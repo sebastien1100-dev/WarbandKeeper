@@ -55,7 +55,7 @@ function UI:Button(parent, text, width, height, style, icon)
         self.hover = true; self:Refresh()
         if self.tooltip then
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:SetText(self.tooltip, 1, 1, 1, 1, true)
+            GameTooltip:SetText(WK.T(self.tooltip), 1, 1, 1, 1, true)
             GameTooltip:Show()
         end
     end)
@@ -90,7 +90,7 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
         refresh(true)
         if self.tooltip then
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:SetText(self.tooltip, 1, 1, 1, 1, true)
+            GameTooltip:SetText(WK.T(self.tooltip), 1, 1, 1, 1, true)
             GameTooltip:Show()
         end
     end)

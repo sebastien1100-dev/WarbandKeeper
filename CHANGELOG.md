@@ -3,6 +3,22 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.4.0 — 14/11/2026
+
+### Ajouts
+- Page Journal : courriers envoyés, or gagné ou dépensé, progrès de métier et niveaux, regroupés par jour, avec des filtres Tout / Or / Courrier / Métiers. Les variations d'or et les progrès d'un même métier sont regroupés par heure.
+- Boîte aux lettres : son contenu est lu à l'ouverture (objets, or, nombre de lettres, date d'expiration). Les objets envoyés par l'envoi automatique à un autre perso du compte sont comptés tout de suite dans sa boîte.
+- Les objets du courrier comptent dans les totaux, les infobulles et les stats. Nouveau filtre « Courrier » dans l'Inventaire.
+- Alertes : banque d'un perso (niveau 10+) jamais ouverte ou pas vue depuis 7 jours, courrier qui expire dans moins de 3 jours. Rappel dans le chat à la connexion et colonnes en orange. Seuils réglables dans les Options.
+- Page Persos : nouvelles colonnes Banque (dernière visite) et Courrier (lettres en attente et jours avant expiration).
+- Stats : vue « Par perso » pour les matériaux, avec une courbe par personnage en couleur de classe et une légende.
+- Version anglaise de l'interface et des messages du chat. Choix de la langue dans les Options : Auto (celle du jeu), Français ou English.
+
+### Modifications
+- Options : la page défile et regroupe Apparence, Langue, Bouton minimap, Alertes et À propos.
+- Les commandes du chat existent aussi en anglais (/wk help, gold, chars, find, prof, mail add / del).
+- Nouveaux fichiers : redémarrer complètement le jeu après la mise à jour (un /reload ne suffit pas).
+
 ## v0.3.1 — 14/11/2026
 
 ### Ajouts
@@ -10,16 +26,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 - Icône « Notes de patch » dans la barre du haut et commande /wk notes.
 - Message dans le chat à la première connexion après une mise à jour.
 - Fichier CHANGELOG.md sur GitHub, généré à partir des mêmes notes.
-
-## À venir
-
-_Prévu, pas encore commencé._
-
-- Journal d'activité : courriers envoyés, gains et pertes d'or, progrès de métier.
-- Suivi des objets en attente dans la boîte aux lettres de chaque personnage.
-- Alerte quand la banque d'un personnage n'a pas été scannée depuis longtemps.
-- Tendance des matériaux par personnage, en plus du total du compte.
-- Version anglaise de l'interface.
 
 ## v0.3.0 — 14/11/2026
 

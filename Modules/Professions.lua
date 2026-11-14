@@ -1,6 +1,19 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Professions")
 
+-- Enregistre les métiers et note les progrès dans le journal.
+function M:Store(c, profs)
+    local old = c.professions or {}
+    for name, p in pairs(profs) do
+        local o = old[name]
+        if o and (p.rank or 0) > (o.rank or 0) and WK.modules.Journal then
+            WK.modules.Journal:Skill(name, o.rank, p.rank)
+        end
+    end
+    c.professions = profs
+    WK:NotifyChanged()
+end
+
 -- Lecture des métiers via les compétences (API Classic : GetSkillLineInfo).
 function M:Scan()
     if GetProfessions and GetProfessionInfo then return self:ScanModern() end
@@ -18,8 +31,7 @@ function M:Scan()
             profs[name] = { rank = rank, max = maxRank }
         end
     end
-    c.professions = profs
-    WK:NotifyChanged()
+    M:Store(c, profs)
 end
 
 -- Client moderne : GetProfessions() renvoie jusqu'à 5 index (peuvent être nil).
@@ -31,8 +43,7 @@ function M:ScanModern()
         local name, _, rank, maxRank = GetProfessionInfo(idx)
         if name then profs[name] = { rank = rank, max = maxRank } end
     end
-    c.professions = profs
-    WK:NotifyChanged()
+    M:Store(c, profs)
 end
 
 function M:OnLogin() self:Scan() end

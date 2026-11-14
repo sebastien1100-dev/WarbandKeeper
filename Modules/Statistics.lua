@@ -21,9 +21,19 @@ end
 -- Met à jour l'historique des matériaux suivis (total sur le compte).
 function M:UpdateItems()
     local hist = WK.DB.global.history.items
+    local me, key = WK.DB:Me()
+    local all = WK.DB.global.history.charItems
+    all[key] = all[key] or {}
+    local mine = all[key]
     for id in pairs(self:TrackedItems()) do
         hist[id] = hist[id] or {}
         WK.DB:PushHistory(hist[id], WK.modules.Inventory:AccountCount(id))
+        -- Le perso connecté est le seul dont le stock change : on enregistre sa part.
+        local n = WK.modules.Inventory:CharCount(me, id)
+        if n > 0 or mine[id] then
+            mine[id] = mine[id] or {}
+            WK.DB:PushHistory(mine[id], n)
+        end
     end
 end
 
@@ -51,6 +61,21 @@ function M:CharGoldAt(key, t)
     return valueAt(WK.DB.global.history.gold[key], t) or 0
 end
 
+function M:CharItemAt(key, itemID, t)
+    local s = WK.DB.global.history.charItems[key]
+    return valueAt(s and s[itemID], t) or 0
+end
+
+-- Personnages ayant un historique pour cet objet.
+function M:CharsWithItem(itemID)
+    local out = {}
+    for key, s in pairs(WK.DB.global.history.charItems) do
+        if s[itemID] and #s[itemID] > 0 then table.insert(out, key) end
+    end
+    table.sort(out)
+    return out
+end
+
 function M:ItemAt(itemID, t)
     return valueAt(WK.DB.global.history.items[itemID], t) or 0
 end
@@ -72,5 +97,5 @@ function M:PrintGold(days)
         local t = now - d * 86400
         WK:Print(string.format("  %s : %s", date("%d/%m", t), WK:FormatMoney(self:AccountGoldAt(t))))
     end
-    WK:Print(string.format("Évolution sur %d jours : %s", days, WK:FormatMoney(current - start)))
+    WK:Print(string.format(WK.T("Évolution sur %d jours : %s"), days, WK:FormatMoney(current - start)))
 end

@@ -29,16 +29,26 @@ end
 UI:RegisterPage({
     key = "options", order = 10, navIcon = "gear",
     title = "Options",
-    subtitle = "Apparence de la fenêtre et du bouton minimap.",
+    subtitle = "Apparence, langue, bouton minimap et alertes.",
 
     Build = function(self, p)
         local cfg = WK.DB.global.settings.ui
+        local alerts = WK.DB.global.settings.alerts
+        local scroll = UI:Scroll(p)
+        scroll:SetAllPoints()
+        local root = scroll.child
+        local W = UI.PAGE_W - 12
+        local y = 0
+        local function card(title, h)
+            local c = UI:Card(root, title)
+            c:SetSize(W, h)
+            c:SetPoint("TOPLEFT", 0, -y)
+            y = y + h + GAP
+            return c
+        end
 
         -- Apparence --------------------------------------------------------------
-        local look = UI:Card(p, "Apparence")
-        look:SetSize(UI.PAGE_W, 150)
-        look:SetPoint("TOPLEFT")
-
+        local look = card("Apparence", 200)
         local dots = CreateFrame("Frame", nil, look)
         dots:SetSize(#UI.accents * 32, 26)
         for i = 1, #UI.accents do
@@ -52,10 +62,23 @@ UI:RegisterPage({
             function(v) UI:ApplyScale(v) end, "%.2fx")
         UI:SettingRow(look, -92, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
 
+        local langBox = CreateFrame("Frame", nil, look)
+        local lang = UI:Segmented(langBox, { { "auto", "Auto" }, { "frFR", "Français" }, { "enUS", "English" } },
+            function(v)
+                cfg.lang = v
+                self.reload:Show()
+            end, 30)
+        lang:SetPoint("RIGHT")
+        lang:Select(cfg.lang or "auto")
+        self.reload = UI:Button(langBox, "Recharger", nil, 30, "primary")
+        self.reload:SetPoint("RIGHT", lang, "LEFT", -8, 0)
+        self.reload:SetScript("OnClick", function() ReloadUI() end)
+        self.reload:Hide()
+        langBox:SetSize(lang:GetWidth() + 120, 30)
+        UI:SettingRow(look, -144, "Langue", "Auto : celle du jeu. Le changement demande de recharger l'interface.", langBox, 360)
+
         -- Bouton minimap -----------------------------------------------------------
-        local mm = UI:Card(p, "Bouton minimap")
-        mm:SetSize(UI.PAGE_W, 136)
-        mm:SetPoint("TOPLEFT", 0, -150 - GAP)
+        local mm = card("Bouton minimap", 136)
         self.mmToggle = UI:Toggle(mm,
             function() return not cfg.minimap.hide end,
             function(v) cfg.minimap.hide = not v; WK.modules.MinimapButton:Update() end)
@@ -68,22 +91,38 @@ UI:RegisterPage({
             UI.frame:SetPoint("CENTER")
         end)
 
+        -- Alertes -------------------------------------------------------------------
+        local al = card("Alertes", 196)
+        self.alertToggle = UI:Toggle(al,
+            function() return alerts.enabled end,
+            function(v) alerts.enabled = v; WK:NotifyChanged() end)
+        UI:SettingRow(al, -40, "Activer les alertes", "Rappel dans le chat à la connexion, et colonnes en orange dans la page Persos.", self.alertToggle, 80)
+        local bankSlider = UI:Slider(al, 240, 1, 30, 1,
+            function() return alerts.bankDays end,
+            function(v) alerts.bankDays = v; WK:NotifyChanged() end, "%d j")
+        UI:SettingRow(al, -92, "Banque pas vue depuis", "Alerte quand la banque d'un perso (niveau 10+) n'a pas été ouverte depuis ce nombre de jours.", bankSlider, 260)
+        local mailSlider = UI:Slider(al, 240, 1, 10, 1,
+            function() return alerts.mailDays end,
+            function(v) alerts.mailDays = v; WK:NotifyChanged() end, "%d j")
+        UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
+
         -- À propos ----------------------------------------------------------------
-        local about = UI:Card(p, "À propos")
-        about:SetSize(UI.PAGE_W, UI.PAGE_H - 150 - 136 - 2 * GAP)
-        about:SetPoint("TOPLEFT", 0, -150 - 136 - 2 * GAP)
+        local about = card("À propos", 120)
         local t = UI:Text(about, 12, C.muted)
         t:SetPoint("TOPLEFT", 16, -42)
         t:SetPoint("TOPRIGHT", -16, -42)
         t:SetJustifyV("TOP")
         if t.SetWordWrap then t:SetWordWrap(true) end
         t:SetSpacing(4)
+        local T = WK.T
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
-            .. "Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.\n"
-            .. "Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.")
+            .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
+            .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré."))
+        scroll:SetContentHeight(y)
     end,
 
     Refresh = function(self)
         self.mmToggle:Refresh()
+        self.alertToggle:Refresh()
     end,
 })

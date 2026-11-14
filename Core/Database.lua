@@ -11,7 +11,9 @@ local defaults = {
     history = {        -- séries temporelles pour les statistiques
         gold = {},     -- [charKey] = { {t=timestamp, v=copper}, ... }
         items = {},    -- [itemID] = { {t=timestamp, v=total compte}, ... }
+        charItems = {},-- [charKey] = { [itemID] = { {t, v}, ... } } : tendance par personnage
     },
+    journal = {},      -- journal d'activité (le plus récent en premier)
     mail = {
         enabled = true,
         rules = {},    -- [itemID] = "NomDestinataire"
@@ -19,7 +21,13 @@ local defaults = {
     settings = {
         historyIntervalSec = 3600, -- 1 point max par heure et par série
         trackedItems = {},         -- [itemID] = true : matériaux suivis dans les stats
+        alerts = {
+            enabled = true,
+            bankDays = 7,          -- banque non vue depuis N jours
+            mailDays = 3,          -- courrier qui expire dans moins de N jours
+        },
         ui = {
+            lang = "auto",         -- "auto", "frFR" ou "enUS"
             accent = 1,            -- index dans WK.UI.accents
             scale = 1,
             lastPage = "overview",

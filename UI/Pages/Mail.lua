@@ -5,7 +5,7 @@ local C = UI.colors
 local GAP = 12
 
 UI:RegisterPage({
-    key = "mail", order = 6, nav = "Courrier",
+    key = "mail", order = 7, nav = "Courrier",
     title = "Courrier automatique",
     subtitle = "Assigne tes matériaux de farm à un personnage : ils partent tout seuls à la boîte aux lettres.",
     count = function()
@@ -48,7 +48,7 @@ UI:RegisterPage({
                 item:SetText("")
                 self:Refresh()
             else
-                WK:Print("Indique un objet (Maj + clic) et un destinataire.")
+                WK:Print(WK.T("Indique un objet (Maj + clic) et un destinataire."))
             end
         end
         btn:SetScript("OnClick", doAdd)
@@ -153,7 +153,7 @@ UI:RegisterPage({
             if string.lower(dest) == string.lower(UnitName("player")) then
                 r.bags:SetText("c'est ce personnage")
             else
-                r.bags:SetText(n > 0 and string.format("x%d dans les sacs", n) or "")
+                r.bags:SetText(n > 0 and string.format(WK.T("x%d dans les sacs"), n) or "")
             end
             r.del.itemID = id
             y = y + 46

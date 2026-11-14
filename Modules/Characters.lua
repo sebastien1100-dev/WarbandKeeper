@@ -14,7 +14,9 @@ end
 
 function M:UpdateMoney()
     local c, key = WK.DB:Me()
-    c.money = GetMoney()
+    local money = GetMoney()
+    if c.money and money ~= c.money and WK.modules.Journal then WK.modules.Journal:Gold(money - c.money) end
+    c.money = money
     local hist = WK.DB.global.history.gold
     hist[key] = hist[key] or {}
     WK.DB:PushHistory(hist[key], c.money)

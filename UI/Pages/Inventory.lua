@@ -18,7 +18,7 @@ UI:RegisterPage({
         self.search = search
         search.onChange = function(text) self.query = string.lower(text or ""); self:Refresh() end
 
-        local seg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" } },
+        local seg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
         seg:SetPoint("TOPRIGHT")
         seg:Select("all")
@@ -69,9 +69,10 @@ UI:RegisterPage({
         local items = {}
         for key, c in pairs(WK.DB.global.characters) do
             local name = c.name or key
-            for _, where in ipairs({ "bags", "bank" }) do
+            for _, where in ipairs({ "bags", "bank", "mailbox" }) do
                 if self.where == "all" or self.where == where then
-                    for id, n in pairs(c[where] or {}) do
+                    local list = where == "mailbox" and (c.mailbox and c.mailbox.items) or c[where]
+                    for id, n in pairs(list or {}) do
                         local it = items[id]
                         if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
                         it.total = it.total + n
@@ -82,12 +83,13 @@ UI:RegisterPage({
         end
 
         local wb = WK.DB.global.warbank
-        if wb and self.where ~= "bags" then
+        if wb and (self.where == "all" or self.where == "bank") then
             for id, n in pairs(wb.items) do
                 local it = items[id]
                 if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
                 it.total = it.total + n
-                it.per["Bataillon"] = (it.per["Bataillon"] or 0) + n
+                local wl = WK.T("Bataillon")
+                it.per[wl] = (it.per[wl] or 0) + n
             end
         end
 
@@ -127,9 +129,9 @@ UI:RegisterPage({
         self.scroll:SetContentHeight(y)
 
         if #list > MAX_ROWS then
-            self.info:SetText(string.format("%d objets (affichage limité à %d, affine ta recherche)", #list, MAX_ROWS))
+            self.info:SetText(string.format(WK.T("%d objets (affichage limité à %d, affine ta recherche)"), #list, MAX_ROWS))
         else
-            self.info:SetText(string.format("%d objet%s", #list, #list > 1 and "s" or ""))
+            self.info:SetText(string.format(#list > 1 and WK.T("%d objets") or WK.T("%d objet"), #list))
         end
     end,
 })

@@ -108,11 +108,19 @@ WK:On("BANKFRAME_OPENED", function() bankOpen = true; M:ScanBank() end)
 WK:On("BANKFRAME_CLOSED", function() bankOpen = false end)
 WK:On("PLAYERBANKSLOTS_CHANGED", scheduleScan)
 
+-- Quantité d'un objet chez un personnage : sacs, banque, boîte aux lettres.
+function M:CharCount(c, itemID)
+    local b = (c.bags or {})[itemID] or 0
+    local k = (c.bank or {})[itemID] or 0
+    local m = (c.mailbox and c.mailbox.items[itemID]) or 0
+    return b + k + m, b, k, m
+end
+
 -- Total d'un objet sur tout le compte.
 function M:AccountCount(itemID)
     local total = 0
     for _, c in pairs(WK.DB.global.characters) do
-        total = total + ((c.bags or {})[itemID] or 0) + ((c.bank or {})[itemID] or 0)
+        total = total + (self:CharCount(c, itemID))
     end
     local wb = WK.DB.global.warbank
     if wb then total = total + (wb.items[itemID] or 0) end
@@ -125,8 +133,9 @@ function M:Find(query)
     local q = query and string.lower(query)
     local found = false
     for key, c in pairs(WK.DB.global.characters) do
-        for _, where in ipairs({ "bags", "bank" }) do
-            for itemID, count in pairs(c[where] or {}) do
+        for _, where in ipairs({ "bags", "bank", "mailbox" }) do
+            local list = where == "mailbox" and (c.mailbox and c.mailbox.items) or c[where]
+            for itemID, count in pairs(list or {}) do
                 local match = (id and itemID == id)
                 if not match and not id then
                     local name = WK.GetItemInfo(itemID)
@@ -135,7 +144,7 @@ function M:Find(query)
                 if match then
                     found = true
                     WK:Print(string.format("  %s x%d - %s (%s)", WK:ItemName(itemID), count, key,
-                        where == "bags" and WK.L.BAGS or WK.L.BANK))
+                        where == "bags" and WK.L.BAGS or where == "bank" and WK.L.BANK or WK.L.MAILBOX))
                 end
             end
         end
@@ -164,20 +173,22 @@ local function onTooltip(tooltip, data)
     if not itemID then return end
     local any = false
     for key, c in pairs(WK.DB.global.characters) do
-        local b, k = (c.bags or {})[itemID] or 0, (c.bank or {})[itemID] or 0
-        if b + k > 0 then
+        local total, b, k, m = M:CharCount(c, itemID)
+        if total > 0 then
             if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
             local r, g, bl = 1, 1, 1
             local cc = c.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[c.class]
             if cc then r, g, bl = cc.r, cc.g, cc.b end
-            tooltip:AddDoubleLine(c.name or key, string.format("%d (%s %d, %s %d)", b + k, WK.L.BAGS, b, WK.L.BANK, k), r, g, bl, 1, 1, 1)
+            local detail = string.format("%s %d, %s %d", WK.L.BAGS, b, WK.L.BANK, k)
+            if m > 0 then detail = detail .. string.format(", %s %d", WK.L.MAILBOX, m) end
+            tooltip:AddDoubleLine(c.name or key, string.format("%d (%s)", total, detail), r, g, bl, 1, 1, 1)
         end
     end
     local wb = WK.DB.global.warbank
     local w = wb and wb.items[itemID] or 0
     if w > 0 then
         if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
-        tooltip:AddDoubleLine("Banque de bataillon", tostring(w), 1, 1, 1, 1, 1, 1)
+        tooltip:AddDoubleLine(WK.L.WARBANK, tostring(w), 1, 1, 1, 1, 1, 1)
     end
     if any then tooltip:Show() end
 end

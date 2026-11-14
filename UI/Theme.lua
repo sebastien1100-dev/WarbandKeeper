@@ -145,6 +145,9 @@ function UI:Text(parent, size, color, layer)
     fs:SetTextColor(unpack(color or UI.colors.text))
     fs:SetJustifyH("LEFT")
     if fs.SetWordWrap then fs:SetWordWrap(false) end
+    -- Les textes fixes sont traduits à l'affichage (clé = texte français).
+    local set = fs.SetText
+    fs.SetText = function(self, t) return set(self, WK.T(t)) end
     return fs
 end
 
@@ -187,22 +190,23 @@ function UI:ShortGold(copper)
     if g >= 1e6 then s = string.format("%.1fM", g / 1e6)
     elseif g >= 1e4 then s = string.format("%.1fk", g / 1e3)
     else s = string.format("%d", math.floor(g)) end
-    return (neg and "-" or "") .. s:gsub("%.", ",") .. " po"
+    local dec = WK.Lang() == "frFR" and "," or "."
+    return (neg and "-" or "") .. s:gsub("%.", dec) .. " " .. WK.T("po")
 end
 
 function UI:Ago(t)
     if not t then return "-" end
     local d = time() - t
-    if d < 3600 then return "à l'instant" end
-    if d < 86400 then return string.format("il y a %d h", math.floor(d / 3600)) end
-    return string.format("il y a %d j", math.floor(d / 86400))
+    if d < 3600 then return WK.T("à l'instant") end
+    if d < 86400 then return string.format(WK.T("il y a %d h"), math.floor(d / 3600)) end
+    return string.format(WK.T("il y a %d j"), math.floor(d / 86400))
 end
 
 -- Or entier avec séparateur de milliers : "12 345 po".
 function UI:GoldText(copper)
     local g = math.floor((copper or 0) / 10000)
     local s = tostring(math.abs(g)):reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "")
-    return "|cffffd24d" .. (g < 0 and "-" or "") .. s .. "|r po"
+    return "|cffffd24d" .. (g < 0 and "-" or "") .. s .. "|r " .. WK.T("po")
 end
 
 -- Infos d'objet avec demande de chargement si l'objet n'est pas en cache.
@@ -214,7 +218,7 @@ function UI:ItemInfo(itemID)
     local r, g, b = 1, 1, 1
     local qc = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
     if qc then r, g, b = qc.r, qc.g, qc.b end
-    return name or ("Objet #" .. itemID), icon, r, g, b, link
+    return name or (WK.T("Objet #") .. itemID), icon, r, g, b, link
 end
 
 -- Les noms d'objets arrivent du serveur en différé : on rafraîchit l'écran.

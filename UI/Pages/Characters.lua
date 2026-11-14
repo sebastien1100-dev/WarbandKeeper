@@ -1,14 +1,18 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local T = function(s) return WK.T(s) end
+local WARN = { 0.95, 0.66, 0.30, 1 }
 
 -- Colonnes : { libellé, x, alignement }
 local COLS = {
     { "Personnage", 52, "LEFT" },
-    { "Niveau", 330, "LEFT" },
-    { "Or", 560, "RIGHT" },
-    { "Temps de jeu", 600, "LEFT" },
-    { "Vu", 740, "LEFT" },
+    { "Niveau", 262, "LEFT" },
+    { "Or", 430, "RIGHT" },
+    { "Temps de jeu", 462, "LEFT" },
+    { "Banque", 582, "LEFT" },
+    { "Courrier", 700, "LEFT" },
+    { "Vu", 802, "LEFT" },
 }
 
 UI:RegisterPage({
@@ -25,12 +29,12 @@ UI:RegisterPage({
         for _, col in ipairs(COLS) do
             local t = UI:Text(p, 10, C.dim)
             if col[3] == "RIGHT" then
-                t:SetPoint("TOPRIGHT", p, "TOPLEFT", col[2] + 12, -4)
+                t:SetPoint("TOPRIGHT", p, "TOPLEFT", col[2], -4)
                 t:SetJustifyH("RIGHT")
             else
-                t:SetPoint("TOPLEFT", col[2] + 12, -4)
+                t:SetPoint("TOPLEFT", col[2], -4)
             end
-            t:SetText(string.upper(col[1]))
+            t:SetText(string.upper(T(col[1])))
         end
 
         local scroll = UI:Scroll(p)
@@ -38,6 +42,12 @@ UI:RegisterPage({
         scroll:SetPoint("BOTTOMRIGHT")
         self.scroll = scroll
         local child = scroll.child
+
+        local function cell(r, x, color)
+            local fs = UI:Text(r, 12, color)
+            fs:SetPoint("LEFT", x, 0)
+            return fs
+        end
 
         self.rows = UI:Pool(function()
             local r = CreateFrame("Frame", nil, child)
@@ -52,15 +62,14 @@ UI:RegisterPage({
             r.realm:SetWidth(COLS[2][2] - 52 - 10)
             r.badge = UI:Badge(r, "connecté")
             r.badge:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
-            r.level = UI:Text(r, 12)
-            r.level:SetPoint("LEFT", COLS[2][2], 0)
+            r.level = cell(r, COLS[2][2])
             r.gold = UI:Text(r, 12)
             r.gold:SetPoint("RIGHT", r, "LEFT", COLS[3][2], 0)
             r.gold:SetJustifyH("RIGHT")
-            r.played = UI:Text(r, 12, C.muted)
-            r.played:SetPoint("LEFT", COLS[4][2], 0)
-            r.seen = UI:Text(r, 12, C.muted)
-            r.seen:SetPoint("LEFT", COLS[5][2], 0)
+            r.played = cell(r, COLS[4][2], C.muted)
+            r.bank = cell(r, COLS[5][2], C.muted)
+            r.mail = cell(r, COLS[6][2], C.muted)
+            r.seen = cell(r, COLS[7][2], C.muted)
             r.del = UI:IconButton(r, "trash", 26, "Maj + clic : oublier ce personnage", true)
             r.del:SetPoint("RIGHT", -10, 0)
             r.del:SetScript("OnClick", function(btn)
@@ -88,7 +97,28 @@ UI:RegisterPage({
             r.level:SetText(tostring(c.level or "-"))
             r.gold:SetText(UI:GoldText(c.money))
             r.played:SetText(WK:FormatTime(c.played))
-            r.seen:SetText(e.key == me and "maintenant" or UI:Ago(c.lastSeen))
+
+            -- Banque et courrier, en orange quand une alerte les concerne.
+            local warnBank, warnMail = false, false
+            for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
+                if a.kind == "bank" then warnBank = true else warnMail = true end
+            end
+            r.bank:SetText(c.bankScanned and UI:Ago(c.bankScanned) or T("jamais"))
+            r.bank:SetTextColor(unpack(warnBank and WARN or C.muted))
+            local box = c.mailbox
+            if box and (box.count or 0) > 0 then
+                local txt = string.format((box.count > 1) and T("%d lettres") or T("%d lettre"), box.count)
+                if box.expiresAt then
+                    local d = math.max(0, math.floor((box.expiresAt - time()) / 86400))
+                    txt = txt .. " · " .. string.format(T("%d j"), d)
+                end
+                r.mail:SetText(txt)
+            else
+                r.mail:SetText(box and T("vide") or "-")
+            end
+            r.mail:SetTextColor(unpack(warnMail and WARN or C.muted))
+
+            r.seen:SetText(e.key == me and T("maintenant") or UI:Ago(c.lastSeen))
             r.del.key = e.key
             r.del:SetShown(e.key ~= me)
             y = y + 56

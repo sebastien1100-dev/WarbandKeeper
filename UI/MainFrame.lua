@@ -148,7 +148,7 @@ function UI:Create()
     UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
     local sub = UI:Text(top, 10, C.muted)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
-    sub:SetText("Registre du compte · v" .. WK.version)
+    sub:SetText(WK.T("Registre du compte") .. " · v" .. WK.version)
 
     -- Boutons à droite : fermer, scanner, rechercher.
     local close = UI:IconButton(top, "close", 30, "Fermer")

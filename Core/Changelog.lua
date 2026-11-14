@@ -6,6 +6,23 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.4.0", date = "14/11/2026",
+        added = {
+            "Page Journal : courriers envoyés, or gagné ou dépensé, progrès de métier et niveaux, regroupés par jour, avec des filtres Tout / Or / Courrier / Métiers. Les variations d'or et les progrès d'un même métier sont regroupés par heure.",
+            "Boîte aux lettres : son contenu est lu à l'ouverture (objets, or, nombre de lettres, date d'expiration). Les objets envoyés par l'envoi automatique à un autre perso du compte sont comptés tout de suite dans sa boîte.",
+            "Les objets du courrier comptent dans les totaux, les infobulles et les stats. Nouveau filtre « Courrier » dans l'Inventaire.",
+            "Alertes : banque d'un perso (niveau 10+) jamais ouverte ou pas vue depuis 7 jours, courrier qui expire dans moins de 3 jours. Rappel dans le chat à la connexion et colonnes en orange. Seuils réglables dans les Options.",
+            "Page Persos : nouvelles colonnes Banque (dernière visite) et Courrier (lettres en attente et jours avant expiration).",
+            "Stats : vue « Par perso » pour les matériaux, avec une courbe par personnage en couleur de classe et une légende.",
+            "Version anglaise de l'interface et des messages du chat. Choix de la langue dans les Options : Auto (celle du jeu), Français ou English.",
+        },
+        changed = {
+            "Options : la page défile et regroupe Apparence, Langue, Bouton minimap, Alertes et À propos.",
+            "Les commandes du chat existent aussi en anglais (/wk help, gold, chars, find, prof, mail add / del).",
+            "Nouveaux fichiers : redémarrer complètement le jeu après la mise à jour (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.3.1", date = "14/11/2026",
         added = {
             "Page « Notes de patch » : toutes les versions avec leurs ajouts, modifications et corrections, plus ce qui est prévu.",
@@ -106,11 +123,6 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Journal d'activité : courriers envoyés, gains et pertes d'or, progrès de métier.",
-    "Suivi des objets en attente dans la boîte aux lettres de chaque personnage.",
-    "Alerte quand la banque d'un personnage n'a pas été scannée depuis longtemps.",
-    "Tendance des matériaux par personnage, en plus du total du compte.",
-    "Version anglaise de l'interface.",
 }
 
 -- Message au premier lancement d'une nouvelle version.
@@ -118,7 +130,7 @@ WK:On("PLAYER_LOGIN", function()
     local s = WK.DB.global.settings
     if s.lastSeenVersion ~= WK.version then
         if s.lastSeenVersion then
-            WK:Print(string.format("mis à jour en |cffe0bd72v%s|r. Tape |cffffd100/wk notes|r pour voir les nouveautés.", WK.version))
+            WK:Print(string.format(WK.L.UPDATED, WK.version))
         end
         s.lastSeenVersion = WK.version
     end

@@ -1,10 +1,11 @@
 local ADDON_NAME, WK = ...
 
--- Chaînes affichées. Une seule langue pour l'instant (français).
-WK.L = {
+-- Messages du chat en français (langue de référence).
+WK.Locales.frFR.keys = {
     LOADED          = "chargé. Tape |cffffd100/wk|r pour ouvrir la fenêtre, |cffffd100/wk aide|r pour les commandes.",
     HELP_TITLE      = "Commandes :",
     HELP_OPEN       = "/wk               - Ouvre / ferme la fenêtre (/wk aide : cette aide)",
+    UPDATED         = "mis à jour en |cffe0bd72v%s|r. Tape |cffffd100/wk notes|r pour voir les nouveautés.",
     HELP_NOTES      = "/wk notes         - Notes de patch (nouveautés et corrections)",
     HELP_GOLD       = "/wk or            - Or de tous les personnages",
     HELP_CHARS      = "/wk persos        - Liste des personnages (niveau, temps de jeu)",
@@ -19,6 +20,8 @@ WK.L = {
     NOT_FOUND       = "Aucun objet trouvé pour",
     BAGS            = "sacs",
     BANK            = "banque",
+    MAILBOX         = "courrier",
+    WARBANK         = "Banque de bataillon",
     MAIL_SENDING    = "Envoi de %d objet(s) à %s...",
     MAIL_DONE       = "Envoi automatique terminé.",
     MAIL_RULE_ADD   = "Règle ajoutée : %s -> %s",

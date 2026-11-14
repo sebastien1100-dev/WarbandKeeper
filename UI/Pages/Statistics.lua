@@ -101,6 +101,23 @@ UI:RegisterPage({
         seg:SetPoint("TOPRIGHT", -14, -14)
         seg:Select(7)
 
+        -- Matériaux : total du compte ou une courbe par personnage.
+        self.mode = "total"
+        self.modeSeg = UI:Segmented(card, { { "total", "Compte" }, { "chars", "Par perso" } },
+            function(m) self.mode = m; self:Refresh() end, 30)
+        self.modeSeg:SetPoint("RIGHT", seg, "LEFT", -8, 0)
+        self.modeSeg:Select("total")
+        self.legend = UI:Pool(function()
+            local f = CreateFrame("Frame", nil, card)
+            f:SetHeight(16)
+            f.dot = UI:Icon(f, "circle", 8, nil, "ARTWORK")
+            f.dot:SetPoint("LEFT")
+            f.text = UI:Text(f, 11, C.muted)
+            f.text:SetPoint("LEFT", 13, 0)
+            return f
+        end)
+        self.charCharts = {}
+
         local area = CreateFrame("Frame", nil, card)
         area:SetPoint("TOPLEFT", 70, -104)
         area:SetPoint("BOTTOMRIGHT", -18, 40)
@@ -163,7 +180,7 @@ UI:RegisterPage({
                 e.icon:SetTexture(icon)
                 e.name:SetText(name)
                 e.name:SetTextColor(qr, qg, qb)
-                local suffix = tracked[key] == "mail" and "  ·  règle d'envoi" or ""
+                local suffix = tracked[key] == "mail" and ("  ·  " .. WK.T("règle d'envoi")) or ""
                 e.value:SetText("x" .. WK.modules.Inventory:AccountCount(key) .. suffix)
                 e.del:SetShown(tracked[key] == "manual")
             end
@@ -204,11 +221,31 @@ UI:RegisterPage({
 
         local area = self.area
         local h = area:GetHeight()
+
+        -- Mode « Par perso » (matériaux uniquement) : une série par personnage.
+        local perChar = not isGold and self.mode == "chars"
+        self.modeSeg:SetShown(not isGold)
+        local minV = math.huge
+        local series, keys = {}, {}
+        if perChar then
+            keys = S:CharsWithItem(key)
+            maxV = 0
+            for _, ck in ipairs(keys) do
+                local vs = {}
+                for i = 1, n do
+                    local v = S:CharItemAt(ck, key, values[i].t)
+                    vs[i] = v
+                    if v > maxV then maxV = v end
+                    if v < minV then minV = v end
+                end
+                series[ck] = vs
+            end
+        else
+            for _, pt in ipairs(values) do if pt.v < minV then minV = pt.v end end
+        end
         self.empty:SetShown(maxV == 0)
 
         -- Échelle : on cadre sur la plage des valeurs pour voir les variations.
-        local minV = math.huge
-        for _, pt in ipairs(values) do if pt.v < minV then minV = pt.v end end
         local pad = math.max((maxV - minV) * 0.15, maxV * 0.02, 1)
         local lo, hi = math.max(0, minV - pad), maxV + pad
 
@@ -225,10 +262,35 @@ UI:RegisterPage({
             gl.label:SetText(maxV == 0 and "" or (isGold and UI:ShortGold(v) or tostring(math.floor(v + 0.5))))
         end
 
-        -- Courbe
+        -- Courbes par personnage + légende
+        for _, ch in ipairs(self.charCharts) do ch:SetData({}, C.text) end
+        self.legend:Reset()
+        if perChar then
+            local x = 0
+            for i, ck in ipairs(keys) do
+                local ch = self.charCharts[i]
+                if not ch then
+                    ch = UI:LineChart(area, 2, false)
+                    ch:SetAllPoints()
+                    self.charCharts[i] = ch
+                end
+                local c = WK.DB.global.characters[ck]
+                local col = { UI:ClassColor(c and c.class) }
+                ch:SetData(series[ck], col, lo, hi)
+                local lg = self.legend:Get()
+                lg.dot:SetVertexColor(col[1], col[2], col[3], 1)
+                lg.text:SetText(string.format("%s %d", c and c.name or ck, series[ck][n]))
+                lg:SetWidth(lg.text:GetStringWidth() + 14)
+                lg:ClearAllPoints()
+                lg:SetPoint("TOPLEFT", self.card, "TOPLEFT", 18 + x, -80)
+                x = x + lg:GetWidth() + 14
+            end
+        end
+
+        -- Courbe du total (masquée en mode « Par perso »)
         local vals = {}
         for i, pt in ipairs(values) do vals[i] = pt.v end
-        if maxV > 0 then
+        if maxV > 0 and not perChar then
             self.chart:SetData(vals, { UI:Accent() }, lo, hi)
             for i, pt in ipairs(self.chart.points) do pt.t = values[i].t end
         else

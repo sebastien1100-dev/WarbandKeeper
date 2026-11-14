@@ -19,7 +19,8 @@ function WK:FormatMoney(copper)
     local g = math.floor(copper / 10000)
     local s = math.floor((copper % 10000) / 100)
     local c = copper % 100
-    local str = string.format("|cffffd700%d|rpo |cffc7c7cf%d|rpa |cffeda55f%d|rpc", g, s, c)
+    local str = string.format("|cffffd700%d|r%s |cffc7c7cf%d|r%s |cffeda55f%d|r%s",
+        g, WK.T("po"), s, WK.T("pa"), c, WK.T("pc"))
     return neg and ("-" .. str) or str
 end
 
@@ -29,8 +30,8 @@ function WK:FormatTime(sec)
     local d = math.floor(sec / 86400)
     local h = math.floor((sec % 86400) / 3600)
     local m = math.floor((sec % 3600) / 60)
-    if d > 0 then return string.format("%dj %dh %dm", d, h, m) end
-    return string.format("%dh %dm", h, m)
+    if d > 0 then return string.format(WK.T("%dj %dh %dm"), d, h, m) end
+    return string.format(WK.T("%dh %dm"), h, m)
 end
 
 -- Extrait un itemID depuis un nombre ou un lien d'objet.

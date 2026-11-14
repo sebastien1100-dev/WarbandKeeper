@@ -39,7 +39,7 @@ end
 
 -- "12 345 po" en couleur -> "12 345" sans codes couleur.
 local function plainGold(copper)
-    local s = UI:GoldText(copper):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub(" po$", "")
+    local s = UI:GoldText(copper):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub(" " .. WK.T("po") .. "$", "")
     return s
 end
 
@@ -58,7 +58,7 @@ UI:RegisterPage({
         self.total:SetPoint("TOPLEFT", 0, -22)
         self.po = UI:Text(p, 18)
         self.po:SetPoint("BOTTOMLEFT", self.total, "BOTTOMRIGHT", 6, 2)
-        self.po:SetText("po")
+        self.po:SetText(WK.T("po"))
         UI:OnAccent(function() self.po:SetTextColor(UI:Accent()) end)
         self.delta = UI:Badge(p, "", C.positive)
         self.delta:SetPoint("TOPLEFT", 0, -66)
@@ -127,7 +127,7 @@ UI:RegisterPage({
             else
                 t:SetPoint("TOPLEFT", col[2], ty)
             end
-            t:SetText(string.upper(col[1]))
+            t:SetText(string.upper(WK.T(col[1])))
         end
         local scroll = UI:Scroll(p)
         scroll:SetPoint("TOPLEFT", 0, ty - 20)
