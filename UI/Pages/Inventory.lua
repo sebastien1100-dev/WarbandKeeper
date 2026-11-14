@@ -1,35 +1,106 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local T = function(s) return WK.T(s) end
 
 local MAX_ROWS = 150
+local TABS_W = 214
+local GAP = 12
+local WHERE = { "bags", "bank", "mailbox" }
+local WHERE_LABEL = { bags = "Sacs", bank = "Banque", mailbox = "Courrier" }
+
+-- Contenu d'un emplacement ("bags", "bank", "mailbox") d'un personnage.
+local function listOf(c, where)
+    if where == "mailbox" then return c.mailbox and c.mailbox.items end
+    return c[where]
+end
+
+local function countItems(t)
+    local n, kinds = 0, 0
+    for _, k in pairs(t or {}) do n = n + k; kinds = kinds + 1 end
+    return n, kinds
+end
 
 UI:RegisterPage({
     key = "inventory", order = 3, nav = "Inventaire",
     title = "Inventaire",
-    subtitle = "Sacs et banques de tous tes personnages. Maj + clic sur une ligne pour lier l'objet.",
+    subtitle = "Sacs, banques et courrier, par personnage ou pour tout le compte. Maj + clic sur une ligne pour lier l'objet.",
 
     Build = function(self, p)
         self.where = "all"
         self.query = ""
+        local cfg = WK.DB.global.settings.ui
+        self.char = cfg.invChar or "all"
 
-        local search = UI:Input(p, 300, 34, "Rechercher un objet...", "search")
-        search:SetPoint("TOPLEFT")
+        -- Onglets (colonne de gauche) ------------------------------------------
+        local tabsCard = UI:Card(p)
+        tabsCard:SetSize(TABS_W, UI.PAGE_H)
+        tabsCard:SetPoint("TOPLEFT")
+        local ts = UI:Scroll(tabsCard)
+        ts:SetPoint("TOPLEFT", 8, -8)
+        ts:SetPoint("BOTTOMRIGHT", -6, 8)
+        self.tabScroll = ts
+        self.tabs = UI:Pool(function()
+            local b = CreateFrame("Button", nil, ts.child)
+            b:SetHeight(42)
+            b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
+            b.bar = CreateFrame("Frame", nil, b)
+            b.bar:SetSize(3, 18)
+            b.bar:SetPoint("LEFT", 0, 0)
+            b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
+            b.icon = UI:RoundIcon(b, 24)
+            b.icon:SetPoint("LEFT", 10, 0)
+            b.glyph = UI:Icon(b, "users", 16)
+            b.glyph:SetPoint("CENTER", b.icon, "CENTER")
+            b.name = UI:Text(b, 12)
+            b.name:SetPoint("TOPLEFT", 42, -7)
+            b.name:SetPoint("TOPRIGHT", -8, -7)
+            b.sub = UI:Text(b, 10, C.muted)
+            b.sub:SetPoint("TOPLEFT", b.name, "BOTTOMLEFT", 0, -3)
+            b.sub:SetPoint("TOPRIGHT", b.name, "BOTTOMRIGHT", 0, -3)
+            function b:Paint()
+                local sel = self.selected
+                self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+                self.bg:SetShown(sel or self.hover)
+                self.bar:SetShown(sel)
+                self.barTex:SetColor(UI:Accent())
+            end
+            b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+            b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+            b:SetScript("OnClick", function(s)
+                self.char = s.key
+                cfg.invChar = s.key
+                self:Refresh()
+            end)
+            return b
+        end)
+
+        -- Barre d'outils (droite) ----------------------------------------------------
+        local x0 = TABS_W + GAP
+        local search = UI:Input(p, 280, 34, "Rechercher un objet...", "search")
+        search:SetPoint("TOPLEFT", x0, 0)
         self.search = search
         search.onChange = function(text) self.query = string.lower(text or ""); self:Refresh() end
 
-        local seg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
+        self.whereSeg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
-        seg:SetPoint("TOPRIGHT")
-        seg:Select("all")
+        self.whereSeg:SetPoint("TOPRIGHT")
+        self.whereSeg:Select("all")
 
+        self.header = UI:Text(p, 14)
+        self.header:SetPoint("TOPLEFT", x0 + 2, -48)
         self.info = UI:Text(p, 11, C.muted)
-        self.info:SetPoint("TOPLEFT", 4, -48)
+        self.info:SetPoint("BOTTOMLEFT", self.header, "BOTTOMRIGHT", 10, 1)
+        self.countText = UI:Text(p, 11, C.muted)
+        self.countText:SetPoint("TOPRIGHT", -4, -50)
+        self.countText:SetJustifyH("RIGHT")
 
         local scroll = UI:Scroll(p)
-        scroll:SetPoint("TOPLEFT", 0, -68)
+        scroll:SetPoint("TOPLEFT", x0, -74)
         scroll:SetPoint("BOTTOMRIGHT")
         self.scroll = scroll
+        self.empty = UI:Text(p, 12, C.muted)
+        self.empty:SetPoint("CENTER", scroll, "CENTER")
 
         self.rows = UI:Pool(function()
             local r = CreateFrame("Button", nil, scroll.child)
@@ -46,51 +117,136 @@ UI:RegisterPage({
             r.total = UI:Text(r, 15)
             r.total:SetPoint("RIGHT", -16, 0)
             r.total:SetJustifyH("RIGHT")
-            r:SetScript("OnEnter", function(self)
-                self.bg:SetColor(unpack(C.surface2))
-                GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-                GameTooltip:SetItemByID(self.itemID)
+            r:SetScript("OnEnter", function(row)
+                row.bg:SetColor(unpack(C.surface2))
+                GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+                GameTooltip:SetItemByID(row.itemID)
                 GameTooltip:Show()
             end)
-            r:SetScript("OnLeave", function(self)
-                self.bg:SetColor(unpack(C.surface))
+            r:SetScript("OnLeave", function(row)
+                row.bg:SetColor(unpack(C.surface))
                 GameTooltip:Hide()
             end)
-            r:SetScript("OnClick", function(self)
-                local _, _, _, _, _, link = UI:ItemInfo(self.itemID)
+            r:SetScript("OnClick", function(row)
+                local _, _, _, _, _, link = UI:ItemInfo(row.itemID)
                 if IsModifiedClick("CHATLINK") and link then WK.InsertChatLink(link) end
             end)
             return r
         end)
     end,
 
+    -- Onglets : tout le compte, chaque personnage, banque de bataillon.
+    RefreshTabs = function(self)
+        local chars = WK.DB.global.characters
+        if self.char ~= "all" and self.char ~= "warband" and not chars[self.char] then self.char = "all" end
+        local entries = { { key = "all" } }
+        for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
+        local wb = WK.DB.global.warbank
+        if wb then table.insert(entries, { key = "warband" }) end
+
+        self.tabs:Reset()
+        local y = 0
+        local accountTotal = 0
+        for _, e in ipairs(entries) do
+            local b = self.tabs:Get()
+            b.key = e.key
+            b:ClearAllPoints()
+            b:SetPoint("TOPLEFT", 0, -y)
+            b:SetPoint("TOPRIGHT", 0, -y)
+            if e.c then
+                local n = 0
+                for _, where in ipairs(WHERE) do n = n + countItems(listOf(e.c, where)) end
+                accountTotal = accountTotal + n
+                b.icon:Show(); b.glyph:Hide()
+                UI:SetClassIcon(b.icon, e.c.class)
+                b.name:SetText(e.c.name or e.key)
+                b.name:SetTextColor(UI:ClassColor(e.c.class))
+                b.sub:SetText(string.format(T("%d objets"), n))
+                e.button = b
+            else
+                b.icon:Hide(); b.glyph:Show()
+                b.glyph:SetTexture(UI.MEDIA .. (e.key == "all" and "users" or "bag"))
+                b.glyph:SetVertexColor(UI:Accent())
+                b.name:SetText(e.key == "all" and T("Tout le compte") or T("Banque de bataillon"))
+                b.name:SetTextColor(unpack(C.text))
+                if e.key == "warband" then
+                    local n = countItems(wb.items)
+                    b.sub:SetText(string.format(T("%d objets"), n))
+                end
+                e.button = b
+            end
+            b.selected = (self.char == e.key)
+            b:Paint()
+            y = y + 46
+        end
+        -- Total du compte sous « Tout le compte ».
+        local all = entries[1].button
+        local wbn = wb and countItems(wb.items) or 0
+        all.sub:SetText(string.format(T("%d objets"), accountTotal + wbn))
+        self.tabScroll:SetContentHeight(y)
+    end,
+
     Refresh = function(self)
-        -- Agrégation sur le compte : [itemID] = { total, per = { [nom] = n } }
+        self:RefreshTabs()
+        local chars = WK.DB.global.characters
+        local sel = self.char
         local items = {}
-        for key, c in pairs(WK.DB.global.characters) do
-            local name = c.name or key
-            for _, where in ipairs({ "bags", "bank", "mailbox" }) do
-                if self.where == "all" or self.where == where then
-                    local list = where == "mailbox" and (c.mailbox and c.mailbox.items) or c[where]
-                    for id, n in pairs(list or {}) do
-                        local it = items[id]
-                        if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
-                        it.total = it.total + n
-                        it.per[name] = (it.per[name] or 0) + n
+        local function add(id, n, label)
+            local it = items[id]
+            if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
+            it.total = it.total + n
+            it.per[label] = (it.per[label] or 0) + n
+        end
+
+        -- Filtres d'emplacement : pas de sacs ni de courrier pour la banque de bataillon.
+        self.whereSeg:SetShown(sel ~= "warband")
+        local wb = WK.DB.global.warbank
+        if sel == "warband" then
+            for id, n in pairs(wb and wb.items or {}) do add(id, n, T("Bataillon")) end
+        elseif sel == "all" then
+            for key, c in pairs(chars) do
+                for _, where in ipairs(WHERE) do
+                    if self.where == "all" or self.where == where then
+                        for id, n in pairs(listOf(c, where) or {}) do add(id, n, c.name or key) end
                     end
+                end
+            end
+            if wb and (self.where == "all" or self.where == "bank") then
+                for id, n in pairs(wb.items) do add(id, n, T("Bataillon")) end
+            end
+        else
+            -- Un personnage : le détail indique où se trouve l'objet.
+            local c = chars[sel]
+            for _, where in ipairs(WHERE) do
+                if self.where == "all" or self.where == where then
+                    for id, n in pairs(listOf(c, where) or {}) do add(id, n, T(WHERE_LABEL[where])) end
                 end
             end
         end
 
-        local wb = WK.DB.global.warbank
-        if wb and (self.where == "all" or self.where == "bank") then
-            for id, n in pairs(wb.items) do
-                local it = items[id]
-                if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
-                it.total = it.total + n
-                local wl = WK.T("Bataillon")
-                it.per[wl] = (it.per[wl] or 0) + n
+        -- En-tête de l'onglet
+        if sel == "all" then
+            self.header:SetText(T("Tout le compte"))
+            self.header:SetTextColor(unpack(C.text))
+            self.info:SetText("")
+        elseif sel == "warband" then
+            self.header:SetText(T("Banque de bataillon"))
+            self.header:SetTextColor(unpack(C.text))
+            self.info:SetText(wb and wb.scanned and UI:Ago(wb.scanned) or "")
+        else
+            local c = chars[sel]
+            self.header:SetText(c.name or sel)
+            self.header:SetTextColor(UI:ClassColor(c.class))
+            local parts = {}
+            if c.totalSlots and c.totalSlots > 0 then
+                table.insert(parts, string.format(T("sacs %d / %d"), c.totalSlots - (c.freeSlots or 0), c.totalSlots))
             end
+            table.insert(parts, c.bankScanned and (T("banque") .. " " .. UI:Ago(c.bankScanned)) or T("banque jamais ouverte"))
+            local box = c.mailbox
+            if box and (box.count or 0) > 0 then
+                table.insert(parts, string.format(box.count > 1 and T("%d lettres") or T("%d lettre"), box.count))
+            end
+            self.info:SetText(table.concat(parts, "  ·  "))
         end
 
         local list = {}
@@ -127,11 +283,13 @@ UI:RegisterPage({
             y = y + 52
         end
         self.scroll:SetContentHeight(y)
+        self.empty:SetShown(#list == 0)
+        self.empty:SetText(self.query ~= "" and T("Aucun objet ne correspond à la recherche.") or T("Rien ici pour l'instant."))
 
         if #list > MAX_ROWS then
-            self.info:SetText(string.format(WK.T("%d objets (affichage limité à %d, affine ta recherche)"), #list, MAX_ROWS))
+            self.countText:SetText(string.format(T("%d objets (affichage limité à %d, affine ta recherche)"), #list, MAX_ROWS))
         else
-            self.info:SetText(string.format(#list > 1 and WK.T("%d objets") or WK.T("%d objet"), #list))
+            self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list))
         end
     end,
 })

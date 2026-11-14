@@ -214,6 +214,12 @@ WK.Locales.enUS.text = {
     ["Opacité du fond"] = "Background opacity", ["Transparence du fond de la fenêtre (rechargement)."] = "Window background transparency (reload).",
     ["Auto : celle du jeu (rechargement)."] = "Auto: the game's language (reload).",
 
+    -- Inventaire par personnage
+    ["Sacs, banques et courrier, par personnage ou pour tout le compte. Maj + clic sur une ligne pour lier l'objet."] =
+        "Bags, banks and mail, per character or for the whole account. Shift + click a row to link the item.",
+    ["Tout le compte"] = "Whole account", ["sacs %d / %d"] = "bags %d / %d",
+    ["Aucun objet ne correspond à la recherche."] = "No item matches the search.", ["Rien ici pour l'instant."] = "Nothing here yet.",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }

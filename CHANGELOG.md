@@ -3,6 +3,23 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.6.1 — 14/11/2026
+
+### Ajouts
+- Inventaire : onglets par personnage dans une colonne à gauche (icône et couleur de classe, nombre d'objets), plus « Tout le compte » et « Banque de bataillon ».
+- Sur l'onglet d'un personnage, chaque objet indique où il se trouve (sacs, banque, courrier), et l'en-tête résume sacs occupés, dernière visite à la banque et lettres en attente.
+
+### Modifications
+- L'Inventaire retient le dernier onglet ouvert. La recherche et les filtres Sacs / Banque / Courrier s'appliquent à l'onglet choisi.
+
+## À venir
+
+_Prévu, pas encore commencé._
+
+- Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.
+- Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.
+- Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.
+
 ## v0.6.0 — 14/11/2026
 
 ### Ajouts
@@ -15,14 +32,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 - Les thèmes Héraldique et Faction s'adaptent au perso connecté.
 - Changer de thème remet l'accent sur celui du thème.
 - Nouveau fichier : redémarrer complètement le jeu après la mise à jour.
-
-## À venir
-
-_Prévu, pas encore commencé._
-
-- Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.
-- Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.
-- Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.
 
 ## v0.5.0 — 14/11/2026
 
