@@ -74,7 +74,7 @@ UI:RegisterPage({
                 if button == "RightButton" and s.key then UI:EditCharName(s.key) end
             end)
             r:SetScript("OnEnter", function(s)
-                GameTooltip:SetOwner(s, "ANCHOR_CURSOR")
+                WK.UI:TooltipOwner(s, "ANCHOR_CURSOR")
                 GameTooltip:SetText(WK.T("Clic droit : corriger le nom complet"), 1, 1, 1)
                 GameTooltip:Show()
             end)

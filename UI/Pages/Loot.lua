@@ -180,7 +180,7 @@ UI:RegisterPage({
             r.name:SetPoint("RIGHT", -4, 0)
             r:SetScript("OnEnter", function(s)
                 s.name:SetTextColor(unpack(C.text))
-                GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+                WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
                 GameTooltip:SetText(WK.T("Clique pour toujours ramasser cet objet"), 1, 1, 1)
                 GameTooltip:Show()
             end)
@@ -275,7 +275,7 @@ UI:RegisterPage({
             r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -3)
             r:SetScript("OnEnter", function(s)
                 if not s.itemID then return end
-                GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+                WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
                 if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.itemID)
                 else GameTooltip:SetHyperlink("item:" .. s.itemID) end
                 GameTooltip:Show()

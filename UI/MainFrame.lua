@@ -83,7 +83,7 @@ local function NavItem(parent, def)
     b:SetScript("OnEnter", function(self)
         self.hover = true; self:Refresh()
         if WK.DB.global.settings.ui.collapsed then
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            WK.UI:TooltipOwner(self, "ANCHOR_RIGHT")
             GameTooltip:SetText(self.label:GetText(), 1, 1, 1)
             GameTooltip:Show()
         end
@@ -266,7 +266,7 @@ function UI:Create()
         c:SetScript("OnEnter", function(s)
             if s.page then s.border:SetColor(UI:Accent()) end
             if s.tip then
-                GameTooltip:SetOwner(s, "ANCHOR_BOTTOM")
+                WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
                 GameTooltip:SetText(s.tip, 1, 1, 1, 1, true)
                 GameTooltip:Show()
             end
@@ -309,7 +309,7 @@ function UI:Create()
     gt:SetPoint("CENTER")
     grip:SetScript("OnEnter", function()
         gt:SetVertexColor(UI:Accent())
-        GameTooltip:SetOwner(grip, "ANCHOR_TOP")
+        WK.UI:TooltipOwner(grip, "ANCHOR_TOP")
         GameTooltip:SetText(WK.T("Glisser pour redimensionner"), 1, 1, 1)
         GameTooltip:Show()
     end)

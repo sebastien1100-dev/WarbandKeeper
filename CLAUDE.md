@@ -45,3 +45,4 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Guides de montée des métiers
 
 `Modules/Guides.lua` est **généré** par `python3 tools/gen_guides.py` depuis `tools/guides/*.json` (extraits des guides WoW Forever de wowtbc.gg). Pour ajouter ou mettre à jour un métier : télécharger `https://wowtbc.gg/page-data/warcraftforever/professions/<métier>/page-data.json` puis `python3 tools/gen_guides.py --import <fichier>`. Une remarque de maître nouvelle doit être traduite dans `NOTES` du générateur (et en anglais dans `Locales/enUS.lua`).
+- Infobulles : toujours `WK.UI:TooltipOwner(owner, anchor)` au lieu de `GameTooltip:SetOwner` ; elle habille l'infobulle aux couleurs de l'addon (le cadre du jeu revient à la fermeture).

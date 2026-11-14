@@ -30,7 +30,7 @@ local function AccentDot(parent, key, color, tooltip)
     end
     b:SetScript("OnClick", function() UI:SetAccent(key) end)
     b:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        WK.UI:TooltipOwner(self, "ANCHOR_TOP")
         GameTooltip:SetText(WK.T(tooltip), 1, 1, 1)
         GameTooltip:Show()
     end)
@@ -83,7 +83,7 @@ local function ThemeTile(parent, theme, width, onClick)
     end
     b:SetScript("OnClick", onClick)
     b:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        WK.UI:TooltipOwner(self, "ANCHOR_TOP")
         GameTooltip:SetText(WK.T(theme.label), 1, 1, 1)
         GameTooltip:AddLine(WK.T(theme.desc), 0.8, 0.8, 0.8, true)
         GameTooltip:Show()
@@ -251,7 +251,7 @@ UI:RegisterPage({
                     saveCustom(k[1], r, g, bl)
                 end)
             end)
-            b:SetScript("OnEnter", function() GameTooltip:SetOwner(b, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
+            b:SetScript("OnEnter", function() WK.UI:TooltipOwner(b, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
             b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         end
 

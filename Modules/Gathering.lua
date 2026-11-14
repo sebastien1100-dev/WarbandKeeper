@@ -22,6 +22,19 @@ local Z = {
 }
 M.ZONES = Z
 
+-- Niveau des monstres de chaque zone (pour les tuiles « Où aller »).
+local LV = {
+    elwynn = "1-10", dunmorogh = "1-10", durotar = "1-10", mulgore = "1-10", tirisfal = "1-10", teldrassil = "1-10",
+    darkshore = "10-20", westfall = "10-20", lochmodan = "10-20", silverpine = "10-20", barrens = "10-25",
+    redridge = "15-25", duskwood = "18-30", ashenvale = "18-30", stonetalon = "15-27", hillsbrad = "20-30",
+    wetlands = "20-30", arathi = "30-40", stv = "30-45", swamp = "35-45", desolace = "30-40", needles = "25-35",
+    dustwallow = "35-45", hinterlands = "40-50", badlands = "35-45", alterac = "30-40", searing = "43-50",
+    feralas = "40-50", tanaris = "40-50", azshara = "45-55", felwood = "48-55", ungoro = "48-55",
+    burning = "50-58", blasted = "45-55", winterspring = "53-60", silithus = "55-60", wpl = "51-58", epl = "53-60",
+}
+M.ZONE_LEVELS = {}
+for k, name in pairs(Z) do M.ZONE_LEVELS[name] = LV[k] end
+
 local function zones(...)
     local t = {}
     for _, k in ipairs({ ... }) do table.insert(t, Z[k] or k) end

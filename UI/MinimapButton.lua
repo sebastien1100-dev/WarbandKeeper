@@ -53,7 +53,7 @@ function M:Create()
     b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
     b:SetScript("OnEnter", function(self)
         self.hover = true; refresh()
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        WK.UI:TooltipOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine("Warband Keeper")
         local total = 0
         for _, c in pairs(WK.DB.global.characters) do total = total + (c.money or 0) end

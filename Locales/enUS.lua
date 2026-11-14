@@ -367,6 +367,8 @@ WK.Locales.enUS.text = {
     ["Achète au passage le {16112} et le {16113}."] = "Buy the {16112} and the {16113} while you are there.",
 
     -- Métiers de récolte
+    ["Niv. %s"] = "Lvl %s",
+    ["tu y es"] = "you are here",
     ["Où aller à ton niveau"] = "Where to go at your level",
     ["Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."] = "Nothing raises this profession any more: it is maxed for these resources.",
     ["(tu y es)"] = "(you are here)",

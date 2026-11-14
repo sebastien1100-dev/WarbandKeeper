@@ -16,7 +16,7 @@ end
 
 -- Infobulle d'une recette : coût, vente, bénéfice et composants possédés sur le compte.
 local function recipeTooltip(row)
-    GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+    WK.UI:TooltipOwner(row, "ANCHOR_RIGHT")
     GameTooltip:SetText(row.rec.name, 1, 1, 1)
     local cost, sale, profit = WK.modules.Recipes:Economics(row.rec)
     GameTooltip:AddDoubleLine(WK.T("Coût des composants"), WK:FormatMoney(cost), 0.7, 0.7, 0.7, 1, 1, 1)
@@ -103,7 +103,7 @@ local function Levels(page, parent)
                     l:SetScript("OnClick", function(s) page:ShowDetail(s.charKey, s.prof) end)
                     l:SetScript("OnEnter", function(s)
                         s.hl:Show(); s.go:SetVertexColor(unpack(C.text))
-                        GameTooltip:SetOwner(s, "ANCHOR_TOP")
+                        WK.UI:TooltipOwner(s, "ANCHOR_TOP")
                         GameTooltip:SetText(WK.T("Clic : recettes et détail du métier"), 1, 1, 1)
                         GameTooltip:Show()
                     end)
@@ -563,11 +563,30 @@ local function Detail(page, parent)
     where:SetHeight(86)
     where:SetPoint("TOPLEFT")
     where:SetPoint("TOPRIGHT")
-    local whereText = UI:Text(where, 12)
+    local whereText = UI:Text(where, 12, C.muted)
     whereText:SetPoint("TOPLEFT", 16, -40)
     whereText:SetPoint("TOPRIGHT", -16, -40)
     whereText:SetJustifyH("LEFT")
     if whereText.SetWordWrap then whereText:SetWordWrap(true) end
+    -- Tuiles de zones : nom, niveau des monstres, ressources utiles (pastille de couleur).
+    local TILE_H = 66
+    local tiles = UI:Pool(function()
+        local t = CreateFrame("Frame", nil, where)
+        t:SetHeight(TILE_H)
+        UI:Panel(t, 10, C.surface2, C.border)
+        t.name = UI:Text(t, 12)
+        t.name:SetPoint("TOPLEFT", 12, -9)
+        t.name:SetPoint("TOPRIGHT", -12, -9)
+        t.level = UI:Text(t, 10, C.muted)
+        t.level:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -3)
+        t.res = UI:Text(t, 10, C.muted)
+        t.res:SetPoint("BOTTOMLEFT", 12, 9)
+        t.res:SetPoint("BOTTOMRIGHT", -12, 9)
+        t.res:SetJustifyH("LEFT")
+        t.here = UI:Badge(t, "tu y es", C.positive)
+        t.here:SetPoint("TOPRIGHT", -8, -8)
+        return t
+    end)
     local gscroll = UI:Scroll(gather)
     gscroll:SetPoint("TOPLEFT", 0, -86 - GAP)
     gscroll:SetPoint("BOTTOMRIGHT")
@@ -597,7 +616,7 @@ local function Detail(page, parent)
         r.zones:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -5)
         r:SetScript("OnEnter", function(s)
             if not s.data then return end
-            GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.title or "", 1, 1, 1)
             for _, z in ipairs(s.data.zones) do GameTooltip:AddLine(WK.T(z), 0.85, 0.85, 0.85) end
             GameTooltip:Show()
@@ -611,23 +630,53 @@ local function Detail(page, parent)
         local rank = pr.rank or 0
         local list, kind = G:Rows(self.prof, rank)
         local here = GetRealZoneText and GetRealZoneText() or ""
-        -- Zones conseillées
+        -- Zones conseillées en tuiles (ta zone actuelle d'abord)
         local best = G:BestZones(list)
-        if #best == 0 then
-            whereText:SetText(T("Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."))
-        else
-            local parts = {}
-            for i, z in ipairs(best) do
-                if i > 10 then break end
-                local name = T(z)
-                if z == here or name == here then
-                    table.insert(parts, UI:Hex(C.positive) .. name .. " " .. T("(tu y es)") .. "|r")
-                else
-                    table.insert(parts, name)
+        local perZone = {}
+        for _, d in ipairs(list) do
+            if d.good then
+                for _, z in ipairs(d.zones) do
+                    perZone[z] = perZone[z] or {}
+                    table.insert(perZone[z], d)
                 end
             end
-            whereText:SetText(table.concat(parts, "  ·  "))
         end
+        for i, z in ipairs(best) do
+            if z == here or T(z) == here then table.remove(best, i); table.insert(best, 1, z); break end
+        end
+        tiles:Reset()
+        local w = (where:GetWidth() or 0) > 100 and where:GetWidth() or (UI.PAGE_W or 840)
+        local perRow = math.max(2, math.min(4, math.floor((w - 32 + 10) / 210)))
+        local tw = (w - 32 - (perRow - 1) * 10) / perRow
+        local shown = math.min(#best, perRow * 2)
+        whereText:SetShown(#best == 0)
+        whereText:SetText(T("Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."))
+        for i = 1, shown do
+            local z = best[i]
+            local t = tiles:Get()
+            t:SetWidth(tw)
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", 16 + ((i - 1) % perRow) * (tw + 10), -40 - math.floor((i - 1) / perRow) * (TILE_H + 8))
+            local isHere = z == here or T(z) == here
+            t.name:SetText(T(z))
+            t.name:SetPoint("TOPRIGHT", isHere and -70 or -12, -9)
+            t.level:SetText(G.ZONE_LEVELS[z] and string.format(T("Niv. %s"), G.ZONE_LEVELS[z]) or "")
+            local parts = {}
+            for _, d in ipairs(perZone[z] or {}) do
+                local col = DIFF[d.color] and DIFF[d.color].color or C.text
+                table.insert(parts, UI:Hex(col) .. "•|r " .. ((UI:ItemInfo(d.id)) or "?"))
+            end
+            t.res:SetText(table.concat(parts, "   "))
+            t.here:SetShown(isHere)
+            t.border:SetColor(unpack(isHere and { UI:Accent() } or C.border))
+        end
+        local rowsN = math.max(1, math.ceil(shown / perRow))
+        local cardH = 40 + rowsN * (TILE_H + 8) + 6
+        if #best == 0 then cardH = 86 end
+        where:SetHeight(cardH)
+        gscroll:ClearAllPoints()
+        gscroll:SetPoint("TOPLEFT", 0, -cardH - GAP)
+        gscroll:SetPoint("BOTTOMRIGHT")
         -- Ressources
         grows:Reset()
         local y = 0
@@ -725,7 +774,7 @@ local function Detail(page, parent)
         r.name:SetPoint("RIGHT", r.count, "LEFT", -6, 0)
         r:SetScript("OnEnter", function(s)
             if not s.m then return end
-            GameTooltip:SetOwner(s, "ANCHOR_LEFT")
+            WK.UI:TooltipOwner(s, "ANCHOR_LEFT")
             GameTooltip:SetText((UI:ItemInfo(s.m.itemID)) or "?", 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Nécessaire"), tostring(s.m.need), 0.7, 0.7, 0.7, 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Sur le compte"), tostring(s.m.have), 0.7, 0.7, 0.7, 1, 1, 1)
@@ -773,7 +822,7 @@ local function Detail(page, parent)
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
             local st = s.e.step
-            GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.title or "", 1, 1, 1)
             GameTooltip:AddLine(string.format(T("Niveaux %d à %d · %d fabrications"), st.from, st.to, st.crafts), 0.8, 0.8, 0.8)
             for _, f in ipairs(st.first or {}) do

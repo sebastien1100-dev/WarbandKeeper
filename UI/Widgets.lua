@@ -54,7 +54,7 @@ function UI:Button(parent, text, width, height, style, icon)
     b:SetScript("OnEnter", function(self)
         self.hover = true; self:Refresh()
         if self.tooltip then
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            WK.UI:TooltipOwner(self, "ANCHOR_TOP")
             GameTooltip:SetText(WK.T(self.tooltip), 1, 1, 1, 1, true)
             GameTooltip:Show()
         end
@@ -89,7 +89,7 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
     b:SetScript("OnEnter", function(self)
         refresh(true)
         if self.tooltip then
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            WK.UI:TooltipOwner(self, "ANCHOR_TOP")
             GameTooltip:SetText(WK.T(self.tooltip), 1, 1, 1, 1, true)
             GameTooltip:Show()
         end
@@ -612,7 +612,7 @@ function UI:ChartHover(area, chart, format)
             dot:ClearAllPoints()
             dot:SetPoint("CENTER", a, "BOTTOMLEFT", best.x, best.y)
             marker:Show(); dot:Show()
-            GameTooltip:SetOwner(a, "ANCHOR_NONE")
+            WK.UI:TooltipOwner(a, "ANCHOR_NONE")
             GameTooltip:ClearAllPoints()
             GameTooltip:SetPoint("BOTTOM", a, "BOTTOMLEFT", best.x, best.y + 14)
             GameTooltip:SetText(date("%d/%m %Hh", best.t or time()), 1, 1, 1)
@@ -762,4 +762,62 @@ function UI:EditCharName(key)
     StaticPopupDialogs.WARBANDKEEPER_MAILNAME.text = string.format(
         T("Nom complet de %s pour le courrier (tel que tu le tapes dans « À : ») :"), WK:CharName(c, key))
     StaticPopup_Show("WARBANDKEEPER_MAILNAME", nil, nil, { key = key, name = WK.modules.Mail:MailName(c) })
+end
+
+---------------------------------------------------------------------------
+-- Infobulles aux couleurs de l'addon. UI:TooltipOwner remplace GameTooltip:SetOwner
+-- dans l'addon : le cadre du jeu est masqué le temps de l'infobulle, puis rendu
+-- tel quel à sa fermeture (les infobulles du jeu et des autres addons ne changent pas).
+---------------------------------------------------------------------------
+local ttSkin
+local function hideGameFrame(tt)
+    if type(tt.NineSlice) == "table" and tt.NineSlice.Hide then tt.NineSlice:Hide() end
+    if tt.SetBackdropColor and ttSkin.backdrop then
+        tt:SetBackdropColor(0, 0, 0, 0)
+        tt:SetBackdropBorderColor(0, 0, 0, 0)
+    end
+end
+
+function UI:SkinTooltip(tt)
+    tt = tt or GameTooltip
+    if not ttSkin then
+        ttSkin = {
+            border = UI:Rounded(tt, 10, 0, "BACKGROUND", -7),
+            bg = UI:Rounded(tt, 9, 1, "BACKGROUND", -6),
+        }
+        ttSkin.accent = tt:CreateTexture(nil, "BACKGROUND", nil, -5)
+        ttSkin.accent:SetHeight(2)
+        ttSkin.accent:SetPoint("TOPLEFT", tt, "TOPLEFT", 10, -1)
+        ttSkin.accent:SetPoint("TOPRIGHT", tt, "TOPRIGHT", -10, -1)
+        if tt.GetBackdropColor and tt:GetBackdropColor() then
+            ttSkin.backdrop = { { tt:GetBackdropColor() }, { tt:GetBackdropBorderColor() } }
+        end
+        ttSkin.border:Hide(); ttSkin.bg:Hide(); ttSkin.accent:Hide()
+        tt:HookScript("OnHide", function(self) UI:UnskinTooltip(self) end)
+        -- Le jeu peut remettre son cadre en remplissant l'infobulle : on le retire à nouveau.
+        tt:HookScript("OnShow", function(self) if ttSkin.active then hideGameFrame(self) end end)
+    end
+    ttSkin.border:SetColor(unpack(C.border))
+    ttSkin.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.97)
+    ttSkin.accent:SetColorTexture(UI:Accent())
+    ttSkin.border:Show(); ttSkin.bg:Show(); ttSkin.accent:Show()
+    hideGameFrame(tt)
+    ttSkin.active = true
+end
+
+function UI:UnskinTooltip(tt)
+    if not ttSkin or not ttSkin.active then return end
+    tt = tt or GameTooltip
+    ttSkin.active = false
+    ttSkin.border:Hide(); ttSkin.bg:Hide(); ttSkin.accent:Hide()
+    if type(tt.NineSlice) == "table" and tt.NineSlice.Show then tt.NineSlice:Show() end
+    if tt.SetBackdropColor and ttSkin.backdrop then
+        tt:SetBackdropColor(unpack(ttSkin.backdrop[1]))
+        tt:SetBackdropBorderColor(unpack(ttSkin.backdrop[2]))
+    end
+end
+
+function UI:TooltipOwner(owner, anchor, x, y)
+    GameTooltip:SetOwner(owner, anchor, x, y)
+    UI:SkinTooltip(GameTooltip)
 end

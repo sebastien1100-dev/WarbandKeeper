@@ -256,7 +256,7 @@ UI:RegisterPage({
             r.mail.icon = UI:Icon(r.mail, "mail", 14)
             r.mail.icon:SetPoint("CENTER")
             r.mail:SetScript("OnEnter", function(s)
-                GameTooltip:SetOwner(s, "ANCHOR_TOP")
+                WK.UI:TooltipOwner(s, "ANCHOR_TOP")
                 GameTooltip:SetText(s.tip or "", 1, 1, 1, 1, true)
                 GameTooltip:Show()
             end)

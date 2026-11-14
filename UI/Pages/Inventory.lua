@@ -123,7 +123,7 @@ UI:RegisterPage({
             r.value:SetJustifyH("RIGHT")
             r:SetScript("OnEnter", function(row)
                 row.bg:SetColor(unpack(C.surface2))
-                GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+                WK.UI:TooltipOwner(row, "ANCHOR_RIGHT")
                 GameTooltip:SetItemByID(row.itemID)
                 GameTooltip:Show()
             end)
