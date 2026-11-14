@@ -1,0 +1,30 @@
+local ADDON_NAME, WK = ...
+
+-- Chaînes affichées. Une seule langue pour l'instant (français).
+WK.L = {
+    LOADED          = "chargé. Tape |cffffd100/wk|r pour l'aide.",
+    HELP_TITLE      = "Commandes :",
+    HELP_GOLD       = "/wk or            - Or de tous les personnages",
+    HELP_CHARS      = "/wk persos        - Liste des personnages (niveau, temps de jeu)",
+    HELP_FIND       = "/wk cherche <nom> - Où se trouve un objet (sacs / banque)",
+    HELP_PROF       = "/wk metiers       - Métiers de tous les personnages",
+    HELP_STATS      = "/wk stats [jours] - Évolution de l'or (défaut : 7 jours)",
+    HELP_MAIL_ADD   = "/wk envoi ajoute <itemID|lien> <Perso> - Assigne un objet à un perso",
+    HELP_MAIL_DEL   = "/wk envoi retire <itemID|lien>          - Retire une règle",
+    HELP_MAIL_LIST  = "/wk envoi liste                         - Liste des règles",
+    HELP_MAIL_TOG   = "/wk envoi on|off                        - Active/désactive l'envoi auto",
+    TOTAL           = "Total",
+    NOT_FOUND       = "Aucun objet trouvé pour",
+    BAGS            = "sacs",
+    BANK            = "banque",
+    MAIL_SENDING    = "Envoi de %d objet(s) à %s...",
+    MAIL_DONE       = "Envoi automatique terminé.",
+    MAIL_RULE_ADD   = "Règle ajoutée : %s -> %s",
+    MAIL_RULE_DEL   = "Règle retirée : %s",
+    MAIL_NO_RULES   = "Aucune règle d'envoi.",
+    MAIL_ON         = "Envoi automatique activé.",
+    MAIL_OFF        = "Envoi automatique désactivé.",
+    MAIL_SKIP_SELF  = "ignoré (c'est ce personnage)",
+    MAIL_ERROR      = "Erreur d'envoi, file d'attente vidée.",
+    STATS_NO_DATA   = "Pas encore assez de données.",
+}

@@ -1,0 +1,21 @@
+## Interface: 16001
+## Title: Warband Keeper
+## Notes: Gestion de compte : sacs, banques, métiers, or, temps de jeu, statistiques et envoi automatique du farm par courrier.
+## Author: sebastien1100-dev
+## Version: 0.1.0
+## SavedVariables: WarbandKeeperDB
+## SavedVariablesPerCharacter: WarbandKeeperCharDB
+
+Locales\frFR.lua
+
+Core\Init.lua
+Core\Utils.lua
+Core\Database.lua
+
+Modules\Characters.lua
+Modules\Inventory.lua
+Modules\Professions.lua
+Modules\Statistics.lua
+Modules\Mail.lua
+
+Core\Commands.lua

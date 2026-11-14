@@ -1,0 +1,4 @@
+package-as: WarbandKeeper
+ignore:
+  - README.md
+  - .gitignore

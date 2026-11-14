@@ -1,0 +1,48 @@
+local ADDON_NAME, WK = ...
+_G.WarbandKeeper = WK
+
+WK.version = "0.1.0"
+WK.modules = {}
+
+-- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
+local frame = CreateFrame("Frame")
+local handlers = {}
+
+function WK:On(event, fn)
+    if not handlers[event] then
+        handlers[event] = {}
+        frame:RegisterEvent(event)
+    end
+    table.insert(handlers[event], fn)
+end
+
+frame:SetScript("OnEvent", function(_, event, ...)
+    local list = handlers[event]
+    if not list then return end
+    for i = 1, #list do
+        local ok, err = pcall(list[i], ...)
+        if not ok then WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err)) end
+    end
+end)
+
+-- Enregistrement d'un module : il expose éventuellement OnInit() et OnLogin().
+function WK:NewModule(name)
+    local m = { name = name }
+    self.modules[name] = m
+    return m
+end
+
+WK:On("ADDON_LOADED", function(name)
+    if name ~= ADDON_NAME then return end
+    WK.DB:Init()
+    for _, m in pairs(WK.modules) do
+        if m.OnInit then m:OnInit() end
+    end
+end)
+
+WK:On("PLAYER_LOGIN", function()
+    for _, m in pairs(WK.modules) do
+        if m.OnLogin then m:OnLogin() end
+    end
+    WK:Print(WK.L.LOADED)
+end)
