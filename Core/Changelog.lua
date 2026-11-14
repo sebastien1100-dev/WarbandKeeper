@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.19.0", date = "14/11/2026",
+        added = {
+            "Métiers de récolte (Minage, Herboristerie, Dépeçage) : la fiche du métier liste chaque ressource avec son niveau requis et les zones où la trouver, au lieu des recettes.",
+            "Les ressources orange et jaunes pour le niveau du perso sont mises en valeur, et une carte « Où aller à ton niveau » donne les zones conseillées (ta zone actuelle en vert).",
+            "Dépeçage : niveau des monstres par type de cuir, et niveau maximal des monstres que le perso peut dépecer.",
+        },
+        changed = {
+            "Nouveau fichier : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.18.0", date = "14/11/2026",
         changed = {
             "En haut des pages, le titre et la phrase d'explication sont remplacés par des pastilles avec les chiffres clés de la page (or, richesse, courrier en attente, session de farm, objets et valeur des stocks, règles, objets à envoyer…).",
@@ -406,7 +417,6 @@ WK.Changelog = {
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
     "Guide de montée de chaque métier jusqu'au niveau max, d'après les guides à jour de WoW Forever : étape en cours selon le niveau du perso, matériaux totaux, ce qui manque sur le compte et son coût, liste Auctionator et envoi des matériaux au perso.",
-    "Guide des métiers de récolte (Minage, Herboristerie, Dépeçage) : zones à farmer par tranche de niveau, en lien avec la Session de farm.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Rappel du maître de métier quand un perso arrive au plafond de son rang (75, 150, 225).",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",

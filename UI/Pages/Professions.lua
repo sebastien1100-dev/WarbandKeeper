@@ -538,6 +538,123 @@ local function Detail(page, parent)
         return r
     end)
 
+    -----------------------------------------------------------------------
+    -- Métiers de récolte : zones et niveau de chaque ressource, mises en valeur
+    -- pour le niveau du perso (pas de recettes).
+    -----------------------------------------------------------------------
+    local gather = CreateFrame("Frame", nil, parent)
+    gather:SetPoint("TOPLEFT", 0, fTop)
+    gather:SetPoint("BOTTOMRIGHT")
+    gather:Hide()
+    local where = UI:Card(gather, "Où aller à ton niveau")
+    where:SetHeight(86)
+    where:SetPoint("TOPLEFT")
+    where:SetPoint("TOPRIGHT")
+    local whereText = UI:Text(where, 12)
+    whereText:SetPoint("TOPLEFT", 16, -40)
+    whereText:SetPoint("TOPRIGHT", -16, -40)
+    whereText:SetJustifyH("LEFT")
+    if whereText.SetWordWrap then whereText:SetWordWrap(true) end
+    local gscroll = UI:Scroll(gather)
+    gscroll:SetPoint("TOPLEFT", 0, -86 - GAP)
+    gscroll:SetPoint("BOTTOMRIGHT")
+    local GOOD_BG = C.surface2
+    local grows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, gscroll.child)
+        r:SetHeight(50)
+        UI:Panel(r, 12, C.surface, C.border)
+        local df = CreateFrame("Frame", nil, r)
+        df:SetPoint("TOPLEFT", 7, -10)
+        df:SetPoint("BOTTOMLEFT", 7, 10)
+        df:SetWidth(4)
+        r.diff = UI:Rounded(df, 2, 0, "ARTWORK", 1)
+        r.icon = UI:RoundIcon(r, 30)
+        r.icon:SetPoint("LEFT", 18, 0)
+        r.level = UI:Text(r, 13)
+        r.level:SetPoint("TOPRIGHT", -16, -9)
+        r.level:SetJustifyH("RIGHT")
+        r.state = UI:Text(r, 10)
+        r.state:SetPoint("TOPRIGHT", r.level, "BOTTOMRIGHT", 0, -4)
+        r.state:SetJustifyH("RIGHT")
+        r.name = UI:Text(r, 12)
+        r.name:SetPoint("TOPLEFT", 60, -9)
+        r.name:SetPoint("TOPRIGHT", -190, -9)
+        r.zones = UI:Text(r, 10, C.muted)
+        r.zones:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -5)
+        r.zones:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -5)
+        r:SetScript("OnEnter", function(s)
+            if not s.data then return end
+            GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.title or "", 1, 1, 1)
+            for _, z in ipairs(s.data.zones) do GameTooltip:AddLine(WK.T(z), 0.85, 0.85, 0.85) end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return r
+    end)
+
+    function tab:RefreshGather(pr)
+        local G = WK.modules.Gathering
+        local rank = pr.rank or 0
+        local list, kind = G:Rows(self.prof, rank)
+        local here = GetRealZoneText and GetRealZoneText() or ""
+        -- Zones conseillées
+        local best = G:BestZones(list)
+        if #best == 0 then
+            whereText:SetText(T("Plus rien ne fait monter ce métier : il est au maximum pour ces ressources."))
+        else
+            local parts = {}
+            for i, z in ipairs(best) do
+                if i > 10 then break end
+                local name = T(z)
+                if z == here or name == here then
+                    table.insert(parts, UI:Hex(C.positive) .. name .. " " .. T("(tu y es)") .. "|r")
+                else
+                    table.insert(parts, name)
+                end
+            end
+            whereText:SetText(table.concat(parts, "  ·  "))
+        end
+        -- Ressources
+        grows:Reset()
+        local y = 0
+        for _, d in ipairs(list) do
+            local r = grows:Get()
+            r.data = d
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -y)
+            r:SetPoint("TOPRIGHT", 0, -y)
+            local name, ic, qr, qg, qb = UI:ItemInfo(d.id)
+            r.title = (name or "?") .. (d.suffix and (" (" .. T(d.suffix) .. ")") or "")
+            r.icon:SetTexture(ic)
+            r.name:SetText(r.title)
+            r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+            local zs = {}
+            for _, z in ipairs(d.zones) do
+                local zn = T(z)
+                if z == here or zn == here then zn = UI:Hex(C.positive) .. zn .. "|r" end
+                table.insert(zs, zn)
+            end
+            r.zones:SetText(table.concat(zs, ", "))
+            if kind == "skin" then
+                r.level:SetText(string.format(T("Monstres niv. %d-%d"), d.min, d.max))
+            else
+                r.level:SetText(string.format(T("Niv. %d"), d.req))
+            end
+            local col = d.color == "low" and C.negative or (DIFF[d.color] and DIFF[d.color].color) or C.border
+            r.diff:SetColor(unpack(col))
+            local label = d.color == "low" and T("Trop bas") or T(DIFF[d.color].label)
+            r.state:SetText(UI:Hex(col) .. label .. (d.good and ("  ·  " .. T("pour ton niveau")) or "") .. "|r")
+            r.bg:SetColor(unpack(d.good and GOOD_BG or C.surface))
+            r.border:SetColor(unpack(d.good and { UI:Accent() } or C.border))
+            r:SetAlpha((d.color == "low" or d.color == "trivial") and 0.6 or 1)
+            y = y + 56
+        end
+        gscroll:SetContentHeight(y)
+        local maxL = kind == "skin" and G:SkinMaxLevel(rank)
+        return maxL
+    end
+
     function tab:Show(key, prof)
         if self.key ~= key or self.prof ~= prof then
             self.query, self.filter = "", "all"
@@ -581,6 +698,19 @@ local function Detail(page, parent)
             note:SetText(string.format(T("Recettes lues le %s"), date("%d/%m à %H:%M", scan.t)))
         else
             note:SetText("")
+        end
+
+        -- Métier de récolte : zones et ressources au lieu des recettes.
+        local gkind = WK.modules.Gathering:Kind(self.prof)
+        gather:SetShown(gkind ~= nil)
+        filter:SetShown(not gkind); search:SetShown(not gkind); info:SetShown(not gkind); scroll:SetShown(not gkind)
+        if gkind then
+            empty:Hide()
+            local maxL = self:RefreshGather(pr)
+            local p2 = { string.format("%d / %d", pr.rank or 0, pr.max or 0) }
+            if maxL then table.insert(p2, string.format(T("dépeçage des monstres jusqu'au niveau %d"), maxL)) end
+            sub:SetText(table.concat(p2, "  ·  "))
+            return
         end
 
         -- Liste filtrée
