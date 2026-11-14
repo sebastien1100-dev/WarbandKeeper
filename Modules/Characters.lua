@@ -1,9 +1,20 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Characters")
 
+-- Nom complet (« Prénom Nom ») si une fonction du jeu le donne avec l'espace.
+function M:DetectFullName()
+    local cands = { (UnitName("player")) }
+    if GetUnitName then table.insert(cands, (GetUnitName("player", false))) end
+    if UnitFullName then table.insert(cands, (UnitFullName("player"))) end
+    for _, n in ipairs(cands) do
+        if type(n) == "string" and string.find(n, "%S %S") then return n end
+    end
+end
+
 function M:UpdateBasics()
     local c = WK.DB:Me()
     c.name = UnitName("player")
+    c.fullName = M:DetectFullName()
     c.realm = GetRealmName()
     c.class = select(2, UnitClass("player"))
     c.race = select(2, UnitRace("player"))

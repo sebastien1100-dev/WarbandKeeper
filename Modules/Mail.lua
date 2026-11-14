@@ -11,8 +11,94 @@ local queue = {}
 local sending = false
 local current -- courrier en cours d'envoi (pour le créditer au destinataire)
 
-local function myName() return UnitName("player") end
-local function isMe(name) return string.lower(name or ""):match("^[^%-]+") == string.lower(myName()) end
+---------------------------------------------------------------------------
+-- Noms des personnages. Sur WoW Forever un nom est en deux parties (« Prénom Nom »)
+-- et le courrier demande le nom complet. Chaque perso garde :
+--   name     : ce que renvoie UnitName ;
+--   fullName : le nom complet détecté à la connexion (s'il contient un espace) ;
+--   mailName : le nom saisi à la main pour le courrier (prioritaire).
+---------------------------------------------------------------------------
+local function norm(s)
+    s = string.lower(s or ""):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
+    return s
+end
+local function words(s)
+    local t = {}
+    for w in string.gmatch(norm(s), "[^ ]+") do table.insert(t, w) end
+    return t
+end
+
+-- Nom à mettre dans le champ « À : » pour ce personnage.
+function M:MailName(c)
+    if not c then return end
+    if c.mailName and c.mailName ~= "" then return c.mailName end
+    return c.fullName or c.name
+end
+
+-- Personnage du compte désigné par un destinataire (« Prénom Nom », « Prénom »,
+-- « Nom-Royaume »…). Nom exact d'abord ; sinon un seul mot du nom, s'il ne
+-- correspond qu'à un seul perso du royaume. Renvoie c, key.
+function M:Resolve(recipient)
+    if not recipient or recipient == "" then return end
+    local name, realm = string.match(recipient, "^([^%-]+)%-?(.*)$")
+    name = norm(name or recipient)
+    realm = (realm and realm ~= "") and string.lower(realm):gsub("%s", "") or nil
+    local myRealm = string.lower(GetRealmName() or ""):gsub("%s", "")
+    local partial, partialKey, partialCount = nil, nil, 0
+    for key, c in pairs(WK.DB.global.characters) do
+        local cr = string.lower(c.realm or ""):gsub("%s", "")
+        if c.name and cr == (realm or myRealm) then
+            -- (pas d'ipairs : mailName ou fullName peuvent être nil)
+            if norm(c.mailName) == name or norm(c.fullName) == name or norm(c.name) == name then return c, key end
+            if not string.find(name, " ", 1, true) then
+                local full = words(M:MailName(c))
+                if #full > 1 and (full[1] == name or full[#full] == name) then
+                    partial, partialKey, partialCount = c, key, partialCount + 1
+                end
+            end
+        end
+    end
+    if partialCount == 1 then return partial, partialKey end
+end
+
+-- Le destinataire est-il le personnage connecté ?
+function M:IsMe(recipient)
+    local _, key = self:Resolve(recipient)
+    if key then return key == select(2, WK.DB:Me()) end
+    return norm(recipient):match("^[^%-]+") == norm(UnitName("player"))
+end
+local function isMe(name) return M:IsMe(name) end
+
+-- Nom réellement envoyé : le nom complet d'un perso du compte, sinon le texte saisi.
+function M:Recipient(to)
+    local c = self:Resolve(to)
+    return c and self:MailName(c) or to
+end
+
+-- Corrige à la main le nom de courrier d'un perso (vide = détection automatique).
+function M:SetMailName(key, name)
+    local c = WK.DB.global.characters[key]
+    if not c then return end
+    name = (name or ""):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
+    c.mailName = name ~= "" and name or nil
+    WK:Print(string.format(T("Nom pour le courrier de %s : %s"), c.name or key, M:MailName(c)))
+    WK:NotifyChanged()
+end
+
+-- /wk nom : ce que le jeu renvoie pour le perso connecté (pour régler un souci de courrier).
+function M:PrintNames()
+    local c = WK.DB:Me()
+    local function show(label, ...)
+        local parts = {}
+        for i = 1, select("#", ...) do table.insert(parts, "« " .. tostring((select(i, ...))) .. " »") end
+        WK:Print(string.format("  %s : %s", label, table.concat(parts, ", ")))
+    end
+    WK:Print(T("Noms du personnage connecté :"))
+    show("UnitName", UnitName("player"))
+    if GetUnitName then show("GetUnitName", GetUnitName("player", true)) end
+    if UnitFullName then show("UnitFullName", UnitFullName("player")) end
+    show(T("Nom pour le courrier"), M:MailName(c))
+end
 
 -- Règles d'envoi : objets précis + catégories. Chaque règle : { to = "Nom", keep = n }.
 function M:Store()
@@ -34,8 +120,9 @@ function M:BuildQueue()
     wipe(queue)
     local byRecipient = {}
     for _, e in ipairs(plan()) do
-        local list = byRecipient[e.rule.to]
-        if not list then list = {}; byRecipient[e.rule.to] = list end
+        local to = M:Recipient(e.rule.to)
+        local list = byRecipient[to]
+        if not list then list = {}; byRecipient[to] = list end
         for _, op in ipairs(e.ops) do table.insert(list, op) end
     end
     for to, ops in pairs(byRecipient) do
@@ -68,6 +155,7 @@ function M:SendNext()
         return
     end
     sending = true
+    lastError = nil
     current = mail
     mail.content = {}
     for _, op in ipairs(mail.items) do
@@ -99,18 +187,8 @@ WK:On("MAIL_SHOW", function()
     C_Timer.After(0.5, function() M:Run() end)
 end)
 
--- Personnage du compte correspondant à un destinataire ("Nom" ou "Nom-Royaume").
-function M:FindCharacter(recipient)
-    if not recipient then return end
-    local name, realm = string.match(recipient, "^([^%-]+)%-?(.*)$")
-    name = string.lower(name or recipient)
-    realm = (realm and realm ~= "") and string.lower(realm):gsub("%s", "") or nil
-    local myRealm = string.lower(GetRealmName()):gsub("%s", "")
-    for key, c in pairs(WK.DB.global.characters) do
-        local cr = string.lower(c.realm or ""):gsub("%s", "")
-        if c.name and string.lower(c.name) == name and cr == (realm or myRealm) then return c, key end
-    end
-end
+-- Personnage du compte correspondant à un destinataire.
+function M:FindCharacter(recipient) return self:Resolve(recipient) end
 
 -- Ajoute le contenu d'un courrier envoyé à la boîte aux lettres du destinataire (si c'est un perso du compte).
 function M:Credit(recipient, content)
@@ -134,10 +212,20 @@ WK:On("MAIL_SEND_SUCCESS", function()
     end
 end)
 
+-- Message d'erreur du jeu pendant un envoi (destinataire inconnu…), repris dans le chat.
+local lastError
+WK:On("UI_ERROR_MESSAGE", function(_, msg) if sending then lastError = msg end end)
+
 WK:On("MAIL_FAILED", function()
     if sending then
         wipe(queue); sending = false
         WK:Print(WK.L.MAIL_ERROR)
+        if current then
+            WK:Print(string.format(T("Destinataire utilisé : « %s »%s"), current.recipient,
+                lastError and (" (" .. tostring(lastError) .. ")") or ""))
+            WK:Print(T("Si le nom est incomplet : clic droit sur le perso dans Courrier > Nouvelle règle, ou /wk nom."))
+        end
+        current, lastError = nil, nil
     end
 end)
 

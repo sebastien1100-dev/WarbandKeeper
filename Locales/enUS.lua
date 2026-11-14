@@ -8,6 +8,7 @@ WK.Locales.enUS.keys = {
     HELP_OPEN       = "/wk               - Open / close the window (/wk help: this help)",
     HELP_NOTES      = "/wk notes         - Patch notes",
     HELP_FARM       = "/wk farm          - Start / stop a farming session",
+    HELP_NAME       = "/wk name          - Show the character name used for mail",
     HELP_TAKE       = "/wk take          - Take all mail (mailbox open)",
     HELP_GOLD       = "/wk gold          - Gold of every character",
     HELP_CHARS      = "/wk chars         - Character list (level, played time)",
@@ -309,6 +310,15 @@ WK.Locales.enUS.text = {
     ["Les deux prix sont affichés ; les calculs prennent le meilleur des deux."] = "Both prices are shown; calculations use the better of the two.",
     ["Prix de vente aux marchands uniquement."] = "Vendor sell prices only.",
     ["Prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix)."] = "Auction house prices (vendor price when an item has none).",
+
+    -- Noms en deux parties
+    ["Nom pour le courrier de %s : %s"] = "Mail name for %s: %s",
+    ["Noms du personnage connecté :"] = "Names of the current character:",
+    ["Nom pour le courrier"] = "Mail name",
+    ["Destinataire utilisé : « %s »%s"] = "Recipient used: \"%s\"%s",
+    ["Si le nom est incomplet : clic droit sur le perso dans Courrier > Nouvelle règle, ou /wk nom."] = "If the name is incomplete: right-click the character in Mail > New rule, or /wk name.",
+    ["Nom complet de %s pour le courrier (tel que tu le tapes dans « À : ») :"] = "Full name of %s for mail (as you type it in \"To:\"):",
+    ["Clic : destinataire. Clic droit : corriger le nom complet pour le courrier."] = "Click: recipient. Right-click: fix the full name used for mail.",
 
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",

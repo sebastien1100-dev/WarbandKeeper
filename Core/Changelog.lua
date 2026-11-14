@@ -6,6 +6,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.9.3", date = "14/11/2026",
+        added = {
+            "Noms en deux parties (« Prénom Nom ») : l'envoi automatique utilise le nom complet de tes persos.",
+            "Clic droit sur un perso dans Courrier > Nouvelle règle pour corriger son nom complet si le jeu ne le donne pas.",
+            "Commande /wk nom : affiche le nom utilisé pour le courrier.",
+        },
+        changed = {
+            "Une règle écrite avec le prénom seul est envoyée au nom complet du perso du compte, s'il n'y a pas d'ambiguïté.",
+            "En cas d'échec d'un envoi, le chat indique le destinataire utilisé et la raison donnée par le jeu.",
+        },
+        fixed = {
+            "/wk envoi ajoute ne gardait que le dernier mot d'un nom en deux parties.",
+        },
+    },
+    {
         version = "0.9.2", date = "14/11/2026",
         added = {
             "Prix : nouvelle source « Les deux ». L'Inventaire affiche le prix HV et le prix marchand côte à côte, et l'infobulle des objets donne les deux prix à l'unité. Les calculs (stocks, richesse, butin, rentabilité, filtre de loot) prennent le meilleur des deux : ce que tu tirerais vraiment de l'objet.",

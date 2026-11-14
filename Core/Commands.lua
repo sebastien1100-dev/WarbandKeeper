@@ -4,7 +4,7 @@ local L = WK.L
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME" }) do
         WK:Print("  " .. L[k])
     end
 end
@@ -31,8 +31,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         sub = string.lower(sub or "")
         local Mail = WK.modules.Mail
         if sub == "ajoute" or sub == "add" then
-            -- Le lien d'objet peut contenir des espaces : le destinataire est le dernier mot.
-            local item, to = string.match(args, "^(.-)%s+(%S+)$")
+            -- Le destinataire peut avoir plusieurs mots (« Prénom Nom ») : il suit le lien ou l'ID.
+            local item, to = string.match(args, "^(.-|h|r)%s*(.-)%s*$")
+            if not item then item, to = string.match(args, "^(%S+)%s+(.-)%s*$") end
             if not Mail:AddRule(item, to) then WK:Print("  " .. L.HELP_MAIL_ADD) end
         elseif sub == "retire" or sub == "del" then
             if not Mail:RemoveRule(args) then WK:Print("  " .. L.HELP_MAIL_DEL) end
@@ -49,6 +50,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Farm:Toggle()
     elseif cmd == "prendre" or cmd == "take" then
         WK.modules.Mail:TakeAll()
+    elseif cmd == "nom" or cmd == "name" then
+        WK.modules.Mail:PrintNames()
     elseif cmd == "notes" then
         WK.UI:ToggleWindow("notes")
     elseif cmd == "options" then

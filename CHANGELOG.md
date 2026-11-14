@@ -9,6 +9,20 @@ _Prévu, pas encore commencé._
 
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.9.3 — 14/11/2026
+
+### Ajouts
+- Noms en deux parties (« Prénom Nom ») : l'envoi automatique utilise le nom complet de tes persos.
+- Clic droit sur un perso dans Courrier > Nouvelle règle pour corriger son nom complet si le jeu ne le donne pas.
+- Commande /wk nom : affiche le nom utilisé pour le courrier.
+
+### Modifications
+- Une règle écrite avec le prénom seul est envoyée au nom complet du perso du compte, s'il n'y a pas d'ambiguïté.
+- En cas d'échec d'un envoi, le chat indique le destinataire utilisé et la raison donnée par le jeu.
+
+### Corrections
+- /wk envoi ajoute ne gardait que le dernier mot d'un nom en deux parties.
+
 ## v0.9.2 — 14/11/2026
 
 ### Ajouts

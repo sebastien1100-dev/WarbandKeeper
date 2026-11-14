@@ -17,6 +17,31 @@ local function categoryOptions()
     return opts
 end
 
+-- Fenêtre de correction du nom de courrier d'un perso (« Prénom Nom »).
+local function editMailName(key)
+    local c = WK.DB.global.characters[key]
+    if not c or not StaticPopupDialogs or not StaticPopup_Show then return end
+    StaticPopupDialogs.WARBANDKEEPER_MAILNAME = StaticPopupDialogs.WARBANDKEEPER_MAILNAME or {
+        button1 = OKAY or "OK", button2 = CANCEL or "Annuler",
+        hasEditBox = true, editBoxWidth = 220, timeout = 0, whileDead = true, hideOnEscape = true,
+        OnShow = function(s, data)
+            local eb = s.editBox or s.EditBox
+            if eb then eb:SetText(data.name or ""); eb:HighlightText() end
+        end,
+        OnAccept = function(s, data)
+            local eb = s.editBox or s.EditBox
+            WK.modules.Mail:SetMailName(data.key, eb and eb:GetText() or "")
+        end,
+        EditBoxOnEnterPressed = function(eb, data)
+            WK.modules.Mail:SetMailName(data.key, eb:GetText() or "")
+            eb:GetParent():Hide()
+        end,
+    }
+    StaticPopupDialogs.WARBANDKEEPER_MAILNAME.text = string.format(
+        T("Nom complet de %s pour le courrier (tel que tu le tapes dans « À : ») :"), c.name or key)
+    StaticPopup_Show("WARBANDKEEPER_MAILNAME", nil, nil, { key = key, name = WK.modules.Mail:MailName(c) })
+end
+
 local TARGETS = { { "bank", "Banque du perso" }, { "warband", "Banque de bataillon" } }
 local function targetLabel(t) return t == "warband" and T("Banque de bataillon") or T("Banque du perso") end
 
@@ -109,7 +134,11 @@ local function RuleEditor(page, parent, mode, top)
         ed.hint = hint
         ed.picks = UI:Pool(function()
             local b = UI:Button(add, "", nil, 24, "secondary")
-            b:SetScript("OnClick", function(s) dest:SetText(s.charName) end)
+            if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+            b:SetScript("OnClick", function(s, button)
+                if button == "RightButton" then editMailName(s.charKey) else dest:SetText(s.charName) end
+            end)
+            b.tooltip = "Clic : destinataire. Clic droit : corriger le nom complet pour le courrier."
             return b
         end)
     end
@@ -164,10 +193,6 @@ local function RuleEditor(page, parent, mode, top)
     function ed:Refresh()
         self.toggle:Refresh()
         local me = WK.DB:Me()
-        local classOf = {}
-        for _, c in pairs(WK.DB.global.characters) do
-            if c.name then classOf[string.lower(c.name)] = c.class end
-        end
 
         -- Raccourcis : personnages du royaume courant
         if self.picks then
@@ -177,8 +202,9 @@ local function RuleEditor(page, parent, mode, top)
             for _, e in ipairs(UI:SortedCharacters()) do
                 if e.c.realm == realm and e.c.name then
                     local b = self.picks:Get()
-                    b.charName = e.c.name
-                    b:SetLabel(e.c.name)
+                    b.charName = WK.modules.Mail:MailName(e.c)
+                    b.charKey = e.key
+                    b:SetLabel(b.charName)
                     b:SetWidth(b.label:GetStringWidth() + 24)
                     b.label:SetTextColor(UI:ClassColor(e.c.class))
                     if x + b:GetWidth() > UI.PAGE_W - 16 then b:Hide() else
@@ -230,8 +256,10 @@ local function RuleEditor(page, parent, mode, top)
                 r.name:SetTextColor(qr, qg, qb)
             end
             if isMail then
-                r.to:SetText(e.rule.to)
-                r.to:SetTextColor(UI:ClassColor(classOf[string.lower(e.rule.to or "")]))
+                -- Nom réellement utilisé à l'envoi (nom complet d'un perso du compte).
+                local tc = WK.modules.Mail:Resolve(e.rule.to)
+                r.to:SetText(WK.modules.Mail:Recipient(e.rule.to))
+                r.to:SetTextColor(UI:ClassColor(tc and tc.class))
             else
                 r.to:SetText(targetLabel(e.rule.target))
                 r.to:SetTextColor(unpack(C.text))
@@ -239,7 +267,7 @@ local function RuleEditor(page, parent, mode, top)
             r.keep:SetText((e.rule.keep or 0) > 0 and string.format(T("garder %d"), e.rule.keep) or "")
             if e.itemID then
                 local n = (me.bags or {})[e.itemID] or 0
-                if isMail and string.lower(e.rule.to or "") == string.lower(UnitName("player")) then
+                if isMail and WK.modules.Mail:IsMe(e.rule.to) then
                     r.info:SetText(T("c'est ce personnage"))
                 else
                     r.info:SetText(n > 0 and string.format(T("x%d dans les sacs"), n) or "")

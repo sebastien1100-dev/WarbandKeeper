@@ -8,6 +8,7 @@ WK.Locales.frFR.keys = {
     UPDATED         = "mis à jour en |cffe0bd72v%s|r. Tape |cffffd100/wk notes|r pour voir les nouveautés.",
     HELP_NOTES      = "/wk notes         - Patch notes (nouveautés et corrections)",
     HELP_FARM       = "/wk farm          - Démarre / termine une session de farm",
+    HELP_NAME       = "/wk nom           - Affiche le nom du perso utilisé pour le courrier",
     HELP_TAKE       = "/wk prendre       - Prend tout le courrier (boîte aux lettres ouverte)",
     HELP_GOLD       = "/wk or            - Or de tous les personnages",
     HELP_CHARS      = "/wk persos        - Liste des personnages (niveau, temps de jeu)",
