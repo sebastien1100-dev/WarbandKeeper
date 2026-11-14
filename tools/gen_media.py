@@ -201,10 +201,18 @@ def icon_refresh():
     save(img, "refresh", 64)
 
 
+def icon_notes():
+    img, d, s = canvas(64)
+    rrect(d, s, 0.2, 0.1, 0.8, 0.9, 0.1, SW)
+    for y, x1 in ((0.32, 0.66), (0.46, 0.66), (0.6, 0.56), (0.74, 0.48)):
+        line(d, s, [(0.34, y), (x1, y)], SW * 0.8)
+    save(img, "notes", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes]:
         fn()
     print("OK")

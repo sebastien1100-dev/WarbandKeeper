@@ -42,6 +42,7 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | `/wk` | Ouvre / ferme la fenêtre |
 | `/wk aide` | Aide des commandes |
 | `/wk options` | Ouvre les options |
+| `/wk notes` | Notes de patch |
 | `/wk or` | Or de tous les personnages |
 | `/wk persos` | Niveau, classe, temps de jeu |
 | `/wk cherche <nom>` | Où se trouve un objet (sacs / banque) |
@@ -53,6 +54,10 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | `/wk envoi on\|off` | Active / désactive l'envoi automatique |
 
 Astuce : pour `ajoute`, tape `/wk envoi ajoute ` puis fais **Maj + clic** sur l'objet dans ton sac pour insérer son lien.
+
+## Notes de patch
+
+Toutes les modifications sont listées dans [CHANGELOG.md](CHANGELOG.md), et en jeu avec `/wk notes` ou l'icône parchemin de la barre du haut.
 
 ## Structure
 
@@ -79,11 +84,7 @@ tools/gen_media.py      Régénère les textures (python3 + Pillow)
 
 ## Feuille de route
 
-- [x] Fenêtre principale (onglets Personnages / Inventaire / Métiers / Stats)
-- [x] Graphiques d'évolution de l'or et des matériaux
-- [x] Bouton minimap
-- [ ] Suivi des matériaux dans la boîte aux lettres
-- [ ] Locale anglaise (enUS)
+Voir la section « À venir » de [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 

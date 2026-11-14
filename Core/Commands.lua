@@ -3,7 +3,7 @@ local L = WK.L
 
 local function help()
     WK:Print(L.HELP_TITLE)
-    for _, k in ipairs({ "HELP_OPEN", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
+    for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
                          "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG" }) do
         WK:Print("  " .. L[k])
     end
@@ -45,6 +45,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         end
     elseif cmd == "" then
         WK.UI:ToggleWindow()
+    elseif cmd == "notes" then
+        WK.UI:ToggleWindow("notes")
     elseif cmd == "options" then
         WK.UI:ToggleWindow("options")
     else
