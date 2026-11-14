@@ -24,7 +24,11 @@ Les couleurs viennent de `UI/Themes.lua` : un thème donne quelques couleurs de 
 
 ## Disposition et taille
 
-La fenêtre est redimensionnable : `UI.PAGE_W` / `UI.PAGE_H` sont recalculées et les pages sont reconstruites (`UI:Relayout`) au relâchement de la poignée ou au repli de la barre latérale. Dans `Build`, lire ces valeurs au moment de la construction (jamais en constante de fichier). La largeur minimale de contenu est de 840 px : toute page doit tenir dans cette largeur.
+La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconstruites** pour une nouvelle taille (WoW ne détruit pas les cadres). Une page doit donc être élastique :
+- ancrer les cartes aux bords (`TOPLEFT` + `TOPRIGHT`, `BOTTOMRIGHT`…) plutôt que leur donner une largeur fixe ;
+- ce qui se calcule (colonnes, tuiles, retours à la ligne) se fait dans `UI:OnResize(frame, function(w, h) ... end)` ;
+- un graphique se redessine avec `UI:RefreshSoon()` depuis `OnResize`.
+`UI.PAGE_W` / `UI.PAGE_H` suivent la taille en direct. La largeur minimale de contenu est de 840 px : toute page doit tenir dans cette largeur.
 
 ## Pièges connus
 

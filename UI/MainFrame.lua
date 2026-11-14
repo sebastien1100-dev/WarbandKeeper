@@ -22,7 +22,7 @@ local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
     mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear",
 }
-local LABELS = { notes = "Notes de patch", options = "Options", farm = "Session de farm" }
+local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
 local function sideWidth()
     local g = WK.DB and WK.DB.global -- pas encore chargé au chargement du fichier
@@ -273,6 +273,10 @@ function UI:Create()
     end)
 
     self.pageHost = CreateFrame("Frame", nil, f)
+    -- Les pages sont élastiques : elles suivent la taille en direct (UI:OnResize).
+    self.pageHost:SetScript("OnSizeChanged", function(_, w, h)
+        if w and w > 0 then UI.PAGE_W, UI.PAGE_FULL_H, UI.PAGE_H = w, h, h end
+    end)
 
     -- Poignée de redimensionnement ---------------------------------------------------------
     local grip = CreateFrame("Button", nil, f)
@@ -294,7 +298,7 @@ function UI:Create()
         cfg.size = { math.floor(f:GetWidth() + 0.5), math.floor(f:GetHeight() + 0.5) }
         local p, _, rp, x, y = f:GetPoint()
         cfg.point = { p, rp, x, y }
-        UI:Relayout()
+        UI:Refresh()
     end)
 
     f:SetScript("OnShow", function() UI:Refresh() end)
@@ -322,15 +326,26 @@ function UI:ApplySide()
     for _, item in pairs(self.nav) do item:Refresh() end
 end
 
--- Nouvelle mise en page (taille de fenêtre ou barre latérale modifiée) : les pages
--- sont reconstruites à la nouvelle taille, la page ouverte est conservée.
+-- Barre latérale repliée ou dépliée : les pages suivent d'elles-mêmes (elles sont élastiques).
 function UI:Relayout()
     if not self.frame then return end
     self:ApplySide()
-    for _, def in pairs(self.pages) do
-        if def.frame then def.frame:Hide(); def.frame = nil end
-    end
-    self:ShowPage(self.current or "overview")
+    self:Refresh()
+end
+
+-- Mise en page élastique : fn(largeur, hauteur) est appelée tout de suite puis à chaque
+-- changement de taille du cadre (redimensionnement en direct, repli du menu).
+function UI:OnResize(frame, fn)
+    frame:HookScript("OnSizeChanged", function(_, w, h) if w and w > 0 then fn(w, h) end end)
+    fn(frame:GetWidth(), frame:GetHeight())
+end
+
+-- Rafraîchissement rapide et regroupé (graphiques à redessiner pendant un redimensionnement).
+local soonPending = false
+function UI:RefreshSoon()
+    if soonPending then return end
+    soonPending = true
+    C_Timer.After(0.05, function() soonPending = false; UI:Refresh() end)
 end
 
 function UI:ShowPage(key)

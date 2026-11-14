@@ -35,8 +35,9 @@ UI:RegisterPage({
     Build = function(self, p)
         -- Carte principale ------------------------------------------------------
         local main = UI:Card(p, nil, nil, true)
-        main:SetSize(UI.PAGE_W, TOP_H)
+        main:SetHeight(TOP_H)
         main:SetPoint("TOPLEFT")
+        main:SetPoint("TOPRIGHT")
         self.status = UI:Badge(main, "")
         self.status:SetPoint("TOPLEFT", 18, -16)
         self.timer = UI:Text(main, 32)
@@ -55,12 +56,11 @@ UI:RegisterPage({
         self.stopBtn:SetPoint("LEFT", self.pauseBtn, "RIGHT", 8, 0)
         self.stopBtn:SetScript("OnClick", function() Farm():Stop(); self:Refresh() end)
 
-        local tx, tw = 330, (UI.PAGE_W - 330 - 16 - 3 * 10) / 4
+        local tx = 330
         self.tiles = {}
         for i, l in ipairs({ "Or ramassé", "Or / heure", "Objets", "Valeur du butin" }) do
             local t = Tile(main, l)
-            t:SetSize(tw, 58)
-            t:SetPoint("TOPLEFT", tx + (i - 1) * (tw + 10), -18)
+            t:SetHeight(58)
             self.tiles[i] = t
         end
         local farm = WK.DB.global.farm
@@ -73,14 +73,13 @@ UI:RegisterPage({
         ml:SetText("Mini-fenêtre pendant la session")
         local vh = UI:Text(main, 10, C.dim)
         vh:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", tx, 24)
-        vh:SetWidth(UI.PAGE_W - tx - 300)
+        self.vh = vh
         vh:SetText("Valeur du butin : prix Auctionator, sinon prix marchand.")
 
         -- Butin --------------------------------------------------------------------
-        local leftW = math.floor(UI.PAGE_W * 0.6)
         local loot = UI:Card(p, "Butin de la session")
-        loot:SetSize(leftW, UI.PAGE_H - TOP_H - GAP)
         loot:SetPoint("TOPLEFT", 0, -TOP_H - GAP)
+        loot:SetPoint("BOTTOMLEFT")
         self.lootCard = loot
         self.lootEmpty = UI:Text(loot, 12, C.muted)
         self.lootEmpty:SetPoint("CENTER")
@@ -97,7 +96,7 @@ UI:RegisterPage({
             r.icon:SetPoint("LEFT", 8, 0)
             r.name = UI:Text(r, 12)
             r.name:SetPoint("LEFT", 38, 0)
-            r.name:SetWidth(leftW - 220)
+            r.name:SetPoint("RIGHT", -130, 0)
             r.count = UI:Text(r, 13)
             r.count:SetPoint("RIGHT", -90, 0)
             r.count:SetJustifyH("RIGHT")
@@ -114,8 +113,8 @@ UI:RegisterPage({
             function(k) self.histMode = k; self.viewing = nil; self:Refresh() end, 28)
         modeSeg:SetPoint("TOPRIGHT", -10, -8)
         modeSeg:Select("sessions")
-        hist:SetSize(UI.PAGE_W - leftW - GAP, UI.PAGE_H - TOP_H - GAP)
-        hist:SetPoint("TOPRIGHT", 0, -TOP_H - GAP)
+        hist:SetPoint("TOPLEFT", loot, "TOPRIGHT", GAP, 0)
+        hist:SetPoint("BOTTOMRIGHT")
         self.histEmpty = UI:Text(hist, 12, C.muted)
         self.histEmpty:SetPoint("CENTER")
         self.histEmpty:SetText("Aucune session terminée.")
@@ -147,6 +146,18 @@ UI:RegisterPage({
                 self.bg:SetColor(unpack((self.selected or self.hover) and C.hover or C.surface2))
             end
             return r
+        end)
+
+        -- Élastique : tuiles et colonnes recalculées quand la taille change.
+        UI:OnResize(p, function(w)
+            local tw = (w - tx - 16 - 3 * 10) / 4
+            for i, t in ipairs(self.tiles) do
+                t:SetWidth(tw)
+                t:ClearAllPoints()
+                t:SetPoint("TOPLEFT", main, "TOPLEFT", tx + (i - 1) * (tw + 10), -18)
+            end
+            self.vh:SetWidth(math.max(80, w - tx - 300))
+            loot:SetWidth(math.floor(w * 0.6))
         end)
 
         -- Chrono en direct.

@@ -56,7 +56,7 @@ WK.Locales.enUS.text = {
     ["Résumé"] = "Summary", ["Persos"] = "Chars", ["Inventaire"] = "Inventory", ["Métiers"] = "Professions",
     ["Stats"] = "Stats", ["Journal"] = "Log", ["Courrier"] = "Mail", ["Options"] = "Options",
     ["Personnages"] = "Characters", ["Statistiques"] = "Statistics", ["Courrier automatique"] = "Auto mail",
-    ["Notes de patch"] = "Patch notes",
+    ["Notes de patch"] = "Patch notes", ["Patch notes"] = "Patch notes",
 
     -- Résumé
     ["OR DU COMPTE"] = "ACCOUNT GOLD", ["Temps de jeu"] = "Played time", ["Règles courrier"] = "Mail rules",
@@ -271,7 +271,7 @@ WK.Locales.enUS.text = {
     ["Thèmes et couleurs"] = "Themes and colours", ["Accent, police, taille"] = "Accent, font, size",
     ["Langue, minimap, fenêtre"] = "Language, minimap, window", ["Source des prix"] = "Price source",
     ["Banque et courrier"] = "Bank and mail", ["Version et commandes"] = "Version and commands",
-    ["Voir les notes de patch"] = "See the patch notes",
+    ["Voir les patch notes"] = "See the patch notes",
 
     -- Disposition
     ["COMPTE"] = "ACCOUNT", ["ÉCONOMIE"] = "ECONOMY", ["FARM"] = "FARM", ["Réduire le menu"] = "Collapse menu",

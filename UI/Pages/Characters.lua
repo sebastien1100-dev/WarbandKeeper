@@ -30,15 +30,13 @@ UI:RegisterPage({
     Build = function(self, p)
         local k = UI.PAGE_W / 924
         for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
-        for _, col in ipairs(COLS) do
+        self.page = p
+        self.colHeaders = {}
+        for i, col in ipairs(BASE_COLS) do
             local t = UI:Text(p, 10, C.dim)
-            if col[3] == "RIGHT" then
-                t:SetPoint("TOPRIGHT", p, "TOPLEFT", col[2], -4)
-                t:SetJustifyH("RIGHT")
-            else
-                t:SetPoint("TOPLEFT", col[2], -4)
-            end
+            if col[3] == "RIGHT" then t:SetJustifyH("RIGHT") end
             t:SetText(UI:Upper(T(col[1])))
+            self.colHeaders[i] = t
         end
 
         local scroll = UI:Scroll(p)
@@ -47,10 +45,8 @@ UI:RegisterPage({
         self.scroll = scroll
         local child = scroll.child
 
-        local function cell(r, x, color)
-            local fs = UI:Text(r, 12, color)
-            fs:SetPoint("LEFT", x, 0)
-            return fs
+        local function cell(r, color)
+            return UI:Text(r, 12, color)
         end
 
         self.rows = UI:Pool(function()
@@ -63,24 +59,50 @@ UI:RegisterPage({
             r.name:SetPoint("TOPLEFT", 52, -10)
             r.realm = UI:Text(r, 10, C.muted)
             r.realm:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
-            r.realm:SetWidth(COLS[2][2] - 52 - 10)
             r.badge = UI:Badge(r, "connecté")
             r.badge:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
-            r.level = cell(r, COLS[2][2])
+            r.level = cell(r)
             r.gold = UI:Text(r, 12)
-            r.gold:SetPoint("RIGHT", r, "LEFT", COLS[3][2], 0)
             r.gold:SetJustifyH("RIGHT")
-            r.played = cell(r, COLS[4][2], C.muted)
-            r.bank = cell(r, COLS[5][2], C.muted)
-            r.mail = cell(r, COLS[6][2], C.muted)
-            r.seen = cell(r, COLS[7][2], C.muted)
+            r.played = cell(r, C.muted)
+            r.bank = cell(r, C.muted)
+            r.mail = cell(r, C.muted)
+            r.seen = cell(r, C.muted)
             r.del = UI:IconButton(r, "trash", 26, "Maj + clic : oublier ce personnage", true)
             r.del:SetPoint("RIGHT", -10, 0)
             r.del:SetScript("OnClick", function(btn)
                 if IsShiftKeyDown() and btn.key then WK.modules.Characters:Delete(btn.key) end
             end)
+            self:PlaceRow(r)
             return r
         end)
+        UI:OnResize(p, function(w) self:PlaceColumns(w) end)
+    end,
+
+    -- Colonnes proportionnelles à la largeur (prévues pour 924 px).
+    PlaceColumns = function(self, w)
+        local k = (w or UI.PAGE_W) / 924
+        for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
+        for i, t in ipairs(self.colHeaders) do
+            t:ClearAllPoints()
+            if COLS[i][3] == "RIGHT" then
+                t:SetPoint("TOPRIGHT", self.page, "TOPLEFT", COLS[i][2], -4)
+            else
+                t:SetPoint("TOPLEFT", self.page, "TOPLEFT", COLS[i][2], -4)
+            end
+        end
+        for _, r in ipairs(self.rows.items) do self:PlaceRow(r) end
+    end,
+
+    PlaceRow = function(self, r)
+        r.realm:SetWidth(math.max(60, COLS[2][2] - 52 - 10))
+        local cells = { { r.level, 2 }, { r.played, 4 }, { r.bank, 5 }, { r.mail, 6 }, { r.seen, 7 } }
+        for _, c in ipairs(cells) do
+            c[1]:ClearAllPoints()
+            c[1]:SetPoint("LEFT", r, "LEFT", COLS[c[2]][2], 0)
+        end
+        r.gold:ClearAllPoints()
+        r.gold:SetPoint("RIGHT", r, "LEFT", COLS[3][2], 0)
     end,
 
     Refresh = function(self)

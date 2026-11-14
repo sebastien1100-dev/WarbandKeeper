@@ -29,8 +29,9 @@ local function RuleEditor(page, parent, mode, top)
 
     -- Activation
     local head = UI:Card(parent)
-    head:SetSize(UI.PAGE_W, 66)
+    head:SetHeight(66)
     head:SetPoint("TOPLEFT", 0, top)
+    head:SetPoint("TOPRIGHT", 0, top)
     local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
     ed.toggle = UI:Toggle(head,
         function() return cfg.enabled end,
@@ -49,8 +50,9 @@ local function RuleEditor(page, parent, mode, top)
 
     -- Nouvelle règle
     local add = UI:Card(parent, "Nouvelle règle")
-    add:SetSize(UI.PAGE_W, isMail and 128 or 100)
+    add:SetHeight(isMail and 128 or 100)
     add:SetPoint("TOPLEFT", 0, top - 66 - GAP)
+    add:SetPoint("TOPRIGHT", 0, top - 66 - GAP)
     local kind = "item"
     local item = UI:Input(add, 250, 34, "Maj + clic sur un objet, ou son ID", "bag")
     item.edit.acceptLinks = true
@@ -115,8 +117,8 @@ local function RuleEditor(page, parent, mode, top)
     -- Liste
     local listTop = top - 66 - GAP - (isMail and 128 or 100) - GAP
     local list = UI:Card(parent, "Règles")
-    list:SetSize(UI.PAGE_W, UI.PAGE_H + listTop)
     list:SetPoint("TOPLEFT", 0, listTop)
+    list:SetPoint("BOTTOMRIGHT")
     ed.empty = UI:Text(list, 12, C.muted)
     ed.empty:SetPoint("CENTER")
     ed.empty:SetText("Aucune règle pour l'instant.")
@@ -259,8 +261,9 @@ end
 local function Reception(page, parent, top)
     local rc = {}
     local head = UI:Card(parent)
-    head:SetSize(UI.PAGE_W, 112)
+    head:SetHeight(112)
     head:SetPoint("TOPLEFT", 0, top)
+    head:SetPoint("TOPRIGHT", 0, top)
     local mail = WK.DB.global.mail
     rc.toggle = UI:Toggle(head, function() return mail.autoTake end, function(v) mail.autoTake = v end)
     UI:SettingRow(head, -12, "Tout prendre automatiquement",
@@ -272,8 +275,8 @@ local function Reception(page, parent, top)
 
     local list = UI:Card(parent, "Boîtes aux lettres du compte")
     local listTop = top - 112 - GAP
-    list:SetSize(UI.PAGE_W, UI.PAGE_H + listTop)
     list:SetPoint("TOPLEFT", 0, listTop)
+    list:SetPoint("BOTTOMRIGHT")
     local scroll = UI:Scroll(list)
     scroll:SetPoint("TOPLEFT", 10, -40)
     scroll:SetPoint("BOTTOMRIGHT", -8, 10)
@@ -361,6 +364,7 @@ UI:RegisterPage({
         self.tabs.send = RuleEditor(self, frames.send, "mail", -46)
         self.tabs.bank = RuleEditor(self, frames.bank, "bank", -46)
         self.tabs.receive = Reception(self, frames.receive, -46)
+        UI:OnResize(p, function() UI:RefreshSoon() end) -- raccourcis « Mes persos »
     end,
 
     Refresh = function(self)

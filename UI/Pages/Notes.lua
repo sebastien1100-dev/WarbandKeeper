@@ -27,7 +27,7 @@ end
 local function VersionCard(parent, y, entry, isCurrent, width)
     local card = UI:Card(parent, nil, nil, isCurrent)
     card:SetPoint("TOPLEFT", 0, -y)
-    card:SetWidth(width)
+    card:SetPoint("TOPRIGHT", 0, -y)
 
     local title = UI:Text(card, 16)
     title:SetPoint("TOPLEFT", 18, -16)
@@ -81,7 +81,7 @@ end
 
 UI:RegisterPage({
     key = "notes", order = 9, navIcon = "notes",
-    title = "Notes de patch",
+    title = "Patch notes",
     subtitle = "Tout ce qui a été ajouté, modifié et corrigé, version par version.",
     count = function() return notesSeen() and "" or "•" end,
 
@@ -90,11 +90,12 @@ UI:RegisterPage({
         scroll:SetAllPoints()
         local width = UI.PAGE_W - 12
         local y = 0
+        -- « À venir » toujours en haut, puis les versions de la plus récente à la plus ancienne.
+        if #WK.Roadmap > 0 then
+            y = y + VersionCard(scroll.child, y, { roadmap = true, items = WK.Roadmap }, false, width) + 12
+        end
         for i, entry in ipairs(WK.Changelog) do
             y = y + VersionCard(scroll.child, y, entry, i == 1 and entry.version == WK.version, width) + 12
-            if i == 1 and #WK.Roadmap > 0 then
-                y = y + VersionCard(scroll.child, y, { roadmap = true, items = WK.Roadmap }, false, width) + 12
-            end
         end
         scroll:SetContentHeight(y)
     end,

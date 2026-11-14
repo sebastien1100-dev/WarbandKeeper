@@ -104,8 +104,9 @@ UI:RegisterPage({
         local NAV_W = 210
         local W = UI.PAGE_W - NAV_W - GAP - 12
         local navCard = UI:Card(p)
-        navCard:SetSize(NAV_W, UI.PAGE_H)
+        navCard:SetWidth(NAV_W)
         navCard:SetPoint("TOPLEFT")
+        navCard:SetPoint("BOTTOMLEFT")
         local host = CreateFrame("Frame", nil, p)
         host:SetPoint("TOPLEFT", NAV_W + GAP, 0)
         host:SetPoint("BOTTOMRIGHT")
@@ -124,6 +125,7 @@ UI:RegisterPage({
             local c = UI:Card(root, title)
             c:SetSize(W, h)
             c:SetPoint("TOPLEFT", 0, -y)
+            c:SetPoint("TOPRIGHT", 0, -y)
             y = y + h + GAP
             return c
         end
@@ -358,7 +360,7 @@ UI:RegisterPage({
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
             .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré."))
-        local notesBtn = UI:Button(about, "Voir les notes de patch", nil, 28, "secondary", "notes")
+        local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)
         notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
         current.scroll:SetContentHeight(y)

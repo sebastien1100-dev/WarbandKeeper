@@ -34,8 +34,9 @@ UI:RegisterPage({
 
         -- Onglets (colonne de gauche) ------------------------------------------
         local tabsCard = UI:Card(p)
-        tabsCard:SetSize(TABS_W, UI.PAGE_H)
+        tabsCard:SetWidth(TABS_W)
         tabsCard:SetPoint("TOPLEFT")
+        tabsCard:SetPoint("BOTTOMLEFT")
         local ts = UI:Scroll(tabsCard)
         ts:SetPoint("TOPLEFT", 8, -8)
         ts:SetPoint("BOTTOMRIGHT", -6, 8)

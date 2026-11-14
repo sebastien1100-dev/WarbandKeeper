@@ -25,8 +25,9 @@ UI:RegisterPage({
 
         -- Liste des séries ---------------------------------------------------
         local list = UI:Card(p, "Séries")
-        list:SetSize(LEFT_W, UI.PAGE_H)
+        list:SetWidth(LEFT_W)
         list:SetPoint("TOPLEFT")
+        list:SetPoint("BOTTOMLEFT")
         self.list = list
 
         local add = UI:Input(list, LEFT_W - 72, 30, "Maj+clic objet / ID")
@@ -80,10 +81,9 @@ UI:RegisterPage({
         end)
 
         -- Graphique ------------------------------------------------------------
-        local chartW = UI.PAGE_W - LEFT_W - GAP
         local card = UI:Card(p)
-        card:SetSize(chartW, UI.PAGE_H)
-        card:SetPoint("TOPRIGHT")
+        card:SetPoint("TOPLEFT", list, "TOPRIGHT", GAP, 0)
+        card:SetPoint("BOTTOMRIGHT")
         self.card = card
 
         self.seriesTitle = UI:Text(card, 13, C.muted)
@@ -147,7 +147,7 @@ UI:RegisterPage({
 
         -- Ligne pointillée de l'objectif.
         self.goalDash = {}
-        for i = 1, 60 do
+        for i = 1, 200 do -- assez pour une fenêtre très large
             local d = self.area:CreateTexture(nil, "ARTWORK", nil, 4)
             d:SetSize(6, 1.5)
             d:Hide()
@@ -177,6 +177,7 @@ UI:RegisterPage({
         UI:ChartHover(area, self.chart, function(pt)
             return self.series == "gold" and WK:FormatMoney(pt.v) or ("x" .. pt.v)
         end)
+        UI:OnResize(p, function() if self.chart then UI:RefreshSoon() end end)
     end,
 
     RefreshList = function(self)

@@ -89,7 +89,8 @@ UI:RegisterPage({
         -- Courbe d'évolution -----------------------------------------------------------
         local card = UI:Card(p, nil, nil, true)
         card:SetPoint("TOPLEFT", LEFT_W + GAP, 0)
-        card:SetSize(UI.PAGE_W - LEFT_W - GAP, TOP_H)
+        card:SetPoint("TOPRIGHT", 0, 0)
+        card:SetHeight(TOP_H)
         local ct = UI:Text(card, 12, C.muted)
         ct:SetPoint("TOPLEFT", 16, -16)
         ct:SetText("Évolution de l'or")
@@ -157,15 +158,12 @@ UI:RegisterPage({
         self.tableBox = tableBox
         tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4))
         tableBox:SetPoint("BOTTOMRIGHT")
-        for _, col in ipairs(COLS) do
+        self.colHeaders = {}
+        for i, col in ipairs(BASE_COLS) do
             local t = UI:Text(tableBox, 10, C.dim)
-            if col[3] == "RIGHT" then
-                t:SetPoint("TOPRIGHT", tableBox, "TOPLEFT", col[2] + 12, 0)
-                t:SetJustifyH("RIGHT")
-            else
-                t:SetPoint("TOPLEFT", col[2], 0)
-            end
+            if col[3] == "RIGHT" then t:SetJustifyH("RIGHT") end
             t:SetText(UI:Upper(WK.T(col[1])))
+            self.colHeaders[i] = t
         end
         local scroll = UI:Scroll(tableBox)
         scroll:SetPoint("TOPLEFT", 0, -20)
@@ -179,28 +177,57 @@ UI:RegisterPage({
             r.border:SetColor(unpack(C.border))
             r.bg = UI:Rounded(r, 11, 1, "BACKGROUND", 1)
             r.icon = UI:RoundIcon(r, 24)
-            r.icon:SetPoint("LEFT", COLS[1][2], 0)
             r.name = UI:Text(r, 13)
             r.name:SetPoint("LEFT", r.icon, "RIGHT", 10, 0)
             r.here = UI:Badge(r, "ici")
             r.here:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
             r.level = UI:Text(r, 12)
-            r.level:SetPoint("LEFT", COLS[2][2], 0)
             r.gold = UI:Text(r, 12)
-            r.gold:SetPoint("RIGHT", r, "LEFT", COLS[3][2] + 12, 0)
             r.gold:SetJustifyH("RIGHT")
             r.diff = UI:Text(r, 12)
-            r.diff:SetPoint("RIGHT", r, "LEFT", COLS[4][2] + 12, 0)
             r.diff:SetJustifyH("RIGHT")
             r.spark = UI:LineChart(r, 1.5, false)
             r.spark:SetSize(84, 18)
-            r.spark:SetPoint("LEFT", COLS[5][2], 0)
             r.bags = UI:Text(r, 12, C.muted)
-            r.bags:SetPoint("LEFT", COLS[6][2], 0)
             r.seen = UI:Text(r, 12, C.muted)
-            r.seen:SetPoint("LEFT", COLS[7][2], 0)
+            self:PlaceRow(r)
             return r
         end)
+
+        -- Élastique : colonnes recalculées et graphique redessiné quand la taille change.
+        UI:OnResize(p, function(w)
+            self:PlaceColumns(w)
+            if self.chart then UI:RefreshSoon() end
+        end)
+    end,
+
+    -- Colonnes du tableau proportionnelles à la largeur (prévues pour 924 px).
+    PlaceColumns = function(self, w)
+        local k = (w or UI.PAGE_W) / 924
+        for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
+        for i, t in ipairs(self.colHeaders) do
+            t:ClearAllPoints()
+            if COLS[i][3] == "RIGHT" then
+                t:SetPoint("TOPRIGHT", self.tableBox, "TOPLEFT", COLS[i][2] + 12, 0)
+            else
+                t:SetPoint("TOPLEFT", self.tableBox, "TOPLEFT", COLS[i][2], 0)
+            end
+        end
+        for _, r in ipairs(self.rows.items) do self:PlaceRow(r) end
+    end,
+
+    PlaceRow = function(self, r)
+        local function at(region, point, x, rel)
+            region:ClearAllPoints()
+            region:SetPoint(point, r, rel or "LEFT", x, 0)
+        end
+        at(r.icon, "LEFT", COLS[1][2])
+        at(r.level, "LEFT", COLS[2][2])
+        at(r.gold, "RIGHT", COLS[3][2] + 12)
+        at(r.diff, "RIGHT", COLS[4][2] + 12)
+        at(r.spark, "LEFT", COLS[5][2])
+        at(r.bags, "LEFT", COLS[6][2])
+        at(r.seen, "LEFT", COLS[7][2])
     end,
 
     Refresh = function(self)

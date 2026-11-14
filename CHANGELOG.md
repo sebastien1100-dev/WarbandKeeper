@@ -1,7 +1,24 @@
-# Notes de patch
+# Patch notes
 
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
+
+## À venir
+
+_Prévu, pas encore commencé._
+
+- Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
+
+## v0.9.1 — 14/11/2026
+
+### Modifications
+- Redimensionnement fluide : les pages suivent la souris en direct pendant qu'on agrandit ou réduit la fenêtre (cartes, colonnes des tableaux, tuiles, catégories du loot), et les graphiques sont redessinés au fur et à mesure. Plus besoin de relâcher la souris.
+- Replier ou déplier le menu redimensionne aussi les pages en direct.
+- « Notes de patch » devient « Patch notes ».
+- Patch notes : la section « À venir » est toujours en haut, au-dessus des versions. Pareil dans CHANGELOG.md sur GitHub.
+
+### Corrections
+- Sur une grande fenêtre, la ligne d'objectif des Stats s'arrêtait avant le bord du graphique.
 
 ## v0.9.0 — 14/11/2026
 
@@ -16,12 +33,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 - Nouvelle disposition : barre latérale groupée (Compte, Économie, Farm, puis Notes de patch et Options), repliable en icônes avec « Réduire le menu ». Le titre de la page et les boutons Scanner et Fermer passent dans l'en-tête du contenu.
 - Les colonnes des tableaux du Résumé et des Persos suivent la largeur de la fenêtre.
 - Nouveaux fichiers : redémarrer complètement le jeu après la mise à jour.
-
-## À venir
-
-_Prévu, pas encore commencé._
-
-- Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
 ## v0.8.2 — 14/11/2026
 

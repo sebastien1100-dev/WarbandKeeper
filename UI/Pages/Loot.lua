@@ -105,8 +105,9 @@ UI:RegisterPage({
 
         -- Colonne de gauche : profils + objets laissés au sol --------------------------
         local left = UI:Card(p, "Profils")
-        left:SetSize(LEFT_W, UI.PAGE_H)
+        left:SetWidth(LEFT_W)
         left:SetPoint("TOPLEFT")
+        left:SetPoint("BOTTOMLEFT")
         local addBtn = UI:IconButton(left, "plus", 26, "Nouveau profil")
         addBtn:SetPoint("TOPRIGHT", -10, -8)
         addBtn:SetScript("OnClick", function() self.sel = L:Add(); self:Refresh() end)
@@ -171,12 +172,12 @@ UI:RegisterPage({
 
         -- Colonne de droite ---------------------------------------------------------------
         local x0 = LEFT_W + GAP
-        local RW = UI.PAGE_W - x0
 
         -- Avertissement : butin automatique du jeu.
         self.warn = UI:Card(p)
-        self.warn:SetSize(RW, 44)
+        self.warn:SetHeight(44)
         self.warn:SetPoint("TOPLEFT", x0, 0)
+        self.warn:SetPoint("TOPRIGHT")
         self.warn.bg:SetColor(C.negative[1] * 0.25, C.negative[2] * 0.2, C.negative[3] * 0.2, 1)
         local wt = UI:Text(self.warn, 11)
         wt:SetPoint("LEFT", 14, 0)
@@ -188,12 +189,14 @@ UI:RegisterPage({
 
         local body = CreateFrame("Frame", nil, p)
         self.body = body
+        body:SetPoint("TOPLEFT", x0, 0)
         body:SetPoint("BOTTOMRIGHT")
 
         -- Réglages du profil
         local prof = UI:Card(body)
-        prof:SetSize(RW, PROF_H)
+        prof:SetHeight(PROF_H)
         prof:SetPoint("TOPLEFT")
+        prof:SetPoint("TOPRIGHT")
         self.nameInput = UI:Input(prof, 240, 32, "Nom du profil")
         self.nameInput:SetPoint("TOPLEFT", 14, -14)
         self.nameInput.onEnter = function(t)
@@ -265,34 +268,40 @@ UI:RegisterPage({
         local cats = UI:Card(body, "Catégories toujours ramassées")
         self.catCard = cats
         cats:SetPoint("TOPLEFT", 0, -PROF_H - GAP)
-        cats:SetWidth(RW)
+        cats:SetPoint("TOPRIGHT", 0, -PROF_H - GAP)
         self.catButtons = {}
-        local cx, cy = 14, -40
+        local catOrder = {}
         for _, c in ipairs(WK.modules.Rules.CATEGORIES) do
             local b = UI:Button(cats, c.label, nil, 26, "ghost")
-            if cx + b:GetWidth() > RW - 14 then cx, cy = 14, cy - 32 end
-            b:SetPoint("TOPLEFT", cx, cy)
-            cx = cx + b:GetWidth() + 6
+            table.insert(catOrder, b)
             b:SetScript("OnClick", function()
                 local pr = L:Get(self.sel)
                 if pr then pr.cats[c.key] = (not pr.cats[c.key]) or nil; self:Refresh() end
             end)
             self.catButtons[c.key] = b
         end
-        local catH = -cy + 40
-        cats:SetHeight(catH)
-
-        -- Listes
-        local listTop = -PROF_H - GAP - catH - GAP
-        local half = (RW - GAP) / 2
+        -- Listes sous les catégories, côte à côte.
         self.always = ItemList(self, body, "Toujours ramasser", "always")
-        self.always.card:SetPoint("TOPLEFT", 0, listTop)
+        self.always.card:SetPoint("TOPLEFT", cats, "BOTTOMLEFT", 0, -GAP)
         self.always.card:SetPoint("BOTTOMLEFT")
-        self.always.card:SetWidth(half)
         self.never = ItemList(self, body, "Jamais ramasser", "never")
-        self.never.card:SetPoint("TOPRIGHT", 0, listTop)
+        self.never.card:SetPoint("TOPRIGHT", cats, "BOTTOMRIGHT", 0, -GAP)
         self.never.card:SetPoint("BOTTOMRIGHT")
-        self.never.card:SetWidth(half)
+
+        -- Élastique : pastilles des catégories remises en lignes, listes à moitié de largeur.
+        UI:OnResize(body, function(w)
+            local cx, cy = 14, -40
+            for _, b in ipairs(catOrder) do
+                if cx + b:GetWidth() > w - 14 then cx, cy = 14, cy - 32 end
+                b:ClearAllPoints()
+                b:SetPoint("TOPLEFT", cats, "TOPLEFT", cx, cy)
+                cx = cx + b:GetWidth() + 6
+            end
+            cats:SetHeight(-cy + 40)
+            local half = (w - GAP) / 2
+            self.always.card:SetWidth(half)
+            self.never.card:SetWidth(half)
+        end)
     end,
 
     Refresh = function(self)

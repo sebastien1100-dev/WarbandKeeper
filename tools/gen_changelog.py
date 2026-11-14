@@ -19,13 +19,21 @@ def items(t):
 
 
 out = [
-    "# Notes de patch",
+    "# Patch notes",
     "",
     "Toutes les modifications de Warband Keeper, version par version.",
     "Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).",
     "",
 ]
 roadmap = items(wk.Roadmap)
+# « À venir » toujours en haut.
+if roadmap:
+    out.append("## À venir")
+    out.append("")
+    out.append("_Prévu, pas encore commencé._")
+    out.append("")
+    out.extend(f"- {line}" for line in roadmap)
+    out.append("")
 for i, entry in enumerate(items(wk.Changelog)):
     out.append(f"## v{entry.version} — {entry.date}")
     out.append("")
@@ -35,13 +43,6 @@ for i, entry in enumerate(items(wk.Changelog)):
             out.append(f"### {label}")
             out.extend(f"- {line}" for line in lst)
             out.append("")
-    if i == 0 and roadmap:
-        out.append("## À venir")
-        out.append("")
-        out.append("_Prévu, pas encore commencé._")
-        out.append("")
-        out.extend(f"- {line}" for line in roadmap)
-        out.append("")
 
 open(os.path.join(ROOT, "CHANGELOG.md"), "w", encoding="utf-8").write("\n".join(out))
 print("CHANGELOG.md généré")

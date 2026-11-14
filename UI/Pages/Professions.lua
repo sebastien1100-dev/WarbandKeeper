@@ -22,10 +22,8 @@ local function Levels(parent)
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, TOP)
     scroll:SetPoint("BOTTOMRIGHT")
-    local colW = (UI.PAGE_W - 12 - GAP) / 2
     local cards = UI:Pool(function()
         local card = UI:Card(scroll.child, " ")
-        card:SetWidth(colW)
         card.icon = UI:RoundIcon(card, 20)
         card.icon:SetPoint("TOPLEFT", 14, -12)
         card.title:ClearAllPoints()
@@ -42,9 +40,11 @@ local function Levels(parent)
 
     function tab:Refresh()
         cards:Reset()
+        local colW = (UI.PAGE_W - 12 - GAP) / 2
         local colY = { 0, 0 }
         for _, e in ipairs(UI:SortedCharacters()) do
             local card = cards:Get()
+            card:SetWidth(colW)
             local c = e.c
             UI:SetClassIcon(card.icon, c.class)
             card.title:SetText(c.name or e.key)
@@ -249,8 +249,9 @@ local function Shopping(page, parent)
     local h = UI.PAGE_H + TOP
 
     local planned = UI:Card(parent, "Fabrications prévues")
-    planned:SetSize(leftW, h)
+    planned:SetWidth(leftW)
     planned:SetPoint("TOPLEFT", 0, TOP)
+    planned:SetPoint("BOTTOMLEFT")
     local pEmpty = UI:Text(planned, 11, C.muted)
     pEmpty:SetPoint("TOPLEFT", 16, -46)
     pEmpty:SetPoint("TOPRIGHT", -16, -46)
@@ -287,8 +288,9 @@ local function Shopping(page, parent)
     end)
 
     local need = UI:Card(parent, "Composants")
-    need:SetSize(UI.PAGE_W - leftW - GAP, h)
-    need:SetPoint("TOPRIGHT", 0, TOP)
+    need:SetPoint("TOPLEFT", planned, "TOPRIGHT", GAP, 0)
+    need:SetPoint("BOTTOMRIGHT")
+    UI:OnResize(parent, function(w) planned:SetWidth(math.floor(w * 0.38)) end)
     local cols = { { "Besoin", -250 }, { "Possédé", -180 }, { "Manquant", -110 }, { "Coût", -16 } }
     for _, col in ipairs(cols) do
         local t = UI:Text(need, 10, C.dim)
@@ -397,6 +399,7 @@ UI:RegisterPage({
         tabs.levels = Levels(frames.levels)
         tabs.recipes = Recipes(self, frames.recipes)
         tabs.shopping = Shopping(self, frames.shopping)
+        UI:OnResize(p, function() UI:RefreshSoon() end) -- cartes des niveaux
         self.tabs = tabs
         local function setTab(k)
             self.tab = k
