@@ -46,6 +46,7 @@ function M:Start()
         gold = 0, items = {},
     }
     WK:Print(T("Session de farm démarrée."))
+    if WK.modules.Loot then WK.modules.Loot:CheckAuto() end
     self:UpdateMini()
     WK:NotifyChanged()
 end
@@ -82,6 +83,7 @@ function M:Stop()
     s.stop = time()
     s.paused, s.resumedAt, s.acc = nil, nil, nil
     farm().current = nil
+    if WK.modules.Loot then C_Timer.After(0, function() WK.modules.Loot:CheckAuto() end) end
     if s.duration >= 60 or s.gold > 0 or next(s.items) then
         table.insert(farm().history, 1, s)
         while #farm().history > MAX_HISTORY do table.remove(farm().history) end

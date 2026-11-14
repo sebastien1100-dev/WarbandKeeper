@@ -342,7 +342,8 @@ function UI:UpdateFarmMini()
             if not s then return end
             F:Tick()
             local vendor = F:VendorValue(s.items)
-            self.zone:SetText(s.zone ~= "" and s.zone or "Farm")
+            local lp = WK.modules.Loot and WK.DB.global.loot.enabled and WK.modules.Loot:Effective()
+            self.zone:SetText((s.zone ~= "" and s.zone or "Farm") .. (lp and ("  ·  " .. lp.name) or ""))
             self.timer:SetText(clock(F:Elapsed(s)))
             self.timer:SetTextColor(unpack(s.paused and C.muted or C.text))
             self.line:SetText(string.format("%s%s  ·  %d %s", UI:GoldText(F:PerHour(s.gold + vendor, s)), T("/h"),

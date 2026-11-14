@@ -25,7 +25,7 @@ Puis se connecter avec **chaque personnage** au moins une fois (et ouvrir sa ban
 
 ## Interface
 
-Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, clic droit : options, glisser : déplacer).
+Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, clic droit : options, glisser : déplacer). Les pages sont rangées dans une barre latérale (repliable en icônes), et la fenêtre se redimensionne avec la poignée en bas à droite.
 
 | Page | Contenu |
 |---|---|
@@ -35,6 +35,7 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | Métiers | Niveaux par perso, recettes connues avec rentabilité (coût, vente, bénéfice), liste de courses avec export vers Auctionator |
 | Stats | Courbes de l'or, de la richesse totale (or + stocks) ou d'un matériau, objectifs avec date estimée |
 | Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique, classement des meilleurs spots, mini-fenêtre |
+| Loot | Profils de filtres de ramassage par situation (qualité, valeur, catégories, listes, activation automatique) |
 | Journal | Courriers envoyés, dépôts, or gagné ou dépensé, sessions de farm, progrès de métier, niveaux |
 | Courrier et banque | Envoi automatique et dépôt en banque par objet ou par catégorie, avec seuil « garder » ; « Tout prendre » dans la boîte aux lettres |
 | Options | 8 thèmes dont un personnalisable, appliqués en direct, couleur d'accent (dont couleur de classe), police, arrondi, opacité, échelle, langue (FR / EN), bouton minimap, alertes |

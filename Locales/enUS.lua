@@ -273,6 +273,36 @@ WK.Locales.enUS.text = {
     ["Banque et courrier"] = "Bank and mail", ["Version et commandes"] = "Version and commands",
     ["Voir les notes de patch"] = "See the patch notes",
 
+    -- Disposition
+    ["COMPTE"] = "ACCOUNT", ["ÉCONOMIE"] = "ECONOMY", ["FARM"] = "FARM", ["Réduire le menu"] = "Collapse menu",
+    ["Glisser pour redimensionner"] = "Drag to resize",
+    ["Vue d'ensemble du compte : or, évolution et personnages."] = "Account overview: gold, history and characters.",
+
+    -- Loot
+    ["Loot"] = "Loot", ["Filtres de ramassage par situation. Maj en ouvrant un butin : tout est laissé à ta main."] =
+        "Loot filters per situation. Hold Shift when opening loot to handle it yourself.",
+    ["Profils"] = "Profiles", ["Nouveau profil"] = "New profile", ["(copie)"] = "(copy)",
+    ["Tout ramasser"] = "Loot everything", ["Farm (valeur > 1 po)"] = "Farm (value > 1 g)", ["Donjon"] = "Dungeon",
+    ["Raid"] = "Raid", ["Or et quêtes seulement"] = "Gold and quests only",
+    ["actif"] = "active", ["auto"] = "auto", ["auto : "] = "auto: ", ["donjon"] = "dungeon", ["raid"] = "raid",
+    ["JcJ"] = "PvP", ["session de farm"] = "farming session", ["Filtre activé"] = "Filter enabled",
+    ["Laissés au sol (session) : %d"] = "Left on the ground (session): %d",
+    ["Laissés au sol récemment"] = "Recently left on the ground",
+    ["Clique pour toujours ramasser cet objet"] = "Click to always loot this item",
+    ["Le butin automatique du jeu est activé : le filtre ne peut pas choisir."] = "The game's auto loot is on: the filter can't choose.",
+    ["Le désactiver"] = "Turn it off", ["Nom du profil"] = "Profile name", ["Supprimer ce profil"] = "Delete this profile",
+    ["Dupliquer"] = "Duplicate", ["Charger"] = "Load", ["Chargé"] = "Loaded",
+    ["Qualité minimale"] = "Minimum quality", ["Valeur minimale"] = "Minimum value",
+    ["Médiocre (gris)"] = "Poor (grey)", ["Commune (blanc)"] = "Common (white)", ["Inhabituelle (vert)"] = "Uncommon (green)",
+    ["Rare (bleu)"] = "Rare (blue)", ["Épique (violet)"] = "Epic (purple)", ["Aucune (listes et catégories)"] = "None (lists and categories)",
+    ["Toujours les objets de mes règles d'envoi et de dépôt"] = "Always items from my send and deposit rules",
+    ["L'or, les monnaies et les objets de quête sont toujours ramassés."] = "Gold, currencies and quest items are always looted.",
+    ["Activation manuelle"] = "Manual activation", ["Zone : "] = "Zone: ", ["En donjon"] = "In dungeons", ["En raid"] = "In raids",
+    ["En JcJ"] = "In PvP", ["Pendant une session de farm"] = "During a farming session", ["Activation auto"] = "Auto activation",
+    ["Catégories toujours ramassées"] = "Categories always looted", ["Toujours ramasser"] = "Always loot",
+    ["Jamais ramasser"] = "Never loot", ["Maj + clic sur un objet"] = "Shift + click an item", ["Objet ou ID"] = "Item or ID",
+    ["Retirer"] = "Remove", ["Profil de loot : %s"] = "Loot profile: %s",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }

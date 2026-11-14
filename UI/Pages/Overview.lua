@@ -9,7 +9,8 @@ local GOAL_H = 54
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
 
 -- Colonnes du tableau : x de départ (ou de fin pour "RIGHT").
-local COLS = {
+-- Positions prévues pour 924 px de large, mises à l'échelle à la construction.
+local BASE_COLS = {
     { "Personnage", 16, "LEFT" },
     { "Niv.", 300, "LEFT" },
     { "Or", 470, "RIGHT" },
@@ -18,6 +19,7 @@ local COLS = {
     { "Sacs", 730, "LEFT" },
     { "Vu", 812, "LEFT" },
 }
+local COLS = {}
 
 local function points(days)
     if days <= 7 then return 28 end -- un point toutes les 6 h
@@ -45,11 +47,14 @@ local function plainGold(copper)
 end
 
 UI:RegisterPage({
-    key = "overview", order = 1, nav = "Résumé", noHeader = true,
+    key = "overview", order = 1, nav = "Résumé",
     title = "Résumé",
+    subtitle = "Vue d'ensemble du compte : or, évolution et personnages.",
 
     Build = function(self, p)
         self.days = 7
+        local k = UI.PAGE_W / 924
+        for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
 
         -- Bloc de gauche : or total + chiffres clés ---------------------------------
         local k = UI:Text(p, 11, C.dim)

@@ -240,10 +240,31 @@ def icon_minus():
     save(img, "minus", 64)
 
 
+def icon_filter():
+    img, d, s = canvas(64)
+    d.polygon([(P(0.14, s), P(0.18, s)), (P(0.86, s), P(0.18, s)), (P(0.58, s), P(0.52, s)),
+               (P(0.58, s), P(0.84, s)), (P(0.42, s), P(0.74, s)), (P(0.42, s), P(0.52, s))], fill=W)
+    save(img, "filter", 64)
+
+
+def icon_grip():
+    img, d, s = canvas(64)
+    for k in (0.35, 0.6, 0.85):
+        line(d, s, [(0.92, 0.92 - k), (0.92 - k, 0.92)], SW * 0.7)
+    save(img, "grip", 64)
+
+
+def icon_back():
+    img, d, s = canvas(64)
+    line(d, s, [(0.82, 0.5), (0.2, 0.5)], SW)
+    line(d, s, [(0.44, 0.26), (0.2, 0.5), (0.44, 0.74)], SW)
+    save(img, "back", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back]:
         fn()
     print("OK")

@@ -5,7 +5,8 @@ local T = function(s) return WK.T(s) end
 local WARN = { 0.95, 0.66, 0.30, 1 }
 
 -- Colonnes : { libellé, x, alignement }
-local COLS = {
+-- Positions prévues pour 924 px de large, mises à l'échelle à la construction.
+local BASE_COLS = {
     { "Personnage", 52, "LEFT" },
     { "Niveau", 262, "LEFT" },
     { "Or", 430, "RIGHT" },
@@ -14,6 +15,7 @@ local COLS = {
     { "Courrier", 700, "LEFT" },
     { "Vu", 802, "LEFT" },
 }
+local COLS = {}
 
 UI:RegisterPage({
     key = "characters", order = 2, nav = "Persos",
@@ -26,6 +28,8 @@ UI:RegisterPage({
     end,
 
     Build = function(self, p)
+        local k = UI.PAGE_W / 924
+        for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
         for _, col in ipairs(COLS) do
             local t = UI:Text(p, 10, C.dim)
             if col[3] == "RIGHT" then

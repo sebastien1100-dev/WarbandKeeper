@@ -28,6 +28,13 @@ local defaults = {
         items = {},    -- [itemID] = { target = "bank"|"warband", keep = n }
         cats = {},
     },
+    loot = {
+        enabled = true,
+        closeAfter = true, -- ferme la fenêtre de butin quand des objets sont laissés
+        active = 1,        -- profil chargé à la main (index)
+        profiles = {},     -- créés au premier lancement (Modules/Loot.lua)
+        recent = {},       -- derniers objets laissés au sol
+    },
     farm = {
         history = {},  -- sessions terminées (la plus récente en premier)
         mini = true,   -- mini-fenêtre pendant une session
