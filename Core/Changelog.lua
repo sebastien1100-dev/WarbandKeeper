@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.16.0", date = "14/11/2026",
+        added = {
+            "Options > Courrier : tous les réglages du courrier et de la banque au même endroit (envoi automatique, fermeture de la boîte aux lettres, tri des sacs, prise automatique, dépôt automatique).",
+            "Page Courrier : bouton « Réglages » qui mène à Options > Courrier, et état de l'automatisme de l'onglet (activé / désactivé).",
+        },
+        changed = {
+            "Options : Thèmes et Apparence ne forment plus qu'une section « Apparence ».",
+            "La page Courrier ne garde que les règles et les boîtes aux lettres : plus de place pour la liste.",
+        },
+    },
+    {
         version = "0.15.1", date = "14/11/2026",
         fixed = {
             "L'infobulle de la pierre de foyer listait inutilement tous les persos qui l'ont dans leurs sacs.",

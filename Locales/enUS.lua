@@ -324,6 +324,20 @@ WK.Locales.enUS.text = {
 
     ["Courrier en attente"] = "Mail waiting",
 
+    -- Options > Courrier
+    ["Couleurs, police et taille"] = "Colors, font and size",
+    ["Envoi, réception, dépôt"] = "Sending, receiving, deposit",
+    ["Thème, couleurs, police"] = "Theme, colors, font",
+    ["Dépôt en banque"] = "Bank deposit",
+    ["Après les envois : or et objets (sauf contre-remboursement), arrêt si les sacs sont pleins. Un bouton « Tout prendre » est aussi ajouté à la boîte de réception."] = "After sending: gold and items (except COD), stops when bags are full. A \"Take all\" button is also added to the inbox.",
+    ["Réglages"] = "Settings",
+    ["Envoi, réception et dépôt automatiques : Options > Courrier."] = "Automatic sending, receiving and deposit: Options > Mail.",
+    ["activé"] = "on",
+    ["désactivé"] = "off",
+    ["Envoi automatique : "] = "Auto-send: ",
+    ["Dépôt automatique : "] = "Auto-deposit: ",
+    ["Prise automatique : "] = "Auto-take: ",
+
     -- Tri des sacs
     ["Trier les sacs ensuite"] = "Sort bags afterwards",
     ["Après l'envoi automatique (et la prise automatique si elle est activée)."] = "After auto-send (and auto-take if enabled).",

@@ -130,6 +130,7 @@ UI:RegisterPage({
             return c
         end
         function self:ShowSection(key)
+            if key == "theme" then key = "look" end -- ancienne section, fusionnée dans Apparence
             if not self.sections[key] then key = "general" end
             cfg.optSection = key
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
@@ -138,9 +139,9 @@ UI:RegisterPage({
         local SECTIONS = {
             { "general", "Général", "home", "Langue, minimap, combat" },
             { "prices", "Prix", "coin", "Source des prix" },
+            { "mail", "Courrier", "mail", "Envoi, réception, dépôt" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
-            { "theme", "Thèmes", "logo", "Thèmes et couleurs" },
-            { "look", "Apparence", "gear", "Accent, police, taille" },
+            { "look", "Apparence", "logo", "Thème, couleurs, police" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -181,8 +182,8 @@ UI:RegisterPage({
         -- Thème, police, arrondi, opacité et langue s'appliquent en direct : l'interface est reconstruite.
         local function apply() UI:Rebuild() end
 
-        -- Thème -------------------------------------------------------------------
-        section("theme")
+        -- Apparence : thème puis couleurs, police, taille ---------------------------
+        section("look")
         local perRow = 4
         local rowsN = math.ceil(#UI.themes / perRow)
         local themeCard = card("Thème", 48 + rowsN * 106)
@@ -254,9 +255,7 @@ UI:RegisterPage({
             b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         end
 
-        -- Apparence --------------------------------------------------------------
-        section("look")
-        local look = card("Apparence", 356)
+        local look = card("Couleurs, police et taille", 356)
         local dots = CreateFrame("Frame", nil, look)
         local choices = {
             { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
@@ -348,6 +347,36 @@ UI:RegisterPage({
         UI:SettingRow(winCard, -40, "Fermer la fenêtre en combat",
             "Au début d'un combat. La mini-fenêtre de la session de farm reste affichée.", self.combatToggle, 80)
 
+        -- Courrier : envoi, réception, dépôt en banque ---------------------------
+        section("mail")
+        local mcfg, bcfg = WK.DB.global.mail, WK.DB.global.bank
+        self.mailToggles = {}
+        local function toggle(parent, get, set)
+            local t = UI:Toggle(parent, get, set)
+            table.insert(self.mailToggles, t)
+            return t
+        end
+        local send = card("Envoi", 184)
+        UI:SettingRow(send, -40, "Envoi automatique",
+            "À l'ouverture de la boîte aux lettres, les objets assignés quittent les sacs vers leur destinataire (12 par courrier).",
+            toggle(send, function() return mcfg.enabled end, function(v) WK.modules.Mail:SetEnabled(v) end), 80)
+        UI:SettingRow(send, -88, "Fermer la boîte aux lettres après l'envoi",
+            "Seulement quand quelque chose a été envoyé (après la prise automatique si elle est activée).",
+            toggle(send, function() return mcfg.closeAfter ~= false end, function(v) mcfg.closeAfter = v end), 80)
+        UI:SettingRow(send, -136, "Trier les sacs ensuite",
+            "Après l'envoi automatique (et la prise automatique si elle est activée).",
+            toggle(send, function() return mcfg.sortAfter ~= false end, function(v) mcfg.sortAfter = v end), 80)
+        local recv = card("Réception", 88)
+        UI:SettingRow(recv, -40, "Tout prendre automatiquement",
+            "Après les envois : or et objets (sauf contre-remboursement), arrêt si les sacs sont pleins. Un bouton « Tout prendre » est aussi ajouté à la boîte de réception.",
+            toggle(recv, function() return mcfg.autoTake end, function(v) mcfg.autoTake = v end), 80)
+        local dep = card("Dépôt en banque", 136)
+        UI:SettingRow(dep, -40, "Dépôt automatique",
+            "À l'ouverture de la banque, les objets assignés sont rangés dans la banque du perso ou de bataillon.",
+            toggle(dep, function() return bcfg.enabled end, function(v) bcfg.enabled = v; WK:NotifyChanged() end), 80)
+        UI:SettingRow(dep, -88, "Trier les sacs ensuite", "Après le dépôt automatique.",
+            toggle(dep, function() return bcfg.sortAfter ~= false end, function(v) bcfg.sortAfter = v end), 80)
+
         -- Alertes -------------------------------------------------------------------
         section("alerts")
         local al = card("Alertes", 196)
@@ -402,5 +431,6 @@ UI:RegisterPage({
         self.combatToggle:Refresh()
         self.portraitToggle:Refresh()
         self.alertToggle:Refresh()
+        for _, t in ipairs(self.mailToggles) do t:Refresh() end
     end,
 })

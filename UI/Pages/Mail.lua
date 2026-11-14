@@ -27,48 +27,14 @@ local function RuleEditor(page, parent, mode, top)
     local ed = {}
     local isMail = mode == "mail"
 
-    -- Activation
-    local HEAD_H = isMail and 154 or 110
-    local ADD_H = isMail and 168 or 132
-    local head = UI:Card(parent)
-    head:SetHeight(HEAD_H)
-    head:SetPoint("TOPLEFT", 0, top)
-    head:SetPoint("TOPRIGHT", 0, top)
     local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
-    ed.toggle = UI:Toggle(head,
-        function() return cfg.enabled end,
-        function(v)
-            if isMail then WK.modules.Mail:SetEnabled(v) else cfg.enabled = v; WK:NotifyChanged() end
-        end)
-    if isMail then
-        UI:SettingRow(head, -12, "Envoi automatique",
-            "À l'ouverture de la boîte aux lettres, les objets assignés quittent les sacs vers leur destinataire (12 par courrier).",
-            ed.toggle, 80)
-        ed.closeToggle = UI:Toggle(head,
-            function() return cfg.closeAfter ~= false end,
-            function(v) cfg.closeAfter = v end)
-        UI:SettingRow(head, -56, "Fermer la boîte aux lettres après l'envoi",
-            "Seulement quand quelque chose a été envoyé (après la prise automatique si elle est activée).",
-            ed.closeToggle, 80)
-    else
-        UI:SettingRow(head, -12, "Dépôt automatique",
-            "À l'ouverture de la banque, les objets assignés sont rangés dans la banque du perso ou de bataillon.",
-            ed.toggle, 80)
-    end
-    -- Tri des sacs après l'envoi / le dépôt.
-    ed.sortToggle = UI:Toggle(head,
-        function() return cfg.sortAfter ~= false end,
-        function(v) cfg.sortAfter = v end)
-    UI:SettingRow(head, isMail and -100 or -56, "Trier les sacs ensuite",
-        isMail and "Après l'envoi automatique (et la prise automatique si elle est activée)."
-            or "Après le dépôt automatique.",
-        ed.sortToggle, 80)
-
+    -- Les réglages (envoi / dépôt automatique, fermeture, tri) sont dans Options > Courrier.
     -- Nouvelle règle
+    local ADD_H = isMail and 168 or 132
     local add = UI:Card(parent, "Nouvelle règle")
     add:SetHeight(ADD_H)
-    add:SetPoint("TOPLEFT", 0, top - HEAD_H - GAP)
-    add:SetPoint("TOPRIGHT", 0, top - HEAD_H - GAP)
+    add:SetPoint("TOPLEFT", 0, top)
+    add:SetPoint("TOPRIGHT", 0, top)
     local kind = "item"
     local item = UI:Input(add, 250, 34, "Maj + clic sur un objet, ou son ID", "bag")
     item.edit.acceptLinks = true
@@ -144,7 +110,7 @@ local function RuleEditor(page, parent, mode, top)
     end
 
     -- Liste
-    local listTop = top - HEAD_H - GAP - ADD_H - GAP
+    local listTop = top - ADD_H - GAP
     local list = UI:Card(parent, "Règles")
     list:SetPoint("TOPLEFT", 0, listTop)
     list:SetPoint("BOTTOMRIGHT")
@@ -191,9 +157,6 @@ local function RuleEditor(page, parent, mode, top)
     end)
 
     function ed:Refresh()
-        self.toggle:Refresh()
-        if self.closeToggle then self.closeToggle:Refresh() end
-        self.sortToggle:Refresh()
         local opts = { { "", T("Tous les persos") } }
         for _, e in ipairs(UI:SortedCharacters()) do
             table.insert(opts, { e.key, WK:CharName(e.c, e.key), { UI:ClassColor(e.c.class) } })
@@ -311,22 +274,8 @@ end
 ---------------------------------------------------------------------------
 local function Reception(page, parent, top)
     local rc = {}
-    local head = UI:Card(parent)
-    head:SetHeight(112)
-    head:SetPoint("TOPLEFT", 0, top)
-    head:SetPoint("TOPRIGHT", 0, top)
-    local mail = WK.DB.global.mail
-    rc.toggle = UI:Toggle(head, function() return mail.autoTake end, function(v) mail.autoTake = v end)
-    UI:SettingRow(head, -12, "Tout prendre automatiquement",
-        "À l'ouverture de la boîte aux lettres, après les envois : récupère l'or et les objets (sauf contre-remboursement), et s'arrête si les sacs sont pleins.",
-        rc.toggle, 80)
-    local note = UI:Text(head, 11, C.dim)
-    note:SetPoint("TOPLEFT", 16, -70)
-    note:SetText("Un bouton « Tout prendre » est aussi ajouté dans la boîte de réception du jeu.")
-
     local list = UI:Card(parent, "Boîtes aux lettres du compte")
-    local listTop = top - 112 - GAP
-    list:SetPoint("TOPLEFT", 0, listTop)
+    list:SetPoint("TOPLEFT", 0, top)
     list:SetPoint("BOTTOMRIGHT")
     local scroll = UI:Scroll(list)
     scroll:SetPoint("TOPLEFT", 10, -40)
@@ -353,7 +302,6 @@ local function Reception(page, parent, top)
     end)
 
     function rc:Refresh()
-        self.toggle:Refresh()
         self.rows:Reset()
         local y = 0
         for _, e in ipairs(UI:SortedCharacters()) do
@@ -412,6 +360,17 @@ UI:RegisterPage({
             f:SetShown(key == "send")
             frames[key] = f
         end
+        -- Raccourci vers les réglages (Options > Courrier) et état de l'automatisme de l'onglet.
+        local settings = UI:Button(p, "Réglages", nil, 30, "secondary", "gear")
+        settings:SetPoint("TOPRIGHT", 0, -1)
+        settings.tooltip = "Envoi, réception et dépôt automatiques : Options > Courrier."
+        settings:SetScript("OnClick", function()
+            UI:ShowPage("options")
+            UI.pages.options:ShowSection("mail")
+        end)
+        self.status = UI:Text(p, 11, C.muted)
+        self.status:SetPoint("RIGHT", settings, "LEFT", -12, 0)
+        self.status:SetJustifyH("RIGHT")
         self.tabs.send = RuleEditor(self, frames.send, "mail", -46)
         self.tabs.bank = RuleEditor(self, frames.bank, "bank", -46)
         self.tabs.receive = Reception(self, frames.receive, -46)
@@ -421,5 +380,15 @@ UI:RegisterPage({
     Refresh = function(self)
         local t = self.tabs[self.tab]
         if t then t:Refresh() end
+        local mail, bank = WK.DB.global.mail, WK.DB.global.bank
+        local on = UI:Hex(C.positive) .. T("activé") .. "|r"
+        local off = UI:Hex(C.dim) .. T("désactivé") .. "|r"
+        if self.tab == "send" then
+            self.status:SetText(T("Envoi automatique : ") .. (mail.enabled and on or off))
+        elseif self.tab == "bank" then
+            self.status:SetText(T("Dépôt automatique : ") .. (bank.enabled and on or off))
+        else
+            self.status:SetText(T("Prise automatique : ") .. (mail.autoTake and on or off))
+        end
     end,
 })
