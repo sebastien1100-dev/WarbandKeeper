@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.20.1", date = "14/11/2026",
+        changed = {
+            "Résumé : le bloc « Or du compte » et ses tuiles (persos, temps de jeu, règles, à envoyer) est retiré, il faisait doublon avec les pastilles du haut. La courbe d'évolution de l'or prend toute la largeur.",
+            "Persos : la pastille « Temps de jeu total » (tous les persos) passe en premier.",
+            "Persos : survoler la pastille « Alertes » liste chaque alerte (perso et raison) ; un clic ouvre Options > Alertes.",
+        },
+        fixed = {
+            "Métiers : les pastilles comptaient plusieurs fois un métier ou une recette connus par plusieurs persos.",
+        },
+    },
+    {
         version = "0.20.0", date = "14/11/2026",
         added = {
             "Guides de montée de WoW Forever pour le Travail du cuir, le Secourisme et la Cuisine (d'après wowtbc.gg) : dans la fiche du métier, onglet « Guide de montée ».",

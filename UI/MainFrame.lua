@@ -450,11 +450,20 @@ UI.CHIPS = {
             played = played + (c.played or 0)
             if (c.level or 0) >= 60 then maxLvl = maxLvl + 1 end
         end
-        local l = { { T("Persos"), tostring(count(WK.DB.global.characters)) },
-                    { T("Niveau 60"), tostring(maxLvl) },
-                    { T("Temps de jeu"), WK:FormatTime(played) } }
-        local n = #(WK.modules.Alerts:All() or {})
-        if n > 0 then table.insert(l, { T("Alertes"), tostring(n), C.warning }) end
+        local l = { { T("Temps de jeu total"), WK:FormatTime(played), C.gold, nil, T("Tous les persos du compte") },
+                    { T("Persos"), tostring(count(WK.DB.global.characters)) },
+                    { T("Niveau 60"), tostring(maxLvl) } }
+        local alerts = WK.modules.Alerts:All() or {}
+        if #alerts > 0 then
+            -- Survol : le détail des alertes (banque pas vue, courrier qui expire).
+            local lines = { T("Alertes") }
+            for _, e in ipairs(alerts) do
+                table.insert(lines, "|cffffffff" .. WK:CharName(e.c, e.key) .. "|r : " .. e.alert.text)
+            end
+            table.insert(lines, "|cff999999" .. T("Réglages : Options > Alertes") .. "|r")
+            table.insert(l, { T("Alertes"), tostring(#alerts), C.warning, "options", table.concat(lines, "\n"),
+                function() UI.pages.options:ShowSection("alerts") end })
+        end
         return l
     end,
     inventory = function()
@@ -474,10 +483,13 @@ UI.CHIPS = {
                    nil, "options", T("Source des prix (Options > Prix)"), function() UI.pages.options:ShowSection("prices") end } }
     end,
     professions = function()
-        local profs, recipes = 0, 0
+        -- Chaque métier et chaque recette comptés une seule fois, même si plusieurs persos les ont.
+        local profSet, recSet = {}, {}
         for _, c in pairs(WK.DB.global.characters) do
-            profs = profs + count(c.professions); recipes = recipes + count(c.recipes)
+            for name in pairs(c.professions or {}) do profSet[name] = true end
+            for key in pairs(c.recipes or {}) do recSet[key] = true end
         end
+        local profs, recipes = count(profSet), count(recSet)
         local l = { { T("Métiers"), tostring(profs) }, { T("Recettes connues"), tostring(recipes) } }
         local n = count(WK.DB.global.shopping)
         if n > 0 then table.insert(l, { T("Liste de courses"), tostring(n), nil, "professions", nil,

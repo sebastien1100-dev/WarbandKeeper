@@ -13,6 +13,16 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.20.1 — 14/11/2026
+
+### Modifications
+- Résumé : le bloc « Or du compte » et ses tuiles (persos, temps de jeu, règles, à envoyer) est retiré, il faisait doublon avec les pastilles du haut. La courbe d'évolution de l'or prend toute la largeur.
+- Persos : la pastille « Temps de jeu total » (tous les persos) passe en premier.
+- Persos : survoler la pastille « Alertes » liste chaque alerte (perso et raison) ; un clic ouvre Options > Alertes.
+
+### Corrections
+- Métiers : les pastilles comptaient plusieurs fois un métier ou une recette connus par plusieurs persos.
+
 ## v0.20.0 — 14/11/2026
 
 ### Ajouts

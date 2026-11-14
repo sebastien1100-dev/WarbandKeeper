@@ -3,7 +3,6 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
-local LEFT_W = 276
 local TOP_H = 232
 local GAP = 16
 local GOAL_H = 54
@@ -29,18 +28,6 @@ local function points(days)
     return 52
 end
 
--- Tuile chiffre-clé (libellé + valeur) avec liseré doré.
-local function Tile(parent, label)
-    local t = UI:Card(parent, nil, nil, true)
-    t.label = UI:Text(t, 11, C.muted)
-    t.label:SetPoint("TOPLEFT", 12, -10)
-    t.label:SetText(label)
-    t.value = UI:Text(t, 15)
-    t.value:SetPoint("BOTTOMLEFT", 12, 10)
-    t.value:SetPoint("BOTTOMRIGHT", -8, 10)
-    return t
-end
-
 -- "12 345 po" en couleur -> "12 345" sans codes couleur.
 local function plainGold(copper)
     local s = UI:GoldText(copper):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub(" " .. WK.T("po") .. "$", "")
@@ -57,39 +44,12 @@ UI:RegisterPage({
         local k = UI.PAGE_W / 924
         for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
 
-        -- Bloc de gauche : or total + chiffres clés ---------------------------------
-        local k = UI:Text(p, 11, C.dim)
-        k:SetPoint("TOPLEFT", 2, -2)
-        k:SetText("OR DU COMPTE")
-        self.total = UI:Text(p, 30)
-        self.total:SetPoint("TOPLEFT", 0, -22)
-        self.po = UI:Text(p, 18)
-        self.po:SetPoint("BOTTOMLEFT", self.total, "BOTTOMRIGHT", 6, 2)
-        self.po:SetText(WK.T("po"))
-        UI:OnAccent(function() self.po:SetTextColor(UI:Accent()) end)
-        self.delta = UI:Badge(p, "", C.positive)
-        self.delta:SetPoint("TOPLEFT", 0, -66)
-        self.deltaLabel = UI:Text(p, 11, C.muted)
-        self.deltaLabel:SetPoint("LEFT", self.delta, "RIGHT", 8, 0)
-        self.stock = UI:Text(p, 11, C.muted)
-        self.stock:SetPoint("TOPLEFT", 2, -88)
-        self.stock:SetWidth(LEFT_W)
-
-        local tw = (LEFT_W - 10) / 2
-        self.tiles = {}
-        local labels = { "Personnages", "Temps de jeu", "Règles courrier", "À envoyer" }
-        for i, l in ipairs(labels) do
-            local t = Tile(p, l)
-            t:SetSize(tw, 58)
-            t:SetPoint("TOPLEFT", ((i - 1) % 2) * (tw + 10), -106 - math.floor((i - 1) / 2) * 68)
-            self.tiles[i] = t
-        end
-        self.tiles[3]:EnableMouse(true)
-        self.tiles[3]:SetScript("OnMouseUp", function() UI:ShowPage("mail") end)
+        -- (L'ancien bloc « or du compte + chiffres clés » est retiré : les pastilles de
+        -- l'en-tête donnent déjà ces chiffres.)
 
         -- Courbe d'évolution -----------------------------------------------------------
         local card = UI:Card(p, nil, nil, true)
-        card:SetPoint("TOPLEFT", LEFT_W + GAP, 0)
+        card:SetPoint("TOPLEFT", 0, 0)
         card:SetPoint("TOPRIGHT", 0, 0)
         card:SetHeight(TOP_H)
         local ct = UI:Text(card, 12, C.muted)
@@ -248,19 +208,6 @@ UI:RegisterPage({
         local now = time()
         local chars = UI:SortedCharacters()
 
-        -- Chiffres clés
-        local gold, played = 0, 0
-        for _, e in ipairs(chars) do
-            gold = gold + (e.c.money or 0)
-            played = played + (e.c.played or 0)
-        end
-        self.total:SetText(plainGold(gold))
-        local diff = S:AccountGoldAt(now) - S:AccountGoldAt(now - 7 * 86400)
-        self.delta:Set((diff >= 0 and "+" or "") .. UI:ShortGold(diff), diff >= 0 and C.positive or C.negative)
-        self.deltaLabel:SetText("sur 7 jours")
-        local V = WK.modules.Value
-        self.stock:SetText(string.format(WK.T("+ %s de stocks (%s)"), UI:GoldText(V:StockValue()), V:SourceLabel()))
-
         -- Objectifs
         self.goalCards:Reset()
         local goals = WK.modules.Goals:List()
@@ -285,14 +232,6 @@ UI:RegisterPage({
         self.tableBox:ClearAllPoints()
         self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4) - (shown > 0 and (GOAL_H + 12) or 0))
         self.tableBox:SetPoint("BOTTOMRIGHT")
-        local rules = 0
-        for _ in pairs(WK.DB.global.mail.rules) do rules = rules + 1 end
-        for _ in pairs(WK.DB.global.mail.cats) do rules = rules + 1 end
-        self.tiles[1].value:SetText(tostring(#chars))
-        self.tiles[2].value:SetText(WK:FormatTime(played))
-        self.tiles[3].value:SetText(tostring(rules))
-        self.tiles[4].value:SetText(tostring(WK.modules.Mail:PendingCount()))
-
         -- Courbe
         local n = points(self.days)
         local step = self.days * 86400 / n

@@ -402,6 +402,9 @@ WK.Locales.enUS.text = {
     ["Maleterres de l'Est"] = "Eastern Plaguelands",
 
     -- Pastilles de l'en-tête
+    ["Temps de jeu total"] = "Total played",
+    ["Tous les persos du compte"] = "All characters on the account",
+    ["Réglages : Options > Alertes"] = "Settings: Options > Alerts",
     ["HV / marchand"] = "AH / vendor",
     ["Source des prix (Options > Prix)"] = "Price source (Options > Prices)",
     ["Valeur laissée au sol"] = "Value left on ground",
