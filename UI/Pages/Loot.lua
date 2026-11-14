@@ -265,11 +265,17 @@ UI:RegisterPage({
         qn:SetPoint("TOPLEFT", 16, -172)
         qn:SetText("L'or, les monnaies et les objets de quête sont toujours ramassés.")
 
-        local zone = GetRealZoneText and GetRealZoneText() or "?"
-        self.autoDd = UI:Dropdown(prof, 230, 30, {
-            { "none", "Activation manuelle" }, { "zone", T("Zone : ") .. zone }, { "party", "En donjon" },
-            { "raid", "En raid" }, { "pvp", "En JcJ" }, { "farm", "Pendant une session de farm" },
-        }, function(k)
+        -- « Se charge tout seul » : situation dans laquelle ce profil remplace le profil chargé.
+        local function autoOptions()
+            local zone = GetRealZoneText and GetRealZoneText() or "?"
+            return {
+                { "none", T("Jamais (bouton Charger)") }, { "zone", T("Dans cette zone : ") .. zone },
+                { "party", T("En donjon") }, { "raid", T("En raid") }, { "pvp", T("En JcJ") },
+                { "farm", T("Pendant une session de farm") },
+            }
+        end
+        self.autoOptions = autoOptions
+        self.autoDd = UI:Dropdown(prof, 260, 30, autoOptions(), function(k)
             local pr = L:Get(self.sel)
             if pr then pr.auto = { kind = k, value = k == "zone" and (GetRealZoneText and GetRealZoneText()) or nil } end
             L:CheckAuto()
@@ -278,7 +284,12 @@ UI:RegisterPage({
         self.autoDd:SetPoint("TOPLEFT", 150, -98)
         local al = UI:Text(prof, 12, C.muted)
         al:SetPoint("TOPLEFT", 16, -106)
-        al:SetText("Activation auto")
+        al:SetText("Se charge tout seul")
+        self.autoHelp = UI:Text(prof, 10, C.dim)
+        self.autoHelp:SetPoint("TOPLEFT", self.autoDd, "TOPRIGHT", 12, -2)
+        self.autoHelp:SetPoint("TOPRIGHT", prof, "TOPRIGHT", -16, -100)
+        self.autoHelp:SetJustifyH("LEFT")
+        if self.autoHelp.SetWordWrap then self.autoHelp:SetWordWrap(true) end
 
         -- Catégories
         local cats = UI:Card(body, "Catégories toujours ramassées")
@@ -393,10 +404,21 @@ UI:RegisterPage({
         self.quality:Select(pr.minQuality or 0)
         self.value:SetText(tostring(math.floor((pr.minValue or 0) / 100)))
         self.keepRules:Refresh()
-        self.autoDd:Select((pr.auto and pr.auto.kind) or "none")
-        if pr.auto and pr.auto.kind == "zone" and pr.auto.value then
-            self.autoDd.label:SetText(T("Zone : ") .. pr.auto.value)
+        self.autoDd:SetOptions(self.autoOptions()) -- zone actuelle à jour
+        local kind = (pr.auto and pr.auto.kind) or "none"
+        self.autoDd:Select(kind)
+        if kind == "zone" and pr.auto.value then
+            self.autoDd.label:SetText(T("Dans la zone : ") .. pr.auto.value)
         end
+        local HELP = {
+            none = "Se charge seulement avec le bouton « Charger ».",
+            zone = "Se charge en entrant dans cette zone, puis le profil chargé à la main revient en la quittant.",
+            party = "Se charge en entrant en donjon, puis le profil chargé à la main revient à la sortie.",
+            raid = "Se charge en entrant en raid, puis le profil chargé à la main revient à la sortie.",
+            pvp = "Se charge en champ de bataille ou en arène, puis le profil chargé à la main revient à la sortie.",
+            farm = "Se charge au début d'une session de farm, puis le profil chargé à la main revient à la fin.",
+        }
+        self.autoHelp:SetText(T(HELP[kind] or HELP.none))
         self.loadBtn:SetLabel(d.active == self.sel and T("Chargé") or T("Charger"))
         for key, b in pairs(self.catButtons) do b:SetStyle(pr.cats[key] and "primary" or "ghost") end
         self.always:Refresh(pr)

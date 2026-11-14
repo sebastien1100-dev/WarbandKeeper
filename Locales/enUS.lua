@@ -325,6 +325,16 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Bandeau du loot
+    ["Jamais (bouton Charger)"] = "Never (Load button)",
+    ["Dans cette zone : "] = "In this zone: ",
+    ["Dans la zone : "] = "In zone: ",
+    ["Se charge tout seul"] = "Loads by itself",
+    ["Se charge seulement avec le bouton « Charger »."] = "Loads only with the Load button.",
+    ["Se charge en entrant dans cette zone, puis le profil chargé à la main revient en la quittant."] = "Loads when entering this zone; the manually loaded profile comes back when you leave.",
+    ["Se charge en entrant en donjon, puis le profil chargé à la main revient à la sortie."] = "Loads when entering a dungeon; the manually loaded profile comes back when you leave.",
+    ["Se charge en entrant en raid, puis le profil chargé à la main revient à la sortie."] = "Loads when entering a raid; the manually loaded profile comes back when you leave.",
+    ["Se charge en champ de bataille ou en arène, puis le profil chargé à la main revient à la sortie."] = "Loads in battlegrounds and arenas; the manually loaded profile comes back when you leave.",
+    ["Se charge au début d'une session de farm, puis le profil chargé à la main revient à la fin."] = "Loads when a farm session starts; the manually loaded profile comes back when it ends.",
     ["Maj + clic ou ID d'objet"] = "Shift-click or item ID",
     ["Filtre de loot"] = "Loot filter",
     ["Activé"] = "On",
