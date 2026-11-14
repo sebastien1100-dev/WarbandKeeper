@@ -19,6 +19,8 @@ local defaults = {
     shopping = {},     -- liste de courses : [nom de recette] = nombre de fabrications
     mail = {
         enabled = true,
+        closeAfter = true, -- ferme la boîte aux lettres après l'envoi automatique
+        -- Clé : itemID (ou catégorie), suivi de « @Perso-Royaume » pour une règle d'un seul perso.
         rules = {},    -- [itemID] = { to = "Nom", keep = n }
         cats = {},     -- [clé de catégorie] = { to = "Nom", keep = n }
         autoTake = false, -- « Tout prendre » automatiquement à l'ouverture (après les envois)

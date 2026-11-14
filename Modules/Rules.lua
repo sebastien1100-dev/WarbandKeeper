@@ -26,6 +26,7 @@ M.byKey = {}
 for _, c in ipairs(M.CATEGORIES) do M.byKey[c.key] = c end
 
 function M:CategoryLabel(key)
+    key = self:SplitKey(key)
     local c = self.byKey[key]
     return c and WK.T(c.label) or key
 end
@@ -44,39 +45,60 @@ function M:BoE(itemID)
     return bindType == 2, quality or 0
 end
 
--- Règle applicable à un objet dans un magasin { items = {[id]=règle}, cats = {[clé]=règle} } :
--- règle d'objet > catégorie précise (sous-classe) > objets LQE > catégorie large (classe).
-function M:Resolve(store, itemID)
-    local r = store.items[itemID]
-    if type(r) == "string" then -- ancien format (nom du destinataire seul)
-        r = { to = r, keep = 0 }
-        store.items[itemID] = r
+-- Clé d'une règle : l'objet (itemID) ou la catégorie, suivi de « @Perso-Royaume » si la
+-- règle ne vaut que pour un perso. Sans suffixe, elle vaut pour tous les persos.
+function M:MakeKey(base, from)
+    if from and from ~= "" then return base .. "@" .. from end
+    return base
+end
+
+-- Renvoie la base (itemID en nombre, ou clé de catégorie) et le perso (nil = tous).
+function M:SplitKey(k)
+    if type(k) == "number" then return k, nil end
+    local base, from = string.match(k, "^(.-)@(.+)$")
+    base = base or k
+    return tonumber(base) or base, from
+end
+
+-- Règle applicable à un objet dans un magasin { items = {...}, cats = {...} }, pour le perso
+-- « who » (le perso connecté par défaut). Par ordre : règle d'objet > catégorie précise
+-- (sous-classe) > objets LQE > catégorie large (classe). À égalité, la règle propre au perso
+-- passe avant la règle « tous les persos ».
+function M:Resolve(store, itemID, who)
+    who = who or select(2, WK.DB:Me())
+    for _, k in ipairs({ itemID .. "@" .. who, itemID }) do
+        local r = store.items[k]
+        if type(r) == "string" then -- ancien format (nom du destinataire seul)
+            r = { to = r, keep = 0 }
+            store.items[k] = r
+        end
+        if r then return r, "item" end
     end
-    if r then return r, "item" end
     local class, sub = self:ItemClass(itemID)
-    if not class then return nil end
-    local broad
-    for key, rule in pairs(store.cats) do
-        local c = self.byKey[key]
-        if c and c.class == class then
-            if c.sub then
-                if c.sub == sub then return rule, key end
-            else
-                broad = broad or { rule, key }
+    local checked, isBoE, quality = false, false, 0
+    local best, bestScore
+    for k, rule in pairs(store.cats) do
+        local base, from = self:SplitKey(k)
+        local c = self.byKey[base]
+        if c and (not from or from == who) then
+            local score
+            if c.boe then
+                if not checked then isBoE, quality = self:BoE(itemID); checked = true end
+                if isBoE and quality >= c.boe then score = 20 + c.boe end
+            elseif class and c.class == class then
+                if c.sub then
+                    if c.sub == sub then score = 30 end
+                else
+                    score = 10
+                end
+            end
+            if score then
+                if from then score = score + 0.5 end
+                if not bestScore or score > bestScore then best, bestScore = { rule, k }, score end
             end
         end
     end
-    -- LQE : la catégorie la plus exigeante qui correspond (épique avant bleu avant vert).
-    local checked, isBoE, quality, best = false, false, 0, nil
-    for key, rule in pairs(store.cats) do
-        local c = self.byKey[key]
-        if c and c.boe then
-            if not checked then isBoE, quality = self:BoE(itemID); checked = true end
-            if isBoE and quality >= c.boe and (not best or c.boe > best[3]) then best = { rule, key, c.boe } end
-        end
-    end
     if best then return best[1], best[2] end
-    if broad then return broad[1], broad[2] end
 end
 
 -- Plan de transfert depuis les sacs : pour chaque objet concerné, on garde rule.keep

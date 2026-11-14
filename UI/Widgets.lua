@@ -651,38 +651,60 @@ function UI:Dropdown(parent, width, height, options, onSelect)
     d.list = list
 
     local rowH = 26
-    for i, opt in ipairs(options) do
-        local b = CreateFrame("Button", nil, list)
-        b:SetHeight(rowH)
-        b:SetPoint("TOPLEFT", 4, -4 - (i - 1) * rowH)
-        b:SetPoint("TOPRIGHT", -4, -4 - (i - 1) * rowH)
-        b.bg = UI:Rounded(b, 9, 0, "BACKGROUND", 2)
-        b.bg:SetColor(unpack(C.hover))
-        b.bg:Hide()
-        b.text = UI:Text(b, 12)
-        b.text:SetPoint("LEFT", 10, 0)
-        b.text:SetText(opt[2])
-        b:SetScript("OnEnter", function(s) s.bg:Show() end)
-        b:SetScript("OnLeave", function(s) s.bg:Hide() end)
-        b:SetScript("OnClick", function()
-            d:Select(opt[1])
-            list:Hide()
-            if onSelect then onSelect(opt[1]) end
-        end)
+    local buttons = {}
+    -- (Re)construit les choix : la liste peut changer (ex. persos du compte).
+    function d:SetOptions(opts)
+        options = opts
+        for i, opt in ipairs(options) do
+            local b = buttons[i]
+            if not b then
+                b = CreateFrame("Button", nil, list)
+                b:SetHeight(rowH)
+                b:SetPoint("TOPLEFT", 4, -4 - (i - 1) * rowH)
+                b:SetPoint("TOPRIGHT", -4, -4 - (i - 1) * rowH)
+                b.bg = UI:Rounded(b, 9, 0, "BACKGROUND", 2)
+                b.bg:SetColor(unpack(C.hover))
+                b.bg:Hide()
+                b.text = UI:Text(b, 12)
+                b.text:SetPoint("LEFT", 10, 0)
+                b.text:SetPoint("RIGHT", -10, 0)
+                b:SetScript("OnEnter", function(s) s.bg:Show() end)
+                b:SetScript("OnLeave", function(s) s.bg:Hide() end)
+                b:SetScript("OnClick", function(s)
+                    d:Select(s.key)
+                    list:Hide()
+                    if onSelect then onSelect(s.key) end
+                end)
+                buttons[i] = b
+            end
+            b.key = opt[1]
+            b.text:SetText(opt[2])
+            if opt[3] then b.text:SetTextColor(unpack(opt[3])) else b.text:SetTextColor(unpack(C.text)) end
+            b:Show()
+        end
+        for i = #options + 1, #buttons do buttons[i]:Hide() end
+        list:SetHeight(#options * rowH + 8)
+        -- Choix courant disparu : retour au premier.
+        local found = false
+        for _, opt in ipairs(options) do if opt[1] == self.selected then found = true end end
+        if self.selected ~= nil and found then self:Select(self.selected)
+        elseif options[1] then self:Select(options[1][1]) end
     end
-    list:SetHeight(#options * rowH + 8)
 
     function d:Select(key)
         self.selected = key
         for _, opt in ipairs(options) do
-            if opt[1] == key then self.label:SetText(opt[2]) end
+            if opt[1] == key then
+                self.label:SetText(opt[2])
+                if opt[3] then self.label:SetTextColor(unpack(opt[3])) else self.label:SetTextColor(unpack(C.text)) end
+            end
         end
     end
     d:SetScript("OnClick", function() list:SetShown(not list:IsShown()) end)
     d:SetScript("OnHide", function() list:Hide() end)
     d:SetScript("OnEnter", function(s) s.border:SetColor(UI:Accent()) end)
     d:SetScript("OnLeave", function(s) s.border:SetColor(unpack(C.border)) end)
-    if options[1] then d:Select(options[1][1]) end
+    d:SetOptions(options)
     return d
 end
 

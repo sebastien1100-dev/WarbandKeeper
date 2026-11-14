@@ -14,6 +14,16 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.13.0 — 14/11/2026
+
+### Ajouts
+- Courrier : la boîte aux lettres se ferme toute seule après l'envoi automatique (après la prise automatique si elle est activée). Option dans Courrier > Envoi.
+- Règles d'envoi et de dépôt en banque par perso : « Envoyé par » / « Déposé par » permet de choisir un perso, ou tous les persos.
+- La liste des règles indique pour qui vaut chaque règle (« par Brumefer » ou « tous les persos »).
+
+### Modifications
+- Une règle propre à un perso passe avant la règle « tous les persos » pour le même objet ou la même catégorie. Les règles existantes valent pour tous les persos.
+
 ## v0.12.0 — 14/11/2026
 
 ### Ajouts

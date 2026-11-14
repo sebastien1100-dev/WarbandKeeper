@@ -28,8 +28,10 @@ local function RuleEditor(page, parent, mode, top)
     local isMail = mode == "mail"
 
     -- Activation
+    local HEAD_H = isMail and 110 or 66
+    local ADD_H = isMail and 168 or 132
     local head = UI:Card(parent)
-    head:SetHeight(66)
+    head:SetHeight(HEAD_H)
     head:SetPoint("TOPLEFT", 0, top)
     head:SetPoint("TOPRIGHT", 0, top)
     local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
@@ -42,6 +44,12 @@ local function RuleEditor(page, parent, mode, top)
         UI:SettingRow(head, -12, "Envoi automatique",
             "À l'ouverture de la boîte aux lettres, les objets assignés quittent les sacs vers leur destinataire (12 par courrier).",
             ed.toggle, 80)
+        ed.closeToggle = UI:Toggle(head,
+            function() return cfg.closeAfter ~= false end,
+            function(v) cfg.closeAfter = v end)
+        UI:SettingRow(head, -56, "Fermer la boîte aux lettres après l'envoi",
+            "Seulement quand quelque chose a été envoyé (après la prise automatique si elle est activée).",
+            ed.closeToggle, 80)
     else
         UI:SettingRow(head, -12, "Dépôt automatique",
             "À l'ouverture de la banque, les objets assignés sont rangés dans la banque du perso ou de bataillon.",
@@ -50,9 +58,9 @@ local function RuleEditor(page, parent, mode, top)
 
     -- Nouvelle règle
     local add = UI:Card(parent, "Nouvelle règle")
-    add:SetHeight(isMail and 128 or 100)
-    add:SetPoint("TOPLEFT", 0, top - 66 - GAP)
-    add:SetPoint("TOPRIGHT", 0, top - 66 - GAP)
+    add:SetHeight(ADD_H)
+    add:SetPoint("TOPLEFT", 0, top - HEAD_H - GAP)
+    add:SetPoint("TOPRIGHT", 0, top - HEAD_H - GAP)
     local kind = "item"
     local item = UI:Input(add, 250, 34, "Maj + clic sur un objet, ou son ID", "bag")
     item.edit.acceptLinks = true
@@ -81,16 +89,25 @@ local function RuleEditor(page, parent, mode, top)
     local btn = UI:Button(add, "Ajouter", nil, 34, "primary", "plus")
     btn:SetPoint("TOPRIGHT", -16, -42)
 
+    -- Perso concerné par la règle : celui qui envoie / dépose, ou tous.
+    local fromLbl = UI:Text(add, 12, C.muted)
+    fromLbl:SetPoint("TOPLEFT", 16, -96)
+    fromLbl:SetText(isMail and "Envoyé par :" or "Déposé par :")
+    local fromDd = UI:Dropdown(add, 240, 30, { { "", "Tous les persos" } })
+    fromDd:SetPoint("TOPLEFT", 16 + fromLbl:GetStringWidth() + 10, -86)
+    ed.fromDd = fromDd
+
     local function doAdd()
         local n = keep:GetNumber()
+        local from = (fromDd.selected and fromDd.selected ~= "") and fromDd.selected or nil
         local ok
         if isMail then
             local name = (dest:GetText() or ""):gsub("^%s+", ""):gsub("%s+$", "")
-            if kind == "item" then ok = WK.modules.Mail:AddRule(item:GetText(), name, n)
-            else ok = WK.modules.Mail:AddCategoryRule(cat.selected, name, n) end
+            if kind == "item" then ok = WK.modules.Mail:AddRule(item:GetText(), name, n, from)
+            else ok = WK.modules.Mail:AddCategoryRule(cat.selected, name, n, from) end
         else
-            if kind == "item" then ok = WK.modules.BankDeposit:AddRule(item:GetText(), dest.selected, n)
-            else ok = WK.modules.BankDeposit:AddCategoryRule(cat.selected, dest.selected, n) end
+            if kind == "item" then ok = WK.modules.BankDeposit:AddRule(item:GetText(), dest.selected, n, from)
+            else ok = WK.modules.BankDeposit:AddCategoryRule(cat.selected, dest.selected, n, from) end
         end
         if ok then
             item:SetText(""); keep:SetText("")
@@ -104,7 +121,7 @@ local function RuleEditor(page, parent, mode, top)
 
     if isMail then
         local hint = UI:Text(add, 11, C.dim)
-        hint:SetPoint("TOPLEFT", 16, -92)
+        hint:SetPoint("TOPLEFT", 16, -132)
         hint:SetText("Mes persos :")
         ed.hint = hint
         ed.picks = UI:Pool(function()
@@ -119,7 +136,7 @@ local function RuleEditor(page, parent, mode, top)
     end
 
     -- Liste
-    local listTop = top - 66 - GAP - (isMail and 128 or 100) - GAP
+    local listTop = top - HEAD_H - GAP - ADD_H - GAP
     local list = UI:Card(parent, "Règles")
     list:SetPoint("TOPLEFT", 0, listTop)
     list:SetPoint("BOTTOMRIGHT")
@@ -148,18 +165,18 @@ local function RuleEditor(page, parent, mode, top)
         r.arrow:SetPoint("LEFT", 310, 0)
         r.to = UI:Text(r, 12)
         r.to:SetPoint("LEFT", r.arrow, "RIGHT", 12, 0)
-        r.keep = UI:Text(r, 11, C.muted)
-        r.keep:SetPoint("LEFT", 520, 0)
         r.info = UI:Text(r, 11, C.muted)
         r.info:SetPoint("RIGHT", -44, 0)
         r.info:SetJustifyH("RIGHT")
+        r.keep = UI:Text(r, 11, C.muted)
+        r.keep:SetPoint("LEFT", 520, 0)
+        r.keep:SetPoint("RIGHT", r.info, "LEFT", -12, 0)
+        r.keep:SetJustifyH("LEFT")
         r.del = UI:IconButton(r, "trash", 26, "Supprimer la règle", true)
         r.del:SetPoint("RIGHT", -8, 0)
         r.del:SetScript("OnClick", function(b)
             local mod = isMail and WK.modules.Mail or WK.modules.BankDeposit
-            if b.cat then mod:RemoveCategoryRule(b.cat)
-            elseif isMail then mod:RemoveRule(b.itemID)
-            else mod:RemoveRule(b.itemID) end
+            if b.cat then mod:RemoveCategoryRule(b.ruleKey) else mod:RemoveRule(b.ruleKey) end
             page:Refresh()
         end)
         return r
@@ -167,6 +184,12 @@ local function RuleEditor(page, parent, mode, top)
 
     function ed:Refresh()
         self.toggle:Refresh()
+        if self.closeToggle then self.closeToggle:Refresh() end
+        local opts = { { "", T("Tous les persos") } }
+        for _, e in ipairs(UI:SortedCharacters()) do
+            table.insert(opts, { e.key, WK:CharName(e.c, e.key), { UI:ClassColor(e.c.class) } })
+        end
+        self.fromDd:SetOptions(opts)
         local me = WK.DB:Me()
 
         -- Raccourcis : personnages du royaume courant
@@ -184,7 +207,7 @@ local function RuleEditor(page, parent, mode, top)
                     b.label:SetTextColor(UI:ClassColor(e.c.class))
                     if x + b:GetWidth() > UI.PAGE_W - 16 then b:Hide() else
                         b:ClearAllPoints()
-                        b:SetPoint("LEFT", add, "TOPLEFT", x, -97)
+                        b:SetPoint("LEFT", add, "TOPLEFT", x, -137)
                         x = x + b:GetWidth() + 6
                     end
                 end
@@ -193,11 +216,16 @@ local function RuleEditor(page, parent, mode, top)
 
         local store = isMail and WK.modules.Mail:Store() or WK.modules.BankDeposit:Store()
         local entries = {}
+        local Rl = WK.modules.Rules
         for key, rule in pairs(store.cats) do
-            table.insert(entries, { cat = key, rule = rule, sort = "0" .. WK.modules.Rules:CategoryLabel(key) })
+            local base, from = Rl:SplitKey(key)
+            table.insert(entries, { cat = base, key = key, from = from, rule = rule,
+                sort = "0" .. Rl:CategoryLabel(base) .. "\1" .. (from or "") })
         end
-        for id, rule in pairs(store.items) do
-            table.insert(entries, { itemID = id, rule = rule, sort = "1" .. (UI:ItemInfo(id)) })
+        for key, rule in pairs(store.items) do
+            local id, from = Rl:SplitKey(key)
+            table.insert(entries, { itemID = id, key = key, from = from, rule = rule,
+                sort = "1" .. (UI:ItemInfo(id) or "") .. "\1" .. (from or "") })
         end
         table.sort(entries, function(a, b) return a.sort < b.sort end)
 
@@ -208,7 +236,7 @@ local function RuleEditor(page, parent, mode, top)
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
-            r.del.cat, r.del.itemID = e.cat, e.itemID
+            r.del.cat, r.del.itemID, r.del.ruleKey = e.cat, e.itemID, e.key
             if e.cat then
                 r.icon:Hide(); r.glyph:Show()
                 r.glyph:SetVertexColor(UI:Accent())
@@ -239,7 +267,18 @@ local function RuleEditor(page, parent, mode, top)
                 r.to:SetText(targetLabel(e.rule.target))
                 r.to:SetTextColor(unpack(C.text))
             end
-            r.keep:SetText((e.rule.keep or 0) > 0 and string.format(T("garder %d"), e.rule.keep) or "")
+            -- Perso concerné (ou tous) et quantité gardée.
+            local who
+            if e.from then
+                local fc = WK.DB.global.characters[e.from]
+                local cr, cg, cb = UI:ClassColor(fc and fc.class)
+                who = string.format(T("par %s"), string.format("|cff%02x%02x%02x%s|r", cr * 255, cg * 255, cb * 255,
+                    WK:CharName(fc, e.from)))
+            else
+                who = T("tous les persos")
+            end
+            if (e.rule.keep or 0) > 0 then who = who .. "  ·  " .. string.format(T("garder %d"), e.rule.keep) end
+            r.keep:SetText(who)
             if e.itemID then
                 local n = (me.bags or {})[e.itemID] or 0
                 if isMail and WK.modules.Mail:IsMe(e.rule.to) then

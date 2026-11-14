@@ -14,7 +14,10 @@ end
 function M:TrackedItems()
     local t = {}
     for id in pairs(WK.DB.global.settings.trackedItems) do t[id] = "manual" end
-    for id in pairs(WK.DB.global.mail.rules) do t[id] = t[id] or "mail" end
+    for key in pairs(WK.DB.global.mail.rules) do
+        local id = WK.modules.Rules:SplitKey(key)
+        t[id] = t[id] or "mail"
+    end
     return t
 end
 

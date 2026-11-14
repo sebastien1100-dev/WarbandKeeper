@@ -108,6 +108,12 @@ end
 ---------------------------------------------------------------------------
 -- Envoi automatique
 ---------------------------------------------------------------------------
+-- Fermeture de la boîte aux lettres une fois l'envoi (et la prise automatique) terminés.
+local closeAfterTake = false
+local function closeMailbox()
+    if CloseMail then CloseMail() elseif MailFrame and HideUIPanel then HideUIPanel(MailFrame) end
+end
+
 local function plan()
     return WK.modules.Rules:Plan(M:Store(), function(rule, _, bound)
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
@@ -149,7 +155,13 @@ function M:SendNext()
         if sending then
             WK:Print(WK.L.MAIL_DONE)
             sending = false
-            if WK.DB.global.mail.autoTake then C_Timer.After(0.5, function() M:TakeAll() end) end
+            local closeAfter = WK.DB.global.mail.closeAfter ~= false
+            if WK.DB.global.mail.autoTake then
+                closeAfterTake = closeAfter
+                C_Timer.After(0.5, function() M:TakeAll() end)
+            elseif closeAfter then
+                C_Timer.After(0.5, closeMailbox)
+            end
         end
         return
     end
@@ -285,6 +297,10 @@ local function finishTake(reason)
     if takeStats.items > 0 then table.insert(parts, string.format(T("%d objet(s)"), takeStats.items)) end
     if #parts > 0 then WK:Print(T("Récupéré : ") .. table.concat(parts, ", ")) end
     if reason then WK:Print(reason) end
+    if closeAfterTake then
+        closeAfterTake = false
+        C_Timer.After(0.3, closeMailbox)
+    end
 end
 
 local function takeStep()
@@ -350,35 +366,39 @@ function M:EnsureTakeButton()
 end
 
 WK:On("MAIL_CLOSED", function()
-    wipe(queue); sending = false
+    wipe(queue); sending = false; closeAfterTake = false
     if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
 end)
 
 ---------------------------------------------------------------------------
 -- Gestion des règles
 ---------------------------------------------------------------------------
-function M:AddRule(itemArg, recipient, keep)
+-- from : clé du perso qui envoie (nil = tous les persos).
+function M:AddRule(itemArg, recipient, keep, from)
     local id = WK:ParseItemID(itemArg)
     if not id or not recipient or recipient == "" then return false end
-    WK.DB.global.mail.rules[id] = { to = recipient, keep = keep or 0 }
+    WK.DB.global.mail.rules[WK.modules.Rules:MakeKey(id, from)] = { to = recipient, keep = keep or 0 }
     WK:Print(string.format(WK.L.MAIL_RULE_ADD, WK:ItemName(id), recipient))
     WK.modules.Statistics:UpdateItems()
     WK:NotifyChanged()
     return true
 end
 
-function M:AddCategoryRule(key, recipient, keep)
+function M:AddCategoryRule(key, recipient, keep, from)
     if not WK.modules.Rules.byKey[key] or not recipient or recipient == "" then return false end
-    WK.DB.global.mail.cats[key] = { to = recipient, keep = keep or 0 }
+    WK.DB.global.mail.cats[WK.modules.Rules:MakeKey(key, from)] = { to = recipient, keep = keep or 0 }
     WK:Print(string.format(WK.L.MAIL_RULE_ADD, WK.modules.Rules:CategoryLabel(key), recipient))
     WK:NotifyChanged()
     return true
 end
 
+-- itemArg : lien, itemID, ou clé de règle complète (« id@Perso »).
 function M:RemoveRule(itemArg)
-    local id = WK:ParseItemID(itemArg)
-    if not id then return false end
-    WK.DB.global.mail.rules[id] = nil
+    local key = itemArg
+    if not WK.DB.global.mail.rules[key] then key = WK:ParseItemID(itemArg) end
+    if not key then return false end
+    local id = WK.modules.Rules:SplitKey(key)
+    WK.DB.global.mail.rules[key] = nil
     WK:Print(string.format(WK.L.MAIL_RULE_DEL, WK:ItemName(id)))
     WK:NotifyChanged()
     return true
@@ -392,7 +412,8 @@ end
 
 function M:ListRules()
     local any = false
-    for id, r in pairs(WK.DB.global.mail.rules) do
+    for key, r in pairs(WK.DB.global.mail.rules) do
+        local id = WK.modules.Rules:SplitKey(key)
         any = true
         local note = isMe(r.to) and (" - " .. WK.L.MAIL_SKIP_SELF) or ""
         local keep = (r.keep or 0) > 0 and string.format(" (%s %d)", T("garder"), r.keep) or ""

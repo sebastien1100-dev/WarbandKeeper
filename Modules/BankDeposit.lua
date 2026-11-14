@@ -105,17 +105,18 @@ WK:On("BANKFRAME_OPENED", function() C_Timer.After(0.6, function() M:Run() end) 
 WK:On("BANKFRAME_CLOSED", function() running = false end)
 
 -- Gestion des règles
-function M:AddRule(itemArg, target, keep)
+-- from : clé du perso qui dépose (nil = tous les persos).
+function M:AddRule(itemArg, target, keep, from)
     local id = WK:ParseItemID(itemArg)
     if not id then return false end
-    WK.DB.global.bank.items[id] = { target = target or "bank", keep = keep or 0 }
+    WK.DB.global.bank.items[WK.modules.Rules:MakeKey(id, from)] = { target = target or "bank", keep = keep or 0 }
     WK:NotifyChanged()
     return true
 end
 
-function M:AddCategoryRule(key, target, keep)
+function M:AddCategoryRule(key, target, keep, from)
     if not WK.modules.Rules.byKey[key] then return false end
-    WK.DB.global.bank.cats[key] = { target = target or "bank", keep = keep or 0 }
+    WK.DB.global.bank.cats[WK.modules.Rules:MakeKey(key, from)] = { target = target or "bank", keep = keep or 0 }
     WK:NotifyChanged()
     return true
 end

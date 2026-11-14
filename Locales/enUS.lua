@@ -322,6 +322,12 @@ WK.Locales.enUS.text = {
 
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
+    -- Règles par perso
+    ["Envoyé par :"] = "Sent by:", ["Déposé par :"] = "Deposited by:",
+    ["Tous les persos"] = "All characters", ["tous les persos"] = "all characters", ["par %s"] = "by %s",
+    ["Fermer la boîte aux lettres après l'envoi"] = "Close the mailbox after sending",
+    ["Seulement quand quelque chose a été envoyé (après la prise automatique si elle est activée)."] = "Only when something was sent (after auto-take if enabled).",
+
     -- Fiche métier
     ["Objets LQE (vert et +)"] = "BoE items (green and up)",
     ["Objets LQE (bleu et +)"] = "BoE items (blue and up)",
