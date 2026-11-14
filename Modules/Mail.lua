@@ -108,10 +108,16 @@ end
 ---------------------------------------------------------------------------
 -- Envoi automatique
 ---------------------------------------------------------------------------
--- Fermeture de la boîte aux lettres une fois l'envoi (et la prise automatique) terminés.
-local closeAfterTake = false
+-- Une fois l'envoi (et la prise automatique) terminés : tri des sacs puis fermeture
+-- de la boîte aux lettres, chacun selon son option.
+local afterTake -- fonction à lancer quand la prise automatique a fini
 local function closeMailbox()
     if CloseMail then CloseMail() elseif MailFrame and HideUIPanel then HideUIPanel(MailFrame) end
+end
+local function afterSend()
+    local mail = WK.DB.global.mail
+    if mail.sortAfter ~= false then WK.modules.Inventory:SortBags() end
+    if mail.closeAfter ~= false then C_Timer.After(0.3, closeMailbox) end
 end
 
 local function plan()
@@ -155,12 +161,11 @@ function M:SendNext()
         if sending then
             WK:Print(WK.L.MAIL_DONE)
             sending = false
-            local closeAfter = WK.DB.global.mail.closeAfter ~= false
             if WK.DB.global.mail.autoTake then
-                closeAfterTake = closeAfter
+                afterTake = afterSend
                 C_Timer.After(0.5, function() M:TakeAll() end)
-            elseif closeAfter then
-                C_Timer.After(0.5, closeMailbox)
+            else
+                C_Timer.After(0.5, afterSend)
             end
         end
         return
@@ -297,9 +302,10 @@ local function finishTake(reason)
     if takeStats.items > 0 then table.insert(parts, string.format(T("%d objet(s)"), takeStats.items)) end
     if #parts > 0 then WK:Print(T("Récupéré : ") .. table.concat(parts, ", ")) end
     if reason then WK:Print(reason) end
-    if closeAfterTake then
-        closeAfterTake = false
-        C_Timer.After(0.3, closeMailbox)
+    if afterTake then
+        local f = afterTake
+        afterTake = nil
+        C_Timer.After(0.3, f)
     end
 end
 
@@ -366,7 +372,7 @@ function M:EnsureTakeButton()
 end
 
 WK:On("MAIL_CLOSED", function()
-    wipe(queue); sending = false; closeAfterTake = false
+    wipe(queue); sending = false; afterTake = nil
     if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
 end)
 

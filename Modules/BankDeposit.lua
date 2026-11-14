@@ -52,7 +52,12 @@ local function finish()
             if WK.modules.Journal then WK.modules.Journal:Deposit(target, items) end
         end
     end
-    if #parts > 0 then WK:Print(T("Déposé : ") .. table.concat(parts, " ; ")) end
+    if #parts > 0 then
+        WK:Print(T("Déposé : ") .. table.concat(parts, " ; "))
+        if WK.DB.global.bank.sortAfter ~= false then
+            C_Timer.After(0.5, function() WK.modules.Inventory:SortBags() end)
+        end
+    end
     for target in pairs(full) do
         WK:Print(target == "warband" and T("Banque de bataillon pleine : dépôt incomplet.") or T("Banque pleine : dépôt incomplet."))
     end

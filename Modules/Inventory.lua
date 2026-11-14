@@ -210,3 +210,18 @@ else
     GameTooltip:HookScript("OnTooltipSetItem", onTooltip)
     if ItemRefTooltip then ItemRefTooltip:HookScript("OnTooltipSetItem", onTooltip) end
 end
+
+-- Tri des sacs par la fonction du jeu (comme le bouton de tri des sacs).
+local sortWarned = false
+function M:SortBags()
+    local f = (C_Container and C_Container.SortBags) or SortBags
+    if f then
+        local ok = pcall(f)
+        return ok
+    end
+    if not sortWarned then
+        sortWarned = true
+        WK:Print(WK.T("Le tri des sacs n'existe pas sur ce client."))
+    end
+    return false
+end

@@ -20,6 +20,7 @@ local defaults = {
     mail = {
         enabled = true,
         closeAfter = true, -- ferme la boîte aux lettres après l'envoi automatique
+        sortAfter = true,  -- trie les sacs après l'envoi automatique
         -- Clé : itemID (ou catégorie), suivi de « @Perso-Royaume » pour une règle d'un seul perso.
         rules = {},    -- [itemID] = { to = "Nom", keep = n }
         cats = {},     -- [clé de catégorie] = { to = "Nom", keep = n }
@@ -27,6 +28,7 @@ local defaults = {
     },
     bank = {
         enabled = true,
+        sortAfter = true,  -- trie les sacs après le dépôt automatique
         items = {},    -- [itemID] = { target = "bank"|"warband", keep = n }
         cats = {},
     },

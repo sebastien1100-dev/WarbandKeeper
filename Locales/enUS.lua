@@ -322,6 +322,12 @@ WK.Locales.enUS.text = {
 
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
+    -- Tri des sacs
+    ["Trier les sacs ensuite"] = "Sort bags afterwards",
+    ["Après l'envoi automatique (et la prise automatique si elle est activée)."] = "After auto-send (and auto-take if enabled).",
+    ["Après le dépôt automatique."] = "After auto-deposit.",
+    ["Le tri des sacs n'existe pas sur ce client."] = "Bag sorting is not available on this client.",
+
     -- Règles par perso
     ["Envoyé par :"] = "Sent by:", ["Déposé par :"] = "Deposited by:",
     ["Tous les persos"] = "All characters", ["tous les persos"] = "all characters", ["par %s"] = "by %s",

@@ -28,7 +28,7 @@ local function RuleEditor(page, parent, mode, top)
     local isMail = mode == "mail"
 
     -- Activation
-    local HEAD_H = isMail and 110 or 66
+    local HEAD_H = isMail and 154 or 110
     local ADD_H = isMail and 168 or 132
     local head = UI:Card(parent)
     head:SetHeight(HEAD_H)
@@ -55,6 +55,14 @@ local function RuleEditor(page, parent, mode, top)
             "À l'ouverture de la banque, les objets assignés sont rangés dans la banque du perso ou de bataillon.",
             ed.toggle, 80)
     end
+    -- Tri des sacs après l'envoi / le dépôt.
+    ed.sortToggle = UI:Toggle(head,
+        function() return cfg.sortAfter ~= false end,
+        function(v) cfg.sortAfter = v end)
+    UI:SettingRow(head, isMail and -100 or -56, "Trier les sacs ensuite",
+        isMail and "Après l'envoi automatique (et la prise automatique si elle est activée)."
+            or "Après le dépôt automatique.",
+        ed.sortToggle, 80)
 
     -- Nouvelle règle
     local add = UI:Card(parent, "Nouvelle règle")
@@ -185,6 +193,7 @@ local function RuleEditor(page, parent, mode, top)
     function ed:Refresh()
         self.toggle:Refresh()
         if self.closeToggle then self.closeToggle:Refresh() end
+        self.sortToggle:Refresh()
         local opts = { { "", T("Tous les persos") } }
         for _, e in ipairs(UI:SortedCharacters()) do
             table.insert(opts, { e.key, WK:CharName(e.c, e.key), { UI:ClassColor(e.c.class) } })
