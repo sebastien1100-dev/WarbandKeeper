@@ -46,6 +46,7 @@ local defaults = {
     },
     settings = {
         historyIntervalSec = 3600, -- 1 point max par heure et par série
+        profLink = {},             -- [métier] = { text = "texte ajouté au lien", on = true/false }
         trackedItems = {},         -- [itemID] = true : matériaux suivis dans les stats
         value = {
             source = "auctionator", -- "auctionator" (repli marchand) ou "vendor"

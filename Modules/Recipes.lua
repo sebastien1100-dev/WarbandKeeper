@@ -87,6 +87,17 @@ function M:Scan()
     else
         recipes, prof = scanClassic()
     end
+    -- Lien de la fenêtre du métier (cliquable par les autres joueurs), gardé pour le coller plus tard.
+    if prof then
+        local getLink = (C_TradeSkillUI and C_TradeSkillUI.GetTradeSkillListLink) or GetTradeSkillListLink
+        local ok, link = false, nil
+        if getLink then ok, link = pcall(getLink) end
+        if ok and type(link) == "string" and link ~= "" then
+            local me = WK.DB:Me()
+            me.profLinks = me.profLinks or {}
+            me.profLinks[prof] = { link = link, t = time() }
+        end
+    end
     if not recipes or not next(recipes) then return end
     local c = WK.DB:Me()
     c.recipes = c.recipes or {}
@@ -338,6 +349,38 @@ function M:GuidePlan(prof, rank, known)
         return a.itemID < b.itemID
     end)
     return steps, mats, total, g
+end
+
+---------------------------------------------------------------------------
+-- Lien du métier dans le chat : lien de la fenêtre (enregistré à la dernière ouverture)
+-- + texte personnalisé du métier s'il est activé. Sans lien, un résumé en texte.
+---------------------------------------------------------------------------
+function M:LinkSettings(prof)
+    local all = WK.DB.global.settings.profLink
+    all[prof] = all[prof] or { text = "", on = false }
+    return all[prof]
+end
+
+function M:LinkText(c, key, prof)
+    local pr = c and c.professions and c.professions[prof] or {}
+    local saved = c and c.profLinks and c.profLinks[prof]
+    local text
+    if saved and saved.link then
+        text = saved.link
+    else
+        text = string.format("%s %d/%d", prof, pr.rank or 0, pr.max or 0)
+    end
+    local cfg = self:LinkSettings(prof)
+    if cfg.on and cfg.text and cfg.text ~= "" then text = text .. " " .. cfg.text end
+    return text, saved ~= nil
+end
+
+function M:LinkToChat(c, key, prof)
+    local text, real = self:LinkText(c, key, prof)
+    WK.ChatInsert(text)
+    if not real then
+        WK:Print(string.format(T("Pas encore de lien enregistré pour %s : ouvre la fenêtre du métier sur ce perso, puis réessaie."), prof))
+    end
 end
 
 ---------------------------------------------------------------------------

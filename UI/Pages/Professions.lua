@@ -568,7 +568,7 @@ local function Detail(page, parent)
     icon:SetPoint("TOPLEFT", 132, -13)
     local title = UI:Text(head, 16)
     title:SetPoint("TOPLEFT", 180, -14)
-    title:SetPoint("TOPRIGHT", -200, -14)
+    title:SetPoint("TOPRIGHT", -400, -14)
     local sub = UI:Text(head, 11, C.muted)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
     sub:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", 0, -4)
@@ -619,8 +619,65 @@ local function Detail(page, parent)
     -- « Ouvrir le métier ». Par l'API si le client l'a ; sinon un bouton sécurisé lance le sort
     -- du métier. Ce bouton sécurisé n'est PAS dans la fenêtre (sinon le jeu bloquerait sa
     -- fermeture en combat) : il est posé par-dessus, hors combat seulement.
+    -- Lien du métier dans le chat (+ texte personnalisé), pour tous les métiers.
+    local linkCfgBtn = UI:IconButton(head, "gear", 32, "Texte ajouté au lien")
+    tab.linkCfgBtn = linkCfgBtn
+    linkCfgBtn:SetPoint("TOPRIGHT", -16, -18)
+    local linkBtn = UI:Button(head, "Lier dans le chat", nil, 32, "secondary")
+    linkBtn:SetPoint("TOPRIGHT", linkCfgBtn, "TOPLEFT", -6, 0)
+    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier (enregistré à sa dernière ouverture), suivi de ton texte s'il est activé."
+    linkBtn:SetScript("OnClick", function()
+        local c = WK.DB.global.characters[tab.key]
+        WK.modules.Recipes:LinkToChat(c, tab.key, tab.prof)
+    end)
+
+    -- Réglage du texte : fenêtre qui s'ouvre sous le bouton
+    local editor = UI:Card(parent, "Texte ajouté au lien")
+    editor:SetSize(400, 186)
+    editor:SetPoint("TOPRIGHT", head, "BOTTOMRIGHT", 0, -6)
+    editor:SetFrameStrata("DIALOG")
+    editor:EnableMouse(true)
+    editor:Hide()
+    local edClose = UI:IconButton(editor, "close", 26, nil, "accent")
+    edClose:SetPoint("TOPRIGHT", -10, -8)
+    edClose:SetScript("OnClick", function() editor:Hide() end)
+    local edInput = UI:Input(editor, 368, 32, "Ex. : je fabrique gratuitement, apportez les composants")
+    edInput:SetPoint("TOPLEFT", 16, -42)
+    local edToggle = UI:Toggle(editor,
+        function() return tab.prof and WK.modules.Recipes:LinkSettings(tab.prof).on end,
+        function(v) if tab.prof then WK.modules.Recipes:LinkSettings(tab.prof).on = v; tab:RefreshLinkPreview() end end)
+    edToggle:SetPoint("TOPLEFT", 16, -86)
+    local edToggleLbl = UI:Text(editor, 12)
+    edToggleLbl:SetPoint("LEFT", edToggle, "RIGHT", 10, 0)
+    edToggleLbl:SetText("Ajouter ce texte au lien")
+    local edPreview = UI:Text(editor, 10, C.muted)
+    edPreview:SetPoint("TOPLEFT", 16, -122)
+    edPreview:SetPoint("TOPRIGHT", -16, -122)
+    edPreview:SetJustifyH("LEFT")
+    if edPreview.SetWordWrap then edPreview:SetWordWrap(true) end
+    edInput.onChange = function(t)
+        if tab.prof then WK.modules.Recipes:LinkSettings(tab.prof).text = t or ""; tab:RefreshLinkPreview() end
+    end
+    function tab:RefreshLinkPreview()
+        if not self.prof then return end
+        local c = WK.DB.global.characters[self.key]
+        local text, real = WK.modules.Recipes:LinkText(c, self.key, self.prof)
+        local saved = c and c.profLinks and c.profLinks[self.prof]
+        edPreview:SetText(T("Aperçu : ") .. "|cffffffff" .. text .. "|r" ..
+            (real and ("\n" .. string.format(T("Lien enregistré le %s"), date("%d/%m à %H:%M", saved.t)))
+                or ("\n" .. T("Pas encore de lien : ouvre la fenêtre du métier sur ce perso."))))
+        edToggle:Refresh()
+    end
+    linkCfgBtn:SetScript("OnClick", function()
+        if editor:IsShown() then editor:Hide() return end
+        local cfg = WK.modules.Recipes:LinkSettings(tab.prof)
+        edInput:SetText(cfg.text or "")
+        tab:RefreshLinkPreview()
+        editor:Show()
+    end)
+
     local open = UI:Button(head, "Ouvrir le métier", 170, 32, "primary", "play")
-    open:SetPoint("TOPRIGHT", -16, -26)
+    open:SetPoint("TOPRIGHT", linkBtn, "TOPLEFT", -8, 0)
     open:SetScript("OnClick", function() WK.modules.Professions:OpenDirect(tab.prof) end)
     local secure
     local function needSecure()
@@ -653,7 +710,7 @@ local function Detail(page, parent)
     WK:On("PLAYER_REGEN_DISABLED", function() if secure then secure:Hide() end end)
     WK:On("PLAYER_REGEN_ENABLED", function() tab:SyncSecure() end)
     local note = UI:Text(head, 10, C.dim)
-    note:SetPoint("TOPRIGHT", -16, -32)
+    note:SetPoint("TOPRIGHT", -16, -58)
     note:SetJustifyH("RIGHT")
 
     -- Filtres
@@ -1291,6 +1348,7 @@ local function Detail(page, parent)
 
     function tab:Show(key, prof)
         if self.key ~= key or self.prof ~= prof then
+            editor:Hide()
             self.query, self.filter = "", "all"
             -- Guide de montée par défaut quand il existe et que le métier n'est pas au max.
             self.mode = WK.modules.Recipes:Guide(prof) and "guide" or "recipes"

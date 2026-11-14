@@ -63,6 +63,15 @@ function WK.InsertChatLink(link)
     if ChatEdit_InsertLink then return ChatEdit_InsertLink(link) end
 end
 
+-- Ouvre la zone de saisie du chat avec ce texte (ou l'ajoute si elle est déjà ouverte).
+function WK.ChatInsert(text)
+    local eb = ChatEdit_GetActiveWindow and ChatEdit_GetActiveWindow()
+    if eb and eb.Insert then eb:Insert(text) return true end
+    if ChatFrame_OpenChat then ChatFrame_OpenChat(text) return true end
+    if ChatFrameUtil and ChatFrameUtil.OpenChat then ChatFrameUtil.OpenChat(text) return true end
+    return false
+end
+
 -- Nom et icône d'un sort (recette de métier), dans la langue du jeu.
 function WK.SpellInfo(spellID)
     if not spellID then return nil end

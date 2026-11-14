@@ -335,6 +335,17 @@ WK.Locales.enUS.text = {
     ["Meilleures ventes :"] = "Best sales:",
     ["Bilan HV 7 j"] = "AH balance 7 d",
 
+    -- Lien du métier
+    ["Texte ajouté au lien"] = "Text added to the link",
+    ["Lier dans le chat"] = "Link in chat",
+    ["Colle dans le chat le lien de la fenêtre du métier (enregistré à sa dernière ouverture), suivi de ton texte s'il est activé."] = "Pastes the profession window link (saved when last opened) in chat, followed by your text if enabled.",
+    ["Ex. : je fabrique gratuitement, apportez les composants"] = "E.g.: free crafting, bring your materials",
+    ["Ajouter ce texte au lien"] = "Add this text to the link",
+    ["Aperçu : "] = "Preview: ",
+    ["Lien enregistré le %s"] = "Link saved on %s",
+    ["Pas encore de lien : ouvre la fenêtre du métier sur ce perso."] = "No link yet: open the profession window on this character.",
+    ["Pas encore de lien enregistré pour %s : ouvre la fenêtre du métier sur ce perso, puis réessaie."] = "No link saved yet for %s: open the profession window on this character, then try again.",
+
     -- Guides de montée
     ["%s : %s de nouveau disponible"] = "%s: %s available again",
     ["recharge : %s"] = "cooldown: %s",
