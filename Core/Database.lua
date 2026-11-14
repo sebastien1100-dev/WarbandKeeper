@@ -26,6 +26,7 @@ local defaults = {
         cats = {},     -- [clé de catégorie] = { to = "Nom", keep = n }
         autoTake = false, -- « Tout prendre » automatiquement à l'ouverture (après les envois)
     },
+    auction = { log = {} },   -- ventes et achats à l'HV (Modules/Auction.lua)
     bank = {
         enabled = true,
         sortAfter = true,  -- trie les sacs après le dépôt automatique

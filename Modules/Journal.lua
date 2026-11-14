@@ -82,6 +82,12 @@ function M:Farm(s)
         gold = s.gold, count = WK.modules.Farm:ItemCount(s.items) })
 end
 
+-- Vente ou achat à l'hôtel des ventes (Modules/Auction.lua).
+function M:Auction(e)
+    push({ t = e.t, kind = e.kind == "sale" and "ahsale" or "ahbuy", char = e.char, item = e.item,
+        count = e.count, net = e.net, gross = e.gross })
+end
+
 WK:On("PLAYER_LEVEL_UP", function(level) M:Level(level) end)
 
 function M:Entries(filter)
@@ -89,7 +95,8 @@ function M:Entries(filter)
     local out = {}
     for _, e in ipairs(journal()) do
         if e.kind == filter or (filter == "skill" and e.kind == "level")
-            or (filter == "mail" and e.kind == "bank") or (filter == "gold" and e.kind == "farm") then
+            or (filter == "mail" and e.kind == "bank") or (filter == "gold" and e.kind == "farm")
+            or (filter == "ah" and (e.kind == "ahsale" or e.kind == "ahbuy")) then
             table.insert(out, e)
         end
     end

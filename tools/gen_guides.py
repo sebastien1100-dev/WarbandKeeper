@@ -17,6 +17,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "guides")
 OUT = os.path.join(ROOT, "Modules", "Guides.lua")
+OUT_DB = os.path.join(ROOT, "Modules", "RecipeDB.lua")
 
 # Nom du métier en jeu (français) pour chaque guide.
 PROFS = {
@@ -87,7 +88,14 @@ def slim(page):
             "taught_by": [{"id": t["id"], "name": t["name"], "vendors": t.get("vendors") or [], "price": t.get("price")}
                           for t in r.get("taught_by", [])],
         }
-    return {"name": prof["name"], "leveling": prof["leveling"], "sections": prof["sections"],
+    # Toutes les recettes du métier (pour « recettes manquantes »), en version courte.
+    allr = []
+    for r in recipes.values():
+        t = (r.get("taught_by") or [{}])[0]
+        allr.append({"id": r["id"], "out": r["item"]["id"] if r.get("item") else None, "learn": r.get("learn") or r["skill"][0],
+                     "src": r.get("source"), "recipe": t.get("id"), "price": t.get("price"), "vendors": t.get("vendors") or []})
+    allr.sort(key=lambda x: (x["learn"], x["id"]))
+    return {"name": prof["name"], "leveling": prof["leveling"], "sections": prof["sections"], "all": allr,
             "craftedParts": prof.get("craftedParts", {}), "skillOnly": prof.get("skillOnly", []),
             "craftedTools": prof.get("craftedTools", {}), "recipes": keep}
 
@@ -185,6 +193,43 @@ def gen():
     out.append("}")
     open(OUT, "w", encoding="utf-8").write("\n".join(out) + "\n")
     print("écrit", OUT, "(%d guides)" % len(guides))
+    gen_db(guides)
+
+
+def gen_db(guides):
+    """Modules/RecipeDB.lua : toutes les recettes de chaque métier (recettes manquantes)."""
+    out = ["local ADDON_NAME, WK = ...", "",
+           "-- Toutes les recettes des métiers de WoW Forever (d'après wowtbc.gg), pour les recettes manquantes.",
+           "-- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.",
+           "-- s = recette (sort), o = objet fabriqué, l = niveau pour l'apprendre, t = 1 si elle s'apprend chez le maître,",
+           "-- r = objet de recette (à trouver ou acheter), p = prix chez le vendeur (cuivre), v = vendeurs.",
+           "WK.RecipeDB = {"]
+    n = 0
+    for g in guides:
+        name = PROFS.get(g["name"], g["name"])
+        out.append("    [%s] = {" % lua_str(name))
+        for r in g.get("all", []):
+            parts = ["s = %d" % r["id"], "l = %d" % r["learn"]]
+            if r["out"]:
+                parts.append("o = %d" % r["out"])
+            if r["src"] == "trainer":
+                parts.append("t = 1")
+            if r["recipe"]:
+                parts.append("r = %d" % r["recipe"])
+            if r["price"]:
+                parts.append("p = %d" % r["price"])
+            if r["vendors"]:
+                vs = []
+                for v in r["vendors"]:
+                    place = VENDOR_PLACES.get(v)
+                    vs.append("{ %s, %s }" % (lua_str(v), lua_str(place)) if place else "{ %s }" % lua_str(v))
+                parts.append("v = { " + ", ".join(vs) + " }")
+            out.append("        { " + ", ".join(parts) + " },")
+            n += 1
+        out.append("    },")
+    out.append("}")
+    open(OUT_DB, "w", encoding="utf-8").write("\n".join(out) + "\n")
+    print("écrit", OUT_DB, "(%d recettes)" % n)
 
 
 if __name__ == "__main__":

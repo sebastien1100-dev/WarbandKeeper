@@ -210,7 +210,7 @@ end
 ---------------------------------------------------------------------------
 local function Recipes(page, parent)
     local tab = { query = "", sort = "name" }
-    local search = UI:Input(parent, 300, 34, "Rechercher une recette ou un objet...", "search")
+    local search = UI:Input(parent, 240, 34, "Rechercher une recette...", "search")
     search:SetPoint("TOPLEFT", 0, TOP)
     search.onChange = function(t) tab.query = string.lower(t or ""); tab:Refresh() end
     local sortSeg = UI:Segmented(parent, { { "name", "Nom" }, { "profit", "Bénéfice" }, { "craftable", "Possibles" } },
@@ -219,6 +219,15 @@ local function Recipes(page, parent)
     sortSeg:Select("name")
     local sortLbl = UI:Text(parent, 11, C.muted)
     sortLbl:SetPoint("RIGHT", sortSeg, "LEFT", -10, 0)
+    -- « Rentables maintenant » : bénéfice positif et composants déjà sur le compte.
+    local profitBtn = UI:Button(parent, "Rentables maintenant", nil, 34, "secondary", "coin")
+    profitBtn:SetPoint("RIGHT", sortLbl, "LEFT", -14, 0)
+    profitBtn.tooltip = "Seulement les recettes rentables que tu peux fabriquer tout de suite avec les composants du compte, triées par gain total possible."
+    profitBtn:SetScript("OnClick", function()
+        tab.onlyProfit = not tab.onlyProfit
+        profitBtn:SetStyle(tab.onlyProfit and "primary" or "secondary")
+        tab:Refresh()
+    end)
     sortLbl:SetText("Trier :")
     local info = UI:Text(parent, 11, C.muted)
     info:SetPoint("LEFT", search, "RIGHT", 14, 0)
@@ -274,7 +283,19 @@ local function Recipes(page, parent)
             local cost, sale, profit = R:Economics(rec)
             eco[rec] = { cost = cost, sale = sale, profit = profit, can = R:Craftable(rec) or 0 }
         end
-        if self.sort == "profit" then
+        if self.onlyProfit then
+            local keep = {}
+            for _, rec in ipairs(list) do
+                local e = eco[rec]
+                if e.profit and e.profit > 0 and e.can > 0 then keep[#keep + 1] = rec end
+            end
+            list = keep
+            table.sort(list, function(a, b)
+                local ga, gb = eco[a].profit * eco[a].can, eco[b].profit * eco[b].can
+                if ga ~= gb then return ga > gb end
+                return a.name < b.name
+            end)
+        elseif self.sort == "profit" then
             table.sort(list, function(a, b)
                 local pa, pb = eco[a].profit, eco[b].profit
                 if (pa == nil) ~= (pb == nil) then return pa ~= nil end
@@ -319,7 +340,11 @@ local function Recipes(page, parent)
                 else
                     r.profit:SetText(UI:Hex(C.negative) .. UI:PlainMoney(e.profit) .. "|r")
                 end
-                r.eco:SetText(string.format(T("coût %s · vente %s"), UI:PlainMoney(e.cost), UI:PlainMoney(e.sale)))
+                if self.onlyProfit then
+                    r.eco:SetText(string.format(T("x%d possibles · gain total %s"), e.can, UI:PlainMoney(e.profit * e.can)))
+                else
+                    r.eco:SetText(string.format(T("coût %s · vente %s"), UI:PlainMoney(e.cost), UI:PlainMoney(e.sale)))
+                end
             else
                 r.profit:SetText(UI:Hex(C.dim) .. "-|r")
                 r.eco:SetText(string.format(T("coût %s · pas de prix de vente"), UI:PlainMoney(e.cost)))
@@ -643,7 +668,7 @@ local function Detail(page, parent)
     local info = UI:Text(parent, 11, C.muted)
     info:SetPoint("LEFT", filter, "RIGHT", 14, 0)
     -- Recettes ou guide de montée (quand un guide existe pour ce métier)
-    local modeSeg = UI:Segmented(parent, { { "recipes", "Recettes" }, { "guide", "Guide de montée" } },
+    local modeSeg = UI:Segmented(parent, { { "recipes", "Recettes" }, { "guide", "Guide" }, { "missing", "Manquantes" } },
         function(k) tab.mode = k; tab.scrollToCurrent = (k == "guide"); tab:Refresh() end, 34)
     modeSeg:SetPoint("TOPLEFT", 0, fTop)
     modeSeg:Select("recipes")
@@ -1127,6 +1152,143 @@ local function Detail(page, parent)
         mscroll:SetContentHeight(my)
     end
 
+    -----------------------------------------------------------------------
+    -- Recettes manquantes : celles que le perso n'a pas, où les obtenir, prix à l'HV.
+    -----------------------------------------------------------------------
+    local missing = CreateFrame("Frame", nil, parent)
+    missing:SetPoint("TOPLEFT", 0, fTop)
+    missing:SetPoint("BOTTOMRIGHT")
+    missing:Hide()
+    tab.missFilter = "now"
+    local missSeg = UI:Segmented(missing, { { "now", "Apprenables" }, { "all", "Toutes" } },
+        function(k) tab.missFilter = k; tab:Refresh() end, 34)
+    missSeg:SetPoint("TOPRIGHT")
+    missSeg:Select("now")
+    local missInfo = UI:Text(missing, 11, C.muted)
+    missInfo:SetPoint("RIGHT", missSeg, "LEFT", -12, 0)
+    missInfo:SetJustifyH("RIGHT")
+    local mlist = UI:Scroll(missing)
+    mlist:SetPoint("TOPLEFT", 0, -46)
+    mlist:SetPoint("BOTTOMRIGHT")
+    local missEmpty = UI:Text(missing, 12, C.muted)
+    missEmpty:SetPoint("TOPLEFT", mlist, "TOPLEFT", 20, -40)
+    missEmpty:SetPoint("TOPRIGHT", mlist, "TOPRIGHT", -20, -40)
+    missEmpty:SetJustifyH("CENTER")
+    if missEmpty.SetWordWrap then missEmpty:SetWordWrap(true) end
+    local missRows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, mlist.child)
+        r:SetHeight(46)
+        UI:Panel(r, 12, C.surface, C.border)
+        r.icon = UI:RoundIcon(r, 28)
+        r.icon:SetPoint("LEFT", 12, 0)
+        r.level = UI:Text(r, 12)
+        r.level:SetPoint("TOPRIGHT", -14, -9)
+        r.level:SetJustifyH("RIGHT")
+        r.state = UI:Text(r, 10)
+        r.state:SetPoint("TOPRIGHT", r.level, "BOTTOMRIGHT", 0, -4)
+        r.state:SetJustifyH("RIGHT")
+        r.name = UI:Text(r, 12)
+        r.name:SetPoint("TOPLEFT", 52, -9)
+        r.name:SetPoint("TOPRIGHT", -130, -9)
+        r.sub = UI:Text(r, 10, C.muted)
+        r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
+        r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -4)
+        r:SetScript("OnEnter", function(s)
+            local d = s.data
+            if not d then return end
+            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.title or "?", 1, 1, 1)
+            GameTooltip:AddLine(string.format(T("Niveau requis : %d"), d.l), 0.8, 0.8, 0.8)
+            if d.t then
+                GameTooltip:AddLine(T("S'apprend chez le maître."), 0.6, 1, 0.5)
+            elseif d.r then
+                GameTooltip:AddLine(string.format(T("Recette : %s"), (UI:ItemInfo(d.r)) or "?"), 1, 0.82, 0)
+                local ahText, ahCol = recipeAH(d.r)
+                if ahText then GameTooltip:AddLine(ahText, ahCol[1], ahCol[2], ahCol[3]) end
+                if d.p then GameTooltip:AddDoubleLine(T("Prix chez le vendeur"), WK:FormatMoney(d.p), 0.8, 0.8, 0.8, 1, 1, 1) end
+                if d.v then
+                    GameTooltip:AddLine(T("Vendeurs :"), 0.8, 0.8, 0.8)
+                    for _, v in ipairs(d.v) do GameTooltip:AddDoubleLine("  " .. v[1], v[2] and T(v[2]) or "", 1, 1, 1, 0.7, 0.7, 0.7) end
+                else
+                    GameTooltip:AddLine(T("Pas vendue : à trouver (butin, quête ou hôtel des ventes)."), 0.8, 0.8, 0.8, true)
+                end
+            end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(s)
+            if IsShiftKeyDown() and s.data then
+                local _, link = WK.GetItemInfo(s.data.r or s.data.o or 0)
+                if link then WK.InsertChatLink(link) end
+            end
+        end)
+        return r
+    end)
+
+    function tab:RefreshMissing(c, pr)
+        local rank = pr.rank or 0
+        local list, total = WK.modules.Recipes:Missing(c, self.prof)
+        list = list or {}
+        local shown = {}
+        for _, d in ipairs(list) do
+            if self.missFilter == "all" or d.l <= rank then table.insert(shown, d) end
+        end
+        -- Apprenables : les plus hautes d'abord (les plus utiles maintenant) ; puis les autres par niveau.
+        table.sort(shown, function(a, b)
+            local la, lb = a.l <= rank, b.l <= rank
+            if la ~= lb then return la end
+            if la then return a.l > b.l end
+            return a.l < b.l
+        end)
+        local learnable = 0
+        for _, d in ipairs(list) do if d.l <= rank then learnable = learnable + 1 end end
+        missInfo:SetText(string.format(T("%d manquantes sur %d · %d apprenables"), #list, total or 0, learnable))
+        missRows:Reset()
+        local y = 0
+        for i, d in ipairs(shown) do
+            if i > 250 then break end
+            local r = missRows:Get()
+            r.data = d
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -y)
+            r:SetPoint("TOPRIGHT", 0, -y)
+            local name, ic, qr, qg, qb = stepInfo({ out = d.o, spell = d.s })
+            r.title = name
+            r.icon:SetTexture(ic)
+            r.name:SetText(name)
+            r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+            local src
+            if d.t then
+                src = T("Maître")
+            elseif d.r then
+                src = T("Recette : ") .. ((UI:ItemInfo(d.r)) or "?")
+                if d.v then src = src .. " " .. T("chez") .. " " .. vendorText(d.v, 2)
+                else src = src .. " " .. UI:Hex(C.dim) .. T("(à trouver)") .. "|r" end
+                local ahText, ahCol = recipeAH(d.r)
+                if ahText then src = src .. "  ·  " .. UI:Hex(ahCol) .. ahText .. "|r" end
+            else
+                src = T("À trouver")
+            end
+            r.sub:SetText(src)
+            r.level:SetText(string.format(T("Niv. %d"), d.l))
+            local ok = d.l <= rank
+            r.state:SetText(ok and (UI:Hex(C.positive) .. T("apprenable") .. "|r") or (UI:Hex(C.dim) .. string.format(T("encore %d pts"), d.l - rank) .. "|r"))
+            y = y + 52
+        end
+        mlist:SetContentHeight(y)
+        missEmpty:SetShown(#shown == 0)
+        local scanned = false
+        for _ in pairs(c.recipes or {}) do scanned = true; break end
+        if not scanned then
+            missEmpty:SetText(T("Ouvre la fenêtre de ce métier sur ce perso pour savoir quelles recettes il connaît."))
+            missEmpty:Show()
+        elseif #list == 0 then
+            missEmpty:SetText(T("Toutes les recettes sont connues !"))
+        else
+            missEmpty:SetText(T("Aucune recette apprenable pour l'instant : choisis « Toutes »."))
+        end
+    end
+
     function tab:Show(key, prof)
         if self.key ~= key or self.prof ~= prof then
             self.query, self.filter = "", "all"
@@ -1181,7 +1343,7 @@ local function Detail(page, parent)
         gather:SetShown(gkind ~= nil)
         filter:SetShown(not gkind); search:SetShown(not gkind); info:SetShown(not gkind); scroll:SetShown(not gkind)
         if gkind then
-            modeSeg:Hide(); guide:Hide()
+            modeSeg:Hide(); guide:Hide(); missing:Hide()
             empty:Hide()
             local maxL = self:RefreshGather(pr)
             local p2 = { string.format("%d / %d", pr.rank or 0, pr.max or 0) }
@@ -1197,11 +1359,19 @@ local function Detail(page, parent)
         if hasGuide then filter:SetPoint("LEFT", modeSeg, "RIGHT", 12, 0) else filter:SetPoint("TOPLEFT", 0, fTop) end
         info:SetShown(not hasGuide)
         local showGuide = hasGuide and self.mode == "guide"
+        local showMissing = hasGuide and self.mode == "missing"
         guide:SetShown(showGuide)
-        filter:SetShown(not showGuide); search:SetShown(not showGuide); scroll:SetShown(not showGuide)
+        missing:SetShown(showMissing)
+        local recipesMode = not showGuide and not showMissing
+        filter:SetShown(recipesMode); search:SetShown(recipesMode); scroll:SetShown(recipesMode)
         if showGuide then
             empty:Hide()
             self:RefreshGuide(c, pr)
+            return
+        end
+        if showMissing then
+            empty:Hide()
+            self:RefreshMissing(c, pr)
             return
         end
 
@@ -1242,6 +1412,13 @@ local function Detail(page, parent)
             end
             local bits = {}
             if d then table.insert(bits, UI:Hex(d.color) .. T(d.label) .. "|r") end
+            -- Temps de recharge
+            local cd = c.cooldowns and c.cooldowns[rec.key]
+            if cd then
+                local left = cd.readyAt - time()
+                table.insert(bits, left > 0 and (UI:Hex(C.warning) .. string.format(T("recharge : %s"), WK:FormatTime(left)) .. "|r")
+                    or (UI:Hex(C.positive) .. T("prête") .. "|r"))
+            end
             table.insert(bits, can > 0 and (UI:Hex(C.positive) .. string.format(T("x%d possibles"), can) .. "|r")
                 or T("composants manquants"))
             if #reag > 0 then table.insert(bits, table.concat(reag, ", ")) end

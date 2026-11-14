@@ -3,8 +3,8 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
-local FILTERS = { { "all", "Tout" }, { "gold", "Or" }, { "mail", "Courrier" }, { "skill", "Métiers" } }
-local ICONS = { gold = "coin", mail = "mail", skill = "hammer", level = "chart", bank = "bag", farm = "play" }
+local FILTERS = { { "all", "Tout" }, { "gold", "Or" }, { "ah", "HV" }, { "mail", "Courrier" }, { "skill", "Métiers" } }
+local ICONS = { gold = "coin", mail = "mail", skill = "hammer", level = "chart", bank = "bag", farm = "play", ahsale = "coin", ahbuy = "coin" }
 local MAX_ROWS = 200
 
 local function charLabel(key)
@@ -48,6 +48,12 @@ local function describe(e)
             UI:ShortGold(e.gold or 0), e.count or 0), string.format(T("session de farm · %s"), WK:FormatTime(e.duration))
     elseif e.kind == "level" then
         return string.format(T("%s atteint le niveau %d"), who, e.level or 0), T("niveau")
+    elseif e.kind == "ahsale" then
+        return string.format(T("%s a vendu %d %s  %s"), who, e.count or 1, e.item or "?", "|cff9ed17a+" .. UI:ShortGold(e.net or 0) .. "|r"),
+            string.format(T("vente à l'HV · prix %s, reçu après commission"), UI:ShortGold(e.gross or 0))
+    elseif e.kind == "ahbuy" then
+        return string.format(T("%s a acheté %d %s  %s"), who, e.count or 1, e.item or "?", "|cffe86a6a-" .. UI:ShortGold(e.gross or 0) .. "|r"),
+            T("achat à l'HV")
     end
     return who, ""
 end
@@ -68,6 +74,7 @@ UI:RegisterPage({
     Build = function(self, p)
         self.filter = "all"
         local seg = UI:Segmented(p, FILTERS, function(k) self.filter = k; self:Refresh() end, 32)
+        self.jseg = seg
         seg:SetPoint("TOPLEFT")
         seg:Select("all")
         self.info = UI:Text(p, 11, C.muted)
@@ -138,6 +145,8 @@ UI:RegisterPage({
             r.icon:SetTexture(UI.MEDIA .. (ICONS[e.kind] or "coin"))
             local col
             if e.kind == "gold" then col = e.delta >= 0 and C.positive or C.negative
+            elseif e.kind == "ahsale" then col = C.positive
+            elseif e.kind == "ahbuy" then col = C.negative
             elseif e.kind == "level" then col = { 0.70, 0.56, 1.0 }
             else col = { UI:Accent() } end
             r.icon:SetVertexColor(col[1], col[2], col[3], 1)

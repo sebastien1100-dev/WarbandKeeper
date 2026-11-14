@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.25.0", date = "14/11/2026",
+        added = {
+            "Fiche métier > « Manquantes » : les recettes que le perso ne connaît pas (toutes les recettes de WoW Forever, d'après wowtbc.gg), avec le niveau requis, où les obtenir (maître, vendeur et sa zone, ou à trouver) et leur prix à l'HV. Filtre « Apprenables » (les plus utiles d'abord) ou « Toutes ».",
+            "Métiers > Recettes : bouton « Rentables maintenant » qui ne garde que les recettes rentables faisables avec les composants du compte, triées par gain total possible.",
+            "Temps de recharge des fabrications (transmutations, étoffe lunaire…) : enregistrés à l'ouverture du métier, affichés sur la recette, et « de nouveau disponible » dans « À faire » du Résumé.",
+            "Hôtel des ventes : les ventes et achats sont lus sur les factures du courrier quand tu en prends l'or ou l'objet. Ils apparaissent dans le Journal (filtre « HV ») et la pastille « Bilan HV 7 j » des Stats donne ventes, achats et meilleures ventes.",
+        },
+        changed = {
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.24.1", date = "14/11/2026",
         added = {
             "Guides : pour chaque recette à acheter, sa disponibilité à l'hôtel des ventes d'après Auctionator (« HV : 1 po 50 pa (vu il y a 2 j) » ou « pas vu à l'HV »), sur la ligne de l'étape, au survol et dans les matériaux.",

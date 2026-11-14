@@ -32,6 +32,11 @@ local function scanModern()
         if r and r.learned and r.name then
             local rec = { name = r.name, icon = r.icon, prof = prof, qty = 1, reagents = {},
                 diff = MODERN_DIFF[r.relativeDifficulty] }
+            -- Temps de recharge (transmutations, étoffe lunaire…)
+            if api.GetRecipeCooldown then
+                local ok, cd = pcall(api.GetRecipeCooldown, id)
+                if ok and type(cd) == "number" and cd > 0 then rec.cooldown = cd end
+            end
             local sch = api.GetRecipeSchematic and api.GetRecipeSchematic(id, false)
             if sch then
                 rec.out = sch.outputItemID
@@ -59,7 +64,9 @@ local function scanClassic()
         local name, kind = GetTradeSkillInfo(i)
         if name and kind ~= "header" and kind ~= "subheader" then
             local link = GetTradeSkillItemLink and GetTradeSkillItemLink(i)
+            local cd = GetTradeSkillCooldown and GetTradeSkillCooldown(i)
             local rec = { name = name, icon = GetTradeSkillIcon and GetTradeSkillIcon(i), prof = prof,
+                cooldown = (type(cd) == "number" and cd > 0) and cd or nil,
                 out = WK:ParseItemID(link), qty = 1, reagents = {},
                 diff = (kind == "optimal" or kind == "medium" or kind == "easy" or kind == "trivial") and kind or nil }
             for j = 1, (GetTradeSkillNumReagents(i) or 0) do
@@ -87,7 +94,15 @@ function M:Scan()
     for k, r in pairs(c.recipes) do
         if prof and r.prof == prof then c.recipes[k] = nil end
     end
-    for k, r in pairs(recipes) do c.recipes[k] = r end
+    -- Temps de recharge : on retient l'heure où la recette sera prête (gardée tant qu'on ne la refait pas).
+    c.cooldowns = c.cooldowns or {}
+    for k, r in pairs(recipes) do
+        if r.cooldown then
+            c.cooldowns[k] = { prof = r.prof or prof, readyAt = time() + r.cooldown, out = r.out }
+        end
+        r.cooldown = nil
+        c.recipes[k] = r
+    end
     if prof then
         c.recipeScans = c.recipeScans or {}
         local p = c.professions and c.professions[prof]
@@ -109,6 +124,16 @@ WK:On("TRADE_SKILL_DATA_SOURCE_CHANGED", schedule)
 ---------------------------------------------------------------------------
 -- Index du compte : qui sait fabriquer quoi.
 ---------------------------------------------------------------------------
+-- Recettes en recharge ou prêtes d'un perso : { key, prof, readyAt, ready }.
+function M:Cooldowns(c)
+    local out, now = {}, time()
+    for k, cd in pairs(c and c.cooldowns or {}) do
+        table.insert(out, { key = k, prof = cd.prof, readyAt = cd.readyAt, out = cd.out, ready = cd.readyAt <= now })
+    end
+    table.sort(out, function(a, b) return a.readyAt < b.readyAt end)
+    return out
+end
+
 -- Recettes d'un perso pour un métier, triées : orange, jaune, vert, gris, puis par nom.
 local DIFF_ORDER = { optimal = 1, medium = 2, easy = 3, trivial = 4 }
 function M:ForProfession(c, prof)
@@ -313,6 +338,27 @@ function M:GuidePlan(prof, rank, known)
         return a.itemID < b.itemID
     end)
     return steps, mats, total, g
+end
+
+---------------------------------------------------------------------------
+-- Recettes manquantes (Modules/RecipeDB.lua : toutes les recettes de chaque métier).
+---------------------------------------------------------------------------
+-- Recettes que ce perso ne connaît pas, triées par niveau requis.
+-- Renvoie la liste et le nombre de recettes du métier dans la base.
+function M:Missing(c, prof)
+    local db = WK.RecipeDB and WK.RecipeDB[prof]
+    if not db then return nil end
+    local known = self:KnownOutputs(c)
+    local list = {}
+    for _, r in ipairs(db) do
+        local isKnown = (r.o and known[r.o]) or false
+        if not isKnown then
+            local name = WK.SpellInfo(r.s)
+            isKnown = name ~= nil and known.names[name] == true
+        end
+        if not isKnown then table.insert(list, r) end
+    end
+    return list, #db
 end
 
 -- Composants manquants du guide vers une liste de courses Auctionator.

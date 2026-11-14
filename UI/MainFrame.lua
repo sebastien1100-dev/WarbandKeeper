@@ -500,9 +500,28 @@ UI.CHIPS = {
         local V = WK.modules.Value
         local now = time()
         local d = V:AccountGold() - WK.modules.Statistics:AccountGoldAt(now - 7 * 86400)
-        return { { T("Richesse totale"), UI:PlainMoney(V:Wealth()), C.gold },
-                 { T("Or"), UI:PlainMoney(V:AccountGold()), C.gold },
-                 { T("Or sur 7 jours"), (d >= 0 and "+" or "") .. UI:PlainMoney(d), d >= 0 and C.positive or C.negative } }
+        local l = { { T("Richesse totale"), UI:PlainMoney(V:Wealth()), C.gold },
+                    { T("Or"), UI:PlainMoney(V:AccountGold()), C.gold },
+                    { T("Or sur 7 jours"), (d >= 0 and "+" or "") .. UI:PlainMoney(d), d >= 0 and C.positive or C.negative } }
+        -- Bilan de l'hôtel des ventes sur 7 jours (ventes nettes - achats)
+        local A = WK.modules.Auction
+        if A then
+            local sm = A:Summary(7)
+            if sm.nSales + sm.nBuys > 0 then
+                local lines = { T("Hôtel des ventes, 7 derniers jours"),
+                    string.format(T("Ventes : %d · %s (après commission)"), sm.nSales, UI:PlainMoney(sm.sales)),
+                    string.format(T("Achats : %d · %s"), sm.nBuys, UI:PlainMoney(sm.buys)) }
+                if #sm.top > 0 then table.insert(lines, " "); table.insert(lines, T("Meilleures ventes :")) end
+                for i, b in ipairs(sm.top) do
+                    if i > 5 then break end
+                    table.insert(lines, string.format("  %d %s : %s", b.count, b.item, UI:PlainMoney(b.net)))
+                end
+                table.insert(l, { T("Bilan HV 7 j"), (sm.balance >= 0 and "+" or "") .. UI:PlainMoney(sm.balance),
+                    sm.balance >= 0 and C.positive or C.negative, "journal", table.concat(lines, "\n"),
+                    function() UI.pages.journal.filter = "ah"; if UI.pages.journal.jseg then UI.pages.journal.jseg:Select("ah") end; UI:Refresh() end })
+            end
+        end
+        return l
     end,
     mail = function()
         local m, b = WK.DB.global.mail, WK.DB.global.bank

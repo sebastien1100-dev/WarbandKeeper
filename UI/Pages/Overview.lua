@@ -33,6 +33,13 @@ local function todoItems()
                     function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, prof) end, C.warning)
             end
         end
+        -- Fabrications à recharge de nouveau prêtes (transmutation, étoffe lunaire…)
+        for _, cd in ipairs(WK.modules.Recipes:Cooldowns(c)) do
+            if cd.ready then
+                add(4, "clock", string.format(WK.T("%s : %s de nouveau disponible"), name, cd.key),
+                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, cd.prof) end, C.positive)
+            end
+        end
         -- Banque pas vue (alertes)
         for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
             if a.kind == "bank" then
