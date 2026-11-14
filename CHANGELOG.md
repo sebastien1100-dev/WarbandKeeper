@@ -14,6 +14,11 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.15.1 — 14/11/2026
+
+### Corrections
+- L'infobulle de la pierre de foyer listait inutilement tous les persos qui l'ont dans leurs sacs.
+
 ## v0.15.0 — 14/11/2026
 
 ### Ajouts

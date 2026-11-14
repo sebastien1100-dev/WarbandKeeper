@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.15.1", date = "14/11/2026",
+        fixed = {
+            "L'infobulle de la pierre de foyer listait inutilement tous les persos qui l'ont dans leurs sacs.",
+        },
+    },
+    {
         version = "0.15.0", date = "14/11/2026",
         added = {
             "Résumé : une enveloppe à côté du nom des persos qui ont du courrier en attente. Elle passe au rouge quand le courrier expire bientôt (seuil réglé dans Options > Alertes).",

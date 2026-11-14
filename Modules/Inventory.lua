@@ -168,11 +168,16 @@ local function tooltipItemID(tooltip, data)
     end
 end
 
+-- Objets que tous les persos ont (le détail par perso n'apporte rien) : pas d'ajout à l'infobulle.
+local NO_TOOLTIP = {
+    [6948] = true, -- Pierre de foyer
+}
+
 -- Info-bulle : quantité par personnage (pas sur les infobulles de comparaison).
 local function onTooltip(tooltip, data)
     if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip then return end
     local itemID = tooltipItemID(tooltip, data)
-    if not itemID then return end
+    if not itemID or NO_TOOLTIP[itemID] then return end
     local any = false
     for key, c in pairs(WK.DB.global.characters) do
         local total, b, k, m = M:CharCount(c, itemID)
