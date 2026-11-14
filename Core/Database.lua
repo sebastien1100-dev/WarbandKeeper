@@ -27,6 +27,9 @@ local defaults = {
         autoTake = false, -- « Tout prendre » automatiquement à l'ouverture (après les envois)
     },
     auction = { log = {} },   -- ventes et achats à l'HV (Modules/Auction.lua)
+    -- Lueur de récolte (Modules/Glow.lua) : désactivée tant que le joueur ne l'allume pas
+    glow = { enabled = false, range = 15, size = 110, intensity = 100, offsetY = -45,
+             hideInCombat = false, hideInInstance = false, onlyTrained = true, cats = {}, colors = {} },
     bank = {
         enabled = true,
         sortAfter = true,  -- trie les sacs après le dépôt automatique

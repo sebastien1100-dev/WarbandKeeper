@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.27.0", date = "14/11/2026",
+        added = {
+            "Lueur de récolte : plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Halo qui respire, plus vif avec un anneau quand l'objet est à portée.",
+            "Options > Lueur : activation (éteinte par défaut), portée, taille, intensité, couleur et activation par type d'objet, et masquage en combat, en instance ou sans le métier de récolte.",
+            "Les réglages du jeu modifiés pour la lueur sont rendus à l'arrêt. Si l'addon Lueur est installé, cette lueur reste éteinte pour ne pas se disputer avec lui.",
+        },
+        changed = {
+            "Nouveaux fichiers et textures : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.26.0", date = "14/11/2026",
         added = {
             "Fiche métier (tous les métiers) : bouton « Lier dans le chat » qui colle le lien de la fenêtre du métier du jeu, cliquable par les autres joueurs. Le lien est enregistré à chaque ouverture du métier, on peut donc le coller depuis n'importe quel perso.",

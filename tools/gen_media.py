@@ -261,10 +261,38 @@ def icon_back():
     save(img, "back", 64)
 
 
+def fx_halo():
+    """Halo doux : blanc au centre, s'éteint vers le bord (alpha gaussien)."""
+    size = 128
+    img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    px = img.load()
+    c = (size - 1) / 2
+    for y in range(size):
+        for x in range(size):
+            r = math.hypot(x - c, y - c) / c
+            a = math.exp(-(r * 2.2) ** 2) if r < 1 else 0
+            px[x, y] = (255, 255, 255, int(255 * a))
+    img.save(os.path.join(OUT, "fxhalo.tga"))
+
+
+def fx_ring():
+    """Anneau lumineux fin aux bords adoucis."""
+    size = 128
+    img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    px = img.load()
+    c = (size - 1) / 2
+    for y in range(size):
+        for x in range(size):
+            r = math.hypot(x - c, y - c) / c
+            a = math.exp(-((r - 0.78) / 0.07) ** 2) if r < 1 else 0
+            px[x, y] = (255, 255, 255, int(255 * a))
+    img.save(os.path.join(OUT, "fxring.tga"))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, fx_halo, fx_ring]:
         fn()
     print("OK")
