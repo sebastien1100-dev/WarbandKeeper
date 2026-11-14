@@ -62,20 +62,18 @@ def icon_circle():
 
 
 def icon_logo():
+    """Étendard de bataillon : hampe + drapeau à queue d'aronde avec un W en creux."""
     img, d, s = canvas(64)
-    # bouclier
-    shield = [(0.5, 0.06), (0.88, 0.2), (0.84, 0.55), (0.5, 0.95), (0.16, 0.55), (0.12, 0.2)]
-    d.polygon([(P(x, s), P(y, s)) for x, y in shield], fill=W)
-    inner = [(0.5, 0.17), (0.77, 0.27), (0.74, 0.53), (0.5, 0.82), (0.26, 0.53), (0.23, 0.27)]
-    d.polygon([(P(x, s), P(y, s)) for x, y in inner], fill=(0, 0, 0, 0))
-    # étoile à 4 branches au centre
-    cx, cy = 0.5, 0.5
-    star = []
-    for i in range(8):
-        a = math.pi / 4 * i - math.pi / 2
-        r = 0.2 if i % 2 == 0 else 0.06
-        star.append((P(cx + math.cos(a) * r, s), P(cy + math.sin(a) * r, s)))
-    d.polygon(star, fill=W)
+    line(d, s, [(0.2, 0.06), (0.2, 0.95)], 0.07)
+    circle(d, s, 0.2, 0.06, 0.06)
+    flag = [(0.26, 0.12), (0.86, 0.12), (0.86, 0.72), (0.56, 0.6), (0.26, 0.72)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in flag], fill=W)
+    wpts = [(0.36, 0.24), (0.44, 0.48), (0.56, 0.32), (0.68, 0.48), (0.76, 0.24)]
+    pts = [(P(x, s), P(y, s)) for x, y in wpts]
+    d.line(pts, fill=(0, 0, 0, 0), width=int(0.055 * s), joint="curve")
+    r = 0.055 * s / 2
+    for x, y in (pts[0], pts[-1]):
+        d.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0, 0))
     save(img, "logo", 64)
 
 
