@@ -57,7 +57,7 @@ UI:RegisterPage({
             end)
             r:SetScript("OnClick", function(self)
                 local _, _, _, _, _, link = UI:ItemInfo(self.itemID)
-                if IsModifiedClick("CHATLINK") and link and ChatEdit_InsertLink then ChatEdit_InsertLink(link) end
+                if IsModifiedClick("CHATLINK") and link then WK.InsertChatLink(link) end
             end)
             return r
         end)
@@ -77,6 +77,16 @@ UI:RegisterPage({
                         it.per[name] = (it.per[name] or 0) + n
                     end
                 end
+            end
+        end
+
+        local wb = WK.DB.global.warbank
+        if wb and self.where ~= "bags" then
+            for id, n in pairs(wb.items) do
+                local it = items[id]
+                if not it then it = { id = id, total = 0, per = {} }; items[id] = it end
+                it.total = it.total + n
+                it.per["Bataillon"] = (it.per["Bataillon"] or 0) + n
             end
         end
 

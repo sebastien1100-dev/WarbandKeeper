@@ -1,9 +1,9 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Inventory")
 
-local BACKPACK, NUM_BAGS = 0, (NUM_BAG_SLOTS or 4)
-local BANK_CONTAINER = BANK_CONTAINER or -1
-local NUM_BANK_BAGS = NUM_BANKBAGSLOTS or 7
+local BI = Enum and Enum.BagIndex
+-- Sacs équipés : sac à dos (0) + 4 sacs (+ sac de composants sur le client moderne).
+local NUM_BAGS = NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4
 
 -- Agrège le contenu d'une liste de conteneurs en { [itemID] = quantité }.
 local function scan(bags)
@@ -20,14 +20,42 @@ end
 
 function M:BagList()
     local t = {}
-    for b = BACKPACK, NUM_BAGS do table.insert(t, b) end
+    for b = 0, NUM_BAGS do table.insert(t, b) end
     return t
 end
 
+-- Banque du personnage : onglets (client récent) ou banque + sacs de banque (ancien).
 function M:BankList()
-    local t = { BANK_CONTAINER }
-    for b = NUM_BAGS + 1, NUM_BAGS + NUM_BANK_BAGS do table.insert(t, b) end
+    local t = {}
+    if BI and BI.CharacterBankTab_1 then
+        for i = 1, 6 do
+            local b = BI["CharacterBankTab_" .. i]
+            if b then table.insert(t, b) end
+        end
+        return t
+    end
+    table.insert(t, BANK_CONTAINER or (BI and BI.Bank) or -1)
+    if BI and BI.Reagentbank then table.insert(t, BI.Reagentbank) end
+    for b = NUM_BAGS + 1, NUM_BAGS + (NUM_BANKBAGSLOTS or 7) do table.insert(t, b) end
     return t
+end
+
+-- Banque de bataillon (commune au compte), si le client la propose.
+function M:WarbandList()
+    local t = {}
+    if BI and BI.AccountBankTab_1 then
+        for i = 1, 5 do
+            local b = BI["AccountBankTab_" .. i]
+            if b then table.insert(t, b) end
+        end
+    end
+    return t
+end
+
+local function totalSlots(bags)
+    local n = 0
+    for _, b in ipairs(bags) do n = n + (WK.Container.NumSlots(b) or 0) end
+    return n
 end
 
 function M:ScanBags()
@@ -47,8 +75,16 @@ local bankOpen = false
 function M:ScanBank()
     if not bankOpen then return end
     local c = WK.DB:Me()
-    c.bank = scan(self:BankList())
-    c.bankScanned = time()
+    -- On n'écrase pas les données si la banque n'est pas réellement accessible.
+    local bank = self:BankList()
+    if totalSlots(bank) > 0 then
+        c.bank = scan(bank)
+        c.bankScanned = time()
+    end
+    local wb = self:WarbandList()
+    if #wb > 0 and totalSlots(wb) > 0 then
+        WK.DB.global.warbank = { items = scan(wb), scanned = time() }
+    end
     WK.modules.Statistics:UpdateItems()
     WK:NotifyChanged()
 end
@@ -78,6 +114,8 @@ function M:AccountCount(itemID)
     for _, c in pairs(WK.DB.global.characters) do
         total = total + ((c.bags or {})[itemID] or 0) + ((c.bank or {})[itemID] or 0)
     end
+    local wb = WK.DB.global.warbank
+    if wb then total = total + (wb.items[itemID] or 0) end
     return total
 end
 
@@ -91,7 +129,7 @@ function M:Find(query)
             for itemID, count in pairs(c[where] or {}) do
                 local match = (id and itemID == id)
                 if not match and not id then
-                    local name = GetItemInfo(itemID)
+                    local name = WK.GetItemInfo(itemID)
                     match = name and string.find(string.lower(name), q, 1, true)
                 end
                 if match then
@@ -117,6 +155,12 @@ local function onTooltip(tooltip)
             if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
             tooltip:AddDoubleLine(key, string.format("%d (%s %d, %s %d)", b + k, WK.L.BAGS, b, WK.L.BANK, k), 1, 1, 1, 1, 1, 1)
         end
+    end
+    local wb = WK.DB.global.warbank
+    local w = wb and wb.items[itemID] or 0
+    if w > 0 then
+        if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+        tooltip:AddDoubleLine("Banque de bataillon", tostring(w), 1, 1, 1, 1, 1, 1)
     end
     if any then tooltip:Show() end
 end

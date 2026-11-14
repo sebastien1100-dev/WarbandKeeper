@@ -48,7 +48,8 @@ function M:SendNext()
         ClickSendMailItemButton(i)
     end
     WK:Print(string.format(WK.L.MAIL_SENDING, #mail.items, mail.recipient))
-    SendMail(mail.recipient, "Warband Keeper", "")
+    local send = SendMail or (C_Mail and C_Mail.SendMail)
+    send(mail.recipient, "Warband Keeper", "")
 end
 
 function M:Run()

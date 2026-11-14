@@ -186,7 +186,7 @@ end
 
 -- Infos d'objet avec demande de chargement si l'objet n'est pas en cache.
 function UI:ItemInfo(itemID)
-    local name, link, quality = GetItemInfo(itemID)
+    local name, link, quality = WK.GetItemInfo(itemID)
     if not name and C_Item and C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(itemID) end
     local icon = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(itemID))
         or (GetItemIcon and GetItemIcon(itemID)) or "Interface\\Icons\\INV_Misc_QuestionMark"

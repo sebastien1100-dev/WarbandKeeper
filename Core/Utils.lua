@@ -40,8 +40,20 @@ function WK:ParseItemID(arg)
     return id
 end
 
+-- API moderne (C_Item) avec repli sur l'ancienne fonction globale.
+function WK.GetItemInfo(itemID)
+    if C_Item and C_Item.GetItemInfo then return C_Item.GetItemInfo(itemID) end
+    if GetItemInfo then return GetItemInfo(itemID) end
+end
+
+-- Insère un lien d'objet dans la zone de saisie du chat.
+function WK.InsertChatLink(link)
+    if ChatFrameUtil and ChatFrameUtil.InsertLink then return ChatFrameUtil.InsertLink(link) end
+    if ChatEdit_InsertLink then return ChatEdit_InsertLink(link) end
+end
+
 function WK:ItemName(itemID)
-    local name, link = GetItemInfo(itemID)
+    local name, link = WK.GetItemInfo(itemID)
     return link or name or ("item:" .. itemID)
 end
 

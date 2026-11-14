@@ -3,6 +3,7 @@ local M = WK:NewModule("Professions")
 
 -- Lecture des métiers via les compétences (API Classic : GetSkillLineInfo).
 function M:Scan()
+    if GetProfessions and GetProfessionInfo then return self:ScanModern() end
     if not GetNumSkillLines then return end
     local c = WK.DB:Me()
     local profs = {}
@@ -21,8 +22,22 @@ function M:Scan()
     WK:NotifyChanged()
 end
 
+-- Client moderne : GetProfessions() renvoie jusqu'à 5 index (peuvent être nil).
+function M:ScanModern()
+    local c = WK.DB:Me()
+    local profs = {}
+    local p1, p2, arch, fish, cook = GetProfessions()
+    for _, idx in pairs({ p1, p2, arch, fish, cook }) do
+        local name, _, rank, maxRank = GetProfessionInfo(idx)
+        if name then profs[name] = { rank = rank, max = maxRank } end
+    end
+    c.professions = profs
+    WK:NotifyChanged()
+end
+
 function M:OnLogin() self:Scan() end
 WK:On("SKILL_LINES_CHANGED", function() M:Scan() end)
+WK:On("TRADE_SKILL_LIST_UPDATE", function() M:Scan() end)
 
 function M:Print()
     for key, c in pairs(WK.DB.global.characters) do
