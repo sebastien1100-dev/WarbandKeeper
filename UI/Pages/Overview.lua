@@ -4,6 +4,81 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 local TOP_H = 232
+local TODO_W = 300
+
+-- Liste « À faire » : actions utiles maintenant, les plus urgentes d'abord.
+-- { prio (petit = urgent), icon, text, color?, go = function() }
+local function todoItems()
+    local items = {}
+    local function add(prio, icon, text, go, color) table.insert(items, { prio = prio, icon = icon, text = text, go = go, color = color }) end
+    local now = time()
+    local mailDays = WK.DB.global.settings.alerts.mailDays or 3
+    local me = select(2, WK.DB:Me())
+    for _, e in ipairs(UI:SortedCharacters()) do
+        local c, name = e.c, WK:CharName(e.c, e.key)
+        -- Courrier en attente
+        local box = c.mailbox
+        if box and (box.count or 0) > 0 then
+            local d = box.expiresAt and math.max(0, math.floor((box.expiresAt - now) / 86400))
+            local soon = d and d <= mailDays
+            local txt = string.format(box.count > 1 and WK.T("%d lettres à récupérer sur %s") or WK.T("%d lettre à récupérer sur %s"), box.count, name)
+            if d then txt = txt .. "  ·  " .. string.format(WK.T("expire dans %d j"), d) end
+            add(soon and 1 or 6, "mail", txt, function() UI:ShowPage("mail"); UI.pages.mail:SetTab("receive") end, soon and C.negative or nil)
+        end
+        -- Métier bloqué au plafond de son rang (75, 150, 225…)
+        for prof, pr in pairs(c.professions or {}) do
+            if (pr.max or 0) > 0 and pr.max < 300 and (pr.rank or 0) >= pr.max
+                and not WK.modules.Gathering:Kind(prof) and prof ~= "Pêche" and prof ~= "Fishing" then
+                add(3, "hammer", string.format(WK.T("%s : %s au plafond %d, va voir le maître"), name, prof, pr.max),
+                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, prof) end, C.warning)
+            end
+        end
+        -- Banque pas vue (alertes)
+        for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
+            if a.kind == "bank" then
+                add(5, "home", name .. " : " .. a.text, function() UI:ShowPage("characters") end)
+            end
+        end
+    end
+    -- Butin automatique du jeu actif : le filtre de loot ne peut pas choisir
+    local L = WK.modules.Loot
+    if WK.DB.global.loot.enabled and L:GameAutoLoot() then
+        add(2, "filter", WK.T("Butin automatique du jeu activé : le filtre de loot ne peut pas choisir"),
+            function() UI:ShowPage("loot") end, C.negative)
+    end
+    -- Objets à envoyer / à déposer depuis les sacs du perso connecté
+    if WK.DB.global.mail.enabled then
+        local n = WK.modules.Mail:PendingCount()
+        if n > 0 then
+            add(4, "mail", string.format(WK.T("%d objets à envoyer à la prochaine boîte aux lettres"), n),
+                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("send") end)
+        end
+    end
+    if WK.DB.global.bank.enabled then
+        local n = 0
+        for _, e in ipairs(WK.modules.BankDeposit:Plan()) do for _, op in ipairs(e.ops) do n = n + op.count end end
+        if n > 0 then
+            add(4, "bag", string.format(WK.T("%d objets à déposer à la prochaine banque"), n),
+                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("bank") end)
+        end
+    end
+    -- Session de farm en pause
+    local F = WK.modules.Farm
+    if F:Active() and F:Current().paused then
+        add(4, "pause", WK.T("Session de farm en pause"), function() UI:ShowPage("farm") end, C.warning)
+    end
+    -- Liste de courses : composants manquants
+    if next(WK.DB.global.shopping) then
+        local missing = 0
+        for _, m in ipairs((WK.modules.Recipes:Needs())) do if m.missing > 0 then missing = missing + 1 end end
+        if missing > 0 then
+            add(7, "search", string.format(WK.T("Liste de courses : %d composant(s) manquant(s)"), missing),
+                function() UI:ShowPage("professions"); UI.pages.professions:SetTab("shopping") end)
+        end
+    end
+    table.sort(items, function(a, b) if a.prio ~= b.prio then return a.prio < b.prio end return a.text < b.text end)
+    return items
+end
 local GAP = 16
 local GOAL_H = 54
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
@@ -44,12 +119,44 @@ UI:RegisterPage({
         local k = UI.PAGE_W / 924
         for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
 
-        -- (L'ancien bloc « or du compte + chiffres clés » est retiré : les pastilles de
-        -- l'en-tête donnent déjà ces chiffres.)
+        -- À faire (à gauche de la courbe) ------------------------------------------
+        local todo = UI:Card(p, "À faire")
+        todo:SetPoint("TOPLEFT")
+        todo:SetSize(TODO_W, TOP_H)
+        self.todoCount = UI:Text(todo, 11, C.muted)
+        self.todoCount:SetPoint("TOPRIGHT", -16, -15)
+        self.todoCount:SetJustifyH("RIGHT")
+        local tscroll = UI:Scroll(todo)
+        tscroll:SetPoint("TOPLEFT", 8, -40)
+        tscroll:SetPoint("BOTTOMRIGHT", -6, 8)
+        self.todoScroll = tscroll
+        self.todoEmpty = UI:Text(todo, 12, C.muted)
+        self.todoEmpty:SetPoint("CENTER", 0, -10)
+        self.todoEmpty:SetText("Rien à faire : tout est à jour.")
+        self.todoRows = UI:Pool(function()
+            local r = CreateFrame("Button", nil, tscroll.child)
+            r:SetHeight(40)
+            r.hl = CreateFrame("Frame", nil, r)
+            r.hl:SetAllPoints()
+            r.hl:SetFrameLevel(math.max(0, r:GetFrameLevel() - 1))
+            UI:Rounded(r.hl, 9, 0, "BACKGROUND", 1):SetColor(unpack(C.hover))
+            r.hl:Hide()
+            r.icon = UI:Icon(r, "mail", 14)
+            r.icon:SetPoint("TOPLEFT", 8, -7)
+            r.text = UI:Text(r, 11)
+            r.text:SetPoint("TOPLEFT", 30, -6)
+            r.text:SetPoint("TOPRIGHT", -6, -6)
+            r.text:SetJustifyH("LEFT")
+            if r.text.SetWordWrap then r.text:SetWordWrap(true) end
+            r:SetScript("OnEnter", function(s) s.hl:Show() end)
+            r:SetScript("OnLeave", function(s) s.hl:Hide() end)
+            r:SetScript("OnClick", function(s) if s.go then s.go() end end)
+            return r
+        end)
 
         -- Courbe d'évolution -----------------------------------------------------------
         local card = UI:Card(p, nil, nil, true)
-        card:SetPoint("TOPLEFT", 0, 0)
+        card:SetPoint("TOPLEFT", TODO_W + GAP, 0)
         card:SetPoint("TOPRIGHT", 0, 0)
         card:SetHeight(TOP_H)
         local ct = UI:Text(card, 12, C.muted)
@@ -207,6 +314,28 @@ UI:RegisterPage({
         local S = WK.modules.Statistics
         local now = time()
         local chars = UI:SortedCharacters()
+
+        -- À faire
+        self.todoRows:Reset()
+        local items = todoItems()
+        local ty = 0
+        for _, it in ipairs(items) do
+            local r = self.todoRows:Get()
+            r.go = it.go
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -ty)
+            r:SetPoint("TOPRIGHT", 0, -ty)
+            r.icon:SetTexture(UI.MEDIA .. it.icon)
+            r.icon:SetVertexColor(unpack(it.color or C.muted))
+            r.text:SetText(it.text)
+            r.text:SetTextColor(unpack(it.color or C.text))
+            local h = math.max(28, math.ceil((r.text:GetStringHeight() or 13) + 14))
+            r:SetHeight(h)
+            ty = ty + h + 2
+        end
+        self.todoScroll:SetContentHeight(ty)
+        self.todoEmpty:SetShown(#items == 0)
+        self.todoCount:SetText(#items > 0 and tostring(#items) or "")
 
         -- Objectifs
         self.goalCards:Reset()

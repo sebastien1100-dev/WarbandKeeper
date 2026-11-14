@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.21.0", date = "14/11/2026",
+        added = {
+            "Résumé : carte « À faire » à gauche de la courbe, avec les actions utiles du moment, les plus urgentes d'abord : courrier à récupérer (en rouge s'il expire bientôt), butin automatique du jeu qui bloque le filtre, métier au plafond de son rang à faire monter chez le maître, objets à envoyer ou à déposer, banque pas vue, session de farm en pause, composants manquants de la liste de courses.",
+            "Chaque ligne de « À faire » est cliquable et mène à la bonne page.",
+        },
+    },
+    {
         version = "0.20.1", date = "14/11/2026",
         changed = {
             "Résumé : le bloc « Or du compte » et ses tuiles (persos, temps de jeu, règles, à envoyer) est retiré, il faisait doublon avec les pastilles du haut. La courbe d'évolution de l'or prend toute la largeur.",
@@ -440,7 +447,6 @@ WK.Changelog = {
 WK.Roadmap = {
     "Guides de montée des autres métiers (Couture, Forge, Alchimie, Enchantement, Ingénierie) d'après les guides WoW Forever.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
-    "Rappel du maître de métier quand un perso arrive au plafond de son rang (75, 150, 225).",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.",
 }

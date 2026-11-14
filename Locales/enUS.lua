@@ -401,6 +401,18 @@ WK.Locales.enUS.text = {
     ["Maleterres de l'Ouest"] = "Western Plaguelands",
     ["Maleterres de l'Est"] = "Eastern Plaguelands",
 
+    -- À faire (Résumé)
+    ["À faire"] = "To do",
+    ["Rien à faire : tout est à jour."] = "Nothing to do: all up to date.",
+    ["%d lettres à récupérer sur %s"] = "%d letters to collect on %s",
+    ["%d lettre à récupérer sur %s"] = "%d letter to collect on %s",
+    ["%s : %s au plafond %d, va voir le maître"] = "%s: %s capped at %d, visit the trainer",
+    ["Butin automatique du jeu activé : le filtre de loot ne peut pas choisir"] = "Game auto-loot is on: the loot filter cannot choose",
+    ["%d objets à envoyer à la prochaine boîte aux lettres"] = "%d items to send at the next mailbox",
+    ["%d objets à déposer à la prochaine banque"] = "%d items to deposit at the next bank",
+    ["Session de farm en pause"] = "Farm session paused",
+    ["Liste de courses : %d composant(s) manquant(s)"] = "Shopping list: %d reagent(s) missing",
+
     -- Pastilles de l'en-tête
     ["Temps de jeu total"] = "Total played",
     ["Tous les persos du compte"] = "All characters on the account",
