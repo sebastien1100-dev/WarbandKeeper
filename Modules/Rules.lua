@@ -17,6 +17,10 @@ M.CATEGORIES = {
     { key = "gems", label = "Gemmes", class = 3 },
     { key = "consumables", label = "Consommables", class = 0 },
     { key = "recipes", label = "Recettes", class = 9 },
+    -- Objets « lié quand équipé » (encore libres) à partir d'une qualité : 2 vert, 3 bleu, 4 épique.
+    { key = "boe", label = "Objets LQE (vert et +)", boe = 2 },
+    { key = "boe_rare", label = "Objets LQE (bleu et +)", boe = 3 },
+    { key = "boe_epic", label = "Objets LQE (épiques)", boe = 4 },
 }
 M.byKey = {}
 for _, c in ipairs(M.CATEGORIES) do M.byKey[c.key] = c end
@@ -34,8 +38,14 @@ function M:ItemClass(itemID)
     return classID, subclassID
 end
 
+-- Objet « lié quand équipé » ? Renvoie aussi sa qualité. (bindType 2 = LQE)
+function M:BoE(itemID)
+    local _, _, quality, _, _, _, _, _, _, _, _, _, _, bindType = WK.GetItemInfo(itemID)
+    return bindType == 2, quality or 0
+end
+
 -- Règle applicable à un objet dans un magasin { items = {[id]=règle}, cats = {[clé]=règle} } :
--- règle d'objet > catégorie précise (sous-classe) > catégorie large (classe).
+-- règle d'objet > catégorie précise (sous-classe) > objets LQE > catégorie large (classe).
 function M:Resolve(store, itemID)
     local r = store.items[itemID]
     if type(r) == "string" then -- ancien format (nom du destinataire seul)
@@ -56,6 +66,16 @@ function M:Resolve(store, itemID)
             end
         end
     end
+    -- LQE : la catégorie la plus exigeante qui correspond (épique avant bleu avant vert).
+    local checked, isBoE, quality, best = false, false, 0, nil
+    for key, rule in pairs(store.cats) do
+        local c = self.byKey[key]
+        if c and c.boe then
+            if not checked then isBoE, quality = self:BoE(itemID); checked = true end
+            if isBoE and quality >= c.boe and (not best or c.boe > best[3]) then best = { rule, key, c.boe } end
+        end
+    end
+    if best then return best[1], best[2] end
     if broad then return broad[1], broad[2] end
 end
 
