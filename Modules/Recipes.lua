@@ -6,6 +6,11 @@ local T = function(s) return WK.T(s) end
 -- c.recipes[clé] = { name, icon, prof, out = itemID produit, qty = quantité produite,
 --                    reagents = { { itemID, count }, ... } }
 -- La clé d'une recette est son nom (identique d'un perso à l'autre).
+-- diff = couleur de la recette lors de la lecture : "optimal" (orange), "medium" (jaune),
+--        "easy" (vert), "trivial" (gris). c.recipeScans[métier] = { t = date, rank = niveau }.
+
+-- Couleurs du client moderne (Enum.TradeskillRelativeDifficulty : 0 orange … 3 gris).
+local MODERN_DIFF = { [0] = "optimal", [1] = "medium", [2] = "easy", [3] = "trivial" }
 
 local function keyOf(name) return name end
 
@@ -25,7 +30,8 @@ local function scanModern()
     for _, id in ipairs(api.GetAllRecipeIDs() or {}) do
         local r = api.GetRecipeInfo(id)
         if r and r.learned and r.name then
-            local rec = { name = r.name, icon = r.icon, prof = prof, qty = 1, reagents = {} }
+            local rec = { name = r.name, icon = r.icon, prof = prof, qty = 1, reagents = {},
+                diff = MODERN_DIFF[r.relativeDifficulty] }
             local sch = api.GetRecipeSchematic and api.GetRecipeSchematic(id, false)
             if sch then
                 rec.out = sch.outputItemID
@@ -54,7 +60,8 @@ local function scanClassic()
         if name and kind ~= "header" and kind ~= "subheader" then
             local link = GetTradeSkillItemLink and GetTradeSkillItemLink(i)
             local rec = { name = name, icon = GetTradeSkillIcon and GetTradeSkillIcon(i), prof = prof,
-                out = WK:ParseItemID(link), qty = 1, reagents = {} }
+                out = WK:ParseItemID(link), qty = 1, reagents = {},
+                diff = (kind == "optimal" or kind == "medium" or kind == "easy" or kind == "trivial") and kind or nil }
             for j = 1, (GetTradeSkillNumReagents(i) or 0) do
                 local _, _, count = GetTradeSkillReagentInfo(i, j)
                 local id = WK:ParseItemID(GetTradeSkillReagentItemLink and GetTradeSkillReagentItemLink(i, j))
@@ -81,6 +88,11 @@ function M:Scan()
         if prof and r.prof == prof then c.recipes[k] = nil end
     end
     for k, r in pairs(recipes) do c.recipes[k] = r end
+    if prof then
+        c.recipeScans = c.recipeScans or {}
+        local p = c.professions and c.professions[prof]
+        c.recipeScans[prof] = { t = time(), rank = p and p.rank }
+    end
     WK:NotifyChanged()
 end
 
@@ -97,6 +109,24 @@ WK:On("TRADE_SKILL_DATA_SOURCE_CHANGED", schedule)
 ---------------------------------------------------------------------------
 -- Index du compte : qui sait fabriquer quoi.
 ---------------------------------------------------------------------------
+-- Recettes d'un perso pour un métier, triées : orange, jaune, vert, gris, puis par nom.
+local DIFF_ORDER = { optimal = 1, medium = 2, easy = 3, trivial = 4 }
+function M:ForProfession(c, prof)
+    local list = {}
+    for k, r in pairs(c and c.recipes or {}) do
+        if r.prof == prof then
+            table.insert(list, { key = k, name = r.name, icon = r.icon, prof = r.prof, out = r.out,
+                qty = r.qty or 1, reagents = r.reagents, diff = r.diff })
+        end
+    end
+    table.sort(list, function(a, b)
+        local da, db = DIFF_ORDER[a.diff] or 5, DIFF_ORDER[b.diff] or 5
+        if da ~= db then return da < db end
+        return a.name < b.name
+    end)
+    return list
+end
+
 function M:All()
     local index = {}
     for key, c in pairs(WK.DB.global.characters) do

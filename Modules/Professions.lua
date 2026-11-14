@@ -40,10 +40,26 @@ function M:ScanModern()
     local profs = {}
     local p1, p2, arch, fish, cook = GetProfessions()
     for _, idx in pairs({ p1, p2, arch, fish, cook }) do
-        local name, _, rank, maxRank = GetProfessionInfo(idx)
-        if name then profs[name] = { rank = rank, max = maxRank } end
+        local name, icon, rank, maxRank, _, _, skillLine = GetProfessionInfo(idx)
+        if name then profs[name] = { rank = rank, max = maxRank, icon = icon, skillLine = skillLine } end
     end
     M:Store(c, profs)
+end
+
+-- Sort qui ouvre la fenêtre d'un métier (le minage ouvre la fonte).
+local OPEN_SPELL = { ["Minage"] = "Fondre", ["Mining"] = "Smelting" }
+function M:OpenSpell(prof) return OPEN_SPELL[prof] or prof end
+
+-- Ouvre la fenêtre du métier du perso connecté par l'API, si le client le permet.
+-- Renvoie false si le bouton doit lancer le sort du métier à la place.
+function M:OpenDirect(prof)
+    local c = WK.DB:Me()
+    local p = c.professions and c.professions[prof]
+    if p and p.skillLine and C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill then
+        local ok = pcall(C_TradeSkillUI.OpenTradeSkill, p.skillLine)
+        if ok then return true end
+    end
+    return false
 end
 
 function M:OnLogin() self:Scan() end

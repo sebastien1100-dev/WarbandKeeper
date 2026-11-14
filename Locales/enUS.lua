@@ -322,6 +322,21 @@ WK.Locales.enUS.text = {
 
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
+    -- Fiche métier
+    ["Clic : recettes et détail du métier"] = "Click: recipes and profession details",
+    ["Retour aux niveaux"] = "Back to levels",
+    ["Ouvrir le métier"] = "Open profession",
+    ["Font monter"] = "Skill-ups",
+    ["Rechercher une recette..."] = "Search a recipe...",
+    ["Orange"] = "Orange",
+    ["Jaune"] = "Yellow",
+    ["Vert"] = "Green",
+    ["Gris"] = "Grey",
+    ["Recettes lues le %s"] = "Recipes read on %s",
+    ["Aucune recette enregistrée pour ce métier. Ouvre la fenêtre de %s sur %s pour les lire (un métier de récolte n'en a pas)."] = "No recipes recorded for this profession. Open the %s window on %s to read them (gathering professions have none).",
+    ["Aucune recette ne correspond au filtre."] = "No recipe matches the filter.",
+    ["Toutes"] = "All",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }
