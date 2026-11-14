@@ -14,6 +14,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.17.0 — 14/11/2026
+
+### Ajouts
+- Loot : bouton « Voir la liste » qui affiche tous les objets laissés au sol, avec la quantité, le nombre de fois, la dernière fois, le prix à l'unité et la valeur totale.
+- Liste des objets laissés au sol : tri par valeur, quantité ou récents, total en haut, bouton + pour toujours ramasser un objet, et Maj + clic sur « Vider la liste » pour repartir de zéro.
+
+### Modifications
+- Les objets laissés au sol sont maintenant cumulés depuis la dernière remise à zéro (avant, seuls les 40 derniers étaient gardés).
+
 ## v0.16.2 — 14/11/2026
 
 ### Modifications

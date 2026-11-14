@@ -40,6 +40,8 @@ function M:OnInit()
         d.active = 1
     end
     d.recent = d.recent or {}
+    d.left = d.left or {}          -- [itemID] = { n = quantité, times = fois, last = date, name }
+    d.leftSince = d.leftSince or time()
     self.leftSession = 0
 end
 
@@ -152,6 +154,34 @@ function M:DisableGameAutoLoot()
     WK:NotifyChanged()
 end
 
+-- Liste cumulée des objets laissés au sol, avec leur prix (unitaire et total).
+-- sort : "value" (valeur totale), "count" (quantité) ou "recent".
+function M:LeftList(sort)
+    local d = db()
+    local V = WK.modules.Value
+    local list, total, count = {}, 0, 0
+    for id, e in pairs(d.left or {}) do
+        local unit, src = V:Price(id)
+        local item = { id = id, n = e.n, times = e.times, last = e.last, name = e.name,
+            unit = unit or 0, src = src, value = (unit or 0) * e.n }
+        total, count = total + item.value, count + e.n
+        table.insert(list, item)
+    end
+    table.sort(list, function(a, b)
+        if sort == "count" and a.n ~= b.n then return a.n > b.n end
+        if sort == "recent" and a.last ~= b.last then return (a.last or 0) > (b.last or 0) end
+        if a.value ~= b.value then return a.value > b.value end
+        return (a.name or "") < (b.name or "")
+    end)
+    return list, total, count, d.leftSince
+end
+
+function M:ClearLeft()
+    local d = db()
+    d.left, d.leftSince = {}, time()
+    WK:NotifyChanged()
+end
+
 local handled = false
 local function onLoot()
     local d = db()
@@ -178,6 +208,11 @@ local function onLoot()
                     M.leftSession = M.leftSession + (quantity or 1)
                     table.insert(d.recent, 1, { id = id, n = quantity or 1, t = time(), name = name })
                     while #d.recent > MAX_RECENT do table.remove(d.recent) end
+                    if id then
+                        local e = d.left[id] or { n = 0, times = 0 }
+                        e.n, e.times, e.last, e.name = e.n + (quantity or 1), e.times + 1, time(), name or e.name
+                        d.left[id] = e
+                    end
                 end
             end
         end

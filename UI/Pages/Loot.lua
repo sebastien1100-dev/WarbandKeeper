@@ -162,6 +162,14 @@ UI:RegisterPage({
         -- Bas de colonne : objets laissés au sol.
         self.leftCount = UI:Text(left, 11, C.muted)
         self.leftCount:SetPoint("BOTTOMLEFT", 14, 14)
+        local listBtn = UI:Button(left, "Voir la liste", nil, 24, "secondary", "notes")
+        listBtn:SetPoint("BOTTOMLEFT", 10, 34)
+        listBtn:SetPoint("BOTTOMRIGHT", -10, 34)
+        listBtn.tooltip = "Tous les objets laissés au sol, avec leur prix."
+        listBtn:SetScript("OnClick", function()
+            self.leftPanel:SetShown(not self.leftPanel:IsShown())
+            self:RefreshLeft()
+        end)
         self.recentRows = UI:Pool(function()
             local r = CreateFrame("Button", nil, left)
             r:SetHeight(24)
@@ -207,6 +215,112 @@ UI:RegisterPage({
         self.body = body
         body:SetPoint("TOPLEFT", x0, TOP)
         body:SetPoint("BOTTOMRIGHT")
+
+        -- Liste de tous les objets laissés au sol, avec leur prix (par-dessus la colonne de droite).
+        local lp = UI:Card(p, "Objets laissés au sol")
+        lp:SetPoint("TOPLEFT", x0, TOP)
+        lp:SetPoint("BOTTOMRIGHT")
+        lp:SetFrameLevel(p:GetFrameLevel() + 40)
+        lp:EnableMouse(true)
+        lp:Hide()
+        self.leftPanel = lp
+        local close = UI:IconButton(lp, "close", 26, "Fermer la liste")
+        close:SetPoint("TOPRIGHT", -10, -8)
+        close:SetScript("OnClick", function() lp:Hide() end)
+        self.lpSummary = UI:Text(lp, 11, C.muted)
+        self.lpSummary:SetPoint("TOPLEFT", 16, -36)
+        self.lpSummary:SetPoint("TOPRIGHT", -16, -36)
+        self.lpSort = "value"
+        local sortSeg = UI:Segmented(lp, { { "value", "Valeur" }, { "count", "Quantité" }, { "recent", "Récents" } },
+            function(k) self.lpSort = k; self:RefreshLeft() end, 30)
+        sortSeg:SetPoint("TOPLEFT", 12, -56)
+        sortSeg:Select("value")
+        local clear = UI:Button(lp, "Vider la liste", nil, 28, "ghost", "trash")
+        clear:SetPoint("TOPRIGHT", -12, -57)
+        clear.tooltip = "Maj + clic : remet la liste à zéro."
+        clear:SetScript("OnClick", function()
+            if IsShiftKeyDown() then L:ClearLeft(); self:RefreshLeft() end
+        end)
+        local lscroll = UI:Scroll(lp)
+        lscroll:SetPoint("TOPLEFT", 10, -96)
+        lscroll:SetPoint("BOTTOMRIGHT", -8, 10)
+        self.lpScroll = lscroll
+        self.lpEmpty = UI:Text(lp, 12, C.muted)
+        self.lpEmpty:SetPoint("TOP", lscroll, "TOP", 0, -40)
+        self.lpEmpty:SetText("Aucun objet laissé au sol pour l'instant.")
+        self.lpRows = UI:Pool(function()
+            local r = CreateFrame("Button", nil, lscroll.child)
+            r:SetHeight(42)
+            r.bg = UI:Rounded(r, 10, 0, "BACKGROUND", 1)
+            r.bg:SetColor(unpack(C.surface2))
+            r.icon = UI:RoundIcon(r, 26)
+            r.icon:SetPoint("LEFT", 10, 0)
+            r.add = UI:IconButton(r, "plus", 26, "Toujours ramasser cet objet (profil sélectionné)")
+            r.add:SetPoint("RIGHT", -8, 0)
+            r.add:SetScript("OnClick", function(b)
+                local prof = L:Get(self.sel)
+                if prof and b.itemID then prof.always[b.itemID] = true; prof.never[b.itemID] = nil; self:Refresh() end
+            end)
+            r.value = UI:Text(r, 13)
+            r.value:SetPoint("TOPRIGHT", -44, -7)
+            r.value:SetJustifyH("RIGHT")
+            r.unit = UI:Text(r, 10, C.muted)
+            r.unit:SetPoint("TOPRIGHT", r.value, "BOTTOMRIGHT", 0, -3)
+            r.unit:SetJustifyH("RIGHT")
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("TOPLEFT", 46, -7)
+            r.name:SetPoint("TOPRIGHT", -200, -7)
+            r.sub = UI:Text(r, 10, C.muted)
+            r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
+            r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -3)
+            r:SetScript("OnEnter", function(s)
+                if not s.itemID then return end
+                GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.itemID)
+                else GameTooltip:SetHyperlink("item:" .. s.itemID) end
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            r:SetScript("OnClick", function(s)
+                if IsShiftKeyDown() and s.itemID then
+                    local _, link = WK.GetItemInfo(s.itemID)
+                    if link then WK.InsertChatLink(link) end
+                end
+            end)
+            return r
+        end)
+
+        function self:RefreshLeft()
+            if not lp:IsShown() then return end
+            local list, total, count, since = L:LeftList(self.lpSort)
+            self.lpSummary:SetText(string.format(T("%d objets laissés · valeur %s · depuis le %s  (%s)"),
+                count, UI:PlainMoney(total), date("%d/%m", since or time()), WK.modules.Value:SourceLabel()))
+            self.lpRows:Reset()
+            local y = 0
+            for _, e in ipairs(list) do
+                local r = self.lpRows:Get()
+                r.itemID = e.id
+                r.add.itemID = e.id
+                r:ClearAllPoints()
+                r:SetPoint("TOPLEFT", 0, -y)
+                r:SetPoint("TOPRIGHT", 0, -y)
+                local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
+                r.icon:SetTexture(icon)
+                r.name:SetText(e.name or name)
+                r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+                r.sub:SetText(string.format(T("x%d  ·  %d fois  ·  dernière fois %s"), e.n, e.times or 1, UI:Ago(e.last or time())))
+                if e.unit > 0 then
+                    r.value:SetText(UI:GoldText(e.value))
+                    r.unit:SetText(string.format(T("%s l'unité"), UI:PlainMoney(e.unit)))
+                else
+                    r.value:SetText(UI:Hex(C.dim) .. "-|r")
+                    r.unit:SetText(T("pas de prix"))
+                end
+                y = y + 46
+            end
+            self.lpScroll:SetContentHeight(y)
+            self.lpEmpty:SetShown(#list == 0)
+        end
 
         -- Réglages du profil
         local prof = UI:Card(body)
@@ -379,20 +493,20 @@ UI:RegisterPage({
 
         -- Laissés au sol
         self.recentRows:Reset()
-        self.leftCount:SetText(string.format(T("Laissés au sol (session) : %d"), L.leftSession or 0))
-        local room = math.floor((UI.PAGE_H - BANNER_H - GAP + y - 90) / 24)
+        self.leftCount:SetText(string.format(T("Session : %d laissés"), L.leftSession or 0))
+        local room = math.floor((UI.PAGE_H - BANNER_H - GAP + y - 122) / 24)
         local recent = d.recent or {}
         local shown = math.max(0, math.min(#recent, room))
         self.recentTitle:ClearAllPoints()
-        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 38 + shown * 24)
+        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 70 + shown * 24)
         self.recentTitle:SetShown(shown > 0)
         for i = 1, shown do
             local e = recent[i]
             local r = self.recentRows:Get()
             r.itemID = e.id
             r:ClearAllPoints()
-            r:SetPoint("BOTTOMLEFT", 10, 34 + (shown - i) * 24)
-            r:SetPoint("BOTTOMRIGHT", -10, 34 + (shown - i) * 24)
+            r:SetPoint("BOTTOMLEFT", 10, 66 + (shown - i) * 24)
+            r:SetPoint("BOTTOMRIGHT", -10, 66 + (shown - i) * 24)
             local name, icon = UI:ItemInfo(e.id or 0)
             r.icon:SetTexture(icon)
             r.name:SetText((e.name or name) .. "  x" .. (e.n or 1))
@@ -423,5 +537,6 @@ UI:RegisterPage({
         for key, b in pairs(self.catButtons) do b:SetStyle(pr.cats[key] and "primary" or "ghost") end
         self.always:Refresh(pr)
         self.never:Refresh(pr)
+        self:RefreshLeft()
     end,
 })

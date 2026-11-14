@@ -324,6 +324,23 @@ WK.Locales.enUS.text = {
 
     ["Courrier en attente"] = "Mail waiting",
 
+    -- Liste des objets laissés au sol
+    ["Session : %d laissés"] = "Session: %d left",
+    ["Voir la liste"] = "Show list",
+    ["Tous les objets laissés au sol, avec leur prix."] = "All items left on the ground, with their prices.",
+    ["Objets laissés au sol"] = "Items left on the ground",
+    ["Fermer la liste"] = "Close list",
+    ["Valeur"] = "Value",
+    ["Quantité"] = "Quantity",
+    ["Récents"] = "Recent",
+    ["Maj + clic : remet la liste à zéro."] = "Shift + click: reset the list.",
+    ["Aucun objet laissé au sol pour l'instant."] = "No item left on the ground yet.",
+    ["Toujours ramasser cet objet (profil sélectionné)"] = "Always loot this item (selected profile)",
+    ["%d objets laissés · valeur %s · depuis le %s  (%s)"] = "%d items left · value %s · since %s  (%s)",
+    ["x%d  ·  %d fois  ·  dernière fois %s"] = "x%d  ·  %d times  ·  last %s",
+    ["%s l'unité"] = "%s each",
+    ["pas de prix"] = "no price",
+
     -- Bandeau du loot
     ["Jamais (bouton Charger)"] = "Never (Load button)",
     ["Dans cette zone : "] = "In this zone: ",
