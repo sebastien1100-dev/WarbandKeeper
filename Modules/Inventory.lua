@@ -192,6 +192,15 @@ local function onTooltip(tooltip, data)
         if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
         tooltip:AddDoubleLine(WK.L.WARBANK, tostring(w), 1, 1, 1, 1, 1, 1)
     end
+    local V = WK.modules.Value
+    if V and V:ShowBoth() then
+        local ah, vendor = V:Prices(itemID)
+        if ah or vendor > 0 then
+            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+            if ah then tooltip:AddDoubleLine(WK.T("Prix HV (unité)"), WK:FormatMoney(ah), 0.8, 0.8, 0.8, 1, 1, 1) end
+            if vendor > 0 then tooltip:AddDoubleLine(WK.T("Prix marchand (unité)"), WK:FormatMoney(vendor), 0.8, 0.8, 0.8, 1, 1, 1) end
+        end
+    end
     if any then tooltip:Show() end
 end
 

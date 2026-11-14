@@ -307,13 +307,17 @@ UI:RegisterPage({
 
         -- Prix des objets ------------------------------------------------------------
         section("prices")
-        local priceCard = card("Prix des objets", 96)
+        local priceCard = card("Prix des objets", 108)
         local vcfg = WK.DB.global.settings.value
-        local src = UI:Segmented(priceCard, { { "auctionator", "Auctionator" }, { "vendor", "Marchand" } },
-            function(v) vcfg.source = v; WK.modules.Value:StockValue(true); WK:NotifyChanged() end, 30)
+        local src = UI:Segmented(priceCard, { { "auctionator", "Auctionator" }, { "vendor", "Marchand" }, { "both", "Les deux" } },
+            function(v) vcfg.source = v; WK.modules.Value:StockValue(true); WK:NotifyChanged(); self:Refresh() end, 30)
         src:Select(vcfg.source or "auctionator")
-        self.priceRow = UI:SettingRow(priceCard, -40, "Source des prix", " ", src, 280)
-        self.priceDesc = self.priceRow.desc
+        self.priceRow = UI:SettingRow(priceCard, -36, "Source des prix", nil, src, 330)
+        -- Description sur sa propre ligne : la commande à trois choix prend la largeur.
+        self.priceDesc = UI:Text(priceCard, 11, C.muted)
+        self.priceDesc:SetPoint("TOPLEFT", 16, -76)
+        self.priceDesc:SetPoint("TOPRIGHT", -16, -76)
+        self.priceDesc:SetJustifyH("LEFT")
 
         -- Bouton minimap (section Général) ---------------------------------------------
         current.scroll:SetContentHeight(y)
@@ -370,9 +374,16 @@ UI:RegisterPage({
     Refresh = function(self)
         self:RefreshThemes()
         if self.priceDesc and self.priceDesc.SetText then
-            self.priceDesc:SetText(WK.modules.Value:HasAuctionator()
-                and WK.T("Auctionator détecté : valeur des stocks, du butin et des listes de courses au prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix).")
-                or WK.T("Auctionator non détecté : les prix de vente aux marchands sont utilisés."))
+            local V = WK.modules.Value
+            if not V:HasAuctionator() then
+                self.priceDesc:SetText(WK.T("Auctionator non détecté : les prix de vente aux marchands sont utilisés."))
+            elseif V:ShowBoth() then
+                self.priceDesc:SetText(WK.T("Les deux prix sont affichés ; les calculs prennent le meilleur des deux."))
+            elseif WK.DB.global.settings.value.source == "vendor" then
+                self.priceDesc:SetText(WK.T("Prix de vente aux marchands uniquement."))
+            else
+                self.priceDesc:SetText(WK.T("Prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix)."))
+            end
         end
         self.mmToggle:Refresh()
         self.alertToggle:Refresh()

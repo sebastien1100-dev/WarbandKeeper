@@ -303,6 +303,13 @@ WK.Locales.enUS.text = {
     ["Jamais ramasser"] = "Never loot", ["Maj + clic sur un objet"] = "Shift + click an item", ["Objet ou ID"] = "Item or ID",
     ["Retirer"] = "Remove", ["Profil de loot : %s"] = "Loot profile: %s",
 
+    -- Prix : les deux
+    ["Les deux"] = "Both", ["HV"] = "AH", ["marchand"] = "vendor", ["meilleur prix HV / marchand"] = "best of AH / vendor",
+    ["Prix HV (unité)"] = "AH price (each)", ["Prix marchand (unité)"] = "Vendor price (each)",
+    ["Les deux prix sont affichés ; les calculs prennent le meilleur des deux."] = "Both prices are shown; calculations use the better of the two.",
+    ["Prix de vente aux marchands uniquement."] = "Vendor sell prices only.",
+    ["Prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix)."] = "Auction house prices (vendor price when an item has none).",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }

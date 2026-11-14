@@ -111,7 +111,7 @@ UI:RegisterPage({
             r.icon:SetPoint("LEFT", 12, 0)
             r.name = UI:Text(r, 12)
             r.name:SetPoint("TOPLEFT", 52, -9)
-            r.name:SetPoint("TOPRIGHT", -90, -9)
+            r.name:SetPoint("TOPRIGHT", -210, -9)
             r.detail = UI:Text(r, 10, C.muted)
             r.detail:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
             r.detail:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -4)
@@ -286,8 +286,17 @@ UI:RegisterPage({
             for k, v in ipairs(parts) do parts[k] = v[1] .. " " .. v[2] end
             r.detail:SetText(table.concat(parts, "  ·  "))
             r.total:SetText(tostring(it.total))
-            local price = WK.modules.Value:Price(it.id)
-            r.value:SetText(price > 0 and ("~ " .. UI:GoldText(price * it.total)) or "")
+            local V = WK.modules.Value
+            if V:ShowBoth() then
+                local ah, vendor = V:Prices(it.id)
+                local parts = {}
+                if ah then table.insert(parts, T("HV") .. " " .. UI:GoldText(ah * it.total)) end
+                if vendor > 0 then table.insert(parts, T("marchand") .. " " .. UI:GoldText(vendor * it.total)) end
+                r.value:SetText(table.concat(parts, "  ·  "))
+            else
+                local price = V:Price(it.id)
+                r.value:SetText(price > 0 and ("~ " .. UI:GoldText(price * it.total)) or "")
+            end
             y = y + 52
         end
         self.scroll:SetContentHeight(y)

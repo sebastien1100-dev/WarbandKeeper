@@ -20,13 +20,29 @@ local function ahPrice(itemID)
     if ok and type(price) == "number" and price > 0 then return price end
 end
 
--- Prix unitaire en cuivre et sa source ("ah" ou "vendor").
+-- Les deux prix d'un objet : hôtel des ventes (nil si inconnu) et marchand.
+function M:Prices(itemID)
+    return ahPrice(itemID), vendorPrice(itemID)
+end
+
+-- Source "both" : les deux prix sont affichés, les calculs prennent le meilleur des deux.
+function M:ShowBoth()
+    return WK.DB.global.settings.value.source == "both"
+end
+
+-- Prix unitaire en cuivre utilisé pour les calculs, et sa source ("ah" ou "vendor").
+--   "auctionator" : prix HV, sinon marchand · "vendor" : marchand · "both" : le meilleur des deux.
 function M:Price(itemID)
-    if WK.DB.global.settings.value.source ~= "vendor" then
-        local p = ahPrice(itemID)
-        if p then return p, "ah" end
+    local src = WK.DB.global.settings.value.source
+    local vendor = vendorPrice(itemID)
+    if src == "vendor" then return vendor, "vendor" end
+    local ah = ahPrice(itemID)
+    if src == "both" then
+        if ah and ah > vendor then return ah, "ah" end
+        return vendor, "vendor"
     end
-    return vendorPrice(itemID), "vendor"
+    if ah then return ah, "ah" end
+    return vendor, "vendor"
 end
 
 -- Valeur d'une liste { [itemID] = quantité }.
@@ -72,7 +88,9 @@ function M:Record()
 end
 
 function M:SourceLabel()
-    if WK.DB.global.settings.value.source ~= "vendor" and self:HasAuctionator() then
+    local src = WK.DB.global.settings.value.source
+    if src == "both" and self:HasAuctionator() then return WK.T("meilleur prix HV / marchand") end
+    if src ~= "vendor" and self:HasAuctionator() then
         return WK.T("prix Auctionator")
     end
     return WK.T("prix marchand")

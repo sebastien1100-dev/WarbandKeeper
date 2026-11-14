@@ -9,6 +9,14 @@ _Prévu, pas encore commencé._
 
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.9.2 — 14/11/2026
+
+### Ajouts
+- Prix : nouvelle source « Les deux ». L'Inventaire affiche le prix HV et le prix marchand côte à côte, et l'infobulle des objets donne les deux prix à l'unité. Les calculs (stocks, richesse, butin, rentabilité, filtre de loot) prennent le meilleur des deux : ce que tu tirerais vraiment de l'objet.
+
+### Modifications
+- Options > Prix : la description indique ce que fait la source choisie.
+
 ## v0.9.1 — 14/11/2026
 
 ### Modifications
