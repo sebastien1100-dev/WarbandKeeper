@@ -64,14 +64,9 @@ function M:TogglePause()
     WK:NotifyChanged()
 end
 
--- Valeur marchande estimée (prix de vente au PNJ).
+-- Valeur du butin : prix Auctionator si disponible, sinon prix marchand.
 function M:VendorValue(items)
-    local v = 0
-    for id, n in pairs(items) do
-        local price = select(11, WK.GetItemInfo(id))
-        v = v + (price or 0) * n
-    end
-    return v
+    return WK.modules.Value:ValueOf(items)
 end
 
 function M:ItemCount(items)

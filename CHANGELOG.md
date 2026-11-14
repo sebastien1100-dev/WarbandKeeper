@@ -3,6 +3,23 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.7.0 — 14/11/2026
+
+### Ajouts
+- Valeur du compte : les stocks (sacs, banques, courrier, bataillon) sont estimés au prix d'Auctionator, ou au prix marchand si Auctionator n'est pas installé ou n'a pas de prix. Le Résumé affiche la valeur des stocks sous l'or du compte.
+- Nouvelle série « Richesse totale » (or + stocks) dans les Stats, avec son historique.
+- Inventaire : valeur estimée de chaque ligne et du contenu de l'onglet.
+- Objectifs : sur l'or, la richesse totale ou un matériau, depuis la page Stats. Ligne pointillée sur le graphique, pourcentage atteint et date estimée au rythme des 7 derniers jours. Les objectifs apparaissent aussi en bandeau sur le Résumé.
+- Métiers > Recettes : les recettes connues de chaque perso (enregistrées à l'ouverture de la fenêtre de métier), qui peut les fabriquer et combien de fois avec le stock du compte. L'infobulle détaille les composants possédés.
+- Métiers > Liste de courses : fabrications prévues (+ / -), composants nécessaires, possédés et manquants, coût des manquants. Bouton « Créer la liste Auctionator » pour acheter les composants manquants dans Auctionator.
+- Options : choix de la source des prix (Auctionator ou marchand).
+
+### Modifications
+- La session de farm estime la valeur du butin au prix d'Auctionator quand il est disponible.
+- Les en-têtes en majuscules gardent leurs accents (POSSÉDÉ, COÛT…).
+- Les flèches du Journal utilisent « » », un symbole que la police du jeu sait afficher.
+- Nouveaux fichiers : redémarrer complètement le jeu après la mise à jour.
+
 ## v0.6.1 — 14/11/2026
 
 ### Ajouts
@@ -11,14 +28,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 ### Modifications
 - L'Inventaire retient le dernier onglet ouvert. La recherche et les filtres Sacs / Banque / Courrier s'appliquent à l'onglet choisi.
-
-## À venir
-
-_Prévu, pas encore commencé._
-
-- Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.
-- Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.
-- Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.
 
 ## v0.6.0 — 14/11/2026
 

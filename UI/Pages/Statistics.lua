@@ -118,10 +118,42 @@ UI:RegisterPage({
         end)
         self.charCharts = {}
 
+        -- Objectif sur la série affichée (or et richesse en po, matériaux en quantité).
+        self.goalBtn = UI:Button(card, "Définir", 84, 28, "secondary", "plus")
+        self.goalBtn:SetPoint("TOPRIGHT", -14, -52)
+        self.goalInput = UI:NumberInput(card, 110, 28, "Objectif")
+        self.goalInput:SetPoint("RIGHT", self.goalBtn, "LEFT", -6, 0)
+        self.goalDel = UI:IconButton(card, "trash", 26, "Retirer l'objectif", true)
+        self.goalDel:SetPoint("RIGHT", self.goalInput, "LEFT", -4, 0)
+        local function setGoal()
+            local n = self.goalInput:GetNumber()
+            if n <= 0 then return end
+            local money = self.series == "gold" or self.series == "value"
+            WK.modules.Goals:Set(self.series, money and n * 10000 or n)
+            self.goalInput:SetText("")
+            self:Refresh()
+        end
+        self.goalBtn:SetScript("OnClick", setGoal)
+        self.goalInput.onEnter = setGoal
+        self.goalDel:SetScript("OnClick", function() WK.modules.Goals:Remove(self.series); self:Refresh() end)
+        self.goalInfo = UI:Text(card, 11, C.muted)
+        self.goalInfo:SetPoint("LEFT", self.delta, "RIGHT", 10, 0)
+
+
         local area = CreateFrame("Frame", nil, card)
         area:SetPoint("TOPLEFT", 70, -104)
         area:SetPoint("BOTTOMRIGHT", -18, 40)
         self.area = area
+
+        -- Ligne pointillée de l'objectif.
+        self.goalDash = {}
+        for i = 1, 60 do
+            local d = self.area:CreateTexture(nil, "ARTWORK", nil, 4)
+            d:SetSize(6, 1.5)
+            d:Hide()
+            self.goalDash[i] = d
+        end
+        self.goalLabel = UI:Text(self.area, 10)
 
         self.grid = {}
         for i = 0, 3 do
@@ -151,12 +183,12 @@ UI:RegisterPage({
         local S = WK.modules.Statistics
         local now = time()
         local tracked = S:TrackedItems()
-        local keys = { "gold" }
+        local keys = { "gold", "value" }
         local ids = {}
         for id in pairs(tracked) do table.insert(ids, id) end
         table.sort(ids, function(a, b) return UI:ItemInfo(a) < UI:ItemInfo(b) end)
         for _, id in ipairs(ids) do table.insert(keys, id) end
-        if self.series ~= "gold" and not tracked[self.series] then self.series = "gold" end
+        if self.series ~= "gold" and self.series ~= "value" and not tracked[self.series] then self.series = "gold" end
 
         self.entries:Reset()
         local y = 0
@@ -167,12 +199,13 @@ UI:RegisterPage({
             e:ClearAllPoints()
             e:SetPoint("TOPLEFT", 0, -y)
             e:SetPoint("TOPRIGHT", 0, -y)
-            if key == "gold" then
+            if key == "gold" or key == "value" then
                 e.icon:Hide(); e.glyph:Show()
+                e.glyph:SetTexture(UI.MEDIA .. (key == "gold" and "coin" or "chart"))
                 e.glyph:SetVertexColor(unpack(C.gold))
-                e.name:SetText("Or du compte")
+                e.name:SetText(key == "gold" and "Or du compte" or "Richesse totale")
                 e.name:SetTextColor(unpack(C.text))
-                e.value:SetText(UI:GoldText(S:AccountGoldAt(now)))
+                e.value:SetText(UI:GoldText(key == "gold" and S:AccountGoldAt(now) or WK.modules.Value:Wealth()))
                 e.del:Hide()
             else
                 local name, icon, qr, qg, qb = UI:ItemInfo(key)
@@ -184,6 +217,8 @@ UI:RegisterPage({
                 e.value:SetText("x" .. WK.modules.Inventory:AccountCount(key) .. suffix)
                 e.del:SetShown(tracked[key] == "manual")
             end
+            local _, _, ratio = WK.modules.Goals:Progress(key)
+            if ratio then e.value:SetText(e.value:GetText() .. "  ·  " .. math.floor(ratio * 100) .. " %") end
             e.selected = (key == self.series)
             e:Paint()
             y = y + 44
@@ -198,9 +233,11 @@ UI:RegisterPage({
         local now = time()
         local n = buckets(days)
         local step = days * 86400 / n
-        local isGold = key == "gold"
+        local isGold = key == "gold" or key == "value"
 
-        if isGold then
+        if key == "value" then
+            self.seriesTitle:SetText(WK.T("Richesse totale") .. " · " .. WK.modules.Value:SourceLabel())
+        elseif isGold then
             self.seriesTitle:SetText("Or du compte")
         else
             self.seriesTitle:SetText((UI:ItemInfo(key)))
@@ -248,6 +285,43 @@ UI:RegisterPage({
         -- Échelle : on cadre sur la plage des valeurs pour voir les variations.
         local pad = math.max((maxV - minV) * 0.15, maxV * 0.02, 1)
         local lo, hi = math.max(0, minV - pad), maxV + pad
+
+        -- Objectif : progression, échelle étendue pour voir la cible, ligne pointillée.
+        local G = WK.modules.Goals
+        local goal = G:Get(key)
+        local cur, target, ratio, gdays = G:Progress(key)
+        self.goalDel:SetShown(goal ~= nil)
+        self.goalBtn:SetLabel(goal and WK.T("Modifier") or WK.T("Définir"))
+        if goal then
+            local fmt = isGold and UI:ShortGold(target) or tostring(target)
+            local txt = string.format(WK.T("objectif %s · %d %%"), fmt, math.floor(ratio * 100))
+            if ratio >= 1 then txt = txt .. " · " .. WK.T("atteint !")
+            elseif gdays then txt = txt .. " · " .. string.format(WK.T("dans ~%d j"), gdays) end
+            self.goalInfo:SetText(txt)
+            if not perChar and maxV > 0 then hi = math.max(hi, target * 1.05) end
+        else
+            self.goalInfo:SetText("")
+        end
+        for _, d in ipairs(self.goalDash) do d:Hide() end
+        self.goalLabel:Hide()
+        if goal and not perChar and maxV > 0 and hi > lo then
+            local gy = (target - lo) / (hi - lo) * h
+            local w = area:GetWidth()
+            local r, g, b = UI:Accent()
+            for i, d in ipairs(self.goalDash) do
+                local x = (i - 1) * 12
+                if x + 6 > w then break end
+                d:SetColorTexture(r, g, b, 0.9)
+                d:ClearAllPoints()
+                d:SetPoint("LEFT", area, "BOTTOMLEFT", x, gy)
+                d:Show()
+            end
+            self.goalLabel:ClearAllPoints()
+            self.goalLabel:SetPoint("BOTTOMRIGHT", area, "BOTTOMRIGHT", 0, gy + 4)
+            self.goalLabel:SetTextColor(r, g, b, 1)
+            self.goalLabel:SetText(WK.T("Objectif"))
+            self.goalLabel:Show()
+        end
 
         -- Grille + libellés de l'axe vertical
         for i = 0, 3 do

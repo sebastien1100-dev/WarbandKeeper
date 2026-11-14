@@ -11,9 +11,12 @@ local defaults = {
     history = {        -- séries temporelles pour les statistiques
         gold = {},     -- [charKey] = { {t=timestamp, v=copper}, ... }
         items = {},    -- [itemID] = { {t=timestamp, v=total compte}, ... }
+        value = {},    -- richesse totale (or + stocks) : { {t, v}, ... }
         charItems = {},-- [charKey] = { [itemID] = { {t, v}, ... } } : tendance par personnage
     },
     journal = {},      -- journal d'activité (le plus récent en premier)
+    goals = {},        -- [série] = { target = n } ; série = "gold", "value" ou itemID
+    shopping = {},     -- liste de courses : [nom de recette] = nombre de fabrications
     mail = {
         enabled = true,
         rules = {},    -- [itemID] = { to = "Nom", keep = n }
@@ -32,6 +35,9 @@ local defaults = {
     settings = {
         historyIntervalSec = 3600, -- 1 point max par heure et par série
         trackedItems = {},         -- [itemID] = true : matériaux suivis dans les stats
+        value = {
+            source = "auctionator", -- "auctionator" (repli marchand) ou "vendor"
+        },
         alerts = {
             enabled = true,
             bankDays = 7,          -- banque non vue depuis N jours

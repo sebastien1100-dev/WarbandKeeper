@@ -115,8 +115,11 @@ UI:RegisterPage({
             r.detail:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
             r.detail:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -4)
             r.total = UI:Text(r, 15)
-            r.total:SetPoint("RIGHT", -16, 0)
+            r.total:SetPoint("TOPRIGHT", -16, -8)
             r.total:SetJustifyH("RIGHT")
+            r.value = UI:Text(r, 10, C.muted)
+            r.value:SetPoint("TOPRIGHT", r.total, "BOTTOMRIGHT", 0, -3)
+            r.value:SetJustifyH("RIGHT")
             r:SetScript("OnEnter", function(row)
                 row.bg:SetColor(unpack(C.surface2))
                 GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
@@ -264,6 +267,8 @@ UI:RegisterPage({
 
         self.rows:Reset()
         local y = 0
+        local listValue = 0
+        for _, it in ipairs(list) do listValue = listValue + WK.modules.Value:Price(it.id) * it.total end
         for i, it in ipairs(list) do
             if i > MAX_ROWS then break end
             local r = self.rows:Get()
@@ -280,6 +285,8 @@ UI:RegisterPage({
             for k, v in ipairs(parts) do parts[k] = v[1] .. " " .. v[2] end
             r.detail:SetText(table.concat(parts, "  ·  "))
             r.total:SetText(tostring(it.total))
+            local price = WK.modules.Value:Price(it.id)
+            r.value:SetText(price > 0 and ("~ " .. UI:GoldText(price * it.total)) or "")
             y = y + 52
         end
         self.scroll:SetContentHeight(y)
@@ -289,7 +296,8 @@ UI:RegisterPage({
         if #list > MAX_ROWS then
             self.countText:SetText(string.format(T("%d objets (affichage limité à %d, affine ta recherche)"), #list, MAX_ROWS))
         else
-            self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list))
+            self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list)
+                .. (listValue > 0 and ("  ·  ~ " .. UI:GoldText(listValue)) or ""))
         end
     end,
 })

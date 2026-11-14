@@ -234,10 +234,16 @@ def icon_stop():
     save(img, "stop", 64)
 
 
+def icon_minus():
+    img, d, s = canvas(64)
+    line(d, s, [(0.22, 0.5), (0.78, 0.5)], SW * 1.1)
+    save(img, "minus", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus]:
         fn()
     print("OK")

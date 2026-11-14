@@ -1,6 +1,8 @@
 # Warband Keeper
 
-Addon World of Warcraft (WoW Forever, `## Interface: 16001`) pour gérer l'ensemble de son compte :
+Addon World of Warcraft (WoW Forever, `**Optionnel :** avec [Auctionator](https://www.curseforge.com/wow/addons/auctionator) installé, la valeur des stocks, du butin et des listes de courses utilise les prix de l'hôtel des ventes, et la liste de courses peut être envoyée dans Auctionator.
+
+## Interface: 16001`) pour gérer l'ensemble de son compte :
 
 - **Or** de chaque personnage et total du compte
 - **Sacs et banques** de tous les personnages (avec quantités dans l'info-bulle des objets)
@@ -30,8 +32,8 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | Résumé | Or du compte, évolution sur 7 j à 1 an (courbe), chiffres clés, tableau des persos avec tendance sur 7 jours |
 | Persos | Niveau, or, temps de jeu, dernière visite à la banque, courrier en attente, dernière connexion |
 | Inventaire | Recherche dans les sacs, banques et boîtes aux lettres, filtre Tout / Sacs / Banque / Courrier |
-| Métiers | Barres de progression par personnage |
-| Stats | Courbe de l'or ou d'un matériau suivi sur 7 j / 30 j / 90 j / 1 an |
+| Métiers | Niveaux par perso, recettes connues (qui peut fabriquer quoi), liste de courses avec export vers Auctionator |
+| Stats | Courbes de l'or, de la richesse totale (or + stocks) ou d'un matériau, objectifs avec date estimée |
 | Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique des sessions, mini-fenêtre |
 | Journal | Courriers envoyés, dépôts, or gagné ou dépensé, sessions de farm, progrès de métier, niveaux |
 | Courrier et banque | Envoi automatique et dépôt en banque par objet ou par catégorie, avec seuil « garder » ; « Tout prendre » dans la boîte aux lettres |

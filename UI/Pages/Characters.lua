@@ -34,7 +34,7 @@ UI:RegisterPage({
             else
                 t:SetPoint("TOPLEFT", col[2], -4)
             end
-            t:SetText(string.upper(T(col[1])))
+            t:SetText(UI:Upper(T(col[1])))
         end
 
         local scroll = UI:Scroll(p)

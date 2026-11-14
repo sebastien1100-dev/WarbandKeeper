@@ -384,7 +384,9 @@ function UI:SettingRow(parent, y, label, desc, control, width)
         local rowW = (parent:GetWidth() or 0) - 32
         d:SetPoint("TOPRIGHT", l, "BOTTOMLEFT", math.max(100, rowW - (width or 60)), -4)
         d:SetText(desc)
+        row.desc = d
     end
+    row.label = l
     if control then
         control:SetParent(row)
         control:ClearAllPoints()

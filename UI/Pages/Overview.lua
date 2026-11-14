@@ -5,6 +5,7 @@ local C = UI.colors
 local LEFT_W = 276
 local TOP_H = 232
 local GAP = 16
+local GOAL_H = 54
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
 
 -- Colonnes du tableau : x de départ (ou de fin pour "RIGHT").
@@ -64,6 +65,9 @@ UI:RegisterPage({
         self.delta:SetPoint("TOPLEFT", 0, -66)
         self.deltaLabel = UI:Text(p, 11, C.muted)
         self.deltaLabel:SetPoint("LEFT", self.delta, "RIGHT", 8, 0)
+        self.stock = UI:Text(p, 11, C.muted)
+        self.stock:SetPoint("TOPLEFT", 2, -88)
+        self.stock:SetWidth(LEFT_W)
 
         local tw = (LEFT_W - 10) / 2
         self.tiles = {}
@@ -117,20 +121,49 @@ UI:RegisterPage({
 
         UI:ChartHover(area, self.chart, function(pt) return WK:FormatMoney(pt.v) end)
 
+        -- Objectifs (bandeau affiché seulement s'il y en a) ---------------------------
+        self.goalTop = -(TOP_H + GAP)
+        self.goalCards = UI:Pool(function()
+            local g = CreateFrame("Button", nil, p)
+            g:SetHeight(GOAL_H)
+            UI:Panel(g, 12, C.surface, C.border)
+            g.label = UI:Text(g, 11, C.muted)
+            g.label:SetPoint("TOPLEFT", 12, -9)
+            g.label:SetPoint("TOPRIGHT", -60, -9)
+            g.pct = UI:Text(g, 12)
+            g.pct:SetPoint("TOPRIGHT", -12, -9)
+            g.pct:SetJustifyH("RIGHT")
+            g.bar = UI:Progress(g, 6)
+            g.bar:SetPoint("BOTTOMLEFT", 12, 12)
+            g.bar:SetPoint("BOTTOMRIGHT", -12, 12)
+            g.eta = UI:Text(g, 10, C.dim)
+            g.eta:SetPoint("BOTTOMRIGHT", g.bar, "TOPRIGHT", 0, 4)
+            g.eta:SetJustifyH("RIGHT")
+            g:SetScript("OnClick", function(b)
+                UI:ShowPage("stats")
+                UI.pages.stats.series = b.key
+                UI:Refresh()
+            end)
+            return g
+        end)
+
         -- Tableau des personnages ---------------------------------------------------
-        local ty = -(TOP_H + GAP + 4)
+        local tableBox = CreateFrame("Frame", nil, p)
+        self.tableBox = tableBox
+        tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4))
+        tableBox:SetPoint("BOTTOMRIGHT")
         for _, col in ipairs(COLS) do
-            local t = UI:Text(p, 10, C.dim)
+            local t = UI:Text(tableBox, 10, C.dim)
             if col[3] == "RIGHT" then
-                t:SetPoint("TOPRIGHT", p, "TOPLEFT", col[2] + 12, ty)
+                t:SetPoint("TOPRIGHT", tableBox, "TOPLEFT", col[2] + 12, 0)
                 t:SetJustifyH("RIGHT")
             else
-                t:SetPoint("TOPLEFT", col[2], ty)
+                t:SetPoint("TOPLEFT", col[2], 0)
             end
-            t:SetText(string.upper(WK.T(col[1])))
+            t:SetText(UI:Upper(WK.T(col[1])))
         end
-        local scroll = UI:Scroll(p)
-        scroll:SetPoint("TOPLEFT", 0, ty - 20)
+        local scroll = UI:Scroll(tableBox)
+        scroll:SetPoint("TOPLEFT", 0, -20)
         scroll:SetPoint("BOTTOMRIGHT")
         self.scroll = scroll
 
@@ -180,6 +213,33 @@ UI:RegisterPage({
         local diff = S:AccountGoldAt(now) - S:AccountGoldAt(now - 7 * 86400)
         self.delta:Set((diff >= 0 and "+" or "") .. UI:ShortGold(diff), diff >= 0 and C.positive or C.negative)
         self.deltaLabel:SetText("sur 7 jours")
+        local V = WK.modules.Value
+        self.stock:SetText(string.format(WK.T("+ %s de stocks (%s)"), UI:GoldText(V:StockValue()), V:SourceLabel()))
+
+        -- Objectifs
+        self.goalCards:Reset()
+        local goals = WK.modules.Goals:List()
+        local G = WK.modules.Goals
+        local shown = math.min(#goals, 4)
+        local gw = shown > 0 and (UI.PAGE_W - (shown - 1) * 10) / shown or 0
+        for i = 1, shown do
+            local e = goals[i]
+            local g = self.goalCards:Get()
+            g.key = e.key
+            g:SetWidth(gw)
+            g:ClearAllPoints()
+            g:SetPoint("TOPLEFT", (i - 1) * (gw + 10), self.goalTop)
+            local fmt = function(v) return G:IsMoney(e.key) and UI:ShortGold(v) or tostring(v) end
+            g.label:SetText(G:Label(e.key) .. "  ·  " .. fmt(e.current) .. " / " .. fmt(e.target))
+            g.pct:SetText(math.floor(e.ratio * 100) .. " %")
+            g.bar:SetValue(e.ratio)
+            if e.ratio >= 1 then g.eta:SetText(WK.T("atteint !"))
+            elseif e.days then g.eta:SetText(string.format(WK.T("dans ~%d j"), e.days))
+            else g.eta:SetText("") end
+        end
+        self.tableBox:ClearAllPoints()
+        self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4) - (shown > 0 and (GOAL_H + 12) or 0))
+        self.tableBox:SetPoint("BOTTOMRIGHT")
         local rules = 0
         for _ in pairs(WK.DB.global.mail.rules) do rules = rules + 1 end
         for _ in pairs(WK.DB.global.mail.cats) do rules = rules + 1 end

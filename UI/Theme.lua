@@ -266,3 +266,13 @@ function UI:SetClassIcon(tex, class)
         tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     end
 end
+
+-- Majuscules avec les lettres accentuées (string.upper ne traite que l'ASCII).
+local ACCENTS = {
+    ["à"] = "À", ["â"] = "Â", ["ä"] = "Ä", ["ç"] = "Ç", ["é"] = "É", ["è"] = "È", ["ê"] = "Ê", ["ë"] = "Ë",
+    ["î"] = "Î", ["ï"] = "Ï", ["ô"] = "Ô", ["ö"] = "Ö", ["ù"] = "Ù", ["û"] = "Û", ["ü"] = "Ü", ["œ"] = "Œ",
+}
+function UI:Upper(s)
+    s = string.upper(s or "")
+    return (s:gsub("[\195\197][\128-\191]", function(c) return ACCENTS[c] or c end))
+end

@@ -34,15 +34,15 @@ local function describe(e)
         table.sort(parts, function(a, b) return a[1] > b[1] end)
         for i, p in ipairs(parts) do parts[i] = p[1] .. " " .. p[2] end
         local letters = e.letters or 1
-        return string.format("%s → %s : %s", who, recipientLabel(e.to), table.concat(parts, ", ")),
+        return string.format("%s » %s : %s", who, recipientLabel(e.to), table.concat(parts, ", ")),
             string.format(letters > 1 and T("%d courriers envoyés") or T("%d courrier envoyé"), letters)
     elseif e.kind == "skill" then
-        return string.format("%s : %s %d → %d", who, e.prof, e.from or 0, e.to or 0), T("progrès de métier")
+        return string.format("%s : %s %d » %d", who, e.prof, e.from or 0, e.to or 0), T("progrès de métier")
     elseif e.kind == "bank" then
         local parts = {}
         for id, n in pairs(e.items or {}) do table.insert(parts, n .. " " .. (UI:ItemInfo(id))) end
         local where = e.target == "warband" and T("banque de bataillon") or T("banque")
-        return string.format("%s → %s : %s", who, where, table.concat(parts, ", ")), T("dépôt en banque")
+        return string.format("%s » %s : %s", who, where, table.concat(parts, ", ")), T("dépôt en banque")
     elseif e.kind == "farm" then
         return string.format(T("%s : session à %s, %s, %d objet(s)"), who, (e.zone ~= "" and e.zone or "?"),
             UI:ShortGold(e.gold or 0), e.count or 0), string.format(T("session de farm · %s"), WK:FormatTime(e.duration))
@@ -123,7 +123,7 @@ UI:RegisterPage({
                 local h = self.headers:Get()
                 h:ClearAllPoints()
                 h:SetPoint("TOPLEFT", 4, -y - (lastDay and 10 or 0))
-                h:SetText(string.upper(day))
+                h:SetText(UI:Upper(day))
                 y = y + (lastDay and 30 or 20)
                 lastDay = day
             end

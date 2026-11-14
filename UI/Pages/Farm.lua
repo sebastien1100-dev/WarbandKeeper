@@ -57,7 +57,7 @@ UI:RegisterPage({
 
         local tx, tw = 330, (UI.PAGE_W - 330 - 16 - 3 * 10) / 4
         self.tiles = {}
-        for i, l in ipairs({ "Or ramassé", "Or / heure", "Objets", "Valeur marchande" }) do
+        for i, l in ipairs({ "Or ramassé", "Or / heure", "Objets", "Valeur du butin" }) do
             local t = Tile(main, l)
             t:SetSize(tw, 58)
             t:SetPoint("TOPLEFT", tx + (i - 1) * (tw + 10), -18)
@@ -73,7 +73,7 @@ UI:RegisterPage({
         ml:SetText("Mini-fenêtre pendant la session")
         local vh = UI:Text(main, 10, C.dim)
         vh:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", tx, 24)
-        vh:SetText("Valeur marchande : prix de vente aux PNJ du butin.")
+        vh:SetText("Valeur du butin : prix Auctionator, sinon prix de vente aux marchands.")
 
         -- Butin --------------------------------------------------------------------
         local leftW = math.floor(UI.PAGE_W * 0.6)

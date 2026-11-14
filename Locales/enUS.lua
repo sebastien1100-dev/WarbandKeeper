@@ -220,6 +220,37 @@ WK.Locales.enUS.text = {
     ["Tout le compte"] = "Whole account", ["sacs %d / %d"] = "bags %d / %d",
     ["Aucun objet ne correspond à la recherche."] = "No item matches the search.", ["Rien ici pour l'instant."] = "Nothing here yet.",
 
+    -- Valeur, objectifs, recettes
+    ["Richesse totale"] = "Total wealth", ["+ %s de stocks (%s)"] = "+ %s in stock (%s)",
+    ["prix Auctionator"] = "Auctionator prices", ["prix marchand"] = "vendor prices",
+    ["Objectif"] = "Goal", ["Définir"] = "Set", ["Modifier"] = "Change", ["Retirer l'objectif"] = "Remove the goal",
+    ["objectif %s · %d %%"] = "goal %s · %d %%", ["atteint !"] = "reached!", ["dans ~%d j"] = "in ~%d d",
+    ["Prix des objets"] = "Item prices", ["Source des prix"] = "Price source", ["Marchand"] = "Vendor",
+    ["Auctionator détecté : valeur des stocks, du butin et des listes de courses au prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix)."] =
+        "Auctionator detected: stock, loot and shopping list values use auction house prices (vendor price when an item has none).",
+    ["Auctionator non détecté : les prix de vente aux marchands sont utilisés."] = "Auctionator not detected: vendor sell prices are used.",
+    ["Valeur du butin"] = "Loot value",
+    ["Valeur du butin : prix Auctionator, sinon prix de vente aux marchands."] = "Loot value: Auctionator price, otherwise vendor price.",
+    ["Niveaux, recettes connues par perso et liste de courses des composants."] = "Skill levels, known recipes per character and a reagent shopping list.",
+    ["Niveaux"] = "Levels", ["Recettes"] = "Recipes", ["Liste de courses"] = "Shopping list", ["%d recettes"] = "%d recipes",
+    ["Rechercher une recette ou un objet..."] = "Search a recipe or an item...",
+    ["Ajouter à la liste de courses"] = "Add to the shopping list", ["x%d possibles"] = "x%d craftable",
+    ["composants manquants"] = "missing reagents",
+    ["Ouvre la fenêtre de chaque métier une fois pour enregistrer ses recettes."] = "Open each profession window once to record its recipes.",
+    ["Aucune recette ne correspond à la recherche."] = "No recipe matches the search.",
+    ["Fabrications prévues"] = "Planned crafts", ["Ajoute des recettes depuis l'onglet Recettes (bouton +)."] = "Add recipes from the Recipes tab (+ button).",
+    ["Vider la liste"] = "Clear the list", ["Une fabrication de plus"] = "One more craft", ["Une fabrication de moins"] = "One less craft",
+    ["Composants"] = "Reagents", ["Besoin"] = "Need", ["Possédé"] = "Owned", ["Manquant"] = "Missing", ["Coût"] = "Cost",
+    ["Rien à fabriquer pour l'instant."] = "Nothing to craft yet.", ["Créer la liste Auctionator"] = "Create Auctionator list",
+    ["Crée une liste de courses « Warband Keeper » dans Auctionator avec les composants manquants."] =
+        "Creates a \"Warband Keeper\" shopping list in Auctionator with the missing reagents.",
+    ["Coût des composants manquants : %s"] = "Cost of missing reagents: %s",
+    ["Auctionator n'est pas disponible."] = "Auctionator is not available.",
+    ["%d objet(s) pas encore chargés par le jeu : réessaie dans un instant."] = "%d item(s) not loaded by the game yet: try again in a moment.",
+    ["Rien à acheter : tu as déjà tous les composants."] = "Nothing to buy: you already have every reagent.",
+    ["Liste « Warband Keeper » créée dans Auctionator (%d objet(s))."] = "\"Warband Keeper\" list created in Auctionator (%d item(s)).",
+    ["Auctionator a refusé la liste : "] = "Auctionator rejected the list: ",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }

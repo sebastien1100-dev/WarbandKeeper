@@ -27,3 +27,4 @@ Les couleurs viennent de `UI/Themes.lua` : un thème donne quelques couleurs de 
 - Ne pas mélanger un ancrage haut/bas (`TOPLEFT`…) et un ancrage centré (`LEFT`, `RIGHT`) sur une même région : utiliser `TOPRIGHT` avec le même décalage vertical.
 - Fonctions globales absentes sur ce client : passer par `WK.GetItemInfo`, `WK.InsertChatLink`, `WK.Container.*`.
 - Dans une page (`UI:RegisterPage`), `self` est la définition de la page : ne pas y créer de champs `title`, `subtitle`, `nav`, `navIcon`, `count`, `key`, `order`, `frame` ou `noHeader`, utilisés par `UI/MainFrame.lua`.
+- Les polices du jeu ne couvrent que le jeu de caractères Windows-1252 : pas de « → », « ≈ », « ✓ »… dans les textes affichés (utiliser « » », « ~ », « · », « • »).

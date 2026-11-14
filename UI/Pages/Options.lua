@@ -193,6 +193,15 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(look, -300, "Langue", "Auto : celle du jeu (rechargement).", lang, 280)
 
+        -- Prix des objets ------------------------------------------------------------
+        local priceCard = card("Prix des objets", 96)
+        local vcfg = WK.DB.global.settings.value
+        local src = UI:Segmented(priceCard, { { "auctionator", "Auctionator" }, { "vendor", "Marchand" } },
+            function(v) vcfg.source = v; WK.modules.Value:StockValue(true); WK:NotifyChanged() end, 30)
+        src:Select(vcfg.source or "auctionator")
+        self.priceRow = UI:SettingRow(priceCard, -40, "Source des prix", " ", src, 280)
+        self.priceDesc = self.priceRow.desc
+
         -- Bouton minimap -----------------------------------------------------------
         local mm = card("Bouton minimap", 136)
         self.mmToggle = UI:Toggle(mm,
@@ -239,6 +248,11 @@ UI:RegisterPage({
 
     Refresh = function(self)
         self:RefreshThemes()
+        if self.priceDesc and self.priceDesc.SetText then
+            self.priceDesc:SetText(WK.modules.Value:HasAuctionator()
+                and WK.T("Auctionator détecté : valeur des stocks, du butin et des listes de courses au prix de l'hôtel des ventes (prix marchand si l'objet n'a pas de prix).")
+                or WK.T("Auctionator non détecté : les prix de vente aux marchands sont utilisés."))
+        end
         self.mmToggle:Refresh()
         self.alertToggle:Refresh()
     end,

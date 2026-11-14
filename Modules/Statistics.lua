@@ -18,8 +18,9 @@ function M:TrackedItems()
     return t
 end
 
--- Met à jour l'historique des matériaux suivis (total sur le compte).
+-- Met à jour l'historique des matériaux suivis (total sur le compte) et de la richesse.
 function M:UpdateItems()
+    if WK.modules.Value then WK.modules.Value:Record() end
     local hist = WK.DB.global.history.items
     local me, key = WK.DB:Me()
     local all = WK.DB.global.history.charItems
@@ -83,6 +84,7 @@ end
 -- key = "gold" ou un itemID.
 function M:SeriesAt(key, t)
     if key == "gold" then return self:AccountGoldAt(t) end
+    if key == "value" then return valueAt(WK.DB.global.history.value, t) or 0 end
     return self:ItemAt(key, t)
 end
 
