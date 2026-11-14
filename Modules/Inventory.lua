@@ -143,17 +143,34 @@ function M:Find(query)
     if not found then WK:Print(WK.L.NOT_FOUND .. " \"" .. tostring(query) .. "\"") end
 end
 
--- Info-bulle : quantité par personnage.
-local function onTooltip(tooltip)
-    local _, link = tooltip:GetItem()
-    local itemID = WK:ParseItemID(link)
+-- Retrouve l'ID de l'objet affiché, quelle que soit la version de l'API.
+local function tooltipItemID(tooltip, data)
+    if data and type(data.id) == "number" then return data.id end
+    if TooltipUtil and TooltipUtil.GetDisplayedItem then
+        local _, link, id = TooltipUtil.GetDisplayedItem(tooltip)
+        if id then return id end
+        if link then return WK:ParseItemID(link) end
+    end
+    if tooltip.GetItem then
+        local _, link = tooltip:GetItem()
+        return WK:ParseItemID(link)
+    end
+end
+
+-- Info-bulle : quantité par personnage (pas sur les infobulles de comparaison).
+local function onTooltip(tooltip, data)
+    if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip then return end
+    local itemID = tooltipItemID(tooltip, data)
     if not itemID then return end
     local any = false
     for key, c in pairs(WK.DB.global.characters) do
         local b, k = (c.bags or {})[itemID] or 0, (c.bank or {})[itemID] or 0
         if b + k > 0 then
             if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
-            tooltip:AddDoubleLine(key, string.format("%d (%s %d, %s %d)", b + k, WK.L.BAGS, b, WK.L.BANK, k), 1, 1, 1, 1, 1, 1)
+            local r, g, bl = 1, 1, 1
+            local cc = c.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[c.class]
+            if cc then r, g, bl = cc.r, cc.g, cc.b end
+            tooltip:AddDoubleLine(c.name or key, string.format("%d (%s %d, %s %d)", b + k, WK.L.BAGS, b, WK.L.BANK, k), r, g, bl, 1, 1, 1)
         end
     end
     local wb = WK.DB.global.warbank
