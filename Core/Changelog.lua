@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.24.0", date = "14/11/2026",
+        added = {
+            "Guides de montée de WoW Forever pour l'Alchimie, la Forge, l'Enchantement, l'Ingénierie et la Couture : tous les métiers d'artisanat ont maintenant leur guide.",
+            "Guides : les outils nécessaires (bâtonnets runiques, clé Arclight, marteau de forgeron…) apparaissent au survol des étapes ; un outil à acheter, comme le marteau de forgeron, est ajouté aux matériaux.",
+        },
+        changed = {
+            "Les enchantements, qui ne fabriquent pas d'objet, s'affichent avec le nom de la recette du jeu ; une recette d'enchantement déjà apprise est reconnue.",
+        },
+    },
+    {
         version = "0.23.4", date = "14/11/2026",
         changed = {
             "Infobulles de l'addon : mêmes couleurs que les cadres du thème choisi (fond et bordure), quel que soit le thème.",
@@ -508,7 +518,6 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Guides de montée des autres métiers (Couture, Forge, Alchimie, Enchantement, Ingénierie) d'après les guides WoW Forever.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.",

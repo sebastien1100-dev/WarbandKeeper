@@ -1,0 +1,671 @@
+{
+ "name": "Enchanting",
+ "leveling": [
+  {
+   "skill": [
+    1,
+    23
+   ],
+   "recipe": 7418,
+   "crafts": 24,
+   "first": [
+    {
+     "recipe": 7421,
+     "crafts": 1
+    }
+   ]
+  },
+  {
+   "skill": [
+    23,
+    50
+   ],
+   "recipe": 7420,
+   "crafts": 27
+  },
+  {
+   "skill": [
+    50,
+    76
+   ],
+   "recipe": 7420,
+   "crafts": 27
+  },
+  {
+   "skill": [
+    76,
+    99
+   ],
+   "recipe": 7426,
+   "crafts": 25
+  },
+  {
+   "skill": [
+    99,
+    127
+   ],
+   "recipe": 7771,
+   "crafts": 35
+  },
+  {
+   "skill": [
+    127,
+    128
+   ],
+   "recipe": 7795,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    128,
+    159
+   ],
+   "recipe": 7863,
+   "crafts": 33
+  },
+  {
+   "skill": [
+    159,
+    160
+   ],
+   "recipe": 13628,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    160,
+    200
+   ],
+   "recipe": 13637,
+   "crafts": 50
+  },
+  {
+   "skill": [
+    200,
+    206
+   ],
+   "recipe": 13663,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    206,
+    207
+   ],
+   "recipe": 13702,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    207,
+    210
+   ],
+   "recipe": 13746,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    210,
+    250
+   ],
+   "recipe": 13815,
+   "crafts": 50
+  },
+  {
+   "skill": [
+    250,
+    255
+   ],
+   "recipe": 13836,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    255,
+    260
+   ],
+   "recipe": 13858,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    260,
+    280
+   ],
+   "recipe": 13939,
+   "crafts": 30
+  },
+  {
+   "skill": [
+    280,
+    290
+   ],
+   "recipe": 13948,
+   "crafts": 18
+  },
+  {
+   "skill": [
+    290,
+    300
+   ],
+   "recipe": 20017,
+   "crafts": 16
+  }
+ ],
+ "sections": [
+  {
+   "rank": "Apprentice",
+   "skill": [
+    1,
+    50
+   ],
+   "trainers": null
+  },
+  {
+   "rank": "Journeyman",
+   "skill": [
+    50,
+    127
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Taladan",
+      "location": "Darnassus",
+      "image": "taladan.webp"
+     },
+     {
+      "npc": "Gimble Thistlefuzz",
+      "location": "Ironforge",
+      "image": "gimble-thistlefuzz.webp"
+     },
+     {
+      "npc": "Lucan Cordell",
+      "location": "Stormwind City",
+      "image": "lucan-cordell.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Godan",
+      "location": "Orgrimmar",
+      "image": "godan.webp"
+     },
+     {
+      "npc": "Teg Dawnstrider",
+      "location": "Thunder Bluff",
+      "image": "teg-dawnstrider.webp"
+     },
+     {
+      "npc": "Lavinia Crowe",
+      "location": "Undercity",
+      "image": "lavinia-crowe.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Expert",
+   "skill": [
+    127,
+    200
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Kitta Firewind",
+      "location": "Elwynn Forest",
+      "image": "kitta-firewind.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Hgarth",
+      "location": "Stonetalon Mountains",
+      "image": "hgarth.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Artisan",
+   "skill": [
+    200,
+    300
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Annora",
+      "location": "Uldaman (Dungeon)",
+      "image": "annora.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Annora",
+      "location": "Uldaman (Dungeon)",
+      "image": "annora.webp"
+     }
+    ],
+    "note": "The trainer is inside Uldaman and will likely require a group to access if you're not 60."
+   }
+  }
+ ],
+ "craftedParts": {},
+ "skillOnly": [],
+ "craftedTools": {
+  "Runed Golden Rod": 13628,
+  "Runed Copper Rod": 7421,
+  "Runed Truesilver Rod": 13702,
+  "Runed Silver Rod": 7795
+ },
+ "recipes": {
+  "13948": {
+   "name": "Enchant Gloves - Minor Haste",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11178,
+     "name": "Large Radiant Shard",
+     "count": 1,
+     "price": 17400
+    },
+    {
+     "id": 8153,
+     "name": "Wildvine",
+     "count": 1,
+     "price": 73
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "7426": {
+   "name": "Enchant Chest - Minor Absorption",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10938,
+     "name": "Lesser Magic Essence",
+     "count": 1,
+     "price": 128
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Copper Rod"
+   ],
+   "taught_by": []
+  },
+  "13815": {
+   "name": "Enchant Gloves - Agility",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 1,
+     "price": 1000
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "13858": {
+   "name": "Enchant Chest - Superior Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 3,
+     "price": 1000
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "13637": {
+   "name": "Enchant Boots - Lesser Agility",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11083,
+     "name": "Soul Dust",
+     "count": 1,
+     "price": 419
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Golden Rod"
+   ],
+   "taught_by": []
+  },
+  "13702": {
+   "name": "Runed Truesilver Rod",
+   "item": {
+    "id": 11145,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 11144,
+     "name": "Truesilver Rod",
+     "count": 1,
+     "price": 3598
+    },
+    {
+     "id": 7971,
+     "name": "Black Pearl",
+     "count": 1,
+     "price": 1272
+    },
+    {
+     "id": 11135,
+     "name": "Greater Mystic Essence",
+     "count": 1,
+     "price": 2399
+    },
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 1,
+     "price": 1000
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "13836": {
+   "name": "Enchant Boots - Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 2,
+     "price": 1000
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "20017": {
+   "name": "Enchant Shield - Greater Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11176,
+     "name": "Dream Dust",
+     "count": 6,
+     "price": 2700
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 16217,
+     "name": "Formula: Enchant Shield - Greater Stamina",
+     "vendors": [
+      "Mythrin'dir",
+      "Daniel Bartlett"
+     ],
+     "price": 12000
+    }
+   ]
+  },
+  "13746": {
+   "name": "Enchant Cloak - Greater Defense",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 1,
+     "price": 1000
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "7795": {
+   "name": "Runed Silver Rod",
+   "item": {
+    "id": 6339,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 6338,
+     "name": "Silver Rod",
+     "count": 1,
+     "price": 700
+    },
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 3,
+     "price": 95
+    },
+    {
+     "id": 10938,
+     "name": "Lesser Magic Essence",
+     "count": 4,
+     "price": 128
+    },
+    {
+     "id": 1210,
+     "name": "Shadowgem",
+     "count": 1,
+     "price": 302
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "13939": {
+   "name": "Enchant Bracer - Greater Strength",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11176,
+     "name": "Dream Dust",
+     "count": 1,
+     "price": 2700
+    },
+    {
+     "id": 11174,
+     "name": "Lesser Nether Essence",
+     "count": 2,
+     "price": 2380
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "13628": {
+   "name": "Runed Golden Rod",
+   "item": {
+    "id": 11130,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 11128,
+     "name": "Golden Rod",
+     "count": 1,
+     "price": 998
+    },
+    {
+     "id": 5500,
+     "name": "Iridescent Pearl",
+     "count": 1,
+     "price": 984
+    },
+    {
+     "id": 11082,
+     "name": "Greater Astral Essence",
+     "count": 1,
+     "price": 1729
+    },
+    {
+     "id": 11083,
+     "name": "Soul Dust",
+     "count": 1,
+     "price": 419
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "7863": {
+   "name": "Enchant Boots - Minor Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 4,
+     "price": 95
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Silver Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 6376,
+     "name": "Formula: Enchant Boots - Minor Stamina",
+     "vendors": [],
+     "price": null
+    }
+   ]
+  },
+  "7418": {
+   "name": "Enchant Bracer - Inferior Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 247786,
+     "name": "Mote of Magic",
+     "count": 1,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Copper Rod"
+   ],
+   "taught_by": []
+  },
+  "7771": {
+   "name": "Enchant Cloak - Minor Protection",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 2,
+     "price": 95
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Copper Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 6345,
+     "name": "Formula: Imbue Cloak - Protection",
+     "vendors": [],
+     "price": null
+    }
+   ]
+  },
+  "7420": {
+   "name": "Enchant Chest - Inferior Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 1,
+     "price": 95
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Copper Rod"
+   ],
+   "taught_by": []
+  },
+  "7421": {
+   "name": "Runed Copper Rod",
+   "item": {
+    "id": 6218,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 6217,
+     "name": "Copper Rod",
+     "count": 1,
+     "price": 100
+    },
+    {
+     "id": 247786,
+     "name": "Mote of Magic",
+     "count": 1,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "13663": {
+   "name": "Enchant Chest - Greater Intellect",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11134,
+     "name": "Lesser Mystic Essence",
+     "count": 1,
+     "price": 900
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Golden Rod"
+   ],
+   "taught_by": []
+  }
+ }
+}

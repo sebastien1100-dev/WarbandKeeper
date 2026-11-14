@@ -325,6 +325,9 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Guides de montée
+    ["Outils : "] = "Tools: ",
+    ["Uldaman (donjon)"] = "Uldaman (dungeon)",
+    ["Le maître est dans Uldaman : il faudra sans doute un groupe pour y accéder si tu n'es pas niveau 60."] = "The trainer is inside Uldaman: you will likely need a group to get there if you are not level 60.",
     ["Recette connue"] = "Recipe known",
     ["Recette à acheter"] = "Recipe to buy",
     ["chez"] = "from",

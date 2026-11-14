@@ -63,6 +63,19 @@ function WK.InsertChatLink(link)
     if ChatEdit_InsertLink then return ChatEdit_InsertLink(link) end
 end
 
+-- Nom et icône d'un sort (recette de métier), dans la langue du jeu.
+function WK.SpellInfo(spellID)
+    if not spellID then return nil end
+    if C_Spell and C_Spell.GetSpellInfo then
+        local i = C_Spell.GetSpellInfo(spellID)
+        if type(i) == "table" then return i.name, i.iconID end
+    end
+    if GetSpellInfo then
+        local name, _, icon = GetSpellInfo(spellID)
+        return name, icon
+    end
+end
+
 function WK:ItemName(itemID)
     local name, link = WK.GetItemInfo(itemID)
     return link or name or ("item:" .. itemID)

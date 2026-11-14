@@ -7,6 +7,16 @@ local GAP = 12
 local TOP = -46
 local MAX_RECIPES = 150
 
+-- Nom et icône d'une étape de guide : l'objet fabriqué, sinon la recette (enchantements).
+local function stepInfo(st)
+    if st.out then
+        local name, icon, r, g, b = UI:ItemInfo(st.out)
+        if name and name ~= "" then return name, icon, r, g, b end
+    end
+    local name, icon = WK.SpellInfo(st.spell)
+    return name or "?", icon, 1, 1, 1
+end
+
 local function colored(key)
     local c = WK.DB.global.characters[key]
     local name = WK:CharName(c, key)
@@ -70,7 +80,7 @@ local function Levels(page, parent)
             for _, e in ipairs(steps or {}) do
                 if e.status == "current" or (e.status == "todo" and rank < e.step.from) then
                     return string.format(T("Guide : %d-%d  ·  %d %s"), e.step.from, e.step.to,
-                        e.status == "current" and e.left or e.step.crafts, (UI:ItemInfo(e.step.out or 0)) or "?")
+                        e.status == "current" and e.left or e.step.crafts, (stepInfo(e.step)))
                 end
             end
             return T("Guide terminé")
@@ -944,7 +954,12 @@ local function Detail(page, parent)
             GameTooltip:SetText(s.title or "", 1, 1, 1)
             GameTooltip:AddLine(string.format(T("Niveaux %d à %d · %d fabrications"), st.from, st.to, st.crafts), 0.8, 0.8, 0.8)
             for _, f in ipairs(st.first or {}) do
-                GameTooltip:AddLine(string.format(T("D'abord : %d x %s"), f.crafts, (UI:ItemInfo(f.out)) or "?"), 0.6, 0.8, 1)
+                GameTooltip:AddLine(string.format(T("D'abord : %d x %s"), f.crafts, (stepInfo(f))), 0.6, 0.8, 1)
+            end
+            if st.tools then
+                local names = {}
+                for _, tool in ipairs(st.tools) do table.insert(names, (UI:ItemInfo(tool)) or "?") end
+                GameTooltip:AddLine(T("Outils : ") .. table.concat(names, ", "), 0.8, 0.8, 0.8, true)
             end
             for _, rg in ipairs(st.reagents or {}) do
                 local have = WK.modules.Inventory:AccountCount(rg[1])
@@ -1007,7 +1022,7 @@ local function Detail(page, parent)
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
             r.range:SetText(st.from .. "-" .. st.to)
-            local name, ic, qr, qg, qb = UI:ItemInfo(st.out or 0)
+            local name, ic, qr, qg, qb = stepInfo(st)
             r.title = name or "?"
             r.icon:SetTexture(ic)
             local n = e.status == "current" and e.left or st.crafts
@@ -1015,14 +1030,14 @@ local function Detail(page, parent)
             r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
             local reag = {}
             for _, f in ipairs(st.first or {}) do
-                table.insert(reag, UI:Hex(C.muted) .. T("d'abord") .. " " .. f.crafts .. " " .. ((UI:ItemInfo(f.out)) or "?") .. "|r")
+                table.insert(reag, UI:Hex(C.muted) .. T("d'abord") .. " " .. f.crafts .. " " .. (stepInfo(f)) .. "|r")
             end
             for _, rg in ipairs(st.reagents or {}) do
                 table.insert(reag, (rg[2] * n) .. " " .. ((UI:ItemInfo(rg[1])) or "?"))
             end
             local src
             if st.src == "recipe" then
-                if self.known and st.out and self.known[st.out] then
+                if WK.modules.Recipes:StepKnown(st, self.known) then
                     src = UI:Hex(C.positive) .. T("Recette connue") .. "|r"
                 else
                     src = UI:Hex(C.warning) .. T("Recette à acheter") .. "|r"

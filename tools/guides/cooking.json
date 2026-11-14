@@ -177,6 +177,7 @@
  ],
  "craftedParts": {},
  "skillOnly": [],
+ "craftedTools": {},
  "recipes": {
   "6499": {
    "name": "Boiled Clams",
@@ -199,6 +200,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "6500": {
@@ -222,6 +224,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "18244": {
@@ -239,6 +242,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 13946,
@@ -265,6 +269,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 6330,
@@ -298,6 +303,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 6369,
@@ -332,6 +338,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 17062,
@@ -366,6 +373,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "8604": {
@@ -389,6 +397,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   }
  }

@@ -1,0 +1,834 @@
+{
+ "name": "Tailoring",
+ "leveling": [
+  {
+   "skill": [
+    1,
+    44
+   ],
+   "recipe": 2963,
+   "crafts": 95,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    44,
+    60
+   ],
+   "recipe": 8776,
+   "crafts": 19
+  },
+  {
+   "skill": [
+    60,
+    77
+   ],
+   "recipe": 2964,
+   "crafts": 25,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    77,
+    90
+   ],
+   "recipe": 12046,
+   "crafts": 19
+  },
+  {
+   "skill": [
+    90,
+    98
+   ],
+   "recipe": 2402,
+   "crafts": 15
+  },
+  {
+   "skill": [
+    98,
+    100
+   ],
+   "recipe": 3848,
+   "crafts": 2
+  },
+  {
+   "skill": [
+    100,
+    120
+   ],
+   "recipe": 3839,
+   "crafts": 228,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    120,
+    121
+   ],
+   "recipe": 3852,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    121,
+    132
+   ],
+   "recipe": 8760,
+   "crafts": 12
+  },
+  {
+   "skill": [
+    132,
+    136
+   ],
+   "recipe": 8762,
+   "crafts": 4
+  },
+  {
+   "skill": [
+    136,
+    140
+   ],
+   "recipe": 3871,
+   "crafts": 4
+  },
+  {
+   "skill": [
+    140,
+    150
+   ],
+   "recipe": 3865,
+   "crafts": 45,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    150,
+    171
+   ],
+   "recipe": 8791,
+   "crafts": 21
+  },
+  {
+   "skill": [
+    171,
+    190
+   ],
+   "recipe": 8799,
+   "crafts": 24
+  },
+  {
+   "skill": [
+    190,
+    195
+   ],
+   "recipe": 12053,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    195,
+    200
+   ],
+   "recipe": 12077,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    200,
+    205
+   ],
+   "recipe": 12065,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    205,
+    215
+   ],
+   "recipe": 18401,
+   "crafts": 339,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    215,
+    240
+   ],
+   "recipe": 18402,
+   "crafts": 33
+  },
+  {
+   "skill": [
+    240,
+    253
+   ],
+   "recipe": 18417,
+   "crafts": 15
+  },
+  {
+   "skill": [
+    253,
+    280
+   ],
+   "recipe": 1257487,
+   "crafts": 36
+  }
+ ],
+ "sections": [
+  {
+   "rank": "Apprentice",
+   "skill": [
+    1,
+    60
+   ],
+   "trainers": null
+  },
+  {
+   "rank": "Journeyman",
+   "skill": [
+    60,
+    132
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Me'lynn",
+      "location": "Darnassus",
+      "image": "melynn.webp"
+     },
+     {
+      "npc": "Jormund Stonebrow",
+      "location": "Ironforge",
+      "image": "jormund-stonebrow.webp"
+     },
+     {
+      "npc": "Sellandus",
+      "location": "Stormwind City",
+      "image": "sellandus.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Magar",
+      "location": "Orgrimmar",
+      "image": "magar.webp"
+     },
+     {
+      "npc": "Tepa",
+      "location": "Thunder Bluff",
+      "image": "tepa.webp"
+     },
+     {
+      "npc": "Rhiannon Davis",
+      "location": "Undercity",
+      "image": "rhiannon-davis.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Expert",
+   "skill": [
+    132,
+    200
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Georgio Bolero",
+      "location": "Stormwind City",
+      "image": "georgio-bolero.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Josef Gregorian",
+      "location": "Undercity",
+      "image": "josef-gregorian.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Artisan",
+   "skill": [
+    200,
+    280
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Timothy Worthington",
+      "location": "Duswallow Marsh",
+      "image": "timothy-worthington.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Daryl Stack",
+      "location": "Hillsbrad Foothills",
+      "image": "daryl-stack.webp"
+     }
+    ]
+   }
+  }
+ ],
+ "craftedParts": {
+  "2996": 2963,
+  "2997": 2964,
+  "4305": 3839,
+  "4339": 3865,
+  "14048": 18401
+ },
+ "skillOnly": [],
+ "craftedTools": {},
+ "recipes": {
+  "3848": {
+   "name": "Double-stitched Woolen Shoulders",
+   "item": {
+    "id": 4314,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2997,
+     "name": "Bolt of Woolen Cloth",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 2,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3852": {
+   "name": "Gloves of Meditation",
+   "item": {
+    "id": 4318,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2997,
+     "name": "Bolt of Woolen Cloth",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 3,
+     "price": 100
+    },
+    {
+     "id": 3383,
+     "name": "Elixir of Wisdom",
+     "count": 1,
+     "price": 123
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12046": {
+   "name": "Simple Kilt",
+   "item": {
+    "id": 10047,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2996,
+     "name": "Bolt of Linen Cloth",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "1257487": {
+   "name": "Runecloth Cuffs",
+   "item": {
+    "id": 254123,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14048,
+     "name": "Bolt of Runecloth",
+     "count": 5,
+     "price": null
+    },
+    {
+     "id": 14227,
+     "name": "Ironweb Spider Silk",
+     "count": 1,
+     "price": 9900
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "tools": [],
+   "taught_by": [
+    {
+     "id": 254124,
+     "name": "Pattern: Runecloth Cuffs",
+     "vendors": [
+      "Pexmit"
+     ],
+     "price": 100000
+    }
+   ]
+  },
+  "2963": {
+   "name": "Bolt of Linen Cloth",
+   "item": {
+    "id": 2996,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 2,
+     "price": 22
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "2964": {
+   "name": "Bolt of Woolen Cloth",
+   "item": {
+    "id": 2997,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2592,
+     "name": "Wool Cloth",
+     "count": 3,
+     "price": 112
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12053": {
+   "name": "Black Mageweave Gloves",
+   "item": {
+    "id": 10003,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4339,
+     "name": "Bolt of Mageweave",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 2,
+     "price": 2000
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3865": {
+   "name": "Bolt of Mageweave",
+   "item": {
+    "id": 4339,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4338,
+     "name": "Mageweave Cloth",
+     "count": 5,
+     "price": 611
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3871": {
+   "name": "Formal White Shirt",
+   "item": {
+    "id": 4334,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4305,
+     "name": "Bolt of Silk Cloth",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 2324,
+     "name": "Bleach",
+     "count": 2,
+     "price": 25
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12065": {
+   "name": "Mageweave Bag",
+   "item": {
+    "id": 10050,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4339,
+     "name": "Bolt of Mageweave",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 2,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12077": {
+   "name": "Simple Black Dress",
+   "item": {
+    "id": 10053,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4339,
+     "name": "Bolt of Mageweave",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 2325,
+     "name": "Black Dye",
+     "count": 1,
+     "price": 1000
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 1,
+     "price": 2000
+    },
+    {
+     "id": 2324,
+     "name": "Bleach",
+     "count": 1,
+     "price": 25
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8760": {
+   "name": "Azure Silk Hood",
+   "item": {
+    "id": 7048,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4305,
+     "name": "Bolt of Silk Cloth",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 6260,
+     "name": "Blue Dye",
+     "count": 2,
+     "price": 50
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8762": {
+   "name": "Silk Headband",
+   "item": {
+    "id": 7050,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4305,
+     "name": "Bolt of Silk Cloth",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 2,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8776": {
+   "name": "Linen Belt",
+   "item": {
+    "id": 7026,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2996,
+     "name": "Bolt of Linen Cloth",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 2320,
+     "name": "Coarse Thread",
+     "count": 1,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8791": {
+   "name": "Crimson Silk Vest",
+   "item": {
+    "id": 7058,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4305,
+     "name": "Bolt of Silk Cloth",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 2604,
+     "name": "Red Dye",
+     "count": 2,
+     "price": 50
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 2,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8799": {
+   "name": "Crimson Silk Pantaloons",
+   "item": {
+    "id": 7062,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4305,
+     "name": "Bolt of Silk Cloth",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 2604,
+     "name": "Red Dye",
+     "count": 2,
+     "price": 50
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 2,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "18401": {
+   "name": "Bolt of Runecloth",
+   "item": {
+    "id": 14048,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14047,
+     "name": "Runecloth",
+     "count": 5,
+     "price": 976
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "2402": {
+   "name": "Woolen Cape",
+   "item": {
+    "id": 2584,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2997,
+     "name": "Bolt of Woolen Cloth",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "18402": {
+   "name": "Runecloth Belt",
+   "item": {
+    "id": 13856,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14048,
+     "name": "Bolt of Runecloth",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "18417": {
+   "name": "Runecloth Gloves",
+   "item": {
+    "id": 13863,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14048,
+     "name": "Bolt of Runecloth",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 8170,
+     "name": "Rugged Leather",
+     "count": 4,
+     "price": 1149
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "tools": [],
+   "taught_by": [
+    {
+     "id": 14481,
+     "name": "Pattern: Runecloth Gloves",
+     "vendors": [
+      "Qia"
+     ],
+     "price": 16000
+    }
+   ]
+  },
+  "3839": {
+   "name": "Bolt of Silk Cloth",
+   "item": {
+    "id": 4305,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4306,
+     "name": "Silk Cloth",
+     "count": 4,
+     "price": 198
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  }
+ }
+}

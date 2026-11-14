@@ -352,6 +352,7 @@
   4304,
   8170
  ],
+ "craftedTools": {},
  "recipes": {
   "19082": {
    "name": "Runic Leather Headband",
@@ -380,6 +381,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 15756,
@@ -412,6 +414,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10647": {
@@ -453,6 +456,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10650": {
@@ -488,6 +492,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "20648": {
@@ -505,6 +510,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "20650": {
@@ -522,6 +528,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3756": {
@@ -545,6 +552,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3763": {
@@ -568,6 +576,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10548": {
@@ -591,6 +600,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3768": {
@@ -620,6 +630,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10558": {
@@ -643,6 +654,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "1254974": {
@@ -672,6 +684,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 252933,
@@ -698,6 +711,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3780": {
@@ -721,6 +735,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "14932": {
@@ -756,6 +771,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "2152": {
@@ -773,6 +789,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3816": {
@@ -796,6 +813,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3817": {
@@ -819,6 +837,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3818": {
@@ -842,6 +861,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "9068": {
@@ -871,6 +891,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "19053": {
@@ -900,6 +921,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 15729,
@@ -938,6 +960,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10482": {
@@ -961,6 +984,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "19058": {
@@ -978,6 +1002,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "7156": {
@@ -1007,6 +1032,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10487": {
@@ -1030,6 +1056,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   }
  }

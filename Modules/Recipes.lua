@@ -228,9 +228,20 @@ end
 
 -- Objets que ce perso sait déjà fabriquer (pour ne pas compter les recettes déjà apprises).
 function M:KnownOutputs(c)
-    local known = {}
-    for _, r in pairs(c and c.recipes or {}) do if r.out then known[r.out] = true end end
+    local known = { names = {} }
+    for k, r in pairs(c and c.recipes or {}) do
+        if r.out then known[r.out] = true end
+        known.names[r.name or k] = true -- enchantements : pas d'objet fabriqué, on compare le nom
+    end
     return known
+end
+
+-- La recette de cette étape est-elle déjà connue ?
+function M:StepKnown(st, known)
+    if not known then return false end
+    if st.out and known[st.out] then return true end
+    local name = st.spell and WK.SpellInfo(st.spell)
+    return name ~= nil and known.names ~= nil and known.names[name] == true
 end
 
 -- Plan pour un niveau : étapes (status "done" / "current" / "todo", left = fabrications restantes)
@@ -259,13 +270,19 @@ function M:GuidePlan(prof, rank, known)
         local left = math.ceil(st.crafts * ratio)
         table.insert(steps, { step = st, status = status, left = left })
         -- Recette à acheter (une seule fois, même si plusieurs étapes l'utilisent)
-        if status ~= "done" and st.learn and not (known and st.out and known[st.out]) then
+        if status ~= "done" and st.learn and not self:StepKnown(st, known) then
             need[st.learn] = 1
             learns = learns or {}
             learns[st.learn] = learns[st.learn] or { vendors = st.vendors, from = st.from, to = st.to }
         end
         local function add(s, n)
             for _, rg in ipairs(s.reagents or {}) do need[rg[1]] = (need[rg[1]] or 0) + rg[2] * n end
+        end
+        -- Outils achetés (marteau de forgeron…) : un seul exemplaire suffit
+        if status ~= "done" then
+            for _, tool in ipairs(st.tools or {}) do
+                if not made[tool] then need[tool] = math.max(need[tool] or 0, 1) end
+            end
         end
         if left > 0 then
             add(st, left)

@@ -204,6 +204,7 @@
   "14530": 18630
  },
  "skillOnly": [],
+ "craftedTools": {},
  "recipes": {
   "18629": {
    "name": "Runecloth Bandage",
@@ -220,6 +221,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "18630": {
@@ -237,6 +239,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3275": {
@@ -254,6 +257,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "3276": {
@@ -271,6 +275,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10840": {
@@ -288,6 +293,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 16113,
@@ -327,6 +333,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "1244432": {
@@ -356,6 +363,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "1244433": {
@@ -385,6 +393,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "10841": {
@@ -402,6 +411,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "7928": {
@@ -419,6 +429,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   },
   "7929": {
@@ -436,6 +447,7 @@
     }
    ],
    "source": "recipe",
+   "tools": [],
    "taught_by": [
     {
      "id": 16112,
@@ -463,6 +475,7 @@
     }
    ],
    "source": "trainer",
+   "tools": [],
    "taught_by": []
   }
  }

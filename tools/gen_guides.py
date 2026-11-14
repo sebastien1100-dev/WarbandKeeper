@@ -35,7 +35,13 @@ PLACES = {
     "Desolace": "Désolace", "Dustwallow Marsh": "Marécage d'Âprefange", "Feralas": "Feralas",
     "Ironforge": "Forgefer", "Orgrimmar": "Orgrimmar", "Stormwind City": "Hurlevent",
     "The Hinterlands": "Les Hinterlands", "Thunder Bluff": "Les Pitons-du-Tonnerre", "Undercity": "Fossoyeuse",
+    "Booty Bay": "Baie-du-Butin", "Elwynn Forest": "Forêt d'Elwynn", "Hillsbrad Foothills": "Contreforts de Hautebrande",
+    "Stonetalon Mountains": "Les Serres-Rocheuses", "Swamp of Sorrows": "Marais des Chagrins", "Tanaris": "Tanaris",
+    "Tirisfal Glades": "Clairières de Tirisfal", "Uldaman (Dungeon)": "Uldaman (donjon)",
+    "Duswallow Marsh": "Marécage d'Âprefange",
 }
+# Outils achetés (les autres outils sont fabriqués par le parcours lui-même).
+BOUGHT_TOOLS = {"Blacksmith Hammer": 5956}
 # Zone des vendeurs de recettes (seulement ceux dont on est sûr ; les autres sans zone).
 VENDOR_PLACES = {
     "Jase Farlane": "Maleterres de l'Est", "Blimo Gadgetspring": "Azshara",
@@ -43,7 +49,8 @@ VENDOR_PLACES = {
     "Tansy Puddlefizz": "Forgefer", "Shankys": "Orgrimmar", "Lindea Rabonne": "Contreforts de Hautebrande",
     "Derak Nightfall": "Contreforts de Hautebrande", "Kilxx": "Les Tarides", "Naal Mistrunner": "Les Pitons-du-Tonnerre",
     "Sewa Mistrunner": "Les Pitons-du-Tonnerre", "Ronald Burch": "Fossoyeuse", "Wulan": "Désolace",
-    "Catherine Leland": "Hurlevent",
+    "Catherine Leland": "Hurlevent", "Xizzer Fizzbolt": "Berceau-de-l'Hiver", "Gearcutter Cogspinner": "Forgefer",
+    "Mythrin'dir": "Darnassus", "Daniel Bartlett": "Fossoyeuse", "Kor'geld": "Orgrimmar", "Soolie Berryfizz": "Forgefer",
 }
 # Remarques des guides, traduites. {n:id} = n fois l'objet id ; {id} = l'objet id (nom pris dans le jeu).
 NOTES = {
@@ -53,6 +60,8 @@ NOTES = {
         "Apporte {12:12207}, {10:7974} et {20:8932} pour la quête de formation.",
     "Buy Manual: Heavy Silk Bandage and Manual: Mageweave Bandage while you're there.":
         "Achète au passage le {16112} et le {16113}.",
+    "The trainer is inside Uldaman and will likely require a group to access if you're not 60.":
+        "Le maître est dans Uldaman : il faudra sans doute un groupe pour y accéder si tu n'es pas niveau 60.",
 }
 
 
@@ -74,11 +83,13 @@ def slim(page):
             "reagents": [{"id": g["id"], "name": g["name"], "count": g["count"], "price": g.get("price")}
                          for g in r["reagents"]],
             "source": r.get("source"),
+            "tools": r.get("tools", []),
             "taught_by": [{"id": t["id"], "name": t["name"], "vendors": t.get("vendors") or [], "price": t.get("price")}
                           for t in r.get("taught_by", [])],
         }
     return {"name": prof["name"], "leveling": prof["leveling"], "sections": prof["sections"],
-            "craftedParts": prof.get("craftedParts", {}), "skillOnly": prof.get("skillOnly", []), "recipes": keep}
+            "craftedParts": prof.get("craftedParts", {}), "skillOnly": prof.get("skillOnly", []),
+            "craftedTools": prof.get("craftedTools", {}), "recipes": keep}
 
 
 def lua_str(s):
@@ -96,6 +107,7 @@ def gen():
            "-- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },",
            "--           src = \"trainer\" | \"recipe\", learn = recette (objet), vendors = { {nom, zone?} },",
            "--           first = étapes à faire avant }",
+           "-- spell = recette (sort : nom en jeu même sans objet fabriqué) ; tools = outils nécessaires (objets).",
            "-- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.",
            "-- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.",
            "WK.Guides = {"]
@@ -109,11 +121,23 @@ def gen():
             for x in r["reagents"]:
                 if x.get("price"):
                     prices[x["id"]] = x["price"]
-            parts = ["crafts = %d" % crafts]
+            parts = ["crafts = %d" % crafts, "spell = %d" % rid]
             if r["item"]:
                 parts.append("out = %d, qty = %d" % (r["item"]["id"], r["item"]["count"] or 1))
             parts.append("reagents = { " + ", ".join("{ %d, %d }" % (x["id"], x["count"]) for x in r["reagents"]) + " }")
             parts.append("src = %s" % lua_str(r["source"] or "trainer"))
+            tool_ids = []
+            for t in r.get("tools", []):
+                if t in BOUGHT_TOOLS:
+                    tool_ids.append(BOUGHT_TOOLS[t])
+                elif t in g.get("craftedTools", {}):
+                    tr = rec.get(str(g["craftedTools"][t]))
+                    if tr and tr["item"]:
+                        tool_ids.append(tr["item"]["id"])
+                else:
+                    sys.exit("Outil inconnu (à ajouter dans BOUGHT_TOOLS) : " + t)
+            if tool_ids:
+                parts.append("tools = { " + ", ".join(str(i) for i in tool_ids) + " }")
             if r["taught_by"]:
                 t = r["taught_by"][0]
                 if t.get("price"):

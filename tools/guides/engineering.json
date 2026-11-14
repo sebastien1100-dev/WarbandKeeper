@@ -1,0 +1,1239 @@
+{
+ "name": "Engineering",
+ "leveling": [
+  {
+   "skill": [
+    1,
+    30
+   ],
+   "recipe": 3918,
+   "crafts": 34
+  },
+  {
+   "skill": [
+    30,
+    56
+   ],
+   "recipe": 3922,
+   "crafts": 55,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    56,
+    61
+   ],
+   "recipe": 3923,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    61,
+    62
+   ],
+   "recipe": 7430,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    62,
+    75
+   ],
+   "recipe": 3924,
+   "crafts": 13
+  },
+  {
+   "skill": [
+    75,
+    88
+   ],
+   "recipe": 3929,
+   "crafts": 14
+  },
+  {
+   "skill": [
+    88,
+    103
+   ],
+   "recipe": 3926,
+   "crafts": 17
+  },
+  {
+   "skill": [
+    103,
+    108
+   ],
+   "recipe": 8334,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    108,
+    109
+   ],
+   "recipe": 3973,
+   "crafts": 2,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    109,
+    112
+   ],
+   "recipe": 8334,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    112,
+    125
+   ],
+   "recipe": 3934,
+   "crafts": 13
+  },
+  {
+   "skill": [
+    125,
+    135
+   ],
+   "recipe": 3945,
+   "crafts": 26,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    135,
+    145
+   ],
+   "recipe": 3942,
+   "crafts": 16
+  },
+  {
+   "skill": [
+    145,
+    150
+   ],
+   "recipe": 3953,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    150,
+    154
+   ],
+   "recipe": 9271,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    154,
+    160
+   ],
+   "recipe": 12584,
+   "crafts": 8
+  },
+  {
+   "skill": [
+    160,
+    170
+   ],
+   "recipe": 3958,
+   "crafts": 15
+  },
+  {
+   "skill": [
+    170,
+    175
+   ],
+   "recipe": 3961,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    175,
+    193
+   ],
+   "recipe": 12585,
+   "crafts": 114,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    193,
+    194
+   ],
+   "recipe": 3962,
+   "crafts": 2
+  },
+  {
+   "skill": [
+    194,
+    200
+   ],
+   "recipe": 3967,
+   "crafts": 8
+  },
+  {
+   "skill": [
+    200,
+    220
+   ],
+   "recipe": 12591,
+   "crafts": 46,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    220,
+    235
+   ],
+   "recipe": 12599,
+   "crafts": 29,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    235,
+    243
+   ],
+   "recipe": 12619,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    243,
+    245
+   ],
+   "recipe": 12618,
+   "crafts": 2,
+   "first": [
+    {
+     "recipe": 12590,
+     "crafts": 1
+    }
+   ]
+  },
+  {
+   "skill": [
+    245,
+    250
+   ],
+   "recipe": 12621,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    250,
+    255
+   ],
+   "recipe": 19788,
+   "crafts": 8
+  },
+  {
+   "skill": [
+    255,
+    265
+   ],
+   "recipe": 12621,
+   "crafts": 18
+  },
+  {
+   "skill": [
+    265,
+    275
+   ],
+   "recipe": 12622,
+   "crafts": 15
+  },
+  {
+   "skill": [
+    275,
+    280
+   ],
+   "recipe": 19567,
+   "crafts": 9
+  },
+  {
+   "skill": [
+    280,
+    288
+   ],
+   "recipe": 19791,
+   "crafts": 11
+  },
+  {
+   "skill": [
+    288,
+    300
+   ],
+   "recipe": 19795,
+   "crafts": 14
+  }
+ ],
+ "sections": [
+  {
+   "rank": "Apprentice",
+   "skill": [
+    1,
+    56
+   ],
+   "trainers": null
+  },
+  {
+   "rank": "Journeyman",
+   "skill": [
+    56,
+    125
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Finbus Geargrind",
+      "location": "Darnassus",
+      "image": "finbus-geargrind.webp"
+     },
+     {
+      "npc": "Trixie Quikswitch",
+      "location": "Ironforge",
+      "image": "trixie-quikswitch.webp"
+     },
+     {
+      "npc": "Lilliam Sparkspindle",
+      "location": "Stormwind City",
+      "image": "lilliam-sparkspindle.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Nogg",
+      "location": "Orgrimmar",
+      "image": "nogg.webp"
+     },
+     {
+      "npc": "Franklin Lloyd",
+      "location": "Undercity",
+      "image": "franklin-lloyd.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Expert",
+   "skill": [
+    125,
+    200
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Springspindle Fizzlegear",
+      "location": "Ironforge",
+      "image": "springspindle-fizzlegear.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Roxxik",
+      "location": "Orgrimmar",
+      "image": "roxxik.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Artisan",
+   "skill": [
+    200,
+    300
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Buzzek Bracketswing",
+      "location": "Tanaris",
+      "image": "buzzek-bracketswing.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Buzzek Bracketswing",
+      "location": "Tanaris",
+      "image": "buzzek-bracketswing.webp"
+     }
+    ]
+   }
+  }
+ ],
+ "craftedParts": {
+  "4357": 3918,
+  "4359": 3922,
+  "4360": 3923,
+  "4361": 3924,
+  "4363": 3926,
+  "4364": 3929,
+  "4368": 3934,
+  "4371": 3938,
+  "4375": 3942,
+  "4377": 3945,
+  "4380": 3950,
+  "4382": 3953,
+  "4385": 3956,
+  "4387": 3958,
+  "4389": 3961,
+  "4394": 3967,
+  "4404": 3973,
+  "4405": 3977,
+  "5507": 6458,
+  "10500": 12594,
+  "10505": 12585,
+  "10507": 12586,
+  "10543": 12718,
+  "10558": 12584,
+  "10559": 12589,
+  "10560": 12591,
+  "10561": 12599,
+  "10586": 12754,
+  "15992": 19788,
+  "249432": 1249634
+ },
+ "skillOnly": [],
+ "craftedTools": {
+  "Arclight Spanner": 7430,
+  "Gyromatic Micro-Adjustor": 12590
+ },
+ "recipes": {
+  "3973": {
+   "name": "Silver Contact",
+   "item": {
+    "id": 4404,
+    "count": 5
+   },
+   "reagents": [
+    {
+     "id": 2842,
+     "name": "Silver Bar",
+     "count": 1,
+     "price": 474
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "7430": {
+   "name": "Arclight Spanner",
+   "item": {
+    "id": 6219,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 6,
+     "price": 85
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "8334": {
+   "name": "Practice Lock",
+   "item": {
+    "id": 6712,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2841,
+     "name": "Bronze Bar",
+     "count": 1,
+     "price": 168
+    },
+    {
+     "id": 4359,
+     "name": "Handful of Copper Bolts",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 2880,
+     "name": "Weak Flux",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "12584": {
+   "name": "Gold Power Core",
+   "item": {
+    "id": 10558,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 3577,
+     "name": "Gold Bar",
+     "count": 1,
+     "price": 600
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "12585": {
+   "name": "Solid Blasting Powder",
+   "item": {
+    "id": 10505,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 7912,
+     "name": "Solid Stone",
+     "count": 2,
+     "price": 162
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12590": {
+   "name": "Gyromatic Micro-Adjustor",
+   "item": {
+    "id": 10498,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3859,
+     "name": "Steel Bar",
+     "count": 4,
+     "price": 889
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "12591": {
+   "name": "Unstable Trigger",
+   "item": {
+    "id": 10560,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3860,
+     "name": "Mithril Bar",
+     "count": 1,
+     "price": 1006
+    },
+    {
+     "id": 4338,
+     "name": "Mageweave Cloth",
+     "count": 1,
+     "price": 611
+    },
+    {
+     "id": 10505,
+     "name": "Solid Blasting Powder",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "9271": {
+   "name": "Aquadynamic Fish Attractor",
+   "item": {
+    "id": 6533,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 2841,
+     "name": "Bronze Bar",
+     "count": 2,
+     "price": 168
+    },
+    {
+     "id": 6530,
+     "name": "Nightcrawlers",
+     "count": 1,
+     "price": 27
+    },
+    {
+     "id": 4364,
+     "name": "Coarse Blasting Powder",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12599": {
+   "name": "Mithril Casing",
+   "item": {
+    "id": 10561,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3860,
+     "name": "Mithril Bar",
+     "count": 3,
+     "price": 1006
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "12618": {
+   "name": "Rose Colored Goggles",
+   "item": {
+    "id": 10503,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 6,
+     "price": 649
+    },
+    {
+     "id": 7910,
+     "name": "Star Ruby",
+     "count": 2,
+     "price": 5271
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Arclight Spanner",
+    "Gyromatic Micro-Adjustor"
+   ],
+   "taught_by": []
+  },
+  "12619": {
+   "name": "Hi-Explosive Bomb",
+   "item": {
+    "id": 10562,
+    "count": 4
+   },
+   "reagents": [
+    {
+     "id": 10561,
+     "name": "Mithril Casing",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 10560,
+     "name": "Unstable Trigger",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 10505,
+     "name": "Solid Blasting Powder",
+     "count": 2,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "19788": {
+   "name": "Dense Blasting Powder",
+   "item": {
+    "id": 15992,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12365,
+     "name": "Dense Stone",
+     "count": 2,
+     "price": 499
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12621": {
+   "name": "Mithril Gyro-Shot",
+   "item": {
+    "id": 10513,
+    "count": 200
+   },
+   "reagents": [
+    {
+     "id": 3860,
+     "name": "Mithril Bar",
+     "count": 2,
+     "price": 1006
+    },
+    {
+     "id": 10505,
+     "name": "Solid Blasting Powder",
+     "count": 2,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3918": {
+   "name": "Rough Blasting Powder",
+   "item": {
+    "id": 4357,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2835,
+     "name": "Rough Stone",
+     "count": 1,
+     "price": 9
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "12622": {
+   "name": "Green Lens",
+   "item": {
+    "id": 10504,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 8,
+     "price": 649
+    },
+    {
+     "id": 1529,
+     "name": "Jade",
+     "count": 3,
+     "price": 735
+    },
+    {
+     "id": 7909,
+     "name": "Aquamarine",
+     "count": 3,
+     "price": 1800
+    },
+    {
+     "id": 10286,
+     "name": "Heart of the Wild",
+     "count": 2,
+     "price": 409
+    },
+    {
+     "id": 8153,
+     "name": "Wildvine",
+     "count": 2,
+     "price": 73
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Arclight Spanner",
+    "Gyromatic Micro-Adjustor"
+   ],
+   "taught_by": []
+  },
+  "19791": {
+   "name": "Thorium Widget",
+   "item": {
+    "id": 15994,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12359,
+     "name": "Thorium Bar",
+     "count": 3,
+     "price": 2897
+    },
+    {
+     "id": 14047,
+     "name": "Runecloth",
+     "count": 1,
+     "price": 976
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": [
+    {
+     "id": 16042,
+     "name": "Schematic: Thorium Widget",
+     "vendors": [
+      "Gearcutter Cogspinner"
+     ],
+     "price": 12000
+    }
+   ]
+  },
+  "3922": {
+   "name": "Handful of Copper Bolts",
+   "item": {
+    "id": 4359,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 1,
+     "price": 85
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3923": {
+   "name": "Rough Copper Bomb",
+   "item": {
+    "id": 4360,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 1,
+     "price": 85
+    },
+    {
+     "id": 4359,
+     "name": "Handful of Copper Bolts",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 4357,
+     "name": "Rough Blasting Powder",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 1,
+     "price": 22
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3924": {
+   "name": "Copper Tube",
+   "item": {
+    "id": 4361,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 2,
+     "price": 85
+    },
+    {
+     "id": 2880,
+     "name": "Weak Flux",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "19795": {
+   "name": "Thorium Tube",
+   "item": {
+    "id": 16000,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12359,
+     "name": "Thorium Bar",
+     "count": 6,
+     "price": 2897
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": [
+    {
+     "id": 16047,
+     "name": "Schematic: Thorium Tube",
+     "vendors": [
+      "Xizzer Fizzbolt",
+      "Kor'gar"
+     ],
+     "price": 16000
+    }
+   ]
+  },
+  "3926": {
+   "name": "Copper Modulator",
+   "item": {
+    "id": 4363,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4359,
+     "name": "Handful of Copper Bolts",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 1,
+     "price": 85
+    },
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 2,
+     "price": 22
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "3929": {
+   "name": "Coarse Blasting Powder",
+   "item": {
+    "id": 4364,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2836,
+     "name": "Coarse Stone",
+     "count": 1,
+     "price": 77
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3934": {
+   "name": "Flying Tiger Goggles",
+   "item": {
+    "id": 4368,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 6,
+     "price": 34
+    },
+    {
+     "id": 818,
+     "name": "Tigerseye",
+     "count": 2,
+     "price": 125
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "3942": {
+   "name": "Whirring Bronze Gizmo",
+   "item": {
+    "id": 4375,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2841,
+     "name": "Bronze Bar",
+     "count": 2,
+     "price": 168
+    },
+    {
+     "id": 2592,
+     "name": "Wool Cloth",
+     "count": 1,
+     "price": 112
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "3945": {
+   "name": "Heavy Blasting Powder",
+   "item": {
+    "id": 4377,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2838,
+     "name": "Heavy Stone",
+     "count": 1,
+     "price": 339
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "19567": {
+   "name": "Salt Shaker",
+   "item": {
+    "id": 15846,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 10561,
+     "name": "Mithril Casing",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 12359,
+     "name": "Thorium Bar",
+     "count": 6,
+     "price": 2897
+    },
+    {
+     "id": 10558,
+     "name": "Gold Power Core",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 10560,
+     "name": "Unstable Trigger",
+     "count": 4,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3953": {
+   "name": "Bronze Framework",
+   "item": {
+    "id": 4382,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2841,
+     "name": "Bronze Bar",
+     "count": 2,
+     "price": 168
+    },
+    {
+     "id": 2319,
+     "name": "Medium Leather",
+     "count": 1,
+     "price": 82
+    },
+    {
+     "id": 2592,
+     "name": "Wool Cloth",
+     "count": 1,
+     "price": 112
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3958": {
+   "name": "Iron Strut",
+   "item": {
+    "id": 4387,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3575,
+     "name": "Iron Bar",
+     "count": 2,
+     "price": 293
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3961": {
+   "name": "Gyrochronatom",
+   "item": {
+    "id": 4389,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3575,
+     "name": "Iron Bar",
+     "count": 1,
+     "price": 293
+    },
+    {
+     "id": 10558,
+     "name": "Gold Power Core",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "3962": {
+   "name": "Iron Grenade",
+   "item": {
+    "id": 4390,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 3575,
+     "name": "Iron Bar",
+     "count": 1,
+     "price": 293
+    },
+    {
+     "id": 4377,
+     "name": "Heavy Blasting Powder",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 4306,
+     "name": "Silk Cloth",
+     "count": 1,
+     "price": 198
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "3967": {
+   "name": "Big Iron Bomb",
+   "item": {
+    "id": 4394,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 3575,
+     "name": "Iron Bar",
+     "count": 3,
+     "price": 293
+    },
+    {
+     "id": 4377,
+     "name": "Heavy Blasting Powder",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 4404,
+     "name": "Silver Contact",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  }
+ }
+}
