@@ -9,6 +9,11 @@ _Prévu, pas encore commencé._
 
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.9.4 — 14/11/2026
+
+### Corrections
+- La barre de défilement ne réagissait pas à la souris : un clic sur la barre amène la liste à cet endroit, et le curseur se fait glisser.
+
 ## v0.9.3 — 14/11/2026
 
 ### Ajouts

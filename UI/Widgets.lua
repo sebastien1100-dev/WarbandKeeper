@@ -235,7 +235,15 @@ function UI:Scroll(parent)
     s:SetScrollChild(child)
     s.child = child
 
-    local bar = CreateFrame("Frame", nil, s)
+    -- Rail cliquable (12 px à droite, hors du contenu) et curseur déplaçable.
+    local track = CreateFrame("Frame", nil, s)
+    track:SetPoint("TOPRIGHT")
+    track:SetPoint("BOTTOMRIGHT")
+    track:SetWidth(12)
+    track:SetFrameLevel(s:GetFrameLevel() + 5)
+    track:EnableMouse(true)
+    s.track = track
+    local bar = CreateFrame("Frame", nil, track)
     bar:SetWidth(4)
     bar.tex = UI:Rounded(bar, 2, 0, "OVERLAY", 1)
     bar.tex:SetColor(unpack(C.border))
@@ -243,14 +251,59 @@ function UI:Scroll(parent)
     function s:MaxScroll() return math.max(0, child:GetHeight() - self:GetHeight()) end
     function s:UpdateBar()
         local h, ch = self:GetHeight(), child:GetHeight()
-        if ch <= h + 1 or h <= 0 then bar:Hide() return end
-        bar:Show()
+        if ch <= h + 1 or h <= 0 then track:Hide() return end
+        track:Show()
         local bh = math.max(24, h * h / ch)
         local pos = (self:GetVerticalScroll() / self:MaxScroll()) * (h - bh)
+        bar.bh = bh
         bar:SetHeight(bh)
+        bar:SetWidth((track.hover or track.dragging) and 6 or 4)
         bar:ClearAllPoints()
         bar:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, -pos)
+        bar.tex:SetColor(unpack((track.hover or track.dragging) and C.muted or C.border))
     end
+
+    -- Position du curseur de la souris dans le rail (0 = haut).
+    local function cursorOffset()
+        local _, y = GetCursorPosition()
+        return (track:GetTop() or 0) - y / (track:GetEffectiveScale() or 1)
+    end
+    -- Place le haut du curseur de défilement à `top` px du haut du rail.
+    local function scrollToThumb(top)
+        local h = s:GetHeight()
+        local room = h - (bar.bh or 24)
+        if room <= 0 then return end
+        local v = math.max(0, math.min(1, top / room)) * s:MaxScroll()
+        s:SetVerticalScroll(v)
+        s:UpdateBar()
+    end
+    track:SetScript("OnMouseDown", function(self, button)
+        if button and button ~= "LeftButton" then return end
+        local y = cursorOffset()
+        local thumbTop = (s:GetVerticalScroll() / math.max(1, s:MaxScroll())) * (s:GetHeight() - (bar.bh or 24))
+        -- Clic sur le curseur : on le saisit là où on l'a pris ; clic sur le rail : il saute sous la souris.
+        if y >= thumbTop and y <= thumbTop + (bar.bh or 24) then
+            self.grab = y - thumbTop
+        else
+            self.grab = (bar.bh or 24) / 2
+            scrollToThumb(y - self.grab)
+        end
+        self.dragging = true
+        self:SetScript("OnUpdate", function() scrollToThumb(cursorOffset() - track.grab) end)
+    end)
+    track:SetScript("OnMouseUp", function(self)
+        self.dragging = false
+        self:SetScript("OnUpdate", nil)
+        s:UpdateBar()
+    end)
+    track:SetScript("OnEnter", function(self) self.hover = true; s:UpdateBar() end)
+    track:SetScript("OnLeave", function(self) self.hover = false; s:UpdateBar() end)
+    track:SetScript("OnHide", function(self)
+        self.dragging, self.hover = false, false
+        self:SetScript("OnUpdate", nil)
+    end)
+    track:SetScript("OnMouseWheel", function(_, delta) s:GetScript("OnMouseWheel")(s, delta) end)
+    track:EnableMouseWheel(true)
     function s:SetContentHeight(h)
         local w = self:GetWidth()
         if w and w > 12 then child:SetWidth(w - 12) end
