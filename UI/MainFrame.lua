@@ -303,7 +303,7 @@ function UI:Create()
 
     f:SetScript("OnShow", function() UI:Refresh() end)
     self:ApplySide()
-    self:ShowPage(cfg.lastPage or "overview")
+    self:ShowPage("overview")
     return f
 end
 
@@ -393,7 +393,8 @@ function UI:ToggleWindow(page)
         f:Hide()
     else
         f:Show()
-        if page then self:ShowPage(page) end
+        -- À l'ouverture : toujours le Résumé, sauf si une page précise est demandée.
+        self:ShowPage(page or "overview")
     end
 end
 
