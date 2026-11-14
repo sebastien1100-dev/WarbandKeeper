@@ -182,12 +182,57 @@ function M:ClearLeft()
     WK:NotifyChanged()
 end
 
-local handled = false
+local handled, lootOpen = false, false
+
+-- Emplacements encore pleins de la fenêtre de butin : total, et ceux que le profil veut.
+local function remaining(p)
+    local total, wanted = 0, {}
+    for i = 1, (GetNumLootItems() or 0) do
+        local _, name, quantity, currencyID, quality, locked, isQuest = GetLootSlotInfo(i)
+        local slotType = GetLootSlotType and GetLootSlotType(i) or 1
+        local filled = (name and name ~= "") or (quantity and quantity > 0)
+        if filled and slotType ~= 0 then
+            total = total + 1
+            if not locked then
+                if slotType ~= 1 or currencyID then
+                    table.insert(wanted, i)
+                elseif p and M:Wants(p, WK:ParseItemID(GetLootSlotLink(i)), quality, quantity, isQuest) then
+                    table.insert(wanted, i)
+                end
+            end
+        end
+    end
+    return total, wanted
+end
+
+-- Vérification juste après le passage du filtre : fenêtre vide -> fermée ; objet voulu encore
+-- là -> nouvel essai (puis message si les sacs sont pleins) ; plus que des objets laissés -> fermée.
+local function verify(p, attempt)
+    if not lootOpen then return end
+    local total, wanted = remaining(p)
+    if total == 0 then return CloseLoot() end
+    if #wanted > 0 then
+        if attempt < 2 then
+            for k = #wanted, 1, -1 do LootSlot(wanted[k]) end
+            C_Timer.After(0.4, function() verify(p, attempt + 1) end)
+        else
+            WK:Print(T("Butin : des objets voulus n'ont pas pu être ramassés (sacs pleins ?)."))
+        end
+        return
+    end
+    if db().closeAfter then CloseLoot() end
+end
+
 local function onLoot()
     local d = db()
     if not d.enabled or handled then return end
     -- Maj maintenue (ou touche de bascule du butin auto) : on laisse faire le joueur.
     if IsShiftKeyDown() or (IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE")) then return end
+    -- Le contenu n'est pas toujours prêt au premier évènement : on attend le suivant.
+    if (GetNumLootItems() or 0) == 0 then
+        if lootOpen then C_Timer.After(0.3, function() if lootOpen and (GetNumLootItems() or 0) == 0 then CloseLoot() end end) end
+        return
+    end
     handled = true
     local p = M:Effective()
     if not p then return end
@@ -217,15 +262,13 @@ local function onLoot()
             end
         end
     end
-    if left > 0 and d.closeAfter then
-        C_Timer.After(0.1, function() CloseLoot() end)
-    end
     if left > 0 then WK:NotifyChanged() end
+    C_Timer.After(0.3, function() verify(p, 1) end)
 end
 
 WK:On("LOOT_READY", onLoot)
-WK:On("LOOT_OPENED", onLoot)
-WK:On("LOOT_CLOSED", function() handled = false end)
+WK:On("LOOT_OPENED", function() lootOpen = true; onLoot() end)
+WK:On("LOOT_CLOSED", function() handled = false; lootOpen = false end)
 
 -- Prévient quand une activation automatique change le profil.
 local lastEffective

@@ -20,6 +20,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.29.1 — 14/11/2026
+
+### Ajouts
+- Message dans le chat quand des objets voulus n'ont pas pu être ramassés (sacs pleins).
+
+### Corrections
+- Filtre de loot : la fenêtre de butin pouvait rester ouverte, vide ou avec des objets voulus, quand le jeu donnait son contenu un peu tard. Le filtre attend maintenant le contenu, ferme une fenêtre vide et réessaie de ramasser les objets voulus.
+
 ## v0.29.0 — 14/11/2026
 
 ### Ajouts

@@ -336,6 +336,7 @@ WK.Locales.enUS.text = {
     ["Bilan HV 7 j"] = "AH balance 7 d",
 
     -- Rangement (Inventaire)
+    ["Butin : des objets voulus n'ont pas pu être ramassés (sacs pleins ?)."] = "Loot: some wanted items could not be picked up (bags full?).",
     ["Regrouper"] = "Group",
     ["À regrouper"] = "To group",
     ["Oubliés en banque"] = "Forgotten in bank",

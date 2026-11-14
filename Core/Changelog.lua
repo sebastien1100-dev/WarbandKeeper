@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.29.1", date = "14/11/2026",
+        fixed = {
+            "Filtre de loot : la fenêtre de butin pouvait rester ouverte, vide ou avec des objets voulus, quand le jeu donnait son contenu un peu tard. Le filtre attend maintenant le contenu, ferme une fenêtre vide et réessaie de ramasser les objets voulus.",
+        },
+        added = {
+            "Message dans le chat quand des objets voulus n'ont pas pu être ramassés (sacs pleins).",
+        },
+    },
+    {
         version = "0.29.0", date = "14/11/2026",
         added = {
             "Inventaire > À regrouper : les composants, consommables, gemmes et recettes présents chez plusieurs persos, avec le perso conseillé (celui qui en a le plus, ou celui d'une règle d'envoi existante) et un bouton « Regrouper » qui crée la règle d'envoi.",
