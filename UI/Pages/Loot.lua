@@ -4,6 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 local LEFT_W = 240
+local BANNER_H = 60
 local PROF_H = 192
 local GAP = 12
 local QUALITIES = {
@@ -103,10 +104,30 @@ UI:RegisterPage({
         self.sel = self.sel or L:EffectiveIndex()
         local d = WK.DB.global.loot
 
+        -- Bandeau du haut : filtre activé ou non (le réglage le plus important) ---------
+        local banner = UI:Card(p)
+        banner:SetHeight(BANNER_H)
+        banner:SetPoint("TOPLEFT")
+        banner:SetPoint("TOPRIGHT")
+        self.banner = banner
+        self.bannerIcon = UI:Icon(banner, "filter", 22)
+        self.bannerIcon:SetPoint("LEFT", 18, 0)
+        local bt = UI:Text(banner, 14)
+        bt:SetPoint("TOPLEFT", 52, -12)
+        bt:SetText("Filtre de loot")
+        self.bannerState = UI:Text(banner, 11, C.muted)
+        self.bannerState:SetPoint("TOPLEFT", bt, "BOTTOMLEFT", 0, -4)
+        self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -150, -30)
+        self.enable = UI:Toggle(banner, function() return d.enabled end, function(v) d.enabled = v; L:CheckAuto(); self:Refresh() end)
+        self.enable:SetPoint("RIGHT", -16, 0)
+        self.enableLbl = UI:Text(banner, 12)
+        self.enableLbl:SetPoint("RIGHT", self.enable, "LEFT", -10, 0)
+        local TOP = -(BANNER_H + GAP)
+
         -- Colonne de gauche : profils + objets laissés au sol --------------------------
         local left = UI:Card(p, "Profils")
         left:SetWidth(LEFT_W)
-        left:SetPoint("TOPLEFT")
+        left:SetPoint("TOPLEFT", 0, TOP)
         left:SetPoint("BOTTOMLEFT")
         local addBtn = UI:IconButton(left, "plus", 26, "Nouveau profil")
         addBtn:SetPoint("TOPRIGHT", -10, -8)
@@ -138,14 +159,9 @@ UI:RegisterPage({
             return b
         end)
 
-        -- Bas de colonne : filtre activé, laissés au sol.
-        self.enable = UI:Toggle(left, function() return d.enabled end, function(v) d.enabled = v; L:CheckAuto() end)
-        self.enable:SetPoint("BOTTOMRIGHT", -12, 12)
-        local enl = UI:Text(left, 12)
-        enl:SetPoint("RIGHT", self.enable, "LEFT", -10, 0)
-        enl:SetText("Filtre activé")
+        -- Bas de colonne : objets laissés au sol.
         self.leftCount = UI:Text(left, 11, C.muted)
-        self.leftCount:SetPoint("BOTTOMLEFT", 14, 46)
+        self.leftCount:SetPoint("BOTTOMLEFT", 14, 14)
         self.recentRows = UI:Pool(function()
             local r = CreateFrame("Button", nil, left)
             r:SetHeight(24)
@@ -176,8 +192,8 @@ UI:RegisterPage({
         -- Avertissement : butin automatique du jeu.
         self.warn = UI:Card(p)
         self.warn:SetHeight(44)
-        self.warn:SetPoint("TOPLEFT", x0, 0)
-        self.warn:SetPoint("TOPRIGHT")
+        self.warn:SetPoint("TOPLEFT", x0, TOP)
+        self.warn:SetPoint("TOPRIGHT", 0, TOP)
         self.warn.bg:SetColor(C.negative[1] * 0.25, C.negative[2] * 0.2, C.negative[3] * 0.2, 1)
         local wt = UI:Text(self.warn, 11)
         wt:SetPoint("LEFT", 14, 0)
@@ -189,7 +205,7 @@ UI:RegisterPage({
 
         local body = CreateFrame("Frame", nil, p)
         self.body = body
-        body:SetPoint("TOPLEFT", x0, 0)
+        body:SetPoint("TOPLEFT", x0, TOP)
         body:SetPoint("BOTTOMRIGHT")
 
         -- Réglages du profil
@@ -315,7 +331,7 @@ UI:RegisterPage({
         local warn = L:GameAutoLoot() and d.enabled
         self.warn:SetShown(warn)
         self.body:ClearAllPoints()
-        self.body:SetPoint("TOPLEFT", LEFT_W + GAP, warn and -(44 + GAP) or 0)
+        self.body:SetPoint("TOPLEFT", LEFT_W + GAP, -(BANNER_H + GAP) - (warn and (44 + GAP) or 0))
         self.body:SetPoint("BOTTOMRIGHT")
 
         -- Profils
@@ -337,23 +353,35 @@ UI:RegisterPage({
             y = y - 42
         end
         self.enable:Refresh()
+        -- Bandeau : état du filtre et profil chargé
+        local eff = profiles[effIndex]
+        if d.enabled then
+            self.bannerIcon:SetVertexColor(UI:Accent())
+            self.enableLbl:SetText(UI:Hex(C.positive) .. T("Activé") .. "|r")
+            self.bannerState:SetText(string.format(T("Profil chargé : %s%s"), eff and eff.name or "-",
+                isAuto and ("  ·  " .. T("choisi automatiquement")) or ""))
+        else
+            self.bannerIcon:SetVertexColor(unpack(C.dim))
+            self.enableLbl:SetText(UI:Hex(C.dim) .. T("Désactivé") .. "|r")
+            self.bannerState:SetText(T("Le butin est ramassé normalement par le jeu."))
+        end
 
         -- Laissés au sol
         self.recentRows:Reset()
         self.leftCount:SetText(string.format(T("Laissés au sol (session) : %d"), L.leftSession or 0))
-        local room = math.floor((UI.PAGE_H + y - 120) / 24)
+        local room = math.floor((UI.PAGE_H - BANNER_H - GAP + y - 90) / 24)
         local recent = d.recent or {}
         local shown = math.max(0, math.min(#recent, room))
         self.recentTitle:ClearAllPoints()
-        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 70 + shown * 24)
+        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 38 + shown * 24)
         self.recentTitle:SetShown(shown > 0)
         for i = 1, shown do
             local e = recent[i]
             local r = self.recentRows:Get()
             r.itemID = e.id
             r:ClearAllPoints()
-            r:SetPoint("BOTTOMLEFT", 10, 66 + (shown - i) * 24)
-            r:SetPoint("BOTTOMRIGHT", -10, 66 + (shown - i) * 24)
+            r:SetPoint("BOTTOMLEFT", 10, 34 + (shown - i) * 24)
+            r:SetPoint("BOTTOMRIGHT", -10, 34 + (shown - i) * 24)
             local name, icon = UI:ItemInfo(e.id or 0)
             r.icon:SetTexture(icon)
             r.name:SetText((e.name or name) .. "  x" .. (e.n or 1))

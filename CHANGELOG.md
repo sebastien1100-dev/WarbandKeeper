@@ -14,6 +14,12 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.16.1 — 14/11/2026
+
+### Modifications
+- Loot : le filtre s'active dans un bandeau en haut de la page, qui montre son état et le profil chargé (au lieu d'un petit interrupteur en bas de la colonne).
+- Courrier : la ligne « Mes persos » est remplacée par un petit bouton liste à côté du destinataire, qui propose tes persos avec leur nom complet. Le champ reste libre pour un autre joueur.
+
 ## v0.16.0 — 14/11/2026
 
 ### Ajouts

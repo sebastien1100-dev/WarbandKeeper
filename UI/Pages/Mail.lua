@@ -30,15 +30,15 @@ local function RuleEditor(page, parent, mode, top)
     local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
     -- Les réglages (envoi / dépôt automatique, fermeture, tri) sont dans Options > Courrier.
     -- Nouvelle règle
-    local ADD_H = isMail and 168 or 132
+    local ADD_H = 132
     local add = UI:Card(parent, "Nouvelle règle")
     add:SetHeight(ADD_H)
     add:SetPoint("TOPLEFT", 0, top)
     add:SetPoint("TOPRIGHT", 0, top)
     local kind = "item"
-    local item = UI:Input(add, 250, 34, "Maj + clic sur un objet, ou son ID", "bag")
+    local item = UI:Input(add, 220, 34, "Maj + clic ou ID d'objet", "bag")
     item.edit.acceptLinks = true
-    local cat = UI:Dropdown(add, 250, 34, categoryOptions())
+    local cat = UI:Dropdown(add, 220, 34, categoryOptions())
     cat:Hide()
     local typeDd = UI:Dropdown(add, 130, 34, { { "item", "Objet" }, { "cat", "Catégorie" } }, function(k)
         kind = k
@@ -50,15 +50,24 @@ local function RuleEditor(page, parent, mode, top)
     cat:SetPoint("LEFT", typeDd, "RIGHT", 10, 0)
     local arrow = UI:Icon(add, "arrow", 16, C.muted)
     arrow:SetPoint("LEFT", item, "RIGHT", 12, 0)
-    local dest
+    local dest, pick
     if isMail then
-        dest = UI:Input(add, 170, 34, "Destinataire", "users")
+        dest = UI:Input(add, 160, 34, "Destinataire", "users")
+        -- Petit bouton liste : choisir un de ses persos (nom complet). Le champ reste libre
+        -- pour écrire le nom d'un autre joueur.
+        pick = UI:Dropdown(add, 34, 34, { { "", "" } }, function(v) if v ~= "" then dest:SetText(v) end end)
+        pick.label:Hide()
+        pick.list:SetWidth(230)
+        pick.arrow:ClearAllPoints()
+        pick.arrow:SetPoint("CENTER")
+        ed.pick = pick
     else
         dest = UI:Dropdown(add, 170, 34, TARGETS)
     end
     dest:SetPoint("LEFT", arrow, "RIGHT", 12, 0)
+    if pick then pick:SetPoint("LEFT", dest, "RIGHT", 6, 0) end
     local keep = UI:NumberInput(add, 84, 34, "Garder")
-    keep:SetPoint("LEFT", dest, "RIGHT", 10, 0)
+    keep:SetPoint("LEFT", pick or dest, "RIGHT", 10, 0)
     keep.tooltip = "Quantité à garder dans les sacs"
     local btn = UI:Button(add, "Ajouter", nil, 34, "primary", "plus")
     btn:SetPoint("TOPRIGHT", -16, -42)
@@ -92,22 +101,6 @@ local function RuleEditor(page, parent, mode, top)
     end
     btn:SetScript("OnClick", doAdd)
     if isMail then dest.onEnter = doAdd end
-
-    if isMail then
-        local hint = UI:Text(add, 11, C.dim)
-        hint:SetPoint("TOPLEFT", 16, -132)
-        hint:SetText("Mes persos :")
-        ed.hint = hint
-        ed.picks = UI:Pool(function()
-            local b = UI:Button(add, "", nil, 24, "secondary")
-            if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
-            b:SetScript("OnClick", function(s, button)
-                if button == "RightButton" then UI:EditCharName(s.charKey) else dest:SetText(s.charName) end
-            end)
-            b.tooltip = "Clic : destinataire. Clic droit : corriger le nom complet pour le courrier."
-            return b
-        end)
-    end
 
     -- Liste
     local listTop = top - ADD_H - GAP
@@ -164,26 +157,18 @@ local function RuleEditor(page, parent, mode, top)
         self.fromDd:SetOptions(opts)
         local me = WK.DB:Me()
 
-        -- Raccourcis : personnages du royaume courant
-        if self.picks then
-            self.picks:Reset()
+        -- Liste des persos du royaume courant pour le destinataire (nom complet)
+        if self.pick then
             local realm = GetRealmName()
-            local x = self.hint:GetStringWidth() + 26
+            local list = {}
             for _, e in ipairs(UI:SortedCharacters()) do
                 if e.c.realm == realm and e.c.name then
-                    local b = self.picks:Get()
-                    b.charName = WK.modules.Mail:MailName(e.c)
-                    b.charKey = e.key
-                    b:SetLabel(b.charName)
-                    b:SetWidth(b.label:GetStringWidth() + 24)
-                    b.label:SetTextColor(UI:ClassColor(e.c.class))
-                    if x + b:GetWidth() > UI.PAGE_W - 16 then b:Hide() else
-                        b:ClearAllPoints()
-                        b:SetPoint("LEFT", add, "TOPLEFT", x, -137)
-                        x = x + b:GetWidth() + 6
-                    end
+                    table.insert(list, { WK.modules.Mail:MailName(e.c), WK:CharName(e.c, e.key), { UI:ClassColor(e.c.class) } })
                 end
             end
+            if #list == 0 then list = { { "", T("Aucun perso enregistré") } } end
+            self.pick:SetOptions(list)
+            self.pick.selected = nil
         end
 
         local store = isMail and WK.modules.Mail:Store() or WK.modules.BankDeposit:Store()

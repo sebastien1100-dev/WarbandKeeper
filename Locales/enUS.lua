@@ -324,6 +324,16 @@ WK.Locales.enUS.text = {
 
     ["Courrier en attente"] = "Mail waiting",
 
+    -- Bandeau du loot
+    ["Maj + clic ou ID d'objet"] = "Shift-click or item ID",
+    ["Filtre de loot"] = "Loot filter",
+    ["Activé"] = "On",
+    ["Désactivé"] = "Off",
+    ["Profil chargé : %s%s"] = "Loaded profile: %s%s",
+    ["choisi automatiquement"] = "picked automatically",
+    ["Le butin est ramassé normalement par le jeu."] = "Loot is picked up normally by the game.",
+    ["Aucun perso enregistré"] = "No character recorded",
+
     -- Options > Courrier
     ["Couleurs, police et taille"] = "Colors, font and size",
     ["Envoi, réception, dépôt"] = "Sending, receiving, deposit",
