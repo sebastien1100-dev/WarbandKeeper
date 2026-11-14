@@ -12,6 +12,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.21.1 — 14/11/2026
+
+### Modifications
+- Guides de montée : les objets que le guide fabrique lui-même (peaux traitées, bandages…) n'apparaissent plus dans les matériaux. Les cuirs fabriqués seulement pour monter restent comptés, moins ce que le guide en produit.
+- Matériaux du guide : le prix de ce qui manque sur chaque ligne (« ok » quand tu as tout), le prix unitaire au survol, et le total à acheter en bas.
+- Les recettes à acheter chez un vendeur font partie des matériaux, sauf celles que le perso connaît déjà.
+
 ## v0.21.0 — 14/11/2026
 
 ### Ajouts

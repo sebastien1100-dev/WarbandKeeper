@@ -65,11 +65,11 @@ def slim(page):
             "reagents": [{"id": g["id"], "name": g["name"], "count": g["count"], "price": g.get("price")}
                          for g in r["reagents"]],
             "source": r.get("source"),
-            "taught_by": [{"id": t["id"], "name": t["name"], "vendors": t.get("vendors") or []}
+            "taught_by": [{"id": t["id"], "name": t["name"], "vendors": t.get("vendors") or [], "price": t.get("price")}
                           for t in r.get("taught_by", [])],
         }
     return {"name": prof["name"], "leveling": prof["leveling"], "sections": prof["sections"],
-            "craftedParts": prof.get("craftedParts", {}), "recipes": keep}
+            "craftedParts": prof.get("craftedParts", {}), "skillOnly": prof.get("skillOnly", []), "recipes": keep}
 
 
 def lua_str(s):
@@ -86,6 +86,7 @@ def gen():
            "-- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.",
            "-- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },",
            "--           src = \"trainer\" | \"recipe\", learn = recette (objet), vendors, first = étapes à faire avant }",
+           "-- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.",
            "-- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.",
            "WK.Guides = {"]
     prices = {}
@@ -105,6 +106,8 @@ def gen():
             parts.append("src = %s" % lua_str(r["source"] or "trainer"))
             if r["taught_by"]:
                 t = r["taught_by"][0]
+                if t.get("price"):
+                    prices[t["id"]] = t["price"]
                 parts.append("learn = %d" % t["id"])
                 if t["vendors"]:
                     parts.append("vendors = { " + ", ".join(lua_str(v) for v in t["vendors"]) + " }")
@@ -112,6 +115,8 @@ def gen():
 
         out.append("    [%s] = {" % lua_str(name))
         out.append("        en = %s," % lua_str(g["name"]))
+        if g.get("skillOnly"):
+            out.append("        skillOnly = { " + ", ".join("[%d] = true" % i for i in g["skillOnly"]) + " },")
         out.append("        sections = {")
         for s in g["sections"]:
             t = s.get("trainers") or {}

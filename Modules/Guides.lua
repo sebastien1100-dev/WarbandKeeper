@@ -4,6 +4,7 @@ local ADDON_NAME, WK = ...
 -- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.
 -- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },
 --           src = "trainer" | "recipe", learn = recette (objet), vendors, first = étapes à faire avant }
+-- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.
 -- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.
 WK.Guides = {
     ["Cuisine"] = {
@@ -51,6 +52,7 @@ WK.Guides = {
     },
     ["Travail du cuir"] = {
         en = "Leatherworking",
+        skillOnly = { [2318] = true, [2319] = true, [4234] = true, [4304] = true, [8170] = true },
         sections = {
             { rank = "Apprenti", from = 1, to = 50 },
             { rank = "Compagnon", from = 50, to = 125, alliance = { { "Faldron", "Darnassus" }, { "Fimble Finespindle", "Forgefer" }, { "Simon Tanner", "Hurlevent" } }, horde = { { "Karolek", "Orgrimmar" }, { "Tarn", "Les Pitons-du-Tonnerre" }, { "Arthur Moore", "Fossoyeuse" } } },
@@ -117,7 +119,9 @@ WK.GuidePrices = {
     [5503] = 23,
     [5504] = 40,
     [6308] = 10,
+    [6330] = 1200,
     [6362] = 5,
+    [6369] = 2200,
     [6889] = 20,
     [7971] = 1272,
     [8150] = 265,
@@ -130,8 +134,15 @@ WK.GuidePrices = {
     [8951] = 526,
     [12205] = 208,
     [13760] = 190,
+    [13946] = 20000,
     [14047] = 976,
     [14341] = 5000,
     [15408] = 2900,
     [15423] = 1200,
+    [15729] = 12000,
+    [15756] = 22000,
+    [16112] = 2200,
+    [16113] = 5000,
+    [17062] = 2200,
+    [252933] = 100000,
 }

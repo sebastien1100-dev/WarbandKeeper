@@ -325,6 +325,11 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Guides de montée
+    ["Recette à acheter chez un vendeur (voir l'étape du guide)."] = "Recipe to buy from a vendor (see the guide step).",
+    ["Prix unitaire"] = "Unit price",
+    ["Coût du manquant"] = "Cost of missing",
+    ["ok"] = "ok",
+    ["Total à acheter : "] = "Total to buy: ",
     ["Guide de montée"] = "Leveling guide",
     ["Matériaux jusqu'au max"] = "Materials to max",
     ["Liste Auctionator"] = "Auctionator list",

@@ -691,8 +691,11 @@ local function Detail(page, parent)
     local ahBtn = UI:Button(matsCard, "Liste Auctionator", nil, 28, "primary", "search")
     ahBtn:SetPoint("BOTTOMLEFT", 12, 46)
     ahBtn:SetPoint("BOTTOMRIGHT", -12, 46)
+    local matsTotal = UI:Text(matsCard, 13)
+    matsTotal:SetPoint("BOTTOMRIGHT", -16, 84)
+    matsTotal:SetJustifyH("RIGHT")
     ahBtn.tooltip = "Crée une liste de courses Auctionator avec les composants qui manquent sur le compte."
-    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToAuctionator(tab.prof, tab.rank) end)
+    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToAuctionator(tab.prof, tab.rank, tab.known) end)
     local mailBtn = UI:Button(matsCard, "Envoyer à ce perso", nil, 28, "secondary", "mail")
     mailBtn:SetPoint("BOTTOMLEFT", 12, 12)
     mailBtn:SetPoint("BOTTOMRIGHT", -12, 12)
@@ -703,29 +706,34 @@ local function Detail(page, parent)
     end)
     local mscroll = UI:Scroll(matsCard)
     mscroll:SetPoint("TOPLEFT", 10, -60)
-    mscroll:SetPoint("BOTTOMRIGHT", -8, 84)
+    mscroll:SetPoint("BOTTOMRIGHT", -8, 108)
     local mrows = UI:Pool(function()
         local r = CreateFrame("Button", nil, mscroll.child)
         r:SetHeight(30)
         r.icon = UI:RoundIcon(r, 20)
         r.icon:SetPoint("LEFT", 4, 0)
+        r.price = UI:Text(r, 11)
+        r.price:SetPoint("RIGHT", -4, 0)
+        r.price:SetJustifyH("RIGHT")
+        r.price:SetWidth(70)
         r.count = UI:Text(r, 11)
-        r.count:SetPoint("RIGHT", -4, 0)
+        r.count:SetPoint("RIGHT", r.price, "LEFT", -6, 0)
         r.count:SetJustifyH("RIGHT")
+        r.count:SetWidth(64)
         r.name = UI:Text(r, 11)
         r.name:SetPoint("LEFT", 30, 0)
-        r.name:SetPoint("RIGHT", -96, 0)
+        r.name:SetPoint("RIGHT", r.count, "LEFT", -6, 0)
         r:SetScript("OnEnter", function(s)
             if not s.m then return end
             GameTooltip:SetOwner(s, "ANCHOR_LEFT")
             GameTooltip:SetText((UI:ItemInfo(s.m.itemID)) or "?", 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Nécessaire"), tostring(s.m.need), 0.7, 0.7, 0.7, 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Sur le compte"), tostring(s.m.have), 0.7, 0.7, 0.7, 1, 1, 1)
-            if s.m.crafted then
-                GameTooltip:AddLine(T("Fabriqué par une étape du guide."), 0.6, 0.8, 1)
-            elseif s.m.missing > 0 then
+            if s.m.recipe then GameTooltip:AddLine(T("Recette à acheter chez un vendeur (voir l'étape du guide)."), 0.6, 0.8, 1, true) end
+            GameTooltip:AddDoubleLine(T("Prix unitaire"), WK:FormatMoney(s.m.unit or 0), 0.7, 0.7, 0.7, 1, 1, 1)
+            if s.m.missing > 0 then
                 GameTooltip:AddDoubleLine(T("Manquant"), tostring(s.m.missing), 0.7, 0.7, 0.7, 1, 0.5, 0.4)
-                GameTooltip:AddDoubleLine(T("Coût"), WK:FormatMoney(s.m.cost), 0.7, 0.7, 0.7, 1, 1, 1)
+                GameTooltip:AddDoubleLine(T("Coût du manquant"), WK:FormatMoney(s.m.cost), 0.7, 0.7, 0.7, 1, 1, 1)
             end
             GameTooltip:Show()
         end)
@@ -793,7 +801,8 @@ local function Detail(page, parent)
         self.currentY = nil
         local rank = pr.rank or 0
         self.rank = rank
-        local steps, mats, total, g = R:GuidePlan(self.prof, rank)
+        self.known = R:KnownOutputs(c)
+        local steps, mats, total, g = R:GuidePlan(self.prof, rank, self.known)
         local faction = c.faction == "Horde" and "horde" or "alliance"
         sheads:Reset(); srows:Reset()
         local y, si = 0, 1
@@ -868,7 +877,8 @@ local function Detail(page, parent)
 
         -- Matériaux
         local missing = 0
-        for _, m in ipairs(mats) do if not m.crafted and m.missing > 0 then missing = missing + 1 end end
+        for _, m in ipairs(mats) do if m.missing > 0 then missing = missing + 1 end end
+        matsTotal:SetText(T("Total à acheter : ") .. UI:GoldText(total))
         if #mats == 0 then
             matsSum:SetText(T("Plus rien à fabriquer : le guide est terminé."))
         else
@@ -886,12 +896,12 @@ local function Detail(page, parent)
             r.icon:SetTexture(ic)
             r.name:SetText(name or "?")
             r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
-            if m.crafted then
-                r.count:SetText(UI:Hex(C.dim) .. T("fabriqué") .. "  " .. m.need .. "|r")
-            elseif m.missing > 0 then
+            if m.missing > 0 then
                 r.count:SetText(string.format("%s%d|r / %d", UI:Hex(C.negative), m.have, m.need))
+                r.price:SetText(m.cost > 0 and UI:GoldText(m.cost) or (UI:Hex(C.dim) .. "?|r"))
             else
                 r.count:SetText(string.format("%s%d|r / %d", UI:Hex(C.positive), m.have, m.need))
+                r.price:SetText(UI:Hex(C.positive) .. T("ok") .. "|r")
             end
             my = my + 32
         end

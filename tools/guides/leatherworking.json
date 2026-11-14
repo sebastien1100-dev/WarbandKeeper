@@ -345,6 +345,13 @@
   "15407": 19047,
   "15564": 19058
  },
+ "skillOnly": [
+  2318,
+  2319,
+  4234,
+  4304,
+  8170
+ ],
  "recipes": {
   "19082": {
    "name": "Runic Leather Headband",
@@ -379,7 +386,8 @@
      "name": "Pattern: Runic Leather Headband",
      "vendors": [
       "Jase Farlane"
-     ]
+     ],
+     "price": 22000
     }
    ]
   },
@@ -670,7 +678,8 @@
      "name": "Pattern: Supple Scorpid Vest",
      "vendors": [
       "Pexmit"
-     ]
+     ],
+     "price": 100000
     }
    ]
   },
@@ -897,7 +906,8 @@
      "name": "Pattern: Chimeric Gloves",
      "vendors": [
       "Blimo Gadgetspring"
-     ]
+     ],
+     "price": 12000
     }
    ]
   },

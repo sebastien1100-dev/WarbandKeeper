@@ -226,18 +226,31 @@ function M:GuidePrice(id)
     return p or 0
 end
 
+-- Objets que ce perso sait déjà fabriquer (pour ne pas compter les recettes déjà apprises).
+function M:KnownOutputs(c)
+    local known = {}
+    for _, r in pairs(c and c.recipes or {}) do if r.out then known[r.out] = true end end
+    return known
+end
+
 -- Plan pour un niveau : étapes (status "done" / "current" / "todo", left = fabrications restantes)
--- et matériaux jusqu'au maximum { itemID, need, have, missing, cost, crafted }.
-function M:GuidePlan(prof, rank)
+-- et matériaux jusqu'au maximum { itemID, need, have, missing, unit, cost, recipe? }, recettes à
+-- acheter comprises (sauf celles déjà connues : known = { [objet fabriqué] = true }).
+function M:GuidePlan(prof, rank, known)
     local g = self:Guide(prof)
     if not g then return nil end
     rank = rank or 0
-    local made = {} -- objets fabriqués par le guide lui-même (peaux traitées, cuirs…)
+    -- Objets fabriqués par le guide lui-même (peaux traitées, bandages…) : on ne les achète pas,
+    -- leurs composants sont déjà comptés dans l'étape qui les fabrique. Exception : les objets
+    -- « skillOnly » (cuirs…) qu'on fabrique juste pour monter : il faut s'en procurer le reste.
+    local skillOnly = g.skillOnly or {}
+    local made, produced = {}, {}
     for _, st in ipairs(g.steps) do
         if st.out then made[st.out] = true end
         for _, f in ipairs(st.first or {}) do if f.out then made[f.out] = true end end
     end
     local steps, need = {}, {}
+    local learns
     for _, st in ipairs(g.steps) do
         local status, ratio
         if rank >= st.to then status, ratio = "done", 0
@@ -245,36 +258,51 @@ function M:GuidePlan(prof, rank)
         else status, ratio = "todo", 1 end
         local left = math.ceil(st.crafts * ratio)
         table.insert(steps, { step = st, status = status, left = left })
+        -- Recette à acheter (une seule fois, même si plusieurs étapes l'utilisent)
+        if status ~= "done" and st.learn and not (known and st.out and known[st.out]) then
+            need[st.learn] = 1
+            learns = learns or {}
+            learns[st.learn] = true
+        end
         local function add(s, n)
             for _, rg in ipairs(s.reagents or {}) do need[rg[1]] = (need[rg[1]] or 0) + rg[2] * n end
         end
         if left > 0 then
             add(st, left)
-            for _, f in ipairs(st.first or {}) do add(f, math.ceil(f.crafts * ratio)) end
+            if st.out then produced[st.out] = (produced[st.out] or 0) + left * (st.qty or 1) end
+            for _, f in ipairs(st.first or {}) do
+                local n = math.ceil(f.crafts * ratio)
+                add(f, n)
+                if f.out then produced[f.out] = (produced[f.out] or 0) + n * (f.qty or 1) end
+            end
         end
     end
     local mats, total = {}, 0
     for id, n in pairs(need) do
-        local have = WK.modules.Inventory:AccountCount(id)
-        local missing = math.max(0, n - have)
-        local crafted = made[id] or false
-        local cost = crafted and 0 or missing * self:GuidePrice(id)
-        total = total + cost
-        table.insert(mats, { itemID = id, need = n, have = have, missing = missing, cost = cost, crafted = crafted })
+        if skillOnly[id] then n = math.max(0, n - (produced[id] or 0)) end
+        if n > 0 and (not made[id] or skillOnly[id]) then
+            local have = WK.modules.Inventory:AccountCount(id)
+            local missing = math.max(0, n - have)
+            local unit = self:GuidePrice(id)
+            local cost = missing * unit
+            total = total + cost
+            table.insert(mats, { itemID = id, need = n, have = have, missing = missing, unit = unit, cost = cost,
+                recipe = learns and learns[id] or nil })
+        end
     end
     table.sort(mats, function(a, b)
-        if a.crafted ~= b.crafted then return not a.crafted end
         if (a.missing > 0) ~= (b.missing > 0) then return a.missing > 0 end
-        return a.cost > b.cost
+        if a.cost ~= b.cost then return a.cost > b.cost end
+        return a.itemID < b.itemID
     end)
     return steps, mats, total, g
 end
 
 -- Composants manquants du guide vers une liste de courses Auctionator.
-function M:GuideToAuctionator(prof, rank)
-    local _, mats = self:GuidePlan(prof, rank)
+function M:GuideToAuctionator(prof, rank, known)
+    local _, mats = self:GuidePlan(prof, rank, known)
     local list = {}
-    for _, m in ipairs(mats or {}) do if not m.crafted and m.missing > 0 then table.insert(list, m) end end
+    for _, m in ipairs(mats or {}) do if m.missing > 0 then table.insert(list, m) end end
     return self:ExportToAuctionator(list, "Warband Keeper - " .. prof)
 end
 
@@ -282,16 +310,16 @@ end
 -- règles existantes). Renvoie le nombre de règles ajoutées et ignorées.
 function M:GuideMailRules(prof, key)
     local c = WK.DB.global.characters[key]
-    local _, mats = self:GuidePlan(prof, c and c.professions and c.professions[prof] and c.professions[prof].rank or 0)
+    local _, mats = self:GuidePlan(prof, c and c.professions and c.professions[prof] and c.professions[prof].rank or 0,
+        self:KnownOutputs(c))
     if not c or not mats then return 0, 0 end
     local to = WK.modules.Mail:MailName(c)
     local rules = WK.DB.global.mail.rules
     local added, skipped = 0, 0
     for _, m in ipairs(mats) do
-        if not m.crafted then
-            if rules[m.itemID] then skipped = skipped + 1
-            else rules[m.itemID] = { to = to, keep = 0 }; added = added + 1 end
-        end
+        if m.recipe then -- les recettes s'achètent chez un vendeur : pas de règle d'envoi
+        elseif rules[m.itemID] then skipped = skipped + 1
+        else rules[m.itemID] = { to = to, keep = 0 }; added = added + 1 end
     end
     WK.modules.Statistics:UpdateItems()
     WK:NotifyChanged()

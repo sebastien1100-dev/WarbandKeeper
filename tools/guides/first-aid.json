@@ -203,6 +203,7 @@
   "6452": 7934,
   "14530": 18630
  },
+ "skillOnly": [],
  "recipes": {
   "18629": {
    "name": "Runecloth Bandage",
@@ -294,7 +295,8 @@
      "vendors": [
       "Deneb Walker",
       "Balai Lok'Wein"
-     ]
+     ],
+     "price": 5000
     }
    ]
   },
@@ -441,7 +443,8 @@
      "vendors": [
       "Deneb Walker",
       "Balai Lok'Wein"
-     ]
+     ],
+     "price": 2200
     }
    ]
   },

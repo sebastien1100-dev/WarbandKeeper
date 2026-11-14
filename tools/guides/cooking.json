@@ -176,6 +176,7 @@
   }
  ],
  "craftedParts": {},
+ "skillOnly": [],
  "recipes": {
   "6499": {
    "name": "Boiled Clams",
@@ -244,7 +245,8 @@
      "name": "Recipe: Poached Sunscale Salmon",
      "vendors": [
       "Gikkix"
-     ]
+     ],
+     "price": 20000
     }
    ]
   },
@@ -276,7 +278,8 @@
       "Ronald Burch",
       "Catherine Leland",
       "Gritta Chumwater"
-     ]
+     ],
+     "price": 1200
     }
    ]
   },
@@ -309,7 +312,8 @@
       "Tansy Puddlefizz",
       "Wulan",
       "Wik'Tar"
-     ]
+     ],
+     "price": 2200
     }
    ]
   },
@@ -342,7 +346,8 @@
       "Tansy Puddlefizz",
       "Wulan",
       "Wik'Tar"
-     ]
+     ],
+     "price": 2200
     }
    ]
   },
