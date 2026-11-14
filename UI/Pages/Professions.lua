@@ -479,6 +479,19 @@ local DIFF = {
     trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
 }
 
+-- Vendeurs d'une recette : « Nom (zone) », les premiers puis « +N ».
+local function vendorText(vendors, limit)
+    local out = {}
+    for i, v in ipairs(vendors or {}) do
+        if limit and i > limit then
+            table.insert(out, "+" .. (#vendors - limit))
+            break
+        end
+        table.insert(out, v[2] and (v[1] .. " (" .. T(v[2]) .. ")") or v[1])
+    end
+    return table.concat(out, ", ")
+end
+
 -- Remarque de guide : {n:id} = « n Objet », {id} = « Objet » (nom pris dans le jeu).
 local function renderNote(note)
     note = T(note)
@@ -877,7 +890,13 @@ local function Detail(page, parent)
             GameTooltip:SetText((UI:ItemInfo(s.m.itemID)) or "?", 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Nécessaire"), tostring(s.m.need), 0.7, 0.7, 0.7, 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Sur le compte"), tostring(s.m.have), 0.7, 0.7, 0.7, 1, 1, 1)
-            if s.m.recipe then GameTooltip:AddLine(T("Recette à acheter chez un vendeur (voir l'étape du guide)."), 0.6, 0.8, 1, true) end
+            if s.m.recipe then
+                local info = s.m.recipe
+                GameTooltip:AddLine(string.format(T("Recette pour l'étape %d-%d, à acheter chez :"), info.from or 0, info.to or 0), 0.6, 0.8, 1, true)
+                for _, v in ipairs(info.vendors or {}) do
+                    GameTooltip:AddDoubleLine("  " .. v[1], v[2] and T(v[2]) or "", 1, 1, 1, 0.7, 0.7, 0.7)
+                end
+            end
             GameTooltip:AddDoubleLine(T("Prix unitaire"), WK:FormatMoney(s.m.unit or 0), 0.7, 0.7, 0.7, 1, 1, 1)
             if s.m.missing > 0 then
                 GameTooltip:AddDoubleLine(T("Manquant"), tostring(s.m.missing), 0.7, 0.7, 0.7, 1, 0.5, 0.4)
@@ -933,10 +952,15 @@ local function Detail(page, parent)
                 GameTooltip:AddDoubleLine((UI:ItemInfo(rg[1])) or "?", string.format("%d / %d", have, need),
                     0.85, 0.85, 0.85, have >= need and 0.6 or 1, have >= need and 1 or 0.5, have >= need and 0.5 or 0.4)
             end
-            if st.vendors then
+            if st.src == "recipe" then
                 GameTooltip:AddLine(" ")
-                GameTooltip:AddLine(T("Vendeurs de la recette :"), 0.8, 0.8, 0.8)
-                GameTooltip:AddLine(table.concat(st.vendors, ", "), 1, 1, 1, true)
+                GameTooltip:AddLine(string.format(T("Recette : %s"), (st.learn and UI:ItemInfo(st.learn)) or "?"), 1, 0.82, 0)
+                if st.vendors then
+                    GameTooltip:AddLine(T("Vendeurs :"), 0.8, 0.8, 0.8)
+                    for _, v in ipairs(st.vendors) do
+                        GameTooltip:AddDoubleLine("  " .. v[1], v[2] and T(v[2]) or "", 1, 1, 1, 0.7, 0.7, 0.7)
+                    end
+                end
             end
             GameTooltip:Show()
         end)
@@ -996,8 +1020,18 @@ local function Detail(page, parent)
             for _, rg in ipairs(st.reagents or {}) do
                 table.insert(reag, (rg[2] * n) .. " " .. ((UI:ItemInfo(rg[1])) or "?"))
             end
-            local src = st.src == "recipe" and (T("Recette : ") .. ((st.learn and UI:ItemInfo(st.learn)) or "?")) or T("Maître")
-            r.sub:SetText(table.concat(reag, ", ") .. "  ·  " .. src)
+            local src
+            if st.src == "recipe" then
+                if self.known and st.out and self.known[st.out] then
+                    src = UI:Hex(C.positive) .. T("Recette connue") .. "|r"
+                else
+                    src = UI:Hex(C.warning) .. T("Recette à acheter") .. "|r"
+                    if st.vendors then src = src .. " " .. T("chez") .. " " .. vendorText(st.vendors, 2) end
+                end
+            else
+                src = T("Maître")
+            end
+            r.sub:SetText(src .. "  ·  " .. table.concat(reag, ", "))
             if e.status == "done" then
                 r.state:SetText(UI:Hex(C.positive) .. T("fait") .. "|r")
                 r:SetAlpha(0.5)

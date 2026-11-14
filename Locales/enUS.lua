@@ -325,6 +325,13 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Guides de montée
+    ["Recette connue"] = "Recipe known",
+    ["Recette à acheter"] = "Recipe to buy",
+    ["chez"] = "from",
+    ["Recette : %s"] = "Recipe: %s",
+    ["Vendeurs :"] = "Vendors:",
+    ["Recette pour l'étape %d-%d, à acheter chez :"] = "Recipe for step %d-%d, sold by:",
+    ["Baie-du-Butin"] = "Booty Bay",
     ["Plafond atteint : va voir le maître"] = "Cap reached: visit the trainer",
     ["Monstres jusqu'au niv. %d"] = "Mobs up to lvl %d",
     ["Guide : %d-%d  ·  %d %s"] = "Guide: %d-%d  ·  %d %s",

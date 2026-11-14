@@ -262,7 +262,7 @@ function M:GuidePlan(prof, rank, known)
         if status ~= "done" and st.learn and not (known and st.out and known[st.out]) then
             need[st.learn] = 1
             learns = learns or {}
-            learns[st.learn] = true
+            learns[st.learn] = learns[st.learn] or { vendors = st.vendors, from = st.from, to = st.to }
         end
         local function add(s, n)
             for _, rg in ipairs(s.reagents or {}) do need[rg[1]] = (need[rg[1]] or 0) + rg[2] * n end

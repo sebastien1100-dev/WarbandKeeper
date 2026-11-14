@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.23.2", date = "14/11/2026",
+        changed = {
+            "Guides de montée : les étapes qui demandent une recette l'indiquent clairement (« Recette à acheter chez … » avec le vendeur et sa zone quand elle est connue, ou « Recette connue » si le perso l'a déjà).",
+            "Survol d'une étape : la recette et la liste complète de ses vendeurs avec leur zone.",
+        },
+        fixed = {
+            "Matériaux du guide : l'infobulle d'une recette renvoyait au guide, qui n'en disait rien. Elle donne maintenant l'étape concernée et les vendeurs.",
+        },
+    },
+    {
         version = "0.23.1", date = "14/11/2026",
         changed = {
             "Infobulles de l'addon : fond très sombre, bordure fine et claire, coins arrondis, sans liseré de couleur.",

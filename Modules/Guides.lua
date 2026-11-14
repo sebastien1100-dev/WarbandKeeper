@@ -3,7 +3,8 @@ local ADDON_NAME, WK = ...
 -- Guides de montée des métiers de WoW Forever (d'après wowtbc.gg).
 -- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.
 -- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },
---           src = "trainer" | "recipe", learn = recette (objet), vendors, first = étapes à faire avant }
+--           src = "trainer" | "recipe", learn = recette (objet), vendors = { {nom, zone?} },
+--           first = étapes à faire avant }
 -- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.
 -- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.
 WK.Guides = {
@@ -18,13 +19,13 @@ WK.Guides = {
         steps = {
             { from = 1, to = 51, crafts = 51, out = 6888, qty = 1, reagents = { { 6889, 1 }, { 2678, 1 } }, src = "trainer" },
             { from = 51, to = 100, crafts = 52, out = 5525, qty = 1, reagents = { { 5503, 1 }, { 159, 1 } }, src = "trainer" },
-            { from = 100, to = 125, crafts = 25, out = 4593, qty = 1, reagents = { { 6308, 1 } }, src = "recipe", learn = 6330, vendors = { "Lindea Rabonne", "Derak Nightfall", "Naal Mistrunner", "Sewa Mistrunner", "Kilxx", "Ronald Burch", "Catherine Leland", "Gritta Chumwater" } },
-            { from = 125, to = 160, crafts = 45, out = 4593, qty = 1, reagents = { { 6308, 1 } }, src = "recipe", learn = 6330, vendors = { "Lindea Rabonne", "Derak Nightfall", "Naal Mistrunner", "Sewa Mistrunner", "Kilxx", "Ronald Burch", "Catherine Leland", "Gritta Chumwater" } },
+            { from = 100, to = 125, crafts = 25, out = 4593, qty = 1, reagents = { { 6308, 1 } }, src = "recipe", learn = 6330, vendors = { { "Lindea Rabonne", "Contreforts de Hautebrande" }, { "Derak Nightfall", "Contreforts de Hautebrande" }, { "Naal Mistrunner", "Les Pitons-du-Tonnerre" }, { "Sewa Mistrunner", "Les Pitons-du-Tonnerre" }, { "Kilxx", "Les Tarides" }, { "Ronald Burch", "Fossoyeuse" }, { "Catherine Leland", "Hurlevent" }, { "Gritta Chumwater" } } },
+            { from = 125, to = 160, crafts = 45, out = 4593, qty = 1, reagents = { { 6308, 1 } }, src = "recipe", learn = 6330, vendors = { { "Lindea Rabonne", "Contreforts de Hautebrande" }, { "Derak Nightfall", "Contreforts de Hautebrande" }, { "Naal Mistrunner", "Les Pitons-du-Tonnerre" }, { "Sewa Mistrunner", "Les Pitons-du-Tonnerre" }, { "Kilxx", "Les Tarides" }, { "Ronald Burch", "Fossoyeuse" }, { "Catherine Leland", "Hurlevent" }, { "Gritta Chumwater" } } },
             { from = 160, to = 175, crafts = 18, out = 5527, qty = 1, reagents = { { 5504, 1 }, { 2692, 1 } }, src = "trainer" },
-            { from = 175, to = 210, crafts = 45, out = 4594, qty = 1, reagents = { { 6362, 1 } }, src = "recipe", learn = 6369, vendors = { "Lindea Rabonne", "Kelsey Yance", "Stuart Fleming", "Shankys", "Heldan Galesong", "Lizbeth Cromwell", "Tansy Puddlefizz", "Wulan", "Wik'Tar" } },
-            { from = 210, to = 235, crafts = 35, out = 8364, qty = 1, reagents = { { 8365, 1 } }, src = "recipe", learn = 17062, vendors = { "Lindea Rabonne", "Kelsey Yance", "Stuart Fleming", "Shankys", "Heldan Galesong", "Lizbeth Cromwell", "Tansy Puddlefizz", "Wulan", "Wik'Tar" } },
+            { from = 175, to = 210, crafts = 45, out = 4594, qty = 1, reagents = { { 6362, 1 } }, src = "recipe", learn = 6369, vendors = { { "Lindea Rabonne", "Contreforts de Hautebrande" }, { "Kelsey Yance", "Baie-du-Butin" }, { "Stuart Fleming", "Les Paluns" }, { "Shankys", "Orgrimmar" }, { "Heldan Galesong", "Sombrivage" }, { "Lizbeth Cromwell" }, { "Tansy Puddlefizz", "Forgefer" }, { "Wulan", "Désolace" }, { "Wik'Tar" } } },
+            { from = 210, to = 235, crafts = 35, out = 8364, qty = 1, reagents = { { 8365, 1 } }, src = "recipe", learn = 17062, vendors = { { "Lindea Rabonne", "Contreforts de Hautebrande" }, { "Kelsey Yance", "Baie-du-Butin" }, { "Stuart Fleming", "Les Paluns" }, { "Shankys", "Orgrimmar" }, { "Heldan Galesong", "Sombrivage" }, { "Lizbeth Cromwell" }, { "Tansy Puddlefizz", "Forgefer" }, { "Wulan", "Désolace" }, { "Wik'Tar" } } },
             { from = 235, to = 250, crafts = 18, out = 17222, qty = 1, reagents = { { 12205, 2 } }, src = "trainer" },
-            { from = 250, to = 300, crafts = 53, out = 13932, qty = 1, reagents = { { 13760, 1 } }, src = "recipe", learn = 13946, vendors = { "Gikkix" } },
+            { from = 250, to = 300, crafts = 53, out = 13932, qty = 1, reagents = { { 13760, 1 } }, src = "recipe", learn = 13946, vendors = { { "Gikkix" } } },
         },
     },
     ["Secourisme"] = {
@@ -43,8 +44,8 @@ WK.Guides = {
             { from = 90, to = 125, crafts = 53, out = 255716, qty = 3, reagents = { { 3174, 1 }, { 2678, 1 }, { 2723, 1 } }, src = "trainer" },
             { from = 125, to = 152, crafts = 34, out = 929, qty = 1, reagents = { { 3372, 1 }, { 2692, 1 }, { 2453, 1 } }, src = "trainer" },
             { from = 152, to = 180, crafts = 43, out = 6450, qty = 1, reagents = { { 4306, 1 } }, src = "trainer" },
-            { from = 180, to = 210, crafts = 46, out = 6451, qty = 1, reagents = { { 4306, 2 } }, src = "recipe", learn = 16112, vendors = { "Deneb Walker", "Balai Lok'Wein" } },
-            { from = 210, to = 240, crafts = 46, out = 8544, qty = 1, reagents = { { 4338, 1 } }, src = "recipe", learn = 16113, vendors = { "Deneb Walker", "Balai Lok'Wein" } },
+            { from = 180, to = 210, crafts = 46, out = 6451, qty = 1, reagents = { { 4306, 2 } }, src = "recipe", learn = 16112, vendors = { { "Deneb Walker" }, { "Balai Lok'Wein" } } },
+            { from = 210, to = 240, crafts = 46, out = 8544, qty = 1, reagents = { { 4338, 1 } }, src = "recipe", learn = 16113, vendors = { { "Deneb Walker" }, { "Balai Lok'Wein" } } },
             { from = 240, to = 260, crafts = 27, out = 8545, qty = 1, reagents = { { 4338, 2 } }, src = "trainer" },
             { from = 260, to = 290, crafts = 46, out = 14529, qty = 1, reagents = { { 14047, 1 } }, src = "trainer" },
             { from = 290, to = 300, crafts = 12, out = 14530, qty = 1, reagents = { { 14047, 2 } }, src = "trainer" },
@@ -83,9 +84,9 @@ WK.Guides = {
             { from = 235, to = 240, crafts = 9, out = 8197, qty = 1, reagents = { { 4304, 16 }, { 8343, 2 } }, src = "trainer" },
             { from = 240, to = 255, crafts = 20, out = 8349, qty = 1, reagents = { { 4304, 40 }, { 8168, 40 }, { 7971, 2 }, { 8172, 4 }, { 8343, 4 } }, src = "trainer", first = { { crafts = 80, out = 8172, qty = 1, reagents = { { 8169, 1 }, { 8150, 1 } }, src = "trainer" } } },
             { from = 255, to = 260, crafts = 9, out = 8367, qty = 1, reagents = { { 4304, 40 }, { 8165, 30 }, { 8343, 4 }, { 8172, 4 } }, src = "trainer", first = { { crafts = 36, out = 8172, qty = 1, reagents = { { 8169, 1 }, { 8150, 1 } }, src = "trainer" } } },
-            { from = 260, to = 268, crafts = 11, out = 15074, qty = 1, reagents = { { 8170, 6 }, { 15423, 6 }, { 14341, 1 } }, src = "recipe", learn = 15729, vendors = { "Blimo Gadgetspring" } },
-            { from = 268, to = 294, crafts = 30, out = 15094, qty = 1, reagents = { { 8170, 14 }, { 14047, 10 }, { 14341, 1 } }, src = "recipe", learn = 15756, vendors = { "Jase Farlane" } },
-            { from = 294, to = 300, crafts = 12, out = 252599, qty = 1, reagents = { { 8170, 20 }, { 15408, 10 }, { 14341, 1 } }, src = "recipe", learn = 252933, vendors = { "Pexmit" } },
+            { from = 260, to = 268, crafts = 11, out = 15074, qty = 1, reagents = { { 8170, 6 }, { 15423, 6 }, { 14341, 1 } }, src = "recipe", learn = 15729, vendors = { { "Blimo Gadgetspring", "Azshara" } } },
+            { from = 268, to = 294, crafts = 30, out = 15094, qty = 1, reagents = { { 8170, 14 }, { 14047, 10 }, { 14341, 1 } }, src = "recipe", learn = 15756, vendors = { { "Jase Farlane", "Maleterres de l'Est" } } },
+            { from = 294, to = 300, crafts = 12, out = 252599, qty = 1, reagents = { { 8170, 20 }, { 15408, 10 }, { 14341, 1 } }, src = "recipe", learn = 252933, vendors = { { "Pexmit" } } },
         },
     },
 }

@@ -36,6 +36,15 @@ PLACES = {
     "Ironforge": "Forgefer", "Orgrimmar": "Orgrimmar", "Stormwind City": "Hurlevent",
     "The Hinterlands": "Les Hinterlands", "Thunder Bluff": "Les Pitons-du-Tonnerre", "Undercity": "Fossoyeuse",
 }
+# Zone des vendeurs de recettes (seulement ceux dont on est sûr ; les autres sans zone).
+VENDOR_PLACES = {
+    "Jase Farlane": "Maleterres de l'Est", "Blimo Gadgetspring": "Azshara",
+    "Kelsey Yance": "Baie-du-Butin", "Stuart Fleming": "Les Paluns", "Heldan Galesong": "Sombrivage",
+    "Tansy Puddlefizz": "Forgefer", "Shankys": "Orgrimmar", "Lindea Rabonne": "Contreforts de Hautebrande",
+    "Derak Nightfall": "Contreforts de Hautebrande", "Kilxx": "Les Tarides", "Naal Mistrunner": "Les Pitons-du-Tonnerre",
+    "Sewa Mistrunner": "Les Pitons-du-Tonnerre", "Ronald Burch": "Fossoyeuse", "Wulan": "Désolace",
+    "Catherine Leland": "Hurlevent",
+}
 # Remarques des guides, traduites. {n:id} = n fois l'objet id ; {id} = l'objet id (nom pris dans le jeu).
 NOTES = {
     "To raise your skill cap to 225, you will need to buy an Expert Cookbook for 1g. It can also be found on the Auction House.":
@@ -85,7 +94,8 @@ def gen():
            "-- Guides de montée des métiers de WoW Forever (d'après wowtbc.gg).",
            "-- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.",
            "-- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },",
-           "--           src = \"trainer\" | \"recipe\", learn = recette (objet), vendors, first = étapes à faire avant }",
+           "--           src = \"trainer\" | \"recipe\", learn = recette (objet), vendors = { {nom, zone?} },",
+           "--           first = étapes à faire avant }",
            "-- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.",
            "-- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.",
            "WK.Guides = {"]
@@ -110,7 +120,11 @@ def gen():
                     prices[t["id"]] = t["price"]
                 parts.append("learn = %d" % t["id"])
                 if t["vendors"]:
-                    parts.append("vendors = { " + ", ".join(lua_str(v) for v in t["vendors"]) + " }")
+                    vs = []
+                    for v in t["vendors"]:
+                        place = VENDOR_PLACES.get(v)
+                        vs.append("{ %s, %s }" % (lua_str(v), lua_str(place)) if place else "{ %s }" % lua_str(v))
+                    parts.append("vendors = { " + ", ".join(vs) + " }")
             return parts
 
         out.append("    [%s] = {" % lua_str(name))

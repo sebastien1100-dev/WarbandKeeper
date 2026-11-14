@@ -12,6 +12,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.23.2 — 14/11/2026
+
+### Modifications
+- Guides de montée : les étapes qui demandent une recette l'indiquent clairement (« Recette à acheter chez … » avec le vendeur et sa zone quand elle est connue, ou « Recette connue » si le perso l'a déjà).
+- Survol d'une étape : la recette et la liste complète de ses vendeurs avec leur zone.
+
+### Corrections
+- Matériaux du guide : l'infobulle d'une recette renvoyait au guide, qui n'en disait rien. Elle donne maintenant l'étape concernée et les vendeurs.
+
 ## v0.23.1 — 14/11/2026
 
 ### Modifications
