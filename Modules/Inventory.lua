@@ -60,7 +60,9 @@ end
 
 function M:ScanBags()
     local c = WK.DB:Me()
+    local old = c.bags
     c.bags = scan(self:BagList())
+    if WK.modules.Farm then WK.modules.Farm:OnBags(old, c.bags) end
     local free, total = 0, 0
     for _, bag in ipairs(self:BagList()) do
         free = free + (WK.Container.NumFree(bag) or 0)

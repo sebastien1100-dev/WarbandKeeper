@@ -16,7 +16,18 @@ local defaults = {
     journal = {},      -- journal d'activité (le plus récent en premier)
     mail = {
         enabled = true,
-        rules = {},    -- [itemID] = "NomDestinataire"
+        rules = {},    -- [itemID] = { to = "Nom", keep = n }
+        cats = {},     -- [clé de catégorie] = { to = "Nom", keep = n }
+        autoTake = false, -- « Tout prendre » automatiquement à l'ouverture (après les envois)
+    },
+    bank = {
+        enabled = true,
+        items = {},    -- [itemID] = { target = "bank"|"warband", keep = n }
+        cats = {},
+    },
+    farm = {
+        history = {},  -- sessions terminées (la plus récente en premier)
+        mini = true,   -- mini-fenêtre pendant une session
     },
     settings = {
         historyIntervalSec = 3600, -- 1 point max par heure et par série

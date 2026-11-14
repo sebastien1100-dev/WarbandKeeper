@@ -182,6 +182,7 @@ UI:RegisterPage({
         self.deltaLabel:SetText("sur 7 jours")
         local rules = 0
         for _ in pairs(WK.DB.global.mail.rules) do rules = rules + 1 end
+        for _ in pairs(WK.DB.global.mail.cats) do rules = rules + 1 end
         self.tiles[1].value:SetText(tostring(#chars))
         self.tiles[2].value:SetText(WK:FormatTime(played))
         self.tiles[3].value:SetText(tostring(rules))

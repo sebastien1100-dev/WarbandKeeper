@@ -39,7 +39,7 @@ local function NavButton(parent, def)
         b.label = UI:Text(b, 12)
         b.label:SetPoint("CENTER")
         b.label:SetText(def.nav or def.title)
-        b:SetSize(b.label:GetStringWidth() + 26, NAV_H)
+        b:SetSize(b.label:GetStringWidth() + 20, NAV_H)
     end
     b.count = UI:Text(b, 9, C.dim)
     b.count:SetPoint("TOPRIGHT", -5, -3)
@@ -163,13 +163,6 @@ function UI:Create()
         WK.modules.Professions:Scan()
         UI:Refresh()
     end)
-    local search = UI:IconButton(top, "search", 30, "Chercher un objet")
-    search:SetPoint("RIGHT", scan, "LEFT", -4, 0)
-    search:SetScript("OnClick", function()
-        UI:ShowPage("inventory")
-        local inv = UI.pages.inventory
-        if inv.search then inv.search.edit:SetFocus() end
-    end)
 
     -- Navigation : pilules dans un conteneur arrondi, centrée dans l'espace libre.
     local nav = CreateFrame("Frame", nil, top)
@@ -179,12 +172,12 @@ function UI:Create()
     for _, def in ipairs(self.pageOrder) do
         local b = NavButton(nav, def)
         b:SetPoint("LEFT", x, 0)
-        x = x + b:GetWidth() + 2
+        x = x + b:GetWidth() + 1
         self.nav[def.key] = b
     end
     nav:SetSize(x + 2, NAV_H + 8)
     local left = PAD + 36 + 12 + math.max(title:GetStringWidth(), sub:GetStringWidth()) + 16
-    local right = W - (PAD - 4) - 3 * 34 - 16
+    local right = W - (PAD - 4) - 2 * 34 - 12
     nav:SetPoint("CENTER", top, "LEFT", math.max(left + nav:GetWidth() / 2, (left + right) / 2) - 5, 0)
 
     -- Zone de page --------------------------------------------------------------

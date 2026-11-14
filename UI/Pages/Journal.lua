@@ -4,7 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 local FILTERS = { { "all", "Tout" }, { "gold", "Or" }, { "mail", "Courrier" }, { "skill", "Métiers" } }
-local ICONS = { gold = "coin", mail = "mail", skill = "hammer", level = "chart" }
+local ICONS = { gold = "coin", mail = "mail", skill = "hammer", level = "chart", bank = "bag", farm = "play" }
 local MAX_ROWS = 200
 
 local function charLabel(key)
@@ -38,6 +38,14 @@ local function describe(e)
             string.format(letters > 1 and T("%d courriers envoyés") or T("%d courrier envoyé"), letters)
     elseif e.kind == "skill" then
         return string.format("%s : %s %d → %d", who, e.prof, e.from or 0, e.to or 0), T("progrès de métier")
+    elseif e.kind == "bank" then
+        local parts = {}
+        for id, n in pairs(e.items or {}) do table.insert(parts, n .. " " .. (UI:ItemInfo(id))) end
+        local where = e.target == "warband" and T("banque de bataillon") or T("banque")
+        return string.format("%s → %s : %s", who, where, table.concat(parts, ", ")), T("dépôt en banque")
+    elseif e.kind == "farm" then
+        return string.format(T("%s : session à %s, %s, %d objet(s)"), who, (e.zone ~= "" and e.zone or "?"),
+            UI:ShortGold(e.gold or 0), e.count or 0), string.format(T("session de farm · %s"), WK:FormatTime(e.duration))
     elseif e.kind == "level" then
         return string.format(T("%s atteint le niveau %d"), who, e.level or 0), T("niveau")
     end

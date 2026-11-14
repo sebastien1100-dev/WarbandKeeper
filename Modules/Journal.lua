@@ -69,13 +69,29 @@ function M:MailSent(recipient, content)
     WK:NotifyChanged()
 end
 
+-- Dépôt en banque : items = { [itemID] = quantité }.
+function M:Deposit(target, items)
+    local copy = {}
+    for id, n in pairs(items) do copy[id] = n end
+    push({ t = time(), kind = "bank", char = WK:CharKey(), target = target, items = copy })
+end
+
+-- Fin d'une session de farm.
+function M:Farm(s)
+    push({ t = time(), kind = "farm", char = s.char, zone = s.zone, duration = s.duration,
+        gold = s.gold, count = WK.modules.Farm:ItemCount(s.items) })
+end
+
 WK:On("PLAYER_LEVEL_UP", function(level) M:Level(level) end)
 
 function M:Entries(filter)
     if not filter or filter == "all" then return journal() end
     local out = {}
     for _, e in ipairs(journal()) do
-        if e.kind == filter or (filter == "skill" and e.kind == "level") then table.insert(out, e) end
+        if e.kind == filter or (filter == "skill" and e.kind == "level")
+            or (filter == "mail" and e.kind == "bank") or (filter == "gold" and e.kind == "farm") then
+            table.insert(out, e)
+        end
     end
     return out
 end

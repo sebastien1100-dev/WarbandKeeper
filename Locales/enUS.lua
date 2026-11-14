@@ -7,6 +7,8 @@ WK.Locales.enUS.keys = {
     HELP_TITLE      = "Commands:",
     HELP_OPEN       = "/wk               - Open / close the window (/wk help: this help)",
     HELP_NOTES      = "/wk notes         - Patch notes",
+    HELP_FARM       = "/wk farm          - Start / stop a farming session",
+    HELP_TAKE       = "/wk take          - Take all mail (mailbox open)",
     HELP_GOLD       = "/wk gold          - Gold of every character",
     HELP_CHARS      = "/wk chars         - Character list (level, played time)",
     HELP_FIND       = "/wk find <name>   - Where an item is (bags / bank / mail)",
@@ -143,6 +145,53 @@ WK.Locales.enUS.text = {
         "Commands: |cffffffff/wk|r opens this window, |cffffffff/wk help|r lists the chat commands.",
     ["Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré."] =
         "Log in once on each character and open their bank so they get recorded.",
+
+
+    -- Farm
+    ["Farm"] = "Farm", ["Session de farm"] = "Farming session",
+    ["Chrono, or ramassé, butin et or par heure. Les échanges, achats et le courrier ne comptent pas."] =
+        "Timer, gold looted, loot and gold per hour. Trades, purchases and mail don't count.",
+    ["Démarrer"] = "Start", ["Pause"] = "Pause", ["Terminer"] = "Stop", ["Reprendre"] = "Resume",
+    ["Or ramassé"] = "Gold looted", ["Or / heure"] = "Gold / hour", ["Objets"] = "Items", ["objets"] = "items",
+    ["Valeur marchande"] = "Vendor value", ["Mini-fenêtre pendant la session"] = "Mini window during the session",
+    ["Valeur marchande : prix de vente aux PNJ du butin."] = "Vendor value: what the loot sells for to NPCs.",
+    ["Butin de la session"] = "Session loot", ["Butin du %s"] = "Loot of %s", ["Sessions précédentes"] = "Previous sessions",
+    ["Aucune session terminée."] = "No finished session.", ["En pause"] = "Paused", ["En cours"] = "Running",
+    ["Aucune session"] = "No session", ["Lance une session avant de partir farmer."] = "Start a session before you go farming.",
+    ["%d / h"] = "%d / h", ["/h"] = "/h", ["Rien ramassé pour l'instant."] = "Nothing looted yet.",
+    ["Démarre une session pour suivre ton butin."] = "Start a session to track your loot.",
+    ["Terminer la session"] = "Stop the session", ["Pause / reprendre"] = "Pause / resume", ["Ouvrir la page Farm"] = "Open the Farm page",
+    ["Session de farm démarrée."] = "Farming session started.",
+    ["Session terminée : %s, %s, %d objet(s)."] = "Session finished: %s, %s, %d item(s).",
+    ["%s : session à %s, %s, %d objet(s)"] = "%s: session in %s, %s, %d item(s)", ["session de farm · %s"] = "farming session · %s",
+
+    -- Courrier et banque
+    ["Courrier et banque"] = "Mail and bank",
+    ["Envoi du farm à tes persos, dépôt en banque et récupération du courrier."] = "Send your farm to your chars, bank deposits and mail collection.",
+    ["Envoi"] = "Send", ["Dépôt banque"] = "Bank deposit", ["Réception"] = "Receive",
+    ["Banque du perso"] = "Character bank", ["Banque de bataillon"] = "Warband bank", ["banque de bataillon"] = "warband bank", ["banque"] = "bank",
+    ["Dépôt automatique"] = "Auto-deposit",
+    ["À l'ouverture de la banque, les objets assignés sont rangés dans la banque du perso ou de bataillon."] =
+        "When you open the bank, assigned items are stored in the character or warband bank.",
+    ["Objet"] = "Item", ["Catégorie"] = "Category", ["catégorie"] = "category", ["Garder"] = "Keep", ["garder"] = "keep",
+    ["garder %d"] = "keep %d", ["Quantité à garder dans les sacs"] = "Amount to keep in bags",
+    ["Indique un objet (Maj + clic)."] = "Enter an item (Shift + click).",
+    ["Tout prendre automatiquement"] = "Take all automatically",
+    ["À l'ouverture de la boîte aux lettres, après les envois : récupère l'or et les objets (sauf contre-remboursement), et s'arrête si les sacs sont pleins."] =
+        "When you open the mailbox, after sending: takes gold and items (except COD), and stops when bags are full.",
+    ["Un bouton « Tout prendre » est aussi ajouté dans la boîte de réception du jeu."] = "A \"Take all\" button is also added to the game's inbox.",
+    ["Boîtes aux lettres du compte"] = "Account mailboxes", ["%d objet(s)"] = "%d item(s)", ["expire dans %d j"] = "expires in %d d",
+    ["Tout prendre"] = "Take all", ["Récupéré : "] = "Collected: ", ["Récupération..."] = "Collecting...",
+    ["Sacs pleins : récupération arrêtée."] = "Bags full: collection stopped.",
+    ["Récupère l'or et les objets de toutes les lettres (sauf contre-remboursement)."] = "Takes gold and items from every letter (except COD).",
+    ["Déposé : "] = "Deposited: ", ["Banque de bataillon pleine : dépôt incomplet."] = "Warband bank full: deposit incomplete.",
+    ["Banque pleine : dépôt incomplet."] = "Bank full: deposit incomplete.", ["dépôt en banque"] = "bank deposit",
+
+    -- Catégories
+    ["Tous les composants d'artisanat"] = "All trade goods", ["Étoffes"] = "Cloth", ["Cuirs"] = "Leather",
+    ["Métaux et pierres"] = "Metal & stone", ["Viandes et cuisine"] = "Meat & cooking", ["Herbes"] = "Herbs",
+    ["Éléments"] = "Elemental", ["Enchantement"] = "Enchanting", ["Joaillerie"] = "Jewelcrafting",
+    ["Pièces d'ingénierie"] = "Engineering parts", ["Gemmes"] = "Gems", ["Consommables"] = "Consumables", ["Recettes"] = "Recipes",
 
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",

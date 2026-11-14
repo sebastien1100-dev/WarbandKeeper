@@ -6,6 +6,31 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.5.0", date = "14/11/2026",
+        added = {
+            "Règles par catégorie : étoffes, cuirs, métaux et pierres, herbes, éléments, enchantement, gemmes… Une seule règle suffit pour envoyer tout un type de composant. Une règle sur un objet précis reste prioritaire.",
+            "Seuil « Garder » : une règle peut garder une quantité dans les sacs (ex. garder 20 potions) et n'envoie ou ne dépose que le surplus, en partageant une pile si besoin.",
+            "Page Farm : session de farm avec chrono, pause, or ramassé, nombre d'objets, valeur marchande du butin et or par heure. Le butin est listé avec sa quantité par heure, et chaque session terminée est gardée dans un historique consultable (zone, durée, or/h).",
+            "Mini-fenêtre déplaçable pendant une session : chrono, or par heure, nombre d'objets, boutons pause et fin. Commande /wk farm pour démarrer ou terminer.",
+            "« Tout prendre » : un bouton dans la boîte de réception du jeu récupère l'or et les objets de toutes les lettres, sauf les contre-remboursements, et s'arrête quand les sacs sont pleins. Option pour le faire automatiquement après les envois. Commande /wk prendre.",
+            "Dépôt automatique en banque : à l'ouverture de la banque, les objets ou catégories choisis sont rangés dans la banque du perso ou de bataillon, en complétant les piles existantes.",
+            "Onglet Réception : les boîtes aux lettres de tous les persos (lettres, objets, or, expiration).",
+            "Journal : dépôts en banque et sessions de farm terminées.",
+        },
+        changed = {
+            "La page Courrier devient « Courrier et banque », avec trois onglets : Envoi, Dépôt banque et Réception.",
+            "Nouvelle règle : choix Objet ou Catégorie dans une liste déroulante, et champ « Garder ».",
+            "Le butin ne compte pas pendant le courrier, la banque, un marchand, un échange ou l'hôtel des ventes.",
+            "Les sommes de moins d'1 po s'affichent en pièces d'argent au lieu de « 0 po ».",
+            "Barre du haut plus compacte pour faire de la place à l'onglet Farm ; la loupe est retirée (la recherche reste dans l'Inventaire).",
+            "Les anciennes règles d'envoi sont converties automatiquement.",
+            "Nouveaux fichiers : redémarrer complètement le jeu après la mise à jour.",
+        },
+        fixed = {
+            "Une session de farm interrompue par un crash ou une déconnexion garde le temps écoulé jusqu'à la dernière activité.",
+        },
+    },
+    {
         version = "0.4.0", date = "14/11/2026",
         added = {
             "Page Journal : courriers envoyés, or gagné ou dépensé, progrès de métier et niveaux, regroupés par jour, avec des filtres Tout / Or / Courrier / Métiers. Les variations d'or et les progrès d'un même métier sont regroupés par heure.",
@@ -123,6 +148,9 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.",
+    "Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.",
+    "Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.",
 }
 
 -- Message au premier lancement d'une nouvelle version.

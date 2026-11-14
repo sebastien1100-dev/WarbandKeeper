@@ -209,10 +209,35 @@ def icon_notes():
     save(img, "notes", 64)
 
 
+def icon_chevron():
+    img, d, s = canvas(64)
+    line(d, s, [(0.26, 0.38), (0.5, 0.62), (0.74, 0.38)], SW * 1.1)
+    save(img, "chevron", 64)
+
+
+def icon_play():
+    img, d, s = canvas(64)
+    d.polygon([(P(0.3, s), P(0.18, s)), (P(0.84, s), P(0.5, s)), (P(0.3, s), P(0.82, s))], fill=W)
+    save(img, "play", 64)
+
+
+def icon_pause():
+    img, d, s = canvas(64)
+    rrect(d, s, 0.24, 0.18, 0.42, 0.82, 0.05)
+    rrect(d, s, 0.58, 0.18, 0.76, 0.82, 0.05)
+    save(img, "pause", 64)
+
+
+def icon_stop():
+    img, d, s = canvas(64)
+    rrect(d, s, 0.22, 0.22, 0.78, 0.78, 0.08)
+    save(img, "stop", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop]:
         fn()
     print("OK")

@@ -1,78 +1,107 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Mail")
+local T = function(s) return WK.T(s) end
 
 local MAX_ATTACH = ATTACHMENTS_MAX_SEND or 12
+local MAX_RECEIVE = ATTACHMENTS_MAX_RECEIVE or 16
+local MAIL_DAYS = 30 -- durée de conservation d'un courrier envoyé à un joueur
 
--- File d'envoi : liste de { recipient, items = { {bag, slot}, ... } } (1 courrier par entrée).
+-- File d'envoi : liste de { recipient, items = { {bag, slot, count, split}, ... } } (1 courrier par entrée).
 local queue = {}
 local sending = false
 local current -- courrier en cours d'envoi (pour le créditer au destinataire)
-local MAIL_DAYS = 30 -- durée de conservation d'un courrier envoyé à un joueur
 
 local function myName() return UnitName("player") end
+local function isMe(name) return string.lower(name or ""):match("^[^%-]+") == string.lower(myName()) end
+
+-- Règles d'envoi : objets précis + catégories. Chaque règle : { to = "Nom", keep = n }.
+function M:Store()
+    local mail = WK.DB.global.mail
+    return { items = mail.rules, cats = mail.cats }
+end
+
+---------------------------------------------------------------------------
+-- Envoi automatique
+---------------------------------------------------------------------------
+local function plan()
+    return WK.modules.Rules:Plan(M:Store(), function(rule, _, bound)
+        return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
+    end)
+end
 
 -- Construit la file à partir des règles et du contenu des sacs.
 function M:BuildQueue()
     wipe(queue)
-    local rules = WK.DB.global.mail.rules
     local byRecipient = {}
-    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
-        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
-            local id, _, locked, bound = WK.Container.Info(bag, slot)
-            local to = id and rules[id]
-            if to and not locked and not bound and string.lower(to) ~= string.lower(myName()) then
-                byRecipient[to] = byRecipient[to] or {}
-                table.insert(byRecipient[to], { bag = bag, slot = slot })
-            end
-        end
+    for _, e in ipairs(plan()) do
+        local list = byRecipient[e.rule.to]
+        if not list then list = {}; byRecipient[e.rule.to] = list end
+        for _, op in ipairs(e.ops) do table.insert(list, op) end
     end
-    for to, items in pairs(byRecipient) do
-        for i = 1, #items, MAX_ATTACH do
+    for to, ops in pairs(byRecipient) do
+        for i = 1, #ops, MAX_ATTACH do
             local batch = {}
-            for j = i, math.min(i + MAX_ATTACH - 1, #items) do table.insert(batch, items[j]) end
+            for j = i, math.min(i + MAX_ATTACH - 1, #ops) do table.insert(batch, ops[j]) end
             table.insert(queue, { recipient = to, items = batch })
         end
     end
+end
+
+-- Nombre d'objets des sacs qui partiraient au prochain passage à la boîte aux lettres.
+function M:PendingCount()
+    local n = 0
+    for _, e in ipairs(plan()) do
+        for _, op in ipairs(e.ops) do n = n + op.count end
+    end
+    return n
 end
 
 -- Envoie le prochain courrier de la file. La suite est déclenchée par MAIL_SEND_SUCCESS.
 function M:SendNext()
     local mail = table.remove(queue, 1)
     if not mail then
-        if sending then WK:Print(WK.L.MAIL_DONE) end
-        sending = false
+        if sending then
+            WK:Print(WK.L.MAIL_DONE)
+            sending = false
+            if WK.DB.global.mail.autoTake then C_Timer.After(0.5, function() M:TakeAll() end) end
+        end
         return
     end
     sending = true
     current = mail
     mail.content = {}
-    ClearCursor()
-    for _, it in ipairs(mail.items) do
-        local id, count = WK.Container.Info(it.bag, it.slot)
-        if id then mail.content[id] = (mail.content[id] or 0) + (count or 1) end
+    for _, op in ipairs(mail.items) do
+        local id = WK.Container.Info(op.bag, op.slot)
+        if id then mail.content[id] = (mail.content[id] or 0) + op.count end
     end
-    for i, it in ipairs(mail.items) do
-        WK.Container.Pickup(it.bag, it.slot)
+    for i, op in ipairs(mail.items) do
+        WK.modules.Rules:PickUp(op)
         ClickSendMailItemButton(i)
     end
+    ClearCursor()
     WK:Print(string.format(WK.L.MAIL_SENDING, #mail.items, mail.recipient))
     local send = SendMail or (C_Mail and C_Mail.SendMail)
     send(mail.recipient, "Warband Keeper", "")
 end
 
 function M:Run()
-    if not WK.DB.global.mail.enabled or sending then return end
-    self:BuildQueue()
-    if #queue > 0 then self:SendNext() end
+    if sending then return end
+    if WK.DB.global.mail.enabled then
+        self:BuildQueue()
+        if #queue > 0 then self:SendNext() return end
+    end
+    if WK.DB.global.mail.autoTake then self:TakeAll() end
 end
 
 WK:On("MAIL_SHOW", function()
     -- Petit délai : l'interface du courrier doit être prête.
+    M:EnsureTakeButton()
     C_Timer.After(0.5, function() M:Run() end)
 end)
 
 -- Personnage du compte correspondant à un destinataire ("Nom" ou "Nom-Royaume").
 function M:FindCharacter(recipient)
+    if not recipient then return end
     local name, realm = string.match(recipient, "^([^%-]+)%-?(.*)$")
     name = string.lower(name or recipient)
     realm = (realm and realm ~= "") and string.lower(realm):gsub("%s", "") or nil
@@ -105,18 +134,23 @@ WK:On("MAIL_SEND_SUCCESS", function()
     end
 end)
 
+WK:On("MAIL_FAILED", function()
+    if sending then
+        wipe(queue); sending = false
+        WK:Print(WK.L.MAIL_ERROR)
+    end
+end)
+
 ---------------------------------------------------------------------------
 -- Lecture de la boîte aux lettres du personnage connecté.
 ---------------------------------------------------------------------------
-local MAX_RECEIVE = ATTACHMENTS_MAX_RECEIVE or 16
-
 function M:ScanInbox()
     if not GetInboxNumItems then return end
     local c = WK.DB:Me()
     local box = { items = {}, money = 0, count = 0, scanned = time() }
     local n = GetInboxNumItems() or 0
     for i = 1, n do
-        local _, _, _, _, money, cod, daysLeft, hasItem = GetInboxHeaderInfo(i)
+        local _, _, _, _, money, _, daysLeft, hasItem = GetInboxHeaderInfo(i)
         box.count = box.count + 1
         box.money = box.money + (money or 0)
         if daysLeft then
@@ -127,9 +161,7 @@ function M:ScanInbox()
             for a = 1, MAX_RECEIVE do
                 local name, itemID, _, count = GetInboxItem(i, a)
                 if not itemID and GetInboxItemLink then itemID = WK:ParseItemID(GetInboxItemLink(i, a)) end
-                if name or itemID then
-                    if itemID then box.items[itemID] = (box.items[itemID] or 0) + (count or 1) end
-                end
+                if (name or itemID) and itemID then box.items[itemID] = (box.items[itemID] or 0) + (count or 1) end
             end
         end
     end
@@ -145,32 +177,113 @@ WK:On("MAIL_INBOX_UPDATE", function()
     C_Timer.After(0.3, function() inboxPending = false; M:ScanInbox() end)
 end)
 
-WK:On("MAIL_FAILED", function()
-    if sending then
-        wipe(queue); sending = false
-        WK:Print(WK.L.MAIL_ERROR)
-    end
-end)
+---------------------------------------------------------------------------
+-- « Tout prendre » : or et objets de chaque lettre, une opération à la fois.
+-- Ignore les contre-remboursements et s'arrête quand les sacs sont pleins.
+---------------------------------------------------------------------------
+local taking = false
+local takeStats, lastKey, sameCount, skip
 
-WK:On("MAIL_CLOSED", function() wipe(queue); sending = false end)
-
--- Nombre d'objets dans les sacs du perso courant qui partiraient au prochain passage.
-function M:PendingCount()
+local function freeSlots()
     local n = 0
-    local me = WK.DB:Me()
-    for id, to in pairs(WK.DB.global.mail.rules) do
-        if string.lower(to) ~= string.lower(myName()) then n = n + ((me.bags or {})[id] or 0) end
-    end
+    for _, bag in ipairs(WK.modules.Inventory:BagList()) do n = n + (WK.Container.NumFree(bag) or 0) end
     return n
 end
 
+local function finishTake(reason)
+    taking = false
+    if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end
+    local parts = {}
+    if takeStats.money > 0 then table.insert(parts, WK:FormatMoney(takeStats.money)) end
+    if takeStats.items > 0 then table.insert(parts, string.format(T("%d objet(s)"), takeStats.items)) end
+    if #parts > 0 then WK:Print(T("Récupéré : ") .. table.concat(parts, ", ")) end
+    if reason then WK:Print(reason) end
+end
+
+local function takeStep()
+    if not taking then return end
+    local n = GetInboxNumItems() or 0
+    for i = n, 1, -1 do
+        if not skip[i] then
+            local _, _, _, _, money, cod, _, hasItem = GetInboxHeaderInfo(i)
+            if (cod or 0) == 0 and ((money or 0) > 0 or hasItem) then
+                local key
+                -- (les stats ne comptent qu'une fois une opération répétée en attendant la mise à jour)
+                if (money or 0) > 0 then
+                    key = i .. ":m"
+                    if key ~= lastKey then takeStats.money = takeStats.money + money end
+                    TakeInboxMoney(i)
+                else
+                    for a = 1, MAX_RECEIVE do
+                        local name, itemID, _, count = GetInboxItem(i, a)
+                        if name or itemID then
+                            if freeSlots() == 0 then return finishTake(T("Sacs pleins : récupération arrêtée.")) end
+                            key = i .. ":" .. a .. ":" .. tostring(itemID)
+                            if key ~= lastKey then takeStats.items = takeStats.items + (count or 1) end
+                            TakeInboxItem(i, a)
+                            break
+                        end
+                    end
+                end
+                -- Sécurité : la même opération répétée sans effet (objet unique déjà possédé…) -> on passe la lettre.
+                if key == lastKey then
+                    sameCount = sameCount + 1
+                    if sameCount >= 4 then skip[i] = true end
+                else
+                    lastKey, sameCount = key, 0
+                end
+                if key then
+                    C_Timer.After(0.35, takeStep)
+                    return
+                end
+            end
+        end
+    end
+    finishTake()
+end
+
+function M:TakeAll()
+    if taking or sending or not GetInboxNumItems then return end
+    taking = true
+    takeStats = { money = 0, items = 0 }
+    lastKey, sameCount, skip = nil, 0, {}
+    if self.takeButton then self.takeButton:SetLabel(T("Récupération...")) end
+    takeStep()
+end
+
+-- Bouton ajouté à la boîte de réception du jeu.
+function M:EnsureTakeButton()
+    if self.takeButton or not InboxFrame then return end
+    local b = WK.UI:Button(InboxFrame, T("Tout prendre"), 110, 24, "primary")
+    b:SetPoint("TOPRIGHT", InboxFrame, "TOPRIGHT", -60, -32)
+    b:SetFrameLevel((InboxFrame:GetFrameLevel() or 1) + 10)
+    b.tooltip = "Récupère l'or et les objets de toutes les lettres (sauf contre-remboursement)."
+    b:SetScript("OnClick", function() M:TakeAll() end)
+    self.takeButton = b
+end
+
+WK:On("MAIL_CLOSED", function()
+    wipe(queue); sending = false
+    if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
+end)
+
+---------------------------------------------------------------------------
 -- Gestion des règles
-function M:AddRule(itemArg, recipient)
+---------------------------------------------------------------------------
+function M:AddRule(itemArg, recipient, keep)
     local id = WK:ParseItemID(itemArg)
     if not id or not recipient or recipient == "" then return false end
-    WK.DB.global.mail.rules[id] = recipient
+    WK.DB.global.mail.rules[id] = { to = recipient, keep = keep or 0 }
     WK:Print(string.format(WK.L.MAIL_RULE_ADD, WK:ItemName(id), recipient))
     WK.modules.Statistics:UpdateItems()
+    WK:NotifyChanged()
+    return true
+end
+
+function M:AddCategoryRule(key, recipient, keep)
+    if not WK.modules.Rules.byKey[key] or not recipient or recipient == "" then return false end
+    WK.DB.global.mail.cats[key] = { to = recipient, keep = keep or 0 }
+    WK:Print(string.format(WK.L.MAIL_RULE_ADD, WK.modules.Rules:CategoryLabel(key), recipient))
     WK:NotifyChanged()
     return true
 end
@@ -184,12 +297,23 @@ function M:RemoveRule(itemArg)
     return true
 end
 
+function M:RemoveCategoryRule(key)
+    WK.DB.global.mail.cats[key] = nil
+    WK:Print(string.format(WK.L.MAIL_RULE_DEL, WK.modules.Rules:CategoryLabel(key)))
+    WK:NotifyChanged()
+end
+
 function M:ListRules()
     local any = false
-    for id, to in pairs(WK.DB.global.mail.rules) do
+    for id, r in pairs(WK.DB.global.mail.rules) do
         any = true
-        local note = string.lower(to) == string.lower(myName()) and (" - " .. WK.L.MAIL_SKIP_SELF) or ""
-        WK:Print(string.format("  %s -> %s%s", WK:ItemName(id), to, note))
+        local note = isMe(r.to) and (" - " .. WK.L.MAIL_SKIP_SELF) or ""
+        local keep = (r.keep or 0) > 0 and string.format(" (%s %d)", T("garder"), r.keep) or ""
+        WK:Print(string.format("  %s -> %s%s%s", WK:ItemName(id), r.to, keep, note))
+    end
+    for key, r in pairs(WK.DB.global.mail.cats) do
+        any = true
+        WK:Print(string.format("  [%s] -> %s", WK.modules.Rules:CategoryLabel(key), r.to))
     end
     if not any then WK:Print(WK.L.MAIL_NO_RULES) end
     WK:Print(WK.DB.global.mail.enabled and WK.L.MAIL_ON or WK.L.MAIL_OFF)

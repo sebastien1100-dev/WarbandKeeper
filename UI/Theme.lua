@@ -204,7 +204,12 @@ end
 
 -- Or entier avec séparateur de milliers : "12 345 po".
 function UI:GoldText(copper)
-    local g = math.floor((copper or 0) / 10000)
+    copper = copper or 0
+    if copper ~= 0 and math.abs(copper) < 10000 then
+        local sv = math.floor(math.abs(copper) / 100)
+        return "|cffc7c7cf" .. (copper < 0 and "-" or "") .. sv .. "|r " .. WK.T("pa")
+    end
+    local g = math.floor(copper / 10000)
     local s = tostring(math.abs(g)):reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "")
     return "|cffffd24d" .. (g < 0 and "-" or "") .. s .. "|r " .. WK.T("po")
 end

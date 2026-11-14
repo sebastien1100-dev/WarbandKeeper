@@ -571,3 +571,71 @@ function UI:ChartHover(area, chart, format)
         GameTooltip:Hide()
     end)
 end
+
+---------------------------------------------------------------------------
+-- Liste déroulante : bouton pilule + liste arrondie qui s'ouvre dessous.
+-- options = { {clé, libellé}, ... } ; onSelect(clé).
+---------------------------------------------------------------------------
+function UI:Dropdown(parent, width, height, options, onSelect)
+    height = height or 32
+    local d = CreateFrame("Button", nil, parent)
+    d:SetSize(width, height)
+    UI:Panel(d, height / 2, C.surface, C.border)
+    d.label = UI:Text(d, 12)
+    d.label:SetPoint("LEFT", 14, 0)
+    d.label:SetPoint("RIGHT", -28, 0)
+    d.arrow = UI:Icon(d, "chevron", 14, C.muted)
+    d.arrow:SetPoint("RIGHT", -12, 0)
+
+    local list = CreateFrame("Frame", nil, d)
+    list:SetFrameStrata("DIALOG")
+    list:SetPoint("TOPLEFT", d, "BOTTOMLEFT", 0, -4)
+    list:SetWidth(width)
+    UI:Panel(list, 12, C.surface2, C.border)
+    list:Hide()
+    d.list = list
+
+    local rowH = 26
+    for i, opt in ipairs(options) do
+        local b = CreateFrame("Button", nil, list)
+        b:SetHeight(rowH)
+        b:SetPoint("TOPLEFT", 4, -4 - (i - 1) * rowH)
+        b:SetPoint("TOPRIGHT", -4, -4 - (i - 1) * rowH)
+        b.bg = UI:Rounded(b, 9, 0, "BACKGROUND", 2)
+        b.bg:SetColor(unpack(C.hover))
+        b.bg:Hide()
+        b.text = UI:Text(b, 12)
+        b.text:SetPoint("LEFT", 10, 0)
+        b.text:SetText(opt[2])
+        b:SetScript("OnEnter", function(s) s.bg:Show() end)
+        b:SetScript("OnLeave", function(s) s.bg:Hide() end)
+        b:SetScript("OnClick", function()
+            d:Select(opt[1])
+            list:Hide()
+            if onSelect then onSelect(opt[1]) end
+        end)
+    end
+    list:SetHeight(#options * rowH + 8)
+
+    function d:Select(key)
+        self.selected = key
+        for _, opt in ipairs(options) do
+            if opt[1] == key then self.label:SetText(opt[2]) end
+        end
+    end
+    d:SetScript("OnClick", function() list:SetShown(not list:IsShown()) end)
+    d:SetScript("OnHide", function() list:Hide() end)
+    d:SetScript("OnEnter", function(s) s.border:SetColor(UI:Accent()) end)
+    d:SetScript("OnLeave", function(s) s.border:SetColor(unpack(C.border)) end)
+    if options[1] then d:Select(options[1][1]) end
+    return d
+end
+
+-- Petit champ numérique (ex. « garder 20 »).
+function UI:NumberInput(parent, width, height, placeholder)
+    local f = UI:Input(parent, width, height, placeholder)
+    f.edit:SetNumeric(true)
+    f.edit:SetMaxLetters(5)
+    function f:GetNumber() return tonumber(self.edit:GetText()) or 0 end
+    return f
+end

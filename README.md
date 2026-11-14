@@ -32,8 +32,9 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | Inventaire | Recherche dans les sacs, banques et boîtes aux lettres, filtre Tout / Sacs / Banque / Courrier |
 | Métiers | Barres de progression par personnage |
 | Stats | Courbe de l'or ou d'un matériau suivi sur 7 j / 30 j / 90 j / 1 an |
-| Journal | Courriers envoyés, or gagné ou dépensé, progrès de métier, niveaux |
-| Courrier automatique | Ajout de règles (Maj + clic sur un objet), choix rapide du destinataire |
+| Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique des sessions, mini-fenêtre |
+| Journal | Courriers envoyés, dépôts, or gagné ou dépensé, sessions de farm, progrès de métier, niveaux |
+| Courrier et banque | Envoi automatique et dépôt en banque par objet ou par catégorie, avec seuil « garder » ; « Tout prendre » dans la boîte aux lettres |
 | Options | Couleur d'accent, échelle, langue (FR / EN), bouton minimap, alertes |
 
 ## Commandes
@@ -44,6 +45,8 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | `/wk aide` | Aide des commandes |
 | `/wk options` | Ouvre les options |
 | `/wk notes` | Notes de patch |
+| `/wk farm` | Démarre / termine une session de farm |
+| `/wk prendre` | Prend tout le courrier (boîte aux lettres ouverte) |
 | `/wk or` | Or de tous les personnages |
 | `/wk persos` | Niveau, classe, temps de jeu |
 | `/wk cherche <nom>` | Où se trouve un objet (sacs / banque) |
