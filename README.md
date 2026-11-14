@@ -2,7 +2,7 @@
 
 Addon World of Warcraft (WoW Forever, `**Optionnel :** avec [Auctionator](https://www.curseforge.com/wow/addons/auctionator) installé, la valeur des stocks, du butin et des listes de courses utilise les prix de l'hôtel des ventes, et la liste de courses peut être envoyée dans Auctionator.
 
-## Interface: 16001`) pour gérer l'ensemble de son compte :
+Pour gérer l'ensemble de son compte :
 
 - **Or** de chaque personnage et total du compte
 - **Sacs et banques** de tous les personnages (avec quantités dans l'info-bulle des objets)
