@@ -117,6 +117,33 @@ UI.themes = {
         } end,
     },
 }
+-- Thème personnalisé : couleurs choisies dans les Options (départ : Coffre-fort).
+UI.CUSTOM_KEYS = {
+    { "bg", "Fond" }, { "line", "Bordures" }, { "frame", "Cadre" }, { "glow", "Halo" },
+    { "text", "Texte" }, { "muted", "Texte secondaire" }, { "accent", "Accent" },
+}
+table.insert(UI.themes, {
+    key = "custom", label = "Personnalisé", desc = "Tes propres couleurs, réglables dans la carte « Thème personnalisé ».",
+    base = function()
+        local saved = WK.DB and WK.DB.global.settings.ui.custom
+        local b = UI.themes[1].base()
+        if saved then
+            for _, k in ipairs(UI.CUSTOM_KEYS) do
+                local c = saved[k[1]]
+                if c then b[k[1]] = { c[1], c[2], c[3] } end
+            end
+            b.onAccent = nil
+        end
+        return b
+    end,
+})
+
+-- Couleurs de base d'un thème (pour copier un thème dans le thème personnalisé).
+function UI:ThemeBase(key)
+    local t = self.themeByKey[key] or self.themes[1]
+    return t.base()
+end
+
 UI.themeByKey = {}
 for _, t in ipairs(UI.themes) do UI.themeByKey[t.key] = t end
 

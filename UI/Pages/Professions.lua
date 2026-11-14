@@ -98,13 +98,19 @@ end
 -- Onglet Recettes : qui peut fabriquer quoi, et combien avec le stock du compte.
 ---------------------------------------------------------------------------
 local function Recipes(page, parent)
-    local tab = { query = "" }
+    local tab = { query = "", sort = "name" }
     local search = UI:Input(parent, 300, 34, "Rechercher une recette ou un objet...", "search")
     search:SetPoint("TOPLEFT", 0, TOP)
     search.onChange = function(t) tab.query = string.lower(t or ""); tab:Refresh() end
+    local sortSeg = UI:Segmented(parent, { { "name", "Nom" }, { "profit", "Bénéfice" }, { "craftable", "Possibles" } },
+        function(k) tab.sort = k; tab:Refresh() end, 34)
+    sortSeg:SetPoint("TOPRIGHT", 0, TOP)
+    sortSeg:Select("name")
+    local sortLbl = UI:Text(parent, 11, C.muted)
+    sortLbl:SetPoint("RIGHT", sortSeg, "LEFT", -10, 0)
+    sortLbl:SetText("Trier :")
     local info = UI:Text(parent, 11, C.muted)
-    info:SetPoint("TOPRIGHT", -4, TOP - 10)
-    info:SetJustifyH("RIGHT")
+    info:SetPoint("LEFT", search, "RIGHT", 14, 0)
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, TOP - 46)
     scroll:SetPoint("BOTTOMRIGHT")
@@ -119,13 +125,16 @@ local function Recipes(page, parent)
         r.icon:SetPoint("LEFT", 12, 0)
         r.name = UI:Text(r, 12)
         r.name:SetPoint("TOPLEFT", 52, -9)
-        r.name:SetPoint("TOPRIGHT", -170, -9)
+        r.name:SetPoint("TOPRIGHT", -240, -9)
         r.who = UI:Text(r, 10, C.muted)
         r.who:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
         r.who:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -4)
-        r.can = UI:Text(r, 11, C.muted)
-        r.can:SetPoint("RIGHT", -50, 0)
-        r.can:SetJustifyH("RIGHT")
+        r.profit = UI:Text(r, 13)
+        r.profit:SetPoint("TOPRIGHT", -50, -8)
+        r.profit:SetJustifyH("RIGHT")
+        r.eco = UI:Text(r, 10, C.muted)
+        r.eco:SetPoint("TOPRIGHT", r.profit, "BOTTOMRIGHT", 0, -4)
+        r.eco:SetJustifyH("RIGHT")
         r.add = UI:IconButton(r, "plus", 28, "Ajouter à la liste de courses")
         r.add:SetPoint("RIGHT", -10, 0)
         r.add:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
@@ -133,6 +142,14 @@ local function Recipes(page, parent)
             row.bg:SetColor(unpack(C.surface2))
             GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
             GameTooltip:SetText(row.rec.name, 1, 1, 1)
+            local cost, sale, profit = WK.modules.Recipes:Economics(row.rec)
+            GameTooltip:AddDoubleLine(WK.T("Coût des composants"), WK:FormatMoney(cost), 0.7, 0.7, 0.7, 1, 1, 1)
+            if sale then
+                GameTooltip:AddDoubleLine(WK.T("Prix de vente"), WK:FormatMoney(sale), 0.7, 0.7, 0.7, 1, 1, 1)
+                GameTooltip:AddDoubleLine(WK.T("Bénéfice"), WK:FormatMoney(profit), 0.7, 0.7, 0.7,
+                    profit >= 0 and 0.6 or 1, profit >= 0 and 1 or 0.4, profit >= 0 and 0.5 or 0.4)
+            end
+            GameTooltip:AddLine(" ")
             for _, rg in ipairs(row.rec.reagents or {}) do
                 local have = WK.modules.Inventory:AccountCount(rg[1])
                 local ok = have >= rg[2]
@@ -155,6 +172,27 @@ local function Recipes(page, parent)
                 table.insert(list, rec)
             end
         end
+        -- Tri : nom, bénéfice (inconnus à la fin) ou nombre de fabrications possibles.
+        local R = WK.modules.Recipes
+        local eco = {}
+        for _, rec in ipairs(list) do
+            local cost, sale, profit = R:Economics(rec)
+            eco[rec] = { cost = cost, sale = sale, profit = profit, can = R:Craftable(rec) or 0 }
+        end
+        if self.sort == "profit" then
+            table.sort(list, function(a, b)
+                local pa, pb = eco[a].profit, eco[b].profit
+                if (pa == nil) ~= (pb == nil) then return pa ~= nil end
+                if pa and pa ~= pb then return pa > pb end
+                return a.name < b.name
+            end)
+        elseif self.sort == "craftable" then
+            table.sort(list, function(a, b)
+                if eco[a].can ~= eco[b].can then return eco[a].can > eco[b].can end
+                return a.name < b.name
+            end)
+        end
+
         rows:Reset()
         local y = 0
         for i, rec in ipairs(list) do
@@ -176,14 +214,20 @@ local function Recipes(page, parent)
             r.name:SetTextColor(qr, qg, qb)
             local who = {}
             for _, k in ipairs(rec.crafters) do table.insert(who, colored(k)) end
-            r.who:SetText((rec.prof and (rec.prof .. "  ·  ") or "") .. table.concat(who, ", "))
-            local n = WK.modules.Recipes:Craftable(rec)
-            if n and n > 0 then
-                r.can:SetText(string.format(T("x%d possibles"), n))
-                r.can:SetTextColor(unpack(C.positive))
+            local e = eco[rec]
+            local canTxt = e.can > 0 and (UI:Hex(C.positive) .. string.format(T("x%d possibles"), e.can) .. "|r")
+                or T("composants manquants")
+            r.who:SetText((rec.prof and (rec.prof .. "  ·  ") or "") .. table.concat(who, ", ") .. "  ·  " .. canTxt)
+            if e.profit then
+                if e.profit >= 0 then
+                    r.profit:SetText("+" .. UI:GoldText(e.profit))
+                else
+                    r.profit:SetText(UI:Hex(C.negative) .. UI:PlainMoney(e.profit) .. "|r")
+                end
+                r.eco:SetText(string.format(T("coût %s · vente %s"), UI:PlainMoney(e.cost), UI:PlainMoney(e.sale)))
             else
-                r.can:SetText(n and T("composants manquants") or "")
-                r.can:SetTextColor(unpack(C.dim))
+                r.profit:SetText(UI:Hex(C.dim) .. "-|r")
+                r.eco:SetText(string.format(T("coût %s · pas de prix de vente"), UI:PlainMoney(e.cost)))
             end
             y = y + 52
         end

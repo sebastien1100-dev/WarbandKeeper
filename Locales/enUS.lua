@@ -230,7 +230,7 @@ WK.Locales.enUS.text = {
         "Auctionator detected: stock, loot and shopping list values use auction house prices (vendor price when an item has none).",
     ["Auctionator non détecté : les prix de vente aux marchands sont utilisés."] = "Auctionator not detected: vendor sell prices are used.",
     ["Valeur du butin"] = "Loot value",
-    ["Valeur du butin : prix Auctionator, sinon prix de vente aux marchands."] = "Loot value: Auctionator price, otherwise vendor price.",
+    ["Valeur du butin : prix Auctionator, sinon prix marchand."] = "Loot value: Auctionator price, otherwise vendor price.",
     ["Niveaux, recettes connues par perso et liste de courses des composants."] = "Skill levels, known recipes per character and a reagent shopping list.",
     ["Niveaux"] = "Levels", ["Recettes"] = "Recipes", ["Liste de courses"] = "Shopping list", ["%d recettes"] = "%d recipes",
     ["Rechercher une recette ou un objet..."] = "Search a recipe or an item...",
@@ -250,6 +250,22 @@ WK.Locales.enUS.text = {
     ["Rien à acheter : tu as déjà tous les composants."] = "Nothing to buy: you already have every reagent.",
     ["Liste « Warband Keeper » créée dans Auctionator (%d objet(s))."] = "\"Warband Keeper\" list created in Auctionator (%d item(s)).",
     ["Auctionator a refusé la liste : "] = "Auctionator rejected the list: ",
+
+    -- Thème personnalisé, rentabilité, spots
+    ["Personnalisé"] = "Custom", ["Tes propres couleurs, réglables dans la carte « Thème personnalisé »."] = "Your own colours, set in the \"Custom theme\" card.",
+    ["Thème personnalisé"] = "Custom theme", ["Partir du thème actuel"] = "Start from current theme",
+    ["Copie les couleurs du thème actuel pour les modifier."] = "Copies the current theme's colours so you can edit them.",
+    ["Fond"] = "Background", ["Bordures"] = "Borders", ["Cadre"] = "Frame", ["Halo"] = "Glow", ["Texte"] = "Text",
+    ["Texte secondaire"] = "Secondary text", ["Accent"] = "Accent", ["Clique pour choisir la couleur"] = "Click to pick the colour",
+    ["Police du texte de l'interface."] = "Interface text font.", ["Arrondi des fenêtres, cartes et boutons."] = "Rounding of windows, cards and buttons.",
+    ["Transparence du fond de la fenêtre (appliquée au relâchement)."] = "Window background transparency (applied on release).",
+    ["Auto : celle du jeu."] = "Auto: the game's language.",
+    ["Nom"] = "Name", ["Bénéfice"] = "Profit", ["Possibles"] = "Craftable", ["Trier :"] = "Sort:",
+    ["Coût des composants"] = "Reagent cost", ["Prix de vente"] = "Sale price",
+    ["coût %s · vente %s"] = "cost %s · sells %s", ["coût %s · pas de prix de vente"] = "cost %s · no sale price",
+    ["Historique"] = "History", ["Sessions"] = "Sessions", ["Meilleurs spots"] = "Best spots",
+    ["%d sessions"] = "%d sessions", ["%d session"] = "%d session", ["Butin à %s"] = "Loot in %s",
+    ["%d session(s) · %s · meilleur : %s"] = "%d session(s) · %s · best: %s",
 
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",

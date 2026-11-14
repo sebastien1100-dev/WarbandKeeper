@@ -73,7 +73,8 @@ UI:RegisterPage({
         ml:SetText("Mini-fenêtre pendant la session")
         local vh = UI:Text(main, 10, C.dim)
         vh:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", tx, 24)
-        vh:SetText("Valeur du butin : prix Auctionator, sinon prix de vente aux marchands.")
+        vh:SetWidth(UI.PAGE_W - tx - 300)
+        vh:SetText("Valeur du butin : prix Auctionator, sinon prix marchand.")
 
         -- Butin --------------------------------------------------------------------
         local leftW = math.floor(UI.PAGE_W * 0.6)
@@ -107,7 +108,12 @@ UI:RegisterPage({
         end)
 
         -- Historique ----------------------------------------------------------------
-        local hist = UI:Card(p, "Sessions précédentes")
+        local hist = UI:Card(p, "Historique")
+        self.histMode = "sessions"
+        local modeSeg = UI:Segmented(hist, { { "sessions", "Sessions" }, { "spots", "Meilleurs spots" } },
+            function(k) self.histMode = k; self.viewing = nil; self:Refresh() end, 28)
+        modeSeg:SetPoint("TOPRIGHT", -10, -8)
+        modeSeg:Select("sessions")
         hist:SetSize(UI.PAGE_W - leftW - GAP, UI.PAGE_H - TOP_H - GAP)
         hist:SetPoint("TOPRIGHT", 0, -TOP_H - GAP)
         self.histEmpty = UI:Text(hist, 12, C.muted)
@@ -130,7 +136,9 @@ UI:RegisterPage({
             r.rate:SetPoint("RIGHT", -12, 0)
             r.rate:SetJustifyH("RIGHT")
             r:SetScript("OnClick", function(b)
-                self.viewing = (self.viewing == b.session) and nil or b.session
+                local same = self.viewing and (self.viewing == b.session
+                    or (self.viewing.spot and b.session.spot and self.viewing.zone == b.session.zone))
+                self.viewing = (not same) and b.session or nil
                 self:Refresh()
             end)
             r:SetScript("OnEnter", function(b) b.hover = true; b:Paint() end)
@@ -165,7 +173,13 @@ UI:RegisterPage({
         else
             self.status:Set(T("Aucune session"), C.muted)
         end
-        if self.viewing then self.status:Set(date("%d/%m %H:%M", self.viewing.start), C.muted) end
+        if self.viewing then
+            if self.viewing.spot then
+                self.status:Set(string.format(self.viewing.sessions > 1 and T("%d sessions") or T("%d session"), self.viewing.sessions), C.muted)
+            else
+                self.status:Set(date("%d/%m %H:%M", self.viewing.start), C.muted)
+            end
+        end
         self.startBtn:SetShown(not cur)
         self.pauseBtn:SetShown(cur ~= nil)
         self.stopBtn:SetShown(cur ~= nil)
@@ -196,7 +210,13 @@ UI:RegisterPage({
         local s = self:Shown()
 
         -- Butin
-        self.lootCard.title:SetText(self.viewing and string.format(T("Butin du %s"), date("%d/%m", self.viewing.start)) or T("Butin de la session"))
+        if self.viewing and self.viewing.spot then
+            self.lootCard.title:SetText(string.format(T("Butin à %s"), self.viewing.zone))
+        elseif self.viewing then
+            self.lootCard.title:SetText(string.format(T("Butin du %s"), date("%d/%m", self.viewing.start)))
+        else
+            self.lootCard.title:SetText(T("Butin de la session"))
+        end
         self.lootRows:Reset()
         local list = {}
         for id, n in pairs(s and s.items or {}) do
@@ -222,26 +242,35 @@ UI:RegisterPage({
         self.lootEmpty:SetShown(#list == 0)
         self.lootEmpty:SetText(s and T("Rien ramassé pour l'instant.") or T("Démarre une session pour suivre ton butin."))
 
-        -- Historique
+        -- Historique : sessions, ou spots classés par or/heure
         self.histRows:Reset()
         y = 0
-        local history = WK.DB.global.farm.history
-        for _, h in ipairs(history) do
+        local spots = self.histMode == "spots"
+        local entries = spots and F:Spots() or WK.DB.global.farm.history
+        for i, h in ipairs(entries) do
             local r = self.histRows:Get()
             r.session = h
-            r.selected = (self.viewing == h)
+            r.selected = self.viewing ~= nil and (self.viewing == h
+                or (spots and self.viewing.spot and self.viewing.zone == h.zone))
             r:Paint()
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
             local c = WK.DB.global.characters[h.char]
-            r.zone:SetText((h.zone ~= "" and h.zone or "?"))
-            r.meta:SetText(string.format("%s · %s · %s", date("%d/%m", h.start), WK:FormatTime(h.duration), c and c.name or ""))
-            r.rate:SetText(UI:GoldText(F:PerHour(h.gold + F:VendorValue(h.items), h)) .. T("/h"))
+            if spots then
+                r.zone:SetText(UI:Hex(C.dim) .. "#" .. i .. "|r  " .. h.zone)
+                r.meta:SetText(string.format(T("%d session(s) · %s · meilleur : %s"), h.sessions,
+                    WK:FormatTime(h.duration), c and c.name or "?"))
+                r.rate:SetText(UI:GoldText(h.rate) .. T("/h"))
+            else
+                r.zone:SetText((h.zone ~= "" and h.zone or "?"))
+                r.meta:SetText(string.format("%s · %s · %s", date("%d/%m", h.start), WK:FormatTime(h.duration), c and c.name or ""))
+                r.rate:SetText(UI:GoldText(F:PerHour(h.gold + F:VendorValue(h.items), h)) .. T("/h"))
+            end
             y = y + 52
         end
         self.histScroll:SetContentHeight(y)
-        self.histEmpty:SetShown(#history == 0)
+        self.histEmpty:SetShown(#entries == 0)
     end,
 })
 

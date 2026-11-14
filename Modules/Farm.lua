@@ -93,6 +93,36 @@ function M:Stop()
     WK:NotifyChanged()
 end
 
+-- Classement des spots : sessions terminées regroupées par zone, or/h recalculé au prix actuel
+-- (or ramassé + valeur du butin). Chaque spot ressemble à une session (pour l'afficher pareil).
+function M:Spots()
+    local byZone = {}
+    for _, h in ipairs(farm().history) do
+        local z = (h.zone and h.zone ~= "") and h.zone or "?"
+        local s = byZone[z]
+        if not s then
+            s = { zone = z, spot = true, sessions = 0, duration = 0, gold = 0, items = {}, start = h.start, chars = {} }
+            byZone[z] = s
+        end
+        s.sessions = s.sessions + 1
+        s.duration = s.duration + (h.duration or 0)
+        s.gold = s.gold + (h.gold or 0)
+        for id, n in pairs(h.items or {}) do s.items[id] = (s.items[id] or 0) + n end
+        if h.start > s.start then s.start = h.start end
+        s.chars[h.char] = true
+        -- Meilleure session de la zone (or/h)
+        local rate = self:PerHour((h.gold or 0) + self:VendorValue(h.items), h)
+        if not s.bestRate or rate > s.bestRate then s.bestRate, s.char = rate, h.char end
+    end
+    local list = {}
+    for _, s in pairs(byZone) do
+        s.rate = self:PerHour(s.gold + self:VendorValue(s.items), s)
+        table.insert(list, s)
+    end
+    table.sort(list, function(a, b) return a.rate > b.rate end)
+    return list
+end
+
 function M:Toggle()
     if self:Active() then self:Stop() else self:Start() end
 end

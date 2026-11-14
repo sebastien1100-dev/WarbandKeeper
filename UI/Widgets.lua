@@ -641,3 +641,24 @@ function UI:NumberInput(parent, width, height, placeholder)
     function f:GetNumber() return tonumber(self.edit:GetText()) or 0 end
     return f
 end
+
+-- Ouvre le sélecteur de couleur du jeu ; onChange(r, g, b) à chaque modification
+-- (et avec la couleur d'origine si le joueur annule).
+function UI:PickColor(r, g, b, onChange)
+    if not ColorPickerFrame then return end
+    local function current() onChange(ColorPickerFrame:GetColorRGB()) end
+    local function cancel() onChange(r, g, b) end
+    if ColorPickerFrame.SetupColorPickerAndShow then
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, hasOpacity = false, swatchFunc = current, cancelFunc = cancel,
+        })
+    else
+        ColorPickerFrame.func = current
+        ColorPickerFrame.cancelFunc = cancel
+        ColorPickerFrame.hasOpacity = false
+        ColorPickerFrame.previousValues = { r, g, b }
+        ColorPickerFrame:SetColorRGB(r, g, b)
+        ColorPickerFrame:Hide()
+        ColorPickerFrame:Show()
+    end
+end

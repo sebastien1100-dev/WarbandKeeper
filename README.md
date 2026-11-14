@@ -32,12 +32,12 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | Résumé | Or du compte, évolution sur 7 j à 1 an (courbe), chiffres clés, tableau des persos avec tendance sur 7 jours |
 | Persos | Niveau, or, temps de jeu, dernière visite à la banque, courrier en attente, dernière connexion |
 | Inventaire | Recherche dans les sacs, banques et boîtes aux lettres, filtre Tout / Sacs / Banque / Courrier |
-| Métiers | Niveaux par perso, recettes connues (qui peut fabriquer quoi), liste de courses avec export vers Auctionator |
+| Métiers | Niveaux par perso, recettes connues avec rentabilité (coût, vente, bénéfice), liste de courses avec export vers Auctionator |
 | Stats | Courbes de l'or, de la richesse totale (or + stocks) ou d'un matériau, objectifs avec date estimée |
-| Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique des sessions, mini-fenêtre |
+| Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique, classement des meilleurs spots, mini-fenêtre |
 | Journal | Courriers envoyés, dépôts, or gagné ou dépensé, sessions de farm, progrès de métier, niveaux |
 | Courrier et banque | Envoi automatique et dépôt en banque par objet ou par catégorie, avec seuil « garder » ; « Tout prendre » dans la boîte aux lettres |
-| Options | 7 thèmes, couleur d'accent (dont couleur de classe), police, arrondi, opacité, échelle, langue (FR / EN), bouton minimap, alertes |
+| Options | 8 thèmes dont un personnalisable, appliqués en direct, couleur d'accent (dont couleur de classe), police, arrondi, opacité, échelle, langue (FR / EN), bouton minimap, alertes |
 
 ## Commandes
 

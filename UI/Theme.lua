@@ -276,3 +276,17 @@ function UI:Upper(s)
     s = string.upper(s or "")
     return (s:gsub("[\195\197][\128-\191]", function(c) return ACCENTS[c] or c end))
 end
+
+-- Code couleur "|cffRRGGBB" d'une couleur {r, g, b} (pour colorer une partie d'un texte).
+function UI:Hex(c)
+    return string.format("|cff%02x%02x%02x", math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5))
+end
+
+-- Montant lisible sans couleur : or au-dessus d'1 po (format court), argent en dessous.
+function UI:PlainMoney(copper)
+    copper = copper or 0
+    if copper ~= 0 and math.abs(copper) < 10000 then
+        return (copper < 0 and "-" or "") .. math.floor(math.abs(copper) / 100) .. " " .. WK.T("pa")
+    end
+    return self:ShortGold(copper)
+end

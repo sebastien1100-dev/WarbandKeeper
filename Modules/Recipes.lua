@@ -127,6 +127,21 @@ function M:Craftable(rec)
     return n
 end
 
+-- Rentabilité d'une recette au prix actuel (Auctionator, sinon marchand) :
+-- cost = prix des composants, sale = prix de l'objet fabriqué x quantité produite,
+-- profit = sale - cost (nil si l'objet fabriqué n'a pas de prix connu).
+function M:Economics(rec)
+    local V = WK.modules.Value
+    local cost = 0
+    for _, rg in ipairs(rec.reagents or {}) do cost = cost + V:Price(rg[1]) * rg[2] end
+    local sale
+    if rec.out then
+        local p = V:Price(rec.out)
+        if p and p > 0 then sale = p * (rec.qty or 1) end
+    end
+    return cost, sale, sale and (sale - cost) or nil
+end
+
 ---------------------------------------------------------------------------
 -- Liste de courses : WK.DB.global.shopping[clé de recette] = nombre de fabrications.
 ---------------------------------------------------------------------------

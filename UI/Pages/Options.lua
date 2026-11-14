@@ -113,20 +113,11 @@ UI:RegisterPage({
             return c
         end
 
-        -- Les réglages marqués « rechargement » s'appliquent après /reload.
-        local reloads = {}
-        local function needReload() for _, r in ipairs(reloads) do r:Show() end end
-        local function reloadButton(parent)
-            local r = UI:Button(parent, "Recharger pour appliquer", nil, 28, "primary", "refresh")
-            r:SetScript("OnClick", function() ReloadUI() end)
-            r:Hide()
-            table.insert(reloads, r)
-            return r
-        end
+        -- Thème, police, arrondi, opacité et langue s'appliquent en direct : l'interface est reconstruite.
+        local function apply() UI:Rebuild() end
 
         -- Thème -------------------------------------------------------------------
         local themeCard = card("Thème", 154)
-        reloadButton(themeCard):SetPoint("TOPRIGHT", -12, -8)
         local n = #UI.themes
         local tw = (W - 32 - (n - 1) * 10) / n
         self.themeTiles = {}
@@ -135,8 +126,7 @@ UI:RegisterPage({
                 cfg.theme = th.key
                 cfg.accent = "theme"
                 UI:SetAccent("theme")
-                self:RefreshThemes()
-                needReload()
+                apply()
             end)
             tile:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + 10), -44)
             self.themeTiles[th.key] = tile
@@ -145,9 +135,60 @@ UI:RegisterPage({
             for key, tile in pairs(self.themeTiles) do tile:Refresh(key == cfg.theme) end
         end
 
+        -- Thème personnalisé ----------------------------------------------------------
+        local cust = card("Thème personnalisé", 132)
+        local copy = UI:Button(cust, "Partir du thème actuel", nil, 28, "secondary")
+        copy:SetPoint("TOPRIGHT", -12, -8)
+        copy.tooltip = "Copie les couleurs du thème actuel pour les modifier."
+        local function saveCustom(key, r, g, b)
+            cfg.custom = cfg.custom or {}
+            cfg.custom[key] = { r, g, b }
+            cfg.theme = "custom"
+            if cfg.accent ~= "class" and type(cfg.accent) ~= "number" then cfg.accent = "theme" end
+            -- Le sélecteur envoie beaucoup de valeurs pendant qu'on le fait glisser : on attend un peu.
+            self.customToken = (self.customToken or 0) + 1
+            local token = self.customToken
+            C_Timer.After(0.4, function() if token == self.customToken then apply() end end)
+        end
+        copy:SetScript("OnClick", function()
+            local base = UI:ThemeBase(cfg.theme == "custom" and "vault" or cfg.theme)
+            cfg.custom = {}
+            for _, k in ipairs(UI.CUSTOM_KEYS) do
+                local c = base[k[1]]
+                cfg.custom[k[1]] = { c[1], c[2], c[3] }
+            end
+            cfg.theme = "custom"
+            cfg.accent = "theme"
+            apply()
+        end)
+        local sw = (W - 32 - 6 * 10) / 7
+        local customBase = UI:ThemeBase("custom")
+        for i, k in ipairs(UI.CUSTOM_KEYS) do
+            local b = CreateFrame("Button", nil, cust)
+            b:SetSize(sw, 64)
+            b:SetPoint("TOPLEFT", 16 + (i - 1) * (sw + 10), -44)
+            local swatch = CreateFrame("Frame", nil, b)
+            swatch:SetPoint("TOPLEFT"); swatch:SetPoint("TOPRIGHT"); swatch:SetHeight(34)
+            UI:Rounded(swatch, 10, 0, "BACKGROUND", 1):SetColor(unpack(C.border))
+            local fill = UI:Rounded(swatch, 9, 1, "BACKGROUND", 2)
+            local c = customBase[k[1]]
+            fill:SetColor(c[1], c[2], c[3], 1)
+            local lbl = UI:Text(b, 11, C.muted)
+            lbl:SetPoint("TOP", swatch, "BOTTOM", 0, -8)
+            lbl:SetText(k[2])
+            b:SetScript("OnClick", function()
+                local cur = UI:ThemeBase("custom")[k[1]]
+                UI:PickColor(cur[1], cur[2], cur[3], function(r, g, bl)
+                    fill:SetColor(r, g, bl, 1)
+                    saveCustom(k[1], r, g, bl)
+                end)
+            end)
+            b:SetScript("OnEnter", function() GameTooltip:SetOwner(b, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
+            b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        end
+
         -- Apparence --------------------------------------------------------------
         local look = card("Apparence", 356)
-        reloadButton(look):SetPoint("TOPRIGHT", -12, -8)
         local dots = CreateFrame("Frame", nil, look)
         local choices = {
             { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
@@ -169,19 +210,19 @@ UI:RegisterPage({
         UI:SettingRow(look, -40, "Couleur d'accent", "T : celle du thème. C : couleur de classe du perso connecté. Changement immédiat.", dots, 300)
 
         local fontSeg = UI:Segmented(look, { { "friz", "Friz Quadrata" }, { "arialn", "Arial Narrow" } },
-            function(v) cfg.font = v; needReload() end, 30)
+            function(v) cfg.font = v; apply() end, 30)
         fontSeg:Select(cfg.font or "friz")
-        UI:SettingRow(look, -92, "Police", "Police du texte de l'interface (rechargement).", fontSeg, 280)
+        UI:SettingRow(look, -92, "Police", "Police du texte de l'interface.", fontSeg, 280)
 
         local roundSeg = UI:Segmented(look, { { 1, "Fort" }, { 0.6, "Moyen" }, { 0.25, "Carré" } },
-            function(v) cfg.rounding = v; needReload() end, 30)
+            function(v) cfg.rounding = v; apply() end, 30)
         roundSeg:Select(cfg.rounding or 1)
-        UI:SettingRow(look, -144, "Arrondi", "Arrondi des fenêtres, cartes et boutons (rechargement).", roundSeg, 280)
+        UI:SettingRow(look, -144, "Arrondi", "Arrondi des fenêtres, cartes et boutons.", roundSeg, 280)
 
         local opacity = UI:Slider(look, 240, 0.6, 1, 0.05,
             function() return cfg.opacity or 1 end,
-            function(v) cfg.opacity = v; needReload() end, "%.2f")
-        UI:SettingRow(look, -196, "Opacité du fond", "Transparence du fond de la fenêtre (rechargement).", opacity, 260)
+            function(v) cfg.opacity = v; apply() end, "%.2f")
+        UI:SettingRow(look, -196, "Opacité du fond", "Transparence du fond de la fenêtre (appliquée au relâchement).", opacity, 260)
 
         local slider = UI:Slider(look, 240, 0.7, 1.3, 0.05,
             function() return cfg.scale or 1 end,
@@ -189,9 +230,9 @@ UI:RegisterPage({
         UI:SettingRow(look, -248, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
 
         local lang = UI:Segmented(look, { { "auto", "Auto" }, { "frFR", "Français" }, { "enUS", "English" } },
-            function(v) cfg.lang = v; needReload() end, 30)
+            function(v) cfg.lang = v; apply() end, 30)
         lang:Select(cfg.lang or "auto")
-        UI:SettingRow(look, -300, "Langue", "Auto : celle du jeu (rechargement).", lang, 280)
+        UI:SettingRow(look, -300, "Langue", "Auto : celle du jeu.", lang, 280)
 
         -- Prix des objets ------------------------------------------------------------
         local priceCard = card("Prix des objets", 96)

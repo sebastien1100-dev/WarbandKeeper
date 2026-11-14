@@ -252,3 +252,33 @@ function UI:ApplyScale(s)
     WK.DB.global.settings.ui.scale = s
     if self.frame then self.frame:SetScale(s) end
 end
+
+-- Reconstruit toute l'interface avec le thème, la police, l'arrondi et la langue actuels,
+-- sans recharger le jeu. Les anciens cadres sont masqués et remplacés (WoW ne permet pas
+-- de les détruire) ; la page ouverte et la position de la fenêtre sont conservées.
+local rebuildPending = false
+function UI:Rebuild()
+    if rebuildPending then return end
+    rebuildPending = true
+    C_Timer.After(0.05, function()
+        rebuildPending = false
+        local wasShown = self.frame and self.frame:IsShown()
+        local page = self.current
+        UI:ApplyTheme()
+        -- Les widgets masqués n'ont plus besoin des mises à jour de l'accent.
+        wipe(self.accentHooks)
+        wipe(self.inputs)
+        if self.frame then self.frame:Hide() end
+        self.frame = nil
+        for _, def in pairs(self.pages) do def.frame = nil end
+        if self.farmMini then self.farmMini:Hide(); self.farmMini = nil end
+        local mm = WK.modules.MinimapButton
+        if mm and mm.button then mm.button:Hide(); mm.button = nil end
+        if mm then mm:Update() end
+        self:UpdateFarmMini()
+        if wasShown then
+            self:Create():Show()
+            self:ShowPage(page or "overview")
+        end
+    end)
+end
