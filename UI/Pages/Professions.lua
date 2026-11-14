@@ -43,10 +43,47 @@ local function Levels(page, parent)
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, TOP)
     scroll:SetPoint("BOTTOMRIGHT")
+    local TILE_H, TILE_MIN = 74, 230
+
+    -- Ligne d'état d'une tuile : ce qu'il y a à faire ensuite pour ce métier.
+    local function status(c, key, prof, pr)
+        local rank, max = pr.rank or 0, pr.max or 0
+        local G, R = WK.modules.Gathering, WK.modules.Recipes
+        local kind = G:Kind(prof)
+        if max > 0 and max < 300 and rank >= max and not kind and prof ~= "Pêche" and prof ~= "Fishing" then
+            return T("Plafond atteint : va voir le maître"), true
+        end
+        if kind then
+            local rows = G:Rows(prof, rank)
+            local best = G:BestZones(rows)
+            local res
+            for _, d in ipairs(rows) do if d.good then res = d; break end end
+            local zone = best[1] and T(best[1]) or nil
+            if kind == "skin" then
+                return string.format(T("Monstres jusqu'au niv. %d"), G:SkinMaxLevel(rank)) .. (zone and ("  ·  " .. zone) or "")
+            end
+            if res then return ((UI:ItemInfo(res.id)) or "?") .. (zone and ("  ·  " .. zone) or "") end
+            return ""
+        end
+        if R:Guide(prof) then
+            local steps = R:GuidePlan(prof, rank, R:KnownOutputs(c))
+            for _, e in ipairs(steps or {}) do
+                if e.status == "current" or (e.status == "todo" and rank < e.step.from) then
+                    return string.format(T("Guide : %d-%d  ·  %d %s"), e.step.from, e.step.to,
+                        e.status == "current" and e.left or e.step.crafts, (UI:ItemInfo(e.step.out or 0)) or "?")
+                end
+            end
+            return T("Guide terminé")
+        end
+        local n = 0
+        for _, r in pairs(c.recipes or {}) do if r.prof == prof then n = n + 1 end end
+        return n > 0 and string.format(n > 1 and T("%d recettes") or T("%d recette"), n) or ""
+    end
+
     local cards = UI:Pool(function()
         local card = UI:Card(scroll.child, " ")
-        card.icon = UI:RoundIcon(card, 20)
-        card.icon:SetPoint("TOPLEFT", 14, -12)
+        card.icon = UI:RoundIcon(card, 22)
+        card.icon:SetPoint("TOPLEFT", 14, -11)
         card.title:ClearAllPoints()
         card.title:SetPoint("LEFT", card.icon, "RIGHT", 8, 0)
         card.recipes = UI:Text(card, 11, C.muted)
@@ -55,85 +92,105 @@ local function Levels(page, parent)
         card.empty = UI:Text(card, 11, C.dim)
         card.empty:SetPoint("TOPLEFT", 16, -46)
         card.empty:SetText("Aucun métier enregistré")
-        card.lines = {}
+        card.tiles = UI:Pool(function()
+            local t = CreateFrame("Button", nil, card)
+            t:SetHeight(TILE_H)
+            UI:Panel(t, 10, C.surface2, C.border)
+            t.icon = UI:RoundIcon(t, 20)
+            t.icon:SetPoint("TOPLEFT", 10, -9)
+            t.rank = UI:Text(t, 11, C.muted)
+            t.rank:SetPoint("TOPRIGHT", -12, -12)
+            t.rank:SetJustifyH("RIGHT")
+            t.name = UI:Text(t, 12)
+            t.name:SetPoint("TOPLEFT", 36, -11)
+            t.name:SetPoint("TOPRIGHT", -80, -11)
+            t.bar = UI:Progress(t, 6)
+            t.bar:SetPoint("TOPLEFT", 12, -38)
+            t.bar:SetPoint("TOPRIGHT", -12, -38)
+            t.bar.track:SetColor(unpack(C.hover)) -- visible sur le fond de la tuile
+            -- séparations des rangs (75, 150, 225) au-dessus du remplissage
+            local holder = CreateFrame("Frame", nil, t.bar)
+            holder:SetAllPoints()
+            holder:SetFrameLevel(t.bar:GetFrameLevel() + 5)
+            t.ticks = {}
+            for i = 1, 3 do
+                local tk = holder:CreateTexture(nil, "OVERLAY")
+                tk:SetSize(2, 10)
+                t.ticks[i] = tk
+            end
+            t.state = UI:Text(t, 10, C.muted)
+            t.state:SetPoint("BOTTOMLEFT", 12, 10)
+            t.state:SetPoint("BOTTOMRIGHT", -12, 10)
+            t.state:SetJustifyH("LEFT")
+            t:SetScript("OnClick", function(s) page:ShowDetail(s.charKey, s.prof) end)
+            t:SetScript("OnEnter", function(s)
+                if not s.warn then s.border:SetColor(UI:Accent()) end
+                WK.UI:TooltipOwner(s, "ANCHOR_TOP")
+                GameTooltip:SetText(WK.T("Clic : recettes et détail du métier"), 1, 1, 1)
+                GameTooltip:Show()
+            end)
+            t:SetScript("OnLeave", function(s)
+                s.border:SetColor(unpack(s.warn and C.warning or C.border))
+                GameTooltip:Hide()
+            end)
+            return t
+        end)
         return card
     end)
 
     function tab:Refresh()
         cards:Reset()
-        local colW = (UI.PAGE_W - 12 - GAP) / 2
-        local colY = { 0, 0 }
+        local w = (UI.PAGE_W or 840) - 12
+        local perRow = math.max(2, math.min(5, math.floor((w - 32 + 8) / (TILE_MIN + 8))))
+        local tw = (w - 32 - (perRow - 1) * 8) / perRow
+        local y = 0
         for _, e in ipairs(UI:SortedCharacters()) do
             local card = cards:Get()
-            card:SetWidth(colW)
             local c = e.c
+            card:ClearAllPoints()
+            card:SetPoint("TOPLEFT", 0, -y)
+            card:SetPoint("TOPRIGHT", 0, -y)
             UI:SetCharIcon(card.icon, c, e.key)
             card.title:SetText(WK:CharName(c, e.key))
             card.title:SetTextColor(UI:ClassColor(c.class))
-            local nr, byProf = 0, {}
-            for _, rec in pairs(c.recipes or {}) do
-                nr = nr + 1
-                if rec.prof then byProf[rec.prof] = (byProf[rec.prof] or 0) + 1 end
-            end
+            local nr = 0
+            for _ in pairs(c.recipes or {}) do nr = nr + 1 end
             card.recipes:SetText(nr > 0 and string.format(T("%d recettes"), nr) or "")
 
             local names = {}
             for name in pairs(c.professions or {}) do table.insert(names, name) end
             table.sort(names)
-            for _, l in ipairs(card.lines) do l:Hide() end
+            card.tiles:Reset()
             for i, name in ipairs(names) do
-                local l = card.lines[i]
-                if not l then
-                    -- Ligne cliquable : ouvre la fiche du métier.
-                    l = CreateFrame("Button", nil, card)
-                    l:SetHeight(30)
-                    l.hl = CreateFrame("Frame", nil, l)
-                    l.hl:SetPoint("TOPLEFT", -8, 4)
-                    l.hl:SetPoint("BOTTOMRIGHT", 8, -2)
-                    l.hl:SetFrameLevel(math.max(0, l:GetFrameLevel() - 1))
-                    UI:Rounded(l.hl, 8, 0, "BACKGROUND", 1):SetColor(unpack(C.hover))
-                    l.hl:Hide()
-                    l.name = UI:Text(l, 12)
-                    l.name:SetPoint("TOPLEFT")
-                    l.go = UI:Icon(l, "arrow", 12, C.dim)
-                    l.go:SetPoint("TOPRIGHT", 0, -1)
-                    l.rank = UI:Text(l, 11, C.muted)
-                    l.rank:SetPoint("TOPRIGHT", -18, 0)
-                    l.rank:SetJustifyH("RIGHT")
-                    l:SetScript("OnClick", function(s) page:ShowDetail(s.charKey, s.prof) end)
-                    l:SetScript("OnEnter", function(s)
-                        s.hl:Show(); s.go:SetVertexColor(unpack(C.text))
-                        WK.UI:TooltipOwner(s, "ANCHOR_TOP")
-                        GameTooltip:SetText(WK.T("Clic : recettes et détail du métier"), 1, 1, 1)
-                        GameTooltip:Show()
-                    end)
-                    l:SetScript("OnLeave", function(s) s.hl:Hide(); s.go:SetVertexColor(unpack(C.dim)); GameTooltip:Hide() end)
-                    l.bar = UI:Progress(l, 6)
-                    l.bar:SetPoint("BOTTOMLEFT", 0, 2)
-                    l.bar:SetPoint("BOTTOMRIGHT", 0, 2)
-                    card.lines[i] = l
-                end
                 local pr = c.professions[name]
-                l:ClearAllPoints()
-                l:SetPoint("TOPLEFT", 16, -44 - (i - 1) * 38)
-                l:SetPoint("TOPRIGHT", -16, -44 - (i - 1) * 38)
-                l.charKey, l.prof = e.key, name
-                local n = byProf[name] or 0
-                l.name:SetText(n > 0 and (name .. "  " .. UI:Hex(C.muted) .. string.format(
-                    n > 1 and T("(%d recettes)") or T("(%d recette)"), n) .. "|r") or name)
-                l.rank:SetText(string.format("%d / %d", pr.rank or 0, pr.max or 0))
-                l.bar:SetValue((pr.max or 0) > 0 and (pr.rank or 0) / pr.max or 0)
-                l:Show()
+                local t = card.tiles:Get()
+                t.charKey, t.prof = e.key, name
+                t:SetWidth(tw)
+                t:ClearAllPoints()
+                t:SetPoint("TOPLEFT", 16 + ((i - 1) % perRow) * (tw + 8), -44 - math.floor((i - 1) / perRow) * (TILE_H + 8))
+                if pr.icon then t.icon:SetTexture(pr.icon) else t.icon:SetTexture(UI.MEDIA .. "hammer") end
+                t.name:SetText(name)
+                t.rank:SetText(string.format("%d / %d", pr.rank or 0, pr.max or 0))
+                t.bar:SetValue(math.min(pr.rank or 0, 300) / 300)
+                local bw = tw - 24
+                for k = 1, 3 do
+                    t.ticks[k]:ClearAllPoints()
+                    t.ticks[k]:SetPoint("CENTER", t.bar, "LEFT", bw * k / 4, 0)
+                    t.ticks[k]:SetColorTexture(unpack(C.surface2))
+                end
+                local txt, warn = status(c, e.key, name, pr)
+                t.warn = warn
+                t.state:SetText(txt or "")
+                t.state:SetTextColor(unpack(warn and C.warning or C.muted))
+                t.border:SetColor(unpack(warn and C.warning or C.border))
             end
             card.empty:SetShown(#names == 0)
-            local h = 52 + math.max(1, #names) * 38 - (#names == 0 and 14 or 0)
+            local rowsN = math.max(1, math.ceil(#names / perRow))
+            local h = #names == 0 and 72 or (52 + rowsN * (TILE_H + 8))
             card:SetHeight(h)
-            local col = colY[1] <= colY[2] and 1 or 2
-            card:ClearAllPoints()
-            card:SetPoint("TOPLEFT", (col - 1) * (colW + GAP), -colY[col])
-            colY[col] = colY[col] + h + GAP
+            y = y + h + GAP
         end
-        scroll:SetContentHeight(math.max(colY[1], colY[2]))
+        scroll:SetContentHeight(y)
     end
     return tab
 end

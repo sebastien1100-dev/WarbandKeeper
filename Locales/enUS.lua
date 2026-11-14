@@ -325,6 +325,11 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Guides de montée
+    ["Plafond atteint : va voir le maître"] = "Cap reached: visit the trainer",
+    ["Monstres jusqu'au niv. %d"] = "Mobs up to lvl %d",
+    ["Guide : %d-%d  ·  %d %s"] = "Guide: %d-%d  ·  %d %s",
+    ["Guide terminé"] = "Guide complete",
+    ["%d recette"] = "%d recipe",
     ["Retour à la liste des métiers"] = "Back to the professions list",
     ["Recette à acheter chez un vendeur (voir l'étape du guide)."] = "Recipe to buy from a vendor (see the guide step).",
     ["Prix unitaire"] = "Unit price",

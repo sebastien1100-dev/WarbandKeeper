@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.23.0", date = "14/11/2026",
+        changed = {
+            "Métiers > Niveaux : chaque métier d'un perso devient une tuile cliquable avec son icône, son niveau, une mini-barre des rangs (1-300) et ce qu'il y a à faire ensuite : étape du guide en cours, ressource et zone conseillées pour la récolte, ou « Plafond atteint : va voir le maître » (tuile encadrée en orange).",
+            "Les cartes des persos prennent toute la largeur ; les tuiles s'adaptent à la taille de la fenêtre.",
+        },
+    },
+    {
         version = "0.22.2", date = "14/11/2026",
         changed = {
             "Fiche d'un métier : les onglets « Niveaux / Recettes / Liste de courses » sont masqués (ils reviennent sur la liste des métiers) et la fiche remonte à leur place.",
