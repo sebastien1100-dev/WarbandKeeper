@@ -489,6 +489,22 @@ local DIFF = {
     trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
 }
 
+-- Recette à l'hôtel des ventes (d'après Auctionator) : texte court et couleur.
+local function recipeAH(itemID)
+    local V = WK.modules.Value
+    if not itemID or not V:HasAuctionator() then return nil end
+    local ah = V:Prices(itemID)
+    if ah then
+        local age = V:AuctionAge(itemID)
+        local when = age and (age == 0 and T("vu aujourd'hui") or string.format(T("vu il y a %d j"), age)) or nil
+        -- Prix précis pour une recette (« 1 po 50 pa » plutôt que « 1 po »)
+        local g, sv = math.floor(ah / 10000), math.floor((ah % 10000) / 100)
+        local price = (g > 0 and g < 100 and sv > 0) and string.format("%d %s %d %s", g, T("po"), sv, T("pa")) or UI:PlainMoney(ah)
+        return string.format(T("HV : %s"), price) .. (when and (" (" .. when .. ")") or ""), C.positive
+    end
+    return T("pas vu à l'HV"), C.dim
+end
+
 -- Vendeurs d'une recette : « Nom (zone) », les premiers puis « +N ».
 local function vendorText(vendors, limit)
     local out = {}
@@ -902,6 +918,8 @@ local function Detail(page, parent)
             GameTooltip:AddDoubleLine(T("Sur le compte"), tostring(s.m.have), 0.7, 0.7, 0.7, 1, 1, 1)
             if s.m.recipe then
                 local info = s.m.recipe
+                local ahText, ahCol = recipeAH(s.m.itemID)
+                if ahText then GameTooltip:AddLine(ahText, ahCol[1], ahCol[2], ahCol[3]) end
                 GameTooltip:AddLine(string.format(T("Recette pour l'étape %d-%d, à acheter chez :"), info.from or 0, info.to or 0), 0.6, 0.8, 1, true)
                 for _, v in ipairs(info.vendors or {}) do
                     GameTooltip:AddDoubleLine("  " .. v[1], v[2] and T(v[2]) or "", 1, 1, 1, 0.7, 0.7, 0.7)
@@ -970,6 +988,8 @@ local function Detail(page, parent)
             if st.src == "recipe" then
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine(string.format(T("Recette : %s"), (st.learn and UI:ItemInfo(st.learn)) or "?"), 1, 0.82, 0)
+                local ahText, ahCol = recipeAH(st.learn)
+                if ahText then GameTooltip:AddLine(ahText, ahCol[1], ahCol[2], ahCol[3]) end
                 if st.vendors then
                     GameTooltip:AddLine(T("Vendeurs :"), 0.8, 0.8, 0.8)
                     for _, v in ipairs(st.vendors) do
@@ -1042,6 +1062,8 @@ local function Detail(page, parent)
                 else
                     src = UI:Hex(C.warning) .. T("Recette à acheter") .. "|r"
                     if st.vendors then src = src .. " " .. T("chez") .. " " .. vendorText(st.vendors, 2) end
+                    local ahText, ahCol = recipeAH(st.learn)
+                    if ahText then src = src .. "  ·  " .. UI:Hex(ahCol) .. ahText .. "|r" end
                 end
             else
                 src = T("Maître")

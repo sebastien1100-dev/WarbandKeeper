@@ -25,6 +25,14 @@ function M:Prices(itemID)
     return ahPrice(itemID), vendorPrice(itemID)
 end
 
+-- Jours depuis le dernier relevé Auctionator de cet objet (nil si inconnu).
+function M:AuctionAge(itemID)
+    local api = self:HasAuctionator() and Auctionator.API.v1
+    if not api or not api.GetAuctionAgeByItemID then return nil end
+    local ok, age = pcall(api.GetAuctionAgeByItemID, ADDON_NAME, itemID)
+    if ok and type(age) == "number" then return age end
+end
+
 -- Source "both" : les deux prix sont affichés, les calculs prennent le meilleur des deux.
 function M:ShowBoth()
     return WK.DB.global.settings.value.source == "both"
