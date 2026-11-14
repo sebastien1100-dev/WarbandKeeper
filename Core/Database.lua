@@ -39,7 +39,11 @@ local defaults = {
         },
         ui = {
             lang = "auto",         -- "auto", "frFR" ou "enUS"
-            accent = 1,            -- index dans WK.UI.accents
+            theme = "vault",       -- clé de UI.themes
+            font = "friz",         -- clé de UI.fonts
+            rounding = 1,          -- 1 = arrondi fort, 0.6 = moyen, 0.25 = presque carré
+            opacity = 1,           -- opacité du fond de la fenêtre
+            accent = "theme",      -- "theme", "class" ou index dans WK.UI.accents
             scale = 1,
             lastPage = "overview",
             minimap = { hide = false, angle = 215 },

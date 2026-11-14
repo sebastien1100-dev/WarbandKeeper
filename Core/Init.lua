@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "0.5.0"
+WK.version = "0.6.0"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -40,12 +40,15 @@ end
 WK:On("ADDON_LOADED", function(name)
     if name ~= ADDON_NAME then return end
     WK.DB:Init()
+    if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
     for _, m in pairs(WK.modules) do
         if m.OnInit then m:OnInit() end
     end
 end)
 
 WK:On("PLAYER_LOGIN", function()
+    -- Classe et faction sont sûres ici : on réapplique pour les thèmes dynamiques.
+    if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
     for _, m in pairs(WK.modules) do
         if m.OnLogin then m:OnLogin() end
     end

@@ -18,6 +18,10 @@ Chaque ajout, modification ou correction doit être noté **dans le même commit
 
 Les textures de `Media/` sont générées par `python3 tools/gen_media.py` (Pillow). Un nouveau fichier de texture ou un nouveau `.lua` demande de **redémarrer le jeu** (un `/reload` ne suffit pas) : le signaler dans la note de version.
 
+## Thèmes
+
+Les couleurs viennent de `UI/Themes.lua` : un thème donne quelques couleurs de base (`bg`, `line`, `frame`, `glow`, `text`, `muted`, `accent`) et `palette()` dérive le reste. `UI:ApplyTheme()` recopie la palette dans `UI.colors` au chargement : ne jamais réassigner `UI.colors`, et ne pas mettre de couleur en dur dans les pages (utiliser `C.*` ou `UI:Accent()`).
+
 ## Pièges connus
 
 - Ne pas mélanger un ancrage haut/bas (`TOPLEFT`…) et un ancrage centré (`LEFT`, `RIGHT`) sur une même région : utiliser `TOPRIGHT` avec le même décalage vertical.

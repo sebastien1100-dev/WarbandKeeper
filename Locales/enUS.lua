@@ -193,6 +193,27 @@ WK.Locales.enUS.text = {
     ["Éléments"] = "Elemental", ["Enchantement"] = "Enchanting", ["Joaillerie"] = "Jewelcrafting",
     ["Pièces d'ingénierie"] = "Engineering parts", ["Gemmes"] = "Gems", ["Consommables"] = "Consumables", ["Recettes"] = "Recipes",
 
+    -- Thèmes
+    ["Thème"] = "Theme", ["Coffre-fort"] = "Vault", ["Givre"] = "Frost", ["Graphite"] = "Graphite",
+    ["Héraldique"] = "Heraldry", ["Faction"] = "Faction", ["Gangrefeu"] = "Fel", ["Néant"] = "Void",
+    ["Bois sombre, parchemin et or."] = "Dark wood, parchment and gold.",
+    ["Bleu nuit et cyan, net et lumineux."] = "Midnight blue and cyan, crisp and bright.",
+    ["Gris neutre, sobre, couleur de ta classe en accent."] = "Neutral grey, understated, your class colour as accent.",
+    ["Fenêtre aux couleurs de la classe du perso connecté."] = "Window in the colours of the logged-in character's class.",
+    ["Alliance : bleu et or. Horde : rouge et fer."] = "Alliance: blue and gold. Horde: red and iron.",
+    ["Noir profond et vert gangrené."] = "Deep black and fel green.",
+    ["Violet et ombre, façon magie du Vide."] = "Purple and shadow, Void-magic style.",
+    ["Thème, apparence, langue, bouton minimap et alertes."] = "Theme, appearance, language, minimap button and alerts.",
+    ["Recharger pour appliquer"] = "Reload to apply",
+    ["Accent du thème"] = "Theme accent", ["Couleur de classe"] = "Class colour", ["Couleur fixe"] = "Fixed colour",
+    ["T : celle du thème. C : couleur de classe du perso connecté. Changement immédiat."] =
+        "T: the theme's. C: class colour of the logged-in character. Applies instantly.",
+    ["Police"] = "Font", ["Police du texte de l'interface (rechargement)."] = "Interface text font (reload).",
+    ["Arrondi"] = "Rounding", ["Fort"] = "Strong", ["Moyen"] = "Medium", ["Carré"] = "Square",
+    ["Arrondi des fenêtres, cartes et boutons (rechargement)."] = "Rounding of windows, cards and buttons (reload).",
+    ["Opacité du fond"] = "Background opacity", ["Transparence du fond de la fenêtre (rechargement)."] = "Window background transparency (reload).",
+    ["Auto : celle du jeu (rechargement)."] = "Auto: the game's language (reload).",
+
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",
 }

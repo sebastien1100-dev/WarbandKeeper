@@ -35,7 +35,7 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 | Farm | Session de farm : chrono, or ramassé, butin, or par heure, historique des sessions, mini-fenêtre |
 | Journal | Courriers envoyés, dépôts, or gagné ou dépensé, sessions de farm, progrès de métier, niveaux |
 | Courrier et banque | Envoi automatique et dépôt en banque par objet ou par catégorie, avec seuil « garder » ; « Tout prendre » dans la boîte aux lettres |
-| Options | Couleur d'accent, échelle, langue (FR / EN), bouton minimap, alertes |
+| Options | 7 thèmes, couleur d'accent (dont couleur de classe), police, arrondi, opacité, échelle, langue (FR / EN), bouton minimap, alertes |
 
 ## Commandes
 

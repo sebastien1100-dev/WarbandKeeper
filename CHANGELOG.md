@@ -3,6 +3,27 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.6.0 — 14/11/2026
+
+### Ajouts
+- Thèmes : 7 thèmes au choix dans les Options, avec un aperçu de chacun. Coffre-fort (bois et or), Givre (bleu nuit et cyan), Graphite (gris neutre), Héraldique (aux couleurs de ta classe), Faction (bleu et or pour l'Alliance, rouge et fer pour la Horde), Gangrefeu (vert gangrené) et Néant (violet).
+- Couleur d'accent : en plus des couleurs fixes, « Thème » suit l'accent du thème choisi et « Classe » prend la couleur de classe du perso connecté.
+- Réglages d'apparence : police (Friz Quadrata ou Arial Narrow), arrondi (fort, moyen ou carré) et opacité du fond de la fenêtre.
+
+### Modifications
+- Les Options commencent par la carte Thème. Un bouton « Recharger pour appliquer » apparaît quand un réglage demande de recharger l'interface (thème, police, arrondi, opacité, langue).
+- Les thèmes Héraldique et Faction s'adaptent au perso connecté.
+- Changer de thème remet l'accent sur celui du thème.
+- Nouveau fichier : redémarrer complètement le jeu après la mise à jour.
+
+## À venir
+
+_Prévu, pas encore commencé._
+
+- Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.
+- Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.
+- Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.
+
 ## v0.5.0 — 14/11/2026
 
 ### Ajouts
@@ -26,14 +47,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 ### Corrections
 - Une session de farm interrompue par un crash ou une déconnexion garde le temps écoulé jusqu'à la dernière activité.
-
-## À venir
-
-_Prévu, pas encore commencé._
-
-- Valeur du compte : estimer les stocks au prix de l'hôtel des ventes, pour suivre la richesse totale et pas seulement l'or.
-- Objectifs : une cible d'or ou de matériaux (ex. 200 Barres de fer) avec une barre de progression sur le Résumé.
-- Qui peut fabriquer quoi : recettes connues par perso et liste de courses des composants manquants.
 
 ## v0.4.0 — 14/11/2026
 

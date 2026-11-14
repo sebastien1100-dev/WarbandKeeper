@@ -8,7 +8,7 @@ UI.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 UI.FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 UI.TITLE_FONT = "Fonts\\MORPHEUS.TTF" -- police médiévale du jeu (titre uniquement)
 
--- Palette « Coffre-fort » : bois sombre, parchemin et or.
+-- Palette par défaut (« Coffre-fort ») ; remplacée par UI:ApplyTheme (UI/Themes.lua).
 UI.colors = {
     frame    = { 0.431, 0.329, 0.188, 1 },   -- bordure extérieure de la fenêtre
     inset    = { 0.102, 0.071, 0.043, 1 },   -- liseré sombre entre les deux bordures
@@ -29,7 +29,7 @@ UI.colors = {
     gold     = { 0.878, 0.741, 0.447, 1 },
 }
 
--- Couleurs d'accent proposées dans les options (or par défaut).
+-- Couleurs d'accent proposées dans les options, en plus de « Thème » et « Classe ».
 UI.accents = {
     { 0.878, 0.741, 0.447 }, -- or
     { 0.850, 0.560, 0.310 }, -- cuivre
@@ -54,8 +54,18 @@ function UI:SetGradient(tex, orient, c1, c2)
     tex:SetColorTexture(c2[1], c2[2], c2[3], (c1[4] + c2[4]) / 2)
 end
 
+-- Accent : "theme" (celui du thème), "class" (couleur de classe) ou un index de UI.accents.
 function UI:Accent()
-    local a = self.accents[WK.DB.global.settings.ui.accent] or self.accents[1]
+    local choice = WK.DB.global.settings.ui.accent
+    local a
+    if choice == "class" then
+        local _, class = UnitClass("player")
+        local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+        if c then return c.r, c.g, c.b end
+    elseif type(choice) == "number" then
+        a = self.accents[choice]
+    end
+    a = a or self.themeAccent or self.accents[1]
     return a[1], a[2], a[3]
 end
 
@@ -79,6 +89,7 @@ Rounded.__index = Rounded
 
 function UI:Rounded(parent, radius, inset, layer, sublevel)
     inset, layer, sublevel = inset or 0, layer or "BACKGROUND", sublevel or 0
+    radius = math.max(1, radius * (UI.radiusScale or 1))
     local r = setmetatable({ t = {} }, Rounded)
     local function tex()
         local t = parent:CreateTexture(nil, layer, nil, sublevel)
