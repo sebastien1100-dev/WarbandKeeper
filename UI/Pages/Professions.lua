@@ -433,25 +433,67 @@ end
 local function Detail(page, parent)
     local tab = { query = "", filter = "all", mode = "recipes" }
 
-    -- En-tête : retour, perso, métier, niveau, ouverture.
+    -- En-tête : retour, perso, métier, ouverture, puis la barre des rangs de 1 à 300.
+    local HEAD_H = 118
     local head = UI:Card(parent)
-    head:SetHeight(84)
+    head:SetHeight(HEAD_H)
     head:SetPoint("TOPLEFT", 0, TOP)
     head:SetPoint("TOPRIGHT", 0, TOP)
-    local back = UI:IconButton(head, "back", 30, "Retour aux niveaux")
-    back:SetPoint("TOPLEFT", 12, -14)
+    local back = UI:Button(head, "Niveaux", 104, 30, "secondary", "back")
+    back:SetPoint("TOPLEFT", 14, -16)
+    back.tooltip = "Retour à la liste des métiers"
     back:SetScript("OnClick", function() page:ShowDetail(nil) end)
-    local icon = UI:RoundIcon(head, 34)
-    icon:SetPoint("TOPLEFT", 52, -12)
+    local icon = UI:RoundIcon(head, 36)
+    icon:SetPoint("TOPLEFT", 132, -13)
     local title = UI:Text(head, 16)
-    title:SetPoint("TOPLEFT", 96, -12)
-    title:SetPoint("TOPRIGHT", -200, -12)
+    title:SetPoint("TOPLEFT", 180, -14)
+    title:SetPoint("TOPRIGHT", -200, -14)
     local sub = UI:Text(head, 11, C.muted)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
     sub:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", 0, -4)
-    local bar = UI:Progress(head, 6)
-    bar:SetPoint("BOTTOMLEFT", 96, 14)
-    bar:SetPoint("BOTTOMRIGHT", -200, 14)
+
+    -- Barre des rangs : Apprenti (75), Compagnon (150), Expert (225), Artisan (300).
+    local RANKS = { { "Apprenti", 75 }, { "Compagnon", 150 }, { "Expert", 225 }, { "Artisan", 300 } }
+    local bar = UI:Progress(head, 8)
+    bar:SetPoint("BOTTOMLEFT", 16, 28)
+    bar:SetPoint("BOTTOMRIGHT", -16, 28)
+    local rankLabels, ticks = {}, {}
+    -- Séparations au-dessus du remplissage de la barre
+    local tickHolder = CreateFrame("Frame", nil, bar)
+    tickHolder:SetAllPoints()
+    tickHolder:SetFrameLevel(bar:GetFrameLevel() + 5)
+    for i, rk in ipairs(RANKS) do
+        rankLabels[i] = UI:Text(head, 10, C.muted)
+        rankLabels[i]:SetText(rk[1])
+        if i < #RANKS then
+            local t = tickHolder:CreateTexture(nil, "OVERLAY")
+            t:SetSize(3, 14)
+            ticks[i] = t
+        end
+    end
+    local marker = UI:Text(head, 10)
+    local function placeRanks(rank)
+        local w = bar:GetWidth()
+        if not w or w < 50 then w = (UI.PAGE_W or 840) - 32 end
+        local cur = 1
+        for i, rk in ipairs(RANKS) do if rank >= rk[2] and i < #RANKS then cur = i + 1 end end
+        for i = 1, #RANKS do
+            local l = rankLabels[i]
+            l:ClearAllPoints()
+            l:SetPoint("BOTTOM", bar, "TOPLEFT", w * (i - 0.5) / #RANKS, 6)
+            l:SetTextColor(unpack(i == cur and C.text or C.dim))
+            if ticks[i] then
+                ticks[i]:ClearAllPoints()
+                ticks[i]:SetPoint("CENTER", bar, "LEFT", w * i / #RANKS, 0)
+                ticks[i]:SetColorTexture(unpack(C.bg))
+            end
+        end
+        marker:ClearAllPoints()
+        marker:SetPoint("TOP", bar, "BOTTOMLEFT", math.max(10, math.min(w - 10, w * math.min(rank, 300) / 300)), -4)
+        marker:SetText(tostring(rank))
+        marker:SetTextColor(UI:Accent())
+        bar:SetValue(math.min(rank, 300) / 300)
+    end
 
     -- « Ouvrir le métier ». Par l'API si le client l'a ; sinon un bouton sécurisé lance le sort
     -- du métier. Ce bouton sécurisé n'est PAS dans la fenêtre (sinon le jeu bloquerait sa
@@ -494,7 +536,7 @@ local function Detail(page, parent)
     note:SetJustifyH("RIGHT")
 
     -- Filtres
-    local fTop = TOP - 84 - GAP
+    local fTop = TOP - HEAD_H - GAP
     local filter = UI:Segmented(parent, { { "all", "Toutes" }, { "up", "Font monter" }, { "craft", "Possibles" } },
         function(k) tab.filter = k; tab:Refresh() end, 34)
     filter:SetPoint("TOPLEFT", 0, fTop)
@@ -980,7 +1022,7 @@ local function Detail(page, parent)
         if pr.icon then icon:SetTexture(pr.icon) else UI:SetClassIcon(icon, c.class) end
         local r, g, b = UI:ClassColor(c.class)
         title:SetText(string.format("%s  |cff%02x%02x%02x%s|r", self.prof, r * 255, g * 255, b * 255, WK:CharName(c, self.key)))
-        bar:SetValue((pr.max or 0) > 0 and (pr.rank or 0) / pr.max or 0)
+        placeRanks(pr.rank or 0)
 
         local all = R:ForProfession(c, self.prof)
         local counts = { optimal = 0, medium = 0, easy = 0, trivial = 0 }

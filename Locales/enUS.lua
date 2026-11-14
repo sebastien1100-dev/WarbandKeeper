@@ -325,6 +325,7 @@ WK.Locales.enUS.text = {
     ["Courrier en attente"] = "Mail waiting",
 
     -- Guides de montée
+    ["Retour à la liste des métiers"] = "Back to the professions list",
     ["Recette à acheter chez un vendeur (voir l'étape du guide)."] = "Recipe to buy from a vendor (see the guide step).",
     ["Prix unitaire"] = "Unit price",
     ["Coût du manquant"] = "Cost of missing",

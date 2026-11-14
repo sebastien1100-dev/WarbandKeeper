@@ -12,6 +12,12 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.22.1 — 14/11/2026
+
+### Modifications
+- Fiche métier (tous les métiers) : nouvel en-tête avec une barre des rangs de 1 à 300, découpée en Apprenti, Compagnon, Expert et Artisan, le rang en cours en clair et un repère à ton niveau.
+- Fiche métier : la flèche de retour devient un bouton « Niveaux » plus visible.
+
 ## v0.22.0 — 14/11/2026
 
 ### Modifications
