@@ -267,7 +267,7 @@ WK.Locales.enUS.text = {
     ["%d session(s) · %s · meilleur : %s"] = "%d session(s) · %s · best: %s",
 
     -- Sections des options
-    ["Réglages rangés par catégorie."] = "Settings sorted by category.", ["Général"] = "General", ["Prix"] = "Prices",
+    ["Réglages rangés par catégorie."] = "Settings sorted by category.", ["Thèmes"] = "Themes", ["Général"] = "General", ["Prix"] = "Prices",
     ["Thèmes et couleurs"] = "Themes and colours", ["Accent, police, taille"] = "Accent, font, size",
     ["Langue, minimap, fenêtre"] = "Language, minimap, window", ["Source des prix"] = "Price source",
     ["Banque et courrier"] = "Bank and mail", ["Version et commandes"] = "Version and commands",

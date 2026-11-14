@@ -128,17 +128,17 @@ UI:RegisterPage({
             return c
         end
         function self:ShowSection(key)
-            if not self.sections[key] then key = "theme" end
+            if not self.sections[key] then key = "general" end
             cfg.optSection = key
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
         local SECTIONS = {
-            { "theme", "Thème", "logo", "Thèmes et couleurs" },
-            { "look", "Apparence", "gear", "Accent, police, taille" },
             { "general", "Général", "home", "Langue, minimap, fenêtre" },
             { "prices", "Prix", "coin", "Source des prix" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
+            { "theme", "Thèmes", "logo", "Thèmes et couleurs" },
+            { "look", "Apparence", "gear", "Accent, police, taille" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -362,7 +362,7 @@ UI:RegisterPage({
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)
         notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
         current.scroll:SetContentHeight(y)
-        self:ShowSection(cfg.optSection or "theme")
+        self:ShowSection(cfg.optSection or "general")
     end,
 
     Refresh = function(self)

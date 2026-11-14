@@ -3,6 +3,11 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.8.2 — 14/11/2026
+
+### Modifications
+- Ordre des sections des Options : Général, Prix, Alertes, Thèmes, Apparence, À propos. Général s'ouvre par défaut.
+
 ## v0.8.1 — 14/11/2026
 
 ### Modifications
