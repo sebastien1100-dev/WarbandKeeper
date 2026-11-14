@@ -8,6 +8,7 @@ local function infoLine(parent, y, label)
     l:SetText(label)
     local v = UI:Text(parent, 12, C.text)
     v:SetPoint("TOPRIGHT", -16, y)
+    v:SetPoint("LEFT", l, "RIGHT", 12, 0) -- largeur bornée : texte coupé au lieu de déborder
     v:SetJustifyH("RIGHT")
     return v
 end
@@ -100,12 +101,15 @@ UI:RegisterPage({
         local me = UI:Card(p, "Ce personnage")
         me:SetSize(rightW, h - 186 - gap)
         me:SetPoint("TOPRIGHT", 0, top - 186 - gap)
-        self.meName = UI:Text(me, 11, C.muted)
-        self.meName:SetPoint("LEFT", me.title, "RIGHT", 8, 0)
-        self.meLevel = infoLine(me, -50, "Niveau")
-        self.mePlayed = infoLine(me, -76, "Temps de jeu")
-        self.meSlots = infoLine(me, -102, "Emplacements libres")
-        self.meBank = infoLine(me, -128, "Banque scannée")
+        self.meName = UI:Text(me, 13)
+        self.meName:SetPoint("TOPRIGHT", -16, -14)
+        self.meName:SetPoint("LEFT", me.title, "RIGHT", 12, 0)
+        self.meName:SetJustifyH("RIGHT")
+        self.meRealm = infoLine(me, -46, "Royaume")
+        self.meLevel = infoLine(me, -70, "Niveau")
+        self.mePlayed = infoLine(me, -94, "Temps de jeu")
+        self.meSlots = infoLine(me, -118, "Emplacements libres")
+        self.meBank = infoLine(me, -142, "Banque scannée")
         self.meSlotsBar = UI:Progress(me, 6)
         self.meSlotsBar:SetPoint("BOTTOMLEFT", 16, 18)
         self.meSlotsBar:SetPoint("BOTTOMRIGHT", -16, 18)
@@ -155,7 +159,9 @@ UI:RegisterPage({
 
         -- Personnage courant
         local c = WK.DB:Me()
-        self.meName:SetText(WK:CharKey())
+        self.meName:SetText(c.name or UnitName("player"))
+        self.meName:SetTextColor(UI:ClassColor(c.class))
+        self.meRealm:SetText(c.realm or GetRealmName())
         self.meLevel:SetText(tostring(c.level or "-"))
         self.mePlayed:SetText(WK:FormatTime(c.played))
         local free, total = c.freeSlots or 0, c.totalSlots or 0

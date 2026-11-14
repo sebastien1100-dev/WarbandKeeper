@@ -49,6 +49,7 @@ UI:RegisterPage({
             r.name:SetPoint("TOPLEFT", 52, -10)
             r.realm = UI:Text(r, 10, C.muted)
             r.realm:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
+            r.realm:SetWidth(COLS[2][2] - 52 - 10)
             r.badge = UI:Badge(r, "connecté")
             r.badge:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
             r.level = UI:Text(r, 12)
