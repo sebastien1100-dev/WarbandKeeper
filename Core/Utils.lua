@@ -11,6 +11,16 @@ function WK:CharKey(name, realm)
     return name .. "-" .. realm
 end
 
+-- Nom affiché d'un personnage : nom saisi pour le courrier, sinon nom complet
+-- détecté (« Prénom Nom » sur WoW Forever), sinon nom du jeu, sinon tiré de la clé.
+function WK:CharName(c, key)
+    if c then
+        if c.mailName and c.mailName ~= "" then return c.mailName end
+        if c.fullName or c.name then return c.fullName or c.name end
+    end
+    return key and (string.match(key, "^([^%-]+)") or key) or "?"
+end
+
 -- Formatage de l'or : 1234567 -> "123po 45pa 67pc".
 function WK:FormatMoney(copper)
     copper = math.floor(copper or 0)

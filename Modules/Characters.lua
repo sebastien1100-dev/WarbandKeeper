@@ -84,7 +84,7 @@ function M:PrintGold()
     for _, key in ipairs(self:SortedKeys()) do
         local c = WK.DB.global.characters[key]
         total = total + (c.money or 0)
-        WK:Print(string.format("  %s : %s", key, WK:FormatMoney(c.money)))
+        WK:Print(string.format("  %s : %s", WK:CharName(c, key), WK:FormatMoney(c.money)))
     end
     WK:Print(WK.L.TOTAL .. " : " .. WK:FormatMoney(total))
 end
@@ -94,7 +94,7 @@ function M:PrintCharacters()
     for _, key in ipairs(self:SortedKeys()) do
         local c = WK.DB.global.characters[key]
         totalPlayed = totalPlayed + (c.played or 0)
-        WK:Print(string.format("  %s - niv %s %s - %s", key, c.level or "?", c.class or "?", WK:FormatTime(c.played)))
+        WK:Print(string.format("  %s - niv %s %s - %s", WK:CharName(c, key), c.level or "?", c.class or "?", WK:FormatTime(c.played)))
     end
     WK:Print(WK.L.TOTAL .. " : " .. WK:FormatTime(totalPlayed))
 end

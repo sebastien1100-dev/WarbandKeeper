@@ -145,7 +145,7 @@ function M:Find(query)
                 end
                 if match then
                     found = true
-                    WK:Print(string.format("  %s x%d - %s (%s)", WK:ItemName(itemID), count, key,
+                    WK:Print(string.format("  %s x%d - %s (%s)", WK:ItemName(itemID), count, WK:CharName(c, key),
                         where == "bags" and WK.L.BAGS or where == "bank" and WK.L.BANK or WK.L.MAILBOX))
                 end
             end
@@ -183,7 +183,7 @@ local function onTooltip(tooltip, data)
             if cc then r, g, bl = cc.r, cc.g, cc.b end
             local detail = string.format("%s %d, %s %d", WK.L.BAGS, b, WK.L.BANK, k)
             if m > 0 then detail = detail .. string.format(", %s %d", WK.L.MAILBOX, m) end
-            tooltip:AddDoubleLine(c.name or key, string.format("%d (%s)", total, detail), r, g, bl, 1, 1, 1)
+            tooltip:AddDoubleLine(WK:CharName(c, key), string.format("%d (%s)", total, detail), r, g, bl, 1, 1, 1)
         end
     end
     local wb = WK.DB.global.warbank

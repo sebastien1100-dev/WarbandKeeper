@@ -715,3 +715,29 @@ function UI:PickColor(r, g, b, onChange)
         ColorPickerFrame:Show()
     end
 end
+
+-- Fenêtre de correction du nom complet d'un perso (« Prénom Nom ») : affichage et courrier.
+function UI:EditCharName(key)
+    local T = WK.T
+    local c = WK.DB.global.characters[key]
+    if not c or not StaticPopupDialogs or not StaticPopup_Show then return end
+    StaticPopupDialogs.WARBANDKEEPER_MAILNAME = StaticPopupDialogs.WARBANDKEEPER_MAILNAME or {
+        button1 = OKAY or "OK", button2 = CANCEL or "Annuler",
+        hasEditBox = true, editBoxWidth = 220, timeout = 0, whileDead = true, hideOnEscape = true,
+        OnShow = function(s, data)
+            local eb = s.editBox or s.EditBox
+            if eb then eb:SetText(data.name or ""); eb:HighlightText() end
+        end,
+        OnAccept = function(s, data)
+            local eb = s.editBox or s.EditBox
+            WK.modules.Mail:SetMailName(data.key, eb and eb:GetText() or "")
+        end,
+        EditBoxOnEnterPressed = function(eb, data)
+            WK.modules.Mail:SetMailName(data.key, eb:GetText() or "")
+            eb:GetParent():Hide()
+        end,
+    }
+    StaticPopupDialogs.WARBANDKEEPER_MAILNAME.text = string.format(
+        T("Nom complet de %s pour le courrier (tel que tu le tapes dans « À : ») :"), WK:CharName(c, key))
+    StaticPopup_Show("WARBANDKEEPER_MAILNAME", nil, nil, { key = key, name = WK.modules.Mail:MailName(c) })
+end

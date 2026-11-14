@@ -31,8 +31,7 @@ end
 -- Nom à mettre dans le champ « À : » pour ce personnage.
 function M:MailName(c)
     if not c then return end
-    if c.mailName and c.mailName ~= "" then return c.mailName end
-    return c.fullName or c.name
+    return WK:CharName(c)
 end
 
 -- Personnage du compte désigné par un destinataire (« Prénom Nom », « Prénom »,
@@ -81,7 +80,7 @@ function M:SetMailName(key, name)
     if not c then return end
     name = (name or ""):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
     c.mailName = name ~= "" and name or nil
-    WK:Print(string.format(T("Nom pour le courrier de %s : %s"), c.name or key, M:MailName(c)))
+    WK:Print(string.format(T("Nom complet de %s : %s"), c.name or key, M:MailName(c)))
     WK:NotifyChanged()
 end
 

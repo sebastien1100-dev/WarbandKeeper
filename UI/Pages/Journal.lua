@@ -9,7 +9,7 @@ local MAX_ROWS = 200
 
 local function charLabel(key)
     local c = WK.DB.global.characters[key]
-    local name = c and c.name or (key and key:match("^[^%-]+")) or "?"
+    local name = WK:CharName(c, key)
     local r, g, b = UI:ClassColor(c and c.class)
     return string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, name)
 end
@@ -18,7 +18,7 @@ local function recipientLabel(name)
     local c = WK.modules.Mail:FindCharacter(name)
     if not c then return name end
     local r, g, b = UI:ClassColor(c.class)
-    return string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, c.name)
+    return string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, WK:CharName(c))
 end
 
 -- Texte d'une entrée du journal.

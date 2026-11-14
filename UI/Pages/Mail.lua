@@ -17,31 +17,6 @@ local function categoryOptions()
     return opts
 end
 
--- Fenêtre de correction du nom de courrier d'un perso (« Prénom Nom »).
-local function editMailName(key)
-    local c = WK.DB.global.characters[key]
-    if not c or not StaticPopupDialogs or not StaticPopup_Show then return end
-    StaticPopupDialogs.WARBANDKEEPER_MAILNAME = StaticPopupDialogs.WARBANDKEEPER_MAILNAME or {
-        button1 = OKAY or "OK", button2 = CANCEL or "Annuler",
-        hasEditBox = true, editBoxWidth = 220, timeout = 0, whileDead = true, hideOnEscape = true,
-        OnShow = function(s, data)
-            local eb = s.editBox or s.EditBox
-            if eb then eb:SetText(data.name or ""); eb:HighlightText() end
-        end,
-        OnAccept = function(s, data)
-            local eb = s.editBox or s.EditBox
-            WK.modules.Mail:SetMailName(data.key, eb and eb:GetText() or "")
-        end,
-        EditBoxOnEnterPressed = function(eb, data)
-            WK.modules.Mail:SetMailName(data.key, eb:GetText() or "")
-            eb:GetParent():Hide()
-        end,
-    }
-    StaticPopupDialogs.WARBANDKEEPER_MAILNAME.text = string.format(
-        T("Nom complet de %s pour le courrier (tel que tu le tapes dans « À : ») :"), c.name or key)
-    StaticPopup_Show("WARBANDKEEPER_MAILNAME", nil, nil, { key = key, name = WK.modules.Mail:MailName(c) })
-end
-
 local TARGETS = { { "bank", "Banque du perso" }, { "warband", "Banque de bataillon" } }
 local function targetLabel(t) return t == "warband" and T("Banque de bataillon") or T("Banque du perso") end
 
@@ -136,7 +111,7 @@ local function RuleEditor(page, parent, mode, top)
             local b = UI:Button(add, "", nil, 24, "secondary")
             if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
             b:SetScript("OnClick", function(s, button)
-                if button == "RightButton" then editMailName(s.charKey) else dest:SetText(s.charName) end
+                if button == "RightButton" then UI:EditCharName(s.charKey) else dest:SetText(s.charName) end
             end)
             b.tooltip = "Clic : destinataire. Clic droit : corriger le nom complet pour le courrier."
             return b
@@ -341,7 +316,7 @@ local function Reception(page, parent, top)
                 r:SetPoint("TOPLEFT", 0, -y)
                 r:SetPoint("TOPRIGHT", 0, -y)
                 UI:SetClassIcon(r.icon, e.c.class)
-                r.name:SetText(e.c.name or e.key)
+                r.name:SetText(WK:CharName(e.c, e.key))
                 r.name:SetTextColor(UI:ClassColor(e.c.class))
                 r.letters:SetText(string.format(box.count > 1 and T("%d lettres") or T("%d lettre"), box.count))
                 r.items:SetText(string.format(T("%d objet(s)"), WK.modules.Farm:ItemCount(box.items or {})))

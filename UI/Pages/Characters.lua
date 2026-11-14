@@ -68,6 +68,17 @@ UI:RegisterPage({
             r.bank = cell(r, C.muted)
             r.mail = cell(r, C.muted)
             r.seen = cell(r, C.muted)
+            -- Clic droit : corriger le nom complet (« Prénom Nom »).
+            r:EnableMouse(true)
+            r:SetScript("OnMouseUp", function(s, button)
+                if button == "RightButton" and s.key then UI:EditCharName(s.key) end
+            end)
+            r:SetScript("OnEnter", function(s)
+                GameTooltip:SetOwner(s, "ANCHOR_CURSOR")
+                GameTooltip:SetText(WK.T("Clic droit : corriger le nom complet"), 1, 1, 1)
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
             r.del = UI:IconButton(r, "trash", 26, "Maj + clic : oublier ce personnage", true)
             r.del:SetPoint("RIGHT", -10, 0)
             r.del:SetScript("OnClick", function(btn)
@@ -116,7 +127,11 @@ UI:RegisterPage({
             r:SetPoint("TOPRIGHT", 0, -y)
             local c = e.c
             UI:SetClassIcon(r.icon, c.class)
-            r.name:SetText(c.name or e.key)
+            r.key = e.key
+            r.name:SetText(WK:CharName(c, e.key))
+            -- Nom long : borné à sa colonne (place gardée pour le badge « connecté »).
+            local maxW = COLS[2][2] - 52 - 12 - (e.key == me and (r.badge:GetWidth() + 8) or 0)
+            r.name:SetWidth(math.max(40, math.min(maxW, r.name:GetStringWidth() + 2)))
             r.name:SetTextColor(UI:ClassColor(c.class))
             r.realm:SetText((c.realm or "") .. (c.faction and (" · " .. c.faction) or ""))
             r.badge:SetShown(e.key == me)

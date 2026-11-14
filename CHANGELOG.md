@@ -9,6 +9,12 @@ _Prévu, pas encore commencé._
 
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.9.5 — 14/11/2026
+
+### Modifications
+- Le nom complet des persos (« Prénom Nom ») est affiché dans tout l'addon : résumé, persos, inventaire, métiers, stats, farm, journal, alertes, infobulles et messages du chat.
+- Persos : clic droit sur un perso pour corriger son nom complet (comme dans Courrier). Un nom trop long est coupé proprement au lieu de déborder sur les colonnes.
+
 ## v0.9.4 — 14/11/2026
 
 ### Corrections

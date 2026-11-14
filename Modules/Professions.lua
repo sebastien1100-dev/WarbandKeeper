@@ -57,6 +57,6 @@ function M:Print()
             table.insert(parts, string.format("%s %d/%d", name, p.rank or 0, p.max or 0))
         end
         table.sort(parts)
-        WK:Print(string.format("  %s : %s", key, #parts > 0 and table.concat(parts, ", ") or "-"))
+        WK:Print(string.format("  %s : %s", WK:CharName(c, key), #parts > 0 and table.concat(parts, ", ") or "-"))
     end
 end

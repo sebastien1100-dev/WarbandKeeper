@@ -201,7 +201,7 @@ UI:RegisterPage({
         self.timer:SetText(clock(dur))
         if s then
             local c = WK.DB.global.characters[s.char]
-            self.where:SetText((s.zone ~= "" and s.zone or "?") .. " · " .. (c and c.name or s.char))
+            self.where:SetText((s.zone ~= "" and s.zone or "?") .. " · " .. WK:CharName(c, s.char))
         else
             self.where:SetText(T("Lance une session avant de partir farmer."))
         end
@@ -271,11 +271,11 @@ UI:RegisterPage({
             if spots then
                 r.zone:SetText(UI:Hex(C.dim) .. "#" .. i .. "|r  " .. h.zone)
                 r.meta:SetText(string.format(T("%d session(s) · %s · meilleur : %s"), h.sessions,
-                    WK:FormatTime(h.duration), c and c.name or "?"))
+                    WK:FormatTime(h.duration), WK:CharName(c, h.char)))
                 r.rate:SetText(UI:GoldText(h.rate) .. T("/h"))
             else
                 r.zone:SetText((h.zone ~= "" and h.zone or "?"))
-                r.meta:SetText(string.format("%s · %s · %s", date("%d/%m", h.start), WK:FormatTime(h.duration), c and c.name or ""))
+                r.meta:SetText(string.format("%s · %s · %s", date("%d/%m", h.start), WK:FormatTime(h.duration), WK:CharName(c, h.char)))
                 r.rate:SetText(UI:GoldText(F:PerHour(h.gold + F:VendorValue(h.items), h)) .. T("/h"))
             end
             y = y + 52

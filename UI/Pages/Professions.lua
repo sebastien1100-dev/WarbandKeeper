@@ -9,7 +9,7 @@ local MAX_RECIPES = 150
 
 local function colored(key)
     local c = WK.DB.global.characters[key]
-    local name = c and c.name or key:match("^[^%-]+")
+    local name = WK:CharName(c, key)
     local r, g, b = UI:ClassColor(c and c.class)
     return string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, name)
 end
@@ -47,7 +47,7 @@ local function Levels(parent)
             card:SetWidth(colW)
             local c = e.c
             UI:SetClassIcon(card.icon, c.class)
-            card.title:SetText(c.name or e.key)
+            card.title:SetText(WK:CharName(c, e.key))
             card.title:SetTextColor(UI:ClassColor(c.class))
             local nr = 0
             for _ in pairs(c.recipes or {}) do nr = nr + 1 end

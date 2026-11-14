@@ -163,7 +163,7 @@ UI:RegisterPage({
                 accountTotal = accountTotal + n
                 b.icon:Show(); b.glyph:Hide()
                 UI:SetClassIcon(b.icon, e.c.class)
-                b.name:SetText(e.c.name or e.key)
+                b.name:SetText(WK:CharName(e.c, e.key))
                 b.name:SetTextColor(UI:ClassColor(e.c.class))
                 b.sub:SetText(string.format(T("%d objets"), n))
                 e.button = b
@@ -211,7 +211,7 @@ UI:RegisterPage({
             for key, c in pairs(chars) do
                 for _, where in ipairs(WHERE) do
                     if self.where == "all" or self.where == where then
-                        for id, n in pairs(listOf(c, where) or {}) do add(id, n, c.name or key) end
+                        for id, n in pairs(listOf(c, where) or {}) do add(id, n, WK:CharName(c, key)) end
                     end
                 end
             end
@@ -239,7 +239,7 @@ UI:RegisterPage({
             self.info:SetText(wb and wb.scanned and UI:Ago(wb.scanned) or "")
         else
             local c = chars[sel]
-            self.header:SetText(c.name or sel)
+            self.header:SetText(WK:CharName(c, sel))
             self.header:SetTextColor(UI:ClassColor(c.class))
             local parts = {}
             if c.totalSlots and c.totalSlots > 0 then

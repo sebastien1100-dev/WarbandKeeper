@@ -49,7 +49,7 @@ function M:OnLogin()
         WK:Print(string.format(T("%d alerte(s) :"), #all))
         for i, e in ipairs(all) do
             if i > 5 then WK:Print("  ..."); break end
-            WK:Print(string.format("  %s : %s", e.c.name or e.key, e.alert.text))
+            WK:Print(string.format("  %s : %s", WK:CharName(e.c, e.key), e.alert.text))
         end
     end)
 end

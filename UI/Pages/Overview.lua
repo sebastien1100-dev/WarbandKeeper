@@ -316,7 +316,7 @@ UI:RegisterPage({
             local isMe = e.key == me
             r.bg:SetColor(unpack(isMe and C.surface2 or C.surface))
             UI:SetClassIcon(r.icon, c.class)
-            r.name:SetText(c.name or e.key)
+            r.name:SetText(WK:CharName(c, e.key))
             r.name:SetTextColor(UI:ClassColor(c.class))
             r.here:SetShown(isMe)
             r.level:SetText(tostring(c.level or "-"))

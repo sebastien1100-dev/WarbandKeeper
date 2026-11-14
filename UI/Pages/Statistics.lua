@@ -354,7 +354,7 @@ UI:RegisterPage({
                 ch:SetData(series[ck], col, lo, hi)
                 local lg = self.legend:Get()
                 lg.dot:SetVertexColor(col[1], col[2], col[3], 1)
-                lg.text:SetText(string.format("%s %d", c and c.name or ck, series[ck][n]))
+                lg.text:SetText(string.format("%s %d", WK:CharName(c, ck), series[ck][n]))
                 lg:SetWidth(lg.text:GetStringWidth() + 14)
                 lg:ClearAllPoints()
                 lg:SetPoint("TOPLEFT", self.card, "TOPLEFT", 18 + x, -80)
