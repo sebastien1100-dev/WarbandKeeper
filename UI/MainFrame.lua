@@ -254,11 +254,32 @@ function UI:Create()
     header:RegisterForDrag("LeftButton")
     header:SetScript("OnDragStart", startMove)
     header:SetScript("OnDragStop", stopMove)
-    self.titleText = UI:Text(header, 18)
-    self.titleText:SetPoint("LEFT", PAD - 5, -2)
-    UI:OnAccent(function() UI.titleText:SetTextColor(UI:Accent()) end)
-    self.subtitleText = UI:Text(header, 11, C.muted)
-    self.subtitleText:SetPoint("BOTTOMLEFT", self.titleText, "BOTTOMRIGHT", 12, 1)
+    -- Pastilles d'infos utiles de la page (voir UI.CHIPS plus bas).
+    self.chips = UI:Pool(function()
+        local c = CreateFrame("Button", nil, header)
+        c:SetHeight(26)
+        UI:Panel(c, 13, C.surface, C.border)
+        c.label = UI:Text(c, 11, C.muted)
+        c.label:SetPoint("LEFT", 12, 0)
+        c.value = UI:Text(c, 12)
+        c.value:SetPoint("LEFT", c.label, "RIGHT", 6, 0)
+        c:SetScript("OnEnter", function(s)
+            if s.page then s.border:SetColor(UI:Accent()) end
+            if s.tip then
+                GameTooltip:SetOwner(s, "ANCHOR_BOTTOM")
+                GameTooltip:SetText(s.tip, 1, 1, 1, 1, true)
+                GameTooltip:Show()
+            end
+        end)
+        c:SetScript("OnLeave", function(s) s.border:SetColor(unpack(C.border)); GameTooltip:Hide() end)
+        c:SetScript("OnClick", function(s)
+            if s.page then
+                UI:ShowPage(s.page)
+                if s.after then s.after() end
+            end
+        end)
+        return c
+    end)
     local close = UI:IconButton(header, "close", 30, "Fermer")
     close:SetPoint("RIGHT", -(PAD - 9), 0)
     close:SetScript("OnClick", function() f:Hide() end)
@@ -276,6 +297,7 @@ function UI:Create()
     -- Les pages sont élastiques : elles suivent la taille en direct (UI:OnResize).
     self.pageHost:SetScript("OnSizeChanged", function(_, w, h)
         if w and w > 0 then UI.PAGE_W, UI.PAGE_FULL_H, UI.PAGE_H = w, h, h end
+        UI:RefreshChips() -- pastilles de l'en-tête : autant qu'il en tient
     end)
 
     -- Poignée de redimensionnement ---------------------------------------------------------
@@ -361,9 +383,6 @@ function UI:ShowPage(key)
         def.frame:SetAllPoints()
         def:Build(def.frame)
     end
-    self.titleText:SetText(def.title)
-    self.subtitleText:SetText(def.subtitle or "")
-    self.subtitleText:SetWidth(math.max(50, UI.PAGE_W - self.titleText:GetStringWidth() - 100))
     self:Refresh()
 end
 
@@ -377,6 +396,171 @@ function UI:Refresh()
     end
     local def = self.pages[self.current]
     if def and def.frame and def.Refresh then def:Refresh() end
+    self:RefreshChips()
+end
+
+---------------------------------------------------------------------------
+-- Pastilles de l'en-tête : chiffres clés de chaque page.
+-- Chaque fonction renvoie une liste { label, valeur, couleur?, page?, tip?, after? }.
+---------------------------------------------------------------------------
+local T = function(s) return WK.T(s) end
+local function count(t) local n = 0 for _ in pairs(t or {}) do n = n + 1 end return n end
+local function waitingMail()
+    local letters, chars, soon = 0, 0, false
+    local limit = WK.DB.global.settings.alerts.mailDays or 3
+    for _, c in pairs(WK.DB.global.characters) do
+        local box = c.mailbox
+        if box and (box.count or 0) > 0 then
+            letters, chars = letters + box.count, chars + 1
+            if box.expiresAt and (box.expiresAt - time()) / 86400 <= limit then soon = true end
+        end
+    end
+    return letters, chars, soon
+end
+local function farmChip()
+    local F = WK.modules.Farm
+    if F:Active() then
+        local cur = F:Current()
+        return { T("Session de farm"), WK:FormatTime(F:Elapsed(cur)) .. (cur.paused and (" · " .. T("en pause")) or ""),
+            cur.paused and C.warning or C.positive, "farm" }
+    end
+end
+local function mailChip()
+    local letters, chars, soon = waitingMail()
+    if letters > 0 then
+        return { T("Courrier en attente"), string.format("%d", letters), soon and C.negative or C.text, "mail",
+            string.format(T("%d lettre(s) sur %d perso(s)"), letters, chars),
+            function() UI.pages.mail:SetTab("receive") end }
+    end
+end
+local function add(list, chip) if chip then table.insert(list, chip) end end
+
+UI.CHIPS = {
+    overview = function()
+        local V = WK.modules.Value
+        local l = { { T("Or"), UI:PlainMoney(V:AccountGold()), C.gold },
+                    { T("Richesse totale"), UI:PlainMoney(V:Wealth()), C.gold, "stats", T("Or + valeur des stocks") },
+                    { T("Persos"), tostring(count(WK.DB.global.characters)), nil, "characters" } }
+        add(l, mailChip()); add(l, farmChip())
+        return l
+    end,
+    characters = function()
+        local played, maxLvl = 0, 0
+        for _, c in pairs(WK.DB.global.characters) do
+            played = played + (c.played or 0)
+            if (c.level or 0) >= 60 then maxLvl = maxLvl + 1 end
+        end
+        local l = { { T("Persos"), tostring(count(WK.DB.global.characters)) },
+                    { T("Niveau 60"), tostring(maxLvl) },
+                    { T("Temps de jeu"), WK:FormatTime(played) } }
+        local n = #(WK.modules.Alerts:All() or {})
+        if n > 0 then table.insert(l, { T("Alertes"), tostring(n), C.warning }) end
+        return l
+    end,
+    inventory = function()
+        local total = 0
+        for _, c in pairs(WK.DB.global.characters) do
+            for _, list in ipairs({ c.bags, c.bank, c.mailbox and c.mailbox.items }) do
+                for _, n in pairs(list or {}) do total = total + n end
+            end
+        end
+        local wb = WK.DB.global.warbank
+        for _, n in pairs(wb and wb.items or {}) do total = total + n end
+        local V = WK.modules.Value
+        return { { T("Objets"), tostring(total) },
+                 { T("Valeur des stocks"), UI:PlainMoney(V:StockValue()), C.gold },
+                 { T("Prix"), V:ShowBoth() and T("HV / marchand")
+                     or ((WK.DB.global.settings.value.source ~= "vendor" and V:HasAuctionator()) and "Auctionator" or T("marchand")),
+                   nil, "options", T("Source des prix (Options > Prix)"), function() UI.pages.options:ShowSection("prices") end } }
+    end,
+    professions = function()
+        local profs, recipes = 0, 0
+        for _, c in pairs(WK.DB.global.characters) do
+            profs = profs + count(c.professions); recipes = recipes + count(c.recipes)
+        end
+        local l = { { T("Métiers"), tostring(profs) }, { T("Recettes connues"), tostring(recipes) } }
+        local n = count(WK.DB.global.shopping)
+        if n > 0 then table.insert(l, { T("Liste de courses"), tostring(n), nil, "professions", nil,
+            function() UI.pages.professions:SetTab("shopping") end }) end
+        return l
+    end,
+    stats = function()
+        local V = WK.modules.Value
+        local now = time()
+        local d = V:AccountGold() - WK.modules.Statistics:AccountGoldAt(now - 7 * 86400)
+        return { { T("Richesse totale"), UI:PlainMoney(V:Wealth()), C.gold },
+                 { T("Or"), UI:PlainMoney(V:AccountGold()), C.gold },
+                 { T("Or sur 7 jours"), (d >= 0 and "+" or "") .. UI:PlainMoney(d), d >= 0 and C.positive or C.negative } }
+    end,
+    mail = function()
+        local m, b = WK.DB.global.mail, WK.DB.global.bank
+        local l = { { T("Règles d'envoi"), tostring(count(m.rules) + count(m.cats)) },
+                    { T("Règles de dépôt"), tostring(count(b.items) + count(b.cats)) } }
+        local pending = WK.modules.Mail:PendingCount()
+        if pending > 0 then table.insert(l, { T("À envoyer"), tostring(pending), C.positive, nil,
+            T("Objets des sacs qui partiront à la prochaine boîte aux lettres") }) end
+        add(l, mailChip())
+        return l
+    end,
+    farm = function()
+        local l = {}
+        add(l, farmChip())
+        if #l == 0 then table.insert(l, { T("Session de farm"), T("aucune"), C.dim }) end
+        local h = WK.DB.global.farm.history or {}
+        local gold = 0
+        for _, s in ipairs(h) do gold = gold + (s.gold or 0) end
+        table.insert(l, { T("Sessions enregistrées"), tostring(#h) })
+        if gold > 0 then table.insert(l, { T("Or farmé"), UI:PlainMoney(gold), C.gold }) end
+        return l
+    end,
+    loot = function()
+        local L = WK.modules.Loot
+        local _, total, n = L:LeftList()
+        local function openList()
+            local pg = UI.pages.loot
+            if pg.leftPanel then pg.leftPanel:Show(); pg:RefreshLeft() end
+        end
+        return { { T("Profils"), tostring(#L:Profiles()) },
+                 { T("Laissés au sol (session)"), tostring(L.leftSession or 0) },
+                 { T("Valeur laissée au sol"), UI:PlainMoney(total), C.gold, "loot",
+                   string.format(T("%d objets depuis la dernière remise à zéro"), n), openList } }
+    end,
+    journal = function()
+        local today, n = date("%Y%m%d"), 0
+        for _, e in ipairs(WK.DB.global.journal or {}) do if date("%Y%m%d", e.t) == today then n = n + 1 end end
+        return { { T("Événements"), tostring(#(WK.DB.global.journal or {})) }, { T("Aujourd'hui"), tostring(n) } }
+    end,
+    notes = function()
+        return { { T("Version"), WK.version, C.gold }, { T("À venir"), tostring(#(WK.Roadmap or {})) } }
+    end,
+    options = function()
+        return { { T("Version"), WK.version, C.gold } }
+    end,
+}
+
+function UI:RefreshChips()
+    if not self.chips then return end
+    self.chips:Reset()
+    local f = UI.CHIPS[self.current]
+    local ok, list = true, {}
+    if f then ok, list = pcall(f) end
+    if not ok or type(list) ~= "table" then list = {} end
+    local x = PAD - 5
+    local maxX = (self.header:GetWidth() or 600) - 80
+    for _, ch in ipairs(list) do
+        local c = self.chips:Get()
+        c.label:SetText(ch[1])
+        c.value:SetText(ch[2] or "")
+        c.value:SetTextColor(unpack(ch[3] or C.text))
+        c.page, c.tip, c.after = ch[4], ch[5], ch[6]
+        local w = c.label:GetStringWidth() + c.value:GetStringWidth() + 30
+        c:SetWidth(w)
+        if x + w > maxX then c:Hide() else
+            c:ClearAllPoints()
+            c:SetPoint("LEFT", self.header, "LEFT", x, -2)
+            x = x + w + 8
+        end
+    end
 end
 
 -- Rafraîchissement différé (évite de reconstruire 20 fois pendant un BAG_UPDATE).

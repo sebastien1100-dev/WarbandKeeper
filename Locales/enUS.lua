@@ -324,6 +324,30 @@ WK.Locales.enUS.text = {
 
     ["Courrier en attente"] = "Mail waiting",
 
+    -- Pastilles de l'en-tête
+    ["HV / marchand"] = "AH / vendor",
+    ["Source des prix (Options > Prix)"] = "Price source (Options > Prices)",
+    ["Valeur laissée au sol"] = "Value left on ground",
+    ["%d objets depuis la dernière remise à zéro"] = "%d items since the last reset",
+    ["Or + valeur des stocks"] = "Gold + stock value",
+    ["%d lettre(s) sur %d perso(s)"] = "%d letter(s) on %d character(s)",
+    ["en pause"] = "paused",
+    ["Niveau 60"] = "Level 60",
+    ["Valeur des stocks"] = "Stock value",
+    ["Recettes connues"] = "Known recipes",
+    ["Or sur 7 jours"] = "Gold over 7 days",
+    ["Règles d'envoi"] = "Send rules",
+    ["Règles de dépôt"] = "Deposit rules",
+    ["Objets des sacs qui partiront à la prochaine boîte aux lettres"] = "Bag items that will leave at the next mailbox",
+    ["aucune"] = "none",
+    ["Sessions enregistrées"] = "Recorded sessions",
+    ["Or farmé"] = "Gold farmed",
+    ["Filtre"] = "Filter",
+    ["Profil"] = "Profile",
+    ["Laissés au sol (session)"] = "Left on ground (session)",
+    ["Événements"] = "Events",
+    ["Version"] = "Version",
+
     -- Liste des objets laissés au sol
     ["Session : %d laissés"] = "Session: %d left",
     ["Voir la liste"] = "Show list",
