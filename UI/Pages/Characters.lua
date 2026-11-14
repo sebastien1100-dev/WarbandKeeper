@@ -5,14 +5,14 @@ local C = UI.colors
 -- Colonnes : { libellé, x, alignement }
 local COLS = {
     { "Personnage", 52, "LEFT" },
-    { "Niveau", 260, "LEFT" },
-    { "Or", 450, "RIGHT" },
-    { "Temps de jeu", 470, "LEFT" },
-    { "Vu", 580, "LEFT" },
+    { "Niveau", 330, "LEFT" },
+    { "Or", 560, "RIGHT" },
+    { "Temps de jeu", 600, "LEFT" },
+    { "Vu", 740, "LEFT" },
 }
 
 UI:RegisterPage({
-    key = "characters", order = 2, section = "compte", icon = "users",
+    key = "characters", order = 2, nav = "Persos",
     title = "Personnages",
     subtitle = "Tous tes personnages enregistrés. Maj + clic sur la corbeille pour en oublier un.",
     count = function()

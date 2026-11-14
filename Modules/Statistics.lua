@@ -47,6 +47,10 @@ function M:AccountGoldAt(t)
     return total
 end
 
+function M:CharGoldAt(key, t)
+    return valueAt(WK.DB.global.history.gold[key], t) or 0
+end
+
 function M:ItemAt(itemID, t)
     return valueAt(WK.DB.global.history.items[itemID], t) or 0
 end

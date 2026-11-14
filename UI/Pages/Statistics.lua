@@ -6,15 +6,16 @@ local LEFT_W = 230
 local GAP = 12
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
 
--- Nombre de barres selon la période.
+-- Nombre de points de la courbe selon la période.
 local function buckets(days)
-    if days <= 30 then return days end
+    if days <= 7 then return 28 end
+    if days <= 30 then return 30 end
     if days <= 90 then return 45 end
     return 52
 end
 
 UI:RegisterPage({
-    key = "stats", order = 5, section = "outils", icon = "chart",
+    key = "stats", order = 5, nav = "Stats",
     title = "Statistiques",
     subtitle = "Évolution de l'or du compte et des matériaux suivis.",
 
@@ -57,7 +58,7 @@ UI:RegisterPage({
             b.glyph:SetPoint("CENTER", b.icon, "CENTER")
             b.name = UI:Text(b, 12)
             b.name:SetPoint("TOPLEFT", 38, -7)
-            b.name:SetPoint("RIGHT", -28, 0)
+            b.name:SetPoint("TOPRIGHT", -28, -7)
             b.value = UI:Text(b, 10, C.muted)
             b.value:SetPoint("TOPLEFT", b.name, "BOTTOMLEFT", 0, -3)
             b.del = UI:IconButton(b, "trash", 22, "Ne plus suivre", true)
@@ -122,23 +123,10 @@ UI:RegisterPage({
         self.empty:SetPoint("CENTER", area, "CENTER")
         self.empty:SetText("Pas encore assez de données : reviens après quelques sessions de jeu.")
 
-        self.bars = UI:Pool(function()
-            local b = CreateFrame("Frame", nil, area)
-            b.shape = UI:Rounded(b, 2, 0, "ARTWORK", 1)
-            b:EnableMouse(true)
-            b:SetScript("OnEnter", function(bar)
-                bar.hover = true; bar:Paint()
-                GameTooltip:SetOwner(bar, "ANCHOR_TOP")
-                GameTooltip:AddLine(date("%d/%m/%Y", bar.t), 1, 1, 1)
-                GameTooltip:AddLine(self.series == "gold" and WK:FormatMoney(bar.v) or ("x" .. bar.v), 0.8, 0.8, 0.8)
-                GameTooltip:Show()
-            end)
-            b:SetScript("OnLeave", function(bar) bar.hover = false; bar:Paint(); GameTooltip:Hide() end)
-            function b:Paint()
-                local r, g, bl = UI:Accent()
-                self.shape:SetColor(r, g, bl, self.hover and 1 or 0.6)
-            end
-            return b
+        self.chart = UI:LineChart(area, 2.5, true)
+        self.chart:SetAllPoints()
+        UI:ChartHover(area, self.chart, function(pt)
+            return self.series == "gold" and WK:FormatMoney(pt.v) or ("x" .. pt.v)
         end)
     end,
 
@@ -214,10 +202,15 @@ UI:RegisterPage({
         local txt = (diff >= 0 and "+" or "") .. (isGold and UI:ShortGold(diff) or tostring(diff))
         self.delta:Set(txt, diff >= 0 and C.positive or C.negative)
 
-        self.bars:Reset()
         local area = self.area
-        local w, h = area:GetWidth(), area:GetHeight()
+        local h = area:GetHeight()
         self.empty:SetShown(maxV == 0)
+
+        -- Échelle : on cadre sur la plage des valeurs pour voir les variations.
+        local minV = math.huge
+        for _, pt in ipairs(values) do if pt.v < minV then minV = pt.v end end
+        local pad = math.max((maxV - minV) * 0.15, maxV * 0.02, 1)
+        local lo, hi = math.max(0, minV - pad), maxV + pad
 
         -- Grille + libellés de l'axe vertical
         for i = 0, 3 do
@@ -228,35 +221,30 @@ UI:RegisterPage({
             gl.line:SetPoint("BOTTOMRIGHT", area, "BOTTOMRIGHT", 0, gy)
             gl.label:ClearAllPoints()
             gl.label:SetPoint("RIGHT", area, "BOTTOMLEFT", -10, gy)
-            local v = maxV * i / 3
+            local v = lo + (hi - lo) * i / 3
             gl.label:SetText(maxV == 0 and "" or (isGold and UI:ShortGold(v) or tostring(math.floor(v + 0.5))))
         end
 
-        -- Barres
-        local gap = n > 30 and 2 or 4
-        local bw = math.max(4, (w - (n - 1) * gap) / n)
+        -- Courbe
+        local vals = {}
+        for i, pt in ipairs(values) do vals[i] = pt.v end
         if maxV > 0 then
-            for i, pt in ipairs(values) do
-                local b = self.bars:Get()
-                b.t, b.v = pt.t, pt.v
-                b:ClearAllPoints()
-                b:SetPoint("BOTTOMLEFT", area, "BOTTOMLEFT", (i - 1) * (bw + gap), 0)
-                b:SetSize(bw, math.max(4, h * pt.v / maxV))
-                b:Paint()
-            end
+            self.chart:SetData(vals, { UI:Accent() }, lo, hi)
+            for i, pt in ipairs(self.chart.points) do pt.t = values[i].t end
+        else
+            self.chart:SetData({}, { UI:Accent() })
         end
 
         -- Dates sur l'axe horizontal (début, milieu, fin)
+        local w = area:GetWidth()
         local idx = { 1, math.ceil(n / 2), n }
-        local anchors = { "LEFT", "CENTER", "RIGHT" }
+        local anchors = { "TOPLEFT", "TOP", "TOPRIGHT" }
         for i = 1, 3 do
             local l = self.xLabels[i]
-            local k = idx[i]
             l:ClearAllPoints()
-            local x = (k - 1) * (bw + gap) + bw / 2
-            l:SetPoint("TOP", area, "BOTTOMLEFT", x, -10)
-            l:SetJustifyH(anchors[i])
-            l:SetText(date("%d/%m", values[k].t))
+            local x = ({ 0, w / 2, w })[i]
+            l:SetPoint(anchors[i], area, "BOTTOMLEFT", x, -10)
+            l:SetText(date("%d/%m", values[idx[i]].t))
         end
     end,
 })

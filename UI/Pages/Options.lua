@@ -27,7 +27,7 @@ local function AccentDot(parent, index)
 end
 
 UI:RegisterPage({
-    key = "options", order = 10, section = "bas", icon = "gear",
+    key = "options", order = 10, navIcon = "gear",
     title = "Options",
     subtitle = "Apparence de la fenêtre et du bouton minimap.",
 
@@ -54,14 +54,14 @@ UI:RegisterPage({
 
         -- Bouton minimap -----------------------------------------------------------
         local mm = UI:Card(p, "Bouton minimap")
-        mm:SetSize(UI.PAGE_W, 112)
+        mm:SetSize(UI.PAGE_W, 136)
         mm:SetPoint("TOPLEFT", 0, -150 - GAP)
         self.mmToggle = UI:Toggle(mm,
             function() return not cfg.minimap.hide end,
             function(v) cfg.minimap.hide = not v; WK.modules.MinimapButton:Update() end)
         UI:SettingRow(mm, -40, "Afficher le bouton", "Clic gauche : ouvrir. Clic droit : options. Glisser pour le déplacer.", self.mmToggle, 80)
-        local reset = UI:Button(mm, "Recentrer la fenêtre", nil, 28, "secondary")
-        reset:SetPoint("BOTTOMRIGHT", -16, 14)
+        local reset = UI:Button(mm, "Recentrer", nil, 28, "secondary")
+        UI:SettingRow(mm, -88, "Position de la fenêtre", nil, reset)
         reset:SetScript("OnClick", function()
             cfg.point = nil
             UI.frame:ClearAllPoints()
@@ -70,11 +70,11 @@ UI:RegisterPage({
 
         -- À propos ----------------------------------------------------------------
         local about = UI:Card(p, "À propos")
-        about:SetSize(UI.PAGE_W, UI.PAGE_H - 150 - 112 - 2 * GAP)
-        about:SetPoint("TOPLEFT", 0, -150 - 112 - 2 * GAP)
+        about:SetSize(UI.PAGE_W, UI.PAGE_H - 150 - 136 - 2 * GAP)
+        about:SetPoint("TOPLEFT", 0, -150 - 136 - 2 * GAP)
         local t = UI:Text(about, 12, C.muted)
         t:SetPoint("TOPLEFT", 16, -42)
-        t:SetPoint("RIGHT", -16, 0)
+        t:SetPoint("TOPRIGHT", -16, -42)
         t:SetJustifyV("TOP")
         if t.SetWordWrap then t:SetWordWrap(true) end
         t:SetSpacing(4)

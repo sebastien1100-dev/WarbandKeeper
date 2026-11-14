@@ -2,171 +2,246 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 
-local function infoLine(parent, y, label)
-    local l = UI:Text(parent, 12, C.muted)
-    l:SetPoint("TOPLEFT", 16, y)
-    l:SetText(label)
-    local v = UI:Text(parent, 12, C.text)
-    v:SetPoint("TOPRIGHT", -16, y)
-    v:SetPoint("LEFT", l, "RIGHT", 12, 0) -- largeur bornée : texte coupé au lieu de déborder
-    v:SetJustifyH("RIGHT")
-    return v
+local LEFT_W = 276
+local TOP_H = 232
+local GAP = 16
+local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
+
+-- Colonnes du tableau : x de départ (ou de fin pour "RIGHT").
+local COLS = {
+    { "Personnage", 16, "LEFT" },
+    { "Niv.", 300, "LEFT" },
+    { "Or", 470, "RIGHT" },
+    { "7 jours", 580, "RIGHT" },
+    { "Tendance", 612, "LEFT" },
+    { "Sacs", 730, "LEFT" },
+    { "Vu", 812, "LEFT" },
+}
+
+local function points(days)
+    if days <= 7 then return 28 end -- un point toutes les 6 h
+    if days <= 30 then return 30 end
+    if days <= 90 then return 45 end
+    return 52
+end
+
+-- Tuile chiffre-clé (libellé + valeur) avec liseré doré.
+local function Tile(parent, label)
+    local t = UI:Card(parent, nil, nil, true)
+    t.label = UI:Text(t, 11, C.muted)
+    t.label:SetPoint("TOPLEFT", 12, -10)
+    t.label:SetText(label)
+    t.value = UI:Text(t, 15)
+    t.value:SetPoint("BOTTOMLEFT", 12, 10)
+    t.value:SetPoint("BOTTOMRIGHT", -8, 10)
+    return t
+end
+
+-- "12 345 po" en couleur -> "12 345" sans codes couleur.
+local function plainGold(copper)
+    local s = UI:GoldText(copper):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub(" po$", "")
+    return s
 end
 
 UI:RegisterPage({
-    key = "overview", order = 1, section = "compte", icon = "home",
-    title = "Vue d'ensemble",
-    subtitle = "Un coup d'œil sur tout ton compte : or, personnages et envoi automatique.",
+    key = "overview", order = 1, nav = "Résumé", noHeader = true,
+    title = "Résumé",
 
     Build = function(self, p)
-        local gap = 12
-        local cw = (UI.PAGE_W - 3 * gap) / 4
+        self.days = 7
 
-        -- Cartes de statistiques -------------------------------------------
-        self.stats = {}
-        local defs = {
-            { "coin", "Or du compte" }, { "users", "Personnages" },
-            { "clock", "Temps de jeu" }, { "chart", "Sur 7 jours" },
-        }
-        for i, d in ipairs(defs) do
-            local c = UI:Card(p)
-            c:SetSize(cw, 88)
-            c:SetPoint("TOPLEFT", (i - 1) * (cw + gap), 0)
-            local ib = CreateFrame("Frame", nil, c)
-            ib:SetSize(30, 30)
-            ib:SetPoint("TOPLEFT", 14, -14)
-            local ibg = UI:Rounded(ib, 10, 0, "BACKGROUND", 3)
-            local ic = UI:Icon(ib, d[1], 16)
-            ic:SetPoint("CENTER")
-            UI:OnAccent(function()
-                local r, g, b = UI:Accent()
-                ibg:SetColor(r, g, b, 0.15)
-                ic:SetVertexColor(r, g, b, 1)
-            end)
-            local l = UI:Text(c, 11, C.muted)
-            l:SetPoint("LEFT", ib, "RIGHT", 10, 0)
-            l:SetText(d[2])
-            local v = UI:Text(c, 17)
-            v:SetPoint("BOTTOMLEFT", 16, 14)
-            v:SetPoint("RIGHT", -12, 0)
-            self.stats[i] = v
+        -- Bloc de gauche : or total + chiffres clés ---------------------------------
+        local k = UI:Text(p, 11, C.dim)
+        k:SetPoint("TOPLEFT", 2, -2)
+        k:SetText("OR DU COMPTE")
+        self.total = UI:Text(p, 30)
+        self.total:SetPoint("TOPLEFT", 0, -22)
+        self.po = UI:Text(p, 18)
+        self.po:SetPoint("BOTTOMLEFT", self.total, "BOTTOMRIGHT", 6, 2)
+        self.po:SetText("po")
+        UI:OnAccent(function() self.po:SetTextColor(UI:Accent()) end)
+        self.delta = UI:Badge(p, "", C.positive)
+        self.delta:SetPoint("TOPLEFT", 0, -66)
+        self.deltaLabel = UI:Text(p, 11, C.muted)
+        self.deltaLabel:SetPoint("LEFT", self.delta, "RIGHT", 8, 0)
+
+        local tw = (LEFT_W - 10) / 2
+        self.tiles = {}
+        local labels = { "Personnages", "Temps de jeu", "Règles courrier", "À envoyer" }
+        for i, l in ipairs(labels) do
+            local t = Tile(p, l)
+            t:SetSize(tw, 58)
+            t:SetPoint("TOPLEFT", ((i - 1) % 2) * (tw + 10), -106 - math.floor((i - 1) / 2) * 68)
+            self.tiles[i] = t
         end
+        self.tiles[3]:EnableMouse(true)
+        self.tiles[3]:SetScript("OnMouseUp", function() UI:ShowPage("mail") end)
 
-        local top = -88 - gap
-        local h = UI.PAGE_H + top
-        local leftW = math.floor(UI.PAGE_W * 0.58)
-        local rightW = UI.PAGE_W - leftW - gap
+        -- Courbe d'évolution -----------------------------------------------------------
+        local card = UI:Card(p, nil, nil, true)
+        card:SetPoint("TOPLEFT", LEFT_W + GAP, 0)
+        card:SetSize(UI.PAGE_W - LEFT_W - GAP, TOP_H)
+        local ct = UI:Text(card, 12, C.muted)
+        ct:SetPoint("TOPLEFT", 16, -16)
+        ct:SetText("Évolution de l'or")
+        local seg = UI:Segmented(card, RANGES, function(d) self.days = d; self:Refresh() end, 28)
+        seg:SetPoint("TOPRIGHT", -12, -10)
+        seg:Select(7)
 
-        -- Répartition de l'or ------------------------------------------------
-        local dist = UI:Card(p, "Répartition de l'or")
-        dist:SetSize(leftW, h)
-        dist:SetPoint("TOPLEFT", 0, top)
-        local more = UI:Button(dist, "Tout voir", nil, 24, "ghost")
-        more:SetPoint("TOPRIGHT", -10, -8)
-        more:SetScript("OnClick", function() UI:ShowPage("characters") end)
+        local areaH = TOP_H - 52 - 30
+        local area = CreateFrame("Frame", nil, card)
+        area:SetPoint("TOPLEFT", 16, -52)
+        area:SetPoint("BOTTOMRIGHT", -16, 30)
+        self.area = area
+        for i = 1, 3 do
+            local g = area:CreateTexture(nil, "BACKGROUND", nil, 2)
+            g:SetColorTexture(unpack(C.border))
+            g:SetHeight(1)
+            g:SetPoint("LEFT", area, "BOTTOMLEFT", 0, areaH * (i - 1) / 2)
+            g:SetPoint("RIGHT", area, "BOTTOMRIGHT", 0, areaH * (i - 1) / 2)
+        end
+        self.chart = UI:LineChart(area, 2.5, true)
+        self.chart:SetAllPoints()
+        self.xLabels = {}
+        local anchors = {
+            { "TOPLEFT", "BOTTOMLEFT" }, { "TOP", "BOTTOM" }, { "TOPRIGHT", "BOTTOMRIGHT" },
+        }
+        for i, a in ipairs(anchors) do
+            local l = UI:Text(card, 10, C.dim)
+            l:SetPoint(a[1], area, a[2], 0, -8)
+            self.xLabels[i] = l
+        end
+        self.empty = UI:Text(card, 12, C.muted)
+        self.empty:SetPoint("CENTER", area)
+        self.empty:SetText("L'historique se remplit au fil de tes sessions.")
+
+        UI:ChartHover(area, self.chart, function(pt) return WK:FormatMoney(pt.v) end)
+
+        -- Tableau des personnages ---------------------------------------------------
+        local ty = -(TOP_H + GAP + 4)
+        for _, col in ipairs(COLS) do
+            local t = UI:Text(p, 10, C.dim)
+            if col[3] == "RIGHT" then
+                t:SetPoint("TOPRIGHT", p, "TOPLEFT", col[2] + 12, ty)
+                t:SetJustifyH("RIGHT")
+            else
+                t:SetPoint("TOPLEFT", col[2], ty)
+            end
+            t:SetText(string.upper(col[1]))
+        end
+        local scroll = UI:Scroll(p)
+        scroll:SetPoint("TOPLEFT", 0, ty - 20)
+        scroll:SetPoint("BOTTOMRIGHT")
+        self.scroll = scroll
+
         self.rows = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, dist)
-            r:SetSize(leftW - 32, 40)
-            r.icon = UI:RoundIcon(r, 22)
-            r.icon:SetPoint("TOPLEFT", 0, -2)
-            r.name = UI:Text(r, 12)
+            local r = CreateFrame("Frame", nil, scroll.child)
+            r:SetHeight(42)
+            r.border = UI:Rounded(r, 12, 0, "BACKGROUND", 0)
+            r.border:SetColor(unpack(C.border))
+            r.bg = UI:Rounded(r, 11, 1, "BACKGROUND", 1)
+            r.icon = UI:RoundIcon(r, 24)
+            r.icon:SetPoint("LEFT", COLS[1][2], 0)
+            r.name = UI:Text(r, 13)
             r.name:SetPoint("LEFT", r.icon, "RIGHT", 10, 0)
-            r.value = UI:Text(r, 12)
-            r.value:SetPoint("TOPRIGHT", 0, -7)
-            r.value:SetJustifyH("RIGHT")
-            r.bar = UI:Progress(r, 4)
-            r.bar:SetPoint("BOTTOMLEFT", 32, 4)
-            r.bar:SetPoint("BOTTOMRIGHT", 0, 4)
+            r.here = UI:Badge(r, "ici")
+            r.here:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
+            r.level = UI:Text(r, 12)
+            r.level:SetPoint("LEFT", COLS[2][2], 0)
+            r.gold = UI:Text(r, 12)
+            r.gold:SetPoint("RIGHT", r, "LEFT", COLS[3][2] + 12, 0)
+            r.gold:SetJustifyH("RIGHT")
+            r.diff = UI:Text(r, 12)
+            r.diff:SetPoint("RIGHT", r, "LEFT", COLS[4][2] + 12, 0)
+            r.diff:SetJustifyH("RIGHT")
+            r.spark = UI:LineChart(r, 1.5, false)
+            r.spark:SetSize(84, 18)
+            r.spark:SetPoint("LEFT", COLS[5][2], 0)
+            r.bags = UI:Text(r, 12, C.muted)
+            r.bags:SetPoint("LEFT", COLS[6][2], 0)
+            r.seen = UI:Text(r, 12, C.muted)
+            r.seen:SetPoint("LEFT", COLS[7][2], 0)
             return r
         end)
-        self.dist = dist
-
-        -- Envoi automatique --------------------------------------------------
-        local mail = UI:Card(p, "Envoi automatique")
-        mail:SetSize(rightW, 186)
-        mail:SetPoint("TOPRIGHT", 0, top)
-        local tog = UI:Toggle(mail,
-            function() return WK.DB.global.mail.enabled end,
-            function(v) WK.modules.Mail:SetEnabled(v) end)
-        tog:SetPoint("TOPRIGHT", -14, -11)
-        self.mailToggle = tog
-        self.mailRules = infoLine(mail, -50, "Règles actives")
-        self.mailPending = infoLine(mail, -76, "Objets à envoyer (ce perso)")
-        self.mailState = infoLine(mail, -102, "État")
-        local manage = UI:Button(mail, "Gérer les règles", rightW - 32, 32, "secondary", "mail")
-        manage:SetPoint("BOTTOM", 0, 14)
-        manage:SetScript("OnClick", function() UI:ShowPage("mail") end)
-
-        -- Ce personnage -------------------------------------------------------
-        local me = UI:Card(p, "Ce personnage")
-        me:SetSize(rightW, h - 186 - gap)
-        me:SetPoint("TOPRIGHT", 0, top - 186 - gap)
-        self.meName = UI:Text(me, 13)
-        self.meName:SetPoint("TOPRIGHT", -16, -14)
-        self.meName:SetPoint("LEFT", me.title, "RIGHT", 12, 0)
-        self.meName:SetJustifyH("RIGHT")
-        self.meRealm = infoLine(me, -46, "Royaume")
-        self.meLevel = infoLine(me, -70, "Niveau")
-        self.mePlayed = infoLine(me, -94, "Temps de jeu")
-        self.meSlots = infoLine(me, -118, "Emplacements libres")
-        self.meBank = infoLine(me, -142, "Banque scannée")
-        self.meSlotsBar = UI:Progress(me, 6)
-        self.meSlotsBar:SetPoint("BOTTOMLEFT", 16, 18)
-        self.meSlotsBar:SetPoint("BOTTOMRIGHT", -16, 18)
     end,
 
     Refresh = function(self)
+        local S = WK.modules.Statistics
+        local now = time()
         local chars = UI:SortedCharacters()
+
+        -- Chiffres clés
         local gold, played = 0, 0
         for _, e in ipairs(chars) do
             gold = gold + (e.c.money or 0)
             played = played + (e.c.played or 0)
         end
-        local S = WK.modules.Statistics
-        local now = time()
+        self.total:SetText(plainGold(gold))
         local diff = S:AccountGoldAt(now) - S:AccountGoldAt(now - 7 * 86400)
+        self.delta:Set((diff >= 0 and "+" or "") .. UI:ShortGold(diff), diff >= 0 and C.positive or C.negative)
+        self.deltaLabel:SetText("sur 7 jours")
+        local rules = 0
+        for _ in pairs(WK.DB.global.mail.rules) do rules = rules + 1 end
+        self.tiles[1].value:SetText(tostring(#chars))
+        self.tiles[2].value:SetText(WK:FormatTime(played))
+        self.tiles[3].value:SetText(tostring(rules))
+        self.tiles[4].value:SetText(tostring(WK.modules.Mail:PendingCount()))
 
-        self.stats[1]:SetText(UI:GoldText(gold))
-        self.stats[2]:SetText(tostring(#chars))
-        self.stats[3]:SetText(WK:FormatTime(played))
-        local col = diff >= 0 and C.positive or C.negative
-        self.stats[4]:SetText(UI:ShortGold(diff))
-        self.stats[4]:SetTextColor(unpack(col))
-
-        -- Répartition
-        self.rows:Reset()
-        local maxRows = math.floor((self.dist:GetHeight() - 46) / 44)
-        for i, e in ipairs(chars) do
-            if i > maxRows then break end
-            local r = self.rows:Get()
-            r:SetPoint("TOPLEFT", 16, -42 - (i - 1) * 44)
-            UI:SetClassIcon(r.icon, e.c.class)
-            r.name:SetText(e.c.name or e.key)
-            r.name:SetTextColor(UI:ClassColor(e.c.class))
-            r.value:SetText(UI:GoldText(e.c.money))
-            r.bar:SetValue(gold > 0 and (e.c.money or 0) / gold or 0)
+        -- Courbe
+        local n = points(self.days)
+        local step = self.days * 86400 / n
+        local vals, maxV, minV = {}, 0, math.huge
+        for i = 1, n do
+            local v = S:AccountGoldAt(now - (n - i) * step)
+            vals[i] = v
+            if v > maxV then maxV = v end
+            if v < minV then minV = v end
         end
+        self.empty:SetShown(maxV == 0)
+        if maxV > 0 then
+            local pad = math.max((maxV - minV) * 0.15, maxV * 0.02)
+            self.chart:SetData(vals, { UI:Accent() }, math.max(0, minV - pad), maxV + pad)
+            for i, pt in ipairs(self.chart.points) do pt.t = now - (n - i) * step end
+        else
+            self.chart:SetData({}, { UI:Accent() })
+        end
+        local fmt = self.days <= 90 and "%d/%m" or "%m/%Y"
+        self.xLabels[1]:SetText(date(fmt, now - self.days * 86400))
+        self.xLabels[2]:SetText(date(fmt, now - self.days * 43200))
+        self.xLabels[3]:SetText(date(fmt, now))
 
-        -- Courrier
-        local n = 0
-        for _ in pairs(WK.DB.global.mail.rules) do n = n + 1 end
-        self.mailToggle:Refresh()
-        self.mailRules:SetText(tostring(n))
-        self.mailPending:SetText(tostring(WK.modules.Mail:PendingCount()))
-        local on = WK.DB.global.mail.enabled
-        self.mailState:SetText(on and "Actif" or "Désactivé")
-        self.mailState:SetTextColor(unpack(on and C.positive or C.muted))
+        -- Tableau
+        self.rows:Reset()
+        local me = WK:CharKey()
+        local y = 0
+        for _, e in ipairs(chars) do
+            local c = e.c
+            local r = self.rows:Get()
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -y)
+            r:SetPoint("TOPRIGHT", 0, -y)
+            local isMe = e.key == me
+            r.bg:SetColor(unpack(isMe and C.surface2 or C.surface))
+            UI:SetClassIcon(r.icon, c.class)
+            r.name:SetText(c.name or e.key)
+            r.name:SetTextColor(UI:ClassColor(c.class))
+            r.here:SetShown(isMe)
+            r.level:SetText(tostring(c.level or "-"))
+            r.gold:SetText(UI:GoldText(c.money))
 
-        -- Personnage courant
-        local c = WK.DB:Me()
-        self.meName:SetText(c.name or UnitName("player"))
-        self.meName:SetTextColor(UI:ClassColor(c.class))
-        self.meRealm:SetText(c.realm or GetRealmName())
-        self.meLevel:SetText(tostring(c.level or "-"))
-        self.mePlayed:SetText(WK:FormatTime(c.played))
-        local free, total = c.freeSlots or 0, c.totalSlots or 0
-        self.meSlots:SetText(string.format("%d / %d", free, total))
-        self.meBank:SetText(c.bankScanned and UI:Ago(c.bankScanned) or "jamais")
-        self.meSlotsBar:SetValue(total > 0 and (total - free) / total or 0)
+            local spark = {}
+            for i = 1, 8 do spark[i] = S:CharGoldAt(e.key, now - (8 - i) * 86400) end
+            local d = spark[8] - spark[1]
+            r.diff:SetText(d == 0 and "-" or ((d > 0 and "+" or "") .. plainGold(d)))
+            local col = d > 0 and C.positive or (d < 0 and C.negative or C.dim)
+            r.diff:SetTextColor(unpack(col))
+            r.spark:SetData(spark, col)
+
+            local free, total = c.freeSlots, c.totalSlots
+            r.bags:SetText(total and total > 0 and string.format("%d / %d", total - (free or 0), total) or "-")
+            r.seen:SetText(isMe and "maintenant" or UI:Ago(c.lastSeen))
+            y = y + 48
+        end
+        self.scroll:SetContentHeight(y)
     end,
 })

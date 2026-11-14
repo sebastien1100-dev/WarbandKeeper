@@ -6,32 +6,53 @@ WK.UI = UI
 
 UI.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 UI.FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+UI.TITLE_FONT = "Fonts\\MORPHEUS.TTF" -- police médiévale du jeu (titre uniquement)
 
+-- Palette « Coffre-fort » : bois sombre, parchemin et or.
 UI.colors = {
-    bg       = { 0.055, 0.060, 0.068, 0.97 },
-    sidebar  = { 0.035, 0.038, 0.044, 1 },
-    surface  = { 0.090, 0.097, 0.108, 1 },
-    surface2 = { 0.135, 0.145, 0.160, 1 },
-    hover    = { 0.175, 0.185, 0.205, 1 },
-    border   = { 0.180, 0.190, 0.210, 1 },
-    text     = { 0.93, 0.94, 0.95, 1 },
-    muted    = { 0.60, 0.62, 0.66, 1 },
-    dim      = { 0.40, 0.42, 0.46, 1 },
-    onAccent = { 0.05, 0.06, 0.07, 1 },
-    positive = { 0.50, 0.85, 0.45, 1 },
-    negative = { 0.95, 0.42, 0.45, 1 },
-    gold     = { 1.00, 0.82, 0.30, 1 },
+    frame    = { 0.431, 0.329, 0.188, 1 },   -- bordure extérieure de la fenêtre
+    inset    = { 0.102, 0.071, 0.043, 1 },   -- liseré sombre entre les deux bordures
+    trim     = { 0.231, 0.173, 0.094, 1 },   -- bordure intérieure
+    bg       = { 0.086, 0.063, 0.043, 0.98 },
+    glow     = { 0.235, 0.165, 0.090 },      -- halo chaud en haut de la fenêtre
+    sidebar  = { 0.070, 0.050, 0.032, 1 },
+    surface  = { 0.129, 0.094, 0.059, 1 },
+    surface2 = { 0.169, 0.125, 0.078, 1 },
+    hover    = { 0.205, 0.153, 0.094, 1 },
+    border   = { 0.290, 0.220, 0.125, 1 },
+    text     = { 0.945, 0.902, 0.812, 1 },
+    muted    = { 0.706, 0.627, 0.478, 1 },
+    dim      = { 0.490, 0.420, 0.300, 1 },
+    onAccent = { 0.165, 0.110, 0.043, 1 },
+    positive = { 0.62, 0.82, 0.48, 1 },
+    negative = { 0.91, 0.42, 0.42, 1 },
+    gold     = { 0.878, 0.741, 0.447, 1 },
 }
 
--- Couleurs d'accent proposées dans les options (comme HunterSuite).
+-- Couleurs d'accent proposées dans les options (or par défaut).
 UI.accents = {
-    { 0.64, 0.85, 0.42 }, -- vert
-    { 0.20, 0.80, 0.62 }, -- émeraude
-    { 1.00, 0.72, 0.28 }, -- ambre
-    { 0.40, 0.76, 1.00 }, -- bleu
-    { 0.70, 0.56, 1.00 }, -- violet
-    { 1.00, 0.46, 0.56 }, -- rose
+    { 0.878, 0.741, 0.447 }, -- or
+    { 0.850, 0.560, 0.310 }, -- cuivre
+    { 0.640, 0.850, 0.420 }, -- vert
+    { 0.200, 0.800, 0.620 }, -- émeraude
+    { 0.400, 0.760, 1.000 }, -- bleu
+    { 0.700, 0.560, 1.000 }, -- violet
 }
+
+-- Dégradé sur une texture (API moderne SetGradient, ancienne SetGradientAlpha).
+-- c1 = couleur min (gauche / bas), c2 = couleur max (droite / haut), {r,g,b,a}.
+function UI:SetGradient(tex, orient, c1, c2)
+    tex:SetColorTexture(1, 1, 1, 1)
+    if CreateColor and tex.SetGradient then
+        local ok = pcall(tex.SetGradient, tex, orient, CreateColor(unpack(c1)), CreateColor(unpack(c2)))
+        if ok then return end
+    end
+    if tex.SetGradientAlpha then
+        tex:SetGradientAlpha(orient, c1[1], c1[2], c1[3], c1[4], c2[1], c2[2], c2[3], c2[4])
+        return
+    end
+    tex:SetColorTexture(c2[1], c2[2], c2[3], (c1[4] + c2[4]) / 2)
+end
 
 function UI:Accent()
     local a = self.accents[WK.DB.global.settings.ui.accent] or self.accents[1]

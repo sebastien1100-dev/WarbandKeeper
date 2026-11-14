@@ -27,11 +27,11 @@ Ouvre la fenêtre avec `/wk` ou le **bouton minimap** (clic gauche : ouvrir, cli
 
 | Page | Contenu |
 |---|---|
-| Vue d'ensemble | Or du compte, nombre de persos, temps de jeu, évolution sur 7 jours, répartition de l'or, état de l'envoi auto |
+| Résumé | Or du compte, évolution sur 7 j à 1 an (courbe), chiffres clés, tableau des persos avec tendance sur 7 jours |
 | Personnages | Niveau, or, temps de jeu, dernière connexion (Maj + clic sur la corbeille pour oublier un perso) |
 | Inventaire | Recherche dans tous les sacs et banques, filtre Tout / Sacs / Banque |
 | Métiers | Barres de progression par personnage |
-| Statistiques | Graphique de l'or ou d'un matériau suivi sur 7 j / 30 j / 90 j / 1 an |
+| Stats | Courbe de l'or ou d'un matériau suivi sur 7 j / 30 j / 90 j / 1 an |
 | Courrier automatique | Ajout de règles (Maj + clic sur un objet), choix rapide du destinataire |
 | Options | Couleur d'accent, échelle de la fenêtre, bouton minimap |
 
@@ -70,7 +70,7 @@ Modules/Statistics.lua  Historique or / matériaux
 Modules/Mail.lua        Envoi automatique
 UI/Theme.lua            Couleurs, formes arrondies, helpers
 UI/Widgets.lua          Boutons, interrupteurs, champs, listes, curseurs
-UI/MainFrame.lua        Fenêtre principale et navigation
+UI/MainFrame.lua        Fenêtre principale, barre du haut et navigation
 UI/Pages/*.lua          Une page par onglet
 UI/MinimapButton.lua    Bouton minimap
 Media/*.tga             Textures (cercle pour les arrondis, icônes)

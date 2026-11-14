@@ -192,10 +192,19 @@ def icon_arrow():
     save(img, "arrow", 64)
 
 
+def icon_refresh():
+    img, d, s = canvas(64)
+    d.arc([P(0.18, s), P(0.18, s), P(0.82, s), P(0.82, s)], 30, 320, fill=W, width=int(SW * s))
+    a = math.radians(320)
+    cx, cy = 0.5 + 0.32 * math.cos(a), 0.5 + 0.32 * math.sin(a)
+    d.polygon([(P(cx + 0.14, s), P(cy - 0.02, s)), (P(cx - 0.06, s), P(cy - 0.14, s)), (P(cx - 0.02, s), P(cy + 0.12, s))], fill=W)
+    save(img, "refresh", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh]:
         fn()
     print("OK")

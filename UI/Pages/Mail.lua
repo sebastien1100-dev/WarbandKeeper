@@ -5,7 +5,7 @@ local C = UI.colors
 local GAP = 12
 
 UI:RegisterPage({
-    key = "mail", order = 6, section = "outils", icon = "mail",
+    key = "mail", order = 6, nav = "Courrier",
     title = "Courrier automatique",
     subtitle = "Assigne tes matériaux de farm à un personnage : ils partent tout seuls à la boîte aux lettres.",
     count = function()

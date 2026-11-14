@@ -113,7 +113,7 @@ function UI:Toggle(parent, getter, setter)
             local r, g, b = UI:Accent()
             self.track:SetColor(r, g, b, 1)
             self.knob:SetPoint("RIGHT", -3, 0)
-            self.knob:SetVertexColor(1, 1, 1, 1)
+            self.knob:SetVertexColor(unpack(C.onAccent))
         else
             self.track:SetColor(unpack(C.border))
             self.knob:SetPoint("LEFT", 3, 0)
@@ -351,9 +351,10 @@ end
 ---------------------------------------------------------------------------
 -- Carte : panneau arrondi avec titre optionnel.
 ---------------------------------------------------------------------------
-function UI:Card(parent, title, subtitle)
+function UI:Card(parent, title, subtitle, highlight)
     local f = CreateFrame("Frame", nil, parent)
     UI:Panel(f, 12, C.surface, C.border)
+    if highlight then UI:TopHighlight(f) end
     if title then
         f.title = UI:Text(f, 13, C.text)
         f.title:SetPoint("TOPLEFT", 16, -14)
@@ -379,7 +380,9 @@ function UI:SettingRow(parent, y, label, desc, control, width)
     if desc then
         local d = UI:Text(row, 11, C.muted)
         d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -4)
-        d:SetPoint("RIGHT", row, "RIGHT", -(width or 60), 0)
+        -- Largeur bornée sans mélanger ancrage haut et ancrage centré.
+        local rowW = (parent:GetWidth() or 0) - 32
+        d:SetPoint("TOPRIGHT", l, "BOTTOMLEFT", math.max(100, rowW - (width or 60)), -4)
         d:SetText(desc)
     end
     if control then
@@ -428,4 +431,143 @@ function UI:Pool(createFn)
         return it
     end
     return pool
+end
+
+-- Liseré doré qui s'estompe sur les bords, en haut d'une carte (style « plaque »).
+function UI:TopHighlight(f)
+    local l = f:CreateTexture(nil, "BORDER")
+    local r = f:CreateTexture(nil, "BORDER")
+    l:SetHeight(1); r:SetHeight(1)
+    l:SetPoint("TOPLEFT", 14, 0); l:SetPoint("TOPRIGHT", f, "TOP", 0, 0)
+    r:SetPoint("TOPLEFT", f, "TOP", 0, 0); r:SetPoint("TOPRIGHT", -14, 0)
+    UI:OnAccent(function()
+        local cr, cg, cb = UI:Accent()
+        UI:SetGradient(l, "HORIZONTAL", { cr, cg, cb, 0 }, { cr, cg, cb, 1 })
+        UI:SetGradient(r, "HORIZONTAL", { cr, cg, cb, 1 }, { cr, cg, cb, 0 })
+    end)
+end
+
+---------------------------------------------------------------------------
+-- Courbe (lignes) avec remplissage dégradé optionnel sous la courbe.
+-- f.points contient ensuite les positions {x, y} pour le survol.
+---------------------------------------------------------------------------
+function UI:LineChart(parent, thickness, withFill)
+    local f = CreateFrame("Frame", nil, parent)
+    f.lines, f.cols, f.dots, f.points = {}, {}, {}, {}
+    f.thickness = thickness or 2
+
+    function f:SetData(vals, col, minV, maxV)
+        for _, o in ipairs(self.lines) do o:Hide() end
+        for _, o in ipairs(self.cols) do o:Hide() end
+        for _, o in ipairs(self.dots) do o:Hide() end
+        wipe(self.points)
+        local n = #vals
+        if n == 0 then return end
+        local W, H = self:GetWidth(), self:GetHeight()
+        if not minV then
+            minV, maxV = math.huge, -math.huge
+            for _, v in ipairs(vals) do
+                if v < minV then minV = v end
+                if v > maxV then maxV = v end
+            end
+        end
+        local span = maxV - minV
+        for i = 1, n do
+            local y = span > 0 and (vals[i] - minV) / span * H or H / 2
+            self.points[i] = { x = n == 1 and W / 2 or (i - 1) / (n - 1) * W, y = y, v = vals[i] }
+        end
+        local r, g, b = col[1], col[2], col[3]
+
+        if withFill and n > 1 then
+            local cols = math.max(1, math.floor(W / 4))
+            local cw = W / cols
+            for c = 1, cols do
+                local pos = ((c - 0.5) * cw) / W * (n - 1) + 1
+                local i = math.min(n - 1, math.floor(pos))
+                local t = pos - i
+                local yy = self.points[i].y + (self.points[i + 1].y - self.points[i].y) * t
+                local tex = self.cols[c]
+                if not tex then
+                    tex = self:CreateTexture(nil, "BACKGROUND", nil, 3)
+                    self.cols[c] = tex
+                end
+                tex:ClearAllPoints()
+                tex:SetPoint("BOTTOMLEFT", (c - 1) * cw, 0)
+                tex:SetSize(cw + 0.5, math.max(1, yy))
+                UI:SetGradient(tex, "VERTICAL", { r, g, b, 0 }, { r, g, b, 0.22 })
+                tex:Show()
+            end
+        end
+
+        if self.CreateLine and n > 1 then
+            for i = 1, n - 1 do
+                local l = self.lines[i]
+                if not l then
+                    l = self:CreateLine(nil, "ARTWORK")
+                    self.lines[i] = l
+                end
+                local p1, p2 = self.points[i], self.points[i + 1]
+                l:SetThickness(self.thickness)
+                l:SetColorTexture(r, g, b, 1)
+                l:SetStartPoint("BOTTOMLEFT", self, p1.x, p1.y)
+                l:SetEndPoint("BOTTOMLEFT", self, p2.x, p2.y)
+                l:Show()
+            end
+        else
+            -- Repli sans CreateLine : un point par valeur.
+            for i, p in ipairs(self.points) do
+                local d = self.dots[i]
+                if not d then
+                    d = UI:Icon(self, "circle", 4, nil, "ARTWORK")
+                    self.dots[i] = d
+                end
+                d:SetVertexColor(r, g, b, 1)
+                d:ClearAllPoints()
+                d:SetPoint("CENTER", self, "BOTTOMLEFT", p.x, p.y)
+                d:Show()
+            end
+        end
+    end
+    return f
+end
+
+-- Survol d'une courbe : repère vertical, point et infobulle sur la valeur la plus proche.
+-- format(point) renvoie le texte de la 2e ligne ; chaque point doit avoir un champ t (date).
+function UI:ChartHover(area, chart, format)
+    local marker = area:CreateTexture(nil, "OVERLAY")
+    marker:SetWidth(1)
+    marker:SetColorTexture(unpack(C.muted))
+    local dot = UI:Icon(area, "circle", 9, nil, "OVERLAY")
+    marker:Hide(); dot:Hide()
+    UI:OnAccent(function() dot:SetVertexColor(UI:Accent()) end)
+    area:EnableMouse(true)
+    area:SetScript("OnEnter", function(a)
+        a:SetScript("OnUpdate", function()
+            local pts = chart.points
+            if #pts == 0 then return end
+            local x = GetCursorPosition() / a:GetEffectiveScale() - a:GetLeft()
+            local best, bd = pts[1], math.huge
+            for _, pt in ipairs(pts) do
+                local d = math.abs(pt.x - x)
+                if d < bd then best, bd = pt, d end
+            end
+            marker:ClearAllPoints()
+            marker:SetPoint("BOTTOM", a, "BOTTOMLEFT", best.x, 0)
+            marker:SetPoint("TOP", a, "TOPLEFT", best.x, 0)
+            dot:ClearAllPoints()
+            dot:SetPoint("CENTER", a, "BOTTOMLEFT", best.x, best.y)
+            marker:Show(); dot:Show()
+            GameTooltip:SetOwner(a, "ANCHOR_NONE")
+            GameTooltip:ClearAllPoints()
+            GameTooltip:SetPoint("BOTTOM", a, "BOTTOMLEFT", best.x, best.y + 14)
+            GameTooltip:SetText(date("%d/%m %Hh", best.t or time()), 1, 1, 1)
+            GameTooltip:AddLine(format(best))
+            GameTooltip:Show()
+        end)
+    end)
+    area:SetScript("OnLeave", function(a)
+        a:SetScript("OnUpdate", nil)
+        marker:Hide(); dot:Hide()
+        GameTooltip:Hide()
+    end)
 end

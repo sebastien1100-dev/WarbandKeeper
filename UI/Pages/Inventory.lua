@@ -5,7 +5,7 @@ local C = UI.colors
 local MAX_ROWS = 150
 
 UI:RegisterPage({
-    key = "inventory", order = 3, section = "compte", icon = "bag",
+    key = "inventory", order = 3, nav = "Inventaire",
     title = "Inventaire",
     subtitle = "Sacs et banques de tous tes personnages. Maj + clic sur une ligne pour lier l'objet.",
 
@@ -15,6 +15,7 @@ UI:RegisterPage({
 
         local search = UI:Input(p, 300, 34, "Rechercher un objet...", "search")
         search:SetPoint("TOPLEFT")
+        self.search = search
         search.onChange = function(text) self.query = string.lower(text or ""); self:Refresh() end
 
         local seg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" } },
@@ -38,10 +39,10 @@ UI:RegisterPage({
             r.icon:SetPoint("LEFT", 12, 0)
             r.name = UI:Text(r, 12)
             r.name:SetPoint("TOPLEFT", 52, -9)
-            r.name:SetPoint("RIGHT", -90, 0)
+            r.name:SetPoint("TOPRIGHT", -90, -9)
             r.detail = UI:Text(r, 10, C.muted)
             r.detail:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
-            r.detail:SetPoint("RIGHT", -90, 0)
+            r.detail:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -4)
             r.total = UI:Text(r, 15)
             r.total:SetPoint("RIGHT", -16, 0)
             r.total:SetJustifyH("RIGHT")

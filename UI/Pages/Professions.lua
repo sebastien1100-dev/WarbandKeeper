@@ -5,7 +5,7 @@ local C = UI.colors
 local GAP = 12
 
 UI:RegisterPage({
-    key = "professions", order = 4, section = "compte", icon = "hammer",
+    key = "professions", order = 4, nav = "Métiers",
     title = "Métiers",
     subtitle = "Niveaux de compétence de chaque personnage.",
 

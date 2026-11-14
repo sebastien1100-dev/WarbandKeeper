@@ -2,20 +2,18 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 
-local W, H, SIDE = 960, 620, 220
-local HEADER = 96
-UI.PAGE_W = W - SIDE - 28 - 24
-UI.PAGE_H = H - HEADER - 22
-
--- Sections de la barre latérale (dans l'ordre d'affichage).
-local SECTIONS = {
-    { key = "compte", label = "COMPTE" },
-    { key = "outils", label = "OUTILS" },
-}
+-- Mise en page « Registre » : barre du haut + navigation en pilules, sans barre latérale.
+local W, H = 960, 620
+local TOP = 62      -- hauteur de la barre du haut
+local PAD = 20      -- marge intérieure
+local HEADER = 34   -- en-tête de page (titre + aide), absent sur le Résumé
+UI.PAGE_W = W - 2 * PAD
+UI.PAGE_FULL_H = H - TOP - 16 - PAD
+UI.PAGE_H = UI.PAGE_FULL_H - HEADER
 
 ---------------------------------------------------------------------------
 -- Enregistrement des pages
--- def = { key, title, subtitle, icon, section, order, count(), Build(page, frame), Refresh(page) }
+-- def = { key, nav, title, subtitle, icon?, order, noHeader?, count(), Build(page, frame), Refresh(page) }
 ---------------------------------------------------------------------------
 function UI:RegisterPage(def)
     self.pages[def.key] = def
@@ -24,35 +22,37 @@ function UI:RegisterPage(def)
 end
 
 ---------------------------------------------------------------------------
--- Élément de navigation
+-- Bouton de navigation (pilule). Sélectionné : fond relevé + bordure fine.
 ---------------------------------------------------------------------------
-local function NavItem(parent, def)
+local NAV_H = 30
+local function NavButton(parent, def)
     local b = CreateFrame("Button", nil, parent)
-    b:SetSize(SIDE - 24, 34)
-    b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
-    b.bar = CreateFrame("Frame", nil, b)
-    b.bar:SetSize(3, 16)
-    b.bar:SetPoint("LEFT", 0, 0)
-    b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
-    b.icon = UI:Icon(b, def.icon, 16)
-    b.icon:SetPoint("LEFT", 14, 0)
-    b.label = UI:Text(b, 13)
-    b.label:SetPoint("LEFT", b.icon, "RIGHT", 12, 0)
-    b.label:SetText(def.title)
-    b.count = UI:Text(b, 12, C.muted)
-    b.count:SetPoint("RIGHT", -12, 0)
-    b.count:SetJustifyH("RIGHT")
+    b.selBorder = UI:Rounded(b, NAV_H / 2, 0, "BACKGROUND", 2)
+    b.selBorder:SetColor(unpack(C.border))
+    b.selFill = UI:Rounded(b, NAV_H / 2 - 1, 1, "BACKGROUND", 3)
+    b.selFill:SetColor(unpack(C.surface2))
+    if def.navIcon then
+        b.icon = UI:Icon(b, def.navIcon, 15)
+        b.icon:SetPoint("CENTER")
+        b:SetSize(NAV_H + 6, NAV_H)
+    else
+        b.label = UI:Text(b, 12)
+        b.label:SetPoint("CENTER")
+        b.label:SetText(def.nav or def.title)
+        b:SetSize(b.label:GetStringWidth() + 26, NAV_H)
+    end
+    b.count = UI:Text(b, 9, C.dim)
+    b.count:SetPoint("TOPRIGHT", -5, -3)
 
     function b:Refresh()
         local sel = UI.current == def.key
-        local r, g, bl = UI:Accent()
-        self.bg:SetColor(unpack(sel and C.surface2 or C.surface))
-        self.bg:SetShown(sel or self.hover)
-        self.barTex:SetColor(r, g, bl, 1)
-        self.bar:SetShown(sel)
-        if sel then self.icon:SetVertexColor(r, g, bl, 1) else self.icon:SetVertexColor(unpack(C.muted)) end
-        self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
-        self.count:SetText(def.count and def.count() or "")
+        self.selBorder:SetShown(sel)
+        self.selFill:SetShown(sel)
+        local col = (sel or self.hover) and C.text or C.muted
+        if self.label then self.label:SetTextColor(unpack(col)) end
+        if self.icon then
+            if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(col)) end
+        end
     end
     b:SetScript("OnEnter", function(self) self.hover = true; self:Refresh() end)
     b:SetScript("OnLeave", function(self) self.hover = false; self:Refresh() end)
@@ -85,125 +85,118 @@ function UI:Create()
     f:Hide()
     table.insert(UISpecialFrames, "WarbandKeeperFrame") -- fermeture avec Échap
 
-    UI:Panel(f, 14, C.bg, C.border)
+    -- Cadre : bordure dorée, liseré sombre, bordure intérieure, fond.
+    UI:Rounded(f, 16, 0, "BACKGROUND", -8):SetColor(unpack(C.frame))
+    UI:Rounded(f, 15, 1, "BACKGROUND", -7):SetColor(unpack(C.inset))
+    UI:Rounded(f, 12, 4, "BACKGROUND", -6):SetColor(unpack(C.trim))
+    UI:Rounded(f, 11, 5, "BACKGROUND", -5):SetColor(unpack(C.bg))
+    -- Halo chaud en haut (comme une lueur de chandelle).
+    -- Le centre suit les coins arrondis : bandes latérales sous les coins + quarts de cercle.
+    local GH, GA, R = 220, 0.65, 11
+    local gr, gg, gb = C.glow[1], C.glow[2], C.glow[3]
+    local glow = f:CreateTexture(nil, "BACKGROUND", nil, -4)
+    glow:SetPoint("TOPLEFT", 5 + R, -5)
+    glow:SetPoint("TOPRIGHT", -5 - R, -5)
+    glow:SetHeight(GH)
+    UI:SetGradient(glow, "VERTICAL", { gr, gg, gb, 0 }, { gr, gg, gb, GA })
+    local topA = GA * (GH - R) / GH
+    for _, side in ipairs({ "LEFT", "RIGHT" }) do
+        local strip = f:CreateTexture(nil, "BACKGROUND", nil, -4)
+        strip:SetPoint("TOP" .. side, side == "LEFT" and 5 or -5, -5 - R)
+        strip:SetSize(R, GH - R)
+        UI:SetGradient(strip, "VERTICAL", { gr, gg, gb, 0 }, { gr, gg, gb, topA })
+        local corner = f:CreateTexture(nil, "BACKGROUND", nil, -4)
+        corner:SetTexture(UI.MEDIA .. "circle")
+        corner:SetTexCoord(side == "LEFT" and 0 or 0.5, side == "LEFT" and 0.5 or 1, 0, 0.5)
+        corner:SetSize(R, R)
+        corner:SetPoint("TOP" .. side, side == "LEFT" and 5 or -5, -5)
+        corner:SetVertexColor(gr, gg, gb, GA)
+    end
 
-    local function startMove() f:StartMoving() end
-    local function stopMove()
+    -- Barre du haut -------------------------------------------------------------
+    local top = CreateFrame("Frame", nil, f)
+    top:SetPoint("TOPLEFT", 5, -5)
+    top:SetPoint("TOPRIGHT", -5, -5)
+    top:SetHeight(TOP - 5)
+    top:EnableMouse(true)
+    top:RegisterForDrag("LeftButton")
+    top:SetScript("OnDragStart", function() f:StartMoving() end)
+    top:SetScript("OnDragStop", function()
         f:StopMovingOrSizing()
         local p, _, rp, x, y = f:GetPoint()
         cfg.point = { p, rp, x, y }
-    end
-
-    -- Barre latérale ---------------------------------------------------------
-    local side = CreateFrame("Frame", nil, f)
-    side:SetPoint("TOPLEFT", 1, -1)
-    side:SetPoint("BOTTOMLEFT", 1, 1)
-    side:SetWidth(SIDE)
-    UI:Rounded(side, 13, 0, "BACKGROUND", 2):SetColor(unpack(C.sidebar))
-    local square = side:CreateTexture(nil, "BACKGROUND", nil, 2) -- coins droits côté contenu
-    square:SetColorTexture(unpack(C.sidebar))
-    square:SetPoint("TOPRIGHT"); square:SetPoint("BOTTOMRIGHT"); square:SetWidth(14)
-    local sep = side:CreateTexture(nil, "BORDER")
-    sep:SetColorTexture(unpack(C.border))
-    sep:SetPoint("TOPRIGHT"); sep:SetPoint("BOTTOMRIGHT"); sep:SetWidth(1)
-    side:EnableMouse(true)
-    side:RegisterForDrag("LeftButton")
-    side:SetScript("OnDragStart", startMove)
-    side:SetScript("OnDragStop", stopMove)
-
-    -- Logo + titre
-    local logoBg = CreateFrame("Frame", nil, side)
-    logoBg:SetSize(38, 38)
-    logoBg:SetPoint("TOPLEFT", 18, -20)
-    local logoRound = UI:Rounded(logoBg, 12, 0, "BACKGROUND", 3)
-    local logo = UI:Icon(logoBg, "logo", 24)
-    logo:SetPoint("CENTER")
-    UI:OnAccent(function()
-        local r, g, b = UI:Accent()
-        logoRound:SetColor(r, g, b, 0.15)
-        logo:SetVertexColor(r, g, b, 1)
     end)
-    local title = UI:Text(side, 16)
-    title:SetPoint("TOPLEFT", logoBg, "TOPRIGHT", 12, -3)
+    local sep = f:CreateTexture(nil, "BORDER")
+    sep:SetColorTexture(unpack(C.border))
+    sep:SetHeight(1)
+    sep:SetPoint("TOPLEFT", 5, -TOP)
+    sep:SetPoint("TOPRIGHT", -5, -TOP)
+
+    -- Logo : tuile dorée arrondie avec l'étendard en creux.
+    local tile = CreateFrame("Frame", nil, top)
+    tile:SetSize(36, 36)
+    tile:SetPoint("LEFT", PAD - 5, 0)
+    local tileBg = UI:Rounded(tile, 11, 0, "BACKGROUND", 1)
+    local logo = UI:Icon(tile, "logo", 24, C.onAccent)
+    logo:SetPoint("CENTER")
+    UI:OnAccent(function() tileBg:SetColor(UI:Accent()) end)
+
+    local title = top:CreateFontString(nil, "OVERLAY")
+    title:SetFont(UI.TITLE_FONT, 19, "")
     title:SetText("Warband Keeper")
-    local sub = UI:Text(side, 11, C.muted)
-    sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-    sub:SetText("v" .. WK.version .. " · WoW Forever")
+    title:SetPoint("TOPLEFT", tile, "TOPRIGHT", 12, 1)
+    UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
+    local sub = UI:Text(top, 10, C.muted)
+    sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
+    sub:SetText("Registre du compte · v" .. WK.version)
 
-    -- Navigation par sections
-    self.nav = {}
-    local y = -84
-    for _, sec in ipairs(SECTIONS) do
-        local lbl = UI:Text(side, 10, C.dim)
-        lbl:SetPoint("TOPLEFT", 26, y - 10)
-        lbl:SetText(sec.label)
-        y = y - 30
-        for _, def in ipairs(self.pageOrder) do
-            if def.section == sec.key then
-                local item = NavItem(side, def)
-                item:SetPoint("TOPLEFT", 12, y)
-                self.nav[def.key] = item
-                y = y - 38
-            end
-        end
-        y = y - 6
-    end
-    -- Pages du bas (options)
-    local by = 96
-    for _, def in ipairs(self.pageOrder) do
-        if def.section == "bas" then
-            local item = NavItem(side, def)
-            item:SetPoint("BOTTOMLEFT", 12, by)
-            self.nav[def.key] = item
-            by = by + 38
-        end
-    end
-
-    -- Pied de barre latérale : statut + bouton principal
-    local status = CreateFrame("Frame", nil, side)
-    status:SetPoint("BOTTOMLEFT", 12, 54)
-    status:SetPoint("BOTTOMRIGHT", -12, 54)
-    status:SetHeight(28)
-    UI:Panel(status, 14, C.surface, C.border)
-    local dot = UI:Icon(status, "circle", 8, nil, "ARTWORK")
-    dot:SetPoint("LEFT", 12, 0)
-    UI:OnAccent(function() dot:SetVertexColor(UI:Accent()) end)
-    self.statusText = UI:Text(status, 11, C.muted)
-    self.statusText:SetPoint("LEFT", dot, "RIGHT", 8, 0)
-
-    local scanBtn = UI:Button(side, "Scanner ce personnage", SIDE - 24, 32, "primary")
-    scanBtn:SetPoint("BOTTOMLEFT", 12, 14)
-    scanBtn.tooltip = "Relit les sacs, l'or et les métiers du personnage connecté. La banque est lue quand tu l'ouvres."
-    scanBtn:SetScript("OnClick", function()
+    -- Boutons à droite : fermer, scanner, rechercher.
+    local close = UI:IconButton(top, "close", 30, "Fermer")
+    close:SetPoint("RIGHT", -(PAD - 9), 0)
+    close:SetScript("OnClick", function() f:Hide() end)
+    local scan = UI:IconButton(top, "refresh", 30, "Scanner ce personnage (sacs, or, métiers)")
+    scan:SetPoint("RIGHT", close, "LEFT", -4, 0)
+    scan:SetScript("OnClick", function()
         WK.modules.Characters:UpdateBasics()
         WK.modules.Characters:UpdateMoney()
         WK.modules.Inventory:ScanBags()
         WK.modules.Professions:Scan()
         UI:Refresh()
     end)
+    local search = UI:IconButton(top, "search", 30, "Chercher un objet")
+    search:SetPoint("RIGHT", scan, "LEFT", -4, 0)
+    search:SetScript("OnClick", function()
+        UI:ShowPage("inventory")
+        local inv = UI.pages.inventory
+        if inv.search then inv.search.edit:SetFocus() end
+    end)
 
-    -- Zone de contenu ----------------------------------------------------------
-    local header = CreateFrame("Frame", nil, f)
-    header:SetPoint("TOPLEFT", SIDE, 0)
-    header:SetPoint("TOPRIGHT")
-    header:SetHeight(HEADER - 8)
-    header:EnableMouse(true)
-    header:RegisterForDrag("LeftButton")
-    header:SetScript("OnDragStart", startMove)
-    header:SetScript("OnDragStop", stopMove)
+    -- Navigation : pilules dans un conteneur arrondi, centrée dans l'espace libre.
+    local nav = CreateFrame("Frame", nil, top)
+    UI:Panel(nav, (NAV_H + 8) / 2, C.inset, C.border)
+    self.nav = {}
+    local x = 4
+    for _, def in ipairs(self.pageOrder) do
+        local b = NavButton(nav, def)
+        b:SetPoint("LEFT", x, 0)
+        x = x + b:GetWidth() + 2
+        self.nav[def.key] = b
+    end
+    nav:SetSize(x + 2, NAV_H + 8)
+    local left = PAD + 36 + 12 + math.max(title:GetStringWidth(), sub:GetStringWidth()) + 16
+    local right = W - (PAD - 4) - 3 * 34 - 16
+    nav:SetPoint("CENTER", top, "LEFT", math.max(left + nav:GetWidth() / 2, (left + right) / 2) - 5, 0)
 
-    self.titleText = UI:Text(header, 24)
-    self.titleText:SetPoint("TOPLEFT", 28, -26)
-    self.subtitleText = UI:Text(header, 12, C.muted)
-    self.subtitleText:SetPoint("TOPLEFT", self.titleText, "BOTTOMLEFT", 0, -8)
-
-    local close = UI:IconButton(header, "close", 30, "Fermer")
-    close:SetPoint("TOPRIGHT", -14, -14)
-    close:SetScript("OnClick", function() f:Hide() end)
-
+    -- Zone de page --------------------------------------------------------------
     self.pageHost = CreateFrame("Frame", nil, f)
-    self.pageHost:SetPoint("TOPLEFT", SIDE + 28, -HEADER)
-    self.pageHost:SetSize(UI.PAGE_W, UI.PAGE_H)
+    self.pageHost:SetPoint("TOPLEFT", PAD, -(TOP + 16))
+    self.pageHost:SetSize(UI.PAGE_W, UI.PAGE_FULL_H)
+
+    self.titleText = UI:Text(self.pageHost, 15)
+    self.titleText:SetPoint("TOPLEFT", 2, -2)
+    UI:OnAccent(function() UI.titleText:SetTextColor(UI:Accent()) end)
+    self.subtitleText = UI:Text(self.pageHost, 11, C.muted)
+    self.subtitleText:SetPoint("BOTTOMLEFT", self.titleText, "BOTTOMRIGHT", 12, 1)
 
     f:SetScript("OnShow", function() UI:Refresh() end)
     self:ShowPage(cfg.lastPage or "overview")
@@ -220,21 +213,26 @@ function UI:ShowPage(key)
     end
     if not def.frame then
         def.frame = CreateFrame("Frame", nil, self.pageHost)
-        def.frame:SetAllPoints()
+        def.frame:SetPoint("BOTTOMRIGHT")
+        def.frame:SetPoint("TOPLEFT", 0, def.noHeader and 0 or -HEADER)
         def:Build(def.frame)
     end
+    self.titleText:SetShown(not def.noHeader)
+    self.subtitleText:SetShown(not def.noHeader)
     self.titleText:SetText(def.title)
     self.subtitleText:SetText(def.subtitle or "")
+    self.subtitleText:SetWidth(math.max(50, UI.PAGE_W - self.titleText:GetStringWidth() - 20))
     self:Refresh()
 end
 
--- Met à jour la page affichée et la barre latérale.
+-- Met à jour la page affichée et la navigation.
 function UI:Refresh()
     if not self.frame or not self.frame:IsShown() then return end
-    for _, item in pairs(self.nav) do item:Refresh() end
-    local n, gold = 0, 0
-    for _, c in pairs(WK.DB.global.characters) do n = n + 1; gold = gold + (c.money or 0) end
-    self.statusText:SetText(string.format("%d personnage%s · %s", n, n > 1 and "s" or "", UI:ShortGold(gold)))
+    for key, item in pairs(self.nav) do
+        local def = self.pages[key]
+        item.count:SetText(def.count and def.count() or "")
+        item:Refresh()
+    end
     local def = self.pages[self.current]
     if def and def.frame and def.Refresh then def:Refresh() end
 end
