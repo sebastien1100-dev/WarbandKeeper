@@ -27,6 +27,9 @@ local defaults = {
         autoTake = false, -- « Tout prendre » automatiquement à l'ouverture (après les envois)
     },
     auction = { log = {} },   -- ventes et achats à l'HV (Modules/Auction.lua)
+    -- Coins de récolte (Modules/GatherMap.lua) : points par carte, et leur affichage sur la carte du monde
+    gatherSpots = {},
+    gatherMap = { record = true, showMap = true },
     -- Lueur de récolte (Modules/Glow.lua) : désactivée tant que le joueur ne l'allume pas
     glow = { enabled = false, range = 15, size = 110, intensity = 100, offsetY = -45,
              hideInCombat = false, hideInInstance = false, onlyTrained = true, cats = {}, colors = {} },
@@ -62,6 +65,7 @@ local defaults = {
         ui = {
             lang = "auto",         -- "auto", "frFR" ou "enUS"
             closeInCombat = false, -- ferme la fenêtre principale au début d'un combat
+            loginPopup = true,     -- fenêtre de rappels à la connexion (UI/LoginPopup.lua)
             portraits = true,      -- portrait à côté du nom des persos (sinon icône de classe)
             theme = "vault",       -- clé de UI.themes
             font = "friz",         -- clé de UI.fonts

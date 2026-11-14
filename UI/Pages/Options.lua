@@ -140,7 +140,7 @@ UI:RegisterPage({
             { "general", "Général", "home", "Langue, minimap, combat" },
             { "prices", "Prix", "coin", "Source des prix" },
             { "mail", "Courrier", "mail", "Envoi, réception, dépôt" },
-            { "glow", "Lueur", "filter", "Objets qui brillent" },
+            { "glow", "Récolte", "filter", "Lueur, coins de récolte" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
             { "look", "Apparence", "logo", "Thème, couleurs, police" },
             { "about", "À propos", "notes", "Version et commandes" },
@@ -341,6 +341,15 @@ UI:RegisterPage({
             UI.frame:ClearAllPoints()
             UI.frame:SetPoint("CENTER")
         end)
+        local loginCard = card("Rappels à la connexion", 96)
+        self.loginToggle = UI:Toggle(loginCard,
+            function() return cfg.loginPopup ~= false end,
+            function(v) cfg.loginPopup = v end)
+        local loginRow = UI:SettingRow(loginCard, -40, "Fenêtre de rappels",
+            "À la connexion d'un perso : courrier à prendre, recharges prêtes, métier au plafond…", self.loginToggle, 190)
+        local preview = UI:Button(loginCard, "Aperçu", nil, 26, "ghost")
+        preview:SetPoint("RIGHT", self.loginToggle, "LEFT", -12, 0)
+        preview:SetScript("OnClick", function() UI:ShowLoginPopup(true) end)
         local winCard = card("Combat", 96)
         self.combatToggle = UI:Toggle(winCard,
             function() return cfg.closeInCombat end,
@@ -439,6 +448,26 @@ UI:RegisterPage({
             UI:SettingRow(gcats, y, Gm.LABELS[key], nil, row, 140)
         end
 
+        -- Coins de récolte sur la carte du monde
+        local gm = WK.DB.global.gatherMap
+        local spotsCard = card("Coins de récolte", 184)
+        UI:SettingRow(spotsCard, -40, "Enregistrer mes récoltes",
+            "À chaque plante, minerai ou cuir ramassé, l'endroit est noté (tous les persos).",
+            gtoggle(spotsCard, function() return gm.record end, function(v) gm.record = v end), 80)
+        UI:SettingRow(spotsCard, -88, "Afficher sur la carte du monde",
+            "Une pastille par coin, de la couleur de la ressource, plus grosse là où tu récoltes souvent.",
+            gtoggle(spotsCard, function() return gm.showMap end, function(v)
+                gm.showMap = v; WK.modules.GatherMap:Redraw()
+            end), 80)
+        self.spotsInfo = UI:Text(spotsCard, 11, C.muted)
+        self.spotsInfo:SetPoint("BOTTOMLEFT", 16, 18)
+        local clearSpots = UI:Button(spotsCard, "Effacer", nil, 28, "ghost", "trash")
+        clearSpots:SetPoint("BOTTOMRIGHT", -12, 12)
+        clearSpots.tooltip = "Maj + clic : efface tous les coins enregistrés."
+        clearSpots:SetScript("OnClick", function()
+            if IsShiftKeyDown() then WK.modules.GatherMap:Clear(); self:Refresh() end
+        end)
+
         -- Alertes -------------------------------------------------------------------
         section("alerts")
         local al = card("Alertes", 196)
@@ -491,10 +520,12 @@ UI:RegisterPage({
         end
         self.mmToggle:Refresh()
         self.combatToggle:Refresh()
+        self.loginToggle:Refresh()
         self.portraitToggle:Refresh()
         self.alertToggle:Refresh()
         for _, t in ipairs(self.mailToggles) do t:Refresh() end
         for _, t in ipairs(self.glowToggles) do t:Refresh() end
+        self.spotsInfo:SetText(string.format(WK.T("%d récoltes enregistrées"), WK.modules.GatherMap:Count()))
         self.glowNote:SetText(WK.modules.Glow:OtherAddonLoaded()
             and WK.T("L'addon Lueur est chargé : il s'en occupe, cette lueur reste éteinte.") or "")
     end,

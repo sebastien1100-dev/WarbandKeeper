@@ -11,6 +11,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.28.0 — 14/11/2026
+
+### Ajouts
+- Coins de récolte : chaque plante, minerai ou cuir ramassé note l'endroit (tous les persos). Sur la carte du monde, une pastille par coin, de la couleur de la ressource et plus grosse là où tu récoltes souvent ; son survol détaille ce que tu y as récolté.
+- Options > Récolte : enregistrer les récoltes, les afficher sur la carte du monde, et Maj + clic pour tout effacer.
+- Farm en direct : or à l'heure, objets à l'heure et valeur du butin à l'heure sur les tuiles ; « Total / heure » comparé au record des 7 derniers jours (au survol : la zone du record). Le meilleur spot de la semaine est dans les pastilles et dans la mini-fenêtre.
+- Fenêtre de rappels à la connexion d'un perso : les tâches du moment (comme « À faire » du Résumé), cliquables. Désactivable, avec un aperçu, dans Options > Général.
+
+### Modifications
+- Options : la section « Lueur » devient « Récolte » (lueur et coins de récolte).
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.27.0 — 14/11/2026
 
 ### Ajouts

@@ -335,6 +335,40 @@ WK.Locales.enUS.text = {
     ["Meilleures ventes :"] = "Best sales:",
     ["Bilan HV 7 j"] = "AH balance 7 d",
 
+    -- Rappels à la connexion
+    ["Rappels à la connexion"] = "Login reminders",
+    ["Fenêtre de rappels"] = "Reminders window",
+    ["À la connexion d'un perso : courrier à prendre, recharges prêtes, métier au plafond…"] = "When a character logs in: mail to collect, cooldowns ready, capped profession…",
+    ["Aperçu"] = "Preview",
+    ["Bonjour %s"] = "Hello %s",
+    ["%d choses à faire"] = "%d things to do",
+    ["%d chose à faire"] = "%d thing to do",
+    ["+ %d autre(s) dans le Résumé"] = "+ %d more in the Summary",
+    ["Ouvrir Warband Keeper"] = "Open Warband Keeper",
+    ["Désactivable dans Options > Général"] = "Can be turned off in Options > General",
+
+    -- Farm en direct
+    ["Total / heure"] = "Total / hour",
+    ["%d/h"] = "%d/h",
+    ["%d %% du record"] = "%d %% of record",
+    ["Record des 7 derniers jours : %s/h à %s"] = "Last 7 days record: %s/h at %s",
+    ["record %s/h"] = "record %s/h",
+    ["Meilleur spot 7 j"] = "Best spot 7 d",
+
+    -- Coins de récolte
+    ["Récolte"] = "Gathering",
+    ["Lueur, coins de récolte"] = "Glow, gathering spots",
+    ["Coins de récolte"] = "Gathering spots",
+    ["Enregistrer mes récoltes"] = "Record my gathering",
+    ["À chaque plante, minerai ou cuir ramassé, l'endroit est noté (tous les persos)."] = "Each herb, ore or leather looted, the place is recorded (all characters).",
+    ["Afficher sur la carte du monde"] = "Show on the world map",
+    ["Une pastille par coin, de la couleur de la ressource, plus grosse là où tu récoltes souvent."] = "One dot per spot, colored by resource, bigger where you gather often.",
+    ["Effacer"] = "Clear",
+    ["Maj + clic : efface tous les coins enregistrés."] = "Shift + click: clears all recorded spots.",
+    ["%d récoltes enregistrées"] = "%d gatherings recorded",
+    ["Coin de récolte"] = "Gathering spot",
+    ["%d récolte(s) ici · dernière %s"] = "%d gathering(s) here · last %s",
+
     -- Lueur de récolte
     ["Lueur"] = "Glow",
     ["Objets qui brillent"] = "Glowing objects",

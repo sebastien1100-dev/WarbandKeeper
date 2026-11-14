@@ -540,6 +540,10 @@ UI.CHIPS = {
         local h = WK.DB.global.farm.history or {}
         local gold = 0
         for _, s in ipairs(h) do gold = gold + (s.gold or 0) end
+        local best = WK.modules.Farm:BestSpot(7)
+        if best and best.rate > 0 then
+            table.insert(l, { T("Meilleur spot 7 j"), best.zone .. " · " .. UI:PlainMoney(best.rate) .. T("/h"), C.gold })
+        end
         table.insert(l, { T("Sessions enregistrées"), tostring(#h) })
         if gold > 0 then table.insert(l, { T("Or farmé"), UI:PlainMoney(gold), C.gold }) end
         return l

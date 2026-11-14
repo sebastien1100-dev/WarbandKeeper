@@ -86,6 +86,7 @@ local function todoItems()
     table.sort(items, function(a, b) if a.prio ~= b.prio then return a.prio < b.prio end return a.text < b.text end)
     return items
 end
+UI.TodoItems = todoItems -- aussi pour la fenêtre de rappels à la connexion (UI/LoginPopup.lua)
 local GAP = 16
 local GOAL_H = 54
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }

@@ -23,6 +23,9 @@ local function Tile(parent, label)
     t.value = UI:Text(t, 15)
     t.value:SetPoint("BOTTOMLEFT", 12, 10)
     t.value:SetPoint("BOTTOMRIGHT", -8, 10)
+    t.sub = UI:Text(t, 10, C.muted) -- rythme à l'heure ou comparaison
+    t.sub:SetPoint("TOPRIGHT", -10, -11)
+    t.sub:SetJustifyH("RIGHT")
     return t
 end
 
@@ -58,11 +61,21 @@ UI:RegisterPage({
 
         local tx = 330
         self.tiles = {}
-        for i, l in ipairs({ "Or ramassé", "Or / heure", "Objets", "Valeur du butin" }) do
+        for i, l in ipairs({ "Or ramassé", "Total / heure", "Objets", "Valeur du butin" }) do
             local t = Tile(main, l)
             t:SetHeight(58)
             self.tiles[i] = t
         end
+        -- Survol de « Total / heure » : le record de la semaine
+        local rt = self.tiles[2]
+        rt:EnableMouse(true)
+        rt:SetScript("OnEnter", function(f)
+            if not f.tooltipText then return end
+            WK.UI:TooltipOwner(f, "ANCHOR_TOP")
+            GameTooltip:SetText(f.tooltipText, 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        rt:SetScript("OnLeave", function() GameTooltip:Hide() end)
         local farm = WK.DB.global.farm
         self.miniToggle = UI:Toggle(main, function() return farm.mini end, function(v)
             farm.mini = v; UI:UpdateFarmMini()
@@ -209,9 +222,24 @@ UI:RegisterPage({
         local items = s and s.items or {}
         local vendor = F:VendorValue(items)
         self.tiles[1].value:SetText(UI:GoldText(gold))
-        self.tiles[2].value:SetText(s and UI:GoldText(F:PerHour(gold + vendor, s)) or "-")
+        local total = s and F:PerHour(gold + vendor, s) or 0
+        self.tiles[2].value:SetText(s and UI:GoldText(total) or "-")
         self.tiles[3].value:SetText(tostring(F:ItemCount(items)))
         self.tiles[4].value:SetText(UI:GoldText(vendor))
+        -- Rythmes à l'heure en direct, et comparaison au meilleur spot de la semaine
+        local live = s and F:Elapsed(s) >= 60
+        self.tiles[1].sub:SetText(live and (UI:PlainMoney(F:PerHour(gold, s)) .. T("/h")) or "")
+        self.tiles[4].sub:SetText(live and (UI:PlainMoney(F:PerHour(vendor, s)) .. T("/h")) or "")
+        self.tiles[3].sub:SetText(live and string.format(T("%d/h"), math.floor(F:PerHour(F:ItemCount(items), s))) or "")
+        local best = F:BestSpot(7)
+        if live and best and best.rate > 0 then
+            local pct = math.floor(total / best.rate * 100 + 0.5)
+            self.tiles[2].sub:SetText(UI:Hex(pct >= 100 and C.positive or C.muted) .. string.format(T("%d %% du record"), pct) .. "|r")
+            self.tiles[2].tooltipText = string.format(T("Record des 7 derniers jours : %s/h à %s"), UI:PlainMoney(best.rate), best.zone)
+        else
+            self.tiles[2].sub:SetText("")
+            self.tiles[2].tooltipText = nil
+        end
     end,
 
     Refresh = function(self)
@@ -357,8 +385,10 @@ function UI:UpdateFarmMini()
             self.zone:SetText((s.zone ~= "" and s.zone or "Farm") .. (lp and ("  ·  " .. lp.name) or ""))
             self.timer:SetText(clock(F:Elapsed(s)))
             self.timer:SetTextColor(unpack(s.paused and C.muted or C.text))
+            local best = F:BestSpot(7)
             self.line:SetText(string.format("%s%s  ·  %d %s", UI:GoldText(F:PerHour(s.gold + vendor, s)), T("/h"),
-                F:ItemCount(s.items), T("objets")))
+                F:ItemCount(s.items), T("objets")) .. (best and best.rate > 0
+                    and ("  ·  " .. string.format(T("record %s/h"), UI:PlainMoney(best.rate))) or ""))
             self.pause.icon:SetTexture(UI.MEDIA .. (s.paused and "play" or "pause"))
         end
     end

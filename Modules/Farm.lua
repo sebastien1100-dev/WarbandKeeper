@@ -125,6 +125,27 @@ function M:Spots()
     return list
 end
 
+-- Meilleur spot des N derniers jours (sessions terminées regroupées par zone) : zone et total/h.
+function M:BestSpot(days)
+    local since = time() - (days or 7) * 86400
+    local byZone = {}
+    for _, h in ipairs(farm().history) do
+        if (h.stop or h.start or 0) >= since and (h.duration or 0) >= 300 then
+            local z = (h.zone and h.zone ~= "") and h.zone or "?"
+            local s = byZone[z] or { zone = z, duration = 0, value = 0 }
+            s.duration = s.duration + h.duration
+            s.value = s.value + (h.gold or 0) + self:VendorValue(h.items or {})
+            byZone[z] = s
+        end
+    end
+    local best
+    for _, s in pairs(byZone) do
+        s.rate = s.value * 3600 / s.duration
+        if not best or s.rate > best.rate then best = s end
+    end
+    return best
+end
+
 function M:Toggle()
     if self:Active() then self:Stop() else self:Start() end
 end
