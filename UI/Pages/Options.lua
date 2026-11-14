@@ -95,16 +95,31 @@ end
 UI:RegisterPage({
     key = "options", order = 10, navIcon = "gear",
     title = "Options",
-    subtitle = "Thème, apparence, langue, bouton minimap et alertes.",
+    subtitle = "Réglages rangés par catégorie.",
 
     Build = function(self, p)
         local cfg = WK.DB.global.settings.ui
         local alerts = WK.DB.global.settings.alerts
-        local scroll = UI:Scroll(p)
-        scroll:SetAllPoints()
-        local root = scroll.child
-        local W = UI.PAGE_W - 12
-        local y = 0
+        -- Sections verticales à gauche, contenu défilant à droite ----------------------
+        local NAV_W = 210
+        local W = UI.PAGE_W - NAV_W - GAP - 12
+        local navCard = UI:Card(p)
+        navCard:SetSize(NAV_W, UI.PAGE_H)
+        navCard:SetPoint("TOPLEFT")
+        local host = CreateFrame("Frame", nil, p)
+        host:SetPoint("TOPLEFT", NAV_W + GAP, 0)
+        host:SetPoint("BOTTOMRIGHT")
+        self.sections, self.sectionButtons = {}, {}
+        local root, y, current
+        local function section(key)
+            if current then current.scroll:SetContentHeight(y) end
+            local sc = UI:Scroll(host)
+            sc:SetAllPoints()
+            sc:Hide()
+            current = { scroll = sc }
+            self.sections[key] = current
+            root, y = sc.child, 0
+        end
         local function card(title, h)
             local c = UI:Card(root, title)
             c:SetSize(W, h)
@@ -112,14 +127,64 @@ UI:RegisterPage({
             y = y + h + GAP
             return c
         end
+        function self:ShowSection(key)
+            if not self.sections[key] then key = "theme" end
+            cfg.optSection = key
+            for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
+            for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
+        end
+        local SECTIONS = {
+            { "theme", "Thème", "logo", "Thèmes et couleurs" },
+            { "look", "Apparence", "gear", "Accent, police, taille" },
+            { "general", "Général", "home", "Langue, minimap, fenêtre" },
+            { "prices", "Prix", "coin", "Source des prix" },
+            { "alerts", "Alertes", "clock", "Banque et courrier" },
+            { "about", "À propos", "notes", "Version et commandes" },
+        }
+        for i, sec in ipairs(SECTIONS) do
+            local b = CreateFrame("Button", nil, navCard)
+            b:SetHeight(50)
+            b:SetPoint("TOPLEFT", 8, -8 - (i - 1) * 54)
+            b:SetPoint("TOPRIGHT", -8, -8 - (i - 1) * 54)
+            b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
+            b.bar = CreateFrame("Frame", nil, b)
+            b.bar:SetSize(3, 20)
+            b.bar:SetPoint("LEFT")
+            b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
+            b.icon = UI:Icon(b, sec[3], 16)
+            b.icon:SetPoint("LEFT", 14, 0)
+            b.label = UI:Text(b, 13)
+            b.label:SetPoint("TOPLEFT", 42, -9)
+            b.label:SetText(sec[2])
+            b.desc = UI:Text(b, 10, C.muted)
+            b.desc:SetPoint("TOPLEFT", b.label, "BOTTOMLEFT", 0, -4)
+            b.desc:SetPoint("RIGHT", b, "RIGHT", -6, 0)
+            b.desc:SetText(sec[4])
+            function b:Paint()
+                local sel = self.selected
+                self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+                self.bg:SetShown(sel or self.hover)
+                self.bar:SetShown(sel)
+                self.barTex:SetColor(UI:Accent())
+                if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
+                self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+            end
+            b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+            b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+            b:SetScript("OnClick", function() self:ShowSection(sec[1]) end)
+            UI:OnAccent(function() b:Paint() end)
+            self.sectionButtons[sec[1]] = b
+        end
 
         -- Thème, police, arrondi, opacité et langue s'appliquent en direct : l'interface est reconstruite.
         local function apply() UI:Rebuild() end
 
         -- Thème -------------------------------------------------------------------
-        local themeCard = card("Thème", 154)
-        local n = #UI.themes
-        local tw = (W - 32 - (n - 1) * 10) / n
+        section("theme")
+        local perRow = 4
+        local rowsN = math.ceil(#UI.themes / perRow)
+        local themeCard = card("Thème", 48 + rowsN * 106)
+        local tw = (W - 32 - (perRow - 1) * 10) / perRow
         self.themeTiles = {}
         for i, th in ipairs(UI.themes) do
             local tile = ThemeTile(themeCard, th, tw, function()
@@ -128,7 +193,7 @@ UI:RegisterPage({
                 UI:SetAccent("theme")
                 apply()
             end)
-            tile:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + 10), -44)
+            tile:SetPoint("TOPLEFT", 16 + ((i - 1) % perRow) * (tw + 10), -44 - math.floor((i - 1) / perRow) * 106)
             self.themeTiles[th.key] = tile
         end
         function self:RefreshThemes()
@@ -188,7 +253,8 @@ UI:RegisterPage({
         end
 
         -- Apparence --------------------------------------------------------------
-        local look = card("Apparence", 356)
+        section("look")
+        local look = card("Apparence", 304)
         local dots = CreateFrame("Frame", nil, look)
         local choices = {
             { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
@@ -207,7 +273,7 @@ UI:RegisterPage({
             local d = AccentDot(dots, ch[1], ch[2], ch[3])
             d:SetPoint("LEFT", (i - 1) * 32, 0)
         end
-        UI:SettingRow(look, -40, "Couleur d'accent", "T : celle du thème. C : couleur de classe du perso connecté. Changement immédiat.", dots, 300)
+        UI:SettingRow(look, -40, "Couleur d'accent", "T : accent du thème · C : couleur de classe.", dots, 300)
 
         local fontSeg = UI:Segmented(look, { { "friz", "Friz Quadrata" }, { "arialn", "Arial Narrow" } },
             function(v) cfg.font = v; apply() end, 30)
@@ -229,12 +295,16 @@ UI:RegisterPage({
             function(v) UI:ApplyScale(v) end, "%.2fx")
         UI:SettingRow(look, -248, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
 
-        local lang = UI:Segmented(look, { { "auto", "Auto" }, { "frFR", "Français" }, { "enUS", "English" } },
+        -- Général : langue, bouton minimap, fenêtre ------------------------------------
+        section("general")
+        local langCard = card("Langue", 96)
+        local lang = UI:Segmented(langCard, { { "auto", "Auto" }, { "frFR", "Français" }, { "enUS", "English" } },
             function(v) cfg.lang = v; apply() end, 30)
         lang:Select(cfg.lang or "auto")
-        UI:SettingRow(look, -300, "Langue", "Auto : celle du jeu.", lang, 280)
+        UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
         -- Prix des objets ------------------------------------------------------------
+        section("prices")
         local priceCard = card("Prix des objets", 96)
         local vcfg = WK.DB.global.settings.value
         local src = UI:Segmented(priceCard, { { "auctionator", "Auctionator" }, { "vendor", "Marchand" } },
@@ -243,7 +313,9 @@ UI:RegisterPage({
         self.priceRow = UI:SettingRow(priceCard, -40, "Source des prix", " ", src, 280)
         self.priceDesc = self.priceRow.desc
 
-        -- Bouton minimap -----------------------------------------------------------
+        -- Bouton minimap (section Général) ---------------------------------------------
+        current.scroll:SetContentHeight(y)
+        root, y, current = self.sections.general.scroll.child, 96 + GAP, self.sections.general
         local mm = card("Bouton minimap", 136)
         self.mmToggle = UI:Toggle(mm,
             function() return not cfg.minimap.hide end,
@@ -258,6 +330,7 @@ UI:RegisterPage({
         end)
 
         -- Alertes -------------------------------------------------------------------
+        section("alerts")
         local al = card("Alertes", 196)
         self.alertToggle = UI:Toggle(al,
             function() return alerts.enabled end,
@@ -273,7 +346,8 @@ UI:RegisterPage({
         UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
 
         -- À propos ----------------------------------------------------------------
-        local about = card("À propos", 120)
+        section("about")
+        local about = card("À propos", 156)
         local t = UI:Text(about, 12, C.muted)
         t:SetPoint("TOPLEFT", 16, -42)
         t:SetPoint("TOPRIGHT", -16, -42)
@@ -284,7 +358,11 @@ UI:RegisterPage({
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
             .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré."))
-        scroll:SetContentHeight(y)
+        local notesBtn = UI:Button(about, "Voir les notes de patch", nil, 28, "secondary", "notes")
+        notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)
+        notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
+        current.scroll:SetContentHeight(y)
+        self:ShowSection(cfg.optSection or "theme")
     end,
 
     Refresh = function(self)

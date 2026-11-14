@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.8.1", date = "14/11/2026",
+        changed = {
+            "Options rangées en sections verticales à gauche : Thème, Apparence, Général (langue, bouton minimap, position de la fenêtre), Prix, Alertes et À propos. La dernière section ouverte est mémorisée.",
+            "Les vignettes de thèmes passent sur deux rangées pour rester lisibles.",
+            "À propos : bouton pour ouvrir les notes de patch.",
+        },
+    },
+    {
         version = "0.8.0", date = "14/11/2026",
         added = {
             "Rentabilité des fabrications : pour chaque recette, coût des composants, prix de vente de l'objet fabriqué et bénéfice, au prix d'Auctionator (sinon prix marchand). Tri des recettes par nom, bénéfice ou nombre de fabrications possibles ; le détail est dans l'infobulle.",

@@ -206,8 +206,7 @@ WK.Locales.enUS.text = {
     ["Thème, apparence, langue, bouton minimap et alertes."] = "Theme, appearance, language, minimap button and alerts.",
     ["Recharger pour appliquer"] = "Reload to apply",
     ["Accent du thème"] = "Theme accent", ["Couleur de classe"] = "Class colour", ["Couleur fixe"] = "Fixed colour",
-    ["T : celle du thème. C : couleur de classe du perso connecté. Changement immédiat."] =
-        "T: the theme's. C: class colour of the logged-in character. Applies instantly.",
+    ["T : accent du thème · C : couleur de classe."] = "T: theme accent · C: class colour.",
     ["Police"] = "Font", ["Police du texte de l'interface (rechargement)."] = "Interface text font (reload).",
     ["Arrondi"] = "Rounding", ["Fort"] = "Strong", ["Moyen"] = "Medium", ["Carré"] = "Square",
     ["Arrondi des fenêtres, cartes et boutons (rechargement)."] = "Rounding of windows, cards and buttons (reload).",
@@ -266,6 +265,13 @@ WK.Locales.enUS.text = {
     ["Historique"] = "History", ["Sessions"] = "Sessions", ["Meilleurs spots"] = "Best spots",
     ["%d sessions"] = "%d sessions", ["%d session"] = "%d session", ["Butin à %s"] = "Loot in %s",
     ["%d session(s) · %s · meilleur : %s"] = "%d session(s) · %s · best: %s",
+
+    -- Sections des options
+    ["Réglages rangés par catégorie."] = "Settings sorted by category.", ["Général"] = "General", ["Prix"] = "Prices",
+    ["Thèmes et couleurs"] = "Themes and colours", ["Accent, police, taille"] = "Accent, font, size",
+    ["Langue, minimap, fenêtre"] = "Language, minimap, window", ["Source des prix"] = "Price source",
+    ["Banque et courrier"] = "Bank and mail", ["Version et commandes"] = "Version and commands",
+    ["Voir les notes de patch"] = "See the patch notes",
 
     -- Chat
     ["Évolution sur %d jours : %s"] = "Change over %d days: %s",

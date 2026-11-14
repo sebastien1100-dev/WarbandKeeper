@@ -3,6 +3,13 @@
 Toutes les modifications de Warband Keeper, version par version.
 Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes sont visibles en jeu : `/wk notes`).
 
+## v0.8.1 — 14/11/2026
+
+### Modifications
+- Options rangées en sections verticales à gauche : Thème, Apparence, Général (langue, bouton minimap, position de la fenêtre), Prix, Alertes et À propos. La dernière section ouverte est mémorisée.
+- Les vignettes de thèmes passent sur deux rangées pour rester lisibles.
+- À propos : bouton pour ouvrir les notes de patch.
+
 ## v0.8.0 — 14/11/2026
 
 ### Ajouts
