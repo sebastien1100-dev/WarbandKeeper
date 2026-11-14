@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.10.1", date = "14/11/2026",
+        added = {
+            "Métiers > Niveaux : le nombre de recettes connues est affiché à côté de chaque métier, par exemple « Cuisine (4 recettes) ».",
+            "Options > Général > Combat : « Fermer la fenêtre en combat ». La fenêtre se ferme au début d'un combat ; la mini-fenêtre de la session de farm reste affichée.",
+        },
+        fixed = {
+            "Le bouton « Ouvrir le métier » pouvait empêcher de fermer la fenêtre pendant un combat.",
+            "Options : certaines descriptions étaient coupées (par exemple « Auto : celle du j... »).",
+        },
+    },
+    {
         version = "0.10.0", date = "14/11/2026",
         added = {
             "Métiers : clic sur un métier dans l'onglet Niveaux pour ouvrir sa fiche : niveau, recettes connues du perso avec leur couleur (orange, jaune, vert, gris), composants possédés sur tout le compte, coût et bénéfice.",

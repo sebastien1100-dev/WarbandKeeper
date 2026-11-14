@@ -433,9 +433,9 @@ function UI:SettingRow(parent, y, label, desc, control, width)
     if desc then
         local d = UI:Text(row, 11, C.muted)
         d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -4)
-        -- Largeur bornée sans mélanger ancrage haut et ancrage centré.
-        local rowW = (parent:GetWidth() or 0) - 32
-        d:SetPoint("TOPRIGHT", l, "BOTTOMLEFT", math.max(100, rowW - (width or 60)), -4)
+        d:SetJustifyH("LEFT")
+        -- Largeur = ligne moins la commande, recalculée quand la fenêtre change de taille.
+        UI:OnResize(row, function(w) d:SetWidth(math.max(100, w - (width or 60) - 8)) end)
         d:SetText(desc)
         row.desc = d
     end

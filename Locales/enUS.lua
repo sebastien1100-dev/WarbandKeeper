@@ -323,6 +323,11 @@ WK.Locales.enUS.text = {
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
     -- Fiche métier
+    ["(%d recettes)"] = "(%d recipes)", ["(%d recette)"] = "(%d recipe)",
+    ["Combat"] = "Combat",
+    ["Fermer la fenêtre en combat"] = "Close the window in combat",
+    ["Au début d'un combat. La mini-fenêtre de la session de farm reste affichée."] = "When combat starts. The farm session mini window stays open.",
+    ["Langue, minimap, combat"] = "Language, minimap, combat",
     ["Clic : recettes et détail du métier"] = "Click: recipes and profession details",
     ["Retour aux niveaux"] = "Back to levels",
     ["Ouvrir le métier"] = "Open profession",

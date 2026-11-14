@@ -431,3 +431,10 @@ function UI:Rebuild()
         end
     end)
 end
+
+-- Option « Fermer la fenêtre en combat » : seulement la fenêtre principale,
+-- la mini-fenêtre de farm reste. (Cet évènement arrive juste avant le verrouillage du combat.)
+WK:On("PLAYER_REGEN_DISABLED", function()
+    local cfg = WK.DB and WK.DB.global and WK.DB.global.settings.ui
+    if cfg and cfg.closeInCombat and UI.frame and UI.frame:IsShown() then UI.frame:Hide() end
+end)

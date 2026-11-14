@@ -136,7 +136,7 @@ UI:RegisterPage({
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
         local SECTIONS = {
-            { "general", "Général", "home", "Langue, minimap, fenêtre" },
+            { "general", "Général", "home", "Langue, minimap, combat" },
             { "prices", "Prix", "coin", "Source des prix" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
             { "theme", "Thèmes", "logo", "Thèmes et couleurs" },
@@ -334,6 +334,12 @@ UI:RegisterPage({
             UI.frame:ClearAllPoints()
             UI.frame:SetPoint("CENTER")
         end)
+        local winCard = card("Combat", 96)
+        self.combatToggle = UI:Toggle(winCard,
+            function() return cfg.closeInCombat end,
+            function(v) cfg.closeInCombat = v end)
+        UI:SettingRow(winCard, -40, "Fermer la fenêtre en combat",
+            "Au début d'un combat. La mini-fenêtre de la session de farm reste affichée.", self.combatToggle, 80)
 
         -- Alertes -------------------------------------------------------------------
         section("alerts")
@@ -386,6 +392,7 @@ UI:RegisterPage({
             end
         end
         self.mmToggle:Refresh()
+        self.combatToggle:Refresh()
         self.alertToggle:Refresh()
     end,
 })

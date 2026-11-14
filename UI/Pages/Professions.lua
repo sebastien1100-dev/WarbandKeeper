@@ -70,8 +70,11 @@ local function Levels(page, parent)
             UI:SetClassIcon(card.icon, c.class)
             card.title:SetText(WK:CharName(c, e.key))
             card.title:SetTextColor(UI:ClassColor(c.class))
-            local nr = 0
-            for _ in pairs(c.recipes or {}) do nr = nr + 1 end
+            local nr, byProf = 0, {}
+            for _, rec in pairs(c.recipes or {}) do
+                nr = nr + 1
+                if rec.prof then byProf[rec.prof] = (byProf[rec.prof] or 0) + 1 end
+            end
             card.recipes:SetText(nr > 0 and string.format(T("%d recettes"), nr) or "")
 
             local names = {}
@@ -115,7 +118,9 @@ local function Levels(page, parent)
                 l:SetPoint("TOPLEFT", 16, -44 - (i - 1) * 38)
                 l:SetPoint("TOPRIGHT", -16, -44 - (i - 1) * 38)
                 l.charKey, l.prof = e.key, name
-                l.name:SetText(name)
+                local n = byProf[name] or 0
+                l.name:SetText(n > 0 and (name .. "  " .. UI:Hex(C.muted) .. string.format(
+                    n > 1 and T("(%d recettes)") or T("(%d recette)"), n) .. "|r") or name)
                 l.rank:SetText(string.format("%d / %d", pr.rank or 0, pr.max or 0))
                 l.bar:SetValue((pr.max or 0) > 0 and (pr.rank or 0) / pr.max or 0)
                 l:Show()
@@ -440,24 +445,42 @@ local function Detail(page, parent)
     bar:SetPoint("BOTTOMLEFT", 96, 14)
     bar:SetPoint("BOTTOMRIGHT", -200, 14)
 
-    -- « Ouvrir le métier » : bouton visible, et bouton sécurisé par-dessus pour lancer le sort
-    -- du métier quand l'API d'ouverture directe n'existe pas sur le client.
+    -- « Ouvrir le métier ». Par l'API si le client l'a ; sinon un bouton sécurisé lance le sort
+    -- du métier. Ce bouton sécurisé n'est PAS dans la fenêtre (sinon le jeu bloquerait sa
+    -- fermeture en combat) : il est posé par-dessus, hors combat seulement.
     local open = UI:Button(head, "Ouvrir le métier", 170, 32, "primary", "play")
     open:SetPoint("TOPRIGHT", -16, -26)
-    local secure = CreateFrame("Button", nil, open, "SecureActionButtonTemplate")
-    secure:SetAllPoints()
-    if secure.RegisterForClicks then secure:RegisterForClicks("AnyUp", "AnyDown") end
-    secure:SetScript("PreClick", function(s)
+    open:SetScript("OnClick", function() WK.modules.Professions:OpenDirect(tab.prof) end)
+    local secure
+    local function needSecure()
+        return not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill)
+    end
+    function tab:SyncSecure()
         if InCombatLockdown and InCombatLockdown() then return end
-        if WK.modules.Professions:OpenDirect(tab.prof) then
-            s:SetAttribute("type", nil)
-        else
-            s:SetAttribute("type", "spell")
-            s:SetAttribute("spell", WK.modules.Professions:OpenSpell(tab.prof))
+        local want = needSecure() and open:IsVisible() and self.prof ~= nil
+        if want and not secure then
+            secure = CreateFrame("Button", "WarbandKeeperOpenProfession", UIParent, "SecureActionButtonTemplate")
+            if secure.RegisterForClicks then secure:RegisterForClicks("AnyUp", "AnyDown") end
+            secure:SetAttribute("type", "spell")
+            secure:SetScript("OnEnter", function() open:GetScript("OnEnter")(open) end)
+            secure:SetScript("OnLeave", function() open:GetScript("OnLeave")(open) end)
         end
-    end)
-    secure:SetScript("OnEnter", function() open:GetScript("OnEnter")(open) end)
-    secure:SetScript("OnLeave", function() open:GetScript("OnLeave")(open) end)
+        if not secure then return end
+        if want then
+            secure:SetAttribute("spell", WK.modules.Professions:OpenSpell(self.prof))
+            secure:ClearAllPoints()
+            secure:SetAllPoints(open)
+            secure:SetFrameStrata(open:GetFrameStrata() or "HIGH")
+            secure:SetFrameLevel((open:GetFrameLevel() or 1) + 5)
+            secure:Show()
+        else
+            secure:Hide()
+        end
+    end
+    open:HookScript("OnShow", function() tab:SyncSecure() end)
+    open:HookScript("OnHide", function() tab:SyncSecure() end)
+    WK:On("PLAYER_REGEN_DISABLED", function() if secure then secure:Hide() end end)
+    WK:On("PLAYER_REGEN_ENABLED", function() tab:SyncSecure() end)
     local note = UI:Text(head, 10, C.dim)
     note:SetPoint("TOPRIGHT", -16, -32)
     note:SetJustifyH("RIGHT")
@@ -550,6 +573,7 @@ local function Detail(page, parent)
         -- Ouverture : seulement pour le perso connecté et un métier qui a une fenêtre.
         local canOpen = isMe and #all > 0
         open:SetShown(canOpen)
+        self:SyncSecure()
         local scan = c.recipeScans and c.recipeScans[self.prof]
         if canOpen then
             note:SetText("")

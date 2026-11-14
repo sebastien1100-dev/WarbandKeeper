@@ -52,6 +52,7 @@ local defaults = {
         },
         ui = {
             lang = "auto",         -- "auto", "frFR" ou "enUS"
+            closeInCombat = false, -- ferme la fenêtre principale au début d'un combat
             theme = "vault",       -- clé de UI.themes
             font = "friz",         -- clé de UI.fonts
             rounding = 1,          -- 1 = arrondi fort, 0.6 = moyen, 0.25 = presque carré
