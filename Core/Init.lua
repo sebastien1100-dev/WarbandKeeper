@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "0.1.0"
+WK.version = "0.2.0"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -24,6 +24,11 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if not ok then WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err)) end
     end
 end)
+
+-- Prévient l'interface que les données ont changé (rafraîchissement différé).
+function WK:NotifyChanged()
+    if self.UI and self.UI.RequestRefresh then self.UI:RequestRefresh() end
+end
 
 -- Enregistrement d'un module : il expose éventuellement OnInit() et OnLogin().
 function WK:NewModule(name)

@@ -18,6 +18,7 @@ function M:UpdateMoney()
     local hist = WK.DB.global.history.gold
     hist[key] = hist[key] or {}
     WK.DB:PushHistory(hist[key], c.money)
+    WK:NotifyChanged()
 end
 
 function M:OnLogin()
@@ -34,6 +35,7 @@ WK:On("TIME_PLAYED_MSG", function(total, level)
     local c = WK.DB:Me()
     c.played = total
     c.playedLevel = level
+    WK:NotifyChanged()
 end)
 
 -- Masque le message "/played" automatique dans le chat au login.
@@ -52,6 +54,13 @@ function M:SortedKeys()
     for k in pairs(WK.DB.global.characters) do table.insert(keys, k) end
     table.sort(keys)
     return keys
+end
+
+-- Supprime un personnage (et son historique) des données.
+function M:Delete(key)
+    WK.DB.global.characters[key] = nil
+    WK.DB.global.history.gold[key] = nil
+    WK:NotifyChanged()
 end
 
 function M:PrintGold()

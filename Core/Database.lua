@@ -19,6 +19,12 @@ local defaults = {
     settings = {
         historyIntervalSec = 3600, -- 1 point max par heure et par série
         trackedItems = {},         -- [itemID] = true : matériaux suivis dans les stats
+        ui = {
+            accent = 1,            -- index dans WK.UI.accents
+            scale = 1,
+            lastPage = "overview",
+            minimap = { hide = false, angle = 215 },
+        },
     },
 }
 

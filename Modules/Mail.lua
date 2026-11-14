@@ -75,12 +75,24 @@ end)
 
 WK:On("MAIL_CLOSED", function() wipe(queue); sending = false end)
 
+-- Nombre d'objets dans les sacs du perso courant qui partiraient au prochain passage.
+function M:PendingCount()
+    local n = 0
+    local me = WK.DB:Me()
+    for id, to in pairs(WK.DB.global.mail.rules) do
+        if string.lower(to) ~= string.lower(myName()) then n = n + ((me.bags or {})[id] or 0) end
+    end
+    return n
+end
+
 -- Gestion des règles
 function M:AddRule(itemArg, recipient)
     local id = WK:ParseItemID(itemArg)
     if not id or not recipient or recipient == "" then return false end
     WK.DB.global.mail.rules[id] = recipient
     WK:Print(string.format(WK.L.MAIL_RULE_ADD, WK:ItemName(id), recipient))
+    WK.modules.Statistics:UpdateItems()
+    WK:NotifyChanged()
     return true
 end
 
@@ -89,6 +101,7 @@ function M:RemoveRule(itemArg)
     if not id then return false end
     WK.DB.global.mail.rules[id] = nil
     WK:Print(string.format(WK.L.MAIL_RULE_DEL, WK:ItemName(id)))
+    WK:NotifyChanged()
     return true
 end
 
@@ -106,4 +119,5 @@ end
 function M:SetEnabled(on)
     WK.DB.global.mail.enabled = on
     WK:Print(on and WK.L.MAIL_ON or WK.L.MAIL_OFF)
+    WK:NotifyChanged()
 end

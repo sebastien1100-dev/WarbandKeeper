@@ -1,0 +1,262 @@
+local ADDON_NAME, WK = ...
+local UI = WK.UI
+local C = UI.colors
+
+local LEFT_W = 230
+local GAP = 12
+local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
+
+-- Nombre de barres selon la période.
+local function buckets(days)
+    if days <= 30 then return days end
+    if days <= 90 then return 45 end
+    return 52
+end
+
+UI:RegisterPage({
+    key = "stats", order = 5, section = "outils", icon = "chart",
+    title = "Statistiques",
+    subtitle = "Évolution de l'or du compte et des matériaux suivis.",
+
+    Build = function(self, p)
+        self.series = "gold"
+        self.days = 7
+
+        -- Liste des séries ---------------------------------------------------
+        local list = UI:Card(p, "Séries")
+        list:SetSize(LEFT_W, UI.PAGE_H)
+        list:SetPoint("TOPLEFT")
+        self.list = list
+
+        local add = UI:Input(list, LEFT_W - 72, 30, "Maj+clic objet / ID")
+        add:SetPoint("BOTTOMLEFT", 12, 12)
+        add.edit.acceptLinks = true
+        local plus = UI:Button(list, "", 40, 30, "primary", "plus")
+        plus.icon:ClearAllPoints(); plus.icon:SetPoint("CENTER")
+        plus:SetPoint("BOTTOMRIGHT", -12, 12)
+        plus.tooltip = "Suivre cet objet dans les statistiques"
+        local function doAdd()
+            local id = WK:ParseItemID(add:GetText())
+            if id then WK.modules.Statistics:Track(id); add:SetText(""); self.series = id; self:Refresh() end
+        end
+        plus:SetScript("OnClick", doAdd)
+        add.onEnter = doAdd
+
+        local scroll = UI:Scroll(list)
+        scroll:SetPoint("TOPLEFT", 8, -40)
+        scroll:SetPoint("BOTTOMRIGHT", -6, 52)
+        self.listScroll = scroll
+
+        self.entries = UI:Pool(function()
+            local b = CreateFrame("Button", nil, scroll.child)
+            b:SetHeight(40)
+            b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
+            b.icon = UI:RoundIcon(b, 22)
+            b.icon:SetPoint("LEFT", 8, 0)
+            b.glyph = UI:Icon(b, "coin", 16)
+            b.glyph:SetPoint("CENTER", b.icon, "CENTER")
+            b.name = UI:Text(b, 12)
+            b.name:SetPoint("TOPLEFT", 38, -7)
+            b.name:SetPoint("RIGHT", -28, 0)
+            b.value = UI:Text(b, 10, C.muted)
+            b.value:SetPoint("TOPLEFT", b.name, "BOTTOMLEFT", 0, -3)
+            b.del = UI:IconButton(b, "trash", 22, "Ne plus suivre", true)
+            b.del:SetPoint("RIGHT", -2, 0)
+            b.del:SetScript("OnClick", function(btn)
+                WK.modules.Statistics:Untrack(btn.key)
+                if self.series == btn.key then self.series = "gold" end
+                self:Refresh()
+            end)
+            b:SetScript("OnEnter", function(btn) btn.hover = true; btn:Paint() end)
+            b:SetScript("OnLeave", function(btn) btn.hover = false; btn:Paint() end)
+            b:SetScript("OnClick", function(btn) self.series = btn.key; self:Refresh() end)
+            function b:Paint()
+                local sel = self.selected
+                self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+                self.bg:SetShown(sel or self.hover)
+            end
+            return b
+        end)
+
+        -- Graphique ------------------------------------------------------------
+        local chartW = UI.PAGE_W - LEFT_W - GAP
+        local card = UI:Card(p)
+        card:SetSize(chartW, UI.PAGE_H)
+        card:SetPoint("TOPRIGHT")
+        self.card = card
+
+        self.seriesTitle = UI:Text(card, 13, C.muted)
+        self.seriesTitle:SetPoint("TOPLEFT", 18, -16)
+        self.seriesValue = UI:Text(card, 22)
+        self.seriesValue:SetPoint("TOPLEFT", self.seriesTitle, "BOTTOMLEFT", 0, -8)
+        self.delta = UI:Badge(card, "")
+        self.delta:SetPoint("LEFT", self.seriesValue, "RIGHT", 10, 0)
+
+        local seg = UI:Segmented(card, (function()
+            local t = {}
+            for _, r in ipairs(RANGES) do table.insert(t, { r[1], r[2] }) end
+            return t
+        end)(), function(d) self.days = d; self:Refresh() end, 30)
+        seg:SetPoint("TOPRIGHT", -14, -14)
+        seg:Select(7)
+
+        local area = CreateFrame("Frame", nil, card)
+        area:SetPoint("TOPLEFT", 70, -104)
+        area:SetPoint("BOTTOMRIGHT", -18, 40)
+        self.area = area
+
+        self.grid = {}
+        for i = 0, 3 do
+            local line = area:CreateTexture(nil, "BACKGROUND", nil, 2)
+            line:SetColorTexture(unpack(C.border))
+            line:SetHeight(1)
+            local lbl = UI:Text(card, 10, C.dim)
+            lbl:SetJustifyH("RIGHT")
+            self.grid[i] = { line = line, label = lbl }
+        end
+        self.xLabels = {}
+        for i = 1, 3 do
+            self.xLabels[i] = UI:Text(card, 10, C.dim)
+        end
+        self.empty = UI:Text(card, 12, C.muted)
+        self.empty:SetPoint("CENTER", area, "CENTER")
+        self.empty:SetText("Pas encore assez de données : reviens après quelques sessions de jeu.")
+
+        self.bars = UI:Pool(function()
+            local b = CreateFrame("Frame", nil, area)
+            b.shape = UI:Rounded(b, 2, 0, "ARTWORK", 1)
+            b:EnableMouse(true)
+            b:SetScript("OnEnter", function(bar)
+                bar.hover = true; bar:Paint()
+                GameTooltip:SetOwner(bar, "ANCHOR_TOP")
+                GameTooltip:AddLine(date("%d/%m/%Y", bar.t), 1, 1, 1)
+                GameTooltip:AddLine(self.series == "gold" and WK:FormatMoney(bar.v) or ("x" .. bar.v), 0.8, 0.8, 0.8)
+                GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function(bar) bar.hover = false; bar:Paint(); GameTooltip:Hide() end)
+            function b:Paint()
+                local r, g, bl = UI:Accent()
+                self.shape:SetColor(r, g, bl, self.hover and 1 or 0.6)
+            end
+            return b
+        end)
+    end,
+
+    RefreshList = function(self)
+        local S = WK.modules.Statistics
+        local now = time()
+        local tracked = S:TrackedItems()
+        local keys = { "gold" }
+        local ids = {}
+        for id in pairs(tracked) do table.insert(ids, id) end
+        table.sort(ids, function(a, b) return UI:ItemInfo(a) < UI:ItemInfo(b) end)
+        for _, id in ipairs(ids) do table.insert(keys, id) end
+        if self.series ~= "gold" and not tracked[self.series] then self.series = "gold" end
+
+        self.entries:Reset()
+        local y = 0
+        local r, g, b = UI:Accent()
+        for _, key in ipairs(keys) do
+            local e = self.entries:Get()
+            e.key, e.del.key = key, key
+            e:ClearAllPoints()
+            e:SetPoint("TOPLEFT", 0, -y)
+            e:SetPoint("TOPRIGHT", 0, -y)
+            if key == "gold" then
+                e.icon:Hide(); e.glyph:Show()
+                e.glyph:SetVertexColor(unpack(C.gold))
+                e.name:SetText("Or du compte")
+                e.name:SetTextColor(unpack(C.text))
+                e.value:SetText(UI:GoldText(S:AccountGoldAt(now)))
+                e.del:Hide()
+            else
+                local name, icon, qr, qg, qb = UI:ItemInfo(key)
+                e.glyph:Hide(); e.icon:Show()
+                e.icon:SetTexture(icon)
+                e.name:SetText(name)
+                e.name:SetTextColor(qr, qg, qb)
+                local suffix = tracked[key] == "mail" and "  ·  règle d'envoi" or ""
+                e.value:SetText("x" .. WK.modules.Inventory:AccountCount(key) .. suffix)
+                e.del:SetShown(tracked[key] == "manual")
+            end
+            e.selected = (key == self.series)
+            e:Paint()
+            y = y + 44
+        end
+        self.listScroll:SetContentHeight(y)
+    end,
+
+    Refresh = function(self)
+        self:RefreshList()
+        local S = WK.modules.Statistics
+        local key, days = self.series, self.days
+        local now = time()
+        local n = buckets(days)
+        local step = days * 86400 / n
+        local isGold = key == "gold"
+
+        if isGold then
+            self.seriesTitle:SetText("Or du compte")
+        else
+            self.seriesTitle:SetText((UI:ItemInfo(key)))
+        end
+
+        local values, maxV = {}, 0
+        for i = 1, n do
+            local t = now - (n - i) * step
+            local v = S:SeriesAt(key, t)
+            values[i] = { t = t, v = v }
+            if v > maxV then maxV = v end
+        end
+        local first, last = values[1].v, values[n].v
+        self.seriesValue:SetText(isGold and UI:GoldText(last) or ("x" .. last))
+        local diff = last - first
+        local txt = (diff >= 0 and "+" or "") .. (isGold and UI:ShortGold(diff) or tostring(diff))
+        self.delta:Set(txt, diff >= 0 and C.positive or C.negative)
+
+        self.bars:Reset()
+        local area = self.area
+        local w, h = area:GetWidth(), area:GetHeight()
+        self.empty:SetShown(maxV == 0)
+
+        -- Grille + libellés de l'axe vertical
+        for i = 0, 3 do
+            local gy = h * i / 3
+            local gl = self.grid[i]
+            gl.line:ClearAllPoints()
+            gl.line:SetPoint("BOTTOMLEFT", area, "BOTTOMLEFT", 0, gy)
+            gl.line:SetPoint("BOTTOMRIGHT", area, "BOTTOMRIGHT", 0, gy)
+            gl.label:ClearAllPoints()
+            gl.label:SetPoint("RIGHT", area, "BOTTOMLEFT", -10, gy)
+            local v = maxV * i / 3
+            gl.label:SetText(maxV == 0 and "" or (isGold and UI:ShortGold(v) or tostring(math.floor(v + 0.5))))
+        end
+
+        -- Barres
+        local gap = n > 30 and 2 or 4
+        local bw = math.max(4, (w - (n - 1) * gap) / n)
+        if maxV > 0 then
+            for i, pt in ipairs(values) do
+                local b = self.bars:Get()
+                b.t, b.v = pt.t, pt.v
+                b:ClearAllPoints()
+                b:SetPoint("BOTTOMLEFT", area, "BOTTOMLEFT", (i - 1) * (bw + gap), 0)
+                b:SetSize(bw, math.max(4, h * pt.v / maxV))
+                b:Paint()
+            end
+        end
+
+        -- Dates sur l'axe horizontal (début, milieu, fin)
+        local idx = { 1, math.ceil(n / 2), n }
+        local anchors = { "LEFT", "CENTER", "RIGHT" }
+        for i = 1, 3 do
+            local l = self.xLabels[i]
+            local k = idx[i]
+            l:ClearAllPoints()
+            local x = (k - 1) * (bw + gap) + bw / 2
+            l:SetPoint("TOP", area, "BOTTOMLEFT", x, -10)
+            l:SetJustifyH(anchors[i])
+            l:SetText(date("%d/%m", values[k].t))
+        end
+    end,
+})

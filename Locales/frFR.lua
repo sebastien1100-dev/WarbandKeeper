@@ -2,8 +2,9 @@ local ADDON_NAME, WK = ...
 
 -- Chaînes affichées. Une seule langue pour l'instant (français).
 WK.L = {
-    LOADED          = "chargé. Tape |cffffd100/wk|r pour l'aide.",
+    LOADED          = "chargé. Tape |cffffd100/wk|r pour ouvrir la fenêtre, |cffffd100/wk aide|r pour les commandes.",
     HELP_TITLE      = "Commandes :",
+    HELP_OPEN       = "/wk               - Ouvre / ferme la fenêtre (/wk aide : cette aide)",
     HELP_GOLD       = "/wk or            - Or de tous les personnages",
     HELP_CHARS      = "/wk persos        - Liste des personnages (niveau, temps de jeu)",
     HELP_FIND       = "/wk cherche <nom> - Où se trouve un objet (sacs / banque)",

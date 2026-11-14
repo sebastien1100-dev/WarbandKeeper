@@ -18,6 +18,7 @@ function M:Scan()
         end
     end
     c.professions = profs
+    WK:NotifyChanged()
 end
 
 function M:OnLogin() self:Scan() end

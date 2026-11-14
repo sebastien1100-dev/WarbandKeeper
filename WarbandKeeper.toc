@@ -2,7 +2,9 @@
 ## Title: Warband Keeper
 ## Notes: Gestion de compte : sacs, banques, métiers, or, temps de jeu, statistiques et envoi automatique du farm par courrier.
 ## Author: sebastien1100-dev
-## Version: 0.1.0
+## Version: 0.2.0
+## IconTexture: Interface\Icons\INV_Misc_Bag_10
+## AddonCompartmentFunc: WarbandKeeper_OnAddonCompartmentClick
 ## SavedVariables: WarbandKeeperDB
 ## SavedVariablesPerCharacter: WarbandKeeperCharDB
 
@@ -17,5 +19,17 @@ Modules\Inventory.lua
 Modules\Professions.lua
 Modules\Statistics.lua
 Modules\Mail.lua
+
+UI\Theme.lua
+UI\Widgets.lua
+UI\MainFrame.lua
+UI\Pages\Overview.lua
+UI\Pages\Characters.lua
+UI\Pages\Inventory.lua
+UI\Pages\Professions.lua
+UI\Pages\Statistics.lua
+UI\Pages\Mail.lua
+UI\Pages\Options.lua
+UI\MinimapButton.lua
 
 Core\Commands.lua

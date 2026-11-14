@@ -66,6 +66,12 @@ function WK.Container.Info(bag, slot)
     return itemID, count, locked, nil
 end
 
+function WK.Container.NumFree(bag)
+    if C and C.GetContainerNumFreeSlots then return (C.GetContainerNumFreeSlots(bag)) end
+    if GetContainerNumFreeSlots then return (GetContainerNumFreeSlots(bag)) end
+    return 0
+end
+
 function WK.Container.Pickup(bag, slot)
     if C and C.PickupContainerItem then return C.PickupContainerItem(bag, slot) end
     return PickupContainerItem(bag, slot)

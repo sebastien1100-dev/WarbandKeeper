@@ -33,7 +33,14 @@ end
 function M:ScanBags()
     local c = WK.DB:Me()
     c.bags = scan(self:BagList())
+    local free, total = 0, 0
+    for _, bag in ipairs(self:BagList()) do
+        free = free + (WK.Container.NumFree(bag) or 0)
+        total = total + (WK.Container.NumSlots(bag) or 0)
+    end
+    c.freeSlots, c.totalSlots = free, total
     WK.modules.Statistics:UpdateItems()
+    WK:NotifyChanged()
 end
 
 local bankOpen = false
@@ -43,6 +50,7 @@ function M:ScanBank()
     c.bank = scan(self:BankList())
     c.bankScanned = time()
     WK.modules.Statistics:UpdateItems()
+    WK:NotifyChanged()
 end
 
 -- Regroupe les BAG_UPDATE rafales en un seul scan.
