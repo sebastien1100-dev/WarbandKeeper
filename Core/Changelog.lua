@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.15.0", date = "14/11/2026",
+        added = {
+            "Résumé : une enveloppe à côté du nom des persos qui ont du courrier en attente. Elle passe au rouge quand le courrier expire bientôt (seuil réglé dans Options > Alertes).",
+            "Survol de l'enveloppe : nombre de lettres, objets, or et jours avant expiration.",
+        },
+    },
+    {
         version = "0.14.0", date = "14/11/2026",
         added = {
             "Les sacs sont triés automatiquement après l'envoi du courrier (et la prise automatique) et après le dépôt en banque, avec le tri du jeu.",

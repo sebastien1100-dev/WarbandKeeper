@@ -40,6 +40,7 @@ local function palette(b)
         onAccent = rgba(b.onAccent or scale(b.bg, 0.6)),
         positive = { 0.62, 0.82, 0.48, 1 },
         negative = { 0.91, 0.42, 0.42, 1 },
+        warning  = { 0.95, 0.66, 0.30, 1 },
         gold     = { 0.878, 0.741, 0.447, 1 },
     }
     return p

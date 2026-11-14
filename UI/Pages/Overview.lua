@@ -1,6 +1,7 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local T = function(s) return WK.T(s) end
 
 local LEFT_W = 276
 local TOP_H = 232
@@ -181,6 +182,18 @@ UI:RegisterPage({
             r.name:SetPoint("LEFT", r.icon, "RIGHT", 10, 0)
             r.here = UI:Badge(r, "ici")
             r.here:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
+            -- Enveloppe : courrier en attente (rouge quand il expire bientôt).
+            r.mail = CreateFrame("Frame", nil, r)
+            r.mail:SetSize(18, 18)
+            r.mail:EnableMouse(true)
+            r.mail.icon = UI:Icon(r.mail, "mail", 14)
+            r.mail.icon:SetPoint("CENTER")
+            r.mail:SetScript("OnEnter", function(s)
+                GameTooltip:SetOwner(s, "ANCHOR_TOP")
+                GameTooltip:SetText(s.tip or "", 1, 1, 1, 1, true)
+                GameTooltip:Show()
+            end)
+            r.mail:SetScript("OnLeave", function() GameTooltip:Hide() end)
             r.level = UI:Text(r, 12)
             r.gold = UI:Text(r, 12)
             r.gold:SetJustifyH("RIGHT")
@@ -319,6 +332,26 @@ UI:RegisterPage({
             r.name:SetText(WK:CharName(c, e.key))
             r.name:SetTextColor(UI:ClassColor(c.class))
             r.here:SetShown(isMe)
+            local box = c.mailbox
+            if box and (box.count or 0) > 0 then
+                r.mail:ClearAllPoints()
+                r.mail:SetPoint("LEFT", isMe and r.here or r.name, "RIGHT", 6, 0)
+                local days = box.expiresAt and math.floor((box.expiresAt - time()) / 86400)
+                local soon = days and days <= (WK.DB.global.settings.alerts.mailDays or 3)
+                r.mail.icon:SetVertexColor(unpack(soon and C.negative or C.muted))
+                local parts = { string.format(box.count > 1 and T("%d lettres") or T("%d lettre"), box.count) }
+                local n = WK.modules.Farm:ItemCount(box.items or {})
+                if n > 0 then table.insert(parts, string.format(T("%d objet(s)"), n)) end
+                if (box.money or 0) > 0 then table.insert(parts, WK:FormatMoney(box.money)) end
+                if days then
+                    table.insert(parts, (soon and UI:Hex(C.negative) or "") ..
+                        string.format(T("expire dans %d j"), math.max(0, days)) .. (soon and "|r" or ""))
+                end
+                r.mail.tip = T("Courrier en attente") .. "\n" .. table.concat(parts, "  ·  ")
+                r.mail:Show()
+            else
+                r.mail:Hide()
+            end
             r.level:SetText(tostring(c.level or "-"))
             r.gold:SetText(UI:GoldText(c.money))
 

@@ -2,7 +2,7 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
-local WARN = { 0.95, 0.66, 0.30, 1 }
+local WARN = C.warning
 
 -- Colonnes : { libellé, x, alignement }
 -- Positions prévues pour 924 px de large, mises à l'échelle à la construction.

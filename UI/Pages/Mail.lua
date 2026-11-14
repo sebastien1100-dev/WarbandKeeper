@@ -372,7 +372,7 @@ local function Reception(page, parent, top)
                 if box.expiresAt then
                     local d = math.max(0, math.floor((box.expiresAt - time()) / 86400))
                     r.exp:SetText(string.format(T("expire dans %d j"), d))
-                    r.exp:SetTextColor(unpack(d <= WK.DB.global.settings.alerts.mailDays and { 0.95, 0.66, 0.30, 1 } or C.muted))
+                    r.exp:SetTextColor(unpack(d <= WK.DB.global.settings.alerts.mailDays and C.warning or C.muted))
                 else
                     r.exp:SetText("")
                 end

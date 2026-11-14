@@ -322,6 +322,8 @@ WK.Locales.enUS.text = {
 
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
+    ["Courrier en attente"] = "Mail waiting",
+
     -- Tri des sacs
     ["Trier les sacs ensuite"] = "Sort bags afterwards",
     ["Après l'envoi automatique (et la prise automatique si elle est activée)."] = "After auto-send (and auto-take if enabled).",

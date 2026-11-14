@@ -14,6 +14,12 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.15.0 — 14/11/2026
+
+### Ajouts
+- Résumé : une enveloppe à côté du nom des persos qui ont du courrier en attente. Elle passe au rouge quand le courrier expire bientôt (seuil réglé dans Options > Alertes).
+- Survol de l'enveloppe : nombre de lettres, objets, or et jours avant expiration.
+
 ## v0.14.0 — 14/11/2026
 
 ### Ajouts
