@@ -1159,17 +1159,23 @@ UI:RegisterPage({
         end
         tabs.levels = Levels(self, frames.levels)
         tabs.detail = Detail(self, frames.detail)
+        -- La fiche prend la place des onglets (masqués) : on la remonte d'autant.
+        frames.detail:ClearAllPoints()
+        frames.detail:SetPoint("TOPLEFT", 0, -TOP)
+        frames.detail:SetPoint("BOTTOMRIGHT")
         tabs.recipes = Recipes(self, frames.recipes)
         tabs.shopping = Shopping(self, frames.shopping)
         UI:OnResize(p, function() UI:RefreshSoon() end) -- cartes des niveaux
         self.tabs = tabs
+        local seg
         local function setTab(k)
             self.tab = k
             self.detailOpen = nil
+            if seg then seg:Show() end
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
-        local seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "Liste de courses" } }, setTab, 32)
+        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "Liste de courses" } }, setTab, 32)
         seg:SetPoint("TOPLEFT")
         seg:Select("levels")
         function self:SetTab(k) seg:Select(k); setTab(k) end
@@ -1177,6 +1183,7 @@ UI:RegisterPage({
         function self:ShowDetail(key, prof)
             if not key then self:SetTab("levels") return end
             seg:Select("levels")
+            seg:Hide() -- les onglets ne servent que sur la liste des métiers
             self.tab = "detail"
             self.detailOpen = true
             for k, f in pairs(frames) do f:SetShown(k == "detail") end
