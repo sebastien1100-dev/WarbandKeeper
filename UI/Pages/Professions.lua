@@ -422,8 +422,16 @@ local DIFF = {
     trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
 }
 
+-- Remarque de guide : {n:id} = « n Objet », {id} = « Objet » (nom pris dans le jeu).
+local function renderNote(note)
+    note = T(note)
+    note = note:gsub("{(%d+):(%d+)}", function(n, id) return n .. " " .. (UI:ItemInfo(tonumber(id)) or "?") end)
+    note = note:gsub("{(%d+)}", function(id) return (UI:ItemInfo(tonumber(id)) or "?") end)
+    return note
+end
+
 local function Detail(page, parent)
-    local tab = { query = "", filter = "all" }
+    local tab = { query = "", filter = "all", mode = "recipes" }
 
     -- En-tête : retour, perso, métier, niveau, ouverture.
     local head = UI:Card(parent)
@@ -491,11 +499,16 @@ local function Detail(page, parent)
         function(k) tab.filter = k; tab:Refresh() end, 34)
     filter:SetPoint("TOPLEFT", 0, fTop)
     filter:Select("all")
-    local search = UI:Input(parent, 260, 34, "Rechercher une recette...", "search")
+    local search = UI:Input(parent, 220, 34, "Rechercher une recette...", "search")
     search:SetPoint("TOPRIGHT", 0, fTop)
     search.onChange = function(t) tab.query = string.lower(t or ""); tab:Refresh() end
     local info = UI:Text(parent, 11, C.muted)
     info:SetPoint("LEFT", filter, "RIGHT", 14, 0)
+    -- Recettes ou guide de montée (quand un guide existe pour ce métier)
+    local modeSeg = UI:Segmented(parent, { { "recipes", "Recettes" }, { "guide", "Guide de montée" } },
+        function(k) tab.mode = k; tab.scrollToCurrent = (k == "guide"); tab:Refresh() end, 34)
+    modeSeg:SetPoint("TOPLEFT", 0, fTop)
+    modeSeg:Select("recipes")
 
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, fTop - 46)
@@ -655,9 +668,243 @@ local function Detail(page, parent)
         return maxL
     end
 
+    -----------------------------------------------------------------------
+    -- Guide de montée : étapes (celle en cours mise en avant) et matériaux
+    -- jusqu'au niveau max, avec ce qui manque sur le compte.
+    -----------------------------------------------------------------------
+    local MATS_W = 320
+    local guide = CreateFrame("Frame", nil, parent)
+    guide:SetPoint("TOPLEFT", 0, fTop - 46)
+    guide:SetPoint("BOTTOMRIGHT")
+    guide:Hide()
+    local gsteps = UI:Scroll(guide)
+    gsteps:SetPoint("TOPLEFT")
+    gsteps:SetPoint("BOTTOMRIGHT", -(MATS_W + GAP), 0)
+    local matsCard = UI:Card(guide, "Matériaux jusqu'au max")
+    matsCard:SetWidth(MATS_W)
+    matsCard:SetPoint("TOPRIGHT")
+    matsCard:SetPoint("BOTTOMRIGHT")
+    local matsSum = UI:Text(matsCard, 11, C.muted)
+    matsSum:SetPoint("TOPLEFT", 16, -36)
+    matsSum:SetPoint("TOPRIGHT", -16, -36)
+    matsSum:SetJustifyH("LEFT")
+    local ahBtn = UI:Button(matsCard, "Liste Auctionator", nil, 28, "primary", "search")
+    ahBtn:SetPoint("BOTTOMLEFT", 12, 46)
+    ahBtn:SetPoint("BOTTOMRIGHT", -12, 46)
+    ahBtn.tooltip = "Crée une liste de courses Auctionator avec les composants qui manquent sur le compte."
+    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToAuctionator(tab.prof, tab.rank) end)
+    local mailBtn = UI:Button(matsCard, "Envoyer à ce perso", nil, 28, "secondary", "mail")
+    mailBtn:SetPoint("BOTTOMLEFT", 12, 12)
+    mailBtn:SetPoint("BOTTOMRIGHT", -12, 12)
+    mailBtn.tooltip = "Crée des règles d'envoi pour que tes autres persos lui postent ces composants (les règles existantes ne sont pas modifiées)."
+    mailBtn:SetScript("OnClick", function()
+        local added, skipped = WK.modules.Recipes:GuideMailRules(tab.prof, tab.key)
+        WK:Print(string.format(T("Guide : %d règle(s) d'envoi ajoutée(s), %d déjà existante(s)."), added, skipped))
+    end)
+    local mscroll = UI:Scroll(matsCard)
+    mscroll:SetPoint("TOPLEFT", 10, -60)
+    mscroll:SetPoint("BOTTOMRIGHT", -8, 84)
+    local mrows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, mscroll.child)
+        r:SetHeight(30)
+        r.icon = UI:RoundIcon(r, 20)
+        r.icon:SetPoint("LEFT", 4, 0)
+        r.count = UI:Text(r, 11)
+        r.count:SetPoint("RIGHT", -4, 0)
+        r.count:SetJustifyH("RIGHT")
+        r.name = UI:Text(r, 11)
+        r.name:SetPoint("LEFT", 30, 0)
+        r.name:SetPoint("RIGHT", -96, 0)
+        r:SetScript("OnEnter", function(s)
+            if not s.m then return end
+            GameTooltip:SetOwner(s, "ANCHOR_LEFT")
+            GameTooltip:SetText((UI:ItemInfo(s.m.itemID)) or "?", 1, 1, 1)
+            GameTooltip:AddDoubleLine(T("Nécessaire"), tostring(s.m.need), 0.7, 0.7, 0.7, 1, 1, 1)
+            GameTooltip:AddDoubleLine(T("Sur le compte"), tostring(s.m.have), 0.7, 0.7, 0.7, 1, 1, 1)
+            if s.m.crafted then
+                GameTooltip:AddLine(T("Fabriqué par une étape du guide."), 0.6, 0.8, 1)
+            elseif s.m.missing > 0 then
+                GameTooltip:AddDoubleLine(T("Manquant"), tostring(s.m.missing), 0.7, 0.7, 0.7, 1, 0.5, 0.4)
+                GameTooltip:AddDoubleLine(T("Coût"), WK:FormatMoney(s.m.cost), 0.7, 0.7, 0.7, 1, 1, 1)
+            end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return r
+    end)
+    -- Lignes d'étapes et en-têtes de rang
+    local sheads = UI:Pool(function()
+        local h = CreateFrame("Frame", nil, gsteps.child)
+        h:SetHeight(40)
+        h.title = UI:Text(h, 12)
+        h.title:SetPoint("TOPLEFT", 4, -6)
+        h.info = UI:Text(h, 10, C.muted)
+        h.info:SetPoint("TOPLEFT", h.title, "BOTTOMLEFT", 0, -3)
+        h.info:SetPoint("TOPRIGHT", h, "TOPRIGHT", -4, -21)
+        h.info:SetJustifyH("LEFT")
+        return h
+    end)
+    local srows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, gsteps.child)
+        r:SetHeight(50)
+        UI:Panel(r, 12, C.surface, C.border)
+        r.range = UI:Text(r, 11, C.muted)
+        r.range:SetPoint("LEFT", 12, 0)
+        r.range:SetWidth(58)
+        r.icon = UI:RoundIcon(r, 28)
+        r.icon:SetPoint("LEFT", 72, 0)
+        r.state = UI:Text(r, 10)
+        r.state:SetPoint("TOPRIGHT", -12, -9)
+        r.state:SetJustifyH("RIGHT")
+        r.name = UI:Text(r, 12)
+        r.name:SetPoint("TOPLEFT", 110, -9)
+        r.name:SetPoint("TOPRIGHT", -90, -9)
+        r.sub = UI:Text(r, 10, C.muted)
+        r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -5)
+        r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -12, -28)
+        r:SetScript("OnEnter", function(s)
+            if not s.e then return end
+            local st = s.e.step
+            GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.title or "", 1, 1, 1)
+            GameTooltip:AddLine(string.format(T("Niveaux %d à %d · %d fabrications"), st.from, st.to, st.crafts), 0.8, 0.8, 0.8)
+            for _, f in ipairs(st.first or {}) do
+                GameTooltip:AddLine(string.format(T("D'abord : %d x %s"), f.crafts, (UI:ItemInfo(f.out)) or "?"), 0.6, 0.8, 1)
+            end
+            for _, rg in ipairs(st.reagents or {}) do
+                local have = WK.modules.Inventory:AccountCount(rg[1])
+                local need = rg[2] * math.max(s.e.left, 0)
+                GameTooltip:AddDoubleLine((UI:ItemInfo(rg[1])) or "?", string.format("%d / %d", have, need),
+                    0.85, 0.85, 0.85, have >= need and 0.6 or 1, have >= need and 1 or 0.5, have >= need and 0.5 or 0.4)
+            end
+            if st.vendors then
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine(T("Vendeurs de la recette :"), 0.8, 0.8, 0.8)
+                GameTooltip:AddLine(table.concat(st.vendors, ", "), 1, 1, 1, true)
+            end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return r
+    end)
+
+    function tab:RefreshGuide(c, pr)
+        local R = WK.modules.Recipes
+        self.currentY = nil
+        local rank = pr.rank or 0
+        self.rank = rank
+        local steps, mats, total, g = R:GuidePlan(self.prof, rank)
+        local faction = c.faction == "Horde" and "horde" or "alliance"
+        sheads:Reset(); srows:Reset()
+        local y, si = 0, 1
+        local sections = g.sections or {}
+        for _, e in ipairs(steps) do
+            local st = e.step
+            -- En-tête de rang quand on entre dans une nouvelle tranche
+            while sections[si] and st.from >= sections[si].from do
+                local sec = sections[si]
+                local h = sheads:Get()
+                h:ClearAllPoints()
+                h:SetPoint("TOPLEFT", 0, -y)
+                h:SetPoint("TOPRIGHT", 0, -y)
+                h.title:SetText(string.format("%s  %s", T(sec.rank), UI:Hex(C.muted) .. sec.from .. "-" .. sec.to .. "|r"))
+                local bits = {}
+                local tr = sec[faction]
+                if tr then
+                    local names = {}
+                    for _, n in ipairs(tr) do table.insert(names, n[1] .. " (" .. T(n[2]) .. ")") end
+                    table.insert(bits, T("Maître : ") .. table.concat(names, ", "))
+                end
+                if sec.note then table.insert(bits, UI:Hex(C.warning) .. renderNote(sec.note) .. "|r") end
+                h.info:SetText(table.concat(bits, "  ·  "))
+                y = y + (#bits > 0 and 44 or 28)
+                si = si + 1
+            end
+            local r = srows:Get()
+            r.e = e
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -y)
+            r:SetPoint("TOPRIGHT", 0, -y)
+            r.range:SetText(st.from .. "-" .. st.to)
+            local name, ic, qr, qg, qb = UI:ItemInfo(st.out or 0)
+            r.title = name or "?"
+            r.icon:SetTexture(ic)
+            local n = e.status == "current" and e.left or st.crafts
+            r.name:SetText((name or "?") .. "  " .. UI:Hex(C.muted) .. "x" .. n .. "|r")
+            r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+            local reag = {}
+            for _, f in ipairs(st.first or {}) do
+                table.insert(reag, UI:Hex(C.muted) .. T("d'abord") .. " " .. f.crafts .. " " .. ((UI:ItemInfo(f.out)) or "?") .. "|r")
+            end
+            for _, rg in ipairs(st.reagents or {}) do
+                table.insert(reag, (rg[2] * n) .. " " .. ((UI:ItemInfo(rg[1])) or "?"))
+            end
+            local src = st.src == "recipe" and (T("Recette : ") .. ((st.learn and UI:ItemInfo(st.learn)) or "?")) or T("Maître")
+            r.sub:SetText(table.concat(reag, ", ") .. "  ·  " .. src)
+            if e.status == "done" then
+                r.state:SetText(UI:Hex(C.positive) .. T("fait") .. "|r")
+                r:SetAlpha(0.5)
+                r.bg:SetColor(unpack(C.surface)); r.border:SetColor(unpack(C.border))
+            elseif e.status == "current" then
+                r.state:SetText(UI:Hex(C.gold) .. T("en cours") .. "|r")
+                r:SetAlpha(1)
+                r.bg:SetColor(unpack(C.surface2)); r.border:SetColor(UI:Accent())
+            else
+                r.state:SetText("")
+                r:SetAlpha(1)
+                r.bg:SetColor(unpack(C.surface)); r.border:SetColor(unpack(C.border))
+            end
+            if e.status == "current" then self.currentY = y end
+            y = y + 56
+        end
+        gsteps:SetContentHeight(y)
+        -- À l'ouverture du guide : on fait défiler jusqu'à l'étape en cours.
+        if self.scrollToCurrent then
+            self.scrollToCurrent = false
+            local target = math.max(0, (self.currentY or 0) - 60)
+            gsteps:SetVerticalScroll(math.min(target, gsteps:MaxScroll()))
+            gsteps:UpdateBar()
+        end
+
+        -- Matériaux
+        local missing = 0
+        for _, m in ipairs(mats) do if not m.crafted and m.missing > 0 then missing = missing + 1 end end
+        if #mats == 0 then
+            matsSum:SetText(T("Plus rien à fabriquer : le guide est terminé."))
+        else
+            matsSum:SetText(string.format(T("%d manquant(s) · coût %s"), missing, UI:PlainMoney(total)))
+        end
+        mrows:Reset()
+        local my = 0
+        for _, m in ipairs(mats) do
+            local r = mrows:Get()
+            r.m = m
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 0, -my)
+            r:SetPoint("TOPRIGHT", 0, -my)
+            local name, ic, qr, qg, qb = UI:ItemInfo(m.itemID)
+            r.icon:SetTexture(ic)
+            r.name:SetText(name or "?")
+            r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+            if m.crafted then
+                r.count:SetText(UI:Hex(C.dim) .. T("fabriqué") .. "  " .. m.need .. "|r")
+            elseif m.missing > 0 then
+                r.count:SetText(string.format("%s%d|r / %d", UI:Hex(C.negative), m.have, m.need))
+            else
+                r.count:SetText(string.format("%s%d|r / %d", UI:Hex(C.positive), m.have, m.need))
+            end
+            my = my + 32
+        end
+        mscroll:SetContentHeight(my)
+    end
+
     function tab:Show(key, prof)
         if self.key ~= key or self.prof ~= prof then
             self.query, self.filter = "", "all"
+            -- Guide de montée par défaut quand il existe et que le métier n'est pas au max.
+            self.mode = WK.modules.Recipes:Guide(prof) and "guide" or "recipes"
+            modeSeg:Select(self.mode)
+            self.scrollToCurrent = true
             search:SetText("")
             filter:Select("all")
         end
@@ -705,11 +952,27 @@ local function Detail(page, parent)
         gather:SetShown(gkind ~= nil)
         filter:SetShown(not gkind); search:SetShown(not gkind); info:SetShown(not gkind); scroll:SetShown(not gkind)
         if gkind then
+            modeSeg:Hide(); guide:Hide()
             empty:Hide()
             local maxL = self:RefreshGather(pr)
             local p2 = { string.format("%d / %d", pr.rank or 0, pr.max or 0) }
             if maxL then table.insert(p2, string.format(T("dépeçage des monstres jusqu'au niveau %d"), maxL)) end
             sub:SetText(table.concat(p2, "  ·  "))
+            return
+        end
+
+        -- Guide de montée : sélecteur Recettes / Guide quand un guide existe.
+        local hasGuide = WK.modules.Recipes:Guide(self.prof) ~= nil
+        modeSeg:SetShown(hasGuide)
+        filter:ClearAllPoints()
+        if hasGuide then filter:SetPoint("LEFT", modeSeg, "RIGHT", 12, 0) else filter:SetPoint("TOPLEFT", 0, fTop) end
+        info:SetShown(not hasGuide)
+        local showGuide = hasGuide and self.mode == "guide"
+        guide:SetShown(showGuide)
+        filter:SetShown(not showGuide); search:SetShown(not showGuide); scroll:SetShown(not showGuide)
+        if showGuide then
+            empty:Hide()
+            self:RefreshGuide(c, pr)
             return
         end
 

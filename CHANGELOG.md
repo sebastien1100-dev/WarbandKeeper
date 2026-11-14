@@ -7,11 +7,21 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Guide de montée de chaque métier jusqu'au niveau max, d'après les guides à jour de WoW Forever : étape en cours selon le niveau du perso, matériaux totaux, ce qui manque sur le compte et son coût, liste Auctionator et envoi des matériaux au perso.
+- Guides de montée des autres métiers (Couture, Forge, Alchimie, Enchantement, Ingénierie) d'après les guides WoW Forever.
 - Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.
 - Rappel du maître de métier quand un perso arrive au plafond de son rang (75, 150, 225).
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
+
+## v0.20.0 — 14/11/2026
+
+### Ajouts
+- Guides de montée de WoW Forever pour le Travail du cuir, le Secourisme et la Cuisine (d'après wowtbc.gg) : dans la fiche du métier, onglet « Guide de montée ».
+- Le guide met en avant l'étape en cours selon le niveau du perso (avec les fabrications qui restent), grise les étapes faites, et indique les maîtres de chaque rang pour la faction du perso, ainsi que les recettes à acheter et leurs vendeurs.
+- Matériaux jusqu'au max : ce qu'il faut, ce que le compte possède déjà, ce qui manque et son coût. Bouton « Liste Auctionator » pour les manquants, et « Envoyer à ce perso » pour créer les règles d'envoi des composants.
+
+### Modifications
+- Nouveau fichier : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.19.0 — 14/11/2026
 

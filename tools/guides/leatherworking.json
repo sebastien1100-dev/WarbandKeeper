@@ -1,0 +1,1026 @@
+{
+ "name": "Leatherworking",
+ "leveling": [
+  {
+   "skill": [
+    1,
+    30
+   ],
+   "recipe": 2881,
+   "crafts": 36,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    30,
+    45
+   ],
+   "recipe": 2152,
+   "crafts": 23
+  },
+  {
+   "skill": [
+    45,
+    50
+   ],
+   "recipe": 3816,
+   "crafts": 6,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    50,
+    75
+   ],
+   "recipe": 3756,
+   "crafts": 26
+  },
+  {
+   "skill": [
+    75,
+    80
+   ],
+   "recipe": 20648,
+   "crafts": 10,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    80,
+    97
+   ],
+   "recipe": 3817,
+   "crafts": 20,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    97,
+    100
+   ],
+   "recipe": 3763,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    100,
+    105
+   ],
+   "recipe": 9068,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    105,
+    125
+   ],
+   "recipe": 3768,
+   "crafts": 20
+  },
+  {
+   "skill": [
+    125,
+    142
+   ],
+   "recipe": 3818,
+   "crafts": 40,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    142,
+    155
+   ],
+   "recipe": 3780,
+   "crafts": 18
+  },
+  {
+   "skill": [
+    155,
+    165
+   ],
+   "recipe": 7151,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    165,
+    175
+   ],
+   "recipe": 7156,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    175,
+    176
+   ],
+   "recipe": 20650,
+   "crafts": 1
+  },
+  {
+   "skill": [
+    176,
+    193
+   ],
+   "recipe": 7156,
+   "crafts": 20
+  },
+  {
+   "skill": [
+    193,
+    196
+   ],
+   "recipe": 10487,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    196,
+    210
+   ],
+   "recipe": 10507,
+   "crafts": 19
+  },
+  {
+   "skill": [
+    210,
+    221
+   ],
+   "recipe": 14932,
+   "crafts": 11,
+   "first": [
+    {
+     "recipe": 10482,
+     "crafts": 11
+    }
+   ]
+  },
+  {
+   "skill": [
+    221,
+    225
+   ],
+   "recipe": 10548,
+   "crafts": 4
+  },
+  {
+   "skill": [
+    225,
+    235
+   ],
+   "recipe": 19058,
+   "crafts": 15
+  },
+  {
+   "skill": [
+    235,
+    240
+   ],
+   "recipe": 10558,
+   "crafts": 9
+  },
+  {
+   "skill": [
+    240,
+    255
+   ],
+   "recipe": 10647,
+   "crafts": 20,
+   "first": [
+    {
+     "recipe": 10482,
+     "crafts": 80
+    }
+   ]
+  },
+  {
+   "skill": [
+    255,
+    260
+   ],
+   "recipe": 10650,
+   "crafts": 9,
+   "first": [
+    {
+     "recipe": 10482,
+     "crafts": 36
+    }
+   ]
+  },
+  {
+   "skill": [
+    260,
+    268
+   ],
+   "recipe": 19053,
+   "crafts": 11
+  },
+  {
+   "skill": [
+    268,
+    294
+   ],
+   "recipe": 19082,
+   "crafts": 30
+  },
+  {
+   "skill": [
+    294,
+    300
+   ],
+   "recipe": 1254974,
+   "crafts": 12
+  }
+ ],
+ "sections": [
+  {
+   "rank": "Apprentice",
+   "skill": [
+    1,
+    50
+   ],
+   "trainers": null
+  },
+  {
+   "rank": "Journeyman",
+   "skill": [
+    50,
+    125
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Faldron",
+      "location": "Darnassus",
+      "image": "faldron.webp"
+     },
+     {
+      "npc": "Fimble Finespindle",
+      "location": "Ironforge",
+      "image": "fimble-finespindle.webp"
+     },
+     {
+      "npc": "Simon Tanner",
+      "location": "Stormwind City",
+      "image": "simon-tanner.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Karolek",
+      "location": "Orgrimmar",
+      "image": "karolek.webp"
+     },
+     {
+      "npc": "Tarn",
+      "location": "Thunder Bluff",
+      "image": "tarn.webp"
+     },
+     {
+      "npc": "Arthur Moore",
+      "location": "Undercity",
+      "image": "arthur-moore.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Expert",
+   "skill": [
+    125,
+    210
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Telonis",
+      "location": "Darnassus",
+      "image": "telonis.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Una",
+      "location": "Thunder Bluff",
+      "image": "una.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Artisan",
+   "skill": [
+    210,
+    300
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Drakk Stonehand",
+      "location": "The Hinterlands",
+      "image": "drakk-stonehand.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Hahrana Ironhide",
+      "location": "Feralas",
+      "image": "hahrana-ironhide.webp"
+     }
+    ]
+   }
+  }
+ ],
+ "craftedParts": {
+  "2313": 2165,
+  "4231": 3816,
+  "4233": 3817,
+  "4236": 3818,
+  "4243": 3761,
+  "4246": 3763,
+  "4265": 3780,
+  "8172": 10482,
+  "8173": 10487,
+  "15407": 19047,
+  "15564": 19058
+ },
+ "recipes": {
+  "19082": {
+   "name": "Runic Leather Headband",
+   "item": {
+    "id": 15094,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8170,
+     "name": "Rugged Leather",
+     "count": 14,
+     "price": 1149
+    },
+    {
+     "id": 14047,
+     "name": "Runecloth",
+     "count": 10,
+     "price": 976
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "taught_by": [
+    {
+     "id": 15756,
+     "name": "Pattern: Runic Leather Headband",
+     "vendors": [
+      "Jase Farlane"
+     ]
+    }
+   ]
+  },
+  "10507": {
+   "name": "Nightscape Headband",
+   "item": {
+    "id": 8176,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 5,
+     "price": 649
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 2,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10647": {
+   "name": "Feathered Breastplate",
+   "item": {
+    "id": 8349,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 40,
+     "price": 649
+    },
+    {
+     "id": 8168,
+     "name": "Jet Black Feather",
+     "count": 40,
+     "price": 121
+    },
+    {
+     "id": 7971,
+     "name": "Black Pearl",
+     "count": 2,
+     "price": 1272
+    },
+    {
+     "id": 8172,
+     "name": "Cured Thick Hide",
+     "count": 4,
+     "price": null
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 4,
+     "price": 2000
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10650": {
+   "name": "Dragonscale Breastplate",
+   "item": {
+    "id": 8367,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 40,
+     "price": 649
+    },
+    {
+     "id": 8165,
+     "name": "Worn Dragonscale",
+     "count": 30,
+     "price": 500
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 4,
+     "price": 2000
+    },
+    {
+     "id": 8172,
+     "name": "Cured Thick Hide",
+     "count": 4,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "20648": {
+   "name": "Medium Leather",
+   "item": {
+    "id": 2319,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 4,
+     "price": 34
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "20650": {
+   "name": "Thick Leather",
+   "item": {
+    "id": 4304,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4234,
+     "name": "Heavy Leather",
+     "count": 6,
+     "price": 214
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3756": {
+   "name": "Embossed Leather Gloves",
+   "item": {
+    "id": 4239,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 3,
+     "price": 34
+    },
+    {
+     "id": 2320,
+     "name": "Coarse Thread",
+     "count": 2,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3763": {
+   "name": "Fine Leather Belt",
+   "item": {
+    "id": 4246,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 6,
+     "price": 34
+    },
+    {
+     "id": 2320,
+     "name": "Coarse Thread",
+     "count": 2,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10548": {
+   "name": "Nightscape Pants",
+   "item": {
+    "id": 8193,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 14,
+     "price": 649
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 4,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3768": {
+   "name": "Hillman's Shoulders",
+   "item": {
+    "id": 4251,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4233,
+     "name": "Cured Medium Hide",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 2319,
+     "name": "Medium Leather",
+     "count": 4,
+     "price": 82
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10558": {
+   "name": "Nightscape Boots",
+   "item": {
+    "id": 8197,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 16,
+     "price": 649
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 2,
+     "price": 2000
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "1254974": {
+   "name": "Supple Scorpid Vest",
+   "item": {
+    "id": 252599,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8170,
+     "name": "Rugged Leather",
+     "count": 20,
+     "price": 1149
+    },
+    {
+     "id": 15408,
+     "name": "Heavy Scorpid Scale",
+     "count": 10,
+     "price": 2900
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "taught_by": [
+    {
+     "id": 252933,
+     "name": "Pattern: Supple Scorpid Vest",
+     "vendors": [
+      "Pexmit"
+     ]
+    }
+   ]
+  },
+  "2881": {
+   "name": "Light Leather",
+   "item": {
+    "id": 2318,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2934,
+     "name": "Ruined Leather Scraps",
+     "count": 3,
+     "price": 10
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3780": {
+   "name": "Heavy Armor Kit",
+   "item": {
+    "id": 4265,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4234,
+     "name": "Heavy Leather",
+     "count": 5,
+     "price": 214
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "14932": {
+   "name": "Thick Leather Ammo Pouch",
+   "item": {
+    "id": 8218,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 10,
+     "price": 649
+    },
+    {
+     "id": 8172,
+     "name": "Cured Thick Hide",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 8951,
+     "name": "Elixir of Defense",
+     "count": 1,
+     "price": 526
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 6,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "2152": {
+   "name": "Light Armor Kit",
+   "item": {
+    "id": 2304,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 1,
+     "price": 34
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3816": {
+   "name": "Cured Light Hide",
+   "item": {
+    "id": 4231,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 783,
+     "name": "Light Hide",
+     "count": 1,
+     "price": 160
+    },
+    {
+     "id": 4289,
+     "name": "Salt",
+     "count": 1,
+     "price": 50
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3817": {
+   "name": "Cured Medium Hide",
+   "item": {
+    "id": 4233,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4232,
+     "name": "Medium Hide",
+     "count": 1,
+     "price": 264
+    },
+    {
+     "id": 4289,
+     "name": "Salt",
+     "count": 1,
+     "price": 50
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3818": {
+   "name": "Cured Heavy Hide",
+   "item": {
+    "id": 4236,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4235,
+     "name": "Heavy Hide",
+     "count": 1,
+     "price": 930
+    },
+    {
+     "id": 4289,
+     "name": "Salt",
+     "count": 3,
+     "price": 50
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "9068": {
+   "name": "Light Leather Pants",
+   "item": {
+    "id": 7282,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2318,
+     "name": "Light Leather",
+     "count": 10,
+     "price": 34
+    },
+    {
+     "id": 4231,
+     "name": "Cured Light Hide",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "19053": {
+   "name": "Chimeric Gloves",
+   "item": {
+    "id": 15074,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8170,
+     "name": "Rugged Leather",
+     "count": 6,
+     "price": 1149
+    },
+    {
+     "id": 15423,
+     "name": "Chimera Leather",
+     "count": 6,
+     "price": 1200
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "taught_by": [
+    {
+     "id": 15729,
+     "name": "Pattern: Chimeric Gloves",
+     "vendors": [
+      "Blimo Gadgetspring"
+     ]
+    }
+   ]
+  },
+  "7151": {
+   "name": "Barbaric Shoulders",
+   "item": {
+    "id": 5964,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4234,
+     "name": "Heavy Leather",
+     "count": 8,
+     "price": 214
+    },
+    {
+     "id": 4236,
+     "name": "Cured Heavy Hide",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 2,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10482": {
+   "name": "Cured Thick Hide",
+   "item": {
+    "id": 8172,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8169,
+     "name": "Thick Hide",
+     "count": 1,
+     "price": 511
+    },
+    {
+     "id": 8150,
+     "name": "Deeprock Salt",
+     "count": 1,
+     "price": 265
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "19058": {
+   "name": "Rugged Armor Kit",
+   "item": {
+    "id": 15564,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8170,
+     "name": "Rugged Leather",
+     "count": 5,
+     "price": 1149
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "7156": {
+   "name": "Guardian Gloves",
+   "item": {
+    "id": 5966,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4234,
+     "name": "Heavy Leather",
+     "count": 4,
+     "price": 214
+    },
+    {
+     "id": 4236,
+     "name": "Cured Heavy Hide",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 1,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10487": {
+   "name": "Thick Armor Kit",
+   "item": {
+    "id": 8173,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 5,
+     "price": 649
+    },
+    {
+     "id": 4291,
+     "name": "Silken Thread",
+     "count": 1,
+     "price": 500
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  }
+ }
+}

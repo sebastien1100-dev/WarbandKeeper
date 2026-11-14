@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Génère Modules/Guides.lua (guides de montée des métiers) à partir des données
+des guides WoW Forever de wowtbc.gg.
+
+Usage :
+  python3 tools/gen_guides.py                      # régénère depuis tools/guides/*.json
+  python3 tools/gen_guides.py --import page.json   # importe un page-data.json du site
+
+Le page-data.json d'un guide se télécharge à l'adresse
+  https://wowtbc.gg/page-data/warcraftforever/professions/<métier>/page-data.json
+L'import n'en garde que ce qui sert (parcours, maîtres, recettes utilisées).
+"""
+import json
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, "tools", "guides")
+OUT = os.path.join(ROOT, "Modules", "Guides.lua")
+
+# Nom du métier en jeu (français) pour chaque guide.
+PROFS = {
+    "Leatherworking": "Travail du cuir",
+    "First Aid": "Secourisme",
+    "Cooking": "Cuisine",
+    "Tailoring": "Couture",
+    "Blacksmithing": "Forge",
+    "Alchemy": "Alchimie",
+    "Enchanting": "Enchantement",
+    "Engineering": "Ingénierie",
+}
+RANKS = {"Apprentice": "Apprenti", "Journeyman": "Compagnon", "Expert": "Expert", "Artisan": "Artisan"}
+PLACES = {
+    "Arathi Highlands": "Hautes-terres d'Arathi", "Ashenvale": "Orneval", "Darnassus": "Darnassus",
+    "Desolace": "Désolace", "Dustwallow Marsh": "Marécage d'Âprefange", "Feralas": "Feralas",
+    "Ironforge": "Forgefer", "Orgrimmar": "Orgrimmar", "Stormwind City": "Hurlevent",
+    "The Hinterlands": "Les Hinterlands", "Thunder Bluff": "Les Pitons-du-Tonnerre", "Undercity": "Fossoyeuse",
+}
+# Remarques des guides, traduites. {n:id} = n fois l'objet id ; {id} = l'objet id (nom pris dans le jeu).
+NOTES = {
+    "To raise your skill cap to 225, you will need to buy an Expert Cookbook for 1g. It can also be found on the Auction House.":
+        "Pour monter le plafond à 225, achète le {16072} (1 po) ; il se trouve aussi à l'hôtel des ventes.",
+    "Bring x12 Giant Egg, x10 Zesty Clam Meat, and x20 Alterac Swiss for the training quest.":
+        "Apporte {12:12207}, {10:7974} et {20:8932} pour la quête de formation.",
+    "Buy Manual: Heavy Silk Bandage and Manual: Mageweave Bandage while you're there.":
+        "Achète au passage le {16112} et le {16113}.",
+}
+
+
+def slim(page):
+    """Garde du page-data.json le parcours, les maîtres et les recettes utilisées."""
+    prof = page["result"]["pageContext"]["profession"]
+    recipes = {r["id"]: r for c in prof["categories"] for r in c["recipes"]}
+    used = set()
+    for st in prof["leveling"]:
+        used.add(st["recipe"])
+        for f in st.get("first", []):
+            used.add(f["recipe"])
+    keep = {}
+    for rid in used:
+        r = recipes[rid]
+        keep[str(rid)] = {
+            "name": r["name"],
+            "item": {"id": r["item"]["id"], "count": r["item"].get("count", 1)} if r.get("item") else None,
+            "reagents": [{"id": g["id"], "name": g["name"], "count": g["count"], "price": g.get("price")}
+                         for g in r["reagents"]],
+            "source": r.get("source"),
+            "taught_by": [{"id": t["id"], "name": t["name"], "vendors": t.get("vendors") or []}
+                          for t in r.get("taught_by", [])],
+        }
+    return {"name": prof["name"], "leveling": prof["leveling"], "sections": prof["sections"],
+            "craftedParts": prof.get("craftedParts", {}), "recipes": keep}
+
+
+def lua_str(s):
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def gen():
+    guides = []
+    for f in sorted(os.listdir(SRC)):
+        if f.endswith(".json"):
+            guides.append(json.load(open(os.path.join(SRC, f), encoding="utf-8")))
+    out = ["local ADDON_NAME, WK = ...", "",
+           "-- Guides de montée des métiers de WoW Forever (d'après wowtbc.gg).",
+           "-- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.",
+           "-- steps : { from, to, crafts, out = objet fabriqué, qty, reagents = { {id, n par fabrication} },",
+           "--           src = \"trainer\" | \"recipe\", learn = recette (objet), vendors, first = étapes à faire avant }",
+           "-- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.",
+           "WK.Guides = {"]
+    prices = {}
+    for g in guides:
+        name = PROFS.get(g["name"], g["name"])
+        rec = g["recipes"]
+
+        def step(rid, crafts):
+            r = rec[str(rid)]
+            for x in r["reagents"]:
+                if x.get("price"):
+                    prices[x["id"]] = x["price"]
+            parts = ["crafts = %d" % crafts]
+            if r["item"]:
+                parts.append("out = %d, qty = %d" % (r["item"]["id"], r["item"]["count"] or 1))
+            parts.append("reagents = { " + ", ".join("{ %d, %d }" % (x["id"], x["count"]) for x in r["reagents"]) + " }")
+            parts.append("src = %s" % lua_str(r["source"] or "trainer"))
+            if r["taught_by"]:
+                t = r["taught_by"][0]
+                parts.append("learn = %d" % t["id"])
+                if t["vendors"]:
+                    parts.append("vendors = { " + ", ".join(lua_str(v) for v in t["vendors"]) + " }")
+            return parts
+
+        out.append("    [%s] = {" % lua_str(name))
+        out.append("        en = %s," % lua_str(g["name"]))
+        out.append("        sections = {")
+        for s in g["sections"]:
+            t = s.get("trainers") or {}
+            line = "            { rank = %s, from = %d, to = %d" % (lua_str(RANKS.get(s["rank"], s["rank"])), s["skill"][0], s["skill"][1])
+            for fac in ("alliance", "horde"):
+                if t.get(fac):
+                    line += ", %s = { %s }" % (fac, ", ".join("{ %s, %s }" % (lua_str(n["npc"]), lua_str(PLACES.get(n["location"], n["location"]))) for n in t[fac]))
+            if t.get("note"):
+                if t["note"] not in NOTES:
+                    sys.exit("Remarque sans traduction dans NOTES : " + t["note"])
+                line += ", note = %s" % lua_str(NOTES[t["note"]])
+            out.append(line + " },")
+        out.append("        },")
+        out.append("        steps = {")
+        for st in g["leveling"]:
+            parts = ["from = %d, to = %d" % (st["skill"][0], st["skill"][1])] + step(st["recipe"], st["crafts"])
+            if st.get("first"):
+                firsts = ["{ " + ", ".join(step(f["recipe"], f["crafts"])) + " }" for f in st["first"]]
+                parts.append("first = { " + ", ".join(firsts) + " }")
+            out.append("            { " + ", ".join(parts) + " },")
+        out.append("        },")
+        out.append("    },")
+    out.append("}")
+    out.append("")
+    out.append("WK.GuidePrices = {")
+    for i in sorted(prices):
+        out.append("    [%d] = %d," % (i, prices[i]))
+    out.append("}")
+    open(OUT, "w", encoding="utf-8").write("\n".join(out) + "\n")
+    print("écrit", OUT, "(%d guides)" % len(guides))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "--import":
+        os.makedirs(SRC, exist_ok=True)
+        for path in sys.argv[2:]:
+            data = slim(json.load(open(path, encoding="utf-8")))
+            key = data["name"].lower().replace(" ", "-")
+            json.dump(data, open(os.path.join(SRC, key + ".json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            print("importé", data["name"])
+    gen()

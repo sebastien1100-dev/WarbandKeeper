@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.20.0", date = "14/11/2026",
+        added = {
+            "Guides de montée de WoW Forever pour le Travail du cuir, le Secourisme et la Cuisine (d'après wowtbc.gg) : dans la fiche du métier, onglet « Guide de montée ».",
+            "Le guide met en avant l'étape en cours selon le niveau du perso (avec les fabrications qui restent), grise les étapes faites, et indique les maîtres de chaque rang pour la faction du perso, ainsi que les recettes à acheter et leurs vendeurs.",
+            "Matériaux jusqu'au max : ce qu'il faut, ce que le compte possède déjà, ce qui manque et son coût. Bouton « Liste Auctionator » pour les manquants, et « Envoyer à ce perso » pour créer les règles d'envoi des composants.",
+        },
+        changed = {
+            "Nouveau fichier : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.19.0", date = "14/11/2026",
         added = {
             "Métiers de récolte (Minage, Herboristerie, Dépeçage) : la fiche du métier liste chaque ressource avec son niveau requis et les zones où la trouver, au lieu des recettes.",
@@ -416,7 +427,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Guide de montée de chaque métier jusqu'au niveau max, d'après les guides à jour de WoW Forever : étape en cours selon le niveau du perso, matériaux totaux, ce qui manque sur le compte et son coût, liste Auctionator et envoi des matériaux au perso.",
+    "Guides de montée des autres métiers (Couture, Forge, Alchimie, Enchantement, Ingénierie) d'après les guides WoW Forever.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Rappel du maître de métier quand un perso arrive au plafond de son rang (75, 150, 225).",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",

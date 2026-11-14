@@ -1,0 +1,466 @@
+{
+ "name": "First Aid",
+ "leveling": [
+  {
+   "skill": [
+    1,
+    41
+   ],
+   "recipe": 3275,
+   "crafts": 44
+  },
+  {
+   "skill": [
+    41,
+    75
+   ],
+   "recipe": 3276,
+   "crafts": 47
+  },
+  {
+   "skill": [
+    75,
+    80
+   ],
+   "recipe": 1244432,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    80,
+    90
+   ],
+   "recipe": 7934,
+   "crafts": 12
+  },
+  {
+   "skill": [
+    90,
+    125
+   ],
+   "recipe": 1259342,
+   "crafts": 53
+  },
+  {
+   "skill": [
+    125,
+    152
+   ],
+   "recipe": 1244433,
+   "crafts": 34
+  },
+  {
+   "skill": [
+    152,
+    180
+   ],
+   "recipe": 7928,
+   "crafts": 43
+  },
+  {
+   "skill": [
+    180,
+    210
+   ],
+   "recipe": 7929,
+   "crafts": 46
+  },
+  {
+   "skill": [
+    210,
+    240
+   ],
+   "recipe": 10840,
+   "crafts": 46
+  },
+  {
+   "skill": [
+    240,
+    260
+   ],
+   "recipe": 10841,
+   "crafts": 27
+  },
+  {
+   "skill": [
+    260,
+    290
+   ],
+   "recipe": 18629,
+   "crafts": 46
+  },
+  {
+   "skill": [
+    290,
+    300
+   ],
+   "recipe": 18630,
+   "crafts": 12
+  }
+ ],
+ "sections": [
+  {
+   "rank": "Apprentice",
+   "skill": [
+    1,
+    75
+   ],
+   "trainers": null
+  },
+  {
+   "rank": "Journeyman",
+   "skill": [
+    75,
+    125
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Nissa Firestone",
+      "location": "Ironforge",
+      "image": "nissa-firestone.webp"
+     },
+     {
+      "npc": "Dannelor",
+      "location": "Darnassus",
+      "image": "dannelor.webp"
+     },
+     {
+      "npc": "Shaina Fuller",
+      "location": "Stormwind City",
+      "image": "shaina-fuller.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Arnok",
+      "location": "Orgrimmar",
+      "image": "arnok.webp"
+     },
+     {
+      "npc": "Pand Stonebinder",
+      "location": "Thunder Bluff",
+      "image": "pand-stonebinder.webp"
+     },
+     {
+      "npc": "Mary Edras",
+      "location": "Undercity",
+      "image": "mary-edras.webp"
+     }
+    ]
+   }
+  },
+  {
+   "rank": "Expert",
+   "skill": [
+    125,
+    210
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Deneb Walker",
+      "location": "Arathi Highlands",
+      "image": "deneb-walker.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Balai Lok'Wein",
+      "location": "Dustwallow Marsh",
+      "image": "balai-lokwein.webp"
+     }
+    ],
+    "note": "Buy Manual: Heavy Silk Bandage and Manual: Mageweave Bandage while you're there."
+   }
+  },
+  {
+   "rank": "Artisan",
+   "skill": [
+    210,
+    300
+   ],
+   "trainers": {
+    "alliance": [
+     {
+      "npc": "Doctor Gustaf VanHowzen",
+      "location": "Dustwallow Marsh",
+      "image": "doctor-gustaf-vanhowzen.webp"
+     }
+    ],
+    "horde": [
+     {
+      "npc": "Doctor Gregory Victor",
+      "location": "Arathi Highlands",
+      "image": "doctor-gregory-victor.webp"
+     }
+    ]
+   }
+  }
+ ],
+ "craftedParts": {
+  "1251": 3275,
+  "6452": 7934,
+  "14530": 18630
+ },
+ "recipes": {
+  "18629": {
+   "name": "Runecloth Bandage",
+   "item": {
+    "id": 14529,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14047,
+     "name": "Runecloth",
+     "count": 1,
+     "price": 976
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "18630": {
+   "name": "Heavy Runecloth Bandage",
+   "item": {
+    "id": 14530,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14047,
+     "name": "Runecloth",
+     "count": 2,
+     "price": 976
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3275": {
+   "name": "Linen Bandage",
+   "item": {
+    "id": 1251,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 1,
+     "price": 22
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "3276": {
+   "name": "Heavy Linen Bandage",
+   "item": {
+    "id": 2581,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 2,
+     "price": 22
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10840": {
+   "name": "Mageweave Bandage",
+   "item": {
+    "id": 8544,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4338,
+     "name": "Mageweave Cloth",
+     "count": 1,
+     "price": 611
+    }
+   ],
+   "source": "recipe",
+   "taught_by": [
+    {
+     "id": 16113,
+     "name": "Manual: Mageweave Bandage",
+     "vendors": [
+      "Deneb Walker",
+      "Balai Lok'Wein"
+     ]
+    }
+   ]
+  },
+  "1259342": {
+   "name": "Simple Poultice",
+   "item": {
+    "id": 255716,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 3174,
+     "name": "Spider Ichor",
+     "count": 1,
+     "price": 19
+    },
+    {
+     "id": 2678,
+     "name": "Mild Spices",
+     "count": 1,
+     "price": 2
+    },
+    {
+     "id": 2723,
+     "name": "Bottle of Dalaran Noir",
+     "count": 1,
+     "price": 50
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "1244432": {
+   "name": "Lesser Healing Potion",
+   "item": {
+    "id": 858,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3371,
+     "name": "Empty Vial",
+     "count": 1,
+     "price": 4
+    },
+    {
+     "id": 2678,
+     "name": "Mild Spices",
+     "count": 2,
+     "price": 2
+    },
+    {
+     "id": 2450,
+     "name": "Briarthorn",
+     "count": 1,
+     "price": 113
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "1244433": {
+   "name": "Healing Potion",
+   "item": {
+    "id": 929,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3372,
+     "name": "Leaded Vial",
+     "count": 1,
+     "price": 40
+    },
+    {
+     "id": 2692,
+     "name": "Hot Spices",
+     "count": 1,
+     "price": 40
+    },
+    {
+     "id": 2453,
+     "name": "Bruiseweed",
+     "count": 1,
+     "price": 105
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "10841": {
+   "name": "Heavy Mageweave Bandage",
+   "item": {
+    "id": 8545,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4338,
+     "name": "Mageweave Cloth",
+     "count": 2,
+     "price": 611
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "7928": {
+   "name": "Silk Bandage",
+   "item": {
+    "id": 6450,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4306,
+     "name": "Silk Cloth",
+     "count": 1,
+     "price": 198
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  },
+  "7929": {
+   "name": "Heavy Silk Bandage",
+   "item": {
+    "id": 6451,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4306,
+     "name": "Silk Cloth",
+     "count": 2,
+     "price": 198
+    }
+   ],
+   "source": "recipe",
+   "taught_by": [
+    {
+     "id": 16112,
+     "name": "Manual: Heavy Silk Bandage",
+     "vendors": [
+      "Deneb Walker",
+      "Balai Lok'Wein"
+     ]
+    }
+   ]
+  },
+  "7934": {
+   "name": "Anti-Venom",
+   "item": {
+    "id": 6452,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 1475,
+     "name": "Small Venom Sac",
+     "count": 1,
+     "price": 90
+    }
+   ],
+   "source": "trainer",
+   "taught_by": []
+  }
+ }
+}

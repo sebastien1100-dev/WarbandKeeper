@@ -214,15 +214,100 @@ function M:Needs()
     return out, total
 end
 
--- Crée une liste de courses Auctionator avec les composants manquants.
-function M:ExportToAuctionator()
+---------------------------------------------------------------------------
+-- Guides de montée (Modules/Guides.lua, d'après les guides WoW Forever).
+---------------------------------------------------------------------------
+function M:Guide(prof) return WK.Guides and WK.Guides[prof] end
+
+-- Prix d'un composant : source de prix choisie, sinon prix noté dans le guide.
+function M:GuidePrice(id)
+    local p = WK.modules.Value:Price(id)
+    if (not p or p == 0) and WK.GuidePrices then p = WK.GuidePrices[id] or 0 end
+    return p or 0
+end
+
+-- Plan pour un niveau : étapes (status "done" / "current" / "todo", left = fabrications restantes)
+-- et matériaux jusqu'au maximum { itemID, need, have, missing, cost, crafted }.
+function M:GuidePlan(prof, rank)
+    local g = self:Guide(prof)
+    if not g then return nil end
+    rank = rank or 0
+    local made = {} -- objets fabriqués par le guide lui-même (peaux traitées, cuirs…)
+    for _, st in ipairs(g.steps) do
+        if st.out then made[st.out] = true end
+        for _, f in ipairs(st.first or {}) do if f.out then made[f.out] = true end end
+    end
+    local steps, need = {}, {}
+    for _, st in ipairs(g.steps) do
+        local status, ratio
+        if rank >= st.to then status, ratio = "done", 0
+        elseif rank >= st.from then status, ratio = "current", (st.to - rank) / math.max(1, st.to - st.from)
+        else status, ratio = "todo", 1 end
+        local left = math.ceil(st.crafts * ratio)
+        table.insert(steps, { step = st, status = status, left = left })
+        local function add(s, n)
+            for _, rg in ipairs(s.reagents or {}) do need[rg[1]] = (need[rg[1]] or 0) + rg[2] * n end
+        end
+        if left > 0 then
+            add(st, left)
+            for _, f in ipairs(st.first or {}) do add(f, math.ceil(f.crafts * ratio)) end
+        end
+    end
+    local mats, total = {}, 0
+    for id, n in pairs(need) do
+        local have = WK.modules.Inventory:AccountCount(id)
+        local missing = math.max(0, n - have)
+        local crafted = made[id] or false
+        local cost = crafted and 0 or missing * self:GuidePrice(id)
+        total = total + cost
+        table.insert(mats, { itemID = id, need = n, have = have, missing = missing, cost = cost, crafted = crafted })
+    end
+    table.sort(mats, function(a, b)
+        if a.crafted ~= b.crafted then return not a.crafted end
+        if (a.missing > 0) ~= (b.missing > 0) then return a.missing > 0 end
+        return a.cost > b.cost
+    end)
+    return steps, mats, total, g
+end
+
+-- Composants manquants du guide vers une liste de courses Auctionator.
+function M:GuideToAuctionator(prof, rank)
+    local _, mats = self:GuidePlan(prof, rank)
+    local list = {}
+    for _, m in ipairs(mats or {}) do if not m.crafted and m.missing > 0 then table.insert(list, m) end end
+    return self:ExportToAuctionator(list, "Warband Keeper - " .. prof)
+end
+
+-- Règles d'envoi pour que les composants du guide arrivent à ce perso (sans toucher aux
+-- règles existantes). Renvoie le nombre de règles ajoutées et ignorées.
+function M:GuideMailRules(prof, key)
+    local c = WK.DB.global.characters[key]
+    local _, mats = self:GuidePlan(prof, c and c.professions and c.professions[prof] and c.professions[prof].rank or 0)
+    if not c or not mats then return 0, 0 end
+    local to = WK.modules.Mail:MailName(c)
+    local rules = WK.DB.global.mail.rules
+    local added, skipped = 0, 0
+    for _, m in ipairs(mats) do
+        if not m.crafted then
+            if rules[m.itemID] then skipped = skipped + 1
+            else rules[m.itemID] = { to = to, keep = 0 }; added = added + 1 end
+        end
+    end
+    WK.modules.Statistics:UpdateItems()
+    WK:NotifyChanged()
+    return added, skipped
+end
+
+-- Crée une liste de courses Auctionator avec les composants manquants
+-- (ceux de la liste de courses, ou la liste { itemID, missing } donnée).
+function M:ExportToAuctionator(entries, listName)
     local api = Auctionator and Auctionator.API and Auctionator.API.v1
     if not api or not api.CreateShoppingList then
         WK:Print(T("Auctionator n'est pas disponible."))
         return false
     end
     local terms, unknown = {}, 0
-    for _, e in ipairs((self:Needs())) do
+    for _, e in ipairs(entries or (self:Needs())) do
         if e.missing > 0 then
             local name = WK.GetItemInfo(e.itemID)
             if not name then
@@ -247,9 +332,10 @@ function M:ExportToAuctionator()
         WK:Print(T("Rien à acheter : tu as déjà tous les composants."))
         return false
     end
-    local ok, err = pcall(api.CreateShoppingList, ADDON_NAME, "Warband Keeper", terms)
+    listName = listName or "Warband Keeper"
+    local ok, err = pcall(api.CreateShoppingList, ADDON_NAME, listName, terms)
     if ok then
-        WK:Print(string.format(T("Liste « Warband Keeper » créée dans Auctionator (%d objet(s))."), #terms))
+        WK:Print(string.format(T("Liste « %s » créée dans Auctionator (%d objet(s))."), listName, #terms))
     else
         WK:Print(T("Auctionator a refusé la liste : ") .. tostring(err))
     end
