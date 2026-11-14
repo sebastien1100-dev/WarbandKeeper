@@ -67,7 +67,7 @@ local function Levels(page, parent)
             local card = cards:Get()
             card:SetWidth(colW)
             local c = e.c
-            UI:SetClassIcon(card.icon, c.class)
+            UI:SetCharIcon(card.icon, c, e.key)
             card.title:SetText(WK:CharName(c, e.key))
             card.title:SetTextColor(UI:ClassColor(c.class))
             local nr, byProf = 0, {}

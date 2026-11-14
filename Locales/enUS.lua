@@ -323,6 +323,8 @@ WK.Locales.enUS.text = {
     ["Clic droit : corriger le nom complet"] = "Right-click: fix the full name",
 
     -- Fiche métier
+    ["Portraits des persos"] = "Character portraits",
+    ["À côté des noms. Vrai portrait pour le perso connecté, race et sexe pour les autres. Désactivé : icône de classe."] = "Next to names. Real portrait for the current character, race and sex for the others. Off: class icon.",
     ["(%d recettes)"] = "(%d recipes)", ["(%d recette)"] = "(%d recipe)",
     ["Combat"] = "Combat",
     ["Fermer la fenêtre en combat"] = "Close the window in combat",

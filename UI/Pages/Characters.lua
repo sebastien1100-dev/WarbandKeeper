@@ -126,7 +126,7 @@ UI:RegisterPage({
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
             local c = e.c
-            UI:SetClassIcon(r.icon, c.class)
+            UI:SetCharIcon(r.icon, c, e.key)
             r.key = e.key
             r.name:SetText(WK:CharName(c, e.key))
             -- Nom long : borné à sa colonne (place gardée pour le badge « connecté »).

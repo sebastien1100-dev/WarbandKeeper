@@ -256,7 +256,7 @@ UI:RegisterPage({
 
         -- Apparence --------------------------------------------------------------
         section("look")
-        local look = card("Apparence", 304)
+        local look = card("Apparence", 356)
         local dots = CreateFrame("Frame", nil, look)
         local choices = {
             { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
@@ -296,6 +296,13 @@ UI:RegisterPage({
             function() return cfg.scale or 1 end,
             function(v) UI:ApplyScale(v) end, "%.2fx")
         UI:SettingRow(look, -248, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
+
+        self.portraitToggle = UI:Toggle(look,
+            function() return cfg.portraits ~= false end,
+            function(v) cfg.portraits = v; WK:NotifyChanged() end)
+        UI:SettingRow(look, -300, "Portraits des persos",
+            "À côté des noms. Vrai portrait pour le perso connecté, race et sexe pour les autres. Désactivé : icône de classe.",
+            self.portraitToggle, 80)
 
         -- Général : langue, bouton minimap, fenêtre ------------------------------------
         section("general")
@@ -393,6 +400,7 @@ UI:RegisterPage({
         end
         self.mmToggle:Refresh()
         self.combatToggle:Refresh()
+        self.portraitToggle:Refresh()
         self.alertToggle:Refresh()
     end,
 })

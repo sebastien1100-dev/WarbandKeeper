@@ -18,6 +18,7 @@ function M:UpdateBasics()
     c.realm = GetRealmName()
     c.class = select(2, UnitClass("player"))
     c.race = select(2, UnitRace("player"))
+    c.sex = UnitSex and UnitSex("player") or c.sex -- 2 = homme, 3 = femme
     c.faction = UnitFactionGroup("player")
     c.level = UnitLevel("player")
     c.lastSeen = time()
@@ -45,6 +46,8 @@ end
 
 WK:On("PLAYER_MONEY", function() M:UpdateMoney() end)
 WK:On("PLAYER_LEVEL_UP", function() M:UpdateBasics() end)
+-- Portrait du perso connecté (changement d'apparence, de forme…).
+WK:On("UNIT_PORTRAIT_UPDATE", function(unit) if unit == "player" then WK:NotifyChanged() end end)
 WK:On("PLAYER_LOGOUT", function() M:UpdateBasics() end)
 
 WK:On("TIME_PLAYED_MSG", function(total, level)

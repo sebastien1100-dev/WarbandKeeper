@@ -14,6 +14,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.11.0 — 14/11/2026
+
+### Ajouts
+- Portraits à côté du nom des persos (Résumé, Persos, Inventaire, Métiers, Courrier) : le vrai portrait pour le perso connecté, l'icône de race et de sexe pour les autres.
+- Options > Apparence : « Portraits des persos » pour revenir aux icônes de classe.
+
+### Modifications
+- Le sexe de chaque perso est enregistré à la connexion : connecte chaque perso une fois pour avoir la bonne icône.
+
 ## v0.10.1 — 14/11/2026
 
 ### Ajouts

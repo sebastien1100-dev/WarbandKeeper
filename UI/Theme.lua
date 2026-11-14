@@ -267,6 +267,37 @@ function UI:SetClassIcon(tex, class)
     end
 end
 
+-- Portrait d'un perso : le vrai portrait pour le perso connecté (le jeu ne le donne que
+-- pour lui), l'icône de race et de sexe pour les autres, l'icône de classe sinon ou si
+-- l'option « Portraits » est désactivée.
+local RACE_FILE = { Scourge = "Undead", NightElf = "Nightelf", BloodElf = "Bloodelf" }
+local function atlasExists(name)
+    return C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(name) ~= nil
+end
+function UI:SetCharIcon(tex, c, key)
+    local cfg = WK.DB and WK.DB.global and WK.DB.global.settings.ui
+    if not c or (cfg and cfg.portraits == false) then return UI:SetClassIcon(tex, c and c.class) end
+    if key and key == select(2, WK.DB:Me()) and SetPortraitTexture then
+        tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        SetPortraitTexture(tex, "player")
+        return
+    end
+    if c.race then
+        local race = RACE_FILE[c.race] or c.race
+        local female = c.sex == 3
+        local atlas = "raceicon-" .. string.lower(race) .. "-" .. (female and "female" or "male")
+        if tex.SetAtlas and atlasExists(atlas) then
+            tex:SetTexCoord(0, 1, 0, 1)
+            tex:SetAtlas(atlas)
+            return
+        end
+        tex:SetTexture("Interface\\Icons\\Achievement_Character_" .. race .. "_" .. (female and "Female" or "Male"))
+        tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        return
+    end
+    UI:SetClassIcon(tex, c.class)
+end
+
 -- Majuscules avec les lettres accentuées (string.upper ne traite que l'ASCII).
 local ACCENTS = {
     ["à"] = "À", ["â"] = "Â", ["ä"] = "Ä", ["ç"] = "Ç", ["é"] = "É", ["è"] = "È", ["ê"] = "Ê", ["ë"] = "Ë",

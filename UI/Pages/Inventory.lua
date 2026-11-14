@@ -162,7 +162,7 @@ UI:RegisterPage({
                 for _, where in ipairs(WHERE) do n = n + countItems(listOf(e.c, where)) end
                 accountTotal = accountTotal + n
                 b.icon:Show(); b.glyph:Hide()
-                UI:SetClassIcon(b.icon, e.c.class)
+                UI:SetCharIcon(b.icon, e.c, e.key)
                 b.name:SetText(WK:CharName(e.c, e.key))
                 b.name:SetTextColor(UI:ClassColor(e.c.class))
                 b.sub:SetText(string.format(T("%d objets"), n))
