@@ -75,8 +75,13 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
     b.icon = UI:Icon(b, icon, math.floor(size * 0.55))
     b.icon:SetPoint("CENTER")
     b.tooltip = tooltip
+    -- danger = true : rouge ; danger = "accent" : icône de la couleur d'accent du thème.
     local function refresh(h)
-        if danger then
+        if danger == "accent" then
+            local r, g, bl = UI:Accent()
+            b.bg:SetColor(r, g, bl, 0.18)
+            b.icon:SetVertexColor(r, g, bl, h and 1 or 0.85)
+        elseif danger then
             b.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], 0.2)
             b.icon:SetVertexColor(unpack(h and C.negative or C.muted))
         else
@@ -95,6 +100,7 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
         end
     end)
     b:SetScript("OnLeave", function() refresh(false); GameTooltip:Hide() end)
+    if danger == "accent" then UI:OnAccent(function() refresh(false) end) end
     return b
 end
 

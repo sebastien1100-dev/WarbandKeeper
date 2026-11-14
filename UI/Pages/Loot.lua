@@ -224,7 +224,7 @@ UI:RegisterPage({
         lp:EnableMouse(true)
         lp:Hide()
         self.leftPanel = lp
-        local close = UI:IconButton(lp, "close", 26, "Fermer la liste")
+        local close = UI:IconButton(lp, "close", 26, nil, "accent")
         close:SetPoint("TOPRIGHT", -10, -8)
         close:SetScript("OnClick", function() lp:Hide() end)
         self.lpSummary = UI:Text(lp, 11, C.muted)

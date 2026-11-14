@@ -280,7 +280,7 @@ function UI:Create()
         end)
         return c
     end)
-    local close = UI:IconButton(header, "close", 30, "Fermer")
+    local close = UI:IconButton(header, "close", 30, nil, "accent")
     close:SetPoint("RIGHT", -(PAD - 9), 0)
     close:SetScript("OnClick", function() f:Hide() end)
     local scan = UI:IconButton(header, "refresh", 30, "Scanner ce personnage (sacs, or, métiers)")
