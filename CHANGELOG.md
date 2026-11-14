@@ -12,6 +12,11 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.
 
+## v0.23.4 — 14/11/2026
+
+### Modifications
+- Infobulles de l'addon : mêmes couleurs que les cadres du thème choisi (fond et bordure), quel que soit le thème.
+
 ## v0.23.3 — 14/11/2026
 
 ### Modifications

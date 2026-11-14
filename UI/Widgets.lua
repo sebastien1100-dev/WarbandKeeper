@@ -803,9 +803,9 @@ function UI:SkinTooltip(tt)
         -- Le jeu peut remettre son cadre en remplissant l'infobulle : on le retire à nouveau.
         tt:HookScript("OnShow", function(self) if ttSkin.active then hideGameFrame(self) end end)
     end
-    -- Fond très sombre, bordure fine et claire, coins arrondis (pas de liseré d'accent).
-    ttSkin.border:SetColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
-    ttSkin.bg:SetColor(C.inset[1], C.inset[2], C.inset[3], 0.96)
+    -- Mêmes couleurs que les cadres (cartes) du thème choisi : fond et bordure.
+    ttSkin.border:SetColor(unpack(C.border))
+    ttSkin.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
     ttSkin.border:Show(); ttSkin.bg:Show(); ttSkin.accent:Hide()
     hideGameFrame(tt)
     ttSkin.active = true
