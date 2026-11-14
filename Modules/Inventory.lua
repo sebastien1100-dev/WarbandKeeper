@@ -74,6 +74,16 @@ function M:ScanBags()
 end
 
 local bankOpen = false
+-- Depuis quand chaque objet dort en banque : date depuis laquelle sa quantité n'a pas changé.
+local function trackAges(ages, items)
+    local now = time()
+    for id, n in pairs(items) do
+        local e = ages[id]
+        if not e or e.n ~= n then ages[id] = { n = n, since = now } end
+    end
+    for id in pairs(ages) do if not items[id] then ages[id] = nil end end
+end
+
 function M:ScanBank()
     if not bankOpen then return end
     local c = WK.DB:Me()
@@ -82,10 +92,15 @@ function M:ScanBank()
     if totalSlots(bank) > 0 then
         c.bank = scan(bank)
         c.bankScanned = time()
+        c.bankAges = c.bankAges or {}
+        trackAges(c.bankAges, c.bank)
     end
     local wb = self:WarbandList()
     if #wb > 0 and totalSlots(wb) > 0 then
-        WK.DB.global.warbank = { items = scan(wb), scanned = time() }
+        local old = WK.DB.global.warbank
+        local ages = old and old.ages or {}
+        WK.DB.global.warbank = { items = scan(wb), scanned = time(), ages = ages }
+        trackAges(ages, WK.DB.global.warbank.items)
     end
     WK.modules.Statistics:UpdateItems()
     WK:NotifyChanged()
@@ -229,4 +244,69 @@ function M:SortBags()
         WK:Print(WK.T("Le tri des sacs n'existe pas sur ce client."))
     end
     return false
+end
+
+---------------------------------------------------------------------------
+-- Objets oubliés en banque : qui dorment depuis au moins N jours et ont de la valeur.
+-- Renvoie la liste { itemID, n, since, key ("warband" pour la banque de bataillon), value }
+-- et la date du plus ancien suivi (avant, on ne sait pas).
+---------------------------------------------------------------------------
+function M:Forgotten(days)
+    local limit = time() - (days or 14) * 86400
+    local V = WK.modules.Value
+    local out, trackedSince = {}, nil
+    local function scanAges(ages, key)
+        for id, e in pairs(ages or {}) do
+            if not trackedSince or e.since < trackedSince then trackedSince = e.since end
+            if e.since <= limit then
+                local value = V:Price(id) * e.n
+                if value > 0 then table.insert(out, { itemID = id, n = e.n, since = e.since, key = key, value = value }) end
+            end
+        end
+    end
+    for key, c in pairs(WK.DB.global.characters) do scanAges(c.bankAges, key) end
+    local wb = WK.DB.global.warbank
+    if wb then scanAges(wb.ages, "warband") end
+    table.sort(out, function(a, b) return a.value > b.value end)
+    return out, trackedSince
+end
+
+---------------------------------------------------------------------------
+-- Objets dispersés : composants, consommables, gemmes et recettes présents chez plusieurs persos
+-- (sacs, banque, courrier). Perso conseillé : celui d'une règle d'envoi existante, sinon celui
+-- qui en a le plus. { itemID, total, holders = { {key, n} }, target, rule }
+---------------------------------------------------------------------------
+local GROUPABLE = { [0] = true, [3] = true, [5] = true, [7] = true, [9] = true }
+function M:Spread()
+    local byItem = {}
+    for key, c in pairs(WK.DB.global.characters) do
+        local own = {}
+        for _, list in ipairs({ c.bags, c.bank, c.mailbox and c.mailbox.items }) do
+            for id, n in pairs(list or {}) do own[id] = (own[id] or 0) + n end
+        end
+        for id, n in pairs(own) do
+            local e = byItem[id] or { itemID = id, total = 0, holders = {} }
+            e.total = e.total + n
+            table.insert(e.holders, { key = key, n = n })
+            byItem[id] = e
+        end
+    end
+    local Mail, Rules = WK.modules.Mail, WK.modules.Rules
+    local out = {}
+    for id, e in pairs(byItem) do
+        local class = Rules:ItemClass(id)
+        if #e.holders >= 2 and class and GROUPABLE[class] and not NO_TOOLTIP[id] then
+            table.sort(e.holders, function(a, b) return a.n > b.n end)
+            local rule = WK.DB.global.mail.rules[id]
+            local ruleChar = rule and select(2, Mail:Resolve(rule.to))
+            e.rule = rule
+            e.target = ruleChar or e.holders[1].key
+            table.insert(out, e)
+        end
+    end
+    table.sort(out, function(a, b)
+        if #a.holders ~= #b.holders then return #a.holders > #b.holders end
+        return a.total > b.total
+    end)
+    return out
 end

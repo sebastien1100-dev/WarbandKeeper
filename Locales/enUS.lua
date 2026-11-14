@@ -335,6 +335,24 @@ WK.Locales.enUS.text = {
     ["Meilleures ventes :"] = "Best sales:",
     ["Bilan HV 7 j"] = "AH balance 7 d",
 
+    -- Rangement (Inventaire)
+    ["Regrouper"] = "Group",
+    ["À regrouper"] = "To group",
+    ["Oubliés en banque"] = "Forgotten in bank",
+    ["%d objets dispersés"] = "%d scattered items",
+    ["%d depuis %d j"] = "%d for %d d",
+    ["le même objet chez plusieurs persos"] = "the same item on several characters",
+    ["suivi depuis le %s"] = "tracked since %s",
+    ["suivi à partir de la prochaine ouverture des banques"] = "tracked from the next time banks are opened",
+    ["déjà envoyé à %s"] = "already sent to %s",
+    ["vers %s"] = "to %s",
+    ["Crée une règle d'envoi : tes autres persos posteront cet objet à %s."] = "Creates a mail rule: your other characters will mail this item to %s.",
+    ["%s · depuis %s"] = "%s · since %s",
+    ["Rien à regrouper : chaque objet est chez un seul perso."] = "Nothing to group: each item is on a single character.",
+    ["Rien d'oublié : aucun objet de valeur ne dort en banque depuis aussi longtemps."] = "Nothing forgotten: no valuable item has been sitting in a bank that long.",
+    ["%d objets · ~ %s à revendre"] = "%d items · ~ %s to sell",
+    ["14 j"] = "14 d",
+
     -- Rappels à la connexion
     ["Rappels à la connexion"] = "Login reminders",
     ["Fenêtre de rappels"] = "Reminders window",

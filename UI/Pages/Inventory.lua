@@ -87,6 +87,13 @@ UI:RegisterPage({
             function(key) self.where = key; self:Refresh() end, 34)
         self.whereSeg:SetPoint("TOPRIGHT")
         self.whereSeg:Select("all")
+        -- Objets oubliés : depuis combien de jours
+        self.oldDays = 14
+        self.oldSeg = UI:Segmented(p, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
+            function(d) self.oldDays = d; self:Refresh() end, 34)
+        self.oldSeg:SetPoint("TOPRIGHT")
+        self.oldSeg:Select(14)
+        self.oldSeg:Hide()
 
         self.header = UI:Text(p, 14)
         self.header:SetPoint("TOPLEFT", x0 + 2, -48)
@@ -121,6 +128,16 @@ UI:RegisterPage({
             r.value = UI:Text(r, 10, C.muted)
             r.value:SetPoint("TOPRIGHT", r.total, "BOTTOMRIGHT", 0, -3)
             r.value:SetJustifyH("RIGHT")
+            -- « Regrouper » (vue des objets dispersés)
+            r.action = UI:Button(r, "Regrouper", nil, 26, "secondary", "mail")
+            r.action:SetPoint("RIGHT", -96, 0)
+            r.action:Hide()
+            r.action:SetScript("OnClick", function(b)
+                local e = b.entry
+                if not e then return end
+                local tc = WK.DB.global.characters[e.target]
+                if WK.modules.Mail:AddRule(e.itemID, WK.modules.Mail:MailName(tc), 0) then self:Refresh() end
+            end)
             r:SetScript("OnEnter", function(row)
                 row.bg:SetColor(unpack(C.surface2))
                 WK.UI:TooltipOwner(row, "ANCHOR_RIGHT")
@@ -139,11 +156,84 @@ UI:RegisterPage({
         end)
     end,
 
+    -- Vues d'aide au rangement : objets dispersés (à regrouper) et objets oubliés en banque.
+    RefreshHelp = function(self, sel)
+        local Inv, V = WK.modules.Inventory, WK.modules.Value
+        local chars = WK.DB.global.characters
+        local function who(key)
+            if key == "warband" then return T("Bataillon") end
+            local c = chars[key]
+            local r, g, b = UI:ClassColor(c and c.class)
+            return string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, WK:CharName(c, key))
+        end
+        local list, trackedSince
+        if sel == "spread" then
+            list = Inv:Spread()
+            self.header:SetText(T("À regrouper"))
+            self.info:SetText(T("le même objet chez plusieurs persos"))
+        else
+            list, trackedSince = Inv:Forgotten(self.oldDays)
+            self.header:SetText(T("Oubliés en banque"))
+            self.info:SetText(trackedSince and string.format(T("suivi depuis le %s"), date("%d/%m", trackedSince))
+                or T("suivi à partir de la prochaine ouverture des banques"))
+        end
+        self.header:SetTextColor(unpack(C.text))
+        self.rows:Reset()
+        local y, total = 0, 0
+        for i, e in ipairs(list) do
+            if i > MAX_ROWS then break end
+            if self.query == "" or string.find(string.lower((UI:ItemInfo(e.itemID)) or ""), self.query, 1, true) then
+                local r = self.rows:Get()
+                r.itemID = e.itemID
+                r:ClearAllPoints()
+                r:SetPoint("TOPLEFT", 0, -y)
+                r:SetPoint("TOPRIGHT", 0, -y)
+                local name, icon, qr, qg, qb = UI:ItemInfo(e.itemID)
+                r.icon:SetTexture(icon)
+                r.name:SetText(name)
+                r.name:SetTextColor(qr, qg, qb)
+                if sel == "spread" then
+                    local parts = {}
+                    for _, h in ipairs(e.holders) do table.insert(parts, who(h.key) .. " " .. h.n) end
+                    r.detail:SetText(table.concat(parts, "  ·  "))
+                    r.total:SetText(tostring(e.total))
+                    if e.rule then
+                        r.value:SetText(string.format(T("déjà envoyé à %s"), who(e.target)))
+                        r.action:Hide()
+                    else
+                        r.value:SetText(string.format(T("vers %s"), who(e.target)))
+                        r.action.entry = e
+                        r.action.tooltip = string.format(T("Crée une règle d'envoi : tes autres persos posteront cet objet à %s."), WK:CharName(chars[e.target], e.target))
+                        r.action:Show()
+                    end
+                else
+                    r.action:Hide()
+                    r.detail:SetText(string.format(T("%s · depuis %s"), who(e.key), UI:Ago(e.since)))
+                    r.total:SetText(tostring(e.n))
+                    r.value:SetText("~ " .. UI:GoldText(e.value))
+                    total = total + e.value
+                end
+                y = y + 52
+            end
+        end
+        self.scroll:SetContentHeight(y)
+        self.empty:SetShown(y == 0)
+        self.empty:SetText(sel == "spread" and T("Rien à regrouper : chaque objet est chez un seul perso.")
+            or T("Rien d'oublié : aucun objet de valeur ne dort en banque depuis aussi longtemps."))
+        if sel == "old" and total > 0 then
+            self.countText:SetText(string.format(T("%d objets · ~ %s à revendre"), #list, UI:GoldText(total)))
+        else
+            self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list))
+        end
+    end,
+
     -- Onglets : tout le compte, chaque personnage, banque de bataillon.
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        if self.char ~= "all" and self.char ~= "warband" and not chars[self.char] then self.char = "all" end
-        local entries = { { key = "all" } }
+        local special = { spread = true, old = true }
+        if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
+        -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
+        local entries = { { key = "all" }, { key = "spread" }, { key = "old" } }
         for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
         local wb = WK.DB.global.warbank
         if wb then table.insert(entries, { key = "warband" }) end
@@ -169,13 +259,21 @@ UI:RegisterPage({
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
-                b.glyph:SetTexture(UI.MEDIA .. (e.key == "all" and "users" or "bag"))
+                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock" }
+                b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                b.name:SetText(e.key == "all" and T("Tout le compte") or T("Banque de bataillon"))
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque" }
+                b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
                     local n = countItems(wb.items)
                     b.sub:SetText(string.format(T("%d objets"), n))
+                elseif e.key == "spread" then
+                    local n = #WK.modules.Inventory:Spread()
+                    b.sub:SetText(string.format(T("%d objets dispersés"), n))
+                elseif e.key == "old" then
+                    local n = #WK.modules.Inventory:Forgotten(self.oldDays)
+                    b.sub:SetText(string.format(T("%d depuis %d j"), n, self.oldDays))
                 end
                 e.button = b
             end
@@ -194,6 +292,12 @@ UI:RegisterPage({
         self:RefreshTabs()
         local chars = WK.DB.global.characters
         local sel = self.char
+        self.oldSeg:SetShown(sel == "old")
+        if sel == "spread" or sel == "old" then
+            self.whereSeg:Hide()
+            return self:RefreshHelp(sel)
+        end
+        for _, r in ipairs(self.rows.items) do r.action:Hide() end
         local items = {}
         local function add(id, n, label)
             local it = items[id]

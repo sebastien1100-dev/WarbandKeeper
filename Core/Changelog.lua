@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.29.0", date = "14/11/2026",
+        added = {
+            "Inventaire > À regrouper : les composants, consommables, gemmes et recettes présents chez plusieurs persos, avec le perso conseillé (celui qui en a le plus, ou celui d'une règle d'envoi existante) et un bouton « Regrouper » qui crée la règle d'envoi.",
+            "Inventaire > Oubliés en banque : les objets de valeur qui dorment dans une banque (perso ou bataillon) depuis 7, 14 ou 30 jours, avec leur valeur et le total à revendre.",
+        },
+        changed = {
+            "La date depuis laquelle chaque objet dort en banque est suivie à partir de cette version : ouvre tes banques une fois pour démarrer le suivi.",
+        },
+    },
+    {
         version = "0.28.0", date = "14/11/2026",
         added = {
             "Coins de récolte : chaque plante, minerai ou cuir ramassé note l'endroit (tous les persos). Sur la carte du monde, une pastille par coin, de la couleur de la ressource et plus grosse là où tu récoltes souvent ; son survol détaille ce que tu y as récolté.",
@@ -567,10 +577,20 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Options par classe : flèches et balles des chasseurs, fragments d'âme des démonistes, composants de sorts (mages, prêtres, paladins…), poisons des voleurs, avec une alerte quand il en reste peu.",
+    "Durabilité de l'équipement de chaque perso, avec « à réparer » dans « À faire ».",
+    "Avertissement quand les sacs ou la banque d'un perso sont presque pleins.",
+    "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
+    "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
+    "Recherche globale : trouver un objet, une recette ou un perso dans tout l'addon.",
+    "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
-    "Options par classe : par exemple, pour les chasseurs, le suivi des flèches et balles avec une alerte quand il en reste peu.",
+    "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
+    "Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.",
+    "Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).",
 }
+
 
 -- Message au premier lancement d'une nouvelle version.
 WK:On("PLAYER_LOGIN", function()
