@@ -782,8 +782,8 @@ function UI:SkinTooltip(tt)
     tt = tt or GameTooltip
     if not ttSkin then
         ttSkin = {
-            border = UI:Rounded(tt, 10, 0, "BACKGROUND", -7),
-            bg = UI:Rounded(tt, 9, 1, "BACKGROUND", -6),
+            border = UI:Rounded(tt, 8, 0, "BACKGROUND", -7),
+            bg = UI:Rounded(tt, 7, 1, "BACKGROUND", -6),
         }
         ttSkin.accent = tt:CreateTexture(nil, "BACKGROUND", nil, -5)
         ttSkin.accent:SetHeight(2)
@@ -797,10 +797,10 @@ function UI:SkinTooltip(tt)
         -- Le jeu peut remettre son cadre en remplissant l'infobulle : on le retire à nouveau.
         tt:HookScript("OnShow", function(self) if ttSkin.active then hideGameFrame(self) end end)
     end
-    ttSkin.border:SetColor(unpack(C.border))
-    ttSkin.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.97)
-    ttSkin.accent:SetColorTexture(UI:Accent())
-    ttSkin.border:Show(); ttSkin.bg:Show(); ttSkin.accent:Show()
+    -- Fond très sombre, bordure fine et claire, coins arrondis (pas de liseré d'accent).
+    ttSkin.border:SetColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
+    ttSkin.bg:SetColor(C.inset[1], C.inset[2], C.inset[3], 0.96)
+    ttSkin.border:Show(); ttSkin.bg:Show(); ttSkin.accent:Hide()
     hideGameFrame(tt)
     ttSkin.active = true
 end

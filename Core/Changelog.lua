@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.23.1", date = "14/11/2026",
+        changed = {
+            "Infobulles de l'addon : fond très sombre, bordure fine et claire, coins arrondis, sans liseré de couleur.",
+        },
+    },
+    {
         version = "0.23.0", date = "14/11/2026",
         changed = {
             "Métiers > Niveaux : chaque métier d'un perso devient une tuile cliquable avec son icône, son niveau, une mini-barre des rangs (1-300) et ce qu'il y a à faire ensuite : étape du guide en cours, ressource et zone conseillées pour la récolte, ou « Plafond atteint : va voir le maître » (tuile encadrée en orange).",
