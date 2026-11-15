@@ -66,3 +66,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Emplacements de récolte
 
 `Modules/NodesDB.lua` est **généré** par `python3 tools/gen_nodes.py <clone de QuestieDB>` : points d'apparition connus des filons et des plantes (données Questie, GPLv3 : garder la mention en tête du fichier et dans Options > À propos). `Modules/Nodes.lua` filtre selon les métiers et la compétence du perso ; `UI/NodePins.lua` dessine les icônes sur la minicarte (autour du joueur, sans capter la souris) et sur la carte du monde (appelé par `UI/MapPins.lua`). Ce sont des emplacements possibles, pas des nœuds en direct : lire les points de pistage du jeu a été étudié et écarté (technique fragile).
+
+## Onglet LFG
+
+`Modules/LFG.lua` pilote la recherche de groupe du jeu (`C_LFGList`, lu à chaque appel) : recherche sur un clic, lecture des résultats (toute valeur passe par `readable`, une valeur masquée ne cache jamais un groupe), place libre pour les rôles du perso (`FitRole`), message modèle et suivi des demandes (`M.requests`, réponses lues dans les chuchotements). `UI/Pages/LFG.lua` est la page : bandeau du perso, échelle des donjons, cartes de groupes, mes demandes. LFG Forever (GPLv3) a servi d'inspiration : son code n'est pas repris. Les couleurs de rôle sont `C.tank`, `C.heal`, `C.dps`.

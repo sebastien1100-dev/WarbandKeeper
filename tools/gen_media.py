@@ -306,6 +306,21 @@ def fx_ring():
     img.save(os.path.join(OUT, "fxring.tga"))
 
 
+def icon_lfg():
+    """LFG : trois silhouettes, celle du milieu au premier plan."""
+    img, d, s = canvas(64)
+    for cx, cy, r, sh in ((0.24, 0.36, 0.10, 0.20), (0.76, 0.36, 0.10, 0.20)):
+        circle(d, s, cx, cy, r)
+        d.pieslice([P(cx - sh, s), P(0.50, s), P(cx + sh, s), P(0.92, s)], 180, 360, fill=W)
+    # contour évidé autour de la silhouette centrale pour la détacher des deux autres
+    circle(d, s, 0.5, 0.32, 0.17)
+    d.pieslice([P(0.16, s), P(0.50, s), P(0.84, s), P(1.18, s)], 180, 360, fill=CLEAR)
+    d.rectangle([P(0.16, s), P(0.84, s), P(0.84, s), P(1.0, s)], fill=CLEAR)
+    circle(d, s, 0.5, 0.32, 0.13)
+    d.pieslice([P(0.22, s), P(0.56, s), P(0.78, s), P(1.12, s)], 180, 360, fill=W)
+    save(img, "lfg", 64)
+
+
 def icon_fish():
     """Poisson (pêche) : corps en amande, queue en triangle, œil évidé."""
     img, d, s = canvas(64)
@@ -521,6 +536,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_fish, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_fish, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")

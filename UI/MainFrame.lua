@@ -16,12 +16,13 @@ local GROUPS = {
     { "COMPTE", { "overview", "characters", "inventory" } },
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
     { "FARM", { "farm", "loot", "journal" } },
+    { "GROUPE", { "lfg" } },
     { "CONFORT", { "qol" } },
 }
 local BOTTOM = { "notes", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -594,6 +595,17 @@ UI.CHIPS = {
                  { T("Laissés au sol (session)"), tostring(L.leftSession or 0) },
                  { T("Valeur laissée au sol"), UI:PlainMoney(total), C.gold, "loot",
                    string.format(T("%d objets depuis la dernière remise à zéro"), n), openList } }
+    end,
+    lfg = function()
+        local L = WK.modules.LFG
+        local groups, mine, solos, asked = 0, 0, 0, 0
+        for _, r in ipairs(L.results) do
+            if r.solo then solos = solos + 1
+            elseif not r.delisted then groups = groups + 1; if L:FitRole(r) then mine = mine + 1 end end
+        end
+        for _ in pairs(L.requests) do asked = asked + 1 end
+        return { { T("Groupes"), tostring(groups) }, { T("Une place pour toi"), tostring(mine), mine > 0 and C.positive or nil },
+                 { T("Joueurs seuls"), tostring(solos) }, { T("Demandes"), tostring(asked) } }
     end,
     journal = function()
         local today, n = date("%Y%m%d"), 0

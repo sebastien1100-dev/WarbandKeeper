@@ -17,6 +17,20 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.59.0 — 15/11/2026
+
+### Ajouts
+- Nouvel onglet LFG (groupe « Groupe » de la barre latérale) : la recherche de groupe du jeu, présentée à partir de ton perso.
+- LFG : tu choisis tes rôles (tank, soin, dégâts) et ce que tu cherches (un groupe ou des joueurs), puis « Actualiser ».
+- LFG : à gauche, les donjons classés par niveau, avec un trait à ton niveau et le nombre de groupes de chacun. Un clic limite la recherche à ce donjon.
+- LFG : les groupes en cartes, avec leurs cinq places (tank, soin, trois dégâts). « Une place pour toi » montre d'abord les groupes qui cherchent ton rôle, et la place que tu prendrais.
+- LFG : « Demander » envoie au chef un message rédigé d'après ton perso, ton rôle et le donjon (modifiable). « Inviter » pour les joueurs seuls.
+- LFG : « Mes demandes » suit chaque demande (réponse reçue, en attente, groupe retiré).
+- Micro menu : raccourci « LFG », avec un point vert quand un chef t'a répondu.
+
+### Modifications
+- Nouveaux fichiers et nouvelle texture : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.58.3 — 15/11/2026
 
 ### Corrections

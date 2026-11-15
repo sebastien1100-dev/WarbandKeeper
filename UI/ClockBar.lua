@@ -62,6 +62,11 @@ local SHORTCUTS = {
     { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "play" end, tint = true,
       run = function() local F = WK.modules.Farm; if F:Active() then F:Stop() else F:Start() end end,
       dot = function() return WK.modules.Farm:Active() and C.positive or nil end },
+    { key = "lfg", label = "LFG", icon = function() return UI.MEDIA .. "lfg" end, tint = true,
+      run = function() UI:ToggleWindow("lfg") end,
+      dot = function()
+          for _, q in pairs(WK.modules.LFG.requests) do if q.state == "answer" then return C.positive end end
+      end },
     { key = "fishing", label = "Mode pêche", icon = function() return UI.MEDIA .. "fish" end, tint = true,
       run = function() WK.modules.Fishing:Toggle() end,
       dot = function() return WK.modules.Fishing.active and C.positive or nil end },
@@ -94,6 +99,10 @@ local function cfg()
         end
     end
     -- le raccourci « Mode pêche » arrive à droite une fois, puis reste où tu le mets
+    if not q.clock.lfgAdded then
+        q.clock.lfgAdded = true
+        if q.clock.side.lfg == nil then q.clock.side.lfg = "R" end
+    end
     if not q.clock.fishAdded then
         q.clock.fishAdded = true
         if q.clock.side.fishing == nil then q.clock.side.fishing = "R" end

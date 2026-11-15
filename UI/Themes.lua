@@ -42,6 +42,10 @@ local function palette(b)
         negative = { 0.91, 0.42, 0.42, 1 },
         warning  = { 0.95, 0.66, 0.30, 1 },
         gold     = { 0.878, 0.741, 0.447, 1 },
+        -- rôles de groupe (onglet LFG)
+        tank     = { 0.48, 0.65, 0.86, 1 },
+        heal     = { 0.56, 0.82, 0.54, 1 },
+        dps      = { 0.88, 0.54, 0.49, 1 },
     }
     return p
 end
