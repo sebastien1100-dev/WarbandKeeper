@@ -18,6 +18,11 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.55.0 — 15/11/2026
+
+### Ajouts
+- Halo : nouvelle catégorie « Créatures à dépecer » (brun clair). Le cadavre que le jeu désigne brille s'il est dépeçable et si le perso a le Dépeçage.
+
 ## v0.54.0 — 15/11/2026
 
 ### Ajouts

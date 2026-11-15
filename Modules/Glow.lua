@@ -9,12 +9,14 @@ local T = function(s) return WK.T(s) end
 
 local UNIT = "softinteract"
 local plain
-local CATEGORIES = { "herb", "ore", "quest", "chest", "bobber", "other" }
+local CATEGORIES = { "herb", "ore", "skin", "quest", "chest", "bobber", "other" }
 M.CATEGORIES = CATEGORIES
-M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche", other = "Autres objets" }
+M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche", other = "Autres objets",
+             skin = "Créatures à dépecer" }
 local DEFAULT_COLORS = {
     herb = { 0.40, 1.00, 0.42 }, ore = { 1.00, 0.60, 0.18 }, quest = { 1.00, 0.84, 0.15 },
     chest = { 0.45, 0.78, 1.00 }, bobber = { 1.00, 0.45, 0.40 }, other = { 0.92, 0.92, 0.92 },
+    skin = { 0.90, 0.58, 0.36 },
 }
 
 -- Réglages du jeu nécessaires (valeur voulue) : soft targeting des objets et leur plaque de nom.
@@ -166,14 +168,14 @@ end
 -- Curseur que le jeu montrerait sur l'objet (pioche, fleur, « ! » de quête, main…) : il dit
 -- ce qu'est l'objet. Le jeu renvoie un numéro de fichier, un chemin ou un nom d'atlas.
 local CURSOR_FILES = { -- fichiers Interface\Cursor\ du jeu -> catégorie (false : service, pas de halo)
-    Mine = "ore", GatherHerbs = "herb", Fishing = "bobber",
+    Mine = "ore", GatherHerbs = "herb", Fishing = "bobber", Skin = "skin",
     Quest = "quest", QuestRepeatable = "quest", QuestTurnIn = "quest", QuestInteract = "quest",
     Pickup = "chest", LootAll = "chest", PickLock = "chest",
     Interact = "other", Inspect = "other",
     Mail = false, Speak = false, Buy = false, Trainer = false, Taxi = false, Innkeeper = false, Repair = false,
 }
 local CURSOR_WORDS = { -- dans l'ordre : le premier mot trouvé l'emporte
-    { "gather", "herb" }, { "herb", "herb" }, { "mine", "ore" }, { "mining", "ore" }, { "fish", "bobber" },
+    { "gather", "herb" }, { "herb", "herb" }, { "mine", "ore" }, { "mining", "ore" }, { "fish", "bobber" }, { "skin", "skin" },
     { "quest", "quest" }, { "lootall", "chest" }, { "pickup", "chest" }, { "picklock", "chest" },
     { "mail", false }, { "speak", false }, { "buy", false }, { "trainer", false }, { "taxi", false },
     { "innkeeper", false }, { "repair", false }, { "stable", false },
@@ -240,9 +242,30 @@ local function questObjective(name)
     return false
 end
 
+-- Cadavre à dépecer : le jeu l'écrit dans l'infobulle (« Dépeçable ») ou lui donne le curseur du dépeçage.
+local function skinnable(unit)
+    local cur = cursorCategory(unit)
+    if cur == "skin" then return true end
+    if not (C_TooltipInfo and C_TooltipInfo.GetUnit) then return false end
+    local ok, data = pcall(C_TooltipInfo.GetUnit, unit)
+    if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return false end
+    local want = string.lower(UNIT_SKINNABLE_LEATHER or "")
+    for _, line in ipairs(data.lines) do
+        local t = string.lower(line.leftText or "")
+        if (want ~= "" and t == want) or string.find(t, "dépeçable", 1, true) or string.find(t, "skinnable", 1, true) then return true end
+    end
+    return false
+end
+
 function M:Classify(unit)
     if not M.SoftExists(unit) then return nil end
-    if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then return nil end -- PNJ, joueur : pas de halo
+    if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then
+        -- une créature : seul un cadavre à dépecer reçoit le halo (pas les PNJ ni les joueurs)
+        local name = UnitName(unit) or ""
+        local ok, dead = pcall(UnitIsDead, unit)
+        if ok and plain(dead) == true and skinnable(unit) then return "skin", name end
+        return nil, name
+    end
     local name = UnitName(unit) or ""
     if contains(name, BOBBER_WORDS) then return "bobber", name end
     if C_QuestLog and C_QuestLog.UnitIsRelatedToActiveQuest then
@@ -272,7 +295,7 @@ local function hasProfession(cat)
     local c = WK.DB:Me()
     for prof in pairs(c.professions or {}) do
         local kind = WK.modules.Gathering:Kind(prof)
-        if (cat == "herb" and kind == "herb") or (cat == "ore" and kind == "mining") then return true end
+        if (cat == "herb" and kind == "herb") or (cat == "ore" and kind == "mining") or (cat == "skin" and kind == "skin") then return true end
     end
     return false
 end
@@ -375,7 +398,7 @@ function M:Update()
     end
     local cat, name = self:Classify(UNIT)
     if not cat or not g.cats[cat] then return self:Hide() end
-    if (cat == "herb" or cat == "ore") and g.onlyTrained ~= false and not hasProfession(cat) then return self:Hide() end
+    if (cat == "herb" or cat == "ore" or cat == "skin") and g.onlyTrained ~= false and not hasProfession(cat) then return self:Hide() end
     local plate = findPlate()
     if not plate then
         -- la plaque arrive souvent un instant après la désignation : on réessaie quelques fois
@@ -427,7 +450,7 @@ function M:Report()
         WK:Print("  " .. T("ce client ne signale pas l'objet désigné (évènement absent)"))
     end
     local function show(fn) if not fn then return "absent" end local ok, v = pcall(fn, UNIT); return ok and tostring(plain(v)) or "erreur" end
-    WK:Print("  UnitIsGameObject : " .. show(UnitIsGameObject) .. " · UnitExists : " .. show(UnitExists) .. " · UnitName : " .. show(UnitName))
+    WK:Print("  UnitIsGameObject : " .. show(UnitIsGameObject) .. " · UnitExists : " .. show(UnitExists) .. " · UnitIsDead : " .. show(UnitIsDead) .. " · UnitName : " .. show(UnitName))
     if not M.SoftExists() then
         WK:Print("  " .. T("aucun objet désigné par le jeu : approche-toi d'un objet et relance la commande"))
         return
