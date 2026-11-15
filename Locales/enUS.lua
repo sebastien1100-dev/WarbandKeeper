@@ -790,7 +790,8 @@ WK.Locales.enUS.text = {
     ["Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange)."] = "Between 5 and 8 yd, neither shooting nor melee (otherwise orange).",
     ["Distance au centre"] = "Distance in the middle", ["Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m."] = "Estimated range: melee, 5-8 yd, 8-35 yd, 35+ yd.",
     ["5-8 m"] = "5-8 yd", ["8-35 m"] = "8-35 yd", ["35+ m"] = "35+ yd",
-    ["Micro menu"] = "Micro menu",     -- Guidage
+    ["Micro menu"] = "Micro menu",     ["sans"] = "no", ["cible"] = "target", ["Masquer sans cible"] = "Hide without a target", ["Sinon, anneau beige avec « sans cible »."] = "Otherwise a beige ring with \"no target\".",
+    -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
     ["Aucun lieu connu pour : %s"] = "No known place for: %s",

@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.45.2", date = "15/11/2026",
+        fixed = {
+            "Indicateur de distance : sans cible, l'anneau gris et transparent était presque invisible. Il est maintenant beige sur un fond sombre, avec « sans cible » au centre.",
+        },
+        added = {
+            "Indicateur de distance : option « Masquer sans cible ».",
+        },
+    },
+    {
         version = "0.45.1", date = "15/11/2026",
         changed = {
             "Cadre du familier plus compact : la barre de vie prend toute la largeur, et une seule ligne en dessous réunit les boutons (à gauche), l'humeur (au milieu) et la nourriture avec son nombre (à droite).",

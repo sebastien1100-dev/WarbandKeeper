@@ -11,7 +11,7 @@ local T = function(s) return WK.T(s) end
 -- Réglages : WK.modules.QoL:Class("HUNTER").range
 local ring
 local AUTO_SHOT = 75
-local DEFAULTS = { enabled = true, combatOnly = false, deadZone = true, numbers = true }
+local DEFAULTS = { enabled = true, combatOnly = false, deadZone = true, numbers = true, hideNoTarget = false }
 
 local function cfg()
     local cc = WK.modules.QoL:Class("HUNTER")
@@ -65,7 +65,7 @@ function UI:RangeState()
     return "far"
 end
 
-local LABEL = { none = "–", melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
+local LABEL = { none = "sans\ncible", melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperRange", UIParent)
@@ -94,15 +94,19 @@ local function build()
     function f:Paint(state)
         local o = cfg()
         if state == "dead" and not o.deadZone then state = "melee" end
+        -- Sans cible : anneau beige bien visible sur fond sombre (plus de gris transparent)
         local col = ({ melee = C.warning, dead = { 0.91, 0.83, 0.29, 1 }, ranged = C.positive, far = C.negative })[state]
-            or { 0.55, 0.55, 0.55, 1 }
+            or C.muted
         self.ring:SetVertexColor(col[1], col[2], col[3], 1)
-        self.glow:SetVertexColor(col[1], col[2], col[3], state == "none" and 0 or 0.35)
-        self.disc:SetVertexColor(0, 0, 0, 0.35)
+        self.glow:SetVertexColor(col[1], col[2], col[3], state == "none" and 0.15 or 0.35)
+        self.disc:SetVertexColor(0, 0, 0, state == "none" and 0.65 or 0.35)
         self.text:SetTextColor(col[1], col[2], col[3], 1)
-        self.text:SetText(o.numbers and T(LABEL[state]) or "")
-        local hide = o.combatOnly and not (InCombatLockdown and InCombatLockdown()) and not self.sample
-        self:SetAlpha(hide and 0 or (UI:HUDEntry("range").alpha or 1) * (state == "none" and 0.6 or 1))
+        self.text:SetFont(UI.FONT, state == "none" and 9 or 10, "OUTLINE")
+        local label = state == "none" and (T("sans") .. "\n" .. T("cible")) or T(LABEL[state])
+        self.text:SetText(o.numbers and label or "")
+        local hide = (o.combatOnly and not (InCombatLockdown and InCombatLockdown()) and not self.sample)
+            or (o.hideNoTarget and state == "none" and not self.sample)
+        self:SetAlpha(hide and 0 or (UI:HUDEntry("range").alpha or 1))
     end
     f:Hide()
     UI:RegisterHUD("range", f, {

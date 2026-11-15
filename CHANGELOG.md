@@ -18,6 +18,14 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.45.2 — 15/11/2026
+
+### Ajouts
+- Indicateur de distance : option « Masquer sans cible ».
+
+### Corrections
+- Indicateur de distance : sans cible, l'anneau gris et transparent était presque invisible. Il est maintenant beige sur un fond sombre, avec « sans cible » au centre.
+
 ## v0.45.1 — 15/11/2026
 
 ### Modifications
