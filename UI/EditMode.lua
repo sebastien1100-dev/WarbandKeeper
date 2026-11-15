@@ -376,7 +376,9 @@ function UI:EnterEditMode()
     if self.editing then return end
     if not overlay then buildOverlay() end
     self.editing = true
-    if self.frame and self.frame:IsShown() then self.frame:Hide() end
+    -- La fenêtre se ferme pendant l'édition et se rouvre à la sortie si elle était ouverte.
+    self.reopenAfterEdit = self.frame and self.frame:IsShown() or false
+    if self.reopenAfterEdit then self.frame:Hide() end
     overlay:Show()
     drawGrid()
     for _, key in ipairs(order) do
@@ -409,6 +411,10 @@ function UI:ExitEditMode()
     end
     if popup then popup:Hide() end
     overlay:Hide()
+    -- (pas si un combat commence et que l'option « fermer la fenêtre en combat » est active)
+    local combatClose = InCombatLockdown and InCombatLockdown() and WK.DB.global.settings.ui.closeInCombat
+    if self.reopenAfterEdit and self.frame and not combatClose then self.frame:Show(); self:Refresh() end
+    self.reopenAfterEdit = nil
 end
 
 -- Un combat met fin au mode édition ; un bouton protégé déplacé en combat se place à la sortie.
