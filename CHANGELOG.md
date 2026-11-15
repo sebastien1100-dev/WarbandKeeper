@@ -18,6 +18,14 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.51.1 — 15/11/2026
+
+### Modifications
+- /wk halo affiche aussi ces nouveaux réglages du jeu.
+
+### Corrections
+- Halo : le jeu ne désignait un objet qu'à portée de main (quelques mètres), donc le halo ne s'allumait pas à l'approche. L'addon règle maintenant le jeu pour désigner l'objet jusqu'à la portée choisie, et pour afficher sa plaque aussi loin.
+
 ## v0.51.0 — 15/11/2026
 
 ### Ajouts

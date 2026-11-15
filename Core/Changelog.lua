@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.51.1", date = "15/11/2026",
+        fixed = {
+            "Halo : le jeu ne désignait un objet qu'à portée de main (quelques mètres), donc le halo ne s'allumait pas à l'approche. L'addon règle maintenant le jeu pour désigner l'objet jusqu'à la portée choisie, et pour afficher sa plaque aussi loin.",
+        },
+        changed = {
+            "/wk halo affiche aussi ces nouveaux réglages du jeu.",
+        },
+    },
+    {
         version = "0.51.0", date = "15/11/2026",
         added = {
             "Micro menu : option « Raccourcis toujours affichés » (sinon ils se déplient au survol).",

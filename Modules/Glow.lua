@@ -22,7 +22,11 @@ local CVARS = {
     SoftTargetInteractArc = "2",       -- dans toutes les directions
     SoftTargetNameplateInteract = "1", -- plaque de nom sur l'objet désigné (support de la lueur)
     SoftTargetIconGameObject = "1",    -- sans elle, pas de plaque pour les objets
+    SoftTargetInteractOnlyInRange = "0", -- désigner aussi hors de portée de main (sinon : quelques mètres seulement)
+    SoftTargetInteractRangeIsHard = "0", -- la portée choisie n'écarte pas ce qui reste utilisable (flotteur…)
 }
+-- Distance d'affichage des plaques d'objets : au moins la portée du halo (réglage monté, jamais baissé).
+local PLATE_DIST = "nameplateGameObjectMaxDistance"
 
 function M:Config()
     local g = WK.DB.global.glow
@@ -63,6 +67,9 @@ function M:ApplyCVars()
     end
     if g.saved.SoftTargetInteractRange == nil then g.saved.SoftTargetInteractRange = getCVar("SoftTargetInteractRange") end
     setCVar("SoftTargetInteractRange", tostring(g.range or 15))
+    if g.saved[PLATE_DIST] == nil then g.saved[PLATE_DIST] = getCVar(PLATE_DIST) end
+    local dist = math.max(tonumber(g.saved[PLATE_DIST]) or 0, g.range or 15)
+    setCVar(PLATE_DIST, tostring(dist))
 end
 
 function M:RestoreCVars()
@@ -286,6 +293,7 @@ function M:Report()
     for name in pairs(CVARS) do table.insert(parts, name .. "=" .. tostring(getCVar(name))) end
     table.sort(parts)
     table.insert(parts, "SoftTargetInteractRange=" .. tostring(getCVar("SoftTargetInteractRange")))
+    table.insert(parts, PLATE_DIST .. "=" .. tostring(getCVar(PLATE_DIST)))
     WK:Print("  " .. T("réglages du jeu") .. " : " .. table.concat(parts, ", "))
     if WK.unknownEvents and WK.unknownEvents.PLAYER_SOFT_INTERACT_CHANGED then
         WK:Print("  " .. T("ce client ne signale pas l'objet désigné (évènement absent)"))
