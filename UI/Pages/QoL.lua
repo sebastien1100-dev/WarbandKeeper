@@ -440,7 +440,7 @@ UI:RegisterPage({
         local Gm = WK.modules.Glow
         local gcfg = Gm:Config()
         local gtoggle = toggle
-        local gmain = card("Halo", 262)
+        local gmain = card("Halo", 308)
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
@@ -451,9 +451,13 @@ UI:RegisterPage({
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
         UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
             UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
+        local fxSeg = UI:Segmented(gmain, { { "halo", "Halo" }, { "beam", "Colonne" }, { "both", "Les deux" } },
+            function(v) gcfg.style = v end, 26)
+        fxSeg:Select(gcfg.style or "halo")
+        UI:SettingRow(gmain, -230, "Effet", "Halo autour de l'objet, colonne de lumière au-dessus, ou les deux.", fxSeg, 280)
         local diag = UI:Text(gmain, 11, C.muted)
-        diag:SetPoint("TOPLEFT", 16, -234)
-        diag:SetPoint("TOPRIGHT", -16, -234)
+        diag:SetPoint("TOPLEFT", 16, -280)
+        diag:SetPoint("TOPRIGHT", -16, -280)
         diag:SetJustifyH("LEFT")
         diag:SetText(T("Pour comprendre pourquoi un objet ne brille pas : approche-toi de lui et tape /wk halo."))
         local glowNote = dynText(gmain, 11, C.warning, function()

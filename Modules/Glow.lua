@@ -289,6 +289,11 @@ local function buildGlow()
     glow.halo:SetTexture(WK.UI.MEDIA .. "fxhalo")
     glow.halo:SetBlendMode("ADD")
     glow.halo:SetPoint("CENTER")
+    -- colonne de lumière (effet au choix) : son pied est posé sur l'objet
+    glow.beam = glow:CreateTexture(nil, "ARTWORK")
+    glow.beam:SetTexture(WK.UI.MEDIA .. "fxbeam")
+    glow.beam:SetBlendMode("ADD")
+    glow.beam:SetPoint("BOTTOM", glow, "CENTER", 0, -6)
     glow.ring = glow:CreateTexture(nil, "OVERLAY")
     glow.ring:SetTexture(WK.UI.MEDIA .. "fxring")
     glow.ring:SetBlendMode("ADD")
@@ -304,8 +309,17 @@ local function buildGlow()
         local speed = inRange and 4 or 2
         local breath = 0.5 + 0.5 * math.sin(self.t * speed)
         local base = inRange and 0.85 or 0.45
-        self.halo:SetSize(size * (0.9 + 0.1 * breath), size * (0.9 + 0.1 * breath))
+        -- effet : "halo" (défaut), "beam" (colonne de lumière) ou "both"
+        local style = g.style or "halo"
+        local beamOn = style == "beam" or style == "both"
+        local hs = (style == "beam") and size * 0.55 or size -- avec la colonne seule : une petite lueur au pied
+        self.halo:SetSize(hs * (0.9 + 0.1 * breath), hs * (0.9 + 0.1 * breath))
         self.halo:SetAlpha(math.min(1, (base + 0.15 * breath) * power))
+        self.beam:SetShown(beamOn)
+        if beamOn then
+            self.beam:SetSize(size * (0.42 + 0.05 * breath), size * 2.4)
+            self.beam:SetAlpha(math.min(1, (base + 0.1 + 0.2 * breath) * power))
+        end
         -- anneau qui s'élargit en boucle quand l'objet est à portée
         if inRange then
             local k = (self.t * 0.8) % 1
@@ -375,6 +389,7 @@ function M:Update()
     local col = g.colors[cat]
     glow.halo:SetVertexColor(col[1], col[2], col[3])
     glow.ring:SetVertexColor(col[1], col[2], col[3])
+    glow.beam:SetVertexColor(col[1], col[2], col[3])
     glow:ClearAllPoints()
     glow:SetPoint("CENTER", plate, "CENTER", 0, g.offsetY or -45)
     glow:SetSize(1, 1)

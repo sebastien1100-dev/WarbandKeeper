@@ -275,6 +275,23 @@ def fx_halo():
     img.save(os.path.join(OUT, "fxhalo.tga"))
 
 
+def fx_beam():
+    """Colonne de lumière : douce sur les côtés, pleine au pied, s'éteint vers le haut."""
+    w, h = 64, 256
+    img = Image.new("RGBA", (w, h), (255, 255, 255, 0))
+    px = img.load()
+    c = (w - 1) / 2
+    for y in range(h):
+        v = y / (h - 1)                      # 0 en haut, 1 au pied
+        up = v ** 1.4                        # s'éteint vers le haut
+        foot = min(1.0, (1 - v) / 0.04)      # pied arrondi
+        for x in range(w):
+            dx = abs(x - c) / c
+            a = math.exp(-(dx * 2.3) ** 2) * up * foot
+            px[x, y] = (255, 255, 255, int(255 * min(1, a)))
+    img.save(os.path.join(OUT, "fxbeam.tga"))
+
+
 def fx_ring():
     """Anneau lumineux fin aux bords adoucis."""
     size = 128
@@ -390,6 +407,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, fx_halo, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")

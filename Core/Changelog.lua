@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.53.0", date = "15/11/2026",
+        added = {
+            "Halo : choix de l'effet (QoL > Halo > Effet) : halo, colonne de lumière au-dessus de l'objet, ou les deux. La colonne prend la couleur de la catégorie et s'avive à portée.",
+        },
+        changed = {
+            "Nouvelle texture : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.52.0", date = "15/11/2026",
         added = {
             "Indicateur de distance : la vraie fourchette de distance de la cible s'affiche (par exemple « 20-25 m ») à la place du « 8-35 m » fixe, grâce à la bibliothèque LibRangeCheck-3.0.",
