@@ -65,7 +65,7 @@ function UI:RangeState()
     return "far"
 end
 
-local LABEL = { none = "sans\ncible", melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
+local LABEL = { melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperRange", UIParent)
@@ -80,6 +80,8 @@ local function build()
     f.disc:SetPoint("CENTER")
     f.ring = UI:Icon(f, "ring", 64, nil, "ARTWORK")
     f.ring:SetPoint("CENTER")
+    f.cross = UI:Icon(f, "crosshair", 26, nil, "OVERLAY")
+    f.cross:SetPoint("CENTER")
     f.text = UI:Text(f, 10)
     f.text:SetPoint("CENTER")
     f.text:SetJustifyH("CENTER")
@@ -94,16 +96,19 @@ local function build()
     function f:Paint(state)
         local o = cfg()
         if state == "dead" and not o.deadZone then state = "melee" end
-        -- Sans cible : anneau beige bien visible sur fond sombre (plus de gris transparent)
+        -- Sans cible : anneau beige en pointillés avec un viseur au centre, sans texte
         local col = ({ melee = C.warning, dead = { 0.91, 0.83, 0.29, 1 }, ranged = C.positive, far = C.negative })[state]
             or C.muted
         self.ring:SetVertexColor(col[1], col[2], col[3], 1)
         self.glow:SetVertexColor(col[1], col[2], col[3], state == "none" and 0.15 or 0.35)
         self.disc:SetVertexColor(0, 0, 0, state == "none" and 0.65 or 0.35)
         self.text:SetTextColor(col[1], col[2], col[3], 1)
-        self.text:SetFont(UI.FONT, state == "none" and 9 or 10, "OUTLINE")
-        local label = state == "none" and (T("sans") .. "\n" .. T("cible")) or T(LABEL[state])
-        self.text:SetText(o.numbers and label or "")
+        local none = state == "none"
+        self.ring:SetTexture(UI.MEDIA .. (none and "ring_dash" or "ring"))
+        self.cross:SetShown(none)
+        self.cross:SetVertexColor(col[1], col[2], col[3], 1)
+        self.text:SetFont(UI.FONT, 10, "OUTLINE")
+        self.text:SetText((o.numbers and not none) and T(LABEL[state]) or "")
         local hide = (o.combatOnly and not (InCombatLockdown and InCombatLockdown()) and not self.sample)
             or (o.hideNoTarget and state == "none" and not self.sample)
         self:SetAlpha(hide and 0 or (UI:HUDEntry("range").alpha or 1))

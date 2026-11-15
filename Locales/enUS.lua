@@ -729,7 +729,7 @@ WK.Locales.enUS.text = {
     ["Oui"] = "Yes", ["Non"] = "No", ["niveau %s"] = "level %s",
     ["Pile d'alertes"] = "Alert stack", ["Empiler vers"] = "Stack towards", ["le bas"] = "down", ["le haut"] = "up", ["Icônes"] = "Icons",
     ["Exemple : aucun aspect actif"] = "Example: no aspect active", ["Exemple : rappel urgent"] = "Example: urgent reminder",
-    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Bouton du familier"] = "Pet button",
+    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker", ["Bouton du familier"] = "Pet button",
     ["Opacité"] = "Opacity", ["Réinitialiser"] = "Reset", ["Mode édition"] = "Edit mode",
     ["Grille : %d"] = "Grid: %d", ["Aimant : oui"] = "Snap: on", ["Aimant : non"] = "Snap: off",
     ["Les éléments s'alignent sur la grille. Maj enfoncée : placement libre."] = "Elements snap to the grid. Hold Shift: free placement.",
@@ -791,7 +791,7 @@ WK.Locales.enUS.text = {
     ["Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange)."] = "Between 5 and 8 yd, neither shooting nor melee (otherwise orange).",
     ["Distance au centre"] = "Distance in the middle", ["Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m."] = "Estimated range: melee, 5-8 yd, 8-35 yd, 35+ yd.",
     ["5-8 m"] = "5-8 yd", ["8-35 m"] = "8-35 yd", ["35+ m"] = "35+ yd",
-    ["Micro menu"] = "Micro menu",     ["sans"] = "no", ["cible"] = "target", ["Masquer sans cible"] = "Hide without a target", ["Sinon, anneau beige avec « sans cible »."] = "Otherwise a beige ring with \"no target\".",
+    ["Micro menu"] = "Micro menu",     ["Masquer sans cible"] = "Hide without a target", ["Sinon, anneau beige en pointillés avec un viseur."] = "Otherwise a dashed beige ring with a crosshair.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

@@ -317,6 +317,19 @@ def icon_ring():
     img, d, s = canvas(128)
     circle(d, s, 0.5, 0.5, 0.44, 0.09)
     save(img, "ring", 128)
+    # anneau en pointillés (sans cible) : 14 tirets
+    img, d, s2 = canvas(128)
+    r0, r1 = 0.06 * s2, 0.94 * s2
+    for i in range(14):
+        a = i * 360 / 14
+        d.arc([r0, r0, r1, r1], a, a + 15, fill=W, width=int(0.09 * s2))
+    save(img, "ring_dash", 128)
+    # viseur (centre de l'anneau sans cible)
+    img, d, s2 = canvas(64)
+    circle(d, s2, 0.5, 0.5, 0.2, 0.09)
+    for seg in ([(0.5, 0.08), (0.5, 0.26)], [(0.5, 0.74), (0.5, 0.92)], [(0.08, 0.5), (0.26, 0.5)], [(0.74, 0.5), (0.92, 0.5)]):
+        line(d, s2, seg, 0.09)
+    save(img, "crosshair", 64)
 
 
 # Pictogrammes du micro menu (style trait fin, grille 24 comme les maquettes)

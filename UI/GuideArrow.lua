@@ -10,7 +10,7 @@ local refresh
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperGuideArrow", UIParent)
-    f:SetSize(220, 104)
+    f:SetSize(180, 96)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
@@ -21,15 +21,40 @@ local function build()
     f:SetScript("OnMouseUp", function(_, button) if button == "RightButton" then WK.modules.Guide:Stop() end end)
     f.arrow = f:CreateTexture(nil, "ARTWORK")
     f.arrow:SetTexture(UI.MEDIA .. "guide")
-    f.arrow:SetSize(48, 48)
-    f.arrow:SetPoint("TOP", 0, -4)
-    f.name = UI:Text(f, 12, C.text)
-    f.name:SetPoint("TOP", f.arrow, "BOTTOM", 0, -4)
+    f.arrow:SetSize(40, 40)
+    f.arrow:SetPoint("TOP", 0, -6)
+    -- ligne 1 : le nom ; ligne 2 : le rôle et la distance dans une pastille à la couleur du thème
+    f.name = UI:Text(f, 13, C.text)
+    f.name:SetPoint("TOP", f.arrow, "BOTTOM", 0, -3)
     f.name:SetJustifyH("CENTER")
-    f.dist = UI:Text(f, 11, C.muted)
-    f.dist:SetPoint("TOP", f.name, "BOTTOM", 0, -3)
+    f.line2 = CreateFrame("Frame", nil, f)
+    f.line2:SetSize(100, 16)
+    f.line2:SetPoint("TOP", f.name, "BOTTOM", 0, -4)
+    f.role = UI:Text(f.line2, 11, C.muted)
+    f.role:SetPoint("LEFT", 0, 0)
+    f.pill = CreateFrame("Frame", nil, f.line2)
+    f.pill:SetHeight(16)
+    f.pill.bg = UI:Rounded(f.pill, 8, 0, "BACKGROUND", 2)
+    f.dist = UI:Text(f.pill, 11)
+    f.dist:SetPoint("CENTER", 0, 0)
     f.dist:SetJustifyH("CENTER")
-    f.close = UI:IconButton(f, "close", 18, nil, "accent")
+    -- pose la distance (ou un état) dans la pastille et recentre la ligne 2
+    function f:SetDist(text, col)
+        local r, g, b = UI:Accent()
+        col = col or { r, g, b }
+        self.dist:SetText(text)
+        self.dist:SetTextColor(C.bg[1], C.bg[2], C.bg[3], 1)
+        self.pill.bg:SetColor(col[1], col[2], col[3], 1)
+        local pw = (self.dist:GetStringWidth() or 20) + 12
+        self.pill:SetWidth(pw)
+        local rw = (self.role:GetText() or "") ~= "" and (self.role:GetStringWidth() or 0) + 6 or 0
+        self.pill:ClearAllPoints()
+        self.pill:SetPoint("LEFT", self.line2, "LEFT", rw, 0)
+        self.line2:SetWidth(rw + pw)
+        local w = math.max(150, (self.name:GetStringWidth() or 0) + 36, rw + pw + 36)
+        if math.abs((self:GetWidth() or 0) - w) > 1 then self:SetWidth(w) end
+    end
+    f.close = UI:IconButton(f, "close", 16, nil, "accent")
     f.close:SetPoint("TOPRIGHT", -2, -2)
     f.close:SetScript("OnClick", function() WK.modules.Guide:Stop() end)
     f:SetScript("OnEnter", function(s)
@@ -56,13 +81,13 @@ local function build()
         if not d then
             s.arrow:SetRotation(0)
             s.arrow:SetVertexColor(unpack(C.dim))
-            s.dist:SetText(T("Autre zone : ouvre la carte"))
+            s:SetDist(T("Autre zone : ouvre la carte"), C.dim)
             return
         end
         if d < 8 then
             s.arrow:SetRotation(0)
             s.arrow:SetVertexColor(unpack(C.positive))
-            s.dist:SetText(T("Arrivé"))
+            s:SetDist(T("Arrivé"), C.positive)
             return
         end
         local facing = GetPlayerFacing and GetPlayerFacing() or 0
@@ -72,7 +97,7 @@ local function build()
         local k = math.max(0, math.min(1, 1 - d / 300))
         local pc = C.positive
         s.arrow:SetVertexColor(r + (pc[1] - r) * k, g + (pc[2] - g) * k, b + (pc[3] - b) * k)
-        s.dist:SetText(string.format(T("%d m"), math.floor(d)))
+        s:SetDist(string.format(T("%d m"), math.floor(d)))
     end)
     UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.82 }, C.border)
     f:Hide()
@@ -90,7 +115,8 @@ local function build()
             f.sample = on or nil
             if on then
                 f.name:SetText(T("Exemple : banque"))
-                f.dist:SetText(string.format(T("%d m"), 120))
+                f.role:SetText(T("Banquier"))
+                f:SetDist(string.format(T("%d m"), 120))
                 f.arrow:SetRotation(0.6)
                 f.arrow:SetVertexColor(UI:Accent())
                 f:Show()
@@ -110,8 +136,10 @@ refresh = function()
         return
     end
     frame = frame or build()
-    frame.name:SetText(G:PlaceName(t))
-    frame:SetWidth(math.max(180, frame.name:GetStringWidth() + 40))
+    local name, role = G:PlaceParts(t)
+    frame.name:SetText(name)
+    frame.role:SetText(role or "")
+    frame:SetDist(frame.dist:GetText() or "")
     frame:Show()
 end
 

@@ -136,6 +136,15 @@ function M:PlaceName(t)
     return sub and (name .. " (" .. sub .. ")") or name
 end
 
+-- Nom et rôle séparés (flèche de guidage sur deux lignes)
+function M:PlaceParts(t)
+    local e = t and t.e
+    if not e then return "?" end
+    if band(e[3], KIND.mail) ~= 0 and not e[6] then return T("Boîte aux lettres") end
+    local fr = WK.Lang() == "frFR"
+    return (fr and e[7]) or e[6] or "?", fr and e[8] or nil
+end
+
 ---------------------------------------------------------------------------
 -- Cible courante
 ---------------------------------------------------------------------------

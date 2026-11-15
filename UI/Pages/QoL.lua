@@ -845,7 +845,7 @@ UI:RegisterPage({
                 end
                 rrow("Afficher l'anneau", "Vert : à portée de tir · orange : corps à corps · rouge : trop loin · gris : pas de cible.", "enabled", function() UI:SyncRange() end)
                 rrow("Seulement en combat", nil, "combatOnly")
-                rrow("Masquer sans cible", "Sinon, anneau beige avec « sans cible ».", "hideNoTarget")
+                rrow("Masquer sans cible", "Sinon, anneau beige en pointillés avec un viseur.", "hideNoTarget")
                 rrow("Zone morte en jaune", "Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange).", "deadZone")
                 rrow("Distance au centre", "Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m.", "numbers")
 

@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.48.0", date = "15/11/2026",
+        changed = {
+            "Indicateur de distance : sans cible, un anneau beige en pointillés avec un viseur au centre remplace le texte « sans cible », qui était coupé.",
+            "Flèche de guidage plus compacte, sur deux lignes : le nom, puis le rôle (maître des écuries, banquier…) et la distance dans une pastille à la couleur du thème.",
+            "Nouvelles textures : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.47.0", date = "15/11/2026",
         changed = {
             "Micro menu : le fond est séparé en trois (raccourcis de gauche, heure, raccourcis de droite). Les côtés glissent depuis l'heure au survol.",

@@ -18,6 +18,13 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.48.0 — 15/11/2026
+
+### Modifications
+- Indicateur de distance : sans cible, un anneau beige en pointillés avec un viseur au centre remplace le texte « sans cible », qui était coupé.
+- Flèche de guidage plus compacte, sur deux lignes : le nom, puis le rôle (maître des écuries, banquier…) et la distance dans une pastille à la couleur du thème.
+- Nouvelles textures : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.47.0 — 15/11/2026
 
 ### Ajouts
