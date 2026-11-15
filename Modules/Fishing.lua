@@ -196,7 +196,7 @@ end
 ---------------------------------------------------------------------------
 -- Désignation du flotteur : la touche unique ferre avec « Interagir avec la cible »
 ---------------------------------------------------------------------------
-local SOFT_CVARS = { SoftTargetInteract = "3", SoftTargetInteractArc = "2", SoftTargetInteractRange = "30",
+local SOFT_CVARS = { SoftTargetInteract = "3", SoftTargetInteractArc = "2", SoftTargetInteractRange = "60",
                      SoftTargetInteractOnlyInRange = "0", SoftTargetInteractRangeIsHard = "0" }
 function M:SoftTarget(on)
     local o = self:Config()
@@ -206,7 +206,7 @@ function M:SoftTarget(on)
         for name, value in pairs(SOFT_CVARS) do
             o.savedSoft[name] = getCVar(name) or false
             -- la portée n'est jamais réduite (le halo peut l'avoir montée)
-            if name ~= "SoftTargetInteractRange" or (tonumber(getCVar(name)) or 0) < 30 then setCVar(name, value) end
+            if name ~= "SoftTargetInteractRange" or (tonumber(getCVar(name)) or 0) < 60 then setCVar(name, value) end
         end
     elseif o.savedSoft then
         local G = WK.modules.Glow

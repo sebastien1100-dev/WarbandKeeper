@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.56.1", date = "15/11/2026",
+        changed = {
+            "Halo : le réglage « Portée » s'arrête de nouveau à 15 m. Le jeu ne désigne pas un objet plus loin, quelle que soit la valeur demandée : monter au-delà ne changeait rien.",
+            "Pêche : le flotteur est cherché plus loin (jusqu'à 60 m) pendant le mode pêche, pour que la touche puisse le ferrer.",
+        },
+    },
+    {
         version = "0.56.0", date = "15/11/2026",
         added = {
             "Pêche : nouvel onglet dans QoL, avec un « mode pêche » qu'on ouvre et qu'on ferme (bouton, /wk peche, bouton de minicarte, ou tout seul quand une canne est équipée).",

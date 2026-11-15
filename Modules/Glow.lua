@@ -39,6 +39,8 @@ function M:Config()
         if g.cats[k] == nil then g.cats[k] = true end
         g.colors[k] = g.colors[k] or { unpack(DEFAULT_COLORS[k]) }
     end
+    -- le jeu perd l'objet désigné vers 15 m, quelle que soit la portée demandée
+    if (g.range or 15) > 15 then g.range = 15 end
     return g
 end
 

@@ -732,6 +732,7 @@ WK.Locales.enUS.text = {
     ["Pile d'alertes"] = "Alert stack", ["Empiler vers"] = "Stack towards", ["le bas"] = "down", ["le haut"] = "up", ["Icônes"] = "Icons",
     ["Exemple : aucun aspect actif"] = "Example: no aspect active", ["Exemple : rappel urgent"] = "Example: urgent reminder",
     ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker",
+    ["Distance à laquelle le jeu désigne un objet. Le jeu ne va pas au-delà de 15 m environ."] = "Distance at which the game targets an object. The game does not go beyond about 15 m.",
     ["Pas de canne à pêche : achète-en une (fournitures de pêche)"] = "No fishing pole: buy one (fishing supplies)",
     ["Canne non équipée : équipe ta tenue de pêche"] = "Pole not equipped: equip your fishing gear",
     ["Plus d'appât dans les sacs"] = "No lure left in your bags",

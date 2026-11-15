@@ -446,8 +446,8 @@ UI:RegisterPage({
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
-        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet.",
-            UI:Slider(gmain, 240, 5, 60, 1, function() return gcfg.range or 15 end,
+        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet. Le jeu ne va pas au-delà de 15 m environ.",
+            UI:Slider(gmain, 240, 5, 15, 1, function() return gcfg.range or 15 end,
                 function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
         UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
