@@ -9,6 +9,7 @@ WK.Locales.enUS.keys = {
     HELP_NOTES      = "/wk notes         - Patch notes",
     HELP_FARM       = "/wk farm          - Start / stop a farming session",
     HELP_NAME       = "/wk name          - Show the character name used for mail",
+    HELP_LINK       = "/wk link          - Profession link diagnostic (after opening a profession)",
     HELP_TAKE       = "/wk take          - Take all mail (mailbox open)",
     HELP_GOLD       = "/wk gold          - Gold of every character",
     HELP_CHARS      = "/wk chars         - Character list (level, played time)",
@@ -675,6 +676,10 @@ WK.Locales.enUS.text = {
     ["Aucune recette enregistrée pour ce métier. Ouvre la fenêtre de %s sur %s pour les lire (un métier de récolte n'en a pas)."] = "No recipes recorded for this profession. Open the %s window on %s to read them (gathering professions have none).",
     ["Aucune recette ne correspond au filtre."] = "No recipe matches the filter.",
     ["Toutes"] = "All",
+
+    ["Aucun métier ouvert depuis la connexion : ouvre la fenêtre d'un métier puis refais /wk lien."] = "No profession opened since login: open a profession window, then type /wk link again.",
+    ["Dernier métier ouvert : %s"] = "Last profession opened: %s",
+    ["Aucun lien de métier gardé pour ce perso."] = "No profession link saved for this character.",
 
     -- Qualité de vie (QoL)
     ["QoL"] = "QoL", ["CONFORT"] = "COMFORT", ["Confort"] = "Comfort",

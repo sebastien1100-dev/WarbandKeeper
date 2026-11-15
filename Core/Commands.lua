@@ -4,7 +4,7 @@ local L = WK.L
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK" }) do
         WK:Print("  " .. L[k])
     end
 end
@@ -52,6 +52,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Mail:TakeAll()
     elseif cmd == "nom" or cmd == "name" then
         WK.modules.Mail:PrintNames()
+    elseif cmd == "lien" or cmd == "link" then
+        WK.modules.Recipes:LinkReport()
     elseif cmd == "notes" then
         WK.UI:ToggleWindow("notes")
     elseif cmd == "options" then

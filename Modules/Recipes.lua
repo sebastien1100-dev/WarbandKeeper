@@ -88,16 +88,7 @@ function M:Scan()
         recipes, prof = scanClassic()
     end
     -- Lien de la fenêtre du métier (cliquable par les autres joueurs), gardé pour le coller plus tard.
-    if prof then
-        local getLink = (C_TradeSkillUI and C_TradeSkillUI.GetTradeSkillListLink) or GetTradeSkillListLink
-        local ok, link = false, nil
-        if getLink then ok, link = pcall(getLink) end
-        if ok and type(link) == "string" and link ~= "" then
-            local me = WK.DB:Me()
-            me.profLinks = me.profLinks or {}
-            me.profLinks[prof] = { link = link, t = time() }
-        end
-    end
+    if prof then M:CaptureLink(prof) end
     if not recipes or not next(recipes) then return end
     local c = WK.DB:Me()
     c.recipes = c.recipes or {}
@@ -355,6 +346,82 @@ end
 -- Lien du métier dans le chat : lien de la fenêtre (enregistré à la dernière ouverture)
 -- + texte personnalisé du métier s'il est activé. Sans lien, un résumé en texte.
 ---------------------------------------------------------------------------
+-- Lien du métier ouvert : on essaie toutes les fonctions du jeu qui peuvent le donner
+-- (la version moderne peut exister et ne rien renvoyer sur ce client).
+M.linkDiag = {}
+function M:CaptureLink(prof)
+    local tries = {
+        { "C_TradeSkillUI.GetTradeSkillListLink", C_TradeSkillUI and C_TradeSkillUI.GetTradeSkillListLink },
+        { "GetTradeSkillListLink", GetTradeSkillListLink },
+        { "GetCraftListLink", GetCraftListLink },
+    }
+    local diag = { prof = prof, t = time(), results = {} }
+    for _, tr in ipairs(tries) do
+        local name, fn = tr[1], tr[2]
+        if not fn then
+            table.insert(diag.results, name .. " : absente")
+        else
+            local ok, link = pcall(fn)
+            table.insert(diag.results, name .. " : " .. (ok and (type(link) == "string" and link ~= "" and "lien reçu" or "rien") or "erreur"))
+            if ok and type(link) == "string" and link ~= "" then
+                self:SaveLink(prof, link)
+                diag.saved = true
+                break
+            end
+        end
+    end
+    self.linkDiag = diag
+end
+
+function M:SaveLink(prof, link)
+    local me = WK.DB:Me()
+    me.profLinks = me.profLinks or {}
+    me.profLinks[prof] = { link = link, t = time() }
+    WK:NotifyChanged()
+end
+
+-- Un lien de métier mis dans le chat depuis la fenêtre du jeu (bouton de lien, Maj + clic) est
+-- aussi retenu : « [Couture] » est rattaché au métier du perso qui porte ce nom.
+local function captureFromChat(text)
+    if type(text) ~= "string" or not string.find(text, "|Htrade:", 1, true) then return end
+    local link = string.match(text, "(|c%x+|Htrade:.-|h.-|h|r)") or string.match(text, "(|Htrade:.-|h.-|h)")
+    if not link then return end
+    local label = string.match(link, "|h%[?(.-)%]?|h") or ""
+    for prof in pairs(WK.DB:Me().professions or {}) do
+        if string.find(string.lower(label), string.lower(prof), 1, true) then
+            M:SaveLink(prof, link)
+            return
+        end
+    end
+end
+if hooksecurefunc then
+    if ChatEdit_InsertLink then hooksecurefunc("ChatEdit_InsertLink", captureFromChat) end
+    if ChatFrameUtil and ChatFrameUtil.InsertLink then hooksecurefunc(ChatFrameUtil, "InsertLink", captureFromChat) end
+    if SendChatMessage then hooksecurefunc("SendChatMessage", captureFromChat) end
+end
+WK:On("CRAFT_SHOW", function() C_Timer.After(0.5, function()
+    local name = GetCraftDisplaySkillLine and GetCraftDisplaySkillLine() or (GetCraftName and GetCraftName())
+    if name then M:CaptureLink(name) end
+end) end)
+
+-- /wk lien : ce que le jeu a répondu à la dernière ouverture d'un métier, et les liens gardés.
+function M:LinkReport()
+    local d = self.linkDiag
+    if not d or not d.prof then
+        WK:Print(T("Aucun métier ouvert depuis la connexion : ouvre la fenêtre d'un métier puis refais /wk lien."))
+    else
+        WK:Print(string.format(T("Dernier métier ouvert : %s"), d.prof))
+        for _, r in ipairs(d.results) do WK:Print("  " .. r) end
+    end
+    local me = WK.DB:Me()
+    local n = 0
+    for prof, l in pairs(me.profLinks or {}) do
+        n = n + 1
+        WK:Print("  " .. prof .. " : " .. (l.link or "?"))
+    end
+    if n == 0 then WK:Print(T("Aucun lien de métier gardé pour ce perso.")) end
+end
+
 function M:LinkSettings(prof)
     local all = WK.DB.global.settings.profLink
     all[prof] = all[prof] or { text = "", on = false }

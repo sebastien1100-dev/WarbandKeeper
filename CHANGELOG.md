@@ -17,6 +17,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.30.1 — 15/11/2026
+
+### Ajouts
+- Commande /wk lien : ce que le jeu a répondu à la dernière ouverture d'un métier, et les liens gardés pour le perso (pour comprendre un lien qui ne vient pas).
+
+### Corrections
+- Métiers > Lier dans le chat : le lien de la fenêtre du métier n'était jamais retenu sur ce client (seul le nom et le niveau partaient). L'addon essaie maintenant toutes les façons de l'obtenir à l'ouverture du métier, et retient aussi un lien de métier que tu mets toi-même dans le chat depuis la fenêtre du jeu.
+
 ## v0.30.0 — 15/11/2026
 
 ### Ajouts
