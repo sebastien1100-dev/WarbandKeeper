@@ -162,7 +162,7 @@ function M:LeftList(sort)
     local list, total, count = {}, 0, 0
     for id, e in pairs(d.left or {}) do
         local unit, src = V:Price(id)
-        local item = { id = id, n = e.n, times = e.times, last = e.last, name = e.name,
+        local item = { id = id, n = e.n, times = e.times, last = e.last, name = e.name, full = e.full,
             unit = unit or 0, src = src, value = (unit or 0) * e.n }
         total, count = total + item.value, count + e.n
         table.insert(list, item)
@@ -183,6 +183,21 @@ function M:ClearLeft()
 end
 
 local handled, lootOpen = false, false
+
+-- Note un objet resté au sol (filtre, ou sacs pleins quand full = true).
+local function recordLeft(id, qty, name, full)
+    local d = db()
+    qty = qty or 1
+    M.leftSession = M.leftSession + qty
+    table.insert(d.recent, 1, { id = id, n = qty, t = time(), name = name, full = full or nil })
+    while #d.recent > MAX_RECENT do table.remove(d.recent) end
+    if id then
+        local e = d.left[id] or { n = 0, times = 0 }
+        e.n, e.times, e.last, e.name = e.n + qty, e.times + 1, time(), name or e.name
+        if full then e.full = (e.full or 0) + qty end
+        d.left[id] = e
+    end
+end
 
 -- Emplacements encore pleins de la fenêtre de butin : total, et ceux que le profil veut.
 local function remaining(p)
@@ -216,7 +231,17 @@ local function verify(p, attempt)
             for k = #wanted, 1, -1 do LootSlot(wanted[k]) end
             C_Timer.After(0.4, function() verify(p, attempt + 1) end)
         else
+            -- Sacs pleins : les objets voulus restent au sol, on les compte aussi.
+            for _, i in ipairs(wanted) do
+                local slotType = GetLootSlotType and GetLootSlotType(i) or 1
+                if slotType == 1 then
+                    local _, name, quantity = GetLootSlotInfo(i)
+                    recordLeft(WK:ParseItemID(GetLootSlotLink(i)), quantity, name, true)
+                end
+            end
+            WK:NotifyChanged()
             WK:Print(T("Butin : des objets voulus n'ont pas pu être ramassés (sacs pleins ?)."))
+            if db().closeAfter then CloseLoot() end
         end
         return
     end
@@ -250,14 +275,7 @@ local function onLoot()
                     LootSlot(i)
                 else
                     left = left + (quantity or 1)
-                    M.leftSession = M.leftSession + (quantity or 1)
-                    table.insert(d.recent, 1, { id = id, n = quantity or 1, t = time(), name = name })
-                    while #d.recent > MAX_RECENT do table.remove(d.recent) end
-                    if id then
-                        local e = d.left[id] or { n = 0, times = 0 }
-                        e.n, e.times, e.last, e.name = e.n + (quantity or 1), e.times + 1, time(), name or e.name
-                        d.left[id] = e
-                    end
+                    recordLeft(id, quantity, name)
                 end
             end
         end

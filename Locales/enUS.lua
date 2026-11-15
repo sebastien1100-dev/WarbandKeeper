@@ -746,6 +746,7 @@ WK.Locales.enUS.text = {
     ["durée estimée"] = "estimated duration", ["premier vol : durée apprise à l'arrivée"] = "first flight: duration learned on arrival",
     ["atterrissage au prochain relais"] = "landing at the next flight point", ["Barre de vol"] = "Flight bar",
     ["Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition."] = "Route, time left and \"Land\" button during a flight. Placed in edit mode.",
+    ["%d sacs pleins"] = "%d with full bags",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

@@ -308,7 +308,11 @@ UI:RegisterPage({
                 r.icon:SetTexture(icon)
                 r.name:SetText(e.name or name)
                 r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
-                r.sub:SetText(string.format(T("x%d  ·  %d fois  ·  dernière fois %s"), e.n, e.times or 1, UI:Ago(e.last or time())))
+                local sub = string.format(T("x%d  ·  %d fois  ·  dernière fois %s"), e.n, e.times or 1, UI:Ago(e.last or time()))
+                if (e.full or 0) > 0 then
+                    sub = sub .. "  ·  " .. UI:Hex(C.warning) .. string.format(T("%d sacs pleins"), e.full) .. "|r"
+                end
+                r.sub:SetText(sub)
                 if e.unit > 0 then
                     r.value:SetText(UI:GoldText(e.value))
                     r.unit:SetText(string.format(T("%s l'unité"), UI:PlainMoney(e.unit)))
