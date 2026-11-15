@@ -190,10 +190,11 @@ local function build()
     end
     bar.fpsBar = meter()
     bar.msBar = meter()
-    bar.fpsBar:SetPoint("BOTTOMRIGHT", bar.clockBtn, "BOTTOM", -2, 5)
-    bar.msBar:SetPoint("BOTTOMLEFT", bar.clockBtn, "BOTTOM", 2, 5)
+    -- (placées par Layout : sous l'heure, calées sur la largeur du texte)
     function bar:Meter(m, frac, col)
-        m.track:SetColor(C.border[1], C.border[2], C.border[3], 1)
+        m.frac, m.col = frac, col
+        -- fond de barre bien visible : sinon la partie vide disparaît et l'ensemble paraît décentré
+        m.track:SetColor(C.muted[1], C.muted[2], C.muted[3], 0.35)
         m.fill:SetWidth(math.max(1, (m:GetWidth() or 24) * math.max(0.08, math.min(1, frac))))
         m.fill:SetColorTexture(col[1], col[2], col[3], 1)
     end
@@ -239,6 +240,7 @@ local function build()
             local txt = clockText()
             self.time:SetText(txt)
             self.timeBold:SetText(txt)
+            if txt ~= self.lastTxt then self.lastTxt = txt; self.relayout = true end
             local fps, ms, fc, mc = stats()
             self:Meter(self.fpsBar, fps / 60, fc)
             self:Meter(self.msBar, 1 - ms / 400, mc)
@@ -255,7 +257,7 @@ local function build()
         local before = self.open
         if self.open < want then self.open = math.min(1, self.open + el * 6)
         elseif self.open > want then self.open = math.max(0, self.open - el * 6) end
-        if self.open ~= before or self.open > 0 then self:Layout() end
+        if self.open ~= before or self.open > 0 or self.relayout then self.relayout = nil; self:Layout() end
     end
 
     -- Souris sur l'un des trois fonds (les côtés seulement quand ils sont dépliés)
@@ -301,8 +303,21 @@ local function build()
         local tw = (self.time:GetStringWidth() or 0) + (o.bold and 1 or 0)
         local clockW = math.max(math.floor(96 * k + 0.5), math.floor(tw + 28))
         local h = math.max(base + PAD * 2, fs + 18)
-        local mw = math.floor(24 * k + 0.5)
-        self.fpsBar:SetWidth(mw); self.msBar:SetWidth(mw)
+        -- heure et barres forment un bloc centré dans le fond : le texte au milieu (le double du
+        -- gras est réparti des deux côtés), les deux barres dessous, d'un bord du texte à l'autre
+        local yoff = o.stats and 3 or 0
+        self.time:ClearAllPoints()
+        self.time:SetPoint("CENTER", self.clockBtn, "CENTER", o.bold and -0.5 or 0, yoff)
+        local half = math.max(20, tw) / 2
+        local by = yoff - fs * 0.42 - 2
+        local mw = math.floor(half - 2)
+        for _, m in ipairs({ self.fpsBar, self.msBar }) do
+            m:ClearAllPoints()
+            m:SetWidth(mw)
+            if m.frac then self:Meter(m, m.frac, m.col) end
+        end
+        self.fpsBar:SetPoint("TOPLEFT", self.clockBtn, "CENTER", -half, by)
+        self.msBar:SetPoint("TOPRIGHT", self.clockBtn, "CENTER", half, by)
         self.bg:SetSize(clockW, h)
         self:SetHeight(h)
         local left = self:GetLeft() or 0

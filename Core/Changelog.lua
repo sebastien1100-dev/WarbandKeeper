@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.50.1", date = "15/11/2026",
+        fixed = {
+            "Micro menu : l'heure et les barres FPS / latence paraissaient décentrées. Les deux barres vont maintenant d'un bord du texte à l'autre, leur partie vide reste visible, et le gras n'est plus décalé d'un côté.",
+        },
+    },
+    {
         version = "0.50.0", date = "15/11/2026",
         added = {
             "Micro menu : l'heure peut s'afficher en gras.",
