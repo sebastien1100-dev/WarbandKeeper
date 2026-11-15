@@ -6,6 +6,19 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.61.0", date = "15/11/2026",
+        added = {
+            "LFG : bouton « Affiner » (entonnoir, à côté d'Actualiser). Classes et niveau des joueurs seuls, style de jeu des annonces, et langues : par défaut le jeu ne cherche que dans ta langue, tu peux ajouter l'anglais et les autres. Un point signale qu'un filtre est actif.",
+            "LFG : notes des joueurs, de 1 à 3 étoiles. Onglet « Récents » à droite : les joueurs avec qui tu as fait un groupe, à noter d'un clic. Clic droit sur une carte de groupe pour noter son chef.",
+            "LFG : un liseré à gauche des cartes montre ta note (rouge 1 étoile, gris 2, vert 3). Les joueurs notés 1 étoile passent en bas des listes, et le chat te prévient s'ils rejoignent ton groupe.",
+            "LFG : le style de jeu de l'annonce (apprentissage, décontracté, compétitif, carry) s'affiche sur la carte quand le chef n'a pas laissé de message.",
+        },
+        changed = {
+            "LFG : « Mes demandes » est gardé après un /reload ou une déconnexion (pendant 3 heures).",
+            "Nouvelle texture : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.60.0", date = "15/11/2026",
         added = {
             "Infobulles : nouvelle partie « Montée des métiers ». Pour un composant, les métiers qui s'en servent dans les guides de montée et, pour chacun de tes persos qui a ce métier, combien il en faut encore à son niveau (« Alchimie · Lapine (40) : encore 36 »), avec ce que le compte en a déjà.",

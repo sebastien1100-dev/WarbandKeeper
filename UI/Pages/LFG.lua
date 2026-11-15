@@ -46,13 +46,13 @@ UI:RegisterPage({
         self.meSub:SetPoint("TOPLEFT", self.meName, "BOTTOMLEFT", 0, -3)
 
         local playHd = UI:Text(banner, 10, C.dim)
-        playHd:SetPoint("TOPLEFT", 250, -10)
+        playHd:SetPoint("TOPLEFT", 222, -10)
         playHd:SetText(T("JE JOUE"))
         self.roleBtns = {}
-        local x = 250
+        local x = 222
         for _, role in ipairs(ROLES) do
             local b = CreateFrame("Button", nil, banner)
-            b:SetSize(84, 24)
+            b:SetSize(78, 24)
             b:SetPoint("TOPLEFT", x, -26)
             b.edge = UI:Rounded(b, 12, 0, "BACKGROUND", 0)
             b.bg = UI:Rounded(b, 11, 1, "BACKGROUND", 1)
@@ -75,7 +75,7 @@ UI:RegisterPage({
                 self:Refresh()
             end)
             self.roleBtns[role] = b
-            x = x + 90
+            x = x + 84
         end
 
         local lookHd = UI:Text(banner, 10, C.dim)
@@ -89,6 +89,18 @@ UI:RegisterPage({
         self.searchBtn = UI:Button(banner, "Actualiser", 110, 26, "primary", "refresh")
         self.searchBtn:SetPoint("TOPRIGHT", -14, -8)
         self.searchBtn:SetScript("OnClick", function() self:DoSearch() end)
+        self.refineBtn = UI:IconButton(banner, "filter", 26)
+        self.refineBtn:SetPoint("RIGHT", self.searchBtn, "LEFT", -8, 0)
+        self.refineBtn:SetScript("OnClick", function() self:ToggleRefine() end)
+        self.refineBtn:SetScript("OnEnter", function(s)
+            WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            GameTooltip:SetText(T("Affiner"), 1, 1, 1)
+            GameTooltip:AddLine(T("Classes et niveau des joueurs seuls, style de jeu, langues."), 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+        end)
+        self.refineBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        self.refineDot = UI:Icon(self.refineBtn, "circle", 8, nil, "OVERLAY")
+        self.refineDot:SetPoint("TOPRIGHT", 1, 1)
         self.status = UI:Text(banner, 11, C.muted)
         self.status:SetPoint("TOPRIGHT", self.searchBtn, "BOTTOMRIGHT", -4, -4)
         self.status:SetJustifyH("RIGHT")
@@ -145,9 +157,46 @@ UI:RegisterPage({
         right:SetPoint("TOPRIGHT", 0, -(BANNER_H + GAP))
         right:SetPoint("BOTTOMRIGHT")
         right:SetWidth(RIGHT_W)
-        local rqHd = UI:Text(right, 10, C.dim)
-        rqHd:SetPoint("TOPLEFT", 14, -14)
-        rqHd:SetText(T("MES DEMANDES"))
+        self.rightTab = "requests"
+        self.rightSeg = UI:Segmented(right, { { "requests", "Mes demandes" }, { "recent", "Récents" } },
+            function(v) self.rightTab = v; self:Refresh() end, 24)
+        self.rightSeg:SetPoint("TOPLEFT", 12, -10)
+        self.rightSeg:Select("requests")
+        -- joueurs croisés en groupe, avec leur note (1 à 3 étoiles)
+        self.recents = UI:Pool(function()
+            local r = CreateFrame("Frame", nil, right)
+            r:SetSize(RIGHT_W - 28, 40)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("TOPLEFT", 0, 0)
+            r.name:SetPoint("RIGHT", -62, 0)
+            r.name:SetJustifyH("LEFT")
+            r.name:SetWordWrap(false)
+            r.sub = UI:Text(r, 10, C.dim)
+            r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
+            r.sub:SetPoint("RIGHT", -62, 0)
+            r.sub:SetJustifyH("LEFT")
+            r.sub:SetWordWrap(false)
+            r.stars = {}
+            for i = 1, 3 do
+                local st = CreateFrame("Button", nil, r)
+                st:SetSize(18, 18)
+                st:SetPoint("TOPRIGHT", -(3 - i) * 20, 0)
+                st.tex = UI:Icon(st, "star", 16, nil, "ARTWORK")
+                st.tex:SetPoint("CENTER")
+                st:SetScript("OnClick", function()
+                    if not r.player then return end
+                    LFG:SetRating(r.player, LFG:Rating(r.player) == i and 0 or i)
+                    self:Refresh()
+                end)
+                r.stars[i] = st
+            end
+            return r
+        end)
+        self.noRecent = UI:Text(right, 11, C.dim)
+        self.noRecent:SetPoint("TOPLEFT", 14, -46)
+        self.noRecent:SetPoint("RIGHT", -14, 0)
+        self.noRecent:SetJustifyH("LEFT")
+        self.noRecent:SetText(T("Les joueurs avec qui tu fais un groupe apparaîtront ici. Note-les de 1 à 3 étoiles : 1 étoile les met en bas des listes et tu es prévenu s'ils rejoignent ton groupe."))
         self.reqs = UI:Pool(function()
             local r = CreateFrame("Frame", nil, right)
             r:SetSize(RIGHT_W - 28, 50)
@@ -165,7 +214,7 @@ UI:RegisterPage({
             return r
         end)
         self.noReq = UI:Text(right, 11, C.dim)
-        self.noReq:SetPoint("TOPLEFT", 14, -36)
+        self.noReq:SetPoint("TOPLEFT", 14, -46)
         self.noReq:SetPoint("RIGHT", -14, 0)
         self.noReq:SetJustifyH("LEFT")
         self.noReq:SetText(T("Aucune demande pour l'instant."))
@@ -214,6 +263,10 @@ UI:RegisterPage({
             local c = CreateFrame("Frame", nil, root)
             c:SetSize(CARD_W, CARD_H)
             c.edge = UI:Rounded(c, 12, 0, "BACKGROUND", 0)
+            c.rate = c:CreateTexture(nil, "ARTWORK")
+            c.rate:SetPoint("TOPLEFT", 1, -14)
+            c.rate:SetPoint("BOTTOMLEFT", 1, 14)
+            c.rate:SetWidth(3)
             c.bg = UI:Rounded(c, 11, 1, "BACKGROUND", 1)
             c.name = UI:Text(c, 13)
             c.name:SetPoint("TOPLEFT", 14, -12)
@@ -253,7 +306,19 @@ UI:RegisterPage({
                 local act = LFG:Activity(s.r.activity)
                 if act then GameTooltip:AddLine(act, 0.8, 0.8, 0.8) end
                 if s.r.comment and s.r.comment ~= "" then GameTooltip:AddLine("« " .. s.r.comment .. " »", 0.9, 0.85, 0.7, true) end
+                local ps = LFG:PlaystyleLabel(s.r.playstyle)
+                if ps then GameTooltip:AddLine(T(ps), 0.7, 0.7, 0.7) end
+                local rt = LFG:Rating(s.r.leader)
+                GameTooltip:AddLine(rt and string.format(T("Ta note : %d étoile(s)"), rt) or T("Pas encore noté"), 0.88, 0.74, 0.45)
+                GameTooltip:AddLine(T("Clic droit : noter le chef (1, 2, 3 étoiles, aucune)"), 0.6, 0.6, 0.6)
                 GameTooltip:Show()
+            end)
+            c:SetScript("OnMouseUp", function(s, button)
+                if button ~= "RightButton" or not s.r or not s.r.leader then return end
+                local cur = LFG:Rating(s.r.leader) or 0
+                LFG:SetRating(s.r.leader, (cur + 1) % 4)
+                self:Refresh()
+                if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
             end)
             c:SetScript("OnLeave", function() GameTooltip:Hide() end)
             return c
@@ -276,6 +341,136 @@ UI:RegisterPage({
         self.empty = UI:Text(root, 12, C.muted)
         self.empty:SetJustifyH("LEFT")
         UI:OnResize(center, function() self:Refresh() end)
+    end,
+
+    -- Panneau « Affiner » : construit à la première ouverture (les langues du jeu sont alors connues).
+    ToggleRefine = function(self)
+        if not self.refine then self:BuildRefine() end
+        self.refine:SetShown(not self.refine:IsShown())
+    end,
+
+    BuildRefine = function(self)
+        local f = LFG:Config().filters
+        local pnl = CreateFrame("Frame", nil, self.center:GetParent())
+        pnl:SetFrameStrata("DIALOG")
+        pnl:SetSize(470, 300)
+        pnl:SetPoint("TOPRIGHT", self.refineBtn:GetParent(), "BOTTOMRIGHT", 0, -6)
+        pnl:EnableMouse(true)
+        UI:Panel(pnl, 12, { C.bg[1], C.bg[2], C.bg[3], 0.98 }, C.border)
+        self.refine = pnl
+        local chips = {}
+        local function chip(label, get, set, color)
+            local b = CreateFrame("Button", nil, pnl)
+            b:SetHeight(22)
+            b.edge = UI:Rounded(b, 11, 0, "BACKGROUND", 0)
+            b.bg = UI:Rounded(b, 10, 1, "BACKGROUND", 1)
+            b.label = UI:Text(b, 11)
+            b.label:SetPoint("CENTER", color and 5 or 0, 0)
+            b.label:SetText(label)
+            if color then
+                b.dot = UI:Icon(b, "circle", 8, nil, "ARTWORK")
+                b.dot:SetPoint("RIGHT", b.label, "LEFT", -5, 0)
+                b.dot:SetVertexColor(unpack(color))
+            end
+            b:SetWidth((b.label:GetStringWidth() or 40) + (color and 34 or 22))
+            function b:Paint()
+                local on = get()
+                local r, g, bl = UI:Accent()
+                self.edge:SetColor(unpack(on and { r, g, bl, 1 } or C.border))
+                self.bg:SetColor(unpack(on and C.surface2 or C.surface))
+                self.label:SetTextColor(unpack(on and C.text or C.muted))
+            end
+            b:SetScript("OnClick", function(s) set(not get()); s:Paint(); self:Refresh() end)
+            table.insert(chips, b)
+            return b
+        end
+        local y = -14
+        local function title(t, sub)
+            local h = UI:Text(pnl, 11, C.text)
+            h:SetPoint("TOPLEFT", 14, y)
+            h:SetText(t)
+            if sub then
+                local d = UI:Text(pnl, 10, C.dim)
+                d:SetPoint("LEFT", h, "RIGHT", 8, 0)
+                d:SetText(sub)
+            end
+            y = y - 22
+        end
+        local function flow(list)
+            local x = 14
+            for _, b in ipairs(list) do
+                local w = b:GetWidth()
+                if x + w > 456 then x = 14; y = y - 28 end
+                b:SetPoint("TOPLEFT", x, y)
+                x = x + w + 6
+            end
+            y = y - 36
+        end
+        -- classes des joueurs seuls
+        title(T("Joueurs seuls : classes"), T("aucune cochée = toutes"))
+        local cl = {}
+        for _, c in ipairs(WK.modules.QoL.CLASSES) do
+            local key = c[1]
+            local cc = RAID_CLASS_COLORS and RAID_CLASS_COLORS[key]
+            table.insert(cl, chip(T(c[2]), function() return f.classes[key] end,
+                function(v) f.classes[key] = v or nil end, cc and { cc.r, cc.g, cc.b, 1 } or nil))
+        end
+        flow(cl)
+        -- niveau des joueurs seuls
+        title(T("Joueurs seuls : niveau"))
+        local function lvlBox(field, x, ph)
+            local box = UI:Input(pnl, 60, 26, ph)
+            box:SetPoint("TOPLEFT", x, y + 4)
+            box:SetText(f[field] and tostring(f[field]) or "")
+            box.edit:SetScript("OnEditFocusLost", function()
+                f[field] = tonumber(box:GetText()); self:Refresh()
+            end)
+            return box
+        end
+        lvlBox("minLevel", 14, T("min"))
+        local to = UI:Text(pnl, 11, C.muted)
+        to:SetPoint("TOPLEFT", 82, y - 2)
+        to:SetText(T("à"))
+        lvlBox("maxLevel", 98, T("max"))
+        y = y - 40
+        -- style de jeu
+        title(T("Style de jeu"), T("aucun coché = tous"))
+        local ps = {}
+        for _, p in ipairs(LFG.PLAYSTYLES) do
+            table.insert(ps, chip(T(p.label), function() return f.playstyles[p.key] end, function(v) f.playstyles[p.key] = v or nil end))
+        end
+        flow(ps)
+        -- langues (prises en compte à la prochaine recherche)
+        local langs = LFG:Languages()
+        if #langs > 0 then
+            title(T("Langues"), T("à la prochaine recherche"))
+            local NAMES = { frFR = "Français", enUS = "English", enGB = "English", deDE = "Deutsch", esES = "Español", esMX = "Español (MX)",
+                            itIT = "Italiano", ptBR = "Português", ruRU = "Russe", koKR = "Coréen", zhCN = "Chinois", zhTW = "Chinois trad." }
+            local lc = {}
+            for _, l in ipairs(langs) do
+                local b = chip(NAMES[l.code] or l.code, function() return l.locked or f.languages[l.code] end,
+                    function(v) if not l.locked then f.languages[l.code] = v or nil end end)
+                if l.locked then b:SetAlpha(0.6) end
+                table.insert(lc, b)
+            end
+            flow(lc)
+        end
+        local reset = UI:Button(pnl, "Réinitialiser", 110, 24, "ghost")
+        reset:SetPoint("BOTTOMLEFT", 12, 10)
+        reset:SetScript("OnClick", function()
+            f.classes, f.playstyles, f.languages, f.minLevel, f.maxLevel = {}, {}, {}, nil, nil
+            local cfg = LFG:Config()
+            cfg.filters = f
+            for _, b in ipairs(chips) do b:Paint() end
+            pnl:Hide(); self.refine = nil
+            self:Refresh()
+        end)
+        local close = UI:Button(pnl, "Fermer", 80, 24, "primary")
+        close:SetPoint("BOTTOMRIGHT", -12, 10)
+        close:SetScript("OnClick", function() pnl:Hide() end)
+        pnl:SetHeight(-y + 44)
+        for _, b in ipairs(chips) do b:Paint() end
+        pnl:Hide()
     end,
 
     -- Lance la recherche : l'activité choisie, ou toutes celles de la catégorie.
@@ -327,7 +522,12 @@ UI:RegisterPage({
                 s.txt:SetText(r.counts and ROLE_LETTER[role] or "?"); s.txt:SetTextColor(col[1], col[2], col[3])
             end
         end
-        local note = r.comment ~= "" and ("« " .. r.comment .. " »") or (LFG:Activity(r.activity) or "")
+        local ps = LFG:PlaystyleLabel(r.playstyle)
+        local note = r.comment ~= "" and ("« " .. r.comment .. " »") or (ps and T(ps)) or (LFG:Activity(r.activity) or "")
+        local rt = LFG:Rating(r.leader)
+        local RC = { C.negative, C.muted, C.positive }
+        c.rate:SetShown(rt ~= nil)
+        if rt then c.rate:SetColorTexture(unpack(RC[rt])) end
         c.note:SetText(note)
         -- bouton : Demander, Demandé, ou un état
         local q = r.leader and LFG.requests[r.leader]
@@ -417,7 +617,7 @@ UI:RegisterPage({
         local cw = math.floor((W - 14 - (cols - 1) * GAP) / cols)
         local mine, others, solos = {}, {}, {}
         for _, r in ipairs(LFG.results) do
-            if not self.sel or r.activity == self.sel then
+            if (not self.sel or r.activity == self.sel) and LFG:PassFilters(r) then
                 if r.solo then table.insert(solos, r)
                 else
                     local fit = LFG:FitRole(r)
@@ -425,6 +625,17 @@ UI:RegisterPage({
                 end
             end
         end
+        -- les joueurs notés 1 étoile passent en bas de leur liste
+        local function low(r) return LFG:Rating(r.leader) == 1 end
+        local function bottomLow(list, get)
+            local keep, last = {}, {}
+            for _, it in ipairs(list) do if low(get(it)) then table.insert(last, it) else table.insert(keep, it) end end
+            for _, it in ipairs(last) do table.insert(keep, it) end
+            return keep
+        end
+        local first = function(it) return it[1] end
+        mine, others = bottomLow(mine, first), bottomLow(others, first)
+        solos = bottomLow(solos, function(r) return r end)
         local cy = 0
         local function head(title, sub)
             local h = self.heads:Get()
@@ -492,14 +703,37 @@ UI:RegisterPage({
         self.scroll.child:SetSize(W, cy + 10)
         if self.scroll.UpdateBar then self.scroll:UpdateBar() end
 
-        -- mes demandes
-        self.reqs:Reset()
+        -- droite : mes demandes ou joueurs récents
+        self.reqs:Reset(); self.recents:Reset()
+        local showReq = self.rightTab == "requests"
+        local _, g = LFG:Config()
+        self.noRecent:SetShown(not showReq and #g.recent == 0)
+        if not showReq then
+            local ry2 = 46
+            for i, e in ipairs(g.recent) do
+                if i > 12 then break end
+                local row = self.recents:Get()
+                row.player = e.name
+                row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry2)
+                local cr, cg, cb = classColor(e.class)
+                row.name:SetText(e.name .. (e.level and ("  |cff999999" .. e.level .. "|r") or ""))
+                row.name:SetTextColor(cr, cg, cb)
+                row.sub:SetText((e.where and (e.where .. " · ") or "") .. ago(time() - (e.t or time())))
+                local rt = LFG:Rating(e.name) or 0
+                for k, st in ipairs(row.stars) do
+                    local on = k <= rt
+                    local col = rt == 1 and C.negative or (rt == 3 and C.positive or C.gold)
+                    st.tex:SetVertexColor(unpack(on and col or C.border))
+                end
+                ry2 = ry2 + 42
+            end
+        end
         local list = {}
         for name, q in pairs(LFG.requests) do table.insert(list, { name = name, q = q }) end
         table.sort(list, function(a, b) return a.q.t > b.q.t end)
-        local ry = 36
+        local ry = 46
         for i, e in ipairs(list) do
-            if i > 6 then break end
+            if i > 6 or not showReq then break end
             local row = self.reqs:Get()
             row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry)
             local q = e.q
@@ -513,7 +747,9 @@ UI:RegisterPage({
             row.l2:SetText(q.activity or "")
             ry = ry + 54
         end
-        self.noReq:SetShown(#list == 0)
+        self.noReq:SetShown(showReq and #list == 0)
+        self.refineDot:SetShown(LFG:FiltersActive())
+        self.refineDot:SetVertexColor(UI:Accent())
         local fitName = act or nil
         self.msgPreview:SetText("|cff999999" .. T("Envoyé :") .. "|r " .. LFG:Message(fitName))
     end,

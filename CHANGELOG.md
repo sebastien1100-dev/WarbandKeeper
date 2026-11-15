@@ -17,6 +17,18 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.61.0 — 15/11/2026
+
+### Ajouts
+- LFG : bouton « Affiner » (entonnoir, à côté d'Actualiser). Classes et niveau des joueurs seuls, style de jeu des annonces, et langues : par défaut le jeu ne cherche que dans ta langue, tu peux ajouter l'anglais et les autres. Un point signale qu'un filtre est actif.
+- LFG : notes des joueurs, de 1 à 3 étoiles. Onglet « Récents » à droite : les joueurs avec qui tu as fait un groupe, à noter d'un clic. Clic droit sur une carte de groupe pour noter son chef.
+- LFG : un liseré à gauche des cartes montre ta note (rouge 1 étoile, gris 2, vert 3). Les joueurs notés 1 étoile passent en bas des listes, et le chat te prévient s'ils rejoignent ton groupe.
+- LFG : le style de jeu de l'annonce (apprentissage, décontracté, compétitif, carry) s'affiche sur la carte quand le chef n'a pas laissé de message.
+
+### Modifications
+- LFG : « Mes demandes » est gardé après un /reload ou une déconnexion (pendant 3 heures).
+- Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.60.0 — 15/11/2026
 
 ### Ajouts

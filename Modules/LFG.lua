@@ -30,6 +30,15 @@ function M:Config()
     if c.lfg.roles == nil then c.lfg.roles = { dps = true } end
     if c.lfg.mode == nil then c.lfg.mode = "group" end
     if c.lfg.message == nil or c.lfg.message == OLD_DEFAULT then c.lfg.message = DEFAULT_MSG end
+    -- Affiner : classes et niveau des joueurs seuls, style de jeu, langues (vide : tout)
+    c.lfg.filters = c.lfg.filters or {}
+    local f = c.lfg.filters
+    f.classes = f.classes or {}
+    f.playstyles = f.playstyles or {}
+    f.languages = f.languages or {}
+    c.lfg.requests = c.lfg.requests or {}
+    g.lfg.ratings = g.lfg.ratings or {}   -- [nom] = 1 à 3 étoiles (compte entier)
+    g.lfg.recent = g.lfg.recent or {}     -- joueurs croisés en groupe : { name, class, level, t, where }
     return c.lfg, g.lfg
 end
 M.DEFAULT_MSG = DEFAULT_MSG
@@ -88,13 +97,75 @@ M.results = {}
 M.searching = false
 M.searchedAt = nil
 
+-- Langues : celles que le jeu propose. Les langues imposées par le jeu sont toujours cherchées.
+function M:Languages()
+    local out = {}
+    local ok, list = pcall(C_LFGList.GetAvailableLanguageSearchFilter)
+    local okD, def = pcall(C_LFGList.GetDefaultLanguageSearchFilter)
+    def = okD and type(def) == "table" and def or {}
+    for _, code in ipairs(ok and type(list) == "table" and list or {}) do
+        if type(code) == "string" then table.insert(out, { code = code, locked = def[code] == true }) end
+    end
+    return out
+end
+function M:LanguageFilter()
+    local chosen = self:Config().filters.languages
+    local filter, extra = {}, false
+    for _, l in ipairs(self:Languages()) do
+        if l.locked then filter[l.code] = true
+        elseif chosen[l.code] then filter[l.code] = true; extra = true end
+    end
+    if not extra then
+        local ok, def = pcall(C_LFGList.GetDefaultLanguageSearchFilter)
+        return ok and def or nil
+    end
+    return filter
+end
+
+-- Styles de jeu des annonces (valeurs du jeu)
+local PS = Enum and Enum.LFGEntryGeneralPlaystyle or {}
+M.PLAYSTYLES = {
+    { key = "learning", value = PS.Learning or 1, label = "Apprentissage" },
+    { key = "relaxed", value = PS.FunRelaxed or 2, label = "Décontracté" },
+    { key = "serious", value = PS.FunSerious or 3, label = "Compétitif" },
+    { key = "expert", value = PS.Expert or 4, label = "Carry" },
+}
+function M:PlaystyleLabel(v)
+    for _, p in ipairs(M.PLAYSTYLES) do if p.value == v then return p.label end end
+end
+
+-- L'annonce passe-t-elle les filtres « Affiner » ? Une valeur illisible ne cache rien.
+function M:PassFilters(r)
+    local f = self:Config().filters
+    local anyPS = false
+    for _ in pairs(f.playstyles) do anyPS = true break end
+    if anyPS and r.playstyle and r.playstyle ~= 0 then
+        local ok = false
+        for _, p in ipairs(M.PLAYSTYLES) do if p.value == r.playstyle and f.playstyles[p.key] then ok = true end end
+        if not ok then return false end
+    end
+    if r.solo then
+        local anyCl = false
+        for _ in pairs(f.classes) do anyCl = true break end
+        if anyCl and r.class and not f.classes[r.class] then return false end
+        if r.level and f.minLevel and r.level < f.minLevel then return false end
+        if r.level and f.maxLevel and r.level > f.maxLevel then return false end
+    end
+    return true
+end
+function M:FiltersActive()
+    local f = self:Config().filters
+    for _, t in ipairs({ f.classes, f.playstyles, f.languages }) do for _ in pairs(t) do return true end end
+    return f.minLevel ~= nil or f.maxLevel ~= nil
+end
+
 function M:Search(categoryID, activityIDs)
     if not self:Available() or self.searching or not categoryID then return false end
     if not activityIDs or #activityIDs == 0 then
         activityIDs = {}
         for _, a in ipairs(self:Activities(categoryID)) do table.insert(activityIDs, a.id) end
     end
-    local filter = C_LFGList.GetDefaultLanguageSearchFilter and C_LFGList.GetDefaultLanguageSearchFilter() or nil
+    local filter = self:LanguageFilter()
     local ok = pcall(C_LFGList.Search, categoryID, 0, 0, filter, false, nil, activityIDs)
     if not ok then return false end
     self.searching = true
@@ -269,7 +340,77 @@ function M:Message(activityName, role)
     return msg
 end
 
-M.requests = {} -- [nom] = { t, activity, state = "sent"|"answer"|"closed", reply }
+-- Demandes : sauvegardées par perso (WK.DB.char.lfg.requests), gardées 3 heures
+M.requests = {} -- [nom] = { t, activity, state = "sent"|"answer"|"closed"|"invited", reply }
+function M:OnLogin()
+    local cfg = self:Config()
+    local now = time()
+    for name, q in pairs(cfg.requests) do if now - (q.t or 0) > 3 * 3600 then cfg.requests[name] = nil end end
+    for name, q in pairs(M.requests) do cfg.requests[name] = q end
+    M.requests = cfg.requests
+end
+
+---------------------------------------------------------------------------
+-- Notes des joueurs (1 à 3 étoiles) et joueurs croisés en groupe
+---------------------------------------------------------------------------
+local function bare(name)
+    name = readable(name, nil)
+    if type(name) ~= "string" then return nil end
+    return (name:gsub("%-.*$", ""))
+end
+M.Bare = bare
+function M:Rating(name)
+    name = bare(name)
+    if not name then return nil end
+    local _, g = self:Config()
+    return g.ratings[name]
+end
+function M:SetRating(name, stars)
+    name = bare(name)
+    if not name then return end
+    local _, g = self:Config()
+    g.ratings[name] = (stars and stars > 0) and stars or nil
+    WK:NotifyChanged()
+end
+-- Note la plus basse d'une annonce (chef seulement : les membres ne sont pas tous lisibles)
+function M:ListingRating(r) return self:Rating(r.leader) end
+
+local inGroup = {}
+local function rosterUnits()
+    local units = {}
+    if IsInRaid and IsInRaid() then
+        for i = 1, (GetNumGroupMembers and GetNumGroupMembers() or 0) do table.insert(units, "raid" .. i) end
+    else
+        for i = 1, 4 do table.insert(units, "party" .. i) end
+    end
+    return units
+end
+WK:On("GROUP_ROSTER_UPDATE", function()
+    local _, g = M:Config()
+    local now, seen = time(), {}
+    local me = bare(UnitName("player"))
+    local where = GetZoneText and readable(GetZoneText(), nil)
+    for _, u in ipairs(rosterUnits()) do
+        if UnitExists(u) then
+            local name = bare(GetUnitName and GetUnitName(u, false) or UnitName(u))
+            if name and name ~= me then
+                seen[name] = true
+                if not inGroup[name] then
+                    -- nouveau venu : on le note dans les récents, et on prévient si tu l'as noté 1 étoile
+                    if g.ratings[name] == 1 then
+                        WK:Print(string.format(T("%s vient de rejoindre ton groupe : tu l'avais noté 1 étoile."), name))
+                    end
+                    for i = #g.recent, 1, -1 do if g.recent[i].name == name then table.remove(g.recent, i) end end
+                    local _, class = UnitClass(u)
+                    table.insert(g.recent, 1, { name = name, class = readable(class, nil), level = readable(UnitLevel(u), nil), t = now, where = where })
+                    while #g.recent > 40 do table.remove(g.recent) end
+                end
+            end
+        end
+    end
+    inGroup = seen
+    WK:NotifyChanged()
+end)
 
 local function whisper(name, msg)
     if C_ChatInfo and C_ChatInfo.SendChatMessage then pcall(C_ChatInfo.SendChatMessage, msg, "WHISPER", nil, name)

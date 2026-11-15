@@ -306,6 +306,18 @@ def fx_ring():
     img.save(os.path.join(OUT, "fxring.tga"))
 
 
+def icon_star():
+    """Étoile pleine à cinq branches (notes des joueurs)."""
+    img, d, s = canvas(64)
+    pts = []
+    for i in range(10):
+        ang = -math.pi / 2 + i * math.pi / 5
+        r = 0.46 if i % 2 == 0 else 0.19
+        pts.append((P(0.5 + math.cos(ang) * r, s), P(0.53 + math.sin(ang) * r, s)))
+    d.polygon(pts, fill=W)
+    save(img, "star", 64)
+
+
 def icon_lfg():
     """LFG : trois silhouettes, celle du milieu au premier plan."""
     img, d, s = canvas(64)
@@ -536,6 +548,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_fish, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_fish, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")
