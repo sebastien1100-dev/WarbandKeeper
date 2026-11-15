@@ -198,25 +198,53 @@ function UI:Create()
     self.sideTitle, self.sideVer = title, ver
 
     self.nav, self.groupLabels = {}, {}
-    local y = -64
+    -- Haut de la barre : groupes et pages. Placés par layoutTop() : l'espacement se resserre
+    -- quand la fenêtre est basse, pour ne jamais chevaucher le bas (notes, options, repli).
+    local topList = {}
     for _, g in ipairs(GROUPS) do
         local lbl = UI:Text(side, 10, C.dim)
-        lbl:SetPoint("TOPLEFT", 16, y - 8)
         lbl:SetText(g[1])
         table.insert(self.groupLabels, lbl)
-        y = y - 26
+        table.insert(topList, { label = lbl })
         for _, key in ipairs(g[2]) do
             local def = self.pages[key]
             if def then
                 local item = NavItem(side, def)
-                item:SetPoint("TOPLEFT", 8, y)
-                item:SetPoint("TOPRIGHT", -8, y)
                 self.nav[key] = item
-                y = y - 36
+                table.insert(topList, { item = item })
             end
         end
-        y = y - 4
     end
+    local function layoutTop(h)
+        local nLabels, nItems = 0, 0
+        for _, e in ipairs(topList) do if e.label then nLabels = nLabels + 1 else nItems = nItems + 1 end end
+        local bottomH = 44 + #BOTTOM * 36 + 8           -- repli + notes + options
+        local avail = (h or 600) - 64 - bottomH
+        local labelStep, itemStep, gap = 26, 36, 4
+        local need = nLabels * (labelStep + gap) + nItems * itemStep
+        if need > avail then
+            local k = math.max(0.6, avail / need)
+            labelStep, itemStep, gap = math.floor(26 * k), math.max(26, math.floor(36 * k)), math.floor(4 * k)
+        end
+        local y, first = -64, true
+        for _, e in ipairs(topList) do
+            if e.label then
+                if not first then y = y - gap end
+                first = false
+                e.label:ClearAllPoints()
+                e.label:SetPoint("TOPLEFT", 16, y - math.floor(labelStep * 0.3))
+                y = y - labelStep
+            else
+                e.item:SetHeight(math.min(34, itemStep - 2))
+                e.item:ClearAllPoints()
+                e.item:SetPoint("TOPLEFT", 8, y)
+                e.item:SetPoint("TOPRIGHT", -8, y)
+                y = y - itemStep
+            end
+        end
+    end
+    side:HookScript("OnSizeChanged", function(_, _, h) layoutTop(h) end)
+    layoutTop(side:GetHeight())
 
     -- Bas de la barre : notes, options, repli.
     local collapse = CreateFrame("Button", nil, side)

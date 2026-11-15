@@ -17,6 +17,19 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.33.0 — 15/11/2026
+
+### Modifications
+- Patch notes : trois couleurs distinctes et fixes (vert sauge pour les ajouts, ambre pour les modifications, vieux rose pour les corrections), avec un symbole dans le badge (+, ~, !) et un liseré de couleur à gauche de chaque rubrique.
+- Historique (or, richesse, matériaux suivis) : au-delà de 30 jours, un seul point par jour est gardé. Les courbes ne changent pas, mais les données ne grossissent plus sans fin (connexion et déconnexion plus rapides à la longue).
+- Options > Récolte : la lueur précise qu'il faut l'éteindre avant de désinstaller l'addon (les réglages du jeu qu'elle modifie sont rendus à l'arrêt).
+
+### Corrections
+- Barre latérale : avec une fenêtre basse, le groupe « Confort » (QoL) passait sous « Patch notes » et « Options ». L'espacement se resserre maintenant quand la place manque.
+- QoL : la colonne des classes se resserre aussi dans une fenêtre basse, pour garder une marge sous la dernière classe.
+- Courrier : après un envoi raté, le message d'erreur d'un échec précédent pouvait réapparaître dans le diagnostic.
+- Fiche métier d'un autre perso : « Recettes lues le… » chevauchait le libellé « Artisan » de la barre des rangs ; il est maintenant sur la ligne des boutons.
+
 ## v0.32.5 — 15/11/2026
 
 ### Modifications

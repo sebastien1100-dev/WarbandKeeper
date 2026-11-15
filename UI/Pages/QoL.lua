@@ -182,9 +182,21 @@ UI:RegisterPage({
         sep:SetPoint("TOPLEFT", 14, -61)
         sep:SetPoint("TOPRIGHT", -14, -61)
         sep:SetHeight(1)
+        local classButtons = {}
         for i, cl in ipairs(QoL.CLASSES) do
-            navButton(cl[1], cl[2], -66 - (i - 1) * 50, cl[1])
+            classButtons[i] = navButton(cl[1], cl[2], -66 - (i - 1) * 50, cl[1])
         end
+        -- Fenêtre basse : les lignes se resserrent pour garder une marge sous la dernière classe.
+        UI:OnResize(navCard, function(_, h)
+            if not h or h <= 0 then return end
+            local step = math.max(40, math.min(50, math.floor((h - 66 - 14) / #classButtons)))
+            for i, b in ipairs(classButtons) do
+                b:SetHeight(step - 2)
+                b:ClearAllPoints()
+                b:SetPoint("TOPLEFT", 8, -66 - (i - 1) * step)
+                b:SetPoint("TOPRIGHT", -8, -66 - (i - 1) * step)
+            end
+        end)
 
         -----------------------------------------------------------------------
         -- Général

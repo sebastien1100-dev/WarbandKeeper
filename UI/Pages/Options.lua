@@ -399,7 +399,7 @@ UI:RegisterPage({
         end
         local gmain = card("Lueur de récolte", 236)
         UI:SettingRow(gmain, -40, "Faire briller l'objet visé",
-            "Plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Les réglages du jeu modifiés sont rendus à l'arrêt.",
+            "Plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Les réglages du jeu modifiés sont rendus à l'arrêt : éteins-la avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
         UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet.",
             UI:Slider(gmain, 240, 5, 30, 1, function() return gcfg.range or 15 end,

@@ -2,10 +2,12 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 
+-- Trois couleurs fixes, douces et accordées aux thèmes chauds, indépendantes de l'accent :
+-- vert sauge (ajouts), ambre (modifications), vieux rose (corrections).
 local SECTIONS = {
-    { "added", "AJOUTS", C.positive },
-    { "changed", "MODIFICATIONS", nil }, -- couleur d'accent
-    { "fixed", "CORRECTIONS", C.negative },
+    { "added", "+  AJOUTS", { 0.66, 0.79, 0.50, 1 } },
+    { "changed", "~  MODIFICATIONS", { 0.88, 0.66, 0.35, 1 } },
+    { "fixed", "!  CORRECTIONS", { 0.85, 0.53, 0.53, 1 } },
 }
 
 local function notesSeen() return WK.DB.global.settings.notesSeenVersion == WK.version end
@@ -50,12 +52,12 @@ local function VersionCard(parent, y, entry, isCurrent, width)
     end
 
     local h = 48
-    local textW = width - 18 - 26 - 18
+    local textW = width - 18 - 34 - 18
     local function bullets(list, color)
         for _, line in ipairs(list) do
             local dot = UI:Icon(card, "circle", 5, color or C.muted, "ARTWORK")
-            dot:SetPoint("TOPLEFT", 22, -h - 6)
-            local th = wrapped(card, line, 36, -h, textW, C.text, 12)
+            dot:SetPoint("TOPLEFT", 30, -h - 6)
+            local th = wrapped(card, line, 44, -h, textW, C.text, 12)
             h = h + th + 7
         end
     end
@@ -66,10 +68,16 @@ local function VersionCard(parent, y, entry, isCurrent, width)
         for _, sec in ipairs(SECTIONS) do
             local list = entry[sec[1]]
             if list and #list > 0 then
+                local top = h
                 local badge = UI:Badge(card, sec[2], sec[3])
-                badge:SetPoint("TOPLEFT", 18, -h)
+                badge:SetPoint("TOPLEFT", 26, -h)
                 h = h + 26
-                bullets(list, sec[3] or { UI:Accent() })
+                bullets(list, sec[3])
+                -- Liseré de la couleur de la rubrique, sur toute sa hauteur
+                local stripe = card:CreateTexture(nil, "ARTWORK")
+                stripe:SetColorTexture(unpack(sec[3]))
+                stripe:SetPoint("TOPLEFT", 16, -top)
+                stripe:SetSize(3, h - top - 2)
                 h = h + 6
             end
         end

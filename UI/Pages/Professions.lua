@@ -1395,6 +1395,11 @@ local function Detail(page, parent)
         -- Ouverture : seulement pour le perso connecté et un métier qui a une fenêtre.
         local canOpen = isMe and #all > 0
         open:SetShown(canOpen)
+        -- « Recettes lues le… » : sur la ligne des boutons (place libre quand « Ouvrir » est caché),
+        -- pour ne pas tomber sur les libellés des rangs.
+        note:ClearAllPoints()
+        if noLink then note:SetPoint("RIGHT", head, "TOPRIGHT", -16, -34)
+        else note:SetPoint("RIGHT", linkCfgBtn, "LEFT", -(linkBtn:GetWidth() + 18), 0) end
         self:SyncSecure()
         local scan = c.recipeScans and c.recipeScans[self.prof]
         if canOpen then

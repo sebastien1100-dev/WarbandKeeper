@@ -10,6 +10,7 @@ local MAIL_DAYS = 30 -- durée de conservation d'un courrier envoyé à un joueu
 local queue = {}
 local sending = false
 local sentSummary = {} -- [destinataire] = objets envoyés pendant cette ouverture de la boîte
+local lastError        -- dernier message d'erreur du jeu pendant un envoi (diagnostic)
 local current -- courrier en cours d'envoi (pour le créditer au destinataire)
 
 ---------------------------------------------------------------------------
@@ -236,7 +237,6 @@ WK:On("MAIL_SEND_SUCCESS", function()
 end)
 
 -- Message d'erreur du jeu pendant un envoi (destinataire inconnu…), repris dans le chat.
-local lastError
 WK:On("UI_ERROR_MESSAGE", function(_, msg) if sending then lastError = msg end end)
 
 WK:On("MAIL_FAILED", function()

@@ -121,3 +121,45 @@ function DB:PushHistory(series, value)
         table.insert(series, { t = now, v = value })
     end
 end
+
+-- Allège l'historique : au-delà de `days` jours (30 par défaut), un seul point par jour (le dernier).
+-- Les courbes restent identiques à l'échelle du mois et de l'année, sans grossir sans fin.
+local function compactSeries(series, cutoff)
+    if type(series) ~= "table" or #series < 2 then return 0 end
+    local out, removed = {}, 0
+    local lastDay
+    for _, p in ipairs(series) do
+        if p.t >= cutoff then
+            table.insert(out, p)
+            lastDay = nil
+        else
+            local day = math.floor(p.t / 86400)
+            if day == lastDay then
+                out[#out] = p -- remplace : on garde le dernier point du jour
+                removed = removed + 1
+            else
+                table.insert(out, p)
+                lastDay = day
+            end
+        end
+    end
+    if removed > 0 then
+        wipe(series)
+        for i, p in ipairs(out) do series[i] = p end
+    end
+    return removed
+end
+DB.CompactSeries = compactSeries
+
+function DB:CompactHistory(days)
+    local cutoff = time() - (days or 30) * 86400
+    local h = self.global.history
+    local removed = 0
+    for _, series in pairs(h.gold or {}) do removed = removed + compactSeries(series, cutoff) end
+    for _, series in pairs(h.items or {}) do removed = removed + compactSeries(series, cutoff) end
+    for _, perChar in pairs(h.charItems or {}) do
+        for _, series in pairs(perChar) do removed = removed + compactSeries(series, cutoff) end
+    end
+    removed = removed + compactSeries(h.value, cutoff)
+    return removed
+end

@@ -395,7 +395,7 @@ WK.Locales.enUS.text = {
     ["Objets qui brillent"] = "Glowing objects",
     ["Lueur de récolte"] = "Gathering glow",
     ["Faire briller l'objet visé"] = "Make the targeted object glow",
-    ["Plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Les réglages du jeu modifiés sont rendus à l'arrêt."] = "Herbs, veins, quest objects, chests and the fishing bobber glow as you approach (game soft targeting). Game settings changed are restored when turned off.",
+    ["Plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Les réglages du jeu modifiés sont rendus à l'arrêt : éteins-la avant de désinstaller l'addon."] = "Herbs, veins, quest objects, chests and the fishing bobber glow as you approach (game soft targeting). Game settings changed are restored when turned off: turn it off before uninstalling the addon.",
     ["Portée"] = "Range",
     ["Distance à laquelle le jeu désigne un objet."] = "Distance at which the game picks an object.",
     ["Taille"] = "Size",
@@ -694,6 +694,9 @@ WK.Locales.enUS.text = {
     ["gris vendus %s"] = "greys sold %s", ["acheté "] = "bought ",
     ["Link tchat"] = "Link to chat",
     ["Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."] = "Puts the profession window link in chat, followed by your text if enabled. The link is read when the profession opens: the first time, the addon opens and closes the window by itself (current character).",
+    ["+  AJOUTS"] = "+  ADDED",
+    ["~  MODIFICATIONS"] = "~  CHANGED",
+    ["!  CORRECTIONS"] = "!  FIXED",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
