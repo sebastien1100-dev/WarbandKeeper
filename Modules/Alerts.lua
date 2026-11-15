@@ -44,12 +44,9 @@ end
 -- Rappel dans le chat quelques secondes après la connexion.
 function M:OnLogin()
     C_Timer.After(6, function()
+        if WK.DB.global.settings.ui.loginPopup ~= false then return end -- déjà dans la fenêtre de rappels
         local all = self:All()
         if #all == 0 then return end
-        WK:Print(string.format(T("%d alerte(s) :"), #all))
-        for i, e in ipairs(all) do
-            if i > 5 then WK:Print("  ..."); break end
-            WK:Print(string.format("  %s : %s", WK:CharName(e.c, e.key), e.alert.text))
-        end
+        WK:Print(string.format(T("%d alerte(s) : voir la page Persos (/wk)."), #all))
     end)
 end

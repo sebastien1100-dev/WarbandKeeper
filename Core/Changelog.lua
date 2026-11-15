@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.32.2", date = "15/11/2026",
+        changed = {
+            "Chat épuré : plus de message « chargé » à chaque connexion (seulement à la première installation), plus de liste d'alertes à la connexion quand la fenêtre de rappels est active (sinon une seule ligne).",
+            "Courrier : un seul bilan à la fin de l'envoi automatique (« Courrier envoyé : 24 à Lapine, 12 à Brumefer ») au lieu d'une ligne par lettre.",
+            "Marchand : réparation, objets gris vendus et achats automatiques regroupés sur une seule ligne.",
+            "Montants plus courts : les parties à zéro ne sont plus écrites (« 50pa » au lieu de « 0po 50pa 0pc »).",
+            "Les rappels (familier, poisons, buffs, guidage, maître de classe) ne s'affichent plus qu'au milieu de l'écran, plus dans le chat. Invitations acceptées et duels refusés se font sans message. Les boutons de guidage n'écrivent plus rien quand la flèche est affichée.",
+        },
+    },
+    {
         version = "0.32.1", date = "15/11/2026",
         changed = {
             "Métiers > Lier dans le chat : si le lien n'est pas encore enregistré, l'addon ouvre la fenêtre du métier une fois pour le lire, la referme et colle le lien (perso connecté). Pour un autre perso, le message explique qu'il faut le connecter et ouvrir son métier une fois. L'infobulle du bouton le précise aussi.",

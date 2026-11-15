@@ -9,6 +9,7 @@ local MAIL_DAYS = 30 -- durée de conservation d'un courrier envoyé à un joueu
 -- File d'envoi : liste de { recipient, items = { {bag, slot, count, split}, ... } } (1 courrier par entrée).
 local queue = {}
 local sending = false
+local sentSummary = {} -- [destinataire] = objets envoyés pendant cette ouverture de la boîte
 local current -- courrier en cours d'envoi (pour le créditer au destinataire)
 
 ---------------------------------------------------------------------------
@@ -159,7 +160,11 @@ function M:SendNext()
     local mail = table.remove(queue, 1)
     if not mail then
         if sending then
-            WK:Print(WK.L.MAIL_DONE)
+            local parts = {}
+            for who, n in pairs(sentSummary) do table.insert(parts, n .. " " .. T("à") .. " " .. who) end
+            table.sort(parts)
+            if #parts > 0 then WK:Print(T("Courrier envoyé : ") .. table.concat(parts, ", ")) end
+            wipe(sentSummary)
             sending = false
             if WK.DB.global.mail.autoTake then
                 afterTake = afterSend
@@ -183,7 +188,9 @@ function M:SendNext()
         ClickSendMailItemButton(i)
     end
     ClearCursor()
-    WK:Print(string.format(WK.L.MAIL_SENDING, #mail.items, mail.recipient))
+    local n = 0
+    for _, op in ipairs(mail.items) do n = n + (op.count or 1) end
+    sentSummary[mail.recipient] = (sentSummary[mail.recipient] or 0) + n
     local send = SendMail or (C_Mail and C_Mail.SendMail)
     send(mail.recipient, "Warband Keeper", "")
 end

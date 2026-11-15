@@ -259,15 +259,15 @@ end
 
 ---------------------------------------------------------------------------
 -- Rappels à l'écran (au milieu, comme les erreurs du jeu), limités par sujet : une minute,
--- ou cinq sans message dans le chat (quiet) pour les rappels de buffs qui reviennent souvent.
+-- ou cinq (quiet) pour les rappels de buffs qui reviennent souvent.
 ---------------------------------------------------------------------------
 local lastReminder = {}
 function M:Remind(key, text, r, g, b, quiet)
     local now = GetTime and GetTime() or 0
     if lastReminder[key] and now - lastReminder[key] < (quiet and 300 or 60) then return end
     lastReminder[key] = now
+    -- À l'écran seulement : le chat reste réservé à l'essentiel.
     if UIErrorsFrame and UIErrorsFrame.AddMessage then UIErrorsFrame:AddMessage(text, r or 1, g or 0.82, b or 0.2) end
-    if not quiet then WK:Print(text) end
 end
 
 ---------------------------------------------------------------------------
@@ -346,6 +346,13 @@ end
 -- Marchand : réparation, vente des objets gris, achat des composants
 ---------------------------------------------------------------------------
 local merchantOpen = false
+-- Bilan du passage chez le marchand, écrit en une seule ligne.
+local shopLog = {}
+local function shopNote(text) table.insert(shopLog, text) end
+local function shopFlush()
+    if #shopLog > 0 then WK:Print(T("Marchand : ") .. table.concat(shopLog, " · ")) end
+    wipe(shopLog)
+end
 
 function M:Repair()
     local g = self:General()
@@ -358,13 +365,13 @@ function M:Repair()
     end
     if g.repairGuild and CanGuildBankRepair and CanGuildBankRepair() then
         RepairAllItems(true)
-        WK:Print(string.format(T("Réparé avec l'or de guilde : %s"), WK:FormatMoney(cost)))
+        shopNote(string.format(T("réparé (or de guilde) %s"), WK:FormatMoney(cost)))
         C_Timer.After(0.5, function() M:ScanDurability() end)
         return true
     end
     if cost > GetMoney() then return end
     RepairAllItems()
-    WK:Print(string.format(T("Réparé : %s"), WK:FormatMoney(cost)))
+    shopNote(string.format(T("réparé %s"), WK:FormatMoney(cost)))
     C_Timer.After(0.5, function() M:ScanDurability() end)
     return true
 end
@@ -407,7 +414,7 @@ function M:SellGrey(onDone)
             i = i + 1
             local it = list[i]
             if not it then
-                WK:Print(string.format(T("Objets gris vendus : %s"), WK:FormatMoney(total)))
+                shopNote(string.format(T("gris vendus %s"), WK:FormatMoney(total)))
                 return onDone()
             end
             useContainerItem(it.bag, it.slot)
@@ -487,7 +494,7 @@ function M:AutoBuy()
             end
         end
     end
-    if #bought > 0 then WK:Print(T("Acheté : ") .. table.concat(bought, ", ")) end
+    if #bought > 0 then shopNote(T("acheté ") .. table.concat(bought, ", ")) end
 end
 
 -- Fermer la fenêtre après une réparation (réglage) ; Maj enfoncée à l'ouverture : elle reste ouverte.
@@ -499,6 +506,7 @@ WK:On("MERCHANT_SHOW", function()
         local repaired = M:Repair()
         M:AutoBuy()
         M:SellGrey(function()
+            shopFlush()
             if repaired and M:General().closeAfterRepair and not keepOpen then
                 C_Timer.After(0.5, function() if merchantOpen and CloseMerchant then CloseMerchant() end end)
             end
@@ -541,7 +549,6 @@ WK:On("PARTY_INVITE_REQUEST", function(name)
     if not M:General().acceptInvites or not M:IsFriendOrGuild(name) then return end
     if AcceptGroup then AcceptGroup() end
     hidePopup("PARTY_INVITE")
-    WK:Print(string.format(T("Invitation de %s acceptée."), name))
 end)
 
 WK:On("DUEL_REQUESTED", function(name)
@@ -550,7 +557,6 @@ WK:On("DUEL_REQUESTED", function(name)
     if g.duelFriends and M:IsFriendOrGuild(name) then return end
     if CancelDuel then CancelDuel() end
     hidePopup("DUEL_REQUESTED")
-    WK:Print(string.format(T("Duel de %s refusé."), name))
 end)
 
 WK:On("PLAYER_DEAD", function()

@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "0.32.1"
+WK.version = "0.32.2"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -55,5 +55,6 @@ WK:On("PLAYER_LOGIN", function()
     for _, m in pairs(WK.modules) do
         if m.OnLogin then m:OnLogin() end
     end
-    WK:Print(WK.L.LOADED)
+    -- Message « chargé » seulement à la première installation (les mises à jour ont le leur).
+    if not WK.DB.global.settings.lastSeenVersion then WK:Print(WK.L.LOADED) end
 end)

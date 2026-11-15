@@ -688,6 +688,10 @@ WK.Locales.enUS.text = {
     ["Lien de %s pas encore enregistré : ouvre une fois la fenêtre du métier (bouton « Ouvrir le métier »), puis réessaie."] = "%s link not saved yet: open the profession window once (\"Open profession\" button), then try again.",
     ["Lien de %s pas encore enregistré pour %s : connecte ce perso et ouvre une fois la fenêtre du métier."] = "%s link not saved yet for %s: log on that character and open the profession window once.",
     ["Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."] = "Puts the profession window link in chat, followed by your text if enabled. The link is read when the profession opens: the first time, the addon opens and closes the window by itself (current character).",
+    ["%d alerte(s) : voir la page Persos (/wk)."] = "%d alert(s): see the Characters page (/wk).",
+    ["Courrier envoyé : "] = "Mail sent: ", ["à"] = "to",
+    ["Marchand : "] = "Vendor: ", ["réparé (or de guilde) %s"] = "repaired (guild gold) %s", ["réparé %s"] = "repaired %s",
+    ["gris vendus %s"] = "greys sold %s", ["acheté "] = "bought ",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

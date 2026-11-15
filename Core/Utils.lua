@@ -29,8 +29,12 @@ function WK:FormatMoney(copper)
     local g = math.floor(copper / 10000)
     local s = math.floor((copper % 10000) / 100)
     local c = copper % 100
-    local str = string.format("|cffffd700%d|r%s |cffc7c7cf%d|r%s |cffeda55f%d|r%s",
-        g, WK.T("po"), s, WK.T("pa"), c, WK.T("pc"))
+    -- Les parties à zéro sont omises (« 50pa » plutôt que « 0po 50pa 0pc »).
+    local parts = {}
+    if g > 0 then table.insert(parts, string.format("|cffffd700%d|r%s", g, WK.T("po"))) end
+    if s > 0 then table.insert(parts, string.format("|cffc7c7cf%d|r%s", s, WK.T("pa"))) end
+    if c > 0 or #parts == 0 then table.insert(parts, string.format("|cffeda55f%d|r%s", c, WK.T("pc"))) end
+    local str = table.concat(parts, " ")
     return neg and ("-" .. str) or str
 end
 

@@ -186,7 +186,7 @@ function M:GoTo(what, r, quiet)
         return nil
     end
     self:Start(t, M.LABELS[what] or what, what)
-    if not quiet then
+    if not quiet and not self:Config().arrow then
         local label, place = T(M.LABELS[what] or what), self:PlaceName(t)
         if place == label then
             WK:Print(string.format(T("Au plus près · %s, à %d m"), label, math.floor(t.distance or 0)))
