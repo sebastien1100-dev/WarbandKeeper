@@ -125,7 +125,7 @@ local function tooltipProfession(unit)
     local ok, data = pcall(C_TooltipInfo.GetUnit, unit)
     if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
     for _, line in ipairs(data.lines) do
-        local t = string.lower(line.leftText or "")
+        local t = string.lower(plain(line.leftText) or "")
         if string.find(t, "herboristerie", 1, true) or string.find(t, "herbalism", 1, true) then return "herb" end
         if string.find(t, "minage", 1, true) or string.find(t, "mining", 1, true) then return "ore" end
     end
@@ -162,7 +162,7 @@ local function tooltipQuest(unit)
         local ty = line.type
         if ty ~= nil and (ty == LT.QuestTitle or ty == LT.QuestObjective or ty == LT.QuestPlayer) then return true end
         -- repli : une ligne d'objectif « 2/5 … » ou « … : 2/5 » sous le nom
-        if i > 1 and string.find(line.leftText or "", "%d+%s*/%s*%d+") then return true end
+        if i > 1 and string.find(plain(line.leftText) or "", "%d+%s*/%s*%d+") then return true end
     end
     return false
 end
@@ -221,7 +221,10 @@ M.CursorCategory = cursorCategory
 local function questObjective(name)
     if not name or name == "" then return false end
     local low = string.lower(name)
-    local function match(text) return type(text) == "string" and string.find(string.lower(text), low, 1, true) ~= nil end
+    local function match(text)
+        text = plain(text)
+        return type(text) == "string" and string.find(string.lower(text), low, 1, true) ~= nil
+    end
     if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo and C_QuestLog.GetQuestObjectives then
         local ok, n = pcall(C_QuestLog.GetNumQuestLogEntries)
         for i = 1, (ok and n or 0) do
@@ -253,7 +256,7 @@ local function skinnable(unit)
     if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return false end
     local want = string.lower(UNIT_SKINNABLE_LEATHER or "")
     for _, line in ipairs(data.lines) do
-        local t = string.lower(line.leftText or "")
+        local t = string.lower(plain(line.leftText) or "")
         if (want ~= "" and t == want) or string.find(t, "dépeçable", 1, true) or string.find(t, "skinnable", 1, true) then return true end
     end
     return false
@@ -263,12 +266,15 @@ function M:Classify(unit)
     if not M.SoftExists(unit) then return nil end
     if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then
         -- une créature : seul un cadavre à dépecer reçoit le halo (pas les PNJ ni les joueurs)
-        local name = UnitName(unit) or ""
+        local name = plain(UnitName(unit))
+        if not name then return nil end -- nom masqué (donjon, combat) : on ne peut rien en dire
         local ok, dead = pcall(UnitIsDead, unit)
         if ok and plain(dead) == true and skinnable(unit) then return "skin", name end
         return nil, name
     end
-    local name = UnitName(unit) or ""
+    -- en donjon ou en combat, le jeu masque le nom : pas de halo plutôt qu'une erreur
+    local name = plain(UnitName(unit))
+    if not name then return nil end
     if contains(name, BOBBER_WORDS) then return "bobber", name end
     if C_QuestLog and C_QuestLog.UnitIsRelatedToActiveQuest then
         local ok, related = pcall(C_QuestLog.UnitIsRelatedToActiveQuest, unit)
@@ -407,7 +413,7 @@ function M:Update()
         -- la plaque arrive souvent un instant après la désignation : on réessaie quelques fois
         self:Hide()
         self.retry = (self.retry or 0) + 1
-        if self.retry <= 8 and C_Timer and C_Timer.After then C_Timer.After(0.15, function() M:Update() end) end
+        if self.retry <= 8 and C_Timer and C_Timer.After then C_Timer.After(0.15, function() pcall(M.Update, M) end) end
         return
     end
     self.retry = 0
@@ -467,11 +473,12 @@ function M:Report()
 end
 
 -- Les évènements de plaque donnent « nameplateN », jamais « softinteract » : on revérifie à chaque fois.
-local function refresh() M.retry = 0; M:Update() end
+-- Jamais d'erreur dans le chat pour le halo : une valeur masquée par le jeu éteint simplement le halo.
+local function refresh() M.retry = 0; if not pcall(M.Update, M) then M:Hide() end end
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", refresh)
 WK:On("NAME_PLATE_UNIT_ADDED", refresh)
 WK:On("NAME_PLATE_UNIT_REMOVED", function() if M.current then refresh() end end)
-WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then M:Update() end end)
+WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then refresh() end end)
 WK:On("PLAYER_REGEN_DISABLED", refresh)
 WK:On("PLAYER_REGEN_ENABLED", refresh)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()

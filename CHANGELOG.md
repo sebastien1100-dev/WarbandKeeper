@@ -17,6 +17,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.59.1 — 15/11/2026
+
+### Corrections
+- Halo : en donjon et en combat, le jeu masque le nom de l'objet désigné, et l'addon affichait des erreurs dans le chat (« attempt to perform string conversion on a secret string value »). Le halo reste maintenant simplement éteint dans ce cas.
+- Barre de vol : la durée estimée d'un trajet pas encore fait était fausse. Elle était calculée sur la carte des vols, dont l'échelle change d'un continent à l'autre. Elle est maintenant calculée en mètres, puis corrigée en vol d'après la distance réellement parcourue.
+
 ## v0.59.0 — 15/11/2026
 
 ### Ajouts

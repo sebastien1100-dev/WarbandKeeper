@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.59.1", date = "15/11/2026",
+        fixed = {
+            "Halo : en donjon et en combat, le jeu masque le nom de l'objet désigné, et l'addon affichait des erreurs dans le chat (« attempt to perform string conversion on a secret string value »). Le halo reste maintenant simplement éteint dans ce cas.",
+            "Barre de vol : la durée estimée d'un trajet pas encore fait était fausse. Elle était calculée sur la carte des vols, dont l'échelle change d'un continent à l'autre. Elle est maintenant calculée en mètres, puis corrigée en vol d'après la distance réellement parcourue.",
+        },
+    },
+    {
         version = "0.59.0", date = "15/11/2026",
         added = {
             "Nouvel onglet LFG (groupe « Groupe » de la barre latérale) : la recherche de groupe du jeu, présentée à partir de ton perso.",
