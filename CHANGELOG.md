@@ -18,6 +18,11 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.44.1 — 15/11/2026
+
+### Modifications
+- « Éditer l'interface » devient un bouton à droite de l'en-tête, sur toutes les pages, à la couleur d'accent du thème (au lieu d'une pastille de la page QoL).
+
 ## v0.44.0 — 15/11/2026
 
 ### Ajouts

@@ -314,6 +314,12 @@ function UI:Create()
     close:SetScript("OnClick", function() f:Hide() end)
     local scan = UI:IconButton(header, "refresh", 30, "Scanner ce personnage (sacs, or, métiers)")
     scan:SetPoint("RIGHT", close, "LEFT", -4, 0)
+    -- Mode édition, sur toutes les pages, à la couleur d'accent
+    local editBtn = UI:Button(header, "Éditer l'interface", nil, 28, "primary")
+    editBtn:SetPoint("RIGHT", scan, "LEFT", -10, 0)
+    editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
+    editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
+    self.editBtn = editBtn
     scan:SetScript("OnClick", function()
         WK.modules.Characters:UpdateBasics()
         WK.modules.Characters:UpdateMoney()
@@ -610,9 +616,7 @@ UI.CHIPS = {
         return { { T("Composants bas"), tostring(reag), reag > 0 and C.warning or C.positive, nil, tip("reagent", T("Composants bas")) },
                  { T("À réparer"), tostring(rep), rep > 0 and C.negative or C.positive, nil, tip("durability", T("À réparer")) },
                  { T("Sacs pleins"), tostring(bags), bags > 0 and C.warning or C.positive, nil, tip("bags", T("Sacs presque pleins")) },
-                 { T("Classes jouées"), played .. " / 9" },
-                 { T("Éditer l'interface"), "»", { UI:Accent() }, "qol",
-                   T("Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."), function() UI:EnterEditMode() end } }
+                 { T("Classes jouées"), played .. " / 9" } }
     end,
     notes = function()
         return { { T("Version"), WK.version, C.gold }, { T("À venir"), tostring(#(WK.Roadmap or {})) } }
@@ -630,7 +634,7 @@ function UI:RefreshChips()
     if f then ok, list = pcall(f) end
     if not ok or type(list) ~= "table" then list = {} end
     local x = PAD - 5
-    local maxX = (self.header:GetWidth() or 600) - 80
+    local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0)
     for _, ch in ipairs(list) do
         local c = self.chips:Get()
         c.label:SetText(ch[1])
