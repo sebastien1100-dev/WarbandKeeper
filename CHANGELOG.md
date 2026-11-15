@@ -17,6 +17,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.61.1 — 15/11/2026
+
+### Corrections
+- LFG : avec la fenêtre à sa taille minimale, le texte sous « Actualiser » passait sur « Je cherche ». Le bandeau se resserre maintenant (rôles plus courts, classe sous le nom masquée) et l'état de la recherche passe dans l'infobulle d'Actualiser.
+- LFG : le message d'accueil (« Choisis un donjon… ») était coupé ; il passe maintenant à la ligne.
+
 ## v0.61.0 — 15/11/2026
 
 ### Ajouts

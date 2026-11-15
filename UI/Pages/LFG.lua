@@ -85,10 +85,38 @@ UI:RegisterPage({
             function(v) cfg.mode = v; self:Refresh() end, 24)
         self.modeSeg:SetPoint("TOPLEFT", x + 14, -26)
         self.modeSeg:Select(cfg.mode)
+        -- Fenêtre étroite : le bandeau se resserre (rôles plus courts, sans la classe sous le nom,
+        -- l'état de la recherche passe dans l'infobulle d'Actualiser) pour que rien ne se chevauche.
+        self.playHd, self.lookHd = playHd, lookHd
+        UI:OnResize(banner, function(w)
+            if not w or w <= 0 then return end
+            local narrow = w < 1000
+            local start = narrow and 196 or 222
+            local bw, step = narrow and 70 or 78, narrow and 74 or 84
+            self.meSub:SetShown(not narrow)
+            playHd:ClearAllPoints(); playHd:SetPoint("TOPLEFT", start, -10)
+            local xx = start
+            for _, role in ipairs(ROLES) do
+                local b = self.roleBtns[role]
+                b:SetWidth(bw); b:ClearAllPoints(); b:SetPoint("TOPLEFT", xx, -26)
+                xx = xx + step
+            end
+            lookHd:ClearAllPoints(); lookHd:SetPoint("TOPLEFT", xx + 10, -10)
+            self.modeSeg:ClearAllPoints(); self.modeSeg:SetPoint("TOPLEFT", xx + 10, -26)
+            self.narrow = narrow
+            if self.status then self.status:SetShown(not narrow) end
+        end)
 
         self.searchBtn = UI:Button(banner, "Actualiser", 110, 26, "primary", "refresh")
         self.searchBtn:SetPoint("TOPRIGHT", -14, -8)
         self.searchBtn:SetScript("OnClick", function() self:DoSearch() end)
+        self.searchBtn:HookScript("OnEnter", function(s)
+            if not self.narrow then return end
+            WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            GameTooltip:SetText(self.status:GetText() or "", 1, 1, 1)
+            GameTooltip:Show()
+        end)
+        self.searchBtn:HookScript("OnLeave", function() GameTooltip:Hide() end)
         self.refineBtn = UI:IconButton(banner, "filter", 26)
         self.refineBtn:SetPoint("RIGHT", self.searchBtn, "LEFT", -8, 0)
         self.refineBtn:SetScript("OnClick", function() self:ToggleRefine() end)
@@ -104,6 +132,7 @@ UI:RegisterPage({
         self.status = UI:Text(banner, 11, C.muted)
         self.status:SetPoint("TOPRIGHT", self.searchBtn, "BOTTOMRIGHT", -4, -4)
         self.status:SetJustifyH("RIGHT")
+        if self.narrow then self.status:Hide() end
 
         -----------------------------------------------------------------------
         -- Échelle des donjons (gauche)
@@ -340,6 +369,8 @@ UI:RegisterPage({
         end)
         self.empty = UI:Text(root, 12, C.muted)
         self.empty:SetJustifyH("LEFT")
+        self.empty:SetJustifyV("TOP")
+        if self.empty.SetWordWrap then self.empty:SetWordWrap(true) end
         UI:OnResize(center, function() self:Refresh() end)
     end,
 
