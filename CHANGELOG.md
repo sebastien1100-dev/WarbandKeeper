@@ -17,6 +17,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.32.4 — 15/11/2026
+
+### Modifications
+- Métiers : le bouton « Lier dans le chat » s'appelle maintenant « Link tchat ».
+
+### Corrections
+- Link tchat sur Herboristerie, Dépeçage ou Pêche : l'addon essayait d'ouvrir une fenêtre de métier qui n'existe pas, puis affichait « Le jeu n'a pas donné le lien ». Ces métiers n'ont pas de lien : le nom et le niveau sont envoyés tout de suite, sans message.
+
 ## v0.32.3 — 15/11/2026
 
 ### Corrections

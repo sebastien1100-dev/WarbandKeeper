@@ -446,6 +446,12 @@ end
 function M:LinkToChat(c, key, prof)
     local text, real = self:LinkText(c, key, prof)
     if real then WK.ChatInsert(text) return end
+    -- Herboristerie, Dépeçage, Pêche : pas de fenêtre de métier, donc pas de lien. Nom et niveau.
+    local kind = WK.modules.Gathering:Kind(prof)
+    if kind == "herb" or kind == "skin" or prof == "Pêche" or prof == "Fishing" then
+        WK.ChatInsert(text)
+        return
+    end
     -- Pas encore de lien : pour le perso connecté, on ouvre le métier une fois (le lien est lu à
     -- l'ouverture), on le referme et on colle le lien. Sinon, on explique quoi faire.
     if key == select(2, WK.DB:Me()) and WK.modules.Professions:OpenDirect(prof) then

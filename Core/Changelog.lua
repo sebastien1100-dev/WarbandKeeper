@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.32.4", date = "15/11/2026",
+        changed = {
+            "Métiers : le bouton « Lier dans le chat » s'appelle maintenant « Link tchat ».",
+        },
+        fixed = {
+            "Link tchat sur Herboristerie, Dépeçage ou Pêche : l'addon essayait d'ouvrir une fenêtre de métier qui n'existe pas, puis affichait « Le jeu n'a pas donné le lien ». Ces métiers n'ont pas de lien : le nom et le niveau sont envoyés tout de suite, sans message.",
+        },
+    },
+    {
         version = "0.32.3", date = "15/11/2026",
         fixed = {
             "Messages du chat : « Warband Keeper » s'affichait toujours en bleu. Il prend maintenant la couleur d'accent du thème choisi.",

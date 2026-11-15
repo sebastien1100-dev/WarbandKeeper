@@ -623,9 +623,9 @@ local function Detail(page, parent)
     local linkCfgBtn = UI:IconButton(head, "gear", 32, "Texte ajouté au lien")
     tab.linkCfgBtn = linkCfgBtn
     linkCfgBtn:SetPoint("TOPRIGHT", -16, -18)
-    local linkBtn = UI:Button(head, "Lier dans le chat", nil, 32, "secondary")
+    local linkBtn = UI:Button(head, "Link tchat", nil, 32, "secondary")
     linkBtn:SetPoint("TOPRIGHT", linkCfgBtn, "TOPLEFT", -6, 0)
-    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."
+    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté). Herboristerie, Dépeçage et Pêche n'ont pas de fenêtre : le nom et le niveau sont envoyés."
     linkBtn:SetScript("OnClick", function()
         local c = WK.DB.global.characters[tab.key]
         WK.modules.Recipes:LinkToChat(c, tab.key, tab.prof)
