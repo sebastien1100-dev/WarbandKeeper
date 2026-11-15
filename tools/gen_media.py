@@ -307,13 +307,19 @@ def fx_ring():
 
 
 def icon_crown():
-    """Couronne (chef de groupe) : trois pointes et un bandeau, posée comme un chapeau."""
+    """Couronne penchée (chef de groupe), posée de travers comme un chapeau : bandeau arrondi,
+    trois pointes à boules, une échancrure sur le bandeau. Dessinée droite puis tournée."""
     img, d, s = canvas(64)
-    d.polygon([(P(0.08, s), P(0.78, s)), (P(0.08, s), P(0.30, s)), (P(0.30, s), P(0.52, s)), (P(0.50, s), P(0.18, s)),
-               (P(0.70, s), P(0.52, s)), (P(0.92, s), P(0.30, s)), (P(0.92, s), P(0.78, s))], fill=W)
-    for cx, cy in ((0.08, 0.26), (0.50, 0.13), (0.92, 0.26)):
-        circle(d, s, cx, cy, 0.07)
-    d.rectangle([P(0.08, s), P(0.84, s), P(0.92, s), P(0.94, s)], fill=W)
+    # corps : bandeau légèrement bombé et trois pointes
+    d.polygon([(P(0.14, s), P(0.70, s)), (P(0.10, s), P(0.34, s)), (P(0.31, s), P(0.52, s)), (P(0.50, s), P(0.24, s)),
+               (P(0.69, s), P(0.52, s)), (P(0.90, s), P(0.34, s)), (P(0.86, s), P(0.70, s))], fill=W)
+    d.rounded_rectangle([P(0.12, s), P(0.64, s), P(0.88, s), P(0.84, s)], radius=0.08 * s, fill=W)
+    for cx, cy, r in ((0.10, 0.29, 0.075), (0.50, 0.19, 0.085), (0.90, 0.29, 0.075)):
+        circle(d, s, cx, cy, r)
+    # pierre au centre du bandeau (évidée)
+    circle(d, s, 0.50, 0.74, 0.055, None)
+    d.ellipse([P(0.445, s), P(0.685, s), P(0.555, s), P(0.795, s)], fill=CLEAR)
+    img = img.rotate(-22, resample=Image.BICUBIC, center=(s * 0.5, s * 0.55))
     save(img, "crown", 64)
 
 

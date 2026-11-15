@@ -17,6 +17,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.62.1 — 15/11/2026
+
+### Modifications
+- LFG : nouvelle couronne du chef de groupe, plus ronde, penchée et posée de travers sur le haut de son logo, avec une petite ombre.
+- Texture modifiée : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.62.0 — 15/11/2026
 
 ### Modifications

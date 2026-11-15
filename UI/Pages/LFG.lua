@@ -315,8 +315,13 @@ UI:RegisterPage({
                 s.trait = s:CreateTexture(nil, "ARTWORK")
                 s.trait:SetSize(20, 3)
                 s.trait:SetPoint("TOP", s, "BOTTOM", 0, -3)
-                s.crown = UI:Icon(s, "crown", 14, nil, "OVERLAY")
-                s.crown:SetPoint("BOTTOM", s, "TOP", 0, -4)
+                -- couronne penchée, posée de travers sur le haut du logo, avec une ombre
+                s.crownShadow = UI:Icon(s, "crown", 18, nil, "OVERLAY")
+                s.crownShadow:SetDrawLayer("OVERLAY", 1)
+                s.crownShadow:SetPoint("CENTER", s, "TOP", 6, 0)
+                s.crown = UI:Icon(s, "crown", 18, nil, "OVERLAY")
+                s.crown:SetDrawLayer("OVERLAY", 2)
+                s.crown:SetPoint("CENTER", s, "TOP", 5, 2)
                 s.fill = UI:Icon(s, "circle", 26, nil, "ARTWORK")
                 s.fill:SetPoint("CENTER")
                 s.ring = UI:Icon(s, "ring", 26, nil, "OVERLAY")
@@ -561,12 +566,15 @@ UI:RegisterPage({
             local col = C[role]
             local taken = r.counts and seen[role] <= (cnt[role] or 0)
             local m = taken and take(role) or nil
-            s.cls:Hide(); s.trait:Hide(); s.crown:Hide()
+            s.cls:Hide(); s.trait:Hide(); s.crown:Hide(); s.crownShadow:Hide()
             if m and m.class then
                 s.fill:Hide(); s.ring:Hide(); s.txt:SetText("")
                 UI:SetClassIcon(s.cls, m.class); s.cls:Show()
                 s.trait:SetColorTexture(unpack(col)); s.trait:Show()
-                if m.leader then s.crown:SetVertexColor(unpack(C.gold)); s.crown:Show() end
+                if m.leader then
+                    s.crown:SetVertexColor(unpack(C.gold)); s.crown:Show()
+                    s.crownShadow:SetVertexColor(0, 0, 0, 0.6); s.crownShadow:Show()
+                end
             elseif taken then
                 s.fill:Show(); s.ring:Hide()
                 s.fill:SetVertexColor(unpack(col))

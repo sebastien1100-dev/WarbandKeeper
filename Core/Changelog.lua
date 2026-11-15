@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.62.1", date = "15/11/2026",
+        changed = {
+            "LFG : nouvelle couronne du chef de groupe, plus ronde, penchée et posée de travers sur le haut de son logo, avec une petite ombre.",
+            "Texture modifiée : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.62.0", date = "15/11/2026",
         changed = {
             "LFG : sur les cartes de groupe, chaque place prise montre le logo de la classe du joueur, avec un petit trait à la couleur de son rôle dessous (bleu tank, vert soin, rouge dégâts). Le chef de groupe porte une couronne sur son logo.",
