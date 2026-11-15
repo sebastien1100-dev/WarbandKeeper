@@ -18,6 +18,15 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.51.3 — 15/11/2026
+
+### Ajouts
+- Halo : catégorie « Autres objets » (blanc), pour tout objet utilisable qui n'est ni plante, ni filon, ni quête, ni coffre. Elle se décoche dans les réglages.
+- /wk halo affiche le curseur que le jeu donne à l'objet.
+
+### Corrections
+- Halo : beaucoup d'objets de quête n'étaient pas reconnus, donc pas éclairés. L'objet est maintenant reconnu par son nom dans les objectifs de tes quêtes, et par le curseur que le jeu lui donne (pioche, fleur, quête, main).
+
 ## v0.51.2 — 15/11/2026
 
 ### Modifications

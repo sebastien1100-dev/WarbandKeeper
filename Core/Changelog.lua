@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.51.3", date = "15/11/2026",
+        fixed = {
+            "Halo : beaucoup d'objets de quête n'étaient pas reconnus, donc pas éclairés. L'objet est maintenant reconnu par son nom dans les objectifs de tes quêtes, et par le curseur que le jeu lui donne (pioche, fleur, quête, main).",
+        },
+        added = {
+            "Halo : catégorie « Autres objets » (blanc), pour tout objet utilisable qui n'est ni plante, ni filon, ni quête, ni coffre. Elle se décoche dans les réglages.",
+            "/wk halo affiche le curseur que le jeu donne à l'objet.",
+        },
+    },
+    {
         version = "0.51.2", date = "15/11/2026",
         fixed = {
             "Halo : l'addon demandait au jeu si l'objet désigné « existe », or le jeu répond non pour un objet du décor (plante, filon, objet de quête). Il demande maintenant si c'est un objet : le halo ne restait éteint que pour cette raison.",

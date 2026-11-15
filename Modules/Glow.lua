@@ -9,12 +9,12 @@ local T = function(s) return WK.T(s) end
 
 local UNIT = "softinteract"
 local plain
-local CATEGORIES = { "herb", "ore", "quest", "chest", "bobber" }
+local CATEGORIES = { "herb", "ore", "quest", "chest", "bobber", "other" }
 M.CATEGORIES = CATEGORIES
-M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche" }
+M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche", other = "Autres objets" }
 local DEFAULT_COLORS = {
     herb = { 0.40, 1.00, 0.42 }, ore = { 1.00, 0.60, 0.18 }, quest = { 1.00, 0.84, 0.15 },
-    chest = { 0.45, 0.78, 1.00 }, bobber = { 1.00, 0.45, 0.40 },
+    chest = { 0.45, 0.78, 1.00 }, bobber = { 1.00, 0.45, 0.40 }, other = { 0.92, 0.92, 0.92 },
 }
 
 -- Réglages du jeu nécessaires (valeur voulue) : soft targeting des objets et leur plaque de nom.
@@ -163,6 +163,83 @@ local function tooltipQuest(unit)
     return false
 end
 
+-- Curseur que le jeu montrerait sur l'objet (pioche, fleur, « ! » de quête, main…) : il dit
+-- ce qu'est l'objet. Le jeu renvoie un numéro de fichier, un chemin ou un nom d'atlas.
+local CURSOR_FILES = { -- fichiers Interface\Cursor\ du jeu -> catégorie (false : service, pas de halo)
+    Mine = "ore", GatherHerbs = "herb", Fishing = "bobber",
+    Quest = "quest", QuestRepeatable = "quest", QuestTurnIn = "quest", QuestInteract = "quest",
+    Pickup = "chest", LootAll = "chest", PickLock = "chest",
+    Interact = "other", Inspect = "other",
+    Mail = false, Speak = false, Buy = false, Trainer = false, Taxi = false, Innkeeper = false, Repair = false,
+}
+local CURSOR_WORDS = { -- dans l'ordre : le premier mot trouvé l'emporte
+    { "gather", "herb" }, { "herb", "herb" }, { "mine", "ore" }, { "mining", "ore" }, { "fish", "bobber" },
+    { "quest", "quest" }, { "lootall", "chest" }, { "pickup", "chest" }, { "picklock", "chest" },
+    { "mail", false }, { "speak", false }, { "buy", false }, { "trainer", false }, { "taxi", false },
+    { "innkeeper", false }, { "repair", false }, { "stable", false },
+    { "interact", "other" }, { "inspect", "other" },
+}
+local probe, cursorIDs
+local function cursorCategory(unit)
+    if not SetUnitCursorTexture then return nil end
+    if not probe then
+        probe = UIParent:CreateTexture(nil, "BACKGROUND")
+        probe:SetSize(1, 1); probe:SetAlpha(0)
+        cursorIDs = {}
+        if GetFileIDFromPath then
+            for name, cat in pairs(CURSOR_FILES) do
+                for _, prefix in ipairs({ "", "Unable" }) do
+                    local ok, id = pcall(GetFileIDFromPath, "Interface\\Cursor\\" .. prefix .. name)
+                    if ok and id then cursorIDs[id] = cat end
+                end
+            end
+        end
+    end
+    local ok, has = pcall(SetUnitCursorTexture, probe, unit, nil, true)
+    if not ok or not plain(has) then return nil end
+    local tex = plain(probe:GetTexture())
+    local atlas = probe.GetAtlas and plain(probe:GetAtlas()) or nil
+    local shown = tostring(atlas or tex)
+    if type(tex) == "number" and cursorIDs[tex] ~= nil then return cursorIDs[tex], shown end
+    for _, src in ipairs({ tex, atlas }) do
+        if type(src) == "string" then
+            local low = string.lower(src)
+            for _, w in ipairs(CURSOR_WORDS) do
+                if string.find(low, w[1], 1, true) then return w[2], shown end
+            end
+        end
+    end
+    return "other", shown -- le jeu a un curseur pour lui : on peut interagir avec
+end
+M.CursorCategory = cursorCategory
+
+-- L'objet porte-t-il le nom d'un objectif de quête en cours (« Bois de construction : 0/4 ») ?
+local function questObjective(name)
+    if not name or name == "" then return false end
+    local low = string.lower(name)
+    local function match(text) return type(text) == "string" and string.find(string.lower(text), low, 1, true) ~= nil end
+    if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo and C_QuestLog.GetQuestObjectives then
+        local ok, n = pcall(C_QuestLog.GetNumQuestLogEntries)
+        for i = 1, (ok and n or 0) do
+            local ok2, info = pcall(C_QuestLog.GetInfo, i)
+            if ok2 and info and not info.isHeader and info.questID then
+                local ok3, objs = pcall(C_QuestLog.GetQuestObjectives, info.questID)
+                for _, o in ipairs(ok3 and objs or {}) do
+                    if not o.finished and match(o.text) then return true end
+                end
+            end
+        end
+    elseif GetNumQuestLogEntries and GetNumQuestLeaderBoards and GetQuestLogLeaderBoard then
+        for i = 1, GetNumQuestLogEntries() do
+            for j = 1, (GetNumQuestLeaderBoards(i) or 0) do
+                local text, _, done = GetQuestLogLeaderBoard(j, i)
+                if not done and match(text) then return true end
+            end
+        end
+    end
+    return false
+end
+
 function M:Classify(unit)
     if not M.SoftExists(unit) then return nil end
     if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then return nil end -- PNJ, joueur : pas de halo
@@ -172,12 +249,21 @@ function M:Classify(unit)
         local ok, related = pcall(C_QuestLog.UnitIsRelatedToActiveQuest, unit)
         if ok and related then return "quest", name end
     end
-    if tooltipQuest(unit) then return "quest", name end
+    if tooltipQuest(unit) or questObjective(name) then return "quest", name end
+    local cur = cursorCategory(unit)
+    if cur == false then return nil, name end -- boîte aux lettres, PNJ de service : pas de halo
+    if cur and cur ~= "other" then return cur, name end
     local prof = tooltipProfession(unit)
     if prof then return prof, name end
     if isHerbName(name) then return "herb", name end
     if contains(name, ORE_WORDS) then return "ore", name end
     if contains(name, CHEST_WORDS) then return "chest", name end
+    -- objet utilisable que rien ne range ailleurs
+    if cur == "other" then return "other", name end
+    if UnitIsInteractable then
+        local ok, can = pcall(UnitIsInteractable, unit)
+        if ok and plain(can) == true then return "other", name end
+    end
     return nil, name
 end
 
@@ -333,6 +419,8 @@ function M:Report()
     end
     local cat, name = self:Classify(UNIT)
     WK:Print("  " .. T("objet désigné") .. " : " .. tostring(name) .. " · " .. T("catégorie") .. " : " .. (cat and T(M.LABELS[cat]) or T("inconnue (pas de halo)")))
+    local _, cursor = cursorCategory(UNIT)
+    WK:Print("  " .. T("curseur du jeu") .. " : " .. tostring(cursor or (SetUnitCursorTexture and "aucun" or "absent")))
     if cat and not g.cats[cat] then WK:Print("  " .. T("cette catégorie est décochée dans les réglages")) end
     WK:Print("  " .. T("plaque de nom trouvée") .. " : " .. yn(findPlate() ~= nil))
 end
