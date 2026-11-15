@@ -46,6 +46,8 @@ local function palette(b)
         tank     = { 0.48, 0.65, 0.86, 1 },
         heal     = { 0.56, 0.82, 0.54, 1 },
         dps      = { 0.88, 0.54, 0.49, 1 },
+        -- monstres rares (alerte, carte)
+        rare     = { 0.79, 0.71, 0.93, 1 },
     }
     return p
 end

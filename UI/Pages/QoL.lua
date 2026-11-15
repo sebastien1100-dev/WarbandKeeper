@@ -256,7 +256,9 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
-        local classesBtn = navButton("classes", "Classes", -208, nil, "users")
+        local raresBtn = navButton("rares", "Rares", -208, nil, "star")
+        raresBtn.desc:SetText("Carte, alerte, butin")
+        local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
 
         -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
@@ -558,6 +560,27 @@ UI:RegisterPage({
             UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
             cy = cy - 38
         end
+
+        -----------------------------------------------------------------------
+        -- Rares (Modules/Rares.lua, UI/RarePins.lua, UI/RareAlert.lua)
+        -----------------------------------------------------------------------
+        section("rares")
+        local Ra = WK.modules.Rares
+        local rc = Ra:Config()
+        local function rtoggle(parent, field, after)
+            return toggle(parent, function() return rc[field] end, function(v) rc[field] = v; if after then after() end end)
+        end
+        local rcard = card("Rares", 40 + 5 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
+        local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
+        UI:SettingRow(rcard, -40, "Sur la carte du monde", "Un médaillon par rare (mauve, doré pour un élite, grisé si ce perso l'a tué). Au survol : apparitions et patrouille.", rtoggle(rcard, "map", redraw), 80)
+        UI:SettingRow(rcard, -86, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", rtoggle(rcard, "list", redraw), 80)
+        UI:SettingRow(rcard, -132, "Alerte « Rare en vue »", "Bandeau en haut de l'écran quand un rare entre dans ton champ de vision. Se place en mode édition.", rtoggle(rcard, "alert"), 80)
+        UI:SettingRow(rcard, -178, "Son de l'alerte", nil, rtoggle(rcard, "sound"), 80)
+        UI:SettingRow(rcard, -224, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", rtoggle(rcard, "tooltip"), 80)
+        local rtest = card("Essayer", 84)
+        local tb = UI:Button(rtest, "Montrer l'alerte", 150, 28, "secondary")
+        tb:SetScript("OnClick", function() UI:TestRareAlert() end)
+        UI:SettingRow(rtest, -40, "Alerte de test", "Les rares tués sont comptés à partir de maintenant : le jeu ne garde pas l'historique.", tb, 170)
 
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
@@ -1084,6 +1107,11 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "rares" then
+                local mp = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+                local n = mp and #WK.modules.Rares:OnMap(mp) or 0
+                b.desc:SetText(n > 0 and string.format(T("%d rares dans la zone"), n) or T("Carte, alerte, butin"))
+                b.count:SetText("")
             elseif key == "fishing" then
                 local F2 = WK.modules.Fishing
                 local sk = F2:Skill()

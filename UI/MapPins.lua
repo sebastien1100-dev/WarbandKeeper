@@ -49,6 +49,7 @@ local function hideAll()
     for _, p in ipairs(pins) do p:Hide() end
     if targetPin then targetPin:Hide() end
     if UI.HideNodePins then UI:HideNodePins() end
+    if UI.HideRarePins then UI:HideRarePins() end
 end
 
 -- Repère du guidage (Modules/Guide.lua) : anneau pulsé à la couleur d'accent sur le lieu visé.
@@ -98,6 +99,7 @@ local function redraw()
     local cw, ch = cv:GetWidth(), cv:GetHeight()
     if cw and cw > 0 then
         if UI.DrawNodePins then UI:DrawNodePins(cv, mapID, cw, ch) end -- emplacements connus (UI/NodePins.lua)
+        if UI.DrawRarePins then UI:DrawRarePins(cv, mapID, cw, ch) end -- rares (UI/RarePins.lua)
         drawTarget(cv, mapID, cw, ch)
     end
     if not cfg.showMap then return end

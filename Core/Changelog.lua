@@ -6,6 +6,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.63.0", date = "15/11/2026",
+        added = {
+            "Rares : les 327 monstres rares de WoW Forever (données QuestieDB), avec noms français, apparitions, patrouilles et butin notable.",
+            "Rares : un médaillon par rare sur la carte du monde (mauve, doré pour un rare élite, grisé si ce perso l'a tué). Au survol, ses autres points d'apparition et sa patrouille en pointillés ; un clic lance le guidage.",
+            "Rares : liste « Rares de la zone » sur le côté de la carte du monde, avec le nombre restant à tuer ; clic sur une ligne pour être guidé.",
+            "Rares : alerte « Rare en vue » en haut de l'écran quand un rare entre dans ton champ de vision, avec son portrait, son niveau, son butin notable et s'il a déjà été tué. Boutons Cibler (hors combat) et Guider, son au choix. Se place en mode édition.",
+            "Rares : dans l'infobulle d'un rare, son butin notable (recettes, avec tes persos qui ont le métier) et lesquels de tes persos l'ont déjà tué.",
+            "QoL : nouvelle section « Rares » pour régler tout ça, avec une alerte de test.",
+        },
+        changed = {
+            "Les rares tués sont comptés à partir de cette version (le jeu ne garde pas d'historique).",
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.62.2", date = "15/11/2026",
         changed = {
             "Patch notes : la liste « À venir » reprend tout ce qui est prévu (rares, quêtes, suite de la pêche, Warband UI).",
@@ -1213,7 +1228,6 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Rares (données QuestieDB) : sur la carte du monde avec apparitions et patrouilles, alerte quand un rare apparaît près de toi, butin utile dans l'infobulle, rares tués par perso.",
     "Quêtes (données QuestieDB) : quêtes restantes par zone pour chaque perso, meilleure zone pour monter, quêtes de métier et quêtes qui donnent une recette, chaînes de quêtes et prérequis.",
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",

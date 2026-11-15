@@ -70,3 +70,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Onglet LFG
 
 `Modules/LFG.lua` pilote la recherche de groupe du jeu (`C_LFGList`, lu à chaque appel) : recherche sur un clic, lecture des résultats (toute valeur passe par `readable`, une valeur masquée ne cache jamais un groupe), place libre pour les rôles du perso (`FitRole`), message modèle et suivi des demandes (`M.requests`, réponses lues dans les chuchotements). `UI/Pages/LFG.lua` est la page : bandeau du perso, échelle des donjons, cartes de groupes, mes demandes. LFG Forever (GPLv3) a servi d'inspiration : son code n'est pas repris. Les couleurs de rôle sont `C.tank`, `C.heal`, `C.dps`.
+
+## Rares
+
+`Modules/RaresDB.lua` est **généré** par `python3 tools/gen_rares.py <clone de QuestieDB>` : PNJ de rang rare ou rare élite, apparitions et patrouilles par carte, nom français, butin notable (recettes, objets que peu de monstres donnent). `Modules/Rares.lua` : accès aux données, détection (plaque de nom ou cible dont le jeu dit « rare »), rares tués (`WK.DB.global.rares.kills`, notés au butin ou à la mort de la cible), guidage. `UI/RarePins.lua` : médaillons sur la carte du monde (appelé par `UI/MapPins.lua`), liste sur le côté de la carte, infobulle d'unité. `UI/RareAlert.lua` : bandeau « Rare en vue » (bouton Cibler protégé, hors combat). Réglages dans la section « rares » de `UI/Pages/QoL.lua`.
