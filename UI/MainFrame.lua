@@ -16,11 +16,12 @@ local GROUPS = {
     { "COMPTE", { "overview", "characters", "inventory" } },
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
     { "FARM", { "farm", "loot", "journal" } },
+    { "CONFORT", { "qol" } },
 }
 local BOTTOM = { "notes", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -564,6 +565,24 @@ UI.CHIPS = {
         local today, n = date("%Y%m%d"), 0
         for _, e in ipairs(WK.DB.global.journal or {}) do if date("%Y%m%d", e.t) == today then n = n + 1 end end
         return { { T("Événements"), tostring(#(WK.DB.global.journal or {})) }, { T("Aujourd'hui"), tostring(n) } }
+    end,
+    qol = function()
+        local Q = WK.modules.QoL
+        local function n(kind) return (Q:AlertsFor(function(a) return a.kind == kind end)) end
+        local reag = n("reagent") + n("ammo")
+        local rep, bags = n("durability"), n("bags")
+        local _, played = Q:PlayedClasses()
+        local function tip(kind, title)
+            local _, list = Q:AlertsFor(function(a) return a.kind == kind or (kind == "reagent" and a.kind == "ammo") end)
+            if #list == 0 then return nil end
+            local lines = { title }
+            for i, a in ipairs(list) do if i <= 12 then table.insert(lines, a.text) end end
+            return table.concat(lines, "\n")
+        end
+        return { { T("Composants bas"), tostring(reag), reag > 0 and C.warning or C.positive, nil, tip("reagent", T("Composants bas")) },
+                 { T("À réparer"), tostring(rep), rep > 0 and C.negative or C.positive, nil, tip("durability", T("À réparer")) },
+                 { T("Sacs pleins"), tostring(bags), bags > 0 and C.warning or C.positive, nil, tip("bags", T("Sacs presque pleins")) },
+                 { T("Classes jouées"), played .. " / 9" } }
     end,
     notes = function()
         return { { T("Version"), WK.version, C.gold }, { T("À venir"), tostring(#(WK.Roadmap or {})) } }

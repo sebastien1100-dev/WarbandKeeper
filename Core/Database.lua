@@ -33,6 +33,8 @@ local defaults = {
     -- Lueur de récolte (Modules/Glow.lua) : désactivée tant que le joueur ne l'allume pas
     glow = { enabled = false, range = 15, size = 110, intensity = 100, offsetY = -45,
              hideInCombat = false, hideInInstance = false, onlyTrained = true, cats = {}, colors = {} },
+    -- Qualité de vie (Modules/QoL.lua) : réglages complétés par QoL:Config()
+    qol = { general = {}, classes = {}, petFoods = {} },
     bank = {
         enabled = true,
         sortAfter = true,  -- trie les sacs après le dépôt automatique

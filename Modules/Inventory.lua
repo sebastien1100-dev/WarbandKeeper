@@ -92,6 +92,9 @@ function M:ScanBank()
     if totalSlots(bank) > 0 then
         c.bank = scan(bank)
         c.bankScanned = time()
+        local free = 0
+        for _, b in ipairs(bank) do free = free + (WK.Container.NumFree(b) or 0) end
+        c.bankFree, c.bankSlots = free, totalSlots(bank)
         c.bankAges = c.bankAges or {}
         trackAges(c.bankAges, c.bank)
     end

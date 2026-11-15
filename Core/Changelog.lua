@@ -6,6 +6,25 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.30.0", date = "15/11/2026",
+        added = {
+            "Nouvel onglet QoL (qualité de vie), dans un nouveau groupe « Confort » du menu : une colonne avec Général et les 9 classes (grisées quand aucun perso ne les joue), le nombre d'alertes à côté de chacune.",
+            "QoL > Général : réparation automatique chez le marchand (plafond possible, or de guilde d'abord en option) et vente automatique des objets gris avec le total dans le chat.",
+            "QoL > Général : durabilité de l'équipement et places libres dans les sacs et la banque de chaque perso (banque relevée à chaque visite), avec une alerte sous un seuil choisi (dans « À faire » et la fenêtre de connexion).",
+            "QoL > Général : accepter les invitations de groupe des amis et de la guilde, refuser les duels (sauf amis et guilde en option), libérer l'esprit en champ de bataille, confirmer le butin lié quand on est seul, descendre de monture ou se lever quand une action l'exige, passer les cinématiques.",
+            "Fiches de classe : tes persos de la classe en tête (stock de leurs composants), puis les composants de la classe avec un seuil d'alerte et un achat automatique chez le marchand jusqu'à la quantité voulue.",
+            "Munitions (chasseur, guerrier, voleur) : alerte quand il en reste peu et achat automatique du même type de munitions.",
+            "Chasseur : alerte quand le familier n'est plus heureux, nourriture qu'il accepte (apprise quand tu le nourris) et macro « Nourrir » qui choisit la nourriture toute seule.",
+            "Voleur : alerte avant la fin des poisons sur les armes, coffres à crocheter dans les sacs de tes persos avec la compétence demandée, or volé à la tire.",
+            "Démoniste : nombre maximum de fragments d'âme et bouton pour supprimer ceux en trop (Maj + clic). Mage : annonce de portail prête pour le chat. Guerrier : deux équipements d'armes (deux mains, arme et bouclier) à enregistrer et équiper en un clic. Chaman : totems en sac et temps de recharge de la Réincarnation.",
+            "Rappels à l'écran hors combat : Robustesse du groupe (prêtre), aura et bénédiction (paladin), Marque du fauve (druide).",
+            "Pastilles de l'en-tête QoL : composants bas, persos à réparer, sacs pleins et classes jouées.",
+        },
+        changed = {
+            "Nouveaux fichiers et nouvelle icône : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.29.1", date = "14/11/2026",
         fixed = {
             "Filtre de loot : la fenêtre de butin pouvait rester ouverte, vide ou avec des objets voulus, quand le jeu donnait son contenu un peu tard. Le filtre attend maintenant le contenu, ferme une fenêtre vide et réessaie de ramasser les objets voulus.",
@@ -586,9 +605,6 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Options par classe : flèches et balles des chasseurs, fragments d'âme des démonistes, composants de sorts (mages, prêtres, paladins…), poisons des voleurs, avec une alerte quand il en reste peu.",
-    "Durabilité de l'équipement de chaque perso, avec « à réparer » dans « À faire ».",
-    "Avertissement quand les sacs ou la banque d'un perso sont presque pleins.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
     "Recherche globale : trouver un objet, une recette ou un perso dans tout l'addon.",

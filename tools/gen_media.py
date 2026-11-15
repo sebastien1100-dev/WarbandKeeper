@@ -289,10 +289,25 @@ def fx_ring():
     img.save(os.path.join(OUT, "fxring.tga"))
 
 
+def icon_spark():
+    """Étincelle (qualité de vie) : grande étoile à quatre branches et une petite."""
+    img, d, s = canvas(64)
+    def star(cx, cy, r, k):
+        pts = []
+        for i in range(8):
+            a = math.pi / 4 * i - math.pi / 2
+            rr = r if i % 2 == 0 else r * k
+            pts.append((P(cx + math.cos(a) * rr, s), P(cy + math.sin(a) * rr, s)))
+        d.polygon(pts, fill=W)
+    star(0.42, 0.56, 0.36, 0.3)
+    star(0.76, 0.22, 0.16, 0.32)
+    save(img, "spark", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, fx_halo, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, fx_halo, fx_ring]:
         fn()
     print("OK")

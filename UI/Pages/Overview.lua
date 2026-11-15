@@ -47,6 +47,14 @@ local function todoItems()
             end
         end
     end
+    -- Qualité de vie : durabilité, sacs presque pleins, composants et munitions, familier
+    local ICON = { durability = "hammer", bags = "bag", reagent = "spark", ammo = "spark", pet = "spark" }
+    for _, a in ipairs(WK.modules.QoL:Alerts()) do
+        local section = a.class or "general"
+        add(a.urgent and 2 or 5, ICON[a.kind] or "spark", a.text, function()
+            UI:ShowPage("qol"); UI.pages.qol:ShowSection(section)
+        end, a.urgent and C.negative or C.warning)
+    end
     -- Butin automatique du jeu actif : le filtre de loot ne peut pas choisir
     local L = WK.modules.Loot
     if WK.DB.global.loot.enabled and L:GameAutoLoot() then
