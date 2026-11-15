@@ -15,7 +15,13 @@ local function readable(v, fallback)
 end
 M.Readable = readable
 
-local DEFAULT_MSG = "Salut ! %classe% %niveau%, %role%, dispo pour %donjon%."
+-- Messages envoyés aux autres joueurs : en anglais (WoW Forever est un serveur européen, l'anglais y est
+-- la langue commune). Les mots-clés existent en anglais et en français.
+local DEFAULT_MSG = "Hi! %class% %level%, %role%, available for %dungeon%."
+local OLD_DEFAULT = "Salut ! %classe% %niveau%, %role%, dispo pour %donjon%."
+local CLASS_EN = { WARRIOR = "Warrior", PALADIN = "Paladin", HUNTER = "Hunter", ROGUE = "Rogue", PRIEST = "Priest",
+                   SHAMAN = "Shaman", MAGE = "Mage", WARLOCK = "Warlock", DRUID = "Druid" }
+local ROLE_EN = { tank = "tank", heal = "healer", dps = "dps" }
 function M:Config()
     local g = WK.DB.global
     g.lfg = g.lfg or {}
@@ -23,7 +29,7 @@ function M:Config()
     c.lfg = c.lfg or {}
     if c.lfg.roles == nil then c.lfg.roles = { dps = true } end
     if c.lfg.mode == nil then c.lfg.mode = "group" end
-    if c.lfg.message == nil then c.lfg.message = DEFAULT_MSG end
+    if c.lfg.message == nil or c.lfg.message == OLD_DEFAULT then c.lfg.message = DEFAULT_MSG end
     return c.lfg, g.lfg
 end
 M.DEFAULT_MSG = DEFAULT_MSG
@@ -195,13 +201,16 @@ M.ROLE_WORD = ROLE_WORD
 function M:Message(activityName, role)
     local cfg = self:Config()
     local me = WK.DB:Me()
-    local class = WK.modules.QoL.CLASS_LABEL[me.class or ""] or ""
+    local class = CLASS_EN[me.class or ""] or ""
     local roles = {}
-    if role then roles = { T(ROLE_WORD[role]) }
-    else for _, k in ipairs({ "tank", "heal", "dps" }) do if cfg.roles[k] then table.insert(roles, T(ROLE_WORD[k])) end end end
+    if role then roles = { ROLE_EN[role] }
+    else for _, k in ipairs({ "tank", "heal", "dps" }) do if cfg.roles[k] then table.insert(roles, ROLE_EN[k]) end end end
+    local level = tostring(UnitLevel("player") or "")
     local msg = cfg.message or DEFAULT_MSG
-    msg = msg:gsub("%%classe%%", T(class)):gsub("%%niveau%%", tostring(UnitLevel("player") or ""))
-    msg = msg:gsub("%%role%%", table.concat(roles, " / ")):gsub("%%donjon%%", activityName or T("ton groupe"))
+    msg = msg:gsub("%%class%%", class):gsub("%%classe%%", class)
+    msg = msg:gsub("%%level%%", level):gsub("%%niveau%%", level)
+    msg = msg:gsub("%%role%%", table.concat(roles, " / "))
+    msg = msg:gsub("%%dungeon%%", activityName or "your group"):gsub("%%donjon%%", activityName or "your group")
     return msg
 end
 
@@ -224,7 +233,7 @@ function M:Invite(r)
     if not r.leader then return end
     local f = (C_PartyInfo and C_PartyInfo.InviteUnit) or InviteUnit
     if f then pcall(f, r.leader) end
-    whisper(r.leader, string.format(T("Salut ! Tu veux venir pour %s ?"), self:Activity(r.activity) or T("un groupe")))
+    whisper(r.leader, string.format("Hi! Want to join us for %s?", self:Activity(r.activity) or "a group"))
     self.requests[r.leader] = { t = time(), activity = self:Activity(r.activity), state = "invited" }
     WK:NotifyChanged()
 end

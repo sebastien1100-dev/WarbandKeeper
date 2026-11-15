@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.59.2", date = "15/11/2026",
+        changed = {
+            "LFG : les messages envoyés aux autres joueurs sont maintenant en anglais, la langue commune d'un serveur européen (« Hi! Hunter 23, dps, available for … »). L'ancien message par défaut est remplacé ; un message que tu avais modifié est gardé.",
+            "LFG : mots-clés du message en anglais (%class%, %level%, %role%, %dungeon%) ; les mots-clés français marchent toujours.",
+        },
+    },
+    {
         version = "0.59.1", date = "15/11/2026",
         fixed = {
             "Halo : en donjon et en combat, le jeu masque le nom de l'objet désigné, et l'addon affichait des erreurs dans le chat (« attempt to perform string conversion on a secret string value »). Le halo reste maintenant simplement éteint dans ce cas.",

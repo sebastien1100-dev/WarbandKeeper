@@ -17,6 +17,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.59.2 — 15/11/2026
+
+### Modifications
+- LFG : les messages envoyés aux autres joueurs sont maintenant en anglais, la langue commune d'un serveur européen (« Hi! Hunter 23, dps, available for … »). L'ancien message par défaut est remplacé ; un message que tu avais modifié est gardé.
+- LFG : mots-clés du message en anglais (%class%, %level%, %role%, %dungeon%) ; les mots-clés français marchent toujours.
+
 ## v0.59.1 — 15/11/2026
 
 ### Corrections

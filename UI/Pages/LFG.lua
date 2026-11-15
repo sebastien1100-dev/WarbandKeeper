@@ -183,7 +183,7 @@ UI:RegisterPage({
         self.msgPreview:SetWordWrap(true)
         local msgHelp = UI:Text(right, 10, C.dim)
         msgHelp:SetPoint("BOTTOMLEFT", 14, 12)
-        msgHelp:SetText("%classe% %niveau% %role% %donjon%")
+        msgHelp:SetText("%class% %level% %role% %dungeon%")
         local reset = UI:Button(right, "Défaut", 60, 20, "ghost")
         reset:SetPoint("BOTTOMRIGHT", -10, 126)
         reset:SetScript("OnClick", function() cfg.message = LFG.DEFAULT_MSG; self.msgBox:SetText(cfg.message); self:Refresh() end)
@@ -514,7 +514,7 @@ UI:RegisterPage({
             ry = ry + 54
         end
         self.noReq:SetShown(#list == 0)
-        local fitName = act or (LFG:Activities(self.category or 0)[1] and T("ton donjon")) or nil
+        local fitName = act or nil
         self.msgPreview:SetText("|cff999999" .. T("Envoyé :") .. "|r " .. LFG:Message(fitName))
     end,
 })
