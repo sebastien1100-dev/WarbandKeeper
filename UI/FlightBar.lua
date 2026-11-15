@@ -49,6 +49,19 @@ local function build()
     f.land:SetPoint("RIGHT", f.map, "LEFT", -6, 0)
     f.land.tooltip = "Se poser au prochain relais."
     f.land:SetScript("OnClick", function() F:LandEarly() end)
+    -- Étapes : un point sur la piste et le nom du relais dessous
+    f.stops = UI:Pool(function()
+        local st = CreateFrame("Frame", nil, f.track)
+        st:SetSize(12, 12)
+        st:SetFrameLevel(f.fillF:GetFrameLevel() + 2)
+        st.dot = UI:Icon(st, "circle", 12, nil, "ARTWORK")
+        st.dot:SetPoint("CENTER")
+        st.hole = UI:Icon(st, "circle", 6, nil, "OVERLAY")
+        st.hole:SetPoint("CENTER")
+        st.label = UI:Text(f, 10, C.muted)
+        st.label:SetJustifyH("CENTER")
+        return st
+    end)
     f.note = UI:Text(f, 10, C.muted)
     f.note:SetPoint("BOTTOMLEFT", 16, 16)
     f.elapsed = 0
@@ -92,6 +105,34 @@ local function build()
             self.markRing:SetPoint("CENTER", self.mark, "CENTER")
         end
         self.land:SetShown(F:CanLandEarly() and not fl.early)
+        -- Étapes : passées en couleur d'accent, à venir creuses ; noms sans se chevaucher
+        self.stops:Reset()
+        for _, st in ipairs(self.stops.items) do st.label:Hide() end
+        local lastX = -1000
+        local stops = fl.stops or {}
+        for _, stop in ipairs(stops) do
+            local st = self.stops:Get()
+            local x = w * stop.frac
+            st:ClearAllPoints()
+            st:SetPoint("CENTER", self.track, "LEFT", x, 0)
+            local passed = p and p >= stop.frac
+            st.dot:SetVertexColor(r, g, b, 1)
+            st.hole:SetVertexColor(unpack(passed and { r, g, b, 1 } or C.bg))
+            st.label:ClearAllPoints()
+            st.label:SetPoint("TOP", self.track, "BOTTOMLEFT", x, -6)
+            st.label:SetText(stop.name)
+            st.label:SetTextColor(unpack(passed and C.dim or C.muted))
+            local lw = st.label:GetStringWidth() or 60
+            st.label:SetShown(x - lw / 2 > lastX + 6)
+            if st.label:IsShown() then lastX = x + lw / 2 end
+        end
+        -- Le prochain relais (pour « Atterrir »)
+        local nextStop
+        for _, stop in ipairs(stops) do if not p or p < stop.frac then nextStop = stop.name break end end
+        if fl.early then self.note:SetText(string.format(T("atterrissage à %s"), nextStop or fl.to)) end
+        self.land.tooltip = nextStop and string.format(T("Se poser à %s."), nextStop) or T("Se poser au prochain relais.")
+        -- Plus haute quand il y a des étapes (leurs noms passent sous la piste)
+        self:SetHeight(#stops > 0 and 108 or 92)
     end
     f:Hide()
     UI:RegisterHUD("flight", f, {
@@ -100,7 +141,8 @@ local function build()
         sample = function(on)
             f.sample = on or nil
             if on then
-                f:Paint({ from = "Astranaar", to = "Auberdine", start = GetTime() - 38, est = 130, learned = true })
+                f:Paint({ from = "Rut'theran", to = "Astranaar", start = GetTime() - 50, est = 182, learned = true,
+                          stops = { { name = "Auberdine", frac = 0.42 } } })
                 f:Show()
             elseif not F:Current() then
                 f:Hide()

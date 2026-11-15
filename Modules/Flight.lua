@@ -51,12 +51,40 @@ function M:Estimate(dist)
     return nil
 end
 
+-- Étapes du trajet (relais intermédiaires) : { { name, frac } }, frac = part de la distance (0-1).
+-- La distance totale suit les relais, plus juste que la ligne droite.
+local function routeStops(cur, index)
+    if not (GetNumRoutes and TaxiGetNodeSlot and cur) then return nil, cur and nodeDist(cur, index) end
+    local hops = GetNumRoutes(index) or 0
+    if hops < 1 then return nil, nodeDist(cur, index) end
+    local slots = { cur }
+    for r = 1, hops do
+        local slot = TaxiGetNodeSlot(index, r, true)
+        if not slot then return nil, nodeDist(cur, index) end
+        table.insert(slots, slot)
+    end
+    local legs, total = {}, 0
+    for i = 2, #slots do
+        local d = nodeDist(slots[i - 1], slots[i]) or 0
+        legs[i] = d
+        total = total + d
+    end
+    local stops, acc = {}, 0
+    for i = 2, #slots - 1 do -- relais entre le départ et l'arrivée
+        acc = acc + legs[i]
+        table.insert(stops, { name = nodeName(slots[i]) or "?", frac = total > 0 and acc / total or (i - 1) / (#slots - 1) })
+    end
+    return stops, total > 0 and total or nodeDist(cur, index)
+end
+M.RouteStops = routeStops -- (pour les tests)
+
 if hooksecurefunc and TakeTaxiNode then
     hooksecurefunc("TakeTaxiNode", function(index)
         local cur = currentNode()
         local from, to = cur and nodeName(cur), nodeName(index)
         if not to then return end
-        pending = { from = from or "?", to = to, dist = cur and nodeDist(cur, index), t = GetTime() }
+        local stops, dist = routeStops(cur, index)
+        pending = { from = from or "?", to = to, dist = dist, stops = stops, t = GetTime() }
     end)
 end
 
@@ -68,7 +96,7 @@ local function onTaxi() return UnitOnTaxi and UnitOnTaxi("player") end
 function M:Start()
     if not pending then return end
     local key = pending.from .. "|" .. pending.to
-    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = pending.dist,
+    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = pending.dist, stops = pending.stops,
                est = db().routes[key] or self:Estimate(pending.dist), learned = db().routes[key] ~= nil }
     pending = nil
     if self.OnStart then self:OnStart(flight) end

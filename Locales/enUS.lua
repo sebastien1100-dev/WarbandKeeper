@@ -764,6 +764,7 @@ WK.Locales.enUS.text = {
     ["Ressusciter"] = "Revive", ["Mort"] = "Dead",
     ["Clic : nourrir · Clic droit : soigner, ou ressusciter s'il est mort"] = "Click: feed · Right-click: mend, or revive if dead",
     ["Soigner (ou ressusciter) le familier"] = "Mend (or revive) pet",
+    ["atterrissage à %s"] = "landing at %s", ["Se poser à %s."] = "Land at %s.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
