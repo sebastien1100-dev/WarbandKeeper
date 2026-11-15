@@ -256,7 +256,7 @@ UI:RegisterPage({
         -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
         local G = WK.modules.Guide
         local gcfg = G:Config()
-        local guide = card("Guidage", 300)
+        local guide = card("Guidage", 318)
         UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
             "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
             toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
@@ -276,20 +276,18 @@ UI:RegisterPage({
         local goButtons = { goLbl }
         for _, it in ipairs({ { "mail", "Boîte aux lettres" }, { "bank", "Banque" }, { "repair", "Réparation" },
                               { "vendor", "Marchand" }, { "trainer", "Maître de classe" } }) do
-            local b = UI:Button(goBar, it[2], nil, 28, "secondary")
+            local b = UI:Button(goBar, it[2], nil, 28, "primary")
             b:SetScript("OnClick", function() G:GoTo(it[1]) end)
             table.insert(goButtons, b)
         end
-        local stop = UI:Button(goBar, "Arrêter", nil, 28, "ghost")
-        stop:SetScript("OnClick", function() G:Stop() end)
-        table.insert(goButtons, stop)
         UI:OnResize(goBar, function(w)
             local x, row = 0, 0
             for _, b in ipairs(goButtons) do
-                local bw = b.GetStringWidth and (b:GetStringWidth() + 6) or b:GetWidth()
+                local isLabel = b == goLbl
+                local bw = isLabel and (goLbl:GetStringWidth() + 6) or b:GetWidth()
                 if x > 0 and x + bw > w then x, row = 0, row + 1 end
                 b:ClearAllPoints()
-                b:SetPoint("TOPLEFT", x, -row * 34 - (b.GetStringWidth and 8 or 0))
+                b:SetPoint("TOPLEFT", x, -row * 34 - (isLabel and 8 or 0))
                 x = x + bw + 6
             end
         end)
