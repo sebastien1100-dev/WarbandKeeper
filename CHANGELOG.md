@@ -18,6 +18,16 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.43.0 — 15/11/2026
+
+### Ajouts
+- Horloge en haut de l'écran : l'heure et deux points de couleur pour les FPS et la latence. Au survol, les raccourcis glissent de chaque côté avec un effet loupe façon dock, et se replient quand la souris s'en va. Clic sur l'heure : calendrier ; infobulle : date, heure du serveur, durée de la session, FPS et latence.
+- Raccourcis au choix, à gauche ou à droite : Warband Keeper, courrier (point doré s'il y a du courrier), pierre de foyer, personnage, grimoire, talents, carte, journal de quêtes, social, métier principal, session de farm (point vert si elle tourne), menu du jeu.
+- Réglages dans QoL > Général > Horloge et raccourcis : heure locale ou du serveur, 24 h ou 12 h, effet loupe (curseur), FPS et latence, et la place de chaque raccourci. Position et taille en mode édition.
+
+### Modifications
+- Nouveau fichier : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.42.0 — 15/11/2026
 
 ### Modifications

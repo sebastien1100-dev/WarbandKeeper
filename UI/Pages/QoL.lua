@@ -362,6 +362,38 @@ UI:RegisterPage({
             toggle(hud, function() return WK.DB.global.settings.ui.hudPerChar end,
                 function(v) WK.DB.global.settings.ui.hudPerChar = v; UI:HUDReapplyAll() end), 80)
 
+        -- Horloge et raccourcis (UI/ClockBar.lua)
+        local ck = UI.ClockConfig()
+        local SC = UI.CLOCK_SHORTCUTS
+        local clockCard = card("Horloge et raccourcis", 40 + 5 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local cy = -40
+        local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
+        local function csync() UI:SyncClock() end
+        crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
+            toggle(clockCard, function() return ck.enabled end, function(v) ck.enabled = v; csync() end), 80)
+        local segSrv = UI:Segmented(clockCard, { { false, "Locale" }, { true, "Serveur" } }, function(v) ck.server = v end, 26)
+        segSrv:Select(ck.server and true or false)
+        crow("Heure", nil, segSrv, 200)
+        local segFmt = UI:Segmented(clockCard, { { false, "24 h" }, { true, "12 h" } }, function(v) ck.h12 = v end, 26)
+        segFmt:Select(ck.h12 and true or false)
+        crow("Format", nil, segFmt, 160)
+        crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
+            UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
+                function(v) ck.magnify = v / 100 end, "%d %%"), 240)
+        crow("FPS et latence", "Deux points de couleur à côté de l'heure (vert, orange, rouge).",
+            toggle(clockCard, function() return ck.stats end, function(v) ck.stats = v end), 80)
+        local hdr = UI:Text(clockCard, 10, C.dim)
+        hdr:SetPoint("TOPLEFT", 16, cy - 6)
+        hdr:SetText("RACCOURCIS")
+        cy = cy - 30
+        for _, def in ipairs(SC) do
+            local sg = UI:Segmented(clockCard, { { "", "Masqué" }, { "L", "Gauche" }, { "R", "Droite" } },
+                function(v) ck.side[def.key] = (v ~= "" and v) or nil; csync() end, 24)
+            sg:Select(ck.side[def.key] or "")
+            UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
+            cy = cy - 38
+        end
+
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)
