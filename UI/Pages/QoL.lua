@@ -236,6 +236,50 @@ UI:RegisterPage({
             end):SetPoint("TOPRIGHT", -16, ry - 2)
         end
 
+        -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
+        local G = WK.modules.Guide
+        local gcfg = G:Config()
+        local guide = card("Guidage", 300)
+        UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
+            "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
+            toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
+        UI:SettingRow(guide, -96, "Flèche à l'écran", "Déplaçable ; clic droit ou croix pour arrêter.",
+            toggle(guide, function() return gcfg.arrow end, function(v) gcfg.arrow = v; if G.OnTarget then G:OnTarget() end end), 80)
+        UI:SettingRow(guide, -144, "Repère sur la carte du monde", nil,
+            toggle(guide, function() return gcfg.mapPin end, function(v) gcfg.mapPin = v; if G.Redraw then G:Redraw() end end), 80)
+        UI:SettingRow(guide, -186, "Maître de classe à chaque niveau pair", "Nouveaux sorts tous les deux niveaux : guidage vers le maître de ta classe le plus proche.",
+            toggle(guide, function() return gcfg.trainerOnLevel end, function(v) gcfg.trainerOnLevel = v end), 80)
+        -- Boutons « le plus proche » : passent à la ligne si la fenêtre est étroite (2 lignes prévues).
+        local goBar = CreateFrame("Frame", nil, guide)
+        goBar:SetPoint("BOTTOMLEFT", 16, 12)
+        goBar:SetPoint("BOTTOMRIGHT", -12, 12)
+        goBar:SetHeight(62)
+        local goLbl = UI:Text(goBar, 11, C.muted)
+        goLbl:SetText("Le plus proche :")
+        local goButtons = { goLbl }
+        for _, it in ipairs({ { "mail", "Boîte aux lettres" }, { "bank", "Banque" }, { "repair", "Réparation" },
+                              { "vendor", "Marchand" }, { "trainer", "Maître de classe" } }) do
+            local b = UI:Button(goBar, it[2], nil, 28, "secondary")
+            b:SetScript("OnClick", function() G:GoTo(it[1]) end)
+            table.insert(goButtons, b)
+        end
+        local stop = UI:Button(goBar, "Arrêter", nil, 28, "ghost")
+        stop:SetScript("OnClick", function() G:Stop() end)
+        table.insert(goButtons, stop)
+        UI:OnResize(goBar, function(w)
+            local x, row = 0, 0
+            for _, b in ipairs(goButtons) do
+                local bw = b.GetStringWidth and (b:GetStringWidth() + 6) or b:GetWidth()
+                if x > 0 and x + bw > w then x, row = 0, row + 1 end
+                b:ClearAllPoints()
+                b:SetPoint("TOPLEFT", x, -row * 34 - (b.GetStringWidth and 8 or 0))
+                x = x + bw + 6
+            end
+        end)
+        dynText(guide, 10, C.dim, function()
+            return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
+        end):SetPoint("TOPRIGHT", -16, -16)
+
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)

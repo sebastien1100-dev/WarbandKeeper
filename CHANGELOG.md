@@ -17,6 +17,18 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.31.0 — 15/11/2026
+
+### Ajouts
+- Guidage vers le lieu utile le plus proche : boîte aux lettres, banque, réparation, marchand, munitions, composants de classe et maître de classe. Une flèche à l'écran (déplaçable, clic droit pour arrêter) indique la direction et la distance, et un repère s'affiche sur la carte du monde.
+- Les alertes de QoL guident d'elles-mêmes : sacs presque pleins (boîte aux lettres, banque ou marchand le plus proche), équipement à réparer, composants ou munitions bas (marchand qui les vend). Hors combat et hors donjon, une fois toutes les 10 minutes par sujet.
+- Maître de classe : à chaque niveau pair (nouveaux sorts), guidage vers le maître de ta classe le plus proche.
+- QoL > Général > Guidage : réglages, boutons « le plus proche » et commande /wk guide (boite, banque, reparer, marchand, maitre, munitions, stop).
+- Les lieux viennent de la base de données de Questie pour WoW Forever (QuestieDB, licence GPLv3), avec les noms français des PNJ : rien à apprendre, tout est connu dès le départ. Les marchands saisonniers (fêtes, foire) sont écartés.
+
+### Modifications
+- Nouveaux fichiers et nouvelle texture : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.30.1 — 15/11/2026
 
 ### Ajouts

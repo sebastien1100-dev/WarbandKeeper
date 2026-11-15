@@ -304,10 +304,18 @@ def icon_spark():
     save(img, "spark", 64)
 
 
+def icon_guide():
+    """Flèche de guidage pleine, pointe vers le haut (tournée en jeu avec SetRotation)."""
+    img, d, s = canvas(128)
+    pts = [(0.5, 0.06), (0.86, 0.84), (0.5, 0.66), (0.14, 0.84)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in pts], fill=W)
+    save(img, "guide", 128)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, fx_halo, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, fx_halo, fx_ring]:
         fn()
     print("OK")

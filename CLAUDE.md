@@ -50,3 +50,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Qualité de vie (QoL)
 
 `Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (colonne Général + 9 classes). Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
+
+## Lieux et guidage
+
+`Modules/PlacesDB.lua` est **généré** par `python3 tools/gen_places.py <clone de QuestieDB>` (`git clone --depth 1 https://github.com/Questie/QuestieDB`) : boîtes aux lettres, banquiers, marchands (munitions, composants, poisons…) et maîtres de classe de WoW Forever, avec noms français. Données Questie (GPLv3 selon son équipe) : garder la mention dans l'en-tête du fichier généré et dans Options > À propos. `Modules/Guide.lua` cherche le lieu le plus proche et gère la cible ; `UI/GuideArrow.lua` dessine la flèche, `UI/MapPins.lua` le repère sur la carte.
