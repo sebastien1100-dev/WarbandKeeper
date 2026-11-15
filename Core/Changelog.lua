@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.59.3", date = "15/11/2026",
+        changed = {
+            "LFG : dans les messages envoyés, le nom du donjon est maintenant en anglais (« The Stockade » au lieu de « Prison de Stormwind »). Tous les donjons et raids de WoW Forever sont reconnus, ailes du Monastère écarlate et de Hache-tripes comprises ; un nom inconnu reste tel quel.",
+        },
+    },
+    {
         version = "0.59.2", date = "15/11/2026",
         changed = {
             "LFG : les messages envoyés aux autres joueurs sont maintenant en anglais, la langue commune d'un serveur européen (« Hi! Hunter 23, dps, available for … »). L'ancien message par défaut est remplacé ; un message que tu avais modifié est gardé.",

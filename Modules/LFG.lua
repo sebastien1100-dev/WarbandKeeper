@@ -198,6 +198,60 @@ end
 local ROLE_WORD = { tank = "tank", heal = "soin", dps = "dégâts" }
 M.ROLE_WORD = ROLE_WORD
 
+-- Nom anglais d'un donjon ou d'un raid, pour les messages. Le jeu ne donne que le nom traduit, et
+-- WoW Forever mélange parfois les deux (« Prison de Stormwind ») : reconnaissance par mots-clés,
+-- dans l'ordre (le premier trouvé l'emporte). Un nom inconnu (ou déjà anglais) reste tel quel.
+local DUNGEON_EN = {
+    { "ragefeu", "Ragefire Chasm" }, { "ragefire", "Ragefire Chasm" },
+    { "lamentations", "Wailing Caverns" },
+    { "mortemines", "The Deadmines" },
+    { "ombrecroc", "Shadowfang Keep" },
+    { "brassenoire", "Blackfathom Deeps" },
+    { "prison", "The Stockade" },
+    { "gnomeregan", "Gnomeregan" },
+    { "kraal", "Razorfen Kraul" },
+    { "souilles", "Razorfen Downs" },
+    { "cimetiere", "Scarlet Monastery Graveyard" }, { "bibliotheque", "Scarlet Monastery Library" },
+    { "armurerie", "Scarlet Monastery Armory" }, { "cathedrale", "Scarlet Monastery Cathedral" },
+    { "monastere", "Scarlet Monastery" },
+    { "uldaman", "Uldaman" },
+    { "zul'farrak", "Zul'Farrak" }, { "zulfarrak", "Zul'Farrak" },
+    { "maraudon", "Maraudon" },
+    { "atal", "Sunken Temple" }, { "englouti", "Sunken Temple" },
+    { "profondeurs de rochenoire", "Blackrock Depths" }, { "profondeurs de blackrock", "Blackrock Depths" },
+    { "inferieur", "Lower Blackrock Spire" }, { "bas du pic", "Lower Blackrock Spire" },
+    { "superieur", "Upper Blackrock Spire" }, { "haut du pic", "Upper Blackrock Spire" },
+    { "pic de rochenoire", "Blackrock Spire" }, { "pic blackrock", "Blackrock Spire" },
+    { "hache-tripes", "Dire Maul", wing = true }, { "dire maul", "Dire Maul", wing = true },
+    { "stratholme", "Stratholme" },
+    { "scholomance", "Scholomance" },
+    { "coeur du magma", "Molten Core" },
+    { "onyxia", "Onyxia's Lair" },
+    { "aile noire", "Blackwing Lair" },
+    { "zul'gurub", "Zul'Gurub" }, { "zulgurub", "Zul'Gurub" },
+    { "ruines d'ahn", "Ruins of Ahn'Qiraj" }, { "temple d'ahn", "Temple of Ahn'Qiraj" },
+    { "naxxramas", "Naxxramas" },
+}
+local ACCENTS = { ["é"] = "e", ["è"] = "e", ["ê"] = "e", ["ë"] = "e", ["à"] = "a", ["â"] = "a", ["î"] = "i", ["ï"] = "i",
+                  ["ô"] = "o", ["û"] = "u", ["ù"] = "u", ["ç"] = "c", ["œ"] = "oe", ["É"] = "e", ["Œ"] = "oe" }
+function M.EnglishName(name)
+    if not name or name == "" then return name end
+    local low = string.lower(name)
+    for k, v in pairs(ACCENTS) do low = low:gsub(k, v) end
+    for _, e in ipairs(DUNGEON_EN) do
+        if string.find(low, e[1], 1, true) then
+            if e.wing then -- Hache-tripes : l'aile, quel que soit le séparateur
+                local rest = " " .. low:gsub("[^%a]", " ") .. " "
+                if rest:find(" ouest ") or rest:find(" west ") then return e[2] .. " West" end
+                if rest:find(" est ") or rest:find(" east ") then return e[2] .. " East" end
+                if rest:find(" nord ") or rest:find(" north ") then return e[2] .. " North" end
+            end
+            return e[2]
+        end
+    end
+    return name
+end
+
 function M:Message(activityName, role)
     local cfg = self:Config()
     local me = WK.DB:Me()
@@ -206,6 +260,7 @@ function M:Message(activityName, role)
     if role then roles = { ROLE_EN[role] }
     else for _, k in ipairs({ "tank", "heal", "dps" }) do if cfg.roles[k] then table.insert(roles, ROLE_EN[k]) end end end
     local level = tostring(UnitLevel("player") or "")
+    activityName = M.EnglishName(activityName)
     local msg = cfg.message or DEFAULT_MSG
     msg = msg:gsub("%%class%%", class):gsub("%%classe%%", class)
     msg = msg:gsub("%%level%%", level):gsub("%%niveau%%", level)
@@ -233,7 +288,7 @@ function M:Invite(r)
     if not r.leader then return end
     local f = (C_PartyInfo and C_PartyInfo.InviteUnit) or InviteUnit
     if f then pcall(f, r.leader) end
-    whisper(r.leader, string.format("Hi! Want to join us for %s?", self:Activity(r.activity) or "a group"))
+    whisper(r.leader, string.format("Hi! Want to join us for %s?", M.EnglishName(self:Activity(r.activity)) or "a group"))
     self.requests[r.leader] = { t = time(), activity = self:Activity(r.activity), state = "invited" }
     WK:NotifyChanged()
 end
