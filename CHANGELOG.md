@@ -18,6 +18,16 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.52.0 — 15/11/2026
+
+### Ajouts
+- Indicateur de distance : la vraie fourchette de distance de la cible s'affiche (par exemple « 20-25 m ») à la place du « 8-35 m » fixe, grâce à la bibliothèque LibRangeCheck-3.0.
+- Indicateur de distance : état « ? » quand le jeu ne donne pas la distance, au lieu d'afficher « trop loin » à tort.
+
+### Modifications
+- Indicateur de distance : la zone morte (plus au corps à corps, pas encore à portée de tir) est calculée d'après la distance estimée, entre 5 et 8 m.
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.51.3 — 15/11/2026
 
 ### Ajouts

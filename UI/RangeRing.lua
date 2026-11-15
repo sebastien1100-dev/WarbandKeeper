@@ -51,21 +51,41 @@ local function spellInRange(id)
     return nil
 end
 
--- État de la cible : "none", "melee", "dead", "ranged", "far"
-function UI:RangeState()
-    if not UnitExists("target") or UnitIsDead("target") or not UnitCanAttack("player", "target") then return "none" end
-    local melee = swingRange(SWING.MainHand)
-    if melee then return "melee" end
-    local ranged = swingRange(SWING.Ranged)
-    if ranged == nil then ranged = spellInRange(AUTO_SHOT) end
-    if ranged then return "ranged" end
-    -- hors de portée de tir : trop près (zone morte) ou trop loin ?
-    local ok, close = pcall(CheckInteractDistance, "target", 3)
-    if ok and readable(close) then return "dead" end
-    return "far"
+-- Fourchette de distance estimée (bibliothèque LibRangeCheck-3.0, licence MIT) : elle teste la
+-- portée de sorts et d'objets connus et rend « entre min et max ». nil si elle ne sait pas.
+local rc = LibStub and LibStub("LibRangeCheck-3.0", true)
+local function estimate()
+    if not rc then return nil end
+    local ok, a, b = pcall(rc.GetRange, rc, "target")
+    if not ok then return nil end
+    a, b = readable(a), readable(b)
+    return type(a) == "number" and a or nil, type(b) == "number" and b or nil
 end
 
-local LABEL = { melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
+-- État de la cible : "none", "melee", "dead", "ranged", "far", "unknown" ; puis la fourchette.
+function UI:RangeState()
+    if not UnitExists("target") or UnitIsDead("target") or not UnitCanAttack("player", "target") then return "none" end
+    local minR, maxR = estimate()
+    local melee = swingRange(SWING.MainHand)
+    if melee == nil and maxR then melee = maxR <= 5 end -- pas de test de mêlée : d'après la distance
+    local ranged = swingRange(SWING.Ranged)
+    if ranged == nil then ranged = spellInRange(AUTO_SHOT) end
+    if melee then return "melee", minR, maxR end
+    if ranged then return "ranged", minR, maxR end
+    -- zone morte : plus au corps à corps, pas encore à portée de tir (entre 5 et 8 m)
+    if (maxR and maxR <= 8) or (minR and minR < 8 and ranged == false) then return "dead", minR, maxR end
+    if ranged == false then
+        if not minR then -- sans estimation : le test de proximité du jeu (moins de 10 m)
+            local ok, close = pcall(CheckInteractDistance, "target", 3)
+            if ok and readable(close) then return "dead" end
+        end
+        return "far", minR, maxR
+    end
+    if minR and minR >= 35 then return "far", minR, maxR end
+    return "unknown", minR, maxR
+end
+
+local LABEL = { unknown = "?", melee = "cac", dead = "5-8 m", ranged = "8-35 m", far = "35+ m" }
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperRange", UIParent)
@@ -93,7 +113,7 @@ local function build()
         if s.sample then return end
         s:Paint(UI:RangeState())
     end)
-    function f:Paint(state)
+    function f:Paint(state, minR, maxR)
         local o = cfg()
         if state == "dead" and not o.deadZone then state = "melee" end
         -- Sans cible : anneau beige en pointillés avec un viseur au centre, sans texte
@@ -108,7 +128,12 @@ local function build()
         self.cross:SetShown(none)
         self.cross:SetVertexColor(col[1], col[2], col[3], 1)
         self.text:SetFont(UI.FONT, 10, "OUTLINE")
-        self.text:SetText((o.numbers and not none) and T(LABEL[state]) or "")
+        -- la vraie fourchette quand elle est connue, sinon le libellé de la zone
+        local label = T(LABEL[state] or "?")
+        if minR and (state == "ranged" or state == "far" or state == "unknown") then
+            label = maxR and string.format("%d-%d m", minR, maxR) or string.format("%d+ m", minR)
+        end
+        self.text:SetText((o.numbers and not none) and label or "")
         local hide = (o.combatOnly and not (InCombatLockdown and InCombatLockdown()) and not self.sample)
             or (o.hideNoTarget and state == "none" and not self.sample)
         self:SetAlpha(hide and 0 or (UI:HUDEntry("range").alpha or 1))

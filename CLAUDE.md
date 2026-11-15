@@ -54,3 +54,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Lieux et guidage
 
 `Modules/PlacesDB.lua` est **généré** par `python3 tools/gen_places.py <clone de QuestieDB>` (`git clone --depth 1 https://github.com/Questie/QuestieDB`) : boîtes aux lettres, banquiers, marchands (munitions, composants, poisons…) et maîtres de classe de WoW Forever, avec noms français. Données Questie (GPLv3 selon son équipe) : garder la mention dans l'en-tête du fichier généré et dans Options > À propos. `Modules/Guide.lua` cherche le lieu le plus proche et gère la cible ; `UI/GuideArrow.lua` dessine la flèche, `UI/MapPins.lua` le repère sur la carte.
+
+## Bibliothèques
+
+`Libs/` contient du code tiers, à ne pas modifier : LibStub (domaine public) et LibRangeCheck-3.0 (licence MIT, github.com/WeakAuras/LibRangeCheck-3.0), qui donne la fourchette de distance de la cible à `UI/RangeRing.lua`. Garder le fichier `LICENSE` de la bibliothèque et la mention dans Options > À propos.

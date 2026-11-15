@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.52.0", date = "15/11/2026",
+        added = {
+            "Indicateur de distance : la vraie fourchette de distance de la cible s'affiche (par exemple « 20-25 m ») à la place du « 8-35 m » fixe, grâce à la bibliothèque LibRangeCheck-3.0.",
+            "Indicateur de distance : état « ? » quand le jeu ne donne pas la distance, au lieu d'afficher « trop loin » à tort.",
+        },
+        changed = {
+            "Indicateur de distance : la zone morte (plus au corps à corps, pas encore à portée de tir) est calculée d'après la distance estimée, entre 5 et 8 m.",
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.51.3", date = "15/11/2026",
         fixed = {
             "Halo : beaucoup d'objets de quête n'étaient pas reconnus, donc pas éclairés. L'objet est maintenant reconnu par son nom dans les objectifs de tes quêtes, et par le curseur que le jeu lui donne (pioche, fleur, quête, main).",
