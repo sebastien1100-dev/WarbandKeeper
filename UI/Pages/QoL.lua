@@ -917,18 +917,22 @@ UI:RegisterPage({
 
                 -- Indicateur de distance (UI/RangeRing.lua)
                 local rg = UI.RangeConfig()
-                local rcard = card("Indicateur de distance", 40 + 5 * 46 + 8, "position et taille en mode édition")
+                local rcard = card("Indicateur de distance", 40 + 7 * 46 + 8, "position et taille en mode édition")
                 local ry = -40
                 local function rrow(label, desc, field, after)
                     UI:SettingRow(rcard, ry, label, desc, toggle(rcard, function() return rg[field] end,
                         function(v) rg[field] = v; if after then after() end end), 80)
                     ry = ry - 46
                 end
-                rrow("Afficher l'anneau", "Vert : à portée de tir · orange : corps à corps · rouge : trop loin · gris : pas de cible.", "enabled", function() UI:SyncRange() end)
+                rrow("Afficher la règle", "Orange : corps à corps · jaune : zone morte · vert : à portée de tir · rouge : trop loin. Un curseur blanc montre la distance.", "enabled", function() UI:SyncRange() end)
+                UI:SettingRow(rcard, ry, "Largeur", "Pour l'aligner sur une barre de vie.",
+                    UI:Slider(rcard, 220, 90, 320, 5, function() return rg.width or 150 end, function(v) rg.width = v end, "%d px"), 240)
+                ry = ry - 46
+                rrow("Texte au-dessus", "La zone et la fourchette estimée, par exemple « À portée · 22-25 m ».", "numbers")
+                rrow("Fond sombre", nil, "backdrop")
                 rrow("Seulement en combat", nil, "combatOnly")
-                rrow("Masquer sans cible", "Sinon, anneau beige en pointillés avec un viseur.", "hideNoTarget")
+                rrow("Masquer sans cible", "Sinon, la règle reste affichée, estompée.", "hideNoTarget")
                 rrow("Zone morte en jaune", "Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange).", "deadZone")
-                rrow("Distance au centre", "Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m.", "numbers")
 
                 -- Bouton d'aspect (UI/AspectButton.lua)
                 local ab = UI.AspectButtonConfig()

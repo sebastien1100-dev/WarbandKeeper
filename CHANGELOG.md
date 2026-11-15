@@ -18,6 +18,15 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.54.0 — 15/11/2026
+
+### Ajouts
+- Indicateur de distance : réglage « Largeur » pour l'aligner sur une barre de vie, et options « Texte au-dessus » et « Fond sombre ».
+
+### Modifications
+- Indicateur de distance : l'anneau est remplacé par une règle compacte. Quatre zones en couleur (corps à corps, zone morte, tir, trop loin), un curseur blanc à la distance de la cible, et au-dessus la zone avec la fourchette estimée (« À portée · 22-25 m »).
+- Indicateur de distance : sans cible, la règle reste affichée en estompé (ou masquée, selon l'option).
+
 ## v0.53.0 — 15/11/2026
 
 ### Ajouts

@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.54.0", date = "15/11/2026",
+        changed = {
+            "Indicateur de distance : l'anneau est remplacé par une règle compacte. Quatre zones en couleur (corps à corps, zone morte, tir, trop loin), un curseur blanc à la distance de la cible, et au-dessus la zone avec la fourchette estimée (« À portée · 22-25 m »).",
+            "Indicateur de distance : sans cible, la règle reste affichée en estompé (ou masquée, selon l'option).",
+        },
+        added = {
+            "Indicateur de distance : réglage « Largeur » pour l'aligner sur une barre de vie, et options « Texte au-dessus » et « Fond sombre ».",
+        },
+    },
+    {
         version = "0.53.0", date = "15/11/2026",
         added = {
             "Halo : choix de l'effet (QoL > Halo > Effet) : halo, colonne de lumière au-dessus de l'objet, ou les deux. La colonne prend la couleur de la catégorie et s'avive à portée.",
