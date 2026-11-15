@@ -15,9 +15,19 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
-- Carte du familier (chasseur) : portrait, humeur, vie et nourriture prévue ; clic gauche pour nourrir, clic droit pour Guérison du familier, avec raccourci clavier.
+- Carte du familier (chasseur), modèle B sans portrait : vie, humeur, nourriture prévue, boutons Nourrir et Soigner, avec réglages de taille et d'affichage (en attente du choix des réglages).
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
+
+## v0.39.0 — 15/11/2026
+
+### Ajouts
+- Barre de vol : au départ d'un vol, « Départ › Arrivée », temps restant en grand, piste avec un griffon qui avance, et boutons « Atterrir » (se poser au prochain relais, si le jeu le permet), « Carte » et fermer.
+- Durée des vols apprise au premier vol complet de chaque trajet, partagée entre tes persos ; avant ça, estimée d'après la distance (ou temps écoulé au tout premier vol).
+- Réglage dans QoL > Général > Confort ; la barre se place et se redimensionne en mode édition.
+
+### Modifications
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.38.1 — 15/11/2026
 

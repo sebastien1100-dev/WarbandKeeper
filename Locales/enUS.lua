@@ -741,6 +741,11 @@ WK.Locales.enUS.text = {
     ["Disposition propre à chaque perso"] = "Layout per character", ["Sinon, la même pour tout le compte."] = "Otherwise, the same for the whole account.",
     ["Maître des écuries"] = "Stable master",
     ["Guide vers le maître des écuries le plus proche (aussi : /wk guide ecurie)."] = "Guides you to the nearest stable master (also: /wk guide stable).",
+    ["Atterrissage demandé au prochain relais."] = "Landing requested at the next flight point.",
+    ["Carte"] = "Map", ["Atterrir"] = "Land", ["Se poser au prochain relais."] = "Land at the next flight point.",
+    ["durée estimée"] = "estimated duration", ["premier vol : durée apprise à l'arrivée"] = "first flight: duration learned on arrival",
+    ["atterrissage au prochain relais"] = "landing at the next flight point", ["Barre de vol"] = "Flight bar",
+    ["Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition."] = "Route, time left and \"Land\" button during a flight. Placed in edit mode.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
