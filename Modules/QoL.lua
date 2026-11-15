@@ -109,7 +109,7 @@ local GENERAL_DEFAULTS = {
 }
 local CLASS_DEFAULTS = {
     alerts = true,
-    ammo = { min = 400, buy = 2000, auto = false },
+    ammo = { min = 400, buy = 2000, auto = false, minMinutes = 0 },
     -- Chasseur
     petAlert = true, petButton = true,
     remAspect = true, remCheetah = true, remGrowl = true, remTrack = false,
@@ -134,7 +134,7 @@ function M:Config()
         local c = q.classes[cl[1]] or {}
         q.classes[cl[1]] = c
         for k, v in pairs(CLASS_DEFAULTS) do
-            if c[k] == nil then c[k] = type(v) == "table" and { min = v.min, buy = v.buy, auto = v.auto } or v end
+            if c[k] == nil then c[k] = type(v) == "table" and { min = v.min, buy = v.buy, auto = v.auto, minMinutes = v.minMinutes } or v end
         end
         c.reag = c.reag or {}
         for _, r in ipairs(M.REAGENTS[cl[1]] or {}) do
@@ -238,9 +238,18 @@ function M:Alerts()
                 end
             end
             -- Munitions
-            if M.AMMO[c.class] and c.ammo and c.ammo.id and (cc.ammo.min or 0) > 0 and (c.ammo.n or 0) < cc.ammo.min then
-                table.insert(out, { key = key, c = c, kind = "ammo", class = c.class, urgent = (c.ammo.n or 0) == 0,
-                    text = string.format(T("%s : munitions basses (%d)"), name, c.ammo.n or 0) })
+            -- Seuil en nombre, ou en minutes de tir (d'après la vitesse de tir du perso)
+            if M.AMMO[c.class] and c.ammo and c.ammo.id then
+                local n = c.ammo.n or 0
+                local mins = c.ammo.speed and (n * c.ammo.speed / 60) or nil
+                local low = ((cc.ammo.min or 0) > 0 and n < cc.ammo.min)
+                    or ((cc.ammo.minMinutes or 0) > 0 and mins ~= nil and mins < cc.ammo.minMinutes)
+                if low then
+                    local txt = mins and (mins >= 1 and string.format(T("%s : munitions basses (%d, ~%d min de tir)"), name, n, math.floor(mins))
+                        or string.format(T("%s : munitions basses (%d, moins d'une minute de tir)"), name, n))
+                        or string.format(T("%s : munitions basses (%d)"), name, n)
+                    table.insert(out, { key = key, c = c, kind = "ammo", class = c.class, urgent = n == 0 or (mins ~= nil and mins < 1), text = txt })
+                end
             end
             -- Familier pas heureux (perso connecté seulement : l'état change vite)
             if c.class == "HUNTER" and key == me and cc.petAlert and c.pet and c.pet.happy and c.pet.happy < 3

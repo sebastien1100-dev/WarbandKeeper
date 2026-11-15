@@ -717,6 +717,11 @@ WK.Locales.enUS.text = {
     ["Tout de suite, même en combat : tu vas être hébété."] = "Right away, even in combat: you will be dazed.",
     ["Grondement du familier"] = "Pet's Growl", ["Désactivé en donjon et raid, activé en solo."] = "Off in dungeons and raids, on while solo.",
     ["Pistage en champ de bataille"] = "Tracking in battlegrounds", ["Pister les humanoïdes."] = "Track Humanoids.",
+    ["%s : munitions basses (%d, ~%d min de tir)"] = "%s: ammo low (%d, ~%d min of shooting)",
+    ["%s : munitions basses (%d, moins d'une minute de tir)"] = "%s: ammo low (%d, less than a minute of shooting)",
+    ["Type de munitions équipé, compté dans les sacs (0 : pas d'alerte au nombre)."] = "Equipped ammo type, counted in your bags (0: no count alert).",
+    ["Ou en minutes de tir"] = "Or in minutes of shooting",
+    ["Alerte quand il reste moins de ce temps de tir, d'après ta vitesse de tir (0 : pas d'alerte en minutes)."] = "Alert when less shooting time than this is left, from your shooting speed (0: no minutes alert).",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

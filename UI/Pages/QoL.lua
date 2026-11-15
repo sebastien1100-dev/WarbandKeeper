@@ -483,16 +483,18 @@ UI:RegisterPage({
 
             -- Munitions
             if QoL.AMMO[class] then
-                local am = card("Munitions", 140, class == "HUNTER" and nil or "si tu tires à l'arc, au fusil ou à l'arbalète")
-                UI:SettingRow(am, -40, "Alerte quand il en reste peu", "Type de munitions équipé, compté dans les sacs.",
+                local am = card("Munitions", 186, class == "HUNTER" and nil or "si tu tires à l'arc, au fusil ou à l'arbalète")
+                UI:SettingRow(am, -40, "Alerte quand il en reste peu", "Type de munitions équipé, compté dans les sacs (0 : pas d'alerte au nombre).",
                     UI:Slider(am, 240, 0, 2000, 100, function() return cc.ammo.min or 0 end, function(v) cc.ammo.min = v; WK:NotifyChanged() end, "%d"), 260)
+                UI:SettingRow(am, -88, "Ou en minutes de tir", "Alerte quand il reste moins de ce temps de tir, d'après ta vitesse de tir (0 : pas d'alerte en minutes).",
+                    UI:Slider(am, 240, 0, 30, 1, function() return cc.ammo.minMinutes or 0 end, function(v) cc.ammo.minMinutes = v; WK:NotifyChanged() end, "%d min"), 260)
                 local ctl = CreateFrame("Frame", nil, am)
                 ctl:SetSize(320, 22)
                 local sl = UI:Slider(ctl, 260, 200, 4000, 200, function() return cc.ammo.buy or 2000 end, function(v) cc.ammo.buy = v end, "%d")
                 sl:SetPoint("LEFT")
                 local tg = toggle(ctl, function() return cc.ammo.auto end, function(v) cc.ammo.auto = v end)
                 tg:SetPoint("RIGHT")
-                UI:SettingRow(am, -88, "Achat automatique chez le marchand", "Complète jusqu'à cette quantité avec la meilleure munition vendue pour ton arme et ton niveau.", ctl, 320)
+                UI:SettingRow(am, -136, "Achat automatique chez le marchand", "Complète jusqu'à cette quantité avec la meilleure munition vendue pour ton arme et ton niveau.", ctl, 320)
             end
 
             -- Aides propres à la classe
