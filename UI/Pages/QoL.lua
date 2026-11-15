@@ -353,6 +353,15 @@ UI:RegisterPage({
             return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
         end):SetPoint("TOPRIGHT", -16, -16)
 
+        -- Disposition des éléments à l'écran (UI/EditMode.lua)
+        local hud = card("Disposition à l'écran", 136)
+        local editBtn = UI:Button(hud, "Mode édition", nil, 30, "primary")
+        UI:SettingRow(hud, -40, "Placer et redimensionner", "Pile d'alertes, bouton du familier, flèche de guidage… Aussi avec /wk edit.", editBtn, 160)
+        editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
+        UI:SettingRow(hud, -88, "Disposition propre à chaque perso", "Sinon, la même pour tout le compte.",
+            toggle(hud, function() return WK.DB.global.settings.ui.hudPerChar end,
+                function(v) WK.DB.global.settings.ui.hudPerChar = v; UI:HUDReapplyAll() end), 80)
+
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)

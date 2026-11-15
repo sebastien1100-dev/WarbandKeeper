@@ -135,10 +135,6 @@ end
 local petBtn
 local VISIBILITY = "[dead][mounted] hide; [@pet,dead] show; [nopet] show; hide"
 
-local function savePetPos()
-    local p, _, _, x, y = petBtn:GetPoint(1)
-    cfg().petButtonPos = { p, x, y }
-end
 
 function M:BuildPetButton()
     if petBtn or not CreateFrame or (InCombatLockdown and InCombatLockdown()) then return end
@@ -146,8 +142,6 @@ function M:BuildPetButton()
     local C = UI.colors
     petBtn = CreateFrame("Button", "WarbandKeeperPetButton", UIParent, "SecureActionButtonTemplate")
     petBtn:SetSize(54, 54)
-    local pos = cfg().petButtonPos
-    if pos then petBtn:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3]) else petBtn:SetPoint("CENTER", 0, -180) end
     petBtn:SetFrameStrata("MEDIUM")
     petBtn:SetClampedToScreen(true)
     if petBtn.RegisterForClicks then petBtn:RegisterForClicks("AnyUp", "AnyDown") end
@@ -181,7 +175,7 @@ function M:BuildPetButton()
     petBtn:SetMovable(true)
     petBtn:RegisterForDrag("LeftButton")
     petBtn:SetScript("OnDragStart", function(s) if IsShiftKeyDown() and not InCombatLockdown() then s:StartMoving() end end)
-    petBtn:SetScript("OnDragStop", function(s) s:StopMovingOrSizing(); savePetPos() end)
+    petBtn:SetScript("OnDragStop", function(s) s:StopMovingOrSizing(); WK.UI:HUDCapture("petButton") end)
     petBtn:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_TOP")
         GameTooltip:SetText(T("Familier"), 1, 1, 1)
@@ -193,6 +187,24 @@ function M:BuildPetButton()
     petBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
     if RegisterStateDriver then RegisterStateDriver(petBtn, "visibility", VISIBILITY) end
     self:PaintPetButton()
+    WK.UI:RegisterHUD("petButton", petBtn, {
+        label = T("Bouton du familier"), protected = true, default = { 0, -180 },
+        legacy = function()
+            local pos = cfg().petButtonPos -- position des versions précédentes
+            if not pos then return false end
+            petBtn:ClearAllPoints()
+            petBtn:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3])
+            return true
+        end,
+        -- Le bouton n'apparaît que sans familier : en mode édition, un rond le représente.
+        preview = function(box)
+            local t = box:CreateTexture(nil, "ARTWORK")
+            t:SetTexture(WK.UI.MEDIA .. "circle")
+            t:SetPoint("TOPLEFT", 4, -4)
+            t:SetPoint("BOTTOMRIGHT", -4, 4)
+            t:SetVertexColor(WK.UI.colors.warning[1], WK.UI.colors.warning[2], WK.UI.colors.warning[3], 0.5)
+        end,
+    })
 end
 
 -- Texte et couleurs (non protégés : se mettent à jour même en combat).

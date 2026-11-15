@@ -2,7 +2,7 @@
 ## Title: Warband Keeper
 ## Notes: Gestion de compte : sacs, banques, métiers, or, temps de jeu, statistiques et envoi automatique du farm par courrier.
 ## Author: sebastien1100-dev
-## Version: 0.37.0
+## Version: 0.38.0
 ## IconTexture: Interface\Icons\INV_Misc_Bag_10
 ## AddonCompartmentFunc: WarbandKeeper_OnAddonCompartmentClick
 ## OptionalDeps: Auctionator
@@ -60,6 +60,7 @@ UI\Pages\QoL.lua
 UI\Pages\Notes.lua
 UI\Pages\Options.lua
 UI\MinimapButton.lua
+UI\EditMode.lua
 UI\MapPins.lua
 UI\GuideArrow.lua
 UI\AlertStack.lua

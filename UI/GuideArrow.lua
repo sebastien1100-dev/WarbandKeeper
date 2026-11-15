@@ -6,23 +6,18 @@ local T = function(s) return WK.T(s) end
 -- Flèche de guidage (Modules/Guide.lua) : petit cadre déplaçable en haut de l'écran, flèche
 -- tournée vers le lieu visé, nom du lieu et distance. Clic droit ou croix : arrêter.
 local frame
+local refresh
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperGuideArrow", UIParent)
     f:SetSize(220, 104)
-    local pos = WK.modules.Guide:Config().point
-    if pos then f:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3]) else f:SetPoint("TOP", 0, -120) end
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
     f:SetMovable(true)
     f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(s)
-        s:StopMovingOrSizing()
-        local p, _, _, x, y = s:GetPoint(1)
-        WK.modules.Guide:Config().point = { p, x, y }
-    end)
+    f:SetScript("OnDragStart", function(s) if not UI.editing then s:StartMoving() end end)
+    f:SetScript("OnDragStop", function(s) s:StopMovingOrSizing(); UI:HUDCapture("arrow") end)
     f:SetScript("OnMouseUp", function(_, button) if button == "RightButton" then WK.modules.Guide:Stop() end end)
     f.arrow = f:CreateTexture(nil, "ARTWORK")
     f.arrow:SetTexture(UI.MEDIA .. "guide")
@@ -51,6 +46,7 @@ local function build()
         s.elapsed = s.elapsed + el
         if s.elapsed < 0.05 then return end
         s.elapsed = 0
+        if s.sample then return end
         local G = WK.modules.Guide
         local t = G.target
         if not t then s:Hide() return end
@@ -79,10 +75,34 @@ local function build()
         s.dist:SetText(string.format(T("%d m"), math.floor(d)))
     end)
     UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.82 }, C.border)
+    f:Hide()
+    UI:RegisterHUD("arrow", f, {
+        label = T("Flèche de guidage"),
+        default = { 0, UIParent:GetHeight() / 2 - 172 },
+        legacy = function()
+            local pos = WK.modules.Guide:Config().point -- position des versions précédentes
+            if not pos then return false end
+            f:ClearAllPoints()
+            f:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3])
+            return true
+        end,
+        sample = function(on)
+            f.sample = on or nil
+            if on then
+                f.name:SetText(T("Exemple : banque"))
+                f.dist:SetText(string.format(T("%d m"), 120))
+                f.arrow:SetRotation(0.6)
+                f.arrow:SetVertexColor(UI:Accent())
+                f:Show()
+            else
+                refresh()
+            end
+        end,
+    })
     return f
 end
 
-local function refresh()
+refresh = function()
     local G = WK.modules.Guide
     local t = G.target
     if not t or not G:Config().arrow then
@@ -96,3 +116,6 @@ local function refresh()
 end
 
 WK.modules.Guide.OnTarget = function() refresh() end
+
+-- La flèche existe dès la connexion (cachée), pour pouvoir la placer en mode édition.
+WK:On("PLAYER_LOGIN", function() frame = frame or build() end)

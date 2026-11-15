@@ -19,6 +19,18 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.38.0 — 15/11/2026
+
+### Ajouts
+- Mode édition plein écran (QoL > Général > Disposition à l'écran, ou /wk edit) : grille, chaque élément encadré avec son nom et des exemples. Glisser pour déplacer (aimanté à la grille, Maj pour placer librement), tirer le coin pour la taille, flèches du clavier pour ajuster au pixel (Maj : 10), Échap ou « Terminer » pour quitter.
+- Un clic sur un élément ouvre ses réglages : taille, opacité, réinitialisation ; pour la pile d'alertes, sens d'empilement (vers le bas ou le haut) et icônes affichées ou non. « Tout réinitialiser » (Maj + clic) remet tout en place.
+- Disposition commune au compte, ou propre à chaque perso (option).
+- Éléments concernés : pile d'alertes, bouton du familier, flèche de guidage. Leurs anciennes positions sont reprises.
+
+### Modifications
+- Le mode édition se ferme tout seul au début d'un combat (le jeu interdit de déplacer le bouton du familier en combat).
+- Nouveau fichier : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.37.0 — 15/11/2026
 
 ### Modifications

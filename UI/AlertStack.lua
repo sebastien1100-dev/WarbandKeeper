@@ -10,21 +10,42 @@ local T = function(s) return WK.T(s) end
 local anchor, items = nil, {}
 local active = {} -- [key] = { icon, text, color, prio }
 
-local function savePos()
-    local p, _, _, x, y = anchor:GetPoint(1)
-    WK.DB.global.settings.ui.alertStack = { p, x, y }
-end
-
+local layout
 local function build()
     anchor = CreateFrame("Frame", "WarbandKeeperAlertStack", UIParent)
     anchor:SetSize(240, 30)
-    local pos = WK.DB.global.settings.ui.alertStack
-    if pos then anchor:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3]) else anchor:SetPoint("TOP", 0, -200) end
     anchor:SetFrameStrata("MEDIUM")
     anchor:SetClampedToScreen(true)
     anchor:SetMovable(true)
+    UI:RegisterHUD("alerts", anchor, {
+        label = T("Pile d'alertes"),
+        default = { 0, UIParent:GetHeight() / 2 - 250 },
+        dynamicPoint = function(e) return e.growUp and "BOTTOM" or "TOP" end,
+        legacy = function()
+            local pos = WK.DB.global.settings.ui.alertStack -- position des versions précédentes
+            if not pos then return false end
+            anchor:ClearAllPoints()
+            anchor:SetPoint(pos[1], UIParent, pos[1], pos[2], pos[3])
+            return true
+        end,
+        options = {
+            { type = "seg", label = "Empiler vers", items = { { false, "le bas" }, { true, "le haut" } },
+              get = function(e) return e.growUp and true or false end,
+              set = function(e, v)
+                  if (e.growUp and true or false) == v then return end
+                  local h = (anchor:GetHeight() or 30) * (e.scale or 1)
+                  e.y = v and (e.y - h) or (e.y + h) -- le haut (ou le bas) de la pile reste en place
+                  e.growUp = v
+              end },
+            { type = "toggle", label = "Icônes", get = function(e) return e.icons ~= false end, set = function(e, v) e.icons = v end },
+        },
+        sample = function(on)
+            UI:SetAlert("demo.1", on, { text = T("Exemple : aucun aspect actif"), prio = 3 })
+            UI:SetAlert("demo.2", on, { text = T("Exemple : rappel urgent"), color = C.negative, prio = 1 })
+        end,
+        onApply = function() if layout then layout() end end,
+    })
 end
-
 local function getItem(i)
     local it = items[i]
     if it then return it end
@@ -42,8 +63,8 @@ local function getItem(i)
     it.text:SetPoint("RIGHT", -8, 0)
     it:EnableMouse(true)
     it:RegisterForDrag("LeftButton")
-    it:SetScript("OnDragStart", function() anchor:StartMoving() end)
-    it:SetScript("OnDragStop", function() anchor:StopMovingOrSizing(); savePos() end)
+    it:SetScript("OnDragStart", function() if not UI.editing then anchor:StartMoving() end end)
+    it:SetScript("OnDragStop", function() anchor:StopMovingOrSizing(); UI:HUDCapture("alerts") end)
     it:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T("Rappel Warband Keeper"), 1, 1, 1)
@@ -55,27 +76,38 @@ local function getItem(i)
     return it
 end
 
-local function layout()
+layout = function()
+    if not anchor then return end
     local list = {}
     for key, a in pairs(active) do table.insert(list, { key = key, a = a }) end
     table.sort(list, function(x, y)
         if (x.a.prio or 5) ~= (y.a.prio or 5) then return (x.a.prio or 5) < (y.a.prio or 5) end
         return x.key < y.key
     end)
-    if #list == 0 and not anchor then return end
-    if not anchor then build() end
-    for i, e in ipairs(list) do
-        local it = getItem(i)
-        local col = e.a.color or C.warning
-        it.stripe:SetColorTexture(col[1], col[2], col[3], 1)
-        if e.a.icon then it.icon:SetTexture(e.a.icon); it.icon:Show() else it.icon:Hide() end
-        it.text:SetText(e.a.text)
-        it:SetWidth(math.max(200, it.text:GetStringWidth() + 52))
-        it:ClearAllPoints()
-        it:SetPoint("TOP", anchor, "TOP", 0, -(i - 1) * 34)
-        it:Show()
+    local e = UI:HUDEntry("alerts")
+    local up, icons = e.growUp, e.icons ~= false
+    local maxW = 200
+    for i, it in ipairs(list) do
+        local item = getItem(i)
+        local col = it.a.color or C.warning
+        item.stripe:SetColorTexture(col[1], col[2], col[3], 1)
+        item.icon:SetShown(icons and it.a.icon ~= nil)
+        if it.a.icon then item.icon:SetTexture(it.a.icon) end
+        item.text:ClearAllPoints()
+        item.text:SetPoint("LEFT", (icons and it.a.icon) and 36 or 14, 0)
+        item.text:SetPoint("RIGHT", -8, 0)
+        item.text:SetText(it.a.text)
+        local w = math.max(200, item.text:GetStringWidth() + ((icons and it.a.icon) and 52 or 30))
+        maxW = math.max(maxW, w)
+        item:SetWidth(w)
+        item:ClearAllPoints()
+        if up then item:SetPoint("BOTTOM", anchor, "BOTTOM", 0, (i - 1) * 34)
+        else item:SetPoint("TOP", anchor, "TOP", 0, -(i - 1) * 34) end
+        item:Show()
     end
     for i = #list + 1, #items do items[i]:Hide() end
+    -- Le cadre couvre toute la pile (pour le mode édition)
+    anchor:SetSize(maxW, math.max(30, #list * 34 - 4))
 end
 
 function UI:SetAlert(key, shown, data)
@@ -87,7 +119,11 @@ function UI:SetAlert(key, shown, data)
         if not cur then return end
         active[key] = nil
     end
+    if not anchor then build() end
     layout()
 end
 
 function UI:ActiveAlerts() return active end
+
+-- La pile existe dès la connexion (vide), pour pouvoir la placer en mode édition.
+WK:On("PLAYER_LOGIN", function() if not anchor then build(); layout() end end)

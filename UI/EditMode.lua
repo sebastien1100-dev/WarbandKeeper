@@ -1,0 +1,409 @@
+local ADDON_NAME, WK = ...
+local UI = WK.UI
+local C = UI.colors
+local T = function(s) return WK.T(s) end
+
+-- Éléments affichés à l'écran (pile d'alertes, bouton du familier, flèche de guidage…) :
+-- position, taille et opacité communes, et un mode édition plein écran pour les régler.
+--
+--   UI:RegisterHUD(key, frame, { label, point = "CENTER", default = { x, y }, legacy = function() ... end,
+--                                 preview = function(box) end, options = { ... }, onApply = function() end })
+-- La position est celle du point de référence (CENTER par défaut, ou TOP / BOTTOM) par rapport au
+-- centre de l'écran, en unités de l'interface : elle ne dépend pas de la taille de l'élément.
+
+local registry, order = {}, {}
+
+local function store()
+    local ui = WK.DB.global.settings.ui
+    if ui.hudPerChar then
+        WK.DB.char.hud = WK.DB.char.hud or {}
+        return WK.DB.char.hud
+    end
+    ui.hud = ui.hud or {}
+    return ui.hud
+end
+
+function UI:HUDEntry(key)
+    local s = store()
+    s[key] = s[key] or {}
+    return s[key]
+end
+
+local function refPoint(key)
+    local r = registry[key]
+    local e = UI:HUDEntry(key)
+    if r.dynamicPoint then return r.dynamicPoint(e) end
+    return r.point or "CENTER"
+end
+
+-- Coordonnées actuelles du point de référence d'un cadre, depuis le centre de l'écran.
+local function readRef(frame, point)
+    local l, b, w, h = frame:GetRect()
+    if not l then return nil end
+    local k = (frame:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+    l, b, w, h = l * k, b * k, w * k, h * k
+    local cx = l + w / 2 - UIParent:GetWidth() / 2
+    local cy
+    if point == "TOP" then cy = b + h elseif point == "BOTTOM" then cy = b else cy = b + h / 2 end
+    return cx, cy - UIParent:GetHeight() / 2
+end
+
+function UI:HUDApply(key)
+    local r = registry[key]
+    if not r or not r.frame then return end
+    local f, e = r.frame, self:HUDEntry(key)
+    if not e.x then
+        -- Première fois : ancienne position enregistrée (versions précédentes) ou position par défaut.
+        if r.legacy and r.legacy() then
+            e.x, e.y = readRef(f, refPoint(key))
+        end
+        if not e.x then e.x, e.y = r.default[1], r.default[2] end
+    end
+    local s = e.scale or 1
+    if r.protected and InCombatLockdown and InCombatLockdown() then
+        r.pending = true -- un bouton protégé ne bouge pas en combat : appliqué à la sortie
+        return
+    end
+    r.pending = nil
+    f:SetScale(s)
+    f:ClearAllPoints()
+    local p = refPoint(key)
+    f:SetPoint(p, UIParent, "CENTER", e.x / s, e.y / s)
+    if not r.protected or not (InCombatLockdown and InCombatLockdown()) then f:SetAlpha(e.alpha or 1) end
+    if r.onApply then r.onApply(e) end
+end
+
+-- Après un déplacement direct (glisser hors du mode édition) : on relit la position.
+function UI:HUDCapture(key)
+    local r = registry[key]
+    if not r or not r.frame then return end
+    local e = self:HUDEntry(key)
+    e.x, e.y = readRef(r.frame, refPoint(key))
+    self:HUDApply(key)
+end
+
+function UI:RegisterHUD(key, frame, opts)
+    opts.frame = frame
+    opts.key = key
+    opts.default = opts.default or { 0, 0 }
+    if not registry[key] then table.insert(order, key) end
+    registry[key] = opts
+    self:HUDApply(key)
+    if self.editing then self:EditRefresh() end
+end
+
+function UI:HUDReset(key)
+    local s = store()
+    s[key] = nil
+    local r = registry[key]
+    if r then
+        local e = self:HUDEntry(key)
+        e.x, e.y = r.default[1], r.default[2]
+        self:HUDApply(key)
+    end
+end
+
+function UI:HUDReapplyAll()
+    for _, key in ipairs(order) do self:HUDApply(key) end
+end
+
+---------------------------------------------------------------------------
+-- Mode édition
+---------------------------------------------------------------------------
+local overlay, toolbar, popup
+local boxes = {}
+local selected
+local gridSize, magnet = 32, true
+
+local function cursor()
+    local x, y = GetCursorPosition()
+    local s = UIParent:GetEffectiveScale() or 1
+    return x / s, y / s
+end
+
+local function snap(v)
+    if not magnet or IsShiftKeyDown() then return math.floor(v + 0.5) end
+    return math.floor(v / gridSize + 0.5) * gridSize
+end
+
+local gridLines = {}
+local function drawGrid()
+    for _, t in ipairs(gridLines) do t:Hide() end
+    local w, h = UIParent:GetWidth(), UIParent:GetHeight()
+    local i = 0
+    local function line(vertical, pos)
+        i = i + 1
+        local t = gridLines[i] or overlay:CreateTexture(nil, "BACKGROUND", nil, 1)
+        gridLines[i] = t
+        local strong = math.abs(pos) < 1
+        local r, g, b = UI:Accent()
+        t:SetColorTexture(r, g, b, strong and 0.45 or 0.12)
+        t:ClearAllPoints()
+        if vertical then
+            t:SetPoint("TOP", overlay, "TOP", pos, 0); t:SetPoint("BOTTOM", overlay, "BOTTOM", pos, 0); t:SetWidth(1)
+        else
+            t:SetPoint("LEFT", overlay, "LEFT", 0, pos); t:SetPoint("RIGHT", overlay, "RIGHT", 0, pos); t:SetHeight(1)
+        end
+        t:Show()
+    end
+    for x = 0, w / 2, gridSize do line(true, x); if x > 0 then line(true, -x) end end
+    for y = 0, h / 2, gridSize do line(false, y); if y > 0 then line(false, -y) end end
+end
+
+local function select(key)
+    selected = key
+    for k, b in pairs(boxes) do b:Paint(k == key) end
+    if popup then popup:Fill(key) end
+end
+
+local function buildBox(key)
+    local r = registry[key]
+    local b = CreateFrame("Button", nil, overlay)
+    b:SetFrameLevel(overlay:GetFrameLevel() + 10)
+    -- Fond léger et contour fin : l'élément reste visible à travers le cadre.
+    b.fill = b:CreateTexture(nil, "BACKGROUND")
+    b.fill:SetAllPoints()
+    b.edges = {}
+    for _, side in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
+        local t = b:CreateTexture(nil, "BORDER")
+        if side == "TOP" or side == "BOTTOM" then
+            t:SetPoint(side .. "LEFT"); t:SetPoint(side .. "RIGHT"); t:SetHeight(2)
+        else
+            t:SetPoint("TOP" .. side); t:SetPoint("BOTTOM" .. side); t:SetWidth(2)
+        end
+        table.insert(b.edges, t)
+    end
+    b.tagF = CreateFrame("Frame", nil, b)
+    b.tagF:SetPoint("BOTTOMLEFT", b, "TOPLEFT", 0, 4)
+    b.tagF:SetHeight(18)
+    b.tagBg = UI:Rounded(b.tagF, 6, 0, "BACKGROUND", 1)
+    b.tag = UI:Text(b.tagF, 11, C.onAccent)
+    b.tag:SetPoint("LEFT", 8, 0)
+    b.tag:SetText(r.label)
+    b.tagF:SetWidth(b.tag:GetStringWidth() + 16)
+    if r.preview then r.preview(b) end
+    -- poignée de taille (coin bas-droit)
+    b.grip = CreateFrame("Button", nil, b)
+    b.grip:SetSize(14, 14)
+    b.grip:SetPoint("BOTTOMRIGHT", 5, -5)
+    b.gripTex = UI:Rounded(b.grip, 3, 0, "OVERLAY", 1)
+    function b:Paint(sel)
+        local ar, ag, ab = UI:Accent()
+        for _, t in ipairs(self.edges) do t:SetColorTexture(ar, ag, ab, sel and 1 or 0.6) end
+        self.fill:SetColorTexture(ar, ag, ab, sel and 0.12 or 0.05)
+        self.tagBg:SetColor(ar, ag, ab, 1)
+        self.gripTex:SetColor(ar, ag, ab, 1)
+    end
+    b:SetAllPoints(r.frame)
+    b:RegisterForClicks("LeftButtonUp")
+    -- Glisser : déplace l'élément (aimanté à la grille, Maj = libre)
+    b:SetScript("OnMouseDown", function(s, button)
+        if button ~= "LeftButton" then return end
+        local e = UI:HUDEntry(key)
+        local cx, cy = cursor()
+        s.drag = { cx = cx, cy = cy, x = e.x, y = e.y, moved = false }
+        s:SetScript("OnUpdate", function(self2)
+            local d = self2.drag
+            local nx, ny = cursor()
+            if math.abs(nx - d.cx) + math.abs(ny - d.cy) > 3 then d.moved = true end
+            e.x, e.y = snap(d.x + nx - d.cx), snap(d.y + ny - d.cy)
+            UI:HUDApply(key)
+        end)
+    end)
+    b:SetScript("OnMouseUp", function(s)
+        s:SetScript("OnUpdate", nil)
+        local moved = s.drag and s.drag.moved
+        s.drag = nil
+        select(key)
+        if not moved and popup then popup:Show() end
+    end)
+    -- Tirer le coin : change la taille (50 % à 200 %)
+    b.grip:SetScript("OnMouseDown", function(g)
+        local e = UI:HUDEntry(key)
+        local cx = cursor()
+        local w = (r.frame:GetWidth() or 100) * (e.scale or 1)
+        g.drag = { cx = cx, s = e.scale or 1, w = math.max(20, w) }
+        g:SetScript("OnUpdate", function(g2)
+            local nx = cursor()
+            local sc = g2.drag.s * (1 + (nx - g2.drag.cx) / g2.drag.w)
+            e.scale = math.max(0.5, math.min(2, math.floor(sc * 20 + 0.5) / 20))
+            UI:HUDApply(key)
+            if popup and selected == key then popup:Fill(key) end
+        end)
+    end)
+    b.grip:SetScript("OnMouseUp", function(g) g:SetScript("OnUpdate", nil); select(key) end)
+    b:Paint(false)
+    return b
+end
+
+local function buildPopup()
+    local p = UI:Card(overlay, "")
+    p:SetSize(280, 220)
+    p:SetFrameLevel(overlay:GetFrameLevel() + 30)
+    p:EnableMouse(true)
+    p:Hide()
+    p.rows = {}
+    local close = UI:IconButton(p, "close", 22, nil, "accent")
+    close:SetPoint("TOPRIGHT", -8, -8)
+    close:SetScript("OnClick", function() p:Hide() end)
+    function p:Fill(key)
+        local r, e = registry[key], UI:HUDEntry(key)
+        if not r then return end
+        self.title:SetText(r.label)
+        local y = -42
+        local function addRow(label, ctl, w)
+            local row = UI:SettingRow(self, y, label, nil, ctl, w)
+            table.insert(self.rows, row)
+            y = y - 38
+            return row
+        end
+        if self.built ~= key then
+            -- Reconstruit les commandes pour cet élément
+            for _, row in ipairs(self.rows) do row:Hide() end
+            self.rows = {}
+            addRow(T("Taille"), UI:Slider(self, 150, 0.5, 2, 0.05, function() return e.scale or 1 end,
+                function(v) e.scale = v; UI:HUDApply(key) end, "%.2fx"), 150)
+            addRow(T("Opacité"), UI:Slider(self, 150, 0.3, 1, 0.05, function() return e.alpha or 1 end,
+                function(v) e.alpha = v; UI:HUDApply(key) end, "%.2f"), 150)
+            for _, opt in ipairs(r.options or {}) do
+                if opt.type == "seg" then
+                    local seg = UI:Segmented(self, opt.items, function(v) opt.set(e, v); UI:HUDApply(key) end, 26)
+                    seg:Select(opt.get(e))
+                    addRow(T(opt.label), seg, 150)
+                elseif opt.type == "toggle" then
+                    addRow(T(opt.label), UI:Toggle(self, function() return opt.get(e) end, function(v) opt.set(e, v); UI:HUDApply(key) end), 60)
+                end
+            end
+            local reset = UI:Button(self, "Réinitialiser", nil, 26, "secondary")
+            reset:SetPoint("BOTTOMLEFT", 14, 12)
+            reset:SetScript("OnClick", function() UI:HUDReset(key); self.built = nil; self:Fill(key) end)
+            table.insert(self.rows, reset)
+            self.built = key
+            self:SetHeight(-y + 50)
+        end
+        -- à côté de l'élément choisi, sans sortir de l'écran
+        self:ClearAllPoints()
+        local fx = (r.frame:GetCenter())
+        if fx and fx * (r.frame:GetEffectiveScale() / UIParent:GetEffectiveScale()) > UIParent:GetWidth() / 2 then
+            self:SetPoint("RIGHT", boxes[key], "LEFT", -16, 0)
+        else
+            self:SetPoint("LEFT", boxes[key], "RIGHT", 16, 0)
+        end
+        self:SetClampedToScreen(true)
+    end
+    return p
+end
+
+local function buildOverlay()
+    overlay = CreateFrame("Frame", "WarbandKeeperEditMode", UIParent)
+    overlay:SetAllPoints(UIParent)
+    overlay:SetFrameStrata("DIALOG")
+    overlay:EnableMouse(false)
+    overlay.dim = overlay:CreateTexture(nil, "BACKGROUND")
+    overlay.dim:SetAllPoints()
+    overlay.dim:SetColorTexture(0, 0, 0, 0.35)
+    -- Clavier : Échap pour quitter, flèches pour ajuster l'élément choisi (Maj : 10 px)
+    overlay:EnableKeyboard(true)
+    overlay:SetScript("OnKeyDown", function(s, key)
+        local handled = true
+        if key == "ESCAPE" then UI:ExitEditMode()
+        elseif selected and (key == "UP" or key == "DOWN" or key == "LEFT" or key == "RIGHT") then
+            local e = UI:HUDEntry(selected)
+            local d = IsShiftKeyDown() and 10 or 1
+            if key == "UP" then e.y = e.y + d elseif key == "DOWN" then e.y = e.y - d
+            elseif key == "LEFT" then e.x = e.x - d else e.x = e.x + d end
+            UI:HUDApply(selected)
+        else
+            handled = false
+        end
+        if s.SetPropagateKeyboardInput then s:SetPropagateKeyboardInput(not handled) end
+    end)
+
+    toolbar = CreateFrame("Frame", nil, overlay)
+    toolbar:SetPoint("TOP", 0, -14)
+    toolbar:SetSize(560, 44)
+    toolbar:SetFrameLevel(overlay:GetFrameLevel() + 40)
+    UI:Panel(toolbar, 12, { C.bg[1], C.bg[2], C.bg[3], 0.96 }, C.border)
+    toolbar:EnableMouse(true)
+    local title = UI:Text(toolbar, 13)
+    title:SetPoint("LEFT", 16, 0)
+    title:SetText("Mode édition")
+    UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
+    local x = title:GetStringWidth() + 32
+    local function tb(text, style, fn, tip)
+        local b = UI:Button(toolbar, text, nil, 28, style)
+        b:SetPoint("LEFT", x, 0)
+        b:SetScript("OnClick", fn)
+        b.tooltip = tip
+        x = x + b:GetWidth() + 8
+        return b
+    end
+    local gridBtn
+    gridBtn = tb(string.format(T("Grille : %d"), gridSize), "secondary", function()
+        gridSize = gridSize == 16 and 32 or (gridSize == 32 and 64 or 16)
+        gridBtn.label:SetText(string.format(T("Grille : %d"), gridSize))
+        drawGrid()
+    end)
+    local magBtn
+    magBtn = tb(T("Aimant : oui"), "secondary", function()
+        magnet = not magnet
+        magBtn.label:SetText(magnet and T("Aimant : oui") or T("Aimant : non"))
+    end, "Les éléments s'alignent sur la grille. Maj enfoncée : placement libre.")
+    tb("Tout réinitialiser", "ghost", function()
+        if not IsShiftKeyDown() then WK:Print(T("Maj + clic pour tout réinitialiser.")) return end
+        for _, key in ipairs(order) do UI:HUDReset(key) end
+        if popup then popup.built = nil; if selected then popup:Fill(selected) end end
+    end, "Maj + clic : remet tous les éléments à leur place et à leur taille d'origine.")
+    tb("Terminer", "primary", function() UI:ExitEditMode() end)
+    toolbar:SetWidth(x + 8)
+    local hint = UI:Text(overlay, 11, C.text)
+    hint:SetPoint("TOP", toolbar, "BOTTOM", 0, -8)
+    hint:SetText("Glisser pour déplacer · coin pour la taille · clic pour les réglages · flèches pour ajuster · Échap pour quitter")
+    popup = buildPopup()
+end
+
+function UI:EnterEditMode()
+    if InCombatLockdown and InCombatLockdown() then WK:Print(T("Pas en combat.")) return end
+    if self.editing then return end
+    if not overlay then buildOverlay() end
+    self.editing = true
+    if self.frame and self.frame:IsShown() then self.frame:Hide() end
+    overlay:Show()
+    drawGrid()
+    for _, key in ipairs(order) do
+        local r = registry[key]
+        if r.sample then r.sample(true) end
+        boxes[key] = boxes[key] or buildBox(key)
+        boxes[key]:SetAllPoints(r.frame)
+        boxes[key]:Show()
+    end
+    select(order[1])
+    popup:Hide()
+end
+
+function UI:EditRefresh()
+    if not self.editing then return end
+    for _, key in ipairs(order) do
+        local r = registry[key]
+        boxes[key] = boxes[key] or buildBox(key)
+        boxes[key]:SetAllPoints(r.frame)
+        boxes[key]:Show()
+    end
+end
+
+function UI:ExitEditMode()
+    if not self.editing then return end
+    self.editing = false
+    for _, key in ipairs(order) do
+        local r = registry[key]
+        if r.sample then r.sample(false) end
+    end
+    if popup then popup:Hide() end
+    overlay:Hide()
+end
+
+-- Un combat met fin au mode édition ; un bouton protégé déplacé en combat se place à la sortie.
+WK:On("PLAYER_REGEN_DISABLED", function() UI:ExitEditMode() end)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    for _, key in ipairs(order) do if registry[key].pending then UI:HUDApply(key) end end
+end)
