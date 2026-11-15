@@ -16,8 +16,20 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Carte du familier (chasseur) : portrait, humeur, vie et nourriture prévue ; clic gauche pour nourrir, clic droit pour Guérison du familier, avec raccourci clavier.
-- Pile d'alertes : regrouper les rappels à l'écran (buffs, poisons, guidage, familier) dans un cadre déplaçable.
+- Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
+
+## v0.36.0 — 15/11/2026
+
+### Ajouts
+- Munitions : les minutes de tir restantes (d'après ta vitesse de tir) s'affichent à côté du nombre de munitions dans les tuiles de la fiche de classe.
+- Pile d'alertes : petites vignettes empilées (icône, texte, liseré de couleur) dans un cadre que l'on déplace en le glissant. Elle reste affichée tant que le problème n'est pas réglé.
+- Chasseur : rappels dans la pile d'alertes, chacun désactivable dans QoL > Chasseur > Rappels : aucun aspect actif (hors combat), Guépard ou Meute en combat (hébétement), Grondement activé en donjon ou désactivé en solo, pistage des humanoïdes en champ de bataille (désactivé au départ).
+- Chasseur : gros bouton rond qui pulse quand le familier est absent ou mort, même en combat. Clic : appeler, ou ressusciter s'il est mort ; clic droit : ressusciter ; Maj + glisser pour le déplacer. Désactivable dans QoL > Chasseur > Familier.
+- Si l'addon HunterSuite est chargé, ces rappels et ce bouton se mettent en retrait pour ne pas faire doublon.
+
+### Modifications
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.35.0 — 15/11/2026
 

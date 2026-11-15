@@ -42,7 +42,12 @@ local function charSummary(c)
         end
     end
     if Q().AMMO[class] and c.ammo and c.ammo.id then
-        table.insert(parts, string.format(T("Munitions %s"), num(c.ammo.n)))
+        local txt = string.format(T("Munitions %s"), num(c.ammo.n))
+        if c.ammo.speed and (c.ammo.n or 0) > 0 then
+            local mins = math.floor((c.ammo.n or 0) * c.ammo.speed / 60)
+            txt = txt .. " · " .. (mins >= 1 and string.format(T("~%d min de tir"), mins) or T("moins d'une minute de tir"))
+        end
+        table.insert(parts, txt)
         track(c.ammo.n or 0, cc.ammo.buy)
     end
     if class == "HUNTER" and c.pet and c.pet.happy then
@@ -492,9 +497,11 @@ UI:RegisterPage({
 
             -- Aides propres à la classe
             if class == "HUNTER" then
-                local pet = card("Familier", 184)
+                local pet = card("Familier", 232)
                 UI:SettingRow(pet, -40, "Alerte si le familier n'est plus heureux", "À l'écran quand il change d'humeur, et dans « À faire ».",
                     toggle(pet, function() return cc.petAlert end, function(v) cc.petAlert = v end), 80)
+                UI:SettingRow(pet, -136, "Bouton si le familier est absent ou mort", "Gros bouton rond qui apparaît tout seul, même en combat : clic pour appeler ou ressusciter. Maj + glisser pour le déplacer.",
+                    toggle(pet, function() return cc.petButton ~= false end, function(v) cc.petButton = v; WK.modules.Hunter:SyncPetButton() end), 80)
                 local foodRow = UI:SettingRow(pet, -88, "Nourriture qu'il accepte", " ", nil)
                 table.insert(self.dyn, function()
                     local c = WK.DB:Me()
@@ -649,6 +656,17 @@ UI:RegisterPage({
                 t:SetJustifyV("TOP")
                 if t.SetWordWrap then t:SetWordWrap(true) end
                 t:SetSpacing(8)
+            end
+            if class == "HUNTER" then
+                local H = WK.modules.Hunter
+                local rm = card("Rappels", 232, "dans la pile d'alertes, déplaçable")
+                local function rt(field)
+                    return toggle(rm, function() return cc[field] end, function(v) cc[field] = v; H:UpdateAlerts() end)
+                end
+                UI:SettingRow(rm, -40, "Aucun aspect actif", "Hors combat, à partir du niveau 10.", rt("remAspect"), 80)
+                UI:SettingRow(rm, -88, "Guépard ou Meute en combat", "Tout de suite, même en combat : tu vas être hébété.", rt("remCheetah"), 80)
+                UI:SettingRow(rm, -136, "Grondement du familier", "Désactivé en donjon et raid, activé en solo.", rt("remGrowl"), 80)
+                UI:SettingRow(rm, -184, "Pistage en champ de bataille", "Pister les humanoïdes.", rt("remTrack"), 80)
             end
             local REMIND = {
                 PRIEST = { "Robustesse du groupe", "À l'écran, hors combat, quand un membre du groupe n'a plus Robustesse (ou presque plus)." },

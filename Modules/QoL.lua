@@ -2,6 +2,14 @@ local ADDON_NAME, WK = ...
 local M = WK:NewModule("QoL")
 local T = function(s) return WK.T(s) end
 
+-- WoW Forever peut masquer des valeurs en combat (« secret values ») : une valeur masquée est
+-- traitée comme inconnue.
+local function readable(v)
+    if issecretvalue and issecretvalue(v) then return nil end
+    return v
+end
+M.Readable = readable
+
 -- Qualité de vie : petites automatisations générales (marchand, groupe, confort) et aides
 -- propres à chaque classe (composants, munitions, familier, poisons, totems…).
 -- Réglages : WK.DB.global.qol = { general = {...}, classes = { [CLASSE] = {...} } }
@@ -103,7 +111,8 @@ local CLASS_DEFAULTS = {
     alerts = true,
     ammo = { min = 400, buy = 2000, auto = false },
     -- Chasseur
-    petAlert = true,
+    petAlert = true, petButton = true,
+    remAspect = true, remCheetah = true, remGrowl = true, remTrack = false,
     -- Voleur
     poisonAlert = true, poisonMin = 5,
     -- Démoniste
@@ -293,18 +302,16 @@ function M:ScanAmmo()
     if not M.AMMO[c.class or ""] or not GetInventoryItemID then return end
     local id = GetInventoryItemID("player", 0)
     if id then
-        c.ammo = { id = id, n = GetInventoryItemCount and GetInventoryItemCount("player", 0) or 0 }
+        -- Vitesse de tir (secondes entre deux tirs) : pour estimer les minutes de tir restantes.
+        local speed = UnitRangedDamage and readable((UnitRangedDamage("player")))
+        c.ammo = { id = id, n = GetInventoryItemCount and GetInventoryItemCount("player", 0) or 0,
+                   speed = (speed and speed > 0) and speed or (c.ammo and c.ammo.speed) }
     else
         c.ammo = nil
     end
 end
 
--- WoW Forever range les fonctions du familier dans C_PetInfo, et peut masquer des valeurs en
--- combat (« secret values ») : une valeur masquée est traitée comme inconnue.
-local function readable(v)
-    if issecretvalue and issecretvalue(v) then return nil end
-    return v
-end
+-- WoW Forever range les fonctions du familier dans C_PetInfo.
 function M:PetHappiness()
     local h
     if C_PetInfo and C_PetInfo.GetPetHappiness then h = C_PetInfo.GetPetHappiness()
