@@ -625,7 +625,7 @@ local function Detail(page, parent)
     linkCfgBtn:SetPoint("TOPRIGHT", -16, -18)
     local linkBtn = UI:Button(head, "Link tchat", nil, 32, "secondary")
     linkBtn:SetPoint("TOPRIGHT", linkCfgBtn, "TOPLEFT", -6, 0)
-    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté). Herboristerie, Dépeçage et Pêche n'ont pas de fenêtre : le nom et le niveau sont envoyés."
+    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."
     linkBtn:SetScript("OnClick", function()
         local c = WK.DB.global.characters[tab.key]
         WK.modules.Recipes:LinkToChat(c, tab.key, tab.prof)
@@ -1382,6 +1382,15 @@ local function Detail(page, parent)
             end
         end
         sub:SetText(table.concat(parts, "  ·  "))
+
+        -- Herboristerie, Dépeçage, Pêche : pas de fenêtre de métier, donc pas de lien à coller.
+        local gk = WK.modules.Gathering:Kind(self.prof)
+        local noLink = gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
+        linkBtn:SetShown(not noLink)
+        linkCfgBtn:SetShown(not noLink)
+        if noLink then editor:Hide() end
+        open:ClearAllPoints()
+        if noLink then open:SetPoint("TOPRIGHT", -16, -18) else open:SetPoint("TOPRIGHT", linkBtn, "TOPLEFT", -8, 0) end
 
         -- Ouverture : seulement pour le perso connecté et un métier qui a une fenêtre.
         local canOpen = isMe and #all > 0

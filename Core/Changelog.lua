@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.32.5", date = "15/11/2026",
+        changed = {
+            "Métiers : le bouton « Link tchat » et le réglage de son texte sont retirés sur Herboristerie, Dépeçage et Pêche, qui n'ont pas de lien de métier.",
+        },
+    },
+    {
         version = "0.32.4", date = "15/11/2026",
         changed = {
             "Métiers : le bouton « Lier dans le chat » s'appelle maintenant « Link tchat ».",

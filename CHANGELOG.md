@@ -17,6 +17,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.32.5 — 15/11/2026
+
+### Modifications
+- Métiers : le bouton « Link tchat » et le réglage de son texte sont retirés sur Herboristerie, Dépeçage et Pêche, qui n'ont pas de lien de métier.
+
 ## v0.32.4 — 15/11/2026
 
 ### Modifications

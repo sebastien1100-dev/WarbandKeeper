@@ -693,7 +693,7 @@ WK.Locales.enUS.text = {
     ["Marchand : "] = "Vendor: ", ["réparé (or de guilde) %s"] = "repaired (guild gold) %s", ["réparé %s"] = "repaired %s",
     ["gris vendus %s"] = "greys sold %s", ["acheté "] = "bought ",
     ["Link tchat"] = "Link to chat",
-    ["Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté). Herboristerie, Dépeçage et Pêche n'ont pas de fenêtre : le nom et le niveau sont envoyés."] = "Puts the profession window link in chat, followed by your text if enabled. The link is read when the profession opens: the first time, the addon opens and closes the window by itself (current character). Herbalism, Skinning and Fishing have no window: the name and level are sent.",
+    ["Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."] = "Puts the profession window link in chat, followed by your text if enabled. The link is read when the profession opens: the first time, the addon opens and closes the window by itself (current character).",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
