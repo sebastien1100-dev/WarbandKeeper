@@ -17,6 +17,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.31.1 — 15/11/2026
+
+### Corrections
+- Erreur au chargement « Attempt to register unknown event CRAFT_SHOW » : un évènement absent de ce client faisait échouer le chargement d'une partie de l'addon. Les évènements inconnus du client sont maintenant ignorés sans erreur.
+
 ## v0.31.0 — 15/11/2026
 
 ### Ajouts

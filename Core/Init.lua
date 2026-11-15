@@ -1,17 +1,20 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "0.31.0"
+WK.version = "0.31.1"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
 local frame = CreateFrame("Frame")
 local handlers = {}
 
+-- Un évènement absent de ce client (ex. CRAFT_SHOW) est ignoré sans erreur.
+WK.unknownEvents = {}
 function WK:On(event, fn)
     if not handlers[event] then
         handlers[event] = {}
-        frame:RegisterEvent(event)
+        local ok = pcall(frame.RegisterEvent, frame, event)
+        if not ok then WK.unknownEvents[event] = true end
     end
     table.insert(handlers[event], fn)
 end
