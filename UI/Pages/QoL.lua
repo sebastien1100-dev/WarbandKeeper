@@ -765,6 +765,39 @@ UI:RegisterPage({
             end
             if class == "HUNTER" then
                 local H = WK.modules.Hunter
+                -- Carte du familier (UI/PetCard.lua)
+                local pc = UI.PetCardConfig()
+                local pcard = card("Carte du familier", 40 + 12 * 46 + 8, "position et taille en mode édition")
+                local py = -40
+                local function prow(label, desc, ctl, w)
+                    UI:SettingRow(pcard, py, label, desc, ctl, w)
+                    py = py - 46
+                end
+                local function relayout() UI:PetCardLayout() end
+                local function pseg(field, items)
+                    local sg = UI:Segmented(pcard, items, function(v) pc[field] = v; relayout() end, 26)
+                    sg:Select(pc[field])
+                    return sg
+                end
+                local function pslider(field, mn, mx, st, fmtS)
+                    return UI:Slider(pcard, 220, mn, mx, st, function() return pc[field] end, function(v) pc[field] = v; relayout() end, fmtS)
+                end
+                prow("Afficher la carte", "Tant qu'un familier est là. Clic : nourrir · clic droit : soigner.",
+                    toggle(pcard, function() return pc.enabled end, function(v) pc.enabled = v; UI:SyncPetCard() end), 80)
+                prow("Largeur de la carte", nil, pslider("width", 200, 420, 10, "%d"), 240)
+                prow("Hauteur de la barre de vie", nil, pslider("barH", 6, 24, 1, "%d px"), 240)
+                prow("Chiffres sur la barre", nil, pseg("numbers", { { "none", "Aucun" }, { "value", "696" }, { "full", "696 / 720" }, { "pct", "97 %" } }), 300)
+                prow("Couleur de la barre", nil, pseg("color", { { "mood", "Humeur" }, { "health", "Vie" }, { "theme", "Thème" } }), 240)
+                prow("Humeur", nil, pseg("mood", { { "segments", "Segments" }, { "text", "Texte" }, { "both", "Les deux" }, { "hidden", "Masquée" } }), 320)
+                prow("Nourriture", nil, pseg("food", { { "icon", "Icône" }, { "iconName", "Icône + nom" }, { "hidden", "Masquée" } }), 280)
+                prow("Boutons Nourrir et Soigner", "Sinon : clic gauche et clic droit sur la carte.",
+                    toggle(pcard, function() return pc.buttons end, function(v) pc.buttons = v; relayout() end), 80)
+                prow("Nom et niveau du familier", nil, toggle(pcard, function() return pc.name end, function(v) pc.name = v; relayout() end), 80)
+                prow("Afficher", "« Si besoin » : vie sous le seuil ci-dessous, ou humeur pas « heureux ».",
+                    pseg("show", { { "always", "Toujours" }, { "ooc", "Hors combat" }, { "need", "Si besoin" } }), 280)
+                prow("« Si besoin » : vie sous", nil, pslider("needHealth", 10, 100, 5, "%d %%"), 240)
+                prow("Opacité hors combat", nil, pslider("oocAlpha", 0.3, 1, 0.05, "%.2f"), 240)
+
                 local rm = card("Rappels", 232, "dans la pile d'alertes, déplaçable")
                 local function rt(field)
                     return toggle(rm, function() return cc[field] end, function(v) cc[field] = v; H:UpdateAlerts() end)
