@@ -487,7 +487,7 @@ UI:RegisterPage({
                 sl:SetPoint("LEFT")
                 local tg = toggle(ctl, function() return cc.ammo.auto end, function(v) cc.ammo.auto = v end)
                 tg:SetPoint("RIGHT")
-                UI:SettingRow(am, -88, "Achat automatique chez le marchand", "Complète jusqu'à cette quantité, avec le même type de munitions.", ctl, 320)
+                UI:SettingRow(am, -88, "Achat automatique chez le marchand", "Complète jusqu'à cette quantité avec la meilleure munition vendue pour ton arme et ton niveau.", ctl, 320)
             end
 
             -- Aides propres à la classe
@@ -507,8 +507,10 @@ UI:RegisterPage({
                         if i > 4 then break end
                         table.insert(names, (WK.GetItemInfo(f.id) or "?") .. " x" .. f.n)
                     end
-                    foodRow.desc:SetText(#names > 0 and table.concat(names, " · ")
-                        or T("Rien de connu dans les sacs. Nourris-le une fois à la main : ce qu'il mange est retenu."))
+                    local diet = c.pet and c.pet.diet or {}
+                    local dietTxt = #diet > 0 and (table.concat(diet, ", ") .. "  ·  ") or ""
+                    foodRow.desc:SetText(dietTxt .. (#names > 0 and table.concat(names, " · ")
+                        or T("Rien qu'il accepte dans les sacs.")))
                 end)
                 local macro = UI:Button(pet, "Macro « Nourrir »", nil, 28, "primary")
                 macro:SetPoint("BOTTOMRIGHT", -12, 12)

@@ -702,6 +702,7 @@ WK.Locales.enUS.text = {
     ["Pas de halo sur une plante sans Herboristerie, ni sur un filon sans Minage."] = "No halo on a herb without Herbalism, or on a vein without Mining.",
     ["L'addon Lueur est chargé : il s'en occupe, le halo reste éteint."] = "The Lueur addon is loaded: it handles this, the halo stays off.",
     ["Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon."] = "Herbs, veins, chests, quest objects and the bobber glow as you approach. Turn it off before uninstalling the addon.",
+    ["Rien qu'il accepte dans les sacs."] = "Nothing it eats in your bags.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
@@ -805,7 +806,7 @@ WK.Locales.enUS.text = {
     ["Alerte quand il en reste peu"] = "Alert when running low",
     ["Type de munitions équipé, compté dans les sacs."] = "Equipped ammo type, counted in your bags.",
     ["Achat automatique chez le marchand"] = "Auto buy at vendors",
-    ["Complète jusqu'à cette quantité, avec le même type de munitions."] = "Tops up to this amount, with the same ammo type.",
+    ["Complète jusqu'à cette quantité avec la meilleure munition vendue pour ton arme et ton niveau."] = "Tops up to this amount with the best ammo sold for your weapon and level.",
     ["Familier"] = "Pet", ["Alerte si le familier n'est plus heureux"] = "Alert when the pet is no longer happy",
     ["À l'écran quand il change d'humeur, et dans « À faire »."] = "On screen when its mood changes, and in \"To do\".",
     ["Nourriture qu'il accepte"] = "Food it accepts",

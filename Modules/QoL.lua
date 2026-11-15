@@ -299,18 +299,54 @@ function M:ScanAmmo()
     end
 end
 
+-- WoW Forever range les fonctions du familier dans C_PetInfo, et peut masquer des valeurs en
+-- combat (« secret values ») : une valeur masquée est traitée comme inconnue.
+local function readable(v)
+    if issecretvalue and issecretvalue(v) then return nil end
+    return v
+end
+function M:PetHappiness()
+    local h
+    if C_PetInfo and C_PetInfo.GetPetHappiness then h = C_PetInfo.GetPetHappiness()
+    elseif GetPetHappiness then h = GetPetHappiness() end
+    return readable(h)
+end
+-- Régime du familier : { "Viande", "Poisson", ... } (vide si inconnu).
+function M:PetDiet()
+    local out = {}
+    if C_PetInfo and C_PetInfo.GetPetFoodTypes then
+        local list = C_PetInfo.GetPetFoodTypes()
+        if type(list) == "table" then for _, v in ipairs(list) do table.insert(out, v) end end
+    elseif GetPetFoodTypes then
+        for _, v in ipairs({ GetPetFoodTypes() }) do
+            for name in tostring(v):gmatch("[^,]+") do table.insert(out, (name:gsub("^%s+", ""):gsub("%s+$", ""))) end
+        end
+    end
+    return out
+end
+-- true / false si le jeu sait dire si le familier mange cet objet, nil sinon.
+function M:CanPetEat(itemID)
+    if C_PetInfo and C_PetInfo.CanPetEatItem then
+        local ok, res = pcall(C_PetInfo.CanPetEatItem, itemID)
+        if ok then return readable(res) end
+    end
+    return nil
+end
+
 function M:ScanPet()
     local c = WK.DB:Me()
     if c.class ~= "HUNTER" then return end
-    if UnitExists and UnitExists("pet") and GetPetHappiness then
-        local happy = GetPetHappiness()
+    local hasPet = UnitExists and UnitExists("pet")
+    local happy = hasPet and self:PetHappiness()
+    if hasPet and happy then
         local old = c.pet and c.pet.happy
-        c.pet = { happy = happy, name = UnitName("pet"), family = UnitCreatureFamily and UnitCreatureFamily("pet"), t = time() }
+        c.pet = { happy = happy, name = UnitName("pet"), family = UnitCreatureFamily and UnitCreatureFamily("pet"),
+                  diet = self:PetDiet(), t = time() }
         local cc = M:Class("HUNTER")
         if cc.petAlert and happy and old and happy < old and happy < 3 then
             M:Remind("pet", string.format(happy == 1 and T("%s est mécontent : nourris-le") or T("%s n'est plus heureux"), c.pet.name or T("Le familier")))
         end
-    else
+    elseif not hasPet then
         c.pet = nil
     end
     WK:NotifyChanged()
@@ -466,6 +502,44 @@ local function buy(index, need)
     return bought
 end
 
+-- Munitions : arc et arbalète tirent des flèches, fusil des balles (classe d'objet 6 « Projectile »).
+local function itemClass(id)
+    local f = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+    if not f or not id then return nil end
+    local _, _, _, _, _, classID, subID = f(id)
+    return classID, subID
+end
+function M:AmmoKind()
+    local weapon = GetInventoryItemID and GetInventoryItemID("player", 18)
+    local cls, sub = itemClass(weapon)
+    if cls ~= 2 then return nil end
+    if sub == 3 then return 3 end                 -- fusil : balles
+    if sub == 2 or sub == 18 then return 2 end    -- arc, arbalète : flèches
+    return nil
+end
+
+-- La meilleure munition que ce marchand vend pour l'arme du perso et à son niveau :
+-- { index, id }, ou nil. À qualité égale, celle déjà équipée.
+function M:BestMerchantAmmo(c)
+    local want = self:AmmoKind()
+    if not want or not GetMerchantNumItems then return nil end
+    local level = c.level or (UnitLevel and UnitLevel("player")) or 1
+    local best
+    for i = 1, GetMerchantNumItems() do
+        local id = GetMerchantItemID and GetMerchantItemID(i) or WK:ParseItemID(GetMerchantItemLink and GetMerchantItemLink(i))
+        local cls, sub = itemClass(id)
+        if cls == 6 and sub == want then
+            local _, _, _, ilvl, minLevel = WK.GetItemInfo(id)
+            local _, _, _, _, available = GetMerchantItemInfo(i)
+            if (minLevel or 0) <= level and available ~= 0 then
+                local score = (ilvl or 0) + ((c.ammo and c.ammo.id == id) and 0.5 or 0)
+                if not best or score > best.score then best = { index = i, id = id, score = score } end
+            end
+        end
+    end
+    return best
+end
+
 function M:AutoBuy()
     local c = WK.DB:Me()
     local cc = c.class and self:Class(c.class)
@@ -484,13 +558,22 @@ function M:AutoBuy()
             end
         end
     end
-    if M.AMMO[c.class] and cc.ammo.auto and c.ammo and c.ammo.id then
-        local need = (cc.ammo.buy or 0) - (c.ammo.n or 0)
-        if need > 0 then
-            local m = merchantIndex({ c.ammo.id })
-            if m then
-                local n = buy(m.index, need)
-                if n > 0 then table.insert(bought, n .. " " .. (WK.GetItemInfo(m.id) or T("munitions"))) end
+    if M.AMMO[c.class] and cc.ammo.auto then
+        local best = M:BestMerchantAmmo(c)
+        if best then
+            local have = (c.bags or {})[best.id] or 0
+            local need = (cc.ammo.buy or 0) - have
+            if need > 0 then
+                local n = buy(best.index, need)
+                if n > 0 then
+                    table.insert(bought, n .. " " .. (WK.GetItemInfo(best.id) or T("munitions")))
+                    -- Meilleure que celle équipée : on l'équipe (hors combat).
+                    if best.id ~= (c.ammo and c.ammo.id) and EquipItemByName then
+                        C_Timer.After(0.8, function()
+                            if not (InCombatLockdown and InCombatLockdown()) then pcall(EquipItemByName, best.id) end
+                        end)
+                    end
+                end
             end
         end
     end
@@ -624,10 +707,15 @@ end
 function M:FoodInBags(c)
     c = c or WK.DB:Me()
     local family = c.pet and c.pet.family
-    local list = {}
-    for id in pairs(self:PetFoods(family)) do
-        local n = (c.bags or {})[id] or 0
-        if n > 0 then table.insert(list, { id = id, n = n }) end
+    local list, seen = {}, {}
+    local isMe = c == WK.DB:Me() and UnitExists and UnitExists("pet")
+    for id, n in pairs(c.bags or {}) do
+        local ok = isMe and self:CanPetEat(id)
+        if ok == nil then ok = self:PetFoods(family)[id] end -- le jeu ne sait pas : ce qu'on a appris
+        if ok and n > 0 and not seen[id] then
+            seen[id] = true
+            table.insert(list, { id = id, n = n })
+        end
     end
     table.sort(list, function(a, b) return a.n > b.n end)
     return list

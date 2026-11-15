@@ -15,7 +15,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
+- Carte du familier (chasseur) : portrait, humeur, vie et nourriture prévue ; clic gauche pour nourrir, clic droit pour Guérison du familier, avec raccourci clavier.
+- Pile d'alertes : regrouper les rappels à l'écran (buffs, poisons, guidage, familier) dans un cadre déplaçable.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
+
+## v0.35.0 — 15/11/2026
+
+### Modifications
+- Chasseur : la nourriture que le familier accepte est demandée directement au jeu (plus besoin de le nourrir une première fois à la main), avec son régime (viande, poisson…). La macro « Nourrir » est juste tout de suite.
+- Munitions : l'achat automatique prend la meilleure munition vendue pour ton arme (flèches pour arc et arbalète, balles pour fusil) et utilisable à ton niveau, et l'équipe si elle est meilleure que celle en place.
+
+### Corrections
+- Chasseur : l'humeur du familier n'était jamais lue sur WoW Forever (la fonction du jeu a changé de place), donc l'alerte « n'est plus heureux » ne se déclenchait pas.
 
 ## v0.34.1 — 15/11/2026
 

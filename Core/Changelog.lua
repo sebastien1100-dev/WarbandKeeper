@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.35.0", date = "15/11/2026",
+        changed = {
+            "Chasseur : la nourriture que le familier accepte est demandée directement au jeu (plus besoin de le nourrir une première fois à la main), avec son régime (viande, poisson…). La macro « Nourrir » est juste tout de suite.",
+            "Munitions : l'achat automatique prend la meilleure munition vendue pour ton arme (flèches pour arc et arbalète, balles pour fusil) et utilisable à ton niveau, et l'équipe si elle est meilleure que celle en place.",
+        },
+        fixed = {
+            "Chasseur : l'humeur du familier n'était jamais lue sur WoW Forever (la fonction du jeu a changé de place), donc l'alerte « n'est plus heureux » ne se déclenchait pas.",
+        },
+    },
+    {
         version = "0.34.1", date = "15/11/2026",
         changed = {
             "QoL > Général > Guidage : les boutons « le plus proche » prennent la couleur d'accent du thème, et le bouton « Arrêter » est retiré (la croix ou le clic droit sur la flèche arrêtent le guidage, comme /wk guide stop).",
@@ -711,6 +721,8 @@ WK.Roadmap = {
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
     "Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.",
+    "Carte du familier (chasseur) : portrait, humeur, vie et nourriture prévue ; clic gauche pour nourrir, clic droit pour Guérison du familier, avec raccourci clavier.",
+    "Pile d'alertes : regrouper les rappels à l'écran (buffs, poisons, guidage, familier) dans un cadre déplaçable.",
     "Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).",
 }
 
