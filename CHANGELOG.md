@@ -18,6 +18,16 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.47.0 — 15/11/2026
+
+### Ajouts
+- Micro menu : réglage « Taille » (raccourcis et heure), dans Qualité de vie > Micro menu.
+
+### Modifications
+- Micro menu : le fond est séparé en trois (raccourcis de gauche, heure, raccourcis de droite). Les côtés glissent depuis l'heure au survol.
+- Micro menu : avec l'effet loupe, le fond de chaque côté grandit avec les icônes au lieu de les laisser déborder.
+- Micro menu : FPS et latence sont maintenant deux petites barres sous l'heure, remplies selon la valeur (vert, orange, rouge).
+
 ## v0.46.0 — 15/11/2026
 
 ### Modifications

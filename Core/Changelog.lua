@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.47.0", date = "15/11/2026",
+        changed = {
+            "Micro menu : le fond est séparé en trois (raccourcis de gauche, heure, raccourcis de droite). Les côtés glissent depuis l'heure au survol.",
+            "Micro menu : avec l'effet loupe, le fond de chaque côté grandit avec les icônes au lieu de les laisser déborder.",
+            "Micro menu : FPS et latence sont maintenant deux petites barres sous l'heure, remplies selon la valeur (vert, orange, rouge).",
+        },
+        added = {
+            "Micro menu : réglage « Taille » (raccourcis et heure), dans Qualité de vie > Micro menu.",
+        },
+    },
+    {
         version = "0.46.0", date = "15/11/2026",
         changed = {
             "Micro menu : nouvelles icônes dessinées au trait fin, à la couleur du thème, sur des tuiles sombres arrondies. Les douze raccourcis ont maintenant le même style.",

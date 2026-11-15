@@ -3,14 +3,17 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Horloge en haut de l'écran : au repos, l'heure et deux points (FPS, latence). Au survol, les
--- raccourcis glissent de chaque côté avec un effet loupe façon dock (réglable), et se replient
--- quand la souris s'en va. Hors combat seulement pour le dépliage (la pierre de foyer est un
+-- Horloge en haut de l'écran : au repos, l'heure et deux petites barres dessous (FPS, latence).
+-- Au survol, deux fonds séparés (gauche, droite) glissent de chaque côté de l'heure avec leurs
+-- raccourcis ; effet loupe façon dock (réglable), le fond suit la taille des icônes. Repli quand
+-- la souris s'en va. Hors combat seulement pour le dépliage (la pierre de foyer est un
 -- bouton protégé que le jeu interdit de bouger en combat).
 -- Réglages : WK.modules.QoL:Config().clock
 
-local BASE = 28        -- taille d'une icône au repos (déplié)
-local GAP = 6
+local BASE = 28        -- taille d'une icône au repos (déplié), réglable (clock.size)
+local GAP = 6          -- écart entre les trois fonds
+local IGAP = 4         -- écart entre deux icônes
+local PAD = 4          -- marge intérieure des fonds
 local bar
 
 -- Raccourcis disponibles. secure : bouton protégé (objet ou sort) ; sinon une fonction.
@@ -56,7 +59,7 @@ local SHORTCUTS = {
 UI.CLOCK_SHORTCUTS = SHORTCUTS
 
 local DEFAULTS = {
-    enabled = true, server = false, h12 = false, magnify = 0.8, stats = true,
+    enabled = true, server = false, h12 = false, magnify = 0.8, stats = true, size = 28,
     side = { wk = "L", mail = "L", hearth = "L", char = "R", spells = "R", talents = "R", map = "R" },
 }
 local function cfg()
@@ -117,7 +120,7 @@ local function makeIcon(def)
     b.tex:SetPoint("TOPLEFT", 6, -6)
     b.tex:SetPoint("BOTTOMRIGHT", -6, 6)
     b.dot = UI:Icon(b, "circle", 7, nil, "OVERLAY")
-    b.dot:SetPoint("TOP", b, "BOTTOM", 0, -2)
+    b.dot:SetPoint("TOPRIGHT", -2, -2)
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T(def.label), 1, 1, 1)
@@ -137,22 +140,43 @@ local function build()
     bar:SetClampedToScreen(true)
     -- Seul le fond visible capte la souris : la place réservée aux raccourcis ne bloque pas le jeu.
     bar:EnableMouse(false)
-    bar.bg = CreateFrame("Frame", nil, bar)
-    bar.bg:EnableMouse(true)
+    local function panel(mouse)
+        local p = CreateFrame("Frame", nil, bar)
+        p:EnableMouse(mouse)
+        p:SetSize(120, 34)
+        UI:Panel(p, 12, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
+        return p
+    end
+    bar.bg = panel(true)       -- milieu : l'heure
     bar.bg:SetPoint("TOP")
-    bar.bg:SetSize(120, 34)
-    UI:Panel(bar.bg, 12, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
+    bar.lp = panel(true)       -- gauche
+    bar.rp = panel(true)       -- droite
+    bar.lp:Hide(); bar.rp:Hide()
     -- Heure (bouton : clic = calendrier si le jeu en a un, sinon Warband Keeper)
     bar.clockBtn = CreateFrame("Button", nil, bar)
-    bar.clockBtn:SetSize(90, 30)
-    bar.clockBtn:SetPoint("TOP", 0, -2)
+    bar.clockBtn:SetAllPoints(bar.bg)
     bar.clockBtn:SetFrameLevel(bar.bg:GetFrameLevel() + 3)
     bar.time = UI:Text(bar.clockBtn, 18)
-    bar.time:SetPoint("CENTER", -8, 0)
-    bar.fpsDot = UI:Icon(bar.clockBtn, "circle", 7)
-    bar.msDot = UI:Icon(bar.clockBtn, "circle", 7)
-    bar.fpsDot:SetPoint("LEFT", bar.time, "RIGHT", 6, 0)
-    bar.msDot:SetPoint("LEFT", bar.fpsDot, "RIGHT", 3, 0)
+    bar.time:SetPoint("CENTER", 0, 3)
+    bar.time:SetJustifyH("CENTER")
+    -- FPS et latence : deux petites barres côte à côte sous l'heure (remplies selon la valeur)
+    local function meter()
+        local m = CreateFrame("Frame", nil, bar.clockBtn)
+        m:SetSize(24, 3)
+        m.track = UI:Rounded(m, 2, 0, "ARTWORK", 0)
+        m.fill = m:CreateTexture(nil, "ARTWORK", nil, 1)
+        m.fill:SetPoint("TOPLEFT"); m.fill:SetPoint("BOTTOMLEFT")
+        return m
+    end
+    bar.fpsBar = meter()
+    bar.msBar = meter()
+    bar.fpsBar:SetPoint("BOTTOMRIGHT", bar.clockBtn, "BOTTOM", -2, 5)
+    bar.msBar:SetPoint("BOTTOMLEFT", bar.clockBtn, "BOTTOM", 2, 5)
+    function bar:Meter(m, frac, col)
+        m.track:SetColor(C.border[1], C.border[2], C.border[3], 1)
+        m.fill:SetWidth(math.max(1, (m:GetWidth() or 24) * math.max(0.08, math.min(1, frac))))
+        m.fill:SetColorTexture(col[1], col[2], col[3], 1)
+    end
     bar.clockBtn:SetScript("OnClick", function()
         if ToggleCalendar then ToggleCalendar() elseif GameTimeFrame and GameTimeFrame.Click then GameTimeFrame:Click() else UI:ToggleWindow() end
     end)
@@ -193,13 +217,14 @@ local function build()
         if self.acc > 0.5 then
             self.acc = 0
             self.time:SetText(clockText())
-            local _, _, fc, mc = stats()
-            self.fpsDot:SetVertexColor(unpack(fc)); self.msDot:SetVertexColor(unpack(mc))
-            self.fpsDot:SetShown(o.stats); self.msDot:SetShown(o.stats)
+            local fps, ms, fc, mc = stats()
+            self:Meter(self.fpsBar, fps / 60, fc)
+            self:Meter(self.msBar, 1 - ms / 400, mc)
+            self.fpsBar:SetShown(o.stats); self.msBar:SetShown(o.stats)
             self.time:SetTextColor(UI:Accent())
         end
         -- dépliage au survol (hors combat), repli 0,4 s après le départ de la souris
-        local over = self.bg:IsMouseOver(4, -4, -4, 4)
+        local over = self:Over()
         if over then self.leftAt = nil elseif not self.leftAt then self.leftAt = GetTime() end
         local want = (over or (self.leftAt and GetTime() - self.leftAt < 0.4)) and 1 or 0
         if inCombat() then want = self.open > 0.5 and 1 or 0 end
@@ -209,53 +234,69 @@ local function build()
         if self.open ~= before or self.open > 0 then self:Layout() end
     end
 
-    -- Place les raccourcis : effet loupe selon la distance du curseur (hors combat).
+    -- Souris sur l'un des trois fonds (les côtés seulement quand ils sont dépliés)
+    function bar:Over()
+        if self.bg:IsMouseOver(4, -4, -4, 4) then return true end
+        if self.open > 0.05 then
+            if self.lp:IsShown() and self.lp:IsMouseOver(4, -4, -4, 4) then return true end
+            if self.rp:IsShown() and self.rp:IsMouseOver(4, -4, -4, 4) then return true end
+        end
+        return false
+    end
+
+    -- Place les raccourcis : effet loupe selon la distance du curseur (hors combat). Chaque fond de
+    -- côté épouse ses icônes : il grandit avec elles.
     function bar:Layout()
         if inCombat() then return end
         local o = cfg()
+        local base = math.max(20, math.min(48, o.size or BASE))
+        local k = base / BASE
         local L, R = self:Lists()
         local open = self.open
         local scale = self:GetEffectiveScale()
         local cx = (GetCursorPosition()) / scale
-        local over = self.bg:IsMouseOver(4, -4, -4, 4)
-        local function sizeOf(icon, x)
-            if not over then return BASE end
+        local over = open > 0.05 and self:Over()
+        local function sizeOf(x)
+            if not over then return base end
             local d = math.abs(cx - x)
-            local k = math.max(0, 1 - d / (BASE * 3))
-            return BASE * (1 + (o.magnify or 0) * k * k)
+            local f = math.max(0, 1 - d / (base * 3))
+            return math.floor(base * (1 + (o.magnify or 0) * f * f) + 0.5)
         end
-        local clockW = 96
+        local clockW = math.floor(96 * k + 0.5)
+        local h = base + PAD * 2
+        local fs = math.floor(18 * k + 0.5)
+        if self.fontSize ~= fs then self.fontSize = fs; self.time:SetFont(UI.FONT, fs, "") end
+        local mw = math.floor(24 * k + 0.5)
+        self.fpsBar:SetWidth(mw); self.msBar:SetWidth(mw)
+        self.bg:SetSize(clockW, h)
+        self:SetHeight(h)
         local left = self:GetLeft() or 0
         local mid = (self:GetWidth() or 120) / 2
-        -- côté gauche : du centre vers l'extérieur
-        local x = mid - clockW / 2 - GAP
-        local maxH = BASE
-        for _, ic in ipairs(L) do
-            local sz = sizeOf(ic, left + x - BASE / 2)
-            x = x - sz
-            ic:SetSize(sz, sz)
-            ic:ClearAllPoints()
-            ic:SetPoint("TOPLEFT", self, "TOPLEFT", x, -3)
-            x = x - GAP
-            maxH = math.max(maxH, sz)
+        local slide = (1 - open) * 14 -- les côtés glissent depuis l'heure
+        local function side(list, panel, dir)
+            panel:SetShown(#list > 0 and open > 0.05)
+            if #list == 0 then return end
+            local edge = mid + dir * (clockW / 2 + GAP + slide) -- bord du fond côté heure
+            local x = edge + dir * PAD
+            local maxH = 0
+            for _, ic in ipairs(list) do
+                local sz = sizeOf(left + x + dir * base / 2)
+                local x0 = dir > 0 and x or x - sz
+                ic:SetSize(sz, sz)
+                ic:ClearAllPoints()
+                ic:SetPoint("TOPLEFT", self, "TOPLEFT", x0, -PAD)
+                x = x + dir * (sz + IGAP)
+                maxH = math.max(maxH, sz)
+                ic:SetShown(open > 0.05); ic:SetAlpha(open)
+            end
+            local outer = x - dir * IGAP + dir * PAD
+            panel:ClearAllPoints()
+            panel:SetPoint("TOPLEFT", self, "TOPLEFT", math.min(edge, outer), 0)
+            panel:SetSize(math.abs(outer - edge), maxH + PAD * 2)
+            panel:SetAlpha(open)
         end
-        local leftEdge = x
-        x = mid + clockW / 2 + GAP
-        for _, ic in ipairs(R) do
-            local sz = sizeOf(ic, left + x + BASE / 2)
-            ic:SetSize(sz, sz)
-            ic:ClearAllPoints()
-            ic:SetPoint("TOPLEFT", self, "TOPLEFT", x, -3)
-            x = x + sz + GAP
-            maxH = math.max(maxH, sz)
-        end
-        local rightEdge = x
-        -- fond : de la largeur de l'heure (replié) à celle des raccourcis (déplié)
-        local fullW = math.max(rightEdge - leftEdge + 12, clockW)
-        local w = clockW + (fullW - clockW) * open
-        self.bg:SetSize(w, 34 + (maxH - BASE) * open)
-        for _, ic in ipairs(L) do ic:SetShown(open > 0.05); ic:SetAlpha(open) end
-        for _, ic in ipairs(R) do ic:SetShown(open > 0.05); ic:SetAlpha(open) end
+        side(L, self.lp, -1)
+        side(R, self.rp, 1)
         for _, def in ipairs(SHORTCUTS) do
             local ic = self.icons[def.key]
             if not o.side[def.key] then ic:Hide() end
@@ -268,7 +309,8 @@ local function build()
             if dc then ic.dot:SetVertexColor(unpack(dc)) end
         end
         -- largeur du cadre : place pour tous les raccourcis (stable, pour le mode édition)
-        self:SetWidth(math.max(120, (#L > #R and #L or #R) * (BASE + GAP) * 2 + clockW + 40))
+        local n = #L > #R and #L or #R
+        self:SetWidth(math.max(120, n * (base + IGAP) * 2 + clockW + 2 * (GAP + PAD) + 20))
     end
 
     UI:RegisterHUD("clock", bar, { label = T("Micro menu"), protected = true, point = "TOP",

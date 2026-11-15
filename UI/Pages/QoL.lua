@@ -442,7 +442,7 @@ UI:RegisterPage({
         section("micro")
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 5 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local clockCard = card("Horloge et raccourcis", 40 + 6 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
         local cy = -40
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
@@ -454,10 +454,13 @@ UI:RegisterPage({
         local segFmt = UI:Segmented(clockCard, { { false, "24 h" }, { true, "12 h" } }, function(v) ck.h12 = v end, 26)
         segFmt:Select(ck.h12 and true or false)
         crow("Format", nil, segFmt, 160)
+        crow("Taille", "Taille des raccourcis et de l'heure (le fond suit).",
+            UI:Slider(clockCard, 220, 20, 48, 2, function() return ck.size or 28 end,
+                function(v) ck.size = v; csync() end, "%d px"), 240)
         crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
             UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
                 function(v) ck.magnify = v / 100 end, "%d %%"), 240)
-        crow("FPS et latence", "Deux points de couleur à côté de l'heure (vert, orange, rouge).",
+        crow("FPS et latence", "Deux petites barres sous l'heure (vert, orange, rouge).",
             toggle(clockCard, function() return ck.stats end, function(v) ck.stats = v end), 80)
         local hdr = UI:Text(clockCard, 10, C.dim)
         hdr:SetPoint("TOPLEFT", 16, cy - 6)
