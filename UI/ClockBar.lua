@@ -17,6 +17,9 @@ local PAD = 4          -- marge intérieure des fonds
 local bar
 
 -- Raccourcis disponibles. secure : bouton protégé (objet ou sort) ; sinon une fonction.
+-- micro : boutons du micro menu du jeu qui ouvrent la même fenêtre. Le raccourci clique alors ce
+-- bouton par un chemin protégé : ouvrir une fenêtre du jeu depuis le code d'un addon la « contamine »,
+-- et le jeu bloque ensuite ses éléments protégés en combat (ADDON_ACTION_BLOCKED).
 local SHORTCUTS = {
     { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "mm_wk" end, tint = true,
       run = function() UI:ToggleWindow() end },
@@ -30,17 +33,23 @@ local SHORTCUTS = {
     { key = "hearth", label = "Pierre de foyer", secure = { type = "item", item = "item:6948" },
       icon = function() return UI.MEDIA .. "mm_hearth" end, tint = true,
       tip = function() return GetBindLocation and GetBindLocation() end },
-    { key = "char", label = "Personnage", icon = function() return UI.MEDIA .. "mm_char" end, tint = true,
+    { key = "char", label = "Personnage", micro = { "CharacterMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_char" end, tint = true,
       run = function() if ToggleCharacter then ToggleCharacter("PaperDollFrame") end end },
-    { key = "spells", label = "Grimoire", icon = function() return UI.MEDIA .. "mm_book" end, tint = true,
+    { key = "spells", label = "Grimoire", micro = { "SpellbookMicroButton", "PlayerSpellsMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_book" end, tint = true,
       run = function() if ToggleSpellBook then ToggleSpellBook(BOOKTYPE_SPELL or "spell") end end },
-    { key = "talents", label = "Talents", icon = function() return UI.MEDIA .. "mm_talents" end, tint = true,
+    { key = "talents", label = "Talents", micro = { "TalentMicroButton", "PlayerSpellsMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_talents" end, tint = true,
       run = function() if ToggleTalentFrame then ToggleTalentFrame() end end },
-    { key = "map", label = "Carte", icon = function() return UI.MEDIA .. "mm_map" end, tint = true,
+    { key = "map", label = "Carte", micro = { "WorldMapMicroButton", "MiniMapWorldMapButton" },
+      icon = function() return UI.MEDIA .. "mm_map" end, tint = true,
       run = function() if ToggleWorldMap then ToggleWorldMap() end end },
-    { key = "quests", label = "Journal de quêtes", icon = function() return UI.MEDIA .. "mm_quest" end, tint = true,
+    { key = "quests", label = "Journal de quêtes", micro = { "QuestLogMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_quest" end, tint = true,
       run = function() if ToggleQuestLog then ToggleQuestLog() end end },
-    { key = "social", label = "Social et guilde", icon = function() return UI.MEDIA .. "mm_social" end, tint = true,
+    { key = "social", label = "Social et guilde", micro = { "SocialsMicroButton", "FriendsMicroButton", "GuildMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_social" end, tint = true,
       run = function() if ToggleFriendsFrame then ToggleFriendsFrame() end end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "mm_prof" end, tint = true,
       run = function()
@@ -53,7 +62,8 @@ local SHORTCUTS = {
     { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "mm_farm" end, tint = true,
       run = function() local F = WK.modules.Farm; if F:Active() then F:Stop() else F:Start() end end,
       dot = function() return WK.modules.Farm:Active() and C.positive or nil end },
-    { key = "menu", label = "Menu du jeu", icon = function() return UI.MEDIA .. "mm_menu" end, tint = true,
+    { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton" },
+      icon = function() return UI.MEDIA .. "mm_menu" end, tint = true,
       run = function() if ToggleGameMenu then ToggleGameMenu() end end },
 }
 UI.CLOCK_SHORTCUTS = SHORTCUTS
@@ -118,14 +128,28 @@ end
 ---------------------------------------------------------------------------
 local function makeIcon(def)
     local b
-    if def.secure then
+    local target
+    for _, name in ipairs(def.micro or {}) do
+        local mb = _G[name]
+        if type(mb) == "table" and mb.Click then target = mb break end
+    end
+    if target then
+        b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
+        if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
+        b:SetAttribute("type", "click")
+        b:SetAttribute("clickbutton", target)
+    elseif def.secure then
         b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
         if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
         b:SetAttribute("type", def.secure.type)
         b:SetAttribute(def.secure.type, def.secure.item)
     else
         b = CreateFrame("Button", nil, bar)
-        b:SetScript("OnClick", function() def.run() end)
+        b:SetScript("OnClick", function()
+            -- fenêtre du jeu sans bouton protégé trouvé : jamais en combat, pour limiter la casse
+            if def.micro and inCombat() then return end
+            def.run()
+        end)
     end
     b:SetFrameLevel(bar.bg:GetFrameLevel() + 4)
     b.def = def

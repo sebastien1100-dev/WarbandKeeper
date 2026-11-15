@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.56.2", date = "15/11/2026",
+        fixed = {
+            "Micro menu : les raccourcis Personnage, Grimoire, Talents, Carte, Quêtes, Social et Menu ouvraient la fenêtre du jeu depuis l'addon, ce qui provoquait ensuite l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée StatusBar:Show() » en combat. Ils cliquent maintenant le bouton du jeu par un chemin protégé.",
+        },
+    },
+    {
         version = "0.56.1", date = "15/11/2026",
         changed = {
             "Halo : le réglage « Portée » s'arrête de nouveau à 15 m. Le jeu ne désigne pas un objet plus loin, quelle que soit la valeur demandée : monter au-delà ne changeait rien.",
