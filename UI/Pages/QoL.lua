@@ -801,6 +801,20 @@ UI:RegisterPage({
                 prow("« Si besoin » : vie sous", nil, pslider("needHealth", 10, 100, 5, "%d %%"), 240)
                 prow("Opacité hors combat", nil, pslider("oocAlpha", 0.3, 1, 0.05, "%.2f"), 240)
 
+                -- Indicateur de distance (UI/RangeRing.lua)
+                local rg = UI.RangeConfig()
+                local rcard = card("Indicateur de distance", 40 + 4 * 46 + 8, "position et taille en mode édition")
+                local ry = -40
+                local function rrow(label, desc, field, after)
+                    UI:SettingRow(rcard, ry, label, desc, toggle(rcard, function() return rg[field] end,
+                        function(v) rg[field] = v; if after then after() end end), 80)
+                    ry = ry - 46
+                end
+                rrow("Afficher l'anneau", "Vert : à portée de tir · orange : corps à corps · rouge : trop loin · gris : pas de cible.", "enabled", function() UI:SyncRange() end)
+                rrow("Seulement en combat", nil, "combatOnly")
+                rrow("Zone morte en jaune", "Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange).", "deadZone")
+                rrow("Distance au centre", "Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m.", "numbers")
+
                 -- Bouton d'aspect (UI/AspectButton.lua)
                 local ab = UI.AspectButtonConfig()
                 local H = WK.modules.Hunter

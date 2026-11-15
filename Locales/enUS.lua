@@ -784,6 +784,12 @@ WK.Locales.enUS.text = {
     ["Disposition : ce perso"] = "Layout: this character", ["Disposition : compte"] = "Layout: account",
     ["Disposition commune à tout le compte, ou propre à ce perso."] = "Layout shared by the whole account, or for this character only.",
     ["Icône et nombre"] = "Icon and count",
+    ["cac"] = "melee", ["Indicateur de distance"] = "Range indicator", ["Afficher l'anneau"] = "Show the ring",
+    ["Vert : à portée de tir · orange : corps à corps · rouge : trop loin · gris : pas de cible."] = "Green: in shooting range · orange: melee · red: too far · grey: no target.",
+    ["Seulement en combat"] = "Only in combat", ["Zone morte en jaune"] = "Dead zone in yellow",
+    ["Entre 5 et 8 m, ni tir ni corps à corps (sinon en orange)."] = "Between 5 and 8 yd, neither shooting nor melee (otherwise orange).",
+    ["Distance au centre"] = "Distance in the middle", ["Fourchette estimée : cac, 5-8 m, 8-35 m, 35+ m."] = "Estimated range: melee, 5-8 yd, 8-35 yd, 35+ yd.",
+    ["5-8 m"] = "5-8 yd", ["8-35 m"] = "8-35 yd", ["35+ m"] = "35+ yd",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

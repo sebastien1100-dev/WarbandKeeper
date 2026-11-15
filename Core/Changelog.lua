@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.44.0", date = "15/11/2026",
+        added = {
+            "Chasseur : indicateur de distance, un anneau coloré selon la cible : vert à portée de tir, orange au corps à corps, jaune dans la zone morte (5 à 8 m, option), rouge trop loin, gris sans cible. Fourchette de distance estimée au centre.",
+            "Réglages dans QoL > Chasseur > Indicateur de distance (seulement en combat, zone morte, distance au centre) ; position et taille en mode édition.",
+        },
+        changed = {
+            "Nouveaux fichiers et nouvelle texture : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.43.2", date = "15/11/2026",
         fixed = {
             "Cadre du familier : la vie ne s'affichait pas sur WoW Forever (le jeu la donne parfois sous forme masquée, que l'addon ne peut pas lire). La barre et le chiffre sont maintenant affichés par le jeu lui-même, même dans ce cas.",

@@ -312,10 +312,17 @@ def icon_guide():
     save(img, "guide", 128)
 
 
+def icon_ring():
+    """Anneau net (indicateur de distance)."""
+    img, d, s = canvas(128)
+    circle(d, s, 0.5, 0.5, 0.44, 0.09)
+    save(img, "ring", 128)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, fx_halo, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, fx_halo, fx_ring]:
         fn()
     print("OK")

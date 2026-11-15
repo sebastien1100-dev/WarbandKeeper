@@ -18,6 +18,15 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.44.0 — 15/11/2026
+
+### Ajouts
+- Chasseur : indicateur de distance, un anneau coloré selon la cible : vert à portée de tir, orange au corps à corps, jaune dans la zone morte (5 à 8 m, option), rouge trop loin, gris sans cible. Fourchette de distance estimée au centre.
+- Réglages dans QoL > Chasseur > Indicateur de distance (seulement en combat, zone morte, distance au centre) ; position et taille en mode édition.
+
+### Modifications
+- Nouveaux fichiers et nouvelle texture : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.43.2 — 15/11/2026
 
 ### Modifications
