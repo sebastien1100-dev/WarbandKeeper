@@ -440,12 +440,12 @@ UI:RegisterPage({
         local Gm = WK.modules.Glow
         local gcfg = Gm:Config()
         local gtoggle = toggle
-        local gmain = card("Halo", 308)
+        local gmain = card("Halo", 354)
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
         UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet.",
-            UI:Slider(gmain, 240, 5, 30, 1, function() return gcfg.range or 15 end,
+            UI:Slider(gmain, 240, 5, 60, 1, function() return gcfg.range or 15 end,
                 function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
         UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
@@ -455,9 +455,11 @@ UI:RegisterPage({
             function(v) gcfg.style = v end, 26)
         fxSeg:Select(gcfg.style or "halo")
         UI:SettingRow(gmain, -230, "Effet", "Halo autour de l'objet, colonne de lumière au-dessus, ou les deux.", fxSeg, 280)
+        UI:SettingRow(gmain, -276, "Hauteur de la colonne", "En multiples de la taille du halo.",
+            UI:Slider(gmain, 240, 2, 10, 0.5, function() return gcfg.beamHeight or 4.5 end, function(v) gcfg.beamHeight = v end, "%.1fx"), 260)
         local diag = UI:Text(gmain, 11, C.muted)
-        diag:SetPoint("TOPLEFT", 16, -280)
-        diag:SetPoint("TOPRIGHT", -16, -280)
+        diag:SetPoint("TOPLEFT", 16, -326)
+        diag:SetPoint("TOPRIGHT", -16, -326)
         diag:SetJustifyH("LEFT")
         diag:SetText(T("Pour comprendre pourquoi un objet ne brille pas : approche-toi de lui et tape /wk halo."))
         local glowNote = dynText(gmain, 11, C.warning, function()

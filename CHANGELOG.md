@@ -18,6 +18,15 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.55.1 — 15/11/2026
+
+### Ajouts
+- Halo : réglage « Hauteur de la colonne ».
+
+### Modifications
+- Halo : la colonne de lumière est presque deux fois plus haute par défaut, et plus lumineuse quand l'objet est encore loin.
+- Halo : la portée se règle maintenant jusqu'à 60 m (30 m avant), pour voir l'objet de plus loin.
+
 ## v0.55.0 — 15/11/2026
 
 ### Ajouts

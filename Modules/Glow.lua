@@ -340,8 +340,9 @@ local function buildGlow()
         self.halo:SetAlpha(math.min(1, (base + 0.15 * breath) * power))
         self.beam:SetShown(beamOn)
         if beamOn then
-            self.beam:SetSize(size * (0.42 + 0.05 * breath), size * 2.4)
-            self.beam:SetAlpha(math.min(1, (base + 0.1 + 0.2 * breath) * power))
+            -- hauteur réglable (en multiples de la taille) ; bien visible même hors de portée
+            self.beam:SetSize(size * (0.42 + 0.05 * breath), size * (g.beamHeight or 4.5))
+            self.beam:SetAlpha(math.min(1, (math.max(base, 0.7) + 0.1 + 0.2 * breath) * power))
         end
         -- anneau qui s'élargit en boucle quand l'objet est à portée
         if inRange then

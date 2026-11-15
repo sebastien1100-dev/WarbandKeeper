@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.55.1", date = "15/11/2026",
+        changed = {
+            "Halo : la colonne de lumière est presque deux fois plus haute par défaut, et plus lumineuse quand l'objet est encore loin.",
+            "Halo : la portée se règle maintenant jusqu'à 60 m (30 m avant), pour voir l'objet de plus loin.",
+        },
+        added = {
+            "Halo : réglage « Hauteur de la colonne ».",
+        },
+    },
+    {
         version = "0.55.0", date = "15/11/2026",
         added = {
             "Halo : nouvelle catégorie « Créatures à dépecer » (brun clair). Le cadavre que le jeu désigne brille s'il est dépeçable et si le perso a le Dépeçage.",
