@@ -319,10 +319,64 @@ def icon_ring():
     save(img, "ring", 128)
 
 
+# Pictogrammes du micro menu (style trait fin, grille 24 comme les maquettes)
+MM = 2.0 / 24  # épaisseur du trait
+
+
+def _g(v):
+    return v / 24.0
+
+
+def _pts(pts):
+    return [(_g(x), _g(y)) for x, y in pts]
+
+
+def _arc(d, s, box, a0, a1):
+    d.arc([P(_g(box[0]), s), P(_g(box[1]), s), P(_g(box[2]), s), P(_g(box[3]), s)], a0, a1, fill=W, width=int(MM * s))
+
+
+def _poly(d, s, pts, closed=True):
+    pts = _pts(pts)
+    if closed:
+        pts = pts + [pts[0]]
+    line(d, s, pts, MM)
+
+
+def mm_icons():
+    def make(name, draw):
+        img, d, s = canvas(64)
+        draw(d, s)
+        save(img, "mm_" + name, 64)
+
+    make("wk", lambda d, s: (line(d, s, _pts([(6, 21), (6, 3)]), MM), _poly(d, s, [(6, 4), (18, 4), (15, 8), (18, 12), (6, 12)]),
+                              line(d, s, _pts([(9, 6.5), (10.2, 9.5), (11.5, 7.3), (12.8, 9.5), (14, 6.5)]), MM * 0.8)))
+    make("mail", lambda d, s: (rrect(d, s, _g(3), _g(5), _g(21), _g(19), _g(2), MM), line(d, s, _pts([(3.5, 6.5), (12, 13), (20.5, 6.5)]), MM)))
+    make("hearth", lambda d, s: (_arc(d, s, (6, 3, 18, 17), 180, 360), line(d, s, _pts([(6, 10), (6, 19), (18, 19), (18, 10)]), MM),
+                                  line(d, s, _pts([(12, 8), (12, 12), (14.5, 14.5)]), MM)))
+    make("char", lambda d, s: (circle(d, s, _g(12), _g(8), _g(4), MM), _arc(d, s, (4, 14, 20, 28), 180, 360)))
+    make("book", lambda d, s: (rrect(d, s, _g(4), _g(3), _g(19), _g(21), _g(2), MM), line(d, s, _pts([(7.5, 3.5), (7.5, 20.5)]), MM),
+                                _poly(d, s, [(13, 7.5), (14, 10), (16.5, 10.2), (14.6, 11.9), (15.2, 14.4), (13, 13), (10.8, 14.4), (11.4, 11.9), (9.5, 10.2), (12, 10)])))
+    make("talents", lambda d, s: (line(d, s, _pts([(12, 20), (12, 13)]), MM), line(d, s, _pts([(10.6, 9.6), (8.4, 7.4)]), MM),
+                                   line(d, s, _pts([(13.4, 9.6), (15.6, 7.4)]), MM), circle(d, s, _g(12), _g(11), _g(2), MM),
+                                   circle(d, s, _g(7), _g(6), _g(2), MM), circle(d, s, _g(17), _g(6), _g(2), MM), circle(d, s, _g(12), _g(21), _g(1.4))))
+    make("map", lambda d, s: (_poly(d, s, [(3, 6), (9, 4), (15, 6), (21, 4), (21, 18), (15, 20), (9, 18), (3, 20)]),
+                               line(d, s, _pts([(9, 4), (9, 18)]), MM), line(d, s, _pts([(15, 6), (15, 20)]), MM)))
+    make("quest", lambda d, s: (rrect(d, s, _g(5), _g(3), _g(19), _g(21), _g(2), MM), line(d, s, _pts([(12, 7), (12, 13)]), MM),
+                                 circle(d, s, _g(12), _g(16.6), _g(1.2))))
+    make("social", lambda d, s: (circle(d, s, _g(9), _g(8), _g(3.2), MM), circle(d, s, _g(17), _g(9), _g(2.6), MM),
+                                  _arc(d, s, (3, 14.4, 15, 25.6), 180, 360), _arc(d, s, (11, 14.6, 22, 25.6), 270, 360)))
+    make("prof", lambda d, s: (_poly(d, s, [(14, 4), (20, 10), (17, 13), (11, 7)]), line(d, s, _pts([(11, 7), (3, 15), (6, 18), (14, 10)]), MM)))
+    make("farm", lambda d, s: (circle(d, s, _g(12), _g(12), _g(9), MM),
+                                d.polygon([(P(_g(10), s), P(_g(8), s)), (P(_g(16), s), P(_g(12), s)), (P(_g(10), s), P(_g(16), s))], fill=W)))
+    make("menu", lambda d, s: (circle(d, s, _g(12), _g(12), _g(3), MM),
+                                [line(d, s, _pts(seg), MM) for seg in ([(12, 2.5), (12, 5)], [(12, 19), (12, 21.5)], [(2.5, 12), (5, 12)], [(19, 12), (21.5, 12)],
+                                                                       [(5.3, 5.3), (7, 7)], [(17, 17), (18.7, 18.7)], [(5.3, 18.7), (7, 17)], [(17, 7), (18.7, 5.3)])]))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, fx_halo, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, fx_halo, fx_ring]:
         fn()
     print("OK")

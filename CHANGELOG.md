@@ -18,6 +18,12 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.46.0 — 15/11/2026
+
+### Modifications
+- Micro menu : nouvelles icônes dessinées au trait fin, à la couleur du thème, sur des tuiles sombres arrondies. Les douze raccourcis ont maintenant le même style.
+- Nouvelles textures : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.45.2 — 15/11/2026
 
 ### Ajouts

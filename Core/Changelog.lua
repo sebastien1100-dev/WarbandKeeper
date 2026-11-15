@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.46.0", date = "15/11/2026",
+        changed = {
+            "Micro menu : nouvelles icônes dessinées au trait fin, à la couleur du thème, sur des tuiles sombres arrondies. Les douze raccourcis ont maintenant le même style.",
+            "Nouvelles textures : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.45.2", date = "15/11/2026",
         fixed = {
             "Indicateur de distance : sans cible, l'anneau gris et transparent était presque invisible. Il est maintenant beige sur un fond sombre, avec « sans cible » au centre.",

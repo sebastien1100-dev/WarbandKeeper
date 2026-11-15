@@ -15,9 +15,9 @@ local bar
 
 -- Raccourcis disponibles. secure : bouton protégé (objet ou sort) ; sinon une fonction.
 local SHORTCUTS = {
-    { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "logo" end, tint = true,
+    { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "mm_wk" end, tint = true,
       run = function() UI:ToggleWindow() end },
-    { key = "mail", label = "Courrier", icon = function() return UI.MEDIA .. "mail" end, tint = true,
+    { key = "mail", label = "Courrier", icon = function() return UI.MEDIA .. "mm_mail" end, tint = true,
       run = function() UI:Create():Show(); UI:ShowPage("mail") end,
       dot = function()
           for _, c in pairs(WK.DB.global.characters) do
@@ -25,25 +25,21 @@ local SHORTCUTS = {
           end
       end },
     { key = "hearth", label = "Pierre de foyer", secure = { type = "item", item = "item:6948" },
-      icon = function() return (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(6948)) or (GetItemIcon and GetItemIcon(6948)) or "Interface\\Icons\\INV_Misc_Rune_01" end,
+      icon = function() return UI.MEDIA .. "mm_hearth" end, tint = true,
       tip = function() return GetBindLocation and GetBindLocation() end },
-    { key = "char", label = "Personnage", icon = function() return "Interface\\Icons\\INV_Chest_Chain_05" end,
+    { key = "char", label = "Personnage", icon = function() return UI.MEDIA .. "mm_char" end, tint = true,
       run = function() if ToggleCharacter then ToggleCharacter("PaperDollFrame") end end },
-    { key = "spells", label = "Grimoire", icon = function() return "Interface\\Icons\\INV_Misc_Book_09" end,
+    { key = "spells", label = "Grimoire", icon = function() return UI.MEDIA .. "mm_book" end, tint = true,
       run = function() if ToggleSpellBook then ToggleSpellBook(BOOKTYPE_SPELL or "spell") end end },
-    { key = "talents", label = "Talents", icon = function() return "Interface\\Icons\\Ability_Marksmanship" end,
+    { key = "talents", label = "Talents", icon = function() return UI.MEDIA .. "mm_talents" end, tint = true,
       run = function() if ToggleTalentFrame then ToggleTalentFrame() end end },
-    { key = "map", label = "Carte", icon = function() return "Interface\\Icons\\INV_Misc_Map_01" end,
+    { key = "map", label = "Carte", icon = function() return UI.MEDIA .. "mm_map" end, tint = true,
       run = function() if ToggleWorldMap then ToggleWorldMap() end end },
-    { key = "quests", label = "Journal de quêtes", icon = function() return "Interface\\Icons\\INV_Misc_Book_08" end,
+    { key = "quests", label = "Journal de quêtes", icon = function() return UI.MEDIA .. "mm_quest" end, tint = true,
       run = function() if ToggleQuestLog then ToggleQuestLog() end end },
-    { key = "social", label = "Social et guilde", icon = function() return "Interface\\Icons\\INV_Misc_Note_02" end,
+    { key = "social", label = "Social et guilde", icon = function() return UI.MEDIA .. "mm_social" end, tint = true,
       run = function() if ToggleFriendsFrame then ToggleFriendsFrame() end end },
-    { key = "prof", label = "Métier principal", icon = function()
-          local me = WK.DB:Me()
-          for _, p in pairs(me.professions or {}) do if p.icon then return p.icon end end
-          return "Interface\\Icons\\Trade_BlackSmithing"
-      end,
+    { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "mm_prof" end, tint = true,
       run = function()
           local me = WK.DB:Me()
           for name in pairs(me.professions or {}) do
@@ -51,10 +47,10 @@ local SHORTCUTS = {
               if k ~= "herb" and k ~= "skin" then WK.modules.Professions:OpenDirect(name) return end
           end
       end },
-    { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "play" end, tint = true,
+    { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "mm_farm" end, tint = true,
       run = function() local F = WK.modules.Farm; if F:Active() then F:Stop() else F:Start() end end,
       dot = function() return WK.modules.Farm:Active() and C.positive or nil end },
-    { key = "menu", label = "Menu du jeu", icon = function() return "Interface\\Icons\\INV_Misc_Gear_01" end,
+    { key = "menu", label = "Menu du jeu", icon = function() return UI.MEDIA .. "mm_menu" end, tint = true,
       run = function() if ToggleGameMenu then ToggleGameMenu() end end },
 }
 UI.CLOCK_SHORTCUTS = SHORTCUTS
@@ -114,11 +110,12 @@ local function makeIcon(def)
     end
     b:SetFrameLevel(bar.bg:GetFrameLevel() + 4)
     b.def = def
-    b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
+    -- tuile sombre arrondie, bordure fine, pictogramme au trait teinté à l'accent
+    b.edge = UI:Rounded(b, 8, 0, "BACKGROUND", 0)
+    b.bg = UI:Rounded(b, 7, 1, "BACKGROUND", 1)
     b.tex = b:CreateTexture(nil, "ARTWORK")
-    b.tex:SetPoint("TOPLEFT", 3, -3)
-    b.tex:SetPoint("BOTTOMRIGHT", -3, 3)
-    if not def.tint then b.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92) end
+    b.tex:SetPoint("TOPLEFT", 6, -6)
+    b.tex:SetPoint("BOTTOMRIGHT", -6, 6)
     b.dot = UI:Icon(b, "circle", 7, nil, "OVERLAY")
     b.dot:SetPoint("TOP", b, "BOTTOM", 0, -2)
     b:SetScript("OnEnter", function(s)
@@ -265,6 +262,7 @@ local function build()
             ic.tex:SetTexture(def.icon())
             if def.tint then ic.tex:SetVertexColor(UI:Accent()) end
             ic.bg:SetColor(unpack(C.surface2))
+            ic.edge:SetColor(unpack(C.border))
             local dc = def.dot and def.dot()
             ic.dot:SetShown(dc ~= nil)
             if dc then ic.dot:SetVertexColor(unpack(dc)) end
