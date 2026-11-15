@@ -440,7 +440,7 @@ UI:RegisterPage({
         local Gm = WK.modules.Glow
         local gcfg = Gm:Config()
         local gtoggle = toggle
-        local gmain = card("Halo", 236)
+        local gmain = card("Halo", 262)
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
@@ -451,6 +451,11 @@ UI:RegisterPage({
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
         UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
             UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
+        local diag = UI:Text(gmain, 11, C.muted)
+        diag:SetPoint("TOPLEFT", 16, -234)
+        diag:SetPoint("TOPRIGHT", -16, -234)
+        diag:SetJustifyH("LEFT")
+        diag:SetText(T("Pour comprendre pourquoi un objet ne brille pas : approche-toi de lui et tape /wk halo."))
         local glowNote = dynText(gmain, 11, C.warning, function()
             return WK.modules.Glow:OtherAddonLoaded() and T("L'addon Lueur est chargé : il s'en occupe, le halo reste éteint.") or ""
         end)
@@ -500,12 +505,16 @@ UI:RegisterPage({
         section("micro")
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 9 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local clockCard = card("Horloge et raccourcis", 40 + 11 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
         local cy = -40
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
         crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
             toggle(clockCard, function() return ck.enabled end, function(v) ck.enabled = v; csync() end), 80)
+        crow("Horloge toujours affichée", "Sinon, elle apparaît au survol de son emplacement.",
+            toggle(clockCard, function() return ck.clockAlways ~= false end, function(v) ck.clockAlways = v; csync() end), 80)
+        crow("Raccourcis toujours affichés", "Sinon, ils se déplient au survol de l'heure.",
+            toggle(clockCard, function() return ck.always end, function(v) ck.always = v; csync() end), 80)
         local segSrv = UI:Segmented(clockCard, { { false, "Locale" }, { true, "Serveur" } }, function(v) ck.server = v end, 26)
         segSrv:Select(ck.server and true or false)
         crow("Heure", nil, segSrv, 200)

@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.51.0", date = "15/11/2026",
+        added = {
+            "Micro menu : option « Raccourcis toujours affichés » (sinon ils se déplient au survol).",
+            "Micro menu : option « Horloge toujours affichée » (sinon elle apparaît au survol de son emplacement).",
+            "Halo : commande /wk halo, qui dit pourquoi l'objet désigné brille ou non (activé, réglages du jeu, catégorie reconnue, plaque trouvée).",
+        },
+        fixed = {
+            "Halo : il ne s'allumait presque jamais, car la plaque de l'objet arrive un instant après sa désignation et l'addon ne revérifiait pas. Il réessaie maintenant, et retrouve la plaque même si le jeu ne la donne pas directement.",
+            "Halo : les objets de quête sont aussi reconnus d'après leur infobulle (titre ou objectif de quête), quand le jeu ne les signale pas lui-même.",
+        },
+    },
+    {
         version = "0.50.1", date = "15/11/2026",
         fixed = {
             "Micro menu : l'heure et les barres FPS / latence paraissaient décentrées. Les deux barres vont maintenant d'un bord du texte à l'autre, leur partie vide reste visible, et le gras n'est plus décalé d'un côté.",

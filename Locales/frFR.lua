@@ -11,6 +11,7 @@ WK.Locales.frFR.keys = {
     HELP_NAME       = "/wk nom           - Affiche le nom du perso utilisé pour le courrier",
     HELP_LINK       = "/wk lien          - Diagnostic du lien de métier (après ouverture d'un métier)",
     HELP_GUIDE      = "/wk guide boite|banque|reparer|marchand|maitre|ecurie|munitions|stop - Guidage vers le plus proche",
+    HELP_HALO       = "/wk halo          - Diagnostic du halo (pourquoi l'objet désigné brille ou non)",
     HELP_EDIT       = "/wk edit          - Mode édition : placer et redimensionner les éléments à l'écran",
     HELP_TAKE       = "/wk prendre       - Prend tout le courrier (boîte aux lettres ouverte)",
     HELP_GOLD       = "/wk or            - Or de tous les personnages",

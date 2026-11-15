@@ -18,6 +18,17 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.51.0 — 15/11/2026
+
+### Ajouts
+- Micro menu : option « Raccourcis toujours affichés » (sinon ils se déplient au survol).
+- Micro menu : option « Horloge toujours affichée » (sinon elle apparaît au survol de son emplacement).
+- Halo : commande /wk halo, qui dit pourquoi l'objet désigné brille ou non (activé, réglages du jeu, catégorie reconnue, plaque trouvée).
+
+### Corrections
+- Halo : il ne s'allumait presque jamais, car la plaque de l'objet arrive un instant après sa désignation et l'addon ne revérifiait pas. Il réessaie maintenant, et retrouve la plaque même si le jeu ne la donne pas directement.
+- Halo : les objets de quête sont aussi reconnus d'après leur infobulle (titre ou objectif de quête), quand le jeu ne les signale pas lui-même.
+
 ## v0.50.1 — 15/11/2026
 
 ### Corrections

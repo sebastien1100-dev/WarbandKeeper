@@ -60,6 +60,7 @@ UI.CLOCK_SHORTCUTS = SHORTCUTS
 
 local DEFAULTS = {
     enabled = true, server = false, h12 = false, magnify = 0.8, stats = true, size = 28,
+    always = false, clockAlways = true, -- raccourcis toujours dépliés ; horloge toujours visible
     bold = false, timeSize = 0, timeFont = "ui", -- heure : gras, taille (0 = suit la taille des raccourcis), police
     side = { wk = "L", mail = "L", hearth = "L", char = "R", spells = "R", talents = "R", map = "R" },
 }
@@ -252,7 +253,14 @@ local function build()
         -- dépliage au survol (hors combat), repli 0,4 s après le départ de la souris
         local over = self:Over()
         if over then self.leftAt = nil elseif not self.leftAt then self.leftAt = GetTime() end
-        local want = (over or (self.leftAt and GetTime() - self.leftAt < 0.4)) and 1 or 0
+        local want = (o.always or over or (self.leftAt and GetTime() - self.leftAt < 0.4)) and 1 or 0
+        -- horloge masquée au repos (option) : elle revient au survol de son emplacement
+        local ca = (o.clockAlways ~= false or over or (not o.always and self.open > 0)) and 1 or 0
+        self.clockA = self.clockA or 1
+        if self.clockA ~= ca then
+            self.clockA = self.clockA < ca and math.min(1, self.clockA + el * 6) or math.max(0, self.clockA - el * 6)
+            self.bg:SetAlpha(self.clockA); self.clockBtn:SetAlpha(self.clockA)
+        end
         if inCombat() then want = self.open > 0.5 and 1 or 0 end
         local before = self.open
         if self.open < want then self.open = math.min(1, self.open + el * 6)

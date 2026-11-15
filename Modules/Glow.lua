@@ -119,6 +119,21 @@ local function tooltipProfession(unit)
     end
 end
 
+-- Objet de quête d'après son infobulle : le jeu y met le titre et les objectifs de la quête.
+local function tooltipQuest(unit)
+    if not (C_TooltipInfo and C_TooltipInfo.GetUnit) then return false end
+    local ok, data = pcall(C_TooltipInfo.GetUnit, unit)
+    if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return false end
+    local LT = Enum and Enum.TooltipDataLineType or {}
+    for i, line in ipairs(data.lines) do
+        local ty = line.type
+        if ty ~= nil and (ty == LT.QuestTitle or ty == LT.QuestObjective or ty == LT.QuestPlayer) then return true end
+        -- repli : une ligne d'objectif « 2/5 … » ou « … : 2/5 » sous le nom
+        if i > 1 and string.find(line.leftText or "", "%d+%s*/%s*%d+") then return true end
+    end
+    return false
+end
+
 function M:Classify(unit)
     if not UnitExists or not UnitExists(unit) then return nil end
     if UnitIsGameObject and not UnitIsGameObject(unit) then return nil end
@@ -128,6 +143,7 @@ function M:Classify(unit)
         local ok, related = pcall(C_QuestLog.UnitIsRelatedToActiveQuest, unit)
         if ok and related then return "quest", name end
     end
+    if tooltipQuest(unit) then return "quest", name end
     local prof = tooltipProfession(unit)
     if prof then return prof, name end
     if isHerbName(name) then return "herb", name end
@@ -187,6 +203,30 @@ local function buildGlow()
     end)
 end
 
+-- Plaque de nom de l'objet désigné. Selon le client, la demande directe peut échouer : on
+-- cherche alors parmi les plaques affichées celle qui porte la même unité.
+local function findPlate()
+    if not C_NamePlate then return nil end
+    if C_NamePlate.GetNamePlateForUnit then
+        local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, UNIT)
+        if ok and plate then return plate end
+    end
+    if C_NamePlate.GetNamePlates and UnitIsUnit then
+        local ok, plates = pcall(C_NamePlate.GetNamePlates)
+        if ok and type(plates) == "table" then
+            for _, plate in ipairs(plates) do
+                local token = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
+                if token then
+                    local ok2, same = pcall(UnitIsUnit, token, UNIT)
+                    if ok2 and same then return plate end
+                end
+            end
+        end
+    end
+    return nil
+end
+M.FindPlate = findPlate
+
 function M:Hide()
     if glow then glow:Hide() end
     self.current = nil
@@ -202,8 +242,15 @@ function M:Update()
     local cat, name = self:Classify(UNIT)
     if not cat or not g.cats[cat] then return self:Hide() end
     if (cat == "herb" or cat == "ore") and g.onlyTrained ~= false and not hasProfession(cat) then return self:Hide() end
-    local plate = C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(UNIT)
-    if not plate then return self:Hide() end
+    local plate = findPlate()
+    if not plate then
+        -- la plaque arrive souvent un instant après la désignation : on réessaie quelques fois
+        self:Hide()
+        self.retry = (self.retry or 0) + 1
+        if self.retry <= 8 and C_Timer and C_Timer.After then C_Timer.After(0.15, function() M:Update() end) end
+        return
+    end
+    self.retry = 0
     if not glow then buildGlow() end
     local col = g.colors[cat]
     glow.halo:SetVertexColor(col[1], col[2], col[3])
@@ -229,10 +276,37 @@ function M:OnLogin()
     if g.enabled and not self:OtherAddonLoaded() then self:ApplyCVars() end
 end
 
-local function refresh() M:Update() end
+-- Diagnostic (/wk halo) : dit pourquoi le halo s'affiche ou non sur l'objet désigné.
+function M:Report()
+    local g = self:Config()
+    local function yn(v) return v and T("oui") or T("non") end
+    WK:Print(T("Halo : diagnostic"))
+    WK:Print("  " .. T("activé") .. " : " .. yn(g.enabled) .. " · " .. T("addon Lueur chargé") .. " : " .. yn(self:OtherAddonLoaded()))
+    local parts = {}
+    for name in pairs(CVARS) do table.insert(parts, name .. "=" .. tostring(getCVar(name))) end
+    table.sort(parts)
+    table.insert(parts, "SoftTargetInteractRange=" .. tostring(getCVar("SoftTargetInteractRange")))
+    WK:Print("  " .. T("réglages du jeu") .. " : " .. table.concat(parts, ", "))
+    if WK.unknownEvents and WK.unknownEvents.PLAYER_SOFT_INTERACT_CHANGED then
+        WK:Print("  " .. T("ce client ne signale pas l'objet désigné (évènement absent)"))
+    end
+    local exists = UnitExists and UnitExists(UNIT)
+    if not exists then
+        WK:Print("  " .. T("aucun objet désigné par le jeu : approche-toi d'un objet et relance la commande"))
+        return
+    end
+    local cat, name = self:Classify(UNIT)
+    WK:Print("  " .. T("objet désigné") .. " : " .. tostring(name) .. " · " .. T("catégorie") .. " : " .. (cat and T(M.LABELS[cat]) or T("inconnue (pas de halo)")))
+    if cat and not g.cats[cat] then WK:Print("  " .. T("cette catégorie est décochée dans les réglages")) end
+    WK:Print("  " .. T("plaque de nom trouvée") .. " : " .. yn(findPlate() ~= nil))
+end
+
+-- Les évènements de plaque donnent « nameplateN », jamais « softinteract » : on revérifie à chaque fois.
+local function refresh() M.retry = 0; M:Update() end
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", refresh)
-WK:On("NAME_PLATE_UNIT_ADDED", function(unit) if unit == UNIT then refresh() end end)
-WK:On("NAME_PLATE_UNIT_REMOVED", function(unit) if unit == UNIT then M:Hide() end end)
+WK:On("NAME_PLATE_UNIT_ADDED", refresh)
+WK:On("NAME_PLATE_UNIT_REMOVED", function() if M.current then refresh() end end)
+WK:On("QUEST_LOG_UPDATE", function() if M.current or (UnitExists and UnitExists(UNIT)) then M:Update() end end)
 WK:On("PLAYER_REGEN_DISABLED", refresh)
 WK:On("PLAYER_REGEN_ENABLED", refresh)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()
