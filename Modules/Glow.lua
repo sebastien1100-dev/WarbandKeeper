@@ -2,7 +2,7 @@ local ADDON_NAME, WK = ...
 local M = WK:NewModule("Glow")
 local T = function(s) return WK.T(s) end
 
--- Lueur de récolte : fait briller l'objet que le jeu désigne pour l'interaction (plante, filon,
+-- Halo (ancienne « lueur de récolte ») : fait briller l'objet que le jeu désigne pour l'interaction (plante, filon,
 -- objet de quête, coffre, flotteur de pêche). Le « soft targeting » du jeu choisit l'objet
 -- (unité « softinteract ») et lui donne une plaque de nom : la lueur s'y accroche.
 -- Les réglages du jeu modifiés sont gardés à l'activation et rendus à l'arrêt.

@@ -127,7 +127,7 @@ UI:RegisterPage({
         end
 
         -- Colonne : Général puis les classes ---------------------------------------
-        local function navButton(key, label, y0, class)
+        local function navButton(key, label, y0, class, iconName)
             local b = CreateFrame("Button", nil, navCard)
             b:SetHeight(48)
             b:SetPoint("TOPLEFT", 8, y0)
@@ -144,7 +144,7 @@ UI:RegisterPage({
             else
                 b.iconBg = UI:Icon(b, "circle", 26, nil, "ARTWORK")
                 b.iconBg:SetPoint("LEFT", 12, 0)
-                b.icon = UI:Icon(b, "gear", 14, C.onAccent, "OVERLAY")
+                b.icon = UI:Icon(b, iconName or "gear", 14, C.onAccent, "OVERLAY")
                 b.icon:SetPoint("CENTER", b.iconBg, "CENTER")
             end
             b.label = UI:Text(b, 13)
@@ -177,24 +177,27 @@ UI:RegisterPage({
         end
         local gen = navButton("general", "Général", -8)
         gen.desc:SetText("Marchand, groupe, confort")
+        local halo = navButton("halo", "Halo", -58, nil, "spark")
+        halo.desc:SetText("L'objet visé brille")
+        local CLASS_TOP = 116 -- début des classes, sous Général, Halo et le séparateur
         local sep = navCard:CreateTexture(nil, "ARTWORK")
         sep:SetColorTexture(unpack(C.border))
-        sep:SetPoint("TOPLEFT", 14, -61)
-        sep:SetPoint("TOPRIGHT", -14, -61)
+        sep:SetPoint("TOPLEFT", 14, -(CLASS_TOP - 5))
+        sep:SetPoint("TOPRIGHT", -14, -(CLASS_TOP - 5))
         sep:SetHeight(1)
         local classButtons = {}
         for i, cl in ipairs(QoL.CLASSES) do
-            classButtons[i] = navButton(cl[1], cl[2], -66 - (i - 1) * 50, cl[1])
+            classButtons[i] = navButton(cl[1], cl[2], -CLASS_TOP - (i - 1) * 50, cl[1])
         end
         -- Fenêtre basse : les lignes se resserrent pour garder une marge sous la dernière classe.
         UI:OnResize(navCard, function(_, h)
             if not h or h <= 0 then return end
-            local step = math.max(40, math.min(50, math.floor((h - 66 - 14) / #classButtons)))
+            local step = math.max(40, math.min(50, math.floor((h - CLASS_TOP - 14) / #classButtons)))
             for i, b in ipairs(classButtons) do
                 b:SetHeight(step - 2)
                 b:ClearAllPoints()
-                b:SetPoint("TOPLEFT", 8, -66 - (i - 1) * step)
-                b:SetPoint("TOPRIGHT", -8, -66 - (i - 1) * step)
+                b:SetPoint("TOPLEFT", 8, -CLASS_TOP - (i - 1) * step)
+                b:SetPoint("TOPRIGHT", -8, -CLASS_TOP - (i - 1) * step)
             end
         end)
 
@@ -311,6 +314,67 @@ UI:RegisterPage({
             toggle(comfort, function() return g.dismount end, function(v) g.dismount = v end), 80)
         UI:SettingRow(comfort, -184, "Passer les cinématiques", nil,
             toggle(comfort, function() return g.skipCinematics end, function(v) g.skipCinematics = v end), 80)
+
+        -----------------------------------------------------------------------
+        -- Halo : l'objet visé (plante, filon, coffre, flotteur…) brille (Modules/Glow.lua)
+        -----------------------------------------------------------------------
+        section("halo")
+        local Gm = WK.modules.Glow
+        local gcfg = Gm:Config()
+        local gtoggle = toggle
+        local gmain = card("Halo", 236)
+        UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
+            "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
+            gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
+        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet.",
+            UI:Slider(gmain, 240, 5, 30, 1, function() return gcfg.range or 15 end,
+                function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
+        UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
+            UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
+        UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
+            UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
+        local glowNote = dynText(gmain, 11, C.warning, function()
+            return WK.modules.Glow:OtherAddonLoaded() and T("L'addon Lueur est chargé : il s'en occupe, le halo reste éteint.") or ""
+        end)
+        glowNote:SetPoint("TOPLEFT", 16, -16)
+        glowNote:SetPoint("TOPRIGHT", -16, -16)
+        glowNote:SetJustifyH("RIGHT")
+
+        local ghide = card("Quand ne pas l'afficher", 184)
+        UI:SettingRow(ghide, -40, "Seulement si le perso a le métier", "Pas de halo sur une plante sans Herboristerie, ni sur un filon sans Minage.",
+            gtoggle(ghide, function() return gcfg.onlyTrained ~= false end, function(v) gcfg.onlyTrained = v; Gm:Update() end), 80)
+        UI:SettingRow(ghide, -88, "Pas en combat", nil,
+            gtoggle(ghide, function() return gcfg.hideInCombat end, function(v) gcfg.hideInCombat = v; Gm:Update() end), 80)
+        UI:SettingRow(ghide, -130, "Pas en donjon, raid ou champ de bataille", nil,
+            gtoggle(ghide, function() return gcfg.hideInInstance end, function(v) gcfg.hideInInstance = v; Gm:Update() end), 80)
+
+        local gcats = card("Objets et couleurs", 40 + #Gm.CATEGORIES * 44 + 8)
+        for i, key in ipairs(Gm.CATEGORIES) do
+            local ry = -40 - (i - 1) * 44
+            local sw = CreateFrame("Button", nil, gcats)
+            sw:SetSize(44, 26)
+            UI:Rounded(sw, 8, 0, "BACKGROUND", 1):SetColor(unpack(C.border))
+            local fill = UI:Rounded(sw, 7, 1, "BACKGROUND", 2)
+            local col = gcfg.colors[key]
+            fill:SetColor(col[1], col[2], col[3], 1)
+            sw:SetScript("OnClick", function()
+                local c0 = gcfg.colors[key]
+                UI:PickColor(c0[1], c0[2], c0[3], function(r, g, b)
+                    gcfg.colors[key] = { r, g, b }
+                    fill:SetColor(r, g, b, 1)
+                    Gm:Update()
+                end)
+            end)
+            sw:SetScript("OnEnter", function() WK.UI:TooltipOwner(sw, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
+            sw:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            local row = CreateFrame("Frame", nil, gcats)
+            row:SetSize(140, 26)
+            local tg = gtoggle(row, function() return gcfg.cats[key] end, function(v) gcfg.cats[key] = v; Gm:Update() end)
+            tg:SetPoint("RIGHT")
+            sw:SetParent(row); sw:ClearAllPoints(); sw:SetPoint("RIGHT", tg, "LEFT", -12, 0)
+            UI:SettingRow(gcats, ry, Gm.LABELS[key], nil, row, 140)
+        end
+
 
         -----------------------------------------------------------------------
         -- Fiches de classe
@@ -612,6 +676,11 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "halo" then
+                local G = WK.modules.Glow
+                local on = G:Config().enabled and not G:OtherAddonLoaded()
+                b.desc:SetText(on and T("Activé") or T("Désactivé"))
+                b.count:SetText("")
             else
                 local n = #QoL:CharsOf(key)
                 b.played = played[key] or false

@@ -140,7 +140,7 @@ UI:RegisterPage({
             { "general", "Général", "home", "Langue, minimap, combat" },
             { "prices", "Prix", "coin", "Source des prix" },
             { "mail", "Courrier", "mail", "Envoi, réception, dépôt" },
-            { "glow", "Récolte", "filter", "Lueur, coins de récolte" },
+            { "glow", "Récolte", "filter", "Coins de récolte" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
             { "look", "Apparence", "logo", "Thème, couleurs, police" },
             { "about", "À propos", "notes", "Version et commandes" },
@@ -387,65 +387,13 @@ UI:RegisterPage({
         UI:SettingRow(dep, -88, "Trier les sacs ensuite", "Après le dépôt automatique.",
             toggle(dep, function() return bcfg.sortAfter ~= false end, function(v) bcfg.sortAfter = v end), 80)
 
-        -- Lueur de récolte ---------------------------------------------------------
+        -- Récolte : coins de récolte (le halo est dans QoL) -------------------------------
         section("glow")
-        local Gm = WK.modules.Glow
-        local gcfg = Gm:Config()
         self.glowToggles = {}
         local function gtoggle(parent, get, set)
             local t = UI:Toggle(parent, get, set)
             table.insert(self.glowToggles, t)
             return t
-        end
-        local gmain = card("Lueur de récolte", 236)
-        UI:SettingRow(gmain, -40, "Faire briller l'objet visé",
-            "Plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Les réglages du jeu modifiés sont rendus à l'arrêt : éteins-la avant de désinstaller l'addon.",
-            gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
-        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet.",
-            UI:Slider(gmain, 240, 5, 30, 1, function() return gcfg.range or 15 end,
-                function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
-        UI:SettingRow(gmain, -138, "Taille", "Taille de la lueur.",
-            UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
-        UI:SettingRow(gmain, -184, "Intensité", "Luminosité de la lueur.",
-            UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
-        self.glowNote = UI:Text(gmain, 11, C.warning)
-        self.glowNote:SetPoint("TOPLEFT", 16, -16)
-        self.glowNote:SetPoint("TOPRIGHT", -16, -16)
-        self.glowNote:SetJustifyH("RIGHT")
-
-        local ghide = card("Quand ne pas briller", 184)
-        UI:SettingRow(ghide, -40, "Seulement si le perso a le métier", "Pas de lueur sur une plante sans Herboristerie, ni sur un filon sans Minage.",
-            gtoggle(ghide, function() return gcfg.onlyTrained ~= false end, function(v) gcfg.onlyTrained = v; Gm:Update() end), 80)
-        UI:SettingRow(ghide, -88, "Pas en combat", nil,
-            gtoggle(ghide, function() return gcfg.hideInCombat end, function(v) gcfg.hideInCombat = v; Gm:Update() end), 80)
-        UI:SettingRow(ghide, -130, "Pas en donjon, raid ou champ de bataille", nil,
-            gtoggle(ghide, function() return gcfg.hideInInstance end, function(v) gcfg.hideInInstance = v; Gm:Update() end), 80)
-
-        local gcats = card("Objets et couleurs", 40 + #Gm.CATEGORIES * 44 + 8)
-        for i, key in ipairs(Gm.CATEGORIES) do
-            local y = -40 - (i - 1) * 44
-            local sw = CreateFrame("Button", nil, gcats)
-            sw:SetSize(44, 26)
-            UI:Rounded(sw, 8, 0, "BACKGROUND", 1):SetColor(unpack(C.border))
-            local fill = UI:Rounded(sw, 7, 1, "BACKGROUND", 2)
-            local col = gcfg.colors[key]
-            fill:SetColor(col[1], col[2], col[3], 1)
-            sw:SetScript("OnClick", function()
-                local c0 = gcfg.colors[key]
-                UI:PickColor(c0[1], c0[2], c0[3], function(r, g, b)
-                    gcfg.colors[key] = { r, g, b }
-                    fill:SetColor(r, g, b, 1)
-                    Gm:Update()
-                end)
-            end)
-            sw:SetScript("OnEnter", function() WK.UI:TooltipOwner(sw, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
-            sw:SetScript("OnLeave", function() GameTooltip:Hide() end)
-            local row = CreateFrame("Frame", nil, gcats)
-            row:SetSize(140, 26)
-            local tg = gtoggle(row, function() return gcfg.cats[key] end, function(v) gcfg.cats[key] = v; Gm:Update() end)
-            tg:SetPoint("RIGHT")
-            sw:SetParent(row); sw:ClearAllPoints(); sw:SetPoint("RIGHT", tg, "LEFT", -12, 0)
-            UI:SettingRow(gcats, y, Gm.LABELS[key], nil, row, 140)
         end
 
         -- Coins de récolte sur la carte du monde
@@ -527,7 +475,6 @@ UI:RegisterPage({
         for _, t in ipairs(self.mailToggles) do t:Refresh() end
         for _, t in ipairs(self.glowToggles) do t:Refresh() end
         self.spotsInfo:SetText(string.format(WK.T("%d récoltes enregistrées"), WK.modules.GatherMap:Count()))
-        self.glowNote:SetText(WK.modules.Glow:OtherAddonLoaded()
-            and WK.T("L'addon Lueur est chargé : il s'en occupe, cette lueur reste éteinte.") or "")
+
     end,
 })

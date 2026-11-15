@@ -697,6 +697,11 @@ WK.Locales.enUS.text = {
     ["+  AJOUTS"] = "+  ADDED",
     ["~  MODIFICATIONS"] = "~  CHANGED",
     ["!  CORRECTIONS"] = "!  FIXED",
+    ["Halo"] = "Halo", ["L'objet visé brille"] = "The targeted object glows", ["Halo sur l'objet visé"] = "Halo on the targeted object",
+    ["Taille du halo."] = "Halo size.", ["Luminosité du halo."] = "Halo brightness.", ["Quand ne pas l'afficher"] = "When not to show it",
+    ["Pas de halo sur une plante sans Herboristerie, ni sur un filon sans Minage."] = "No halo on a herb without Herbalism, or on a vein without Mining.",
+    ["L'addon Lueur est chargé : il s'en occupe, le halo reste éteint."] = "The Lueur addon is loaded: it handles this, the halo stays off.",
+    ["Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon."] = "Herbs, veins, chests, quest objects and the bobber glow as you approach. Turn it off before uninstalling the addon.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

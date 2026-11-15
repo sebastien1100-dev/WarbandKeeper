@@ -17,6 +17,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.34.0 — 15/11/2026
+
+### Modifications
+- La « lueur de récolte » s'appelle maintenant « Halo » et passe dans QoL : nouvelle entrée « Halo » sous Général (avec son état, activé ou non), mêmes réglages qu'avant (portée, taille, intensité, quand ne pas l'afficher, objets et couleurs).
+- Options > Récolte ne garde que les coins de récolte sur la carte du monde.
+
 ## v0.33.0 — 15/11/2026
 
 ### Modifications
