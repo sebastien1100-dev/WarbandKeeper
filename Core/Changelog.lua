@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.58.2", date = "15/11/2026",
+        changed = {
+            "Pêche : le bouton de minicarte disparaît quand le raccourci « Mode pêche » est présent dans le micro menu (il faisait doublon). Il revient si tu masques le raccourci.",
+        },
+    },
+    {
         version = "0.58.1", date = "15/11/2026",
         fixed = {
             "Micro menu : le raccourci « Menu du jeu » n'ouvrait rien. Il essaie le bouton du jeu, puis ouvre le menu directement si rien ne s'est passé.",

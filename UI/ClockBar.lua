@@ -446,6 +446,7 @@ local function build()
 end
 
 function UI:SyncClock()
+    if UI.SyncFishingMinimap then UI:SyncFishingMinimap() end -- le bouton de minicarte de la pêche en dépend
     if inCombat() then return end
     if cfg().enabled then
         bar = bar or build()

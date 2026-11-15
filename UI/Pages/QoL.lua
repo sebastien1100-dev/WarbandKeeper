@@ -576,7 +576,7 @@ UI:RegisterPage({
         end)
         UI:SettingRow(fmode, -40, "Mode pêche", "À la fermeture, équipement, sons et touche redeviennent comme avant. Aussi : /wk peche.", modeBtn, 170)
         UI:SettingRow(fmode, -86, "Ouvrir quand une canne est équipée", "Y compris à la connexion.", ftoggle(fmode, "autoOpen"), 80)
-        UI:SettingRow(fmode, -132, "Bouton de minicarte", "Petit bouton rond : ouvre et ferme le mode pêche. Seulement sur les persos qui ont la Pêche.",
+        UI:SettingRow(fmode, -132, "Bouton de minicarte", "Ouvre et ferme le mode pêche. Seulement sur les persos qui ont la Pêche, et masqué si le raccourci est dans le micro menu.",
             ftoggle(fmode, "minimap", function() UI:SyncFishingMinimap() end), 80)
 
         -- Touche unique : capture d'une touche, de la molette ou d'un bouton de souris

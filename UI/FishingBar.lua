@@ -238,7 +238,10 @@ end
 
 -- Affiché si l'option est cochée et que le perso connaît la Pêche.
 function UI:SyncFishingMinimap()
-    local want = F:Config().minimap and F:Knows() and Minimap ~= nil
+    -- inutile en double : si le raccourci « Mode pêche » est dans le micro menu, pas de bouton de minicarte
+    local ck = UI.ClockConfig and UI.ClockConfig()
+    local inMicro = ck and ck.enabled and ck.side and ck.side.fishing ~= nil
+    local want = F:Config().minimap and F:Knows() and Minimap ~= nil and not inMicro
     if want then
         mini = mini or buildMini()
         mini:Show()

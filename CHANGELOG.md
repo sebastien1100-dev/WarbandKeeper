@@ -17,6 +17,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.58.2 — 15/11/2026
+
+### Modifications
+- Pêche : le bouton de minicarte disparaît quand le raccourci « Mode pêche » est présent dans le micro menu (il faisait doublon). Il revient si tu masques le raccourci.
+
 ## v0.58.1 — 15/11/2026
 
 ### Ajouts
