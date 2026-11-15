@@ -8,7 +8,7 @@ local T = function(s) return WK.T(s) end
 -- ils marchent en combat, mais leur disposition ne change qu'hors combat.
 -- Réglages : WK.modules.QoL:Class("HUNTER").petCard
 local card
-local SPELL_FEED, SPELL_MEND = 6991, 136
+local SPELL_FEED, SPELL_MEND, SPELL_REVIVE = 6991, 136, 982
 local DEFAULTS = {
     enabled = true, width = 300, barH = 12, numbers = "full", color = "mood", mood = "both",
     food = "iconName", buttons = true, name = true, show = "always", needHealth = 60, oocAlpha = 1,
@@ -33,8 +33,9 @@ end
 
 local function visibility()
     local s = cfg().show
-    if s == "ooc" then return "[combat] hide; [nopet] hide; [@pet,dead] hide; show" end
-    return "[nopet] hide; [@pet,dead] hide; show"
+    -- Familier mort : la carte reste là, « Soigner » devient « Ressusciter ».
+    if s == "ooc" then return "[combat] hide; [@pet,dead] show; [nopet] hide; show" end
+    return "[@pet,dead] show; [nopet] hide; show"
 end
 
 local function secureButton(parent, name)
@@ -85,7 +86,8 @@ local function build()
     f.foodName:SetJustifyH("CENTER")
     -- Boutons protégés Nourrir / Soigner (visuel de nos boutons, clic protégé par-dessus)
     local function makeBtn(label, style)
-        local vis = UI:Button(f, label, 70, 22, style)
+        -- largeur fixe, assez grande pour « Ressusciter » (le bouton protégé ne change pas de taille en combat)
+        local vis = UI:Button(f, label, 92, 22, style)
         local sec = secureButton(f)
         sec:SetAllPoints(vis)
         sec:SetFrameLevel(f:GetFrameLevel() + 5)
@@ -98,7 +100,7 @@ local function build()
     f.click:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_TOP")
         GameTooltip:SetText(T("Familier"), 1, 1, 1)
-        GameTooltip:AddLine(T("Clic : nourrir · Clic droit : Guérison du familier"), 0.85, 0.85, 0.85)
+        GameTooltip:AddLine(T("Clic : nourrir · Clic droit : soigner, ou ressusciter s'il est mort"), 0.85, 0.85, 0.85)
         GameTooltip:Show()
     end)
     f.click:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -123,8 +125,11 @@ local function setActions()
     for _, b in ipairs({ card.click, card.feedSec }) do
         b:SetAttribute("type1", "macro"); b:SetAttribute("macrotext1", macro)
     end
-    card.click:SetAttribute("type2", "spell"); card.click:SetAttribute("spell2", mend); card.click:SetAttribute("unit2", "pet")
-    card.mendSec:SetAttribute("type1", "spell"); card.mendSec:SetAttribute("spell1", mend); card.mendSec:SetAttribute("unit1", "pet")
+    -- Soigner, ou ressusciter si le familier est mort (aussi pour le clic droit et le raccourci)
+    local revive = spellName(SPELL_REVIVE) or "Ressusciter le familier"
+    local heal = "/cast [@pet,dead][nopet] " .. revive .. "; [@pet] " .. mend
+    card.click:SetAttribute("type2", "macro"); card.click:SetAttribute("macrotext2", heal)
+    card.mendSec:SetAttribute("type1", "macro"); card.mendSec:SetAttribute("macrotext1", heal)
 end
 
 -- Disposition selon les réglages (hors combat : la carte contient des boutons protégés).
@@ -191,6 +196,7 @@ local function paint(self, demo)
         family = UnitCreatureFamily and UnitCreatureFamily("pet")
         level = UnitLevel and UnitLevel("pet")
         hp, hpMax = readable(UnitHealth and UnitHealth("pet")), readable(UnitHealthMax and UnitHealthMax("pet"))
+        self.dead = UnitIsDead and UnitIsDead("pet") or false
         if hp then self.lastHp, self.lastMax = hp, hpMax else hp, hpMax = self.lastHp, self.lastMax end
         happy = WK.modules.QoL:PetHappiness() or self.lastHappy
         self.lastHappy = happy
@@ -220,6 +226,19 @@ local function paint(self, demo)
     end
     self.moodText:SetText(T(MOOD[happy or 2]))
     self.moodText:SetTextColor(mc[1], mc[2], mc[3], 1)
+    -- Mort : « Ressusciter » mis en avant, « Nourrir » estompé
+    local dead = not demo and self.dead
+    self.mendVis.label:SetText(dead and T("Ressusciter") or T("Soigner"))
+    self.mendVis.style = dead and "primary" or "secondary"
+    self.feedVis.style = dead and "secondary" or "primary"
+    if self.mendVis.Refresh then self.mendVis:Refresh() end
+    if self.feedVis.Refresh then self.feedVis:Refresh() end
+    self.feedVis:SetAlpha(dead and 0.45 or 1)
+    if dead then
+        self.hpText:SetText(T("Mort"))
+        self.moodText:SetText(T("Mort"))
+        self.moodText:SetTextColor(unpack(C.negative))
+    end
     if foodId then
         local icon = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(foodId)) or (GetItemIcon and GetItemIcon(foodId))
         self.food:SetTexture(icon or "Interface\\Icons\\INV_Misc_Food_14")

@@ -761,6 +761,9 @@ WK.Locales.enUS.text = {
     ["Aspect suivant"] = "Next aspect", ["Aspect principal"] = "Main aspect", ["Nourrir le familier"] = "Feed pet", ["Soigner le familier"] = "Mend pet",
     ["raccourcis : Options > Raccourcis > AddOns"] = "key bindings: Options > Keybindings > AddOns",     ["Clic : aspect suivant de la liste · clic droit : aspect principal."] = "Click: next aspect in the list · right-click: main aspect.",
     ["Aspect principal (clic droit)"] = "Main aspect (right-click)",
+    ["Ressusciter"] = "Revive", ["Mort"] = "Dead",
+    ["Clic : nourrir · Clic droit : soigner, ou ressusciter s'il est mort"] = "Click: feed · Right-click: mend, or revive if dead",
+    ["Soigner (ou ressusciter) le familier"] = "Mend (or revive) pet",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
