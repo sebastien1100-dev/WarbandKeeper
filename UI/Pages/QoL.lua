@@ -353,47 +353,6 @@ UI:RegisterPage({
             return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
         end):SetPoint("TOPRIGHT", -16, -16)
 
-        -- Disposition des éléments à l'écran (UI/EditMode.lua)
-        local hud = card("Disposition à l'écran", 136)
-        local editBtn = UI:Button(hud, "Mode édition", nil, 30, "primary")
-        UI:SettingRow(hud, -40, "Placer et redimensionner", "Pile d'alertes, bouton du familier, flèche de guidage… Aussi avec /wk edit.", editBtn, 160)
-        editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
-        UI:SettingRow(hud, -88, "Disposition propre à chaque perso", "Sinon, la même pour tout le compte.",
-            toggle(hud, function() return WK.DB.global.settings.ui.hudPerChar end,
-                function(v) WK.DB.global.settings.ui.hudPerChar = v; UI:HUDReapplyAll() end), 80)
-
-        -- Horloge et raccourcis (UI/ClockBar.lua)
-        local ck = UI.ClockConfig()
-        local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 5 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
-        local cy = -40
-        local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
-        local function csync() UI:SyncClock() end
-        crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
-            toggle(clockCard, function() return ck.enabled end, function(v) ck.enabled = v; csync() end), 80)
-        local segSrv = UI:Segmented(clockCard, { { false, "Locale" }, { true, "Serveur" } }, function(v) ck.server = v end, 26)
-        segSrv:Select(ck.server and true or false)
-        crow("Heure", nil, segSrv, 200)
-        local segFmt = UI:Segmented(clockCard, { { false, "24 h" }, { true, "12 h" } }, function(v) ck.h12 = v end, 26)
-        segFmt:Select(ck.h12 and true or false)
-        crow("Format", nil, segFmt, 160)
-        crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
-            UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
-                function(v) ck.magnify = v / 100 end, "%d %%"), 240)
-        crow("FPS et latence", "Deux points de couleur à côté de l'heure (vert, orange, rouge).",
-            toggle(clockCard, function() return ck.stats end, function(v) ck.stats = v end), 80)
-        local hdr = UI:Text(clockCard, 10, C.dim)
-        hdr:SetPoint("TOPLEFT", 16, cy - 6)
-        hdr:SetText("RACCOURCIS")
-        cy = cy - 30
-        for _, def in ipairs(SC) do
-            local sg = UI:Segmented(clockCard, { { "", "Masqué" }, { "L", "Gauche" }, { "R", "Droite" } },
-                function(v) ck.side[def.key] = (v ~= "" and v) or nil; csync() end, 24)
-            sg:Select(ck.side[def.key] or "")
-            UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
-            cy = cy - 38
-        end
-
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)
@@ -564,6 +523,18 @@ UI:RegisterPage({
                         end
                     end
                 end)
+            end
+
+            -- HunterSuite chargé : nos aides de chasseur se mettent en retrait (désactivable)
+            if class == "HUNTER" and WK.modules.Hunter:HunterSuiteLoaded() then
+                local hs = card("HunterSuite est chargé", 96)
+                hs.title:SetTextColor(unpack(C.warning))
+                UI:SettingRow(hs, -40, "Garder aussi les aides de Warband Keeper",
+                    "Sinon, cadre et bouton du familier, bouton d'aspect et rappels restent masqués pour ne pas faire doublon.",
+                    toggle(hs, function() return cc.keepWithHunterSuite end, function(v)
+                        cc.keepWithHunterSuite = v
+                        UI:SyncPetCard(); UI:SyncAspectButton(); WK.modules.Hunter:SyncPetButton(); WK.modules.Hunter:UpdateAlerts()
+                    end), 80)
             end
 
             -- Composants
@@ -797,9 +768,9 @@ UI:RegisterPage({
             end
             if class == "HUNTER" then
                 local H = WK.modules.Hunter
-                -- Carte du familier (UI/PetCard.lua)
+                -- Cadre du familier (UI/PetCard.lua)
                 local pc = UI.PetCardConfig()
-                local pcard = card("Carte du familier", 40 + 12 * 46 + 8, "position et taille en mode édition")
+                local pcard = card("Cadre du familier", 40 + 12 * 46 + 8, "position et taille en mode édition")
                 local py = -40
                 local function prow(label, desc, ctl, w)
                     UI:SettingRow(pcard, py, label, desc, ctl, w)
@@ -814,9 +785,9 @@ UI:RegisterPage({
                 local function pslider(field, mn, mx, st, fmtS)
                     return UI:Slider(pcard, 220, mn, mx, st, function() return pc[field] end, function(v) pc[field] = v; relayout() end, fmtS)
                 end
-                prow("Afficher la carte", "Tant qu'un familier est là. Clic : nourrir · clic droit : soigner.",
+                prow("Afficher le cadre", "Tant qu'un familier est là. Clic : nourrir · clic droit : soigner.",
                     toggle(pcard, function() return pc.enabled end, function(v) pc.enabled = v; UI:SyncPetCard() end), 80)
-                prow("Largeur de la carte", nil, pslider("width", 200, 420, 10, "%d"), 240)
+                prow("Largeur du cadre", nil, pslider("width", 200, 420, 10, "%d"), 240)
                 prow("Hauteur de la barre de vie", nil, pslider("barH", 6, 24, 1, "%d px"), 240)
                 prow("Chiffres sur la barre", nil, pseg("numbers", { { "none", "Aucun" }, { "value", "696" }, { "full", "696 / 720" }, { "pct", "97 %" } }), 300)
                 prow("Couleur de la barre", nil, pseg("color", { { "mood", "Humeur" }, { "health", "Vie" }, { "theme", "Thème" } }), 240)

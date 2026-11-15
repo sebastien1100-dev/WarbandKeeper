@@ -349,6 +349,15 @@ local function buildOverlay()
         magnet = not magnet
         magBtn.label:SetText(magnet and T("Aimant : oui") or T("Aimant : non"))
     end, "Les éléments s'alignent sur la grille. Maj enfoncée : placement libre.")
+    local perBtn
+    local function perLabel() return WK.DB.global.settings.ui.hudPerChar and T("Disposition : ce perso") or T("Disposition : compte") end
+    perBtn = tb(perLabel(), "secondary", function()
+        local ui = WK.DB.global.settings.ui
+        ui.hudPerChar = not ui.hudPerChar
+        perBtn.label:SetText(perLabel())
+        UI:HUDReapplyAll()
+        if popup then popup.built = nil; popup:Hide() end
+    end, "Disposition commune à tout le compte, ou propre à ce perso.")
     tb("Tout réinitialiser", "ghost", function()
         if not IsShiftKeyDown() then WK:Print(T("Maj + clic pour tout réinitialiser.")) return end
         for _, key in ipairs(order) do UI:HUDReset(key) end

@@ -3,7 +3,7 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Carte du familier (chasseur) : nom, vie, humeur, nourriture prévue, boutons Nourrir et Soigner.
+-- Cadre du familier (chasseur) : nom, vie, humeur, nourriture prévue, boutons Nourrir et Soigner.
 -- Les boutons (et la carte elle-même : clic gauche nourrir, clic droit soigner) sont protégés :
 -- ils marchent en combat, mais leur disposition ne change qu'hors combat.
 -- Réglages : WK.modules.QoL:Class("HUNTER").petCard
@@ -106,7 +106,7 @@ local function build()
     f.click:SetScript("OnLeave", function() GameTooltip:Hide() end)
     f:Hide()
     UI:RegisterHUD("petCard", f, {
-        label = T("Carte du familier"), protected = true, default = { 0, -260 },
+        label = T("Cadre du familier"), protected = true, default = { 0, -260 },
         sample = function(on)
             f.sample = on or nil
             if on then f:Paint(true) end

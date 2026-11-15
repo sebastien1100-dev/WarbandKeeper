@@ -610,7 +610,9 @@ UI.CHIPS = {
         return { { T("Composants bas"), tostring(reag), reag > 0 and C.warning or C.positive, nil, tip("reagent", T("Composants bas")) },
                  { T("À réparer"), tostring(rep), rep > 0 and C.negative or C.positive, nil, tip("durability", T("À réparer")) },
                  { T("Sacs pleins"), tostring(bags), bags > 0 and C.warning or C.positive, nil, tip("bags", T("Sacs presque pleins")) },
-                 { T("Classes jouées"), played .. " / 9" } }
+                 { T("Classes jouées"), played .. " / 9" },
+                 { T("Éditer l'interface"), "»", { UI:Accent() }, "qol",
+                   T("Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."), function() UI:EnterEditMode() end } }
     end,
     notes = function()
         return { { T("Version"), WK.version, C.gold }, { T("À venir"), tostring(#(WK.Roadmap or {})) } }

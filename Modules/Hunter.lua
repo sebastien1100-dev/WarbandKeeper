@@ -20,9 +20,13 @@ local function isHunter() return WK.DB:Me().class == "HUNTER" end
 local readable = function(v) return WK.modules.QoL.Readable(v) end
 
 -- HunterSuite (l'addon d'un autre auteur) fait déjà tout ça : on lui laisse la place.
-function M:OtherAddonLoaded()
+function M:HunterSuiteLoaded()
     local loaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
     return loaded and loaded("HunterSuite") and true or false
+end
+-- En retrait quand HunterSuite est là, sauf si le joueur veut garder les deux.
+function M:OtherAddonLoaded()
+    return self:HunterSuiteLoaded() and not WK.modules.QoL:Class("HUNTER").keepWithHunterSuite
 end
 
 local function spellName(id) return (WK.SpellInfo(id)) end
