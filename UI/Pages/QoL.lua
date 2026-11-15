@@ -798,6 +798,25 @@ UI:RegisterPage({
                 prow("« Si besoin » : vie sous", nil, pslider("needHealth", 10, 100, 5, "%d %%"), 240)
                 prow("Opacité hors combat", nil, pslider("oocAlpha", 0.3, 1, 0.05, "%.2f"), 240)
 
+                -- Bouton d'aspect (UI/AspectButton.lua)
+                local ab = UI.AspectButtonConfig()
+                local H = WK.modules.Hunter
+                local acard = card("Bouton d'aspect", 40 + (2 + #H.ASPECT_ORDER) * 44 + 8, "raccourcis : Options > Raccourcis > AddOns")
+                local ay = -40
+                local function arow(label, desc, ctl, w) UI:SettingRow(acard, ay, label, desc, ctl, w); ay = ay - 44 end
+                arow("Afficher le bouton", "Clic : aspect suivant de la liste · clic droit : aspect principal.",
+                    toggle(acard, function() return ab.enabled end, function(v) ab.enabled = v; UI:SyncAspectButton() end), 80)
+                local opts = {}
+                for _, key in ipairs(H.ASPECT_ORDER) do table.insert(opts, { key, WK.SpellInfo(H.ASPECTS[key]) or key }) end
+                local dd = UI:Dropdown(acard, 220, 28, opts, function(v) ab.main = v; UI:AspectButtonSetup() end)
+                dd:Select(ab.main)
+                arow("Aspect principal (clic droit)", nil, dd, 240)
+                for _, key in ipairs(H.ASPECT_ORDER) do
+                    local name = WK.SpellInfo(H.ASPECTS[key]) or key
+                    arow(name, nil, toggle(acard, function() return ab.list[key] end,
+                        function(v) ab.list[key] = v or nil; UI:AspectButtonSetup() end), 80)
+                end
+
                 local rm = card("Rappels", 232, "dans la pile d'alertes, déplaçable")
                 local function rt(field)
                     return toggle(rm, function() return cc[field] end, function(v) cc[field] = v; H:UpdateAlerts() end)

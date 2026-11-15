@@ -756,6 +756,11 @@ WK.Locales.enUS.text = {
     ["« Si besoin » : vie sous le seuil ci-dessous, ou humeur pas « heureux »."] = "\"When needed\": health under the threshold below, or mood not \"happy\".",
     ["« Si besoin » : vie sous"] = "\"When needed\": health under", ["Opacité hors combat"] = "Opacity out of combat",
     ["Nourrir"] = "Feed", ["Soigner"] = "Mend", ["Clic : nourrir · Clic droit : Guérison du familier"] = "Click: feed · Right-click: Mend Pet", ["Loup"] = "Wolf",
+    ["Aspects"] = "Aspects", ["Clic : aspect suivant de ta liste"] = "Click: next aspect in your list", ["Clic droit : aspect principal"] = "Right-click: main aspect",
+    ["Raccourcis : Options > Raccourcis > AddOns"] = "Key bindings: Options > Keybindings > AddOns", ["Bouton d'aspect"] = "Aspect button",
+    ["Aspect suivant"] = "Next aspect", ["Aspect principal"] = "Main aspect", ["Nourrir le familier"] = "Feed pet", ["Soigner le familier"] = "Mend pet",
+    ["raccourcis : Options > Raccourcis > AddOns"] = "key bindings: Options > Keybindings > AddOns",     ["Clic : aspect suivant de la liste · clic droit : aspect principal."] = "Click: next aspect in the list · right-click: main aspect.",
+    ["Aspect principal (clic droit)"] = "Main aspect (right-click)",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

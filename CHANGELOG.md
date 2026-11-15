@@ -18,6 +18,16 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.41.0 — 15/11/2026
+
+### Ajouts
+- Chasseur : bouton d'aspect avec l'icône de l'aspect actif (et en petit, le prochain). Clic : aspect suivant de ta liste ; clic droit : aspect principal. Marche en combat.
+- Réglages dans QoL > Chasseur > Bouton d'aspect : aspects à alterner et aspect principal. Position et taille en mode édition.
+- Raccourcis clavier (Options du jeu > Raccourcis > AddOns > Warband Keeper) : aspect suivant, aspect principal, nourrir le familier, soigner le familier.
+
+### Modifications
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.40.0 — 15/11/2026
 
 ### Ajouts

@@ -1,0 +1,6 @@
+<Bindings>
+    <Binding name="CLICK WarbandKeeperAspectButton:LeftButton" header="WARBANDKEEPER" category="ADDONS"/>
+    <Binding name="CLICK WarbandKeeperAspectButton:RightButton" category="ADDONS"/>
+    <Binding name="CLICK WarbandKeeperPetCardClick:LeftButton" category="ADDONS"/>
+    <Binding name="CLICK WarbandKeeperPetCardClick:RightButton" category="ADDONS"/>
+</Bindings>

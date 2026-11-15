@@ -9,6 +9,8 @@ local T = function(s) return WK.T(s) end
 
 local ASPECTS = { monkey = 13163, hawk = 13165, cheetah = 5118, pack = 13159, beast = 13161, wild = 20043 }
 local RISKY = { cheetah = true, pack = true } -- hébétement si on est touché
+M.ASPECTS = ASPECTS
+M.ASPECT_ORDER = { "hawk", "monkey", "cheetah", "pack", "beast", "wild" }
 local GROWL = 2649
 local TRACK_HUMANOIDS = 19883
 local CALL_PET, REVIVE_PET = 883, 982
@@ -253,6 +255,7 @@ local function refresh()
     if not isHunter() then return end
     M:ReadAspect()
     M:UpdateAlerts()
+    if WK.UI.AspectButtonPaint then WK.UI:AspectButtonPaint() end
 end
 WK:On("UNIT_AURA", function(unit) if unit == "player" then refresh() end end)
 WK:On("PLAYER_REGEN_ENABLED", function() refresh(); M:SyncPetButton() end)
@@ -267,5 +270,5 @@ WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
     if unit ~= "player" or not isHunter() then return end
     -- En combat, les auras sont masquées : l'aspect lancé devient l'aspect actif.
     local key = aspectNames()[spellName(spellID) or ""]
-    if key then M.aspect = key; M:UpdateAlerts() end
+    if key then M.aspect = key; M:UpdateAlerts(); if WK.UI.AspectButtonPaint then WK.UI:AspectButtonPaint() end end
 end)
