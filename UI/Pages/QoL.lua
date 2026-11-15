@@ -621,6 +621,10 @@ UI:RegisterPage({
                 end)
                 local macro = UI:Button(pet, "Macro « Nourrir »", nil, 28, "primary")
                 macro:SetPoint("BOTTOMRIGHT", -12, 12)
+                local stable = UI:Button(pet, "Maître des écuries", nil, 28, "secondary")
+                stable:SetPoint("RIGHT", macro, "LEFT", -8, 0)
+                stable.tooltip = "Guide vers le maître des écuries le plus proche (aussi : /wk guide ecurie)."
+                stable:SetScript("OnClick", function() WK.modules.Guide:GoTo("stable") end)
                 macro.tooltip = "Crée la macro du perso et la met sur le curseur : pose-la dans une barre d'action. Elle choisit toute seule la nourriture."
                 macro:SetScript("OnClick", function() QoL:PickupFeedMacro() end)
                 local note = UI:Text(pet, 11, C.muted)

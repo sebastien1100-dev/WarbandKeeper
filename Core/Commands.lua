@@ -56,7 +56,7 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.UI:EnterEditMode()
     elseif cmd == "guide" then
         local map = { boite = "mail", mail = "mail", banque = "bank", bank = "bank", reparer = "repair", repair = "repair",
-                      marchand = "vendor", vendor = "vendor", maitre = "trainer", trainer = "trainer", munitions = "ammo", ammo = "ammo" }
+                      marchand = "vendor", vendor = "vendor", maitre = "trainer", trainer = "trainer", munitions = "ammo", ammo = "ammo", ecurie = "stable", stable = "stable" }
         local what = map[string.lower(rest or "")]
         if what then WK.modules.Guide:GoTo(what) elseif string.lower(rest or "") == "stop" then WK.modules.Guide:Stop()
         else WK:Print("  " .. L.HELP_GUIDE) end

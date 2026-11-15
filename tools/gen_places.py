@@ -16,9 +16,9 @@ import lupa.lua54 as lupa
 OUT = os.path.join(os.path.dirname(__file__), "..", "Modules", "PlacesDB.lua")
 
 # npcFlags (client Classic) et rôles retenus
-VENDOR, TRAINER, BANKER, REPAIR = 4, 16, 256, 16384
+VENDOR, TRAINER, BANKER, STABLE, REPAIR = 4, 16, 256, 8192, 16384
 # Bits de l'addon
-K = {"mail": 1, "bank": 2, "vendor": 4, "repair": 8, "ammo": 16, "reagent": 32, "poison": 64, "trainer": 128, "general": 256}
+K = {"mail": 1, "bank": 2, "vendor": 4, "repair": 8, "ammo": 16, "reagent": 32, "poison": 64, "trainer": 128, "general": 256, "stable": 512}
 CLASSES = {
     "Warrior Trainer": "WARRIOR", "Paladin Trainer": "PALADIN", "Hunter Trainer": "HUNTER", "Rogue Trainer": "ROGUE",
     "Priest Trainer": "PRIEST", "Shaman Trainer": "SHAMAN", "Mage Trainer": "MAGE", "Warlock Trainer": "WARLOCK",
@@ -40,6 +40,8 @@ def kinds_of(npc):
         k |= K["bank"]
     if flags & REPAIR:
         k |= K["repair"]
+    if flags & STABLE:
+        k |= K["stable"]
     if flags & VENDOR:
         k |= K["vendor"]
         if any(w in low for w in AMMO_WORDS):
@@ -123,7 +125,7 @@ def main(root):
         "-- Questie : positions et rôles seulement, sous la licence de Questie (GPLv3 selon son équipe).",
         "-- WK.PlacesDB[uiMapID] = { { x, y, genre (bits), classe, faction (\"A\"|\"H\"|nil), nom, nom fr, métier fr }, ... }",
         "-- Genres : 1 boîte aux lettres, 2 banque, 4 marchand, 8 réparation, 16 munitions, 32 composants,",
-        "--          64 poisons, 128 maître de classe, 256 fournitures générales. x, y : 0-100.",
+        "--          64 poisons, 128 maître de classe, 256 fournitures générales, 512 maître des écuries. x, y : 0-100.",
         "local ADDON_NAME, WK = ...",
         "WK.PlacesDB = {",
     ]

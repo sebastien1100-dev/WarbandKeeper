@@ -10,7 +10,7 @@ WK.Locales.enUS.keys = {
     HELP_FARM       = "/wk farm          - Start / stop a farming session",
     HELP_NAME       = "/wk name          - Show the character name used for mail",
     HELP_LINK       = "/wk link          - Profession link diagnostic (after opening a profession)",
-    HELP_GUIDE      = "/wk guide mail|bank|repair|vendor|trainer|ammo|stop - Guide to the nearest one",
+    HELP_GUIDE      = "/wk guide mail|bank|repair|vendor|trainer|stable|ammo|stop - Guide to the nearest one",
     HELP_EDIT       = "/wk edit          - Edit mode: move and resize on-screen elements",
     HELP_TAKE       = "/wk take          - Take all mail (mailbox open)",
     HELP_GOLD       = "/wk gold          - Gold of every character",
@@ -739,6 +739,8 @@ WK.Locales.enUS.text = {
     ["Disposition à l'écran"] = "On-screen layout", ["Placer et redimensionner"] = "Move and resize",
     ["Pile d'alertes, bouton du familier, flèche de guidage… Aussi avec /wk edit."] = "Alert stack, pet button, guide arrow... Also with /wk edit.",
     ["Disposition propre à chaque perso"] = "Layout per character", ["Sinon, la même pour tout le compte."] = "Otherwise, the same for the whole account.",
+    ["Maître des écuries"] = "Stable master",
+    ["Guide vers le maître des écuries le plus proche (aussi : /wk guide ecurie)."] = "Guides you to the nearest stable master (also: /wk guide stable).",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",
