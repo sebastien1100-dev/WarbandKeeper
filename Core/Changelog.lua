@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.58.0", date = "15/11/2026",
+        changed = {
+            "Micro menu : les icônes sont refaites dans le style de l'addon (formes pleines, traits épais), comme celles de la barre latérale. Cinq sont nouvelles : personnage, grimoire, talents, carte et quêtes.",
+            "Nouvelles textures : relancer le jeu (un /reload ne suffit pas).",
+        },
+        added = {
+            "Micro menu : raccourci « Mode pêche », avec son icône. Un point vert indique que le mode est ouvert. Il apparaît à droite ; il se déplace ou se masque dans QoL > Micro menu.",
+        },
+    },
+    {
         version = "0.57.0", date = "15/11/2026",
         added = {
             "Récolte : les emplacements connus des filons et des plantes s'affichent sur la minicarte et sur la carte du monde (près de 24 000 emplacements, dans toute la zone). Ce sont des emplacements possibles, pas des nœuds présents en direct.",

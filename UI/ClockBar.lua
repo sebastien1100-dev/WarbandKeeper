@@ -21,9 +21,9 @@ local bar
 -- bouton par un chemin protégé : ouvrir une fenêtre du jeu depuis le code d'un addon la « contamine »,
 -- et le jeu bloque ensuite ses éléments protégés en combat (ADDON_ACTION_BLOCKED).
 local SHORTCUTS = {
-    { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "mm_wk" end, tint = true,
+    { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "logo" end, tint = true,
       run = function() UI:ToggleWindow() end },
-    { key = "mail", label = "Courrier", icon = function() return UI.MEDIA .. "mm_mail" end, tint = true,
+    { key = "mail", label = "Courrier", icon = function() return UI.MEDIA .. "mail" end, tint = true,
       run = function() UI:Create():Show(); UI:ShowPage("mail") end,
       dot = function()
           for _, c in pairs(WK.DB.global.characters) do
@@ -31,27 +31,27 @@ local SHORTCUTS = {
           end
       end },
     { key = "hearth", label = "Pierre de foyer", secure = { type = "item", item = "item:6948" },
-      icon = function() return UI.MEDIA .. "mm_hearth" end, tint = true,
+      icon = function() return UI.MEDIA .. "home" end, tint = true,
       tip = function() return GetBindLocation and GetBindLocation() end },
     { key = "char", label = "Personnage", micro = { "CharacterMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_char" end, tint = true,
+      icon = function() return UI.MEDIA .. "person" end, tint = true,
       run = function() if ToggleCharacter then ToggleCharacter("PaperDollFrame") end end },
     { key = "spells", label = "Grimoire", micro = { "SpellbookMicroButton", "PlayerSpellsMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_book" end, tint = true,
+      icon = function() return UI.MEDIA .. "book" end, tint = true,
       run = function() if ToggleSpellBook then ToggleSpellBook(BOOKTYPE_SPELL or "spell") end end },
     { key = "talents", label = "Talents", micro = { "TalentMicroButton", "PlayerSpellsMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_talents" end, tint = true,
+      icon = function() return UI.MEDIA .. "tree" end, tint = true,
       run = function() if ToggleTalentFrame then ToggleTalentFrame() end end },
     { key = "map", label = "Carte", micro = { "WorldMapMicroButton", "MiniMapWorldMapButton" },
-      icon = function() return UI.MEDIA .. "mm_map" end, tint = true,
+      icon = function() return UI.MEDIA .. "map" end, tint = true,
       run = function() if ToggleWorldMap then ToggleWorldMap() end end },
     { key = "quests", label = "Journal de quêtes", micro = { "QuestLogMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_quest" end, tint = true,
+      icon = function() return UI.MEDIA .. "bang" end, tint = true,
       run = function() if ToggleQuestLog then ToggleQuestLog() end end },
     { key = "social", label = "Social et guilde", micro = { "SocialsMicroButton", "FriendsMicroButton", "GuildMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_social" end, tint = true,
+      icon = function() return UI.MEDIA .. "users" end, tint = true,
       run = function() if ToggleFriendsFrame then ToggleFriendsFrame() end end },
-    { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "mm_prof" end, tint = true,
+    { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,
       run = function()
           local me = WK.DB:Me()
           for name in pairs(me.professions or {}) do
@@ -59,11 +59,14 @@ local SHORTCUTS = {
               if k ~= "herb" and k ~= "skin" then WK.modules.Professions:OpenDirect(name) return end
           end
       end },
-    { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "mm_farm" end, tint = true,
+    { key = "farm", label = "Session de farm", icon = function() return UI.MEDIA .. "play" end, tint = true,
       run = function() local F = WK.modules.Farm; if F:Active() then F:Stop() else F:Start() end end,
       dot = function() return WK.modules.Farm:Active() and C.positive or nil end },
+    { key = "fishing", label = "Mode pêche", icon = function() return UI.MEDIA .. "fish" end, tint = true,
+      run = function() WK.modules.Fishing:Toggle() end,
+      dot = function() return WK.modules.Fishing.active and C.positive or nil end },
     { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton" },
-      icon = function() return UI.MEDIA .. "mm_menu" end, tint = true,
+      icon = function() return UI.MEDIA .. "gear" end, tint = true,
       run = function() if ToggleGameMenu then ToggleGameMenu() end end },
 }
 UI.CLOCK_SHORTCUTS = SHORTCUTS
@@ -81,6 +84,11 @@ local function cfg()
         if q.clock[k] == nil then
             if type(v) == "table" then q.clock[k] = {}; for a, b in pairs(v) do q.clock[k][a] = b end else q.clock[k] = v end
         end
+    end
+    -- le raccourci « Mode pêche » arrive à droite une fois, puis reste où tu le mets
+    if not q.clock.fishAdded then
+        q.clock.fishAdded = true
+        if q.clock.side.fishing == nil then q.clock.side.fishing = "R" end
     end
     return q.clock
 end

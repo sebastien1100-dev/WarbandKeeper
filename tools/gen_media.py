@@ -358,6 +358,111 @@ def icon_ring():
     save(img, "crosshair", 64)
 
 
+# Pictogrammes du micro menu, dans le style de l'addon (formes pleines, traits épais).
+# Les autres raccourcis reprennent les icônes existantes (logo, mail, home, users, hammer, play, gear, fish).
+CLEAR = (255, 255, 255, 0)
+
+
+def icon_person():
+    """Personnage : tête et épaules pleines."""
+    img, d, s = canvas(64)
+    circle(d, s, 0.5, 0.3, 0.17)
+    d.pieslice([P(0.14, s), P(0.54, s), P(0.86, s), P(1.26, s)], 180, 360, fill=W)
+    save(img, "person", 64)
+
+
+def icon_book():
+    """Grimoire : livre plein, dos et deux lignes évidés."""
+    img, d, s = canvas(64)
+    rrect(d, s, 0.16, 0.12, 0.84, 0.88, 0.08)
+    d.line([(P(0.31, s), P(0.12, s)), (P(0.31, s), P(0.88, s))], fill=CLEAR, width=int(0.05 * s))
+    for y in (0.34, 0.5):
+        d.line([(P(0.44, s), P(y, s)), (P(0.72, s), P(y, s))], fill=CLEAR, width=int(0.07 * s))
+    save(img, "book", 64)
+
+
+def icon_tree():
+    """Talents : un arbre à trois nœuds pleins."""
+    img, d, s = canvas(64)
+    line(d, s, [(0.5, 0.88), (0.5, 0.56)], SW * 1.1)
+    line(d, s, [(0.5, 0.56), (0.24, 0.26)], SW * 1.1)
+    line(d, s, [(0.5, 0.56), (0.76, 0.26)], SW * 1.1)
+    circle(d, s, 0.5, 0.56, 0.12)
+    circle(d, s, 0.24, 0.24, 0.13)
+    circle(d, s, 0.76, 0.24, 0.13)
+    circle(d, s, 0.5, 0.88, 0.09)
+    save(img, "tree", 64)
+
+
+def icon_map():
+    """Carte : trois volets pleins d'une carte pliée."""
+    img, d, s = canvas(64)
+    for x0, x1, up in ((0.10, 0.34, False), (0.39, 0.61, True), (0.66, 0.90, False)):
+        ya, yb = (0.14, 0.24) if up else (0.24, 0.14)
+        d.polygon([(P(x0, s), P(ya, s)), (P(x1, s), P(yb, s)), (P(x1, s), P(yb + 0.62, s)), (P(x0, s), P(ya + 0.62, s))], fill=W)
+    save(img, "map", 64)
+
+
+def icon_bang():
+    """Quêtes : le point d'exclamation des quêtes."""
+    img, d, s = canvas(64)
+    rrect(d, s, 0.40, 0.08, 0.60, 0.64, 0.10)
+    circle(d, s, 0.5, 0.82, 0.11)
+    save(img, "bang", 64)
+
+
+def icon_fish():
+    """Poisson (pêche) : corps en amande, queue en triangle, œil évidé."""
+    img, d, s = canvas(64)
+    d.ellipse([P(0.10, s), P(0.28, s), P(0.72, s), P(0.72, s)], fill=W)
+    d.polygon([(P(0.62, s), P(0.50, s)), (P(0.92, s), P(0.24, s)), (P(0.92, s), P(0.76, s))], fill=W)
+    d.ellipse([P(0.24, s), P(0.40, s), P(0.32, s), P(0.48, s)], fill=(255, 255, 255, 0))
+    save(img, "fish", 64)
+
+
+def icon_spark():
+    """Étincelle (qualité de vie) : grande étoile à quatre branches et une petite."""
+    img, d, s = canvas(64)
+    def star(cx, cy, r, k):
+        pts = []
+        for i in range(8):
+            a = math.pi / 4 * i - math.pi / 2
+            rr = r if i % 2 == 0 else r * k
+            pts.append((P(cx + math.cos(a) * rr, s), P(cy + math.sin(a) * rr, s)))
+        d.polygon(pts, fill=W)
+    star(0.42, 0.56, 0.36, 0.3)
+    star(0.76, 0.22, 0.16, 0.32)
+    save(img, "spark", 64)
+
+
+def icon_guide():
+    """Flèche de guidage pleine, pointe vers le haut (tournée en jeu avec SetRotation)."""
+    img, d, s = canvas(128)
+    pts = [(0.5, 0.06), (0.86, 0.84), (0.5, 0.66), (0.14, 0.84)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in pts], fill=W)
+    save(img, "guide", 128)
+
+
+def icon_ring():
+    """Anneau net (indicateur de distance)."""
+    img, d, s = canvas(128)
+    circle(d, s, 0.5, 0.5, 0.44, 0.09)
+    save(img, "ring", 128)
+    # anneau en pointillés (sans cible) : 14 tirets
+    img, d, s2 = canvas(128)
+    r0, r1 = 0.06 * s2, 0.94 * s2
+    for i in range(14):
+        a = i * 360 / 14
+        d.arc([r0, r0, r1, r1], a, a + 15, fill=W, width=int(0.09 * s2))
+    save(img, "ring_dash", 128)
+    # viseur (centre de l'anneau sans cible)
+    img, d, s2 = canvas(64)
+    circle(d, s2, 0.5, 0.5, 0.2, 0.09)
+    for seg in ([(0.5, 0.08), (0.5, 0.26)], [(0.5, 0.74), (0.5, 0.92)], [(0.08, 0.5), (0.26, 0.5)], [(0.74, 0.5), (0.92, 0.5)]):
+        line(d, s2, seg, 0.09)
+    save(img, "crosshair", 64)
+
+
 # Pictogrammes du micro menu (style trait fin, grille 24 comme les maquettes)
 MM = 2.0 / 24  # épaisseur du trait
 
@@ -416,6 +521,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, icon_fish, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_fish, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")
