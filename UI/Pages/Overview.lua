@@ -371,7 +371,7 @@ UI:RegisterPage({
             g.pct:SetText(math.floor(e.ratio * 100) .. " %")
             g.bar:SetValue(e.ratio)
             if e.ratio >= 1 then g.eta:SetText(WK.T("atteint !"))
-            elseif e.days then g.eta:SetText(string.format(WK.T("dans ~%d j"), e.days))
+            elseif e.days then g.eta:SetText(string.format(WK.T("dans env. %d j"), e.days))
             else g.eta:SetText("") end
         end
         self.tableBox:ClearAllPoints()

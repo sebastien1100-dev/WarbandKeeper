@@ -30,48 +30,101 @@ local function minutes(sec)
     return string.format(T("%d h %02d"), math.floor(sec / 3600), math.floor(sec % 3600 / 60))
 end
 
--- Résumé d'un perso pour sa tuile : texte, et part du stock (0-1) pour la barre.
-local function charSummary(c)
-    local class = c.class
-    local cc = Q():Class(class)
-    local parts, ratio = {}, nil
-    local function track(n, target)
-        if target and target > 0 then
-            local r = math.min(1, n / target)
-            ratio = ratio and math.min(ratio, r) or r
+-- Colonnes de la tuile d'un perso : jusqu'à trois chiffres clés propres à sa classe.
+-- { icon, value, label, color, ratio (0-1, petite jauge) }
+local ICONS = {
+    clock = "Interface\\Icons\\INV_Misc_PocketWatch_01",
+    repair = "Interface\\Icons\\Trade_BlackSmithing",
+    unknown = "Interface\\Icons\\INV_Misc_QuestionMark",
+}
+local function itemIcon(id)
+    local f = (C_Item and C_Item.GetItemIconByID) or GetItemIcon
+    return (f and id and f(id)) or ICONS.unknown
+end
+local function spellIcon(id) return select(2, WK.SpellInfo(id)) or ICONS.unknown end
+local function stat(icon, value, label, color, ratio)
+    return { icon = icon, value = value, label = label, color = color, ratio = ratio }
+end
+
+local function reagentStat(c, r, cc)
+    local n = Q():Count(c, r)
+    local s = cc.reag[r.key] or {}
+    local low = (s.min or 0) > 0 and n < s.min
+    local target = ((s.buy or 0) > 0 and s.buy) or ((s.min or 0) > 0 and s.min * 2) or nil
+    return stat(itemIcon(r.id or (r.ids and r.ids[1])), num(n), Q():ReagentName(r),
+        low and (n == 0 and C.negative or C.warning) or C.text, target and math.min(1, n / target) or nil)
+end
+
+local function durabilityStat(c)
+    local d = c.durability
+    local g = Q():General()
+    local col = (d and (g.durability or 0) > 0 and d < g.durability) and C.negative or C.text
+    return stat(ICONS.repair, d and (d .. " %") or "-", T("équipement"), col, d and d / 100 or nil)
+end
+
+local function charStats(c)
+    local QoL, class = Q(), c.class
+    local cc = QoL:Class(class)
+    local out = {}
+    local function add(st) if #out < 3 then table.insert(out, st) end end
+    local reags = {}
+    for _, r in ipairs(QoL.REAGENTS[class] or {}) do
+        if QoL:Relevant(r, c.level) then reags[r.key] = r end
+    end
+    -- Munitions et minutes de tir (chasseur, guerrier, voleur)
+    if QoL.AMMO[class] and c.ammo and c.ammo.id then
+        local n = c.ammo.n or 0
+        local mins = c.ammo.speed and math.floor(n * c.ammo.speed / 60) or nil
+        local lowN = (cc.ammo.min or 0) > 0 and n < cc.ammo.min
+        local lowM = mins and (cc.ammo.minMinutes or 0) > 0 and mins < cc.ammo.minMinutes
+        local col = (lowN or lowM) and (n == 0 and C.negative or C.warning) or C.text
+        add(stat(itemIcon(c.ammo.id), num(n), T("munitions"), col, (cc.ammo.buy or 0) > 0 and math.min(1, n / cc.ammo.buy) or nil))
+        if mins then
+            add(stat(ICONS.clock, mins >= 1 and string.format(T("%d min"), mins) or T("moins d'1 min"), T("de tir restantes"),
+                lowM and C.warning or C.positive))
         end
     end
-    if Q().AMMO[class] and c.ammo and c.ammo.id then
-        local txt = string.format(T("Munitions %s"), num(c.ammo.n))
-        if c.ammo.speed and (c.ammo.n or 0) > 0 then
-            local mins = math.floor((c.ammo.n or 0) * c.ammo.speed / 60)
-            txt = txt .. " · " .. (mins >= 1 and string.format(T("~%d min de tir"), mins) or T("moins d'une minute de tir"))
-        end
-        table.insert(parts, txt)
-        track(c.ammo.n or 0, cc.ammo.buy)
-    end
-    if class == "HUNTER" and c.pet and c.pet.happy then
-        local st = ({ T("mécontent"), T("content"), T("heureux") })[c.pet.happy] or "?"
-        table.insert(parts, string.format(T("Familier : %s"), st))
-    elseif class == "ROGUE" and c.lockpick then
-        table.insert(parts, string.format(T("Crochetage %d"), c.lockpick))
-    elseif class == "SHAMAN" and c.reincarnation then
-        table.insert(parts, string.format(T("Réincarnation : %s"), minutes(c.reincarnation - time())))
-    end
-    local shown = 0
-    for _, r in ipairs(Q().REAGENTS[class] or {}) do
-        if Q():Relevant(r, c.level) then
-            local n = Q():Count(c, r)
-            local s = cc.reag[r.key]
-            if shown < 3 then
-                table.insert(parts, Q():ReagentName(r) .. " " .. num(n))
-                shown = shown + 1
+    if class == "HUNTER" then
+        local h = c.pet and c.pet.happy
+        local label = ({ T("Mécontent"), T("Content"), T("Heureux") })[h or 0]
+        local col = ({ C.negative, C.warning, C.positive })[h or 0] or C.dim
+        add(stat(spellIcon(883), label or "-", (c.pet and c.pet.name) and (c.pet.name .. " · " .. T("familier")) or T("familier"), col))
+    elseif class == "ROGUE" then
+        if reags.poisons then add(reagentStat(c, reags.poisons, cc)) end
+        add(stat(spellIcon(1804), c.lockpick and tostring(c.lockpick) or "-", T("crochetage")))
+    elseif class == "WARLOCK" then
+        local n = (c.bags or {})[6265] or 0
+        local max = cc.shardMax or 20
+        add(stat(itemIcon(6265), n .. " / " .. max, T("fragments d'âme"), n == 0 and C.negative or C.text, math.min(1, n / max)))
+        for _, k in ipairs({ "healthstone", "soulstone" }) do
+            local r = reags[k]
+            if r then
+                local has = QoL:Count(c, r) > 0
+                add(stat(itemIcon(r.ids[1]), has and T("Oui") or T("Non"), QoL:ReagentName(r), has and C.positive or C.dim))
             end
-            track(n, (s and s.buy and s.buy > 0) and s.buy or (s and s.min and s.min > 0 and s.min * 2) or nil)
+        end
+    elseif class == "SHAMAN" then
+        local have, total = 0, 0
+        for _, r in ipairs(QoL.REAGENTS.SHAMAN) do
+            if r.totem and reags[r.key] then total = total + 1; if QoL:Count(c, r) > 0 then have = have + 1 end end
+        end
+        if total > 0 then
+            add(stat(itemIcon(5175), have .. " / " .. total, T("totems"), have < total and C.warning or C.positive, have / total))
+        end
+        if reags["17030"] then add(reagentStat(c, reags["17030"], cc)) end
+        if (c.level or 0) >= 30 then
+            local left = c.reincarnation and (c.reincarnation - time())
+            add(stat(spellIcon(20608), left and minutes(left) or "-", T("réincarnation"), (left and left <= 0) and C.positive or C.text))
+        end
+    else
+        -- Mage, prêtre, paladin, druide, guerrier : composants utiles à son niveau
+        for _, r in ipairs(QoL.REAGENTS[class] or {}) do
+            local s = cc.reag[r.key] or {}
+            if reags[r.key] and ((s.min or 0) > 0 or r.buy or r.conjured) then add(reagentStat(c, r, cc)) end
         end
     end
-    if #parts == 0 then table.insert(parts, T("Rien à suivre à ce niveau")) end
-    return table.concat(parts, " · "), ratio
+    if c.durability then add(durabilityStat(c)) end
+    return out
 end
 
 UI:RegisterPage({
@@ -397,39 +450,75 @@ UI:RegisterPage({
                 t:SetPoint("RIGHT", -16, 0)
                 t:SetText(string.format(T("Aucun %s pour l'instant : ces réglages serviront dès que tu en joueras un."), string.lower(T(cl[2]))))
             else
-                local perRow = math.min(3, #list)
-                local rows = math.ceil(#list / perRow)
+                -- Une tuile par perso sur toute la largeur : liseré et portrait à la couleur de classe,
+                -- nom, puis trois colonnes (icône, valeur, libellé, petite jauge).
+                local TILE_H, STEP = 64, 72
                 local holder = CreateFrame("Frame", nil, root)
-                holder:SetSize(W, rows * 66 - 8)
+                holder:SetSize(W, #list * STEP - 8)
                 holder:SetPoint("TOPLEFT", 0, -y)
                 holder:SetPoint("TOPRIGHT", 0, -y)
-                y = y + rows * 66 - 8 + GAP
+                y = y + #list * STEP - 8 + GAP
                 local tiles = {}
-                for _, e in ipairs(list) do
+                local cr, cg, cb = UI:ClassColor(class)
+                for i, e in ipairs(list) do
                     local tile = CreateFrame("Frame", nil, holder)
-                    tile:SetHeight(58)
+                    tile:SetHeight(TILE_H)
+                    tile:SetPoint("TOPLEFT", 0, -(i - 1) * STEP)
+                    tile:SetPoint("TOPRIGHT", 0, -(i - 1) * STEP)
                     UI:Panel(tile, 10, C.surface2, C.border)
-                    tile.icon = UI:RoundIcon(tile, 34)
-                    tile.icon:SetPoint("LEFT", 12, 0)
-                    tile.name = UI:Text(tile, 12)
-                    tile.name:SetPoint("TOPLEFT", 56, -10)
-                    tile.line = UI:Text(tile, 11, C.muted)
-                    tile.line:SetPoint("TOPLEFT", tile.name, "BOTTOMLEFT", 0, -4)
-                    tile.line:SetPoint("RIGHT", tile, "RIGHT", -10, 0)
-                    tile.bar = UI:Progress(tile, 4)
-                    tile.bar:SetPoint("TOPLEFT", tile.line, "BOTTOMLEFT", 0, -6)
-                    tile.bar:SetWidth(150)
+                    tile.stripe = tile:CreateTexture(nil, "ARTWORK")
+                    tile.stripe:SetColorTexture(cr, cg, cb, 1)
+                    tile.stripe:SetPoint("TOPLEFT", 1, -6)
+                    tile.stripe:SetPoint("BOTTOMLEFT", 1, 6)
+                    tile.stripe:SetWidth(3)
+                    tile.ring = UI:Icon(tile, "circle", 46, { cr, cg, cb, 1 })
+                    tile.ring:SetPoint("LEFT", 16, 0)
+                    tile.icon = UI:RoundIcon(tile, 42)
+                    tile.icon:SetPoint("CENTER", tile.ring, "CENTER")
+                    tile.name = UI:Text(tile, 13)
+                    tile.name:SetPoint("TOPLEFT", 78, -15)
+                    tile.sub = UI:Text(tile, 11, { cr, cg, cb, 1 })
+                    tile.sub:SetPoint("TOPLEFT", tile.name, "BOTTOMLEFT", 0, -5)
+                    tile.cols = {}
+                    for k = 1, 3 do
+                        local col = CreateFrame("Frame", nil, tile)
+                        col:SetHeight(TILE_H - 16)
+                        col.sep = col:CreateTexture(nil, "ARTWORK")
+                        col.sep:SetColorTexture(unpack(C.border))
+                        col.sep:SetPoint("TOPLEFT", 0, -4)
+                        col.sep:SetPoint("BOTTOMLEFT", 0, 4)
+                        col.sep:SetWidth(1)
+                        col.iconBg = CreateFrame("Frame", nil, col)
+                        col.iconBg:SetSize(32, 32)
+                        col.iconBg:SetPoint("LEFT", 16, 0)
+                        col.iconBgTex = UI:Rounded(col.iconBg, 8, 0, "BACKGROUND", 1)
+                        col.icon = col.iconBg:CreateTexture(nil, "ARTWORK")
+                        col.icon:SetPoint("TOPLEFT", 4, -4)
+                        col.icon:SetPoint("BOTTOMRIGHT", -4, 4)
+                        col.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                        col.value = UI:Text(col, 15)
+                        col.value:SetPoint("TOPLEFT", col.iconBg, "TOPRIGHT", 12, 2)
+                        col.label = UI:Text(col, 10, C.muted)
+                        col.label:SetPoint("TOPLEFT", col.value, "BOTTOMLEFT", 0, -4)
+                        col.label:SetPoint("RIGHT", col, "RIGHT", -8, 0)
+                        col.bar = UI:Progress(col, 4)
+                        col.bar:SetPoint("TOPLEFT", col.label, "BOTTOMLEFT", 0, -5)
+                        col.bar:SetWidth(100)
+                        tile.cols[k] = col
+                    end
                     tile.e = e
                     table.insert(tiles, tile)
                     table.insert(self.tiles, tile)
                 end
                 UI:OnResize(holder, function(w)
-                    local tw = (w - (perRow - 1) * 10) / perRow
-                    for i, tile in ipairs(tiles) do
-                        local col, row = (i - 1) % perRow, math.floor((i - 1) / perRow)
-                        tile:ClearAllPoints()
-                        tile:SetPoint("TOPLEFT", col * (tw + 10), -row * 66)
-                        tile:SetWidth(tw)
+                    local x0 = 250
+                    local cw = math.max(110, (w - x0 - 8) / 3)
+                    for _, tile in ipairs(tiles) do
+                        for k, col in ipairs(tile.cols) do
+                            col:ClearAllPoints()
+                            col:SetPoint("TOPLEFT", tile, "TOPLEFT", x0 + (k - 1) * cw, -8)
+                            col:SetWidth(cw)
+                        end
                     end
                 end)
             end
@@ -709,18 +798,27 @@ UI:RegisterPage({
             end
             b:Paint()
         end
-        local alerted = {}
-        for _, a in ipairs(alerts) do if a.class then alerted[a.key] = true end end
         for _, tile in ipairs(self.tiles) do
             local e = tile.e
             UI:SetCharIcon(tile.icon, e.c, e.key)
-            tile.name:SetText(WK:CharName(e.c, e.key) .. "  |cffb6a27e" .. (e.c.level or "?") .. "|r")
-            local txt, ratio = charSummary(e.c)
-            tile.line:SetText(txt)
-            tile.line:SetTextColor(unpack(alerted[e.key] and C.warning or C.muted))
-            tile.bar:SetShown(ratio ~= nil)
-            tile.bar.color = alerted[e.key] and C.warning or C.positive
-            tile.bar:SetValue(ratio or 0)
+            tile.name:SetText(WK:CharName(e.c, e.key))
+            tile.sub:SetText(T(QoL.CLASS_LABEL[e.c.class] or "?") .. " · " .. string.format(T("niveau %s"), tostring(e.c.level or "?")))
+            local stats = charStats(e.c)
+            for k, col in ipairs(tile.cols) do
+                local st = stats[k]
+                col:SetShown(st ~= nil)
+                if st then
+                    local sc = st.color or C.text
+                    col.icon:SetTexture(st.icon)
+                    col.iconBgTex:SetColor(sc[1], sc[2], sc[3], 0.18)
+                    col.value:SetText(st.value)
+                    col.value:SetTextColor(unpack(sc))
+                    col.label:SetText(st.label)
+                    col.bar:SetShown(st.ratio ~= nil)
+                    col.bar.color = (sc == C.text) and C.positive or sc
+                    col.bar:SetValue(st.ratio or 0)
+                end
+            end
         end
         for _, t in ipairs(self.toggles) do t:Refresh() end
         for _, inp in ipairs(self.inputs) do

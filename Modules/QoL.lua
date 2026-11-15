@@ -245,7 +245,7 @@ function M:Alerts()
                 local low = ((cc.ammo.min or 0) > 0 and n < cc.ammo.min)
                     or ((cc.ammo.minMinutes or 0) > 0 and mins ~= nil and mins < cc.ammo.minMinutes)
                 if low then
-                    local txt = mins and (mins >= 1 and string.format(T("%s : munitions basses (%d, ~%d min de tir)"), name, n, math.floor(mins))
+                    local txt = mins and (mins >= 1 and string.format(T("%s : munitions basses (%d, env. %d min de tir)"), name, n, math.floor(mins))
                         or string.format(T("%s : munitions basses (%d, moins d'une minute de tir)"), name, n))
                         or string.format(T("%s : munitions basses (%d)"), name, n)
                     table.insert(out, { key = key, c = c, kind = "ammo", class = c.class, urgent = n == 0 or (mins ~= nil and mins < 1), text = txt })

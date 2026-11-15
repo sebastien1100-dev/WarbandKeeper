@@ -297,7 +297,7 @@ UI:RegisterPage({
             local fmt = isGold and UI:ShortGold(target) or tostring(target)
             local txt = string.format(WK.T("objectif %s · %d %%"), fmt, math.floor(ratio * 100))
             if ratio >= 1 then txt = txt .. " · " .. WK.T("atteint !")
-            elseif gdays then txt = txt .. " · " .. string.format(WK.T("dans ~%d j"), gdays) end
+            elseif gdays then txt = txt .. " · " .. string.format(WK.T("dans env. %d j"), gdays) end
             self.goalInfo:SetText(txt)
             if not perChar and maxV > 0 then hi = math.max(hi, target * 1.05) end
         else
