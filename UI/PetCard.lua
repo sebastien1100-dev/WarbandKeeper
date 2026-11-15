@@ -81,10 +81,11 @@ local function build()
     end
     f.moodText = UI:Text(f, 10)
     f.food = f:CreateTexture(nil, "ARTWORK")
-    f.food:SetSize(28, 28)
+    f.food:SetSize(18, 18)
     f.food:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     f.foodCount = UI:Text(f, 10, C.gold)
-    f.foodCount:SetPoint("BOTTOMRIGHT", f.food, "BOTTOMRIGHT", 4, -4)
+    f.foodCount:SetPoint("RIGHT", f.food, "LEFT", -4, 0)
+    f.foodCount:SetJustifyH("RIGHT")
     -- Boutons-icônes protégés : Nourrir le familier, Guérison (ou Ressusciter s'il est mort)
     local function makeBtn(spellID, tip)
         local vis = CreateFrame("Frame", nil, f)
@@ -159,41 +160,44 @@ function UI:PetCardLayout()
     card.pendingLayout = nil
     local o = cfg()
     local f = card
-    local foodW = o.food == "hidden" and 0 or 40
     local y = -9
     f.name:ClearAllPoints()
     f.name:SetShown(o.name)
     if o.name then f.name:SetPoint("TOPLEFT", 12, y); y = y - 19 end
     f.hp:ClearAllPoints()
     f.hp:SetPoint("TOPLEFT", 12, y)
-    f.hp:SetPoint("TOPRIGHT", -(12 + foodW), y)
+    f.hp:SetPoint("TOPRIGHT", -12, y)
     f.hp:SetHeight(o.barH)
-    f.hpText:SetFont(UI.FONT, math.max(8, math.min(12, o.barH - 2)), "")
+    -- contour noir : lisible même sur une barre claire
+    f.hpText:SetFont(UI.FONT, math.max(8, math.min(12, o.barH - 2)), "OUTLINE")
     y = y - o.barH - 6
+    -- Une seule ligne sous la barre : boutons à gauche, humeur au milieu, nourriture à droite.
     local showSegs = o.mood == "both" or o.mood == "segments"
     local showText = o.mood == "both" or o.mood == "text"
-    for i, sF in ipairs(f.segs) do
-        sF:ClearAllPoints()
-        sF:SetPoint("TOPLEFT", 12 + (i - 1) * 25, y - 2)
-        sF:SetShown(showSegs)
-    end
-    f.moodText:ClearAllPoints()
-    f.moodText:SetPoint("TOPLEFT", showSegs and 92 or 12, y + 1)
-    f.moodText:SetShown(showText)
-    if o.mood ~= "hidden" then y = y - 14 end
+    local rowH = o.buttons and 30 or 16
+    local x = 12
     f.feedVis:ClearAllPoints(); f.mendVis:ClearAllPoints()
     f.feedVis:SetShown(o.buttons); f.mendVis:SetShown(o.buttons)
     f.feedSec:SetShown(o.buttons); f.mendSec:SetShown(o.buttons)
     if o.buttons then
-        y = y - 4
-        f.feedVis:SetPoint("TOPLEFT", 12, y)
+        f.feedVis:SetPoint("TOPLEFT", x, y)
         f.mendVis:SetPoint("LEFT", f.feedVis, "RIGHT", 6, 0)
-        y = y - 32
+        x = x + 30 + 6 + 30 + 12
     end
+    local midY = y - rowH / 2
+    for i, sF in ipairs(f.segs) do
+        sF:ClearAllPoints()
+        sF:SetPoint("LEFT", f, "TOPLEFT", x + (i - 1) * 25, midY)
+        sF:SetShown(showSegs)
+    end
+    f.moodText:ClearAllPoints()
+    f.moodText:SetPoint("LEFT", f, "TOPLEFT", showSegs and (x + 80) or x, midY)
+    f.moodText:SetShown(showText)
     f.food:ClearAllPoints()
     f.food:SetShown(o.food ~= "hidden"); f.foodCount:SetShown(o.food ~= "hidden")
-    f.food:SetPoint("TOPRIGHT", -14, -10)
-    local h = math.max(-y + 8, 46)
+    f.food:SetPoint("RIGHT", f, "TOPRIGHT", -12, midY)
+    if o.buttons or o.mood ~= "hidden" or o.food ~= "hidden" then y = y - rowH end
+    local h = math.max(-y + 8, 30)
     f:SetSize(o.width, h)
     setActions()
     if RegisterStateDriver and wanted() then RegisterStateDriver(f, "visibility", visibility()) end
@@ -229,7 +233,8 @@ local function paint(self, demo)
     elseif o.color == "theme" then local r, g, b = UI:Accent(); col = { r, g, b, 1 }
     else col = mood[happy or 2] end
     self.hpTrack:SetColor(unpack(C.surface2))
-    self.hpFillF:SetStatusBarColor(col[1], col[2], col[3], 1)
+    -- un peu assombrie pour que le chiffre ressorte
+    self.hpFillF:SetStatusBarColor(col[1] * 0.75, col[2] * 0.75, col[3] * 0.75, 1)
     -- valeurs passées telles quelles à la barre (lisibles ou masquées)
     if demo then
         self.hpFillF:SetMinMaxValues(0, hpMax); self.hpFillF:SetValue(hp)
