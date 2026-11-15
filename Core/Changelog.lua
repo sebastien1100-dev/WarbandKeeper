@@ -6,6 +6,25 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.56.0", date = "15/11/2026",
+        added = {
+            "Pêche : nouvel onglet dans QoL, avec un « mode pêche » qu'on ouvre et qu'on ferme (bouton, /wk peche, bouton de minicarte, ou tout seul quand une canne est équipée).",
+            "Pêche : tenue de pêche. La meilleure canne des sacs et les pièces qui donnent de la Pêche sont équipées ; l'équipement habituel revient à la fermeture.",
+            "Pêche : appâts. Le meilleur appât utilisable (ou celui que tu choisis) est posé sur la canne, et reposé quand il expire.",
+            "Pêche : une seule touche pour tout (molette vers le bas par défaut). Chaque appui équipe la tenue, pose l'appât, lance la ligne, puis ferre le flotteur. Hors du mode pêche, la touche garde son rôle.",
+            "Pêche : barre à l'écran (bouton Pêcher, tenue, appât avec temps restant), à placer en mode édition.",
+            "Pêche : icône « acheter une canne » quand il n'y en a ni équipée ni dans les sacs ; un clic guide vers les fournitures de pêche les plus proches.",
+            "Pêche : butin rapide, qui ramasse la prise dès que le butin est prêt.",
+            "Pêche : son du flotteur mis en avant (musique et ambiance coupées le temps de pêcher, puis rétablies).",
+            "Pêche : avertissements à l'écran (pas de canne, plus d'appât, sacs pleins).",
+            "Pêche : bouton de minicarte, sur les persos qui ont la Pêche.",
+            "Guidage : les marchands de fournitures de pêche sont connus.",
+        },
+        changed = {
+            "Nouveaux fichiers et nouvelle texture : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.55.1", date = "15/11/2026",
         changed = {
             "Halo : la colonne de lumière est presque deux fois plus haute par défaut, et plus lumineuse quand l'objet est encore loin.",

@@ -58,3 +58,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Bibliothèques
 
 `Libs/` contient du code tiers, à ne pas modifier : LibStub (domaine public) et LibRangeCheck-3.0 (licence MIT, github.com/WeakAuras/LibRangeCheck-3.0), qui donne la fourchette de distance de la cible à `UI/RangeRing.lua`. Garder le fichier `LICENSE` de la bibliothèque et la mention dans Options > À propos.
+
+## Pêche
+
+`Modules/Fishing.lua` gère le « mode pêche » (tenue, appâts, sons, touche unique, butin rapide, avertissements) ; `UI/FishingBar.lua` la barre à l'écran et le bouton de minicarte ; les réglages sont dans `QoL:Config().fishing` et la page dans la section « fishing » de `UI/Pages/QoL.lua`. Le lancer et la pose d'appât passent par le bouton protégé `WarbandKeeperFishButton` (macro préparée juste avant le clic, hors combat). La touche unique est une liaison temporaire (`SetOverrideBinding`), posée seulement en mode pêche : elle clique le bouton, ou ferre avec `INTERACTTARGET` quand le flotteur est désigné. Tout ce que le mode change (équipement, sons, réglages de désignation) est sauvegardé et rendu à la fermeture.

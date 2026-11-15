@@ -254,7 +254,9 @@ UI:RegisterPage({
         halo.desc:SetText("L'objet visé brille")
         local micro = navButton("micro", "Micro menu", -108, nil, "clock")
         micro.desc:SetText("Horloge et raccourcis")
-        local classesBtn = navButton("classes", "Classes", -158, nil, "users")
+        local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
+        fishBtn.desc:SetText("Tenue, appâts, touche unique")
+        local classesBtn = navButton("classes", "Classes", -208, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
 
         -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
@@ -556,6 +558,98 @@ UI:RegisterPage({
             UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
             cy = cy - 38
         end
+
+        -----------------------------------------------------------------------
+        -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
+        -----------------------------------------------------------------------
+        section("fishing")
+        local Fi = WK.modules.Fishing
+        local fo = Fi:Config()
+        local function ftoggle(parent, field, after)
+            return toggle(parent, function() return fo[field] end, function(v) fo[field] = v; if after then after() end end)
+        end
+        local fmode = card("Mode pêche", 40 + 3 * 46 + 8, "tenue, sons, touche et barre à l'écran, le temps de pêcher")
+        local modeBtn = UI:Button(fmode, "Ouvrir", 150, 28, "primary")
+        modeBtn:SetScript("OnClick", function() Fi:Toggle() end)
+        table.insert(self.dyn, function()
+            modeBtn.label:SetText(Fi.active and T("Fermer le mode pêche") or T("Ouvrir le mode pêche"))
+        end)
+        UI:SettingRow(fmode, -40, "Mode pêche", "À la fermeture, équipement, sons et touche redeviennent comme avant. Aussi : /wk peche.", modeBtn, 170)
+        UI:SettingRow(fmode, -86, "Ouvrir quand une canne est équipée", "Y compris à la connexion.", ftoggle(fmode, "autoOpen"), 80)
+        UI:SettingRow(fmode, -132, "Bouton de minicarte", "Petit bouton rond : ouvre et ferme le mode pêche. Seulement sur les persos qui ont la Pêche.",
+            ftoggle(fmode, "minimap", function() UI:SyncFishingMinimap() end), 80)
+
+        -- Touche unique : capture d'une touche, de la molette ou d'un bouton de souris
+        local fkey = card("Une seule touche pour tout", 40 + 46 + 44, "active seulement en mode pêche, hors combat")
+        local keyBtn = UI:Button(fkey, "", 170, 28, "secondary")
+        local capture
+        local function keyText() keyBtn.label:SetText(fo.key and fo.key ~= "" and UI.FishKeyLabel(fo.key) or T("Aucune")) end
+        local function setKey(k)
+            fo.key = k
+            if capture then capture:Hide() end
+            keyText()
+            Fi:UpdateBinding()
+            UI:RefreshFishingBar()
+        end
+        local function mods()
+            return (IsAltKeyDown() and "ALT-" or "") .. (IsControlKeyDown() and "CTRL-" or "") .. (IsShiftKeyDown() and "SHIFT-" or "")
+        end
+        keyBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        keyBtn:SetScript("OnClick", function(_, button)
+            if InCombatLockdown and InCombatLockdown() then return end
+            if button == "RightButton" then setKey("") return end
+            if not capture then
+                capture = CreateFrame("Frame", nil, UIParent)
+                capture:SetAllPoints(UIParent)
+                capture:SetFrameStrata("FULLSCREEN_DIALOG")
+                capture:EnableMouse(true)
+                capture:EnableKeyboard(true)
+                capture:EnableMouseWheel(true)
+                local shade = capture:CreateTexture(nil, "BACKGROUND")
+                shade:SetAllPoints()
+                shade:SetColorTexture(0, 0, 0, 0.6)
+                local msg = UI:Text(capture, 16)
+                msg:SetPoint("CENTER")
+                msg:SetJustifyH("CENTER")
+                msg:SetText(T("Appuie sur une touche, tourne la molette ou clique un bouton de souris (milieu, 4, 5).") .. "\n" .. T("Échap pour annuler."))
+                capture:SetScript("OnKeyDown", function(_, key)
+                    if key == "ESCAPE" then capture:Hide() return end
+                    if key:find("SHIFT") or key:find("CTRL") or key:find("ALT") or key == "UNKNOWN" then return end
+                    setKey(mods() .. key)
+                end)
+                capture:SetScript("OnMouseWheel", function(_, delta) setKey(mods() .. (delta > 0 and "MOUSEWHEELUP" or "MOUSEWHEELDOWN")) end)
+                capture:SetScript("OnMouseDown", function(_, button)
+                    local map = { MiddleButton = "BUTTON3", Button4 = "BUTTON4", Button5 = "BUTTON5" }
+                    if map[button] then setKey(mods() .. map[button]) else capture:Hide() end
+                end)
+            end
+            capture:Show()
+        end)
+        keyText()
+        UI:SettingRow(fkey, -40, "Touche de pêche", "Clic : choisir une touche. Clic droit : aucune.", keyBtn, 190)
+        local keyNote = UI:Text(fkey, 11, C.muted)
+        keyNote:SetPoint("TOPLEFT", 16, -90)
+        keyNote:SetPoint("TOPRIGHT", -16, -90)
+        keyNote:SetJustifyH("LEFT")
+        if keyNote.SetWordWrap then keyNote:SetWordWrap(true) end
+        keyNote:SetText(T("Chaque appui fait ce qu'il faut : équiper la tenue, poser un appât, lancer la ligne, puis ferrer quand le flotteur est désigné. Hors du mode pêche, la touche garde son rôle habituel."))
+
+        local fgear = card("Tenue et appâts", 40 + 4 * 46 + 8)
+        UI:SettingRow(fgear, -40, "Équiper la tenue de pêche", "La meilleure canne des sacs, et les pièces qui donnent de la Pêche.", ftoggle(fgear, "autoGear"), 80)
+        UI:SettingRow(fgear, -86, "Remettre l'équipement à la fermeture", "Les armes et pièces remplacées par la tenue de pêche.", ftoggle(fgear, "restoreGear"), 80)
+        UI:SettingRow(fgear, -132, "Poser un appât", "Quand il n'y en a pas sur la canne, ou qu'il a expiré.", ftoggle(fgear, "autoLure"), 80)
+        local lureOpts = { { "best", T("Le meilleur disponible") } }
+        for _, l in ipairs(Fi.LURES) do
+            table.insert(lureOpts, { tostring(l.id), ((WK.GetItemInfo(l.id)) or ("#" .. l.id)) .. " (+" .. l.bonus .. ")" })
+        end
+        local lureDd = UI:Dropdown(fgear, 240, 30, lureOpts, function(v) fo.lure = v; UI:RefreshFishingBar() end)
+        lureDd:Select(fo.lure or "best")
+        UI:SettingRow(fgear, -178, "Appât utilisé", "« Le meilleur » suit ta compétence et tes sacs.", lureDd, 240)
+
+        local fcomfort = card("Confort", 40 + 3 * 46 + 8)
+        UI:SettingRow(fcomfort, -40, "Butin rapide", "Ramasse la prise dès que le butin est prêt (sauf sacs pleins).", ftoggle(fcomfort, "fastLoot"), 80)
+        UI:SettingRow(fcomfort, -86, "Son du flotteur mis en avant", "Musique et ambiance coupées, effets au maximum, le temps de pêcher.", ftoggle(fcomfort, "sound"), 80)
+        UI:SettingRow(fcomfort, -132, "Avertissements à l'écran", "Pas de canne, plus d'appât, sacs pleins.", ftoggle(fcomfort, "warn", function() Fi:Warn() end), 80)
 
         -----------------------------------------------------------------------
         -- Fiches de classe
@@ -990,6 +1084,11 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "fishing" then
+                local F2 = WK.modules.Fishing
+                local sk = F2:Skill()
+                b.desc:SetText(F2.active and T("Mode pêche ouvert") or (sk and string.format(T("Compétence %d"), sk) or T("Pas appris sur ce perso")))
+                b.count:SetText("")
             elseif key == "micro" then
                 b.desc:SetText(UI.ClockConfig().enabled and T("Activé") or T("Désactivé"))
                 b.count:SetText("")

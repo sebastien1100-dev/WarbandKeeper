@@ -4,7 +4,7 @@ local L = WK.L
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_FISH" }) do
         WK:Print("  " .. L[k])
     end
 end
@@ -60,6 +60,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         local what = map[string.lower(rest or "")]
         if what then WK.modules.Guide:GoTo(what) elseif string.lower(rest or "") == "stop" then WK.modules.Guide:Stop()
         else WK:Print("  " .. L.HELP_GUIDE) end
+    elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
+        WK.modules.Fishing:Toggle()
     elseif cmd == "halo" then
         WK.modules.Glow:Report()
     elseif cmd == "lien" or cmd == "link" then

@@ -306,6 +306,15 @@ def fx_ring():
     img.save(os.path.join(OUT, "fxring.tga"))
 
 
+def icon_fish():
+    """Poisson (pêche) : corps en amande, queue en triangle, œil évidé."""
+    img, d, s = canvas(64)
+    d.ellipse([P(0.10, s), P(0.28, s), P(0.72, s), P(0.72, s)], fill=W)
+    d.polygon([(P(0.62, s), P(0.50, s)), (P(0.92, s), P(0.24, s)), (P(0.92, s), P(0.76, s))], fill=W)
+    d.ellipse([P(0.24, s), P(0.40, s), P(0.32, s), P(0.48, s)], fill=(255, 255, 255, 0))
+    save(img, "fish", 64)
+
+
 def icon_spark():
     """Étincelle (qualité de vie) : grande étoile à quatre branches et une petite."""
     img, d, s = canvas(64)
@@ -407,6 +416,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, mm_icons, icon_fish, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")

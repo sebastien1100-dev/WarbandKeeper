@@ -7,11 +7,11 @@ local T = function(s) return WK.T(s) end
 -- sur la carte du monde montrent le chemin ; les alertes de QoL (sacs pleins, composants,
 -- munitions, réparation) peuvent lancer le guidage d'elles-mêmes.
 
-M.KIND = { mail = 1, bank = 2, vendor = 4, repair = 8, ammo = 16, reagent = 32, poison = 64, trainer = 128, general = 256, stable = 512 }
+M.KIND = { mail = 1, bank = 2, vendor = 4, repair = 8, ammo = 16, reagent = 32, poison = 64, trainer = 128, general = 256, stable = 512, fishing = 1024 }
 local KIND = M.KIND
 M.LABELS = {
     mail = "Boîte aux lettres", bank = "Banque", vendor = "Marchand", repair = "Réparation",
-    ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", bags = "Boîte aux lettres, banque ou marchand",
+    ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
 }
 
 local DEFAULTS = { auto = true, arrow = true, mapPin = true, trainerOnLevel = true }
