@@ -378,6 +378,7 @@ function M:SaveLink(prof, link)
     me.profLinks = me.profLinks or {}
     me.profLinks[prof] = { link = link, t = time() }
     WK:NotifyChanged()
+    M:FinishPendingLink(prof)
 end
 
 -- Un lien de métier mis dans le chat depuis la fenêtre du jeu (bouton de lien, Maj + clic) est
@@ -444,10 +445,38 @@ end
 
 function M:LinkToChat(c, key, prof)
     local text, real = self:LinkText(c, key, prof)
-    WK.ChatInsert(text)
-    if not real then
-        WK:Print(string.format(T("Pas encore de lien enregistré pour %s : ouvre la fenêtre du métier sur ce perso, puis réessaie."), prof))
+    if real then WK.ChatInsert(text) return end
+    -- Pas encore de lien : pour le perso connecté, on ouvre le métier une fois (le lien est lu à
+    -- l'ouverture), on le referme et on colle le lien. Sinon, on explique quoi faire.
+    if key == select(2, WK.DB:Me()) and WK.modules.Professions:OpenDirect(prof) then
+        local token = {}
+        self.pendingLink = { prof = prof, key = key, c = c, token = token }
+        C_Timer.After(3, function()
+            local p = M.pendingLink
+            if p and p.token == token then
+                M.pendingLink = nil
+                WK.ChatInsert((M:LinkText(c, key, prof)))
+                WK:Print(string.format(T("Le jeu n'a pas donné le lien de %s : seul le nom et le niveau sont envoyés."), prof))
+            end
+        end)
+        return
     end
+    WK.ChatInsert(text)
+    if key == select(2, WK.DB:Me()) then
+        WK:Print(string.format(T("Lien de %s pas encore enregistré : ouvre une fois la fenêtre du métier (bouton « Ouvrir le métier »), puis réessaie."), prof))
+    else
+        WK:Print(string.format(T("Lien de %s pas encore enregistré pour %s : connecte ce perso et ouvre une fois la fenêtre du métier."), prof, WK:CharName(c, key)))
+    end
+end
+
+-- Le lien demandé par « Lier dans le chat » vient d'arriver : on referme la fenêtre ouverte pour lui.
+function M:FinishPendingLink(prof)
+    local p = self.pendingLink
+    if not p or p.prof ~= prof then return end
+    self.pendingLink = nil
+    if C_TradeSkillUI and C_TradeSkillUI.CloseTradeSkill then pcall(C_TradeSkillUI.CloseTradeSkill)
+    elseif CloseTradeSkill then pcall(CloseTradeSkill) end
+    C_Timer.After(0.1, function() WK.ChatInsert((M:LinkText(p.c, p.key, prof))) end)
 end
 
 ---------------------------------------------------------------------------

@@ -684,6 +684,10 @@ WK.Locales.enUS.text = {
 
     ["Fermer la fenêtre après la réparation"] = "Close the window after repairing",
     ["Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte."] = "After selling greys and auto-buying. Hold Shift when talking to the vendor to keep it open.",
+    ["Le jeu n'a pas donné le lien de %s : seul le nom et le niveau sont envoyés."] = "The game did not give the %s link: only the name and level are sent.",
+    ["Lien de %s pas encore enregistré : ouvre une fois la fenêtre du métier (bouton « Ouvrir le métier »), puis réessaie."] = "%s link not saved yet: open the profession window once (\"Open profession\" button), then try again.",
+    ["Lien de %s pas encore enregistré pour %s : connecte ce perso et ouvre une fois la fenêtre du métier."] = "%s link not saved yet for %s: log on that character and open the profession window once.",
+    ["Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."] = "Puts the profession window link in chat, followed by your text if enabled. The link is read when the profession opens: the first time, the addon opens and closes the window by itself (current character).",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

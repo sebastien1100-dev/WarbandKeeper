@@ -625,7 +625,7 @@ local function Detail(page, parent)
     linkCfgBtn:SetPoint("TOPRIGHT", -16, -18)
     local linkBtn = UI:Button(head, "Lier dans le chat", nil, 32, "secondary")
     linkBtn:SetPoint("TOPRIGHT", linkCfgBtn, "TOPLEFT", -6, 0)
-    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier (enregistré à sa dernière ouverture), suivi de ton texte s'il est activé."
+    linkBtn.tooltip = "Colle dans le chat le lien de la fenêtre du métier, suivi de ton texte s'il est activé. Le lien est lu à l'ouverture du métier : la première fois, l'addon ouvre et referme la fenêtre tout seul (perso connecté)."
     linkBtn:SetScript("OnClick", function()
         local c = WK.DB.global.characters[tab.key]
         WK.modules.Recipes:LinkToChat(c, tab.key, tab.prof)
