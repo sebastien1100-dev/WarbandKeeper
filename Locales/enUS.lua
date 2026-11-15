@@ -682,6 +682,8 @@ WK.Locales.enUS.text = {
     ["Dernier métier ouvert : %s"] = "Last profession opened: %s",
     ["Aucun lien de métier gardé pour ce perso."] = "No profession link saved for this character.",
 
+    ["Fermer la fenêtre après la réparation"] = "Close the window after repairing",
+    ["Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte."] = "After selling greys and auto-buying. Hold Shift when talking to the vendor to keep it open.",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

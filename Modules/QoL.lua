@@ -94,7 +94,7 @@ local FEED_MACRO = "WK Nourrir"
 -- Réglages
 ---------------------------------------------------------------------------
 local GENERAL_DEFAULTS = {
-    repair = true, repairCap = 0, repairGuild = false, sellGrey = true,
+    repair = true, repairCap = 0, repairGuild = false, sellGrey = true, closeAfterRepair = true,
     durability = 30, freeSlots = 4,
     acceptInvites = false, declineDuels = false, duelFriends = true,
     releaseBG = false, confirmBoP = false, dismount = true, skipCinematics = false,
@@ -359,12 +359,14 @@ function M:Repair()
     if g.repairGuild and CanGuildBankRepair and CanGuildBankRepair() then
         RepairAllItems(true)
         WK:Print(string.format(T("Réparé avec l'or de guilde : %s"), WK:FormatMoney(cost)))
-        return
+        C_Timer.After(0.5, function() M:ScanDurability() end)
+        return true
     end
     if cost > GetMoney() then return end
     RepairAllItems()
     WK:Print(string.format(T("Réparé : %s"), WK:FormatMoney(cost)))
     C_Timer.After(0.5, function() M:ScanDurability() end)
+    return true
 end
 
 local function useContainerItem(bag, slot)
@@ -389,10 +391,12 @@ function M:GreyItems()
     return list
 end
 
-function M:SellGrey()
-    if not self:General().sellGrey then return end
+-- onDone() est appelé quand la vente est finie (tout de suite s'il n'y a rien à vendre).
+function M:SellGrey(onDone)
+    onDone = onDone or function() end
+    if not self:General().sellGrey then return onDone() end
     local list = self:GreyItems()
-    if #list == 0 then return end
+    if #list == 0 then return onDone() end
     local total = 0
     for _, it in ipairs(list) do total = total + it.price end
     -- Par paquets : le serveur n'aime pas cent ventes dans la même image.
@@ -404,7 +408,7 @@ function M:SellGrey()
             local it = list[i]
             if not it then
                 WK:Print(string.format(T("Objets gris vendus : %s"), WK:FormatMoney(total)))
-                return
+                return onDone()
             end
             useContainerItem(it.bag, it.slot)
         end
@@ -486,13 +490,19 @@ function M:AutoBuy()
     if #bought > 0 then WK:Print(T("Acheté : ") .. table.concat(bought, ", ")) end
 end
 
+-- Fermer la fenêtre après une réparation (réglage) ; Maj enfoncée à l'ouverture : elle reste ouverte.
 WK:On("MERCHANT_SHOW", function()
     merchantOpen = true
+    local keepOpen = IsShiftKeyDown and IsShiftKeyDown()
     C_Timer.After(0.2, function()
         if not merchantOpen then return end
-        M:Repair()
-        M:SellGrey()
+        local repaired = M:Repair()
         M:AutoBuy()
+        M:SellGrey(function()
+            if repaired and M:General().closeAfterRepair and not keepOpen then
+                C_Timer.After(0.5, function() if merchantOpen and CloseMerchant then CloseMerchant() end end)
+            end
+        end)
     end)
 end)
 WK:On("MERCHANT_CLOSED", function() merchantOpen = false end)
