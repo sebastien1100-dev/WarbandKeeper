@@ -65,9 +65,16 @@ local SHORTCUTS = {
     { key = "fishing", label = "Mode pêche", icon = function() return UI.MEDIA .. "fish" end, tint = true,
       run = function() WK.modules.Fishing:Toggle() end,
       dot = function() return WK.modules.Fishing.active and C.positive or nil end },
-    { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton" },
+    { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton", "GameMenuMicroButton" },
       icon = function() return UI.MEDIA .. "gear" end, tint = true,
-      run = function() if ToggleGameMenu then ToggleGameMenu() end end },
+      -- vérifié après le clic : si le bouton du jeu n'a rien ouvert, on ouvre le menu directement
+      shown = function() return GameMenuFrame and GameMenuFrame:IsShown() or false end,
+      run = function()
+          if ToggleGameMenu then ToggleGameMenu() return end
+          if not GameMenuFrame then return end
+          if GameMenuFrame:IsShown() then (HideUIPanel or GameMenuFrame.Hide)(GameMenuFrame)
+          else (ShowUIPanel or GameMenuFrame.Show)(GameMenuFrame) end
+      end },
 }
 UI.CLOCK_SHORTCUTS = SHORTCUTS
 
@@ -134,18 +141,47 @@ end
 ---------------------------------------------------------------------------
 -- Construction
 ---------------------------------------------------------------------------
-local function makeIcon(def)
-    local b
-    local target
+-- Bouton du micro menu du jeu qui ouvre la même fenêtre que le raccourci (ou nil), et son nom.
+function UI.ClockMicroButton(def)
     for _, name in ipairs(def.micro or {}) do
         local mb = _G[name]
-        if type(mb) == "table" and mb.Click then target = mb break end
+        if type(mb) == "table" and mb.Click then return mb, name end
     end
+    return nil
+end
+
+-- Diagnostic (/wk micro) : par quel chemin chaque raccourci ouvre sa fenêtre.
+function UI:ClockReport()
+    WK:Print(T("Micro menu : diagnostic"))
+    for _, def in ipairs(SHORTCUTS) do
+        if def.micro then
+            local _, name = UI.ClockMicroButton(def)
+            WK:Print("  " .. T(def.label) .. " : " .. (name and (T("bouton du jeu") .. " " .. name) or T("aucun bouton du jeu trouvé (ouverture directe)")))
+        end
+    end
+    WK:Print("  ToggleGameMenu : " .. tostring(ToggleGameMenu ~= nil) .. " · GameMenuFrame : " .. tostring(GameMenuFrame ~= nil))
+end
+
+local function makeIcon(def)
+    local b
+    local target = UI.ClockMicroButton(def)
     if target then
         b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
         if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
         b:SetAttribute("type", "click")
         b:SetAttribute("clickbutton", target)
+        if def.shown then
+            -- le clic part à l'appui et au relâchement : on ne vérifie qu'une fois par clic
+            b:SetScript("PreClick", function(s)
+                local now = GetTime()
+                if s.checkAt and now - s.checkAt < 0.4 then return end
+                s.checkAt = now
+                local before = def.shown()
+                C_Timer.After(0.25, function()
+                    if def.shown() == before and not inCombat() then def.run() end
+                end)
+            end)
+        end
     elseif def.secure then
         b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
         if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end

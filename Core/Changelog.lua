@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.58.1", date = "15/11/2026",
+        fixed = {
+            "Micro menu : le raccourci « Menu du jeu » n'ouvrait rien. Il essaie le bouton du jeu, puis ouvre le menu directement si rien ne s'est passé.",
+        },
+        added = {
+            "/wk micro : indique par quel chemin chaque raccourci du micro menu ouvre sa fenêtre.",
+        },
+    },
+    {
         version = "0.58.0", date = "15/11/2026",
         changed = {
             "Micro menu : les icônes sont refaites dans le style de l'addon (formes pleines, traits épais), comme celles de la barre latérale. Cinq sont nouvelles : personnage, grimoire, talents, carte et quêtes.",

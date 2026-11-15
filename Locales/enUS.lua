@@ -731,7 +731,7 @@ WK.Locales.enUS.text = {
     ["Oui"] = "Yes", ["Non"] = "No", ["niveau %s"] = "level %s",
     ["Pile d'alertes"] = "Alert stack", ["Empiler vers"] = "Stack towards", ["le bas"] = "down", ["le haut"] = "up", ["Icônes"] = "Icons",
     ["Exemple : aucun aspect actif"] = "Example: no aspect active", ["Exemple : rappel urgent"] = "Example: urgent reminder",
-    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker",
+    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker", ["Micro menu : diagnostic"] = "Micro menu: diagnostic", ["bouton du jeu"] = "game button", ["aucun bouton du jeu trouvé (ouverture directe)"] = "no game button found (opened directly)",
     ["Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe) et emplacements des filons et des plantes : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3)."] = "Guide places (mailboxes, banks, vendors, class trainers) and ore vein and herb locations: data from QuestieDB, the Questie addon database (github.com/Questie/QuestieDB, GPLv3 license).",
     ["Filons et plantes connus"] = "Known veins and herbs",
     ["emplacements possibles, pas des nœuds présents en direct"] = "possible locations, not live nodes",

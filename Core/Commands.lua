@@ -62,6 +62,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. L.HELP_GUIDE) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "micro" then
+        WK.UI:ClockReport()
     elseif cmd == "halo" then
         WK.modules.Glow:Report()
     elseif cmd == "lien" or cmd == "link" then

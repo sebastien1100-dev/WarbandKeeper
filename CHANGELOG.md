@@ -17,6 +17,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.58.1 — 15/11/2026
+
+### Ajouts
+- /wk micro : indique par quel chemin chaque raccourci du micro menu ouvre sa fenêtre.
+
+### Corrections
+- Micro menu : le raccourci « Menu du jeu » n'ouvrait rien. Il essaie le bouton du jeu, puis ouvre le menu directement si rien ne s'est passé.
+
 ## v0.58.0 — 15/11/2026
 
 ### Ajouts
