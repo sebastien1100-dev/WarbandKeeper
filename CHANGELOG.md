@@ -7,6 +7,10 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Rares (données QuestieDB) : sur la carte du monde avec apparitions et patrouilles, alerte quand un rare apparaît près de toi, butin utile dans l'infobulle, rares tués par perso.
+- Quêtes (données QuestieDB) : quêtes restantes par zone pour chaque perso, meilleure zone pour monter, quêtes de métier et quêtes qui donnent une recette, chaînes de quêtes et prérequis.
+- Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.
+- Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.
 - Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.
 - Recherche globale : trouver un objet, une recette ou un perso dans tout l'addon.
@@ -16,6 +20,11 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.62.2 — 15/11/2026
+
+### Modifications
+- Patch notes : la liste « À venir » reprend tout ce qui est prévu (rares, quêtes, suite de la pêche, Warband UI).
 
 ## v0.62.1 — 15/11/2026
 

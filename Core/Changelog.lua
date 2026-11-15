@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.62.2", date = "15/11/2026",
+        changed = {
+            "Patch notes : la liste « À venir » reprend tout ce qui est prévu (rares, quêtes, suite de la pêche, Warband UI).",
+        },
+    },
+    {
         version = "0.62.1", date = "15/11/2026",
         changed = {
             "LFG : nouvelle couronne du chef de groupe, plus ronde, penchée et posée de travers sur le haut de son logo, avec une petite ombre.",
@@ -1207,6 +1213,10 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Rares (données QuestieDB) : sur la carte du monde avec apparitions et patrouilles, alerte quand un rare apparaît près de toi, butin utile dans l'infobulle, rares tués par perso.",
+    "Quêtes (données QuestieDB) : quêtes restantes par zone pour chaque perso, meilleure zone pour monter, quêtes de métier et quêtes qui donnent une recette, chaînes de quêtes et prérequis.",
+    "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
+    "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
     "Recherche globale : trouver un objet, une recette ou un perso dans tout l'addon.",
