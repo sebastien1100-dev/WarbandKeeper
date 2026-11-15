@@ -8,6 +8,7 @@ local T = function(s) return WK.T(s) end
 -- Les réglages du jeu modifiés sont gardés à l'activation et rendus à l'arrêt.
 
 local UNIT = "softinteract"
+local plain
 local CATEGORIES = { "herb", "ore", "quest", "chest", "bobber" }
 M.CATEGORIES = CATEGORIES
 M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche" }
@@ -126,6 +127,27 @@ local function tooltipProfession(unit)
     end
 end
 
+-- Valeur lisible (certaines réponses du jeu sont masquées en combat)
+plain = function(v)
+    if issecretvalue and issecretvalue(v) then return nil end
+    return v
+end
+
+-- Y a-t-il un objet désigné ? Un objet du décor n'« existe » pas au sens de UnitExists :
+-- il faut demander si c'est un objet (UnitIsGameObject).
+function M.SoftExists(unit)
+    unit = unit or UNIT
+    if UnitIsGameObject then
+        local ok, obj = pcall(UnitIsGameObject, unit)
+        if ok and plain(obj) == true then return true end
+    end
+    if UnitExists then
+        local ok, ex = pcall(UnitExists, unit)
+        if ok and plain(ex) == true then return true end
+    end
+    return false
+end
+
 -- Objet de quête d'après son infobulle : le jeu y met le titre et les objectifs de la quête.
 local function tooltipQuest(unit)
     if not (C_TooltipInfo and C_TooltipInfo.GetUnit) then return false end
@@ -142,8 +164,8 @@ local function tooltipQuest(unit)
 end
 
 function M:Classify(unit)
-    if not UnitExists or not UnitExists(unit) then return nil end
-    if UnitIsGameObject and not UnitIsGameObject(unit) then return nil end
+    if not M.SoftExists(unit) then return nil end
+    if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then return nil end -- PNJ, joueur : pas de halo
     local name = UnitName(unit) or ""
     if contains(name, BOBBER_WORDS) then return "bobber", name end
     if C_QuestLog and C_QuestLog.UnitIsRelatedToActiveQuest then
@@ -191,7 +213,7 @@ local function buildGlow()
         local g = M:Config()
         local size = g.size or 110
         local power = (g.intensity or 100) / 100
-        local inRange = UnitIsInInteractRange and UnitIsInInteractRange(UNIT)
+        local inRange = UnitIsInInteractRange and plain(UnitIsInInteractRange(UNIT))
         -- respiration lente hors de portée, plus vive à portée
         local speed = inRange and 4 or 2
         local breath = 0.5 + 0.5 * math.sin(self.t * speed)
@@ -225,7 +247,12 @@ local function findPlate()
                 local token = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
                 if token then
                     local ok2, same = pcall(UnitIsUnit, token, UNIT)
-                    if ok2 and same then return plate end
+                    if ok2 and plain(same) == true then return plate end
+                    -- une plaque d'objet du décor : c'est celle de l'objet désigné
+                    if UnitIsGameObject then
+                        local ok3, obj = pcall(UnitIsGameObject, token)
+                        if ok3 and plain(obj) == true then return plate end
+                    end
                 end
             end
         end
@@ -298,8 +325,9 @@ function M:Report()
     if WK.unknownEvents and WK.unknownEvents.PLAYER_SOFT_INTERACT_CHANGED then
         WK:Print("  " .. T("ce client ne signale pas l'objet désigné (évènement absent)"))
     end
-    local exists = UnitExists and UnitExists(UNIT)
-    if not exists then
+    local function show(fn) if not fn then return "absent" end local ok, v = pcall(fn, UNIT); return ok and tostring(plain(v)) or "erreur" end
+    WK:Print("  UnitIsGameObject : " .. show(UnitIsGameObject) .. " · UnitExists : " .. show(UnitExists) .. " · UnitName : " .. show(UnitName))
+    if not M.SoftExists() then
         WK:Print("  " .. T("aucun objet désigné par le jeu : approche-toi d'un objet et relance la commande"))
         return
     end
@@ -314,7 +342,7 @@ local function refresh() M.retry = 0; M:Update() end
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", refresh)
 WK:On("NAME_PLATE_UNIT_ADDED", refresh)
 WK:On("NAME_PLATE_UNIT_REMOVED", function() if M.current then refresh() end end)
-WK:On("QUEST_LOG_UPDATE", function() if M.current or (UnitExists and UnitExists(UNIT)) then M:Update() end end)
+WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then M:Update() end end)
 WK:On("PLAYER_REGEN_DISABLED", refresh)
 WK:On("PLAYER_REGEN_ENABLED", refresh)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()

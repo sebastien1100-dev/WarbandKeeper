@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.51.2", date = "15/11/2026",
+        fixed = {
+            "Halo : l'addon demandait au jeu si l'objet désigné « existe », or le jeu répond non pour un objet du décor (plante, filon, objet de quête). Il demande maintenant si c'est un objet : le halo ne restait éteint que pour cette raison.",
+            "Halo : la plaque d'un objet du décor est aussi retrouvée parmi les plaques affichées.",
+        },
+        changed = {
+            "/wk halo affiche les réponses brutes du jeu sur l'objet désigné.",
+        },
+    },
+    {
         version = "0.51.1", date = "15/11/2026",
         fixed = {
             "Halo : le jeu ne désignait un objet qu'à portée de main (quelques mètres), donc le halo ne s'allumait pas à l'approche. L'addon règle maintenant le jeu pour désigner l'objet jusqu'à la portée choisie, et pour afficher sa plaque aussi loin.",
