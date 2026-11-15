@@ -148,10 +148,12 @@ UI:RegisterPage({
         self.toggles, self.inputs, self.dyn = {}, {}, {}
         local root, y, current
 
-        local function section(key)
+        local CLASSBAR_H = 64
+        local function section(key, top)
             if current then current.scroll:SetContentHeight(y) end
             local sc = UI:Scroll(host)
-            sc:SetAllPoints()
+            sc:SetPoint("TOPLEFT", 0, -(top or 0))
+            sc:SetPoint("BOTTOMRIGHT")
             sc:Hide()
             current = { scroll = sc }
             self.sections[key] = current
@@ -177,11 +179,24 @@ UI:RegisterPage({
             return t
         end
 
+        local isClass = {}
+        for _, cl in ipairs(QoL.CLASSES) do isClass[cl[1]] = true end
+        -- « classes » ouvre la dernière classe vue (sinon celle du perso joué)
         function self:ShowSection(key)
+            if key == "classes" then
+                key = ui.qolClass
+                if not isClass[key or ""] then key = WK.DB:Me().class end
+                if not isClass[key or ""] then key = QoL.CLASSES[1][1] end
+            end
             if not self.sections[key] then key = "general" end
             ui.qolSection = key
+            local cls = isClass[key]
+            if cls then ui.qolClass = key end
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
-            for k, b in pairs(self.navButtons) do b.selected = (k == key); b:Paint() end
+            local navKey = cls and "classes" or key
+            for k, b in pairs(self.navButtons) do b.selected = (k == navKey); b:Paint() end
+            self.classBar:SetShown(cls or false)
+            for k, t in pairs(self.classTabs) do t.selected = (k == key); t:Paint() end
         end
 
         -- Colonne : Général puis les classes ---------------------------------------
@@ -239,25 +254,68 @@ UI:RegisterPage({
         halo.desc:SetText("L'objet visé brille")
         local micro = navButton("micro", "Micro menu", -108, nil, "clock")
         micro.desc:SetText("Horloge et raccourcis")
-        local CLASS_TOP = 166 -- début des classes, sous Général, Halo, Micro menu et le séparateur
-        local sep = navCard:CreateTexture(nil, "ARTWORK")
-        sep:SetColorTexture(unpack(C.border))
-        sep:SetPoint("TOPLEFT", 14, -(CLASS_TOP - 5))
-        sep:SetPoint("TOPRIGHT", -14, -(CLASS_TOP - 5))
-        sep:SetHeight(1)
-        local classButtons = {}
-        for i, cl in ipairs(QoL.CLASSES) do
-            classButtons[i] = navButton(cl[1], cl[2], -CLASS_TOP - (i - 1) * 50, cl[1])
+        local classesBtn = navButton("classes", "Classes", -158, nil, "users")
+        classesBtn.desc:SetText("Réglages par classe")
+
+        -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
+        local classBar = UI:Card(host)
+        classBar:SetPoint("TOPLEFT")
+        classBar:SetPoint("TOPRIGHT")
+        classBar:SetHeight(CLASSBAR_H - 8)
+        classBar:Hide()
+        self.classBar, self.classTabs = classBar, {}
+        local tabList = {}
+        for _, cl in ipairs(QoL.CLASSES) do
+            local key = cl[1]
+            local t = CreateFrame("Button", nil, classBar)
+            t:SetHeight(48)
+            t.bg = UI:Rounded(t, 10, 0, "BACKGROUND", 1)
+            t.icon = UI:RoundIcon(t, 24)
+            UI:SetClassIcon(t.icon, key)
+            t.icon:SetPoint("TOP", 0, -5)
+            t.label = UI:Text(t, 10)
+            t.label:SetPoint("TOP", t.icon, "BOTTOM", 0, -3)
+            t.label:SetJustifyH("CENTER")
+            t.label:SetText(T(cl[2]))
+            t.line = CreateFrame("Frame", nil, t)
+            t.line:SetHeight(2)
+            t.line:SetPoint("BOTTOMLEFT", 10, 0)
+            t.line:SetPoint("BOTTOMRIGHT", -10, 0)
+            t.lineTex = UI:Rounded(t.line, 1, 0, "ARTWORK", 1)
+            t.count = UI:Badge(t, "", C.warning)
+            t.count:SetPoint("TOPRIGHT", -2, -2)
+            t.count:Hide()
+            function t:Paint()
+                local sel, played = self.selected, self.played ~= false
+                self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+                self.bg:SetShown(sel or self.hover)
+                self.line:SetShown(sel)
+                self.lineTex:SetColor(UI:Accent())
+                if self.icon.SetDesaturated then self.icon:SetDesaturated(not played) end
+                self.icon:SetAlpha(played and 1 or 0.45)
+                self.label:SetTextColor(unpack((sel or self.hover or played) and C.text or C.dim))
+            end
+            t:SetScript("OnEnter", function(s2)
+                s2.hover = true; s2:Paint()
+                WK.UI:TooltipOwner(s2, "ANCHOR_BOTTOM")
+                GameTooltip:SetText(T(cl[2]), 1, 1, 1)
+                if s2.tip then GameTooltip:AddLine(s2.tip, 0.8, 0.8, 0.8) end
+                GameTooltip:Show()
+            end)
+            t:SetScript("OnLeave", function(s2) s2.hover = false; s2:Paint(); GameTooltip:Hide() end)
+            t:SetScript("OnClick", function() self:ShowSection(key) end)
+            UI:OnAccent(function() t:Paint() end)
+            self.classTabs[key] = t
+            table.insert(tabList, t)
         end
-        -- Fenêtre basse : les lignes se resserrent pour garder une marge sous la dernière classe.
-        UI:OnResize(navCard, function(_, h)
-            if not h or h <= 0 then return end
-            local step = math.max(36, math.min(50, math.floor((h - CLASS_TOP - 14) / #classButtons)))
-            for i, b in ipairs(classButtons) do
-                b:SetHeight(step - 2)
-                b:ClearAllPoints()
-                b:SetPoint("TOPLEFT", 8, -CLASS_TOP - (i - 1) * step)
-                b:SetPoint("TOPRIGHT", -8, -CLASS_TOP - (i - 1) * step)
+        -- les 9 onglets se partagent la largeur
+        UI:OnResize(classBar, function(w)
+            if not w or w <= 0 then return end
+            local tw = (w - 12) / #tabList
+            for i, t in ipairs(tabList) do
+                t:ClearAllPoints()
+                t:SetWidth(tw - 4)
+                t:SetPoint("TOPLEFT", 6 + (i - 1) * tw + 2, -4)
             end
         end)
 
@@ -481,7 +539,7 @@ UI:RegisterPage({
         for _, cl in ipairs(QoL.CLASSES) do
             local class = cl[1]
             local cc = q.classes[class]
-            section(class)
+            section(class, CLASSBAR_H)
 
             -- Persos de la classe (tuiles)
             local list = QoL:CharsOf(class)
@@ -911,13 +969,25 @@ UI:RegisterPage({
                 local on = G:Config().enabled and not G:OtherAddonLoaded()
                 b.desc:SetText(on and T("Activé") or T("Désactivé"))
                 b.count:SetText("")
-            else
-                local n = #QoL:CharsOf(key)
-                b.played = played[key] or false
-                b.desc:SetText(n == 0 and T("Aucun perso") or string.format(n > 1 and T("%d persos") or T("%d perso"), n))
-                b.count:SetText((byClass[key] or 0) > 0 and tostring(byClass[key]) or "")
+            elseif key == "classes" then
+                local total, kinds = 0, 0
+                for _, cl in ipairs(QoL.CLASSES) do
+                    total = total + (byClass[cl[1]] or 0)
+                    if played[cl[1]] then kinds = kinds + 1 end
+                end
+                b.desc:SetText(string.format(kinds > 1 and T("%d classes jouées") or T("%d classe jouée"), kinds))
+                b.count:SetText(total > 0 and tostring(total) or "")
             end
             b:Paint()
+        end
+        for key, t in pairs(self.classTabs) do
+            local n = #QoL:CharsOf(key)
+            t.played = played[key] or false
+            t.tip = n == 0 and T("Aucun perso") or string.format(n > 1 and T("%d persos") or T("%d perso"), n)
+            local a = byClass[key] or 0
+            t.count:SetShown(a > 0)
+            if a > 0 then t.count:Set(tostring(a), C.warning) end
+            t:Paint()
         end
         for _, tile in ipairs(self.tiles) do
             local e = tile.e

@@ -18,6 +18,12 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.49.0 — 15/11/2026
+
+### Modifications
+- QoL : les 9 classes sont rangées dans un seul onglet « Classes » de la colonne. Elles se choisissent dans une barre d'onglets en haut de la page (icône, nom, nombre d'alertes ; classes non jouées en grisé).
+- QoL : l'onglet « Classes » rouvre la dernière classe consultée, sinon celle du perso joué.
+
 ## v0.48.1 — 15/11/2026
 
 ### Modifications

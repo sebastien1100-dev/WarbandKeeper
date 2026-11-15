@@ -929,7 +929,7 @@ WK.Locales.enUS.text = {
     ["À l'écran, hors combat, quand tu n'as pas d'aura ou pas de bénédiction."] = "On screen, out of combat, when you have no aura or no blessing.",
     ["Marque du fauve"] = "Mark of the Wild",
     ["À l'écran, hors combat, quand tu n'as plus la Marque ou le Don du fauve."] = "On screen, out of combat, when you no longer have Mark or Gift of the Wild.",
-    ["Aucun perso"] = "No character", ["%d persos"] = "%d characters", ["%d perso"] = "%d character",
+    ["Aucun perso"] = "No character", ["Classes"] = "Classes", ["Réglages par classe"] = "Per-class settings", ["%d classes jouées"] = "%d classes played", ["%d classe jouée"] = "%d class played", ["%d persos"] = "%d characters", ["%d perso"] = "%d character",
     ["Composants bas"] = "Low reagents", ["À réparer"] = "To repair", ["Sacs pleins"] = "Full bags", ["Classes jouées"] = "Classes played",
 
     -- Chat

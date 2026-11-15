@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.49.0", date = "15/11/2026",
+        changed = {
+            "QoL : les 9 classes sont rangées dans un seul onglet « Classes » de la colonne. Elles se choisissent dans une barre d'onglets en haut de la page (icône, nom, nombre d'alertes ; classes non jouées en grisé).",
+            "QoL : l'onglet « Classes » rouvre la dernière classe consultée, sinon celle du perso joué.",
+        },
+    },
+    {
         version = "0.48.1", date = "15/11/2026",
         changed = {
             "Micro menu : plus de fond derrière les raccourcis de gauche et de droite. Seule l'heure garde le sien, les icônes restent sur leurs tuiles.",
