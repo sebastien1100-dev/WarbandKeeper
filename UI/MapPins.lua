@@ -48,6 +48,7 @@ local targetPin
 local function hideAll()
     for _, p in ipairs(pins) do p:Hide() end
     if targetPin then targetPin:Hide() end
+    if UI.HideNodePins then UI:HideNodePins() end
 end
 
 -- Repère du guidage (Modules/Guide.lua) : anneau pulsé à la couleur d'accent sur le lieu visé.
@@ -95,7 +96,10 @@ local function redraw()
     local mapID = wm.GetMapID and wm:GetMapID()
     if not mapID then return end
     local cw, ch = cv:GetWidth(), cv:GetHeight()
-    if cw and cw > 0 then drawTarget(cv, mapID, cw, ch) end
+    if cw and cw > 0 then
+        if UI.DrawNodePins then UI:DrawNodePins(cv, mapID, cw, ch) end -- emplacements connus (UI/NodePins.lua)
+        drawTarget(cv, mapID, cw, ch)
+    end
     if not cfg.showMap then return end
     local list = WK.modules.GatherMap:Clusters(mapID)
     local w, h = cv:GetWidth(), cv:GetHeight()

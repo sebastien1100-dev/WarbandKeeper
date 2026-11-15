@@ -55,6 +55,8 @@ local function toWorld(mapID, x, y)
     return cont, wx, wy
 end
 
+M.ToWorld = toWorld
+
 local function entryWorld(mapID, e)
     local w = worldCache[e]
     if w == nil then

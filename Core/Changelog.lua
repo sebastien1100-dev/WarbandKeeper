@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.57.0", date = "15/11/2026",
+        added = {
+            "Récolte : les emplacements connus des filons et des plantes s'affichent sur la minicarte et sur la carte du monde (près de 24 000 emplacements, dans toute la zone). Ce sont des emplacements possibles, pas des nœuds présents en direct.",
+            "Récolte : l'anneau de chaque icône dit la difficulté pour ta compétence (rouge trop dur, orange, jaune, vert, gris).",
+            "Récolte : réglages dans Options > Récolte (minicarte, carte du monde, seulement mes métiers, seulement ce que je peux récolter, taille des icônes).",
+        },
+        changed = {
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.56.2", date = "15/11/2026",
         fixed = {
             "Micro menu : les raccourcis Personnage, Grimoire, Talents, Carte, Quêtes, Social et Menu ouvraient la fenêtre du jeu depuis l'addon, ce qui provoquait ensuite l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée StatusBar:Show() » en combat. Ils cliquent maintenant le bouton du jeu par un chemin protégé.",
@@ -1087,7 +1098,6 @@ WK.Roadmap = {
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
     "Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.",
     "Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.",
-    "Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).",
 }
 
 

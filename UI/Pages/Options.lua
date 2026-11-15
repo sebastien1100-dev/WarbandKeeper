@@ -396,6 +396,7 @@ UI:RegisterPage({
             return t
         end
 
+        local nodesCard
         -- Coins de récolte sur la carte du monde
         local gm = WK.DB.global.gatherMap
         local spotsCard = card("Coins de récolte", 184)
@@ -416,6 +417,22 @@ UI:RegisterPage({
             if IsShiftKeyDown() then WK.modules.GatherMap:Clear(); self:Refresh() end
         end)
 
+        -- Emplacements connus des filons et des plantes (Modules/Nodes.lua)
+        local nd = WK.modules.Nodes:Config()
+        local function ntoggle(field)
+            return gtoggle(nodesCard, function() return nd[field] end, function(v) nd[field] = v; UI:RefreshNodePins() end)
+        end
+        nodesCard = card("Filons et plantes connus", 40 + 5 * 46 + 30, "emplacements possibles, pas des nœuds présents en direct")
+        UI:SettingRow(nodesCard, -40, "Afficher sur la minicarte", "Une petite icône par emplacement connu autour de toi.", ntoggle("minimap"), 80)
+        UI:SettingRow(nodesCard, -86, "Afficher sur la carte du monde", "Tous les emplacements connus de la zone.", ntoggle("map"), 80)
+        UI:SettingRow(nodesCard, -132, "Seulement mes métiers", "Plantes si le perso a l'Herboristerie, filons s'il a le Minage.", ntoggle("onlyMine"), 80)
+        UI:SettingRow(nodesCard, -178, "Seulement ce que je peux récolter", "Cache ce qui demande plus que ta compétence.", ntoggle("onlyUsable"), 80)
+        UI:SettingRow(nodesCard, -224, "Taille des icônes", nil,
+            UI:Slider(nodesCard, 220, 8, 24, 1, function() return nd.size or 14 end, function(v) nd.size = v; UI:RefreshNodePins() end, "%d px"), 240)
+        local nodesNote = UI:Text(nodesCard, 11, C.muted)
+        nodesNote:SetPoint("BOTTOMLEFT", 16, 14)
+        nodesNote:SetText(WK.T("Anneau : rouge trop dur · orange, jaune, vert selon la difficulté · gris sans intérêt ou métier absent."))
+
         -- Alertes -------------------------------------------------------------------
         section("alerts")
         local al = card("Alertes", 196)
@@ -434,7 +451,7 @@ UI:RegisterPage({
 
         -- À propos ----------------------------------------------------------------
         section("about")
-        local about = card("À propos", 220)
+        local about = card("À propos", 236)
         local t = UI:Text(about, 12, C.muted)
         t:SetPoint("TOPLEFT", 16, -42)
         t:SetPoint("TOPRIGHT", -16, -42)
@@ -445,7 +462,7 @@ UI:RegisterPage({
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
             .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
-            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
+            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe) et emplacements des filons et des plantes : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
             .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)

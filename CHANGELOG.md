@@ -16,7 +16,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
-- Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
+
+## v0.57.0 — 15/11/2026
+
+### Ajouts
+- Récolte : les emplacements connus des filons et des plantes s'affichent sur la minicarte et sur la carte du monde (près de 24 000 emplacements, dans toute la zone). Ce sont des emplacements possibles, pas des nœuds présents en direct.
+- Récolte : l'anneau de chaque icône dit la difficulté pour ta compétence (rouge trop dur, orange, jaune, vert, gris).
+- Récolte : réglages dans Options > Récolte (minicarte, carte du monde, seulement mes métiers, seulement ce que je peux récolter, taille des icônes).
+
+### Modifications
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.56.2 — 15/11/2026
 
