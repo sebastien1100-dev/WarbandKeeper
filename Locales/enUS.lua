@@ -729,7 +729,7 @@ WK.Locales.enUS.text = {
     ["Oui"] = "Yes", ["Non"] = "No", ["niveau %s"] = "level %s",
     ["Pile d'alertes"] = "Alert stack", ["Empiler vers"] = "Stack towards", ["le bas"] = "down", ["le haut"] = "up", ["Icônes"] = "Icons",
     ["Exemple : aucun aspect actif"] = "Example: no aspect active", ["Exemple : rappel urgent"] = "Example: urgent reminder",
-    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker", ["Bouton du familier"] = "Pet button",
+    ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker", ["Police de l'interface"] = "Interface font", ["Police de l'heure"] = "Time font", ["Indépendante de la police de l'interface."] = "Independent from the interface font.", ["Taille de l'heure"] = "Time size", ["0 : suit la taille des raccourcis."] = "0: follows the shortcut size.", ["Heure en gras"] = "Bold time", ["Bouton du familier"] = "Pet button",
     ["Opacité"] = "Opacity", ["Réinitialiser"] = "Reset", ["Mode édition"] = "Edit mode",
     ["Grille : %d"] = "Grid: %d", ["Aimant : oui"] = "Snap: on", ["Aimant : non"] = "Snap: off",
     ["Les éléments s'alignent sur la grille. Maj enfoncée : placement libre."] = "Elements snap to the grid. Hold Shift: free placement.",

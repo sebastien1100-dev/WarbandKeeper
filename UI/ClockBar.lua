@@ -60,6 +60,7 @@ UI.CLOCK_SHORTCUTS = SHORTCUTS
 
 local DEFAULTS = {
     enabled = true, server = false, h12 = false, magnify = 0.8, stats = true, size = 28,
+    bold = false, timeSize = 0, timeFont = "ui", -- heure : gras, taille (0 = suit la taille des raccourcis), police
     side = { wk = "L", mail = "L", hearth = "L", char = "R", spells = "R", talents = "R", map = "R" },
 }
 local function cfg()
@@ -73,6 +74,20 @@ local function cfg()
     return q.clock
 end
 UI.ClockConfig = cfg
+
+-- Polices proposées pour l'heure (polices du jeu, présentes sur tous les clients)
+local TIME_FONTS = {
+    { "ui", "Police de l'interface" },
+    { "friz", "Friz Quadrata", "Fonts\\FRIZQT__.TTF" },
+    { "arialn", "Arial Narrow", "Fonts\\ARIALN.TTF" },
+    { "morpheus", "Morpheus", "Fonts\\MORPHEUS.TTF" },
+    { "skurri", "Skurri", "Fonts\\SKURRI.TTF" },
+}
+UI.CLOCK_FONTS = TIME_FONTS
+local function timeFont(key)
+    for _, f in ipairs(TIME_FONTS) do if f[1] == key and f[3] then return f[3] end end
+    return UI.FONT
+end
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
 
@@ -159,6 +174,11 @@ local function build()
     bar.time = UI:Text(bar.clockBtn, 18)
     bar.time:SetPoint("CENTER", 0, 3)
     bar.time:SetJustifyH("CENTER")
+    -- gras : le jeu n'a pas de police grasse, on double le texte décalé d'un pixel
+    bar.timeBold = UI:Text(bar.clockBtn, 18)
+    bar.timeBold:SetPoint("CENTER", bar.time, "CENTER", 1, 0)
+    bar.timeBold:SetJustifyH("CENTER")
+    bar.timeBold:Hide()
     -- FPS et latence : deux petites barres côte à côte sous l'heure (remplies selon la valeur)
     local function meter()
         local m = CreateFrame("Frame", nil, bar.clockBtn)
@@ -216,12 +236,16 @@ local function build()
         self.acc = self.acc + el
         if self.acc > 0.5 then
             self.acc = 0
-            self.time:SetText(clockText())
+            local txt = clockText()
+            self.time:SetText(txt)
+            self.timeBold:SetText(txt)
             local fps, ms, fc, mc = stats()
             self:Meter(self.fpsBar, fps / 60, fc)
             self:Meter(self.msBar, 1 - ms / 400, mc)
             self.fpsBar:SetShown(o.stats); self.msBar:SetShown(o.stats)
             self.time:SetTextColor(UI:Accent())
+            self.timeBold:SetTextColor(UI:Accent())
+            self.timeBold:SetShown(o.bold and true or false)
         end
         -- dépliage au survol (hors combat), repli 0,4 s après le départ de la souris
         local over = self:Over()
@@ -262,16 +286,28 @@ local function build()
             local f = math.max(0, 1 - d / (base * 3))
             return math.floor(base * (1 + (o.magnify or 0) * f * f) + 0.5)
         end
-        local clockW = math.floor(96 * k + 0.5)
-        local h = base + PAD * 2
-        local fs = math.floor(18 * k + 0.5)
-        if self.fontSize ~= fs then self.fontSize = fs; self.time:SetFont(UI.FONT, fs, "") end
+        local fs = (o.timeSize or 0) > 0 and o.timeSize or math.floor(18 * k + 0.5)
+        local font = timeFont(o.timeFont)
+        local fkey = font .. fs
+        if self.fontKey ~= fkey then
+            self.fontKey = fkey
+            for _, t in ipairs({ self.time, self.timeBold }) do
+                t:SetFont(font, fs, "")
+                if not t:GetFont() then t:SetFont(UI.FONT, fs, "") end -- police absente : celle de l'interface
+            end
+            self.time:SetText(clockText()); self.timeBold:SetText(clockText())
+        end
+        -- le fond de l'heure s'élargit et grandit avec le texte
+        local tw = (self.time:GetStringWidth() or 0) + (o.bold and 1 or 0)
+        local clockW = math.max(math.floor(96 * k + 0.5), math.floor(tw + 28))
+        local h = math.max(base + PAD * 2, fs + 18)
         local mw = math.floor(24 * k + 0.5)
         self.fpsBar:SetWidth(mw); self.msBar:SetWidth(mw)
         self.bg:SetSize(clockW, h)
         self:SetHeight(h)
         local left = self:GetLeft() or 0
         local mid = (self:GetWidth() or 120) / 2
+        local top = PAD + math.floor((h - base - PAD * 2) / 2) -- icônes centrées sur la hauteur de l'heure
         local slide = (1 - open) * 14 -- les côtés glissent depuis l'heure
         local function side(list, panel, dir)
             panel:SetShown(#list > 0 and open > 0.05)
@@ -284,14 +320,14 @@ local function build()
                 local x0 = dir > 0 and x or x - sz
                 ic:SetSize(sz, sz)
                 ic:ClearAllPoints()
-                ic:SetPoint("TOPLEFT", self, "TOPLEFT", x0, -PAD)
+                ic:SetPoint("TOPLEFT", self, "TOPLEFT", x0, -top)
                 x = x + dir * (sz + IGAP)
                 maxH = math.max(maxH, sz)
                 ic:SetShown(open > 0.05); ic:SetAlpha(open)
             end
             local outer = x - dir * IGAP + dir * PAD
             panel:ClearAllPoints()
-            panel:SetPoint("TOPLEFT", self, "TOPLEFT", math.min(edge, outer), 0)
+            panel:SetPoint("TOPLEFT", self, "TOPLEFT", math.min(edge, outer), -(top - PAD))
             panel:SetSize(math.abs(outer - edge), maxH + PAD * 2)
             panel:SetAlpha(open)
         end

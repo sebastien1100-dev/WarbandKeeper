@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.50.0", date = "15/11/2026",
+        added = {
+            "Micro menu : l'heure peut s'afficher en gras.",
+            "Micro menu : taille de l'heure réglable à part (0 = suit la taille des raccourcis).",
+            "Micro menu : police de l'heure au choix (police de l'interface, Friz Quadrata, Arial Narrow, Morpheus, Skurri), indépendante du reste de l'addon.",
+        },
+        changed = {
+            "Mode édition : le panneau (grille, aimant, disposition, Terminer) est maintenant en bas de l'écran.",
+            "Micro menu : le fond de l'heure s'adapte à la taille du texte, et les raccourcis restent centrés en hauteur.",
+        },
+    },
+    {
         version = "0.49.0", date = "15/11/2026",
         changed = {
             "QoL : les 9 classes sont rangées dans un seul onglet « Classes » de la colonne. Elles se choisissent dans une barre d'onglets en haut de la page (icône, nom, nombre d'alertes ; classes non jouées en grisé).",

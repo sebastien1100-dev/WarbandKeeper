@@ -500,7 +500,7 @@ UI:RegisterPage({
         section("micro")
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 6 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local clockCard = card("Horloge et raccourcis", 40 + 9 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
         local cy = -40
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
@@ -515,6 +515,16 @@ UI:RegisterPage({
         crow("Taille", "Taille des raccourcis et de l'heure (le fond suit).",
             UI:Slider(clockCard, 220, 20, 48, 2, function() return ck.size or 28 end,
                 function(v) ck.size = v; csync() end, "%d px"), 240)
+        local fontOpts = {}
+        for _, f in ipairs(UI.CLOCK_FONTS) do table.insert(fontOpts, { f[1], T(f[2]) }) end
+        local fontDd = UI:Dropdown(clockCard, 220, 30, fontOpts, function(v) ck.timeFont = v; csync() end)
+        fontDd:Select(ck.timeFont or "ui")
+        crow("Police de l'heure", "Indépendante de la police de l'interface.", fontDd, 220)
+        crow("Taille de l'heure", "0 : suit la taille des raccourcis.",
+            UI:Slider(clockCard, 220, 0, 40, 1, function() return ck.timeSize or 0 end,
+                function(v) ck.timeSize = v; csync() end, "%d"), 240)
+        crow("Heure en gras", nil,
+            toggle(clockCard, function() return ck.bold end, function(v) ck.bold = v; csync() end), 80)
         crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
             UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
                 function(v) ck.magnify = v / 100 end, "%d %%"), 240)

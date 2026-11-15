@@ -320,7 +320,7 @@ local function buildOverlay()
     end)
 
     toolbar = CreateFrame("Frame", nil, overlay)
-    toolbar:SetPoint("TOP", 0, -14)
+    toolbar:SetPoint("BOTTOM", 0, 34) -- en bas de l'écran, au-dessus de la consigne
     toolbar:SetSize(560, 44)
     toolbar:SetFrameLevel(overlay:GetFrameLevel() + 40)
     UI:Panel(toolbar, 12, { C.bg[1], C.bg[2], C.bg[3], 0.96 }, C.border)
@@ -366,7 +366,7 @@ local function buildOverlay()
     tb("Terminer", "primary", function() UI:ExitEditMode() end)
     toolbar:SetWidth(x + 8)
     local hint = UI:Text(overlay, 11, C.text)
-    hint:SetPoint("TOP", toolbar, "BOTTOM", 0, -8)
+    hint:SetPoint("TOP", toolbar, "BOTTOM", 0, -6)
     hint:SetText("Glisser pour déplacer · coin pour la taille · clic pour les réglages · flèches pour ajuster · Échap pour quitter")
     popup = buildPopup()
 end

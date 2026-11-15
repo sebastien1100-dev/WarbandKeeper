@@ -18,6 +18,17 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.50.0 — 15/11/2026
+
+### Ajouts
+- Micro menu : l'heure peut s'afficher en gras.
+- Micro menu : taille de l'heure réglable à part (0 = suit la taille des raccourcis).
+- Micro menu : police de l'heure au choix (police de l'interface, Friz Quadrata, Arial Narrow, Morpheus, Skurri), indépendante du reste de l'addon.
+
+### Modifications
+- Mode édition : le panneau (grille, aimant, disposition, Terminer) est maintenant en bas de l'écran.
+- Micro menu : le fond de l'heure s'adapte à la taille du texte, et les raccourcis restent centrés en hauteur.
+
 ## v0.49.0 — 15/11/2026
 
 ### Modifications
