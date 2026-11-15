@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.45.0", date = "15/11/2026",
+        changed = {
+            "QoL : nouvelle entrée « Micro menu » sous Halo, avec les réglages de l'horloge et des raccourcis (heure locale ou serveur, format, effet loupe, FPS et latence, place de chaque raccourci). Dans le mode édition, l'élément s'appelle aussi « Micro menu ».",
+        },
+        fixed = {
+            "Les réglages de l'horloge et des raccourcis avaient disparu de QoL > Général depuis la 0.43.1 (retirés par erreur avec la carte « Disposition à l'écran »). Ils sont de retour, dans « Micro menu ».",
+        },
+    },
+    {
         version = "0.44.3", date = "15/11/2026",
         changed = {
             "QoL > Chasseur > Familier : le bouton « Macro Nourrir » est retiré (le cadre du familier et son raccourci clavier font mieux) ; il reste le bouton « Maître des écuries », à la couleur du thème.",

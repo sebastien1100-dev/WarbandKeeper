@@ -237,7 +237,9 @@ UI:RegisterPage({
         gen.desc:SetText("Marchand, groupe, confort")
         local halo = navButton("halo", "Halo", -58, nil, "spark")
         halo.desc:SetText("L'objet visé brille")
-        local CLASS_TOP = 116 -- début des classes, sous Général, Halo et le séparateur
+        local micro = navButton("micro", "Micro menu", -108, nil, "clock")
+        micro.desc:SetText("Horloge et raccourcis")
+        local CLASS_TOP = 166 -- début des classes, sous Général, Halo, Micro menu et le séparateur
         local sep = navCard:CreateTexture(nil, "ARTWORK")
         sep:SetColorTexture(unpack(C.border))
         sep:SetPoint("TOPLEFT", 14, -(CLASS_TOP - 5))
@@ -250,7 +252,7 @@ UI:RegisterPage({
         -- Fenêtre basse : les lignes se resserrent pour garder une marge sous la dernière classe.
         UI:OnResize(navCard, function(_, h)
             if not h or h <= 0 then return end
-            local step = math.max(40, math.min(50, math.floor((h - CLASS_TOP - 14) / #classButtons)))
+            local step = math.max(36, math.min(50, math.floor((h - CLASS_TOP - 14) / #classButtons)))
             for i, b in ipairs(classButtons) do
                 b:SetHeight(step - 2)
                 b:ClearAllPoints()
@@ -433,6 +435,41 @@ UI:RegisterPage({
             UI:SettingRow(gcats, ry, Gm.LABELS[key], nil, row, 140)
         end
 
+
+        -----------------------------------------------------------------------
+        -- Micro menu : horloge et raccourcis (UI/ClockBar.lua)
+        -----------------------------------------------------------------------
+        section("micro")
+        local ck = UI.ClockConfig()
+        local SC = UI.CLOCK_SHORTCUTS
+        local clockCard = card("Horloge et raccourcis", 40 + 5 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local cy = -40
+        local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
+        local function csync() UI:SyncClock() end
+        crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
+            toggle(clockCard, function() return ck.enabled end, function(v) ck.enabled = v; csync() end), 80)
+        local segSrv = UI:Segmented(clockCard, { { false, "Locale" }, { true, "Serveur" } }, function(v) ck.server = v end, 26)
+        segSrv:Select(ck.server and true or false)
+        crow("Heure", nil, segSrv, 200)
+        local segFmt = UI:Segmented(clockCard, { { false, "24 h" }, { true, "12 h" } }, function(v) ck.h12 = v end, 26)
+        segFmt:Select(ck.h12 and true or false)
+        crow("Format", nil, segFmt, 160)
+        crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
+            UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
+                function(v) ck.magnify = v / 100 end, "%d %%"), 240)
+        crow("FPS et latence", "Deux points de couleur à côté de l'heure (vert, orange, rouge).",
+            toggle(clockCard, function() return ck.stats end, function(v) ck.stats = v end), 80)
+        local hdr = UI:Text(clockCard, 10, C.dim)
+        hdr:SetPoint("TOPLEFT", 16, cy - 6)
+        hdr:SetText("RACCOURCIS")
+        cy = cy - 30
+        for _, def in ipairs(SC) do
+            local sg = UI:Segmented(clockCard, { { "", "Masqué" }, { "L", "Gauche" }, { "R", "Droite" } },
+                function(v) ck.side[def.key] = (v ~= "" and v) or nil; csync() end, 24)
+            sg:Select(ck.side[def.key] or "")
+            UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
+            cy = cy - 38
+        end
 
         -----------------------------------------------------------------------
         -- Fiches de classe
@@ -862,6 +899,9 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "micro" then
+                b.desc:SetText(UI.ClockConfig().enabled and T("Activé") or T("Désactivé"))
+                b.count:SetText("")
             elseif key == "halo" then
                 local G = WK.modules.Glow
                 local on = G:Config().enabled and not G:OtherAddonLoaded()

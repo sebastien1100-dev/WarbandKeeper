@@ -273,7 +273,7 @@ local function build()
         self:SetWidth(math.max(120, (#L > #R and #L or #R) * (BASE + GAP) * 2 + clockW + 40))
     end
 
-    UI:RegisterHUD("clock", bar, { label = T("Horloge"), protected = true, point = "TOP",
+    UI:RegisterHUD("clock", bar, { label = T("Micro menu"), protected = true, point = "TOP",
         default = { 0, UIParent:GetHeight() / 2 - 6 } })
     return bar
 end

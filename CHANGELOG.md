@@ -18,6 +18,14 @@ _Prévu, pas encore commencé._
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 - Icônes des filons et plantes pistés sur la minimap (technique fragile, à étudier).
 
+## v0.45.0 — 15/11/2026
+
+### Modifications
+- QoL : nouvelle entrée « Micro menu » sous Halo, avec les réglages de l'horloge et des raccourcis (heure locale ou serveur, format, effet loupe, FPS et latence, place de chaque raccourci). Dans le mode édition, l'élément s'appelle aussi « Micro menu ».
+
+### Corrections
+- Les réglages de l'horloge et des raccourcis avaient disparu de QoL > Général depuis la 0.43.1 (retirés par erreur avec la carte « Disposition à l'écran »). Ils sont de retour, dans « Micro menu ».
+
 ## v0.44.3 — 15/11/2026
 
 ### Modifications
