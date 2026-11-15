@@ -783,6 +783,7 @@ WK.Locales.enUS.text = {
     ["Éditer l'interface"] = "Edit the interface", ["Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."] = "Move and resize on-screen elements (also: /wk edit).",
     ["Disposition : ce perso"] = "Layout: this character", ["Disposition : compte"] = "Layout: account",
     ["Disposition commune à tout le compte, ou propre à ce perso."] = "Layout shared by the whole account, or for this character only.",
+    ["Icône et nombre"] = "Icon and count",
     -- Guidage
     ["Boîte aux lettres"] = "Mailbox", ["Réparation"] = "Repair", ["Maître de classe"] = "Class trainer",
     ["Boîte aux lettres, banque ou marchand"] = "Mailbox, bank or vendor",

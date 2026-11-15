@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.43.2", date = "15/11/2026",
+        fixed = {
+            "Cadre du familier : la vie ne s'affichait pas sur WoW Forever (le jeu la donne parfois sous forme masquée, que l'addon ne peut pas lire). La barre et le chiffre sont maintenant affichés par le jeu lui-même, même dans ce cas.",
+        },
+        changed = {
+            "Cadre du familier : les boutons Nourrir et Soigner deviennent des icônes (Nourrir le familier, Guérison du familier, et Ressusciter quand il est mort), avec leur nom au survol. Sous la nourriture, seulement le nombre en sac.",
+        },
+    },
+    {
         version = "0.43.1", date = "15/11/2026",
         changed = {
             "La « carte du familier » s'appelle maintenant « cadre du familier ».",

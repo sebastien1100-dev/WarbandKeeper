@@ -792,7 +792,7 @@ UI:RegisterPage({
                 prow("Chiffres sur la barre", nil, pseg("numbers", { { "none", "Aucun" }, { "value", "696" }, { "full", "696 / 720" }, { "pct", "97 %" } }), 300)
                 prow("Couleur de la barre", nil, pseg("color", { { "mood", "Humeur" }, { "health", "Vie" }, { "theme", "Thème" } }), 240)
                 prow("Humeur", nil, pseg("mood", { { "segments", "Segments" }, { "text", "Texte" }, { "both", "Les deux" }, { "hidden", "Masquée" } }), 320)
-                prow("Nourriture", nil, pseg("food", { { "icon", "Icône" }, { "iconName", "Icône + nom" }, { "hidden", "Masquée" } }), 280)
+                prow("Nourriture", nil, pseg("food", { { "icon", "Icône et nombre" }, { "hidden", "Masquée" } }), 240)
                 prow("Boutons Nourrir et Soigner", "Sinon : clic gauche et clic droit sur la carte.",
                     toggle(pcard, function() return pc.buttons end, function(v) pc.buttons = v; relayout() end), 80)
                 prow("Nom et niveau du familier", nil, toggle(pcard, function() return pc.name end, function(v) pc.name = v; relayout() end), 80)
