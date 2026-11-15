@@ -17,6 +17,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.61.2 — 15/11/2026
+
+### Modifications
+- Halo : la catégorie « Autres objets » est décochée par défaut (elle éclairait trop de choses). Tu peux la recocher dans QoL > Halo.
+
+### Corrections
+- Halo : il s'allumait sur les chaises, bancs et autres sièges. Le mobilier est maintenant écarté.
+
 ## v0.61.1 — 15/11/2026
 
 ### Corrections

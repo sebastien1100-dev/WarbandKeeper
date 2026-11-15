@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.61.2", date = "15/11/2026",
+        fixed = {
+            "Halo : il s'allumait sur les chaises, bancs et autres sièges. Le mobilier est maintenant écarté.",
+        },
+        changed = {
+            "Halo : la catégorie « Autres objets » est décochée par défaut (elle éclairait trop de choses). Tu peux la recocher dans QoL > Halo.",
+        },
+    },
+    {
         version = "0.61.1", date = "15/11/2026",
         fixed = {
             "LFG : avec la fenêtre à sa taille minimale, le texte sous « Actualiser » passait sur « Je cherche ». Le bandeau se resserre maintenant (rôles plus courts, classe sous le nom masquée) et l'état de la recherche passe dans l'infobulle d'Actualiser.",

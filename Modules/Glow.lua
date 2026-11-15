@@ -36,9 +36,11 @@ function M:Config()
     g.colors = g.colors or {}
     g.cats = g.cats or {}
     for _, k in ipairs(CATEGORIES) do
-        if g.cats[k] == nil then g.cats[k] = true end
+        if g.cats[k] == nil then g.cats[k] = (k ~= "other") end
         g.colors[k] = g.colors[k] or { unpack(DEFAULT_COLORS[k]) }
     end
+    -- « Autres objets » éclairait le mobilier (chaises…) : décochée une fois par défaut
+    if not g.otherOff then g.otherOff = true; g.cats.other = false end
     -- le jeu perd l'objet désigné vers 15 m, quelle que soit la portée demandée
     if (g.range or 15) > 15 then g.range = 15 end
     return g
@@ -90,6 +92,9 @@ end
 ---------------------------------------------------------------------------
 local CHEST_WORDS = { "coffre", "caisse", "tonneau", "malle", "chest", "crate", "barrel", "footlocker", "strongbox" }
 local BOBBER_WORDS = { "flotteur", "bobber" }
+-- Mobilier : on peut s'y asseoir, le jeu le désigne, mais il n'a rien à récolter
+local SEAT_WORDS = { "chaise", "banc", "tabouret", "fauteuil", "trône", "trone", "siège", "siege", "canapé", "sofa",
+                     "chair", "bench", "stool", "throne", "seat", "couch", "pew" }
 local ORE_WORDS = { "filon", "gisement", "vein", "deposit" }
 
 -- Noms des plantes = noms des objets qu'elles donnent (dans la langue du client). Le cache
@@ -289,7 +294,8 @@ function M:Classify(unit)
     if isHerbName(name) then return "herb", name end
     if contains(name, ORE_WORDS) then return "ore", name end
     if contains(name, CHEST_WORDS) then return "chest", name end
-    -- objet utilisable que rien ne range ailleurs
+    -- objet utilisable que rien ne range ailleurs, sauf le mobilier (chaises, bancs…)
+    if contains(name, SEAT_WORDS) then return nil, name end
     if cur == "other" then return "other", name end
     if UnitIsInteractable then
         local ok, can = pcall(UnitIsInteractable, unit)
