@@ -17,6 +17,13 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.60.0 — 15/11/2026
+
+### Ajouts
+- Infobulles : nouvelle partie « Montée des métiers ». Pour un composant, les métiers qui s'en servent dans les guides de montée et, pour chacun de tes persos qui a ce métier, combien il en faut encore à son niveau (« Alchimie · Lapine (40) : encore 36 »), avec ce que le compte en a déjà.
+- Infobulles : pour une recette ou un outil utile à la montée, le métier et les niveaux concernés.
+- Options > Général : réglage pour afficher ou non cette partie de l'infobulle.
+
 ## v0.59.3 — 15/11/2026
 
 ### Modifications

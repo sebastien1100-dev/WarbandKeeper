@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.60.0", date = "15/11/2026",
+        added = {
+            "Infobulles : nouvelle partie « Montée des métiers ». Pour un composant, les métiers qui s'en servent dans les guides de montée et, pour chacun de tes persos qui a ce métier, combien il en faut encore à son niveau (« Alchimie · Lapine (40) : encore 36 »), avec ce que le compte en a déjà.",
+            "Infobulles : pour une recette ou un outil utile à la montée, le métier et les niveaux concernés.",
+            "Options > Général : réglage pour afficher ou non cette partie de l'infobulle.",
+        },
+    },
+    {
         version = "0.59.3", date = "15/11/2026",
         changed = {
             "LFG : dans les messages envoyés, le nom du donjon est maintenant en anglais (« The Stockade » au lieu de « Prison de Stormwind »). Tous les donjons et raids de WoW Forever sont reconnus, ailes du Monastère écarlate et de Hache-tripes comprises ; un nom inconnu reste tel quel.",

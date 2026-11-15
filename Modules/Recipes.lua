@@ -246,6 +246,119 @@ end
 ---------------------------------------------------------------------------
 function M:Guide(prof) return WK.Guides and WK.Guides[prof] end
 
+---------------------------------------------------------------------------
+-- Infobulle : à quoi sert l'objet pour monter les métiers (guides de Modules/Guides.lua)
+---------------------------------------------------------------------------
+-- uses[itemID] = { { prof, kind = "reagent" | "recipe" | "tool", steps = { { from, to, crafts, n } } }, ... }
+local uses
+local function buildUses()
+    uses = {}
+    for prof, g in pairs(WK.Guides or {}) do
+        local byItem = {}
+        local function add(id, kind, st, n, crafts)
+            local key = id .. kind
+            local u = byItem[key]
+            if not u then
+                u = { prof = prof, en = g.en, kind = kind, steps = {} }
+                byItem[key] = u
+                uses[id] = uses[id] or {}
+                table.insert(uses[id], u)
+            end
+            table.insert(u.steps, { from = st.from, to = st.to, crafts = crafts or st.crafts, n = n })
+        end
+        for _, st in ipairs(g.steps or {}) do
+            for _, rg in ipairs(st.reagents or {}) do add(rg[1], "reagent", st, rg[2]) end
+            for _, f in ipairs(st.first or {}) do
+                for _, rg in ipairs(f.reagents or {}) do add(rg[1], "reagent", st, rg[2], f.crafts) end
+            end
+            if st.learn then add(st.learn, "recipe", st, 0) end
+            for _, tool in ipairs(st.tools or {}) do add(tool, "tool", st, 0) end
+        end
+    end
+end
+
+-- Quantité qu'il reste à utiliser pour un niveau de métier donné.
+local function remaining(u, rank)
+    local n = 0
+    for _, st in ipairs(u.steps) do
+        if rank < st.to then
+            local ratio = rank >= st.from and (st.to - rank) / math.max(1, st.to - st.from) or 1
+            n = n + math.ceil(st.crafts * ratio) * st.n
+        end
+    end
+    return n
+end
+local function ranges(u)
+    local out, last = {}, nil
+    for _, st in ipairs(u.steps) do
+        if last and last[2] >= st.from then last[2] = math.max(last[2], st.to)
+        else last = { st.from, st.to }; table.insert(out, last) end
+    end
+    local txt = {}
+    for _, r in ipairs(out) do table.insert(txt, r[1] .. "-" .. r[2]) end
+    return table.concat(txt, ", ")
+end
+
+function M:TooltipEnabled()
+    return WK.DB.global.settings.ui.tooltipProf ~= false
+end
+
+-- Ajoute les lignes à l'infobulle. header() pose l'en-tête Warband Keeper s'il n'y est pas encore.
+function M:AddTooltip(tooltip, itemID, header)
+    if not self:TooltipEnabled() then return false end
+    if not uses then buildUses() end
+    local list = uses[itemID]
+    if not list then return false end
+    local T = WK.T
+    local lines = {}
+    for _, u in ipairs(list) do
+        local who = {}
+        if u.kind == "reagent" then
+            for key, c in pairs(WK.DB.global.characters) do
+                local p = c.professions and (c.professions[u.prof] or (u.en and c.professions[u.en]))
+                if p then
+                    local left = remaining(u, p.rank or 0)
+                    if left > 0 then table.insert(who, { c = c, key = key, rank = p.rank or 0, left = left }) end
+                end
+            end
+            table.sort(who, function(a, b) return a.left > b.left end)
+        end
+        table.insert(lines, { u = u, who = who })
+    end
+    header()
+    tooltip:AddLine(T("Montée des métiers"), 0.88, 0.74, 0.45)
+    local shown = 0
+    for _, l in ipairs(lines) do
+        local u = l.u
+        local prof = T(u.prof)
+        if u.kind == "recipe" then
+            tooltip:AddDoubleLine("  " .. prof .. " · " .. T("recette"), string.format(T("pour %s"), ranges(u)), 0.8, 0.8, 0.8, 1, 1, 1)
+        elseif u.kind == "tool" then
+            tooltip:AddDoubleLine("  " .. prof .. " · " .. T("outil"), string.format(T("dès %d"), u.steps[1].from), 0.8, 0.8, 0.8, 1, 1, 1)
+        elseif #l.who == 0 then
+            tooltip:AddDoubleLine("  " .. prof, ranges(u), 0.8, 0.8, 0.8, 0.7, 0.7, 0.7)
+        else
+            for i, w in ipairs(l.who) do
+                if i > 4 then break end
+                local r, g, b = 1, 1, 1
+                local cc = w.c.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[w.c.class]
+                if cc then r, g, b = cc.r, cc.g, cc.b end
+                tooltip:AddDoubleLine("  " .. prof .. " · " .. WK:CharName(w.c, w.key) .. " (" .. w.rank .. ")",
+                    string.format(T("encore %d"), w.left), r, g, b, 1, 1, 1)
+            end
+            local have = WK.modules.Inventory:AccountCount(itemID)
+            local need = l.who[1].left
+            if have > 0 then
+                tooltip:AddDoubleLine("  " .. T("sur le compte"), tostring(have), 0.6, 0.6, 0.6,
+                    have >= need and 0.62 or 0.95, have >= need and 0.82 or 0.66, have >= need and 0.48 or 0.30)
+            end
+        end
+        shown = shown + 1
+        if shown >= 4 then break end
+    end
+    return true
+end
+
 -- Prix d'un composant : source de prix choisie, sinon prix noté dans le guide.
 function M:GuidePrice(id)
     local p = WK.modules.Value:Price(id)

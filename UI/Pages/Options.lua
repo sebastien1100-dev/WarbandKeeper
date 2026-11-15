@@ -312,6 +312,10 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
+        local ttCard = card("Infobulles", 96)
+        UI:SettingRow(ttCard, -40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
+            UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
+
         -- Prix des objets ------------------------------------------------------------
         section("prices")
         local priceCard = card("Prix des objets", 108)

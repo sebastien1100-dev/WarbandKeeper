@@ -215,6 +215,13 @@ local function onTooltip(tooltip, data)
         if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
         tooltip:AddDoubleLine(WK.L.WARBANK, tostring(w), 1, 1, 1, 1, 1, 1)
     end
+    -- à quoi sert l'objet pour monter les métiers (guides)
+    local R = WK.modules.Recipes
+    if R and R.AddTooltip then
+        if R:AddTooltip(tooltip, itemID, function()
+            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+        end) then any = true end
+    end
     local V = WK.modules.Value
     if V and V:ShowBoth() then
         local ah, vendor = V:Prices(itemID)
