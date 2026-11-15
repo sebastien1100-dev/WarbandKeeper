@@ -69,8 +69,9 @@ local SHORTCUTS = {
       icon = function() return UI.MEDIA .. "gear" end, tint = true,
       -- vérifié après le clic : si le bouton du jeu n'a rien ouvert, on ouvre le menu directement
       shown = function() return GameMenuFrame and GameMenuFrame:IsShown() or false end,
+      -- pas ToggleGameMenu : c'est la touche Échap du jeu, qui interrompt aussi le sort en cours,
+      -- ce que le jeu interdit à un addon (ADDON_ACTION_FORBIDDEN SpellStopCasting)
       run = function()
-          if ToggleGameMenu then ToggleGameMenu() return end
           if not GameMenuFrame then return end
           if GameMenuFrame:IsShown() then (HideUIPanel or GameMenuFrame.Hide)(GameMenuFrame)
           else (ShowUIPanel or GameMenuFrame.Show)(GameMenuFrame) end

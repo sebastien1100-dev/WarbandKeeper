@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.58.3", date = "15/11/2026",
+        fixed = {
+            "Micro menu : le raccourci « Menu du jeu » provoquait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée SpellStopCasting() ». Il passait par la fonction de la touche Échap, qui interrompt aussi le sort en cours. Il ouvre maintenant la fenêtre du menu sans passer par elle.",
+        },
+    },
+    {
         version = "0.58.2", date = "15/11/2026",
         changed = {
             "Pêche : le bouton de minicarte disparaît quand le raccourci « Mode pêche » est présent dans le micro menu (il faisait doublon). Il revient si tu masques le raccourci.",
