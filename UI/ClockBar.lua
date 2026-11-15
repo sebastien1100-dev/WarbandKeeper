@@ -4,8 +4,8 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Horloge en haut de l'écran : au repos, l'heure et deux petites barres dessous (FPS, latence).
--- Au survol, deux fonds séparés (gauche, droite) glissent de chaque côté de l'heure avec leurs
--- raccourcis ; effet loupe façon dock (réglable), le fond suit la taille des icônes. Repli quand
+-- Au survol, les raccourcis glissent de chaque côté de l'heure, sans fond (chaque icône a sa
+-- tuile) ; effet loupe façon dock (réglable). Des zones invisibles suivent les icônes pour le survol. Repli quand
 -- la souris s'en va. Hors combat seulement pour le dépliage (la pierre de foyer est un
 -- bouton protégé que le jeu interdit de bouger en combat).
 -- Réglages : WK.modules.QoL:Config().clock
@@ -140,17 +140,17 @@ local function build()
     bar:SetClampedToScreen(true)
     -- Seul le fond visible capte la souris : la place réservée aux raccourcis ne bloque pas le jeu.
     bar:EnableMouse(false)
-    local function panel(mouse)
+    local function panel(visible)
         local p = CreateFrame("Frame", nil, bar)
-        p:EnableMouse(mouse)
+        p:EnableMouse(true)
         p:SetSize(120, 34)
-        UI:Panel(p, 12, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
+        if visible then UI:Panel(p, 12, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border) end
         return p
     end
-    bar.bg = panel(true)       -- milieu : l'heure
+    bar.bg = panel(true)       -- milieu : l'heure, sur son fond
     bar.bg:SetPoint("TOP")
-    bar.lp = panel(true)       -- gauche
-    bar.rp = panel(true)       -- droite
+    bar.lp = panel(false)      -- gauche : zone de survol invisible (pas de fond)
+    bar.rp = panel(false)      -- droite
     bar.lp:Hide(); bar.rp:Hide()
     -- Heure (bouton : clic = calendrier si le jeu en a un, sinon Warband Keeper)
     bar.clockBtn = CreateFrame("Button", nil, bar)
