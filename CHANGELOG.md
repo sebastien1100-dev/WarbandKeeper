@@ -17,6 +17,13 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.62.0 — 15/11/2026
+
+### Modifications
+- LFG : sur les cartes de groupe, chaque place prise montre le logo de la classe du joueur, avec un petit trait à la couleur de son rôle dessous (bleu tank, vert soin, rouge dégâts). Le chef de groupe porte une couronne sur son logo.
+- LFG : l'infobulle d'une carte liste chaque membre (nom, classe, niveau, rôle) ; le chef est marqué d'une étoile.
+- Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.61.2 — 15/11/2026
 
 ### Modifications

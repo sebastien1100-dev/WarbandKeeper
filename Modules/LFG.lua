@@ -214,6 +214,23 @@ local function readResult(id)
         local li = C_LFGList.GetSearchResultLeaderInfo(id)
         if li then r.class = readable(li.classFilename, nil); r.level = readable(li.level, nil) end
     end
+    -- membres du groupe : classe, niveau, rôle (souvent masqué en donjon), chef
+    r.list = {}
+    local ROLE = { TANK = "tank", HEALER = "heal", DAMAGER = "dps" }
+    if not r.solo and r.members and C_LFGList.GetSearchResultPlayerInfo then
+        for i = 1, math.min(r.members, 40) do
+            local p = C_LFGList.GetSearchResultPlayerInfo(id, i)
+            if p then
+                local name = readable(p.name, nil)
+                local role = readable(p.assignedRole, nil)
+                table.insert(r.list, {
+                    name = name, class = readable(p.classFilename, nil), level = readable(p.level, nil),
+                    role = type(role) == "string" and ROLE[role] or nil,
+                    leader = readable(p.isLeader, nil) == true or (name ~= nil and r.leader ~= nil and name == r.leader),
+                })
+            end
+        end
+    end
     -- ami ou guilde : le jeu le donne dans les listes de l'annonce
     r.friend = (readable(info.numBNetFriends, 0) or 0) + (readable(info.numCharFriends, 0) or 0) > 0
     r.guild = (readable(info.numGuildMates, 0) or 0) > 0

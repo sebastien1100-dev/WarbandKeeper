@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 --   à droite : mes demandes et mon message.
 local LFG = WK.modules.LFG
 local LEFT_W, RIGHT_W, GAP, BANNER_H = 230, 270, 12, 62
-local CARD_W, CARD_H = 286, 100
+local CARD_W, CARD_H = 286, 108
 local ROLES = { "tank", "heal", "dps" }
 local ROLE_LABEL = { tank = "Tank", heal = "Soin", dps = "Dégâts" }
 local ROLE_LETTER = { tank = "T", heal = "S", dps = "D" }
@@ -308,7 +308,15 @@ UI:RegisterPage({
             for i = 1, 5 do
                 local s = CreateFrame("Frame", nil, c)
                 s:SetSize(26, 26)
-                s:SetPoint("TOPLEFT", 14 + (i - 1) * 32 + (i >= 3 and 8 or 0), -36)
+                s:SetPoint("TOPLEFT", 14 + (i - 1) * 32 + (i >= 3 and 8 or 0), -42)
+                -- membre : logo de sa classe, trait de rôle dessous, couronne du chef posée dessus
+                s.cls = UI:RoundIcon(s, 26)
+                s.cls:SetPoint("CENTER")
+                s.trait = s:CreateTexture(nil, "ARTWORK")
+                s.trait:SetSize(20, 3)
+                s.trait:SetPoint("TOP", s, "BOTTOM", 0, -3)
+                s.crown = UI:Icon(s, "crown", 14, nil, "OVERLAY")
+                s.crown:SetPoint("BOTTOM", s, "TOP", 0, -4)
                 s.fill = UI:Icon(s, "circle", 26, nil, "ARTWORK")
                 s.fill:SetPoint("CENTER")
                 s.ring = UI:Icon(s, "ring", 26, nil, "OVERLAY")
@@ -335,6 +343,15 @@ UI:RegisterPage({
                 local act = LFG:Activity(s.r.activity)
                 if act then GameTooltip:AddLine(act, 0.8, 0.8, 0.8) end
                 if s.r.comment and s.r.comment ~= "" then GameTooltip:AddLine("« " .. s.r.comment .. " »", 0.9, 0.85, 0.7, true) end
+                -- membres : classe, niveau, rôle
+                local RW = { tank = "Tank", heal = "Soin", dps = "Dégâts" }
+                for _, m in ipairs(s.r.list or {}) do
+                    local cr, cg, cb = UI:ClassColor(m.class)
+                    local cls = T(WK.modules.QoL.CLASS_LABEL[m.class or ""] or "?")
+                    GameTooltip:AddDoubleLine((m.leader and "|cffe0bd72*|r " or "  ") .. (m.name or "?"),
+                        cls .. (m.level and (" " .. m.level) or "") .. (m.role and (" · " .. T(RW[m.role])) or ""),
+                        cr, cg, cb, 0.8, 0.8, 0.8)
+                end
                 local ps = LFG:PlaystyleLabel(s.r.playstyle)
                 if ps then GameTooltip:AddLine(T(ps), 0.7, 0.7, 0.7) end
                 local rt = LFG:Rating(s.r.leader)
@@ -531,12 +548,26 @@ UI:RegisterPage({
         local order = { "tank", "heal", "dps", "dps", "dps" }
         local seen = { tank = 0, heal = 0, dps = 0 }
         local youPlaced = false
+        -- membres à placer : d'abord par rôle connu, sinon dans l'ordre
+        local pool = {}
+        for _, m in ipairs(r.list or {}) do table.insert(pool, m) end
+        local function take(role)
+            for k, m in ipairs(pool) do if m.role == role then return table.remove(pool, k) end end
+            for k, m in ipairs(pool) do if not m.role then return table.remove(pool, k) end end
+        end
         for i, role in ipairs(order) do
             seen[role] = seen[role] + 1
             local s = c.slots[i]
             local col = C[role]
             local taken = r.counts and seen[role] <= (cnt[role] or 0)
-            if taken then
+            local m = taken and take(role) or nil
+            s.cls:Hide(); s.trait:Hide(); s.crown:Hide()
+            if m and m.class then
+                s.fill:Hide(); s.ring:Hide(); s.txt:SetText("")
+                UI:SetClassIcon(s.cls, m.class); s.cls:Show()
+                s.trait:SetColorTexture(unpack(col)); s.trait:Show()
+                if m.leader then s.crown:SetVertexColor(unpack(C.gold)); s.crown:Show() end
+            elseif taken then
                 s.fill:Show(); s.ring:Hide()
                 s.fill:SetVertexColor(unpack(col))
                 s.txt:SetText(ROLE_LETTER[role]); s.txt:SetTextColor(unpack(C.onAccent))
