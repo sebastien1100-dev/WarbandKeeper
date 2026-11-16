@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.86.2", date = "16/11/2026",
+        fixed = {
+            "Options > Général : la carte « Bouton minimap » chevauchait la carte « Infobulles ».",
+        },
+    },
+    {
         version = "0.86.1", date = "16/11/2026",
         fixed = {
             "Carte du monde : les médaillons des rares (et les autres pastilles de l'addon) pouvaient ne plus s'afficher depuis la 0.79.1. Le masquage du losange du jeu plantait dès qu'un point était suivi, et arrêtait tout le dessin de la carte.",

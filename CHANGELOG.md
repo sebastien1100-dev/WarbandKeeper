@@ -16,6 +16,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.86.2 — 16/11/2026
+
+### Corrections
+- Options > Général : la carte « Bouton minimap » chevauchait la carte « Infobulles ».
+
 ## v0.86.1 — 16/11/2026
 
 ### Corrections

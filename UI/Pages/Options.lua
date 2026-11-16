@@ -317,6 +317,7 @@ UI:RegisterPage({
             UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
         UI:SettingRow(ttCard, -40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
             UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
+        local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
 
         -- Prix des objets ------------------------------------------------------------
         section("prices")
@@ -334,7 +335,7 @@ UI:RegisterPage({
 
         -- Bouton minimap (section Général) ---------------------------------------------
         current.scroll:SetContentHeight(y)
-        root, y, current = self.sections.general.scroll.child, 96 + GAP, self.sections.general
+        root, y, current = self.sections.general.scroll.child, generalY, self.sections.general
         local mm = card("Bouton minimap", 136)
         self.mmToggle = UI:Toggle(mm,
             function() return not cfg.minimap.hide end,
