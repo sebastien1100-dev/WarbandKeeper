@@ -905,6 +905,110 @@ UI:RegisterPage({
         UI:SettingRow(fmode, -132, "Bouton de minicarte", "Ouvre et ferme le mode pêche. Seulement sur les persos qui ont la Pêche, et masqué si le raccourci est dans le micro menu.",
             ftoggle(fmode, "minimap", function() UI:SyncFishingMinimap() end), 80)
 
+        -- Carnet de pêche (Modules/FishingLog.lua) : chiffres du compte, zones, dernières prises
+        local FL = WK.modules.FishingLog
+        local ZROWS, JROWS = 6, 10
+        local fbook = card("Carnet de pêche", 40 + 30 + 22 + ZROWS * 34 + 8, "relevé à chaque prise, sur tout le compte")
+        local fsum = dynText(fbook, 12, C.text, function()
+            local d = FL:Data()
+            local rate = FL.Rate(d.total, d.time)
+            local h = math.floor(d.time / 3600)
+            return string.format(T("%d prises"), d.total) .. "  ·  " .. string.format(T("%d h %02d de pêche"), h, math.floor(d.time % 3600 / 60))
+                .. (rate and ("  ·  " .. rate .. "/h") or "") .. "  ·  " .. UI:GoldText(FL:Value()) .. "  ·  " .. string.format(T("%d espèces"), FL:Species())
+        end)
+        fsum:SetPoint("TOPLEFT", 16, -42)
+        fsum:SetPoint("RIGHT", -16, 0)
+        fsum:SetJustifyH("LEFT")
+        local zh = UI:Text(fbook, 10, C.dim)
+        zh:SetPoint("TOPLEFT", 16, -72)
+        zh:SetText(T("ZONES, PAR NOMBRE DE PRISES"))
+        local zrows = {}
+        for i = 1, ZROWS do
+            local r = CreateFrame("Frame", nil, fbook)
+            r:SetHeight(30)
+            r:SetPoint("TOPLEFT", 16, -90 - (i - 1) * 34)
+            r:SetPoint("RIGHT", -16, 0)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("TOPLEFT", 0, -1)
+            r.top = UI:Text(r, 10, C.muted)
+            r.top:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
+            r.top:SetPoint("RIGHT", -170, 0)
+            r.top:SetJustifyH("LEFT")
+            r.bar = UI:Progress(r, 5)
+            r.bar:SetPoint("RIGHT", -96, 0)
+            r.bar:SetWidth(70)
+            r.n = UI:Text(r, 11, C.muted)
+            r.n:SetPoint("RIGHT", -48, 0)
+            r.rate = UI:Text(r, 11, C.muted)
+            r.rate:SetPoint("RIGHT", 0, 0)
+            zrows[i] = r
+        end
+        local zempty = UI:Text(fbook, 11, C.muted)
+        zempty:SetPoint("TOPLEFT", 16, -92)
+        zempty:SetText(T("Pas encore de prise : elles se notent toutes seules quand tu pêches."))
+        table.insert(self.dyn, function()
+            local zs = FL:Zones()
+            local maxN = zs[1] and zs[1].n or 1
+            zempty:SetShown(#zs == 0)
+            for i, r in ipairs(zrows) do
+                local z = zs[i]
+                r:SetShown(z ~= nil)
+                if z then
+                    r.name:SetText(FL:ZoneName(z.map))
+                    local names = {}
+                    for _, id in ipairs(z.top) do if id then table.insert(names, WK.GetItemInfo(id) or ("#" .. id)) end end
+                    r.top:SetText(table.concat(names, "  ·  "))
+                    r.bar:SetValue(z.n / maxN)
+                    r.n:SetText(tostring(z.n))
+                    local rate = FL.Rate(z.n, z.time)
+                    r.rate:SetText(rate and (rate .. "/h") or "")
+                end
+            end
+        end)
+        local fj = card("Dernières prises", 40 + JROWS * 26 + 8, "« nouveau » : première prise de cette espèce sur le compte")
+        local jrows = {}
+        for i = 1, JROWS do
+            local r = CreateFrame("Frame", nil, fj)
+            r:SetHeight(24)
+            r:SetPoint("TOPLEFT", 16, -40 - (i - 1) * 26)
+            r:SetPoint("RIGHT", -16, 0)
+            r.t = UI:Text(r, 10, C.dim)
+            r.t:SetPoint("LEFT")
+            r.t:SetWidth(78)
+            r.t:SetJustifyH("LEFT")
+            r.what = UI:Text(r, 11)
+            r.what:SetPoint("LEFT", 82, 0)
+            r.what:SetPoint("RIGHT", -110, 0)
+            r.what:SetJustifyH("LEFT")
+            r.who = UI:Text(r, 10, C.muted)
+            r.who:SetPoint("RIGHT")
+            r.who:SetJustifyH("RIGHT")
+            jrows[i] = r
+        end
+        table.insert(self.dyn, function()
+            local log = FL:Data().log
+            local r1, g1, b1 = UI:Accent()
+            local hex = string.format("%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
+            for i, r in ipairs(jrows) do
+                local e = log[i]
+                r:SetShown(e ~= nil)
+                if e then
+                    r.t:SetText(date((time() - e.t) < 86400 and "%H:%M" or "%d/%m %H:%M", e.t))
+                    local parts = {}
+                    for _, it in ipairs(e.it) do
+                        local nm = (WK.GetItemInfo(it[1]) or ("#" .. it[1])) .. (it[2] > 1 and (" x" .. it[2]) or "")
+                        if e.new and e.new[it[1]] then nm = nm .. "  |cff" .. hex .. T("nouveau") .. "|r" end
+                        table.insert(parts, nm)
+                    end
+                    r.what:SetText(table.concat(parts, ", "))
+                    local c = WK.DB.global.characters[e.c]
+                    r.who:SetText((c and WK:CharName(c, e.c) or "?") .. "  ·  " .. FL:ZoneName(e.m))
+                end
+            end
+        end)
+        local frec = card("Récapitulatif de session", 40 + 46 + 8)
+        UI:SettingRow(frec, -40, "À la fermeture du mode pêche", "Prises, rythme, valeur, ce qui a le plus mordu, compétence gagnée. Se place en mode édition.", ftoggle(frec, "recap"), 80)
+
         -- Touche unique : capture d'une touche, de la molette ou d'un bouton de souris
         local fkey = card("Une seule touche pour tout", 40 + 46 + 44, "active seulement en mode pêche, hors combat")
         local keyBtn = UI:Button(fkey, "", 170, 28, "secondary")

@@ -38,7 +38,7 @@ end
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperFishingBar", UIParent)
-    f:SetSize(286, 60)
+    f:SetSize(286, 66)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.9 }, C.border)
@@ -66,9 +66,12 @@ local function build()
     cast:SetScript("OnLeave", function() GameTooltip:Hide() end)
     f.cast = cast
     f.title = UI:Text(f, 12)
-    f.title:SetPoint("TOPLEFT", cast, "TOPRIGHT", 8, -8)
+    f.title:SetPoint("TOPLEFT", cast, "TOPRIGHT", 8, -4)
     f.sub = UI:Text(f, 10, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3)
+    -- compteur de la session (Modules/FishingLog.lua) : prises, rythme, valeur
+    f.stats = UI:Text(f, 10)
+    f.stats:SetPoint("TOPLEFT", f.sub, "BOTTOMLEFT", 0, -3)
 
     -- Tenue : équiper / remettre ; sans canne nulle part : « acheter une canne » (guidage)
     local gear = tile(CreateFrame("Button", nil, f), 30)
@@ -143,6 +146,16 @@ function UI:RefreshFishingBar()
     bar.title:SetText(T(({ gear = "Équiper la tenue", lure = "Poser l'appât", cast = "Pêcher", nopole = "Pas de canne" })[step]))
     bar.title:SetTextColor(unpack(step == "nopole" and C.negative or C.text))
     bar.sub:SetText(keyLabel(F:Config().key))
+    local s = WK.modules.FishingLog and WK.modules.FishingLog.session
+    if s and s.catches > 0 then
+        local rate = WK.modules.FishingLog.Rate(s.catches, GetTime() - s.start)
+        bar.stats:SetText(string.format(T("%d prises"), s.catches) .. (rate and ("  ·  " .. rate .. "/h") or "")
+            .. (s.value > 0 and ("  ·  " .. UI:GoldText(s.value)) or ""))
+        bar.stats:SetTextColor(r, g, b)
+    else
+        bar.stats:SetText(T("pas encore de prise"))
+        bar.stats:SetTextColor(unpack(C.dim))
+    end
     -- tenue : canne équipée, canne en sac, ou « acheter une canne »
     local has = F:HasPole()
     bar.gear.icon:SetTexture(has and itemIcon(GetInventoryItemID and F:PoleEquipped() and GetInventoryItemID("player", 16) or F:BagPole()) or "Interface\\Icons\\INV_Misc_Coin_01")

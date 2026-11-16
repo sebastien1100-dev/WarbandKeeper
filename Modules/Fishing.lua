@@ -31,7 +31,7 @@ local MAINHAND, OFFHAND = 16, 17
 
 local DEFAULTS = {
     autoOpen = true, autoGear = true, restoreGear = true, autoLure = true, lure = "best",
-    fastLoot = true, sound = true, warn = true, minimap = true, key = "MOUSEWHEELDOWN",
+    fastLoot = true, sound = true, warn = true, minimap = true, key = "MOUSEWHEELDOWN", recap = true,
 }
 function M:Config()
     local q = WK.modules.QoL:Config()
@@ -322,6 +322,7 @@ function M:Start(fromEquip)
     if WK.UI.SyncFishingBar then WK.UI:SyncFishingBar() end
     self:UpdateBinding()
     self:Warn()
+    if WK.modules.FishingLog then WK.modules.FishingLog:StartSession() end
     WK:NotifyChanged()
 end
 
@@ -340,6 +341,7 @@ function M:Stop(keepGear)
     end
     if not keepGear and self:Config().restoreGear then self:RestoreGear() end
     self:Warn()
+    if WK.modules.FishingLog then WK.modules.FishingLog:EndSession() end
     WK:NotifyChanged()
 end
 
@@ -349,6 +351,8 @@ function M:Toggle() if self.active then self:Stop() else self:Start() end end
 -- Butin rapide
 ---------------------------------------------------------------------------
 local function fastLoot()
+    -- carnet de pêche : la prise est notée avant d'être ramassée
+    if WK.modules.FishingLog then pcall(WK.modules.FishingLog.Record, WK.modules.FishingLog) end
     if not M.active or not M:Config().fastLoot then return end
     if IsFishingLoot and not IsFishingLoot() then return end
     if M:FreeSlots() == 0 then return end -- sacs pleins : on laisse faire le jeu

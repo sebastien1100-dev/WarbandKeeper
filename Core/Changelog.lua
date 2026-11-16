@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.74.0", date = "16/11/2026",
+        added = {
+            "Pêche : chaque prise est notée toute seule (objets, zone, heure, perso), même hors du mode pêche.",
+            "Pêche : compteur de session dans la barre du mode pêche (prises, rythme par heure, valeur).",
+            "Pêche : récapitulatif à la fermeture du mode pêche : zone et durée, prises, rythme, valeur, prises au fil de la session, ce qui a le plus mordu, nouvelles espèces et points de compétence gagnés. Il disparaît seul (clic pour le fermer) et se place en mode édition.",
+            "Pêche : carnet dans QoL > Pêche : prises, temps de pêche, rythme, valeur et espèces du compte ; les zones par nombre de prises avec ce qu'elles donnent le plus et le rythme ; les dernières prises avec « nouveau » pour une première prise sur le compte.",
+        },
+        changed = {
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.73.5", date = "16/11/2026",
         changed = {
             "Résumé : icônes de la carte Modules repliée plus grandes et mieux espacées.",
@@ -1465,7 +1477,7 @@ WK.Changelog = {
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
-    "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
+    "Pêche, suite : collection des poissons (tuiles par espèce, où les pêcher).",
     "Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",

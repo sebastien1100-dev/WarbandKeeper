@@ -74,7 +74,8 @@ local mapInfo = {}
 local function info(mapID)
     local i = mapInfo[mapID]
     if i == nil then
-        local ok, mi = pcall(C_Map.GetMapInfo, mapID)
+        local ok, mi = false, nil
+        if C_Map and C_Map.GetMapInfo then ok, mi = pcall(C_Map.GetMapInfo, mapID) end
         i = ok and mi or false
         mapInfo[mapID] = i
     end
