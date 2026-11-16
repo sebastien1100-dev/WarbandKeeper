@@ -117,9 +117,22 @@ function M:EndSession()
     if not s or s.catches == 0 then return end
     local F = WK.modules.Fishing
     s.duration = GetTime() - s.start
+    -- compétence relue au moment de fermer (l'évènement des compétences peut ne pas avoir suivi)
+    local P = WK.modules.Professions
+    if P and P.Scan then pcall(P.Scan, P) end
     s.skill1 = F and F:Skill()
+    if s.skillMax and (not s.skill1 or s.skillMax > s.skill1) then s.skill1 = s.skillMax end
     if WK.UI.ShowFishingRecap then WK.UI:ShowFishingRecap(s) end
 end
+-- Point de compétence gagné pendant la session (message « Votre compétence en Pêche augmente… »)
+WK:On("CHAT_MSG_SKILL", function()
+    local P = WK.modules.Professions
+    if P and P.Scan then pcall(P.Scan, P) end
+    local s, F = M.session, WK.modules.Fishing
+    local sk = s and F and F:Skill()
+    if sk and (not s.skillMax or sk > s.skillMax) then s.skillMax = sk end
+end)
+
 -- Rythme (prises par heure) d'une session ou d'un total
 function M.Rate(n, seconds)
     if not seconds or seconds < 60 then return nil end

@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.78.2", date = "16/11/2026",
+        fixed = {
+            "Récapitulatif de pêche : les points de compétence gagnés pouvaient manquer (« +0 ») si le jeu n'avait pas encore mis à jour la compétence. Elle est maintenant relue à chaque message « Votre compétence en Pêche augmente » et à la fermeture du mode pêche.",
+        },
+    },
+    {
         version = "0.78.1", date = "16/11/2026",
         fixed = {
             "Micro menu : l'heure paraissait décalée vers la droite quand elle commence par un 1 (le chiffre 1 laisse un vide à sa gauche). Elle est maintenant centrée sur ses chiffres, et les barres FPS et latence vont du premier au dernier chiffre.",
