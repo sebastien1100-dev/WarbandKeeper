@@ -49,9 +49,15 @@ local function gamePinAlpha(a)
     local wm = WorldMapFrame
     if not (wm and wm.EnumeratePinsByTemplate) then return end
     for _, tpl in ipairs(GAME_PIN_TEMPLATES) do
-        local ok, iter = pcall(wm.EnumeratePinsByTemplate, wm, tpl)
-        if ok and iter then
-            for gp in iter do if gp.SetAlpha then gp:SetAlpha(a) end end
+        -- l'énumération du jeu renvoie un itérateur complet (fonction, table, départ), comme pairs()
+        local ok, f, st, k0 = pcall(wm.EnumeratePinsByTemplate, wm, tpl)
+        if ok and type(f) == "function" then
+            pcall(function()
+                for k, v in f, st, k0 do
+                    local pin = (type(k) == "table" and k.SetAlpha and k) or (type(v) == "table" and v.SetAlpha and v)
+                    if pin then pin:SetAlpha(a) end
+                end
+            end)
         end
     end
 end
@@ -141,12 +147,25 @@ local function redraw()
     if not mapID then return end
     local cw, ch = cv:GetWidth(), cv:GetHeight()
     if cw and cw > 0 then
-        if UI.DrawMapLayers then UI:DrawMapLayers(cv, mapID, cw, ch) end -- lieux utiles (UI/MapLayers.lua)
-        if UI.DrawNodePins then UI:DrawNodePins(cv, mapID, cw, ch) end -- emplacements connus (UI/NodePins.lua)
-        if UI.DrawRarePins then UI:DrawRarePins(cv, mapID, cw, ch) end -- rares (UI/RarePins.lua)
-        if UI.DrawBoatPaths then UI:DrawBoatPaths(cv, mapID, cw, ch) end -- bateaux appris (UI/NavRoute.lua)
-        if UI.DrawNavRoute then UI:DrawNavRoute(cv, mapID, cw, ch) end -- trajet du guidage (UI/NavRoute.lua)
-        drawTarget(cv, mapID, cw, ch)
+        -- chaque calque à part : une erreur dans l'un n'empêche pas les autres de s'afficher
+        -- (elle est notée une fois dans le chat, avec le nom du calque)
+        local function layer(name, fn)
+            if not fn then return end
+            local ok, err = pcall(fn, UI, cv, mapID, cw, ch)
+            if not ok then
+                UI.mapErrors = UI.mapErrors or {}
+                if not UI.mapErrors[name] then
+                    UI.mapErrors[name] = tostring(err)
+                    WK:Print(string.format(T("Carte : le calque « %s » a rencontré une erreur (/wk carte pour le détail)."), T(name)))
+                end
+            end
+        end
+        layer("Lieux", UI.DrawMapLayers)        -- lieux utiles (UI/MapLayers.lua)
+        layer("Filons et plantes", UI.DrawNodePins) -- nœuds récoltés (UI/NodePins.lua)
+        layer("Rares", UI.DrawRarePins)         -- rares (UI/RarePins.lua)
+        layer("Bateaux", UI.DrawBoatPaths)      -- bateaux appris (UI/NavRoute.lua)
+        layer("Trajet", UI.DrawNavRoute)        -- trajet du guidage (UI/NavRoute.lua)
+        layer("Repère", function(_, ...) drawTarget(...) end)
     end
     if not cfg.showMap then return end
     local list = WK.modules.GatherMap:Clusters(mapID)

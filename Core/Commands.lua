@@ -66,6 +66,17 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "carte" or cmd == "map" then
+        -- diagnostic de la carte du monde : rares de la carte affichée, erreurs des calques
+        local wm = WorldMapFrame
+        local mapID = wm and wm.GetMapID and wm:GetMapID()
+        local R = WK.modules.Rares
+        WK:Print(WK.T("Carte du monde : diagnostic"))
+        WK:Print("  " .. WK.T("carte") .. " : " .. tostring(mapID) .. " · " .. WK.T("module Rares") .. " : " .. tostring(WK:FeatureOn("rares"))
+            .. " · " .. WK.T("médaillons") .. " : " .. tostring(R:Config().map) .. " · " .. WK.T("rares sur cette carte") .. " : " .. (mapID and #R:OnMap(mapID) or 0))
+        local any = false
+        for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
+        if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
     elseif cmd == "hud" then
         WK.UI:ToggleGatherHUD()
     elseif cmd == "nav" then

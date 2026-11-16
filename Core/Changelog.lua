@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.86.1", date = "16/11/2026",
+        fixed = {
+            "Carte du monde : les médaillons des rares (et les autres pastilles de l'addon) pouvaient ne plus s'afficher depuis la 0.79.1. Le masquage du losange du jeu plantait dès qu'un point était suivi, et arrêtait tout le dessin de la carte.",
+            "Carte du monde : chaque calque (lieux, filons, rares, bateaux, trajet, repère) est maintenant dessiné à part. Une erreur dans l'un n'empêche plus les autres de s'afficher, et elle est signalée une fois dans le chat. /wk carte donne le détail et le nombre de rares sur la carte ouverte.",
+        },
+    },
+    {
         version = "0.86.0", date = "16/11/2026",
         added = {
             "HUD de récolte : la minicarte du jeu s'affiche en grand et transparente au centre de l'écran, dézoomée au maximum et tournée avec ton perso. Les points jaunes du pistage (filons, plantes) se voient ainsi de bien plus loin, avec nos pastilles et le trajet. Les clics passent au travers. /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper > HUD de récolte). Taille, opacité et « fermer en combat » dans Options > Récolte. La minicarte retrouve sa place, sa taille et son zoom à la fermeture.",
