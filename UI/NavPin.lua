@@ -111,51 +111,113 @@ local function build()
     f.icon = f:CreateTexture(nil, "OVERLAY")
     f.icon:SetSize(15, 15)
     f.icon:SetPoint("CENTER", f, "TOP", 0, -13)
+    -- étiquette compacte sur trois lignes : nom, rôle, distance
     f.pill = CreateFrame("Frame", nil, f)
-    f.pill:SetHeight(20)
     f.pill:SetPoint("TOP", f, "BOTTOM", 0, -3)
-    f.pill.bg = UI:Rounded(f.pill, 10, 0, "BACKGROUND", 1)
-    f.label = UI:Text(f.pill, 12)
-    f.label:SetPoint("CENTER")
+    f.pill.bg = UI:Rounded(f.pill, 8, 0, "BACKGROUND", 1)
+    f.name = UI:Text(f.pill, 12)
+    f.name:SetPoint("TOP", 0, -5)
+    f.role = UI:Text(f.pill, 10, C.muted)
+    f.role:SetPoint("TOP", f.name, "BOTTOM", 0, -2)
+    f.dist = UI:Text(f.pill, 12)
+    -- au bord de l'écran : petite flèche tournée vers le lieu
+    f.edge = f:CreateTexture(nil, "OVERLAY")
+    f.edge:SetTexture(UI.MEDIA .. "guide")
+    f.edge:SetSize(18, 18)
     f:Hide()
-    f.acc = 0
-    f:SetScript("OnUpdate", function(s, el)
-        s.acc = s.acc + el
-        if s.acc < 0.03 then return end
-        s.acc = 0
-        local t = G.target
-        if not t or not G:Config().screenPin then s:Hide(); showGameMarker(true) return end
-        -- distance : par le trajet si on l'a, sinon à vol d'oiseau
-        local d, p = UI:GuideDistance(t)
-        if d and d < 10 and p and t.map then arrive(t) end
-        local nf, clamped = navFrame()
-        if not nf then s:Hide(); return end
-        showGameMarker(false)
-        s:ClearAllPoints()
-        s:SetPoint("BOTTOM", nf, "CENTER", 0, 0)
-        local r, g, b = UI:Accent()
-        s.body:SetVertexColor(r, g, b, 1)
-        s.icon:SetTexture(UI.MEDIA .. iconFor(t))
-        s.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
-        local hex = WK:AccentHex()
-        local txt = G:PlaceName(t) .. (d and ("  ·  |cff" .. hex .. string.format(T("%d m"), math.floor(d)) .. "|r") or "")
-        if s.label:GetText() ~= txt then
-            s.label:SetText(txt)
-            s.pill:SetWidth((s.label:GetStringWidth() or 60) + 20)
-        end
-        s.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.82)
-        -- au bord de l'écran (lieu derrière toi ou hors champ) : plus discret
-        s:SetAlpha(clamped and 0.6 or 1)
-        s.pill:SetShown(not clamped)
-        s:Show()
-    end)
     return f
 end
 
+-- Place l'épingle au bord de l'écran, dans la direction du lieu (le jeu ne donne pas de position
+-- à l'écran quand le lieu est derrière toi)
+local function placeAtEdge(f, t, p)
+    local _, bearing = G:Vector(p, t)
+    if not bearing then return false end
+    local facing = GetPlayerFacing and GetPlayerFacing() or 0
+    local rel = bearing - (facing or 0) -- 0 : devant ; positif : vers la gauche
+    local dx, dy = -math.sin(rel), math.cos(rel)
+    local W, H = UIParent:GetWidth(), UIParent:GetHeight()
+    local hx, hy = W / 2 - 60, H / 2 - 90
+    local k = math.min(hx / math.max(math.abs(dx), 0.001), hy / math.max(math.abs(dy), 0.001))
+    f:ClearAllPoints()
+    f:SetPoint("CENTER", UIParent, "CENTER", dx * k, dy * k)
+    f.edge:ClearAllPoints()
+    f.edge:SetPoint("CENTER", f, "CENTER", dx * 30, dy * 30)
+    f.edge:SetRotation(rel)
+    return true
+end
+
+-- Boucle (cadre toujours actif pendant le guidage : l'épingle peut être cachée sans l'arrêter)
+local function update()
+    local t = G.target
+    if not t or not G:Config().screenPin then
+        if pin then pin:Hide() end
+        showGameMarker(true)
+        return
+    end
+    pin = pin or build()
+    local f = pin
+    -- distance : par le trajet si on l'a, sinon à vol d'oiseau
+    local d, p = UI:GuideDistance(t)
+    if d and d < 10 and p and t.map then arrive(t) end
+    local nf, clamped = navFrame()
+    showGameMarker(false)
+    local atEdge = false
+    if nf and not clamped then
+        f:ClearAllPoints()
+        f:SetPoint("BOTTOM", nf, "CENTER", 0, 0)
+    elseif p and placeAtEdge(f, t, p) then
+        atEdge = true
+    else
+        f:Hide()
+        return
+    end
+    local r, g, b = UI:Accent()
+    f.body:SetVertexColor(r, g, b, 1)
+    f.edge:SetVertexColor(r, g, b, 1)
+    f.edge:SetShown(atEdge)
+    f.icon:SetTexture(UI.MEDIA .. iconFor(t))
+    f.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+    local name, role = G:PlaceParts(t)
+    local dist = d and string.format(T("%d m"), math.floor(d)) or ""
+    local key = (atEdge and "e" or "n") .. name .. (role or "") .. dist
+    if f.key ~= key then
+        f.key = key
+        f.name:SetText(name)
+        f.role:SetText(role or "")
+        f.dist:SetText(dist)
+        f.dist:SetTextColor(r, g, b, 1)
+        f.name:SetShown(not atEdge)
+        f.role:SetShown(not atEdge and (role or "") ~= "")
+        f.dist:ClearAllPoints()
+        local h
+        if atEdge then
+            f.dist:SetPoint("TOP", 0, -4)
+            h = 20
+        else
+            local above = (role or "") ~= "" and f.role or f.name
+            f.dist:SetPoint("TOP", above, "BOTTOM", 0, -2)
+            h = 10 + (f.name:GetStringHeight() or 12) + ((role or "") ~= "" and (f.role:GetStringHeight() or 10) + 2 or 0) + (f.dist:GetStringHeight() or 12) + 2
+        end
+        local w = math.max(atEdge and 0 or (f.name:GetStringWidth() or 0), atEdge and 0 or (f.role:GetStringWidth() or 0), f.dist:GetStringWidth() or 0) + 16
+        f.pill:SetSize(w, h)
+    end
+    f.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.82)
+    f:SetAlpha(atEdge and 0.75 or 1)
+    f:Show()
+end
+local driver = CreateFrame("Frame")
+driver.acc = 0
+driver:SetScript("OnUpdate", function(s, el)
+    s.acc = s.acc + el
+    if s.acc < 0.03 then return end
+    s.acc = 0
+    if G.target or (pin and pin:IsShown()) or hiddenGame then update() end
+end)
+
 local function sync()
     if G.target and G:Config().screenPin then
-        pin = pin or build()
-        pin:Show() -- l'OnUpdate décide ensuite (repère du jeu disponible ou non)
+        update()
     elseif pin then
         pin:Hide()
         showGameMarker(true)

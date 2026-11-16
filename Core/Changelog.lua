@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.80.1", date = "16/11/2026",
+        changed = {
+            "Épingle à l'écran : étiquette plus compacte, sur trois lignes centrées (nom, rôle, distance de ta couleur) au lieu d'une longue ligne.",
+        },
+        fixed = {
+            "Épingle à l'écran : quand le lieu était derrière toi ou hors champ, elle disparaissait (et ne revenait qu'au guidage suivant). Elle se cale maintenant au bord de l'écran, dans la direction du lieu, avec une petite flèche et la distance.",
+        },
+    },
+    {
         version = "0.80.0", date = "16/11/2026",
         added = {
             "Alerte « Rare en vue » : le bouton Guider devient l'icône ronde de guidage (comme dans les listes Rares et Quêtes). Un clic guide vers le rare et pose le marqueur tête de mort du jeu au-dessus de lui (aussi en cliquant sur l'alerte compacte).",

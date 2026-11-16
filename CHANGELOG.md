@@ -18,6 +18,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.80.1 — 16/11/2026
+
+### Modifications
+- Épingle à l'écran : étiquette plus compacte, sur trois lignes centrées (nom, rôle, distance de ta couleur) au lieu d'une longue ligne.
+
+### Corrections
+- Épingle à l'écran : quand le lieu était derrière toi ou hors champ, elle disparaissait (et ne revenait qu'au guidage suivant). Elle se cale maintenant au bord de l'écran, dans la direction du lieu, avec une petite flèche et la distance.
+
 ## v0.80.0 — 16/11/2026
 
 ### Ajouts
