@@ -71,6 +71,13 @@ function M:Record()
         d.zones[map] = d.zones[map] or { n = 0, time = 0, items = {} }
         z = d.zones[map]
         z.n, z.time = z.n + 1, z.time + dt
+        -- dernier coin de pêche de la zone (pour y guider depuis la collection)
+        local pos = C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(map, "player")
+        if pos then
+            local x, y = pos.x, pos.y
+            if pos.GetXY then x, y = pos:GetXY() end
+            if x and y and (x > 0 or y > 0) then z.pos = { math.floor(x * 10000) / 10000, math.floor(y * 10000) / 10000 } end
+        end
     end
     local new = {}
     for _, it in ipairs(items) do
@@ -140,4 +147,122 @@ function M:Value()
     local v = 0
     for id, e in pairs(self:Data().items) do v = v + price(id) * e.n end
     return v
+end
+
+---------------------------------------------------------------------------
+-- Collection (album et atlas) : référence Modules/FishDB.lua + prises du carnet
+---------------------------------------------------------------------------
+local REF_BY_ID
+local function ref()
+    if not REF_BY_ID then
+        REF_BY_ID = {}
+        for i, sp in ipairs(WK.FishDB.species) do REF_BY_ID[sp[1]] = { id = sp[1], cat = sp[2], tier = sp[3], order = i } end
+    end
+    return REF_BY_ID
+end
+M.NEW_DAYS = 7 -- point « nouveau » sur les espèces pêchées pour la première fois depuis moins d'une semaine
+
+-- Espèces : { { id, cat, tier, n, first, by, ref } } ; les prises hors référence sont en « other »
+-- (dans le palier de compétence de la zone où elles ont mordu, sinon sans palier).
+function M:Collection()
+    local d, R = self:Data(), ref()
+    local out = {}
+    for _, sp in ipairs(WK.FishDB.species) do
+        local e = d.items[sp[1]]
+        table.insert(out, { id = sp[1], cat = sp[2], tier = sp[3], ref = true, n = e and e.n or 0, first = e and e.first, by = e and e.by })
+    end
+    local extra = {}
+    for id, e in pairs(d.items) do
+        if not R[id] then
+            local tier
+            for map, z in pairs(d.zones) do
+                local zr = z.items[id] and WK.FishDB.zones[map]
+                if zr then
+                    local t = zr[1] >= 205 and 4 or zr[1] >= 130 and 3 or zr[1] >= 55 and 2 or 1
+                    if not tier or t < tier then tier = t end
+                end
+            end
+            table.insert(extra, { id = id, cat = "other", tier = tier or 0, n = e.n, first = e.first, by = e.by })
+        end
+    end
+    table.sort(extra, function(a, b) return a.id < b.id end)
+    for _, e in ipairs(extra) do table.insert(out, e) end
+    return out
+end
+function M:CollectionCount()
+    local have, total = 0, 0
+    for _, e in ipairs(self:Collection()) do
+        total = total + 1
+        if e.n > 0 then have = have + 1 end
+    end
+    return have, total
+end
+
+-- Où une espèce a mordu : { { map, n, pct } } (tes prises), puis les zones de la référence où elle mord
+function M:SpeciesZones(id)
+    local out, sum = {}, 0
+    for map, z in pairs(self:Data().zones) do
+        local n = z.items[id]
+        if n and n > 0 then table.insert(out, { map = map, n = n }); sum = sum + n end
+    end
+    table.sort(out, function(a, b) return a.n > b.n end)
+    for _, r in ipairs(out) do r.pct = math.floor(r.n * 100 / sum + 0.5) end
+    local refZones = {}
+    for map, zr in pairs(WK.FishDB.zones) do
+        local seen = false
+        for _, r in ipairs(out) do if r.map == map then seen = true end end
+        if not seen then for _, f in ipairs(zr[2]) do if f == id then table.insert(refZones, { map = map, skill = zr[1] }) end end end
+    end
+    table.sort(refZones, function(a, b) if a.skill ~= b.skill then return a.skill < b.skill end return a.map < b.map end)
+    return out, refZones
+end
+
+-- Atlas : une ligne par zone (référence + zones où tu as pêché) :
+-- { map, skill, fish = { ids }, have = { [id] = true }, n, time, pos }
+function M:Atlas()
+    local d, R = self:Data(), ref()
+    local rows = {}
+    local function row(map)
+        local zr = WK.FishDB.zones[map]
+        local z = d.zones[map]
+        local r = { map = map, skill = zr and zr[1], fish = {}, have = {}, n = z and z.n or 0, time = z and z.time or 0, pos = z and z.pos }
+        local seen = {}
+        if zr then for _, id in ipairs(zr[2]) do table.insert(r.fish, id); seen[id] = true end end
+        if z then
+            for id in pairs(z.items) do
+                r.have[id] = true
+                local sp = R[id]
+                if not seen[id] and (not sp or sp.cat == "fish") then table.insert(r.fish, id); seen[id] = true end
+            end
+        end
+        return r
+    end
+    for map in pairs(WK.FishDB.zones) do table.insert(rows, row(map)) end
+    for map in pairs(d.zones) do if not WK.FishDB.zones[map] then table.insert(rows, row(map)) end end
+    table.sort(rows, function(a, b)
+        local sa, sb = a.skill or 999, b.skill or 999
+        if sa ~= sb then return sa < sb end
+        return self:ZoneName(a.map) < self:ZoneName(b.map)
+    end)
+    return rows
+end
+
+-- Guidage vers le dernier coin de pêche connu d'une zone
+function M:GuideZone(map)
+    local z = self:Data().zones[map]
+    if not (z and z.pos) then return false end
+    local G = WK.modules.Guide
+    local t = { map = map, x = z.pos[1], y = z.pos[2] }
+    t.cont, t.wx, t.wy = G.ToWorld(map, t.x, t.y)
+    local p = G:PlayerPos()
+    t.distance = p and G:Vector(p, t) or nil
+    t.e = { t.x * 100, t.y * 100, 0, nil, nil, self:ZoneName(map), self:ZoneName(map), T("Coin de pêche") }
+    G:Start(t, "Pêche", "fishing")
+    return true
+end
+-- Vers la zone où une espèce mord le plus (parmi celles où tu as un coin connu)
+function M:GuideSpecies(id)
+    local zs = self:SpeciesZones(id)
+    for _, r in ipairs(zs) do if self:GuideZone(r.map) then return true end end
+    return false
 end

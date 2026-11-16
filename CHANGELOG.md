@@ -8,7 +8,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
-- Pêche, suite : collection des poissons (tuiles par espèce, où les pêcher).
 - Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.
 - Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
@@ -19,6 +18,16 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Trajet sans ShortestPathForever : tracé marche, vol, marche par Warband Keeper, aidé des routes de patrouille des PNJ et des chemins déjà parcourus.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.77.0 — 16/11/2026
+
+### Ajouts
+- QoL > Pêche : nouvelle carte « Collection » sous le carnet, avec deux onglets.
+- Album : une tuile par espèce (poissons, coffres, curiosités), rangée par palier de compétence ; en couleur si un de tes persos l'a déjà pêchée (avec le nombre), en gris sinon. Filtres Tout, Poissons, Coffres, Curiosités, Manquants. Un point de ta couleur marque les espèces pêchées pour la première fois cette semaine.
+- Fiche de l'espèce (clic sur une tuile) : prises du compte, prix HV, zones où elle a mordu (en %) puis zones conseillées, première prise (perso et date), bouton « Meilleur coin » pour y être guidé et bouton « Lien ».
+- Par zone : l'atlas des eaux, une ligne par zone avec la compétence conseillée (verte, jaune ou rouge selon ta compétence), ses espèces (en gris si pas encore pêchées ici), ta progression et ton rythme, et un bouton pour être guidé vers ton dernier coin de pêche de la zone.
+- La liste de référence des espèces et des zones est indicative : toute prise imprévue rejoint la collection et l'atlas d'elle-même. Le dernier coin de pêche de chaque zone est noté à partir de maintenant.
+- Nouveaux fichiers : redémarrer le jeu (un /reload ne suffit pas).
 
 ## v0.76.2 — 16/11/2026
 

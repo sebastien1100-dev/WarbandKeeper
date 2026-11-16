@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.77.0", date = "16/11/2026",
+        added = {
+            "QoL > Pêche : nouvelle carte « Collection » sous le carnet, avec deux onglets.",
+            "Album : une tuile par espèce (poissons, coffres, curiosités), rangée par palier de compétence ; en couleur si un de tes persos l'a déjà pêchée (avec le nombre), en gris sinon. Filtres Tout, Poissons, Coffres, Curiosités, Manquants. Un point de ta couleur marque les espèces pêchées pour la première fois cette semaine.",
+            "Fiche de l'espèce (clic sur une tuile) : prises du compte, prix HV, zones où elle a mordu (en %) puis zones conseillées, première prise (perso et date), bouton « Meilleur coin » pour y être guidé et bouton « Lien ».",
+            "Par zone : l'atlas des eaux, une ligne par zone avec la compétence conseillée (verte, jaune ou rouge selon ta compétence), ses espèces (en gris si pas encore pêchées ici), ta progression et ton rythme, et un bouton pour être guidé vers ton dernier coin de pêche de la zone.",
+            "La liste de référence des espèces et des zones est indicative : toute prise imprévue rejoint la collection et l'atlas d'elle-même. Le dernier coin de pêche de chaque zone est noté à partir de maintenant.",
+            "Nouveaux fichiers : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.76.2", date = "16/11/2026",
         changed = {
             "/wk nav : pendant un trajet confié à ShortestPathForever, le diagnostic dit que le repère, la flèche et le tracé sont gérés par lui, au lieu d'afficher « aucun » et une distance à 0.",
@@ -1546,7 +1557,6 @@ WK.Changelog = {
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
-    "Pêche, suite : collection des poissons (tuiles par espèce, où les pêcher).",
     "Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
