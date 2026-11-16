@@ -256,12 +256,14 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
+        local mapBtn = navButton("maplayers", "Carte", -208, nil, "map")
+        mapBtn.desc:SetText("Lieux utiles et trajets")
         local ahBtn = navButton("ah", "Hôtel des ventes", -208, nil, "coin")
         ahBtn.desc:SetText("Scan et prix")
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "fishing", "ah", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -795,6 +797,59 @@ UI:RegisterPage({
         UI:OnResize(box, function() layoutBar() end)
         table.insert(self.dyn, function() layoutBar() end)
         layoutBar()
+
+        -----------------------------------------------------------------------
+        -- Carte : lieux utiles et trajets (Modules/MapLayers.lua, UI/MapLayers.lua)
+        -----------------------------------------------------------------------
+        section("maplayers")
+        local ML = WK.modules.MapLayers
+        local mlc = ML:Config()
+        local function mlRefresh() if UI.RefreshMapLayers then UI:RefreshMapLayers() end end
+        local nRows, nFam = #ML.LAYERS, #ML.FAMILIES
+        local lcard = card("Sur les cartes", 40 + 22 + nFam * 26 + nRows * 36 + 8, "une pastille par lieu ; sur la carte du monde, clic pour guider")
+        local hdr1 = UI:Text(lcard, 10, C.dim)
+        hdr1:SetPoint("TOPRIGHT", -78, -44)
+        hdr1:SetText(T("CARTE"))
+        local hdr2 = UI:Text(lcard, 10, C.dim)
+        hdr2:SetPoint("TOPRIGHT", -16, -44)
+        hdr2:SetText(T("MINICARTE"))
+        local ly = -62
+        for _, fam in ipairs(ML.FAMILIES) do
+            local fl = UI:Text(lcard, 10, C.dim)
+            fl:SetPoint("TOPLEFT", 16, ly - 8)
+            fl:SetText(UI:Upper(T(fam.label)))
+            ly = ly - 26
+            for _, l in ipairs(ML.LAYERS) do
+                if l.family == fam.key then
+                    local ctl = CreateFrame("Frame", nil, lcard)
+                    ctl:SetSize(130, 24)
+                    local t1 = toggle(ctl, function() return mlc.map[l.key] end, function(v) mlc.map[l.key] = v; mlRefresh() end)
+                    t1:SetPoint("RIGHT", -72, 0)
+                    local t2 = toggle(ctl, function() return mlc.mini[l.key] end, function(v) mlc.mini[l.key] = v; mlRefresh() end)
+                    t2:SetPoint("RIGHT", -8, 0)
+                    local row = UI:SettingRow(lcard, ly, l.label, nil, ctl, 130)
+                    local dot = UI:Icon(row, "circle", 18, nil, "ARTWORK")
+                    dot:SetPoint("LEFT", 0, 0)
+                    dot:SetVertexColor(fam.color[1], fam.color[2], fam.color[3])
+                    local ic = UI:Icon(row, l.icon, 10, nil, "OVERLAY")
+                    ic:SetPoint("CENTER", dot, "CENTER")
+                    ic:SetVertexColor(unpack(C.bg))
+                    row.label:ClearAllPoints(); row.label:SetPoint("LEFT", 28, 0)
+                    ly = ly - 36
+                end
+            end
+        end
+        local fcard = card("Filtres et affichage", 40 + 5 * 46 + 8)
+        UI:SettingRow(fcard, -40, "Seulement ma faction", "Pas les lieux ni les trajets réservés à l'autre faction.",
+            toggle(fcard, function() return mlc.myFaction end, function(v) mlc.myFaction = v; mlRefresh() end), 80)
+        UI:SettingRow(fcard, -86, "Seulement ma classe", "Maître de classe, familiers et démons, munitions (chasseur), poisons (voleur), écuries.",
+            toggle(fcard, function() return mlc.myClass end, function(v) mlc.myClass = v; mlRefresh() end), 80)
+        UI:SettingRow(fcard, -132, "Seulement mes métiers", "Les maîtres des métiers que ce perso a appris.",
+            toggle(fcard, function() return mlc.myProfs end, function(v) mlc.myProfs = v; mlRefresh() end), 80)
+        UI:SettingRow(fcard, -178, "Barre de filtres sur la carte du monde", "En haut de la carte : clic sur une famille pour l'afficher ou la masquer, clic droit pour le détail.",
+            toggle(fcard, function() return mlc.toolbar end, function(v) mlc.toolbar = v; mlRefresh() end), 80)
+        UI:SettingRow(fcard, -224, "Taille des pastilles", nil,
+            UI:Slider(fcard, 220, 12, 30, 1, function() return mlc.size or 18 end, function(v) mlc.size = v; mlRefresh() end, "%d"), 240)
 
         -----------------------------------------------------------------------
         -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)
@@ -1356,6 +1411,11 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "maplayers" then
+                local n = 0
+                for _, v in pairs(WK.modules.MapLayers:Config().map) do if v then n = n + 1 end end
+                b.desc:SetText(string.format(T("%d types de lieux affichés"), n))
+                b.count:SetText("")
             elseif key == "ah" then
                 local n = WK.modules.AHScan:Count()
                 b.desc:SetText(n > 0 and string.format(T("%d prix connus"), n) or T("Pas encore de scan"))

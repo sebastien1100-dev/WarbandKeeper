@@ -19,6 +19,7 @@ WK.FEATURES = {
     { key = "lfg", label = "LFG", icon = "lfg", group = "GROUPE", page = "lfg" },
     { key = "quests", label = "Quêtes", icon = "bang", group = "EXPLORATION", page = "quests", desc = "page et donneurs" },
     { key = "rares", label = "Rares", icon = "star", group = "EXPLORATION", page = "rares", desc = "page, carte, alerte" },
+    { key = "maplayers", label = "Carte", icon = "map", group = "EXPLORATION", qol = "maplayers", desc = "lieux et trajets" },
     { key = "nodes", label = "Récolte", icon = "tree", group = "EXPLORATION", desc = "filons et plantes" },
     { key = "halo", label = "Halo", icon = "spark", group = "CONFORT", qol = "halo", reload = true },
     { key = "micro", label = "Micro menu", icon = "clock", group = "CONFORT", qol = "micro", reload = true },
@@ -56,6 +57,7 @@ function WK:SetFeature(key, on)
         if UI.SyncFishingBar then UI:SyncFishingBar() end
         if UI.RefreshNodePins then UI:RefreshNodePins() end
         if UI.RedrawRarePins then UI:RedrawRarePins() end
+        if UI.RefreshMapLayers then UI:RefreshMapLayers() end
     end
     if key == "fishing" and not on and WK.modules.Fishing and WK.modules.Fishing.active then WK.modules.Fishing:Stop() end
     if key == "halo" and WK.modules.Glow and WK.modules.Glow.Update then pcall(WK.modules.Glow.Update, WK.modules.Glow) end

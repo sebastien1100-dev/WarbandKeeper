@@ -1,0 +1,421 @@
+local ADDON_NAME, WK = ...
+local UI = WK.UI
+local C = UI.colors
+local T = function(s) return WK.T(s) end
+
+-- Lieux utiles sur les cartes (Modules/MapLayers.lua) :
+--   carte du monde : une pastille par lieu (anneau de la couleur de sa famille, icône dedans ; survol :
+--   nom et rôle ; clic : guidage), les trajets des bateaux et zeppelins en pointillés vers leur
+--   destination, et une barre de filtres en haut de la carte (clic : la famille ; clic droit : le détail) ;
+--   minicarte : les mêmes pastilles autour du joueur, sans capter la souris.
+local L = WK.modules.MapLayers
+local DOTS = 9 -- points d'un tracé
+
+local function on() return WK:FeatureOn("maplayers") end
+local function familyColor(l) return L.FAMILY[l.family].color end
+
+---------------------------------------------------------------------------
+-- Carte du monde
+---------------------------------------------------------------------------
+local pins, routes = {}, {}
+local function getPin(i, cv)
+    local p = pins[i]
+    if not p then
+        p = CreateFrame("Button", nil, cv)
+        p.ring = p:CreateTexture(nil, "ARTWORK")
+        p.ring:SetAllPoints()
+        p.ring:SetTexture(UI.MEDIA .. "circle")
+        p.inner = p:CreateTexture(nil, "ARTWORK", nil, 1)
+        p.inner:SetPoint("CENTER")
+        p.inner:SetTexture(UI.MEDIA .. "circle")
+        p.icon = p:CreateTexture(nil, "OVERLAY")
+        p.icon:SetPoint("CENTER")
+        p:RegisterForClicks("LeftButtonUp")
+        p:SetScript("OnEnter", function(s)
+            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            local G = WK.modules.Guide
+            local name, sub = G:PlaceParts({ e = s.e })
+            local col = familyColor(s.layer)
+            GameTooltip:SetText(name, 1, 1, 1)
+            if sub then GameTooltip:AddLine(sub, 0.8, 0.8, 0.8) end
+            GameTooltip:AddLine(T(s.layer.label), col[1], col[2], col[3])
+            GameTooltip:AddLine(T("Clic : guider jusqu'ici"), 0.6, 0.6, 0.6)
+            GameTooltip:Show()
+        end)
+        p:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        p:SetScript("OnClick", function(s) L:GuideTo(s.mapID, s.e, s.layer.label) end)
+        pins[i] = p
+    end
+    p:SetParent(cv)
+    return p
+end
+local function paintPin(p, l, size)
+    local col = familyColor(l)
+    p:SetSize(size, size)
+    p.ring:SetVertexColor(col[1], col[2], col[3], 1)
+    p.inner:SetSize(size - 4, size - 4)
+    p.inner:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
+    p.icon:SetTexture(UI.MEDIA .. l.icon)
+    p.icon:SetSize(size * 0.52, size * 0.52)
+    p.icon:SetVertexColor(col[1], col[2], col[3], 1)
+    if p.icon.SetRotation then p.icon:SetRotation(0) end
+end
+
+local function getRoute(i, cv)
+    local r = routes[i]
+    if not r then
+        r = { dots = {} }
+        for k = 1, DOTS do
+            local d = cv:CreateTexture(nil, "ARTWORK")
+            d:SetTexture(UI.MEDIA .. "circle")
+            r.dots[k] = d
+        end
+        r.pin = getPin(1000 + i, cv)
+        r.label = CreateFrame("Frame", nil, cv)
+        r.label.bg = UI:Rounded(r.label, 6, 0, "BACKGROUND", 1)
+        r.label.text = UI:Text(r.label, 10)
+        r.label.text:SetPoint("CENTER")
+        routes[i] = r
+    end
+    for _, d in ipairs(r.dots) do d:SetParent(cv) end
+    r.label:SetParent(cv)
+    return r
+end
+
+function UI:HideMapLayers()
+    for _, p in pairs(pins) do p:Hide() end
+    for _, r in ipairs(routes) do
+        for _, d in ipairs(r.dots) do d:Hide() end
+        r.label:Hide()
+    end
+end
+
+function UI:DrawMapLayers(cv, mapID, w, h)
+    if not on() then return end
+    local cfg = L:Config()
+    local scale = w / 1000
+    local size = math.max(12, (cfg.size or 18) * scale * 1.2)
+    local lvl = (cv:GetFrameLevel() or 1) + 18
+    local n = 0
+    for _, it in ipairs(L:Places(mapID, "map")) do
+        n = n + 1
+        if n > 400 then break end
+        local p = getPin(n, cv)
+        p.e, p.layer, p.mapID = it.e, it.layer, mapID
+        paintPin(p, it.layer, size)
+        p:SetFrameLevel(lvl)
+        p:ClearAllPoints()
+        p:SetPoint("CENTER", cv, "TOPLEFT", it.e[1] / 100 * w, -it.e[2] / 100 * h)
+        p:Show()
+    end
+    -- bateaux et zeppelins : quai, pointillés vers la destination, nom au bout
+    local tl = L.LAYER.transport
+    local col = familyColor(tl)
+    for i, d in ipairs(L:Docks(mapID, "map")) do
+        local r = getRoute(i, cv)
+        local x0, y0 = d.x / 100 * w, d.y / 100 * h
+        local dx, dy = L:Heading(d.here, d.other)
+        -- pointillés vers la destination, sans sortir de la carte
+        local len = 0.16 * w
+        local function room(p0, dp, maxv) if dp > 0 then return (maxv - p0) / dp elseif dp < 0 then return -p0 / dp end return math.huge end
+        len = math.max(0, math.min(len, room(x0, dx, w) - 8, room(y0, dy, h) - 8))
+        local ds = math.max(3, 5 * scale)
+        for k, dot in ipairs(r.dots) do
+            local f = k / DOTS
+            dot:SetSize(ds, ds)
+            dot:SetVertexColor(col[1], col[2], col[3], 0.9)
+            dot:ClearAllPoints()
+            dot:SetPoint("CENTER", cv, "TOPLEFT", x0 + dx * len * f, -(y0 + dy * len * f))
+            dot:SetShown(len > 12)
+        end
+        local e = { d.x, d.y, 0, nil, nil, (d.kind == "zeppelin" and "Zeppelin" or "Bateau") .. " > " .. d.to,
+                    (d.kind == "zeppelin" and T("Zeppelin") or T("Bateau")) .. " " .. string.format(T("vers %s"), d.to) }
+        r.pin.e, r.pin.layer, r.pin.mapID = e, tl, mapID
+        paintPin(r.pin, tl, size)
+        r.pin:SetFrameLevel(lvl + 1)
+        r.pin:ClearAllPoints()
+        r.pin:SetPoint("CENTER", cv, "TOPLEFT", x0, -y0)
+        r.pin:Show()
+        if r.pin.icon.SetRotation then r.pin.icon:SetRotation(math.atan2(-dy, dx)) end -- la flèche montre la destination
+        r.label.text:SetText(string.format(T("vers %s"), d.to))
+        r.label:SetSize((r.label.text:GetStringWidth() or 60) + 12, 18)
+        r.label.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.88)
+        r.label.text:SetTextColor(col[1], col[2], col[3])
+        r.label:SetFrameLevel(lvl + 2)
+        r.label:ClearAllPoints()
+        local lw = r.label:GetWidth()
+        if len >= 0.08 * w then
+            -- au bout des pointillés, gardé dans la carte
+            local lx = math.max(lw / 2 + 4, math.min(w - lw / 2 - 4, x0 + dx * (len + lw / 2 + 8)))
+            local lyy = math.max(12, math.min(h - 12, y0 + dy * (len + 12)))
+            r.label:SetPoint("CENTER", cv, "TOPLEFT", lx, -lyy)
+        else
+            -- quai au bord de la carte : le nom à côté du quai, du côté de la carte
+            local side = (dx < 0) and 1 or -1
+            r.label:SetPoint("CENTER", cv, "TOPLEFT", x0 + side * (size / 2 + lw / 2 + 6), -y0)
+        end
+        r.label:Show()
+    end
+end
+
+---------------------------------------------------------------------------
+-- Barre de filtres en haut de la carte du monde
+---------------------------------------------------------------------------
+local bar, menu
+local function familyOn(fam)
+    local cfg = L:Config()
+    for _, l in ipairs(L.LAYERS) do if l.family == fam and cfg.map[l.key] then return true end end
+    return false
+end
+local function redrawMap() if WK.modules.GatherMap.Redraw then WK.modules.GatherMap.Redraw() end end
+
+local function buildMenu()
+    menu = CreateFrame("Frame", nil, bar)
+    menu:SetFrameStrata("DIALOG")
+    menu.edge = UI:Rounded(menu, 10, 0, "BACKGROUND", 0)
+    menu.bg = UI:Rounded(menu, 9, 1, "BACKGROUND", 1)
+    menu.title = UI:Text(menu, 10, C.dim)
+    menu.title:SetPoint("TOPLEFT", 10, -8)
+    menu.rows = {}
+    menu:Hide()
+    menu:SetScript("OnUpdate", function(s)
+        if not s:IsMouseOver() and not bar:IsMouseOver() and IsMouseButtonDown and IsMouseButtonDown() then s:Hide() end
+    end)
+end
+local function openMenu(btn, fam)
+    if not menu then buildMenu() end
+    if menu:IsShown() and menu.fam == fam then menu:Hide() return end
+    menu.fam = fam
+    for _, r in ipairs(menu.rows) do r:Hide() end
+    local cfg = L:Config()
+    local y, n = -24, 0
+    for _, l in ipairs(L.LAYERS) do
+        if l.family == fam then
+            n = n + 1
+            local r = menu.rows[n]
+            if not r then
+                r = CreateFrame("Button", nil, menu)
+                r:SetHeight(20)
+                r.boxFrame = CreateFrame("Frame", nil, r)
+                r.boxFrame:SetSize(14, 14)
+                r.boxFrame:SetPoint("LEFT", 0, 0)
+                r.box = UI:Rounded(r.boxFrame, 4, 0, "ARTWORK", 1)
+                r.text = UI:Text(r, 11)
+                r.text:SetPoint("LEFT", 22, 0)
+                menu.rows[n] = r
+            end
+            r:SetPoint("TOPLEFT", 10, y); r:SetPoint("TOPRIGHT", -10, y)
+            r.text:SetText(T(l.label))
+            local function paint()
+                local onL = cfg.map[l.key]
+                local a1, a2, a3 = UI:Accent()
+                if onL then r.box:SetColor(a1, a2, a3, 1) else r.box:SetColor(unpack(C.border)) end
+                r.text:SetTextColor(unpack(onL and C.text or C.muted))
+            end
+            r:SetScript("OnClick", function() cfg.map[l.key] = not cfg.map[l.key]; paint(); bar:Paint(); redrawMap() end)
+            paint()
+            r:Show()
+            y = y - 22
+        end
+    end
+    menu.title:SetText(UI:Upper(T(L.FAMILY[fam].label)))
+    menu:SetSize(200, -y + 8)
+    local a1, a2, a3 = UI:Accent()
+    menu.edge:SetColor(unpack(C.border))
+    menu.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
+    menu:ClearAllPoints()
+    menu:SetPoint("TOP", btn, "BOTTOM", 0, -6)
+    menu:Show()
+end
+
+local function buildBar()
+    local wm = WorldMapFrame
+    local host = wm.ScrollContainer or wm
+    bar = CreateFrame("Frame", "WarbandKeeperMapBar", wm)
+    bar:SetFrameStrata("HIGH")
+    bar:SetHeight(38)
+    bar.edge = UI:Rounded(bar, 12, 0, "BACKGROUND", 0)
+    bar.bg = UI:Rounded(bar, 11, 1, "BACKGROUND", 1)
+    bar.btns = {}
+    local x = 5
+    for _, f in ipairs(L.FAMILIES) do
+        local b = CreateFrame("Button", nil, bar)
+        b:SetSize(28, 28)
+        b:SetPoint("LEFT", x, 0)
+        b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        b.edge = UI:Rounded(b, 8, 0, "BACKGROUND", 2)
+        b.bg = UI:Rounded(b, 7, 1, "BACKGROUND", 3)
+        b.icon = UI:Icon(b, f.icon, 15, nil, "ARTWORK")
+        b.icon:SetPoint("CENTER")
+        b.fam = f.key
+        b:SetScript("OnClick", function(s, button)
+            if button == "RightButton" then openMenu(s, f.key) return end
+            -- clic : toute la famille, éteinte ou allumée (au moins ses couches par défaut)
+            local cfg = L:Config()
+            local was = familyOn(f.key)
+            for _, l in ipairs(L.LAYERS) do
+                if l.family == f.key then cfg.map[l.key] = (not was) and (l.map or false) or false end
+            end
+            if not was and not familyOn(f.key) then
+                for _, l in ipairs(L.LAYERS) do if l.family == f.key then cfg.map[l.key] = true break end end
+            end
+            bar:Paint(); redrawMap()
+            if menu and menu:IsShown() and menu.fam == f.key then openMenu(s, f.key); openMenu(s, f.key) end
+        end)
+        b:SetScript("OnEnter", function(s)
+            WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            GameTooltip:SetText(T(f.label), 1, 1, 1)
+            GameTooltip:AddLine(T("Clic : afficher ou masquer · clic droit : le détail"), 0.7, 0.7, 0.7)
+            GameTooltip:Show()
+        end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        table.insert(bar.btns, b)
+        x = x + 32
+    end
+    -- réglages complets
+    local g = UI:IconButton(bar, "gear", 24)
+    g:SetPoint("LEFT", x + 2, 0)
+    g:SetScript("OnClick", function()
+        UI:Create():Show(); UI:ShowPage("qol")
+        if UI.pages.qol.ShowSection then UI.pages.qol:ShowSection("maplayers") end
+    end)
+    bar:SetWidth(x + 32)
+    bar:SetPoint("TOP", host, "TOP", 0, -8)
+    function bar:Paint()
+        self.edge:SetColor(unpack(C.border))
+        self.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.95)
+        for _, b in ipairs(self.btns) do
+            local col = L.FAMILY[b.fam].color
+            local o = familyOn(b.fam)
+            b.edge:SetColor(col[1], col[2], col[3], o and 1 or 0)
+            b.bg:SetColor(unpack(o and C.surface2 or C.surface))
+            if o then b.icon:SetVertexColor(col[1], col[2], col[3]) else b.icon:SetVertexColor(unpack(C.dim)) end
+        end
+    end
+end
+
+function UI:SyncMapBar()
+    if not WorldMapFrame then return end
+    local want = on() and L:Config().toolbar
+    if want and not bar then buildBar() end
+    if bar then
+        bar:SetShown(want and true or false)
+        if want then bar:Paint() end
+        if menu and not want then menu:Hide() end
+    end
+end
+
+---------------------------------------------------------------------------
+-- Minicarte
+---------------------------------------------------------------------------
+local MAX_MINI = 50
+local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
+local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
+local holder, mini = nil, {}
+local scaleCache = {}
+local cache, cacheMap, cacheAt
+
+local function mapSize(mapID)
+    local s = scaleCache[mapID]
+    if s == nil then
+        local G = WK.modules.Guide
+        local c0, n0, w0 = G.ToWorld(mapID, 0, 0)
+        local c1, n1, w1 = G.ToWorld(mapID, 1, 1)
+        s = (c0 and c1 and n0 and n1) and { math.abs(w1 - w0), math.abs(n1 - n0) } or false
+        scaleCache[mapID] = s
+    end
+    return s
+end
+local function viewRadius()
+    if C_Minimap and C_Minimap.GetViewRadius then
+        local ok, r = pcall(C_Minimap.GetViewRadius)
+        if ok and type(r) == "number" and r > 0 then return r end
+    end
+    local zoom = Minimap.GetZoom and Minimap:GetZoom() or 0
+    return ((IsIndoors and IsIndoors()) and RADIUS_IN or RADIUS_OUT)[zoom] or 233.3
+end
+local function miniPin(i)
+    local p = mini[i]
+    if not p then
+        p = {}
+        p.ring = holder:CreateTexture(nil, "ARTWORK")
+        p.ring:SetTexture(UI.MEDIA .. "circle")
+        p.inner = holder:CreateTexture(nil, "ARTWORK", nil, 1)
+        p.inner:SetTexture(UI.MEDIA .. "circle")
+        p.inner:SetPoint("CENTER", p.ring, "CENTER")
+        p.icon = holder:CreateTexture(nil, "OVERLAY")
+        p.icon:SetPoint("CENTER", p.ring, "CENTER")
+        mini[i] = p
+    end
+    return p
+end
+local function updateMini()
+    for _, p in ipairs(mini) do p.ring:Hide(); p.inner:Hide(); p.icon:Hide() end
+    if not on() or not Minimap:IsVisible() then return end
+    if IsInInstance and select(2, IsInInstance()) ~= "none" and select(2, IsInInstance()) ~= nil then return end
+    local pos = WK.modules.Guide:PlayerPos()
+    if not pos then return end
+    local size = mapSize(pos.map)
+    if not size then return end
+    local now = GetTime()
+    if cacheMap ~= pos.map or not cacheAt or now - cacheAt > 5 then
+        cache = L:Places(pos.map, "mini")
+        for _, d in ipairs(L:Docks(pos.map, "mini")) do
+            table.insert(cache, { e = { d.x, d.y, 0 }, layer = L.LAYER.transport })
+        end
+        cacheMap, cacheAt = pos.map, now
+    end
+    local radius = viewRadius()
+    local limit = radius * 0.92
+    local half = Minimap:GetWidth() / 2
+    local rotate = GetCVar and GetCVar("rotateMinimap") == "1"
+    local facing = rotate and GetPlayerFacing and GetPlayerFacing() or nil
+    local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
+    local n = 0
+    local ps = 14
+    for _, it in ipairs(cache) do
+        local dx, dy = (it.e[1] / 100 - pos.x) * size[1], (pos.y - it.e[2] / 100) * size[2]
+        if dx * dx + dy * dy < limit * limit then
+            if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
+            n = n + 1
+            local p = miniPin(n)
+            local col = familyColor(it.layer)
+            p.ring:SetSize(ps, ps); p.ring:SetVertexColor(col[1], col[2], col[3], 1)
+            p.inner:SetSize(ps - 3, ps - 3); p.inner:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
+            p.icon:SetTexture(UI.MEDIA .. it.layer.icon); p.icon:SetSize(ps * 0.55, ps * 0.55)
+            p.icon:SetVertexColor(col[1], col[2], col[3], 1)
+            p.ring:ClearAllPoints()
+            p.ring:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
+            p.ring:Show(); p.inner:Show(); p.icon:Show()
+            if n >= MAX_MINI then break end
+        end
+    end
+end
+
+function UI:RefreshMapLayers()
+    cacheAt = nil
+    UI:SyncMapBar()
+    redrawMap()
+end
+
+WK:On("PLAYER_LOGIN", function()
+    C_Timer.After(2, function()
+        if Minimap and not holder then
+            holder = CreateFrame("Frame", "WarbandKeeperMapLayerPins", Minimap)
+            holder:SetAllPoints(Minimap)
+            holder:SetFrameLevel((Minimap:GetFrameLevel() or 1) + 4)
+            holder.acc = 0
+            holder:SetScript("OnUpdate", function(s, el)
+                s.acc = s.acc + el
+                if s.acc < 0.2 then return end
+                s.acc = 0
+                updateMini()
+            end)
+        end
+        UI:SyncMapBar()
+    end)
+end)
+if WorldMapFrame then WorldMapFrame:HookScript("OnShow", function() UI:SyncMapBar() end) end
+WK:On("ADDON_LOADED", function(name)
+    if name == "Blizzard_WorldMap" and WorldMapFrame then WorldMapFrame:HookScript("OnShow", function() UI:SyncMapBar() end) end
+end)

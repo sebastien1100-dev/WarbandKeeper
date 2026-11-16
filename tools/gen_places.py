@@ -17,8 +17,18 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "Modules", "PlacesDB.lua")
 
 # npcFlags (client Classic) et rôles retenus
 VENDOR, TRAINER, BANKER, STABLE, REPAIR = 4, 16, 256, 8192, 16384
+FLIGHT, INNKEEPER, BATTLEMASTER, AUCTIONEER = 8, 128, 2048, 4096
 # Bits de l'addon
-K = {"mail": 1, "bank": 2, "vendor": 4, "repair": 8, "ammo": 16, "reagent": 32, "poison": 64, "trainer": 128, "general": 256, "stable": 512, "fishing": 1024}
+K = {"mail": 1, "bank": 2, "vendor": 4, "repair": 8, "ammo": 16, "reagent": 32, "poison": 64, "trainer": 128, "general": 256, "stable": 512, "fishing": 1024,
+     "auction": 2048, "inn": 4096, "flight": 8192, "prof": 16384, "battle": 32768, "pet": 65536}
+# Titre (anglais) d'un maître de métier -> métier (nom français, comme dans les métiers du perso)
+PROF_WORDS = (
+    ("blacksmith", "Forge"), ("armorsmith", "Forge"), ("weaponsmith", "Forge"), ("armor crafter", "Forge"), ("weapon crafter", "Forge"),
+    ("tailor", "Couture"), ("alchemist", "Alchimie"), ("alchemy", "Alchimie"), ("leatherwork", "Travail du cuir"),
+    ("leathercraft", "Travail du cuir"), ("engineer", "Ingénierie"), ("enchant", "Enchantement"), ("herbalis", "Herboristerie"),
+    ("mining", "Minage"), ("miner", "Minage"), ("skinn", "Dépeçage"), ("first aid", "Secourisme"), ("physician", "Secourisme"),
+    ("surgeon", "Secourisme"), ("cook", "Cuisine"), ("butcher", "Cuisine"), ("fishing trainer", "Pêche"), ("fisherman", "Pêche"),
+)
 CLASSES = {
     "Warrior Trainer": "WARRIOR", "Paladin Trainer": "PALADIN", "Hunter Trainer": "HUNTER", "Rogue Trainer": "ROGUE",
     "Priest Trainer": "PRIEST", "Shaman Trainer": "SHAMAN", "Mage Trainer": "MAGE", "Warlock Trainer": "WARLOCK",
@@ -57,6 +67,23 @@ def kinds_of(npc):
     if flags & TRAINER and sub in CLASSES:
         k |= K["trainer"]
         cls = CLASSES[sub]
+    elif flags & TRAINER and ("pet trainer" in low or "demon trainer" in low):
+        k |= K["pet"]
+        cls = "HUNTER" if "pet" in low else "WARLOCK"
+    elif flags & TRAINER:
+        for w, prof in PROF_WORDS:
+            if w in low:
+                k |= K["prof"]
+                cls = prof  # pour un maître de métier, le champ « classe » porte le métier
+                break
+    if flags & AUCTIONEER:
+        k |= K["auction"]
+    if flags & INNKEEPER:
+        k |= K["inn"]
+    if flags & FLIGHT:
+        k |= K["flight"]
+    if flags & BATTLEMASTER:
+        k |= K["battle"]
     return k, cls
 
 
@@ -122,13 +149,15 @@ def main(root):
 
     lines = [
         "-- FICHIER GÉNÉRÉ par tools/gen_places.py : ne pas modifier à la main.",
-        "-- Lieux utiles de WoW Forever : boîtes aux lettres, banquiers, marchands et maîtres de classe.",
+        "-- Lieux utiles de WoW Forever : boîtes aux lettres, banquiers, marchands, maîtres, HV, auberges, vols.",
         "-- Données tirées de QuestieDB (https://github.com/Questie/QuestieDB), base de données de l'addon",
         "-- Questie : positions et rôles seulement, sous la licence de Questie (GPLv3 selon son équipe).",
         "-- WK.PlacesDB[uiMapID] = { { x, y, genre (bits), classe, faction (\"A\"|\"H\"|nil), nom, nom fr, métier fr }, ... }",
         "-- Genres : 1 boîte aux lettres, 2 banque, 4 marchand, 8 réparation, 16 munitions, 32 composants,",
         "--          64 poisons, 128 maître de classe, 256 fournitures générales, 512 maître des écuries,",
-        "--          1024 fournitures de pêche. x, y : 0-100.",
+        "--          1024 fournitures de pêche, 2048 hôtel des ventes, 4096 aubergiste, 8192 maître de vol,",
+        "--          16384 maître de métier (classe = métier), 32768 maître de guerre, 65536 maître des familiers",
+        "--          ou des démons. x, y : 0-100.",
         "local ADDON_NAME, WK = ...",
         "WK.PlacesDB = {",
     ]

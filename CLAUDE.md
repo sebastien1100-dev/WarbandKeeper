@@ -83,6 +83,10 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 
 `Core/Features.lua` : liste des modules qu'on peut couper (`WK.FEATURES` : clé, nom, icône, groupe, page ou section de QoL, `reload` s'il affiche quelque chose à l'écran), `WK:FeatureOn(clé)`, `WK:PageOn(page)`, `WK:SetFeature(clé, actif)`. Réglage : `WK.DB.global.modulesOff` (dans les profils). Un nouveau module doit y être ajouté et vérifier `WK:FeatureOn` à ses points d'entrée (infobulle, dessin, détection, éléments à l'écran) ; sa page et sa section de QoL sont masquées automatiquement. Carte « Modules » : bas de `UI/Pages/Overview.lua`.
 
+## Carte (lieux utiles)
+
+`Modules/MapLayers.lua` : couches de lieux (`LAYERS` : bit de `PlacesDB`, famille, icône, filtres de classe ou de métier), familles de couleur, trajets des bateaux et zeppelins (`TRANSPORTS`, quais de l'Alliance relevés à la main), réglages `WK.DB.global.mapLayers` (map et mini par couche). `UI/MapLayers.lua` : pastilles et tracés sur la carte du monde (appelé par `UI/MapPins.lua`), barre de filtres posée sur la carte, pastilles de la minicarte. Les nouveaux genres de lieux (HV, auberge, vol, maître de métier avec le métier dans le champ classe, maître de guerre, familiers) viennent de `tools/gen_places.py`.
+
 ## Hôtel des ventes
 
 `Modules/AHScan.lua` : scan de l'HV (complet avec `getAll` quand `CanSendAuctionQuery` le permet, sinon page par page ; `C_AuctionHouse.ReplicateItems` si le client l'a), lecture par morceaux à chaque image, prix par royaume et faction dans `WK.DB.global.ah.realms` (exclus des profils), infobulle (appelée par `Modules/Inventory.lua`), `/wk hv`. `UI/AuctionPanel.lua` : panneau collé à la fenêtre de l'HV. `Modules/Value.lua` prend notre prix d'abord, Auctionator ensuite. Ne pas confondre avec `Modules/Auction.lua` (journal des ventes et achats lus sur les factures du courrier).

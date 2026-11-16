@@ -20,6 +20,21 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.71.0 — 16/11/2026
+
+### Ajouts
+- Carte : nouveau module QoL > Carte pour afficher les lieux utiles sur la carte du monde et la minicarte, rangés en familles de couleur : Services (boîtes aux lettres, hôtel des ventes, banque, auberges), Marchands (composants, munitions, poisons, fournitures, pêche, réparation), Maîtres (classe, métiers, écuries, familiers et démons), Voyage (maîtres de vol, bateaux et zeppelins), Divers (maîtres de guerre).
+- Carte : barre de filtres en haut de la carte du monde. Clic sur une famille pour l'afficher ou la masquer, clic droit pour choisir le détail, roue dentée pour les réglages.
+- Carte : les bateaux et zeppelins sont tracés en pointillés depuis leur quai vers leur destination, avec son nom (« vers Theramore »).
+- Carte : au survol d'une pastille, le nom et le rôle du PNJ ; un clic lance le guidage jusqu'à lui.
+- Carte : filtres « seulement ma faction », « seulement ma classe » (maître de classe, munitions, poisons, écuries) et « seulement mes métiers » (maîtres des métiers appris), taille des pastilles, et réglage séparé pour la minicarte.
+- Lieux : hôtels des ventes, auberges, maîtres de vol, maîtres de métier, maîtres de guerre et maîtres des familiers ajoutés aux données (QuestieDB).
+- Modules : « Carte » peut se couper dans la carte Modules du Résumé.
+
+### Modifications
+- Les quais des bateaux de l'Alliance (Menethil, Theramore, Auberdine, Rut'theran) sont placés à la main : dis-moi s'il y en a un qui tombe à côté.
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.70.1 — 16/11/2026
 
 ### Modifications

@@ -23,6 +23,7 @@ local KEYS = {
     quests = {},
     ah = { realms = true },
     modulesOff = {},
+    mapLayers = {},
     gatherMap = {},
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau
