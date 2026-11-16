@@ -5,7 +5,8 @@ local T = function(s) return WK.T(s) end
 
 -- Fenêtre de rappels à la connexion : les tâches du moment (les mêmes que « À faire » du
 -- Résumé), chacune cliquable. Seulement à une vraie connexion (pas après un /reload), s'il y a
--- quelque chose à faire, et désactivable dans Options > Général.
+-- quelque chose à faire, et désactivable dans Options > Général. Se ferme seule au bout de
+-- settings.ui.loginPopupTime secondes (5 par défaut, 0 : reste ouverte), en pause sous la souris.
 local MAX_ROWS = 8
 local popup
 
@@ -60,7 +61,15 @@ local function build()
     f.openBtn:SetScript("OnClick", function() UI:ToggleWindow("overview"); f:Hide() end)
     f.hint = UI:Text(f, 10, C.dim)
     f.hint:SetPoint("BOTTOMLEFT", 16, 20)
-    f.hint:SetText("Désactivable dans Options > Général")
+    f.hint:SetText(T("Désactivable dans Options > Général"))
+    -- fermeture automatique (pas sous la souris), avec un fondu sur la dernière demi-seconde
+    f:SetScript("OnUpdate", function(s)
+        if not s.until_ then return end
+        if s:IsMouseOver() then s.until_ = math.max(s.until_, GetTime() + 1.5); s:SetAlpha(1) return end
+        local left = s.until_ - GetTime()
+        if left <= 0 then s.until_ = nil; s:Hide(); s:SetAlpha(1) return end
+        s:SetAlpha(math.min(1, left / 0.5))
+    end)
     return f
 end
 
@@ -92,6 +101,11 @@ function UI:ShowLoginPopup(force)
     popup.more:SetText(#items > MAX_ROWS and string.format(T("+ %d autre(s) dans le Résumé"), #items - MAX_ROWS) or "")
     if #items > MAX_ROWS then y = y - 18 end
     popup:SetHeight(-y + 56)
+    local secs = WK.DB.global.settings.ui.loginPopupTime
+    if secs == nil then secs = 5 end
+    popup.until_ = secs > 0 and (GetTime() + secs) or nil
+    popup.hint:SetText(secs > 0 and string.format(T("Se ferme dans %d s · Options > Général"), secs) or T("Désactivable dans Options > Général"))
+    popup:SetAlpha(1)
     popup:Show()
 end
 

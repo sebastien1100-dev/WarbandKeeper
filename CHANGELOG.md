@@ -16,6 +16,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.82.1 — 16/11/2026
+
+### Modifications
+- Fenêtre de rappels à la connexion : elle se ferme seule au bout de 5 secondes (fondu à la fin), sauf tant que la souris est dessus. Durée réglable dans Options > Général > Rappels à la connexion, de 0 (reste ouverte) à 60 s.
+
 ## v0.82.0 — 16/11/2026
 
 ### Ajouts

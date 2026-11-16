@@ -347,7 +347,7 @@ UI:RegisterPage({
             UI.frame:ClearAllPoints()
             UI.frame:SetPoint("CENTER")
         end)
-        local loginCard = card("Rappels à la connexion", 96)
+        local loginCard = card("Rappels à la connexion", 146)
         self.loginToggle = UI:Toggle(loginCard,
             function() return cfg.loginPopup ~= false end,
             function(v) cfg.loginPopup = v end)
@@ -356,6 +356,10 @@ UI:RegisterPage({
         local preview = UI:Button(loginCard, "Aperçu", nil, 26, "ghost")
         preview:SetPoint("RIGHT", self.loginToggle, "LEFT", -12, 0)
         preview:SetScript("OnClick", function() UI:ShowLoginPopup(true) end)
+        UI:SettingRow(loginCard, -92, "Durée d'affichage", "La fenêtre se ferme seule au bout de ce temps (pas tant que la souris est dessus). 0 : elle reste jusqu'à ce que tu la fermes.",
+            UI:Slider(loginCard, 200, 0, 60, 1,
+                function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
+                function(v) cfg.loginPopupTime = v end, "%d s"), 220)
         local winCard = card("Combat", 96)
         self.combatToggle = UI:Toggle(winCard,
             function() return cfg.closeInCombat end,
