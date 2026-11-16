@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.85.0", date = "16/11/2026",
+        changed = {
+            "Collection de pêche : elle a sa propre page « Pêche » dans le groupe Farm de la barre latérale (album et atlas en pleine largeur), avec en en-tête les espèces trouvées, le nombre de prises et leur valeur. Elle quitte QoL > Pêche, qui garde le mode pêche, le carnet et les réglages.",
+            "Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.84.1", date = "16/11/2026",
         changed = {
             "Halo : la carte « Forme par filon et par plante » est retirée ; chaque filon et chaque plante reprend la forme de sa catégorie (atelier).",

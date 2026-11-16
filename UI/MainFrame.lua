@@ -15,7 +15,7 @@ local MIN_H = 600
 local GROUPS = {
     { "COMPTE", { "overview", "characters", "inventory" } },
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
-    { "FARM", { "farm", "loot", "journal" } },
+    { "FARM", { "farm", "loot", "journal", "fishing" } },
     { "GROUPE", { "lfg" } },
     { "EXPLORATION", { "quests", "rares" } },
     { "CONFORT", { "qol" } },
@@ -23,7 +23,7 @@ local GROUPS = {
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -659,6 +659,13 @@ UI.CHIPS = {
         for _ in pairs(L.requests) do asked = asked + 1 end
         return { { T("Groupes"), tostring(groups) }, { T("Une place pour toi"), tostring(mine), mine > 0 and C.positive or nil },
                  { T("Joueurs seuls"), tostring(solos) }, { T("Demandes"), tostring(asked) } }
+    end,
+    fishing = function()
+        local FL = WK.modules.FishingLog
+        local have, total = FL:CollectionCount()
+        local d = FL:Data()
+        return { { T("Espèces"), have .. " / " .. total }, { T("Prises"), tostring(d.total or 0) },
+                 { T("Valeur"), UI:PlainMoney(FL:Value()), C.gold } }
     end,
     journal = function()
         local today, n = date("%Y%m%d"), 0

@@ -1051,23 +1051,6 @@ UI:RegisterPage({
                 end
             end
         end)
-        -- Collection (UI/FishingCollection.lua) : hauteur variable, les cartes suivantes se rangent
-        -- dans un support accroché sous elle.
-        local fishSec, collY = current, y
-        local fcol = UI:Card(root, T("Collection"), " ")
-        fcol:SetSize(W, 400)
-        fcol:SetPoint("TOPLEFT", 0, -y)
-        fcol:SetPoint("TOPRIGHT", 0, -y)
-        local holder = CreateFrame("Frame", nil, root)
-        holder:SetHeight(1)
-        holder:SetPoint("TOPLEFT", fcol, "BOTTOMLEFT", 0, -GAP)
-        holder:SetPoint("TOPRIGHT", fcol, "BOTTOMRIGHT", 0, -GAP)
-        fishSec.extraY = function() return collY + fcol:GetHeight() + GAP end
-        local coll = UI:FishCollection(fcol, function()
-            if fishSec.tailY then fishSec.scroll:SetContentHeight(fishSec.tailY + fishSec.extraY()) end
-        end)
-        table.insert(self.dyn, function() coll:Refresh() end)
-        root, y = holder, 0
         local fj = card("Dernières prises", 40 + JROWS * 26 + 8, "« nouveau » : première prise de cette espèce sur le compte")
         local jrows = {}
         for i = 1, JROWS do

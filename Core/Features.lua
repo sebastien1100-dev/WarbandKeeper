@@ -23,7 +23,7 @@ WK.FEATURES = {
     { key = "nodes", label = "Récolte", icon = "tree", group = "EXPLORATION", desc = "filons et plantes" },
     { key = "halo", label = "Halo", icon = "spark", group = "CONFORT", qol = "halo", reload = true },
     { key = "micro", label = "Micro menu", icon = "clock", group = "CONFORT", qol = "micro", reload = true },
-    { key = "fishing", label = "Pêche", icon = "fish", group = "CONFORT", qol = "fishing", reload = true },
+    { key = "fishing", label = "Pêche", icon = "fish", group = "CONFORT", qol = "fishing", page = "fishing", reload = true },
     { key = "range", label = "Distance", icon = "crosshair", group = "CONFORT", desc = "ruban de distance du chasseur", reload = true },
 }
 WK.FEATURE_BY_PAGE, WK.FEATURE_BY_QOL = {}, {}
