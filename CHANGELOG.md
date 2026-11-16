@@ -20,6 +20,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.70.1 — 16/11/2026
+
+### Modifications
+- Halo : l'atelier est maintenant en haut de QoL > Halo, au-dessus des réglages généraux.
+
 ## v0.70.0 — 16/11/2026
 
 ### Ajouts

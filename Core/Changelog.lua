@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.70.1", date = "16/11/2026",
+        changed = {
+            "Halo : l'atelier est maintenant en haut de QoL > Halo, au-dessus des réglages généraux.",
+        },
+    },
+    {
         version = "0.70.0", date = "16/11/2026",
         added = {
             "Halo : atelier dans QoL > Halo. Les catégories en pastilles (clic : on la règle), un aperçu en direct à gauche, et à droite ses réglages : halo oui ou non, effet propre ou « comme les autres », couleur en nuancier (ou au choix avec +).",

@@ -465,45 +465,7 @@ UI:RegisterPage({
         local Gm = WK.modules.Glow
         local gcfg = Gm:Config()
         local gtoggle = toggle
-        local gmain = card("Halo", 354)
-        UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
-            "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
-            gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
-        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet. Le jeu ne va pas au-delà de 15 m environ.",
-            UI:Slider(gmain, 240, 5, 15, 1, function() return gcfg.range or 15 end,
-                function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
-        UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
-            UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
-        UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
-            UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
-        local styleOpts = {}
-        for _, st in ipairs(Gm.STYLES) do table.insert(styleOpts, { st[1], T(st[2]) }) end
         local haloPaint -- aperçu de l'atelier, repeint quand l'effet global change
-        local fxDd = UI:Dropdown(gmain, 220, 30, styleOpts, function(v) gcfg.style = v; Gm:Update(); if haloPaint then haloPaint() end end)
-        fxDd:Select(gcfg.style or "halo")
-        UI:SettingRow(gmain, -230, "Effet", "Pour toutes les catégories ; chacune peut avoir le sien dans l'atelier.", fxDd, 240)
-        UI:SettingRow(gmain, -276, "Hauteur de la colonne", "En multiples de la taille du halo.",
-            UI:Slider(gmain, 240, 2, 10, 0.5, function() return gcfg.beamHeight or 4.5 end, function(v) gcfg.beamHeight = v end, "%.1fx"), 260)
-        local diag = UI:Text(gmain, 11, C.muted)
-        diag:SetPoint("TOPLEFT", 16, -326)
-        diag:SetPoint("TOPRIGHT", -16, -326)
-        diag:SetJustifyH("LEFT")
-        diag:SetText(T("Pour comprendre pourquoi un objet ne brille pas : approche-toi de lui et tape /wk halo."))
-        local glowNote = dynText(gmain, 11, C.warning, function()
-            return WK.modules.Glow:OtherAddonLoaded() and T("L'addon Lueur est chargé : il s'en occupe, le halo reste éteint.") or ""
-        end)
-        glowNote:SetPoint("TOPLEFT", 16, -16)
-        glowNote:SetPoint("TOPRIGHT", -16, -16)
-        glowNote:SetJustifyH("RIGHT")
-
-        local ghide = card("Quand ne pas l'afficher", 184)
-        UI:SettingRow(ghide, -40, "Seulement si le perso a le métier", "Pas de halo sur une plante sans Herboristerie, ni sur un filon sans Minage.",
-            gtoggle(ghide, function() return gcfg.onlyTrained ~= false end, function(v) gcfg.onlyTrained = v; Gm:Update() end), 80)
-        UI:SettingRow(ghide, -88, "Pas en combat", nil,
-            gtoggle(ghide, function() return gcfg.hideInCombat end, function(v) gcfg.hideInCombat = v; Gm:Update() end), 80)
-        UI:SettingRow(ghide, -130, "Pas en donjon, raid ou champ de bataille", nil,
-            gtoggle(ghide, function() return gcfg.hideInInstance end, function(v) gcfg.hideInInstance = v; Gm:Update() end), 80)
-
         -- Atelier : une catégorie à la fois (pastilles), aperçu en direct à gauche, réglages à droite
         local CAT_ICON = {
             ore = "Interface\\Icons\\INV_Ore_Copper_01", herb = "Interface\\Icons\\INV_Misc_Flower_02",
@@ -645,6 +607,43 @@ UI:RegisterPage({
         table.insert(self.dyn, function() haloPaint() end)
         haloPaint()
 
+        local gmain = card("Halo", 354)
+        UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
+            "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
+            gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
+        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet. Le jeu ne va pas au-delà de 15 m environ.",
+            UI:Slider(gmain, 240, 5, 15, 1, function() return gcfg.range or 15 end,
+                function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
+        UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
+            UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
+        UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
+            UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
+        local styleOpts = {}
+        for _, st in ipairs(Gm.STYLES) do table.insert(styleOpts, { st[1], T(st[2]) }) end
+        local fxDd = UI:Dropdown(gmain, 220, 30, styleOpts, function(v) gcfg.style = v; Gm:Update(); if haloPaint then haloPaint() end end)
+        fxDd:Select(gcfg.style or "halo")
+        UI:SettingRow(gmain, -230, "Effet", "Pour toutes les catégories ; chacune peut avoir le sien dans l'atelier.", fxDd, 240)
+        UI:SettingRow(gmain, -276, "Hauteur de la colonne", "En multiples de la taille du halo.",
+            UI:Slider(gmain, 240, 2, 10, 0.5, function() return gcfg.beamHeight or 4.5 end, function(v) gcfg.beamHeight = v end, "%.1fx"), 260)
+        local diag = UI:Text(gmain, 11, C.muted)
+        diag:SetPoint("TOPLEFT", 16, -326)
+        diag:SetPoint("TOPRIGHT", -16, -326)
+        diag:SetJustifyH("LEFT")
+        diag:SetText(T("Pour comprendre pourquoi un objet ne brille pas : approche-toi de lui et tape /wk halo."))
+        local glowNote = dynText(gmain, 11, C.warning, function()
+            return WK.modules.Glow:OtherAddonLoaded() and T("L'addon Lueur est chargé : il s'en occupe, le halo reste éteint.") or ""
+        end)
+        glowNote:SetPoint("TOPLEFT", 16, -16)
+        glowNote:SetPoint("TOPRIGHT", -16, -16)
+        glowNote:SetJustifyH("RIGHT")
+
+        local ghide = card("Quand ne pas l'afficher", 184)
+        UI:SettingRow(ghide, -40, "Seulement si le perso a le métier", "Pas de halo sur une plante sans Herboristerie, ni sur un filon sans Minage.",
+            gtoggle(ghide, function() return gcfg.onlyTrained ~= false end, function(v) gcfg.onlyTrained = v; Gm:Update() end), 80)
+        UI:SettingRow(ghide, -88, "Pas en combat", nil,
+            gtoggle(ghide, function() return gcfg.hideInCombat end, function(v) gcfg.hideInCombat = v; Gm:Update() end), 80)
+        UI:SettingRow(ghide, -130, "Pas en donjon, raid ou champ de bataille", nil,
+            gtoggle(ghide, function() return gcfg.hideInInstance end, function(v) gcfg.hideInInstance = v; Gm:Update() end), 80)
 
         -----------------------------------------------------------------------
         -- Micro menu : horloge et raccourcis (UI/ClockBar.lua)
