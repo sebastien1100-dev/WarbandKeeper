@@ -74,3 +74,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 ## Rares
 
 `Modules/RaresDB.lua` est **généré** par `python3 tools/gen_rares.py <clone de QuestieDB>` : PNJ de rang rare ou rare élite, apparitions et patrouilles par carte, nom français, butin notable (recettes, objets que peu de monstres donnent). `Modules/Rares.lua` : accès aux données, détection (plaque de nom ou cible dont le jeu dit « rare »), rares tués (`WK.DB.global.rares.kills`, notés au butin ou à la mort de la cible), guidage. `UI/RarePins.lua` : médaillons sur la carte du monde (appelé par `UI/MapPins.lua`), liste sur le côté de la carte, infobulle d'unité. `UI/RareAlert.lua` : bandeau « Rare en vue » (bouton Cibler protégé, hors combat). Réglages dans la section « rares » de `UI/Pages/QoL.lua`.
+
+## Recherche et profils
+
+`UI/Search.lua` : la recherche de la barre latérale. Chaque `UI:SettingRow` s'inscrit dans `UI.settingIndex` ; à la première recherche, les pages pas encore ouvertes sont construites (cachées) pour être indexées. Un nouveau réglage est donc trouvable s'il passe par `UI:SettingRow`. `Modules/Profiles.lua` : profils de réglages, appliqués par `Core/Init.lua` juste après `WK.DB:Init()` (avant tout le reste). La liste `KEYS` dit ce qu'un profil contient (clés de `WK.DB.global`, sous-clés de données exclues) : un nouveau réglage rangé ailleurs doit y être ajouté, une nouvelle donnée de compte rangée dans ces clés doit y être exclue.

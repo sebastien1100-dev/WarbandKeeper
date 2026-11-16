@@ -446,6 +446,9 @@ function UI:SettingRow(parent, y, label, desc, control, width)
         row.desc = d
     end
     row.label = l
+    -- inscrit pour la recherche de la barre latérale (UI/Search.lua)
+    UI.settingIndex = UI.settingIndex or {}
+    table.insert(UI.settingIndex, { row = row, label = label, desc = desc })
     if control then
         control:SetParent(row)
         control:ClearAllPoints()

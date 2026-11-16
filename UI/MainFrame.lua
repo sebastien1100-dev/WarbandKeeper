@@ -197,6 +197,7 @@ function UI:Create()
     ver:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
     ver:SetText("v" .. WK.version)
     self.sideTitle, self.sideVer = title, ver
+    if UI.BuildSideSearch then UI:BuildSideSearch(side) end -- recherche (UI/Search.lua)
 
     self.nav, self.groupLabels = {}, {}
     -- Haut de la barre : groupes et pages. Placés par layoutTop() : l'espacement se resserre
@@ -220,14 +221,15 @@ function UI:Create()
         local nLabels, nItems = 0, 0
         for _, e in ipairs(topList) do if e.label then nLabels = nLabels + 1 else nItems = nItems + 1 end end
         local bottomH = 44 + #BOTTOM * 36 + 8           -- repli + notes + options
-        local avail = (h or 600) - 64 - bottomH
+        local avail = (h or 600) - ((WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98) - bottomH
         local labelStep, itemStep, gap = 26, 36, 4
         local need = nLabels * (labelStep + gap) + nItems * itemStep
         if need > avail then
             local k = math.max(0.6, avail / need)
             labelStep, itemStep, gap = math.floor(26 * k), math.max(26, math.floor(36 * k)), math.floor(4 * k)
         end
-        local y, first = -64, true
+        -- sous la recherche quand la barre est dépliée
+        local y, first = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and -64 or -98, true
         for _, e in ipairs(topList) do
             if e.label then
                 if not first then y = y - gap end
@@ -245,6 +247,7 @@ function UI:Create()
         end
     end
     side:HookScript("OnSizeChanged", function(_, _, h) layoutTop(h) end)
+    self.layoutTop = function() layoutTop(side:GetHeight()) end
     layoutTop(side:GetHeight())
 
     -- Bas de la barre : notes, options, repli.
@@ -372,6 +375,8 @@ function UI:ApplySide()
     self.side:SetWidth(w)
     self.sideTitle:SetShown(not collapsed)
     self.sideVer:SetShown(not collapsed)
+    if self.sideSearch then self.sideSearch:SetShown(not collapsed) end
+    if self.layoutTop then self.layoutTop() end
     for _, l in ipairs(self.groupLabels) do l:SetShown(not collapsed) end
     self.collapseBtn.label:SetShown(not collapsed)
     self.collapseBtn.label:SetText(WK.T("Réduire le menu"))

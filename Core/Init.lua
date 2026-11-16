@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "0.63.0"
+WK.version = "0.64.0"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -43,6 +43,8 @@ end
 WK:On("ADDON_LOADED", function(name)
     if name ~= ADDON_NAME then return end
     WK.DB:Init()
+    -- profil de réglages de ce perso, avant que quoi que ce soit ne lise les réglages
+    if WK.modules.Profiles then WK.modules.Profiles:Apply() end
     if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
     WK.DB:CompactHistory()
     for _, m in pairs(WK.modules) do

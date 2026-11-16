@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.64.0", date = "16/11/2026",
+        added = {
+            "Recherche en haut de la barre latérale : pages, sections, réglages, persos et objets du compte, en direct dès deux lettres. Un clic ouvre la bonne page et la bonne section, fait défiler jusqu'au réglage et le met en évidence. Entrée prend le premier résultat, Échap efface.",
+            "Profils de réglages (Options > Profils) : crée des profils à partir de tes réglages actuels, choisis-en un par perso, copie les réglages d'un profil dans un autre, ou remets un profil aux réglages d'origine. Changer de profil recharge l'interface.",
+            "Un profil contient l'apparence, QoL, le halo, les rares et la récolte ; les données du compte (persos, sacs, journal, courrier, notes de joueurs, rares tués) n'en font jamais partie.",
+        },
+        changed = {
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.63.0", date = "15/11/2026",
         added = {
             "Rares : les 327 monstres rares de WoW Forever (données QuestieDB), avec noms français, apparitions, patrouilles et butin notable.",
@@ -1233,7 +1244,6 @@ WK.Roadmap = {
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
-    "Recherche globale : trouver un objet, une recette ou un perso dans tout l'addon.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
