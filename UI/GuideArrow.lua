@@ -74,7 +74,7 @@ local function build()
         if s.sample then return end
         local G = WK.modules.Guide
         local t = G.target
-        if not t then s:Hide() return end
+        if not t or t.spf then s:Hide() return end
         local p = G:PlayerPos()
         local d, bearing = nil, nil
         if p then d, bearing = G:Vector(p, t) end
@@ -131,7 +131,7 @@ end
 refresh = function()
     local G = WK.modules.Guide
     local t = G.target
-    if not t or not G:Config().arrow then
+    if not t or t.spf or not G:Config().arrow then -- ShortestPathForever a sa propre flèche
         if frame then frame:Hide() end
         return
     end

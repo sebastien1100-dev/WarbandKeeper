@@ -850,6 +850,20 @@ UI:RegisterPage({
             toggle(fcard, function() return mlc.toolbar end, function(v) mlc.toolbar = v; mlRefresh() end), 80)
         UI:SettingRow(fcard, -224, "Taille des pastilles", nil,
             UI:Slider(fcard, 220, 12, 30, 1, function() return mlc.size or 18 end, function(v) mlc.size = v; mlRefresh() end, "%d"), 240)
+        -- Trajet qui suit le terrain : confié à ShortestPathForever s'il est installé (Modules/Guide.lua)
+        local GD = WK.modules.Guide
+        local gdc = GD:Config()
+        local rcard = card("Trajet du guidage", 40 + 46 + 8)
+        UI:SettingRow(rcard, -40, "Trajet avec ShortestPathForever",
+            "Si l'addon ShortestPathForever est installé, « Guider » (quêtes, rares, lieux, métiers) lui confie le trajet : chemin en pointillé qui suit le terrain, vols et bateaux, avec sa propre flèche.",
+            toggle(rcard, function() return gdc.spf end, function(v)
+                gdc.spf = v
+                local t = GD.target
+                if t and ((v and not t.spf) or (not v and t.spf)) then GD:Start(t, t.reason, t.kind) end
+            end), 80)
+        dynText(rcard, 10, C.dim, function()
+            return GD:SPFInstalled() and T("ShortestPathForever installé") or T("ShortestPathForever non installé")
+        end):SetPoint("TOPRIGHT", -16, -16)
 
         -----------------------------------------------------------------------
         -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)

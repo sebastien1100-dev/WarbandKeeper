@@ -17,7 +17,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
+- Trajet sans ShortestPathForever : tracé marche, vol, marche par Warband Keeper, aidé des routes de patrouille des PNJ et des chemins déjà parcourus.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.76.0 — 16/11/2026
+
+### Ajouts
+- Guidage : si l'addon ShortestPathForever est installé, « Guider » (quêtes, rares, lieux de la carte, métiers, alertes) lui confie le trajet. Le chemin en pointillé suit le terrain (routes, murs, ponts) et enchaîne marche, vols et bateaux, avec sa propre flèche (celle de Warband Keeper se cache alors).
+- QoL > Carte : carte « Trajet du guidage » pour activer ou couper ce relais (activé par défaut), avec l'état de ShortestPathForever (installé ou non). Sans lui, le guidage reste celui de Warband Keeper.
+- /wk nav dit aussi si ShortestPathForever est installé, utilisé, et si un trajet est en cours.
 
 ## v0.75.4 — 16/11/2026
 
