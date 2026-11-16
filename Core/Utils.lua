@@ -69,6 +69,18 @@ function WK:ParseItemID(arg)
 end
 
 -- API moderne (C_Item) avec repli sur l'ancienne fonction globale.
+-- Article du marchand ouvert : nom, icône, prix, taille du lot, quantité dispo (-1 : illimitée).
+-- GetMerchantItemInfo n'existe plus sur ce client : C_MerchantFrame.GetItemInfo rend une table.
+function WK.MerchantItemInfo(index)
+    if C_MerchantFrame and C_MerchantFrame.GetItemInfo then
+        local ok, info = pcall(C_MerchantFrame.GetItemInfo, index)
+        if ok and type(info) == "table" then
+            return info.name, info.texture, info.price, info.stackCount, info.numAvailable
+        end
+    end
+    if GetMerchantItemInfo then return GetMerchantItemInfo(index) end
+end
+
 function WK.GetItemInfo(itemID)
     if C_Item and C_Item.GetItemInfo then return C_Item.GetItemInfo(itemID) end
     if GetItemInfo then return GetItemInfo(itemID) end

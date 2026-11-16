@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.88.1", date = "16/11/2026",
+        fixed = {
+            "Marchand : une erreur Lua à l'ouverture de n'importe quel marchand (panneau « Pour monter tes métiers »). Le même souci empêchait le rachat automatique des composants de classe et des munitions : corrigé aussi.",
+        },
+    },
+    {
         version = "0.88.0", date = "16/11/2026",
         added = {
             "Voyages : la durée du vol s'affiche dans l'infobulle de chaque destination, sur la carte du maître de vol. Durée exacte si tu as déjà fait ce vol, sinon une estimation (« environ… (estimée) »).",

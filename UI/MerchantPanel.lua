@@ -35,7 +35,7 @@ local function merchantStock()
         local id = GetMerchantItemID and GetMerchantItemID(i)
         if not id and GetMerchantItemLink then id = WK:ParseItemID(GetMerchantItemLink(i)) end
         if id then
-            local _, _, price, batch, available = GetMerchantItemInfo(i)
+            local _, _, price, batch, available = WK.MerchantItemInfo(i)
             out[id] = { index = i, price = price or 0, batch = math.max(1, batch or 1), available = available }
         end
     end

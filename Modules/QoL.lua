@@ -494,7 +494,7 @@ end
 
 -- Achète `need` unités de l'objet au rang `index` (par lots si le marchand vend par paquets).
 local function buy(index, need)
-    local _, _, price, batch, available = GetMerchantItemInfo(index)
+    local _, _, price, batch, available = WK.MerchantItemInfo(index)
     batch = math.max(1, batch or 1)
     if available and available >= 0 and available == 0 then return 0 end
     local bought = 0
@@ -546,7 +546,7 @@ function M:BestMerchantAmmo(c)
         local cls, sub = itemClass(id)
         if cls == 6 and sub == want then
             local _, _, _, ilvl, minLevel = WK.GetItemInfo(id)
-            local _, _, _, _, available = GetMerchantItemInfo(i)
+            local _, _, _, _, available = WK.MerchantItemInfo(i)
             if (minLevel or 0) <= level and available ~= 0 then
                 local score = (ilvl or 0) + ((c.ammo and c.ammo.id == id) and 0.5 or 0)
                 if not best or score > best.score then best = { index = i, id = id, score = score } end
