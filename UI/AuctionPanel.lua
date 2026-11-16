@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 --                (l'achat se fait avec ses boutons).
 local S = WK.modules.AHScan
 local panel
-local W, H_SCAN, H_LIST, ROW_H = 300, 182, 400, 38
+local W, H_SCAN, H_LIST, ROW_H = 300, 182, 450, 38
 
 local function ago(t)
     if not t then return T("jamais") end
@@ -89,7 +89,7 @@ local function build()
     lb:SetPoint("TOPLEFT", 0, -66)
     lb:SetPoint("BOTTOMRIGHT")
     f.listBox = lb
-    f.listDd = UI:Dropdown(lb, W - 28 - 34, 28, {}, function(v) S:Config().curList = v; f:Refresh() end)
+    f.listDd = UI:Dropdown(lb, W - 28 - 64, 28, {}, function(v) S:CancelBuy(); S:Config().curList = v; f:Refresh() end)
     f.listDd:SetPoint("TOPLEFT", 14, -4)
     f.del = UI:IconButton(lb, "trash", 26, "Supprimer cette liste")
     f.del:SetPoint("TOPRIGHT", -12, -5)
@@ -106,6 +106,13 @@ local function build()
         S:DeleteList(name)
         f:Refresh()
     end)
+    f.prune = UI:IconButton(lb, "minus", 26, "Retirer de la liste ce qui est déjà sur le compte")
+    f.prune:SetPoint("RIGHT", f.del, "LEFT", -4, 0)
+    f.prune:SetScript("OnClick", function()
+        local n = S:PruneList(S:Config().curList)
+        WK:Print(string.format(T("%d objet(s) retiré(s) de la liste : déjà sur le compte."), n))
+        f:Refresh()
+    end)
     f.empty = UI:Text(lb, 11, C.muted)
     f.empty:SetPoint("TOPLEFT", 16, -10)
     f.empty:SetPoint("RIGHT", -16, 0)
@@ -113,7 +120,7 @@ local function build()
     f.empty:SetText(T("Pas encore de liste. Dans Métiers, « Liste d'achat » ou « Créer la liste d'achat » en prépare une avec les composants qui manquent."))
     f.lscroll = UI:Scroll(lb)
     f.lscroll:SetPoint("TOPLEFT", 6, -40)
-    f.lscroll:SetPoint("BOTTOMRIGHT", -6, 40)
+    f.lscroll:SetPoint("BOTTOMRIGHT", -6, 82)
     f.rows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, f.lscroll.child)
         r:SetHeight(ROW_H)
@@ -141,8 +148,23 @@ local function build()
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)
         return r
     end)
+    -- achat de la liste, pas à pas (un clic pour le prix, un clic pour confirmer)
+    f.buyBtn = UI:Button(lb, "Acheter la liste", W - 28 - 32, 30, "primary")
+    f.buyBtn:SetPoint("BOTTOMLEFT", 14, 12)
+    f.buyBtn:SetScript("OnClick", function() S:BuyStep() end)
+    f.buyBtn:SetScript("OnEnter", function(b)
+        WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
+        GameTooltip:SetText(T("Acheter la liste au prix le plus bas"), 1, 1, 1)
+        GameTooltip:AddLine(T("Le jeu demande un clic par achat : 1er clic, le prix de tout ce qui manque pour l'objet suivant ; 2e clic, la confirmation. Puis on passe au suivant."), 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine(T("Les objets achetés sont retirés de la liste."), 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    f.buyBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f.cancel = UI:IconButton(lb, "close", 26, "Annuler cet achat")
+    f.cancel:SetPoint("LEFT", f.buyBtn, "RIGHT", 4, 0)
+    f.cancel:SetScript("OnClick", function() S:CancelBuy() end)
     f.total = UI:Text(lb, 12)
-    f.total:SetPoint("BOTTOMLEFT", 16, 14)
+    f.total:SetPoint("BOTTOMLEFT", 16, 54)
     f.total:SetPoint("RIGHT", -16, 0)
     f.total:SetJustifyH("LEFT")
 
@@ -204,6 +226,7 @@ local function build()
         if cfg.curList then self.listDd:Select(cfg.curList) end
         self.listDd:SetShown(#names > 0)
         self.del:SetShown(#names > 0)
+        self.prune:SetShown(#names > 0)
         self.empty:SetShown(#names == 0)
         self.rows:Reset()
         local list = S:GetList(cfg.curList)
@@ -234,7 +257,40 @@ local function build()
         self.lscroll.child:SetSize(LW - 10, math.max(y, 10))
         if self.lscroll.UpdateBar then self.lscroll:UpdateBar() end
         self.total:SetShown(list ~= nil)
+        self:PaintBuy(list)
         self.total:SetText(T("Reste à acheter :") .. " " .. UI:GoldText(cost) .. (unknown > 0 and ("  |cff999999" .. string.format(T("(+%d sans prix)"), unknown) .. "|r") or ""))
+    end
+
+    -- Bouton d'achat : ce que fera le prochain clic
+    function f:PaintBuy(list)
+        local b = S.buy
+        local canBuy = list ~= nil and S:CanBuy()
+        self.buyBtn:SetShown(canBuy)
+        self.cancel:SetShown(canBuy and b ~= nil and b.phase == "confirm")
+        if not canBuy then return end
+        local function nm(id) return WK.GetItemInfo(id) or ("#" .. id) end
+        if b and b.phase == "quote" then
+            self.buyBtn:SetLabel(T("Prix demandé au serveur..."))
+            self.buyBtn:SetStyle("secondary")
+        elseif b and b.phase == "confirm" then
+            -- garde-fou : prix bien au-dessus du prix relevé par le scan
+            local ref = S:Price(b.id)
+            local high = ref and b.unit and b.unit > ref * 2.5
+            self.buyBtn:SetLabel(string.format(T("Confirmer %d %s : %s"), b.qty, nm(b.id), UI:PlainMoney(b.total or 0)) .. (high and ("  |cffe06666" .. T("(cher !)") .. "|r") or ""))
+            self.buyBtn:SetStyle("primary")
+        elseif b and b.phase == "wait" then
+            self.buyBtn:SetLabel(T("Achat en cours..."))
+            self.buyBtn:SetStyle("secondary")
+        else
+            local id, qty = S:NextToBuy(S:Config().curList)
+            if id then
+                self.buyBtn:SetLabel(string.format(T("Acheter %d %s"), qty, nm(id)))
+                self.buyBtn:SetStyle("primary")
+            else
+                self.buyBtn:SetLabel(T("Il ne manque plus rien"))
+                self.buyBtn:SetStyle("secondary")
+            end
+        end
     end
 
     function f:Refresh()

@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.73.0", date = "16/11/2026",
+        added = {
+            "Listes d'achat : bouton « Acheter » qui parcourt la liste au prix le plus bas. Le jeu exige un clic par achat : 1er clic, le prix de tout ce qui manque pour l'objet suivant ; 2e clic, « Confirmer 30 Barre de fer : 7 po 83 » ; puis on passe à l'objet suivant. La croix annule l'achat en attente.",
+            "Listes d'achat : un objet acheté est retiré de la liste ; le bouton « - » retire aussi ce qui est déjà sur le compte.",
+            "Listes d'achat : garde-fou « (cher !) » quand le prix demandé dépasse 2,5 fois le prix relevé par le scan.",
+            "Un équipement ou une recette (pas une marchandise) n'est pas acheté d'office : la recherche s'ouvre dans la fenêtre de l'HV pour choisir l'enchère.",
+        },
+    },
+    {
         version = "0.72.1", date = "16/11/2026",
         changed = {
             "Carte : la barre de filtres de la carte du monde se déplace. Glisse-la par sa poignée (à gauche) ; sa place est gardée. Clic droit sur la poignée pour la remettre en haut de la carte.",
@@ -1423,7 +1432,7 @@ WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
-    "Hôtel des ventes, suite : achat direct depuis la liste d'achat, vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
+    "Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",

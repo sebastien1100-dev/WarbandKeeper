@@ -300,6 +300,7 @@ end
 function M:Report()
     WK:Print(T("Hôtel des ventes : diagnostic"))
     WK:Print("  C_AuctionHouse.ReplicateItems : " .. tostring(modern() ~= nil))
+    WK:Print("  " .. T("achat depuis la liste") .. " : " .. tostring(M:CanBuy()))
     WK:Print("  QueryAuctionItems : " .. tostring(QueryAuctionItems ~= nil) .. " · GetAuctionItemInfo : " .. tostring(GetAuctionItemInfo ~= nil))
     local q, all = self:CanQuery()
     WK:Print("  CanSendAuctionQuery : " .. tostring(CanSendAuctionQuery ~= nil) .. " (" .. tostring(q) .. ", " .. T("complet") .. " " .. tostring(all) .. ")")
@@ -371,3 +372,139 @@ function M:SearchItem(itemID)
     end
     return false
 end
+
+---------------------------------------------------------------------------
+-- Achat de la liste, au prix le plus bas (système d'HV récent : objets « marchandises »).
+-- Le jeu exige un clic du joueur pour chaque achat : le bouton du panneau avance pas à pas.
+--   1er clic : demande du prix pour l'objet suivant (tout ce qui manque) -> COMMODITY_PRICE_UPDATED
+--   2e clic  : confirmation -> COMMODITY_PURCHASE_SUCCEEDED / _FAILED ; la quantité achetée est
+--              retirée de la liste, et l'objet disparaît de la liste quand il ne manque plus rien.
+-- Un objet qui n'est pas une marchandise (équipement, recette) : recherche dans la fenêtre de l'HV.
+-- M.buy = { list, id, qty, phase = "quote" | "confirm" | "wait", unit, total, skip = { [id] = true } }
+---------------------------------------------------------------------------
+local AH = function() return C_AuctionHouse end
+function M:CanBuy()
+    local A = AH()
+    return A and A.StartCommoditiesPurchase and A.ConfirmCommoditiesPurchase and true or false
+end
+local function have(id)
+    local Inv = WK.modules.Inventory
+    return (Inv and Inv.AccountCount and Inv:AccountCount(id)) or 0
+end
+-- Objet suivant à acheter dans la liste : id, quantité
+function M:NextToBuy(name)
+    local list = self:GetList(name)
+    if not list then return nil end
+    local skip = (self.buy and self.buy.skip) or {}
+    for _, it in ipairs(list.items) do
+        local miss = it[2] - have(it[1])
+        if miss > 0 and not skip[it[1]] then return it[1], miss end
+    end
+    return nil
+end
+local function isCommodity(id)
+    local A = AH()
+    if A and A.GetItemCommodityStatus and Enum and Enum.ItemCommodityStatus then
+        local ok, st = pcall(A.GetItemCommodityStatus, id)
+        if ok and st == Enum.ItemCommodityStatus.Item then return false end
+    end
+    return true
+end
+-- Retire de la liste ce qui est acheté (qty) ou déjà sur le compte
+local function consume(name, id, qty)
+    local list = M:GetList(name)
+    if not list then return end
+    for i = #list.items, 1, -1 do
+        local it = list.items[i]
+        if it[1] == id then
+            it[2] = it[2] - (qty or 0)
+            if it[2] <= 0 then table.remove(list.items, i) end
+        end
+    end
+end
+function M:PruneList(name)
+    local list = self:GetList(name)
+    if not list then return 0 end
+    local n = 0
+    for i = #list.items, 1, -1 do
+        if have(list.items[i][1]) >= list.items[i][2] then table.remove(list.items, i); n = n + 1 end
+    end
+    if self.OnProgress then self:OnProgress() end
+    return n
+end
+function M:CancelBuy()
+    local A = AH()
+    if self.buy and self.buy.phase == "confirm" and A and A.CancelCommoditiesPurchase then pcall(A.CancelCommoditiesPurchase) end
+    self.buy = nil
+    if self.OnProgress then self:OnProgress() end
+end
+-- Un clic sur « Acheter » : avance d'un pas
+function M:BuyStep()
+    if not self.open then WK:Print(T("Ouvre l'hôtel des ventes pour acheter.")) return end
+    if not self:CanBuy() then WK:Print(T("Ce client ne permet pas l'achat depuis l'addon : utilise « Chercher ».")) return end
+    local name = self:Config().curList
+    local A = AH()
+    local b = self.buy
+    if b and b.phase == "confirm" then
+        b.phase = "wait"
+        local ok = pcall(A.ConfirmCommoditiesPurchase, b.id, b.qty)
+        if not ok then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
+        if self.OnProgress then self:OnProgress() end
+        return
+    end
+    if b and (b.phase == "quote" or b.phase == "wait") then return end -- réponse du serveur attendue
+    local skip = b and b.skip or {}
+    self.buy = { list = name, skip = skip }
+    local id, qty = self:NextToBuy(name)
+    while id and not isCommodity(id) do
+        -- équipement, recette : pas d'achat groupé, on le montre dans la fenêtre de l'HV
+        skip[id] = true
+        self:SearchItem(id)
+        WK:Print(string.format(T("%s n'est pas une marchandise : choisis l'enchère dans la fenêtre de l'HV."), WK.GetItemInfo(id) or ("#" .. id)))
+        self.buy = nil
+        if self.OnProgress then self:OnProgress() end
+        return
+    end
+    if not id then
+        self.buy = nil
+        WK:Print(T("Liste d'achat : il ne manque plus rien."))
+        self:PruneList(name)
+        return
+    end
+    self.buy.id, self.buy.qty, self.buy.phase = id, qty, "quote"
+    local ok = pcall(A.StartCommoditiesPurchase, id, qty)
+    if not ok then self.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) end
+    if self.OnProgress then self:OnProgress() end
+end
+WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
+    local b = M.buy
+    if not b or b.phase ~= "quote" then return end
+    b.unit, b.total, b.phase = unit, total, "confirm"
+    if M.OnProgress then M:OnProgress() end
+end)
+WK:On("COMMODITY_PRICE_UNAVAILABLE", function()
+    local b = M.buy
+    if not b then return end
+    WK:Print(string.format(T("Pas assez de %s en vente pour cette quantité."), WK.GetItemInfo(b.id) or "?"))
+    b.skip[b.id] = true
+    b.phase = nil
+    if M.OnProgress then M:OnProgress() end
+end)
+WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
+    local b = M.buy
+    if not b then return end
+    WK:Print(string.format(T("Acheté : %d %s pour %s."), b.qty, WK.GetItemInfo(b.id) or "?", WK:FormatMoney(b.total or 0)))
+    consume(b.list, b.id, b.qty)
+    M:PruneList(b.list)
+    M.buy = { list = b.list, skip = b.skip } -- prêt pour le suivant
+    WK:NotifyChanged()
+    if M.OnProgress then M:OnProgress() end
+end)
+WK:On("COMMODITY_PURCHASE_FAILED", function()
+    local b = M.buy
+    if not b then return end
+    WK:Print(T("Achat échoué (prix changé ou plus assez en vente) : reclique pour redemander le prix."))
+    M.buy = { list = b.list, skip = b.skip }
+    if M.OnProgress then M:OnProgress() end
+end)
+WK:On("AUCTION_HOUSE_CLOSED", function() M.buy = nil end)
