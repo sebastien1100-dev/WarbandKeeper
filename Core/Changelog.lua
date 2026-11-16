@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.76.2", date = "16/11/2026",
+        changed = {
+            "/wk nav : pendant un trajet confié à ShortestPathForever, le diagnostic dit que le repère, la flèche et le tracé sont gérés par lui, au lieu d'afficher « aucun » et une distance à 0.",
+        },
+    },
+    {
         version = "0.76.1", date = "16/11/2026",
         changed = {
             "Guidage vers le plus proche (réparation, marchand, boîte aux lettres, banque, maître de classe, munitions, composants, alertes de sacs pleins) : avec ShortestPathForever, le lieu choisi est celui qu'on atteint le plus vite en vrai, parmi les 6 plus proches à vol d'oiseau (une rivière ou une falaise ne piègent plus le choix), et le trajet passe par lui.",

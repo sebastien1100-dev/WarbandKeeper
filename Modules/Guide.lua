@@ -383,7 +383,9 @@ function M:NavReport()
     WK:Print("  SuperTrackedFrame : " .. yn(SuperTrackedFrame))
     WK:Print("  ShortestPathForever : " .. yn(self:SPFInstalled()) .. " · " .. T("utilisé") .. " : " .. yn(self:SPF()) .. " · " .. T("trajet en cours") .. " : " .. yn(self.target and self.target.spf))
     WK:Print("  " .. T("point suivi") .. " : " .. call(ST and ST.IsSuperTrackingUserWaypoint) .. " · " .. T("guidage Warband Keeper") .. " : " .. yn(self.target))
-    if N then
+    if self.target and self.target.spf then
+        WK:Print("  " .. T("repère, flèche et tracé : gérés par ShortestPathForever (Warband Keeper ne pose pas le sien)"))
+    elseif N then
         WK:Print("  " .. T("distance") .. " : " .. call(N.GetDistance) .. " · " .. T("à l'écran") .. " : " .. call(N.HasValidScreenPosition)
             .. " · " .. T("au bord") .. " : " .. call(N.WasClampedToScreen))
         local ok, f = pcall(N.GetFrame or function() end)

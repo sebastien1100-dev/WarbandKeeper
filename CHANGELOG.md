@@ -20,6 +20,11 @@ _Prévu, pas encore commencé._
 - Trajet sans ShortestPathForever : tracé marche, vol, marche par Warband Keeper, aidé des routes de patrouille des PNJ et des chemins déjà parcourus.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.76.2 — 16/11/2026
+
+### Modifications
+- /wk nav : pendant un trajet confié à ShortestPathForever, le diagnostic dit que le repère, la flèche et le tracé sont gérés par lui, au lieu d'afficher « aucun » et une distance à 0.
+
 ## v0.76.1 — 16/11/2026
 
 ### Modifications
