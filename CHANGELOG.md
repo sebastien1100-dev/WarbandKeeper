@@ -9,7 +9,6 @@ _Prévu, pas encore commencé._
 
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 - Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.
-- Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.
 - Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.
 - Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
