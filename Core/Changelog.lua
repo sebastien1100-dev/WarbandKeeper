@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.75.1", date = "16/11/2026",
+        changed = {
+            "Boutons : tous les boutons de l'addon prennent la couleur d'accent (la couleur de classe en Graphite). Les boutons secondaires (« Link tchat », « Niveaux », « Envoyer à ce perso »…) ont un fond teinté et un texte de cette couleur ; les boutons discrets et les boutons-icônes s'y colorent au survol ; les boutons principaux restent pleins.",
+        },
+    },
+    {
         version = "0.75.0", date = "16/11/2026",
         changed = {
             "Résumé : « À faire » prend la moitié gauche (la courbe de l'or la moitié droite) et se range en trois groupes, Urgent (rouge), Bientôt (orange) et À noter, avec un compteur en pastille à côté du titre.",

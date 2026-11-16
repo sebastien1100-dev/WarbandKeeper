@@ -3,7 +3,8 @@ local UI = WK.UI
 local C = UI.colors
 
 ---------------------------------------------------------------------------
--- Bouton arrondi (pilule). Styles : primary (accent), secondary, ghost, danger.
+-- Bouton arrondi (pilule). Styles : primary (plein, couleur d'accent = couleur de classe en Graphite),
+-- secondary (fond teinté et texte de la couleur d'accent), ghost (discret, teinté au survol), danger.
 ---------------------------------------------------------------------------
 function UI:Button(parent, text, width, height, style, icon)
     height = height or 30
@@ -31,17 +32,19 @@ function UI:Button(parent, text, width, height, style, icon)
             self.bg:Show()
             fg = C.onAccent
         elseif s == "ghost" then
-            self.bg:SetColor(unpack(C.hover))
+            local r, g, bl = UI:Accent()
+            self.bg:SetColor(r, g, bl, 0.14)
             self.bg:SetShown(h)
-            fg = h and C.text or C.muted
+            fg = h and { r, g, bl, 1 } or C.muted
         elseif s == "danger" then
             self.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], h and 0.28 or 0.16)
             self.bg:Show()
             fg = C.negative
         else
-            self.bg:SetColor(unpack(h and C.hover or C.surface2))
+            local r, g, bl = UI:Accent()
+            self.bg:SetColor(r, g, bl, h and 0.30 or 0.16)
             self.bg:Show()
-            fg = C.text
+            fg = { math.min(1, r * 1.08 + 0.06), math.min(1, g * 1.08 + 0.06), math.min(1, bl * 1.08 + 0.06), 1 }
         end
         self.label:SetTextColor(unpack(fg))
         if self.icon then self.icon:SetVertexColor(unpack(fg)) end
@@ -85,8 +88,9 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
             b.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], 0.2)
             b.icon:SetVertexColor(unpack(h and C.negative or C.muted))
         else
-            b.bg:SetColor(unpack(C.hover))
-            b.icon:SetVertexColor(unpack(h and C.text or C.muted))
+            local r, g, bl = UI:Accent()
+            b.bg:SetColor(r, g, bl, 0.16)
+            if h then b.icon:SetVertexColor(r, g, bl, 1) else b.icon:SetVertexColor(unpack(C.muted)) end
         end
         b.bg:SetShown(h)
     end
