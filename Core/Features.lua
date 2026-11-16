@@ -18,6 +18,7 @@ WK.FEATURES = {
     { key = "journal", label = "Journal", icon = "clock", group = "FARM", page = "journal" },
     { key = "lfg", label = "LFG", icon = "lfg", group = "GROUPE", page = "lfg" },
     { key = "quests", label = "Quêtes", icon = "bang", group = "EXPLORATION", page = "quests", desc = "page et donneurs" },
+    { key = "dungeons", label = "Donjons", icon = "skull", group = "EXPLORATION", page = "dungeons", desc = "boss, butin, envies" },
     { key = "rares", label = "Rares", icon = "star", group = "EXPLORATION", page = "rares", desc = "page, carte, alerte" },
     { key = "maplayers", label = "Carte", icon = "map", group = "EXPLORATION", qol = "maplayers", desc = "lieux et trajets" },
     { key = "nodes", label = "Récolte", icon = "tree", group = "EXPLORATION", desc = "filons et plantes" },

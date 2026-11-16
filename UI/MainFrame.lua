@@ -17,13 +17,13 @@ local GROUPS = {
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
     { "FARM", { "farm", "loot", "journal", "fishing" } },
     { "GROUPE", { "lfg" } },
-    { "EXPLORATION", { "quests", "rares" } },
+    { "EXPLORATION", { "quests", "rares", "dungeons" } },
     { "CONFORT", { "qol" } },
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -659,6 +659,20 @@ UI.CHIPS = {
         for _ in pairs(L.requests) do asked = asked + 1 end
         return { { T("Groupes"), tostring(groups) }, { T("Une place pour toi"), tostring(mine), mine > 0 and C.positive or nil },
                  { T("Joueurs seuls"), tostring(solos) }, { T("Demandes"), tostring(asked) } }
+    end,
+    dungeons = function()
+        local D = WK.modules.Dungeons
+        local key = WK:CharKey()
+        local full, n = 0, 0
+        for _, d in ipairs(D:All()) do
+            n = n + 1
+            local done, total = D:Progress(d, key)
+            if total > 0 and done >= total then full = full + 1 end
+        end
+        local cur = D:Current()
+        local chips = { { T("Donjons finis"), full .. " / " .. n }, { T("Envies"), tostring(D:WishCount(key)) } }
+        if cur then table.insert(chips, { T("En ce moment"), D:Name(cur), C.positive }) end
+        return chips
     end,
     fishing = function()
         local FL = WK.modules.FishingLog

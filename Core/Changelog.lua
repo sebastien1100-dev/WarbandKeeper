@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.87.0", date = "16/11/2026",
+        added = {
+            "Donjons : nouvelle page « Donjons » (groupe Exploration). Les 19 donjons de WoW Forever en tuiles par niveau (couleur selon le niveau du perso choisi, barre des boss déjà tués), puis les boss du donjon choisi et leur butin propre (armes, armures, recettes), en couleur de qualité. « Pour ce perso » ne garde que ce qu'il peut porter (classe, type d'armure selon le niveau, armes, recettes de ses métiers) ; étiquettes « pour toi » et « sur le compte ».",
+            "Liste d'envies : une étoile sur chaque objet ; onglet « Mes envies » (par perso, avec le donjon et le boss). En entrant dans un donjon qui contient tes envies, un rappel le dit ; quand un objet voulu tombe dans le groupe, une alerte et un son.",
+            "En donjon : panneau à droite de la carte du monde, avec les boss dans l'ordre (ceux tués pendant ce passage marqués « tué »), le butin du boss suivant déplié, filtres Pour moi / Tout / Envies. Aussi seul avec /wk donjon, ou « Panneau en jeu » dans la page.",
+            "Dans la page : nombre de quêtes de donjon de la zone de l'entrée, « Chercher un groupe » (onglet LFG) et « Guider vers l'entrée ». Les boss tués sont notés par perso.",
+            "Données des donjons tirées de QuestieDB (boss et butin) ; la rareté vient du jeu, les taux de drop ne sont pas connus.",
+            "Nouveaux fichiers : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.86.3", date = "16/11/2026",
         changed = {
             "Carte du monde, liste des rares : bien plus compacte (une ligne par rare : étoile, nom, niveau ; le butin est dans l'infobulle). Clic sur l'en-tête : la replier ou la déplier ; glisser l'en-tête : la déplacer (position gardée) ; clic droit : la remettre en place ; croix : ne plus l'afficher (réactivable dans Rares > Carte et infobulle).",
@@ -1734,6 +1745,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné) et raids (Cœur du Magma, Onyxia, Zul'Gurub…) avec la même présentation.",
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
