@@ -11,10 +11,10 @@ local ADDON_NAME, WK = ...
 WK.FEATURES = {
     { key = "stats", label = "Stats", icon = "chart", group = "ÉCONOMIE", page = "stats" },
     { key = "professions", label = "Métiers", icon = "hammer", group = "ÉCONOMIE", page = "professions", desc = "page et infobulle" },
-    { key = "mail", label = "Courrier", icon = "mail", group = "ÉCONOMIE", page = "mail" },
+    { key = "mail", label = "Règles d'envoi", icon = "mail", group = "ÉCONOMIE", page = "mail" },
     { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "ÉCONOMIE", qol = "ah", desc = "scan et infobulle" },
     { key = "farm", label = "Session de farm", icon = "play", group = "FARM", page = "farm" },
-    { key = "loot", label = "Loot", icon = "filter", group = "FARM", page = "loot" },
+    { key = "loot", label = "Filtre de loot", icon = "filter", group = "FARM", page = "loot" },
     { key = "journal", label = "Journal", icon = "clock", group = "FARM", page = "journal" },
     { key = "lfg", label = "LFG", icon = "lfg", group = "GROUPE", page = "lfg" },
     { key = "quests", label = "Quêtes", icon = "bang", group = "EXPLORATION", page = "quests", desc = "page et donneurs" },

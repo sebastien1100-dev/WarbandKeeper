@@ -10,13 +10,20 @@ local function valueAt(series, t)
     return v
 end
 
--- Objets suivis = suivis manuellement + objets ayant une règle d'envoi.
+-- Objets suivis = suivis manuellement + objets ayant une règle d'envoi (sauf ceux retirés des
+-- statistiques : WK.DB.global.settings.statsHidden[id]).
+local function hidden()
+    local s = WK.DB.global.settings
+    s.statsHidden = s.statsHidden or {}
+    return s.statsHidden
+end
 function M:TrackedItems()
     local t = {}
+    local hid = hidden()
     for id in pairs(WK.DB.global.settings.trackedItems) do t[id] = "manual" end
     for key in pairs(WK.DB.global.mail.rules) do
         local id = WK.modules.Rules:SplitKey(key)
-        t[id] = t[id] or "mail"
+        if type(id) == "number" and not hid[id] then t[id] = t[id] or "mail" end
     end
     return t
 end
@@ -43,12 +50,16 @@ end
 
 function M:Track(itemID)
     WK.DB.global.settings.trackedItems[itemID] = true
+    hidden()[itemID] = nil
     self:UpdateItems()
     WK:NotifyChanged()
 end
 
+-- Retire un objet des statistiques : suivi manuel arrêté, et objet d'une règle d'envoi masqué
+-- (la règle d'envoi, elle, ne change pas)
 function M:Untrack(itemID)
     WK.DB.global.settings.trackedItems[itemID] = nil
+    if type(itemID) == "number" then hidden()[itemID] = true end
     WK:NotifyChanged()
 end
 

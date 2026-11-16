@@ -63,7 +63,7 @@ WK.Locales.enUS.text = {
 
     -- Navigation et titres
     ["Résumé"] = "Summary", ["Persos"] = "Chars", ["Inventaire"] = "Inventory", ["Métiers"] = "Professions",
-    ["Stats"] = "Stats", ["Journal"] = "Log", ["Courrier"] = "Mail", ["Options"] = "Options",
+    ["Stats"] = "Stats", ["Journal"] = "Log", ["Courrier"] = "Mail", ["Filtre de loot"] = "Loot filter", ["Règles d'envoi"] = "Mail rules", ["Options"] = "Options",
     ["Personnages"] = "Characters", ["Statistiques"] = "Statistics", ["Courrier automatique"] = "Auto mail",
     ["Notes de patch"] = "Patch notes", ["Patch notes"] = "Patch notes",
 

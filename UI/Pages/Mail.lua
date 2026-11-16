@@ -318,7 +318,7 @@ local function Reception(page, parent, top)
 end
 
 UI:RegisterPage({
-    key = "mail", order = 7, nav = "Courrier",
+    key = "mail", order = 7, nav = "Règles d'envoi",
     title = "Courrier et banque",
     subtitle = "Envoi du farm à tes persos, dépôt en banque et récupération du courrier.",
     count = function()

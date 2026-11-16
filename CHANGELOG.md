@@ -19,6 +19,19 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.74.1 — 16/11/2026
+
+### Ajouts
+- Stats : chaque objet suivi a une corbeille, y compris ceux ajoutés automatiquement par une règle d'envoi. Retirer un objet des statistiques ne touche pas à sa règle d'envoi ; le rajouter à la main le fait revenir.
+
+### Modifications
+- Barre latérale : « Loot » s'appelle maintenant « Filtre de loot » et « Courrier » « Règles d'envoi » (aussi dans la carte Modules).
+- Barre latérale : quand la fenêtre est basse, la liste des pages s'arrête au-dessus de Patch notes, Profils et Options et défile à la molette, au lieu de passer par-dessus.
+
+### Corrections
+- Stats : les catégories de règles d'envoi (Cuirs, Métaux…) ne se glissent plus dans la liste des objets suivis.
+- Barre latérale : le titre d'un groupe dont tous les modules sont coupés réapparaissait en repliant ou dépliant la barre.
+
 ## v0.74.0 — 16/11/2026
 
 ### Ajouts

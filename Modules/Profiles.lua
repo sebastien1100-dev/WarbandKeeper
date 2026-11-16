@@ -16,7 +16,7 @@ M.DEFAULT = DEFAULT
 
 -- Ce qu'un profil contient : clé de WK.DB.global, et sous-clés à laisser de côté (données ou état)
 local KEYS = {
-    settings = { trackedItems = true, lastSeenVersion = true },
+    settings = { trackedItems = true, lastSeenVersion = true, statsHidden = true },
     qol = { petFoods = true },
     glow = { saved = true, otherOff = true },
     rares = { kills = true },

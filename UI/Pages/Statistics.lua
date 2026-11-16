@@ -62,7 +62,7 @@ UI:RegisterPage({
             b.name:SetPoint("TOPRIGHT", -28, -7)
             b.value = UI:Text(b, 10, C.muted)
             b.value:SetPoint("TOPLEFT", b.name, "BOTTOMLEFT", 0, -3)
-            b.del = UI:IconButton(b, "trash", 22, "Ne plus suivre", true)
+            b.del = UI:IconButton(b, "trash", 22, "Retirer des statistiques (la règle d'envoi reste)", true)
             b.del:SetPoint("RIGHT", -2, 0)
             b.del:SetScript("OnClick", function(btn)
                 WK.modules.Statistics:Untrack(btn.key)
@@ -216,7 +216,7 @@ UI:RegisterPage({
                 e.name:SetTextColor(qr, qg, qb)
                 local suffix = tracked[key] == "mail" and ("  ·  " .. WK.T("règle d'envoi")) or ""
                 e.value:SetText("x" .. WK.modules.Inventory:AccountCount(key) .. suffix)
-                e.del:SetShown(tracked[key] == "manual")
+                e.del:SetShown(true)
             end
             local _, _, ratio = WK.modules.Goals:Progress(key)
             if ratio then e.value:SetText(e.value:GetText() .. "  ·  " .. math.floor(ratio * 100) .. " %") end

@@ -95,7 +95,7 @@ local function ItemList(page, parent, title, field)
 end
 
 UI:RegisterPage({
-    key = "loot", order = 5.7, nav = "Loot",
+    key = "loot", order = 5.7, nav = "Filtre de loot",
     title = "Loot",
     subtitle = "Filtres de ramassage par situation. Maj en ouvrant un butin : tout est laissé à ta main.",
 

@@ -203,9 +203,21 @@ function UI:Create()
     self.nav, self.groupLabels = {}, {}
     -- Haut de la barre : groupes et pages. Placés par layoutTop() : l'espacement se resserre
     -- quand la fenêtre est basse, pour ne jamais chevaucher le bas (notes, options, repli).
+    -- Zone du haut : coupée au-dessus du bas de la barre (notes, profils, options) ; si la liste reste
+    -- trop longue une fois resserrée, elle défile à la molette au lieu de chevaucher le bas.
+    local navScroll = CreateFrame("ScrollFrame", nil, side)
+    local navChild = CreateFrame("Frame", nil, navScroll)
+    navChild:SetSize(1, 1)
+    navScroll:SetScrollChild(navChild)
+    navScroll:EnableMouseWheel(true)
+    navScroll:SetScript("OnMouseWheel", function(s, delta)
+        local max = s.maxScroll or 0
+        s:SetVerticalScroll(math.max(0, math.min(max, (s:GetVerticalScroll() or 0) - delta * 36)))
+    end)
+    self.navScroll = navScroll
     local topList = {}
     for _, g in ipairs(GROUPS) do
-        local lbl = UI:Text(side, 10, C.dim)
+        local lbl = UI:Text(navChild, 10, C.dim)
         lbl:SetText(g[1])
         table.insert(self.groupLabels, lbl)
         local head = { label = lbl, items = {} }
@@ -213,7 +225,7 @@ function UI:Create()
         for _, key in ipairs(g[2]) do
             local def = self.pages[key]
             if def then
-                local item = NavItem(side, def)
+                local item = NavItem(navChild, def)
                 self.nav[key] = item
                 local e = { item = item, key = key }
                 table.insert(head.items, e)
@@ -228,7 +240,8 @@ function UI:Create()
             if e.label then
                 e.hidden = true
                 for _, it in ipairs(e.items) do if WK:PageOn(it.key) then e.hidden = false end end
-                e.label:SetShown(not e.hidden)
+                e.label.wkHidden = e.hidden
+                e.label:SetShown(not e.hidden and not WK.DB.global.settings.ui.collapsed)
                 if not e.hidden then nLabels = nLabels + 1 end
             else
                 e.hidden = not WK:PageOn(e.key)
@@ -246,7 +259,12 @@ function UI:Create()
             labelStep, itemStep, gap = math.max(14, math.floor(26 * k)), math.max(24, math.floor(36 * k)), math.floor(4 * k)
         end
         -- sous la recherche quand la barre est dépliée
-        local y, first = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and -64 or -98, true
+        local topY = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98
+        navScroll:ClearAllPoints()
+        navScroll:SetPoint("TOPLEFT", side, "TOPLEFT", 0, -topY)
+        navScroll:SetPoint("BOTTOMRIGHT", side, "BOTTOMRIGHT", 0, bottomH)
+        navChild:SetWidth(math.max(1, side:GetWidth() or 1))
+        local y, first = 0, true
         for _, e in ipairs(topList) do
             if e.hidden then
                 -- rien
@@ -264,6 +282,9 @@ function UI:Create()
                 y = y - itemStep
             end
         end
+        navChild:SetHeight(math.max(1, -y))
+        navScroll.maxScroll = math.max(0, -y - math.max(0, avail))
+        navScroll:SetVerticalScroll(math.min(navScroll:GetVerticalScroll() or 0, navScroll.maxScroll))
     end
     side:HookScript("OnSizeChanged", function(_, _, h) layoutTop(h) end)
     self.layoutTop = function() layoutTop(side:GetHeight()) end
@@ -403,7 +424,7 @@ function UI:ApplySide()
     self.sideVer:SetShown(not collapsed)
     if self.sideSearch then self.sideSearch:SetShown(not collapsed) end
     if self.layoutTop then self.layoutTop() end
-    for _, l in ipairs(self.groupLabels) do l:SetShown(not collapsed) end
+    for _, l in ipairs(self.groupLabels) do l:SetShown(not collapsed and not l.wkHidden) end
     self.collapseBtn.label:SetShown(not collapsed)
     self.collapseBtn.label:SetText(WK.T("Réduire le menu"))
     self.collapseBtn.icon:SetTexture(UI.MEDIA .. (collapsed and "arrow" or "back"))
