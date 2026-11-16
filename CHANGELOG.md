@@ -20,6 +20,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.73.2 — 16/11/2026
+
+### Modifications
+- Listes d'achat : un seul clic par objet. Après chaque achat, le prix de l'objet suivant est demandé tout seul et le bouton affiche directement « Confirmer… ». (Acheter toute la liste d'un seul clic est impossible : le jeu exige un clic du joueur pour chaque achat.)
+- Listes d'achat : un objet introuvable en quantité suffisante est passé, et l'achat continue avec le suivant ; à la fin, un récapitulatif dit combien d'achats et pour quel montant.
+
 ## v0.73.1 — 16/11/2026
 
 ### Ajouts

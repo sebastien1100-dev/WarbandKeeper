@@ -453,27 +453,46 @@ function M:BuyStep()
         return
     end
     if b and (b.phase == "quote" or b.phase == "wait") then return end -- réponse du serveur attendue
-    local skip = b and b.skip or {}
-    self.buy = { list = name, skip = skip }
+    self:QuoteNext(name, true)
+end
+
+-- Demande le prix de l'objet suivant de la liste. Appelée par un clic, ou toute seule juste après
+-- un achat réussi : il ne reste alors qu'un clic par objet (la confirmation, que le jeu réserve au joueur).
+function M:QuoteNext(name, fromClick)
+    local A = AH()
+    local prev = self.buy
+    local skip = prev and prev.skip or {}
+    self.buy = { list = name, skip = skip, spent = prev and prev.spent or 0, count = prev and prev.count or 0 }
     local id, qty = self:NextToBuy(name)
     while id and not isCommodity(id) do
-        -- équipement, recette : pas d'achat groupé, on le montre dans la fenêtre de l'HV
+        -- équipement, recette : pas d'achat groupé ; au clic, on le montre dans la fenêtre de l'HV
         skip[id] = true
-        self:SearchItem(id)
-        WK:Print(string.format(T("%s n'est pas une marchandise : choisis l'enchère dans la fenêtre de l'HV."), WK.GetItemInfo(id) or ("#" .. id)))
-        self.buy = nil
-        if self.OnProgress then self:OnProgress() end
-        return
+        if fromClick then
+            self:SearchItem(id)
+            WK:Print(string.format(T("%s n'est pas une marchandise : choisis l'enchère dans la fenêtre de l'HV."), WK.GetItemInfo(id) or ("#" .. id)))
+            if self.OnProgress then self:OnProgress() end
+            return
+        end
+        id, qty = self:NextToBuy(name)
     end
     if not id then
+        local done = self.buy
         self.buy = nil
-        WK:Print(T("Liste d'achat : il ne manque plus rien."))
+        if (done.count or 0) > 0 then
+            WK:Print(string.format(T("Liste d'achat terminée : %d achat(s) pour %s."), done.count, WK:FormatMoney(done.spent or 0)))
+        elseif fromClick then
+            WK:Print(T("Liste d'achat : il ne manque plus rien."))
+        end
         self:PruneList(name)
+        if self.OnProgress then self:OnProgress() end
         return
     end
     self.buy.id, self.buy.qty, self.buy.phase = id, qty, "quote"
     local ok = pcall(A.StartCommoditiesPurchase, id, qty)
-    if not ok then self.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) end
+    if not ok then
+        self.buy.phase = nil
+        if fromClick then WK:Print(T("Le jeu a refusé la demande de prix.")) end
+    end
     if self.OnProgress then self:OnProgress() end
 end
 WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
@@ -485,10 +504,10 @@ end)
 WK:On("COMMODITY_PRICE_UNAVAILABLE", function()
     local b = M.buy
     if not b then return end
-    WK:Print(string.format(T("Pas assez de %s en vente pour cette quantité."), WK.GetItemInfo(b.id) or "?"))
+    WK:Print(string.format(T("Pas assez de %s en vente pour cette quantité : objet passé."), WK.GetItemInfo(b.id) or "?"))
     b.skip[b.id] = true
     b.phase = nil
-    if M.OnProgress then M:OnProgress() end
+    M:QuoteNext(b.list, false)
 end)
 WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
     local b = M.buy
@@ -496,15 +515,16 @@ WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
     WK:Print(string.format(T("Acheté : %d %s pour %s."), b.qty, WK.GetItemInfo(b.id) or "?", WK:FormatMoney(b.total or 0)))
     consume(b.list, b.id, b.qty)
     M:PruneList(b.list)
-    M.buy = { list = b.list, skip = b.skip } -- prêt pour le suivant
+    b.spent, b.count = (b.spent or 0) + (b.total or 0), (b.count or 0) + 1
     WK:NotifyChanged()
-    if M.OnProgress then M:OnProgress() end
+    -- prix de l'objet suivant demandé tout de suite : le prochain clic confirme directement
+    M:QuoteNext(b.list, false)
 end)
 WK:On("COMMODITY_PURCHASE_FAILED", function()
     local b = M.buy
     if not b then return end
     WK:Print(T("Achat échoué (prix changé ou plus assez en vente) : reclique pour redemander le prix."))
-    M.buy = { list = b.list, skip = b.skip }
+    M.buy = { list = b.list, skip = b.skip, spent = b.spent, count = b.count }
     if M.OnProgress then M:OnProgress() end
 end)
 WK:On("AUCTION_HOUSE_CLOSED", function() M.buy = nil end)

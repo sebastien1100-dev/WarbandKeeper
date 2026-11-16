@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.73.2", date = "16/11/2026",
+        changed = {
+            "Listes d'achat : un seul clic par objet. Après chaque achat, le prix de l'objet suivant est demandé tout seul et le bouton affiche directement « Confirmer… ». (Acheter toute la liste d'un seul clic est impossible : le jeu exige un clic du joueur pour chaque achat.)",
+            "Listes d'achat : un objet introuvable en quantité suffisante est passé, et l'achat continue avec le suivant ; à la fin, un récapitulatif dit combien d'achats et pour quel montant.",
+        },
+    },
+    {
         version = "0.73.1", date = "16/11/2026",
         added = {
             "Guide de métier : boutons 75, 150, 225, 300 et Max dans la carte des matériaux. Les matériaux, le coût et la liste d'achat s'arrêtent au palier choisi (« Matériaux jusqu'à 150 »). Le choix est retenu par métier ; un palier déjà atteint passe au suivant.",
