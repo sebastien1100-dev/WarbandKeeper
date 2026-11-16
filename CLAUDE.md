@@ -89,7 +89,7 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 
 ## Hôtel des ventes
 
-`Modules/AHScan.lua` : scan de l'HV (complet avec `getAll` quand `CanSendAuctionQuery` le permet, sinon page par page ; `C_AuctionHouse.ReplicateItems` si le client l'a), lecture par morceaux à chaque image, prix par royaume et faction dans `WK.DB.global.ah.realms` (exclus des profils), infobulle (appelée par `Modules/Inventory.lua`), `/wk hv`. `UI/AuctionPanel.lua` : panneau collé à la fenêtre de l'HV. `Modules/Value.lua` prend notre prix d'abord, Auctionator ensuite. Ne pas confondre avec `Modules/Auction.lua` (journal des ventes et achats lus sur les factures du courrier).
+`Modules/AHScan.lua` : scan de l'HV (complet avec `getAll` quand `CanSendAuctionQuery` le permet, sinon page par page ; `C_AuctionHouse.ReplicateItems` si le client l'a), lecture par morceaux à chaque image, prix par royaume et faction dans `WK.DB.global.ah.realms` (exclus des profils), infobulle (appelée par `Modules/Inventory.lua`), `/wk hv`. Listes d'achat : `WK.DB.global.ah.lists` (`SaveList`, `GetList`, `DeleteList`, `SearchItem` qui remplit la recherche de la fenêtre de l'HV du jeu) ; les métiers les créent via `Recipes:ExportToList` / `GuideToList`. `UI/AuctionPanel.lua` : panneau collé à la fenêtre de l'HV (onglets Scan et Listes d'achat). `Modules/Value.lua` ne prend que nos prix (plus d'Auctionator). Ne pas confondre avec `Modules/Auction.lua` (journal des ventes et achats lus sur les factures du courrier).
 
 ## Recherche et profils
 

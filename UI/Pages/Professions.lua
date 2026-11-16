@@ -426,10 +426,10 @@ local function Shopping(page, parent)
     nEmpty:SetText("Rien à fabriquer pour l'instant.")
     local total = UI:Text(need, 13)
     total:SetPoint("BOTTOMLEFT", 16, 20)
-    local export = UI:Button(need, "Créer la liste Auctionator", nil, 30, "primary", "plus")
+    local export = UI:Button(need, "Créer la liste d'achat", nil, 30, "primary", "plus")
     export:SetPoint("BOTTOMRIGHT", -12, 12)
-    export:SetScript("OnClick", function() WK.modules.Recipes:ExportToAuctionator() end)
-    export.tooltip = "Crée une liste de courses « Warband Keeper » dans Auctionator avec les composants manquants."
+    export:SetScript("OnClick", function() WK.modules.Recipes:ExportToList() end)
+    export.tooltip = "Crée une liste d'achat avec les composants manquants ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."
 
     local nRows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, ns.child)
@@ -496,8 +496,7 @@ local function Shopping(page, parent)
         ns:SetContentHeight(y)
         nEmpty:SetShown(#needs == 0)
         total:SetText(string.format(T("Coût des composants manquants : %s"), UI:GoldText(cost)))
-        local hasAH = Auctionator and Auctionator.API and Auctionator.API.v1 and Auctionator.API.v1.CreateShoppingList
-        export:SetShown(hasAH and #needs > 0)
+        export:SetShown(#needs > 0)
     end
     return tab
 end
@@ -514,7 +513,7 @@ local DIFF = {
     trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
 }
 
--- Recette à l'hôtel des ventes (notre scan, sinon Auctionator) : texte court et couleur.
+-- Recette à l'hôtel des ventes (prix relevé par le scan) : texte court et couleur.
 local function recipeAH(itemID)
     local V = WK.modules.Value
     if not itemID or not V:HasAHPrices() then return nil end
@@ -957,14 +956,14 @@ local function Detail(page, parent)
     matsSum:SetPoint("TOPLEFT", 16, -36)
     matsSum:SetPoint("TOPRIGHT", -16, -36)
     matsSum:SetJustifyH("LEFT")
-    local ahBtn = UI:Button(matsCard, "Liste Auctionator", nil, 28, "primary", "search")
+    local ahBtn = UI:Button(matsCard, "Liste d'achat", nil, 28, "primary", "search")
     ahBtn:SetPoint("BOTTOMLEFT", 12, 46)
     ahBtn:SetPoint("BOTTOMRIGHT", -12, 46)
     local matsTotal = UI:Text(matsCard, 13)
     matsTotal:SetPoint("BOTTOMRIGHT", -16, 84)
     matsTotal:SetJustifyH("RIGHT")
-    ahBtn.tooltip = "Crée une liste de courses Auctionator avec les composants qui manquent sur le compte."
-    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToAuctionator(tab.prof, tab.rank, tab.known) end)
+    ahBtn.tooltip = "Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."
+    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToList(tab.prof, tab.rank, tab.known) end)
     local mailBtn = UI:Button(matsCard, "Envoyer à ce perso", nil, 28, "secondary", "mail")
     mailBtn:SetPoint("BOTTOMLEFT", 12, 12)
     mailBtn:SetPoint("BOTTOMRIGHT", -12, 12)

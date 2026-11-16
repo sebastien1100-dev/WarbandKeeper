@@ -860,7 +860,7 @@ UI:RegisterPage({
         local function atoggle(parent, field)
             return toggle(parent, function() return ac[field] end, function(v) ac[field] = v end)
         end
-        local hcard = card("Hôtel des ventes", 40 + 4 * 46 + 8, "scan de l'HV, sans Auctionator")
+        local hcard = card("Hôtel des ventes", 40 + 4 * 46 + 8, "scan, prix et listes d'achat")
         UI:SettingRow(hcard, -40, "Panneau à côté de l'HV", "Nombre de prix connus, dernier scan et bouton « Scanner l'HV ».", atoggle(hcard, "panel"), 80)
         UI:SettingRow(hcard, -86, "Scan complet à l'ouverture", "Dès que le jeu l'autorise (environ toutes les 15 minutes).", atoggle(hcard, "auto"), 80)
         UI:SettingRow(hcard, -132, "Prix dans l'infobulle", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.", atoggle(hcard, "tooltip"), 80)

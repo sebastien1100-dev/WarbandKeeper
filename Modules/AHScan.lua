@@ -2,7 +2,7 @@ local ADDON_NAME, WK = ...
 local M = WK:NewModule("AHScan")
 local T = function(s) return WK.T(s) end
 
--- Hôtel des ventes sans Auctionator : scan de l'HV et prix des objets.
+-- Hôtel des ventes : scan de l'HV, prix des objets et listes d'achat.
 --   Scan complet en une requête quand le jeu le permet (environ toutes les 15 min), sinon page par page.
 --   Deux API possibles selon le client : C_AuctionHouse.ReplicateItems (récente) ou QueryAuctionItems
 --   (ancienne, celle des clients classiques). /wk hv dit laquelle ce client donne.
@@ -306,4 +306,68 @@ function M:Report()
     WK:Print("  " .. T("HV ouvert") .. " : " .. tostring(self.open and true or false) .. " · AuctionFrame : " .. tostring(AuctionFrame ~= nil) .. " · AuctionHouseFrame : " .. tostring(AuctionHouseFrame ~= nil))
     local d = self:Data()
     WK:Print("  " .. string.format(T("%d objets avec un prix"), self:Count()) .. (d.last and (" · " .. T("dernier scan") .. " " .. date("%d/%m %H:%M", d.last)) or ""))
+end
+
+---------------------------------------------------------------------------
+-- Listes d'achat (remplacent les listes de courses d'Auctionator)
+-- WK.DB.global.ah.lists[nom] = { items = { { id, qty } }, at = date } ; liste choisie : ah.curList
+---------------------------------------------------------------------------
+function M:Lists()
+    local cfg = self:Config()
+    cfg.lists = cfg.lists or {}
+    local names = {}
+    for name in pairs(cfg.lists) do table.insert(names, name) end
+    table.sort(names, function(a, b) return (cfg.lists[a].at or 0) > (cfg.lists[b].at or 0) end)
+    return names, cfg.lists
+end
+function M:GetList(name)
+    local _, lists = self:Lists()
+    return name and lists[name]
+end
+-- entries : { { itemID, missing } } ; renvoie le nombre d'objets gardés
+function M:SaveList(name, entries)
+    local _, lists = self:Lists()
+    local items = {}
+    for _, e in ipairs(entries or {}) do
+        if (e.missing or 0) > 0 and e.itemID then table.insert(items, { e.itemID, e.missing }) end
+    end
+    if #items == 0 then return 0 end
+    lists[name] = { items = items, at = time() }
+    self:Config().curList = name
+    if self.OnProgress then self:OnProgress() end
+    WK:NotifyChanged()
+    return #items
+end
+function M:DeleteList(name)
+    local _, lists = self:Lists()
+    lists[name] = nil
+    local cfg = self:Config()
+    if cfg.curList == name then cfg.curList = (self:Lists())[1] end
+    if self.OnProgress then self:OnProgress() end
+end
+-- Cherche un objet dans la fenêtre de l'HV du jeu (on achète ensuite avec ses boutons)
+function M:SearchItem(itemID)
+    if not self.open then WK:Print(T("Ouvre l'hôtel des ventes pour chercher cet objet.")) return false end
+    local name = WK.GetItemInfo(itemID)
+    if not name then
+        if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, itemID) end
+        WK:Print(T("Objet pas encore chargé par le jeu : réessaie dans un instant."))
+        return false
+    end
+    local f = AuctionHouseFrame
+    local bar = f and f.SearchBar
+    if bar then
+        if f.SetDisplayMode and AuctionHouseFrameDisplayMode and AuctionHouseFrameDisplayMode.Buy then
+            pcall(f.SetDisplayMode, f, AuctionHouseFrameDisplayMode.Buy)
+        end
+        if bar.SetSearchText then pcall(bar.SetSearchText, bar, name)
+        elseif bar.SearchBox then bar.SearchBox:SetText(name) end
+        if bar.StartSearch then pcall(bar.StartSearch, bar) return true end
+    end
+    if BrowseName and AuctionFrameBrowse_Search then -- ancienne fenêtre de l'HV
+        BrowseName:SetText(name)
+        pcall(AuctionFrameBrowse_Search)
+        return true
+    end
+    return false
 end

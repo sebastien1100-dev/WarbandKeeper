@@ -87,7 +87,7 @@ UI:RegisterPage({
         local vh = UI:Text(main, 10, C.dim)
         vh:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", tx, 24)
         self.vh = vh
-        vh:SetText("Valeur du butin : prix Auctionator, sinon prix marchand.")
+        vh:SetText("Valeur du butin : prix HV relevé par le scan, sinon prix marchand.")
 
         -- Butin --------------------------------------------------------------------
         local loot = UI:Card(p, "Butin de la session")

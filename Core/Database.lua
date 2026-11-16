@@ -57,7 +57,7 @@ local defaults = {
         profLink = {},             -- [métier] = { text = "texte ajouté au lien", on = true/false }
         trackedItems = {},         -- [itemID] = true : matériaux suivis dans les stats
         value = {
-            source = "auctionator", -- "auctionator" (repli marchand) ou "vendor"
+            source = "auctionator", -- "auctionator" : prix HV du scan (repli marchand), "vendor" ou "both"
         },
         alerts = {
             enabled = true,

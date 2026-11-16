@@ -21,7 +21,7 @@ local KEYS = {
     glow = { saved = true, otherOff = true },
     rares = { kills = true },
     quests = {},
-    ah = { realms = true },
+    ah = { realms = true, lists = true, curList = true },
     modulesOff = {},
     mapLayers = {},
     gatherMap = {},

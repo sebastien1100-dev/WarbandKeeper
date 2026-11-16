@@ -320,7 +320,7 @@ UI:RegisterPage({
         section("prices")
         local priceCard = card("Prix des objets", 108)
         local vcfg = WK.DB.global.settings.value
-        local src = UI:Segmented(priceCard, { { "auctionator", "Auctionator" }, { "vendor", "Marchand" }, { "both", "Les deux" } },
+        local src = UI:Segmented(priceCard, { { "auctionator", "Hôtel des ventes" }, { "vendor", "Marchand" }, { "both", "Les deux" } },
             function(v) vcfg.source = v; WK.modules.Value:StockValue(true); WK:NotifyChanged(); self:Refresh() end, 30)
         src:Select(vcfg.source or "auctionator")
         self.priceRow = UI:SettingRow(priceCard, -36, "Source des prix", nil, src, 330)
@@ -480,7 +480,7 @@ UI:RegisterPage({
         if self.priceDesc and self.priceDesc.SetText then
             local V = WK.modules.Value
             if not V:HasAHPrices() then
-                self.priceDesc:SetText(WK.T("Pas encore de prix HV : fais un scan à l'hôtel des ventes (ou installe Auctionator). En attendant, les prix marchands sont utilisés."))
+                self.priceDesc:SetText(WK.T("Pas encore de prix HV : fais un scan à l'hôtel des ventes (panneau Warband Keeper). En attendant, les prix marchands sont utilisés."))
             elseif V:ShowBoth() then
                 self.priceDesc:SetText(WK.T("Les deux prix sont affichés ; les calculs prennent le meilleur des deux."))
             elseif WK.DB.global.settings.value.source == "vendor" then

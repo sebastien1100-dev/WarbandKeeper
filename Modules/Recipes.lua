@@ -184,7 +184,7 @@ function M:Craftable(rec)
     return n
 end
 
--- Rentabilité d'une recette au prix actuel (Auctionator, sinon marchand) :
+-- Rentabilité d'une recette au prix actuel (prix HV relevé, sinon marchand) :
 -- cost = prix des composants, sale = prix de l'objet fabriqué x quantité produite,
 -- profit = sale - cost (nil si l'objet fabriqué n'a pas de prix connu).
 function M:Economics(rec)
@@ -619,12 +619,12 @@ function M:Missing(c, prof)
     return list, #db
 end
 
--- Composants manquants du guide vers une liste de courses Auctionator.
-function M:GuideToAuctionator(prof, rank, known)
+-- Composants manquants du guide vers une liste d'achat.
+function M:GuideToList(prof, rank, known)
     local _, mats = self:GuidePlan(prof, rank, known)
     local list = {}
     for _, m in ipairs(mats or {}) do if m.missing > 0 then table.insert(list, m) end end
-    return self:ExportToAuctionator(list, "Warband Keeper - " .. prof)
+    return self:ExportToList(list, T(prof))
 end
 
 -- Règles d'envoi pour que les composants du guide arrivent à ce perso (sans toucher aux
@@ -647,46 +647,15 @@ function M:GuideMailRules(prof, key)
     return added, skipped
 end
 
--- Crée une liste de courses Auctionator avec les composants manquants
+-- Crée une liste d'achat (Modules/AHScan.lua) avec les composants manquants
 -- (ceux de la liste de courses, ou la liste { itemID, missing } donnée).
-function M:ExportToAuctionator(entries, listName)
-    local api = Auctionator and Auctionator.API and Auctionator.API.v1
-    if not api or not api.CreateShoppingList then
-        WK:Print(T("Auctionator n'est pas disponible."))
-        return false
-    end
-    local terms, unknown = {}, 0
-    for _, e in ipairs(entries or (self:Needs())) do
-        if e.missing > 0 then
-            local name = WK.GetItemInfo(e.itemID)
-            if not name then
-                unknown = unknown + 1
-                if C_Item and C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(e.itemID) end
-            else
-                local term = name
-                if api.ConvertToSearchString then
-                    local ok, s = pcall(api.ConvertToSearchString, ADDON_NAME,
-                        { searchString = name, isExact = true, quantity = e.missing })
-                    if ok and s then term = s end
-                end
-                table.insert(terms, term)
-            end
-        end
-    end
-    if unknown > 0 then
-        WK:Print(string.format(T("%d objet(s) pas encore chargés par le jeu : réessaie dans un instant."), unknown))
-        if #terms == 0 then return false end
-    end
-    if #terms == 0 then
+function M:ExportToList(entries, listName)
+    listName = listName or T("Composants manquants")
+    local n = WK.modules.AHScan:SaveList(listName, entries or (self:Needs()))
+    if n == 0 then
         WK:Print(T("Rien à acheter : tu as déjà tous les composants."))
         return false
     end
-    listName = listName or "Warband Keeper"
-    local ok, err = pcall(api.CreateShoppingList, ADDON_NAME, listName, terms)
-    if ok then
-        WK:Print(string.format(T("Liste « %s » créée dans Auctionator (%d objet(s))."), listName, #terms))
-    else
-        WK:Print(T("Auctionator a refusé la liste : ") .. tostring(err))
-    end
-    return ok
+    WK:Print(string.format(T("Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."), listName, n))
+    return true
 end

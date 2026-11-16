@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.72.0", date = "16/11/2026",
+        added = {
+            "Hôtel des ventes : listes d'achat de l'addon. Le panneau à côté de l'HV a deux onglets, « Scan » et « Listes d'achat ». Pour chaque objet d'une liste : ce que tu as sur le compte sur ce qu'il faut (« 12 / 30 »), le prix relevé, et « Chercher » qui lance la recherche dans la fenêtre de l'HV (l'achat se fait avec ses boutons). En bas, ce qu'il reste à acheter ; la corbeille supprime la liste (deux clics).",
+            "Métiers : « Liste d'achat » (guide de montée) et « Créer la liste d'achat » (composants manquants) préparent une liste d'achat de l'addon, au lieu d'une liste Auctionator.",
+        },
+        changed = {
+            "Auctionator n'est plus utilisé du tout : tous les prix HV viennent du scan de l'addon (valeur des stocks, butin de farm, rentabilité des recettes, guides, infobulles). Options > Prix : la source s'appelle maintenant « Hôtel des ventes ».",
+            "Les listes d'achat et l'onglet choisi du panneau ne font pas partie des profils (ce sont des données du compte).",
+        },
+    },
+    {
         version = "0.71.2", date = "16/11/2026",
         changed = {
             "Hôtel des ventes : panneau plus lisible. Le nombre de prix s'écrit avec une espace (« 6 541 »), le dernier scan et le prochain scan complet sont sur deux lignes (« Scan complet possible maintenant » en vert, sinon « Prochain scan complet dans 15 min »), et le bouton passe en discret tant que le scan complet n'est pas possible.",
@@ -1406,9 +1417,9 @@ WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
-    "Hôtel des ventes, suite : listes d'achat (recherche de toute la liste, achat en un clic, listes de courses des métiers), vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler.",
-    "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
-    "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
+    "Hôtel des ventes, suite : achat direct depuis la liste d'achat, vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
+    "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).",
+    "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",

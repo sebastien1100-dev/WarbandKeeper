@@ -65,7 +65,7 @@ function M:TogglePause()
     WK:NotifyChanged()
 end
 
--- Valeur du butin : prix Auctionator si disponible, sinon prix marchand.
+-- Valeur du butin : prix HV relevé par le scan si disponible, sinon prix marchand.
 function M:VendorValue(items)
     return WK.modules.Value:ValueOf(items)
 end

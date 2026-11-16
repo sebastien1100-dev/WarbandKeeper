@@ -547,7 +547,7 @@ UI.CHIPS = {
         return { { T("Objets"), tostring(total) },
                  { T("Valeur des stocks"), UI:PlainMoney(V:StockValue()), C.gold },
                  { T("Prix"), V:ShowBoth() and T("HV / marchand")
-                     or ((WK.DB.global.settings.value.source ~= "vendor" and V:HasAHPrices()) and (WK.modules.AHScan:HasData() and T("HV") or "Auctionator") or T("marchand")),
+                     or ((WK.DB.global.settings.value.source ~= "vendor" and V:HasAHPrices()) and T("HV") or T("marchand")),
                    nil, "options", T("Source des prix (Options > Prix)"), function() UI.pages.options:ShowSection("prices") end } }
     end,
     professions = function()
