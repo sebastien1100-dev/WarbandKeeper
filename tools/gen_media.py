@@ -55,6 +55,14 @@ def circle(d, s, cx, cy, r, w=None):
 SW = 0.085  # épaisseur de trait par défaut
 
 
+def icon_pin():
+    """Épingle du repère de navigation (goutte pointe en bas), teintée en jeu."""
+    img, d, s = canvas(128)
+    circle(d, s, 0.5, 0.38, 0.36)
+    d.polygon([(P(0.5 - 0.27, s), P(0.62, s)), (P(0.5 + 0.27, s), P(0.62, s)), (P(0.5, s), P(0.98, s))], fill=W)
+    save(img, "pin", 128)
+
+
 def icon_circle():
     img, d, s = canvas(128)
     d.ellipse([0, 0, s - 1, s - 1], fill=W)
@@ -591,6 +599,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin]:
         fn()
     print("OK")

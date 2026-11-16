@@ -14,7 +14,7 @@ M.LABELS = {
     ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
 }
 
-local DEFAULTS = { auto = true, arrow = true, mapPin = true, trainerOnLevel = true, route = true, routeMini = true, learn = true }
+local DEFAULTS = { auto = true, arrow = true, mapPin = true, screenPin = true, arriveSound = true, trainerOnLevel = true, route = true, routeMini = true, learn = true }
 function M:Config()
     local q = WK.modules.QoL:Config()
     q.guide = q.guide or {}
@@ -164,7 +164,8 @@ function M:Start(target, reason, kind)
     target.reason, target.kind = reason, kind
     self.target = target
     local cfg = self:Config()
-    if cfg.mapPin and C_Map and C_Map.SetUserWaypoint and UiMapPoint and UiMapPoint.CreateFromCoordinates then
+    -- point suivi du jeu : repère sur la carte et position à l'écran pour l'épingle (UI/NavPin.lua)
+    if (cfg.mapPin or cfg.screenPin) and C_Map and C_Map.SetUserWaypoint and UiMapPoint and UiMapPoint.CreateFromCoordinates then
         pcall(C_Map.SetUserWaypoint, UiMapPoint.CreateFromCoordinates(target.map, target.x, target.y))
         if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then pcall(C_SuperTrack.SetSuperTrackedUserWaypoint, true) end
         self.placedWaypoint = true

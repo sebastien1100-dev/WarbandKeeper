@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.79.0", date = "16/11/2026",
+        added = {
+            "Guidage : épingle à l'écran au-dessus du lieu guidé, de ta couleur, avec l'icône de ce que tu suis (boîte aux lettres, banque, réparation, quête, rare, pêche…) et dessous le nom et la distance restante par le trajet. Quand le lieu est hors champ, elle se cale au bord de l'écran, plus discrète. Elle remplace le repère d'origine du jeu.",
+            "Arrivée : à moins de 10 m, un bandeau « Arrivé : … · le guidage s'arrête » s'affiche (avec un son si tu veux) et le guidage s'arrête.",
+            "QoL > Général > Guidage : réglages « Épingle à l'écran » et « Son à l'arrivée ».",
+            "Nouveaux fichiers (code et texture) : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+        fixed = {
+            "Métiers : une lecture vide des compétences (données du jeu pas encore prêtes) ne peut plus effacer les métiers connus du perso.",
+        },
+    },
+    {
         version = "0.78.2", date = "16/11/2026",
         fixed = {
             "Récapitulatif de pêche : les points de compétence gagnés pouvaient manquer (« +0 ») si le jeu n'avait pas encore mis à jour la compétence. Elle est maintenant relue à chaque message « Votre compétence en Pêche augmente » et à la fermeture du mode pêche.",

@@ -18,6 +18,17 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.79.0 — 16/11/2026
+
+### Ajouts
+- Guidage : épingle à l'écran au-dessus du lieu guidé, de ta couleur, avec l'icône de ce que tu suis (boîte aux lettres, banque, réparation, quête, rare, pêche…) et dessous le nom et la distance restante par le trajet. Quand le lieu est hors champ, elle se cale au bord de l'écran, plus discrète. Elle remplace le repère d'origine du jeu.
+- Arrivée : à moins de 10 m, un bandeau « Arrivé : … · le guidage s'arrête » s'affiche (avec un son si tu veux) et le guidage s'arrête.
+- QoL > Général > Guidage : réglages « Épingle à l'écran » et « Son à l'arrivée ».
+- Nouveaux fichiers (code et texture) : redémarrer le jeu (un /reload ne suffit pas).
+
+### Corrections
+- Métiers : une lecture vide des compétences (données du jeu pas encore prêtes) ne peut plus effacer les métiers connus du perso.
+
 ## v0.78.2 — 16/11/2026
 
 ### Corrections

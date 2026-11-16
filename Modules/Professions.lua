@@ -4,6 +4,8 @@ local M = WK:NewModule("Professions")
 -- Enregistre les métiers et note les progrès dans le journal.
 function M:Store(c, profs)
     local old = c.professions or {}
+    -- lecture vide (le jeu n'a pas encore ses données, liste repliée…) : on garde ce qu'on sait
+    if next(profs) == nil and next(old) ~= nil then return end
     for name, p in pairs(profs) do
         local o = old[name]
         if o and (p.rank or 0) > (o.rank or 0) and WK.modules.Journal then

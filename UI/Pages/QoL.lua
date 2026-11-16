@@ -401,7 +401,7 @@ UI:RegisterPage({
         -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
         local G = WK.modules.Guide
         local gcfg = G:Config()
-        local guide = card("Guidage", 318)
+        local guide = card("Guidage", 410)
         UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
             "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
             toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
@@ -411,6 +411,10 @@ UI:RegisterPage({
             toggle(guide, function() return gcfg.mapPin end, function(v) gcfg.mapPin = v; if G.Redraw then G:Redraw() end end), 80)
         UI:SettingRow(guide, -186, "Maître de classe à chaque niveau pair", "Nouveaux sorts tous les deux niveaux : guidage vers le maître de ta classe le plus proche.",
             toggle(guide, function() return gcfg.trainerOnLevel end, function(v) gcfg.trainerOnLevel = v end), 80)
+        UI:SettingRow(guide, -232, "Épingle à l'écran", "Au-dessus du lieu guidé : épingle à l'icône de ce que tu suis, avec le nom et la distance restante.",
+            toggle(guide, function() return gcfg.screenPin end, function(v) gcfg.screenPin = v; if G.target then G:Start(G.target, G.target.reason, G.target.kind) end end), 80)
+        UI:SettingRow(guide, -278, "Son à l'arrivée", "Un bandeau « Arrivé » s'affiche et le guidage s'arrête ; avec un son si activé.",
+            toggle(guide, function() return gcfg.arriveSound end, function(v) gcfg.arriveSound = v end), 80)
         -- Boutons « le plus proche » : passent à la ligne si la fenêtre est étroite (2 lignes prévues).
         local goBar = CreateFrame("Frame", nil, guide)
         goBar:SetPoint("BOTTOMLEFT", 16, 12)
