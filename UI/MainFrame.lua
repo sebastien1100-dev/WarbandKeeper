@@ -17,13 +17,13 @@ local GROUPS = {
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
     { "FARM", { "farm", "loot", "journal" } },
     { "GROUPE", { "lfg" } },
-    { "EXPLORATION", { "rares" } },
+    { "EXPLORATION", { "quests", "rares" } },
     { "CONFORT", { "qol" } },
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -667,6 +667,20 @@ UI.CHIPS = {
             end
         end
         table.insert(out, { T("À ton niveau"), string.format(T("%d restants"), left), left > 0 and C.positive or nil })
+        return out
+    end,
+    quests = function()
+        local Q = WK.modules.Quests
+        local pg = UI.pages.quests
+        local key = (pg and pg.viewKey) or WK:CharKey()
+        local done, total, avail = Q:Totals(key)
+        local out = { { T("Quêtes faites"), done .. " / " .. total, C.gold } }
+        local best, xp = Q:BestZone(key)
+        if best then
+            table.insert(out, { T("Pour monter"), best.name, C.positive, nil,
+                string.format(T("%s XP de quêtes disponibles à ton niveau"), tostring(xp)) })
+        end
+        table.insert(out, { T("Disponibles"), tostring(avail) })
         return out
     end,
     profiles = function()

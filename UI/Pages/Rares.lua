@@ -264,7 +264,7 @@ UI:RegisterPage({
             t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (TILE_W + 10), -row * (TILE_H + 10))
             local cur = z.map == playerZone
             local sel = z.map == self.zone
-            t.edge:SetColor(unpack((cur or sel) and { r1, g1, b1, 1 } or C.border))
+            t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border)) -- seule la zone choisie est entourée
             t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
             local frac = z.total > 0 and z.killed / z.total or 0
             local col2 = frac >= 1 and C.positive or { r1, g1, b1, 1 }

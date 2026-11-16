@@ -6,6 +6,24 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.67.0", date = "16/11/2026",
+        added = {
+            "Quêtes : nouvelle page « Quêtes » (groupe Exploration), sur le modèle de la page Rares : une tuile par zone avec la progression du perso, ta zone en premier puis la zone conseillée pour monter.",
+            "Quêtes : liste des quêtes de la zone choisie, triées par niveau, avec leur état (disponible, dans le journal, faite, trop haute, après une autre quête), l'XP, le métier ou le donjon concerné, et « Guider » vers le donneur.",
+            "Quêtes : « Quêtes de » pour voir la progression d'un autre perso, et filtre Toutes / À faire / Faites. Au survol d'une quête : qui l'a déjà faite et la suite de la chaîne.",
+            "Quêtes : réglages à droite de la page (quêtes de donjon, trop hautes, de métier, de classe) et infobulle d'un PNJ avec ses quêtes pas encore faites par ce perso.",
+            "Quêtes : en tête de page, les quêtes faites, la meilleure zone pour monter (la plus d'XP de quêtes à ton niveau) et le nombre de quêtes disponibles.",
+        },
+        changed = {
+            "Quêtes faites et journal de quêtes enregistrés pour chaque perso à la connexion et à chaque quête prise ou rendue : connecte chaque perso une fois pour voir sa progression.",
+            "Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).",
+        },
+        fixed = {
+            "Options > À propos : la mention des données QuestieDB couvre aussi les quêtes, et s'affiche maintenant en anglais sur un client anglais.",
+            "Rares : la tuile de ta zone restait entourée quand on choisissait une autre zone ; seule la zone choisie est maintenant entourée (« ta zone » reste écrit sur la tienne).",
+        },
+    },
+    {
         version = "0.66.0", date = "16/11/2026",
         changed = {
             "Rares : la page ne garde que la vue « Collection » (tuiles des zones, rares de la zone choisie en dessous) ; la vue « Zones » est retirée.",
@@ -1269,7 +1287,8 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Quêtes (données QuestieDB) : quêtes restantes par zone pour chaque perso, meilleure zone pour monter, quêtes de métier et quêtes qui donnent une recette, chaînes de quêtes et prérequis.",
+    "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
+    "Micro menu : réglages des raccourcis plus compacts (propositions A, B, C).",
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
