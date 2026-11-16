@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.64.1", date = "16/11/2026",
+        changed = {
+            "Profils : ils ont maintenant leur propre page dans la barre latérale, entre Patch notes et Options (ils étaient dans Options), avec leurs pastilles en tête : profil actuel, nombre de profils, persos sur ce profil.",
+            "Nouveau fichier : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.64.0", date = "16/11/2026",
         added = {
             "Recherche en haut de la barre latérale : pages, sections, réglages, persos et objets du compte, en direct dès deux lettres. Un clic ouvre la bonne page et la bonne section, fait défiler jusqu'au réglage et le met en évidence. Entrée prend le premier résultat, Échap efface.",

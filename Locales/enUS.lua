@@ -732,6 +732,8 @@ WK.Locales.enUS.text = {
     ["Pile d'alertes"] = "Alert stack", ["Empiler vers"] = "Stack towards", ["le bas"] = "down", ["le haut"] = "up", ["Icônes"] = "Icons",
     ["Exemple : aucun aspect actif"] = "Example: no aspect active", ["Exemple : rappel urgent"] = "Example: urgent reminder",
     ["Flèche de guidage"] = "Guide arrow", ["Exemple : banque"] = "Example: bank", ["Banquier"] = "Banker",
+    ["Profil actuel"] = "Current profile",
+    ["Persos sur ce profil"] = "Characters on this profile",
     ["Rechercher"] = "Search",
     ["Page"] = "Page",
     ["Section"] = "Section",

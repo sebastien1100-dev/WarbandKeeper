@@ -19,10 +19,10 @@ local GROUPS = {
     { "GROUPE", { "lfg" } },
     { "CONFORT", { "qol" } },
 }
-local BOTTOM = { "notes", "options" }
+local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -640,6 +640,12 @@ UI.CHIPS = {
     end,
     options = function()
         return { { T("Version"), WK.version, C.gold } }
+    end,
+    profiles = function()
+        local P = WK.modules.Profiles
+        local cur = P:Current()
+        return { { T("Profil actuel"), cur == P.DEFAULT and T("Défaut") or cur, C.gold }, { T("Profils"), tostring(#P:Names()) },
+                 { T("Persos sur ce profil"), tostring(#P:Users(cur)) } }
     end,
 }
 
