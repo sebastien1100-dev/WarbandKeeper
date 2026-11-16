@@ -4,8 +4,9 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Page Rares (Modules/Rares.lua) : la collection des rares, perso par perso.
---   une tuile par zone avec un anneau de progression (ta zone en premier), les rares de la zone
---   choisie en dessous, et à droite les réglages (carte, infobulle, alerte avec aperçu en direct).
+--   onglet « Collection » : une tuile par zone avec un anneau de progression (ta zone en premier),
+--                           les rares de la zone choisie en dessous ;
+--   onglet « Carte et infobulle » : les réglages (carte, infobulle, alerte avec aperçu en direct).
 local R = WK.modules.Rares
 local GAP, SIDE_W, ROW_H = 12, 300, 44
 local TILE_W, TILE_H = 214, 74
@@ -37,18 +38,24 @@ UI:RegisterPage({
         self.viewKey = WK:CharKey()
         self.zone = R:PlayerZone()
 
-        -- Barre de commandes ---------------------------------------------------------
+        -- Onglets et barre de commandes ----------------------------------------------
+        self.tab = "collection"
+        self.tabSeg = UI:Segmented(p, { { "collection", "Collection" }, { "settings", "Carte et infobulle" } },
+            function(v) self.tab = v; self:Layout(); self:Refresh() end, 30)
+        self.tabSeg:SetPoint("TOPLEFT")
+        self.tabSeg:Select("collection")
         local of = UI:Text(p, 11, C.muted)
-        of:SetPoint("TOPLEFT", 0, -9)
+        of:SetPoint("TOPRIGHT", -(190 + 8 + 150 + 8), -9)
         of:SetText(T("Collection de"))
+        self.ofLabel = of
         local charOpts = {}
         for key, c in pairs(WK.DB.global.characters) do table.insert(charOpts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
         table.sort(charOpts, function(a, b) return a[2] < b[2] end)
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
-        self.charDd:SetPoint("TOPLEFT", of, "TOPRIGHT", 8, 9)
+        self.charDd:SetPoint("TOPRIGHT", -(150 + 8), 0)
         self.charDd:Select(self.viewKey)
         self.hideBtn = UI:Button(p, "Masquer les tués", 150, 30, "ghost")
-        self.hideBtn:SetPoint("TOPLEFT", self.charDd, "TOPRIGHT", 8, 0)
+        self.hideBtn:SetPoint("TOPRIGHT")
         self.hideBtn:SetScript("OnClick", function() cfg.pageHideKilled = not cfg.pageHideKilled; self:Refresh() end)
 
         self:BuildSettings(p)
@@ -147,13 +154,14 @@ UI:RegisterPage({
         self:Layout()
     end,
 
-    -- Colonne de réglages à droite (mêmes réglages que l'ancienne section QoL > Rares)
+    -- Onglet « Carte et infobulle » (mêmes réglages qu'avant dans QoL > Rares)
     BuildSettings = function(self, p)
         local rc = R:Config()
         self.toggles = {}
-        local side = UI:Scroll(p)
-        self.side = side
-        local root = side.child
+        local sc = UI:Scroll(p)
+        self.side = sc
+        local root = sc.child
+        root:SetSize(math.max(400, (UI.PAGE_W or 840) - 10), 400) -- largeur connue avant de poser les réglages
         local y = 0
         local function card(title, h, subtitle)
             local c = UI:Card(root, title, subtitle)
@@ -171,69 +179,72 @@ UI:RegisterPage({
         end
         local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
 
-        local mcard = card("Carte et infobulle", 40 + 4 * 36 + 6, "d'après QuestieDB")
-        UI:SettingRow(mcard, -40, "Médaillons sur la carte", nil, toggle(mcard, "map", redraw), 50)
-        UI:SettingRow(mcard, -76, "Masquer les tués sur la carte", nil, toggle(mcard, "hideKilled", redraw), 50)
-        UI:SettingRow(mcard, -112, "Liste à côté de la carte", nil, toggle(mcard, "list", redraw), 50)
-        UI:SettingRow(mcard, -148, "Infobulle d'un rare", nil, toggle(mcard, "tooltip"), 50)
+        local mcard = card("Carte et infobulle", 40 + 4 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
+        UI:SettingRow(mcard, -40, "Sur la carte du monde", "Un médaillon par rare (mauve, doré pour un élite, grisé si ce perso l'a tué). Au survol : apparitions et patrouille.", toggle(mcard, "map", redraw), 80)
+        UI:SettingRow(mcard, -86, "Masquer les rares tués sur la carte", "Ceux que ce perso a déjà tués disparaissent de la carte.", toggle(mcard, "hideKilled", redraw), 80)
+        UI:SettingRow(mcard, -132, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", toggle(mcard, "list", redraw), 80)
+        UI:SettingRow(mcard, -178, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", toggle(mcard, "tooltip"), 80)
 
-        local acard = card("Alerte « Rare en vue »", 40 + 3 * 36 + 112 + 44, "à l'écran")
-        UI:SettingRow(acard, -40, "Alerte", nil, toggle(acard, "alert"), 50)
-        UI:SettingRow(acard, -76, "Son de l'alerte", nil, toggle(acard, "sound"), 50)
-        local preview, box, prevState = nil, nil, "new"
-        local function fill()
-            local st = rc.alertStyle or "banner"
-            local sc = st == "compact" and 0.76 or 0.54
-            preview:SetScale(sc)
-            preview:ClearAllPoints()
-            preview:SetPoint("CENTER", box, "BOTTOM", 0, 37 / sc) -- décalage en unités de l'aperçu réduit
-            preview:Fill(prevState, st)
-        end
+        local acard = card("Alerte « Rare en vue »", 40 + 3 * 46 + 182, "quand un rare entre dans ton champ de vision")
+        UI:SettingRow(acard, -40, "Alerte", "Se place en mode édition.", toggle(acard, "alert"), 80)
+        UI:SettingRow(acard, -86, "Son de l'alerte", nil, toggle(acard, "sound"), 80)
+        local preview, prevState = nil, "new"
         local styleSeg = UI:Segmented(acard, { { "banner", "Bandeau" }, { "compact", "Compact" } },
-            function(v) rc.alertStyle = v; if preview then fill() end end, 24)
+            function(v) rc.alertStyle = v; if preview then preview:Fill(prevState, v) end end, 26)
         styleSeg:Select(rc.alertStyle or "banner")
-        UI:SettingRow(acard, -112, "Style", nil, styleSeg, 150)
+        UI:SettingRow(acard, -132, "Style", "Bandeau : portrait, butin, Cibler et Guider. Compact : une ligne, clic pour guider.", styleSeg, 200)
         -- aperçu en direct, avec trois états à essayer
-        box = CreateFrame("Frame", nil, acard)
-        box:SetPoint("TOPLEFT", 12, -152)
-        box:SetPoint("TOPRIGHT", -12, -152)
-        box:SetHeight(104)
+        local box = CreateFrame("Frame", nil, acard)
+        box:SetPoint("TOPLEFT", 16, -178)
+        box:SetPoint("TOPRIGHT", -16, -178)
+        box:SetHeight(124)
         box.bg = UI:Rounded(box, 10, 0, "BACKGROUND", 1)
         box.bg:SetColor(unpack(C.inset))
         local stateSeg = UI:Segmented(box, { { "new", "Pas tué" }, { "killed", "Déjà tué" }, { "elite", "Élite" } },
-            function(v) prevState = v; fill() end, 22)
-        stateSeg:SetPoint("TOP", 0, -8)
+            function(v) prevState = v; preview:Fill(v, rc.alertStyle) end, 22)
+        stateSeg:SetPoint("TOPRIGHT", -8, -8)
         stateSeg:Select("new")
+        local ph = UI:Text(box, 10, C.dim)
+        ph:SetPoint("TOPLEFT", 10, -12)
+        ph:SetText(T("APERÇU"))
         preview = UI:RareAlertPreview(box)
-        fill()
-        self.preview = fill
+        preview:SetPoint("BOTTOM", 0, 10)
+        preview:Fill("new", rc.alertStyle or "banner")
         local tb = UI:Button(acard, "Montrer à l'écran", 150, 26, "ghost")
-        tb:SetPoint("BOTTOMRIGHT", -12, 10)
+        tb:SetPoint("BOTTOMRIGHT", -14, 10)
         tb:SetScript("OnClick", function() UI:TestRareAlert(prevState) end)
-        local hint = UI:Text(acard, 10, C.dim)
-        hint:SetPoint("BOTTOMLEFT", 14, 18)
-        hint:SetText(T("Se place en mode édition."))
         self.sideH = y
+        -- pour la recherche de la barre latérale (UI/Search.lua) : un réglage trouvé ouvre cet onglet
+        self.sections = { settings = { scroll = sc } }
+        UI:OnResize(sc, function(w) root:SetSize(math.max(w - 10, 100), self.sideH) end)
     end,
 
-    -- Tuiles en haut, liste en dessous, réglages à droite
+    ShowSection = function(self, key)
+        self.tab = key == "settings" and "settings" or "collection"
+        self.tabSeg:Select(self.tab)
+        self:Layout(); self:Refresh()
+    end,
+
     Layout = function(self)
         local p = self.list:GetParent()
         local h = p:GetHeight() or 500
         if h < 100 then h = 500 end
         local top = 30 + GAP
+        local coll = self.tab ~= "settings"
+        self.list:SetShown(coll); self.tscroll:SetShown(coll); self.side:SetShown(not coll)
+        self.charDd:SetShown(coll); self.hideBtn:SetShown(coll); self.ofLabel:SetShown(coll)
         self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
-        self.side:SetPoint("TOPRIGHT", 0, 0)
+        self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
-        self.side:SetWidth(SIDE_W)
-        self.side.child:SetSize(SIDE_W - 8, self.sideH or 400)
+        local w = p:GetWidth() or 800
+        self.side.child:SetSize((w > 100 and w or 800) - 10, self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
         local th = math.floor((h - top) * 0.46)
         self.tscroll:SetPoint("TOPLEFT", 0, -top)
-        self.tscroll:SetPoint("TOPRIGHT", -(SIDE_W + GAP), -top)
+        self.tscroll:SetPoint("TOPRIGHT", 0, -top)
         self.tscroll:SetHeight(th)
         self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
-        self.list:SetPoint("BOTTOMRIGHT", -(SIDE_W + GAP), 0)
+        self.list:SetPoint("BOTTOMRIGHT")
     end,
 
     Refresh = function(self)
@@ -253,6 +264,7 @@ UI:RegisterPage({
         local W = (self.tscroll:GetWidth() or 800)
         if W < 100 then W = 800 end
         local cols = math.max(1, math.floor((W - 14 + 10) / (TILE_W + 10)))
+        local tw = math.floor((W - 14 - (cols - 1) * 10) / cols) -- tuiles étirées sur toute la largeur
         -- ta zone en premier
         local ordered = {}
         for _, z in ipairs(zones) do if z.map == playerZone then table.insert(ordered, z) end end
@@ -261,7 +273,7 @@ UI:RegisterPage({
             local t = self.tiles:Get()
             t.map = z.map
             local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
-            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (TILE_W + 10), -row * (TILE_H + 10))
+            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (tw + 10), -row * (TILE_H + 10)); t:SetWidth(tw)
             local cur = z.map == playerZone
             local sel = z.map == self.zone
             t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border)) -- seule la zone choisie est entourée

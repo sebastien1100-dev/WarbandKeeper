@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.67.1", date = "16/11/2026",
+        changed = {
+            "Rares : la page a deux onglets, « Collection » (tuiles et rares de la zone) et « Carte et infobulle » (réglages de la carte, de l'infobulle et de l'alerte, avec l'aperçu en taille réelle).",
+            "Rares et Quêtes : les tuiles des zones s'étirent sur toute la largeur de la page.",
+            "Recherche : un réglage des rares trouvé ouvre directement l'onglet « Carte et infobulle ».",
+        },
+    },
+    {
         version = "0.67.0", date = "16/11/2026",
         added = {
             "Quêtes : nouvelle page « Quêtes » (groupe Exploration), sur le modèle de la page Rares : une tuile par zone avec la progression du perso, ta zone en premier puis la zone conseillée pour monter.",

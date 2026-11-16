@@ -238,6 +238,7 @@ UI:RegisterPage({
         local W = (self.tscroll:GetWidth() or 800)
         if W < 100 then W = 800 end
         local cols = math.max(1, math.floor((W - 14 + 10) / (TILE_W + 10)))
+        local tw = math.floor((W - 14 - (cols - 1) * 10) / cols) -- tuiles étirées sur toute la largeur
         local ordered = {}
         for _, z in ipairs(zones) do if z.map == playerZone then table.insert(ordered, z) end end
         for _, z in ipairs(zones) do if best and z.map == best.map and z.map ~= playerZone then table.insert(ordered, z) end end
@@ -246,7 +247,7 @@ UI:RegisterPage({
             local t = self.tiles:Get()
             t.map = z.map
             local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
-            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (TILE_W + 10), -row * (TILE_H + 10))
+            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (tw + 10), -row * (TILE_H + 10)); t:SetWidth(tw)
             local sel = z.map == self.zone
             t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border))
             t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
