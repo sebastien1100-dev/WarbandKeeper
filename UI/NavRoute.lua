@@ -34,19 +34,24 @@ end
 ---------------------------------------------------------------------------
 -- Carte du monde
 ---------------------------------------------------------------------------
+-- Chaque point : un disque de la couleur d'accent posé sur un disque sombre un peu plus grand
+-- (contour), pour rester lisible sur tous les fonds de carte.
 local mapDots = {}
 local function mapDot(i, cv)
     local d = mapDots[i]
     if not d then
         d = cv:CreateTexture(nil, "OVERLAY", nil, 6)
         d:SetTexture(UI.MEDIA .. "circle")
+        d.o = cv:CreateTexture(nil, "OVERLAY", nil, 5)
+        d.o:SetTexture(UI.MEDIA .. "circle")
+        d.o:SetPoint("CENTER", d, "CENTER")
         mapDots[i] = d
     end
-    if d:GetParent() ~= cv then d:SetParent(cv) end
+    if d:GetParent() ~= cv then d:SetParent(cv); d.o:SetParent(cv) end
     return d
 end
 function UI:HideNavRoute()
-    for _, d in ipairs(mapDots) do d:Hide() end
+    for _, d in ipairs(mapDots) do d:Hide(); d.o:Hide() end
 end
 local function toMap(cont, x, y, mapID)
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
@@ -63,8 +68,8 @@ function UI:DrawNavRoute(cv, mapID, w, h)
     if not pts or #pts < 2 then return end
     local r, g, b = UI:Accent()
     local scale = w / 1000
-    local size = math.max(3, 5 * scale)
-    local gap = math.max(6, 11 * scale)
+    local size = math.max(5, 7.5 * scale)
+    local gap = math.max(9, 14 * scale)
     local n = 0
     local px, py
     for i, pt in ipairs(pts) do
@@ -84,10 +89,12 @@ function UI:DrawNavRoute(cv, mapID, w, h)
                         local d = mapDot(n, cv)
                         local s = fly and size * 0.8 or size
                         d:SetSize(s, s)
-                        d:SetVertexColor(r, g, b, fly and 0.55 or 0.95)
+                        d:SetVertexColor(r, g, b, fly and 0.6 or 1)
+                        d.o:SetSize(s + 3.5 * math.max(1, scale), s + 3.5 * math.max(1, scale))
+                        d.o:SetVertexColor(0, 0, 0, fly and 0.45 or 0.8)
                         d:ClearAllPoints()
                         d:SetPoint("CENTER", cv, "TOPLEFT", px + dx * k / len, -(py + dy * k / len))
-                        d:Show()
+                        d:Show(); d.o:Show()
                         k = k + step
                     end
                 end
@@ -117,14 +124,17 @@ end
 local function miniDot(i)
     local d = miniDots[i]
     if not d then
-        d = holder:CreateTexture(nil, "OVERLAY")
+        d = holder:CreateTexture(nil, "OVERLAY", nil, 2)
         d:SetTexture(UI.MEDIA .. "circle")
+        d.o = holder:CreateTexture(nil, "OVERLAY", nil, 1)
+        d.o:SetTexture(UI.MEDIA .. "circle")
+        d.o:SetPoint("CENTER", d, "CENTER")
         miniDots[i] = d
     end
     return d
 end
 local function updateMini()
-    for _, d in ipairs(miniDots) do d:Hide() end
+    for _, d in ipairs(miniDots) do d:Hide(); d.o:Hide() end
     if not gcfg().routeMini or not Minimap:IsVisible() then return end
     local pts, cont = remaining()
     if not pts or #pts < 2 then return end
@@ -138,7 +148,7 @@ local function updateMini()
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or nil
     local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
     local r, g, b = UI:Accent()
-    local spacing = radius / 14
+    local spacing = radius / 12
     local n = 0
     for i = 2, #pts do
         local a, c = pts[i - 1], pts[i]
@@ -154,9 +164,12 @@ local function updateMini()
                 if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
                 n = n + 1
                 local d = miniDot(n)
-                local s = fly and 3 or 4
+                local s = fly and 4 or 5
                 d:SetSize(s, s)
-                d:SetVertexColor(r, g, b, fly and 0.5 or 0.95)
+                d:SetVertexColor(r, g, b, fly and 0.6 or 1)
+                d.o:SetSize(s + 3, s + 3)
+                d.o:SetVertexColor(0, 0, 0, fly and 0.45 or 0.8)
+                d.o:Show()
                 d:ClearAllPoints()
                 d:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
                 d:Show()
