@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.71.2", date = "16/11/2026",
+        changed = {
+            "Hôtel des ventes : panneau plus lisible. Le nombre de prix s'écrit avec une espace (« 6 541 »), le dernier scan et le prochain scan complet sont sur deux lignes (« Scan complet possible maintenant » en vert, sinon « Prochain scan complet dans 15 min »), et le bouton passe en discret tant que le scan complet n'est pas possible.",
+        },
+        fixed = {
+            "Hôtel des ventes : le « ~ » s'affichait mal dans la police du jeu et la ligne d'état touchait le bord du panneau.",
+        },
+    },
+    {
         version = "0.71.1", date = "16/11/2026",
         changed = {
             "Hôtel des ventes : WoW Forever utilise le système d'HV récent (scan complet en une requête). Le scan respecte maintenant son délai : un scan complet toutes les 15 minutes environ ; avant, le bouton dit dans combien de minutes ce sera possible.",

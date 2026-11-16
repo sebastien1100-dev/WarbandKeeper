@@ -18,7 +18,7 @@ end
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperAHPanel", UIParent)
-    f:SetSize(250, 136)
+    f:SetSize(250, 146)
     UI:Panel(f, 12, C.surface, C.border)
     f.logo = UI:Icon(f, "logo", 16, nil, "ARTWORK")
     f.logo:SetPoint("TOPLEFT", 14, -12)
@@ -33,10 +33,16 @@ local function build()
     f.countL = UI:Text(f, 11, C.muted)
     f.countL:SetPoint("BOTTOMLEFT", f.count, "BOTTOMRIGHT", 6, 2)
     f.when = UI:Text(f, 11, C.muted)
-    f.when:SetPoint("TOPLEFT", f.count, "BOTTOMLEFT", 0, -4)
+    f.when:SetPoint("TOPLEFT", 14, -62)
+    f.when:SetPoint("RIGHT", -14, 0)
+    f.when:SetJustifyH("LEFT")
+    f.next = UI:Text(f, 11, C.muted)
+    f.next:SetPoint("TOPLEFT", 14, -78)
+    f.next:SetPoint("RIGHT", -14, 0)
+    f.next:SetJustifyH("LEFT")
     f.bar = UI:Progress(f, 4)
-    f.bar:SetPoint("TOPLEFT", 14, -82)
-    f.bar:SetPoint("TOPRIGHT", -14, -82)
+    f.bar:SetPoint("TOPLEFT", 14, -84)
+    f.bar:SetPoint("TOPRIGHT", -14, -84)
     f.btn = UI:Button(f, "Scanner l'HV", 222, 28, "primary")
     f.btn:SetPoint("BOTTOM", 0, 12)
     f.btn:SetScript("OnClick", function()
@@ -61,12 +67,16 @@ local function build()
         local d = S:Data()
         local r, g, b = UI:Accent()
         self.logo:SetVertexColor(r, g, b)
-        self.count:SetText(tostring(S:Count()))
+        -- 6541 -> « 6 541 »
+        local n = tostring(S:Count())
+        n = n:reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "")
+        self.count:SetText(n)
         self.countL:SetText(T("objets avec un prix"))
         local sc = S.scan
         if sc then
             local frac = (sc.total and sc.total > 0) and (sc.done or 0) / sc.total or 0
             self.bar:Show(); self.bar:SetValue(frac)
+            self.next:Hide()
             if sc.phase == "wait" then self.when:SetText(T("Scan : réponse du serveur..."))
             elseif sc.pages then self.when:SetText(string.format(T("Scan page par page : %d / %d"), sc.done or 0, sc.total or 0))
             else self.when:SetText(string.format(T("Scan complet : %d / %d"), sc.done or 0, sc.total or 0)) end
@@ -76,10 +86,20 @@ local function build()
             self.bar:Hide()
             local _, all = S:CanQuery()
             local cd = S:FullCooldown()
-            local hint = all and T("complet possible") or (cd > 0 and string.format(T("complet dans ~%d min"), math.ceil(cd / 60)) or T("page par page"))
-            self.when:SetText(T("Dernier scan") .. " " .. ago(d.last) .. "  ·  " .. hint)
+            self.when:SetText(T("Dernier scan") .. " " .. ago(d.last))
+            self.next:Show()
+            if all then
+                self.next:SetText(T("Scan complet possible maintenant"))
+                self.next:SetTextColor(unpack(C.positive))
+            elseif cd > 0 then
+                self.next:SetText(string.format(T("Prochain scan complet dans %d min"), math.ceil(cd / 60)))
+                self.next:SetTextColor(unpack(C.muted))
+            else
+                self.next:SetText(T("Scan page par page (plus lent)"))
+                self.next:SetTextColor(unpack(C.muted))
+            end
             self.btn:SetLabel(T("Scanner l'HV"))
-            self.btn:SetStyle("primary")
+            self.btn:SetStyle((all or cd == 0) and "primary" or "secondary")
         end
     end
     return f
