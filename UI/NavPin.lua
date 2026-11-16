@@ -20,6 +20,15 @@ local KIND_ICON = {
 local function iconFor(t)
     return KIND_ICON[t.kind or ""] or "guide"
 end
+-- icône du lieu guidé (épingle à l'écran et sur la carte du monde, UI/MapPins.lua)
+function UI:GuideIcon(t) return iconFor(t) end
+-- distance restante : par le trajet s'il y en a un, sinon à vol d'oiseau
+function UI:GuideDistance(t)
+    local p = G:PlayerPos()
+    local d = p and G:Vector(p, t)
+    local _, _, _, rest = WK.modules.Nav:Waypoint()
+    return rest or d, p
+end
 
 local function showGameMarker(show)
     if not SuperTrackedFrame then return end
@@ -117,10 +126,7 @@ local function build()
         local t = G.target
         if not t or not G:Config().screenPin then s:Hide(); showGameMarker(true) return end
         -- distance : par le trajet si on l'a, sinon à vol d'oiseau
-        local p = G:PlayerPos()
-        local d = p and G:Vector(p, t)
-        local _, _, _, rest = WK.modules.Nav:Waypoint()
-        if rest then d = rest end
+        local d, p = UI:GuideDistance(t)
         if d and d < 10 and p and t.map then arrive(t) end
         local nf, clamped = navFrame()
         if not nf then s:Hide(); return end

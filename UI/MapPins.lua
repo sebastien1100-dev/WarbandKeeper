@@ -44,30 +44,59 @@ local function getPin(i, parent)
     return p
 end
 
+local GAME_PIN_TEMPLATES = { "WaypointLocationPinTemplate", "SuperTrackedWaypointPinTemplate" }
+local function gamePinAlpha(a)
+    local wm = WorldMapFrame
+    if not (wm and wm.EnumeratePinsByTemplate) then return end
+    for _, tpl in ipairs(GAME_PIN_TEMPLATES) do
+        local ok, iter = pcall(wm.EnumeratePinsByTemplate, wm, tpl)
+        if ok and iter then
+            for gp in iter do if gp.SetAlpha then gp:SetAlpha(a) end end
+        end
+    end
+end
 local targetPin
 local function hideAll()
     for _, p in ipairs(pins) do p:Hide() end
     if targetPin then targetPin:Hide() end
+    gamePinAlpha(1)
     if UI.HideNodePins then UI:HideNodePins() end
     if UI.HideRarePins then UI:HideRarePins() end
     if UI.HideMapLayers then UI:HideMapLayers() end
     if UI.HideNavRoute then UI:HideNavRoute() end
 end
 
--- Repère du guidage (Modules/Guide.lua) : anneau pulsé à la couleur d'accent sur le lieu visé.
+-- Repère du guidage sur la carte du monde (Modules/Guide.lua) : épingle de la couleur d'accent avec
+-- l'icône de ce qu'on suit, et dessous le nom et la distance restante (même style que l'épingle à
+-- l'écran, UI/NavPin.lua). Le losange du point suivi du jeu est masqué sur la carte pendant ce temps.
+-- nom et distance sous l'épingle (rappelé chaque seconde par UI/NavRoute.lua quand la carte est ouverte)
+function UI:RefreshGuidePinLabel()
+    local G = WK.modules.Guide
+    local t = G.target
+    if not (t and targetPin) then return end
+    if G:Config().mapPin then gamePinAlpha(0) end -- le jeu peut réafficher son losange en rafraîchissant la carte
+    local d = UI.GuideDistance and UI:GuideDistance(t)
+    targetPin.label:SetText(G:PlaceName(t) .. (d and ("  ·  |cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") or ""))
+    targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 16, 18)
+end
 local function drawTarget(cv, mapID, w, h)
     local G = WK.modules.Guide
     local t = G and G.target
+    gamePinAlpha(t and G:Config().mapPin and 0 or 1)
     if not t or not G:Config().mapPin or t.map ~= mapID then return end
     if not targetPin then
         targetPin = CreateFrame("Button", nil, cv)
-        targetPin.glow = targetPin:CreateTexture(nil, "ARTWORK")
-        targetPin.glow:SetAllPoints()
-        targetPin.glow:SetTexture(UI.MEDIA .. "fxring")
-        targetPin.glow:SetBlendMode("ADD")
-        targetPin.dot = targetPin:CreateTexture(nil, "OVERLAY")
-        targetPin.dot:SetPoint("CENTER")
-        targetPin.dot:SetTexture(UI.MEDIA .. "circle")
+        targetPin.shadow = targetPin:CreateTexture(nil, "BACKGROUND")
+        targetPin.shadow:SetTexture(UI.MEDIA .. "pin")
+        targetPin.shadow:SetVertexColor(0, 0, 0, 0.5)
+        targetPin.body = targetPin:CreateTexture(nil, "ARTWORK")
+        targetPin.body:SetTexture(UI.MEDIA .. "pin")
+        targetPin.body:SetAllPoints()
+        targetPin.icon = targetPin:CreateTexture(nil, "OVERLAY")
+        targetPin.pill = CreateFrame("Frame", nil, targetPin)
+        targetPin.pill.bg = UI:Rounded(targetPin.pill, 9, 0, "BACKGROUND", 1)
+        targetPin.label = UI:Text(targetPin.pill, 11)
+        targetPin.label:SetPoint("CENTER")
         targetPin:SetScript("OnEnter", function(s)
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(G:PlaceName(G.target), 1, 1, 1)
@@ -79,15 +108,26 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnMouseUp", function(_, b) if b == "RightButton" then G:Stop() end end)
     end
     targetPin:SetParent(cv)
-    local size = 34 * (w / 1000)
-    targetPin:SetSize(size * 1.6, size * 1.6)
-    targetPin.dot:SetSize(size * 0.4, size * 0.4)
+    local size = 30 * (w / 1000)
+    targetPin:SetSize(size, size)
+    targetPin.shadow:SetSize(size * 1.06, size * 1.06)
+    targetPin.shadow:ClearAllPoints()
+    targetPin.shadow:SetPoint("CENTER", size * 0.03, -size * 0.06)
+    targetPin.icon:SetSize(size * 0.44, size * 0.44)
+    targetPin.icon:ClearAllPoints()
+    targetPin.icon:SetPoint("CENTER", targetPin, "TOP", 0, -size * 0.38)
+    targetPin.icon:SetTexture(UI.MEDIA .. (UI.GuideIcon and UI:GuideIcon(t) or "guide"))
+    local C = UI.colors
+    targetPin.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
     local r, g, b = UI:Accent()
-    targetPin.glow:SetVertexColor(r, g, b, 1)
-    targetPin.dot:SetVertexColor(r, g, b, 1)
+    targetPin.body:SetVertexColor(r, g, b, 1)
+    UI:RefreshGuidePinLabel()
+    targetPin.pill:ClearAllPoints()
+    targetPin.pill:SetPoint("TOP", targetPin, "BOTTOM", 0, -2)
+    targetPin.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.85)
     targetPin:SetFrameLevel((cv:GetFrameLevel() or 1) + 30)
     targetPin:ClearAllPoints()
-    targetPin:SetPoint("CENTER", cv, "TOPLEFT", t.x * w, -t.y * h)
+    targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", t.x * w, -t.y * h) -- la pointe de l'épingle sur le lieu
     targetPin:Show()
 end
 

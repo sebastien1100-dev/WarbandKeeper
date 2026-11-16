@@ -182,12 +182,16 @@ WK:On("PLAYER_LOGIN", function()
             holder:SetScript("OnUpdate", function(s, el)
                 s.acc, s.mapAcc = s.acc + el, s.mapAcc + el
                 -- carte du monde ouverte : le tracé suit le perso (une fois par seconde)
+                if s.mapAcc > 1 and WorldMapFrame and WorldMapFrame:IsShown() and UI.RefreshGuidePinLabel then
+                    UI:RefreshGuidePinLabel()
+                end
                 if s.mapAcc > 1 and N.route and WorldMapFrame and WorldMapFrame:IsShown() then
                     s.mapAcc = 0
                     local cv = WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.Child
                     local mapID = WorldMapFrame.GetMapID and WorldMapFrame:GetMapID()
                     if cv and mapID and (cv:GetWidth() or 0) > 0 then UI:DrawNavRoute(cv, mapID, cv:GetWidth(), cv:GetHeight()) end
                 end
+                if s.mapAcc > 1 then s.mapAcc = 0 end
                 if s.acc < 0.15 then return end
                 s.acc = 0
                 updateMini()
