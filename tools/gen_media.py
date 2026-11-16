@@ -283,6 +283,24 @@ def fx_halo():
     img.save(os.path.join(OUT, "fxhalo.tga"))
 
 
+def fx_spark():
+    """Étincelle du halo : étoile à quatre branches fines, cœur lumineux (effet « Étincelles »)."""
+    size = 64
+    img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    px = img.load()
+    c = (size - 1) / 2
+    for y in range(size):
+        for x in range(size):
+            dx, dy = abs(x - c) / c, abs(y - c) / c
+            # branches : fines le long des axes, s'amincissent vers le bout
+            arm = max(math.exp(-(dy / max(0.02, 0.10 * (1 - dx))) ** 2) * (1 - dx) if dx < 1 else 0,
+                      math.exp(-(dx / max(0.02, 0.10 * (1 - dy))) ** 2) * (1 - dy) if dy < 1 else 0)
+            core = math.exp(-((math.hypot(dx, dy)) * 3.2) ** 2)
+            a = min(1.0, arm * 1.1 + core)
+            px[x, y] = (255, 255, 255, int(255 * a))
+    img.save(os.path.join(OUT, "fxspark.tga"))
+
+
 def fx_beam():
     """Colonne de lumière : douce sur les côtés, pleine au pied, s'éteint vers le haut."""
     w, h = 64, 256
@@ -573,6 +591,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark]:
         fn()
     print("OK")

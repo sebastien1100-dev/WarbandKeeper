@@ -9,15 +9,22 @@ local T = function(s) return WK.T(s) end
 
 local UNIT = "softinteract"
 local plain
-local CATEGORIES = { "herb", "ore", "skin", "quest", "chest", "bobber", "other" }
+local CATEGORIES = { "ore", "herb", "quest", "chest", "bobber", "skin", "loot", "giver", "other" }
 M.CATEGORIES = CATEGORIES
 M.LABELS = { herb = "Plantes", ore = "Filons", quest = "Objets de quête", chest = "Coffres", bobber = "Flotteur de pêche", other = "Autres objets",
-             skin = "Créatures à dépecer" }
+             skin = "Créatures à dépecer", loot = "Cadavres avec butin", giver = "Donneurs de quêtes" }
 local DEFAULT_COLORS = {
     herb = { 0.40, 1.00, 0.42 }, ore = { 1.00, 0.60, 0.18 }, quest = { 1.00, 0.84, 0.15 },
     chest = { 0.45, 0.78, 1.00 }, bobber = { 1.00, 0.45, 0.40 }, other = { 0.92, 0.92, 0.92 },
-    skin = { 0.90, 0.58, 0.36 },
+    skin = { 0.90, 0.58, 0.36 }, loot = { 0.79, 0.71, 0.93 }, giver = { 1.00, 0.92, 0.40 },
 }
+M.DEFAULT_COLORS = DEFAULT_COLORS
+-- Effets : halo, colonne, les deux, onde, étincelles, viseur (réglage global, ou par catégorie dans g.fx)
+M.STYLES = { { "halo", "Halo" }, { "beam", "Colonne" }, { "both", "Halo et colonne" }, { "wave", "Onde" },
+             { "spark", "Étincelles" }, { "cross", "Viseur" } }
+-- Couleurs de difficulté (comme les métiers) : rouge (compétence trop basse), orange, jaune, vert, gris
+M.DIFF_COLORS = { low = { 0.90, 0.33, 0.33 }, optimal = { 1.00, 0.55, 0.15 }, medium = { 1.00, 0.86, 0.20 },
+                  easy = { 0.40, 0.85, 0.42 }, trivial = { 0.58, 0.58, 0.58 } }
 
 -- Réglages du jeu nécessaires (valeur voulue) : soft targeting des objets et leur plaque de nom.
 local CVARS = {
@@ -35,6 +42,9 @@ function M:Config()
     local g = WK.DB.global.glow
     g.colors = g.colors or {}
     g.cats = g.cats or {}
+    g.fx = g.fx or {}           -- effet propre à une catégorie (absent : effet global)
+    if g.diffColor == nil then g.diffColor = true end
+    if g.info == nil then g.info = true end
     for _, k in ipairs(CATEGORIES) do
         if g.cats[k] == nil then g.cats[k] = (k ~= "other") end
         g.colors[k] = g.colors[k] or { unpack(DEFAULT_COLORS[k]) }
@@ -270,11 +280,34 @@ end
 function M:Classify(unit)
     if not M.SoftExists(unit) then return nil end
     if UnitIsGameObject and plain(UnitIsGameObject(unit)) == false then
-        -- une créature : seul un cadavre à dépecer reçoit le halo (pas les PNJ ni les joueurs)
+        -- une créature : cadavre avec butin, cadavre à dépecer, ou PNJ qui a une quête pour ce perso
         local name = plain(UnitName(unit))
         if not name then return nil end -- nom masqué (donjon, combat) : on ne peut rien en dire
+        local okP, isPlayer = pcall(UnitIsPlayer, unit)
+        if okP and plain(isPlayer) == true then return nil, name end
         local ok, dead = pcall(UnitIsDead, unit)
-        if ok and plain(dead) == true and skinnable(unit) then return "skin", name end
+        local cur = cursorCategory(unit)
+        if ok and plain(dead) == true then
+            if cur == "skin" then return "skin", name end
+            if cur == "chest" then return "loot", name end -- curseur « tout ramasser »
+            if CanLootUnit and UnitGUID then
+                local okG, guid = pcall(UnitGUID, unit)
+                local okL, has = pcall(CanLootUnit, plain(okG and guid or nil))
+                if okL and plain(has) == true then return "loot", name end
+            end
+            if skinnable(unit) then return "skin", name end
+            return nil, name
+        end
+        if cur == "quest" then return "giver", name end
+        local Q = WK.modules.Quests
+        local R = WK.modules.Rares
+        local id = R and R.NpcID(unit)
+        if Q and id then
+            local c = WK.DB:Me()
+            for _, q in ipairs(Q:ByStarter(id)) do
+                if Q:ForChar(q, c) and Q:State(q, c) == "avail" then return "giver", name end
+            end
+        end
         return nil, name
     end
     -- en donjon ou en combat, le jeu masque le nom : pas de halo plutôt qu'une erreur
@@ -315,59 +348,167 @@ local function hasProfession(cat)
 end
 
 ---------------------------------------------------------------------------
--- La lueur
+-- Difficulté de la récolte : compétence demandée et couleur (comme les métiers)
 ---------------------------------------------------------------------------
-local glow -- cadre unique, posé sur la plaque de l'objet désigné
-local function buildGlow()
-    glow = CreateFrame("Frame", "WarbandKeeperGlow", UIParent)
-    glow:SetFrameStrata("BACKGROUND")
-    glow:Hide()
-    glow.halo = glow:CreateTexture(nil, "ARTWORK")
-    glow.halo:SetTexture(WK.UI.MEDIA .. "fxhalo")
-    glow.halo:SetBlendMode("ADD")
-    glow.halo:SetPoint("CENTER")
-    -- colonne de lumière (effet au choix) : son pied est posé sur l'objet
-    glow.beam = glow:CreateTexture(nil, "ARTWORK")
-    glow.beam:SetTexture(WK.UI.MEDIA .. "fxbeam")
-    glow.beam:SetBlendMode("ADD")
-    glow.beam:SetPoint("BOTTOM", glow, "CENTER", 0, -6)
-    glow.ring = glow:CreateTexture(nil, "OVERLAY")
-    glow.ring:SetTexture(WK.UI.MEDIA .. "fxring")
-    glow.ring:SetBlendMode("ADD")
-    glow.ring:SetPoint("CENTER")
-    glow.t = 0
-    glow:SetScript("OnUpdate", function(self, elapsed)
-        self.t = self.t + elapsed
-        local g = M:Config()
-        local size = g.size or 110
-        local power = (g.intensity or 100) / 100
-        local inRange = UnitIsInInteractRange and plain(UnitIsInInteractRange(UNIT))
-        -- respiration lente hors de portée, plus vive à portée
+-- Filons : nom de l'objet du décor (français ou anglais) -> compétence demandée. Le plus précis d'abord.
+local ORE_REQ = {
+    { "vrai-argent", 230 }, { "truesilver", 230 }, { "sombrefer", 230 }, { "dark iron", 230 },
+    { "riche filon de thorium", 275 }, { "rich thorium", 275 }, { "thorium", 245 },
+    { "mithril", 175 }, { "filon d'or", 155 }, { "gold", 155 }, { "fer", 125 }, { "iron", 125 },
+    { "argent", 75 }, { "silver", 75 }, { "étain", 65 }, { "etain", 65 }, { "tin", 65 }, { "cuivre", 1 }, { "copper", 1 },
+}
+local herbReq
+local function rankOf(kind)
+    local G = WK.modules.Gathering
+    for prof, p in pairs(WK.DB:Me().professions or {}) do
+        if G:Kind(prof) == kind then return p.rank or 0, prof end
+    end
+end
+-- Compétence demandée, métier (nom affiché) et clé de couleur (low, optimal, medium, easy, trivial)
+function M:Difficulty(cat, name, unit)
+    local G = WK.modules.Gathering
+    local req, kind
+    if cat == "ore" then
+        kind = "mining"
+        local low = string.lower(name or "")
+        for _, e in ipairs(ORE_REQ) do if string.find(low, e[1], 1, true) then req = e[2] break end end
+    elseif cat == "herb" then
+        kind = "herb"
+        if not herbReq then
+            herbReq = {}
+            for _, d in ipairs(G.DATA.herb) do
+                local n = WK.GetItemInfo(d.id)
+                if n then herbReq[string.lower(n)] = d.req or 1 end
+            end
+        end
+        req = herbReq[string.lower(name or "")]
+    elseif cat == "skin" then
+        kind = "skin"
+        local ok, lvl = pcall(UnitLevel, unit)
+        lvl = ok and plain(lvl) or nil
+        if lvl and lvl > 0 then req = lvl <= 10 and 1 or (lvl <= 20 and (lvl - 10) * 10 or lvl * 5) end
+    end
+    if not req then return nil end
+    local rank, prof = rankOf(kind)
+    if not rank then return req, nil, "low" end
+    return req, prof, G:Color(req, rank)
+end
+
+---------------------------------------------------------------------------
+-- Effets (le halo en jeu et l'aperçu des réglages utilisent le même dessin)
+---------------------------------------------------------------------------
+local SPARKS = { { 0.0, 0.42 }, { 1.1, 0.30 }, { 2.0, 0.48 }, { 2.9, 0.26 }, { 3.9, 0.44 }, { 4.8, 0.34 }, { 5.6, 0.50 } }
+function M.NewFx(parent)
+    local f = CreateFrame("Frame", nil, parent)
+    f:SetSize(1, 1)
+    local function tex(file, layer)
+        local t = f:CreateTexture(nil, layer or "ARTWORK")
+        t:SetTexture(WK.UI.MEDIA .. file)
+        t:SetBlendMode("ADD")
+        t:SetPoint("CENTER")
+        return t
+    end
+    f.halo = tex("fxhalo")
+    f.beam = tex("fxbeam")
+    f.beam:ClearAllPoints()
+    f.beam:SetPoint("BOTTOM", f, "CENTER", 0, -6) -- pied de la colonne posé sur l'objet
+    f.ring = tex("fxring", "OVERLAY")
+    f.waves = { tex("fxring", "OVERLAY"), tex("fxring", "OVERLAY"), tex("fxring", "OVERLAY") }
+    f.sparks = {}
+    for i = 1, #SPARKS do f.sparks[i] = tex("fxspark", "OVERLAY") end
+    f.dash = tex("ring_dash", "OVERLAY")
+    f.t = 0
+    f.style, f.size, f.power, f.beamH = "halo", 110, 1, 4.5
+    -- style, couleur {r,g,b}, taille, intensité (1 = 100 %), hauteur de colonne
+    function f:Set(style, col, size, power, beamH)
+        self.style, self.size, self.power, self.beamH = style or "halo", size or 110, power or 1, beamH or 4.5
+        for _, t in ipairs({ self.halo, self.beam, self.ring, self.dash }) do t:SetVertexColor(col[1], col[2], col[3]) end
+        for _, t in ipairs(self.waves) do t:SetVertexColor(col[1], col[2], col[3]) end
+        for _, t in ipairs(self.sparks) do t:SetVertexColor(col[1], col[2], col[3]) end
+    end
+    function f:Draw(inRange)
+        local t, size, power, style = self.t, self.size, self.power, self.style
         local speed = inRange and 4 or 2
-        local breath = 0.5 + 0.5 * math.sin(self.t * speed)
+        local breath = 0.5 + 0.5 * math.sin(t * speed)
         local base = inRange and 0.85 or 0.45
-        -- effet : "halo" (défaut), "beam" (colonne de lumière) ou "both"
-        local style = g.style or "halo"
-        local beamOn = style == "beam" or style == "both"
-        local hs = (style == "beam") and size * 0.55 or size -- avec la colonne seule : une petite lueur au pied
+        local classic = style == "halo" or style == "beam" or style == "both"
+        -- halo : plein pour « halo », petite lueur au pied pour les autres effets
+        local hs = style == "halo" and size or (style == "both" and size or size * 0.55)
+        local ha = (style == "halo" or style == "both") and 1 or 0.55
         self.halo:SetSize(hs * (0.9 + 0.1 * breath), hs * (0.9 + 0.1 * breath))
-        self.halo:SetAlpha(math.min(1, (base + 0.15 * breath) * power))
+        self.halo:SetAlpha(math.min(1, (base + 0.15 * breath) * power * ha))
+        local beamOn = style == "beam" or style == "both"
         self.beam:SetShown(beamOn)
         if beamOn then
-            -- hauteur réglable (en multiples de la taille) ; bien visible même hors de portée
-            self.beam:SetSize(size * (0.42 + 0.05 * breath), size * (g.beamHeight or 4.5))
+            self.beam:SetSize(size * (0.42 + 0.05 * breath), size * self.beamH)
             self.beam:SetAlpha(math.min(1, (math.max(base, 0.7) + 0.1 + 0.2 * breath) * power))
         end
-        -- anneau qui s'élargit en boucle quand l'objet est à portée
-        if inRange then
-            local k = (self.t * 0.8) % 1
+        -- anneau qui s'élargit à portée (halo, colonne)
+        if classic and inRange then
+            local k = (t * 0.8) % 1
             self.ring:SetSize(size * (0.5 + 0.8 * k), size * (0.5 + 0.8 * k))
             self.ring:SetAlpha((1 - k) * 0.8 * power)
             self.ring:Show()
         else
             self.ring:Hide()
         end
+        -- onde : trois cercles qui s'élargissent l'un après l'autre
+        for i, w in ipairs(self.waves) do
+            w:SetShown(style == "wave")
+            if style == "wave" then
+                local k = (t * (inRange and 0.7 or 0.45) + (i - 1) / 3) % 1
+                w:SetSize(size * (0.3 + 1.0 * k), size * (0.3 + 1.0 * k))
+                w:SetAlpha((1 - k) * 0.95 * power)
+            end
+        end
+        -- étincelles : petites étoiles qui scintillent en tournant doucement autour de l'objet
+        for i, sp in ipairs(self.sparks) do
+            sp:SetShown(style == "spark")
+            if style == "spark" then
+                local e = SPARKS[i]
+                local a = e[1] + t * 0.35
+                local tw = math.max(0, math.sin(t * (inRange and 3.2 or 2.2) + i * 1.7))
+                local r = size * e[2]
+                sp:ClearAllPoints()
+                sp:SetPoint("CENTER", self, "CENTER", math.cos(a) * r, math.sin(a) * r * 0.6 + size * 0.12)
+                local s = size * (0.16 + 0.14 * tw)
+                sp:SetSize(s, s)
+                sp:SetAlpha(math.min(1, (0.25 + 0.85 * tw) * power))
+            end
+        end
+        -- viseur : anneau en pointillés qui tourne lentement
+        self.dash:SetShown(style == "cross")
+        if style == "cross" then
+            local s = size * (0.7 + 0.05 * breath)
+            self.dash:SetSize(s, s)
+            if self.dash.SetRotation then self.dash:SetRotation(t * (inRange and 1.2 or 0.6)) end
+            self.dash:SetAlpha(math.min(1, (inRange and 1 or 0.75) * power))
+        end
+    end
+    f:SetScript("OnUpdate", function(self, el)
+        self.t = self.t + el
+        local ir = self.inRangeFn and self.inRangeFn() or self.inRange
+        self:Draw(ir)
     end)
+    return f
+end
+
+---------------------------------------------------------------------------
+-- La lueur
+---------------------------------------------------------------------------
+local glow -- cadre unique, posé sur la plaque de l'objet désigné
+local function buildGlow()
+    glow = CreateFrame("Frame", "WarbandKeeperGlow", UIParent)
+    glow:SetFrameStrata("BACKGROUND")
+    glow:SetSize(1, 1)
+    glow:Hide()
+    glow.fx = M.NewFx(glow)
+    glow.fx:SetPoint("CENTER")
+    glow.fx.inRangeFn = function() return UnitIsInInteractRange and plain(UnitIsInInteractRange(UNIT)) end
+    -- ligne d'info sous l'objet : nom, compétence demandée (couleur de difficulté)
+    glow.info = glow:CreateFontString(nil, "OVERLAY")
+    glow.info:SetFont(WK.UI.FONT or STANDARD_TEXT_FONT, 11, "OUTLINE")
+    glow.info:SetPoint("TOP", glow, "CENTER", 0, -22)
 end
 
 -- Plaque de nom de l'objet désigné. Selon le client, la demande directe peut échouer : on
@@ -425,9 +566,19 @@ function M:Update()
     self.retry = 0
     if not glow then buildGlow() end
     local col = g.colors[cat]
-    glow.halo:SetVertexColor(col[1], col[2], col[3])
-    glow.ring:SetVertexColor(col[1], col[2], col[3])
-    glow.beam:SetVertexColor(col[1], col[2], col[3])
+    -- compétence demandée : couleur de difficulté (filons, plantes, dépeçage) et ligne d'info
+    local req, prof, diff = self:Difficulty(cat, name, UNIT)
+    if req and g.diffColor then col = M.DIFF_COLORS[diff] or col end
+    glow.fx:Set(g.fx[cat] or g.style or "halo", col, g.size or 110, (g.intensity or 100) / 100, g.beamHeight or 4.5)
+    local info
+    if g.info then
+        if req then info = name .. "  ·  " .. (prof or T(cat == "ore" and "Minage" or cat == "herb" and "Herboristerie" or "Dépeçage")) .. " " .. req
+        elseif cat == "giver" then info = name end
+    end
+    glow.info:SetText(info or "")
+    glow.info:SetTextColor(col[1], col[2], col[3])
+    glow.info:ClearAllPoints()
+    glow.info:SetPoint("TOP", glow, "CENTER", 0, -((g.size or 110) * 0.32))
     glow:ClearAllPoints()
     glow:SetPoint("CENTER", plate, "CENTER", 0, g.offsetY or -45)
     glow:SetSize(1, 1)
@@ -475,6 +626,9 @@ function M:Report()
     local _, cursor = cursorCategory(UNIT)
     WK:Print("  " .. T("curseur du jeu") .. " : " .. tostring(cursor or (SetUnitCursorTexture and "aucun" or "absent")))
     if cat and not g.cats[cat] then WK:Print("  " .. T("cette catégorie est décochée dans les réglages")) end
+    local req, prof, diff = self:Difficulty(cat, name, UNIT)
+    if req then WK:Print("  " .. T("compétence demandée") .. " : " .. req .. " · " .. tostring(prof or T("métier non appris")) .. " · " .. tostring(diff)) end
+    if cat then WK:Print("  " .. T("effet") .. " : " .. tostring(g.fx[cat] or g.style or "halo")) end
     WK:Print("  " .. T("plaque de nom trouvée") .. " : " .. yn(findPlate() ~= nil))
 end
 

@@ -476,10 +476,12 @@ UI:RegisterPage({
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
         UI:SettingRow(gmain, -184, "Intensité", "Luminosité du halo.",
             UI:Slider(gmain, 240, 30, 150, 10, function() return gcfg.intensity or 100 end, function(v) gcfg.intensity = v end, "%d %%"), 260)
-        local fxSeg = UI:Segmented(gmain, { { "halo", "Halo" }, { "beam", "Colonne" }, { "both", "Les deux" } },
-            function(v) gcfg.style = v end, 26)
-        fxSeg:Select(gcfg.style or "halo")
-        UI:SettingRow(gmain, -230, "Effet", "Halo autour de l'objet, colonne de lumière au-dessus, ou les deux.", fxSeg, 280)
+        local styleOpts = {}
+        for _, st in ipairs(Gm.STYLES) do table.insert(styleOpts, { st[1], T(st[2]) }) end
+        local haloPaint -- aperçu de l'atelier, repeint quand l'effet global change
+        local fxDd = UI:Dropdown(gmain, 220, 30, styleOpts, function(v) gcfg.style = v; Gm:Update(); if haloPaint then haloPaint() end end)
+        fxDd:Select(gcfg.style or "halo")
+        UI:SettingRow(gmain, -230, "Effet", "Pour toutes les catégories ; chacune peut avoir le sien dans l'atelier.", fxDd, 240)
         UI:SettingRow(gmain, -276, "Hauteur de la colonne", "En multiples de la taille du halo.",
             UI:Slider(gmain, 240, 2, 10, 0.5, function() return gcfg.beamHeight or 4.5 end, function(v) gcfg.beamHeight = v end, "%.1fx"), 260)
         local diag = UI:Text(gmain, 11, C.muted)
@@ -502,32 +504,146 @@ UI:RegisterPage({
         UI:SettingRow(ghide, -130, "Pas en donjon, raid ou champ de bataille", nil,
             gtoggle(ghide, function() return gcfg.hideInInstance end, function(v) gcfg.hideInInstance = v; Gm:Update() end), 80)
 
-        local gcats = card("Objets et couleurs", 40 + #Gm.CATEGORIES * 44 + 8)
-        for i, key in ipairs(Gm.CATEGORIES) do
-            local ry = -40 - (i - 1) * 44
-            local sw = CreateFrame("Button", nil, gcats)
-            sw:SetSize(44, 26)
-            UI:Rounded(sw, 8, 0, "BACKGROUND", 1):SetColor(unpack(C.border))
-            local fill = UI:Rounded(sw, 7, 1, "BACKGROUND", 2)
-            local col = gcfg.colors[key]
-            fill:SetColor(col[1], col[2], col[3], 1)
-            sw:SetScript("OnClick", function()
-                local c0 = gcfg.colors[key]
-                UI:PickColor(c0[1], c0[2], c0[3], function(r, g, b)
-                    gcfg.colors[key] = { r, g, b }
-                    fill:SetColor(r, g, b, 1)
-                    Gm:Update()
-                end)
-            end)
-            sw:SetScript("OnEnter", function() WK.UI:TooltipOwner(sw, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
-            sw:SetScript("OnLeave", function() GameTooltip:Hide() end)
-            local row = CreateFrame("Frame", nil, gcats)
-            row:SetSize(140, 26)
-            local tg = gtoggle(row, function() return gcfg.cats[key] end, function(v) gcfg.cats[key] = v; Gm:Update() end)
-            tg:SetPoint("RIGHT")
-            sw:SetParent(row); sw:ClearAllPoints(); sw:SetPoint("RIGHT", tg, "LEFT", -12, 0)
-            UI:SettingRow(gcats, ry, Gm.LABELS[key], nil, row, 140)
+        -- Atelier : une catégorie à la fois (pastilles), aperçu en direct à gauche, réglages à droite
+        local CAT_ICON = {
+            ore = "Interface\\Icons\\INV_Ore_Copper_01", herb = "Interface\\Icons\\INV_Misc_Flower_02",
+            quest = "Interface\\Icons\\INV_Misc_Note_01", chest = "Interface\\Icons\\INV_Box_01",
+            bobber = "Interface\\Icons\\INV_Fishingpole_02", skin = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
+            loot = "Interface\\Icons\\INV_Misc_Bag_10", giver = "Interface\\Icons\\INV_Misc_Head_Human_01",
+            other = "Interface\\Icons\\INV_Misc_Gear_01",
+        }
+        local SAMPLE = { ore = { "Filon de cuivre", 65, "Minage", "optimal" }, herb = { "Pacifique", 1, "Herboristerie", "medium" },
+                         skin = { "Loup des bois", 50, "Dépeçage", "easy" }, giver = { "Maréchal Dughan" } }
+        local SWATCHES = { { 1, 0.6, 0.18 }, { 1, 0.84, 0.15 }, { 0.4, 1, 0.42 }, { 0.45, 0.78, 1 }, { 0.79, 0.71, 0.93 },
+                           { 1, 0.45, 0.4 }, { 0.96, 0.55, 0.73 }, { 0.95, 0.95, 0.95 } }
+        local STAGE_H = 230
+        local acard = card("Atelier", 40 + 3 * 32 + 8 + STAGE_H + 16, "une catégorie à la fois : effet, couleur et aperçu")
+        local selCat = ui.haloCat or "ore"
+        local chips = {}
+        for _, key in ipairs(Gm.CATEGORIES) do
+            local b = CreateFrame("Button", nil, acard)
+            b:SetHeight(26)
+            b.edge = UI:Rounded(b, 13, 0, "BACKGROUND", 0)
+            b.bg = UI:Rounded(b, 12, 1, "BACKGROUND", 1)
+            b.dot = UI:Icon(b, "circle", 10, nil, "ARTWORK")
+            b.dot:SetPoint("LEFT", 9, 0)
+            b.label = UI:Text(b, 11)
+            b.label:SetPoint("LEFT", 24, 0)
+            b.label:SetText(T(Gm.LABELS[key]))
+            b:SetWidth(math.floor((b.label:GetStringWidth() or 80) + 36))
+            b.key = key
+            b:SetScript("OnClick", function() selCat = key; ui.haloCat = key; haloPaint() end)
+            table.insert(chips, b)
         end
+        local stage, right
+        local function layoutChips(w)
+            w = (w and w > 100) and w or 600
+            local x, y = 16, -40
+            for _, b in ipairs(chips) do
+                local bw = b:GetWidth()
+                if x + bw > w - 16 then x, y = 16, y - 32 end
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, y)
+                x = x + bw + 6
+            end
+            -- aperçu et réglages sous la dernière ligne de pastilles (la carte garde la place de trois lignes)
+            if stage then
+                local top = -y + 32 + 8
+                stage:ClearAllPoints(); stage:SetPoint("TOPLEFT", 16, -top)
+                right:ClearAllPoints()
+                right:SetPoint("TOPLEFT", stage, "TOPRIGHT", 0, 0)
+                right:SetPoint("TOPRIGHT", acard, "TOPRIGHT", 0, -top)
+            end
+        end
+        stage = CreateFrame("Frame", nil, acard)
+        stage:SetPoint("TOPLEFT", 16, -(40 + 3 * 32 + 8))
+        stage:SetSize(260, STAGE_H)
+        stage.bg = UI:Rounded(stage, 12, 0, "BACKGROUND", 1)
+        stage.bg:SetColor(unpack(C.inset))
+        stage.icon = UI:RoundIcon(stage, 34)
+        stage.icon:SetPoint("BOTTOM", 0, 62)
+        stage.fx = Gm.NewFx(stage)
+        stage.fx:SetPoint("CENTER", stage.icon, "CENTER")
+        stage.fx.inRange = true
+        stage.info = UI:Text(stage, 11)
+        stage.info:SetPoint("TOP", stage.icon, "BOTTOM", 0, -18)
+        stage.off = UI:Text(stage, 11, C.muted)
+        stage.off:SetPoint("TOP", 0, -14)
+        if stage.SetClipsChildren then stage:SetClipsChildren(true) end
+        -- réglages de la catégorie choisie
+        right = CreateFrame("Frame", nil, acard)
+        right:SetPoint("TOPLEFT", stage, "TOPRIGHT", 0, 0)
+        right:SetPoint("TOPRIGHT", acard, "TOPRIGHT", 0, -(40 + 3 * 32 + 8))
+        right:SetHeight(STAGE_H)
+        local catToggle = gtoggle(right, function() return gcfg.cats[selCat] end, function(v) gcfg.cats[selCat] = v; Gm:Update(); haloPaint() end)
+        UI:SettingRow(right, 0, "Halo sur cette catégorie", nil, catToggle, 60)
+        local catOpts = { { "", T("Comme les autres") } }
+        for _, st in ipairs(Gm.STYLES) do table.insert(catOpts, { st[1], T(st[2]) }) end
+        local catFx = UI:Dropdown(right, 200, 28, catOpts, function(v) gcfg.fx[selCat] = (v ~= "" and v) or nil; Gm:Update(); haloPaint() end)
+        UI:SettingRow(right, -40, "Effet", nil, catFx, 210)
+        local swRow = CreateFrame("Frame", nil, right)
+        swRow:SetSize(8 * 26 + 30, 24)
+        local swatches = {}
+        for i, col in ipairs(SWATCHES) do
+            local sb = CreateFrame("Button", nil, swRow)
+            sb:SetSize(22, 22)
+            sb:SetPoint("LEFT", (i - 1) * 26, 0)
+            sb.ring = UI:Rounded(sb, 8, 0, "BACKGROUND", 0)
+            sb.fill = UI:Rounded(sb, 6, 2, "BACKGROUND", 1)
+            sb.fill:SetColor(col[1], col[2], col[3], 1)
+            sb.col = col
+            sb:SetScript("OnClick", function() gcfg.colors[selCat] = { col[1], col[2], col[3] }; Gm:Update(); haloPaint() end)
+            swatches[i] = sb
+        end
+        local pick = UI:IconButton(swRow, "plus", 22)
+        pick:SetPoint("LEFT", 8 * 26, 0)
+        pick:SetScript("OnClick", function()
+            local c0 = gcfg.colors[selCat]
+            UI:PickColor(c0[1], c0[2], c0[3], function(r, g, b) gcfg.colors[selCat] = { r, g, b }; Gm:Update(); haloPaint() end)
+        end)
+        UI:SettingRow(right, -84, "Couleur", nil, swRow, 8 * 26 + 30)
+        local diffToggle = gtoggle(right, function() return gcfg.diffColor end, function(v) gcfg.diffColor = v; Gm:Update(); haloPaint() end)
+        local diffRow = UI:SettingRow(right, -126, "Couleur selon la difficulté", "Filons, plantes et dépeçage : orange, jaune, vert, gris (rouge si la compétence manque).", diffToggle, 60)
+        local infoToggle = gtoggle(right, function() return gcfg.info end, function(v) gcfg.info = v; Gm:Update(); haloPaint() end)
+        UI:SettingRow(right, -180, "Ligne d'info sous l'objet", "Nom et compétence demandée.", infoToggle, 60)
+
+        haloPaint = function()
+            local r1, g1, b1 = UI:Accent()
+            for _, b in ipairs(chips) do
+                local on, sel = gcfg.cats[b.key], b.key == selCat
+                local col = gcfg.colors[b.key]
+                b.dot:SetVertexColor(col[1], col[2], col[3])
+                b.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border))
+                b.bg:SetColor(unpack(sel and C.surface2 or C.surface))
+                b.label:SetTextColor(unpack(sel and C.text or (on and C.muted or C.dim)))
+                b:SetAlpha(on and 1 or 0.55)
+            end
+            local col = gcfg.colors[selCat]
+            local sample = SAMPLE[selCat]
+            local diffable = selCat == "ore" or selCat == "herb" or selCat == "skin"
+            local shown = col
+            if diffable and gcfg.diffColor and sample then shown = Gm.DIFF_COLORS[sample[4]] end
+            stage.icon:SetTexture(CAT_ICON[selCat])
+            stage.fx:Set(gcfg.fx[selCat] or gcfg.style or "halo", shown, 110, (gcfg.intensity or 100) / 100, 2.2)
+            stage.fx:SetShown(gcfg.cats[selCat] and true or false)
+            stage.off:SetText(gcfg.cats[selCat] and "" or T("catégorie coupée"))
+            local info = ""
+            if gcfg.info and sample then
+                info = sample[2] and (T(sample[1]) .. "  ·  " .. T(sample[3]) .. " " .. sample[2]) or T(sample[1])
+            end
+            stage.info:SetText(info)
+            stage.info:SetTextColor(shown[1], shown[2], shown[3])
+            catToggle:Refresh(); diffToggle:Refresh(); infoToggle:Refresh()
+            catFx:Select(gcfg.fx[selCat] or "")
+            for _, sb in ipairs(swatches) do
+                local same = math.abs(sb.col[1] - col[1]) < 0.02 and math.abs(sb.col[2] - col[2]) < 0.02 and math.abs(sb.col[3] - col[3]) < 0.02
+                sb.ring:SetColor(1, 1, 1, same and 1 or 0)
+            end
+            diffRow:SetAlpha(diffable and 1 or 0.4)
+        end
+        UI:OnResize(acard, function(w) layoutChips(w) end)
+        layoutChips(acard:GetWidth())
+        table.insert(self.dyn, function() haloPaint() end)
+        haloPaint()
 
 
         -----------------------------------------------------------------------

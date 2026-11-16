@@ -6,6 +6,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.70.0", date = "16/11/2026",
+        added = {
+            "Halo : atelier dans QoL > Halo. Les catégories en pastilles (clic : on la règle), un aperçu en direct à gauche, et à droite ses réglages : halo oui ou non, effet propre ou « comme les autres », couleur en nuancier (ou au choix avec +).",
+            "Halo : trois nouveaux effets, Onde (cercles qui s'élargissent), Étincelles (petites étoiles qui scintillent autour de l'objet) et Viseur (anneau en pointillés qui tourne). Au choix pour toutes les catégories, ou une par une.",
+            "Halo : couleur selon la difficulté pour les filons, les plantes et les créatures à dépecer : orange, jaune, vert ou gris comme dans les métiers, rouge si la compétence manque.",
+            "Halo : ligne d'info sous l'objet, avec son nom et la compétence demandée (« Filon de fer · Minage 125 »).",
+            "Halo : deux nouvelles catégories, les donneurs de quêtes qui ont une quête pour ce perso (d'après la page Quêtes) et les cadavres qui ont encore du butin.",
+            "/wk halo dit aussi la compétence demandée et l'effet utilisé.",
+        },
+        changed = {
+            "Halo : la liste « Objets et couleurs » est remplacée par l'atelier ; l'effet global se choisit dans une liste.",
+            "Nouvelle texture : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.69.1", date = "16/11/2026",
         changed = {
             "Barre de vol : nouveau look « ruban ». Une pilule fine avec la destination et sa zone, une barre de progression (un trait par relais) et le temps restant ; plus d'arc ni de griffon.",
