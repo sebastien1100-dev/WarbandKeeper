@@ -351,7 +351,7 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         section("general")
         local g = q.general
-        local shop = card("Marchand", 276)
+        local shop = card("Marchand", 322)
         UI:SettingRow(shop, -40, "Réparation automatique", "Chez un marchand qui répare, tout l'équipement.",
             toggle(shop, function() return g.repair end, function(v) g.repair = v end), 80)
         UI:SettingRow(shop, -88, "Plafond de réparation", "Pas de réparation automatique au-delà (0 : sans limite).",
@@ -362,6 +362,8 @@ UI:RegisterPage({
             toggle(shop, function() return g.sellGrey end, function(v) g.sellGrey = v end), 80)
         UI:SettingRow(shop, -226, "Fermer la fenêtre après la réparation", "Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte.",
             toggle(shop, function() return g.closeAfterRepair end, function(v) g.closeAfterRepair = v end), 80)
+        UI:SettingRow(shop, -274, "Composants de métier à côté du marchand", "Ce qui manque pour monter tes métiers jusqu'au palier choisi dans le guide (75, 150… ou Max), avec Acheter et Tout acheter. Seulement chez un marchand qui en vend.",
+            toggle(shop, function() return ui.merchantPanel ~= false end, function(v) ui.merchantPanel = v end), 80)
 
         -- État des persos : seuils puis une ligne par perso
         local chars = UI:SortedCharacters()

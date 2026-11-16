@@ -51,6 +51,10 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 
 `Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (colonne Général + 9 classes). Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
 
+## Marchand
+
+`UI/MerchantPanel.lua` : panneau collé à `MerchantFrame` (« Pour monter tes métiers »), composants manquants de chaque guide de métier jusqu'au palier `settings.ui.guideTarget[métier]` (`Recipes:GuidePlan`), filtrés sur ce que vend le marchand ; achat sur clic (`BuyMerchantItem`). Réglage `settings.ui.merchantPanel`.
+
 ## Lieux et guidage
 
 `Modules/PlacesDB.lua` est **généré** par `python3 tools/gen_places.py <clone de QuestieDB>` (`git clone --depth 1 https://github.com/Questie/QuestieDB`) : boîtes aux lettres, banquiers, marchands (munitions, composants, poisons…) et maîtres de classe de WoW Forever, avec noms français. Données Questie (GPLv3 selon son équipe) : garder la mention dans l'en-tête du fichier généré et dans Options > À propos. `Modules/Guide.lua` cherche le lieu le plus proche et gère la cible ; `UI/GuideArrow.lua` dessine la flèche, `UI/MapPins.lua` le repère sur la carte, `UI/NavPin.lua` l'épingle à l'écran (accrochée à `C_Navigation.GetFrame()`, le repère du point suivi du jeu, rendu invisible pendant ce temps ; bandeau d'arrivée et arrêt du guidage à moins de 10 m).
