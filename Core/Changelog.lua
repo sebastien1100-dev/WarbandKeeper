@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.80.3", date = "16/11/2026",
+        changed = {
+            "Guidage : la flèche de guidage est coupée (une fois, pour tout le monde) : l'épingle à l'écran, qui se cale au bord quand le lieu est hors champ, et le trajet en pointillés la remplacent. Elle reste disponible dans QoL > Général > Guidage (« Flèche à l'écran ») et vise alors le point suivant du trajet.",
+            "Mode édition : un élément coupé dans ses réglages (comme la flèche) n'y apparaît plus.",
+        },
+    },
+    {
         version = "0.80.2", date = "16/11/2026",
         changed = {
             "Trajet en pointillés : points plus gros et plus espacés, chacun avec un contour sombre, pour rester lisibles sur tous les fonds de la carte du monde et de la minicarte.",

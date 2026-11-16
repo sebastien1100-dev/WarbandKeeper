@@ -18,6 +18,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.80.3 — 16/11/2026
+
+### Modifications
+- Guidage : la flèche de guidage est coupée (une fois, pour tout le monde) : l'épingle à l'écran, qui se cale au bord quand le lieu est hors champ, et le trajet en pointillés la remplacent. Elle reste disponible dans QoL > Général > Guidage (« Flèche à l'écran ») et vise alors le point suivant du trajet.
+- Mode édition : un élément coupé dans ses réglages (comme la flèche) n'y apparaît plus.
+
 ## v0.80.2 — 16/11/2026
 
 ### Modifications

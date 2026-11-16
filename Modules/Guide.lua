@@ -14,11 +14,13 @@ M.LABELS = {
     ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
 }
 
-local DEFAULTS = { auto = true, arrow = true, mapPin = true, screenPin = true, arriveSound = true, trainerOnLevel = true, route = true, routeMini = true, learn = true }
+local DEFAULTS = { auto = true, arrow = false, mapPin = true, screenPin = true, arriveSound = true, trainerOnLevel = true, route = true, routeMini = true, learn = true }
 function M:Config()
     local q = WK.modules.QoL:Config()
     q.guide = q.guide or {}
     for k, v in pairs(DEFAULTS) do if q.guide[k] == nil then q.guide[k] = v end end
+    -- 0.80.3 : l'épingle et le trajet guident ; la flèche passe en option, coupée une fois pour toutes
+    if not q.guide.arrowOff1 then q.guide.arrow = false; q.guide.arrowOff1 = true end
     return q.guide
 end
 
@@ -209,7 +211,7 @@ function M:GoTo(what, r, quiet)
         return nil
     end
     self:Start(t, M.LABELS[what] or what, what)
-    if not quiet and not self:Config().arrow then
+    if not quiet and not self:Config().arrow and not self:Config().screenPin then
         local label, place = T(M.LABELS[what] or what), self:PlaceName(t)
         if place == label then
             WK:Print(string.format(T("Au plus près · %s, %s"), label, self:DistText(t)))

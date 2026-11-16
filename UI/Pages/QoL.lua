@@ -405,7 +405,7 @@ UI:RegisterPage({
         UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
             "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
             toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
-        UI:SettingRow(guide, -96, "Flèche à l'écran", "Déplaçable ; clic droit ou croix pour arrêter.",
+        UI:SettingRow(guide, -96, "Flèche à l'écran", "En plus de l'épingle et du trajet : flèche déplaçable vers le point suivant du chemin ; clic droit ou croix pour arrêter.",
             toggle(guide, function() return gcfg.arrow end, function(v) gcfg.arrow = v; if G.OnTarget then G:OnTarget() end end), 80)
         UI:SettingRow(guide, -144, "Repère sur la carte du monde", nil,
             toggle(guide, function() return gcfg.mapPin end, function(v) gcfg.mapPin = v; if G.Redraw then G:Redraw() end end), 80)

@@ -381,14 +381,21 @@ function UI:EnterEditMode()
     if self.reopenAfterEdit then self.frame:Hide() end
     overlay:Show()
     drawGrid()
+    local first
     for _, key in ipairs(order) do
         local r = registry[key]
-        if r.sample then r.sample(true) end
-        boxes[key] = boxes[key] or buildBox(key)
-        boxes[key]:SetAllPoints(r.frame)
-        boxes[key]:Show()
+        -- élément coupé dans ses réglages (opts.enabled) : absent du mode édition
+        if not r.enabled or r.enabled() then
+            if r.sample then r.sample(true) end
+            boxes[key] = boxes[key] or buildBox(key)
+            boxes[key]:SetAllPoints(r.frame)
+            boxes[key]:Show()
+            first = first or key
+        elseif boxes[key] then
+            boxes[key]:Hide()
+        end
     end
-    select(order[1])
+    if first then select(first) end
     popup:Hide()
 end
 
@@ -396,9 +403,13 @@ function UI:EditRefresh()
     if not self.editing then return end
     for _, key in ipairs(order) do
         local r = registry[key]
-        boxes[key] = boxes[key] or buildBox(key)
-        boxes[key]:SetAllPoints(r.frame)
-        boxes[key]:Show()
+        if not r.enabled or r.enabled() then
+            boxes[key] = boxes[key] or buildBox(key)
+            boxes[key]:SetAllPoints(r.frame)
+            boxes[key]:Show()
+        elseif boxes[key] then
+            boxes[key]:Hide()
+        end
     end
 end
 
@@ -407,7 +418,7 @@ function UI:ExitEditMode()
     self.editing = false
     for _, key in ipairs(order) do
         local r = registry[key]
-        if r.sample then r.sample(false) end
+        if r.sample and (not r.enabled or r.enabled()) then r.sample(false) end
     end
     if popup then popup:Hide() end
     overlay:Hide()

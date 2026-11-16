@@ -119,6 +119,7 @@ local function build()
     f:Hide()
     UI:RegisterHUD("arrow", f, {
         label = T("Flèche de guidage"),
+        enabled = function() return WK.modules.Guide:Config().arrow end,
         default = { 0, UIParent:GetHeight() / 2 - 172 },
         legacy = function()
             local pos = WK.modules.Guide:Config().point -- position des versions précédentes
