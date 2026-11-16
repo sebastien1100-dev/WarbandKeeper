@@ -582,9 +582,13 @@ local function Detail(page, parent)
     local tickHolder = CreateFrame("Frame", nil, bar)
     tickHolder:SetAllPoints()
     tickHolder:SetFrameLevel(bar:GetFrameLevel() + 5)
+    local tierNums = {}
     for i, rk in ipairs(RANKS) do
         rankLabels[i] = UI:Text(head, 10, C.muted)
         rankLabels[i]:SetText(rk[1])
+        -- palier sous la barre (75, 150, 225, 300)
+        tierNums[i] = UI:Text(head, 9, C.dim)
+        tierNums[i]:SetText(tostring(rk[2]))
         if i < #RANKS then
             local t = tickHolder:CreateTexture(nil, "OVERLAY")
             t:SetSize(3, 14)
@@ -608,8 +612,19 @@ local function Detail(page, parent)
                 ticks[i]:SetColorTexture(unpack(C.bg))
             end
         end
+        local mx = math.max(10, math.min(w - 10, w * math.min(rank, 300) / 300))
+        for i, rk in ipairs(RANKS) do
+            local tx = w * i / #RANKS
+            local n = tierNums[i]
+            n:ClearAllPoints()
+            if i == #RANKS then n:SetPoint("TOPRIGHT", bar, "BOTTOMRIGHT", 0, -4)
+            else n:SetPoint("TOP", bar, "BOTTOMLEFT", tx, -4) end
+            -- palier atteint : couleur d'accent ; masqué s'il gêne la valeur du perso
+            if rank >= rk[2] then n:SetTextColor(UI:Accent()) else n:SetTextColor(unpack(C.dim)) end
+            n:SetShown(math.abs(tx - mx) > 28)
+        end
         marker:ClearAllPoints()
-        marker:SetPoint("TOP", bar, "BOTTOMLEFT", math.max(10, math.min(w - 10, w * math.min(rank, 300) / 300)), -4)
+        marker:SetPoint("TOP", bar, "BOTTOMLEFT", mx, -4)
         marker:SetText(tostring(rank))
         marker:SetTextColor(UI:Accent())
         bar:SetValue(math.min(rank, 300) / 300)
@@ -952,9 +967,27 @@ local function Detail(page, parent)
     matsCard:SetWidth(MATS_W)
     matsCard:SetPoint("TOPRIGHT")
     matsCard:SetPoint("BOTTOMRIGHT")
+    -- jusqu'où compter les matériaux : 75, 150, 225, 300 ou tout le guide (retenu par métier)
+    local function targets()
+        local ui = WK.DB.global.settings.ui
+        ui.guideTarget = ui.guideTarget or {}
+        return ui.guideTarget
+    end
+    function tab:Target()
+        local t = targets()[self.prof or ""]
+        if t == "max" or not t then return nil end
+        return t
+    end
+    local tgtSeg = UI:Segmented(matsCard, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } },
+        function(v)
+            targets()[tab.prof or ""] = v
+            if tab.lastC and tab.lastPr then tab:RefreshGuide(tab.lastC, tab.lastPr) end
+        end, 24)
+    tgtSeg:SetPoint("TOPLEFT", 12, -36)
+    tab.tgtSeg = tgtSeg
     local matsSum = UI:Text(matsCard, 11, C.muted)
-    matsSum:SetPoint("TOPLEFT", 16, -36)
-    matsSum:SetPoint("TOPRIGHT", -16, -36)
+    matsSum:SetPoint("TOPLEFT", 16, -68)
+    matsSum:SetPoint("TOPRIGHT", -16, -68)
     matsSum:SetJustifyH("LEFT")
     local ahBtn = UI:Button(matsCard, "Liste d'achat", nil, 28, "primary", "search")
     ahBtn:SetPoint("BOTTOMLEFT", 12, 46)
@@ -963,7 +996,7 @@ local function Detail(page, parent)
     matsTotal:SetPoint("BOTTOMRIGHT", -16, 84)
     matsTotal:SetJustifyH("RIGHT")
     ahBtn.tooltip = "Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."
-    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToList(tab.prof, tab.rank, tab.known) end)
+    ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToList(tab.prof, tab.rank, tab.known, tab.effTarget) end)
     local mailBtn = UI:Button(matsCard, "Envoyer à ce perso", nil, 28, "secondary", "mail")
     mailBtn:SetPoint("BOTTOMLEFT", 12, 12)
     mailBtn:SetPoint("BOTTOMRIGHT", -12, 12)
@@ -973,7 +1006,7 @@ local function Detail(page, parent)
         WK:Print(string.format(T("Guide : %d règle(s) d'envoi ajoutée(s), %d déjà existante(s)."), added, skipped))
     end)
     local mscroll = UI:Scroll(matsCard)
-    mscroll:SetPoint("TOPLEFT", 10, -60)
+    mscroll:SetPoint("TOPLEFT", 10, -90)
     mscroll:SetPoint("BOTTOMRIGHT", -8, 108)
     local mrows = UI:Pool(function()
         local r = CreateFrame("Button", nil, mscroll.child)
@@ -1090,7 +1123,17 @@ local function Detail(page, parent)
         local rank = pr.rank or 0
         self.rank = rank
         self.known = R:KnownOutputs(c)
-        local steps, mats, total, g = R:GuidePlan(self.prof, rank, self.known)
+        self.lastC, self.lastPr = c, pr
+        local target = self:Target()
+        -- cible déjà atteinte : on passe au palier suivant
+        if target and rank >= target then
+            target = nil
+            for _, t in ipairs({ 75, 150, 225, 300 }) do if t > rank then target = t break end end
+        end
+        self.effTarget = target
+        self.tgtSeg:Select(target or "max")
+        matsCard.title:SetText(target and string.format(T("Matériaux jusqu'à %d"), target) or T("Matériaux jusqu'au max"))
+        local steps, mats, total, g = R:GuidePlan(self.prof, rank, self.known, target)
         local faction = c.faction == "Horde" and "horde" or "alliance"
         sheads:Reset(); srows:Reset()
         local y, si = 0, 1

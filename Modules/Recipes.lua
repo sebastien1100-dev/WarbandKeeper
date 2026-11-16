@@ -387,10 +387,13 @@ end
 -- Plan pour un niveau : étapes (status "done" / "current" / "todo", left = fabrications restantes)
 -- et matériaux jusqu'au maximum { itemID, need, have, missing, unit, cost, recipe? }, recettes à
 -- acheter comprises (sauf celles déjà connues : known = { [objet fabriqué] = true }).
-function M:GuidePlan(prof, rank, known)
+-- target : compétence visée pour les matériaux (75, 150, 225, 300 ; nil = jusqu'au bout du guide).
+-- Les étapes gardent leur état complet ; seuls les matériaux s'arrêtent à la cible.
+function M:GuidePlan(prof, rank, known, target)
     local g = self:Guide(prof)
     if not g then return nil end
     rank = rank or 0
+    local tgt = target or math.huge
     -- Objets fabriqués par le guide lui-même (peaux traitées, bandages…) : on ne les achète pas,
     -- leurs composants sont déjà comptés dans l'étape qui les fabrique. Exception : les objets
     -- « skillOnly » (cuirs…) qu'on fabrique juste pour monter : il faut s'en procurer le reste.
@@ -409,8 +412,12 @@ function M:GuidePlan(prof, rank, known)
         else status, ratio = "todo", 1 end
         local left = math.ceil(st.crafts * ratio)
         table.insert(steps, { step = st, status = status, left = left })
+        -- part de l'étape à faire avant la cible (matériaux seulement)
+        local lo, hi = math.max(rank, st.from), math.min(st.to, tgt)
+        local mratio = hi > lo and (hi - lo) / math.max(1, st.to - st.from) or 0
+        local inTarget = mratio > 0
         -- Recette à acheter (une seule fois, même si plusieurs étapes l'utilisent)
-        if status ~= "done" and st.learn and not self:StepKnown(st, known) then
+        if inTarget and st.learn and not self:StepKnown(st, known) then
             need[st.learn] = 1
             learns = learns or {}
             learns[st.learn] = learns[st.learn] or { vendors = st.vendors, from = st.from, to = st.to }
@@ -419,16 +426,17 @@ function M:GuidePlan(prof, rank, known)
             for _, rg in ipairs(s.reagents or {}) do need[rg[1]] = (need[rg[1]] or 0) + rg[2] * n end
         end
         -- Outils achetés (marteau de forgeron…) : un seul exemplaire suffit
-        if status ~= "done" then
+        if inTarget then
             for _, tool in ipairs(st.tools or {}) do
                 if not made[tool] then need[tool] = math.max(need[tool] or 0, 1) end
             end
         end
-        if left > 0 then
-            add(st, left)
-            if st.out then produced[st.out] = (produced[st.out] or 0) + left * (st.qty or 1) end
+        local mleft = math.ceil(st.crafts * mratio)
+        if mleft > 0 then
+            add(st, mleft)
+            if st.out then produced[st.out] = (produced[st.out] or 0) + mleft * (st.qty or 1) end
             for _, f in ipairs(st.first or {}) do
-                local n = math.ceil(f.crafts * ratio)
+                local n = math.ceil(f.crafts * mratio)
                 add(f, n)
                 if f.out then produced[f.out] = (produced[f.out] or 0) + n * (f.qty or 1) end
             end
@@ -620,11 +628,11 @@ function M:Missing(c, prof)
 end
 
 -- Composants manquants du guide vers une liste d'achat.
-function M:GuideToList(prof, rank, known)
-    local _, mats = self:GuidePlan(prof, rank, known)
+function M:GuideToList(prof, rank, known, target)
+    local _, mats = self:GuidePlan(prof, rank, known, target)
     local list = {}
     for _, m in ipairs(mats or {}) do if m.missing > 0 then table.insert(list, m) end end
-    return self:ExportToList(list, T(prof))
+    return self:ExportToList(list, T(prof) .. (target and (" " .. string.format(T("jusqu'à %d"), target)) or ""))
 end
 
 -- Règles d'envoi pour que les composants du guide arrivent à ce perso (sans toucher aux

@@ -20,6 +20,12 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.73.1 — 16/11/2026
+
+### Ajouts
+- Guide de métier : boutons 75, 150, 225, 300 et Max dans la carte des matériaux. Les matériaux, le coût et la liste d'achat s'arrêtent au palier choisi (« Matériaux jusqu'à 150 »). Le choix est retenu par métier ; un palier déjà atteint passe au suivant.
+- Métiers : les paliers 75, 150, 225 et 300 sont écrits sous la barre des rangs, à la couleur d'accent quand ils sont atteints.
+
 ## v0.73.0 — 16/11/2026
 
 ### Ajouts

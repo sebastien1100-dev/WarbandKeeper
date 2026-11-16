@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.73.1", date = "16/11/2026",
+        added = {
+            "Guide de métier : boutons 75, 150, 225, 300 et Max dans la carte des matériaux. Les matériaux, le coût et la liste d'achat s'arrêtent au palier choisi (« Matériaux jusqu'à 150 »). Le choix est retenu par métier ; un palier déjà atteint passe au suivant.",
+            "Métiers : les paliers 75, 150, 225 et 300 sont écrits sous la barre des rangs, à la couleur d'accent quand ils sont atteints.",
+        },
+    },
+    {
         version = "0.73.0", date = "16/11/2026",
         added = {
             "Listes d'achat : bouton « Acheter » qui parcourt la liste au prix le plus bas. Le jeu exige un clic par achat : 1er clic, le prix de tout ce qui manque pour l'objet suivant ; 2e clic, « Confirmer 30 Barre de fer : 7 po 83 » ; puis on passe à l'objet suivant. La croix annule l'achat en attente.",
