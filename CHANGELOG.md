@@ -11,6 +11,7 @@ _Prévu, pas encore commencé._
 - Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.
 - Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.
 - Hôtel des ventes, suite : listes d'achat (recherche de toute la liste, achat en un clic, listes de courses des métiers), vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler.
+- Modules : activer ou couper chaque partie de l'addon (propositions A, B, C).
 - Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.
 - Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.
@@ -19,6 +20,15 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.68.1 — 16/11/2026
+
+### Ajouts
+- En-tête : nouveau bouton pour recharger l'interface (/reload), à gauche de la croix ; il ne fait rien en combat.
+
+### Modifications
+- En-tête : le bouton « Éditer l'interface » s'appelle maintenant « Éditer ».
+- Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.68.0 — 16/11/2026
 

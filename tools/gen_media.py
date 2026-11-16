@@ -201,6 +201,14 @@ def icon_refresh():
     save(img, "refresh", 64)
 
 
+def icon_power():
+    # recharger l'interface : symbole marche/arrêt (cercle ouvert en haut, trait vertical)
+    img, d, s = canvas(64)
+    d.arc([P(0.2, s), P(0.22, s), P(0.8, s), P(0.82, s)], -55, 235, fill=W, width=int(SW * s))
+    line(d, s, [(0.5, 0.12), (0.5, 0.5)], SW)
+    save(img, "power", 64)
+
+
 def icon_notes():
     img, d, s = canvas(64)
     rrect(d, s, 0.2, 0.1, 0.8, 0.9, 0.1, SW)
@@ -565,6 +573,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring]:
         fn()
     print("OK")

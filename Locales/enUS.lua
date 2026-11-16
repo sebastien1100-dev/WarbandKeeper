@@ -1067,7 +1067,7 @@ WK.Locales.enUS.text = {
     ["RACCOURCIS"] = "SHORTCUTS", ["Masqué"] = "Hidden", ["Gauche"] = "Left", ["Droite"] = "Right",
     ["HunterSuite est chargé"] = "HunterSuite is loaded", ["Garder aussi les aides de Warband Keeper"] = "Also keep Warband Keeper's helpers",
     ["Sinon, cadre et bouton du familier, bouton d'aspect et rappels restent masqués pour ne pas faire doublon."] = "Otherwise the pet frame and button, aspect button and reminders stay hidden to avoid duplicates.",
-    ["Éditer l'interface"] = "Edit the interface", ["Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."] = "Move and resize on-screen elements (also: /wk edit).",
+    ["Éditer l'interface"] = "Edit the interface", ["Éditer"] = "Edit", ["Recharger l'interface (/reload)"] = "Reload the interface (/reload)", ["Pas de rechargement en combat."] = "No reload during combat.", ["Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."] = "Move and resize on-screen elements (also: /wk edit).",
     ["Disposition : ce perso"] = "Layout: this character", ["Disposition : compte"] = "Layout: account",
     ["Disposition commune à tout le compte, ou propre à ce perso."] = "Layout shared by the whole account, or for this character only.",
     ["Icône et nombre"] = "Icon and count",
