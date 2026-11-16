@@ -20,6 +20,12 @@ _Prévu, pas encore commencé._
 - Trajet sans ShortestPathForever : tracé marche, vol, marche par Warband Keeper, aidé des routes de patrouille des PNJ et des chemins déjà parcourus.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.76.1 — 16/11/2026
+
+### Modifications
+- Guidage vers le plus proche (réparation, marchand, boîte aux lettres, banque, maître de classe, munitions, composants, alertes de sacs pleins) : avec ShortestPathForever, le lieu choisi est celui qu'on atteint le plus vite en vrai, parmi les 6 plus proches à vol d'oiseau (une rivière ou une falaise ne piègent plus le choix), et le trajet passe par lui.
+- Les messages du guidage donnent alors le temps de trajet (« à 3 min de trajet ») au lieu de la distance à vol d'oiseau.
+
 ## v0.76.0 — 16/11/2026
 
 ### Ajouts

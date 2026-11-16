@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.76.1", date = "16/11/2026",
+        changed = {
+            "Guidage vers le plus proche (réparation, marchand, boîte aux lettres, banque, maître de classe, munitions, composants, alertes de sacs pleins) : avec ShortestPathForever, le lieu choisi est celui qu'on atteint le plus vite en vrai, parmi les 6 plus proches à vol d'oiseau (une rivière ou une falaise ne piègent plus le choix), et le trajet passe par lui.",
+            "Les messages du guidage donnent alors le temps de trajet (« à 3 min de trajet ») au lieu de la distance à vol d'oiseau.",
+        },
+    },
+    {
         version = "0.76.0", date = "16/11/2026",
         added = {
             "Guidage : si l'addon ShortestPathForever est installé, « Guider » (quêtes, rares, lieux de la carte, métiers, alertes) lui confie le trajet. Le chemin en pointillé suit le terrain (routes, murs, ponts) et enchaîne marche, vols et bateaux, avec sa propre flèche (celle de Warband Keeper se cache alors).",

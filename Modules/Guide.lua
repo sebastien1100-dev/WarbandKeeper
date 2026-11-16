@@ -9,6 +9,7 @@ local T = function(s) return WK.T(s) end
 
 M.KIND = { mail = 1, bank = 2, vendor = 4, repair = 8, ammo = 16, reagent = 32, poison = 64, trainer = 128, general = 256, stable = 512, fishing = 1024 }
 local KIND = M.KIND
+local SPF_CANDIDATES = 6 -- lieux comparés au temps de trajet (ShortestPathForever)
 M.LABELS = {
     mail = "Boîte aux lettres", bank = "Banque", vendor = "Marchand", repair = "Réparation",
     ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
@@ -107,7 +108,7 @@ function M:Nearest(kinds, class)
     if not p then return nil end
     local fac = UnitFactionGroup("player")
     local faction = fac == "Horde" and "H" or (fac == "Alliance" and "A") or fac
-    local best, bestD
+    local cands = {}
     for mapID, list in pairs(WK.PlacesDB or {}) do
         for _, e in ipairs(list) do
             local ok = false
@@ -118,14 +119,37 @@ function M:Nearest(kinds, class)
                 local t = { map = mapID, x = e[1] / 100, y = e[2] / 100 }
                 if w then t.cont, t.wx, t.wy = w[1], w[2], w[3] end
                 local d = self:Vector(p, t)
-                if d and (not bestD or d < bestD) then
-                    best, bestD = { map = mapID, x = t.x, y = t.y, cont = t.cont, wx = t.wx, wy = t.wy, e = e }, d
+                if d then
+                    t.e, t.distance = e, d
+                    table.insert(cands, t)
                 end
             end
         end
     end
-    if best then best.distance = bestD end
-    return best
+    if #cands == 0 then return nil end
+    table.sort(cands, function(a, b) return a.distance < b.distance end)
+    -- Avec ShortestPathForever : parmi les plus proches à vol d'oiseau, celui qu'on atteint le plus
+    -- vite en vrai (une rivière, une falaise ou un vol peuvent tout changer).
+    local api = self:SPF()
+    if api and type(api.Estimate) == "function" and #cands > 1 then
+        local best, bestS
+        for i = 1, math.min(SPF_CANDIDATES, #cands) do
+            local c = cands[i]
+            local ok, sec = pcall(api.Estimate, p.map, p.x, p.y, c.map, c.x, c.y)
+            if ok and type(sec) == "number" then
+                c.seconds = sec
+                if not bestS or sec < bestS then best, bestS = c, sec end
+            end
+        end
+        if best then return best end
+    end
+    return cands[1]
+end
+
+-- « à 240 m » ou, avec ShortestPathForever, « à 3 min de trajet »
+function M:DistText(t)
+    if t.seconds then return string.format(T("à %d min de trajet"), math.max(1, math.floor(t.seconds / 60 + 0.5))) end
+    return string.format(T("à %d m"), math.floor(t.distance or 0))
 end
 
 function M:PlaceName(t)
@@ -244,9 +268,9 @@ function M:GoTo(what, r, quiet)
     if not quiet and not self:Config().arrow then
         local label, place = T(M.LABELS[what] or what), self:PlaceName(t)
         if place == label then
-            WK:Print(string.format(T("Au plus près · %s, à %d m"), label, math.floor(t.distance or 0)))
+            WK:Print(string.format(T("Au plus près · %s, %s"), label, self:DistText(t)))
         else
-            WK:Print(string.format(T("Au plus près · %s : %s, à %d m"), label, place, math.floor(t.distance or 0)))
+            WK:Print(string.format(T("Au plus près · %s : %s, %s"), label, place, self:DistText(t)))
         end
     end
     return t
@@ -297,7 +321,7 @@ function M:Check()
             local t = self:Nearest(self:KindsFor(need.what, need.r))
             local msg = need.text
             if t then
-                msg = msg .. " · " .. string.format(T("%s à %d m"), self:PlaceName(t), math.floor(t.distance or 0))
+                msg = msg .. " · " .. self:PlaceName(t) .. " " .. self:DistText(t)
                 if not self.target then self:Start(t, M.LABELS[need.what], need.what) end
             end
             WK.modules.QoL:Remind("guide" .. need.key, msg, 1, 0.82, 0.2)
@@ -328,7 +352,7 @@ WK:On("PLAYER_LEVEL_UP", function(level)
         if not canGuide() then return end
         local t = M:GoTo("trainer", nil, true)
         local msg = string.format(T("Niveau %d : nouveaux sorts chez ton maître de classe"), level)
-        if t then msg = msg .. " · " .. string.format(T("%s à %d m"), M:PlaceName(t), math.floor(t.distance or 0)) end
+        if t then msg = msg .. " · " .. M:PlaceName(t) .. " " .. M:DistText(t) end
         WK.modules.QoL:Remind("trainer", msg, 0.4, 0.85, 1)
     end)
 end)
