@@ -6,6 +6,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.82.0", date = "16/11/2026",
+        added = {
+            "Vols : le chemin réellement suivi par le griffon est noté à chaque vol. En vol, la carte du monde et la minicarte montrent ce chemin depuis ta position jusqu'à l'arrivée (au premier vol sur un trajet : le chemin déjà parcouru), puis la suite du trajet guidé. Les trajets planifiés dessinent aussi ce vrai chemin de vol au lieu d'une ligne droite.",
+            "Bateaux appris : quand un bateau ou un zeppelin te porte (tu avances sans bouger), le départ et l'arrivée deviennent deux quais connus, avec le chemin suivi. Ils apparaissent sur la carte comme les autres trajets (« vers Hurlevent »…), leur tracé est dessiné, et la navigation s'en sert (même continent compris). Un message le signale la première fois.",
+            "Nouvelle texture : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+        changed = {
+            "Barre de filtres de la carte : la poignée pour la déplacer devient une croix à quatre flèches, qui prend ta couleur au survol.",
+            "« Oublier les chemins appris » oublie aussi les bateaux appris.",
+        },
+    },
+    {
         version = "0.81.0", date = "16/11/2026",
         added = {
             "Hôtel des ventes, onglet « Ventes » du panneau : tes enchères en cours (prix à l'unité, quantité). « Vérifier les prix » cherche le plus bas prix actuel de chaque objet (un toutes les 1,2 s) et marque chaque enchère : au plus bas, seul en vente, ou sous-cotée avec le prix du concurrent. Une enchère sous-cotée a un bouton « Annuler » (l'objet revient par courrier, le dépôt est perdu).",

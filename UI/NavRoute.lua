@@ -10,13 +10,62 @@ local MAX_MAP, MAX_MINI = 1200, 160
 
 local function gcfg() return WK.modules.Guide:Config() end
 
+-- Points d'un vol : chemin réel déjà parcouru une fois (Modules/Flight.lua), sinon ligne droite
+local function flyPoints(out, from, to, ax, ay, bx, by, fromIdx)
+    local F = WK.modules.Flight
+    local _, pts = F and F.Path and F:Path(from, to)
+    if pts and #pts >= 4 then
+        for k = (fromIdx or 1), #pts / 2 do out[#out + 1] = { pts[k * 2 - 1], pts[k * 2], true } end
+        return true
+    end
+    if ax then out[#out + 1] = { ax, ay } end
+    if bx then out[#out + 1] = { bx, by, true } end -- le segment qui arrive ici est un vol
+    return false
+end
+-- Index du point du chemin le plus proche de (x, y)
+local function nearestIdx(pts, x, y)
+    local bi, bd = 1, math.huge
+    for k = 1, #pts / 2 do
+        local d = N.Dist(x, y, pts[k * 2 - 1], pts[k * 2])
+        if d < bd then bi, bd = k, d end
+    end
+    return bi
+end
+
 -- Points restants du trajet (monde), depuis la position du perso : { { x, y, fly } }
+-- En vol (taxi) : le chemin du griffon depuis la position actuelle (connu après un premier vol,
+-- sinon le chemin parcouru jusqu'ici), puis la suite du trajet guidé.
 local function remaining()
     local r = N.route
-    if not r then return nil end
     local G = WK.modules.Guide
     local p = G:PlayerPos()
+    local F = WK.modules.Flight
+    local fl = F and F.Current and F:Current()
     local out = {}
+    if fl and p and p.cont then
+        out[1] = { p.wx, p.wy }
+        local _, pts = F:Path(fl.from, fl.to)
+        if pts and #pts >= 4 then
+            for k = nearestIdx(pts, p.wx, p.wy), #pts / 2 do out[#out + 1] = { pts[k * 2 - 1], pts[k * 2], true } end
+        elseif fl.pts and #fl.pts >= 4 then
+            -- premier vol sur ce trajet : le chemin déjà parcouru (derrière toi)
+            out = {}
+            for k = 1, #fl.pts / 2 do out[#out + 1] = { fl.pts[k * 2 - 1], fl.pts[k * 2], k > 1 } end
+            out[#out + 1] = { p.wx, p.wy, true }
+        end
+        -- suite du trajet guidé après l'étape de vol
+        if r and r.cont == p.cont then
+            local after = false
+            for _, l in ipairs(r.legs) do
+                if after and l.kind == "walk" then
+                    for k = 1, #l.pts / 2 do out[#out + 1] = { l.pts[k * 2 - 1], l.pts[k * 2] } end
+                end
+                if l.kind == "fly" then after = true end
+            end
+        end
+        return out, p.cont
+    end
+    if not r then return nil end
     if p and p.cont == r.cont then out[1] = { p.wx, p.wy } end
     for li = r.leg or 1, #r.legs do
         local l = r.legs[li]
@@ -24,12 +73,65 @@ local function remaining()
             local start = (li == r.leg) and (r.idx or 1) or 1
             for k = start, #l.pts / 2 do out[#out + 1] = { l.pts[k * 2 - 1], l.pts[k * 2] } end
         elseif l.kind == "fly" then
-            out[#out + 1] = { l.ax, l.ay }
-            out[#out + 1] = { l.bx, l.by, true } -- le segment qui arrive ici est un vol
+            flyPoints(out, l.from, l.to, l.ax, l.ay, l.bx, l.by)
         end
     end
     return out, r.cont
 end
+
+-- Trajets de bateau appris (Modules/Nav.lua) : leur chemin réel, en pointillés de la couleur des transports
+local boatDots = {}
+function UI:DrawBoatPaths(cv, mapID, w, h)
+    for _, d in ipairs(boatDots) do d:Hide() end
+    local L = WK.modules.MapLayers
+    if not (L and WK:FeatureOn("maplayers") and L:Config().map.transport) then return end
+    if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return end
+    local col = { UI:Accent() }
+    local tl = L.LAYER and L.LAYER.transport
+    if tl and L.FAMILY[tl.family] then col = L.FAMILY[tl.family].color end
+    local scale = w / 1000
+    local size, gap = math.max(3, 4.5 * scale), math.max(8, 13 * scale)
+    local n = 0
+    for _, b in ipairs(N:Boats()) do
+        local pts = b.path and b.path.pts
+        if pts and #pts >= 4 then
+            local px, py
+            for k = 1, #pts / 2 do
+                local okc, _, pos = pcall(C_Map.GetMapPosFromWorldPos, b.path.c, CreateVector2D(pts[k * 2 - 1], pts[k * 2]), mapID)
+                local mx, my
+                if okc and pos then mx, my = pos.x, pos.y; if pos.GetXY then mx, my = pos:GetXY() end end
+                if mx and mx > -0.1 and mx < 1.1 and my > -0.1 and my < 1.1 then
+                    local x, y = mx * w, my * h
+                    if px then
+                        local dx, dy = x - px, y - py
+                        local len = math.sqrt(dx * dx + dy * dy)
+                        local t = 0
+                        while t < len and n < 600 do
+                            n = n + 1
+                            local d = boatDots[n]
+                            if not d then
+                                d = cv:CreateTexture(nil, "OVERLAY", nil, 4)
+                                d:SetTexture(UI.MEDIA .. "circle")
+                                boatDots[n] = d
+                            end
+                            if d:GetParent() ~= cv then d:SetParent(cv) end
+                            d:SetSize(size, size)
+                            d:SetVertexColor(col[1], col[2], col[3], 0.85)
+                            d:ClearAllPoints()
+                            d:SetPoint("CENTER", cv, "TOPLEFT", px + dx * t / len, -(py + dy * t / len))
+                            d:Show()
+                            t = t + gap
+                        end
+                    end
+                    px, py = x, y
+                else
+                    px, py = nil, nil
+                end
+            end
+        end
+    end
+end
+function UI:HideBoatPaths() for _, d in ipairs(boatDots) do d:Hide() end end
 
 ---------------------------------------------------------------------------
 -- Carte du monde
@@ -198,7 +300,8 @@ WK:On("PLAYER_LOGIN", function()
                 if s.mapAcc > 1 and WorldMapFrame and WorldMapFrame:IsShown() and UI.RefreshGuidePinLabel then
                     UI:RefreshGuidePinLabel()
                 end
-                if s.mapAcc > 1 and N.route and WorldMapFrame and WorldMapFrame:IsShown() then
+                local flying = WK.modules.Flight and WK.modules.Flight:Current()
+                if s.mapAcc > 1 and (N.route or flying) and WorldMapFrame and WorldMapFrame:IsShown() then
                     s.mapAcc = 0
                     local cv = WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.Child
                     local mapID = WorldMapFrame.GetMapID and WorldMapFrame:GetMapID()

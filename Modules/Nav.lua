@@ -104,6 +104,12 @@ local function addLine(g, pts, factor)
     return len
 end
 
+local function lineLen(pts)
+    local len = 0
+    for k = 1, #pts - 3, 2 do len = len + dist(pts[k], pts[k + 1], pts[k + 2], pts[k + 3]) end
+    return len
+end
+
 local function build(cont)
     local g = newGraph()
     local G = Gd()
@@ -121,6 +127,14 @@ local function build(cont)
     end
     for _, pts in ipairs(data().trails[cont] or {}) do
         g.learnedLen = g.learnedLen + addLine(g, pts, LEARNED)
+    end
+    -- bateaux appris sur ce continent : un saut d'un quai à l'autre (temps d'attente compté)
+    for _, b in ipairs(data().boats or {}) do
+        if b.a.c == cont and b.b.c == cont then
+            local na, nb = addNode(g, b.a.wx, b.a.wy), addNode(g, b.b.wx, b.b.wy)
+            local len = (b.path and b.path.pts and lineLen(b.path.pts)) or dist(b.a.wx, b.a.wy, b.b.wx, b.b.wy)
+            link(g, na, nb, len * 0.35 + 300)
+        end
     end
     -- jonctions : les chemins qui se touchent se rejoignent
     for i = 1, g.n do
@@ -230,11 +244,6 @@ local function walk(cont, sx, sy, tx, ty, budget)
     for k = #rev - 1, 1, -2 do pts[#pts + 1] = rev[k]; pts[#pts + 1] = rev[k + 1] end
     return pts, goalCost
 end
-local function lineLen(pts)
-    local len = 0
-    for k = 1, #pts - 3, 2 do len = len + dist(pts[k], pts[k + 1], pts[k + 2], pts[k + 3]) end
-    return len
-end
 
 ---------------------------------------------------------------------------
 -- Vols connus du perso (notés à l'ouverture de la carte des vols)
@@ -300,7 +309,7 @@ local function compute(target)
         local fac = UnitFactionGroup and UnitFactionGroup("player")
         fac = fac == "Alliance" and "A" or fac == "Horde" and "H" or nil
         local best, bd
-        for _, r in ipairs(L and L.TRANSPORTS or {}) do
+        for _, r in ipairs(L and L:AllTransports() or {}) do
             if not (r.side and r.side ~= fac) then
                 for _, pair in ipairs({ { r.a, r.b }, { r.b, r.a } }) do
                     local here, there = pair[1], pair[2]
@@ -482,7 +491,8 @@ local function learnedPoints()
     return nLearned
 end
 -- Simplification d'un tronçon (Ramer-Douglas-Peucker, 3 m) : la ligne garde sa forme, moins de points
-local function simplify(pts)
+local function simplify(pts, tol)
+    tol = tol or 3
     local n = #pts / 2
     if n < 3 then return pts end
     local keep = { [1] = true, [n] = true }
@@ -500,7 +510,7 @@ local function simplify(pts)
             local d = dist(px, py, ax + t * dx, ay + t * dy)
             if d > best then best, bk = d, k end
         end
-        if bk and best > 3 then
+        if bk and best > tol then
             keep[bk] = true
             stack[#stack + 1] = { i, bk }; stack[#stack + 1] = { bk, j }
         end
@@ -533,6 +543,7 @@ function M:EndTrail()
 end
 local function canLearn()
     if not cfg().learn then return false end
+    if M.IsRiding and M.IsRiding() then return false end
     if UnitOnTaxi and UnitOnTaxi("player") then return false end
     if IsFlying and IsFlying() then return false end
     if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return false end
@@ -568,14 +579,90 @@ local function learnTick()
     end
     M.lastPos = { cont, x, y }
 end
+---------------------------------------------------------------------------
+-- Bateaux (et zeppelins) appris : la position avance alors que le perso ne bouge pas, hors vol et
+-- hors taxi : il est porté par un transport. Le départ et l'arrivée deviennent deux quais, le
+-- trajet suivi est gardé pour le dessin. WK.DB.global.nav.boats = { { kind, a, b, path } },
+-- a et b = { map, x, y (0-100), name, c (continent), wx, wy }.
+---------------------------------------------------------------------------
+function M:Boats()
+    local d = data()
+    d.boats = d.boats or {}
+    return d.boats
+end
+local ride, lastS
+local function zoneName(map)
+    local R = WK.modules.Rares
+    local ok, n = pcall(function() return R and R:ZoneName(map) end)
+    return (ok and n) or (GetZoneText and GetZoneText()) or "?"
+end
+local function dock(p)
+    return { map = p.map, x = floor(p.x * 10000) / 100, y = floor(p.y * 10000) / 100, name = zoneName(p.map), c = p.cont, wx = floor(p.wx), wy = floor(p.wy) }
+end
+local function endRide(endP)
+    local r = ride
+    ride = nil
+    if not (r and endP and endP.cont) then return end
+    local len = lineLen(r.pts)
+    if not r.crossed and len < 150 then return end
+    local a, b = dock(r.start), dock(endP)
+    local boats = M:Boats()
+    local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
+    for i = 1, #path.pts do path.pts[i] = floor(path.pts[i] + 0.5) end
+    -- même trajet (dans un sens ou dans l'autre) : on met à jour
+    for _, e in ipairs(boats) do
+        local same = (e.a.c == a.c and dist(e.a.wx, e.a.wy, a.wx, a.wy) < 150 and e.b.c == b.c and dist(e.b.wx, e.b.wy, b.wx, b.wy) < 250)
+        local rev = (e.b.c == a.c and dist(e.b.wx, e.b.wy, a.wx, a.wy) < 150 and e.a.c == b.c and dist(e.a.wx, e.a.wy, b.wx, b.wy) < 250)
+        if same or rev then
+            if same and (#path.pts > #(e.path and e.path.pts or {})) then e.path = path end
+            return
+        end
+    end
+    table.insert(boats, { kind = "boat", a = a, b = b, path = path })
+    graphs = {}
+    WK:Print(string.format(T("Nouveau trajet en bateau appris : %s » %s."), a.name, b.name))
+    if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
+end
+local function rideTick()
+    if not cfg().learn then ride = nil; lastS = nil return end
+    local p = Gd():PlayerPos()
+    if not (p and p.cont) then return end
+    local now = GetTime()
+    local taxi = (UnitOnTaxi and UnitOnTaxi("player")) or (IsFlying and IsFlying())
+    if lastS then
+        local dt = now - lastS.t
+        if lastS.cont ~= p.cont then
+            -- écran de chargement pendant le trajet : arrivée sur l'autre continent
+            if ride then ride.crossed = true; endRide(p) end
+        elseif dt > 0 then
+            local v = dist(p.wx, p.wy, lastS.wx, lastS.wy) / dt
+            local moving = (IsPlayerMoving and IsPlayerMoving()) or (GetUnitSpeed and (GetUnitSpeed("player") or 0) > 0 and not IsPlayerMoving)
+            if not taxi and not moving and v > 3 and v < 60 then
+                if not ride then ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0 } end
+                ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy
+                ride.still, ride.last = 0, p
+            elseif ride then
+                ride.still = ride.still + dt
+                -- il descend du bateau, ou le bateau est à quai depuis un moment
+                if moving or taxi or ride.still > 8 then endRide(ride.last) end
+            end
+        end
+    end
+    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now }
+end
+M.IsRiding = function() return ride ~= nil end
+
 WK:On("PLAYER_LOGOUT", function() M:EndTrail() end)
 WK:On("PLAYER_LOGIN", function()
-    if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(0.5, function() pcall(learnTick) end) end
+    if C_Timer and C_Timer.NewTicker then
+        C_Timer.NewTicker(0.5, function() pcall(rideTick); pcall(learnTick) end)
+    end
 end)
 
 function M:Forget()
     cur = nil
     data().trails = {}
+    data().boats = {}
     graphs = {}
     nLearned = 0
     if Gd().target then self:Plan(Gd().target) end
@@ -593,6 +680,7 @@ function M:Stats()
     return learned, roads
 end
 M.Dist, M.LineLen = dist, lineLen
+M.Simplify = function(pts, tol) return simplify(pts, tol) end
 
 function M:Report()
     local learned, roads = self:Stats()
@@ -607,3 +695,4 @@ end
 
 -- accès pour les tests
 M._compute, M._learnTick = compute, function() learnTick() end
+M._rideTick = function() rideTick() end

@@ -16,6 +16,17 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.82.0 — 16/11/2026
+
+### Ajouts
+- Vols : le chemin réellement suivi par le griffon est noté à chaque vol. En vol, la carte du monde et la minicarte montrent ce chemin depuis ta position jusqu'à l'arrivée (au premier vol sur un trajet : le chemin déjà parcouru), puis la suite du trajet guidé. Les trajets planifiés dessinent aussi ce vrai chemin de vol au lieu d'une ligne droite.
+- Bateaux appris : quand un bateau ou un zeppelin te porte (tu avances sans bouger), le départ et l'arrivée deviennent deux quais connus, avec le chemin suivi. Ils apparaissent sur la carte comme les autres trajets (« vers Hurlevent »…), leur tracé est dessiné, et la navigation s'en sert (même continent compris). Un message le signale la première fois.
+- Nouvelle texture : redémarrer le jeu (un /reload ne suffit pas).
+
+### Modifications
+- Barre de filtres de la carte : la poignée pour la déplacer devient une croix à quatre flèches, qui prend ta couleur au survol.
+- « Oublier les chemins appris » oublie aussi les bateaux appris.
+
 ## v0.81.0 — 16/11/2026
 
 ### Ajouts

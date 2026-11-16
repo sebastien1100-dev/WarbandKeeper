@@ -239,11 +239,11 @@ local function buildBar()
     bar.btns = {}
     -- poignée : glisser pour déplacer la barre sur la carte ; clic droit pour la remettre en haut
     local grip = CreateFrame("Button", nil, bar)
-    grip:SetSize(16, 28)
+    grip:SetSize(22, 28)
     grip:SetPoint("LEFT", 4, 0)
-    grip.icon = UI:Icon(grip, "grip", 14, nil, "ARTWORK")
+    grip.icon = UI:Icon(grip, "move", 15, nil, "ARTWORK")
     grip.icon:SetPoint("CENTER")
-    grip.icon:SetVertexColor(unpack(C.dim))
+    grip.icon:SetVertexColor(unpack(C.muted))
     grip:RegisterForDrag("LeftButton")
     grip:RegisterForClicks("RightButtonUp")
     bar:SetMovable(true)
@@ -271,8 +271,8 @@ local function buildBar()
         GameTooltip:AddLine(T("Clic droit : la remettre en haut de la carte"), 0.7, 0.7, 0.7)
         GameTooltip:Show()
     end)
-    grip:SetScript("OnLeave", function(s) s.icon:SetVertexColor(unpack(C.dim)); GameTooltip:Hide() end)
-    local x = 22
+    grip:SetScript("OnLeave", function(s) s.icon:SetVertexColor(unpack(C.muted)); GameTooltip:Hide() end)
+    local x = 28
     for _, f in ipairs(L.FAMILIES) do
         local b = CreateFrame("Button", nil, bar)
         b:SetSize(28, 28)

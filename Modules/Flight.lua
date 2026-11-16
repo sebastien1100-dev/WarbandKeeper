@@ -145,6 +145,14 @@ function M:Finish()
     -- Durée apprise seulement pour un vol complet et plausible
     if not f.early and secs > 5 then
         local d = db()
+        -- chemin du vol, simplifié, gardé pour le tracé (WK.DB.global.flights.paths["Départ|Arrivée"])
+        if f.pts and #f.pts >= 6 and f.cont then
+            local Nv = WK.modules.Nav
+            d.paths = d.paths or {}
+            local pts = Nv and Nv.Simplify and Nv.Simplify(f.pts, 8) or f.pts
+            for i = 1, #pts do pts[i] = math.floor(pts[i] + 0.5) end
+            d.paths[f.from .. "|" .. f.to] = { c = f.cont, pts = pts }
+        end
         d.routes[f.from .. "|" .. f.to] = math.floor(secs + 0.5)
         d.speed = nil -- ancienne mesure, en unités de carte
         if f.dist and f.dist > 0 then
@@ -156,6 +164,18 @@ function M:Finish()
 end
 
 function M:Current() return flight end
+-- Chemin connu d'un vol (« Départ », « Arrivée ») : continent, { x, y, ... } (sens du vol)
+function M:Path(from, to)
+    local d = db().paths or {}
+    local e = d[(from or "") .. "|" .. (to or "")]
+    if e then return e.c, e.pts end
+    e = d[(to or "") .. "|" .. (from or "")]
+    if e then
+        local rev = {}
+        for i = #e.pts - 1, 1, -2 do rev[#rev + 1] = e.pts[i]; rev[#rev + 1] = e.pts[i + 1] end
+        return e.c, rev
+    end
+end
 
 -- En vol : distance réellement parcourue (positions du perso, une par seconde). Pour un trajet pas
 -- encore appris, l'estimation est recalculée : reste à parcourir / vitesse mesurée.
@@ -165,6 +185,15 @@ function M:Track()
     if f.lastSample and now - f.lastSample < 1 then return end
     local p = WK.modules.Guide:PlayerPos()
     if not (p and p.cont) then return end
+    -- chemin réel du vol (pour le dessiner : UI/NavRoute.lua), un point tous les 25 m au moins
+    f.pts = f.pts or {}
+    local np = #f.pts
+    if np == 0 or f.cont ~= p.cont then
+        f.cont = p.cont
+        f.pts = { p.wx, p.wy }
+    elseif math.sqrt((p.wx - f.pts[np - 1]) ^ 2 + (p.wy - f.pts[np]) ^ 2) > 25 then
+        f.pts[np + 1], f.pts[np + 2] = p.wx, p.wy
+    end
     if f.pos and f.pos.cont == p.cont then
         local dx, dy = p.wx - f.pos.wx, p.wy - f.pos.wy
         local step = math.sqrt(dx * dx + dy * dy)

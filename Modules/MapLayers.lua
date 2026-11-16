@@ -53,6 +53,18 @@ M.TRANSPORTS = {
     { kind = "boat", side = "A", a = { 1439, 33.2, 40.1, "Auberdine" }, b = { 1438, 54.9, 96.8, "Rut'theran" } },
 }
 
+-- Trajets connus : ceux de la liste + les bateaux appris en les prenant (Modules/Nav.lua)
+function M:AllTransports()
+    local out = {}
+    for _, r in ipairs(M.TRANSPORTS) do out[#out + 1] = r end
+    local Nv = WK.modules.Nav
+    for _, b in ipairs(Nv and Nv.Boats and Nv:Boats() or {}) do
+        out[#out + 1] = { kind = b.kind or "boat", learned = true, path = b.path,
+                          a = { b.a.map, b.a.x, b.a.y, b.a.name }, b = { b.b.map, b.b.x, b.b.y, b.b.name } }
+    end
+    return out
+end
+
 local DEFAULTS = { myFaction = true, myClass = true, myProfs = true, toolbar = true, size = 18 }
 function M:Config()
     local g = WK.DB.global
@@ -114,10 +126,10 @@ function M:Docks(mapID, which)
     if not cfg[which or "map"].transport then return {} end
     local fac = factionLetter()
     local out = {}
-    for _, r in ipairs(M.TRANSPORTS) do
+    for _, r in ipairs(M:AllTransports()) do
         if not (cfg.myFaction and r.side and r.side ~= fac) then
-            if r.a[1] == mapID then table.insert(out, { x = r.a[2], y = r.a[3], to = r.b[4], kind = r.kind, other = r.b, here = r.a }) end
-            if r.b[1] == mapID then table.insert(out, { x = r.b[2], y = r.b[3], to = r.a[4], kind = r.kind, other = r.a, here = r.b }) end
+            if r.a[1] == mapID then table.insert(out, { x = r.a[2], y = r.a[3], to = r.b[4], kind = r.kind, other = r.b, here = r.a, path = r.path }) end
+            if r.b[1] == mapID then table.insert(out, { x = r.b[2], y = r.b[3], to = r.a[4], kind = r.kind, other = r.a, here = r.b, path = r.path }) end
         end
     end
     return out

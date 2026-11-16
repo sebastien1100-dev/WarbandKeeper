@@ -64,6 +64,7 @@ local function hideAll()
     if UI.HideRarePins then UI:HideRarePins() end
     if UI.HideMapLayers then UI:HideMapLayers() end
     if UI.HideNavRoute then UI:HideNavRoute() end
+    if UI.HideBoatPaths then UI:HideBoatPaths() end
 end
 
 -- Repère du guidage sur la carte du monde (Modules/Guide.lua) : épingle de la couleur d'accent avec
@@ -143,6 +144,7 @@ local function redraw()
         if UI.DrawMapLayers then UI:DrawMapLayers(cv, mapID, cw, ch) end -- lieux utiles (UI/MapLayers.lua)
         if UI.DrawNodePins then UI:DrawNodePins(cv, mapID, cw, ch) end -- emplacements connus (UI/NodePins.lua)
         if UI.DrawRarePins then UI:DrawRarePins(cv, mapID, cw, ch) end -- rares (UI/RarePins.lua)
+        if UI.DrawBoatPaths then UI:DrawBoatPaths(cv, mapID, cw, ch) end -- bateaux appris (UI/NavRoute.lua)
         if UI.DrawNavRoute then UI:DrawNavRoute(cv, mapID, cw, ch) end -- trajet du guidage (UI/NavRoute.lua)
         drawTarget(cv, mapID, cw, ch)
     end

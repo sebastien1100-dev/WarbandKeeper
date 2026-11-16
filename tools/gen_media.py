@@ -278,6 +278,18 @@ def icon_filter():
     save(img, "filter", 64)
 
 
+def icon_move():
+    """Déplacer : croix à quatre flèches."""
+    img, d, s = canvas(64)
+    w = SW * 0.95
+    line(d, s, [(0.5, 0.16), (0.5, 0.84)], w)
+    line(d, s, [(0.16, 0.5), (0.84, 0.5)], w)
+    for (tx, ty), (ax, ay), (bx, by) in [((0.5, 0.06), (0.36, 0.22), (0.64, 0.22)), ((0.5, 0.94), (0.36, 0.78), (0.64, 0.78)),
+                                          ((0.06, 0.5), (0.22, 0.36), (0.22, 0.64)), ((0.94, 0.5), (0.78, 0.36), (0.78, 0.64))]:
+        d.polygon([(P(tx, s), P(ty, s)), (P(ax, s), P(ay, s)), (P(bx, s), P(by, s))], fill=W)
+    save(img, "move", 64)
+
+
 def icon_grip():
     img, d, s = canvas(64)
     for k in (0.35, 0.6, 0.85):
@@ -614,6 +626,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move]:
         fn()
     print("OK")
