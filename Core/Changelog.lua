@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.83.0", date = "16/11/2026",
+        added = {
+            "Halo : nouvelle carte « Forme par filon et par plante » sous l'atelier (QoL > Halo). Chaque filon (cuivre, étain, argent, fer, or, mithril, vrai-argent, sombrefer, thorium…) et chaque plante peut avoir sa propre forme parmi les six existantes (halo, colonne, halo et colonne, onde, étincelles, viseur). « Catégorie » garde la forme choisie dans l'atelier ; « Tout comme la catégorie » remet la liste à zéro.",
+        },
+    },
+    {
         version = "0.82.1", date = "16/11/2026",
         changed = {
             "Fenêtre de rappels à la connexion : elle se ferme seule au bout de 5 secondes (fondu à la fin), sauf tant que la souris est dessus. Durée réglable dans Options > Général > Rappels à la connexion, de 0 (reste ouverte) à 60 s.",

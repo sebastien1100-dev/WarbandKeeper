@@ -16,6 +16,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.83.0 — 16/11/2026
+
+### Ajouts
+- Halo : nouvelle carte « Forme par filon et par plante » sous l'atelier (QoL > Halo). Chaque filon (cuivre, étain, argent, fer, or, mithril, vrai-argent, sombrefer, thorium…) et chaque plante peut avoir sa propre forme parmi les six existantes (halo, colonne, halo et colonne, onde, étincelles, viseur). « Catégorie » garde la forme choisie dans l'atelier ; « Tout comme la catégorie » remet la liste à zéro.
+
 ## v0.82.1 — 16/11/2026
 
 ### Modifications

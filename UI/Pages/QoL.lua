@@ -613,6 +613,70 @@ UI:RegisterPage({
         table.insert(self.dyn, function() haloPaint() end)
         haloPaint()
 
+        do
+        -- Forme par filon et par plante (Glow:Elements) : au-dessus de l'effet de la catégorie
+        local elCat = (ui.haloElCat == "herb") and "herb" or "ore"
+        local nOre, nHerb = #Gm:Elements("ore"), #Gm:Elements("herb")
+        local EL_ROWS = math.ceil(math.max(nOre, nHerb) / 2)
+        local ecard = card("Forme par filon et par plante", 40 + 40 + EL_ROWS * 34 + 8, "sinon : celle de la catégorie dans l'atelier")
+        local elSeg = UI:Segmented(ecard, { { "ore", "Filons" }, { "herb", "Plantes" } }, function(v) elCat = v; ui.haloElCat = v; self.elPaint() end, 26)
+        elSeg:SetPoint("TOPLEFT", 16, -40)
+        local elReset = UI:Button(ecard, "Tout comme la catégorie", nil, 26, "ghost")
+        elReset:SetPoint("TOPRIGHT", -16, -40)
+        elReset:SetScript("OnClick", function()
+            for _, e in ipairs(Gm:Elements(elCat)) do gcfg.fxNode[e.key] = nil end
+            Gm:Update(); self.elPaint()
+        end)
+        local elOpts = { { "", T("Catégorie") } }
+        for _, st in ipairs(Gm.STYLES) do table.insert(elOpts, { st[1], T(st[2]) }) end
+        local elRows = {}
+        for i = 1, EL_ROWS * 2 do
+            local r = CreateFrame("Frame", nil, ecard)
+            r:SetHeight(30)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 0, 0)
+            r.name:SetJustifyH("LEFT")
+            r.req = UI:Text(r, 10, C.dim)
+            r.dd = UI:Dropdown(r, 140, 26, elOpts, function(v)
+                if r.key then gcfg.fxNode[r.key] = (v ~= "" and v) or nil; Gm:Update() end
+            end)
+            r.dd:SetPoint("RIGHT", 0, 0)
+            r.req:SetPoint("RIGHT", r.dd, "LEFT", -8, 0)
+            r.name:SetPoint("RIGHT", r.req, "LEFT", -6, 0)
+            elRows[i] = r
+        end
+        -- deux colonnes ancrées aux bords et au milieu de la carte (élastiques, sans calcul de largeur)
+        for i, r in ipairs(elRows) do
+            local c = (i - 1) % 2
+            local y = -80 - math.floor((i - 1) / 2) * 34
+            r:ClearAllPoints()
+            if c == 0 then
+                r:SetPoint("TOPLEFT", ecard, "TOPLEFT", 16, y)
+                r:SetPoint("TOPRIGHT", ecard, "TOP", -12, y)
+            else
+                r:SetPoint("TOPLEFT", ecard, "TOP", 12, y)
+                r:SetPoint("TOPRIGHT", ecard, "TOPRIGHT", -16, y)
+            end
+        end
+        self.elPaint = function()
+            elSeg:Select(elCat)
+            local list = Gm:Elements(elCat)
+            for i, r in ipairs(elRows) do
+                local e = list[i]
+                r:SetShown(e ~= nil)
+                if e then
+                    r.key = e.key
+                    r.name:SetText(e.label)
+                    r.req:SetText(tostring(e.req))
+                    r.dd:Select(gcfg.fxNode[e.key] or "")
+                    r.name:SetTextColor(unpack(gcfg.fxNode[e.key] and C.text or C.muted))
+                end
+            end
+        end
+        table.insert(self.dyn, function() self.elPaint() end)
+        self.elPaint()
+        end
+
         local gmain = card("Halo", 354)
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
