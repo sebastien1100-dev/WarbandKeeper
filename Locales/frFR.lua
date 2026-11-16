@@ -13,6 +13,7 @@ WK.Locales.frFR.keys = {
     HELP_GUIDE      = "/wk guide boite|banque|reparer|marchand|maitre|ecurie|munitions|stop - Guidage vers le plus proche",
     HELP_HV         = "/wk hv [scan|scan force|stop] - Hôtel des ventes : diagnostic, lancer ou arrêter un scan",
     HELP_ALERT      = "/wk alerte <lien> <prix> - Alerte de prix à l'HV (prix en po : 2.5, 2po50pa, 75pa) ; sans prix : retire ; seul : la liste",
+    HELP_HUD        = "/wk hud - HUD de récolte : la minicarte en grand au centre de l'écran (points de pistage visibles de loin)",
     HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
     HELP_NAV        = "/wk nav           - Diagnostic du repère de navigation (marqueur de point de passage)",
     HELP_HALO       = "/wk halo          - Diagnostic du halo (pourquoi l'objet désigné brille ou non)",

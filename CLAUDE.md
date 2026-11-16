@@ -75,7 +75,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Emplacements de récolte
 
-`Modules/NodesDB.lua` est **généré** par `python3 tools/gen_nodes.py <clone de QuestieDB>` : points d'apparition connus des filons et des plantes (données Questie, GPLv3 : garder la mention en tête du fichier et dans Options > À propos). `Modules/Nodes.lua` filtre selon les métiers et la compétence du perso ; `UI/NodePins.lua` dessine les icônes sur la minicarte (autour du joueur, sans capter la souris) et sur la carte du monde (appelé par `UI/MapPins.lua`). Ce sont des emplacements possibles, pas des nœuds en direct : lire les points de pistage du jeu a été étudié et écarté (technique fragile).
+`Modules/Nodes.lua` : filons et plantes **déjà récoltés** par tes persos (`WK.DB.global.gatherSpots`, notés par `Modules/GatherMap.lua` à chaque récolte), regroupés par nœud, filtrés selon les métiers et la compétence du perso ; `UI/NodePins.lua` dessine les icônes sur la minicarte (autour du joueur, sans capter la souris) et sur la carte du monde (appelé par `UI/MapPins.lua`). Les points d'apparition de QuestieDB (ancien `NodesDB.lua`) ne correspondaient pas aux nœuds de WoW Forever : retirés. Les points de pistage du jeu ne sont lisibles par aucun addon : le **HUD de récolte** (`UI/GatherHUD.lua`) déplace la minicarte du jeu au centre de l'écran, agrandie, transparente, dézoomée et tournée avec le perso (tout est rendu à la fermeture ; `/wk hud`, raccourci `WARBANDKEEPER_HUD` dans `Bindings.xml`, réglages `settings.ui.gatherHUD` dans Options).
 
 ## Onglet LFG
 

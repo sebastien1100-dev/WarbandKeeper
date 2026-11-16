@@ -3,4 +3,5 @@
     <Binding name="CLICK WarbandKeeperAspectButton:RightButton" category="ADDONS"/>
     <Binding name="CLICK WarbandKeeperPetCardClick:LeftButton" category="ADDONS"/>
     <Binding name="CLICK WarbandKeeperPetCardClick:RightButton" category="ADDONS"/>
+    <Binding name="WARBANDKEEPER_HUD" category="ADDONS">WarbandKeeper_ToggleGatherHUD()</Binding>
 </Bindings>

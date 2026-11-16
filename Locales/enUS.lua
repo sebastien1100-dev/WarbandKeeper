@@ -13,6 +13,7 @@ WK.Locales.enUS.keys = {
     HELP_GUIDE      = "/wk guide mail|bank|repair|vendor|trainer|stable|ammo|stop - Guide to the nearest one",
     HELP_HV         = "/wk hv [scan|scan force|stop] - Auction house: diagnostic, start or stop a scan",
     HELP_ALERT      = "/wk alerte <link> <price> - Auction house price alert (gold: 2.5, 2po50pa, 75pa); no price: remove; alone: list",
+    HELP_HUD        = "/wk hud - Gathering HUD: the minimap enlarged in the middle of the screen (tracking dots visible from afar)",
     HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
     HELP_NAV        = "/wk nav           - Navigation marker diagnostic (waypoint marker)",
     HELP_HALO       = "/wk halo          - Halo diagnostic (why the targeted object glows or not)",

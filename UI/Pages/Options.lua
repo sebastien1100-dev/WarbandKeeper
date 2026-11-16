@@ -427,14 +427,14 @@ UI:RegisterPage({
             if IsShiftKeyDown() then WK.modules.GatherMap:Clear(); self:Refresh() end
         end)
 
-        -- Emplacements connus des filons et des plantes (Modules/Nodes.lua)
+        -- Filons et plantes déjà récoltés (Modules/Nodes.lua) et HUD de récolte (UI/GatherHUD.lua)
         local nd = WK.modules.Nodes:Config()
         local function ntoggle(field)
             return gtoggle(nodesCard, function() return nd[field] end, function(v) nd[field] = v; UI:RefreshNodePins() end)
         end
-        nodesCard = card("Filons et plantes connus", 40 + 5 * 46 + 30, "emplacements possibles, pas des nœuds présents en direct")
-        UI:SettingRow(nodesCard, -40, "Afficher sur la minicarte", "Une petite icône par emplacement connu autour de toi.", ntoggle("minimap"), 80)
-        UI:SettingRow(nodesCard, -86, "Afficher sur la carte du monde", "Tous les emplacements connus de la zone.", ntoggle("map"), 80)
+        nodesCard = card("Filons et plantes récoltés", 40 + 5 * 46 + 30, "là où tes persos ont déjà récolté (tout le compte)")
+        UI:SettingRow(nodesCard, -40, "Afficher sur la minicarte", "Une petite icône par nœud déjà récolté autour de toi, même hors de portée du pistage du jeu.", ntoggle("minimap"), 80)
+        UI:SettingRow(nodesCard, -86, "Afficher sur la carte du monde", "Tous les nœuds déjà récoltés de la zone.", ntoggle("map"), 80)
         UI:SettingRow(nodesCard, -132, "Seulement mes métiers", "Plantes si le perso a l'Herboristerie, filons s'il a le Minage.", ntoggle("onlyMine"), 80)
         UI:SettingRow(nodesCard, -178, "Seulement ce que je peux récolter", "Cache ce qui demande plus que ta compétence.", ntoggle("onlyUsable"), 80)
         UI:SettingRow(nodesCard, -224, "Taille des icônes", nil,
@@ -442,6 +442,18 @@ UI:RegisterPage({
         local nodesNote = UI:Text(nodesCard, 11, C.muted)
         nodesNote:SetPoint("BOTTOMLEFT", 16, 14)
         nodesNote:SetText(WK.T("Anneau : rouge trop dur · orange, jaune, vert selon la difficulté · gris sans intérêt ou métier absent."))
+
+        local hc = UI.GatherHUDConfig()
+        local hud = card("HUD de récolte", 40 + 3 * 46 + 52, "la minicarte en grand au milieu de l'écran")
+        local hudBtn = UI:Button(hud, "Afficher / masquer", nil, 28, "primary")
+        hudBtn:SetScript("OnClick", function() UI:ToggleGatherHUD() end)
+        UI:SettingRow(hud, -40, "HUD de récolte", "La minicarte s'affiche en grand et transparente au centre de l'écran : les points jaunes du pistage (filons, plantes) se voient de bien plus loin. Aussi : /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper).", hudBtn, 170)
+        UI:SettingRow(hud, -92, "Taille", "Part de la hauteur de l'écran.",
+            UI:Slider(hud, 220, 30, 90, 5, function() return hc.size end, function(v) hc.size = v; UI:ApplyGatherHUD() end, "%d %%"), 240)
+        UI:SettingRow(hud, -138, "Opacité", nil,
+            UI:Slider(hud, 220, 0.2, 1, 0.05, function() return hc.alpha end, function(v) hc.alpha = v; UI:ApplyGatherHUD() end, "%.2f"), 240)
+        UI:SettingRow(hud, -184, "Fermer en combat", "Le HUD disparaît au début d'un combat.",
+            gtoggle(hud, function() return hc.combatHide end, function(v) hc.combatHide = v end), 80)
 
         -- Alertes -------------------------------------------------------------------
         section("alerts")
@@ -472,7 +484,7 @@ UI:RegisterPage({
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
             .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
-            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), emplacements des filons et des plantes, monstres rares, quêtes et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
+            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), monstres rares, quêtes et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
             .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)

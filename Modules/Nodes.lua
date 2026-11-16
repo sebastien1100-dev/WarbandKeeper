@@ -1,9 +1,11 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Nodes")
 
--- Emplacements connus des filons et des plantes (Modules/NodesDB.lua, généré depuis QuestieDB).
--- Ce sont des points d'apparition possibles, pas des nœuds présents en direct : le pistage du jeu
--- reste le signal en direct. Affichage : UI/NodePins.lua (minicarte et carte du monde).
+-- Emplacements des filons et des plantes : ceux que tes persos ont réellement récoltés
+-- (WK.DB.global.gatherSpots, notés par Modules/GatherMap.lua à chaque récolte), regroupés par nœud.
+-- Les points d'apparition de QuestieDB ne correspondaient pas aux nœuds de WoW Forever : retirés.
+-- Le pistage du jeu reste le signal en direct (agrandi par le HUD de récolte, UI/GatherHUD.lua).
+-- Affichage : UI/NodePins.lua (minicarte et carte du monde).
 -- Réglages : WK.DB.global.gatherMap.nodes
 
 local DEFAULTS = { minimap = true, map = true, onlyMine = true, onlyUsable = false, size = 14 }
@@ -49,21 +51,32 @@ function M:Color(node, ranks)
     return COLORS[WK.modules.Gathering:Color(node.req, rank)] or COLORS.none
 end
 
--- Tous les emplacements d'une carte : { { x, y (0-1), id, kind, req }, ... } (gardé en mémoire).
+-- Tous les emplacements d'une carte : { { x, y (0-1), id, kind, req, n }, ... }.
+-- Les récoltes à moins de MERGE (fraction de la carte, ~10 à 20 m) du même nœud n'en font qu'un.
+-- Gardé en mémoire tant que le nombre de récoltes de la carte ne change pas.
+local MERGE = 0.006
 local cache = {}
 function M:All(mapID)
-    local list = cache[mapID]
-    if list then return list end
-    list = {}
-    for id, pts in pairs((WK.NodesDB or {})[mapID] or {}) do
-        local i = self:Info(id)
+    local spots = (WK.DB.global.gatherSpots or {})[mapID] or {}
+    local c = cache[mapID]
+    if c and c.n == #spots then return c.list end
+    local list = {}
+    for _, p in ipairs(spots) do
+        local i = (p.k == "herb" or p.k == "ore") and self:Info(p.i)
         if i then
-            for k = 1, #pts, 2 do
-                list[#list + 1] = { x = pts[k] / 1000, y = pts[k + 1] / 1000, id = id, kind = i.kind, req = i.req }
+            local found
+            for _, e in ipairs(list) do
+                if e.kind == i.kind and math.abs(e.x - p.x) < MERGE and math.abs(e.y - p.y) < MERGE then found = e break end
+            end
+            if found then
+                found.n = found.n + 1
+                if i.req > found.req then found.req, found.id = i.req, p.i end
+            else
+                list[#list + 1] = { x = p.x, y = p.y, id = p.i, kind = i.kind, req = i.req, n = 1 }
             end
         end
     end
-    cache[mapID] = list
+    cache[mapID] = { n = #spots, list = list }
     return list
 end
 

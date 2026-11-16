@@ -16,6 +16,15 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.86.0 — 16/11/2026
+
+### Ajouts
+- HUD de récolte : la minicarte du jeu s'affiche en grand et transparente au centre de l'écran, dézoomée au maximum et tournée avec ton perso. Les points jaunes du pistage (filons, plantes) se voient ainsi de bien plus loin, avec nos pastilles et le trajet. Les clics passent au travers. /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper > HUD de récolte). Taille, opacité et « fermer en combat » dans Options > Récolte. La minicarte retrouve sa place, sa taille et son zoom à la fermeture.
+- Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).
+
+### Modifications
+- Filons et plantes sur la minicarte et la carte du monde : ce sont maintenant les nœuds que tes persos ont réellement récoltés (tout le compte), au lieu des points de QuestieDB, qui ne correspondaient pas aux nœuds de WoW Forever. La carte se remplit à mesure que tu récoltes.
+
 ## v0.85.0 — 16/11/2026
 
 ### Modifications

@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.86.0", date = "16/11/2026",
+        added = {
+            "HUD de récolte : la minicarte du jeu s'affiche en grand et transparente au centre de l'écran, dézoomée au maximum et tournée avec ton perso. Les points jaunes du pistage (filons, plantes) se voient ainsi de bien plus loin, avec nos pastilles et le trajet. Les clics passent au travers. /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper > HUD de récolte). Taille, opacité et « fermer en combat » dans Options > Récolte. La minicarte retrouve sa place, sa taille et son zoom à la fermeture.",
+            "Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+        changed = {
+            "Filons et plantes sur la minicarte et la carte du monde : ce sont maintenant les nœuds que tes persos ont réellement récoltés (tout le compte), au lieu des points de QuestieDB, qui ne correspondaient pas aux nœuds de WoW Forever. La carte se remplit à mesure que tu récoltes.",
+        },
+    },
+    {
         version = "0.85.0", date = "16/11/2026",
         changed = {
             "Collection de pêche : elle a sa propre page « Pêche » dans le groupe Farm de la barre latérale (album et atlas en pleine largeur), avec en en-tête les espèces trouvées, le nombre de prises et leur valeur. Elle quitte QoL > Pêche, qui garde le mode pêche, le carnet et les réglages.",
