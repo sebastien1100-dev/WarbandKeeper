@@ -43,7 +43,7 @@ function M:Config()
     g.colors = g.colors or {}
     g.cats = g.cats or {}
     g.fx = g.fx or {}           -- effet propre à une catégorie (absent : effet global)
-    g.fxNode = g.fxNode or {}   -- effet propre à un filon ou une plante (absent : celui de la catégorie)
+    g.fxNode = nil              -- forme par filon ou par plante (0.83.0) : retirée
     if g.diffColor == nil then g.diffColor = true end
     if g.info == nil then g.info = true end
     for _, k in ipairs(CATEGORIES) do
@@ -360,64 +360,10 @@ local ORE_REQ = {
 }
 local herbReq
 
----------------------------------------------------------------------------
--- Éléments (un filon, une plante) : effet propre à chacun, au-dessus de celui de la catégorie.
--- Réglage g.fxNode[clé] = effet ; clé = « o:<filon> » ou « h:<n° de la plante> ».
----------------------------------------------------------------------------
--- Filons, dans l'ordre de reconnaissance (les noms composés d'abord : « vrai-argent » avant « argent »)
-local ORE_EL = {
-    { "truesilver", "Vrai-argent", 230, { "vrai-argent", "truesilver" } },
-    { "darkiron", "Sombrefer", 230, { "sombrefer", "dark iron" } },
-    { "richthorium", "Riche filon de thorium", 275, { "riche filon de thorium", "rich thorium" } },
-    { "thorium", "Thorium", 245, { "thorium" } },
-    { "mithril", "Mithril", 175, { "mithril" } },
-    { "gold", "Or", 155, { "filon d'or", "gold" } },
-    { "iron", "Fer", 125, { "filon de fer", "iron" } },
-    { "silver", "Argent", 75, { "argent", "silver" } },
-    { "tin", "Étain", 65, { "étain", "etain", "tin vein" } },
-    { "copper", "Cuivre", 1, { "cuivre", "copper" } },
-    { "incendicite", "Incendicite", 65, { "incendicite" } },
-    { "bloodstone", "Pierre de sang inférieure", 75, { "pierre de sang", "bloodstone" } },
-    { "indurium", "Indurium", 150, { "indurium" } },
-}
--- Éléments d'une catégorie (« ore » ou « herb ») : { { key, label, req } }, par compétence croissante
-function M:Elements(cat)
-    local out = {}
-    if cat == "ore" then
-        for _, e in ipairs(ORE_EL) do table.insert(out, { key = "o:" .. e[1], label = T(e[2]), req = e[3] }) end
-    elseif cat == "herb" then
-        for _, d in ipairs(WK.modules.Gathering.DATA.herb) do
-            table.insert(out, { key = "h:" .. d.id, label = WK.GetItemInfo(d.id) or ("#" .. d.id), req = d.req or 1, id = d.id })
-        end
-    end
-    table.sort(out, function(a, b) if a.req ~= b.req then return a.req < b.req end return a.label < b.label end)
-    return out
-end
-local herbKeyByName
--- Clé de l'élément d'après le nom de l'objet désigné
-function M:ElementKey(cat, name)
-    local low = string.lower(name or "")
-    if low == "" then return nil end
-    if cat == "ore" then
-        for _, e in ipairs(ORE_EL) do
-            for _, m in ipairs(e[4]) do if string.find(low, m, 1, true) then return "o:" .. e[1] end end
-        end
-    elseif cat == "herb" then
-        if not herbKeyByName or not herbKeyByName.complete then
-            herbKeyByName = { complete = true }
-            for _, d in ipairs(WK.modules.Gathering.DATA.herb) do
-                local n = WK.GetItemInfo(d.id)
-                if n then herbKeyByName[string.lower(n)] = "h:" .. d.id else herbKeyByName.complete = false end
-            end
-        end
-        return herbKeyByName[low]
-    end
-end
--- Effet à utiliser pour cet objet : élément, sinon catégorie, sinon effet global
-function M:StyleFor(cat, name)
+-- Effet à utiliser : celui de la catégorie, sinon l'effet global
+function M:StyleFor(cat)
     local g = self:Config()
-    local k = self:ElementKey(cat, name)
-    return (k and g.fxNode[k]) or g.fx[cat] or g.style or "halo"
+    return g.fx[cat] or g.style or "halo"
 end
 
 local function rankOf(kind)
@@ -633,7 +579,7 @@ function M:Update()
     local req, prof, diff = self:Difficulty(cat, name, UNIT)
     local textCol = col
     if req and g.diffColor then textCol = M.DIFF_COLORS[diff] or col end
-    glow.fx:Set(self:StyleFor(cat, name), col, g.size or 110, (g.intensity or 100) / 100, g.beamHeight or 4.5)
+    glow.fx:Set(self:StyleFor(cat), col, g.size or 110, (g.intensity or 100) / 100, g.beamHeight or 4.5)
     local info
     if g.info then
         if req then info = name .. "  ·  " .. (prof or T(cat == "ore" and "Minage" or cat == "herb" and "Herboristerie" or "Dépeçage")) .. " " .. req
