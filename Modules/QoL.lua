@@ -928,17 +928,23 @@ local function buffNames(ids)
 end
 
 -- Temps restant du premier buff trouvé parmi `names` sur `unit` (0 = sans durée), nil s'il manque.
+-- Le jeu peut masquer les auras (« secret ») : la lecture passe par pcall et une aura illisible
+-- rend 0 (« présent ») pour ne jamais lancer de rappel à tort.
 local function buffLeft(unit, names, contains)
     for i = 1, 40 do
         local name, expires
         if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
-            local a = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
+            local ok, a = pcall(C_UnitAuras.GetAuraDataByIndex, unit, i, "HELPFUL")
+            if not ok then return 0 end
             if not a then break end
-            name, expires = a.name, a.expirationTime
+            name, expires = readable(a.name), readable(a.expirationTime)
+            if name == nil then return 0 end
         elseif UnitBuff then
-            local n, _, _, _, _, exp = UnitBuff(unit, i)
-            if not n then break end
-            name, expires = n, exp
+            local ok, n, _, _, _, _, exp = pcall(UnitBuff, unit, i)
+            if not ok then return 0 end
+            if n == nil then break end
+            name, expires = readable(n), readable(exp)
+            if name == nil then return 0 end
         else
             break
         end
@@ -982,7 +988,7 @@ local function checkBuffs()
         for _, u in ipairs(groupUnits()) do
             if UnitExists(u) and UnitIsConnected(u) and not UnitIsDeadOrGhost(u) then
                 local left = buffLeft(u, names)
-                if not left or (left > 0 and left < 60) then table.insert(missing, (UnitName(u))) end
+                if not left or (left > 0 and left < 60) then table.insert(missing, readable((UnitName(u))) or "?") end
             end
         end
         if #missing > 0 then

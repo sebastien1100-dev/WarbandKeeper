@@ -19,6 +19,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.75.4 — 16/11/2026
+
+### Corrections
+- Rappels de buffs (paladin, prêtre, druide) : une erreur « Auras cannot be accessed when secret » pouvait apparaître quand le jeu masque les auras. Une aura illisible est maintenant ignorée, sans erreur ni rappel à tort.
+
 ## v0.75.3 — 16/11/2026
 
 ### Modifications

@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.75.4", date = "16/11/2026",
+        fixed = {
+            "Rappels de buffs (paladin, prêtre, druide) : une erreur « Auras cannot be accessed when secret » pouvait apparaître quand le jeu masque les auras. Une aura illisible est maintenant ignorée, sans erreur ni rappel à tort.",
+        },
+    },
+    {
         version = "0.75.3", date = "16/11/2026",
         changed = {
             "Infobulles de l'addon : texte plus fin, dans la police de l'interface choisie dans Options > Apparence, sans contour (13 pour le titre, 12 pour le reste). Les infobulles du jeu (objets, PNJ) ne changent pas.",
