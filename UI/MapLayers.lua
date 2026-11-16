@@ -237,7 +237,42 @@ local function buildBar()
     bar.edge = UI:Rounded(bar, 12, 0, "BACKGROUND", 0)
     bar.bg = UI:Rounded(bar, 11, 1, "BACKGROUND", 1)
     bar.btns = {}
-    local x = 5
+    -- poignée : glisser pour déplacer la barre sur la carte ; clic droit pour la remettre en haut
+    local grip = CreateFrame("Button", nil, bar)
+    grip:SetSize(16, 28)
+    grip:SetPoint("LEFT", 4, 0)
+    grip.icon = UI:Icon(grip, "grip", 14, nil, "ARTWORK")
+    grip.icon:SetPoint("CENTER")
+    grip.icon:SetVertexColor(unpack(C.dim))
+    grip:RegisterForDrag("LeftButton")
+    grip:RegisterForClicks("RightButtonUp")
+    bar:SetMovable(true)
+    bar:SetClampedToScreen(true)
+    grip:SetScript("OnDragStart", function() bar:StartMoving() end)
+    grip:SetScript("OnDragStop", function()
+        bar:StopMovingOrSizing()
+        -- position gardée par rapport au haut de la carte (la carte peut changer de taille)
+        local cfg = L:Config()
+        local bx, by = bar:GetCenter()
+        local hx = host:GetCenter()
+        local ht = host:GetTop()
+        if bx and hx and ht then
+            local s1, s2 = bar:GetEffectiveScale(), host:GetEffectiveScale()
+            cfg.barX = math.floor(bx * s1 / s2 - hx + 0.5)
+            cfg.barY = math.floor(by * s1 / s2 - ht + 0.5)
+        end
+        bar:Place()
+    end)
+    grip:SetScript("OnClick", function() local cfg = L:Config(); cfg.barX, cfg.barY = nil, nil; bar:Place() end)
+    grip:SetScript("OnEnter", function(s)
+        s.icon:SetVertexColor(UI:Accent())
+        WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        GameTooltip:SetText(T("Glisser pour déplacer la barre"), 1, 1, 1)
+        GameTooltip:AddLine(T("Clic droit : la remettre en haut de la carte"), 0.7, 0.7, 0.7)
+        GameTooltip:Show()
+    end)
+    grip:SetScript("OnLeave", function(s) s.icon:SetVertexColor(unpack(C.dim)); GameTooltip:Hide() end)
+    local x = 22
     for _, f in ipairs(L.FAMILIES) do
         local b = CreateFrame("Button", nil, bar)
         b:SetSize(28, 28)
@@ -280,7 +315,16 @@ local function buildBar()
         if UI.pages.qol.ShowSection then UI.pages.qol:ShowSection("maplayers") end
     end)
     bar:SetWidth(x + 32)
-    bar:SetPoint("TOP", host, "TOP", 0, -8)
+    function bar:Place()
+        local cfg = L:Config()
+        self:ClearAllPoints()
+        if cfg.barX and cfg.barY then
+            self:SetPoint("CENTER", host, "TOP", cfg.barX, cfg.barY)
+        else
+            self:SetPoint("TOP", host, "TOP", 0, -8)
+        end
+    end
+    bar:Place()
     function bar:Paint()
         self.edge:SetColor(unpack(C.border))
         self.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.95)

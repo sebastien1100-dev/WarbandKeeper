@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.72.1", date = "16/11/2026",
+        changed = {
+            "Carte : la barre de filtres de la carte du monde se déplace. Glisse-la par sa poignée (à gauche) ; sa place est gardée. Clic droit sur la poignée pour la remettre en haut de la carte.",
+        },
+    },
+    {
         version = "0.72.0", date = "16/11/2026",
         added = {
             "Hôtel des ventes : listes d'achat de l'addon. Le panneau à côté de l'HV a deux onglets, « Scan » et « Listes d'achat ». Pour chaque objet d'une liste : ce que tu as sur le compte sur ce qu'il faut (« 12 / 30 »), le prix relevé, et « Chercher » qui lance la recherche dans la fenêtre de l'HV (l'achat se fait avec ses boutons). En bas, ce qu'il reste à acheter ; la corbeille supprime la liste (deux clics).",
