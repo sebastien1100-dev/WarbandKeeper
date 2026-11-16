@@ -19,6 +19,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.75.2 — 16/11/2026
+
+### Modifications
+- Rares et Quêtes : le bouton « Guider » des listes devient une icône, la flèche de guidage dans un petit rond de ta couleur de classe, qui se remplit au survol (infobulle : où elle te guide). Les lignes gagnent de la place pour le nom.
+
 ## v0.75.1 — 16/11/2026
 
 ### Modifications

@@ -69,6 +69,42 @@ function UI:Button(parent, text, width, height, style, icon)
     return b
 end
 
+-- Bouton « Guider » : rond teinté de la couleur d'accent avec la flèche de guidage ; il se remplit
+-- au survol. Même icône que la flèche de guidage à l'écran.
+function UI:GuideButton(parent, size, tooltip)
+    size = size or 28
+    local b = CreateFrame("Button", nil, parent)
+    b:SetSize(size, size)
+    -- vrai rond, quel que soit l'arrondi choisi pour le thème
+    b.bg = b:CreateTexture(nil, "BACKGROUND")
+    b.bg:SetAllPoints()
+    b.bg:SetTexture(UI.MEDIA .. "circle")
+    function b.bg:SetColor(r, g, bl, a) self:SetVertexColor(r, g, bl, a or 1) end
+    b.icon = UI:Icon(b, "guide", math.floor(size * 0.52))
+    b.icon:SetPoint("CENTER")
+    b.tooltip = tooltip or "Guider jusqu'ici"
+    function b:Refresh()
+        local r, g, bl = UI:Accent()
+        if self.hover then
+            self.bg:SetColor(r, g, bl, 1)
+            self.icon:SetVertexColor(unpack(C.onAccent))
+        else
+            self.bg:SetColor(r, g, bl, 0.18)
+            self.icon:SetVertexColor(r, g, bl, 1)
+        end
+    end
+    b:SetScript("OnEnter", function(self)
+        self.hover = true; self:Refresh()
+        WK.UI:TooltipOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(WK.T(self.tooltip), 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function(self) self.hover = false; self:Refresh(); GameTooltip:Hide() end)
+    UI:OnAccent(function() b:Refresh() end)
+    b:Refresh()
+    return b
+end
+
 -- Bouton rond ne contenant qu'une icône (fermer, supprimer...).
 function UI:IconButton(parent, icon, size, tooltip, danger)
     size = size or 28
