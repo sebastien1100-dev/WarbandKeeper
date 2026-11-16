@@ -15,6 +15,7 @@ WK.Locales.frFR.keys = {
     HELP_ALERT      = "/wk alerte <lien> <prix> - Alerte de prix à l'HV (prix en po : 2.5, 2po50pa, 75pa) ; sans prix : retire ; seul : la liste",
     HELP_HUD        = "/wk hud - HUD de récolte : la minicarte en grand au centre de l'écran (points de pistage visibles de loin)",
     HELP_DUNGEON    = "/wk donjon - Panneau du donjon en cours : boss, butin, liste d'envies",
+    HELP_FP         = "/wk vol - Guidage vers le point de vol pas encore appris le plus proche",
     HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
     HELP_NAV        = "/wk nav           - Diagnostic du repère de navigation (marqueur de point de passage)",
     HELP_HALO       = "/wk halo          - Diagnostic du halo (pourquoi l'objet désigné brille ou non)",

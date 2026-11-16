@@ -260,10 +260,12 @@ UI:RegisterPage({
         mapBtn.desc:SetText("Lieux utiles et trajets")
         local ahBtn = navButton("ah", "Hôtel des ventes", -208, nil, "coin")
         ahBtn.desc:SetText("Scan et prix")
+        local curBtn = navButton("cursor", "Curseur", -258, nil, "crosshair")
+        curBtn.desc:SetText("Anneau, curseur en combat")
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -883,7 +885,90 @@ UI:RegisterPage({
             local learned, roads = NV:Stats()
             return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
         end):SetPoint("TOPLEFT", 16, -232)
+        -- Points de vol à apprendre (Modules/Flight.lua) : maîtres de vol du continent pas encore appris
+        do
+            local FL = WK.modules.Flight
+            local flc = FL.Config()
+            local FPR = 6
+            local fpcard = card("Points de vol à apprendre", 40 + 46 + 22 + FPR * 30 + 16, "maîtres de vol de ta faction sur ce continent, du plus proche au plus loin")
+            UI:SettingRow(fpcard, -40, "Rappel en arrivant dans une zone", "Une fois par zone et par session, si un maître de vol de la zone n'est pas encore appris. /wk vol guide au plus proche.",
+                toggle(fpcard, function() return flc.fpRemind end, function(v) flc.fpRemind = v end), 80)
+            local fpInfo = UI:Text(fpcard, 11, C.muted)
+            fpInfo:SetPoint("TOPLEFT", 16, -92)
+            fpInfo:SetPoint("RIGHT", -16, 0)
+            fpInfo:SetJustifyH("LEFT")
+            local fpRows = {}
+            for i = 1, FPR do
+                local r = CreateFrame("Frame", nil, fpcard)
+                r:SetHeight(26)
+                r:SetPoint("TOPLEFT", 16, -112 - (i - 1) * 30)
+                r:SetPoint("RIGHT", -16, 0)
+                r.name = UI:Text(r, 12)
+                r.name:SetPoint("LEFT")
+                r.name:SetPoint("RIGHT", -230, 0)
+                r.name:SetJustifyH("LEFT")
+                r.info = UI:Text(r, 11, C.muted)
+                r.info:SetPoint("RIGHT", -96, 0)
+                r.go = UI:Button(r, "Guider", 86, 24, "ghost")
+                r.go:SetPoint("RIGHT")
+                r.go:SetScript("OnClick", function() if r.target then FL:GuideToFlightPoint(r.target) end end)
+                fpRows[i] = r
+            end
+            local function fpRefresh()
+                local p = WK.modules.Guide:PlayerPos()
+                local list = (p and p.cont and FL:KnowsAnyTaxi()) and FL:MissingFlightPoints(nil, p.cont) or {}
+                if not FL:KnowsAnyTaxi() then
+                    fpInfo:SetText(T("Ouvre une fois la carte d'un maître de vol avec ce perso : ses points de vol connus seront notés."))
+                elseif #list == 0 then
+                    fpInfo:SetText(T("Tous les points de vol de ce continent sont appris."))
+                else
+                    fpInfo:SetText(string.format(T("%d à apprendre sur ce continent."), #list))
+                end
+                local G = WK.modules.Guide
+                for i, r in ipairs(fpRows) do
+                    local t = list[i]
+                    r.target = t
+                    r:SetShown(t ~= nil)
+                    if t then
+                        r.name:SetText(G:PlaceName(t))
+                        local zone = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(t.map)
+                        r.info:SetText((zone and zone.name or "") .. (t.distance and string.format("  ·  %d m", t.distance) or ""))
+                    end
+                end
+            end
+            table.insert(self.dyn, fpRefresh)
+            function UI:RefreshFlightPoints() pcall(fpRefresh) end
+        end
 
+
+        -----------------------------------------------------------------------
+        -- Curseur (UI/CursorRing.lua) : anneau autour de la souris, curseur gardé dans la fenêtre en combat
+        -----------------------------------------------------------------------
+        section("cursor")
+        do
+            local cc = UI.CursorConfig()
+            local function sync() UI:SyncCursorRing() end
+            local function ctoggle(parent, field, after)
+                return toggle(parent, function() return cc[field] end, function(v) cc[field] = v; if after then after() end end)
+            end
+            local rgc = card("Anneau autour de la souris", 40 + 8 * 46 + 8, "le curseur se repère d'un coup d'œil")
+            UI:SettingRow(rgc, -40, "Anneau autour de la souris", "De ta couleur, au-dessus de tout le reste.", ctoggle(rgc, "ring", sync), 80)
+            UI:SettingRow(rgc, -86, "Seulement en combat", nil, ctoggle(rgc, "combatOnly", sync), 80)
+            UI:SettingRow(rgc, -132, "Taille", nil,
+                UI:Slider(rgc, 220, 24, 120, 2, function() return cc.size end, function(v) cc.size = v; sync() end, "%d px"), 240)
+            UI:SettingRow(rgc, -178, "Opacité", nil,
+                UI:Slider(rgc, 220, 20, 100, 5, function() return math.floor((cc.alpha or 0.85) * 100 + 0.5) end, function(v) cc.alpha = v / 100 end, "%d %%"), 240)
+            UI:SettingRow(rgc, -224, "Balayage du temps global et des incantations", "L'anneau se remplit pendant le temps de recharge global et pendant tes incantations.", ctoggle(rgc, "sweep"), 80)
+            UI:SettingRow(rgc, -270, "Rouge hors de portée", "Quand ta cible attaquable est trop loin (mêlée pour guerrier, voleur et paladin ; 35 m pour le chasseur ; 30 m sinon).", ctoggle(rgc, "range"), 80)
+            UI:SettingRow(rgc, -316, "Estomper quand la souris ne bouge pas", "Après 3 secondes, hors combat.", ctoggle(rgc, "fadeIdle"), 80)
+            UI:SettingRow(rgc, -362, "Masquer en tournant la caméra", "Pendant que le clic droit est enfoncé.", ctoggle(rgc, "hideMouselook"), 80)
+            local clc = card("Curseur en combat", 40 + 46 + 30, "pour ne pas cliquer hors du jeu sur un deuxième écran")
+            UI:SettingRow(clc, -40, "Garder le curseur dans la fenêtre en combat", "Le curseur ne sort plus de la fenêtre du jeu pendant un combat ; ton réglage revient à la sortie du combat.",
+                ctoggle(clc, "clip", function() if not cc.clip then UI:CursorClipOff() end end), 80)
+            dynText(clc, 11, C.muted, function()
+                return UI:CursorClipSupported() and "" or T("Ce client du jeu n'a pas le réglage nécessaire : l'option n'a pas d'effet.")
+            end):SetPoint("TOPLEFT", 16, -90)
+        end
 
         -----------------------------------------------------------------------
         -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)

@@ -21,6 +21,7 @@ local function cfg()
     local q = WK.modules.QoL:Config()
     q.flight = q.flight or {}
     if q.flight.enabled == nil then q.flight.enabled = true end
+    if q.flight.fpRemind == nil then q.flight.fpRemind = true end
     return q.flight
 end
 M.Config = cfg
@@ -110,6 +111,51 @@ local function routeStops(cur, index)
     return stops, world and world > 0 and world or nil
 end
 M.RouteStops = routeStops -- (pour les tests)
+
+-- Durée d'un vol vers le relais `index` depuis le maître de vol ouvert : secondes, apprise (true/false)
+function M:RouteTime(index)
+    local cur = currentNode()
+    local from, to = cur and nodeName(cur), nodeName(index)
+    if not (from and to) or cur == index then return nil end
+    local learned = db().routes[from .. "|" .. to]
+    if learned then return learned, true end
+    local _, dist = routeStops(cur, index)
+    local est = self:Estimate(dist)
+    return est and math.floor(est + 0.5) or nil, false
+end
+local function clock(sec)
+    sec = math.floor(sec + 0.5)
+    if sec < 60 then return sec .. " s" end
+    return string.format("%d min %02d", math.floor(sec / 60), sec % 60)
+end
+-- Infobulle d'une destination sur la carte des vols : durée apprise, ou estimée (« ~ »)
+local function addTime(index)
+    if not cfg().enabled or not index then return end
+    local sec, learned = M:RouteTime(index)
+    if not sec then return end
+    GameTooltip:AddLine(learned and string.format(T("Durée du vol : %s"), clock(sec))
+        or string.format(T("Durée du vol : environ %s (estimée)"), clock(sec)), 0.96, 0.55, 0.73)
+    GameTooltip:Show()
+end
+if hooksecurefunc then
+    -- ancienne carte des vols (boutons de relais)
+    if TaxiNodeOnButtonEnter then
+        hooksecurefunc("TaxiNodeOnButtonEnter", function(button) pcall(addTime, button and button:GetID()) end)
+    end
+    -- carte des vols récente (épingles) : accrochée quand elle se charge
+    local function hookPins()
+        local mix = FlightMap_FlightPointPinMixin
+        if mix and mix.OnMouseEnter and not M.pinsHooked then
+            M.pinsHooked = true
+            hooksecurefunc(mix, "OnMouseEnter", function(pin)
+                local d = pin and pin.taxiNodeData
+                if d and d.slotIndex then pcall(addTime, d.slotIndex) end
+            end)
+        end
+    end
+    hookPins()
+    WK:On("ADDON_LOADED", function(name) if name == "Blizzard_FlightMap" then hookPins() end end)
+end
 
 if hooksecurefunc and TakeTaxiNode then
     hooksecurefunc("TakeTaxiNode", function(index)
@@ -238,3 +284,83 @@ watcher:SetScript("OnUpdate", function(_, el)
     elseif not on and flight then M:Finish() end
     if pending and not on and GetTime() - pending.t > 15 then pending = nil end
 end)
+
+---------------------------------------------------------------------------
+-- Points de vol à apprendre : maîtres de vol de ta faction (Modules/PlacesDB.lua, genre 8192) dont le
+-- relais n'est pas dans les vols connus du perso (notés à l'ouverture de la carte des vols, Modules/Nav.lua).
+-- Rappel une fois par zone et par session ; liste et guidage dans QoL > Carte ; /wk vol guide au plus proche.
+---------------------------------------------------------------------------
+local FM_BIT = 8192
+local NEAR = 120 -- un relais connu à moins de 120 m du maître de vol : il est appris
+local function factionLetter()
+    local f = UnitFactionGroup and UnitFactionGroup("player")
+    return f == "Alliance" and "A" or f == "Horde" and "H" or nil
+end
+function M:KnowsAnyTaxi()
+    local t = WK.DB:Me().taxi
+    return t ~= nil and next(t) ~= nil
+end
+-- Maîtres de vol pas encore appris : { { map, e, cont, wx, wy, distance } } (carte donnée, ou tout le continent)
+function M:MissingFlightPoints(mapID, cont)
+    local G = WK.modules.Guide
+    local known = WK.DB:Me().taxi or {}
+    local fac = factionLetter()
+    local p = G:PlayerPos()
+    local out = {}
+    local maps = {}
+    if mapID then maps[mapID] = (WK.PlacesDB or {})[mapID] else maps = WK.PlacesDB or {} end
+    for map, list in pairs(maps) do
+        for _, e in ipairs(list or {}) do
+            if G.band(e[3], FM_BIT) ~= 0 and (not e[5] or e[5] == fac) then
+                local c, wx, wy = G.ToWorld(map, e[1] / 100, e[2] / 100)
+                if c and (not cont or c == cont) then
+                    local learned = false
+                    for _, n in pairs(known) do
+                        if n[1] == c and math.sqrt((n[2] - wx) ^ 2 + (n[3] - wy) ^ 2) < NEAR then learned = true break end
+                    end
+                    if not learned then
+                        local t = { map = map, e = e, cont = c, wx = wx, wy = wy, x = e[1] / 100, y = e[2] / 100 }
+                        t.distance = p and G:Vector(p, t) or nil
+                        table.insert(out, t)
+                    end
+                end
+            end
+        end
+    end
+    table.sort(out, function(a, b) return (a.distance or 1e9) < (b.distance or 1e9) end)
+    return out
+end
+function M:GuideToFlightPoint(t)
+    t = t or self:MissingFlightPoints(nil, (WK.modules.Guide:PlayerPos() or {}).cont)[1]
+    if not t then WK:Print(T("Aucun point de vol à apprendre connu sur ce continent.")) return end
+    WK.modules.Guide:Start(t, "Point de vol à apprendre", "flight")
+end
+local reminded = {}
+local hinted = false
+local function checkZone()
+    local c = cfg()
+    if not c.fpRemind or (InCombatLockdown and InCombatLockdown()) then return end
+    if IsInInstance and select(2, IsInInstance()) ~= "none" and select(2, IsInInstance()) ~= nil then return end
+    local p = WK.modules.Guide:PlayerPos()
+    if not p then return end
+    if not M:KnowsAnyTaxi() then
+        if not hinted then
+            hinted = true
+            WK:Print(T("Ouvre une fois la carte d'un maître de vol : Warband Keeper notera tes points de vol connus (rappel des points à apprendre, trajets avec vols)."))
+        end
+        return
+    end
+    if reminded[p.map] then return end
+    reminded[p.map] = true
+    local miss = M:MissingFlightPoints(p.map)
+    if #miss == 0 then return end
+    local G = WK.modules.Guide
+    local name = G:PlaceName(miss[1])
+    local msg = string.format(T("Point de vol à apprendre ici : %s"), name) .. (#miss > 1 and string.format(T(" (+%d)"), #miss - 1) or "")
+    WK:Print(msg .. "  ·  " .. T("/wk vol pour y être guidé"))
+    WK.modules.QoL:Remind("flightpoint", msg, 0.45, 0.78, 1)
+end
+WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(3, function() pcall(checkZone) end) end)
+WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(6, function() pcall(checkZone) end) end)
+-- appris à l'instant (carte des vols ouverte chez ce maître) : plus de rappel pour la zone
+WK:On("TAXIMAP_CLOSED", function() if WK.UI.RefreshFlightPoints then WK.UI:RefreshFlightPoints() end end)

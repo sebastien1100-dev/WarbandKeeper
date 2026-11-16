@@ -8,6 +8,10 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
+- Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.
+- Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).
+- Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
+- Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
 - Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
 - Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné) et raids (Cœur du Magma, Onyxia, Zul'Gurub…) avec la même présentation.
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
@@ -18,6 +22,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.88.0 — 16/11/2026
+
+### Ajouts
+- Voyages : la durée du vol s'affiche dans l'infobulle de chaque destination, sur la carte du maître de vol. Durée exacte si tu as déjà fait ce vol, sinon une estimation (« environ… (estimée) »).
+- Voyages : rappel des points de vol à apprendre. En arrivant dans une zone dont le maître de vol n'est pas encore appris (ta faction), un message le dit, une fois par zone et par session. /wk vol guide vers le plus proche. Nouvelle carte « Points de vol à apprendre » dans QoL > Carte : ceux du continent, du plus proche au plus loin, avec un bouton Guider, et le rappel à couper. Il faut avoir ouvert une fois la carte d'un maître de vol avec le perso pour que ses vols connus soient notés.
+- Nouvelle section « Curseur » dans QoL : anneau de ta couleur autour de la souris (taille, opacité, en combat seulement ou toujours). Il se remplit pendant le temps de recharge global et tes incantations, passe au rouge quand ta cible est hors de portée, s'estompe quand la souris ne bouge pas et se cache quand tu tournes la caméra.
+- Curseur : « Garder le curseur dans la fenêtre en combat » : le curseur ne sort plus de la fenêtre du jeu pendant un combat (pratique avec deux écrans) ; ton réglage revient à la sortie du combat. Coupé par défaut.
+- Feuille de route : horaires des bateaux et zeppelins, partage des horaires, réticule au centre de l'écran, et retrouver le curseur.
+- Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).
 
 ## v0.87.1 — 16/11/2026
 
