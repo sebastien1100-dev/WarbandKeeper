@@ -93,6 +93,32 @@ UI:RegisterPage({
             return h
         end)
         self.items = UI:Pool(function() return UI:DungeonLootRow(det) end)
+        -- quêtes du donjon : état pour le perso et quête à faire avant
+        det.qhead = UI:Text(det, 10, C.dim)
+        det.qhead:SetText(T("QUÊTES DU DONJON"))
+        self.qrows = UI:Pool(function()
+            local r = CreateFrame("Frame", nil, det)
+            r:SetHeight(24)
+            r.dot = UI:Icon(r, "circle", 9, nil, "ARTWORK")
+            r.dot:SetPoint("LEFT", 6, 0)
+            r.lvl = UI:Text(r, 11, C.muted)
+            r.lvl:SetPoint("LEFT", 20, 0)
+            r.lvl:SetWidth(24)
+            r.lvl:SetJustifyH("RIGHT")
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 52, 0)
+            r.name:SetJustifyH("LEFT")
+            r.name:SetWordWrap(false)
+            r.state = UI:Text(r, 11)
+            r.state:SetJustifyH("RIGHT")
+            r.state:SetWordWrap(false)
+            r.guide = UI:GuideButton(r, 22, "Guider vers le donneur")
+            r.guide:SetPoint("RIGHT", -4, 0)
+            r.state:SetPoint("RIGHT", r.guide, "LEFT", -8, 0)
+            r.state:SetWidth(300)
+            r.name:SetPoint("RIGHT", r.state, "LEFT", -8, 0)
+            return r
+        end)
         self.none = UI:Text(det, 11, C.muted)
 
         -- onglet Mes envies
@@ -123,7 +149,7 @@ UI:RegisterPage({
         local key = self.viewKey
         local lvl = c.level or 1
         self.tabSeg:Select(self.tab)
-        self.tiles:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset()
+        self.tiles:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset(); self.qrows:Reset()
         local r1, g1, b1 = UI:Accent()
         if self.tab == "wish" then
             self.det:Hide()
@@ -217,10 +243,57 @@ UI:RegisterPage({
         self.none:ClearAllPoints(); self.none:SetPoint("TOPLEFT", 16, -50)
         self.none:SetText(T("Rien que ce perso puisse porter ici (essaie « Tout »)."))
         if not any then bottom = 76 end
-        -- bas de carte : quêtes, boutons
-        local nq = #D:Quests(d)
+        -- quêtes du donjon (zone de l'entrée, au niveau du donjon), pour le perso choisi :
+        -- faite, en cours, disponible, niveau trop bas, ou quête à faire avant (prérequis)
+        local Q = WK.modules.Quests
+        local quests = {}
+        for _, q in ipairs(D:Quests(d)) do
+            local okSide = not q.side or (c.faction == "Alliance" and q.side == 1) or (c.faction == "Horde" and q.side == 2) or not c.faction
+            if okSide then table.insert(quests, q) end
+        end
+        local ORDER = { avail = 1, log = 2, locked = 3, high = 4, done = 5 }
+        local states = {}
+        for _, q in ipairs(quests) do states[q] = { Q:State(q, c) } end
+        table.sort(quests, function(a, b)
+            local sa, sb = ORDER[states[a][1]] or 9, ORDER[states[b][1]] or 9
+            if sa ~= sb then return sa < sb end
+            return (a.lvl or 0) < (b.lvl or 0)
+        end)
+        local qy = bottom + 6
+        det.qhead:SetShown(#quests > 0)
+        det.qhead:ClearAllPoints(); det.qhead:SetPoint("TOPLEFT", 16, -qy)
+        if #quests > 0 then qy = qy + 18 end
+        local STATE = {
+            done = { "faite", C.dim }, log = { "dans le journal", C.positive }, avail = { "disponible", C.gold },
+            high = { "niveau %d requis", C.negative }, locked = { "après : %s", C.tank },
+        }
+        for _, q in ipairs(quests) do
+            local st, pre = states[q][1], states[q][2]
+            local r = self.qrows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 10, -qy); r:SetPoint("TOPRIGHT", -10, -qy)
+            local def = STATE[st] or { st, C.muted }
+            r.dot:SetVertexColor(unpack(def[2]))
+            r.lvl:SetText(tostring(q.lvl or "?"))
+            r.name:SetText(Q:Name(q))
+            r.name:SetTextColor(unpack(st == "done" and C.dim or C.text))
+            local txt
+            if st == "high" then txt = string.format(T(def[1]), q.req or 0)
+            elseif st == "locked" then txt = string.format(T(def[1]), pre and Q:Name(Q:Get(pre)) or "?")
+            else txt = T(def[1]) end
+            r.state:SetText(txt)
+            r.state:SetTextColor(unpack(def[2]))
+            -- guidage : vers le donneur, ou vers celui de la quête à faire avant
+            local target = (st == "locked" and pre and Q:Get(pre)) or q
+            r.guide.tooltip = (st == "locked") and "Guider vers le donneur de la quête à faire avant" or "Guider vers le donneur"
+            r.guide:SetShown(st ~= "done" and target and target.x ~= nil)
+            r.guide:SetScript("OnClick", function() Q:GuideTo(target) end)
+            qy = qy + 24
+        end
+        bottom = qy
+        -- bas de carte : boutons
+        local nq = #quests
         det.quests:ClearAllPoints(); det.quests:SetPoint("TOPLEFT", 16, -(bottom + 8))
-        det.quests:SetText(nq > 0 and string.format(nq > 1 and T("%d quêtes de donjon dans la zone de l'entrée") or T("%d quête de donjon dans la zone de l'entrée"), nq) or "")
+        det.quests:SetText(nq == 0 and T("Pas de quête de donjon connue pour ce perso.") or "")
         det.lfg:ClearAllPoints(); det.lfg:SetPoint("TOPRIGHT", -14, -(bottom + 2))
         det.go:ClearAllPoints(); det.go:SetPoint("RIGHT", det.lfg, "LEFT", -8, 0)
         det.go:SetShown(d.entry ~= nil)

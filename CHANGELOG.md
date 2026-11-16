@@ -7,6 +7,8 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
+- Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
 - Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné) et raids (Cœur du Magma, Onyxia, Zul'Gurub…) avec la même présentation.
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
@@ -16,6 +18,12 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.87.1 — 16/11/2026
+
+### Ajouts
+- Donjons : section « Quêtes du donjon » sous les boss, pour le perso choisi. Chaque quête avec son niveau et son état : disponible, dans le journal, niveau requis, faite, ou « après : <quête> » quand une quête doit être faite avant (prérequis). Les quêtes à faire passent en premier. L'icône de guidage mène au donneur, ou, s'il y a un prérequis, au donneur de la quête à faire avant.
+- Feuille de route mise à jour : bénédictions du paladin, et deux améliorations de la navigation (bateau sur le même continent, repère du jeu sur la minicarte).
 
 ## v0.87.0 — 16/11/2026
 
