@@ -18,6 +18,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.78.1 — 16/11/2026
+
+### Corrections
+- Micro menu : l'heure paraissait décalée vers la droite quand elle commence par un 1 (le chiffre 1 laisse un vide à sa gauche). Elle est maintenant centrée sur ses chiffres, et les barres FPS et latence vont du premier au dernier chiffre.
+
 ## v0.78.0 — 16/11/2026
 
 ### Ajouts

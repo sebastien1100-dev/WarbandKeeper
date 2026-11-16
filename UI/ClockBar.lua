@@ -392,9 +392,27 @@ local function build()
         -- heure et barres forment un bloc centré dans le fond : le texte au milieu (le double du
         -- gras est réparti des deux côtés), les deux barres dessous, d'un bord du texte à l'autre
         local yoff = o.stats and 3 or 0
+        -- centrage sur l'encre : avec des chiffres à largeur fixe, le « 1 » laisse un vide à sa
+        -- gauche (et un peu à sa droite) ; on décale le texte et on cale les barres sur les chiffres
+        if not self.probe then
+            self.probe = self.clockBtn:CreateFontString(nil, "BACKGROUND")
+            self.probe:Hide()
+        end
+        self.probe:SetFont(font, fs, "")
+        self.probe:SetText("0")
+        local cell = self.probe:GetStringWidth() or 0
+        self.probe:SetText("1")
+        local one = self.probe:GetStringWidth() or 0
+        local txt = self.time:GetText() or ""
+        local lead, trail = 0, 0
+        if cell > 0 and one > cell * 0.8 then -- chiffres tabulaires
+            lead = (txt:sub(1, 1) == "1") and cell * 0.39 or 0
+            trail = (txt:sub(-1) == "1") and cell * 0.12 or 0
+        end
+        local shift = (lead - trail) / 2
         self.time:ClearAllPoints()
-        self.time:SetPoint("CENTER", self.clockBtn, "CENTER", o.bold and -0.5 or 0, yoff)
-        local half = math.max(20, tw) / 2
+        self.time:SetPoint("CENTER", self.clockBtn, "CENTER", (o.bold and -0.5 or 0) - shift, yoff)
+        local half = math.max(20, tw - lead - trail) / 2
         local by = yoff - fs * 0.42 - 2
         local mw = math.floor(half - 2)
         for _, m in ipairs({ self.fpsBar, self.msBar }) do
