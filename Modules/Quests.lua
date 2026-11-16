@@ -242,7 +242,7 @@ end
 ---------------------------------------------------------------------------
 -- Infobulle d'un donneur de quêtes : ses quêtes pas encore faites par ce perso
 ---------------------------------------------------------------------------
-local STATE_COL = { avail = "ffd200", log = "9ed17a", high = "999999", locked = "999999" }
+local STATE_COL = { avail = "ffd200", log = "9ed17a", high = "e06666", locked = "7aa6db" }
 local function onUnitTooltip(tooltip)
     if tooltip ~= GameTooltip or not M:Config().tooltip then return end
     local R = WK.modules.Rares

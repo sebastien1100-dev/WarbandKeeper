@@ -8,7 +8,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
-- Micro menu : réglages des raccourcis plus compacts (propositions A, B, C).
 - Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.
 - Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.
 - Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).
@@ -19,6 +18,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.67.2 — 16/11/2026
+
+### Modifications
+- Micro menu : les 14 lignes « Masqué / Gauche / Droite » sont remplacées par la barre telle qu'elle est à l'écran. Clic sur une icône : gauche, puis droite, puis masquée ; clic sur une icône masquée : elle revient à gauche.
+- Micro menu : on peut enfin choisir l'ordre des raccourcis (Maj + clic gauche ou droit pour décaler d'un cran) ; clic droit pour masquer.
+- Quêtes : nouvelles couleurs pour les états, rouge pour « trop haute » et bleu pour « après une autre quête » (page, légende et infobulle du donneur).
 
 ## v0.67.1 — 16/11/2026
 

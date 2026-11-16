@@ -303,7 +303,7 @@ local function build()
     function bar:Lists()
         local o = cfg()
         local L, R = {}, {}
-        for _, def in ipairs(SHORTCUTS) do
+        for _, def in ipairs(UI.ClockOrdered()) do
             local side = o.side[def.key]
             if side == "L" then table.insert(L, self.icons[def.key]) elseif side == "R" then table.insert(R, self.icons[def.key]) end
         end
@@ -453,6 +453,77 @@ local function build()
     UI:RegisterHUD("clock", bar, { label = T("Micro menu"), protected = true, point = "TOP",
         default = { 0, UIParent:GetHeight() / 2 - 6 } })
     return bar
+end
+
+---------------------------------------------------------------------------
+-- Ordre et côté des raccourcis (réglages : barre en direct de QoL > Micro menu)
+---------------------------------------------------------------------------
+-- Raccourcis dans l'ordre choisi (cfg().order), les autres ensuite dans l'ordre d'origine.
+-- À gauche, le premier est le plus près de l'heure.
+function UI.ClockOrdered()
+    local o, out, seen = cfg(), {}, {}
+    local byKey = {}
+    for _, def in ipairs(SHORTCUTS) do byKey[def.key] = def end
+    for _, k in ipairs(o.order or {}) do
+        if byKey[k] and not seen[k] then seen[k] = true; table.insert(out, byKey[k]) end
+    end
+    for _, def in ipairs(SHORTCUTS) do if not seen[def.key] then table.insert(out, def) end end
+    return out
+end
+-- Ordre à l'écran d'un côté : { clés de gauche à droite }
+function UI.ClockVisual(side)
+    local o, out = cfg(), {}
+    for _, def in ipairs(UI.ClockOrdered()) do
+        if o.side[def.key] == side then
+            if side == "L" then table.insert(out, 1, def.key) else table.insert(out, def.key) end
+        end
+    end
+    return out
+end
+local function saveVisual(VL, VR)
+    local o = cfg()
+    local order = {}
+    for i = #VL, 1, -1 do table.insert(order, VL[i]) end
+    for _, k in ipairs(VR) do table.insert(order, k) end
+    for _, def in ipairs(SHORTCUTS) do
+        local found = false
+        for _, k in ipairs(order) do if k == def.key then found = true break end end
+        if not found then table.insert(order, def.key) end
+    end
+    o.order = order
+    UI:SyncClock()
+end
+-- Clic : gauche > droite > masqué > gauche (au bout le plus éloigné de l'heure)
+function UI:ClockCycle(key)
+    local o = cfg()
+    local VL, VR = UI.ClockVisual("L"), UI.ClockVisual("R")
+    local function drop(t) for i = #t, 1, -1 do if t[i] == key then table.remove(t, i) end end end
+    drop(VL); drop(VR)
+    local cur = o.side[key]
+    if cur == "L" then o.side[key] = "R"; table.insert(VR, key)
+    elseif cur == "R" then o.side[key] = nil
+    else o.side[key] = "L"; table.insert(VL, 1, key) end
+    saveVisual(VL, VR)
+end
+function UI:ClockHide(key)
+    cfg().side[key] = nil
+    UI:SyncClock()
+end
+-- Décale d'un cran à l'écran (dir -1 : vers la gauche, 1 : vers la droite), sans changer de côté
+function UI:ClockMove(key, dir)
+    local o = cfg()
+    local side = o.side[key]
+    if not side then return end
+    local VL, VR = UI.ClockVisual("L"), UI.ClockVisual("R")
+    local t = side == "L" and VL or VR
+    for i, k in ipairs(t) do
+        if k == key then
+            local j = i + dir
+            if j >= 1 and j <= #t then t[i], t[j] = t[j], t[i] end
+            break
+        end
+    end
+    saveVisual(VL, VR)
 end
 
 function UI:SyncClock()

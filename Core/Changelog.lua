@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.67.2", date = "16/11/2026",
+        changed = {
+            "Micro menu : les 14 lignes « Masqué / Gauche / Droite » sont remplacées par la barre telle qu'elle est à l'écran. Clic sur une icône : gauche, puis droite, puis masquée ; clic sur une icône masquée : elle revient à gauche.",
+            "Micro menu : on peut enfin choisir l'ordre des raccourcis (Maj + clic gauche ou droit pour décaler d'un cran) ; clic droit pour masquer.",
+            "Quêtes : nouvelles couleurs pour les états, rouge pour « trop haute » et bleu pour « après une autre quête » (page, légende et infobulle du donneur).",
+        },
+    },
+    {
         version = "0.67.1", date = "16/11/2026",
         changed = {
             "Rares : la page a deux onglets, « Collection » (tuiles et rares de la zone) et « Carte et infobulle » (réglages de la carte, de l'infobulle et de l'alerte, avec l'aperçu en taille réelle).",
@@ -1296,7 +1304,6 @@ WK.Changelog = {
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
-    "Micro menu : réglages des raccourcis plus compacts (propositions A, B, C).",
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",

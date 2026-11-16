@@ -513,7 +513,7 @@ UI:RegisterPage({
         section("micro")
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 11 * 46 + 30 + #SC * 38 + 10, "les raccourcis se déplient au survol de l'heure")
+        local clockCard = card("Horloge et raccourcis", 40 + 11 * 46 + 30 + 128, "les raccourcis se déplient au survol de l'heure")
         local cy = -40
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
@@ -547,17 +547,116 @@ UI:RegisterPage({
                 function(v) ck.magnify = v / 100 end, "%d %%"), 240)
         crow("FPS et latence", "Deux petites barres sous l'heure (vert, orange, rouge).",
             toggle(clockCard, function() return ck.stats end, function(v) ck.stats = v end), 80)
+        -- Raccourcis : la barre telle qu'à l'écran. Clic : gauche > droite > masqué ;
+        -- Maj + clic gauche / droit : décaler d'un cran ; clic droit : masquer.
         local hdr = UI:Text(clockCard, 10, C.dim)
         hdr:SetPoint("TOPLEFT", 16, cy - 6)
-        hdr:SetText("RACCOURCIS")
-        cy = cy - 30
-        for _, def in ipairs(SC) do
-            local sg = UI:Segmented(clockCard, { { "", "Masqué" }, { "L", "Gauche" }, { "R", "Droite" } },
-                function(v) ck.side[def.key] = (v ~= "" and v) or nil; csync() end, 24)
-            sg:Select(ck.side[def.key] or "")
-            UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
-            cy = cy - 38
+        hdr:SetText(T("RACCOURCIS") .. "  ·  " .. T("clic : gauche > droite > masqué"))
+        cy = cy - 26
+        local box = CreateFrame("Frame", nil, clockCard)
+        box:SetPoint("TOPLEFT", 16, cy)
+        box:SetPoint("TOPRIGHT", -16, cy)
+        box:SetHeight(56)
+        box.bg = UI:Rounded(box, 12, 0, "BACKGROUND", 1)
+        box.bg:SetColor(unpack(C.inset))
+        UI.settingIndex = UI.settingIndex or {}
+        table.insert(UI.settingIndex, { row = box, label = "Raccourcis du micro menu", desc = "Gauche, droite, masqué, ordre." })
+        local hid = CreateFrame("Frame", nil, clockCard)
+        hid:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -8)
+        hid:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -8)
+        hid:SetHeight(34)
+        local hl = UI:Text(hid, 10, C.dim)
+        hl:SetPoint("LEFT", 4, 0)
+        hl:SetText(T("MASQUÉS"))
+        local hint = UI:Text(clockCard, 10, C.muted)
+        hint:SetPoint("TOPLEFT", hid, "BOTTOMLEFT", 4, -6)
+        hint:SetText(T("Maj + clic gauche ou droit : décaler d'un cran  ·  clic droit : masquer"))
+        local clockTxt = UI:Text(box, 18)
+        local sepL = box:CreateTexture(nil, "ARTWORK"); sepL:SetSize(1, 26)
+        local sepR = box:CreateTexture(nil, "ARTWORK"); sepR:SetSize(1, 26)
+        local SZ, IG = 32, 4
+        local btns = {}
+        local function sideText(k)
+            local sd = ck.side[k]
+            return sd == "L" and T("à gauche") or sd == "R" and T("à droite") or T("masqué")
         end
+        local function nextText(k)
+            local sd = ck.side[k]
+            return sd == "L" and T("clic : à droite") or sd == "R" and T("clic : masquer") or T("clic : à gauche")
+        end
+        local layoutBar
+        for _, def in ipairs(SC) do
+            local b = CreateFrame("Button", nil, box)
+            b:SetSize(SZ, SZ)
+            b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            b.edge = UI:Rounded(b, 9, 0, "BACKGROUND", 1)
+            b.tex = b:CreateTexture(nil, "ARTWORK")
+            b.tex:SetSize(18, 18)
+            b.tex:SetPoint("CENTER")
+            b.def = def
+            b:SetScript("OnClick", function(_, button)
+                if IsShiftKeyDown() then
+                    UI:ClockMove(def.key, button == "RightButton" and 1 or -1)
+                elseif button == "RightButton" then
+                    UI:ClockHide(def.key)
+                else
+                    UI:ClockCycle(def.key)
+                end
+                layoutBar()
+                if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end
+            end)
+            b:SetScript("OnEnter", function(s2)
+                local ar, ag, ab = UI:Accent(); s2.edge:SetColor(ar, ag, ab, 1)
+                WK.UI:TooltipOwner(s2, "ANCHOR_BOTTOM")
+                GameTooltip:SetText(T(def.label), 1, 1, 1)
+                GameTooltip:AddLine(sideText(def.key) .. "  ·  " .. nextText(def.key), 0.6, 0.6, 0.6)
+                GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function(s2) s2.hover = nil; layoutBar(); GameTooltip:Hide() end)
+            btns[def.key] = b
+        end
+        layoutBar = function()
+            local VL, VR = UI.ClockVisual("L"), UI.ClockVisual("R")
+            local W = box:GetWidth() or 600
+            if W < 100 then W = 600 end
+            clockTxt:SetText(date(ck.h12 and "%I:%M" or "%H:%M"))
+            clockTxt:SetTextColor(UI:Accent())
+            sepL:SetColorTexture(unpack(C.border)); sepR:SetColorTexture(unpack(C.border))
+            local cw = 80
+            local total = #VL * (SZ + IG) + #VR * (SZ + IG) + cw + 24
+            local x = math.floor((W - total) / 2)
+            for _, k in ipairs(VL) do
+                local b = btns[k]
+                b:ClearAllPoints(); b:SetParent(box); b:SetPoint("LEFT", box, "LEFT", x, 0); x = x + SZ + IG
+            end
+            sepL:ClearAllPoints(); sepL:SetPoint("LEFT", box, "LEFT", x + 6, 0)
+            clockTxt:ClearAllPoints(); clockTxt:SetPoint("CENTER", box, "LEFT", x + 12 + cw / 2, 0)
+            sepR:ClearAllPoints(); sepR:SetPoint("LEFT", box, "LEFT", x + 18 + cw, 0)
+            x = x + cw + 24
+            for _, k in ipairs(VR) do
+                local b = btns[k]
+                b:ClearAllPoints(); b:SetParent(box); b:SetPoint("LEFT", box, "LEFT", x, 0); x = x + SZ + IG
+            end
+            local hx = 70
+            for _, def in ipairs(SC) do
+                local b = btns[def.key]
+                local shown = ck.side[def.key] ~= nil
+                b.tex:SetTexture(def.icon())
+                if shown then
+                    if def.tint then b.tex:SetVertexColor(UI:Accent()) else b.tex:SetVertexColor(unpack(C.text)) end
+                    b:SetAlpha(1)
+                else
+                    b:ClearAllPoints(); b:SetParent(hid); b:SetPoint("LEFT", hid, "LEFT", hx, 0); hx = hx + SZ + IG
+                    b.tex:SetVertexColor(unpack(C.muted))
+                    b:SetAlpha(0.6)
+                end
+                local ar, ag, ab = UI:Accent()
+                b.edge:SetColor(unpack(b:IsMouseOver() and { ar, ag, ab, 1 } or C.surface2))
+            end
+        end
+        UI:OnResize(box, function() layoutBar() end)
+        table.insert(self.dyn, function() layoutBar() end)
+        layoutBar()
 
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)

@@ -25,8 +25,8 @@ local function stateInfo(st)
     if st == "done" then return C.dim, T("faite") end
     if st == "log" then return C.positive, T("dans le journal") end
     if st == "avail" then return C.gold, T("disponible") end
-    if st == "high" then return C.warning, T("trop haute") end
-    return C.muted, T("plus tard")
+    if st == "high" then return C.negative, T("trop haute") end
+    return C.tank, T("plus tard")
 end
 local KIND = { d = "Donjon", c = "Classe" }
 
