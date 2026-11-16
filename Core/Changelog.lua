@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.86.3", date = "16/11/2026",
+        changed = {
+            "Carte du monde, liste des rares : bien plus compacte (une ligne par rare : étoile, nom, niveau ; le butin est dans l'infobulle). Clic sur l'en-tête : la replier ou la déplier ; glisser l'en-tête : la déplacer (position gardée) ; clic droit : la remettre en place ; croix : ne plus l'afficher (réactivable dans Rares > Carte et infobulle).",
+        },
+        added = {
+            "Rares > Carte et infobulle : « Patrouilles des rares sur la carte » affiche en permanence le trajet de chaque rare qui se déplace, en pointillés de sa couleur (sinon seulement au survol de son médaillon). Coupé par défaut.",
+        },
+    },
+    {
         version = "0.86.2", date = "16/11/2026",
         fixed = {
             "Options > Général : la carte « Bouton minimap » chevauchait la carte « Infobulles ».",

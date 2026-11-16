@@ -137,7 +137,9 @@ function UI:DrawRarePins(cv, mapID, w, h)
         p:ClearAllPoints()
         p:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[1] / 100 * w, -m.spawns[2] / 100 * h)
         p:Show()
-        -- survolé : autres points d'apparition, et patrouille en pointillés
+        -- survolé : autres points d'apparition ; patrouille en pointillés au survol, ou toujours
+        -- si « Patrouilles des rares » est activé (plus pâle pour les rares non survolés)
+        local showPath = hovered == r or R:Config().paths
         if hovered == r then
             for k = 3, #m.spawns, 2 do
                 nd = nd + 1
@@ -146,7 +148,10 @@ function UI:DrawRarePins(cv, mapID, w, h)
                 d:SetVertexColor(col[1], col[2], col[3], 0.8)
                 d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[k] / 100 * w, -m.spawns[k + 1] / 100 * h)
             end
+        end
+        if showPath then
             local path = m.path
+            local pa = (hovered == r) and 0.9 or 0.55
             for k = 1, #path - 2, 2 do
                 local x1, y1, x2, y2 = path[k] / 100 * w, path[k + 1] / 100 * h, path[k + 2] / 100 * w, path[k + 3] / 100 * h
                 local len = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
@@ -155,7 +160,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
                     nd = nd + 1
                     local d = getDot(nd)
                     d:SetSize(4 * scale * 1.2, 4 * scale * 1.2)
-                    d:SetVertexColor(col[1], col[2], col[3], 0.9)
+                    d:SetVertexColor(col[1], col[2], col[3], pa)
                     local t = j / n
                     d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", x1 + (x2 - x1) * t, -(y1 + (y2 - y1) * t))
                 end
@@ -177,48 +182,87 @@ R.OnChange = function() UI:RedrawRarePins() end
 ---------------------------------------------------------------------------
 -- Liste « Rares de la zone » sur le côté de la carte
 ---------------------------------------------------------------------------
+-- Compacte : une ligne par rare (étoile, nom, niveau ; le butin est dans l'infobulle).
+-- En-tête : clic = replier / déplier ; glisser = déplacer (position gardée par rapport au coin
+-- haut droit de la carte) ; clic droit = remettre en place ; croix = ne plus l'afficher
+-- (réglage « Liste des rares de la zone » dans Rares > Carte et infobulle).
 local panel, rows = nil, {}
+local W_LIST, ROW = 200, 20
+local function place()
+    local cfg = R:Config()
+    local parent = panel:GetParent()
+    panel:ClearAllPoints()
+    panel:SetPoint("TOPRIGHT", parent, "TOPRIGHT", cfg.listX or -8, cfg.listY or -8)
+end
 local function buildList()
     local parent = WorldMapFrame and (WorldMapFrame.ScrollContainer or WorldMapFrame)
     if not (parent and parent.GetFrameLevel) then parent = WorldMapFrame end
     if not (parent and parent.GetFrameLevel) then return end
     panel = CreateFrame("Frame", "WarbandKeeperRareList", parent)
-    panel:SetWidth(230)
-    panel:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, -8)
+    panel:SetWidth(W_LIST)
     panel:SetFrameLevel((parent:GetFrameLevel() or 1) + 40)
-    UI:Panel(panel, 10, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border)
-    panel.title = UI:Text(panel, 12)
-    panel.title:SetPoint("TOPLEFT", 12, -10)
-    panel.title:SetText(T("Rares de la zone"))
+    panel:SetMovable(true)
+    panel:SetClampedToScreen(true)
+    UI:Panel(panel, 9, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
+    panel.chev = UI:Icon(panel, "chevron", 10, nil, "ARTWORK")
+    panel.chev:SetPoint("TOPLEFT", 9, -9)
+    panel.title = UI:Text(panel, 11)
+    panel.title:SetPoint("TOPLEFT", 24, -7)
+    panel.title:SetText(T("Rares"))
     panel.count = UI:Text(panel, 10, C.muted)
-    panel.count:SetPoint("TOPRIGHT", -12, -12)
+    panel.count:SetPoint("LEFT", panel.title, "RIGHT", 6, 0)
+    panel.close = UI:IconButton(panel, "close", 14, "Ne plus afficher cette liste (réactivable dans Rares > Carte et infobulle)", "accent")
+    panel.close:SetPoint("TOPRIGHT", -5, -4)
+    panel.close:SetScript("OnClick", function()
+        R:Config().list = false
+        panel:Hide()
+        WK:Print(T("Liste des rares masquée : à réactiver dans Rares > Carte et infobulle."))
+    end)
     panel.toggle = CreateFrame("Button", nil, panel)
-    panel.toggle:SetPoint("TOPLEFT"); panel.toggle:SetPoint("TOPRIGHT")
-    panel.toggle:SetHeight(28)
-    panel.toggle:SetScript("OnClick", function()
+    panel.toggle:SetPoint("TOPLEFT"); panel.toggle:SetPoint("TOPRIGHT", -22, 0)
+    panel.toggle:SetHeight(22)
+    panel.toggle:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    panel.toggle:RegisterForDrag("LeftButton")
+    panel.toggle:SetScript("OnClick", function(_, btn)
         local cfg = R:Config()
+        if btn == "RightButton" then cfg.listX, cfg.listY = nil, nil; place() return end
         cfg.listCollapsed = not cfg.listCollapsed
         UI:RedrawRarePins()
     end)
+    panel.toggle:SetScript("OnDragStart", function() panel:StartMoving() end)
+    panel.toggle:SetScript("OnDragStop", function()
+        panel:StopMovingOrSizing()
+        local par = panel:GetParent()
+        local cfg = R:Config()
+        local s1, s2 = panel:GetEffectiveScale(), par:GetEffectiveScale()
+        cfg.listX = math.floor((panel:GetRight() * s1 - par:GetRight() * s2) / s2 + 0.5)
+        cfg.listY = math.floor((panel:GetTop() * s1 - par:GetTop() * s2) / s2 + 0.5)
+        place()
+    end)
+    panel.toggle:SetScript("OnEnter", function(b)
+        WK.UI:TooltipOwner(b, "ANCHOR_LEFT")
+        GameTooltip:SetText(T("Rares de la zone"), 1, 1, 1)
+        GameTooltip:AddLine(T("Clic : replier ou déplier · glisser : déplacer · clic droit : remettre en place"), 0.7, 0.7, 0.7, true)
+        GameTooltip:Show()
+    end)
+    panel.toggle:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    place()
 end
 local function getRow(i)
     local r = rows[i]
     if not r then
         r = CreateFrame("Button", nil, panel)
-        r:SetHeight(34)
-        r.dot = UI:Icon(r, "star", 12, nil, "ARTWORK")
-        r.dot:SetPoint("TOPLEFT", 10, -5)
-        r.name = UI:Text(r, 12)
-        r.name:SetPoint("TOPLEFT", 28, -3)
-        r.name:SetPoint("RIGHT", -8, 0)
+        r:SetHeight(ROW)
+        r.dot = UI:Icon(r, "star", 10, nil, "ARTWORK")
+        r.dot:SetPoint("LEFT", 8, 0)
+        r.lvl = UI:Text(r, 10, C.muted)
+        r.lvl:SetPoint("RIGHT", -8, 0)
+        r.name = UI:Text(r, 11)
+        r.name:SetPoint("LEFT", 22, 0)
+        r.name:SetPoint("RIGHT", r.lvl, "LEFT", -4, 0)
         r.name:SetJustifyH("LEFT")
         r.name:SetWordWrap(false)
-        r.sub = UI:Text(r, 10, C.dim)
-        r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
-        r.sub:SetPoint("RIGHT", -8, 0)
-        r.sub:SetJustifyH("LEFT")
-        r.sub:SetWordWrap(false)
-        r.hl = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
+        r.hl = UI:Rounded(r, 5, 0, "BACKGROUND", 1)
         r:SetScript("OnEnter", function(s)
             s.hl:SetColor(unpack(C.hover)); s.hl:Show()
             WK.UI:TooltipOwner(s, "ANCHOR_LEFT")
@@ -247,27 +291,29 @@ function UI:SyncRareList(mapID, list)
     local me = WK:CharKey()
     local left = 0
     for _, r in ipairs(list) do if not R:Killed(r.id, me) then left = left + 1 end end
-    panel.count:SetText(string.format(T("%d / %d restants"), left, #list))
+    panel.count:SetText(left .. " / " .. #list)
+    panel.chev:SetRotation(cfg.listCollapsed and math.pi / 2 or 0)
+    panel.chev:SetVertexColor(unpack(C.muted))
     for _, rw in ipairs(rows) do rw:Hide() end
-    local y = -34
+    local y = -24
     if not cfg.listCollapsed then
         for i, r in ipairs(list) do
             if i > 12 then break end
             local rw = getRow(i)
             rw.r = r
-            rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", 4, y); rw:SetPoint("TOPRIGHT", -4, y)
+            rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", 3, y); rw:SetPoint("TOPRIGHT", -3, y)
             local col = r.elite and C.gold or C.rare
             local dead = R:Killed(r.id, me) ~= nil
             rw.dot:SetVertexColor(unpack(dead and C.dim or col))
-            rw.name:SetText(R:Name(r) .. "  |cff999999" .. r.min .. "|r")
+            rw.name:SetText(R:Name(r))
             rw.name:SetTextColor(unpack(dead and C.dim or C.text))
-            local loot = R:Loot(r.id)[1]
-            rw.sub:SetText(dead and T("tué") or (loot and (WK.GetItemInfo(loot.id) or "") or T("aucun butin notable")))
+            rw.lvl:SetText(dead and T("tué") or tostring(r.min))
             rw:Show()
-            y = y - 36
+            y = y - ROW
         end
+        y = y - 4
     end
-    panel:SetHeight(-y + 4)
+    panel:SetHeight(-y + 2)
     panel:Show()
 end
 

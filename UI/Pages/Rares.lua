@@ -179,11 +179,12 @@ UI:RegisterPage({
         end
         local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
 
-        local mcard = card("Carte et infobulle", 40 + 4 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
+        local mcard = card("Carte et infobulle", 40 + 5 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
         UI:SettingRow(mcard, -40, "Sur la carte du monde", "Un médaillon par rare (mauve, doré pour un élite, grisé si ce perso l'a tué). Au survol : apparitions et patrouille.", toggle(mcard, "map", redraw), 80)
         UI:SettingRow(mcard, -86, "Masquer les rares tués sur la carte", "Ceux que ce perso a déjà tués disparaissent de la carte.", toggle(mcard, "hideKilled", redraw), 80)
         UI:SettingRow(mcard, -132, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", toggle(mcard, "list", redraw), 80)
         UI:SettingRow(mcard, -178, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", toggle(mcard, "tooltip"), 80)
+        UI:SettingRow(mcard, -224, "Patrouilles des rares sur la carte", "Le trajet de chaque rare qui se déplace, en pointillés de sa couleur, toujours affiché (sinon : seulement au survol de son médaillon).", toggle(mcard, "paths", redraw), 80)
 
         local acard = card("Alerte « Rare en vue »", 40 + 4 * 46 + 182, "quand un rare entre dans ton champ de vision")
         UI:SettingRow(acard, -40, "Alerte", "Se place en mode édition.", toggle(acard, "alert"), 80)
