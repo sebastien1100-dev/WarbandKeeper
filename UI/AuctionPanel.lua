@@ -88,7 +88,7 @@ end
 local function host() return AuctionHouseFrame or AuctionFrame end
 
 local function show()
-    if not S:Config().panel then return end
+    if not S:Config().panel or not WK:FeatureOn("ah") then return end
     local h = host()
     if not h then return end
     panel = panel or build()

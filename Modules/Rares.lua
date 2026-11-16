@@ -207,7 +207,7 @@ end)
 local seen = {} -- [id ou nom] = date de la dernière alerte (une alerte par rare toutes les 5 minutes)
 local function check(unit)
     local cfg = M:Config()
-    if not cfg.alert then return end
+    if not cfg.alert or not WK:FeatureOn("rares") then return end
     local okE, exists = pcall(UnitExists, unit)
     if not (okE and readable(exists)) then return end
     local okC, cls = pcall(UnitClassification, unit)

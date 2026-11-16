@@ -79,6 +79,10 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 
 `Modules/QuestsDB.lua` est **généré** par `python3 tools/gen_quests.py <clone de QuestieDB>` (il lui faut aussi `l10n/Classic/lookupQuests/frFR.lua` pour les noms français) : quêtes par zone (donjon : zone de l'entrée), niveau, faction, classes, métier, prérequis, donneur et XP ; quêtes répétables exclues. Données Questie (GPLv3) : garder la mention. `Modules/Quests.lua` : état d'une quête pour un perso (`ForChar`, `State`), zones, meilleure zone, guidage, infobulle du donneur ; quêtes faites et journal dans `characters[perso].quests`. `UI/Pages/Quests.lua` : même disposition que la page Rares (tuiles, liste, colonne de réglages).
 
+## Modules
+
+`Core/Features.lua` : liste des modules qu'on peut couper (`WK.FEATURES` : clé, nom, icône, groupe, page ou section de QoL, `reload` s'il affiche quelque chose à l'écran), `WK:FeatureOn(clé)`, `WK:PageOn(page)`, `WK:SetFeature(clé, actif)`. Réglage : `WK.DB.global.modulesOff` (dans les profils). Un nouveau module doit y être ajouté et vérifier `WK:FeatureOn` à ses points d'entrée (infobulle, dessin, détection, éléments à l'écran) ; sa page et sa section de QoL sont masquées automatiquement. Carte « Modules » : bas de `UI/Pages/Overview.lua`.
+
 ## Hôtel des ventes
 
 `Modules/AHScan.lua` : scan de l'HV (complet avec `getAll` quand `CanSendAuctionQuery` le permet, sinon page par page ; `C_AuctionHouse.ReplicateItems` si le client l'a), lecture par morceaux à chaque image, prix par royaume et faction dans `WK.DB.global.ah.realms` (exclus des profils), infobulle (appelée par `Modules/Inventory.lua`), `/wk hv`. `UI/AuctionPanel.lua` : panneau collé à la fenêtre de l'HV. `Modules/Value.lua` prend notre prix d'abord, Auctionator ensuite. Ne pas confondre avec `Modules/Auction.lua` (journal des ventes et achats lus sur les factures du courrier).

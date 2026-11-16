@@ -529,7 +529,7 @@ end
 function UI:SyncClock()
     if UI.SyncFishingMinimap then UI:SyncFishingMinimap() end -- le bouton de minicarte de la pêche en dépend
     if inCombat() then return end
-    if cfg().enabled then
+    if cfg().enabled and WK:FeatureOn("micro") then
         bar = bar or build()
         bar:Show()
         bar.open = 0

@@ -243,7 +243,7 @@ end
 WK:On("AUCTION_HOUSE_SHOW", function()
     M.open = true
     notify()
-    if M:Config().auto then
+    if M:Config().auto and WK:FeatureOn("ah") then
         C_Timer.After(1.5, function()
             local _, all = M:CanQuery()
             if M.open and not M.scan and all then M:Start("full") end
@@ -260,7 +260,7 @@ end)
 -- Infobulle d'un objet (appelée par Modules/Inventory.lua)
 ---------------------------------------------------------------------------
 function M:AddTooltip(tooltip, itemID, header)
-    if not self:Config().tooltip then return false end
+    if not self:Config().tooltip or not WK:FeatureOn("ah") then return false end
     local e = self:Entry(itemID)
     if not e or not e.p then return false end
     header()

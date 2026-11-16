@@ -244,7 +244,7 @@ end
 ---------------------------------------------------------------------------
 local STATE_COL = { avail = "ffd200", log = "9ed17a", high = "e06666", locked = "7aa6db" }
 local function onUnitTooltip(tooltip)
-    if tooltip ~= GameTooltip or not M:Config().tooltip then return end
+    if tooltip ~= GameTooltip or not M:Config().tooltip or not WK:FeatureOn("quests") then return end
     local R = WK.modules.Rares
     local unit = R.Readable(select(2, tooltip:GetUnit()))
     if not unit then return end

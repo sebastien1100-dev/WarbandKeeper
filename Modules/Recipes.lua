@@ -305,7 +305,7 @@ end
 
 -- Ajoute les lignes à l'infobulle. header() pose l'en-tête Warband Keeper s'il n'y est pas encore.
 function M:AddTooltip(tooltip, itemID, header)
-    if not self:TooltipEnabled() then return false end
+    if not self:TooltipEnabled() or not WK:FeatureOn("professions") then return false end
     if not uses then buildUses() end
     local list = uses[itemID]
     if not list then return false end

@@ -80,7 +80,7 @@ end
 local function updateMini()
     pool:Reset()
     local o = N:Config()
-    if not o.minimap or not Minimap:IsVisible() then return end
+    if not o.minimap or not WK:FeatureOn("nodes") or not Minimap:IsVisible() then return end
     if IsInInstance and select(2, IsInInstance()) ~= "none" and select(2, IsInInstance()) ~= nil then return end
     local p = WK.modules.Guide:PlayerPos()
     if not p then return end
@@ -157,7 +157,7 @@ end
 
 function UI:DrawNodePins(cv, mapID, w, h)
     local o = N:Config()
-    if not o.map then return end
+    if not o.map or not WK:FeatureOn("nodes") then return end
     local list, rk = N:Visible(mapID)
     if #list == 0 then return end
     if not mapHolder then

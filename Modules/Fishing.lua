@@ -310,6 +310,7 @@ end
 ---------------------------------------------------------------------------
 function M:Start(fromEquip)
     if self.active then return end
+    if not WK:FeatureOn("fishing") then if not fromEquip then WK:Print(T("Le module Pêche est coupé (Résumé > Modules).")) end return end
     if inCombat() then WK:Print(T("Pas en combat.")) return end
     if not self:Knows() then WK:Print(T("Ce perso ne connaît pas la Pêche.")) return end
     local o = self:Config()

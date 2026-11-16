@@ -195,7 +195,7 @@ local function build()
 end
 
 function UI:SyncRange()
-    local want = WK.DB:Me().class == "HUNTER" and cfg().enabled
+    local want = WK.DB:Me().class == "HUNTER" and cfg().enabled and WK:FeatureOn("range")
     if want then
         ring = ring or build()
         ring:Show()

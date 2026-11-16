@@ -6,6 +6,19 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.69.0", date = "16/11/2026",
+        added = {
+            "Modules : carte « Modules » en bas du Résumé. Repliée, une ligne d'icônes (rose : actif, gris : coupé) ; « Gérer » la déplie à la place du tableau des persos, avec une tuile par module rangée par groupe (son chiffre du moment et un interrupteur). Un clic sur une tuile ouvre la page du module.",
+            "Modules : 15 modules à couper ou remettre : Stats, Métiers, Courrier, Hôtel des ventes, Session de farm, Loot, Journal, LFG, Quêtes, Rares, Récolte, Halo, Micro menu, Pêche, Distance.",
+            "Modules : un module coupé quitte la barre latérale (et son groupe s'il est vide), la recherche et QoL ; ses infobulles et ce qu'il affiche à l'écran disparaissent et ses actions s'arrêtent (filtre de loot, détection et alerte des rares, scan auto de l'HV, halo, mode pêche…). Les relevés discrets (or, courrier, journal, quêtes faites) continuent, pour que rien ne manque quand on le remet.",
+            "Modules : pour Halo, Micro menu, Pêche et Distance, un bouton « Recharger » apparaît pour terminer le changement proprement.",
+            "Modules : les modules actifs font partie des profils (chaque profil peut avoir les siens).",
+        },
+        changed = {
+            "Nouveau fichier : relancer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.68.1", date = "16/11/2026",
         added = {
             "En-tête : nouveau bouton pour recharger l'interface (/reload), à gauche de la croix ; il ne fait rien en combat.",
@@ -1331,7 +1344,6 @@ WK.Roadmap = {
     "Pêche : statistiques de pêche, journal des prises et récapitulatif de prise.",
     "Warband UI : addon d'interface séparé, par modules (minicarte, chat, barres de vie, incantation, nameplates, améliorations, barres de sorts), d'après tes modèles.",
     "Hôtel des ventes, suite : listes d'achat (recherche de toute la liste, achat en un clic, listes de courses des métiers), vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler.",
-    "Modules : activer ou couper chaque partie de l'addon (propositions A, B, C).",
     "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (Auctionator).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix Auctionator.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",

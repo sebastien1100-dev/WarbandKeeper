@@ -241,7 +241,7 @@ function UI:SyncFishingMinimap()
     -- inutile en double : si le raccourci « Mode pêche » est dans le micro menu, pas de bouton de minicarte
     local ck = UI.ClockConfig and UI.ClockConfig()
     local inMicro = ck and ck.enabled and ck.side and ck.side.fishing ~= nil
-    local want = F:Config().minimap and F:Knows() and Minimap ~= nil and not inMicro
+    local want = F:Config().minimap and WK:FeatureOn("fishing") and F:Knows() and Minimap ~= nil and not inMicro
     if want then
         mini = mini or buildMini()
         mini:Show()

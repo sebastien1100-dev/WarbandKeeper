@@ -241,7 +241,7 @@ UI:RegisterPage({
         local tableBox = CreateFrame("Frame", nil, p)
         self.tableBox = tableBox
         tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4))
-        tableBox:SetPoint("BOTTOMRIGHT")
+        tableBox:SetPoint("BOTTOMRIGHT", 0, 44 + GAP)
         self.colHeaders = {}
         for i, col in ipairs(BASE_COLS) do
             local t = UI:Text(tableBox, 10, C.dim)
@@ -290,11 +290,189 @@ UI:RegisterPage({
             return r
         end)
 
+        self:BuildModules(p)
+
         -- Élastique : colonnes recalculées et graphique redessiné quand la taille change.
         UI:OnResize(p, function(w)
             self:PlaceColumns(w)
+            self:LayoutModules(w)
             if self.chart then UI:RefreshSoon() end
         end)
+    end,
+
+    -- Carte « Modules » (Core/Features.lua) en bas du Résumé : repliée, une ligne d'icônes ;
+    -- dépliée, une ligne par groupe avec une tuile par module (icône, nom, chiffre, interrupteur).
+    BuildModules = function(self, p)
+        local ui = WK.DB.global.settings.ui
+        local card = CreateFrame("Frame", nil, p)
+        UI:Panel(card, 12, C.surface, C.border)
+        self.modCard = card
+        local title = UI:Text(card, 13)
+        title:SetPoint("TOPLEFT", 16, -14)
+        title:SetText(T("Modules"))
+        self.modCount = UI:Text(card, 11, C.muted)
+        self.modCount:SetPoint("LEFT", title, "RIGHT", 8, -1)
+        self.modToggle = UI:Button(card, "Gérer", 90, 24, "ghost")
+        self.modToggle:SetPoint("TOPRIGHT", -12, -9)
+        self.modToggle:SetScript("OnClick", function()
+            ui.modulesOpen = not ui.modulesOpen
+            self:LayoutModules(); self:Refresh()
+        end)
+        self.modReload = UI:Button(card, "Recharger", 110, 24, "primary", "power")
+        self.modReload:SetPoint("RIGHT", self.modToggle, "LEFT", -8, 0)
+        self.modReload:SetScript("OnClick", function()
+            if not (InCombatLockdown and InCombatLockdown()) then ReloadUI() end
+        end)
+        self.modReload:Hide()
+        self.modReloadHint = UI:Text(card, 10, C.muted)
+        self.modReloadHint:SetPoint("RIGHT", self.modReload, "LEFT", -8, 0)
+        self.modReloadHint:SetText(T("un /reload termine le changement"))
+        self.modReloadHint:Hide()
+        -- ligne d'icônes (repliée)
+        self.modDots = {}
+        for i, f in ipairs(WK.FEATURES) do
+            local d = UI:Icon(card, f.icon, 14, nil, "ARTWORK")
+            self.modDots[i] = d
+        end
+        -- tuiles (dépliée)
+        self.modLabels, self.modTiles = {}, {}
+        local groups = {}
+        for _, f in ipairs(WK.FEATURES) do
+            if not groups[f.group] then
+                groups[f.group] = true
+                local l = UI:Text(card, 10, C.dim)
+                l:SetText(T(f.group))
+                table.insert(self.modLabels, { label = l, group = f.group })
+            end
+            local t = CreateFrame("Button", nil, card)
+            t:SetHeight(40)
+            t.edge = UI:Rounded(t, 10, 0, "BACKGROUND", 0)
+            t.bg = UI:Rounded(t, 9, 1, "BACKGROUND", 1)
+            t.icon = UI:Icon(t, f.icon, 16, nil, "ARTWORK")
+            t.icon:SetPoint("LEFT", 12, 0)
+            t.name = UI:Text(t, 12)
+            t.name:SetPoint("TOPLEFT", 38, -6)
+            t.name:SetPoint("RIGHT", -50, 0)
+            t.name:SetJustifyH("LEFT")
+            t.name:SetText(T(f.label))
+            t.sub = UI:Text(t, 10, C.muted)
+            t.sub:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -2)
+            t.sub:SetPoint("RIGHT", -50, 0)
+            t.sub:SetJustifyH("LEFT")
+            t.toggle = UI:Toggle(t, function() return WK:FeatureOn(f.key) end, function(v)
+                WK:SetFeature(f.key, v)
+                if f.reload then self.needReload = true end
+                self:Refresh()
+            end)
+            t.toggle:SetPoint("RIGHT", -10, 0)
+            t.f = f
+            -- un clic sur la tuile ouvre la page du module (ou sa section de QoL)
+            t:SetScript("OnClick", function()
+                if not WK:FeatureOn(f.key) then return end
+                if f.page then UI:ShowPage(f.page)
+                elseif f.qol then UI:ShowPage("qol"); if UI.pages.qol.ShowSection then UI.pages.qol:ShowSection(f.qol) end end
+            end)
+            t:SetScript("OnEnter", function(s)
+                WK.UI:TooltipOwner(s, "ANCHOR_TOP")
+                GameTooltip:SetText(T(f.label), 1, 1, 1)
+                if f.desc then GameTooltip:AddLine(T(f.desc), 0.7, 0.7, 0.7, true) end
+                GameTooltip:AddLine(T("Couper un module masque sa page, ses infobulles et ce qu'il affiche, et arrête ses actions ; ses données sont gardées."), 0.5, 0.5, 0.5, true)
+                GameTooltip:Show()
+            end)
+            t:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            table.insert(self.modTiles, t)
+        end
+        self:LayoutModules()
+    end,
+
+    LayoutModules = function(self, w)
+        if not self.modCard then return end
+        local open = WK.DB.global.settings.ui.modulesOpen
+        local W = w or (self.modCard:GetParent():GetWidth()) or UI.PAGE_W or 900
+        if not W or W < 100 then W = UI.PAGE_W or 900 end
+        local LABEL_W, TG, ROW = 88, 8, 46
+        self.modToggle:SetLabel(open and T("Replier") or T("Gérer"))
+        for _, d in ipairs(self.modDots) do d:SetShown(not open) end
+        for _, l in ipairs(self.modLabels) do l.label:SetShown(open) end
+        for _, t in ipairs(self.modTiles) do t:SetShown(open) end
+        if not open then
+            local x = 16
+            for i, d in ipairs(self.modDots) do
+                d:ClearAllPoints(); d:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 22, -16)
+            end
+            self.modH = 44
+        else
+            local tw = math.floor((W - 32 - LABEL_W - 3 * TG) / 4)
+            local y, col, lastGroup = -44, 0, nil
+            for _, t in ipairs(self.modTiles) do
+                if t.f.group ~= lastGroup then
+                    if lastGroup then y = y - ROW end
+                    lastGroup, col = t.f.group, 0
+                    for _, l in ipairs(self.modLabels) do
+                        if l.group == t.f.group then l.label:ClearAllPoints(); l.label:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16, y - 15) end
+                    end
+                end
+                t:SetWidth(tw)
+                t:ClearAllPoints(); t:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16 + LABEL_W + col * (tw + TG), y)
+                col = col + 1
+            end
+            self.modH = -y + ROW + 4
+        end
+        -- repliée : une ligne sous le tableau ; dépliée : elle prend la place du tableau et des objectifs
+        self.modCard:ClearAllPoints()
+        if open then
+            self.modCard:SetPoint("TOPLEFT", 0, -(TOP_H + GAP))
+            self.modCard:SetPoint("BOTTOMRIGHT")
+        else
+            self.modCard:SetPoint("BOTTOMLEFT"); self.modCard:SetPoint("BOTTOMRIGHT")
+            self.modCard:SetHeight(self.modH)
+        end
+        if self.tableBox then self.tableBox:SetShown(not open) end
+        for _, g in ipairs(self.goalCards and self.goalCards.items or {}) do if open then g:Hide() end end
+    end,
+
+    -- Chiffre du moment d'un module
+    ModuleStat = function(self, f)
+        if not WK:FeatureOn(f.key) then return T("coupé") end
+        local ok, v = pcall(function()
+            local k = f.key
+            if k == "ah" then local n = WK.modules.AHScan:Count(); return n > 0 and string.format(T("%d prix"), n) or T("aucun scan") end
+            if k == "quests" then local _, _, a = WK.modules.Quests:Totals(); return string.format(T("%d disponibles"), a) end
+            if k == "rares" then local a, b = WK.modules.Rares:Totals(); return a .. " / " .. b end
+            if k == "mail" then
+                local n = 0
+                for _, c in pairs(WK.DB.global.characters) do n = n + ((c.mailbox and c.mailbox.count) or 0) end
+                return string.format(T("%d lettres"), n)
+            end
+            if k == "halo" then return WK.modules.Glow:Config().enabled and T("activé") or T("désactivé dans QoL") end
+            if k == "micro" then return UI.ClockConfig().enabled and T("activé") or T("désactivé dans QoL") end
+            if k == "fishing" then local s = WK.modules.Fishing:Skill(); return s and string.format(T("compétence %d"), s) or T("pas appris") end
+            if k == "range" then return T("chasseur") end
+            return f.desc and T(f.desc) or T("page")
+        end)
+        return ok and v or ""
+    end,
+
+    RefreshModules = function(self)
+        if not self.modCard then return end
+        local n, total = WK:FeatureCount()
+        self.modCount:SetText(string.format(T("%d / %d actifs"), n, total))
+        local r, g, b = UI:Accent()
+        for i, f in ipairs(WK.FEATURES) do
+            local on = WK:FeatureOn(f.key)
+            if on then self.modDots[i]:SetVertexColor(r, g, b) else self.modDots[i]:SetVertexColor(unpack(C.dim)) end
+        end
+        for _, t in ipairs(self.modTiles) do
+            local on = WK:FeatureOn(t.f.key)
+            t.toggle:Refresh()
+            t.edge:SetColor(unpack(C.border))
+            t.bg:SetColor(unpack(C.surface2))
+            if on then t.icon:SetVertexColor(r, g, b) else t.icon:SetVertexColor(unpack(C.dim)) end
+            t.name:SetTextColor(unpack(on and C.text or C.dim))
+            t.sub:SetText(self:ModuleStat(t.f))
+        end
+        self.modReload:SetShown(self.needReload and true or false)
+        self.modReloadHint:SetShown(self.needReload and true or false)
     end,
 
     -- Colonnes du tableau proportionnelles à la largeur (prévues pour 924 px).
@@ -376,7 +554,9 @@ UI:RegisterPage({
         end
         self.tableBox:ClearAllPoints()
         self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4) - (shown > 0 and (GOAL_H + 12) or 0))
-        self.tableBox:SetPoint("BOTTOMRIGHT")
+        self.tableBox:SetPoint("BOTTOMRIGHT", 0, 44 + GAP)
+        self:LayoutModules()
+        self:RefreshModules()
         -- Courbe
         local n = points(self.days)
         local step = self.days * 86400 / n

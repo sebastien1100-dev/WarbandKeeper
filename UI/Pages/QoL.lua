@@ -260,6 +260,27 @@ UI:RegisterPage({
         ahBtn.desc:SetText("Scan et prix")
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
+        -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
+        local NAV_ORDER = { "general", "halo", "micro", "fishing", "ah", "classes" }
+        function self:LayoutNav()
+            local y = -8
+            for _, k in ipairs(NAV_ORDER) do
+                local b = self.navButtons[k]
+                local fk = WK.FEATURE_BY_QOL[k]
+                local on = not fk or WK:FeatureOn(fk)
+                if b then
+                    b:SetShown(on)
+                    if on then
+                        b:ClearAllPoints()
+                        b:SetPoint("TOPLEFT", 8, y); b:SetPoint("TOPRIGHT", -8, y)
+                        y = y - 50
+                    end
+                end
+            end
+            local cur = WK.DB.global.settings.ui.qolSection
+            local fk = cur and WK.FEATURE_BY_QOL[cur]
+            if fk and not WK:FeatureOn(fk) and self.ShowSection then self:ShowSection("general") end
+        end
 
         -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
         local classBar = UI:Card(host)
@@ -1209,6 +1230,7 @@ UI:RegisterPage({
     end,
 
     Refresh = function(self)
+        if self.LayoutNav then self:LayoutNav() end
         local QoL = Q()
         local played = QoL:PlayedClasses()
         local alerts = QoL:Alerts()

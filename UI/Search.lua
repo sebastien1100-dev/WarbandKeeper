@@ -74,7 +74,7 @@ local function search(q)
     -- pages
     for key, def in pairs(UI.pages) do
         local l = pageLabel(def)
-        if norm(l):find(q, 1, true) then add(T("Page"), l, nil, function() UI:ShowPage(key) end) end
+        if WK:PageOn(key) and norm(l):find(q, 1, true) then add(T("Page"), l, nil, function() UI:ShowPage(key) end) end
     end
     -- sections (colonnes de QoL et d'Options)
     for key, def in pairs(UI.pages) do
@@ -93,6 +93,8 @@ local function search(q)
         local l, d = e.label or "", e.desc or ""
         if norm(WK.T(l)):find(q, 1, true) or norm(WK.T(d)):find(q, 1, true) then
             local pk, sk = locate(e.row)
+            -- module coupé : ni sa page, ni sa section de QoL
+            if pk and (not WK:PageOn(pk) or (pk == "qol" and sk and WK.FEATURE_BY_QOL[sk] and not WK:FeatureOn(WK.FEATURE_BY_QOL[sk]))) then pk = nil end
             if pk then
                 local def = UI.pages[pk]
                 local where = pageLabel(def)

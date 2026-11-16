@@ -406,7 +406,7 @@ end
 
 function M:Update()
     local g = self:Config()
-    if not g.enabled or self:OtherAddonLoaded() then return self:Hide() end
+    if not g.enabled or not WK:FeatureOn("halo") or self:OtherAddonLoaded() then return self:Hide() end
     if g.hideInCombat and InCombatLockdown and InCombatLockdown() then return self:Hide() end
     if g.hideInInstance and IsInInstance and select(2, IsInInstance()) ~= "none" and select(2, IsInInstance()) ~= nil then
         return self:Hide()

@@ -250,7 +250,7 @@ end
 
 local function onLoot()
     local d = db()
-    if not d.enabled or handled then return end
+    if not d.enabled or handled or not WK:FeatureOn("loot") then return end
     -- Maj maintenue (ou touche de bascule du butin auto) : on laisse faire le joueur.
     if IsShiftKeyDown() or (IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE")) then return end
     -- Le contenu n'est pas toujours prêt au premier évènement : on attend le suivant.

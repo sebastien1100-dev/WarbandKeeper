@@ -208,19 +208,34 @@ function UI:Create()
         local lbl = UI:Text(side, 10, C.dim)
         lbl:SetText(g[1])
         table.insert(self.groupLabels, lbl)
-        table.insert(topList, { label = lbl })
+        local head = { label = lbl, items = {} }
+        table.insert(topList, head)
         for _, key in ipairs(g[2]) do
             local def = self.pages[key]
             if def then
                 local item = NavItem(side, def)
                 self.nav[key] = item
-                table.insert(topList, { item = item })
+                local e = { item = item, key = key }
+                table.insert(head.items, e)
+                table.insert(topList, e)
             end
         end
     end
     local function layoutTop(h)
+        -- modules coupés (Core/Features.lua) : leur page et, s'il est vide, leur groupe disparaissent
         local nLabels, nItems = 0, 0
-        for _, e in ipairs(topList) do if e.label then nLabels = nLabels + 1 else nItems = nItems + 1 end end
+        for _, e in ipairs(topList) do
+            if e.label then
+                e.hidden = true
+                for _, it in ipairs(e.items) do if WK:PageOn(it.key) then e.hidden = false end end
+                e.label:SetShown(not e.hidden)
+                if not e.hidden then nLabels = nLabels + 1 end
+            else
+                e.hidden = not WK:PageOn(e.key)
+                e.item:SetShown(not e.hidden)
+                if not e.hidden then nItems = nItems + 1 end
+            end
+        end
         local bottomH = 44 + #BOTTOM * 36 + 8           -- repli + notes + options
         local avail = (h or 600) - ((WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98) - bottomH
         local labelStep, itemStep, gap = 26, 36, 4
@@ -233,7 +248,9 @@ function UI:Create()
         -- sous la recherche quand la barre est dépliée
         local y, first = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and -64 or -98, true
         for _, e in ipairs(topList) do
-            if e.label then
+            if e.hidden then
+                -- rien
+            elseif e.label then
                 if not first then y = y - gap end
                 first = false
                 e.label:ClearAllPoints()
@@ -421,6 +438,7 @@ function UI:RefreshSoon()
 end
 
 function UI:ShowPage(key)
+    if key and not WK:PageOn(key) then key = "overview" end -- module coupé
     local def = self.pages[key] or self.pages.overview
     if not self.frame then self:Create() end
     self.current = def.key

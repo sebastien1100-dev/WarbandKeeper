@@ -98,6 +98,10 @@ end
 local last -- dernier dessin (pour redessiner au survol)
 function UI:DrawRarePins(cv, mapID, w, h)
     last = { cv, mapID, w, h }
+    if not WK:FeatureOn("rares") then
+        if UI.SyncRareList then UI:SyncRareList(mapID, {}) end
+        return
+    end
     local list = R:OnMap(mapID)
     if UI.SyncRareList then UI:SyncRareList(mapID, list) end
     if not R:Config().map then return end
@@ -276,7 +280,7 @@ end
 -- Infobulle d'un rare (survol du monstre ou de sa plaque)
 ---------------------------------------------------------------------------
 local function onUnitTooltip(tooltip)
-    if tooltip ~= GameTooltip or not R:Config().tooltip then return end
+    if tooltip ~= GameTooltip or not R:Config().tooltip or not WK:FeatureOn("rares") then return end
     local unit = select(2, tooltip:GetUnit())
     unit = R.Readable(unit)
     if not unit then return end
