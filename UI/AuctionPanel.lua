@@ -8,9 +8,15 @@ local T = function(s) return WK.T(s) end
 --   « Listes » : listes d'achat créées depuis les métiers ; par objet, ce qu'on a sur le compte, ce qu'il
 --                faut, le prix relevé, et « Chercher » qui lance la recherche dans la fenêtre de l'HV du jeu
 --                (l'achat se fait avec ses boutons).
+--   « Ventes » : tes enchères en cours, vérification du plus bas prix (sous-cotée ou non), Annuler ;
+--                état de la vente rapide (Modules/AHSell.lua).
+-- L'onglet Scan montre aussi les alertes de prix déclenchées par le dernier scan.
 local S = WK.modules.AHScan
+local A = WK.modules.AHSell
 local panel
 local W, H_SCAN, H_LIST, ROW_H = 300, 182, 450, 38
+local ALERT_ROWS = 4
+local SELL_H = 42
 
 local function ago(t)
     if not t then return T("jamais") end
@@ -42,7 +48,7 @@ local function build()
     f.close:SetPoint("TOPRIGHT", -10, -10)
     f.close:SetScript("OnClick", function() f.hidden = true; f:Hide() end)
     f.tab = S:Config().panelTab or "scan"
-    f.seg = UI:Segmented(f, { { "scan", "Scan" }, { "lists", "Listes d'achat" } }, function(v)
+    f.seg = UI:Segmented(f, { { "scan", "Scan" }, { "lists", "Listes d'achat" }, { "sell", "Ventes" } }, function(v)
         f.tab = v; S:Config().panelTab = v; f:Layout(); f:Refresh()
     end, 24)
     f.seg:SetPoint("TOPLEFT", 14, -36)
@@ -83,6 +89,26 @@ local function build()
         GameTooltip:Show()
     end)
     f.btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    -- alertes de prix déclenchées (sous les chiffres du scan)
+    f.alertH = UI:Text(sb, 10, C.dim)
+    f.alertH:SetPoint("TOPLEFT", 14, -72)
+    f.alertH:SetText(T("ALERTES DE PRIX"))
+    f.alertRows = {}
+    for i = 1, ALERT_ROWS do
+        local r = CreateFrame("Frame", nil, sb)
+        r:SetHeight(26)
+        r:SetPoint("TOPLEFT", 8, -86 - (i - 1) * 28)
+        r:SetPoint("RIGHT", -8, 0)
+        r.icon = UI:RoundIcon(r, 20)
+        r.icon:SetPoint("LEFT", 6, 0)
+        r.name = UI:Text(r, 11)
+        r.name:SetPoint("LEFT", 32, 0)
+        r.name:SetPoint("RIGHT", -74, 0)
+        r.name:SetJustifyH("LEFT")
+        r.go = UI:Button(r, "Chercher", 66, 22, "secondary")
+        r.go:SetPoint("RIGHT", -4, 0)
+        f.alertRows[i] = r
+    end
 
     -- Onglet Listes d'achat ----------------------------------------------------------
     local lb = CreateFrame("Frame", nil, f)
@@ -168,16 +194,90 @@ local function build()
     f.total:SetPoint("RIGHT", -16, 0)
     f.total:SetJustifyH("LEFT")
 
+    -- Onglet Ventes ---------------------------------------------------------------
+    local vb = CreateFrame("Frame", nil, f)
+    vb:SetPoint("TOPLEFT", 0, -66)
+    vb:SetPoint("BOTTOMRIGHT")
+    f.sellBox = vb
+    f.sellSum = UI:Text(vb, 12)
+    f.sellSum:SetPoint("TOPLEFT", 14, -6)
+    f.sellSum:SetPoint("RIGHT", -14, 0)
+    f.sellSum:SetJustifyH("LEFT")
+    f.quick = UI:Text(vb, 10, C.muted)
+    f.quick:SetPoint("TOPLEFT", 14, -24)
+    f.quick:SetPoint("RIGHT", -14, 0)
+    f.quick:SetJustifyH("LEFT")
+    f.sscroll = UI:Scroll(vb)
+    f.sscroll:SetPoint("TOPLEFT", 6, -44)
+    f.sscroll:SetPoint("BOTTOMRIGHT", -6, 52)
+    f.sempty = UI:Text(vb, 11, C.muted)
+    f.sempty:SetPoint("TOPLEFT", 16, -50)
+    f.sempty:SetPoint("RIGHT", -16, 0)
+    f.sempty:SetJustifyH("LEFT")
+    f.srows = UI:Pool(function()
+        local r = CreateFrame("Frame", nil, f.sscroll.child)
+        r:SetHeight(SELL_H)
+        r.line = r:CreateTexture(nil, "BACKGROUND")
+        r.line:SetPoint("BOTTOMLEFT", 8, 0); r.line:SetPoint("BOTTOMRIGHT", -8, 0); r.line:SetHeight(1)
+        r.icon = UI:RoundIcon(r, 24)
+        r.icon:SetPoint("LEFT", 8, 0)
+        r.name = UI:Text(r, 12)
+        r.name:SetPoint("TOPLEFT", 40, -4)
+        r.name:SetPoint("RIGHT", -70, 0)
+        r.name:SetJustifyH("LEFT")
+        r.sub = UI:Text(r, 10, C.muted)
+        r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -4)
+        r.sub:SetPoint("RIGHT", -8, 0)
+        r.sub:SetJustifyH("LEFT")
+        r.cancel = UI:Button(r, "Annuler", 60, 20, "secondary")
+        r.cancel:SetPoint("TOPRIGHT", -6, -3)
+        r.cancel:SetScript("OnEnter", function(b)
+            WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
+            GameTooltip:SetText(T("Annuler cette enchère"), 1, 1, 1)
+            GameTooltip:AddLine(T("L'objet revient par courrier ; le dépôt n'est pas rendu. Tu pourras le remettre en vente moins cher."), 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+        end)
+        r.cancel:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:EnableMouse(true)
+        r:SetScript("OnEnter", function(s)
+            if not s.id then return end
+            WK.UI:TooltipOwner(s, "ANCHOR_LEFT")
+            if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText(WK.GetItemInfo(s.id) or "?") end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return r
+    end)
+    f.checkBtn = UI:Button(vb, "Vérifier les prix", W - 28, 30, "primary")
+    f.checkBtn:SetPoint("BOTTOMLEFT", 14, 12)
+    f.checkBtn:SetScript("OnClick", function()
+        if A.checking then return end
+        if #A.owned == 0 then A:Query() else A:Check() end
+    end)
+    f.checkBtn:SetScript("OnEnter", function(b)
+        WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
+        GameTooltip:SetText(T("Vérifier les prix de mes enchères"), 1, 1, 1)
+        GameTooltip:AddLine(T("Cherche le plus bas prix actuel de chaque objet que tu vends (un objet toutes les 1,2 s) : « sous-cotée » quand un autre vendeur est moins cher que toi."), 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    f.checkBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el
-        if s.acc > 1 then s.acc = 0; if s.tab == "scan" or S.scan then s:Refresh() end end
+        if s.acc > 1 then s.acc = 0; if s.tab == "scan" or S.scan or (s.tab == "sell" and A.checking) then s:Refresh() end end
     end)
 
     function f:Layout()
-        local lists = self.tab == "lists"
-        self.scanBox:SetShown(not lists)
-        self.listBox:SetShown(lists)
-        self:SetHeight(lists and H_LIST or H_SCAN)
+        local tab = self.tab
+        self.scanBox:SetShown(tab ~= "lists" and tab ~= "sell")
+        self.listBox:SetShown(tab == "lists")
+        self.sellBox:SetShown(tab == "sell")
+        if tab == "lists" or tab == "sell" then
+            self:SetHeight(H_LIST)
+        else
+            local n = math.min(ALERT_ROWS, #(A.triggered or {}))
+            self:SetHeight(H_SCAN + (n > 0 and (24 + n * 28) or 0))
+        end
     end
 
     function f:RefreshScan()
@@ -212,6 +312,74 @@ local function build()
             end
             self.btn:SetLabel(T("Scanner l'HV"))
             self.btn:SetStyle((all or cd == 0) and "primary" or "secondary")
+        end
+        -- alertes de prix déclenchées
+        local hits = A.triggered or {}
+        self.alertH:SetShown(#hits > 0)
+        for i, r in ipairs(self.alertRows) do
+            local a = hits[i]
+            r:SetShown(a ~= nil)
+            if a then
+                r.icon:SetTexture(itemIcon(a.id))
+                r.name:SetText((WK.GetItemInfo(a.id) or ("#" .. a.id)) .. "  |cffffd24d" .. UI:ExactMoney(a.price) .. "|r")
+                r.go:SetScript("OnClick", function() S:SearchItem(a.id) end)
+            end
+        end
+        local want = H_SCAN + (#hits > 0 and (24 + math.min(ALERT_ROWS, #hits) * 28) or 0)
+        if math.abs((self:GetHeight() or 0) - want) > 1 then self:SetHeight(want) end
+    end
+
+    function f:RefreshSell()
+        local owned = A.owned or {}
+        local under = A:UnderCount()
+        if not A:Available() then
+            self.sellSum:SetText(T("Ce client ne donne pas la liste de tes enchères."))
+        else
+            self.sellSum:SetText(string.format(T("%d enchère(s) en cours"), #owned) .. (under > 0 and ("  ·  |cffe06666" .. string.format(T("%d sous-cotée(s)"), under) .. "|r") or ""))
+        end
+        local c = A.Config()
+        local q = A.lastQuick
+        if not c.quickSell then
+            self.quick:SetText(T("Vente rapide coupée (QoL > Hôtel des ventes)."))
+        elseif q then
+            self.quick:SetText(string.format(T("Vente rapide : %s mis à %s (%s - %d pc)"), WK.GetItemInfo(q.id) or "?", UI:ExactMoney(q.price), q.why or "", c.undercut))
+        else
+            self.quick:SetText(string.format(T("Vente rapide : pose un objet dans la fenêtre de vente, son prix est mis au plus bas - %d pc."), c.undercut))
+        end
+        self.srows:Reset()
+        local LW = self.sscroll:GetWidth() or (W - 12)
+        if LW < 100 then LW = W - 12 end
+        local y = 0
+        for _, o in ipairs(owned) do
+            local r = self.srows:Get()
+            r.id = o.id
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(LW - 10)
+            r.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.6)
+            r.icon:SetTexture(itemIcon(o.id))
+            r.name:SetText((WK.GetItemInfo(o.id) or ("#" .. o.id)) .. (o.qty > 1 and ("  x" .. o.qty) or ""))
+            local mine = o.unit and UI:ExactMoney(o.unit) or "?"
+            local st
+            if o.state == "under" then st = "|cffe06666" .. T("plus bas") .. " " .. UI:ExactMoney(o.lowest) .. "|r"
+            elseif o.state == "ok" then st = "|cff9ed17a" .. T("au plus bas") .. "|r"
+            elseif o.state == "alone" then st = "|cff9ed17a" .. T("seul en vente") .. "|r"
+            else st = T("à vérifier") end
+            r.sub:SetText(mine .. "  ·  " .. st)
+            r.cancel:SetShown(o.state == "under")
+            r.cancel:SetStyle(o.state == "under" and "primary" or "secondary")
+            r.cancel:SetScript("OnClick", function() A:Cancel(o.auctionID) end)
+            y = y + SELL_H
+        end
+        self.sscroll.child:SetSize(LW - 10, math.max(y, 10))
+        if self.sscroll.UpdateBar then self.sscroll:UpdateBar() end
+        self.sempty:SetShown(#owned == 0)
+        self.sempty:SetText(T("Aucune enchère en cours (ou liste pas encore reçue : « Vérifier les prix » la redemande)."))
+        if A.checking then
+            local done, total = A:Progress()
+            self.checkBtn:SetLabel(string.format(T("Vérification %d / %d..."), done, total))
+            self.checkBtn:SetStyle("secondary")
+        else
+            self.checkBtn:SetLabel(T("Vérifier les prix"))
+            self.checkBtn:SetStyle("primary")
         end
     end
 
@@ -252,7 +420,7 @@ local function build()
             r.sub:SetText(string.format("%d / %d", math.min(have, want), want) .. "  ·  " .. hv)
             r.go:SetShown(not done)
             r.go:SetScript("OnClick", function() S:SearchItem(id) end)
-            y = y + ROW_H
+            y = y + SELL_H
         end
         self.lscroll.child:SetSize(LW - 10, math.max(y, 10))
         if self.lscroll.UpdateBar then self.lscroll:UpdateBar() end
@@ -296,7 +464,7 @@ local function build()
     function f:Refresh()
         local r, g, b = UI:Accent()
         self.logo:SetVertexColor(r, g, b)
-        if self.tab == "lists" then self:RefreshLists() else self:RefreshScan() end
+        if self.tab == "lists" then self:RefreshLists() elseif self.tab == "sell" then self:RefreshSell() else self:RefreshScan() end
     end
     f:Layout()
     return f
@@ -319,6 +487,7 @@ local function show()
 end
 
 S.OnProgress = function() if panel and panel:IsShown() then panel:Refresh() end end
+A.OnChange = function() if panel and panel:IsShown() then panel:Layout(); panel:Refresh() end end
 WK:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.1, show) end)
 WK:On("AUCTION_HOUSE_CLOSED", function() if panel then panel:Hide() end end)
 -- objets achetés : les compteurs de la liste se mettent à jour

@@ -137,6 +137,7 @@ local function finish(ok, why)
         if sc.full then d.lastFull = now end
         d.lastCount = n
         WK:Print(string.format(T("Scan de l'HV terminé : %d objets, %d enchères."), n, sc.done or 0))
+        if WK.modules.AHSell then pcall(WK.modules.AHSell.CheckAlerts, WK.modules.AHSell) end -- alertes de prix
         WK:NotifyChanged()
     else
         WK:Print(why or T("Scan de l'HV interrompu."))

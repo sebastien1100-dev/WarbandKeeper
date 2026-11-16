@@ -916,6 +916,58 @@ UI:RegisterPage({
         end)
         UI:SettingRow(scard, -86, "Repartir de zéro", "Efface les prix relevés sur ce royaume (deux clics).", wipe, 160)
 
+        -- Vente (Modules/AHSell.lua) : vente rapide, mes enchères, alertes de prix
+        local AV = WK.modules.AHSell
+        AV.Config()
+        local vcard = card("Vente", 40 + 2 * 46 + 8, "onglet « Ventes » du panneau : tes enchères, sous-cotées ou non")
+        UI:SettingRow(vcard, -40, "Vente rapide", "Quand tu poses un objet dans la fenêtre de vente du jeu, son prix est mis au plus bas des autres vendeurs moins la marge ci-dessous (sinon au prix du scan).", atoggle(vcard, "quickSell"), 80)
+        UI:SettingRow(vcard, -86, "Marge sous le plus bas", "En pièces de cuivre.",
+            UI:Slider(vcard, 220, 1, 100, 1, function() return ac.undercut or 1 end, function(v) ac.undercut = v end, "%d pc"), 240)
+        local ALR = 6
+        local alcard = card("Alertes de prix", 40 + 22 + ALR * 30 + 30, "signalées après chaque scan de l'HV")
+        local alHelp = UI:Text(alcard, 11, C.muted)
+        alHelp:SetPoint("TOPLEFT", 16, -40)
+        alHelp:SetPoint("RIGHT", -16, 0)
+        alHelp:SetJustifyH("LEFT")
+        alHelp:SetText(T("Ajouter : /wk alerte puis Maj+clic sur l'objet et le prix max à l'unité (ex. /wk alerte [Étoffe de soie] 75pa). Sans prix : retire l'alerte."))
+        local alRows = {}
+        for i = 1, ALR do
+            local r = CreateFrame("Frame", nil, alcard)
+            r:SetHeight(26)
+            r:SetPoint("TOPLEFT", 16, -64 - (i - 1) * 30)
+            r:SetPoint("RIGHT", -16, 0)
+            r.icon = UI:RoundIcon(r, 20)
+            r.icon:SetPoint("LEFT")
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 28, 0)
+            r.name:SetPoint("RIGHT", -260, 0)
+            r.name:SetJustifyH("LEFT")
+            r.info = UI:Text(r, 11, C.muted)
+            r.info:SetPoint("RIGHT", -36, 0)
+            r.del = UI:IconButton(r, "trash", 24, "Retirer cette alerte")
+            r.del:SetPoint("RIGHT")
+            alRows[i] = r
+        end
+        local alEmpty = UI:Text(alcard, 11, C.dim)
+        alEmpty:SetPoint("TOPLEFT", 16, -70)
+        alEmpty:SetText(T("Aucune alerte pour l'instant."))
+        table.insert(self.dyn, function()
+            local list = AV:Alerts()
+            alEmpty:SetShown(#list == 0)
+            for i, r in ipairs(alRows) do
+                local a = list[i]
+                r:SetShown(a ~= nil)
+                if a then
+                    local _, icon = UI:ItemInfo(a.id)
+                    r.icon:SetTexture(icon)
+                    r.name:SetText(WK.GetItemInfo(a.id) or ("#" .. a.id))
+                    local now = a.price and ((a.qty or 0) > 0) and (T("à l'HV") .. " " .. UI:ExactMoney(a.price)) or T("pas en vente")
+                    r.info:SetText(T("max") .. " " .. UI:ExactMoney(a.max) .. "  ·  " .. (a.hit and ("|cff9ed17a" .. now .. "|r") or now))
+                    r.del:SetScript("OnClick", function() AV:RemoveAlert(a.id); WK:NotifyChanged() end)
+                end
+            end
+        end)
+
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
         -----------------------------------------------------------------------

@@ -6,6 +6,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.81.0", date = "16/11/2026",
+        added = {
+            "Hôtel des ventes, onglet « Ventes » du panneau : tes enchères en cours (prix à l'unité, quantité). « Vérifier les prix » cherche le plus bas prix actuel de chaque objet (un toutes les 1,2 s) et marque chaque enchère : au plus bas, seul en vente, ou sous-cotée avec le prix du concurrent. Une enchère sous-cotée a un bouton « Annuler » (l'objet revient par courrier, le dépôt est perdu).",
+            "Vente rapide : quand tu poses un objet dans la fenêtre de vente du jeu, son prix est rempli au plus bas des autres vendeurs moins 1 pc (sinon au prix du scan moins 1 pc). Réglable dans QoL > Hôtel des ventes (marche ou arrêt, marge de 1 à 100 pc).",
+            "Alertes de prix : /wk alerte [objet] 75pa (Maj+clic sur l'objet, prix max à l'unité en po, pa ou pc). Après chaque scan, les objets en vente à ce prix ou moins sont signalés dans le chat, à l'écran et dans l'onglet Scan du panneau, avec « Chercher ». Liste et suppression dans QoL > Hôtel des ventes ; /wk alerte seul les liste.",
+            "Prix exacts (po, pa, pc) dans le panneau, les alertes et les messages de vente.",
+            "/wk hv dit aussi ce que ce client permet côté vente (mes enchères, recherche, annuler, vente rapide).",
+            "Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.80.3", date = "16/11/2026",
         changed = {
             "Guidage : la flèche de guidage est coupée (une fois, pour tout le monde) : l'épingle à l'écran, qui se cale au bord quand le lieu est hors champ, et le trajet en pointillés la remplacent. Elle reste disponible dans QoL > Général > Guidage (« Flèche à l'écran ») et vise alors le point suivant du trajet.",
@@ -1635,8 +1646,6 @@ WK.Changelog = {
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
-    "Hôtel des ventes, suite : vente rapide (prix rempli au plus bas moins 1 pc), mes enchères sous-cotées à annuler, alerte de prix.",
-    "Alerte de prix : prévenir quand un objet suivi passe sous un prix choisi à l'hôtel des ventes (d'après le scan).",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",

@@ -314,6 +314,19 @@ function UI:Hex(c)
 end
 
 -- Montant lisible sans couleur : or au-dessus d'1 po (format court), argent en dessous.
+-- Montant exact, pour les prix d'enchères : « 2 po 50 pa 3 pc » (les zéros sont omis)
+function UI:ExactMoney(copper)
+    copper = math.floor(copper or 0)
+    local neg = copper < 0
+    copper = math.abs(copper)
+    local g, s, c = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
+    local parts = {}
+    if g > 0 then table.insert(parts, tostring(g):reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "") .. " " .. WK.T("po")) end
+    if s > 0 then table.insert(parts, s .. " " .. WK.T("pa")) end
+    if c > 0 or #parts == 0 then table.insert(parts, c .. " " .. WK.T("pc")) end
+    return (neg and "-" or "") .. table.concat(parts, " ")
+end
+
 function UI:PlainMoney(copper)
     copper = copper or 0
     if copper ~= 0 and math.abs(copper) < 10000 then

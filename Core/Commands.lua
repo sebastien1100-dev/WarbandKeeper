@@ -8,7 +8,7 @@ local function plainBars(s) return (s:gsub("|", "||")) end
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_NAV", "HELP_FISH", "HELP_HV" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT" }) do
         if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
@@ -73,7 +73,32 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "hv" or cmd == "ah" then
         local r = string.lower(rest or "")
         if r == "scan" then WK.modules.AHScan:Start()
-        elseif r == "scan force" then WK.modules.AHScan:Start("force") elseif r == "stop" then WK.modules.AHScan:Stop() else WK.modules.AHScan:Report() end
+        elseif r == "scan force" then WK.modules.AHScan:Start("force") elseif r == "stop" then WK.modules.AHScan:Stop()
+        else WK.modules.AHScan:Report(); if WK.modules.AHSell then WK.modules.AHSell:Report() end end
+    elseif cmd == "alerte" or cmd == "alert" then
+        -- /wk alerte <lien ou numéro> <prix> : prix en po (« 2.5 », « 2po50pa », « 75pa », « 30pc ») ; sans prix : retire
+        local A = WK.modules.AHSell
+        local item, price = string.match(rest or "", "^(.-|h|r)%s*(.-)%s*$")
+        if not item then item, price = string.match(rest or "", "^(%S+)%s*(.-)%s*$") end
+        local id = item and WK:ParseItemID(item)
+        if not id then
+            local n = 0
+            for _, a in ipairs(A:Alerts()) do
+                n = n + 1
+                WK:Print("  " .. (WK.GetItemInfo(a.id) or ("#" .. a.id)) .. " : " .. WK.UI:ExactMoney(a.max) .. (a.hit and ("  " .. WK.T("en vente à") .. " " .. WK.UI:ExactMoney(a.price)) or ""))
+            end
+            if n == 0 then help() end
+        elseif price == nil or price == "" then
+            A:RemoveAlert(id)
+            WK:Print(WK.T("Alerte de prix retirée."))
+        else
+            local c = A.ParsePrice(price)
+            if c and A:AddAlert(id, c) then
+                WK:Print(string.format(WK.T("Alerte de prix : %s à %s ou moins."), WK.GetItemInfo(id) or ("#" .. id), WK.UI:ExactMoney(c)))
+            else
+                WK:Print(WK.T("Prix non compris : par exemple 2.5, 2po50pa ou 75pa."))
+            end
+        end
     elseif cmd == "halo" then
         WK.modules.Glow:Report()
     elseif cmd == "lien" or cmd == "link" then
