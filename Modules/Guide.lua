@@ -293,3 +293,33 @@ function M:OnLogin()
     self:Config()
     if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(10, function() M:Check() end) end
 end
+
+---------------------------------------------------------------------------
+-- Diagnostic (/wk nav) : ce que ce client donne pour un repère de navigation à l'écran
+-- (marqueur de point de passage). Le jeu dessine son repère quand un point de la carte est suivi ;
+-- un addon peut alors lire sa place à l'écran et la distance.
+---------------------------------------------------------------------------
+function M:NavReport()
+    local function yn(v) return v and T("oui") or T("non") end
+    local function call(fn, ...) if not fn then return "absent" end local ok, a, b = pcall(fn, ...); if not ok then return "erreur" end return tostring(a) .. (b ~= nil and (", " .. tostring(b)) or "") end
+    local N, ST = C_Navigation, C_SuperTrack
+    WK:Print(T("Repère de navigation : diagnostic"))
+    WK:Print("  C_Navigation : " .. yn(N) .. (N and (" · GetFrame " .. yn(N.GetFrame) .. " · GetDistance " .. yn(N.GetDistance)
+        .. " · HasValidScreenPosition " .. yn(N.HasValidScreenPosition) .. " · WasClampedToScreen " .. yn(N.WasClampedToScreen)) or ""))
+    WK:Print("  C_SuperTrack : " .. yn(ST) .. (ST and (" · SetSuperTrackedUserWaypoint " .. yn(ST.SetSuperTrackedUserWaypoint)
+        .. " · IsSuperTrackingUserWaypoint " .. yn(ST.IsSuperTrackingUserWaypoint)) or ""))
+    WK:Print("  C_Map.SetUserWaypoint : " .. yn(C_Map and C_Map.SetUserWaypoint) .. " · HasUserWaypoint : " .. call(C_Map and C_Map.HasUserWaypoint))
+    WK:Print("  SuperTrackedFrame : " .. yn(SuperTrackedFrame))
+    WK:Print("  " .. T("point suivi") .. " : " .. call(ST and ST.IsSuperTrackingUserWaypoint) .. " · " .. T("guidage Warband Keeper") .. " : " .. yn(self.target))
+    if N then
+        WK:Print("  " .. T("distance") .. " : " .. call(N.GetDistance) .. " · " .. T("à l'écran") .. " : " .. call(N.HasValidScreenPosition)
+            .. " · " .. T("au bord") .. " : " .. call(N.WasClampedToScreen))
+        local ok, f = pcall(N.GetFrame or function() end)
+        if ok and f and f.GetCenter then
+            local x, y = f:GetCenter()
+            WK:Print("  " .. T("repère du jeu à l'écran") .. " : " .. string.format("%.0f, %.0f", x or -1, y or -1))
+        else
+            WK:Print("  " .. T("repère du jeu à l'écran") .. " : " .. T("aucun (lance un guidage, puis relance /wk nav)"))
+        end
+    end
+end

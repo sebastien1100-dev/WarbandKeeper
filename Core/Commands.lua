@@ -8,7 +8,7 @@ local function plainBars(s) return (s:gsub("|", "||")) end
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_FISH", "HELP_HV" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_NAV", "HELP_FISH", "HELP_HV" }) do
         if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
@@ -66,6 +66,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "nav" then
+        WK.modules.Guide:NavReport()
     elseif cmd == "micro" then
         WK.UI:ClockReport()
     elseif cmd == "hv" or cmd == "ah" then
