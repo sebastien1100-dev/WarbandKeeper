@@ -32,6 +32,9 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 
 ## Pièges connus
 
+- Journal de combat (`COMBAT_LOG_EVENT_UNFILTERED`) : réservé au jeu, s'y inscrire ou s'en désinscrire déclenche ADDON_ACTION_FORBIDDEN. Ne jamais l'utiliser.
+- `GetMerchantItemInfo` est absent : passer par `WK.MerchantItemInfo(index)`.
+
 - Ne pas mélanger un ancrage haut/bas (`TOPLEFT`…) et un ancrage centré (`LEFT`, `RIGHT`) sur une même région : utiliser `TOPRIGHT` avec le même décalage vertical.
 - Fonctions globales absentes sur ce client : passer par `WK.GetItemInfo`, `WK.InsertChatLink`, `WK.Container.*`.
 - Dans une page (`UI:RegisterPage`), `self` est la définition de la page : ne pas y créer de champs `title`, `subtitle`, `nav`, `navIcon`, `count`, `key`, `order`, `frame` ou `noHeader`, utilisés par `UI/MainFrame.lua`.
@@ -95,7 +98,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Donjons
 
-`Modules/DungeonsDB.lua` est **généré** par `python3 tools/gen_dungeons.py <clone de QuestieDB>` : 19 donjons (liste `DUNGEONS` du générateur : zone, n° d'instance, nom français, niveaux), zones annexes et entrée (`support/Forever/Zones/dungeons.lua`), boss (élites de niveau fixe, peu d'objets dont au moins un à eux seuls) et leur butin (armes, armures, recettes, divers lâchés par 4 PNJ au plus). Données Questie (GPLv3) : garder la mention. Ni rareté (lue en jeu) ni taux de drop. `Modules/Dungeons.lua` : donjon en cours (`GetInstanceInfo`, n° d'instance), boss tués (journal de combat `UNIT_DIED`, seulement en donjon ; passage en cours `M.run`, et au moins une fois par perso `dungeons.kills`), `Usable` (classe, armure selon le niveau, armes, recettes selon les métiers), liste d'envies par perso (`dungeons.wish`), alertes (entrée dans un donjon qui contient des envies, envie tombée lue dans `CHAT_MSG_LOOT`), guidage vers l'entrée. `UI/DungeonPanel.lua` : panneau collé à la carte en donjon (et `/wk donjon`), `UI:DungeonLootRow` (ligne d'objet). `UI/Pages/Dungeons.lua` : page (tuiles, boss et butin, Mes envies).
+`Modules/DungeonsDB.lua` est **généré** par `python3 tools/gen_dungeons.py <clone de QuestieDB>` : 19 donjons (liste `DUNGEONS` du générateur : zone, n° d'instance, nom français, niveaux), zones annexes et entrée (`support/Forever/Zones/dungeons.lua`), boss (élites de niveau fixe, peu d'objets dont au moins un à eux seuls) et leur butin (armes, armures, recettes, divers lâchés par 4 PNJ au plus). Données Questie (GPLv3) : garder la mention. Ni rareté (lue en jeu) ni taux de drop. `Modules/Dungeons.lua` : donjon en cours (`GetInstanceInfo`, n° d'instance), boss tués (pas de journal de combat : s'inscrire à `COMBAT_LOG_EVENT_UNFILTERED` est interdit aux addons sur ce client ; mort d'une unité visible lue sur `UNIT_HEALTH` : cible, focus, boss1-5, plaques de nom, et source du butin `GetLootSourceInfo` ; seulement en donjon ; passage en cours `M.run`, et au moins une fois par perso `dungeons.kills`), `Usable` (classe, armure selon le niveau, armes, recettes selon les métiers), liste d'envies par perso (`dungeons.wish`), alertes (entrée dans un donjon qui contient des envies, envie tombée lue dans `CHAT_MSG_LOOT`), guidage vers l'entrée. `UI/DungeonPanel.lua` : panneau collé à la carte en donjon (et `/wk donjon`), `UI:DungeonLootRow` (ligne d'objet). `UI/Pages/Dungeons.lua` : page (tuiles, boss et butin, Mes envies).
 
 ## Modules
 

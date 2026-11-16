@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.88.2", date = "16/11/2026",
+        fixed = {
+            "Au démarrage (et en entrant ou sortant d'un donjon), le jeu bloquait une action de Warband Keeper (« fonction protégée UnregisterEvent ») : le module Donjons lisait le journal de combat, désormais réservé au jeu. Les boss tués sont maintenant repérés autrement : mort de ta cible, du focus, d'un boss ou d'une plaque de nom, et butin ramassé sur son corps.",
+        },
+    },
+    {
         version = "0.88.1", date = "16/11/2026",
         fixed = {
             "Marchand : une erreur Lua à l'ouverture de n'importe quel marchand (panneau « Pour monter tes métiers »). Le même souci empêchait le rachat automatique des composants de classe et des munitions : corrigé aussi.",

@@ -165,8 +165,7 @@ end
 M.run = nil -- { key, killed = { [boss] = true } }
 local function npcID(guid)
     if not guid then return nil end
-    local kind, _, _, _, _, id = strsplit("-", guid)
-    if kind ~= "Creature" then return nil end
+    local id = type(guid) == "string" and guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
     return tonumber(id)
 end
 function M:Killed(d, bossID)
@@ -201,11 +200,33 @@ local function onDeath(guid)
     if M.OnChange then M:OnChange() end
     WK:NotifyChanged()
 end
-local cleu = CreateFrame("Frame")
-cleu:SetScript("OnEvent", function()
-    if not CombatLogGetCurrentEventInfo then return end
-    local _, sub, _, _, _, _, _, destGUID = CombatLogGetCurrentEventInfo()
-    if sub == "UNIT_DIED" or sub == "PARTY_KILL" then pcall(onDeath, destGUID) end
+-- Détection sans le journal de combat (réservé au jeu sur ce client : s'y inscrire est interdit aux
+-- addons) : mort d'une unité visible (cible, focus, boss1-5, plaques de nom) et butin d'un corps.
+-- Toute valeur que le jeu masque est ignorée.
+local readable = function(v) return WK.modules.QoL.Readable(v) end
+local function checkUnit(unit)
+    if not M.run or not unit then return end
+    local okE, ex = pcall(UnitExists, unit)
+    if not (okE and readable(ex)) then return end
+    local okD, dead = pcall(UnitIsDead, unit)
+    if not (okD and readable(dead)) then return end
+    local okG, guid = pcall(UnitGUID, unit)
+    guid = okG and readable(guid) or nil
+    if guid then pcall(onDeath, guid) end
+end
+local WATCH = { target = true, focus = true, mouseover = true }
+WK:On("UNIT_HEALTH", function(unit)
+    if not M.run or type(unit) ~= "string" then return end
+    if WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d") then checkUnit(unit) end
+end)
+WK:On("PLAYER_TARGET_CHANGED", function() checkUnit("target") end)
+WK:On("LOOT_OPENED", function()
+    if not (M.run and GetNumLootItems and GetLootSourceInfo) then return end
+    for i = 1, GetNumLootItems() do
+        local ok, guid = pcall(GetLootSourceInfo, i)
+        guid = ok and readable(guid) or nil
+        if guid then pcall(onDeath, guid) end
+    end
 end)
 
 -- Entrée et sortie de donjon : passage remis à zéro, alerte des envies
@@ -213,7 +234,6 @@ local lastKey
 local function onZone()
     local d = M:Current()
     if d then
-        cleu:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
         if lastKey ~= d.key then
             M.run = { key = d.key, killed = {} }
             lastKey = d.key
@@ -228,7 +248,6 @@ local function onZone()
             end
         end
     else
-        cleu:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
         lastKey, M.run = nil, nil
     end
     if M.OnChange then M:OnChange() end
