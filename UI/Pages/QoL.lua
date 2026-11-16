@@ -568,9 +568,9 @@ UI:RegisterPage({
             local c0 = gcfg.colors[selCat]
             UI:PickColor(c0[1], c0[2], c0[3], function(r, g, b) gcfg.colors[selCat] = { r, g, b }; Gm:Update(); haloPaint() end)
         end)
-        local colorRow = UI:SettingRow(right, -84, "Couleur", nil, swRow, 8 * 26 + 30)
+        UI:SettingRow(right, -84, "Couleur", nil, swRow, 8 * 26 + 30)
         local diffToggle = gtoggle(right, function() return gcfg.diffColor end, function(v) gcfg.diffColor = v; Gm:Update(); haloPaint() end)
-        local diffRow = UI:SettingRow(right, -126, "Couleur selon la difficulté", "Filons, plantes et dépeçage : orange, jaune, vert, gris (rouge si la compétence manque).", diffToggle, 60)
+        local diffRow = UI:SettingRow(right, -126, "Texte selon la difficulté", "Filons, plantes et dépeçage : le nom sous l'objet en orange, jaune, vert, gris (rouge si la compétence manque). Le halo garde ta couleur.", diffToggle, 60)
         local infoToggle = gtoggle(right, function() return gcfg.info end, function(v) gcfg.info = v; Gm:Update(); haloPaint() end)
         UI:SettingRow(right, -180, "Ligne d'info sous l'objet", "Nom et compétence demandée.", infoToggle, 60)
 
@@ -588,10 +588,10 @@ UI:RegisterPage({
             local col = gcfg.colors[selCat]
             local sample = SAMPLE[selCat]
             local diffable = selCat == "ore" or selCat == "herb" or selCat == "skin"
-            local shown = col
+            local shown = col -- texte : couleur de difficulté ; halo : couleur choisie
             if diffable and gcfg.diffColor and sample then shown = Gm.DIFF_COLORS[sample[4]] end
             stage.icon:SetTexture(CAT_ICON[selCat])
-            stage.fx:Set(gcfg.fx[selCat] or gcfg.style or "halo", shown, 110, (gcfg.intensity or 100) / 100, 2.2)
+            stage.fx:Set(gcfg.fx[selCat] or gcfg.style or "halo", col, 110, (gcfg.intensity or 100) / 100, 2.2)
             stage.fx:SetShown(gcfg.cats[selCat] and true or false)
             stage.off:SetText(gcfg.cats[selCat] and "" or T("catégorie coupée"))
             local info = ""
@@ -607,10 +607,6 @@ UI:RegisterPage({
                 sb.ring:SetColor(1, 1, 1, same and 1 or 0)
             end
             diffRow:SetAlpha(diffable and 1 or 0.4)
-            -- couleur de difficulté active : elle remplace la couleur choisie (gardée pour plus tard)
-            local overridden = diffable and gcfg.diffColor
-            colorRow:SetAlpha(overridden and 0.45 or 1)
-            colorRow.label:SetText(overridden and T("Couleur (remplacée par la difficulté)") or T("Couleur"))
         end
         UI:OnResize(acard, function(w) layoutChips(w) end)
         layoutChips(acard:GetWidth())

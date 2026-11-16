@@ -628,9 +628,11 @@ function M:Update()
     self.retry = 0
     if not glow then buildGlow() end
     local col = g.colors[cat]
-    -- compétence demandée : couleur de difficulté (filons, plantes, dépeçage) et ligne d'info
+    -- compétence demandée (filons, plantes, dépeçage) : la couleur de difficulté colore la ligne d'info,
+    -- le halo garde la couleur choisie pour la catégorie
     local req, prof, diff = self:Difficulty(cat, name, UNIT)
-    if req and g.diffColor then col = M.DIFF_COLORS[diff] or col end
+    local textCol = col
+    if req and g.diffColor then textCol = M.DIFF_COLORS[diff] or col end
     glow.fx:Set(self:StyleFor(cat, name), col, g.size or 110, (g.intensity or 100) / 100, g.beamHeight or 4.5)
     local info
     if g.info then
@@ -638,7 +640,7 @@ function M:Update()
         elseif cat == "giver" then info = name end
     end
     glow.info:SetText(info or "")
-    glow.info:SetTextColor(col[1], col[2], col[3])
+    glow.info:SetTextColor(textCol[1], textCol[2], textCol[3])
     glow.info:ClearAllPoints()
     glow.info:SetPoint("TOP", glow, "CENTER", 0, -((g.size or 110) * 0.32))
     glow:ClearAllPoints()

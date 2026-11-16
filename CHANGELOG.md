@@ -16,6 +16,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.83.2 — 16/11/2026
+
+### Modifications
+- Halo : le halo prend toujours la couleur choisie dans l'atelier, y compris pour les filons, les plantes et les créatures à dépecer. La difficulté (orange, jaune, vert, gris, rouge) ne colore plus que le texte sous l'objet ; le réglage s'appelle désormais « Texte selon la difficulté ». La rangée Couleur n'est plus grisée.
+
 ## v0.83.1 — 16/11/2026
 
 ### Corrections
