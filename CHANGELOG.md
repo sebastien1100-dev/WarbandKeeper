@@ -20,6 +20,15 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.71.1 — 16/11/2026
+
+### Modifications
+- Hôtel des ventes : WoW Forever utilise le système d'HV récent (scan complet en une requête). Le scan respecte maintenant son délai : un scan complet toutes les 15 minutes environ ; avant, le bouton dit dans combien de minutes ce sera possible.
+- Hôtel des ventes : /wk hv scan force pour tenter un scan sans attendre le délai.
+
+### Corrections
+- Hôtel des ventes : si le serveur n'envoie pas l'HV (scan demandé trop tôt), le scan s'arrête au bout de 90 secondes avec un message, au lieu d'attendre sans fin.
+
 ## v0.71.0 — 16/11/2026
 
 ### Ajouts

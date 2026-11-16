@@ -66,7 +66,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.UI:ClockReport()
     elseif cmd == "hv" or cmd == "ah" then
         local r = string.lower(rest or "")
-        if r == "scan" then WK.modules.AHScan:Start() elseif r == "stop" then WK.modules.AHScan:Stop() else WK.modules.AHScan:Report() end
+        if r == "scan" then WK.modules.AHScan:Start()
+        elseif r == "scan force" then WK.modules.AHScan:Start("force") elseif r == "stop" then WK.modules.AHScan:Stop() else WK.modules.AHScan:Report() end
     elseif cmd == "halo" then
         WK.modules.Glow:Report()
     elseif cmd == "lien" or cmd == "link" then

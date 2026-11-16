@@ -72,7 +72,8 @@ local function legacy() return QueryAuctionItems and GetNumAuctionItems and GetA
 function M:Available() return modern() ~= nil or legacy() ~= nil end
 -- canQuery, canFull
 function M:CanQuery()
-    if modern() then return true, true end
+    -- système récent : un scan complet toutes les 15 minutes environ (le serveur ignore les autres)
+    if modern() then return true, M:FullCooldown() == 0 end
     if CanSendAuctionQuery then
         local ok, q, all = pcall(CanSendAuctionQuery)
         if ok then return q and true or false, all and true or false end
@@ -109,7 +110,7 @@ local function record(seen, itemID, count, buyout)
 end
 
 -- Fin du scan : on remplace les prix des objets vus ; un scan complet remet à zéro la quantité des autres
-local function finish(ok)
+local function finish(ok, why)
     local sc = M.scan
     M.scan = nil
     driver:SetScript("OnUpdate", nil)
@@ -138,7 +139,7 @@ local function finish(ok)
         WK:Print(string.format(T("Scan de l'HV terminé : %d objets, %d enchères."), n, sc.done or 0))
         WK:NotifyChanged()
     else
-        WK:Print(T("Scan de l'HV interrompu."))
+        WK:Print(why or T("Scan de l'HV interrompu."))
     end
     notify()
 end
@@ -164,6 +165,13 @@ end
 
 local function startModern()
     M.scan = { full = true, seen = {}, started = GetTime(), phase = "wait" }
+    -- sans réponse du serveur (scan refusé, trop tôt après le précédent) : on n'attend pas indéfiniment
+    driver:SetScript("OnUpdate", function()
+        local s = M.scan
+        if s and s.phase == "wait" and GetTime() - s.started > 90 then
+            finish(false, T("Le serveur n'a pas envoyé l'HV : un scan complet n'est accepté qu'environ toutes les 15 minutes. Réessaie plus tard."))
+        end
+    end)
     driver:RegisterEvent("REPLICATE_ITEM_LIST_UPDATE")
     driver:SetScript("OnEvent", function()
         driver:UnregisterEvent("REPLICATE_ITEM_LIST_UPDATE")
@@ -223,7 +231,14 @@ end
 function M:Start(mode)
     if self.scan then return end
     if not self.open then WK:Print(T("Ouvre l'hôtel des ventes pour lancer un scan.")) return end
-    if modern() then startModern() notify() return end
+    if modern() then
+        local cd = self:FullCooldown()
+        if cd > 0 and mode ~= "force" then
+            WK:Print(string.format(T("Scan complet possible dans environ %d min (le serveur n'en accepte qu'un toutes les 15 minutes). /wk hv scan force pour essayer quand même."), math.ceil(cd / 60)))
+            return
+        end
+        startModern() notify() return
+    end
     if not legacy() then WK:Print(T("Ce client ne donne pas accès à l'hôtel des ventes.")) return end
     local q, all = self:CanQuery()
     if mode ~= "pages" and all then startFull()

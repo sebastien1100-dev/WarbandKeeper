@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.71.1", date = "16/11/2026",
+        changed = {
+            "Hôtel des ventes : WoW Forever utilise le système d'HV récent (scan complet en une requête). Le scan respecte maintenant son délai : un scan complet toutes les 15 minutes environ ; avant, le bouton dit dans combien de minutes ce sera possible.",
+            "Hôtel des ventes : /wk hv scan force pour tenter un scan sans attendre le délai.",
+        },
+        fixed = {
+            "Hôtel des ventes : si le serveur n'envoie pas l'HV (scan demandé trop tôt), le scan s'arrête au bout de 90 secondes avec un message, au lieu d'attendre sans fin.",
+        },
+    },
+    {
         version = "0.71.0", date = "16/11/2026",
         added = {
             "Carte : nouveau module QoL > Carte pour afficher les lieux utiles sur la carte du monde et la minicarte, rangés en familles de couleur : Services (boîtes aux lettres, hôtel des ventes, banque, auberges), Marchands (composants, munitions, poisons, fournitures, pêche, réparation), Maîtres (classe, métiers, écuries, familiers et démons), Voyage (maîtres de vol, bateaux et zeppelins), Divers (maîtres de guerre).",
