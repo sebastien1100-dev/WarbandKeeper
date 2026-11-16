@@ -1781,6 +1781,7 @@ WK.Roadmap = {
     "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
     "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",
     "Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.",
+    "Donjons : vérifier les tables de butin. Noter en jeu ce qui tombe vraiment de chaque boss (corps fouillé) pour compléter et corriger la liste tirée de QuestieDB (objets manquants, boss oubliés), avec un indice « vu tomber X fois ».",
     "Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné) et raids (Cœur du Magma, Onyxia, Zul'Gurub…) avec la même présentation.",
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
