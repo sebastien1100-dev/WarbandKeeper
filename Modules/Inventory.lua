@@ -222,12 +222,20 @@ local function onTooltip(tooltip, data)
             if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
         end) then any = true end
     end
+    -- prix relevés par notre scan de l'HV (Modules/AHScan.lua)
+    local S = WK.modules.AHScan
+    local scanned = false
+    if S and S.AddTooltip then
+        scanned = S:AddTooltip(tooltip, itemID, function()
+            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+        end)
+    end
     local V = WK.modules.Value
     if V and V:ShowBoth() then
         local ah, vendor = V:Prices(itemID)
         if ah or vendor > 0 then
             if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
-            if ah then tooltip:AddDoubleLine(WK.T("Prix HV (unité)"), WK:FormatMoney(ah), 0.8, 0.8, 0.8, 1, 1, 1) end
+            if ah and not scanned then tooltip:AddDoubleLine(WK.T("Prix HV (unité)"), WK:FormatMoney(ah), 0.8, 0.8, 0.8, 1, 1, 1) end
             if vendor > 0 then tooltip:AddDoubleLine(WK.T("Prix marchand (unité)"), WK:FormatMoney(vendor), 0.8, 0.8, 0.8, 1, 1, 1) end
         end
     end

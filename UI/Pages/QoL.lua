@@ -256,7 +256,9 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
-        local classesBtn = navButton("classes", "Classes", -208, nil, "users")
+        local ahBtn = navButton("ah", "Hôtel des ventes", -208, nil, "coin")
+        ahBtn.desc:SetText("Scan et prix")
+        local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
 
         -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
@@ -657,6 +659,40 @@ UI:RegisterPage({
         UI:OnResize(box, function() layoutBar() end)
         table.insert(self.dyn, function() layoutBar() end)
         layoutBar()
+
+        -----------------------------------------------------------------------
+        -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)
+        -----------------------------------------------------------------------
+        section("ah")
+        local AS = WK.modules.AHScan
+        local ac = AS:Config()
+        local function atoggle(parent, field)
+            return toggle(parent, function() return ac[field] end, function(v) ac[field] = v end)
+        end
+        local hcard = card("Hôtel des ventes", 40 + 4 * 46 + 8, "scan de l'HV, sans Auctionator")
+        UI:SettingRow(hcard, -40, "Panneau à côté de l'HV", "Nombre de prix connus, dernier scan et bouton « Scanner l'HV ».", atoggle(hcard, "panel"), 80)
+        UI:SettingRow(hcard, -86, "Scan complet à l'ouverture", "Dès que le jeu l'autorise (environ toutes les 15 minutes).", atoggle(hcard, "auto"), 80)
+        UI:SettingRow(hcard, -132, "Prix dans l'infobulle", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.", atoggle(hcard, "tooltip"), 80)
+        UI:SettingRow(hcard, -178, "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.", atoggle(hcard, "stack"), 80)
+        local scard = card("Prix relevés", 40 + 2 * 46 + 8, "pour ce royaume et cette faction")
+        local stat = dynText(scard, 12, C.text, function()
+            local d = AS:Data()
+            return string.format(T("%d objets avec un prix"), AS:Count()) .. "  ·  " ..
+                (d.last and (T("dernier scan le") .. " " .. date("%d/%m %H:%M", d.last)) or T("aucun scan pour l'instant"))
+        end)
+        UI:SettingRow(scard, -40, "État", nil, stat, 420)
+        local wipe = UI:Button(scard, "Effacer les prix", 150, 28, "ghost")
+        wipe:SetScript("OnClick", function(b)
+            if not b.armed then
+                b.armed = true; b:SetLabel(T("Confirmer"))
+                C_Timer.After(3, function() b.armed = nil; b:SetLabel(T("Effacer les prix")) end)
+                return
+            end
+            b.armed = nil; b:SetLabel(T("Effacer les prix"))
+            local d = AS:Data(); d.items = {}; d.last, d.lastFull, d.lastCount = nil, nil, nil
+            WK:NotifyChanged()
+        end)
+        UI:SettingRow(scard, -86, "Repartir de zéro", "Efface les prix relevés sur ce royaume (deux clics).", wipe, 160)
 
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
@@ -1183,6 +1219,10 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
+            elseif key == "ah" then
+                local n = WK.modules.AHScan:Count()
+                b.desc:SetText(n > 0 and string.format(T("%d prix connus"), n) or T("Pas encore de scan"))
+                b.count:SetText("")
             elseif key == "fishing" then
                 local F2 = WK.modules.Fishing
                 local sk = F2:Skill()

@@ -21,6 +21,7 @@ local KEYS = {
     glow = { saved = true, otherOff = true },
     rares = { kills = true },
     quests = {},
+    ah = { realms = true },
     gatherMap = {},
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau

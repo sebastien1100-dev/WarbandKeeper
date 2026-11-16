@@ -1,8 +1,8 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Value")
 
--- Prix des objets : Auctionator (prix de l'hôtel des ventes) si présent, sinon prix de vente
--- aux marchands. Richesse totale = or + valeur des stocks (sacs, banques, courrier, bataillon).
+-- Prix des objets : prix de l'hôtel des ventes relevé par notre scan (Modules/AHScan.lua), sinon
+-- Auctionator s'il est installé, sinon prix de vente aux marchands. Richesse totale = or + valeur des stocks (sacs, banques, courrier, bataillon).
 local CACHE_SECONDS = 30
 
 function M:HasAuctionator()
@@ -14,7 +14,16 @@ local function vendorPrice(itemID)
     return select(11, WK.GetItemInfo(itemID)) or 0
 end
 
+-- Une source de prix HV existe-t-elle ? (notre scan ou Auctionator)
+function M:HasAHPrices()
+    local S = WK.modules.AHScan
+    return (S and S:HasData()) or self:HasAuctionator()
+end
+
 local function ahPrice(itemID)
+    local S = WK.modules.AHScan
+    local own = S and S:Price(itemID)
+    if own and own > 0 then return own end
     if not M:HasAuctionator() then return nil end
     local ok, price = pcall(Auctionator.API.v1.GetAuctionPriceByItemID, ADDON_NAME, itemID)
     if ok and type(price) == "number" and price > 0 then return price end
@@ -27,6 +36,9 @@ end
 
 -- Jours depuis le dernier relevé Auctionator de cet objet (nil si inconnu).
 function M:AuctionAge(itemID)
+    local S = WK.modules.AHScan
+    local own = S and S:Price(itemID) and S:Age(itemID)
+    if own then return own end
     local api = self:HasAuctionator() and Auctionator.API.v1
     if not api or not api.GetAuctionAgeByItemID then return nil end
     local ok, age = pcall(api.GetAuctionAgeByItemID, ADDON_NAME, itemID)
@@ -97,8 +109,10 @@ end
 
 function M:SourceLabel()
     local src = WK.DB.global.settings.value.source
-    if src == "both" and self:HasAuctionator() then return WK.T("meilleur prix HV / marchand") end
-    if src ~= "vendor" and self:HasAuctionator() then
+    if src == "both" and self:HasAHPrices() then return WK.T("meilleur prix HV / marchand") end
+    if src ~= "vendor" and self:HasAHPrices() then
+        local S = WK.modules.AHScan
+        if S and S:HasData() then return WK.T("prix HV (scan)") end
         return WK.T("prix Auctionator")
     end
     return WK.T("prix marchand")

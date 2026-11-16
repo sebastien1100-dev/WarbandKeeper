@@ -514,10 +514,10 @@ local DIFF = {
     trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
 }
 
--- Recette à l'hôtel des ventes (d'après Auctionator) : texte court et couleur.
+-- Recette à l'hôtel des ventes (notre scan, sinon Auctionator) : texte court et couleur.
 local function recipeAH(itemID)
     local V = WK.modules.Value
-    if not itemID or not V:HasAuctionator() then return nil end
+    if not itemID or not V:HasAHPrices() then return nil end
     local ah = V:Prices(itemID)
     if ah then
         local age = V:AuctionAge(itemID)

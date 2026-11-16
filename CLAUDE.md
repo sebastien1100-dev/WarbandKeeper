@@ -79,6 +79,10 @@ Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles 
 
 `Modules/QuestsDB.lua` est **généré** par `python3 tools/gen_quests.py <clone de QuestieDB>` (il lui faut aussi `l10n/Classic/lookupQuests/frFR.lua` pour les noms français) : quêtes par zone (donjon : zone de l'entrée), niveau, faction, classes, métier, prérequis, donneur et XP ; quêtes répétables exclues. Données Questie (GPLv3) : garder la mention. `Modules/Quests.lua` : état d'une quête pour un perso (`ForChar`, `State`), zones, meilleure zone, guidage, infobulle du donneur ; quêtes faites et journal dans `characters[perso].quests`. `UI/Pages/Quests.lua` : même disposition que la page Rares (tuiles, liste, colonne de réglages).
 
+## Hôtel des ventes
+
+`Modules/AHScan.lua` : scan de l'HV (complet avec `getAll` quand `CanSendAuctionQuery` le permet, sinon page par page ; `C_AuctionHouse.ReplicateItems` si le client l'a), lecture par morceaux à chaque image, prix par royaume et faction dans `WK.DB.global.ah.realms` (exclus des profils), infobulle (appelée par `Modules/Inventory.lua`), `/wk hv`. `UI/AuctionPanel.lua` : panneau collé à la fenêtre de l'HV. `Modules/Value.lua` prend notre prix d'abord, Auctionator ensuite. Ne pas confondre avec `Modules/Auction.lua` (journal des ventes et achats lus sur les factures du courrier).
+
 ## Recherche et profils
 
 `UI/Search.lua` : la recherche de la barre latérale. Chaque `UI:SettingRow` s'inscrit dans `UI.settingIndex` ; à la première recherche, les pages pas encore ouvertes sont construites (cachées) pour être indexées. Un nouveau réglage est donc trouvable s'il passe par `UI:SettingRow`. `Modules/Profiles.lua` : profils de réglages (page `UI/Pages/Profiles.lua`, en bas de la barre latérale), appliqués par `Core/Init.lua` juste après `WK.DB:Init()` (avant tout le reste). La liste `KEYS` dit ce qu'un profil contient (clés de `WK.DB.global`, sous-clés de données exclues) : un nouveau réglage rangé ailleurs doit y être ajouté, une nouvelle donnée de compte rangée dans ces clés doit y être exclue.

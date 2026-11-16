@@ -479,8 +479,8 @@ UI:RegisterPage({
         self:RefreshThemes()
         if self.priceDesc and self.priceDesc.SetText then
             local V = WK.modules.Value
-            if not V:HasAuctionator() then
-                self.priceDesc:SetText(WK.T("Auctionator non détecté : les prix de vente aux marchands sont utilisés."))
+            if not V:HasAHPrices() then
+                self.priceDesc:SetText(WK.T("Pas encore de prix HV : fais un scan à l'hôtel des ventes (ou installe Auctionator). En attendant, les prix marchands sont utilisés."))
             elseif V:ShowBoth() then
                 self.priceDesc:SetText(WK.T("Les deux prix sont affichés ; les calculs prennent le meilleur des deux."))
             elseif WK.DB.global.settings.value.source == "vendor" then
