@@ -1051,7 +1051,7 @@ WK.Locales.enUS.text = {
     ["Clic : nourrir · Clic droit : soigner, ou ressusciter s'il est mort"] = "Click: feed · Right-click: mend, or revive if dead",
     ["Soigner (ou ressusciter) le familier"] = "Mend (or revive) pet",
     ["atterrissage à %s"] = "landing at %s", ["Se poser à %s."] = "Land at %s.",
-    ["arrivée %s"] = "arrival %s", ["1er vol"] = "1st flight", ["Atterrir à %s"] = "Land at %s",
+    ["arrivée %s"] = "arrival %s", ["VOL EN COURS  ·  %d RELAIS"] = "IN FLIGHT  ·  %d STOPS", ["VOL EN COURS  ·  DIRECT"] = "IN FLIGHT  ·  DIRECT", ["parti à %s"] = "left at %s", ["1er vol"] = "1st flight", ["Atterrir à %s"] = "Land at %s",
     ["Pierre de foyer"] = "Hearthstone", ["Grimoire"] = "Spellbook", ["Talents"] = "Talents",
     ["Journal de quêtes"] = "Quest log", ["Social et guilde"] = "Social and guild", ["Métier principal"] = "Main profession", ["Menu du jeu"] = "Game menu",
     ["Horloge"] = "Clock", ["Heure du serveur"] = "Server time", ["Session de jeu"] = "Play session", ["FPS · latence"] = "FPS · latency",

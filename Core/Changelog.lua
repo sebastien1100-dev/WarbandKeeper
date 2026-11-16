@@ -6,6 +6,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.69.1", date = "16/11/2026",
+        changed = {
+            "Barre de vol : nouveau look « ruban ». Une pilule fine avec la destination et sa zone, une barre de progression (un trait par relais) et le temps restant ; plus d'arc ni de griffon.",
+            "Barre de vol : au survol, un volet s'ouvre dessous avec le trajet complet (départ > relais > arrivée, les relais passés en gris), l'heure de départ et d'arrivée, « Atterrir à … » et Carte. Il se referme quand la souris s'en va.",
+        },
+    },
+    {
         version = "0.69.0", date = "16/11/2026",
         added = {
             "Modules : carte « Modules » en bas du Résumé. Repliée, une ligne d'icônes (rose : actif, gris : coupé) ; « Gérer » la déplie à la place du tableau des persos, avec une tuile par module rangée par groupe (son chiffre du moment et un interrupteur). Un clic sur une tuile ouvre la page du module.",
