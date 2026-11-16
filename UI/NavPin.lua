@@ -15,7 +15,7 @@ local hiddenGame = false
 
 local KIND_ICON = {
     mail = "mail", bank = "coin", repair = "hammer", vendor = "bag", ammo = "bag", reagent = "bag", bags = "bag",
-    trainer = "book", stable = "person", fishing = "fish", quest = "bang", rare = "star", place = "map",
+    trainer = "book", stable = "person", fishing = "fish", quest = "bang", rare = "skull", place = "map",
 }
 local function iconFor(t)
     return KIND_ICON[t.kind or ""] or "guide"

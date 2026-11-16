@@ -5,7 +5,7 @@ local T = function(s) return WK.T(s) end
 
 -- Alerte « Rare en vue » (Modules/Rares.lua), deux styles au choix (Rares:Config().alertStyle) :
 --   « banner »  : bandeau en haut de l'écran, portrait, niveau, butin notable, s'il a déjà été tué,
---                 et deux boutons : Cibler (bouton protégé, hors combat) et Guider ;
+--                 et deux boutons : Cibler (bouton protégé, hors combat) et Guider (icône ronde, pose la tête de mort) ;
 --   « compact » : une seule ligne, sans bouton ; un clic dessus lance le guidage.
 -- Disparaît seule après 25 s. Chaque style se place en mode édition.
 -- UI:RareAlertPreview(parent) fabrique un aperçu (sans bouton protégé) pour la colonne de réglages de la page Rares.
@@ -75,8 +75,9 @@ local function makeBanner(parent, name, secure)
     tgt.label:SetPoint("CENTER")
     tgt.label:SetText(T("Cibler"))
     f.target = tgt
-    f.guide = UI:Button(f, "Guider", 86, 24, "secondary")
-    f.guide:SetPoint("TOPRIGHT", tgt, "BOTTOMRIGHT", 0, -6)
+    -- Guider : icône ronde (comme les listes Rares et Quêtes) ; pose aussi la tête de mort sur le rare
+    f.guide = UI:GuideButton(f, 26, "Guider vers ce rare (et marquer d'une tête de mort)")
+    f.guide:SetPoint("TOPRIGHT", tgt, "BOTTOMRIGHT", 0, -5)
     f.close = UI:IconButton(f, "close", 16, nil, "accent")
     f.close:SetPoint("TOPRIGHT", f, "TOPLEFT", 458, -2)
     f.close:SetFrameLevel(tgt:GetFrameLevel() + 2)
@@ -101,7 +102,10 @@ local function makeBanner(parent, name, secure)
         self.target.bg:SetColor(r, g, b, 1)
         self.target.label:SetTextColor(unpack(C.onAccent))
         self.guide:SetShown(info.rare ~= nil)
-        self.guide:SetScript("OnClick", function() if info.rare then R:GuideTo(info.rare) end end)
+        self.guide:SetScript("OnClick", function()
+            if info.rare then R:GuideTo(info.rare) end
+            R:MarkSkull(info)
+        end)
     end
     return f
 end
@@ -140,7 +144,7 @@ local function makeCompact(parent, name)
         self.name:SetText(info.name)
         portrait(self.portrait, info)
         self.sub:SetText(detail(info, true))
-        self:SetScript("OnClick", function() if info.rare then R:GuideTo(info.rare) end; self:Hide() end)
+        self:SetScript("OnClick", function() if info.rare then R:GuideTo(info.rare) end; R:MarkSkull(info); self:Hide() end)
     end
     return f
 end

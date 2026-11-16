@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 -- Réglages : WK.DB.global.rares ; rares tués : WK.DB.global.rares.kills[npcID][perso] = date.
 
 local DEFAULTS = { map = true, list = true, alert = true, sound = true, tooltip = true,
-                   hideKilled = false, alertStyle = "banner" }
+                   hideKilled = false, alertStyle = "banner", skull = true }
 function M:Config()
     local g = WK.DB.global
     g.rares = g.rares or {}
@@ -237,6 +237,21 @@ WK:On("PLAYER_TARGET_CHANGED", function() pcall(check, "target") end)
 ---------------------------------------------------------------------------
 -- Guidage vers le point d'apparition le plus proche
 ---------------------------------------------------------------------------
+-- Marqueur tête de mort du jeu sur le rare vu (unité de sa plaque de nom ou cible), s'il est encore là
+function M:MarkSkull(info)
+    if not (info and info.unit) or self:Config().skull == false then return end
+    if not (SetRaidTarget and UnitExists) then return end
+    local okE, ex = pcall(UnitExists, info.unit)
+    if not okE or not ex then return end
+    -- la plaque a pu passer à un autre monstre : on vérifie le nom
+    local okN, nm = pcall(UnitName, info.unit)
+    nm = okN and readable(nm) or nil
+    if nm and info.unitName and nm ~= info.unitName then return end
+    local okI, idx = pcall(GetRaidTargetIndex, info.unit)
+    if okI and readable(idx) == 8 then return end
+    pcall(SetRaidTarget, info.unit, 8)
+end
+
 function M:GuideTo(r)
     local G = WK.modules.Guide
     local p = G:PlayerPos()

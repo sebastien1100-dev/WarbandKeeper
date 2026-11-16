@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.80.0", date = "16/11/2026",
+        added = {
+            "Alerte « Rare en vue » : le bouton Guider devient l'icône ronde de guidage (comme dans les listes Rares et Quêtes). Un clic guide vers le rare et pose le marqueur tête de mort du jeu au-dessus de lui (aussi en cliquant sur l'alerte compacte).",
+            "Rare guidé : l'épingle à l'écran et sur la carte du monde montre une tête de mort.",
+            "Rares > Carte et infobulle : réglage « Tête de mort sur le rare guidé » (activé par défaut ; en raid, il faut être chef ou assistant pour marquer).",
+            "Nouvelle texture : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+    },
+    {
         version = "0.79.1", date = "16/11/2026",
         changed = {
             "Carte du monde : le lieu guidé est marqué par une épingle de ta couleur avec l'icône de ce que tu suis, et dessous le nom et la distance restante (mise à jour chaque seconde), comme l'épingle à l'écran. Le losange jaune du jeu est masqué sur la carte pendant le guidage. Clic droit sur l'épingle : arrêter.",

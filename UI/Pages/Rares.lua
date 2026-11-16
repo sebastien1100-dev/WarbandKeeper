@@ -185,18 +185,19 @@ UI:RegisterPage({
         UI:SettingRow(mcard, -132, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", toggle(mcard, "list", redraw), 80)
         UI:SettingRow(mcard, -178, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", toggle(mcard, "tooltip"), 80)
 
-        local acard = card("Alerte « Rare en vue »", 40 + 3 * 46 + 182, "quand un rare entre dans ton champ de vision")
+        local acard = card("Alerte « Rare en vue »", 40 + 4 * 46 + 182, "quand un rare entre dans ton champ de vision")
         UI:SettingRow(acard, -40, "Alerte", "Se place en mode édition.", toggle(acard, "alert"), 80)
         UI:SettingRow(acard, -86, "Son de l'alerte", nil, toggle(acard, "sound"), 80)
+        UI:SettingRow(acard, -132, "Tête de mort sur le rare guidé", "En cliquant sur Guider dans l'alerte : le marqueur tête de mort du jeu est posé sur le rare (en raid, il faut être chef ou assistant).", toggle(acard, "skull"), 80)
         local preview, prevState = nil, "new"
         local styleSeg = UI:Segmented(acard, { { "banner", "Bandeau" }, { "compact", "Compact" } },
             function(v) rc.alertStyle = v; if preview then preview:Fill(prevState, v) end end, 26)
         styleSeg:Select(rc.alertStyle or "banner")
-        UI:SettingRow(acard, -132, "Style", "Bandeau : portrait, butin, Cibler et Guider. Compact : une ligne, clic pour guider.", styleSeg, 200)
+        UI:SettingRow(acard, -178, "Style", "Bandeau : portrait, butin, Cibler et Guider. Compact : une ligne, clic pour guider.", styleSeg, 200)
         -- aperçu en direct, avec trois états à essayer
         local box = CreateFrame("Frame", nil, acard)
-        box:SetPoint("TOPLEFT", 16, -178)
-        box:SetPoint("TOPRIGHT", -16, -178)
+        box:SetPoint("TOPLEFT", 16, -224)
+        box:SetPoint("TOPRIGHT", -16, -224)
         box:SetHeight(124)
         box.bg = UI:Rounded(box, 10, 0, "BACKGROUND", 1)
         box.bg:SetColor(unpack(C.inset))

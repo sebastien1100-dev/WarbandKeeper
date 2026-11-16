@@ -63,6 +63,21 @@ def icon_pin():
     save(img, "pin", 128)
 
 
+def icon_skull():
+    """Tête de mort (rare guidé), blanche ; yeux et nez évidés."""
+    img, d, s = canvas(64)
+    circle(d, s, 0.5, 0.42, 0.34)
+    rrect(d, s, 0.3, 0.56, 0.7, 0.86, 0.06)
+    clear = (255, 255, 255, 0)
+    for cx in (0.36, 0.64):
+        r = 0.095
+        d.ellipse([P(cx - r, s), P(0.46 - r, s), P(cx + r, s), P(0.46 + r, s)], fill=clear)
+    d.polygon([(P(0.5, s), P(0.56, s)), (P(0.45, s), P(0.66, s)), (P(0.55, s), P(0.66, s))], fill=clear)
+    for x in (0.41, 0.5, 0.59):
+        d.rectangle([P(x - 0.018, s), P(0.74, s), P(x + 0.018, s), P(0.86, s)], fill=clear)
+    save(img, "skull", 64)
+
+
 def icon_circle():
     img, d, s = canvas(128)
     d.ellipse([0, 0, s - 1, s - 1], fill=W)
@@ -599,6 +614,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull]:
         fn()
     print("OK")

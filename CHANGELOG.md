@@ -18,6 +18,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.80.0 — 16/11/2026
+
+### Ajouts
+- Alerte « Rare en vue » : le bouton Guider devient l'icône ronde de guidage (comme dans les listes Rares et Quêtes). Un clic guide vers le rare et pose le marqueur tête de mort du jeu au-dessus de lui (aussi en cliquant sur l'alerte compacte).
+- Rare guidé : l'épingle à l'écran et sur la carte du monde montre une tête de mort.
+- Rares > Carte et infobulle : réglage « Tête de mort sur le rare guidé » (activé par défaut ; en raid, il faut être chef ou assistant pour marquer).
+- Nouvelle texture : redémarrer le jeu (un /reload ne suffit pas).
+
 ## v0.79.1 — 16/11/2026
 
 ### Modifications
