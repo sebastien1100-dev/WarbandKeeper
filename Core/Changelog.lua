@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.66.0", date = "16/11/2026",
+        changed = {
+            "Rares : la page ne garde que la vue « Collection » (tuiles des zones, rares de la zone choisie en dessous) ; la vue « Zones » est retirée.",
+            "Rares : les réglages des rares (carte, infobulle, alerte, son, style avec aperçu en direct, « Montrer à l'écran ») sont maintenant dans une colonne à droite de la page Rares, et quittent QoL.",
+            "Commandes de la page Rares (« Collection de », « Masquer les tués ») regroupées en haut à gauche.",
+        },
+    },
+    {
         version = "0.65.0", date = "16/11/2026",
         added = {
             "Rares : nouvelle page « Rares » (groupe Exploration de la barre latérale), la collection des rares perso par perso, avec en tête les rares tués, ta zone et les rares restants à ton niveau.",

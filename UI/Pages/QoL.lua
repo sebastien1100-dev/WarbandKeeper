@@ -256,9 +256,7 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
-        local raresBtn = navButton("rares", "Rares", -208, nil, "star")
-        raresBtn.desc:SetText("Carte, alerte, butin")
-        local classesBtn = navButton("classes", "Classes", -258, nil, "users")
+        local classesBtn = navButton("classes", "Classes", -208, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
 
         -- Onglets des classes (en haut de la zone, quand « Classes » est choisi) ----------
@@ -560,53 +558,6 @@ UI:RegisterPage({
             UI:SettingRow(clockCard, cy, def.label, nil, sg, 240)
             cy = cy - 38
         end
-
-        -----------------------------------------------------------------------
-        -- Rares (Modules/Rares.lua, UI/RarePins.lua, UI/RareAlert.lua)
-        -----------------------------------------------------------------------
-        section("rares")
-        local Ra = WK.modules.Rares
-        local rc = Ra:Config()
-        local function rtoggle(parent, field, after)
-            return toggle(parent, function() return rc[field] end, function(v) rc[field] = v; if after then after() end end)
-        end
-        local rcard = card("Rares", 40 + 5 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
-        local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
-        UI:SettingRow(rcard, -40, "Sur la carte du monde", "Un médaillon par rare (mauve, doré pour un élite, grisé si ce perso l'a tué). Au survol : apparitions et patrouille.", rtoggle(rcard, "map", redraw), 80)
-        UI:SettingRow(rcard, -86, "Masquer les rares tués sur la carte", "Ceux que ce perso a déjà tués disparaissent de la carte.", rtoggle(rcard, "hideKilled", redraw), 80)
-        UI:SettingRow(rcard, -132, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", rtoggle(rcard, "list", redraw), 80)
-        UI:SettingRow(rcard, -178, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", rtoggle(rcard, "tooltip"), 80)
-        local openPage = UI:Button(rcard, "Ouvrir la page Rares", 170, 28, "secondary", "star")
-        openPage:SetScript("OnClick", function() UI:ShowPage("rares") end)
-        UI:SettingRow(rcard, -224, "Collection", "Progression par zone et par perso, dans la page Rares.", openPage, 180)
-        local acard = card("Alerte « Rare en vue »", 40 + 3 * 46 + 182, "quand un rare entre dans ton champ de vision")
-        UI:SettingRow(acard, -40, "Alerte", "Se place en mode édition.", rtoggle(acard, "alert"), 80)
-        UI:SettingRow(acard, -86, "Son de l'alerte", nil, rtoggle(acard, "sound"), 80)
-        local preview, prevState = nil, "new"
-        local styleSeg = UI:Segmented(acard, { { "banner", "Bandeau" }, { "compact", "Compact" } },
-            function(v) rc.alertStyle = v; if preview then preview:Fill(prevState, v) end end, 26)
-        styleSeg:Select(rc.alertStyle or "banner")
-        UI:SettingRow(acard, -132, "Style", "Bandeau : portrait, butin, Cibler et Guider. Compact : une ligne, clic pour guider.", styleSeg, 200)
-        -- aperçu en direct, avec trois états à essayer
-        local box = CreateFrame("Frame", nil, acard)
-        box:SetPoint("TOPLEFT", 16, -178)
-        box:SetPoint("TOPRIGHT", -16, -178)
-        box:SetHeight(124)
-        box.bg = UI:Rounded(box, 10, 0, "BACKGROUND", 1)
-        box.bg:SetColor(unpack(C.inset))
-        local stateSeg = UI:Segmented(box, { { "new", "Pas tué" }, { "killed", "Déjà tué" }, { "elite", "Élite" } },
-            function(v) prevState = v; preview:Fill(v, rc.alertStyle) end, 22)
-        stateSeg:SetPoint("TOPRIGHT", -8, -8)
-        stateSeg:Select("new")
-        local ph = UI:Text(box, 10, C.dim)
-        ph:SetPoint("TOPLEFT", 10, -12)
-        ph:SetText(T("APERÇU"))
-        preview = UI:RareAlertPreview(box)
-        preview:SetPoint("BOTTOM", 0, 10)
-        preview:Fill("new", rc.alertStyle or "banner")
-        local tb = UI:Button(acard, "Montrer à l'écran", 150, 26, "ghost")
-        tb:SetPoint("BOTTOMRIGHT", -14, 10)
-        tb:SetScript("OnClick", function() UI:TestRareAlert(prevState) end)
 
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
@@ -1133,11 +1084,6 @@ UI:RegisterPage({
         for key, b in pairs(self.navButtons) do
             if key == "general" then
                 b.count:SetText(general > 0 and tostring(general) or "")
-            elseif key == "rares" then
-                local mp = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
-                local n = mp and #WK.modules.Rares:OnMap(mp) or 0
-                b.desc:SetText(n > 0 and string.format(T("%d rares dans la zone"), n) or T("Carte, alerte, butin"))
-                b.count:SetText("")
             elseif key == "fishing" then
                 local F2 = WK.modules.Fishing
                 local sk = F2:Skill()

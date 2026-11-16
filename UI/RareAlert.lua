@@ -8,7 +8,7 @@ local T = function(s) return WK.T(s) end
 --                 et deux boutons : Cibler (bouton protégé, hors combat) et Guider ;
 --   « compact » : une seule ligne, sans bouton ; un clic dessus lance le guidage.
 -- Disparaît seule après 25 s. Chaque style se place en mode édition.
--- UI:RareAlertPreview(parent) fabrique un aperçu (sans bouton protégé) pour la page QoL > Rares.
+-- UI:RareAlertPreview(parent) fabrique un aperçu (sans bouton protégé) pour la colonne de réglages de la page Rares.
 local R = WK.modules.Rares
 local banner, compact
 

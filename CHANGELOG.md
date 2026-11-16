@@ -19,6 +19,13 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.66.0 — 16/11/2026
+
+### Modifications
+- Rares : la page ne garde que la vue « Collection » (tuiles des zones, rares de la zone choisie en dessous) ; la vue « Zones » est retirée.
+- Rares : les réglages des rares (carte, infobulle, alerte, son, style avec aperçu en direct, « Montrer à l'écran ») sont maintenant dans une colonne à droite de la page Rares, et quittent QoL.
+- Commandes de la page Rares (« Collection de », « Masquer les tués ») regroupées en haut à gauche.
+
 ## v0.65.0 — 16/11/2026
 
 ### Ajouts

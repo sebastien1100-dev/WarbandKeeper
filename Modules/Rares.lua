@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 -- Réglages : WK.DB.global.rares ; rares tués : WK.DB.global.rares.kills[npcID][perso] = date.
 
 local DEFAULTS = { map = true, list = true, alert = true, sound = true, tooltip = true,
-                   hideKilled = false, alertStyle = "banner", view = "zones" }
+                   hideKilled = false, alertStyle = "banner" }
 function M:Config()
     local g = WK.DB.global
     g.rares = g.rares or {}

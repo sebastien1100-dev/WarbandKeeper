@@ -4,12 +4,10 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Page Rares (Modules/Rares.lua) : la collection des rares, perso par perso.
---   vue « Zones »      : à gauche ta zone et les zones par continent avec leur progression,
---                        à droite les rares de la zone choisie ;
---   vue « Collection » : une tuile par zone avec un anneau de progression, les rares de la zone
---                        choisie en dessous.
+--   une tuile par zone avec un anneau de progression (ta zone en premier), les rares de la zone
+--   choisie en dessous, et à droite les réglages (carte, infobulle, alerte avec aperçu en direct).
 local R = WK.modules.Rares
-local GAP, LEFT_W, ROW_H = 12, 300, 44
+local GAP, SIDE_W, ROW_H = 12, 300, 44
 local TILE_W, TILE_H = 214, 74
 local DOTS = 28 -- points de l'anneau de progression
 
@@ -40,68 +38,20 @@ UI:RegisterPage({
         self.zone = R:PlayerZone()
 
         -- Barre de commandes ---------------------------------------------------------
-        self.viewSeg = UI:Segmented(p, { { "zones", "Zones" }, { "tiles", "Collection" } },
-            function(v) cfg.view = v; self:Layout(); self:Refresh() end, 30)
-        self.viewSeg:SetPoint("TOPLEFT")
-        self.viewSeg:Select(cfg.view or "zones")
-        self.hideBtn = UI:Button(p, "Masquer les tués", 150, 30, "ghost")
-        self.hideBtn:SetPoint("TOPRIGHT")
-        self.hideBtn:SetScript("OnClick", function() cfg.pageHideKilled = not cfg.pageHideKilled; self:Refresh() end)
+        local of = UI:Text(p, 11, C.muted)
+        of:SetPoint("TOPLEFT", 0, -9)
+        of:SetText(T("Collection de"))
         local charOpts = {}
         for key, c in pairs(WK.DB.global.characters) do table.insert(charOpts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
         table.sort(charOpts, function(a, b) return a[2] < b[2] end)
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
-        self.charDd:SetPoint("RIGHT", self.hideBtn, "LEFT", -8, 0)
+        self.charDd:SetPoint("TOPLEFT", of, "TOPRIGHT", 8, 9)
         self.charDd:Select(self.viewKey)
-        local of = UI:Text(p, 11, C.muted)
-        of:SetPoint("RIGHT", self.charDd, "LEFT", -8, 0)
-        of:SetText(T("Collection de"))
+        self.hideBtn = UI:Button(p, "Masquer les tués", 150, 30, "ghost")
+        self.hideBtn:SetPoint("TOPLEFT", self.charDd, "TOPRIGHT", 8, 0)
+        self.hideBtn:SetScript("OnClick", function() cfg.pageHideKilled = not cfg.pageHideKilled; self:Refresh() end)
 
-        -- Vue Zones : colonne de gauche ------------------------------------------------
-        local left = UI:Card(p)
-        left:SetWidth(LEFT_W)
-        self.left = left
-        self.cur = CreateFrame("Button", nil, left)
-        self.cur:SetPoint("TOPLEFT", 10, -10)
-        self.cur:SetPoint("TOPRIGHT", -10, -10)
-        self.cur:SetHeight(78)
-        self.cur.edge = UI:Rounded(self.cur, 10, 0, "BACKGROUND", 0)
-        self.cur.bg = UI:Rounded(self.cur, 9, 1, "BACKGROUND", 1)
-        self.cur.name = UI:Text(self.cur, 13)
-        self.cur.name:SetPoint("TOPLEFT", 12, -10)
-        self.cur.tag = UI:Text(self.cur, 10, C.muted)
-        self.cur.tag:SetPoint("TOPRIGHT", -12, -12)
-        self.cur.tag:SetText(T("ta zone"))
-        self.cur.count = UI:Text(self.cur, 22)
-        self.cur.count:SetPoint("TOPLEFT", self.cur.name, "BOTTOMLEFT", 0, -4)
-        self.cur.lv = UI:Text(self.cur, 11, C.muted)
-        self.cur.lv:SetPoint("BOTTOMLEFT", self.cur.count, "BOTTOMRIGHT", 8, 3)
-        self.cur.bar = UI:Progress(self.cur, 4)
-        self.cur.bar:SetPoint("BOTTOMLEFT", 12, 10)
-        self.cur.bar:SetPoint("BOTTOMRIGHT", -12, 10)
-        self.cur:SetScript("OnClick", function() self.zone = R:PlayerZone(); self:Refresh() end)
-        self.zscroll = UI:Scroll(left)
-        self.zscroll:SetPoint("TOPLEFT", 6, -98)
-        self.zscroll:SetPoint("BOTTOMRIGHT", -6, 8)
-        self.zrows = UI:Pool(function()
-            local b = CreateFrame("Button", nil, self.zscroll.child)
-            b:SetHeight(30)
-            b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
-            b.name = UI:Text(b, 12)
-            b.name:SetPoint("LEFT", 10, 0)
-            b.name:SetPoint("RIGHT", -60, 0)
-            b.name:SetJustifyH("LEFT")
-            b.n = UI:Text(b, 11, C.muted)
-            b.n:SetPoint("RIGHT", -10, 0)
-            b:SetScript("OnEnter", function(s) if not s.sel then s.bg:SetColor(unpack(C.hover)); s.bg:Show() end end)
-            b:SetScript("OnLeave", function(s) if not s.sel then s.bg:Hide() end end)
-            b:SetScript("OnClick", function(s) self.zone = s.map; self:Refresh() end)
-            return b
-        end)
-        self.zheads = UI:Pool(function()
-            local t = UI:Text(self.zscroll.child, 10, C.dim)
-            return t
-        end)
+        self:BuildSettings(p)
 
         -- Vue Collection : tuiles ------------------------------------------------------
         self.tscroll = UI:Scroll(p)
@@ -134,7 +84,7 @@ UI:RegisterPage({
             return t
         end)
 
-        -- Rares de la zone (les deux vues) -----------------------------------------------
+        -- Rares de la zone choisie -------------------------------------------------------
         local list = UI:Card(p)
         self.list = list
         self.lTitle = UI:Text(list, 14)
@@ -197,37 +147,97 @@ UI:RegisterPage({
         self:Layout()
     end,
 
-    -- Place les blocs selon la vue
+    -- Colonne de réglages à droite (mêmes réglages que l'ancienne section QoL > Rares)
+    BuildSettings = function(self, p)
+        local rc = R:Config()
+        self.toggles = {}
+        local side = UI:Scroll(p)
+        self.side = side
+        local root = side.child
+        local y = 0
+        local function card(title, h, subtitle)
+            local c = UI:Card(root, title, subtitle)
+            c:SetHeight(h)
+            c:SetPoint("TOPLEFT", 0, -y)
+            c:SetPoint("TOPRIGHT", 0, -y)
+            y = y + h + GAP
+            return c
+        end
+        local function toggle(parent, field, after)
+            local t = UI:Toggle(parent, function() return rc[field] end,
+                function(v) rc[field] = v; if after then after() end; WK:NotifyChanged() end)
+            table.insert(self.toggles, t)
+            return t
+        end
+        local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
+
+        local mcard = card("Carte et infobulle", 40 + 4 * 36 + 6, "d'après QuestieDB")
+        UI:SettingRow(mcard, -40, "Médaillons sur la carte", nil, toggle(mcard, "map", redraw), 50)
+        UI:SettingRow(mcard, -76, "Masquer les tués sur la carte", nil, toggle(mcard, "hideKilled", redraw), 50)
+        UI:SettingRow(mcard, -112, "Liste à côté de la carte", nil, toggle(mcard, "list", redraw), 50)
+        UI:SettingRow(mcard, -148, "Infobulle d'un rare", nil, toggle(mcard, "tooltip"), 50)
+
+        local acard = card("Alerte « Rare en vue »", 40 + 3 * 36 + 112 + 44, "à l'écran")
+        UI:SettingRow(acard, -40, "Alerte", nil, toggle(acard, "alert"), 50)
+        UI:SettingRow(acard, -76, "Son de l'alerte", nil, toggle(acard, "sound"), 50)
+        local preview, box, prevState = nil, nil, "new"
+        local function fill()
+            local st = rc.alertStyle or "banner"
+            local sc = st == "compact" and 0.76 or 0.54
+            preview:SetScale(sc)
+            preview:ClearAllPoints()
+            preview:SetPoint("CENTER", box, "BOTTOM", 0, 37 / sc) -- décalage en unités de l'aperçu réduit
+            preview:Fill(prevState, st)
+        end
+        local styleSeg = UI:Segmented(acard, { { "banner", "Bandeau" }, { "compact", "Compact" } },
+            function(v) rc.alertStyle = v; if preview then fill() end end, 24)
+        styleSeg:Select(rc.alertStyle or "banner")
+        UI:SettingRow(acard, -112, "Style", nil, styleSeg, 150)
+        -- aperçu en direct, avec trois états à essayer
+        box = CreateFrame("Frame", nil, acard)
+        box:SetPoint("TOPLEFT", 12, -152)
+        box:SetPoint("TOPRIGHT", -12, -152)
+        box:SetHeight(104)
+        box.bg = UI:Rounded(box, 10, 0, "BACKGROUND", 1)
+        box.bg:SetColor(unpack(C.inset))
+        local stateSeg = UI:Segmented(box, { { "new", "Pas tué" }, { "killed", "Déjà tué" }, { "elite", "Élite" } },
+            function(v) prevState = v; fill() end, 22)
+        stateSeg:SetPoint("TOP", 0, -8)
+        stateSeg:Select("new")
+        preview = UI:RareAlertPreview(box)
+        fill()
+        self.preview = fill
+        local tb = UI:Button(acard, "Montrer à l'écran", 150, 26, "ghost")
+        tb:SetPoint("BOTTOMRIGHT", -12, 10)
+        tb:SetScript("OnClick", function() UI:TestRareAlert(prevState) end)
+        local hint = UI:Text(acard, 10, C.dim)
+        hint:SetPoint("BOTTOMLEFT", 14, 18)
+        hint:SetText(T("Se place en mode édition."))
+        self.sideH = y
+    end,
+
+    -- Tuiles en haut, liste en dessous, réglages à droite
     Layout = function(self)
-        local p = self.left:GetParent()
+        local p = self.list:GetParent()
         local h = p:GetHeight() or 500
         if h < 100 then h = 500 end
         local top = 30 + GAP
-        self.left:ClearAllPoints(); self.list:ClearAllPoints(); self.tscroll:ClearAllPoints()
-        if (R:Config().view or "zones") == "tiles" then
-            self.left:Hide(); self.tscroll:Show()
-            local th = math.floor((h - top) * 0.46)
-            self.tscroll:SetPoint("TOPLEFT", 0, -top)
-            self.tscroll:SetPoint("TOPRIGHT", 0, -top)
-            self.tscroll:SetHeight(th)
-            self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
-            self.list:SetPoint("BOTTOMRIGHT")
-        else
-            self.left:Show(); self.tscroll:Hide()
-            self.left:SetPoint("TOPLEFT", 0, -top)
-            self.left:SetPoint("BOTTOMLEFT")
-            self.list:SetPoint("TOPLEFT", LEFT_W + GAP, -top)
-            self.list:SetPoint("BOTTOMRIGHT")
-        end
+        self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
+        self.side:SetPoint("TOPRIGHT", 0, 0)
+        self.side:SetPoint("BOTTOMRIGHT")
+        self.side:SetWidth(SIDE_W)
+        self.side.child:SetSize(SIDE_W - 8, self.sideH or 400)
+        if self.side.UpdateBar then self.side:UpdateBar() end
+        local th = math.floor((h - top) * 0.46)
+        self.tscroll:SetPoint("TOPLEFT", 0, -top)
+        self.tscroll:SetPoint("TOPRIGHT", -(SIDE_W + GAP), -top)
+        self.tscroll:SetHeight(th)
+        self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
+        self.list:SetPoint("BOTTOMRIGHT", -(SIDE_W + GAP), 0)
     end,
 
     Refresh = function(self)
         local cfg = R:Config()
-        if self.lastView ~= (cfg.view or "zones") then
-            self.lastView = cfg.view or "zones"
-            self.viewSeg:Select(self.lastView)
-            self:Layout()
-        end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
         local myLevel = c.level or UnitLevel("player") or 1
@@ -235,52 +245,8 @@ UI:RegisterPage({
         local playerZone = R:PlayerZone()
         self.zone = self.zone or playerZone or (zones[1] and zones[1].map)
         local r1, g1, b1 = UI:Accent()
+        for _, t in ipairs(self.toggles) do t:Refresh() end
         self.hideBtn.label:SetText(cfg.pageHideKilled and T("Montrer les tués") or T("Masquer les tués"))
-
-        -- zone du joueur en grand
-        local pz
-        for _, z in ipairs(zones) do if z.map == playerZone then pz = z end end
-        self.cur:SetShown(pz ~= nil)
-        if pz then
-            self.cur.edge:SetColor(r1, g1, b1, 1); self.cur.bg:SetColor(unpack(self.zone == pz.map and C.surface2 or C.surface))
-            self.cur.name:SetText(pz.name)
-            self.cur.count:SetText(pz.killed .. " / " .. pz.total)
-            self.cur.lv:SetText(string.format(T("niveaux %d-%d"), pz.min, pz.max))
-            self.cur.bar:SetValue(pz.total > 0 and pz.killed / pz.total or 0)
-        end
-        -- liste des zones par continent
-        self.zrows:Reset(); self.zheads:Reset()
-        local y, lastCont = 0, nil
-        local contTotals = {}
-        for _, z in ipairs(zones) do
-            local t = contTotals[z.contName] or { 0, 0 }
-            t[1], t[2] = t[1] + z.killed, t[2] + z.total
-            contTotals[z.contName] = t
-        end
-        local zw = LEFT_W - 24
-        for _, z in ipairs(zones) do
-            if z.contName ~= lastCont then
-                lastCont = z.contName
-                local hd = self.zheads:Get()
-                hd:ClearAllPoints(); hd:SetPoint("TOPLEFT", 8, -(y + 10))
-                local t = contTotals[z.contName]
-                hd:SetText(string.upper(z.contName) .. "  ·  " .. t[1] .. " / " .. t[2])
-                hd:Show()
-                y = y + 30
-            end
-            local b = self.zrows:Get()
-            b.map = z.map
-            b.sel = self.zone == z.map
-            b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y); b:SetWidth(zw)
-            b.name:SetText(z.name)
-            local done = z.killed >= z.total
-            b.n:SetText(z.killed .. " / " .. z.total .. (done and "  •" or ""))
-            b.n:SetTextColor(unpack(done and C.positive or C.muted))
-            b.bg:SetColor(unpack(C.surface2)); b.bg:SetShown(b.sel)
-            y = y + 32
-        end
-        self.zscroll.child:SetSize(zw, y + 6)
-        if self.zscroll.UpdateBar then self.zscroll:UpdateBar() end
 
         -- tuiles
         self.tiles:Reset()
@@ -312,7 +278,7 @@ UI:RegisterPage({
             t.tag:SetText(cur and T("ta zone") or "")
             t.tag:SetTextColor(r1, g1, b1)
         end
-        self.tscroll.child:SetSize(W, math.ceil(#zones / cols) * (TILE_H + 10))
+        self.tscroll.child:SetSize(W, math.ceil(#ordered / cols) * (TILE_H + 10))
         if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
 
         -- rares de la zone choisie
