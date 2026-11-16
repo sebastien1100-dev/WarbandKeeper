@@ -857,6 +857,29 @@ local function restoreTooltipFonts()
     for fs in pairs(ttFonts) do ttFonts[fs] = nil end
 end
 
+-- Infobulles du jeu (objets, PNJ, sorts…) : même police fine, par les polices partagées du jeu.
+-- Réglage settings.ui.gameTooltipFont (activé par défaut) ; coupé : polices d'origine rendues.
+local GAME_TT_FONTS = { { "GameTooltipHeaderText", 13 }, { "GameTooltipText", 12 }, { "GameTooltipTextSmall", 11 } }
+local gameTTOrig
+function UI:ApplyGameTooltipFonts()
+    local on = WK.DB.global.settings.ui.gameTooltipFont ~= false
+    if not gameTTOrig then
+        if not on then return end
+        gameTTOrig = {}
+        for _, f in ipairs(GAME_TT_FONTS) do
+            local o = _G[f[1]]
+            if o and o.GetFont then gameTTOrig[f[1]] = { o:GetFont() } end
+        end
+    end
+    for _, f in ipairs(GAME_TT_FONTS) do
+        local o, orig = _G[f[1]], gameTTOrig[f[1]]
+        if o and o.SetFont and orig then
+            if on then pcall(o.SetFont, o, UI.FONT, f[2], "") else pcall(o.SetFont, o, orig[1], orig[2], orig[3] or "") end
+        end
+    end
+end
+WK:On("PLAYER_LOGIN", function() UI:ApplyGameTooltipFonts() end)
+
 function UI:SkinTooltip(tt)
     tt = tt or GameTooltip
     if not ttSkin then

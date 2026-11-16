@@ -288,7 +288,7 @@ local function onUnitTooltip(tooltip)
     local r = id and R:Get(id)
     if not r then return end
     tooltip:AddLine(" ")
-    tooltip:AddLine("|cff33ccffWarband Keeper|r")
+    tooltip:AddLine(WK:Tag())
     tooltipLines(tooltip, r)
     tooltip:Show()
 end

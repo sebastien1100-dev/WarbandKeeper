@@ -266,7 +266,7 @@ local function onUnitTooltip(tooltip)
     end
     if #lines == 0 then return end
     tooltip:AddLine(" ")
-    tooltip:AddLine("|cff33ccffWarband Keeper|r  " .. string.format(T("%d quêtes"), #lines))
+    tooltip:AddLine(WK:Tag() .. "  " .. string.format(T("%d quêtes"), #lines))
     for i, l in ipairs(lines) do
         if i > 5 then tooltip:AddLine("|cff999999+" .. (#lines - 5) .. "|r") break end
         tooltip:AddLine(l)

@@ -6,6 +6,23 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.78.0", date = "16/11/2026",
+        added = {
+            "Navigation Warband Keeper : chaque guidage (quêtes, rares, lieux, métiers, alertes, pêche) trace un trajet en pointillés de ta couleur, de toi jusqu'au lieu, sur la carte du monde et sur la minicarte. La flèche vise le point suivant du trajet et donne la distance restante par le chemin.",
+            "Le trajet suit les chemins connus : chemins de base tirés des patrouilles des PNJ (QuestieDB : routes, ponts, cols) et chemins appris. Hors des chemins, il coupe tout droit (terrain inconnu).",
+            "Apprentissage : les chemins que tes persos parcourent à pied ou à monture (hors vol, instances et fantôme) sont notés, seulement là où rien n'était connu. Les trajets s'affinent au fil de tes déplacements, sur tout le compte.",
+            "Vols : un maître de vol que ton perso connaît (noté à l'ouverture de la carte des vols) entre dans le trajet s'il fait gagner du temps (marche, vol, marche). Autre continent : le trajet mène au bateau ou au zeppelin qui y va, puis repart à l'arrivée.",
+            "Si tu t'écartes du trajet plus de 4 secondes, il est recalculé depuis ta position.",
+            "QoL > Carte : carte « Navigation » (trajet sur la carte du monde, sur la minicarte, apprentissage, kilomètres appris, bouton pour oublier les chemins appris). /wk nav donne aussi l'état de la navigation.",
+            "Options > Infobulles : « Police fine pour les infobulles du jeu » (objets, PNJ, sorts), activée par défaut.",
+            "Nouveaux fichiers : redémarrer le jeu (un /reload ne suffit pas).",
+        },
+        changed = {
+            "« Warband Keeper » dans les infobulles (objets, quêtes, rares) et dans le chat prend la couleur d'accent de l'apparence au lieu du bleu.",
+            "Le relais vers ShortestPathForever est retiré (avec son réglage) : le guidage ne dépend plus d'aucun autre addon.",
+        },
+    },
+    {
         version = "0.77.0", date = "16/11/2026",
         added = {
             "QoL > Pêche : nouvelle carte « Collection » sous le carnet, avec deux onglets.",
@@ -1565,7 +1582,6 @@ WK.Roadmap = {
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
     "Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.",
-    "Trajet sans ShortestPathForever : tracé marche, vol, marche par Warband Keeper, aidé des routes de patrouille des PNJ et des chemins déjà parcourus.",
     "Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.",
 }
 

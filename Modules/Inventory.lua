@@ -200,7 +200,7 @@ local function onTooltip(tooltip, data)
     for key, c in pairs(WK.DB.global.characters) do
         local total, b, k, m = M:CharCount(c, itemID)
         if total > 0 then
-            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
             local r, g, bl = 1, 1, 1
             local cc = c.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[c.class]
             if cc then r, g, bl = cc.r, cc.g, cc.b end
@@ -212,14 +212,14 @@ local function onTooltip(tooltip, data)
     local wb = WK.DB.global.warbank
     local w = wb and wb.items[itemID] or 0
     if w > 0 then
-        if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         tooltip:AddDoubleLine(WK.L.WARBANK, tostring(w), 1, 1, 1, 1, 1, 1)
     end
     -- à quoi sert l'objet pour monter les métiers (guides)
     local R = WK.modules.Recipes
     if R and R.AddTooltip then
         if R:AddTooltip(tooltip, itemID, function()
-            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         end) then any = true end
     end
     -- prix relevés par notre scan de l'HV (Modules/AHScan.lua)
@@ -227,14 +227,14 @@ local function onTooltip(tooltip, data)
     local scanned = false
     if S and S.AddTooltip then
         scanned = S:AddTooltip(tooltip, itemID, function()
-            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         end)
     end
     local V = WK.modules.Value
     if V and V:ShowBoth() then
         local ah, vendor = V:Prices(itemID)
         if ah or vendor > 0 then
-            if not any then tooltip:AddLine(" "); tooltip:AddLine("|cff33ccffWarband Keeper|r"); any = true end
+            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
             if ah and not scanned then tooltip:AddDoubleLine(WK.T("Prix HV (unité)"), WK:FormatMoney(ah), 0.8, 0.8, 0.8, 1, 1, 1) end
             if vendor > 0 then tooltip:AddDoubleLine(WK.T("Prix marchand (unité)"), WK:FormatMoney(vendor), 0.8, 0.8, 0.8, 1, 1, 1) end
         end

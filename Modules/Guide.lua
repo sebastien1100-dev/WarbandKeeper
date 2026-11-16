@@ -9,13 +9,12 @@ local T = function(s) return WK.T(s) end
 
 M.KIND = { mail = 1, bank = 2, vendor = 4, repair = 8, ammo = 16, reagent = 32, poison = 64, trainer = 128, general = 256, stable = 512, fishing = 1024 }
 local KIND = M.KIND
-local SPF_CANDIDATES = 6 -- lieux comparés au temps de trajet (ShortestPathForever)
 M.LABELS = {
     mail = "Boîte aux lettres", bank = "Banque", vendor = "Marchand", repair = "Réparation",
     ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
 }
 
-local DEFAULTS = { auto = true, arrow = true, mapPin = true, trainerOnLevel = true, spf = true }
+local DEFAULTS = { auto = true, arrow = true, mapPin = true, trainerOnLevel = true, route = true, routeMini = true, learn = true }
 function M:Config()
     local q = WK.modules.QoL:Config()
     q.guide = q.guide or {}
@@ -128,25 +127,10 @@ function M:Nearest(kinds, class)
     end
     if #cands == 0 then return nil end
     table.sort(cands, function(a, b) return a.distance < b.distance end)
-    -- Avec ShortestPathForever : parmi les plus proches à vol d'oiseau, celui qu'on atteint le plus
-    -- vite en vrai (une rivière, une falaise ou un vol peuvent tout changer).
-    local api = self:SPF()
-    if api and type(api.Estimate) == "function" and #cands > 1 then
-        local best, bestS
-        for i = 1, math.min(SPF_CANDIDATES, #cands) do
-            local c = cands[i]
-            local ok, sec = pcall(api.Estimate, p.map, p.x, p.y, c.map, c.x, c.y)
-            if ok and type(sec) == "number" then
-                c.seconds = sec
-                if not bestS or sec < bestS then best, bestS = c, sec end
-            end
-        end
-        if best then return best end
-    end
     return cands[1]
 end
 
--- « à 240 m » ou, avec ShortestPathForever, « à 3 min de trajet »
+-- « à 240 m », ou « à 3 min de trajet » quand le trajet est estimé (Modules/Nav.lua)
 function M:DistText(t)
     if t.seconds then return string.format(T("à %d min de trajet"), math.max(1, math.floor(t.seconds / 60 + 0.5))) end
     return string.format(T("à %d m"), math.floor(t.distance or 0))
@@ -172,71 +156,30 @@ function M:PlaceParts(t)
 end
 
 ---------------------------------------------------------------------------
--- Trajet par ShortestPathForever (addon à part, GPLv3) : s'il est installé, on lui confie le
--- trajet par son API publique (ShortestPathForever.API) ; il trace le chemin qui suit le terrain,
--- avec vols, bateaux et portails, et dessine sa propre flèche. Aucun code ni donnée n'en est repris.
----------------------------------------------------------------------------
-local SPF_OWNER = "WarbandKeeper"
-function M:SPFInstalled()
-    local api = ShortestPathForever and ShortestPathForever.API
-    return type(api) == "table" and type(api.Navigate) == "function" and api or nil
-end
-function M:SPF()
-    if not self:Config().spf then return nil end
-    return self:SPFInstalled()
-end
-local function spfNavigate(t)
-    local api = M:SPF()
-    if not api or not (t.map and t.x and t.y) then return false end
-    local ok, res = pcall(api.Navigate, SPF_OWNER, t.map, t.x, t.y, M:PlaceName(t))
-    return ok and res == true
-end
-local function spfCancel()
-    local api = M:SPFInstalled()
-    if api and type(api.Cancel) == "function" then pcall(api.Cancel, SPF_OWNER) end
-end
--- Trajet terminé ou repris par un autre côté ShortestPathForever : on arrête aussi le nôtre.
-local function spfWatch()
-    local t = M.target
-    if not (t and t.spf) then return end
-    local api = M:SPFInstalled()
-    if not api or type(api.Ended) ~= "function" then return end
-    local ok, reason = pcall(api.Ended, SPF_OWNER)
-    if ok and type(reason) == "string" and reason ~= "loading" and reason ~= "none" then
-        t.spf = nil
-        M:Stop(true)
-    end
-end
-
----------------------------------------------------------------------------
 -- Cible courante
 ---------------------------------------------------------------------------
--- M.target = { map, x, y, cont, wx, wy, e, reason, kind, spf }
+-- M.target = { map, x, y, cont, wx, wy, e, reason, kind }
 function M:Start(target, reason, kind)
     if not target then return false end
     target.reason, target.kind = reason, kind
-    if self.target and self.target.spf then spfCancel() end
     self.target = target
     local cfg = self:Config()
-    target.spf = spfNavigate(target) or nil
-    if target.spf then
-        -- ShortestPathForever pose son propre repère et sa flèche : on retire le nôtre
-        if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
-        self.placedWaypoint = nil
-    elseif cfg.mapPin and C_Map and C_Map.SetUserWaypoint and UiMapPoint and UiMapPoint.CreateFromCoordinates then
+    if cfg.mapPin and C_Map and C_Map.SetUserWaypoint and UiMapPoint and UiMapPoint.CreateFromCoordinates then
         pcall(C_Map.SetUserWaypoint, UiMapPoint.CreateFromCoordinates(target.map, target.x, target.y))
         if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then pcall(C_SuperTrack.SetSuperTrackedUserWaypoint, true) end
         self.placedWaypoint = true
     end
+    -- trajet qui suit les chemins connus (Modules/Nav.lua), calculé en arrière-plan
+    if WK.modules.Nav then WK.modules.Nav:Plan(target) end
     if self.OnTarget then self:OnTarget() end
     if self.Redraw then self:Redraw() end
     WK:NotifyChanged()
     return true
 end
 
-function M:Stop(fromSPF)
-    if self.target and self.target.spf and not fromSPF then spfCancel() end
+function M:Stop()
     self.target = nil
+    if WK.modules.Nav then WK.modules.Nav:Clear() end
     if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
     self.placedWaypoint = nil
     if self.OnTarget then self:OnTarget() end
@@ -359,10 +302,7 @@ end)
 
 function M:OnLogin()
     self:Config()
-    if C_Timer and C_Timer.NewTicker then
-        C_Timer.NewTicker(10, function() M:Check() end)
-        C_Timer.NewTicker(2, spfWatch)
-    end
+    if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(10, function() M:Check() end) end
 end
 
 ---------------------------------------------------------------------------
@@ -381,11 +321,9 @@ function M:NavReport()
         .. " · IsSuperTrackingUserWaypoint " .. yn(ST.IsSuperTrackingUserWaypoint)) or ""))
     WK:Print("  C_Map.SetUserWaypoint : " .. yn(C_Map and C_Map.SetUserWaypoint) .. " · HasUserWaypoint : " .. call(C_Map and C_Map.HasUserWaypoint))
     WK:Print("  SuperTrackedFrame : " .. yn(SuperTrackedFrame))
-    WK:Print("  ShortestPathForever : " .. yn(self:SPFInstalled()) .. " · " .. T("utilisé") .. " : " .. yn(self:SPF()) .. " · " .. T("trajet en cours") .. " : " .. yn(self.target and self.target.spf))
+    if WK.modules.Nav then WK.modules.Nav:Report() end
     WK:Print("  " .. T("point suivi") .. " : " .. call(ST and ST.IsSuperTrackingUserWaypoint) .. " · " .. T("guidage Warband Keeper") .. " : " .. yn(self.target))
-    if self.target and self.target.spf then
-        WK:Print("  " .. T("repère, flèche et tracé : gérés par ShortestPathForever (Warband Keeper ne pose pas le sien)"))
-    elseif N then
+    if N then
         WK:Print("  " .. T("distance") .. " : " .. call(N.GetDistance) .. " · " .. T("à l'écran") .. " : " .. call(N.HasValidScreenPosition)
             .. " · " .. T("au bord") .. " : " .. call(N.WasClampedToScreen))
         local ok, f = pcall(N.GetFrame or function() end)

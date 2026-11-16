@@ -1,13 +1,20 @@
 local ADDON_NAME, WK = ...
 
--- Préfixe « Warband Keeper » à la couleur d'accent du thème (doré avant le chargement des réglages).
-function WK:Print(msg)
+-- Couleur d'accent du thème en hexadécimal (doré avant le chargement des réglages).
+function WK:AccentHex()
     local hex = "e0bd72"
     if WK.UI and WK.UI.Accent and WK.DB and WK.DB.global then
         local ok, r, g, b = pcall(WK.UI.Accent, WK.UI)
         if ok and r then hex = string.format("%02x%02x%02x", math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5)) end
     end
-    DEFAULT_CHAT_FRAME:AddMessage("|cff" .. hex .. "Warband Keeper|r " .. tostring(msg))
+    return hex
+end
+-- « Warband Keeper » à la couleur d'accent (titres de section dans les infobulles, chat)
+function WK:Tag()
+    return "|cff" .. WK:AccentHex() .. "Warband Keeper|r"
+end
+function WK:Print(msg)
+    DEFAULT_CHAT_FRAME:AddMessage(WK:Tag() .. " " .. tostring(msg))
 end
 
 -- Clé unique d'un personnage : "Nom-Royaume".

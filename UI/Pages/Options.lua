@@ -278,7 +278,7 @@ UI:RegisterPage({
         UI:SettingRow(look, -40, "Couleur d'accent", "T : accent du thème · C : couleur de classe.", dots, 300)
 
         local fontSeg = UI:Segmented(look, { { "friz", "Friz Quadrata" }, { "arialn", "Arial Narrow" } },
-            function(v) cfg.font = v; apply() end, 30)
+            function(v) cfg.font = v; apply(); UI:ApplyGameTooltipFonts() end, 30)
         fontSeg:Select(cfg.font or "friz")
         UI:SettingRow(look, -92, "Police", "Police du texte de l'interface.", fontSeg, 280)
 
@@ -312,7 +312,9 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
-        local ttCard = card("Infobulles", 96)
+        local ttCard = card("Infobulles", 150)
+        UI:SettingRow(ttCard, -94, "Police fine pour les infobulles du jeu", "Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon.",
+            UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
         UI:SettingRow(ttCard, -40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
             UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
 
@@ -466,7 +468,7 @@ UI:RegisterPage({
         t:SetText("Warband Keeper v" .. WK.version .. "\n"
             .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
-            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), emplacements des filons et des plantes, monstres rares et quêtes : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
+            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), emplacements des filons et des plantes, monstres rares, quêtes et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
             .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)

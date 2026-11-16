@@ -51,6 +51,7 @@ local function hideAll()
     if UI.HideNodePins then UI:HideNodePins() end
     if UI.HideRarePins then UI:HideRarePins() end
     if UI.HideMapLayers then UI:HideMapLayers() end
+    if UI.HideNavRoute then UI:HideNavRoute() end
 end
 
 -- Repère du guidage (Modules/Guide.lua) : anneau pulsé à la couleur d'accent sur le lieu visé.
@@ -102,6 +103,7 @@ local function redraw()
         if UI.DrawMapLayers then UI:DrawMapLayers(cv, mapID, cw, ch) end -- lieux utiles (UI/MapLayers.lua)
         if UI.DrawNodePins then UI:DrawNodePins(cv, mapID, cw, ch) end -- emplacements connus (UI/NodePins.lua)
         if UI.DrawRarePins then UI:DrawRarePins(cv, mapID, cw, ch) end -- rares (UI/RarePins.lua)
+        if UI.DrawNavRoute then UI:DrawNavRoute(cv, mapID, cw, ch) end -- trajet du guidage (UI/NavRoute.lua)
         drawTarget(cv, mapID, cw, ch)
     end
     if not cfg.showMap then return end

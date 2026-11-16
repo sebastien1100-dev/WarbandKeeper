@@ -74,10 +74,26 @@ local function build()
         if s.sample then return end
         local G = WK.modules.Guide
         local t = G.target
-        if not t or t.spf then s:Hide() return end
+        if not t then s:Hide() return end
         local p = G:PlayerPos()
         local d, bearing = nil, nil
         if p then d, bearing = G:Vector(p, t) end
+        -- trajet de navigation (Modules/Nav.lua) : la flèche vise le point suivant du chemin
+        local N = WK.modules.Nav
+        local wx, wy, step, rest = N:Waypoint()
+        local role = step or s.baseRole or ""
+        if s.role:GetText() ~= role then s.role:SetText(role) end
+        if step and not wx then
+            s.arrow:SetRotation(0)
+            s.arrow:SetVertexColor(UI:Accent())
+            s:SetDist(T("Étape"))
+            return
+        end
+        if wx and p and p.wx then
+            local dn, dw = wx - p.wx, wy - p.wy
+            bearing = math.atan2(dw, dn)
+            d = rest and math.max(rest, 0) or math.sqrt(dn * dn + dw * dw)
+        end
         if not d then
             s.arrow:SetRotation(0)
             s.arrow:SetVertexColor(unpack(C.dim))
@@ -131,13 +147,14 @@ end
 refresh = function()
     local G = WK.modules.Guide
     local t = G.target
-    if not t or t.spf or not G:Config().arrow then -- ShortestPathForever a sa propre flèche
+    if not t or not G:Config().arrow then
         if frame then frame:Hide() end
         return
     end
     frame = frame or build()
     local name, role = G:PlaceParts(t)
     frame.name:SetText(name)
+    frame.baseRole = role or ""
     frame.role:SetText(role or "")
     frame:SetDist(frame.dist:GetText() or "")
     frame:Show()

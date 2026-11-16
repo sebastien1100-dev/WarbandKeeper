@@ -850,20 +850,33 @@ UI:RegisterPage({
             toggle(fcard, function() return mlc.toolbar end, function(v) mlc.toolbar = v; mlRefresh() end), 80)
         UI:SettingRow(fcard, -224, "Taille des pastilles", nil,
             UI:Slider(fcard, 220, 12, 30, 1, function() return mlc.size or 18 end, function(v) mlc.size = v; mlRefresh() end, "%d"), 240)
-        -- Trajet qui suit le terrain : confié à ShortestPathForever s'il est installé (Modules/Guide.lua)
-        local GD = WK.modules.Guide
+        -- Navigation : trajet en pointillé qui suit les chemins connus, appris en jouant (Modules/Nav.lua)
+        local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()
-        local rcard = card("Trajet du guidage", 40 + 46 + 8)
-        UI:SettingRow(rcard, -40, "Trajet avec ShortestPathForever",
-            "Si l'addon ShortestPathForever est installé, « Guider » (quêtes, rares, lieux, métiers) lui confie le trajet : chemin en pointillé qui suit le terrain, vols et bateaux, avec sa propre flèche.",
-            toggle(rcard, function() return gdc.spf end, function(v)
-                gdc.spf = v
-                local t = GD.target
-                if t and ((v and not t.spf) or (not v and t.spf)) then GD:Start(t, t.reason, t.kind) end
-            end), 80)
-        dynText(rcard, 10, C.dim, function()
-            return GD:SPFInstalled() and T("ShortestPathForever installé") or T("ShortestPathForever non installé")
-        end):SetPoint("TOPRIGHT", -16, -16)
+        local function replan() if GD.target then NV:Plan(GD.target) end; if UI.RefreshNavRoute then UI:RefreshNavRoute() end end
+        local rcard = card("Navigation", 40 + 4 * 46 + 44, "trajet du guidage, appris en jouant")
+        UI:SettingRow(rcard, -40, "Trajet sur la carte du monde", "Pointillés de ta couleur, de toi jusqu'au lieu guidé, en suivant les chemins connus (vols compris).",
+            toggle(rcard, function() return gdc.route end, function(v) gdc.route = v; replan() end), 80)
+        UI:SettingRow(rcard, -86, "Trajet sur la minicarte", nil,
+            toggle(rcard, function() return gdc.routeMini end, function(v) gdc.routeMini = v; replan() end), 80)
+        UI:SettingRow(rcard, -132, "Apprendre les chemins", "Note les chemins que tu parcours à pied ou à monture (hors vol et instances), sur tous tes persos : les trajets les suivent ensuite.",
+            toggle(rcard, function() return gdc.learn end, function(v) gdc.learn = v; if not v then NV:EndTrail() end end), 80)
+        local forget = UI:Button(rcard, "Oublier les chemins appris", nil, 28, "ghost")
+        forget:SetScript("OnClick", function(b)
+            if not b.armed then
+                b.armed = true; b:SetLabel(T("Confirmer"))
+                C_Timer.After(3, function() b.armed = nil; b:SetLabel(T("Oublier les chemins appris")) end)
+                return
+            end
+            b.armed = nil; b:SetLabel(T("Oublier les chemins appris"))
+            NV:Forget(); WK:NotifyChanged()
+        end)
+        UI:SettingRow(rcard, -178, "Chemins appris", nil, forget, 240)
+        dynText(rcard, 11, C.muted, function()
+            local learned, roads = NV:Stats()
+            return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
+        end):SetPoint("TOPLEFT", 16, -232)
+
 
         -----------------------------------------------------------------------
         -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)
