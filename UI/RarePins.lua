@@ -109,8 +109,12 @@ function UI:DrawRarePins(cv, mapID, w, h)
     local scale = w / 1000
     local me = WK:CharKey()
     local nd = 0
-    for i, r in ipairs(list) do
-        if i > MAX then break end
+    local shown = 0
+    for _, r in ipairs(list) do
+        if shown >= MAX then break end
+        if not (R:Config().hideKilled and R:Killed(r.id, me)) then
+        shown = shown + 1
+        local i = shown
         local m = r.maps[mapID]
         local p = getPin(i)
         p.r = r
@@ -153,7 +157,9 @@ function UI:DrawRarePins(cv, mapID, w, h)
                 end
             end
         end
+        end
     end
+    for k = shown + 1, #pins do pins[k]:Hide() end
     for k = nd + 1, #dots do dots[k]:Hide() end
 end
 function UI:RedrawRarePins()

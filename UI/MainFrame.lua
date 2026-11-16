@@ -17,12 +17,13 @@ local GROUPS = {
     { "ÉCONOMIE", { "stats", "professions", "mail" } },
     { "FARM", { "farm", "loot", "journal" } },
     { "GROUPE", { "lfg" } },
+    { "EXPLORATION", { "rares" } },
     { "CONFORT", { "qol" } },
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users",
+    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -225,8 +226,9 @@ function UI:Create()
         local labelStep, itemStep, gap = 26, 36, 4
         local need = nLabels * (labelStep + gap) + nItems * itemStep
         if need > avail then
-            local k = math.max(0.6, avail / need)
-            labelStep, itemStep, gap = math.floor(26 * k), math.max(26, math.floor(36 * k)), math.floor(4 * k)
+            -- les titres de groupe se resserrent plus que les entrées (qui restent cliquables)
+            local k = math.max(0.45, avail / need)
+            labelStep, itemStep, gap = math.max(14, math.floor(26 * k)), math.max(24, math.floor(36 * k)), math.floor(4 * k)
         end
         -- sous la recherche quand la barre est dépliée
         local y, first = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and -64 or -98, true
@@ -640,6 +642,32 @@ UI.CHIPS = {
     end,
     options = function()
         return { { T("Version"), WK.version, C.gold } }
+    end,
+    rares = function()
+        local R = WK.modules.Rares
+        local pg = UI.pages.rares
+        local key = (pg and pg.viewKey) or WK:CharKey()
+        local killed, total = R:Totals(key)
+        local out = { { T("Rares tués"), killed .. " / " .. total, C.gold } }
+        local pz = R:PlayerZone()
+        if pz then
+            local n, k = 0, 0
+            for _, r in ipairs(R:OnMap(pz)) do n = n + 1; if R:Killed(r.id, key) then k = k + 1 end end
+            table.insert(out, { R:ZoneName(pz), k .. " / " .. n })
+        end
+        -- rares de ton niveau pas encore tués, toutes zones
+        local c = WK.DB.global.characters[key] or {}
+        local lvl, left, seen = c.level or 1, 0, {}
+        for _, list in pairs(WK.RaresDB or {}) do
+            for _, e in ipairs(list) do
+                if not seen[e[1]] then
+                    seen[e[1]] = true
+                    if (e[4] or 0) >= lvl - 2 and (e[4] or 0) <= lvl + 3 and not R:Killed(e[1], key) then left = left + 1 end
+                end
+            end
+        end
+        table.insert(out, { T("À ton niveau"), string.format(T("%d restants"), left), left > 0 and C.positive or nil })
+        return out
     end,
     profiles = function()
         local P = WK.modules.Profiles

@@ -19,6 +19,20 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.65.0 — 16/11/2026
+
+### Ajouts
+- Rares : nouvelle page « Rares » (groupe Exploration de la barre latérale), la collection des rares perso par perso, avec en tête les rares tués, ta zone et les rares restants à ton niveau.
+- Rares : vue « Zones », avec ta zone en grand et sa progression, les zones par continent avec leur compte, et les rares de la zone choisie (niveau à la couleur de difficulté, butin utile pour tes métiers, tué ou pas, Guider).
+- Rares : vue « Collection », une tuile par zone avec un anneau de progression (vert quand la zone est terminée), ta zone en premier ; un clic affiche ses rares en dessous.
+- Rares : « Collection de » pour regarder la collection d'un autre de tes persos, et « Masquer les tués » dans la liste.
+- Rares : réglage « Masquer les rares tués sur la carte ».
+- Rares : alerte au choix en bandeau ou compacte (une ligne, clic pour guider), avec un aperçu en direct dans QoL > Rares et trois états à essayer (pas tué, déjà tué, élite).
+
+### Modifications
+- Barre latérale : les titres de groupe se resserrent davantage quand la place manque, pour que les entrées ne se chevauchent jamais.
+- Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
+
 ## v0.64.1 — 16/11/2026
 
 ### Modifications

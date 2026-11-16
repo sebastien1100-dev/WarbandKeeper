@@ -9,7 +9,8 @@ local T = function(s) return WK.T(s) end
 -- que le jeu dit « rare » déclenche quand même l'alerte.
 -- Réglages : WK.DB.global.rares ; rares tués : WK.DB.global.rares.kills[npcID][perso] = date.
 
-local DEFAULTS = { map = true, list = true, alert = true, sound = true, tooltip = true }
+local DEFAULTS = { map = true, list = true, alert = true, sound = true, tooltip = true,
+                   hideKilled = false, alertStyle = "banner", view = "zones" }
 function M:Config()
     local g = WK.DB.global
     g.rares = g.rares or {}
@@ -64,6 +65,74 @@ function M.NpcID(unit)
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
     if kind ~= "Creature" and kind ~= "Vehicle" then return nil end
     return tonumber(id)
+end
+
+---------------------------------------------------------------------------
+-- Zones et progression (page Rares)
+---------------------------------------------------------------------------
+local mapInfo = {}
+local function info(mapID)
+    local i = mapInfo[mapID]
+    if i == nil then
+        local ok, mi = pcall(C_Map.GetMapInfo, mapID)
+        i = ok and mi or false
+        mapInfo[mapID] = i
+    end
+    return i or nil
+end
+-- Continent d'une carte : { id, name } (en remontant les cartes parentes)
+function M:Continent(mapID)
+    local id, guard = mapID, 0
+    while id and guard < 8 do
+        local i = info(id)
+        if not i then break end
+        if i.mapType == 2 then return id, i.name end
+        id, guard = i.parentMapID, guard + 1
+    end
+    return 0, T("Autres")
+end
+function M:ZoneName(mapID)
+    local i = info(mapID)
+    return i and i.name or ("#" .. mapID)
+end
+-- Zones qui ont des rares : { { map, name, cont, contName, total, killed, min, max } } pour un perso
+function M:Zones(key)
+    key = key or WK:CharKey()
+    local out = {}
+    for mapID, list in pairs(WK.RaresDB or {}) do
+        local z = { map = mapID, name = self:ZoneName(mapID), total = 0, killed = 0, min = 99, max = 0 }
+        z.cont, z.contName = self:Continent(mapID)
+        for _, e in ipairs(list) do
+            z.total = z.total + 1
+            if self:Killed(e[1], key) then z.killed = z.killed + 1 end
+            z.min, z.max = math.min(z.min, e[4] or 0), math.max(z.max, e[5] or 0)
+        end
+        table.insert(out, z)
+    end
+    table.sort(out, function(a, b) if a.contName ~= b.contName then return a.contName < b.contName end return a.name < b.name end)
+    return out
+end
+-- Nombre de rares (uniques) et tués par un perso
+function M:Totals(key)
+    key = key or WK:CharKey()
+    if not byID then index() end
+    local total, killed = 0, 0
+    for id in pairs(byID) do
+        total = total + 1
+        if self:Killed(id, key) then killed = killed + 1 end
+    end
+    return killed, total
+end
+-- Zone du joueur qui a des rares (ou sa carte parente)
+function M:PlayerZone()
+    if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
+    local id, guard = C_Map.GetBestMapForUnit("player"), 0
+    while id and guard < 5 do
+        if (WK.RaresDB or {})[id] then return id end
+        local i = info(id)
+        id, guard = i and i.parentMapID, guard + 1
+    end
+    return nil
 end
 
 ---------------------------------------------------------------------------
