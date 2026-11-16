@@ -19,6 +19,11 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.73.5 — 16/11/2026
+
+### Modifications
+- Résumé : icônes de la carte Modules repliée plus grandes et mieux espacées.
+
 ## v0.73.4 — 16/11/2026
 
 ### Ajouts

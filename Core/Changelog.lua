@@ -6,6 +6,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.73.5", date = "16/11/2026",
+        changed = {
+            "Résumé : icônes de la carte Modules repliée plus grandes et mieux espacées.",
+        },
+    },
+    {
         version = "0.73.4", date = "16/11/2026",
         added = {
             "Commande /wk nav : dit ce que ce client permet pour un repère de navigation à l'écran (marqueur de point de passage) : fonctions du jeu présentes, point suivi, distance, place du repère du jeu à l'écran. À lancer pendant un guidage.",

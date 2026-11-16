@@ -331,7 +331,7 @@ UI:RegisterPage({
         -- ligne d'icônes (repliée)
         self.modDots = {}
         for i, f in ipairs(WK.FEATURES) do
-            local d = UI:Icon(card, f.icon, 14, nil, "ARTWORK")
+            local d = UI:Icon(card, f.icon, 18, nil, "ARTWORK")
             self.modDots[i] = d
         end
         -- tuiles (dépliée)
@@ -398,7 +398,7 @@ UI:RegisterPage({
         if not open then
             local x = 16
             for i, d in ipairs(self.modDots) do
-                d:ClearAllPoints(); d:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 22, -16)
+                d:ClearAllPoints(); d:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 28, -13)
             end
             self.modH = 44
         else
