@@ -12,6 +12,7 @@ WK.Locales.enUS.keys = {
     HELP_LINK       = "/wk link          - Profession link diagnostic (after opening a profession)",
     HELP_GUIDE      = "/wk guide mail|bank|repair|vendor|trainer|stable|ammo|stop - Guide to the nearest one",
     HELP_HV         = "/wk hv [scan|scan force|stop] - Auction house: diagnostic, start or stop a scan",
+    HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
     HELP_HALO       = "/wk halo          - Halo diagnostic (why the targeted object glows or not)",
     HELP_FISH       = "/wk fish          - Open or close fishing mode",
     HELP_EDIT       = "/wk edit          - Edit mode: move and resize on-screen elements",

@@ -6,6 +6,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.73.3", date = "16/11/2026",
+        fixed = {
+            "Aide (/wk aide) : la ligne du guidage affichait « boite|banqueeparer » ; le jeu prenait « |r » pour un code de couleur. Les barres s'affichent maintenant telles quelles.",
+        },
+        added = {
+            "Aide : la commande /wk micro (diagnostic des raccourcis du micro menu) apparaît dans la liste.",
+        },
+    },
+    {
         version = "0.73.2", date = "16/11/2026",
         changed = {
             "Listes d'achat : un seul clic par objet. Après chaque achat, le prix de l'objet suivant est demandé tout seul et le bouton affiche directement « Confirmer… ». (Acheter toute la liste d'un seul clic est impossible : le jeu exige un clic du joueur pour chaque achat.)",

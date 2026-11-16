@@ -12,6 +12,7 @@ WK.Locales.frFR.keys = {
     HELP_LINK       = "/wk lien          - Diagnostic du lien de métier (après ouverture d'un métier)",
     HELP_GUIDE      = "/wk guide boite|banque|reparer|marchand|maitre|ecurie|munitions|stop - Guidage vers le plus proche",
     HELP_HV         = "/wk hv [scan|scan force|stop] - Hôtel des ventes : diagnostic, lancer ou arrêter un scan",
+    HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
     HELP_HALO       = "/wk halo          - Diagnostic du halo (pourquoi l'objet désigné brille ou non)",
     HELP_FISH       = "/wk peche         - Ouvrir ou fermer le mode pêche",
     HELP_EDIT       = "/wk edit          - Mode édition : placer et redimensionner les éléments à l'écran",

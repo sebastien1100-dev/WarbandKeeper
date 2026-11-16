@@ -19,6 +19,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.73.3 — 16/11/2026
+
+### Ajouts
+- Aide : la commande /wk micro (diagnostic des raccourcis du micro menu) apparaît dans la liste.
+
+### Corrections
+- Aide (/wk aide) : la ligne du guidage affichait « boite|banqueeparer » ; le jeu prenait « |r » pour un code de couleur. Les barres s'affichent maintenant telles quelles.
+
 ## v0.73.2 — 16/11/2026
 
 ### Modifications

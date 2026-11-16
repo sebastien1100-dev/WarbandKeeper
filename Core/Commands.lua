@@ -1,11 +1,15 @@
 local ADDON_NAME, WK = ...
 local L = WK.L
 
+-- Dans le chat, « |r » (et « |c », « |n »…) sont des codes du jeu : « boite|reparer » perdait son « |r ».
+-- On double chaque barre pour qu'elle s'affiche telle quelle.
+local function plainBars(s) return (s:gsub("|", "||")) end
+
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_FISH", "HELP_HV" }) do
-        WK:Print("  " .. L[k])
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_FISH", "HELP_HV" }) do
+        if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
 
@@ -34,9 +38,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             -- Le destinataire peut avoir plusieurs mots (« Prénom Nom ») : il suit le lien ou l'ID.
             local item, to = string.match(args, "^(.-|h|r)%s*(.-)%s*$")
             if not item then item, to = string.match(args, "^(%S+)%s+(.-)%s*$") end
-            if not Mail:AddRule(item, to) then WK:Print("  " .. L.HELP_MAIL_ADD) end
+            if not Mail:AddRule(item, to) then WK:Print("  " .. plainBars(L.HELP_MAIL_ADD)) end
         elseif sub == "retire" or sub == "del" then
-            if not Mail:RemoveRule(args) then WK:Print("  " .. L.HELP_MAIL_DEL) end
+            if not Mail:RemoveRule(args) then WK:Print("  " .. plainBars(L.HELP_MAIL_DEL)) end
         elseif sub == "on" then
             Mail:SetEnabled(true)
         elseif sub == "off" then
@@ -59,7 +63,7 @@ SlashCmdList.WARBANDKEEPER = function(msg)
                       marchand = "vendor", vendor = "vendor", maitre = "trainer", trainer = "trainer", munitions = "ammo", ammo = "ammo", ecurie = "stable", stable = "stable" }
         local what = map[string.lower(rest or "")]
         if what then WK.modules.Guide:GoTo(what) elseif string.lower(rest or "") == "stop" then WK.modules.Guide:Stop()
-        else WK:Print("  " .. L.HELP_GUIDE) end
+        else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
     elseif cmd == "micro" then
