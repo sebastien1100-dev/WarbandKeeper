@@ -3,8 +3,8 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
-local TOP_H = 232
-local TODO_W = 300
+local TOP_H = 250
+local TODO_W = 420
 
 -- Liste « À faire » : actions utiles maintenant, les plus urgentes d'abord.
 -- { prio (petit = urgent), icon, text, color?, go = function() }
@@ -135,44 +135,68 @@ UI:RegisterPage({
         local k = UI.PAGE_W / 924
         for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
 
-        -- À faire (à gauche de la courbe) ------------------------------------------
+        -- À faire (moitié gauche) : groupes Urgent / Bientôt / À noter ---------------------
         local todo = UI:Card(p, "À faire")
         todo:SetPoint("TOPLEFT")
         todo:SetSize(TODO_W, TOP_H)
-        self.todoCount = UI:Text(todo, 11, C.muted)
-        self.todoCount:SetPoint("TOPRIGHT", -16, -15)
-        self.todoCount:SetJustifyH("RIGHT")
+        self.todo = todo
+        -- compteur en pastille d'accent à côté du titre
+        self.todoBadge = CreateFrame("Frame", nil, todo)
+        self.todoBadge:SetSize(24, 18)
+        self.todoBadge.bg = UI:Rounded(self.todoBadge, 9, 0, "BACKGROUND", 2)
+        self.todoBadge.text = UI:Text(self.todoBadge, 11)
+        self.todoBadge.text:SetPoint("CENTER")
+        if todo.title then self.todoBadge:SetPoint("LEFT", todo.title, "RIGHT", 8, 0) else self.todoBadge:SetPoint("TOPLEFT", 80, -14) end
         local tscroll = UI:Scroll(todo)
-        tscroll:SetPoint("TOPLEFT", 8, -40)
+        tscroll:SetPoint("TOPLEFT", 8, -42)
         tscroll:SetPoint("BOTTOMRIGHT", -6, 8)
         self.todoScroll = tscroll
-        self.todoEmpty = UI:Text(todo, 12, C.muted)
+        self.todoEmpty = UI:Text(todo, 13, C.muted)
         self.todoEmpty:SetPoint("CENTER", 0, -10)
         self.todoEmpty:SetText("Rien à faire : tout est à jour.")
+        self.todoHeads = UI:Pool(function()
+            local t = UI:Text(tscroll.child, 10)
+            return t
+        end)
         self.todoRows = UI:Pool(function()
             local r = CreateFrame("Button", nil, tscroll.child)
-            r:SetHeight(40)
+            r:SetHeight(46)
             r.hl = CreateFrame("Frame", nil, r)
             r.hl:SetAllPoints()
             r.hl:SetFrameLevel(math.max(0, r:GetFrameLevel() - 1))
             UI:Rounded(r.hl, 9, 0, "BACKGROUND", 1):SetColor(unpack(C.hover))
             r.hl:Hide()
-            r.icon = UI:Icon(r, "mail", 14)
-            r.icon:SetPoint("TOPLEFT", 8, -7)
-            r.text = UI:Text(r, 11)
-            r.text:SetPoint("TOPLEFT", 30, -6)
-            r.text:SetPoint("TOPRIGHT", -6, -6)
+            r.box = CreateFrame("Frame", nil, r)
+            r.box:SetSize(30, 30)
+            r.box:SetPoint("LEFT", 8, 0)
+            r.box.edge = UI:Rounded(r.box, 8, 0, "BACKGROUND", 2)
+            r.box.bg = UI:Rounded(r.box, 7, 1, "BACKGROUND", 3)
+            r.icon = UI:Icon(r.box, "mail", 15, nil, "ARTWORK")
+            r.icon:SetPoint("CENTER")
+            r.text = UI:Text(r, 13)
+            r.text:SetPoint("TOPLEFT", 48, -7)
+            r.text:SetPoint("RIGHT", -80, 0)
             r.text:SetJustifyH("LEFT")
             if r.text.SetWordWrap then r.text:SetWordWrap(true) end
-            r:SetScript("OnEnter", function(s) s.hl:Show() end)
-            r:SetScript("OnLeave", function(s) s.hl:Hide() end)
+            if r.text.SetMaxLines then r.text:SetMaxLines(2) end
+            r.sub = UI:Text(r, 11, C.muted)
+            r.sub:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -3)
+            r.sub:SetPoint("RIGHT", -80, 0)
+            r.sub:SetJustifyH("LEFT")
+            r.go2 = UI:Button(r, "Ouvrir", 66, 24, "secondary")
+            r.go2:SetPoint("RIGHT", -8, 0)
+            r.go2:Hide()
+            r.go2:SetScript("OnClick", function() if r.go then r.go() end end)
+            r.go2:HookScript("OnLeave", function() if not r:IsMouseOver() then r.hl:Hide(); r.go2:Hide() end end)
+            r:SetScript("OnEnter", function(s) s.hl:Show(); s.go2:Show() end)
+            r:SetScript("OnLeave", function(s) if not s.go2:IsMouseOver() then s.hl:Hide(); s.go2:Hide() end end)
             r:SetScript("OnClick", function(s) if s.go then s.go() end end)
             return r
         end)
 
         -- Courbe d'évolution -----------------------------------------------------------
         local card = UI:Card(p, nil, nil, true)
-        card:SetPoint("TOPLEFT", TODO_W + GAP, 0)
+        card:SetPoint("TOPLEFT", todo, "TOPRIGHT", GAP, 0)
         card:SetPoint("TOPRIGHT", 0, 0)
         card:SetHeight(TOP_H)
         local ct = UI:Text(card, 12, C.muted)
@@ -294,6 +318,8 @@ UI:RegisterPage({
 
         -- Élastique : colonnes recalculées et graphique redessiné quand la taille change.
         UI:OnResize(p, function(w)
+            -- « À faire » et la courbe se partagent la largeur à moitié
+            if self.todo and w and w > 100 then self.todo:SetWidth(math.floor((w - GAP) / 2)) end
             self:PlaceColumns(w)
             self:LayoutModules(w)
             if self.chart then UI:RefreshSoon() end
@@ -509,27 +535,50 @@ UI:RegisterPage({
         local now = time()
         local chars = UI:SortedCharacters()
 
-        -- À faire
-        self.todoRows:Reset()
+        -- À faire : groupes par urgence (Urgent, Bientôt, À noter), texte sur deux lignes
+        self.todoRows:Reset(); self.todoHeads:Reset()
         local items = todoItems()
-        local ty = 0
+        local GROUPS = { { "URGENT", C.negative }, { "BIENTÔT", C.warning }, { "À NOTER", C.muted } }
+        local function groupOf(it) if it.prio <= 2 then return 1 elseif it.prio <= 5 then return 2 end return 3 end
+        local ty, lastG = 0, nil
         for _, it in ipairs(items) do
+            local gi = groupOf(it)
+            local gcol = GROUPS[gi][2]
+            if gi ~= lastG then
+                lastG = gi
+                local hd = self.todoHeads:Get()
+                hd:ClearAllPoints(); hd:SetPoint("TOPLEFT", 10, -(ty + (ty > 0 and 8 or 2)))
+                hd:SetText(WK.T(GROUPS[gi][1])); hd:SetTextColor(unpack(gcol)); hd:Show()
+                ty = ty + (ty > 0 and 26 or 20)
+            end
             local r = self.todoRows:Get()
             r.go = it.go
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -ty)
             r:SetPoint("TOPRIGHT", 0, -ty)
+            local col = it.color or gcol
+            r.box.edge:SetColor(col[1], col[2], col[3], 1)
+            r.box.bg:SetColor(unpack(C.surface2))
             r.icon:SetTexture(UI.MEDIA .. it.icon)
-            r.icon:SetVertexColor(unpack(it.color or C.muted))
-            r.text:SetText(it.text)
-            r.text:SetTextColor(unpack(it.color or C.text))
-            local h = math.max(28, math.ceil((r.text:GetStringHeight() or 13) + 14))
+            r.icon:SetVertexColor(col[1], col[2], col[3])
+            -- « titre  ·  détail » : le détail passe sur la deuxième ligne
+            local main, rest = it.text:match("^(.-)%s+·%s+(.+)$")
+            r.text:SetText(main or it.text)
+            r.text:SetTextColor(unpack(C.text))
+            r.sub:SetText(rest or "")
+            local th = math.min(34, r.text:GetStringHeight() or 15)
+            local h = math.max(36, math.ceil(th + (rest and 17 or 0) + 16))
             r:SetHeight(h)
             ty = ty + h + 2
         end
         self.todoScroll:SetContentHeight(ty)
         self.todoEmpty:SetShown(#items == 0)
-        self.todoCount:SetText(#items > 0 and tostring(#items) or "")
+        local r1, g1, b1 = UI:Accent()
+        self.todoBadge:SetShown(#items > 0)
+        self.todoBadge.bg:SetColor(r1, g1, b1, 1)
+        self.todoBadge.text:SetText(tostring(#items))
+        self.todoBadge.text:SetTextColor(unpack(C.onAccent))
+        self.todoBadge:SetWidth(math.max(22, (self.todoBadge.text:GetStringWidth() or 8) + 14))
 
         -- Objectifs
         self.goalCards:Reset()

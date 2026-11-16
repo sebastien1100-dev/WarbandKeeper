@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.75.0", date = "16/11/2026",
+        changed = {
+            "Résumé : « À faire » prend la moitié gauche (la courbe de l'or la moitié droite) et se range en trois groupes, Urgent (rouge), Bientôt (orange) et À noter, avec un compteur en pastille à côté du titre.",
+            "Résumé : chaque tâche est écrite plus grand, sur deux lignes (l'action, puis le détail comme « expire dans 2 j »), avec son icône dans une case de couleur ; au survol, un bouton « Ouvrir » y mène.",
+        },
+        fixed = {
+            "Barre latérale : la dernière entrée (QoL) était coupée un peu trop tôt au-dessus de Patch notes.",
+        },
+    },
+    {
         version = "0.74.1", date = "16/11/2026",
         added = {
             "Stats : chaque objet suivi a une corbeille, y compris ceux ajoutés automatiquement par une règle d'envoi. Retirer un objet des statistiques ne touche pas à sa règle d'envoi ; le rajouter à la main le fait revenir.",

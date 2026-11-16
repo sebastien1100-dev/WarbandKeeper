@@ -19,6 +19,15 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.75.0 — 16/11/2026
+
+### Modifications
+- Résumé : « À faire » prend la moitié gauche (la courbe de l'or la moitié droite) et se range en trois groupes, Urgent (rouge), Bientôt (orange) et À noter, avec un compteur en pastille à côté du titre.
+- Résumé : chaque tâche est écrite plus grand, sur deux lignes (l'action, puis le détail comme « expire dans 2 j »), avec son icône dans une case de couleur ; au survol, un bouton « Ouvrir » y mène.
+
+### Corrections
+- Barre latérale : la dernière entrée (QoL) était coupée un peu trop tôt au-dessus de Patch notes.
+
 ## v0.74.1 — 16/11/2026
 
 ### Ajouts

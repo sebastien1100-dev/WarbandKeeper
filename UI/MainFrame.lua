@@ -249,14 +249,14 @@ function UI:Create()
                 if not e.hidden then nItems = nItems + 1 end
             end
         end
-        local bottomH = 44 + #BOTTOM * 36 + 8           -- repli + notes + options
+        local bottomH = 44 + #BOTTOM * 36 - 2           -- repli + notes + profils + options (haut de « Patch notes »)
         local avail = (h or 600) - ((WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98) - bottomH
         local labelStep, itemStep, gap = 26, 36, 4
         local need = nLabels * (labelStep + gap) + nItems * itemStep
         if need > avail then
             -- les titres de groupe se resserrent plus que les entrées (qui restent cliquables)
-            local k = math.max(0.45, avail / need)
-            labelStep, itemStep, gap = math.max(14, math.floor(26 * k)), math.max(24, math.floor(36 * k)), math.floor(4 * k)
+            local k = math.max(0.4, avail / need)
+            labelStep, itemStep, gap = math.max(12, math.floor(26 * k)), math.max(22, math.floor(36 * k)), math.floor(4 * k)
         end
         -- sous la recherche quand la barre est dépliée
         local topY = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98
