@@ -827,6 +827,36 @@ local function hideGameFrame(tt)
     end
 end
 
+-- Police des infobulles de l'addon : celle de l'interface (Options > Apparence), sans contour,
+-- 13 pour le titre et 12 pour le reste. Les polices d'origine sont rendues à la fermeture.
+local ttFonts = {} -- [FontString] = { police, taille, contour } d'origine
+local function applyTooltipFonts(tt)
+    local name = tt.GetName and tt:GetName()
+    if not name or not tt.NumLines then return false end
+    local changed = false
+    for i = 1, tt:NumLines() do
+        for _, side in ipairs({ "Left", "Right" }) do
+            local fs = _G[name .. "Text" .. side .. i]
+            if fs and fs.GetFont then
+                local f, sz, fl = fs:GetFont()
+                local want = i == 1 and 13 or 12
+                if f ~= UI.FONT or math.floor((sz or 0) + 0.5) ~= want or (fl or "") ~= "" then
+                    if not ttFonts[fs] then ttFonts[fs] = { f, sz, fl } end
+                    fs:SetFont(UI.FONT, want, "")
+                    changed = true
+                end
+            end
+        end
+    end
+    return changed
+end
+local function restoreTooltipFonts()
+    for fs, o in pairs(ttFonts) do
+        if o[1] then pcall(fs.SetFont, fs, o[1], o[2], o[3] or "") end
+    end
+    for fs in pairs(ttFonts) do ttFonts[fs] = nil end
+end
+
 function UI:SkinTooltip(tt)
     tt = tt or GameTooltip
     if not ttSkin then
@@ -845,6 +875,17 @@ function UI:SkinTooltip(tt)
         tt:HookScript("OnHide", function(self) UI:UnskinTooltip(self) end)
         -- Le jeu peut remettre son cadre en remplissant l'infobulle : on le retire à nouveau.
         tt:HookScript("OnShow", function(self) if ttSkin.active then hideGameFrame(self) end end)
+        -- à chaque Show (lignes ajoutées) : police de l'addon, puis taille recalculée
+        if hooksecurefunc then
+            hooksecurefunc(tt, "Show", function(self)
+                if not ttSkin.active or ttSkin.reshow then return end
+                if applyTooltipFonts(self) then
+                    ttSkin.reshow = true
+                    self:Show()
+                    ttSkin.reshow = nil
+                end
+            end)
+        end
     end
     -- Mêmes couleurs que les cadres (cartes) du thème choisi : fond et bordure.
     ttSkin.border:SetColor(unpack(C.border))
@@ -858,6 +899,7 @@ function UI:UnskinTooltip(tt)
     if not ttSkin or not ttSkin.active then return end
     tt = tt or GameTooltip
     ttSkin.active = false
+    restoreTooltipFonts()
     ttSkin.border:Hide(); ttSkin.bg:Hide(); ttSkin.accent:Hide()
     if type(tt.NineSlice) == "table" and tt.NineSlice.Show then tt.NineSlice:Show() end
     if tt.SetBackdropColor and ttSkin.backdrop then
