@@ -163,10 +163,10 @@ function UI:DrawRarePins(cv, mapID, w, h)
     if UI.SyncRareList then UI:SyncRareList(mapID, list) end
     if not R:Config().map then return end
     if #list == 0 then return end
-    if not holder then holder = CreateFrame("Frame", nil, cv) end
+    if not holder then holder = CreateFrame("Frame", nil, cv); holder.wk = true end
     holder:SetParent(cv)
     holder:SetAllPoints(cv)
-    holder:SetFrameLevel((cv:GetFrameLevel() or 1) + 620)
+    holder:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 20)
     if not top then top = CreateFrame("Frame", nil, holder) end
     top:SetAllPoints(holder)
     top:SetFrameLevel(holder:GetFrameLevel() + 20)

@@ -76,8 +76,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             .. " · " .. WK.T("médaillons") .. " : " .. tostring(R:Config().map) .. " · " .. WK.T("rares sur cette carte") .. " : " .. (mapID and #R:OnMap(mapID) or 0))
         local st = WK.UI.mapStats
         if st then
-            WK:Print("  " .. string.format("dessin : carte %s · toile %dx%d · %s/%s (cadres du jeu jusqu'à %s) · module Carte : %s · lieux : %s",
-                tostring(st.map), st.w or 0, st.h or 0, tostring(st.strata), tostring(st.level), tostring(st.gameTop), tostring(WK:FeatureOn("maplayers")), tostring(st.places)))
+            WK:Print("  " .. string.format("dessin : carte %s · toile %dx%d · %s/%s (calques du jeu jusqu'à %s, nos pastilles à partir de %s) · module Carte : %s · lieux : %s",
+                tostring(st.map), st.w or 0, st.h or 0, tostring(st.strata), tostring(st.level), tostring(st.gameTop), tostring(WK.UI.mapBase), tostring(WK:FeatureOn("maplayers")), tostring(st.places)))
             local parts = {}
             for _, k in ipairs({ "Lieux", "Filons et plantes", "Rares", "Bateaux", "Trajet", "Notes", "Repère" }) do
                 table.insert(parts, k .. " " .. tostring(st[k]))

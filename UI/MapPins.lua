@@ -16,6 +16,7 @@ local function getPin(i, parent)
     local p = pins[i]
     if not p then
         p = CreateFrame("Button", nil, parent)
+        p.wk = true
         p.glow = p:CreateTexture(nil, "ARTWORK")
         p.glow:SetAllPoints()
         p.glow:SetTexture(UI.MEDIA .. "fxhalo")
@@ -102,6 +103,7 @@ local function drawTarget(cv, mapID, w, h)
     if not t or not G:Config().mapPin or t.map ~= mapID then return end
     if not targetPin then
         targetPin = CreateFrame("Button", nil, cv)
+        targetPin.wk = true
         targetPin.shadow = targetPin:CreateTexture(nil, "BACKGROUND")
         targetPin.shadow:SetTexture(UI.MEDIA .. "pin")
         targetPin.shadow:SetVertexColor(0, 0, 0, 0.5)
@@ -141,7 +143,7 @@ local function drawTarget(cv, mapID, w, h)
     targetPin.pill:ClearAllPoints()
     targetPin.pill:SetPoint("TOP", targetPin, "BOTTOM", 0, -2)
     targetPin.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.85)
-    targetPin:SetFrameLevel((cv:GetFrameLevel() or 1) + 700)
+    targetPin:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 40)
     targetPin:ClearAllPoints()
     targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", t.x * w, -t.y * h) -- la pointe de l'épingle sur le lieu
     targetPin:Show()
@@ -160,17 +162,19 @@ local function redraw(src)
         -- chaque calque à part : une erreur dans l'un n'empêche pas les autres de s'afficher
         -- (elle est notée une fois dans le chat, avec le nom du calque)
         UI.mapStats = { map = mapID, w = cw, h = ch, level = cv:GetFrameLevel(), strata = cv.GetFrameStrata and cv:GetFrameStrata() }
-        -- plus haut niveau des cadres du jeu sur la toile (diagnostic : nos pastilles doivent passer au-dessus)
+        -- plus haut niveau des cadres du jeu sur la toile (calques de la carte, pastilles de quête…) :
+        -- nos pastilles se placent au-dessus (UI.mapBase), quel que soit le client
+        local top = cv:GetFrameLevel() or 1
         if cv.GetChildren then
-            local top = 0
             for _, ch2 in ipairs({ cv:GetChildren() }) do
-                if ch2.GetFrameLevel and ch2:IsShown() then
+                if not ch2.wk and ch2.GetFrameLevel then
                     local lv = ch2:GetFrameLevel() or 0
-                    if lv > top and lv < (cv:GetFrameLevel() or 0) + 590 then top = lv end
+                    if lv > top then top = lv end
                 end
             end
-            UI.mapStats.gameTop = top
         end
+        UI.mapBase = math.min(top + 5, 9000)
+        UI.mapStats.gameTop = top
         local function layer(name, fn)
             if not fn then return end
             local ok, err = pcall(fn, UI, cv, mapID, cw, ch)
@@ -207,7 +211,7 @@ local function redraw(src)
         local col = WK.modules.GatherMap.COLORS[c.kind] or { 1, 1, 1 }
         p.glow:SetVertexColor(col[1], col[2], col[3], 0.9)
         p.dot:SetVertexColor(col[1], col[2], col[3], 1)
-        p:SetFrameLevel((cv:GetFrameLevel() or 1) + 595)
+        p:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 5)
         p:ClearAllPoints()
         p:SetPoint("CENTER", cv, "TOPLEFT", c.x * w, -c.y * h)
         p:Show()

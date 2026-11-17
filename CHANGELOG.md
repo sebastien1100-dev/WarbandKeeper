@@ -24,6 +24,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.3.6 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte : réparateurs affichés par défaut sur la carte et la minicarte, et maître de ta classe sur la minicarte (réglable dans QoL > Carte).
+
+### Corrections
+- Carte du monde : les pastilles (lieux, rares, filons, notes, repère du guidage) restaient sous les calques de la carte de WoW Forever, qui montent plus haut que prévu. Elles se placent maintenant au-dessus du plus haut calque du jeu, calculé à chaque ouverture de la carte.
+
 ## v1.3.5 — 17/11/2026
 
 _Un /reload suffit._

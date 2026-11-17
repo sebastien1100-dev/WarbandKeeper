@@ -22,6 +22,7 @@ local function getPin(i, cv)
     local p = pins[i]
     if not p then
         p = CreateFrame("Button", nil, cv)
+        p.wk = true
         p.ring = p:CreateTexture(nil, "ARTWORK")
         p.ring:SetAllPoints()
         p.ring:SetTexture(UI.MEDIA .. "circle")
@@ -72,6 +73,7 @@ local function getRoute(i, cv)
         end
         r.pin = getPin(1000 + i, cv)
         r.label = CreateFrame("Frame", nil, cv)
+        r.label.wk = true
         r.label.bg = UI:Rounded(r.label, 6, 0, "BACKGROUND", 1)
         r.label.text = UI:Text(r.label, 10)
         r.label.text:SetPoint("CENTER")
@@ -120,7 +122,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     local cfg = L:Config()
     local scale = w / 1000
     local size = math.max(12, (cfg.size or 18) * scale * 1.2)
-    local lvl = (cv:GetFrameLevel() or 1) + 600 -- bien au-dessus des calques de la carte du jeu (WoW Forever en a vers +30)
+    local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 10 -- au-dessus des calques de la carte du jeu (UI/MapPins.lua)
     local n = 0
     local places = L:Places(mapID, "map")
     if UI.mapStats then UI.mapStats.places = #places end

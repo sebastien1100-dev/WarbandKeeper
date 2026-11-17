@@ -30,8 +30,8 @@ M.LAYERS = {
     { key = "poison", bit = 64, family = "shop", icon = "filter", label = "Poisons", class = { ROGUE = true } },
     { key = "general", bit = 256, family = "shop", icon = "bag", label = "Fournitures générales" },
     { key = "fishing", bit = 1024, family = "shop", icon = "fish", label = "Fournitures de pêche" },
-    { key = "repair", bit = 8, family = "shop", icon = "hammer", label = "Réparation" },
-    { key = "trainer", bit = 128, family = "mast", icon = "person", label = "Maître de classe", map = true, classTrainer = true },
+    { key = "repair", bit = 8, family = "shop", icon = "hammer", label = "Réparation", map = true, mini = true },
+    { key = "trainer", bit = 128, family = "mast", icon = "person", label = "Maître de classe", map = true, mini = true, classTrainer = true },
     { key = "prof", bit = 16384, family = "mast", icon = "hammer", label = "Maîtres de métier", map = true, prof = true },
     { key = "stable", bit = 512, family = "mast", icon = "users", label = "Maître des écuries", class = { HUNTER = true } },
     { key = "pet", bit = 65536, family = "mast", icon = "star", label = "Familiers et démons", classTrainer = true },
@@ -73,6 +73,11 @@ function M:Config()
     for k, v in pairs(DEFAULTS) do if c[k] == nil then c[k] = v end end
     c.map = c.map or {}
     c.mini = c.mini or {}
+    -- une fois : réparation (carte et minicarte) et maître de classe (minicarte) affichés par défaut
+    if not c.v2 then
+        c.v2 = true
+        c.map.repair, c.mini.repair, c.mini.trainer = true, true, true
+    end
     for _, l in ipairs(M.LAYERS) do
         if c.map[l.key] == nil then c.map[l.key] = l.map and true or false end
         if c.mini[l.key] == nil then c.mini[l.key] = l.mini and true or false end

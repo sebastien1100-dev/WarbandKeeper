@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.6", date = "17/11/2026",
+        fixed = {
+            "Carte du monde : les pastilles (lieux, rares, filons, notes, repère du guidage) restaient sous les calques de la carte de WoW Forever, qui montent plus haut que prévu. Elles se placent maintenant au-dessus du plus haut calque du jeu, calculé à chaque ouverture de la carte.",
+        },
+        changed = {
+            "Carte : réparateurs affichés par défaut sur la carte et la minicarte, et maître de ta classe sur la minicarte (réglable dans QoL > Carte).",
+        },
+    },
+    {
         version = "1.3.5", date = "17/11/2026",
         fixed = {
             "Carte du monde : les pastilles (lieux, rares, filons, notes) étaient dessinées puis masquées juste après sur certaines cartes. Tant que la carte est ouverte, Warband Keeper vérifie chaque seconde qu'elles sont bien là et les redessine sinon.",
