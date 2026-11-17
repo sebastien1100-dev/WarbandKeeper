@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.11.5 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Micro menu : le nombre en ligne passe sur une gélule vert menthe pastel, chiffre vert sombre, centrée sous l'icône (Amis et Guilde).
+
+### Corrections
+- Micro menu : la Guilde n'affichait pas son nombre de membres en ligne quand le jeu ne le donnait pas directement ; il est maintenant compté dans la liste de guilde.
+
 ## v1.11.4 — 17/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.11.5", date = "17/11/2026",
+        changed = {
+            "Micro menu : le nombre en ligne passe sur une gélule vert menthe pastel, chiffre vert sombre, centrée sous l'icône (Amis et Guilde).",
+        },
+        fixed = {
+            "Micro menu : la Guilde n'affichait pas son nombre de membres en ligne quand le jeu ne le donnait pas directement ; il est maintenant compté dans la liste de guilde.",
+        },
+    },
+    {
         version = "1.11.4", date = "17/11/2026",
         changed = {
             "Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte en gélule (elle s'élargit pour deux chiffres), cerclée de sombre et posée au-dessus des icônes voisines, avec un chiffre blanc détouré.",

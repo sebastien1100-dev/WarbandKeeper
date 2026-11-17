@@ -198,8 +198,17 @@ local SHORTCUTS = {
       run = function() if ToggleGuildFrame then ToggleGuildFrame() elseif ToggleFriendsFrame then ToggleFriendsFrame(3) end end,
       count = function()
           if not (IsInGuild and IsInGuild() and GetNumGuildMembers) then return nil end
-          local _, online = GetNumGuildMembers()
-          return tonumber(online)
+          local total, online = GetNumGuildMembers()
+          online = tonumber(online)
+          -- certains clients ne donnent pas le nombre en ligne : on compte dans la liste de guilde
+          if (not online or online == 0) and GetGuildRosterInfo then
+              online = 0
+              for i = 1, tonumber(total) or 0 do
+                  local _, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+                  if isOnline == true or isOnline == 1 then online = online + 1 end
+              end
+          end
+          return online
       end,
       tooltip = guildTooltip },
     { key = "collect", label = "Collections du compte", micro = { "CollectionsMicroButton" },
@@ -391,16 +400,16 @@ local function makeIcon(def)
     b.tex:SetPoint("BOTTOMRIGHT", -6, 6)
     b.dot = UI:Icon(b, "circle", 7, nil, "OVERLAY")
     b.dot:SetPoint("TOPRIGHT", -2, -2)
-    -- nombre en ligne (guilde, amis) : pastille verte en gélule, dans son propre cadre (au-dessus des voisins)
+    -- nombre en ligne (guilde, amis) : gélule menthe centrée sous l'icône, dans son propre cadre (au-dessus des voisins)
     b.badge = CreateFrame("Frame", nil, b)
     b.badge:SetFrameLevel(b:GetFrameLevel() + 6)
     b.badge:SetSize(18, 16)
-    b.badge:SetPoint("CENTER", b, "BOTTOMRIGHT", -2, 3)
-    UI:Panel(b.badge, 8, { 0.18, 0.55, 0.27, 1 }, { 0.03, 0.03, 0.04, 1 })
+    b.badge:SetPoint("CENTER", b, "BOTTOM", 0, 1)
+    UI:Panel(b.badge, 8, { 0.66, 0.88, 0.71, 1 }) -- vert menthe pastel
     b.num = b.badge:CreateFontString(nil, "OVERLAY")
-    b.num:SetFont(UI.FONT, 11, "OUTLINE")
+    b.num:SetFont(UI.FONT, 11, "")
     b.num:SetPoint("CENTER", 0, 0)
-    b.num:SetTextColor(1, 1, 1)
+    b.num:SetTextColor(0.11, 0.23, 0.15)
     b.badge:Hide()
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
