@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.7", date = "17/11/2026",
+        changed = {
+            "Fiche de personnage : les cartes sont alignées en deux rangées, Équipement et Stats à la même hauteur, puis Réputations et Métiers à la même hauteur.",
+        },
+        fixed = {
+            "Micro menu : le raccourci Héritages ouvrait l'onglet des montures. Il ouvre maintenant le journal des collections sur l'onglet Héritages, quel que soit son numéro sur ce client.",
+        },
+    },
+    {
         version = "1.3.6", date = "17/11/2026",
         fixed = {
             "Carte du monde : les pastilles (lieux, rares, filons, notes, repère du guidage) restaient sous les calques de la carte de WoW Forever, qui montent plus haut que prévu. Elles se placent maintenant au-dessus du plus haut calque du jeu, calculé à chaque ouverture de la carte.",

@@ -513,21 +513,22 @@ local function refresh(f)
     f.sc.child:SetWidth(W)
     local leftW = W - SIDE_W - COL_GAP
     local view = setmetatable({ key = key }, { __index = c })
-    -- gauche : équipement puis réputations
-    f.gearCard:ClearAllPoints(); f.gearCard:SetPoint("TOPLEFT", 0, 0); f.gearCard:SetWidth(leftW)
+    -- deux rangées alignées : Équipement | Stats, puis Réputations | Métiers (chaque rangée à la hauteur
+    -- de sa plus grande carte)
+    local GEAR_H = 46 + 8 * SLOT_STEP
     refreshGear(f, view)
-    local gh = f.gearCard:GetHeight()
-    f.repCard:ClearAllPoints(); f.repCard:SetPoint("TOPLEFT", 0, -(gh + COL_GAP)); f.repCard:SetWidth(leftW)
-    local rh = refreshReps(f, c, f.repCard, leftW)
-    f.repCard:SetHeight(rh)
-    -- droite : stats puis métiers
-    f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetWidth(SIDE_W)
     local sh = refreshStats(f, c)
-    f.statCard:SetHeight(sh)
-    f.profCard:ClearAllPoints(); f.profCard:SetPoint("TOPLEFT", leftW + COL_GAP, -(sh + COL_GAP)); f.profCard:SetWidth(SIDE_W)
+    local row1 = math.max(GEAR_H, sh)
+    f.gearCard:ClearAllPoints(); f.gearCard:SetPoint("TOPLEFT", 0, 0); f.gearCard:SetSize(leftW, row1)
+    f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetSize(SIDE_W, row1)
+    local y2 = row1 + COL_GAP
+    f.repCard:ClearAllPoints(); f.repCard:SetPoint("TOPLEFT", 0, -y2); f.repCard:SetWidth(leftW)
+    f.profCard:ClearAllPoints(); f.profCard:SetPoint("TOPLEFT", leftW + COL_GAP, -y2); f.profCard:SetWidth(SIDE_W)
+    local rh = refreshReps(f, c, f.repCard, leftW)
     local ph = refreshProfs(f, c, f.profCard, SIDE_W)
-    f.profCard:SetHeight(ph)
-    f.sc:SetContentHeight(math.max(gh + COL_GAP + rh, sh + COL_GAP + ph) + 8)
+    local row2 = math.max(rh, ph)
+    f.repCard:SetHeight(row2); f.profCard:SetHeight(row2)
+    f.sc:SetContentHeight(y2 + row2 + 8)
 end
 
 -- branché après build (les fonctions locales ci-dessus doivent exister)

@@ -73,8 +73,25 @@ local SHORTCUTS = {
       run = function() if ToggleCollectionsJournal then ToggleCollectionsJournal() end end },
     { key = "heirloom", label = "Héritages", icon = function() return UI.MEDIA .. "crown" end, tint = true,
       -- onglet des héritages du journal des collections (pas de bouton du jeu pour un onglet précis)
+      -- le n° d'onglet change selon le client : on ouvre le journal puis on clique l'onglet « Héritages »
       run = function()
-          if ToggleCollectionsJournal then ToggleCollectionsJournal(COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS or 4) end
+          if CollectionsJournal_LoadUI and not CollectionsJournal then pcall(CollectionsJournal_LoadUI) end
+          if not (CollectionsJournal and CollectionsJournal:IsShown()) and ToggleCollectionsJournal then ToggleCollectionsJournal() end
+          C_Timer.After(0, function()
+              local want = (HEIRLOOMS or "Héritages"):lower()
+              for i = 1, 10 do
+                  local tab = _G["CollectionsJournalTab" .. i]
+                  local txt = tab and tab.GetText and tab:GetText()
+                  if type(txt) == "string" and txt:lower():find(want, 1, true) then
+                      if tab.Click then tab:Click() end
+                      return
+                  end
+              end
+              -- pas trouvé par le nom : l'onglet dont le panneau est celui des héritages
+              if HeirloomsJournal and CollectionsJournal_SetTab and CollectionsJournal and HeirloomsJournal.GetID then
+                  pcall(CollectionsJournal_SetTab, CollectionsJournal, HeirloomsJournal:GetID())
+              end
+          end)
       end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,
       run = function()
