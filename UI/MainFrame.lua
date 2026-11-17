@@ -526,22 +526,14 @@ function UI:Create()
         if InCombatLockdown and InCombatLockdown() then WK:Print(WK.T("Pas de rechargement en combat.")) return end
         ReloadUI()
     end)
-    local scan = UI:Button(header, "Scan", nil, 28, "secondary", "refresh")
-    scan:SetPoint("RIGHT", reload, "LEFT", -8, 0)
-    scan.tooltip = "Scanner ce personnage (sacs, or, métiers)."
-    -- Mode édition, sur toutes les pages, à la couleur d'accent
-    local editBtn = UI:Button(header, "Éditer", nil, 28, "primary")
-    editBtn:SetPoint("RIGHT", scan, "LEFT", -8, 0)
-    editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
-    editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
-    -- Patch notes, Profils, Options : icônes juste à gauche d'Éditer (point = notes pas encore lues)
+    -- Patch notes, Profils, Options : icônes à droite, avec recharger et fermer (point = notes pas encore lues)
     self.headIcons = {}
-    local prevIcon = editBtn
+    local prevIcon = reload
     for i = #BOTTOM, 1, -1 do
         local def = self.pages[BOTTOM[i]]
         if def then
             local ib = UI:IconButton(header, ICONS[def.key] or "circle", 30, LABELS[def.key] or def.nav or def.title)
-            ib:SetPoint("RIGHT", prevIcon, "LEFT", prevIcon == editBtn and -8 or -2, 0)
+            ib:SetPoint("RIGHT", prevIcon, "LEFT", -4, 0)
             ib:SetScript("OnClick", function() UI:ShowPage(def.key) end)
             ib.dot = UI:Icon(ib, "circle", 7, nil, "OVERLAY")
             ib.dot:SetPoint("TOPRIGHT", -4, -4)
@@ -551,11 +543,19 @@ function UI:Create()
             prevIcon = ib
         end
     end
+    -- puis les boutons : Scan, et Éditer (mode édition, sur toutes les pages)
+    local scan = UI:Button(header, "Scan", nil, 28, "secondary", "refresh")
+    scan:SetPoint("RIGHT", prevIcon, "LEFT", -10, 0)
+    scan.tooltip = "Scanner ce personnage (sacs, or, métiers)."
+    local editBtn = UI:Button(header, "Éditer", nil, 28, "primary")
+    editBtn:SetPoint("RIGHT", scan, "LEFT", -8, 0)
+    editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
+    editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
     self.editBtn = editBtn
-    self.headLeft = prevIcon
+    self.headLeft = editBtn
     -- Mise à jour disponible (client PC ou version vue chez un autre joueur) : bouton à gauche des icônes
     local upd = UI:Button(header, "Mise à jour", nil, 28, "secondary", "refresh")
-    upd:SetPoint("RIGHT", prevIcon, "LEFT", -8, 0)
+    upd:SetPoint("RIGHT", editBtn, "LEFT", -8, 0)
     upd:HookScript("OnEnter", function(s)
         local v, src = WK.modules.Version:Available()
         if not v then return end

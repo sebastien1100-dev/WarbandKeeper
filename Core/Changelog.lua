@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.1.1", date = "17/11/2026",
+        changed = {
+            "En-tête : les boutons Éditer et Scan d'abord, puis toutes les icônes ensemble à droite (Patch notes, Profils, Options, recharger, fermer).",
+        },
+    },
+    {
         version = "1.1.0", date = "17/11/2026", restart = true,
         added = {
             "Notes de carte perso : Alt + clic sur la carte du monde pose une note à cet endroit (icône, couleur, titre, texte libre). Elle reste, se voit sur la carte et, au choix, sur la minicarte, et tous tes persos la voient ; rien n'est envoyé à personne.",
