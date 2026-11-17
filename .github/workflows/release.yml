@@ -28,7 +28,8 @@ jobs:
 
       - name: Version
         id: v
-        run: echo "version=$(sed -n 's/^## Version: *//p' WarbandKeeper.toc | tr -d '\r')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(sed -n 's/^## Version: *//p' WarbandKeeper.toc | tr -d '\r')" >> "$GITHUB_OUTPUT"
 
       - name: Release de l'addon
         env:
