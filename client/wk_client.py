@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.3.1"
+CLIENT_VERSION = "1.4.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -61,7 +61,10 @@ def data_dir():
 
 
 CONFIG_PATH = os.path.join(data_dir(), "config.json")
-DEFAULTS = {"addons": "", "token": "", "checkEvery": "start", "autoInstall": False, "backupBefore": True, "keepBackups": 15}
+DEFAULTS = {"addons": "", "token": "", "checkEvery": "1h", "autoInstall": False, "backupBefore": True, "keepBackups": 15,
+            "startup": False}
+RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
+RUN_NAME = "WarbandKeeperClient"
 SCHEDULE_PATH = "tools/update_schedule.json"
 DATA_WORKFLOW = "update-data.yml"
 
@@ -75,7 +78,49 @@ def load_config():
         pass
     if cfg.pop("checkOnStart", True) is False and cfg.get("checkEvery") == "start":
         cfg["checkEvery"] = "manual"  # réglage du client 1.0-1.2
+    if not cfg.get("hourly14"):
+        # client 1.4 : vérification toutes les heures par défaut (l'ancien défaut était « au démarrage »)
+        if cfg.get("checkEvery") == "start":
+            cfg["checkEvery"] = "1h"
+        cfg["hourly14"] = True
     return cfg
+
+
+def set_startup(on):
+    """Lancer le client avec Windows, réduit (clé Run de l'utilisateur). Rend True si c'est fait."""
+    if not (IS_WIN and FROZEN):
+        return False
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0, winreg.KEY_SET_VALUE) as k:
+            if on:
+                winreg.SetValueEx(k, RUN_NAME, 0, winreg.REG_SZ, '"%s" --minimized' % sys.executable)
+            else:
+                try:
+                    winreg.DeleteValue(k, RUN_NAME)
+                except FileNotFoundError:
+                    pass
+        return True
+    except OSError:
+        return False
+
+
+def flash_taskbar(root):
+    """Fait clignoter le bouton du client dans la barre des tâches (Windows) pour attirer l'œil."""
+    if not IS_WIN:
+        return
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class FLASHWINFO(ctypes.Structure):
+            _fields_ = [("cbSize", wintypes.UINT), ("hwnd", wintypes.HWND), ("dwFlags", wintypes.DWORD),
+                        ("uCount", wintypes.UINT), ("dwTimeout", wintypes.DWORD)]
+        hwnd = ctypes.windll.user32.GetParent(root.winfo_id())
+        info = FLASHWINFO(ctypes.sizeof(FLASHWINFO), hwnd, 3 | 12, 0, 0)  # tout, jusqu'au retour au premier plan
+        ctypes.windll.user32.FlashWindowEx(ctypes.byref(info))
+    except Exception:
+        pass
 
 
 def save_config(cfg):
@@ -1164,11 +1209,16 @@ class SettingsPage(Page):
         u = Card(host, "Mises à jour", "de l'addon, sur ce PC")
         u.pack(fill="x", pady=(12, 0))
         label(u.body, "Chercher les nouvelles versions", fg="muted", font="small").pack(anchor="w")
-        Segmented(u.body, [("start", "Au démarrage"), ("1h", "Toutes les heures"), ("6h", "Toutes les 6 h"), ("manual", "À la demande")],
-                  lambda: self.app.cfg["checkEvery"], lambda v: self.set_opt("checkEvery", v)).pack(anchor="w", pady=(4, 10))
+        Segmented(u.body, [("1h", "Toutes les heures"), ("6h", "Toutes les 6 h"), ("start", "Au démarrage seulement"), ("manual", "À la demande")],
+                  lambda: self.app.cfg["checkEvery"], lambda v: self.set_opt("checkEvery", v)).pack(anchor="w", pady=(4, 2))
+        label(u.body, "Le client vérifie tant qu'il est ouvert (même réduit) et te prévient : bouton qui clignote dans la barre des tâches.",
+              fg="dim", font="small").pack(anchor="w", pady=(0, 8))
         self.opts = {}
-        for key, text in (("autoInstall", "Installer automatiquement les mises à jour de l'addon"),
-                          ("backupBefore", "Sauvegarder mes réglages avant chaque mise à jour")):
+        opts = [("autoInstall", "Installer automatiquement les mises à jour de l'addon"),
+                ("backupBefore", "Sauvegarder mes réglages avant chaque mise à jour")]
+        if IS_WIN and FROZEN:
+            opts.append(("startup", "Lancer le client avec Windows, réduit (pour vérifier en arrière-plan)"))
+        for key, text in opts:
             v = tk.BooleanVar(value=cfg[key])
             cb = tk.Checkbutton(u.body, text="  " + text, variable=v, bg=C["surface"], fg=C["text"], selectcolor=C["surface2"],
                                 activebackground=C["surface"], activeforeground=C["text"], bd=0, highlightthickness=0,
@@ -1278,6 +1328,10 @@ class SettingsPage(Page):
         a.run(lambda: GitHub(a.cfg["token"]).run_data_update(), done)
 
     def set_opt(self, k, v):
+        if k == "startup" and not set_startup(v):
+            self.app.toast("Impossible de régler le lancement avec Windows.", "negative")
+            self.opts[k].set(not v)
+            return
         self.app.cfg[k] = v
         save_config(self.app.cfg)
 
@@ -1344,7 +1398,7 @@ class App:
         self.set_icon()
         self.cfg = load_config()
         self.releases, self.error, self.busy = [], None, False
-        self.clientNotes, self.lastCheck = None, 0
+        self.clientNotes, self.lastCheck, self.notified = None, 0, None
         self.q = queue.Queue()
         self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
@@ -1353,6 +1407,8 @@ class App:
             self.cfg["addons"] = use_install(pick) if pick else ""
             save_config(self.cfg)
         self.build()
+        if "--minimized" in sys.argv:
+            self.root.iconify()  # lancé avec Windows : réduit, il vérifie en arrière-plan
         self.show("home")
         self.state_changed()
         self.root.after(80, self.poll)
@@ -1642,8 +1698,17 @@ class App:
                 self.clientNotes = notes or self.clientNotes
                 home.set_busy("Vérifié à %s." % datetime.now().strftime("%H:%M"))
             self.state_changed()
-            # installation automatique (Réglages > Mises à jour), seulement sur un addon déjà installé
             inst = self.installed
+            latest = self.latest_version
+            newer = not err and inst and latest and vtuple(latest) > vtuple(inst)
+            self.root.title("Warband Keeper · version %s disponible" % latest if newer else "Warband Keeper")
+            # nouvelle version vue pour la première fois : on prévient (clignote, message), une seule fois par version
+            if newer and latest != self.notified:
+                self.notified = latest
+                if not self.cfg["autoInstall"]:
+                    self.toast("Nouvelle version %s de Warband Keeper : « Mettre à jour » sur l'Accueil." % latest, "warning")
+                flash_taskbar(self.root)
+            # installation automatique (Réglages > Mises à jour), seulement sur un addon déjà installé
             if not err and self.cfg["autoInstall"] and inst and self.latest_version and not self.busy \
                     and vtuple(self.latest_version) > vtuple(inst):
                 self.toast("Nouvelle version %s : installation automatique…" % self.latest_version)

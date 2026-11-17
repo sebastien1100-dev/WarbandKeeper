@@ -13,7 +13,7 @@ Après chaque mise à jour, il dit s'il faut redémarrer complètement le jeu (n
   (« Installer ici »). Le dossier `Interface\AddOns` est créé s'il manque.
 - **Nouveautés** en deux volets : notes de l'**addon** et notes du **client** (client/CHANGELOG.md, à part).
 - **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub,
-  **Mises à jour** (chercher au démarrage, toutes les heures, toutes les 6 h ou à la demande ; installation automatique),
+  **Mises à jour** (toutes les heures par défaut, toutes les 6 h, au démarrage seulement ou à la demande ; le client prévient en clignotant dans la barre des tâches ; installation automatique ; lancement avec Windows, réduit),
   **Données** (vérification sur GitHub chaque jour, chaque lundi ou à la demande ; publication automatique
   ou PR à valider ; « Lancer maintenant » ; état de la dernière vérification).
 - Le client se met à jour lui-même quand une nouvelle version est publiée.
