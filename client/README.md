@@ -6,7 +6,10 @@ Petit programme Windows pour installer et mettre à jour l'addon sans manipuler 
 - **Nouveautés** : les notes de toutes les versions.
 - **Sauvegardes** : tes réglages de l'addon (SavedVariables) sont sauvegardés avant chaque mise à jour,
   restaurables en un clic (jeu fermé) ; la version précédente de l'addon est gardée (« Revenir à cette version »).
-- **Réglages** : dossier du jeu (détecté tout seul, sinon « Parcourir »), jeton GitHub, options.
+- **Installation de l'addon** : le client cherche WoW tout seul (registre de Windows, réglages de Battle.net,
+  tous les disques) et reconnaît l'installation WoW Forever ; s'il en trouve plusieurs, il te laisse choisir
+  (« Installer ici »). Le dossier `Interface\AddOns` est créé s'il manque.
+- **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub, options.
 - Le client se met à jour lui-même quand une nouvelle version est publiée.
 
 ## Installation

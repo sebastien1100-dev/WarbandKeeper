@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Logo du client (client/assets/logo.png et logo.ico) : carré rose arrondi et étendard de
+"""Logo du client (client/assets/logo.png et logo.ico) : carré bleu électrique arrondi et étendard de
 l'addon (même dessin que icon_logo de tools/gen_media.py), en grand. Usage : python3 client/make_assets.py"""
 import os
 from PIL import Image, ImageDraw
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-ACCENT, DARK = (245, 140, 186, 255), (13, 13, 15, 255)
+ACCENT, DARK = (31, 143, 255, 255), (255, 255, 255, 255)  # bleu électrique, étendard blanc
 
 
 def logo(size=512):

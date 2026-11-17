@@ -30,7 +30,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.0.0"
+CLIENT_VERSION = "1.1.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -40,12 +40,12 @@ IS_WIN = sys.platform.startswith("win")
 FROZEN = getattr(sys, "frozen", False)
 
 # ---------------------------------------------------------------------------
-# Couleurs : thème Graphite de l'addon (UI/Themes.lua), accent rose
+# Couleurs : thème Graphite de l'addon (UI/Themes.lua), accent bleu électrique
 # ---------------------------------------------------------------------------
 C = {
     "bg": "#0f1012", "sidebar": "#0c0d0e", "surface": "#17191b", "surface2": "#1c1e21",
     "hover": "#212327", "border": "#303338", "text": "#edeff2", "muted": "#999ea8",
-    "dim": "#65686f", "accent": "#f58cba", "accent2": "#f7a6ca", "onAccent": "#0d0d0f",
+    "dim": "#65686f", "accent": "#1f8fff", "accent2": "#4da6ff", "onAccent": "#ffffff",
     "positive": "#9ed17a", "warning": "#f2a84d", "negative": "#e86b6b",
 }
 
@@ -85,32 +85,161 @@ def vtuple(v):
 # ---------------------------------------------------------------------------
 # Jeu et addon
 # ---------------------------------------------------------------------------
-def find_addons_dirs():
-    """Dossiers Interface/AddOns trouvés dans les installations de WoW (celles qui ont l'addon d'abord)."""
-    roots = []
+FLAVORS = {"_retail_": "Retail", "_classic_": "Classic", "_classic_era_": "Classic Era",
+           "_anniversary_": "Anniversary", "_classic_ptr_": "Classic PTR", "_ptr_": "PTR", "_beta_": "Bêta",
+           "_forever_": "WoW Forever"}
+
+
+def _registry_paths():
+    """Emplacements de WoW notés par l'installeur (registre Windows)."""
+    out = []
+    try:
+        import winreg
+    except ImportError:
+        return out
+    keys = [r"SOFTWARE\WOW6432Node\Blizzard Entertainment\World of Warcraft",
+            r"SOFTWARE\Blizzard Entertainment\World of Warcraft",
+            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\World of Warcraft",
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\World of Warcraft"]
+    for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+        for k in keys:
+            try:
+                h = winreg.OpenKey(hive, k)
+            except OSError:
+                continue
+            for val in ("InstallPath", "GamePath", "InstallLocation"):
+                try:
+                    out.append(winreg.QueryValueEx(h, val)[0])
+                except OSError:
+                    pass
+    return out
+
+
+def _battlenet_paths():
+    """Dossier d'installation par défaut de Battle.net (%APPDATA%\\Battle.net\\Battle.net.config)."""
+    out = []
+    p = os.path.join(os.environ.get("APPDATA", ""), "Battle.net", "Battle.net.config")
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            txt = f.read()
+    except OSError:
+        return out
+    for m in re.findall(r'"(?:DefaultInstallPath|InstallPath|Path)"\s*:\s*"([^"]+)"', txt):
+        m = m.replace("\\\\", "\\").replace("/", os.sep)
+        out += [m, os.path.join(m, "World of Warcraft")]
+    return out
+
+
+def wow_roots():
+    """Dossiers « World of Warcraft » (ceux qui contiennent _retail_, _classic_era_…)."""
+    cands = []
     if IS_WIN:
-        for drive in "CDEFGH":
+        cands += _registry_paths() + _battlenet_paths()
+        for drive in "CDEFGHIJK":
             d = drive + ":\\"
             if not os.path.isdir(d):
                 continue
-            for base in ("", "Program Files", "Program Files (x86)", "Games", "Jeux", "Blizzard"):
-                for name in ("World of Warcraft", "World of Warcraft Forever", "WoW Forever"):
-                    roots.append(os.path.join(d, base, name))
+            bases = [d]
+            try:  # un niveau de dossiers sous la racine (Program Files, Jeux, Games…), puis Blizzard
+                for n in os.listdir(d):
+                    full = os.path.join(d, n)
+                    if os.path.isdir(full) and not n.startswith(("$", ".")) and n.lower() not in ("windows", "users", "programdata"):
+                        bases.append(full)
+                        bases.append(os.path.join(full, "Blizzard"))
+                        bases.append(os.path.join(full, "Blizzard Entertainment"))
+            except OSError:
+                pass
+            for base in bases:
+                for name in ("World of Warcraft", "World of Warcraft Forever", "WoW Forever", "WoW"):
+                    cands.append(os.path.join(base, name))
     else:
         home = os.path.expanduser("~")
-        roots += [os.path.join(home, "Games", "World of Warcraft"), "/Applications/World of Warcraft",
+        cands += [os.path.join(home, "Games", "World of Warcraft"), "/Applications/World of Warcraft",
                   os.path.join(home, ".wine", "drive_c", "Program Files (x86)", "World of Warcraft")]
-    found = []
-    for r in roots:
-        if not os.path.isdir(r):
+    roots = []
+    for c in cands:
+        if not c:
             continue
-        subs = [r] + [os.path.join(r, s) for s in sorted(os.listdir(r)) if s.startswith("_")]
-        for s in subs:
-            a = os.path.join(s, "Interface", "AddOns")
-            if os.path.isdir(a) and a not in found:
-                found.append(a)
-    found.sort(key=lambda a: (not os.path.isdir(os.path.join(a, ADDON)), "forever" not in a.lower()))
-    return found
+        c = os.path.normpath(c)
+        if os.path.basename(c).startswith("_"):  # le registre donne parfois ...\\_retail_
+            c = os.path.dirname(c)
+        if os.path.isdir(c) and c not in roots:
+            try:
+                if any(n.startswith("_") and os.path.isdir(os.path.join(c, n)) for n in os.listdir(c)) or \
+                        os.path.isdir(os.path.join(c, "Interface")):
+                    roots.append(c)
+            except OSError:
+                pass
+    return roots
+
+
+def _is_forever(flavor_dir, name):
+    """WoW Forever : nom du dossier, .flavor.info, ou addons pour l'interface 16xxx."""
+    if "forever" in name.lower():
+        return True
+    try:
+        with open(os.path.join(flavor_dir, ".flavor.info"), encoding="utf-8", errors="replace") as f:
+            if "forever" in f.read().lower():
+                return True
+    except OSError:
+        pass
+    addons = os.path.join(flavor_dir, "Interface", "AddOns")
+    try:
+        for n in os.listdir(addons)[:60]:
+            toc = os.path.join(addons, n, n + ".toc")
+            if os.path.isfile(toc):
+                with open(toc, encoding="utf-8", errors="replace") as f:
+                    if re.search(r"^## Interface:\s*16\d{3}\b", f.read(4000), re.M):
+                        return True
+    except OSError:
+        pass
+    return False
+
+
+def find_installs():
+    """Versions de WoW installées : [{ addons, label, forever, version }], les plus probables d'abord
+    (celle qui a déjà l'addon, puis WoW Forever). Le dossier AddOns est créé s'il manque."""
+    out = []
+    for root in wow_roots():
+        flavors = [n for n in sorted(os.listdir(root)) if n.startswith("_") and os.path.isdir(os.path.join(root, n))]
+        for n in flavors or [""]:
+            fdir = os.path.join(root, n) if n else root
+            if n and not any(os.path.exists(os.path.join(fdir, x)) for x in ("Interface", "WTF", "Data", ".flavor.info")) \
+                    and not any(f.lower().endswith(".exe") for f in os.listdir(fdir)):
+                continue
+            addons = os.path.join(fdir, "Interface", "AddOns")
+            forever = _is_forever(fdir, n or root)
+            label = "WoW Forever" if forever else FLAVORS.get(n, n.strip("_").replace("_", " ").title() or "World of Warcraft")
+            if any(o["addons"] == addons for o in out):
+                continue
+            out.append({"addons": addons, "label": label, "forever": forever, "root": root,
+                        "version": installed_version(addons) if os.path.isdir(addons) else None})
+    out.sort(key=lambda i: (i["version"] is None, not i["forever"]))
+    return out
+
+
+def find_addons_dirs():
+    return [i["addons"] for i in find_installs()]
+
+
+def short_path(p, n=55):
+    """Chemin raccourci pour l'affichage : début…fin."""
+    return p if len(p) <= n else p[:18] + "…" + p[-(n - 19):]
+
+
+def flavor_label(addons):
+    """Nom lisible de l'installation d'un dossier AddOns (WoW Forever, Classic Era…)."""
+    fdir = game_dir(addons)
+    n = os.path.basename(fdir)
+    if _is_forever(fdir, n):
+        return "WoW Forever"
+    return FLAVORS.get(n, n.strip("_").replace("_", " ").title() or "World of Warcraft")
+
+
+def use_install(inst):
+    """Prépare le dossier AddOns d'une installation (créé s'il manque) et le rend."""
+    os.makedirs(inst["addons"], exist_ok=True)
+    return inst["addons"]
 
 
 def normalize_addons(path):
@@ -614,6 +743,7 @@ class HomePage(Page):
         self.action.pack(anchor="e")
         self.check = Button(right, "Vérifier", self.app.refresh, "ghost", width=190, height=30)
         self.check.pack(anchor="e", pady=(6, 0))
+        self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
         self.status = label(b, "", fg="muted", font="small")
         self.status.pack(anchor="w", pady=(10, 0))
@@ -638,25 +768,53 @@ class HomePage(Page):
             self.progress.set(value)
         self.status.configure(text=text)
 
+    def build_picker(self):
+        a = self.app
+        for w in self.picker.winfo_children():
+            w.destroy()
+        if a.addons:
+            self.picker.pack_forget()
+            return
+        self.picker.pack(fill="x", pady=(12, 0), before=self.status)
+        for inst in a.installs[:6]:
+            row = tk.Frame(self.picker, bg=C["surface2"])
+            row.pack(fill="x", pady=2)
+            inner = tk.Frame(row, bg=C["surface2"])
+            inner.pack(fill="x", padx=10, pady=6)
+            Button(inner, "Installer ici", lambda i=inst: a.choose_install(i), "primary" if inst["forever"] else "secondary", height=28).pack(side="right")
+            label(inner, inst["label"], fg="accent" if inst["forever"] else "text", font="bodyb").pack(side="left")
+            label(inner, "   " + short_path(os.path.dirname(os.path.dirname(inst["addons"]))), fg="muted", font="small").pack(side="left")
+        other = tk.Frame(self.picker, bg=C["surface"])
+        other.pack(fill="x", pady=(6, 0))
+        Button(other, "Autre dossier…", a.browse_addons, "ghost", height=28).pack(side="left")
+        label(other, "  le dossier du jeu, ou son Interface\\AddOns", fg="dim", font="small").pack(side="left")
+
     def on_state(self):
         a = self.app
         inst, latest = a.installed, a.latest_version
+        self.build_picker()
         if not a.addons:
-            self.versions.configure(text="Dossier du jeu introuvable")
-            self.chip.set("Choisis le dossier AddOns dans Réglages", C["warning"])
-            self.action.set("Réglages", True, "secondary")
-            self.action.command = lambda: a.show("settings")
+            n = len(a.installs)
+            self.versions.configure(text=("%d installations de WoW trouvées : choisis celle de WoW Forever." % n) if n > 1 else
+                                    "Aucune installation de WoW trouvée automatiquement.")
+            self.chip.set("Où installer Warband Keeper ?", C["warning"])
+            self.action.set("Rechercher", True, "secondary")
+            self.action.command = a.rescan
         elif a.error and not latest:
             self.versions.configure(text="Installée : %s" % (inst or "non installée"))
             self.chip.set(a.error, C["negative"])
-            self.action.set("Réessayer", True, "secondary")
-            self.action.command = a.refresh
+            if "jeton" in a.error:
+                self.action.set("Ajouter le jeton", True, "secondary")
+                self.action.command = lambda: a.show("settings")
+            else:
+                self.action.set("Réessayer", True, "secondary")
+                self.action.command = a.refresh
         elif latest is None:
             self.versions.configure(text="Installée : %s" % (inst or "non installée"))
             self.chip.set("Recherche des versions…", C["muted"])
             self.action.set("Mettre à jour", False, "primary")
         elif not inst:
-            self.versions.configure(text="Pas encore installé · dernière version %s" % latest)
+            self.versions.configure(text="Pas encore installé dans %s · dernière version %s" % (flavor_label(a.addons), latest))
             self.chip.set("Prêt à installer", C["accent"])
             self.action.set("Installer", not a.busy, "primary")
             self.action.command = a.update_addon
@@ -827,13 +985,18 @@ class SettingsPage(Page):
             self.apply_path(d)
 
     def detect(self):
-        found = find_addons_dirs()
-        if found:
-            self.apply_path(found[0])
-            if len(found) > 1:
-                self.app.toast("%d installations trouvées : la première est prise." % len(found), "muted")
-        else:
-            self.app.toast("Aucune installation trouvée : choisis le dossier avec Parcourir.", "warning")
+        a = self.app
+        a.installs = find_installs()
+        if not a.installs:
+            return a.toast("Aucune installation trouvée : choisis le dossier avec Parcourir.", "warning")
+        if len(a.installs) == 1:
+            a.choose_install(a.installs[0], install=False)
+            self.path.set(a.addons)
+            return
+        inst = a.pick_dialog(a.installs)
+        if inst:
+            a.choose_install(inst, install=False)
+            self.path.set(a.addons)
 
     def apply_path(self, p):
         a = normalize_addons(p.strip())
@@ -875,9 +1038,11 @@ class App:
         self.cfg = load_config()
         self.releases, self.error, self.busy = [], None, False
         self.q = queue.Queue()
+        self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
-            found = find_addons_dirs()
-            self.cfg["addons"] = found[0] if found else ""
+            self.installs = find_installs()
+            pick = self.auto_pick(self.installs)
+            self.cfg["addons"] = use_install(pick) if pick else ""
             save_config(self.cfg)
         self.build()
         self.show("home")
@@ -958,6 +1123,45 @@ class App:
             self.root.after_cancel(self._toastJob)
         self._toastJob = self.root.after(4200, self.toastBar.place_forget)
 
+    def pick_dialog(self, installs):
+        win = tk.Toplevel(self.root, bg=C["surface"])
+        win.title("Warband Keeper")
+        win.transient(self.root)
+        win.resizable(False, False)
+        res = {"inst": None}
+        tk.Label(win, text="Installations de WoW trouvées", bg=C["surface"], fg=C["text"], font=App.fonts["h3"],
+                 padx=18, pady=14).pack(anchor="w")
+
+        def done(i):
+            res["inst"] = i
+            win.destroy()
+        for inst in installs[:8]:
+            row = tk.Frame(win, bg=C["surface2"])
+            row.pack(fill="x", padx=14, pady=2)
+            tk.Label(row, text=inst["label"], bg=C["surface2"], fg=C["accent"] if inst["forever"] else C["text"],
+                     font=App.fonts["bodyb"], padx=10, pady=8).pack(side="left")
+            tk.Label(row, text=short_path(os.path.dirname(os.path.dirname(inst["addons"]))) + ("   (addon %s)" % inst["version"] if inst["version"] else ""),
+                     bg=C["surface2"], fg=C["muted"], font=App.fonts["small"]).pack(side="left")
+            Button(row, "Choisir", lambda i=inst: done(i), "primary" if inst["forever"] else "secondary", height=28).pack(side="right", padx=8, pady=4)
+        Button(win, "Annuler", lambda: done(None), "ghost", width=100, height=30).pack(anchor="e", padx=14, pady=12)
+        win.update_idletasks()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - win.winfo_width()) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - win.winfo_height()) // 3
+        win.geometry("+%d+%d" % (x, y))
+        win.grab_set()
+        self.root.wait_window(win)
+        return res["inst"]
+
+    def rescan(self):
+        self.installs = find_installs()
+        pick = self.auto_pick(self.installs)
+        if pick:
+            self.choose_install(pick, install=False)
+        else:
+            self.state_changed()
+            self.toast("%d installation%s trouvée%s." % (len(self.installs), "s" if len(self.installs) > 1 else "",
+                                                        "s" if len(self.installs) > 1 else ""), "muted")
+
     def confirm(self, text):
         win = tk.Toplevel(self.root, bg=C["surface"])
         win.title("Warband Keeper")
@@ -1007,6 +1211,37 @@ class App:
         if not inst:
             return self.releases[:1]
         return [r for r in self.releases if vtuple(r["tag_name"]) > vtuple(inst)]
+
+    @staticmethod
+    def auto_pick(installs):
+        """Installation prise d'office : celle qui a déjà l'addon, sinon la seule WoW Forever, sinon la seule."""
+        withAddon = [i for i in installs if i["version"]]
+        if withAddon:
+            return withAddon[0]
+        forever = [i for i in installs if i["forever"]]
+        if len(forever) == 1:
+            return forever[0]
+        return installs[0] if len(installs) == 1 else None
+
+    def choose_install(self, inst, install=True):
+        self.set_addons(use_install(inst))
+        self.toast("Dossier choisi : %s." % inst["label"], "positive")
+        if install and self.latest and not self.installed:
+            self.update_addon()
+
+    def browse_addons(self):
+        d = filedialog.askdirectory(title="Dossier du jeu, ou Interface\\AddOns")
+        if not d:
+            return
+        a = normalize_addons(d)
+        if not a and os.path.isdir(os.path.join(d, "Interface")) is False and os.path.isfile(os.path.join(d, ".flavor.info")):
+            a = os.path.join(d, "Interface", "AddOns")
+            os.makedirs(a, exist_ok=True)
+        if a:
+            self.set_addons(a)
+            self.toast("Dossier choisi.", "positive")
+        else:
+            self.toast("Ce dossier ne contient pas Interface\\AddOns.", "negative")
 
     def set_addons(self, path):
         self.cfg["addons"] = path

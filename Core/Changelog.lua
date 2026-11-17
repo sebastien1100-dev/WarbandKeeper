@@ -6,6 +6,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.90.1", date = "17/11/2026",
+        changed = {
+            "Client PC 1.1 : il installe aussi l'addon la première fois. Il trouve WoW tout seul (registre de Windows, réglages de Battle.net, tous les disques) et reconnaît l'installation WoW Forever ; s'il y en a plusieurs, l'Accueil les liste avec « Installer ici ». « Détecter » dans Réglages ouvre le même choix.",
+            "Client PC : nouvelles couleurs, bleu électrique au lieu du rose (logo compris).",
+            "Le client 1.0 propose de lui-même la mise à jour vers la 1.1 (bandeau en bas à gauche).",
+        },
+    },
+    {
         version = "0.90.0", date = "17/11/2026",
         added = {
             "Nouveau : client PC « Warband Keeper » (Windows), à télécharger sur la page Releases du dépôt GitHub. Il trouve le dossier du jeu, montre la version installée et la dernière, installe la mise à jour en un clic avec les nouveautés, sauvegarde tes réglages de l'addon avant chaque mise à jour (restaurables), garde la version précédente pour y revenir, et se met à jour lui-même.",

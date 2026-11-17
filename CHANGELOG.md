@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.90.1 — 17/11/2026
+
+### Modifications
+- Client PC 1.1 : il installe aussi l'addon la première fois. Il trouve WoW tout seul (registre de Windows, réglages de Battle.net, tous les disques) et reconnaît l'installation WoW Forever ; s'il y en a plusieurs, l'Accueil les liste avec « Installer ici ». « Détecter » dans Réglages ouvre le même choix.
+- Client PC : nouvelles couleurs, bleu électrique au lieu du rose (logo compris).
+- Le client 1.0 propose de lui-même la mise à jour vers la 1.1 (bandeau en bas à gauche).
+
 ## v0.90.0 — 17/11/2026
 
 ### Ajouts
