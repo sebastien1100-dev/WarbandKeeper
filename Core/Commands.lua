@@ -88,6 +88,7 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             local ok, txt = pcall(WK.UI.MapLayersProbe, WK.UI)
             WK:Print("  " .. tostring(ok and txt or ("sonde : " .. tostring(txt))))
         end
+        for _, line in ipairs(WK.UI.mapLog or {}) do WK:Print("  · " .. line) end
         local any = false
         for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end

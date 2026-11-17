@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.5", date = "17/11/2026",
+        fixed = {
+            "Carte du monde : les pastilles (lieux, rares, filons, notes) étaient dessinées puis masquées juste après sur certaines cartes. Tant que la carte est ouverte, Warband Keeper vérifie chaque seconde qu'elles sont bien là et les redessine sinon.",
+        },
+        changed = {
+            "/wk carte : journal des derniers redessins et masquages de la carte (ouverture, changement de carte, guidage, récolte, réparation).",
+        },
+    },
+    {
         version = "1.3.4", date = "17/11/2026",
         changed = {
             "/wk carte : le diagnostic décrit aussi la première pastille de lieu (affichée ou non, transparence, taille, position, texture), pour trouver pourquoi les pastilles restent invisibles sur certaines cartes.",

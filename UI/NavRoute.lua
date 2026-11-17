@@ -342,6 +342,11 @@ WK:On("PLAYER_LOGIN", function()
                 if s.mapAcc > 1 and WorldMapFrame and WorldMapFrame:IsShown() and UI.RefreshGuidePinLabel then
                     UI:RefreshGuidePinLabel()
                 end
+                -- carte ouverte : pastilles de lieux masquées par autre chose qu'un redessin ? on les remet
+                if s.mapAcc > 1 and WorldMapFrame and WorldMapFrame:IsShown() and UI.MapLayersHidden and UI:MapLayersHidden() then
+                    if UI.MapNote then UI.MapNote("pastilles masquées : réaffichage") end
+                    if UI.RedrawWorldMap then UI.RedrawWorldMap("réparation") end
+                end
                 local flying = WK.modules.Flight and WK.modules.Flight:Current()
                 if s.mapAcc > 1 and (N.route or flying) and WorldMapFrame and WorldMapFrame:IsShown() then
                     s.mapAcc = 0

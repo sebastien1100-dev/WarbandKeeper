@@ -61,6 +61,14 @@ local function gamePinAlpha(a)
         end
     end
 end
+-- Journal (/wk carte) : redessins et masquages de la carte, pour comprendre une pastille disparue
+UI.mapLog = UI.mapLog or {}
+local function note(ev)
+    local wm = WorldMapFrame
+    table.insert(UI.mapLog, string.format("%.1f %s (carte %s)", GetTime(), ev, tostring(wm and wm:IsShown())))
+    while #UI.mapLog > 10 do table.remove(UI.mapLog, 1) end
+end
+UI.MapNote = note
 local targetPin
 local function hideAll()
     for _, p in ipairs(pins) do p:Hide() end
@@ -139,7 +147,8 @@ local function drawTarget(cv, mapID, w, h)
     targetPin:Show()
 end
 
-local function redraw()
+local function redraw(src)
+    note("redessin" .. (type(src) == "string" and (" · " .. src) or ""))
     hideAll()
     local cfg = WK.DB.global.gatherMap
     local wm, cv = WorldMapFrame, canvas()
@@ -204,17 +213,21 @@ local function redraw()
         p:Show()
     end
 end
-WK.modules.GatherMap.Redraw = function() redraw() end
-WK.modules.Guide.Redraw = function() redraw() end
+WK.modules.GatherMap.Redraw = function() redraw("récolte") end
+WK.modules.Guide.Redraw = function() redraw("guidage") end
+UI.RedrawWorldMap = redraw
 
 -- La carte du monde se charge parfois après l'addon : on s'y accroche dès qu'elle existe.
 local hooked = false
 local function hook()
     if hooked or not WorldMapFrame then return end
     hooked = true
-    WorldMapFrame:HookScript("OnShow", redraw)
-    WorldMapFrame:HookScript("OnHide", hideAll)
-    if WorldMapFrame.OnMapChanged then hooksecurefunc(WorldMapFrame, "OnMapChanged", redraw) end
+    WorldMapFrame:HookScript("OnShow", function() redraw("ouverture") end)
+    WorldMapFrame:HookScript("OnHide", function()
+        note("fermeture"); hideAll()
+        if UI.MapLayersReset then UI:MapLayersReset() end
+    end)
+    if WorldMapFrame.OnMapChanged then hooksecurefunc(WorldMapFrame, "OnMapChanged", function() redraw("changement de carte") end) end
 end
 WK:On("PLAYER_LOGIN", hook)
 WK:On("ADDON_LOADED", function(name) if name == "Blizzard_WorldMap" then hook() end end)

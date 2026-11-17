@@ -82,6 +82,13 @@ local function getRoute(i, cv)
     return r
 end
 
+-- Pastilles posées au dernier dessin mais plus montrées (masquées par autre chose)
+local lastDrawn = 0
+function UI:MapLayersHidden()
+    if lastDrawn == 0 then return false end
+    local p = pins[1]
+    return p ~= nil and not p:IsShown()
+end
 -- Diagnostic (/wk carte) : état de la première pastille de lieu affichée
 function UI:MapLayersProbe()
     local p = pins[1]
@@ -98,6 +105,7 @@ function UI:MapLayersProbe()
         n(l), n(b), n(w), n(h), tostring(p:GetFrameStrata()), tostring(p:GetFrameLevel()), tostring(ic))
 end
 
+function UI:MapLayersReset() lastDrawn = 0 end -- carte fermée : rien à réparer
 function UI:HideMapLayers()
     for _, p in pairs(pins) do p:Hide() end
     for _, r in ipairs(routes) do
@@ -116,6 +124,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     local n = 0
     local places = L:Places(mapID, "map")
     if UI.mapStats then UI.mapStats.places = #places end
+    lastDrawn = math.min(#places, 400)
     for _, it in ipairs(places) do
         n = n + 1
         if n > 400 then break end
