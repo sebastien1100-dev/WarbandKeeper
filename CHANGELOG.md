@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Expérience (QoL > Expérience) : barre d'expérience avec repos et expérience en attente des quêtes terminées, rythme et temps jusqu'au prochain niveau, repos de chaque perso, alertes.
 - Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
@@ -23,6 +24,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.9.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Réglages QoL : nouvelle section « Expérience » (barre, repos, quêtes à rendre), en préparation ; elle a son interrupteur dans la carte Modules.
 
 ## v1.9.1 — 17/11/2026
 

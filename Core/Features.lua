@@ -32,6 +32,7 @@ WK.FEATURES = {
     { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "RÉGLAGES QOL", qol = "ah", desc = "scan et infobulle" },
     { key = "cursor", label = "Curseur", icon = "crosshair", group = "RÉGLAGES QOL", qol = "cursor", desc = "anneau et curseur gardé en combat", reload = true },
     { key = "campfire", label = "Feu de camp", icon = "fire", group = "RÉGLAGES QOL", qol = "campfire", desc = "rappel pour s'asseoir près d'un camp", reload = true },
+    { key = "xp", label = "Expérience", icon = "chart", group = "RÉGLAGES QOL", qol = "xp", desc = "barre, repos, quêtes à rendre" },
     { key = "classes", label = "Classes", icon = "users", group = "RÉGLAGES QOL", qol = "classes", desc = "section des réglages" },
     { key = "range", label = "Distance", icon = "arrow", group = "RÉGLAGES QOL", desc = "ruban de distance du chasseur", reload = true },
 }

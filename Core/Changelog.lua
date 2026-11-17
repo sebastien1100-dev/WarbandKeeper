@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.9.2", date = "17/11/2026",
+        added = {
+            "Réglages QoL : nouvelle section « Expérience » (barre, repos, quêtes à rendre), en préparation ; elle a son interrupteur dans la carte Modules.",
+        },
+    },
+    {
         version = "1.9.1", date = "17/11/2026",
         changed = {
             "Micro menu : les barres FPS et latence passent sous le cadre de l'heure (sur sa largeur), un peu plus épaisses ; l'heure est de nouveau bien centrée dans son cadre.",
@@ -2165,6 +2171,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Expérience (QoL > Expérience) : barre d'expérience avec repos et expérience en attente des quêtes terminées, rythme et temps jusqu'au prochain niveau, repos de chaque perso, alertes.",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",

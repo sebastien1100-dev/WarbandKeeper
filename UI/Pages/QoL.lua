@@ -131,7 +131,7 @@ end
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
     { "fishing", "Pêche", "fish" }, { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
-    { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "classes", "Classes", "users" },
+    { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "xp", "Expérience", "chart" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
 function UI:QoLSectionCount(key)
@@ -299,10 +299,12 @@ UI:RegisterPage({
         curBtn.desc:SetText("Anneau, curseur en combat")
         local campBtn = navButton("campfire", "Feu de camp", -258, nil, "fire")
         campBtn.desc:SetText("S'asseoir près d'un camp")
+        local xpBtn = navButton("xp", "Expérience", -258, nil, "chart")
+        xpBtn.desc:SetText("Barre, repos, quêtes à rendre")
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "campfire", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "campfire", "xp", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -1569,6 +1571,20 @@ UI:RegisterPage({
                 return q and string.format(T("Dès le niveau 14 · %s (%d, %d)"), T(q[4]), q[2], q[3]) or ""
             end)
             bagWhere:SetPoint("LEFT", bagBtn, "RIGHT", 12, 0)
+        end
+
+        -----------------------------------------------------------------------
+        -- Expérience (en préparation)
+        -----------------------------------------------------------------------
+        section("xp")
+        do
+            local soon = card("Expérience", 40 + 7 * 20 + 16, "bientôt")
+            local st = UI:Text(soon, 12, C.muted)
+            st:SetPoint("TOPLEFT", 16, -42); st:SetPoint("RIGHT", -16, 0)
+            st:SetJustifyH("LEFT")
+            if st.SetWordWrap then st:SetWordWrap(true) end
+            st:SetText(T("Cette section accueillera l'expérience de tes persos : barre d'expérience, repos, quêtes terminées à rendre, rythme et temps jusqu'au prochain niveau.") .. "\n\n"
+                .. T("Elle est en préparation."))
         end
 
         -----------------------------------------------------------------------
