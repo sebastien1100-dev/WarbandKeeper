@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.4.1 — 17/11/2026
+
+### Corrections
+- Après la mise à jour du client par lui-même, le nouveau client ne démarrait pas (« Failed to load Python DLL … python312.dll ») : il cherchait ses fichiers dans le dossier temporaire de l'ancien. Il démarre maintenant normalement. (Pour passer de la 1.4.0 à la 1.4.1, l'erreur peut encore apparaître une dernière fois : relance alors le client à la main.)
+
 ## 1.4.0 — 17/11/2026
 
 ### Ajouts

@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.0"
+CLIENT_VERSION = "1.4.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -667,14 +667,25 @@ def rollback(addons, prev):
     shutil.move(prev["path"], target)
 
 
+def clean_env():
+    """Environnement pour lancer une nouvelle instance du client : sans les variables de PyInstaller héritées
+    (_MEIPASS2, _PYI_*), sinon le nouvel exe cherche ses fichiers dans le dossier temporaire de l'ancien,
+    effacé à sa fermeture (« Failed to load Python DLL … _MEIxxxx\\python312.dll »)."""
+    env = {k: v for k, v in os.environ.items() if not (k.startswith("_PYI") or k.startswith("_MEI"))}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"  # PyInstaller 6.10+ : nouvelle instance indépendante
+    return env
+
+
 def self_update(exe_path):
-    """Remplace l'exe du client par exe_path (téléchargé) à la fermeture, puis le relance."""
+    """Remplace l'exe du client par exe_path (téléchargé) à la fermeture, puis le relance (environnement propre)."""
     cur = sys.executable
     bat = os.path.join(tempfile.gettempdir(), "wk-client-update.bat")
     with open(bat, "w", encoding="mbcs" if IS_WIN else "utf-8") as f:
         f.write('@echo off\r\n:wait\r\ntimeout /t 1 /nobreak >nul\r\n'
-                'move /y "%s" "%s" >nul 2>&1 || goto wait\r\nstart "" "%s"\r\ndel "%%~f0"\r\n' % (exe_path, cur, cur))
-    subprocess.Popen(["cmd", "/c", bat], creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                'move /y "%s" "%s" >nul 2>&1 || goto wait\r\n'
+                'timeout /t 2 /nobreak >nul\r\n'  # laisse l'ancien client finir de ranger ses fichiers temporaires
+                'start "" "%s"\r\ndel "%%~f0"\r\n' % (exe_path, cur, cur))
+    subprocess.Popen(["cmd", "/c", bat], env=clean_env(), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 # ---------------------------------------------------------------------------
