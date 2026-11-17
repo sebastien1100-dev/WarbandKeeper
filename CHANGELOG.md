@@ -21,8 +21,16 @@ _Prévu, pas encore commencé._
 - Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
-- Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.93.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Métiers : Maj + clic sur une tuile de métier met le lien du métier dans le chat (le même que le bouton « Link tchat », avec ton texte s'il est activé).
+- Métiers : Maj + clic sur une recette (liste des recettes, détail d'un métier, liste de courses) met son lien dans le chat : l'objet fabriqué, comme dans la fenêtre de métier du jeu, ou la recette elle-même pour un enchantement. L'infobulle le rappelle.
+- Pour les enchantements, rouvre une fois la fenêtre du métier avec chaque perso : l'addon y note ce qu'il faut pour le lien.
 
 ## v0.92.2 — 17/11/2026
 

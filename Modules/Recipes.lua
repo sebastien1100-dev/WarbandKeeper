@@ -4,7 +4,7 @@ local T = function(s) return WK.T(s) end
 
 -- Recettes connues de chaque personnage, lues à l'ouverture de la fenêtre de métier.
 -- c.recipes[clé] = { name, icon, prof, out = itemID produit, qty = quantité produite,
---                    reagents = { { itemID, count }, ... } }
+--                    spell = n° du sort de la recette (lien des enchantements), reagents = { { itemID, count }, ... } }
 -- La clé d'une recette est son nom (identique d'un perso à l'autre).
 -- diff = couleur de la recette lors de la lecture : "optimal" (orange), "medium" (jaune),
 --        "easy" (vert), "trivial" (gris). c.recipeScans[métier] = { t = date, rank = niveau }.
@@ -30,7 +30,7 @@ local function scanModern()
     for _, id in ipairs(api.GetAllRecipeIDs() or {}) do
         local r = api.GetRecipeInfo(id)
         if r and r.learned and r.name then
-            local rec = { name = r.name, icon = r.icon, prof = prof, qty = 1, reagents = {},
+            local rec = { name = r.name, icon = r.icon, prof = prof, qty = 1, reagents = {}, spell = id,
                 diff = MODERN_DIFF[r.relativeDifficulty] }
             -- Temps de recharge (transmutations, étoffe lunaire…)
             if api.GetRecipeCooldown then
@@ -65,7 +65,9 @@ local function scanClassic()
         if name and kind ~= "header" and kind ~= "subheader" then
             local link = GetTradeSkillItemLink and GetTradeSkillItemLink(i)
             local cd = GetTradeSkillCooldown and GetTradeSkillCooldown(i)
+            local rlink = GetTradeSkillRecipeLink and GetTradeSkillRecipeLink(i)
             local rec = { name = name, icon = GetTradeSkillIcon and GetTradeSkillIcon(i), prof = prof,
+                spell = rlink and tonumber(rlink:match("enchant:(%d+)") or rlink:match("spell:(%d+)")) or nil,
                 cooldown = (type(cd) == "number" and cd > 0) and cd or nil,
                 out = WK:ParseItemID(link), qty = 1, reagents = {},
                 diff = (kind == "optimal" or kind == "medium" or kind == "easy" or kind == "trivial") and kind or nil }
@@ -562,6 +564,37 @@ function M:LinkText(c, key, prof)
     local cfg = self:LinkSettings(prof)
     if cfg.on and cfg.text and cfg.text ~= "" then text = text .. " " .. cfg.text end
     return text, saved ~= nil
+end
+
+-- Lien d'une recette pour le chat : l'objet fabriqué (comme Maj + clic dans la fenêtre du métier du
+-- jeu), sinon le sort de la recette (enchantements). nil si le jeu ne le connaît pas encore.
+function M:RecipeLink(rec)
+    if not rec then return nil end
+    if rec.out then
+        local _, link = WK.GetItemInfo(rec.out)
+        if link then return link end
+    end
+    if rec.spell then
+        if C_TradeSkillUI and C_TradeSkillUI.GetRecipeLink then
+            local ok, link = pcall(C_TradeSkillUI.GetRecipeLink, rec.spell)
+            if ok and type(link) == "string" and link ~= "" then return link end
+        end
+        if C_Spell and C_Spell.GetSpellLink then
+            local ok, link = pcall(C_Spell.GetSpellLink, rec.spell)
+            if ok and type(link) == "string" and link ~= "" then return link end
+        end
+        if GetSpellLink then
+            local ok, link = pcall(GetSpellLink, rec.spell)
+            if ok and type(link) == "string" and link ~= "" then return link end
+        end
+    end
+    return nil
+end
+function M:LinkRecipe(rec)
+    local link = self:RecipeLink(rec)
+    if link then return WK.InsertChatLink(link) end
+    WK:Print(T("Lien pas encore connu pour cette recette : ouvre une fois la fenêtre du métier avec ce perso."))
+    return false
 end
 
 function M:LinkToChat(c, key, prof)

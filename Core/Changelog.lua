@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.93.0", date = "17/11/2026",
+        added = {
+            "Métiers : Maj + clic sur une tuile de métier met le lien du métier dans le chat (le même que le bouton « Link tchat », avec ton texte s'il est activé).",
+            "Métiers : Maj + clic sur une recette (liste des recettes, détail d'un métier, liste de courses) met son lien dans le chat : l'objet fabriqué, comme dans la fenêtre de métier du jeu, ou la recette elle-même pour un enchantement. L'infobulle le rappelle.",
+            "Pour les enchantements, rouvre une fois la fenêtre du métier avec chaque perso : l'addon y note ce qu'il faut pour le lien.",
+        },
+    },
+    {
         version = "0.92.2", date = "17/11/2026",
         changed = {
             "Tous les boutons sont à la couleur de ton apparence, même sans la souris dessus : boutons discrets (Panneau en jeu, Guider vers l'entrée…), boutons à icône (actualiser, fermer…), onglets et choix pas sélectionnés. Seuls les boutons de suppression restent gris, puis rouges au survol.",
@@ -1870,7 +1878,6 @@ WK.Roadmap = {
     "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
-    "Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.",
     "Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.",
 }
 

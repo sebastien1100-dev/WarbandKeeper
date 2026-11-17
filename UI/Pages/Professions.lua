@@ -42,6 +42,8 @@ local function recipeTooltip(row)
         GameTooltip:AddDoubleLine((UI:ItemInfo(rg[1])), string.format("%d / %d", have, rg[2]),
             0.85, 0.85, 0.85, ok and 0.6 or 1, ok and 1 or 0.4, ok and 0.5 or 0.4)
     end
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddLine(WK.T("Maj + clic : lien dans le chat"), 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end
 
@@ -132,11 +134,19 @@ local function Levels(page, parent)
             t.state:SetPoint("BOTTOMLEFT", 12, 10)
             t.state:SetPoint("BOTTOMRIGHT", -12, 10)
             t.state:SetJustifyH("LEFT")
-            t:SetScript("OnClick", function(s) page:ShowDetail(s.charKey, s.prof) end)
+            t:SetScript("OnClick", function(s)
+                -- Maj + clic : lien du métier dans le chat (même lien que « Link tchat »)
+                if IsShiftKeyDown() then
+                    WK.modules.Recipes:LinkToChat(WK.DB.global.characters[s.charKey], s.charKey, s.prof)
+                    return
+                end
+                page:ShowDetail(s.charKey, s.prof)
+            end)
             t:SetScript("OnEnter", function(s)
                 if not s.warn then s.border:SetColor(UI:Accent()) end
                 WK.UI:TooltipOwner(s, "ANCHOR_TOP")
                 GameTooltip:SetText(WK.T("Clic : recettes et détail du métier"), 1, 1, 1)
+                GameTooltip:AddLine(WK.T("Maj + clic : lien du métier dans le chat"), 0.7, 0.7, 0.7)
                 GameTooltip:Show()
             end)
             t:SetScript("OnLeave", function(s)
@@ -263,6 +273,7 @@ local function Recipes(page, parent)
             recipeTooltip(row)
         end)
         r:SetScript("OnLeave", function(row) row.bg:SetColor(unpack(C.surface)); GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(row) if IsShiftKeyDown() and row.rec then WK.modules.Recipes:LinkRecipe(row.rec) end end)
         return r
     end)
 
@@ -386,7 +397,7 @@ local function Shopping(page, parent)
     clear:SetScript("OnClick", function() WK.modules.Recipes:ClearList(); page:Refresh() end)
 
     local pRows = UI:Pool(function()
-        local r = CreateFrame("Frame", nil, ps.child)
+        local r = CreateFrame("Button", nil, ps.child)
         r:SetHeight(40)
         r.bg = UI:Rounded(r, 10, 0, "BACKGROUND", 1)
         r.bg:SetColor(unpack(C.surface2))
@@ -404,6 +415,15 @@ local function Shopping(page, parent)
         r.minus:SetPoint("RIGHT", r.qty, "LEFT", -6, 0)
         r.plus:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
         r.minus:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, -1); page:Refresh() end)
+        r:SetScript("OnClick", function(row) if IsShiftKeyDown() and row.rec then WK.modules.Recipes:LinkRecipe(row.rec) end end)
+        r:SetScript("OnEnter", function(row)
+            if not row.rec then return end
+            WK.UI:TooltipOwner(row, "ANCHOR_RIGHT")
+            GameTooltip:SetText(row.rec.name, 1, 1, 1)
+            GameTooltip:AddLine(WK.T("Maj + clic : lien dans le chat"), 0.6, 0.6, 0.6)
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
         return r
     end)
 
@@ -462,6 +482,7 @@ local function Shopping(page, parent)
             local rec = index[k]
             local r = pRows:Get()
             r.plus.recipeKey, r.minus.recipeKey = k, k
+            r.rec = rec
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
@@ -782,6 +803,7 @@ local function Detail(page, parent)
         r.add:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
         r:SetScript("OnEnter", function(row) row.bg:SetColor(unpack(C.surface2)); recipeTooltip(row) end)
         r:SetScript("OnLeave", function(row) row.bg:SetColor(unpack(C.surface)); GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(row) if IsShiftKeyDown() and row.rec then WK.modules.Recipes:LinkRecipe(row.rec) end end)
         return r
     end)
 
