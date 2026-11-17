@@ -392,11 +392,19 @@ local function makeIcon(def)
     b.dot = UI:Icon(b, "circle", 7, nil, "OVERLAY")
     b.dot:SetPoint("TOPRIGHT", -2, -2)
     -- nombre en ligne (guilde, amis) : pastille en bas à droite
-    b.numBg = UI:Icon(b, "circle", 15, nil, "OVERLAY")
-    b.numBg:SetPoint("BOTTOMRIGHT", 3, -3)
-    b.num = UI:Text(b, 9, nil, "OVERLAY")
+    -- pastille verte du nombre en ligne, cerclée de sombre pour ressortir sur l'icône
+    b.numEdge = UI:Icon(b, "circle", 20, nil, "OVERLAY")
+    b.numEdge:SetPoint("BOTTOMRIGHT", 5, -5)
+    b.numEdge:SetDrawLayer("OVERLAY", 1)
+    b.numBg = UI:Icon(b, "circle", 17, nil, "OVERLAY")
+    b.numBg:SetPoint("CENTER", b.numEdge, "CENTER", 0, 0)
+    b.numBg:SetDrawLayer("OVERLAY", 2)
+    b.num = UI:Text(b, 11, nil, "OVERLAY")
+    b.num:SetDrawLayer("OVERLAY", 3)
     b.num:SetPoint("CENTER", b.numBg, "CENTER", 0, 0)
-    b.numBg:Hide(); b.num:Hide()
+    b.num:SetShadowOffset(1, -1)
+    b.num:SetShadowColor(0, 0, 0, 1)
+    b.numEdge:Hide(); b.numBg:Hide(); b.num:Hide()
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         if def.tooltip then
@@ -692,11 +700,13 @@ function UI:ClockCounts()
         local n = def.count and def.count()
         local show = ic and n ~= nil and n > 0
         if ic then
-            ic.num:SetShown(show); ic.numBg:SetShown(show)
+            ic.num:SetShown(show); ic.numBg:SetShown(show); ic.numEdge:SetShown(show)
             if show then
                 ic.num:SetText(n > 99 and "99" or tostring(n))
-                ic.numBg:SetVertexColor(UI:Accent())
-                ic.num:SetTextColor(unpack(C.onAccent))
+                local g = C.positive
+                ic.numBg:SetVertexColor(g[1] * 0.62, g[2] * 0.72, g[3] * 0.55, 1)
+                ic.numEdge:SetVertexColor(0.04, 0.04, 0.05, 0.95)
+                ic.num:SetTextColor(1, 1, 1)
             end
         end
     end

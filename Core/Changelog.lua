@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.11.3", date = "17/11/2026",
+        changed = {
+            "Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte plus grande, cerclée de sombre, avec un chiffre blanc plus gros.",
+        },
+    },
+    {
         version = "1.11.2", date = "17/11/2026",
         changed = {
             "QoL > Feu de camp, allégé : la carte « En ce moment » et les lignes « Position » (Placer l'encart, Placer le kit) sont retirées. Tout se place avec le bouton Éditer en haut de la fenêtre, et l'état du camp reste visible sur l'icône de flamme, ses pastilles et l'encart.",
