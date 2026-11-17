@@ -24,6 +24,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.4.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau de connexion : les icônes sans urgence (enveloppe…) étaient grises et peu visibles ; elles sont à la couleur de l'apparence, un peu plus grandes.
+- Bandeau de connexion : au survol d'une ligne, le fond recouvrait son icône et son texte ; il passe maintenant dessous.
+
 ## v1.4.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.4.1", date = "17/11/2026",
+        fixed = {
+            "Bandeau de connexion : les icônes sans urgence (enveloppe…) étaient grises et peu visibles ; elles sont à la couleur de l'apparence, un peu plus grandes.",
+            "Bandeau de connexion : au survol d'une ligne, le fond recouvrait son icône et son texte ; il passe maintenant dessous.",
+        },
+    },
+    {
         version = "1.4.0", date = "17/11/2026", restart = true,
         changed = {
             "Bandeau de connexion : il se place en mode édition (glisser, taille, opacité) comme les autres éléments à l'écran ; « Tester » le joue comme à la connexion.",
