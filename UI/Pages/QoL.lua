@@ -1477,6 +1477,24 @@ UI:RegisterPage({
             local placeBtn = UI:Button(rem, "Placer l'encart", 150, 28, "secondary")
             placeBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
             UI:SettingRow(rem, -224, "Position et taille", "En mode édition, avec les autres éléments à l'écran (« Tester » le joue en vrai).", placeBtn, 150)
+            -- kit de camp et rappels
+            local kc = card("Kit de camp et rappels", 40 + 7 * 46 + 8, "colonne de boutons près de la flamme")
+            UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
+                toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
+            UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
+                toggle(kc, function() return campCfg.kitAlways end, function(v) campCfg.kitAlways = v; cupdate() end), 80)
+            UI:SettingRow(kc, -132, "Pastilles sous la flamme", "Avantages restants, recharge des objets de camp, « Bien nourri ».",
+                toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
+            UI:SettingRow(kc, -178, "Objet de camp de nouveau prêt", "Une alerte quand la recharge commune d'1 h est finie.",
+                toggle(kc, function() return campCfg.alertCd end, function(v) campCfg.alertCd = v end), 80)
+            UI:SettingRow(kc, -224, "Avantages bientôt finis", "Une alerte, même loin du camp, sous le seuil « Proposer de renouveler ».",
+                toggle(kc, function() return campCfg.alertExpire end, function(v) campCfg.alertExpire = v; cupdate() end), 80)
+            UI:SettingRow(kc, -270, "« Bien nourri » au camp", "Une alerte près d'un feu quand tu n'as pas « Bien nourri » et que tu as de quoi manger.",
+                toggle(kc, function() return campCfg.alertFood end, function(v) campCfg.alertFood = v; cupdate() end), 80)
+            local kplace = UI:Button(kc, "Placer le kit", 150, 28, "secondary")
+            kplace:SetScript("OnClick", function() UI:EnterEditMode() end)
+            UI:SettingRow(kc, -316, "Position", "En mode édition (« Kit de camp »).", kplace, 150)
+
             -- comment ça marche, et effets rencontrés
             local how = card("Comment ça marche", 40 + 4 * 22 + 30 + 8 * 18 + 8)
             local howText = UI:Text(how, 11, C.muted)
@@ -1529,30 +1547,47 @@ UI:RegisterPage({
             ctext:SetJustifyH("LEFT")
             if ctext.SetWordWrap then ctext:SetWordWrap(false) end
 
-            -- objets de camp par métier (premier objet, à 20 de compétence)
-            local tbl = card("Objets de camp par métier", 40 + 20 + #Cp.ITEMS * 20 + 4 * 20 + 16, "premier objet à 20 ; 140 et 300 avec un plan")
-            local function col(x, y, txt, color)
-                local t = UI:Text(tbl, 11, color)
+            -- objets de camp par métier (données du jeu), effet au niveau du perso connecté
+            local ROWH = 30
+            local tbl = card("Objets de camp par métier", 40 + 22 + #Cp.OBJECTS * ROWH + 22 + #Cp.FIRES * 20 + 16, "données du jeu · effet à ton niveau")
+            local function col(x, y, txt, color, w, size)
+                local t = UI:Text(tbl, size or 11, color)
                 t:SetPoint("TOPLEFT", x, y)
-                t:SetText(txt)
+                if w then t:SetWidth(w); t:SetJustifyH("LEFT"); if t.SetWordWrap then t:SetWordWrap(true) end end
+                t:SetText(txt or "")
                 return t
             end
-            local XS = { 16, 130, 300, 500 }
+            local XS = { 16, 116, 262, 408, 556 }
             local hy = -42
-            for i, h in ipairs({ "Métier", "Objet", "Effet", "Ne se cumule pas avec" }) do col(XS[i], hy, UI:Upper(T(h)), C.dim) end
-            for i, it in ipairs(Cp.ITEMS) do
-                local y = hy - 20 * i
-                col(XS[1], y, T(it[1]), C.muted)
-                col(XS[2], y, it[2][1], C.text)
-                col(XS[3], y, it[2][2], C.text)
-                col(XS[4], y, it[2][3] or "-", C.muted)
+            for i, h in ipairs({ "Métier", "20", "140", "300", "Effet à ton niveau" }) do col(XS[i], hy, UI:Upper(T(h)), C.dim) end
+            local cells = {}
+            for i, o in ipairs(Cp.OBJECTS) do
+                local y = hy - 20 - (i - 1) * ROWH
+                local row = { col(XS[1], y, T(o.prof), C.muted) }
+                for t = 1, 3 do row[t + 1] = col(XS[t + 1], y, "", t == 1 and C.text or C.muted, 140, 10) end
+                row.eff = col(XS[5], y, "", C.text)
+                row.excl = col(XS[5], y - 13, "", C.dim, nil, 10)
+                cells[i] = row
             end
-            local fy = hy - 20 * (#Cp.ITEMS + 1) - 6
+            local fy = hy - 20 - #Cp.OBJECTS * ROWH - 4
             col(16, fy, UI:Upper(T("Feux de camp (Cuisine)")), C.dim)
+            local fireCells = {}
             for i, f in ipairs(Cp.FIRES) do
-                col(16, fy - 20 * i, f[1], C.text)
-                col(XS[3], fy - 20 * i, string.format(T("Cuisine %d · %d objets en plus · %s"), f[2], f[3], f[4]), C.muted)
+                fireCells[i] = col(16, fy - 20 * i, "", C.text)
+                col(XS[3], fy - 20 * i, string.format(T("Cuisine %d · %d objets de camp en plus"), f[3], f[4]), C.muted)
             end
+            table.insert(self.dyn, function()
+                local level = (UnitLevel and UnitLevel("player")) or 1
+                for i, o in ipairs(Cp.OBJECTS) do
+                    local row = cells[i]
+                    for t = 1, 3 do row[t + 1]:SetText(Cp:Name(o, t) or "-") end
+                    row.eff:SetText(Cp:Effect(o, 1, level) or (type(o.text) == "table" and T("service (palier 140 et 300)")) or "")
+                    local has = Cp:Cancelled(o)
+                    row.excl:SetText(has and ("|cffe86b6b" .. string.format(T("annulé : tu as %s"), has) .. "|r")
+                        or (o.exclLabel and string.format(T("pas avec %s"), T(o.exclLabel)) or ""))
+                end
+                for i in ipairs(Cp.FIRES) do fireCells[i]:SetText(Cp:FireName(i)) end
+            end)
 
             -- bon à savoir : repos, sac de couchage
             local bag = card("Repos et Sac de couchage douillet", 40 + 4 * 18 + 46 + 8)

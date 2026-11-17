@@ -9,6 +9,7 @@ _Prévu, pas encore commencé._
 
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
+- Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.
 - Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - Objets verrouillés : ne verrouiller que les recettes qu'aucun de tes persos n'a encore apprises.
 - Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).
@@ -28,6 +29,20 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.11.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Kit de camp : une colonne de boutons près de la flamme, avec ton feu (le plus grand kit que tu as), tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser l'objet (hors combat) ; un voile décompte la recharge d'1 h ; liseré jaune sur la nourriture quand tu n'es pas « Bien nourri ». Il apparaît près d'un feu (ou toujours) et se place en mode édition.
+- Pastilles sous l'icône de flamme : avantages du camp restants, recharge des objets de camp, « Bien nourri » (restant ou absent).
+- Rappels : objet de camp de nouveau disponible, avantages du camp bientôt finis (même loin du camp) et pas de « Bien nourri » au camp alors que tu as de quoi manger. Chacun se coupe dans QoL > Feu de camp, carte « Kit de camp et rappels ».
+- Infobulle des objets de camp : l'effet pour toi à ton niveau (par exemple « +11 Force pour toi (niveau 26) ») et les paliers suivants, le buff de classe qui l'annule (en rouge si tu l'as déjà), ce qui le remplace à 140 et 300, et la recharge restante. Les kits de feu disent combien d'objets ils acceptent.
+
+### Modifications
+- Objets de camp : données reprises du jeu (opendata, licence CC BY 4.0, citée dans À propos). Corrigé : le Rouet et le Métier à tisser pour la Couture, le Festin de Cookie et le Four en fer pour la Cuisine, le feu de compagnon à 140 et le feu d'expert à 220. Les noms s'affichent dans la langue du jeu dès qu'il les connaît.
+- QoL > Feu de camp : le tableau montre les trois objets de chaque métier et leur effet à ton niveau, avec le buff qui l'annule.
 
 ## v1.10.3 — 17/11/2026
 
