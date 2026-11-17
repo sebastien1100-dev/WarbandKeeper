@@ -3,6 +3,8 @@
 # client PC (client/wk_client.py construit en .exe par PyInstaller sur Windows). Le client
 # (WarbandKeeper-Client.exe) lit ces Releases pour installer et mettre à jour l'addon et lui-même.
 # Un changement du client sans nouvelle version de l'addon remplace l'exe de la dernière Release.
+# Notes : celles de l'addon (CHANGELOG.md) d'abord, puis « ## Client PC x.y.z » (client/CHANGELOG.md) quand
+# le client change ; client/CHANGELOG.md est aussi joint (WarbandKeeper-Client-notes.md).
 name: Publication
 
 on:
@@ -75,7 +77,7 @@ jobs:
           echo "CV=$CV" >> "$GITHUB_ENV"
           pip install pyinstaller
           pyinstaller --noconfirm --onefile --windowed --name "WarbandKeeper-Client-$CV" \
-            --icon client/assets/logo.ico --add-data "client/assets;assets" client/wk_client.py
+            --icon client/assets/logo.ico --add-data "client/assets;assets" --add-data "client/CHANGELOG.md;." client/wk_client.py
 
       - name: Joindre à la release
         shell: bash
@@ -88,3 +90,15 @@ jobs:
             [ "$a" = "WarbandKeeper-Client-$CV.exe" ] || gh release delete-asset "v$V" "$a" -y
           done
           gh release upload "v$V" "dist/WarbandKeeper-Client-$CV.exe" --clobber
+          # notes du client (lues par le client : Nouveautés > Client)
+          cp client/CHANGELOG.md WarbandKeeper-Client-notes.md
+          gh release upload "v$V" WarbandKeeper-Client-notes.md --clobber
+          # nouvelle version du client : sa section ajoutée aux notes de la release, après celles de l'addon
+          BODY=$(gh release view "v$V" --json body --jq .body)
+          if ! printf '%s' "$BODY" | grep -q "^## Client PC $CV"; then
+            awk -v v="## $CV " 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on {print}' client/CHANGELOG.md > client-notes.md
+            if [ -s client-notes.md ]; then
+              { printf '%s\n\n## Client PC %s\n' "$BODY" "$CV"; cat client-notes.md; } > body.md
+              gh release edit "v$V" --notes-file body.md
+            fi
+          fi

@@ -1,19 +1,23 @@
-# Mise à jour des données (QuestieDB, wowtbc.gg) chaque lundi, ou à la demande (onglet Actions >
-# « Mise à jour des données » > Run workflow). S'il y a du nouveau, une PR est ouverte avec le résumé
-# de tools/update_data.py ; rien n'est publié tout seul. Une PR précédente encore ouverte est fermée
-# (remplacée par la nouvelle).
-# Il faut autoriser les actions à ouvrir des PR : Settings > Actions > General > Workflow permissions >
-# « Allow GitHub Actions to create and approve pull requests ».
+# Mise à jour des données (QuestieDB, wowtbc.gg), réglée par tools/update_schedule.json (modifiable depuis
+# le client PC, Réglages > Données) :
+#   "frequence" : "quotidienne" (chaque jour), "hebdomadaire" (le lundi) ou "manuelle" (seulement à la demande :
+#                 onglet Actions > « Mise à jour des données » > Run workflow, ou bouton du client) ;
+#   "publier"   : false » une PR avec le résumé, à intégrer puis publier comme une version ;
+#                 true  » si les contrôles passent, version publiée directement (tools/publish_data.py :
+#                 version +1, note « Données mises à jour », CHANGELOG.md), puis Release (release.yml).
+# Pour les PR : Settings > Actions > General > Workflow permissions > « Allow GitHub Actions to create and
+# approve pull requests ».
 name: Mise à jour des données
 
 on:
   schedule:
-    - cron: "37 3 * * 1"
+    - cron: "37 4 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 concurrency:
   group: update-data
@@ -26,31 +30,68 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Planning
+        id: plan
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, datetime, os
+          try:
+              c = json.load(open("tools/update_schedule.json", encoding="utf-8"))
+          except Exception:
+              c = {}
+          freq = c.get("frequence", "quotidienne")
+          manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+          due = manual or freq == "quotidienne" or (freq == "hebdomadaire" and datetime.date.today().weekday() == 0)
+          print("due=" + ("true" if due else "false"))
+          print("publish=" + ("true" if c.get("publier") else "false"))
+          print("freq=" + freq)
+          PY
+
+      - name: Pas prévu aujourd'hui
+        if: steps.plan.outputs.due != 'true'
+        run: |
+          echo "Fréquence « ${{ steps.plan.outputs.freq }} » : rien à faire aujourd'hui."
+
       - uses: actions/setup-python@v5
+        if: steps.plan.outputs.due == 'true'
         with:
           python-version: "3.12"
 
       - name: Dépendances
+        if: steps.plan.outputs.due == 'true'
         run: pip install lupa
 
       - name: Mise à jour
-        run: python3 tools/update_data.py --summary "$RUNNER_TEMP/summary.md"
+        if: steps.plan.outputs.due == 'true'
+        run: python3 tools/update_data.py --summary "$RUNNER_TEMP/summary.md" --json "$RUNNER_TEMP/summary.json"
 
       - name: Résumé
-        if: always()
+        if: always() && steps.plan.outputs.due == 'true'
         run: if [ -f "$RUNNER_TEMP/summary.md" ]; then cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
 
-      - name: Ouvrir une PR s'il y a du nouveau
+      - name: Publier ou proposer
+        if: steps.plan.outputs.due == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH: ${{ steps.plan.outputs.publish }}
         run: |
           if [ -z "$(git status --porcelain -- Modules tools/guides tools/dungeons)" ]; then
             echo "Rien de nouveau."
             exit 0
           fi
-          branch="data-update/$(date +%Y-%m-%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "$PUBLISH" = "true" ]; then
+            V=$(python3 tools/publish_data.py "$RUNNER_TEMP/summary.json")
+            git add -- Modules tools/guides tools/dungeons WarbandKeeper.toc Core/Init.lua Core/Changelog.lua CHANGELOG.md
+            git commit -q -m "$V : données mises à jour (QuestieDB, wowtbc.gg)"
+            git push -q origin HEAD:main
+            # un push fait avec ce jeton ne lance pas les autres workflows : la publication est demandée ici
+            gh workflow run release.yml --ref main
+            echo "Version $V publiée." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          branch="data-update/$(date +%Y-%m-%d)"
           git checkout -b "$branch"
           git add -- Modules tools/guides tools/dungeons
           git commit -q -m "Données : mise à jour QuestieDB et wowtbc.gg ($(date +%d/%m/%Y))"

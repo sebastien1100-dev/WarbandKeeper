@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.2.0"
+CLIENT_VERSION = "1.3.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -61,7 +61,9 @@ def data_dir():
 
 
 CONFIG_PATH = os.path.join(data_dir(), "config.json")
-DEFAULTS = {"addons": "", "token": "", "checkOnStart": True, "backupBefore": True, "keepBackups": 15}
+DEFAULTS = {"addons": "", "token": "", "checkEvery": "start", "autoInstall": False, "backupBefore": True, "keepBackups": 15}
+SCHEDULE_PATH = "tools/update_schedule.json"
+DATA_WORKFLOW = "update-data.yml"
 
 
 def load_config():
@@ -71,6 +73,8 @@ def load_config():
             cfg.update(json.load(f))
     except (OSError, ValueError):
         pass
+    if cfg.pop("checkOnStart", True) is False and cfg.get("checkEvery") == "start":
+        cfg["checkEvery"] = "manual"  # réglage du client 1.0-1.2
     return cfg
 
 
@@ -345,6 +349,61 @@ class GitHub:
         except (urllib.error.URLError, OSError) as e:
             raise NetError("Pas de connexion à GitHub (%s)." % getattr(e, "reason", e))
 
+    def api(self, method, path, body=None):
+        """Appel de l'API du dépôt (lecture ou écriture) ; rend le JSON (ou None)."""
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        req = urllib.request.Request(API + path, data=data, method=method,
+                                     headers={"User-Agent": UA, "Accept": "application/vnd.github+json"})
+        if data is not None:
+            req.add_header("Content-Type", "application/json")
+        if self.token:
+            req.add_header("Authorization", "Bearer " + self.token)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                raw = r.read()
+                return json.loads(raw) if raw else None
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403, 404) and method != "GET":
+                raise NetError("Ton jeton n'a pas le droit de faire ça : il lui faut aussi « Contents : Read and write » "
+                               "et « Actions : Read and write » sur le dépôt (voir le mode d'emploi).")
+            if e.code in (401, 403, 404):
+                raise NetError("Accès refusé : vérifie le jeton (il lui faut au moins « Actions : Read-only » pour l'état des données).")
+            raise NetError("GitHub répond %d." % e.code)
+        except (urllib.error.URLError, OSError) as e:
+            raise NetError("Pas de connexion à GitHub (%s)." % getattr(e, "reason", e))
+
+    def schedule(self):
+        """Planning des données (tools/update_schedule.json) : (réglages, sha du fichier)."""
+        import base64
+        r = self.api("GET", "/contents/" + SCHEDULE_PATH + "?ref=main")
+        return json.loads(base64.b64decode(r["content"]).decode("utf-8")), r["sha"]
+
+    def save_schedule(self, sched, sha):
+        import base64
+        content = (json.dumps(sched, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+        self.api("PUT", "/contents/" + SCHEDULE_PATH, {
+            "message": "Données : fréquence « %s », publication %s (client PC)" % (
+                sched.get("frequence"), "automatique" if sched.get("publier") else "par PR"),
+            "content": base64.b64encode(content).decode("ascii"), "sha": sha, "branch": "main"})
+
+    def run_data_update(self):
+        self.api("POST", "/actions/workflows/%s/dispatches" % DATA_WORKFLOW, {"ref": "main"})
+
+    def last_data_run(self):
+        r = self.api("GET", "/actions/workflows/%s/runs?per_page=1" % DATA_WORKFLOW)
+        runs = (r or {}).get("workflow_runs") or []
+        return runs[0] if runs else None
+
+    def client_notes(self, rel):
+        """Notes du client (asset WarbandKeeper-Client-notes.md de la release), ou None."""
+        for a in (rel or {}).get("assets", []):
+            if a["name"] == "WarbandKeeper-Client-notes.md":
+                tmp = os.path.join(tempfile.gettempdir(), "wk-client-notes.md")
+                self.download(a, tmp)
+                with open(tmp, encoding="utf-8") as f:
+                    return f.read()
+        return None
+
     def releases(self):
         with self._open(API + "/releases?per_page=40") as r:
             data = json.load(r)
@@ -372,6 +431,28 @@ class GitHub:
                 if progress and total:
                     progress(done / total)
         r.close()
+
+
+def parse_client_notes(text):
+    """client/CHANGELOG.md » [{ tag_name, date, body }] (même forme que les releases pour fill_notes)."""
+    out, cur = [], None
+    for line in (text or "").splitlines():
+        m = re.match(r"^## (\d+\.\d+\.\d+)\s*(?:[—-]\s*(.+))?$", line)
+        if m:
+            cur = {"tag_name": m.group(1), "date": (m.group(2) or "").strip(), "body": ""}
+            out.append(cur)
+        elif cur is not None:
+            cur["body"] += line + "\n"
+    return out
+
+
+def bundled_client_notes():
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    try:
+        with open(os.path.join(base, "CHANGELOG.md"), encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        return ""
 
 
 def addon_asset(rel):
@@ -650,6 +731,51 @@ class Chip(tk.Canvas):
         self.create_text(18, 12, text=text, fill=col, font=f, anchor="w")
 
 
+class Segmented(tk.Frame):
+    """Choix exclusif en boutons côte à côte (le choisi en bleu)."""
+
+    def __init__(self, parent, options, get, set_):
+        super().__init__(parent, bg=parent["bg"])
+        self.get, self.set_, self.btns = get, set_, {}
+        for value, text in options:
+            b = Button(self, text, lambda v=value: (self.set_(v), self.refresh()), "ghost", height=30)
+            b.pack(side="left", padx=(0, 4))
+            self.btns[value] = b
+        self.refresh()
+
+    def refresh(self):
+        cur = self.get()
+        for v, b in self.btns.items():
+            b.set(style="primary" if v == cur else "ghost")
+
+
+class ScrollArea(tk.Frame):
+    """Contenu qui défile (molette) : on remplit self.inner."""
+
+    def __init__(self, parent):
+        super().__init__(parent, bg=C["bg"])
+        self.cv = tk.Canvas(self, bg=C["bg"], highlightthickness=0, bd=0)
+        self.sb = tk.Scrollbar(self, command=self.cv.yview, bg=C["bg"], troughcolor=C["bg"], bd=0,
+                               activebackground=C["hover"], highlightthickness=0, width=10, elementborderwidth=0)
+        self.inner = tk.Frame(self.cv, bg=C["bg"])
+        self.win = self.cv.create_window(0, 0, window=self.inner, anchor="nw")
+        self.cv.configure(yscrollcommand=self.sb.set)
+        self.cv.pack(side="left", fill="both", expand=True)
+        self.sb.pack(side="right", fill="y")
+        self.inner.bind("<Configure>", lambda e: self.cv.configure(scrollregion=self.cv.bbox("all")))
+        self.cv.bind("<Configure>", lambda e: self.cv.itemconfigure(self.win, width=e.width - 4))
+        self.bind_all("<MouseWheel>", self._wheel, add="+")
+        self.bind_all("<Button-4>", lambda e: self._scroll(-1), add="+")
+        self.bind_all("<Button-5>", lambda e: self._scroll(1), add="+")
+
+    def _scroll(self, n):
+        if self.winfo_ismapped():
+            self.cv.yview_scroll(n, "units")
+
+    def _wheel(self, e):
+        self._scroll(-1 if e.delta > 0 else 1)
+
+
 class Card(tk.Frame):
     """Carte : cadre arrondi dessiné derrière un Frame intérieur (self.body)."""
 
@@ -737,8 +863,11 @@ def fill_notes(txt, releases, empty="Rien de nouveau."):
         when = (rel.get("published_at") or "")[:10]
         if when:
             txt.insert("end", "   " + "/".join(reversed(when.split("-"))), "muted")
+        elif rel.get("date"):
+            txt.insert("end", "   " + rel["date"], "muted")
         txt.insert("end", "\n")
-        for line in (rel.get("body") or "").splitlines():
+        body = (rel.get("body") or "").split("\n## Client PC")[0]
+        for line in body.splitlines():
             line = line.rstrip()
             if not line or line.startswith("## "):
                 continue
@@ -885,13 +1014,29 @@ class HomePage(Page):
 class NotesPage(Page):
     def __init__(self, app, parent):
         super().__init__(app, parent)
-        c = Card(self, "Toutes les versions", "publiées sur GitHub")
+        self.tab = "addon"
+        self.seg = Segmented(self, [("addon", "Addon"), ("client", "Client PC")], lambda: self.tab, self.set_tab)
+        self.seg.pack(anchor="w", pady=(0, 10))
+        c = Card(self)
         c.pack(fill="both", expand=True)
+        self.sub = label(c.body, "", fg="muted", font="small")
+        self.sub.pack(anchor="w", pady=(0, 6))
         wrap, self.txt = notes_view(c.body, 20)
         wrap.pack(fill="both", expand=True)
 
+    def set_tab(self, t):
+        self.tab = t
+        self.on_state()
+
     def on_state(self):
-        fill_notes(self.txt, self.app.releases, "Aucune version trouvée pour l'instant.")
+        self.seg.refresh()
+        if self.tab == "client":
+            self.sub.configure(text="Notes du client PC (installé : %s)" % CLIENT_VERSION)
+            fill_notes(self.txt, parse_client_notes(self.app.clientNotes or bundled_client_notes()),
+                       "Pas de notes du client pour l'instant.")
+        else:
+            self.sub.configure(text="Notes de l'addon, version par version (publiées sur GitHub)")
+            fill_notes(self.txt, self.app.releases, "Aucune version trouvée pour l'instant.")
 
 
 @page("backups", "Sauvegardes", "⟲")
@@ -981,7 +1126,10 @@ class SettingsPage(Page):
     def __init__(self, app, parent):
         super().__init__(app, parent)
         cfg = app.cfg
-        g = Card(self, "Dossier de l'addon", "Interface\\AddOns de WoW Forever")
+        area = ScrollArea(self)
+        area.pack(fill="both", expand=True)
+        host = area.inner
+        g = Card(host, "Dossier de l'addon", "Interface\\AddOns de WoW Forever")
         g.pack(fill="x")
         row = tk.Frame(g.body, bg=C["surface"])
         row.pack(fill="x")
@@ -995,10 +1143,11 @@ class SettingsPage(Page):
         self.pathInfo = label(g.body, "", fg="muted", font="small")
         self.pathInfo.pack(anchor="w", pady=(8, 0))
 
-        t = Card(self, "Accès à GitHub", "dépôt privé : jeton en lecture seule")
+        t = Card(host, "Accès à GitHub", "dépôt privé : jeton fine-grained")
         t.pack(fill="x", pady=(12, 0))
-        label(t.body, "Jeton « fine-grained » limité au dépôt WarbandKeeper, permission Contents : Read-only.\n"
-                      "Inutile si le dépôt devient public. Gardé seulement sur ce PC.", fg="muted", font="small").pack(anchor="w")
+        label(t.body, "Limité au dépôt WarbandKeeper. Pour installer l'addon : Contents « Read-only ».\n"
+                      "Pour régler les données (plus bas) : Contents et Actions « Read and write ». Gardé seulement sur ce PC.",
+              fg="muted", font="small").pack(anchor="w")
         row2 = tk.Frame(t.body, bg=C["surface"])
         row2.pack(fill="x", pady=(8, 0))
         self.token = tk.StringVar(value=cfg["token"])
@@ -1008,17 +1157,122 @@ class SettingsPage(Page):
         Button(row2, "Enregistrer", self.save_token, "secondary", height=34).pack(side="left")
         Button(row2, "Créer un jeton", lambda: webbrowser.open(TOKEN_URL), "ghost", height=34).pack(side="left", padx=(6, 0))
 
-        o = Card(self, "Options")
-        o.pack(fill="x", pady=(12, 0))
+        # Mises à jour de l'addon (sur ce PC)
+        u = Card(host, "Mises à jour", "de l'addon, sur ce PC")
+        u.pack(fill="x", pady=(12, 0))
+        label(u.body, "Chercher les nouvelles versions", fg="muted", font="small").pack(anchor="w")
+        Segmented(u.body, [("start", "Au démarrage"), ("1h", "Toutes les heures"), ("6h", "Toutes les 6 h"), ("manual", "À la demande")],
+                  lambda: self.app.cfg["checkEvery"], lambda v: self.set_opt("checkEvery", v)).pack(anchor="w", pady=(4, 10))
         self.opts = {}
-        for key, text in (("checkOnStart", "Chercher les nouvelles versions au démarrage"),
+        for key, text in (("autoInstall", "Installer automatiquement les mises à jour de l'addon"),
                           ("backupBefore", "Sauvegarder mes réglages avant chaque mise à jour")):
             v = tk.BooleanVar(value=cfg[key])
-            cb = tk.Checkbutton(o.body, text="  " + text, variable=v, bg=C["surface"], fg=C["text"], selectcolor=C["surface2"],
+            cb = tk.Checkbutton(u.body, text="  " + text, variable=v, bg=C["surface"], fg=C["text"], selectcolor=C["surface2"],
                                 activebackground=C["surface"], activeforeground=C["text"], bd=0, highlightthickness=0,
                                 font=App.fonts["body"], anchor="w", command=lambda k=key, v=v: self.set_opt(k, v.get()))
             cb.pack(anchor="w", pady=2)
             self.opts[key] = v
+
+        # Données (sur GitHub) : planning de .github/workflows/update-data.yml
+        d = Card(host, "Données", "QuestieDB et wowtbc.gg, vérifiées sur GitHub")
+        d.pack(fill="x", pady=(12, 0))
+        self.sched, self.schedSha = None, None
+        label(d.body, "Fréquence de la vérification", fg="muted", font="small").pack(anchor="w")
+        self.freq = Segmented(d.body, [("quotidienne", "Chaque jour"), ("hebdomadaire", "Chaque lundi"), ("manuelle", "À la demande")],
+                              lambda: (self.sched or {}).get("frequence"), lambda v: self.set_sched("frequence", v))
+        self.freq.pack(anchor="w", pady=(4, 10))
+        self.pubVar = tk.BooleanVar(value=False)
+        tk.Checkbutton(d.body, text="  Publier automatiquement (sinon une PR à valider sur GitHub)", variable=self.pubVar,
+                       bg=C["surface"], fg=C["text"], selectcolor=C["surface2"], activebackground=C["surface"],
+                       activeforeground=C["text"], bd=0, highlightthickness=0, font=App.fonts["body"], anchor="w",
+                       command=lambda: self.set_sched("publier", self.pubVar.get())).pack(anchor="w", pady=2)
+        row3 = tk.Frame(d.body, bg=C["surface"])
+        row3.pack(fill="x", pady=(10, 0))
+        Button(row3, "Lancer maintenant", self.run_data, "secondary", height=30).pack(side="left")
+        Button(row3, "Actualiser", self.load_schedule, "ghost", height=30).pack(side="left", padx=(6, 0))
+        self.dataInfo = label(d.body, "", fg="muted", font="small", wraplength=560)
+        self.dataInfo.pack(anchor="w", pady=(8, 0))
+        self.loaded = False
+
+    def on_show(self):
+        if not self.loaded:
+            self.load_schedule()
+
+    def load_schedule(self):
+        a = self.app
+        if not a.cfg["token"]:
+            self.dataInfo.configure(text="Ajoute un jeton (ci-dessus) pour régler les données depuis le client.", fg=C["warning"])
+            return
+        self.dataInfo.configure(text="Lecture du planning…", fg=C["muted"])
+        g = GitHub(a.cfg["token"])
+
+        def job():
+            sched, sha = g.schedule()
+            try:
+                run = g.last_data_run()
+            except NetError:
+                run = None
+            return sched, sha, run
+
+        def done(res, err):
+            if err:
+                self.dataInfo.configure(text=str(err), fg=C["negative"])
+                return
+            self.loaded = True
+            self.sched, self.schedSha, run = res
+            self.freq.refresh()
+            self.pubVar.set(bool(self.sched.get("publier")))
+            self.dataInfo.configure(text=self.run_text(run), fg=C["muted"])
+        a.run(job, done)
+
+    @staticmethod
+    def run_text(run):
+        if not run:
+            return "Pas encore de vérification enregistrée."
+        when = (run.get("run_started_at") or run.get("created_at") or "")[:16].replace("T", " à ")
+        if when:
+            dt = when.split(" à ")
+            when = "/".join(reversed(dt[0].split("-"))) + " à " + dt[1] + " (UTC)"
+        state = {"success": "réussie", "failure": "échouée", "cancelled": "annulée"}.get(run.get("conclusion"), "en cours")
+        return "Dernière vérification : %s, %s." % (when, state)
+
+    def set_sched(self, k, v):
+        a = self.app
+        if self.sched is None:
+            self.freq.refresh()
+            return a.toast("Planning pas encore lu (jeton nécessaire).", "warning")
+        new = dict(self.sched)
+        new[k] = v
+        g = GitHub(a.cfg["token"])
+
+        def job():
+            g.save_schedule(new, self.schedSha)
+            return g.schedule()
+
+        def done(res, err):
+            if err:
+                a.toast(str(err), "negative")
+                self.freq.refresh()
+                self.pubVar.set(bool(self.sched.get("publier")))
+                return
+            self.sched, self.schedSha = res
+            self.freq.refresh()
+            self.pubVar.set(bool(self.sched.get("publier")))
+            a.toast("Planning des données enregistré sur GitHub.", "positive")
+        a.run(job, done)
+
+    def run_data(self):
+        a = self.app
+        if not a.cfg["token"]:
+            return a.toast("Ajoute d'abord un jeton.", "warning")
+
+        def done(_, err):
+            if err:
+                a.toast(str(err), "negative")
+            else:
+                a.toast("Vérification des données lancée sur GitHub (quelques minutes).", "positive")
+                self.dataInfo.configure(text="Vérification lancée : actualise dans quelques minutes.", fg=C["muted"])
+        a.run(lambda: GitHub(a.cfg["token"]).run_data_update(), done)
 
     def set_opt(self, k, v):
         self.app.cfg[k] = v
@@ -1059,6 +1313,8 @@ class SettingsPage(Page):
         save_config(self.app.cfg)
         self.app.toast("Jeton enregistré.", "positive")
         self.app.refresh()
+        self.loaded = False
+        self.load_schedule()
 
     def on_state(self):
         a = self.app
@@ -1085,6 +1341,7 @@ class App:
         self.set_icon()
         self.cfg = load_config()
         self.releases, self.error, self.busy = [], None, False
+        self.clientNotes, self.lastCheck = None, 0
         self.q = queue.Queue()
         self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
@@ -1096,8 +1353,16 @@ class App:
         self.show("home")
         self.state_changed()
         self.root.after(80, self.poll)
-        if self.cfg["checkOnStart"]:
+        if self.cfg["checkEvery"] != "manual":
             self.refresh()
+        self.root.after(60000, self.tick)
+
+    def tick(self):
+        """Vérification régulière pendant que le client est ouvert (Réglages > Mises à jour)."""
+        every = {"1h": 3600, "6h": 6 * 3600}.get(self.cfg["checkEvery"])
+        if every and not self.busy and time.time() - self.lastCheck >= every:
+            self.refresh()
+        self.root.after(60000, self.tick)
 
     # -- présentation
     def setup_fonts(self):
@@ -1350,15 +1615,33 @@ class App:
         home.set_busy("Recherche des versions sur GitHub…")
         self.error = None
 
+        def job():
+            g = GitHub(self.cfg["token"])
+            rels = g.releases()
+            notes = None
+            try:
+                notes = g.client_notes(rels[0]) if rels else None
+            except (NetError, OSError):
+                pass
+            return rels, notes
+
         def done(res, err):
+            self.lastCheck = time.time()
             if err:
                 self.error = str(err) if isinstance(err, NetError) else "Erreur : %s" % err
                 home.set_busy(self.error)
             else:
-                self.releases = res
+                self.releases, notes = res
+                self.clientNotes = notes or self.clientNotes
                 home.set_busy("Vérifié à %s." % datetime.now().strftime("%H:%M"))
             self.state_changed()
-        self.run(lambda: GitHub(self.cfg["token"]).releases(), done)
+            # installation automatique (Réglages > Mises à jour), seulement sur un addon déjà installé
+            inst = self.installed
+            if not err and self.cfg["autoInstall"] and inst and self.latest_version and not self.busy \
+                    and vtuple(self.latest_version) > vtuple(inst):
+                self.toast("Nouvelle version %s : installation automatique…" % self.latest_version)
+                self.update_addon()
+        self.run(job, done)
 
     def update_addon(self):
         rel, addons = self.latest, self.addons
@@ -1418,6 +1701,9 @@ class App:
         box = tk.Frame(self.clientBanner, bg=C["surface2"])
         box.pack(fill="x")
         tk.Label(box, text="Client %s disponible" % ver, bg=C["surface2"], fg=C["accent"], font=App.fonts["smallb"]).pack(anchor="w", padx=10, pady=(8, 2))
+        see = tk.Label(box, text="Voir les nouveautés", bg=C["surface2"], fg=C["muted"], font=App.fonts["small"], cursor="hand2")
+        see.pack(anchor="w", padx=10)
+        see.bind("<Button-1>", lambda e: (setattr(self.pages["notes"], "tab", "client"), self.show("notes"), self.pages["notes"].on_state()))
         if FROZEN and IS_WIN:
             Button(box, "Mettre à jour le client", lambda: self.update_client(asset), "primary", height=30).pack(fill="x", padx=10, pady=(4, 10))
         else:

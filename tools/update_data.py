@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Met à jour toutes les données générées de Warband Keeper, en une commande.
 
-Usage : python3 tools/update_data.py [--questie <clone de QuestieDB>] [--summary <fichier.md>]
+Usage : python3 tools/update_data.py [--questie <clone de QuestieDB>] [--summary <fichier.md>] [--json <fichier.json>]
                                      [--sans-questie] [--sans-wowtbc]
         (nécessite : pip install lupa)
 
@@ -137,6 +137,7 @@ def main():
     args = sys.argv[1:]
     opt = lambda k: args[args.index(k) + 1] if k in args else None
     summary_path = opt("--summary")
+    json_path = opt("--json")
     do_questie, do_wowtbc = "--sans-questie" not in args, "--sans-wowtbc" not in args
 
     backup = tempfile.mkdtemp(prefix="wk-backup-")
@@ -236,6 +237,11 @@ def main():
     if summary_path:
         with open(summary_path, "w", encoding="utf-8") as f:
             f.write(text)
+    if json_path:  # repris par tools/publish_data.py (publication automatique)
+        import json
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump({"before": before, "after": after, "sources": sources,
+                       "changed": [l[3:] for l in changed.splitlines()]}, f, ensure_ascii=False, indent=1)
 
 
 if __name__ == "__main__":

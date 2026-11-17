@@ -11,7 +11,11 @@ Après chaque mise à jour, il dit s'il faut redémarrer complètement le jeu (n
 - **Installation de l'addon** : le client cherche WoW tout seul (registre de Windows, réglages de Battle.net,
   tous les disques) et ne garde que WoW Forever ; s'il en trouve plusieurs, il te laisse choisir
   (« Installer ici »). Le dossier `Interface\AddOns` est créé s'il manque.
-- **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub, options.
+- **Nouveautés** en deux volets : notes de l'**addon** et notes du **client** (client/CHANGELOG.md, à part).
+- **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub,
+  **Mises à jour** (chercher au démarrage, toutes les heures, toutes les 6 h ou à la demande ; installation automatique),
+  **Données** (vérification sur GitHub chaque jour, chaque lundi ou à la demande ; publication automatique
+  ou PR à valider ; « Lancer maintenant » ; état de la dernière vérification).
 - Le client se met à jour lui-même quand une nouvelle version est publiée.
 
 ## Installation
@@ -28,6 +32,8 @@ Tant que le dépôt est privé, le client a besoin d'un jeton en lecture seule :
    (bouton « Créer un jeton » du client).
 2. Repository access : **Only select repositories** > `WarbandKeeper`.
 3. Permissions > Repository permissions > **Contents : Read-only**. Rien d'autre.
+   Pour régler aussi les **Données** depuis le client : **Contents : Read and write** et **Actions : Read and write**
+   (le client modifie `tools/update_schedule.json` et lance la vérification).
 4. Copier le jeton dans **Réglages > Accès à GitHub** du client, puis « Enregistrer ».
 
 Le jeton reste sur ton PC (`%APPDATA%\WarbandKeeper Client\config.json`). Si le dépôt devient public, il n'est plus utile.
@@ -35,6 +41,7 @@ Le jeton reste sur ton PC (`%APPDATA%\WarbandKeeper Client\config.json`). Si le 
 ## Pour le développement
 
 - Lancer depuis les sources : `python client/wk_client.py` (Python 3.9+ avec Tkinter).
+- Notes du client : `client/CHANGELOG.md` (à part de celles de l'addon), joint à chaque Release et embarqué dans l'exe.
 - Logo : `python3 client/make_assets.py` (Pillow).
 - L'exe est construit par `.github/workflows/release.yml` (PyInstaller, Windows) et joint à chaque Release.
 - Nouvelle page : une classe qui hérite de `Page`, décorée par `@page("clé", "Libellé", "icône")` ;

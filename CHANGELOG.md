@@ -7,7 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Client PC, suite : lancer le jeu, mise à jour des données d'un clic, résumé de tes persos (lu dans tes réglages) hors du jeu.
+- Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
 - Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.
 - Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).
@@ -24,33 +24,34 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.90.3 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Données (quêtes, rares, lieux, donjons, guides…) : vérifiées chaque jour au lieu de chaque lundi, le temps que le jeu se stabilise. Fréquence et publication automatique réglables depuis le client PC (Réglages > Données).
+- Notes de version : celles de l'addon et celles du client PC sont désormais séparées (le client a les siennes).
+
 ## v0.90.2 — 17/11/2026
 
 _Un /reload suffit._
 
 ### Ajouts
-- Chaque version dit maintenant s'il faut redémarrer complètement le jeu ou si un /reload suffit : pastille dans les notes de version en jeu, ligne en tête des notes sur GitHub et dans le client.
-- Client PC 1.2 : après une mise à jour, il te dit quoi faire, calculé sur ce qui a vraiment changé (nouveaux fichiers ou .toc modifié : redémarrage complet ; sinon un /reload suffit), même si tu sautes plusieurs versions.
-
-### Modifications
-- Client PC : Warband Keeper est fait pour WoW Forever seulement ; le client ne propose plus que les installations de WoW Forever, et demande confirmation si tu choisis un autre dossier.
+- Chaque version dit maintenant s'il faut redémarrer complètement le jeu ou si un /reload suffit : pastille dans les notes de version en jeu, et ligne en tête des notes sur GitHub.
 
 ## v0.90.1 — 17/11/2026
 
 _Un /reload suffit._
 
 ### Modifications
-- Client PC 1.1 : il installe aussi l'addon la première fois. Il trouve WoW tout seul (registre de Windows, réglages de Battle.net, tous les disques) et reconnaît l'installation WoW Forever ; s'il y en a plusieurs, l'Accueil les liste avec « Installer ici ». « Détecter » dans Réglages ouvre le même choix.
-- Client PC : nouvelles couleurs, bleu électrique au lieu du rose (logo compris).
-- Le client 1.0 propose de lui-même la mise à jour vers la 1.1 (bandeau en bas à gauche).
+- Pas de changement dans l'addon (client PC 1.1 : voir ses notes).
 
 ## v0.90.0 — 17/11/2026
 
 _Un /reload suffit._
 
 ### Ajouts
-- Nouveau : client PC « Warband Keeper » (Windows), à télécharger sur la page Releases du dépôt GitHub. Il trouve le dossier du jeu, montre la version installée et la dernière, installe la mise à jour en un clic avec les nouveautés, sauvegarde tes réglages de l'addon avant chaque mise à jour (restaurables), garde la version précédente pour y revenir, et se met à jour lui-même.
-- Chaque nouvelle version est désormais publiée automatiquement sur GitHub (page Releases), avec ses notes.
+- Chaque nouvelle version est désormais publiée automatiquement sur GitHub (page Releases), avec ses notes. Un client PC (Windows) l'installe et la met à jour : il a ses propres notes de version.
 
 ## v0.89.1 — 17/11/2026
 
