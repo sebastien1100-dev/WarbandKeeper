@@ -20,7 +20,7 @@ local COLS = {}
 UI:RegisterPage({
     key = "characters", order = 2, nav = "Persos",
     title = "Personnages",
-    subtitle = "Tous tes personnages enregistrés. Maj + clic sur la corbeille pour en oublier un.",
+    subtitle = "Tous tes personnages enregistrés. Clic sur un perso : sa fiche. Maj + clic sur la corbeille pour en oublier un.",
     count = function()
         local n = 0
         for _ in pairs(WK.DB.global.characters) do n = n + 1 end
@@ -71,11 +71,13 @@ UI:RegisterPage({
             -- Clic droit : corriger le nom complet (« Prénom Nom »).
             r:EnableMouse(true)
             r:SetScript("OnMouseUp", function(s, button)
-                if button == "RightButton" and s.key then UI:EditCharName(s.key) end
+                if button == "RightButton" and s.key then UI:EditCharName(s.key)
+                elseif button == "LeftButton" and s.key then UI:ShowCharSheet(s.key) end
             end)
             r:SetScript("OnEnter", function(s)
                 WK.UI:TooltipOwner(s, "ANCHOR_CURSOR")
-                GameTooltip:SetText(WK.T("Clic droit : corriger le nom complet"), 1, 1, 1)
+                GameTooltip:SetText(WK.T("Clic : fiche du personnage"), 1, 1, 1)
+                GameTooltip:AddLine(WK.T("Clic droit : corriger le nom complet"), 0.7, 0.7, 0.7)
                 GameTooltip:Show()
             end)
             r:SetScript("OnLeave", function() GameTooltip:Hide() end)

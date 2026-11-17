@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.99.0", date = "17/11/2026", restart = true,
+        added = {
+            "Fiche de personnage : clic sur un perso dans Persos. En haut, sa classe, son niveau et le niveau moyen de son équipement. Onglet Équipement : les emplacements autour de son portrait, cadre à la couleur de qualité, niveau d'objet, point bleu = enchanté, infobulle du jeu (Maj + clic : lien dans le chat), puis armure, durabilité et place dans les sacs, et sa spécialisation (arbre de talents le plus rempli).",
+            "Fiche, onglet Stats : les 5 caractéristiques avec une barre en couleur pour celles qui comptent pour sa classe, les stats de combat utiles (puissance d'attaque, critique, toucher, sorts, soins, esquive, parade, blocage) et les résistances. Onglets Métiers et Réputations (avec le rang et la progression).",
+            "Ces données sont relevées à chaque connexion du perso et à chaque changement d'équipement : connecte une fois chaque perso avec cette version pour remplir sa fiche.",
+        },
+    },
+    {
         version = "0.98.1", date = "17/11/2026",
         changed = {
             "Rappels à la connexion : la fenêtre devient un bandeau en haut de l'écran. Ton perso, puis une pastille par tâche avec l'icône du jeu qui va avec (lettre cachetée pour le courrier, caisse pour les objets à envoyer, coffre pour la banque, montre pour une recharge prête, livre pour un métier au plafond, enclume pour réparer…) et son chiffre. Les lettres de tous les persos ne font qu'une pastille ; son infobulle détaille.",

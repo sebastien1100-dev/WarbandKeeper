@@ -23,6 +23,15 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.99.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Fiche de personnage : clic sur un perso dans Persos. En haut, sa classe, son niveau et le niveau moyen de son équipement. Onglet Équipement : les emplacements autour de son portrait, cadre à la couleur de qualité, niveau d'objet, point bleu = enchanté, infobulle du jeu (Maj + clic : lien dans le chat), puis armure, durabilité et place dans les sacs, et sa spécialisation (arbre de talents le plus rempli).
+- Fiche, onglet Stats : les 5 caractéristiques avec une barre en couleur pour celles qui comptent pour sa classe, les stats de combat utiles (puissance d'attaque, critique, toucher, sorts, soins, esquive, parade, blocage) et les résistances. Onglets Métiers et Réputations (avec le rang et la progression).
+- Ces données sont relevées à chaque connexion du perso et à chaque changement d'équipement : connecte une fois chaque perso avec cette version pour remplir sa fiche.
+
 ## v0.98.1 — 17/11/2026
 
 _Un /reload suffit._

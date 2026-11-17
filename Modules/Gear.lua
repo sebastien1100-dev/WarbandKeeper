@@ -1,0 +1,159 @@
+local ADDON_NAME, WK = ...
+local M = WK:NewModule("Gear")
+
+-- Fiche de personnage (UI/CharacterSheet.lua) : ce qu'on relève sur le perso connecté, pour le revoir
+-- depuis n'importe quel autre perso.
+--   c.gear    = { [emplacement 1-19] = lien de l'objet }
+--   c.stats   = { str, agi, sta, int, spi, armor, ap, rap, crit, rcrit, hit, dodge, parry, block,
+--                 spell, heal, scrit, res = { holy, fire, nature, frost, shadow, arcane } }
+--   c.talents = { { name, points }, ... } (arbres de talents)
+--   c.reps    = { { name, standing (1-8), cur, max, header = true? }, ... }
+--   c.sheetAt = date du relevé
+-- Relevé à la connexion, puis à chaque changement d'équipement, de stats ou de réputation (regroupé).
+-- Toute valeur que le jeu masque (restrictions) est ignorée : la précédente reste.
+local SLOTS = 19
+
+local function readable(v)
+    local Q = WK.modules.QoL
+    if Q and Q.Readable then v = Q.Readable(v) end
+    return v
+end
+local function num(v)
+    v = readable(v)
+    return type(v) == "number" and v or nil
+end
+local function call(f, ...)
+    if not f then return end
+    local r = { pcall(f, ...) }
+    if not r[1] then return end
+    return select(2, unpack(r))
+end
+
+local function scanGear(c)
+    if not GetInventoryItemLink then return end
+    local gear = {}
+    for slot = 1, SLOTS do
+        local link = readable(call(GetInventoryItemLink, "player", slot))
+        if type(link) == "string" then gear[slot] = link end
+    end
+    c.gear = gear
+end
+
+local function scanStats(c)
+    local s = c.stats or {}
+    local keys = { "str", "agi", "sta", "int", "spi" }
+    for i, k in ipairs(keys) do
+        local _, eff = call(UnitStat, "player", i)
+        s[k] = num(eff) or s[k]
+    end
+    local _, armor = call(UnitArmor, "player")
+    s.armor = num(armor) or s.armor
+    local base, pos, neg = call(UnitAttackPower, "player")
+    if num(base) then s.ap = num(base) + (num(pos) or 0) + (num(neg) or 0) end
+    base, pos, neg = call(UnitRangedAttackPower, "player")
+    if num(base) then s.rap = num(base) + (num(pos) or 0) + (num(neg) or 0) end
+    s.crit = num(call(GetCritChance)) or s.crit
+    s.rcrit = num(call(GetRangedCritChance)) or s.rcrit
+    s.hit = num(call(GetHitModifier)) or s.hit
+    s.dodge = num(call(GetDodgeChance)) or s.dodge
+    s.parry = num(call(GetParryChance)) or s.parry
+    s.block = num(call(GetBlockChance)) or s.block
+    -- sorts : meilleure école (2 = sacré … 7 = arcanes)
+    local spell, scrit = nil, nil
+    for school = 2, 7 do
+        local d = num(call(GetSpellBonusDamage, school))
+        if d and (not spell or d > spell) then spell = d end
+        local cr = num(call(GetSpellCritChance, school))
+        if cr and (not scrit or cr > scrit) then scrit = cr end
+    end
+    s.spell, s.scrit = spell or s.spell, scrit or s.scrit
+    s.heal = num(call(GetSpellBonusHealing)) or s.heal
+    -- résistances : 1 sacré, 2 feu, 3 nature, 4 givre, 5 ombre, 6 arcanes
+    s.res = s.res or {}
+    local RES = { "holy", "fire", "nature", "frost", "shadow", "arcane" }
+    for i, k in ipairs(RES) do
+        local _, total = call(UnitResistance, "player", i)
+        s.res[k] = num(total) or s.res[k]
+    end
+    c.stats = s
+end
+
+-- Arbres de talents : nom et points (deux formes de GetTalentTabInfo selon le client)
+local function scanTalents(c)
+    if not (GetNumTalentTabs and GetTalentTabInfo) then return end
+    local n = num(call(GetNumTalentTabs)) or 0
+    local out = {}
+    for i = 1, n do
+        local r = { pcall(GetTalentTabInfo, i) }
+        if r[1] then
+            local name, points
+            if type(r[2]) == "number" then name, points = r[3], r[6] else name, points = r[2], r[4] end
+            name, points = readable(name), readable(points)
+            if type(name) == "string" then table.insert(out, { name = name, points = type(points) == "number" and points or 0 }) end
+        end
+    end
+    if #out > 0 then c.talents = out end
+end
+
+local function scanReps(c)
+    local out = {}
+    if C_Reputation and C_Reputation.GetNumFactions and C_Reputation.GetFactionDataByIndex then
+        local n = num(call(C_Reputation.GetNumFactions)) or 0
+        for i = 1, n do
+            local d = call(C_Reputation.GetFactionDataByIndex, i)
+            if type(d) == "table" and type(readable(d.name)) == "string" then
+                local mn, mx, v = num(d.currentReactionThreshold) or 0, num(d.nextReactionThreshold) or 1, num(d.currentStanding) or 0
+                table.insert(out, { name = d.name, standing = num(d.reaction) or 4, cur = v - mn, max = math.max(1, mx - mn),
+                    header = (d.isHeader and not d.isHeaderWithRep) or nil })
+            end
+        end
+    elseif GetNumFactions and GetFactionInfo then
+        local n = num(call(GetNumFactions)) or 0
+        for i = 1, n do
+            local name, _, standing, bMin, bMax, bVal, _, _, isHeader, _, hasRep = call(GetFactionInfo, i)
+            name = readable(name)
+            if type(name) == "string" then
+                bMin, bMax, bVal = num(bMin) or 0, num(bMax) or 1, num(bVal) or 0
+                table.insert(out, { name = name, standing = num(standing) or 4, cur = bVal - bMin, max = math.max(1, bMax - bMin),
+                    header = (readable(isHeader) and not readable(hasRep)) or nil })
+            end
+        end
+    end
+    if #out > 0 then c.reps = out end
+end
+
+function M:Scan(what)
+    local c = WK.DB:Me()
+    if not c then return end
+    if not what or what.gear then scanGear(c) end
+    if not what or what.stats then scanStats(c) end
+    if not what or what.talents then scanTalents(c) end
+    if not what or what.reps then scanReps(c) end
+    c.sheetAt = time()
+    WK:NotifyChanged()
+end
+
+-- Regroupe les évènements rapprochés en un seul relevé
+local pending
+local function later(part)
+    if pending then
+        if part then for k in pairs(part) do pending[k] = true end else pending.all = true end
+        return
+    end
+    pending = part and {} or { all = true }
+    if part then for k in pairs(part) do pending[k] = true end end
+    C_Timer.After(1, function()
+        local p = pending
+        pending = nil
+        M:Scan(not p.all and p or nil)
+    end)
+end
+
+WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() later() end) end)
+WK:On("PLAYER_EQUIPMENT_CHANGED", function() later({ gear = true, stats = true }) end)
+WK:On("UNIT_INVENTORY_CHANGED", function(unit) if unit == "player" then later({ gear = true }) end end)
+WK:On("UNIT_STATS", function(unit) if unit == "player" then later({ stats = true }) end end)
+WK:On("UNIT_RESISTANCES", function(unit) if unit == "player" then later({ stats = true }) end end)
+WK:On("CHARACTER_POINTS_CHANGED", function() later({ talents = true }) end)
+WK:On("UPDATE_FACTION", function() later({ reps = true }) end)
+WK:On("PLAYER_LEVEL_UP", function() later() end)
