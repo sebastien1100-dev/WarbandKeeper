@@ -170,9 +170,32 @@ function M:Killed(id, key)
     if key then return k[key] end
     return k
 end
+-- Mort récente (vue sur la carte : tête de mort et « mort il y a… ») : tué par un de tes persos, ou vu
+-- mort (cible morte tuée par un autre). WK.DB.global.rares.dead[npcID] = { at = date, me = true? }
+local DEAD_TTL = 3 * 3600
+function M:MarkDead(id, me)
+    if not id or not self:Get(id) then return end
+    local cfg = self:Config()
+    cfg.dead = cfg.dead or {}
+    local d = cfg.dead[id]
+    if d and time() - d.at < 60 and (d.me or not me) then return end
+    cfg.dead[id] = { at = time(), me = me or nil }
+    if self.OnChange then self:OnChange() end
+    if WK.UI and WK.UI.RedrawRarePins then WK.UI:RedrawRarePins() end
+    WK:NotifyChanged()
+end
+-- Secondes depuis la mort si elle est récente (moins de 3 h), et si c'est toi ; sinon nil
+function M:RecentDeath(id)
+    local d = (self:Config().dead or {})[id]
+    if not d then return nil end
+    local ago = time() - d.at
+    if ago > DEAD_TTL then self:Config().dead[id] = nil; return nil end
+    return ago, d.me
+end
 function M:MarkKilled(id)
     if not id or not self:Get(id) then return end
     local cfg = self:Config()
+    self:MarkDead(id, true)
     cfg.kills[id] = cfg.kills[id] or {}
     cfg.kills[id][WK:CharKey()] = time()
     if self.OnChange then self:OnChange() end
@@ -198,7 +221,7 @@ WK:On("UNIT_HEALTH", function(unit)
     local id = M.NpcID("target")
     if id and M:Get(id) then
         local tapOk, denied = pcall(UnitIsTapDenied, "target")
-        if not (tapOk and readable(denied) == true) then M:MarkKilled(id) end
+        if not (tapOk and readable(denied) == true) then M:MarkKilled(id) else M:MarkDead(id) end
     end
 end)
 
@@ -208,7 +231,14 @@ end)
 local seen = {} -- [id ou nom] = date de la dernière alerte (une alerte par rare toutes les 5 minutes)
 local function check(unit)
     local cfg = M:Config()
-    if not cfg.alert or not WK:FeatureOn("rares") then return end
+    if not WK:FeatureOn("rares") then return end
+    -- rare connu vu mort (son cadavre ciblé) : noté pour la carte, même sans alerte
+    local did = M.NpcID(unit)
+    if did and M:Get(did) then
+        local okD0, dead0 = pcall(UnitIsDead, unit)
+        if okD0 and readable(dead0) == true then M:MarkDead(did) return end
+    end
+    if not cfg.alert then return end
     local okE, exists = pcall(UnitExists, unit)
     if not (okE and readable(exists)) then return end
     local okC, cls = pcall(UnitClassification, unit)

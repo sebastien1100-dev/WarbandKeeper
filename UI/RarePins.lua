@@ -71,12 +71,25 @@ local function getPin(i)
         p.star = UI:Icon(p, "star", 12, nil, "OVERLAY")
         p.star:SetDrawLayer("OVERLAY", 2)
         p.star:SetPoint("CENTER", 0, 0)
+        -- mort récente : tête de mort rouge et « mort · 12 min » sous le médaillon
+        p.skull = UI:Icon(p, "skull", 12, nil, "OVERLAY")
+        p.skull:SetDrawLayer("OVERLAY", 3)
+        p.skull:SetPoint("CENTER", p, "BOTTOMRIGHT", -2, 2)
+        p.deadPill = CreateFrame("Frame", nil, p)
+        p.deadPill.bg = UI:Rounded(p.deadPill, 6, 0, "BACKGROUND", 1)
+        p.deadLabel = UI:Text(p.deadPill, 9)
+        p.deadLabel:SetPoint("CENTER")
+        p.deadPill:SetPoint("TOP", p, "BOTTOM", 0, -1)
         p:SetScript("OnEnter", function(s)
             local changed = hovered ~= s.r
             hovered = s.r
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(R:Name(s.r), C.rare[1], C.rare[2], C.rare[3])
             tooltipLines(GameTooltip, s.r)
+            local ago, me = R:RecentDeath(s.r.id)
+            if ago then
+                GameTooltip:AddLine(string.format(me and T("Tué par toi %s") or T("Vu mort %s"), UI:AgoShort(ago)), 0.91, 0.42, 0.42)
+            end
             -- patrouille : dit ce qu'on doit voir sur la carte
             local m = s.mapID and s.r.maps[s.mapID]
             local ext = m and pathExtent(m.path)
@@ -181,8 +194,23 @@ function UI:DrawRarePins(cv, mapID, w, h)
         p.bg:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
         p.ring:SetVertexColor(col[1], col[2], col[3], 1)
         p.star:SetVertexColor(col[1], col[2], col[3], 1)
-        p:SetAlpha(dead and 0.45 or 1)
-        if p.bg.SetDesaturated then p.bg:SetDesaturated(dead); p.ring:SetDesaturated(dead); p.star:SetDesaturated(dead) end
+        -- mort récente (toi ou vu mort) : médaillon rouge, tête de mort, depuis combien de temps
+        local ago = R:RecentDeath(r.id)
+        if ago then
+            p.ring:SetVertexColor(unpack(C.negative))
+            p.star:SetVertexColor(unpack(C.negative))
+            p.skull:SetSize(size * 0.55, size * 0.55)
+            p.skull:SetVertexColor(unpack(C.negative))
+            p.deadLabel:SetText(string.format(T("mort · %s"), UI:AgoShort(ago, true)))
+            p.deadLabel:SetTextColor(unpack(C.negative))
+            p.deadPill:SetSize((p.deadLabel:GetStringWidth() or 30) + 10, 14)
+            p.deadPill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.9)
+        end
+        p.skull:SetShown(ago ~= nil)
+        p.deadPill:SetShown(ago ~= nil)
+        p:SetAlpha((dead and not ago) and 0.45 or 1)
+        local grey = dead and not ago
+        if p.bg.SetDesaturated then p.bg:SetDesaturated(grey); p.ring:SetDesaturated(grey); p.star:SetDesaturated(grey) end
         p:ClearAllPoints()
         p:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[1] / 100 * w, -m.spawns[2] / 100 * h)
         p:Show()
@@ -359,6 +387,13 @@ function UI:SyncRareList(mapID, list)
             rw.name:SetText(R:Name(r))
             rw.name:SetTextColor(unpack(dead and C.dim or C.text))
             rw.lvl:SetText(dead and T("tué") or tostring(r.min))
+            rw.lvl:SetTextColor(unpack(C.muted))
+            local ago = R:RecentDeath(r.id)
+            if ago then
+                rw.dot:SetVertexColor(unpack(C.negative))
+                rw.lvl:SetText(string.format(T("mort · %s"), UI:AgoShort(ago, true)))
+                rw.lvl:SetTextColor(unpack(C.negative))
+            end
             rw:Show()
             y = y - ROW
         end

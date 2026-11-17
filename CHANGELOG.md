@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.3.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Rares : un rare mort apparaît sur la carte pendant 3 h (médaillon rouge, tête de mort, « mort · 12 min » dessous), qu'il ait été tué par toi ou que tu aies vu son cadavre (cible morte tuée par un autre). L'infobulle dit « Tué par toi » ou « Vu mort », et la liste à côté de la carte l'indique aussi. Au-delà, il redevient comme avant (pâle s'il a déjà été tué par ce perso).
+
 ## v1.2.2 — 17/11/2026
 
 _Un /reload suffit._

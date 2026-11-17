@@ -349,3 +349,14 @@ function UI:FactionRealm(c)
     table.insert(parts, kind or c.realm or "")
     return table.concat(parts, "  ·  ")
 end
+
+-- Durée écoulée courte : « il y a 12 min », « il y a 2 h 05 » (bare : « 12 min », « 2 h 05 »)
+function UI:AgoShort(sec, bare)
+    sec = math.max(0, sec or 0)
+    local t
+    if sec < 60 then t = WK.T("< 1 min")
+    elseif sec < 3600 then t = string.format(WK.T("%d min"), math.floor(sec / 60))
+    else t = string.format("%d h %02d", math.floor(sec / 3600), math.floor(sec % 3600 / 60)) end
+    if bare then return t end
+    return WK.T("il y a") .. " " .. t
+end

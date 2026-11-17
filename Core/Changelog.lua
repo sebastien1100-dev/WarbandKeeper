@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.0", date = "17/11/2026",
+        added = {
+            "Rares : un rare mort apparaît sur la carte pendant 3 h (médaillon rouge, tête de mort, « mort · 12 min » dessous), qu'il ait été tué par toi ou que tu aies vu son cadavre (cible morte tuée par un autre). L'infobulle dit « Tué par toi » ou « Vu mort », et la liste à côté de la carte l'indique aussi. Au-delà, il redevient comme avant (pâle s'il a déjà été tué par ce perso).",
+        },
+    },
+    {
         version = "1.2.2", date = "17/11/2026",
         fixed = {
             "Alerte de rare : erreur « fonction protégée WarbandKeeperRareAlert:Hide() » quand le bandeau se fermait (ou entrait dans le mode édition) en plein combat. Le bandeau porte le bouton Cibler, que le jeu interdit de cacher en combat : il devient transparent et se ferme vraiment à la sortie du combat. Un rare repéré en combat s'affiche dans l'alerte compacte quand le bandeau n'est pas déjà ouvert.",
