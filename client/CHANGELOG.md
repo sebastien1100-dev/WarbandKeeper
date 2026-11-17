@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.3.1 — 17/11/2026
+
+### Corrections
+- Le dossier de la bêta de WoW Forever (`_forever_beta_`) était présenté comme WoW Forever : il est maintenant nommé « WoW Forever (bêta) », et l'installation normale passe avant lui (choisie d'office si c'est la seule).
+
 ## 1.3.0 — 17/11/2026
 
 ### Ajouts

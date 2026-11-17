@@ -81,6 +81,30 @@ def questie(path):
     return dest, git("rev-parse", "--short", "HEAD", cwd=dest)
 
 
+EVERLOOT_URL = "https://github.com/Everloot/everloot"
+EVERLOOT_FILE = "web/src/data/game-data/client-encounters.json"
+
+
+def everloot_encounters():
+    """Catalogue des rencontres de boss (lu dans les fichiers du jeu par Everloot) : clone partiel,
+    seul ce fichier est téléchargé. Rend son chemin, ou None (le reste de la mise à jour continue)."""
+    dest = os.path.join(CACHE, "everloot")
+    try:
+        if not os.path.isdir(os.path.join(dest, ".git")):
+            os.makedirs(CACHE, exist_ok=True)
+            subprocess.run(["git", "clone", "-q", "--depth", "1", "--filter=blob:none", "--sparse", EVERLOOT_URL, dest],
+                           check=True)
+            git("sparse-checkout", "set", "--no-cone", EVERLOOT_FILE, cwd=dest)
+        else:
+            git("fetch", "-q", "--depth", "1", "origin", cwd=dest)
+            git("reset", "-q", "--hard", "FETCH_HEAD", cwd=dest)
+        path = os.path.join(dest, EVERLOOT_FILE)
+        return path if os.path.isfile(path) else None
+    except Exception as e:
+        log("  ! Everloot indisponible :", e)
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Chiffres de chaque fichier généré (chargé avec lupa : sert aussi de contrôle)
 # ---------------------------------------------------------------------------
@@ -126,6 +150,8 @@ def metrics():
             out["Boss sans n° de PNJ (appris en jeu)"] = nb
             out["Objets de butin des boss"] = it
             out["Objets pas encore découverts"] = und
+            enc = L.eval("function(db) local n = 0 for _, x in ipairs(db or {}) do for _, y in ipairs(x.bosses) do if (y[7] or 0) ~= 0 then n = n + 1 end end end return n end")
+            out["Boss avec n° de rencontre"] = enc(WK.DungeonsDB)
     return out
 
 
@@ -193,6 +219,11 @@ def main():
                 fetch("%s/%s/page-data.json" % (WOWTBC, s), os.path.join(ldir, s.replace("/", "_") + ".json"))
             if slugs:
                 run(os.path.join(HERE, "gen_dungeons.py"), "--import", ldir)
+            # rencontres de boss (fichiers du jeu, catalogue d'Everloot) : clone partiel d'un seul fichier
+            enc = everloot_encounters()
+            if enc:
+                run(os.path.join(HERE, "gen_dungeons.py"), "--import-encounters", enc)
+                sources.append("Everloot (rencontres)")
             sources.append("wowtbc.gg (%d guides, %d tables de butin)" % (len(pages), len(slugs)))
         if do_questie:
             run(os.path.join(HERE, "gen_dungeons.py"), qpath)

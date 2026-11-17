@@ -891,6 +891,7 @@ WK.Locales.enUS.text = {
     ["Bas"] = "Lower", ["Haut"] = "Upper", ["Est"] = "East", ["Nord"] = "North", ["Ouest"] = "West",
     ["redémarrer le jeu"] = "restart the game",
     ["/reload suffit"] = "/reload is enough",
+    ["Numéros des rencontres de boss (lus dans les fichiers du jeu) : catalogue d'Everloot (github.com/Everloot/everloot)."] = "Boss encounter IDs (read from the game files): Everloot's catalogue (github.com/Everloot/everloot).",
     ["sur le compte"] = "on the account",
     ["Infobulles"] = "Tooltips",
     ["Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos."] = "In an item tooltip: the professions that use it to level up, and how many each of your characters still needs.",

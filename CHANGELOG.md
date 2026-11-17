@@ -24,6 +24,16 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.91.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Donjons : les boss tués sont aussi repérés par la fin de rencontre que signale le jeu (177 boss), même sans les avoir en cible ni fouiller leur corps. Et sur un client français, le jeu donne le vrai nom français du boss : il est retenu et affiché (utile pour le nouveau contenu, que QuestieDB ne traduit pas encore).
+
+### Modifications
+- Options > À propos : source des numéros de rencontre (catalogue d'Everloot, tiré des fichiers du jeu).
+
 ## v0.90.3 — 17/11/2026
 
 _Un /reload suffit._

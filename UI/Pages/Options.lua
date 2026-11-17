@@ -487,6 +487,7 @@ UI:RegisterPage({
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
             .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), monstres rares, quêtes, boss des donjons et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
             .. T("Guides de montée des métiers et tables de butin des donjons et raids de WoW Forever : wowtbc.gg.") .. "\n"
+            .. T("Numéros des rencontres de boss (lus dans les fichiers du jeu) : catalogue d'Everloot (github.com/Everloot/everloot).") .. "\n"
             .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)

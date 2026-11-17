@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.3.0"
+CLIENT_VERSION = "1.3.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -92,7 +92,7 @@ def vtuple(v):
 # ---------------------------------------------------------------------------
 FLAVORS = {"_retail_": "Retail", "_classic_": "Classic", "_classic_era_": "Classic Era",
            "_anniversary_": "Anniversary", "_classic_ptr_": "Classic PTR", "_ptr_": "PTR", "_beta_": "Bêta",
-           "_forever_": "WoW Forever"}
+           "_forever_": "WoW Forever", "_forever_beta_": "WoW Forever (bêta)", "_forever_ptr_": "WoW Forever (PTR)"}
 
 
 def _registry_paths():
@@ -214,12 +214,13 @@ def find_installs():
                 continue
             addons = os.path.join(fdir, "Interface", "AddOns")
             forever = _is_forever(fdir, n or root)
-            label = "WoW Forever" if forever else FLAVORS.get(n, n.strip("_").replace("_", " ").title() or "World of Warcraft")
+            label = FLAVORS.get(n) or ("WoW Forever" if forever else n.strip("_").replace("_", " ").title() or "World of Warcraft")
             if any(o["addons"] == addons for o in out):
                 continue
             out.append({"addons": addons, "label": label, "forever": forever, "root": root,
                         "version": installed_version(addons) if os.path.isdir(addons) else None})
-    out.sort(key=lambda i: (i["version"] is None, not i["forever"]))
+    # l'addon déjà installé d'abord, puis WoW Forever « normal » avant la bêta ou le PTR
+    out.sort(key=lambda i: (i["version"] is None, not i["forever"], "(" in i["label"]))
     return out
 
 
@@ -241,9 +242,11 @@ def flavor_label(addons):
     """Nom lisible de l'installation d'un dossier AddOns (WoW Forever, Classic Era…)."""
     fdir = game_dir(addons)
     n = os.path.basename(fdir)
+    if n in FLAVORS:
+        return FLAVORS[n]
     if _is_forever(fdir, n):
         return "WoW Forever"
-    return FLAVORS.get(n, n.strip("_").replace("_", " ").title() or "World of Warcraft")
+    return n.strip("_").replace("_", " ").title() or "World of Warcraft"
 
 
 def use_install(inst):
@@ -1527,10 +1530,14 @@ class App:
 
     @staticmethod
     def auto_pick(installs):
-        """Installation prise d'office (WoW Forever) : celle qui a déjà l'addon, sinon la seule."""
+        """Installation prise d'office (WoW Forever) : celle qui a déjà l'addon, sinon la seule (bêta et PTR
+        mises de côté quand il y a l'installation normale)."""
         withAddon = [i for i in installs if i["version"]]
         if withAddon:
             return withAddon[0]
+        live = [i for i in installs if "(" not in i["label"]]
+        if len(live) == 1:
+            return live[0]
         forever = [i for i in installs if i["forever"]]
         if len(forever) == 1:
             return forever[0]

@@ -9,6 +9,11 @@ Deux étapes :
      (liste des donjons : https://wowtbc.gg/page-data/warcraftforever/loot-tables/dungeons/page-data.json).
      Le script en garde l'essentiel dans tools/dungeons/wowtbc.json (boss, objets, rareté, niveau,
      taux de drop quand le site le donne, objet découvert ou non).
+  1b. python3 tools/gen_dungeons.py --import-encounters <client-encounters.json>
+     (catalogue des rencontres de boss lu dans les fichiers du jeu par Everloot :
+      https://github.com/Everloot/everloot, web/src/data/game-data/client-encounters.json) : gardé dans
+      tools/dungeons/encounters.json (n° d'instance » rencontres { n°, nom anglais }). Sert à la détection des
+      boss tués (événement ENCOUNTER_END du jeu) et au nom français des boss (donné par le jeu en français).
   2. python3 tools/gen_dungeons.py <clone de QuestieDB>
      (git clone --depth 1 https://github.com/Questie/QuestieDB)
 
@@ -29,6 +34,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "dungeons", "wowtbc.json")
+ENCOUNTERS = os.path.join(HERE, "dungeons", "encounters.json")
 OUT = os.path.join(HERE, "..", "Modules", "DungeonsDB.lua")
 
 # page wowtbc.gg -> (clé, n° d'instance du jeu, nom français, aile, raid)
@@ -124,10 +130,42 @@ def do_import(src):
     print("%d pages -> %s%s" % (len(pages), CACHE, ("  (manquent : " + ", ".join(missing) + ")") if missing else ""))
 
 
+def do_import_encounters(src):
+    with open(src, encoding="utf-8") as f:
+        d = json.load(f)
+    out = {"source": "Everloot, client-encounters.json (https://github.com/Everloot/everloot)",
+           "credit": d.get("credit"), "build": (d.get("build") or {}).get("version"),
+           "instances": {k: [[e["id"], e["name"]] for e in v] for k, v in d["instances"].items()}}
+    os.makedirs(os.path.dirname(ENCOUNTERS), exist_ok=True)
+    with open(ENCOUNTERS, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=0, sort_keys=True)
+    print("%d instances, %d rencontres (build %s) -> %s" % (len(out["instances"]),
+          sum(len(v) for v in out["instances"].values()), out["build"], ENCOUNTERS))
+
+
+def _norm(x):
+    return re.sub(r"[^a-z0-9]", "", re.sub(r"^the ", "", (x or "").lower()))
+
+
 def generate(root):
     import lupa
     with open(CACHE, encoding="utf-8") as f:
         pages = json.load(f)
+    encounters = {}
+    if os.path.exists(ENCOUNTERS):
+        with open(ENCOUNTERS, encoding="utf-8") as f:
+            encounters = json.load(f)["instances"]
+
+    def encounter_of(inst, name):
+        """N° de rencontre du boss (nom anglais, ou l'un des noms de « A / B » ou « A and B »)."""
+        if not inst:
+            return 0
+        parts = [name] + name.split(" / ") + re.split(r" and | & ", name)
+        keys = {_norm(p) for p in parts if p}
+        for eid, ename in encounters.get(str(inst), []):
+            if _norm(ename) in keys:
+                return eid
+        return 0
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
     L.execute('QDB={}; ZDB={private={}}; L10N={npcNameLookup={}}\nGetLocale=function() return "frFR" end\nloadstring=load\n'
               'UnitFactionGroup=function() return "Alliance" end\n'
@@ -212,13 +250,14 @@ def generate(root):
         "-- base de données de l'addon Questie, sous la licence de Questie (GPLv3 selon son équipe).",
         "-- WK.DungeonsDB = { { key, inst (n° d'instance ou nil), name, en (nom anglais), min, max, raid, zones,",
         "--   entry = { uiMapID, x, y }, trash = { objet, ... },",
-        "--   bosses = { { id (PNJ, 0 si inconnu), nom, nom fr, niveau, { objet, ... }, aile }, ... } }, ... }",
+        "--   bosses = { { id (PNJ, 0 si inconnu), nom, nom fr, niveau, { objet, ... }, aile, rencontre (0 si inconnue) }, ... } }, ... }",
+        "-- N° des rencontres (ENCOUNTER_END) : catalogue des fichiers du jeu d'Everloot (github.com/Everloot/everloot).",
         "-- WK.DungeonItems[objet] = { qualité, niveau d'objet, niveau requis, % de drop ou nil, pas encore vu tomber }",
         "local ADDON_NAME, WK = ...",
         "WK.DungeonsDB = {",
     ]
     all_items = {}
-    tb = ti = unmatched = 0
+    tb = ti = unmatched = matched_enc = 0
     order.sort(key=lambda k: (merged[k]["raid"], merged[k]["min"], merged[k]["max"]))
     for key in order:
         d = merged[key]
@@ -242,7 +281,10 @@ def generate(root):
                         loot.append(r)
             else:
                 unmatched += 1
-            lines.append("{%d,%s,%s,%d,{%s},%s}," % (nid, s(b["name"]), s(nmfr), lvl, ",".join(str(i) for i in loot), s(wing)))
+            enc = encounter_of(d["inst"], b["name"])
+            if enc:
+                matched_enc += 1
+            lines.append("{%d,%s,%s,%d,{%s},%s,%d}," % (nid, s(b["name"]), s(nmfr), lvl, ",".join(str(i) for i in loot), s(wing), enc))
             tb += 1
             ti += len(loot)
         lines.append("}},")
@@ -258,13 +300,15 @@ def generate(root):
     lines.append("}")
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-    print("%d donjons et raids, %d boss (%d sans n° de PNJ), %d objets -> %s (%d Ko)" % (
-        len(order), tb, unmatched, ti, os.path.normpath(OUT), os.path.getsize(OUT) // 1024))
+    print("%d donjons et raids, %d boss (%d sans n° de PNJ, %d avec n° de rencontre), %d objets -> %s (%d Ko)" % (
+        len(order), tb, unmatched, matched_enc, ti, os.path.normpath(OUT), os.path.getsize(OUT) // 1024))
 
 
 if __name__ == "__main__":
     if len(sys.argv) >= 3 and sys.argv[1] == "--import":
         do_import(sys.argv[2])
+    elif len(sys.argv) >= 3 and sys.argv[1] == "--import-encounters":
+        do_import_encounters(sys.argv[2])
     elif len(sys.argv) >= 2 and not sys.argv[1].startswith("-"):
         generate(sys.argv[1])
     else:

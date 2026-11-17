@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.91.0", date = "17/11/2026",
+        added = {
+            "Donjons : les boss tués sont aussi repérés par la fin de rencontre que signale le jeu (177 boss), même sans les avoir en cible ni fouiller leur corps. Et sur un client français, le jeu donne le vrai nom français du boss : il est retenu et affiché (utile pour le nouveau contenu, que QuestieDB ne traduit pas encore).",
+        },
+        changed = {
+            "Options > À propos : source des numéros de rencontre (catalogue d'Everloot, tiré des fichiers du jeu).",
+        },
+    },
+    {
         version = "0.90.3", date = "17/11/2026",
         changed = {
             "Données (quêtes, rares, lieux, donjons, guides…) : vérifiées chaque jour au lieu de chaque lundi, le temps que le jeu se stabilise. Fréquence et publication automatique réglables depuis le client PC (Réglages > Données).",

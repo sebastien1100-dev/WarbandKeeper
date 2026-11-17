@@ -27,12 +27,12 @@ function M:Config() return db().cfg end
 -- Boss sans n° de PNJ connu (nouveau contenu, absent de QuestieDB) : identifiés en jeu par leur nom
 -- (client anglais) ou par leur butin (un objet de leur table trouvé sur le corps), puis le n° est
 -- retenu dans dungeons.bossIds[clé:nom]. Même chose pour un n° d'instance inconnu (dungeons.inst).
-local byKey, byInst, byZone, bossOf, byName
+local byKey, byInst, byZone, bossOf, byName, byEncounter
 local function norm(s) return s and s:lower():gsub("^the ", ""):gsub("[%s%p]", "") or "" end
 local function index()
     local g = db()
-    g.bossIds, g.inst, g.names = g.bossIds or {}, g.inst or {}, g.names or {}
-    byKey, byInst, byZone, bossOf, byName = {}, {}, {}, {}, {}
+    g.bossIds, g.inst, g.names, g.bossNames = g.bossIds or {}, g.inst or {}, g.names or {}, g.bossNames or {}
+    byKey, byInst, byZone, bossOf, byName, byEncounter = {}, {}, {}, {}, {}, {}
     for _, d in ipairs(WK.DungeonsDB or {}) do
         byKey[d.key] = d
         if d.inst then byInst[d.inst] = d end
@@ -41,8 +41,10 @@ local function index()
         for _, b in ipairs(d.bosses) do
             local id = b[1]
             if id == 0 then id = g.bossIds[d.key .. ":" .. b[2]] or ("n:" .. b[2]) end
-            local e = { id = id, name = b[2], nameFR = b[3], level = b[4], loot = b[5], wing = b[6], dungeon = d }
+            local e = { id = id, name = b[2], nameFR = b[3] or g.bossNames[d.key .. ":" .. b[2]], level = b[4], loot = b[5],
+                        wing = b[6], encounter = (b[7] or 0) ~= 0 and b[7] or nil, dungeon = d }
             table.insert(d.list, e)
+            if e.encounter then byEncounter[e.encounter] = e end
             if type(id) == "number" then bossOf[id] = e end
             byName[norm(b[2])] = byName[norm(b[2])] or e
             if b[3] then byName[norm(b[3])] = byName[norm(b[3])] or e end
@@ -297,6 +299,23 @@ local function onDeath(guid, name)
     end
     if b then record(b) end
 end
+-- Fin de rencontre réussie (ENCOUNTER_END, n° de rencontre des fichiers du jeu) : le boss est tué ;
+-- le nom que donne le jeu (dans sa langue) devient le nom français du boss s'il manquait
+WK:On("ENCOUNTER_END", function(encounterID, encounterName, _, _, success)
+    local readable = WK.modules.QoL.Readable
+    encounterID, success = readable(encounterID), readable(success)
+    if type(encounterID) ~= "number" or (success ~= 1 and success ~= true) then return end
+    if not byKey then index() end
+    local b = byEncounter[encounterID]
+    if not b then return end
+    encounterName = readable(encounterName)
+    if type(encounterName) == "string" and encounterName ~= "" and WK.Lang() == "frFR" and not b.nameFR then
+        db().bossNames[b.dungeon.key .. ":" .. b.name] = encounterName
+        b.nameFR = encounterName
+    end
+    record(b)
+end)
+
 -- Objet trouvé sur le corps du PNJ id : s'il n'est dans la table que d'un seul boss pas encore
 -- identifié du donjon, ce PNJ est ce boss
 local function learnFromLoot(id, itemID)

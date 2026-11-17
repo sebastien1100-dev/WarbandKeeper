@@ -30,6 +30,7 @@ PHRASES = {
     "Objets de butin des boss": ("{n} objet(s) de butin de plus", "{n} objet(s) de butin en moins"),
     "Objets pas encore découverts": ("", "{n} objet(s) de butin désormais découverts"),
     "Recettes": ("{n} recette(s) de plus", "{n} recette(s) en moins"),
+    "Boss avec n° de rencontre": ("{n} boss de plus détectés par la fin de rencontre", ""),
     "Guides de métiers": ("{n} guide(s) de métier de plus", ""),
 }
 
