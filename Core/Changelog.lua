@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.11.4", date = "17/11/2026",
+        changed = {
+            "Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte en gélule (elle s'élargit pour deux chiffres), cerclée de sombre et posée au-dessus des icônes voisines, avec un chiffre blanc détouré.",
+        },
+    },
+    {
         version = "1.11.3", date = "17/11/2026",
         changed = {
             "Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte plus grande, cerclée de sombre, avec un chiffre blanc plus gros.",
