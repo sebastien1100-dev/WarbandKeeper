@@ -150,9 +150,11 @@ local function redraw()
     if cw and cw > 0 then
         -- chaque calque à part : une erreur dans l'un n'empêche pas les autres de s'afficher
         -- (elle est notée une fois dans le chat, avec le nom du calque)
+        UI.mapStats = { map = mapID, w = cw, h = ch, level = cv:GetFrameLevel(), strata = cv.GetFrameStrata and cv:GetFrameStrata() }
         local function layer(name, fn)
             if not fn then return end
             local ok, err = pcall(fn, UI, cv, mapID, cw, ch)
+            UI.mapStats[name] = ok and "ok" or "erreur"
             if not ok then
                 UI.mapErrors = UI.mapErrors or {}
                 if not UI.mapErrors[name] then

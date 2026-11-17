@@ -98,7 +98,9 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     local size = math.max(12, (cfg.size or 18) * scale * 1.2)
     local lvl = (cv:GetFrameLevel() or 1) + 18
     local n = 0
-    for _, it in ipairs(L:Places(mapID, "map")) do
+    local places = L:Places(mapID, "map")
+    if UI.mapStats then UI.mapStats.places = #places end
+    for _, it in ipairs(places) do
         n = n + 1
         if n > 400 then break end
         local p = getPin(n, cv)

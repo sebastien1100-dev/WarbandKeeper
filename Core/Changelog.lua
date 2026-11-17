@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.2", date = "17/11/2026",
+        changed = {
+            "/wk carte : le diagnostic de la carte du monde dit aussi ce qui a été dessiné (carte, taille, module Carte actif, nombre de lieux) et l'état de chaque calque (Lieux, Rares, Notes…), pour trouver pourquoi des pastilles n'apparaissent pas.",
+        },
+    },
+    {
         version = "1.3.1", date = "17/11/2026",
         changed = {
             "Alerte de rare : plus de bouton « Cibler », seulement la flèche de guidage (plus grande, à droite du bandeau ; elle pose aussi la tête de mort). Sans bouton protégé, le bandeau s'affiche et se ferme normalement en combat.",

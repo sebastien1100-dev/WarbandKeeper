@@ -74,6 +74,16 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK:Print(WK.T("Carte du monde : diagnostic"))
         WK:Print("  " .. WK.T("carte") .. " : " .. tostring(mapID) .. " · " .. WK.T("module Rares") .. " : " .. tostring(WK:FeatureOn("rares"))
             .. " · " .. WK.T("médaillons") .. " : " .. tostring(R:Config().map) .. " · " .. WK.T("rares sur cette carte") .. " : " .. (mapID and #R:OnMap(mapID) or 0))
+        local st = WK.UI.mapStats
+        if st then
+            WK:Print("  " .. string.format("dessin : carte %s · toile %dx%d · %s/%s · module Carte : %s · lieux : %s",
+                tostring(st.map), st.w or 0, st.h or 0, tostring(st.strata), tostring(st.level), tostring(WK:FeatureOn("maplayers")), tostring(st.places)))
+            local parts = {}
+            for _, k in ipairs({ "Lieux", "Filons et plantes", "Rares", "Bateaux", "Trajet", "Notes", "Repère" }) do
+                table.insert(parts, k .. " " .. tostring(st[k]))
+            end
+            WK:Print("  " .. table.concat(parts, " · "))
+        end
         local any = false
         for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
