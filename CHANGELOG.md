@@ -23,6 +23,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.95.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte du monde : patrouilles des rares bien plus visibles (points plus gros et serrés, contour noir comme le trajet du guidage). Au survol, la patrouille et les autres points d'apparition passent par-dessus les médaillons : une patrouille courte n'est plus cachée sous l'étoile.
+- Infobulle d'un rare : dit s'il patrouille (pointillés sur la carte), s'il ne bouge que de quelques mètres, ou s'il reste toujours à son point d'apparition (c'est le cas de la plupart : 237 rares sur 327).
+
 ## v0.95.1 — 17/11/2026
 
 _Un /reload suffit._

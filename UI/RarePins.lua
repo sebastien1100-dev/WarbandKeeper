@@ -11,6 +11,17 @@ local R = WK.modules.Rares
 local MAX = 60
 
 local holder, pins, dots, hovered = nil, {}, {}, nil
+local top, topDots = nil, {} -- points du rare survolé, dessinés par-dessus les médaillons
+-- Étendue d'une patrouille (en % de la carte) : nil sans patrouille
+local function pathExtent(path)
+    if not path or #path < 4 then return nil end
+    local x1, x2, y1, y2 = 100, 0, 100, 0
+    for k = 1, #path - 1, 2 do
+        x1, x2 = math.min(x1, path[k]), math.max(x2, path[k])
+        y1, y2 = math.min(y1, path[k + 1]), math.max(y2, path[k + 1])
+    end
+    return math.max(x2 - x1, y2 - y1)
+end
 
 local function killedText(r)
     local k = R:Killed(r.id) or {}
@@ -66,6 +77,12 @@ local function getPin(i)
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(R:Name(s.r), C.rare[1], C.rare[2], C.rare[3])
             tooltipLines(GameTooltip, s.r)
+            -- patrouille : dit ce qu'on doit voir sur la carte
+            local m = s.mapID and s.r.maps[s.mapID]
+            local ext = m and pathExtent(m.path)
+            if not ext then GameTooltip:AddLine(T("Ne patrouille pas : toujours à son point d'apparition."), 0.6, 0.6, 0.6, true)
+            elseif ext < 4 then GameTooltip:AddLine(T("Patrouille courte (quelques mètres autour du médaillon)."), 0.6, 0.6, 0.6, true)
+            else GameTooltip:AddLine(T("Patrouille : pointillés sur la carte."), 0.6, 0.6, 0.6, true) end
             GameTooltip:AddLine(T("Clic : guidage vers ce rare"), 0.5, 0.5, 0.5)
             GameTooltip:Show()
             if changed and UI.RedrawRarePins then UI:RedrawRarePins() end
@@ -81,20 +98,45 @@ local function getPin(i)
     end
     return p
 end
+-- Point de patrouille ou d'apparition : rond de couleur sur un contour noir (lisible sur tous les fonds
+-- de carte, comme le trajet du guidage).
 local function getDot(i)
     local d = dots[i]
     if not d then
-        d = holder:CreateTexture(nil, "ARTWORK")
+        d = holder:CreateTexture(nil, "ARTWORK", nil, 2)
         d:SetTexture(UI.MEDIA .. "circle")
+        d.o = holder:CreateTexture(nil, "ARTWORK", nil, 1)
+        d.o:SetTexture(UI.MEDIA .. "circle")
+        d.o:SetPoint("CENTER", d, "CENTER")
         dots[i] = d
     end
-    d:Show()
+    d:Show(); d.o:Show()
     return d
+end
+local function getTopDot(i)
+    local d = topDots[i]
+    if not d then
+        d = top:CreateTexture(nil, "OVERLAY", nil, 2)
+        d:SetTexture(UI.MEDIA .. "circle")
+        d.o = top:CreateTexture(nil, "OVERLAY", nil, 1)
+        d.o:SetTexture(UI.MEDIA .. "circle")
+        d.o:SetPoint("CENTER", d, "CENTER")
+        topDots[i] = d
+    end
+    d:Show(); d.o:Show()
+    return d
+end
+local function sizeDot(d, s, r, g, b, a)
+    d:SetSize(s, s)
+    d:SetVertexColor(r, g, b, a)
+    d.o:SetSize(s + 3, s + 3)
+    d.o:SetVertexColor(0, 0, 0, 0.8 * a)
 end
 
 function UI:HideRarePins()
     for _, p in ipairs(pins) do p:Hide() end
-    for _, d in ipairs(dots) do d:Hide() end
+    for _, d in ipairs(dots) do d:Hide(); d.o:Hide() end
+    for _, d in ipairs(topDots) do d:Hide(); d.o:Hide() end
 end
 
 local last -- dernier dessin (pour redessiner au survol)
@@ -112,6 +154,11 @@ function UI:DrawRarePins(cv, mapID, w, h)
     holder:SetParent(cv)
     holder:SetAllPoints(cv)
     holder:SetFrameLevel((cv:GetFrameLevel() or 1) + 25)
+    if not top then top = CreateFrame("Frame", nil, holder) end
+    top:SetAllPoints(holder)
+    top:SetFrameLevel(holder:GetFrameLevel() + 20)
+    top:EnableMouse(false)
+    local nt = 0
     local scale = w / 1000
     local me = WK:CharKey()
     local nd = 0
@@ -123,7 +170,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
         local i = shown
         local m = r.maps[mapID]
         local p = getPin(i)
-        p.r = r
+        p.r, p.mapID = r, mapID
         local size = 26 * scale * 1.2
         p:SetSize(size, size)
         p.bg:SetSize(size * 0.82, size * 0.82)
@@ -144,25 +191,24 @@ function UI:DrawRarePins(cv, mapID, w, h)
         local showPath = hovered == r or R:Config().paths
         if hovered == r then
             for k = 3, #m.spawns, 2 do
-                nd = nd + 1
-                local d = getDot(nd)
-                d:SetSize(8 * scale * 1.2, 8 * scale * 1.2)
-                d:SetVertexColor(col[1], col[2], col[3], 0.8)
+                nt = nt + 1
+                local d = getTopDot(nt)
+                sizeDot(d, math.max(8, 10 * scale), col[1], col[2], col[3], 1)
                 d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[k] / 100 * w, -m.spawns[k + 1] / 100 * h)
             end
         end
         if showPath then
             local path = m.path
-            local pa = (hovered == r) and 0.9 or 0.55
+            local pa = (hovered == r) and 1 or 0.8
+            local ds, gap = math.max(5, 6.5 * scale), math.max(9, 13 * scale)
             for k = 1, #path - 2, 2 do
                 local x1, y1, x2, y2 = path[k] / 100 * w, path[k + 1] / 100 * h, path[k + 2] / 100 * w, path[k + 3] / 100 * h
                 local len = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-                local n = math.max(1, math.floor(len / (12 * scale)))
-                for j = 0, n - 1, 2 do
-                    nd = nd + 1
-                    local d = getDot(nd)
-                    d:SetSize(4 * scale * 1.2, 4 * scale * 1.2)
-                    d:SetVertexColor(col[1], col[2], col[3], pa)
+                local n = math.max(1, math.floor(len / gap))
+                for j = 0, n - 1 do
+                    local d
+                    if hovered == r then nt = nt + 1; d = getTopDot(nt) else nd = nd + 1; d = getDot(nd) end
+                    sizeDot(d, ds, col[1], col[2], col[3], pa)
                     local t = j / n
                     d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", x1 + (x2 - x1) * t, -(y1 + (y2 - y1) * t))
                 end
@@ -171,7 +217,8 @@ function UI:DrawRarePins(cv, mapID, w, h)
         end
     end
     for k = shown + 1, #pins do pins[k]:Hide() end
-    for k = nd + 1, #dots do dots[k]:Hide() end
+    for k = nd + 1, #dots do dots[k]:Hide(); dots[k].o:Hide() end
+    for k = nt + 1, #topDots do topDots[k]:Hide(); topDots[k].o:Hide() end
 end
 -- Redessin au survol : sans tout cacher d'abord (cacher le médaillon sous la souris déclenchait son OnLeave,
 -- donc un nouveau redessin, et le médaillon clignotait / disparaissait). DrawRarePins place et montre les

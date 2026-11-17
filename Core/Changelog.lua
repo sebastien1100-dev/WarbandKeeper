@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.95.2", date = "17/11/2026",
+        changed = {
+            "Carte du monde : patrouilles des rares bien plus visibles (points plus gros et serrés, contour noir comme le trajet du guidage). Au survol, la patrouille et les autres points d'apparition passent par-dessus les médaillons : une patrouille courte n'est plus cachée sous l'étoile.",
+            "Infobulle d'un rare : dit s'il patrouille (pointillés sur la carte), s'il ne bouge que de quelques mètres, ou s'il reste toujours à son point d'apparition (c'est le cas de la plupart : 237 rares sur 327).",
+        },
+    },
+    {
         version = "0.95.1", date = "17/11/2026",
         fixed = {
             "Carte du monde : le médaillon d'un rare disparaissait (ou clignotait) dès qu'on passait la souris dessus. Il reste affiché, avec son infobulle et sa patrouille.",
