@@ -82,6 +82,22 @@ local function getRoute(i, cv)
     return r
 end
 
+-- Diagnostic (/wk carte) : état de la première pastille de lieu affichée
+function UI:MapLayersProbe()
+    local p = pins[1]
+    if not p then return "aucune pastille créée" end
+    local function n(v) return v and string.format("%.0f", v) or "?" end
+    local cx, cy = p:GetCenter()
+    local par = p:GetParent()
+    local l, b, w, h = par and par:GetRect()
+    local ic = p.icon and p.icon:GetTexture()
+    return string.format("pastille 1 : montrée %s, visible %s, alpha %.2f (effectif %.2f), taille %sx%s, échelle %.2f, centre %s/%s, parent %s/%s (%s,%s %sx%s), %s/%s, texture %s",
+        tostring(p:IsShown()), tostring(p:IsVisible()), p:GetAlpha() or -1, p.GetEffectiveAlpha and p:GetEffectiveAlpha() or -1,
+        n(p:GetWidth()), n(p:GetHeight()), p:GetEffectiveScale() or -1, n(cx), n(cy),
+        tostring(par and par.GetName and par:GetName()), tostring(par == (WorldMapFrame and WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.Child)),
+        n(l), n(b), n(w), n(h), tostring(p:GetFrameStrata()), tostring(p:GetFrameLevel()), tostring(ic))
+end
+
 function UI:HideMapLayers()
     for _, p in pairs(pins) do p:Hide() end
     for _, r in ipairs(routes) do

@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.3.4 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk carte : le diagnostic décrit aussi la première pastille de lieu (affichée ou non, transparence, taille, position, texture), pour trouver pourquoi les pastilles restent invisibles sur certaines cartes.
+
 ## v1.3.3 — 17/11/2026
 
 _Un /reload suffit._

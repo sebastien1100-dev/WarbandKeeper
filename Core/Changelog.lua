@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.4", date = "17/11/2026",
+        changed = {
+            "/wk carte : le diagnostic décrit aussi la première pastille de lieu (affichée ou non, transparence, taille, position, texture), pour trouver pourquoi les pastilles restent invisibles sur certaines cartes.",
+        },
+    },
+    {
         version = "1.3.3", date = "17/11/2026",
         fixed = {
             "Carte du monde : les pastilles de Warband Keeper (boîtes aux lettres, maîtres de vol, rares, filons, notes) étaient dessinées puis cachées sous des éléments de la carte de WoW Forever ; seule l'épingle du guidage restait visible. Elles passent maintenant bien au-dessus.",

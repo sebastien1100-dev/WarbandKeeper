@@ -84,6 +84,10 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             end
             WK:Print("  " .. table.concat(parts, " · "))
         end
+        if WK.UI.MapLayersProbe then
+            local ok, txt = pcall(WK.UI.MapLayersProbe, WK.UI)
+            WK:Print("  " .. tostring(ok and txt or ("sonde : " .. tostring(txt))))
+        end
         local any = false
         for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
