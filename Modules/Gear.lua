@@ -6,7 +6,7 @@ local M = WK:NewModule("Gear")
 --   c.gear    = { [emplacement 1-19] = lien de l'objet }
 --   c.stats   = { str, agi, sta, int, spi, armor, ap, rap, crit, rcrit, hit, dodge, parry, block,
 --                 spell, heal, scrit, res = { holy, fire, nature, frost, shadow, arcane } }
---   c.talents = { { name, points }, ... } (arbres de talents)
+--   c.talents = { { name, points, list = { { nom, icône, rangée, colonne, rang, rang max } } }, ... } (arbres de talents), c.talentFree, c.talentsAt
 --   c.reps    = { { name, standing (1-8), cur, max, header = true? }, ... }
 --   c.sheetAt = date du relevé
 -- Relevé à la connexion, puis à chaque changement d'équipement, de stats ou de réputation (regroupé).
@@ -89,10 +89,30 @@ local function scanTalents(c)
             local name, points
             if type(r[2]) == "number" then name, points = r[3], r[6] else name, points = r[2], r[4] end
             name, points = readable(name), readable(points)
-            if type(name) == "string" then table.insert(out, { name = name, points = type(points) == "number" and points or 0 }) end
+            if type(name) == "string" then
+                local tree = { name = name, points = type(points) == "number" and points or 0 }
+                -- talents de l'arbre : { nom, icône, rangée, colonne, rang, rang max }
+                if GetNumTalents and GetTalentInfo then
+                    tree.list = {}
+                    for j = 1, num(call(GetNumTalents, i)) or 0 do
+                        local ok, tn, ic, tier, col, rank, maxRank = pcall(GetTalentInfo, i, j)
+                        tn, ic, tier, col, rank, maxRank = readable(tn), readable(ic), num(tier), num(col), num(rank), num(maxRank)
+                        if ok and type(tn) == "string" and tier and col then
+                            table.insert(tree.list, { tn, ic, tier, col, rank or 0, maxRank or 1 })
+                        end
+                    end
+                end
+                table.insert(out, tree)
+            end
         end
     end
-    if #out > 0 then c.talents = out end
+    if #out > 0 then
+        c.talents = out
+        local free = (UnitCharacterPoints and num(call(UnitCharacterPoints, "player")))
+            or (GetUnspentTalentPoints and num(call(GetUnspentTalentPoints)))
+        c.talentFree = free
+        c.talentsAt = time()
+    end
 end
 
 local function scanReps(c)

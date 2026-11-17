@@ -30,6 +30,21 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.12.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Fiche du perso : trois onglets sous le nom, « Fiche » (la page d'avant), « Talents » et « BiS ».
+- Talents : les trois arbres côte à côte, chaque talent à sa place avec son icône et son rang (vert : pris, doré : au maximum, grisé : pas pris), les points de chaque arbre, la répartition et les points à dépenser. Survol : le talent (description complète pour le perso connecté). Chaque perso doit se connecter une fois pour relever ses talents.
+- BiS : pour chaque emplacement, ce que tu portes, le meilleur objet trouvable en donjon (hors raids) que ta classe peut porter, où il tombe (donjon, boss, % de drop) et le gain estimé selon ce qui compte pour ta classe. Choix du niveau visé (actuel, 30, 40, 50, 60), bouton Envie (liste d'envies), clic sur l'objet : guidage vers le donjon.
+
+### Modifications
+- Fiche du perso : le bouton de retour « Persos » passe à gauche, avant l'icône de classe.
+
+### Corrections
+- Fiche du perso : les trois chiffres sous le portrait (armure, durabilité, sacs) s'empilaient les uns sur les autres à la première ouverture.
+
 ## v1.11.6 — 17/11/2026
 
 _Un /reload suffit._

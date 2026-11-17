@@ -163,8 +163,12 @@ local function build(parent)
     local f = CreateFrame("Frame", "WarbandKeeperCharSheet", parent)
     f:SetAllPoints()
     -- en-tête : icône de classe dans un anneau, nom, classe et niveau, niveau moyen, retour à Persos
+    -- retour à Persos à gauche, puis l'icône de classe
+    f.back = UI:Button(f, "Persos", nil, 26, "ghost", "back")
+    f.back:SetPoint("TOPLEFT", 2, -16)
+    f.back:SetScript("OnClick", function() UI:ShowPage("characters") end)
     f.ring = UI:Icon(f, "ring", 50, nil, "ARTWORK")
-    f.ring:SetPoint("TOPLEFT", 4, -4)
+    f.ring:SetPoint("LEFT", f.back, "RIGHT", 12, 0)
     f.cls = f:CreateTexture(nil, "ARTWORK", nil, -1)
     f.cls:SetSize(40, 40)
     f.cls:SetPoint("CENTER", f.ring)
@@ -178,18 +182,50 @@ local function build(parent)
     f.title:SetPoint("TOPLEFT", f.ring, "TOPRIGHT", 12, -6)
     f.sub = UI:Text(f, 11, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
-    f.back = UI:Button(f, "Persos", nil, 26, "ghost", "back")
-    f.back:SetPoint("TOPRIGHT", -4, -6)
-    f.back:SetScript("OnClick", function() UI:ShowPage("characters") end)
     f.score = UI:Text(f, 22)
-    f.score:SetPoint("TOPRIGHT", f.back, "TOPLEFT", -18, -2)
+    f.score:SetPoint("TOPRIGHT", -8, -8)
     f.scoreL = UI:Text(f, 10, C.dim)
     f.scoreL:SetPoint("TOPRIGHT", f.score, "BOTTOMRIGHT", 0, -2)
     f.scoreL:SetText(T("niv. moyen"))
 
     -- tout le reste défile : à gauche Équipement puis Réputations, à droite Stats puis Métiers
+    -- onglets sous l'en-tête : Fiche, Talents, BiS (soulignés, comme ceux des donjons)
+    f.tab = "sheet"
+    f.tabs = {}
+    f.tabLine = f:CreateTexture(nil, "ARTWORK")
+    f.tabLine:SetTexture("Interface\\Buttons\\WHITE8X8")
+    f.tabLine:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+    f.tabLine:SetHeight(1)
+    f.tabLine:SetPoint("TOPLEFT", 0, -90); f.tabLine:SetPoint("TOPRIGHT", 0, -90)
+    local prev
+    for _, t in ipairs({ { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }) do
+        local b = CreateFrame("Button", nil, f)
+        b:SetHeight(26)
+        b.label = UI:Text(b, 12)
+        b.label:SetPoint("CENTER", 0, 1)
+        b.label:SetText(T(t[2]))
+        b:SetWidth(b.label:GetStringWidth() + 28)
+        b.under = b:CreateTexture(nil, "OVERLAY")
+        b.under:SetTexture("Interface\\Buttons\\WHITE8X8")
+        b.under:SetHeight(2)
+        b.under:SetPoint("BOTTOMLEFT", 0, -1); b.under:SetPoint("BOTTOMRIGHT", 0, -1)
+        if prev then b:SetPoint("LEFT", prev, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", 6, -64) end
+        prev = b
+        function b:Paint()
+            local sel = f.tab == t[1]
+            local r, g, bl = UI:Accent()
+            if sel then self.label:SetTextColor(unpack(C.text)) else self.label:SetTextColor(r, g, bl, self.hover and 1 or 0.85) end
+            self.under:SetVertexColor(r, g, bl, 1)
+            self.under:SetShown(sel)
+        end
+        b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+        b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+        b:SetScript("OnClick", function() f.tab = t[1]; f:Refresh() end)
+        f.tabs[t[1]] = b
+    end
+
     local sc = UI:Scroll(f)
-    sc:SetPoint("TOPLEFT", 0, -66)
+    sc:SetPoint("TOPLEFT", 0, -98)
     sc:SetPoint("BOTTOMRIGHT")
     f.sc = sc
     local root = sc.child
@@ -327,6 +363,105 @@ local function build(parent)
     f.repEmpty:SetPoint("TOPLEFT", 16, -44)
     f.profEmpty = UI:Text(pr, 11, C.muted)
     f.profEmpty:SetPoint("TOPLEFT", 16, -44)
+    mid:SetScript("OnSizeChanged", function() f:PlaceKpis() end)
+
+    -- Onglet Talents : les arbres côte à côte, chaque talent à sa place
+    local tsc = UI:Scroll(f)
+    tsc:SetPoint("TOPLEFT", 0, -98)
+    tsc:SetPoint("BOTTOMRIGHT")
+    tsc:Hide()
+    f.tsc = tsc
+    f.tsum = UI:Text(tsc.child, 12)
+    f.tsum:SetPoint("TOPLEFT", 4, -4)
+    f.tempty = UI:Text(tsc.child, 11, C.muted)
+    f.tempty:SetPoint("TOPLEFT", 4, -28)
+    f.trees = {}
+    for i = 1, 3 do
+        local tr = UI:Card(tsc.child, "")
+        tr.pts = UI:Text(tr, 14)
+        tr.pts:SetPoint("TOPRIGHT", -14, -12)
+        tr.cells = {}
+        f.trees[i] = tr
+    end
+    f.talentCell = function(tr, j)
+        local b = tr.cells[j]
+        if b then return b end
+        b = CreateFrame("Button", nil, tr)
+        b:SetSize(34, 34)
+        b.edge = b:CreateTexture(nil, "BACKGROUND")
+        b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
+        b.edge:SetAllPoints()
+        b.icon = b:CreateTexture(nil, "ARTWORK")
+        b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        b.rk = UI:Text(b, 9, nil, "OVERLAY")
+        b.rk:SetPoint("BOTTOMRIGHT", 3, -3)
+        b.rk:SetShadowOffset(1, -1)
+        b:SetScript("OnEnter", function(s)
+            local d = s.data
+            if not d then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            local done = false
+            -- description complète : seulement pour le perso connecté (le jeu ne la donne que pour lui)
+            if s.mine and GameTooltip.SetTalent then done = pcall(GameTooltip.SetTalent, GameTooltip, s.tab, s.index) end
+            if not done then
+                GameTooltip:SetText(d[1], 1, 1, 1)
+                GameTooltip:AddLine(string.format(T("Rang %d/%d"), d[5], d[6]), 0.8, 0.8, 0.8)
+            end
+            GameTooltip:Show()
+        end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        tr.cells[j] = b
+        return b
+    end
+
+    -- Onglet BiS : meilleur objet trouvable en donjon par emplacement
+    local bsc = UI:Scroll(f)
+    bsc:SetPoint("TOPLEFT", 0, -98)
+    bsc:SetPoint("BOTTOMRIGHT")
+    bsc:Hide()
+    f.bsc = bsc
+    f.bisLevel = nil
+    f.bisSeg = {}
+    f.bisInfo = UI:Text(bsc.child, 11, C.muted)
+    f.bisCard = UI:Card(bsc.child, "")
+    f.bisNote = UI:Text(bsc.child, 10, C.dim)
+    f.bisNote:SetText(T("Meilleur objet des donjons (hors raids) que ta classe peut porter, selon ce qui compte pour elle. Clic sur un objet : guidage vers le donjon."))
+    f.bisHeads = {}
+    for i, h in ipairs({ "Emplacement", "Porté", "Meilleur trouvable", "Où", "Gain" }) do
+        local t = UI:Text(f.bisCard, 10, C.dim)
+        t:SetText(UI:Upper(T(h)))
+        f.bisHeads[i] = t
+    end
+    f.bisRows = {}
+    for i = 1, #WK.modules.BiS.SLOTS do
+        local r = CreateFrame("Frame", nil, f.bisCard)
+        r:SetHeight(28)
+        r.slot = UI:Text(r, 12, C.muted)
+        r.wIcon = r:CreateTexture(nil, "ARTWORK"); r.wIcon:SetSize(20, 20)
+        r.wText = UI:Text(r, 11, C.muted)
+        r.item = CreateFrame("Button", nil, r)
+        r.item:SetHeight(24)
+        r.bIcon = r.item:CreateTexture(nil, "ARTWORK"); r.bIcon:SetSize(20, 20); r.bIcon:SetPoint("LEFT", 0, 0)
+        r.bText = UI:Text(r.item, 12); r.bText:SetPoint("LEFT", 26, 0); r.bText:SetPoint("RIGHT", 0, 0)
+        r.where = UI:Text(r, 11, C.muted)
+        r.gain = UI:Text(r, 12, C.positive)
+        r.wish = UI:Button(r, "Envie", 76, 22, "secondary", "star")
+        r.item:SetScript("OnEnter", function(s)
+            if not r.e then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            if GameTooltip.SetItemByID then GameTooltip:SetItemByID(r.e.id) end
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine(T("Clic : guidage vers le donjon"), 0.6, 0.6, 0.6)
+            GameTooltip:Show()
+        end)
+        r.item:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r.item:SetScript("OnClick", function() if r.e then WK.modules.Dungeons:GuideTo(r.e.d) end end)
+        r.wish:SetScript("OnClick", function()
+            if r.e then WK.modules.Dungeons:ToggleWish(r.e.id, r.e.d.key, f.key); f:Refresh() end
+        end)
+        f.bisRows[i] = r
+    end
     return f
 end
 
@@ -485,10 +620,150 @@ end
 
 function UI:ShowCharSheet(key)
     if not WK.DB.global.characters[key] then return end
+    if sheet then sheet.repAll = false; if UI.charSheetKey ~= key then sheet.bisLevel = nil end end
     UI.charSheetKey = key
-    if sheet then sheet.repAll = false end
     UI:Create():Show()
     UI:ShowPage("charsheet")
+end
+
+-- Onglet Talents
+local CELL, CGAP = 34, 10
+local function refreshTalents(f, c)
+    local W = math.max(600, (f.tsc:GetWidth() or 840) - 12)
+    f.tsc.child:SetWidth(W)
+    local trees = c.talents or {}
+    local split = {}
+    for _, t in ipairs(trees) do table.insert(split, t.points or 0) end
+    local any = #trees > 0 and trees[1].list ~= nil
+    local r, g, b = UI:Accent()
+    f.tsum:SetText(#split > 0 and string.format(T("Répartition |cff%02x%02x%02x%s|r  ·  %s"), r * 255, g * 255, b * 255, table.concat(split, " / "),
+        (c.talentFree and c.talentFree > 0) and string.format(T("%d point(s) à dépenser"), c.talentFree) or T("aucun point à dépenser")) or "")
+    f.tempty:SetShown(not any)
+    f.tempty:SetText(T("Talents pas encore relevés : connecte ce perso une fois avec cette version."))
+    local tw = math.floor((W - 2 * 12) / 3)
+    local maxTier = 1
+    for _, t in ipairs(trees) do for _, d in ipairs(t.list or {}) do maxTier = math.max(maxTier, d[3]) end end
+    local th = 52 + maxTier * (CELL + CGAP) + 6
+    local mine = f.key == WK:CharKey()
+    for i, tr in ipairs(f.trees) do
+        local t = trees[i]
+        tr:SetShown(any and t ~= nil)
+        if any and t then
+            tr:ClearAllPoints()
+            tr:SetPoint("TOPLEFT", (i - 1) * (tw + 12), -(any and 28 or 48))
+            tr:SetSize(tw, th)
+            tr.title:SetText(t.name)
+            tr.pts:SetText(t.points or 0)
+            if (t.points or 0) > 0 then tr.pts:SetTextColor(r, g, b) else tr.pts:SetTextColor(unpack(C.dim)) end
+            local gx = math.floor((tw - (4 * CELL + 3 * CGAP)) / 2)
+            for _, cell in ipairs(tr.cells) do cell:Hide() end
+            for j, d in ipairs(t.list or {}) do
+                local cell = f.talentCell(tr, j)
+                cell.data, cell.tab, cell.index, cell.mine = d, i, j, mine
+                cell:ClearAllPoints()
+                cell:SetPoint("TOPLEFT", gx + (d[4] - 1) * (CELL + CGAP), -46 - (d[3] - 1) * (CELL + CGAP))
+                cell.icon:SetTexture(d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
+                local rank, max = d[5] or 0, d[6] or 1
+                if cell.icon.SetDesaturated then cell.icon:SetDesaturated(rank == 0) end
+                cell.icon:SetAlpha(rank == 0 and 0.45 or 1)
+                local col = rank >= max and C.gold or rank > 0 and C.positive or C.border
+                cell.edge:SetVertexColor(col[1], col[2], col[3], 1)
+                cell.rk:SetText(rank > 0 and (rank .. "/" .. max) or "")
+                cell.rk:SetTextColor(col[1], col[2], col[3])
+                cell:Show()
+            end
+        end
+    end
+    f.tsc:SetContentHeight((any and (28 + th) or 60) + 8)
+end
+
+-- Onglet BiS
+local LEVELS = { 30, 40, 50, 60 }
+local function refreshBis(f, c)
+    local B = WK.modules.BiS
+    local W = math.max(600, (f.bsc:GetWidth() or 840) - 12)
+    f.bsc.child:SetWidth(W)
+    local lvl = c.level or 1
+    local opts = { lvl }
+    for _, l in ipairs(LEVELS) do if l > lvl then table.insert(opts, l) end end
+    local target = f.bisLevel
+    if not target or target < lvl then target = lvl end
+    -- choix du niveau visé
+    for _, b in pairs(f.bisSeg) do b:Hide() end
+    local x = 4
+    for i, l in ipairs(opts) do
+        local b = f.bisSeg[i]
+        if not b then
+            b = UI:Button(f.bsc.child, "", nil, 24, "secondary")
+            f.bisSeg[i] = b
+        end
+        b:SetLabel(i == 1 and string.format(T("Niveau %d (actuel)"), l) or string.format(T("Niveau %d"), l))
+        b:SetWidth(b.label:GetStringWidth() + 28)
+        b:SetScript("OnClick", function() f.bisLevel = l; f:Refresh() end)
+        b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, -4)
+        b:SetStyle(l == target and "primary" or "secondary")
+        b:Show()
+        x = x + b:GetWidth() + 6
+    end
+    local rows = B:Rows(c, target)
+    local n, wished = 0, 0
+    for _, row in ipairs(rows) do
+        if row.best then
+            n = n + 1
+            if WK.modules.Dungeons:IsWished(row.best.id, f.key) then wished = wished + 1 end
+        end
+    end
+    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisSeg[#opts], "RIGHT", 12, 0)
+    f.bisInfo:SetText(string.format(T("%d amélioration(s) possible(s) · %d dans ta liste d'envies"), n, wished))
+    local card = f.bisCard
+    card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -38); card:SetWidth(W)
+    local XS = { 16, 120, 220, math.floor(W * 0.55), W - 150 }
+    for i, t in ipairs(f.bisHeads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", XS[i], -16) end
+    local y = -38
+    for i, r in ipairs(f.bisRows) do
+        local row = rows[i]
+        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:SetPoint("TOPRIGHT", 0, y)
+        r.slot:ClearAllPoints(); r.slot:SetPoint("LEFT", XS[1], 0); r.slot:SetText(T(row.label))
+        r.wIcon:ClearAllPoints(); r.wIcon:SetPoint("LEFT", XS[2], 0)
+        r.wText:ClearAllPoints(); r.wText:SetPoint("LEFT", XS[2] + 26, 0)
+        if row.worn then
+            local d = itemData(row.worn)
+            r.wIcon:SetTexture(d and d.icon or nil); r.wIcon:Show()
+            r.wText:SetText(d and d.ilvl and string.format(T("niv. %d"), d.ilvl) or "")
+        else
+            r.wIcon:Hide(); r.wText:SetText(T("vide"))
+        end
+        r.item:ClearAllPoints(); r.item:SetPoint("LEFT", XS[3], 0); r.item:SetWidth(XS[4] - XS[3] - 12)
+        r.where:ClearAllPoints(); r.where:SetPoint("LEFT", XS[4], 0); r.where:SetWidth(XS[5] - XS[4] - 10)
+        r.gain:ClearAllPoints(); r.gain:SetPoint("LEFT", XS[5], 0)
+        r.wish:ClearAllPoints(); r.wish:SetPoint("RIGHT", -12, 0)
+        local e = row.best
+        r.e = e
+        if e then
+            local name, _, q = WK.GetItemInfo(e.id)
+            local qc = QUALITY[q or e.quality or 1] or QUALITY[1]
+            r.bIcon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(e.id)) or nil); r.bIcon:Show()
+            r.bText:SetText(name or ("#" .. e.id)); r.bText:SetTextColor(qc[1], qc[2], qc[3])
+            local D = WK.modules.Dungeons
+            local where = D:Name(e.d)
+            if e.boss then where = where .. " · " .. (e.boss.trash and T("monstres") or D:BossName(e.boss)) end
+            if e.drop then where = where .. string.format(" · %s %%", (string.format("%.0f", e.drop))) end
+            r.where:SetText(where)
+            r.gain:SetText(string.format("+%d", math.floor(row.gain + 0.5)))
+            local w = D:IsWished(e.id, f.key)
+            r.wish:SetLabel(w and T("Retirer") or T("Envie"))
+            r.wish:Show(); r.where:Show(); r.gain:Show()
+        else
+            r.bIcon:Hide()
+            r.bText:SetText(row.worn and T("déjà le meilleur trouvable") or T("rien de mieux en donjon"))
+            r.bText:SetTextColor(unpack(C.dim))
+            r.where:SetText(""); r.gain:SetText(""); r.wish:Hide()
+        end
+        y = y - 30
+    end
+    card:SetHeight(-y + 10)
+    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", card, "BOTTOMLEFT", 4, -8)
+    f.bsc:SetContentHeight(38 - y + 40)
 end
 
 -- Mise à jour de la fiche : en-tête, puis les deux colonnes
@@ -507,6 +782,10 @@ local function refresh(f)
     local avg = averageIlvl(c.gear)
     f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
     f.score:SetTextColor(UI:Accent())
+    for _, b in pairs(f.tabs) do b:Paint() end
+    f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
+    if f.tab == "talents" then return refreshTalents(f, c) end
+    if f.tab == "bis" then return refreshBis(f, c) end
     f.lrows:Reset(); f.lheads:Reset()
     -- largeurs : colonne de droite fixe, la gauche prend le reste
     local W = math.max(600, (f.sc:GetWidth() or 840) - 12)
@@ -520,6 +799,7 @@ local function refresh(f)
     local sh = refreshStats(f, c)
     local row1 = math.max(GEAR_H, sh)
     f.gearCard:ClearAllPoints(); f.gearCard:SetPoint("TOPLEFT", 0, 0); f.gearCard:SetSize(leftW, row1)
+    f:PlaceKpis()
     f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetSize(SIDE_W, row1)
     local y2 = row1 + COL_GAP
     f.repCard:ClearAllPoints(); f.repCard:SetPoint("TOPLEFT", 0, -y2); f.repCard:SetWidth(leftW)

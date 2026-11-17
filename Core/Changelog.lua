@@ -8,6 +8,20 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.12.0", date = "17/11/2026", restart = true,
+        added = {
+            "Fiche du perso : trois onglets sous le nom, « Fiche » (la page d'avant), « Talents » et « BiS ».",
+            "Talents : les trois arbres côte à côte, chaque talent à sa place avec son icône et son rang (vert : pris, doré : au maximum, grisé : pas pris), les points de chaque arbre, la répartition et les points à dépenser. Survol : le talent (description complète pour le perso connecté). Chaque perso doit se connecter une fois pour relever ses talents.",
+            "BiS : pour chaque emplacement, ce que tu portes, le meilleur objet trouvable en donjon (hors raids) que ta classe peut porter, où il tombe (donjon, boss, % de drop) et le gain estimé selon ce qui compte pour ta classe. Choix du niveau visé (actuel, 30, 40, 50, 60), bouton Envie (liste d'envies), clic sur l'objet : guidage vers le donjon.",
+        },
+        changed = {
+            "Fiche du perso : le bouton de retour « Persos » passe à gauche, avant l'icône de classe.",
+        },
+        fixed = {
+            "Fiche du perso : les trois chiffres sous le portrait (armure, durabilité, sacs) s'empilaient les uns sur les autres à la première ouverture.",
+        },
+    },
+    {
         version = "1.11.6", date = "17/11/2026",
         changed = {
             "Micro menu, infobulle des Amis : tous ceux qui jouent à WoW sont en haut de la liste (amis du jeu et amis Battle.net en jeu, avec leur perso et le prénom du compte en bleu) ; ceux qui sont sur une autre appli ou un autre jeu suivent, sous « Battle.net · hors de WoW ».",
