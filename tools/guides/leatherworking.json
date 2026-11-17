@@ -175,62 +175,26 @@
   {
    "skill": [
     235,
-    240
+    265
    ],
-   "recipe": 10558,
-   "crafts": 9
+   "recipe": 19049,
+   "crafts": 35
   },
   {
    "skill": [
-    240,
-    255
-   ],
-   "recipe": 10647,
-   "crafts": 20,
-   "first": [
-    {
-     "recipe": 10482,
-     "crafts": 80
-    }
-   ]
-  },
-  {
-   "skill": [
-    255,
-    260
-   ],
-   "recipe": 10650,
-   "crafts": 9,
-   "first": [
-    {
-     "recipe": 10482,
-     "crafts": 36
-    }
-   ]
-  },
-  {
-   "skill": [
-    260,
-    268
-   ],
-   "recipe": 19053,
-   "crafts": 11
-  },
-  {
-   "skill": [
-    268,
-    294
+    265,
+    295
    ],
    "recipe": 19082,
-   "crafts": 30
+   "crafts": 35
   },
   {
    "skill": [
-    294,
+    295,
     300
    ],
    "recipe": 1254974,
-   "crafts": 12
+   "crafts": 11
   }
  ],
  "sections": [
@@ -5485,13 +5449,13 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 14,
-     "price": 1149
+     "price": 1782
     },
     {
      "id": 14047,
      "name": "Runecloth",
      "count": 10,
-     "price": 976
+     "price": 611
     },
     {
      "id": 14341,
@@ -5524,91 +5488,13 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 5,
-     "price": 649
+     "price": 659
     },
     {
      "id": 4291,
      "name": "Silken Thread",
      "count": 2,
      "price": 500
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "10647": {
-   "name": "Feathered Breastplate",
-   "item": {
-    "id": 8349,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 40,
-     "price": 649
-    },
-    {
-     "id": 8168,
-     "name": "Jet Black Feather",
-     "count": 40,
-     "price": 121
-    },
-    {
-     "id": 7971,
-     "name": "Black Pearl",
-     "count": 2,
-     "price": 1272
-    },
-    {
-     "id": 8172,
-     "name": "Cured Thick Hide",
-     "count": 4,
-     "price": null
-    },
-    {
-     "id": 8343,
-     "name": "Heavy Silken Thread",
-     "count": 4,
-     "price": 2000
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "10650": {
-   "name": "Dragonscale Breastplate",
-   "item": {
-    "id": 8367,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 40,
-     "price": 649
-    },
-    {
-     "id": 8165,
-     "name": "Worn Dragonscale",
-     "count": 30,
-     "price": 500
-    },
-    {
-     "id": 8343,
-     "name": "Heavy Silken Thread",
-     "count": 4,
-     "price": 2000
-    },
-    {
-     "id": 8172,
-     "name": "Cured Thick Hide",
-     "count": 4,
-     "price": null
     }
    ],
    "source": "trainer",
@@ -5626,7 +5512,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 4,
-     "price": 34
+     "price": 28
     }
    ],
    "source": "trainer",
@@ -5644,7 +5530,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 6,
-     "price": 214
+     "price": 201
     }
    ],
    "source": "trainer",
@@ -5662,7 +5548,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 3,
-     "price": 34
+     "price": 28
     },
     {
      "id": 2320,
@@ -5686,7 +5572,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 6,
-     "price": 34
+     "price": 28
     },
     {
      "id": 2320,
@@ -5710,7 +5596,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 14,
-     "price": 649
+     "price": 659
     },
     {
      "id": 4291,
@@ -5740,37 +5626,13 @@
      "id": 2319,
      "name": "Medium Leather",
      "count": 4,
-     "price": 82
+     "price": 89
     },
     {
      "id": 2321,
      "name": "Fine Thread",
      "count": 1,
      "price": 100
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "10558": {
-   "name": "Nightscape Boots",
-   "item": {
-    "id": 8197,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 16,
-     "price": 649
-    },
-    {
-     "id": 8343,
-     "name": "Heavy Silken Thread",
-     "count": 2,
-     "price": 2000
     }
    ],
    "source": "trainer",
@@ -5788,13 +5650,13 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 20,
-     "price": 1149
+     "price": 1782
     },
     {
      "id": 15408,
      "name": "Heavy Scorpid Scale",
      "count": 10,
-     "price": 2900
+     "price": 5599
     },
     {
      "id": 14341,
@@ -5845,7 +5707,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 5,
-     "price": 214
+     "price": 201
     },
     {
      "id": 2321,
@@ -5869,7 +5731,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 10,
-     "price": 649
+     "price": 659
     },
     {
      "id": 8172,
@@ -5881,7 +5743,7 @@
      "id": 8951,
      "name": "Elixir of Defense",
      "count": 1,
-     "price": 526
+     "price": 608
     },
     {
      "id": 4291,
@@ -5905,7 +5767,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 1,
-     "price": 34
+     "price": 28
     }
    ],
    "source": "trainer",
@@ -5923,7 +5785,7 @@
      "id": 783,
      "name": "Light Hide",
      "count": 1,
-     "price": 160
+     "price": 159
     },
     {
      "id": 4289,
@@ -5947,7 +5809,7 @@
      "id": 4232,
      "name": "Medium Hide",
      "count": 1,
-     "price": 264
+     "price": 250
     },
     {
      "id": 4289,
@@ -5971,7 +5833,7 @@
      "id": 4235,
      "name": "Heavy Hide",
      "count": 1,
-     "price": 930
+     "price": 950
     },
     {
      "id": 4289,
@@ -5995,7 +5857,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 10,
-     "price": 34
+     "price": 28
     },
     {
      "id": 4231,
@@ -6014,24 +5876,24 @@
    "tools": [],
    "taught_by": []
   },
-  "19053": {
-   "name": "Chimeric Gloves",
+  "19049": {
+   "name": "Wicked Leather Gauntlets",
    "item": {
-    "id": 15074,
+    "id": 15083,
     "count": 1
    },
    "reagents": [
     {
      "id": 8170,
      "name": "Rugged Leather",
-     "count": 6,
-     "price": 1149
+     "count": 8,
+     "price": 1782
     },
     {
-     "id": 15423,
-     "name": "Chimera Leather",
-     "count": 6,
-     "price": 1200
+     "id": 2325,
+     "name": "Black Dye",
+     "count": 1,
+     "price": 1000
     },
     {
      "id": 14341,
@@ -6044,10 +5906,11 @@
    "tools": [],
    "taught_by": [
     {
-     "id": 15729,
-     "name": "Pattern: Chimeric Gloves",
+     "id": 15725,
+     "name": "Pattern: Wicked Leather Gauntlets",
      "vendors": [
-      "Blimo Gadgetspring"
+      "Leonard Porter",
+      "Werg Thickblade"
      ],
      "price": 12000
     }
@@ -6064,7 +5927,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 8,
-     "price": 214
+     "price": 201
     },
     {
      "id": 4236,
@@ -6094,13 +5957,13 @@
      "id": 8169,
      "name": "Thick Hide",
      "count": 1,
-     "price": 511
+     "price": 514
     },
     {
      "id": 8150,
      "name": "Deeprock Salt",
      "count": 1,
-     "price": 265
+     "price": 264
     }
    ],
    "source": "trainer",
@@ -6118,7 +5981,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 5,
-     "price": 1149
+     "price": 1782
     }
    ],
    "source": "trainer",
@@ -6136,7 +5999,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 4,
-     "price": 214
+     "price": 201
     },
     {
      "id": 4236,
@@ -6166,7 +6029,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 5,
-     "price": 649
+     "price": 659
     },
     {
      "id": 4291,

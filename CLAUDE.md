@@ -45,6 +45,10 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 
 Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles de chiffres clés, définies par page dans `UI.CHIPS` (`UI/MainFrame.lua`). Chaque fonction renvoie `{ label, valeur, couleur?, page?, tip?, after? }` ; `page` rend la pastille cliquable. Une nouvelle page doit avoir ses pastilles.
 
+## Mise à jour des données
+
+`python3 tools/update_data.py` (lupa requis) : met à jour QuestieDB (clone dans `tools/.cache/QuestieDB`, ignoré par git, ou `--questie <clone>`), télécharge les guides (ceux de `tools/guides`) et les tables de butin de wowtbc.gg, relance tous les générateurs (lieux, chemins, rares, quêtes, donjons, guides, recettes), charge chaque fichier généré et compare les chiffres : un fichier qui ne se charge plus ou un chiffre qui chute de plus de 20 % remet tout comme avant (code 2). Résumé Markdown avec `--summary`. Options `--sans-questie`, `--sans-wowtbc`. `.github/workflows/update-data.yml` le lance chaque lundi (et à la demande) et ouvre une PR `data-update/<date>` s'il y a du nouveau (l'ancienne PR ouverte est fermée) ; rien n'est publié tout seul : intégrer la PR puis faire une version comme d'habitude. Un nouveau générateur doit y être ajouté (étape et chiffres dans `metrics()`).
+
 ## Guides de montée des métiers
 
 `Modules/Guides.lua` est **généré** par `python3 tools/gen_guides.py` depuis `tools/guides/*.json` (extraits des guides WoW Forever de wowtbc.gg). Pour ajouter ou mettre à jour un métier : télécharger `https://wowtbc.gg/page-data/warcraftforever/professions/<métier>/page-data.json` puis `python3 tools/gen_guides.py --import <fichier>`. Une remarque de maître nouvelle doit être traduite dans `NOTES` du générateur (et en anglais dans `Locales/enUS.lua`).

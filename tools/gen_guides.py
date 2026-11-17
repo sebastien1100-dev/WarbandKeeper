@@ -117,7 +117,7 @@ def gen():
            "--           first = étapes à faire avant }",
            "-- spell = recette (sort : nom en jeu même sans objet fabriqué) ; tools = outils nécessaires (objets).",
            "-- skillOnly : objets fabriqués seulement pour monter (cuirs…) : il faut quand même s'en procurer.",
-           "-- prices : prix de secours des composants (cuivre) quand ni Auctionator ni le marchand n'en donnent.",
+           "-- prices : prix de secours des composants (cuivre) quand ni le scan de l'HV ni le marchand n'en donnent.",
            "WK.Guides = {"]
     prices = {}
     for g in guides:

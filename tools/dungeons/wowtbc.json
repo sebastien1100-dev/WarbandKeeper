@@ -820,7 +820,8 @@
 11764,
 11765,
 11766,
-11767
+11767,
+11768
 ],
 "name": "Lord Incendius"
 },
@@ -892,7 +893,8 @@
 11744,
 11745,
 22212,
-276879
+276879,
+11743
 ],
 "name": "Phalanx"
 },
@@ -1196,6 +1198,13 @@
 "q": 3,
 "req": 52
 },
+"11743": {
+"drop": 0.0257,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "11744": {
 "drop": null,
 "found": true,
@@ -1279,6 +1288,13 @@
 "ilvl": 57,
 "q": 3,
 "req": 52
+},
+"11768": {
+"drop": 0.4085,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "11782": {
 "drop": null,
@@ -2005,7 +2021,8 @@
 13173,
 13177,
 13179,
-16676
+16676,
+13175
 ],
 "name": "War Master Voone"
 },
@@ -2060,7 +2077,8 @@
 13162,
 13164,
 22321,
-16679
+16679,
+13148
 ],
 "name": "Overlord Wyrmthalak"
 },
@@ -2122,7 +2140,8 @@
 22398,
 22306,
 22319,
-22322
+22322,
+22325
 ],
 "name": "Mor Grayhoof"
 }
@@ -2190,6 +2209,13 @@
 "ilvl": 61,
 "q": 4,
 "req": 56
+},
+"13148": {
+"drop": 0.0109,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "13161": {
 "drop": null,
@@ -2260,6 +2286,13 @@
 "ilvl": 60,
 "q": 3,
 "req": 55
+},
+"13175": {
+"drop": 0.0092,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "13177": {
 "drop": null,
@@ -2646,6 +2679,13 @@
 "q": 3,
 "req": 56
 },
+"22325": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "22398": {
 "drop": null,
 "found": true,
@@ -2724,7 +2764,8 @@
 18103,
 18104,
 22247,
-16733
+16733,
+12588
 ],
 "name": "Warchief Rend Blackhand"
 },
@@ -2761,7 +2802,8 @@
 22337,
 22340,
 22342,
-22343
+22343,
+22339
 ],
 "name": "Lord Valthalak"
 },
@@ -2803,6 +2845,13 @@
 "ilvl": 63,
 "q": 3,
 "req": 58
+},
+"12588": {
+"drop": 0.01,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "12589": {
 "drop": null,
@@ -3322,6 +3371,13 @@
 "q": 3,
 "req": 58
 },
+"22339": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "22340": {
 "drop": null,
 "found": true,
@@ -3670,7 +3726,9 @@
 22401,
 22304,
 22315,
-22472
+22472,
+22314,
+22345
 ],
 "name": "Isalien"
 }
@@ -4019,12 +4077,26 @@
 "q": 3,
 "req": 56
 },
+"22314": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "22315": {
 "drop": null,
 "found": true,
 "ilvl": 61,
 "q": 3,
 "req": 56
+},
+"22345": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "22401": {
 "drop": null,
@@ -4663,7 +4735,11 @@
 "name": "Lord Hel'nurath"
 },
 {
-"items": [],
+"items": [
+23127,
+23128,
+23129
+],
 "name": "Revanchion"
 }
 ],
@@ -5094,6 +5170,27 @@
 "ilvl": 62,
 "q": 3,
 "req": 57
+},
+"23127": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23128": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23129": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 }
 },
 "levels": [
@@ -6410,11 +6507,37 @@
 "onyxia-s-lair": {
 "bosses": [
 {
-"items": [],
+"items": [
+17064,
+17068,
+17075
+],
 "name": "Onyxia"
 }
 ],
-"items": {},
+"items": {
+"17064": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"17068": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"17075": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+}
+},
 "levels": [
 60,
 60
@@ -6604,7 +6727,10 @@
 "name": "Amnennar the Coldbringer"
 },
 {
-"items": [],
+"items": [
+23177,
+23178
+],
 "name": "Lady Falther'ess"
 }
 ],
@@ -6811,6 +6937,20 @@
 "ilvl": 42,
 "q": 3,
 "req": 37
+},
+"23177": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23178": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "274380": {
 "drop": null,
@@ -8084,7 +8224,9 @@
 },
 {
 "items": [
-23169
+23169,
+23168,
+23170
 ],
 "name": "Scorn"
 }
@@ -8139,12 +8281,26 @@
 "q": 3,
 "req": 31
 },
+"23168": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "23169": {
 "drop": null,
 "found": true,
 "ilvl": 35,
 "q": 3,
 "req": 30
+},
+"23170": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "274290": {
 "drop": null,
@@ -8770,7 +8926,8 @@
 18690,
 22394,
 14541,
-16701
+16701,
+14543
 ],
 "name": "Jandice Barov"
 },
@@ -8819,7 +8976,11 @@
 "name": "Ras Frostwhisper"
 },
 {
-"items": [],
+"items": [
+23132,
+23139,
+23156
+],
 "name": "Lord Blackwood"
 },
 {
@@ -8859,7 +9020,8 @@
 16707,
 16720,
 16727,
-16731
+16731,
+13950
 ],
 "name": "Darkmaster Gandling"
 }
@@ -8899,6 +9061,13 @@
 "ilvl": 62,
 "q": 3,
 "req": 57
+},
+"13950": {
+"drop": 0.0071,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "13951": {
 "drop": null,
@@ -9074,6 +9243,13 @@
 "ilvl": 61,
 "q": 3,
 "req": 56
+},
+"14543": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "14545": {
 "drop": null,
@@ -9572,6 +9748,27 @@
 "q": 3,
 "req": 58
 },
+"23132": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23139": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23156": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "23200": {
 "drop": 0.0121,
 "found": true,
@@ -9711,7 +9908,10 @@
 "name": "Archmage Arugal"
 },
 {
-"items": [],
+"items": [
+23171,
+23173
+],
 "name": "Sever"
 },
 {
@@ -9792,6 +9992,20 @@
 "ilvl": 25,
 "q": 3,
 "req": 20
+},
+"23171": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23173": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "273456": {
 "drop": null,
@@ -10540,7 +10754,9 @@
 },
 {
 "items": [
-23125
+23125,
+23124,
+23126
 ],
 "name": "Balzaphon"
 },
@@ -10549,7 +10765,9 @@
 22301,
 22327,
 22328,
-22329
+22329,
+228547,
+228548
 ],
 "name": "Sothon and Jarien's Heirlooms"
 }
@@ -11479,12 +11697,40 @@
 "q": 3,
 "req": 58
 },
+"228547": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"228548": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
+"23124": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
+},
 "23125": {
 "drop": null,
 "found": true,
 "ilvl": 60,
 "q": 3,
 "req": 55
+},
+"23126": {
+"drop": null,
+"found": false,
+"ilvl": 0,
+"q": 1,
+"req": 0
 },
 "23198": {
 "drop": null,

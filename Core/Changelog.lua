@@ -6,6 +6,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.89.1", date = "17/11/2026",
+        changed = {
+            "Guides de montée des métiers mis à jour depuis wowtbc.gg (paliers et étapes revus par le site, par exemple Alchimie : Compagnon jusqu'à 130).",
+            "Données mises à jour d'un coup (lieux, chemins, rares, quêtes, donjons, guides, recettes) : désormais vérifiées chaque semaine, et proposées à la publication quand QuestieDB ou wowtbc.gg ont du nouveau.",
+        },
+        fixed = {
+            "Donjons : les objets pas encore découverts sur WoW Forever (surtout le butin des raids) manquaient dans les listes ; ils y sont, marqués « non découvert ».",
+        },
+    },
+    {
         version = "0.89.0", date = "17/11/2026",
         added = {
             "Donjons : nouvelles tables de butin, celles de WoW Forever (wowtbc.gg) au lieu des tables de Classic. 31 donjons et raids au lieu de 19, avec les nouveaux : Hall of Thanes, Ruines de Lordaeron, Cité de Dalaran, Excavation Site, The Drowned City, Krol'dok Stronghold, Alcaz Prison, Blackmaw Hold, Shaper's Terrace, et les raids Repaire d'Onyxia, Barrow Deeps et Hyjal Summit.",

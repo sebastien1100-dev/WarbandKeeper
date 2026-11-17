@@ -147,32 +147,40 @@
     215
    ],
    "recipe": 18401,
-   "crafts": 339,
+   "crafts": 650,
    "craftAll": true
   },
   {
    "skill": [
     215,
-    240
+    236
    ],
    "recipe": 18402,
-   "crafts": 33
+   "crafts": 25
   },
   {
    "skill": [
-    240,
-    253
+    236,
+    250
    ],
    "recipe": 18417,
    "crafts": 15
   },
   {
    "skill": [
-    253,
-    280
+    250,
+    273
    ],
    "recipe": 1257487,
-   "crafts": 36
+   "crafts": 25
+  },
+  {
+   "skill": [
+    273,
+    300
+   ],
+   "recipe": 18450,
+   "crafts": 65
   }
  ],
  "sections": [
@@ -254,7 +262,7 @@
    "rank": "Artisan",
    "skill": [
     200,
-    280
+    300
    ],
    "trainers": {
     "alliance": [
@@ -3793,7 +3801,7 @@
    "learn": 260,
    "src": "recipe",
    "recipe": 14504,
-   "price": null,
+   "price": 40000,
    "vendors": []
   },
   {
@@ -3802,7 +3810,7 @@
    "learn": 260,
    "src": "recipe",
    "recipe": 14505,
-   "price": null,
+   "price": 40000,
    "vendors": []
   },
   {
@@ -4581,7 +4589,7 @@
      "id": 3383,
      "name": "Elixir of Wisdom",
      "count": 1,
-     "price": 123
+     "price": 105
     }
    ],
    "source": "trainer",
@@ -4629,7 +4637,7 @@
      "id": 14227,
      "name": "Ironweb Spider Silk",
      "count": 1,
-     "price": 9900
+     "price": 10000
     },
     {
      "id": 14341,
@@ -4651,6 +4659,49 @@
     }
    ]
   },
+  "18450": {
+   "name": "Wizardweave Turban",
+   "item": {
+    "id": 14130,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14048,
+     "name": "Bolt of Runecloth",
+     "count": 6,
+     "price": null
+    },
+    {
+     "id": 11176,
+     "name": "Dream Dust",
+     "count": 4,
+     "price": 3685
+    },
+    {
+     "id": 7910,
+     "name": "Star Ruby",
+     "count": 1,
+     "price": 5841
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "tools": [],
+   "taught_by": [
+    {
+     "id": 14505,
+     "name": "Pattern: Wizardweave Turban",
+     "vendors": [],
+     "price": 40000
+    }
+   ]
+  },
   "2963": {
    "name": "Bolt of Linen Cloth",
    "item": {
@@ -4662,7 +4713,7 @@
      "id": 2589,
      "name": "Linen Cloth",
      "count": 2,
-     "price": 22
+     "price": 24
     }
    ],
    "source": "trainer",
@@ -4680,7 +4731,7 @@
      "id": 2592,
      "name": "Wool Cloth",
      "count": 3,
-     "price": 112
+     "price": 115
     }
    ],
    "source": "trainer",
@@ -4722,7 +4773,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 5,
-     "price": 611
+     "price": 539
     }
    ],
    "source": "trainer",
@@ -4968,7 +5019,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 5,
-     "price": 976
+     "price": 611
     }
    ],
    "source": "trainer",
@@ -5040,7 +5091,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 4,
-     "price": 1149
+     "price": 1782
     },
     {
      "id": 14341,
@@ -5073,7 +5124,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 4,
-     "price": 198
+     "price": 195
     }
    ],
    "source": "trainer",

@@ -93,15 +93,14 @@ def do_import(src):
             continue
         gear = {}
         for g in d.get("gearData", []):
-            if g.get("hidden"):
-                continue
             other = g.get("other_stats") or {}
             gear[g["id"]] = {
                 "q": RARITY.get(g.get("rarity"), 1),
                 "ilvl": g.get("ilvl") or 0,
                 "req": other.get("min_level") or 0,
                 "drop": g.get("drop_chance"),
-                "found": g.get("discovered", True) is not False,
+                # « hidden » : objet annoncé mais pas encore vu tomber (« Not yet discovered » sur le site)
+                "found": not g.get("hidden") and g.get("discovered", True) is not False,
             }
         for l in d.get("loot", []):
             bosses, trash = [], []

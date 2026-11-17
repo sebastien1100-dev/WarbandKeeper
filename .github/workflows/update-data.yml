@@ -1,0 +1,65 @@
+# Mise à jour des données (QuestieDB, wowtbc.gg) chaque lundi, ou à la demande (onglet Actions >
+# « Mise à jour des données » > Run workflow). S'il y a du nouveau, une PR est ouverte avec le résumé
+# de tools/update_data.py ; rien n'est publié tout seul. Une PR précédente encore ouverte est fermée
+# (remplacée par la nouvelle).
+# Il faut autoriser les actions à ouvrir des PR : Settings > Actions > General > Workflow permissions >
+# « Allow GitHub Actions to create and approve pull requests ».
+name: Mise à jour des données
+
+on:
+  schedule:
+    - cron: "37 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dépendances
+        run: pip install lupa
+
+      - name: Mise à jour
+        run: python3 tools/update_data.py --summary "$RUNNER_TEMP/summary.md"
+
+      - name: Résumé
+        if: always()
+        run: if [ -f "$RUNNER_TEMP/summary.md" ]; then cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Ouvrir une PR s'il y a du nouveau
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git status --porcelain -- Modules tools/guides tools/dungeons)" ]; then
+            echo "Rien de nouveau."
+            exit 0
+          fi
+          branch="data-update/$(date +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -- Modules tools/guides tools/dungeons
+          git commit -q -m "Données : mise à jour QuestieDB et wowtbc.gg ($(date +%d/%m/%Y))"
+          git push -q -f origin "$branch"
+          for n in $(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("data-update/")) | select(.headRefName != "'"$branch"'") | .number'); do
+            gh pr close "$n" --comment "Remplacée par la mise à jour du $(date +%d/%m/%Y)." --delete-branch || true
+          done
+          if [ -z "$(gh pr list --state open --head "$branch" --json number --jq '.[].number')" ]; then
+            gh pr create --base main --head "$branch" \
+              --title "Données : mise à jour du $(date +%d/%m/%Y)" \
+              --body-file "$RUNNER_TEMP/summary.md"
+          fi

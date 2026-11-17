@@ -12,84 +12,84 @@
   {
    "skill": [
     30,
-    56
+    53
    ],
    "recipe": 3922,
-   "crafts": 55,
+   "crafts": 34,
    "craftAll": true
   },
   {
    "skill": [
-    56,
-    61
-   ],
-   "recipe": 3923,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    61,
-    62
+    53,
+    54
    ],
    "recipe": 7430,
    "crafts": 1
   },
   {
    "skill": [
-    62,
+    54,
+    63
+   ],
+   "recipe": 3923,
+   "crafts": 10
+  },
+  {
+   "skill": [
+    63,
     75
    ],
    "recipe": 3924,
-   "crafts": 13
+   "crafts": 12
   },
   {
    "skill": [
     75,
-    88
+    90
    ],
    "recipe": 3929,
-   "crafts": 14
-  },
-  {
-   "skill": [
-    88,
-    103
-   ],
-   "recipe": 3926,
-   "crafts": 17
-  },
-  {
-   "skill": [
-    103,
-    108
-   ],
-   "recipe": 8334,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    108,
-    109
-   ],
-   "recipe": 3973,
-   "crafts": 2,
+   "crafts": 39,
    "craftAll": true
   },
   {
    "skill": [
-    109,
-    112
+    90,
+    96
    ],
-   "recipe": 8334,
-   "crafts": 3
+   "recipe": 3931,
+   "crafts": 8
   },
   {
    "skill": [
-    112,
+    96,
+    100
+   ],
+   "recipe": 3926,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    100,
+    109
+   ],
+   "recipe": 3973,
+   "crafts": 9
+  },
+  {
+   "skill": [
+    109,
+    116
+   ],
+   "recipe": 8334,
+   "crafts": 7
+  },
+  {
+   "skill": [
+    116,
     125
    ],
    "recipe": 3934,
-   "crafts": 13
+   "crafts": 9
   },
   {
    "skill": [
@@ -119,26 +119,35 @@
   {
    "skill": [
     150,
-    154
-   ],
-   "recipe": 9271,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    154,
     160
    ],
-   "recipe": 12584,
-   "crafts": 8
+   "recipe": 9271,
+   "crafts": 15
   },
   {
    "skill": [
     160,
+    168
+   ],
+   "recipe": 3958,
+   "crafts": 11
+  },
+  {
+   "skill": [
+    168,
+    169
+   ],
+   "recipe": 12584,
+   "crafts": 2,
+   "craftAll": true
+  },
+  {
+   "skill": [
+    169,
     170
    ],
    "recipe": 3958,
-   "crafts": 15
+   "crafts": 2
   },
   {
    "skill": [
@@ -151,10 +160,25 @@
   {
    "skill": [
     175,
+    179
+   ],
+   "recipe": 12586,
+   "crafts": 30,
+   "craftAll": true,
+   "first": [
+    {
+     "recipe": 12585,
+     "crafts": 30
+    }
+   ]
+  },
+  {
+   "skill": [
+    179,
     193
    ],
    "recipe": 12585,
-   "crafts": 114,
+   "crafts": 91,
    "craftAll": true
   },
   {
@@ -176,19 +200,27 @@
   {
    "skill": [
     200,
-    220
+    210
    ],
    "recipe": 12591,
-   "crafts": 46,
+   "crafts": 13,
    "craftAll": true
   },
   {
    "skill": [
-    220,
+    210,
+    227
+   ],
+   "recipe": 12596,
+   "crafts": 24
+  },
+  {
+   "skill": [
+    227,
     235
    ],
    "recipe": 12599,
-   "crafts": 29,
+   "crafts": 16,
    "craftAll": true
   },
   {
@@ -196,7 +228,7 @@
     235,
     243
    ],
-   "recipe": 12619,
+   "recipe": 12754,
    "crafts": 10
   },
   {
@@ -204,14 +236,8 @@
     243,
     245
    ],
-   "recipe": 12618,
-   "crafts": 2,
-   "first": [
-    {
-     "recipe": 12590,
-     "crafts": 1
-    }
-   ]
+   "recipe": 12619,
+   "crafts": 3
   },
   {
    "skill": [
@@ -240,26 +266,10 @@
   {
    "skill": [
     265,
-    275
-   ],
-   "recipe": 12622,
-   "crafts": 15
-  },
-  {
-   "skill": [
-    275,
-    280
-   ],
-   "recipe": 19567,
-   "crafts": 9
-  },
-  {
-   "skill": [
-    280,
     288
    ],
    "recipe": 19791,
-   "crafts": 11
+   "crafts": 26
   },
   {
    "skill": [
@@ -275,14 +285,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    56
+    53
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    56,
+    53,
     125
    ],
    "trainers": {
@@ -2750,7 +2760,7 @@
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 474
+     "price": 430
     }
    ],
    "source": "trainer",
@@ -2768,7 +2778,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 6,
-     "price": 85
+     "price": 98
     }
    ],
    "source": "trainer",
@@ -2788,7 +2798,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 1,
-     "price": 168
+     "price": 159
     },
     {
      "id": 4359,
@@ -2820,7 +2830,7 @@
      "id": 3577,
      "name": "Gold Bar",
      "count": 1,
-     "price": 600
+     "price": 825
     }
    ],
    "source": "trainer",
@@ -2841,31 +2851,35 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 2,
-     "price": 162
+     "price": 167
     }
    ],
    "source": "trainer",
    "tools": [],
    "taught_by": []
   },
-  "12590": {
-   "name": "Gyromatic Micro-Adjustor",
+  "12586": {
+   "name": "Solid Dynamite",
    "item": {
-    "id": 10498,
-    "count": 1
+    "id": 10507,
+    "count": 2
    },
    "reagents": [
     {
-     "id": 3859,
-     "name": "Steel Bar",
-     "count": 4,
-     "price": 889
+     "id": 10505,
+     "name": "Solid Blasting Powder",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 4306,
+     "name": "Silk Cloth",
+     "count": 1,
+     "price": 195
     }
    ],
    "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
+   "tools": [],
    "taught_by": []
   },
   "12591": {
@@ -2879,13 +2893,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 1,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 1,
-     "price": 611
+     "price": 539
     },
     {
      "id": 10505,
@@ -2901,6 +2915,32 @@
    ],
    "taught_by": []
   },
+  "12596": {
+   "name": "Hi-Impact Mithril Slugs",
+   "item": {
+    "id": 10512,
+    "count": 200
+   },
+   "reagents": [
+    {
+     "id": 3860,
+     "name": "Mithril Bar",
+     "count": 1,
+     "price": 1047
+    },
+    {
+     "id": 10505,
+     "name": "Solid Blasting Powder",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
   "9271": {
    "name": "Aquadynamic Fish Attractor",
    "item": {
@@ -2912,13 +2952,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 2,
-     "price": 168
+     "price": 159
     },
     {
      "id": 6530,
      "name": "Nightcrawlers",
      "count": 1,
-     "price": 27
+     "price": 30
     },
     {
      "id": 4364,
@@ -2942,40 +2982,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 3,
-     "price": 1006
+     "price": 1047
     }
    ],
    "source": "trainer",
    "tools": [
     "Blacksmith Hammer",
     "Arclight Spanner"
-   ],
-   "taught_by": []
-  },
-  "12618": {
-   "name": "Rose Colored Goggles",
-   "item": {
-    "id": 10503,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 6,
-     "price": 649
-    },
-    {
-     "id": 7910,
-     "name": "Star Ruby",
-     "count": 2,
-     "price": 5271
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Arclight Spanner",
-    "Gyromatic Micro-Adjustor"
    ],
    "taught_by": []
   },
@@ -3023,7 +3036,7 @@
      "id": 12365,
      "name": "Dense Stone",
      "count": 2,
-     "price": 499
+     "price": 505
     }
    ],
    "source": "trainer",
@@ -3041,7 +3054,7 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 2,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 10505,
@@ -3067,56 +3080,11 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 1,
-     "price": 9
+     "price": 8
     }
    ],
    "source": "trainer",
    "tools": [],
-   "taught_by": []
-  },
-  "12622": {
-   "name": "Green Lens",
-   "item": {
-    "id": 10504,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 8,
-     "price": 649
-    },
-    {
-     "id": 1529,
-     "name": "Jade",
-     "count": 3,
-     "price": 735
-    },
-    {
-     "id": 7909,
-     "name": "Aquamarine",
-     "count": 3,
-     "price": 1800
-    },
-    {
-     "id": 10286,
-     "name": "Heart of the Wild",
-     "count": 2,
-     "price": 409
-    },
-    {
-     "id": 8153,
-     "name": "Wildvine",
-     "count": 2,
-     "price": 73
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Arclight Spanner",
-    "Gyromatic Micro-Adjustor"
-   ],
    "taught_by": []
   },
   "19791": {
@@ -3130,13 +3098,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 3,
-     "price": 2897
+     "price": 2319
     },
     {
      "id": 14047,
      "name": "Runecloth",
      "count": 1,
-     "price": 976
+     "price": 611
     }
    ],
    "source": "recipe",
@@ -3166,7 +3134,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 1,
-     "price": 85
+     "price": 98
     }
    ],
    "source": "trainer",
@@ -3186,7 +3154,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 1,
-     "price": 85
+     "price": 98
     },
     {
      "id": 4359,
@@ -3204,7 +3172,7 @@
      "id": 2589,
      "name": "Linen Cloth",
      "count": 1,
-     "price": 22
+     "price": 24
     }
    ],
    "source": "trainer",
@@ -3224,7 +3192,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 2,
-     "price": 85
+     "price": 98
     },
     {
      "id": 2880,
@@ -3239,6 +3207,78 @@
    ],
    "taught_by": []
   },
+  "12754": {
+   "name": "The Big One",
+   "item": {
+    "id": 10586,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 10561,
+     "name": "Mithril Casing",
+     "count": 1,
+     "price": null
+    },
+    {
+     "id": 9061,
+     "name": "Goblin Rocket Fuel",
+     "count": 1,
+     "price": 740
+    },
+    {
+     "id": 10507,
+     "name": "Solid Dynamite",
+     "count": 6,
+     "price": null
+    },
+    {
+     "id": 10560,
+     "name": "Unstable Trigger",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
+  "3926": {
+   "name": "Copper Modulator",
+   "item": {
+    "id": 4363,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4359,
+     "name": "Handful of Copper Bolts",
+     "count": 2,
+     "price": null
+    },
+    {
+     "id": 2840,
+     "name": "Copper Bar",
+     "count": 1,
+     "price": 98
+    },
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 2,
+     "price": 24
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer",
+    "Arclight Spanner"
+   ],
+   "taught_by": []
+  },
   "19795": {
    "name": "Thorium Tube",
    "item": {
@@ -3250,7 +3290,7 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 6,
-     "price": 2897
+     "price": 2319
     }
    ],
    "source": "recipe",
@@ -3270,39 +3310,6 @@
     }
    ]
   },
-  "3926": {
-   "name": "Copper Modulator",
-   "item": {
-    "id": 4363,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4359,
-     "name": "Handful of Copper Bolts",
-     "count": 2,
-     "price": null
-    },
-    {
-     "id": 2840,
-     "name": "Copper Bar",
-     "count": 1,
-     "price": 85
-    },
-    {
-     "id": 2589,
-     "name": "Linen Cloth",
-     "count": 2,
-     "price": 22
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer",
-    "Arclight Spanner"
-   ],
-   "taught_by": []
-  },
   "3929": {
    "name": "Coarse Blasting Powder",
    "item": {
@@ -3314,7 +3321,31 @@
      "id": 2836,
      "name": "Coarse Stone",
      "count": 1,
-     "price": 77
+     "price": 59
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3931": {
+   "name": "Coarse Dynamite",
+   "item": {
+    "id": 4365,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 4364,
+     "name": "Coarse Blasting Powder",
+     "count": 3,
+     "price": null
+    },
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 1,
+     "price": 24
     }
    ],
    "source": "trainer",
@@ -3332,13 +3363,13 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 6,
-     "price": 34
+     "price": 28
     },
     {
      "id": 818,
      "name": "Tigerseye",
      "count": 2,
-     "price": 125
+     "price": 164
     }
    ],
    "source": "trainer",
@@ -3358,13 +3389,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 2,
-     "price": 168
+     "price": 159
     },
     {
      "id": 2592,
      "name": "Wool Cloth",
      "count": 1,
-     "price": 112
+     "price": 115
     }
    ],
    "source": "trainer",
@@ -3385,49 +3416,11 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 1,
-     "price": 339
+     "price": 361
     }
    ],
    "source": "trainer",
    "tools": [],
-   "taught_by": []
-  },
-  "19567": {
-   "name": "Salt Shaker",
-   "item": {
-    "id": 15846,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 10561,
-     "name": "Mithril Casing",
-     "count": 1,
-     "price": null
-    },
-    {
-     "id": 12359,
-     "name": "Thorium Bar",
-     "count": 6,
-     "price": 2897
-    },
-    {
-     "id": 10558,
-     "name": "Gold Power Core",
-     "count": 1,
-     "price": null
-    },
-    {
-     "id": 10560,
-     "name": "Unstable Trigger",
-     "count": 4,
-     "price": null
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
    "taught_by": []
   },
   "3953": {
@@ -3441,19 +3434,19 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 2,
-     "price": 168
+     "price": 159
     },
     {
      "id": 2319,
      "name": "Medium Leather",
      "count": 1,
-     "price": 82
+     "price": 89
     },
     {
      "id": 2592,
      "name": "Wool Cloth",
      "count": 1,
-     "price": 112
+     "price": 115
     }
    ],
    "source": "trainer",
@@ -3471,7 +3464,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 2,
-     "price": 293
+     "price": 297
     }
    ],
    "source": "trainer",
@@ -3491,7 +3484,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 293
+     "price": 297
     },
     {
      "id": 10558,
@@ -3518,7 +3511,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 293
+     "price": 297
     },
     {
      "id": 4377,
@@ -3530,7 +3523,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 1,
-     "price": 198
+     "price": 195
     }
    ],
    "source": "trainer",
@@ -3550,7 +3543,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 3,
-     "price": 293
+     "price": 297
     },
     {
      "id": 4377,

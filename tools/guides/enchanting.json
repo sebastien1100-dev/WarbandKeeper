@@ -58,18 +58,26 @@
   {
    "skill": [
     128,
-    159
+    151
    ],
    "recipe": 7863,
-   "crafts": 33
+   "crafts": 23
   },
   {
    "skill": [
-    159,
-    160
+    151,
+    152
    ],
    "recipe": 13628,
    "crafts": 1
+  },
+  {
+   "skill": [
+    152,
+    160
+   ],
+   "recipe": 13501,
+   "crafts": 9
   },
   {
    "skill": [
@@ -82,26 +90,34 @@
   {
    "skill": [
     200,
-    206
+    201
    ],
-   "recipe": 13663,
-   "crafts": 6
+   "recipe": 13661,
+   "crafts": 1
   },
   {
    "skill": [
-    206,
-    207
+    201,
+    202
    ],
    "recipe": 13702,
    "crafts": 1
   },
   {
    "skill": [
-    207,
+    202,
+    205
+   ],
+   "recipe": 13663,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    205,
     210
    ],
    "recipe": 13746,
-   "crafts": 3
+   "crafts": 5
   },
   {
    "skill": [
@@ -122,34 +138,42 @@
   {
    "skill": [
     255,
-    260
+    270
    ],
-   "recipe": 13858,
-   "crafts": 10
+   "recipe": 25127,
+   "crafts": 20
   },
   {
    "skill": [
-    260,
+    270,
+    272
+   ],
+   "recipe": 13939,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    272,
+    273
+   ],
+   "recipe": 13935,
+   "crafts": 2
+  },
+  {
+   "skill": [
+    273,
     280
    ],
    "recipe": 13939,
-   "crafts": 30
+   "crafts": 13
   },
   {
    "skill": [
     280,
-    290
-   ],
-   "recipe": 13948,
-   "crafts": 18
-  },
-  {
-   "skill": [
-    290,
     300
    ],
    "recipe": 20017,
-   "crafts": 16
+   "crafts": 26
   }
  ],
  "sections": [
@@ -2519,29 +2543,6 @@
   "Runed Silver Rod": 7795
  },
  "recipes": {
-  "13948": {
-   "name": "Enchant Gloves - Minor Haste",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11178,
-     "name": "Large Radiant Shard",
-     "count": 1,
-     "price": 17400
-    },
-    {
-     "id": 8153,
-     "name": "Wildvine",
-     "count": 1,
-     "price": 73
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Truesilver Rod"
-   ],
-   "taught_by": []
-  },
   "7426": {
    "name": "Enchant Chest - Minor Absorption",
    "item": null,
@@ -2550,63 +2551,12 @@
      "id": 10938,
      "name": "Lesser Magic Essence",
      "count": 1,
-     "price": 128
+     "price": 133
     }
    ],
    "source": "trainer",
    "tools": [
     "Runed Copper Rod"
-   ],
-   "taught_by": []
-  },
-  "13815": {
-   "name": "Enchant Gloves - Agility",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11137,
-     "name": "Vision Dust",
-     "count": 1,
-     "price": 1000
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Truesilver Rod"
-   ],
-   "taught_by": []
-  },
-  "13858": {
-   "name": "Enchant Chest - Superior Stamina",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11137,
-     "name": "Vision Dust",
-     "count": 3,
-     "price": 1000
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Truesilver Rod"
-   ],
-   "taught_by": []
-  },
-  "13637": {
-   "name": "Enchant Boots - Lesser Agility",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11083,
-     "name": "Soul Dust",
-     "count": 1,
-     "price": 419
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Golden Rod"
    ],
    "taught_by": []
   },
@@ -2621,25 +2571,25 @@
      "id": 11144,
      "name": "Truesilver Rod",
      "count": 1,
-     "price": 3598
+     "price": 3500
     },
     {
      "id": 7971,
      "name": "Black Pearl",
      "count": 1,
-     "price": 1272
+     "price": 1111
     },
     {
      "id": 11135,
      "name": "Greater Mystic Essence",
      "count": 1,
-     "price": 2399
+     "price": 3371
     },
     {
      "id": 11137,
      "name": "Vision Dust",
      "count": 1,
-     "price": 1000
+     "price": 996
     }
    ],
    "source": "trainer",
@@ -2654,7 +2604,7 @@
      "id": 11137,
      "name": "Vision Dust",
      "count": 2,
-     "price": 1000
+     "price": 996
     }
    ],
    "source": "trainer",
@@ -2662,6 +2612,47 @@
     "Runed Truesilver Rod"
    ],
    "taught_by": []
+  },
+  "25127": {
+   "name": "Lesser Mana Oil",
+   "item": {
+    "id": 20747,
+    "count": 0
+   },
+   "reagents": [
+    {
+     "id": 11176,
+     "name": "Dream Dust",
+     "count": 1,
+     "price": 3685
+    },
+    {
+     "id": 8831,
+     "name": "Purple Lotus",
+     "count": 1,
+     "price": 414
+    },
+    {
+     "id": 8925,
+     "name": "Crystal Vial",
+     "count": 1,
+     "price": 499
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 20754,
+     "name": "Formula: Lesser Mana Oil",
+     "vendors": [
+      "Kania"
+     ],
+     "price": 10000
+    }
+   ]
   },
   "20017": {
    "name": "Enchant Shield - Greater Stamina",
@@ -2671,7 +2662,7 @@
      "id": 11176,
      "name": "Dream Dust",
      "count": 6,
-     "price": 2700
+     "price": 3685
     }
    ],
    "source": "recipe",
@@ -2698,7 +2689,176 @@
      "id": 11137,
      "name": "Vision Dust",
      "count": 1,
-     "price": 1000
+     "price": 996
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
+   "taught_by": []
+  },
+  "7863": {
+   "name": "Enchant Boots - Minor Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 4,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Silver Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 6376,
+     "name": "Formula: Enchant Boots - Minor Stamina",
+     "vendors": [],
+     "price": null
+    }
+   ]
+  },
+  "13628": {
+   "name": "Runed Golden Rod",
+   "item": {
+    "id": 11130,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 11128,
+     "name": "Golden Rod",
+     "count": 1,
+     "price": 1250
+    },
+    {
+     "id": 5500,
+     "name": "Iridescent Pearl",
+     "count": 1,
+     "price": 1156
+    },
+    {
+     "id": 11082,
+     "name": "Greater Astral Essence",
+     "count": 1,
+     "price": 1540
+    },
+    {
+     "id": 11083,
+     "name": "Soul Dust",
+     "count": 1,
+     "price": 408
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "13501": {
+   "name": "Enchant Bracer - Lesser Stamina",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11083,
+     "name": "Soul Dust",
+     "count": 1,
+     "price": 408
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Silver Rod"
+   ],
+   "taught_by": []
+  },
+  "13637": {
+   "name": "Enchant Boots - Lesser Agility",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11083,
+     "name": "Soul Dust",
+     "count": 1,
+     "price": 408
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Golden Rod"
+   ],
+   "taught_by": []
+  },
+  "7771": {
+   "name": "Enchant Cloak - Minor Protection",
+   "item": null,
+   "reagents": [
+    {
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 2,
+     "price": 100
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Copper Rod"
+   ],
+   "taught_by": [
+    {
+     "id": 6345,
+     "name": "Formula: Imbue Cloak - Protection",
+     "vendors": [],
+     "price": null
+    }
+   ]
+  },
+  "13661": {
+   "name": "Enchant Bracer - Strength",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 1,
+     "price": 996
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Golden Rod"
+   ],
+   "taught_by": []
+  },
+  "13663": {
+   "name": "Enchant Chest - Greater Intellect",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11134,
+     "name": "Lesser Mystic Essence",
+     "count": 1,
+     "price": 1118
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Golden Rod"
+   ],
+   "taught_by": []
+  },
+  "13935": {
+   "name": "Enchant Boots - Agility",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11175,
+     "name": "Greater Nether Essence",
+     "count": 1,
+     "price": 9890
     }
    ],
    "source": "trainer",
@@ -2718,25 +2878,25 @@
      "id": 6338,
      "name": "Silver Rod",
      "count": 1,
-     "price": 700
+     "price": 500
     },
     {
      "id": 10940,
      "name": "Strange Dust",
      "count": 3,
-     "price": 95
+     "price": 100
     },
     {
      "id": 10938,
      "name": "Lesser Magic Essence",
      "count": 4,
-     "price": 128
+     "price": 133
     },
     {
      "id": 1210,
      "name": "Shadowgem",
      "count": 1,
-     "price": 302
+     "price": 270
     }
    ],
    "source": "trainer",
@@ -2751,13 +2911,13 @@
      "id": 11176,
      "name": "Dream Dust",
      "count": 1,
-     "price": 2700
+     "price": 3685
     },
     {
      "id": 11174,
      "name": "Lesser Nether Essence",
      "count": 2,
-     "price": 2380
+     "price": 3292
     }
    ],
    "source": "trainer",
@@ -2766,65 +2926,22 @@
    ],
    "taught_by": []
   },
-  "13628": {
-   "name": "Runed Golden Rod",
-   "item": {
-    "id": 11130,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 11128,
-     "name": "Golden Rod",
-     "count": 1,
-     "price": 998
-    },
-    {
-     "id": 5500,
-     "name": "Iridescent Pearl",
-     "count": 1,
-     "price": 984
-    },
-    {
-     "id": 11082,
-     "name": "Greater Astral Essence",
-     "count": 1,
-     "price": 1729
-    },
-    {
-     "id": 11083,
-     "name": "Soul Dust",
-     "count": 1,
-     "price": 419
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "7863": {
-   "name": "Enchant Boots - Minor Stamina",
+  "13815": {
+   "name": "Enchant Gloves - Agility",
    "item": null,
    "reagents": [
     {
-     "id": 10940,
-     "name": "Strange Dust",
-     "count": 4,
-     "price": 95
+     "id": 11137,
+     "name": "Vision Dust",
+     "count": 1,
+     "price": 996
     }
    ],
    "source": "trainer",
    "tools": [
-    "Runed Silver Rod"
+    "Runed Truesilver Rod"
    ],
-   "taught_by": [
-    {
-     "id": 6376,
-     "name": "Formula: Enchant Boots - Minor Stamina",
-     "vendors": [],
-     "price": null
-    }
-   ]
+   "taught_by": []
   },
   "7418": {
    "name": "Enchant Bracer - Inferior Stamina",
@@ -2843,30 +2960,6 @@
    ],
    "taught_by": []
   },
-  "7771": {
-   "name": "Enchant Cloak - Minor Protection",
-   "item": null,
-   "reagents": [
-    {
-     "id": 10940,
-     "name": "Strange Dust",
-     "count": 2,
-     "price": 95
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Copper Rod"
-   ],
-   "taught_by": [
-    {
-     "id": 6345,
-     "name": "Formula: Imbue Cloak - Protection",
-     "vendors": [],
-     "price": null
-    }
-   ]
-  },
   "7420": {
    "name": "Enchant Chest - Inferior Stamina",
    "item": null,
@@ -2875,7 +2968,7 @@
      "id": 10940,
      "name": "Strange Dust",
      "count": 1,
-     "price": 95
+     "price": 100
     }
    ],
    "source": "trainer",
@@ -2906,23 +2999,6 @@
    ],
    "source": "trainer",
    "tools": [],
-   "taught_by": []
-  },
-  "13663": {
-   "name": "Enchant Chest - Greater Intellect",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11134,
-     "name": "Lesser Mystic Essence",
-     "count": 1,
-     "price": 900
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Golden Rod"
-   ],
    "taught_by": []
   }
  }

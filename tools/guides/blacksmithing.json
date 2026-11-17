@@ -12,16 +12,15 @@
   {
    "skill": [
     26,
-    69
+    65
    ],
    "recipe": 3320,
-   "crafts": 73,
-   "craftAll": true
+   "crafts": 49
   },
   {
    "skill": [
-    69,
-    77
+    65,
+    76
    ],
    "recipe": 3326,
    "crafts": 44,
@@ -29,35 +28,27 @@
   },
   {
    "skill": [
-    77,
+    76,
     81
    ],
    "recipe": 7818,
-   "crafts": 4
+   "crafts": 5
   },
   {
    "skill": [
     81,
-    86
+    85
    ],
-   "recipe": 2666,
-   "crafts": 5
+   "recipe": 19666,
+   "crafts": 8
   },
   {
    "skill": [
-    86,
-    91
-   ],
-   "recipe": 2664,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    91,
+    85,
     100
    ],
    "recipe": 2668,
-   "crafts": 9
+   "crafts": 15
   },
   {
    "skill": [
@@ -103,18 +94,10 @@
   {
    "skill": [
     128,
-    132
-   ],
-   "recipe": 14379,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    132,
     138
    ],
    "recipe": 2672,
-   "crafts": 10
+   "crafts": 15
   },
   {
    "skill": [
@@ -135,11 +118,27 @@
   {
    "skill": [
     175,
-    185
+    179
+   ],
+   "recipe": 9918,
+   "crafts": 6
+  },
+  {
+   "skill": [
+    179,
+    182
    ],
    "recipe": 9920,
-   "crafts": 304,
+   "crafts": 29,
    "craftAll": true
+  },
+  {
+   "skill": [
+    182,
+    185
+   ],
+   "recipe": 19668,
+   "crafts": 6
   },
   {
    "skill": [
@@ -152,35 +151,58 @@
   {
    "skill": [
     190,
-    208
+    204
    ],
    "recipe": 9928,
-   "crafts": 21
+   "crafts": 15
   },
   {
    "skill": [
-    208,
+    204,
+    206
+   ],
+   "recipe": 9931,
+   "crafts": 2
+  },
+  {
+   "skill": [
+    206,
+    211
+   ],
+   "recipe": 9935,
+   "crafts": 5
+  },
+  {
+   "skill": [
+    211,
     225
    ],
    "recipe": 9961,
-   "crafts": 17
+   "crafts": 14
   },
   {
    "skill": [
     225,
-    235
+    233
    ],
-   "recipe": 16639,
-   "crafts": 76,
-   "craftAll": true
+   "recipe": 16641,
+   "crafts": 10
   },
   {
    "skill": [
-    235,
+    233,
+    234
+   ],
+   "recipe": 9961,
+   "crafts": 2
+  },
+  {
+   "skill": [
+    234,
     240
    ],
    "recipe": 9968,
-   "crafts": 9
+   "crafts": 10
   },
   {
    "skill": [
@@ -193,34 +215,34 @@
   {
    "skill": [
     243,
-    263
+    245
    ],
    "recipe": 10011,
-   "crafts": 27
+   "crafts": 2
   },
   {
    "skill": [
-    263,
+    245,
     273
    ],
-   "recipe": 10015,
-   "crafts": 17
+   "recipe": 16649,
+   "crafts": 31
   },
   {
    "skill": [
     273,
-    287
+    291
    ],
-   "recipe": 16969,
-   "crafts": 20
+   "recipe": 16657,
+   "crafts": 18
   },
   {
    "skill": [
-    287,
-    290
+    291,
+    300
    ],
-   "recipe": 16971,
-   "crafts": 6
+   "recipe": 16730,
+   "crafts": 9
   }
  ],
  "sections": [
@@ -228,14 +250,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    69
+    65
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    69,
+    65,
     125
    ],
    "trainers": {
@@ -279,7 +301,7 @@
    "rank": "Expert",
    "skill": [
     125,
-    208
+    204
    ],
    "trainers": {
     "alliance": [
@@ -301,8 +323,8 @@
   {
    "rank": "Artisan",
    "skill": [
-    208,
-    290
+    204,
+    300
    ],
    "trainers": {
     "alliance": [
@@ -2928,7 +2950,7 @@
    "learn": 240,
    "src": "recipe",
    "recipe": 12688,
-   "price": null,
+   "price": 12000,
    "vendors": []
   },
   {
@@ -3033,7 +3055,7 @@
    "learn": 245,
    "src": "recipe",
    "recipe": 12690,
-   "price": null,
+   "price": 12000,
    "vendors": []
   },
   {
@@ -3428,7 +3450,7 @@
    "learn": 270,
    "src": "recipe",
    "recipe": 12700,
-   "price": null,
+   "price": 25000,
    "vendors": []
   },
   {
@@ -3590,7 +3612,7 @@
    "learn": 280,
    "src": "recipe",
    "recipe": 12715,
-   "price": null,
+   "price": 40000,
    "vendors": []
   },
   {
@@ -4591,6 +4613,24 @@
  "skillOnly": [],
  "craftedTools": {},
  "recipes": {
+  "16641": {
+   "name": "Dense Sharpening Stone",
+   "item": {
+    "id": 12404,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12365,
+     "name": "Dense Stone",
+     "count": 1,
+     "price": 505
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
   "3333": {
    "name": "Silvered Bronze Gauntlets",
    "item": {
@@ -4602,13 +4642,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 8,
-     "price": 168
+     "price": 159
     },
     {
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 474
+     "price": 430
     },
     {
      "id": 3478,
@@ -4634,7 +4674,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 3,
-     "price": 339
+     "price": 361
     }
    ],
    "source": "trainer",
@@ -4652,7 +4692,7 @@
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 474
+     "price": 430
     },
     {
      "id": 3470,
@@ -4667,6 +4707,39 @@
    ],
    "taught_by": []
   },
+  "16649": {
+   "name": "Imperial Plate Bracers",
+   "item": {
+    "id": 12425,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12359,
+     "name": "Thorium Bar",
+     "count": 20,
+     "price": 2319
+    },
+    {
+     "id": 7910,
+     "name": "Star Ruby",
+     "count": 1,
+     "price": 5841
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": [
+    {
+     "id": 12690,
+     "name": "Plans: Imperial Plate Bracers",
+     "vendors": [],
+     "price": 12000
+    }
+   ]
+  },
   "10001": {
    "name": "Big Black Mace",
    "item": {
@@ -4678,19 +4751,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 16,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 7971,
      "name": "Black Pearl",
      "count": 1,
-     "price": 1272
+     "price": 1111
     },
     {
      "id": 1210,
      "name": "Shadowgem",
      "count": 4,
-     "price": 302
+     "price": 270
     },
     {
      "id": 7966,
@@ -4702,7 +4775,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 2,
-     "price": 649
+     "price": 659
     }
    ],
    "source": "trainer",
@@ -4710,6 +4783,45 @@
     "Blacksmith Hammer"
    ],
    "taught_by": []
+  },
+  "16657": {
+   "name": "Imperial Plate Boots",
+   "item": {
+    "id": 12426,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 12359,
+     "name": "Thorium Bar",
+     "count": 34,
+     "price": 2319
+    },
+    {
+     "id": 7910,
+     "name": "Star Ruby",
+     "count": 1,
+     "price": 5841
+    },
+    {
+     "id": 7909,
+     "name": "Aquamarine",
+     "count": 1,
+     "price": 1154
+    }
+   ],
+   "source": "recipe",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": [
+    {
+     "id": 12700,
+     "name": "Plans: Imperial Plate Boots",
+     "vendors": [],
+     "price": 25000
+    }
+   ]
   },
   "10011": {
    "name": "Blight",
@@ -4722,19 +4834,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 28,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 7972,
      "name": "Ichor of Undeath",
      "count": 10,
-     "price": 436
+     "price": 409
     },
     {
      "id": 6037,
      "name": "Truesilver Bar",
      "count": 10,
-     "price": 1680
+     "price": 1549
     },
     {
      "id": 7966,
@@ -4746,83 +4858,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 6,
-     "price": 649
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
-   "taught_by": []
-  },
-  "10015": {
-   "name": "Truesilver Champion",
-   "item": {
-    "id": 7960,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 3860,
-     "name": "Mithril Bar",
-     "count": 30,
-     "price": 1006
-    },
-    {
-     "id": 6037,
-     "name": "Truesilver Bar",
-     "count": 16,
-     "price": 1680
-    },
-    {
-     "id": 7910,
-     "name": "Star Ruby",
-     "count": 6,
-     "price": 5271
-    },
-    {
-     "id": 7081,
-     "name": "Breath of Wind",
-     "count": 4,
-     "price": 8000
-    },
-    {
-     "id": 7966,
-     "name": "Solid Grinding Stone",
-     "count": 8,
-     "price": null
-    },
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 6,
-     "price": 649
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
-   "taught_by": []
-  },
-  "14379": {
-   "name": "Golden Rod",
-   "item": {
-    "id": 11128,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 3577,
-     "name": "Gold Bar",
-     "count": 1,
-     "price": 600
-    },
-    {
-     "id": 3478,
-     "name": "Coarse Grinding Stone",
-     "count": 2,
-     "price": null
+     "price": 659
     }
    ],
    "source": "trainer",
@@ -4842,7 +4878,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 6,
-     "price": 293
+     "price": 297
     },
     {
      "id": 2605,
@@ -4868,7 +4904,7 @@
      "id": 3859,
      "name": "Steel Bar",
      "count": 5,
-     "price": 889
+     "price": 903
     },
     {
      "id": 3486,
@@ -4883,6 +4919,24 @@
    ],
    "taught_by": []
   },
+  "9918": {
+   "name": "Solid Sharpening Stone",
+   "item": {
+    "id": 7964,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 7912,
+     "name": "Solid Stone",
+     "count": 1,
+     "price": 167
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
   "8768": {
    "name": "Iron Buckle",
    "item": {
@@ -4894,7 +4948,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 293
+     "price": 297
     }
    ],
    "source": "trainer",
@@ -4914,7 +4968,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 4,
-     "price": 162
+     "price": 167
     }
    ],
    "source": "trainer",
@@ -4932,13 +4986,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 6,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 4,
-     "price": 611
+     "price": 539
     }
    ],
    "source": "trainer",
@@ -4947,77 +5001,122 @@
    ],
    "taught_by": []
   },
-  "16969": {
-   "name": "Ornate Thorium Handaxe",
+  "9931": {
+   "name": "Mithril Plate Pants",
    "item": {
-    "id": 12773,
+    "id": 7920,
     "count": 1
    },
    "reagents": [
     {
-     "id": 12359,
-     "name": "Thorium Bar",
-     "count": 20,
-     "price": 2897
-    },
-    {
-     "id": 12799,
-     "name": "Large Opal",
-     "count": 2,
-     "price": 8695
-    },
-    {
-     "id": 12644,
-     "name": "Dense Grinding Stone",
-     "count": 2,
-     "price": null
-    },
-    {
-     "id": 8170,
-     "name": "Rugged Leather",
-     "count": 4,
-     "price": 1149
+     "id": 3860,
+     "name": "Mithril Bar",
+     "count": 12,
+     "price": 1047
     }
    ],
-   "source": "recipe",
+   "source": "trainer",
    "tools": [
     "Blacksmith Hammer"
    ],
-   "taught_by": [
-    {
-     "id": 12819,
-     "name": "Plans: Ornate Thorium Handaxe",
-     "vendors": [
-      "Magnus Frostwake"
-     ],
-     "price": 16000
-    }
-   ]
+   "taught_by": []
   },
-  "16971": {
-   "name": "Huge Thorium Battleaxe",
+  "9935": {
+   "name": "Steel Plate Helm",
    "item": {
-    "id": 12775,
+    "id": 7922,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 3859,
+     "name": "Steel Bar",
+     "count": 14,
+     "price": 903
+    },
+    {
+     "id": 7966,
+     "name": "Solid Grinding Stone",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "19666": {
+   "name": "Silver Skeleton Key",
+   "item": {
+    "id": 15869,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 2842,
+     "name": "Silver Bar",
+     "count": 1,
+     "price": 430
+    },
+    {
+     "id": 3470,
+     "name": "Rough Grinding Stone",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "19668": {
+   "name": "Truesilver Skeleton Key",
+   "item": {
+    "id": 15871,
+    "count": 2
+   },
+   "reagents": [
+    {
+     "id": 6037,
+     "name": "Truesilver Bar",
+     "count": 1,
+     "price": 1549
+    },
+    {
+     "id": 7966,
+     "name": "Solid Grinding Stone",
+     "count": 1,
+     "price": null
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Blacksmith Hammer"
+   ],
+   "taught_by": []
+  },
+  "16730": {
+   "name": "Imperial Plate Leggings",
+   "item": {
+    "id": 12429,
     "count": 1
    },
    "reagents": [
     {
      "id": 12359,
      "name": "Thorium Bar",
-     "count": 40,
-     "price": 2897
+     "count": 44,
+     "price": 2319
     },
     {
-     "id": 12644,
-     "name": "Dense Grinding Stone",
-     "count": 6,
-     "price": null
-    },
-    {
-     "id": 8170,
-     "name": "Rugged Leather",
-     "count": 6,
-     "price": 1149
+     "id": 7910,
+     "name": "Star Ruby",
+     "count": 2,
+     "price": 5841
     }
    ],
    "source": "recipe",
@@ -5026,12 +5125,10 @@
    ],
    "taught_by": [
     {
-     "id": 12823,
-     "name": "Plans: Huge Thorium Battleaxe",
-     "vendors": [
-      "Magnus Frostwake"
-     ],
-     "price": 20000
+     "id": 12715,
+     "name": "Plans: Imperial Plate Leggings",
+     "vendors": [],
+     "price": 40000
     }
    ]
   },
@@ -5046,37 +5143,11 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 1,
-     "price": 9
+     "price": 8
     }
    ],
    "source": "trainer",
    "tools": [],
-   "taught_by": []
-  },
-  "2664": {
-   "name": "Runed Copper Bracers",
-   "item": {
-    "id": 2854,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 2840,
-     "name": "Copper Bar",
-     "count": 10,
-     "price": 85
-    },
-    {
-     "id": 3470,
-     "name": "Rough Grinding Stone",
-     "count": 3,
-     "price": null
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
    "taught_by": []
   },
   "9961": {
@@ -5090,33 +5161,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 10,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 6,
-     "price": 611
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
-   "taught_by": []
-  },
-  "2666": {
-   "name": "Runed Copper Belt",
-   "item": {
-    "id": 2857,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 2840,
-     "name": "Copper Bar",
-     "count": 10,
-     "price": 85
+     "price": 539
     }
    ],
    "source": "trainer",
@@ -5136,7 +5187,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 6,
-     "price": 168
+     "price": 159
     }
    ],
    "source": "trainer",
@@ -5156,7 +5207,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 5,
-     "price": 168
+     "price": 159
     },
     {
      "id": 3478,
@@ -5182,13 +5233,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 14,
-     "price": 1006
+     "price": 1047
     },
     {
      "id": 4304,
      "name": "Thick Leather",
      "count": 4,
-     "price": 649
+     "price": 659
     }
    ],
    "source": "trainer",
@@ -5208,7 +5259,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 1,
-     "price": 339
+     "price": 361
     }
    ],
    "source": "trainer",
@@ -5226,7 +5277,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 2,
-     "price": 9
+     "price": 8
     }
    ],
    "source": "trainer",
@@ -5244,25 +5295,7 @@
      "id": 2836,
      "name": "Coarse Stone",
      "count": 2,
-     "price": 77
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "16639": {
-   "name": "Dense Grinding Stone",
-   "item": {
-    "id": 12644,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 12365,
-     "name": "Dense Stone",
-     "count": 4,
-     "price": 499
+     "price": 59
     }
    ],
    "source": "trainer",

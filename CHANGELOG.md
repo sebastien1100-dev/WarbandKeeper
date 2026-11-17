@@ -23,6 +23,15 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.89.1 — 17/11/2026
+
+### Modifications
+- Guides de montée des métiers mis à jour depuis wowtbc.gg (paliers et étapes revus par le site, par exemple Alchimie : Compagnon jusqu'à 130).
+- Données mises à jour d'un coup (lieux, chemins, rares, quêtes, donjons, guides, recettes) : désormais vérifiées chaque semaine, et proposées à la publication quand QuestieDB ou wowtbc.gg ont du nouveau.
+
+### Corrections
+- Donjons : les objets pas encore découverts sur WoW Forever (surtout le butin des raids) manquaient dans les listes ; ils y sont, marqués « non découvert ».
+
 ## v0.89.0 — 17/11/2026
 
 ### Ajouts
