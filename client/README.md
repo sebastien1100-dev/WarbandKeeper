@@ -1,13 +1,15 @@
 # Warband Keeper : client PC
 
 Petit programme Windows pour installer et mettre à jour l'addon sans manipuler de zip.
+Warband Keeper est fait pour **WoW Forever** seulement : le client ne propose que ses installations.
+Après chaque mise à jour, il dit s'il faut redémarrer complètement le jeu (nouveaux fichiers) ou si un `/reload` suffit.
 
 - **Accueil** : version installée et dernière version publiée, bouton « Mettre à jour », nouveautés depuis ta version.
 - **Nouveautés** : les notes de toutes les versions.
 - **Sauvegardes** : tes réglages de l'addon (SavedVariables) sont sauvegardés avant chaque mise à jour,
   restaurables en un clic (jeu fermé) ; la version précédente de l'addon est gardée (« Revenir à cette version »).
 - **Installation de l'addon** : le client cherche WoW tout seul (registre de Windows, réglages de Battle.net,
-  tous les disques) et reconnaît l'installation WoW Forever ; s'il en trouve plusieurs, il te laisse choisir
+  tous les disques) et ne garde que WoW Forever ; s'il en trouve plusieurs, il te laisse choisir
   (« Installer ici »). Le dossier `Interface\AddOns` est créé s'il manque.
 - **Réglages** : dossier du jeu (« Détecter » ou « Parcourir »), jeton GitHub, options.
 - Le client se met à jour lui-même quand une nouvelle version est publiée.

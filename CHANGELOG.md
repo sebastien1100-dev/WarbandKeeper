@@ -24,7 +24,20 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.90.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Chaque version dit maintenant s'il faut redémarrer complètement le jeu ou si un /reload suffit : pastille dans les notes de version en jeu, ligne en tête des notes sur GitHub et dans le client.
+- Client PC 1.2 : après une mise à jour, il te dit quoi faire, calculé sur ce qui a vraiment changé (nouveaux fichiers ou .toc modifié : redémarrage complet ; sinon un /reload suffit), même si tu sautes plusieurs versions.
+
+### Modifications
+- Client PC : Warband Keeper est fait pour WoW Forever seulement ; le client ne propose plus que les installations de WoW Forever, et demande confirmation si tu choisis un autre dossier.
+
 ## v0.90.1 — 17/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Client PC 1.1 : il installe aussi l'addon la première fois. Il trouve WoW tout seul (registre de Windows, réglages de Battle.net, tous les disques) et reconnaît l'installation WoW Forever ; s'il y en a plusieurs, l'Accueil les liste avec « Installer ici ». « Détecter » dans Réglages ouvre le même choix.
@@ -33,11 +46,15 @@ _Prévu, pas encore commencé._
 
 ## v0.90.0 — 17/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Nouveau : client PC « Warband Keeper » (Windows), à télécharger sur la page Releases du dépôt GitHub. Il trouve le dossier du jeu, montre la version installée et la dernière, installe la mise à jour en un clic avec les nouveautés, sauvegarde tes réglages de l'addon avant chaque mise à jour (restaurables), garde la version précédente pour y revenir, et se met à jour lui-même.
 - Chaque nouvelle version est désormais publiée automatiquement sur GitHub (page Releases), avec ses notes.
 
 ## v0.89.1 — 17/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Guides de montée des métiers mis à jour depuis wowtbc.gg (paliers et étapes revus par le site, par exemple Alchimie : Compagnon jusqu'à 130).
@@ -47,6 +64,8 @@ _Prévu, pas encore commencé._
 - Donjons : les objets pas encore découverts sur WoW Forever (surtout le butin des raids) manquaient dans les listes ; ils y sont, marqués « non découvert ».
 
 ## v0.89.0 — 17/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Donjons : nouvelles tables de butin, celles de WoW Forever (wowtbc.gg) au lieu des tables de Classic. 31 donjons et raids au lieu de 19, avec les nouveaux : Hall of Thanes, Ruines de Lordaeron, Cité de Dalaran, Excavation Site, The Drowned City, Krol'dok Stronghold, Alcaz Prison, Blackmaw Hold, Shaper's Terrace, et les raids Repaire d'Onyxia, Barrow Deeps et Hyjal Summit.
@@ -59,15 +78,21 @@ _Prévu, pas encore commencé._
 
 ## v0.88.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Au démarrage (et en entrant ou sortant d'un donjon), le jeu bloquait une action de Warband Keeper (« fonction protégée UnregisterEvent ») : le module Donjons lisait le journal de combat, désormais réservé au jeu. Les boss tués sont maintenant repérés autrement : mort de ta cible, du focus, d'un boss ou d'une plaque de nom, et butin ramassé sur son corps.
 
 ## v0.88.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Marchand : une erreur Lua à l'ouverture de n'importe quel marchand (panneau « Pour monter tes métiers »). Le même souci empêchait le rachat automatique des composants de classe et des munitions : corrigé aussi.
 
 ## v0.88.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Voyages : la durée du vol s'affiche dans l'infobulle de chaque destination, sur la carte du maître de vol. Durée exacte si tu as déjà fait ce vol, sinon une estimation (« environ… (estimée) »).
@@ -79,11 +104,15 @@ _Prévu, pas encore commencé._
 
 ## v0.87.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Donjons : section « Quêtes du donjon » sous les boss, pour le perso choisi. Chaque quête avec son niveau et son état : disponible, dans le journal, niveau requis, faite, ou « après : <quête> » quand une quête doit être faite avant (prérequis). Les quêtes à faire passent en premier. L'icône de guidage mène au donneur, ou, s'il y a un prérequis, au donneur de la quête à faire avant.
 - Feuille de route mise à jour : bénédictions du paladin, et deux améliorations de la navigation (bateau sur le même continent, repère du jeu sur la minicarte).
 
 ## v0.87.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Donjons : nouvelle page « Donjons » (groupe Exploration). Les 19 donjons de WoW Forever en tuiles par niveau (couleur selon le niveau du perso choisi, barre des boss déjà tués), puis les boss du donjon choisi et leur butin propre (armes, armures, recettes), en couleur de qualité. « Pour ce perso » ne garde que ce qu'il peut porter (classe, type d'armure selon le niveau, armes, recettes de ses métiers) ; étiquettes « pour toi » et « sur le compte ».
@@ -95,6 +124,8 @@ _Prévu, pas encore commencé._
 
 ## v0.86.3 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Rares > Carte et infobulle : « Patrouilles des rares sur la carte » affiche en permanence le trajet de chaque rare qui se déplace, en pointillés de sa couleur (sinon seulement au survol de son médaillon). Coupé par défaut.
 
@@ -103,16 +134,22 @@ _Prévu, pas encore commencé._
 
 ## v0.86.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Options > Général : la carte « Bouton minimap » chevauchait la carte « Infobulles ».
 
 ## v0.86.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Corrections
 - Carte du monde : les médaillons des rares (et les autres pastilles de l'addon) pouvaient ne plus s'afficher depuis la 0.79.1. Le masquage du losange du jeu plantait dès qu'un point était suivi, et arrêtait tout le dessin de la carte.
 - Carte du monde : chaque calque (lieux, filons, rares, bateaux, trajet, repère) est maintenant dessiné à part. Une erreur dans l'un n'empêche plus les autres de s'afficher, et elle est signalée une fois dans le chat. /wk carte donne le détail et le nombre de rares sur la carte ouverte.
 
 ## v0.86.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - HUD de récolte : la minicarte du jeu s'affiche en grand et transparente au centre de l'écran, dézoomée au maximum et tournée avec ton perso. Les points jaunes du pistage (filons, plantes) se voient ainsi de bien plus loin, avec nos pastilles et le trajet. Les clics passent au travers. /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper > HUD de récolte). Taille, opacité et « fermer en combat » dans Options > Récolte. La minicarte retrouve sa place, sa taille et son zoom à la fermeture.
@@ -123,16 +160,22 @@ _Prévu, pas encore commencé._
 
 ## v0.85.0 — 16/11/2026
 
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
 ### Modifications
 - Collection de pêche : elle a sa propre page « Pêche » dans le groupe Farm de la barre latérale (album et atlas en pleine largeur), avec en en-tête les espèces trouvées, le nombre de prises et leur valeur. Elle quitte QoL > Pêche, qui garde le mode pêche, le carnet et les réglages.
 - Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).
 
 ## v0.84.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Halo : la carte « Forme par filon et par plante » est retirée ; chaque filon et chaque plante reprend la forme de sa catégorie (atelier).
 
 ## v0.84.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Marchand : panneau « Pour monter tes métiers » collé à la fenêtre du marchand. Pour chaque métier du perso qui a un guide, les composants qui manquent jusqu'au palier choisi (75, 150, 225, 300 ou Max, le même que dans Métiers > guide, modifiable directement dans le panneau) et que ce marchand vend : quantité qui manque, prix, bouton « Acheter » et « Tout acheter ». Les recettes à apprendre vendues ici y sont aussi. Le nombre de composants à trouver ailleurs est indiqué en bas.
@@ -141,25 +184,35 @@ _Prévu, pas encore commencé._
 
 ## v0.83.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Halo : le halo prend toujours la couleur choisie dans l'atelier, y compris pour les filons, les plantes et les créatures à dépecer. La difficulté (orange, jaune, vert, gris, rouge) ne colore plus que le texte sous l'objet ; le réglage s'appelle désormais « Texte selon la difficulté ». La rangée Couleur n'est plus grisée.
 
 ## v0.83.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Corrections
 - Halo, atelier : pour les filons, les plantes et le dépeçage, la couleur choisie ne correspondait pas à l'aperçu quand « Couleur selon la difficulté » est active (c'est la difficulté qui colore). La rangée Couleur est maintenant grisée et indique « remplacée par la difficulté » ; la couleur choisie reprend dès que tu coupes ce réglage.
 
 ## v0.83.0 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Halo : nouvelle carte « Forme par filon et par plante » sous l'atelier (QoL > Halo). Chaque filon (cuivre, étain, argent, fer, or, mithril, vrai-argent, sombrefer, thorium…) et chaque plante peut avoir sa propre forme parmi les six existantes (halo, colonne, halo et colonne, onde, étincelles, viseur). « Catégorie » garde la forme choisie dans l'atelier ; « Tout comme la catégorie » remet la liste à zéro.
 
 ## v0.82.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Fenêtre de rappels à la connexion : elle se ferme seule au bout de 5 secondes (fondu à la fin), sauf tant que la souris est dessus. Durée réglable dans Options > Général > Rappels à la connexion, de 0 (reste ouverte) à 60 s.
 
 ## v0.82.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Vols : le chemin réellement suivi par le griffon est noté à chaque vol. En vol, la carte du monde et la minicarte montrent ce chemin depuis ta position jusqu'à l'arrivée (au premier vol sur un trajet : le chemin déjà parcouru), puis la suite du trajet guidé. Les trajets planifiés dessinent aussi ce vrai chemin de vol au lieu d'une ligne droite.
@@ -172,6 +225,8 @@ _Prévu, pas encore commencé._
 
 ## v0.81.0 — 16/11/2026
 
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
 ### Ajouts
 - Hôtel des ventes, onglet « Ventes » du panneau : tes enchères en cours (prix à l'unité, quantité). « Vérifier les prix » cherche le plus bas prix actuel de chaque objet (un toutes les 1,2 s) et marque chaque enchère : au plus bas, seul en vente, ou sous-cotée avec le prix du concurrent. Une enchère sous-cotée a un bouton « Annuler » (l'objet revient par courrier, le dépôt est perdu).
 - Vente rapide : quand tu poses un objet dans la fenêtre de vente du jeu, son prix est rempli au plus bas des autres vendeurs moins 1 pc (sinon au prix du scan moins 1 pc). Réglable dans QoL > Hôtel des ventes (marche ou arrêt, marge de 1 à 100 pc).
@@ -182,16 +237,22 @@ _Prévu, pas encore commencé._
 
 ## v0.80.3 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Guidage : la flèche de guidage est coupée (une fois, pour tout le monde) : l'épingle à l'écran, qui se cale au bord quand le lieu est hors champ, et le trajet en pointillés la remplacent. Elle reste disponible dans QoL > Général > Guidage (« Flèche à l'écran ») et vise alors le point suivant du trajet.
 - Mode édition : un élément coupé dans ses réglages (comme la flèche) n'y apparaît plus.
 
 ## v0.80.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Trajet en pointillés : points plus gros et plus espacés, chacun avec un contour sombre, pour rester lisibles sur tous les fonds de la carte du monde et de la minicarte.
 
 ## v0.80.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Épingle à l'écran : étiquette plus compacte, sur trois lignes centrées (nom, rôle, distance de ta couleur) au lieu d'une longue ligne.
@@ -201,6 +262,8 @@ _Prévu, pas encore commencé._
 
 ## v0.80.0 — 16/11/2026
 
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
 ### Ajouts
 - Alerte « Rare en vue » : le bouton Guider devient l'icône ronde de guidage (comme dans les listes Rares et Quêtes). Un clic guide vers le rare et pose le marqueur tête de mort du jeu au-dessus de lui (aussi en cliquant sur l'alerte compacte).
 - Rare guidé : l'épingle à l'écran et sur la carte du monde montre une tête de mort.
@@ -209,10 +272,14 @@ _Prévu, pas encore commencé._
 
 ## v0.79.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Carte du monde : le lieu guidé est marqué par une épingle de ta couleur avec l'icône de ce que tu suis, et dessous le nom et la distance restante (mise à jour chaque seconde), comme l'épingle à l'écran. Le losange jaune du jeu est masqué sur la carte pendant le guidage. Clic droit sur l'épingle : arrêter.
 
 ## v0.79.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Guidage : épingle à l'écran au-dessus du lieu guidé, de ta couleur, avec l'icône de ce que tu suis (boîte aux lettres, banque, réparation, quête, rare, pêche…) et dessous le nom et la distance restante par le trajet. Quand le lieu est hors champ, elle se cale au bord de l'écran, plus discrète. Elle remplace le repère d'origine du jeu.
@@ -225,15 +292,21 @@ _Prévu, pas encore commencé._
 
 ## v0.78.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Récapitulatif de pêche : les points de compétence gagnés pouvaient manquer (« +0 ») si le jeu n'avait pas encore mis à jour la compétence. Elle est maintenant relue à chaque message « Votre compétence en Pêche augmente » et à la fermeture du mode pêche.
 
 ## v0.78.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Micro menu : l'heure paraissait décalée vers la droite quand elle commence par un 1 (le chiffre 1 laisse un vide à sa gauche). Elle est maintenant centrée sur ses chiffres, et les barres FPS et latence vont du premier au dernier chiffre.
 
 ## v0.78.0 — 16/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Navigation Warband Keeper : chaque guidage (quêtes, rares, lieux, métiers, alertes, pêche) trace un trajet en pointillés de ta couleur, de toi jusqu'au lieu, sur la carte du monde et sur la minicarte. La flèche vise le point suivant du trajet et donne la distance restante par le chemin.
@@ -251,6 +324,8 @@ _Prévu, pas encore commencé._
 
 ## v0.77.0 — 16/11/2026
 
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
 ### Ajouts
 - QoL > Pêche : nouvelle carte « Collection » sous le carnet, avec deux onglets.
 - Album : une tuile par espèce (poissons, coffres, curiosités), rangée par palier de compétence ; en couleur si un de tes persos l'a déjà pêchée (avec le nombre), en gris sinon. Filtres Tout, Poissons, Coffres, Curiosités, Manquants. Un point de ta couleur marque les espèces pêchées pour la première fois cette semaine.
@@ -261,16 +336,22 @@ _Prévu, pas encore commencé._
 
 ## v0.76.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - /wk nav : pendant un trajet confié à ShortestPathForever, le diagnostic dit que le repère, la flèche et le tracé sont gérés par lui, au lieu d'afficher « aucun » et une distance à 0.
 
 ## v0.76.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Guidage vers le plus proche (réparation, marchand, boîte aux lettres, banque, maître de classe, munitions, composants, alertes de sacs pleins) : avec ShortestPathForever, le lieu choisi est celui qu'on atteint le plus vite en vrai, parmi les 6 plus proches à vol d'oiseau (une rivière ou une falaise ne piègent plus le choix), et le trajet passe par lui.
 - Les messages du guidage donnent alors le temps de trajet (« à 3 min de trajet ») au lieu de la distance à vol d'oiseau.
 
 ## v0.76.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Guidage : si l'addon ShortestPathForever est installé, « Guider » (quêtes, rares, lieux de la carte, métiers, alertes) lui confie le trajet. Le chemin en pointillé suit le terrain (routes, murs, ponts) et enchaîne marche, vols et bateaux, avec sa propre flèche (celle de Warband Keeper se cache alors).
@@ -279,25 +360,35 @@ _Prévu, pas encore commencé._
 
 ## v0.75.4 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Rappels de buffs (paladin, prêtre, druide) : une erreur « Auras cannot be accessed when secret » pouvait apparaître quand le jeu masque les auras. Une aura illisible est maintenant ignorée, sans erreur ni rappel à tort.
 
 ## v0.75.3 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Infobulles de l'addon : texte plus fin, dans la police de l'interface choisie dans Options > Apparence, sans contour (13 pour le titre, 12 pour le reste). Les infobulles du jeu (objets, PNJ) ne changent pas.
 
 ## v0.75.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Rares et Quêtes : le bouton « Guider » des listes devient une icône, la flèche de guidage dans un petit rond de ta couleur de classe, qui se remplit au survol (infobulle : où elle te guide). Les lignes gagnent de la place pour le nom.
 
 ## v0.75.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Boutons : tous les boutons de l'addon prennent la couleur d'accent (la couleur de classe en Graphite). Les boutons secondaires (« Link tchat », « Niveaux », « Envoyer à ce perso »…) ont un fond teinté et un texte de cette couleur ; les boutons discrets et les boutons-icônes s'y colorent au survol ; les boutons principaux restent pleins.
 
 ## v0.75.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Résumé : « À faire » prend la moitié gauche (la courbe de l'or la moitié droite) et se range en trois groupes, Urgent (rouge), Bientôt (orange) et À noter, avec un compteur en pastille à côté du titre.
@@ -307,6 +398,8 @@ _Prévu, pas encore commencé._
 - Barre latérale : la dernière entrée (QoL) était coupée un peu trop tôt au-dessus de Patch notes.
 
 ## v0.74.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Stats : chaque objet suivi a une corbeille, y compris ceux ajoutés automatiquement par une règle d'envoi. Retirer un objet des statistiques ne touche pas à sa règle d'envoi ; le rajouter à la main le fait revenir.
@@ -321,6 +414,8 @@ _Prévu, pas encore commencé._
 
 ## v0.74.0 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Pêche : chaque prise est notée toute seule (objets, zone, heure, perso), même hors du mode pêche.
 - Pêche : compteur de session dans la barre du mode pêche (prises, rythme par heure, valeur).
@@ -332,15 +427,21 @@ _Prévu, pas encore commencé._
 
 ## v0.73.5 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Résumé : icônes de la carte Modules repliée plus grandes et mieux espacées.
 
 ## v0.73.4 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Commande /wk nav : dit ce que ce client permet pour un repère de navigation à l'écran (marqueur de point de passage) : fonctions du jeu présentes, point suivi, distance, place du repère du jeu à l'écran. À lancer pendant un guidage.
 
 ## v0.73.3 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Aide : la commande /wk micro (diagnostic des raccourcis du micro menu) apparaît dans la liste.
@@ -350,17 +451,23 @@ _Prévu, pas encore commencé._
 
 ## v0.73.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Listes d'achat : un seul clic par objet. Après chaque achat, le prix de l'objet suivant est demandé tout seul et le bouton affiche directement « Confirmer… ». (Acheter toute la liste d'un seul clic est impossible : le jeu exige un clic du joueur pour chaque achat.)
 - Listes d'achat : un objet introuvable en quantité suffisante est passé, et l'achat continue avec le suivant ; à la fin, un récapitulatif dit combien d'achats et pour quel montant.
 
 ## v0.73.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Guide de métier : boutons 75, 150, 225, 300 et Max dans la carte des matériaux. Les matériaux, le coût et la liste d'achat s'arrêtent au palier choisi (« Matériaux jusqu'à 150 »). Le choix est retenu par métier ; un palier déjà atteint passe au suivant.
 - Métiers : les paliers 75, 150, 225 et 300 sont écrits sous la barre des rangs, à la couleur d'accent quand ils sont atteints.
 
 ## v0.73.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Listes d'achat : bouton « Acheter » qui parcourt la liste au prix le plus bas. Le jeu exige un clic par achat : 1er clic, le prix de tout ce qui manque pour l'objet suivant ; 2e clic, « Confirmer 30 Barre de fer : 7 po 83 » ; puis on passe à l'objet suivant. La croix annule l'achat en attente.
@@ -370,10 +477,14 @@ _Prévu, pas encore commencé._
 
 ## v0.72.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Carte : la barre de filtres de la carte du monde se déplace. Glisse-la par sa poignée (à gauche) ; sa place est gardée. Clic droit sur la poignée pour la remettre en haut de la carte.
 
 ## v0.72.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Hôtel des ventes : listes d'achat de l'addon. Le panneau à côté de l'HV a deux onglets, « Scan » et « Listes d'achat ». Pour chaque objet d'une liste : ce que tu as sur le compte sur ce qu'il faut (« 12 / 30 »), le prix relevé, et « Chercher » qui lance la recherche dans la fenêtre de l'HV (l'achat se fait avec ses boutons). En bas, ce qu'il reste à acheter ; la corbeille supprime la liste (deux clics).
@@ -385,6 +496,8 @@ _Prévu, pas encore commencé._
 
 ## v0.71.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Hôtel des ventes : panneau plus lisible. Le nombre de prix s'écrit avec une espace (« 6 541 »), le dernier scan et le prochain scan complet sont sur deux lignes (« Scan complet possible maintenant » en vert, sinon « Prochain scan complet dans 15 min »), et le bouton passe en discret tant que le scan complet n'est pas possible.
 
@@ -392,6 +505,8 @@ _Prévu, pas encore commencé._
 - Hôtel des ventes : le « ~ » s'affichait mal dans la police du jeu et la ligne d'état touchait le bord du panneau.
 
 ## v0.71.1 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Hôtel des ventes : WoW Forever utilise le système d'HV récent (scan complet en une requête). Le scan respecte maintenant son délai : un scan complet toutes les 15 minutes environ ; avant, le bouton dit dans combien de minutes ce sera possible.
@@ -401,6 +516,8 @@ _Prévu, pas encore commencé._
 - Hôtel des ventes : si le serveur n'envoie pas l'HV (scan demandé trop tôt), le scan s'arrête au bout de 90 secondes avec un message, au lieu d'attendre sans fin.
 
 ## v0.71.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Carte : nouveau module QoL > Carte pour afficher les lieux utiles sur la carte du monde et la minicarte, rangés en familles de couleur : Services (boîtes aux lettres, hôtel des ventes, banque, auberges), Marchands (composants, munitions, poisons, fournitures, pêche, réparation), Maîtres (classe, métiers, écuries, familiers et démons), Voyage (maîtres de vol, bateaux et zeppelins), Divers (maîtres de guerre).
@@ -417,10 +534,14 @@ _Prévu, pas encore commencé._
 
 ## v0.70.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Halo : l'atelier est maintenant en haut de QoL > Halo, au-dessus des réglages généraux.
 
 ## v0.70.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Halo : atelier dans QoL > Halo. Les catégories en pastilles (clic : on la règle), un aperçu en direct à gauche, et à droite ses réglages : halo oui ou non, effet propre ou « comme les autres », couleur en nuancier (ou au choix avec +).
@@ -436,11 +557,15 @@ _Prévu, pas encore commencé._
 
 ## v0.69.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Barre de vol : nouveau look « ruban ». Une pilule fine avec la destination et sa zone, une barre de progression (un trait par relais) et le temps restant ; plus d'arc ni de griffon.
 - Barre de vol : au survol, un volet s'ouvre dessous avec le trajet complet (départ > relais > arrivée, les relais passés en gris), l'heure de départ et d'arrivée, « Atterrir à … » et Carte. Il se referme quand la souris s'en va.
 
 ## v0.69.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Modules : carte « Modules » en bas du Résumé. Repliée, une ligne d'icônes (rose : actif, gris : coupé) ; « Gérer » la déplie à la place du tableau des persos, avec une tuile par module rangée par groupe (son chiffre du moment et un interrupteur). Un clic sur une tuile ouvre la page du module.
@@ -454,6 +579,8 @@ _Prévu, pas encore commencé._
 
 ## v0.68.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - En-tête : nouveau bouton pour recharger l'interface (/reload), à gauche de la croix ; il ne fait rien en combat.
 
@@ -462,6 +589,8 @@ _Prévu, pas encore commencé._
 - Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.68.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Hôtel des ventes : scan de l'HV sans Auctionator. Scan complet en une fois quand le jeu l'autorise (environ toutes les 15 minutes), sinon page par page ; le jeu ne se fige pas pendant la lecture.
@@ -476,6 +605,8 @@ _Prévu, pas encore commencé._
 
 ## v0.67.2 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Micro menu : les 14 lignes « Masqué / Gauche / Droite » sont remplacées par la barre telle qu'elle est à l'écran. Clic sur une icône : gauche, puis droite, puis masquée ; clic sur une icône masquée : elle revient à gauche.
 - Micro menu : on peut enfin choisir l'ordre des raccourcis (Maj + clic gauche ou droit pour décaler d'un cran) ; clic droit pour masquer.
@@ -483,12 +614,16 @@ _Prévu, pas encore commencé._
 
 ## v0.67.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Rares : la page a deux onglets, « Collection » (tuiles et rares de la zone) et « Carte et infobulle » (réglages de la carte, de l'infobulle et de l'alerte, avec l'aperçu en taille réelle).
 - Rares et Quêtes : les tuiles des zones s'étirent sur toute la largeur de la page.
 - Recherche : un réglage des rares trouvé ouvre directement l'onglet « Carte et infobulle ».
 
 ## v0.67.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Quêtes : nouvelle page « Quêtes » (groupe Exploration), sur le modèle de la page Rares : une tuile par zone avec la progression du perso, ta zone en premier puis la zone conseillée pour monter.
@@ -507,12 +642,16 @@ _Prévu, pas encore commencé._
 
 ## v0.66.0 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Rares : la page ne garde que la vue « Collection » (tuiles des zones, rares de la zone choisie en dessous) ; la vue « Zones » est retirée.
 - Rares : les réglages des rares (carte, infobulle, alerte, son, style avec aperçu en direct, « Montrer à l'écran ») sont maintenant dans une colonne à droite de la page Rares, et quittent QoL.
 - Commandes de la page Rares (« Collection de », « Masquer les tués ») regroupées en haut à gauche.
 
 ## v0.65.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Rares : nouvelle page « Rares » (groupe Exploration de la barre latérale), la collection des rares perso par perso, avec en tête les rares tués, ta zone et les rares restants à ton niveau.
@@ -528,11 +667,15 @@ _Prévu, pas encore commencé._
 
 ## v0.64.1 — 16/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Profils : ils ont maintenant leur propre page dans la barre latérale, entre Patch notes et Options (ils étaient dans Options), avec leurs pastilles en tête : profil actuel, nombre de profils, persos sur ce profil.
 - Nouveau fichier : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.64.0 — 16/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Recherche en haut de la barre latérale : pages, sections, réglages, persos et objets du compte, en direct dès deux lettres. Un clic ouvre la bonne page et la bonne section, fait défiler jusqu'au réglage et le met en évidence. Entrée prend le premier résultat, Échap efface.
@@ -543,6 +686,8 @@ _Prévu, pas encore commencé._
 - Nouveaux fichiers : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.63.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Rares : les 327 monstres rares de WoW Forever (données QuestieDB), avec noms français, apparitions, patrouilles et butin notable.
@@ -558,10 +703,14 @@ _Prévu, pas encore commencé._
 
 ## v0.62.2 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Patch notes : la liste « À venir » reprend tout ce qui est prévu (rares, quêtes, suite de la pêche, Warband UI).
 
 ## v0.62.1 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - LFG : nouvelle couronne du chef de groupe, plus ronde, penchée et posée de travers sur le haut de son logo, avec une petite ombre.
@@ -569,12 +718,16 @@ _Prévu, pas encore commencé._
 
 ## v0.62.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - LFG : sur les cartes de groupe, chaque place prise montre le logo de la classe du joueur, avec un petit trait à la couleur de son rôle dessous (bleu tank, vert soin, rouge dégâts). Le chef de groupe porte une couronne sur son logo.
 - LFG : l'infobulle d'une carte liste chaque membre (nom, classe, niveau, rôle) ; le chef est marqué d'une étoile.
 - Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.61.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Halo : la catégorie « Autres objets » est décochée par défaut (elle éclairait trop de choses). Tu peux la recocher dans QoL > Halo.
@@ -584,11 +737,15 @@ _Prévu, pas encore commencé._
 
 ## v0.61.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - LFG : avec la fenêtre à sa taille minimale, le texte sous « Actualiser » passait sur « Je cherche ». Le bandeau se resserre maintenant (rôles plus courts, classe sous le nom masquée) et l'état de la recherche passe dans l'infobulle d'Actualiser.
 - LFG : le message d'accueil (« Choisis un donjon… ») était coupé ; il passe maintenant à la ligne.
 
 ## v0.61.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - LFG : bouton « Affiner » (entonnoir, à côté d'Actualiser). Classes et niveau des joueurs seuls, style de jeu des annonces, et langues : par défaut le jeu ne cherche que dans ta langue, tu peux ajouter l'anglais et les autres. Un point signale qu'un filtre est actif.
@@ -602,6 +759,8 @@ _Prévu, pas encore commencé._
 
 ## v0.60.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Infobulles : nouvelle partie « Montée des métiers ». Pour un composant, les métiers qui s'en servent dans les guides de montée et, pour chacun de tes persos qui a ce métier, combien il en faut encore à son niveau (« Alchimie · Lapine (40) : encore 36 »), avec ce que le compte en a déjà.
 - Infobulles : pour une recette ou un outil utile à la montée, le métier et les niveaux concernés.
@@ -609,10 +768,14 @@ _Prévu, pas encore commencé._
 
 ## v0.59.3 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - LFG : dans les messages envoyés, le nom du donjon est maintenant en anglais (« The Stockade » au lieu de « Prison de Stormwind »). Tous les donjons et raids de WoW Forever sont reconnus, ailes du Monastère écarlate et de Hache-tripes comprises ; un nom inconnu reste tel quel.
 
 ## v0.59.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - LFG : les messages envoyés aux autres joueurs sont maintenant en anglais, la langue commune d'un serveur européen (« Hi! Hunter 23, dps, available for … »). L'ancien message par défaut est remplacé ; un message que tu avais modifié est gardé.
@@ -620,11 +783,15 @@ _Prévu, pas encore commencé._
 
 ## v0.59.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Halo : en donjon et en combat, le jeu masque le nom de l'objet désigné, et l'addon affichait des erreurs dans le chat (« attempt to perform string conversion on a secret string value »). Le halo reste maintenant simplement éteint dans ce cas.
 - Barre de vol : la durée estimée d'un trajet pas encore fait était fausse. Elle était calculée sur la carte des vols, dont l'échelle change d'un continent à l'autre. Elle est maintenant calculée en mètres, puis corrigée en vol d'après la distance réellement parcourue.
 
 ## v0.59.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Nouvel onglet LFG (groupe « Groupe » de la barre latérale) : la recherche de groupe du jeu, présentée à partir de ton perso.
@@ -640,15 +807,21 @@ _Prévu, pas encore commencé._
 
 ## v0.58.3 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Micro menu : le raccourci « Menu du jeu » provoquait l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée SpellStopCasting() ». Il passait par la fonction de la touche Échap, qui interrompt aussi le sort en cours. Il ouvre maintenant la fenêtre du menu sans passer par elle.
 
 ## v0.58.2 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Pêche : le bouton de minicarte disparaît quand le raccourci « Mode pêche » est présent dans le micro menu (il faisait doublon). Il revient si tu masques le raccourci.
 
 ## v0.58.1 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - /wk micro : indique par quel chemin chaque raccourci du micro menu ouvre sa fenêtre.
@@ -658,6 +831,8 @@ _Prévu, pas encore commencé._
 
 ## v0.58.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Micro menu : raccourci « Mode pêche », avec son icône. Un point vert indique que le mode est ouvert. Il apparaît à droite ; il se déplace ou se masque dans QoL > Micro menu.
 
@@ -666,6 +841,8 @@ _Prévu, pas encore commencé._
 - Nouvelles textures : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.57.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Récolte : les emplacements connus des filons et des plantes s'affichent sur la minicarte et sur la carte du monde (près de 24 000 emplacements, dans toute la zone). Ce sont des emplacements possibles, pas des nœuds présents en direct.
@@ -677,16 +854,22 @@ _Prévu, pas encore commencé._
 
 ## v0.56.2 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Micro menu : les raccourcis Personnage, Grimoire, Talents, Carte, Quêtes, Social et Menu ouvraient la fenêtre du jeu depuis l'addon, ce qui provoquait ensuite l'erreur « WarbandKeeper a tenté d'appeler la fonction protégée StatusBar:Show() » en combat. Ils cliquent maintenant le bouton du jeu par un chemin protégé.
 
 ## v0.56.1 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Halo : le réglage « Portée » s'arrête de nouveau à 15 m. Le jeu ne désigne pas un objet plus loin, quelle que soit la valeur demandée : monter au-delà ne changeait rien.
 - Pêche : le flotteur est cherché plus loin (jusqu'à 60 m) pendant le mode pêche, pour que la touche puisse le ferrer.
 
 ## v0.56.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Pêche : nouvel onglet dans QoL, avec un « mode pêche » qu'on ouvre et qu'on ferme (bouton, /wk peche, bouton de minicarte, ou tout seul quand une canne est équipée).
@@ -706,6 +889,8 @@ _Prévu, pas encore commencé._
 
 ## v0.55.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Halo : réglage « Hauteur de la colonne ».
 
@@ -715,10 +900,14 @@ _Prévu, pas encore commencé._
 
 ## v0.55.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Halo : nouvelle catégorie « Créatures à dépecer » (brun clair). Le cadavre que le jeu désigne brille s'il est dépeçable et si le perso a le Dépeçage.
 
 ## v0.54.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Indicateur de distance : réglage « Largeur » pour l'aligner sur une barre de vie, et options « Texte au-dessus » et « Fond sombre ».
@@ -729,6 +918,8 @@ _Prévu, pas encore commencé._
 
 ## v0.53.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Halo : choix de l'effet (QoL > Halo > Effet) : halo, colonne de lumière au-dessus de l'objet, ou les deux. La colonne prend la couleur de la catégorie et s'avive à portée.
 
@@ -736,6 +927,8 @@ _Prévu, pas encore commencé._
 - Nouvelle texture : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.52.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Indicateur de distance : la vraie fourchette de distance de la cible s'affiche (par exemple « 20-25 m ») à la place du « 8-35 m » fixe, grâce à la bibliothèque LibRangeCheck-3.0.
@@ -747,6 +940,8 @@ _Prévu, pas encore commencé._
 
 ## v0.51.3 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Halo : catégorie « Autres objets » (blanc), pour tout objet utilisable qui n'est ni plante, ni filon, ni quête, ni coffre. Elle se décoche dans les réglages.
 - /wk halo affiche le curseur que le jeu donne à l'objet.
@@ -755,6 +950,8 @@ _Prévu, pas encore commencé._
 - Halo : beaucoup d'objets de quête n'étaient pas reconnus, donc pas éclairés. L'objet est maintenant reconnu par son nom dans les objectifs de tes quêtes, et par le curseur que le jeu lui donne (pioche, fleur, quête, main).
 
 ## v0.51.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - /wk halo affiche les réponses brutes du jeu sur l'objet désigné.
@@ -765,6 +962,8 @@ _Prévu, pas encore commencé._
 
 ## v0.51.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - /wk halo affiche aussi ces nouveaux réglages du jeu.
 
@@ -772,6 +971,8 @@ _Prévu, pas encore commencé._
 - Halo : le jeu ne désignait un objet qu'à portée de main (quelques mètres), donc le halo ne s'allumait pas à l'approche. L'addon règle maintenant le jeu pour désigner l'objet jusqu'à la portée choisie, et pour afficher sa plaque aussi loin.
 
 ## v0.51.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Micro menu : option « Raccourcis toujours affichés » (sinon ils se déplient au survol).
@@ -784,10 +985,14 @@ _Prévu, pas encore commencé._
 
 ## v0.50.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Micro menu : l'heure et les barres FPS / latence paraissaient décentrées. Les deux barres vont maintenant d'un bord du texte à l'autre, leur partie vide reste visible, et le gras n'est plus décalé d'un côté.
 
 ## v0.50.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Micro menu : l'heure peut s'afficher en gras.
@@ -800,16 +1005,22 @@ _Prévu, pas encore commencé._
 
 ## v0.49.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - QoL : les 9 classes sont rangées dans un seul onglet « Classes » de la colonne. Elles se choisissent dans une barre d'onglets en haut de la page (icône, nom, nombre d'alertes ; classes non jouées en grisé).
 - QoL : l'onglet « Classes » rouvre la dernière classe consultée, sinon celle du perso joué.
 
 ## v0.48.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Micro menu : plus de fond derrière les raccourcis de gauche et de droite. Seule l'heure garde le sien, les icônes restent sur leurs tuiles.
 
 ## v0.48.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Indicateur de distance : sans cible, un anneau beige en pointillés avec un viseur au centre remplace le texte « sans cible », qui était coupé.
@@ -817,6 +1028,8 @@ _Prévu, pas encore commencé._
 - Nouvelles textures : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.47.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Micro menu : réglage « Taille » (raccourcis et heure), dans Qualité de vie > Micro menu.
@@ -828,11 +1041,15 @@ _Prévu, pas encore commencé._
 
 ## v0.46.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Micro menu : nouvelles icônes dessinées au trait fin, à la couleur du thème, sur des tuiles sombres arrondies. Les douze raccourcis ont maintenant le même style.
 - Nouvelles textures : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.45.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Indicateur de distance : option « Masquer sans cible ».
@@ -842,6 +1059,8 @@ _Prévu, pas encore commencé._
 
 ## v0.45.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Cadre du familier plus compact : la barre de vie prend toute la largeur, et une seule ligne en dessous réunit les boutons (à gauche), l'humeur (au milieu) et la nourriture avec son nombre (à droite).
 
@@ -849,6 +1068,8 @@ _Prévu, pas encore commencé._
 - Cadre du familier : le chiffre de vie était illisible sur la barre verte. Il a maintenant un contour noir et la barre est un peu plus sombre.
 
 ## v0.45.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - QoL : nouvelle entrée « Micro menu » sous Halo, avec les réglages de l'horloge et des raccourcis (heure locale ou serveur, format, effet loupe, FPS et latence, place de chaque raccourci). Dans le mode édition, l'élément s'appelle aussi « Micro menu ».
@@ -858,20 +1079,28 @@ _Prévu, pas encore commencé._
 
 ## v0.44.3 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - QoL > Chasseur > Familier : le bouton « Macro Nourrir » est retiré (le cadre du familier et son raccourci clavier font mieux) ; il reste le bouton « Maître des écuries », à la couleur du thème.
 
 ## v0.44.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Mode édition : la fenêtre de Warband Keeper se rouvre à la sortie si elle était ouverte au moment d'entrer.
 
 ## v0.44.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - « Éditer l'interface » devient un bouton à droite de l'en-tête, sur toutes les pages, à la couleur d'accent du thème (au lieu d'une pastille de la page QoL).
 
 ## v0.44.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Chasseur : indicateur de distance, un anneau coloré selon la cible : vert à portée de tir, orange au corps à corps, jaune dans la zone morte (5 à 8 m, option), rouge trop loin, gris sans cible. Fourchette de distance estimée au centre.
@@ -882,6 +1111,8 @@ _Prévu, pas encore commencé._
 
 ## v0.43.2 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Cadre du familier : les boutons Nourrir et Soigner deviennent des icônes (Nourrir le familier, Guérison du familier, et Ressusciter quand il est mort), avec leur nom au survol. Sous la nourriture, seulement le nombre en sac.
 
@@ -890,12 +1121,16 @@ _Prévu, pas encore commencé._
 
 ## v0.43.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - La « carte du familier » s'appelle maintenant « cadre du familier ».
 - Mode édition : pastille « Éditer l'interface » dans l'en-tête de la page QoL (et /wk edit) ; l'option « disposition propre à chaque perso » est dans la barre du mode édition. La carte « Disposition à l'écran » quitte QoL > Général.
 - Chasseur : quand HunterSuite est chargé, une note le signale dans la fiche Chasseur, avec une option pour garder quand même le cadre et le bouton du familier, le bouton d'aspect et les rappels de Warband Keeper (sinon masqués pour ne pas faire doublon).
 
 ## v0.43.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Horloge en haut de l'écran : l'heure et deux points de couleur pour les FPS et la latence. Au survol, les raccourcis glissent de chaque côté avec un effet loupe façon dock, et se replient quand la souris s'en va. Clic sur l'heure : calendrier ; infobulle : date, heure du serveur, durée de la session, FPS et latence.
@@ -907,21 +1142,29 @@ _Prévu, pas encore commencé._
 
 ## v0.42.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Barre de vol redessinée en « arc de vol » : le trajet en arc pointillé comme un vol vu de côté, le griffon qui glisse le long de l'arc (partie parcourue en couleur du thème), les relais en balises plantées sur l'arc avec leur nom.
 - Médaillon à droite avec le temps restant et l'heure d'arrivée ; le bouton dit directement « Atterrir à … » avec le nom du prochain relais.
 
 ## v0.41.2 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Barre de vol : les étapes du trajet (relais intermédiaires) sont placées sur la piste avec leur nom, à la bonne distance ; celles déjà passées prennent la couleur du thème. « Atterrir » indique le relais où tu te poseras.
 
 ## v0.41.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Carte du familier : quand le familier est mort, la carte reste affichée et « Soigner » devient « Ressusciter » (bouton, clic droit sur la carte et raccourci clavier). La barre et l'humeur indiquent « Mort ».
 
 ## v0.41.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Chasseur : bouton d'aspect avec l'icône de l'aspect actif (et en petit, le prochain). Clic : aspect suivant de ta liste ; clic droit : aspect principal. Marche en combat.
@@ -933,6 +1176,8 @@ _Prévu, pas encore commencé._
 
 ## v0.40.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Chasseur : carte du familier, affichée tant qu'un familier est là : nom et niveau, barre de vie, humeur (segments et texte), nourriture prévue (icône, nombre en sac et nom), boutons Nourrir et Soigner. Clic sur la carte : nourrir ; clic droit : Guérison du familier. Marche en combat.
 - Réglages de la carte (QoL > Chasseur) : largeur, hauteur de la barre, chiffres (aucun, valeur, valeur / max, pourcentage), couleur (humeur, vie ou thème), humeur, nourriture, boutons, nom, quand l'afficher (toujours, hors combat, si besoin avec un seuil de vie), opacité hors combat. Position et taille en mode édition.
@@ -942,10 +1187,14 @@ _Prévu, pas encore commencé._
 
 ## v0.39.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Loot : avec les sacs pleins, les objets que le filtre voulait ramasser restaient au sol sans être comptés (la liste des objets laissés restait vide). Ils sont maintenant ajoutés à la liste, marqués « sacs pleins », et la fenêtre de butin se ferme comme d'habitude.
 
 ## v0.39.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Barre de vol : au départ d'un vol, « Départ › Arrivée », temps restant en grand, piste avec un griffon qui avance, et boutons « Atterrir » (se poser au prochain relais, si le jeu le permet), « Carte » et fermer.
@@ -957,10 +1206,14 @@ _Prévu, pas encore commencé._
 
 ## v0.38.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Chasseur : bouton « Maître des écuries » dans QoL > Chasseur > Familier, qui guide vers le maître des écuries le plus proche (aussi avec /wk guide ecurie). Les maîtres des écuries de WoW Forever sont ajoutés à la base des lieux.
 
 ## v0.38.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Mode édition plein écran (QoL > Général > Disposition à l'écran, ou /wk edit) : grille, chaque élément encadré avec son nom et des exemples. Glisser pour déplacer (aimanté à la grille, Maj pour placer librement), tirer le coin pour la taille, flèches du clavier pour ajuster au pixel (Maj : 10), Échap ou « Terminer » pour quitter.
@@ -974,6 +1227,8 @@ _Prévu, pas encore commencé._
 
 ## v0.37.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - QoL, fiches de classe : nouvelles tuiles des persos, une par ligne. Liseré et portrait à la couleur de classe, nom avec « classe · niveau », puis jusqu'à trois colonnes avec icône, valeur en grand, libellé et petite jauge ; une valeur passe en orange ou en rouge sous son seuil d'alerte.
 - Chiffres de chaque classe : munitions, minutes de tir et humeur du familier (chasseur) ; poisons et crochetage (voleur) ; fragments d'âme, pierre de soins et pierre d'âme (démoniste) ; totems, ankhs et réincarnation (chaman) ; composants utiles au niveau du perso (mage, prêtre, paladin, druide) ; munitions et état de l'équipement (guerrier).
@@ -983,11 +1238,15 @@ _Prévu, pas encore commencé._
 
 ## v0.36.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Munitions : l'alerte donne aussi les minutes de tir restantes (« munitions basses (120, ~2 min de tir) »), dans « À faire », la fenêtre de connexion et le guidage.
 - Munitions : nouveau seuil d'alerte en minutes de tir (QoL > fiche de classe > Munitions), en plus ou à la place du seuil en nombre.
 
 ## v0.36.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Munitions : les minutes de tir restantes (d'après ta vitesse de tir) s'affichent à côté du nombre de munitions dans les tuiles de la fiche de classe.
@@ -1001,6 +1260,8 @@ _Prévu, pas encore commencé._
 
 ## v0.35.0 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Chasseur : la nourriture que le familier accepte est demandée directement au jeu (plus besoin de le nourrir une première fois à la main), avec son régime (viande, poisson…). La macro « Nourrir » est juste tout de suite.
 - Munitions : l'achat automatique prend la meilleure munition vendue pour ton arme (flèches pour arc et arbalète, balles pour fusil) et utilisable à ton niveau, et l'équipe si elle est meilleure que celle en place.
@@ -1010,16 +1271,22 @@ _Prévu, pas encore commencé._
 
 ## v0.34.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - QoL > Général > Guidage : les boutons « le plus proche » prennent la couleur d'accent du thème, et le bouton « Arrêter » est retiré (la croix ou le clic droit sur la flèche arrêtent le guidage, comme /wk guide stop).
 
 ## v0.34.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - La « lueur de récolte » s'appelle maintenant « Halo » et passe dans QoL : nouvelle entrée « Halo » sous Général (avec son état, activé ou non), mêmes réglages qu'avant (portée, taille, intensité, quand ne pas l'afficher, objets et couleurs).
 - Options > Récolte ne garde que les coins de récolte sur la carte du monde.
 
 ## v0.33.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Patch notes : trois couleurs distinctes et fixes (vert sauge pour les ajouts, ambre pour les modifications, vieux rose pour les corrections), avec un symbole dans le badge (+, ~, !) et un liseré de couleur à gauche de chaque rubrique.
@@ -1034,10 +1301,14 @@ _Prévu, pas encore commencé._
 
 ## v0.32.5 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Métiers : le bouton « Link tchat » et le réglage de son texte sont retirés sur Herboristerie, Dépeçage et Pêche, qui n'ont pas de lien de métier.
 
 ## v0.32.4 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Métiers : le bouton « Lier dans le chat » s'appelle maintenant « Link tchat ».
@@ -1047,10 +1318,14 @@ _Prévu, pas encore commencé._
 
 ## v0.32.3 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Messages du chat : « Warband Keeper » s'affichait toujours en bleu. Il prend maintenant la couleur d'accent du thème choisi.
 
 ## v0.32.2 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Chat épuré : plus de message « chargé » à chaque connexion (seulement à la première installation), plus de liste d'alertes à la connexion quand la fenêtre de rappels est active (sinon une seule ligne).
@@ -1061,20 +1336,28 @@ _Prévu, pas encore commencé._
 
 ## v0.32.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Métiers > Lier dans le chat : si le lien n'est pas encore enregistré, l'addon ouvre la fenêtre du métier une fois pour le lire, la referme et colle le lien (perso connecté). Pour un autre perso, le message explique qu'il faut le connecter et ouvrir son métier une fois. L'infobulle du bouton le précise aussi.
 
 ## v0.32.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - QoL > Général > Marchand : la fenêtre du marchand se ferme toute seule après une réparation automatique (une fois les objets gris vendus et les achats faits). Maj enfoncée en parlant au marchand : elle reste ouverte. Désactivable.
 
 ## v0.31.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Erreur au chargement « Attempt to register unknown event CRAFT_SHOW » : un évènement absent de ce client faisait échouer le chargement d'une partie de l'addon. Les évènements inconnus du client sont maintenant ignorés sans erreur.
 
 ## v0.31.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Guidage vers le lieu utile le plus proche : boîte aux lettres, banque, réparation, marchand, munitions, composants de classe et maître de classe. Une flèche à l'écran (déplaçable, clic droit pour arrêter) indique la direction et la distance, et un repère s'affiche sur la carte du monde.
@@ -1088,6 +1371,8 @@ _Prévu, pas encore commencé._
 
 ## v0.30.1 — 15/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Commande /wk lien : ce que le jeu a répondu à la dernière ouverture d'un métier, et les liens gardés pour le perso (pour comprendre un lien qui ne vient pas).
 
@@ -1095,6 +1380,8 @@ _Prévu, pas encore commencé._
 - Métiers > Lier dans le chat : le lien de la fenêtre du métier n'était jamais retenu sur ce client (seul le nom et le niveau partaient). L'addon essaie maintenant toutes les façons de l'obtenir à l'ouverture du métier, et retient aussi un lien de métier que tu mets toi-même dans le chat depuis la fenêtre du jeu.
 
 ## v0.30.0 — 15/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Nouvel onglet QoL (qualité de vie), dans un nouveau groupe « Confort » du menu : une colonne avec Général et les 9 classes (grisées quand aucun perso ne les joue), le nombre d'alertes à côté de chacune.
@@ -1114,6 +1401,8 @@ _Prévu, pas encore commencé._
 
 ## v0.29.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Message dans le chat quand des objets voulus n'ont pas pu être ramassés (sacs pleins).
 
@@ -1121,6 +1410,8 @@ _Prévu, pas encore commencé._
 - Filtre de loot : la fenêtre de butin pouvait rester ouverte, vide ou avec des objets voulus, quand le jeu donnait son contenu un peu tard. Le filtre attend maintenant le contenu, ferme une fenêtre vide et réessaie de ramasser les objets voulus.
 
 ## v0.29.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Inventaire > À regrouper : les composants, consommables, gemmes et recettes présents chez plusieurs persos, avec le perso conseillé (celui qui en a le plus, ou celui d'une règle d'envoi existante) et un bouton « Regrouper » qui crée la règle d'envoi.
@@ -1130,6 +1421,8 @@ _Prévu, pas encore commencé._
 - La date depuis laquelle chaque objet dort en banque est suivie à partir de cette version : ouvre tes banques une fois pour démarrer le suivi.
 
 ## v0.28.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Coins de récolte : chaque plante, minerai ou cuir ramassé note l'endroit (tous les persos). Sur la carte du monde, une pastille par coin, de la couleur de la ressource et plus grosse là où tu récoltes souvent ; son survol détaille ce que tu y as récolté.
@@ -1143,6 +1436,8 @@ _Prévu, pas encore commencé._
 
 ## v0.27.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Lueur de récolte : plantes, filons, objets de quête, coffres et flotteur de pêche brillent à ton approche (soft targeting du jeu). Halo qui respire, plus vif avec un anneau quand l'objet est à portée.
 - Options > Lueur : activation (éteinte par défaut), portée, taille, intensité, couleur et activation par type d'objet, et masquage en combat, en instance ou sans le métier de récolte.
@@ -1153,11 +1448,15 @@ _Prévu, pas encore commencé._
 
 ## v0.26.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Fiche métier (tous les métiers) : bouton « Lier dans le chat » qui colle le lien de la fenêtre du métier du jeu, cliquable par les autres joueurs. Le lien est enregistré à chaque ouverture du métier, on peut donc le coller depuis n'importe quel perso.
 - Texte personnalisé par métier (roue dentée à côté du bouton) : ajouté après le lien quand l'interrupteur « Ajouter ce texte au lien » est activé, avec un aperçu.
 
 ## v0.25.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Fiche métier > « Manquantes » : les recettes que le perso ne connaît pas (toutes les recettes de WoW Forever, d'après wowtbc.gg), avec le niveau requis, où les obtenir (maître, vendeur et sa zone, ou à trouver) et leur prix à l'HV. Filtre « Apprenables » (les plus utiles d'abord) ou « Toutes ».
@@ -1170,10 +1469,14 @@ _Prévu, pas encore commencé._
 
 ## v0.24.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Guides : pour chaque recette à acheter, sa disponibilité à l'hôtel des ventes d'après Auctionator (« HV : 1 po 50 pa (vu il y a 2 j) » ou « pas vu à l'HV »), sur la ligne de l'étape, au survol et dans les matériaux.
 
 ## v0.24.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Guides de montée de WoW Forever pour l'Alchimie, la Forge, l'Enchantement, l'Ingénierie et la Couture : tous les métiers d'artisanat ont maintenant leur guide.
@@ -1184,15 +1487,21 @@ _Prévu, pas encore commencé._
 
 ## v0.23.4 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Infobulles de l'addon : mêmes couleurs que les cadres du thème choisi (fond et bordure), quel que soit le thème.
 
 ## v0.23.3 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Bouton fermer (fenêtre et liste des objets laissés au sol) : la croix prend la couleur d'accent du thème, sans infobulle.
 
 ## v0.23.2 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Guides de montée : les étapes qui demandent une recette l'indiquent clairement (« Recette à acheter chez … » avec le vendeur et sa zone quand elle est connue, ou « Recette connue » si le perso l'a déjà).
@@ -1203,10 +1512,14 @@ _Prévu, pas encore commencé._
 
 ## v0.23.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Infobulles de l'addon : fond très sombre, bordure fine et claire, coins arrondis, sans liseré de couleur.
 
 ## v0.23.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Métiers > Niveaux : chaque métier d'un perso devient une tuile cliquable avec son icône, son niveau, une mini-barre des rangs (1-300) et ce qu'il y a à faire ensuite : étape du guide en cours, ressource et zone conseillées pour la récolte, ou « Plafond atteint : va voir le maître » (tuile encadrée en orange).
@@ -1214,10 +1527,14 @@ _Prévu, pas encore commencé._
 
 ## v0.22.2 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Fiche d'un métier : les onglets « Niveaux / Recettes / Liste de courses » sont masqués (ils reviennent sur la liste des métiers) et la fiche remonte à leur place.
 
 ## v0.22.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Fiche métier (tous les métiers) : nouvel en-tête avec une barre des rangs de 1 à 300, découpée en Apprenti, Compagnon, Expert et Artisan, le rang en cours en clair et un repère à ton niveau.
@@ -1225,11 +1542,15 @@ _Prévu, pas encore commencé._
 
 ## v0.22.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Métiers de récolte : « Où aller à ton niveau » devient des tuiles de zones, avec le niveau des monstres de chaque zone et les ressources utiles qu'on y trouve (pastille orange ou jaune). Ta zone actuelle passe en premier, encadrée avec « tu y es ».
 - Toutes les infobulles de l'addon prennent son style : fond et bordure du thème, coins arrondis, liseré de la couleur d'accent. Les infobulles du jeu et des autres addons ne changent pas.
 
 ## v0.21.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Guides de montée : les objets que le guide fabrique lui-même (peaux traitées, bandages…) n'apparaissent plus dans les matériaux. Les cuirs fabriqués seulement pour monter restent comptés, moins ce que le guide en produit.
@@ -1238,11 +1559,15 @@ _Prévu, pas encore commencé._
 
 ## v0.21.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Résumé : carte « À faire » à gauche de la courbe, avec les actions utiles du moment, les plus urgentes d'abord : courrier à récupérer (en rouge s'il expire bientôt), butin automatique du jeu qui bloque le filtre, métier au plafond de son rang à faire monter chez le maître, objets à envoyer ou à déposer, banque pas vue, session de farm en pause, composants manquants de la liste de courses.
 - Chaque ligne de « À faire » est cliquable et mène à la bonne page.
 
 ## v0.20.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Résumé : le bloc « Or du compte » et ses tuiles (persos, temps de jeu, règles, à envoyer) est retiré, il faisait doublon avec les pastilles du haut. La courbe d'évolution de l'or prend toute la largeur.
@@ -1254,6 +1579,8 @@ _Prévu, pas encore commencé._
 
 ## v0.20.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Guides de montée de WoW Forever pour le Travail du cuir, le Secourisme et la Cuisine (d'après wowtbc.gg) : dans la fiche du métier, onglet « Guide de montée ».
 - Le guide met en avant l'étape en cours selon le niveau du perso (avec les fabrications qui restent), grise les étapes faites, et indique les maîtres de chaque rang pour la faction du perso, ainsi que les recettes à acheter et leurs vendeurs.
@@ -1263,6 +1590,8 @@ _Prévu, pas encore commencé._
 - Nouveau fichier : relancer le jeu (un /reload ne suffit pas).
 
 ## v0.19.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Métiers de récolte (Minage, Herboristerie, Dépeçage) : la fiche du métier liste chaque ressource avec son niveau requis et les zones où la trouver, au lieu des recettes.
@@ -1274,16 +1603,22 @@ _Prévu, pas encore commencé._
 
 ## v0.18.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - En haut des pages, le titre et la phrase d'explication sont remplacés par des pastilles avec les chiffres clés de la page (or, richesse, courrier en attente, session de farm, objets et valeur des stocks, règles, objets à envoyer…).
 - Certaines pastilles sont cliquables et mènent à la bonne page : courrier en attente, liste de courses, source des prix, valeur laissée au sol…
 
 ## v0.17.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - La fenêtre s'ouvre toujours sur le Résumé (un raccourci vers une page précise, comme le clic droit sur le bouton minimap, ouvre toujours cette page).
 
 ## v0.17.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Loot : bouton « Voir la liste » qui affiche tous les objets laissés au sol, avec la quantité, le nombre de fois, la dernière fois, le prix à l'unité et la valeur totale.
@@ -1294,6 +1629,8 @@ _Prévu, pas encore commencé._
 
 ## v0.16.2 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Loot : « Activation auto » devient « Se charge tout seul », avec une phrase qui explique le choix (« Jamais (bouton Charger) », zone, donjon, raid, JcJ, session de farm).
 
@@ -1302,11 +1639,15 @@ _Prévu, pas encore commencé._
 
 ## v0.16.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Loot : le filtre s'active dans un bandeau en haut de la page, qui montre son état et le profil chargé (au lieu d'un petit interrupteur en bas de la colonne).
 - Courrier : la ligne « Mes persos » est remplacée par un petit bouton liste à côté du destinataire, qui propose tes persos avec leur nom complet. Le champ reste libre pour un autre joueur.
 
 ## v0.16.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Options > Courrier : tous les réglages du courrier et de la banque au même endroit (envoi automatique, fermeture de la boîte aux lettres, tri des sacs, prise automatique, dépôt automatique).
@@ -1318,16 +1659,22 @@ _Prévu, pas encore commencé._
 
 ## v0.15.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - L'infobulle de la pierre de foyer listait inutilement tous les persos qui l'ont dans leurs sacs.
 
 ## v0.15.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Résumé : une enveloppe à côté du nom des persos qui ont du courrier en attente. Elle passe au rouge quand le courrier expire bientôt (seuil réglé dans Options > Alertes).
 - Survol de l'enveloppe : nombre de lettres, objets, or et jours avant expiration.
 
 ## v0.14.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Les sacs sont triés automatiquement après l'envoi du courrier (et la prise automatique) et après le dépôt en banque, avec le tri du jeu.
@@ -1337,6 +1684,8 @@ _Prévu, pas encore commencé._
 - Le tri n'a lieu que si quelque chose a été envoyé ou déposé ; la boîte aux lettres se ferme juste après le tri.
 
 ## v0.13.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Courrier : la boîte aux lettres se ferme toute seule après l'envoi automatique (après la prise automatique si elle est activée). Option dans Courrier > Envoi.
@@ -1348,6 +1697,8 @@ _Prévu, pas encore commencé._
 
 ## v0.12.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Courrier : nouvelles catégories « Objets LQE (vert et +) », « (bleu et +) » et « (épiques) » pour envoyer automatiquement les objets liés quand équipés à un perso (enchanteur, vendeur à l'HV...). Elles marchent aussi pour le dépôt en banque.
 
@@ -1355,6 +1706,8 @@ _Prévu, pas encore commencé._
 - Un objet LQE déjà équipé (donc lié) n'est jamais envoyé. Si plusieurs règles LQE existent, la plus exigeante l'emporte : un épique va à la règle « épiques ».
 
 ## v0.11.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Portraits à côté du nom des persos (Résumé, Persos, Inventaire, Métiers, Courrier) : le vrai portrait pour le perso connecté, l'icône de race et de sexe pour les autres.
@@ -1364,6 +1717,8 @@ _Prévu, pas encore commencé._
 - Le sexe de chaque perso est enregistré à la connexion : connecte chaque perso une fois pour avoir la bonne icône.
 
 ## v0.10.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Métiers > Niveaux : le nombre de recettes connues est affiché à côté de chaque métier, par exemple « Cuisine (4 recettes) ».
@@ -1375,6 +1730,8 @@ _Prévu, pas encore commencé._
 
 ## v0.10.0 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Métiers : clic sur un métier dans l'onglet Niveaux pour ouvrir sa fiche : niveau, recettes connues du perso avec leur couleur (orange, jaune, vert, gris), composants possédés sur tout le compte, coût et bénéfice.
 - Fiche métier : filtres « Font monter » (recettes orange, jaunes et vertes) et « Possibles » (composants déjà sur le compte), recherche, et bouton + vers la liste de courses.
@@ -1385,16 +1742,22 @@ _Prévu, pas encore commencé._
 
 ## v0.9.5 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Le nom complet des persos (« Prénom Nom ») est affiché dans tout l'addon : résumé, persos, inventaire, métiers, stats, farm, journal, alertes, infobulles et messages du chat.
 - Persos : clic droit sur un perso pour corriger son nom complet (comme dans Courrier). Un nom trop long est coupé proprement au lieu de déborder sur les colonnes.
 
 ## v0.9.4 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - La barre de défilement ne réagissait pas à la souris : un clic sur la barre amène la liste à cet endroit, et le curseur se fait glisser.
 
 ## v0.9.3 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Noms en deux parties (« Prénom Nom ») : l'envoi automatique utilise le nom complet de tes persos.
@@ -1410,6 +1773,8 @@ _Prévu, pas encore commencé._
 
 ## v0.9.2 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Prix : nouvelle source « Les deux ». L'Inventaire affiche le prix HV et le prix marchand côte à côte, et l'infobulle des objets donne les deux prix à l'unité. Les calculs (stocks, richesse, butin, rentabilité, filtre de loot) prennent le meilleur des deux : ce que tu tirerais vraiment de l'objet.
 
@@ -1417,6 +1782,8 @@ _Prévu, pas encore commencé._
 - Options > Prix : la description indique ce que fait la source choisie.
 
 ## v0.9.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Redimensionnement fluide : les pages suivent la souris en direct pendant qu'on agrandit ou réduit la fenêtre (cartes, colonnes des tableaux, tuiles, catégories du loot), et les graphiques sont redessinés au fur et à mesure. Plus besoin de relâcher la souris.
@@ -1428,6 +1795,8 @@ _Prévu, pas encore commencé._
 - Sur une grande fenêtre, la ligne d'objectif des Stats s'arrêtait avant le bord du graphique.
 
 ## v0.9.0 — 14/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Filtres de loot : profils de ramassage par situation (Tout ramasser, Farm, Donjon, Raid, Or et quêtes seulement…), à créer, dupliquer, renommer et charger d'un clic. Les objets refusés restent sur le corps.
@@ -1443,10 +1812,14 @@ _Prévu, pas encore commencé._
 
 ## v0.8.2 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Ordre des sections des Options : Général, Prix, Alertes, Thèmes, Apparence, À propos. Général s'ouvre par défaut.
 
 ## v0.8.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Options rangées en sections verticales à gauche : Thème, Apparence, Général (langue, bouton minimap, position de la fenêtre), Prix, Alertes et À propos. La dernière section ouverte est mémorisée.
@@ -1454,6 +1827,8 @@ _Prévu, pas encore commencé._
 - À propos : bouton pour ouvrir les notes de patch.
 
 ## v0.8.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Rentabilité des fabrications : pour chaque recette, coût des composants, prix de vente de l'objet fabriqué et bénéfice, au prix d'Auctionator (sinon prix marchand). Tri des recettes par nom, bénéfice ou nombre de fabrications possibles ; le détail est dans l'infobulle.
@@ -1465,6 +1840,8 @@ _Prévu, pas encore commencé._
 - La carte Historique de la page Farm a deux vues : Sessions et Meilleurs spots.
 
 ## v0.7.0 — 14/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Valeur du compte : les stocks (sacs, banques, courrier, bataillon) sont estimés au prix d'Auctionator, ou au prix marchand si Auctionator n'est pas installé ou n'a pas de prix. Le Résumé affiche la valeur des stocks sous l'or du compte.
@@ -1483,6 +1860,8 @@ _Prévu, pas encore commencé._
 
 ## v0.6.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Inventaire : onglets par personnage dans une colonne à gauche (icône et couleur de classe, nombre d'objets), plus « Tout le compte » et « Banque de bataillon ».
 - Sur l'onglet d'un personnage, chaque objet indique où il se trouve (sacs, banque, courrier), et l'en-tête résume sacs occupés, dernière visite à la banque et lettres en attente.
@@ -1491,6 +1870,8 @@ _Prévu, pas encore commencé._
 - L'Inventaire retient le dernier onglet ouvert. La recherche et les filtres Sacs / Banque / Courrier s'appliquent à l'onglet choisi.
 
 ## v0.6.0 — 14/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Thèmes : 7 thèmes au choix dans les Options, avec un aperçu de chacun. Coffre-fort (bois et or), Givre (bleu nuit et cyan), Graphite (gris neutre), Héraldique (aux couleurs de ta classe), Faction (bleu et or pour l'Alliance, rouge et fer pour la Horde), Gangrefeu (vert gangrené) et Néant (violet).
@@ -1504,6 +1885,8 @@ _Prévu, pas encore commencé._
 - Nouveau fichier : redémarrer complètement le jeu après la mise à jour.
 
 ## v0.5.0 — 14/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 
 ### Ajouts
 - Règles par catégorie : étoffes, cuirs, métaux et pierres, herbes, éléments, enchantement, gemmes… Une seule règle suffit pour envoyer tout un type de composant. Une règle sur un objet précis reste prioritaire.
@@ -1529,6 +1912,8 @@ _Prévu, pas encore commencé._
 
 ## v0.4.0 — 14/11/2026
 
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
 ### Ajouts
 - Page Journal : courriers envoyés, or gagné ou dépensé, progrès de métier et niveaux, regroupés par jour, avec des filtres Tout / Or / Courrier / Métiers. Les variations d'or et les progrès d'un même métier sont regroupés par heure.
 - Boîte aux lettres : son contenu est lu à l'ouverture (objets, or, nombre de lettres, date d'expiration). Les objets envoyés par l'envoi automatique à un autre perso du compte sont comptés tout de suite dans sa boîte.
@@ -1545,6 +1930,8 @@ _Prévu, pas encore commencé._
 
 ## v0.3.1 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Ajouts
 - Page « Notes de patch » : toutes les versions avec leurs ajouts, modifications et corrections, plus ce qui est prévu.
 - Icône « Notes de patch » dans la barre du haut et commande /wk notes.
@@ -1552,6 +1939,8 @@ _Prévu, pas encore commencé._
 - Fichier CHANGELOG.md sur GitHub, généré à partir des mêmes notes.
 
 ## v0.3.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Page Résumé : or du compte en grand, variation sur 7 jours et 4 chiffres clés (personnages, temps de jeu, règles de courrier, objets à envoyer).
@@ -1573,10 +1962,14 @@ _Prévu, pas encore commencé._
 
 ## v0.2.4 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Modifications
 - Nouveau logo : l'étendard de bataillon (drapeau avec un W), sur le bouton minimap et dans la fenêtre.
 
 ## v0.2.3 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Modifications
 - Les quantités par personnage ne s'ajoutent plus aux infobulles de comparaison d'équipement (plus de doublons).
@@ -1587,11 +1980,15 @@ _Prévu, pas encore commencé._
 
 ## v0.2.2 — 14/11/2026
 
+_Un /reload suffit._
+
 ### Corrections
 - Carte « Ce personnage » : le nom complet Nom-Royaume sortait de la carte. Le nom s'affiche seul et le royaume passe sur sa propre ligne.
 - Page Personnages : un royaume au nom long pouvait chevaucher la colonne Niveau.
 
 ## v0.2.1 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Banque de bataillon : lue à l'ouverture de la banque, visible dans l'inventaire (« Bataillon »), les infobulles et les totaux.
@@ -1606,6 +2003,8 @@ _Prévu, pas encore commencé._
 - Insertion des liens d'objets (Maj + clic) compatible avec le nouveau chat.
 
 ## v0.2.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Fenêtre principale aux coins arrondis, avec les pages Vue d'ensemble, Personnages, Inventaire, Métiers, Statistiques, Courrier automatique et Options.
@@ -1623,6 +2022,8 @@ _Prévu, pas encore commencé._
 - Conflit de nom entre l'interrupteur et l'ouverture de la fenêtre (trouvé avant la publication).
 
 ## v0.1.0 — 14/11/2026
+
+_Un /reload suffit._
 
 ### Ajouts
 - Enregistrement de chaque personnage : or, niveau, classe, temps de jeu.

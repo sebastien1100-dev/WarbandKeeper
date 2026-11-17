@@ -889,6 +889,8 @@ WK.Locales.enUS.text = {
     ["Monstres du donjon"] = "Dungeon trash",
     ["Cimetière"] = "Graveyard", ["Bibliothèque"] = "Library", ["Armurerie"] = "Armory", ["Cathédrale"] = "Cathedral",
     ["Bas"] = "Lower", ["Haut"] = "Upper", ["Est"] = "East", ["Nord"] = "North", ["Ouest"] = "West",
+    ["redémarrer le jeu"] = "restart the game",
+    ["/reload suffit"] = "/reload is enough",
     ["sur le compte"] = "on the account",
     ["Infobulles"] = "Tooltips",
     ["Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos."] = "In an item tooltip: the professions that use it to level up, and how many each of your characters still needs.",

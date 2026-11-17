@@ -2,9 +2,21 @@ local ADDON_NAME, WK = ...
 
 -- Notes de patch : source unique, affichée en jeu (page « Notes de patch »)
 -- et convertie en CHANGELOG.md par tools/gen_changelog.py.
--- Pour chaque version : added = ajouts, changed = modifications, fixed = corrections.
+-- Pour chaque version : added = ajouts, changed = modifications, fixed = corrections ;
+-- restart = true quand il faut redémarrer complètement le jeu (nouveau fichier .lua, texture, .toc
+-- modifié) : sinon un /reload suffit. Affiché en jeu, dans CHANGELOG.md et dans les Releases.
 -- La plus récente en premier.
 WK.Changelog = {
+    {
+        version = "0.90.2", date = "17/11/2026",
+        added = {
+            "Chaque version dit maintenant s'il faut redémarrer complètement le jeu ou si un /reload suffit : pastille dans les notes de version en jeu, ligne en tête des notes sur GitHub et dans le client.",
+            "Client PC 1.2 : après une mise à jour, il te dit quoi faire, calculé sur ce qui a vraiment changé (nouveaux fichiers ou .toc modifié : redémarrage complet ; sinon un /reload suffit), même si tu sautes plusieurs versions.",
+        },
+        changed = {
+            "Client PC : Warband Keeper est fait pour WoW Forever seulement ; le client ne propose plus que les installations de WoW Forever, et demande confirmation si tu choisis un autre dossier.",
+        },
+    },
     {
         version = "0.90.1", date = "17/11/2026",
         changed = {
@@ -55,7 +67,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.88.0", date = "16/11/2026",
+        version = "0.88.0", date = "16/11/2026", restart = true,
         added = {
             "Voyages : la durée du vol s'affiche dans l'infobulle de chaque destination, sur la carte du maître de vol. Durée exacte si tu as déjà fait ce vol, sinon une estimation (« environ… (estimée) »).",
             "Voyages : rappel des points de vol à apprendre. En arrivant dans une zone dont le maître de vol n'est pas encore appris (ta faction), un message le dit, une fois par zone et par session. /wk vol guide vers le plus proche. Nouvelle carte « Points de vol à apprendre » dans QoL > Carte : ceux du continent, du plus proche au plus loin, avec un bouton Guider, et le rappel à couper. Il faut avoir ouvert une fois la carte d'un maître de vol avec le perso pour que ses vols connus soient notés.",
@@ -73,7 +85,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.87.0", date = "16/11/2026",
+        version = "0.87.0", date = "16/11/2026", restart = true,
         added = {
             "Donjons : nouvelle page « Donjons » (groupe Exploration). Les 19 donjons de WoW Forever en tuiles par niveau (couleur selon le niveau du perso choisi, barre des boss déjà tués), puis les boss du donjon choisi et leur butin propre (armes, armures, recettes), en couleur de qualité. « Pour ce perso » ne garde que ce qu'il peut porter (classe, type d'armure selon le niveau, armes, recettes de ses métiers) ; étiquettes « pour toi » et « sur le compte ».",
             "Liste d'envies : une étoile sur chaque objet ; onglet « Mes envies » (par perso, avec le donjon et le boss). En entrant dans un donjon qui contient tes envies, un rappel le dit ; quand un objet voulu tombe dans le groupe, une alerte et un son.",
@@ -106,7 +118,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.86.0", date = "16/11/2026",
+        version = "0.86.0", date = "16/11/2026", restart = true,
         added = {
             "HUD de récolte : la minicarte du jeu s'affiche en grand et transparente au centre de l'écran, dézoomée au maximum et tournée avec ton perso. Les points jaunes du pistage (filons, plantes) se voient ainsi de bien plus loin, avec nos pastilles et le trajet. Les clics passent au travers. /wk hud, ou une touche dans les raccourcis du jeu (Warband Keeper > HUD de récolte). Taille, opacité et « fermer en combat » dans Options > Récolte. La minicarte retrouve sa place, sa taille et son zoom à la fermeture.",
             "Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).",
@@ -116,7 +128,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.85.0", date = "16/11/2026",
+        version = "0.85.0", date = "16/11/2026", restart = true,
         changed = {
             "Collection de pêche : elle a sa propre page « Pêche » dans le groupe Farm de la barre latérale (album et atlas en pleine largeur), avec en en-tête les espèces trouvées, le nombre de prises et leur valeur. Elle quitte QoL > Pêche, qui garde le mode pêche, le carnet et les réglages.",
             "Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).",
@@ -129,7 +141,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.84.0", date = "16/11/2026",
+        version = "0.84.0", date = "16/11/2026", restart = true,
         added = {
             "Marchand : panneau « Pour monter tes métiers » collé à la fenêtre du marchand. Pour chaque métier du perso qui a un guide, les composants qui manquent jusqu'au palier choisi (75, 150, 225, 300 ou Max, le même que dans Métiers > guide, modifiable directement dans le panneau) et que ce marchand vend : quantité qui manque, prix, bouton « Acheter » et « Tout acheter ». Les recettes à apprendre vendues ici y sont aussi. Le nombre de composants à trouver ailleurs est indiqué en bas.",
             "Le panneau n'apparaît que chez un marchand qui vend quelque chose d'utile. Réglage dans QoL > Général > Marchand.",
@@ -161,7 +173,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.82.0", date = "16/11/2026",
+        version = "0.82.0", date = "16/11/2026", restart = true,
         added = {
             "Vols : le chemin réellement suivi par le griffon est noté à chaque vol. En vol, la carte du monde et la minicarte montrent ce chemin depuis ta position jusqu'à l'arrivée (au premier vol sur un trajet : le chemin déjà parcouru), puis la suite du trajet guidé. Les trajets planifiés dessinent aussi ce vrai chemin de vol au lieu d'une ligne droite.",
             "Bateaux appris : quand un bateau ou un zeppelin te porte (tu avances sans bouger), le départ et l'arrivée deviennent deux quais connus, avec le chemin suivi. Ils apparaissent sur la carte comme les autres trajets (« vers Hurlevent »…), leur tracé est dessiné, et la navigation s'en sert (même continent compris). Un message le signale la première fois.",
@@ -173,7 +185,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.81.0", date = "16/11/2026",
+        version = "0.81.0", date = "16/11/2026", restart = true,
         added = {
             "Hôtel des ventes, onglet « Ventes » du panneau : tes enchères en cours (prix à l'unité, quantité). « Vérifier les prix » cherche le plus bas prix actuel de chaque objet (un toutes les 1,2 s) et marque chaque enchère : au plus bas, seul en vente, ou sous-cotée avec le prix du concurrent. Une enchère sous-cotée a un bouton « Annuler » (l'objet revient par courrier, le dépôt est perdu).",
             "Vente rapide : quand tu poses un objet dans la fenêtre de vente du jeu, son prix est rempli au plus bas des autres vendeurs moins 1 pc (sinon au prix du scan moins 1 pc). Réglable dans QoL > Hôtel des ventes (marche ou arrêt, marge de 1 à 100 pc).",
@@ -206,7 +218,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.80.0", date = "16/11/2026",
+        version = "0.80.0", date = "16/11/2026", restart = true,
         added = {
             "Alerte « Rare en vue » : le bouton Guider devient l'icône ronde de guidage (comme dans les listes Rares et Quêtes). Un clic guide vers le rare et pose le marqueur tête de mort du jeu au-dessus de lui (aussi en cliquant sur l'alerte compacte).",
             "Rare guidé : l'épingle à l'écran et sur la carte du monde montre une tête de mort.",
@@ -221,7 +233,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.79.0", date = "16/11/2026",
+        version = "0.79.0", date = "16/11/2026", restart = true,
         added = {
             "Guidage : épingle à l'écran au-dessus du lieu guidé, de ta couleur, avec l'icône de ce que tu suis (boîte aux lettres, banque, réparation, quête, rare, pêche…) et dessous le nom et la distance restante par le trajet. Quand le lieu est hors champ, elle se cale au bord de l'écran, plus discrète. Elle remplace le repère d'origine du jeu.",
             "Arrivée : à moins de 10 m, un bandeau « Arrivé : … · le guidage s'arrête » s'affiche (avec un son si tu veux) et le guidage s'arrête.",
@@ -245,7 +257,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.78.0", date = "16/11/2026",
+        version = "0.78.0", date = "16/11/2026", restart = true,
         added = {
             "Navigation Warband Keeper : chaque guidage (quêtes, rares, lieux, métiers, alertes, pêche) trace un trajet en pointillés de ta couleur, de toi jusqu'au lieu, sur la carte du monde et sur la minicarte. La flèche vise le point suivant du trajet et donne la distance restante par le chemin.",
             "Le trajet suit les chemins connus : chemins de base tirés des patrouilles des PNJ (QuestieDB : routes, ponts, cols) et chemins appris. Hors des chemins, il coupe tout droit (terrain inconnu).",
@@ -262,7 +274,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.77.0", date = "16/11/2026",
+        version = "0.77.0", date = "16/11/2026", restart = true,
         added = {
             "QoL > Pêche : nouvelle carte « Collection » sous le carnet, avec deux onglets.",
             "Album : une tuile par espèce (poissons, coffres, curiosités), rangée par palier de compétence ; en couleur si un de tes persos l'a déjà pêchée (avec le nombre), en gris sinon. Filtres Tout, Poissons, Coffres, Curiosités, Manquants. Un point de ta couleur marque les espèces pêchées pour la première fois cette semaine.",
@@ -1587,7 +1599,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.9.0", date = "14/11/2026",
+        version = "0.9.0", date = "14/11/2026", restart = true,
         added = {
             "Filtres de loot : profils de ramassage par situation (Tout ramasser, Farm, Donjon, Raid, Or et quêtes seulement…), à créer, dupliquer, renommer et charger d'un clic. Les objets refusés restent sur le corps.",
             "Chaque profil fixe une qualité minimale, une valeur minimale (au prix Auctionator ou marchand), des catégories toujours ramassées et des listes « toujours » et « jamais » (Maj + clic). L'or, les monnaies et les objets de quête sont toujours ramassés, tout comme, si tu le souhaites, les objets de tes règles d'envoi et de dépôt.",
@@ -1628,7 +1640,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.7.0", date = "14/11/2026",
+        version = "0.7.0", date = "14/11/2026", restart = true,
         added = {
             "Valeur du compte : les stocks (sacs, banques, courrier, bataillon) sont estimés au prix d'Auctionator, ou au prix marchand si Auctionator n'est pas installé ou n'a pas de prix. Le Résumé affiche la valeur des stocks sous l'or du compte.",
             "Nouvelle série « Richesse totale » (or + stocks) dans les Stats, avec son historique.",
@@ -1656,7 +1668,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.6.0", date = "14/11/2026",
+        version = "0.6.0", date = "14/11/2026", restart = true,
         added = {
             "Thèmes : 7 thèmes au choix dans les Options, avec un aperçu de chacun. Coffre-fort (bois et or), Givre (bleu nuit et cyan), Graphite (gris neutre), Héraldique (aux couleurs de ta classe), Faction (bleu et or pour l'Alliance, rouge et fer pour la Horde), Gangrefeu (vert gangrené) et Néant (violet).",
             "Couleur d'accent : en plus des couleurs fixes, « Thème » suit l'accent du thème choisi et « Classe » prend la couleur de classe du perso connecté.",
@@ -1670,7 +1682,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.5.0", date = "14/11/2026",
+        version = "0.5.0", date = "14/11/2026", restart = true,
         added = {
             "Règles par catégorie : étoffes, cuirs, métaux et pierres, herbes, éléments, enchantement, gemmes… Une seule règle suffit pour envoyer tout un type de composant. Une règle sur un objet précis reste prioritaire.",
             "Seuil « Garder » : une règle peut garder une quantité dans les sacs (ex. garder 20 potions) et n'envoie ou ne dépose que le surplus, en partageant une pile si besoin.",
@@ -1695,7 +1707,7 @@ WK.Changelog = {
         },
     },
     {
-        version = "0.4.0", date = "14/11/2026",
+        version = "0.4.0", date = "14/11/2026", restart = true,
         added = {
             "Page Journal : courriers envoyés, or gagné ou dépensé, progrès de métier et niveaux, regroupés par jour, avec des filtres Tout / Or / Courrier / Métiers. Les variations d'or et les progrès d'un même métier sont regroupés par heure.",
             "Boîte aux lettres : son contenu est lu à l'ouverture (objets, or, nombre de lettres, date d'expiration). Les objets envoyés par l'envoi automatique à un autre perso du compte sont comptés tout de suite dans sa boîte.",

@@ -1,6 +1,7 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local T = function(s) return WK.T(s) end
 
 -- Trois couleurs fixes, douces et accordées aux thèmes chauds, indépendantes de l'accent :
 -- vert sauge (ajouts), ambre (modifications), vieux rose (corrections).
@@ -40,6 +41,11 @@ local function VersionCard(parent, y, entry, isCurrent, width)
         local d = UI:Badge(card, entry.date, C.muted)
         d:SetPoint("LEFT", after, "RIGHT", 10, 0)
         after = d
+    end
+    if not entry.roadmap then
+        local r = entry.restart and UI:Badge(card, T("redémarrer le jeu"), C.warning) or UI:Badge(card, T("/reload suffit"), C.muted)
+        r:SetPoint("LEFT", after, "RIGHT", 6, 0)
+        after = r
     end
     if isCurrent then
         local cur = UI:Badge(card, "version installée")

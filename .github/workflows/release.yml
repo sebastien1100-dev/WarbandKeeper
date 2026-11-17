@@ -25,6 +25,8 @@ jobs:
       version: ${{ steps.v.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Version
         id: v
@@ -43,6 +45,17 @@ jobs:
           git archive --prefix=WarbandKeeper/ -o "WarbandKeeper-$V.zip" HEAD
           awk -v v="## v$V " 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on {print}' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "Version $V" > notes.md
+          # filet de sécurité : nouveaux fichiers de l'addon (ou .toc modifié) depuis la release précédente
+          # = redémarrage complet du jeu, même si les notes disent qu'un /reload suffit
+          PREV=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // ""')
+          if [ -n "$PREV" ] && git rev-parse -q --verify "refs/tags/$PREV" >/dev/null; then
+            NEW=$(git diff --name-only --diff-filter=A "$PREV" HEAD -- '*.lua' '*.xml' '*.tga' '*.blp' '*.ttf' '*.ogg' | grep -v -E '^(client|tools|\.github)/' || true)
+            TOC=$(git diff "$PREV" HEAD -- WarbandKeeper.toc | grep -E '^[-+][^-+]' | grep -v '## Version' || true)
+            if [ -n "$NEW$TOC" ] && grep -q 'reload suffit' notes.md; then
+              echo "Nouveaux fichiers depuis $PREV : $NEW"
+              sed -i 's#^_Un /reload suffit\._$#_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._#' notes.md
+            fi
+          fi
           gh release create "v$V" "WarbandKeeper-$V.zip" --title "Warband Keeper $V" --notes-file notes.md --target "$GITHUB_SHA"
 
   client:

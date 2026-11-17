@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Warband Keeper : client PC.
 
+Warband Keeper est fait pour WoW Forever seulement : le client ne propose que les installations de WoW Forever.
 Installe et met à jour l'addon depuis les versions publiées sur GitHub (Releases), montre les nouveautés,
 sauvegarde les réglages de l'addon (SavedVariables) avant chaque mise à jour, permet de revenir à la
 version précédente, et se met à jour lui-même.
@@ -30,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.1.0"
+CLIENT_VERSION = "1.2.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -218,8 +219,13 @@ def find_installs():
     return out
 
 
+def find_forever():
+    """Installations de WoW Forever seulement (Warband Keeper n'existe que pour WoW Forever)."""
+    return [i for i in find_installs() if i["forever"]]
+
+
 def find_addons_dirs():
-    return [i["addons"] for i in find_installs()]
+    return [i["addons"] for i in find_forever()]
 
 
 def short_path(p, n=55):
@@ -464,9 +470,30 @@ def safe_extract(zpath, dest_parent):
         z.extractall(base, [n for n in names if n.startswith(ADDON + "/")])
 
 
+def _files(folder):
+    out = set()
+    for d, _, fs in os.walk(folder):
+        for f in fs:
+            out.add(os.path.relpath(os.path.join(d, f), folder).replace(os.sep, "/").lower())
+    return out
+
+
+def _toc_body(folder):
+    """Le .toc sans sa ligne ## Version (le reste change la liste des fichiers chargés)."""
+    try:
+        with open(os.path.join(folder, ADDON + ".toc"), encoding="utf-8", errors="replace") as f:
+            return "\n".join(l.rstrip() for l in f if not l.startswith("## Version"))
+    except OSError:
+        return None
+
+
 def install_zip(addons, zpath, old_version):
+    """Installe le zip ; rend True s'il faut redémarrer complètement le jeu (nouveaux fichiers ou .toc
+    modifié : le jeu ne les charge qu'au lancement), False si un /reload suffit."""
     target = os.path.join(addons, ADDON)
     moved = None
+    oldFiles = _files(target) if os.path.isdir(target) else None
+    oldToc = _toc_body(target) if os.path.isdir(target) else None
     if os.path.isdir(target):
         moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
         if os.path.exists(moved):
@@ -482,6 +509,9 @@ def install_zip(addons, zpath, old_version):
         if moved and not os.path.isdir(target):
             shutil.move(moved, target)
         raise
+    if oldFiles is None:
+        return True  # première installation : le jeu doit être lancé (ou relancé) pour la voir
+    return bool(_files(target) - oldFiles) or _toc_body(target) != oldToc
 
 
 def previous_versions():
@@ -692,6 +722,8 @@ def notes_view(parent, height=10):
     txt.tag_configure("item", lmargin1=8, lmargin2=22)
     txt.tag_configure("dot", foreground=C["accent"])
     txt.tag_configure("muted", foreground=C["muted"])
+    txt.tag_configure("restart", foreground=C["warning"], font=App.fonts["smallb"], spacing3=4)
+    txt.tag_configure("reload", foreground=C["muted"], font=App.fonts["small"], spacing3=4)
     return wrap, txt
 
 
@@ -710,7 +742,10 @@ def fill_notes(txt, releases, empty="Rien de nouveau."):
             line = line.rstrip()
             if not line or line.startswith("## "):
                 continue
-            if line.startswith("### "):
+            if line.startswith("_") and line.endswith("_"):
+                t = line.strip("_")
+                txt.insert("end", ("⟳  " if "Redémarrage" in t else "↻  ") + t + "\n", "restart" if "Redémarrage" in t else "reload")
+            elif line.startswith("### "):
                 txt.insert("end", line[4:] + "\n", "sec")
             elif line.startswith("- "):
                 txt.insert("end", "•  ", ("item", "dot"))
@@ -732,7 +767,10 @@ class HomePage(Page):
         top.pack(fill="x")
         left = tk.Frame(top, bg=C["surface"])
         left.pack(side="left", fill="x", expand=True)
-        label(left, "Warband Keeper", font="h2").pack(anchor="w")
+        tl = tk.Frame(left, bg=C["surface"])
+        tl.pack(anchor="w")
+        label(tl, "Warband Keeper", font="h2").pack(side="left")
+        label(tl, "  pour WoW Forever", fg="muted", font="small").pack(side="left", pady=(4, 0))
         self.versions = label(left, "", fg="muted")
         self.versions.pack(anchor="w", pady=(2, 8))
         self.chip = Chip(left)
@@ -745,8 +783,9 @@ class HomePage(Page):
         self.check.pack(anchor="e", pady=(6, 0))
         self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
-        self.status = label(b, "", fg="muted", font="small")
-        self.status.pack(anchor="w", pady=(10, 0))
+        self.status = label(b, "", fg="muted", font="small", wraplength=600)
+        self.status.pack(anchor="w", fill="x", pady=(10, 0))
+        b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
 
         notes = Card(self, "Nouveautés", "depuis ta version")
         notes.pack(fill="both", expand=True, pady=(12, 0))
@@ -795,8 +834,8 @@ class HomePage(Page):
         self.build_picker()
         if not a.addons:
             n = len(a.installs)
-            self.versions.configure(text=("%d installations de WoW trouvées : choisis celle de WoW Forever." % n) if n > 1 else
-                                    "Aucune installation de WoW trouvée automatiquement.")
+            self.versions.configure(text=("%d installations de WoW Forever trouvées : choisis la tienne." % n) if n > 1 else
+                                    "WoW Forever introuvable automatiquement : indique son dossier.")
             self.chip.set("Où installer Warband Keeper ?", C["warning"])
             self.action.set("Rechercher", True, "secondary")
             self.action.command = a.rescan
@@ -826,7 +865,13 @@ class HomePage(Page):
             self.action.command = a.update_addon
         else:
             self.versions.configure(text="Installée : %s" % inst)
-            self.chip.set("À jour", C["positive"])
+            last = getattr(a, "lastInstall", None)
+            if last and last[0] == inst and last[1]:
+                self.chip.set("À jour · redémarre complètement le jeu", C["warning"])
+            elif last and last[0] == inst:
+                self.chip.set("À jour · un /reload suffit", C["positive"])
+            else:
+                self.chip.set("À jour", C["positive"])
             self.action.set("À jour", False, "primary")
         newer = a.newer()
         fill_notes(self.notes, newer if newer else a.releases[:1],
@@ -986,9 +1031,9 @@ class SettingsPage(Page):
 
     def detect(self):
         a = self.app
-        a.installs = find_installs()
+        a.installs = find_forever()
         if not a.installs:
-            return a.toast("Aucune installation trouvée : choisis le dossier avec Parcourir.", "warning")
+            return a.toast("WoW Forever introuvable : choisis son dossier avec Parcourir.", "warning")
         if len(a.installs) == 1:
             a.choose_install(a.installs[0], install=False)
             self.path.set(a.addons)
@@ -1002,6 +1047,9 @@ class SettingsPage(Page):
         a = normalize_addons(p.strip())
         if p.strip() and not a:
             self.pathInfo.configure(text="Ce dossier ne contient pas Interface\\AddOns.", fg=C["negative"])
+            return
+        if a and a != self.app.addons and not self.app.check_forever(a):
+            self.path.set(self.app.addons)
             return
         self.path.set(a or "")
         self.app.set_addons(a or "")
@@ -1040,7 +1088,7 @@ class App:
         self.q = queue.Queue()
         self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
-            self.installs = find_installs()
+            self.installs = find_forever()
             pick = self.auto_pick(self.installs)
             self.cfg["addons"] = use_install(pick) if pick else ""
             save_config(self.cfg)
@@ -1129,7 +1177,7 @@ class App:
         win.transient(self.root)
         win.resizable(False, False)
         res = {"inst": None}
-        tk.Label(win, text="Installations de WoW trouvées", bg=C["surface"], fg=C["text"], font=App.fonts["h3"],
+        tk.Label(win, text="Installations de WoW Forever trouvées", bg=C["surface"], fg=C["text"], font=App.fonts["h3"],
                  padx=18, pady=14).pack(anchor="w")
 
         def done(i):
@@ -1153,7 +1201,7 @@ class App:
         return res["inst"]
 
     def rescan(self):
-        self.installs = find_installs()
+        self.installs = find_forever()
         pick = self.auto_pick(self.installs)
         if pick:
             self.choose_install(pick, install=False)
@@ -1214,7 +1262,7 @@ class App:
 
     @staticmethod
     def auto_pick(installs):
-        """Installation prise d'office : celle qui a déjà l'addon, sinon la seule WoW Forever, sinon la seule."""
+        """Installation prise d'office (WoW Forever) : celle qui a déjà l'addon, sinon la seule."""
         withAddon = [i for i in installs if i["version"]]
         if withAddon:
             return withAddon[0]
@@ -1238,10 +1286,20 @@ class App:
             a = os.path.join(d, "Interface", "AddOns")
             os.makedirs(a, exist_ok=True)
         if a:
+            if not self.check_forever(a):
+                return
             self.set_addons(a)
             self.toast("Dossier choisi.", "positive")
         else:
             self.toast("Ce dossier ne contient pas Interface\\AddOns.", "negative")
+
+    def check_forever(self, addons):
+        """Warband Keeper n'existe que pour WoW Forever : confirmation pour un autre dossier."""
+        fdir = game_dir(addons)
+        if _is_forever(fdir, os.path.basename(fdir)):
+            return True
+        return self.confirm("Ce dossier ne ressemble pas à WoW Forever.\n"
+                            "Warband Keeper ne fonctionne que sur WoW Forever.\n\nL'utiliser quand même ?")
 
     def set_addons(self, path):
         self.cfg["addons"] = path
@@ -1320,23 +1378,32 @@ class App:
             GitHub(self.cfg["token"]).download(addon_asset(rel), tmp,
                                                lambda f: self.ui(home.set_busy, "Téléchargement… %d %%" % (f * 100), 0.05 + f * 0.85))
             self.ui(home.set_busy, "Installation…", 0.93)
-            install_zip(addons, tmp, old)
+            restart = install_zip(addons, tmp, old)
             try:
                 os.remove(tmp)
             except OSError:
                 pass
-            return rel["tag_name"].lstrip("v")
+            return rel["tag_name"].lstrip("v"), restart, old is None
 
-        def done(ver, err):
+        def done(res, err):
             self.busy = False
             if err:
                 home.set_busy(str(err) if isinstance(err, (NetError, RuntimeError)) else "Échec : %s" % err)
                 self.toast("La mise à jour n'a pas abouti : rien n'a été changé.", "negative")
             else:
-                home.set_busy("Version %s installée." % ver, 1.0)
+                ver, restart, first = res
+                running = game_running()
+                if first:
+                    how = "Relance complètement le jeu pour la charger." if running else "Elle se chargera au lancement du jeu."
+                elif restart:
+                    how = ("Redémarrage complet du jeu nécessaire : de nouveaux fichiers sont arrivés (un /reload ne suffit pas)."
+                           if running else "Elle se chargera au prochain lancement du jeu (nouveaux fichiers : un /reload ne suffirait pas).")
+                else:
+                    how = "Un /reload en jeu suffit." if running else "Un /reload suffit (ou au prochain lancement du jeu)."
+                self.lastInstall = (ver, restart and not first, how)
+                home.set_busy("Version %s installée. %s" % (ver, how), 1.0)
                 self.root.after(2500, lambda: home.set_busy(home.status["text"]))
-                self.toast(("Installé. Redémarre le jeu pour la charger." if game_running() else
-                            "Installé. Elle se chargera au prochain lancement du jeu."), "positive")
+                self.toast("Installé. " + how, "warning" if (restart and running) else "positive")
             self.state_changed()
         self.run(job, done)
 

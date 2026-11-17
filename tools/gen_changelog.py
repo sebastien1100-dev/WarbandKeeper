@@ -37,6 +37,8 @@ if roadmap:
 for i, entry in enumerate(items(wk.Changelog)):
     out.append(f"## v{entry.version} — {entry.date}")
     out.append("")
+    out.append("_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._" if entry.restart else "_Un /reload suffit._")
+    out.append("")
     for key, label in SECTIONS:
         lst = items(entry[key])
         if lst:
