@@ -23,6 +23,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.97.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Résumé, carte Modules dépliée : elle débordait sous la fenêtre (les modules de QoL sortaient en bas) et coupait les noms (« Règles d'en… »). Dépliée, elle prend maintenant toute la page le temps de gérer les modules (À faire et la courbe reviennent en repliant), sur 3 colonnes assez larges pour les noms (2 à 4 selon la largeur de la fenêtre).
+
 ## v0.97.0 — 17/11/2026
 
 _Un /reload suffit._

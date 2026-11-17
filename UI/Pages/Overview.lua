@@ -196,6 +196,7 @@ UI:RegisterPage({
 
         -- Courbe d'évolution -----------------------------------------------------------
         local card = UI:Card(p, nil, nil, true)
+        self.chartCard = card
         card:SetPoint("TOPLEFT", todo, "TOPRIGHT", GAP, 0)
         card:SetPoint("TOPRIGHT", 0, 0)
         card:SetHeight(TOP_H)
@@ -428,7 +429,9 @@ UI:RegisterPage({
             end
             self.modH = 56
         else
-            local tw = math.floor((W - 32 - LABEL_W - 3 * TG) / 4)
+            -- colonnes d'au moins 220 px (noms lisibles), entre 2 et 4
+            local NC = math.max(2, math.min(4, math.floor((W - 32 - LABEL_W + TG) / (220 + TG))))
+            local tw = math.floor((W - 32 - LABEL_W - (NC - 1) * TG) / NC)
             local y, col, lastGroup = -50, 0, nil
             for _, t in ipairs(self.modTiles) do
                 if t.f.group ~= lastGroup then
@@ -438,7 +441,7 @@ UI:RegisterPage({
                         if l.group == t.f.group then l.label:ClearAllPoints(); l.label:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16, y - 15) end
                     end
                 end
-                if col >= 4 then col = 0; y = y - ROW end -- groupe de plus de 4 modules : ligne suivante
+                if col >= NC then col = 0; y = y - ROW end -- groupe de plus de 4 modules : ligne suivante
                 t:SetWidth(tw)
                 t:ClearAllPoints(); t:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16 + LABEL_W + col * (tw + TG), y)
                 col = col + 1
@@ -448,13 +451,16 @@ UI:RegisterPage({
         -- repliée : une ligne sous le tableau ; dépliée : elle prend la place du tableau et des objectifs
         self.modCard:ClearAllPoints()
         if open then
-            self.modCard:SetPoint("TOPLEFT", 0, -(TOP_H + GAP))
+            -- dépliée : toute la page (les cartes du haut se cachent le temps de gérer les modules)
+            self.modCard:SetPoint("TOPLEFT", 0, 0)
             self.modCard:SetPoint("BOTTOMRIGHT")
         else
             self.modCard:SetPoint("BOTTOMLEFT"); self.modCard:SetPoint("BOTTOMRIGHT")
             self.modCard:SetHeight(self.modH)
         end
         if self.tableBox then self.tableBox:SetShown(not open) end
+        if self.todo then self.todo:SetShown(not open) end
+        if self.chartCard then self.chartCard:SetShown(not open) end
         for _, g in ipairs(self.goalCards and self.goalCards.items or {}) do if open then g:Hide() end end
     end,
 

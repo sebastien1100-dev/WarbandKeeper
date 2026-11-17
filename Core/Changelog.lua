@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.97.1", date = "17/11/2026",
+        fixed = {
+            "Résumé, carte Modules dépliée : elle débordait sous la fenêtre (les modules de QoL sortaient en bas) et coupait les noms (« Règles d'en… »). Dépliée, elle prend maintenant toute la page le temps de gérer les modules (À faire et la courbe reviennent en repliant), sur 3 colonnes assez larges pour les noms (2 à 4 selon la largeur de la fenêtre).",
+        },
+    },
+    {
         version = "0.97.0", date = "17/11/2026",
         added = {
             "Donjons : nouvel onglet « Parcours », ouvert tout seul quand tu entres dans un donjon. En haut, la carte du prochain boss : son butin en icônes (étoile = tes envies, pâle = déjà sur le compte ; clic = envie, Maj + clic = lien), tes envies sur ce boss, qui d'autre les veut, et les quêtes du donjon à faire. En dessous, la frise de tous les boss dans l'ordre du jeu, rangée par aile (compteur par aile), avec l'heure de chaque kill et le prochain boss surligné.",
