@@ -394,9 +394,15 @@ local function build(parent)
         b.icon = b:CreateTexture(nil, "ARTWORK")
         b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
         b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        b.rk = UI:Text(b, 9, nil, "OVERLAY")
-        b.rk:SetPoint("BOTTOMRIGHT", 3, -3)
-        b.rk:SetShadowOffset(1, -1)
+        -- rang dans une petite pastille sombre, à cheval sur le coin bas droit (au-dessus des voisins)
+        b.rkBox = CreateFrame("Frame", nil, b)
+        b.rkBox:SetFrameLevel(b:GetFrameLevel() + 4)
+        b.rkBox:SetSize(26, 14)
+        b.rkBox:SetPoint("CENTER", b, "BOTTOMRIGHT", -2, 2)
+        UI:Panel(b.rkBox, 7, { 0.05, 0.05, 0.06, 0.95 }, C.border)
+        b.rk = b.rkBox:CreateFontString(nil, "OVERLAY")
+        b.rk:SetFont(UI.FONT, 10, "")
+        b.rk:SetPoint("CENTER", 0, 0)
         b:SetScript("OnEnter", function(s)
             local d = s.data
             if not d then return end
@@ -721,8 +727,11 @@ local function refreshTalents(f, c)
                 cell.icon:SetAlpha(rank == 0 and 0.45 or 1)
                 local col = rank >= max and C.gold or rank > 0 and C.positive or C.border
                 cell.edge:SetVertexColor(col[1], col[2], col[3], 1)
-                cell.rk:SetText(rank > 0 and (rank .. "/" .. max) or "")
-                cell.rk:SetTextColor(col[1], col[2], col[3])
+                cell.rk:SetText(rank .. "/" .. max)
+                local tc = rank > 0 and col or C.dim
+                cell.rk:SetTextColor(tc[1], tc[2], tc[3])
+                cell.rkBox:SetWidth(math.max(22, math.ceil(cell.rk:GetStringWidth() or 0) + 8))
+                cell.rkBox.border:SetColor(col[1], col[2], col[3], rank > 0 and 1 or 0.6)
                 cell:Show()
             end
         end

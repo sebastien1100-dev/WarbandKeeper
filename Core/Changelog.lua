@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.13.1", date = "17/11/2026",
+        changed = {
+            "Fiche du perso, onglet Talents : chaque talent affiche son rang (« 2/5 », « 0/3 ») dans une petite pastille lisible au coin de l'icône, de la couleur du talent (vert pris, doré au maximum, gris pas pris).",
+        },
+    },
+    {
         version = "1.13.0", date = "17/11/2026",
         added = {
             "Fiche du perso, onglet BiS : dernier choix « Ma liste BiS », une liste à remplir toi-même (par exemple pour le niveau 60), un objet par emplacement. Pour en ajouter un : Maj+clic sur l'objet avec le champ actif, glisser-déposer sur la ligne, ou son n°. Chaque objet dit où il tombe (donjon, boss, %) ou « hors donjon », et son état : porté, dans les sacs, à la banque ou à obtenir. Boutons « Remplir avec le meilleur trouvable » (niveau 60, emplacements vides) et « Vider ».",

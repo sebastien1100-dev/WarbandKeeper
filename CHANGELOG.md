@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.13.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fiche du perso, onglet Talents : chaque talent affiche son rang (« 2/5 », « 0/3 ») dans une petite pastille lisible au coin de l'icône, de la couleur du talent (vert pris, doré au maximum, gris pas pris).
+
 ## v1.13.0 — 17/11/2026
 
 _Un /reload suffit._
