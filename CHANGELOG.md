@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.14.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Barre d'expérience au style du micro menu : cadre sombre arrondi au liseré fin, textes dans le cadre (niveau à ta couleur, repos en bleu, quêtes à rendre en jaune), piste arrondie avec un léger reflet, et un trait jaune lumineux là où tu arriverais en rendant tes quêtes. Largeur, épaisseur et version compacte inchangées.
+
 ## v1.14.0 — 17/11/2026
 
 _Un /reload suffit._

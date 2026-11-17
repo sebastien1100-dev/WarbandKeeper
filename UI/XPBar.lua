@@ -39,34 +39,42 @@ local function data(sample)
 end
 
 local function build()
+    -- style du micro menu : cadre sombre arrondi au liseré fin, textes dans le cadre, piste arrondie
     local f = CreateFrame("Frame", "WarbandKeeperXPBar", UIParent)
-    f:SetSize(W, 30)
+    f:SetSize(W, 40)
     f:SetFrameStrata("LOW")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    f.track = f:CreateTexture(nil, "BACKGROUND")
-    f.track:SetTexture("Interface\\Buttons\\WHITE8X8")
-    f.track:SetPoint("BOTTOMLEFT", 0, 0); f.track:SetPoint("BOTTOMRIGHT", 0, 0)
-    f.track:SetHeight(BH)
+    UI:Panel(f, 10, { 0.06, 0.063, 0.075, 0.92 }, C.border)
+    f.trackF = CreateFrame("Frame", nil, f)
+    UI:Panel(f.trackF, 5, { 0.09, 0.094, 0.106, 1 }, C.border)
     local function seg(layer, sub)
-        local t = f:CreateTexture(nil, layer, nil, sub)
+        local t = f.trackF:CreateTexture(nil, layer, nil, sub)
         t:SetTexture("Interface\\Buttons\\WHITE8X8")
-        t:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
+        t:SetPoint("TOPLEFT", f.trackF, "TOPLEFT", 1, -1)
+        t:SetPoint("BOTTOMLEFT", f.trackF, "BOTTOMLEFT", 1, 1)
         return t
     end
-    f.rest = seg("ARTWORK", 0)
-    f.pend = seg("ARTWORK", 1)
+    f.pend = seg("ARTWORK", 0)
+    f.rest = seg("ARTWORK", 1)
     f.cur = seg("ARTWORK", 2)
-    f.mark = f:CreateTexture(nil, "OVERLAY")
+    -- reflet clair en haut de l'XP (relief)
+    f.shine = f.trackF:CreateTexture(nil, "ARTWORK", nil, 3)
+    f.shine:SetTexture("Interface\\Buttons\\WHITE8X8")
+    f.shine:SetPoint("TOPLEFT", f.cur, "TOPLEFT"); f.shine:SetPoint("TOPRIGHT", f.cur, "TOPRIGHT")
+    f.shine:SetHeight(1)
+    f.mark = f.trackF:CreateTexture(nil, "OVERLAY")
     f.mark:SetTexture("Interface\\Buttons\\WHITE8X8")
+    f.glow = f.trackF:CreateTexture(nil, "OVERLAY", nil, -1)
+    f.glow:SetTexture("Interface\\Buttons\\WHITE8X8")
     f.ticks = {}
     for i = 1, 9 do
-        local t = f:CreateTexture(nil, "OVERLAY", nil, -1)
+        local t = f.trackF:CreateTexture(nil, "OVERLAY", nil, -2)
         t:SetTexture("Interface\\Buttons\\WHITE8X8")
         f.ticks[i] = t
     end
     f.left = UI:Text(f, 11)
-    f.right = UI:Text(f, 10, C.muted)
+    f.right = UI:Text(f, 11, C.muted)
     f.right:SetJustifyH("RIGHT")
     f:Hide()
 
@@ -75,43 +83,48 @@ local function build()
         local cfg = M:Config()
         -- largeur et épaisseur réglables (QoL > Expérience)
         local bh = math.max(4, math.min(24, cfg.thick or BH))
+        local compact = cfg.compact
         self:SetWidth(math.max(200, cfg.width or W))
-        self.track:SetHeight(bh)
-        for _, t in ipairs({ self.rest, self.pend, self.cur }) do t:SetHeight(bh - 2) end
-        self.mark:SetSize(2, bh + 6)
-        for _, t in ipairs(self.ticks) do t:SetSize(1, bh - 2) end
-        self.left:ClearAllPoints(); self.left:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 2, bh + 4)
-        self.right:ClearAllPoints(); self.right:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, bh + 5)
-        local w = self:GetWidth() - 2
+        self:SetHeight(compact and (bh + 14) or (bh + 32))
+        self.trackF:ClearAllPoints()
+        self.trackF:SetPoint("BOTTOMLEFT", 10, 7); self.trackF:SetPoint("BOTTOMRIGHT", -10, 7)
+        self.trackF:SetHeight(bh)
+        self.left:ClearAllPoints(); self.left:SetPoint("TOPLEFT", 10, -7)
+        self.right:ClearAllPoints(); self.right:SetPoint("TOPRIGHT", -10, -7)
+        self.left:SetShown(not compact); self.right:SetShown(not compact)
+        local w = self:GetWidth() - 22
         local r1, g1, b1 = UI:Accent()
-        self.track:SetVertexColor(0.04, 0.03, 0.02, 0.85)
         self.cur:SetVertexColor(r1, g1, b1, 1)
+        self.shine:SetVertexColor(1, 1, 1, 0.25)
         self.rest:SetVertexColor(BLUE[1], BLUE[2], BLUE[3], 0.55)
-        self.pend:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.9)
+        self.pend:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.75)
         self.mark:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 1)
+        self.glow:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.35)
         local function wid(v) return math.max(0.01, math.min(w, w * v / x.max)) end
         self.cur:SetWidth(wid(x.cur))
         self.rest:SetWidth(wid(x.cur + x.rested))
         self.rest:SetShown(x.rested > 0)
         self.pend:SetWidth(wid(x.cur + pend))
         self.pend:SetShown(pend > 0)
-        self.mark:ClearAllPoints()
-        self.mark:SetPoint("CENTER", self.track, "LEFT", 1 + wid(x.cur + pend), 0)
-        self.mark:SetShown(pend > 0)
+        local mx = 1 + wid(x.cur + pend)
+        self.mark:ClearAllPoints(); self.mark:SetSize(2, bh + 6)
+        self.mark:SetPoint("CENTER", self.trackF, "LEFT", mx, 0)
+        self.glow:ClearAllPoints(); self.glow:SetSize(6, bh + 6)
+        self.glow:SetPoint("CENTER", self.trackF, "LEFT", mx, 0)
+        self.mark:SetShown(pend > 0); self.glow:SetShown(pend > 0)
         for i, t in ipairs(self.ticks) do
             t:ClearAllPoints()
-            t:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 1 + w * i / 10, 1)
+            t:SetSize(1, math.max(1, bh - 2))
+            t:SetPoint("LEFT", self.trackF, "LEFT", 1 + w * i / 10, 0)
             t:SetColorTexture(0, 0, 0, 0.35)
         end
-        local compact = cfg.compact
-        self.left:SetShown(not compact); self.right:SetShown(not compact)
-        self:SetHeight(compact and bh or (bh + 22))
-        self.left:SetText(string.format(T("Niv. %d  ·  %s / %s  (%d %%)"), x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
+        local hex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
+        self.left:SetText(string.format(hex .. T("Niv. %d") .. "|r  |cff9ca3ab·|r  %s / %s  |cff9ca3ab(%d %%)|r", x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
         local parts = {}
-        if x.rested > 0 then table.insert(parts, string.format("|cff61a0f2" .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end
-        if pend > 0 then table.insert(parts, string.format("|cfff5cc5c" .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq)) end
+        if x.rested > 0 then table.insert(parts, string.format("|cff7fb6f2" .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end
+        if pend > 0 then table.insert(parts, string.format("|cfff5d76e" .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq)) end
         if x.cur + pend >= x.max then table.insert(parts, "|cff9ed17a" .. T("niveau en rendant tout") .. "|r") end
-        self.right:SetText(table.concat(parts, "  ·  "))
+        self.right:SetText(table.concat(parts, "  |cff9ca3ab·|r  "))
     end
 
     f:SetScript("OnEnter", function(s)

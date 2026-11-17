@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.14.1", date = "17/11/2026",
+        changed = {
+            "Barre d'expérience au style du micro menu : cadre sombre arrondi au liseré fin, textes dans le cadre (niveau à ta couleur, repos en bleu, quêtes à rendre en jaune), piste arrondie avec un léger reflet, et un trait jaune lumineux là où tu arriverais en rendant tes quêtes. Largeur, épaisseur et version compacte inchangées.",
+        },
+    },
+    {
         version = "1.14.0", date = "17/11/2026",
         changed = {
             "Inventaire : les objets sont rangés comme dans des sacs du jeu, un sac par catégorie (Munitions, Métaux et pierres, Viande et poisson, Étoffes et cuir, Herbes, Enchantement, Autres composants, Consommables, Équipement, Recettes, Objets de quête, Divers), en deux ou trois colonnes selon la largeur. Chaque objet est une case avec son icône, son nombre et un liseré de sa qualité ; chaque sac donne son nombre d'objets et sa valeur. Survol : où se trouve l'objet (perso ou sacs, banque, courrier) et sa valeur ; Maj+clic : lien. Les filtres (perso, Tout / Sacs / Banque / Courrier) et la recherche restent.",
