@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.3.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Alerte de rare : plus de bouton « Cibler », seulement la flèche de guidage (plus grande, à droite du bandeau ; elle pose aussi la tête de mort). Sans bouton protégé, le bandeau s'affiche et se ferme normalement en combat.
+
 ## v1.3.0 — 17/11/2026
 
 _Un /reload suffit._

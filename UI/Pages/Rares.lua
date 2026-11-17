@@ -194,7 +194,7 @@ UI:RegisterPage({
         local styleSeg = UI:Segmented(acard, { { "banner", "Bandeau" }, { "compact", "Compact" } },
             function(v) rc.alertStyle = v; if preview then preview:Fill(prevState, v) end end, 26)
         styleSeg:Select(rc.alertStyle or "banner")
-        UI:SettingRow(acard, -178, "Style", "Bandeau : portrait, butin, Cibler et Guider. Compact : une ligne, clic pour guider.", styleSeg, 200)
+        UI:SettingRow(acard, -178, "Style", "Bandeau : portrait, butin et flèche de guidage. Compact : une ligne, clic pour guider.", styleSeg, 200)
         -- aperçu en direct, avec trois états à essayer
         local box = CreateFrame("Frame", nil, acard)
         box:SetPoint("TOPLEFT", 16, -224)

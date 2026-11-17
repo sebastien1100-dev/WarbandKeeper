@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.1", date = "17/11/2026",
+        changed = {
+            "Alerte de rare : plus de bouton « Cibler », seulement la flèche de guidage (plus grande, à droite du bandeau ; elle pose aussi la tête de mort). Sans bouton protégé, le bandeau s'affiche et se ferme normalement en combat.",
+        },
+    },
+    {
         version = "1.3.0", date = "17/11/2026",
         added = {
             "Rares : un rare mort apparaît sur la carte pendant 3 h (médaillon rouge, tête de mort, « mort · 12 min » dessous), qu'il ait été tué par toi ou que tu aies vu son cadavre (cible morte tuée par un autre). L'infobulle dit « Tué par toi » ou « Vu mort », et la liste à côté de la carte l'indique aussi. Au-delà, il redevient comme avant (pâle s'il a déjà été tué par ce perso).",
