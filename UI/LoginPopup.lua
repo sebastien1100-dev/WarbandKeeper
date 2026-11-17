@@ -147,6 +147,7 @@ local function build()
         end
         self:SetHeight(h)
     end
+    f:Hide() -- créé à la connexion (mode édition) : caché jusqu'aux rappels
     return f
 end
 

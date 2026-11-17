@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.4.2", date = "17/11/2026",
+        fixed = {
+            "Bandeau de connexion : depuis la 1.4.0, un bandeau vide (logo et croix seulement) restait affiché en haut de l'écran. Il est de nouveau caché jusqu'aux rappels.",
+        },
+    },
+    {
         version = "1.4.1", date = "17/11/2026",
         fixed = {
             "Bandeau de connexion : les icônes sans urgence (enveloppe…) étaient grises et peu visibles ; elles sont à la couleur de l'apparence, un peu plus grandes.",
