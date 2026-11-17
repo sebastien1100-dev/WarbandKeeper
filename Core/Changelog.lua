@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.10.3", date = "17/11/2026",
+        changed = {
+            "QoL > Expérience : la carte « Quêtes terminées à rendre » est retirée. L'XP en attente reste sur la barre (partie jaune et infobulle), et l'alerte « rends tes quêtes, elles te font passer un niveau » reste active.",
+        },
+    },
+    {
         version = "1.10.2", date = "17/11/2026",
         added = {
             "Barre d'expérience : largeur (jusqu'à 1 600 px) et épaisseur réglables dans QoL > Expérience.",

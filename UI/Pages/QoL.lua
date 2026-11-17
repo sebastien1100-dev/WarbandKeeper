@@ -1601,39 +1601,6 @@ UI:RegisterPage({
             xplace:SetScript("OnClick", function() UI:EnterEditMode() end)
             UI:SettingRow(xb, -316, "Position", "En mode édition, avec les autres éléments à l'écran.", xplace, 150)
 
-            -- quêtes à rendre (hauteur selon le nombre de quêtes)
-            local QROWS = 12
-            local function qHeight(n) return 40 + 24 + n * 26 + (n > 0 and 50 or 6) end
-            local xq = card("Quêtes terminées à rendre", qHeight(0), "triées par XP")
-            local xqHead = dynText(xq, 11, C.muted, function()
-                local list = X:Pending()
-                if #list == 0 then return T("Aucune quête terminée dans ton journal.") end
-                local x = X:Me()
-                local p = X:PendingXP()
-                local after = (x.cur + p) / x.max * 100
-                return string.format(T("%d quête(s) · +%s XP · en rendant tout : %s"), #list, fmt(p),
-                    after >= 100 and ("|cff9ed17a" .. T("niveau suivant") .. "|r") or string.format("%d %%", math.floor(after)))
-            end)
-            xqHead:SetPoint("TOPLEFT", 16, -42)
-            local qrows = {}
-            for i = 1, QROWS do
-                local r = CreateFrame("Frame", nil, xq)
-                r:SetHeight(24)
-                r:SetPoint("TOPLEFT", 16, -42 - 24 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -16, -42 - 24 - (i - 1) * 26)
-                r.title = UI:Text(r, 11)
-                r.title:SetPoint("LEFT"); r.title:SetPoint("RIGHT", -190, 0)
-                r.title:SetJustifyH("LEFT")
-                r.xp = UI:Text(r, 11, C.gold)
-                r.xp:SetPoint("RIGHT", -96, 0)
-                r.go = UI:Button(r, "Guider", 84, 22, "secondary", "guide")
-                r.go:SetPoint("RIGHT")
-                r.go:SetScript("OnClick", function() if r.e then X:GuideTo(r.e) end end)
-                qrows[i] = r
-            end
-            local nearest = UI:Button(xq, "Guider vers la plus proche", nil, 28, "primary", "guide")
-            nearest:SetPoint("BOTTOMLEFT", 16, 12)
-            nearest:SetScript("OnClick", function() if not X:GuideNearest() then WK:Print(T("Pas de point de rendu connu pour tes quêtes terminées.")) end end)
-
             -- repos
             local xr = card("Repos", 40 + 3 * 20 + 30, "jusqu'à 150 % d'un niveau")
             local xrText = dynText(xr, 12, C.text, function()
@@ -1736,8 +1703,8 @@ UI:RegisterPage({
                 return string.format(T("il y a %d j"), math.floor(sec / 86400))
             end
 
-            -- les cartes suivent la hauteur des quêtes et du tableau
-            for _, pair in ipairs({ { xr, xq }, { xs, xr }, { xa, xs } }) do
+            -- les cartes suivent la hauteur du tableau
+            for _, pair in ipairs({ { xs, xr }, { xa, xs } }) do
                 pair[1]:ClearAllPoints()
                 pair[1]:SetPoint("TOPLEFT", pair[2], "BOTTOMLEFT", 0, -GAP)
                 pair[1]:SetPoint("TOPRIGHT", pair[2], "BOTTOMRIGHT", 0, -GAP)
@@ -1746,23 +1713,6 @@ UI:RegisterPage({
             xsec.extraY = function() return extra end
 
             table.insert(self.dyn, function()
-                -- quêtes
-                local list = X:Pending()
-                local nq = math.min(#list, QROWS)
-                for i, r in ipairs(qrows) do
-                    local e = list[i]
-                    r.e = e
-                    if e then
-                        r.title:SetText(e.title .. (e.giver and ("  |cff9ca3ab· " .. T("donneur") .. "|r") or ""))
-                        r.xp:SetText(e.xp > 0 and ("+" .. fmt(e.xp)) or "")
-                        r.go:SetShown(e.map ~= nil)
-                        r:Show()
-                    else
-                        r:Hide()
-                    end
-                end
-                nearest:SetShown(nq > 0)
-                xq:SetHeight(qHeight(nq))
                 -- repos
                 local me = X:Me()
                 rset((me.rested / me.max) / X.REST_MAX, 0.38, 0.62, 0.95)
@@ -1808,7 +1758,7 @@ UI:RegisterPage({
                 end
                 xa:SetHeight(aHeight(na))
                 -- hauteur de la section
-                local e2 = (qHeight(nq) - qHeight(0)) + (aHeight(na) - aHeight(0))
+                local e2 = aHeight(na) - aHeight(0)
                 if e2 ~= extra then
                     extra = e2
                     if xsec.tailY then xsec.scroll:SetContentHeight(xsec.tailY + extra) end
