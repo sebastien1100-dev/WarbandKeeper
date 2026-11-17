@@ -60,8 +60,9 @@ function UI:DungeonLootRow(parent)
         end
     end)
     r.star:SetScript("OnClick", function() D:ToggleWish(r.id, r.dkey, r.charKey); r:Paint() end)
-    function r:Set(id, dkey, c, charKey)
-        self.id, self.dkey, self.c, self.charKey = id, dkey, c, charKey
+    -- hideMine : liste déjà filtrée « pour ce perso » : l'étiquette « pour toi » n'apprendrait rien
+    function r:Set(id, dkey, c, charKey, hideMine)
+        self.id, self.dkey, self.c, self.charKey, self.hideMine = id, dkey, c, charKey, hideMine
         self:Paint()
     end
     function r:Paint()
@@ -72,7 +73,7 @@ function UI:DungeonLootRow(parent)
         local usable = self.c and D:Usable(self.id, self.c)
         local info = D:ItemInfo(self.id)
         if D:Owned(self.id) then self.tag:Set(T("sur le compte"), C.positive); self.tag:Show()
-        elseif usable then self.tag:Set(T("pour toi")); self.tag:Show()
+        elseif usable and not self.hideMine then self.tag:Set(T("pour toi")); self.tag:Show()
         elseif info and info.undiscovered then self.tag:Set(T("non découvert"), C.dim); self.tag:Show()
         elseif info and info.drop then self.tag:Set(string.format("%s %%", tostring(info.drop)), C.muted); self.tag:Show()
         else self.tag:Hide() end
@@ -180,7 +181,7 @@ local function build()
                     for _, id in ipairs(loot) do
                         local it = self.items:Get()
                         it:ClearAllPoints(); it:SetPoint("TOPLEFT", 4, -y); it:SetWidth(LW - 4)
-                        it:Set(id, d.key, c, me)
+                        it:Set(id, d.key, c, me, cfg.filter == "me")
                         y = y + ITEM_H
                     end
                     if #loot == 0 then y = y + 2 end

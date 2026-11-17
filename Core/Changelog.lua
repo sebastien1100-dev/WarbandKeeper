@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.92.1", date = "17/11/2026",
+        changed = {
+            "Donjons : le détail d'un donjon a deux onglets, « Butin » (avec le nombre d'objets) et « Quêtes » (avec le nombre de quêtes à faire, en orange tant qu'il en reste). L'onglet Quêtes a son filtre « À faire / Toutes » et un bouton de guidage vers le donneur sur chaque quête pas encore faite.",
+            "Donjons : en « Pour ce perso », l'étiquette « pour toi » n'apparaît plus sur chaque objet (tout y est pour toi) ; elle reste en « Tout » pour repérer ce que le perso peut porter. Pareil dans le panneau en jeu.",
+        },
+    },
+    {
         version = "0.92.0", date = "17/11/2026", restart = true,
         added = {
             "Butin observé : dans l'infobulle d'un objet, les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs de WoW Forever (Everloot : 688 objets pour l'instant, et ça grossit chaque jour). Réglable dans Options > Infobulles.",

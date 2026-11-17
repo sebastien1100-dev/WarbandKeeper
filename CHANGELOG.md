@@ -24,6 +24,14 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.92.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : le détail d'un donjon a deux onglets, « Butin » (avec le nombre d'objets) et « Quêtes » (avec le nombre de quêtes à faire, en orange tant qu'il en reste). L'onglet Quêtes a son filtre « À faire / Toutes » et un bouton de guidage vers le donneur sur chaque quête pas encore faite.
+- Donjons : en « Pour ce perso », l'étiquette « pour toi » n'apparaît plus sur chaque objet (tout y est pour toi) ; elle reste en « Tout » pour repérer ce que le perso peut porter. Pareil dans le panneau en jeu.
+
 ## v0.92.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
