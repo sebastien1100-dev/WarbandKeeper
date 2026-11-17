@@ -25,6 +25,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.5.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Micro menu, survol de « Amis » : les amis en ligne, une ligne chacun (niveau, point de faction, nom en couleur de classe, zone ; « absent » ou « occupé »), puis tes amis Battle.net avec le prénom du compte. 15 lignes au plus.
+- Micro menu, survol de « Guilde » : le nom de la guilde et le nombre de connectés, les membres en ligne rangés par rang (niveau, nom en couleur de classe, zone), et le message du jour.
+
 ## v1.5.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

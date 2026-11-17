@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.5.1", date = "17/11/2026",
+        added = {
+            "Micro menu, survol de « Amis » : les amis en ligne, une ligne chacun (niveau, point de faction, nom en couleur de classe, zone ; « absent » ou « occupé »), puis tes amis Battle.net avec le prénom du compte. 15 lignes au plus.",
+            "Micro menu, survol de « Guilde » : le nom de la guilde et le nombre de connectés, les membres en ligne rangés par rang (niveau, nom en couleur de classe, zone), et le message du jour.",
+        },
+    },
+    {
         version = "1.5.0", date = "17/11/2026", restart = true,
         added = {
             "Objets verrouillés : Alt + clic sur un objet dans les sacs le verrouille (ou le déverrouille) ; un petit cadenas apparaît sur sa case (couleur de l'apparence) et son infobulle le dit. Un objet verrouillé n'est jamais vendu.",

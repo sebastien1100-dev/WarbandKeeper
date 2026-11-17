@@ -20,6 +20,140 @@ local bar
 -- micro : boutons du micro menu du jeu qui ouvrent la même fenêtre. Le raccourci clique alors ce
 -- bouton par un chemin protégé : ouvrir une fenêtre du jeu depuis le code d'un addon la « contamine »,
 -- et le jeu bloque ensuite ses éléments protégés en combat (ADDON_ACTION_BLOCKED).
+---------------------------------------------------------------------------
+-- Infobulles Amis (liste simple) et Guilde (par rang)
+---------------------------------------------------------------------------
+local classByName
+local function classColor(token, localized)
+    if not token and localized then
+        if not classByName then
+            classByName = {}
+            for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE or {}) do classByName[v] = k end
+            for k, v in pairs(LOCALIZED_CLASS_NAMES_FEMALE or {}) do classByName[v] = k end
+        end
+        token = classByName[localized]
+    end
+    local c = token and RAID_CLASS_COLORS and RAID_CLASS_COLORS[token]
+    if c then return string.format("|cff%02x%02x%02x", c.r * 255, c.g * 255, c.b * 255) end
+    return "|cffd0d0d0"
+end
+-- point de faction (bleu Alliance, rouge Horde, gris inconnu) : texture en ligne
+local function dot(faction)
+    local r, g, b = 110, 110, 110
+    if faction == "Alliance" then r, g, b = 63, 143, 240 elseif faction == "Horde" then r, g, b = 224, 80, 80 end
+    return string.format("|T%scircle:8:8:0:0:64:64:0:64:0:64:%d:%d:%d|t", UI.MEDIA, r, g, b)
+end
+local function tag(afk, dnd)
+    if dnd then return "  |cffe26060" .. T("occupé") .. "|r" end
+    if afk then return "  |cfff5d76e" .. T("absent") .. "|r" end
+    return ""
+end
+local function short(n)
+    if Ambiguate then return Ambiguate(n, "short") end
+    return (n:gsub("%-.*$", ""))
+end
+local MAX_LINES = 15
+local function friendsTooltip(tt)
+    local myFac = UnitFactionGroup and UnitFactionGroup("player")
+    local lines, bn = {}, {}
+    -- amis du jeu
+    local n = 0
+    if C_FriendList and C_FriendList.GetNumFriends then n = C_FriendList.GetNumFriends() or 0 elseif GetNumFriends then n = GetNumFriends() or 0 end
+    for i = 1, n do
+        local name, level, class, area, connected, afk, dnd
+        if C_FriendList and C_FriendList.GetFriendInfoByIndex then
+            local f = C_FriendList.GetFriendInfoByIndex(i)
+            if f then name, level, class, area, connected, afk, dnd = f.name, f.level, f.className, f.area, f.connected, f.afk, f.dnd end
+        elseif GetFriendInfo then
+            local st
+            name, level, class, area, connected, st = GetFriendInfo(i)
+            afk, dnd = st == CHAT_FLAG_AFK, st == CHAT_FLAG_DND
+        end
+        if connected and name then
+            table.insert(lines, { level = level, left = dot(myFac) .. " " .. classColor(nil, class) .. short(name) .. "|r" .. tag(afk, dnd), right = area or "" })
+        end
+    end
+    -- Battle.net
+    if BNGetNumFriends and C_BattleNet and C_BattleNet.GetFriendAccountInfo then
+        local total = BNGetNumFriends() or 0
+        for i = 1, total do
+            local a = C_BattleNet.GetFriendAccountInfo(i)
+            local g = a and a.gameAccountInfo
+            if g and g.isOnline then
+                local acct = a.accountName or ""
+                if g.clientProgram == "WoW" and g.characterName then
+                    table.insert(bn, { level = g.characterLevel, left = dot(g.factionName) .. " " .. classColor(nil, g.className) .. g.characterName .. "|r  |cff5cc8ff" .. acct .. "|r" .. tag(a.isAFK, a.isDND),
+                                       right = g.areaName or g.richPresence or "" })
+                else
+                    table.insert(bn, { left = dot(nil) .. " |cffd0d0d0" .. acct .. "|r" .. tag(a.isAFK, a.isDND), right = T("Battle.net") })
+                end
+            end
+        end
+    end
+    local total = #lines + #bn
+    tt:SetText(T("Amis"), 1, 1, 1)
+    tt:AddLine(string.format(total > 1 and T("%d en ligne") or T("%d en ligne"), total), 0.49, 0.85, 0.34)
+    local shown = 0
+    local function put(e)
+        if shown >= MAX_LINES then return end
+        shown = shown + 1
+        tt:AddDoubleLine((e.level and e.level > 0 and ("|cffc9ccd2" .. e.level .. "|r  ") or "      ") .. e.left, e.right, 1, 1, 1, 0.55, 0.57, 0.6)
+    end
+    for _, e in ipairs(lines) do put(e) end
+    if #bn > 0 and shown < MAX_LINES then
+        tt:AddLine(" ")
+        tt:AddLine("BATTLE.NET", 0.55, 0.57, 0.6)
+        for _, e in ipairs(bn) do put(e) end
+    end
+    if total > shown then tt:AddLine(string.format(T("+ %d autre(s)"), total - shown), 0.55, 0.57, 0.6) end
+    if total == 0 then tt:AddLine(T("Personne en ligne."), 0.55, 0.57, 0.6) end
+    tt:AddLine(" ")
+    tt:AddLine(T("Clic : liste d'amis"), 0.42, 0.44, 0.47)
+end
+local function guildTooltip(tt)
+    if not (IsInGuild and IsInGuild() and GetNumGuildMembers and GetGuildRosterInfo) then
+        tt:SetText(T("Guilde"), 1, 1, 1)
+        tt:AddLine(T("Pas de guilde"), 0.55, 0.57, 0.6)
+        return
+    end
+    local gname = GetGuildInfo and GetGuildInfo("player") or T("Guilde")
+    local total, online = GetNumGuildMembers()
+    tt:SetText(gname, 1, 1, 1)
+    tt:AddLine(string.format(T("%d / %d en ligne"), online or 0, total or 0), 0.49, 0.85, 0.34)
+    local ranks, order = {}, {}
+    for i = 1, total or 0 do
+        local name, rankName, rankIndex, level, class, zone, _, _, isOnline, status, classFile = GetGuildRosterInfo(i)
+        if isOnline and name then
+            local r = ranks[rankIndex or 99]
+            if not r then r = { name = rankName or "", list = {} }; ranks[rankIndex or 99] = r; table.insert(order, rankIndex or 99) end
+            local afk = status == 1 or status == "<AFK>" or status == CHAT_FLAG_AFK
+            local dnd = status == 2 or status == "<DND>" or status == CHAT_FLAG_DND
+            table.insert(r.list, { level = level, left = classColor(classFile, class) .. short(name) .. "|r" .. tag(afk, dnd), right = zone or "" })
+        end
+    end
+    table.sort(order)
+    local shown, MAXG = 0, 20
+    for _, idx in ipairs(order) do
+        local r = ranks[idx]
+        if shown >= MAXG then break end
+        tt:AddDoubleLine(UI:Upper(r.name), tostring(#r.list), 0.55, 0.57, 0.6, 0.55, 0.57, 0.6)
+        table.sort(r.list, function(a, b) return (a.level or 0) > (b.level or 0) end)
+        for _, e in ipairs(r.list) do
+            if shown >= MAXG then break end
+            shown = shown + 1
+            tt:AddDoubleLine("|cffc9ccd2" .. (e.level or "") .. "|r  " .. e.left, e.right, 1, 1, 1, 0.55, 0.57, 0.6)
+        end
+    end
+    if (online or 0) > shown then tt:AddLine(string.format(T("+ %d autre(s)"), online - shown), 0.55, 0.57, 0.6) end
+    local motd = GetGuildRosterMOTD and GetGuildRosterMOTD()
+    if motd and motd ~= "" then
+        tt:AddLine(" ")
+        tt:AddLine("« " .. motd .. " »", 0.62, 0.64, 0.68, true)
+    end
+    tt:AddLine(" ")
+    tt:AddLine(T("Clic : fenêtre de guilde"), 0.42, 0.44, 0.47)
+end
+
 local SHORTCUTS = {
     { key = "wk", label = "Warband Keeper", icon = function() return UI.MEDIA .. "logo" end, tint = true,
       run = function() UI:ToggleWindow() end },
@@ -58,7 +192,7 @@ local SHORTCUTS = {
           if BNGetNumFriends then local _, on = BNGetNumFriends(); n = n + (tonumber(on) or 0) end
           return n
       end,
-      tip = function() return T("Amis en ligne (jeu et Battle.net)") end },
+      tooltip = friendsTooltip },
     { key = "guild", label = "Guilde", micro = { "GuildMicroButton", "SocialsMicroButton" },
       icon = function() return UI.MEDIA .. "guild" end, tint = true,
       run = function() if ToggleGuildFrame then ToggleGuildFrame() elseif ToggleFriendsFrame then ToggleFriendsFrame(3) end end,
@@ -67,7 +201,7 @@ local SHORTCUTS = {
           local _, online = GetNumGuildMembers()
           return tonumber(online)
       end,
-      tip = function() return IsInGuild and IsInGuild() and T("Membres de la guilde en ligne") or T("Pas de guilde") end },
+      tooltip = guildTooltip },
     { key = "collect", label = "Collections du compte", micro = { "CollectionsMicroButton" },
       icon = function() return UI.MEDIA .. "collect" end, tint = true,
       run = function() if ToggleCollectionsJournal then ToggleCollectionsJournal() end end },
@@ -265,6 +399,12 @@ local function makeIcon(def)
     b.numBg:Hide(); b.num:Hide()
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        if def.tooltip then
+            local ok = pcall(def.tooltip, GameTooltip)
+            if not ok then GameTooltip:SetText(T(def.label), 1, 1, 1) end
+            GameTooltip:Show()
+            return
+        end
         GameTooltip:SetText(T(def.label), 1, 1, 1)
         local extra = def.tip and def.tip()
         if extra then GameTooltip:AddLine(extra, 0.8, 0.8, 0.8) end
