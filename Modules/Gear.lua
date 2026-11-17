@@ -175,5 +175,38 @@ WK:On("UNIT_INVENTORY_CHANGED", function(unit) if unit == "player" then later({ 
 WK:On("UNIT_STATS", function(unit) if unit == "player" then later({ stats = true }) end end)
 WK:On("UNIT_RESISTANCES", function(unit) if unit == "player" then later({ stats = true }) end end)
 WK:On("CHARACTER_POINTS_CHANGED", function() later({ talents = true }) end)
+-- les talents ne sont pas toujours prêts à l'entrée dans le monde : relevés aussi quand le jeu les annonce
+WK:On("PLAYER_TALENT_UPDATE", function() later({ talents = true }) end)
+WK:On("SPELLS_CHANGED", function()
+    local c = WK.DB:Me()
+    if c and not (c.talents and c.talents[1] and c.talents[1].list) then later({ talents = true }) end
+end)
+
+-- Diagnostic (/wk talents) : ce que le jeu répond aux fonctions de talents
+function M:TalentDiag()
+    local out = {}
+    local function show(v) v = readable(v); return type(v) == "string" and ('"' .. v .. '"') or tostring(v) end
+    local function add(s) table.insert(out, s) end
+    add("GetNumTalentTabs : " .. tostring(GetNumTalentTabs ~= nil) .. " = " .. show(call(GetNumTalentTabs)))
+    if GetTalentTabInfo then
+        local r = { pcall(GetTalentTabInfo, 1) }
+        local parts = {}
+        for i = 1, math.min(#r, 9) do parts[i] = show(r[i]) end
+        add("GetTalentTabInfo(1) : " .. table.concat(parts, ", "))
+    else add("GetTalentTabInfo : absent") end
+    add("GetNumTalents(1) : " .. tostring(GetNumTalents ~= nil) .. " = " .. show(call(GetNumTalents, 1)))
+    if GetTalentInfo then
+        local r = { pcall(GetTalentInfo, 1, 1) }
+        local parts = {}
+        for i = 1, math.min(#r, 8) do parts[i] = show(r[i]) end
+        add("GetTalentInfo(1, 1) : " .. table.concat(parts, ", "))
+    else add("GetTalentInfo : absent") end
+    add("UnitCharacterPoints : " .. show(call(UnitCharacterPoints, "player")) .. " · GetUnspentTalentPoints : " .. show(call(GetUnspentTalentPoints)))
+    add("GetNumSpecializations : " .. show(call(GetNumSpecializations)) .. " · GetSpecialization : " .. show(call(GetSpecialization)))
+    add("C_ClassTalents : " .. tostring(C_ClassTalents ~= nil) .. " · C_Traits : " .. tostring(C_Traits ~= nil) .. " · C_SpecializationInfo : " .. tostring(C_SpecializationInfo ~= nil))
+    local c = WK.DB:Me()
+    add("relevé : " .. (c and c.talents and (#c.talents .. " arbre(s), détail : " .. tostring(c.talents[1] and c.talents[1].list and #c.talents[1].list)) or "aucun"))
+    return out
+end
 WK:On("UPDATE_FACTION", function() later({ reps = true }) end)
 WK:On("PLAYER_LEVEL_UP", function() later() end)

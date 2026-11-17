@@ -629,6 +629,12 @@ end
 -- Onglet Talents
 local CELL, CGAP = 34, 10
 local function refreshTalents(f, c)
+    -- perso connecté sans détail : on relève tout de suite (talents pas prêts à la connexion)
+    if f.key == WK:CharKey() and not (c.talents and c.talents[1] and c.talents[1].list) and not f.talentTried then
+        f.talentTried = true
+        WK.modules.Gear:Scan({ talents = true })
+        c = WK.DB.global.characters[f.key] or c
+    end
     local W = math.max(600, (f.tsc:GetWidth() or 840) - 12)
     f.tsc.child:SetWidth(W)
     local trees = c.talents or {}
@@ -639,7 +645,7 @@ local function refreshTalents(f, c)
     f.tsum:SetText(#split > 0 and string.format(T("Répartition |cff%02x%02x%02x%s|r  ·  %s"), r * 255, g * 255, b * 255, table.concat(split, " / "),
         (c.talentFree and c.talentFree > 0) and string.format(T("%d point(s) à dépenser"), c.talentFree) or T("aucun point à dépenser")) or "")
     f.tempty:SetShown(not any)
-    f.tempty:SetText(T("Talents pas encore relevés : connecte ce perso une fois avec cette version."))
+    f.tempty:SetText(f.key == WK:CharKey() and T("Le jeu n'a pas encore donné tes talents. Tape /wk talents et envoie le résultat si ça dure.") or T("Talents pas encore relevés : connecte ce perso une fois avec cette version."))
     local tw = math.floor((W - 2 * 12) / 3)
     local maxTier = 1
     for _, t in ipairs(trees) do for _, d in ipairs(t.list or {}) do maxTier = math.max(maxTier, d[3]) end end

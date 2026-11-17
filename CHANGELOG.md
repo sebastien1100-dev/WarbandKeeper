@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.12.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk talents : relève les talents et dit ce que le jeu répond, pour trouver la cause s'ils ne s'affichent toujours pas.
+
+### Corrections
+- Fiche du perso, onglet Talents : les talents du perso connecté restaient « pas encore relevés », le jeu ne les donnant pas encore à l'entrée dans le monde. Ils sont maintenant relevés aussi quand le jeu les annonce, et à l'ouverture de l'onglet.
+
 ## v1.12.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

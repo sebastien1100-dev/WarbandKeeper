@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.12.1", date = "17/11/2026",
+        fixed = {
+            "Fiche du perso, onglet Talents : les talents du perso connecté restaient « pas encore relevés », le jeu ne les donnant pas encore à l'entrée dans le monde. Ils sont maintenant relevés aussi quand le jeu les annonce, et à l'ouverture de l'onglet.",
+        },
+        added = {
+            "/wk talents : relève les talents et dit ce que le jeu répond, pour trouver la cause s'ils ne s'affichent toujours pas.",
+        },
+    },
+    {
         version = "1.12.0", date = "17/11/2026", restart = true,
         added = {
             "Fiche du perso : trois onglets sous le nom, « Fiche » (la page d'avant), « Talents » et « BiS ».",

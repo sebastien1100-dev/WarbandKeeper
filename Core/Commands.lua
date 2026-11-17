@@ -66,6 +66,10 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "talents" then
+        WK.modules.Gear:Scan({ talents = true })
+        WK:Print(WK.T("Talents : diagnostic"))
+        for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
     elseif cmd == "carte" or cmd == "map" then
         -- diagnostic de la carte du monde : rares de la carte affichée, erreurs des calques
         local wm = WorldMapFrame
