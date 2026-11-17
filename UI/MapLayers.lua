@@ -96,7 +96,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     local cfg = L:Config()
     local scale = w / 1000
     local size = math.max(12, (cfg.size or 18) * scale * 1.2)
-    local lvl = (cv:GetFrameLevel() or 1) + 18
+    local lvl = (cv:GetFrameLevel() or 1) + 600 -- bien au-dessus des calques de la carte du jeu (WoW Forever en a vers +30)
     local n = 0
     local places = L:Places(mapID, "map")
     if UI.mapStats then UI.mapStats.places = #places end

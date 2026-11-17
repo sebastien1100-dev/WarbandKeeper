@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.3.3 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte du monde : les pastilles de Warband Keeper (boîtes aux lettres, maîtres de vol, rares, filons, notes) étaient dessinées puis cachées sous des éléments de la carte de WoW Forever ; seule l'épingle du guidage restait visible. Elles passent maintenant bien au-dessus.
+
 ## v1.3.2 — 17/11/2026
 
 _Un /reload suffit._

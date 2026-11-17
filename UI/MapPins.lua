@@ -133,7 +133,7 @@ local function drawTarget(cv, mapID, w, h)
     targetPin.pill:ClearAllPoints()
     targetPin.pill:SetPoint("TOP", targetPin, "BOTTOM", 0, -2)
     targetPin.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.85)
-    targetPin:SetFrameLevel((cv:GetFrameLevel() or 1) + 30)
+    targetPin:SetFrameLevel((cv:GetFrameLevel() or 1) + 700)
     targetPin:ClearAllPoints()
     targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", t.x * w, -t.y * h) -- la pointe de l'épingle sur le lieu
     targetPin:Show()
@@ -151,6 +151,17 @@ local function redraw()
         -- chaque calque à part : une erreur dans l'un n'empêche pas les autres de s'afficher
         -- (elle est notée une fois dans le chat, avec le nom du calque)
         UI.mapStats = { map = mapID, w = cw, h = ch, level = cv:GetFrameLevel(), strata = cv.GetFrameStrata and cv:GetFrameStrata() }
+        -- plus haut niveau des cadres du jeu sur la toile (diagnostic : nos pastilles doivent passer au-dessus)
+        if cv.GetChildren then
+            local top = 0
+            for _, ch2 in ipairs({ cv:GetChildren() }) do
+                if ch2.GetFrameLevel and ch2:IsShown() then
+                    local lv = ch2:GetFrameLevel() or 0
+                    if lv > top and lv < (cv:GetFrameLevel() or 0) + 590 then top = lv end
+                end
+            end
+            UI.mapStats.gameTop = top
+        end
         local function layer(name, fn)
             if not fn then return end
             local ok, err = pcall(fn, UI, cv, mapID, cw, ch)
@@ -187,7 +198,7 @@ local function redraw()
         local col = WK.modules.GatherMap.COLORS[c.kind] or { 1, 1, 1 }
         p.glow:SetVertexColor(col[1], col[2], col[3], 0.9)
         p.dot:SetVertexColor(col[1], col[2], col[3], 1)
-        p:SetFrameLevel((cv:GetFrameLevel() or 1) + 20)
+        p:SetFrameLevel((cv:GetFrameLevel() or 1) + 595)
         p:ClearAllPoints()
         p:SetPoint("CENTER", cv, "TOPLEFT", c.x * w, -c.y * h)
         p:Show()

@@ -166,7 +166,7 @@ function UI:DrawNodePins(cv, mapID, w, h)
     end
     mapHolder:SetParent(cv)
     mapHolder:SetAllPoints(cv)
-    mapHolder:SetFrameLevel((cv:GetFrameLevel() or 1) + 15)
+    mapHolder:SetFrameLevel((cv:GetFrameLevel() or 1) + 590)
     -- une icône par case et par ressource : la carte reste lisible dans les zones très fournies
     local cell = #list > MAX_MAP and 0.02 or 0.008
     local seen = {}

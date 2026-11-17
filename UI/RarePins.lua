@@ -166,7 +166,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
     if not holder then holder = CreateFrame("Frame", nil, cv) end
     holder:SetParent(cv)
     holder:SetAllPoints(cv)
-    holder:SetFrameLevel((cv:GetFrameLevel() or 1) + 25)
+    holder:SetFrameLevel((cv:GetFrameLevel() or 1) + 620)
     if not top then top = CreateFrame("Frame", nil, holder) end
     top:SetAllPoints(holder)
     top:SetFrameLevel(holder:GetFrameLevel() + 20)
