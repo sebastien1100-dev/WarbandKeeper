@@ -131,7 +131,7 @@ end
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
     { "fishing", "Pêche", "fish" }, { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
-    { "cursor", "Curseur", "crosshair" }, { "classes", "Classes", "users" },
+    { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
 function UI:QoLSectionCount(key)
@@ -297,10 +297,12 @@ UI:RegisterPage({
         ahBtn.desc:SetText("Scan et prix")
         local curBtn = navButton("cursor", "Curseur", -258, nil, "crosshair")
         curBtn.desc:SetText("Anneau, curseur en combat")
+        local campBtn = navButton("campfire", "Feu de camp", -258, nil, "fire")
+        campBtn.desc:SetText("S'asseoir près d'un camp")
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "campfire", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -388,13 +390,7 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         section("general")
         local g = q.general
-        -- Feux de camp (Modules/Camp.lua, UI/CampCard.lua)
-        local campCfg = WK.modules.Camp:Config()
-        local camp = card("Feux de camp", 40 + 2 * 46 + 8, "assis 1 min près d'un camp : avantages pendant 2 h")
-        UI:SettingRow(camp, -40, "Rappel près d'un feu de camp", "Encart « Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus. Se place en mode édition.",
-            toggle(camp, function() return campCfg.enabled end, function(v) campCfg.enabled = v; WK.modules.Camp:Update() end), 80)
-        UI:SettingRow(camp, -86, "Proposer de renouveler", "Quand il reste moins que ce temps sur les avantages du camp.",
-            UI:Slider(camp, 240, 0, 60, 5, function() return campCfg.renewAt or 10 end, function(v) campCfg.renewAt = v; WK.modules.Camp:Update() end, "%d min"), 260)
+
         local shop = card("Marchand", 322)
         UI:SettingRow(shop, -40, "Réparation automatique", "Chez un marchand qui répare, tout l'équipement.",
             toggle(shop, function() return g.repair end, function(v) g.repair = v end), 80)
@@ -1429,6 +1425,85 @@ UI:RegisterPage({
         soundDd:Select(fo.sound and (fo.soundLevel or "strong") or "off")
         UI:SettingRow(fcomfort, -86, "Son du flotteur mis en avant", "Le temps de pêcher ; tout redevient comme avant à la fermeture. Maximum : voix coupées, volume général au maximum, son gardé quand le jeu est en arrière-plan.", soundDd, 240)
         UI:SettingRow(fcomfort, -132, "Avertissements à l'écran", "Pas de canne, plus d'appât, sacs pleins.", ftoggle(fcomfort, "warn", function() Fi:Warn() end), 80)
+
+        -----------------------------------------------------------------------
+        -- Feu de camp (Modules/Camp.lua, UI/CampCard.lua)
+        -----------------------------------------------------------------------
+        section("campfire")
+        do
+            local Cp = WK.modules.Camp
+            local campCfg = Cp:Config()
+            local function cupdate() Cp:Update() end
+            -- en ce moment
+            local now = card("En ce moment", 40 + 70 + 44, "mis à jour en direct")
+            local nowText = dynText(now, 12, C.text, function()
+                local a = Cp.auras or {}
+                local st = Cp.state or "none"
+                local lines = {}
+                if a.flame then table.insert(lines, string.format(T("Près d'un camp : %s"), a.flame.name)) else table.insert(lines, T("Pas de feu de camp à proximité.")) end
+                if a.sit then table.insert(lines, string.format(T("Assis : avantages dans %d s"), math.ceil(Cp.Remaining(a.sit) or 0))) end
+                if a.perk then
+                    local left = Cp.Remaining(a.perk)
+                    table.insert(lines, string.format(T("Avantages du camp actifs%s"), left and (" · " .. string.format(T("%s restantes"), UI:AgoShort(left, true))) or ""))
+                    local txt = Cp:PerkText()
+                    if txt then table.insert(lines, "|cff9ca3ab" .. txt:gsub("\n", " · ") .. "|r") end
+                elseif not a.sit then
+                    table.insert(lines, "|cff9ca3ab" .. T("Pas d'avantages du camp en ce moment.") .. "|r")
+                end
+                if st == "early" then table.insert(lines, "|cfff5d76e" .. T("Relevé trop tôt : rassieds-toi 1 min.") .. "|r") end
+                return table.concat(lines, "\n")
+            end)
+            nowText:SetPoint("TOPLEFT", 16, -42); nowText:SetPoint("RIGHT", -150, 0)
+            nowText:SetJustifyH("LEFT")
+            if nowText.SetWordWrap then nowText:SetWordWrap(true) end
+            local sitBtn = UI:Button(now, "S'asseoir", 120, 28, "primary")
+            sitBtn:SetPoint("TOPRIGHT", -16, -42)
+            sitBtn:SetScript("OnClick", function() Cp:Sit() end)
+            table.insert(self.dyn, function() sitBtn:SetEnabled(Cp.auras ~= nil and Cp.auras.flame ~= nil and not Cp.auras.sit) end)
+            -- rappel
+            local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "encart près du camp")
+            UI:SettingRow(rem, -40, "Rappel près d'un feu de camp", "Encart « Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus.",
+                toggle(rem, function() return campCfg.enabled end, function(v) campCfg.enabled = v; cupdate() end), 80)
+            UI:SettingRow(rem, -86, "Proposer de renouveler", "Quand il reste moins que ce temps sur les avantages du camp (0 : seulement quand ils sont finis).",
+                UI:Slider(rem, 240, 0, 60, 5, function() return campCfg.renewAt or 10 end, function(v) campCfg.renewAt = v; cupdate() end, "%d min"), 260)
+            UI:SettingRow(rem, -132, "Son au rappel", "Un petit son quand l'encart propose de s'asseoir.",
+                toggle(rem, function() return campCfg.sound end, function(v) campCfg.sound = v end), 80)
+            UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
+                UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
+            local placeBtn = UI:Button(rem, "Placer l'encart", 150, 28, "secondary")
+            placeBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
+            UI:SettingRow(rem, -224, "Position et taille", "En mode édition, avec les autres éléments à l'écran (« Tester » le joue en vrai).", placeBtn, 150)
+            -- comment ça marche, et effets rencontrés
+            local how = card("Comment ça marche", 40 + 4 * 22 + 30 + 8 * 18 + 8)
+            local howText = UI:Text(how, 11, C.muted)
+            howText:SetPoint("TOPLEFT", 16, -42); howText:SetPoint("RIGHT", -16, 0)
+            howText:SetJustifyH("LEFT")
+            if howText.SetWordWrap then howText:SetWordWrap(true) end
+            howText:SetText(T("1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres »).") .. "\n"
+                .. T("2. Assieds-toi : « Feu de camp accueillant » compte 1 min.") .. "\n"
+                .. T("3. Tu obtiens « Avantages du camp » pour 2 h, selon les objets posés autour du feu.") .. "\n"
+                .. T("4. Te relever avant la fin annule ; la flamme allonge la durée des effets de camp."))
+            local seenHead = UI:Text(how, 10, C.dim)
+            seenHead:SetPoint("TOPLEFT", 16, -42 - 4 * 22 - 6)
+            seenHead:SetText(UI:Upper(T("Effets de camp rencontrés")))
+            local seenText = dynText(how, 11, C.text, function()
+                local g = WK.DB.global.camp and WK.DB.global.camp.seen or {}
+                local KIND = { flame = T("flamme"), sit = T("assis"), perk = T("avantages") }
+                local out = {}
+                for id, kind in pairs(g) do
+                    local name = (WK.SpellInfo and WK.SpellInfo(id)) or ("#" .. id)
+                    table.insert(out, string.format("%s  |cff9ca3ab· %s · n° %d|r", name, KIND[kind] or kind, id))
+                end
+                table.sort(out)
+                if #out == 0 then return "|cff9ca3ab" .. T("Aucun pour l'instant : approche-toi d'un camp.") .. "|r" end
+                local shown = {}
+                for i = 1, math.min(#out, 8) do shown[i] = out[i] end
+                return table.concat(shown, "\n")
+            end)
+            seenText:SetPoint("TOPLEFT", seenHead, "BOTTOMLEFT", 0, -6); seenText:SetPoint("RIGHT", -16, 0)
+            seenText:SetJustifyH("LEFT")
+            if seenText.SetWordWrap then seenText:SetWordWrap(true) end
+        end
 
         -----------------------------------------------------------------------
         -- Fiches de classe

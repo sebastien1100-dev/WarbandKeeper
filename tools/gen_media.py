@@ -705,10 +705,25 @@ def icon_lock():
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "lock.tga"))
 
 
+def icon_fire():
+    """Feu de camp : flamme et bûches."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    flame = [(32, 4), (40, 16), (46, 26), (46, 36), (42, 44), (32, 48), (22, 44), (18, 36), (19, 27), (24, 20), (27, 28), (30, 18)]
+    d.polygon([(x * s, y * s) for x, y in flame], fill=W)
+    inner = [(32, 26), (37, 34), (37, 40), (32, 44), (27, 40), (28, 34)]
+    d.polygon([(x * s, y * s) for x, y in inner], fill=O)
+    d.line([(10 * s, 58 * s), (54 * s, 50 * s)], fill=W, width=6 * s)
+    d.line([(10 * s, 50 * s), (54 * s, 58 * s)], fill=W, width=6 * s)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "fire.tga"))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire]:
         fn()
     print("OK")

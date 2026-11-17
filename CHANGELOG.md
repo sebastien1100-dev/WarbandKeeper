@@ -24,6 +24,18 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.7.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Réglages QoL : nouvelle section « Feu de camp » (icône de flamme), avec tout ce qui concerne les camps : « En ce moment » en direct (flamme à proximité, compte à rebours assis, avantages actifs, leur effet et leur durée) avec un bouton « S'asseoir », le rappel à l'écran et ses réglages, « Comment ça marche » et la liste des effets de camp déjà rencontrés.
+- Feu de camp : nouveaux réglages : un son quand l'encart propose de s'asseoir, et la durée d'affichage des avantages obtenus (0 : l'encart reste jusqu'à ce que tu le fermes). Bouton « Placer l'encart » (mode édition).
+- Carte Modules : « Feu de camp » a son interrupteur dans Réglages QoL.
+
+### Modifications
+- Les réglages des feux de camp quittent QoL > Général pour leur propre section.
+
 ## v1.6.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

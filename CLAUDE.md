@@ -145,7 +145,7 @@ La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque
 
 ## Feux de camp
 
-`Modules/Camp.lua` : trois effets de WoW Forever (flamme près du camp, « Feu de camp accueillant » assis 1 min, « Avantages du camp » 2 h), reconnus par nom (`FLAME`, `SIT`, `PERK`) ou description, n° vus retenus dans `WK.DB.global.camp.seen` ; état `M.state` (none, sit, sitting, done, early), `Sit()` (`DoEmote("SIT")`, hors combat), `PerkText()` (lignes de l'infobulle de l'effet). `UI/CampCard.lua` : encart placé en mode édition (`camp`). Réglages `QoL:Config().camp` (QoL > Général), module « qolgeneral ».
+`Modules/Camp.lua` : trois effets de WoW Forever (flamme près du camp, « Feu de camp accueillant » assis 1 min, « Avantages du camp » 2 h), reconnus par nom (`FLAME`, `SIT`, `PERK`) ou description, n° vus retenus dans `WK.DB.global.camp.seen` ; état `M.state` (none, sit, sitting, done, early), `Sit()` (`DoEmote("SIT")`, hors combat), `PerkText()` (lignes de l'infobulle de l'effet). `UI/CampCard.lua` : encart placé en mode édition (`camp`). Réglages `QoL:Config().camp` (enabled, renewAt, sound, doneSecs) ; section « campfire » de QoL (En ce moment, Rappel à l'écran, Comment ça marche + effets vus ; bloc `do … end` : la fonction Build de la page QoL est à la limite de 200 variables locales, toute nouvelle section doit être dans son propre bloc), module « campfire », icône `fire`.
 
 ## Objets verrouillés
 

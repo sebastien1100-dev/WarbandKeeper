@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.7.0", date = "17/11/2026", restart = true,
+        added = {
+            "Réglages QoL : nouvelle section « Feu de camp » (icône de flamme), avec tout ce qui concerne les camps : « En ce moment » en direct (flamme à proximité, compte à rebours assis, avantages actifs, leur effet et leur durée) avec un bouton « S'asseoir », le rappel à l'écran et ses réglages, « Comment ça marche » et la liste des effets de camp déjà rencontrés.",
+            "Feu de camp : nouveaux réglages : un son quand l'encart propose de s'asseoir, et la durée d'affichage des avantages obtenus (0 : l'encart reste jusqu'à ce que tu le fermes). Bouton « Placer l'encart » (mode édition).",
+            "Carte Modules : « Feu de camp » a son interrupteur dans Réglages QoL.",
+        },
+        changed = {
+            "Les réglages des feux de camp quittent QoL > Général pour leur propre section.",
+        },
+    },
+    {
         version = "1.6.0", date = "17/11/2026", restart = true,
         added = {
             "Feux de camp : près d'un camp (effet de flamme, comme « Flammes pourpres »), un encart propose « Assieds-toi 1 min pour obtenir les avantages du camp (2 h) » avec un bouton « S'asseoir ». Assis, une barre compte la minute de « Feu de camp accueillant ».",

@@ -77,7 +77,8 @@ local function build()
         if s.sample then return end
         if M.state == "sitting" then s:Paint() end
         -- avantages obtenus : affichés 8 s puis l'encart s'efface
-        if M.state == "done" and s.doneAt and GetTime() - s.doneAt > 8 then s:Hide() end
+        local keep = M:Config().doneSecs or 8
+        if M.state == "done" and s.doneAt and keep > 0 and GetTime() - s.doneAt > keep then s:Hide() end
     end)
     UI:RegisterHUD("camp", f, {
         label = T("Feu de camp"), default = { 0, -180 },
@@ -95,6 +96,9 @@ M.OnChange = function(_, changed)
     if card.dismissed == st then return end
     if changed then card.dismissed = nil end
     if st == "done" and changed then card.doneAt = GetTime() end
+    if changed and (st == "sit" or st == "early") and M:Config().sound and PlaySound then
+        pcall(PlaySound, (SOUNDKIT and SOUNDKIT.UI_GARRISON_TOAST_INVASION_ALERT) or 8959, "Master")
+    end
     if st == "done" and not changed and not card:IsShown() then return end
     card:Paint()
     card:Show()

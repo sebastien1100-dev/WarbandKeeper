@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 -- (WK.DB.global.camp.seen) pour connaître les variantes. Réglages : QoL:Config().camp.
 -- État (M.state) : "none" (pas de camp), "sit" (assieds-toi), "sitting" (assis, compte à rebours),
 -- "done" (avantages actifs), "early" (relevé trop tôt). Affichage : UI/CampCard.lua.
-local DEFAULTS = { enabled = true, renewAt = 10 } -- minutes restantes sous lesquelles on propose de renouveler
+local DEFAULTS = { enabled = true, renewAt = 10, sound = false, doneSecs = 8 } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }
 local SIT = { "feu de camp accueillant", "cozy campfire", "welcoming campfire" }
@@ -114,7 +114,7 @@ function M:Update()
     local a = scan()
     self.auras = a
     local state = "none"
-    if cfg.enabled and WK:FeatureOn("qolgeneral") then
+    if cfg.enabled and WK:FeatureOn("campfire") then
         local perkLeft = remaining(a.perk)
         if a.sit then
             state = "sitting"
@@ -134,6 +134,7 @@ function M:Update()
     local changed = state ~= self.state
     self.state = state
     if self.OnChange then self:OnChange(changed) end
+    if changed then WK:NotifyChanged() end -- section Feu de camp de QoL (en direct)
 end
 
 -- S'asseoir (hors combat)
