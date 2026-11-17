@@ -439,7 +439,7 @@ function M:GreyItems()
     for _, bag in ipairs(WK.modules.Inventory:BagList()) do
         for slot = 1, (WK.Container.NumSlots(bag) or 0) do
             local id, count, locked = WK.Container.Info(bag, slot)
-            if id and not locked then
+            if id and not locked and not (WK.modules.ItemLock and WK.modules.ItemLock:IsLocked(id)) then
                 local _, _, quality, _, _, _, _, _, _, _, price = WK.GetItemInfo(id)
                 if quality == 0 and (price or 0) > 0 then
                     table.insert(list, { bag = bag, slot = slot, price = price * (count or 1) })

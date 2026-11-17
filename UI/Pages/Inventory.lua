@@ -109,6 +109,7 @@ UI:RegisterPage({
         self.scroll = scroll
         self.empty = UI:Text(p, 12, C.muted)
         self.empty:SetPoint("CENTER", scroll, "CENTER")
+        self:BuildLocks(p, x0)
 
         self.rows = UI:Pool(function()
             local r = CreateFrame("Button", nil, scroll.child)
@@ -227,13 +228,130 @@ UI:RegisterPage({
         end
     end,
 
+    -- Objets verrouillés (Modules/ItemLock.lua) : liste, règles automatiques, réglages
+    BuildLocks = function(self, p, x0)
+        local IL = WK.modules.ItemLock
+        local cfg = IL:Config()
+        local pane = UI:Scroll(p)
+        pane:SetPoint("TOPLEFT", x0, 0)
+        pane:SetPoint("BOTTOMRIGHT")
+        pane:Hide()
+        self.lockPane = pane
+        local root = pane.child
+        -- liste
+        local list = UI:Card(root, T("Objets verrouillés"), " ")
+        self.lockList = list
+        local all = UI:Button(list, "Tout déverrouiller", nil, 24, "ghost")
+        all:SetPoint("TOPRIGHT", -10, -9)
+        all.tooltip = "Maj + clic : enlève tous les verrous posés à la main (les règles restent)."
+        all:SetScript("OnClick", function() if IsShiftKeyDown() then IL:UnlockAll() else WK:Print(T("Maj + clic pour tout déverrouiller.")) end end)
+        self.lockRows = UI:Pool(function()
+            local r = CreateFrame("Button", nil, list)
+            r:SetHeight(32)
+            r.icon = UI:RoundIcon(r, 22)
+            r.icon:SetPoint("LEFT", 4, 0)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 34, 0)
+            r.tag = UI:Badge(r, "")
+            r.tag:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
+            r.del = UI:IconButton(r, "close", 22, "Déverrouiller", "accent")
+            r.del:SetPoint("RIGHT", -2, 0)
+            r.who = UI:Text(r, 10, C.muted)
+            r.who:SetPoint("RIGHT", r.del, "LEFT", -10, 0)
+            r.who:SetJustifyH("RIGHT")
+            r.line = r:CreateTexture(nil, "BACKGROUND")
+            r.line:SetHeight(1)
+            r.line:SetPoint("BOTTOMLEFT"); r.line:SetPoint("BOTTOMRIGHT")
+            r:SetScript("OnEnter", function(s)
+                WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            return r
+        end)
+        self.lockEmpty = UI:Text(list, 11, C.muted)
+        self.lockEmpty:SetPoint("TOPLEFT", 16, -46)
+        self.lockEmpty:SetText(T("Aucun objet verrouillé. Alt + clic sur un objet dans tes sacs pour le verrouiller."))
+        -- règles
+        local rules = UI:Card(root, T("Règles automatiques"))
+        self.lockRules = rules
+        local y = -40
+        local function rule(label, desc, key)
+            UI:SettingRow(rules, y, label, desc, UI:Toggle(rules, function() return cfg.rules[key] end,
+                function(v) cfg.rules[key] = v; IL:RuleChanged() end), 80)
+            y = y - 46
+        end
+        rule("Objets épiques et plus", nil, "epic")
+        rule("Objets de ma liste d'envies", "Donjons > Mes envies, tous les persos.", "wish")
+        rule("Recettes", "Celles d'un métier qu'un de tes persos a appris.", "recipes")
+        rule("Objets de quête", nil, "quest")
+        rule("Valeur HV au-dessus d'un seuil", "Prix relevé par le scan de l'hôtel des ventes.", "value")
+        UI:SettingRow(rules, y, "Seuil de valeur HV", nil, UI:Slider(rules, 220, 1, 100, 1,
+            function() return math.floor((cfg.valueMin or 50000) / 10000) end,
+            function(v) cfg.valueMin = v * 10000; IL:RuleChanged() end, "%d po"), 240)
+        y = y - 46
+        rules:SetHeight(-y + 8)
+        -- réglages
+        local sets = UI:Card(root, T("Protection"))
+        self.lockSets = sets
+        local keyDd = UI:Dropdown(sets, 200, 30, { { "alt", T("Alt + clic") }, { "ctrl", T("Ctrl + clic") }, { "shiftalt", T("Maj + Alt + clic") } },
+            function(v) cfg.key = v end)
+        keyDd:Select(cfg.key or "alt")
+        UI:SettingRow(sets, -40, "Touche pour verrouiller", "Sur un objet dans les sacs du jeu.", keyDd, 200)
+        UI:SettingRow(sets, -86, "Racheter un objet verrouillé vendu par erreur", "Aussitôt, chez le marchand (onglet de rachat).",
+            UI:Toggle(sets, function() return cfg.rebuy end, function(v) cfg.rebuy = v end), 80)
+        UI:SettingRow(sets, -132, "Confirmer une vente chère", "Objet non verrouillé qui vaut bien plus à l'HV qu'au marchand.",
+            UI:Toggle(sets, function() return cfg.confirm end, function(v) cfg.confirm = v end), 80)
+        UI:SettingRow(sets, -178, "Écart HV / marchand", "Demander si le prix HV vaut au moins ce multiple du prix marchand.",
+            UI:Slider(sets, 220, 2, 20, 1, function() return cfg.ratio or 5 end, function(v) cfg.ratio = v end, "x %d"), 240)
+        sets:SetHeight(232)
+        UI:OnResize(pane, function() if self.char == "locks" then self:RefreshLocks() end end)
+    end,
+
+    RefreshLocks = function(self)
+        local IL = WK.modules.ItemLock
+        local W = math.max(400, (self.lockPane:GetWidth() or 600) - 14)
+        self.lockPane.child:SetWidth(W)
+        local list = IL:List()
+        local n = 0
+        for _, e in ipairs(list) do if e.reason == "manual" then n = n + 1 end end
+        if self.lockList.subtitle then self.lockList.subtitle:SetText(string.format(T("%d objets · %d à la main"), #list, n)) end
+        self.lockRows:Reset()
+        local y = 44
+        local r1, g1, b1 = UI:Accent()
+        for _, e in ipairs(list) do
+            local r = self.lockRows:Get()
+            r.id = e.id
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 12, -y); r:SetPoint("TOPRIGHT", -12, -y)
+            local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
+            r.icon:SetTexture(icon)
+            r.name:SetText(name); r.name:SetTextColor(qr, qg, qb)
+            if e.reason == "manual" then r.tag:Set(T("à la main")) else r.tag:Set(e.reason, { 0.31, 0.82, 0.77 }) end
+            r.who:SetText(#e.who > 0 and table.concat(e.who, ", ") or T("pas sur le compte"))
+            r.del:SetShown(e.reason == "manual")
+            r.del:SetScript("OnClick", function() IL:Unlock(e.id) end)
+            r.line:SetColorTexture(unpack(C.border))
+            y = y + 34
+        end
+        self.lockEmpty:SetShown(#list == 0)
+        if #list == 0 then y = y + 24 end
+        self.lockList:ClearAllPoints(); self.lockList:SetPoint("TOPLEFT", 0, 0); self.lockList:SetSize(W, y + 10)
+        local ly = y + 10 + 12
+        self.lockRules:ClearAllPoints(); self.lockRules:SetPoint("TOPLEFT", 0, -ly); self.lockRules:SetWidth(W)
+        ly = ly + self.lockRules:GetHeight() + 12
+        self.lockSets:ClearAllPoints(); self.lockSets:SetPoint("TOPLEFT", 0, -ly); self.lockSets:SetWidth(W)
+        ly = ly + self.lockSets:GetHeight() + 10
+        self.lockPane:SetContentHeight(ly)
+    end,
+
     -- Onglets : tout le compte, chaque personnage, banque de bataillon.
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        local special = { spread = true, old = true }
+        local special = { spread = true, old = true, locks = true }
         if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
         -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
-        local entries = { { key = "all" }, { key = "spread" }, { key = "old" } }
+        local entries = { { key = "all" }, { key = "spread" }, { key = "old" }, { key = "locks" } }
         for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
         local wb = WK.DB.global.warbank
         if wb then table.insert(entries, { key = "warband" }) end
@@ -259,10 +377,10 @@ UI:RegisterPage({
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
-                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock" }
+                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock" }
                 b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque" }
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Objets verrouillés" }
                 b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
@@ -271,6 +389,10 @@ UI:RegisterPage({
                 elseif e.key == "spread" then
                     local n = #WK.modules.Inventory:Spread()
                     b.sub:SetText(string.format(T("%d objets dispersés"), n))
+                elseif e.key == "locks" then
+                    local n = 0
+                    for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
+                    b.sub:SetText(string.format(T("%d à la main"), n))
                 elseif e.key == "old" then
                     local n = #WK.modules.Inventory:Forgotten(self.oldDays)
                     b.sub:SetText(string.format(T("%d depuis %d j"), n, self.oldDays))
@@ -293,6 +415,14 @@ UI:RegisterPage({
         local chars = WK.DB.global.characters
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
+        -- objets verrouillés : leur propre panneau à la place de la liste
+        local locks = sel == "locks"
+        self.lockPane:SetShown(locks)
+        for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not locks) end
+        if locks then
+            self.whereSeg:Hide(); self.empty:Hide()
+            return self:RefreshLocks()
+        end
         if sel == "spread" or sel == "old" then
             self.whereSeg:Hide()
             return self:RefreshHelp(sel)

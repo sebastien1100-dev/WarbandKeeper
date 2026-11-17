@@ -123,7 +123,10 @@ local function afterSend()
 end
 
 local function plan()
-    return WK.modules.Rules:Plan(M:Store(), function(rule, _, bound)
+    return WK.modules.Rules:Plan(M:Store(), function(rule, id, bound)
+        -- objet verrouillé à la main (Modules/ItemLock.lua) : il reste dans les sacs
+        local IL = WK.modules.ItemLock
+        if IL and IL:Manual()[id] then return false end
         return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
     end)
 end

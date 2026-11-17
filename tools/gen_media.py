@@ -691,10 +691,24 @@ def icon_send():
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "send.tga"))
 
 
+def icon_lock():
+    """Cadenas (objets verrouillés) : anse et corps avec trou de serrure."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    d.rounded_rectangle((16 * s, 6 * s, 48 * s, 40 * s), radius=16 * s, fill=W)
+    d.rounded_rectangle((23 * s, 13 * s, 41 * s, 40 * s), radius=9 * s, fill=O)
+    d.rounded_rectangle((10 * s, 28 * s, 54 * s, 60 * s), radius=6 * s, fill=W)
+    d.ellipse((28 * s, 36 * s, 36 * s, 44 * s), fill=O)
+    d.rectangle((30 * s, 42 * s, 34 * s, 52 * s), fill=O)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "lock.tga"))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock]:
         fn()
     print("OK")

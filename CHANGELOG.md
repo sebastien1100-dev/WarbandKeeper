@@ -24,6 +24,17 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.5.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Objets verrouillés : Alt + clic sur un objet dans les sacs le verrouille (ou le déverrouille) ; un petit cadenas apparaît sur sa case (couleur de l'apparence) et son infobulle le dit. Un objet verrouillé n'est jamais vendu.
+- Chez le marchand, le clic sur un objet verrouillé ne fait rien (message à l'écran). S'il est vendu quand même (glissé sur le marchand, autre addon), il est racheté aussitôt. La vente automatique des objets gris et l'envoi par courrier (verrou à la main) le respectent.
+- Verrous automatiques par règles (cadenas turquoise) : objets épiques et plus, liste d'envies, recettes d'un métier de tes persos, objets de quête, valeur HV au-dessus d'un seuil.
+- Vente chère : avant de vendre un objet non verrouillé qui vaut bien plus à l'HV qu'au marchand, une fenêtre propose Garder, Verrouiller ou Vendre (avec « Ne plus demander pour cet objet »).
+- Inventaire > Objets verrouillés : tous les verrous du compte (à la main ou par règle, avec les persos qui les ont), déverrouillage, les règles et les réglages (touche, rachat, confirmation et son écart de prix).
+
 ## v1.4.2 — 17/11/2026
 
 _Un /reload suffit._
