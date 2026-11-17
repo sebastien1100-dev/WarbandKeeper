@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.12.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk talents décrit aussi la configuration de talents du jeu (arbres, nœuds, premier talent).
+
+### Corrections
+- Fiche du perso, onglet Talents : WoW Forever utilise le nouveau système de talents du jeu, que l'addon ne lisait pas ; les talents sont maintenant lus dans ce système (configuration active, chaque talent à sa place, rang, points à dépenser). Survol d'un talent : sa description, pour tous tes persos.
+
 ## v1.12.1 — 17/11/2026
 
 _Un /reload suffit._

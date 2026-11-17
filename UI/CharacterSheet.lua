@@ -376,7 +376,7 @@ local function build(parent)
     f.tempty = UI:Text(tsc.child, 11, C.muted)
     f.tempty:SetPoint("TOPLEFT", 4, -28)
     f.trees = {}
-    for i = 1, 3 do
+    for i = 1, 4 do
         local tr = UI:Card(tsc.child, "")
         tr.pts = UI:Text(tr, 14)
         tr.pts:SetPoint("TOPRIGHT", -14, -12)
@@ -403,7 +403,10 @@ local function build(parent)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             local done = false
             -- description complète : seulement pour le perso connecté (le jeu ne la donne que pour lui)
-            if s.mine and GameTooltip.SetTalent then done = pcall(GameTooltip.SetTalent, GameTooltip, s.tab, s.index) end
+            if d[7] and GameTooltip.SetSpellByID then
+                done = pcall(GameTooltip.SetSpellByID, GameTooltip, d[7])
+                if done then GameTooltip:AddLine(string.format(T("Rang %d/%d"), d[5], d[6]), 0.62, 0.82, 0.48) end
+            elseif s.mine and GameTooltip.SetTalent then done = pcall(GameTooltip.SetTalent, GameTooltip, s.tab, s.index) end
             if not done then
                 GameTooltip:SetText(d[1], 1, 1, 1)
                 GameTooltip:AddLine(string.format(T("Rang %d/%d"), d[5], d[6]), 0.8, 0.8, 0.8)
@@ -646,10 +649,16 @@ local function refreshTalents(f, c)
         (c.talentFree and c.talentFree > 0) and string.format(T("%d point(s) à dépenser"), c.talentFree) or T("aucun point à dépenser")) or "")
     f.tempty:SetShown(not any)
     f.tempty:SetText(f.key == WK:CharKey() and T("Le jeu n'a pas encore donné tes talents. Tape /wk talents et envoie le résultat si ça dure.") or T("Talents pas encore relevés : connecte ce perso une fois avec cette version."))
-    local tw = math.floor((W - 2 * 12) / 3)
-    local maxTier = 1
-    for _, t in ipairs(trees) do for _, d in ipairs(t.list or {}) do maxTier = math.max(maxTier, d[3]) end end
-    local th = 52 + maxTier * (CELL + CGAP) + 6
+    local nt = math.max(1, math.min(#trees, #f.trees))
+    local tw = math.floor((W - (nt - 1) * 12) / nt)
+    local maxTier, maxCols = 1, 4
+    for _, t in ipairs(trees) do
+        for _, d in ipairs(t.list or {}) do maxTier = math.max(maxTier, d[3]); maxCols = math.max(maxCols, d[4]) end
+    end
+    -- cases plus petites si l'arbre est large
+    local cs = math.max(22, math.min(CELL, math.floor((tw - 24) / maxCols) - 6))
+    local cg = math.max(4, math.min(CGAP, math.floor((tw - 24 - maxCols * cs) / math.max(1, maxCols - 1))))
+    local th = 52 + maxTier * (cs + cg) + 6
     local mine = f.key == WK:CharKey()
     for i, tr in ipairs(f.trees) do
         local t = trees[i]
@@ -661,13 +670,16 @@ local function refreshTalents(f, c)
             tr.title:SetText(t.name)
             tr.pts:SetText(t.points or 0)
             if (t.points or 0) > 0 then tr.pts:SetTextColor(r, g, b) else tr.pts:SetTextColor(unpack(C.dim)) end
-            local gx = math.floor((tw - (4 * CELL + 3 * CGAP)) / 2)
+            local cols = t.cols or 4
+            for _, d in ipairs(t.list or {}) do cols = math.max(cols, d[4]) end
+            local gx = math.floor((tw - (cols * cs + (cols - 1) * cg)) / 2)
             for _, cell in ipairs(tr.cells) do cell:Hide() end
             for j, d in ipairs(t.list or {}) do
                 local cell = f.talentCell(tr, j)
                 cell.data, cell.tab, cell.index, cell.mine = d, i, j, mine
                 cell:ClearAllPoints()
-                cell:SetPoint("TOPLEFT", gx + (d[4] - 1) * (CELL + CGAP), -46 - (d[3] - 1) * (CELL + CGAP))
+                cell:SetSize(cs, cs)
+                cell:SetPoint("TOPLEFT", gx + (d[4] - 1) * (cs + cg), -46 - (d[3] - 1) * (cs + cg))
                 cell.icon:SetTexture(d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
                 local rank, max = d[5] or 0, d[6] or 1
                 if cell.icon.SetDesaturated then cell.icon:SetDesaturated(rank == 0) end

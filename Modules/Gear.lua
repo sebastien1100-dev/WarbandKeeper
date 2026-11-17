@@ -11,6 +11,7 @@ local M = WK:NewModule("Gear")
 --   c.sheetAt = date du relevé
 -- Relevé à la connexion, puis à chaque changement d'équipement, de stats ou de réputation (regroupé).
 -- Toute valeur que le jeu masque (restrictions) est ignorée : la précédente reste.
+local T = function(s) return WK.T(s) end
 local SLOTS = 19
 
 local function readable(v)
@@ -78,9 +79,140 @@ local function scanStats(c)
     c.stats = s
 end
 
+-- Talents du système de traits (WoW Forever : C_ClassTalents / C_Traits) : configuration active, nœuds de l'arbre
+-- regroupés par sous-arbre (ou, à défaut, en colonnes d'après leur position), rangées et colonnes déduites
+-- des positions. Rend { { name, points, list = { { nom, icône, rangée, colonne, rang, max, sort } } } }
+local function traitConfig()
+    if not (C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_Traits and C_Traits.GetConfigInfo) then return nil end
+    local id = num(call(C_ClassTalents.GetActiveConfigID))
+    if not id then return nil end
+    return id, call(C_Traits.GetConfigInfo, id)
+end
+M.TraitConfig = traitConfig
+local function nodeData(cfgID, nodeID)
+    local n = call(C_Traits.GetNodeInfo, cfgID, nodeID)
+    if type(n) ~= "table" or n.isVisible == false then return nil end
+    local entry = (n.activeEntry and n.activeEntry.entryID) or (n.entryIDs and n.entryIDs[1])
+    local name, icon, spell
+    if entry and C_Traits.GetEntryInfo then
+        local e = call(C_Traits.GetEntryInfo, cfgID, entry)
+        local def = e and e.definitionID and C_Traits.GetDefinitionInfo and call(C_Traits.GetDefinitionInfo, e.definitionID)
+        if def then
+            spell = num(def.spellID) or num(def.overriddenSpellID)
+            name = readable(def.overrideName)
+            icon = readable(def.overrideIcon)
+            if spell and (not name or name == "" or not icon) then
+                local sn, si = WK.SpellInfo(spell)
+                if not name or name == "" then name = sn end
+                icon = icon or si
+            end
+        end
+    end
+    if type(name) ~= "string" then return nil end
+    return { name = name, icon = icon, spell = spell, x = num(n.posX) or 0, y = num(n.posY) or 0,
+        rank = num(n.currentRank) or num(n.activeRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID) }
+end
+-- Noms des trois arbres par classe (ordre classique de gauche à droite), quand le jeu ne les donne pas
+local TREE_NAMES = {
+    WARRIOR = { "Armes", "Fureur", "Protection" }, PALADIN = { "Sacré", "Protection", "Vindicte" },
+    HUNTER = { "Maîtrise des bêtes", "Précision", "Survie" }, ROGUE = { "Assassinat", "Combat", "Finesse" },
+    PRIEST = { "Discipline", "Sacré", "Ombre" }, SHAMAN = { "Élémentaire", "Amélioration", "Restauration" },
+    MAGE = { "Arcanes", "Feu", "Givre" }, WARLOCK = { "Affliction", "Démonologie", "Destruction" },
+    DRUID = { "Équilibre", "Combat farouche", "Restauration" },
+}
+local function scanTraits(c)
+    local cfgID, cfg = traitConfig()
+    if not cfgID or type(cfg) ~= "table" or not C_Traits.GetTreeNodes then return false end
+    local nodes = {}
+    for _, treeID in ipairs(cfg.treeIDs or {}) do
+        for _, nodeID in ipairs(call(C_Traits.GetTreeNodes, treeID) or {}) do
+            local d = nodeData(cfgID, nodeID)
+            if d then d.tree = treeID; table.insert(nodes, d) end
+        end
+        if C_Traits.GetTreeCurrencyInfo then
+            local cur = call(C_Traits.GetTreeCurrencyInfo, cfgID, treeID, false)
+            if type(cur) == "table" and cur[1] then c.talentFree = num(cur[1].quantity) end
+        end
+    end
+    if #nodes == 0 then return false end
+    -- groupes : sous-arbres s'il y en a, sinon arbres, sinon colonnes séparées par un grand écart de position
+    local key = "tree"
+    local subs = {}
+    for _, d in ipairs(nodes) do if d.sub then subs[d.sub] = true end end
+    if next(subs) then key = "sub" end
+    local groups, order = {}, {}
+    local trees = {}
+    for _, d in ipairs(nodes) do trees[d.tree] = true end
+    local nTrees = 0
+    for _ in pairs(trees) do nTrees = nTrees + 1 end
+    if key == "tree" and nTrees == 1 then
+        -- un seul arbre : on coupe en blocs là où l'écart horizontal est grand (arbres côte à côte)
+        local xs = {}
+        for _, d in ipairs(nodes) do xs[#xs + 1] = d.x end
+        table.sort(xs)
+        local gaps = {}
+        for i = 2, #xs do if xs[i] > xs[i - 1] then gaps[#gaps + 1] = xs[i] - xs[i - 1] end end
+        table.sort(gaps)
+        local typical = gaps[math.max(1, math.floor(#gaps / 2))] or 1
+        local cuts, last = {}, xs[1]
+        for i = 2, #xs do
+            if xs[i] - last > typical * 2.5 then cuts[#cuts + 1] = (xs[i] + last) / 2 end
+            last = xs[i]
+        end
+        for _, d in ipairs(nodes) do
+            local g = 1
+            for _, cx in ipairs(cuts) do if d.x > cx then g = g + 1 end end
+            d.group = g
+        end
+    else
+        for _, d in ipairs(nodes) do d.group = d[key] end
+    end
+    for _, d in ipairs(nodes) do
+        if not groups[d.group] then groups[d.group] = { list = {} }; table.insert(order, d.group) end
+        table.insert(groups[d.group].list, d)
+    end
+    table.sort(order, function(a, b)
+        local ax, bx = math.huge, math.huge
+        for _, d in ipairs(groups[a].list) do ax = math.min(ax, d.x) end
+        for _, d in ipairs(groups[b].list) do bx = math.min(bx, d.x) end
+        return ax < bx
+    end)
+    local out = {}
+    for i, gk in ipairs(order) do
+        local g = groups[gk]
+        -- rangées et colonnes : positions distinctes triées
+        local xs, ys, xi, yi = {}, {}, {}, {}
+        for _, d in ipairs(g.list) do
+            if not xi[d.x] then xi[d.x] = true; xs[#xs + 1] = d.x end
+            if not yi[d.y] then yi[d.y] = true; ys[#ys + 1] = d.y end
+        end
+        table.sort(xs); table.sort(ys)
+        for k, v in ipairs(xs) do xi[v] = k end
+        for k, v in ipairs(ys) do yi[v] = k end
+        local name
+        if key == "sub" and C_Traits.GetSubTreeInfo then
+            local st = call(C_Traits.GetSubTreeInfo, cfgID, gk)
+            name = st and readable(st.name)
+        end
+        if type(name) ~= "string" and #order == 3 then name = TREE_NAMES[c.class or ""] and T(TREE_NAMES[c.class][i]) end
+        local tree = { name = type(name) == "string" and name or string.format(T("Arbre %d"), i), points = 0, list = {}, cols = #xs }
+        for _, d in ipairs(g.list) do
+            tree.points = tree.points + d.rank
+            table.insert(tree.list, { d.name, d.icon, yi[d.y], xi[d.x], d.rank, d.max, d.spell })
+        end
+        table.insert(out, tree)
+    end
+    c.talents = out
+    c.talentsAt = time()
+    return true
+end
+
 -- Arbres de talents : nom et points (deux formes de GetTalentTabInfo selon le client)
 local function scanTalents(c)
-    if not (GetNumTalentTabs and GetTalentTabInfo) then return end
+    if not (GetNumTalentTabs and GetTalentTabInfo) then
+        pcall(scanTraits, c)
+        return
+    end
     local n = num(call(GetNumTalentTabs)) or 0
     local out = {}
     for i = 1, n do
@@ -204,6 +336,19 @@ function M:TalentDiag()
     add("UnitCharacterPoints : " .. show(call(UnitCharacterPoints, "player")) .. " · GetUnspentTalentPoints : " .. show(call(GetUnspentTalentPoints)))
     add("GetNumSpecializations : " .. show(call(GetNumSpecializations)) .. " · GetSpecialization : " .. show(call(GetSpecialization)))
     add("C_ClassTalents : " .. tostring(C_ClassTalents ~= nil) .. " · C_Traits : " .. tostring(C_Traits ~= nil) .. " · C_SpecializationInfo : " .. tostring(C_SpecializationInfo ~= nil))
+    local cfgID, cfg = traitConfig()
+    add("configuration active : " .. tostring(cfgID) .. " · arbres : " .. (type(cfg) == "table" and cfg.treeIDs and table.concat(cfg.treeIDs, ", ") or "?"))
+    if cfgID and type(cfg) == "table" and cfg.treeIDs and cfg.treeIDs[1] and C_Traits.GetTreeNodes then
+        local ids = call(C_Traits.GetTreeNodes, cfg.treeIDs[1]) or {}
+        add("nœuds du 1er arbre : " .. #ids)
+        local n1 = ids[1] and call(C_Traits.GetNodeInfo, cfgID, ids[1])
+        if type(n1) == "table" then
+            add(string.format("1er nœud : x %s, y %s, rang %s/%s, sous-arbre %s, type %s, visible %s",
+                show(n1.posX), show(n1.posY), show(n1.currentRank), show(n1.maxRanks), show(n1.subTreeID), show(n1.type), show(n1.isVisible)))
+        end
+        local d = ids[1] and nodeData(cfgID, ids[1])
+        if d then add("1er talent : " .. d.name .. " (sort " .. tostring(d.spell) .. ")") end
+    end
     local c = WK.DB:Me()
     add("relevé : " .. (c and c.talents and (#c.talents .. " arbre(s), détail : " .. tostring(c.talents[1] and c.talents[1].list and #c.talents[1].list)) or "aucun"))
     return out

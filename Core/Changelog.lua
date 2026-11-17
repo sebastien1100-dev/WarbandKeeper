@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.12.2", date = "17/11/2026",
+        fixed = {
+            "Fiche du perso, onglet Talents : WoW Forever utilise le nouveau système de talents du jeu, que l'addon ne lisait pas ; les talents sont maintenant lus dans ce système (configuration active, chaque talent à sa place, rang, points à dépenser). Survol d'un talent : sa description, pour tous tes persos.",
+        },
+        changed = {
+            "/wk talents décrit aussi la configuration de talents du jeu (arbres, nœuds, premier talent).",
+        },
+    },
+    {
         version = "1.12.1", date = "17/11/2026",
         fixed = {
             "Fiche du perso, onglet Talents : les talents du perso connecté restaient « pas encore relevés », le jeu ne les donnant pas encore à l'entrée dans le monde. Ils sont maintenant relevés aussi quand le jeu les annonce, et à l'ouverture de l'onglet.",
