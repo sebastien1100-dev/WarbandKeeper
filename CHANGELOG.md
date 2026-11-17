@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.2.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fiche de personnage : plus d'onglets, tout est sur une seule page qui défile. À gauche l'équipement (poupée, armure, durabilité, sacs) puis les réputations (les 6 plus avancées, « Tout voir » pour toutes avec leurs groupes) ; à droite les stats (caractéristiques, combat, résistances) puis les métiers. Sous le nom : faction et type de serveur.
+
 ## v1.2.0 — 17/11/2026
 
 _Un /reload suffit._

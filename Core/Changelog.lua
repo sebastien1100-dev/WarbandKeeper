@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.2.1", date = "17/11/2026",
+        changed = {
+            "Fiche de personnage : plus d'onglets, tout est sur une seule page qui défile. À gauche l'équipement (poupée, armure, durabilité, sacs) puis les réputations (les 6 plus avancées, « Tout voir » pour toutes avec leurs groupes) ; à droite les stats (caractéristiques, combat, résistances) puis les métiers. Sous le nom : faction et type de serveur.",
+        },
+    },
+    {
         version = "1.2.0", date = "17/11/2026",
         added = {
             "Mode édition de l'interface : bouton « Tester ». Les cadres d'édition s'effacent et chaque élément se joue comme en jeu pendant 10 s : alerte de rare avec son son, récapitulatif de pêche avec sa barre de temps, bandeau de connexion (survol, liste), pile d'alertes, barres… Une barre en bas compte le temps, « Arrêter » revient tout de suite au mode édition.",

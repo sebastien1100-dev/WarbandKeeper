@@ -115,7 +115,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Fiche de personnage
 
-`Modules/Gear.lua` relève sur le perso connecté `c.gear` (liens par emplacement 1-19), `c.stats` (caractéristiques, armure, combat, sorts, résistances), `c.talents`, `c.reps`, `c.sheetAt` (connexion, `PLAYER_EQUIPMENT_CHANGED`, `UNIT_STATS`, `UNIT_RESISTANCES`, `UPDATE_FACTION`… regroupés ; valeurs masquées ignorées). `UI/CharacterSheet.lua` : page « charsheet » de la fenêtre (hors barre latérale, Persos en surbrillance), `UI:ShowCharSheet(clé)` (clic sur une ligne de Persos ou du tableau du Résumé, `UI:HoverRow`), onglets Équipement, Stats (`WEIGHTS` : ce qui compte pour chaque classe), Métiers, Réputations. Idées seulement du Character Panel de Naowh Forever (payant, sans licence) : aucun code repris.
+`Modules/Gear.lua` relève sur le perso connecté `c.gear` (liens par emplacement 1-19), `c.stats` (caractéristiques, armure, combat, sorts, résistances), `c.talents`, `c.reps`, `c.sheetAt` (connexion, `PLAYER_EQUIPMENT_CHANGED`, `UNIT_STATS`, `UNIT_RESISTANCES`, `UPDATE_FACTION`… regroupés ; valeurs masquées ignorées). `UI/CharacterSheet.lua` : page « charsheet » de la fenêtre (hors barre latérale, Persos en surbrillance), `UI:ShowCharSheet(clé)` (clic sur une ligne de Persos ou du tableau du Résumé, `UI:HoverRow`), une seule page qui défile : à gauche Équipement puis Réputations (`REP_SHORT` les plus avancées, « Tout voir »), à droite (`SIDE_W`) Stats (`WEIGHTS` : ce qui compte pour chaque classe) puis Métiers. Idées seulement du Character Panel de Naowh Forever (payant, sans licence) : aucun code repris.
 
 ## Mise à jour disponible
 

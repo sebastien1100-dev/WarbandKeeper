@@ -5,9 +5,10 @@ local T = function(s) return WK.T(s) end
 
 -- Fiche de personnage : page « charsheet » de la fenêtre (hors barre latérale, Persos y reste en
 -- surbrillance), ouverte au clic sur un perso (pages Persos et Résumé), pour n'importe quel perso du compte.
--- Onglets : Équipement (emplacements autour du portrait : cadre à la couleur de qualité, niveau d'objet,
--- point = enchanté ; niveau moyen, armure, durabilité, sacs), Stats (caractéristiques avec une barre
--- colorée pour celles qui comptent pour la classe, combat, résistances), Métiers, Réputations.
+-- Une seule page qui défile : à gauche Équipement (emplacements autour du portrait : cadre à la couleur de
+-- qualité, niveau d'objet, point = enchanté ; armure, durabilité, sacs) puis Réputations (les plus avancées,
+-- « Tout voir ») ; à droite Stats (barre colorée pour ce qui compte pour la classe, combat, résistances)
+-- puis Métiers. Niveau moyen de l'équipement dans l'en-tête.
 -- Données : Modules/Gear.lua (relevées à chaque connexion du perso), c.professions.
 local SQ = 34
 local sheet
@@ -154,13 +155,16 @@ local function kpi(parent)
     return f
 end
 
+local SIDE_W, COL_GAP = 290, 12
+local SLOT_W, SLOT_STEP = 124, SQ + 15
+local REP_SHORT = 6
+
 local function build(parent)
     local f = CreateFrame("Frame", "WarbandKeeperCharSheet", parent)
     f:SetAllPoints()
-    UI:Panel(f, 14, C.surface, C.border)
-    -- en-tête : icône de classe dans un anneau, nom, classe et niveau, niveau moyen, fermer
+    -- en-tête : icône de classe dans un anneau, nom, classe et niveau, niveau moyen, retour à Persos
     f.ring = UI:Icon(f, "ring", 50, nil, "ARTWORK")
-    f.ring:SetPoint("TOPLEFT", 16, -14)
+    f.ring:SetPoint("TOPLEFT", 4, -4)
     f.cls = f:CreateTexture(nil, "ARTWORK", nil, -1)
     f.cls:SetSize(40, 40)
     f.cls:SetPoint("CENTER", f.ring)
@@ -175,73 +179,49 @@ local function build(parent)
     f.sub = UI:Text(f, 11, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
     f.back = UI:Button(f, "Persos", nil, 26, "ghost", "back")
-    f.back:SetPoint("TOPRIGHT", -12, -12)
+    f.back:SetPoint("TOPRIGHT", -4, -6)
     f.back:SetScript("OnClick", function() UI:ShowPage("characters") end)
     f.score = UI:Text(f, 22)
-    f.score:SetPoint("TOPRIGHT", f.back, "TOPLEFT", -18, -4)
+    f.score:SetPoint("TOPRIGHT", f.back, "TOPLEFT", -18, -2)
     f.scoreL = UI:Text(f, 10, C.dim)
     f.scoreL:SetPoint("TOPRIGHT", f.score, "BOTTOMRIGHT", 0, -2)
     f.scoreL:SetText(T("niv. moyen"))
-    -- onglets
-    f.tabLine = f:CreateTexture(nil, "ARTWORK")
-    f.tabLine:SetHeight(1)
-    f.tabLine:SetPoint("TOPLEFT", 14, -104); f.tabLine:SetPoint("TOPRIGHT", -14, -104)
-    f.tabs = {}
-    f.tab = "gear"
-    local prev
-    for _, t in ipairs({ { "gear", "Équipement" }, { "stats", "Stats" }, { "prof", "Métiers" }, { "reps", "Réputations" } }) do
-        local b = CreateFrame("Button", nil, f)
-        b:SetHeight(28)
-        b.label = UI:Text(b, 13)
-        b.label:SetPoint("LEFT", 2, 0)
-        b.label:SetText(T(t[2]))
-        b:SetWidth(b.label:GetStringWidth() + 6)
-        b.under = b:CreateTexture(nil, "OVERLAY")
-        b.under:SetHeight(2)
-        b.under:SetPoint("BOTTOMLEFT", 0, -1); b.under:SetPoint("BOTTOMRIGHT", 0, -1)
-        if prev then b:SetPoint("LEFT", prev, "RIGHT", 18, 0) else b:SetPoint("TOPLEFT", 16, -76) end
-        b:SetScript("OnClick", function() f.tab = t[1]; f:Refresh() end)
-        b:SetScript("OnEnter", function(s) s.hover = true; f:PaintTabs() end)
-        b:SetScript("OnLeave", function(s) s.hover = false; f:PaintTabs() end)
-        f.tabs[t[1]] = b
-        prev = b
-    end
-    function f:PaintTabs()
-        local r, g, b = UI:Accent()
-        for k, tb in pairs(self.tabs) do
-            local on = k == self.tab
-            if on then tb.label:SetTextColor(unpack(C.text)) else tb.label:SetTextColor(r, g, b, tb.hover and 1 or 0.85) end
-            tb.under:SetColorTexture(r, g, b, 1)
-            tb.under:SetShown(on)
-        end
-        self.tabLine:SetColorTexture(unpack(C.border))
-    end
+
+    -- tout le reste défile : à gauche Équipement puis Réputations, à droite Stats puis Métiers
+    local sc = UI:Scroll(f)
+    sc:SetPoint("TOPLEFT", 0, -66)
+    sc:SetPoint("BOTTOMRIGHT")
+    f.sc = sc
+    local root = sc.child
 
     -- Équipement
-    local gear = CreateFrame("Frame", nil, f)
-    gear:SetPoint("TOPLEFT", 14, -114); gear:SetPoint("BOTTOMRIGHT", -14, 12)
-    f.gearPane = gear
+    local gear = UI:Card(root, T("Équipement"))
+    f.gearCard = gear
+    gear:SetHeight(46 + 8 * SLOT_STEP)
     f.slots = {}
     for i, s in ipairs(LEFT) do
         local b = slotButton(gear, "left")
-        b:SetPoint("TOPLEFT", 0, -(i - 1) * (SQ + 15))
+        b:SetWidth(SLOT_W)
+        b:SetPoint("TOPLEFT", 14, -44 - (i - 1) * SLOT_STEP)
         b.def = s
         table.insert(f.slots, b)
     end
     for i, s in ipairs(RIGHT) do
         local b = slotButton(gear, "right")
-        b:SetPoint("TOPRIGHT", 0, -(i - 1) * (SQ + 15))
+        b:SetWidth(SLOT_W)
+        b:SetPoint("TOPRIGHT", -14, -44 - (i - 1) * SLOT_STEP)
         b.def = s
         table.insert(f.slots, b)
     end
     local mid = CreateFrame("Frame", nil, gear)
-    mid:SetPoint("TOPLEFT", 162, 0); mid:SetPoint("TOPRIGHT", -162, 0)
-    mid:SetHeight(196)
-    UI:Panel(mid, 12, C.surface, C.border)
-    f.big = UI:Icon(mid, "ring", 84, nil, "ARTWORK")
-    f.big:SetPoint("TOP", 0, -26)
+    mid:SetPoint("TOPLEFT", 14 + SLOT_W + 8, -44); mid:SetPoint("TOPRIGHT", -(14 + SLOT_W + 8), -44)
+    mid:SetHeight(178)
+    UI:Panel(mid, 12, C.bg, C.border)
+    f.mid = mid
+    f.big = UI:Icon(mid, "ring", 78, nil, "ARTWORK")
+    f.big:SetPoint("TOP", 0, -22)
     f.bigCls = mid:CreateTexture(nil, "ARTWORK", nil, -1)
-    f.bigCls:SetSize(70, 70)
+    f.bigCls:SetSize(64, 64)
     f.bigCls:SetPoint("CENTER", f.big)
     if mid.CreateMaskTexture then
         local m = mid:CreateMaskTexture()
@@ -250,113 +230,103 @@ local function build(parent)
         f.bigCls:AddMaskTexture(m)
     end
     f.spec = UI:Text(mid, 13)
-    f.spec:SetPoint("TOP", f.big, "BOTTOM", 0, -12)
+    f.spec:SetPoint("TOP", f.big, "BOTTOM", 0, -10)
     f.seen = UI:Text(mid, 10, C.dim)
     f.seen:SetPoint("TOP", f.spec, "BOTTOM", 0, -4)
     f.kpis = {}
-    for i = 1, 3 do
-        local k = kpi(gear)
-        k:SetPoint("TOPLEFT", mid, "BOTTOMLEFT", (i - 1) * 104, -8)
-        f.kpis[i] = k
-    end
+    for i = 1, 3 do f.kpis[i] = kpi(gear) end
     function f:PlaceKpis()
         local w = (mid:GetWidth() or 300)
-        local kw = math.floor((w - 16) / 3)
+        local kw = math.floor((w - 12) / 3)
         for i, k in ipairs(self.kpis) do
             k:SetWidth(kw)
-            k:ClearAllPoints(); k:SetPoint("TOPLEFT", mid, "BOTTOMLEFT", (i - 1) * (kw + 8), -8)
+            k:ClearAllPoints(); k:SetPoint("TOPLEFT", mid, "BOTTOMLEFT", (i - 1) * (kw + 6), -8)
         end
     end
-    f.weapons = {}
     for i, s in ipairs(WEAPONS) do
         local b = slotButton(gear, "weapon")
-        b:SetPoint("TOP", mid, "BOTTOM", (i - 2) * 92, -66)
+        b:SetPoint("TOP", mid, "BOTTOM", (i - 2) * 86, -62)
         b.def = s
         table.insert(f.slots, b)
     end
     f.noGear = UI:Text(gear, 11, C.muted)
-    f.noGear:SetPoint("BOTTOM", 0, 2)
+    f.noGear:SetPoint("BOTTOM", 0, 10)
 
-    -- Stats
-    local st = CreateFrame("Frame", nil, f)
-    st:SetPoint("TOPLEFT", 18, -116); st:SetPoint("BOTTOMRIGHT", -18, 12)
-    f.statPane = st
-    local function head(text, y)
-        local h = UI:Text(st, 10, C.muted)
-        h:SetPoint("TOPLEFT", 0, y)
-        h:SetText(UI:Upper(T(text)))
-        return h
-    end
-    f.hStats = head("Caractéristiques", -4)
+    -- Réputations (sous l'équipement) : les plus avancées, « Tout voir » pour toutes, par groupe
+    local reps = UI:Card(root, T("Réputations"))
+    f.repCard = reps
+    f.repAll = false
+    f.repMore = UI:Button(reps, "Tout voir", nil, 24, "ghost")
+    f.repMore:SetPoint("TOPRIGHT", -10, -9)
+    f.repMore:SetScript("OnClick", function() f.repAll = not f.repAll; f:Refresh() end)
+
+    -- Stats (colonne de droite)
+    local st = UI:Card(root, T("Stats"))
+    f.statCard = st
     f.hUse = UI:Text(st, 10, C.dim)
-    f.hUse:SetPoint("TOPRIGHT", 0, -4)
+    f.hUse:SetPoint("TOPRIGHT", -14, -17)
     f.statRows = {}
     for i, k in ipairs({ { "str", "Force" }, { "agi", "Agilité" }, { "sta", "Endurance" }, { "int", "Intelligence" }, { "spi", "Esprit" } }) do
         local r = CreateFrame("Frame", nil, st)
-        r:SetHeight(24)
-        r:SetPoint("TOPLEFT", 0, -22 - (i - 1) * 26); r:SetPoint("TOPRIGHT", 0, -22 - (i - 1) * 26)
-        r.name = UI:Text(r, 13)
+        r:SetHeight(22)
+        r:SetPoint("TOPLEFT", 14, -42 - (i - 1) * 24); r:SetPoint("TOPRIGHT", -14, -42 - (i - 1) * 24)
+        r.name = UI:Text(r, 12)
         r.name:SetPoint("LEFT")
         r.name:SetText(T(k[2]))
-        r.val = UI:Text(r, 13)
-        r.val:SetPoint("RIGHT")
-        r.val:SetJustifyH("RIGHT")
-        r.bar = UI:Progress(r, 6)
-        r.bar:SetPoint("LEFT", 120, 0); r.bar:SetPoint("RIGHT", -60, 0)
-        r.key = k[1]
-        f.statRows[i] = r
-    end
-    f.hCombat = head("Combat", -164)
-    f.combat = {}
-    for i = 1, 8 do
-        local col, row = (i - 1) % 2, math.floor((i - 1) / 2)
-        local r = CreateFrame("Frame", nil, st)
-        r:SetSize(10, 20)
-        r.name = UI:Text(r, 12, C.muted)
-        r.name:SetPoint("LEFT")
         r.val = UI:Text(r, 12)
         r.val:SetPoint("RIGHT")
         r.val:SetJustifyH("RIGHT")
-        r.col, r.row = col, row
+        r.bar = UI:Progress(r, 5)
+        r.bar:SetPoint("LEFT", 92, 0); r.bar:SetPoint("RIGHT", -44, 0)
+        r.key = k[1]
+        f.statRows[i] = r
+    end
+    f.hCombat = UI:Text(st, 10, C.muted)
+    f.hCombat:SetPoint("TOPLEFT", 14, -170)
+    f.hCombat:SetText(UI:Upper(T("Combat")))
+    f.combat = {}
+    for i = 1, 8 do
+        local r = CreateFrame("Frame", nil, st)
+        r:SetHeight(19)
+        r:SetPoint("TOPLEFT", 14, -188 - (i - 1) * 20); r:SetPoint("TOPRIGHT", -14, -188 - (i - 1) * 20)
+        r.name = UI:Text(r, 11, C.muted)
+        r.name:SetPoint("LEFT")
+        r.val = UI:Text(r, 11)
+        r.val:SetPoint("RIGHT")
+        r.val:SetJustifyH("RIGHT")
         f.combat[i] = r
     end
-    function f:PlaceCombat()
-        local w = st:GetWidth() or 580
-        local cw = math.floor((w - 30) / 2)
-        for _, r in ipairs(self.combat) do
-            r:SetWidth(cw)
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", r.col * (cw + 30), -184 - r.row * 22)
-        end
-    end
-    f.hRes = head("Résistances", -280)
-    f.res = UI:Text(st, 12)
-    f.res:SetPoint("TOPLEFT", 0, -300)
-    f.statNote = UI:Text(st, 11, C.dim)
-    f.statNote:SetPoint("TOPLEFT", 0, -332)
+    f.hRes = UI:Text(st, 10, C.muted)
+    f.hRes:SetText(UI:Upper(T("Résistances")))
+    f.res = UI:Text(st, 11)
+    f.res:SetJustifyH("LEFT")
+    if f.res.SetWordWrap then f.res:SetWordWrap(true) end
+    f.statNote = UI:Text(st, 10, C.dim)
+    f.statNote:SetJustifyH("LEFT")
+    if f.statNote.SetWordWrap then f.statNote:SetWordWrap(true) end
 
-    -- Métiers et Réputations : listes défilantes
-    local list = UI:Scroll(f)
-    list:SetPoint("TOPLEFT", 16, -116); list:SetPoint("BOTTOMRIGHT", -10, 12)
-    f.list = list
+    -- Métiers (sous les stats)
+    local pr = UI:Card(root, T("Métiers"))
+    f.profCard = pr
+
+    -- lignes « nom, valeur à droite, barre dessous » (réputations et métiers)
     f.lrows = UI:Pool(function()
-        local r = CreateFrame("Frame", nil, list.child)
+        local r = CreateFrame("Frame", nil, root)
         r:SetHeight(30)
         r.name = UI:Text(r, 12)
         r.name:SetPoint("TOPLEFT", 0, -2)
         r.right = UI:Text(r, 11, C.muted)
-        r.right:SetPoint("TOPRIGHT", -14, -2)
+        r.right:SetPoint("TOPRIGHT", 0, -2)
         r.right:SetJustifyH("RIGHT")
-        r.bar = UI:Progress(r, 5)
-        r.bar:SetPoint("BOTTOMLEFT", 0, 4); r.bar:SetPoint("BOTTOMRIGHT", -14, 4)
+        r.bar = UI:Progress(r, 4)
+        r.bar:SetPoint("BOTTOMLEFT", 0, 5); r.bar:SetPoint("BOTTOMRIGHT", 0, 5)
         return r
     end)
-    f.lheads = UI:Pool(function()
-        local h = UI:Text(list.child, 10, C.muted)
-        return h
-    end)
-    f.empty = UI:Text(f, 12, C.muted)
-    f.empty:SetPoint("TOP", 0, -160)
-
+    f.lheads = UI:Pool(function() return UI:Text(root, 10, C.muted) end)
+    f.repEmpty = UI:Text(reps, 11, C.muted)
+    f.repEmpty:SetPoint("TOPLEFT", 16, -44)
+    f.profEmpty = UI:Text(pr, 11, C.muted)
+    f.profEmpty:SetPoint("TOPLEFT", 16, -44)
     return f
 end
 
@@ -386,12 +356,13 @@ local function refreshGear(f, c)
     f.noGear:SetText(T("Équipement pas encore relevé : connecte ce perso une fois avec cette version."))
 end
 
+-- Stats ; rend la hauteur de la carte
 local function refreshStats(f, c)
     local s = c.stats
     local w = WEIGHTS[c.class or ""] or {}
     local r1, g1, b1 = UI:Accent()
     local cls = c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class]
-    f.hUse:SetText(cls and string.format(T("en couleur : utile pour un %s"), cls:lower()) or "")
+    f.hUse:SetText(cls and T("en couleur : utile") or "")
     local maxV = 1
     for _, r in ipairs(f.statRows) do maxV = math.max(maxV, s and s[r.key] or 0) end
     for _, r in ipairs(f.statRows) do
@@ -411,7 +382,7 @@ local function refreshStats(f, c)
         if c.class == "HUNTER" then add(T("Puiss. d'attaque à distance"), s.rap) end
         if not caster then add(T("Critique"), c.class == "HUNTER" and s.rcrit or s.crit, true) end
         add(T("Toucher"), s.hit, true)
-        if caster then
+        if caster or c.class == "PALADIN" or c.class == "SHAMAN" or c.class == "DRUID" then
             add(T("Puissance des sorts"), s.spell)
             if c.class == "PRIEST" or c.class == "DRUID" or c.class == "PALADIN" or c.class == "SHAMAN" then add(T("Soins"), s.heal) end
             add(T("Critique des sorts"), s.scrit, true)
@@ -420,78 +391,107 @@ local function refreshStats(f, c)
         add(T("Parade"), s.parry, true)
         add(T("Blocage"), s.block, true)
     end
-    f:PlaceCombat()
+    local n = 0
     for i, r in ipairs(f.combat) do
         local e = list[i]
         r:SetShown(e ~= nil)
-        if e then r.name:SetText(e[1]); r.val:SetText(e[2]) end
+        if e then r.name:SetText(e[1]); r.val:SetText(e[2]); n = i end
     end
+    f.hCombat:SetShown(n > 0)
+    local y = n > 0 and (188 + n * 20 + 8) or 170
+    f.hRes:ClearAllPoints(); f.hRes:SetPoint("TOPLEFT", 14, -y)
     local res = s and s.res or {}
     local RES = { { "fire", "Feu", "ff7a3d" }, { "frost", "Givre", "62b6ff" }, { "nature", "Nature", "8dd65c" },
         { "shadow", "Ombre", "b48cff" }, { "arcane", "Arcanes", "ffe27a" } }
     local parts = {}
     for _, x in ipairs(RES) do table.insert(parts, "|cff" .. x[3] .. T(x[2]) .. " " .. (res[x[1]] or 0) .. "|r") end
-    f.res:SetText(s and table.concat(parts, "     ") or "-")
+    local cw = SIDE_W - 28
+    f.res:ClearAllPoints(); f.res:SetPoint("TOPLEFT", 14, -(y + 18)); f.res:SetWidth(cw)
+    f.res:SetText(s and table.concat(parts, "   ") or "-")
+    y = y + 18 + math.max(16, f.res:GetStringHeight() or 16) + 10
+    f.statNote:ClearAllPoints(); f.statNote:SetPoint("TOPLEFT", 14, -y); f.statNote:SetWidth(cw)
     f.statNote:SetText(s and c.sheetAt and string.format(T("Relevées à la dernière connexion de ce perso (%s)."), UI:Ago(c.sheetAt))
         or T("Stats pas encore relevées : connecte ce perso une fois avec cette version."))
+    return y + math.max(14, f.statNote:GetStringHeight() or 14) + 14
 end
 
-local function refreshList(f, c, kind)
-    f.lrows:Reset(); f.lheads:Reset()
-    local w = (f.list:GetWidth() or 600) - 4
-    f.list.child:SetWidth(w)
-    local y = 0
+-- Métiers dans leur carte ; rend la hauteur
+local function refreshProfs(f, c, card, w)
     local r1, g1, b1 = UI:Accent()
-    local n = 0
-    if kind == "prof" then
-        local profs = {}
-        for name, p in pairs(c.professions or {}) do table.insert(profs, { name, p }) end
-        table.sort(profs, function(a, b) return (a[2].rank or 0) > (b[2].rank or 0) end)
-        for _, e in ipairs(profs) do
-            local r = f.lrows:Get()
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(w)
-            r.name:SetText(T(e[1])); r.name:SetTextColor(unpack(C.text))
-            local p = e[2]
-            r.right:SetText((p.rank or 0) .. " / " .. (p.max or 0))
-            r.bar.color = { r1, g1, b1, 1 }
-            r.bar:SetValue((p.max or 0) > 0 and (p.rank or 0) / p.max or 0)
-            y = y + 38; n = n + 1
-        end
-        f.empty:SetText(T("Aucun métier relevé pour ce perso."))
-    else
-        for _, e in ipairs(c.reps or {}) do
-            if e.header then
-                local h = f.lheads:Get()
-                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -(y + 8))
-                h:SetText(UI:Upper(e.name))
-                y = y + 28
-            else
-                local r = f.lrows:Get()
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(w)
-                r.name:SetText(e.name); r.name:SetTextColor(unpack(C.text))
-                local sc = STANDING_COL[e.standing] or C.muted
-                r.right:SetText("|cff" .. string.format("%02x%02x%02x", sc[1] * 255, sc[2] * 255, sc[3] * 255) .. T(STANDING[e.standing] or "?")
-                    .. "|r  " .. (e.cur or 0) .. " / " .. (e.max or 0))
-                r.bar.color = { sc[1], sc[2], sc[3], 1 }
-                r.bar:SetValue((e.max or 0) > 0 and (e.cur or 0) / e.max or 0)
-                y = y + 36; n = n + 1
-            end
-        end
-        f.empty:SetText(T("Réputations pas encore relevées : connecte ce perso une fois avec cette version."))
+    local profs = {}
+    for name, p in pairs(c.professions or {}) do table.insert(profs, { name, p }) end
+    table.sort(profs, function(a, b) return (a[2].rank or 0) > (b[2].rank or 0) end)
+    local y = 44
+    for _, e in ipairs(profs) do
+        local r = f.lrows:Get()
+        r:SetParent(card)
+        r:ClearAllPoints(); r:SetPoint("TOPLEFT", card, "TOPLEFT", 14, -y); r:SetWidth(w - 28)
+        r.name:SetText(T(e[1])); r.name:SetTextColor(unpack(C.text))
+        local p = e[2]
+        r.right:SetText((p.rank or 0) .. " / " .. (p.max or 0))
+        r.bar.color = { r1, g1, b1, 1 }
+        r.bar:SetValue((p.max or 0) > 0 and (p.rank or 0) / p.max or 0)
+        y = y + 34
     end
-    f.empty:SetShown(n == 0)
-    f.list:SetContentHeight(y)
+    f.profEmpty:SetShown(#profs == 0)
+    f.profEmpty:SetText(T("Aucun métier relevé pour ce perso."))
+    return (#profs == 0 and 74) or (y + 8)
+end
+
+-- Réputations dans leur carte ; rend la hauteur. Repliée : les plus avancées, sans les groupes.
+local function refreshReps(f, c, card, w)
+    local all = c.reps or {}
+    local list = {}
+    if f.repAll then
+        list = all
+    else
+        for _, e in ipairs(all) do if not e.header then table.insert(list, e) end end
+        table.sort(list, function(a, b)
+            if (a.standing or 0) ~= (b.standing or 0) then return (a.standing or 0) > (b.standing or 0) end
+            return (a.cur or 0) / math.max(1, a.max or 1) > (b.cur or 0) / math.max(1, b.max or 1)
+        end)
+    end
+    local nReal = 0
+    for _, e in ipairs(all) do if not e.header then nReal = nReal + 1 end end
+    f.repMore:SetShown(nReal > REP_SHORT)
+    f.repMore:SetLabel(f.repAll and T("Réduire") or string.format(T("Tout voir (%d)"), nReal))
+    local y, shown = 44, 0
+    for _, e in ipairs(list) do
+        if not f.repAll and shown >= REP_SHORT then break end
+        if e.header then
+            local h = f.lheads:Get()
+            h:SetParent(card)
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", card, "TOPLEFT", 14, -(y + 6))
+            h:SetText(UI:Upper(e.name))
+            y = y + 24
+        else
+            local r = f.lrows:Get()
+            r:SetParent(card)
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", card, "TOPLEFT", 14, -y); r:SetWidth(w - 28)
+            r.name:SetText(e.name); r.name:SetTextColor(unpack(C.text))
+            local sc = STANDING_COL[e.standing] or C.muted
+            r.right:SetText("|cff" .. string.format("%02x%02x%02x", sc[1] * 255, sc[2] * 255, sc[3] * 255) .. T(STANDING[e.standing] or "?")
+                .. "|r  " .. (e.cur or 0) .. " / " .. (e.max or 0))
+            r.bar.color = { sc[1], sc[2], sc[3], 1 }
+            r.bar:SetValue((e.max or 0) > 0 and (e.cur or 0) / e.max or 0)
+            y = y + 34
+            shown = shown + 1
+        end
+    end
+    f.repEmpty:SetShown(nReal == 0)
+    f.repEmpty:SetText(T("Réputations pas encore relevées : connecte ce perso une fois avec cette version."))
+    return (nReal == 0 and 74) or (y + 8)
 end
 
 function UI:ShowCharSheet(key)
     if not WK.DB.global.characters[key] then return end
     UI.charSheetKey = key
-    if sheet then sheet.tab = "gear" end
+    if sheet then sheet.repAll = false end
     UI:Create():Show()
     UI:ShowPage("charsheet")
 end
 
--- Mise à jour de la fiche (onglet, données)
+-- Mise à jour de la fiche : en-tête, puis les deux colonnes
 local function refresh(f)
     local key = f.key
     local c = WK.DB.global.characters[key]
@@ -503,20 +503,31 @@ local function refresh(f)
     f.title:SetTextColor(cr, cg, cb)
     local cls = c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class] or ""
     local race = c.race and T(RACE[c.race] or c.race) or ""
-    f.sub:SetText(string.format(T("%s %s · niveau %s · %s"), cls, race, tostring(c.level or "?"), c.realm or ""))
+    f.sub:SetText(string.format(T("%s %s · niveau %s · %s"), cls, race, tostring(c.level or "?"), UI:FactionRealm(c)))
     local avg = averageIlvl(c.gear)
     f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
     f.score:SetTextColor(UI:Accent())
-    f:PaintTabs()
-    local tab = f.tab
-    f.gearPane:SetShown(tab == "gear")
-    f.statPane:SetShown(tab == "stats")
-    f.list:SetShown(tab == "prof" or tab == "reps")
-    f.empty:Hide()
+    f.lrows:Reset(); f.lheads:Reset()
+    -- largeurs : colonne de droite fixe, la gauche prend le reste
+    local W = math.max(600, (f.sc:GetWidth() or 840) - 12)
+    f.sc.child:SetWidth(W)
+    local leftW = W - SIDE_W - COL_GAP
     local view = setmetatable({ key = key }, { __index = c })
-    if tab == "gear" then refreshGear(f, view)
-    elseif tab == "stats" then refreshStats(f, c)
-    else refreshList(f, c, tab) end
+    -- gauche : équipement puis réputations
+    f.gearCard:ClearAllPoints(); f.gearCard:SetPoint("TOPLEFT", 0, 0); f.gearCard:SetWidth(leftW)
+    refreshGear(f, view)
+    local gh = f.gearCard:GetHeight()
+    f.repCard:ClearAllPoints(); f.repCard:SetPoint("TOPLEFT", 0, -(gh + COL_GAP)); f.repCard:SetWidth(leftW)
+    local rh = refreshReps(f, c, f.repCard, leftW)
+    f.repCard:SetHeight(rh)
+    -- droite : stats puis métiers
+    f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetWidth(SIDE_W)
+    local sh = refreshStats(f, c)
+    f.statCard:SetHeight(sh)
+    f.profCard:ClearAllPoints(); f.profCard:SetPoint("TOPLEFT", leftW + COL_GAP, -(sh + COL_GAP)); f.profCard:SetWidth(SIDE_W)
+    local ph = refreshProfs(f, c, f.profCard, SIDE_W)
+    f.profCard:SetHeight(ph)
+    f.sc:SetContentHeight(math.max(gh + COL_GAP + rh, sh + COL_GAP + ph) + 8)
 end
 
 -- branché après build (les fonctions locales ci-dessus doivent exister)
@@ -534,7 +545,7 @@ UI:RegisterPage({
     end,
 })
 
-WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsVisible() and sheet.tab == "gear" then sheet:Refresh() end end)
+WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsVisible() then sheet:Refresh() end end)
 
 -- Pastilles de l'en-tête : le perso affiché
 UI.CHIPS.charsheet = function()
