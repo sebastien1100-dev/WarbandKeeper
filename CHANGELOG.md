@@ -24,6 +24,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.9.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Micro menu : survol d'une barre = sa valeur (FPS ; latence domicile et monde, en ms) et ce que veut dire sa couleur.
+
+### Modifications
+- Micro menu : les barres FPS et latence passent sous le cadre de l'heure (sur sa largeur), un peu plus épaisses ; l'heure est de nouveau bien centrée dans son cadre.
+
 ## v1.9.0 — 17/11/2026
 
 _Un /reload suffit._

@@ -446,17 +446,40 @@ local function build()
     bar.timeBold:SetPoint("CENTER", bar.time, "CENTER", 1, 0)
     bar.timeBold:SetJustifyH("CENTER")
     bar.timeBold:Hide()
-    -- FPS et latence : deux petites barres côte à côte sous l'heure (remplies selon la valeur)
-    local function meter()
+    -- FPS et latence : deux barres côte à côte sous le cadre de l'heure (remplies selon la valeur),
+    -- valeurs au survol
+    local function meter(kind)
         local m = CreateFrame("Frame", nil, bar.clockBtn)
-        m:SetSize(24, 3)
-        m.track = UI:Rounded(m, 2, 0, "ARTWORK", 0)
+        m:SetSize(24, 5)
+        m.track = UI:Rounded(m, 2.5, 0, "ARTWORK", 0)
         m.fill = m:CreateTexture(nil, "ARTWORK", nil, 1)
         m.fill:SetPoint("TOPLEFT"); m.fill:SetPoint("BOTTOMLEFT")
+        -- zone de survol un peu plus haute que la barre
+        m.hit = CreateFrame("Frame", nil, m)
+        m.hit:SetPoint("TOPLEFT", -2, 4); m.hit:SetPoint("BOTTOMRIGHT", 2, -4)
+        m.hit:EnableMouse(true)
+        m.hit:SetScript("OnEnter", function(s)
+            WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            local fps, ms, fc, mc = stats()
+            if kind == "fps" then
+                GameTooltip:SetText(T("Images par seconde"), 1, 1, 1)
+                GameTooltip:AddDoubleLine(T("FPS"), tostring(fps), 0.8, 0.8, 0.8, fc[1], fc[2], fc[3])
+                GameTooltip:AddLine(T("Vert au-delà de 50, orange au-delà de 30."), 0.55, 0.57, 0.6, true)
+            else
+                GameTooltip:SetText(T("Latence"), 1, 1, 1)
+                local home, world = ms, ms
+                if GetNetStats then local _, _, h, w = GetNetStats(); home, world = h or ms, w or ms end
+                GameTooltip:AddDoubleLine(T("Domicile"), home .. " ms", 0.8, 0.8, 0.8, 1, 1, 1)
+                GameTooltip:AddDoubleLine(T("Monde"), world .. " ms", 0.8, 0.8, 0.8, mc[1], mc[2], mc[3])
+                GameTooltip:AddLine(T("Vert sous 100 ms, orange sous 200 ms."), 0.55, 0.57, 0.6, true)
+            end
+            GameTooltip:Show()
+        end)
+        m.hit:SetScript("OnLeave", function() GameTooltip:Hide() end)
         return m
     end
-    bar.fpsBar = meter()
-    bar.msBar = meter()
+    bar.fpsBar = meter("fps")
+    bar.msBar = meter("ms")
     -- (placées par Layout : sous l'heure, calées sur la largeur du texte)
     function bar:Meter(m, frac, col)
         m.frac, m.col = frac, col
@@ -579,7 +602,7 @@ local function build()
         local h = math.max(base + PAD * 2, fs + 18)
         -- heure et barres forment un bloc centré dans le fond : le texte au milieu (le double du
         -- gras est réparti des deux côtés), les deux barres dessous, d'un bord du texte à l'autre
-        local yoff = o.stats and 3 or 0
+        local yoff = 0 -- les barres sont sous le cadre : l'heure reste centrée
         -- centrage sur l'encre : avec des chiffres à largeur fixe, le « 1 » laisse un vide à sa
         -- gauche (et un peu à sa droite) ; on décale le texte et on cale les barres sur les chiffres
         if not self.probe then
@@ -600,16 +623,15 @@ local function build()
         local shift = (lead - trail) / 2
         self.time:ClearAllPoints()
         self.time:SetPoint("CENTER", self.clockBtn, "CENTER", (o.bold and -0.5 or 0) - shift, yoff)
-        local half = math.max(20, tw - lead - trail) / 2
-        local by = yoff - fs * 0.42 - 2
-        local mw = math.floor(half - 2)
+        -- sous le cadre de l'heure, sur sa largeur (moins les arrondis), un petit écart au milieu
+        local mw = math.floor((clockW - 16 - 6) / 2)
         for _, m in ipairs({ self.fpsBar, self.msBar }) do
             m:ClearAllPoints()
             m:SetWidth(mw)
             if m.frac then self:Meter(m, m.frac, m.col) end
         end
-        self.fpsBar:SetPoint("TOPLEFT", self.clockBtn, "CENTER", -half, by)
-        self.msBar:SetPoint("TOPRIGHT", self.clockBtn, "CENTER", half, by)
+        self.fpsBar:SetPoint("TOPLEFT", self.bg, "BOTTOMLEFT", 8, -4)
+        self.msBar:SetPoint("TOPRIGHT", self.bg, "BOTTOMRIGHT", -8, -4)
         self.bg:SetSize(clockW, h)
         self:SetHeight(h)
         local left = self:GetLeft() or 0

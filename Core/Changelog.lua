@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.9.1", date = "17/11/2026",
+        changed = {
+            "Micro menu : les barres FPS et latence passent sous le cadre de l'heure (sur sa largeur), un peu plus épaisses ; l'heure est de nouveau bien centrée dans son cadre.",
+        },
+        added = {
+            "Micro menu : survol d'une barre = sa valeur (FPS ; latence domicile et monde, en ms) et ce que veut dire sa couleur.",
+        },
+    },
+    {
         version = "1.9.0", date = "17/11/2026",
         added = {
             "Feu de camp : une icône de flamme apparaît quand tu t'approches d'un camp (elle pulse pour attirer l'oeil). Clic : ton perso s'assoit ; un cercle décompte alors la minute, avec les secondes au centre. Une fois les avantages obtenus, elle passe au vert puis s'efface ; relevé trop tôt, elle passe à l'orange.",
