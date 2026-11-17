@@ -2112,6 +2112,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Campements : près d'un feu de camp (le jeu donne alors l'effet du feu), rappel « Assieds-toi pour profiter du bonus » avec un bouton qui fait asseoir le perso (hors combat), et rappel quand on se relève trop tôt.",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
