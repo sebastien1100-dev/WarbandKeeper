@@ -885,6 +885,90 @@ UI:RegisterPage({
         -- Carte : lieux utiles et trajets (Modules/MapLayers.lua, UI/MapLayers.lua)
         -----------------------------------------------------------------------
         section("maplayers")
+        -- Mes notes de carte (Modules/MapNotes.lua, UI/MapNotes.lua) : réglages, recherche, liste par zone
+        do
+            local MN = WK.modules.MapNotes
+            local nc = MN:Config()
+            local LIST_H = 250
+            local ncard = card("Mes notes de carte", 40 + 3 * 46 + 44 + LIST_H + 12, "perso : vues par tous tes persos, jamais envoyées")
+            local placeDd = UI:Dropdown(ncard, 220, 30, { { "alt", T("Alt + clic") }, { "ctrl", T("Ctrl + clic") }, { "shiftalt", T("Maj + Alt + clic") } },
+                function(v) nc.place = v end)
+            placeDd:Select(nc.place or "alt")
+            UI:SettingRow(ncard, -40, "Poser une note", "Sur la carte du monde, à l'endroit cliqué. Clic sur une note : la modifier ; Maj + clic : y aller.", placeDd, 220)
+            UI:SettingRow(ncard, -86, "Taille des pastilles", nil,
+                UI:Slider(ncard, 220, 12, 32, 2, function() return nc.size or 18 end, function(v) nc.size = v; UI:RefreshMapNotes() end, "%d px"), 240)
+            UI:SettingRow(ncard, -132, "Noms toujours affichés", "Pour toutes les notes (sinon au survol, ou note par note).",
+                toggle(ncard, function() return nc.labels end, function(v) nc.labels = v; UI:RefreshMapNotes() end), 80)
+            local search = UI:Input(ncard, 260, 30, T("Rechercher une note…"), "search")
+            search:SetPoint("TOPLEFT", 16, -184)
+            local count = UI:Text(ncard, 11, C.muted)
+            count:SetPoint("LEFT", search, "RIGHT", 12, 0)
+            local lsc = UI:Scroll(ncard)
+            lsc:SetPoint("TOPLEFT", 12, -222)
+            lsc:SetPoint("TOPRIGHT", -8, -222)
+            lsc:SetHeight(LIST_H)
+            local heads = UI:Pool(function() return UI:Text(lsc.child, 10, C.muted) end)
+            local rows = UI:Pool(function()
+                local r = CreateFrame("Button", nil, lsc.child)
+                r:SetHeight(34)
+                r.hl = UI:Rounded(r, 8, 0, "BACKGROUND", 1)
+                r.icon = UI:Icon(r, "star", 15, nil, "ARTWORK")
+                r.icon:SetPoint("LEFT", 8, 0)
+                r.name = UI:Text(r, 12)
+                r.name:SetPoint("TOPLEFT", 32, -4)
+                r.name:SetPoint("RIGHT", -150, 0)
+                r.name:SetJustifyH("LEFT")
+                r.sub = UI:Text(r, 10, C.dim)
+                r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
+                r.sub:SetPoint("RIGHT", -150, 0)
+                r.sub:SetJustifyH("LEFT")
+                r.del = UI:IconButton(r, "trash", 24, "Maj + clic : supprimer la note", true)
+                r.del:SetPoint("RIGHT", -4, 0)
+                r.del:SetScript("OnClick", function() if IsShiftKeyDown() and r.note then MN:Delete(r.note.id) end end)
+                r.go = UI:Button(r, "Guider", nil, 24, "ghost", "guide")
+                r.go:SetPoint("RIGHT", r.del, "LEFT", -6, 0)
+                r.go:SetScript("OnClick", function() if r.note then MN:GuideTo(r.note) end end)
+                r:SetScript("OnEnter", function(s) s.hl:SetColor(unpack(C.hover)) end)
+                r:SetScript("OnLeave", function(s) s.hl:SetColor(0, 0, 0, 0) end)
+                r:SetScript("OnClick", function(s) if s.note then UI:EditMapNote(s.note) end end)
+                return r
+            end)
+            local empty = UI:Text(lsc.child, 11, C.muted)
+            empty:SetPoint("TOPLEFT", 6, -8)
+            local function refreshList()
+                heads:Reset(); rows:Reset()
+                local w = math.max(200, (lsc:GetWidth() or 600) - 14)
+                lsc.child:SetWidth(w)
+                local groups = MN:Grouped(search:GetText())
+                local y, n = 0, 0
+                for _, g in ipairs(groups) do
+                    local h = heads:Get()
+                    h:ClearAllPoints(); h:SetPoint("TOPLEFT", 6, -(y + 8))
+                    h:SetText(UI:Upper(g.zone) .. "  ·  " .. #g.notes)
+                    y = y + 26
+                    for _, note in ipairs(g.notes) do
+                        local r = rows:Get()
+                        r.note = note
+                        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(w)
+                        r.hl:SetColor(0, 0, 0, 0)
+                        local col = MN:Color(note.color)
+                        r.icon:SetTexture(UI.MEDIA .. (note.icon or "star"))
+                        r.icon:SetVertexColor(col[1], col[2], col[3], 1)
+                        r.name:SetText(note.title or T("Note"))
+                        r.sub:SetText((note.text and note.text ~= "" and (note.text:gsub("\n", " ") .. "  ·  ") or "") .. MN:Coords(note))
+                        y = y + 36; n = n + 1
+                    end
+                end
+                empty:SetShown(n == 0)
+                empty:SetText(#MN:List() == 0 and T("Pas encore de note : Alt + clic sur la carte du monde pour en poser une.") or T("Aucune note ne correspond."))
+                count:SetText(string.format(#MN:List() > 1 and T("%d notes") or T("%d note"), #MN:List()))
+                lsc:SetContentHeight(math.max(y, 30))
+            end
+            search.onChange = function() refreshList() end
+            self.RefreshNotesList = function() refreshList() end
+            table.insert(self.dyn, refreshList)
+            UI:OnResize(lsc, function() refreshList() end)
+        end
         local ML = WK.modules.MapLayers
         local mlc = ML:Config()
         local function mlRefresh() if UI.RefreshMapLayers then UI:RefreshMapLayers() end end

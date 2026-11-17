@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
 - Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.
@@ -22,6 +23,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.1.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Notes de carte perso : Alt + clic sur la carte du monde pose une note à cet endroit (icône, couleur, titre, texte libre). Elle reste, se voit sur la carte et, au choix, sur la minicarte, et tous tes persos la voient ; rien n'est envoyé à personne.
+- Notes : survol = titre, texte et coordonnées ; clic = modifier ou supprimer ; Maj + clic = guidage jusqu'à la note. Nom affiché au survol, ou toujours (note par note ou pour toutes).
+- Réglages QoL > Carte, « Mes notes de carte » : toutes tes notes par zone, recherche, Guider, suppression (Maj + clic), et les réglages (Alt, Ctrl ou Maj + Alt + clic pour poser, taille des pastilles).
 
 ## v1.0.1 — 17/11/2026
 

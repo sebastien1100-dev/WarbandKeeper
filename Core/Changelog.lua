@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.1.0", date = "17/11/2026", restart = true,
+        added = {
+            "Notes de carte perso : Alt + clic sur la carte du monde pose une note à cet endroit (icône, couleur, titre, texte libre). Elle reste, se voit sur la carte et, au choix, sur la minicarte, et tous tes persos la voient ; rien n'est envoyé à personne.",
+            "Notes : survol = titre, texte et coordonnées ; clic = modifier ou supprimer ; Maj + clic = guidage jusqu'à la note. Nom affiché au survol, ou toujours (note par note ou pour toutes).",
+            "Réglages QoL > Carte, « Mes notes de carte » : toutes tes notes par zone, recherche, Guider, suppression (Maj + clic), et les réglages (Alt, Ctrl ou Maj + Alt + clic pour poser, taille des pastilles).",
+        },
+    },
+    {
         version = "1.0.1", date = "17/11/2026",
         fixed = {
             "Mode pêche : la canne à pêche ne s'équipait pas. Elle est maintenant prise dans les sacs et équipée directement (comme un glisser vers la main droite) ; si le jeu refuse encore, un message le dit au lieu de rien faire. Une canne posée ailleurs qu'en main droite (emplacement d'outil de métier) compte aussi comme équipée.",
@@ -1987,6 +1995,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
     "Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.",
