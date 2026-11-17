@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.0.1", date = "17/11/2026",
+        fixed = {
+            "Mode pêche : la canne à pêche ne s'équipait pas. Elle est maintenant prise dans les sacs et équipée directement (comme un glisser vers la main droite) ; si le jeu refuse encore, un message le dit au lieu de rien faire. Une canne posée ailleurs qu'en main droite (emplacement d'outil de métier) compte aussi comme équipée.",
+        },
+    },
+    {
         version = "1.0.0", date = "17/11/2026", restart = true,
         added = {
             "Micro menu : nouveaux raccourcis Guilde (avec le nombre de membres en ligne sur l'icône), Collections du compte et Héritages ; « Amis » affiche le nombre d'amis en ligne (jeu et Battle.net). Ils arrivent dans « Masqués » : glisse-les dans la barre.",

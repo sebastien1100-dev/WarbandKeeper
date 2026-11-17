@@ -81,7 +81,12 @@ local function eachBagItem(fn)
     end
 end
 
-function M:PoleEquipped() return isPole(equippedID(MAINHAND)) end
+-- Canne équipée : main droite, ou un autre emplacement (outil de métier sur certains clients)
+function M:PoleEquipped()
+    if isPole(equippedID(MAINHAND)) then return true end
+    for slot = 18, 30 do if isPole(equippedID(slot)) then return true end end
+    return false
+end
 
 -- Meilleure canne dans les sacs (ou nil)
 function M:BagPole()
@@ -125,9 +130,34 @@ end
 ---------------------------------------------------------------------------
 -- Tenue
 ---------------------------------------------------------------------------
+-- Emplacement d'un objet dans les sacs
+local function findInBags(id)
+    for bag = 0, 4 do
+        for slot = 1, WK.Container.NumSlots(bag) or 0 do
+            if WK.Container.Info(bag, slot) == id then return bag, slot end
+        end
+    end
+end
+-- Équipe un objet : depuis son emplacement dans les sacs (prendre puis équiper, le plus sûr), sinon par
+-- son nom ou son lien. item : n° (dans les sacs) ou lien (équipement à remettre).
 local function equip(item, slot)
+    if not item then return end
+    if type(item) == "number" then
+        local bag, bslot = findInBags(item)
+        local pickup = (C_Container and C_Container.PickupContainerItem) or PickupContainerItem
+        if bag and pickup and EquipCursorItem then
+            if ClearCursor then ClearCursor() end
+            local ok = pcall(pickup, bag, bslot)
+            if ok and CursorHasItem and CursorHasItem() then
+                pcall(EquipCursorItem, slot)
+                if CursorHasItem() then ClearCursor() else return end
+            end
+        end
+    end
     local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
-    if f and item then pcall(f, item, slot) end
+    if f then
+        if not pcall(f, item, slot) then pcall(f, item) end
+    end
 end
 
 -- Équipe la canne et les pièces de pêche ; retient ce qu'elles remplacent.
@@ -144,6 +174,17 @@ function M:EquipGear()
             if saved[OFFHAND] == nil then saved[OFFHAND] = equippedLink(OFFHAND) or false end
             equip(pole, MAINHAND)
             done = true
+            -- toujours pas en main une seconde plus tard : on essaie sans imposer l'emplacement, puis on prévient
+            C_Timer.After(1, function()
+                if self:PoleEquipped() or inCombat() then return end
+                local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
+                if f then pcall(f, pole) end
+                C_Timer.After(1, function()
+                    if not self:PoleEquipped() and self.active then
+                        WK:Print(T("Mode pêche : la canne n'a pas pu être équipée (niveau requis, ou équipe-la une fois à la main)."))
+                    end
+                end)
+            end)
         end
     end
     for id, slot in pairs(EXTRA) do

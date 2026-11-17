@@ -23,6 +23,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.0.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Mode pêche : la canne à pêche ne s'équipait pas. Elle est maintenant prise dans les sacs et équipée directement (comme un glisser vers la main droite) ; si le jeu refuse encore, un message le dit au lieu de rien faire. Une canne posée ailleurs qu'en main droite (emplacement d'outil de métier) compte aussi comme équipée.
+
 ## v1.0.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
