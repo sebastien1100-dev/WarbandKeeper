@@ -8,12 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.3.8", date = "17/11/2026",
+        fixed = {
+            "Notes de carte : dans la fenêtre de modification, les boutons Supprimer et Annuler se chevauchaient.",
+        },
+    },
+    {
         version = "1.3.7", date = "17/11/2026",
         changed = {
             "Fiche de personnage : les cartes sont alignées en deux rangées, Équipement et Stats à la même hauteur, puis Réputations et Métiers à la même hauteur.",
         },
         fixed = {
-            "Notes de carte : dans la fenêtre de modification, les boutons Supprimer et Annuler se chevauchaient.",
             "Micro menu : le raccourci Héritages ouvrait l'onglet des montures. Il ouvre maintenant le journal des collections sur l'onglet Héritages, quel que soit son numéro sur ce client.",
         },
     },
