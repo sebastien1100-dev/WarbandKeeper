@@ -93,6 +93,22 @@ local function todoItems()
                 function() UI:ShowPage("mail"); UI.pages.mail:SetTab("bank") end, nil, { g = "bag", group = "deposit", n = n })
         end
     end
+    -- Expérience : repos plein sur un perso (il gaspille son temps d'auberge)
+    local X = WK.modules.XP
+    if X and WK:FeatureOn("xp") and X:Config().restAlert then
+        for _, r in ipairs(X:RestFull()) do
+            add(6, "clock", string.format(WK.T("%s : repos plein (150 %%), joue-le pour en profiter"), WK:CharName(r.c, r.key)),
+                function() UI:ShowPage("qol"); UI.pages.qol:ShowSection("xp") end, nil, { g = "chart", group = "rest", n = 1, short = WK.T("repos") })
+        end
+        if X:Config().levelAlert and not X:Me().maxed then
+            local x = X:Me()
+            local p = X:PendingXP()
+            if p > 0 and x.cur + p >= x.max then
+                add(3, "star", WK.T("Rends tes quêtes terminées : elles te font passer un niveau"),
+                    function() UI:ShowPage("qol"); UI.pages.qol:ShowSection("xp") end, C.positive, { g = "star", short = WK.T("niveau") })
+            end
+        end
+    end
     -- Session de farm en pause
     local F = WK.modules.Farm
     if F:Active() and F:Current().paused then

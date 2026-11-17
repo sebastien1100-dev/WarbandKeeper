@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.10.0", date = "17/11/2026", restart = true,
+        added = {
+            "Barre d'expérience à l'écran : ton XP (couleur d'accent), ton repos (bleu) et l'XP des quêtes terminées à rendre (jaune, un trait montre où tu arriverais en les rendant). Libellés au-dessus (niveau, XP, %, repos, à rendre) ; survol : le détail, le rythme et le temps jusqu'au niveau suivant ; clic : la section Expérience. Version compacte possible, cachée au niveau maximum, se place en mode édition.",
+            "QoL > Expérience : la section est prête. Quêtes terminées à rendre (XP de chacune, bouton Guider vers le PNJ, « Guider vers la plus proche »), Repos (niveau, en auberge ou non, temps jusqu'au plein), Rythme de la session (XP par heure, temps jusqu'au niveau, monstres restants, part des monstres, quêtes et découverte, remise à zéro) et Tous tes persos (niveau, XP, repos estimé depuis leur déconnexion).",
+            "Alertes : « rends tes quêtes, elles te font passer un niveau » (à l'écran et dans À faire) et « repos plein » pour un perso qui gaspille son temps d'auberge ; chacune se coupe dans la section.",
+        },
+    },
+    {
         version = "1.9.2", date = "17/11/2026",
         added = {
             "Réglages QoL : nouvelle section « Expérience » (barre, repos, quêtes à rendre), en préparation ; elle a son interrupteur dans la carte Modules.",
@@ -2171,7 +2179,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Expérience (QoL > Expérience) : barre d'expérience avec repos et expérience en attente des quêtes terminées, rythme et temps jusqu'au prochain niveau, repos de chaque perso, alertes.",
+    "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit.",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
