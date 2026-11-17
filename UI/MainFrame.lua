@@ -18,7 +18,7 @@ local GROUPS = {
     { "FARM", { "farm", "loot", "journal", "fishing" } },
     { "GROUPE", { "lfg" } },
     { "EXPLORATION", { "quests", "rares", "dungeons" } },
-    { "CONFORT", { "qol" } },
+    { "QoL", { "qol" } },   -- groupe QoL : ses entrées sont les sections de la page QoL (UI.QOL_SECTIONS)
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
@@ -135,13 +135,17 @@ end
 -- Sous-entrée de « QoL » : une section de la page (Général, Halo, … Classes).
 local function SubItem(parent, sec)
     local b = CreateFrame("Button", nil, parent)
-    b:SetHeight(28)
+    b:SetHeight(34)
     b.key = sec[1]
-    b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 2)
-    b.icon = UI:Icon(b, sec[3] or "circle", 13)
-    b.icon:SetPoint("LEFT", 30, 0)
-    b.label = UI:Text(b, 12)
-    b.label:SetPoint("LEFT", 52, 0)
+    b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 2)
+    b.bar = CreateFrame("Frame", nil, b)
+    b.bar:SetSize(3, 18)
+    b.bar:SetPoint("LEFT")
+    b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
+    b.icon = UI:Icon(b, sec[3] or "circle", 16)
+    b.icon:SetPoint("LEFT", 14, 0)
+    b.label = UI:Text(b, 13)
+    b.label:SetPoint("LEFT", 40, 0)
     b.label:SetPoint("RIGHT", -24, 0)
     b.label:SetText(WK.T(sec[2]))
     b.count = UI:Text(b, 10, C.warning)
@@ -150,12 +154,24 @@ local function SubItem(parent, sec)
         local sel = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection() == self.key
         self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
         self.bg:SetShown(sel or self.hover)
+        self.bar:SetShown(sel)
+        self.barTex:SetColor(UI:Accent())
         if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
         self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+        local rail = WK.DB.global.settings.ui.collapsed
+        self.label:SetShown(not rail)
+        self.count:SetShown(not rail)
         self.count:SetText(UI.QoLSectionCount and UI:QoLSectionCount(self.key) or "")
     end
-    b:SetScript("OnEnter", function(s) s.hover = true; s:Refresh() end)
-    b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh() end)
+    b:SetScript("OnEnter", function(s)
+        s.hover = true; s:Refresh()
+        if WK.DB.global.settings.ui.collapsed then
+            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.label:GetText(), 1, 1, 1)
+            GameTooltip:Show()
+        end
+    end)
+    b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh(); GameTooltip:Hide() end)
     b:SetScript("OnClick", function(s)
         UI:ShowPage("qol")
         local P = UI.pages.qol
@@ -293,30 +309,22 @@ function UI:Create()
         table.insert(topList, head)
         for _, key in ipairs(g[2]) do
             local def = self.pages[key]
-            if def then
+            if def and key == "qol" then
+                -- groupe QoL : une entrée par section de la page (pas d'entrée « QoL » elle-même)
+                table.insert(head.items, { key = "qol" })
+                for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
+                    local sub = SubItem(navChild, sec)
+                    self.navSubs[sec[1]] = sub
+                    table.insert(topList, { item = sub, key = "qol", section = sec[1], group = head, sub = true })
+                end
+            elseif def then
                 local item = NavItem(navChild, def)
                 self.nav[key] = item
                 local e = { item = item, key = key, group = head }
                 table.insert(head.items, e)
                 table.insert(topList, e)
-                -- sections de QoL, sous « QoL » (dépliées par un clic sur QoL)
-                if key == "qol" then
-                    for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
-                        local sub = SubItem(navChild, sec)
-                        self.navSubs[sec[1]] = sub
-                        table.insert(topList, { item = sub, key = "qol", section = sec[1], group = head, sub = true })
-                    end
-                end
             end
         end
-    end
-    -- QoL : clic = ouvrir la page et déplier ses sections ; nouveau clic sur la page ouverte = replier
-    if self.nav.qol then
-        self.nav.qol:SetScript("OnClick", function()
-            if UI.current == "qol" then cfg.qolOpen = not cfg.qolOpen else cfg.qolOpen = true end
-            UI:ShowPage("qol")
-            if UI.layoutTop then UI.layoutTop() end
-        end)
     end
     local function layoutTop(h)
         -- modules coupés (Core/Features.lua) : leur page et, s'il est vide, leur groupe disparaissent
@@ -333,9 +341,11 @@ function UI:Create()
                 -- groupe replié : ses pages sont cachées (sauf celle qui est affichée)
                 local closed = not rail and e.group and cfg.navClosed[e.group.name] and UI.current ~= e.key
                 if e.sub then
+                    -- section de QoL : cachée si son module est coupé, ou groupe replié (sauf la section affichée)
                     local fk = WK.FEATURE_BY_QOL and WK.FEATURE_BY_QOL[e.section]
-                    e.hidden = rail or not cfg.qolOpen or not WK:PageOn("qol") or (fk and not WK:FeatureOn(fk))
-                        or (cfg.navClosed[e.group.name] and UI.current ~= "qol")
+                    local shownNow = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection() == e.section
+                    e.hidden = not WK:PageOn("qol") or (fk and not WK:FeatureOn(fk))
+                        or (not rail and cfg.navClosed[e.group.name] and not shownNow)
                 else
                     e.hidden = not WK:PageOn(e.key) or closed
                 end
@@ -370,13 +380,6 @@ function UI:Create()
                 e.label:SetPoint("TOPLEFT", 8, y - math.floor(labelStep * 0.3) + 4)
                 e.label:SetPoint("TOPRIGHT", -8, y - math.floor(labelStep * 0.3) + 4)
                 y = y - labelStep
-            elseif e.sub then
-                e.item:SetHeight(math.min(28, itemStep - 6))
-                e.item:ClearAllPoints()
-                e.item:SetPoint("TOPLEFT", 8, y)
-                e.item:SetPoint("TOPRIGHT", -8, y)
-                e.top, e.h = -y, math.min(30, itemStep - 4)
-                y = y - e.h
             else
                 e.item:SetHeight(math.min(34, itemStep - 2))
                 e.item:ClearAllPoints()
@@ -618,9 +621,17 @@ function UI:Refresh()
             for _, g in ipairs(GROUPS) do
                 if g[1] == head.name then
                     for _, k in ipairs(g[2]) do
-                        local def = self.pages[k]
-                        local n = def and def.count and tonumber(def.count())
-                        if n and WK:PageOn(k) then sum = sum + n end
+                        if k == "qol" then
+                            -- groupe QoL : pastilles de ses sections
+                            for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
+                                local n = UI.QoLSectionCount and tonumber(UI:QoLSectionCount(sec[1]))
+                                if n and WK:PageOn("qol") then sum = sum + n end
+                            end
+                        else
+                            local def = self.pages[k]
+                            local n = def and def.count and tonumber(def.count())
+                            if n and WK:PageOn(k) then sum = sum + n end
+                        end
                     end
                 end
             end

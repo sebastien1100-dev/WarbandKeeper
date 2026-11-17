@@ -23,6 +23,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.94.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Barre latérale : le groupe « Confort » devient « QoL », et ses entrées sont directement les sections de QoL (Général, Halo, Micro menu, Pêche, Carte, Hôtel des ventes, Curseur, Classes), sans étage intermédiaire. Le groupe se replie comme les autres, avec le total de ses alertes ; en menu réduit, les sections restent là en icônes.
+
 ## v0.94.0 — 17/11/2026
 
 _Un /reload suffit._

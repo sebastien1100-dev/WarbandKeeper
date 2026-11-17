@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.94.1", date = "17/11/2026",
+        changed = {
+            "Barre latérale : le groupe « Confort » devient « QoL », et ses entrées sont directement les sections de QoL (Général, Halo, Micro menu, Pêche, Carte, Hôtel des ventes, Curseur, Classes), sans étage intermédiaire. Le groupe se replie comme les autres, avec le total de ses alertes ; en menu réduit, les sections restent là en icônes.",
+        },
+    },
+    {
         version = "0.94.0", date = "17/11/2026",
         added = {
             "Barre latérale : clic sur un titre de groupe (COMPTE, ÉCONOMIE, FARM…) pour le replier ou le déplier, comme un casier. Replié, il affiche le total des pastilles de ses pages pour ne rien rater. Le choix est retenu ; la page affichée reste toujours visible, même dans un groupe replié.",
