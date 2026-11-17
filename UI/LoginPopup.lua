@@ -13,20 +13,21 @@ local MAX_ROWS, MAX_PILLS = 8, 7
 local HEAD_H, ROW_H, ICON = 54, 40, 30
 local popup
 
--- Icône du jeu dans un cadre fin (couleur du cadre = urgence)
+-- Icône de l'addon (enveloppe, coffre-fort…) dans une tuile arrondie : cadre et icône à la couleur de
+-- l'urgence (rouge, orange), sinon icône à la couleur de l'apparence
 local function gameIcon(parent, size)
     local box = CreateFrame("Frame", nil, parent)
     box:SetSize(size + 2, size + 2)
-    box.edge = box:CreateTexture(nil, "BACKGROUND")
-    box.edge:SetAllPoints()
+    box.edge = UI:Rounded(box, 8, 0, "BACKGROUND", 1)
+    box.bg = UI:Rounded(box, 7, 1, "BACKGROUND", 2)
     box.icon = box:CreateTexture(nil, "ARTWORK")
-    box.icon:SetPoint("TOPLEFT", 1, -1)
-    box.icon:SetPoint("BOTTOMRIGHT", -1, 1)
-    box.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    box.icon:SetPoint("CENTER")
+    box.icon:SetSize(size * 0.62, size * 0.62)
     function box:Set(tex, col)
-        self.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
-        local c = col or C.border
-        self.edge:SetColorTexture(c[1], c[2], c[3], 1)
+        self.icon:SetTexture(tex or (UI.MEDIA .. "bang"))
+        self.edge:SetColor(unpack(col or C.border))
+        self.bg:SetColor(unpack(C.surface2))
+        if col then self.icon:SetVertexColor(unpack(col)) else self.icon:SetVertexColor(UI:Accent()) end
     end
     return box
 end
@@ -41,14 +42,10 @@ end
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperLoginPopup", UIParent)
     f:SetSize(420, HEAD_H)
-    f:SetPoint("TOP", 0, -64)
+    f:SetPoint("TOP", 0, -64) -- remplacé par la position du mode édition
     f:SetFrameStrata("DIALOG")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    f:SetMovable(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", f.StopMovingOrSizing)
     UI:Panel(f, 14, C.bg, C.border)
     -- barre de temps, en haut
     f.track = f:CreateTexture(nil, "ARTWORK")
@@ -170,7 +167,7 @@ local function pillsOf(items)
     return out
 end
 
-function UI:ShowLoginPopup(force)
+function UI:ShowLoginPopup(force, sample)
     local items = UI.TodoItems and UI.TodoItems() or {}
     if #items == 0 and not force then return end
     popup = popup or build()
@@ -191,7 +188,7 @@ function UI:ShowLoginPopup(force)
     local pills = pillsOf(items)
     if #pills == 0 then
         local b = f.pills:Get()
-        b.ic:Set("Interface\\Icons\\INV_Misc_Note_01", C.border)
+        b.ic:Set(UI.MEDIA .. "notes", nil)
         b.text:SetText(T("Rien à faire : tout est à jour."))
         b.text:SetTextColor(unpack(C.muted))
         b.lines, b.go = nil, nil
@@ -239,7 +236,7 @@ function UI:ShowLoginPopup(force)
     -- temps
     local secs = WK.DB.global.settings.ui.loginPopupTime
     if secs == nil then secs = 5 end
-    f.total = secs > 0 and secs or nil
+    f.total = (secs > 0 and not sample) and secs or nil
     f.remain = f.total
     f.track:SetShown(f.total ~= nil)
     f.fill:SetShown(f.total ~= nil)
@@ -250,8 +247,18 @@ function UI:ShowLoginPopup(force)
     f:Show()
 end
 
--- Mode test de l'édition de l'interface : le bandeau tel qu'à la connexion
-UI:RegisterHUDTest(function() UI:ShowLoginPopup(true) end, function() if popup then popup:Hide() end end)
+-- Placé en mode édition (aperçu sans minuterie) ; « Tester » le joue comme à la connexion
+local function register()
+    popup = popup or build()
+    UI:RegisterHUD("loginPopup", popup, {
+        label = T("Bandeau de connexion"), point = "TOP", default = { 0, UIParent:GetHeight() / 2 - 64 },
+        enabled = function() return WK.DB.global.settings.ui.loginPopup ~= false end,
+        sample = function(on) if on then UI:ShowLoginPopup(true, true) elseif popup then popup:Hide() end end,
+        test = function() UI:ShowLoginPopup(true) end,
+        testStop = function() if popup then popup:Hide() end end,
+    })
+end
+WK:On("PLAYER_LOGIN", register)
 
 WK:On("PLAYER_ENTERING_WORLD", function(isInitialLogin, isReload)
     if not isInitialLogin or isReload then return end

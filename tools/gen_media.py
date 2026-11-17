@@ -677,10 +677,24 @@ def icon_collect():
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "collect.tga"))
 
 
+def icon_send():
+    """Objets à envoyer : enveloppe et flèche sortante."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    d.rounded_rectangle((4 * s, 16 * s, 44 * s, 48 * s), radius=4 * s, fill=W)
+    d.rounded_rectangle((8 * s, 20 * s, 40 * s, 44 * s), radius=2 * s, fill=O)
+    d.line([(9 * s, 21 * s), (24 * s, 33 * s), (39 * s, 21 * s)], fill=W, width=4 * s)
+    d.line([(40 * s, 32 * s), (58 * s, 32 * s)], fill=W, width=5 * s)
+    d.polygon([(50 * s, 23 * s), (61 * s, 32 * s), (50 * s, 41 * s)], fill=W)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "send.tga"))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send]:
         fn()
     print("OK")

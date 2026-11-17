@@ -24,6 +24,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.4.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Bandeau de connexion : il se place en mode édition (glisser, taille, opacité) comme les autres éléments à l'écran ; « Tester » le joue comme à la connexion.
+- Bandeau de connexion : les icônes du jeu laissent place à celles de Warband Keeper, dans des tuiles arrondies à la couleur de l'apparence (rouge ou orange si urgent) : enveloppe pour le courrier, enveloppe et flèche pour les objets à envoyer, coffre-fort pour la banque, sac, horloge, livre, marteau…
+
 ## v1.3.8 — 17/11/2026
 
 _Un /reload suffit._

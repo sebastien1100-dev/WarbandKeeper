@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.4.0", date = "17/11/2026", restart = true,
+        changed = {
+            "Bandeau de connexion : il se place en mode édition (glisser, taille, opacité) comme les autres éléments à l'écran ; « Tester » le joue comme à la connexion.",
+            "Bandeau de connexion : les icônes du jeu laissent place à celles de Warband Keeper, dans des tuiles arrondies à la couleur de l'apparence (rouge ou orange si urgent) : enveloppe pour le courrier, enveloppe et flèche pour les objets à envoyer, coffre-fort pour la banque, sac, horloge, livre, marteau…",
+        },
+    },
+    {
         version = "1.3.8", date = "17/11/2026",
         fixed = {
             "Notes de carte : dans la fenêtre de modification, les boutons Supprimer et Annuler se chevauchaient.",
