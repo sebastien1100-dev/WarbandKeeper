@@ -23,6 +23,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.94.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre latérale : clic sur un titre de groupe (COMPTE, ÉCONOMIE, FARM…) pour le replier ou le déplier, comme un casier. Replié, il affiche le total des pastilles de ses pages pour ne rien rater. Le choix est retenu ; la page affichée reste toujours visible, même dans un groupe replié.
+- QoL : ses sections (Général, Halo, Micro menu, Pêche, Carte, Hôtel des ventes, Curseur, Classes) sont maintenant dans la barre latérale, sous « QoL » : un clic sur QoL les déplie (un autre clic les replie), avec leurs pastilles d'alertes. La page QoL prend toute la largeur.
+
 ## v0.93.0 — 17/11/2026
 
 _Un /reload suffit._

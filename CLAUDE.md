@@ -42,6 +42,10 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 - Les polices du jeu ne couvrent que le jeu de caractères Windows-1252 : pas de « → », « ≈ », « ✓ »… dans les textes affichés (utiliser « » », « ~ », « · », « • »).
 - Noms de personnages en deux parties sur WoW Forever (« Prénom Nom », avec un espace) : le courrier exige le nom complet. Ne jamais découper un nom sur les espaces ; pour un destinataire, passer par `WK.modules.Mail:Recipient()` / `:Resolve()` / `:IsMe()`.
 
+## Barre latérale
+
+`UI/MainFrame.lua` : groupes (`GROUPS`) repliables par un clic sur leur titre (`GroupHead`, `settings.ui.navClosed[groupe]`, total des pastilles quand replié ; la page affichée reste visible) ; sous « QoL », ses sections (`SubItem`, dépliées par un clic sur QoL : `settings.ui.qolOpen`). Menu réduit en icônes : tout visible, sans titres.
+
 ## En-tête des pages
 
 Plus de titre ni de phrase en haut des pages : l'en-tête affiche des pastilles de chiffres clés, définies par page dans `UI.CHIPS` (`UI/MainFrame.lua`). Chaque fonction renvoie `{ label, valeur, couleur?, page?, tip?, after? }` ; `page` rend la pastille cliquable. Une nouvelle page doit avoir ses pastilles.
@@ -65,7 +69,7 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 
 ## Qualité de vie (QoL)
 
-`Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (colonne Général + 9 classes). Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
+`Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (sections Général… Classes, choisies dans la barre latérale sous « QoL » : `UI.QOL_SECTIONS`, `UI:QoLSectionCount`, `UI:QoLCurrentSection` ; la colonne interne est masquée). Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
 
 ## Marchand
 

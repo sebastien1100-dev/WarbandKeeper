@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.94.0", date = "17/11/2026",
+        added = {
+            "Barre latérale : clic sur un titre de groupe (COMPTE, ÉCONOMIE, FARM…) pour le replier ou le déplier, comme un casier. Replié, il affiche le total des pastilles de ses pages pour ne rien rater. Le choix est retenu ; la page affichée reste toujours visible, même dans un groupe replié.",
+            "QoL : ses sections (Général, Halo, Micro menu, Pêche, Carte, Hôtel des ventes, Curseur, Classes) sont maintenant dans la barre latérale, sous « QoL » : un clic sur QoL les déplie (un autre clic les replie), avec leurs pastilles d'alertes. La page QoL prend toute la largeur.",
+        },
+    },
+    {
         version = "0.93.0", date = "17/11/2026",
         added = {
             "Métiers : Maj + clic sur une tuile de métier met le lien du métier dans le chat (le même que le bouton « Link tchat », avec ton texte s'il est activé).",

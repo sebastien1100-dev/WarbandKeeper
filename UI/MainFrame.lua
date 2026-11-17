@@ -98,6 +98,75 @@ local function NavItem(parent, def)
 end
 
 ---------------------------------------------------------------------------
+-- Titre de groupe cliquable : replie ou déplie le groupe (settings.ui.navClosed[groupe]) ;
+-- replié, il montre le total des pastilles de ses pages.
+---------------------------------------------------------------------------
+local function GroupHead(parent, name)
+    local b = CreateFrame("Button", nil, parent)
+    b:SetHeight(20)
+    b.name = name
+    b.label = UI:Text(b, 10, C.dim)
+    b.label:SetPoint("LEFT", 8, 0)
+    b.label:SetText(name)
+    b.chev = UI:Icon(b, "chevron", 11)
+    b.chev:SetPoint("RIGHT", -12, 0)
+    b.sum = UI:Text(b, 10)
+    b.sum:SetPoint("RIGHT", b.chev, "LEFT", -6, 0)
+    function b:Refresh()
+        local closed = WK.DB.global.settings.ui.navClosed[name]
+        local r, g, bl = UI:Accent()
+        self.chev:SetVertexColor(r, g, bl, self.hover and 1 or 0.8)
+        if self.chev.SetRotation then self.chev:SetRotation(closed and math.pi / 2 or 0) end
+        if self.hover then self.label:SetTextColor(r, g, bl, 1) else self.label:SetTextColor(unpack(closed and C.muted or C.dim)) end
+        self.sum:SetTextColor(unpack(C.warning))
+    end
+    b:SetScript("OnEnter", function(s) s.hover = true; s:Refresh() end)
+    b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh() end)
+    b:SetScript("OnClick", function(s)
+        local nc = WK.DB.global.settings.ui.navClosed
+        nc[name] = not nc[name] or nil
+        if UI.layoutTop then UI.layoutTop() end
+        UI:Refresh()
+    end)
+    UI:OnAccent(function() b:Refresh() end)
+    return b
+end
+
+-- Sous-entrée de « QoL » : une section de la page (Général, Halo, … Classes).
+local function SubItem(parent, sec)
+    local b = CreateFrame("Button", nil, parent)
+    b:SetHeight(28)
+    b.key = sec[1]
+    b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 2)
+    b.icon = UI:Icon(b, sec[3] or "circle", 13)
+    b.icon:SetPoint("LEFT", 30, 0)
+    b.label = UI:Text(b, 12)
+    b.label:SetPoint("LEFT", 52, 0)
+    b.label:SetPoint("RIGHT", -24, 0)
+    b.label:SetText(WK.T(sec[2]))
+    b.count = UI:Text(b, 10, C.warning)
+    b.count:SetPoint("RIGHT", -10, 0)
+    function b:Refresh()
+        local sel = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection() == self.key
+        self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+        self.bg:SetShown(sel or self.hover)
+        if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
+        self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+        self.count:SetText(UI.QoLSectionCount and UI:QoLSectionCount(self.key) or "")
+    end
+    b:SetScript("OnEnter", function(s) s.hover = true; s:Refresh() end)
+    b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh() end)
+    b:SetScript("OnClick", function(s)
+        UI:ShowPage("qol")
+        local P = UI.pages.qol
+        if P and P.ShowSection then P:ShowSection(s.key) end
+        UI:Refresh()
+    end)
+    UI:OnAccent(function() b:Refresh() end)
+    return b
+end
+
+---------------------------------------------------------------------------
 -- Construction de la fenêtre
 ---------------------------------------------------------------------------
 function UI:Create()
@@ -200,7 +269,8 @@ function UI:Create()
     self.sideTitle, self.sideVer = title, ver
     if UI.BuildSideSearch then UI:BuildSideSearch(side) end -- recherche (UI/Search.lua)
 
-    self.nav, self.groupLabels = {}, {}
+    self.nav, self.groupLabels, self.navSubs = {}, {}, {}
+    cfg.navClosed = cfg.navClosed or {}
     -- Haut de la barre : groupes et pages. Placés par layoutTop() : l'espacement se resserre
     -- quand la fenêtre est basse, pour ne jamais chevaucher le bas (notes, options, repli).
     -- Zone du haut : coupée au-dessus du bas de la barre (notes, profils, options) ; si la liste reste
@@ -217,34 +287,58 @@ function UI:Create()
     self.navScroll = navScroll
     local topList = {}
     for _, g in ipairs(GROUPS) do
-        local lbl = UI:Text(navChild, 10, C.dim)
-        lbl:SetText(g[1])
+        local lbl = GroupHead(navChild, g[1])
         table.insert(self.groupLabels, lbl)
-        local head = { label = lbl, items = {} }
+        local head = { label = lbl, items = {}, name = g[1] }
         table.insert(topList, head)
         for _, key in ipairs(g[2]) do
             local def = self.pages[key]
             if def then
                 local item = NavItem(navChild, def)
                 self.nav[key] = item
-                local e = { item = item, key = key }
+                local e = { item = item, key = key, group = head }
                 table.insert(head.items, e)
                 table.insert(topList, e)
+                -- sections de QoL, sous « QoL » (dépliées par un clic sur QoL)
+                if key == "qol" then
+                    for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
+                        local sub = SubItem(navChild, sec)
+                        self.navSubs[sec[1]] = sub
+                        table.insert(topList, { item = sub, key = "qol", section = sec[1], group = head, sub = true })
+                    end
+                end
             end
         end
+    end
+    -- QoL : clic = ouvrir la page et déplier ses sections ; nouveau clic sur la page ouverte = replier
+    if self.nav.qol then
+        self.nav.qol:SetScript("OnClick", function()
+            if UI.current == "qol" then cfg.qolOpen = not cfg.qolOpen else cfg.qolOpen = true end
+            UI:ShowPage("qol")
+            if UI.layoutTop then UI.layoutTop() end
+        end)
     end
     local function layoutTop(h)
         -- modules coupés (Core/Features.lua) : leur page et, s'il est vide, leur groupe disparaissent
         local nLabels, nItems = 0, 0
+        local rail = WK.DB.global.settings.ui.collapsed -- menu réduit en icônes : tout reste visible
         for _, e in ipairs(topList) do
             if e.label then
                 e.hidden = true
                 for _, it in ipairs(e.items) do if WK:PageOn(it.key) then e.hidden = false end end
                 e.label.wkHidden = e.hidden
-                e.label:SetShown(not e.hidden and not WK.DB.global.settings.ui.collapsed)
+                e.label:SetShown(not e.hidden and not rail)
                 if not e.hidden then nLabels = nLabels + 1 end
             else
-                e.hidden = not WK:PageOn(e.key)
+                -- groupe replié : ses pages sont cachées (sauf celle qui est affichée)
+                local closed = not rail and e.group and cfg.navClosed[e.group.name] and UI.current ~= e.key
+                if e.sub then
+                    local fk = WK.FEATURE_BY_QOL and WK.FEATURE_BY_QOL[e.section]
+                    e.hidden = rail or not cfg.qolOpen or not WK:PageOn("qol") or (fk and not WK:FeatureOn(fk))
+                        or (cfg.navClosed[e.group.name] and UI.current ~= "qol")
+                else
+                    e.hidden = not WK:PageOn(e.key) or closed
+                end
                 e.item:SetShown(not e.hidden)
                 if not e.hidden then nItems = nItems + 1 end
             end
@@ -256,7 +350,8 @@ function UI:Create()
         if need > avail then
             -- les titres de groupe se resserrent plus que les entrées (qui restent cliquables)
             local k = math.max(0.4, avail / need)
-            labelStep, itemStep, gap = math.max(12, math.floor(26 * k)), math.max(22, math.floor(36 * k)), math.floor(4 * k)
+            -- (au-delà, la liste défile à la molette : les titres de groupe restent lisibles et cliquables)
+            labelStep, itemStep, gap = math.max(18, math.floor(26 * k)), math.max(26, math.floor(36 * k)), math.max(2, math.floor(4 * k))
         end
         -- sous la recherche quand la barre est dépliée
         local topY = (WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98
@@ -272,22 +367,41 @@ function UI:Create()
                 if not first then y = y - gap end
                 first = false
                 e.label:ClearAllPoints()
-                e.label:SetPoint("TOPLEFT", 16, y - math.floor(labelStep * 0.3))
+                e.label:SetPoint("TOPLEFT", 8, y - math.floor(labelStep * 0.3) + 4)
+                e.label:SetPoint("TOPRIGHT", -8, y - math.floor(labelStep * 0.3) + 4)
                 y = y - labelStep
+            elseif e.sub then
+                e.item:SetHeight(math.min(28, itemStep - 6))
+                e.item:ClearAllPoints()
+                e.item:SetPoint("TOPLEFT", 8, y)
+                e.item:SetPoint("TOPRIGHT", -8, y)
+                e.top, e.h = -y, math.min(30, itemStep - 4)
+                y = y - e.h
             else
                 e.item:SetHeight(math.min(34, itemStep - 2))
                 e.item:ClearAllPoints()
                 e.item:SetPoint("TOPLEFT", 8, y)
                 e.item:SetPoint("TOPRIGHT", -8, y)
+                e.top, e.h = -y, itemStep
                 y = y - itemStep
             end
         end
         navChild:SetHeight(math.max(1, -y))
         navScroll.maxScroll = math.max(0, -y - math.max(0, avail))
-        navScroll:SetVerticalScroll(math.min(navScroll:GetVerticalScroll() or 0, navScroll.maxScroll))
+        -- l'entrée affichée (page, ou section de QoL) reste dans la partie visible de la liste
+        local scroll = math.min(navScroll:GetVerticalScroll() or 0, navScroll.maxScroll)
+        local curSec = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection()
+        for _, e in ipairs(topList) do
+            if not e.hidden and e.top and ((e.sub and e.section == curSec) or (not e.sub and not curSec and e.key == UI.current)) then
+                if e.top + e.h > scroll + avail then scroll = math.min(navScroll.maxScroll, e.top + e.h - avail + 4) end
+                if e.top < scroll then scroll = math.max(0, e.top - 4) end
+            end
+        end
+        navScroll:SetVerticalScroll(scroll)
     end
     side:HookScript("OnSizeChanged", function(_, _, h) layoutTop(h) end)
     self.layoutTop = function() layoutTop(side:GetHeight()) end
+    UI.layoutTop = self.layoutTop
     layoutTop(side:GetHeight())
 
     -- Bas de la barre : notes, options, repli.
@@ -462,7 +576,9 @@ function UI:ShowPage(key)
     if key and not WK:PageOn(key) then key = "overview" end -- module coupé
     local def = self.pages[key] or self.pages.overview
     if not self.frame then self:Create() end
+    local changed = self.current ~= def.key
     self.current = def.key
+    if changed and self.layoutTop then self.layoutTop() end -- groupe replié : la page affichée reste visible
     WK.DB.global.settings.ui.lastPage = def.key
     for k, d in pairs(self.pages) do
         if d.frame then d.frame:SetShown(k == def.key) end
@@ -475,6 +591,17 @@ function UI:ShowPage(key)
     self:Refresh()
 end
 
+-- Sous-entrées de QoL (section affichée, pastilles).
+function UI:RefreshNavSubs()
+    for _, sub in pairs(self.navSubs or {}) do sub:Refresh() end
+    -- section changée depuis la page (onglets des classes…) : la garder visible dans la liste
+    local sec = self.current == "qol" and self.QoLCurrentSection and self:QoLCurrentSection()
+    if sec ~= self.lastNavSec then
+        self.lastNavSec = sec
+        if self.layoutTop then self.layoutTop() end
+    end
+end
+
 -- Met à jour la page affichée et la navigation.
 function UI:Refresh()
     if not self.frame or not self.frame:IsShown() then return end
@@ -483,6 +610,25 @@ function UI:Refresh()
         item.count:SetText(def.count and def.count() or "")
         item:Refresh()
     end
+    -- titres de groupe : total des pastilles de leurs pages quand le groupe est replié
+    local closedMap = WK.DB.global.settings.ui.navClosed or {}
+    for _, head in ipairs(self.groupLabels or {}) do
+        local sum = 0
+        if closedMap[head.name] then
+            for _, g in ipairs(GROUPS) do
+                if g[1] == head.name then
+                    for _, k in ipairs(g[2]) do
+                        local def = self.pages[k]
+                        local n = def and def.count and tonumber(def.count())
+                        if n and WK:PageOn(k) then sum = sum + n end
+                    end
+                end
+            end
+        end
+        head.sum:SetText(sum > 0 and tostring(sum) or "")
+        head:Refresh()
+    end
+    self:RefreshNavSubs()
     local def = self.pages[self.current]
     if def and def.frame and def.Refresh then def:Refresh() end
     self:RefreshChips()

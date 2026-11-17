@@ -127,6 +127,28 @@ local function charStats(c)
     return out
 end
 
+-- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
+UI.QOL_SECTIONS = {
+    { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "clock" },
+    { "fishing", "Pêche", "fish" }, { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
+    { "cursor", "Curseur", "crosshair" }, { "classes", "Classes", "users" },
+}
+-- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
+function UI:QoLSectionCount(key)
+    if key ~= "general" and key ~= "classes" then return "" end
+    local n = 0
+    for _, a in ipairs(Q():Alerts()) do
+        if (key == "general") == (a.class == nil) then n = n + 1 end
+    end
+    return n > 0 and tostring(n) or ""
+end
+-- Section affichée (« classes » pour une classe), pour la barre latérale.
+function UI:QoLCurrentSection()
+    local s = WK.DB.global.settings.ui.qolSection or "general"
+    for _, sec in ipairs(UI.QOL_SECTIONS) do if sec[1] == s then return s end end
+    return "classes"
+end
+
 UI:RegisterPage({
     key = "qol", order = 8, nav = "QoL",
 
@@ -134,14 +156,17 @@ UI:RegisterPage({
         local QoL = Q()
         local q = QoL:Config()
         local ui = WK.DB.global.settings.ui
-        local W = UI.PAGE_W - NAV_W - GAP - 12
+        local W = UI.PAGE_W - 12
 
+        -- Les sections se choisissent dans la barre latérale (sous « QoL ») : la colonne de la page
+        -- reste construite (état des boutons) mais n'est plus affichée ; le contenu prend la largeur.
         local navCard = UI:Card(p)
         navCard:SetWidth(NAV_W)
         navCard:SetPoint("TOPLEFT")
         navCard:SetPoint("BOTTOMLEFT")
+        navCard:Hide()
         local host = CreateFrame("Frame", nil, p)
-        host:SetPoint("TOPLEFT", NAV_W + GAP, 0)
+        host:SetPoint("TOPLEFT", 0, 0)
         host:SetPoint("BOTTOMRIGHT")
 
         self.sections, self.navButtons = {}, {}
@@ -197,6 +222,7 @@ UI:RegisterPage({
             for k, b in pairs(self.navButtons) do b.selected = (k == navKey); b:Paint() end
             self.classBar:SetShown(cls or false)
             for k, t in pairs(self.classTabs) do t.selected = (k == key); t:Paint() end
+            if UI.RefreshNavSubs then UI:RefreshNavSubs() end
         end
 
         -- Colonne : Général puis les classes ---------------------------------------
