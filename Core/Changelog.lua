@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.10.1", date = "17/11/2026",
+        changed = {
+            "Liste « À venir » complétée avec les idées pas encore traitées : suite de l'expérience, du feu de camp et des notes de carte, recettes déjà apprises pour les verrous, recherche globale.",
+        },
+        fixed = {
+            "Barre d'expérience : « monstres restants » s'affiche « env. 52 » au lieu d'un « ~ » mal rendu par la police du jeu.",
+        },
+    },
+    {
         version = "1.10.0", date = "17/11/2026", restart = true,
         added = {
             "Barre d'expérience à l'écran : ton XP (couleur d'accent), ton repos (bleu) et l'XP des quêtes terminées à rendre (jaune, un trait montre où tu arriverais en les rendant). Libellés au-dessus (niveau, XP, %, repos, à rendre) ; survol : le détail, le rythme et le temps jusqu'au niveau suivant ; clic : la section Expérience. Version compacte possible, cachée au niveau maximum, se place en mode édition.",
@@ -2179,7 +2188,11 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit.",
+    "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",
+    "Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.",
+    "Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.",
+    "Objets verrouillés : ne verrouiller que les recettes qu'aucun de tes persos n'a encore apprises.",
+    "Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",

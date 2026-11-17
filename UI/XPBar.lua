@@ -130,7 +130,7 @@ local function build()
             GameTooltip:AddLine(" ")
             GameTooltip:AddDoubleLine(T("Rythme"), string.format(T("%s / h"), fmt(perHour)), 0.8, 0.8, 0.8, 1, 1, 1)
             GameTooltip:AddDoubleLine(T("Niveau suivant dans"), dur(secs), 0.8, 0.8, 0.8, 1, 1, 1)
-            if mobs then GameTooltip:AddDoubleLine(T("Monstres restants"), string.format("~%d", mobs), 0.8, 0.8, 0.8, 1, 1, 1) end
+            if mobs then GameTooltip:AddDoubleLine(T("Monstres restants"), string.format(T("env. %d"), mobs), 0.8, 0.8, 0.8, 1, 1, 1) end
         end
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(T("Clic : section Expérience"), 0.6, 0.6, 0.6)
