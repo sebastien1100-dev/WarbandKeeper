@@ -25,9 +25,9 @@ WK.FEATURES = {
     { key = "maplayers", label = "Carte", icon = "map", group = "AVENTURE", qol = "maplayers", desc = "lieux et trajets" },
     { key = "nodes", label = "Récolte", icon = "tree", group = "AVENTURE", desc = "filons et plantes" },
     { key = "halo", label = "Halo", icon = "spark", group = "RÉGLAGES QOL", qol = "halo", reload = true },
-    { key = "micro", label = "Micro menu", icon = "clock", group = "RÉGLAGES QOL", qol = "micro", reload = true },
+    { key = "micro", label = "Micro menu", icon = "menu", group = "RÉGLAGES QOL", qol = "micro", reload = true },
     { key = "cursor", label = "Curseur", icon = "crosshair", group = "RÉGLAGES QOL", qol = "cursor", desc = "anneau et curseur gardé en combat", reload = true },
-    { key = "range", label = "Distance", icon = "crosshair", group = "RÉGLAGES QOL", desc = "ruban de distance du chasseur", reload = true },
+    { key = "range", label = "Distance", icon = "arrow", group = "RÉGLAGES QOL", desc = "ruban de distance du chasseur", reload = true },
 }
 WK.FEATURE_BY_PAGE, WK.FEATURE_BY_QOL = {}, {}
 for _, f in ipairs(WK.FEATURES) do

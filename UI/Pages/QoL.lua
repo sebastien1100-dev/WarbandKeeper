@@ -129,7 +129,7 @@ end
 
 -- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
 UI.QOL_SECTIONS = {
-    { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "clock" },
+    { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
     { "fishing", "Pêche", "fish" }, { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
     { "cursor", "Curseur", "crosshair" }, { "classes", "Classes", "users" },
 }
@@ -278,7 +278,7 @@ UI:RegisterPage({
         gen.desc:SetText("Marchand, groupe, confort")
         local halo = navButton("halo", "Halo", -58, nil, "spark")
         halo.desc:SetText("L'objet visé brille")
-        local micro = navButton("micro", "Micro menu", -108, nil, "clock")
+        local micro = navButton("micro", "Micro menu", -108, nil, "menu")
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")

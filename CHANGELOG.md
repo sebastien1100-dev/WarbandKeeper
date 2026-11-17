@@ -23,6 +23,17 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.96.2 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Résumé, carte Modules repliée : bandeau un peu plus haut, icônes plus grandes et plus espacées.
+- Modules : Distance (chasseur) prend une flèche, et Micro menu une nouvelle icône de menu (elle est aussi dans la page QoL). Il n'y a plus deux icônes identiques.
+
+### Corrections
+- Résumé, carte Modules dépliée : un groupe de plus de 4 modules (Aventure) passe à la ligne au lieu de déborder de la fenêtre.
+
 ## v0.96.1 — 17/11/2026
 
 _Un /reload suffit._

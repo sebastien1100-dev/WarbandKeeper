@@ -265,7 +265,7 @@ UI:RegisterPage({
         local tableBox = CreateFrame("Frame", nil, p)
         self.tableBox = tableBox
         tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4))
-        tableBox:SetPoint("BOTTOMRIGHT", 0, 44 + GAP)
+        tableBox:SetPoint("BOTTOMRIGHT", 0, 56 + GAP)
         self.colHeaders = {}
         for i, col in ipairs(BASE_COLS) do
             local t = UI:Text(tableBox, 10, C.dim)
@@ -334,12 +334,12 @@ UI:RegisterPage({
         UI:Panel(card, 12, C.surface, C.border)
         self.modCard = card
         local title = UI:Text(card, 13)
-        title:SetPoint("TOPLEFT", 16, -14)
+        title:SetPoint("TOPLEFT", 16, -20)
         title:SetText(T("Modules"))
         self.modCount = UI:Text(card, 11, C.muted)
         self.modCount:SetPoint("LEFT", title, "RIGHT", 8, -1)
         self.modToggle = UI:Button(card, "Gérer", 90, 24, "ghost")
-        self.modToggle:SetPoint("TOPRIGHT", -12, -9)
+        self.modToggle:SetPoint("TOPRIGHT", -12, -16)
         self.modToggle:SetScript("OnClick", function()
             ui.modulesOpen = not ui.modulesOpen
             self:LayoutModules(); self:Refresh()
@@ -357,7 +357,7 @@ UI:RegisterPage({
         -- ligne d'icônes (repliée)
         self.modDots = {}
         for i, f in ipairs(WK.FEATURES) do
-            local d = UI:Icon(card, f.icon, 18, nil, "ARTWORK")
+            local d = UI:Icon(card, f.icon, 22, nil, "ARTWORK")
             self.modDots[i] = d
         end
         -- tuiles (dépliée)
@@ -424,12 +424,12 @@ UI:RegisterPage({
         if not open then
             local x = 16
             for i, d in ipairs(self.modDots) do
-                d:ClearAllPoints(); d:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 28, -13)
+                d:ClearAllPoints(); d:SetPoint("LEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 34, -28)
             end
-            self.modH = 44
+            self.modH = 56
         else
             local tw = math.floor((W - 32 - LABEL_W - 3 * TG) / 4)
-            local y, col, lastGroup = -44, 0, nil
+            local y, col, lastGroup = -50, 0, nil
             for _, t in ipairs(self.modTiles) do
                 if t.f.group ~= lastGroup then
                     if lastGroup then y = y - ROW end
@@ -438,6 +438,7 @@ UI:RegisterPage({
                         if l.group == t.f.group then l.label:ClearAllPoints(); l.label:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16, y - 15) end
                     end
                 end
+                if col >= 4 then col = 0; y = y - ROW end -- groupe de plus de 4 modules : ligne suivante
                 t:SetWidth(tw)
                 t:ClearAllPoints(); t:SetPoint("TOPLEFT", self.modCard, "TOPLEFT", 16 + LABEL_W + col * (tw + TG), y)
                 col = col + 1
@@ -603,7 +604,7 @@ UI:RegisterPage({
         end
         self.tableBox:ClearAllPoints()
         self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4) - (shown > 0 and (GOAL_H + 12) or 0))
-        self.tableBox:SetPoint("BOTTOMRIGHT", 0, 44 + GAP)
+        self.tableBox:SetPoint("BOTTOMRIGHT", 0, 56 + GAP)
         self:LayoutModules()
         self:RefreshModules()
         -- Courbe

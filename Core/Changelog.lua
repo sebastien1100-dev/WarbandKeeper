@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.96.2", date = "17/11/2026", restart = true,
+        changed = {
+            "Résumé, carte Modules repliée : bandeau un peu plus haut, icônes plus grandes et plus espacées.",
+            "Modules : Distance (chasseur) prend une flèche, et Micro menu une nouvelle icône de menu (elle est aussi dans la page QoL). Il n'y a plus deux icônes identiques.",
+        },
+        fixed = {
+            "Résumé, carte Modules dépliée : un groupe de plus de 4 modules (Aventure) passe à la ligne au lieu de déborder de la fenêtre.",
+        },
+    },
+    {
         version = "0.96.1", date = "17/11/2026",
         fixed = {
             "Loot en groupe : un objet tiré aux dés (ou attribué par le maître du butin) n'est plus compté comme « laissé au sol » quand tu perds le lancer. Le filtre ne touche plus à ces objets : le jeu les donne au gagnant. En maître du butin, la fenêtre reste ouverte tant qu'il reste des objets à attribuer.",
