@@ -50,31 +50,11 @@ _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
 _Un /reload suffit._
 
 ### Modifications
+- Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une gélule vert menthe pastel, chiffre vert sombre, centrée sous l'icône et posée au-dessus des icônes voisines.
 - Micro menu, infobulle des Amis : tous ceux qui jouent à WoW sont en haut de la liste (amis du jeu et amis Battle.net en jeu, avec leur perso et le prénom du compte en bleu) ; ceux qui sont sur une autre appli ou un autre jeu suivent, sous « Battle.net · hors de WoW ».
-
-## v1.11.5 — 17/11/2026
-
-_Un /reload suffit._
-
-### Modifications
-- Micro menu : le nombre en ligne passe sur une gélule vert menthe pastel, chiffre vert sombre, centrée sous l'icône (Amis et Guilde).
 
 ### Corrections
 - Micro menu : la Guilde n'affichait pas son nombre de membres en ligne quand le jeu ne le donnait pas directement ; il est maintenant compté dans la liste de guilde.
-
-## v1.11.4 — 17/11/2026
-
-_Un /reload suffit._
-
-### Modifications
-- Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte en gélule (elle s'élargit pour deux chiffres), cerclée de sombre et posée au-dessus des icônes voisines, avec un chiffre blanc détouré.
-
-## v1.11.3 — 17/11/2026
-
-_Un /reload suffit._
-
-### Modifications
-- Micro menu : le nombre de membres de guilde et d'amis en ligne est sur une pastille verte plus grande, cerclée de sombre, avec un chiffre blanc plus gros.
 
 ## v1.11.2 — 17/11/2026
 
