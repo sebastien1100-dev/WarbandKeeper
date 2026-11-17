@@ -145,3 +145,82 @@ WK:On("GET_ITEM_INFO_RECEIVED", function()
     pending = true
     C_Timer.After(1, function() pending = false; M.stamp = M.stamp + 1; WK:NotifyChanged() end)
 end)
+
+---------------------------------------------------------------------------
+-- Ma liste BiS : objets choisis à la main, par perso et par emplacement (WK.DB.global.bisList[perso][emplacement])
+---------------------------------------------------------------------------
+local function store()
+    local g = WK.DB.global
+    g.bisList = g.bisList or {}
+    return g.bisList
+end
+function M:List(key)
+    local s = store()
+    s[key] = s[key] or {}
+    return s[key]
+end
+function M:Set(key, slot, id)
+    self:List(key)[slot] = id
+    WK:NotifyChanged()
+end
+function M:ClearList(key)
+    store()[key] = {}
+    WK:NotifyChanged()
+end
+-- Remplit les emplacements vides avec le meilleur trouvable au niveau 60
+function M:FillFromBest(c)
+    local list = self:List(c.key)
+    local n = 0
+    for _, row in ipairs(self:Rows(c, 60)) do
+        if row.best and not list[row.slot] then list[row.slot] = row.best.id; n = n + 1 end
+    end
+    WK:NotifyChanged()
+    return n
+end
+-- Où tombe un objet : donjon et boss (ou monstres), % de drop
+local sourceOf
+function M:Source(id)
+    if not sourceOf then
+        sourceOf = {}
+        local D = WK.modules.Dungeons
+        for _, d in ipairs(D:All()) do
+            for _, g in ipairs(D:LootGroups(d)) do
+                for _, i in ipairs(g.loot or {}) do if not sourceOf[i] then sourceOf[i] = { d = d, boss = g } end end
+            end
+        end
+    end
+    local s = sourceOf[id]
+    if not s then return nil end
+    local info = WK.modules.Dungeons:ItemInfo(id)
+    return s.d, s.boss, info and info.drop
+end
+-- Persos dont la liste BiS contient l'objet (noms)
+function M:Holders(id)
+    local out = {}
+    for key, list in pairs(store()) do
+        for _, v in pairs(list) do
+            if v == id then
+                local c = WK.DB.global.characters[key]
+                if c then table.insert(out, WK:CharName(c, key)) end
+                break
+            end
+        end
+    end
+    table.sort(out)
+    return out
+end
+
+-- Infobulle : « Dans la liste BiS de … »
+local function onTooltip(tt, data)
+    if tt ~= GameTooltip and tt ~= ItemRefTooltip then return end
+    local id = data and data.id
+    if not id then return end
+    local who = M:Holders(id)
+    if #who == 0 then return end
+    local r, g, b = WK.UI:Accent()
+    tt:AddLine(string.format(T("Liste BiS de %s"), table.concat(who, ", ")), r, g, b, true)
+    tt:Show()
+end
+if TooltipDataProcessor and Enum and Enum.TooltipDataType then
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tt, data) pcall(onTooltip, tt, data) end)
+end

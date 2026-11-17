@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.13.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fiche du perso, onglet BiS : dernier choix « Ma liste BiS », une liste à remplir toi-même (par exemple pour le niveau 60), un objet par emplacement. Pour en ajouter un : Maj+clic sur l'objet avec le champ actif, glisser-déposer sur la ligne, ou son n°. Chaque objet dit où il tombe (donjon, boss, %) ou « hors donjon », et son état : porté, dans les sacs, à la banque ou à obtenir. Boutons « Remplir avec le meilleur trouvable » (niveau 60, emplacements vides) et « Vider ».
+- Infobulle d'un objet : « Liste BiS de … » quand il est dans la liste d'un de tes persos.
+
 ## v1.12.2 — 17/11/2026
 
 _Un /reload suffit._
