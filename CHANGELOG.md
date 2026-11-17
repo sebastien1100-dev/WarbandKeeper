@@ -23,6 +23,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.95.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte du monde : le médaillon d'un rare disparaissait (ou clignotait) dès qu'on passait la souris dessus. Il reste affiché, avec son infobulle et sa patrouille.
+
 ## v0.95.0 — 17/11/2026
 
 _Un /reload suffit._

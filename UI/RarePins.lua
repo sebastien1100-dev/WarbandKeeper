@@ -61,15 +61,17 @@ local function getPin(i)
         p.star:SetDrawLayer("OVERLAY", 2)
         p.star:SetPoint("CENTER", 0, 0)
         p:SetScript("OnEnter", function(s)
+            local changed = hovered ~= s.r
             hovered = s.r
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(R:Name(s.r), C.rare[1], C.rare[2], C.rare[3])
             tooltipLines(GameTooltip, s.r)
             GameTooltip:AddLine(T("Clic : guidage vers ce rare"), 0.5, 0.5, 0.5)
             GameTooltip:Show()
-            if UI.RedrawRarePins then UI:RedrawRarePins() end
+            if changed and UI.RedrawRarePins then UI:RedrawRarePins() end
         end)
-        p:SetScript("OnLeave", function()
+        p:SetScript("OnLeave", function(s)
+            if hovered ~= s.r then return end
             hovered = nil
             GameTooltip:Hide()
             if UI.RedrawRarePins then UI:RedrawRarePins() end
@@ -171,9 +173,11 @@ function UI:DrawRarePins(cv, mapID, w, h)
     for k = shown + 1, #pins do pins[k]:Hide() end
     for k = nd + 1, #dots do dots[k]:Hide() end
 end
+-- Redessin au survol : sans tout cacher d'abord (cacher le médaillon sous la souris déclenchait son OnLeave,
+-- donc un nouveau redessin, et le médaillon clignotait / disparaissait). DrawRarePins place et montre les
+-- médaillons utiles et cache seulement ceux en trop.
 function UI:RedrawRarePins()
     if last and WorldMapFrame and WorldMapFrame:IsShown() then
-        UI:HideRarePins()
         UI:DrawRarePins(unpack(last))
     end
 end

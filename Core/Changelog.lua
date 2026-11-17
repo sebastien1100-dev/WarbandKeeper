@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.95.1", date = "17/11/2026",
+        fixed = {
+            "Carte du monde : le médaillon d'un rare disparaissait (ou clignotait) dès qu'on passait la souris dessus. Il reste affiché, avec son infobulle et sa patrouille.",
+        },
+    },
+    {
         version = "0.95.0", date = "17/11/2026",
         changed = {
             "Barre latérale réorganisée : Résumé tout en haut, à part (jamais replié), puis six groupes avec une petite icône de ta couleur : Bataillon (Persos, Inventaire), Trésorerie (Stats, Règles d'envoi), Artisanat (Métiers, Pêche), Butin (Session de farm, Filtre de loot, Journal), Aventure (Quêtes, Rares, Donjons, LFG) et Réglages QoL.",
