@@ -51,7 +51,6 @@ local function build()
     local function seg(layer, sub)
         local t = f:CreateTexture(nil, layer, nil, sub)
         t:SetTexture("Interface\\Buttons\\WHITE8X8")
-        t:SetHeight(BH - 2)
         t:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
         return t
     end
@@ -60,24 +59,29 @@ local function build()
     f.cur = seg("ARTWORK", 2)
     f.mark = f:CreateTexture(nil, "OVERLAY")
     f.mark:SetTexture("Interface\\Buttons\\WHITE8X8")
-    f.mark:SetSize(2, BH + 6)
     f.ticks = {}
     for i = 1, 9 do
         local t = f:CreateTexture(nil, "OVERLAY", nil, -1)
         t:SetTexture("Interface\\Buttons\\WHITE8X8")
-        t:SetSize(1, BH - 2)
         f.ticks[i] = t
     end
     f.left = UI:Text(f, 11)
-    f.left:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, BH + 4)
     f.right = UI:Text(f, 10, C.muted)
-    f.right:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, BH + 5)
     f.right:SetJustifyH("RIGHT")
     f:Hide()
 
     function f:Paint(sample)
         local x, pend, nq = data(sample)
         local cfg = M:Config()
+        -- largeur et épaisseur réglables (QoL > Expérience)
+        local bh = math.max(4, math.min(24, cfg.thick or BH))
+        self:SetWidth(math.max(200, cfg.width or W))
+        self.track:SetHeight(bh)
+        for _, t in ipairs({ self.rest, self.pend, self.cur }) do t:SetHeight(bh - 2) end
+        self.mark:SetSize(2, bh + 6)
+        for _, t in ipairs(self.ticks) do t:SetSize(1, bh - 2) end
+        self.left:ClearAllPoints(); self.left:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 2, bh + 4)
+        self.right:ClearAllPoints(); self.right:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, bh + 5)
         local w = self:GetWidth() - 2
         local r1, g1, b1 = UI:Accent()
         self.track:SetVertexColor(0.04, 0.03, 0.02, 0.85)
@@ -101,7 +105,7 @@ local function build()
         end
         local compact = cfg.compact
         self.left:SetShown(not compact); self.right:SetShown(not compact)
-        self:SetHeight(compact and BH or 30)
+        self:SetHeight(compact and bh or (bh + 22))
         self.left:SetText(string.format(T("Niv. %d  ·  %s / %s  (%d %%)"), x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
         local parts = {}
         if x.rested > 0 then table.insert(parts, string.format("|cff61a0f2" .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end

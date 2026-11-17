@@ -29,6 +29,17 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.10.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre d'expérience : largeur (jusqu'à 1 600 px) et épaisseur réglables dans QoL > Expérience.
+
+### Modifications
+- QoL > Expérience : la carte « Quêtes terminées à rendre » prend la hauteur de ses quêtes (plus de grand vide), jusqu'à 12 quêtes.
+- « Tous tes persos » devient un vrai tableau : perso en couleur de classe, niveau, barre et % d'XP, barre et % de repos estimé avec l'étiquette « plein », et quand il a été vu (« il y a 3 j · auberge »).
+
 ## v1.10.1 — 17/11/2026
 
 _Un /reload suffit._

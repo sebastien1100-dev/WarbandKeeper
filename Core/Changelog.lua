@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.10.2", date = "17/11/2026",
+        added = {
+            "Barre d'expérience : largeur (jusqu'à 1 600 px) et épaisseur réglables dans QoL > Expérience.",
+        },
+        changed = {
+            "QoL > Expérience : la carte « Quêtes terminées à rendre » prend la hauteur de ses quêtes (plus de grand vide), jusqu'à 12 quêtes.",
+            "« Tous tes persos » devient un vrai tableau : perso en couleur de classe, niveau, barre et % d'XP, barre et % de repos estimé avec l'étiquette « plein », et quand il a été vu (« il y a 3 j · auberge »).",
+        },
+    },
+    {
         version = "1.10.1", date = "17/11/2026",
         changed = {
             "Liste « À venir » complétée avec les idées pas encore traitées : suite de l'expérience, du feu de camp et des notes de carte, recettes déjà apprises pour les verrous, recherche globale.",

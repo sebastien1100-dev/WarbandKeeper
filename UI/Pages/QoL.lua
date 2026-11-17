@@ -1581,24 +1581,30 @@ UI:RegisterPage({
             local X = WK.modules.XP
             local xcfg = X:Config()
             local fmt, xdur = UI.FormatXP, UI.XPDuration
+            local xsec = current
             local function xrefresh() if UI.RefreshXPBar then UI:RefreshXPBar() end end
             -- barre
-            local xb = card("Barre d'expérience", 40 + 5 * 46 + 8, "XP, repos et quêtes à rendre")
+            local xb = card("Barre d'expérience", 40 + 7 * 46 + 8, "XP, repos et quêtes à rendre")
             UI:SettingRow(xb, -40, "Afficher la barre", "Accent : ton XP ; bleu : ton repos ; jaune : l'XP des quêtes terminées à rendre (un trait marque où tu arriverais). Cachée au niveau maximum.",
                 toggle(xb, function() return xcfg.bar end, function(v) xcfg.bar = v; xrefresh() end), 80)
             UI:SettingRow(xb, -86, "Compacte", "Juste la barre, sans les libellés (tout reste dans l'infobulle).",
                 toggle(xb, function() return xcfg.compact end, function(v) xcfg.compact = v; xrefresh() end), 80)
-            UI:SettingRow(xb, -132, "Prévenir d'un niveau à rendre", "À l'écran et dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
+            UI:SettingRow(xb, -132, "Largeur", "Élargis la barre jusqu'à toute la largeur de l'écran.",
+                UI:Slider(xb, 240, 200, 1600, 20, function() return xcfg.width or 520 end, function(v) xcfg.width = v; xrefresh() end, "%d px"), 260)
+            UI:SettingRow(xb, -178, "Épaisseur", "Hauteur de la barre elle-même.",
+                UI:Slider(xb, 240, 4, 24, 1, function() return xcfg.thick or 8 end, function(v) xcfg.thick = v; xrefresh() end, "%d px"), 260)
+            UI:SettingRow(xb, -224, "Prévenir d'un niveau à rendre", "À l'écran et dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
                 toggle(xb, function() return xcfg.levelAlert end, function(v) xcfg.levelAlert = v end), 80)
-            UI:SettingRow(xb, -178, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
+            UI:SettingRow(xb, -270, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
                 toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
             local xplace = UI:Button(xb, "Placer la barre", 150, 28, "secondary")
             xplace:SetScript("OnClick", function() UI:EnterEditMode() end)
-            UI:SettingRow(xb, -224, "Position et taille", "En mode édition, avec les autres éléments à l'écran.", xplace, 150)
+            UI:SettingRow(xb, -316, "Position", "En mode édition, avec les autres éléments à l'écran.", xplace, 150)
 
-            -- quêtes à rendre
-            local QROWS = 8
-            local xq = card("Quêtes terminées à rendre", 40 + 24 + QROWS * 26 + 44, "triées par XP")
+            -- quêtes à rendre (hauteur selon le nombre de quêtes)
+            local QROWS = 12
+            local function qHeight(n) return 40 + 24 + n * 26 + (n > 0 and 50 or 6) end
+            local xq = card("Quêtes terminées à rendre", qHeight(0), "triées par XP")
             local xqHead = dynText(xq, 11, C.muted, function()
                 local list = X:Pending()
                 if #list == 0 then return T("Aucune quête terminée dans ton journal.") end
@@ -1613,7 +1619,7 @@ UI:RegisterPage({
             for i = 1, QROWS do
                 local r = CreateFrame("Frame", nil, xq)
                 r:SetHeight(24)
-                r:SetPoint("TOPLEFT", 16, -42 - 24 - (i - 1) * 26); r:SetPoint("RIGHT", -16, 0)
+                r:SetPoint("TOPLEFT", 16, -42 - 24 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -16, -42 - 24 - (i - 1) * 26)
                 r.title = UI:Text(r, 11)
                 r.title:SetPoint("LEFT"); r.title:SetPoint("RIGHT", -190, 0)
                 r.title:SetJustifyH("LEFT")
@@ -1627,22 +1633,6 @@ UI:RegisterPage({
             local nearest = UI:Button(xq, "Guider vers la plus proche", nil, 28, "primary", "guide")
             nearest:SetPoint("BOTTOMLEFT", 16, 12)
             nearest:SetScript("OnClick", function() if not X:GuideNearest() then WK:Print(T("Pas de point de rendu connu pour tes quêtes terminées.")) end end)
-            table.insert(self.dyn, function()
-                local list = X:Pending()
-                for i, r in ipairs(qrows) do
-                    local e = list[i]
-                    r.e = e
-                    if e then
-                        r.title:SetText(e.title .. (e.giver and ("  |cff9ca3ab· " .. T("donneur") .. "|r") or ""))
-                        r.xp:SetText(e.xp > 0 and ("+" .. fmt(e.xp)) or "")
-                        r.go:SetShown(e.map ~= nil)
-                        r:Show()
-                    else
-                        r:Hide()
-                    end
-                end
-                nearest:SetEnabled(#list > 0)
-            end)
 
             -- repos
             local xr = card("Repos", 40 + 3 * 20 + 30, "jusqu'à 150 % d'un niveau")
@@ -1665,20 +1655,23 @@ UI:RegisterPage({
             end)
             xrText:SetPoint("TOPLEFT", 16, -42); xrText:SetPoint("RIGHT", -16, 0)
             xrText:SetJustifyH("LEFT")
-            local rtrack = xr:CreateTexture(nil, "ARTWORK")
-            rtrack:SetTexture("Interface\\Buttons\\WHITE8X8")
-            rtrack:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.6)
-            rtrack:SetHeight(6)
+            local function hbar(parent, color)
+                local tr = parent:CreateTexture(nil, "ARTWORK")
+                tr:SetTexture("Interface\\Buttons\\WHITE8X8")
+                tr:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.6)
+                tr:SetHeight(6)
+                local fi = parent:CreateTexture(nil, "OVERLAY")
+                fi:SetTexture("Interface\\Buttons\\WHITE8X8")
+                fi:SetHeight(6)
+                fi:SetPoint("LEFT", tr, "LEFT")
+                local function set(v, r, g, b)
+                    fi:SetVertexColor(r, g, b, 1)
+                    fi:SetWidth(math.max(0.01, (tr:GetWidth() or 0) * math.max(0, math.min(1, v))))
+                end
+                return tr, set
+            end
+            local rtrack, rset = hbar(xr)
             rtrack:SetPoint("BOTTOMLEFT", 16, 14); rtrack:SetPoint("BOTTOMRIGHT", -16, 14)
-            local rfill = xr:CreateTexture(nil, "OVERLAY")
-            rfill:SetTexture("Interface\\Buttons\\WHITE8X8")
-            rfill:SetVertexColor(0.38, 0.62, 0.95, 1)
-            rfill:SetHeight(6)
-            rfill:SetPoint("LEFT", rtrack, "LEFT")
-            table.insert(self.dyn, function()
-                local x = X:Me()
-                rfill:SetWidth(math.max(0.01, (rtrack:GetWidth() or 0) * math.min(1, (x.rested / x.max) / X.REST_MAX)))
-            end)
 
             -- rythme de la session
             local xs = card("Rythme de la session", 40 + 5 * 20 + 44, "depuis la connexion")
@@ -1700,45 +1693,127 @@ UI:RegisterPage({
             xreset:SetPoint("BOTTOMLEFT", 16, 12)
             xreset:SetScript("OnClick", function() X:ResetSession(); WK:NotifyChanged() end)
 
-            -- tous tes persos
-            local AROWS = 12
-            local xa = card("Tous tes persos", 40 + AROWS * 20 + 30, "repos estimé depuis leur déconnexion")
-            local xaText = dynText(xa, 11, C.text, function()
+            -- tous tes persos : tableau (perso, niveau, XP, repos estimé, vu)
+            local AROWS = 16
+            local function aHeight(n) return 40 + 22 + math.max(1, n) * 28 + 10 end
+            local xa = card("Tous tes persos", aHeight(0), "repos estimé depuis leur déconnexion")
+            local AX = { 16, 170, 225, 420, 660 }
+            for i, h in ipairs({ "Perso", "Niveau", "XP", "Repos estimé", "Vu" }) do
+                local t = UI:Text(xa, 10, C.dim)
+                t:SetPoint("TOPLEFT", AX[i], -42)
+                t:SetText(UI:Upper(T(h)))
+            end
+            local aempty = UI:Text(xa, 11, C.muted)
+            aempty:SetPoint("TOPLEFT", 16, -68)
+            aempty:SetText(T("Connecte tes persos une fois pour relever leur expérience."))
+            local arows = {}
+            for i = 1, AROWS do
+                local r = CreateFrame("Frame", nil, xa)
+                r:SetHeight(26)
+                r:SetPoint("TOPLEFT", 0, -62 - (i - 1) * 28); r:SetPoint("TOPRIGHT", 0, -62 - (i - 1) * 28)
+                r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", AX[1], 0)
+                r.name:SetWidth(AX[2] - AX[1] - 8); r.name:SetJustifyH("LEFT")
+                r.lvl = UI:Text(r, 12); r.lvl:SetPoint("LEFT", AX[2], 0)
+                r.xtr, r.xset = hbar(r)
+                r.xtr:SetPoint("LEFT", AX[3], 0); r.xtr:SetWidth(120)
+                r.xpc = UI:Text(r, 12); r.xpc:SetPoint("LEFT", AX[3] + 128, 0)
+                r.rtr, r.rset = hbar(r)
+                r.rtr:SetPoint("LEFT", AX[4], 0); r.rtr:SetWidth(120)
+                r.rpc = UI:Text(r, 12); r.rpc:SetPoint("LEFT", AX[4] + 128, 0)
+                r.full = CreateFrame("Frame", nil, r)
+                r.full:SetSize(40, 18)
+                r.full:SetPoint("LEFT", r.rpc, "RIGHT", 6, 0)
+                UI:Panel(r.full, 9, { C.positive[1] * 0.35, C.positive[2] * 0.35, C.positive[3] * 0.35, 0.9 })
+                r.full.t = UI:Text(r.full, 10, C.positive); r.full.t:SetPoint("CENTER")
+                r.full.t:SetText(T("plein"))
+                r.seen = UI:Text(r, 11, C.muted); r.seen:SetPoint("LEFT", AX[5], 0)
+                r.seen:SetPoint("RIGHT", -16, 0); r.seen:SetJustifyH("LEFT")
+                arows[i] = r
+            end
+            local function ago(sec)
+                if sec < 3600 then return string.format(T("il y a %d min"), math.max(1, math.floor(sec / 60))) end
+                if sec < 86400 then return string.format(T("il y a %d h"), math.floor(sec / 3600)) end
+                return string.format(T("il y a %d j"), math.floor(sec / 86400))
+            end
+
+            -- les cartes suivent la hauteur des quêtes et du tableau
+            for _, pair in ipairs({ { xr, xq }, { xs, xr }, { xa, xs } }) do
+                pair[1]:ClearAllPoints()
+                pair[1]:SetPoint("TOPLEFT", pair[2], "BOTTOMLEFT", 0, -GAP)
+                pair[1]:SetPoint("TOPRIGHT", pair[2], "BOTTOMRIGHT", 0, -GAP)
+            end
+            local extra = 0
+            xsec.extraY = function() return extra end
+
+            table.insert(self.dyn, function()
+                -- quêtes
+                local list = X:Pending()
+                local nq = math.min(#list, QROWS)
+                for i, r in ipairs(qrows) do
+                    local e = list[i]
+                    r.e = e
+                    if e then
+                        r.title:SetText(e.title .. (e.giver and ("  |cff9ca3ab· " .. T("donneur") .. "|r") or ""))
+                        r.xp:SetText(e.xp > 0 and ("+" .. fmt(e.xp)) or "")
+                        r.go:SetShown(e.map ~= nil)
+                        r:Show()
+                    else
+                        r:Hide()
+                    end
+                end
+                nearest:SetShown(nq > 0)
+                xq:SetHeight(qHeight(nq))
+                -- repos
+                local me = X:Me()
+                rset((me.rested / me.max) / X.REST_MAX, 0.38, 0.62, 0.95)
+                -- persos
                 local rows = {}
                 for _, e in ipairs(UI:SortedCharacters()) do
-                    local c = e.c
-                    if c.xp or (c.level and c.level < X:MaxLevel()) then table.insert(rows, e) end
+                    if e.c.xp or e.c.level then table.insert(rows, e) end
                 end
-                if #rows == 0 then return "|cff9ca3ab" .. T("Connecte tes persos une fois pour relever leur expérience.") .. "|r" end
-                local out = {}
-                for i, e in ipairs(rows) do
-                    if i > AROWS then table.insert(out, string.format("|cff9ca3ab" .. T("+ %d autre(s)") .. "|r", #rows - AROWS)) break end
-                    local c, x = e.c, e.c.xp
-                    local r, g, b = UI:ClassColor(c.class)
-                    local name = string.format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, WK:CharName(c, e.key))
-                    local lvl = (x and x.level) or c.level or 0
-                    local line = string.format("%s  |cff9ca3ab" .. T("niv.") .. " %d|r", name, lvl)
-                    if lvl >= X:MaxLevel() then
-                        line = line .. "  |cff9ca3ab· " .. T("niveau max") .. "|r"
-                    elseif x then
-                        line = line .. string.format("  ·  %d %%", math.floor((x.cur or 0) / math.max(1, x.max or 1) * 100))
-                        local frac = X:RestOf(e.key)
-                        if frac then
-                            local full = frac >= X.REST_MAX - 0.001
-                            line = line .. string.format("  ·  |cff61a0f2" .. T("repos %d %%") .. "|r", math.floor(frac * 100))
-                                .. (full and ("  |cfff5d76e" .. T("plein") .. "|r") or "")
-                                .. (e.key ~= WK:CharKey() and x.at and ("  |cff9ca3ab· " .. UI:AgoShort(time() - x.at) .. "|r") or "")
+                local na = math.min(#rows, AROWS)
+                aempty:SetShown(na == 0)
+                local ar, ag, ab = UI:Accent()
+                for i, r in ipairs(arows) do
+                    local e = rows[i]
+                    if not e then r:Hide() else
+                        local c, x = e.c, e.c.xp
+                        local mine = e.key == WK:CharKey()
+                        if mine then x = { level = me.level, cur = me.cur, max = me.max, rested = me.rested, resting = me.resting, at = time() } end
+                        local cr, cg, cb = UI:ClassColor(c.class)
+                        r.name:SetText(WK:CharName(c, e.key)); r.name:SetTextColor(cr, cg, cb)
+                        local lvl = (x and x.level) or c.level or 0
+                        r.lvl:SetText(lvl)
+                        local maxed = lvl >= X:MaxLevel()
+                        r.full:Hide()
+                        if maxed then
+                            r.xset(1, ar, ag, ab); r.xpc:SetText(T("max"))
+                            r.rset(0, 0, 0, 0); r.rpc:SetText("-")
+                        elseif x then
+                            local pc = (x.cur or 0) / math.max(1, x.max or 1)
+                            r.xset(pc, ar, ag, ab); r.xpc:SetText(string.format("%d %%", math.floor(pc * 100)))
+                            local frac = X:RestOf(e.key) or 0
+                            r.rset(frac / X.REST_MAX, 0.38, 0.62, 0.95)
+                            r.rpc:SetText(string.format("%d %%", math.floor(frac * 100)))
+                            r.full:SetShown(frac >= X.REST_MAX - 0.001)
+                        else
+                            r.xset(0, ar, ag, ab); r.xpc:SetText("?")
+                            r.rset(0, 0, 0, 0); r.rpc:SetText("?")
                         end
-                    else
-                        line = line .. "  |cff9ca3ab· " .. T("pas encore relevé") .. "|r"
+                        if mine then r.seen:SetText(T("maintenant"))
+                        elseif x and x.at then r.seen:SetText(ago(time() - x.at) .. " · " .. (x.resting and T("auberge") or T("dehors")))
+                        else r.seen:SetText(T("pas encore relevé")) end
+                        r:Show()
                     end
-                    table.insert(out, line)
                 end
-                return table.concat(out, "\n")
+                xa:SetHeight(aHeight(na))
+                -- hauteur de la section
+                local e2 = (qHeight(nq) - qHeight(0)) + (aHeight(na) - aHeight(0))
+                if e2 ~= extra then
+                    extra = e2
+                    if xsec.tailY then xsec.scroll:SetContentHeight(xsec.tailY + extra) end
+                end
             end)
-            xaText:SetPoint("TOPLEFT", 16, -42); xaText:SetPoint("RIGHT", -16, 0)
-            xaText:SetJustifyH("LEFT")
-            if xaText.SetWordWrap then xaText:SetWordWrap(false) end
         end
 
         -----------------------------------------------------------------------
