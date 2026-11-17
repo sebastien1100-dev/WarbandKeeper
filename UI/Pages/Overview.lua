@@ -7,10 +7,17 @@ local TOP_H = 250
 local TODO_W = 420
 
 -- Liste « À faire » : actions utiles maintenant, les plus urgentes d'abord.
--- { prio (petit = urgent), icon, text, color?, go = function() }
+-- { prio (petit = urgent), icon, text, color?, go = function(), gicon, short, group, n }
+-- gicon : icône du jeu (fenêtre de rappels à la connexion), short : libellé court de sa pastille,
+-- group + n : les éléments du même groupe ne font qu'une pastille (n additionnés)
+local GI = "Interface\\Icons\\"
 local function todoItems()
     local items = {}
-    local function add(prio, icon, text, go, color) table.insert(items, { prio = prio, icon = icon, text = text, go = go, color = color }) end
+    local function add(prio, icon, text, go, color, x)
+        x = x or {}
+        table.insert(items, { prio = prio, icon = icon, text = text, go = go, color = color,
+            gicon = x.g and (GI .. x.g) or nil, short = x.short, group = x.group, n = x.n })
+    end
     local now = time()
     local mailDays = WK.DB.global.settings.alerts.mailDays or 3
     local me = select(2, WK.DB:Me())
@@ -23,50 +30,59 @@ local function todoItems()
             local soon = d and d <= mailDays
             local txt = string.format(box.count > 1 and WK.T("%d lettres à récupérer sur %s") or WK.T("%d lettre à récupérer sur %s"), box.count, name)
             if d then txt = txt .. "  ·  " .. string.format(WK.T("expire dans %d j"), d) end
-            add(soon and 1 or 6, "mail", txt, function() UI:ShowPage("mail"); UI.pages.mail:SetTab("receive") end, soon and C.negative or nil)
+            add(soon and 1 or 6, "mail", txt, function() UI:ShowPage("mail"); UI.pages.mail:SetTab("receive") end, soon and C.negative or nil,
+                { g = "INV_Letter_15", group = "letters", n = box.count })
         end
         -- Métier bloqué au plafond de son rang (75, 150, 225…)
         for prof, pr in pairs(c.professions or {}) do
             if (pr.max or 0) > 0 and pr.max < 300 and (pr.rank or 0) >= pr.max
                 and not WK.modules.Gathering:Kind(prof) and prof ~= "Pêche" and prof ~= "Fishing" then
                 add(3, "hammer", string.format(WK.T("%s : %s au plafond %d, va voir le maître"), name, prof, pr.max),
-                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, prof) end, C.warning)
+                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, prof) end, C.warning,
+                    { g = "INV_Misc_Book_09", short = WK.T("plafond") })
             end
         end
         -- Fabrications à recharge de nouveau prêtes (transmutation, étoffe lunaire…)
         for _, cd in ipairs(WK.modules.Recipes:Cooldowns(c)) do
             if cd.ready then
                 add(4, "clock", string.format(WK.T("%s : %s de nouveau disponible"), name, cd.key),
-                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, cd.prof) end, C.positive)
+                    function() UI:ShowPage("professions"); UI.pages.professions:ShowDetail(e.key, cd.prof) end, C.positive,
+                    { g = "INV_Misc_PocketWatch_01", group = "cd", n = 1 })
             end
         end
         -- Banque pas vue (alertes)
         for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
             if a.kind == "bank" then
-                add(5, "home", name .. " : " .. a.text, function() UI:ShowPage("characters") end)
+                add(5, "home", name .. " : " .. a.text, function() UI:ShowPage("characters") end, nil,
+                    { g = "INV_Box_02", short = WK.T("banque") })
             end
         end
     end
     -- Qualité de vie : durabilité, sacs presque pleins, composants et munitions, familier
     local ICON = { durability = "hammer", bags = "bag", reagent = "spark", ammo = "spark", pet = "spark" }
+    local GAME = { durability = { "Trade_BlackSmithing", "réparer" }, bags = { "INV_Misc_Bag_08", "pleins" },
+        reagent = { "INV_Misc_Dust_02", "composants" }, ammo = { "INV_Ammo_Arrow_02", "munitions" },
+        pet = { "Ability_Hunter_BeastTraining", "familier" }, poison = { "Ability_Poisons", "poisons" } }
     for _, a in ipairs(WK.modules.QoL:Alerts()) do
         local section = a.class or "general"
-        add(a.urgent and 2 or 5, ICON[a.kind] or "spark", a.text, function()
+        local gm = GAME[a.kind] or { "INV_Misc_QuestionMark", nil }
+        if a.kind == "bags" and a.bank then gm = { "INV_Box_02", "pleine" } end
+        add(a.urgent and 2 or 5, (a.kind == "bags" and a.bank) and "home" or ICON[a.kind] or "spark", a.text, function()
             UI:ShowPage("qol"); UI.pages.qol:ShowSection(section)
-        end, a.urgent and C.negative or C.warning)
+        end, a.urgent and C.negative or C.warning, { g = gm[1], short = gm[2] and WK.T(gm[2]) })
     end
     -- Butin automatique du jeu actif : le filtre de loot ne peut pas choisir
     local L = WK.modules.Loot
     if WK.DB.global.loot.enabled and L:GameAutoLoot() then
         add(2, "filter", WK.T("Butin automatique du jeu activé : le filtre de loot ne peut pas choisir"),
-            function() UI:ShowPage("loot") end, C.negative)
+            function() UI:ShowPage("loot") end, C.negative, { g = "INV_Misc_Bag_11", short = WK.T("butin auto") })
     end
     -- Objets à envoyer / à déposer depuis les sacs du perso connecté
     if WK.DB.global.mail.enabled then
         local n = WK.modules.Mail:PendingCount()
         if n > 0 then
             add(4, "mail", string.format(WK.T("%d objets à envoyer à la prochaine boîte aux lettres"), n),
-                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("send") end)
+                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("send") end, nil, { g = "INV_Crate_02", group = "send", n = n })
         end
     end
     if WK.DB.global.bank.enabled then
@@ -74,13 +90,13 @@ local function todoItems()
         for _, e in ipairs(WK.modules.BankDeposit:Plan()) do for _, op in ipairs(e.ops) do n = n + op.count end end
         if n > 0 then
             add(4, "bag", string.format(WK.T("%d objets à déposer à la prochaine banque"), n),
-                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("bank") end)
+                function() UI:ShowPage("mail"); UI.pages.mail:SetTab("bank") end, nil, { g = "INV_Misc_Bag_10", group = "deposit", n = n })
         end
     end
     -- Session de farm en pause
     local F = WK.modules.Farm
     if F:Active() and F:Current().paused then
-        add(4, "pause", WK.T("Session de farm en pause"), function() UI:ShowPage("farm") end, C.warning)
+        add(4, "pause", WK.T("Session de farm en pause"), function() UI:ShowPage("farm") end, C.warning, { g = "Spell_Nature_TimeStop", short = WK.T("pause") })
     end
     -- Liste de courses : composants manquants
     if next(WK.DB.global.shopping) then
@@ -88,7 +104,7 @@ local function todoItems()
         for _, m in ipairs((WK.modules.Recipes:Needs())) do if m.missing > 0 then missing = missing + 1 end end
         if missing > 0 then
             add(7, "search", string.format(WK.T("Liste de courses : %d composant(s) manquant(s)"), missing),
-                function() UI:ShowPage("professions"); UI.pages.professions:SetTab("shopping") end)
+                function() UI:ShowPage("professions"); UI.pages.professions:SetTab("shopping") end, nil, { g = "INV_Scroll_03", group = "shop", n = missing })
         end
     end
     table.sort(items, function(a, b) if a.prio ~= b.prio then return a.prio < b.prio end return a.text < b.text end)

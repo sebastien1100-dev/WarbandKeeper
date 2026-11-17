@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.98.1", date = "17/11/2026",
+        changed = {
+            "Rappels à la connexion : la fenêtre devient un bandeau en haut de l'écran. Ton perso, puis une pastille par tâche avec l'icône du jeu qui va avec (lettre cachetée pour le courrier, caisse pour les objets à envoyer, coffre pour la banque, montre pour une recharge prête, livre pour un métier au plafond, enclume pour réparer…) et son chiffre. Les lettres de tous les persos ne font qu'une pastille ; son infobulle détaille.",
+            "Rappels : une barre en haut du bandeau se vide jusqu'à la fermeture. Survol : le bandeau se déplie en liste (clic sur une ligne ou une pastille = la page qui va avec) et le temps s'arrête. Flèche pour ouvrir Warband Keeper, croix pour fermer ; il se déplace en le faisant glisser. Aperçu dans Options > Général.",
+        },
+    },
+    {
         version = "0.98.0", date = "17/11/2026", restart = true,
         added = {
             "En-tête : un bouton « Mise à jour x.y.z » apparaît à gauche d'Éditer quand une version plus récente de Warband Keeper existe. Son infobulle dit d'où vient l'info et comment l'installer.",
