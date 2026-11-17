@@ -58,7 +58,15 @@ jobs:
               sed -i 's#^_Un /reload suffit\._$#_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._#' notes.md
             fi
           fi
-          gh release create "v$V" "WarbandKeeper-$V.zip" --title "Warband Keeper $V" --notes-file notes.md --target "$GITHUB_SHA"
+          # le client de la release précédente est joint tout de suite (le nouveau, construit sous Windows par
+          # le job suivant, le remplace quelques minutes plus tard) : la release ne reste jamais sans client
+          EXTRA=""
+          if [ -n "$PREV" ]; then
+            mkdir -p prev
+            gh release download "$PREV" -D prev -p 'WarbandKeeper-Client-*.exe' -p 'WarbandKeeper-Client-notes.md' || true
+            EXTRA=$(ls prev/* 2>/dev/null || true)
+          fi
+          gh release create "v$V" "WarbandKeeper-$V.zip" $EXTRA --title "Warband Keeper $V" --notes-file notes.md --target "$GITHUB_SHA"
 
   client:
     needs: addon

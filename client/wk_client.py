@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.2"
+CLIENT_VERSION = "1.4.3"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -516,6 +516,17 @@ def client_asset(rel):
         if m:
             return a, m.group(1)
     return None, None
+
+
+def best_client(releases):
+    """Client le plus récent joint à l'une des releases (pas seulement la dernière : juste après une
+    nouvelle version de l'addon, la sienne n'a pas encore son exe, construit quelques minutes plus tard)."""
+    best, bv = None, None
+    for rel in releases or []:
+        a, v = client_asset(rel)
+        if a and (bv is None or vtuple(v) > vtuple(bv)):
+            best, bv = a, v
+    return best, bv
 
 
 # ---------------------------------------------------------------------------
@@ -1713,7 +1724,11 @@ class App:
             rels = g.releases()
             notes = None
             try:
-                notes = g.client_notes(rels[0]) if rels else None
+                # première release qui a les notes du client (la toute dernière peut ne pas encore les avoir)
+                for r in rels or []:
+                    if any(a["name"] == "WarbandKeeper-Client-notes.md" for a in r.get("assets", [])):
+                        notes = g.client_notes(r)
+                        break
             except (NetError, OSError):
                 pass
             return rels, notes
@@ -1799,8 +1814,7 @@ class App:
     def client_banner(self):
         for w in self.clientBanner.winfo_children():
             w.destroy()
-        rel = self.releases[0] if self.releases else None
-        asset, ver = client_asset(rel) if rel else (None, None)
+        asset, ver = best_client(self.releases)
         if not (asset and vtuple(ver) > vtuple(CLIENT_VERSION)):
             return
         box = tk.Frame(self.clientBanner, bg=C["surface2"])
