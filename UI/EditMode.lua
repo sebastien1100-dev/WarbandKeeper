@@ -12,6 +12,7 @@ local T = function(s) return WK.T(s) end
 -- centre de l'écran, en unités de l'interface : elle ne dépend pas de la taille de l'élément.
 
 local registry, order = {}, {}
+local stopTest -- mode test (plus bas)
 
 local function store()
     local ui = WK.DB.global.settings.ui
@@ -91,6 +92,10 @@ function UI:RegisterHUD(key, frame, opts)
     self:HUDApply(key)
     if self.editing then self:EditRefresh() end
 end
+
+-- Tests en plus des éléments placés (bandeau de connexion…) : { start = fn, stop = fn }
+local extraTests = {}
+function UI:RegisterHUDTest(start, stop) table.insert(extraTests, { start = start, stop = stop }) end
 
 function UI:HUDReset(key)
     local s = store()
@@ -363,6 +368,8 @@ local function buildOverlay()
         for _, key in ipairs(order) do UI:HUDReset(key) end
         if popup then popup.built = nil; if selected then popup:Fill(selected) end end
     end, "Maj + clic : remet tous les éléments à leur place et à leur taille d'origine.")
+    tb("Tester", "secondary", function() UI:TestHUD() end,
+        "Joue chaque élément comme en jeu (alerte de rare et son son, récap de pêche, bandeau de connexion…) pendant quelques secondes.")
     tb("Terminer", "primary", function() UI:ExitEditMode() end)
     toolbar:SetWidth(x + 8)
     local hint = UI:Text(overlay, 11, C.text)
@@ -415,6 +422,7 @@ end
 
 function UI:ExitEditMode()
     if not self.editing then return end
+    if self.testing then self.editing = false; stopTest(); self.editing = true end
     self.editing = false
     for _, key in ipairs(order) do
         local r = registry[key]
@@ -426,6 +434,72 @@ function UI:ExitEditMode()
     local combatClose = InCombatLockdown and InCombatLockdown() and WK.DB.global.settings.ui.closeInCombat
     if self.reopenAfterEdit and self.frame and not combatClose then self.frame:Show(); self:Refresh() end
     self.reopenAfterEdit = nil
+end
+
+---------------------------------------------------------------------------
+-- Mode test : les cadres d'édition s'effacent et chaque élément est joué comme en jeu (opts.test :
+-- vrai comportement, minuterie, son ; sinon son aperçu), puis retour au mode édition
+---------------------------------------------------------------------------
+local TEST_TIME = 10
+local testBar
+stopTest = function()
+    if not UI.testing then return end
+    UI.testing = false
+    if testBar then testBar:Hide() end
+    for _, key in ipairs(order) do
+        local r = registry[key]
+        if (not r.enabled or r.enabled()) then
+            if r.testStop then pcall(r.testStop) end
+            if r.sample then r.sample(false) end
+        end
+    end
+    for _, t in ipairs(extraTests) do if t.stop then pcall(t.stop) end end
+    if UI.editing and overlay then
+        overlay:Show()
+        for _, key in ipairs(order) do
+            local r = registry[key]
+            if (not r.enabled or r.enabled()) and r.sample then r.sample(true) end
+        end
+        UI:EditRefresh()
+    end
+end
+function UI:TestHUD()
+    if self.testing or (InCombatLockdown and InCombatLockdown()) then return end
+    self.testing = true
+    if overlay then overlay:Hide() end
+    if popup then popup:Hide() end
+    for _, key in ipairs(order) do
+        local r = registry[key]
+        if not r.enabled or r.enabled() then
+            if r.sample then r.sample(false) end
+            if r.test then pcall(r.test) elseif r.sample then r.sample(true) end
+        end
+    end
+    for _, t in ipairs(extraTests) do if t.start then pcall(t.start) end end
+    if not testBar then
+        testBar = CreateFrame("Frame", nil, UIParent)
+        testBar:SetFrameStrata("TOOLTIP")
+        testBar:SetSize(300, 40)
+        testBar:SetPoint("BOTTOM", 0, 40)
+        UI:Panel(testBar, 12, { C.bg[1], C.bg[2], C.bg[3], 0.96 }, C.border)
+        testBar.text = UI:Text(testBar, 12)
+        testBar.text:SetPoint("LEFT", 16, 2)
+        testBar.stop = UI:Button(testBar, "Arrêter", nil, 26, "primary")
+        testBar.stop:SetPoint("RIGHT", -8, 0)
+        testBar.stop:SetScript("OnClick", stopTest)
+        testBar.fill = testBar:CreateTexture(nil, "OVERLAY")
+        testBar.fill:SetHeight(3)
+        testBar.fill:SetPoint("BOTTOMLEFT", 12, 1)
+        testBar:SetScript("OnUpdate", function(s)
+            local left = s.untilT - GetTime()
+            if left <= 0 then stopTest() return end
+            s.text:SetText(string.format(T("Test en cours · %d s"), math.ceil(left)))
+            s.fill:SetColorTexture(UI:Accent())
+            s.fill:SetWidth(math.max(0.01, (s:GetWidth() - 24) * left / TEST_TIME))
+        end)
+    end
+    testBar.untilT = GetTime() + TEST_TIME
+    testBar:Show()
 end
 
 -- Un combat met fin au mode édition ; un bouton protégé déplacé en combat se place à la sortie.

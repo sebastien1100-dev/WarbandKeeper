@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.2.0", date = "17/11/2026",
+        added = {
+            "Mode édition de l'interface : bouton « Tester ». Les cadres d'édition s'effacent et chaque élément se joue comme en jeu pendant 10 s : alerte de rare avec son son, récapitulatif de pêche avec sa barre de temps, bandeau de connexion (survol, liste), pile d'alertes, barres… Une barre en bas compte le temps, « Arrêter » revient tout de suite au mode édition.",
+        },
+    },
+    {
         version = "1.1.1", date = "17/11/2026",
         changed = {
             "En-tête : les boutons Éditer et Scan d'abord, puis toutes les icônes ensemble à droite (Patch notes, Profils, Options, recharger, fermer).",

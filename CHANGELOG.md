@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.2.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Mode édition de l'interface : bouton « Tester ». Les cadres d'édition s'effacent et chaque élément se joue comme en jeu pendant 10 s : alerte de rare avec son son, récapitulatif de pêche avec sa barre de temps, bandeau de connexion (survol, liste), pile d'alertes, barres… Une barre en bas compte le temps, « Arrêter » revient tout de suite au mode édition.
+
 ## v1.1.1 — 17/11/2026
 
 _Un /reload suffit._

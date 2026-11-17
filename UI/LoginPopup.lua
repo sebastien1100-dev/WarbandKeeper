@@ -250,6 +250,9 @@ function UI:ShowLoginPopup(force)
     f:Show()
 end
 
+-- Mode test de l'édition de l'interface : le bandeau tel qu'à la connexion
+UI:RegisterHUDTest(function() UI:ShowLoginPopup(true) end, function() if popup then popup:Hide() end end)
+
 WK:On("PLAYER_ENTERING_WORLD", function(isInitialLogin, isReload)
     if not isInitialLogin or isReload then return end
     if WK.DB.global.settings.ui.loginPopup == false then return end

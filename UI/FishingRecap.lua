@@ -158,6 +158,19 @@ local function build()
                 f:Hide()
             end
         end,
+        -- test : avec sa barre de temps, comme à la fermeture du mode pêche
+        test = function()
+            f.sample = nil
+            f:Fill({ catches = 42, duration = 29 * 60, value = 34000, zone = nil, buckets = { 3, 4, 2, 5, 3, 4, 3, 2, 4, 3, 5, 4 },
+                     items = { [6362] = 28, [7910] = 6, [6359] = 1 }, new = { [6359] = true }, skill0 = 225, skill1 = 237 })
+            local secs = WK.modules.Fishing:Config().recapTime
+            if secs == nil then secs = 10 end
+            f.total = secs > 0 and secs or nil
+            f.remain = f.total
+            f:SetAlpha(1)
+            f:Show()
+        end,
+        testStop = function() f.total = nil; f:Hide() end,
     })
     return f
 end

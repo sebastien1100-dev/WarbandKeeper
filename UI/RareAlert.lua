@@ -166,6 +166,15 @@ local function arm(f, key, label)
             f.sample = on or nil
             if on then f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) }); f:Show() else f:Hide() end
         end,
+        -- test : comme une vraie apparition (minuterie et son)
+        test = function()
+            f.sample = nil
+            f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) })
+            f.until_ = GetTime() + 25
+            f:Show()
+            if R:Config().sound and PlaySound then pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master") end
+        end,
+        testStop = function() f.until_ = nil; f:Hide() end,
     })
 end
 
