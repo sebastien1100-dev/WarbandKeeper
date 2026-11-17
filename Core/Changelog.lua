@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.6.0", date = "17/11/2026", restart = true,
+        added = {
+            "Feux de camp : près d'un camp (effet de flamme, comme « Flammes pourpres »), un encart propose « Assieds-toi 1 min pour obtenir les avantages du camp (2 h) » avec un bouton « S'asseoir ». Assis, une barre compte la minute de « Feu de camp accueillant ».",
+            "Feux de camp : une fois les avantages obtenus, l'encart les montre (par exemple « Bocal à poisson : augmentation de toutes les caractéristiques de 8 % ») avec leur durée, puis s'efface. Relevé trop tôt : le rappel revient. Avantages qui s'épuisent : il propose de les renouveler (seuil réglable).",
+            "Réglages dans QoL > Général (carte « Feux de camp ») ; l'encart se place en mode édition. Les effets de flamme sont reconnus à leur nom ou à leur description, et l'addon retient ceux qu'il rencontre.",
+        },
+    },
+    {
         version = "1.5.1", date = "17/11/2026",
         added = {
             "Micro menu, survol de « Amis » : les amis en ligne, une ligne chacun (niveau, point de faction, nom en couleur de classe, zone ; « absent » ou « occupé »), puis tes amis Battle.net avec le prénom du compte. 15 lignes au plus.",
@@ -2119,7 +2127,6 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Campements : près d'un feu de camp (le jeu donne alors l'effet du feu), rappel « Assieds-toi pour profiter du bonus » avec un bouton qui fait asseoir le perso (hors combat), et rappel quand on se relève trop tôt.",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",

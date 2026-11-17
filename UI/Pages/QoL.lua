@@ -388,6 +388,13 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         section("general")
         local g = q.general
+        -- Feux de camp (Modules/Camp.lua, UI/CampCard.lua)
+        local campCfg = WK.modules.Camp:Config()
+        local camp = card("Feux de camp", 40 + 2 * 46 + 8, "assis 1 min près d'un camp : avantages pendant 2 h")
+        UI:SettingRow(camp, -40, "Rappel près d'un feu de camp", "Encart « Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus. Se place en mode édition.",
+            toggle(camp, function() return campCfg.enabled end, function(v) campCfg.enabled = v; WK.modules.Camp:Update() end), 80)
+        UI:SettingRow(camp, -86, "Proposer de renouveler", "Quand il reste moins que ce temps sur les avantages du camp.",
+            UI:Slider(camp, 240, 0, 60, 5, function() return campCfg.renewAt or 10 end, function(v) campCfg.renewAt = v; WK.modules.Camp:Update() end, "%d min"), 260)
         local shop = card("Marchand", 322)
         UI:SettingRow(shop, -40, "Réparation automatique", "Chez un marchand qui répare, tout l'équipement.",
             toggle(shop, function() return g.repair end, function(v) g.repair = v end), 80)

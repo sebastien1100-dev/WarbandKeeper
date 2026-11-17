@@ -7,7 +7,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Campements : près d'un feu de camp (le jeu donne alors l'effet du feu), rappel « Assieds-toi pour profiter du bonus » avec un bouton qui fait asseoir le perso (hors combat), et rappel quand on se relève trop tôt.
 - Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
@@ -24,6 +23,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.6.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Feux de camp : près d'un camp (effet de flamme, comme « Flammes pourpres »), un encart propose « Assieds-toi 1 min pour obtenir les avantages du camp (2 h) » avec un bouton « S'asseoir ». Assis, une barre compte la minute de « Feu de camp accueillant ».
+- Feux de camp : une fois les avantages obtenus, l'encart les montre (par exemple « Bocal à poisson : augmentation de toutes les caractéristiques de 8 % ») avec leur durée, puis s'efface. Relevé trop tôt : le rappel revient. Avantages qui s'épuisent : il propose de les renouveler (seuil réglable).
+- Réglages dans QoL > Général (carte « Feux de camp ») ; l'encart se place en mode édition. Les effets de flamme sont reconnus à leur nom ou à leur description, et l'addon retient ceux qu'il rencontre.
 
 ## v1.5.1 — 17/11/2026
 
