@@ -23,6 +23,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.98.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- En-tête : un bouton « Mise à jour x.y.z » apparaît à gauche d'Éditer quand une version plus récente de Warband Keeper existe. Son infobulle dit d'où vient l'info et comment l'installer.
+- Deux façons de le savoir : le client PC (1.4.2 ou plus) écrit la dernière version publiée dans l'addon à chaque vérification (vu au lancement du jeu ou après un /reload) ; et les joueurs de ta guilde ou de ton groupe qui ont l'addon s'échangent leur numéro de version (jamais en instance ni en combat). Un message dans le chat te prévient la première fois.
+
 ## v0.97.1 — 17/11/2026
 
 _Un /reload suffit._

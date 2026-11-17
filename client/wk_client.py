@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.1"
+CLIENT_VERSION = "1.4.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -641,6 +641,25 @@ def install_zip(addons, zpath, old_version):
     if oldFiles is None:
         return True  # première installation : le jeu doit être lancé (ou relancé) pour la voir
     return bool(_files(target) - oldFiles) or _toc_body(target) != oldToc
+
+
+def write_latest(addons, version):
+    """Écrit dans l'addon la dernière version publiée (Core/Latest.lua) : l'en-tête de l'addon affiche
+    alors « Mise à jour x.y.z » (lu au lancement du jeu et à chaque /reload)."""
+    if not (addons and version and re.match(r"^[0-9.]+$", version)):
+        return
+    core = os.path.join(addons, ADDON, "Core")
+    if not os.path.isdir(core):
+        return
+    path = os.path.join(core, "Latest.lua")
+    body = ("local ADDON_NAME, WK = ...\n"
+            "-- Écrit par le client PC Warband Keeper : dernière version publiée vue sur GitHub.\n"
+            "WK.Latest = { version = \"%s\", checked = %d }\n" % (version, int(time.time())))
+    try:
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(body)
+    except OSError:
+        pass
 
 
 def previous_versions():
@@ -1711,6 +1730,8 @@ class App:
             self.state_changed()
             inst = self.installed
             latest = self.latest_version
+            if not err and inst:
+                write_latest(self.addons, latest)
             newer = not err and inst and latest and vtuple(latest) > vtuple(inst)
             self.root.title("Warband Keeper · version %s disponible" % latest if newer else "Warband Keeper")
             # nouvelle version vue pour la première fois : on prévient (clignote, message), une seule fois par version
@@ -1745,6 +1766,7 @@ class App:
                                                lambda f: self.ui(home.set_busy, "Téléchargement… %d %%" % (f * 100), 0.05 + f * 0.85))
             self.ui(home.set_busy, "Installation…", 0.93)
             restart = install_zip(addons, tmp, old)
+            write_latest(addons, rel["tag_name"].lstrip("v"))
             try:
                 os.remove(tmp)
             except OSError:

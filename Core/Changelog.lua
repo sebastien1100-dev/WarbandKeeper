@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.98.0", date = "17/11/2026", restart = true,
+        added = {
+            "En-tête : un bouton « Mise à jour x.y.z » apparaît à gauche d'Éditer quand une version plus récente de Warband Keeper existe. Son infobulle dit d'où vient l'info et comment l'installer.",
+            "Deux façons de le savoir : le client PC (1.4.2 ou plus) écrit la dernière version publiée dans l'addon à chaque vérification (vu au lancement du jeu ou après un /reload) ; et les joueurs de ta guilde ou de ton groupe qui ont l'addon s'échangent leur numéro de version (jamais en instance ni en combat). Un message dans le chat te prévient la première fois.",
+        },
+    },
+    {
         version = "0.97.1", date = "17/11/2026",
         fixed = {
             "Résumé, carte Modules dépliée : elle débordait sous la fenêtre (les modules de QoL sortaient en bas) et coupait les noms (« Règles d'en… »). Dépliée, elle prend maintenant toute la page le temps de gérer les modules (À faire et la courbe reviennent en repliant), sur 3 colonnes assez larges pour les noms (2 à 4 selon la largeur de la fenêtre).",

@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.4.2 — 17/11/2026
+
+### Ajouts
+- À chaque vérification, le client indique à l'addon la dernière version publiée : en jeu, l'en-tête de Warband Keeper affiche « Mise à jour x.y.z » quand ta version est dépassée (visible au lancement du jeu ou après un /reload). Nécessite l'addon 0.98.0 ou plus.
+
 ## 1.4.1 — 17/11/2026
 
 ### Corrections

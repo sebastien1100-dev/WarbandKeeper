@@ -512,6 +512,28 @@ function UI:Create()
     editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
     editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
     self.editBtn = editBtn
+    -- Mise à jour disponible (client PC ou version vue chez un autre joueur) : bouton à gauche d'Éditer
+    local upd = UI:Button(header, "Mise à jour", nil, 28, "secondary", "refresh")
+    upd:SetPoint("RIGHT", editBtn, "LEFT", -8, 0)
+    upd:HookScript("OnEnter", function(s)
+        local v, src = WK.modules.Version:Available()
+        if not v then return end
+        UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        GameTooltip:SetText(string.format(WK.T("Warband Keeper %s est sortie"), v), 1, 1, 1)
+        GameTooltip:AddLine(string.format(WK.T("Tu as la version %s."), WK.version), 0.8, 0.8, 0.8)
+        local from = src == "client" and WK.T("Vue par le client PC Warband Keeper.")
+            or src == "guild" and WK.T("Vue chez un joueur de ta guilde.") or WK.T("Vue chez un joueur de ton groupe.")
+        GameTooltip:AddLine(from, 0.6, 0.6, 0.6)
+        GameTooltip:AddLine(WK.T("Installe-la avec le client PC (Accueil > Mettre à jour), puis relance le jeu."), 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    upd:HookScript("OnLeave", function() GameTooltip:Hide() end)
+    upd:SetScript("OnClick", function()
+        local v = WK.modules.Version:Available()
+        if v then WK:Print(string.format(WK.T("Version %s disponible : installe-la avec le client PC Warband Keeper, puis relance le jeu."), v)) end
+    end)
+    upd:Hide()
+    self.updBtn = upd
     scan:SetScript("OnClick", function()
         WK.modules.Characters:UpdateBasics()
         WK.modules.Characters:UpdateMoney()
@@ -939,8 +961,19 @@ UI.CHIPS = {
     end,
 }
 
+-- Bouton « Mise à jour x.y.z » de l'en-tête
+function UI:RefreshUpdate()
+    local b = self.updBtn
+    if not b then return end
+    local V = WK.modules.Version
+    local v = V and V:Available()
+    if v then b:SetLabel(string.format(T("Mise à jour %s"), v)); b:SetWidth(b.label:GetStringWidth() + 52) end
+    b:SetShown(v ~= nil)
+end
+
 function UI:RefreshChips()
     if not self.chips then return end
+    self:RefreshUpdate()
     self.chips:Reset()
     local f = UI.CHIPS[self.current]
     local ok, list = true, {}
@@ -948,6 +981,7 @@ function UI:RefreshChips()
     if not ok or type(list) ~= "table" then list = {} end
     local x = PAD - 5
     local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0)
+        - ((self.updBtn and self.updBtn:IsShown()) and (self.updBtn:GetWidth() + 8) or 0)
     for _, ch in ipairs(list) do
         local c = self.chips:Get()
         c.label:SetText(ch[1])
