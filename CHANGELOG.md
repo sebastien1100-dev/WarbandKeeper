@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.11.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Feu de camp, allégé : la carte « En ce moment » et les lignes « Position » (Placer l'encart, Placer le kit) sont retirées. Tout se place avec le bouton Éditer en haut de la fenêtre, et l'état du camp reste visible sur l'icône de flamme, ses pastilles et l'encart.
+
 ## v1.11.1 — 17/11/2026
 
 _Un /reload suffit._

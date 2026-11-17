@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.11.2", date = "17/11/2026",
+        changed = {
+            "QoL > Feu de camp, allégé : la carte « En ce moment » et les lignes « Position » (Placer l'encart, Placer le kit) sont retirées. Tout se place avec le bouton Éditer en haut de la fenêtre, et l'état du camp reste visible sur l'icône de flamme, ses pastilles et l'encart.",
+        },
+    },
+    {
         version = "1.11.1", date = "17/11/2026",
         changed = {
             "QoL > Feu de camp : « Objets de camp par métier » devient une grille de tuiles, une par métier : icône, effet à ton niveau en couleur d'accent (en rouge si un de tes buffs l'annule), le buff avec lequel il ne se cumule pas, puis les trois objets (20, 140, 300). Les paliers déjà atteints par un de tes persos sont en clair, les autres grisés. Les trois feux de Cuisine ont aussi leurs tuiles.",

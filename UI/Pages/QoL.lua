@@ -1436,35 +1436,9 @@ UI:RegisterPage({
             local Cp = WK.modules.Camp
             local campCfg = Cp:Config()
             local function cupdate() Cp:Update() end
-            -- en ce moment
-            local now = card("En ce moment", 40 + 70 + 44, "mis à jour en direct")
-            local nowText = dynText(now, 12, C.text, function()
-                local a = Cp.auras or {}
-                local st = Cp.state or "none"
-                local lines = {}
-                if a.flame then table.insert(lines, string.format(T("Près d'un camp : %s"), a.flame.name)) else table.insert(lines, T("Pas de feu de camp à proximité.")) end
-                if a.sit then table.insert(lines, string.format(T("Assis : avantages dans %d s"), math.ceil(Cp.Remaining(a.sit) or 0))) end
-                if a.perk then
-                    local left = Cp.Remaining(a.perk)
-                    table.insert(lines, string.format(T("Avantages du camp actifs%s"), left and (" · " .. string.format(T("%s restantes"), UI:AgoShort(left, true))) or ""))
-                    local txt = Cp:PerkText()
-                    if txt then table.insert(lines, "|cff9ca3ab" .. txt:gsub("\n", " · ") .. "|r") end
-                elseif not a.sit then
-                    table.insert(lines, "|cff9ca3ab" .. T("Pas d'avantages du camp en ce moment.") .. "|r")
-                end
-                if st == "early" then table.insert(lines, "|cfff5d76e" .. T("Relevé trop tôt : rassieds-toi 1 min.") .. "|r") end
-                return table.concat(lines, "\n")
-            end)
-            nowText:SetPoint("TOPLEFT", 16, -42); nowText:SetPoint("RIGHT", -150, 0)
-            nowText:SetJustifyH("LEFT")
-            if nowText.SetWordWrap then nowText:SetWordWrap(true) end
-            local sitBtn = UI:Button(now, "S'asseoir", 120, 28, "primary")
-            sitBtn:SetPoint("TOPRIGHT", -16, -42)
-            sitBtn:SetScript("OnClick", function() Cp:Sit() end)
-            table.insert(self.dyn, function() sitBtn:SetEnabled(Cp.auras ~= nil and Cp.auras.flame ~= nil and not Cp.auras.sit) end)
             -- rappel
-            local rem = card("Rappel à l'écran", 40 + 6 * 46 + 8, "icône et encart près du camp")
-            UI:SettingRow(rem, -270, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
+            local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "icône et encart près du camp")
+            UI:SettingRow(rem, -224, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
                 toggle(rem, function() return campCfg.icon end, function(v) campCfg.icon = v; cupdate() end), 80)
             UI:SettingRow(rem, -40, "Encart près d'un feu de camp", "« Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus.",
                 toggle(rem, function() return campCfg.enabled end, function(v) campCfg.enabled = v; cupdate() end), 80)
@@ -1474,11 +1448,8 @@ UI:RegisterPage({
                 toggle(rem, function() return campCfg.sound end, function(v) campCfg.sound = v end), 80)
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
-            local placeBtn = UI:Button(rem, "Placer l'encart", 150, 28, "secondary")
-            placeBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
-            UI:SettingRow(rem, -224, "Position et taille", "En mode édition, avec les autres éléments à l'écran (« Tester » le joue en vrai).", placeBtn, 150)
             -- kit de camp et rappels
-            local kc = card("Kit de camp et rappels", 40 + 7 * 46 + 8, "colonne de boutons près de la flamme")
+            local kc = card("Kit de camp et rappels", 40 + 6 * 46 + 8, "colonne de boutons près de la flamme")
             UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
@@ -1491,9 +1462,6 @@ UI:RegisterPage({
                 toggle(kc, function() return campCfg.alertExpire end, function(v) campCfg.alertExpire = v; cupdate() end), 80)
             UI:SettingRow(kc, -270, "« Bien nourri » au camp", "Une alerte près d'un feu quand tu n'as pas « Bien nourri » et que tu as de quoi manger.",
                 toggle(kc, function() return campCfg.alertFood end, function(v) campCfg.alertFood = v; cupdate() end), 80)
-            local kplace = UI:Button(kc, "Placer le kit", 150, 28, "secondary")
-            kplace:SetScript("OnClick", function() UI:EnterEditMode() end)
-            UI:SettingRow(kc, -316, "Position", "En mode édition (« Kit de camp »).", kplace, 150)
 
             -- comment ça marche, et effets rencontrés
             local how = card("Comment ça marche", 40 + 4 * 22 + 30 + 8 * 18 + 8)
