@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Client PC, suite : lancer le jeu, mise à jour des données d'un clic, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
 - Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.
 - Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).
@@ -22,6 +23,12 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.90.0 — 17/11/2026
+
+### Ajouts
+- Nouveau : client PC « Warband Keeper » (Windows), à télécharger sur la page Releases du dépôt GitHub. Il trouve le dossier du jeu, montre la version installée et la dernière, installe la mise à jour en un clic avec les nouveautés, sauvegarde tes réglages de l'addon avant chaque mise à jour (restaurables), garde la version précédente pour y revenir, et se met à jour lui-même.
+- Chaque nouvelle version est désormais publiée automatiquement sur GitHub (page Releases), avec ses notes.
 
 ## v0.89.1 — 17/11/2026
 
