@@ -151,7 +151,7 @@ function M:LearnBoss(e, id)
     for _, k in pairs(db().kills) do
         if k[d.key] and k[d.key][old] then k[d.key][id] = k[d.key][old]; k[d.key][old] = nil end
     end
-    if self.run and self.run.killed[old] then self.run.killed[id] = true; self.run.killed[old] = nil end
+    if self.run and self.run.killed[old] then self.run.killed[id] = self.run.killed[old]; self.run.killed[old] = nil end
 end
 
 ---------------------------------------------------------------------------
@@ -252,7 +252,8 @@ end
 ---------------------------------------------------------------------------
 -- Boss tués : passage en cours et, pour la progression, au moins une fois par perso
 ---------------------------------------------------------------------------
-M.run = nil -- { key, killed = { [boss] = true } }
+M.run = nil -- { key, start = date, killed = { [boss] = date du kill }, skipped = { [boss] = true } }
+local function newRun(key) return { key = key, start = time(), killed = {}, skipped = {} } end
 local function npcID(guid)
     if not guid then return nil end
     local id = type(guid) == "string" and guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
@@ -264,6 +265,44 @@ end
 function M:KilledEver(d, bossID, key)
     local k = db().kills[key or WK:CharKey()]
     return k and k[d.key] and k[d.key][bossID] ~= nil or false
+end
+-- Parcours : le passage en cours concerne-t-il ce donjon ?
+function M:InRun(d)
+    return self.run ~= nil and d ~= nil and self.run.key == d.key
+end
+-- Boss facultatif (rare, boss caché) : sans n° de rencontre dans un donjon qui en a pour ses autres boss
+function M:Optional(d, b)
+    if b.encounter then return false end
+    for _, x in ipairs(self:Bosses(d)) do if x.encounter then return true end end
+    return false
+end
+-- Prochain boss du parcours : dans le donjon, le premier pas tué ni passé pendant ce passage ;
+-- dehors, le premier que le perso n'a jamais tué (sinon le premier)
+function M:Next(d, key)
+    local inRun = self:InRun(d)
+    local first
+    for _, b in ipairs(self:Bosses(d)) do
+        if not self:Optional(d, b) then
+            first = first or b
+            if inRun then
+                if not self.run.killed[b.id] and not self.run.skipped[b.id] then return b end
+            elseif not self:KilledEver(d, b.id, key) then
+                return b
+            end
+        end
+    end
+    if inRun then return nil end
+    return first
+end
+-- Passer un boss (ou le reprendre) pour ce passage
+function M:Skip(d, b)
+    if not self:InRun(d) then return end
+    self.run.skipped[b.id] = (not self.run.skipped[b.id]) or nil
+    if self.OnChange then self:OnChange() end
+    WK:NotifyChanged()
+end
+function M:Skipped(d, b)
+    return self:InRun(d) and self.run.skipped[b.id] or false
 end
 function M:Progress(d, key)
     local n, done = 0, 0
@@ -277,9 +316,9 @@ local function record(b)
     local d = b.dungeon
     local inst = instanceNow()
     if inst then M:LearnInstance(inst, d) end
-    if not M.run or M.run.key ~= d.key then M.run = { key = d.key, killed = {} } end
+    if not M.run or M.run.key ~= d.key then M.run = newRun(d.key) end
     if M.run.killed[b.id] then return end
-    M.run.killed[b.id] = true
+    M.run.killed[b.id] = time()
     local k = db().kills
     local me = WK:CharKey()
     k[me] = k[me] or {}
@@ -386,7 +425,7 @@ local function onZone()
     local d = M:Current()
     if d then
         if lastKey ~= d.key then
-            M.run = { key = d.key, killed = {} }
+            M.run = newRun(d.key)
             lastKey = d.key
             if M:Config().alertEnter and WK:FeatureOn("dungeons") then
                 local n = 0

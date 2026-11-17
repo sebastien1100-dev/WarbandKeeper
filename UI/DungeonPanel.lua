@@ -22,6 +22,7 @@ local function quality(id)
     if not q then local i = D:ItemInfo(id); q = i and i.quality end
     return QUALITY[q or 1] or QUALITY[1]
 end
+UI.DungeonQuality = quality
 
 -- Ligne d'objet : icône, nom (couleur de qualité), étiquettes « pour toi » / « sur le compte », étoile
 function UI:DungeonLootRow(parent)

@@ -181,7 +181,7 @@ def generate(root):
         with open(ENCOUNTERS, encoding="utf-8") as f:
             encounters = json.load(f)["instances"]
     # tables du jeu (wago.tools) : instances et rencontres, avec leurs noms français (prioritaires)
-    wago_maps, enc_fr = {}, {}
+    wago_maps, enc_fr, enc_order = {}, {}, {}
     if os.path.exists(WAGO):
         with open(WAGO, encoding="utf-8") as f:
             wg = json.load(f)
@@ -190,6 +190,7 @@ def generate(root):
         for eid, (mid, order_, en, frn) in wg["encounters"].items():
             byMap.setdefault(str(mid), []).append((order_, int(eid), en))
             enc_fr[int(eid)] = frn
+            enc_order[int(eid)] = order_
         for mid, lst in byMap.items():
             encounters[mid] = [[eid, en] for _, eid, en in sorted(lst)]
 
@@ -338,7 +339,17 @@ def generate(root):
         lines.append("{key=%d,inst=%s,name=%s,en=%s,min=%d,max=%d,raid=%s,zones={%s},entry=%s,trash={%s},bosses={" % (
             key, str(d["inst"]) if d["inst"] else "nil", s(d["name"]), s(d["en"]), d["min"], d["max"],
             "true" if d["raid"] else "false", ",".join(str(z) for z in d["zones"]), entry, ",".join(str(i) for i in d["trash"])))
-        for b, wing in d["bosses"]:
+        # ordre du jeu (DungeonEncounter.OrderIndex) : les boss à n° de rencontre sont rangés entre eux,
+        # aile par aile, sur les places qu'ils occupent ; les autres (rares, facultatifs) ne bougent pas
+        bl = list(d["bosses"])
+        encs = [encounter_of(d["inst"], b["name"]) for b, _ in bl]
+        for wg_ in {w for _, w in bl}:
+            idx = [i for i, (_, w) in enumerate(bl) if w == wg_ and encs[i] and encs[i] in enc_order]
+            srt = sorted(idx, key=lambda i: (enc_order[encs[i]], i))
+            moved = [bl[i] for i in srt]
+            for i, x in zip(idx, moved):
+                bl[i] = x
+        for b, wing in bl:
             m = match(b["name"], d["zones"])
             nid, lvl, nmfr = 0, 0, None
             loot = list(b["items"])

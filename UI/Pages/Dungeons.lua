@@ -5,8 +5,9 @@ local T = function(s) return WK.T(s) end
 
 -- Page « Donjons » (groupe Exploration) : tuiles des donjons par niveau (couleur selon le niveau du perso
 -- choisi, barre = boss tués au moins une fois), puis les boss du donjon choisi et leur butin, filtré
--- « Pour <perso> » ou « Tout », avec la liste d'envies (étoile). Le détail a deux onglets : « Butin » (boss et
--- monstres du donjon) et « Quêtes » (quêtes du donjon pour le perso, filtre À faire / Toutes).
+-- « Pour <perso> » ou « Tout », avec la liste d'envies (étoile). Le détail a trois onglets : « Parcours » (carte
+-- du prochain boss, puis la frise des boss dans l'ordre du jeu, par aile), « Butin » (boss et monstres du
+-- donjon) et « Quêtes » (quêtes du donjon pour le perso, filtre À faire / Toutes).
 -- Onglet « Mes envies » : tous les objets voulus, par perso. Boutons : panneau en jeu, Chercher un groupe
 -- (LFG), Guider vers l'entrée.
 local D = WK.modules.Dungeons
@@ -26,7 +27,8 @@ UI:RegisterPage({
         self.viewKey = WK:CharKey()
         self.tab = "list"
         self.filter = "me"
-        self.dtab = "loot"     -- onglet du détail : butin ou quêtes
+        self.dtab = "route"    -- onglet du détail : parcours, butin ou quêtes
+        self.focus = nil       -- parcours : boss montré dans la carte du haut (nil = le prochain)
         self.qfilter = "todo"  -- quêtes : à faire ou toutes
         local cur = D:Current()
         self.sel = cur and cur.key or nil
@@ -118,11 +120,15 @@ UI:RegisterPage({
             end
             b:SetScript("OnEnter", function(s) s.hover = true; recolor(s) end)
             b:SetScript("OnLeave", function(s) s.hover = false; recolor(s) end)
-            b:SetScript("OnClick", function() self.dtab = key; self:Refresh() end)
+            b:SetScript("OnClick", function() self.dtab = key; self.focus = nil; self:Refresh() end)
             det.tabs[key] = b
             return b
         end
-        tab("loot", "Butin"):SetPoint("TOPLEFT", 14, -42)
+        tab("route", "Parcours"):SetPoint("TOPLEFT", 14, -42)
+        tab("loot", "Butin"):SetPoint("LEFT", det.tabs.route, "RIGHT", 8, 0)
+        det.live = UI:Badge(det, "Tu es dedans", C.positive)
+        det.live:SetPoint("LEFT", det.sub, "RIGHT", 10, 0)
+        self:BuildRoute(det)
         tab("quests", "Quêtes"):SetPoint("LEFT", det.tabs.loot, "RIGHT", 8, 0)
         det.quests = UI:Text(det, 11, C.muted)
         det.lfg = UI:Button(det, "Chercher un groupe", nil, 26, "secondary", "lfg")
@@ -197,6 +203,15 @@ UI:RegisterPage({
         local lvl = c.level or 1
         self.tabSeg:Select(self.tab)
         self.tiles:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset(); self.qrows:Reset()
+        self.steps:Reset(); self.wheads:Reset(); self.ficons:Reset()
+        self.det.focus:Hide()
+        -- entrée dans un donjon : la page se place dessus, onglet Parcours
+        local cur = D:Current()
+        local curKey = cur and cur.key or nil
+        if curKey ~= self.lastCur then
+            if curKey then self.sel, self.dtab, self.focus = curKey, "route", nil end
+            self.lastCur = curKey
+        end
         local r1, g1, b1 = UI:Accent()
         if self.tab == "wish" then
             self.det:Hide()
@@ -258,12 +273,23 @@ UI:RegisterPage({
         det:ClearAllPoints(); det:SetPoint("TOPLEFT", 0, -y); det:SetWidth(W)
         det.title:SetText(D:Name(d))
         local done, n = D:Progress(d, key)
-        det.sub:SetText(string.format(T("niv. %d-%d · %d/%d boss déjà tués par ce perso"), d.min, d.max, done, n))
+        local inRun = D:InRun(d)
+        if inRun then
+            local k, m = 0, 0
+            for _, b in ipairs(D:Bosses(d)) do
+                if not D:Optional(d, b) then m = m + 1; if D.run.killed[b.id] then k = k + 1 end end
+            end
+            det.sub:SetText(string.format(T("niv. %d-%d · %d/%d boss ce passage"), d.min, d.max, k, m))
+        else
+            det.sub:SetText(string.format(T("niv. %d-%d · %d/%d boss déjà tués par ce perso"), d.min, d.max, done, n))
+        end
+        det.live:SetShown(inRun and curKey == d.key)
         det.filter:Select(self.filter)
         det.qfilter:Select(self.qfilter)
-        local onLoot = self.dtab ~= "quests"
-        det.filter:SetShown(onLoot)
-        det.qfilter:SetShown(not onLoot)
+        local onLoot = self.dtab == "loot"
+        local onRoute = self.dtab == "route"
+        det.filter:SetShown(not (self.dtab == "quests"))
+        det.qfilter:SetShown(self.dtab == "quests")
         det.tabLine:SetColorTexture(unpack(C.border))
         -- quêtes du donjon (zone de l'entrée, au niveau du donjon), pour le perso choisi :
         -- faite, en cours, disponible, niveau trop bas, ou quête à faire avant (prérequis)
@@ -286,7 +312,14 @@ UI:RegisterPage({
         det.tabs.loot:Paint(onLoot, tostring(nLoot))
         local qBadge = #quests == 0 and T("aucune") or todo == 0 and T("toutes faites")
             or string.format(todo > 1 and T("%d à faire") or T("%d à faire"), todo)
-        det.tabs.quests:Paint(not onLoot, qBadge, todo > 0 and C.warning or C.positive, todo > 0)
+        det.tabs.quests:Paint(self.dtab == "quests", qBadge, todo > 0 and C.warning or C.positive, todo > 0)
+        local nb = D:Next(d, key)
+        det.tabs.route:Paint(onRoute, inRun and (nb and T("en cours") or T("terminé")) or nil, inRun and C.positive or nil, inRun)
+        self.questTodo = todo
+        if onRoute then
+            self.none:Hide()
+            return self:RefreshRoute(d, c, key, y, W)
+        end
         if not onLoot then
             self.none:Hide()
             return self:RefreshQuests(d, c, quests, states, ORDER, y, W)
@@ -328,6 +361,315 @@ UI:RegisterPage({
         self.none:SetText(T("Rien que ce perso puisse porter ici (essaie « Tout »)."))
         if not any then bottom = 114 end
         self:PlaceButtons(d, bottom, "")
+        local h = bottom + 40
+        det:SetHeight(h)
+        self.sc:SetContentHeight(y + h + 10)
+    end,
+
+    -- onglet Parcours : carte du boss en vedette (le prochain, ou celui qu'on a cliqué) et frise des boss
+    BuildRoute = function(self, det)
+        local f = CreateFrame("Frame", nil, det)
+        det.focus = f
+        f.edge = UI:Rounded(f, 11, 0, "BACKGROUND", 2)
+        f.bg = UI:Rounded(f, 10, 1, "BACKGROUND", 3)
+        f.kick = UI:Text(f, 10)
+        f.kick:SetPoint("TOPLEFT", 14, -12)
+        f.name = UI:Text(f, 16)
+        f.name:SetPoint("TOPLEFT", f.kick, "BOTTOMLEFT", 0, -5)
+        f.sub = UI:Text(f, 11, C.muted)
+        f.sub:SetPoint("TOPLEFT", f.name, "BOTTOMLEFT", 0, -4)
+        f.none = UI:Text(f, 11, C.muted)
+        -- colonne de droite : envies du perso sur ce boss, qui d'autre les veut, quêtes du donjon
+        f.sep = f:CreateTexture(nil, "ARTWORK")
+        f.sep:SetWidth(1)
+        f.right = UI:Text(f, 11, C.text)
+        f.right:SetJustifyH("LEFT")
+        f.right:SetJustifyV("TOP")
+        if f.right.SetWordWrap then f.right:SetWordWrap(true) end
+        f.right:SetSpacing(3)
+        f.all = UI:Button(f, "Tout le butin", nil, 24, "primary")
+        f.all:SetScript("OnClick", function() self.dtab = "loot"; self.focus = nil; self:Refresh() end)
+        f.skip = UI:Button(f, "Passer", nil, 24, "secondary")
+        f.skip:SetPoint("LEFT", f.all, "RIGHT", 8, 0)
+        f.skip:SetScript("OnClick", function()
+            local d = D:Get(self.sel)
+            if d and f.boss then D:Skip(d, f.boss); self.focus = nil; self:Refresh() end
+        end)
+        -- icônes du butin (bord à la couleur de qualité, étoile = envie, pâle = déjà sur le compte)
+        self.ficons = UI:Pool(function()
+            local b = CreateFrame("Button", nil, f)
+            b:SetSize(32, 32)
+            b.edge = UI:Rounded(b, 7, 0, "BACKGROUND", 4)
+            b.bg = UI:Rounded(b, 6, 1, "BACKGROUND", 5)
+            b.icon = UI:RoundIcon(b, 26)
+            b.icon:SetPoint("CENTER")
+            b.star = UI:Icon(b, "star", 12, nil, "OVERLAY")
+            b.star:SetPoint("TOPRIGHT", 4, 4)
+            b:SetScript("OnEnter", function(s)
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText((UI:ItemInfo(s.id))) end
+                GameTooltip:AddLine(T("Clic : liste d'envies · Maj + clic : lien dans le chat"), 0.6, 0.6, 0.6)
+                GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            b:SetScript("OnClick", function(s)
+                if IsShiftKeyDown() then
+                    local link = select(6, UI:ItemInfo(s.id))
+                    if link then WK.InsertChatLink(link) end
+                else
+                    D:ToggleWish(s.id, self.sel, self.viewKey); self:Refresh()
+                end
+            end)
+            return b
+        end)
+        -- étapes de la frise
+        self.steps = UI:Pool(function()
+            local r = CreateFrame("Button", nil, det)
+            r:SetHeight(28)
+            r.bg = UI:Rounded(r, 7, 0, "BACKGROUND", 1)
+            r.bar = r:CreateTexture(nil, "ARTWORK")
+            r.bar:SetWidth(3)
+            r.bar:SetPoint("TOPLEFT", 0, -3); r.bar:SetPoint("BOTTOMLEFT", 0, 3)
+            r.ring = UI:Icon(r, "ring", 20, nil, "ARTWORK")
+            r.ring:SetPoint("LEFT", 6, 0)
+            r.num = UI:Text(r, 10)
+            r.num:SetPoint("CENTER", r.ring, "CENTER", 0, 0)
+            r.line = r:CreateTexture(nil, "BACKGROUND", nil, 2)
+            r.line:SetWidth(2)
+            r.line:SetPoint("TOP", r.ring, "BOTTOM", 0, 0)
+            r.line:SetHeight(10)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 36, 0)
+            r.lvl = UI:Text(r, 10, C.dim)
+            r.lvl:SetPoint("LEFT", r.name, "RIGHT", 6, 0)
+            r.right = UI:Text(r, 11, C.muted)
+            r.right:SetPoint("RIGHT", -10, 0)
+            r.right:SetJustifyH("RIGHT")
+            r.star = UI:Icon(r, "star", 12, nil, "ARTWORK")
+            r.wn = UI:Text(r, 10)
+            r:SetScript("OnEnter", function(s) s.hover = true; if not s.on then s.bg:SetColor(unpack(C.hover)) end end)
+            r:SetScript("OnLeave", function(s) s.hover = false; if not s.on then s.bg:SetColor(0, 0, 0, 0) end end)
+            r:SetScript("OnClick", function(s)
+                self.focus = (self.focus ~= s.boss.id) and s.boss.id or nil
+                self:Refresh()
+            end)
+            return r
+        end)
+        self.wheads = UI:Pool(function()
+            local h = CreateFrame("Frame", nil, det)
+            h:SetHeight(20)
+            h.name = UI:Text(h, 10, C.dim)
+            h.name:SetPoint("BOTTOMLEFT", 2, 3)
+            h.count = UI:Text(h, 10, C.muted)
+            h.count:SetPoint("BOTTOMRIGHT", -10, 3)
+            return h
+        end)
+    end,
+
+    RefreshRoute = function(self, d, c, key, y, W)
+        local det = self.det
+        local f = det.focus
+        local r1, g1, b1 = UI:Accent()
+        local inRun = D:InRun(d)
+        local run = D.run
+        local bosses = D:Bosses(d)
+        local nextB = D:Next(d, key)
+        local function find(id) for _, b in ipairs(bosses) do if b.id == id then return b end end end
+        local boss = (self.focus and find(self.focus)) or nextB
+        local main, mainIdx = 0, {}
+        for _, b in ipairs(bosses) do
+            if not D:Optional(d, b) then main = main + 1; mainIdx[b.id] = main end
+        end
+        local function wishes(b)
+            local n = 0
+            for _, id in ipairs(b.loot) do if D:IsWished(id, key) then n = n + 1 end end
+            return n
+        end
+        -- carte du haut
+        f:Show()
+        f:ClearAllPoints(); f:SetPoint("TOPLEFT", 14, -84); f:SetPoint("TOPRIGHT", -14, -84)
+        f.edge:SetColor(r1, g1, b1, 0.45)
+        f.bg:SetColor(C.surface2[1] * 0.85 + r1 * 0.15, C.surface2[2] * 0.85 + g1 * 0.15, C.surface2[3] * 0.85 + b1 * 0.15, 1)
+        f.boss = boss
+        local FH = 128
+        if not boss then
+            f.kick:SetText(""); f.name:SetText(T("Parcours terminé")); f.sub:SetText(T("Tous les boss de ce passage sont tués ou passés."))
+            f.all:Hide(); f.skip:Hide(); f.right:SetText(""); f.sep:Hide()
+            FH = 74
+        else
+            local isNext = boss == nextB
+            local killedAt = inRun and run.killed[boss.id]
+            local parts = {}
+            if killedAt then table.insert(parts, string.format(T("tué à %s"), date("%H:%M", killedAt)))
+            elseif isNext then table.insert(parts, T("prochain"))
+            else table.insert(parts, T("boss")) end
+            if boss.wing then table.insert(parts, T(boss.wing)) end
+            if mainIdx[boss.id] then table.insert(parts, mainIdx[boss.id] .. " / " .. main) end
+            f.kick:SetText(UI:Upper(table.concat(parts, "  ·  ")))
+            f.kick:SetTextColor(r1, g1, b1)
+            f.name:SetText(D:BossName(boss))
+            local sub = (boss.level or 0) > 0 and string.format(T("Niveau %d"), boss.level) or ""
+            if D:Optional(d, boss) then sub = sub .. (sub ~= "" and "  ·  " or "") .. T("facultatif") end
+            if D:Skipped(d, boss) then sub = sub .. (sub ~= "" and "  ·  " or "") .. T("passé") end
+            f.sub:SetText(sub)
+            -- butin (filtre de la page)
+            local loot = UI:DungeonLoot(boss, self.filter, c, key)
+            local rightW = W >= 640 and 230 or 0
+            local maxIcons = math.max(1, math.floor((W - 28 - 28 - rightW - 20) / 38))
+            for i, id in ipairs(loot) do
+                if i > maxIcons then break end
+                local ic = self.ficons:Get()
+                ic.id = id
+                ic:ClearAllPoints(); ic:SetPoint("TOPLEFT", f, "TOPLEFT", 14 + (i - 1) * 38, -66)
+                local _, tex = UI:ItemInfo(id)
+                ic.icon:SetTexture(tex)
+                local q = UI.DungeonQuality and UI.DungeonQuality(id) or C.border
+                ic.edge:SetColor(q[1], q[2], q[3], 1)
+                ic.bg:SetColor(unpack(C.surface))
+                local owned = D:Owned(id)
+                ic.icon:SetAlpha(owned and 0.35 or 1)
+                local wished = D:IsWished(id, key)
+                ic.star:SetShown(wished)
+                ic.star:SetVertexColor(r1, g1, b1, 1)
+            end
+            f.none:SetShown(#loot == 0)
+            f.none:ClearAllPoints(); f.none:SetPoint("TOPLEFT", 14, -74)
+            f.none:SetText(T("Rien que ce perso puisse porter (essaie « Tout »)."))
+            f.all:Show()
+            f.all:ClearAllPoints(); f.all:SetPoint("TOPLEFT", 14, -(FH - 34))
+            local canSkip = inRun and not killedAt and not D:Optional(d, boss)
+            f.skip:SetShown(canSkip)
+            if canSkip then f.skip:SetLabel(D:Skipped(d, boss) and T("Reprendre") or T("Passer")) end
+            -- colonne de droite
+            if rightW > 0 then
+                f.sep:Show(); f.sep:SetColorTexture(r1, g1, b1, 0.25)
+                f.sep:ClearAllPoints(); f.sep:SetPoint("TOPRIGHT", f, "TOPRIGHT", -(rightW + 12), -12); f.sep:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(rightW + 12), 12)
+                f.right:ClearAllPoints(); f.right:SetPoint("TOPLEFT", f, "TOPRIGHT", -rightW, -12); f.right:SetWidth(rightW - 12)
+                local lines = {}
+                local acc = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
+                table.insert(lines, "|cff8a8f98" .. T("TES ENVIES") .. "|r")
+                local mine, others = {}, {}
+                for _, id in ipairs(boss.loot) do
+                    if D:IsWished(id, key) then table.insert(mine, (UI:ItemInfo(id)) or ("#" .. id)) end
+                    for ck in pairs(WK.DB.global.dungeons and WK.DB.global.dungeons.wish or {}) do
+                        if ck ~= key and D:IsWished(id, ck) then
+                            local oc = WK.DB.global.characters[ck]
+                            others[oc and WK:CharName(oc, ck) or ck] = true
+                        end
+                    end
+                end
+                if #mine == 0 then table.insert(lines, "|cff8a8f98" .. T("aucune sur ce boss") .. "|r") end
+                for i, n in ipairs(mine) do if i <= 3 then table.insert(lines, acc .. "*|r " .. n) end end
+                local on = {}
+                for n in pairs(others) do table.insert(on, n) end
+                table.sort(on)
+                if #on > 0 then table.insert(lines, "|cff8a8f98" .. string.format(T("voulu aussi par %s"), table.concat(on, ", ")) .. "|r") end
+                if self.questTodo and self.questTodo > 0 then
+                    table.insert(lines, " ")
+                    table.insert(lines, "|cff8a8f98" .. T("QUÊTES DU DONJON") .. "|r")
+                    table.insert(lines, string.format(self.questTodo > 1 and T("%d à faire") or T("%d à faire"), self.questTodo))
+                end
+                f.right:SetText(table.concat(lines, "\n"))
+            else
+                f.sep:Hide(); f.right:SetText("")
+            end
+        end
+        f:SetHeight(FH)
+        -- frise
+        local fy = 84 + FH + 6
+        local lastWing, wingHead = false, nil
+        local wingCount = {}
+        for _, b in ipairs(bosses) do
+            local w = b.wing or ""
+            wingCount[w] = wingCount[w] or { 0, 0 }
+            if not D:Optional(d, b) then
+                wingCount[w][2] = wingCount[w][2] + 1
+                local k = inRun and run.killed[b.id] or (not inRun and D:KilledEver(d, b.id, key))
+                if k then wingCount[w][1] = wingCount[w][1] + 1 end
+            end
+        end
+        local prev
+        for _, b in ipairs(bosses) do
+            local w = b.wing or ""
+            if w ~= lastWing then
+                lastWing = w
+                prev = nil
+                if w ~= "" then
+                    local h = self.wheads:Get()
+                    h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16, -fy); h:SetPoint("TOPRIGHT", -14, -fy)
+                    h.name:SetText(UI:Upper(T(w)))
+                    local wc = wingCount[w]
+                    h.count:SetText(wc[1] .. "/" .. wc[2])
+                    h.count:SetTextColor(unpack((wc[2] > 0 and wc[1] == wc[2]) and C.positive or C.muted))
+                    fy = fy + 22
+                else
+                    fy = fy + 6
+                end
+            end
+            local r = self.steps:Get()
+            r.boss = b
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 14, -fy); r:SetPoint("TOPRIGHT", -14, -fy)
+            local opt = D:Optional(d, b)
+            local killedAt = inRun and run.killed[b.id]
+            local ever = not inRun and D:KilledEver(d, b.id, key)
+            local isNext = b == nextB
+            local skipped = D:Skipped(d, b)
+            local sel = self.focus == b.id and not isNext
+            r.on = isNext or sel
+            r.bg:SetColor(unpack((isNext or sel) and C.surface2 or { 0, 0, 0, 0 }))
+            if r.hover and not r.on then r.bg:SetColor(unpack(C.hover)) end
+            r.bar:SetShown(isNext)
+            r.bar:SetColorTexture(r1, g1, b1, 1)
+            r.ring:SetTexture(UI.MEDIA .. (opt and "ring_dash" or "ring"))
+            local green = C.positive
+            if killedAt then r.ring:SetVertexColor(green[1], green[2], green[3], 1)
+            elseif ever then r.ring:SetVertexColor(green[1], green[2], green[3], 0.45)
+            elseif isNext then r.ring:SetVertexColor(r1, g1, b1, 1)
+            else r.ring:SetVertexColor(unpack(C.dim)) end
+            r.num:SetText(opt and "" or tostring(mainIdx[b.id] or ""))
+            r.num:SetTextColor(unpack(killedAt and green or isNext and { r1, g1, b1, 1 } or C.muted))
+            r.name:SetText(D:BossName(b))
+            r.name:SetTextColor(unpack((killedAt or skipped) and C.dim or opt and C.muted or C.text))
+            r.lvl:SetText((b.level or 0) > 0 and tostring(b.level) or "")
+            -- à droite : heure du kill, déjà tué, passé, facultatif, prochain ; étoile = envies
+            local txt, col = "", C.muted
+            if killedAt then txt, col = date("%H:%M", killedAt), C.muted
+            elseif skipped then txt = T("passé")
+            elseif isNext then txt, col = T("prochain"), { r1, g1, b1, 1 }
+            elseif ever then txt, col = T("déjà tué"), C.dim
+            elseif opt then txt, col = T("facultatif"), C.dim end
+            r.right:SetText(txt); r.right:SetTextColor(unpack(col))
+            local wn = wishes(b)
+            r.star:SetShown(wn > 0); r.wn:SetShown(wn > 0)
+            if wn > 0 then
+                r.wn:SetText(tostring(wn)); r.wn:SetTextColor(r1, g1, b1)
+                r.star:SetVertexColor(r1, g1, b1, 1)
+                r.wn:ClearAllPoints()
+                if txt ~= "" then r.wn:SetPoint("RIGHT", r.right, "LEFT", -12, 0) else r.wn:SetPoint("RIGHT", -10, 0) end
+                r.star:ClearAllPoints(); r.star:SetPoint("RIGHT", r.wn, "LEFT", -3, 0)
+            end
+            -- trait vers l'étape suivante de la même aile (vert si ce boss est tué)
+            r.line:Hide()
+            if prev then
+                prev.line:Show()
+                prev.line:SetHeight(10)
+                local pk = prev.killedAt or prev.ever
+                if pk then prev.line:SetColorTexture(green[1], green[2], green[3], prev.killedAt and 0.8 or 0.35)
+                else prev.line:SetColorTexture(unpack(C.border)) end
+            end
+            r.killedAt, r.ever = killedAt, ever
+            prev = r
+            fy = fy + 30
+        end
+        -- bas de carte : depuis quand dure le passage
+        local msg = ""
+        if inRun and run.start then
+            msg = string.format(T("Passage commencé à %s  ·  %d min"), date("%H:%M", run.start), math.floor((time() - run.start) / 60))
+        elseif not inRun then
+            msg = T("Hors du donjon : coches pâles = boss déjà tués par ce perso.")
+        end
+        local bottom = fy + 6
+        self:PlaceButtons(d, bottom, msg)
         local h = bottom + 40
         det:SetHeight(h)
         self.sc:SetContentHeight(y + h + 10)

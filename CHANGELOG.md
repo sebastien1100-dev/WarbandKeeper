@@ -14,7 +14,7 @@ _Prévu, pas encore commencé._
 - Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
 - Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
 - Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
-- Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné), « vu tomber X fois » noté en jeu, et les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.
+- Donjons, suite du parcours : temps de chaque boss et record du donjon, partage du parcours avec le groupe. Puis historique des loots (ce qui est tombé, quand, qui l'a gagné), « vu tomber X fois » noté en jeu, et les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.
@@ -22,6 +22,17 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.97.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Donjons : nouvel onglet « Parcours », ouvert tout seul quand tu entres dans un donjon. En haut, la carte du prochain boss : son butin en icônes (étoile = tes envies, pâle = déjà sur le compte ; clic = envie, Maj + clic = lien), tes envies sur ce boss, qui d'autre les veut, et les quêtes du donjon à faire. En dessous, la frise de tous les boss dans l'ordre du jeu, rangée par aile (compteur par aile), avec l'heure de chaque kill et le prochain boss surligné.
+- Parcours : clic sur un boss de la frise pour le voir dans la carte du haut (re-clic : retour au prochain). « Passer » saute un boss pour ce passage (« Reprendre » pour annuler). Rares et boss facultatifs en pointillés, jamais « prochain ». Hors du donjon, la frise sert d'aperçu : coches pâles pour les boss déjà tués par ce perso.
+
+### Modifications
+- Donjons : les boss sont rangés dans l'ordre du jeu (ordre des rencontres des fichiers du jeu, aile par aile), aussi dans le panneau en jeu.
 
 ## v0.96.2 — 17/11/2026
 
