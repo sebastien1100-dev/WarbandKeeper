@@ -24,6 +24,18 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.8.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Feu de camp : carte « Ce que tes persos peuvent apporter » : pour chaque perso, l'objet de camp que ses métiers permettent de poser (selon la compétence : 20, 140 ou 300 avec un plan), et son effet. Les cuisiniers y voient le feu de camp qu'ils peuvent poser.
+- Feu de camp : tableau « Objets de camp par métier » (Meule à aiguiser, Bougie d'encens, Magnétite, Bocal à poisson…) avec leur effet et le buff de classe avec lequel ils ne se cumulent pas, et les trois feux de Cuisine (3, 5 ou 10 objets en plus).
+- Feu de camp : carte « Repos et Sac de couchage douillet » (Tente de campement, bonus d'expérience du sac) avec un bouton pour être guidé au début de la quête du sac (dès le niveau 14, selon ta faction).
+
+### Modifications
+- Feu de camp : « Comment ça marche » précise qu'on peut aussi s'allonger, s'agenouiller, dormir ou fabriquer à côté, la durée d'un camp (~15 min) et les temps de recharge (5 min pour un feu, 1 h commune pour les objets de métier). Données de la bêta, à confirmer en jeu.
+
 ## v1.7.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

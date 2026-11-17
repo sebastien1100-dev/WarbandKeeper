@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.8.0", date = "17/11/2026",
+        added = {
+            "Feu de camp : carte « Ce que tes persos peuvent apporter » : pour chaque perso, l'objet de camp que ses métiers permettent de poser (selon la compétence : 20, 140 ou 300 avec un plan), et son effet. Les cuisiniers y voient le feu de camp qu'ils peuvent poser.",
+            "Feu de camp : tableau « Objets de camp par métier » (Meule à aiguiser, Bougie d'encens, Magnétite, Bocal à poisson…) avec leur effet et le buff de classe avec lequel ils ne se cumulent pas, et les trois feux de Cuisine (3, 5 ou 10 objets en plus).",
+            "Feu de camp : carte « Repos et Sac de couchage douillet » (Tente de campement, bonus d'expérience du sac) avec un bouton pour être guidé au début de la quête du sac (dès le niveau 14, selon ta faction).",
+        },
+        changed = {
+            "Feu de camp : « Comment ça marche » précise qu'on peut aussi s'allonger, s'agenouiller, dormir ou fabriquer à côté, la durée d'un camp (~15 min) et les temps de recharge (5 min pour un feu, 1 h commune pour les objets de métier). Données de la bêta, à confirmer en jeu.",
+        },
+    },
+    {
         version = "1.7.0", date = "17/11/2026", restart = true,
         added = {
             "Réglages QoL : nouvelle section « Feu de camp » (icône de flamme), avec tout ce qui concerne les camps : « En ce moment » en direct (flamme à proximité, compte à rebours assis, avantages actifs, leur effet et leur durée) avec un bouton « S'asseoir », le rappel à l'écran et ses réglages, « Comment ça marche » et la liste des effets de camp déjà rencontrés.",

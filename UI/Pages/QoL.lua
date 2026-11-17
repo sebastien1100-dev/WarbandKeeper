@@ -1479,10 +1479,10 @@ UI:RegisterPage({
             howText:SetPoint("TOPLEFT", 16, -42); howText:SetPoint("RIGHT", -16, 0)
             howText:SetJustifyH("LEFT")
             if howText.SetWordWrap then howText:SetWordWrap(true) end
-            howText:SetText(T("1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres »).") .. "\n"
-                .. T("2. Assieds-toi : « Feu de camp accueillant » compte 1 min.") .. "\n"
-                .. T("3. Tu obtiens « Avantages du camp » pour 2 h, selon les objets posés autour du feu.") .. "\n"
-                .. T("4. Te relever avant la fin annule ; la flamme allonge la durée des effets de camp."))
+            howText:SetText(T("1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres ») : elle allonge la durée des effets de camp.") .. "\n"
+                .. T("2. Assieds-toi (ou allonge-toi, agenouille-toi, dors, ou fabrique à côté) : « Feu de camp accueillant » compte 1 min.") .. "\n"
+                .. T("3. Tu obtiens « Avantages du camp », selon les objets posés autour du feu ; ils restent quand tu pars.") .. "\n"
+                .. T("4. Un camp dure environ 15 min ; poser un feu : recharge de 5 min ; poser un objet de métier : recharge commune d'1 h."))
             local seenHead = UI:Text(how, 10, C.dim)
             seenHead:SetPoint("TOPLEFT", 16, -42 - 4 * 22 - 6)
             seenHead:SetText(UI:Upper(T("Effets de camp rencontrés")))
@@ -1503,6 +1503,70 @@ UI:RegisterPage({
             seenText:SetPoint("TOPLEFT", seenHead, "BOTTOMLEFT", 0, -6); seenText:SetPoint("RIGHT", -16, 0)
             seenText:SetJustifyH("LEFT")
             if seenText.SetWordWrap then seenText:SetWordWrap(true) end
+
+            -- ce que tes persos peuvent apporter (selon leurs métiers)
+            local CROWS = 10
+            local contrib = card("Ce que tes persos peuvent apporter", 40 + CROWS * 20 + 30, "un objet par joueur et par camp")
+            local ctext = dynText(contrib, 11, C.text, function()
+                local list = Cp:Contributions()
+                if #list == 0 then return "|cff9ca3ab" .. T("Aucun : il faut 20 dans un métier (ou la Cuisine pour poser le feu).") .. "|r" end
+                local lines, last = {}, nil
+                for i, e in ipairs(list) do
+                    if i > CROWS then table.insert(lines, string.format("|cff9ca3ab" .. T("+ %d autre(s)") .. "|r", #list - CROWS)) break end
+                    local r, g, b = UI:ClassColor(e.c.class)
+                    local who = e.key ~= last and string.format("|cff%02x%02x%02x%s|r  ", r * 255, g * 255, b * 255, WK:CharName(e.c, e.key)) or "      "
+                    last = e.key
+                    table.insert(lines, who .. e.item .. "  |cff9ca3ab· " .. T(e.prof) .. " " .. e.rank .. " · " .. e.effect
+                        .. (e.tier >= 2 and (" · " .. T("plan requis")) or "") .. "|r")
+                end
+                return table.concat(lines, "\n")
+            end)
+            ctext:SetPoint("TOPLEFT", 16, -42); ctext:SetPoint("RIGHT", -16, 0)
+            ctext:SetJustifyH("LEFT")
+            if ctext.SetWordWrap then ctext:SetWordWrap(false) end
+
+            -- objets de camp par métier (premier objet, à 20 de compétence)
+            local tbl = card("Objets de camp par métier", 40 + 20 + #Cp.ITEMS * 20 + 4 * 20 + 16, "premier objet à 20 ; 140 et 300 avec un plan")
+            local function col(x, y, txt, color)
+                local t = UI:Text(tbl, 11, color)
+                t:SetPoint("TOPLEFT", x, y)
+                t:SetText(txt)
+                return t
+            end
+            local XS = { 16, 130, 300, 500 }
+            local hy = -42
+            for i, h in ipairs({ "Métier", "Objet", "Effet", "Ne se cumule pas avec" }) do col(XS[i], hy, UI:Upper(T(h)), C.dim) end
+            for i, it in ipairs(Cp.ITEMS) do
+                local y = hy - 20 * i
+                col(XS[1], y, T(it[1]), C.muted)
+                col(XS[2], y, it[2][1], C.text)
+                col(XS[3], y, it[2][2], C.text)
+                col(XS[4], y, it[2][3] or "-", C.muted)
+            end
+            local fy = hy - 20 * (#Cp.ITEMS + 1) - 6
+            col(16, fy, UI:Upper(T("Feux de camp (Cuisine)")), C.dim)
+            for i, f in ipairs(Cp.FIRES) do
+                col(16, fy - 20 * i, f[1], C.text)
+                col(XS[3], fy - 20 * i, string.format(T("Cuisine %d · %d objets en plus · %s"), f[2], f[3], f[4]), C.muted)
+            end
+
+            -- bon à savoir : repos, sac de couchage
+            local bag = card("Repos et Sac de couchage douillet", 40 + 4 * 18 + 46 + 8)
+            local bt = UI:Text(bag, 11, C.muted)
+            bt:SetPoint("TOPLEFT", 16, -42); bt:SetPoint("RIGHT", -16, 0)
+            bt:SetJustifyH("LEFT")
+            if bt.SetWordWrap then bt:SetWordWrap(true) end
+            bt:SetText(T("Tente de campement (Travail du cuir 20) : ton repos est porté à 5 % d'un niveau s'il est plus bas (une fois par heure).") .. "\n"
+                .. T("Sac de couchage douillet : en t'y reposant, +1 % d'expérience gagnée par minute, jusqu'à 3 %. Les deux se cumulent.") .. "\n"
+                .. T("Les effets de caractéristiques ne se cumulent pas avec le buff de classe équivalent : choisis plutôt un autre objet."))
+            local bagBtn = UI:Button(bag, "Guider vers la quête du sac", nil, 28, "secondary", "guide")
+            bagBtn:SetPoint("BOTTOMLEFT", 16, 12)
+            bagBtn:SetScript("OnClick", function() Cp:GuideToBag() end)
+            local bagWhere = dynText(bag, 10, C.dim, function()
+                local q = Cp.BAG_QUEST[UnitFactionGroup and UnitFactionGroup("player") or ""]
+                return q and string.format(T("Dès le niveau 14 · %s (%d, %d)"), T(q[4]), q[2], q[3]) or ""
+            end)
+            bagWhere:SetPoint("LEFT", bagBtn, "RIGHT", 12, 0)
         end
 
         -----------------------------------------------------------------------

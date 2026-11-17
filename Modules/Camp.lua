@@ -10,6 +10,71 @@ local T = function(s) return WK.T(s) end
 -- (WK.DB.global.camp.seen) pour connaître les variantes. Réglages : QoL:Config().camp.
 -- État (M.state) : "none" (pas de camp), "sit" (assieds-toi), "sitting" (assis, compte à rebours),
 -- "done" (avantages actifs), "early" (relevé trop tôt). Affichage : UI/CampCard.lua.
+-- Objets de camp par métier (bêta de WoW Forever, d'après les infobulles relevées par les joueurs ; à
+-- vérifier en jeu). Paliers de compétence 20 / 140 / 300 (les objets 140 et 300 demandent un plan).
+-- { métier, { objet 20, effet, ne se cumule pas avec }, objet 140, objet 300 }
+M.ITEMS = {
+    { "Forge", { "Meule à aiguiser", "Force (selon le niveau)", "Totem de Force de la Terre" }, "Enclume", "Forge magistrale" },
+    { "Couture", { "Bannière de faction", "Esprit", "Esprit divin" }, "Atelier de couture", "Atelier de couture avancé" },
+    { "Herboristerie", { "Bougie d'encens", "Intelligence", "Intelligence des arcanes" }, "Serre", "Hybrideur de graines" },
+    { "Alchimie", { "Puits de mana", "Régénération de mana", "Bénédiction de sagesse" }, "Fermenteur", "Laboratoire d'alchimie" },
+    { "Travail du cuir", { "Tente de campement", "Repos porté à 5 % d'un niveau", nil }, "Chevalet de tannage", "Machine à coudre" },
+    { "Dépeçage", { "Chaise de campement", "Coup critique +2 %", "Aura de sélénien" }, "Guide de terrain", "Établi du trappeur" },
+    { "Ingénierie", { "Robot de composants", "Vendeur de composants", nil }, "Robot réparateur", "Établi de l'anarchiste" },
+    { "Enchantement", { "Luth enchanté", "Armure, caractéristiques, résistances", "Marque du fauve" }, "Récupérateur arcanique", "Forge arcanique" },
+    { "Minage", { "Magnétite", "Puissance d'attaque en mêlée", "Bénédiction de puissance" }, "Jardin de pierres", "Fonderie en fusion" },
+    { "Secourisme", { "Trousse de premiers secours", "Endurance", "Mot de pouvoir : Robustesse" }, "Étude des toxines", "Laboratoire du médecin de peste" },
+    { "Pêche", { "Bocal à poisson", "Toutes les caractéristiques", "Bénédiction des rois" }, "Râtelier de pêche", "Cabane de pêche" },
+}
+-- Feux de camp (Cuisine) : { nom, compétence, objets en plus, bois }
+M.FIRES = {
+    { "Kit de feu de camp basique", 1, 3, "1 bois simple + silex avec amadou (outil)" },
+    { "Kit de feu de camp de compagnon", 90, 5, "1 bois étoilé (plan)" },
+    { "Kit de feu de camp d'expert", 200, 10, "1 bûches épaisses (plan)" },
+}
+-- Début de la suite de quêtes du Sac de couchage douillet (dès le niveau 14) : carte, x, y (%)
+M.BAG_QUEST = { Alliance = { 1436, 37, 50, "Marche de l'Ouest, débris d'un chariot" }, Horde = { 1413, 46, 74, "Tarides, tour incendiée" } }
+
+-- Ce que chaque perso peut apporter : { { key, c, prof, rank, item, effect, tier } }
+function M:Contributions()
+    local out = {}
+    for key, c in pairs(WK.DB.global.characters) do
+        for _, it in ipairs(M.ITEMS) do
+            local p = c.professions and c.professions[it[1]]
+            local rank = p and p.rank or 0
+            if rank >= 20 then
+                local item, tier = it[2][1], 1
+                if rank >= 300 then item, tier = it[4], 3 elseif rank >= 140 then item, tier = it[3], 2 end
+                table.insert(out, { key = key, c = c, prof = it[1], rank = rank, item = item, effect = it[2][2], tier = tier })
+            end
+        end
+        local cook = c.professions and c.professions["Cuisine"]
+        if cook then
+            local fire
+            for _, f in ipairs(M.FIRES) do if (cook.rank or 0) >= f[2] then fire = f end end
+            if fire then table.insert(out, { key = key, c = c, prof = "Cuisine", rank = cook.rank or 0, item = fire[1], effect = string.format(T("feu de camp, %d objets en plus"), fire[3]), tier = 0 }) end
+        end
+    end
+    table.sort(out, function(a, b)
+        if a.key ~= b.key then return WK:CharName(a.c, a.key) < WK:CharName(b.c, b.key) end
+        return a.prof < b.prof
+    end)
+    return out
+end
+
+function M:GuideToBag()
+    local fac = UnitFactionGroup and UnitFactionGroup("player")
+    local q = M.BAG_QUEST[fac or ""]
+    if not q then return end
+    local G = WK.modules.Guide
+    local t = { map = q[1], x = q[2] / 100, y = q[3] / 100 }
+    t.cont, t.wx, t.wy = G.ToWorld(t.map, t.x, t.y)
+    local p = G:PlayerPos()
+    t.distance = p and G:Vector(p, t) or nil
+    t.e = { q[2], q[3], 0, nil, nil, "Cozy Sleeping Bag", T("Sac de couchage douillet"), T(q[4]) }
+    G:Start(t, "Sac de couchage douillet", "camp")
+end
+
 local DEFAULTS = { enabled = true, renewAt = 10, sound = false, doneSecs = 8 } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }

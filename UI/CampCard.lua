@@ -54,7 +54,7 @@ local function build()
             self.title:SetText(state == "early" and T("Relevé trop tôt") or T("Feu de camp à proximité"))
             local left = M.Remaining(a.perk)
             self.sub:SetText(left and string.format(T("Avantages : %s restants · assieds-toi 1 min pour les renouveler"), UI:AgoShort(left, true))
-                or T("Assieds-toi 1 min pour obtenir les avantages du camp (2 h)."))
+                or T("Assieds-toi (ou fabrique à côté) 1 min pour obtenir les avantages du camp."))
             self.sit:Show()
         elseif state == "sitting" then
             self.title:SetText(T("Reste assis…"))
