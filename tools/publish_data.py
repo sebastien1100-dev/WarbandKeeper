@@ -32,6 +32,8 @@ PHRASES = {
     "Recettes": ("{n} recette(s) de plus", "{n} recette(s) en moins"),
     "Boss avec n° de rencontre": ("{n} boss de plus détectés par la fin de rencontre", ""),
     "Guides de métiers": ("{n} guide(s) de métier de plus", ""),
+    "Objets avec taux de drop observé": ("{n} objet(s) de plus avec un taux de drop observé", ""),
+    "Trajets de vol (fichiers du jeu)": ("{n} trajet(s) de vol de plus", ""),
 }
 
 

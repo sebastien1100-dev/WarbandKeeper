@@ -312,11 +312,13 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
-        local ttCard = card("Infobulles", 150)
+        local ttCard = card("Infobulles", 196)
         UI:SettingRow(ttCard, -94, "Police fine pour les infobulles du jeu", "Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon.",
             UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
         UI:SettingRow(ttCard, -40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
             UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
+        UI:SettingRow(ttCard, -148, "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
+            UI:Toggle(ttCard, function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end), 80)
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
 
         -- Prix des objets ------------------------------------------------------------
@@ -487,7 +489,7 @@ UI:RegisterPage({
             .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
             .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), monstres rares, quêtes, boss des donjons et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
             .. T("Guides de montée des métiers et tables de butin des donjons et raids de WoW Forever : wowtbc.gg.") .. "\n"
-            .. T("Numéros des rencontres de boss (lus dans les fichiers du jeu) : catalogue d'Everloot (github.com/Everloot/everloot).") .. "\n"
+            .. T("Numéros des rencontres de boss et trajets de vol (lus dans les fichiers du jeu), taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0).") .. "\n"
             .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)

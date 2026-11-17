@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -135,6 +135,9 @@ def metrics():
             out["Guides de métiers"] = size(WK.Guides)
         elif name == "RecipeDB":
             out["Recettes"] = count(WK.RecipeDB)
+        elif name == "EverlootDB":
+            out["Objets avec taux de drop observé"] = size(WK.EverDrops)
+            out["Trajets de vol (fichiers du jeu)"] = size(WK.FlightGame.paths) if WK.FlightGame else 0
         elif name == "DungeonsDB":
             stats = L.eval("""function(db, items)
                 local d, b, nb, it, und = 0, 0, 0, 0, 0
@@ -227,6 +230,13 @@ def main():
             sources.append("wowtbc.gg (%d guides, %d tables de butin)" % (len(pages), len(slugs)))
         if do_questie:
             run(os.path.join(HERE, "gen_dungeons.py"), qpath)
+            # export de données ouvertes d'Everloot : taux de drop observés (CC BY-SA 4.0), trajets de vol du jeu
+            try:
+                run(os.path.join(HERE, "gen_everloot.py"), "--fetch")
+                run(os.path.join(HERE, "gen_everloot.py"), qpath)
+                sources.append("Everloot (taux de drop, vols)")
+            except subprocess.CalledProcessError as e:
+                log("  ! Everloot indisponible, fichier gardé tel quel :", e)
         after = metrics()
     except Exception as e:
         log("ÉCHEC :", e, "-> fichiers remis comme avant")

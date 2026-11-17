@@ -90,7 +90,14 @@ end
 function M:ItemInfo(id)
     local i = WK.DungeonItems and WK.DungeonItems[id]
     if not i then return nil end
-    return { quality = i[1], ilvl = i[2], req = i[3], drop = i[4], undiscovered = i[5] or false }
+    local info = { quality = i[1], ilvl = i[2], req = i[3], drop = i[4], undiscovered = i[5] or false }
+    -- pas de taux sur wowtbc.gg : taux observé par les joueurs (Everloot), meilleure source
+    local ev = WK.EverDrops and WK.EverDrops[id]
+    if not info.drop and ev then
+        info.drop = ev[2] / 10
+        info.observed = ev[3]
+    end
+    return info
 end
 
 -- Donjon où se trouve le perso (n° d'instance du jeu, sinon nom de l'instance), ou nil

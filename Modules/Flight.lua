@@ -120,6 +120,9 @@ function M:RouteTime(index)
     local learned = db().routes[from .. "|" .. to]
     if learned then return learned, true end
     local _, dist = routeStops(cur, index)
+    -- longueur du vrai trajet (fichiers du jeu) : estimation bien plus juste que les lignes droites
+    local _, pts = self:Path(from, to)
+    if pts and #pts >= 4 then dist = M.PathLength(pts) end
     local est = self:Estimate(dist)
     return est and math.floor(est + 0.5) or nil, false
 end
@@ -210,7 +213,67 @@ function M:Finish()
 end
 
 function M:Current() return flight end
--- Chemin connu d'un vol (« Départ », « Arrivée ») : continent, { x, y, ... } (sens du vol)
+
+-- Trajets de vol des fichiers du jeu (Modules/EverlootDB.lua, WK.FlightGame) : relais du jeu retrouvé par la
+-- position du relais connu du perso (characters[perso].taxi, noté à l'ouverture de la carte des vols), puis
+-- plus court enchaînement de trajets directs entre les deux relais.
+local gameAdj
+local function gameNode(name)
+    local FG = WK.FlightGame
+    local t = name and (WK.DB:Me().taxi or {})[name]
+    if not (FG and t) then return nil end
+    local best, bd
+    for id, n in pairs(FG.nodes) do
+        if n[1] == t[1] then
+            local d = (n[2] - t[2]) ^ 2 + (n[3] - t[3]) ^ 2
+            if not bd or d < bd then best, bd = id, d end
+        end
+    end
+    return bd and bd < 150 * 150 and best or nil
+end
+local function pathLen(pts)
+    local len = 0
+    for i = 3, #pts, 2 do len = len + math.sqrt((pts[i] - pts[i - 2]) ^ 2 + (pts[i + 1] - pts[i - 1]) ^ 2) end
+    return len
+end
+local function gamePath(a, b)
+    local FG = WK.FlightGame
+    if not (FG and a and b) or a == b then return nil end
+    if not gameAdj then
+        gameAdj = {}
+        for key, pts in pairs(FG.paths) do
+            local x, y = key:match("^(%d+)%-(%d+)$")
+            x, y = tonumber(x), tonumber(y)
+            gameAdj[x] = gameAdj[x] or {}
+            gameAdj[x][y] = { pts = pts, len = pathLen(pts) }
+        end
+    end
+    -- Dijkstra (quelques dizaines de relais par continent)
+    local dist, prev, done = { [a] = 0 }, {}, {}
+    while true do
+        local u, du
+        for n, dn in pairs(dist) do if not done[n] and (not du or dn < du) then u, du = n, dn end end
+        if not u or u == b then break end
+        done[u] = true
+        for v, e in pairs(gameAdj[u] or {}) do
+            local nd = du + e.len
+            if not dist[v] or nd < dist[v] then dist[v], prev[v] = nd, u end
+        end
+    end
+    if not dist[b] then return nil end
+    local chain, n = {}, b
+    while n ~= a do table.insert(chain, 1, n); n = prev[n] end
+    local out, from = {}, a
+    for _, to in ipairs(chain) do
+        local pts = gameAdj[from][to].pts
+        for i = (#out > 0 and 3 or 1), #pts do out[#out + 1] = pts[i] end
+        from = to
+    end
+    return FG.nodes[a][1], out
+end
+
+-- Chemin connu d'un vol (« Départ », « Arrivée ») : continent, { x, y, ... } (sens du vol), appris en volant,
+-- sinon tiré des fichiers du jeu
 function M:Path(from, to)
     local d = db().paths or {}
     local e = d[(from or "") .. "|" .. (to or "")]
@@ -221,7 +284,9 @@ function M:Path(from, to)
         for i = #e.pts - 1, 1, -2 do rev[#rev + 1] = e.pts[i]; rev[#rev + 1] = e.pts[i + 1] end
         return e.c, rev
     end
+    return gamePath(gameNode(from), gameNode(to))
 end
+M.PathLength = pathLen
 
 -- En vol : distance réellement parcourue (positions du perso, une par seconde). Pour un trajet pas
 -- encore appris, l'estimation est recalculée : reste à parcourir / vitesse mesurée.

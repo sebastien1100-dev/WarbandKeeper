@@ -24,6 +24,17 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.92.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Butin observé : dans l'infobulle d'un objet, les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs de WoW Forever (Everloot : 688 objets pour l'instant, et ça grossit chaque jour). Réglable dans Options > Infobulles.
+- Donjons : quand wowtbc.gg ne donne pas de taux de drop, le taux observé par les joueurs s'affiche, avec le nombre de butins relevés (72 objets de boss pour l'instant).
+- Vols : les vrais trajets des griffons (fichiers du jeu, 138 trajets) sont dessinés même pour un vol jamais fait, y compris avec des relais. La durée estimée d'un vol pas encore fait suit ce vrai trajet : bien plus juste.
+- Ces données sont mises à jour chaque jour avec le reste.
+- Nouveau fichier : redémarrer le jeu (un /reload ne suffit pas).
+
 ## v0.91.0 — 17/11/2026
 
 _Un /reload suffit._

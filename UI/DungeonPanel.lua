@@ -46,6 +46,8 @@ function UI:DungeonLootRow(parent)
         if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText((UI:ItemInfo(s.id))) end
         local info = D:ItemInfo(s.id)
         if info and info.undiscovered then GameTooltip:AddLine(T("Pas encore vu tomber sur WoW Forever (table de butin en cours de relevé)."), 1, 0.6, 0.3, true)
+        elseif info and info.drop and info.observed then
+            GameTooltip:AddLine(string.format(T("Chance de drop observée : %s %% (%d butins relevés, Everloot)"), tostring(info.drop), info.observed), 0.8, 0.8, 0.8)
         elseif info and info.drop then GameTooltip:AddLine(string.format(T("Chance de drop : %s %%"), tostring(info.drop)), 0.8, 0.8, 0.8) end
         GameTooltip:AddLine(T("Maj + clic : lien dans le chat · étoile : liste d'envies"), 0.6, 0.6, 0.6)
         GameTooltip:Show()

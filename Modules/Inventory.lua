@@ -222,6 +222,22 @@ local function onTooltip(tooltip, data)
             if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         end) then any = true end
     end
+    -- butin observé par les joueurs (Modules/EverlootDB.lua : PNJ, taux, nombre de butins relevés)
+    local drops = WK.EverDrops and WK.EverDrops[itemID]
+    local ui = WK.DB.global.settings.ui
+    if drops and ui.tooltipDrops ~= false then
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+        tooltip:AddLine(string.format(WK.T("Butin observé (%s)"), WK.EverlootAsOf and WK.EverlootAsOf:gsub("(%d+)-(%d+)-(%d+)", "%3/%2") or "Everloot"), 0.8, 0.8, 0.8)
+        local fr = WK.Lang() == "frFR"
+        for i = 1, math.min(#drops, 9), 3 do
+            local n = WK.EverNpcs and WK.EverNpcs[drops[i]]
+            local name = n and ((fr and n[2]) or n[1]) or ("#" .. drops[i])
+            local pct = drops[i + 1] / 10
+            local txt = pct >= 10 and tostring(math.floor(pct + 0.5)) or string.format("%.1f", pct)
+            tooltip:AddDoubleLine("  " .. name, string.format(WK.T("%s %% · %d butins"), txt, drops[i + 2]),
+                1, 1, 1, 1, 1, 1)
+        end
+    end
     -- prix relevés par notre scan de l'HV (Modules/AHScan.lua)
     local S = WK.modules.AHScan
     local scanned = false
