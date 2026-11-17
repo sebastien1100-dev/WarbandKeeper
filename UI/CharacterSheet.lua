@@ -697,9 +697,13 @@ local function refreshTalents(f, c)
         for _, d in ipairs(t.list or {}) do maxTier = math.max(maxTier, d[3]); maxCols = math.max(maxCols, d[4]) end
     end
     -- cases plus petites si l'arbre est large
-    local cs = math.max(22, math.min(CELL, math.floor((tw - 24) / maxCols) - 6))
-    local cg = math.max(4, math.min(CGAP, math.floor((tw - 24 - maxCols * cs) / math.max(1, maxCols - 1))))
-    local th = 52 + maxTier * (cs + cg) + 6
+    -- cases aussi grandes que la place le permet : largeur d'un arbre et hauteur de la page (écart = 30 % de la case)
+    local availH = math.max(200, (f.tsc:GetHeight() or 480) - 28 - 52 - 14)
+    local byW = math.floor((tw - 40) / (maxCols + (maxCols - 1) * 0.3))
+    local byH = math.floor(availH / (maxTier + (maxTier - 1) * 0.3))
+    local cs = math.max(24, math.min(60, byW, byH))
+    local cg = math.max(4, math.floor(cs * 0.3))
+    local th = 52 + maxTier * cs + (maxTier - 1) * cg + 14
     local mine = f.key == WK:CharKey()
     for i, tr in ipairs(f.trees) do
         local t = trees[i]
@@ -720,6 +724,8 @@ local function refreshTalents(f, c)
                 cell.data, cell.tab, cell.index, cell.mine = d, i, j, mine
                 cell:ClearAllPoints()
                 cell:SetSize(cs, cs)
+                cell.rk:SetFont(UI.FONT, cs >= 44 and 12 or 10, "")
+                cell.rkBox:SetHeight(cs >= 44 and 17 or 14)
                 cell:SetPoint("TOPLEFT", gx + (d[4] - 1) * (cs + cg), -46 - (d[3] - 1) * (cs + cg))
                 cell.icon:SetTexture(d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
                 local rank, max = d[5] or 0, d[6] or 1

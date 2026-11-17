@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.13.2", date = "17/11/2026",
+        changed = {
+            "Fiche du perso, onglet Talents : les icônes des talents prennent toute la place disponible (largeur des arbres et hauteur de la fenêtre), jusqu'à presque deux fois plus grandes, avec des écarts proportionnés.",
+        },
+    },
+    {
         version = "1.13.1", date = "17/11/2026",
         changed = {
             "Fiche du perso, onglet Talents : chaque talent affiche son rang (« 2/5 », « 0/3 ») dans une petite pastille lisible au coin de l'icône, de la couleur du talent (vert pris, doré au maximum, gris pas pris).",
