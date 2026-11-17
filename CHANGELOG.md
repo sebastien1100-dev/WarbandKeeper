@@ -24,6 +24,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.9.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Feu de camp : une icône de flamme apparaît quand tu t'approches d'un camp (elle pulse pour attirer l'oeil). Clic : ton perso s'assoit ; un cercle décompte alors la minute, avec les secondes au centre. Une fois les avantages obtenus, elle passe au vert puis s'efface ; relevé trop tôt, elle passe à l'orange.
+- L'icône s'active ou se coupe dans QoL > Feu de camp (« Icône près d'un feu de camp »), indépendamment de l'encart, et se place en mode édition.
+
 ## v1.8.0 — 17/11/2026
 
 _Un /reload suffit._

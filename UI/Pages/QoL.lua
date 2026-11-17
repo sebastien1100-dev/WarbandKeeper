@@ -1461,8 +1461,10 @@ UI:RegisterPage({
             sitBtn:SetScript("OnClick", function() Cp:Sit() end)
             table.insert(self.dyn, function() sitBtn:SetEnabled(Cp.auras ~= nil and Cp.auras.flame ~= nil and not Cp.auras.sit) end)
             -- rappel
-            local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "encart près du camp")
-            UI:SettingRow(rem, -40, "Rappel près d'un feu de camp", "Encart « Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus.",
+            local rem = card("Rappel à l'écran", 40 + 6 * 46 + 8, "icône et encart près du camp")
+            UI:SettingRow(rem, -270, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
+                toggle(rem, function() return campCfg.icon end, function(v) campCfg.icon = v; cupdate() end), 80)
+            UI:SettingRow(rem, -40, "Encart près d'un feu de camp", "« Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus.",
                 toggle(rem, function() return campCfg.enabled end, function(v) campCfg.enabled = v; cupdate() end), 80)
             UI:SettingRow(rem, -86, "Proposer de renouveler", "Quand il reste moins que ce temps sur les avantages du camp (0 : seulement quand ils sont finis).",
                 UI:Slider(rem, 240, 0, 60, 5, function() return campCfg.renewAt or 10 end, function(v) campCfg.renewAt = v; cupdate() end, "%d min"), 260)

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.9.0", date = "17/11/2026",
+        added = {
+            "Feu de camp : une icône de flamme apparaît quand tu t'approches d'un camp (elle pulse pour attirer l'oeil). Clic : ton perso s'assoit ; un cercle décompte alors la minute, avec les secondes au centre. Une fois les avantages obtenus, elle passe au vert puis s'efface ; relevé trop tôt, elle passe à l'orange.",
+            "L'icône s'active ou se coupe dans QoL > Feu de camp (« Icône près d'un feu de camp »), indépendamment de l'encart, et se place en mode édition.",
+        },
+    },
+    {
         version = "1.8.0", date = "17/11/2026",
         added = {
             "Feu de camp : carte « Ce que tes persos peuvent apporter » : pour chaque perso, l'objet de camp que ses métiers permettent de poser (selon la compétence : 20, 140 ou 300 avec un plan), et son effet. Les cuisiniers y voient le feu de camp qu'ils peuvent poser.",

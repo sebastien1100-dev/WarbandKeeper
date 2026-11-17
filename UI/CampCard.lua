@@ -88,10 +88,110 @@ local function build()
     return f
 end
 
+---------------------------------------------------------------------------
+-- Icône près d'un feu de camp : clic = s'asseoir ; assis, un cercle décompte la minute
+---------------------------------------------------------------------------
+local icon
+local function buildIcon()
+    local b = CreateFrame("Button", "WarbandKeeperCampIcon", UIParent)
+    b:SetSize(52, 52)
+    b:SetFrameStrata("MEDIUM")
+    b:SetClampedToScreen(true)
+    b:RegisterForClicks("LeftButtonUp")
+    b.glow = b:CreateTexture(nil, "BACKGROUND", nil, -1)
+    b.glow:SetTexture(UI.MEDIA .. "circle")
+    b.glow:SetPoint("CENTER"); b.glow:SetSize(70, 70)
+    b.bg = b:CreateTexture(nil, "BACKGROUND")
+    b.bg:SetTexture(UI.MEDIA .. "circle")
+    b.bg:SetAllPoints()
+    b.ring = b:CreateTexture(nil, "BORDER")
+    b.ring:SetTexture(UI.MEDIA .. "ring")
+    b.ring:SetAllPoints()
+    b.fire = b:CreateTexture(nil, "ARTWORK")
+    b.fire:SetTexture(UI.MEDIA .. "fire")
+    b.fire:SetPoint("CENTER", 0, 1); b.fire:SetSize(30, 30)
+    b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
+    b.cd:SetPoint("TOPLEFT", 4, -4); b.cd:SetPoint("BOTTOMRIGHT", -4, 4)
+    if b.cd.SetHideCountdownNumbers then b.cd:SetHideCountdownNumbers(true) end
+    if b.cd.SetDrawEdge then b.cd:SetDrawEdge(false) end
+    b.num = UI:Text(b, 15, nil, "OVERLAY")
+    b.num:SetPoint("CENTER", 0, 0)
+    b.num:SetShadowOffset(1, -1)
+    b.label = UI:Text(b, 10, C.text)
+    b.label:SetPoint("TOP", b, "BOTTOM", 0, -3)
+    b:SetScript("OnClick", function() M:Sit() end)
+    b:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        local st = M.state
+        GameTooltip:SetText(T("Feu de camp"), 1, 1, 1)
+        if st == "sitting" then GameTooltip:AddLine(T("Reste assis : les avantages du camp arrivent à la fin de la minute."), 0.8, 0.8, 0.8, true)
+        elseif st == "done" then GameTooltip:AddLine(M:PerkText() or T("Avantages du camp obtenus."), 0.8, 0.8, 0.8, true)
+        else GameTooltip:AddLine(T("Clic : s'asseoir 1 min près du feu pour obtenir les avantages du camp."), 0.8, 0.8, 0.8, true) end
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b:SetScript("OnUpdate", function(s, el)
+        s.t = (s.t or 0) + el
+        local r1, g1, b1 = UI:Accent()
+        local st = s.sample and "sit" or M.state
+        -- pulsation pour attirer l'oeil quand il faut s'asseoir
+        local pulse = (st == "sit" or st == "early") and (0.35 + 0.3 * math.sin(s.t * 4)) or 0
+        s.glow:SetVertexColor(r1, g1, b1, pulse)
+        if st == "sitting" and not s.sample then
+            local left = M.Remaining(M.auras and M.auras.sit) or 0
+            s.num:SetText(left > 0 and tostring(math.ceil(left)) or "")
+        else
+            s.num:SetText("")
+        end
+        if st == "done" and s.doneAt and not s.sample then
+            local keep = M:Config().doneSecs or 8
+            if keep > 0 and GetTime() - s.doneAt > keep then s:Hide() end
+        end
+    end)
+    function b:Paint(sample)
+        local st = sample and "sit" or M.state
+        local r1, g1, b1 = UI:Accent()
+        self.bg:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
+        local col = (st == "done") and C.positive or (st == "early") and C.warning or { r1, g1, b1, 1 }
+        self.ring:SetVertexColor(col[1], col[2], col[3], 1)
+        self.fire:SetVertexColor(col[1], col[2], col[3], 1)
+        self.fire:SetAlpha(st == "sitting" and 0.35 or 1)
+        self.label:SetText(st == "sitting" and T("assis") or st == "done" and T("avantages") or st == "early" and T("rassieds-toi") or T("s'asseoir"))
+        local a = M.auras or {}
+        if st == "sitting" and a.sit and type(a.sit.expires) == "number" and not sample then
+            local dur = (type(a.sit.duration) == "number" and a.sit.duration > 0) and a.sit.duration or 60
+            self.cd:SetCooldown(a.sit.expires - dur, dur)
+            self.cd:Show()
+        else
+            self.cd:Hide()
+        end
+    end
+    b:Hide()
+    UI:RegisterHUD("campIcon", b, {
+        label = T("Icône du feu de camp"), default = { -220, -120 },
+        enabled = function() return M:Config().icon end,
+        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide() end end,
+    })
+    return b
+end
+
+local function updateIcon(changed)
+    if not icon then icon = buildIcon() end
+    if icon.sample then return end
+    local st = M.state
+    if not M:Config().icon or st == "none" then icon:Hide() return end
+    if st == "done" and changed then icon.doneAt = GetTime() end
+    if st == "done" and not changed and not icon:IsShown() then return end
+    icon:Paint()
+    icon:Show()
+end
+
 M.OnChange = function(_, changed)
+    updateIcon(changed)
     if not card then card = build() end
     if card.sample then return end
     local st = M.state
+    if not M:Config().enabled then card:Hide() return end
     if st == "none" then card.dismissed = nil; card:Hide() return end
     if card.dismissed == st then return end
     if changed then card.dismissed = nil end
@@ -104,4 +204,7 @@ M.OnChange = function(_, changed)
     card:Show()
 end
 
-WK:On("PLAYER_LOGIN", function() if not card then card = build() end end)
+WK:On("PLAYER_LOGIN", function()
+    if not card then card = build() end
+    if not icon then icon = buildIcon() end
+end)

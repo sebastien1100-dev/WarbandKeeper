@@ -75,7 +75,7 @@ function M:GuideToBag()
     G:Start(t, "Sac de couchage douillet", "camp")
 end
 
-local DEFAULTS = { enabled = true, renewAt = 10, sound = false, doneSecs = 8 } -- minutes restantes sous lesquelles on propose de renouveler
+local DEFAULTS = { enabled = true, icon = true, renewAt = 10, sound = false, doneSecs = 8 } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }
 local SIT = { "feu de camp accueillant", "cozy campfire", "welcoming campfire" }
@@ -179,7 +179,7 @@ function M:Update()
     local a = scan()
     self.auras = a
     local state = "none"
-    if cfg.enabled and WK:FeatureOn("campfire") then
+    if (cfg.enabled or cfg.icon) and WK:FeatureOn("campfire") then
         local perkLeft = remaining(a.perk)
         if a.sit then
             state = "sitting"
