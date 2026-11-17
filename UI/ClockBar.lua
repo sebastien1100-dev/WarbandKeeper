@@ -82,7 +82,8 @@ local function friendsTooltip(tt)
             if g and g.isOnline then
                 local acct = a.accountName or ""
                 if g.clientProgram == "WoW" and g.characterName then
-                    table.insert(bn, { level = g.characterLevel, left = dot(g.factionName) .. " " .. classColor(nil, g.className) .. g.characterName .. "|r  |cff5cc8ff" .. acct .. "|r" .. tag(a.isAFK, a.isDND),
+                    -- en jeu sur WoW : en haut, avec les amis du jeu
+                    table.insert(lines, { level = g.characterLevel, left = dot(g.factionName) .. " " .. classColor(nil, g.className) .. g.characterName .. "|r  |cff5cc8ff" .. acct .. "|r" .. tag(a.isAFK, a.isDND),
                                        right = g.areaName or g.richPresence or "" })
                 else
                     table.insert(bn, { left = dot(nil) .. " |cffd0d0d0" .. acct .. "|r" .. tag(a.isAFK, a.isDND), right = T("Battle.net") })
@@ -102,7 +103,7 @@ local function friendsTooltip(tt)
     for _, e in ipairs(lines) do put(e) end
     if #bn > 0 and shown < MAX_LINES then
         tt:AddLine(" ")
-        tt:AddLine("BATTLE.NET", 0.55, 0.57, 0.6)
+        tt:AddLine(T("BATTLE.NET · HORS DE WOW"), 0.55, 0.57, 0.6)
         for _, e in ipairs(bn) do put(e) end
     end
     if total > shown then tt:AddLine(string.format(T("+ %d autre(s)"), total - shown), 0.55, 0.57, 0.6) end
