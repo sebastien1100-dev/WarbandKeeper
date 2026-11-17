@@ -13,8 +13,7 @@ _Prévu, pas encore commencé._
 - Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
 - Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
 - Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
-- Donjons : vérifier les tables de butin. Noter en jeu ce qui tombe vraiment de chaque boss (corps fouillé) pour compléter et corriger la liste tirée de QuestieDB (objets manquants, boss oubliés), avec un indice « vu tomber X fois ».
-- Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné) et raids (Cœur du Magma, Onyxia, Zul'Gurub…) avec la même présentation.
+- Donjons, suite : historique des loots (ce qui est tombé, quand, qui l'a gagné), « vu tomber X fois » noté en jeu, et les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.
 - Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 - Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.
@@ -23,6 +22,17 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v0.89.0 — 17/11/2026
+
+### Ajouts
+- Donjons : nouvelles tables de butin, celles de WoW Forever (wowtbc.gg) au lieu des tables de Classic. 31 donjons et raids au lieu de 19, avec les nouveaux : Hall of Thanes, Ruines de Lordaeron, Cité de Dalaran, Excavation Site, The Drowned City, Krol'dok Stronghold, Alcaz Prison, Blackmaw Hold, Shaper's Terrace, et les raids Repaire d'Onyxia, Barrow Deeps et Hyjal Summit.
+- Butin de chaque boss avec les objets propres à WoW Forever, et en fin de liste le butin des monstres du donjon. Infobulle : chance de drop quand elle est connue ; « non découvert » pour un objet pas encore vu tomber sur le serveur.
+- Monastère Écarlate, Hache-Tripes et Pic Rochenoire : toutes les ailes dans une seule tuile, chaque boss avec le nom de son aile (Cimetière, Bibliothèque… ; Est, Nord, Ouest ; Bas, Haut).
+- Boss du nouveau contenu : Warband Keeper les reconnaît en jeu la première fois (par leur butin sur le corps, ou par leur nom sur un client anglais), puis note leur mort comme les autres. Même chose pour un nouveau donjon : reconnu à la première visite, et son nom français repris du jeu.
+
+### Modifications
+- Options > À propos : wowtbc.gg cité pour les tables de butin et les guides de métiers.
 
 ## v0.88.2 — 16/11/2026
 

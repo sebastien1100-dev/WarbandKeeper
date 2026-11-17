@@ -19,6 +19,7 @@ local function quality(id)
         if ok then q = v end
     end
     if not q then q = select(3, WK.GetItemInfo(id)) end
+    if not q then local i = D:ItemInfo(id); q = i and i.quality end
     return QUALITY[q or 1] or QUALITY[1]
 end
 
@@ -43,6 +44,9 @@ function UI:DungeonLootRow(parent)
     r:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_RIGHT")
         if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText((UI:ItemInfo(s.id))) end
+        local info = D:ItemInfo(s.id)
+        if info and info.undiscovered then GameTooltip:AddLine(T("Pas encore vu tomber sur WoW Forever (table de butin en cours de relevé)."), 1, 0.6, 0.3, true)
+        elseif info and info.drop then GameTooltip:AddLine(string.format(T("Chance de drop : %s %%"), tostring(info.drop)), 0.8, 0.8, 0.8) end
         GameTooltip:AddLine(T("Maj + clic : lien dans le chat · étoile : liste d'envies"), 0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
@@ -64,9 +68,13 @@ function UI:DungeonLootRow(parent)
         self.name:SetText(name)
         self.name:SetTextColor(unpack(quality(self.id)))
         local usable = self.c and D:Usable(self.id, self.c)
+        local info = D:ItemInfo(self.id)
         if D:Owned(self.id) then self.tag:Set(T("sur le compte"), C.positive); self.tag:Show()
         elseif usable then self.tag:Set(T("pour toi")); self.tag:Show()
+        elseif info and info.undiscovered then self.tag:Set(T("non découvert"), C.dim); self.tag:Show()
+        elseif info and info.drop then self.tag:Set(string.format("%s %%", tostring(info.drop)), C.muted); self.tag:Show()
         else self.tag:Hide() end
+        if name == nil or name == "" then self.name:SetText("#" .. tostring(self.id)) end
         if not self.tag:IsShown() then
             self.name:SetPoint("RIGHT", self.star, "LEFT", -4, 0)
         else
@@ -151,7 +159,7 @@ local function build()
             for _, b in ipairs(D:Bosses(d)) do if not D:Killed(d, b.id) then self.open = b.id break end end
         end
         local shown = 0
-        for _, b in ipairs(D:Bosses(d)) do
+        for _, b in ipairs(D:LootGroups(d)) do
             local loot = UI:DungeonLoot(b, cfg.filter, c, me)
             if cfg.filter ~= "wish" or #loot > 0 then
                 shown = shown + 1
@@ -162,6 +170,7 @@ local function build()
                 h.name:SetText(D:BossName(b))
                 h.name:SetTextColor(unpack(dead and C.dim or C.text))
                 h.right:SetText(dead and ("|cff9ed17a" .. T("tué") .. "|r") or string.format(#loot > 1 and T("%d objets") or T("%d objet"), #loot))
+                if b.wing then h.name:SetText(D:BossName(b) .. "  |cff8a8a96" .. T(b.wing) .. "|r") end
                 local open = self.open == b.id
                 h.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], open and 1 or 0.6)
                 y = y + BOSS_H + 2

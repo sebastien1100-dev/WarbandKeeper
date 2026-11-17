@@ -24,20 +24,39 @@ function M:Config() return db().cfg end
 ---------------------------------------------------------------------------
 -- Données
 ---------------------------------------------------------------------------
-local byKey, byInst, byZone, bossOf
+-- Boss sans n° de PNJ connu (nouveau contenu, absent de QuestieDB) : identifiés en jeu par leur nom
+-- (client anglais) ou par leur butin (un objet de leur table trouvé sur le corps), puis le n° est
+-- retenu dans dungeons.bossIds[clé:nom]. Même chose pour un n° d'instance inconnu (dungeons.inst).
+local byKey, byInst, byZone, bossOf, byName
+local function norm(s) return s and s:lower():gsub("^the ", ""):gsub("[%s%p]", "") or "" end
 local function index()
-    byKey, byInst, byZone, bossOf = {}, {}, {}, {}
+    local g = db()
+    g.bossIds, g.inst, g.names = g.bossIds or {}, g.inst or {}, g.names or {}
+    byKey, byInst, byZone, bossOf, byName = {}, {}, {}, {}, {}
     for _, d in ipairs(WK.DungeonsDB or {}) do
-        byKey[d.key], byInst[d.inst] = d, d
+        byKey[d.key] = d
+        if d.inst then byInst[d.inst] = d end
         for _, z in ipairs(d.zones) do byZone[z] = d end
         d.list = {}
         for _, b in ipairs(d.bosses) do
-            local e = { id = b[1], name = b[2], nameFR = b[3], level = b[4], loot = b[5], dungeon = d }
+            local id = b[1]
+            if id == 0 then id = g.bossIds[d.key .. ":" .. b[2]] or ("n:" .. b[2]) end
+            local e = { id = id, name = b[2], nameFR = b[3], level = b[4], loot = b[5], wing = b[6], dungeon = d }
             table.insert(d.list, e)
-            bossOf[e.id] = e
+            if type(id) == "number" then bossOf[id] = e end
+            byName[norm(b[2])] = byName[norm(b[2])] or e
+            if b[3] then byName[norm(b[3])] = byName[norm(b[3])] or e end
+        end
+        -- butin des monstres du donjon : affiché comme un « boss » de plus, jamais compté
+        d.groups = {}
+        for _, e in ipairs(d.list) do table.insert(d.groups, e) end
+        if d.trash and #d.trash > 0 then
+            table.insert(d.groups, { id = "trash", trash = true, name = "Trash", nameFR = "Monstres du donjon", level = 0, loot = d.trash, dungeon = d })
         end
     end
+    for inst, key in pairs(g.inst) do if byKey[key] and not byInst[inst] then byInst[inst] = byKey[key] end end
 end
+M.Reindex = function() byKey = nil end
 function M:All()
     if not byKey then index() end
     return WK.DungeonsDB or {}
@@ -46,22 +65,84 @@ function M:Get(key)
     if not byKey then index() end
     return byKey[key]
 end
+-- Boss (pour la progression et les boss tués)
 function M:Bosses(d)
     if not byKey then index() end
     return d and d.list or {}
 end
+-- Boss puis butin des monstres du donjon (pour l'affichage du butin)
+function M:LootGroups(d)
+    if not byKey then index() end
+    return d and d.groups or {}
+end
 function M:BossName(b)
     return (WK.Lang() == "frFR" and b.nameFR) or b.name
 end
-function M:Name(d) return T(d.name) end
+-- Nom du donjon : nom français connu, sinon celui que le jeu affiche dans l'instance (retenu), sinon anglais
+function M:Name(d)
+    local learned = db().names and db().names[d.key]
+    if d.name ~= d.en or not learned then return T(d.name) end
+    return learned
+end
+-- Infos de la table de butin : qualité, niveau d'objet, niveau requis, % de drop, pas encore vu tomber
+function M:ItemInfo(id)
+    local i = WK.DungeonItems and WK.DungeonItems[id]
+    if not i then return nil end
+    return { quality = i[1], ilvl = i[2], req = i[3], drop = i[4], undiscovered = i[5] or false }
+end
 
--- Donjon où se trouve le perso (n° d'instance du jeu), ou nil
+-- Donjon où se trouve le perso (n° d'instance du jeu, sinon nom de l'instance), ou nil
 function M:Current()
     if not byKey then index() end
     if not GetInstanceInfo then return nil end
-    local ok, _, itype, _, _, _, _, _, inst = pcall(GetInstanceInfo)
+    local ok, iname, itype, _, _, _, _, _, inst = pcall(GetInstanceInfo)
     if not ok or itype ~= "party" and itype ~= "raid" then return nil end
-    return inst and byInst[inst] or nil
+    local d = inst and byInst[inst]
+    if not d and iname then
+        local n = norm(iname)
+        for _, x in ipairs(WK.DungeonsDB or {}) do
+            if norm(x.name) == n or norm(x.en) == n then d = x break end
+        end
+        if d and inst then self:LearnInstance(inst, d) end
+    end
+    if d and iname and d.name == d.en then db().names[d.key] = iname end
+    return d
+end
+function M:LearnInstance(inst, d)
+    if not (inst and d) or byInst[inst] then return end
+    db().inst[inst] = d.key
+    byInst[inst] = d
+end
+-- Instance où l'on est (party / raid), même inconnue : n° et nom
+local function instanceNow()
+    if not GetInstanceInfo then return nil end
+    local ok, iname, itype, _, _, _, _, _, inst = pcall(GetInstanceInfo)
+    if not ok or (itype ~= "party" and itype ~= "raid") then return nil end
+    return inst, iname
+end
+M.InstanceNow = instanceNow
+M.Norm = norm
+function M:BossByName(name)
+    if not byKey then index() end
+    return name and byName[norm(name)] or nil
+end
+function M:BossOf(id)
+    if not byKey then index() end
+    return bossOf[id]
+end
+-- Le PNJ n° id est le boss e (boss sans n° connu) : retenu pour la suite
+function M:LearnBoss(e, id)
+    if type(e.id) == "number" or type(id) ~= "number" then return end
+    local d = e.dungeon
+    local old = e.id
+    db().bossIds[d.key .. ":" .. e.name] = id
+    e.id = id
+    bossOf[id] = e
+    -- les boss tués notés sous l'ancien nom passent au n°
+    for _, k in pairs(db().kills) do
+        if k[d.key] and k[d.key][old] then k[d.key][id] = k[d.key][old]; k[d.key][old] = nil end
+    end
+    if self.run and self.run.killed[old] then self.run.killed[id] = true; self.run.killed[old] = nil end
 end
 
 ---------------------------------------------------------------------------
@@ -183,49 +264,93 @@ function M:Progress(d, key)
     end
     return done, n
 end
-local function onDeath(guid)
-    local id = npcID(guid)
-    if not id then return end
-    if not byKey then index() end
-    local b = bossOf[id]
-    if not b then return end
+local function record(b)
     local d = b.dungeon
+    local inst = instanceNow()
+    if inst then M:LearnInstance(inst, d) end
     if not M.run or M.run.key ~= d.key then M.run = { key = d.key, killed = {} } end
-    M.run.killed[id] = true
+    if M.run.killed[b.id] then return end
+    M.run.killed[b.id] = true
     local k = db().kills
     local me = WK:CharKey()
     k[me] = k[me] or {}
     k[me][d.key] = k[me][d.key] or {}
-    k[me][d.key][id] = time()
+    k[me][d.key][b.id] = time()
     if M.OnChange then M:OnChange() end
     WK:NotifyChanged()
+end
+-- Le boss b sans n° appartient-il au donjon où l'on est (ou à un donjon pas encore reconnu) ?
+local function plausible(b)
+    local cur = M:Current()
+    if cur then return b.dungeon == cur end
+    return b.dungeon.inst == nil or not byInst[b.dungeon.inst]
+end
+-- PNJ mort (n° tiré de son GUID) ; name : son nom, pour un boss pas encore identifié
+local function onDeath(guid, name)
+    local id = npcID(guid)
+    if not id then return end
+    if not byKey then index() end
+    local b = bossOf[id]
+    if not b and name then
+        local e = byName[norm(name)]
+        if e and type(e.id) ~= "number" and plausible(e) then M:LearnBoss(e, id); b = e end
+    end
+    if b then record(b) end
+end
+-- Objet trouvé sur le corps du PNJ id : s'il n'est dans la table que d'un seul boss pas encore
+-- identifié du donjon, ce PNJ est ce boss
+local function learnFromLoot(id, itemID)
+    if not (id and itemID) or bossOf[id] then return end
+    local found
+    for _, d in ipairs(WK.DungeonsDB or {}) do
+        for _, e in ipairs(d.list or {}) do
+            if type(e.id) ~= "number" and plausible(e) then
+                for _, x in ipairs(e.loot) do
+                    if x == itemID then
+                        if found and found ~= e then return end
+                        found = e
+                    end
+                end
+            end
+        end
+    end
+    if found then M:LearnBoss(found, id); record(found) end
 end
 -- Détection sans le journal de combat (réservé au jeu sur ce client : s'y inscrire est interdit aux
 -- addons) : mort d'une unité visible (cible, focus, boss1-5, plaques de nom) et butin d'un corps.
 -- Toute valeur que le jeu masque est ignorée.
 local readable = function(v) return WK.modules.QoL.Readable(v) end
+local function active() return M.run ~= nil or instanceNow() ~= nil end
 local function checkUnit(unit)
-    if not M.run or not unit then return end
+    if not unit or not active() then return end
     local okE, ex = pcall(UnitExists, unit)
     if not (okE and readable(ex)) then return end
     local okD, dead = pcall(UnitIsDead, unit)
     if not (okD and readable(dead)) then return end
     local okG, guid = pcall(UnitGUID, unit)
     guid = okG and readable(guid) or nil
-    if guid then pcall(onDeath, guid) end
+    local okN, name = pcall(UnitName, unit)
+    name = okN and readable(name) or nil
+    if guid then pcall(onDeath, guid, type(name) == "string" and name or nil) end
 end
 local WATCH = { target = true, focus = true, mouseover = true }
 WK:On("UNIT_HEALTH", function(unit)
-    if not M.run or type(unit) ~= "string" then return end
+    if type(unit) ~= "string" or not active() then return end
     if WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d") then checkUnit(unit) end
 end)
 WK:On("PLAYER_TARGET_CHANGED", function() checkUnit("target") end)
 WK:On("LOOT_OPENED", function()
-    if not (M.run and GetNumLootItems and GetLootSourceInfo) then return end
+    if not (active() and GetNumLootItems and GetLootSourceInfo) then return end
+    if not byKey then index() end
     for i = 1, GetNumLootItems() do
         local ok, guid = pcall(GetLootSourceInfo, i)
         guid = ok and readable(guid) or nil
-        if guid then pcall(onDeath, guid) end
+        if guid then
+            pcall(onDeath, guid)
+            local link = GetLootSlotLink and GetLootSlotLink(i)
+            local item = link and WK:ParseItemID(link)
+            if item then pcall(learnFromLoot, npcID(guid), item) end
+        end
     end
 end)
 

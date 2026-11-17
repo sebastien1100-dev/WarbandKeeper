@@ -164,7 +164,7 @@ UI:RegisterPage({
                 r:ClearAllPoints(); r:SetPoint("TOPLEFT", 10, y); r:SetPoint("TOPRIGHT", -10, y)
                 r.item:Set(e.id, e.dungeon and e.dungeon.key, c, key)
                 local boss
-                if e.dungeon then for _, b in ipairs(D:Bosses(e.dungeon)) do for _, id in ipairs(b.loot) do if id == e.id then boss = b end end end end
+                if e.dungeon then for _, b in ipairs(D:LootGroups(e.dungeon)) do for _, id in ipairs(b.loot) do if id == e.id then boss = b end end end end
                 r.where:SetText(e.dungeon and (D:Name(e.dungeon) .. (boss and ("  ·  " .. D:BossName(boss)) or "")) or "")
                 y = y - ITEM_H - 4
             end
@@ -193,7 +193,11 @@ UI:RegisterPage({
             t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
             t.name:SetText(D:Name(d))
             local done, n = D:Progress(d, key)
-            t.sub:SetText(string.format(T("niv. %d-%d · %d boss"), d.min, d.max, n))
+            if d.raid then
+                t.sub:SetText(string.format(T("raid · niv. %d · %d boss"), d.max, n))
+            else
+                t.sub:SetText(string.format(T("niv. %d-%d · %d boss"), d.min, d.max, n))
+            end
             t.sub:SetTextColor(unpack(levelColor(d, lvl)))
             t.bar.color = { r1, g1, b1, 1 }
             t.bar:SetValue(n > 0 and done / n or 0)
@@ -215,7 +219,7 @@ UI:RegisterPage({
         local colY = {}
         for k = 1, ncol do colY[k] = 46 end
         local any = false
-        for _, b in ipairs(D:Bosses(d)) do
+        for _, b in ipairs(D:LootGroups(d)) do
             local loot = UI:DungeonLoot(b, self.filter, c, key)
             if #loot > 0 then
                 any = true
@@ -226,7 +230,9 @@ UI:RegisterPage({
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", x, -colY[k]); h:SetWidth(colW)
                 h.bg:SetColor(unpack(C.surface2))
                 h.name:SetText(D:BossName(b))
-                h.right:SetText(string.format(T("niv. %d"), b.level))
+                local right = b.wing and T(b.wing) or ""
+                if (b.level or 0) > 0 then right = (right ~= "" and (right .. "  ·  ") or "") .. string.format(T("niv. %d"), b.level) end
+                h.right:SetText(right)
                 colY[k] = colY[k] + 28
                 for _, id in ipairs(loot) do
                     local it = self.items:Get()

@@ -1,0 +1,14448 @@
+{
+"alcaz-prison": {
+"bosses": [
+{
+"items": [
+276735,
+276736,
+276737
+],
+"name": "Tidemistress Ca'zass"
+},
+{
+"items": [
+276732,
+276733,
+276734
+],
+"name": "Overseer Wrex"
+},
+{
+"items": [
+276738,
+276739,
+276740
+],
+"name": "Katerina the Cleaner"
+},
+{
+"items": [],
+"name": "Zarla Ober"
+},
+{
+"items": [
+276741,
+276742,
+276743
+],
+"name": "The Questioner"
+}
+],
+"items": {
+"276732": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276733": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276734": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276735": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276736": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276737": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"276738": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"276739": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"276740": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"276741": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"276742": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"276743": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+}
+},
+"levels": [
+48,
+53
+],
+"name": "Alcaz Prison",
+"trash": []
+},
+"barrow-deeps": {
+"bosses": [
+{
+"items": [],
+"name": "Deepscar Matriarch"
+},
+{
+"items": [],
+"name": "Khalith the Dreadspinner"
+},
+{
+"items": [],
+"name": "Elder Tangleclaw"
+},
+{
+"items": [],
+"name": "Well of Sorrow"
+},
+{
+"items": [],
+"name": "Amethrax"
+},
+{
+"items": [],
+"name": "Del'lynar Songwood"
+},
+{
+"items": [],
+"name": "Ravus and Darlissa"
+},
+{
+"items": [],
+"name": "Sonya Darkhallow"
+}
+],
+"items": {},
+"levels": [
+60,
+60
+],
+"name": "Barrow Deeps",
+"trash": []
+},
+"blackfathom-deeps": {
+"bosses": [
+{
+"items": [
+6907,
+6908,
+273839
+],
+"name": "Ghamoo-ra"
+},
+{
+"items": [
+888,
+3078,
+11121
+],
+"name": "Lady Sarevess"
+},
+{
+"items": [
+273840,
+6906,
+6905
+],
+"name": "Gelihast"
+},
+{
+"items": [
+273841,
+273842,
+273843
+],
+"name": "Lorgus Jett"
+},
+{
+"items": [
+273846,
+1155,
+6903
+],
+"name": "Twilight Lord Kelris"
+},
+{
+"items": [
+6901,
+6904,
+6902
+],
+"name": "Old Serra'kis"
+},
+{
+"items": [
+6909,
+6911,
+6910
+],
+"name": "Aku'mai"
+}
+],
+"items": {
+"11121": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"1155": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"1454": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"1481": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"1486": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"1491": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"2034": {
+"drop": 0.0183,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"2271": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"2567": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"273839": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"273840": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"273841": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273842": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273843": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273846": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"3078": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"3413": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"3414": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"3415": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"3416": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"3417": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6901": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"6902": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6903": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6904": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6905": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6906": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6907": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6908": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6909": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"6910": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"6911": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"888": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+}
+},
+"levels": [
+24,
+32
+],
+"name": "Blackfathom Deeps",
+"trash": [
+1454,
+3414,
+3416,
+3417,
+1481,
+1491,
+3413,
+1486,
+3415,
+2034,
+2271,
+2567
+]
+},
+"blackmaw-hold": {
+"bosses": [
+{
+"items": [
+280062,
+280063,
+280064
+],
+"name": "Withermaw"
+},
+{
+"items": [
+280059,
+280060,
+280061
+],
+"name": "Bonesnout the Unbroken"
+},
+{
+"items": [
+280079,
+280080
+],
+"name": "Moontouched Wanderer"
+},
+{
+"items": [
+280056,
+280057,
+280058
+],
+"name": "Impaan the Imprisoner"
+},
+{
+"items": [
+280071,
+280072,
+280073
+],
+"name": "Unbound Spirit"
+},
+{
+"items": [
+280065,
+280066,
+280067
+],
+"name": "Blackmaw Behemoth"
+},
+{
+"items": [
+280074,
+280075,
+280076
+],
+"name": "Varrox Bleakhoof"
+},
+{
+"items": [
+280068,
+280069,
+280070
+],
+"name": "Elder Shaman Bloodmane"
+}
+],
+"items": {
+"280056": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"280057": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"280058": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"280059": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280060": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280061": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280062": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280063": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280064": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"280065": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280066": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280067": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280068": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280069": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280070": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280071": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280072": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280073": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"280074": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"280075": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"280076": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"280079": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"280080": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+}
+},
+"levels": [
+55,
+60
+],
+"name": "Blackmaw Hold",
+"trash": []
+},
+"blackrock-depths": {
+"bosses": [
+{
+"items": [
+22397,
+22234,
+11631,
+11632
+],
+"name": "Lord Roccor"
+},
+{
+"items": [
+11625,
+11626,
+22240,
+11624
+],
+"name": "High Interrogator Gerstahn"
+},
+{
+"items": [
+10193,
+11627,
+11628,
+11629,
+11623
+],
+"name": "Houndmaster Grebmar"
+},
+{
+"items": [
+11731,
+11675,
+11677,
+11678
+],
+"name": "Anub'shiah"
+},
+{
+"items": [
+11730,
+11679,
+11685,
+11686
+],
+"name": "Eviscerator"
+},
+{
+"items": [
+11726,
+22257,
+22266,
+22271
+],
+"name": "Gorosh the Dervish"
+},
+{
+"items": [
+11702,
+11703,
+11722,
+22270
+],
+"name": "Grizzle"
+},
+{
+"items": [
+11729,
+11633,
+11634,
+11635
+],
+"name": "Hedrum the Creeper"
+},
+{
+"items": [
+11728,
+11662,
+11665,
+11824
+],
+"name": "Ok'thor the Breaker"
+},
+{
+"items": [
+11747,
+11748,
+11749,
+11750
+],
+"name": "Pyromancer Loregrain"
+},
+{
+"items": [
+11764,
+11765,
+11766,
+11767
+],
+"name": "Lord Incendius"
+},
+{
+"items": [
+11782,
+11783,
+22241,
+11784
+],
+"name": "Warder Stilgiss"
+},
+{
+"items": [
+11755,
+22242,
+276884
+],
+"name": "Verek"
+},
+{
+"items": [
+11839,
+11841,
+11842,
+22223
+],
+"name": "Fineous Darkvire"
+},
+{
+"items": [
+11802,
+11807,
+11803,
+11805
+],
+"name": "Bael'Gar"
+},
+{
+"items": [
+11810,
+11820,
+11821,
+11816,
+11817
+],
+"name": "General Angerforge"
+},
+{
+"items": [
+11669,
+11819,
+11822,
+11823
+],
+"name": "Golem Lord Argelmach"
+},
+{
+"items": [
+11735,
+18043,
+18044,
+22275
+],
+"name": "Hurley Blackbreath"
+},
+{
+"items": [
+11744,
+11745,
+22212,
+276879
+],
+"name": "Phalanx"
+},
+{
+"items": [
+12791,
+12793,
+276877
+],
+"name": "Plugger Spazzring"
+},
+{
+"items": [
+11808,
+11812,
+11814,
+11832,
+11809
+],
+"name": "Ambassador Flamelash"
+},
+{
+"items": [
+11785,
+11787,
+11786,
+22245
+],
+"name": "Panzor the Invincible"
+},
+{
+"items": [
+11927
+],
+"name": "Doom'rel"
+},
+{
+"items": [
+11925
+],
+"name": "Anger'rel"
+},
+{
+"items": [
+11935,
+22208,
+22395,
+22400,
+11746
+],
+"name": "Magmus"
+},
+{
+"items": [
+12553,
+12554,
+12556,
+12557
+],
+"name": "Princess Moira Bronzebeard"
+},
+{
+"items": [
+11934,
+11684,
+11924,
+11928,
+11930,
+11933,
+22204,
+22207,
+11931,
+11932,
+11815
+],
+"name": "Emperor Dagran Thaurissan"
+}
+],
+"items": {
+"10193": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 2,
+"req": 50
+},
+"11623": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"11624": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"11625": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11626": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11627": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11628": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11629": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11631": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"11632": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"11633": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11634": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11635": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11662": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11665": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11669": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11675": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11677": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11678": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11679": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11684": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 4,
+"req": 55
+},
+"11685": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11686": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11702": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11703": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11722": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11726": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 4,
+"req": 52
+},
+"11728": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11729": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11730": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11731": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11735": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11744": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11745": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11746": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11747": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11748": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11749": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11750": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11755": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11764": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11765": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11766": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11767": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11782": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11783": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11784": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"11785": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11786": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11787": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11802": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11803": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11805": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11807": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11808": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 4,
+"req": 54
+},
+"11809": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11810": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"11812": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11814": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11815": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11816": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11817": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11819": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11820": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11821": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11822": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11823": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11824": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"11832": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"11839": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11841": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11842": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"11920": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"11921": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11922": {
+"drop": 0.2167,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11923": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11924": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"11925": {
+"drop": 0.25,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11926": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11927": {
+"drop": 0.467,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11928": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"11929": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"11930": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"11931": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11932": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"11933": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"11934": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 55
+},
+"11935": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"12527": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"12528": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"12531": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"12532": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"12535": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"12542": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"12546": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"12547": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"12549": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"12550": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"12551": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"12552": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"12553": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12554": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12555": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"12556": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12557": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12791": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"12793": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"18043": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"18044": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22204": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"22205": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22207": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"22208": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"22212": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"22223": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"22234": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"22240": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"22241": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22242": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"22245": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"22254": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22255": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22256": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22257": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22266": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22270": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"22271": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22275": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22305": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22317": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22318": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22330": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22395": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22397": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22400": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"276877": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"276879": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"276884": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+}
+},
+"levels": [
+52,
+60
+],
+"name": "Blackrock Depths",
+"trash": [
+22305,
+22317,
+22318,
+22330,
+11921,
+11922,
+11923,
+11926,
+11929,
+22205,
+22254,
+22255,
+22256,
+11920,
+12532,
+12547,
+12551,
+12552,
+12555,
+12535,
+12546,
+12527,
+12550,
+12528,
+12549,
+12531,
+12542
+]
+},
+"blackrock-spire-lower": {
+"bosses": [
+{
+"items": [
+13166,
+13167,
+13168,
+13169,
+13170,
+16670
+],
+"name": "Highlord Omokk"
+},
+{
+"items": [
+12626,
+12651,
+12653,
+13255,
+13257,
+16712
+],
+"name": "Shadow Hunter Vosh'gajin"
+},
+{
+"items": [
+22231,
+12582,
+13173,
+13177,
+13179,
+16676
+],
+"name": "War Master Voone"
+},
+{
+"items": [
+13183,
+13213,
+13244,
+16715
+],
+"name": "Mother Smolderweb"
+},
+{
+"items": [
+13258,
+13259,
+22232,
+13178
+],
+"name": "Urok Doomhowl"
+},
+{
+"items": [
+13252,
+13253
+],
+"name": "Quartermaster Zigris"
+},
+{
+"items": [
+22313,
+13210,
+13211,
+13212
+],
+"name": "Halycon"
+},
+{
+"items": [
+13205,
+13206,
+13208,
+16718
+],
+"name": "Gizrul the Slavener"
+},
+{
+"items": [
+13163,
+13143,
+13161,
+13162,
+13164,
+22321,
+16679
+],
+"name": "Overlord Wyrmthalak"
+},
+{
+"items": [
+12608,
+13286
+],
+"name": "Spirestone Butcher"
+},
+{
+"items": [
+13261,
+13282,
+13283
+],
+"name": "Spirestone Lord Magus"
+},
+{
+"items": [
+13284,
+13285
+],
+"name": "Spirestone Battle Lord"
+},
+{
+"items": [
+12634,
+12637,
+12621
+],
+"name": "Bannok Grimaxe"
+},
+{
+"items": [
+13184,
+13185,
+13218
+],
+"name": "Crystal Fang"
+},
+{
+"items": [
+13198,
+13203,
+13204
+],
+"name": "Ghok Bashguud"
+},
+{
+"items": [
+13181,
+13182
+],
+"name": "Burning Felguard"
+},
+{
+"items": [
+22398,
+22306,
+22319,
+22322
+],
+"name": "Mor Grayhoof"
+}
+],
+"items": {
+"12582": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12608": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"12621": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12626": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12634": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12637": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12651": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"12653": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13143": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 4,
+"req": 56
+},
+"13161": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13162": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13163": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13164": {
+"drop": 0.0088,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13166": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13167": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13168": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13169": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13170": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13173": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13177": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13178": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13179": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13181": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13182": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13183": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13184": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13185": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13198": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13203": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13204": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13205": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13206": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13208": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13210": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13211": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13212": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13213": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13218": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13244": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13252": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13253": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13255": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13257": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13258": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13259": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13260": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13261": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13282": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13283": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13284": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13285": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13286": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13371": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 2,
+"req": 0
+},
+"16670": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16673": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16676": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16679": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16680": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16683": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16696": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16703": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16712": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16713": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16715": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16717": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16718": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16735": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22231": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22232": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22306": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22313": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22319": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22321": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22322": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22398": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+}
+},
+"levels": [
+55,
+60
+],
+"name": "Blackrock Spire: Lower",
+"trash": [
+13260,
+16717,
+13371,
+16673,
+16680,
+16696,
+16713,
+16683,
+16703,
+16735
+]
+},
+"blackrock-spire-upper": {
+"bosses": [
+{
+"items": [
+12905,
+12926,
+12927,
+12929,
+16672
+],
+"name": "Pyroguard Emberseer"
+},
+{
+"items": [
+12589,
+12603,
+12606,
+12609,
+16695
+],
+"name": "Solakar Flamewreath"
+},
+{
+"items": [
+13502,
+18047,
+13498,
+18048
+],
+"name": "Goraluk Anvilcrack"
+},
+{
+"items": [
+12604,
+12605,
+12930
+],
+"name": "Jed Runewatcher"
+},
+{
+"items": [
+12583,
+12587,
+12590,
+12935,
+12936,
+12939,
+12940,
+18102,
+18103,
+18104,
+22247,
+16733
+],
+"name": "Warchief Rend Blackhand"
+},
+{
+"items": [
+12952,
+12953,
+12960,
+16669,
+22225
+],
+"name": "Gyth"
+},
+{
+"items": [
+12709,
+12963,
+12964,
+12965,
+12966,
+12967,
+12968,
+12969,
+22311,
+16729
+],
+"name": "The Beast"
+},
+{
+"items": [
+22302,
+22335,
+22336,
+22337,
+22340,
+22342,
+22343
+],
+"name": "Lord Valthalak"
+},
+{
+"items": [
+12592,
+12602,
+13098,
+13141,
+13142,
+16666,
+16674,
+16688,
+16690,
+16700,
+16706,
+16721,
+16726,
+16730,
+22253,
+22267,
+22268,
+22269
+],
+"name": "General Drakkisath"
+}
+],
+"items": {
+"12583": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12587": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12589": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12590": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 4,
+"req": 58
+},
+"12592": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 4,
+"req": 58
+},
+"12602": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12603": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12604": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12605": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 51
+},
+"12606": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12609": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12709": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12905": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12926": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12927": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12929": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"12930": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12935": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12936": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12939": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12940": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12952": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12953": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12960": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"12963": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12964": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12965": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12966": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12967": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12968": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"12969": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13098": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13141": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13142": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13260": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13371": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 2,
+"req": 0
+},
+"13498": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13502": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16666": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16669": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16672": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16673": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16674": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16680": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16683": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16688": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16690": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16695": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16696": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16700": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16703": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16706": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16713": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16717": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16721": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16726": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16729": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16730": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"16733": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16735": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"18047": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18048": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18102": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18103": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18104": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22225": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"22247": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22253": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22267": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 60
+},
+"22268": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22269": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22302": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22311": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22335": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22336": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22337": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22340": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22342": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22343": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Blackrock Spire: Upper",
+"trash": [
+13260,
+16717,
+13371,
+16673,
+16680,
+16696,
+16713,
+16683,
+16703,
+16735
+]
+},
+"city-of-dalaran": {
+"bosses": [
+{
+"items": [
+273032,
+273033,
+273036
+],
+"name": "Atrexis the Grave Knight"
+},
+{
+"items": [
+273031,
+273034,
+273035
+],
+"name": "Arcane Anomaly"
+},
+{
+"items": [
+273043,
+273044,
+273045
+],
+"name": "Arcanic Enigma"
+},
+{
+"items": [
+273046,
+273047,
+273048
+],
+"name": "Unstable Sentinel"
+},
+{
+"items": [
+273040,
+273041,
+273042
+],
+"name": "Mana Devourer"
+},
+{
+"items": [
+273037,
+273038,
+273039
+],
+"name": "Fel Ancient"
+},
+{
+"items": [
+273053,
+273054,
+273055
+],
+"name": "Lyn the Ignored"
+},
+{
+"items": [
+273049,
+273051,
+273052
+],
+"name": "Shade of the Archmage"
+}
+],
+"items": {
+"273031": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273032": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 25
+},
+"273033": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273034": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273035": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273036": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273037": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"273038": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"273039": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"273040": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273041": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273042": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273043": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273044": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273045": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"273046": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273047": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273048": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273049": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"273051": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"273052": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"273053": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273054": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273055": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+}
+},
+"levels": [
+28,
+34
+],
+"name": "City of Dalaran",
+"trash": []
+},
+"dire-maul-east": {
+"bosses": [
+{
+"items": [
+18306,
+18308,
+18313,
+18319,
+18323
+],
+"name": "Zevrim Thornhoof"
+},
+{
+"items": [
+18305,
+18307,
+18317,
+18322,
+18324
+],
+"name": "Hydrospawn"
+},
+{
+"items": [
+18354
+],
+"name": "Pimgib"
+},
+{
+"items": [
+18316,
+18320
+],
+"name": "Pusillin"
+},
+{
+"items": [
+18301,
+18302,
+18311,
+18325
+],
+"name": "Lethtendris"
+},
+{
+"items": [
+18309,
+18310,
+18312,
+18314,
+18315,
+18318,
+18321,
+18326,
+18327,
+18328
+],
+"name": "Alzzin the Wildshaper"
+},
+{
+"items": [
+22401,
+22304,
+22315,
+22472
+],
+"name": "Isalien"
+}
+],
+"items": {
+"18289": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18295": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"18296": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18298": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18301": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18302": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18305": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18306": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18307": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18308": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18309": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18310": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18311": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18312": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18313": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18314": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18315": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18316": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18317": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18318": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18319": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18320": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18321": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18322": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18323": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18324": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18325": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18326": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18327": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18328": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18337": {
+"drop": 0.0081,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18338": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18339": {
+"drop": 0.0096,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18340": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18343": {
+"drop": 0.0105,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 59
+},
+"18344": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18354": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18475": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18477": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18479": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18493": {
+"drop": 0.0599,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18494": {
+"drop": 0.0685,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18496": {
+"drop": 0.0649,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18497": {
+"drop": 0.0586,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18498": {
+"drop": 0.0679,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18528": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18530": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18533": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22304": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22315": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22401": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22472": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Dire Maul: East",
+"trash": [
+18533,
+18530,
+18528,
+18475,
+18477,
+18479,
+18493,
+18494,
+18496,
+18497,
+18498,
+18337,
+18338,
+18339,
+18340,
+18343,
+18344,
+18289,
+18296,
+18298,
+18295
+]
+},
+"dire-maul-north": {
+"bosses": [
+{
+"items": [
+18450,
+18451,
+18458,
+18459,
+18460,
+18462,
+18463,
+18464
+],
+"name": "Guard Fengus"
+},
+{
+"items": [
+18425
+],
+"name": "Stomper Kreeg"
+},
+{
+"items": [
+18502,
+18503,
+18505,
+18507
+],
+"name": "Captain Kromcrush"
+},
+{
+"items": [
+18483,
+18484,
+18485,
+18490
+],
+"name": "Cho'Rush the Observer"
+},
+{
+"items": [
+18520,
+18521,
+18522,
+18523,
+18524,
+18525,
+18526,
+18527
+],
+"name": "King Gordok"
+},
+{
+"items": [
+18495,
+18534,
+18537,
+18499,
+18531,
+18532,
+18500,
+18529,
+18476,
+18478,
+18480,
+18481,
+18482
+],
+"name": "Mizzle the Crafty"
+}
+],
+"items": {
+"18289": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18295": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"18296": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18298": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18337": {
+"drop": 0.0081,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18338": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18339": {
+"drop": 0.0096,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18340": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18343": {
+"drop": 0.0105,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 59
+},
+"18344": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18425": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18450": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18451": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18458": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18459": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18460": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18462": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18463": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18464": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18475": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18476": {
+"drop": 0.015,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18477": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18478": {
+"drop": 0.032,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18479": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18480": {
+"drop": 0.024,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18481": {
+"drop": 0.029,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18482": {
+"drop": 0.018,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18483": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18484": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18485": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18490": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18493": {
+"drop": 0.0599,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18494": {
+"drop": 0.0685,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18495": {
+"drop": 0.011,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18496": {
+"drop": 0.0649,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18497": {
+"drop": 0.0586,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18498": {
+"drop": 0.0679,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18499": {
+"drop": 0.024,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18500": {
+"drop": 0.031,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18502": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18503": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18505": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18507": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18520": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18521": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18522": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18523": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18524": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18525": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18526": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18527": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18528": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18529": {
+"drop": 0.024,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18530": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18531": {
+"drop": 0.018,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18532": {
+"drop": 0.021,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18533": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18534": {
+"drop": 0.016,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18537": {
+"drop": 0.011,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Dire Maul: North",
+"trash": [
+18533,
+18530,
+18528,
+18475,
+18477,
+18479,
+18493,
+18494,
+18496,
+18497,
+18498,
+18337,
+18338,
+18339,
+18340,
+18343,
+18344,
+18289,
+18296,
+18298,
+18295
+]
+},
+"dire-maul-west": {
+"bosses": [
+{
+"items": [
+18352,
+18353,
+18390,
+18393
+],
+"name": "Tendris Warpwood"
+},
+{
+"items": [
+18347,
+18349,
+18383,
+18386
+],
+"name": "Illyanna Ravenoak"
+},
+{
+"items": [
+18374,
+18350,
+18351,
+18371,
+18397
+],
+"name": "Magister Kalendris"
+},
+{
+"items": [
+18345,
+18346,
+18387
+],
+"name": "Tsu'zee"
+},
+{
+"items": [
+18370,
+18372,
+18377,
+18379,
+18381,
+18384,
+18385,
+18389,
+18391,
+18394
+],
+"name": "Immol'thar"
+},
+{
+"items": [
+18373,
+18375,
+18376,
+18378,
+18380,
+18382,
+18388,
+18392,
+18395,
+18396
+],
+"name": "Prince Tortheldrin"
+},
+{
+"items": [
+18754,
+18755,
+18756,
+18757
+],
+"name": "Lord Hel'nurath"
+},
+{
+"items": [],
+"name": "Revanchion"
+}
+],
+"items": {
+"18289": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18295": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"18296": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18298": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18337": {
+"drop": 0.0081,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18338": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18339": {
+"drop": 0.0096,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 54
+},
+"18340": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18343": {
+"drop": 0.0105,
+"found": true,
+"ilvl": 59,
+"q": 2,
+"req": 59
+},
+"18344": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18345": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18346": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18347": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18349": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18350": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18351": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18352": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18353": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18370": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18371": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18372": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18373": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18374": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18375": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18376": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18377": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18378": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18379": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18380": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18381": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18382": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18383": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18384": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18385": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18386": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18387": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18388": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18389": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18390": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 57
+},
+"18391": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18392": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18393": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18394": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18395": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18396": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18397": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18475": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18477": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18479": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 2,
+"req": 55
+},
+"18493": {
+"drop": 0.0599,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18494": {
+"drop": 0.0685,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18496": {
+"drop": 0.0649,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18497": {
+"drop": 0.0586,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18498": {
+"drop": 0.0679,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18528": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18530": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18533": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18754": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18755": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18756": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18757": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Dire Maul: West",
+"trash": [
+18533,
+18530,
+18528,
+18475,
+18477,
+18479,
+18493,
+18494,
+18496,
+18497,
+18498,
+18337,
+18338,
+18339,
+18340,
+18343,
+18344,
+18289,
+18296,
+18298,
+18295
+]
+},
+"excavation-site-wetlands": {
+"bosses": [
+{
+"items": [
+273022,
+273023,
+273024
+],
+"name": "Saltspine"
+},
+{
+"items": [
+273025,
+273026,
+273027
+],
+"name": "Shadetooth"
+},
+{
+"items": [
+273028,
+273029,
+273030
+],
+"name": "Relic Guardian"
+}
+],
+"items": {
+"273022": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273023": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273024": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273025": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273026": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273027": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273028": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273029": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"273030": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+}
+},
+"levels": [
+26,
+32
+],
+"name": "Excavation Site: Wetlands",
+"trash": []
+},
+"gnomeregan": {
+"bosses": [
+{
+"items": [
+9445,
+274042,
+274043,
+6407,
+12039,
+6400
+],
+"name": "Grubbis"
+},
+{
+"items": [
+7330,
+9452,
+9453,
+9454,
+6388
+],
+"name": "Viscous Fallout"
+},
+{
+"items": [
+9446,
+9447,
+9448,
+7330,
+4073
+],
+"name": "Electrocutioner 6000"
+},
+{
+"items": [
+9449,
+9450,
+9819,
+274068,
+6396,
+10408,
+5007
+],
+"name": "Crowd Pummeler 9-60"
+},
+{
+"items": [
+9455,
+9456,
+9457
+],
+"name": "Dark Iron Ambassador"
+},
+{
+"items": [
+9458,
+9459,
+9461,
+9492,
+4717
+],
+"name": "Mekgineer Thermaplugg"
+}
+],
+"items": {
+"10298": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 2,
+"req": 25
+},
+"10299": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 2,
+"req": 26
+},
+"10408": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 2,
+"req": 27
+},
+"12039": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 2,
+"req": 28
+},
+"274042": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"274043": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"274068": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"4073": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 2,
+"req": 26
+},
+"4717": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 2,
+"req": 29
+},
+"5007": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 2,
+"req": 26
+},
+"6388": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 2,
+"req": 25
+},
+"6396": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 2,
+"req": 27
+},
+"6400": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 2,
+"req": 26
+},
+"6407": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 2,
+"req": 28
+},
+"7330": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 2,
+"req": 28
+},
+"9445": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9446": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9447": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9448": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9449": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9450": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"9452": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"9453": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"9454": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"9455": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"9456": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"9457": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"9458": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9459": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9461": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9485": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"9486": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"9487": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"9488": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"9489": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"9490": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"9491": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"9492": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9508": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"9509": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"9510": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"9819": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 2,
+"req": 29
+}
+},
+"levels": [
+29,
+38
+],
+"name": "Gnomeregan",
+"trash": [
+9491,
+9510,
+9489,
+9508,
+10299,
+9485,
+9509,
+10298,
+9487,
+9490,
+9486,
+9488
+]
+},
+"hall-of-thanes": {
+"bosses": [
+{
+"items": [
+270227,
+271096,
+271097
+],
+"name": "Faldrim Anvilmar"
+},
+{
+"items": [
+270230,
+270231,
+271095
+],
+"name": "Magmatus"
+},
+{
+"items": [
+270228,
+270229,
+271098
+],
+"name": "Plunder"
+},
+{
+"items": [
+270256,
+270260,
+270261
+],
+"name": "Durgen Dirgehammer"
+}
+],
+"items": {
+"270227": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270228": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270229": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270230": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270231": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270256": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270260": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"270261": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"271095": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"271096": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"271097": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"271098": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+}
+},
+"levels": [
+13,
+18
+],
+"name": "Hall of Thanes",
+"trash": []
+},
+"hyjal-summit": {
+"bosses": [
+{
+"items": [],
+"name": "Bandalar"
+},
+{
+"items": [],
+"name": "Ancient of Decay"
+},
+{
+"items": [],
+"name": "Time-Lost Battalion"
+},
+{
+"items": [],
+"name": "Sylvestris Dusksong"
+},
+{
+"items": [],
+"name": "Old Gloomlurker"
+},
+{
+"items": [],
+"name": "Gharalis the Abyssal"
+},
+{
+"items": [],
+"name": "Kathris the Haunted"
+},
+{
+"items": [],
+"name": "Elder Minderel"
+},
+{
+"items": [],
+"name": "Anara Chillwind"
+},
+{
+"items": [],
+"name": "Tracker Stillwind"
+},
+{
+"items": [],
+"name": "Council of Thorns"
+},
+{
+"items": [],
+"name": "The Wild King"
+},
+{
+"items": [],
+"name": "Nythus the Dreambound"
+}
+],
+"items": {},
+"levels": [
+60,
+60
+],
+"name": "Hyjal Summit",
+"trash": []
+},
+"krol-dok-stronghold": {
+"bosses": [
+{
+"items": [
+274995,
+274996,
+274997
+],
+"name": "Slavecrusher Grox"
+},
+{
+"items": [
+274998,
+274999,
+275000
+],
+"name": "Twilight Commander Zarmok"
+},
+{
+"items": [
+275001,
+275002,
+275003
+],
+"name": "War Handler Ashka"
+},
+{
+"items": [
+286428,
+286429,
+286430
+],
+"name": "Bossman Toof"
+},
+{
+"items": [
+275004,
+275005,
+275006
+],
+"name": "Nar'gurk"
+},
+{
+"items": [
+275007,
+275008,
+275009,
+275010
+],
+"name": "Overlord Mugg"
+}
+],
+"items": {
+"274995": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274996": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274997": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274998": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"274999": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"275000": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"275001": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"275002": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"275003": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"275004": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"275005": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"275006": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"275007": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"275008": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"275009": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"275010": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"286428": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"286429": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"286430": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"287013": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+}
+},
+"levels": [
+40,
+45
+],
+"name": "Krol'dok Stronghold",
+"trash": [
+287013
+]
+},
+"maraudon": {
+"bosses": [
+{
+"items": [
+17744,
+17745,
+17746
+],
+"name": "Noxxion"
+},
+{
+"items": [
+17748,
+17749,
+17750,
+17751
+],
+"name": "Razorlash"
+},
+{
+"items": [
+17752,
+17754,
+17755,
+275864
+],
+"name": "Lord Vyletongue"
+},
+{
+"items": [
+14448,
+17738,
+17739,
+17740
+],
+"name": "Celebras the Cursed"
+},
+{
+"items": [
+17734,
+17736,
+17737,
+17943,
+15642,
+14666,
+14960,
+14794
+],
+"name": "Landslide"
+},
+{
+"items": [
+17717,
+17718,
+17719
+],
+"name": "Tinkerer Gizlock"
+},
+{
+"items": [
+17728,
+17730,
+17732,
+14948,
+15637
+],
+"name": "Rotgrip"
+},
+{
+"items": [
+17707,
+17710,
+17711,
+17713,
+17714,
+17715,
+17766,
+17780,
+14922,
+14904
+],
+"name": "Princess Theradras"
+},
+{
+"items": [
+17741,
+17742,
+17767
+],
+"name": "Meshlok the Harvester"
+}
+],
+"items": {
+"14448": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"14666": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 46
+},
+"14794": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 2,
+"req": 45
+},
+"14904": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 2,
+"req": 45
+},
+"14922": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 2,
+"req": 48
+},
+"14948": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 46
+},
+"14960": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 46
+},
+"15637": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 46
+},
+"15642": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"17707": {
+"drop": 0.1956,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17710": {
+"drop": 0.1943,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17711": {
+"drop": 0.1946,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17713": {
+"drop": 0.245,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17714": {
+"drop": 0.2426,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17715": {
+"drop": 0.194,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17717": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17718": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17719": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17728": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17730": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17732": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17734": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17736": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17737": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"17738": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"17739": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"17740": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"17741": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17742": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17744": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17745": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17746": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17748": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17749": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17750": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17751": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17752": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"17754": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"17755": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"17766": {
+"drop": 0.1963,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"17767": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"17780": {
+"drop": 0.0038,
+"found": true,
+"ilvl": 54,
+"q": 4,
+"req": 49
+},
+"17943": {
+"drop": null,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"275864": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+}
+},
+"levels": [
+46,
+55
+],
+"name": "Maraudon",
+"trash": []
+},
+"onyxia-s-lair": {
+"bosses": [
+{
+"items": [],
+"name": "Onyxia"
+}
+],
+"items": {},
+"levels": [
+60,
+60
+],
+"name": "Onyxia's Lair",
+"trash": []
+},
+"ragefire-chasm": {
+"bosses": [
+{
+"items": [
+272996,
+272998,
+272999
+],
+"name": "Oggleflint"
+},
+{
+"items": [
+14145,
+14148,
+14149
+],
+"name": "Taragaman the Hungerer"
+},
+{
+"items": [
+14147,
+14150,
+14151
+],
+"name": "Jergosh the Invoker"
+},
+{
+"items": [
+273003,
+273005,
+273007
+],
+"name": "Bazzalan"
+}
+],
+"items": {
+"14145": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"14147": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"14148": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"14149": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"14150": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"14151": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"272996": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"272998": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"272999": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"273003": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"273005": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"273007": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+}
+},
+"levels": [
+13,
+18
+],
+"name": "Ragefire Chasm",
+"trash": []
+},
+"razorfen-downs": {
+"bosses": [
+{
+"items": [
+10775,
+10776,
+10777
+],
+"name": "Tuten'kash"
+},
+{
+"items": [
+10769,
+10770,
+10771
+],
+"name": "Mordresh Fire Eye"
+},
+{
+"items": [
+10772,
+10774,
+274385
+],
+"name": "Glutton"
+},
+{
+"items": [
+10758,
+10767,
+10768
+],
+"name": "Ragglesnout"
+},
+{
+"items": [
+10760,
+10766,
+274380
+],
+"name": "Plaguemaw the Rotting"
+},
+{
+"items": [
+10761,
+10762,
+10763,
+10764,
+10765,
+274381
+],
+"name": "Amnennar the Coldbringer"
+},
+{
+"items": [],
+"name": "Lady Falther'ess"
+}
+],
+"items": {
+"10567": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10570": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10571": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10572": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10573": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10574": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"10578": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10581": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"10582": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"10583": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10584": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"10758": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10760": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10761": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"10762": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"10763": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 40
+},
+"10764": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 39
+},
+"10765": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"10766": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10767": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10768": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10769": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"10770": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"10771": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"10772": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10774": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10775": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 40
+},
+"10776": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"10777": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274380": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274381": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"274385": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+}
+},
+"levels": [
+40,
+50
+],
+"name": "Razorfen Downs",
+"trash": [
+10574,
+10581,
+10570,
+10572,
+10583,
+10567,
+10578,
+10571,
+10573,
+10582,
+10584
+]
+},
+"razorfen-kraul": {
+"bosses": [
+{
+"items": [
+274159,
+6681,
+274158
+],
+"name": "Aggem Thorncurse"
+},
+{
+"items": [
+274149,
+274152,
+274155
+],
+"name": "Roogug"
+},
+{
+"items": [
+2816,
+6685,
+6682
+],
+"name": "Death Speaker Jargba"
+},
+{
+"items": [
+6686,
+6687,
+274161
+],
+"name": "Overlord Ramtusk"
+},
+{
+"items": [
+274160,
+6691,
+6690
+],
+"name": "Agathelos the Raging"
+},
+{
+"items": [
+6695,
+6696,
+6697
+],
+"name": "Blind Hunter"
+},
+{
+"items": [
+6688,
+6689
+],
+"name": "Earthcaller Halmgar"
+},
+{
+"items": [
+6692,
+6693,
+6694
+],
+"name": "Charlga Razorflank"
+}
+],
+"items": {
+"1488": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"1727": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"1975": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"1976": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"1978": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"2039": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"2264": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"2549": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"274149": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"274152": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"274155": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"274158": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"274159": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 27
+},
+"274160": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"274161": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"2816": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"3569": {
+"drop": 0.0285,
+"found": true,
+"ilvl": 26,
+"q": 2,
+"req": 21
+},
+"4438": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"6679": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 2,
+"req": 24
+},
+"6681": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"6682": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"6685": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"6686": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6687": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6688": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6689": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6690": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6691": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"6692": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"6693": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"6694": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"6695": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6696": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"6697": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"776": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+}
+},
+"levels": [
+30,
+40
+],
+"name": "Razorfen Kraul",
+"trash": [
+776,
+1488,
+2264,
+4438,
+1976,
+2039,
+6679,
+1727,
+1975,
+1978,
+2549,
+3569
+]
+},
+"ruins-of-lordaeron": {
+"bosses": [
+{
+"items": [
+271204,
+271205,
+271206
+],
+"name": "The Baron"
+},
+{
+"items": [
+271201,
+271202,
+271203
+],
+"name": "Witherfang"
+},
+{
+"items": [
+271207,
+271208,
+271216
+],
+"name": "The Abandoned"
+},
+{
+"items": [
+271209,
+271210,
+271217
+],
+"name": "Bjork"
+},
+{
+"items": [
+271213,
+271214,
+271215
+],
+"name": "Rath'mael"
+},
+{
+"items": [
+6641,
+6642
+],
+"name": "Deathsworn Captain"
+},
+{
+"items": [
+271211,
+271212,
+271218
+],
+"name": "Viktor the Vile"
+}
+],
+"items": {
+"271201": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271202": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271203": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271204": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271205": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271206": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"271207": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"271208": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"271209": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"271210": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"271211": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"271212": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"271213": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"271214": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"271215": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"271216": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"271217": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"271218": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"286977": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"286978": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"286979": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"286980": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"286981": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"6641": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6642": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+}
+},
+"levels": [
+16,
+23
+],
+"name": "Ruins of Lordaeron",
+"trash": [
+286977,
+286978,
+286979,
+286980,
+286981
+]
+},
+"scarlet-monastery-armory": {
+"bosses": [
+{
+"items": [
+7717,
+7718,
+7719,
+274295
+],
+"name": "Herod"
+}
+],
+"items": {
+"10328": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10329": {
+"drop": 0.0231,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10331": {
+"drop": 0.0208,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10332": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"10333": {
+"drop": 0.0226,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"1992": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"2262": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"274295": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"5756": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"5819": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7717": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"7718": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"7719": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"7727": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7728": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7729": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7730": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7736": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7752": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7753": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7754": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7755": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7757": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"7758": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7759": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7760": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7761": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7786": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7787": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"8225": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"8226": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+}
+},
+"levels": [
+32,
+42
+],
+"name": "Scarlet Monastery: Armory",
+"trash": [
+7736,
+7758,
+7760,
+10328,
+1992,
+7755,
+7759,
+7761,
+10331,
+5756,
+7757,
+10329,
+2262,
+8225,
+10333,
+10332,
+7728,
+7730,
+5819,
+7729,
+7752,
+7727,
+7753,
+7787,
+8226,
+7754,
+7786
+]
+},
+"scarlet-monastery-cathedral": {
+"bosses": [
+{
+"items": [
+19507,
+19508,
+19509
+],
+"name": "High Inquisitor Fairbanks"
+},
+{
+"items": [
+7723,
+7724,
+7726,
+10330
+],
+"name": "Scarlet Commander Mograine"
+},
+{
+"items": [
+7495,
+7720,
+7721,
+7722,
+8157
+],
+"name": "High Inquisitor Whitemane"
+}
+],
+"items": {
+"10328": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10329": {
+"drop": 0.0231,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10330": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"10331": {
+"drop": 0.0208,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10332": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"10333": {
+"drop": 0.0226,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"19507": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"19508": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"19509": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"1992": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"2262": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"5756": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"5819": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7495": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 2,
+"req": 39
+},
+"7720": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7721": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7722": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7723": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7724": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7726": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"7727": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7728": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7729": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7730": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7736": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7752": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7753": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7754": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7755": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7757": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"7758": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7759": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7760": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7761": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7786": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7787": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"8157": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 2,
+"req": 40
+},
+"8225": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"8226": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+}
+},
+"levels": [
+35,
+45
+],
+"name": "Scarlet Monastery: Cathedral",
+"trash": [
+7736,
+7758,
+7760,
+10328,
+1992,
+7755,
+7759,
+7761,
+10331,
+5756,
+7757,
+10329,
+2262,
+8225,
+10333,
+10332,
+7728,
+7730,
+5819,
+7729,
+7752,
+7727,
+7753,
+7787,
+8226,
+7754,
+7786
+]
+},
+"scarlet-monastery-graveyard": {
+"bosses": [
+{
+"items": [
+7682,
+7683,
+274290
+],
+"name": "Interrogator Vishas"
+},
+{
+"items": [
+7685,
+274291,
+7684
+],
+"name": "Bloodmage Thalnos"
+},
+{
+"items": [
+7686,
+7687,
+7688
+],
+"name": "Ironspine"
+},
+{
+"items": [
+7708,
+7709,
+7731
+],
+"name": "Azshir the Sleepless"
+},
+{
+"items": [
+7689,
+7690,
+7691
+],
+"name": "Fallen Champion"
+},
+{
+"items": [
+23169
+],
+"name": "Scorn"
+}
+],
+"items": {
+"10328": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10329": {
+"drop": 0.0231,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10331": {
+"drop": 0.0208,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10332": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"10333": {
+"drop": 0.0226,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"1992": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"2262": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"23169": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"274290": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"274291": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"5756": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"5819": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7682": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7683": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7684": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7685": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"7686": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7687": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7688": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7689": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7690": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7691": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7708": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7709": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7727": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7728": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7729": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7730": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7731": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"7736": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7752": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7753": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7754": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7755": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7757": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"7758": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7759": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7760": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7761": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7786": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7787": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"8225": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"8226": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+}
+},
+"levels": [
+28,
+38
+],
+"name": "Scarlet Monastery: Graveyard",
+"trash": [
+7736,
+7758,
+7760,
+10328,
+1992,
+7755,
+7759,
+7761,
+10331,
+5756,
+7757,
+10329,
+2262,
+8225,
+10333,
+10332,
+7728,
+7730,
+5819,
+7729,
+7752,
+7727,
+7753,
+7787,
+8226,
+7754,
+7786
+]
+},
+"scarlet-monastery-library": {
+"bosses": [
+{
+"items": [
+7710,
+7756,
+274292,
+3456
+],
+"name": "Houndmaster Loksey"
+},
+{
+"items": [
+7711,
+7712,
+7713,
+7714,
+274293,
+274294
+],
+"name": "Arcanist Doan"
+}
+],
+"items": {
+"10328": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"10329": {
+"drop": 0.0231,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"10331": {
+"drop": 0.0208,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"10332": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"10333": {
+"drop": 0.0226,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"1992": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"2262": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"274292": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"274293": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"274294": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 2,
+"req": 34
+},
+"3456": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"5756": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"5819": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7710": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"7711": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 2,
+"req": 34
+},
+"7712": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 2,
+"req": 34
+},
+"7713": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7714": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7727": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7728": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7729": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7730": {
+"drop": null,
+"found": true,
+"ilvl": 34,
+"q": 3,
+"req": 29
+},
+"7736": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7752": {
+"drop": null,
+"found": true,
+"ilvl": 33,
+"q": 3,
+"req": 28
+},
+"7753": {
+"drop": null,
+"found": true,
+"ilvl": 32,
+"q": 3,
+"req": 27
+},
+"7754": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7755": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7756": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"7757": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"7758": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7759": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7760": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"7761": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"7786": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"7787": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"8225": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"8226": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+}
+},
+"levels": [
+29,
+39
+],
+"name": "Scarlet Monastery: Library",
+"trash": [
+7736,
+7758,
+7760,
+10328,
+1992,
+7755,
+7759,
+7761,
+10331,
+5756,
+7757,
+10329,
+2262,
+8225,
+10333,
+10332,
+7728,
+7730,
+5819,
+7729,
+7752,
+7727,
+7753,
+7787,
+8226,
+7754,
+7786
+]
+},
+"scholomance": {
+"bosses": [
+{
+"items": [
+13983,
+13955,
+13956,
+13957,
+13960,
+13967,
+13969,
+14024,
+16734
+],
+"name": "Kirtonos the Herald"
+},
+{
+"items": [
+14545,
+14548,
+18689,
+18690,
+22394,
+14541,
+16701
+],
+"name": "Jandice Barov"
+},
+{
+"items": [
+14528,
+14537,
+14538,
+14539,
+18686,
+14531,
+16711
+],
+"name": "Rattlegore"
+},
+{
+"items": [
+14576,
+18692
+],
+"name": "Marduk Blackpool"
+},
+{
+"items": [
+14577,
+18691
+],
+"name": "Vectus"
+},
+{
+"items": [
+13314,
+13952,
+14340,
+14487,
+14502,
+14503,
+14522,
+14525,
+18693,
+18694,
+18695,
+18696,
+16689
+],
+"name": "Ras Frostwhisper"
+},
+{
+"items": [],
+"name": "Lord Blackwood"
+},
+{
+"items": [
+22326,
+22303,
+22331,
+22332,
+22333
+],
+"name": "Kormok"
+},
+{
+"items": [
+18758,
+18759,
+18760,
+18761
+],
+"name": "Death Knight Darkreaver"
+},
+{
+"items": [
+22433,
+13398,
+13937,
+13938,
+13944,
+13951,
+13953,
+13964,
+16667,
+16677,
+16686,
+16693,
+16698,
+16707,
+16720,
+16727,
+16731
+],
+"name": "Darkmaster Gandling"
+}
+],
+"items": {
+"13314": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 4,
+"req": 57
+},
+"13398": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13937": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 4,
+"req": 57
+},
+"13938": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13944": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13951": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13952": {
+"drop": 0.1503,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13953": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13955": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13956": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13957": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13960": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13964": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13967": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13969": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13983": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14024": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14340": {
+"drop": 0.1447,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14487": {
+"drop": 0.1566,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14502": {
+"drop": 0.1562,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14503": {
+"drop": 0.1411,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14522": {
+"drop": 0.1488,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14525": {
+"drop": 0.1477,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14528": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14531": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"14536": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14537": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14538": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14539": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14541": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14545": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14548": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"14576": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"14577": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14611": {
+"drop": 0.0219,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14612": {
+"drop": 0.0311,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14614": {
+"drop": 0.0312,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14615": {
+"drop": 0.0317,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14616": {
+"drop": 0.0308,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14620": {
+"drop": 0.0319,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14621": {
+"drop": 0.0308,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14622": {
+"drop": 0.0311,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14623": {
+"drop": 0.0304,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14624": {
+"drop": 0.0229,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14626": {
+"drop": 0.0245,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14629": {
+"drop": 0.0333,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14631": {
+"drop": 0.0336,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14632": {
+"drop": 0.0334,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14633": {
+"drop": 0.0328,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14636": {
+"drop": 0.0337,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14637": {
+"drop": 0.024,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14638": {
+"drop": 0.0341,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14640": {
+"drop": 0.0329,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"14641": {
+"drop": 0.0326,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16667": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16677": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16684": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16686": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16689": {
+"drop": 0.1862,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16693": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16698": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16701": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16705": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16707": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16711": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16720": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16722": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16727": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16731": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16734": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18680": {
+"drop": 0.0247,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18681": {
+"drop": 0.0246,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18682": {
+"drop": 0.0244,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18683": {
+"drop": 0.0247,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18684": {
+"drop": 0.0244,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18686": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18689": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18690": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18691": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18692": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18693": {
+"drop": 0.1528,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18694": {
+"drop": 0.1565,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18695": {
+"drop": 0.1525,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18696": {
+"drop": 0.1553,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18697": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"18698": {
+"drop": null,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"18699": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"18700": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18701": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18702": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18758": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18759": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18760": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18761": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22303": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22326": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22331": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22332": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22333": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22394": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22433": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"23200": {
+"drop": 0.0121,
+"found": true,
+"ilvl": 65,
+"q": 3,
+"req": 60
+},
+"23201": {
+"drop": 0.0156,
+"found": true,
+"ilvl": 65,
+"q": 3,
+"req": 60
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Scholomance",
+"trash": [
+23200,
+23201,
+14536,
+14611,
+14612,
+14614,
+14615,
+14616,
+14620,
+14621,
+14622,
+14623,
+14624,
+14626,
+14629,
+14631,
+14632,
+14633,
+14636,
+14637,
+14638,
+14640,
+14641,
+18680,
+18681,
+18682,
+18683,
+18684,
+18702,
+16684,
+16705,
+18701,
+18700,
+16722,
+18699,
+18698,
+18697
+]
+},
+"shadowfang-keep": {
+"bosses": [
+{
+"items": [
+5254,
+273456,
+273457,
+2985
+],
+"name": "Rethilgore"
+},
+{
+"items": [
+1292,
+6226,
+6633
+],
+"name": "Razorclaw the Butcher"
+},
+{
+"items": [
+3212,
+6321,
+6323,
+273637
+],
+"name": "Baron Silverlaine"
+},
+{
+"items": [
+3191,
+3212,
+4707,
+6320,
+273643
+],
+"name": "Commander Springvale"
+},
+{
+"items": [
+3067,
+6318,
+6319,
+273645,
+6567
+],
+"name": "Odo the Blindwatcher"
+},
+{
+"items": [
+4064,
+3230,
+6340,
+273646,
+9804
+],
+"name": "Fenrus the Devourer"
+},
+{
+"items": [
+3748,
+6314,
+3212,
+273647
+],
+"name": "Wolf Master Nandos"
+},
+{
+"items": [
+9829,
+6220,
+6324,
+6392,
+6605,
+9809
+],
+"name": "Archmage Arugal"
+},
+{
+"items": [],
+"name": "Sever"
+},
+{
+"items": [
+6641,
+6642
+],
+"name": "Deathsworn Captain"
+}
+],
+"items": {
+"1292": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"1318": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"1482": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"1483": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"1484": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"1489": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"1935": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"1974": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"2205": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"2292": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"273456": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273457": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273637": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273643": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273645": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273646": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"273647": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"2807": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"2985": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 2,
+"req": 16
+},
+"3067": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 2,
+"req": 21
+},
+"3191": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"3194": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"3212": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 2,
+"req": 21
+},
+"3230": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"3748": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"4064": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 2,
+"req": 25
+},
+"4707": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 2,
+"req": 21
+},
+"5254": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5943": {
+"drop": 0.0236,
+"found": true,
+"ilvl": 25,
+"q": 2,
+"req": 20
+},
+"6220": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6226": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"6314": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6318": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"6319": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"6320": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"6321": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"6323": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"6324": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6340": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6341": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 19
+},
+"6392": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"6567": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 2,
+"req": 20
+},
+"6605": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 2,
+"req": 23
+},
+"6633": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6641": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"6642": {
+"drop": null,
+"found": true,
+"ilvl": 27,
+"q": 3,
+"req": 22
+},
+"9804": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 2,
+"req": 21
+},
+"9809": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 2,
+"req": 23
+},
+"9829": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 2,
+"req": 24
+}
+},
+"levels": [
+22,
+30
+],
+"name": "Shadowfang Keep",
+"trash": [
+1489,
+2205,
+2292,
+5943,
+1482,
+1935,
+1318,
+2807,
+1484,
+1974,
+1483,
+3194,
+6341
+]
+},
+"shaper-s-terrace": {
+"bosses": [
+{
+"items": [
+280009,
+280010,
+280011
+],
+"name": "Titanosaur"
+},
+{
+"items": [
+280012,
+280013,
+280014
+],
+"name": "Tor'Rel"
+},
+{
+"items": [
+280021,
+280022,
+280045
+],
+"name": "Direhorn Matriarch"
+},
+{
+"items": [
+280018,
+280019,
+280020
+],
+"name": "Thunderhoof"
+},
+{
+"items": [
+280015,
+280016,
+280017
+],
+"name": "Venomridge"
+},
+{
+"items": [
+280031,
+280032
+],
+"name": "Bolt"
+},
+{
+"items": [
+280028,
+280029
+],
+"name": "Cinder"
+},
+{
+"items": [
+280026,
+280027
+],
+"name": "Snowtalon"
+},
+{
+"items": [
+280026,
+280027,
+280028,
+280031,
+280032
+],
+"name": "Vitrix"
+},
+{
+"items": [
+280023,
+280024,
+280025
+],
+"name": "Nanaya"
+}
+],
+"items": {
+"280009": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280010": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280011": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280012": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280013": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280014": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280015": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280016": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280017": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280018": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280019": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280020": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280021": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280022": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280023": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280024": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280025": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280026": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280027": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280028": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280029": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280031": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280032": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"280045": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Shaper's Terrace",
+"trash": []
+},
+"stratholme": {
+"bosses": [
+{
+"items": [
+16682,
+13378,
+13383,
+13384
+],
+"name": "Hearthsinger Forresten"
+},
+{
+"items": [
+13400,
+13401,
+13402,
+13403,
+16724
+],
+"name": "Timmy the Cruel"
+},
+{
+"items": [
+13380,
+13381,
+13382,
+18721,
+22403,
+22404,
+22405,
+22406,
+22407,
+16708
+],
+"name": "Cannon Master Willey"
+},
+{
+"items": [
+13385,
+13386,
+13387,
+18716,
+16692
+],
+"name": "Archivist Galford"
+},
+{
+"items": [
+12103,
+13348,
+13353,
+13358,
+13359,
+13360,
+13369,
+18717,
+18718,
+18720,
+22334,
+16725
+],
+"name": "Grand Crusader Dathrohan / Balnazzar"
+},
+{
+"items": [
+13388,
+13389,
+13390,
+13391,
+13392,
+13393
+],
+"name": "Postmaster Malown"
+},
+{
+"items": [
+13394,
+13395,
+13396
+],
+"name": "Skul"
+},
+{
+"items": [
+13397,
+13399,
+13954
+],
+"name": "Stonespine"
+},
+{
+"items": [
+13534,
+13535,
+13537,
+13538,
+13539,
+18728,
+18729,
+18730,
+16704
+],
+"name": "Baroness Anastari"
+},
+{
+"items": [
+13529,
+13530,
+13531,
+13532,
+13533,
+18738,
+18739,
+18740,
+16675
+],
+"name": "Nerub'enkan"
+},
+{
+"items": [
+13524,
+13525,
+13526,
+13527,
+13528,
+18734,
+18735,
+18737,
+16691
+],
+"name": "Maleki the Pallid"
+},
+{
+"items": [
+23198,
+18722,
+13376,
+18725,
+18726,
+18727
+],
+"name": "Magistrate Barthilas"
+},
+{
+"items": [
+18723,
+13372,
+13373,
+13374,
+13375,
+13515,
+16737
+],
+"name": "Ramstein the Gorger"
+},
+{
+"items": [
+13340,
+13344,
+13345,
+13346,
+13349,
+13361,
+13505,
+22408,
+22409,
+22410,
+22411,
+22412,
+13368,
+16668,
+16678,
+16687,
+16694,
+16699,
+16709,
+16719,
+16728,
+16732
+],
+"name": "Baron Rivendare"
+},
+{
+"items": [
+13404,
+13405,
+13408,
+13409
+],
+"name": "The Unforgiven"
+},
+{
+"items": [
+23125
+],
+"name": "Balzaphon"
+},
+{
+"items": [
+22301,
+22327,
+22328,
+22329
+],
+"name": "Sothon and Jarien's Heirlooms"
+}
+],
+"items": {
+"12103": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13340": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13344": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13345": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13346": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13348": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13349": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13353": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 4,
+"req": 58
+},
+"13358": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13359": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13360": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13361": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13368": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13369": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"13372": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13373": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13374": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13375": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13376": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"13378": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13380": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13381": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13382": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13383": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13384": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"13385": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13386": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13387": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13388": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13389": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13390": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13391": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13392": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13393": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13394": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13395": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13396": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13397": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13399": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13400": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13401": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13402": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13403": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13404": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13405": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13408": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13409": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"13505": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 4,
+"req": 58
+},
+"13515": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13524": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13525": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13526": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13527": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13528": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"13529": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13530": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13531": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13532": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13533": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"13534": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13535": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13537": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13538": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13539": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"13954": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"16668": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16671": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16675": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16678": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16681": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16682": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16685": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16687": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16691": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16692": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16694": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16697": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16699": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16702": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16704": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16708": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"16709": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16714": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"16719": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16723": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16724": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16725": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"16728": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16732": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"16736": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"16737": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"17061": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18716": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18717": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18718": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18720": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"18721": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18722": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18723": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18725": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18726": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18727": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18728": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18729": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18730": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18734": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18735": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18736": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18737": {
+"drop": null,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"18738": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18739": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18740": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18741": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"18742": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"18743": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"18744": {
+"drop": null,
+"found": true,
+"ilvl": 58,
+"q": 3,
+"req": 53
+},
+"18745": {
+"drop": null,
+"found": true,
+"ilvl": 57,
+"q": 3,
+"req": 52
+},
+"22301": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22327": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22328": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22329": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22334": {
+"drop": 0.0199,
+"found": true,
+"ilvl": 62,
+"q": 3,
+"req": 57
+},
+"22403": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22404": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22405": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22406": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22407": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"22408": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22409": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22410": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22411": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"22412": {
+"drop": null,
+"found": true,
+"ilvl": 63,
+"q": 3,
+"req": 58
+},
+"23125": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"23198": {
+"drop": null,
+"found": true,
+"ilvl": 65,
+"q": 3,
+"req": 60
+},
+"276394": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"276395": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"276396": {
+"drop": null,
+"found": true,
+"ilvl": 59,
+"q": 3,
+"req": 54
+},
+"276397": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276398": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276399": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276403": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276404": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276419": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+},
+"276456": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+}
+},
+"levels": [
+58,
+60
+],
+"name": "Stratholme",
+"trash": [
+18736,
+18741,
+18742,
+276397,
+276398,
+276399,
+276403,
+276404,
+276419,
+276456,
+18743,
+276394,
+276395,
+276396,
+16685,
+16702,
+16723,
+16736,
+17061,
+18744,
+16671,
+16681,
+16697,
+16714,
+18745
+]
+},
+"the-deadmines": {
+"bosses": [
+{
+"items": [
+872,
+273289,
+5187
+],
+"name": "Rhahk'Zor"
+},
+{
+"items": [
+5443,
+5444
+],
+"name": "Miner Johnson"
+},
+{
+"items": [
+1937,
+2169,
+285292
+],
+"name": "Sneed's Shredder"
+},
+{
+"items": [
+5194,
+5195,
+273293
+],
+"name": "Sneed"
+},
+{
+"items": [
+273297,
+1156,
+5199
+],
+"name": "Gilnid"
+},
+{
+"items": [
+7230,
+5192,
+284715,
+5196
+],
+"name": "Mr. Smite"
+},
+{
+"items": [
+11982,
+273298,
+5198,
+5197
+],
+"name": "Cookie"
+},
+{
+"items": [
+5200,
+5201,
+10403
+],
+"name": "Captain Greenskin"
+},
+{
+"items": [
+5191,
+5193,
+5202,
+10399
+],
+"name": "Edwin VanCleef"
+}
+],
+"items": {
+"10399": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"10400": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 3,
+"req": 14
+},
+"10401": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 3,
+"req": 14
+},
+"10402": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"10403": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"1156": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"11982": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 2,
+"req": 18
+},
+"1929": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"1930": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 2,
+"req": 13
+},
+"1934": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"1936": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 3,
+"req": 13
+},
+"1937": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"1943": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 2,
+"req": 14
+},
+"1944": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 2,
+"req": 13
+},
+"1945": {
+"drop": null,
+"found": true,
+"ilvl": 18,
+"q": 2,
+"req": 13
+},
+"1951": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 3,
+"req": 14
+},
+"2169": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"273289": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273293": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"273297": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"273298": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"284715": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"285292": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"5187": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"5191": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"5192": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5193": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"5194": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"5195": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5196": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 17
+},
+"5197": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"5198": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5199": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"5200": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5201": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5202": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5443": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5444": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"7230": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"872": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+}
+},
+"levels": [
+18,
+23
+],
+"name": "The Deadmines",
+"trash": [
+1934,
+10402,
+1943,
+1951,
+10400,
+10401,
+1929,
+1930,
+1936,
+1944,
+1945
+]
+},
+"the-drowned-city": {
+"bosses": [
+{
+"items": [
+274598,
+274599,
+274600
+],
+"name": "Zul'Alai"
+},
+{
+"items": [
+286646,
+286649
+],
+"name": "Gill"
+},
+{
+"items": [
+274603,
+274604,
+274605
+],
+"name": "Captain Dreadrise"
+},
+{
+"items": [
+274611,
+274612,
+274615
+],
+"name": "Primeval Elemental"
+},
+{
+"items": [
+274601,
+274602,
+274613
+],
+"name": "Var'Taka"
+},
+{
+"items": [
+274606,
+274607,
+274614
+],
+"name": "Deathless Marrow"
+},
+{
+"items": [
+274608,
+274609,
+274610,
+271718
+],
+"name": "Min'loth the Serpent"
+},
+{
+"items": [
+286658,
+286662
+],
+"name": "Umbra"
+},
+{
+"items": [],
+"name": "Zin'aka"
+}
+],
+"items": {
+"271718": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"274598": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"274599": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"274600": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"274601": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274602": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274603": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274604": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274605": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274606": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"274607": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"274608": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274609": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274610": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274611": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274612": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274613": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"274614": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"274615": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"286646": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"286649": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"286658": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"286662": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+}
+},
+"levels": [
+35,
+40
+],
+"name": "The Drowned City",
+"trash": []
+},
+"the-stockade": {
+"bosses": [
+{
+"items": [
+273809,
+273810,
+273811
+],
+"name": "Hamhock"
+},
+{
+"items": [
+273804,
+273805,
+273806
+],
+"name": "Targorr the Dread"
+},
+{
+"items": [
+273824,
+273825,
+273827,
+273829
+],
+"name": "Bazil Thredd"
+},
+{
+"items": [
+273817,
+273819,
+273820
+],
+"name": "Dextren Ward"
+},
+{
+"items": [
+2280,
+273807,
+273808
+],
+"name": "Kam Deepfury"
+},
+{
+"items": [
+2941,
+2942,
+3228
+],
+"name": "Bruegal Ironknuckle"
+}
+],
+"items": {
+"1076": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"2280": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"273804": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273805": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273806": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 21
+},
+"273807": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"273808": {
+"drop": null,
+"found": true,
+"ilvl": 29,
+"q": 3,
+"req": 24
+},
+"273809": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"273810": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"273811": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 3,
+"req": 25
+},
+"273817": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273819": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273820": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"273824": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273825": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273827": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"273829": {
+"drop": null,
+"found": true,
+"ilvl": 31,
+"q": 3,
+"req": 26
+},
+"274092": {
+"drop": null,
+"found": true,
+"ilvl": 26,
+"q": 3,
+"req": 19
+},
+"2941": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"2942": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+},
+"3228": {
+"drop": null,
+"found": true,
+"ilvl": 28,
+"q": 3,
+"req": 23
+}
+},
+"levels": [
+22,
+30
+],
+"name": "The Stockade",
+"trash": [
+1076,
+274092
+]
+},
+"the-temple-of-atal-hakkar": {
+"bosses": [
+{
+"items": [
+10800,
+10798,
+10799
+],
+"name": "Atal'alarion"
+},
+{
+"items": [
+10801,
+10802
+],
+"name": "Spawn of Hakkar"
+},
+{
+"items": [
+10110,
+10806,
+10807,
+10808
+],
+"name": "Jammal'an the Prophet"
+},
+{
+"items": [
+10803,
+10804,
+10805
+],
+"name": "Ogom the Wretched"
+},
+{
+"items": [
+12462
+],
+"name": "Shade of Hakkar"
+},
+{
+"items": [
+10847,
+10828,
+10829,
+10833,
+10835,
+10836,
+10837,
+10110,
+10167
+],
+"name": "Shade of Eranikus"
+}
+],
+"items": {
+"10110": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 2,
+"req": 50
+},
+"10167": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 2,
+"req": 50
+},
+"10623": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"10624": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"10625": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"10626": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"10627": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"10628": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"10629": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"10630": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"10631": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"10632": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"10633": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"10634": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"10780": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 0
+},
+"10781": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 0
+},
+"10782": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 2,
+"req": 0
+},
+"10783": {
+"drop": 0.0419,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"10784": {
+"drop": 0.0281,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"10785": {
+"drop": 0.0559,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"10786": {
+"drop": 0.0827,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"10787": {
+"drop": 0.0705,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"10788": {
+"drop": 0.0974,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"10795": {
+"drop": 0.0888,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10796": {
+"drop": 0.0877,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10797": {
+"drop": 0.0891,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"10798": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"10799": {
+"drop": null,
+"found": true,
+"ilvl": 51,
+"q": 3,
+"req": 46
+},
+"10800": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"10801": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 3,
+"req": 47
+},
+"10802": {
+"drop": null,
+"found": true,
+"ilvl": 52,
+"q": 2,
+"req": 47
+},
+"10803": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10804": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10805": {
+"drop": null,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10806": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"10807": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"10808": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"10828": {
+"drop": 0.1686,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10829": {
+"drop": 0.3202,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10833": {
+"drop": 0.3166,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10835": {
+"drop": 0.2882,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10836": {
+"drop": 0.2709,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10837": {
+"drop": 0.145,
+"found": true,
+"ilvl": 56,
+"q": 3,
+"req": 51
+},
+"10838": {
+"drop": 0.1649,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10842": {
+"drop": 0.3275,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10843": {
+"drop": 0.3185,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10844": {
+"drop": 0.159,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10845": {
+"drop": 0.3076,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10846": {
+"drop": 0.3321,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"10847": {
+"drop": 0.0048,
+"found": true,
+"ilvl": 57,
+"q": 4,
+"req": 52
+},
+"12243": {
+"drop": 0.0864,
+"found": true,
+"ilvl": 54,
+"q": 3,
+"req": 49
+},
+"12462": {
+"drop": 0.0015,
+"found": true,
+"ilvl": 55,
+"q": 4,
+"req": 50
+},
+"12463": {
+"drop": 0.0892,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"12464": {
+"drop": 0.0788,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"12465": {
+"drop": 0.0874,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"12466": {
+"drop": 0.0881,
+"found": true,
+"ilvl": 53,
+"q": 3,
+"req": 48
+},
+"220606": {
+"drop": null,
+"found": true,
+"ilvl": 60,
+"q": 3,
+"req": 55
+}
+},
+"levels": [
+50,
+60
+],
+"name": "The Temple of Atal'Hakkar",
+"trash": [
+220606,
+10795,
+10796,
+10838,
+10842,
+10843,
+10844,
+10845,
+10846,
+12243,
+10797,
+12463,
+12464,
+12465,
+12466,
+10783,
+10784,
+10785,
+10786,
+10787,
+10788,
+10630,
+10633,
+10780,
+10781,
+10782,
+10626,
+10629,
+10625,
+10632,
+10623,
+10628,
+10624,
+10627,
+10631,
+10634
+]
+},
+"uldaman": {
+"bosses": [
+{
+"items": [
+9387,
+9388,
+9389,
+9390
+],
+"name": "Revelosh"
+},
+{
+"items": [
+9400,
+9401
+],
+"name": "Baelog"
+},
+{
+"items": [
+9394,
+9398
+],
+"name": "Eric \"The Swift\""
+},
+{
+"items": [
+9403,
+9404
+],
+"name": "Olaf"
+},
+{
+"items": [
+9407,
+9408,
+9409,
+9973,
+274484,
+7556,
+12030
+],
+"name": "Ironaya"
+},
+{
+"items": [
+9410,
+9411,
+274431
+],
+"name": "Ancient Stone Keeper"
+},
+{
+"items": [
+9412,
+9419,
+11310,
+11311,
+4062
+],
+"name": "Galgann Firehammer"
+},
+{
+"items": [
+9414,
+9415,
+9416,
+8144
+],
+"name": "Grimlok"
+},
+{
+"items": [
+9413,
+9418,
+274432,
+11118
+],
+"name": "Archaedas"
+}
+],
+"items": {
+"11118": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"11310": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"11311": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"12030": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 2,
+"req": 34
+},
+"274425": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274428": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274430": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"274431": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"274432": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"274484": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"274485": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"4062": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 2,
+"req": 40
+},
+"7532": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 2,
+"req": 42
+},
+"7542": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 2,
+"req": 41
+},
+"7556": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 2,
+"req": 35
+},
+"8144": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 2,
+"req": 40
+},
+"9381": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"9383": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"9384": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9386": {
+"drop": null,
+"found": true,
+"ilvl": 36,
+"q": 3,
+"req": 31
+},
+"9387": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 40
+},
+"9388": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9389": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9390": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9391": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"9392": {
+"drop": null,
+"found": true,
+"ilvl": 40,
+"q": 3,
+"req": 35
+},
+"9393": {
+"drop": null,
+"found": true,
+"ilvl": 38,
+"q": 3,
+"req": 33
+},
+"9394": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 40
+},
+"9396": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"9397": {
+"drop": null,
+"found": true,
+"ilvl": 39,
+"q": 3,
+"req": 34
+},
+"9398": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9400": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"9401": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"9403": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9404": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9406": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"9407": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9408": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9409": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9410": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"9411": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"9412": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9413": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9414": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9415": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9416": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9418": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9419": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9420": {
+"drop": null,
+"found": true,
+"ilvl": 37,
+"q": 3,
+"req": 32
+},
+"9422": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"9423": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"9424": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"9425": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"9426": {
+"drop": null,
+"found": true,
+"ilvl": 41,
+"q": 3,
+"req": 36
+},
+"9427": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 37
+},
+"9428": {
+"drop": null,
+"found": true,
+"ilvl": 35,
+"q": 3,
+"req": 30
+},
+"9429": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 3,
+"req": 39
+},
+"9430": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"9431": {
+"drop": null,
+"found": true,
+"ilvl": 43,
+"q": 3,
+"req": 38
+},
+"9432": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 3,
+"req": 40
+},
+"9465": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 3,
+"req": 40
+},
+"9973": {
+"drop": null,
+"found": true,
+"ilvl": 42,
+"q": 2,
+"req": 40
+}
+},
+"levels": [
+42,
+52
+],
+"name": "Uldaman",
+"trash": [
+7532,
+7542,
+9423,
+9430,
+9465,
+9425,
+9429,
+274425,
+274428,
+274430,
+274485,
+9422,
+9431,
+9427,
+9432,
+9424,
+9426,
+9383,
+9392,
+9396,
+9397,
+9381,
+9393,
+9391,
+9420,
+9384,
+9386,
+9406,
+9428
+]
+},
+"wailing-caverns": {
+"bosses": [
+{
+"items": [
+5404,
+12992,
+14568,
+273088,
+10412
+],
+"name": "Lady Anacondra"
+},
+{
+"items": [
+6460,
+6465,
+10410
+],
+"name": "Lord Cobrahn"
+},
+{
+"items": [
+13245,
+14371,
+273084,
+6447
+],
+"name": "Kresh"
+},
+{
+"items": [
+6472,
+6473,
+273089,
+12978
+],
+"name": "Lord Pythas"
+},
+{
+"items": [
+6449,
+14743,
+273137,
+6448
+],
+"name": "Skum"
+},
+{
+"items": [
+6469,
+5970,
+6459,
+10411,
+15307
+],
+"name": "Lord Serpentis"
+},
+{
+"items": [
+6630,
+14374,
+15329,
+6631,
+6629,
+11981
+],
+"name": "Verdan the Everliving"
+},
+{
+"items": [
+6461,
+6463,
+6627,
+15333,
+12053,
+14565
+],
+"name": "Mutanus the Devourer"
+},
+{
+"items": [
+5243,
+6632
+],
+"name": "Deviate Faerie Dragon"
+}
+],
+"items": {
+"10410": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"10411": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"10412": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"10413": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 3,
+"req": 14
+},
+"11981": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 2,
+"req": 15
+},
+"12053": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 2,
+"req": 16
+},
+"12978": {
+"drop": null,
+"found": true,
+"ilvl": 20,
+"q": 3,
+"req": 15
+},
+"12989": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 20
+},
+"12992": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"13245": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"14371": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 2,
+"req": 18
+},
+"14374": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 2,
+"req": 19
+},
+"14565": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 2,
+"req": 16
+},
+"14568": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 2,
+"req": 18
+},
+"14723": {
+"drop": null,
+"found": true,
+"ilvl": 17,
+"q": 2,
+"req": 12
+},
+"14743": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 2,
+"req": 17
+},
+"15307": {
+"drop": null,
+"found": true,
+"ilvl": 19,
+"q": 2,
+"req": 14
+},
+"15329": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 2,
+"req": 19
+},
+"15333": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 2,
+"req": 17
+},
+"273084": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273088": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273089": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"273137": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"5243": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"5404": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"5970": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6447": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"6448": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+},
+"6449": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6459": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6460": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"6461": {
+"drop": null,
+"found": true,
+"ilvl": 25,
+"q": 3,
+"req": 20
+},
+"6463": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"6465": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"6469": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"6472": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"6473": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6627": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6629": {
+"drop": null,
+"found": true,
+"ilvl": 22,
+"q": 3,
+"req": 17
+},
+"6630": {
+"drop": null,
+"found": true,
+"ilvl": 24,
+"q": 3,
+"req": 19
+},
+"6631": {
+"drop": null,
+"found": true,
+"ilvl": 23,
+"q": 3,
+"req": 18
+},
+"6632": {
+"drop": null,
+"found": true,
+"ilvl": 21,
+"q": 3,
+"req": 16
+}
+},
+"levels": [
+15,
+25
+],
+"name": "Wailing Caverns",
+"trash": [
+12989,
+10413,
+14723
+]
+},
+"zul-farrak": {
+"bosses": [
+{
+"items": [
+9379,
+9639,
+9640,
+9641,
+14840
+],
+"name": "Antu'sul"
+},
+{
+"items": [
+9483,
+2040,
+9480,
+5616,
+9482,
+14660,
+15373,
+274638,
+274639,
+274641,
+9511,
+9512,
+15166,
+15964
+],
+"name": "Theka the Martyr"
+},
+{
+"items": [
+18082,
+18083,
+274642
+],
+"name": "Witch Doctor Zum'rah"
+},
+{
+"items": [
+9480,
+14907,
+274643,
+274644,
+274645,
+9482,
+9511
+],
+"name": "Nekrum Gutchewer"
+},
+{
+"items": [
+9470,
+9473,
+9474,
+9475
+],
+"name": "Shadowpriest Sezz'ziz"
+},
+{
+"items": [
+5616,
+9482,
+274646,
+274647,
+274648
+],
+"name": "Sergeant Bly"
+},
+{
+"items": [
+9483,
+2040,
+6440,
+9480,
+5616,
+9482,
+9511,
+9512,
+15616
+],
+"name": "Sandfury Executioner"
+},
+{
+"items": [
+9481,
+9483,
+274651,
+274652,
+274653,
+5616,
+1447,
+9512
+],
+"name": "Hydromancer Velratha"
+},
+{
+"items": [
+9467,
+9469,
+274657,
+14787,
+14270
+],
+"name": "Gahz'rilla"
+},
+{
+"items": [
+9476,
+9477,
+9478,
+11086,
+9479,
+14263
+],
+"name": "Chief Ukorz Sandscalp"
+},
+{
+"items": [
+12471
+],
+"name": "Dustwraith"
+},
+{
+"items": [
+2040,
+6440,
+12470,
+274658,
+9512
+],
+"name": "Zerillis"
+}
+],
+"items": {
+"11086": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"11999": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 2,
+"req": 41
+},
+"12470": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"12471": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"14263": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 2,
+"req": 43
+},
+"14270": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 2,
+"req": 40
+},
+"1447": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 4,
+"req": 41
+},
+"14660": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 2,
+"req": 42
+},
+"14787": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 2,
+"req": 42
+},
+"14840": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 2,
+"req": 42
+},
+"14907": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 2,
+"req": 43
+},
+"15166": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 2,
+"req": 40
+},
+"15373": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 2,
+"req": 42
+},
+"15616": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 2,
+"req": 41
+},
+"15964": {
+"drop": null,
+"found": true,
+"ilvl": 44,
+"q": 2,
+"req": 39
+},
+"18082": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"18083": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"2040": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274638": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274639": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274641": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274642": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274643": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274644": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274645": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274646": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274647": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274648": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274651": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274652": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274653": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274654": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 43
+},
+"274655": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274657": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"274658": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274659": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"274660": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"5616": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"6440": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"9243": {
+"drop": null,
+"found": true,
+"ilvl": 45,
+"q": 2,
+"req": 40
+},
+"9379": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9467": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"9469": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"9470": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9473": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9474": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9475": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9476": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9477": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9478": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9479": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9480": {
+"drop": null,
+"found": true,
+"ilvl": 48,
+"q": 3,
+"req": 43
+},
+"9481": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9482": {
+"drop": null,
+"found": true,
+"ilvl": 47,
+"q": 3,
+"req": 42
+},
+"9483": {
+"drop": null,
+"found": true,
+"ilvl": 49,
+"q": 3,
+"req": 44
+},
+"9511": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"9512": {
+"drop": null,
+"found": true,
+"ilvl": 46,
+"q": 3,
+"req": 41
+},
+"9639": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9640": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+},
+"9641": {
+"drop": null,
+"found": true,
+"ilvl": 50,
+"q": 3,
+"req": 45
+}
+},
+"levels": [
+44,
+54
+],
+"name": "Zul'Farrak",
+"trash": [
+274655,
+274654,
+274659,
+274660,
+11999,
+9243
+]
+}
+}
