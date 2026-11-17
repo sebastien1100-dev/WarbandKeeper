@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.11.1", date = "17/11/2026",
+        changed = {
+            "QoL > Feu de camp : « Objets de camp par métier » devient une grille de tuiles, une par métier : icône, effet à ton niveau en couleur d'accent (en rouge si un de tes buffs l'annule), le buff avec lequel il ne se cumule pas, puis les trois objets (20, 140, 300). Les paliers déjà atteints par un de tes persos sont en clair, les autres grisés. Les trois feux de Cuisine ont aussi leurs tuiles.",
+        },
+    },
+    {
         version = "1.11.0", date = "17/11/2026", restart = true,
         added = {
             "Kit de camp : une colonne de boutons près de la flamme, avec ton feu (le plus grand kit que tu as), tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser l'objet (hors combat) ; un voile décompte la recharge d'1 h ; liseré jaune sur la nourriture quand tu n'es pas « Bien nourri ». Il apparaît près d'un feu (ou toujours) et se place en mode édition.",

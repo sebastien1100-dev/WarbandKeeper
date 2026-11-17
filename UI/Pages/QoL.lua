@@ -1547,46 +1547,108 @@ UI:RegisterPage({
             ctext:SetJustifyH("LEFT")
             if ctext.SetWordWrap then ctext:SetWordWrap(false) end
 
-            -- objets de camp par métier (données du jeu), effet au niveau du perso connecté
-            local ROWH = 30
-            local tbl = card("Objets de camp par métier", 40 + 22 + #Cp.OBJECTS * ROWH + 22 + #Cp.FIRES * 20 + 16, "données du jeu · effet à ton niveau")
-            local function col(x, y, txt, color, w, size)
-                local t = UI:Text(tbl, size or 11, color)
-                t:SetPoint("TOPLEFT", x, y)
-                if w then t:SetWidth(w); t:SetJustifyH("LEFT"); if t.SetWordWrap then t:SetWordWrap(true) end end
-                t:SetText(txt or "")
-                return t
-            end
-            local XS = { 16, 116, 262, 408, 556 }
-            local hy = -42
-            for i, h in ipairs({ "Métier", "20", "140", "300", "Effet à ton niveau" }) do col(XS[i], hy, UI:Upper(T(h)), C.dim) end
-            local cells = {}
+            -- objets de camp par métier : une tuile par métier (3 colonnes), puis les feux
+            local TH, FH, TG = 128, 52, 10
+            local nrows = math.ceil(#Cp.OBJECTS / 3)
+            local tbl = card("Objets de camp par métier", 40 + nrows * (TH + TG) + 24 + FH + 16,
+                "effet à ton niveau · en clair : palier atteint par un de tes persos")
+            local function txt(parent, size, color) local t = UI:Text(parent, size, color); t:SetJustifyH("LEFT"); return t end
+            local tiles, fires = {}, {}
             for i, o in ipairs(Cp.OBJECTS) do
-                local y = hy - 20 - (i - 1) * ROWH
-                local row = { col(XS[1], y, T(o.prof), C.muted) }
-                for t = 1, 3 do row[t + 1] = col(XS[t + 1], y, "", t == 1 and C.text or C.muted, 140, 10) end
-                row.eff = col(XS[5], y, "", C.text)
-                row.excl = col(XS[5], y - 13, "", C.dim, nil, 10)
-                cells[i] = row
+                local t = CreateFrame("Frame", nil, tbl)
+                t:SetHeight(TH)
+                UI:Panel(t, 8, C.surface2, C.border)
+                t.icon = UI:RoundIcon(t, 30)
+                t.icon:SetPoint("TOPLEFT", 12, -10)
+                local first = o.ids[1] or o.ids[2]
+                t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(first)) or "Interface\\Icons\\INV_Misc_QuestionMark")
+                t.title = txt(t, 13, C.text); t.title:SetPoint("TOPLEFT", 52, -10); t.title:SetText(T(o.prof))
+                t.eff = txt(t, 12); t.eff:SetPoint("TOPLEFT", 52, -27); t.eff:SetPoint("TOPRIGHT", -10, -27)
+                if t.eff.SetWordWrap then t.eff:SetWordWrap(false) end
+                t.excl = txt(t, 10, C.dim); t.excl:SetPoint("TOPLEFT", 12, -50); t.excl:SetPoint("TOPRIGHT", -10, -50)
+                if t.excl.SetWordWrap then t.excl:SetWordWrap(false) end
+                t.line = t:CreateTexture(nil, "ARTWORK")
+                t.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+                t.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.8)
+                t.line:SetHeight(1)
+                t.line:SetPoint("TOPLEFT", 12, -66); t.line:SetPoint("TOPRIGHT", -12, -66)
+                t.tiers = {}
+                for k = 1, 3 do
+                    local y = -72 - (k - 1) * 17
+                    local rk = txt(t, 10, C.dim); rk:SetPoint("TOPLEFT", 12, y); rk:SetWidth(30); rk:SetText(Cp.RANKS[k])
+                    local nm = txt(t, 11, C.muted); nm:SetPoint("TOPLEFT", 44, y); nm:SetPoint("TOPRIGHT", -10, y)
+                    if nm.SetWordWrap then nm:SetWordWrap(false) end
+                    t.tiers[k] = { rk = rk, nm = nm }
+                end
+                tiles[i] = t
             end
-            local fy = hy - 20 - #Cp.OBJECTS * ROWH - 4
-            col(16, fy, UI:Upper(T("Feux de camp (Cuisine)")), C.dim)
-            local fireCells = {}
-            for i, f in ipairs(Cp.FIRES) do
-                fireCells[i] = col(16, fy - 20 * i, "", C.text)
-                col(XS[3], fy - 20 * i, string.format(T("Cuisine %d · %d objets de camp en plus"), f[3], f[4]), C.muted)
+            local fhead = txt(tbl, 10, C.dim)
+            fhead:SetText(UI:Upper(T("Feux de camp (Cuisine)")))
+            for i in ipairs(Cp.FIRES) do
+                local f = CreateFrame("Frame", nil, tbl)
+                f:SetHeight(FH)
+                UI:Panel(f, 8, C.surface2, C.border)
+                f.icon = UI:RoundIcon(f, 26)
+                f.icon:SetPoint("LEFT", 12, 0)
+                f.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(Cp.FIRES[i][1])) or "Interface\\Icons\\INV_Misc_QuestionMark")
+                f.name = txt(f, 12, C.text); f.name:SetPoint("TOPLEFT", 46, -10); f.name:SetPoint("TOPRIGHT", -10, -10)
+                if f.name.SetWordWrap then f.name:SetWordWrap(false) end
+                f.sub = txt(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 46, -29)
+                f.sub:SetText(string.format(T("Cuisine %d · %d objets de camp en plus"), Cp.FIRES[i][3], Cp.FIRES[i][4]))
+                fires[i] = f
             end
+            UI:OnResize(tbl, function(w)
+                local tw = (w - 32 - 2 * TG) / 3
+                for i, t in ipairs(tiles) do
+                    local c, r = (i - 1) % 3, math.floor((i - 1) / 3)
+                    t:ClearAllPoints()
+                    t:SetPoint("TOPLEFT", 16 + c * (tw + TG), -42 - r * (TH + TG))
+                    t:SetWidth(tw)
+                end
+                local fy = -42 - nrows * (TH + TG) - 4
+                fhead:ClearAllPoints(); fhead:SetPoint("TOPLEFT", 16, fy)
+                for i, f in ipairs(fires) do
+                    f:ClearAllPoints()
+                    f:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + TG), fy - 18)
+                    f:SetWidth(tw)
+                end
+            end)
             table.insert(self.dyn, function()
                 local level = (UnitLevel and UnitLevel("player")) or 1
-                for i, o in ipairs(Cp.OBJECTS) do
-                    local row = cells[i]
-                    for t = 1, 3 do row[t + 1]:SetText(Cp:Name(o, t) or "-") end
-                    row.eff:SetText(Cp:Effect(o, 1, level) or (type(o.text) == "table" and T("service (palier 140 et 300)")) or "")
-                    local has = Cp:Cancelled(o)
-                    row.excl:SetText(has and ("|cffe86b6b" .. string.format(T("annulé : tu as %s"), has) .. "|r")
-                        or (o.exclLabel and string.format(T("pas avec %s"), T(o.exclLabel)) or ""))
+                local r1, g1, b1 = UI:Accent()
+                local accentHex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
+                -- meilleure compétence de tes persos dans chaque métier
+                local best = {}
+                for _, c in pairs(WK.DB.global.characters) do
+                    for prof, p in pairs(c.professions or {}) do best[prof] = math.max(best[prof] or 0, p.rank or 0) end
                 end
-                for i in ipairs(Cp.FIRES) do fireCells[i]:SetText(Cp:FireName(i)) end
+                for i, o in ipairs(Cp.OBJECTS) do
+                    local t = tiles[i]
+                    local has = Cp:Cancelled(o)
+                    local eff = Cp:Effect(o, 1, level)
+                    if not eff and type(o.text) == "table" then eff = T("pas d'effet de camp : nourriture et four") end
+                    t.eff:SetText(eff or "")
+                    if has then t.eff:SetTextColor(C.negative[1], C.negative[2], C.negative[3])
+                    elseif o.steps or o.enchant or type(o.text) == "string" then t.eff:SetTextColor(r1, g1, b1)
+                    else t.eff:SetTextColor(C.text[1], C.text[2], C.text[3]) end
+                    t.excl:SetText(has and ("|cffe86b6b" .. string.format(T("annulé : tu as %s"), has) .. "|r")
+                        or (o.exclLabel and string.format(T("ne se cumule pas avec %s"), T(o.exclLabel)) or T("se cumule avec tout")))
+                    local rank = best[o.prof] or 0
+                    for k = 1, 3 do
+                        local row = t.tiers[k]
+                        local name = Cp:Name(o, k)
+                        if not name then name = k == 1 and o.prof == "Cuisine" and T("le feu de camp (ci-dessous)") or "-" end
+                        local reach = o.ids[k] and rank >= Cp.RANKS[k]
+                        row.nm:SetText(name)
+                        if reach then row.nm:SetTextColor(C.text[1], C.text[2], C.text[3]); row.rk:SetText(accentHex .. Cp.RANKS[k] .. "|r")
+                        else row.nm:SetTextColor(C.dim[1], C.dim[2], C.dim[3]); row.rk:SetText(Cp.RANKS[k]) end
+                    end
+                end
+                for i, f in ipairs(fires) do
+                    f.name:SetText(Cp:FireName(i))
+                    local reach = (best["Cuisine"] or 0) >= Cp.FIRES[i][3]
+                    f.name:SetTextColor(reach and C.text[1] or C.dim[1], reach and C.text[2] or C.dim[2], reach and C.text[3] or C.dim[3])
+                end
             end)
 
             -- bon à savoir : repos, sac de couchage

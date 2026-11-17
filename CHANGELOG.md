@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.11.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Feu de camp : « Objets de camp par métier » devient une grille de tuiles, une par métier : icône, effet à ton niveau en couleur d'accent (en rouge si un de tes buffs l'annule), le buff avec lequel il ne se cumule pas, puis les trois objets (20, 140, 300). Les paliers déjà atteints par un de tes persos sont en clair, les autres grisés. Les trois feux de Cuisine ont aussi leurs tuiles.
+
 ## v1.11.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
