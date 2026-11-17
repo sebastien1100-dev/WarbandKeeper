@@ -3,6 +3,23 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
+-- Le bandeau porte un bouton protégé (Cibler) : le jeu interdit de le cacher ou de l'afficher en combat.
+-- En combat, il devient transparent et sera vraiment caché à la sortie du combat.
+local pendingHide = {}
+local function inCombat() return InCombatLockdown and InCombatLockdown() end
+local function safeHide(f)
+    if f:IsProtected() and inCombat() then
+        f:SetAlpha(0)
+        pendingHide[f] = true
+        return
+    end
+    pendingHide[f] = nil
+    f:Hide()
+end
+WK:On("PLAYER_REGEN_ENABLED", function()
+    for f in pairs(pendingHide) do pendingHide[f] = nil; f:Hide(); f:SetAlpha(1) end
+end)
+
 -- Alerte « Rare en vue » (Modules/Rares.lua), deux styles au choix (Rares:Config().alertStyle) :
 --   « banner »  : bandeau en haut de l'écran, portrait, niveau, butin notable, s'il a déjà été tué,
 --                 et deux boutons : Cibler (bouton protégé, hors combat) et Guider (icône ronde, pose la tête de mort) ;
@@ -81,7 +98,7 @@ local function makeBanner(parent, name, secure)
     f.close = UI:IconButton(f, "close", 16, nil, "accent")
     f.close:SetPoint("TOPRIGHT", f, "TOPLEFT", 458, -2)
     f.close:SetFrameLevel(tgt:GetFrameLevel() + 2)
-    f.close:SetScript("OnClick", function() f:Hide() end)
+    f.close:SetScript("OnClick", function() safeHide(f) end)
 
     function f:Fill(info)
         local col = info.elite and C.gold or C.rare
@@ -144,7 +161,7 @@ local function makeCompact(parent, name)
         self.name:SetText(info.name)
         portrait(self.portrait, info)
         self.sub:SetText(detail(info, true))
-        self:SetScript("OnClick", function() if info.rare then R:GuideTo(info.rare) end; R:MarkSkull(info); self:Hide() end)
+        self:SetScript("OnClick", function() if info.rare then R:GuideTo(info.rare) end; R:MarkSkull(info); safeHide(self) end)
     end
     return f
 end
@@ -157,14 +174,14 @@ local function arm(f, key, label)
     f:SetClampedToScreen(true)
     f:SetScript("OnUpdate", function(s)
         if s.sample then return end
-        if s.until_ and GetTime() > s.until_ then s:Hide() end
+        if s.until_ and GetTime() > s.until_ then s.until_ = nil; safeHide(s) end
     end)
     f:Hide()
     UI:RegisterHUD(key, f, {
         label = label, protected = key == "rareAlert", default = { 0, UIParent:GetHeight() / 2 - 110 },
         sample = function(on)
             f.sample = on or nil
-            if on then f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) }); f:Show() else f:Hide() end
+            if on then f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) }); f:Show() else safeHide(f) end
         end,
         -- test : comme une vraie apparition (minuterie et son)
         test = function()
@@ -174,7 +191,7 @@ local function arm(f, key, label)
             f:Show()
             if R:Config().sound and PlaySound then pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master") end
         end,
-        testStop = function() f.until_ = nil; f:Hide() end,
+        testStop = function() f.until_ = nil; safeHide(f) end,
     })
 end
 
@@ -184,9 +201,13 @@ local function show(info)
     if cfg.alertStyle == "compact" then
         if not compact then compact = makeCompact(UIParent, "WarbandKeeperRareCompact"); arm(compact, "rareCompact", T("Alerte de rare (compacte)")) end
         f = compact
+    elseif inCombat() and not (banner and banner:IsShown() and not pendingHide[banner]) then
+        -- en combat, le bandeau (bouton protégé) ne peut pas apparaître : l'alerte compacte le remplace
+        if not compact then compact = makeCompact(UIParent, "WarbandKeeperRareCompact"); arm(compact, "rareCompact", T("Alerte de rare (compacte)")) end
+        f = compact
     else
         if not banner then
-            if InCombatLockdown and InCombatLockdown() then
+            if inCombat() then
                 -- premier rare en combat : le bandeau (qui porte un bouton protégé) se crée à la sortie
                 WK:Print(string.format(T("Rare en vue : %s"), info.name))
                 return
@@ -197,6 +218,8 @@ local function show(info)
     end
     f:Fill(info)
     f.until_ = GetTime() + 25
+    pendingHide[f] = nil
+    f:SetAlpha(1)
     f:Show()
     if cfg.sound and PlaySound then pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master") end
 end

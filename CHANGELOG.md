@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.2.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Alerte de rare : erreur « fonction protégée WarbandKeeperRareAlert:Hide() » quand le bandeau se fermait (ou entrait dans le mode édition) en plein combat. Le bandeau porte le bouton Cibler, que le jeu interdit de cacher en combat : il devient transparent et se ferme vraiment à la sortie du combat. Un rare repéré en combat s'affiche dans l'alerte compacte quand le bandeau n'est pas déjà ouvert.
+
 ## v1.2.1 — 17/11/2026
 
 _Un /reload suffit._

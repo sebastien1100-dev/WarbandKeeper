@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.2.2", date = "17/11/2026",
+        fixed = {
+            "Alerte de rare : erreur « fonction protégée WarbandKeeperRareAlert:Hide() » quand le bandeau se fermait (ou entrait dans le mode édition) en plein combat. Le bandeau porte le bouton Cibler, que le jeu interdit de cacher en combat : il devient transparent et se ferme vraiment à la sortie du combat. Un rare repéré en combat s'affiche dans l'alerte compacte quand le bandeau n'est pas déjà ouvert.",
+        },
+    },
+    {
         version = "1.2.1", date = "17/11/2026",
         changed = {
             "Fiche de personnage : plus d'onglets, tout est sur une seule page qui défile. À gauche l'équipement (poupée, armure, durabilité, sacs) puis les réputations (les 6 plus avancées, « Tout voir » pour toutes avec leurs groupes) ; à droite les stats (caractéristiques, combat, résistances) puis les métiers. Sous le nom : faction et type de serveur.",
