@@ -1,0 +1,2539 @@
+{
+"build": "1.60.1.70938",
+"encounters": {
+"1084": [
+249,
+0,
+"Onyxia",
+"Onyxia"
+],
+"1107": [
+533,
+0,
+"Anub'Rekhan",
+"Anub'Rekhan"
+],
+"1108": [
+533,
+1000,
+"Gluth",
+"Gluth"
+],
+"1109": [
+533,
+500,
+"Gothik the Harvester",
+"Gothik le Moissonneur"
+],
+"1110": [
+533,
+250,
+"Grand Widow Faerlina",
+"Grande veuve Faerlina"
+],
+"1111": [
+533,
+750,
+"Grobbulus",
+"Grobbulus"
+],
+"1112": [
+533,
+375,
+"Heigan the Unclean",
+"Heigan l'Impur"
+],
+"1113": [
+533,
+437,
+"Instructor Razuvious",
+"Instructeur Razuvious"
+],
+"1114": [
+533,
+2000,
+"Kel'Thuzad",
+"Kel'Thuzad"
+],
+"1115": [
+533,
+406,
+"Loatheb",
+"Horreb"
+],
+"1116": [
+533,
+312,
+"Maexxna",
+"Maexxna"
+],
+"1117": [
+533,
+343,
+"Noth the Plaguebringer",
+"Noth le Porte-peste"
+],
+"1118": [
+533,
+625,
+"Patchwerk",
+"Le Recousu"
+],
+"1119": [
+533,
+1500,
+"Sapphiron",
+"Saphiron"
+],
+"1120": [
+533,
+1250,
+"Thaddius",
+"Thaddius"
+],
+"1121": [
+533,
+562,
+"The Four Horsemen",
+"Les quatre cavaliers"
+],
+"1887": [
+70,
+3000,
+"Obsidian Sentinel",
+"Sentinelle d’obsidienne"
+],
+"227": [
+230,
+0,
+"High Interrogator Gerstahn",
+"Grande interrogatrice Gerstahn"
+],
+"228": [
+230,
+1000,
+"Lord Roccor",
+"Seigneur Roccor"
+],
+"229": [
+230,
+2000,
+"Houndmaster Grebmar",
+"Maître-chien Grebmar"
+],
+"230": [
+230,
+3000,
+"Ring of Law",
+"Cercle de la loi"
+],
+"231": [
+230,
+4000,
+"Pyromancer Loregrain",
+"Pyromancien Blé-du-savoir"
+],
+"232": [
+230,
+5000,
+"Lord Incendius",
+"Seigneur Incendius"
+],
+"233": [
+230,
+6000,
+"Warder Stilgiss",
+"Gardien Stilgiss"
+],
+"234": [
+230,
+7000,
+"Fineous Darkvire",
+"Fineous Sombrevire"
+],
+"235": [
+230,
+8000,
+"Bael'Gar",
+"Bael’Gar"
+],
+"236": [
+230,
+9000,
+"General Angerforge",
+"Général Forgehargne"
+],
+"237": [
+230,
+10000,
+"Golem Lord Argelmach",
+"Seigneur golem Argelmach"
+],
+"238": [
+230,
+11000,
+"Hurley Blackbreath",
+"Hurley Soufflenoir"
+],
+"239": [
+230,
+12000,
+"Phalanx",
+"Phalange"
+],
+"240": [
+230,
+13000,
+"Ribbly Screwspigot",
+"Ribbly Fermevanne"
+],
+"241": [
+230,
+14000,
+"Plugger Spazzring",
+"Lanfiche Brouillecircuit"
+],
+"242": [
+230,
+15000,
+"Ambassador Flamelash",
+"Ambassadeur Cinglefouet"
+],
+"243": [
+230,
+16000,
+"The Seven",
+"Les Sept"
+],
+"244": [
+230,
+17000,
+"Magmus",
+"Magmus"
+],
+"267": [
+229,
+0,
+"Highlord Omokk",
+"Généralissime Omokk"
+],
+"268": [
+229,
+1000,
+"Shadow Hunter Vosh'gajin",
+"Chasseresse des ombres Vosh’gajin"
+],
+"269": [
+229,
+2000,
+"War Master Voone",
+"Maître de guerre Voone"
+],
+"2694": [
+48,
+0,
+"Baron Aquanis",
+"Baron Aquanis"
+],
+"2697": [
+48,
+1000,
+"Ghamoo-ra",
+"Ghamoo-Ra"
+],
+"2699": [
+48,
+2000,
+"Lady Sarevess",
+"Dame Sarevess"
+],
+"270": [
+229,
+3000,
+"Mother Smolderweb",
+"Matriarche Couveuse"
+],
+"2704": [
+48,
+3000,
+"Gelihast",
+"Gelihast"
+],
+"271": [
+229,
+4000,
+"Urok Doomhowl",
+"Urok Hurleruine"
+],
+"2710": [
+48,
+4000,
+"Lorgus Jett",
+"Lorgus Jett"
+],
+"272": [
+229,
+5000,
+"Quartermaster Zigris",
+"Intendant Zigris"
+],
+"273": [
+229,
+6000,
+"Gizrul the Slavener",
+"Gizrul l’esclavagiste"
+],
+"2732": [
+389,
+0,
+"Oggleflint",
+"Lorgnesilex"
+],
+"2733": [
+389,
+1000,
+"Taragaman the Hungerer",
+"Taragaman l’Affameur"
+],
+"2734": [
+389,
+2000,
+"Jergosh the Invoker",
+"Jergosh l’Invocateur"
+],
+"2735": [
+389,
+3000,
+"Bazzalan",
+"Bazzalan"
+],
+"274": [
+229,
+5500,
+"Halycon",
+"Halycon"
+],
+"2741": [
+36,
+0,
+"Rhahk'Zor",
+"Rhahk’Zor"
+],
+"2742": [
+36,
+1000,
+"Sneed",
+"Sneed"
+],
+"2743": [
+36,
+2000,
+"Gilnid",
+"Gilnid"
+],
+"2744": [
+36,
+3000,
+"Captain Greenskin",
+"Capitaine Vertepeau"
+],
+"2745": [
+36,
+4000,
+"Mr. Smite",
+"M. Châtiment"
+],
+"2746": [
+36,
+5000,
+"Cookie",
+"Macaron"
+],
+"2747": [
+36,
+6000,
+"Edwin VanCleef",
+"Edwin VanCleef"
+],
+"2748": [
+33,
+0,
+"Rethilgore",
+"Rethiltripe"
+],
+"2749": [
+33,
+1000,
+"Razorclaw the Butcher",
+"Tranchegriffe le Boucher"
+],
+"275": [
+229,
+8000,
+"Overlord Wyrmthalak",
+"Seigneur Wyrmthalak"
+],
+"2750": [
+33,
+2000,
+"Baron Silverlaine",
+"Baron d’Argelaine"
+],
+"2751": [
+33,
+3000,
+"Commander Springvale",
+"Commandant Printeval"
+],
+"2752": [
+33,
+4000,
+"Odo the Blindwatcher",
+"Odo l’Aveugle"
+],
+"2753": [
+33,
+5000,
+"Fenrus the Devourer",
+"Fenrus le Dévoreur"
+],
+"2754": [
+33,
+6000,
+"Wolf Master Nandos",
+"Maître-loup Nandos"
+],
+"2755": [
+33,
+7000,
+"Archmage Arugal",
+"Archimage Arugal"
+],
+"2756": [
+34,
+0,
+"Targorr the Dread",
+"Targorr le Terrifiant"
+],
+"2757": [
+34,
+1000,
+"Kam Deepfury",
+"Kam Furie-du-fond"
+],
+"2758": [
+34,
+2000,
+"Hamhock",
+"Hamhock"
+],
+"2759": [
+34,
+3000,
+"Dextren Ward",
+"Dextren Ward"
+],
+"2760": [
+34,
+4000,
+"Bazil Thredd",
+"Bazil Thredd"
+],
+"2761": [
+48,
+0,
+"Ghamoo-ra",
+"Ghamoo-Ra"
+],
+"2762": [
+48,
+1000,
+"Lady Sarevess",
+"Dame Sarevess"
+],
+"2763": [
+48,
+2000,
+"Geilhast",
+"Gelihast"
+],
+"2764": [
+48,
+3000,
+"Lorgus Jett",
+"Lorgus Jett"
+],
+"2765": [
+48,
+4000,
+"Old Serra'kis",
+"Vieux Serra’kis"
+],
+"2766": [
+48,
+5000,
+"Twilight Lord Kelris",
+"Seigneur du Crépuscule Kelris"
+],
+"2767": [
+48,
+6000,
+"Aku'mai",
+"Aku’mai"
+],
+"2768": [
+90,
+0,
+"Grubbis",
+"Grubbis"
+],
+"2769": [
+90,
+1000,
+"Viscous Fallout",
+"Retombée visqueuse"
+],
+"2770": [
+90,
+2000,
+"Electrocutioner 6000",
+"Électrocuteur 6000"
+],
+"2771": [
+90,
+3000,
+"Crowd Pummeler 9-60",
+"Disperseur de foule 9-60"
+],
+"2772": [
+90,
+4000,
+"Mekgineer Thermaplugg",
+"Mekgénieur Thermojoncteur"
+],
+"2773": [
+47,
+0,
+"Roogug",
+"Roogug"
+],
+"2774": [
+47,
+1000,
+"Aggem Thorncurse",
+"Aggem Malépine"
+],
+"2775": [
+47,
+2000,
+"Death Speaker Jargba",
+"Nécrorateur Jargba"
+],
+"2776": [
+47,
+3000,
+"Overlord Ramtusk",
+"Seigneur Brusquebroche"
+],
+"2777": [
+47,
+4000,
+"Agathelos the Raging",
+"Agathelos le Déchaîné"
+],
+"2778": [
+47,
+5000,
+"Charlga Razorflank",
+"Charlga Trancheflanc"
+],
+"2779": [
+189,
+1000,
+"Bloodmage Thalnos",
+"Mage de sang Thalnos"
+],
+"2780": [
+129,
+0,
+"Tuten'kash",
+"Tuten’kash"
+],
+"2781": [
+129,
+1000,
+"Plaguemaw the Rotting",
+"Pestegueule le Pourrissant"
+],
+"2782": [
+129,
+2000,
+"Mordresh Fire Eye",
+"Mordresh Œil-de-Feu"
+],
+"2783": [
+129,
+3000,
+"Ragglesnout",
+"Groinfendu"
+],
+"2784": [
+129,
+4000,
+"Glutton",
+"Glouton"
+],
+"2785": [
+129,
+5000,
+"Amnennar the Coldbringer",
+"Amnennar le Porte-Froid"
+],
+"2789": [
+230,
+18000,
+"Princess Moira Bronzebeard",
+"Princesse Moira Barbe-de-Bronze"
+],
+"2790": [
+230,
+19000,
+"Emperor Dagran Thaurissan",
+"Empereur Dagran Thaurissan"
+],
+"2791": [
+230,
+14500,
+"The Vault",
+"Le Coffre"
+],
+"2792": [
+429,
+2500,
+"Pusillin",
+"Pusillin"
+],
+"2793": [
+429,
+15000,
+"Lord Hel'nurath",
+"Seigneur Hel’nurath"
+],
+"2794": [
+429,
+16000,
+"Tsu'zee",
+"Tsu’zee"
+],
+"2795": [
+329,
+13000,
+"Black Guard Swordsmith",
+"Fabricant d’épées de la Garde noire"
+],
+"2796": [
+329,
+14000,
+"Crimson Hammersmith",
+"Forgeur de marteaux cramoisi"
+],
+"2797": [
+329,
+15000,
+"Ezra Grimm",
+"Ezra Grimm"
+],
+"2798": [
+329,
+16000,
+"Postmaster Malown",
+"Postier Malown"
+],
+"2799": [
+329,
+17000,
+"Skul",
+"Krân"
+],
+"2800": [
+329,
+18000,
+"Stonespine",
+"Échine-de-pierre"
+],
+"2801": [
+289,
+12000,
+"Darkmaster Gandling",
+"Sombre Maître Gandling"
+],
+"2802": [
+289,
+-7,
+"Doctor Theolen Krastinov",
+"Docteur Theolen Krastinov"
+],
+"2803": [
+289,
+-15,
+"Instructor Malicia",
+"Instructrice Malicia"
+],
+"2804": [
+289,
+-500,
+"Jandice Barov",
+"Jandice Barov"
+],
+"2805": [
+289,
+-1000,
+"Kirtonos",
+"Kirtonos"
+],
+"2806": [
+289,
+11500,
+"Lady Illucia Barov",
+"Dame Illucia Barov"
+],
+"2807": [
+289,
+11250,
+"Lord Alexei Barov",
+"Seigneur Alexei Barov"
+],
+"2808": [
+289,
+7000,
+"Lorekeeper Polkelt",
+"Gardien du savoir Polkelt"
+],
+"2809": [
+289,
+-125,
+"Marduk Blackpool",
+"Marduk Noirétang"
+],
+"2810": [
+289,
+-31,
+"Ras Frostwhisperer",
+"Ras Murmegivre"
+],
+"2811": [
+289,
+-250,
+"Rattlegore",
+"Cliquettripes"
+],
+"2812": [
+289,
+11000,
+"The Ravenian",
+"Le Voracien"
+],
+"2813": [
+289,
+-62,
+"Vectus",
+"Vectus"
+],
+"2814": [
+109,
+9000,
+"Atal'alarion",
+"Atal’alarion"
+],
+"2825": [
+48,
+7000,
+"Twilight Lord Kelris",
+"Seigneur du Crépuscule Kelris"
+],
+"2891": [
+48,
+8000,
+"Aku'mai",
+"Aku’mai"
+],
+"2899": [
+90,
+5000,
+"Crowd Pummeler 9-60",
+"Disperseur de foule 9-60"
+],
+"2910": [
+48,
+0,
+"Aku'mai",
+"Aku’mai"
+],
+"2911": [
+48,
+-1000,
+"Twilight Lord Kelris",
+"Seigneur du Crépuscule Kelris"
+],
+"2912": [
+48,
+-2000,
+"Old Serra'kis",
+"Vieux Serra’kis"
+],
+"2913": [
+48,
+-3000,
+"Lorgus Jett",
+"Lorgus Jett"
+],
+"2914": [
+48,
+-4000,
+"Geilhast",
+"Gelihast"
+],
+"2915": [
+48,
+-5000,
+"Lady Sarevess",
+"Dame Sarevess"
+],
+"2916": [
+48,
+-6000,
+"Ghamoo-ra",
+"Ghamoo-Ra"
+],
+"2925": [
+90,
+4000,
+"Grubbis",
+"Grubbis"
+],
+"2927": [
+90,
+6000,
+"Electrocutioner 6000",
+"Électrocuteur 6000"
+],
+"2928": [
+90,
+4500,
+"Viscous Fallout",
+"Retombée visqueuse"
+],
+"2935": [
+90,
+7000,
+"Mechanical Menagerie",
+"Ménagerie mécanique"
+],
+"2940": [
+90,
+8000,
+"Mekgineer Thermaplugg",
+"Mekgénieur Thermojoncteur"
+],
+"2952": [
+109,
+0,
+"Atal'alarion",
+"Atal’alarion"
+],
+"2953": [
+109,
+1000,
+"Festering Rotslime",
+"Pourriture gélatineuse purulente"
+],
+"2954": [
+109,
+2000,
+"Atal'ai Defenders",
+"Défenseurs atal’ai"
+],
+"2955": [
+109,
+3000,
+"Dreamscythe and Weaver",
+"Fauche-rêve et tisserand"
+],
+"2956": [
+109,
+4000,
+"Avatar of Hakkar",
+"Avatar d’Hakkar"
+],
+"2957": [
+109,
+5000,
+"Jammal'an and Ogom",
+"Jammal’an et Ogom"
+],
+"2958": [
+109,
+6000,
+"Morphaz and Hazzas",
+"Morphaz et Hazzas"
+],
+"2959": [
+109,
+7000,
+"Shade of Eranikus",
+"Ombre d’Eranikus"
+],
+"3018": [
+409,
+10000,
+"The Molten Core",
+"Le Cœur du Magma"
+],
+"3023": [
+2784,
+0,
+"Grimroot",
+"Tristeracine"
+],
+"3024": [
+2784,
+1000,
+"Diathorus the Seeker",
+"Diathorus le Chercheur"
+],
+"3025": [
+2720,
+0,
+"Testwerk",
+"Testwerk"
+],
+"3026": [
+2789,
+0,
+"Lord Kazzak",
+"Seigneur Kazzak"
+],
+"3027": [
+2791,
+0,
+"Azuregos",
+"Azuregos"
+],
+"3028": [
+2784,
+500,
+"Destructor's Wraith",
+"Âme en peine du Destructeur"
+],
+"3029": [
+2784,
+750,
+"Zilbagob",
+"Zilbagob"
+],
+"3030": [
+2784,
+875,
+"Pyranis",
+"Pyranis"
+],
+"3031": [
+2784,
+2000,
+"Hellscream's Phantom",
+"Fantôme de Hurlenfer"
+],
+"3055": [
+289,
+-46,
+"Kormok",
+"Kormok"
+],
+"3061": [
+0,
+0,
+"No Longer in Use",
+"Obsolète"
+],
+"3062": [
+229,
+9000,
+"Pyroguard Emberseer",
+"Pyrogarde Prophète ardent"
+],
+"3063": [
+229,
+10000,
+"Warchief Rend Blackhand",
+"Chef de guerre Rend Main-noire"
+],
+"3068": [
+229,
+11000,
+"The Beast",
+"La Bête"
+],
+"3069": [
+229,
+12000,
+"General Drakkisath",
+"Général Drakkisath"
+],
+"3070": [
+229,
+13000,
+"Lord Valthalak",
+"Seigneur Valthalak"
+],
+"3078": [
+13,
+0,
+"Rahuz",
+"Rahuz"
+],
+"3079": [
+2804,
+0,
+"Prince Thunderaan",
+"Prince Tonneraan"
+],
+"3080": [
+2784,
+3000,
+"Azgaloth",
+"Azgaloth"
+],
+"3111": [
+2832,
+0,
+"Emeriss",
+"Emeriss"
+],
+"3112": [
+2832,
+1000,
+"Lethon",
+"Léthon"
+],
+"3113": [
+2832,
+2000,
+"Taerar",
+"Taerar"
+],
+"3114": [
+2832,
+3000,
+"Ysondre",
+"Ysondre"
+],
+"3141": [
+2875,
+0,
+"Harbinger of Sin",
+"Messager de péché"
+],
+"3143": [
+2875,
+1000,
+"Kharon",
+"Kharon"
+],
+"3144": [
+2875,
+500,
+"Three Little Wolves",
+"Les trois petits loups"
+],
+"3145": [
+2875,
+750,
+"Dark Rider",
+"Cavalier noir"
+],
+"3146": [
+2875,
+250,
+"Creeping Malison",
+"Maldicio perfide"
+],
+"3152": [
+2875,
+2000,
+"Unk'omon",
+"Peuk’ommun"
+],
+"3168": [
+2875,
+3000,
+"Hans and Greta",
+"Hans et Greta"
+],
+"3169": [
+2875,
+4000,
+"The Ugly Goblin",
+"Le vilain petit Gobelin"
+],
+"3170": [
+2875,
+5000,
+"Kaigy Maryla",
+"Kaigy Maryla"
+],
+"3171": [
+2875,
+6000,
+"Sairuh Maryla",
+"Sairuh Maryla"
+],
+"3172": [
+2875,
+7000,
+"Barian Maryla",
+"Barian Maryla"
+],
+"3185": [
+2856,
+0,
+"Balnazzar",
+"Balnazzar"
+],
+"3186": [
+2856,
+906,
+"Solistrasza",
+"Solistrasza"
+],
+"3187": [
+2856,
+500,
+"Beatrix",
+"Beatrix"
+],
+"3188": [
+2856,
+2000,
+"Reborn Council",
+"Le conseil ressuscité"
+],
+"3189": [
+2856,
+3000,
+"Caldoran",
+"Caldoran"
+],
+"3190": [
+2856,
+2500,
+"Lillian Voss",
+"Lilian Voss"
+],
+"3196": [
+2856,
+875,
+"Beastmaster",
+"Belluaire"
+],
+"3197": [
+2856,
+937,
+"Mason",
+"Maçon"
+],
+"3296": [
+2921,
+0,
+"Spirit of Mograine",
+"Esprit de Mograine"
+],
+"3298": [
+2959,
+0,
+"Arcane Anomaly",
+"Anomalie arcanique"
+],
+"3299": [
+2959,
+1000,
+"Fel Ancient",
+"Ancien gangrené"
+],
+"3300": [
+2959,
+2000,
+"Mana Devourer",
+"Dévoreur de mana"
+],
+"3301": [
+2959,
+3000,
+"Mana Elemental",
+"Élémentaire de mana"
+],
+"3302": [
+2959,
+4000,
+"Unstable Sentinel",
+"Sentinelle instable"
+],
+"3303": [
+2959,
+9000,
+"Shade of the Archmage",
+"Ombre de l’archimage"
+],
+"3310": [
+2959,
+6000,
+"Lyn the Ignored",
+"Lyn l’Ignoré"
+],
+"3311": [
+2959,
+7000,
+"Atrexis the Grave Knight",
+"Atrexis le Chevalier de la tombe"
+],
+"3312": [
+2959,
+8000,
+"Mana Wraith",
+"Âme en peine de mana"
+],
+"3315": [
+2974,
+0,
+"Withermaw",
+"Flétrigueule"
+],
+"3316": [
+2974,
+1000,
+"Impaan the Imprisoner",
+"Diablaan l’Enfermeur"
+],
+"3322": [
+2974,
+3000,
+"Bonesnout the Unbroken",
+"Muflos l’Indompté"
+],
+"3323": [
+2974,
+5000,
+"Blackmaw Behemoth",
+"Béhémoth noiregueule"
+],
+"3327": [
+2974,
+2000,
+"Elder Shaman Bloodmane",
+"Ancien chaman crin-de-sang"
+],
+"3334": [
+2974,
+4000,
+"Varrox Bleakhoof",
+"Varrox Mornesabot"
+],
+"3336": [
+2974,
+6000,
+"Unbound Spirit",
+"Esprit délié"
+],
+"3353": [
+2999,
+0,
+"Witherfang",
+"Croc-Flétri"
+],
+"3354": [
+2999,
+5000,
+"Rath'mael",
+"Rath’mael"
+],
+"3355": [
+2999,
+500,
+"The Butcher",
+"Le Boucher"
+],
+"3357": [
+2999,
+250,
+"The Abandoned",
+"L’Abandonné"
+],
+"3369": [
+3002,
+0,
+"Deathulus",
+"Mortulus"
+],
+"3371": [
+3002,
+1000,
+"Crushfist Bloodbreaker",
+"Poing-de-Rage Brisesang"
+],
+"3403": [
+2994,
+0,
+"Overseer Wrex",
+"Surveillant Wrex"
+],
+"3408": [
+2999,
+2000,
+"Lordaeron Captain",
+"Capitaine de Lordaeron"
+],
+"3409": [
+2994,
+1000,
+"Blazeroar",
+"Rugiflamme"
+],
+"3410": [
+2994,
+500,
+"Tidemistress Ca'zass",
+"Maîtresse des marées Ca’zass"
+],
+"3411": [
+2999,
+3000,
+"Viktor the Vile",
+"Viktor le Vil"
+],
+"3412": [
+2999,
+4000,
+"Bjork",
+"Bjork"
+],
+"3415": [
+2994,
+750,
+"The Questioner",
+"L’Interrogateur"
+],
+"3418": [
+2994,
+625,
+"Katerina the Cleaner",
+"Katerina la Nettoyeuse"
+],
+"343": [
+429,
+0,
+"Zevrim Thornhoof",
+"Zevrim Sabot-de-Ronce"
+],
+"344": [
+429,
+1000,
+"Hydrospawn",
+"Hydrogénos"
+],
+"3449": [
+3039,
+4500,
+"Nar'gurk",
+"Nar’gurk"
+],
+"345": [
+429,
+2000,
+"Lethtendris",
+"Lethtendris"
+],
+"3450": [
+3039,
+1000,
+"Slavecrusher Grox",
+"Brise-esclave Grox"
+],
+"3451": [
+3039,
+5000,
+"Overseer Mugg",
+"Suzerain Mugg"
+],
+"3452": [
+3039,
+1500,
+"Twilight Commander Zarmok",
+"Commandant du Crépuscule Zarmok"
+],
+"3453": [
+3039,
+4000,
+"Handler Ashka",
+"Dresseuse Ashka"
+],
+"346": [
+429,
+3000,
+"Alzzin the Wildshaper",
+"Alzzin le Modeleur"
+],
+"347": [
+429,
+4000,
+"Illyanna Ravenoak",
+"Illyanna Corvichêne"
+],
+"3474": [
+2970,
+0,
+"Zul'Alai",
+"Zul’Alai"
+],
+"3475": [
+2970,
+1000,
+"Var'Taka",
+"Var’Taka"
+],
+"3476": [
+2970,
+2000,
+"Captain Dreadrise",
+"Capitaine Lèveffroi"
+],
+"3478": [
+2970,
+3000,
+"Deathless Guardians",
+"Gardiens impérissables"
+],
+"3479": [
+2970,
+6000,
+"Min'loth the Serpent",
+"Min’loth le Serpent"
+],
+"348": [
+429,
+5000,
+"Magister Kalendris",
+"Magistère Kalendris"
+],
+"3480": [
+2998,
+0,
+"Saltspine",
+"Seléchine"
+],
+"3481": [
+2998,
+1000,
+"Shadetooth",
+"Dent-Sombre"
+],
+"3482": [
+2998,
+2000,
+"Relic Guardian",
+"Gardien des reliques"
+],
+"349": [
+429,
+6000,
+"Immol'thar",
+"Immol’thar"
+],
+"3493": [
+3065,
+0,
+"Faldrim Anvilmar",
+"Faldrim Courbenclume"
+],
+"3494": [
+3065,
+2500,
+"Plunder",
+"Pillage"
+],
+"3495": [
+3065,
+2000,
+"Infurnus",
+"Infurnus"
+],
+"3496": [
+3065,
+3000,
+"Durgen Dirgehammer",
+"Durgen Mornemartel"
+],
+"3498": [
+3001,
+0,
+"Titanosaur",
+"Titanosaure"
+],
+"3499": [
+3001,
+1000,
+"Ravasaur Hunters",
+"Ravasaures chasseurs"
+],
+"350": [
+429,
+3500,
+"Tendris Warpwood",
+"Tendris Crochebois"
+],
+"3500": [
+3001,
+2000,
+"Thunderhoof",
+"Sabot-Tonnerre"
+],
+"3501": [
+3001,
+3000,
+"Venomridge",
+"Crête-venin"
+],
+"3502": [
+3001,
+8000,
+"Nanaya",
+"Nanaya"
+],
+"3503": [
+3001,
+5000,
+"Cinder",
+"Braise"
+],
+"3504": [
+3001,
+6000,
+"King Op",
+"Roi Op"
+],
+"3505": [
+3001,
+7000,
+"Bolt",
+"Fulguro"
+],
+"3507": [
+3001,
+3500,
+"Direhorn Matriarch",
+"Matriarche navrecorne"
+],
+"3511": [
+2970,
+5000,
+"Primeval Elemental",
+"Élémentaire primitif"
+],
+"3582": [
+109,
+0,
+"Atal'alarion",
+"Atal’alarion"
+],
+"3583": [
+109,
+1000,
+"Avatar of Hakkar",
+"Avatar d’Hakkar"
+],
+"3584": [
+109,
+2000,
+"Shade of Eranikus",
+"Ombre d’Eranikus"
+],
+"3585": [
+109,
+3000,
+"Hazzas",
+"Hazzas"
+],
+"3586": [
+109,
+4000,
+"Morphaz",
+"Morphaz"
+],
+"3587": [
+109,
+5000,
+"Weaver",
+"Tisserand"
+],
+"3588": [
+109,
+6000,
+"Dreamscythe",
+"Fauche-rêve"
+],
+"3589": [
+109,
+7000,
+"Jammal'an the Prophet",
+"Jammal’an le prophète"
+],
+"3597": [
+3001,
+6500,
+"Snowtalon",
+"Serre-neigeuse"
+],
+"3600": [
+3001,
+7500,
+"Vitrix",
+"Vitrix"
+],
+"361": [
+429,
+7000,
+"Prince Tortheldrin",
+"Prince Tortheldrin"
+],
+"362": [
+429,
+8000,
+"Guard Mol'dar",
+"Garde Mol’dar"
+],
+"363": [
+429,
+9000,
+"Stomper Kreeg",
+"Kreeg le Marteleur"
+],
+"364": [
+429,
+10000,
+"Guard Fengus",
+"Garde Fengus"
+],
+"3644": [
+2998,
+1500,
+"Highland Horror",
+"Horreur des hautes-terres"
+],
+"365": [
+429,
+11000,
+"Guard Slip'kik",
+"Garde Slip’kik"
+],
+"366": [
+429,
+12000,
+"Captain Kromcrush",
+"Capitaine Kromcrabouille"
+],
+"367": [
+429,
+13000,
+"Cho'Rush the Observer",
+"Cho’Rush l’Observateur"
+],
+"3676": [
+36,
+1500,
+"Miner Johnson",
+"Mineur Johnson"
+],
+"368": [
+429,
+14000,
+"King Gordok",
+"Roi Gordok"
+],
+"422": [
+349,
+0,
+"Noxxion",
+"Noxcion"
+],
+"423": [
+349,
+1000,
+"Razorlash",
+"Tranchefouet"
+],
+"424": [
+349,
+2000,
+"Lord Vyletongue",
+"Seigneur Vylelangue"
+],
+"425": [
+349,
+3000,
+"Celebras the Cursed",
+"Celebras le Maudit"
+],
+"426": [
+349,
+4000,
+"Landslide",
+"Glissement de terrain"
+],
+"427": [
+349,
+1500,
+"Tinkerer Gizlock",
+"Bricoleur Kadenaz"
+],
+"428": [
+349,
+6000,
+"Rotgrip",
+"Grippe-charogne"
+],
+"429": [
+349,
+7000,
+"Princess Theradras",
+"Princesse Theradras"
+],
+"444": [
+189,
+0,
+"Interrogator Vishas",
+"Interrogateur Vislar"
+],
+"446": [
+189,
+2000,
+"Houndmaster Loksey",
+"Maître-chien Loksey"
+],
+"447": [
+189,
+3000,
+"Arcanist Doan",
+"Arcaniste Doan"
+],
+"448": [
+189,
+4000,
+"Herod",
+"Hérode"
+],
+"449": [
+189,
+5000,
+"High Inquisitor Fairbanks",
+"Grand inquisiteur Fairbanks"
+],
+"450": [
+189,
+6000,
+"High Inquisitor Whitemane",
+"Grande inquisitrice Blanchetête"
+],
+"472": [
+329,
+6500,
+"The Unforgiven",
+"Le Condamné"
+],
+"473": [
+329,
+1000,
+"Hearthsinger Forresten",
+"Chanteloge Forrestin"
+],
+"474": [
+329,
+2000,
+"Timmy the Cruel",
+"Timmy le Cruel"
+],
+"475": [
+329,
+3000,
+"Cannon Master Willey",
+"Maître canonnier Willey"
+],
+"476": [
+329,
+2500,
+"Malor the Zealous",
+"Malor le Zélé"
+],
+"477": [
+329,
+5000,
+"Archivist Galford",
+"Archiviste Galford"
+],
+"478": [
+329,
+6000,
+"Balnazzar",
+"Balnazzar"
+],
+"479": [
+329,
+7000,
+"Baroness Anastari",
+"Baronne Anastari"
+],
+"480": [
+329,
+8000,
+"Nerub'enkan",
+"Nerub’enkan"
+],
+"481": [
+329,
+9000,
+"Maleki the Pallid",
+"Maleki le Blafard"
+],
+"482": [
+329,
+10000,
+"Magistrate Barthilas",
+"Magistrat Barthilas"
+],
+"483": [
+329,
+11000,
+"Ramstein the Gorger",
+"Ramstein Grandgosier"
+],
+"484": [
+329,
+12000,
+"Baron Rivendare",
+"Baron Vaillefendre"
+],
+"486": [
+109,
+1000,
+"Dreamscythe",
+"Fauche-rêve"
+],
+"487": [
+109,
+2000,
+"Weaver",
+"Tisserand"
+],
+"488": [
+109,
+500,
+"Jammal'an the Prophet",
+"Jammal’an le Prophète"
+],
+"490": [
+109,
+5000,
+"Morphaz",
+"Morphaz"
+],
+"491": [
+109,
+6000,
+"Hazzas",
+"Hazzas"
+],
+"492": [
+109,
+-500,
+"Avatar of Hakkar",
+"Avatar d’Hakkar"
+],
+"493": [
+109,
+8000,
+"Shade of Eranikus",
+"Ombre d’Eranikus"
+],
+"547": [
+70,
+0,
+"Revelosh",
+"Revelosh"
+],
+"548": [
+70,
+1000,
+"The Lost Dwarves",
+"Les nains perdus"
+],
+"549": [
+70,
+2000,
+"Ironaya",
+"Ironaya"
+],
+"551": [
+70,
+4000,
+"Ancient Stone Keeper",
+"Ancien gardien en pierre"
+],
+"552": [
+70,
+5000,
+"Galgann Firehammer",
+"Galgann Martel-de-Feu"
+],
+"553": [
+70,
+6000,
+"Grimlok",
+"Grimelok"
+],
+"554": [
+70,
+7000,
+"Archaedas",
+"Archaedas"
+],
+"585": [
+43,
+0,
+"Lady Anacondra",
+"Dame Anacondra"
+],
+"586": [
+43,
+1000,
+"Lord Cobrahn",
+"Seigneur Cobrahn"
+],
+"587": [
+43,
+2000,
+"Kresh",
+"Kresh"
+],
+"588": [
+43,
+3000,
+"Lord Pythas",
+"Seigneur Pythas"
+],
+"589": [
+43,
+4000,
+"Skum",
+"Skum"
+],
+"590": [
+43,
+5000,
+"Lord Serpentis",
+"Seigneur Serpentis"
+],
+"591": [
+43,
+6000,
+"Verdan the Everliving",
+"Verdan l’Immortel"
+],
+"592": [
+43,
+7000,
+"Mutanus the Devourer",
+"Mutanus le Dévoreur"
+],
+"593": [
+209,
+0,
+"Hydromancer Velratha",
+"Hydromancienne Velratha"
+],
+"594": [
+209,
+1000,
+"Gahz'rilla",
+"Gahz’rilla"
+],
+"595": [
+209,
+2000,
+"Antu'sul",
+"Antu’sul"
+],
+"596": [
+209,
+3000,
+"Theka the Martyr",
+"Theka le Martyr"
+],
+"597": [
+209,
+4000,
+"Witch Doctor Zum'rah",
+"Féticheur Zum’rah"
+],
+"598": [
+209,
+5000,
+"Nekrum Gutchewer",
+"Nekrum Mâchentrailles"
+],
+"599": [
+209,
+6000,
+"Shadowpriest Sezz'ziz",
+"Prêtre des ombres Sezz’ziz"
+],
+"600": [
+209,
+7000,
+"Chief Ukorz Sandscalp",
+"Chef Ukorz Scalpessable"
+],
+"610": [
+469,
+0,
+"Razorgore the Untamed",
+"Tranchetripe l'Indompté"
+],
+"611": [
+469,
+1000,
+"Vaelastrasz the Corrupt",
+"Vaelastrasz le Corrompu"
+],
+"612": [
+469,
+2000,
+"Broodlord Lashlayer",
+"Seigneur des couvées Lashlayer"
+],
+"613": [
+469,
+3000,
+"Firemaw",
+"Gueule-de-feu"
+],
+"614": [
+469,
+4000,
+"Ebonroc",
+"Rochébène"
+],
+"615": [
+469,
+5000,
+"Flamegor",
+"Flamegor"
+],
+"616": [
+469,
+6000,
+"Chromaggus",
+"Chromaggus"
+],
+"617": [
+469,
+7000,
+"Nefarian",
+"Nefarian"
+],
+"663": [
+409,
+0,
+"Lucifron",
+"Lucifron"
+],
+"664": [
+409,
+1000,
+"Magmadar",
+"Magmadar"
+],
+"665": [
+409,
+2000,
+"Gehennas",
+"Gehennas"
+],
+"666": [
+409,
+3000,
+"Garr",
+"Garr"
+],
+"667": [
+409,
+4000,
+"Shazzrah",
+"Shazzrah"
+],
+"668": [
+409,
+5000,
+"Baron Geddon",
+"Baron Geddon"
+],
+"669": [
+409,
+6000,
+"Sulfuron Harbinger",
+"Messager de Sulfuron"
+],
+"670": [
+409,
+7000,
+"Golemagg the Incinerator",
+"Golemagg l'Incinérateur"
+],
+"671": [
+409,
+8000,
+"Majordomo Executus",
+"Chambellan Executus"
+],
+"672": [
+409,
+9000,
+"Ragnaros",
+"Ragnaros"
+],
+"709": [
+531,
+0,
+"The Prophet Skeram",
+"Le Prophète Skeram"
+],
+"710": [
+531,
+1000,
+"Silithid Royalty",
+"Famille royale silithide"
+],
+"711": [
+531,
+2000,
+"Battleguard Sartura",
+"Garde de guerre Sartura"
+],
+"712": [
+531,
+3000,
+"Fankriss the Unyielding",
+"Fankriss l'Inflexible"
+],
+"713": [
+531,
+4000,
+"Viscidus",
+"Viscidus"
+],
+"714": [
+531,
+5000,
+"Princess Huhuran",
+"Princesse Huhuran"
+],
+"715": [
+531,
+6000,
+"Twin Emperors",
+"Empereurs jumeaux"
+],
+"716": [
+531,
+7000,
+"Ouro",
+"Ouro"
+],
+"717": [
+531,
+8000,
+"C'thun",
+"C'Thun"
+],
+"718": [
+509,
+0,
+"Kurinnaxx",
+"Kurinnaxx"
+],
+"719": [
+509,
+1000,
+"General Rajaxx",
+"Général Rajaxx"
+],
+"720": [
+509,
+2000,
+"Moam",
+"Moam"
+],
+"721": [
+509,
+3000,
+"Buru the Gorger",
+"Buru Grandgosier"
+],
+"722": [
+509,
+4000,
+"Ayamiss the Hunter",
+"Ayamiss le Chasseur"
+],
+"723": [
+509,
+5000,
+"Ossirian the Unscarred",
+"Ossirian l'Intouché"
+],
+"784": [
+309,
+0,
+"High Priest Venoxis",
+"Grand prêtre Venoxis"
+],
+"785": [
+309,
+-1000,
+"High Priestess Jeklik",
+"Grande prêtresse Jeklik"
+],
+"786": [
+309,
+2000,
+"High Priestess Mar'li",
+"Grande prêtresse Mar'li"
+],
+"787": [
+309,
+3000,
+"Bloodlord Mandokir",
+"Seigneur sanglant Mandokir"
+],
+"788": [
+309,
+4000,
+"Edge of Madness",
+"Frontière de la folie"
+],
+"789": [
+309,
+5000,
+"High Priest Thekal",
+"Grand prêtre Thekal"
+],
+"790": [
+309,
+6000,
+"Gahz'ranka",
+"Gahz'ranka"
+],
+"791": [
+309,
+7000,
+"High Priestess Arlokk",
+"Grande prêtresse Arlokk"
+],
+"792": [
+309,
+8000,
+"Jin'do the Hexxer",
+"Jin'do le Maléficieur"
+],
+"793": [
+309,
+9000,
+"Hakkar",
+"Hakkar"
+]
+},
+"maps": {
+"109": [
+"Sunken Temple",
+"Temple englouti",
+1
+],
+"129": [
+"Razorfen Downs",
+"Souilles de Tranchebauge",
+1
+],
+"13": [
+"Test Dungeon",
+"Test Dungeon",
+1
+],
+"169": [
+"Emerald Dream",
+"Rêve d'émeraude",
+2
+],
+"189": [
+"Scarlet Monastery",
+"Monastère écarlate",
+1
+],
+"209": [
+"Zul'Farrak",
+"Zul'Farrak",
+1
+],
+"229": [
+"Blackrock Spire",
+"Pic Rochenoire",
+1
+],
+"230": [
+"Blackrock Depths",
+"Profondeurs de Rochenoire",
+1
+],
+"249": [
+"Onyxia's Lair",
+"Repaire d'Onyxia",
+2
+],
+"269": [
+"Caverns of Time",
+"Grottes du Temps",
+1
+],
+"2720": [
+"The Searing Basin",
+"Le bassin Incandescent",
+1
+],
+"2784": [
+"Demon Fall Canyon",
+"Canyon de la Malechute",
+1
+],
+"2789": [
+"The Tainted Scar",
+"La Balafre impure",
+2
+],
+"2791": [
+"Storm Cliffs",
+"Falaises de la Tempête",
+2
+],
+"2804": [
+"The Crystal Vale",
+"La vallée des Cristaux",
+2
+],
+"2806": [
+"Shadow Hold",
+"Fort des Ombres",
+1
+],
+"2807": [
+"Burning of Andorhal",
+"Incendie d’Andorhal",
+1
+],
+"2817": [
+"Starfall Barrow Den",
+"Refuge des saisons de Météores",
+1
+],
+"2832": [
+"Nightmare Grove",
+"Bosquet du cauchemar",
+2
+],
+"2853": [
+"Deadwind Pass",
+"Défilé de Deuillevent",
+1
+],
+"2856": [
+"Scarlet Enclave",
+"L’enclave Écarlate",
+2
+],
+"2875": [
+"Karazhan Crypts",
+"Cryptes de Karazhan",
+1
+],
+"289": [
+"Scholomance",
+"Scholomance",
+1
+],
+"29": [
+"CashTest",
+"CashTest",
+1
+],
+"2902": [
+"The Scarab Dais",
+"L’Estrade du scarabée",
+1
+],
+"2921": [
+"Naxxramas",
+"Naxxramas",
+1
+],
+"2959": [
+"City of Dalaran",
+"Cité de Dalaran",
+1
+],
+"2970": [
+"The Drowned City",
+"La cité Submergée",
+1
+],
+"2974": [
+"Blackmaw Hold",
+"Repaire des Noiregueules",
+1
+],
+"2994": [
+"Alcaz Prison",
+"Prison d’Alcaz",
+1
+],
+"2998": [
+"Excavation Site: Wetlands",
+"Excavations : les Paluns",
+1
+],
+"2999": [
+"Ruins of Lordaeron",
+"Ruines de Lordaeron",
+1
+],
+"3001": [
+"The Shaper's Terrace",
+"La terrasse du Façonneur",
+1
+],
+"3039": [
+"Krol'dok Stronghold",
+"Bastion Krol’dok",
+1
+],
+"3065": [
+"The Hall of Thanes",
+"La salle des Thanes",
+1
+],
+"309": [
+"Zul'Gurub",
+"Zul'Gurub",
+2
+],
+"3109": [
+"Manor Mistmantle",
+"Manoir Mantebrume",
+1
+],
+"329": [
+"Stratholme",
+"Stratholme",
+1
+],
+"33": [
+"Shadowfang Keep",
+"Donjon d'Ombrecroc",
+1
+],
+"34": [
+"Stormwind Stockade",
+"Prison de Hurlevent",
+1
+],
+"349": [
+"Maraudon",
+"Maraudon",
+1
+],
+"36": [
+"Deadmines",
+"Mortemines",
+1
+],
+"389": [
+"Ragefire Chasm",
+"Gouffre de Ragefeu",
+1
+],
+"409": [
+"Molten Core",
+"Cœur du Magma",
+2
+],
+"429": [
+"Dire Maul",
+"Hache-tripes",
+1
+],
+"43": [
+"Wailing Caverns",
+"Cavernes des Lamentations",
+1
+],
+"44": [
+"<unused> Monastery",
+"<unused> Monastery",
+1
+],
+"469": [
+"Blackwing Lair",
+"Repaire de l'Aile noire",
+2
+],
+"47": [
+"Razorfen Kraul",
+"Kraal de Tranchebauge",
+1
+],
+"48": [
+"Blackfathom Deeps",
+"Profondeurs de Brassenoire",
+1
+],
+"509": [
+"Ruins of Ahn'Qiraj",
+"Ruines d'Ahn'Qiraj",
+2
+],
+"531": [
+"Ahn'Qiraj Temple",
+"Temple d'Ahn'Qiraj",
+2
+],
+"533": [
+"Naxxramas",
+"Naxxramas",
+2
+],
+"70": [
+"Uldaman",
+"Uldaman",
+1
+],
+"90": [
+"Gnomeregan",
+"Gnomeregan",
+1
+]
+},
+"source": "wago.tools (tables du client WoW Forever)"
+}

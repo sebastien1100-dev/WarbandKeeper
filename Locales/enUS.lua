@@ -914,6 +914,7 @@ WK.Locales.enUS.text = {
     ["Ne patrouille pas : toujours à son point d'apparition."] = "Doesn't patrol: always at its spawn point.",
     ["Patrouille courte (quelques mètres autour du médaillon)."] = "Short patrol (a few yards around the marker).",
     ["Patrouille : pointillés sur la carte."] = "Patrol: dotted line on the map.",
+    ["Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools). Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)."] = "French dungeon and boss names, instance and encounter IDs: WoW Forever client tables (game data, read on wago.tools). Flight paths (game files) and player-observed drop rates: Everloot (everloot.app; drop rates under CC BY-SA 4.0).",
     ["sur le compte"] = "on the account",
     ["Infobulles"] = "Tooltips",
     ["Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos."] = "In an item tooltip: the professions that use it to level up, and how many each of your characters still needs.",

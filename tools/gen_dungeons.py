@@ -14,6 +14,11 @@ Deux étapes :
       https://github.com/Everloot/everloot, web/src/data/game-data/client-encounters.json) : gardé dans
       tools/dungeons/encounters.json (n° d'instance » rencontres { n°, nom anglais }). Sert à la détection des
       boss tués (événement ENCOUNTER_END du jeu) et au nom français des boss (donné par le jeu en français).
+  1c. python3 tools/gen_dungeons.py --import-wago <dossier>
+     (tables du client WoW Forever lues sur wago.tools, en anglais et en français : Map-enUS.csv, Map-frFR.csv,
+      DungeonEncounter-enUS.csv, DungeonEncounter-frFR.csv, de https://wago.tools/db2/<table>/csv?build=<version>
+      &locale=<langue>) : gardé dans tools/dungeons/wago.json. Donne les n° d'instance du nouveau contenu, les noms
+      français des donjons et des boss, et les rencontres (prioritaire sur le catalogue d'Everloot).
   2. python3 tools/gen_dungeons.py <clone de QuestieDB>
      (git clone --depth 1 https://github.com/Questie/QuestieDB)
 
@@ -35,6 +40,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "dungeons", "wowtbc.json")
 ENCOUNTERS = os.path.join(HERE, "dungeons", "encounters.json")
+WAGO = os.path.join(HERE, "dungeons", "wago.json")
 OUT = os.path.join(HERE, "..", "Modules", "DungeonsDB.lua")
 
 # page wowtbc.gg -> (clé, n° d'instance du jeu, nom français, aile, raid)
@@ -143,6 +149,25 @@ def do_import_encounters(src):
           sum(len(v) for v in out["instances"].values()), out["build"], ENCOUNTERS))
 
 
+def do_import_wago(src, build=None):
+    import csv
+
+    def rows(name):
+        with open(os.path.join(src, name), encoding="utf-8") as f:
+            return {r["ID"]: r for r in csv.DictReader(f)}
+    men, mfr = rows("Map-enUS.csv"), rows("Map-frFR.csv")
+    een, efr = rows("DungeonEncounter-enUS.csv"), rows("DungeonEncounter-frFR.csv")
+    maps = {i: [r["MapName_lang"], (mfr.get(i) or {}).get("MapName_lang"), int(r.get("InstanceType") or 0)]
+            for i, r in men.items() if r.get("InstanceType") in ("1", "2")}
+    encs = {i: [int(r["MapID"]), int(r.get("OrderIndex") or 0), r["Name_lang"], (efr.get(i) or {}).get("Name_lang")]
+            for i, r in een.items()}
+    out = {"source": "wago.tools (tables du client WoW Forever)", "build": build, "maps": maps, "encounters": encs}
+    os.makedirs(os.path.dirname(WAGO), exist_ok=True)
+    with open(WAGO, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=0, sort_keys=True)
+    print("%d instances, %d rencontres (build %s) -> %s" % (len(maps), len(encs), build, WAGO))
+
+
 def _norm(x):
     return re.sub(r"[^a-z0-9]", "", re.sub(r"^the ", "", (x or "").lower()))
 
@@ -155,17 +180,51 @@ def generate(root):
     if os.path.exists(ENCOUNTERS):
         with open(ENCOUNTERS, encoding="utf-8") as f:
             encounters = json.load(f)["instances"]
+    # tables du jeu (wago.tools) : instances et rencontres, avec leurs noms français (prioritaires)
+    wago_maps, enc_fr = {}, {}
+    if os.path.exists(WAGO):
+        with open(WAGO, encoding="utf-8") as f:
+            wg = json.load(f)
+        wago_maps = wg["maps"]
+        byMap = {}
+        for eid, (mid, order_, en, frn) in wg["encounters"].items():
+            byMap.setdefault(str(mid), []).append((order_, int(eid), en))
+            enc_fr[int(eid)] = frn
+        for mid, lst in byMap.items():
+            encounters[mid] = [[eid, en] for _, eid, en in sorted(lst)]
+
+    def words(x):
+        return {w for w in re.findall(r"[a-z']+", (x or "").lower().replace("’", "'")) if len(w) >= 4 and w not in ("the", "and")}
 
     def encounter_of(inst, name):
-        """N° de rencontre du boss (nom anglais, ou l'un des noms de « A / B » ou « A and B »)."""
+        """N° de rencontre du boss : nom anglais exact (ou l'une des parties de « A / B », « A and B »),
+        sinon la seule rencontre de l'instance qui partage un mot du nom (« War Handler Ashka » / « Handler Ashka »)."""
         if not inst:
             return 0
         parts = [name] + name.split(" / ") + re.split(r" and | & ", name)
         keys = {_norm(p) for p in parts if p}
-        for eid, ename in encounters.get(str(inst), []):
+        lst = encounters.get(str(inst), [])
+        for eid, ename in lst:
             if _norm(ename) in keys:
                 return eid
-        return 0
+        w = words(name)
+        hits = [eid for eid, ename in lst if w & words(ename)]
+        return hits[0] if len(hits) == 1 else 0
+
+    def wago_inst(en_name, boss_names):
+        """N° d'instance d'un donjon sans n° connu : par son nom anglais dans les tables du jeu, sinon l'instance
+        dont les rencontres portent le plus de noms de ses boss."""
+        n = _norm(en_name)
+        for mid, (en, frn, kind) in wago_maps.items():
+            if _norm(en) == n:
+                return int(mid)
+        best, bh = None, 0
+        names = {_norm(b) for b in boss_names}
+        for mid, lst in encounters.items():
+            h = sum(1 for _, en in lst if _norm(en) in names)
+            if h > bh:
+                best, bh = int(mid), h
+        return best if bh >= 2 else None
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
     L.execute('QDB={}; ZDB={private={}}; L10N={npcNameLookup={}}\nGetLocale=function() return "frFR" end\nloadstring=load\n'
               'UnitFactionGroup=function() return "Alliance" end\n'
@@ -242,6 +301,16 @@ def generate(root):
         d["trash"] += [i for i in p["trash"] if i not in d["trash"]]
         d.setdefault("items", {}).update(p["items"])
 
+    # n° d'instance et nom français repris des tables du jeu quand ils manquent
+    named_from_game = 0
+    for key, d in merged.items():
+        if not d["inst"]:
+            d["inst"] = wago_inst(d["en"], [b["name"] for b, _ in d["bosses"]])
+        wm = d["inst"] and wago_maps.get(str(d["inst"]))
+        if wm and wm[1] and d["name"] == d["en"]:
+            d["name"] = wm[1].replace("’", "'")
+            named_from_game += 1
+
     lines = [
         "-- FICHIER GÉNÉRÉ par tools/gen_dungeons.py : ne pas modifier à la main.",
         "-- Donjons et raids de WoW Forever : boss, butin de chacun et des monstres du donjon.",
@@ -251,7 +320,8 @@ def generate(root):
         "-- WK.DungeonsDB = { { key, inst (n° d'instance ou nil), name, en (nom anglais), min, max, raid, zones,",
         "--   entry = { uiMapID, x, y }, trash = { objet, ... },",
         "--   bosses = { { id (PNJ, 0 si inconnu), nom, nom fr, niveau, { objet, ... }, aile, rencontre (0 si inconnue) }, ... } }, ... }",
-        "-- N° des rencontres (ENCOUNTER_END) : catalogue des fichiers du jeu d'Everloot (github.com/Everloot/everloot).",
+        "-- N° des rencontres (ENCOUNTER_END), n° d'instance du nouveau contenu, noms français des donjons et des boss :",
+        "-- tables du client WoW Forever (données du jeu, lues sur wago.tools ; à défaut, catalogue d'Everloot).",
         "-- WK.DungeonItems[objet] = { qualité, niveau d'objet, niveau requis, % de drop ou nil, pas encore vu tomber }",
         "local ADDON_NAME, WK = ...",
         "WK.DungeonsDB = {",
@@ -284,6 +354,8 @@ def generate(root):
             enc = encounter_of(d["inst"], b["name"])
             if enc:
                 matched_enc += 1
+                if enc_fr.get(enc):
+                    nmfr = enc_fr[enc].replace("\u2019", "'")  # nom français officiel du jeu
             lines.append("{%d,%s,%s,%d,{%s},%s,%d}," % (nid, s(b["name"]), s(nmfr), lvl, ",".join(str(i) for i in loot), s(wing), enc))
             tb += 1
             ti += len(loot)
@@ -307,6 +379,8 @@ def generate(root):
 if __name__ == "__main__":
     if len(sys.argv) >= 3 and sys.argv[1] == "--import":
         do_import(sys.argv[2])
+    elif len(sys.argv) >= 3 and sys.argv[1] == "--import-wago":
+        do_import_wago(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
     elif len(sys.argv) >= 3 and sys.argv[1] == "--import-encounters":
         do_import_encounters(sys.argv[2])
     elif len(sys.argv) >= 2 and not sys.argv[1].startswith("-"):

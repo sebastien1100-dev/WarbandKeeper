@@ -23,6 +23,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.96.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : les vrais noms français, tirés des tables du jeu, pour tout le nouveau contenu : La salle des Thanes, Excavations : les Paluns, La cité Submergée, Bastion Krol'dok, Prison d'Alcaz, Repaire des Noiregueules, La terrasse du Façonneur.
+- Donjons : 265 boss sur 297 ont maintenant leur nom français officiel (Faldrim Courbenclume, Capitaine Lèveffroi, Flétrigueule…), contre 215 avant.
+- Donjons : les cinq donjons pas encore ouverts sont reconnus dès l'entrée (leur n° d'instance vient du jeu), et 214 boss sont repérés par la fin de rencontre (177 avant).
+- Ces données suivent chaque nouvelle version du jeu : elles sont relues chaque jour avec le reste.
+
 ## v0.95.2 — 17/11/2026
 
 _Un /reload suffit._

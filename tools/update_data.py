@@ -81,6 +81,32 @@ def questie(path):
     return dest, git("rev-parse", "--short", "HEAD", cwd=dest)
 
 
+WAGO = "https://wago.tools"
+WAGO_TABLES = ["Map", "DungeonEncounter"]
+
+
+def wago_tables():
+    """Tables du client WoW Forever (produit « wowf ») sur wago.tools, en anglais et en français, pour la
+    dernière version du jeu. Rend (dossier, version), ou (None, None) : le reste de la mise à jour continue."""
+    import json
+    dest = os.path.join(CACHE, "wago")
+    os.makedirs(dest, exist_ok=True)
+    try:
+        builds = os.path.join(dest, "builds.json")
+        if not fetch(WAGO + "/api/builds", builds):
+            return None, None
+        with open(builds, encoding="utf-8") as f:
+            version = json.load(f)["wowf"][0]["version"]
+        for t in WAGO_TABLES:
+            for loc in ("enUS", "frFR"):
+                if not fetch("%s/db2/%s/csv?build=%s&locale=%s" % (WAGO, t, version, loc), os.path.join(dest, "%s-%s.csv" % (t, loc))):
+                    return None, None
+        return dest, version
+    except Exception as e:
+        log("  ! wago.tools indisponible :", e)
+        return None, None
+
+
 EVERLOOT_URL = "https://github.com/Everloot/everloot"
 EVERLOOT_FILE = "web/src/data/game-data/client-encounters.json"
 
@@ -155,6 +181,10 @@ def metrics():
             out["Objets pas encore découverts"] = und
             enc = L.eval("function(db) local n = 0 for _, x in ipairs(db or {}) do for _, y in ipairs(x.bosses) do if (y[7] or 0) ~= 0 then n = n + 1 end end end return n end")
             out["Boss avec n° de rencontre"] = enc(WK.DungeonsDB)
+            frn = L.eval("function(db) local n, i = 0, 0 for _, x in ipairs(db or {}) do if x.inst then i = i + 1 end for _, y in ipairs(x.bosses) do if y[3] then n = n + 1 end end end return n, i end")
+            nf, ni = frn(WK.DungeonsDB)
+            out["Boss avec nom français"] = nf
+            out["Donjons avec n° d'instance"] = ni
     return out
 
 
@@ -227,6 +257,11 @@ def main():
             if enc:
                 run(os.path.join(HERE, "gen_dungeons.py"), "--import-encounters", enc)
                 sources.append("Everloot (rencontres)")
+            # tables du jeu (wago.tools) : n° d'instance, noms français des donjons et des boss, rencontres
+            wdir, wver = wago_tables()
+            if wdir:
+                run(os.path.join(HERE, "gen_dungeons.py"), "--import-wago", wdir, wver)
+                sources.append("tables du jeu %s (wago.tools)" % wver)
             sources.append("wowtbc.gg (%d guides, %d tables de butin)" % (len(pages), len(slugs)))
         if do_questie:
             run(os.path.join(HERE, "gen_dungeons.py"), qpath)
