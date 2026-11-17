@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.14.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire : les objets sont rangés comme dans des sacs du jeu, un sac par catégorie (Munitions, Métaux et pierres, Viande et poisson, Étoffes et cuir, Herbes, Enchantement, Autres composants, Consommables, Équipement, Recettes, Objets de quête, Divers), en deux ou trois colonnes selon la largeur. Chaque objet est une case avec son icône, son nombre et un liseré de sa qualité ; chaque sac donne son nombre d'objets et sa valeur. Survol : où se trouve l'objet (perso ou sacs, banque, courrier) et sa valeur ; Maj+clic : lien. Les filtres (perso, Tout / Sacs / Banque / Courrier) et la recherche restent.
+
+### Corrections
+- Inventaire : le « ~ » devant les valeurs s'affichait comme un petit accent avec la police du jeu ; remplacé par « env. ».
+
 ## v1.13.2 — 17/11/2026
 
 _Un /reload suffit._

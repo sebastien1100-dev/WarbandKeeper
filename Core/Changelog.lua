@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.14.0", date = "17/11/2026",
+        changed = {
+            "Inventaire : les objets sont rangés comme dans des sacs du jeu, un sac par catégorie (Munitions, Métaux et pierres, Viande et poisson, Étoffes et cuir, Herbes, Enchantement, Autres composants, Consommables, Équipement, Recettes, Objets de quête, Divers), en deux ou trois colonnes selon la largeur. Chaque objet est une case avec son icône, son nombre et un liseré de sa qualité ; chaque sac donne son nombre d'objets et sa valeur. Survol : où se trouve l'objet (perso ou sacs, banque, courrier) et sa valeur ; Maj+clic : lien. Les filtres (perso, Tout / Sacs / Banque / Courrier) et la recherche restent.",
+        },
+        fixed = {
+            "Inventaire : le « ~ » devant les valeurs s'affichait comme un petit accent avec la police du jeu ; remplacé par « env. ».",
+        },
+    },
+    {
         version = "1.13.2", date = "17/11/2026",
         changed = {
             "Fiche du perso, onglet Talents : les icônes des talents prennent toute la place disponible (largeur des arbres et hauteur de la fenêtre), jusqu'à presque deux fois plus grandes, avec des écarts proportionnés.",

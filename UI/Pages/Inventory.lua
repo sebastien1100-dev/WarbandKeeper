@@ -21,6 +21,35 @@ local function countItems(t)
     return n, kinds
 end
 
+-- Sacs par catégorie (vue principale) : { clé, libellé } dans l'ordre d'affichage
+local CATS = {
+    { "ammo", "Munitions" }, { "metal", "Métaux et pierres" }, { "cook", "Viande et poisson" },
+    { "cloth", "Étoffes et cuir" }, { "herb", "Herbes" }, { "ench", "Enchantement" }, { "parts", "Autres composants" },
+    { "cons", "Consommables" }, { "gear", "Équipement" }, { "recipe", "Recettes" }, { "quest", "Objets de quête" },
+    { "misc", "Divers" },
+}
+local function catOf(id)
+    local f = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+    local classID, subID
+    if f then
+        local ok, _, _, _, _, _, cl, sub = pcall(f, id)
+        if ok then classID, subID = cl, sub end
+    end
+    if classID == 6 or classID == 11 then return "ammo" end
+    if classID == 7 then
+        if subID == 7 then return "metal" elseif subID == 8 then return "cook" elseif subID == 5 or subID == 6 then return "cloth"
+        elseif subID == 9 then return "herb" elseif subID == 12 then return "ench" end
+        return "parts"
+    end
+    if classID == 5 then return "parts" end
+    if classID == 0 then return "cons" end
+    if classID == 2 or classID == 4 then return "gear" end
+    if classID == 9 then return "recipe" end
+    if classID == 12 then return "quest" end
+    return "misc"
+end
+local SLOT, SGAP = 40, 4
+
 UI:RegisterPage({
     key = "inventory", order = 3, nav = "Inventaire",
     title = "Inventaire",
@@ -110,6 +139,64 @@ UI:RegisterPage({
         self.empty = UI:Text(p, 12, C.muted)
         self.empty:SetPoint("CENTER", scroll, "CENTER")
         self:BuildLocks(p, x0)
+
+        -- sacs par catégorie et leurs cases
+        self.bags = UI:Pool(function()
+            local b = CreateFrame("Frame", nil, scroll.child)
+            UI:Panel(b, 10, C.surface, C.border)
+            b.title = UI:Text(b, 12)
+            b.title:SetPoint("TOPLEFT", 12, -10)
+            b.sub = UI:Text(b, 10, C.muted)
+            b.sub:SetPoint("TOPRIGHT", -12, -11)
+            b.sub:SetJustifyH("RIGHT")
+            return b
+        end)
+        self.slots = UI:Pool(function()
+            local b = CreateFrame("Button", nil, scroll.child)
+            b:SetSize(SLOT, SLOT)
+            b:SetFrameLevel(scroll.child:GetFrameLevel() + 5)
+            b.edge = b:CreateTexture(nil, "BACKGROUND")
+            b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
+            b.edge:SetAllPoints()
+            b.icon = b:CreateTexture(nil, "ARTWORK")
+            b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+            b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            b.hl = b:CreateTexture(nil, "HIGHLIGHT")
+            b.hl:SetTexture("Interface\\Buttons\\WHITE8X8")
+            b.hl:SetAllPoints(b.icon)
+            b.hl:SetVertexColor(1, 1, 1, 0.15)
+            b.n = b:CreateFontString(nil, "OVERLAY")
+            b.n:SetFont(UI.FONT, 11, "OUTLINE")
+            b.n:SetPoint("BOTTOMRIGHT", -2, 3)
+            b:SetScript("OnEnter", function(s)
+                local it = s.it
+                if not it then return end
+                WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:SetItemByID(it.id)
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddDoubleLine(T("Total"), tostring(it.total), 0.8, 0.8, 0.8, 1, 1, 1)
+                local parts = {}
+                for who, n in pairs(it.per) do table.insert(parts, { who, n }) end
+                table.sort(parts, function(a, c) return a[2] > c[2] end)
+                for i, v in ipairs(parts) do
+                    if i > 8 then GameTooltip:AddLine(string.format(T("+ %d autre(s)"), #parts - 8), 0.6, 0.6, 0.6) break end
+                    GameTooltip:AddDoubleLine(v[1], tostring(v[2]), 0.62, 0.64, 0.67, 1, 1, 1)
+                end
+                local price = WK.modules.Value:Price(it.id)
+                if price > 0 then
+                    GameTooltip:AddDoubleLine(T("Valeur"), string.format(T("%s l'unité · %s"), UI:GoldText(price), UI:GoldText(price * it.total)), 0.8, 0.8, 0.8, 1, 0.82, 0.3)
+                end
+                GameTooltip:AddLine(T("Maj+clic : lien dans le chat"), 0.5, 0.5, 0.5)
+                GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            b:SetScript("OnClick", function(s)
+                local _, _, _, _, _, link = UI:ItemInfo(s.it and s.it.id)
+                if IsModifiedClick("CHATLINK") and link then WK.InsertChatLink(link) end
+            end)
+            return b
+        end)
+        UI:OnResize(scroll, function() if self.lastList and scroll:IsVisible() then self:LayoutBags() end end)
 
         self.rows = UI:Pool(function()
             local r = CreateFrame("Button", nil, scroll.child)
@@ -211,7 +298,7 @@ UI:RegisterPage({
                     r.action:Hide()
                     r.detail:SetText(string.format(T("%s · depuis %s"), who(e.key), UI:Ago(e.since)))
                     r.total:SetText(tostring(e.n))
-                    r.value:SetText("~ " .. UI:GoldText(e.value))
+                    r.value:SetText(T("env.") .. " " .. UI:GoldText(e.value))
                     total = total + e.value
                 end
                 y = y + 52
@@ -222,7 +309,7 @@ UI:RegisterPage({
         self.empty:SetText(sel == "spread" and T("Rien à regrouper : chaque objet est chez un seul perso.")
             or T("Rien d'oublié : aucun objet de valeur ne dort en banque depuis aussi longtemps."))
         if sel == "old" and total > 0 then
-            self.countText:SetText(string.format(T("%d objets · ~ %s à revendre"), #list, UI:GoldText(total)))
+            self.countText:SetText(string.format(T("%d objets · env. %s à revendre"), #list, UI:GoldText(total)))
         else
             self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list))
         end
@@ -412,6 +499,7 @@ UI:RegisterPage({
 
     Refresh = function(self)
         self:RefreshTabs()
+        self.bags:Reset(); self.slots:Reset(); self.lastList = nil
         local chars = WK.DB.global.characters
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
@@ -501,47 +589,67 @@ UI:RegisterPage({
         end)
 
         self.rows:Reset()
-        local y = 0
         local listValue = 0
         for _, it in ipairs(list) do listValue = listValue + WK.modules.Value:Price(it.id) * it.total end
-        for i, it in ipairs(list) do
-            if i > MAX_ROWS then break end
-            local r = self.rows:Get()
-            r.itemID = it.id
-            r:ClearAllPoints()
-            r:SetPoint("TOPLEFT", 0, -y)
-            r:SetPoint("TOPRIGHT", 0, -y)
-            r.icon:SetTexture(it.icon)
-            r.name:SetText(it.name)
-            r.name:SetTextColor(unpack(it.color))
-            local parts = {}
-            for who, n in pairs(it.per) do table.insert(parts, { who, n }) end
-            table.sort(parts, function(a, b) return a[2] > b[2] end)
-            for k, v in ipairs(parts) do parts[k] = v[1] .. " " .. v[2] end
-            r.detail:SetText(table.concat(parts, "  ·  "))
-            r.total:SetText(tostring(it.total))
-            local V = WK.modules.Value
-            if V:ShowBoth() then
-                local ah, vendor = V:Prices(it.id)
-                local parts = {}
-                if ah then table.insert(parts, T("HV") .. " " .. UI:GoldText(ah * it.total)) end
-                if vendor > 0 then table.insert(parts, T("marchand") .. " " .. UI:GoldText(vendor * it.total)) end
-                r.value:SetText(table.concat(parts, "  ·  "))
-            else
-                local price = V:Price(it.id)
-                r.value:SetText(price > 0 and ("~ " .. UI:GoldText(price * it.total)) or "")
-            end
-            y = y + 52
-        end
-        self.scroll:SetContentHeight(y)
+        self.lastList = list
+        self:LayoutBags()
         self.empty:SetShown(#list == 0)
         self.empty:SetText(self.query ~= "" and T("Aucun objet ne correspond à la recherche.") or T("Rien ici pour l'instant."))
 
-        if #list > MAX_ROWS then
-            self.countText:SetText(string.format(T("%d objets (affichage limité à %d, affine ta recherche)"), #list, MAX_ROWS))
-        else
-            self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list)
-                .. (listValue > 0 and ("  ·  ~ " .. UI:GoldText(listValue)) or ""))
+        self.countText:SetText(string.format(#list > 1 and T("%d objets") or T("%d objet"), #list)
+            .. (listValue > 0 and ("  ·  " .. T("env.") .. " " .. UI:GoldText(listValue)) or ""))
+    end,
+
+    -- Sacs par catégorie, posés en colonnes (le sac va dans la colonne la moins haute)
+    LayoutBags = function(self)
+        local list = self.lastList
+        if not list then return end
+        self.bags:Reset(); self.slots:Reset()
+        local groups = {}
+        for _, it in ipairs(list) do
+            local k = catOf(it.id)
+            groups[k] = groups[k] or {}
+            table.insert(groups[k], it)
         end
+        local W = math.max(400, self.scroll:GetWidth() or 800)
+        self.scroll.child:SetWidth(W)
+        local ncol = W >= 1000 and 3 or 2
+        local bw = math.floor((W - (ncol - 1) * GAP) / ncol)
+        local per = math.max(4, math.floor((bw - 24 + SGAP) / (SLOT + SGAP)))
+        local heights = {}
+        for i = 1, ncol do heights[i] = 0 end
+        local V = WK.modules.Value
+        for _, cat in ipairs(CATS) do
+            local g = groups[cat[1]]
+            if g then
+                local rows = math.ceil(#g / per)
+                local h = 36 + rows * SLOT + (rows - 1) * SGAP + 12
+                local col = 1
+                for i = 2, ncol do if heights[i] < heights[col] then col = i end end
+                local x, y = (col - 1) * (bw + GAP), heights[col]
+                heights[col] = y + h + GAP
+                local bag = self.bags:Get()
+                bag:ClearAllPoints(); bag:SetPoint("TOPLEFT", x, -y); bag:SetSize(bw, h)
+                bag.title:SetText(T(cat[2]))
+                local val = 0
+                for _, it in ipairs(g) do val = val + V:Price(it.id) * it.total end
+                bag.sub:SetText(#g .. (val > 0 and ("  ·  " .. T("env.") .. " " .. UI:GoldText(val)) or ""))
+                for i, it in ipairs(g) do
+                    local sl = self.slots:Get()
+                    local r, c = math.floor((i - 1) / per), (i - 1) % per
+                    sl:ClearAllPoints()
+                    sl:SetPoint("TOPLEFT", x + 12 + c * (SLOT + SGAP), -(y + 36 + r * (SLOT + SGAP)))
+                    sl.it = it
+                    sl.icon:SetTexture(it.icon)
+                    local q = it.color or { 0.4, 0.4, 0.4 }
+                    local plain = q[1] > 0.95 and q[2] > 0.95 and q[3] > 0.95
+                    sl.edge:SetVertexColor(plain and C.border[1] or q[1], plain and C.border[2] or q[2], plain and C.border[3] or q[3], 1)
+                    sl.n:SetText(it.total > 1 and (it.total > 9999 and "9999+" or tostring(it.total)) or "")
+                end
+            end
+        end
+        local maxH = 0
+        for i = 1, ncol do maxH = math.max(maxH, heights[i]) end
+        self.scroll:SetContentHeight(maxH)
     end,
 })
