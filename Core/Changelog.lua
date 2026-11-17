@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.95.0", date = "17/11/2026",
+        changed = {
+            "Barre latérale réorganisée : Résumé tout en haut, à part (jamais replié), puis six groupes avec une petite icône de ta couleur : Bataillon (Persos, Inventaire), Trésorerie (Stats, Règles d'envoi), Artisanat (Métiers, Pêche), Butin (Session de farm, Filtre de loot, Journal), Aventure (Quêtes, Rares, Donjons, LFG) et Réglages QoL.",
+            "La carte « Modules » du Résumé suit les mêmes groupes. Les groupes que tu avais repliés sont à replier de nouveau (ils ont changé de nom).",
+        },
+    },
+    {
         version = "0.94.1", date = "17/11/2026",
         changed = {
             "Barre latérale : le groupe « Confort » devient « QoL », et ses entrées sont directement les sections de QoL (Général, Halo, Micro menu, Pêche, Carte, Hôtel des ventes, Curseur, Classes), sans étage intermédiaire. Le groupe se replie comme les autres, avec le total de ses alertes ; en menu réduit, les sections restent là en icônes.",

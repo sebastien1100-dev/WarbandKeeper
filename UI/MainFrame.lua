@@ -12,13 +12,15 @@ local MIN_PAGE_W = 840              -- largeur minimale de contenu (les pages so
 local MIN_H = 600
 
 -- Groupes de la barre latérale (clés de pages) et icônes.
+-- Résumé (HOME_PAGE) est à part, tout en haut, jamais replié ; puis les groupes (titre, icône, pages).
+local HOME_PAGE = "overview"
 local GROUPS = {
-    { "COMPTE", { "overview", "characters", "inventory" } },
-    { "ÉCONOMIE", { "stats", "professions", "mail" } },
-    { "FARM", { "farm", "loot", "journal", "fishing" } },
-    { "GROUPE", { "lfg" } },
-    { "EXPLORATION", { "quests", "rares", "dungeons" } },
-    { "QoL", { "qol" } },   -- groupe QoL : ses entrées sont les sections de la page QoL (UI.QOL_SECTIONS)
+    { "BATAILLON", { "characters", "inventory" }, "logo" },
+    { "TRÉSORERIE", { "stats", "mail" }, "coin" },
+    { "ARTISANAT", { "professions", "fishing" }, "hammer" },
+    { "BUTIN", { "farm", "loot", "journal" }, "bag" },
+    { "AVENTURE", { "quests", "rares", "dungeons", "lfg" }, "map" },
+    { "RÉGLAGES QOL", { "qol" }, "gear" },   -- entrées = sections de la page QoL (UI.QOL_SECTIONS)
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
@@ -101,13 +103,16 @@ end
 -- Titre de groupe cliquable : replie ou déplie le groupe (settings.ui.navClosed[groupe]) ;
 -- replié, il montre le total des pastilles de ses pages.
 ---------------------------------------------------------------------------
-local function GroupHead(parent, name)
+local function GroupHead(parent, name, icon)
     local b = CreateFrame("Button", nil, parent)
     b:SetHeight(20)
     b.name = name
+    -- petite icône de la couleur de l'apparence devant le titre
+    b.gicon = UI:Icon(b, icon or "circle", 11)
+    b.gicon:SetPoint("LEFT", 9, 0)
     b.label = UI:Text(b, 10, C.dim)
-    b.label:SetPoint("LEFT", 8, 0)
-    b.label:SetText(name)
+    b.label:SetPoint("LEFT", 26, 0)
+    b.label:SetText(WK.T(name))
     b.chev = UI:Icon(b, "chevron", 11)
     b.chev:SetPoint("RIGHT", -12, 0)
     b.sum = UI:Text(b, 10)
@@ -115,6 +120,7 @@ local function GroupHead(parent, name)
     function b:Refresh()
         local closed = WK.DB.global.settings.ui.navClosed[name]
         local r, g, bl = UI:Accent()
+        self.gicon:SetVertexColor(r, g, bl, 1)
         self.chev:SetVertexColor(r, g, bl, self.hover and 1 or 0.8)
         if self.chev.SetRotation then self.chev:SetRotation(closed and math.pi / 2 or 0) end
         if self.hover then self.label:SetTextColor(r, g, bl, 1) else self.label:SetTextColor(unpack(closed and C.muted or C.dim)) end
@@ -302,8 +308,18 @@ function UI:Create()
     end)
     self.navScroll = navScroll
     local topList = {}
+    -- Résumé : à part, en haut, puis un trait
+    if self.pages[HOME_PAGE] then
+        local item = NavItem(navChild, self.pages[HOME_PAGE])
+        self.nav[HOME_PAGE] = item
+        table.insert(topList, { item = item, key = HOME_PAGE })
+        local sep = navChild:CreateTexture(nil, "ARTWORK")
+        sep:SetHeight(1)
+        sep:SetColorTexture(unpack(C.border))
+        table.insert(topList, { sep = sep })
+    end
     for _, g in ipairs(GROUPS) do
-        local lbl = GroupHead(navChild, g[1])
+        local lbl = GroupHead(navChild, g[1], g[3])
         table.insert(self.groupLabels, lbl)
         local head = { label = lbl, items = {}, name = g[1] }
         table.insert(topList, head)
@@ -331,7 +347,10 @@ function UI:Create()
         local nLabels, nItems = 0, 0
         local rail = WK.DB.global.settings.ui.collapsed -- menu réduit en icônes : tout reste visible
         for _, e in ipairs(topList) do
-            if e.label then
+            if e.sep then
+                e.hidden = rail
+                e.sep:SetShown(not rail)
+            elseif e.label then
                 e.hidden = true
                 for _, it in ipairs(e.items) do if WK:PageOn(it.key) then e.hidden = false end end
                 e.label.wkHidden = e.hidden
@@ -373,6 +392,11 @@ function UI:Create()
         for _, e in ipairs(topList) do
             if e.hidden then
                 -- rien
+            elseif e.sep then
+                e.sep:ClearAllPoints()
+                e.sep:SetPoint("TOPLEFT", 14, y - 5)
+                e.sep:SetPoint("TOPRIGHT", -14, y - 5)
+                y = y - 10
             elseif e.label then
                 if not first then y = y - gap end
                 first = false

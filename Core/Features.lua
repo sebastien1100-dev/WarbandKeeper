@@ -9,24 +9,25 @@ local ADDON_NAME, WK = ...
 --   key, label, icon, group, page (page de la barre latérale), desc, reload (élément à l'écran :
 --   proposer un /reload pour qu'il disparaisse ou revienne proprement)
 WK.FEATURES = {
-    { key = "stats", label = "Stats", icon = "chart", group = "ÉCONOMIE", page = "stats" },
-    { key = "professions", label = "Métiers", icon = "hammer", group = "ÉCONOMIE", page = "professions", desc = "page et infobulle" },
-    { key = "mail", label = "Règles d'envoi", icon = "mail", group = "ÉCONOMIE", page = "mail" },
-    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "ÉCONOMIE", qol = "ah", desc = "scan et infobulle" },
-    { key = "farm", label = "Session de farm", icon = "play", group = "FARM", page = "farm" },
-    { key = "loot", label = "Filtre de loot", icon = "filter", group = "FARM", page = "loot" },
-    { key = "journal", label = "Journal", icon = "clock", group = "FARM", page = "journal" },
-    { key = "lfg", label = "LFG", icon = "lfg", group = "GROUPE", page = "lfg" },
-    { key = "quests", label = "Quêtes", icon = "bang", group = "EXPLORATION", page = "quests", desc = "page et donneurs" },
-    { key = "dungeons", label = "Donjons", icon = "skull", group = "EXPLORATION", page = "dungeons", desc = "boss, butin, envies" },
-    { key = "rares", label = "Rares", icon = "star", group = "EXPLORATION", page = "rares", desc = "page, carte, alerte" },
-    { key = "maplayers", label = "Carte", icon = "map", group = "EXPLORATION", qol = "maplayers", desc = "lieux et trajets" },
-    { key = "nodes", label = "Récolte", icon = "tree", group = "EXPLORATION", desc = "filons et plantes" },
-    { key = "halo", label = "Halo", icon = "spark", group = "QoL", qol = "halo", reload = true },
-    { key = "micro", label = "Micro menu", icon = "clock", group = "QoL", qol = "micro", reload = true },
-    { key = "fishing", label = "Pêche", icon = "fish", group = "QoL", qol = "fishing", page = "fishing", reload = true },
-    { key = "cursor", label = "Curseur", icon = "crosshair", group = "QoL", qol = "cursor", desc = "anneau et curseur gardé en combat", reload = true },
-    { key = "range", label = "Distance", icon = "crosshair", group = "QoL", desc = "ruban de distance du chasseur", reload = true },
+    -- groupes = ceux de la barre latérale (UI/MainFrame.lua), chacun d'un seul tenant (une ligne de la carte Modules)
+    { key = "stats", label = "Stats", icon = "chart", group = "TRÉSORERIE", page = "stats" },
+    { key = "mail", label = "Règles d'envoi", icon = "mail", group = "TRÉSORERIE", page = "mail" },
+    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "TRÉSORERIE", qol = "ah", desc = "scan et infobulle" },
+    { key = "professions", label = "Métiers", icon = "hammer", group = "ARTISANAT", page = "professions", desc = "page et infobulle" },
+    { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", reload = true },
+    { key = "farm", label = "Session de farm", icon = "play", group = "BUTIN", page = "farm" },
+    { key = "loot", label = "Filtre de loot", icon = "filter", group = "BUTIN", page = "loot" },
+    { key = "journal", label = "Journal", icon = "clock", group = "BUTIN", page = "journal" },
+    { key = "quests", label = "Quêtes", icon = "bang", group = "AVENTURE", page = "quests", desc = "page et donneurs" },
+    { key = "rares", label = "Rares", icon = "star", group = "AVENTURE", page = "rares", desc = "page, carte, alerte" },
+    { key = "dungeons", label = "Donjons", icon = "skull", group = "AVENTURE", page = "dungeons", desc = "boss, butin, envies" },
+    { key = "lfg", label = "LFG", icon = "lfg", group = "AVENTURE", page = "lfg" },
+    { key = "maplayers", label = "Carte", icon = "map", group = "AVENTURE", qol = "maplayers", desc = "lieux et trajets" },
+    { key = "nodes", label = "Récolte", icon = "tree", group = "AVENTURE", desc = "filons et plantes" },
+    { key = "halo", label = "Halo", icon = "spark", group = "RÉGLAGES QOL", qol = "halo", reload = true },
+    { key = "micro", label = "Micro menu", icon = "clock", group = "RÉGLAGES QOL", qol = "micro", reload = true },
+    { key = "cursor", label = "Curseur", icon = "crosshair", group = "RÉGLAGES QOL", qol = "cursor", desc = "anneau et curseur gardé en combat", reload = true },
+    { key = "range", label = "Distance", icon = "crosshair", group = "RÉGLAGES QOL", desc = "ruban de distance du chasseur", reload = true },
 }
 WK.FEATURE_BY_PAGE, WK.FEATURE_BY_QOL = {}, {}
 for _, f in ipairs(WK.FEATURES) do

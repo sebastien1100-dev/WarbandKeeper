@@ -23,6 +23,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.95.0 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Barre latérale réorganisée : Résumé tout en haut, à part (jamais replié), puis six groupes avec une petite icône de ta couleur : Bataillon (Persos, Inventaire), Trésorerie (Stats, Règles d'envoi), Artisanat (Métiers, Pêche), Butin (Session de farm, Filtre de loot, Journal), Aventure (Quêtes, Rares, Donjons, LFG) et Réglages QoL.
+- La carte « Modules » du Résumé suit les mêmes groupes. Les groupes que tu avais repliés sont à replier de nouveau (ils ont changé de nom).
+
 ## v0.94.1 — 17/11/2026
 
 _Un /reload suffit._

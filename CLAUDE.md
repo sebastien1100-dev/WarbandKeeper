@@ -44,7 +44,7 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 
 ## Barre latérale
 
-`UI/MainFrame.lua` : groupes (`GROUPS`) repliables par un clic sur leur titre (`GroupHead`, `settings.ui.navClosed[groupe]`, total des pastilles quand replié ; la page affichée reste visible) ; le groupe « QoL » (ex-Confort) a pour entrées les sections de la page QoL (`SubItem`, une par `UI.QOL_SECTIONS`, pas d'entrée « QoL » elle-même ; total de leurs alertes quand replié). Menu réduit en icônes : tout visible (sections comprises), sans titres. Groupe des modules (`Core/Features.lua`) : « QoL ».
+`UI/MainFrame.lua` : Résumé (`HOME_PAGE`) à part en haut, puis un trait ; groupes (`GROUPS` : titre, pages, icône ; Bataillon, Trésorerie, Artisanat, Butin, Aventure, Réglages QoL) repliables par un clic sur leur titre (`GroupHead`, `settings.ui.navClosed[groupe]`, total des pastilles quand replié ; la page affichée reste visible) ; le groupe « Réglages QoL » a pour entrées les sections de la page QoL (`SubItem`, une par `UI.QOL_SECTIONS`, pas d'entrée « QoL » elle-même ; total de leurs alertes quand replié). Menu réduit en icônes : tout visible (sections comprises), sans titres. Les groupes de `Core/Features.lua` (carte Modules) sont les mêmes, chacun d'un seul tenant dans la liste.
 
 ## En-tête des pages
 
