@@ -334,3 +334,18 @@ function UI:PlainMoney(copper)
     end
     return self:ShortGold(copper)
 end
+
+-- « Alliance · JcE » : faction et type du royaume (lu dans son nom : PvE, PvP, RP, RPPvP), sinon le royaume
+function UI:FactionRealm(c)
+    local fac = c.faction and ((c.faction == "Alliance" and WK.T("Alliance")) or (c.faction == "Horde" and WK.T("Horde")) or c.faction) or nil
+    local r = (c.realm or ""):lower()
+    local kind
+    if r:find("rp%s*%-?%s*pvp") or r:find("rppvp") then kind = WK.T("JdR-JcJ")
+    elseif r:find("pvp") then kind = WK.T("JcJ")
+    elseif r:find("rp") and (r:find("%frp%f[%A]") or r:find("roleplay")) then kind = WK.T("JdR")
+    elseif r:find("pve") or r:find("normal") then kind = WK.T("JcE") end
+    local parts = {}
+    if fac then table.insert(parts, fac) end
+    table.insert(parts, kind or c.realm or "")
+    return table.concat(parts, "  ·  ")
+end

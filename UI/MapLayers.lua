@@ -86,6 +86,7 @@ function UI:HideMapLayers()
     for _, p in pairs(pins) do p:Hide() end
     for _, r in ipairs(routes) do
         for _, d in ipairs(r.dots) do d:Hide() end
+        if r.lines then r.lines:Reset() end
         r.label:Hide()
     end
 end
@@ -120,6 +121,13 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         local function room(p0, dp, maxv) if dp > 0 then return (maxv - p0) / dp elseif dp < 0 then return -p0 / dp end return math.huge end
         len = math.max(0, math.min(len, room(x0, dx, w) - 8, room(y0, dy, h) - 8))
         local ds = math.max(3, 5 * scale)
+        r.lines = r.lines or UI:LinePool(3)
+        r.lines:Reset()
+        if cv.CreateLine and len > 12 then
+            -- trait fin du quai vers la destination (les points restent cachés)
+            r.lines:Add(cv, x0, y0, x0 + dx * len, y0 + dy * len, math.max(1.6, 2.2 * scale), col[1], col[2], col[3], 0.95)
+            for _, dot in ipairs(r.dots) do dot:Hide() end
+        else
         for k, dot in ipairs(r.dots) do
             local f = k / DOTS
             dot:SetSize(ds, ds)
@@ -127,6 +135,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
             dot:ClearAllPoints()
             dot:SetPoint("CENTER", cv, "TOPLEFT", x0 + dx * len * f, -(y0 + dy * len * f))
             dot:SetShown(len > 12)
+        end
         end
         local e = { d.x, d.y, 0, nil, nil, (d.kind == "zeppelin" and "Zeppelin" or "Bateau") .. " > " .. d.to,
                     (d.kind == "zeppelin" and T("Zeppelin") or T("Bateau")) .. " " .. string.format(T("vers %s"), d.to) }

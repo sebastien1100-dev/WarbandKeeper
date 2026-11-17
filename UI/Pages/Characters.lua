@@ -69,19 +69,19 @@ UI:RegisterPage({
             r.mail = cell(r, C.muted)
             r.seen = cell(r, C.muted)
             -- Clic droit : corriger le nom complet (« Prénom Nom »).
-            r:EnableMouse(true)
-            r:SetScript("OnMouseUp", function(s, button)
+            UI:HoverRow(r, r.border, r.bg, nil, function(s, button)
                 if button == "RightButton" and s.key then UI:EditCharName(s.key)
                 elseif button == "LeftButton" and s.key then UI:ShowCharSheet(s.key) end
             end)
-            r:SetScript("OnEnter", function(s)
+            r:HookScript("OnEnter", function(s)
                 WK.UI:TooltipOwner(s, "ANCHOR_CURSOR")
                 GameTooltip:SetText(WK.T("Clic : fiche du personnage"), 1, 1, 1)
                 GameTooltip:AddLine(WK.T("Clic droit : corriger le nom complet"), 0.7, 0.7, 0.7)
                 GameTooltip:Show()
             end)
-            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            r:HookScript("OnLeave", function() GameTooltip:Hide() end)
             r.del = UI:IconButton(r, "trash", 26, "Maj + clic : oublier ce personnage", true)
+            r:HoverChild(r.del)
             r.del:SetPoint("RIGHT", -10, 0)
             r.del:SetScript("OnClick", function(btn)
                 if IsShiftKeyDown() and btn.key then WK.modules.Characters:Delete(btn.key) end
@@ -135,7 +135,7 @@ UI:RegisterPage({
             local maxW = COLS[2][2] - 52 - 12 - (e.key == me and (r.badge:GetWidth() + 8) or 0)
             r.name:SetWidth(math.max(40, math.min(maxW, r.name:GetStringWidth() + 2)))
             r.name:SetTextColor(UI:ClassColor(c.class))
-            r.realm:SetText((c.realm or "") .. (c.faction and (" · " .. c.faction) or ""))
+            r.realm:SetText(UI:FactionRealm(c))
             r.badge:SetShown(e.key == me)
             r.level:SetText(tostring(c.level or "-"))
             r.gold:SetText(UI:GoldText(c.money))
@@ -163,6 +163,7 @@ UI:RegisterPage({
 
             r.seen:SetText(e.key == me and T("maintenant") or UI:Ago(c.lastSeen))
             r.del.key = e.key
+            r:PaintHover()
             r.del:SetShown(e.key ~= me)
             y = y + 56
         end

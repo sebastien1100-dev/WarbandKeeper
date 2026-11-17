@@ -491,7 +491,7 @@ UI:RegisterPage({
         f.edge:SetColor(r1, g1, b1, 0.45)
         f.bg:SetColor(C.surface2[1] * 0.85 + r1 * 0.15, C.surface2[2] * 0.85 + g1 * 0.15, C.surface2[3] * 0.85 + b1 * 0.15, 1)
         f.boss = boss
-        local FH = 128
+        local FH = 146
         if not boss then
             f.kick:SetText(""); f.name:SetText(T("Parcours terminé")); f.sub:SetText(T("Tous les boss de ce passage sont tués ou passés."))
             f.all:Hide(); f.skip:Hide(); f.right:SetText(""); f.sep:Hide()

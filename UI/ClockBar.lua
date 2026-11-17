@@ -48,9 +48,34 @@ local SHORTCUTS = {
     { key = "quests", label = "Journal de quêtes", micro = { "QuestLogMicroButton" },
       icon = function() return UI.MEDIA .. "bang" end, tint = true,
       run = function() if ToggleQuestLog then ToggleQuestLog() end end },
-    { key = "social", label = "Social et guilde", micro = { "SocialsMicroButton", "FriendsMicroButton", "GuildMicroButton" },
+    { key = "social", label = "Amis", micro = { "SocialsMicroButton", "FriendsMicroButton" },
       icon = function() return UI.MEDIA .. "users" end, tint = true,
-      run = function() if ToggleFriendsFrame then ToggleFriendsFrame() end end },
+      run = function() if ToggleFriendsFrame then ToggleFriendsFrame() end end,
+      -- amis en ligne (jeu et Battle.net)
+      count = function()
+          local n = 0
+          if C_FriendList and C_FriendList.GetNumOnlineFriends then n = n + (tonumber(C_FriendList.GetNumOnlineFriends()) or 0) end
+          if BNGetNumFriends then local _, on = BNGetNumFriends(); n = n + (tonumber(on) or 0) end
+          return n
+      end,
+      tip = function() return T("Amis en ligne (jeu et Battle.net)") end },
+    { key = "guild", label = "Guilde", micro = { "GuildMicroButton", "SocialsMicroButton" },
+      icon = function() return UI.MEDIA .. "guild" end, tint = true,
+      run = function() if ToggleGuildFrame then ToggleGuildFrame() elseif ToggleFriendsFrame then ToggleFriendsFrame(3) end end,
+      count = function()
+          if not (IsInGuild and IsInGuild() and GetNumGuildMembers) then return nil end
+          local _, online = GetNumGuildMembers()
+          return tonumber(online)
+      end,
+      tip = function() return IsInGuild and IsInGuild() and T("Membres de la guilde en ligne") or T("Pas de guilde") end },
+    { key = "collect", label = "Collections du compte", micro = { "CollectionsMicroButton" },
+      icon = function() return UI.MEDIA .. "collect" end, tint = true,
+      run = function() if ToggleCollectionsJournal then ToggleCollectionsJournal() end end },
+    { key = "heirloom", label = "Héritages", icon = function() return UI.MEDIA .. "crown" end, tint = true,
+      -- onglet des héritages du journal des collections (pas de bouton du jeu pour un onglet précis)
+      run = function()
+          if ToggleCollectionsJournal then ToggleCollectionsJournal(COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS or 4) end
+      end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,
       run = function()
           local me = WK.DB:Me()
@@ -215,6 +240,12 @@ local function makeIcon(def)
     b.tex:SetPoint("BOTTOMRIGHT", -6, 6)
     b.dot = UI:Icon(b, "circle", 7, nil, "OVERLAY")
     b.dot:SetPoint("TOPRIGHT", -2, -2)
+    -- nombre en ligne (guilde, amis) : pastille en bas à droite
+    b.numBg = UI:Icon(b, "circle", 15, nil, "OVERLAY")
+    b.numBg:SetPoint("BOTTOMRIGHT", 3, -3)
+    b.num = UI:Text(b, 9, nil, "OVERLAY")
+    b.num:SetPoint("CENTER", b.numBg, "CENTER", 0, 0)
+    b.numBg:Hide(); b.num:Hide()
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T(def.label), 1, 1, 1)
@@ -463,6 +494,7 @@ local function build()
             ic.dot:SetShown(dc ~= nil)
             if dc then ic.dot:SetVertexColor(unpack(dc)) end
         end
+        UI:ClockCounts()
         -- largeur du cadre : place pour tous les raccourcis (stable, pour le mode édition)
         local n = #L > #R and #L or #R
         self:SetWidth(math.max(120, n * (base + IGAP) * 2 + clockW + 2 * (GAP + PAD) + 20))
@@ -472,6 +504,36 @@ local function build()
         default = { 0, UIParent:GetHeight() / 2 - 6 } })
     return bar
 end
+
+-- Nombres en ligne sur les icônes (texte seulement : possible en combat)
+function UI:ClockCounts()
+    if not bar then return end
+    for _, def in ipairs(SHORTCUTS) do
+        local ic = bar.icons[def.key]
+        local n = def.count and def.count()
+        local show = ic and n ~= nil and n > 0
+        if ic then
+            ic.num:SetShown(show); ic.numBg:SetShown(show)
+            if show then
+                ic.num:SetText(n > 99 and "99" or tostring(n))
+                ic.numBg:SetVertexColor(UI:Accent())
+                ic.num:SetTextColor(unpack(C.onAccent))
+            end
+        end
+    end
+end
+local function countsSoon() if bar then C_Timer.After(0.2, function() UI:ClockCounts() end) end end
+for _, ev in ipairs({ "GUILD_ROSTER_UPDATE", "FRIENDLIST_UPDATE", "BN_FRIEND_ACCOUNT_ONLINE", "BN_FRIEND_ACCOUNT_OFFLINE", "PLAYER_GUILD_UPDATE" }) do
+    WK:On(ev, countsSoon)
+end
+-- la liste de la guilde n'arrive que sur demande : une fois par minute
+local function askRoster()
+    if bar and IsInGuild and IsInGuild() then
+        if C_GuildInfo and C_GuildInfo.GuildRoster then pcall(C_GuildInfo.GuildRoster) elseif GuildRoster then pcall(GuildRoster) end
+    end
+end
+if C_Timer.NewTicker then C_Timer.NewTicker(60, askRoster) end
+WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(5, function() askRoster(); UI:ClockCounts() end) end)
 
 ---------------------------------------------------------------------------
 -- Ordre et côté des raccourcis (réglages : barre en direct de QoL > Micro menu)
@@ -510,6 +572,14 @@ local function saveVisual(VL, VR)
     end
     o.order = order
     UI:SyncClock()
+end
+-- Glisser-déposer (réglages) : nouvelle disposition { gauche de g. à d. }, { droite }, côté de chacun
+function UI:ClockSetLayout(VL, VR)
+    local o = cfg()
+    for _, def in ipairs(SHORTCUTS) do o.side[def.key] = nil end
+    for _, k in ipairs(VL) do o.side[k] = "L" end
+    for _, k in ipairs(VR) do o.side[k] = "R" end
+    saveVisual(VL, VR)
 end
 -- Clic : gauche > droite > masqué > gauche (au bout le plus éloigné de l'heure)
 function UI:ClockCycle(key)

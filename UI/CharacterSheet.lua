@@ -3,12 +3,12 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Fiche de personnage : ouverte au clic sur un perso (page Persos), pour n'importe quel perso du compte.
+-- Fiche de personnage : page « charsheet » de la fenêtre (hors barre latérale, Persos y reste en
+-- surbrillance), ouverte au clic sur un perso (pages Persos et Résumé), pour n'importe quel perso du compte.
 -- Onglets : Équipement (emplacements autour du portrait : cadre à la couleur de qualité, niveau d'objet,
 -- point = enchanté ; niveau moyen, armure, durabilité, sacs), Stats (caractéristiques avec une barre
 -- colorée pour celles qui comptent pour la classe, combat, résistances), Métiers, Réputations.
 -- Données : Modules/Gear.lua (relevées à chaque connexion du perso), c.professions.
-local W, H = 640, 520
 local SQ = 34
 local sheet
 
@@ -154,19 +154,10 @@ local function kpi(parent)
     return f
 end
 
-local function build()
-    local f = CreateFrame("Frame", "WarbandKeeperCharSheet", UIParent)
-    f:SetSize(W, H)
-    f:SetPoint("CENTER", 0, 20)
-    f:SetFrameStrata("DIALOG")
-    f:SetClampedToScreen(true)
-    f:EnableMouse(true)
-    f:SetMovable(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", f.StopMovingOrSizing)
-    UI:Panel(f, 14, C.bg, C.border)
-    if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperCharSheet") end -- Échap ferme
+local function build(parent)
+    local f = CreateFrame("Frame", "WarbandKeeperCharSheet", parent)
+    f:SetAllPoints()
+    UI:Panel(f, 14, C.surface, C.border)
     -- en-tête : icône de classe dans un anneau, nom, classe et niveau, niveau moyen, fermer
     f.ring = UI:Icon(f, "ring", 50, nil, "ARTWORK")
     f.ring:SetPoint("TOPLEFT", 16, -14)
@@ -183,11 +174,11 @@ local function build()
     f.title:SetPoint("TOPLEFT", f.ring, "TOPRIGHT", 12, -6)
     f.sub = UI:Text(f, 11, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
-    f.close = UI:IconButton(f, "close", 26, nil, "accent")
-    f.close:SetPoint("TOPRIGHT", -10, -10)
-    f.close:SetScript("OnClick", function() f:Hide() end)
+    f.back = UI:Button(f, "Persos", nil, 26, "ghost", "back")
+    f.back:SetPoint("TOPRIGHT", -12, -12)
+    f.back:SetScript("OnClick", function() UI:ShowPage("characters") end)
     f.score = UI:Text(f, 22)
-    f.score:SetPoint("TOPRIGHT", -50, -16)
+    f.score:SetPoint("TOPRIGHT", f.back, "TOPLEFT", -18, -4)
     f.scoreL = UI:Text(f, 10, C.dim)
     f.scoreL:SetPoint("TOPRIGHT", f.score, "BOTTOMRIGHT", 0, -2)
     f.scoreL:SetText(T("niv. moyen"))
@@ -366,7 +357,6 @@ local function build()
     f.empty = UI:Text(f, 12, C.muted)
     f.empty:SetPoint("TOP", 0, -160)
 
-    f:SetScript("OnShow", function(s) s:Refresh() end)
     return f
 end
 
@@ -494,23 +484,18 @@ local function refreshList(f, c, kind)
 end
 
 function UI:ShowCharSheet(key)
-    local c = WK.DB.global.characters[key]
-    if not c then return end
-    sheet = sheet or build()
-    sheet.key = key
-    sheet.c = c
-    if sheet:IsShown() then sheet:Refresh() else sheet:Show() end
-end
-
-function UI:RefreshCharSheet()
-    if sheet and sheet:IsShown() then sheet:Refresh() end
+    if not WK.DB.global.characters[key] then return end
+    UI.charSheetKey = key
+    if sheet then sheet.tab = "gear" end
+    UI:Create():Show()
+    UI:ShowPage("charsheet")
 end
 
 -- Mise à jour de la fiche (onglet, données)
 local function refresh(f)
     local key = f.key
     local c = WK.DB.global.characters[key]
-    if not c then f:Hide() return end
+    if not c then return end
     UI:SetClassIcon(f.cls, c.class)
     local cr, cg, cb = UI:ClassColor(c.class)
     f.ring:SetVertexColor(cr, cg, cb)
@@ -535,11 +520,30 @@ local function refresh(f)
 end
 
 -- branché après build (les fonctions locales ci-dessus doivent exister)
-local origBuild = build
-build = function()
-    local f = origBuild()
-    f.Refresh = refresh
-    return f
-end
+UI:RegisterPage({
+    key = "charsheet", order = 2.05, title = "Fiche du personnage",
+    Build = function(self, p)
+        sheet = build(p)
+        sheet.Refresh = refresh
+        UI:OnResize(p, function() if sheet:IsVisible() then sheet:Refresh() end end)
+    end,
+    Refresh = function(self)
+        if not sheet then return end
+        sheet.key = UI.charSheetKey or WK:CharKey()
+        sheet:Refresh()
+    end,
+})
 
-WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsShown() and sheet.tab == "gear" then sheet:Refresh() end end)
+WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsVisible() and sheet.tab == "gear" then sheet:Refresh() end end)
+
+-- Pastilles de l'en-tête : le perso affiché
+UI.CHIPS.charsheet = function()
+    local key = UI.charSheetKey or WK:CharKey()
+    local c = WK.DB.global.characters[key]
+    if not c then return {} end
+    return { { T("Perso"), WK:CharName(c, key), { UI:ClassColor(c.class) }, "characters" },
+             { T("Niveau"), tostring(c.level or "-") },
+             { T("Or"), UI:GoldText(c.money) },
+             { T("Temps de jeu"), WK:FormatTime(c.played) },
+             { T("Royaume"), UI:FactionRealm(c) } }
+end

@@ -318,6 +318,11 @@ UI:RegisterPage({
                 GameTooltip:Show()
             end)
             r.mail:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            -- toute la ligne : clic = fiche du perso, survol à la couleur de l'apparence
+            UI:HoverRow(r, r.border, r.bg, function(s) return s.isMe and C.surface2 or C.surface end, function(s, button)
+                if button == "LeftButton" and s.key then UI:ShowCharSheet(s.key) end
+            end)
+            r:HoverChild(r.mail)
             r.level = UI:Text(r, 12)
             r.gold = UI:Text(r, 12)
             r.gold:SetJustifyH("RIGHT")
@@ -441,7 +446,10 @@ UI:RegisterPage({
         if not open then
             local x = 16
             for i, d in ipairs(self.modDots) do
-                d:ClearAllPoints(); d:SetPoint("LEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * 34, -28)
+                -- pas des icônes : 34 px, resserré pour tenir entre le compteur et « Gérer »
+                local step = math.min(34, math.floor((W - 190 - 120) / math.max(1, #self.modDots)))
+                d:SetSize(math.min(22, step - 6), math.min(22, step - 6))
+                d:ClearAllPoints(); d:SetPoint("LEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * step, -28)
             end
             self.modH = 56
         else
@@ -663,7 +671,8 @@ UI:RegisterPage({
             r:SetPoint("TOPLEFT", 0, -y)
             r:SetPoint("TOPRIGHT", 0, -y)
             local isMe = e.key == me
-            r.bg:SetColor(unpack(isMe and C.surface2 or C.surface))
+            r.isMe, r.key = isMe, e.key
+            r:PaintHover()
             UI:SetCharIcon(r.icon, c, e.key)
             r.name:SetText(WK:CharName(c, e.key))
             r.name:SetTextColor(UI:ClassColor(c.class))

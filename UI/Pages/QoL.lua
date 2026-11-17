@@ -142,6 +142,15 @@ function UI:QoLSectionCount(key)
     end
     return n > 0 and tostring(n) or ""
 end
+-- Alertes d'une section (Général : sacs, banque, réparation ; Classes : composants, munitions, familier)
+function UI:QoLSectionAlerts(key)
+    local out = {}
+    if key ~= "general" and key ~= "classes" then return out end
+    for _, a in ipairs(Q():Alerts()) do
+        if (key == "general") == (a.class == nil) then table.insert(out, a) end
+    end
+    return out
+end
 -- Section affichée (« classes » pour une classe), pour la barre latérale.
 function UI:QoLCurrentSection()
     local s = WK.DB.global.settings.ui.qolSection or "general"
@@ -689,7 +698,9 @@ UI:RegisterPage({
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
         local clockCard = card("Horloge et raccourcis", 40 + 11 * 46 + 30 + 128, "les raccourcis se déplient au survol de l'heure")
-        local cy = -40
+        -- en haut : les raccourcis (barre telle qu'à l'écran) ; les réglages en dessous
+        local TOPBOX = 40 + 26 + 56 + 8 + 34 + 26
+        local cy = -TOPBOX
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
         crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
@@ -725,12 +736,11 @@ UI:RegisterPage({
         -- Raccourcis : la barre telle qu'à l'écran. Clic : gauche > droite > masqué ;
         -- Maj + clic gauche / droit : décaler d'un cran ; clic droit : masquer.
         local hdr = UI:Text(clockCard, 10, C.dim)
-        hdr:SetPoint("TOPLEFT", 16, cy - 6)
-        hdr:SetText(T("RACCOURCIS") .. "  ·  " .. T("clic : gauche > droite > masqué"))
-        cy = cy - 26
+        hdr:SetPoint("TOPLEFT", 16, -46)
+        hdr:SetText(T("RACCOURCIS") .. "  ·  " .. T("glisser-déposer pour les ranger, ou les masquer en bas"))
         local box = CreateFrame("Frame", nil, clockCard)
-        box:SetPoint("TOPLEFT", 16, cy)
-        box:SetPoint("TOPRIGHT", -16, cy)
+        box:SetPoint("TOPLEFT", 16, -66)
+        box:SetPoint("TOPRIGHT", -16, -66)
         box:SetHeight(56)
         box.bg = UI:Rounded(box, 12, 0, "BACKGROUND", 1)
         box.bg:SetColor(unpack(C.inset))
@@ -745,7 +755,7 @@ UI:RegisterPage({
         hl:SetText(T("MASQUÉS"))
         local hint = UI:Text(clockCard, 10, C.muted)
         hint:SetPoint("TOPLEFT", hid, "BOTTOMLEFT", 4, -6)
-        hint:SetText(T("Maj + clic gauche ou droit : décaler d'un cran  ·  clic droit : masquer"))
+        hint:SetText(T("Clic : gauche > droite > masqué  ·  Maj + clic gauche ou droit : décaler d'un cran  ·  clic droit : masquer"))
         local clockTxt = UI:Text(box, 18)
         local sepL = box:CreateTexture(nil, "ARTWORK"); sepL:SetSize(1, 26)
         local sepR = box:CreateTexture(nil, "ARTWORK"); sepR:SetSize(1, 26)
@@ -787,7 +797,45 @@ UI:RegisterPage({
                 GameTooltip:AddLine(sideText(def.key) .. "  ·  " .. nextText(def.key), 0.6, 0.6, 0.6)
                 GameTooltip:Show()
             end)
-            b:SetScript("OnLeave", function(s2) s2.hover = nil; layoutBar(); GameTooltip:Hide() end)
+            b:SetScript("OnLeave", function(s2) s2.hover = nil; if not s2.dragging then layoutBar() end; GameTooltip:Hide() end)
+            -- glisser-déposer : l'icône suit la souris ; lâchée sur la barre, elle se range à cet endroit
+            -- (à gauche ou à droite de l'heure) ; lâchée sur « Masqués », elle est masquée
+            b:RegisterForDrag("LeftButton")
+            b:SetScript("OnDragStart", function(s2)
+                s2.dragging = true
+                GameTooltip:Hide()
+                s2:SetParent(clockCard)
+                s2:SetFrameLevel(clockCard:GetFrameLevel() + 20)
+                s2:SetScript("OnUpdate", function(s3)
+                    local cx, cyy = GetCursorPosition()
+                    local sc = s3:GetEffectiveScale()
+                    s3:ClearAllPoints()
+                    s3:SetPoint("CENTER", UIParent, "BOTTOMLEFT", cx / sc, cyy / sc)
+                end)
+            end)
+            b:SetScript("OnDragStop", function(s2)
+                s2:SetScript("OnUpdate", nil)
+                s2.dragging = nil
+                local cx = GetCursorPosition() / box:GetEffectiveScale()
+                if hid:IsMouseOver() then
+                    UI:ClockHide(def.key)
+                elseif box:IsMouseOver(10, -10, 0, 0) then
+                    local VL, VR = UI.ClockVisual("L"), UI.ClockVisual("R")
+                    local function drop(t) for i = #t, 1, -1 do if t[i] == def.key then table.remove(t, i) end end end
+                    drop(VL); drop(VR)
+                    local mid = clockTxt:GetLeft() and (clockTxt:GetLeft() + clockTxt:GetRight()) / 2 or (box:GetLeft() + box:GetRight()) / 2
+                    local list = cx < mid and VL or VR
+                    local pos = #list + 1
+                    for i, k in ipairs(list) do
+                        local o = btns[k]
+                        local ox = o:GetLeft() and (o:GetLeft() + o:GetRight()) / 2
+                        if ox and cx < ox then pos = i break end
+                    end
+                    table.insert(list, pos, def.key)
+                    UI:ClockSetLayout(VL, VR)
+                end
+                layoutBar()
+            end)
             btns[def.key] = b
         end
         layoutBar = function()
@@ -1091,7 +1139,7 @@ UI:RegisterPage({
         local function ftoggle(parent, field, after)
             return toggle(parent, function() return fo[field] end, function(v) fo[field] = v; if after then after() end end)
         end
-        local fmode = card("Mode pêche", 40 + 3 * 46 + 8, "tenue, sons, touche et barre à l'écran, le temps de pêcher")
+        local fmode = card("Mode pêche", 40 + 3 * 46 + 8)
         local modeBtn = UI:Button(fmode, "Ouvrir", 150, 28, "primary")
         modeBtn:SetScript("OnClick", function() Fi:Toggle() end)
         table.insert(self.dyn, function()
@@ -1203,8 +1251,11 @@ UI:RegisterPage({
                 end
             end
         end)
-        local frec = card("Récapitulatif de session", 40 + 46 + 8)
+        local frec = card("Récapitulatif de session", 40 + 2 * 46 + 8)
         UI:SettingRow(frec, -40, "À la fermeture du mode pêche", "Prises, rythme, valeur, ce qui a le plus mordu, compétence gagnée. Se place en mode édition.", ftoggle(frec, "recap"), 80)
+        UI:SettingRow(frec, -86, "Temps d'affichage", "Une barre en bas se vide jusqu'à la fermeture ; en pause sous la souris. 0 : reste ouvert (clic pour fermer).",
+            UI:Slider(frec, 240, 0, 60, 5, function() local v = fo.recapTime; if v == nil then v = 10 end; return v end,
+                function(v) fo.recapTime = v end, "%d s"), 260)
 
         -- Touche unique : capture d'une touche, de la molette ou d'un bouton de souris
         local fkey = card("Une seule touche pour tout", 40 + 46 + 44, "active seulement en mode pêche, hors combat")
@@ -1275,7 +1326,17 @@ UI:RegisterPage({
 
         local fcomfort = card("Confort", 40 + 3 * 46 + 8)
         UI:SettingRow(fcomfort, -40, "Butin rapide", "Ramasse la prise dès que le butin est prêt (sauf sacs pleins).", ftoggle(fcomfort, "fastLoot"), 80)
-        UI:SettingRow(fcomfort, -86, "Son du flotteur mis en avant", "Musique et ambiance coupées, effets au maximum, le temps de pêcher.", ftoggle(fcomfort, "sound"), 80)
+        local soundDd = UI:Dropdown(fcomfort, 240, 30, {
+            { "off", T("Non") }, { "light", T("Léger : musique et ambiance baissées") }, { "strong", T("Fort : musique et ambiance coupées") },
+            { "max", T("Maximum : tout coupé sauf les effets") } }, function(v)
+            local was = Fi.active and fo.sound
+            if was then Fi:FocusSound(false) end
+            fo.sound = v ~= "off"
+            if v ~= "off" then fo.soundLevel = v end
+            if Fi.active and fo.sound then Fi:FocusSound(true) end
+        end)
+        soundDd:Select(fo.sound and (fo.soundLevel or "strong") or "off")
+        UI:SettingRow(fcomfort, -86, "Son du flotteur mis en avant", "Le temps de pêcher ; tout redevient comme avant à la fermeture. Maximum : voix coupées, volume général au maximum, son gardé quand le jeu est en arrière-plan.", soundDd, 240)
         UI:SettingRow(fcomfort, -132, "Avertissements à l'écran", "Pas de canne, plus d'appât, sacs pleins.", ftoggle(fcomfort, "warn", function() Fi:Warn() end), 80)
 
         -----------------------------------------------------------------------

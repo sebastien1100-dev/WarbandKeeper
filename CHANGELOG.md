@@ -23,6 +23,28 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.0.0 — 17/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Micro menu : nouveaux raccourcis Guilde (avec le nombre de membres en ligne sur l'icône), Collections du compte et Héritages ; « Amis » affiche le nombre d'amis en ligne (jeu et Battle.net). Ils arrivent dans « Masqués » : glisse-les dans la barre.
+- Micro menu, réglages : les raccourcis sont tout en haut, et se rangent par glisser-déposer (lâchés à gauche ou à droite de l'heure, ou sur « Masqués » pour les cacher). Les clics marchent toujours.
+- Pêche : le son du flotteur se règle par niveau (Léger, Fort, Maximum : voix coupées, volume général au maximum, son gardé quand le jeu est en arrière-plan).
+- Pêche : le récapitulatif de session reste 10 s par défaut avec une barre qui se vide (pause sous la souris), et sa durée se règle (0 : reste ouvert).
+
+### Modifications
+- Fiche de personnage : elle s'ouvre maintenant dans la fenêtre de Warband Keeper (bouton « Persos » pour revenir), au clic sur un perso dans Persos ou dans le tableau du Résumé, avec ses pastilles en haut.
+- Persos et Résumé : chaque ligne de perso est cliquable en entier et se colore à la couleur de l'apparence au survol. Sous le nom : la faction et le type de serveur (JcE, JcJ, JdR) au lieu du nom complet du royaume.
+- En-tête : Patch notes, Profils et Options passent en icônes à gauche d'Éditer (un point signale des notes pas lues) ; le scan du perso devient un bouton « Scan ».
+- Barre latérale, Réglages QoL : au lieu d'un chiffre, une petite icône par alerte (coffre-fort rouge = banque pleine, sac = sacs pleins, marteau = réparer…), le détail au survol.
+- Carte Modules : elle reprend toute la barre latérale, groupe par groupe (Persos et Inventaire, Général, Carte, Hôtel des ventes et Classes dans Réglages QoL…) : couper un module retire son entrée de la barre.
+- Carte : les trajets en vol et en bateau sont de fines lignes continues bordées de sombre, bien visibles sur tous les fonds (la marche reste en pointillés).
+- Pêche : la carte « Mode pêche » perd sa phrase d'en-tête.
+
+### Corrections
+- Donjons, Parcours : les icônes du butin chevauchaient le bouton « Tout le butin ».
+
 ## v0.99.0 — 17/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

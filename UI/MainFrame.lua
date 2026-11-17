@@ -74,7 +74,7 @@ local function NavItem(parent, def)
     b.count:SetJustifyH("RIGHT")
 
     function b:Refresh()
-        local sel = UI.current == def.key
+        local sel = UI.current == def.key or (def.key == "characters" and UI.current == "charsheet")
         self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
         self.bg:SetShown(sel or self.hover)
         self.bar:SetShown(sel)
@@ -156,6 +156,34 @@ local function SubItem(parent, sec)
     b.label:SetText(WK.T(sec[2]))
     b.count = UI:Text(b, 10, C.warning)
     b.count:SetPoint("RIGHT", -10, 0)
+    -- alertes de la section : une petite icône par genre (coffre-fort = banque pleine, sac = sacs
+    -- pleins, marteau = réparer…), rouge si urgent, orange sinon ; le détail en infobulle
+    local KIND_ICON = { durability = "hammer", reagent = "spark", ammo = "spark", poison = "spark", pet = "star" }
+    b.alerts = {}
+    for i = 1, 3 do
+        local t = UI:Icon(b, "safe", 14, nil, "OVERLAY")
+        t:SetPoint("RIGHT", -8 - (i - 1) * 17, 0)
+        t:Hide()
+        b.alerts[i] = t
+    end
+    function b:PaintAlerts(rail)
+        local list = UI.QoLSectionAlerts and UI:QoLSectionAlerts(self.key) or {}
+        local kinds, seen = {}, {}
+        for _, a in ipairs(list) do
+            local ic = (a.kind == "bags" and a.bank) and "safe" or (a.kind == "bags" and "bag") or KIND_ICON[a.kind] or "bang"
+            if not seen[ic] then seen[ic] = { icon = ic, urgent = a.urgent or (a.kind == "bags" and a.bank and true) }; table.insert(kinds, seen[ic])
+            elseif a.urgent then seen[ic].urgent = true end
+        end
+        self.alertList = list
+        for i, t in ipairs(self.alerts) do
+            local k = kinds[i]
+            t:SetShown(k ~= nil and not rail)
+            if k then
+                t:SetTexture(UI.MEDIA .. k.icon)
+                t:SetVertexColor(unpack(k.urgent and C.negative or C.warning))
+            end
+        end
+    end
     function b:Refresh()
         local sel = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection() == self.key
         self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
@@ -166,14 +194,19 @@ local function SubItem(parent, sec)
         self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
         local rail = WK.DB.global.settings.ui.collapsed
         self.label:SetShown(not rail)
-        self.count:SetShown(not rail)
-        self.count:SetText(UI.QoLSectionCount and UI:QoLSectionCount(self.key) or "")
+        self.count:Hide()
+        self:PaintAlerts(rail)
     end
     b:SetScript("OnEnter", function(s)
         s.hover = true; s:Refresh()
-        if WK.DB.global.settings.ui.collapsed then
+        local rail = WK.DB.global.settings.ui.collapsed
+        if rail or (s.alertList and #s.alertList > 0) then
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.label:GetText(), 1, 1, 1)
+            for _, a in ipairs(s.alertList or {}) do
+                local col = a.urgent and C.negative or C.warning
+                GameTooltip:AddLine(a.text, col[1], col[2], col[3], true)
+            end
             GameTooltip:Show()
         end
     end)
@@ -372,7 +405,7 @@ function UI:Create()
                 if not e.hidden then nItems = nItems + 1 end
             end
         end
-        local bottomH = 44 + #BOTTOM * 36 - 2           -- repli + notes + profils + options (haut de « Patch notes »)
+        local bottomH = 42                              -- bouton de repli (notes, profils, options : dans l'en-tête)
         local avail = (h or 600) - ((WK.DB.global.settings.ui.collapsed or not UI.sideSearch) and 64 or 98) - bottomH
         local labelStep, itemStep, gap = 26, 36, 4
         local need = nLabels * (labelStep + gap) + nItems * itemStep
@@ -447,17 +480,6 @@ function UI:Create()
     collapse:SetScript("OnEnter", function(s) s.label:SetTextColor(unpack(C.text)) end)
     collapse:SetScript("OnLeave", function(s) s.label:SetTextColor(unpack(C.dim)) end)
     self.collapseBtn = collapse
-    local by = 44
-    for i = #BOTTOM, 1, -1 do
-        local def = self.pages[BOTTOM[i]]
-        if def then
-            local item = NavItem(side, def)
-            item:SetPoint("BOTTOMLEFT", 8, by)
-            item:SetPoint("BOTTOMRIGHT", -8, by)
-            self.nav[def.key] = item
-            by = by + 36
-        end
-    end
 
     -- En-tête de page -----------------------------------------------------------------
     local header = CreateFrame("Frame", nil, f)
@@ -504,17 +526,36 @@ function UI:Create()
         if InCombatLockdown and InCombatLockdown() then WK:Print(WK.T("Pas de rechargement en combat.")) return end
         ReloadUI()
     end)
-    local scan = UI:IconButton(header, "refresh", 30, "Scanner ce personnage (sacs, or, métiers)")
-    scan:SetPoint("RIGHT", reload, "LEFT", -4, 0)
+    local scan = UI:Button(header, "Scan", nil, 28, "secondary", "refresh")
+    scan:SetPoint("RIGHT", reload, "LEFT", -8, 0)
+    scan.tooltip = "Scanner ce personnage (sacs, or, métiers)."
     -- Mode édition, sur toutes les pages, à la couleur d'accent
     local editBtn = UI:Button(header, "Éditer", nil, 28, "primary")
-    editBtn:SetPoint("RIGHT", scan, "LEFT", -10, 0)
+    editBtn:SetPoint("RIGHT", scan, "LEFT", -8, 0)
     editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
     editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
+    -- Patch notes, Profils, Options : icônes juste à gauche d'Éditer (point = notes pas encore lues)
+    self.headIcons = {}
+    local prevIcon = editBtn
+    for i = #BOTTOM, 1, -1 do
+        local def = self.pages[BOTTOM[i]]
+        if def then
+            local ib = UI:IconButton(header, ICONS[def.key] or "circle", 30, LABELS[def.key] or def.nav or def.title)
+            ib:SetPoint("RIGHT", prevIcon, "LEFT", prevIcon == editBtn and -8 or -2, 0)
+            ib:SetScript("OnClick", function() UI:ShowPage(def.key) end)
+            ib.dot = UI:Icon(ib, "circle", 7, nil, "OVERLAY")
+            ib.dot:SetPoint("TOPRIGHT", -4, -4)
+            ib.dot:Hide()
+            ib.def = def
+            self.headIcons[def.key] = ib
+            prevIcon = ib
+        end
+    end
     self.editBtn = editBtn
-    -- Mise à jour disponible (client PC ou version vue chez un autre joueur) : bouton à gauche d'Éditer
+    self.headLeft = prevIcon
+    -- Mise à jour disponible (client PC ou version vue chez un autre joueur) : bouton à gauche des icônes
     local upd = UI:Button(header, "Mise à jour", nil, 28, "secondary", "refresh")
-    upd:SetPoint("RIGHT", editBtn, "LEFT", -8, 0)
+    upd:SetPoint("RIGHT", prevIcon, "LEFT", -8, 0)
     upd:HookScript("OnEnter", function(s)
         local v, src = WK.modules.Version:Available()
         if not v then return end
@@ -963,6 +1004,11 @@ UI.CHIPS = {
 
 -- Bouton « Mise à jour x.y.z » de l'en-tête
 function UI:RefreshUpdate()
+    for key, ib in pairs(self.headIcons or {}) do
+        local n = ib.def.count and ib.def.count() or ""
+        ib.dot:SetShown(n ~= nil and n ~= "")
+        ib.dot:SetVertexColor(UI:Accent())
+    end
     local b = self.updBtn
     if not b then return end
     local V = WK.modules.Version
@@ -980,7 +1026,7 @@ function UI:RefreshChips()
     if f then ok, list = pcall(f) end
     if not ok or type(list) ~= "table" then list = {} end
     local x = PAD - 5
-    local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0)
+    local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0) - 70 - 3 * 32
         - ((self.updBtn and self.updBtn:IsShown()) and (self.updBtn:GetWidth() + 8) or 0)
     for _, ch in ipairs(list) do
         local c = self.chips:Get()

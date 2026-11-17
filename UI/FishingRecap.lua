@@ -77,10 +77,28 @@ local function build()
     f.foot:SetPoint("BOTTOMLEFT", 16, 14)
     f.foot:SetPoint("RIGHT", -16, 0)
     f.foot:SetJustifyH("LEFT")
+    -- barre de temps en bas : se vide jusqu'à la fermeture, en pause sous la souris (grise)
+    f.track = f:CreateTexture(nil, "ARTWORK")
+    f.track:SetHeight(3)
+    f.track:SetPoint("BOTTOMLEFT", 14, 1); f.track:SetPoint("BOTTOMRIGHT", -14, 1)
+    f.fill = f:CreateTexture(nil, "OVERLAY")
+    f.fill:SetHeight(3)
+    f.fill:SetPoint("BOTTOMLEFT", f.track, "BOTTOMLEFT")
     f:SetScript("OnClick", function(s) s:Hide() end)
-    f:SetScript("OnUpdate", function(s)
-        if s.sample then return end
-        if s.until_ and GetTime() > s.until_ then s:Hide() end
+    f:SetScript("OnUpdate", function(s, elapsed)
+        if s.sample or not s.total then
+            s.track:SetShown(false); s.fill:SetShown(false)
+            return
+        end
+        s.track:SetShown(true); s.fill:SetShown(true)
+        local over = s:IsMouseOver()
+        if not over then s.remain = s.remain - elapsed end
+        if s.remain <= 0 then s.total = nil; s:Hide(); s:SetAlpha(1) return end
+        s.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.6)
+        local r, g, b = UI:Accent()
+        if over then s.fill:SetColorTexture(C.dim[1], C.dim[2], C.dim[3], 1) else s.fill:SetColorTexture(r, g, b, 1) end
+        s.fill:SetWidth(math.max(0.01, (s.track:GetWidth() or 0) * s.remain / s.total))
+        s:SetAlpha(over and 1 or math.min(1, s.remain / 0.5))
     end)
 
     function f:Fill(sv)
@@ -149,7 +167,11 @@ function UI:ShowFishingRecap(sv)
     card = card or build()
     card.sample = nil
     card:Fill(sv)
-    card.until_ = GetTime() + 20
+    local secs = WK.modules.Fishing:Config().recapTime
+    if secs == nil then secs = 10 end
+    card.total = secs > 0 and secs or nil
+    card.remain = card.total
+    card:SetAlpha(1)
     card:Show()
 end
 

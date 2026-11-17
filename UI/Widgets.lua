@@ -935,3 +935,33 @@ function UI:TooltipOwner(owner, anchor, x, y)
     GameTooltip:SetOwner(owner, anchor, x, y)
     UI:SkinTooltip(GameTooltip)
 end
+
+-- Ligne (tuile) entièrement cliquable : au survol, bordure et fond à la couleur de l'apparence.
+-- border / bg : fonds arrondis de la ligne (UI:Rounded) ; base() rend la couleur de fond au repos.
+-- Les enfants qui prennent la souris (boutons) gardent le survol : il ne tombe que hors de la ligne.
+function UI:HoverRow(r, border, bg, base, onClick)
+    r:EnableMouse(true)
+    local function paint(s)
+        local on = s:IsMouseOver()
+        local ar, ag, ab = UI:Accent()
+        if on then
+            border:SetColor(ar, ag, ab, 1)
+            local b0 = base and base(s) or C.surface
+            bg:SetColor(b0[1] * 0.82 + ar * 0.18, b0[2] * 0.82 + ag * 0.18, b0[3] * 0.82 + ab * 0.18, 1)
+        else
+            border:SetColor(unpack(C.border))
+            bg:SetColor(unpack(base and base(s) or C.surface))
+        end
+    end
+    r.PaintHover = paint
+    r:HookScript("OnEnter", paint)
+    r:HookScript("OnLeave", function(s) C_Timer.After(0, function() paint(s) end) end)
+    if onClick then
+        r:SetScript("OnMouseUp", function(s, button) onClick(s, button) end)
+    end
+    -- enfants : leur sortie peut être la sortie de la ligne
+    function r:HoverChild(ch)
+        ch:HookScript("OnEnter", function() paint(r) end)
+        ch:HookScript("OnLeave", function() C_Timer.After(0, function() paint(r) end) end)
+    end
+end

@@ -5,16 +5,18 @@ local ADDON_NAME, WK = ...
 -- disparaissent, ses actions s'arrêtent (filtre de loot, détection des rares, scan auto de l'HV, halo…).
 -- Les relevés discrets (or, courrier, journal, quêtes faites) continuent : rien ne manque si on le remet.
 -- Réglage : WK.DB.global.modulesOff[clé] = true (fait partie des profils).
--- Persos, Inventaire, Résumé, QoL (général), guidage et classes restent toujours actifs.
+-- Résumé et guidage restent toujours actifs ; Persos, Inventaire, Général et Classes ne font que masquer leur entrée.
 --   key, label, icon, group, page (page de la barre latérale), desc, reload (élément à l'écran :
 --   proposer un /reload pour qu'il disparaisse ou revienne proprement)
 WK.FEATURES = {
-    -- groupes = ceux de la barre latérale (UI/MainFrame.lua), chacun d'un seul tenant (une ligne de la carte Modules)
+    -- miroir de la barre latérale (UI/MainFrame.lua) : chaque entrée y a son interrupteur, dans le même groupe,
+    -- et chaque groupe est d'un seul tenant (une ligne de la carte Modules) ; en plus : Récolte et Distance
+    { key = "characters", label = "Persos", icon = "users", group = "BATAILLON", page = "characters", desc = "page et fiches" },
+    { key = "inventory", label = "Inventaire", icon = "bag", group = "BATAILLON", page = "inventory", desc = "page" },
     { key = "stats", label = "Stats", icon = "chart", group = "TRÉSORERIE", page = "stats" },
     { key = "mail", label = "Règles d'envoi", icon = "mail", group = "TRÉSORERIE", page = "mail" },
-    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "TRÉSORERIE", qol = "ah", desc = "scan et infobulle" },
     { key = "professions", label = "Métiers", icon = "hammer", group = "ARTISANAT", page = "professions", desc = "page et infobulle" },
-    { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", reload = true },
+    { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", desc = "page et réglages QoL", reload = true },
     { key = "farm", label = "Session de farm", icon = "play", group = "BUTIN", page = "farm" },
     { key = "loot", label = "Filtre de loot", icon = "filter", group = "BUTIN", page = "loot" },
     { key = "journal", label = "Journal", icon = "clock", group = "BUTIN", page = "journal" },
@@ -22,11 +24,14 @@ WK.FEATURES = {
     { key = "rares", label = "Rares", icon = "star", group = "AVENTURE", page = "rares", desc = "page, carte, alerte" },
     { key = "dungeons", label = "Donjons", icon = "skull", group = "AVENTURE", page = "dungeons", desc = "boss, butin, envies" },
     { key = "lfg", label = "LFG", icon = "lfg", group = "AVENTURE", page = "lfg" },
-    { key = "maplayers", label = "Carte", icon = "map", group = "AVENTURE", qol = "maplayers", desc = "lieux et trajets" },
     { key = "nodes", label = "Récolte", icon = "tree", group = "AVENTURE", desc = "filons et plantes" },
+    { key = "qolgeneral", label = "Général", icon = "gear", group = "RÉGLAGES QOL", qol = "general", desc = "section des réglages" },
     { key = "halo", label = "Halo", icon = "spark", group = "RÉGLAGES QOL", qol = "halo", reload = true },
     { key = "micro", label = "Micro menu", icon = "menu", group = "RÉGLAGES QOL", qol = "micro", reload = true },
+    { key = "maplayers", label = "Carte", icon = "map", group = "RÉGLAGES QOL", qol = "maplayers", desc = "lieux et trajets" },
+    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "RÉGLAGES QOL", qol = "ah", desc = "scan et infobulle" },
     { key = "cursor", label = "Curseur", icon = "crosshair", group = "RÉGLAGES QOL", qol = "cursor", desc = "anneau et curseur gardé en combat", reload = true },
+    { key = "classes", label = "Classes", icon = "users", group = "RÉGLAGES QOL", qol = "classes", desc = "section des réglages" },
     { key = "range", label = "Distance", icon = "arrow", group = "RÉGLAGES QOL", desc = "ruban de distance du chasseur", reload = true },
 }
 WK.FEATURE_BY_PAGE, WK.FEATURE_BY_QOL = {}, {}

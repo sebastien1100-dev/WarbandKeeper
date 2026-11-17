@@ -171,7 +171,15 @@ end
 ---------------------------------------------------------------------------
 -- Sons : baisser musique et ambiance pour entendre le flotteur
 ---------------------------------------------------------------------------
-local SOUND = { Sound_MusicVolume = "0", Sound_AmbienceVolume = "0", Sound_SFXVolume = "1" }
+-- niveaux (QoL > Pêche > Confort, réglage soundLevel) : léger, fort (musique et ambiance coupées),
+-- maximum (en plus : voix coupées, volume général au maximum, son gardé quand le jeu est en arrière-plan)
+local SOUND_LEVELS = {
+    light = { Sound_MusicVolume = "0.15", Sound_AmbienceVolume = "0.15", Sound_SFXVolume = "1" },
+    strong = { Sound_MusicVolume = "0", Sound_AmbienceVolume = "0", Sound_SFXVolume = "1" },
+    max = { Sound_MusicVolume = "0", Sound_AmbienceVolume = "0", Sound_DialogVolume = "0", Sound_SFXVolume = "1",
+            Sound_MasterVolume = "1", Sound_EnableSFX = "1", Sound_EnableSoundWhenGameIsInBG = "1" },
+}
+M.SOUND_LEVELS = SOUND_LEVELS
 local function getCVar(n) if C_CVar and C_CVar.GetCVar then return C_CVar.GetCVar(n) end return GetCVar and GetCVar(n) end
 local function setCVar(n, v)
     if getCVar(n) == nil then return end
@@ -183,7 +191,7 @@ function M:FocusSound(on)
     if on then
         if not o.sound or o.savedSound then return end
         o.savedSound = {}
-        for name, value in pairs(SOUND) do
+        for name, value in pairs(SOUND_LEVELS[o.soundLevel or "strong"] or SOUND_LEVELS.strong) do
             o.savedSound[name] = getCVar(name)
             setCVar(name, value)
         end

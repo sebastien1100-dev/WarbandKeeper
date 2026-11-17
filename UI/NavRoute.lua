@@ -79,10 +79,45 @@ local function remaining()
     return out, r.cont
 end
 
--- Trajets de bateau appris (Modules/Nav.lua) : leur chemin réel, en pointillés de la couleur des transports
+-- Lignes fines (vols, bateaux) : un trait de couleur sur un liseré sombre un peu plus large, lisible sur
+-- tous les fonds de carte. Pool par usage ; repli en points si le client n'a pas CreateLine.
+function UI:LinePool(layerSub)
+    local pool = { lines = {}, n = 0 }
+    function pool:Reset()
+        for _, l in ipairs(self.lines) do l:Hide(); l.o:Hide() end
+        self.n = 0
+    end
+    function pool:Add(cv, x1, y1, x2, y2, thick, r, g, b, a)
+        if not cv.CreateLine then return end
+        self.n = self.n + 1
+        local l = self.lines[self.n]
+        if not l then
+            l = cv:CreateLine(nil, "OVERLAY", nil, (layerSub or 4) + 1)
+            l.o = cv:CreateLine(nil, "OVERLAY", nil, layerSub or 4)
+            self.lines[self.n] = l
+        end
+        if l:GetParent() ~= cv then l:SetParent(cv); l.o:SetParent(cv) end
+        for _, x in ipairs({ l.o, l }) do
+            x:ClearAllPoints()
+            x:SetStartPoint("TOPLEFT", cv, x1, -y1)
+            x:SetEndPoint("TOPLEFT", cv, x2, -y2)
+        end
+        l.o:SetThickness(thick + 2.5)
+        l.o:SetColorTexture(0, 0, 0, 0.75 * (a or 1))
+        l:SetThickness(thick)
+        l:SetColorTexture(r, g, b, a or 1)
+        l.o:Show(); l:Show()
+    end
+    return pool
+end
+local canLine = function(cv) return cv and cv.CreateLine ~= nil end
+
+-- Trajets de bateau appris (Modules/Nav.lua) : leur chemin réel, en trait fin de la couleur des transports
 local boatDots = {}
+local boatLines = UI:LinePool(4)
 function UI:DrawBoatPaths(cv, mapID, w, h)
     for _, d in ipairs(boatDots) do d:Hide() end
+    boatLines:Reset()
     local L = WK.modules.MapLayers
     if not (L and WK:FeatureOn("maplayers") and L:Config().map.transport) then return end
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return end
@@ -102,7 +137,9 @@ function UI:DrawBoatPaths(cv, mapID, w, h)
                 if okc and pos then mx, my = pos.x, pos.y; if pos.GetXY then mx, my = pos:GetXY() end end
                 if mx and mx > -0.1 and mx < 1.1 and my > -0.1 and my < 1.1 then
                     local x, y = mx * w, my * h
-                    if px then
+                    if px and canLine(cv) then
+                        boatLines:Add(cv, px, py, x, y, math.max(1.6, 2.2 * scale), col[1], col[2], col[3], 0.95)
+                    elseif px then
                         local dx, dy = x - px, y - py
                         local len = math.sqrt(dx * dx + dy * dy)
                         local t = 0
@@ -131,7 +168,7 @@ function UI:DrawBoatPaths(cv, mapID, w, h)
         end
     end
 end
-function UI:HideBoatPaths() for _, d in ipairs(boatDots) do d:Hide() end end
+function UI:HideBoatPaths() for _, d in ipairs(boatDots) do d:Hide() end; boatLines:Reset() end
 
 ---------------------------------------------------------------------------
 -- Carte du monde
@@ -152,8 +189,10 @@ local function mapDot(i, cv)
     if d:GetParent() ~= cv then d:SetParent(cv); d.o:SetParent(cv) end
     return d
 end
+local flyLines = UI:LinePool(5)
 function UI:HideNavRoute()
     for _, d in ipairs(mapDots) do d:Hide(); d.o:Hide() end
+    flyLines:Reset()
 end
 local function toMap(cont, x, y, mapID)
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
@@ -184,7 +223,10 @@ function UI:DrawNavRoute(cv, mapID, w, h)
                 local len = math.sqrt(dx * dx + dy * dy)
                 local step = fly and gap * 2.2 or gap
                 local inside = (mx > -0.05 and mx < 1.05 and my > -0.05 and my < 1.05) or (px > -0.05 * w and px < 1.05 * w and py > -0.05 * h and py < 1.05 * h)
-                if len > 0 and inside then
+                if len > 0 and inside and fly and canLine(cv) then
+                    -- étape de vol : trait fin continu
+                    flyLines:Add(cv, px, py, x, y, math.max(1.8, 2.4 * scale), r, g, b, 0.95)
+                elseif len > 0 and inside then
                     local k = 0
                     while k < len and n < MAX_MAP do
                         n = n + 1

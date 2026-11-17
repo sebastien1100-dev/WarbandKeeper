@@ -622,10 +622,65 @@ def mm_icons():
                                                                        [(5.3, 5.3), (7, 7)], [(17, 17), (18.7, 18.7)], [(5.3, 18.7), (7, 17)], [(17, 7), (18.7, 5.3)])]))
 
 
+def icon_menu():
+    """Micro menu : trois barres arrondies."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for y in (16, 30, 44):
+        d.rounded_rectangle((10 * s, (y - 3) * s, 54 * s, (y + 3) * s), radius=3 * s, fill=(255, 255, 255, 255))
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "menu.tga"))
+
+
+def icon_safe():
+    """Coffre-fort (banque pleine) : caisse, porte, cadran, poignée, pieds."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    d.rounded_rectangle((6 * s, 8 * s, 58 * s, 52 * s), radius=7 * s, fill=W)
+    d.rounded_rectangle((12 * s, 14 * s, 52 * s, 46 * s), radius=4 * s, fill=O)
+    d.rounded_rectangle((15 * s, 17 * s, 49 * s, 43 * s), radius=3 * s, fill=W)
+    d.ellipse((24 * s, 22 * s, 40 * s, 38 * s), fill=O)
+    d.ellipse((28 * s, 26 * s, 36 * s, 34 * s), fill=W)
+    d.rectangle((31 * s, 19 * s, 33 * s, 24 * s), fill=W)
+    d.rectangle((44 * s, 26 * s, 47 * s, 34 * s), fill=O)
+    d.rectangle((12 * s, 52 * s, 20 * s, 57 * s), fill=W)
+    d.rectangle((44 * s, 52 * s, 52 * s, 57 * s), fill=W)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "safe.tga"))
+
+
+def icon_guild():
+    """Guilde : écu."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    shield = [(32, 6), (54, 13), (52, 34), (32, 58), (12, 34), (10, 13)]
+    d.polygon([(x * s, y * s) for x, y in shield], fill=W)
+    inner = [(32, 13), (47, 18), (46, 33), (32, 50), (18, 33), (17, 18)]
+    d.polygon([(x * s, y * s) for x, y in inner], fill=O)
+    d.polygon([(32 * s, 18 * s), (42 * s, 22 * s), (41 * s, 32 * s), (32 * s, 44 * s)], fill=W)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "guild.tga"))
+
+
+def icon_collect():
+    """Collections : trois cartes en éventail."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    for x0 in (8, 20, 32):
+        d.rounded_rectangle((x0 * s, (14 - (x0 - 8) // 4) * s, (x0 + 24) * s, (54 - (x0 - 8) // 4) * s), radius=4 * s, fill=W)
+        d.rounded_rectangle(((x0 + 3) * s, (17 - (x0 - 8) // 4) * s, (x0 + 21) * s, (51 - (x0 - 8) // 4) * s), radius=3 * s, fill=O)
+    d.ellipse((38 * s, 22 * s, 50 * s, 34 * s), fill=W)
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "collect.tga"))
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect]:
         fn()
     print("OK")
