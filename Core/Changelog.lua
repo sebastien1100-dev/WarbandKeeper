@@ -13,6 +13,7 @@ WK.Changelog = {
             "Fiche de personnage : les cartes sont alignées en deux rangées, Équipement et Stats à la même hauteur, puis Réputations et Métiers à la même hauteur.",
         },
         fixed = {
+            "Notes de carte : dans la fenêtre de modification, les boutons Supprimer et Annuler se chevauchaient.",
             "Micro menu : le raccourci Héritages ouvrait l'onglet des montures. Il ouvre maintenant le journal des collections sur l'onglet Héritages, quel que soit son numéro sur ce client.",
         },
     },
