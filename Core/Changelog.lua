@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.92.2", date = "17/11/2026",
+        changed = {
+            "Tous les boutons sont à la couleur de ton apparence, même sans la souris dessus : boutons discrets (Panneau en jeu, Guider vers l'entrée…), boutons à icône (actualiser, fermer…), onglets et choix pas sélectionnés. Seuls les boutons de suppression restent gris, puis rouges au survol.",
+        },
+    },
+    {
         version = "0.92.1", date = "17/11/2026",
         changed = {
             "Donjons : le détail d'un donjon a deux onglets, « Butin » (avec le nombre d'objets) et « Quêtes » (avec le nombre de quêtes à faire, en orange tant qu'il en reste). L'onglet Quêtes a son filtre « À faire / Toutes » et un bouton de guidage vers le donneur sur chaque quête pas encore faite.",

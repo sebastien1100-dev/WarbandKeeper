@@ -24,6 +24,13 @@ _Prévu, pas encore commencé._
 - Maj + clic sur une tuile de métier ou une recette pour mettre son lien dans le chat.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.92.2 — 17/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Tous les boutons sont à la couleur de ton apparence, même sans la souris dessus : boutons discrets (Panneau en jeu, Guider vers l'entrée…), boutons à icône (actualiser, fermer…), onglets et choix pas sélectionnés. Seuls les boutons de suppression restent gris, puis rouges au survol.
+
 ## v0.92.1 — 17/11/2026
 
 _Un /reload suffit._

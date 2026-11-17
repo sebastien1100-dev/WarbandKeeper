@@ -35,7 +35,7 @@ function UI:Button(parent, text, width, height, style, icon)
             local r, g, bl = UI:Accent()
             self.bg:SetColor(r, g, bl, 0.14)
             self.bg:SetShown(h)
-            fg = h and { r, g, bl, 1 } or C.muted
+            fg = { r, g, bl, h and 1 or 0.85 } -- couleur de l'apparence, même au repos
         elseif s == "danger" then
             self.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], h and 0.28 or 0.16)
             self.bg:Show()
@@ -126,7 +126,7 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
         else
             local r, g, bl = UI:Accent()
             b.bg:SetColor(r, g, bl, 0.16)
-            if h then b.icon:SetVertexColor(r, g, bl, 1) else b.icon:SetVertexColor(unpack(C.muted)) end
+            b.icon:SetVertexColor(r, g, bl, h and 1 or 0.8) -- couleur de l'apparence, même au repos
         end
         b.bg:SetShown(h)
     end

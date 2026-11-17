@@ -21,7 +21,7 @@ Les textures de `Media/` sont générées par `python3 tools/gen_media.py` (Pill
 
 ## Thèmes
 
-Les couleurs viennent de `UI/Themes.lua` : un thème donne quelques couleurs de base (`bg`, `line`, `frame`, `glow`, `text`, `muted`, `accent`) et `palette()` dérive le reste. `UI:ApplyTheme()` recopie la palette dans `UI.colors` au chargement : ne jamais réassigner `UI.colors`, et ne pas mettre de couleur en dur dans les pages (utiliser `C.*` ou `UI:Accent()`).
+Les couleurs viennent de `UI/Themes.lua` : un thème donne quelques couleurs de base (`bg`, `line`, `frame`, `glow`, `text`, `muted`, `accent`) et `palette()` dérive le reste. `UI:ApplyTheme()` recopie la palette dans `UI.colors` au chargement : ne jamais réassigner `UI.colors`, et ne pas mettre de couleur en dur dans les pages (utiliser `C.*` ou `UI:Accent()`). **Tout bouton est à la couleur de l'apparence (`UI:Accent()`), même au repos** : styles `UI:Button` (primary, secondary, ghost), `UI:IconButton`, onglets ; pas de libellé de bouton en `C.muted`. Seule exception : les boutons de suppression (`danger`).
 
 ## Disposition et taille
 

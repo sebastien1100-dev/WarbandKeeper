@@ -105,12 +105,19 @@ UI:RegisterPage({
                 self.badge:Set(count or "", (sel or keep) and col or (not sel and C.muted or nil))
                 self.badge:SetShown(count ~= nil and count ~= "")
                 self:SetWidth(self.label:GetStringWidth() + 20 + (self.badge:IsShown() and self.badge:GetWidth() + 7 or 0))
-                self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+                -- onglet choisi en blanc, l'autre à la couleur de l'apparence (comme les boutons)
+                local r, g, bl = UI:Accent()
+                if sel then self.label:SetTextColor(unpack(C.text)) else self.label:SetTextColor(r, g, bl, self.hover and 1 or 0.85) end
                 self.under:SetShown(sel)
                 self.underTex:SetColor(UI:Accent())
             end
-            b:SetScript("OnEnter", function(s) s.hover = true; s.label:SetTextColor(unpack(C.text)) end)
-            b:SetScript("OnLeave", function(s) s.hover = false; if not s.under:IsShown() then s.label:SetTextColor(unpack(C.muted)) end end)
+            local function recolor(s)
+                if s.under:IsShown() then return end
+                local r, g, bl = UI:Accent()
+                s.label:SetTextColor(r, g, bl, s.hover and 1 or 0.85)
+            end
+            b:SetScript("OnEnter", function(s) s.hover = true; recolor(s) end)
+            b:SetScript("OnLeave", function(s) s.hover = false; recolor(s) end)
             b:SetScript("OnClick", function() self.dtab = key; self:Refresh() end)
             det.tabs[key] = b
             return b
