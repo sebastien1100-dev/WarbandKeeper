@@ -23,6 +23,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v0.96.1 — 17/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Loot en groupe : un objet tiré aux dés (ou attribué par le maître du butin) n'est plus compté comme « laissé au sol » quand tu perds le lancer. Le filtre ne touche plus à ces objets : le jeu les donne au gagnant. En maître du butin, la fenêtre reste ouverte tant qu'il reste des objets à attribuer.
+
 ## v0.96.0 — 17/11/2026
 
 _Un /reload suffit._

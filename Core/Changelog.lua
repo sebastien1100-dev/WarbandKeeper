@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "0.96.1", date = "17/11/2026",
+        fixed = {
+            "Loot en groupe : un objet tiré aux dés (ou attribué par le maître du butin) n'est plus compté comme « laissé au sol » quand tu perds le lancer. Le filtre ne touche plus à ces objets : le jeu les donne au gagnant. En maître du butin, la fenêtre reste ouverte tant qu'il reste des objets à attribuer.",
+        },
+    },
+    {
         version = "0.96.0", date = "17/11/2026",
         changed = {
             "Donjons : les vrais noms français, tirés des tables du jeu, pour tout le nouveau contenu : La salle des Thanes, Excavations : les Paluns, La cité Submergée, Bastion Krol'dok, Prison d'Alcaz, Repaire des Noiregueules, La terrasse du Façonneur.",

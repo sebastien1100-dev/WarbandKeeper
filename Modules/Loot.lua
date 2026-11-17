@@ -199,16 +199,36 @@ local function recordLeft(id, qty, name, full)
     end
 end
 
+-- En groupe, les objets au-dessus du seuil de butin se tirent aux dés (ou passent par le maître du
+-- butin) : ils partent chez le gagnant, ce n'est ni au filtre de les prendre ni « laissé au sol ».
+local METHOD = { [0] = "freeforall", [1] = "roundrobin", [2] = "master", [3] = "group", [4] = "needbeforegreed", [5] = "personalloot" }
+local function lootMethod()
+    local m
+    if GetLootMethod then m = GetLootMethod()
+    elseif C_PartyInfo and C_PartyInfo.GetLootMethod then m = C_PartyInfo.GetLootMethod() end
+    return METHOD[m] or m
+end
+local function isRolled(quality)
+    if not (IsInGroup and IsInGroup()) then return false end
+    local m = lootMethod()
+    if m == "freeforall" or m == "personalloot" or m == "personal" then return false end
+    local th = GetLootThreshold and GetLootThreshold() or 2
+    return (quality or 0) >= (th or 2)
+end
+M.IsRolled = isRolled
+
 -- Emplacements encore pleins de la fenêtre de butin : total, et ceux que le profil veut.
 local function remaining(p)
-    local total, wanted = 0, {}
+    local total, wanted, rolled = 0, {}, 0
     for i = 1, (GetNumLootItems() or 0) do
         local _, name, quantity, currencyID, quality, locked, isQuest = GetLootSlotInfo(i)
         local slotType = GetLootSlotType and GetLootSlotType(i) or 1
         local filled = (name and name ~= "") or (quantity and quantity > 0)
         if filled and slotType ~= 0 then
             total = total + 1
-            if not locked then
+            if slotType == 1 and not currencyID and isRolled(quality) then
+                rolled = rolled + 1
+            elseif not locked then
                 if slotType ~= 1 or currencyID then
                     table.insert(wanted, i)
                 elseif p and M:Wants(p, WK:ParseItemID(GetLootSlotLink(i)), quality, quantity, isQuest) then
@@ -217,15 +237,17 @@ local function remaining(p)
             end
         end
     end
-    return total, wanted
+    return total, wanted, rolled
 end
 
 -- Vérification juste après le passage du filtre : fenêtre vide -> fermée ; objet voulu encore
 -- là -> nouvel essai (puis message si les sacs sont pleins) ; plus que des objets laissés -> fermée.
 local function verify(p, attempt)
     if not lootOpen then return end
-    local total, wanted = remaining(p)
+    local total, wanted, rolled = remaining(p)
     if total == 0 then return CloseLoot() end
+    -- Maître du butin avec des objets à attribuer : la fenêtre reste ouverte.
+    local keepOpen = rolled > 0 and lootMethod() == "master"
     if #wanted > 0 then
         if attempt < 2 then
             for k = #wanted, 1, -1 do LootSlot(wanted[k]) end
@@ -241,11 +263,11 @@ local function verify(p, attempt)
             end
             WK:NotifyChanged()
             WK:Print(T("Butin : des objets voulus n'ont pas pu être ramassés (sacs pleins ?)."))
-            if db().closeAfter then CloseLoot() end
+            if db().closeAfter and not keepOpen then CloseLoot() end
         end
         return
     end
-    if db().closeAfter then CloseLoot() end
+    if db().closeAfter and not keepOpen then CloseLoot() end
 end
 
 local function onLoot()
@@ -265,7 +287,9 @@ local function onLoot()
     for i = GetNumLootItems(), 1, -1 do
         local _, name, quantity, currencyID, quality, locked, isQuest = GetLootSlotInfo(i)
         local slotType = GetLootSlotType and GetLootSlotType(i) or 1
-        if not locked then
+        if slotType == 1 and not currencyID and isRolled(quality) then
+            -- tiré aux dés : le jeu s'en occupe (fenêtre de lancer), rien à compter
+        elseif not locked then
             if slotType ~= 1 or currencyID then
                 LootSlot(i) -- or et monnaies
             else
