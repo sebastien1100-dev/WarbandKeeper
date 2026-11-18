@@ -17,6 +17,7 @@ WK.Locales.frFR.keys = {
     HELP_DUNGEON    = "/wk donjon - Panneau du donjon en cours : boss, butin, liste d'envies",
     HELP_FP         = "/wk vol - Guidage vers le point de vol pas encore appris le plus proche",
     HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
+    HELP_BAGS       = "/wk sacs          - Diagnostic des sacs (cadenas, étoile BiS)",
     HELP_NAV        = "/wk nav           - Diagnostic du repère de navigation (marqueur de point de passage)",
     HELP_HALO       = "/wk halo          - Diagnostic du halo (pourquoi l'objet désigné brille ou non)",
     HELP_FISH       = "/wk peche         - Ouvrir ou fermer le mode pêche",

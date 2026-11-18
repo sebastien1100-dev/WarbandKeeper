@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.20.8 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk sacs : diagnostic des sacs (sacs ouverts, cases trouvées, case sous la souris), à envoyer si le cadenas n'apparaît toujours pas.
+
+### Corrections
+- Objets verrouillés et repère BiS : sur certains sacs, l'addon ne trouvait pas les cases ; ni cadenas, ni étoile, et Alt + clic ne faisait rien. Une case est maintenant aussi reconnue dès que tu la survoles (infobulle de l'objet).
+
 ## v1.20.7 — 18/11/2026
 
 _Un /reload suffit._

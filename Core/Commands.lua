@@ -8,7 +8,7 @@ local function plainBars(s) return (s:gsub("|", "||")) end
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_BAGS", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP" }) do
         if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
@@ -66,6 +66,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "sacs" or cmd == "bags" then
+        WK:Print(WK.T("Sacs : diagnostic"))
+        for _, l in ipairs(WK.UI.BagDiag and WK.UI:BagDiag() or {}) do WK:Print("  " .. l) end
     elseif cmd == "plan" then
         if WK.UI.ToggleTalentPlan then WK.UI:ToggleTalentPlan() end
     elseif cmd == "talents" then

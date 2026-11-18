@@ -17,10 +17,19 @@ local function modDown()
     if k == "shiftalt" then return IsAltKeyDown() and IsShiftKeyDown() end
     return IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown()
 end
+-- Sac et case d'un bouton : plusieurs façons selon l'interface des sacs (jeu moderne, ancien, autres addons)
 local function bagSlot(btn)
-    local bag = (btn.GetBagID and btn:GetBagID()) or (btn:GetParent() and btn:GetParent():GetID())
-    return bag, btn:GetID()
+    local bag
+    if btn.GetBagID then local ok, v = pcall(btn.GetBagID, btn); if ok then bag = v end end
+    if bag == nil and btn.GetBag then local ok, v = pcall(btn.GetBag, btn); if ok and type(v) == "number" then bag = v end end
+    if bag == nil then bag = btn.bagID or btn.bag end
+    if bag == nil and btn:GetParent() and btn:GetParent().GetID then bag = btn:GetParent():GetID() end
+    local slot = btn.GetID and btn:GetID()
+    if (not slot or slot == 0) and btn.slotID then slot = btn.slotID end
+    return bag, slot
 end
+-- Cases repérées par leur infobulle (sacs dont on ne connaît pas les noms) : faibles, repeintes avec les autres
+local known = setmetatable({}, { __mode = "k" })
 local function itemAt(bag, slot)
     if not bag or not slot then return nil end
     return (WK.Container.Info(bag, slot))
@@ -205,9 +214,32 @@ local function eachButton(fn)
             end
         end
     end
+    local seen = {}
+    local function each(b) if not seen[b] then seen[b] = true; fn(b) end end
+    local outer = fn
+    fn = each
     for i = 1, (NUM_CONTAINER_FRAMES or 13) do frameItems(_G["ContainerFrame" .. i]) end
     frameItems(_G.ContainerFrameCombinedBags)
+    for b in pairs(known) do if b:IsVisible() then each(b) end end
+    fn = outer
 end
+local function anyBagOpen()
+    for i = 1, (NUM_CONTAINER_FRAMES or 13) do local f = _G["ContainerFrame" .. i]; if f and f:IsShown() then return true end end
+    if _G.ContainerFrameCombinedBags and _G.ContainerFrameCombinedBags:IsShown() then return true end
+    for b in pairs(known) do if b:IsVisible() then return true end end
+    return false
+end
+-- Une case de sac survolée (infobulle d'objet) : on la retient et on la décore tout de suite
+local function learnButton(owner, id)
+    if not owner or known[owner] or not owner.GetID or not WK:FeatureOn("inventory") then return end
+    if owner.IsForbidden and owner:IsForbidden() then return end
+    local bag, slot = bagSlot(owner)
+    if type(bag) ~= "number" or type(slot) ~= "number" or slot < 1 or bag < -3 or bag > 12 then return end
+    if itemAt(bag, slot) ~= id then return end
+    known[owner] = true
+    paint(owner)
+end
+UI.ItemLockLearn = learnButton
 
 function UI:RefreshItemLocks()
     if not WK:FeatureOn("inventory") then return end
@@ -221,10 +253,7 @@ driver:SetScript("OnUpdate", function(s, el)
     s.acc = s.acc + el
     if s.acc < 0.3 then return end
     s.acc = 0
-    local any = false
-    for i = 1, (NUM_CONTAINER_FRAMES or 13) do local f = _G["ContainerFrame" .. i]; if f and f:IsShown() then any = true break end end
-    if not any and _G.ContainerFrameCombinedBags and _G.ContainerFrameCombinedBags:IsShown() then any = true end
-    if any then UI:RefreshItemLocks() end
+    if anyBagOpen() then UI:RefreshItemLocks() end
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() UI:RefreshItemLocks() end)
 
@@ -235,6 +264,7 @@ local function onTooltip(tt, data)
     if tt ~= GameTooltip and tt ~= ItemRefTooltip then return end
     local id = data and data.id
     if not id and tt.GetItem then local _, link = tt:GetItem(); id = link and WK:ParseItemID(link) end
+    if id and tt == GameTooltip and tt.GetOwner and not inCombat() then learnButton(tt:GetOwner(), id) end
     local why = id and L:Reason(id)
     if not why then return end
     if why == "manual" then
@@ -247,4 +277,45 @@ local function onTooltip(tt, data)
 end
 if TooltipDataProcessor and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tt, data) pcall(onTooltip, tt, data) end)
+end
+
+---------------------------------------------------------------------------
+-- /wk sacs : ce que l'addon voit des sacs (si le cadenas ou l'étoile n'apparaissent pas)
+---------------------------------------------------------------------------
+function UI:BagDiag()
+    local out = {}
+    local frames = {}
+    for i = 1, (NUM_CONTAINER_FRAMES or 13) do
+        local f = _G["ContainerFrame" .. i]
+        if f and f:IsShown() then table.insert(frames, "ContainerFrame" .. i) end
+    end
+    if _G.ContainerFrameCombinedBags and _G.ContainerFrameCombinedBags:IsShown() then table.insert(frames, "ContainerFrameCombinedBags") end
+    table.insert(out, "Sacs du jeu ouverts : " .. (#frames > 0 and table.concat(frames, ", ") or "aucun"))
+    local n, withItem, deco = 0, 0, 0
+    eachButton(function(b)
+        n = n + 1
+        local bag, slot = bagSlot(b)
+        if itemAt(bag, slot) then withItem = withItem + 1 end
+        if b.wkLock then deco = deco + 1 end
+    end)
+    local k = 0
+    for _ in pairs(known) do k = k + 1 end
+    table.insert(out, string.format("Cases trouvées : %d (%d avec un objet, %d décorées ; %d repérées au survol)", n, withItem, deco, k))
+    table.insert(out, "Module Inventaire : " .. (WK:FeatureOn("inventory") and "actif" or "coupé") .. " ; touche : " .. tostring(L:Config().key))
+    local foci = GetMouseFoci and GetMouseFoci() or { GetMouseFocus and GetMouseFocus() }
+    local f = foci and foci[1]
+    if f then
+        local chain = {}
+        local p = f
+        for _ = 1, 5 do
+            if not p then break end
+            table.insert(chain, (p.GetName and p:GetName()) or ("<" .. (p.GetObjectType and p:GetObjectType() or "?") .. ">"))
+            p = p.GetParent and p:GetParent()
+        end
+        local bag, slot = bagSlot(f)
+        table.insert(out, "Sous la souris : " .. table.concat(chain, " < ") .. string.format(" (sac %s, case %s, GetBagID %s)", tostring(bag), tostring(slot), f.GetBagID and "oui" or "non"))
+    else
+        table.insert(out, "Sous la souris : rien (tape la commande en survolant un objet du sac, par une macro)")
+    end
+    return out
 end

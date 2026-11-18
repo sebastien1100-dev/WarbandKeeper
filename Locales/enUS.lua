@@ -17,6 +17,7 @@ WK.Locales.enUS.keys = {
     HELP_DUNGEON    = "/wk donjon - Current dungeon panel: bosses, loot, wish list",
     HELP_FP         = "/wk vol - Guide to the nearest flight point not learned yet",
     HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
+    HELP_BAGS       = "/wk sacs          - Bags diagnostic (lock icon, BiS star)",
     HELP_NAV        = "/wk nav           - Navigation marker diagnostic (waypoint marker)",
     HELP_HALO       = "/wk halo          - Halo diagnostic (why the targeted object glows or not)",
     HELP_FISH       = "/wk fish          - Open or close fishing mode",

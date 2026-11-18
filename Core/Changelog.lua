@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.8", date = "18/11/2026",
+        fixed = {
+            "Objets verrouillés et repère BiS : sur certains sacs, l'addon ne trouvait pas les cases ; ni cadenas, ni étoile, et Alt + clic ne faisait rien. Une case est maintenant aussi reconnue dès que tu la survoles (infobulle de l'objet).",
+        },
+        added = {
+            "/wk sacs : diagnostic des sacs (sacs ouverts, cases trouvées, case sous la souris), à envoyer si le cadenas n'apparaît toujours pas.",
+        },
+    },
+    {
         version = "1.20.7", date = "18/11/2026",
         fixed = {
             "Liste BiS, menu « ... » : il restait ouvert après un clic sur Dupliquer, Renommer, Code, Importer, Supprimer ou Vider. Il se ferme maintenant après chaque choix, et aussi quand tu cliques en dehors.",
