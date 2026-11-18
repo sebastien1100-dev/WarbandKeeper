@@ -176,24 +176,8 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         r.pin:SetPoint("CENTER", cv, "TOPLEFT", x0, -y0)
         r.pin:Show()
         if r.pin.icon.SetRotation then r.pin.icon:SetRotation(math.atan2(-dy, dx)) end -- la flèche montre la destination
-        r.label.text:SetText(string.format(T("vers %s"), d.to))
-        r.label:SetSize((r.label.text:GetStringWidth() or 60) + 12, 18)
-        r.label.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.88)
-        r.label.text:SetTextColor(col[1], col[2], col[3])
-        r.label:SetFrameLevel(lvl + 2)
-        r.label:ClearAllPoints()
-        local lw = r.label:GetWidth()
-        if len >= 0.08 * w then
-            -- au bout des pointillés, gardé dans la carte
-            local lx = math.max(lw / 2 + 4, math.min(w - lw / 2 - 4, x0 + dx * (len + lw / 2 + 8)))
-            local lyy = math.max(12, math.min(h - 12, y0 + dy * (len + 12)))
-            r.label:SetPoint("CENTER", cv, "TOPLEFT", lx, -lyy)
-        else
-            -- quai au bord de la carte : le nom à côté du quai, du côté de la carte
-            local side = (dx < 0) and 1 or -1
-            r.label:SetPoint("CENTER", cv, "TOPLEFT", x0 + side * (size / 2 + lw / 2 + 6), -y0)
-        end
-        r.label:Show()
+        -- destination dans l'infobulle du quai seulement (plus d'étiquette posée sur la carte)
+        r.label:Hide()
     end
 end
 

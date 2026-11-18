@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.4", date = "18/11/2026",
+        changed = {
+            "Carte du monde : les étiquettes « vers … » des bateaux et zeppelins ne sont plus posées sur la carte ; la destination s'affiche au survol du quai (infobulle).",
+        },
+    },
+    {
         version = "1.24.3", date = "18/11/2026",
         changed = {
             "QoL > Expérience : la ligne « Position » (bouton « Placer la barre ») est retirée ; la barre se place toujours avec le mode édition.",
