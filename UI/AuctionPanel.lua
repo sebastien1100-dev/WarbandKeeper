@@ -473,11 +473,27 @@ end
 
 local function host() return AuctionHouseFrame or AuctionFrame end
 
+-- Onglet « Scan » des onglets de l'HV (UI/AuctionTabs.lua) : le panneau y est posé, à gauche
+function UI:AHPanelEmbed(parent)
+    panel = panel or build()
+    panel:SetParent(parent)
+    panel:ClearAllPoints()
+    panel:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+    panel:SetFrameLevel(parent:GetFrameLevel() + 2)
+    panel.embedded = true
+    panel:Show()
+    panel:Layout()
+    panel:Refresh()
+end
 local function show()
     if not S:Config().panel or not WK:FeatureOn("ah") then return end
+    -- onglets de l'HV actifs (UI/AuctionTabs.lua) : le panneau vit dans l'onglet Scan, plus sur le côté
+    if S:Config().tabs ~= false then return end
     local h = host()
     if not h then return end
     panel = panel or build()
+    panel:SetParent(UIParent)
+    panel.embedded = nil
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", h, "TOPRIGHT", 6, -12)
     panel:SetFrameStrata(h:GetFrameStrata() or "MEDIUM")

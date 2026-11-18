@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.34.0", date = "18/11/2026", restart = true,
+        added = {
+            "Hôtel des ventes façon Auctionator : quatre onglets en bas de la fenêtre de l'HV, à côté de ceux du jeu (Achat, Vente, Annulation, Scan) ; un onglet du jeu les referme.",
+            "Vente : tes sacs avec seulement ce qui se vend (liés, verrouillés à la main et objets de quête cachés ; « HV » = prix connu, étoile = à vendre d'après le Rangement), prix proposé tout seul (plus bas des autres moins l'écart, ou ton prix si tu es déjà le moins cher, sinon le prix du scan), quantité, durée, dépôt, « Mettre en vente » puis l'objet suivant ; à droite les enchères en cours (la plus basse et la tienne surlignées), tes derniers prix et tes ventes.",
+            "Achat : tes listes d'achat, « Tout chercher » (plus bas et quantité en vente par objet), « Acheter N » puis « Confirmer » par objet, ou « Tout acheter » à la suite ; un objet qui n'est pas une marchandise ouvre la recherche du jeu.",
+            "Annulation : tes enchères avec leur état (sous-cotée en rouge, plus bas en vert), temps restant, « Vérifier les prix » et « Annuler la suivante » (un clic par enchère).",
+            "Scan : le panneau d'avant (scan, alertes de prix, listes, ventes) est maintenant dans cet onglet, plus collé à côté de la fenêtre.",
+        },
+    },
+    {
         version = "1.33.0", date = "18/11/2026", restart = true,
         added = {
             "Bateaux et zeppelins tirés des fichiers du jeu : les 12 lignes de WoW Forever sont connues dès l'installation (Hurlevent – Auberdine, Austrivage, Plumelune, Île de Zephras, Port de Poudrefuse…), avec leurs quais, leur trajet et la durée exacte de leur tour (mesurée par Nauticus). Un seul départ vu (traversée, « Il part » / « Il arrive », ou partagé par la guilde ou le groupe) suffit à caler l'heure.",
@@ -2904,7 +2914,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
-    "Rangement, suite : onglet « À vendre » du panneau de l'HV sur le perso HV (prix du scan, mise en vente pas à pas), place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
+    "Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
     "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",
     "Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.",
     "Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.",
