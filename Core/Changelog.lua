@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.7", date = "18/11/2026",
+        changed = {
+            "QoL > Feu de camp, objets par métier : quand le palier vient d'un autre de tes persos, tout passe à sa couleur de classe (effet, surlignage, compétence, pastille) ; la couleur d'accent reste pour ce qui est à toi.",
+        },
+    },
+    {
         version = "1.28.6", date = "18/11/2026",
         changed = {
             "QoL > Feu de camp, objets par métier : le nom du perso qui a le palier est écrit à sa couleur de classe, contour compris.",

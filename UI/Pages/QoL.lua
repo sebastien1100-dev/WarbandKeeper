@@ -1679,7 +1679,6 @@ UI:RegisterPage({
             table.insert(self.dyn, function()
                 local level = (UnitLevel and UnitLevel("player")) or 1
                 local r1, g1, b1 = UI:Accent()
-                local accentHex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
                 -- meilleure compétence de tes persos dans chaque métier
                 -- et compétence du perso connecté : « à toi » seulement s'il a le palier, sinon le nom du perso qui l'a
                 local best, bestWho, bestClass, mine = {}, {}, {}, {}
@@ -1701,8 +1700,15 @@ UI:RegisterPage({
                     local eff = Cp:Effect(o, 1, level)
                     if not eff and type(o.text) == "table" then eff = T("pas d'effet de camp : nourriture et four") end
                     t.eff:SetText(eff or "")
+                    -- couleur du perso qui apporte l'objet : accent si c'est toi, sinon sa couleur de classe
+                    local oc = { r1, g1, b1 }
+                    if (mine[o.prof] or 0) < Cp.RANKS[1] and (best[o.prof] or 0) >= Cp.RANKS[1] then oc = { UI:ClassColor(bestClass[o.prof]) } end
+                    local function rowColor(need)
+                        if (mine[o.prof] or 0) >= need then return r1, g1, b1 end
+                        return UI:ClassColor(bestClass[o.prof])
+                    end
                     if has then t.eff:SetTextColor(C.negative[1], C.negative[2], C.negative[3])
-                    elseif o.steps or o.enchant or type(o.text) == "string" then t.eff:SetTextColor(r1, g1, b1)
+                    elseif o.steps or o.enchant or type(o.text) == "string" then t.eff:SetTextColor(oc[1], oc[2], oc[3])
                     else t.eff:SetTextColor(C.text[1], C.text[2], C.text[3]) end
                     t.excl:SetText(has and (UI:Hex(C.negative) .. string.format(T("annulé : tu as %s"), has) .. "|r")
                         or (o.exclLabel and string.format(T("ne se cumule pas avec %s"), T(o.exclLabel)) or T("se cumule avec tout")))
@@ -1715,9 +1721,10 @@ UI:RegisterPage({
                         local reach = o.ids[k] and rank >= need
                         row.nm:SetText(name)
                         row.nm:SetTextColor(C.text[1], C.text[2], C.text[3])
-                        row.rk:SetText(reach and (accentHex .. need .. "|r") or need)
+                        local hr, hg, hb = rowColor(need)
+                        row.rk:SetText(reach and string.format("|cff%02x%02x%02x%d|r", hr * 255, hg * 255, hb * 255, need) or need)
                         row.rk:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
-                        row.hl:SetVertexColor(r1, g1, b1, reach and 0.12 or 0)
+                        row.hl:SetVertexColor(hr, hg, hb, reach and 0.12 or 0)
                         -- pastille : à toi / où en est ton meilleur perso / compétence requise / personne dans le métier
                         local label
                         if not o.ids[k] then label = nil
