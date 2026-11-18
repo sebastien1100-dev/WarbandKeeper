@@ -1338,8 +1338,9 @@ paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
                 tr.sicon:SetPoint("TOPLEFT", 12, -9)
             end
             local ic = t.icon or (icons and icons[i] and ("Interface\\Icons\\" .. icons[i]))
+            tr.sicon:SetTexture(ic)
             tr.sicon:SetShown(ic ~= nil)
-            if ic then tr.sicon:SetTexture(ic) end
+            tr.sicon:SetAlpha(ic and 1 or 0)
             tr.title:ClearAllPoints(); tr.title:SetPoint("TOPLEFT", ic and 44 or 16, -14)
             local pts = 0
             for _, d in ipairs(t.list) do pts = pts + (d[5] or 0) end

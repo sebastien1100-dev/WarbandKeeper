@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.9", date = "18/11/2026",
+        fixed = {
+            "Talents : pour certaines classes (le chasseur par exemple), un talent isolé à droite créait un 4e arbre « Arbre 4 », et les arbres perdaient leurs noms et leurs icônes. Les talents sont maintenant toujours rangés en trois arbres (un bloc isolé rejoint l'arbre voisin), avec les noms et icônes de spécialisation de la classe.",
+            "Talents : une icône de spécialisation d'un autre perso pouvait rester affichée par-dessus le nom de l'arbre.",
+        },
+    },
+    {
         version = "1.19.8", date = "18/11/2026",
         changed = {
             "Fiche du perso : la durabilité se colore selon l'usure, vert à 100 %, jaune vers 50 %, rouge à 0 %.",

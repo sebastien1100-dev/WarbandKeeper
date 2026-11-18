@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.9 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Talents : pour certaines classes (le chasseur par exemple), un talent isolé à droite créait un 4e arbre « Arbre 4 », et les arbres perdaient leurs noms et leurs icônes. Les talents sont maintenant toujours rangés en trois arbres (un bloc isolé rejoint l'arbre voisin), avec les noms et icônes de spécialisation de la classe.
+- Talents : une icône de spécialisation d'un autre perso pouvait rester affichée par-dessus le nom de l'arbre.
+
 ## v1.19.8 — 18/11/2026
 
 _Un /reload suffit._

@@ -146,22 +146,47 @@ local function scanTraits(c)
     local nTrees = 0
     for _ in pairs(trees) do nTrees = nTrees + 1 end
     if key == "tree" and nTrees == 1 then
-        -- un seul arbre : on coupe en blocs là où l'écart horizontal est grand (arbres côte à côte)
-        local xs = {}
-        for _, d in ipairs(nodes) do xs[#xs + 1] = d.x end
+        -- un seul arbre : trois arbres côte à côte (comme toutes les classes), coupés sur les grands écarts
+        -- horizontaux ; un petit bloc isolé (un talent seul) rejoint le bloc le plus proche
+        local xs, seen = {}, {}
+        for _, d in ipairs(nodes) do if not seen[d.x] then seen[d.x] = true; xs[#xs + 1] = d.x end end
         table.sort(xs)
         local gaps = {}
-        for i = 2, #xs do if xs[i] > xs[i - 1] then gaps[#gaps + 1] = xs[i] - xs[i - 1] end end
-        table.sort(gaps)
-        local typical = gaps[math.max(1, math.floor(#gaps / 2))] or 1
-        local cuts, last = {}, xs[1]
+        for i = 2, #xs do gaps[#gaps + 1] = { size = xs[i] - xs[i - 1], at = (xs[i] + xs[i - 1]) / 2 } end
+        local sizes = {}
+        for i, g in ipairs(gaps) do sizes[i] = g.size end
+        table.sort(sizes)
+        local typical = sizes[math.max(1, math.floor(#sizes / 2))] or 1
+        -- blocs : [début, fin] en x
+        local blocks, startX, lastX = {}, xs[1], xs[1]
         for i = 2, #xs do
-            if xs[i] - last > typical * 2.5 then cuts[#cuts + 1] = (xs[i] + last) / 2 end
-            last = xs[i]
+            if xs[i] - lastX > typical * 2.5 then blocks[#blocks + 1] = { lo = startX, hi = lastX }; startX = xs[i] end
+            lastX = xs[i]
+        end
+        if startX then blocks[#blocks + 1] = { lo = startX, hi = lastX } end
+        local function count(bk) local n = 0 for _, d in ipairs(nodes) do if d.x >= bk.lo and d.x <= bk.hi then n = n + 1 end end return n end
+        -- trop de blocs : le plus petit rejoint son voisin le plus proche
+        while #blocks > 3 do
+            local mi, mn = 1, math.huge
+            for i, bk in ipairs(blocks) do local n = count(bk); if n < mn then mi, mn = i, n end end
+            local bk = blocks[mi]
+            local left, right = blocks[mi - 1], blocks[mi + 1]
+            local into
+            if left and right then into = (bk.lo - left.hi <= right.lo - bk.hi) and mi - 1 or mi + 1 else into = left and mi - 1 or mi + 1 end
+            local t = blocks[into]
+            t.lo, t.hi = math.min(t.lo, bk.lo), math.max(t.hi, bk.hi)
+            table.remove(blocks, mi)
+        end
+        -- pas assez de blocs : on coupe sur les plus grands écarts
+        if #blocks < 3 and #gaps >= 2 then
+            table.sort(gaps, function(p, q) return p.size > q.size end)
+            local cuts = { gaps[1].at, gaps[2].at }
+            table.sort(cuts)
+            blocks = { { lo = -math.huge, hi = cuts[1] }, { lo = cuts[1], hi = cuts[2] }, { lo = cuts[2], hi = math.huge } }
         end
         for _, d in ipairs(nodes) do
-            local g = 1
-            for _, cx in ipairs(cuts) do if d.x > cx then g = g + 1 end end
+            local g = #blocks
+            for i, bk in ipairs(blocks) do if d.x >= bk.lo and d.x <= bk.hi then g = i break end end
             d.group = g
         end
     else
