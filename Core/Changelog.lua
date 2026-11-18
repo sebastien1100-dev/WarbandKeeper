@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.7", date = "18/11/2026",
+        fixed = {
+            "Liste BiS, menu « ... » : il restait ouvert après un clic sur Dupliquer, Renommer, Code, Importer, Supprimer ou Vider. Il se ferme maintenant après chaque choix, et aussi quand tu cliques en dehors.",
+        },
+    },
+    {
         version = "1.20.6", date = "18/11/2026",
         added = {
             "Sacs : une étoile en haut à gauche de la case repère les objets de tes listes BiS (sacs du jeu et page Inventaire). Étoile dorée : liste du perso connecté ; étoile grise : liste d'un autre de tes persos (l'infobulle dit lequel).",

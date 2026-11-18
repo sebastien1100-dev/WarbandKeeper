@@ -658,12 +658,19 @@ local function build(parent)
     for i, lab in ipairs({ "Dupliquer", "Renommer", "Code", "Importer", "Supprimer la liste" }) do
         local btn = UI:Button(menu, lab, 154, 22, i == 5 and "danger" or "ghost")
         btn:SetPoint("TOPLEFT", 8, -6 - (i - 1) * 26)
-        btn:HookScript("OnClick", function() menu:Hide() end)
+        btn:SetScript("PostClick", function() menu:Hide() end) -- PostClick : survit au SetScript("OnClick") plus bas
         f.bisLBtns[i] = btn
     end
     f.bisClear = UI:Button(menu, "Vider la liste", 154, 22, "danger")
     f.bisClear:SetPoint("TOPLEFT", 8, -6 - 5 * 26)
-    f.bisClear:HookScript("OnClick", function() menu:Hide() end)
+    f.bisClear:SetScript("PostClick", function() menu:Hide() end)
+    -- clic en dehors du menu (et du bouton qui l'ouvre) : on le ferme
+    menu:SetScript("OnShow", function(s) s.wasDown = true end)
+    menu:SetScript("OnUpdate", function(s)
+        local down = IsMouseButtonDown and (IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton"))
+        if down and not s.wasDown and not (MouseIsOver(s) or MouseIsOver(f.bisMore)) then s:Hide() end
+        s.wasDown = down
+    end)
     f.bisNew:SetScript("OnClick", function()
         f:Ask(T("Nouvelle liste BiS"), T("Donne-lui un nom (JcE, tank, montée, JcJ…)."), T("Nouvelle liste"), function(v)
             B:NewList(f.key, (v ~= "" and v) or T("Nouvelle liste"))
