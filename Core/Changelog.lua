@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.27.4", date = "18/11/2026",
+        changed = {
+            "QoL > Feu de camp, objets par métier : plus de gris pâle. Tous les noms sont lisibles, les compétences sont en or ; le palier atteint est surligné avec une pastille « à toi », les autres disent où en est ton meilleur perso (« Forge 132/140 »), la compétence requise (« 300 requis ») ou « aucun perso ». Feux de camp pas encore atteints : nom lisible, « Cuisine 140 requis » en or.",
+        },
+    },
+    {
         version = "1.27.3", date = "18/11/2026",
         changed = {
             "Carte : la patrouille d'un rare est une ligne fine continue, avec un liseré sombre pour rester visible, au lieu de gros points ; celle du rare survolé est un peu plus épaisse et passe au-dessus.",

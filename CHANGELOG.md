@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.27.4 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Feu de camp, objets par métier : plus de gris pâle. Tous les noms sont lisibles, les compétences sont en or ; le palier atteint est surligné avec une pastille « à toi », les autres disent où en est ton meilleur perso (« Forge 132/140 »), la compétence requise (« 300 requis ») ou « aucun perso ». Feux de camp pas encore atteints : nom lisible, « Cuisine 140 requis » en or.
+
 ## v1.27.3 — 18/11/2026
 
 _Un /reload suffit._

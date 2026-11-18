@@ -1480,7 +1480,7 @@ UI:RegisterPage({
             local campCfg = Cp:Config()
             local function cupdate() Cp:Update() end
             -- objets de camp par métier, en tête de l'onglet : une tuile par métier (3 colonnes), puis les feux
-            local TH, FH, TG = 128, 52, 10
+            local TH, FH, TG = 136, 52, 10
             local nrows = math.ceil(#Cp.OBJECTS / 3)
             local tbl = card("Objets de camp par métier", 40 + nrows * (TH + TG) + 24 + FH + 16,
                 "effet à ton niveau · en clair : palier atteint par un de tes persos")
@@ -1506,11 +1506,20 @@ UI:RegisterPage({
                 t.line:SetPoint("TOPLEFT", 12, -66); t.line:SetPoint("TOPRIGHT", -12, -66)
                 t.tiers = {}
                 for k = 1, 3 do
-                    local y = -72 - (k - 1) * 17
-                    local rk = txt(t, 10, C.dim); rk:SetPoint("TOPLEFT", 12, y); rk:SetWidth(30); rk:SetText(Cp.RANKS[k])
-                    local nm = txt(t, 11, C.muted); nm:SetPoint("TOPLEFT", 44, y); nm:SetPoint("TOPRIGHT", -10, y)
+                    local y = -72 - (k - 1) * 19
+                    -- surlignage du palier atteint, pastille d'état à droite (« à toi », « Forge 132/140 », « 300 requis »)
+                    local thl = t:CreateTexture(nil, "BORDER")
+                    thl:SetTexture("Interface\\Buttons\\WHITE8X8")
+                    thl:SetPoint("TOPLEFT", 6, y + 2); thl:SetPoint("TOPRIGHT", -6, y + 2); thl:SetHeight(17)
+                    local rk = txt(t, 11, C.gold); rk:SetPoint("TOPLEFT", 12, y); rk:SetWidth(30); rk:SetText(Cp.RANKS[k])
+                    local nm = txt(t, 11, C.text); nm:SetPoint("TOPLEFT", 44, y); nm:SetPoint("TOPRIGHT", -104, y)
                     if nm.SetWordWrap then nm:SetWordWrap(false) end
-                    t.tiers[k] = { rk = rk, nm = nm }
+                    local pill = CreateFrame("Frame", nil, t)
+                    pill:SetHeight(15); pill:SetPoint("TOPRIGHT", -10, y + 1)
+                    pill.edge = UI:Rounded(pill, 5, 0, "BACKGROUND", 0)
+                    pill.bg = UI:Rounded(pill, 5, 1, "BACKGROUND", 1)
+                    pill.t = UI:Text(pill, 10); pill.t:SetPoint("CENTER", 0, 0)
+                    t.tiers[k] = { rk = rk, nm = nm, hl = thl, pill = pill }
                 end
                 tiles[i] = t
             end
@@ -1649,16 +1658,42 @@ UI:RegisterPage({
                         local row = t.tiers[k]
                         local name = Cp:Name(o, k)
                         if not name then name = k == 1 and o.prof == "Cuisine" and T("le feu de camp (ci-dessous)") or "-" end
-                        local reach = o.ids[k] and rank >= Cp.RANKS[k]
+                        local need = Cp.RANKS[k]
+                        local reach = o.ids[k] and rank >= need
                         row.nm:SetText(name)
-                        if reach then row.nm:SetTextColor(C.text[1], C.text[2], C.text[3]); row.rk:SetText(accentHex .. Cp.RANKS[k] .. "|r")
-                        else row.nm:SetTextColor(C.dim[1], C.dim[2], C.dim[3]); row.rk:SetText(Cp.RANKS[k]) end
+                        row.nm:SetTextColor(C.text[1], C.text[2], C.text[3])
+                        row.rk:SetText(reach and (accentHex .. need .. "|r") or need)
+                        row.rk:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                        row.hl:SetVertexColor(r1, g1, b1, reach and 0.12 or 0)
+                        -- pastille : à toi / où en est ton meilleur perso / compétence requise / personne dans le métier
+                        local label
+                        if not o.ids[k] then label = nil
+                        elseif reach then label = T("à toi")
+                        elseif rank <= 0 then label = T("aucun perso")
+                        elseif k == 1 or rank >= Cp.RANKS[k - 1] then label = string.format("%s %d/%d", T(o.prof), rank, need)
+                        else label = string.format(T("%d requis"), need) end
+                        local pl = row.pill
+                        pl:SetShown(label ~= nil)
+                        if label then
+                            pl.t:SetText(label)
+                            pl:SetWidth(math.min(96, (pl.t:GetStringWidth() or 30) + 12))
+                            if reach then
+                                pl.bg:SetColor(r1, g1, b1, 1); pl.edge:SetColor(r1, g1, b1, 1)
+                                pl.t:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+                            else
+                                pl.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1); pl.edge:SetColor(C.border[1], C.border[2], C.border[3], 1)
+                                pl.t:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                            end
+                        end
                     end
                 end
                 for i, f in ipairs(fires) do
                     f.name:SetText(Cp:FireName(i))
                     local reach = (best["Cuisine"] or 0) >= Cp.FIRES[i][3]
-                    f.name:SetTextColor(reach and C.text[1] or C.dim[1], reach and C.text[2] or C.dim[2], reach and C.text[3] or C.dim[3])
+                    f.name:SetTextColor(C.text[1], C.text[2], C.text[3])
+                    f.sub:SetText(string.format(reach and T("Cuisine %d · %d objets de camp en plus") or T("Cuisine %d requis · %d objets de camp en plus"),
+                        Cp.FIRES[i][3], Cp.FIRES[i][4]))
+                    if reach then f.sub:SetTextColor(C.muted[1], C.muted[2], C.muted[3]) else f.sub:SetTextColor(C.gold[1], C.gold[2], C.gold[3]) end
                 end
             end)
 
