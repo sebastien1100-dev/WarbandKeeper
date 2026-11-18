@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.25.1 — 18/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Carte et minicarte : les maîtres de vol ont un petit griffon (et le filtre « Maîtres de vol » aussi).
+
 ## v1.25.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

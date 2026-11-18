@@ -749,10 +749,35 @@ def icon_zeppelin():
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "zeppelin.tga"))
 
 
+def icon_griffon():
+    """Griffon en vol, de profil : grande aile relevée, tête d'aigle, pattes repliées (maîtres de vol)."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    def poly(pts, f=W): d.polygon([(x * s, y * s) for x, y in pts], fill=f)
+    # grande aile relevée vers l'arrière, bord de fuite en plumes
+    poly([(30, 34), (40, 30), (34, 18), (24, 6), (20, 14), (14, 8), (13, 18), (6, 14), (8, 24), (2, 24), (10, 32), (20, 36)])
+    # corps allongé
+    d.ellipse([16 * s, 30 * s, 48 * s, 44 * s], fill=W)
+    # cou et tête d'aigle
+    poly([(40, 34), (46, 24), (52, 22), (50, 36)])
+    d.ellipse([44 * s, 18 * s, 56 * s, 29 * s], fill=W)
+    # bec crochu
+    poly([(54, 21), (63, 24), (59, 29), (54, 27)])
+    d.ellipse([49 * s, 21 * s, 52 * s, 24 * s], fill=O)  # œil
+    # pattes avant (serres) et arrière, repliées
+    d.line([(44 * s, 42 * s), (50 * s, 50 * s)], fill=W, width=4 * s)
+    d.line([(22 * s, 42 * s), (16 * s, 50 * s)], fill=W, width=4 * s)
+    # queue de lion, fine, terminée par une touffe
+    d.line([(17 * s, 38 * s), (6 * s, 44 * s), (2 * s, 40 * s)], fill=W, width=2 * s)
+    poly([(0, 37), (5, 39), (2, 44)])
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "griffon.tga"))
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon]:
         fn()
     print("OK")

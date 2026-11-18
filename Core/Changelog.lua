@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.25.1", date = "18/11/2026", restart = true,
+        changed = {
+            "Carte et minicarte : les maîtres de vol ont un petit griffon (et le filtre « Maîtres de vol » aussi).",
+        },
+    },
+    {
         version = "1.25.0", date = "18/11/2026", restart = true,
         changed = {
             "Carte et minicarte : les quais montrent un petit bateau ou un petit zeppelin au lieu d'une flèche ; les zeppelins (pastille et trait) sont orange pour les distinguer des bateaux. L'icône du filtre « Bateaux et zeppelins » est aussi un bateau.",
