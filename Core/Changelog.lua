@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.1", date = "18/11/2026",
+        fixed = {
+            "Barre d'expérience : la partie repos paraissait grise (bleu trop transparent sur le fond sombre) ; elle est maintenant d'un bleu franc.",
+        },
+    },
+    {
         version = "1.19.0", date = "18/11/2026",
         added = {
             "BiS : plusieurs listes par perso (JcE, tank, montée, JcJ…). Colonne « Mes listes BiS » avec la progression de chacune ; clic sur une liste pour la charger. + Nouvelle, Dupliquer, Renommer, Code (partage), Importer, Supprimer ; « Copier d'un perso » reprend la liste affichée d'un autre perso comme nouvelle liste. L'ancienne liste devient « Ma liste BiS ».",

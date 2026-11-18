@@ -9,7 +9,7 @@ local T = function(s) return WK.T(s) end
 local M = WK.modules.XP
 local bar
 local W, BH = 520, 8
-local BLUE = { 0.38, 0.62, 0.95 }
+local BLUE = { 0.30, 0.58, 1.0 }
 local YELLOW = { 0.96, 0.80, 0.36 }
 
 local function fmt(n)
@@ -96,7 +96,7 @@ local function build()
         local r1, g1, b1 = UI:Accent()
         self.cur:SetVertexColor(r1, g1, b1, 1)
         self.shine:SetVertexColor(1, 1, 1, 0.25)
-        self.rest:SetVertexColor(BLUE[1], BLUE[2], BLUE[3], 0.55)
+        self.rest:SetVertexColor(BLUE[1], BLUE[2], BLUE[3], 1)
         self.pend:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.75)
         self.mark:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 1)
         self.glow:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.35)
