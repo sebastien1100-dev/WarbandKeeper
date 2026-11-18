@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.28.5 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Feu de camp, « Comment ça marche » : les 4 étapes en tuiles bien visibles (gros numéro à la couleur d'accent, titre court, texte en clair) au lieu de petites lignes grises ; les effets de camp rencontrés sont plus gros, leur type à la couleur d'accent.
+
 ## v1.28.4 — 18/11/2026
 
 _Un /reload suffit._

@@ -1586,25 +1586,63 @@ UI:RegisterPage({
                 toggle(kc, function() return campCfg.alertFood end, function(v) campCfg.alertFood = v; cupdate() end), 80)
 
             -- comment ça marche, et effets rencontrés
-            local how = card("Comment ça marche", 40 + 4 * 22 + 30 + 8 * 18 + 8)
-            local howText = UI:Text(how, 11, C.muted)
-            howText:SetPoint("TOPLEFT", 16, -42); howText:SetPoint("RIGHT", -16, 0)
-            howText:SetJustifyH("LEFT")
-            if howText.SetWordWrap then howText:SetWordWrap(true) end
-            howText:SetText(T("1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres ») : elle allonge la durée des effets de camp.") .. "\n"
-                .. T("2. Assieds-toi (ou allonge-toi, agenouille-toi, dors, ou fabrique à côté) : « Feu de camp accueillant » compte 1 min.") .. "\n"
-                .. T("3. Tu obtiens « Avantages du camp », selon les objets posés autour du feu ; ils restent quand tu pars.") .. "\n"
-                .. T("4. Un camp dure environ 15 min ; poser un feu : recharge de 5 min ; poser un objet de métier : recharge commune d'1 h."))
-            local seenHead = UI:Text(how, 10, C.dim)
-            seenHead:SetPoint("TOPLEFT", 16, -42 - 4 * 22 - 6)
+            -- 4 étapes en tuiles (gros numéro à la couleur d'accent, titre, texte), puis les effets rencontrés
+            local STH, SG = 92, 10
+            local how = card("Comment ça marche", 40 + 2 * (STH + SG) + 36 + 8 * 18 + 8)
+            local STEPS = {
+                { "Approche-toi du feu", "1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres ») : elle allonge la durée des effets de camp." },
+                { "Assieds-toi 1 min", "2. Assieds-toi (ou allonge-toi, agenouille-toi, dors, ou fabrique à côté) : « Feu de camp accueillant » compte 1 min." },
+                { "Récupère les avantages", "3. Tu obtiens « Avantages du camp », selon les objets posés autour du feu ; ils restent quand tu pars." },
+                { "Durées et recharges", "4. Un camp dure environ 15 min ; poser un feu : recharge de 5 min ; poser un objet de métier : recharge commune d'1 h." },
+            }
+            local steps = {}
+            for i, st in ipairs(STEPS) do
+                local t = CreateFrame("Frame", nil, how)
+                t:SetHeight(STH)
+                UI:Panel(t, 9, C.surface2, C.border)
+                t.badge = CreateFrame("Frame", nil, t)
+                t.badge:SetSize(26, 26); t.badge:SetPoint("TOPLEFT", 12, -12)
+                UI:Panel(t.badge, 13, { 1, 1, 1, 1 })
+                t.num = UI:Text(t.badge, 14, C.onAccent); t.num:SetPoint("CENTER", 0, 0); t.num:SetText(tostring(i))
+                t.title = UI:Text(t, 13, C.text); t.title:SetPoint("LEFT", t.badge, "RIGHT", 10, 0); t.title:SetPoint("RIGHT", -12, 0)
+                t.title:SetText(T(st[1]))
+                t.body = UI:Text(t, 11, C.text)
+                t.body:SetPoint("TOPLEFT", 12, -46); t.body:SetPoint("BOTTOMRIGHT", -12, 8)
+                t.body:SetJustifyH("LEFT"); t.body:SetJustifyV("TOP")
+                if t.body.SetWordWrap then t.body:SetWordWrap(true) end
+                local body = WK.T(st[2]):gsub("^%d+%.%s*", "")
+                t.body:SetText(body)
+                steps[i] = t
+            end
+            local stepRows = 2
+            local function layoutSteps()
+                local Wc = how:GetWidth() or 840
+                local cols = Wc >= 1000 and 4 or 2
+                stepRows = math.ceil(#steps / cols)
+                local tw = (Wc - 32 - (cols - 1) * SG) / cols
+                local r1, g1, b1 = UI:Accent()
+                for i, t in ipairs(steps) do
+                    local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
+                    t:ClearAllPoints(); t:SetPoint("TOPLEFT", 16 + col * (tw + SG), -42 - row * (STH + SG)); t:SetWidth(tw)
+                    if t.badge.bg and t.badge.bg.SetColor then t.badge.bg:SetColor(r1, g1, b1, 1) end
+                end
+                how.seenY = -42 - stepRows * (STH + SG) - 6
+                if how.seenHead then how.seenHead:ClearAllPoints(); how.seenHead:SetPoint("TOPLEFT", 16, how.seenY) end
+            end
+            UI:OnResize(how, function() layoutSteps() end)
+            table.insert(self.dyn, layoutSteps)
+            local seenHead = UI:Text(how, 11, C.muted)
+            how.seenHead = seenHead
+            seenHead:SetPoint("TOPLEFT", 16, -42 - 2 * (STH + SG) - 6)
             seenHead:SetText(UI:Upper(T("Effets de camp rencontrés")))
-            local seenText = dynText(how, 11, C.text, function()
+            local seenText = dynText(how, 12, C.text, function()
                 local g = WK.DB.global.camp and WK.DB.global.camp.seen or {}
                 local KIND = { flame = T("flamme"), sit = T("assis"), perk = T("avantages") }
                 local out = {}
+                local ah = "|cff" .. WK:AccentHex()
                 for id, kind in pairs(g) do
                     local name = (WK.SpellInfo and WK.SpellInfo(id)) or ("#" .. id)
-                    table.insert(out, string.format("%s  " .. UI:Hex(C.muted) .. "· %s · n° %d|r", name, KIND[kind] or kind, id))
+                    table.insert(out, string.format("%s  " .. ah .. "%s|r  " .. UI:Hex(C.dim) .. "n° %d|r", name, KIND[kind] or kind, id))
                 end
                 table.sort(out)
                 if #out == 0 then return UI:Hex(C.muted) .. T("Aucun pour l'instant : approche-toi d'un camp.") .. "|r" end
@@ -1612,6 +1650,7 @@ UI:RegisterPage({
                 for i = 1, math.min(#out, 8) do shown[i] = out[i] end
                 return table.concat(shown, "\n")
             end)
+            if seenText.SetSpacing then seenText:SetSpacing(4) end
             seenText:SetPoint("TOPLEFT", seenHead, "BOTTOMLEFT", 0, -6); seenText:SetPoint("RIGHT", -16, 0)
             seenText:SetJustifyH("LEFT")
             if seenText.SetWordWrap then seenText:SetWordWrap(true) end

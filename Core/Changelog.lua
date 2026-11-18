@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.5", date = "18/11/2026",
+        changed = {
+            "QoL > Feu de camp, « Comment ça marche » : les 4 étapes en tuiles bien visibles (gros numéro à la couleur d'accent, titre court, texte en clair) au lieu de petites lignes grises ; les effets de camp rencontrés sont plus gros, leur type à la couleur d'accent.",
+        },
+    },
+    {
         version = "1.28.4", date = "18/11/2026",
         fixed = {
             "QoL > Feu de camp, objets par métier : « à toi » seulement si le perso connecté a le palier. Sinon la pastille donne le nom de ton perso qui l'a (ex. ton chasseur pour le Dépeçage), avec un contour à la couleur d'accent.",
