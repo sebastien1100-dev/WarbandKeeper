@@ -360,3 +360,21 @@ function UI:AgoShort(sec, bare)
     if bare then return t end
     return WK.T("il y a") .. " " .. t
 end
+
+
+-- Infobulles de comparaison du jeu (« Équipé ») : cachées pour les cadres marqués wkNoCompare (objet déjà porté)
+function UI:HideCompare()
+    for i = 1, 3 do
+        local t = _G["ShoppingTooltip" .. i]
+        if t and t:IsShown() then t:Hide() end
+    end
+end
+for i = 1, 3 do
+    local t = _G["ShoppingTooltip" .. i]
+    if t and t.HookScript then
+        t:HookScript("OnShow", function(s)
+            local owner = GameTooltip and GameTooltip:IsShown() and GameTooltip:GetOwner()
+            if owner and owner.wkNoCompare then s:Hide() end
+        end)
+    end
+end

@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.18.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche du perso, équipement : le survol d'un objet porté ouvrait aussi l'infobulle de comparaison « Équipé » du jeu (le même objet en double) ; elle n'apparaît plus.
+
 ## v1.18.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

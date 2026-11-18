@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.18.1", date = "18/11/2026",
+        fixed = {
+            "Fiche du perso, équipement : le survol d'un objet porté ouvrait aussi l'infobulle de comparaison « Équipé » du jeu (le même objet en double) ; elle n'apparaît plus.",
+        },
+    },
+    {
         version = "1.18.0", date = "18/11/2026", restart = true,
         added = {
             "Plans de montée de niveau (onglet Talents, sous les builds) : l'ordre des points de talent, un par niveau à partir du 10. « Nouveau plan » puis clic sur les talents dans l'ordre (mode plan : chaque talent affiche ses niveaux, « 10-14 » ; clic droit retire le dernier point), « Depuis le build ouvert » (ordre proposé rangée par rangée, à retoucher), code de partage et import, renommer, supprimer, « Suivre » pour choisir le plan actif. Un plan « Montée enregistrée » se remplit tout seul quand tu prends tes talents.",

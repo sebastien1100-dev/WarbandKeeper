@@ -107,11 +107,13 @@ local function slotButton(parent, side)
         b.name:SetPoint("BOTTOMLEFT", b.box, "RIGHT", 7, 1)
         b.sub:SetPoint("TOPLEFT", b.box, "RIGHT", 7, -1)
     end
+    b.wkNoCompare = true -- objet porté : pas d'infobulle de comparaison « Équipé » (il se comparerait à lui-même)
     b:SetScript("OnEnter", function(s)
         if not s.link then return end
         UI:TooltipOwner(s, "ANCHOR_RIGHT")
         if not pcall(GameTooltip.SetHyperlink, GameTooltip, s.link) then GameTooltip:SetText(s.link) end
         GameTooltip:Show()
+        UI:HideCompare()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
     b:SetScript("OnClick", function(s)
