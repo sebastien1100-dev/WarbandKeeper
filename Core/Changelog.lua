@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.18.0", date = "18/11/2026", restart = true,
+        added = {
+            "Plans de montée de niveau (onglet Talents, sous les builds) : l'ordre des points de talent, un par niveau à partir du 10. « Nouveau plan » puis clic sur les talents dans l'ordre (mode plan : chaque talent affiche ses niveaux, « 10-14 » ; clic droit retire le dernier point), « Depuis le build ouvert » (ordre proposé rangée par rangée, à retoucher), code de partage et import, renommer, supprimer, « Suivre » pour choisir le plan actif. Un plan « Montée enregistrée » se remplit tout seul quand tu prends tes talents.",
+            "Panneau « Plan de montée » collé à droite de la fenêtre des talents du jeu, ouvert et fermé avec elle : étape du niveau en cours (talent, rang, points libres) avec « Placer ce point », puis la liste des étapes (faites, en cours, à venir). Le talent à prendre est entouré dans la fenêtre du jeu quand elle le permet. /wk plan ou « Ouvrir le panneau » l'ouvrent seul ; réglage dans la carte des plans.",
+            "Rappel à chaque niveau gagné : « Prochain talent : … » tant qu'il te reste un point libre.",
+            "/wk talents dit aussi quelle fenêtre des talents le jeu utilise et si l'addon peut y placer des points.",
+        },
+    },
+    {
         version = "1.17.1", date = "18/11/2026",
         added = {
             "Fiche du perso : aperçu 3D du perso au centre de l'équipement, comme la fenêtre de perso du jeu (glisser pour le tourner, molette pour zoomer). Pour un autre perso, l'aperçu prend sa race et son équipement si le jeu le permet ; sinon, le portrait de classe reste.",

@@ -66,6 +66,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "plan" then
+        if WK.UI.ToggleTalentPlan then WK.UI:ToggleTalentPlan() end
     elseif cmd == "talents" then
         WK.modules.Gear:Scan({ talents = true })
         WK:Print(WK.T("Talents : diagnostic"))

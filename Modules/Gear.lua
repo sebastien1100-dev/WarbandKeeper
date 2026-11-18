@@ -202,8 +202,10 @@ local function scanTraits(c)
         end
         table.insert(out, tree)
     end
+    if WK.modules.TalentPlan then pcall(WK.modules.TalentPlan.Record, WK.modules.TalentPlan, c, c.talents, out) end
     c.talents = out
     c.talentsAt = time()
+    if WK.modules.TalentPlan then pcall(WK.modules.TalentPlan.CheckAlert, WK.modules.TalentPlan) end
     return true
 end
 
@@ -239,6 +241,7 @@ local function scanTalents(c)
         end
     end
     if #out > 0 then
+        if WK.modules.TalentPlan then pcall(WK.modules.TalentPlan.Record, WK.modules.TalentPlan, c, c.talents, out) end
         c.talents = out
         local free = (UnitCharacterPoints and num(call(UnitCharacterPoints, "player")))
             or (GetUnspentTalentPoints and num(call(GetUnspentTalentPoints)))
@@ -349,6 +352,16 @@ function M:TalentDiag()
         local d = ids[1] and nodeData(cfgID, ids[1])
         if d then add("1er talent : " .. d.name .. " (sort " .. tostring(d.spell) .. ")") end
     end
+    local fr = {}
+    for _, name in ipairs({ "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame", "TalentFrame" }) do
+        local f = _G[name]
+        if f then
+            local sub = f.TalentsFrame or f.TalentsTab or f
+            table.insert(fr, name .. (sub.GetTalentButtonByNodeID and " (boutons : oui)" or " (boutons : non)"))
+        end
+    end
+    add("fenêtre des talents du jeu : " .. (#fr > 0 and table.concat(fr, ", ") or "pas encore chargée (ouvre-la puis retape la commande)"))
+    add("placer un point : " .. tostring(C_Traits and C_Traits.PurchaseRank ~= nil) .. " · valider : " .. tostring(C_Traits and C_Traits.CommitConfig ~= nil))
     local c = WK.DB:Me()
     add("relevé : " .. (c and c.talents and (#c.talents .. " arbre(s), détail : " .. tostring(c.talents[1] and c.talents[1].list and #c.talents[1].list)) or "aucun"))
     return out

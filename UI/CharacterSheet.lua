@@ -410,6 +410,14 @@ local function build(parent)
         if b then return b end
         b = CreateFrame("Button", nil, tr)
         b:SetSize(34, 34)
+        if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+        -- mode plan : clic = point suivant du plan, clic droit = retirer le dernier
+        b:SetScript("OnClick", function(s, btn)
+            if not f.planEdit or tr.preview then return end
+            local P = WK.modules.TalentPlan
+            if btn == "RightButton" then P:RemoveLast(f.key, f.planEdit)
+            elseif not P:AddStep(f.key, f.planEdit, s.tab, s.index) then WK:Print(T("Ce talent est déjà au maximum dans le plan.")) end
+        end)
         b.edge = b:CreateTexture(nil, "BACKGROUND")
         b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
         b.edge:SetAllPoints()
@@ -453,6 +461,7 @@ local function build(parent)
         tr.pts = UI:Text(tr, 14)
         tr.pts:SetPoint("TOPRIGHT", -14, -12)
         tr.cells = {}
+        tr.preview = true
         tr:Hide()
         f.ptrees[i] = tr
     end
@@ -532,6 +541,64 @@ local function build(parent)
         f:Ask(T("Importer un code"), T("Colle un code de build (WK1:…) partagé par un autre joueur de la même classe."), "", function(v)
             local b, why = G:ImportBuild(f.key, v)
             if not b then WK:Print(T("Import impossible : ") .. (why or "")) end
+        end, T("Importer"))
+    end)
+
+    -- Plans de montée (Modules/TalentPlan.lua) : carte sous les builds, mode plan sur les arbres
+    f.pcard = UI:Card(tsc.child, T("Plans de montée"))
+    f.pcount = UI:Text(f.pcard, 11, C.muted); f.pcount:SetPoint("LEFT", f.pcard.title, "RIGHT", 10, 0)
+    f.pnew = UI:Button(f.pcard, "Nouveau plan", nil, 26, "primary"); f.pnew:SetPoint("TOPRIGHT", -12, -10)
+    f.pfrom = UI:Button(f.pcard, "Depuis le build ouvert", nil, 26, "secondary"); f.pfrom:SetPoint("RIGHT", f.pnew, "LEFT", -8, 0)
+    f.pimport = UI:Button(f.pcard, "Importer un code", nil, 26, "secondary"); f.pimport:SetPoint("RIGHT", f.pfrom, "LEFT", -8, 0)
+    f.ppanel = UI:Button(f.pcard, "Ouvrir le panneau", nil, 26, "secondary"); f.ppanel:SetPoint("RIGHT", f.pimport, "LEFT", -8, 0)
+    f.ppanel:SetScript("OnClick", function() if UI.ToggleTalentPlan then UI:ToggleTalentPlan() end end)
+    f.pempty = UI:Text(f.pcard, 11, C.muted); f.pempty:SetPoint("TOPLEFT", 16, -48)
+    f.pempty:SetText(T("Aucun plan. « Nouveau plan » puis clique les talents dans l'ordre, ou pars d'un build ; un plan « Montée enregistrée » se remplit aussi tout seul quand tu prends tes talents."))
+    f.pempty:SetPoint("RIGHT", -16, 0); f.pempty:SetJustifyH("LEFT"); if f.pempty.SetWordWrap then f.pempty:SetWordWrap(true) end
+    f.ptoggle = UI:Toggle(f.pcard, function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end,
+        function(v) WK.DB.global.settings.ui.talentPlanPanel = v end)
+    f.ptoggleL = UI:Text(f.pcard, 11, C.muted); f.ptoggleL:SetText(T("Panneau collé à la fenêtre des talents du jeu"))
+    f.prows = UI:Pool(function()
+        local r = CreateFrame("Frame", nil, f.pcard)
+        r:SetHeight(32)
+        r.line = r:CreateTexture(nil, "ARTWORK"); r.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+        r.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.8); r.line:SetHeight(1); r.line:SetPoint("TOPLEFT"); r.line:SetPoint("TOPRIGHT")
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 14, 0)
+        r.info = UI:Text(r, 11, C.muted)
+        r.del = UI:Button(r, "Suppr.", nil, 22, "danger"); r.del:SetPoint("RIGHT", -6, 0)
+        r.ren = UI:Button(r, "Renommer", nil, 22, "secondary"); r.ren:SetPoint("RIGHT", r.del, "LEFT", -6, 0)
+        r.code = UI:Button(r, "Code", nil, 22, "secondary"); r.code:SetPoint("RIGHT", r.ren, "LEFT", -6, 0)
+        r.edit = UI:Button(r, "Modifier", nil, 22, "secondary"); r.edit:SetPoint("RIGHT", r.code, "LEFT", -6, 0)
+        r.act = UI:Button(r, "Suivre", nil, 22, "primary"); r.act:SetPoint("RIGHT", r.edit, "LEFT", -6, 0)
+        return r
+    end)
+    -- bandeau du mode plan, au-dessus des arbres
+    f.planBar = CreateFrame("Frame", nil, tsc.child)
+    f.planBar:SetHeight(26)
+    UI:Panel(f.planBar, 8, { 0.14, 0.10, 0.18, 1 }, { 0.71, 0.49, 0.95, 1 })
+    f.planBarText = UI:Text(f.planBar, 11); f.planBarText:SetPoint("LEFT", 10, 0)
+    f.planDone = UI:Button(f.planBar, "Terminer", nil, 20, "primary"); f.planDone:SetPoint("RIGHT", -4, 0)
+    f.planDone:SetScript("OnClick", function() f.planEdit = nil; f:Refresh() end)
+    f.planBar:Hide()
+    local P = WK.modules.TalentPlan
+    f.pnew:SetScript("OnClick", function()
+        f:Ask(T("Nouveau plan de montée"), T("Donne-lui un nom ; tu cliqueras ensuite les talents dans l'ordre (clic droit : retirer le dernier)."),
+            T("Montée de niveau"), function(v)
+                f.planEdit = P:New(f.key, (v ~= "" and v) or T("Montée de niveau"))
+            end, T("Créer"))
+    end)
+    f.pfrom:SetScript("OnClick", function()
+        local G = WK.modules.Gear
+        local builds = G:Builds(f.key)
+        local b = builds[f.openBuild or 0] or builds[1]
+        if not b then WK:Print(T("Aucun build enregistré : enregistre-en un (ou ouvre-le) d'abord.")) return end
+        f.planEdit = P:FromBuild(f.key, b)
+        WK:Print(string.format(T("Plan créé depuis « %s » : vérifie l'ordre (talents des rangées du haut d'abord)."), b.name or ""))
+    end)
+    f.pimport:SetScript("OnClick", function()
+        f:Ask(T("Importer un plan"), T("Colle un code de plan (WKP1:…) d'un joueur de la même classe."), "", function(v)
+            local i, why = P:Import(f.key, v)
+            if not i then WK:Print(T("Import impossible : ") .. (why or "")) end
         end, T("Importer"))
     end)
 
@@ -1016,7 +1083,44 @@ local function refreshTalents(f, c)
     local cg = math.max(4, math.floor(cs * 0.3))
     local th = 52 + maxTier * cs + (maxTier - 1) * cg + 14
     local mine = f.key == WK:CharKey()
-    paintTrees(f, f.trees, trees, 28, tw, cs, cg, th, mine, nil)
+    -- mode plan : les arbres montrent les rangs du plan et, sur chaque talent, ses niveaux
+    local P = WK.modules.TalentPlan
+    local editPlan = f.planEdit and P:Plans(f.key)[f.planEdit]
+    if f.planEdit and not editPlan then f.planEdit = nil end
+    local shownTrees = trees
+    local ty = 28
+    if editPlan then
+        local ranks = P:Ranks(editPlan)
+        shownTrees = {}
+        for ti, t in ipairs(trees) do
+            local nt = { name = t.name, cols = t.cols, list = {} }
+            for j, d in ipairs(t.list or {}) do nt.list[j] = { d[1], d[2], d[3], d[4], ranks[ti .. ":" .. j] or 0, d[6], d[7], d[8] } end
+            shownTrees[ti] = nt
+        end
+        f.planBar:ClearAllPoints(); f.planBar:SetPoint("TOPLEFT", 0, -26); f.planBar:SetWidth(W); f.planBar:Show()
+        f.planBarText:SetText(string.format(T("Mode plan : |cffb57ef2%s|r · %d point(s), niveaux %d à %d · clic : point suivant · clic droit : retirer le dernier"),
+            editPlan.name or "", #editPlan.steps, P.FIRST_LEVEL, P.FIRST_LEVEL + math.max(0, #editPlan.steps - 1)))
+        ty = 58
+    else
+        f.planBar:Hide()
+    end
+    paintTrees(f, f.trees, shownTrees, ty, tw, cs, cg, th, mine, nil)
+    if editPlan then
+        local labels = P:LevelLabels(editPlan)
+        for ti, tr in ipairs(f.trees) do
+            for j, cell in ipairs(tr.cells) do
+                if cell:IsShown() then
+                    local lab = labels[ti .. ":" .. j]
+                    cell.rk:SetText(lab or "")
+                    cell.rkBox:SetShown(lab ~= nil)
+                    if lab then cell.rkBox:SetWidth(math.max(22, math.ceil(cell.rk:GetStringWidth() or 0) + 8)) end
+                end
+            end
+        end
+    else
+        for _, tr in ipairs(f.trees) do for _, cell in ipairs(tr.cells) do cell.rkBox:Show() end end
+    end
+    th = th + (ty - 28)
     -- builds sous les arbres
     local G = WK.modules.Gear
     local builds = G:Builds(f.key)
@@ -1080,7 +1184,44 @@ local function refreshTalents(f, c)
         end
     end
     card:SetHeight(y + 8)
-    f.tsc:SetContentHeight(by + y + 16)
+    -- plans de montée, sous les builds
+    local pcard = f.pcard
+    local py = by + y + 20
+    pcard:ClearAllPoints(); pcard:SetPoint("TOPLEFT", 0, -py); pcard:SetWidth(W)
+    local plans = P:Plans(f.key)
+    local _, active = P:Active(f.key)
+    f.pcount:SetText(string.format(T("%d plan(s)"), #plans))
+    f.pnew:SetEnabled(any)
+    f.pempty:SetShown(#plans == 0)
+    f.prows:Reset()
+    local ry = #plans == 0 and 84 or 44
+    for i, pl in ipairs(plans) do
+        local row = f.prows:Get()
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -ry); row:SetPoint("TOPRIGHT", -8, -ry)
+        row.name:SetText((pl.name or "?") .. (i == active and ("  |cff9ed17a" .. T("suivi") .. "|r") or "") .. (f.planEdit == i and ("  |cffb57ef2" .. T("en cours de modification") .. "|r") or ""))
+        row.info:ClearAllPoints(); row.info:SetPoint("LEFT", math.floor(W * 0.42), 0)
+        row.info:SetText(#pl.steps > 0 and string.format(T("%d point(s) · niveaux %d à %d"), #pl.steps, P.FIRST_LEVEL, P.FIRST_LEVEL + #pl.steps - 1) or T("vide"))
+        row.act:SetShown(i ~= active)
+        row.act:SetScript("OnClick", function() P:SetActive(f.key, i) end)
+        row.edit:SetLabel(f.planEdit == i and T("Terminer") or T("Modifier"))
+        row.edit:SetScript("OnClick", function() f.planEdit = (f.planEdit ~= i) and i or nil; f:Refresh() end)
+        row.code:SetScript("OnClick", function()
+            f:Ask(T("Code du plan"), T("Copie ce code (Ctrl+C) pour le partager ; « Importer un code » le reprend sur un perso de la même classe."), P:Export(f.key, i) or "", nil, T("Fermer"))
+        end)
+        row.ren:SetScript("OnClick", function() f:Ask(T("Renommer le plan"), nil, pl.name or "", function(v) P:Rename(f.key, i, v) end, T("Renommer")) end)
+        row.del:SetScript("OnClick", function()
+            f:Ask(T("Supprimer le plan ?"), string.format(T("« %s » sera supprimé."), pl.name or ""), nil, function()
+                if f.planEdit == i then f.planEdit = nil end
+                P:Delete(f.key, i)
+            end, T("Supprimer"))
+        end)
+        ry = ry + 34
+    end
+    f.ptoggle:ClearAllPoints(); f.ptoggle:SetPoint("TOPLEFT", 14, -(ry + 8))
+    f.ptoggleL:ClearAllPoints(); f.ptoggleL:SetPoint("LEFT", f.ptoggle, "RIGHT", 10, 0)
+    if f.ptoggle.Refresh then f.ptoggle:Refresh() end
+    pcard:SetHeight(ry + 44)
+    f.tsc:SetContentHeight(py + ry + 52)
 end
 
 -- Icônes des spécialisations (ordre classique des arbres, de gauche à droite)
