@@ -1642,9 +1642,18 @@ UI:RegisterPage({
                 local r1, g1, b1 = UI:Accent()
                 local accentHex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
                 -- meilleure compétence de tes persos dans chaque métier
-                local best = {}
-                for _, c in pairs(WK.DB.global.characters) do
-                    for prof, p in pairs(c.professions or {}) do best[prof] = math.max(best[prof] or 0, p.rank or 0) end
+                -- et compétence du perso connecté : « à toi » seulement s'il a le palier, sinon le nom du perso qui l'a
+                local best, bestWho, mine = {}, {}, {}
+                local meKey = WK:CharKey()
+                for key, c in pairs(WK.DB.global.characters) do
+                    for prof, p in pairs(c.professions or {}) do
+                        local rk = type(p) == "table" and p.rank or 0
+                        if rk > (best[prof] or 0) or (rk == best[prof] and key == meKey) then
+                            best[prof] = rk
+                            bestWho[prof] = c.name or string.match(key, "^([^%-]+)") or key
+                        end
+                        if key == meKey then mine[prof] = rk end
+                    end
                 end
                 for i, o in ipairs(Cp.OBJECTS) do
                     local t = tiles[i]
@@ -1672,7 +1681,8 @@ UI:RegisterPage({
                         -- pastille : à toi / où en est ton meilleur perso / compétence requise / personne dans le métier
                         local label
                         if not o.ids[k] then label = nil
-                        elseif reach then label = T("à toi")
+                        elseif reach and (mine[o.prof] or 0) >= need then label = T("à toi")
+                        elseif reach then label = WK.Latin and WK.Latin(bestWho[o.prof] or "?") or bestWho[o.prof]
                         elseif rank <= 0 then label = T("aucun perso")
                         elseif k == 1 or rank >= Cp.RANKS[k - 1] then label = string.format("%s %d/%d", T(o.prof), rank, need)
                         else label = string.format(T("%d requis"), need) end
@@ -1681,7 +1691,11 @@ UI:RegisterPage({
                         if label then
                             pl.t:SetText(label)
                             pl:SetWidth(math.min(96, (pl.t:GetStringWidth() or 30) + 12))
-                            if reach then
+                            if reach and (mine[o.prof] or 0) < need then
+                                -- palier tenu par un autre de tes persos : contour accent, nom en accent
+                                pl.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1); pl.edge:SetColor(r1, g1, b1, 1)
+                                pl.t:SetTextColor(r1, g1, b1)
+                            elseif reach then
                                 pl.bg:SetColor(r1, g1, b1, 1); pl.edge:SetColor(r1, g1, b1, 1)
                                 pl.t:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
                             else
