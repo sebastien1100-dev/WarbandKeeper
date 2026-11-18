@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.22.1", date = "18/11/2026",
+        fixed = {
+            "Objets verrouillés et étoile BiS : le cadenas n'apparaissait pas après un Alt + clic (le verrou était bien posé, mais les cases n'étaient jamais redessinées).",
+            "Sacs de l'interface EUI de WoW Forever (liste qui défile) : les cases sont retrouvées directement dans le sac, et Alt + clic vise la case réellement sous la souris (les cases recyclées changent d'objet en défilant).",
+        },
+    },
+    {
         version = "1.22.0", date = "18/11/2026",
         changed = {
             "Carte du monde : un seul affichage des récoltes, le calque « Filons et plantes » (filtré par tes métiers et ta compétence). L'ancienne carte des coins de récolte, qui se superposait, est retirée.",

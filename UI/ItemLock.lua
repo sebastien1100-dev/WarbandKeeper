@@ -225,6 +225,42 @@ function paint(btn)
     end
 end
 
+-- Sacs d'une autre interface (EUI de WoW Forever : EUI_MainBagFrame, cases dans une liste qui défile et dont
+-- les cadres sont recyclés) : on retient le cadre racine du sac et on y cherche les cases à chaque passage.
+local roots = setmetatable({}, { __mode = "k" })
+local ROOT_NAMES = { "EUI_MainBagFrame", "EUI_BankFrame", "EUI_BagFrame" }
+local function isBagButton(f)
+    if not (f and f.GetBagID and f.GetID) or (f.IsForbidden and f:IsForbidden()) then return false end
+    local bag, slot = bagSlot(f)
+    return type(bag) == "number" and type(slot) == "number" and slot >= 1 and bag >= -3 and bag <= 12
+end
+-- La case de sac qui contient ce cadre (le cadre lui-même, ou un parent proche)
+local function findBagButton(f)
+    for _ = 1, 4 do
+        if not f then return nil end
+        if isBagButton(f) then return f end
+        f = f.GetParent and f:GetParent()
+    end
+end
+local function rootOf(b)
+    local f, last = b, b
+    for _ = 1, 12 do
+        local p = f.GetParent and f:GetParent()
+        if not p or p == UIParent then break end
+        last, f = p, p
+        if p.GetName and p:GetName() then return p end -- premier cadre nommé : le sac
+    end
+    return last
+end
+local function walk(f, fn, depth)
+    if depth > 8 or not f.GetChildren then return end
+    for _, ch in ipairs({ f:GetChildren() }) do
+        if ch:IsVisible() then
+            if isBagButton(ch) then fn(ch) else walk(ch, fn, depth + 1) end
+        end
+    end
+end
+
 local function eachButton(fn)
     local function frameItems(f)
         if not (f and f:IsShown()) then return end
@@ -237,23 +273,30 @@ local function eachButton(fn)
             end
         end
     end
-    local seen = {}
-    local function each(b) if not seen[b] then seen[b] = true; fn(b) end end
+    -- chaque case une seule fois, quel que soit le chemin qui l'a trouvée
     local outer = fn
+    local seen = {}
+    local function each(b) if not seen[b] then seen[b] = true; outer(b) end end
     fn = each
     for i = 1, (NUM_CONTAINER_FRAMES or 13) do frameItems(_G["ContainerFrame" .. i]) end
     frameItems(_G.ContainerFrameCombinedBags)
     for b in pairs(known) do if b:IsVisible() then each(b) end end
+    for _, n in ipairs(ROOT_NAMES) do local r = _G[n]; if r and r.GetChildren then roots[r] = true end end
+    for r in pairs(roots) do if r:IsVisible() then walk(r, each, 0) end end
     fn = outer
 end
 local function anyBagOpen()
     for i = 1, (NUM_CONTAINER_FRAMES or 13) do local f = _G["ContainerFrame" .. i]; if f and f:IsShown() then return true end end
     if _G.ContainerFrameCombinedBags and _G.ContainerFrameCombinedBags:IsShown() then return true end
     for b in pairs(known) do if b:IsVisible() then return true end end
+    for _, n in ipairs(ROOT_NAMES) do local r = _G[n]; if r and r.IsVisible and r:IsVisible() then return true end end
+    for r in pairs(roots) do if r:IsVisible() then return true end end
     return false
 end
 -- Une case de sac survolée (infobulle d'objet) : on la retient et on la décore tout de suite
 local function learnButton(owner, id)
+    owner = findBagButton(owner) or owner
+    if owner and isBagButton(owner) then local r = rootOf(owner); if r then roots[r] = true end end
     if not owner or known[owner] or not owner.GetID or not WK:FeatureOn("inventory") then return end
     if owner.IsForbidden and owner:IsForbidden() then return end
     local bag, slot = bagSlot(owner)
@@ -305,8 +348,12 @@ driver:SetScript("OnEvent", function(_, ev, button)
     end
     if ev ~= "GLOBAL_MOUSE_DOWN" or button ~= "LeftButton" or not modDown() or not WK:FeatureOn("inventory") then return end
     if L:MerchantOpen() then return end -- chez le marchand, le cache de la case s'en occupe
-    local hit
-    eachButton(function(b) if not hit and b:IsVisible() and MouseIsOver(b) then hit = b end end)
+    -- d'abord la case réellement sous la souris (les cases recyclées d'une liste qui défile changent d'objet)
+    local foci = GetMouseFoci and GetMouseFoci()
+    local focus = (foci and foci[1]) or (GetMouseFocus and GetMouseFocus())
+    local hit = findBagButton(focus)
+    if hit then local r = rootOf(hit); if r then roots[r] = true end end
+    if not hit then eachButton(function(b) if not hit and b:IsVisible() and MouseIsOver(b) then hit = b end end) end
     if hit then
         pressAt = GetTime()
         UI.ItemLockAltClick(hit)
