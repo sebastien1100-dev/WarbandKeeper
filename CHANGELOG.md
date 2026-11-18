@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.28.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Halo, Atelier > Donneurs de quêtes : option « Seulement les quêtes de ton journal ». Seuls brillent les PNJ où rendre une quête de ton journal ou liés à une quête en cours, pas ceux qui proposent une nouvelle quête (ni les monstres à tuer).
+
 ## v1.28.0 — 18/11/2026
 
 _Un /reload suffit._

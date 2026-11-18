@@ -819,6 +819,8 @@ WK.Locales.enUS.text = {
     ["Camp : %d de tes objets annulés"] = "Camp: %d of your items cancelled",
     ["Camp : %d de tes objets annulé"] = "Camp: %d of your items cancelled",
     ["Maj : noms des buffs"] = "Shift: buff names",
+    ["Seulement les quêtes de ton journal"] = "Only quests in your log",
+    ["Le PNJ où rendre une quête de ton journal, ou lié à une quête en cours ; pas ceux qui proposent une nouvelle quête."] = "The NPC where you turn in a quest from your log, or tied to a quest in progress; not those offering a new quest.",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

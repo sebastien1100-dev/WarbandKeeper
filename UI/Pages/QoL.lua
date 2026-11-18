@@ -640,6 +640,9 @@ UI:RegisterPage({
         UI:SettingRow(right, -84, "Couleur", nil, swRow, 8 * 26 + 30)
         local diffToggle = gtoggle(right, function() return gcfg.diffColor end, function(v) gcfg.diffColor = v; Gm:Update(); haloPaint() end)
         local diffRow = UI:SettingRow(right, -126, "Texte selon la difficulté", "Filons, plantes et dépeçage : le nom sous l'objet en orange, jaune, vert, gris (rouge si la compétence manque). Le halo garde ta couleur.", diffToggle, 60)
+        -- donneurs de quêtes : à la même place, seulement les quêtes du journal
+        local giverToggle = gtoggle(right, function() return gcfg.giverLog end, function(v) gcfg.giverLog = v; Gm:Update(); haloPaint() end)
+        local giverRow = UI:SettingRow(right, -126, "Seulement les quêtes de ton journal", "Le PNJ où rendre une quête de ton journal, ou lié à une quête en cours ; pas ceux qui proposent une nouvelle quête.", giverToggle, 60)
         local infoToggle = gtoggle(right, function() return gcfg.info end, function(v) gcfg.info = v; Gm:Update(); haloPaint() end)
         UI:SettingRow(right, -180, "Ligne d'info sous l'objet", "Nom et compétence demandée.", infoToggle, 60)
 
@@ -669,13 +672,14 @@ UI:RegisterPage({
             end
             stage.info:SetText(info)
             stage.info:SetTextColor(shown[1], shown[2], shown[3])
-            catToggle:Refresh(); diffToggle:Refresh(); infoToggle:Refresh()
+            catToggle:Refresh(); diffToggle:Refresh(); infoToggle:Refresh(); giverToggle:Refresh()
             catFx:Select(gcfg.fx[selCat] or "")
             for _, sb in ipairs(swatches) do
                 local same = math.abs(sb.col[1] - col[1]) < 0.02 and math.abs(sb.col[2] - col[2]) < 0.02 and math.abs(sb.col[3] - col[3]) < 0.02
                 sb.ring:SetColor(1, 1, 1, same and 1 or 0)
             end
             diffRow:SetAlpha(diffable and 1 or 0.4)
+            diffRow:SetShown(selCat ~= "giver"); giverRow:SetShown(selCat == "giver")
         end
         UI:OnResize(acard, function(w) layoutChips(w) end)
         layoutChips(acard:GetWidth())

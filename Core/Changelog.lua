@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.1", date = "18/11/2026",
+        added = {
+            "Halo, Atelier > Donneurs de quêtes : option « Seulement les quêtes de ton journal ». Seuls brillent les PNJ où rendre une quête de ton journal ou liés à une quête en cours, pas ceux qui proposent une nouvelle quête (ni les monstres à tuer).",
+        },
+    },
+    {
         version = "1.28.0", date = "18/11/2026",
         changed = {
             "LFG : l'infobulle d'un groupe montre ses buffs en icônes de sorts : une rangée pour le groupe, une rangée « + » pour ce que tu ajouterais, une rangée éteinte pour ce qui manque, et « Camp : N de tes objets annulés ». Maj enfoncée : la liste avec les noms (s'actualise sans bouger la souris).",

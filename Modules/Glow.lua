@@ -204,7 +204,10 @@ local CURSOR_WORDS = { -- dans l'ordre : le premier mot trouvé l'emporte
     { "interact", "other" }, { "inspect", "other" },
 }
 local probe, cursorIDs
+local turnInIDs = {} -- curseur « rendre une quête » (point d'interrogation)
+local lastTurnIn = false
 local function cursorCategory(unit)
+    lastTurnIn = false
     if not SetUnitCursorTexture then return nil end
     if not probe then
         probe = UIParent:CreateTexture(nil, "BACKGROUND")
@@ -214,7 +217,10 @@ local function cursorCategory(unit)
             for name, cat in pairs(CURSOR_FILES) do
                 for _, prefix in ipairs({ "", "Unable" }) do
                     local ok, id = pcall(GetFileIDFromPath, "Interface\\Cursor\\" .. prefix .. name)
-                    if ok and id then cursorIDs[id] = cat end
+                    if ok and id then
+                        cursorIDs[id] = cat
+                        if name == "QuestTurnIn" then turnInIDs[id] = true end
+                    end
                 end
             end
         end
@@ -224,6 +230,7 @@ local function cursorCategory(unit)
     local tex = plain(probe:GetTexture())
     local atlas = probe.GetAtlas and plain(probe:GetAtlas()) or nil
     local shown = tostring(atlas or tex)
+    lastTurnIn = (type(tex) == "number" and turnInIDs[tex]) or string.find(string.lower(shown), "turnin", 1, true) ~= nil
     if type(tex) == "number" and cursorIDs[tex] ~= nil then return cursorIDs[tex], shown end
     for _, src in ipairs({ tex, atlas }) do
         if type(src) == "string" then
@@ -301,6 +308,20 @@ function M:Classify(unit)
                 if okL and plain(has) == true then return "loot", name end
             end
             if skinnable(unit) then return "skin", name end
+            return nil, name
+        end
+        -- « seulement ton journal » : PNJ où rendre une quête du journal, ou lié à une quête en cours ;
+        -- pas ceux qui proposent une nouvelle quête
+        if M:Config().giverLog then
+            if cur == "quest" and lastTurnIn then return "giver", name end
+            -- une créature hostile liée à une quête est une cible à tuer, pas un donneur
+            local okA, hostile = pcall(UnitCanAttack, "player", unit)
+            if okA and plain(hostile) == true then return nil, name end
+            if C_QuestLog and C_QuestLog.UnitIsRelatedToActiveQuest then
+                local okR, related = pcall(C_QuestLog.UnitIsRelatedToActiveQuest, unit)
+                if okR and plain(related) == true then return "giver", name end
+            end
+            if tooltipQuest(unit) then return "giver", name end
             return nil, name
         end
         if cur == "quest" then return "giver", name end
