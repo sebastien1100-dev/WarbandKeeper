@@ -165,7 +165,13 @@ function UI:ShowTalentPlan(anchorTo)
     if not panel then panel = build() end
     panel:ClearAllPoints()
     panel.anchored = anchorTo ~= nil
-    if anchorTo then panel:SetPoint("TOPLEFT", anchorTo, "TOPRIGHT", 4, 0) else panel:SetPoint("CENTER", 300, 0) end
+    -- au-dessus de la fenêtre de l'addon (même strate « HIGH ») : collé à sa droite, sinon au centre
+    panel:SetFrameStrata("DIALOG")
+    panel:Raise()
+    local main = UI.frame
+    if anchorTo then panel:SetPoint("TOPLEFT", anchorTo, "TOPRIGHT", 4, 0)
+    elseif main and main:IsShown() then panel:SetPoint("TOPLEFT", main, "TOPRIGHT", 6, 0)
+    else panel:SetPoint("CENTER", 0, 0) end
     panel.userHidden = nil
     panel:Paint()
     panel:Show()

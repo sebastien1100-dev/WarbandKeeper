@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.5", date = "18/11/2026",
+        fixed = {
+            "Plans de montée : « Ouvrir le panneau » (et /wk plan) ouvrait le panneau derrière la fenêtre de l'addon, invisible ; il s'ouvre maintenant au premier plan, collé à droite de la fenêtre.",
+        },
+    },
+    {
         version = "1.19.4", date = "18/11/2026",
         changed = {
             "Plans de montée : le bouton « Depuis le build ouvert » est retiré.",

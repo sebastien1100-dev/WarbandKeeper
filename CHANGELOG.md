@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.5 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Plans de montée : « Ouvrir le panneau » (et /wk plan) ouvrait le panneau derrière la fenêtre de l'addon, invisible ; il s'ouvre maintenant au premier plan, collé à droite de la fenêtre.
+
 ## v1.19.4 — 18/11/2026
 
 _Un /reload suffit._
