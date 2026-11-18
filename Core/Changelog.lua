@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.5", date = "18/11/2026",
+        fixed = {
+            "Carte : un même quai pouvait annoncer deux destinations (par exemple Cabestan « vers Vallée de Strangleronce » et « vers Les Tarides »). Le second était un faux trajet en bateau appris (un autre déplacement sans bouger pris pour un bateau). Un trajet n'est plus appris que s'il change de continent, ou de région sur au moins 500 m, et s'il n'est pas déjà connu ; les faux trajets déjà appris sont retirés.",
+        },
+    },
+    {
         version = "1.24.4", date = "18/11/2026",
         changed = {
             "Carte du monde : les étiquettes « vers … » des bateaux et zeppelins ne sont plus posées sur la carte ; la destination s'affiche au survol du quai (infobulle).",

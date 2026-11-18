@@ -585,9 +585,23 @@ end
 -- trajet suivi est gardé pour le dessin. WK.DB.global.nav.boats = { { kind, a, b, path } },
 -- a et b = { map, x, y (0-100), name, c (continent), wx, wy }.
 ---------------------------------------------------------------------------
+-- Un vrai trajet en bateau : autre continent, ou sur le même continent au moins 500 m entre les quais
+-- et une autre région à l'arrivée (un autre déplacement sans bouger, pris pour un bateau, restait dans la même zone)
+local MIN_BOAT = 500
+local function validBoat(a, b)
+    if not (a and b) then return false end
+    if a.c ~= b.c then return true end
+    if a.name and b.name and a.name == b.name then return false end
+    return a.wx and b.wx and dist(a.wx, a.wy, b.wx, b.wy) >= MIN_BOAT or false
+end
 function M:Boats()
     local d = data()
     d.boats = d.boats or {}
+    -- une fois : on retire les trajets appris qui n'en étaient pas
+    if not d.boatsChecked then
+        d.boatsChecked = true
+        for i = #d.boats, 1, -1 do if not validBoat(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
+    end
     return d.boats
 end
 local ride, lastS
@@ -606,6 +620,18 @@ local function endRide(endP)
     local len = lineLen(r.pts)
     if not r.crossed and len < 150 then return end
     local a, b = dock(r.start), dock(endP)
+    if not validBoat(a, b) then return end
+    -- trajet déjà connu dans les données (bateaux et zeppelins des capitales) : rien à apprendre
+    local L, P = WK.modules.MapLayers, WK.modules.Guide
+    for _, t in ipairs(L and L.TRANSPORTS or {}) do
+        local ca, ax, ay = P.ToWorld(t.a[1], t.a[2] / 100, t.a[3] / 100)
+        local cb, bx, by = P.ToWorld(t.b[1], t.b[2] / 100, t.b[3] / 100)
+        if ax and bx then
+            local same = ca == a.c and cb == b.c and dist(ax, ay, a.wx, a.wy) < 300 and dist(bx, by, b.wx, b.wy) < 300
+            local rev = cb == a.c and ca == b.c and dist(bx, by, a.wx, a.wy) < 300 and dist(ax, ay, b.wx, b.wy) < 300
+            if same or rev then return end
+        end
+    end
     local boats = M:Boats()
     local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
     for i = 1, #path.pts do path.pts[i] = floor(path.pts[i] + 0.5) end

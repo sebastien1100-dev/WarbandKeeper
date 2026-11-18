@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.24.5 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte : un même quai pouvait annoncer deux destinations (par exemple Cabestan « vers Vallée de Strangleronce » et « vers Les Tarides »). Le second était un faux trajet en bateau appris (un autre déplacement sans bouger pris pour un bateau). Un trajet n'est plus appris que s'il change de continent, ou de région sur au moins 500 m, et s'il n'est pas déjà connu ; les faux trajets déjà appris sont retirés.
+
 ## v1.24.4 — 18/11/2026
 
 _Un /reload suffit._
