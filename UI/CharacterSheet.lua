@@ -1045,10 +1045,18 @@ local function refreshGear(f, c)
 end
 
 -- Stats ; rend la hauteur de la carte
+-- Couleur des données d'une fiche : l'accent pour le perso connecté ; pour un autre perso, la couleur de sa
+-- classe (l'accent suit la classe du perso connecté dans certains thèmes : un chasseur vu depuis un
+-- paladin ne doit pas s'afficher en rose)
+local function viewAccent(f, c)
+    if not c or f.key == WK:CharKey() then return UI:Accent() end
+    return UI:ClassColor(c.class)
+end
+
 local function refreshStats(f, c)
     local s = c.stats
     local w = WEIGHTS[c.class or ""] or {}
-    local r1, g1, b1 = UI:Accent()
+    local r1, g1, b1 = viewAccent(f, c)
     local cls = c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class]
     f.hUse:SetText(cls and T("en couleur : utile") or "")
     local maxV = 1
@@ -1105,7 +1113,7 @@ end
 
 -- Métiers dans leur carte ; rend la hauteur
 local function refreshProfs(f, c, card, w)
-    local r1, g1, b1 = UI:Accent()
+    local r1, g1, b1 = viewAccent(f, c)
     local profs = {}
     for name, p in pairs(c.professions or {}) do table.insert(profs, { name, p }) end
     table.sort(profs, function(a, b) return (a[2].rank or 0) > (b[2].rank or 0) end)
@@ -1195,7 +1203,7 @@ local function refreshTalents(f, c)
     local split = {}
     for _, t in ipairs(trees) do table.insert(split, t.points or 0) end
     local any = #trees > 0 and trees[1].list ~= nil
-    local r, g, b = UI:Accent()
+    local r, g, b = viewAccent(f, c)
     f.tsum:SetText(#split > 0 and string.format(T("Répartition |cff%02x%02x%02x%s|r  ·  %s"), r * 255, g * 255, b * 255, table.concat(split, " / "),
         (c.talentFree and c.talentFree > 0) and string.format(T("%d point(s) à dépenser"), c.talentFree) or T("aucun point à dépenser")) or "")
     f.tempty:SetShown(not any)
@@ -1370,8 +1378,8 @@ local SPEC_ICONS = {
 }
 -- Dessine des arbres de talents (set de cartes) à la hauteur y ; cur = talents actuels pour marquer les écarts
 paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
-    local r, g, b = UI:Accent()
     local c = WK.DB.global.characters[f.key]
+    local r, g, b = viewAccent(f, c)
     local icons = c and #trees == 3 and SPEC_ICONS[c.class or ""]
     local parent = set == f.ptrees and f.bcard or nil
     for i, tr in ipairs(set) do
@@ -1454,6 +1462,7 @@ local function refreshBis(f, c)
         return n, worn, bags
     end
     local r1, g1, b1 = UI:Accent()
+    local d1, d2, d3 = viewAccent(f, c)
     -- onglets des listes
     local lists, active = B:Lists(f.key), B:ActiveIndex(f.key)
     f.bisTabs:Reset()
@@ -1485,7 +1494,7 @@ local function refreshBis(f, c)
     local n, worn, bags = counts(list)
     f.bisTitle:Hide()
     f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("TOPLEFT", 2, -44); f.bisProg:SetWidth(160)
-    f.bisProg.color = { r1, g1, b1 }; f.bisProg:SetValue(n > 0 and worn / n or 0)
+    f.bisProg.color = { d1, d2, d3 }; f.bisProg:SetValue(n > 0 and worn / n or 0)
     f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisProg, "RIGHT", 10, 0)
     f.bisInfo:SetText(string.format(T("%d / %d obtenus · %d dans les sacs ou la banque"), worn, n, bags))
     -- mannequin centré : 8 emplacements de chaque côté, aperçu au centre, armes dessous
@@ -1597,7 +1606,7 @@ local function refresh(f)
     f.mine:ClearAllPoints(); f.mine:SetPoint("LEFT", f.title, "RIGHT", 14, 0)
     local avg = averageIlvl(c.gear)
     f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
-    f.score:SetTextColor(UI:Accent())
+    f.score:SetTextColor(viewAccent(f, c))
     for _, b in pairs(f.tabs) do b:Paint() end
     f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
     if f.tab ~= "bis" then f.picker:Hide() end

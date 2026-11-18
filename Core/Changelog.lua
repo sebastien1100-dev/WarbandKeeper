@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.2", date = "18/11/2026",
+        fixed = {
+            "Fiche d'un autre perso : les barres (Stats, Métiers), le niveau moyen, les talents et la progression BiS prenaient la couleur d'accent du perso connecté (avec le thème Graphite, la couleur de sa classe : un chasseur vu depuis le paladin s'affichait en rose). Ils prennent maintenant la couleur de classe du perso affiché ; les boutons gardent l'accent.",
+        },
+    },
+    {
         version = "1.20.1", date = "18/11/2026",
         changed = {
             "BiS, fenêtre de choix : filtres rangés par ligne avec leur nom (Source, Qualité, Niveau, Armure), chaque ligne en bloc de boutons collés, l'option active pleine ; recherche plus large ; une croix ronde ferme la fenêtre.",

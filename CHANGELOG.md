@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.20.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche d'un autre perso : les barres (Stats, Métiers), le niveau moyen, les talents et la progression BiS prenaient la couleur d'accent du perso connecté (avec le thème Graphite, la couleur de sa classe : un chasseur vu depuis le paladin s'affichait en rose). Ils prennent maintenant la couleur de classe du perso affiché ; les boutons gardent l'accent.
+
 ## v1.20.1 — 18/11/2026
 
 _Un /reload suffit._
