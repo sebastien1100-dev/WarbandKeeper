@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.22.4", date = "18/11/2026",
+        added = {
+            "Objets verrouillés : deux nouvelles touches au choix, Ctrl + Alt + clic et Ctrl + Maj + clic, pour ne pas gêner les autres addons qui utilisent Alt + clic (Inventaire > Objets verrouillés > Touche pour verrouiller). Chaque combinaison est exacte : Alt + clic ne réagit plus si Ctrl ou Maj est aussi enfoncé.",
+        },
+    },
+    {
         version = "1.22.3", date = "18/11/2026",
         added = {
             "Traduction anglaise complète : plus de 1 100 textes ajoutés (réglages, pages, cartes, infobulles, alertes). Seules les sorties de diagnostic des commandes /wk restent en français.",

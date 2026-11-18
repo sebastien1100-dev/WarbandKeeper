@@ -10,11 +10,16 @@ local T = function(s) return WK.T(s) end
 local L = WK.modules.ItemLock
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
+-- Combinaison exacte (les autres touches relâchées) : alt, ctrl, shiftalt, ctrlalt, ctrlshift
+local COMBOS = {
+    alt = { alt = true }, ctrl = { ctrl = true }, shiftalt = { shift = true, alt = true },
+    ctrlalt = { ctrl = true, alt = true }, ctrlshift = { ctrl = true, shift = true },
+}
 local function modDown()
-    local k = L:Config().key
-    if k == "ctrl" then return IsControlKeyDown() and not IsAltKeyDown() end
-    if k == "shiftalt" then return IsAltKeyDown() and IsShiftKeyDown() end
-    return IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown()
+    local c = COMBOS[L:Config().key] or COMBOS.alt
+    return (IsAltKeyDown() and true or false) == (c.alt or false)
+        and (IsControlKeyDown() and true or false) == (c.ctrl or false)
+        and (IsShiftKeyDown() and true or false) == (c.shift or false)
 end
 -- Sac et case d'un bouton : plusieurs façons selon l'interface des sacs (jeu moderne, ancien, autres addons)
 local function bagSlot(btn)
@@ -102,8 +107,10 @@ end
 -- Libellé de la touche choisie pour (dé)verrouiller (réglage key : alt, ctrl ou shiftalt)
 local function keyLabel()
     local k = L:Config().key
-    return k == "ctrl" and T("Ctrl + clic") or k == "shiftalt" and T("Maj + Alt + clic") or T("Alt + clic")
+    return k == "ctrl" and T("Ctrl + clic") or k == "shiftalt" and T("Maj + Alt + clic")
+        or k == "ctrlalt" and T("Ctrl + Alt + clic") or k == "ctrlshift" and T("Ctrl + Maj + clic") or T("Alt + clic")
 end
+UI.ItemLockKeyLabel = keyLabel
 local function blockMsg(id)
     local msg = string.format(T("Verrouillé : %s n'a pas été vendu (%s pour le déverrouiller)."),
         WK.GetItemInfo(id) or ("#" .. id), keyLabel())

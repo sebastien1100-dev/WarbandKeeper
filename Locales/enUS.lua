@@ -751,6 +751,8 @@ WK.Locales.enUS.text = {
     ["%d rares"] = "%d rares",
     ["trié par niveau"] = "sorted by level",
     ["il y a %s"] = "%s ago",
+    ["Ctrl + Alt + clic"] = "Ctrl + Alt + click", ["Ctrl + Maj + clic"] = "Ctrl + Shift + click",
+    ["Aucun objet verrouillé. %s sur un objet dans tes sacs pour le verrouiller."] = "No locked items. %s an item in your bags to lock it.",
     ["tué il y a %s"] = "killed %s ago",
     ["pas tué"] = "not killed",
     ["tué par"] = "killed by",
