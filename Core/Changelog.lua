@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.4", date = "18/11/2026",
+        changed = {
+            "Plans de montée : le bouton « Depuis le build ouvert » est retiré.",
+        },
+    },
+    {
         version = "1.19.3", date = "18/11/2026",
         changed = {
             "Talents : les talents de rangées accessibles (5 points par rangée au-dessus, dans le même arbre) sont en couleur avec un liseré à ta couleur ; ceux des rangées pas encore ouvertes restent grisés. Aussi dans l'aperçu des builds et en mode plan.",
