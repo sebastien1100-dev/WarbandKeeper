@@ -830,9 +830,9 @@ local function build(parent)
     pk:Hide()
     f.picker = pk
     pk.title = UI:Text(pk, 14); pk.title:SetPoint("TOPLEFT", 16, -18)
-    pk.close = UI:Button(pk, "Fermer", nil, 26, "secondary"); pk.close:SetPoint("TOPRIGHT", -12, -12)
+    pk.close = UI:IconButton(pk, "close", 26, T("Fermer")); pk.close:SetPoint("TOPRIGHT", -12, -12)
     pk.close:SetScript("OnClick", function() pk:Hide() end)
-    pk.search = UI:Input(pk, 400, 28, T("Rechercher un objet…"), "search")
+    pk.search = UI:Input(pk, 530, 28, T("Rechercher un objet…"), "search")
     pk.search:SetPoint("TOPLEFT", 110, -12)
     pk.search.edit.acceptLinks = true
     pk.search.onChange = function(text, user)
@@ -904,41 +904,63 @@ local function build(parent)
     end
     -- rangées de filtres : source, qualité, niveau, type d'armure (emplacements d'armure seulement)
     local ARMOR_SLOTS = { [1] = true, [3] = true, [5] = true, [9] = true, [10] = true, [6] = true, [7] = true, [8] = true }
+    -- filtres rangés par ligne : nom à gauche, choix collés dans un même bloc
+    pk.rowBgs, pk.rowLabels = {}, {}
     function pk:Chips()
         self.chips:Reset()
         local fl = self.f
-        local x, y = 16, -50
-        local function chip(label, sel, fn)
-            local b = self.chips:Get()
-            b:SetLabel(T(label)); b:SetWidth(b.label:GetStringWidth() + 22)
-            b:SetStyle(sel and "primary" or "secondary")
-            if x + b:GetWidth() > 690 then x = 16; y = y - 26 end
-            b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, y)
-            b:SetScript("OnClick", function() fn(); self:Chips(); self:Fill() end)
-            x = x + b:GetWidth() + 5
-        end
-        for _, s in ipairs({ { "all", "Toutes sources" }, { "dungeon", "Donjons" }, { "raid", "Raids" }, { "craft", "Artisanat" }, { "quest", "Quêtes" }, { "other", "Autres" } }) do
-            chip(s[2], fl.source == s[1], function() fl.source = s[1] end)
-        end
-        x = x + 10
-        for _, q in ipairs({ { 2, "Vert et +" }, { 3, "Bleu et +" }, { 4, "Violet et +" } }) do
-            chip(q[2], fl.quality == q[1], function() fl.quality = q[1] end)
-        end
-        x = x + 10
-        for _, l in ipairs({ { nil, "Tous niveaux" }, { { 50, 60 }, "Niv. 50-60" }, { { 30, 49 }, "Niv. 30-49" }, { { 0, 29 }, "Niv. 1-29" } }) do
-            chip(l[2], (fl.level and l[1] and fl.level[1] == l[1][1]) or (not fl.level and not l[1]), function() fl.level = l[1] end)
-        end
-        if ARMOR_SLOTS[self.slot] then
-            x = x + 10
-            local c = WK.DB.global.characters[f.key]
-            chip("Toutes armures", not fl.armor, function() fl.armor = nil end)
-            for _, sub in ipairs(B:ArmorTypes(c)) do
-                chip(B.ARMOR[sub], fl.armor == sub, function() fl.armor = sub end)
+        local y = -52
+        local n = 0
+        local function row(label, opts)
+            n = n + 1
+            local lab = self.rowLabels[n]
+            if not lab then lab = UI:Text(self, 10, C.dim); self.rowLabels[n] = lab end
+            lab:SetText(UI:Upper(T(label))); lab:ClearAllPoints(); lab:SetPoint("TOPLEFT", 16, y - 8); lab:Show()
+            local bg = self.rowBgs[n]
+            if not bg then
+                bg = CreateFrame("Frame", nil, self)
+                UI:Panel(bg, 9, C.surface, C.border)
+                self.rowBgs[n] = bg
             end
+            local x = 2
+            for _, o in ipairs(opts) do
+                local btn = self.chips:Get()
+                btn:SetParent(bg); btn:SetFrameLevel(bg:GetFrameLevel() + 2)
+                btn:SetLabel(T(o[1])); btn:SetWidth(btn.label:GetStringWidth() + 20); btn:SetHeight(20)
+                btn:SetStyle(o[2] and "primary" or "ghost")
+                btn:ClearAllPoints(); btn:SetPoint("TOPLEFT", x, -2)
+                local fn = o[3]
+                btn:SetScript("OnClick", function() fn(); self:Chips(); self:Fill() end)
+                x = x + btn:GetWidth() + 2
+            end
+            bg:ClearAllPoints(); bg:SetPoint("TOPLEFT", 96, y); bg:SetSize(x + 1, 24); bg:Show()
+            y = y - 30
         end
+        local src = {}
+        for _, s in ipairs({ { "all", "Toutes" }, { "dungeon", "Donjons" }, { "raid", "Raids" }, { "craft", "Artisanat" }, { "quest", "Quêtes" }, { "other", "Autres" } }) do
+            src[#src + 1] = { s[2], fl.source == s[1], function() fl.source = s[1] end }
+        end
+        row("Source", src)
+        local qual = {}
+        for _, q in ipairs({ { 2, "Vert et +" }, { 3, "Bleu et +" }, { 4, "Violet et +" } }) do
+            qual[#qual + 1] = { q[2], fl.quality == q[1], function() fl.quality = q[1] end }
+        end
+        row("Qualité", qual)
+        local lv = {}
+        for _, l in ipairs({ { nil, "Tous" }, { { 50, 60 }, "50-60" }, { { 30, 49 }, "30-49" }, { { 0, 29 }, "1-29" } }) do
+            lv[#lv + 1] = { l[2], (fl.level and l[1] and fl.level[1] == l[1][1]) or (not fl.level and not l[1]), function() fl.level = l[1] end }
+        end
+        row("Niveau", lv)
+        if ARMOR_SLOTS[self.slot] then
+            local c = WK.DB.global.characters[f.key]
+            local ar = { { "Toutes", not fl.armor, function() fl.armor = nil end } }
+            for _, sub in ipairs(B:ArmorTypes(c)) do ar[#ar + 1] = { B.ARMOR[sub], fl.armor == sub, function() fl.armor = sub end } end
+            row("Armure", ar)
+        end
+        for i = n + 1, #self.rowBgs do self.rowBgs[i]:Hide(); self.rowLabels[i]:Hide() end
         -- la liste commence sous la dernière rangée de filtres
-        for i, t in ipairs(self.heads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", 12 + PX[i], y - 32) end
-        self.list:ClearAllPoints(); self.list:SetPoint("TOPLEFT", 12, y - 48); self.list:SetPoint("BOTTOMRIGHT", -12, 34)
+        for i, t in ipairs(self.heads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", 12 + PX[i], y - 6) end
+        self.list:ClearAllPoints(); self.list:SetPoint("TOPLEFT", 12, y - 22); self.list:SetPoint("BOTTOMRIGHT", -12, 34)
     end
     function f:OpenPicker(slot, label)
         pk.slot = slot

@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.20.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- BiS, fenêtre de choix : filtres rangés par ligne avec leur nom (Source, Qualité, Niveau, Armure), chaque ligne en bloc de boutons collés, l'option active pleine ; recherche plus large ; une croix ronde ferme la fenêtre.
+
 ## v1.20.0 — 18/11/2026
 
 _Un /reload suffit._
