@@ -28,6 +28,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.34.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes : nos onglets passaient sous des éléments de la fenêtre du jeu (texte « 10% », titre d'onglet par-dessus) ; ils sont maintenant au-dessus de tout.
+- Hôtel des ventes : l'onglet du jeu restait affiché comme choisi quand un des nôtres était ouvert.
+- Onglet Scan : plus de doublons (les petits onglets « Listes d'achat » et « Ventes » du panneau et sa croix sont retirés, le bouton « Scanner » du haut aussi : Achat et Annulation sont des onglets à part).
+- Les messages des listes d'achat renvoient vers l'onglet « Achat » au lieu de l'ancien panneau.
+
 ## v1.34.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

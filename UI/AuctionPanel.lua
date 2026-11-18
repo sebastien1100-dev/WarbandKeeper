@@ -481,6 +481,9 @@ function UI:AHPanelEmbed(parent)
     panel:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
     panel:SetFrameLevel(parent:GetFrameLevel() + 2)
     panel.embedded = true
+    -- dans l'onglet Scan : seulement le scan et les alertes (Achat et Annulation sont des onglets à part)
+    panel.tab = "scan"
+    panel.seg:Hide(); panel.close:Hide()
     panel:Show()
     panel:Layout()
     panel:Refresh()
@@ -494,6 +497,7 @@ local function show()
     panel = panel or build()
     panel:SetParent(UIParent)
     panel.embedded = nil
+    panel.seg:Show(); panel.close:Show()
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", h, "TOPRIGHT", 6, -12)
     panel:SetFrameStrata(h:GetFrameStrata() or "MEDIUM")

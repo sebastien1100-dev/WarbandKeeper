@@ -199,7 +199,8 @@ local function build(host)
     local f = CreateFrame("Frame", "WarbandKeeperAHTabs", host)
     f:SetPoint("TOPLEFT", host, "TOPLEFT", 6, -24)
     f:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -6, 4)
-    f:SetFrameLevel(host:GetFrameLevel() + 40)
+    -- au-dessus de tout le contenu de la fenêtre du jeu (certains de ses cadres sont très hauts)
+    f:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 300))
     f:EnableMouse(true)
     UI:Panel(f, 8, { C.bg[1], C.bg[2], C.bg[3], 0.99 }, C.border)
     f:Hide()
@@ -224,7 +225,7 @@ local function build(host)
         else
             b:SetPoint("LEFT", last, "RIGHT", 4, 0)
         end
-        b:SetFrameLevel(host:GetFrameLevel() + 45)
+        b:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 310))
         b:SetScript("OnClick", function() f:Open(def[1]) end)
         f.tabs[def[1]] = b
         last = b
@@ -235,6 +236,12 @@ local function build(host)
         self.tab = key
         for k, b in pairs(self.tabs) do if b.SetStyle then b:SetStyle(k == key and "primary" or "secondary") end end
         for k, v in pairs(self.views) do v:SetShown(k == key) end
+        -- les onglets du jeu ne paraissent plus choisis
+        if PanelTemplates_DeselectTab then
+            for _, tb in ipairs(host.Tabs or {}) do pcall(PanelTemplates_DeselectTab, tb) end
+        end
+        -- onglet Scan : le panneau a déjà son bouton et son heure
+        self.scanBtn:SetShown(key ~= "scan"); self.scanInfo:SetShown(key ~= "scan")
         self:Show()
         if key == "cancel" then A:Query() end
         if key == "scan" and UI.AHPanelEmbed then UI:AHPanelEmbed(self.views.scan) end
@@ -242,6 +249,8 @@ local function build(host)
     end
     function f:Close()
         self:Hide()
+        -- l'onglet du jeu en cours reprend son air choisi
+        if PanelTemplates_SetTab and host.selectedTab then pcall(PanelTemplates_SetTab, host, host.selectedTab) end
         for _, b in pairs(self.tabs) do if b.SetStyle then b:SetStyle("secondary") end end
     end
 

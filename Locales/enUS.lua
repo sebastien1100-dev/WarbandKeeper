@@ -1682,7 +1682,7 @@ WK.Locales.enUS.text = {
     -- Modules/Recipes.lua
     ["jusqu'à %d"] = "up to %d",
     ["Composants manquants"] = "Missing reagents",
-    ["Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."] = "Shopping list \"%s\" ready (%d item(s)): at the Auction House, \"Lists\" tab of the Warband Keeper panel.",
+    ["Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."] = "Shopping list \"%s\" ready (%d item(s)): at the Auction House, Warband Keeper \"Buy\" tab (bottom of the window).",
     -- Modules/TalentPlan.lua
     ["Ce talent est déjà au maximum dans le plan."] = "This talent is already maxed in the plan.",
     ["Rangée pas encore accessible : il faut %d points dans cet arbre (%d pour l'instant)."] = "Row not available yet: it needs %d points in this tree (%d so far).",
@@ -2111,8 +2111,8 @@ WK.Locales.enUS.text = {
     ["page"] = "page",
     ["%d / %d actifs"] = "%d / %d active",
     -- UI/Pages/Professions.lua
-    ["Crée une liste d'achat avec les composants manquants ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."] = "Creates a shopping list with the missing reagents; at the Auction House, \"Lists\" tab of the Warband Keeper panel.",
-    ["Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."] = "Creates a shopping list with the reagents missing on the account; at the Auction House, \"Lists\" tab of the Warband Keeper panel.",
+    ["Crée une liste d'achat avec les composants manquants ; à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."] = "Creates a shopping list with the missing reagents; at the Auction House, Warband Keeper \"Buy\" tab (bottom of the window).",
+    ["Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."] = "Creates a shopping list with the reagents missing on the account; at the Auction House, Warband Keeper \"Buy\" tab (bottom of the window).",
     ["Matériaux jusqu'à %d"] = "Materials up to %d",
     -- UI/Pages/QoL.lua
     ["Comme les autres"] = "Same as the others",

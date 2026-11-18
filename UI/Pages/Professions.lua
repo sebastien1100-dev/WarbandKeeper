@@ -449,7 +449,7 @@ local function Shopping(page, parent)
     local export = UI:Button(need, "Créer la liste d'achat", nil, 30, "primary", "plus")
     export:SetPoint("BOTTOMRIGHT", -12, 12)
     export:SetScript("OnClick", function() WK.modules.Recipes:ExportToList() end)
-    export.tooltip = "Crée une liste d'achat avec les composants manquants ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."
+    export.tooltip = "Crée une liste d'achat avec les composants manquants ; à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."
 
     local nRows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, ns.child)
@@ -1017,7 +1017,7 @@ local function Detail(page, parent)
     local matsTotal = UI:Text(matsCard, 13)
     matsTotal:SetPoint("BOTTOMRIGHT", -16, 84)
     matsTotal:SetJustifyH("RIGHT")
-    ahBtn.tooltip = "Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Listes » du panneau Warband Keeper."
+    ahBtn.tooltip = "Crée une liste d'achat avec les composants qui manquent sur le compte ; à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."
     ahBtn:SetScript("OnClick", function() WK.modules.Recipes:GuideToList(tab.prof, tab.rank, tab.known, tab.effTarget) end)
     local mailBtn = UI:Button(matsCard, "Envoyer à ce perso", nil, 28, "secondary", "mail")
     mailBtn:SetPoint("BOTTOMLEFT", 12, 12)

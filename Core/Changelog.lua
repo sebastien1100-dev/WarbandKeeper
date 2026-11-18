@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.34.1", date = "18/11/2026",
+        fixed = {
+            "Hôtel des ventes : nos onglets passaient sous des éléments de la fenêtre du jeu (texte « 10% », titre d'onglet par-dessus) ; ils sont maintenant au-dessus de tout.",
+            "Hôtel des ventes : l'onglet du jeu restait affiché comme choisi quand un des nôtres était ouvert.",
+            "Onglet Scan : plus de doublons (les petits onglets « Listes d'achat » et « Ventes » du panneau et sa croix sont retirés, le bouton « Scanner » du haut aussi : Achat et Annulation sont des onglets à part).",
+            "Les messages des listes d'achat renvoient vers l'onglet « Achat » au lieu de l'ancien panneau.",
+        },
+    },
+    {
         version = "1.34.0", date = "18/11/2026", restart = true,
         added = {
             "Hôtel des ventes façon Auctionator : quatre onglets en bas de la fenêtre de l'HV, à côté de ceux du jeu (Achat, Vente, Annulation, Scan) ; un onglet du jeu les referme.",
