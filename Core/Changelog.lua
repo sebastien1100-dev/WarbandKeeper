@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.4", date = "18/11/2026",
+        fixed = {
+            "Carte du monde : erreur Lua en boucle sous l'épingle du guidage (étiquette sur trois lignes) depuis la 1.31.3.",
+        },
+    },
+    {
         version = "1.31.3", date = "18/11/2026",
         changed = {
             "Carte du monde, guidage : le trajet à pied est un trait fin et plein à la couleur d'accent, cerné de sombre, au lieu de gros points.",

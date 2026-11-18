@@ -144,7 +144,7 @@ function UI:RefreshGuidePinLabel()
     local name, sub = G:PlaceParts(t)
     if not name or name == "?" then name, sub = G:PlaceName(t), nil end
     local lines = { name }
-    if sub and sub ~= "" then table.insert(lines, UI:Hex(C.muted) .. sub .. "|r") end
+    if sub and sub ~= "" then table.insert(lines, UI:Hex(UI.colors.muted) .. sub .. "|r") end
     if d then table.insert(lines, "|cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") end
     targetPin.label:SetText(table.concat(lines, "\n"))
     targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 18, #lines * 13 + 8)
