@@ -1709,27 +1709,6 @@ UI:RegisterPage({
             xplace:SetScript("OnClick", function() UI:EnterEditMode() end)
             UI:SettingRow(xb, -316, "Position", "En mode édition, avec les autres éléments à l'écran.", xplace, 150)
 
-            -- repos
-            local xr = card("Repos", 40 + 3 * 20 + 30, "jusqu'à 150 % d'un niveau")
-            local xrText = dynText(xr, 12, C.text, function()
-                local x = X:Me()
-                if x.maxed then return UI:Hex(C.muted) .. T("Niveau maximum : plus de repos.") .. "|r" end
-                local frac = x.rested / x.max
-                local lines = { string.format(T("%s XP de repos  ·  %d %% d'un niveau"), fmt(x.rested), math.floor(frac * 100)) }
-                if x.resting then
-                    table.insert(lines, UI:Hex(C.positive) .. T("En auberge ou en ville : le repos monte (5 % d'un niveau toutes les 8 h).") .. "|r")
-                else
-                    table.insert(lines, UI:Hex(C.muted) .. T("Dehors : le repos monte 4 fois moins vite. Déconnecte-toi en auberge.") .. "|r")
-                end
-                if frac >= X.REST_MAX - 0.001 then
-                    table.insert(lines, UI:Hex(C.gold) .. T("Repos plein : il ne monte plus.") .. "|r")
-                else
-                    table.insert(lines, UI:Hex(C.muted) .. string.format(T("Plein dans %s %s"), xdur(X:RestFullIn(frac, true)), T("en auberge")) .. "|r")
-                end
-                return table.concat(lines, "\n")
-            end)
-            xrText:SetPoint("TOPLEFT", 16, -42); xrText:SetPoint("RIGHT", -16, 0)
-            xrText:SetJustifyH("LEFT")
             local function hbar(parent, color)
                 local tr = parent:CreateTexture(nil, "ARTWORK")
                 tr:SetTexture("Interface\\Buttons\\WHITE8X8")
@@ -1745,8 +1724,6 @@ UI:RegisterPage({
                 end
                 return tr, set
             end
-            local rtrack, rset = hbar(xr)
-            rtrack:SetPoint("BOTTOMLEFT", 16, 14); rtrack:SetPoint("BOTTOMRIGHT", -16, 14)
 
             -- rythme de la session
             local xs = card("Rythme de la session", 40 + 5 * 20 + 44, "depuis la connexion")
@@ -1818,7 +1795,7 @@ UI:RegisterPage({
             xa:ClearAllPoints()
             xa:SetPoint("TOPLEFT", topRel, "TOPLEFT", 0, topY)
             xa:SetPoint("TOPRIGHT", topRel, "TOPRIGHT", 0, topY)
-            for _, pair in ipairs({ { xb, xa }, { xr, xb }, { xs, xr } }) do
+            for _, pair in ipairs({ { xb, xa }, { xs, xb } }) do
                 pair[1]:ClearAllPoints()
                 pair[1]:SetPoint("TOPLEFT", pair[2], "BOTTOMLEFT", 0, -GAP)
                 pair[1]:SetPoint("TOPRIGHT", pair[2], "BOTTOMRIGHT", 0, -GAP)
@@ -1827,9 +1804,7 @@ UI:RegisterPage({
             xsec.extraY = function() return extra end
 
             table.insert(self.dyn, function()
-                -- repos
                 local me = X:Me()
-                rset((me.rested / me.max) / X.REST_MAX, C.info[1], C.info[2], C.info[3])
                 -- persos
                 local rows = {}
                 for _, e in ipairs(UI:SortedCharacters()) do

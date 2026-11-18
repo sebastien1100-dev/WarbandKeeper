@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.24.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Expérience : la carte « Repos » est retirée (le repos de chaque perso reste dans « Tous tes persos » et sur la barre d'expérience).
+
 ## v1.24.1 — 18/11/2026
 
 _Un /reload suffit._

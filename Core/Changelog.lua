@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.2", date = "18/11/2026",
+        changed = {
+            "QoL > Expérience : la carte « Repos » est retirée (le repos de chaque perso reste dans « Tous tes persos » et sur la barre d'expérience).",
+        },
+    },
+    {
         version = "1.24.1", date = "18/11/2026",
         changed = {
             "QoL > Expérience : le tableau « Tous tes persos » est en tête de l'onglet, avant la barre, le repos et le rythme.",
