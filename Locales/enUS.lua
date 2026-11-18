@@ -765,6 +765,8 @@ WK.Locales.enUS.text = {
     ["Robustesse"] = "Fortitude", ["Bénédictions et auras"] = "Blessings and auras", ["Totems"] = "Totems", ["Pierres de soins et d'âme"] = "Health and soul stones",
     ["Distance à laquelle le jeu désigne un objet (15 m au plus). Le mode pêche la monte à 60 m le temps de pêcher, puis la rend."] = "Distance at which the game targets an object (15 m max). Fishing mode raises it to 60 m while fishing, then restores it.",
     ["Clic molette"] = "Middle click", ["Alt + clic molette"] = "Alt + middle click", ["Ctrl + clic molette"] = "Ctrl + middle click",
+    ["Verrouillé à la main"] = "Locked by hand", ["Clic droit : déverrouiller"] = "Right-click: unlock",
+    ["Coupe la règle plus bas pour l'enlever."] = "Turn the rule off below to remove it.", ["À la main"] = "By hand",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

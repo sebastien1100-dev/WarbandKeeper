@@ -128,6 +128,35 @@ function M:Toggle(id, name)
     changed()
 end
 function M:Unlock(id) db().items[id] = nil; changed() end
+
+-- Verrous à la main d'objets qui ne sont plus nulle part sur le compte (recette apprise, objet vendu, utilisé,
+-- donné) : retirés. Jamais marchand ouvert ni objet dans le rachat (le rachat automatique en a besoin).
+local function inBuyback(id)
+    if not (GetNumBuybackItems and GetBuybackItemLink) then return false end
+    for i = 1, GetNumBuybackItems() or 0 do
+        if WK:ParseItemID(GetBuybackItemLink(i)) == id then return true end
+    end
+    return false
+end
+function M:Prune()
+    if M:MerchantOpen() or not next(db().items) then return 0 end
+    local present = {}
+    for _, e in ipairs(self:List()) do if #e.who > 0 then present[e.id] = true end end
+    local n = 0
+    for id in pairs(db().items) do
+        if not present[id] and not inBuyback(id) then db().items[id] = nil; n = n + 1 end
+    end
+    if n > 0 then changed() end
+    return n
+end
+local pruneAt
+local function prunesoon(delay)
+    pruneAt = GetTime() + (delay or 3)
+    C_Timer.After((delay or 3) + 0.1, function() if pruneAt and GetTime() >= pruneAt then pruneAt = nil; M:Prune() end end)
+end
+WK:On("PLAYER_ENTERING_WORLD", function() prunesoon(10) end)
+WK:On("BAG_UPDATE_DELAYED", function() prunesoon(3) end)
+WK:On("MERCHANT_CLOSED", function() prunesoon(5) end)
 function M:UnlockAll() wipe(db().items); changed() end
 function M:Never(id) db().never[id] = true end
 function M:IsNever(id) return db().never[id] == true end
@@ -135,26 +164,31 @@ function M:RuleChanged() changed() end
 
 -- Objets verrouillés présents sur le compte (sacs, banque, courrier, bataillon) ou posés à la main :
 -- { { id, reason, who = { noms } } }
+-- Verrous présents : { id, reason, cat ("manual", "quest", "recipe", "other"), prof (recette), count, who = { persos } }
 function M:List()
     local seen, out = {}, {}
-    local function add(id, who)
+    local function add(id, who, n)
         local e = seen[id]
         if not e then
             local why = self:Reason(id)
             if not why then return end
-            e = { id = id, reason = why, who = {}, whoSet = {} }
+            local classID, subID = instant(id)
+            e = { id = id, reason = why, who = {}, whoSet = {}, count = 0,
+                  cat = why == "manual" and "manual" or (classID == 12 and "quest") or (classID == 9 and "recipe") or "other",
+                  prof = classID == 9 and RECIPE_PROF[subID] or nil }
             seen[id] = e
             table.insert(out, e)
         end
+        if type(n) == "number" then e.count = e.count + n end
         if who and not e.whoSet[who] then e.whoSet[who] = true; table.insert(e.who, who) end
     end
     for id in pairs(db().items) do add(id) end
     for key, c in pairs(WK.DB.global.characters) do
         local nm = WK:CharName(c, key)
-        for _, where in ipairs({ "bags", "bank" }) do for id in pairs(c[where] or {}) do add(id, nm) end end
-        for id in pairs(c.mailbox and c.mailbox.items or {}) do add(id, nm) end
+        for _, where in ipairs({ "bags", "bank" }) do for id, n in pairs(c[where] or {}) do add(id, nm, n) end end
+        for id, n in pairs(c.mailbox and c.mailbox.items or {}) do add(id, nm, n) end
     end
-    for id in pairs(WK.DB.global.warbank and WK.DB.global.warbank.items or {}) do add(id, T("Bataillon")) end
+    for id, n in pairs(WK.DB.global.warbank and WK.DB.global.warbank.items or {}) do add(id, T("Bataillon"), n) end
     table.sort(out, function(a, b)
         if (a.reason == "manual") ~= (b.reason == "manual") then return a.reason == "manual" end
         return (WK.GetItemInfo(a.id) or "") < (WK.GetItemInfo(b.id) or "")

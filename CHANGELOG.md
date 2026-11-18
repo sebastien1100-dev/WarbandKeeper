@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.26.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Objets verrouillés : un verrou posé à la main s'enlève tout seul quand l'objet n'est plus nulle part sur le compte (recette apprise, objet vendu, utilisé pour un craft, donné). Jamais pendant qu'un marchand est ouvert ni tant que l'objet est dans le rachat, pour que le rachat automatique marche toujours.
+
+### Modifications
+- Objets verrouillés (Inventaire) : une icône par objet au lieu d'une ligne, rangées par raison (À la main, Objets de quête, Recettes avec le détail par métier, autres règles), avec la quantité sur le compte. Survol : raison et persos qui l'ont ; clic droit : déverrouiller.
+
 ## v1.25.3 — 18/11/2026
 
 _Un /reload suffit._

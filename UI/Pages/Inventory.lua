@@ -341,31 +341,60 @@ UI:RegisterPage({
         all:SetPoint("TOPRIGHT", -10, -9)
         all.tooltip = "Maj + clic : enlève tous les verrous posés à la main (les règles restent)."
         all:SetScript("OnClick", function() if IsShiftKeyDown() then IL:UnlockAll() else WK:Print(T("Maj + clic pour tout déverrouiller.")) end end)
-        self.lockRows = UI:Pool(function()
-            local r = CreateFrame("Button", nil, list)
-            r:SetHeight(32)
-            r.icon = UI:RoundIcon(r, 22)
-            r.icon:SetPoint("LEFT", 4, 0)
-            r.name = UI:Text(r, 12)
-            r.name:SetPoint("LEFT", 34, 0)
-            r.tag = UI:Badge(r, "")
-            r.tag:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
-            r.del = UI:IconButton(r, "close", 22, "Déverrouiller", "accent")
-            r.del:SetPoint("RIGHT", -2, 0)
-            r.who = UI:Text(r, 10, C.muted)
-            r.who:SetPoint("RIGHT", r.del, "LEFT", -10, 0)
-            r.who:SetJustifyH("RIGHT")
-            r.line = r:CreateTexture(nil, "BACKGROUND")
-            r.line:SetHeight(1)
-            r.line:SetPoint("BOTTOMLEFT"); r.line:SetPoint("BOTTOMRIGHT")
-            r:SetScript("OnEnter", function(s)
-                WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
-                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
+        -- une icône par objet (quantité, pastille : couleur d'accent = à la main, turquoise = règle) ;
+        -- survol = détail, clic droit = déverrouiller (verrou à la main)
+        local LS = 34
+        self.lockIcons = UI:Pool(function()
+            local b = CreateFrame("Button", nil, list)
+            b:SetSize(LS, LS)
+            b:RegisterForClicks("RightButtonUp")
+            b.edge = b:CreateTexture(nil, "BACKGROUND")
+            b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
+            b.edge:SetAllPoints()
+            b.icon = b:CreateTexture(nil, "ARTWORK")
+            b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+            b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            b.hl = b:CreateTexture(nil, "HIGHLIGHT")
+            b.hl:SetTexture("Interface\\Buttons\\WHITE8X8")
+            b.hl:SetAllPoints(b.icon)
+            b.hl:SetVertexColor(1, 1, 1, 0.15)
+            b.ring = b:CreateTexture(nil, "OVERLAY", nil, 5)
+            b.ring:SetTexture(UI.MEDIA .. "circle"); b.ring:SetSize(13, 13); b.ring:SetPoint("TOPRIGHT", 4, 4)
+            b.ring:SetVertexColor(0, 0, 0, 0.9)
+            b.dot = b:CreateTexture(nil, "OVERLAY", nil, 6)
+            b.dot:SetTexture(UI.MEDIA .. "circle"); b.dot:SetSize(10, 10); b.dot:SetPoint("CENTER", b.ring, "CENTER")
+            b.n = b:CreateFontString(nil, "OVERLAY")
+            b.n:SetFont(UI.FONT, 10, "OUTLINE")
+            b.n:SetPoint("BOTTOMRIGHT", -2, 2)
+            b:SetScript("OnEnter", function(sb)
+                local e = sb.e
+                if not e then return end
+                WK.UI:TooltipOwner(sb, "ANCHOR_RIGHT")
+                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(e.id) end
+                GameTooltip:AddLine(" ")
+                if e.reason == "manual" then
+                    local r1, g1, b1 = UI:Accent()
+                    GameTooltip:AddLine(T("Verrouillé à la main"), r1, g1, b1)
+                else
+                    GameTooltip:AddLine(string.format(T("Verrouillé par règle : %s"), e.reason), C.rule[1], C.rule[2], C.rule[3])
+                end
+                GameTooltip:AddLine(#e.who > 0 and (table.concat(e.who, ", ") .. (e.count > 0 and ("  ·  " .. e.count) or "")) or T("pas sur le compte"), 0.8, 0.8, 0.8, true)
+                if e.reason == "manual" then GameTooltip:AddLine(T("Clic droit : déverrouiller"), 0.6, 0.6, 0.6)
+                else GameTooltip:AddLine(T("Coupe la règle plus bas pour l'enlever."), 0.6, 0.6, 0.6) end
                 GameTooltip:Show()
             end)
-            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
-            return r
+            b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            b:SetScript("OnClick", function(sb) if sb.e and sb.e.reason == "manual" then GameTooltip:Hide(); IL:Unlock(sb.e.id) end end)
+            return b
         end)
+        self.lockHeads = UI:Pool(function()
+            local h = CreateFrame("Frame", nil, list)
+            h:SetHeight(16)
+            h.t = UI:Text(h, 10, C.dim); h.t:SetPoint("LEFT")
+            h.n = UI:Text(h, 10, C.muted); h.n:SetPoint("RIGHT")
+            return h
+        end)
+        self.lockLS = LS
         self.lockEmpty = UI:Text(list, 11, C.muted)
         self.lockEmpty:SetPoint("TOPLEFT", 16, -46)
         self.lockEmpty:SetText(string.format(T("Aucun objet verrouillé. %s sur un objet dans tes sacs pour le verrouiller."),
@@ -421,22 +450,52 @@ UI:RegisterPage({
         local n = 0
         for _, e in ipairs(list) do if e.reason == "manual" then n = n + 1 end end
         if self.lockList.subtitle then self.lockList.subtitle:SetText(string.format(T("%d objets · %d à la main"), #list, n)) end
-        self.lockRows:Reset()
+        self.lockIcons:Reset(); self.lockHeads:Reset()
+        -- groupes : à la main, objets de quête, recettes (détail par métier), autres règles
+        local groups, order = {}, {}
+        local function grp(key, label)
+            if not groups[key] then groups[key] = { label = label, items = {}, profs = {} }; table.insert(order, key) end
+            return groups[key]
+        end
+        grp("manual", T("À la main")); grp("quest", T("Objets de quête")); grp("recipe", T("Recettes"))
+        for _, e in ipairs(list) do
+            local g = e.cat == "other" and grp("r:" .. e.reason, e.reason) or groups[e.cat]
+            table.insert(g.items, e)
+            if e.cat == "recipe" and e.prof then g.profs[e.prof] = (g.profs[e.prof] or 0) + 1 end
+        end
+        local LS, IG = self.lockLS, 6
+        local per = math.max(4, math.floor((W - 24 + IG) / (LS + IG)))
         local y = 44
         local r1, g1, b1 = UI:Accent()
-        for _, e in ipairs(list) do
-            local r = self.lockRows:Get()
-            r.id = e.id
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 12, -y); r:SetPoint("TOPRIGHT", -12, -y)
-            local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
-            r.icon:SetTexture(icon)
-            r.name:SetText(name); r.name:SetTextColor(qr, qg, qb)
-            if e.reason == "manual" then r.tag:Set(T("à la main")) else r.tag:Set(e.reason, C.rule) end
-            r.who:SetText(#e.who > 0 and table.concat(e.who, ", ") or T("pas sur le compte"))
-            r.del:SetShown(e.reason == "manual")
-            r.del:SetScript("OnClick", function() IL:Unlock(e.id) end)
-            r.line:SetColorTexture(unpack(C.border))
-            y = y + 34
+        for _, key in ipairs(order) do
+            local g = groups[key]
+            if #g.items > 0 then
+                local label = g.label
+                if key == "recipe" then
+                    local parts = {}
+                    for prof, k in pairs(g.profs) do table.insert(parts, { T(prof), k }) end
+                    table.sort(parts, function(a, b) return a[2] > b[2] end)
+                    for i, pp in ipairs(parts) do parts[i] = pp[1] .. " " .. pp[2] end
+                    if #parts > 0 then label = label .. "  ·  " .. table.concat(parts, "  ·  ") end
+                end
+                local h = self.lockHeads:Get()
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 14, -y); h:SetPoint("TOPRIGHT", -14, -y)
+                h.t:SetText(UI:Upper(label)); h.n:SetText(#g.items)
+                y = y + 20
+                for i, e in ipairs(g.items) do
+                    local b = self.lockIcons:Get()
+                    b.e = e
+                    local c, rr = (i - 1) % per, math.floor((i - 1) / per)
+                    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 14 + c * (LS + IG), -(y + rr * (LS + IG)))
+                    local _, icon, qr, qg, qb = UI:ItemInfo(e.id)
+                    b.icon:SetTexture(icon)
+                    local plain = qr > 0.95 and qg > 0.95 and qb > 0.95
+                    b.edge:SetVertexColor(plain and C.border[1] or qr, plain and C.border[2] or qg, plain and C.border[3] or qb, 1)
+                    if e.reason == "manual" then b.dot:SetVertexColor(r1, g1, b1, 1) else b.dot:SetVertexColor(C.rule[1], C.rule[2], C.rule[3], 1) end
+                    b.n:SetText(e.count > 1 and (e.count > 999 and "999+" or tostring(e.count)) or "")
+                end
+                y = y + math.ceil(#g.items / per) * (LS + IG) + 6
+            end
         end
         self.lockEmpty:SetShown(#list == 0)
         if #list == 0 then y = y + 24 end
