@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.0", date = "18/11/2026",
+        changed = {
+            "LFG : l'infobulle d'un groupe montre ses buffs en icônes de sorts : une rangée pour le groupe, une rangée « + » pour ce que tu ajouterais, une rangée éteinte pour ce qui manque, et « Camp : N de tes objets annulés ». Maj enfoncée : la liste avec les noms (s'actualise sans bouger la souris).",
+        },
+        fixed = {
+            "LFG : les pseudos en cyrillique (joueurs russes) s'affichaient en carrés ; ils sont écrits en lettres latines (« Морог » devient « Morog ») dans les cartes, l'infobulle, les récents et les demandes.",
+        },
+    },
+    {
         version = "1.27.4", date = "18/11/2026",
         changed = {
             "QoL > Feu de camp, objets par métier : plus de gris pâle. Tous les noms sont lisibles, les compétences sont en or ; le palier atteint est surligné avec une pastille « à toi », les autres disent où en est ton meilleur perso (« Forge 132/140 »), la compétence requise (« 300 requis ») ou « aucun perso ». Feux de camp pas encore atteints : nom lisible, « Cuisine 140 requis » en or.",

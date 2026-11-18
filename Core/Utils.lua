@@ -180,3 +180,23 @@ function WK.SpellCooldown(spell)
     if type(start) ~= "number" or type(duration) ~= "number" then return nil end
     return start, duration
 end
+
+-- Pseudos en cyrillique : la police de l'addon n'a pas ces lettres (carrés à l'écran), on les écrit en latin
+-- (table construite au chargement à partir des points de code : pas de lettre cyrillique dans ce fichier)
+local CYR = {}
+do
+    local up = { "A", "B", "V", "G", "D", "E", "Zh", "Z", "I", "Y", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U", "F",
+                 "Kh", "Ts", "Ch", "Sh", "Shch", "", "Y", "", "E", "Yu", "Ya" } -- U+0410 à U+042F
+    local function utf8(cp) return string.char(0xC0 + math.floor(cp / 64), 0x80 + cp % 64) end
+    for i, l in ipairs(up) do
+        CYR[utf8(0x40F + i)] = l           -- majuscule
+        CYR[utf8(0x42F + i)] = l:lower()   -- minuscule (U+0430 à U+044F)
+    end
+    for cp, l in pairs({ [0x401] = "E", [0x451] = "e", [0x406] = "I", [0x456] = "i", [0x407] = "Yi", [0x457] = "yi",
+                         [0x404] = "Ye", [0x454] = "ye", [0x490] = "G", [0x491] = "g" }) do CYR[utf8(cp)] = l end
+end
+function WK.Latin(s)
+    if type(s) ~= "string" or not s:find("[\208-\211]") then return s end
+    return (s:gsub("[\208-\211][\128-\191]", function(ch) return CYR[ch] or "?" end))
+end
+

@@ -364,8 +364,9 @@ UI:RegisterPage({
             c:EnableMouse(true)
             c:SetScript("OnEnter", function(s)
                 if not s.r then return end
+                self.hoverCard = s
                 WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
-                GameTooltip:SetText(s.r.leader or "?", 1, 1, 1)
+                GameTooltip:SetText(WK.Latin(s.r.leader) or "?", 1, 1, 1)
                 local act = LFG:Activity(s.r.activity)
                 if act then GameTooltip:AddLine(act, 0.8, 0.8, 0.8) end
                 if s.r.comment and s.r.comment ~= "" then GameTooltip:AddLine("« " .. s.r.comment .. " »", 0.9, 0.85, 0.7, true) end
@@ -374,7 +375,7 @@ UI:RegisterPage({
                 for _, m in ipairs(s.r.list or {}) do
                     local cr, cg, cb = UI:ClassColor(m.class)
                     local cls = T(WK.modules.QoL.CLASS_LABEL[m.class or ""] or "?")
-                    GameTooltip:AddDoubleLine((m.leader and UI:Hex(C.gold) .. "*|r " or "  ") .. (m.name or "?"),
+                    GameTooltip:AddDoubleLine((m.leader and UI:Hex(C.gold) .. "*|r " or "  ") .. (WK.Latin(m.name) or "?"),
                         cls .. (m.level and (" " .. m.level) or "") .. (m.role and (" · " .. T(RW[m.role])) or ""),
                         cr, cg, cb, 0.8, 0.8, 0.8)
                 end
@@ -383,34 +384,66 @@ UI:RegisterPage({
                     local gb = LFG:GroupBuffs(s.r)
                     local dim = C.dim
                     GameTooltip:AddLine(" ")
-                    GameTooltip:AddLine(T("Buffs du groupe"), 1, 1, 1)
-                    local function buffLine(b, prefix, lr, lg, lb)
-                        local cr, cg, cb = UI:ClassColor(b.class)
-                        local who = T(WK.modules.QoL.CLASS_LABEL[b.class or ""] or "?")
-                        GameTooltip:AddDoubleLine(prefix .. T(b.name) .. (b.talent and (" " .. UI:Hex(C.dim) .. T("(si talent)") .. "|r") or ""),
-                            who, lr or 0.92, lg or 0.92, lb or 0.92, cr, cg, cb)
+                    -- icônes des sorts : allumées (groupe), « + » vert (toi), éteintes (manquants) ; Maj = noms
+                    local function icon(spell, off)
+                        local _, ic = WK.SpellInfo(spell)
+                        ic = ic or 134400
+                        return "|T" .. ic .. ":18:18:0:0:64:64:5:59:5:59" .. (off and ":70:70:70" or "") .. "|t"
                     end
-                    if #gb.have > 0 then
-                        GameTooltip:AddLine(UI:Upper(T("Dans le groupe")), dim[1], dim[2], dim[3])
-                        for _, b in ipairs(gb.have) do buffLine(b, "") end
+                    local function rows(list, prefix, off)
+                        local line, n = prefix or "", 0
+                        for _, b in ipairs(list) do
+                            if b.spell then
+                                line = line .. icon(b.spell, off) .. " "
+                                n = n + 1
+                                if n % 10 == 0 then GameTooltip:AddLine(line); line = prefix and "    " or "" end
+                            end
+                        end
+                        if n % 10 ~= 0 then GameTooltip:AddLine(line) end
                     end
-                    if #gb.mine > 0 then
-                        GameTooltip:AddLine(UI:Upper(T("Avec toi en plus")), C.positive[1], C.positive[2], C.positive[3])
-                        for _, b in ipairs(gb.mine) do buffLine(b, UI:Hex(C.positive) .. "+|r ") end
-                    end
-                    if #gb.missing > 0 then
-                        GameTooltip:AddLine(UI:Upper(T("Manquants")), dim[1], dim[2], dim[3])
-                        for _, m in ipairs(gb.missing) do
-                            GameTooltip:AddDoubleLine(T(m.label), T(WK.modules.QoL.CLASS_LABEL[m.class] or "?"), dim[1], dim[2], dim[3], dim[1], dim[2], dim[3])
+                    local nCamp = 0
+                    for _ in pairs(gb.camp) do nCamp = nCamp + 1 end
+                    if not IsShiftKeyDown() then
+                        GameTooltip:AddLine(string.format(T("Buffs du groupe · %d"), #gb.have)
+                            .. (#gb.mine > 0 and ("  " .. UI:Hex(C.positive) .. string.format(T("+%d avec toi"), #gb.mine) .. "|r") or ""), 1, 1, 1)
+                        if #gb.have > 0 then rows(gb.have) end
+                        if #gb.mine > 0 then rows(gb.mine, UI:Hex(C.positive) .. "+|r ") end
+                        if #gb.missing > 0 then rows(gb.missing, nil, true) end
+                        if nCamp > 0 then
+                            GameTooltip:AddLine(string.format(nCamp > 1 and T("Camp : %d de tes objets annulés") or T("Camp : %d de tes objets annulé"), nCamp), C.gold[1], C.gold[2], C.gold[3])
+                        end
+                        GameTooltip:AddLine(T("Maj : noms des buffs"), dim[1], dim[2], dim[3])
+                    else
+                        GameTooltip:AddLine(" ")
+                        GameTooltip:AddLine(T("Buffs du groupe"), 1, 1, 1)
+                        local function buffLine(b, prefix, lr, lg, lb)
+                            local cr, cg, cb = UI:ClassColor(b.class)
+                            local who = T(WK.modules.QoL.CLASS_LABEL[b.class or ""] or "?")
+                            GameTooltip:AddDoubleLine(prefix .. T(b.name) .. (b.talent and (" " .. UI:Hex(C.dim) .. T("(si talent)") .. "|r") or ""),
+                                who, lr or 0.92, lg or 0.92, lb or 0.92, cr, cg, cb)
+                        end
+                        if #gb.have > 0 then
+                            GameTooltip:AddLine(UI:Upper(T("Dans le groupe")), dim[1], dim[2], dim[3])
+                            for _, b in ipairs(gb.have) do buffLine(b, "") end
+                        end
+                        if #gb.mine > 0 then
+                            GameTooltip:AddLine(UI:Upper(T("Avec toi en plus")), C.positive[1], C.positive[2], C.positive[3])
+                            for _, b in ipairs(gb.mine) do buffLine(b, UI:Hex(C.positive) .. "+|r ") end
+                        end
+                        if #gb.missing > 0 then
+                            GameTooltip:AddLine(UI:Upper(T("Manquants")), dim[1], dim[2], dim[3])
+                            for _, m in ipairs(gb.missing) do
+                                GameTooltip:AddDoubleLine(T(m.label), T(WK.modules.QoL.CLASS_LABEL[m.class] or "?"), dim[1], dim[2], dim[3], dim[1], dim[2], dim[3])
+                            end
+                        end
+                        local camp = {}
+                        for name, prof in pairs(gb.camp) do table.insert(camp, string.format(T("%s annule l'objet de camp (%s)"), T(name), T(prof))) end
+                        if #camp > 0 then
+                            table.sort(camp)
+                            GameTooltip:AddLine(T("Camp :") .. " " .. table.concat(camp, " ; "), C.gold[1], C.gold[2], C.gold[3], true)
                         end
                     end
-                    local camp = {}
-                    for name, prof in pairs(gb.camp) do table.insert(camp, string.format(T("%s annule l'objet de camp (%s)"), T(name), T(prof))) end
-                    if #camp > 0 then
-                        table.sort(camp)
-                        GameTooltip:AddLine(T("Camp :") .. " " .. table.concat(camp, " ; "), C.gold[1], C.gold[2], C.gold[3], true)
                     end
-                end
                 local ps = LFG:PlaystyleLabel(s.r.playstyle)
                 if ps then GameTooltip:AddLine(T(ps), 0.7, 0.7, 0.7) end
                 local rt = LFG:Rating(s.r.leader)
@@ -425,7 +458,7 @@ UI:RegisterPage({
                 self:Refresh()
                 if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
             end)
-            c:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            c:SetScript("OnLeave", function() self.hoverCard = nil; GameTooltip:Hide() end)
             return c
         end)
         self.solos = UI:Pool(function()
@@ -594,7 +627,7 @@ UI:RegisterPage({
         local r1, g1, b1 = UI:Accent()
         c.edge:SetColor(unpack(fit and { r1, g1, b1, 1 } or C.border))
         c.bg:SetColor(unpack(C.surface))
-        local name = r.leader or "?"
+        local name = WK.Latin(r.leader) or "?"
         local nr, ng, nb = classColor(r.class)
         if r.friend or r.guild then nr, ng, nb = C.tank[1], C.tank[2], C.tank[3] end
         if r.delisted then nr, ng, nb = C.dim[1], C.dim[2], C.dim[3] end
@@ -786,7 +819,7 @@ UI:RegisterPage({
                 local b = self.solos:Get()
                 local cr, cg, cb = classColor(r.class)
                 b.dot:SetVertexColor(cr, cg, cb)
-                b.name:SetText(r.leader or "?")
+                b.name:SetText(WK.Latin(r.leader) or "?")
                 local rl = {}
                 for _, k in ipairs(ROLES) do if r.roles and r.roles[k] then table.insert(rl, T(LFG.ROLE_WORD[k])) end end
                 b.sub:SetText((r.level and (r.level .. " · ") or "") .. table.concat(rl, ", "))
@@ -844,7 +877,7 @@ UI:RegisterPage({
                 row.player = e.name
                 row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry2)
                 local cr, cg, cb = classColor(e.class)
-                row.name:SetText(e.name .. (e.level and ("  " .. UI:Hex(C.muted) .. e.level .. "|r") or ""))
+                row.name:SetText(WK.Latin(e.name) .. (e.level and ("  " .. UI:Hex(C.muted) .. e.level .. "|r") or ""))
                 row.name:SetTextColor(cr, cg, cb)
                 row.sub:SetText((e.where and (e.where .. " · ") or "") .. ago(time() - (e.t or time())))
                 local rt = LFG:Rating(e.name) or 0
@@ -868,7 +901,7 @@ UI:RegisterPage({
             local q = e.q
             local col = (q.state == "answer" and C.positive) or (q.state == "closed" and C.dim) or C.gold
             row.dot:SetVertexColor(unpack(col))
-            row.name:SetText(e.name .. "  " .. UI:Hex(C.muted) .. ago(time() - q.t) .. "|r")
+            row.name:SetText(WK.Latin(e.name) .. "  " .. UI:Hex(C.muted) .. ago(time() - q.t) .. "|r")
             if q.state == "answer" then row.l1:SetText("« " .. (q.reply or "") .. " »"); row.l1:SetTextColor(unpack(C.positive))
             elseif q.state == "closed" then row.l1:SetText(T("groupe retiré depuis")); row.l1:SetTextColor(unpack(C.muted))
             elseif q.state == "invited" then row.l1:SetText(T("invité dans ton groupe")); row.l1:SetTextColor(unpack(C.muted))
@@ -886,3 +919,13 @@ UI:RegisterPage({
 })
 
 -- Résultats et réponses : la page se met à jour d'elle-même (WK:NotifyChanged).
+
+-- Maj enfoncée ou relâchée pendant le survol d'un groupe : l'infobulle passe des icônes aux noms des buffs
+WK:On("MODIFIER_STATE_CHANGED", function(key)
+    local page = WK.UI.pages and WK.UI.pages.lfg
+    local c = page and page.hoverCard
+    if c and c:IsVisible() and c:IsMouseOver() and type(key) == "string" and key:find("SHIFT") then
+        local f = c:GetScript("OnEnter")
+        if f then f(c) end
+    end
+end)

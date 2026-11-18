@@ -250,17 +250,18 @@ end
 -- Buffs d'un groupe : d'après les classes et niveaux des membres (le jeu ne dit rien des talents)
 --   { nom, niveau où le sort s'apprend, talent? } par classe ; missing = libellé court d'une classe absente
 ---------------------------------------------------------------------------
+-- 4e champ : n° du sort (icône dans l'infobulle)
 M.BUFFS = {
-    WARRIOR = { { "Cri de guerre", 1 } },
-    PRIEST  = { { "Mot de pouvoir : Robustesse", 1 }, { "Protection contre l'Ombre", 30 }, { "Esprit divin", 30, true } },
-    MAGE    = { { "Intelligence des arcanes", 1 } },
-    DRUID   = { { "Marque du fauve", 1 }, { "Aura de sélénien", 40, true } },
-    PALADIN = { { "Aura de dévotion", 1 }, { "Bénédiction de puissance", 4 }, { "Bénédiction de sagesse", 14 },
-                { "Bénédiction des rois", 20, true }, { "Bénédiction de salut", 26 } },
-    SHAMAN  = { { "Totem de peau de pierre", 4 }, { "Totem de Force de la Terre", 10 }, { "Totem Fontaine de mana", 26 },
-                { "Totem Furie-des-vents", 32 }, { "Totem de grâce aérienne", 42 } },
-    HUNTER  = { { "Aspect de la meute", 30 }, { "Aura de précision", 40, true } },
-    WARLOCK = { { "Lien de sang (diablotin)", 4 }, { "Pierre de soins", 10 }, { "Pierre d'âme", 18 } },
+    WARRIOR = { { "Cri de guerre", 1, nil, 6673 } },
+    PRIEST  = { { "Mot de pouvoir : Robustesse", 1, nil, 1243 }, { "Protection contre l'Ombre", 30, nil, 976 }, { "Esprit divin", 30, true, 14752 } },
+    MAGE    = { { "Intelligence des arcanes", 1, nil, 1459 } },
+    DRUID   = { { "Marque du fauve", 1, nil, 1126 }, { "Aura de sélénien", 40, true, 24907 } },
+    PALADIN = { { "Aura de dévotion", 1, nil, 465 }, { "Bénédiction de puissance", 4, nil, 19740 }, { "Bénédiction de sagesse", 14, nil, 19742 },
+                { "Bénédiction des rois", 20, true, 20217 }, { "Bénédiction de salut", 26, nil, 1038 } },
+    SHAMAN  = { { "Totem de peau de pierre", 4, nil, 8071 }, { "Totem de Force de la Terre", 10, nil, 8075 }, { "Totem Fontaine de mana", 26, nil, 5675 },
+                { "Totem Furie-des-vents", 32, nil, 8512 }, { "Totem de grâce aérienne", 42, nil, 8835 } },
+    HUNTER  = { { "Aspect de la meute", 30, nil, 13159 }, { "Aura de précision", 40, true, 19506 } },
+    WARLOCK = { { "Lien de sang (diablotin)", 4, nil, 6307 }, { "Pierre de soins", 10, nil, 6201 }, { "Pierre d'âme", 18, nil, 693 } },
     ROGUE   = {},
 }
 M.BUFF_SHORT = { WARRIOR = "Cri de guerre", PRIEST = "Robustesse", MAGE = "Intelligence des arcanes", DRUID = "Marque du fauve",
@@ -280,7 +281,7 @@ function M:GroupBuffs(r)
     local out = { have = {}, mine = {}, missing = {}, camp = {} }
     local function add(list, class, lvl)
         for _, b in ipairs(M.BUFFS[class] or {}) do
-            if (lvl or 60) >= b[2] then table.insert(list, { name = b[1], class = class, talent = b[3] }) end
+            if (lvl or 60) >= b[2] then table.insert(list, { name = b[1], class = class, talent = b[3], spell = b[4] }) end
         end
     end
     for _, cl in ipairs(BUFF_ORDER) do if inGroup[cl] then add(out.have, cl, best[cl]) end end
@@ -288,7 +289,9 @@ function M:GroupBuffs(r)
     local myClass = me and me.class
     if myClass and not inGroup[myClass] then add(out.mine, myClass, (UnitLevel and UnitLevel("player")) or me.level) end
     for _, cl in ipairs(BUFF_ORDER) do
-        if not inGroup[cl] and cl ~= myClass and M.BUFF_SHORT[cl] then table.insert(out.missing, { label = M.BUFF_SHORT[cl], class = cl }) end
+        if not inGroup[cl] and cl ~= myClass and M.BUFF_SHORT[cl] then
+            table.insert(out.missing, { label = M.BUFF_SHORT[cl], class = cl, spell = M.BUFFS[cl][1] and M.BUFFS[cl][1][4] })
+        end
     end
     -- objets de camp annulés par un buff du groupe ou par les tiens (WoW Forever)
     local Cp = WK.modules.Camp
