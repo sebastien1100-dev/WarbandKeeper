@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.3", date = "18/11/2026",
+        changed = {
+            "Panneau « Plan de montée » : le mot « appris » reste en vert vif sur les étapes faites ; seul le reste de la ligne est grisé.",
+        },
+    },
+    {
         version = "1.20.2", date = "18/11/2026",
         fixed = {
             "Fiche d'un autre perso : les barres (Stats, Métiers), le niveau moyen, les talents et la progression BiS prenaient la couleur d'accent du perso connecté (avec le thème Graphite, la couleur de sa classe : un chasseur vu depuis le paladin s'affichait en rose). Ils prennent maintenant la couleur de classe du perso affiché ; les boutons gardent l'accent.",

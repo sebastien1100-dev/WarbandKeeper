@@ -72,6 +72,8 @@ local function build()
         r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 56, 0); r.name:SetPoint("RIGHT", -48, 0)
         r.ok = UI:Text(r, 11, C.positive); r.ok:SetPoint("RIGHT", -2, 0)
+        -- « appris » reste bien lisible quand la ligne est grisée
+        if r.ok.SetIgnoreParentAlpha then r.ok:SetIgnoreParentAlpha(true) end
         self.rows[i] = r
         return r
     end
