@@ -1811,8 +1811,14 @@ UI:RegisterPage({
                 return string.format(T("il y a %d j"), math.floor(sec / 86400))
             end
 
-            -- les cartes suivent la hauteur du tableau
-            for _, pair in ipairs({ { xs, xr }, { xa, xs } }) do
+            -- « Tous tes persos » en tête de l'onglet (à la place de la barre) ; les autres cartes suivent
+            -- la hauteur du tableau, chacune sous la précédente
+            local _, topRel, _, _, topY = xb:GetPoint(1)
+            topRel, topY = topRel or xb:GetParent(), topY or 0
+            xa:ClearAllPoints()
+            xa:SetPoint("TOPLEFT", topRel, "TOPLEFT", 0, topY)
+            xa:SetPoint("TOPRIGHT", topRel, "TOPRIGHT", 0, topY)
+            for _, pair in ipairs({ { xb, xa }, { xr, xb }, { xs, xr } }) do
                 pair[1]:ClearAllPoints()
                 pair[1]:SetPoint("TOPLEFT", pair[2], "BOTTOMLEFT", 0, -GAP)
                 pair[1]:SetPoint("TOPRIGHT", pair[2], "BOTTOMRIGHT", 0, -GAP)

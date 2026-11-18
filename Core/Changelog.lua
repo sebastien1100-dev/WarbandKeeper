@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.1", date = "18/11/2026",
+        changed = {
+            "QoL > Expérience : le tableau « Tous tes persos » est en tête de l'onglet, avant la barre, le repos et le rythme.",
+        },
+    },
+    {
         version = "1.24.0", date = "18/11/2026",
         added = {
             "LFG : l'infobulle d'un groupe liste ses buffs, d'après la classe et le niveau de chaque membre : « Dans le groupe », « Avec toi en plus » (ce que ton perso ajouterait) et « Manquants ». Les buffs de talent sont marqués « si talent » (le jeu ne dit pas les talents des autres). En bas, les buffs qui annulent un objet de camp (Robustesse et Secourisme, Intelligence des arcanes et Herboristerie…).",
