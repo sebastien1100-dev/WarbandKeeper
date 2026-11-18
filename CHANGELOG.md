@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.29.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire > Rangement : plus lisible. En haut, trois chiffres (à envoyer à tes persos, pour l'HV avec la valeur, au marchand) ; dessous, une colonne par destination (ton perso à sa couleur de classe avec ses métiers, le perso HV en or, le marchand). Chaque objet a sa raison et qui le détient en petit dessous (« de Lapine ») ; au-delà de 6 objets, « + N autres » déplie la colonne.
+
 ## v1.28.7 — 18/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.29.0", date = "18/11/2026",
+        changed = {
+            "Inventaire > Rangement : plus lisible. En haut, trois chiffres (à envoyer à tes persos, pour l'HV avec la valeur, au marchand) ; dessous, une colonne par destination (ton perso à sa couleur de classe avec ses métiers, le perso HV en or, le marchand). Chaque objet a sa raison et qui le détient en petit dessous (« de Lapine ») ; au-delà de 6 objets, « + N autres » déplie la colonne.",
+        },
+    },
+    {
         version = "1.28.7", date = "18/11/2026",
         changed = {
             "QoL > Feu de camp, objets par métier : quand le palier vient d'un autre de tes persos, tout passe à sa couleur de classe (effet, surlignage, compétence, pastille) ; la couleur d'accent reste pour ce qui est à toi.",

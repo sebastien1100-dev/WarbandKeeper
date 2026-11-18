@@ -453,32 +453,55 @@ UI:RegisterPage({
         note:SetPoint("TOPRIGHT", -14, -14)
         note:SetJustifyH("RIGHT")
         note:SetText(T("les envois se font à la boîte aux lettres de chaque perso"))
-        self.stashHeads = UI:Pool(function()
-            local h = CreateFrame("Frame", nil, list)
-            h:SetHeight(22)
-            h.name = UI:Text(h, 12); h.name:SetPoint("LEFT")
-            h.badge = UI:Badge(h, T("perso HV"), C.gold); h.badge:SetPoint("LEFT", h.name, "RIGHT", 8, 0)
-            h.sub = UI:Text(h, 10, C.muted)
-            h.right = UI:Text(h, 11, C.gold); h.right:SetPoint("RIGHT"); h.right:SetJustifyH("RIGHT")
-            return h
+        -- variante A : 3 chiffres en haut (à tes persos, HV, marchand), puis une colonne par destination
+        self.stashChips = {}
+        for i = 1, 3 do
+            local ch = CreateFrame("Frame", nil, list)
+            ch:SetHeight(48)
+            UI:Panel(ch, 9, C.surface2, C.border)
+            ch.n = UI:Text(ch, 22); ch.n:SetPoint("LEFT", 12, 0); ch.n:SetWidth(34); ch.n:SetJustifyH("CENTER")
+            ch.t = UI:Text(ch, 12); ch.t:SetPoint("TOPLEFT", 54, -9); ch.t:SetPoint("TOPRIGHT", -10, -9)
+            ch.s = UI:Text(ch, 10, C.muted); ch.s:SetPoint("TOPLEFT", 54, -27); ch.s:SetPoint("TOPRIGHT", -10, -27)
+            self.stashChips[i] = ch
+        end
+        self.stashOpen = {}
+        self.stashCols = UI:Pool(function()
+            local c = CreateFrame("Frame", nil, list)
+            UI:Panel(c, 9, C.surface2, C.border)
+            c.bar = c:CreateTexture(nil, "ARTWORK"); c.bar:SetTexture("Interface\\Buttons\\WHITE8X8")
+            c.bar:SetSize(3, 20); c.bar:SetPoint("TOPLEFT", 10, -9)
+            c.name = UI:Text(c, 13); c.name:SetPoint("TOPLEFT", 20, -12)
+            c.badge = UI:Badge(c, T("perso HV"), C.gold); c.badge:SetPoint("LEFT", c.name, "RIGHT", 8, 0)
+            c.right = UI:Text(c, 11, C.muted); c.right:SetPoint("TOPRIGHT", -12, -12); c.right:SetJustifyH("RIGHT")
+            if c.right.SetWordWrap then c.right:SetWordWrap(false) end
+            c.line = c:CreateTexture(nil, "ARTWORK"); c.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+            c.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); c.line:SetHeight(1)
+            c.line:SetPoint("TOPLEFT", 0, -37); c.line:SetPoint("TOPRIGHT", 0, -37)
+            c.more = CreateFrame("Button", nil, c); c.more:SetHeight(22)
+            c.more.t = UI:Text(c.more, 11); c.more.t:SetPoint("LEFT", 12, 0)
+            c.more:SetScript("OnClick", function(b) self.stashOpen[b.key] = not self.stashOpen[b.key]; self:RefreshStash() end)
+            return c
         end)
         self.stashRows = UI:Pool(function()
             local r = CreateFrame("Button", nil, list)
-            r:SetHeight(22)
-            r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(18, 18); r.icon:SetPoint("LEFT", 14, 0)
+            r:SetHeight(34)
+            r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 12, 0)
             r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-            r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 40, 0); r.name:SetJustifyH("LEFT")
+            r.qty = UI:Text(r, 11, C.muted); r.qty:SetPoint("RIGHT", -12, 0); r.qty:SetJustifyH("RIGHT")
+            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 40, -4); r.name:SetPoint("TOPRIGHT", -60, -4); r.name:SetJustifyH("LEFT")
             if r.name.SetWordWrap then r.name:SetWordWrap(false) end
-            r.val = UI:Text(r, 11, C.gold); r.val:SetPoint("RIGHT", 0, 0); r.val:SetWidth(90); r.val:SetJustifyH("RIGHT")
-            r.qty = UI:Text(r, 11, C.muted); r.qty:SetPoint("RIGHT", r.val, "LEFT", -6, 0); r.qty:SetWidth(50); r.qty:SetJustifyH("RIGHT")
-            r.why = UI:Text(r, 10, C.dim); r.why:SetPoint("RIGHT", r.qty, "LEFT", -10, 0); r.why:SetJustifyH("RIGHT")
+            r.why = UI:Text(r, 10, C.dim); r.why:SetPoint("TOPLEFT", 40, -19); r.why:SetPoint("TOPRIGHT", -60, -19); r.why:SetJustifyH("LEFT")
             if r.why.SetWordWrap then r.why:SetWordWrap(false) end
+            r.sep = r:CreateTexture(nil, "ARTWORK"); r.sep:SetTexture("Interface\\Buttons\\WHITE8X8")
+            r.sep:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.6); r.sep:SetHeight(1)
+            r.sep:SetPoint("TOPLEFT", 0, 0); r.sep:SetPoint("TOPRIGHT", 0, 0)
             r:SetScript("OnEnter", function(sb)
                 if not sb.e then return end
                 WK.UI:TooltipOwner(sb, "ANCHOR_RIGHT")
                 if GameTooltip.SetItemByID then GameTooltip:SetItemByID(sb.e.id) end
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine(sb.e.why or "", 0.8, 0.8, 0.8, true)
+                if sb.e.unit then GameTooltip:AddDoubleLine(T("Valeur"), WK:FormatMoney(sb.e.unit * sb.e.count), 0.6, 0.6, 0.6, 1, 1, 1) end
                 local chars = WK.DB.global.characters
                 for key, n in pairs(sb.e.from or {}) do
                     local c = chars[key]
@@ -531,66 +554,136 @@ UI:RegisterPage({
         self.stashCharDd:SetOptions(opts)
         self.stashCharDd:Select(cfg.ahChar or "none")
         local r = S:Route()
-        self.stashHeads:Reset(); self.stashRows:Reset()
-        local y, total = 44, 0
-        local function head(text, color, sub, right, hv)
-            local h = self.stashHeads:Get()
-            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 14, -y); h:SetPoint("TOPRIGHT", -14, -y)
-            h.name:SetText(text); h.name:SetTextColor(color[1], color[2], color[3])
-            h.badge:SetShown(hv and true or false)
-            h.sub:ClearAllPoints(); h.sub:SetPoint("LEFT", hv and h.badge or h.name, "RIGHT", 8, 0)
-            h.sub:SetText(sub or "")
-            h.right:SetText(right or "")
-            y = y + 24
-        end
-        local function row(e, showValue)
-            local rw = self.stashRows:Get()
-            rw.e = e
-            rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", 14, -y); rw:SetPoint("TOPRIGHT", -14, -y)
-            local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
-            rw.icon:SetTexture(icon)
-            rw.name:SetText(name); rw.name:SetTextColor(qr, qg, qb)
-            rw.name:SetWidth(math.max(120, (W - 28) * 0.42))
-            rw.why:SetText(e.why or "")
-            rw.qty:SetText("x" .. e.count)
-            rw.val:SetText(showValue and e.unit and WK:FormatMoney(e.unit * e.count) or "")
-            y = y + 22
-            total = total + 1
-        end
+        self.stashCols:Reset(); self.stashRows:Reset()
+        local total = 0
         local function profs(c)
             local parts = {}
-            for prof, p in pairs(c.professions or {}) do
-                if type(p) == "table" and p.rank then table.insert(parts, T(prof) .. " " .. p.rank) end
+            for prof, pp in pairs(c.professions or {}) do
+                if type(pp) == "table" and pp.rank then table.insert(parts, { T(prof), pp.rank }) end
             end
-            table.sort(parts)
-            return table.concat(parts, "  ·  ")
+            table.sort(parts, function(x, z) return x[2] > z[2] end)
+            local out = {}
+            for i = 1, math.min(2, #parts) do out[i] = parts[i][1] .. " " .. parts[i][2] end
+            return table.concat(out, " · ")
         end
-        -- par perso qui en a besoin
+        local function fromText(e)
+            local n, one = 0, nil
+            for key in pairs(e.from or {}) do n = n + 1; one = key end
+            if n == 0 then return nil end
+            if n > 1 then return string.format(T("de %d persos"), n) end
+            local c = chars[one]
+            return string.format(T("de %s"), c and WK:CharName(c, one) or one)
+        end
+        -- colonnes : { key, name, color, right, hv, rows = { { e, sub } } }
+        local cols = {}
+        local nDest, nAH, nVendor = 0, 0, 0
         for _, ce in ipairs(UI:SortedCharacters()) do
             local d = r.dest[ce.key]
             if d and #d.list > 0 then
-                head(WK:CharName(ce.c, ce.key), { UI:ClassColor(ce.c.class) }, profs(ce.c), nil, ce.key == cfg.ahChar)
-                for _, e in ipairs(d.list) do row(e) end
-                y = y + 6
+                local rows = {}
+                for _, e in ipairs(d.list) do
+                    local f = fromText(e)
+                    table.insert(rows, { e = e, sub = (e.why or "") .. (f and (" · " .. f) or "") })
+                end
+                nDest = nDest + #rows
+                table.insert(cols, { key = ce.key, name = WK:CharName(ce.c, ce.key), color = { UI:ClassColor(ce.c.class) },
+                    right = profs(ce.c), hv = ce.key == cfg.ahChar, rows = rows })
             end
         end
         local hvc = cfg.ahChar and chars[cfg.ahChar]
-        if #r.ah.list > 0 then
-            head(string.format(T("Pour l'HV » %s"), hvc and WK:CharName(hvc, cfg.ahChar) or "?"), C.gold, nil, "~ " .. WK:FormatMoney(r.ah.value or 0))
-            for _, e in ipairs(r.ah.list) do row(e, true) end
-            y = y + 6
-        end
-        if #r.sell.list > 0 then
-            head(T("À vendre sur le perso HV"), C.gold, nil, "~ " .. WK:FormatMoney(r.sell.value or 0))
-            for _, e in ipairs(r.sell.list) do row(e, true) end
-            y = y + 6
+        if #r.ah.list > 0 or #r.sell.list > 0 then
+            local rows = {}
+            for _, e in ipairs(r.ah.list) do
+                local f = fromText(e)
+                table.insert(rows, { e = e, sub = T("à lui envoyer") .. (f and (" · " .. f) or "") })
+            end
+            for _, e in ipairs(r.sell.list) do table.insert(rows, { e = e, sub = T("déjà sur lui : à mettre en vente") }) end
+            nAH = #rows
+            table.insert(cols, { key = "ah", name = string.format(T("HV · %s"), hvc and WK:CharName(hvc, cfg.ahChar) or "?"), color = C.gold,
+                right = "~ " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0)), rows = rows })
         end
         if #r.vendor.list > 0 then
-            head(cfg.ahChar and string.format(T("Au marchand (moins de %s à l'HV)"), WK:FormatMoney(cfg.minAH or 0)) or T("Au marchand"),
-                C.muted, nil, WK:FormatMoney(r.vendor.value or 0))
-            for _, e in ipairs(r.vendor.list) do row(e, true) end
-            y = y + 6
+            local rows = {}
+            for _, e in ipairs(r.vendor.list) do table.insert(rows, { e = e, sub = e.why }) end
+            nVendor = #rows
+            table.insert(cols, { key = "vendor", name = T("Au marchand"), color = C.text, bar = C.dim,
+                right = WK:FormatMoney(r.vendor.value or 0), rows = rows })
         end
+        total = nDest + nAH + nVendor
+        -- les 3 chiffres
+        local ar, ag, ab = UI:Accent()
+        local chipData = {
+            { nDest, { ar, ag, ab }, T("à envoyer à tes persos"), T("ils s'en servent pour leurs métiers") },
+            { nAH, C.gold, T("pour l'HV"), cfg.ahChar and ("~ " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0))) or T("aucun perso HV choisi") },
+            { nVendor, C.muted, T("au marchand"), cfg.ahChar and string.format(T("moins de %s à l'HV · %s"), WK:FormatMoney(cfg.minAH or 0), WK:FormatMoney(r.vendor.value or 0))
+                or WK:FormatMoney(r.vendor.value or 0) },
+        }
+        local GAP = 10
+        local cw3 = (W - 28 - 2 * GAP) / 3
+        for i, ch in ipairs(self.stashChips) do
+            local dta = chipData[i]
+            ch:ClearAllPoints(); ch:SetPoint("TOPLEFT", 14 + (i - 1) * (cw3 + GAP), -44); ch:SetWidth(cw3)
+            ch.n:SetText(tostring(dta[1])); ch.n:SetTextColor(dta[2][1], dta[2][2], dta[2][3])
+            ch.t:SetText(dta[3]); ch.s:SetText(dta[4])
+            ch:SetShown(total > 0)
+        end
+        -- colonnes en grille (3 par ligne, 2 en fenêtre étroite) ; au plus MAXR objets, « + N autres » déplie
+        local MAXR, RH, HEAD = 6, 34, 38
+        local ncol = W >= 900 and 3 or 2
+        local cw = (W - 28 - (ncol - 1) * GAP) / ncol
+        local y = 44 + 48 + GAP
+        local rowH = 0
+        for i, col in ipairs(cols) do
+            local ci = (i - 1) % ncol
+            if ci == 0 and i > 1 then y = y + rowH + GAP; rowH = 0 end
+            local c = self.stashCols:Get()
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", 14 + ci * (cw + GAP), -y); c:SetWidth(cw)
+            local bc = col.bar or col.color
+            c.bar:SetVertexColor(bc[1], bc[2], bc[3], 1)
+            c.name:SetText(col.name); c.name:SetTextColor(col.color[1], col.color[2], col.color[3])
+            c.badge:SetShown(col.hv and true or false)
+            c.right:SetText(col.right or "")
+            c.right:SetWidth(math.max(60, cw - (c.name:GetStringWidth() or 80) - (col.hv and 90 or 40)))
+            local open = self.stashOpen[col.key]
+            local shown = open and #col.rows or math.min(#col.rows, MAXR)
+            local ry = HEAD
+            for k = 1, shown do
+                local rw, it = self.stashRows:Get(), col.rows[k]
+                rw.e = it.e
+                rw:SetParent(c)
+                rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", c, "TOPLEFT", 0, -ry); rw:SetPoint("TOPRIGHT", c, "TOPRIGHT", 0, -ry)
+                local name, icon, qr, qg, qb = UI:ItemInfo(it.e.id)
+                rw.icon:SetTexture(icon)
+                rw.name:SetText(name or "?"); rw.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+                rw.why:SetText(it.sub or "")
+                rw.qty:SetText("x" .. it.e.count)
+                rw.sep:SetShown(k > 1)
+                rw:Show()
+                ry = ry + RH
+            end
+            c.more.key = col.key
+            if #col.rows > MAXR then
+                c.more:ClearAllPoints(); c.more:SetPoint("TOPLEFT", 0, -ry); c.more:SetPoint("TOPRIGHT", 0, -ry)
+                c.more.t:SetText(open and T("Replier") or string.format(T("+ %d autres"), #col.rows - MAXR))
+                c.more.t:SetTextColor(ar, ag, ab)
+                c.more:Show()
+                ry = ry + 24
+            else
+                c.more:Hide()
+            end
+            c.h = ry + 6
+            rowH = math.max(rowH, c.h)
+        end
+        -- même hauteur pour les colonnes d'une ligne
+        local used = self.stashCols.used or 0
+        for i = 1, used do
+            local c = self.stashCols.items[i]
+            local first = math.floor((i - 1) / ncol) * ncol + 1
+            local mh = 0
+            for k = first, math.min(used, first + ncol - 1) do mh = math.max(mh, self.stashCols.items[k].h or 0) end
+            c:SetHeight(mh)
+        end
+        if #cols > 0 then y = y + rowH + 4 else y = 44 end
         if self.stashList.subtitle then self.stashList.subtitle:SetText(string.format(T("%d objets à ranger"), total)) end
         self.stashEmpty:SetShown(total == 0)
         if total == 0 then y = y + 24 end
