@@ -65,7 +65,7 @@ local function build()
     f.help = UI:Text(f, 10, C.muted)
     f.help:SetJustifyH("LEFT")
     if f.help.SetWordWrap then f.help:SetWordWrap(true) end
-    f.help:SetText(T("Pour qu'un navire avance et que ses départs s'affichent, il suffit d'un départ vu : prends-le une fois, ou sur le quai clique « Il part » / « Il arrive » dans le bandeau, ou attends l'annonce du maître de quai (repérée toute seule), ou qu'un membre de ta guilde ou de ton groupe la partage."))
+    f.help:SetText(T("L'heure de chaque navire se cale toute seule : quand tu le prends, quand le maître de quai annonce son arrivée près de toi, ou quand un membre de ta guilde ou de ton groupe qui a Warband Keeper en voit un."))
     f.rows = {}
     local function row(i)
         local r = f.rows[i]

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.34.4", date = "18/11/2026",
+        changed = {
+            "Bateaux : plus aucun bouton à cliquer. Les boutons « Il part » / « Il arrive » du bandeau au quai sont retirés : l'heure de chaque navire se cale toute seule, quand tu le prends, à l'annonce du maître de quai près de toi, ou par le partage avec ta guilde et ton groupe.",
+        },
+    },
+    {
         version = "1.34.3", date = "18/11/2026",
         changed = {
             "Hôtel des ventes : nos onglets (Achat, Vente, Annulation, Scan) ont maintenant l'allure de ceux du jeu (texte, trait de séparation, souligné à la couleur d'accent quand choisi, même police et même hauteur), collés à droite des siens sur un fond de barre d'onglets, au lieu de gros boutons roses posés par-dessus le reste.",

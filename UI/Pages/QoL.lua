@@ -1080,7 +1080,7 @@ UI:RegisterPage({
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")
-            UI:SettingRow(bcard, -40, "Bandeau au quai", "Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé », et les boutons « Il part » / « Il arrive ».",
+            UI:SettingRow(bcard, -40, "Bandeau au quai", "Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé ».",
                 toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
             UI:SettingRow(bcard, -86, "Alertes au quai", "Le bateau arrive au quai dans 30 s, puis il part dans 15 s (quand tu es sur le quai).",
                 toggle(bcard, function() return gdc.dockAlerts ~= false end, function(v) gdc.dockAlerts = v end), 80)

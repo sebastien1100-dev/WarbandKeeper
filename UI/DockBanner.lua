@@ -91,24 +91,6 @@ local function build()
         r.d:SetJustifyH("RIGHT"); r.a:SetJustifyH("RIGHT")
         f.rows[i] = r
     end
-    -- vu du quai : signaler le départ ou l'arrivée du bateau (cale l'heure sans le prendre)
-    f.go = UI:Button(f, "Il part", 70, 20, "secondary")
-    f.come = UI:Button(f, "Il arrive", 76, 20, "secondary")
-    local function observe(kind)
-        local first = f.first
-        if not first then return end
-        local ok
-        if first.game then ok = BL():Observe(first.game, first.s, kind)
-        elseif first.pair then ok = BT():Observe(first.pair, first.side, kind) end
-        if ok then
-            WK:Print(kind == "leave" and T("Départ noté : les horaires de ce bateau se précisent.") or T("Arrivée notée : les horaires de ce bateau se précisent."))
-        else
-            WK:Print(T("Prends ce bateau une fois d'abord : il faut connaître la durée du trajet."))
-        end
-        UI:RefreshDockBanner()
-    end
-    f.go:SetScript("OnClick", function() observe("leave") end)
-    f.come:SetScript("OnClick", function() observe("arrive") end)
 
     function f:Paint(list)
         local first = list[1]
@@ -147,7 +129,7 @@ local function build()
             y = y + 12
         else
             self.time:SetText("")
-            self.sub:SetText(T("Heure pas encore calée : signale son départ ou son arrivée, ou prends-le."))
+            self.sub:SetText(T("Heure pas encore connue : elle se cale toute seule à l'annonce du maître de quai, quand tu le prends, ou par le partage."))
             self.track:Hide(); self.fill:Hide()
         end
         -- prochains départs : les 3 de la première destination, puis le prochain des autres
@@ -189,15 +171,6 @@ local function build()
                 r.d:SetTextColor(dc[1], dc[2], dc[3])
                 y = y + 15
             end
-        end
-        -- boutons : caler l'heure à la main
-        local can = first.game ~= nil or st ~= nil
-        self.go:SetShown(can); self.come:SetShown(can)
-        if can then
-            y = y + 6
-            self.go:ClearAllPoints(); self.go:SetPoint("TOPLEFT", 14, -y)
-            self.come:ClearAllPoints(); self.come:SetPoint("LEFT", self.go, "RIGHT", 6, 0)
-            y = y + 22
         end
         self:SetHeight(y + 10)
     end

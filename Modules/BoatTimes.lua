@@ -196,7 +196,7 @@ function M:TooltipLines(l, side)
         local g = l.game
         table.insert(out, { T(g.vessel or ""), 0.75, 0.75, 0.75 })
         if not s then
-            table.insert(out, { T("Heure pas encore calée : prends-le, ou signale son départ depuis le bandeau du quai (tour connu : ") .. (g.period and M.Clock(g.period) or "?") .. ")", 0.6, 0.6, 0.6, true })
+            table.insert(out, { T("Heure pas encore connue : elle se cale toute seule (traversée, annonce du maître de quai, partage) (tour connu : ") .. (g.period and M.Clock(g.period) or "?") .. ")", 0.6, 0.6, 0.6, true })
             return out
         end
         local pre = s.est and T("env. ") or ""
