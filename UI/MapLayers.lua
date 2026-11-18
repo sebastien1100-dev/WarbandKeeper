@@ -155,6 +155,8 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     end
     -- bateaux et zeppelins : quai, pointillés vers la destination, nom au bout
     local tl = L.LAYER.transport
+    -- quais presque au même endroit (même genre) : une seule pastille, toutes les destinations dans l'infobulle
+    local placed = {}
     for i, d in ipairs(L:Docks(mapID, "map")) do
         local r = getRoute(i, cv)
         local _, col = transportLook(d.kind, tl)
@@ -181,15 +183,29 @@ function UI:DrawMapLayers(cv, mapID, w, h)
             dot:SetShown(len > 12)
         end
         end
+        local twin
+        for _, q in ipairs(placed) do
+            if q.kind == (d.kind or "boat") and math.abs(q.x - d.x) < 1.5 and math.abs(q.y - d.y) < 1.5 then twin = q break end
+        end
         local e = { d.x, d.y, 0, nil, nil, (d.kind == "zeppelin" and "Zeppelin" or "Bateau") .. " > " .. d.to,
                     (d.kind == "zeppelin" and T("Zeppelin") or T("Bateau")) .. " " .. string.format(T("vers %s"), d.to) }
+        if twin then
+            -- même quai : la destination s'ajoute à la pastille déjà posée
+            if not twin.dest[d.to] then
+                twin.dest[d.to] = true
+                twin.e[6] = twin.e[6] .. ", " .. d.to
+                twin.e[7] = twin.e[7] .. ", " .. d.to
+            end
+        else
+            placed[#placed + 1] = { x = d.x, y = d.y, kind = d.kind or "boat", e = e, dest = { [d.to] = true } }
+        end
         r.pin.e, r.pin.layer, r.pin.mapID = e, tl, mapID
         paintPin(r.pin, tl, size)
         paintDock(r.pin, d.kind, tl)
         r.pin:SetFrameLevel(lvl + 1)
         r.pin:ClearAllPoints()
         r.pin:SetPoint("CENTER", cv, "TOPLEFT", x0, -y0)
-        r.pin:Show()
+        r.pin:SetShown(not twin)
         -- destination dans l'infobulle du quai seulement (plus d'étiquette posée sur la carte)
         r.label:Hide()
     end
@@ -420,8 +436,13 @@ local function updateMini()
     local now = GetTime()
     if cacheMap ~= pos.map or not cacheAt or now - cacheAt > 5 then
         cache = L:Places(pos.map, "mini")
+        local seen = {}
         for _, d in ipairs(L:Docks(pos.map, "mini")) do
-            table.insert(cache, { e = { d.x, d.y, 0 }, layer = L.LAYER.transport, kind = d.kind or "boat" })
+            local k = (d.kind or "boat") .. math.floor(d.x / 1.5) .. ":" .. math.floor(d.y / 1.5)
+            if not seen[k] then
+                seen[k] = true
+                table.insert(cache, { e = { d.x, d.y, 0 }, layer = L.LAYER.transport, kind = d.kind or "boat" })
+            end
         end
         cacheMap, cacheAt = pos.map, now
     end

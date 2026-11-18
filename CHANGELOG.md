@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.25.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte : à Auberdine (et ailleurs), des quais apparaissaient en double. C'étaient des trajets en bateau appris avant la 1.24.5 qui doublaient les trajets connus (Menethil, Rut'theran) : ils sont retirés. Deux quais au même endroit ne font plus qu'une pastille, avec toutes leurs destinations au survol.
+
 ## v1.25.1 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

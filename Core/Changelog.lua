@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.25.2", date = "18/11/2026",
+        fixed = {
+            "Carte : à Auberdine (et ailleurs), des quais apparaissaient en double. C'étaient des trajets en bateau appris avant la 1.24.5 qui doublaient les trajets connus (Menethil, Rut'theran) : ils sont retirés. Deux quais au même endroit ne font plus qu'une pastille, avec toutes leurs destinations au survol.",
+        },
+    },
+    {
         version = "1.25.1", date = "18/11/2026", restart = true,
         changed = {
             "Carte et minicarte : les maîtres de vol ont un petit griffon (et le filtre « Maîtres de vol » aussi).",

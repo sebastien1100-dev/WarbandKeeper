@@ -594,13 +594,32 @@ local function validBoat(a, b)
     if a.name and b.name and a.name == b.name then return false end
     return a.wx and b.wx and dist(a.wx, a.wy, b.wx, b.wy) >= MIN_BOAT or false
 end
+-- Trajet déjà dans les données (MapLayers.TRANSPORTS : bateaux et zeppelins connus), dans un sens ou dans l'autre
+local function knownRoute(a, b)
+    local L, P = WK.modules.MapLayers, WK.modules.Guide
+    if not (P and P.ToWorld and a and b and a.wx and b.wx) then return false end
+    for _, t in ipairs(L and L.TRANSPORTS or {}) do
+        local ca, ax, ay = P.ToWorld(t.a[1], t.a[2] / 100, t.a[3] / 100)
+        local cb, bx, by = P.ToWorld(t.b[1], t.b[2] / 100, t.b[3] / 100)
+        if ax and bx then
+            local same = ca == a.c and cb == b.c and dist(ax, ay, a.wx, a.wy) < 300 and dist(bx, by, b.wx, b.wy) < 300
+            local rev = cb == a.c and ca == b.c and dist(bx, by, a.wx, a.wy) < 300 and dist(ax, ay, b.wx, b.wy) < 300
+            if same or rev then return true end
+        end
+    end
+    return false
+end
 function M:Boats()
     local d = data()
     d.boats = d.boats or {}
-    -- une fois : on retire les trajets appris qui n'en étaient pas
+    -- une fois : on retire les trajets appris qui n'en étaient pas, puis ceux qui doublent un trajet connu
     if not d.boatsChecked then
         d.boatsChecked = true
         for i = #d.boats, 1, -1 do if not validBoat(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
+    end
+    if not d.boatsChecked2 and WK.modules.Guide and WK.modules.Guide.ToWorld and C_Map and C_Map.GetWorldPosFromMapPos then
+        d.boatsChecked2 = true
+        for i = #d.boats, 1, -1 do if knownRoute(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
     end
     return d.boats
 end
@@ -621,17 +640,7 @@ local function endRide(endP)
     if not r.crossed and len < 150 then return end
     local a, b = dock(r.start), dock(endP)
     if not validBoat(a, b) then return end
-    -- trajet déjà connu dans les données (bateaux et zeppelins des capitales) : rien à apprendre
-    local L, P = WK.modules.MapLayers, WK.modules.Guide
-    for _, t in ipairs(L and L.TRANSPORTS or {}) do
-        local ca, ax, ay = P.ToWorld(t.a[1], t.a[2] / 100, t.a[3] / 100)
-        local cb, bx, by = P.ToWorld(t.b[1], t.b[2] / 100, t.b[3] / 100)
-        if ax and bx then
-            local same = ca == a.c and cb == b.c and dist(ax, ay, a.wx, a.wy) < 300 and dist(bx, by, b.wx, b.wy) < 300
-            local rev = cb == a.c and ca == b.c and dist(bx, by, a.wx, a.wy) < 300 and dist(ax, ay, b.wx, b.wy) < 300
-            if same or rev then return end
-        end
-    end
+    if knownRoute(a, b) then return end
     local boats = M:Boats()
     local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
     for i = 1, #path.pts do path.pts[i] = floor(path.pts[i] + 0.5) end
