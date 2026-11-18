@@ -10,7 +10,7 @@ local T = function(s) return WK.T(s) end
 -- on revient dans le même donjon moins d'1 h après en être sorti.
 -- Affichage : UI/DungeonPanel.lua (à côté de la carte en donjon), UI/Pages/Dungeons.lua (page).
 
-local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me" }
+local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false }
 local function db()
     local g = WK.DB.global
     g.dungeons = g.dungeons or {}
@@ -324,6 +324,8 @@ local function record(b)
     end
     if M.run.killed[b.id] then return end
     M.run.killed[b.id] = time()
+    M.run.lastBoss, M.run.lastAt = b.id, time()
+    M:SyncHistory(M.run)
     local k = db().kills
     local me = WK:CharKey()
     k[me] = k[me] or {}
@@ -444,6 +446,7 @@ local function onZone()
             else
                 M.run = newRun(d.key)
                 store.runs[me] = M.run
+                M:SyncHistory(M.run)
             end
             lastKey = d.key
             if M:Config().alertEnter and WK:FeatureOn("dungeons") then
@@ -491,6 +494,224 @@ WK:On("CHAT_MSG_LOOT", function(msg)
             end
         end
     end
+end)
+
+---------------------------------------------------------------------------
+-- Chrono, records, historique des loots, partage avec le groupe
+--   dungeons.history[clé] = { { id, at (début), char, dur (passage complet, en s), splits = { [boss] = s depuis
+--                               le début }, n, total, loot = { { id, who, at, boss } } } } (30 derniers)
+--   dungeons.seen[objet] = nombre de fois vu tomber (messages de butin en donjon)
+-- Les temps commencent à l'entrée dans le donjon ; rien avant cette version.
+---------------------------------------------------------------------------
+local HIST_MAX = 30
+local function mainBosses(d)
+    local out = {}
+    for _, b in ipairs(M:Bosses(d)) do if not M:Optional(d, b) then table.insert(out, b) end end
+    return out
+end
+function M:History(key)
+    local st = db()
+    st.history = st.history or {}
+    st.history[key] = st.history[key] or {}
+    return st.history[key]
+end
+-- recopie le passage dans l'historique (les tables des données ne se partagent pas d'une session à l'autre)
+function M:SyncHistory(run)
+    if not (run and run.key and run.start) then return end
+    local d = self:Get(run.key)
+    if not d then return end
+    local list = self:History(run.key)
+    local me = WK:CharKey()
+    local id = run.start .. ":" .. me
+    local e
+    for _, x in ipairs(list) do if x.id == id then e = x break end end
+    if not e then
+        -- pas d'entrée pour un passage sans boss ni butin (entré pour vendre, ressorti…)
+        if not next(run.killed) and not (run.loot and #run.loot > 0) then return end
+        e = { id = id, at = run.start, char = me, loot = {} }
+        table.insert(list, 1, e)
+        while #list > HIST_MAX do table.remove(list) end
+    end
+    e.splits = {}
+    local n, total, last, complete = 0, 0, 0, true
+    for _, b in ipairs(mainBosses(d)) do
+        total = total + 1
+        local k = run.killed[b.id]
+        if k then
+            n = n + 1
+            e.splits[tostring(b.id)] = k - run.start
+            last = math.max(last, k - run.start)
+        else
+            complete = false
+        end
+    end
+    e.n, e.total = n, total
+    e.dur = (complete and total > 0) and last or nil
+    e.loot = run.loot or e.loot or {}
+end
+-- record (passage complet le plus rapide), moyenne des passages complets
+function M:Record(d)
+    local best, sum, cnt
+    for _, e in ipairs(self:History(d.key)) do
+        if e.dur then
+            cnt = (cnt or 0) + 1; sum = (sum or 0) + e.dur
+            if not best or e.dur < best.dur then best = e end
+        end
+    end
+    return best, cnt and math.floor(sum / cnt) or nil, cnt or 0
+end
+-- temps depuis le début du passage en cours
+function M:Elapsed()
+    if not (self.run and self.run.start) then return nil end
+    local stop
+    local d = self:Get(self.run.key)
+    if d and not self:Next(d) then
+        for _, t in pairs(self.run.killed) do stop = math.max(stop or 0, t) end
+    end
+    return (stop or time()) - self.run.start
+end
+-- écart avec le record à ce boss (secondes, négatif = en avance) ; nil sans record ou sans temps
+function M:Delta(d, bossID)
+    local rec = self:Record(d)
+    if not (rec and self.run and self.run.key == d.key) then return nil end
+    local k = self.run.killed[bossID]
+    local r = rec.splits and rec.splits[tostring(bossID)]
+    if not (k and r) then return nil end
+    return (k - self.run.start) - r
+end
+function M:Seen(id) local s = db().seen; return s and s[id] or 0 end
+function M.Clock(sec)
+    if not sec then return "-" end
+    sec = math.max(0, math.floor(sec))
+    if sec >= 3600 then return string.format("%d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60) end
+    return string.format("%d:%02d", sec / 60, sec % 60)
+end
+function M.ClockDelta(sec)
+    if not sec then return "" end
+    return (sec <= 0 and "-" or "+") .. M.Clock(math.abs(sec))
+end
+-- tout ce qui est tombé dans ce donjon (tous passages), le plus récent d'abord
+function M:LootHistory(d)
+    local out = {}
+    for _, e in ipairs(self:History(d.key)) do
+        for _, l in ipairs(e.loot or {}) do table.insert(out, l) end
+    end
+    table.sort(out, function(a, b) return (a.at or 0) > (b.at or 0) end)
+    return out
+end
+
+-- Butin reçu (message du jeu « X reçoit le butin : [objet] ») : historique et « vu tomber »
+local function lootPattern(fmt)
+    if type(fmt) ~= "string" then return nil end
+    local p = fmt:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+    p = p:gsub("%%%%s", "(.+)"):gsub("%%%%d", "%%d+")
+    return "^" .. p
+end
+local lootSeen = {}
+WK:On("CHAT_MSG_LOOT", function(msg)
+    if not (WK:FeatureOn("dungeons") and M.run) or type(msg) ~= "string" then return end
+    if issecretvalue and issecretvalue(msg) then return end
+    if not (IsInInstance and IsInInstance()) then return end
+    local id = tonumber(msg:match("item:(%d+)"))
+    if not (id and WK.DungeonItems and WK.DungeonItems[id]) then return end
+    local who
+    for _, g in ipairs({ "LOOT_ITEM_SELF", "LOOT_ITEM_SELF_MULTIPLE", "LOOT_ITEM_PUSHED_SELF" }) do
+        local p = lootPattern(_G[g])
+        if p and msg:match(p) then who = WK:CharKey() break end
+    end
+    if not who then
+        for _, g in ipairs({ "LOOT_ITEM", "LOOT_ITEM_MULTIPLE" }) do
+            local p = lootPattern(_G[g])
+            local name = p and msg:match(p)
+            if name then who = name break end
+        end
+    end
+    if not who then return end
+    local k = id .. ":" .. who
+    if lootSeen[k] and GetTime() - lootSeen[k] < 5 then return end
+    lootSeen[k] = GetTime()
+    local run = M.run
+    run.loot = run.loot or {}
+    local boss = (run.lastAt and time() - run.lastAt < 180) and run.lastBoss or nil
+    table.insert(run.loot, { id = id, who = who, at = time(), boss = boss and tostring(boss) or nil })
+    local st = db()
+    st.seen = st.seen or {}
+    st.seen[id] = (st.seen[id] or 0) + 1
+    M:SyncHistory(run)
+    if M.OnChange then M:OnChange() end
+    WK:NotifyChanged()
+end)
+
+-- Annonce dans le canal du groupe (clic du joueur)
+local function groupChannel()
+    if IsInGroup and LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then return "INSTANCE_CHAT" end
+    if IsInRaid and IsInRaid() then return "RAID" end
+    if IsInGroup and IsInGroup() then return "PARTY" end
+    return nil
+end
+function M:AnnounceText(d)
+    if not self:InRun(d) then return nil end
+    local main = mainBosses(d)
+    local n, last = 0, nil
+    for _, b in ipairs(main) do if self.run.killed[b.id] then n = n + 1; last = b end end
+    local txt = string.format(T("%s : %d/%d boss en %s"), self:Name(d), n, #main, M.Clock(self:Elapsed()))
+    local rec = self:Record(d)
+    if rec then
+        local dl = last and self:Delta(d, last.id)
+        txt = txt .. string.format(T(" (record %s%s)"), M.Clock(rec.dur), dl and (", " .. M.ClockDelta(dl)) or "")
+    end
+    local nb = self:Next(d)
+    if nb then txt = txt .. string.format(T(". Prochain : %s."), self:BossName(nb)) else txt = txt .. "." end
+    return txt
+end
+function M:Announce(d)
+    local ch, txt = groupChannel(), self:AnnounceText(d)
+    if not txt then return false end
+    if not ch then WK:Print(txt) return false end
+    pcall(SendChatMessage, txt, ch)
+    return true
+end
+-- Partage du parcours aux membres qui ont l'addon : boss tués (secondes depuis le début), temps écoulé
+local SHARE = "WKrun"
+function M:Share(d)
+    local ch = groupChannel()
+    if not (ch and self:InRun(d) and C_ChatInfo and C_ChatInfo.SendAddonMessage) then return false end
+    local parts = {}
+    for b, t in pairs(self.run.killed) do table.insert(parts, tostring(b) .. "=" .. (t - self.run.start)) end
+    local msg = "R:" .. d.key .. ":" .. self:Elapsed() .. ":" .. table.concat(parts, ";")
+    if #msg > 250 then msg = msg:sub(1, 250) end
+    local ok = pcall(C_ChatInfo.SendAddonMessage, SHARE, msg, ch)
+    return ok
+end
+WK:On("PLAYER_LOGIN", function()
+    if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then pcall(C_ChatInfo.RegisterAddonMessagePrefix, SHARE) end
+end)
+WK:On("CHAT_MSG_ADDON", function(prefix, msg, _, sender)
+    local rd = WK.modules.QoL.Readable
+    prefix, msg, sender = rd(prefix), rd(msg), rd(sender)
+    if prefix ~= SHARE or type(msg) ~= "string" then return end
+    local key, elapsed, list = msg:match("^R:([^:]+):(%d+):(.*)$")
+    elapsed = tonumber(elapsed)
+    if not (key and elapsed and M.run and tostring(M.run.key) == key) then return end
+    local me = UnitName and UnitName("player")
+    if type(sender) == "string" and me and sender:match("^[^%-]+") == me then return end
+    local d = M:Get(M.run.key)
+    if not d then return end
+    -- son chrono a commencé plus tôt : on le reprend
+    local start = time() - elapsed
+    if start < M.run.start then M.run.start = start end
+    local n = 0
+    for bid, sec in list:gmatch("([^=;]+)=(%d+)") do
+        for _, b in ipairs(M:Bosses(d)) do
+            if tostring(b.id) == bid and not M.run.killed[b.id] then
+                M.run.killed[b.id] = start + tonumber(sec); n = n + 1
+            end
+        end
+    end
+    M:SyncHistory(M.run)
+    WK:Print(string.format(T("%s a partagé son parcours : %d boss en plus, chrono %s."), (function(n) n = tostring(n):match("^[^%-]+") or tostring(n); return WK.Latin and WK.Latin(n) or n end)(sender), n, M.Clock(elapsed)))
+    if M.OnChange then M:OnChange() end
+    WK:NotifyChanged()
 end)
 
 ---------------------------------------------------------------------------

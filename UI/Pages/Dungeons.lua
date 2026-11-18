@@ -423,6 +423,8 @@ UI:RegisterPage({
             b:SetScript("OnEnter", function(s)
                 UI:TooltipOwner(s, "ANCHOR_RIGHT")
                 if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText((UI:ItemInfo(s.id))) end
+                local seen = D:Seen(s.id)
+                GameTooltip:AddLine(seen > 0 and string.format(seen > 1 and T("Vu tomber %d fois") or T("Vu tomber %d fois"), seen) or T("Jamais vu tomber"), 0.85, 0.75, 0.45)
                 GameTooltip:AddLine(T("Clic : liste d'envies · Maj + clic : lien dans le chat"), 0.6, 0.6, 0.6)
                 GameTooltip:Show()
             end)
@@ -437,6 +439,46 @@ UI:RegisterPage({
             end)
             return b
         end)
+        -- bandeau chrono : temps du passage, record, moyenne, avancée, annonce et partage au groupe
+        local ch = CreateFrame("Frame", nil, det)
+        det.chrono = ch
+        ch:SetHeight(70)
+        ch.bg = UI:Rounded(ch, 10, 0, "BACKGROUND", 2)
+        ch.kick = UI:Text(ch, 10, C.dim); ch.kick:SetPoint("TOPLEFT", 14, -10)
+        ch.time = UI:Text(ch, 24); ch.time:SetPoint("TOPLEFT", 14, -24)
+        ch.rec = UI:Text(ch, 11, C.text); ch.rec:SetPoint("TOPLEFT", 120, -14); ch.rec:SetJustifyH("LEFT")
+        ch.rec2 = UI:Text(ch, 11, C.muted); ch.rec2:SetPoint("TOPLEFT", 120, -32); ch.rec2:SetJustifyH("LEFT")
+        ch.share = UI:Button(ch, "Partager le parcours", nil, 24, "primary")
+        ch.share:SetPoint("TOPRIGHT", -12, -12)
+        ch.share:SetScript("OnClick", function()
+            local d = D:Get(self.sel)
+            if d and not D:Share(d) then WK:Print(T("Partage impossible : pas de groupe, ou pas dans ce donjon.")) end
+        end)
+        ch.say = UI:Button(ch, "Annoncer au groupe", nil, 24, "secondary")
+        ch.say:SetPoint("RIGHT", ch.share, "LEFT", -8, 0)
+        ch.say:SetScript("OnClick", function() local d = D:Get(self.sel); if d then D:Announce(d) end end)
+        ch.hud = UI:Toggle(ch, function() return D:Config().timer end, function(v)
+            D:Config().timer = v; if UI.RefreshDungeonTimer then UI:RefreshDungeonTimer() end
+        end)
+        ch.hud:SetPoint("TOPRIGHT", -12, -42)
+        ch.hudL = UI:Text(ch, 10, C.muted); ch.hudL:SetPoint("RIGHT", ch.hud, "LEFT", -6, 0)
+        ch.hudL:SetText(T("Chrono à l'écran"))
+        ch.track = ch:CreateTexture(nil, "ARTWORK"); ch.track:SetHeight(4)
+        ch.track:SetPoint("BOTTOMLEFT", 14, 8); ch.track:SetPoint("BOTTOMRIGHT", -14, 8)
+        ch.fill = ch:CreateTexture(nil, "ARTWORK", nil, 2); ch.fill:SetHeight(4); ch.fill:SetPoint("LEFT", ch.track, "LEFT")
+        ch.mark = ch:CreateTexture(nil, "ARTWORK", nil, 3); ch.mark:SetSize(2, 10)
+        ch:SetScript("OnUpdate", function(s, el)
+            s.acc = (s.acc or 0) + el
+            if s.acc < 1 or not s.live then return end
+            s.acc = 0
+            s.time:SetText(D.Clock(D:Elapsed()))
+        end)
+        -- tombé dans ce donjon (tous tes passages)
+        det.lootHist = UI:Text(det, 11, C.text)
+        det.lootHist:SetJustifyH("LEFT"); det.lootHist:SetJustifyV("TOP")
+        if det.lootHist.SetWordWrap then det.lootHist:SetWordWrap(false) end
+        det.lootHist:SetSpacing(5)
+        det.lootHead = UI:Text(det, 10, C.dim)
         -- étapes de la frise
         self.steps = UI:Pool(function()
             local r = CreateFrame("Button", nil, det)
@@ -500,9 +542,62 @@ UI:RegisterPage({
             for _, id in ipairs(b.loot) do if D:IsWished(id, key) then n = n + 1 end end
             return n
         end
+        -- bandeau chrono
+        local ch = det.chrono
+        local rec, avg, nComplete = D:Record(d)
+        local top = 84
+        if inRun or rec then
+            ch:Show()
+            ch:ClearAllPoints(); ch:SetPoint("TOPLEFT", 14, -84); ch:SetPoint("TOPRIGHT", -14, -84)
+            ch.bg:SetColor(unpack(C.surface2))
+            ch.live = inRun
+            ch.kick:SetText(UI:Upper(inRun and T("Passage en cours") or T("Meilleur passage")))
+            ch.time:SetText(D.Clock(inRun and D:Elapsed() or rec.dur))
+            if inRun then ch.time:SetTextColor(C.text[1], C.text[2], C.text[3]) else ch.time:SetTextColor(C.gold[1], C.gold[2], C.gold[3]) end
+            local rc = rec and WK.DB.global.characters[rec.char]
+            if rec then
+                ch.rec:SetText(string.format(T("Record %s · %s · %s"), UI:Hex(C.gold) .. D.Clock(rec.dur) .. "|r",
+                    rc and WK:CharName(rc, rec.char) or "?", date("%d/%m", rec.at)))
+            else
+                ch.rec:SetText(T("Pas encore de record : finis un passage complet"))
+            end
+            local dl
+            if inRun then
+                local lastK, lastB = 0, nil
+                for _, b in ipairs(bosses) do local k = run.killed[b.id]; if k and k > lastK then lastK, lastB = k, b end end
+                dl = lastB and D:Delta(d, lastB.id)
+            end
+            local parts = {}
+            if dl then table.insert(parts, UI:Hex(dl <= 0 and C.positive or C.negative) .. D.ClockDelta(dl) .. "|r " .. (dl <= 0 and T("d'avance") or T("de retard"))) end
+            if avg then table.insert(parts, string.format(nComplete > 1 and T("moyenne %s · %d passages") or T("moyenne %s · %d passage"), D.Clock(avg), nComplete)) end
+            ch.rec2:SetText(table.concat(parts, "  ·  "))
+            ch.say:SetShown(inRun); ch.share:SetShown(inRun)
+            ch.hud:Refresh()
+            -- avancée : boss tués / boss du parcours ; trait or : où en était le record au même temps
+            local nMain, nK = 0, 0
+            for _, b in ipairs(bosses) do
+                if not D:Optional(d, b) then nMain = nMain + 1; if inRun and run.killed[b.id] then nK = nK + 1 end end
+            end
+            local tw = math.max(10, W - 28 - 28)
+            ch.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+            ch.fill:SetColorTexture(r1, g1, b1, 1)
+            ch.fill:SetWidth(math.max(0.01, tw * (inRun and nMain > 0 and nK / nMain or 0)))
+            ch.fill:SetShown(inRun)
+            ch.mark:SetColorTexture(C.gold[1], C.gold[2], C.gold[3], 1)
+            ch.mark:SetShown(false)
+            if inRun and rec and rec.splits and nMain > 0 then
+                local el, rk = D:Elapsed() or 0, 0
+                for _, sp in pairs(rec.splits) do if sp <= el then rk = rk + 1 end end
+                ch.mark:ClearAllPoints(); ch.mark:SetPoint("CENTER", ch.track, "LEFT", tw * math.min(1, rk / nMain), 0)
+                ch.mark:Show()
+            end
+            top = 84 + 70 + 8
+        else
+            ch:Hide(); ch.live = false
+        end
         -- carte du haut
         f:Show()
-        f:ClearAllPoints(); f:SetPoint("TOPLEFT", 14, -84); f:SetPoint("TOPRIGHT", -14, -84)
+        f:ClearAllPoints(); f:SetPoint("TOPLEFT", 14, -top); f:SetPoint("TOPRIGHT", -14, -top)
         f.edge:SetColor(r1, g1, b1, 0.45)
         f.bg:SetColor(C.surface2[1] * 0.85 + r1 * 0.15, C.surface2[2] * 0.85 + g1 * 0.15, C.surface2[3] * 0.85 + b1 * 0.15, 1)
         f.boss = boss
@@ -591,7 +686,7 @@ UI:RegisterPage({
         end
         f:SetHeight(FH)
         -- frise
-        local fy = 84 + FH + 6
+        local fy = top + FH + 6
         local lastWing, wingHead = false, nil
         local wingCount = {}
         for _, b in ipairs(bosses) do
@@ -648,11 +743,17 @@ UI:RegisterPage({
             r.lvl:SetText((b.level or 0) > 0 and tostring(b.level) or "")
             -- à droite : heure du kill, déjà tué, passé, facultatif, prochain ; étoile = envies
             local txt, col = "", C.muted
-            if killedAt then txt, col = date("%H:%M", killedAt), C.muted
+            local recSplit = rec and rec.splits and rec.splits[tostring(b.id)]
+            if killedAt then
+                local dlt = D:Delta(d, b.id)
+                txt, col = D.Clock(killedAt - run.start) .. (dlt and ("  " .. UI:Hex(dlt <= 0 and C.positive or C.negative) .. D.ClockDelta(dlt) .. "|r") or ""), C.text
             elseif skipped then txt = T("passé")
             elseif isNext then txt, col = T("prochain"), { r1, g1, b1, 1 }
             elseif ever then txt, col = T("déjà tué"), C.dim
             elseif opt then txt, col = T("facultatif"), C.dim end
+            if not killedAt and not skipped and inRun and recSplit then
+                txt = (txt ~= "" and (txt .. "  ·  ") or "") .. string.format(T("record %s"), D.Clock(recSplit))
+            end
             r.right:SetText(txt); r.right:SetTextColor(unpack(col))
             local wn = wishes(b)
             r.star:SetShown(wn > 0); r.wn:SetShown(wn > 0)
@@ -682,6 +783,37 @@ UI:RegisterPage({
             msg = string.format(T("Passage commencé à %s  ·  %d min"), date("%H:%M", run.start), math.floor((time() - run.start) / 60))
         elseif not inRun then
             msg = T("Hors du donjon : coches pâles = boss déjà tués par ce perso.")
+        end
+        -- tombé dans ce donjon
+        local hist = D:LootHistory(d)
+        det.lootHead:SetShown(#hist > 0); det.lootHist:SetShown(#hist > 0)
+        if #hist > 0 then
+            fy = fy + 10
+            det.lootHead:ClearAllPoints(); det.lootHead:SetPoint("TOPLEFT", 16, -fy)
+            det.lootHead:SetText(UI:Upper(T("Tombé dans ce donjon")) .. "  " .. UI:Hex(C.muted) .. string.format(T("%d objets, tous tes passages"), #hist) .. "|r")
+            fy = fy + 18
+            local lines = {}
+            local bossName = {}
+            for _, b in ipairs(bosses) do bossName[tostring(b.id)] = D:BossName(b) end
+            for i, l in ipairs(hist) do
+                if i > 6 then break end
+                local name, icon, qr, qg, qb = UI:ItemInfo(l.id)
+                local who = l.who
+                local wc = WK.DB.global.characters[who]
+                if wc then
+                    local cr, cg, cb = UI:ClassColor(wc.class)
+                    who = string.format("|cff%02x%02x%02x%s|r", cr * 255, cg * 255, cb * 255, WK:CharName(wc, l.who))
+                else
+                    who = UI:Hex(C.muted) .. (WK.Latin and WK.Latin(who) or who) .. "|r"
+                end
+                local where = (l.boss and bossName[l.boss]) and (bossName[l.boss] .. " · ") or ""
+                table.insert(lines, string.format("|T%s:16:16|t %s%s|r  %s%s%s|r  » %s", tostring(icon or 134400),
+                    string.format("|cff%02x%02x%02x", (qr or 1) * 255, (qg or 1) * 255, (qb or 1) * 255), name or ("#" .. l.id),
+                    UI:Hex(C.dim), where, ((time() - (l.at or time())) >= 86400 and string.format(T("il y a %d j"), math.floor((time() - l.at) / 86400)) or UI:AgoShort(time() - (l.at or time()))), who))
+            end
+            det.lootHist:ClearAllPoints(); det.lootHist:SetPoint("TOPLEFT", 16, -fy); det.lootHist:SetPoint("RIGHT", -16, 0)
+            det.lootHist:SetText(table.concat(lines, "\n"))
+            fy = fy + math.min(#hist, 6) * 21 + 4
         end
         local bottom = fy + 6
         self:PlaceButtons(d, bottom, msg)

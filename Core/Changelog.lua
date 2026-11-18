@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.30.0", date = "18/11/2026", restart = true,
+        added = {
+            "Donjons > Parcours : chrono du passage en tête de l'onglet, avec le record du donjon (temps, perso, date), ton avance ou ton retard au dernier boss, la moyenne de tes passages complets et une barre d'avancée (trait or : où en était le record au même moment).",
+            "Donjons > Parcours : sous chaque boss tué, son temps depuis l'entrée et l'écart avec le record (vert en avance, rouge en retard) ; les boss suivants montrent le temps du record.",
+            "Donjons : « Annoncer au groupe » écrit l'avancée dans le canal du groupe (boss, chrono, record, prochain boss) ; « Partager le parcours » envoie boss tués et chrono aux membres qui ont Warband Keeper.",
+            "Donjons : historique des loots, « Tombé dans ce donjon » (objet, boss, quand, qui l'a gagné) sous la frise, et « Vu tomber X fois » dans l'infobulle des objets. Tout commence avec cette version.",
+            "Chrono de donjon à l'écran, en option (interrupteur « Chrono à l'écran » de l'onglet Parcours) : temps de chaque boss et écart avec le record, à placer en mode édition.",
+        },
+    },
+    {
         version = "1.29.2", date = "18/11/2026",
         changed = {
             "Objets verrouillés, règle « Recettes » : une recette qu'un de tes persos a déjà apprise n'est plus verrouillée ; tu peux la vendre. Seules restent verrouillées celles qu'aucun de tes persos ne connaît encore.",
@@ -2822,7 +2832,7 @@ WK.Roadmap = {
     "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
     "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",
     "Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.",
-    "Donjons, suite du parcours : temps de chaque boss et record du donjon, partage du parcours avec le groupe. Puis historique des loots (ce qui est tombé, quand, qui l'a gagné), « vu tomber X fois » noté en jeu, et les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.",
+    "Donjons : les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.",
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
