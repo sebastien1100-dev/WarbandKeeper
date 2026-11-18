@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.25.0 — 18/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Carte et minicarte : les quais montrent un petit bateau ou un petit zeppelin au lieu d'une flèche ; les zeppelins (pastille et trait) sont orange pour les distinguer des bateaux. L'icône du filtre « Bateaux et zeppelins » est aussi un bateau.
+
 ## v1.24.5 — 18/11/2026
 
 _Un /reload suffit._

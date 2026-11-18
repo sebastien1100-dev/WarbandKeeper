@@ -36,7 +36,7 @@ M.LAYERS = {
     { key = "stable", bit = 512, family = "mast", icon = "users", label = "Maître des écuries", class = { HUNTER = true } },
     { key = "pet", bit = 65536, family = "mast", icon = "star", label = "Familiers et démons", classTrainer = true },
     { key = "flight", bit = 8192, family = "trav", icon = "map", label = "Maîtres de vol", map = true },
-    { key = "transport", family = "trav", icon = "arrow", label = "Bateaux et zeppelins", map = true, mini = true },
+    { key = "transport", family = "trav", icon = "boat", label = "Bateaux et zeppelins", map = true, mini = true },
     { key = "battle", bit = 32768, family = "misc", icon = "lfg", label = "Maîtres de guerre" },
 }
 M.LAYER = {}

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.25.0", date = "18/11/2026", restart = true,
+        changed = {
+            "Carte et minicarte : les quais montrent un petit bateau ou un petit zeppelin au lieu d'une flèche ; les zeppelins (pastille et trait) sont orange pour les distinguer des bateaux. L'icône du filtre « Bateaux et zeppelins » est aussi un bateau.",
+        },
+    },
+    {
         version = "1.24.5", date = "18/11/2026",
         fixed = {
             "Carte : un même quai pouvait annoncer deux destinations (par exemple Cabestan « vers Vallée de Strangleronce » et « vers Les Tarides »). Le second était un faux trajet en bateau appris (un autre déplacement sans bouger pris pour un bateau). Un trajet n'est plus appris que s'il change de continent, ou de région sur au moins 500 m, et s'il n'est pas déjà connu ; les faux trajets déjà appris sont retirés.",

@@ -62,6 +62,20 @@ local function paintPin(p, l, size)
     if p.icon.SetRotation then p.icon:SetRotation(0) end
 end
 
+-- Quai d'un bateau ou d'un zeppelin : petite icône du véhicule ; les zeppelins ont leur propre couleur
+local function transportLook(kind, layer)
+    if kind == "zeppelin" then return "zeppelin", C.warning end
+    return "boat", familyColor(layer)
+end
+local function paintDock(p, kind, layer)
+    local icon, col = transportLook(kind, layer)
+    p.ring:SetVertexColor(col[1], col[2], col[3], 1)
+    p.icon:SetTexture(UI.MEDIA .. icon)
+    p.icon:SetVertexColor(col[1], col[2], col[3], 1)
+    if p.icon.SetRotation then p.icon:SetRotation(0) end
+    return col
+end
+
 local function getRoute(i, cv)
     local r = routes[i]
     if not r then
@@ -141,9 +155,9 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     end
     -- bateaux et zeppelins : quai, pointillés vers la destination, nom au bout
     local tl = L.LAYER.transport
-    local col = familyColor(tl)
     for i, d in ipairs(L:Docks(mapID, "map")) do
         local r = getRoute(i, cv)
+        local _, col = transportLook(d.kind, tl)
         local x0, y0 = d.x / 100 * w, d.y / 100 * h
         local dx, dy = L:Heading(d.here, d.other)
         -- pointillés vers la destination, sans sortir de la carte
@@ -171,11 +185,11 @@ function UI:DrawMapLayers(cv, mapID, w, h)
                     (d.kind == "zeppelin" and T("Zeppelin") or T("Bateau")) .. " " .. string.format(T("vers %s"), d.to) }
         r.pin.e, r.pin.layer, r.pin.mapID = e, tl, mapID
         paintPin(r.pin, tl, size)
+        paintDock(r.pin, d.kind, tl)
         r.pin:SetFrameLevel(lvl + 1)
         r.pin:ClearAllPoints()
         r.pin:SetPoint("CENTER", cv, "TOPLEFT", x0, -y0)
         r.pin:Show()
-        if r.pin.icon.SetRotation then r.pin.icon:SetRotation(math.atan2(-dy, dx)) end -- la flèche montre la destination
         -- destination dans l'infobulle du quai seulement (plus d'étiquette posée sur la carte)
         r.label:Hide()
     end
@@ -407,7 +421,7 @@ local function updateMini()
     if cacheMap ~= pos.map or not cacheAt or now - cacheAt > 5 then
         cache = L:Places(pos.map, "mini")
         for _, d in ipairs(L:Docks(pos.map, "mini")) do
-            table.insert(cache, { e = { d.x, d.y, 0 }, layer = L.LAYER.transport })
+            table.insert(cache, { e = { d.x, d.y, 0 }, layer = L.LAYER.transport, kind = d.kind or "boat" })
         end
         cacheMap, cacheAt = pos.map, now
     end
@@ -430,6 +444,7 @@ local function updateMini()
             p.inner:SetSize(ps - 3, ps - 3); p.inner:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
             p.icon:SetTexture(UI.MEDIA .. it.layer.icon); p.icon:SetSize(ps * 0.55, ps * 0.55)
             p.icon:SetVertexColor(col[1], col[2], col[3], 1)
+            if it.kind then paintDock(p, it.kind, it.layer) end
             p.ring:ClearAllPoints()
             p.ring:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
             p.ring:Show(); p.inner:Show(); p.icon:Show()
