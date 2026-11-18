@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Hôtel des ventes, idées de The Market : valeur des sacs à l'HV (sur les sacs et dans l'infobulle d'un courrier), composants « fabriquer ou vendre ? », zones de récolte classées par valeur à l'heure avec une tournée guidée.
 - Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
@@ -27,6 +28,20 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.35.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Vente, garde-fou : un prix qui rapporte moins que le marchand, ou bien sous le cours (un zéro oublié), demande confirmation (« Vendre quand même » / « Corriger »). Se coupe dans l'onglet Scan.
+- Vente : « ton prix arrive 1er sur 6 » ; un clic sur une enchère de la liste prend son prix ; « Acheter » sur celles des autres, « Annuler » sur les tiennes.
+- Vente : quantité en pastilles (1, une pile, tout), retenue pour chaque genre d'objet ; favoris (clic droit, en tête de liste) et objets à ne plus proposer (Maj + clic droit) ; un clic droit sur un objet des sacs du jeu l'amène dans Vente.
+- Vente au clavier, en option (onglet Scan) : Espace met en vente, S passe, Haut / Bas changent de palier de prix.
+- Nouvel onglet « Prix » : la courbe du plus bas de chaque jour sur 14 jours (survol = prix et quantité en vente), la moyenne, les objets qui ont le plus bougé sur 7 jours, la recherche dans tes scans, « Surveiller » (alerte de prix) et « Vendre ». La courbe se remplit aussi à chaque recherche d'un objet.
+
+### Corrections
+- Hôtel des ventes, Vente : les durées étaient fausses (12, 24 et 48 h) ; ce sont celles du jeu sur WoW Forever (2, 8 et 24 h), avec leurs libellés lus dans le jeu et la durée du jeu par défaut.
 
 ## v1.34.4 — 18/11/2026
 

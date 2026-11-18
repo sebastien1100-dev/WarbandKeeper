@@ -23,8 +23,11 @@ local THROTTLE = 1.1
 local function cfg()
     local c = S:Config()
     if c.tabs == nil then c.tabs = true end
-    c.postDur = c.postDur or 2
+    c.postDur = c.postDur or tonumber(GetCVar and GetCVar("auctionHouseDurationDropdown") or "") or 2
+    if c.postDur < 1 or c.postDur > 3 then c.postDur = 2 end
     c.posts = c.posts or {}
+    c.sellFav, c.sellHidden, c.qtyMode = c.sellFav or {}, c.sellHidden or {}, c.qtyMode or {}
+    if c.askBad == nil then c.askBad = true end
     return c
 end
 local function money(v) return v and WK:FormatMoney(v) or "-" end
@@ -101,6 +104,13 @@ end
 local function onResults(id)
     if not id then return end
     pcall(readResults, id)
+    -- le plus bas vu compte aussi pour la courbe des prix du jour
+    local r = results[id]
+    if r then
+        local low, qty = nil, 0
+        for _, row in ipairs(r.rows) do low = low and math.min(low, row.unit) or row.unit; qty = qty + row.qty end
+        if low then pcall(S.SeenToday, S, id, low, qty) end
+    end
     if pending == id then pending = nil end
     if view and view:IsShown() then view:Refresh() end
 end
@@ -137,23 +147,31 @@ local function sellable(bag, slot, id, bound)
     return true
 end
 local function bagItems()
-    local by, list = {}, {}
+    local by, list, hiddenSeen = {}, {}, {}
     for bag = 0, 4 do
         for slot = 1, WK.Container.NumSlots(bag) or 0 do
             local id, count, _, bound = WK.Container.Info(bag, slot)
-            if id and sellable(bag, slot, id, bound) then
+            if id and cfg().sellHidden[id] and sellable(bag, slot, id, bound) then
+                hiddenSeen[id] = true
+            elseif id and sellable(bag, slot, id, bound) then
                 local e = by[id]
                 if not e then e = { id = id, count = 0, bag = bag, slot = slot }; by[id] = e; table.insert(list, e) end
                 e.count = e.count + (count or 1)
             end
         end
     end
+    local fav = cfg().sellFav
     for _, e in ipairs(list) do e.value = (S:Price(e.id) or 0) * e.count end
+    -- favoris d'abord, puis les plus précieux
     table.sort(list, function(x, y)
+        local fx, fy = fav[x.id] and 1 or 0, fav[y.id] and 1 or 0
+        if fx ~= fy then return fx > fy end
         if x.value ~= y.value then return x.value > y.value end
         return x.id < y.id
     end)
-    return list, by
+    local nh = 0
+    for _ in pairs(hiddenSeen) do nh = nh + 1 end
+    return list, by, nh
 end
 -- objets que le Rangement met en vente sur ce perso (perso HV)
 local function stashSell()
@@ -171,7 +189,7 @@ end
 ---------------------------------------------------------------------------
 -- Construction
 ---------------------------------------------------------------------------
-local TABS = { { "buy", "Achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "scan", "Scan" } }
+local TABS = { { "buy", "Achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
 
 local function panelBox(parent, title)
     local b = CreateFrame("Frame", nil, parent)
@@ -302,38 +320,95 @@ local function build(host)
         local b = CreateFrame("Button", nil, sv.bags)
         b:SetSize(SLOT, SLOT)
         b:SetPoint("TOPLEFT", 10 + ((i - 1) % COLS) * (SLOT + GAP), -30 - math.floor((i - 1) / COLS) * (SLOT + GAP))
+        if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
         b.edge = UI:Rounded(b, 6, 0, "BACKGROUND", 1)
         b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
         b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         b.n = UI:Text(b, 10, C.text, "OVERLAY"); b.n:SetFont(UI.FONT, 10, "OUTLINE"); b.n:SetPoint("BOTTOMRIGHT", -1, 1)
         b.tag = UI:Text(b, 8, C.gold, "OVERLAY"); b.tag:SetFont(UI.FONT, 8, "OUTLINE"); b.tag:SetPoint("TOPLEFT", 2, -1)
-        b:SetScript("OnClick", function(s) if s.e then sv:Select(s.e.id) end end)
+        b:SetScript("OnClick", function(s, button)
+            if not s.e then return end
+            if button == "RightButton" then
+                -- clic droit : favori (en tête de liste) ; Maj + clic droit : ne plus proposer cet objet
+                local c = cfg()
+                if IsShiftKeyDown and IsShiftKeyDown() then c.sellHidden[s.e.id] = true; c.sellFav[s.e.id] = nil
+                else c.sellFav[s.e.id] = (not c.sellFav[s.e.id]) or nil end
+                sv:Refresh()
+                return
+            end
+            sv:Select(s.e.id)
+        end)
         b:SetScript("OnEnter", function(s)
             if not s.e then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.e.id) end
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine(cfg().sellFav[s.e.id] and T("Clic droit : retirer des favoris") or T("Clic droit : favori (en tête)"), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(T("Maj + clic droit : ne plus proposer"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
         b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         b:Hide()
         sv.slots[i] = b
     end
+    sv.hiddenBtn = CreateFrame("Button", nil, sv.bags)
+    sv.hiddenBtn:SetHeight(16); sv.hiddenBtn:SetPoint("BOTTOMLEFT", 10, 52); sv.hiddenBtn:SetPoint("RIGHT", -10, 0)
+    sv.hiddenBtn.t = UI:Text(sv.hiddenBtn, 10); sv.hiddenBtn.t:SetPoint("LEFT")
+    sv.hiddenBtn:SetScript("OnClick", function() wipe(cfg().sellHidden); sv:Refresh() end)
     sv.bagNote = UI:Text(sv.bags, 10, C.dim); sv.bagNote:SetPoint("BOTTOMLEFT", 10, 10); sv.bagNote:SetPoint("RIGHT", -10, 0)
     sv.bagNote:SetJustifyH("LEFT")
     if sv.bagNote.SetWordWrap then sv.bagNote:SetWordWrap(true) end
-    sv.bagNote:SetText(T("Liés, verrouillés à la main et objets de quête cachés · « HV » : prix connu · étoile : à vendre d'après le Rangement"))
+    sv.bagNote:SetText(T("Liés, verrouillés à la main et objets de quête cachés · « HV » : prix connu · étoile : à vendre d'après le Rangement · clic droit sur un objet de tes sacs du jeu : il arrive ici"))
 
     sv.right = panelBox(sv, "En vente")
-    sv.right:SetPoint("TOPRIGHT"); sv.right:SetPoint("BOTTOMRIGHT"); sv.right:SetWidth(250)
+    sv.right:SetPoint("TOPRIGHT"); sv.right:SetPoint("BOTTOMRIGHT"); sv.right:SetWidth(260)
+    sv.right.sub:SetText(T("clic : prendre ce prix"))
     sv.lrows = {}
     for i = 1, 9 do
-        local r = textRow(sv.right, 20)
-        r:SetPoint("TOPLEFT", 6, -28 - (i - 1) * 20); r:SetPoint("TOPRIGHT", -6, -28 - (i - 1) * 20)
+        local r = textRow(sv.right, 22)
+        r:SetPoint("TOPLEFT", 6, -28 - (i - 1) * 22); r:SetPoint("TOPRIGHT", -6, -28 - (i - 1) * 22)
         r.icon:Hide(); r.a:SetPoint("LEFT", 6, 0)
-        r.b:SetPoint("RIGHT", -60, 0); r.c:SetPoint("RIGHT", -6, 0); r.c:SetWidth(50)
+        r.b:SetPoint("RIGHT", -110, 0); r.b:SetWidth(40)
+        r.c:SetPoint("RIGHT", -74, 0); r.c:SetWidth(36)
+        r.act = UI:Button(r, "Acheter", 66, 18, "ghost"); r.act:SetPoint("RIGHT", -2, 0)
+        r:SetScript("OnClick", function(s)
+            -- clic : ce prix (le tien tel quel, celui d'un autre moins l'écart)
+            if not (s.x and sv.id) then return end
+            local under = (A.Config and A.Config().undercut) or 1
+            local p = s.x.mine and s.x.unit or math.max(1, s.x.unit - under)
+            sv.userPrice = true
+            sv.price:SetText(WK:FormatMoney(p):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+            sv:Update()
+        end)
+        r.act:SetScript("OnClick", function(s)
+            local row = s:GetParent()
+            local x, id = row.x, sv.id
+            if not (x and id) then return end
+            local a = AH()
+            if x.mine then
+                -- ta propre enchère : annuler (la première qui a ce prix)
+                for _, o in ipairs(A.owned or {}) do
+                    if o.id == id and o.unit == x.unit then A:Cancel(o.auctionID) return end
+                end
+                A:Query()
+                WK:Print(T("Enchère pas encore relevée : réessaie dans un instant."))
+            elseif not isCommodity(id) and x.auctionID and a and a.PlaceBid then
+                if not pcall(a.PlaceBid, x.auctionID, x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
+            elseif a and a.StartCommoditiesPurchase then
+                local b = S.buy
+                if b and b.id == id and b.phase == "confirm" then
+                    b.phase = "wait"
+                    if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
+                else
+                    S.buy = { id = id, qty = x.qty, phase = "quote", skip = {}, spent = 0, count = 0 }
+                    if not pcall(a.StartCommoditiesPurchase, id, x.qty) then S.buy = nil end
+                end
+            end
+            sv:Refresh()
+        end)
         sv.lrows[i] = r
     end
-    sv.hist = UI:Text(sv.right, 10, C.muted); sv.hist:SetPoint("TOPLEFT", 10, -220); sv.hist:SetPoint("RIGHT", -10, 0)
+    sv.hist = UI:Text(sv.right, 10, C.muted); sv.hist:SetPoint("TOPLEFT", 10, -232); sv.hist:SetPoint("RIGHT", -10, 0)
     sv.hist:SetJustifyH("LEFT"); sv.hist:SetJustifyV("TOP")
     if sv.hist.SetSpacing then sv.hist:SetSpacing(3) end
 
@@ -342,12 +417,15 @@ local function build(host)
     sv.mid.title:Hide()
     sv.itemIcon = sv.mid:CreateTexture(nil, "ARTWORK"); sv.itemIcon:SetSize(36, 36); sv.itemIcon:SetPoint("TOPLEFT", 12, -12)
     sv.itemIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    sv.itemName = UI:Text(sv.mid, 13); sv.itemName:SetPoint("TOPLEFT", 56, -14); sv.itemName:SetPoint("RIGHT", -12, 0)
+    sv.itemName = UI:Text(sv.mid, 13); sv.itemName:SetPoint("TOPLEFT", 56, -12); sv.itemName:SetPoint("RIGHT", -12, 0)
     sv.itemName:SetJustifyH("LEFT")
     if sv.itemName.SetWordWrap then sv.itemName:SetWordWrap(false) end
-    sv.itemSub = UI:Text(sv.mid, 10, C.muted); sv.itemSub:SetPoint("TOPLEFT", 56, -32)
-    local function label(txt, y)
-        local l = UI:Text(sv.mid, 9, C.dim); l:SetPoint("TOPLEFT", 12, y); l:SetText(UI:Upper(T(txt)))
+    sv.itemSub = UI:Text(sv.mid, 10, C.muted); sv.itemSub:SetPoint("TOPLEFT", 56, -29); sv.itemSub:SetPoint("RIGHT", -12, 0)
+    sv.itemSub:SetJustifyH("LEFT")
+    sv.rank = UI:Text(sv.mid, 10, C.muted); sv.rank:SetPoint("TOPLEFT", 56, -42); sv.rank:SetPoint("RIGHT", -12, 0)
+    sv.rank:SetJustifyH("LEFT")
+    local function label(txt, y, x)
+        local l = UI:Text(sv.mid, 9, C.dim); l:SetPoint("TOPLEFT", x or 12, y); l:SetText(UI:Upper(T(txt)))
         return l
     end
     label("Prix unitaire", -62)
@@ -355,27 +433,64 @@ local function build(host)
     sv.price:SetPoint("TOPLEFT", 12, -74)
     sv.priceHint = UI:Text(sv.mid, 10, C.muted); sv.priceHint:SetPoint("TOPLEFT", 12, -106); sv.priceHint:SetPoint("RIGHT", -12, 0)
     sv.priceHint:SetJustifyH("LEFT")
-    label("Quantité", -126)
-    sv.qty = UI:Input(sv.mid, 70, 28, "1", nil)
-    sv.qty:SetPoint("TOPLEFT", 12, -138)
-    sv.max = UI:Button(sv.mid, "max", 46, 24, "ghost"); sv.max:SetPoint("LEFT", sv.qty, "RIGHT", 6, 0)
-    label("Durée", -176)
-    sv.dur = UI:Segmented(sv.mid, { { 1, "12 h" }, { 2, "24 h" }, { 3, "48 h" } }, function(v) cfg().postDur = v; sv:Update() end, 24)
-    sv.dur:SetPoint("TOPLEFT", 12, -188)
-    sv.total = UI:Text(sv.mid, 12); sv.total:SetPoint("TOPLEFT", 12, -222); sv.total:SetPoint("RIGHT", -12, 0); sv.total:SetJustifyH("LEFT")
-    sv.deposit = UI:Text(sv.mid, 10, C.muted); sv.deposit:SetPoint("TOPLEFT", 12, -240)
+    label("Quantité", -124)
+    sv.qty = UI:Input(sv.mid, 60, 26, "1", nil)
+    sv.qty:SetPoint("TOPLEFT", 12, -136)
+    -- pastilles : 1, une pile, tout ; le choix est retenu pour ce genre d'objet
+    sv.qbtn = {}
+    local qprev = sv.qty
+    for _, q in ipairs({ { "one", "1" }, { "stack", "pile" }, { "all", "tout" } }) do
+        local b = UI:Button(sv.mid, q[2], nil, 22, "ghost")
+        b:SetPoint("LEFT", qprev, "RIGHT", 6, 0)
+        b:SetScript("OnClick", function() sv:SetQtyMode(q[1]) end)
+        sv.qbtn[q[1]] = b
+        qprev = b
+    end
+    label("Durée", -170)
+    -- durées du jeu (sur WoW Forever : 2, 8 et 24 h), libellés lus dans le jeu
+    local DUR = { { 1, _G.AUCTION_DURATION_ONE or "2 h" }, { 2, _G.AUCTION_DURATION_TWO or "8 h" }, { 3, _G.AUCTION_DURATION_THREE or "24 h" } }
+    sv.dur = UI:Segmented(sv.mid, DUR, function(v) cfg().postDur = v; sv:Update() end, 24)
+    sv.dur:SetPoint("TOPLEFT", 12, -182)
+    sv.total = UI:Text(sv.mid, 12); sv.total:SetPoint("TOPLEFT", 12, -214); sv.total:SetPoint("RIGHT", -12, 0); sv.total:SetJustifyH("LEFT")
+    sv.deposit = UI:Text(sv.mid, 10, C.muted); sv.deposit:SetPoint("TOPLEFT", 12, -232)
+    sv.keys = UI:Text(sv.mid, 9, C.dim); sv.keys:SetPoint("BOTTOMLEFT", 12, 50); sv.keys:SetPoint("RIGHT", -12, 0); sv.keys:SetJustifyH("LEFT")
     sv.post = UI:Button(sv.mid, "Mettre en vente", nil, 32, "primary")
     sv.post:SetPoint("BOTTOMLEFT", 12, 12); sv.post:SetPoint("BOTTOMRIGHT", -96, 12)
     sv.skip = UI:Button(sv.mid, "Passer", 76, 32, "secondary"); sv.skip:SetPoint("BOTTOMRIGHT", -12, 12)
+    -- garde-fou : prix très sous le cours ou sous le prix du marchand
+    sv.warn = CreateFrame("Frame", nil, sv.mid)
+    sv.warn:SetPoint("BOTTOMLEFT", 12, 50); sv.warn:SetPoint("BOTTOMRIGHT", -12, 50); sv.warn:SetHeight(64)
+    UI:Panel(sv.warn, 8, { C.negative[1] * 0.25, C.negative[2] * 0.25, C.negative[3] * 0.25, 0.95 }, C.negative)
+    sv.warn.t = UI:Text(sv.warn, 11); sv.warn.t:SetPoint("TOPLEFT", 10, -8); sv.warn.t:SetPoint("RIGHT", -10, 0); sv.warn.t:SetJustifyH("LEFT")
+    if sv.warn.t.SetWordWrap then sv.warn.t:SetWordWrap(true) end
+    sv.warn.yes = UI:Button(sv.warn, "Vendre quand même", nil, 22, "primary"); sv.warn.yes:SetPoint("BOTTOMLEFT", 10, 8)
+    sv.warn.no = UI:Button(sv.warn, "Corriger", nil, 22, "secondary"); sv.warn.no:SetPoint("LEFT", sv.warn.yes, "RIGHT", 6, 0)
+    sv.warn:SetFrameLevel(sv.mid:GetFrameLevel() + 5)
+    sv.warn:Hide()
     sv.empty = UI:Text(sv.mid, 11, C.muted); sv.empty:SetPoint("CENTER")
     sv.empty:SetText(T("Choisis un objet dans tes sacs."))
 
     local function priceValue() return A.ParsePrice(sv.price:GetText()) end
     local function qtyValue() return math.max(1, math.floor(tonumber(sv.qty:GetText()) or 1)) end
+    local function plain(p) return (WK:FormatMoney(p):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
     -- prix tapé à la main : on n'y touche plus (jusqu'à l'objet suivant)
-    sv.price.onChange = function(_, user) if user then sv.userPrice = true end sv:Update() end
-    sv.qty.onChange = function() sv:Update() end
-    sv.max:SetScript("OnClick", function() if sv.e then sv.qty:SetText(tostring(sv.e.count)); sv:Update() end end)
+    sv.price.onChange = function(_, user) if user then sv.userPrice = true end sv.warn:Hide(); sv:Update() end
+    sv.qty.onChange = function() sv.warn:Hide(); sv:Update() end
+
+    local function stackOf(id)
+        local n = C_Item and C_Item.GetItemMaxStackSizeByID and C_Item.GetItemMaxStackSizeByID(id)
+        return n or select(8, WK.GetItemInfo(id)) or 1
+    end
+    local function classOf(id) return select(12, WK.GetItemInfo(id)) or 0 end
+    function sv:SetQtyMode(mode, keep)
+        local e = self.e
+        if not e then return end
+        if not keep then cfg().qtyMode[classOf(e.id)] = mode end
+        local n = mode == "one" and 1 or mode == "stack" and math.min(e.count, stackOf(e.id)) or e.count
+        self.qty:SetText(tostring(n))
+        for k, b in pairs(self.qbtn) do if b.SetStyle then b:SetStyle(k == mode and "primary" or "ghost") end end
+        self:Update()
+    end
 
     function sv:Select(id)
         local _, by = bagItems()
@@ -383,8 +498,9 @@ local function build(host)
         self.e = e
         self.id = id
         self.userPrice = false
+        self.warn:Hide()
         if e then
-            self.qty:SetText(tostring(e.count))
+            self:SetQtyMode(cfg().qtyMode[classOf(id)] or "all", true)
             search(id, true)
             pump()
         end
@@ -393,7 +509,7 @@ local function build(host)
     -- prix proposé : plus bas des autres moins l'écart ; tu es déjà le plus bas : ton prix ; sinon le scan
     function sv:Suggest()
         local id = self.id
-        if not id or self.userPrice then return end
+        if not id then return end
         local low, mineFirst = lowestOther(id)
         local c = A.Config and A.Config() or {}
         local under = c.undercut or 1
@@ -402,11 +518,26 @@ local function build(host)
         elseif mineFirst then p, why = results[id].rows[1].unit, T("tu es déjà le moins cher")
         elseif S:Price(id) then p, why = math.max(1, S:Price(id) - under), T("prix du scan")
         end
+        self.suggested = p
+        self.why = why or T("aucun prix connu : à toi de le fixer")
+        if self.userPrice then return end
         if p then
-            local txt = WK:FormatMoney(p):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+            local txt = plain(p)
             if txt ~= self.price:GetText() then self.price:SetText(txt) end
         end
-        self.why = why or T("aucun prix connu : à toi de le fixer")
+    end
+    -- où ton prix arrive parmi les enchères des autres
+    function sv:Rank(unit)
+        local r = self.id and results[self.id]
+        if not (r and unit) then return nil end
+        local pos, n = 1, 0
+        for _, x in ipairs(r.rows) do
+            if not x.mine then
+                n = n + 1
+                if x.unit < unit then pos = pos + 1 end
+            end
+        end
+        return pos, n + 1
     end
     function sv:Update()
         local id, e = self.id, self.e
@@ -414,6 +545,8 @@ local function build(host)
         local unit, qty = priceValue(), math.min(qtyValue(), e.count)
         self.priceHint:SetText((unit and money(unit) .. "  ·  " or "") .. (self.why or ""))
         self.total:SetText(unit and (T("Total") .. " : " .. money(unit * qty)) or "")
+        local pos, n = self:Rank(unit)
+        self.rank:SetText(pos and string.format(T("ton prix arrive %s sur %d"), pos == 1 and (UI:Hex(C.positive) .. T("1er") .. "|r") or (pos .. T("e")), n) or "")
         local dep
         local a = AH()
         if a then
@@ -424,7 +557,10 @@ local function build(host)
             end
         end
         self.deposit:SetText(dep and (T("Dépôt") .. " : " .. money(dep)) or "")
-        self.post:SetEnabled(unit ~= nil and unit > 0)
+        local ready = not (a and a.IsThrottledMessageSystemReady) or a.IsThrottledMessageSystemReady()
+        self.post:SetEnabled(unit ~= nil and unit > 0 and ready)
+        self.keys:SetShown(cfg().postKeys and not self.warn:IsShown())
+        self.keys:SetText(T("Touches : Espace = mettre en vente · S = passer · Haut / Bas = palier de prix"))
     end
     local function nextItem()
         local list = bagItems()
@@ -438,38 +574,115 @@ local function build(host)
         if list[1] then sv:Select(list[1].id) else sv.id, sv.e = nil, nil; sv:Refresh() end
     end
     sv.skip:SetScript("OnClick", nextItem)
-    sv.post:SetScript("OnClick", function()
-        local id, e = sv.id, sv.e
-        local unit, qty = priceValue(), qtyValue()
-        if not (id and e and unit) then return end
-        qty = math.min(qty, e.count)
+    -- garde-fou : prix pour un, après la commission (5 %), pas plus que ce que paie le marchand ; ou, sous le
+    -- prix proposé, sous une part du cours (plus bas des autres, sinon le scan) : 70 % sous 1 po, 50 % jusqu'à
+    -- 50 po, 30 % au-delà ; un zéro oublié (un dixième du prix) est toujours signalé
+    local function badPost(id, unit)
+        local vendor = select(11, WK.GetItemInfo(id)) or 0
+        if vendor > 0 and unit * 0.95 <= vendor then
+            return string.format(T("Ce prix (%s) rapporte moins que le marchand (%s)."), money(unit), money(vendor))
+        end
+        local going = lowestOther(id) or S:Price(id)
+        if going and unit < (sv.suggested or going) then
+            local share = going < 10000 and 0.7 or going <= 500000 and 0.5 or 0.3
+            if unit < going * share or unit <= going * 0.1 then
+                return string.format(T("Prix bien sous le cours (%s) : %s. Un zéro oublié ?"), money(going), money(unit))
+            end
+        end
+    end
+    local function doPost(id, e, unit, qty)
         local a = AH()
         local loc = ItemLocation and ItemLocation:CreateFromBagAndSlot(e.bag, e.slot)
-        local ok, err
+        local dur = cfg().postDur
+        local ok, needs
         if isCommodity(id) and a and a.PostCommodity then
-            ok, err = pcall(a.PostCommodity, loc, cfg().postDur, qty, unit)
+            ok, needs = pcall(a.PostCommodity, loc, dur, qty, unit)
+            if ok and needs == true and a.ConfirmPostCommodity then pcall(a.ConfirmPostCommodity, loc, dur, qty, unit) end
         elseif a and a.PostItem then
-            ok, err = pcall(a.PostItem, loc, cfg().postDur, qty, nil, unit * qty)
+            ok, needs = pcall(a.PostItem, loc, dur, qty, nil, unit * qty)
+            if ok and needs == true and a.ConfirmPostItem then pcall(a.ConfirmPostItem, loc, dur, qty, nil, unit * qty) end
         end
-        if not ok then WK:Print(T("Mise en vente refusée par le jeu.") .. (err and (" (" .. tostring(err) .. ")") or "")) return end
+        if not ok then WK:Print(T("Mise en vente refusée par le jeu.") .. (needs and (" (" .. tostring(needs) .. ")") or "")) return end
+        -- la fenêtre de vente du jeu ne suit pas les sacs : on la vide (comme le jeu après sa propre vente)
+        for _, sf in ipairs({ host.CommoditiesSellFrame, host.ItemSellFrame }) do
+            if type(sf) == "table" and sf.ClearPostItem then pcall(sf.ClearPostItem, sf) end
+        end
         local posts = cfg().posts
         posts[id] = posts[id] or {}
         table.insert(posts[id], 1, { at = time(), unit = unit, qty = qty })
         while #posts[id] > 5 do table.remove(posts[id]) end
         WK:Print(string.format(T("Mis en vente : %d %s à %s l'unité."), qty, WK.GetItemInfo(id) or "?", money(unit)))
         C_Timer.After(0.6, nextItem)
+    end
+    function sv:TryPost()
+        local id, e = self.id, self.e
+        local unit, qty = priceValue(), qtyValue()
+        if not (id and e and unit) then return end
+        local a = AH()
+        if a and a.IsThrottledMessageSystemReady and not a.IsThrottledMessageSystemReady() then
+            WK:Print(T("L'hôtel des ventes est occupé : réessaie dans un instant.")) return
+        end
+        qty = math.min(qty, e.count)
+        local why = cfg().askBad ~= false and badPost(id, unit)
+        if why then
+            self.warn.t:SetText(why)
+            self.warn.pending = { id = id, e = e, unit = unit, qty = qty }
+            self.warn:Show()
+            self:Update()
+            return
+        end
+        doPost(id, e, unit, qty)
+    end
+    sv.post:SetScript("OnClick", function() sv:TryPost() end)
+    sv.warn.yes:SetScript("OnClick", function()
+        local p = sv.warn.pending
+        sv.warn:Hide()
+        if p then doPost(p.id, p.e, p.unit, p.qty) end
+    end)
+    sv.warn.no:SetScript("OnClick", function() sv.warn:Hide(); sv.price.edit:SetFocus(); sv:Update() end)
+    -- palier de prix : Haut = l'enchère suivante (plus chère) moins l'écart, Bas = la précédente
+    function sv:Step(dir)
+        local r = self.id and results[self.id]
+        local unit = priceValue()
+        if not (r and unit) then return end
+        local under = (A.Config and A.Config().undercut) or 1
+        local cands = {}
+        for _, x in ipairs(r.rows) do if not x.mine then table.insert(cands, math.max(1, x.unit - under)) end end
+        local pick
+        if dir > 0 then for _, p in ipairs(cands) do if p > unit then pick = p break end end
+        else for i = #cands, 1, -1 do if cands[i] < unit then pick = cands[i] break end end end
+        if pick then self.userPrice = true; self.price:SetText(plain(pick)); self:Update() end
+    end
+    -- touches (réglage postKeys) : Espace, S, Haut, Bas ; jamais en combat ni pendant une saisie
+    sv:EnableKeyboard(false)
+    sv:SetScript("OnKeyDown", function(s, key)
+        local typing = s.price.edit:HasFocus() or s.qty.edit:HasFocus()
+        local mine = not typing and not (InCombatLockdown and InCombatLockdown()) and s.id ~= nil
+            and (key == "SPACE" or key == "S" or key == "UP" or key == "DOWN" or (key == "ENTER" and s.warn:IsShown()))
+        if s.SetPropagateKeyboardInput then s:SetPropagateKeyboardInput(not mine) end
+        if not mine then return end
+        if s.warn:IsShown() then
+            if key == "ENTER" then s.warn.yes:GetScript("OnClick")(s.warn.yes) end
+            return
+        end
+        if key == "SPACE" then s:TryPost()
+        elseif key == "S" then nextItem()
+        elseif key == "UP" then s:Step(1)
+        elseif key == "DOWN" then s:Step(-1) end
     end)
 
     function sv:Refresh()
-        local list = bagItems()
+        self:EnableKeyboard(cfg().postKeys and true or false)
+        local list, _, hidden = bagItems()
         local marked = stashSell()
+        local fav = cfg().sellFav
         for i, b in ipairs(self.slots) do
             local e = list[i]
             b.e = e
             if e then
                 b.icon:SetTexture(itemIcon(e.id))
                 b.n:SetText(e.count > 1 and e.count or "")
-                b.tag:SetText(marked[e.id] and "*" or (S:Price(e.id) and "HV" or ""))
+                b.tag:SetText(fav[e.id] and "+" or marked[e.id] and "*" or (S:Price(e.id) and "HV" or ""))
                 local r1, g1, b1 = UI:Accent()
                 if e.id == self.id then b.edge:SetColor(r1, g1, b1, 1) else b.edge:SetColor(C.border[1], C.border[2], C.border[3], 1) end
                 b:Show()
@@ -478,13 +691,17 @@ local function build(host)
             end
         end
         self.bags.sub:SetText(string.format(T("%d à vendre"), #list))
+        self.hiddenBtn:SetShown(hidden > 0)
+        self.hiddenBtn.t:SetText(string.format(T("%d objet(s) caché(s) : clic pour les réafficher"), hidden))
+        self.hiddenBtn.t:SetTextColor(UI:Accent())
         if self.id and not self.e then self.id = nil end
         local id = self.id
         local has = id ~= nil
-        for _, w in ipairs({ self.itemIcon, self.itemName, self.itemSub, self.price, self.priceHint, self.qty, self.max, self.dur, self.total, self.deposit, self.post, self.skip }) do w:SetShown(has) end
+        for _, w in ipairs({ self.itemIcon, self.itemName, self.itemSub, self.rank, self.price, self.priceHint, self.qty, self.dur, self.total, self.deposit, self.post, self.skip }) do w:SetShown(has) end
+        for _, b in pairs(self.qbtn) do b:SetShown(has) end
+        if not has then self.warn:Hide(); self.keys:Hide() end
         self.empty:SetShown(not has)
         for _, r in ipairs(self.lrows) do r:Hide() end
-        self.right.sub:SetText(has and (WK.GetItemInfo(id) or "") or "")
         if not has then self.hist:SetText(""); return end
         local name, _, quality = WK.GetItemInfo(id)
         self.itemIcon:SetTexture(itemIcon(id))
@@ -495,28 +712,37 @@ local function build(host)
         self.dur:Select(cfg().postDur)
         self:Suggest()
         self:Update()
-        -- enchères en cours
+        -- enchères en cours : la plus basse des autres en vert, les tiennes à la couleur d'accent ; ton prix
         local r = results[id]
+        local unit = priceValue()
+        local b = S.buy
         if not r then
             local row = self.lrows[1]
+            row.x = nil; row.act:Hide()
             row.a:SetText(UI:Hex(C.muted) .. T("recherche…") .. "|r"); row.b:SetText(""); row.c:SetText(""); row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
         else
             local firstOther = true
+            local ar, ag, ab = UI:Accent()
             for i, row in ipairs(self.lrows) do
                 local x = r.rows[i]
+                row.x = x
                 if x then
                     row.a:SetText(money(x.unit))
                     row.b:SetText(tostring(x.qty))
                     row.c:SetText(x.mine and T("toi") or "")
-                    local ar, ag, ab = UI:Accent()
                     if x.mine then row.hl:SetColorTexture(ar, ag, ab, 0.12); row.c:SetTextColor(ar, ag, ab)
                     elseif firstOther then row.hl:SetColorTexture(C.positive[1], C.positive[2], C.positive[3], 0.10); firstOther = false
                     else row.hl:SetColorTexture(0, 0, 0, 0) end
+                    row.act:Show()
+                    if x.mine then row.act:SetLabel(T("Annuler"))
+                    elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) then row.act:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                    else row.act:SetLabel(T("Acheter")) end
                     row:Show()
                 end
             end
             if #r.rows == 0 then
                 local row = self.lrows[1]
+                row.x = nil; row.act:Hide()
                 row.a:SetText(UI:Hex(C.muted) .. T("personne n'en vend") .. "|r"); row.b:SetText(""); row.c:SetText(""); row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
             end
         end
@@ -536,6 +762,18 @@ local function build(host)
         end
         if #lines == 1 then table.insert(lines, T("pas encore vendu par l'addon")) end
         self.hist:SetText(table.concat(lines, "\n"))
+    end
+
+    -- clic droit sur un objet des sacs du jeu, HV ouvert : il arrive dans notre Vente (le jeu le prend aussi)
+    if hooksecurefunc and host.SetPostItem then
+        hooksecurefunc(host, "SetPostItem", function(_, loc)
+            if not (f:IsShown() and f.tab == "sell") then return end
+            local ok, id = pcall(C_Item.GetItemID, loc)
+            if ok and id then
+                if C_Item.UnlockItem then pcall(C_Item.UnlockItem, loc) end
+                sv:Select(id)
+            end
+        end)
     end
 
     -----------------------------------------------------------------------
@@ -747,6 +985,156 @@ local function build(host)
     end
 
     -----------------------------------------------------------------------
+    -- Prix : courbe du plus bas de chaque jour sur 14 jours, objets qui ont le plus bougé
+    -----------------------------------------------------------------------
+    local pv = CreateFrame("Frame", nil, f)
+    pv:SetPoint("TOPLEFT", 8, -34); pv:SetPoint("BOTTOMRIGHT", -8, 8)
+    f.views.prices = pv
+    pv.left = panelBox(pv, "Objets")
+    pv.left:SetPoint("TOPLEFT"); pv.left:SetPoint("BOTTOMLEFT"); pv.left:SetWidth(250)
+    pv.left.sub:SetText(T("de tes scans"))
+    pv.search = UI:Input(pv.left, 228, 26, "Rechercher…", "search")
+    pv.search:SetPoint("TOPLEFT", 10, -30)
+    pv.search.onChange = function() pv:Refresh() end
+    pv.head = UI:Text(pv.left, 9, C.dim); pv.head:SetPoint("TOPLEFT", 12, -66)
+    pv.rows = {}
+    for i = 1, 12 do
+        local r = textRow(pv.left, 22)
+        r:SetPoint("TOPLEFT", 6, -80 - (i - 1) * 23); r:SetPoint("TOPRIGHT", -6, -80 - (i - 1) * 23)
+        r.a:SetPoint("RIGHT", -60, 0)
+        r.b:SetPoint("RIGHT", -6, 0); r.b:SetWidth(54)
+        r:SetScript("OnClick", function(s) if s.id then pv.id = s.id; pv:Refresh() end end)
+        pv.rows[i] = r
+    end
+    pv.main = panelBox(pv, "")
+    pv.main:SetPoint("TOPLEFT", pv.left, "TOPRIGHT", 8, 0); pv.main:SetPoint("BOTTOMRIGHT")
+    pv.stats = UI:Text(pv.main, 11, C.muted); pv.stats:SetPoint("TOPRIGHT", -12, -10)
+    pv.chart = CreateFrame("Frame", nil, pv.main)
+    pv.chart:SetPoint("TOPLEFT", 60, -40); pv.chart:SetPoint("BOTTOMRIGHT", -16, 80)
+    pv.axis = pv.chart:CreateTexture(nil, "BACKGROUND"); pv.axis:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    pv.axis:SetPoint("BOTTOMLEFT"); pv.axis:SetPoint("BOTTOMRIGHT"); pv.axis:SetHeight(1)
+    pv.axisY = pv.chart:CreateTexture(nil, "BACKGROUND"); pv.axisY:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    pv.axisY:SetPoint("TOPLEFT"); pv.axisY:SetPoint("BOTTOMLEFT"); pv.axisY:SetWidth(1)
+    pv.yTop = UI:Text(pv.main, 9, C.dim); pv.yTop:SetPoint("TOPRIGHT", pv.chart, "TOPLEFT", -4, 0)
+    pv.yBot = UI:Text(pv.main, 9, C.dim); pv.yBot:SetPoint("BOTTOMRIGHT", pv.chart, "BOTTOMLEFT", -4, 0)
+    pv.lines = UI:LinePool(4)
+    pv.dots = {}
+    pv.empty = UI:Text(pv.main, 11, C.muted); pv.empty:SetPoint("CENTER")
+    pv.note = UI:Text(pv.main, 10, C.dim); pv.note:SetPoint("BOTTOMLEFT", 16, 50); pv.note:SetPoint("RIGHT", -16, 0); pv.note:SetJustifyH("LEFT")
+    pv.note:SetText(T("Survol d'un point : prix et quantité en vente ce jour · trait or : moyenne · la courbe se remplit à chaque scan et à chaque recherche de l'objet"))
+    pv.watchLabel = UI:Text(pv.main, 11); pv.watchLabel:SetPoint("BOTTOMLEFT", 16, 18)
+    pv.watchLabel:SetText(T("Me prévenir sous"))
+    pv.watch = UI:Input(pv.main, 130, 26, "ex. 45pa", nil); pv.watch:SetPoint("LEFT", pv.watchLabel, "RIGHT", 8, 0)
+    pv.watchBtn = UI:Button(pv.main, "Surveiller", nil, 26, "primary"); pv.watchBtn:SetPoint("LEFT", pv.watch, "RIGHT", 6, 0)
+    pv.watchBtn:SetScript("OnClick", function()
+        local v = A.ParsePrice(pv.watch:GetText())
+        if pv.id and v then A:AddAlert(pv.id, v); WK:Print(string.format(T("Alerte de prix : %s sous %s."), WK.GetItemInfo(pv.id) or "?", money(v))); pv:Refresh() end
+    end)
+    pv.sellBtn = UI:Button(pv.main, "Vendre", nil, 26, "secondary"); pv.sellBtn:SetPoint("LEFT", pv.watchBtn, "RIGHT", 6, 0)
+    pv.sellBtn:SetScript("OnClick", function() if pv.id then f:Open("sell"); f.views.sell:Select(pv.id) end end)
+    local function dot(i)
+        local d = pv.dots[i]
+        if not d then
+            d = CreateFrame("Button", nil, pv.chart)
+            d:SetSize(12, 12)
+            d.t = d:CreateTexture(nil, "OVERLAY"); d.t:SetTexture(UI.MEDIA .. "circle"); d.t:SetSize(7, 7); d.t:SetPoint("CENTER")
+            d:SetScript("OnEnter", function(s)
+                UI:TooltipOwner(s, "ANCHOR_TOP")
+                GameTooltip:SetText(date("%d/%m", s.day * 86400 + 43200), 1, 1, 1)
+                GameTooltip:AddDoubleLine(T("Plus bas"), money(s.price), 0.7, 0.7, 0.7, 1, 1, 1)
+                if s.qty and s.qty > 0 then GameTooltip:AddDoubleLine(T("En vente"), tostring(s.qty), 0.7, 0.7, 0.7, 1, 1, 1) end
+                GameTooltip:Show()
+            end)
+            d:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            pv.dots[i] = d
+        end
+        return d
+    end
+    function pv:Refresh()
+        local q = string.lower(self.search:GetText() or "")
+        local list = {}
+        if q ~= "" then
+            self.head:SetText(UI:Upper(T("Résultats")))
+            for id in pairs(S:Data().items) do
+                local name = WK.GetItemInfo(id)
+                if name and string.lower(name):find(q, 1, true) then table.insert(list, { id, nil }) end
+                if #list >= 12 then break end
+            end
+        else
+            self.head:SetText(UI:Upper(T("Ont le plus bougé (7 j)")))
+            for _, m in ipairs(S:Movers(12)) do table.insert(list, { m[1], m[2] }) end
+        end
+        if not self.id and list[1] then self.id = list[1][1] end
+        local ar, ag, ab = UI:Accent()
+        for i, r in ipairs(self.rows) do
+            local it = list[i]
+            r.id = it and it[1]
+            if it then
+                r.icon:SetTexture(itemIcon(it[1]))
+                local name, _, quality = WK.GetItemInfo(it[1])
+                r.a:SetText(name or ("#" .. it[1]))
+                if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
+                if it[2] then
+                    local pc = math.floor(it[2] * 100 + 0.5)
+                    r.b:SetText((pc > 0 and "+" or "") .. pc .. " %")
+                    local col = pc >= 0 and C.positive or C.negative
+                    r.b:SetTextColor(col[1], col[2], col[3])
+                else r.b:SetText("") end
+                r.hl:SetColorTexture(ar, ag, ab, it[1] == self.id and 0.14 or 0)
+                r:Show()
+            else r:Hide() end
+        end
+        -- courbe
+        self.lines:Reset()
+        for _, d in ipairs(self.dots) do d:Hide() end
+        local id = self.id
+        local hist = id and S:History(id) or {}
+        local name = id and WK.GetItemInfo(id)
+        self.main.title:SetText(name or "")
+        self.main.sub:SetText(id and T("plus bas de chaque jour · 14 jours") or "")
+        self.empty:SetShown(#hist < 1)
+        self.empty:SetText(id and T("Pas encore de prix relevé pour cet objet : lance un scan.") or T("Choisis un objet : il a le plus bougé, ou cherche-le."))
+        local avg = id and S:Average(id)
+        local alert = id and (A.Config().alerts or {})[id]
+        self.stats:SetText(id and ((hist[#hist] and (T("dernier") .. " " .. money(hist[#hist][2]) .. "  ·  ") or "") .. (avg and (T("moyenne") .. " " .. money(avg)) or "") .. (alert and ("  ·  " .. T("alerte sous") .. " " .. money(alert)) or "")) or "")
+        for _, w in ipairs({ self.watchLabel, self.watch, self.watchBtn, self.sellBtn, self.note }) do w:SetShown(id ~= nil) end
+        if #hist < 1 then self.yTop:SetText(""); self.yBot:SetText(""); return end
+        local lo, hi = math.huge, 0
+        for _, h in ipairs(hist) do lo = math.min(lo, h[2]); hi = math.max(hi, h[2]) end
+        if avg then lo, hi = math.min(lo, avg), math.max(hi, avg) end
+        if hi == lo then hi = lo + 1 end
+        local pad = (hi - lo) * 0.1
+        lo, hi = math.max(0, lo - pad), hi + pad
+        self.yTop:SetText(money(math.floor(hi))); self.yBot:SetText(money(math.floor(lo)))
+        local W, H = self.chart:GetWidth() or 400, self.chart:GetHeight() or 150
+        local today = math.floor(time() / 86400)
+        local first = today - 13
+        local function px(day) return (day - first) / 13 * W end
+        local function py(p) return H - (p - lo) / (hi - lo) * H end
+        if avg then
+            -- moyenne en tirets or
+            local k = 0
+            while k < W do
+                self.lines:Add(self.chart, k, py(avg), math.min(W, k + 8), py(avg), 1.5, C.gold[1], C.gold[2], C.gold[3], 0.8)
+                k = k + 14
+            end
+        end
+        local prevX, prevY
+        for i, h in ipairs(hist) do
+            if h[1] >= first then
+                local x, y = px(h[1]), py(h[2])
+                if prevX then self.lines:Add(self.chart, prevX, prevY, x, y, 2.5, ar, ag, ab, 1) end
+                prevX, prevY = x, y
+                local d = dot(i)
+                d.day, d.price, d.qty = h[1], h[2], h[3]
+                d.t:SetVertexColor(ar, ag, ab, 1)
+                d:ClearAllPoints(); d:SetPoint("CENTER", self.chart, "TOPLEFT", x, -y)
+                d:Show()
+            end
+        end
+    end
+
+    -----------------------------------------------------------------------
     -- Scan : le panneau d'avant, posé dans l'onglet
     -----------------------------------------------------------------------
     local scv = CreateFrame("Frame", nil, f)
@@ -756,13 +1144,28 @@ local function build(host)
     scv.note:SetJustifyH("LEFT")
     if scv.note.SetWordWrap then scv.note:SetWordWrap(true) end
     scv.note:SetText(T("Le scan relève le prix de tout l'HV (un scan complet toutes les 15 minutes au plus). Ces prix servent partout : infobulles, valeur du compte, Rangement, prix proposé à la vente. Les alertes de prix préviennent quand un objet suivi passe sous ton prix."))
-    function scv:Refresh() end
+    -- réglages de la vente
+    scv.opts = panelBox(scv, "Vente")
+    scv.opts:SetPoint("TOPLEFT", 330, -96); scv.opts:SetPoint("RIGHT", -10, 0); scv.opts:SetHeight(120)
+    local function opt(y, label, desc, get, set)
+        local t = UI:Toggle(scv.opts, get, set)
+        t:SetPoint("TOPLEFT", 12, y)
+        local l = UI:Text(scv.opts, 12); l:SetPoint("LEFT", t, "RIGHT", 10, 6); l:SetText(T(label))
+        local d = UI:Text(scv.opts, 10, C.muted); d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -2); d:SetPoint("RIGHT", scv.opts, "RIGHT", -12, 0)
+        d:SetJustifyH("LEFT"); d:SetText(T(desc))
+        return t
+    end
+    scv.t1 = opt(-34, "Mettre en vente au clavier", "Onglet Vente : Espace met en vente, S passe, Haut / Bas changent de palier de prix.",
+        function() return cfg().postKeys end, function(v) cfg().postKeys = v end)
+    scv.t2 = opt(-78, "Demander avant une vente à perte", "Un prix sous le prix du marchand, ou bien sous le cours (un zéro oublié), demande confirmation.",
+        function() return cfg().askBad ~= false end, function(v) cfg().askBad = v end)
+    function scv:Refresh() self.t1:Refresh(); self.t2:Refresh() end
 
     function f:Refresh()
         if not self:IsShown() then return end
         local d = S:Data()
         self.scanInfo:SetText(d.last and string.format(T("dernier scan : %s"), date("%d/%m %H:%M", d.last)) or T("jamais scanné"))
-        local titles = { buy = "Achat", sell = "Vente", cancel = "Annulation", scan = "Scan" }
+        local titles = { buy = "Achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
         self.head:SetText(T(titles[self.tab] or ""))
         local v = self.views[self.tab]
         if v and v.Refresh then v:Refresh() end

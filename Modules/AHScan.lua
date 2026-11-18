@@ -57,6 +57,49 @@ function M:Average(itemID)
     if n == 0 then return nil, 0 end
     return math.floor(sum / n + 0.5), n
 end
+-- Plus bas vu ailleurs que dans un scan (recherche d'un objet à l'HV) : compte pour la courbe du jour
+function M:SeenToday(itemID, low, qty)
+    if not (itemID and low and low > 0) then return end
+    local d = self:Data()
+    local e = d.items[itemID] or {}
+    d.items[itemID] = e
+    local day = math.floor(time() / 86400)
+    e.h = e.h or {}
+    if not e.h[day] or low < e.h[day] then e.h[day] = low end
+    if qty then e.hq = e.hq or {}; e.hq[day] = math.max(e.hq[day] or 0, qty) end
+    if not e.p then e.p, e.t = low, time() end
+end
+-- Courbe : { { day, price, qty } } des 14 derniers jours, du plus ancien au plus récent
+function M:History(itemID)
+    local e = self:Entry(itemID)
+    local out = {}
+    if not (e and e.h) then return out end
+    for day, p in pairs(e.h) do table.insert(out, { day, p, e.hq and e.hq[day] }) end
+    table.sort(out, function(a, b) return a[1] < b[1] end)
+    return out
+end
+-- Objets qui ont le plus bougé sur 7 jours : { { id, change (fraction), now, before } }, du plus fort au plus faible
+function M:Movers(limit)
+    local today = math.floor(time() / 86400)
+    local out = {}
+    for id, e in pairs(self:Data().items) do
+        if e.h and (e.p or 0) >= 100 then
+            local recent, rd, older, sum, n = nil, -1, nil, 0, 0
+            for day, p in pairs(e.h) do
+                if day > rd then recent, rd = p, day end
+                if day < today - 1 and day >= today - 7 then sum, n = sum + p, n + 1 end
+            end
+            older = n >= 2 and sum / n or nil
+            if recent and older and rd >= today - 1 and older > 0 then
+                table.insert(out, { id, (recent - older) / older, recent, older })
+            end
+        end
+    end
+    table.sort(out, function(a, b) return math.abs(a[2]) > math.abs(b[2]) end)
+    local res = {}
+    for i = 1, math.min(limit or 6, #out) do res[i] = out[i] end
+    return res
+end
 function M:Count()
     local n = 0
     for _ in pairs(self:Data().items) do n = n + 1 end
@@ -128,6 +171,10 @@ local function finish(ok, why)
             e.h = e.h or {}
             if not e.h[day] or s[1] < e.h[day] then e.h[day] = s[1] end
             for dd in pairs(e.h) do if dd <= day - HISTORY_DAYS then e.h[dd] = nil end end
+            -- quantité en vente ce jour-là (la plus grande vue), pour la courbe des prix
+            e.hq = e.hq or {}
+            e.hq[day] = math.max(e.hq[day] or 0, s[2] or 0)
+            for dd in pairs(e.hq) do if dd <= day - HISTORY_DAYS then e.hq[dd] = nil end end
             d.items[id] = e
         end
         if sc.full then
