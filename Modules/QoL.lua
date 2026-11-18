@@ -260,6 +260,8 @@ function M:Alerts()
             end
         end
     end
+    -- consommables sous le seuil (Modules/ProfHelp.lua, carte « Avant de partir »)
+    if WK.modules.ProfHelp then WK.modules.ProfHelp:AddAlerts(out) end
     table.sort(out, function(a, b)
         if (a.urgent and 1 or 0) ~= (b.urgent and 1 or 0) then return a.urgent end
         return a.text < b.text

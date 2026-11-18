@@ -227,6 +227,11 @@ local function onTooltip(tooltip, data)
             if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         end) then any = true end
     end
+    -- désenchantement : valeur attendue (Modules/ProfHelp.lua)
+    local PH = WK.modules.ProfHelp
+    if PH and PH:AddTooltip(tooltip, itemID, function()
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+    end) then any = true end
     -- butin observé par les joueurs (Modules/EverlootDB.lua : PNJ, taux, nombre de butins relevés)
     local drops = WK.EverDrops and WK.EverDrops[itemID]
     local ui = WK.DB.global.settings.ui

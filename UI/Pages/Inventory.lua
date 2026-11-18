@@ -166,6 +166,11 @@ UI:RegisterPage({
         self.empty:SetPoint("CENTER", scroll, "CENTER")
         self:BuildLocks(p, x0)
         self:BuildStash(p, x0)
+        -- consommables conseillés (UI/ProfPanels.lua)
+        self.prepPane = UI:BuildPrepPane(p)
+        self.prepPane:SetPoint("TOPLEFT", x0, 0)
+        self.prepPane:SetPoint("BOTTOMRIGHT")
+        self.prepPane:Hide()
 
         -- sacs par catégorie et leurs cases
         self.bags = UI:Pool(function()
@@ -793,10 +798,10 @@ UI:RegisterPage({
     -- Onglets : tout le compte, chaque personnage, banque de bataillon.
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        local special = { spread = true, old = true, locks = true, stash = true }
+        local special = { spread = true, old = true, locks = true, stash = true, prep = true }
         if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
         -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
-        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" } }
+        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" }, { key = "prep" } }
         for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
         local wb = WK.DB.global.warbank
         if wb then table.insert(entries, { key = "warband" }) end
@@ -839,10 +844,10 @@ UI:RegisterPage({
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
-                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send" }
+                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send", prep = "fire" }
                 b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement" }
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement", prep = "Avant de partir" }
                 b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
@@ -864,6 +869,11 @@ UI:RegisterPage({
                     for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
                     b.sub:SetText(string.format(T("%d à la main"), n))
                     b:SetCount(#WK.modules.ItemLock:List())
+                elseif e.key == "prep" then
+                    local n = 0
+                    for _, r in ipairs(WK.modules.ProfHelp:Prep(WK:CharKey())) do if r.low then n = n + 1 end end
+                    b.sub:SetText(string.format(T("%d consommable(s) sous le seuil"), n))
+                    b:SetCount(n, n > 0)
                 elseif e.key == "old" then
                     local n = #WK.modules.Inventory:Forgotten(self.oldDays)
                     b.sub:SetText(string.format(T("%d depuis %d j"), n, self.oldDays))
@@ -892,12 +902,14 @@ UI:RegisterPage({
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
         -- objets verrouillés : leur propre panneau à la place de la liste
-        local locks, stash = sel == "locks", sel == "stash"
+        local locks, stash, prep = sel == "locks", sel == "stash", sel == "prep"
         self.lockPane:SetShown(locks)
         self.stashPane:SetShown(stash)
-        for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not (locks or stash)) end
-        if locks or stash then
+        self.prepPane:SetShown(prep)
+        for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not (locks or stash or prep)) end
+        if locks or stash or prep then
             self.whereSeg:Hide(); self.empty:Hide()
+            if prep then return self.prepPane:Refresh() end
             if stash then return self:RefreshStash() end
             return self:RefreshLocks()
         end

@@ -7,7 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Métiers, idées de Professions (Naowh) : aide au désenchantement (objets des sacs, valeur attendue contre la vente), enchantements proposés dans la fenêtre d'échange, file de fabrication avec minuteur, coût de la montée de compétence, favoris chez le maître et consommables conseillés.
+- Idées d'Utilities (Naowh), en attente de ton choix : limite d'instances par heure, résumé de sortie de donjon, macros intelligentes, jeux de barres d'action, pistages de classe et de race, rappel du Réal d'Outremine, Pierre de foyer et téléports dans le guidage, inspection du groupe.
 - Hôtel des ventes, idées de The Market : valeur des sacs à l'HV (sur les sacs et dans l'infobulle d'un courrier), composants « fabriquer ou vendre ? », zones de récolte classées par valeur à l'heure avec une tournée guidée.
 - Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
@@ -29,6 +29,22 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.37.0 — 18/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Désenchanter ou vendre : pour un enchanteur, une fenêtre à côté des sacs liste les objets à désenchanter, avec ce qu'ils donnent en moyenne, leur valeur et le prix à l'HV ou chez le marchand, puis un conseil. Un bouton « Désenchanter le suivant » les enchaîne (un clic par objet). Aussi avec /wk de.
+- Désenchanter : l'infobulle des objets donne ce que le désenchantement rapporte en moyenne. Les chiffres s'affinent avec tes propres désenchantements.
+- Échange : une fenêtre à côté de l'échange propose tes enchantements pour l'objet posé dans « Ne sera pas échangé », dit s'il te manque des composants, lance l'enchantement et peut annoncer ce que tu sais faire dans le chat.
+- Métiers : la liste de courses devient la « File de fabrication ». Chaque recette dit qui la fabrique, si tout est là ou ce qui manque (et chez quel perso), avec un bouton « Fabriquer » quand la fenêtre du métier est ouverte. Elle se décompte toute seule.
+- Métiers : carte « Recharges » (transmutations, étoffe lunaire…) pour tous tes persos, avec un message quand une recharge est terminée.
+- File de fabrication à l'écran : fenêtre du métier ouverte, la prochaine recette de ta file et un bouton pour la fabriquer (déplaçable dans le mode édition).
+- Guide de métier : le coût de chaque étape, et ce que tes persos ont déjà sous le total à acheter.
+- Maître de métier : une colonne à côté de sa fenêtre liste les recettes à apprendre ici : tes favoris, celles utiles pour le guide, celles déjà connues d'un autre perso. Un bouton apprend tous les favoris. Clic droit sur une recette (ici ou dans les recettes à apprendre) : favori.
+- Inventaire > Avant de partir : potions, élixir, nourriture, boisson et bandages conseillés pour ton perso, ce que tu as dans tes sacs et ailleurs, où en trouver, avec des seuils réglables (Donjon, Raid, JcJ) et un rappel possible dans « À faire ».
+- QoL > Carte : carte « Aides de métiers » pour couper chacune de ces aides.
 
 ## v1.36.0 — 18/11/2026
 

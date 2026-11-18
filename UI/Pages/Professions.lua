@@ -379,10 +379,30 @@ local function Shopping(page, parent)
     local leftW = math.floor(UI.PAGE_W * 0.38)
     local h = UI.PAGE_H + TOP
 
-    local planned = UI:Card(parent, "Fabrications prévues")
+    local planned = UI:Card(parent, "File de fabrication")
     planned:SetWidth(leftW)
     planned:SetPoint("TOPLEFT", 0, TOP)
-    planned:SetPoint("BOTTOMLEFT")
+    planned:SetPoint("BOTTOMLEFT", 0, 116)
+    -- recharges de tout le compte (transmutations, étoffe lunaire…) : Modules/ProfHelp.lua
+    local cds = UI:Card(parent, "Recharges", "prévenu quand c'est prêt, sur n'importe quel perso")
+    cds:SetPoint("TOPLEFT", planned, "BOTTOMLEFT", 0, -10)
+    cds:SetPoint("BOTTOMLEFT")
+    cds:SetWidth(leftW)
+    local cdEmpty = UI:Text(cds, 11, C.muted)
+    cdEmpty:SetPoint("TOPLEFT", 16, -44)
+    cdEmpty:SetText("Aucune recette à temps de recharge connue.")
+    local cdTiles = {}
+    local function cdTile(i)
+        if cdTiles[i] then return cdTiles[i] end
+        local t = CreateFrame("Frame", nil, cds)
+        t:SetHeight(52)
+        t.bg = UI:Rounded(t, 9, 0, "BACKGROUND", 1); t.bg:SetColor(unpack(C.surface2))
+        t.name = UI:Text(t, 11); t.name:SetPoint("TOPLEFT", 10, -7); t.name:SetPoint("RIGHT", -8, 0)
+        t.who = UI:Text(t, 10, C.muted); t.who:SetPoint("TOPLEFT", 10, -22); t.who:SetPoint("RIGHT", -8, 0)
+        t.bar = UI:Progress(t, 4); t.bar:SetPoint("BOTTOMLEFT", 10, 8); t.bar:SetPoint("RIGHT", -10, 0)
+        cdTiles[i] = t
+        return t
+    end
     local pEmpty = UI:Text(planned, 11, C.muted)
     pEmpty:SetPoint("TOPLEFT", 16, -46)
     pEmpty:SetPoint("TOPRIGHT", -16, -46)
@@ -404,8 +424,13 @@ local function Shopping(page, parent)
         r.icon = UI:RoundIcon(r, 22)
         r.icon:SetPoint("LEFT", 8, 0)
         r.name = UI:Text(r, 12)
-        r.name:SetPoint("LEFT", 38, 0)
+        r.name:SetPoint("TOPLEFT", 38, -6)
         r.name:SetPoint("RIGHT", -100, 0)
+        r.sub = UI:Text(r, 10, C.muted)
+        r.sub:SetPoint("TOPLEFT", 38, -22)
+        r.sub:SetPoint("RIGHT", -100, 0)
+        r.make = UI:Button(r, "Fabriquer", nil, 22, "primary")
+        r.make:SetScript("OnClick", function(b) WK.modules.ProfHelp:Craft(b.recipeKey, b.n) end)
         r.plus = UI:IconButton(r, "plus", 24, "Une fabrication de plus")
         r.plus:SetPoint("RIGHT", -6, 0)
         r.qty = UI:Text(r, 13)
@@ -413,6 +438,7 @@ local function Shopping(page, parent)
         r.qty:SetJustifyH("RIGHT")
         r.minus = UI:IconButton(r, "minus", 24, "Une fabrication de moins")
         r.minus:SetPoint("RIGHT", r.qty, "LEFT", -6, 0)
+        r.make:SetPoint("RIGHT", r.minus, "LEFT", -6, 0)
         r.plus:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, 1); page:Refresh() end)
         r.minus:SetScript("OnClick", function(b) WK.modules.Recipes:AddToList(b.recipeKey, -1); page:Refresh() end)
         r:SetScript("OnClick", function(row) if IsShiftKeyDown() and row.rec then WK.modules.Recipes:LinkRecipe(row.rec) end end)
@@ -430,7 +456,7 @@ local function Shopping(page, parent)
     local need = UI:Card(parent, "Composants")
     need:SetPoint("TOPLEFT", planned, "TOPRIGHT", GAP, 0)
     need:SetPoint("BOTTOMRIGHT")
-    UI:OnResize(parent, function(w) planned:SetWidth(math.floor(w * 0.38)) end)
+    UI:OnResize(parent, function(w) planned:SetWidth(math.floor(w * 0.38)); cds:SetWidth(math.floor(w * 0.38)) end)
     local cols = { { "Besoin", -250 }, { "Possédé", -180 }, { "Manquant", -110 }, { "Coût", -16 } }
     for _, col in ipairs(cols) do
         local t = UI:Text(need, 10, C.dim)
@@ -472,16 +498,16 @@ local function Shopping(page, parent)
     end)
 
     function tab:Refresh()
-        local _, index = WK.modules.Recipes:All()
+        local PH = WK.modules.ProfHelp
+        local chars = WK.DB.global.characters
+        local openProf = PH:OpenProfession()
         pRows:Reset()
         local y = 0
-        local keys = {}
-        for k in pairs(WK.DB.global.shopping) do table.insert(keys, k) end
-        table.sort(keys)
-        for _, k in ipairs(keys) do
-            local rec = index[k]
+        local queue = PH:Queue()
+        for _, e in ipairs(queue) do
+            local k, rec = e.key, e.rec
             local r = pRows:Get()
-            r.plus.recipeKey, r.minus.recipeKey = k, k
+            r.plus.recipeKey, r.minus.recipeKey, r.make.recipeKey = k, k, k
             r.rec = rec
             r:ClearAllPoints()
             r:SetPoint("TOPLEFT", 0, -y)
@@ -489,11 +515,47 @@ local function Shopping(page, parent)
             local icon = rec and rec.icon or (rec and rec.out and select(2, UI:ItemInfo(rec.out)))
             r.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
             r.name:SetText(rec and rec.name or k)
-            r.qty:SetText("x" .. WK.DB.global.shopping[k])
+            r.qty:SetText("x" .. e.qty)
+            -- qui la fabrique, et où en sont ses composants
+            local status
+            local c = e.crafter and chars[e.crafter]
+            local who = c and (UI:Hex({ UI:ClassColor(c.class) }) .. WK:CharName(c, e.crafter) .. "|r") or UI:Hex(C.negative) .. T("personne ne la connaît") .. "|r"
+            if not rec then status = ""
+            elseif e.cd then status = string.format(T("prête dans %s"), WK:FormatTime(e.cd))
+            elseif #e.missing == 0 then status = UI:Hex(C.positive) .. T("tout est là") .. "|r"
+            else
+                local m = e.missing[1]
+                local oc = m.where and chars[m.where]
+                status = UI:Hex(C.negative) .. string.format(T("manque %d %s"), m.n, (UI:ItemInfo(m.id)) or "?")
+                    .. (oc and (" " .. string.format(T("(chez %s)"), WK:CharName(oc, m.where))) or "") .. "|r"
+            end
+            r.sub:SetText(who .. "  ·  " .. status)
+            local n = math.min(e.qty, e.can or 0)
+            local canMake = e.mine and rec and openProf and rec.prof == openProf and n > 0 and not e.cd
+            r.make.n = n
+            r.make:SetShown(canMake and true or false)
+            if canMake then r.make:SetLabel(string.format(T("Fabriquer %d"), n)); r.make:SetWidth(r.make.label:GetStringWidth() + 24) end
+            r.name:SetPoint("RIGHT", canMake and -(110 + r.make:GetWidth()) or -100, 0)
             y = y + 46
         end
         ps:SetContentHeight(y)
-        pEmpty:SetShown(#keys == 0)
+        pEmpty:SetShown(#queue == 0)
+        -- recharges
+        local list = PH:AllCooldowns()
+        local tw = math.floor(((cds:GetWidth() or 300) - 32 - 2 * 8) / 3)
+        for i = 1, 3 do
+            local t = cdTile(i)
+            local e = list[i]
+            if e then
+                t:ClearAllPoints(); t:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + 8), -40); t:SetWidth(tw)
+                t.name:SetText(e.name)
+                local left = e.readyAt - time()
+                t.who:SetText(WK:CharName(e.c, e.ck) .. "  ·  " .. (e.ready and (UI:Hex(C.positive) .. T("prête") .. "|r") or WK:FormatTime(left)))
+                t.bar:SetValue(e.ready and 1 or math.max(0.02, 1 - left / (3 * 86400)))
+                t:Show()
+            else t:Hide() end
+        end
+        cdEmpty:SetShown(#list == 0)
 
         local needs, cost = WK.modules.Recipes:Needs()
         nRows:Reset()
@@ -1029,7 +1091,7 @@ local function Detail(page, parent)
     end)
     local mscroll = UI:Scroll(matsCard)
     mscroll:SetPoint("TOPLEFT", 10, -90)
-    mscroll:SetPoint("BOTTOMRIGHT", -8, 108)
+    mscroll:SetPoint("BOTTOMRIGHT", -8, 122)
     local mrows = UI:Pool(function()
         local r = CreateFrame("Button", nil, mscroll.child)
         r:SetHeight(30)
@@ -1215,16 +1277,25 @@ local function Detail(page, parent)
                 src = T("Maître")
             end
             r.sub:SetText(src .. "  ·  " .. table.concat(reag, ", "))
+            -- coût de l'étape (composants au prix choisi, sinon prix du guide)
+            local stepCost = 0
+            if e.status ~= "done" then
+                for _, rg in ipairs(st.reagents or {}) do stepCost = stepCost + R:GuidePrice(rg[1]) * rg[2] * n end
+                for _, f in ipairs(st.first or {}) do
+                    for _, rg in ipairs(f.reagents or {}) do stepCost = stepCost + R:GuidePrice(rg[1]) * rg[2] * f.crafts end
+                end
+            end
+            local costTxt = stepCost > 0 and ("  " .. UI:GoldText(stepCost)) or ""
             if e.status == "done" then
                 r.state:SetText(UI:Hex(C.positive) .. T("fait") .. "|r")
                 r:SetAlpha(0.5)
                 r.bg:SetColor(unpack(C.surface)); r.border:SetColor(unpack(C.border))
             elseif e.status == "current" then
-                r.state:SetText(UI:Hex(C.gold) .. T("en cours") .. "|r")
+                r.state:SetText(UI:Hex(C.gold) .. T("en cours") .. "|r" .. costTxt)
                 r:SetAlpha(1)
                 r.bg:SetColor(unpack(C.surface2)); r.border:SetColor(UI:Accent())
             else
-                r.state:SetText("")
+                r.state:SetText(costTxt)
                 r:SetAlpha(1)
                 r.bg:SetColor(unpack(C.surface)); r.border:SetColor(unpack(C.border))
             end
@@ -1243,7 +1314,11 @@ local function Detail(page, parent)
         -- Matériaux
         local missing = 0
         for _, m in ipairs(mats) do if m.missing > 0 then missing = missing + 1 end end
-        matsTotal:SetText(T("Total à acheter : ") .. UI:GoldText(total))
+        -- ce que les persos ont déjà : économisé sur le total
+        local saved = 0
+        for _, m in ipairs(mats or {}) do saved = saved + math.min(m.have, m.need) * (m.unit or 0) end
+        matsTotal:SetText(T("Total à acheter : ") .. UI:GoldText(total)
+            .. (saved > 0 and ("\n" .. UI:Hex(C.muted) .. string.format(T("déjà sur tes persos : %s"), WK:FormatMoney(saved)) .. "|r") or ""))
         if #mats == 0 then
             matsSum:SetText(T("Plus rien à fabriquer : le guide est terminé."))
         else
@@ -1334,10 +1409,15 @@ local function Detail(page, parent)
                     GameTooltip:AddLine(T("Pas vendue : à trouver (butin, quête ou hôtel des ventes)."), 0.8, 0.8, 0.8, true)
                 end
             end
+            if d.t then GameTooltip:AddLine(T("Clic droit : favori (mis en avant chez le maître)"), 0.6, 0.6, 0.6) end
             GameTooltip:Show()
         end)
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        r:SetScript("OnClick", function(s)
+        if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+        r:SetScript("OnClick", function(s, btn)
+            if btn == "RightButton" and s.favName then
+                WK.modules.ProfHelp:ToggleFav(s.favName); tab:Refresh() return
+            end
             if IsShiftKeyDown() and s.data then
                 local _, link = WK.GetItemInfo(s.data.r or s.data.o or 0)
                 if link then WK.InsertChatLink(link) end
@@ -1376,7 +1456,10 @@ local function Detail(page, parent)
             local name, ic, qr, qg, qb = stepInfo({ out = d.o, spell = d.s })
             r.title = name
             r.icon:SetTexture(ic)
-            r.name:SetText(name)
+            -- favori chez le maître : nom du sort de la recette (celui que le maître affiche)
+            r.favName = d.t and (WK.SpellInfo(d.s) or name) or nil
+            local fav = r.favName and WK.modules.ProfHelp:Config().fav[r.favName]
+            r.name:SetText((fav and (UI:Hex(C.gold) .. "*|r ") or "") .. (name or "?"))
             r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
             local src
             if d.t then
@@ -1618,7 +1701,7 @@ UI:RegisterPage({
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
-        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "Liste de courses" } }, setTab, 32)
+        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" } }, setTab, 32)
         seg:SetPoint("TOPLEFT")
         seg:Select("levels")
         function self:SetTab(k) seg:Select(k); setTab(k) end

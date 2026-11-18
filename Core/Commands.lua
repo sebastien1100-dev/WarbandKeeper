@@ -103,6 +103,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
     elseif cmd == "bateaux" or cmd == "boats" then
         WK.UI:ToggleBoatBoard()
+    elseif cmd == "de" or cmd == "desenchanter" or cmd == "disenchant" then
+        WK.UI:ToggleDEPanel()
     elseif cmd == "bateau" or cmd == "boat" then
         WK:Print(WK.T("Bateaux : diagnostic"))
         for _, l in ipairs(WK.modules.Nav:BoatDiag()) do WK:Print("  " .. l) end

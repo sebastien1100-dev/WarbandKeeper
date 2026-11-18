@@ -1091,6 +1091,24 @@ UI:RegisterPage({
             UI:SettingRow(mcard, -178, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon sur la minicarte : la compétence requise et la tienne, aux couleurs du jeu.",
                 toggle(mcard, function() return hc.nodeTip end, function(v) hc.nodeTip = v end), 80)
         end
+        -- Aides de métiers (Modules/ProfHelp.lua, UI/ProfPanels.lua)
+        do
+            local pc = WK.modules.ProfHelp:Config()
+            local rows = {
+                { "Désenchanter : valeur dans l'infobulle", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.", "deTip" },
+                { "Désenchanter ou vendre, à côté des sacs", "Enchanteur : objets des sacs à désenchanter, à vendre à l'HV ou au marchand, et un bouton pour enchaîner (/wk de).", "dePanel" },
+                { "Enchantements à l'échange", "Fenêtre d'échange : tes enchantements pour l'objet posé, et l'annonce de ce que tu sais faire.", "trade" },
+                { "File de fabrication à l'écran", "Fenêtre du métier ouverte : la prochaine recette de ta file et un bouton pour la fabriquer.", "queueHud" },
+                { "Décompter la file en fabriquant", "Chaque fabrication réussie retire une ligne de la file.", "queueAuto" },
+                { "Recharge terminée", "Transmutation, étoffe lunaire… : un message quand elle est de nouveau prête, sur n'importe quel perso.", "cdAlert" },
+                { "Chez le maître de métier", "Les recettes à apprendre ici : favoris, utiles pour le guide, déjà connues d'un autre perso.", "trainer" },
+            }
+            local acard = card("Aides de métiers", 40 + #rows * 46 + 8, "désenchantement, échange, file, maître")
+            for i, row in ipairs(rows) do
+                UI:SettingRow(acard, -40 - (i - 1) * 46, row[1], row[2],
+                    toggle(acard, function() return pc[row[3]] end, function(v) pc[row[3]] = v end), 80)
+            end
+        end
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")
