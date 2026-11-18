@@ -224,8 +224,13 @@ end
 ---------------------------------------------------------------------------
 -- Construction de la fenêtre
 ---------------------------------------------------------------------------
+local createWindow
 function UI:Create()
     if self.frame then return self.frame end
+    -- crochets d'accent de la fenêtre : retirés par UI:Rebuild (pas ceux des éléments à l'écran)
+    return self:InAccentScope("window", createWindow, self)
+end
+createWindow = function(self)
     local cfg = WK.DB.global.settings.ui
 
     local f = CreateFrame("Frame", "WarbandKeeperFrame", UIParent)
@@ -676,7 +681,7 @@ function UI:ShowPage(key)
     if not def.frame then
         def.frame = CreateFrame("Frame", nil, self.pageHost)
         def.frame:SetAllPoints()
-        def:Build(def.frame)
+        self:InAccentScope("window", def.Build, def, def.frame)
     end
     self:Refresh()
 end
@@ -1080,8 +1085,10 @@ function UI:Rebuild()
         local wasShown = self.frame and self.frame:IsShown()
         local page = self.current
         UI:ApplyTheme()
-        -- Les widgets masqués n'ont plus besoin des mises à jour de l'accent.
-        wipe(self.accentHooks)
+        -- Les widgets masqués de la fenêtre n'ont plus besoin des mises à jour de l'accent
+        -- (les éléments à l'écran qui ne sont pas reconstruits gardent les leurs).
+        self:DropAccentHooks("window")
+        if self.ResetSearchIndex then self:ResetSearchIndex(self.frame) end
         wipe(self.inputs)
         if self.frame then self.frame:Hide() end
         self.frame = nil

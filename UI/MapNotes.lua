@@ -111,17 +111,8 @@ WK:On("ADDON_LOADED", function(name) if name == "Blizzard_WorldMap" then hookMap
 ---------------------------------------------------------------------------
 -- Minicarte : notes « aussi sur la minicarte » autour du joueur
 ---------------------------------------------------------------------------
-local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
-local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
 local holder, miniPins = nil, {}
-local function viewRadius()
-    if C_Minimap and C_Minimap.GetViewRadius then
-        local ok, r = pcall(C_Minimap.GetViewRadius)
-        if ok and type(r) == "number" and r > 0 then return r end
-    end
-    local zoom = Minimap.GetZoom and Minimap:GetZoom() or 0
-    return ((IsIndoors and IsIndoors()) and RADIUS_IN or RADIUS_OUT)[zoom] or 233.3
-end
+local viewRadius = UI.MiniViewRadius -- aide commune de la minicarte (UI/MapPins.lua)
 local function updateMini()
     for _, p in ipairs(miniPins) do p:Hide() end
     if not WK:FeatureOn("maplayers") or not Minimap:IsVisible() then return end
@@ -292,6 +283,8 @@ local function buildEditor()
     end
     function f:Save()
         local d = self.data
+        -- note supprimée ailleurs pendant qu'on la modifiait : on ferme sans la recréer
+        if d.id and not N:Get(d.id) then self:Hide() return end
         d.title = self.name:GetText()
         d.text = self.text:GetText()
         N:Save(d)

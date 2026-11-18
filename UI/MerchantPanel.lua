@@ -110,7 +110,8 @@ local function build()
     f.title:SetText(T("Pour monter tes métiers"))
     f.close = UI:IconButton(f, "close", 16)
     f.close:SetPoint("TOPRIGHT", -10, -10)
-    f.close:SetScript("OnClick", function() f.closed = true; f:Hide() end)
+    -- fermé pour ce marchand seulement : il revient chez le prochain marchand
+    f.close:SetScript("OnClick", function() f:Hide() end)
     f.scroll = UI:Scroll(f)
     f.scroll:SetPoint("TOPLEFT", 6, -36)
     f.scroll:SetPoint("BOTTOMRIGHT", -6, 52)
@@ -172,7 +173,7 @@ local function build()
                 local h = self.heads:Get()
                 h.prof = e.prof
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetWidth(LW)
-                h.name:SetText(T(e.prof) .. "  |cff999999" .. e.rank .. "|r")
+                h.name:SetText(T(e.prof) .. "  " .. UI:Hex(C.muted) .. e.rank .. "|r")
                 h.seg:Select(e.target or "max")
                 y = y + 48
                 for _, m in ipairs(e.here) do
@@ -181,7 +182,7 @@ local function build()
                     r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(LW)
                     local name, icon = UI:ItemInfo(m.id)
                     r.icon:SetTexture(icon)
-                    r.name:SetText(name .. (m.recipe and ("  |cff999999" .. T("(recette)") .. "|r") or ""))
+                    r.name:SetText(name .. (m.recipe and ("  " .. UI:Hex(C.muted) .. T("(recette)") .. "|r") or ""))
                     r.sub:SetText(string.format(T("il en manque %d"), m.missing) .. "  ·  " .. UI:ExactMoney(m.cost))
                     r.buy:SetScript("OnClick", function()
                         local n = buy(m.stock, m.missing)
@@ -206,7 +207,7 @@ local function build()
         y = y + 40
         self.scroll.child:SetSize(LW, y)
         if self.scroll.UpdateBar then self.scroll:UpdateBar() end
-        self.total:SetText(count > 0 and (T("Tout ce qui manque ici :") .. " |cffffd24d" .. UI:ExactMoney(cost) .. "|r") or "")
+        self.total:SetText(count > 0 and (T("Tout ce qui manque ici :") .. " " .. UI:Hex(C.gold) .. UI:ExactMoney(cost) .. "|r") or "")
         self.all:SetShown(count > 0)
         self.all:SetScript("OnClick", function()
             local n = 0
@@ -229,7 +230,6 @@ local function show()
     -- rien à monter du tout (pas de métier avec guide, ou paliers atteints) : pas de panneau
     if #needs(stock) == 0 then if panel then panel:Hide() end return end
     panel = panel or build()
-    panel.closed = nil
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 6, -12)
     panel:SetFrameStrata(MerchantFrame:GetFrameStrata() or "MEDIUM")

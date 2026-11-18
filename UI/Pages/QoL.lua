@@ -322,6 +322,8 @@ UI:RegisterPage({
             end
             local cur = WK.DB.global.settings.ui.qolSection
             local fk = cur and WK.FEATURE_BY_QOL[cur]
+            -- une section de classe (« HUNTER »…) dépend du module « classes »
+            if not fk and isClass[cur or ""] then fk = "classes" end
             if fk and not WK:FeatureOn(fk) and self.ShowSection then self:ShowSection("general") end
         end
 
@@ -418,28 +420,51 @@ UI:RegisterPage({
         local h1 = UI:Text(state, 10, C.dim); h1:SetPoint("TOPLEFT", 16, hdrY); h1:SetText("PERSO")
         local h2 = UI:Text(state, 10, C.dim); h2:SetPoint("TOPRIGHT", -210, hdrY); h2:SetText("DURABILITÉ")
         local h3 = UI:Text(state, 10, C.dim); h3:SetPoint("TOPRIGHT", -16, hdrY); h3:SetText("SACS · BANQUE")
-        for i, e in ipairs(chars) do
-            local ry = hdrY - 18 - (i - 1) * 30
-            local icon = UI:RoundIcon(state, 18)
-            icon:SetPoint("TOPLEFT", 16, ry)
-            UI:SetCharIcon(icon, e.c, e.key)
-            local n = UI:Text(state, 12, classColor(e.c.class))
-            n:SetPoint("TOPLEFT", 42, ry - 2)
-            n:SetText(WK:CharName(e.c, e.key))
-            dynText(state, 12, C.text, function(t)
-                local d = e.c.durability
-                t:SetTextColor(unpack((d and d < (g.durability or 0)) and C.negative or C.text))
-                return d and (d .. " %") or "-"
-            end):SetPoint("TOPRIGHT", -210, ry - 2)
-            dynText(state, 12, C.text, function(t)
-                local f = e.c.freeSlots
-                t:SetTextColor(unpack((f and f < (g.freeSlots or 0)) and C.warning or C.text))
-                local bf = e.c.bankFree
-                local warn = (f and f < (g.freeSlots or 0)) or (bf and bf < (g.freeSlots or 0))
-                t:SetTextColor(unpack(warn and C.warning or C.text))
-                return (f and string.format("%d / %d", f, e.c.totalSlots or 0) or "-") .. "  ·  "
-                    .. (bf and string.format("%d / %d", bf, e.c.bankSlots or 0) or "-")
-            end):SetPoint("TOPRIGHT", -16, ry - 2)
+        -- Lignes gardées pour suivre les persos supprimés ou renommés (bloc : limite de 200 locales).
+        do
+            local rows = {}
+            local function place(r, ry)
+                r.icon:ClearAllPoints(); r.icon:SetPoint("TOPLEFT", 16, ry)
+                r.name:ClearAllPoints(); r.name:SetPoint("TOPLEFT", 42, ry - 2)
+                r.dur:ClearAllPoints(); r.dur:SetPoint("TOPRIGHT", -210, ry - 2)
+                r.slots:ClearAllPoints(); r.slots:SetPoint("TOPRIGHT", -16, ry - 2)
+            end
+            for i, e in ipairs(chars) do
+                local r = { key = e.key }
+                r.icon = UI:RoundIcon(state, 18)
+                UI:SetCharIcon(r.icon, e.c, e.key)
+                r.name = UI:Text(state, 12, classColor(e.c.class))
+                r.name:SetText(WK:CharName(e.c, e.key))
+                r.dur = dynText(state, 12, C.text, function(t)
+                    local d = e.c.durability
+                    t:SetTextColor(unpack((d and d < (g.durability or 0)) and C.negative or C.text))
+                    return d and (d .. " %") or "-"
+                end)
+                r.slots = dynText(state, 12, C.text, function(t)
+                    local f = e.c.freeSlots
+                    local bf = e.c.bankFree
+                    local warn = (f and f < (g.freeSlots or 0)) or (bf and bf < (g.freeSlots or 0))
+                    t:SetTextColor(unpack(warn and C.warning or C.text))
+                    return (f and string.format("%d / %d", f, e.c.totalSlots or 0) or "-") .. "  ·  "
+                        .. (bf and string.format("%d / %d", bf, e.c.bankSlots or 0) or "-")
+                end)
+                place(r, hdrY - 18 - (i - 1) * 30)
+                table.insert(rows, r)
+            end
+            -- perso supprimé : sa ligne disparaît et les suivantes remontent ; nom renommé à jour
+            table.insert(self.dyn, function()
+                local i = 0
+                for _, r in ipairs(rows) do
+                    local c = WK.DB.global.characters[r.key]
+                    r.icon:SetShown(c ~= nil); r.name:SetShown(c ~= nil)
+                    r.dur:SetShown(c ~= nil); r.slots:SetShown(c ~= nil)
+                    if c then
+                        r.name:SetText(WK:CharName(c, r.key))
+                        place(r, hdrY - 18 - i * 30)
+                        i = i + 1
+                    end
+                end
+            end)
         end
 
         -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
@@ -662,8 +687,8 @@ UI:RegisterPage({
         UI:SettingRow(gmain, -40, "Halo sur l'objet visé",
             "Plantes, filons, coffres, objets de quête et flotteur brillent à ton approche. À éteindre avant de désinstaller l'addon.",
             gtoggle(gmain, function() return gcfg.enabled end, function(v) Gm:SetEnabled(v) end), 80)
-        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet. Le jeu ne va pas au-delà de 15 m environ.",
-            UI:Slider(gmain, 240, 5, 15, 1, function() return gcfg.range or 15 end,
+        UI:SettingRow(gmain, -92, "Portée", "Distance à laquelle le jeu désigne un objet. Jusqu'à 60 m (le mode pêche la met toujours à 60 m).",
+            UI:Slider(gmain, 240, 5, 60, 1, function() return gcfg.range or 15 end,
                 function(v) gcfg.range = v; if gcfg.enabled then Gm:ApplyCVars() end end, "%d m"), 260)
         UI:SettingRow(gmain, -138, "Taille", "Taille du halo.",
             UI:Slider(gmain, 240, 60, 220, 10, function() return gcfg.size or 110 end, function(v) gcfg.size = v end, "%d"), 260)
@@ -708,7 +733,7 @@ UI:RegisterPage({
         local cy = -TOPBOX
         local function crow(label, desc, ctl, w) UI:SettingRow(clockCard, cy, label, desc, ctl, w); cy = cy - 46 end
         local function csync() UI:SyncClock() end
-        crow("Afficher l'horloge", "En haut de l'écran ; se place en mode édition.",
+        crow("Afficher le micro menu", "Barre en haut de l'écran (horloge et raccourcis) ; se place en mode édition.",
             toggle(clockCard, function() return ck.enabled end, function(v) ck.enabled = v; csync() end), 80)
         crow("Horloge toujours affichée", "Sinon, elle apparaît au survol de son emplacement.",
             toggle(clockCard, function() return ck.clockAlways ~= false end, function(v) ck.clockAlways = v; csync() end), 80)
@@ -1033,7 +1058,7 @@ UI:RegisterPage({
             toggle(rcard, function() return gdc.routeMini end, function(v) gdc.routeMini = v; replan() end), 80)
         UI:SettingRow(rcard, -132, "Apprendre les chemins", "Note les chemins que tu parcours à pied ou à monture (hors vol et instances), sur tous tes persos : les trajets les suivent ensuite.",
             toggle(rcard, function() return gdc.learn end, function(v) gdc.learn = v; if not v then NV:EndTrail() end end), 80)
-        local forget = UI:Button(rcard, "Oublier les chemins appris", nil, 28, "ghost")
+        local forget = UI:Button(rcard, "Oublier les chemins appris", nil, 28, "danger")
         forget:SetScript("OnClick", function(b)
             if not b.armed then
                 b.armed = true; b:SetLabel(T("Confirmer"))
@@ -1154,7 +1179,7 @@ UI:RegisterPage({
                 (d.last and (T("dernier scan le") .. " " .. date("%d/%m %H:%M", d.last)) or T("aucun scan pour l'instant"))
         end)
         UI:SettingRow(scard, -40, "État", nil, stat, 420)
-        local wipe = UI:Button(scard, "Effacer les prix", 150, 28, "ghost")
+        local wipe = UI:Button(scard, "Effacer les prix", 150, 28, "danger")
         wipe:SetScript("OnClick", function(b)
             if not b.armed then
                 b.armed = true; b:SetLabel(T("Confirmer"))
@@ -1195,7 +1220,7 @@ UI:RegisterPage({
             r.name:SetJustifyH("LEFT")
             r.info = UI:Text(r, 11, C.muted)
             r.info:SetPoint("RIGHT", -36, 0)
-            r.del = UI:IconButton(r, "trash", 24, "Retirer cette alerte")
+            r.del = UI:IconButton(r, "trash", 24, "Retirer cette alerte", true)
             r.del:SetPoint("RIGHT")
             alRows[i] = r
         end
@@ -1213,7 +1238,7 @@ UI:RegisterPage({
                     r.icon:SetTexture(icon)
                     r.name:SetText(WK.GetItemInfo(a.id) or ("#" .. a.id))
                     local now = a.price and ((a.qty or 0) > 0) and (T("à l'HV") .. " " .. UI:ExactMoney(a.price)) or T("pas en vente")
-                    r.info:SetText(T("max") .. " " .. UI:ExactMoney(a.max) .. "  ·  " .. (a.hit and ("|cff9ed17a" .. now .. "|r") or now))
+                    r.info:SetText(T("max") .. " " .. UI:ExactMoney(a.max) .. "  ·  " .. (a.hit and (UI:Hex(C.positive) .. now .. "|r") or now))
                     r.del:SetScript("OnClick", function() AV:RemoveAlert(a.id); WK:NotifyChanged() end)
                 end
             end
@@ -1482,10 +1507,10 @@ UI:RegisterPage({
                 local out = {}
                 for id, kind in pairs(g) do
                     local name = (WK.SpellInfo and WK.SpellInfo(id)) or ("#" .. id)
-                    table.insert(out, string.format("%s  |cff9ca3ab· %s · n° %d|r", name, KIND[kind] or kind, id))
+                    table.insert(out, string.format("%s  " .. UI:Hex(C.muted) .. "· %s · n° %d|r", name, KIND[kind] or kind, id))
                 end
                 table.sort(out)
-                if #out == 0 then return "|cff9ca3ab" .. T("Aucun pour l'instant : approche-toi d'un camp.") .. "|r" end
+                if #out == 0 then return UI:Hex(C.muted) .. T("Aucun pour l'instant : approche-toi d'un camp.") .. "|r" end
                 local shown = {}
                 for i = 1, math.min(#out, 8) do shown[i] = out[i] end
                 return table.concat(shown, "\n")
@@ -1499,14 +1524,14 @@ UI:RegisterPage({
             local contrib = card("Ce que tes persos peuvent apporter", 40 + CROWS * 20 + 30, "un objet par joueur et par camp")
             local ctext = dynText(contrib, 11, C.text, function()
                 local list = Cp:Contributions()
-                if #list == 0 then return "|cff9ca3ab" .. T("Aucun : il faut 20 dans un métier (ou la Cuisine pour poser le feu).") .. "|r" end
+                if #list == 0 then return UI:Hex(C.muted) .. T("Aucun : il faut 20 dans un métier (ou la Cuisine pour poser le feu).") .. "|r" end
                 local lines, last = {}, nil
                 for i, e in ipairs(list) do
-                    if i > CROWS then table.insert(lines, string.format("|cff9ca3ab" .. T("+ %d autre(s)") .. "|r", #list - CROWS)) break end
+                    if i > CROWS then table.insert(lines, string.format(UI:Hex(C.muted) .. T("+ %d autre(s)") .. "|r", #list - CROWS)) break end
                     local r, g, b = UI:ClassColor(e.c.class)
                     local who = e.key ~= last and string.format("|cff%02x%02x%02x%s|r  ", r * 255, g * 255, b * 255, WK:CharName(e.c, e.key)) or "      "
                     last = e.key
-                    table.insert(lines, who .. e.item .. "  |cff9ca3ab· " .. T(e.prof) .. " " .. e.rank .. " · " .. e.effect
+                    table.insert(lines, who .. e.item .. "  " .. UI:Hex(C.muted) .. "· " .. T(e.prof) .. " " .. e.rank .. " · " .. e.effect
                         .. (e.tier >= 2 and (" · " .. T("plan requis")) or "") .. "|r")
                 end
                 return table.concat(lines, "\n")
@@ -1599,7 +1624,7 @@ UI:RegisterPage({
                     if has then t.eff:SetTextColor(C.negative[1], C.negative[2], C.negative[3])
                     elseif o.steps or o.enchant or type(o.text) == "string" then t.eff:SetTextColor(r1, g1, b1)
                     else t.eff:SetTextColor(C.text[1], C.text[2], C.text[3]) end
-                    t.excl:SetText(has and ("|cffe86b6b" .. string.format(T("annulé : tu as %s"), has) .. "|r")
+                    t.excl:SetText(has and (UI:Hex(C.negative) .. string.format(T("annulé : tu as %s"), has) .. "|r")
                         or (o.exclLabel and string.format(T("ne se cumule pas avec %s"), T(o.exclLabel)) or T("se cumule avec tout")))
                     local rank = best[o.prof] or 0
                     for k = 1, 3 do
@@ -1670,18 +1695,18 @@ UI:RegisterPage({
             local xr = card("Repos", 40 + 3 * 20 + 30, "jusqu'à 150 % d'un niveau")
             local xrText = dynText(xr, 12, C.text, function()
                 local x = X:Me()
-                if x.maxed then return "|cff9ca3ab" .. T("Niveau maximum : plus de repos.") .. "|r" end
+                if x.maxed then return UI:Hex(C.muted) .. T("Niveau maximum : plus de repos.") .. "|r" end
                 local frac = x.rested / x.max
                 local lines = { string.format(T("%s XP de repos  ·  %d %% d'un niveau"), fmt(x.rested), math.floor(frac * 100)) }
                 if x.resting then
-                    table.insert(lines, "|cff9ed17a" .. T("En auberge ou en ville : le repos monte (5 % d'un niveau toutes les 8 h).") .. "|r")
+                    table.insert(lines, UI:Hex(C.positive) .. T("En auberge ou en ville : le repos monte (5 % d'un niveau toutes les 8 h).") .. "|r")
                 else
-                    table.insert(lines, "|cff9ca3ab" .. T("Dehors : le repos monte 4 fois moins vite. Déconnecte-toi en auberge.") .. "|r")
+                    table.insert(lines, UI:Hex(C.muted) .. T("Dehors : le repos monte 4 fois moins vite. Déconnecte-toi en auberge.") .. "|r")
                 end
                 if frac >= X.REST_MAX - 0.001 then
-                    table.insert(lines, "|cfff5d76e" .. T("Repos plein : il ne monte plus.") .. "|r")
+                    table.insert(lines, UI:Hex(C.gold) .. T("Repos plein : il ne monte plus.") .. "|r")
                 else
-                    table.insert(lines, "|cff9ca3ab" .. string.format(T("Plein dans %s %s"), xdur(X:RestFullIn(frac, true)), T("en auberge")) .. "|r")
+                    table.insert(lines, UI:Hex(C.muted) .. string.format(T("Plein dans %s %s"), xdur(X:RestFullIn(frac, true)), T("en auberge")) .. "|r")
                 end
                 return table.concat(lines, "\n")
             end)
@@ -1710,13 +1735,13 @@ UI:RegisterPage({
             local xsText = dynText(xs, 12, C.text, function()
                 local s = X.session
                 local perHour, secs, mobs = X:Rate()
-                if not perHour then return "|cff9ca3ab" .. T("Pas encore d'XP gagnée pendant cette session.") .. "|r" end
+                if not perHour then return UI:Hex(C.muted) .. T("Pas encore d'XP gagnée pendant cette session.") .. "|r" end
                 local lines = {
                     string.format(T("%s XP gagnée en %s  ·  %s / h"), fmt(s.gained), xdur(time() - s.start), fmt(perHour)),
                     string.format(T("Niveau suivant dans %s à ce rythme"), xdur(secs)),
                 }
                 if mobs then table.insert(lines, string.format(T("Environ %d monstre(s) comme le dernier (%s XP)"), mobs, fmt(s.lastKill))) end
-                table.insert(lines, "|cff9ca3ab" .. string.format(T("Monstres %s  ·  quêtes %s  ·  découverte %s"), fmt(s.mobs), fmt(s.quests), fmt(s.explore)) .. "|r")
+                table.insert(lines, UI:Hex(C.muted) .. string.format(T("Monstres %s  ·  quêtes %s  ·  découverte %s"), fmt(s.mobs), fmt(s.quests), fmt(s.explore)) .. "|r")
                 return table.concat(lines, "\n")
             end)
             xsText:SetPoint("TOPLEFT", 16, -42); xsText:SetPoint("RIGHT", -16, 0)
@@ -1780,7 +1805,7 @@ UI:RegisterPage({
             table.insert(self.dyn, function()
                 -- repos
                 local me = X:Me()
-                rset((me.rested / me.max) / X.REST_MAX, 0.38, 0.62, 0.95)
+                rset((me.rested / me.max) / X.REST_MAX, C.info[1], C.info[2], C.info[3])
                 -- persos
                 local rows = {}
                 for _, e in ipairs(UI:SortedCharacters()) do
@@ -1808,7 +1833,7 @@ UI:RegisterPage({
                             local pc = (x.cur or 0) / math.max(1, x.max or 1)
                             r.xset(pc, ar, ag, ab); r.xpc:SetText(string.format("%d %%", math.floor(pc * 100)))
                             local frac = X:RestOf(e.key) or 0
-                            r.rset(frac / X.REST_MAX, 0.38, 0.62, 0.95)
+                            r.rset(frac / X.REST_MAX, C.info[1], C.info[2], C.info[3])
                             r.rpc:SetText(string.format("%d %%", math.floor(frac * 100)))
                             r.full:SetShown(frac >= X.REST_MAX - 0.001)
                         else
@@ -1906,6 +1931,7 @@ UI:RegisterPage({
                         tile.cols[k] = col
                     end
                     tile.e = e
+                    tile.holder, tile.step = holder, STEP
                     table.insert(tiles, tile)
                     table.insert(self.tiles, tile)
                 end
@@ -1970,10 +1996,10 @@ UI:RegisterPage({
                         local lv = r.maxLvl and string.format(T("Niveaux %d à %d"), r.lvl, r.maxLvl) or string.format(T("Niveau %d+"), r.lvl or 1)
                         local stock = {}
                         for _, e in ipairs(list) do
-                            if QoL:Relevant(r, e.c.level) then
+                            if QoL:Relevant(r, e.c.level) and WK.DB.global.characters[e.key] then
                                 local n = QoL:Count(e.c, r)
-                                local col = (s.min or 0) > 0 and n < s.min and "|cffe8a849" or "|cffffffff"
-                                table.insert(stock, (e.c.name or "?") .. " " .. col .. num(n) .. "|r")
+                                local col = (s.min or 0) > 0 and n < s.min and UI:Hex(C.warning) or UI:Hex(C.text)
+                                table.insert(stock, WK:CharName(e.c, e.key) .. " " .. col .. num(n) .. "|r")
                             end
                         end
                         row.desc:SetText(lv .. (#stock > 0 and ("  ·  " .. table.concat(stock, ", ")) or ""))
@@ -2047,14 +2073,14 @@ UI:RegisterPage({
                     for i, b in ipairs(boxes) do
                         if i > 5 then break end
                         local ok = best >= b.skill
-                        table.insert(lines, string.format("%s%s|r x%d  ·  %s  ·  %s", ok and "|cff9fd27c" or "|cffb6a27e",
+                        table.insert(lines, string.format("%s%s|r x%d  ·  %s  ·  %s", ok and UI:Hex(C.positive) or UI:Hex(C.muted),
                             WK.GetItemInfo(b.id) or ("#" .. b.id), b.n, b.where,
                             string.format(T("Crochetage %d"), b.skill)))
                     end
                     if #boxes == 0 then table.insert(lines, T("Aucun coffre à crocheter dans les sacs de tes persos.")) end
                     local gold = {}
                     for _, e in ipairs(list) do
-                        if (e.c.pickpocket or 0) > 0 then table.insert(gold, (e.c.name or "?") .. " " .. WK:FormatMoney(e.c.pickpocket)) end
+                        if (e.c.pickpocket or 0) > 0 and WK.DB.global.characters[e.key] then table.insert(gold, WK:CharName(e.c, e.key) .. " " .. WK:FormatMoney(e.c.pickpocket)) end
                     end
                     table.insert(lines, " ")
                     table.insert(lines, T("Or volé à la tire : ") .. (#gold > 0 and table.concat(gold, " · ") or "-"))
@@ -2075,7 +2101,7 @@ UI:RegisterPage({
                     return string.format(T("Dans les sacs : %d / %d"), (c.bags or {})[6265] or 0, cc.shardMax or 20)
                 end)
                 cur:SetPoint("BOTTOMLEFT", 16, 20)
-                local del = UI:Button(sh, "Supprimer le surplus", nil, 28, "ghost", "trash")
+                local del = UI:Button(sh, "Supprimer le surplus", nil, 28, "danger", "trash")
                 del:SetPoint("BOTTOMRIGHT", -12, 12)
                 del.tooltip = "Maj + clic : supprime les fragments au-delà du maximum."
                 del:SetScript("OnClick", function() if IsShiftKeyDown() then QoL:DeleteExtraShards() end end)
@@ -2146,8 +2172,8 @@ UI:RegisterPage({
                     local lines = {}
                     for _, e in ipairs(list) do
                         local left = e.c.reincarnation and (e.c.reincarnation - time())
-                        table.insert(lines, (e.c.name or "?") .. "  ·  " .. ((e.c.level or 0) < 30 and T("à partir du niveau 30")
-                            or (left and minutes(left)) or T("pas encore vue")))
+                        if WK.DB.global.characters[e.key] then table.insert(lines, WK:CharName(e.c, e.key) .. "  ·  " .. ((e.c.level or 0) < 30 and T("à partir du niveau 30")
+                            or (left and minutes(left)) or T("pas encore vue"))) end
                     end
                     return table.concat(lines, "\n")
                 end)
@@ -2308,8 +2334,19 @@ UI:RegisterPage({
             if a > 0 then t.count:Set(tostring(a), C.warning) end
             t:Paint()
         end
+        -- tuiles de classe : perso supprimé masqué, les suivantes remontent
+        local slot = {}
         for _, tile in ipairs(self.tiles) do
             local e = tile.e
+            local alive = WK.DB.global.characters[e.key] ~= nil
+            tile:SetShown(alive)
+            if alive then
+                local n = slot[tile.holder] or 0
+                slot[tile.holder] = n + 1
+                tile:ClearAllPoints()
+                tile:SetPoint("TOPLEFT", 0, -n * tile.step)
+                tile:SetPoint("TOPRIGHT", 0, -n * tile.step)
+            end
             UI:SetCharIcon(tile.icon, e.c, e.key)
             tile.name:SetText(WK:CharName(e.c, e.key))
             tile.sub:SetText(T(QoL.CLASS_LABEL[e.c.class] or "?") .. " · " .. string.format(T("niveau %s"), tostring(e.c.level or "?")))

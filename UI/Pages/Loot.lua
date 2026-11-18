@@ -112,14 +112,17 @@ UI:RegisterPage({
         self.banner = banner
         self.bannerIcon = UI:Icon(banner, "filter", 22)
         self.bannerIcon:SetPoint("LEFT", 18, 0)
-        local bt = UI:Text(banner, 14)
-        bt:SetPoint("TOPLEFT", 52, -12)
-        bt:SetText("Filtre de loot")
+        self.enable = UI:Toggle(banner, function() return d.enabled end, function(v) d.enabled = v; L:CheckAuto(); self:Refresh() end)
+        -- Ligne de réglage (trouvable par la recherche) : son libellé sert de titre au bandeau.
+        local bt = UI:SettingRow(banner, -12, "Filtre de loot", nil, self.enable).label
+        bt:SetFont(UI.FONT, 14, "")
+        bt:ClearAllPoints()
+        bt:SetPoint("TOPLEFT", banner, "TOPLEFT", 52, -12)
+        self.enable:ClearAllPoints()
+        self.enable:SetPoint("RIGHT", banner, "RIGHT", -16, 0)
         self.bannerState = UI:Text(banner, 11, C.muted)
         self.bannerState:SetPoint("TOPLEFT", bt, "BOTTOMLEFT", 0, -4)
         self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -150, -30)
-        self.enable = UI:Toggle(banner, function() return d.enabled end, function(v) d.enabled = v; L:CheckAuto(); self:Refresh() end)
-        self.enable:SetPoint("RIGHT", -16, 0)
         self.enableLbl = UI:Text(banner, 12)
         self.enableLbl:SetPoint("RIGHT", self.enable, "LEFT", -10, 0)
         local TOP = -(BANNER_H + GAP)
@@ -132,8 +135,15 @@ UI:RegisterPage({
         local addBtn = UI:IconButton(left, "plus", 26, "Nouveau profil")
         addBtn:SetPoint("TOPRIGHT", -10, -8)
         addBtn:SetScript("OnClick", function() self.sel = L:Add(); self:Refresh() end)
+        -- Liste des profils : défile quand elle dépasse la place laissée par « Laissés au sol ».
+        local ps = UI:Scroll(left)
+        ps:SetPoint("TOPLEFT", 8, -40)
+        ps:SetPoint("TOPRIGHT", -2, -40)
+        ps:SetHeight(42)
+        self.profScroll = ps
+        self.leftCard = left
         self.profileRows = UI:Pool(function()
-            local b = CreateFrame("Button", nil, left)
+            local b = CreateFrame("Button", nil, ps.child)
             b:SetHeight(38)
             b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
             b.bar = CreateFrame("Frame", nil, b)
@@ -350,17 +360,20 @@ UI:RegisterPage({
         self.loadBtn:SetPoint("RIGHT", dup, "LEFT", -6, 0)
         self.loadBtn:SetScript("OnClick", function() L:SetActive(self.sel); L:CheckAuto(); self:Refresh() end)
 
-        local ql = UI:Text(prof, 12, C.muted)
-        ql:SetPoint("TOPLEFT", 16, -66)
-        ql:SetText("Qualité minimale")
+        -- Réglages en lignes UI:SettingRow (trouvables par la recherche), commandes replacées à la main.
         self.quality = UI:Dropdown(prof, 200, 30, QUALITIES, function(v)
             local pr = L:Get(self.sel); if pr then pr.minQuality = v; self:Refresh() end
         end)
-        self.quality:SetPoint("TOPLEFT", 150, -58)
-        local vl = UI:Text(prof, 12, C.muted)
-        vl:SetPoint("LEFT", self.quality, "RIGHT", 20, 0)
-        vl:SetText("Valeur minimale")
+        local ql = UI:SettingRow(prof, -57, "Qualité minimale", nil, self.quality).label
+        ql:SetTextColor(unpack(C.muted))
+        self.quality:ClearAllPoints()
+        self.quality:SetPoint("TOPLEFT", prof, "TOPLEFT", 150, -58)
         self.value = UI:NumberInput(prof, 90, 30, "0")
+        local vl = UI:SettingRow(prof, -57, "Valeur minimale", nil, self.value).label
+        vl:SetTextColor(unpack(C.muted))
+        vl:ClearAllPoints()
+        vl:SetPoint("LEFT", self.quality, "RIGHT", 20, 0)
+        self.value:ClearAllPoints()
         self.value:SetPoint("LEFT", vl, "RIGHT", 10, 0)
         self.value.onEnter = function()
             local pr = L:Get(self.sel); if pr then pr.minValue = self.value:GetNumber() * 100; self:Refresh() end
@@ -375,10 +388,11 @@ UI:RegisterPage({
         end, function(v)
             local pr = L:Get(self.sel); if pr then pr.keepRules = v end
         end)
-        self.keepRules:SetPoint("TOPLEFT", 16, -142)
-        local kl = UI:Text(prof, 12)
+        local kl = UI:SettingRow(prof, -137, "Toujours les objets de mes règles d'envoi et de dépôt", nil, self.keepRules).label
+        self.keepRules:ClearAllPoints()
+        self.keepRules:SetPoint("TOPLEFT", prof, "TOPLEFT", 16, -142)
+        kl:ClearAllPoints()
         kl:SetPoint("LEFT", self.keepRules, "RIGHT", 10, 0)
-        kl:SetText("Toujours les objets de mes règles d'envoi et de dépôt")
         local qn = UI:Text(prof, 10, C.dim)
         qn:SetPoint("TOPLEFT", 16, -172)
         qn:SetText("L'or, les monnaies et les objets de quête sont toujours ramassés.")
@@ -399,10 +413,10 @@ UI:RegisterPage({
             L:CheckAuto()
             self:Refresh()
         end)
-        self.autoDd:SetPoint("TOPLEFT", 150, -98)
-        local al = UI:Text(prof, 12, C.muted)
-        al:SetPoint("TOPLEFT", 16, -106)
-        al:SetText("Se charge tout seul")
+        local al = UI:SettingRow(prof, -97, "Se charge tout seul", nil, self.autoDd).label
+        al:SetTextColor(unpack(C.muted))
+        self.autoDd:ClearAllPoints()
+        self.autoDd:SetPoint("TOPLEFT", prof, "TOPLEFT", 150, -98)
         self.autoHelp = UI:Text(prof, 10, C.dim)
         self.autoHelp:SetPoint("TOPLEFT", self.autoDd, "TOPRIGHT", 12, -2)
         self.autoHelp:SetPoint("TOPRIGHT", prof, "TOPRIGHT", -16, -100)
@@ -447,6 +461,42 @@ UI:RegisterPage({
             self.always.card:SetWidth(half)
             self.never.card:SetWidth(half)
         end)
+        -- Hauteur de la colonne de gauche : profils et « Laissés au sol » recalculés.
+        UI:OnResize(left, function() if self.profN then self:LayoutLeft() end end)
+    end,
+
+    -- Colonne de gauche : la liste des profils prend sa hauteur (défile au-delà), le reste
+    -- va aux objets laissés au sol récemment (au moins trois lignes quand il y en a).
+    LayoutLeft = function(self)
+        local L = Loot()
+        local d = WK.DB.global.loot
+        local H = self.leftCard:GetHeight()
+        if not H or H <= 0 then H = UI.PAGE_H - BANNER_H - GAP end
+        local recent = d.recent or {}
+        local want = self.profN * 42
+        local free = H - 40 - 122
+        local ph = math.max(42, math.min(want, free - math.min(#recent, 3) * 24))
+        self.profScroll:SetHeight(ph)
+        self.profScroll:SetContentHeight(want)
+
+        self.recentRows:Reset()
+        self.leftCount:SetText(string.format(T("Session : %d laissés"), L.leftSession or 0))
+        local room = math.floor((free - ph) / 24)
+        local shown = math.max(0, math.min(#recent, room))
+        self.recentTitle:ClearAllPoints()
+        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 70 + shown * 24)
+        self.recentTitle:SetShown(shown > 0)
+        for i = 1, shown do
+            local e = recent[i]
+            local r = self.recentRows:Get()
+            r.itemID = e.id
+            r:ClearAllPoints()
+            r:SetPoint("BOTTOMLEFT", 10, 66 + (shown - i) * 24)
+            r:SetPoint("BOTTOMRIGHT", -10, 66 + (shown - i) * 24)
+            local name, icon = UI:ItemInfo(e.id or 0)
+            r.icon:SetTexture(icon)
+            r.name:SetText((e.name or name) .. "  x" .. (e.n or 1))
+        end
     end,
 
     Refresh = function(self)
@@ -465,13 +515,13 @@ UI:RegisterPage({
 
         -- Profils
         self.profileRows:Reset()
-        local y = -40
+        local y = 0
         for i, pr in ipairs(profiles) do
             local b = self.profileRows:Get()
             b.index = i
             b:ClearAllPoints()
-            b:SetPoint("TOPLEFT", 8, y)
-            b:SetPoint("TOPRIGHT", -8, y)
+            b:SetPoint("TOPLEFT", 0, y)
+            b:SetPoint("TOPRIGHT", 0, y)
             b.name:SetText(pr.name)
             local a = autoLabel(pr.auto)
             b.auto:SetText(a and (T("auto : ") .. a) or "")
@@ -495,26 +545,9 @@ UI:RegisterPage({
             self.bannerState:SetText(T("Le butin est ramassé normalement par le jeu."))
         end
 
-        -- Laissés au sol
-        self.recentRows:Reset()
-        self.leftCount:SetText(string.format(T("Session : %d laissés"), L.leftSession or 0))
-        local room = math.floor((UI.PAGE_H - BANNER_H - GAP + y - 122) / 24)
-        local recent = d.recent or {}
-        local shown = math.max(0, math.min(#recent, room))
-        self.recentTitle:ClearAllPoints()
-        self.recentTitle:SetPoint("BOTTOMLEFT", 14, 70 + shown * 24)
-        self.recentTitle:SetShown(shown > 0)
-        for i = 1, shown do
-            local e = recent[i]
-            local r = self.recentRows:Get()
-            r.itemID = e.id
-            r:ClearAllPoints()
-            r:SetPoint("BOTTOMLEFT", 10, 66 + (shown - i) * 24)
-            r:SetPoint("BOTTOMRIGHT", -10, 66 + (shown - i) * 24)
-            local name, icon = UI:ItemInfo(e.id or 0)
-            r.icon:SetTexture(icon)
-            r.name:SetText((e.name or name) .. "  x" .. (e.n or 1))
-        end
+        -- Laissés au sol (et hauteur de la liste des profils)
+        self.profN = #profiles
+        self:LayoutLeft()
 
         -- Profil sélectionné
         local pr = profiles[self.sel]

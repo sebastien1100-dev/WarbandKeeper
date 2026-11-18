@@ -3,12 +3,12 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Trois couleurs fixes, douces et accordées aux thèmes chauds, indépendantes de l'accent :
--- vert sauge (ajouts), ambre (modifications), vieux rose (corrections).
+-- Couleurs de sens de la palette (UI/Themes.lua), lues à l'affichage : ajouts en vert (positive),
+-- modifications en ambre (warning), corrections en rouge doux (negative).
 local SECTIONS = {
-    { "added", "+  AJOUTS", { 0.66, 0.79, 0.50, 1 } },
-    { "changed", "~  MODIFICATIONS", { 0.88, 0.66, 0.35, 1 } },
-    { "fixed", "!  CORRECTIONS", { 0.85, 0.53, 0.53, 1 } },
+    { "added", "+  AJOUTS", "positive" },
+    { "changed", "~  MODIFICATIONS", "warning" },
+    { "fixed", "!  CORRECTIONS", "negative" },
 }
 
 local function notesSeen() return WK.DB.global.settings.notesSeenVersion == WK.version end
@@ -70,9 +70,10 @@ local function VersionCard(parent, entry, isCurrent)
             if list and #list > 0 then
                 -- liseré de la couleur de la rubrique, sur toute sa hauteur
                 local stripe = card:CreateTexture(nil, "ARTWORK")
-                stripe:SetColorTexture(unpack(sec[3]))
-                table.insert(parts, { kind = "head", badge = UI:Badge(card, sec[2], sec[3]), stripe = stripe })
-                bullets(list, sec[3])
+                local col = C[sec[3]]
+                stripe:SetColorTexture(unpack(col))
+                table.insert(parts, { kind = "head", badge = UI:Badge(card, sec[2], col), stripe = stripe })
+                bullets(list, col)
                 table.insert(parts, { kind = "end", stripe = stripe })
             end
         end

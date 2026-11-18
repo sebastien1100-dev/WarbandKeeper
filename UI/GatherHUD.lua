@@ -76,8 +76,11 @@ local function hide()
     if holder then holder:Hide() end
 end
 
+local closedByCombat -- fermé par « Fermer en combat » : rouvert à la sortie du combat
+
 function UI:ToggleGatherHUD(on)
     if on == nil then on = not saved end
+    closedByCombat = nil -- choix du joueur : on ne rouvre rien de soi-même
     if on then show() else hide() end
 end
 -- pour le raccourci du jeu (Bindings.xml)
@@ -85,6 +88,9 @@ function WarbandKeeper_ToggleGatherHUD() UI:ToggleGatherHUD() end
 BINDING_NAME_WARBANDKEEPER_HUD = T("HUD de récolte (afficher / masquer)")
 
 WK:On("PLAYER_REGEN_DISABLED", function()
-    if saved and UI.GatherHUDConfig().combatHide then hide() end
+    if saved and UI.GatherHUDConfig().combatHide then hide(); closedByCombat = true end
+end)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if closedByCombat then closedByCombat = nil; show() end
 end)
 WK:On("PLAYER_LOGOUT", function() hide() end)

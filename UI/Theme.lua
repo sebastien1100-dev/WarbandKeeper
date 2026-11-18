@@ -70,9 +70,34 @@ function UI:Accent()
 end
 
 -- Les widgets qui utilisent l'accent s'enregistrent ici pour se mettre à jour en direct.
-function UI:OnAccent(fn)
+-- owner (facultatif, sinon la portée en cours, voir InAccentScope) : propriétaire du crochet,
+-- pour ne retirer que ceux d'une partie reconstruite (« window » : la fenêtre principale).
+UI.accentOwners = setmetatable({}, { __mode = "k" })
+function UI:OnAccent(fn, owner)
     table.insert(self.accentHooks, fn)
+    owner = owner or self.accentScope
+    if owner then self.accentOwners[fn] = owner end
     fn()
+end
+
+-- Exécute fn(...) : les crochets d'accent posés pendant ce temps appartiennent à owner.
+function UI:InAccentScope(owner, fn, ...)
+    local prev = self.accentScope
+    self.accentScope = owner
+    local ok, res = pcall(fn, ...)
+    self.accentScope = prev
+    if not ok then error(res, 0) end
+    return res
+end
+
+-- Retire les crochets d'accent d'un propriétaire (les autres éléments à l'écran gardent les leurs).
+function UI:DropAccentHooks(owner)
+    local keep = {}
+    for _, fn in ipairs(self.accentHooks) do
+        if self.accentOwners[fn] == owner then self.accentOwners[fn] = nil else table.insert(keep, fn) end
+    end
+    wipe(self.accentHooks)
+    for i, fn in ipairs(keep) do self.accentHooks[i] = fn end
 end
 
 function UI:SetAccent(index)
@@ -220,9 +245,10 @@ function UI:GoldText(copper)
         local sv = math.floor(math.abs(copper) / 100)
         return "|cffc7c7cf" .. (copper < 0 and "-" or "") .. sv .. "|r " .. WK.T("pa")
     end
-    local g = math.floor(copper / 10000)
-    local s = tostring(math.abs(g)):reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "")
-    return "|cffffd24d" .. (g < 0 and "-" or "") .. s .. "|r " .. WK.T("po")
+    -- valeur absolue arrondie vers le bas, puis le signe (math.floor d'un négatif arrondissait vers le haut)
+    local g = math.floor(math.abs(copper) / 10000)
+    local s = tostring(g):reverse():gsub("(%d%d%d)", "%1 "):reverse():gsub("^ ", "")
+    return "|cffffd24d" .. ((copper < 0 and g > 0) and "-" or "") .. s .. "|r " .. WK.T("po")
 end
 
 -- Infos d'objet avec demande de chargement si l'objet n'est pas en cache.

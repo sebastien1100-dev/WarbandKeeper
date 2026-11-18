@@ -12,9 +12,13 @@ local T = function(s) return WK.T(s) end
 -- Hors profils : ce sont des données (sauf les réglages, dans itemLock.cfg).
 local DEFAULTS = { key = "alt", rebuy = true, confirm = true, ratio = 5, confirmMin = 10000,
     rules = { epic = true, wish = true, recipes = true, quest = false, value = false }, valueMin = 50000 }
--- Recettes : sous-classe d'objet » métier (noms des métiers du perso)
+-- Recettes : sous-classe d'objet » métier. c.professions est rangé par nom dans la langue du jeu :
+-- on compare au nom français, au nom anglais et au n° de ligne de compétence (skillLine) quand il est noté.
 local RECIPE_PROF = { [1] = "Travail du cuir", [2] = "Couture", [3] = "Ingénierie", [4] = "Forge", [5] = "Cuisine",
     [6] = "Alchimie", [7] = "Secourisme", [8] = "Enchantement", [9] = "Pêche", [10] = "Joaillerie" }
+local RECIPE_PROF_EN = { [1] = "Leatherworking", [2] = "Tailoring", [3] = "Engineering", [4] = "Blacksmithing", [5] = "Cooking",
+    [6] = "Alchemy", [7] = "First Aid", [8] = "Enchanting", [9] = "Fishing", [10] = "Jewelcrafting" }
+local RECIPE_SKILL = { [1] = 165, [2] = 197, [3] = 202, [4] = 164, [5] = 185, [6] = 171, [7] = 129, [8] = 333, [9] = 356, [10] = 755 }
 
 local function db()
     local g = WK.DB.global
@@ -62,9 +66,18 @@ local function wished(id)
     for _, list in pairs(w or {}) do if list[id] then return true end end
     return false
 end
-local function profHeld(name)
+-- Un perso du compte a-t-il le métier de cette sous-classe de recette ?
+local function profHeld(sub)
+    local fr, en, line = RECIPE_PROF[sub], RECIPE_PROF_EN[sub], RECIPE_SKILL[sub]
+    local tr = fr and WK.T(fr)
     for _, c in pairs(WK.DB.global.characters) do
-        if c.professions and c.professions[name] then return true end
+        local profs = c.professions
+        if profs then
+            if (fr and profs[fr]) or (en and profs[en]) or (tr and profs[tr]) then return true end
+            for _, p in pairs(profs) do
+                if type(p) == "table" and line and p.skillLine == line then return true end
+            end
+        end
     end
     return false
 end
@@ -80,7 +93,7 @@ function M:Reason(id)
     local r = d.cfg.rules
     local why = false
     local classID, subID = instant(id)
-    if r.recipes and classID == 9 and RECIPE_PROF[subID] and profHeld(RECIPE_PROF[subID]) then
+    if r.recipes and classID == 9 and RECIPE_PROF[subID] and profHeld(subID) then
         why = string.format(T("recette de %s"), T(RECIPE_PROF[subID]):lower())
     elseif r.quest and classID == 12 then
         why = T("objet de quête")

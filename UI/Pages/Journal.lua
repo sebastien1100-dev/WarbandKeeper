@@ -25,7 +25,7 @@ end
 local function describe(e)
     local who = charLabel(e.char)
     if e.kind == "gold" then
-        local col = e.delta >= 0 and "|cff9ed17a+" or "|cffe86a6a"
+        local col = e.delta >= 0 and (UI:Hex(C.positive) .. "+") or UI:Hex(C.negative)
         return string.format("%s  %s%s|r", who, col, UI:ShortGold(e.delta)),
             e.delta >= 0 and T("or gagné") or T("or dépensé")
     elseif e.kind == "mail" then
@@ -49,10 +49,10 @@ local function describe(e)
     elseif e.kind == "level" then
         return string.format(T("%s atteint le niveau %d"), who, e.level or 0), T("niveau")
     elseif e.kind == "ahsale" then
-        return string.format(T("%s a vendu %d %s  %s"), who, e.count or 1, e.item or "?", "|cff9ed17a+" .. UI:ShortGold(e.net or 0) .. "|r"),
+        return string.format(T("%s a vendu %d %s  %s"), who, e.count or 1, e.item or "?", UI:Hex(C.positive) .. "+" .. UI:ShortGold(e.net or 0) .. "|r"),
             string.format(T("vente à l'HV · prix %s, reçu après commission"), UI:ShortGold(e.gross or 0))
     elseif e.kind == "ahbuy" then
-        return string.format(T("%s a acheté %d %s  %s"), who, e.count or 1, e.item or "?", "|cffe86a6a-" .. UI:ShortGold(e.gross or 0) .. "|r"),
+        return string.format(T("%s a acheté %d %s  %s"), who, e.count or 1, e.item or "?", UI:Hex(C.negative) .. "-" .. UI:ShortGold(e.gross or 0) .. "|r"),
             T("achat à l'HV")
     end
     return who, ""
@@ -147,7 +147,7 @@ UI:RegisterPage({
             if e.kind == "gold" then col = e.delta >= 0 and C.positive or C.negative
             elseif e.kind == "ahsale" then col = C.positive
             elseif e.kind == "ahbuy" then col = C.negative
-            elseif e.kind == "level" then col = { 0.70, 0.56, 1.0 }
+            elseif e.kind == "level" then col = C.plan
             else col = { UI:Accent() } end
             r.icon:SetVertexColor(col[1], col[2], col[3], 1)
             r.iconRound:SetColor(col[1], col[2], col[3], 0.16)

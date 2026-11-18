@@ -522,6 +522,8 @@ if hooksecurefunc then
     if ChatEdit_InsertLink then hooksecurefunc("ChatEdit_InsertLink", captureFromChat) end
     if ChatFrameUtil and ChatFrameUtil.InsertLink then hooksecurefunc(ChatFrameUtil, "InsertLink", captureFromChat) end
     if SendChatMessage then hooksecurefunc("SendChatMessage", captureFromChat) end
+    -- clients récents : l'envoi passe par C_ChatInfo (la globale peut l'appeler : même lien gardé deux fois, sans effet)
+    if C_ChatInfo and C_ChatInfo.SendChatMessage then hooksecurefunc(C_ChatInfo, "SendChatMessage", captureFromChat) end
 end
 WK:On("CRAFT_SHOW", function() C_Timer.After(0.5, function()
     local name = GetCraftDisplaySkillLine and GetCraftDisplaySkillLine() or (GetCraftName and GetCraftName())

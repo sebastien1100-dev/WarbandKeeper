@@ -77,6 +77,13 @@ UI:RegisterPage({
             self.roleBtns[role] = b
             x = x + 84
         end
+        -- Inscrit les rôles pour la recherche des réglages : ligne posée sur l'en-tête et les boutons
+        -- (son libellé est masqué, « JE JOUE » reste le titre affiché).
+        local roleRow = UI:SettingRow(banner, 0, "Je joue (mes rôles)", nil, nil)
+        roleRow.label:Hide()
+        roleRow:ClearAllPoints()
+        roleRow:SetPoint("TOPLEFT", playHd, "TOPLEFT", -4, 2)
+        roleRow:SetPoint("BOTTOMRIGHT", self.roleBtns[ROLES[#ROLES]], "BOTTOMRIGHT", 4, -2)
 
         local lookHd = UI:Text(banner, 10, C.dim)
         lookHd:SetPoint("TOPLEFT", x + 14, -10)
@@ -146,6 +153,8 @@ UI:RegisterPage({
         local catOpts = {}
         for _, c in ipairs(cats) do table.insert(catOpts, { c.id, c.name }) end
         self.catDd = UI:Dropdown(left, LEFT_W - 20, 28, catOpts, function(v)
+            -- autre catégorie : les groupes de l'ancienne ne sont plus montrés
+            if v ~= self.category then LFG:ClearResults() end
             self.category = v; cfg.category = v; self.sel = nil; self:Refresh()
         end)
         self.catDd:SetPoint("TOPLEFT", 10, -10)
@@ -271,6 +280,12 @@ UI:RegisterPage({
         local reset = UI:Button(right, "Défaut", 60, 20, "ghost")
         reset:SetPoint("BOTTOMRIGHT", -10, 126)
         reset:SetScript("OnClick", function() cfg.message = LFG.DEFAULT_MSG; self.msgBox:SetText(cfg.message); self:Refresh() end)
+        -- Inscrit le message pour la recherche des réglages (libellé masqué, « MON MESSAGE » reste affiché).
+        local msgRow = UI:SettingRow(right, 0, "Mon message (demande de groupe)", nil, nil)
+        msgRow.label:Hide()
+        msgRow:ClearAllPoints()
+        msgRow:SetPoint("TOPLEFT", msgHd, "TOPLEFT", -4, 4)
+        msgRow:SetPoint("BOTTOMRIGHT", self.msgBox, "BOTTOMRIGHT", 4, -4)
 
         -----------------------------------------------------------------------
         -- Groupes (centre)
@@ -359,7 +374,7 @@ UI:RegisterPage({
                 for _, m in ipairs(s.r.list or {}) do
                     local cr, cg, cb = UI:ClassColor(m.class)
                     local cls = T(WK.modules.QoL.CLASS_LABEL[m.class or ""] or "?")
-                    GameTooltip:AddDoubleLine((m.leader and "|cffe0bd72*|r " or "  ") .. (m.name or "?"),
+                    GameTooltip:AddDoubleLine((m.leader and UI:Hex(C.gold) .. "*|r " or "  ") .. (m.name or "?"),
                         cls .. (m.level and (" " .. m.level) or "") .. (m.role and (" · " .. T(RW[m.role])) or ""),
                         cr, cg, cb, 0.8, 0.8, 0.8)
                 end
@@ -550,7 +565,7 @@ UI:RegisterPage({
         local nr, ng, nb = classColor(r.class)
         if r.friend or r.guild then nr, ng, nb = C.tank[1], C.tank[2], C.tank[3] end
         if r.delisted then nr, ng, nb = C.dim[1], C.dim[2], C.dim[3] end
-        c.name:SetText(name .. (r.level and ("  |cff999999" .. r.level .. "|r") or ""))
+        c.name:SetText(name .. (r.level and ("  " .. UI:Hex(C.muted) .. r.level .. "|r") or ""))
         c.name:SetTextColor(nr, ng, nb)
         local tag = r.friend and T("ami") or (r.guild and T("guilde") or nil)
         c.age:SetText((tag and (tag .. " · ") or "") .. ago(r.age))
@@ -635,6 +650,8 @@ UI:RegisterPage({
             self.searchBtn:Hide()
         elseif LFG.searching then
             self.status:SetText(T("recherche en cours…"))
+        elseif LFG.failed then
+            self.status:SetText(UI:Hex(C.negative) .. T("la recherche a échoué : réessaie dans un instant") .. "|r")
         elseif LFG.searchedAt then
             local d = time() - LFG.searchedAt
             self.status:SetText(d < 60 and T("actualisé à l'instant") or string.format(T("actualisé il y a %s"), ago(d)))
@@ -670,7 +687,7 @@ UI:RegisterPage({
             b:SetPoint("TOPLEFT", 0, -y); b:SetWidth(lw)
             local n = counts[a.id] or 0
             b.lv:SetText(a.min > 0 and tostring(a.min) or "")
-            b.name:SetText(a.name .. (n > 0 and ("  |cff999999· " .. n .. "|r") or ""))
+            b.name:SetText(a.name .. (n > 0 and ("  " .. UI:Hex(C.muted) .. "· " .. n .. "|r") or ""))
             local far = a.min > 0 and (a.min > level + 5 or (a.max > 0 and a.max < level - 3))
             b:SetAlpha(far and 0.45 or 1)
             local sel = self.sel == a.id
@@ -757,7 +774,9 @@ UI:RegisterPage({
         if #LFG.results == 0 then
             self.empty:Show()
             self.empty:ClearAllPoints(); self.empty:SetPoint("TOPLEFT", 0, -4); self.empty:SetWidth(W - 14)
-            self.empty:SetText(LFG.searching and T("Recherche en cours…") or T("Choisis un donjon à gauche (ou aucun pour tous), puis clique Actualiser."))
+            self.empty:SetText(LFG.searching and T("Recherche en cours…")
+                or LFG.failed and T("La recherche a échoué (le jeu n'a pas répondu). Clique Actualiser pour réessayer.")
+                or T("Choisis un donjon à gauche (ou aucun pour tous), puis clique Actualiser."))
             cy = 40
         elseif cfg.mode == "players" then
             head(T("Joueurs seuls"), string.format(T("%d pour %s"), #solos, where))
@@ -792,7 +811,7 @@ UI:RegisterPage({
                 row.player = e.name
                 row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry2)
                 local cr, cg, cb = classColor(e.class)
-                row.name:SetText(e.name .. (e.level and ("  |cff999999" .. e.level .. "|r") or ""))
+                row.name:SetText(e.name .. (e.level and ("  " .. UI:Hex(C.muted) .. e.level .. "|r") or ""))
                 row.name:SetTextColor(cr, cg, cb)
                 row.sub:SetText((e.where and (e.where .. " · ") or "") .. ago(time() - (e.t or time())))
                 local rt = LFG:Rating(e.name) or 0
@@ -816,7 +835,7 @@ UI:RegisterPage({
             local q = e.q
             local col = (q.state == "answer" and C.positive) or (q.state == "closed" and C.dim) or C.gold
             row.dot:SetVertexColor(unpack(col))
-            row.name:SetText(e.name .. "  |cff999999" .. ago(time() - q.t) .. "|r")
+            row.name:SetText(e.name .. "  " .. UI:Hex(C.muted) .. ago(time() - q.t) .. "|r")
             if q.state == "answer" then row.l1:SetText("« " .. (q.reply or "") .. " »"); row.l1:SetTextColor(unpack(C.positive))
             elseif q.state == "closed" then row.l1:SetText(T("groupe retiré depuis")); row.l1:SetTextColor(unpack(C.muted))
             elseif q.state == "invited" then row.l1:SetText(T("invité dans ton groupe")); row.l1:SetTextColor(unpack(C.muted))
@@ -829,7 +848,7 @@ UI:RegisterPage({
         self.refineDot:SetShown(LFG:FiltersActive())
         self.refineDot:SetVertexColor(UI:Accent())
         local fitName = act or nil
-        self.msgPreview:SetText("|cff999999" .. T("Envoyé :") .. "|r " .. LFG:Message(fitName))
+        self.msgPreview:SetText(UI:Hex(C.muted) .. T("Envoyé :") .. "|r " .. LFG:Message(fitName))
     end,
 })
 

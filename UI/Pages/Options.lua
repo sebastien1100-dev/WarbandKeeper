@@ -435,18 +435,14 @@ UI:RegisterPage({
         local nodesCard
         -- Coins de récolte sur la carte du monde
         local gm = WK.DB.global.gatherMap
-        local spotsCard = card("Coins de récolte", 184)
+        local spotsCard = card("Coins de récolte", 136)
         UI:SettingRow(spotsCard, -40, "Enregistrer mes récoltes",
             "À chaque plante, minerai ou cuir ramassé, l'endroit est noté (tous les persos).",
             gtoggle(spotsCard, function() return gm.record end, function(v) gm.record = v end), 80)
-        UI:SettingRow(spotsCard, -88, "Afficher sur la carte du monde",
-            "Une pastille par coin, de la couleur de la ressource, plus grosse là où tu récoltes souvent.",
-            gtoggle(spotsCard, function() return gm.showMap end, function(v)
-                gm.showMap = v; WK.modules.GatherMap:Redraw()
-            end), 80)
+        -- (l'affichage sur la carte du monde est celui du calque « Filons et plantes », réglé plus bas)
         self.spotsInfo = UI:Text(spotsCard, 11, C.muted)
         self.spotsInfo:SetPoint("BOTTOMLEFT", 16, 18)
-        local clearSpots = UI:Button(spotsCard, "Effacer", nil, 28, "ghost", "trash")
+        local clearSpots = UI:Button(spotsCard, "Effacer", nil, 28, "danger", "trash")
         clearSpots:SetPoint("BOTTOMRIGHT", -12, 12)
         clearSpots.tooltip = "Maj + clic : efface tous les coins enregistrés."
         clearSpots:SetScript("OnClick", function()

@@ -44,7 +44,7 @@ function M:Create()
         ring:SetVertexColor(r, g, bl, b.hover and 1 or 0.75)
         if b.hover then logo:SetVertexColor(1, 1, 1, 1) else logo:SetVertexColor(r, g, bl, 1) end
     end
-    UI:OnAccent(refresh)
+    UI:OnAccent(refresh, "window") -- bouton refait par UI:Rebuild
 
     b:SetScript("OnClick", function(_, button)
         if button == "RightButton" then UI:ToggleWindow("options") else UI:ToggleWindow() end

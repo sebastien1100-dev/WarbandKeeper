@@ -54,7 +54,7 @@ local function paint()
     if not ring then return end
     local c = cfg()
     local r, g, b = UI:Accent()
-    if c.range and ring.far then r, g, b = 0.95, 0.25, 0.25 end
+    if c.range and ring.far then r, g, b = C.negative[1], C.negative[2], C.negative[3] end -- hors de portée
     ring.tex:SetVertexColor(r, g, b, 1)
     ring.cd:SetSwipeColor(r, g, b, 0.9)
 end

@@ -474,10 +474,18 @@ UI:RegisterPage({
         for _, l in ipairs(self.modLabels) do l.label:SetShown(open) end
         for _, t in ipairs(self.modTiles) do t:SetShown(open) end
         if not open then
-            local x = 16
+            -- « Recharger » (et sa note si elle tient) à gauche de « Gérer » : leur place est réservée
+            local nd = math.max(1, #self.modDots)
+            local reserve = 120
+            self.modHintFits = true
+            if self.needReload then
+                reserve = reserve + 118
+                local hw = (self.modReloadHint:GetStringWidth() or 0) + 8
+                if (W - 190 - reserve - hw) / nd >= 22 then reserve = reserve + hw else self.modHintFits = false end
+            end
             for i, d in ipairs(self.modDots) do
-                -- pas des icônes : 34 px, resserré pour tenir entre le compteur et « Gérer »
-                local step = math.min(34, math.floor((W - 190 - 120) / math.max(1, #self.modDots)))
+                -- pas des icônes : 34 px, resserré pour tenir entre le compteur et les boutons
+                local step = math.min(34, math.floor((W - 190 - reserve) / nd))
                 d:SetSize(math.min(22, step - 6), math.min(22, step - 6))
                 d:ClearAllPoints(); d:SetPoint("LEFT", self.modCard, "TOPLEFT", 190 + (i - 1) * step, -28)
             end
@@ -559,7 +567,8 @@ UI:RegisterPage({
             t.sub:SetText(self:ModuleStat(t.f))
         end
         self.modReload:SetShown(self.needReload and true or false)
-        self.modReloadHint:SetShown(self.needReload and true or false)
+        local modOpen = WK.DB.global.settings.ui.modulesOpen
+        self.modReloadHint:SetShown((self.needReload and (modOpen or self.modHintFits ~= false)) and true or false)
     end,
 
     -- Colonnes du tableau proportionnelles à la largeur (prévues pour 924 px).

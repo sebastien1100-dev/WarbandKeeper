@@ -392,31 +392,10 @@ end
 -- Minicarte
 ---------------------------------------------------------------------------
 local MAX_MINI = 50
-local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
-local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
 local holder, mini = nil, {}
-local scaleCache = {}
 local cache, cacheMap, cacheAt
-
-local function mapSize(mapID)
-    local s = scaleCache[mapID]
-    if s == nil then
-        local G = WK.modules.Guide
-        local c0, n0, w0 = G.ToWorld(mapID, 0, 0)
-        local c1, n1, w1 = G.ToWorld(mapID, 1, 1)
-        s = (c0 and c1 and n0 and n1) and { math.abs(w1 - w0), math.abs(n1 - n0) } or false
-        scaleCache[mapID] = s
-    end
-    return s
-end
-local function viewRadius()
-    if C_Minimap and C_Minimap.GetViewRadius then
-        local ok, r = pcall(C_Minimap.GetViewRadius)
-        if ok and type(r) == "number" and r > 0 then return r end
-    end
-    local zoom = Minimap.GetZoom and Minimap:GetZoom() or 0
-    return ((IsIndoors and IsIndoors()) and RADIUS_IN or RADIUS_OUT)[zoom] or 233.3
-end
+-- aides communes de la minicarte (UI/MapPins.lua)
+local mapSize, viewRadius = UI.MapSize, UI.MiniViewRadius
 local function miniPin(i)
     local p = mini[i]
     if not p then

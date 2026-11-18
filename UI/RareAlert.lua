@@ -43,7 +43,7 @@ local function detail(info, short)
     if k == nil and info.id then k = R:Killed(info.id, WK:CharKey()) end
     if short then
         table.insert(parts, 1, (info.level and (T("Niveau") .. " " .. info.level) or "") .. " · " .. T(info.elite and "Rare élite" or "Rare"))
-        table.insert(parts, k and ("|cff9ed17a" .. T("déjà tué") .. "|r") or T("jamais tué"))
+        table.insert(parts, k and (UI:Hex(C.positive) .. T("déjà tué") .. "|r") or T("jamais tué"))
     else
         table.insert(parts, k and string.format(T("déjà tué il y a %s"), WK:FormatTime(time() - k)) or T("jamais tué par ce perso"))
     end
@@ -92,7 +92,7 @@ local function makeBanner(parent, name)
         self.ring:SetVertexColor(unpack(col))
         self.kicker:SetText(info.elite and T("RARE ÉLITE EN VUE") or T("RARE EN VUE"))
         self.kicker:SetTextColor(unpack(col))
-        self.name:SetText(info.name .. (info.level and ("  |cff999999" .. T("niv.") .. " " .. info.level .. "|r") or ""))
+        self.name:SetText(info.name .. (info.level and ("  " .. UI:Hex(C.muted) .. T("niv.") .. " " .. info.level .. "|r") or ""))
         portrait(self.portrait, info)
         self.sub:SetText(detail(info))
         self.guide:SetShown(info.rare ~= nil)

@@ -11,11 +11,21 @@ local T = function(s) return WK.T(s) end
 
 local DEFAULTS = { map = true, list = true, alert = true, sound = true, tooltip = true,
                    hideKilled = false, alertStyle = "banner", skull = true, paths = false }
+local DEAD_TTL = 3 * 3600 -- une mort de rare compte pendant 3 h
+local purgedAt = 0
 function M:Config()
     local g = WK.DB.global
     g.rares = g.rares or {}
     for k, v in pairs(DEFAULTS) do if g.rares[k] == nil then g.rares[k] = v end end
     g.rares.kills = g.rares.kills or {}
+    -- morts trop anciennes retirées (au premier appel, puis toutes les 10 min au plus)
+    local now = time()
+    if g.rares.dead and now - purgedAt > 600 then
+        purgedAt = now
+        for id, d in pairs(g.rares.dead) do
+            if type(d) ~= "table" or not d.at or now - d.at > DEAD_TTL then g.rares.dead[id] = nil end
+        end
+    end
     return g.rares
 end
 
@@ -172,7 +182,6 @@ function M:Killed(id, key)
 end
 -- Mort récente (vue sur la carte : tête de mort et « mort il y a… ») : tué par un de tes persos, ou vu
 -- mort (cible morte tuée par un autre). WK.DB.global.rares.dead[npcID] = { at = date, me = true? }
-local DEAD_TTL = 3 * 3600
 function M:MarkDead(id, me)
     if not id or not self:Get(id) then return end
     local cfg = self:Config()

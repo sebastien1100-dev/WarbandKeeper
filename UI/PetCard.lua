@@ -128,6 +128,8 @@ local function build()
     f:Hide()
     UI:RegisterHUD("petCard", f, {
         label = T("Cadre du familier"), protected = true, default = { 0, -260 },
+        -- coupé dans ses réglages : absent du mode édition
+        enabled = function() return wanted() and true or false end,
         -- aperçu : cadre montré même sans familier (le pilote d'état le cache), puis tout est rendu au retour
         sample = function(on)
             f.sample = on or nil
@@ -216,6 +218,14 @@ function UI:PetCardLayout()
 end
 
 local MOOD = { "Mécontent", "Content", "Heureux" }
+
+-- Souris des boutons protégés de la carte (jamais en combat).
+local combatStarting
+local function setClickable(f, on)
+    if inCombat() or f.clickable == on then return end
+    f.clickable = on
+    for _, b in ipairs({ f.click, f.feedSec, f.mendSec }) do b:EnableMouse(on) end
+end
 function UI:PetCardPaint() if card then card:Paint() end end
 
 local function paint(self, demo)
@@ -236,7 +246,8 @@ local function paint(self, demo)
         local food = WK.modules.QoL:FoodInBags()[1]
         foodId, foodN = food and food.id, food and food.n
     end
-    self.name:SetText((name or "?") .. "  |cffb6a27e" .. (family and (family .. " ") or "") .. (level or "") .. "|r")
+    local tan = { (C.gold[1] + C.muted[1]) / 2, (C.gold[2] + C.muted[2]) / 2, (C.gold[3] + C.muted[3]) / 2 } -- doré estompé
+    self.name:SetText((name or "?") .. "  " .. UI:Hex(tan) .. (family and (family .. " ") or "") .. (level or "") .. "|r")
     local ratio = (hp and hpMax and hpMax > 0) and hp / hpMax or 0
     local col
     if o.color == "health" then col = ratio > 0.5 and C.positive or (ratio > 0.25 and C.warning or C.negative)
@@ -300,6 +311,9 @@ local function paint(self, demo)
         if fine then alpha = 0 end
     end
     self:SetAlpha(alpha)
+    -- effacée : plus de zone de clic (un clic à l'aveugle nourrissait ou soignait) ; hors combat
+    -- seulement, et rendue à l'entrée en combat (la carte doit pouvoir réapparaître)
+    if not inCombat() and not combatStarting then setClickable(self, alpha > 0) end
 end
 
 function UI:SyncPetCard()
@@ -321,8 +335,13 @@ WK:On("UNIT_MAXHEALTH", function(u) if u == "pet" then refresh() end end)
 WK:On("UNIT_HAPPINESS", refresh)
 WK:On("UNIT_PET", function(u) if u == "player" then refresh(); if not inCombat() then setActions() end end end)
 WK:On("BAG_UPDATE_DELAYED", function() refresh(); if not inCombat() then setActions() end end)
-WK:On("PLAYER_REGEN_DISABLED", refresh)
+WK:On("PLAYER_REGEN_DISABLED", function()
+    combatStarting = true
+    if card then setClickable(card, true) end
+    refresh()
+end)
 WK:On("PLAYER_REGEN_ENABLED", function()
+    combatStarting = nil
     if card and card.pendingLayout then UI:PetCardLayout() end
     setActions(); refresh()
 end)

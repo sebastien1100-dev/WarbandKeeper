@@ -92,7 +92,7 @@ local function build()
                     b.cd:SetCooldown(st, du)
                     if b.cd.SetReverse then b.cd:SetReverse(col ~= nil) end
                     b.cdText:SetText(short(left))
-                    local tc = col or { 0.96, 0.84, 0.43 }
+                    local tc = col or C.gold
                     b.cdText:SetTextColor(tc[1], tc[2], tc[3])
                 else
                     b.cd:Clear(); b.cdText:SetText("")
@@ -130,7 +130,7 @@ local function build()
                 b.icon:SetTexture(itemIcon(e.id))
                 b.n:SetText((e.count or 0) > 1 and e.count or "")
                 local glow = e.kind == "fed" and fedMissing
-                local col = glow and { 0.96, 0.84, 0.43 } or { r1, g1, b1 }
+                local col = glow and C.gold or { r1, g1, b1 }
                 b.edge:SetVertexColor(col[1], col[2], col[3], glow and 1 or 0.8)
                 b.cd:Clear(); b.cdText:SetText("")
                 b:Show()
@@ -151,7 +151,10 @@ function UI:RefreshCampKit()
     pending = false
     local cfg = M:Config()
     local list = (cfg.kit and WK:FeatureOn("campfire")) and M:Kit() or {}
-    local near = M.state and M.state ~= "none"
+    -- près d'un feu : l'état de Camp:Update n'est calculé que si l'encart ou l'icône est actif ;
+    -- les auras, elles, sont toujours relevées (flamme du camp ou assis près du feu)
+    local a = M.auras
+    local near = (M.state and M.state ~= "none") or (a and (a.flame or a.sit)) and true or false
     if #list == 0 or not (cfg.kitAlways or near) then kit:Hide() return end
     kit:Fill(list)
     kit:Show()
@@ -247,8 +250,8 @@ local function onTooltip(tt, data)
         end
         if o.exclLabel then
             local has = M:Cancelled(o)
-            if has then tt:AddLine(string.format(T("Tu as %s : sans effet pour toi (les autres en profitent)"), has), 0.91, 0.42, 0.42, true)
-            else tt:AddLine(string.format(T("Ne se cumule pas avec %s"), T(o.exclLabel)), 0.91, 0.42, 0.42, true) end
+            if has then tt:AddLine(string.format(T("Tu as %s : sans effet pour toi (les autres en profitent)"), has), C.negative[1], C.negative[2], C.negative[3], true)
+            else tt:AddLine(string.format(T("Ne se cumule pas avec %s"), T(o.exclLabel)), C.negative[1], C.negative[2], C.negative[3], true) end
         end
         if tier == 1 and o.ids[2] then
             tt:AddLine(string.format(T("Remplacé par %s (140) et %s (300), avec le même effet"), M:Name(o, 2), M:Name(o, 3)), 0.62, 0.64, 0.67, true)
@@ -263,7 +266,7 @@ local function onTooltip(tt, data)
         return
     end
     local rem = M:Cooldown()
-    if rem and rem > 0 then tt:AddLine(string.format(T("Prêt dans %s (recharge commune des objets de camp)"), UI:AgoShort(rem, true)), 0.96, 0.84, 0.43)
+    if rem and rem > 0 then tt:AddLine(string.format(T("Prêt dans %s (recharge commune des objets de camp)"), UI:AgoShort(rem, true)), C.gold[1], C.gold[2], C.gold[3])
     else tt:AddLine(T("Recharge commune des objets de camp : 1 h"), 0.62, 0.64, 0.67) end
     tt:Show()
 end

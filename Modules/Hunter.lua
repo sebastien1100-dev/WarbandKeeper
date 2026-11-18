@@ -16,7 +16,8 @@ local TRACK_HUMANOIDS = 19883
 local CALL_PET, REVIVE_PET = 883, 982
 
 local function cfg() return WK.modules.QoL:Class("HUNTER") end
-local function isHunter() return WK.DB:Me().class == "HUNTER" end
+-- Classe lue au jeu : à la connexion, Characters n'a pas forcément encore noté c.class
+local function isHunter() return UnitClass and select(2, UnitClass("player")) == "HUNTER" end
 local readable = function(v) return WK.modules.QoL.Readable(v) end
 
 -- HunterSuite (l'addon d'un autre auteur) fait déjà tout ça : on lui laisse la place.

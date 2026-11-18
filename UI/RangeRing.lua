@@ -91,9 +91,9 @@ local LABEL = { none = "Sans cible", unknown = "Distance inconnue", melee = "Cor
 local ZONES = { { "melee", 0, 5 }, { "dead", 5, 8 }, { "ranged", 8, 35 }, { "far", 35, 41 } }
 local SPAN = 41
 local MID = { melee = 2.5, dead = 6.5, ranged = 21, far = 39 } -- place du curseur sans estimation
-local DEAD_COLOR = { 0.91, 0.83, 0.29, 1 }
 local function zoneColor(state)
-    return ({ melee = C.warning, dead = DEAD_COLOR, ranged = C.positive, far = C.negative })[state] or C.muted
+    -- zone morte : jaune doré du thème
+    return ({ melee = C.warning, dead = C.gold, ranged = C.positive, far = C.negative })[state] or C.muted
 end
 
 -- Règle compacte : une ligne de texte (zone · fourchette) et une barre aux quatre zones, avec un
@@ -176,8 +176,7 @@ local function build()
             elseif state == "melee" then range = "0-5 m" elseif state == "dead" then range = "5-8 m" end
         end
         self.text:SetShown(o.numbers and true or false)
-        self.text:SetText(string.format("|cff%02x%02x%02x%s|r%s", math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255), label,
-            range and (" · " .. range) or ""))
+        self.text:SetText(UI:Hex(col) .. label .. "|r" .. (range and (" · " .. range) or ""))
         self.text:SetTextColor(unpack(C.text))
         local hide = (o.combatOnly and not (InCombatLockdown and InCombatLockdown()) and not self.sample)
             or (o.hideNoTarget and none and not self.sample)
@@ -186,19 +185,25 @@ local function build()
     f:Hide()
     UI:RegisterHUD("range", f, {
         label = T("Indicateur de distance"), default = { 0, -120 },
+        -- réglage coupé : absent du mode édition
+        enabled = function() return UI:RangeWanted() end,
         sample = function(on)
             f.sample = on or nil
-            if on then f:Show(); f:Paint("ranged", 22, 25) elseif not cfg().enabled then f:Hide() end
+            if on then f:Show(); f:Paint("ranged", 22, 25) else UI:SyncRange() end
         end,
     })
     return f
 end
 
+function UI:RangeWanted()
+    return WK.DB:Me().class == "HUNTER" and cfg().enabled and WK:FeatureOn("range") and true or false
+end
+
 function UI:SyncRange()
-    local want = WK.DB:Me().class == "HUNTER" and cfg().enabled and WK:FeatureOn("range")
+    local want = self:RangeWanted()
     if want then
         ring = ring or build()
-        ring:Show()
+        if not ring.sample then ring:Show() end
     elseif ring then
         ring:Hide()
     end

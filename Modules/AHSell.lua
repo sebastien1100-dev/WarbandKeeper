@@ -142,8 +142,9 @@ local function setState(id, lowest, mine)
 end
 
 -- Vérifie le plus bas prix de chaque objet en vente, un par un
-local pendingCheck
+local pendingCheck, pendingAt
 local ticker
+local RESULT_TIMEOUT = 6 -- secondes d'attente au plus pour les résultats d'une recherche
 local function nextCheck()
     if #M.queue == 0 then
         M.checking = false
@@ -157,7 +158,7 @@ local function nextCheck()
         return
     end
     local id = table.remove(M.queue, 1)
-    pendingCheck = id
+    pendingCheck, pendingAt = id, GetTime()
     local A = AH()
     local ok = pcall(A.SendSearchQuery, itemKeyOf(id), sorts(), true)
     if not ok then
@@ -183,7 +184,20 @@ function M:Check()
     self.total = #self.queue
     self.checking = #self.queue > 0
     if ticker then ticker:Cancel() end
-    if C_Timer.NewTicker then ticker = C_Timer.NewTicker(THROTTLE, nextCheck) end
+    pendingCheck = nil
+    -- recherche suivante seulement quand les résultats de la précédente sont arrivés (ou après un délai)
+    if C_Timer.NewTicker then
+        ticker = C_Timer.NewTicker(THROTTLE, function()
+            if pendingCheck and GetTime() - (pendingAt or 0) < RESULT_TIMEOUT then return end
+            if pendingCheck then
+                -- pas de réponse : comparaison au prix du scan
+                local p = S:Price(pendingCheck)
+                if p then setState(pendingCheck, p, false) end
+                pendingCheck = nil
+            end
+            nextCheck()
+        end)
+    end
     nextCheck()
 end
 function M:Progress()
@@ -235,6 +249,7 @@ function M:ApplyQuickSell()
     if low then
         price, why = math.max(1, low - c.undercut), T("plus bas")
     elseif mine then
+        self.sellPending = nil
         return -- tu es seul au plus bas : on laisse le prix du jeu
     elseif S:Price(p.id) then
         price, why = math.max(1, S:Price(p.id) - c.undercut), T("prix du scan")

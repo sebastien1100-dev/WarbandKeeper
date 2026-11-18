@@ -353,6 +353,7 @@ end
 -- Fin de rencontre réussie (ENCOUNTER_END, n° de rencontre des fichiers du jeu) : le boss est tué ;
 -- le nom que donne le jeu (dans sa langue) devient le nom français du boss s'il manquait
 WK:On("ENCOUNTER_END", function(encounterID, encounterName, _, _, success)
+    if not WK:FeatureOn("dungeons") then return end
     local readable = WK.modules.QoL.Readable
     encounterID, success = readable(encounterID), readable(success)
     if type(encounterID) ~= "number" or (success ~= 1 and success ~= true) then return end
@@ -390,7 +391,8 @@ end
 -- addons) : mort d'une unité visible (cible, focus, boss1-5, plaques de nom) et butin d'un corps.
 -- Toute valeur que le jeu masque est ignorée.
 local readable = function(v) return WK.modules.QoL.Readable(v) end
-local function active() return M.run ~= nil or instanceNow() ~= nil end
+-- module coupé : ni détection ni apprentissage des boss
+local function active() return WK:FeatureOn("dungeons") and (M.run ~= nil or instanceNow() ~= nil) end
 local function checkUnit(unit)
     if not unit or not active() then return end
     local okE, ex = pcall(UnitExists, unit)

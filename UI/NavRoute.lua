@@ -10,11 +10,30 @@ local MAX_MAP, MAX_MINI = 1200, 160
 
 local function gcfg() return WK.modules.Guide:Config() end
 
+-- Chemin d'un vol, gardé en cache par « Départ|Arrivée » : remaining() tourne toutes les 0,15 s et, pour un
+-- vol pas encore fait, Flight:Path relance un Dijkstra à chaque appel. L'entrée reste valable tant que les
+-- chemins appris de ce trajet (dans un sens ou l'autre) n'ont pas changé ; vidée à l'ouverture de la carte
+-- des vols (nouveau relais connu).
+local pathCache = {}
+local function flightPath(from, to)
+    local F = WK.modules.Flight
+    if not (F and F.Path) then return nil end
+    local fl = WK.DB.global.flights
+    local paths = fl and fl.paths
+    local fw = paths and paths[(from or "") .. "|" .. (to or "")]
+    local bw = paths and paths[(to or "") .. "|" .. (from or "")]
+    local key = (from or "") .. "|" .. (to or "")
+    local e = pathCache[key]
+    if e and e.paths == paths and e.fw == fw and e.bw == bw then return e.c, e.pts end
+    local c, pts = F:Path(from, to)
+    pathCache[key] = { paths = paths, fw = fw, bw = bw, c = c, pts = pts }
+    return c, pts
+end
+WK:On("TAXIMAP_OPENED", function() pathCache = {} end)
+
 -- Points d'un vol : chemin réel déjà parcouru une fois (Modules/Flight.lua), sinon ligne droite
 local function flyPoints(out, from, to, ax, ay, bx, by, fromIdx)
-    local F = WK.modules.Flight
-    local pts
-    if F and F.Path then pts = select(2, F:Path(from, to)) end
+    local pts = select(2, flightPath(from, to))
     if pts and #pts >= 4 then
         for k = (fromIdx or 1), #pts / 2 do out[#out + 1] = { pts[k * 2 - 1], pts[k * 2], true } end
         return true
@@ -45,7 +64,7 @@ local function remaining()
     local out = {}
     if fl and p and p.cont then
         out[1] = { p.wx, p.wy }
-        local _, pts = F:Path(fl.from, fl.to)
+        local _, pts = flightPath(fl.from, fl.to)
         if pts and #pts >= 4 then
             for k = nearestIdx(pts, p.wx, p.wy), #pts / 2 do out[#out + 1] = { pts[k * 2 - 1], pts[k * 2], true } end
         elseif fl.pts and #fl.pts >= 4 then
@@ -256,16 +275,7 @@ end
 -- Minicarte
 ---------------------------------------------------------------------------
 local holder, miniDots = nil, {}
-local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
-local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
-local function viewRadius()
-    if C_Minimap and C_Minimap.GetViewRadius then
-        local ok, rr = pcall(C_Minimap.GetViewRadius)
-        if ok and type(rr) == "number" and rr > 0 then return rr end
-    end
-    local zoom = Minimap.GetZoom and Minimap:GetZoom() or 0
-    return ((IsIndoors and IsIndoors()) and RADIUS_IN or RADIUS_OUT)[zoom] or 233.3
-end
+local viewRadius = UI.MiniViewRadius -- aide commune de la minicarte (UI/MapPins.lua)
 local function miniDot(i)
     local d = miniDots[i]
     if not d then

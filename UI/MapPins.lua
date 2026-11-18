@@ -7,6 +7,35 @@ local T = function(s) return WK.T(s) end
 local MAX_PINS = 80
 local pins = {}
 
+---------------------------------------------------------------------------
+-- Aides communes aux pastilles de la minicarte (UI/NodePins.lua, UI/MapLayers.lua, UI/MapNotes.lua,
+-- UI/NavRoute.lua, chargés après ce fichier)
+---------------------------------------------------------------------------
+-- Rayon de la minicarte en mètres du jeu, par niveau de zoom (dehors, dedans)
+local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
+local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
+function UI.MiniViewRadius()
+    if C_Minimap and C_Minimap.GetViewRadius then
+        local ok, r = pcall(C_Minimap.GetViewRadius)
+        if ok and type(r) == "number" and r > 0 then return r end
+    end
+    local zoom = Minimap.GetZoom and Minimap:GetZoom() or 0
+    return ((IsIndoors and IsIndoors()) and RADIUS_IN or RADIUS_OUT)[zoom] or 233.3
+end
+-- Taille d'une carte en mètres du jeu : { largeur, hauteur }, ou false (gardée en cache)
+local scaleCache = {}
+function UI.MapSize(mapID)
+    local s = scaleCache[mapID]
+    if s == nil then
+        local G = WK.modules.Guide
+        local c0, n0, w0 = G.ToWorld(mapID, 0, 0)
+        local c1, n1, w1 = G.ToWorld(mapID, 1, 1)
+        s = (c0 and c1 and n0 and n1) and { math.abs(w1 - w0), math.abs(n1 - n0) } or false
+        scaleCache[mapID] = s
+    end
+    return s
+end
+
 local function canvas()
     local wm = WorldMapFrame
     return wm and wm.ScrollContainer and wm.ScrollContainer.Child
@@ -195,27 +224,8 @@ local function redraw(src)
         layer("Notes", UI.DrawMapNotes)         -- notes de carte perso (UI/MapNotes.lua)
         layer("Repère", function(_, ...) drawTarget(...) end)
     end
-    if not cfg.showMap then return end
-    local list = WK.modules.GatherMap:Clusters(mapID)
-    local w, h = cv:GetWidth(), cv:GetHeight()
-    if not w or w <= 0 then return end
-    local maxCount = list[1] and list[1].count or 1
-    local scale = (w / 1000) -- taille des pastilles relative à la toile de la carte
-    for i, c in ipairs(list) do
-        if i > MAX_PINS then break end
-        local p = getPin(i, cv)
-        p.cluster = c
-        local size = (14 + 18 * math.sqrt(c.count / maxCount)) * scale
-        p:SetSize(size * 1.8, size * 1.8)
-        p.dot:SetSize(size * 0.45, size * 0.45)
-        local col = WK.modules.GatherMap.COLORS[c.kind] or { 1, 1, 1 }
-        p.glow:SetVertexColor(col[1], col[2], col[3], 0.9)
-        p.dot:SetVertexColor(col[1], col[2], col[3], 1)
-        p:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 5)
-        p:ClearAllPoints()
-        p:SetPoint("CENTER", cv, "TOPLEFT", c.x * w, -c.y * h)
-        p:Show()
-    end
+    -- Les récoltes ne sont plus dessinées ici : un seul affichage, le calque « Filons et plantes »
+    -- (UI/NodePins.lua, filtré par métier et compétence), qui lit les mêmes coins notés par GatherMap.
 end
 WK.modules.GatherMap.Redraw = function() redraw("récolte") end
 WK.modules.Guide.Redraw = function() redraw("guidage") end

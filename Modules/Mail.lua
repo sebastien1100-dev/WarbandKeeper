@@ -200,7 +200,7 @@ function M:SendNext()
 end
 
 function M:Run()
-    if sending then return end
+    if sending or not WK:FeatureOn("mail") then return end
     if WK.DB.global.mail.enabled then
         self:BuildQueue()
         if #queue > 0 then self:SendNext() return end

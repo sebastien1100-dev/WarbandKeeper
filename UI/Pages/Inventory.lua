@@ -423,7 +423,7 @@ UI:RegisterPage({
             local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
             r.icon:SetTexture(icon)
             r.name:SetText(name); r.name:SetTextColor(qr, qg, qb)
-            if e.reason == "manual" then r.tag:Set(T("à la main")) else r.tag:Set(e.reason, { 0.31, 0.82, 0.77 }) end
+            if e.reason == "manual" then r.tag:Set(T("à la main")) else r.tag:Set(e.reason, C.rule) end
             r.who:SetText(#e.who > 0 and table.concat(e.who, ", ") or T("pas sur le compte"))
             r.del:SetShown(e.reason == "manual")
             r.del:SetScript("OnClick", function() IL:Unlock(e.id) end)
@@ -655,7 +655,7 @@ UI:RegisterPage({
                     sl.edge:SetVertexColor(plain and C.border[1] or q[1], plain and C.border[2] or q[2], plain and C.border[3] or q[3], 1)
                     local mark = WK:FeatureOn("characters") and WK.modules.BiS and WK.modules.BiS:Mark(it.id)
                     sl.bisRing:SetShown(mark and true or false); sl.bisBadge:SetShown(mark and true or false); sl.bisStar:SetShown(mark and true or false)
-                    if mark == "mine" then sl.bisBadge:SetVertexColor(1, 0.82, 0.25, 1) elseif mark then sl.bisBadge:SetVertexColor(0.72, 0.74, 0.78, 1) end
+                    if mark == "mine" then sl.bisBadge:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1) elseif mark then sl.bisBadge:SetVertexColor(C.silver[1], C.silver[2], C.silver[3], 1) end
                     sl.n:SetText(it.total > 1 and (it.total > 9999 and "9999+" or tostring(it.total)) or "")
                 end
             end

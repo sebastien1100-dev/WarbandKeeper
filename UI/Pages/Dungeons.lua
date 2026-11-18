@@ -20,6 +20,14 @@ local function levelColor(d, lvl)
     return C.positive
 end
 
+-- Choix du menu des persos (rebâti à chaque rafraîchissement : persos renommés ou supprimés).
+local function charOptions()
+    local opts = {}
+    for key, c in pairs(WK.DB.global.characters) do table.insert(opts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
+    table.sort(opts, function(a, b) return a[2] < b[2] end)
+    return opts
+end
+
 UI:RegisterPage({
     key = "dungeons", order = 8.95, nav = "Donjons",
 
@@ -36,9 +44,7 @@ UI:RegisterPage({
         self.tabSeg = UI:Segmented(p, { { "list", "Donjons" }, { "wish", "Mes envies" } },
             function(v) self.tab = v; self:Refresh() end, 30)
         self.tabSeg:SetPoint("TOPLEFT")
-        local charOpts = {}
-        for key, c in pairs(WK.DB.global.characters) do table.insert(charOpts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
-        table.sort(charOpts, function(a, b) return a[2] < b[2] end)
+        local charOpts = charOptions()
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
         self.charDd:SetPoint("TOPRIGHT")
         self.charDd:Select(self.viewKey)
@@ -197,6 +203,11 @@ UI:RegisterPage({
 
     Refresh = function(self)
         if not self.sc then return end
+        -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
+        self.charDd:SetOptions(charOptions())
+        if self.charDd.selected ~= self.viewKey then
+            if WK.DB.global.characters[self.viewKey] then self.charDd:Select(self.viewKey) else self.viewKey = self.charDd.selected end
+        end
         local W = (self.width or 800) - 12
         local c = WK.DB.global.characters[self.viewKey] or WK.DB:Me()
         local key = self.viewKey
@@ -296,7 +307,10 @@ UI:RegisterPage({
         -- faite, en cours, disponible, niveau trop bas, ou quête à faire avant (prérequis)
         local Q = WK.modules.Quests
         local quests = {}
-        for _, q in ipairs(D:Quests(d)) do
+        -- quêtes que ce perso peut prendre (classe, métier, faction) ; si les quêtes de donjon sont
+        -- masquées dans la page Quêtes, ce filtre les retirerait toutes : liste sans filtre de perso
+        local dq = Q:Config().dungeons and D:Quests(d, c) or D:Quests(d)
+        for _, q in ipairs(dq) do
             local okSide = not q.side or (c.faction == "Alliance" and q.side == 1) or (c.faction == "Horde" and q.side == 2) or not c.faction
             if okSide then table.insert(quests, q) end
         end
@@ -548,7 +562,7 @@ UI:RegisterPage({
                 f.right:ClearAllPoints(); f.right:SetPoint("TOPLEFT", f, "TOPRIGHT", -rightW, -12); f.right:SetWidth(rightW - 12)
                 local lines = {}
                 local acc = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
-                table.insert(lines, "|cff8a8f98" .. T("TES ENVIES") .. "|r")
+                table.insert(lines, UI:Hex(C.dim) .. T("TES ENVIES") .. "|r")
                 local mine, others = {}, {}
                 for _, id in ipairs(boss.loot) do
                     if D:IsWished(id, key) then table.insert(mine, (UI:ItemInfo(id)) or ("#" .. id)) end
@@ -559,15 +573,15 @@ UI:RegisterPage({
                         end
                     end
                 end
-                if #mine == 0 then table.insert(lines, "|cff8a8f98" .. T("aucune sur ce boss") .. "|r") end
+                if #mine == 0 then table.insert(lines, UI:Hex(C.dim) .. T("aucune sur ce boss") .. "|r") end
                 for i, n in ipairs(mine) do if i <= 3 then table.insert(lines, acc .. "*|r " .. n) end end
                 local on = {}
                 for n in pairs(others) do table.insert(on, n) end
                 table.sort(on)
-                if #on > 0 then table.insert(lines, "|cff8a8f98" .. string.format(T("voulu aussi par %s"), table.concat(on, ", ")) .. "|r") end
+                if #on > 0 then table.insert(lines, UI:Hex(C.dim) .. string.format(T("voulu aussi par %s"), table.concat(on, ", ")) .. "|r") end
                 if self.questTodo and self.questTodo > 0 then
                     table.insert(lines, " ")
-                    table.insert(lines, "|cff8a8f98" .. T("QUÊTES DU DONJON") .. "|r")
+                    table.insert(lines, UI:Hex(C.dim) .. T("QUÊTES DU DONJON") .. "|r")
                     table.insert(lines, string.format(self.questTodo > 1 and T("%d à faire") or T("%d à faire"), self.questTodo))
                 end
                 f.right:SetText(table.concat(lines, "\n"))

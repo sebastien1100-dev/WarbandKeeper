@@ -167,12 +167,21 @@ function M:Search(categoryID, activityIDs)
     end
     local filter = self:LanguageFilter()
     local ok = pcall(C_LFGList.Search, categoryID, 0, 0, filter, false, nil, activityIDs)
-    if not ok then return false end
+    self.failed = not ok or nil
+    if not ok then WK:NotifyChanged(); return false end
     self.searching = true
+    -- autre catégorie : les groupes de l'ancienne ne sont plus montrés
+    if self.category ~= categoryID then self.results = {} end
     self.category = categoryID
     C_Timer.After(10, function() if M.searching then M.searching = false; WK:NotifyChanged() end end)
     WK:NotifyChanged()
     return true
+end
+
+-- Vide les résultats (changement de catégorie dans la page).
+function M:ClearResults()
+    self.results = {}
+    self.failed = nil
 end
 
 -- Lecture d'un résultat : ce dont la page a besoin.
@@ -393,6 +402,7 @@ end
 function M:ListingRating(r) return self:Rating(r.leader) end
 
 local inGroup = {}
+local rosterSeeded = false -- après un /reload, le groupe déjà là n'est pas « nouveau »
 local function rosterUnits()
     local units = {}
     if IsInRaid and IsInRaid() then
@@ -402,17 +412,18 @@ local function rosterUnits()
     end
     return units
 end
-WK:On("GROUP_ROSTER_UPDATE", function()
-    local _, g = M:Config()
+-- Relève le groupe ; record = false : mémorise seulement qui est là (rien n'est noté).
+local function scanRoster(record)
+    local g = record and select(2, M:Config())
     local now, seen = time(), {}
     local me = bare(UnitName("player"))
     local where = GetZoneText and readable(GetZoneText(), nil)
     for _, u in ipairs(rosterUnits()) do
-        if UnitExists(u) then
+        if UnitExists and UnitExists(u) then
             local name = bare(GetUnitName and GetUnitName(u, false) or UnitName(u))
             if name and name ~= me then
                 seen[name] = true
-                if not inGroup[name] then
+                if record and not inGroup[name] then
                     -- nouveau venu : on le note dans les récents, et on prévient si tu l'as noté 1 étoile
                     if g.ratings[name] == 1 then
                         WK:Print(string.format(T("%s vient de rejoindre ton groupe : tu l'avais noté 1 étoile."), name))
@@ -426,6 +437,13 @@ WK:On("GROUP_ROSTER_UPDATE", function()
         end
     end
     inGroup = seen
+    rosterSeeded = true
+end
+WK:On("PLAYER_ENTERING_WORLD", function()
+    if not rosterSeeded then scanRoster(false) end
+end)
+WK:On("GROUP_ROSTER_UPDATE", function()
+    scanRoster(rosterSeeded)
     WK:NotifyChanged()
 end)
 
@@ -471,6 +489,7 @@ end)
 ---------------------------------------------------------------------------
 WK:On("LFG_LIST_SEARCH_RESULTS_RECEIVED", function()
     M.searching = false
+    M.failed = nil
     M.searchedAt = time()
     M:ReadResults()
     WK:NotifyChanged()

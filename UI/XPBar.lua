@@ -9,8 +9,6 @@ local T = function(s) return WK.T(s) end
 local M = WK.modules.XP
 local bar
 local W, BH = 520, 8
-local BLUE = { 0.30, 0.58, 1.0 }
-local YELLOW = { 0.96, 0.80, 0.36 }
 
 local function fmt(n)
     n = math.floor((n or 0) + 0.5)
@@ -45,9 +43,9 @@ local function build()
     f:SetFrameStrata("LOW")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    UI:Panel(f, 10, { 0.06, 0.063, 0.075, 0.92 }, C.border)
+    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border) -- fond sombre du thème
     f.trackF = CreateFrame("Frame", nil, f)
-    UI:Panel(f.trackF, 5, { 0.09, 0.094, 0.106, 1 }, C.border)
+    UI:Panel(f.trackF, 5, { (C.bg[1] + C.surface[1]) / 2, (C.bg[2] + C.surface[2]) / 2, (C.bg[3] + C.surface[3]) / 2, 1 }, C.border)
     local function seg(layer, sub)
         local t = f.trackF:CreateTexture(nil, layer, nil, sub)
         t:SetTexture("Interface\\Buttons\\WHITE8X8")
@@ -96,10 +94,10 @@ local function build()
         local r1, g1, b1 = UI:Accent()
         self.cur:SetVertexColor(r1, g1, b1, 1)
         self.shine:SetVertexColor(1, 1, 1, 0.25)
-        self.rest:SetVertexColor(BLUE[1], BLUE[2], BLUE[3], 1)
-        self.pend:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.75)
-        self.mark:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 1)
-        self.glow:SetVertexColor(YELLOW[1], YELLOW[2], YELLOW[3], 0.35)
+        self.rest:SetVertexColor(C.info[1], C.info[2], C.info[3], 1)
+        self.pend:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 0.75)
+        self.mark:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
+        self.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 0.35)
         local function wid(v) return math.max(0.01, math.min(w, w * v / x.max)) end
         self.cur:SetWidth(wid(x.cur))
         self.rest:SetWidth(wid(x.cur + x.rested))
@@ -118,13 +116,13 @@ local function build()
             t:SetPoint("LEFT", self.trackF, "LEFT", 1 + w * i / 10, 0)
             t:SetColorTexture(0, 0, 0, 0.35)
         end
-        local hex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
-        self.left:SetText(string.format(hex .. T("Niv. %d") .. "|r  |cff9ca3ab·|r  %s / %s  |cff9ca3ab(%d %%)|r", x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
+        local hex, mu = UI:Hex({ r1, g1, b1 }), UI:Hex(C.muted)
+        self.left:SetText(string.format(hex .. T("Niv. %d") .. "|r  " .. mu .. "·|r  %s / %s  " .. mu .. "(%d %%)|r", x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
         local parts = {}
-        if x.rested > 0 then table.insert(parts, string.format("|cff7fb6f2" .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end
-        if pend > 0 then table.insert(parts, string.format("|cfff5d76e" .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq)) end
-        if x.cur + pend >= x.max then table.insert(parts, "|cff9ed17a" .. T("niveau en rendant tout") .. "|r") end
-        self.right:SetText(table.concat(parts, "  |cff9ca3ab·|r  "))
+        if x.rested > 0 then table.insert(parts, string.format(UI:Hex(C.info) .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end
+        if pend > 0 then table.insert(parts, string.format(UI:Hex(C.gold) .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq)) end
+        if x.cur + pend >= x.max then table.insert(parts, UI:Hex(C.positive) .. T("niveau en rendant tout") .. "|r") end
+        self.right:SetText(table.concat(parts, "  " .. mu .. "·|r  "))
     end
 
     f:SetScript("OnEnter", function(s)
@@ -134,12 +132,12 @@ local function build()
         GameTooltip:AddDoubleLine(T("Expérience"), string.format("%s / %s (%d %%)", fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)), 0.8, 0.8, 0.8, 1, 1, 1)
         GameTooltip:AddDoubleLine(T("Manque"), fmt(x.max - x.cur), 0.8, 0.8, 0.8, 1, 1, 1)
         GameTooltip:AddDoubleLine(T("Repos"), string.format("%s (%d %%)%s", fmt(x.rested), math.floor(x.rested / x.max * 100),
-            x.resting and (" · " .. T("en auberge")) or ""), 0.8, 0.8, 0.8, BLUE[1], BLUE[2], BLUE[3])
+            x.resting and (" · " .. T("en auberge")) or ""), 0.8, 0.8, 0.8, C.info[1], C.info[2], C.info[3])
         if pend > 0 then
-            GameTooltip:AddDoubleLine(string.format(T("Quêtes à rendre (%d)"), nq), "+" .. fmt(pend), 0.8, 0.8, 0.8, YELLOW[1], YELLOW[2], YELLOW[3])
+            GameTooltip:AddDoubleLine(string.format(T("Quêtes à rendre (%d)"), nq), "+" .. fmt(pend), 0.8, 0.8, 0.8, C.gold[1], C.gold[2], C.gold[3])
             local after = (x.cur + pend) / x.max * 100
             GameTooltip:AddDoubleLine(T("En rendant tout"), after >= 100 and T("niveau suivant") or string.format("%d %%", math.floor(after)),
-                0.8, 0.8, 0.8, 0.62, 0.82, 0.48)
+                0.8, 0.8, 0.8, C.positive[1], C.positive[2], C.positive[3])
         end
         local perHour, secs, mobs = M:Rate()
         if s.sample then perHour, secs, mobs = 18400, 1640, 52 end

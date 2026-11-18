@@ -32,12 +32,27 @@ local function buildAll()
             local ok = pcall(function()
                 def.frame = CreateFrame("Frame", nil, UI.pageHost)
                 def.frame:SetAllPoints()
-                def:Build(def.frame)
+                UI:InAccentScope("window", def.Build, def, def.frame)
             end)
             if def.frame then def.frame:SetShown(key == UI.current) end
             if not ok then def.frame = nil end
         end
     end
+end
+
+-- Après UI:Rebuild : les pages sont refaites et seront de nouveau indexées ; les lignes de
+-- l'ancienne fenêtre (root) sont oubliées, les autres (mode édition…) restent.
+function UI:ResetSearchIndex(root)
+    built = false
+    if not root then return end
+    local keep = {}
+    for _, e in ipairs(self.settingIndex) do
+        local f, inOld = e.row, false
+        while f do if f == root then inOld = true break end f = f:GetParent() end
+        if not inOld then table.insert(keep, e) end
+    end
+    wipe(self.settingIndex)
+    for i, e in ipairs(keep) do self.settingIndex[i] = e end
 end
 
 local function pageLabel(def)

@@ -306,9 +306,12 @@ function M:ScanDurability()
     WK:NotifyChanged()
 end
 
+-- Classe du perso connecté, lue au jeu : à la connexion, Characters n'a pas forcément encore noté c.class
+local function myClass() return UnitClass and select(2, UnitClass("player")) or WK.DB:Me().class end
+
 function M:ScanAmmo()
     local c = WK.DB:Me()
-    if not M.AMMO[c.class or ""] or not GetInventoryItemID then return end
+    if not M.AMMO[myClass() or ""] or not GetInventoryItemID then return end
     local id = GetInventoryItemID("player", 0)
     if id then
         -- Vitesse de tir (secondes entre deux tirs) : pour estimer les minutes de tir restantes.
@@ -351,7 +354,7 @@ end
 
 function M:ScanPet()
     local c = WK.DB:Me()
-    if c.class ~= "HUNTER" then return end
+    if myClass() ~= "HUNTER" then return end
     local hasPet = UnitExists and UnitExists("pet")
     local happy = hasPet and self:PetHappiness()
     if hasPet and happy then
@@ -370,7 +373,7 @@ end
 
 function M:ScanLockpicking()
     local c = WK.DB:Me()
-    if c.class ~= "ROGUE" or not GetNumSkillLines then return end
+    if myClass() ~= "ROGUE" or not GetNumSkillLines then return end
     for i = 1, GetNumSkillLines() do
         local name, header, _, rank = GetSkillLineInfo(i)
         if not header and name then
@@ -385,15 +388,8 @@ end
 
 function M:ScanReincarnation()
     local c = WK.DB:Me()
-    if c.class ~= "SHAMAN" then return end
-    local start, duration
-    if C_Spell and C_Spell.GetSpellCooldown then
-        local ok, info = pcall(C_Spell.GetSpellCooldown, SPELL_REINCARNATION)
-        if ok and type(info) == "table" then start, duration = info.startTime, info.duration end
-    elseif GetSpellCooldown then
-        start, duration = GetSpellCooldown(SPELL_REINCARNATION)
-    end
-    if issecretvalue and (issecretvalue(start) or issecretvalue(duration)) then return end
+    if myClass() ~= "SHAMAN" then return end
+    local start, duration = WK.SpellCooldown(SPELL_REINCARNATION)
     if start and duration and duration > 1.5 then
         c.reincarnation = time() + math.floor(start + duration - GetTime())
     elseif start then
@@ -500,16 +496,20 @@ local function merchantIndex(ids)
 end
 
 -- Achète `need` unités de l'objet au rang `index` (par lots si le marchand vend par paquets).
-local function buy(index, need)
+-- GetMoney() ne baisse pas dans la même image : `budget.left` (argent restant) est décompté à chaque achat.
+local function buy(index, need, budget)
     local _, _, price, batch, available = WK.MerchantItemInfo(index)
     batch = math.max(1, batch or 1)
+    price = price or 0
     if available and available >= 0 and available == 0 then return 0 end
+    budget = budget or { left = GetMoney() }
     local bought = 0
     if batch > 1 then
         local clicks = math.ceil(need / batch)
         for _ = 1, math.min(clicks, 40) do
-            if (price or 0) > GetMoney() then break end
+            if price > budget.left then break end
             BuyMerchantItem(index)
+            budget.left = budget.left - price
             bought = bought + batch
         end
     else
@@ -517,8 +517,9 @@ local function buy(index, need)
         local left = need
         while left > 0 do
             local n = math.min(left, maxStack)
-            if (price or 0) * n > GetMoney() then break end
+            if price * n > budget.left then break end
             BuyMerchantItem(index, n)
+            budget.left = budget.left - price * n
             bought, left = bought + n, left - n
         end
     end
@@ -568,6 +569,7 @@ function M:AutoBuy()
     local cc = c.class and self:Class(c.class)
     if not cc then return end
     local bought = {}
+    local budget = { left = GetMoney() } -- argent restant, décompté à chaque achat
     for _, r in ipairs(M.REAGENTS[c.class] or {}) do
         local s = cc.reag[r.key]
         if s and s.auto and r.buy and (s.buy or 0) > 0 and M:Relevant(r, c.level) then
@@ -575,7 +577,7 @@ function M:AutoBuy()
             if need > 0 then
                 local m = merchantIndex(r.ids or { r.id })
                 if m then
-                    local n = buy(m.index, need)
+                    local n = buy(m.index, need, budget)
                     if n > 0 then table.insert(bought, n .. " " .. (WK.GetItemInfo(m.id) or M:ReagentName(r))) end
                 end
             end
@@ -587,7 +589,7 @@ function M:AutoBuy()
             local have = (c.bags or {})[best.id] or 0
             local need = (cc.ammo.buy or 0) - have
             if need > 0 then
-                local n = buy(best.index, need)
+                local n = buy(best.index, need, budget)
                 if n > 0 then
                     table.insert(bought, n .. " " .. (WK.GetItemInfo(best.id) or T("munitions")))
                     -- Meilleure que celle équipée : on l'équipe (hors combat).

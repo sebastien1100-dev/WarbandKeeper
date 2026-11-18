@@ -39,7 +39,7 @@ function M:Elapsed(s)
 end
 
 function M:Start()
-    if self:Active() then return end
+    if self:Active() or not WK:FeatureOn("farm") then return end
     farm().current = {
         start = time(), resumedAt = time(), acc = 0, paused = false,
         char = WK:CharKey(), zone = GetRealZoneText and GetRealZoneText() or "",
@@ -160,7 +160,7 @@ end
 -- Appelé par l'inventaire à chaque scan des sacs : les hausses comptent comme butin.
 function M:OnBags(old, new)
     local s = self:Current()
-    if not s or s.paused or s.char ~= WK:CharKey() or interacting() or not old then return end
+    if not s or s.paused or s.char ~= WK:CharKey() or interacting() or not old or not WK:FeatureOn("farm") then return end
     for id, n in pairs(new) do
         local diff = n - (old[id] or 0)
         if diff > 0 then s.items[id] = (s.items[id] or 0) + diff end
@@ -172,7 +172,7 @@ end
 -- Appelé à chaque variation d'or.
 function M:OnMoney(delta)
     local s = self:Current()
-    if not s or s.paused or s.char ~= WK:CharKey() or interacting() or delta <= 0 then return end
+    if not s or s.paused or s.char ~= WK:CharKey() or interacting() or delta <= 0 or not WK:FeatureOn("farm") then return end
     s.gold = s.gold + delta
     s.tick = time()
 end

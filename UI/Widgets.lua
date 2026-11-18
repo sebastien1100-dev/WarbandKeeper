@@ -140,7 +140,8 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
         end
     end)
     b:SetScript("OnLeave", function() refresh(false); GameTooltip:Hide() end)
-    if danger == "accent" then UI:OnAccent(function() refresh(false) end) end
+    -- tout style sauf danger suit l'apparence (changement de thème sans attendre le survol)
+    if danger ~= true then UI:OnAccent(function() refresh(false) end) end
     return b
 end
 
@@ -646,6 +647,7 @@ function UI:ChartHover(area, chart, format)
     UI:OnAccent(function() dot:SetVertexColor(UI:Accent()) end)
     area:EnableMouse(true)
     area:SetScript("OnEnter", function(a)
+        a.hoverPt = nil
         a:SetScript("OnUpdate", function()
             local pts = chart.points
             if #pts == 0 then return end
@@ -655,6 +657,9 @@ function UI:ChartHover(area, chart, format)
                 local d = math.abs(pt.x - x)
                 if d < bd then best, bd = pt, d end
             end
+            -- rien à refaire tant que le point le plus proche ne change pas
+            if a.hoverPt == best then return end
+            a.hoverPt = best
             marker:ClearAllPoints()
             marker:SetPoint("BOTTOM", a, "BOTTOMLEFT", best.x, 0)
             marker:SetPoint("TOP", a, "TOPLEFT", best.x, 0)
@@ -671,6 +676,7 @@ function UI:ChartHover(area, chart, format)
     end)
     area:SetScript("OnLeave", function(a)
         a:SetScript("OnUpdate", nil)
+        a.hoverPt = nil
         marker:Hide(); dot:Hide()
         GameTooltip:Hide()
     end)

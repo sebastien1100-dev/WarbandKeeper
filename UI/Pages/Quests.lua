@@ -30,6 +30,14 @@ local function stateInfo(st)
 end
 local KIND = { d = "Donjon", c = "Classe" }
 
+-- Choix du menu des persos (rebâti à chaque rafraîchissement : persos renommés ou supprimés).
+local function charOptions()
+    local opts = {}
+    for key, c in pairs(WK.DB.global.characters) do table.insert(opts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
+    table.sort(opts, function(a, b) return a[2] < b[2] end)
+    return opts
+end
+
 UI:RegisterPage({
     key = "quests", order = 8.9, nav = "Quêtes",
 
@@ -43,9 +51,7 @@ UI:RegisterPage({
         local of = UI:Text(p, 11, C.muted)
         of:SetPoint("TOPLEFT", 0, -9)
         of:SetText(T("Quêtes de"))
-        local charOpts = {}
-        for key, c in pairs(WK.DB.global.characters) do table.insert(charOpts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
-        table.sort(charOpts, function(a, b) return a[2] < b[2] end)
+        local charOpts = charOptions()
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self.zone = nil; self:Refresh() end)
         self.charDd:SetPoint("TOPLEFT", of, "TOPRIGHT", 8, 9)
         self.charDd:Select(self.viewKey)
@@ -223,6 +229,11 @@ UI:RegisterPage({
 
     Refresh = function(self)
         local cfg = Q:Config()
+        -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
+        self.charDd:SetOptions(charOptions())
+        if self.charDd.selected ~= self.viewKey then
+            if WK.DB.global.characters[self.viewKey] then self.charDd:Select(self.viewKey) else self.viewKey = self.charDd.selected end
+        end
         for _, t in ipairs(self.toggles) do t:Refresh() end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
@@ -297,7 +308,7 @@ UI:RegisterPage({
                     row.name:SetText(Q:Name(q))
                     row.name:SetTextColor(unpack(st == "done" and C.dim or C.text))
                     local parts = {}
-                    if q.skill then table.insert(parts, "|cff9ed17a" .. T(q.skill) .. "|r")
+                    if q.skill then table.insert(parts, UI:Hex(C.positive) .. T(q.skill) .. "|r")
                     elseif KIND[q.kind] then table.insert(parts, T(KIND[q.kind])) end
                     if st == "locked" and need and Q:Get(need) then table.insert(parts, string.format(T("après « %s »"), Q:Name(Q:Get(need))))
                     elseif st == "high" then table.insert(parts, string.format(T("niveau %d requis"), q.req)) end
@@ -311,7 +322,7 @@ UI:RegisterPage({
             end
         end
         local zname = self.zone and WK.modules.Rares:ZoneName(self.zone) or ""
-        self.lTitle:SetText(zname .. "  |cff999999· " .. string.format(T("%d quêtes"), total) .. "|r")
+        self.lTitle:SetText(zname .. "  " .. UI:Hex(C.muted) .. "· " .. string.format(T("%d quêtes"), total) .. "|r")
         self.lSub:SetText(Q:Known(key) and T("triées par niveau") or T("connecte ce perso pour lire ses quêtes faites"))
         self.empty:SetShown(shown == 0)
         self.empty:ClearAllPoints(); self.empty:SetPoint("TOPLEFT", 14, -10)

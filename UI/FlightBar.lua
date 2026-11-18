@@ -130,7 +130,7 @@ local function build()
 
     function f:Paint(fl)
         local r, g, b = UI:Accent()
-        local hex = string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
+        local accHex, mutedHex = UI:Hex({ r, g, b }), UI:Hex(C.muted)
         local elapsed = GetTime() - fl.start
         local p, left
         if fl.est and fl.est > 0 then
@@ -139,7 +139,7 @@ local function build()
         end
         local toName, toZone = split(fl.to)
         self.icon:SetVertexColor(r, g, b)
-        self.to:SetText(toName .. (toZone and ("  |cff999999· " .. toZone .. "|r") or ""))
+        self.to:SetText(toName .. (toZone and ("  " .. mutedHex .. "· " .. toZone .. "|r") or ""))
         self.time:SetTextColor(r, g, b)
         self.time:SetText(left and fmt(left) or ("+" .. fmt(elapsed)))
         local stops = fl.stops or {}
@@ -152,11 +152,11 @@ local function build()
         for _, st in ipairs(stops) do
             local passed = p and p >= st.frac
             local nm = split(st.name)
-            table.insert(parts, passed and ("|cff999999" .. nm .. "|r") or nm)
+            table.insert(parts, passed and (mutedHex .. nm .. "|r") or nm)
             if not nextStop and not passed then nextStop = nm end
         end
-        table.insert(parts, "|cff" .. hex .. toName .. "|r")
-        m.route:SetText(table.concat(parts, "  |cff666666>|r  "))
+        table.insert(parts, accHex .. toName .. "|r")
+        m.route:SetText(table.concat(parts, "  " .. UI:Hex(C.dim) .. ">|r  "))
         m.kick:SetText(#stops > 0 and string.format(T("VOL EN COURS  ·  %d RELAIS"), #stops) or T("VOL EN COURS  ·  DIRECT"))
         m.bar:Set(p or 0, stops)
         local dep = date("%H:%M", time() - elapsed)
@@ -175,6 +175,8 @@ local function build()
     UI:RegisterHUD("flight", f, {
         label = T("Barre de vol"),
         default = { 0, UIParent:GetHeight() / 2 - 120 },
+        -- barre coupée dans ses réglages : absente du mode édition
+        enabled = function() return F:Config().enabled and true or false end,
         sample = function(on)
             f.sample = on or nil
             if on then

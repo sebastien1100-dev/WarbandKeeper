@@ -38,14 +38,42 @@ function M:UpdateMoney()
     WK:NotifyChanged()
 end
 
+-- Le /played demandé à la connexion ne s'affiche pas dans le chat : les fenêtres de chat cessent d'écouter
+-- TIME_PLAYED_MSG le temps de la réponse (sans remplacer la fonction du jeu, ce qui le corromprait).
+local muted -- fenêtres de chat qui écoutaient l'évènement
+local function unmutePlayed()
+    if not muted then return end
+    for _, f in ipairs(muted) do pcall(f.RegisterEvent, f, "TIME_PLAYED_MSG") end
+    muted = nil
+end
+local function mutePlayed()
+    if muted then return end
+    muted = {}
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
+        local f = _G["ChatFrame" .. i]
+        if f and f.IsEventRegistered and f:IsEventRegistered("TIME_PLAYED_MSG") then
+            f:UnregisterEvent("TIME_PLAYED_MSG")
+            table.insert(muted, f)
+        end
+    end
+    -- sans réponse, les fenêtres retrouvent l'évènement quand même
+    if C_Timer and C_Timer.After then C_Timer.After(10, unmutePlayed) end
+end
+
 function M:OnLogin()
     self:UpdateBasics()
     self:UpdateMoney()
+    mutePlayed()
     RequestTimePlayed()
 end
 
 WK:On("PLAYER_MONEY", function() M:UpdateMoney() end)
-WK:On("PLAYER_LEVEL_UP", function() M:UpdateBasics() end)
+WK:On("PLAYER_LEVEL_UP", function(level)
+    M:UpdateBasics()
+    -- UnitLevel peut encore rendre l'ancien niveau à cet instant : le niveau de l'évènement fait foi
+    level = tonumber(level)
+    if level and level > 0 then WK.DB:Me().level = level end
+end)
 -- Portrait du perso connecté (changement d'apparence, de forme…).
 WK:On("UNIT_PORTRAIT_UPDATE", function(unit) if unit == "player" then WK:NotifyChanged() end end)
 WK:On("PLAYER_LOGOUT", function() M:UpdateBasics() end)
@@ -55,17 +83,9 @@ WK:On("TIME_PLAYED_MSG", function(total, level)
     c.played = total
     c.playedLevel = level
     WK:NotifyChanged()
+    -- réponse reçue : les fenêtres de chat réécoutent (après cet évènement, pour ne pas l'afficher)
+    if muted and C_Timer and C_Timer.After then C_Timer.After(0, unmutePlayed) end
 end)
-
--- Masque le message "/played" automatique dans le chat au login.
-local hideNextPlayed = true
-local origDisplay = ChatFrame_DisplayTimePlayed
-if origDisplay then
-    ChatFrame_DisplayTimePlayed = function(...)
-        if hideNextPlayed then hideNextPlayed = false return end
-        return origDisplay(...)
-    end
-end
 
 -- Affichage
 function M:SortedKeys()
@@ -75,10 +95,38 @@ function M:SortedKeys()
     return keys
 end
 
--- Supprime un personnage (et son historique) des données.
+-- Supprime un personnage et tout ce qui est rangé à son nom (historique, builds, listes, règles propres…).
 function M:Delete(key)
-    WK.DB.global.characters[key] = nil
-    WK.DB.global.history.gold[key] = nil
+    if not key then return end
+    local g = WK.DB.global
+    g.characters[key] = nil
+    local h = g.history or {}
+    if h.gold then h.gold[key] = nil end
+    if h.charItems then h.charItems[key] = nil end
+    for _, name in ipairs({ "talentBuilds", "talentPlans", "bisLists", "bisList", "weaponSets" }) do
+        if type(g[name]) == "table" then g[name][key] = nil end
+    end
+    if g.profiles and g.profiles.byChar then g.profiles.byChar[key] = nil end
+    local d = g.dungeons
+    if d then
+        for _, name in ipairs({ "wish", "kills", "runs" }) do
+            if type(d[name]) == "table" then d[name][key] = nil end
+        end
+    end
+    for _, per in pairs((g.rares and g.rares.kills) or {}) do
+        if type(per) == "table" then per[key] = nil end
+    end
+    -- règles d'envoi et de dépôt propres à ce perso (clé « objet@Perso-Royaume »)
+    local R = WK.modules.Rules
+    if R and R.SplitKey then
+        local mail, bank = g.mail or {}, g.bank or {}
+        for _, store in pairs({ mail.rules or {}, mail.cats or {}, bank.items or {}, bank.cats or {} }) do
+            for k in pairs(store) do
+                local _, from = R:SplitKey(k)
+                if from == key then store[k] = nil end
+            end
+        end
+    end
     WK:NotifyChanged()
 end
 

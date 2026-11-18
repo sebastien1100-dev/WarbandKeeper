@@ -8,7 +8,6 @@ local T = function(s) return WK.T(s) end
 --   chez le marchand : un cache sur la case bloque le clic (objet verrouillé) ou demande confirmation (vente chère) ;
 --   infobulle : « Verrouillé… ».
 local L = WK.modules.ItemLock
-local RULE = { 0.31, 0.82, 0.77 } -- turquoise des verrous par règle (donnée, pas une couleur du thème)
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
 local function modDown()
@@ -100,9 +99,14 @@ end
 ---------------------------------------------------------------------------
 -- Cases des sacs du jeu
 ---------------------------------------------------------------------------
+-- Libellé de la touche choisie pour (dé)verrouiller (réglage key : alt, ctrl ou shiftalt)
+local function keyLabel()
+    local k = L:Config().key
+    return k == "ctrl" and T("Ctrl + clic") or k == "shiftalt" and T("Maj + Alt + clic") or T("Alt + clic")
+end
 local function blockMsg(id)
     local msg = string.format(T("Verrouillé : %s n'a pas été vendu (%s pour le déverrouiller)."),
-        WK.GetItemInfo(id) or ("#" .. id), L:Config().key == "ctrl" and T("Ctrl + clic") or L:Config().key == "shiftalt" and T("Maj + Alt + clic") or T("Alt + clic"))
+        WK.GetItemInfo(id) or ("#" .. id), keyLabel())
     if UIErrorsFrame then UIErrorsFrame:AddMessage(msg, 0.96, 0.55, 0.73) end
 end
 
@@ -169,15 +173,24 @@ local function decorate(btn)
     o.block:SetScript("OnLeave", function() GameTooltip:Hide() end)
     o.block:Hide()
     -- Alt + clic sur la case (hors marchand) : verrouiller / déverrouiller
-    -- (les sacs de WoW Forever ne passent pas toujours par OnClick : GLOBAL_MOUSE_DOWN plus bas fait le même travail)
+    -- (les sacs de WoW Forever ne passent pas toujours par OnClick : GLOBAL_MOUSE_DOWN plus bas fait le même travail ;
+    -- OnClick ne sert que de secours, pour un appui que GLOBAL_MOUSE_DOWN n'a pas déjà traité)
     btn:HookScript("OnClick", function(b, button)
-        if button ~= "LeftButton" or not modDown() then return end
+        if button ~= "LeftButton" or not modDown() or UI.ItemLockPressHandled() then return end
         UI.ItemLockAltClick(b)
     end)
     btn.wkLock = o
     return o
 end
 
+-- Appui déjà traité par GLOBAL_MOUSE_DOWN : le OnClick qui suit au relâchement (même après 0,25 s) ne
+-- rebascule pas le verrou. Effacé l'image d'après le relâchement (GLOBAL_MOUSE_UP), sinon au bout de 5 s.
+local pressAt
+function UI.ItemLockPressHandled()
+    return pressAt ~= nil and GetTime() - pressAt < 5
+end
+
+local paint
 -- Bascule du verrou d'une case (un seul passage par clic, quel que soit le chemin qui l'a vu)
 local lastToggle = 0
 function UI.ItemLockAltClick(b)
@@ -188,9 +201,10 @@ function UI.ItemLockAltClick(b)
     lastToggle = now
     if CursorHasItem and CursorHasItem() and ClearCursor then ClearCursor() end
     L:Toggle(id)
+    paint(b) -- cadenas montré tout de suite, sans attendre le prochain passage du repeint
 end
 
-local function paint(btn)
+function paint(btn)
     local o = decorate(btn)
     if not o then return end
     local id = itemAt(bagSlot(btn))
@@ -198,13 +212,13 @@ local function paint(btn)
     local r1, g1, b1 = UI:Accent()
     o.badge:SetShown(why ~= nil); o.ring:SetShown(why ~= nil); o.icon:SetShown(why ~= nil)
     if why then
-        if why == "manual" then o.badge:SetVertexColor(r1, g1, b1, 1) else o.badge:SetVertexColor(RULE[1], RULE[2], RULE[3], 1) end
+        if why == "manual" then o.badge:SetVertexColor(r1, g1, b1, 1) else o.badge:SetVertexColor(C.rule[1], C.rule[2], C.rule[3], 1) end
     end
     local B = WK.modules.BiS
     local mark = id and B and WK:FeatureOn("characters") and B:Mark(id)
     o.bisRing:SetShown(mark and true or false); o.bisBadge:SetShown(mark and true or false); o.bisStar:SetShown(mark and true or false)
-    if mark == "mine" then o.bisBadge:SetVertexColor(1, 0.82, 0.25, 1)
-    elseif mark then o.bisBadge:SetVertexColor(0.72, 0.74, 0.78, 1) end
+    if mark == "mine" then o.bisBadge:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
+    elseif mark then o.bisBadge:SetVertexColor(C.silver[1], C.silver[2], C.silver[3], 1) end
     if not inCombat() then
         local guard = L:MerchantOpen() and id ~= nil and (why ~= nil or L:Expensive(id))
         o.block:SetShown(guard and true or false)
@@ -281,13 +295,22 @@ driver:SetScript("OnUpdate", function(s, el)
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() UI:RefreshItemLocks() end)
 -- Clic n'importe où : Alt + clic gauche sur une case de sac connue
-driver:RegisterEvent("GLOBAL_MOUSE_DOWN")
+pcall(driver.RegisterEvent, driver, "GLOBAL_MOUSE_DOWN")
+pcall(driver.RegisterEvent, driver, "GLOBAL_MOUSE_UP")
 driver:SetScript("OnEvent", function(_, ev, button)
+    if ev == "GLOBAL_MOUSE_UP" then
+        -- le OnClick de la case passe au relâchement : on attend l'image suivante pour effacer
+        if pressAt then C_Timer.After(0, function() pressAt = nil end) end
+        return
+    end
     if ev ~= "GLOBAL_MOUSE_DOWN" or button ~= "LeftButton" or not modDown() or not WK:FeatureOn("inventory") then return end
     if L:MerchantOpen() then return end -- chez le marchand, le cache de la case s'en occupe
     local hit
     eachButton(function(b) if not hit and b:IsVisible() and MouseIsOver(b) then hit = b end end)
-    if hit then UI.ItemLockAltClick(hit) end
+    if hit then
+        pressAt = GetTime()
+        UI.ItemLockAltClick(hit)
+    end
 end)
 
 ---------------------------------------------------------------------------
@@ -302,9 +325,9 @@ local function onTooltip(tt, data)
     if not why then return end
     if why == "manual" then
         local r, g, b = UI:Accent()
-        tt:AddLine(T("Verrouillé : ne sera pas vendu (Alt + clic)"), r, g, b)
+        tt:AddLine(T("Verrouillé : ne sera pas vendu") .. " (" .. keyLabel() .. ")", r, g, b)
     else
-        tt:AddLine(string.format(T("Verrouillé par règle : %s"), why), RULE[1], RULE[2], RULE[3])
+        tt:AddLine(string.format(T("Verrouillé par règle : %s"), why), C.rule[1], C.rule[2], C.rule[3])
     end
     tt:Show()
 end
@@ -350,5 +373,19 @@ function UI:BagDiag()
     else
         table.insert(out, "Sous la souris : rien (tape la commande en survolant un objet du sac, par une macro)")
     end
+    -- toutes les cases connues sous la souris : laquelle porte le cadenas, et est-il visible ?
+    local function nm(b) return (b.GetName and b:GetName()) or ("<" .. (b.GetObjectType and b:GetObjectType() or "?") .. ">") end
+    eachButton(function(b)
+        if b:IsVisible() and MouseIsOver(b) then
+            local bag, slot = bagSlot(b)
+            local id = itemAt(bag, slot)
+            local o = b.wkLock
+            local w, h = b:GetSize()
+            table.insert(out, string.format("Case %s (parent %s) : sac %s case %s, objet %s, verrou %s, cadenas %s, alpha %.2f, taille %dx%d, niveau %d / cadenas %s",
+                nm(b), b:GetParent() and nm(b:GetParent()) or "?", tostring(bag), tostring(slot), tostring(id),
+                tostring(id and L:Reason(id)), o and (o.badge:IsShown() and (o.badge:IsVisible() and "visible" or "montré mais caché") or "masqué") or "aucun",
+                b.GetEffectiveAlpha and b:GetEffectiveAlpha() or -1, w or 0, h or 0, b:GetFrameLevel(), o and tostring(o:GetFrameLevel()) or "-"))
+        end
+    end)
     return out
 end

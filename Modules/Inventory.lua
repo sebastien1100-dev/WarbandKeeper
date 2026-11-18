@@ -149,6 +149,11 @@ end
 
 -- Recherche par nom (partiel, insensible à la casse) ou itemID.
 function M:Find(query)
+    -- recherche vide : tout le compte correspondrait, on rappelle l'usage
+    if type(query) ~= "string" or not query:find("%S") then
+        WK:Print(WK.L.HELP_FIND or "/wk cherche <nom>")
+        return
+    end
     local id = WK:ParseItemID(query)
     local q = query and string.lower(query)
     local found = false

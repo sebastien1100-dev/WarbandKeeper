@@ -186,16 +186,18 @@ local function eachBagItem(fn)
         end
     end
 end
-local counts, countsAt = {}, -1
+-- Nombre de chaque objet en sac : gardé jusqu'au prochain changement des sacs
+local counts, countsDirty = {}, true
 local function bagCounts()
-    if countsAt == GetTime() then return counts end
-    countsAt = GetTime()
+    if not countsDirty then return counts end
+    countsDirty = false
     wipe(counts)
     eachBagItem(function(id, n) counts[id] = (counts[id] or 0) + n end)
     return counts
 end
 function M:Count(id) return bagCounts()[id] or 0 end
-WK:On("BAG_UPDATE_DELAYED", function() countsAt = -1 end)
+WK:On("BAG_UPDATE_DELAYED", function() countsDirty = true end)
+WK:On("PLAYER_ENTERING_WORLD", function() countsDirty = true end)
 
 -- Nourriture et boisson : « Bien nourri » repéré dans l'infobulle de l'objet, boisson par le sort d'utilisation
 local foodKind = {}
@@ -213,7 +215,8 @@ local function kindOf(id)
                 for _, l in ipairs(d.lines) do local t = M.Readable(l.leftText); if type(t) == "string" then text = text .. " " .. t:lower() end end
             end
         end
-        local spell = GetItemSpell and M.Readable((GetItemSpell(id)))
+        local getSpell = (C_Item and C_Item.GetItemSpell) or GetItemSpell
+        local spell = getSpell and M.Readable((getSpell(id)))
         spell = type(spell) == "string" and spell:lower() or ""
         if text:find("bien nourri", 1, true) or text:find("well fed", 1, true) then k = "fed"
         elseif spell:find("boisson", 1, true) or spell:find("drink", 1, true) or text:find("mana", 1, true) then k = "drink" end
@@ -409,7 +412,7 @@ function M:Update()
     local a = scan()
     self.auras = a
     local state = "none"
-    if (cfg.enabled or cfg.icon) and WK:FeatureOn("campfire") then
+    if (cfg.enabled or cfg.icon or cfg.kit) and WK:FeatureOn("campfire") then
         local perkLeft = remaining(a.perk)
         if a.sit then
             state = "sitting"

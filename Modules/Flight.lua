@@ -167,9 +167,12 @@ if hooksecurefunc and TakeTaxiNode then
         local from, to = cur and nodeName(cur), nodeName(index)
         if not to then return end
         local stops, dist = routeStops(cur, index)
-        pending = { from = from or "?", to = to, dist = dist, stops = stops, t = GetTime() }
+        local dest = nodeWorld(index)
+        pending = { from = from or "?", to = to, dist = dist, stops = stops, t = GetTime(), dest = dest or nil }
     end)
 end
+-- carte des vols ouverte (autre maître de vol, autre continent) : les positions des relais sont relues
+WK:On("TAXIMAP_OPENED", function() worldCache = {} end)
 
 ---------------------------------------------------------------------------
 -- Décollage et atterrissage (le jeu ne prévient pas : on regarde si le perso est en vol)
@@ -183,18 +186,27 @@ function M:Start()
     local dist = pending.dist
     local _, pts = self:Path(pending.from, pending.to)
     if pts and #pts >= 4 and M.PathLength then dist = M.PathLength(pts) end
-    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = dist, stops = pending.stops,
+    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = dist, stops = pending.stops, dest = pending.dest,
                est = db().routes[key] or self:Estimate(dist), learned = db().routes[key] ~= nil,
                traveled = 0 }
     pending = nil
     if self.OnStart then self:OnStart(flight) end
 end
 
+local LAND_NEAR = 250 -- posé à moins de 250 m du relais d'arrivée : vol complet
 function M:Finish()
     if not flight then return end
     local f = flight
     flight = nil
     local secs = GetTime() - f.start
+    -- Atterrissage anticipé avec le bouton du jeu : posé loin du relais d'arrivée, le vol n'est pas complet
+    if not f.early and f.dest then
+        local p = WK.modules.Guide:PlayerPos()
+        if p and p.cont and (p.cont ~= f.dest[1]
+            or math.sqrt((p.wx - f.dest[2]) ^ 2 + (p.wy - f.dest[3]) ^ 2) > LAND_NEAR) then
+            f.early = true
+        end
+    end
     -- Durée apprise seulement pour un vol complet et plausible
     if not f.early and secs > 5 then
         local d = db()

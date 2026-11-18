@@ -131,7 +131,15 @@ local function build()
         UI:RefreshFishingBar()
     end)
     f:Hide()
-    UI:RegisterHUD("fishing", f, { label = T("Barre de pêche"), protected = true, default = { 0, -200 } })
+    UI:RegisterHUD("fishing", f, { label = T("Barre de pêche"), protected = true, default = { 0, -200 },
+        -- module coupé ou Pêche inconnue : absent du mode édition
+        enabled = function() return WK:FeatureOn("fishing") and F:Knows() and true or false end,
+        -- aperçu : la barre affichée hors mode pêche (hors combat seulement : boutons protégés)
+        sample = function(on)
+            f.sample = on or nil
+            if inCombat() then return end
+            if on then f:Show(); UI:RefreshFishingBar() else UI:SyncFishingBar() end
+        end })
     return f
 end
 
@@ -183,7 +191,7 @@ end
 -- Affiche ou cache la barre selon le mode (hors combat : elle porte des boutons protégés).
 function UI:SyncFishingBar()
     if inCombat() then return end
-    if F.active then
+    if F.active or (bar and bar.sample) then
         bar = bar or build()
         bar:Show()
         UI:RefreshFishingBar()
@@ -264,4 +272,15 @@ function UI:SyncFishingMinimap()
     end
 end
 
-WK:On("PLAYER_LOGIN", function() C_Timer.After(1.5, function() UI:SyncFishingMinimap() end) end)
+-- La barre est construite et placée dès la connexion (hors combat : boutons protégés), pour être
+-- réglable en mode édition sans avoir ouvert le mode pêche.
+local earlyPending
+local function buildEarly()
+    earlyPending = nil
+    if bar or not WK:FeatureOn("fishing") then return end
+    if inCombat() then earlyPending = true return end
+    bar = build()
+    UI:SyncFishingBar()
+end
+WK:On("PLAYER_REGEN_ENABLED", function() if earlyPending then buildEarly() end end)
+WK:On("PLAYER_LOGIN", function() C_Timer.After(1.5, function() buildEarly(); UI:SyncFishingMinimap() end) end)

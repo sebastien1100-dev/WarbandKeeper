@@ -110,7 +110,7 @@ local function nodeData(cfgID, nodeID)
     end
     if type(name) ~= "string" then return nil end
     return { node = nodeID, name = name, icon = icon, spell = spell, x = num(n.posX) or 0, y = num(n.posY) or 0,
-        rank = num(n.currentRank) or num(n.activeRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID) }
+        rank = num(n.activeRank) or num(n.currentRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID) }
 end
 -- Noms des trois arbres par classe (ordre classique de gauche à droite), quand le jeu ne les donne pas
 local TREE_NAMES = {
@@ -124,6 +124,9 @@ local function scanTraits(c)
     local cfgID, cfg = traitConfig()
     if not cfgID or type(cfg) ~= "table" or not C_Traits.GetTreeNodes then return false end
     local nodes = {}
+    -- points libres : une même monnaie peut servir à plusieurs arbres (on la compte une fois, au plus haut),
+    -- des monnaies différentes s'additionnent
+    local freeBy
     for _, treeID in ipairs(cfg.treeIDs or {}) do
         for _, nodeID in ipairs(call(C_Traits.GetTreeNodes, treeID) or {}) do
             local d = nodeData(cfgID, nodeID)
@@ -131,8 +134,22 @@ local function scanTraits(c)
         end
         if C_Traits.GetTreeCurrencyInfo then
             local cur = call(C_Traits.GetTreeCurrencyInfo, cfgID, treeID, false)
-            if type(cur) == "table" and cur[1] then c.talentFree = num(cur[1].quantity) end
+            if type(cur) == "table" then
+                for _, e in ipairs(cur) do
+                    local q = type(e) == "table" and num(e.quantity)
+                    if q then
+                        local id = num(e.traitCurrencyID) or 0
+                        freeBy = freeBy or {}
+                        if not freeBy[id] or q > freeBy[id] then freeBy[id] = q end
+                    end
+                end
+            end
         end
+    end
+    if freeBy then
+        local free = 0
+        for _, q in pairs(freeBy) do free = free + q end
+        c.talentFree = free
     end
     if #nodes == 0 then return false end
     -- groupes : sous-arbres s'il y en a, sinon arbres, sinon colonnes séparées par un grand écart de position

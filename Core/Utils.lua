@@ -163,3 +163,20 @@ function WK.EquipItem(item, slot)
     if not f then return false end
     return pcall(f, item, slot)
 end
+
+-- Recharge d'un sort : début, durée (C_Spell.GetSpellCooldown sur les clients récents, sinon l'ancienne globale).
+-- nil si le jeu ne donne rien ou masque la valeur.
+function WK.SpellCooldown(spell)
+    if not spell then return nil end
+    local start, duration
+    if C_Spell and C_Spell.GetSpellCooldown then
+        local ok, info = pcall(C_Spell.GetSpellCooldown, spell)
+        if ok and type(info) == "table" then start, duration = info.startTime, info.duration end
+    elseif GetSpellCooldown then
+        local ok, s, d = pcall(GetSpellCooldown, spell)
+        if ok then start, duration = s, d end
+    end
+    if issecretvalue and (issecretvalue(start) or issecretvalue(duration)) then return nil end
+    if type(start) ~= "number" or type(duration) ~= "number" then return nil end
+    return start, duration
+end

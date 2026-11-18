@@ -296,7 +296,14 @@ WK:On("PLAYER_LEVEL_UP", function(level)
     if not cfg.trainerOnLevel or not level or level % 2 ~= 0 then return end
     C_Timer.After(2, function()
         if not canGuide() then return end
-        local t = M:GoTo("trainer", nil, true)
+        -- un guidage en cours n'est pas remplacé : le rappel suffit
+        local t
+        if M.target then
+            local class = select(2, UnitClass("player"))
+            t = M:Nearest(M:KindsFor("trainer"), class)
+        else
+            t = M:GoTo("trainer", nil, true)
+        end
         local msg = string.format(T("Niveau %d : nouveaux sorts chez ton maître de classe"), level)
         if t then msg = msg .. " · " .. M:PlaceName(t) .. " " .. M:DistText(t) end
         WK.modules.QoL:Remind("trainer", msg, 0.4, 0.85, 1)

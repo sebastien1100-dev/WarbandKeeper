@@ -406,11 +406,11 @@ local function makeIcon(def)
     b.badge:SetFrameLevel(b:GetFrameLevel() + 6)
     b.badge:SetSize(18, 16)
     b.badge:SetPoint("CENTER", b, "BOTTOM", 0, 1)
-    UI:Panel(b.badge, 8, { 0.66, 0.88, 0.71, 1 }) -- vert menthe pastel
+    UI:Panel(b.badge, 8, C.mint) -- vert menthe pastel du thème
     b.num = b.badge:CreateFontString(nil, "OVERLAY")
     b.num:SetFont(UI.FONT, 11, "")
     b.num:SetPoint("CENTER", 0, 0)
-    b.num:SetTextColor(0.11, 0.23, 0.15)
+    b.num:SetTextColor(C.mint[1] * 0.2, C.mint[2] * 0.25, C.mint[3] * 0.2) -- menthe très sombre, lisible sur la gélule
     b.badge:Hide()
     b:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
@@ -704,7 +704,11 @@ local function build()
     end
 
     UI:RegisterHUD("clock", bar, { label = T("Micro menu"), protected = true, point = "TOP",
-        default = { 0, UIParent:GetHeight() / 2 - 6 } })
+        default = { 0, UIParent:GetHeight() / 2 - 6 },
+        -- coupé dans ses réglages : absent du mode édition
+        enabled = function() return cfg().enabled and WK:FeatureOn("micro") and true or false end,
+        -- aperçu : la barre telle qu'en jeu (hors combat seulement : cadre protégé)
+        sample = function() if not inCombat() then UI:SyncClock() end end })
     return bar
 end
 
@@ -816,9 +820,12 @@ function UI:ClockMove(key, dir)
     saveVisual(VL, VR)
 end
 
+local clockPending -- SyncClock demandé en combat
 function UI:SyncClock()
     if UI.SyncFishingMinimap then UI:SyncFishingMinimap() end -- le bouton de minicarte de la pêche en dépend
-    if inCombat() then return end
+    -- en combat : rien ne bouge (cadre protégé), appliqué à la sortie du combat
+    if inCombat() then clockPending = true return end
+    clockPending = nil
     if cfg().enabled and WK:FeatureOn("micro") then
         bar = bar or build()
         bar:Show()
@@ -830,3 +837,4 @@ function UI:SyncClock()
 end
 
 WK:On("PLAYER_LOGIN", function() C_Timer.After(0.5, function() UI:SyncClock() end) end)
+WK:On("PLAYER_REGEN_ENABLED", function() if clockPending then UI:SyncClock() end end)

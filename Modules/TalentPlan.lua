@@ -59,8 +59,9 @@ function M:Ranks(plan, n)
     end
     return out
 end
--- Ajoute un point au plan (refusé si le talent est déjà au maximum)
-function M:AddStep(key, i, ti, j)
+-- Ajoute un point au plan (refusé si le talent est déjà au maximum).
+-- free = true (import d'un code) : sans la règle des rangées, qui ne colle pas toujours au découpage des arbres
+function M:AddStep(key, i, ti, j, free)
     local p = store(key).list[i]
     local c = WK.DB.global.characters[key]
     local d = c and c.talents and c.talents[ti] and c.talents[ti].list and c.talents[ti].list[j]
@@ -72,7 +73,7 @@ function M:AddStep(key, i, ti, j)
     local inTree = 0
     for k, v in pairs(ranks) do if k:match("^(%d+):") == tostring(ti) then inTree = inTree + v end end
     local need = ((d[3] or 1) - 1) * 5
-    if inTree < need then return false, string.format(T("Rangée pas encore accessible : il faut %d points dans cet arbre (%d pour l'instant)."), need, inTree) end
+    if inTree < need and not free then return false, string.format(T("Rangée pas encore accessible : il faut %d points dans cet arbre (%d pour l'instant)."), need, inTree) end
     table.insert(p.steps, { ti, j, d[8], d[1] })
     WK:NotifyChanged()
     return true
@@ -133,7 +134,7 @@ function M:Import(key, code, name)
     if cls ~= c.class then return nil, T("ce code est pour une autre classe") end
     local i = self:New(key, name or T("Plan importé"))
     for ti, j in body:gmatch("(%d+)%.(%d+)") do
-        if not self:AddStep(key, i, tonumber(ti), tonumber(j)) then
+        if not self:AddStep(key, i, tonumber(ti), tonumber(j), true) then
             self:Delete(key, i)
             return nil, T("le code ne correspond pas à tes arbres")
         end

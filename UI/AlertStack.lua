@@ -110,10 +110,18 @@ layout = function()
     anchor:SetSize(maxW, math.max(30, #list * 34 - 4))
 end
 
+-- Même couleur (composantes comparées : l'appelant peut fournir une nouvelle table à chaque fois)
+local function sameColor(a, b)
+    if a == b then return true end
+    if not a or not b then return false end
+    return a[1] == b[1] and a[2] == b[2] and a[3] == b[3] and a[4] == b[4]
+end
+
 function UI:SetAlert(key, shown, data)
     local cur = active[key]
     if shown then
-        if cur and cur.text == data.text and cur.icon == data.icon then return end
+        if cur and cur.text == data.text and cur.icon == data.icon and cur.prio == data.prio
+            and sameColor(cur.color, data.color) then return end
         active[key] = data
     else
         if not cur then return end

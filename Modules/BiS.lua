@@ -96,15 +96,15 @@ function M:EquipOwned()
     if InCombatLockdown and InCombatLockdown() then return 0, T("pas en combat") end
     local key = WK:CharKey()
     local c = WK.DB:Me()
-    local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
-    if not f then return 0, T("le jeu ne permet pas à l'addon d'équiper") end
-    local worn = {}
-    for _, l in pairs(c.gear or {}) do local id = WK:ParseItemID(l); if id then worn[id] = true end end
-    local n = 0
+    if not ((C_Item and C_Item.EquipItemByName) or EquipItemByName) then return 0, T("le jeu ne permet pas à l'addon d'équiper") end
+    -- objets de la liste pas encore portés à leur place et présents en sac (autant d'exemplaires que le sac en a)
+    local used, n = {}, 0
     for slot, id in pairs(self:List(key)) do
         local gearId = c.gear and c.gear[slot] and WK:ParseItemID(c.gear[slot])
-        if gearId ~= id and c.bags and c.bags[id] then
-            if pcall(f, id, slot) then n = n + 1 end
+        local have = (c.bags or {})[id] or 0
+        if gearId ~= id and have > (used[id] or 0) then
+            used[id] = (used[id] or 0) + 1
+            if WK.EquipItem(id, slot) then n = n + 1 end
         end
     end
     return n

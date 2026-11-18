@@ -1420,6 +1420,8 @@ local function Detail(page, parent)
             self.scrollToCurrent = true
             search:SetText("")
             filter:Select("all")
+            self.missFilter = "now"
+            missSeg:Select("now")
         end
         self.key, self.prof = key, prof
     end

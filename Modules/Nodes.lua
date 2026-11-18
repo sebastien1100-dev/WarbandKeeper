@@ -17,12 +17,17 @@ function M:Config()
 end
 
 -- [objet récolté] = { kind = "herb" | "mining", req = compétence requise }
+-- Un même objet peut venir de plusieurs nœuds (thorium : filon et filon riche) : on garde la plus basse.
 local info
 local function buildInfo()
     info = {}
     local D = WK.modules.Gathering.DATA
-    for _, d in ipairs(D.herb) do info[d.id] = { kind = "herb", req = d.req or 1 } end
-    for _, d in ipairs(D.mining) do info[d.id] = { kind = "mining", req = d.req or 1 } end
+    local function add(d, kind)
+        local req, cur = d.req or 1, info[d.id]
+        if not cur or req < cur.req then info[d.id] = { kind = kind, req = req } end
+    end
+    for _, d in ipairs(D.herb) do add(d, "herb") end
+    for _, d in ipairs(D.mining) do add(d, "mining") end
 end
 function M:Info(id)
     if not info then buildInfo() end
@@ -53,13 +58,15 @@ end
 
 -- Tous les emplacements d'une carte : { { x, y (0-1), id, kind, req, n }, ... }.
 -- Les récoltes à moins de MERGE (fraction de la carte, ~10 à 20 m) du même nœud n'en font qu'un.
--- Gardé en mémoire tant que le nombre de récoltes de la carte ne change pas.
+-- Gardé en mémoire tant qu'aucune récolte n'est notée ni effacée (version de Modules/GatherMap.lua).
 local MERGE = 0.006
 local cache = {}
 function M:All(mapID)
     local spots = (WK.DB.global.gatherSpots or {})[mapID] or {}
+    local GM = WK.modules.GatherMap
+    local ver = GM and GM.version or 0
     local c = cache[mapID]
-    if c and c.n == #spots then return c.list end
+    if c and c.ver == ver and c.spots == spots and c.n == #spots then return c.list end
     local list = {}
     for _, p in ipairs(spots) do
         local i = (p.k == "herb" or p.k == "ore") and self:Info(p.i)
@@ -76,7 +83,7 @@ function M:All(mapID)
             end
         end
     end
-    cache[mapID] = { n = #spots, list = list }
+    cache[mapID] = { ver = ver, spots = spots, n = #spots, list = list }
     return list
 end
 

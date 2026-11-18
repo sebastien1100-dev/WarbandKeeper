@@ -118,6 +118,8 @@ local function build()
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3)
     f.close = UI:IconButton(f, "close", 16, nil, "accent")
     f.close:SetPoint("TOPRIGHT", -8, -8)
+    -- fermé à la croix : ne se recolle plus tout seul à la carte jusqu'à /wk donjon (ou le bouton
+    -- de la page Donjons), ou jusqu'à la prochaine session
     f.close:SetScript("OnClick", function() f.userHidden = true; f:Hide() end)
     -- glisser le titre pour déplacer quand le panneau est seul (pas collé à la carte)
     f:RegisterForDrag("LeftButton")
@@ -173,8 +175,8 @@ local function build()
                 local dead = D:Killed(d, b.id)
                 h.name:SetText(D:BossName(b))
                 h.name:SetTextColor(unpack(dead and C.dim or C.text))
-                h.right:SetText(dead and ("|cff9ed17a" .. T("tué") .. "|r") or string.format(#loot > 1 and T("%d objets") or T("%d objet"), #loot))
-                if b.wing then h.name:SetText(D:BossName(b) .. "  |cff8a8a96" .. T(b.wing) .. "|r") end
+                h.right:SetText(dead and (UI:Hex(C.positive) .. T("tué") .. "|r") or string.format(#loot > 1 and T("%d objets") or T("%d objet"), #loot))
+                if b.wing then h.name:SetText(D:BossName(b) .. "  " .. UI:Hex(C.muted) .. T(b.wing) .. "|r") end
                 local open = self.open == b.id
                 h.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], open and 1 or 0.6)
                 y = y + BOSS_H + 2
@@ -225,12 +227,13 @@ function UI:ToggleDungeonPanel(d)
     if panel and panel:IsShown() and not panel.docked and not d then panel:Hide() return end
     d = d or D:Current() or (panel and panel.dungeon)
     if not d then WK:Print(T("Tu n'es pas dans un donjon : choisis-en un dans la page Donjons.")) return end
+    if panel then panel.userHidden = nil end
     showFor(d, false)
 end
 
 local function onMap()
     local d = D:Current()
-    if d and D:Config().panel and WorldMapFrame and WorldMapFrame:IsShown() then
+    if d and D:Config().panel and WorldMapFrame and WorldMapFrame:IsShown() and not (panel and panel.userHidden) then
         showFor(d, true)
     elseif panel and panel.docked then
         panel:Hide()

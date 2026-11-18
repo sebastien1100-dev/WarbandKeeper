@@ -52,8 +52,8 @@ function M:Config()
     end
     -- « Autres objets » éclairait le mobilier (chaises…) : décochée une fois par défaut
     if not g.otherOff then g.otherOff = true; g.cats.other = false end
-    -- le jeu perd l'objet désigné vers 15 m, quelle que soit la portée demandée
-    if (g.range or 15) > 15 then g.range = 15 end
+    -- portée de désignation : jusqu'à 60 m, comme le mode pêche
+    if (g.range or 15) > 60 then g.range = 60 end
     return g
 end
 
@@ -84,7 +84,11 @@ function M:ApplyCVars()
         setCVar(name, value)
     end
     if g.saved.SoftTargetInteractRange == nil then g.saved.SoftTargetInteractRange = getCVar("SoftTargetInteractRange") end
-    setCVar("SoftTargetInteractRange", tostring(g.range or 15))
+    -- mode pêche ouvert : il lui faut 60 m (flotteur au loin), on ne la réduit jamais pendant ce temps
+    local range = g.range or 15
+    local F = WK.modules.Fishing
+    if F and F.active then range = math.max(range, 60) end
+    setCVar("SoftTargetInteractRange", tostring(range))
     if g.saved[PLATE_DIST] == nil then g.saved[PLATE_DIST] = getCVar(PLATE_DIST) end
     local dist = math.max(tonumber(g.saved[PLATE_DIST]) or 0, g.range or 15)
     setCVar(PLATE_DIST, tostring(dist))
@@ -358,7 +362,7 @@ local ORE_REQ = {
     { "mithril", 175 }, { "filon d'or", 155 }, { "gold", 155 }, { "fer", 125 }, { "iron", 125 },
     { "argent", 75 }, { "silver", 75 }, { "étain", 65 }, { "etain", 65 }, { "tin", 65 }, { "cuivre", 1 }, { "copper", 1 },
 }
-local herbReq
+local herbReq, herbReqComplete -- refaite tant que des noms de plantes manquent au cache d'objets
 
 -- Effet à utiliser : celui de la catégorie, sinon l'effet global
 function M:StyleFor(cat)
@@ -382,11 +386,16 @@ function M:Difficulty(cat, name, unit)
         for _, e in ipairs(ORE_REQ) do if string.find(low, e[1], 1, true) then req = e[2] break end end
     elseif cat == "herb" then
         kind = "herb"
-        if not herbReq then
-            herbReq = {}
+        if not herbReqComplete then
+            herbReq, herbReqComplete = {}, true
             for _, d in ipairs(G.DATA.herb) do
                 local n = WK.GetItemInfo(d.id)
-                if n then herbReq[string.lower(n)] = d.req or 1 end
+                if n then
+                    local low = string.lower(n)
+                    if not herbReq[low] or (d.req or 1) < herbReq[low] then herbReq[low] = d.req or 1 end
+                else
+                    herbReqComplete = false
+                end
             end
         end
         req = herbReq[string.lower(name or "")]
@@ -607,7 +616,7 @@ end
 function M:OnLogin()
     requestHerbItems()
     local g = self:Config()
-    if g.enabled and not self:OtherAddonLoaded() then self:ApplyCVars() end
+    if g.enabled and WK:FeatureOn("halo") and not self:OtherAddonLoaded() then self:ApplyCVars() end
 end
 
 -- Diagnostic (/wk halo) : dit pourquoi le halo s'affiche ou non sur l'objet désigné.
@@ -644,16 +653,39 @@ end
 
 -- Les évènements de plaque donnent « nameplateN », jamais « softinteract » : on revérifie à chaque fois.
 -- Jamais d'erreur dans le chat pour le halo : une valeur masquée par le jeu éteint simplement le halo.
-local function refresh() M.retry = 0; if not pcall(M.Update, M) then M:Hide() end end
+local function softGUID()
+    if not UnitGUID then return nil end
+    local ok, g = pcall(UnitGUID, UNIT)
+    return ok and plain(g) or nil
+end
+local lastGUID, lastAt, queued = nil, 0, false
+local function refresh()
+    M.retry = 0
+    lastGUID, lastAt = softGUID(), GetTime()
+    if not pcall(M.Update, M) then M:Hide() end
+end
+-- Évènements fréquents (plaques, journal de quêtes) : une relecture toutes les 0,25 s au plus
+local THROTTLE = 0.25
+local function refreshSoon()
+    if queued then return end
+    local wait = THROTTLE - (GetTime() - lastAt)
+    if wait <= 0 or not (C_Timer and C_Timer.After) then return refresh() end
+    queued = true
+    C_Timer.After(wait, function() queued = false; refresh() end)
+end
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", refresh)
-WK:On("NAME_PLATE_UNIT_ADDED", refresh)
+-- une plaque de plus : rien à refaire si le même objet est déjà éclairé
+WK:On("NAME_PLATE_UNIT_ADDED", function()
+    if M.current and softGUID() == lastGUID then return end
+    refreshSoon()
+end)
 WK:On("NAME_PLATE_UNIT_REMOVED", function() if M.current then refresh() end end)
-WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then refresh() end end)
+WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then refreshSoon() end end)
 WK:On("PLAYER_REGEN_DISABLED", refresh)
 WK:On("PLAYER_REGEN_ENABLED", refresh)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()
     local g = M:Config()
     -- certains clients remettent ces réglages à zéro au chargement d'une zone
-    if g.enabled and not M:OtherAddonLoaded() then M:ApplyCVars() end
+    if g.enabled and WK:FeatureOn("halo") and not M:OtherAddonLoaded() then M:ApplyCVars() end
     refresh()
 end) end)

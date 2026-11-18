@@ -247,44 +247,65 @@ local function buildPopup()
     p:SetFrameLevel(overlay:GetFrameLevel() + 30)
     p:EnableMouse(true)
     p:Hide()
-    p.rows = {}
+    p.sets = {} -- un jeu de commandes par élément, construit une fois puis montré / caché
     local close = UI:IconButton(p, "close", 22, nil, "accent")
     close:SetPoint("TOPRIGHT", -8, -8)
     close:SetScript("OnClick", function() p:Hide() end)
-    function p:Fill(key)
-        local r, e = registry[key], UI:HUDEntry(key)
-        if not r then return end
-        self.title:SetText(r.label)
+    -- Les commandes relisent l'entrée à chaque fois (HUDReset ou « Disposition » en changent la table).
+    local function entry(key) return UI:HUDEntry(key) end
+    local function buildSet(key)
+        local r = registry[key]
+        local set = { rows = {}, segs = {} }
         local y = -42
         local function addRow(label, ctl, w)
-            local row = UI:SettingRow(self, y, label, nil, ctl, w)
-            table.insert(self.rows, row)
+            local row = UI:SettingRow(p, y, label, nil, ctl, w)
+            table.insert(set.rows, row)
             y = y - 38
             return row
         end
-        if self.built ~= key then
-            -- Reconstruit les commandes pour cet élément
-            for _, row in ipairs(self.rows) do row:Hide() end
-            self.rows = {}
-            addRow(T("Taille"), UI:Slider(self, 150, 0.5, 2, 0.05, function() return e.scale or 1 end,
-                function(v) e.scale = v; UI:HUDApply(key) end, "%.2fx"), 150)
-            addRow(T("Opacité"), UI:Slider(self, 150, 0.3, 1, 0.05, function() return e.alpha or 1 end,
-                function(v) e.alpha = v; UI:HUDApply(key) end, "%.2f"), 150)
-            for _, opt in ipairs(r.options or {}) do
-                if opt.type == "seg" then
-                    local seg = UI:Segmented(self, opt.items, function(v) opt.set(e, v); UI:HUDApply(key) end, 26)
-                    seg:Select(opt.get(e))
-                    addRow(T(opt.label), seg, 150)
-                elseif opt.type == "toggle" then
-                    addRow(T(opt.label), UI:Toggle(self, function() return opt.get(e) end, function(v) opt.set(e, v); UI:HUDApply(key) end), 60)
-                end
+        addRow(T("Taille"), UI:Slider(p, 150, 0.5, 2, 0.05, function() return entry(key).scale or 1 end,
+            function(v) entry(key).scale = v; UI:HUDApply(key) end, "%.2fx"), 150)
+        addRow(T("Opacité"), UI:Slider(p, 150, 0.3, 1, 0.05, function() return entry(key).alpha or 1 end,
+            function(v) entry(key).alpha = v; UI:HUDApply(key) end, "%.2f"), 150)
+        for _, opt in ipairs(r.options or {}) do
+            if opt.type == "seg" then
+                local seg = UI:Segmented(p, opt.items, function(v) opt.set(entry(key), v); UI:HUDApply(key) end, 26)
+                table.insert(set.segs, { seg = seg, opt = opt })
+                addRow(T(opt.label), seg, 150)
+            elseif opt.type == "toggle" then
+                local tg = UI:Toggle(p, function() return opt.get(entry(key)) end, function(v) opt.set(entry(key), v); UI:HUDApply(key) end)
+                set.toggles = set.toggles or {}
+                table.insert(set.toggles, tg)
+                addRow(T(opt.label), tg, 60)
             end
-            local reset = UI:Button(self, "Réinitialiser", nil, 26, "secondary")
-            reset:SetPoint("BOTTOMLEFT", 14, 12)
-            reset:SetScript("OnClick", function() UI:HUDReset(key); self.built = nil; self:Fill(key) end)
-            table.insert(self.rows, reset)
+        end
+        local reset = UI:Button(p, "Réinitialiser", nil, 26, "secondary")
+        reset:SetPoint("BOTTOMLEFT", 14, 12)
+        reset:SetScript("OnClick", function() UI:HUDReset(key); p.built = nil; p:Fill(key) end)
+        table.insert(set.rows, reset)
+        set.height = -y + 50
+        return set
+    end
+    function p:Fill(key)
+        local r = registry[key]
+        if not r then return end
+        local e = UI:HUDEntry(key)
+        self.title:SetText(r.label)
+        self.sets[key] = self.sets[key] or buildSet(key)
+        local set = self.sets[key]
+        if self.built ~= key then
+            for k, other in pairs(self.sets) do
+                if k ~= key then for _, row in ipairs(other.rows) do row:Hide() end end
+            end
+            for _, row in ipairs(set.rows) do row:Show() end
             self.built = key
-            self:SetHeight(-y + 50)
+            self:SetHeight(set.height)
+        end
+        -- valeurs à jour (les curseurs se relisent à l'affichage)
+        for _, sg in ipairs(set.segs) do sg.seg:Select(sg.opt.get(e)) end
+        for _, tg in ipairs(set.toggles or {}) do tg:Refresh() end
+        for _, row in ipairs(set.rows) do
+            if row:IsShown() then row:Hide(); row:Show() end
         end
         -- à côté de l'élément choisi, sans sortir de l'écran
         self:ClearAllPoints()

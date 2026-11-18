@@ -80,10 +80,15 @@ UI:RegisterPage({
         self.miniToggle = UI:Toggle(main, function() return farm.mini end, function(v)
             farm.mini = v; UI:UpdateFarmMini()
         end)
-        self.miniToggle:SetPoint("BOTTOMRIGHT", -16, 18)
-        local ml = UI:Text(main, 11, C.muted)
-        ml:SetPoint("RIGHT", self.miniToggle, "LEFT", -10, 0)
-        ml:SetText("Mini-fenêtre pendant la session")
+        -- Ligne de réglage (trouvable par la recherche) dans un petit cadre en bas à droite.
+        local miniHost = CreateFrame("Frame", nil, main)
+        miniHost:SetSize(300, 32)
+        miniHost:SetPoint("BOTTOMRIGHT", 0, 13)
+        local miniRow = UI:SettingRow(miniHost, 0, "Mini-fenêtre pendant la session", nil, self.miniToggle)
+        miniRow.label:SetFont(UI.FONT, 11, "")
+        miniRow.label:SetTextColor(unpack(C.muted))
+        miniRow.label:ClearAllPoints()
+        miniRow.label:SetPoint("RIGHT", self.miniToggle, "LEFT", -10, 0)
         local vh = UI:Text(main, 10, C.dim)
         vh:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", tx, 24)
         self.vh = vh
@@ -162,13 +167,22 @@ UI:RegisterPage({
         end)
 
         -- Élastique : tuiles et colonnes recalculées quand la taille change.
+        -- Sous ~1000 px, quatre tuiles côte à côte se chevauchent : grille 2 × 2 et carte plus haute.
         UI:OnResize(p, function(w)
-            local tw = (w - tx - 16 - 3 * 10) / 4
+            local narrow = w < 1000
+            local cols = narrow and 2 or 4
+            local tw = (w - tx - 16 - (cols - 1) * 10) / cols
             for i, t in ipairs(self.tiles) do
+                local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
                 t:SetWidth(tw)
                 t:ClearAllPoints()
-                t:SetPoint("TOPLEFT", main, "TOPLEFT", tx + (i - 1) * (tw + 10), -18)
+                t:SetPoint("TOPLEFT", main, "TOPLEFT", tx + col * (tw + 10), -18 - row * (58 + 8))
             end
+            local topH = narrow and TOP_H + 40 or TOP_H
+            main:SetHeight(topH)
+            loot:ClearAllPoints()
+            loot:SetPoint("TOPLEFT", 0, -topH - GAP)
+            loot:SetPoint("BOTTOMLEFT")
             self.vh:SetWidth(math.max(80, w - tx - 300))
             loot:SetWidth(math.floor(w * 0.6))
         end)

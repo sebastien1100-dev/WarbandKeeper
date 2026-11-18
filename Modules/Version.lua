@@ -43,9 +43,12 @@ function M:Available()
     return best, src, at
 end
 
+-- Valeur lisible, ou nil si le jeu la masque (jamais la valeur masquée elle-même)
 local function readable(v)
+    if issecretvalue and issecretvalue(v) then return nil end
     local Q = WK.modules.QoL
-    return Q and Q.Readable and Q.Readable(v) or v
+    if Q and Q.Readable then return Q.Readable(v) end
+    return v
 end
 
 local function send(channel)
@@ -74,7 +77,7 @@ WK:On("GROUP_ROSTER_UPDATE", function() C_Timer.After(3, announceGroup) end)
 
 WK:On("CHAT_MSG_ADDON", function(prefix, msg, channel, sender)
     prefix, msg, channel = readable(prefix), readable(msg), readable(channel)
-    if prefix ~= PREFIX or type(msg) ~= "string" then return end
+    if prefix == nil or msg == nil or prefix ~= PREFIX or type(msg) ~= "string" then return end
     local v = msg:match("^V:([%d%.]+)$")
     if not v or not M.Newer(v, WK.version) then return end
     local g = WK.DB.global

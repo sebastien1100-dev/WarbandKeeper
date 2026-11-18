@@ -46,7 +46,8 @@ local function build()
     f.title:SetText("Warband Keeper")
     f.close = UI:IconButton(f, "close", 16)
     f.close:SetPoint("TOPRIGHT", -10, -10)
-    f.close:SetScript("OnClick", function() f.hidden = true; f:Hide() end)
+    -- fermé pour cette visite seulement : il revient à la prochaine ouverture de l'HV
+    f.close:SetScript("OnClick", function() f:Hide() end)
     f.tab = S:Config().panelTab or "scan"
     f.seg = UI:Segmented(f, { { "scan", "Scan" }, { "lists", "Listes d'achat" }, { "sell", "Ventes" } }, function(v)
         f.tab = v; S:Config().panelTab = v; f:Layout(); f:Refresh()
@@ -79,7 +80,7 @@ local function build()
     f.btn:SetScript("OnClick", function()
         if S.scan then S:Stop() else S:Start() end
     end)
-    f.btn:SetScript("OnEnter", function(b)
+    f.btn:HookScript("OnEnter", function(b)
         WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
         local _, all = S:CanQuery()
         GameTooltip:SetText(T("Scan de l'hôtel des ventes"), 1, 1, 1)
@@ -88,7 +89,7 @@ local function build()
         GameTooltip:AddLine(T("Les prix servent aux infobulles, à la valeur des stocks, aux métiers et aux listes d'achat."), 0.6, 0.6, 0.6, true)
         GameTooltip:Show()
     end)
-    f.btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f.btn:HookScript("OnLeave", function() GameTooltip:Hide() end)
     -- alertes de prix déclenchées (sous les chiffres du scan)
     f.alertH = UI:Text(sb, 10, C.dim)
     f.alertH:SetPoint("TOPLEFT", 14, -72)
@@ -178,14 +179,14 @@ local function build()
     f.buyBtn = UI:Button(lb, "Acheter la liste", W - 28 - 32, 30, "primary")
     f.buyBtn:SetPoint("BOTTOMLEFT", 14, 12)
     f.buyBtn:SetScript("OnClick", function() S:BuyStep() end)
-    f.buyBtn:SetScript("OnEnter", function(b)
+    f.buyBtn:HookScript("OnEnter", function(b)
         WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
         GameTooltip:SetText(T("Acheter la liste au prix le plus bas"), 1, 1, 1)
         GameTooltip:AddLine(T("Le jeu exige un clic du joueur pour chaque achat : impossible de tout acheter d'un seul clic. Le 1er clic demande le prix ; ensuite, un seul clic par objet : après chaque achat, le prix du suivant est demandé tout seul."), 0.8, 0.8, 0.8, true)
         GameTooltip:AddLine(T("Les objets achetés sont retirés de la liste."), 0.6, 0.6, 0.6, true)
         GameTooltip:Show()
     end)
-    f.buyBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f.buyBtn:HookScript("OnLeave", function() GameTooltip:Hide() end)
     f.cancel = UI:IconButton(lb, "close", 26, "Annuler cet achat")
     f.cancel:SetPoint("LEFT", f.buyBtn, "RIGHT", 4, 0)
     f.cancel:SetScript("OnClick", function() S:CancelBuy() end)
@@ -231,13 +232,13 @@ local function build()
         r.sub:SetJustifyH("LEFT")
         r.cancel = UI:Button(r, "Annuler", 60, 20, "secondary")
         r.cancel:SetPoint("TOPRIGHT", -6, -3)
-        r.cancel:SetScript("OnEnter", function(b)
+        r.cancel:HookScript("OnEnter", function(b)
             WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
             GameTooltip:SetText(T("Annuler cette enchère"), 1, 1, 1)
             GameTooltip:AddLine(T("L'objet revient par courrier ; le dépôt n'est pas rendu. Tu pourras le remettre en vente moins cher."), 0.8, 0.8, 0.8, true)
             GameTooltip:Show()
         end)
-        r.cancel:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r.cancel:HookScript("OnLeave", function() GameTooltip:Hide() end)
         r:EnableMouse(true)
         r:SetScript("OnEnter", function(s)
             if not s.id then return end
@@ -254,13 +255,13 @@ local function build()
         if A.checking then return end
         if #A.owned == 0 then A:Query() else A:Check() end
     end)
-    f.checkBtn:SetScript("OnEnter", function(b)
+    f.checkBtn:HookScript("OnEnter", function(b)
         WK.UI:TooltipOwner(b, "ANCHOR_RIGHT")
         GameTooltip:SetText(T("Vérifier les prix de mes enchères"), 1, 1, 1)
         GameTooltip:AddLine(T("Cherche le plus bas prix actuel de chaque objet que tu vends (un objet toutes les 1,2 s) : « sous-cotée » quand un autre vendeur est moins cher que toi."), 0.8, 0.8, 0.8, true)
         GameTooltip:Show()
     end)
-    f.checkBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f.checkBtn:HookScript("OnLeave", function() GameTooltip:Hide() end)
 
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el
@@ -321,7 +322,7 @@ local function build()
             r:SetShown(a ~= nil)
             if a then
                 r.icon:SetTexture(itemIcon(a.id))
-                r.name:SetText((WK.GetItemInfo(a.id) or ("#" .. a.id)) .. "  |cffffd24d" .. UI:ExactMoney(a.price) .. "|r")
+                r.name:SetText((WK.GetItemInfo(a.id) or ("#" .. a.id)) .. "  " .. UI:Hex(C.gold) .. UI:ExactMoney(a.price) .. "|r")
                 r.go:SetScript("OnClick", function() S:SearchItem(a.id) end)
             end
         end
@@ -335,7 +336,7 @@ local function build()
         if not A:Available() then
             self.sellSum:SetText(T("Ce client ne donne pas la liste de tes enchères."))
         else
-            self.sellSum:SetText(string.format(T("%d enchère(s) en cours"), #owned) .. (under > 0 and ("  ·  |cffe06666" .. string.format(T("%d sous-cotée(s)"), under) .. "|r") or ""))
+            self.sellSum:SetText(string.format(T("%d enchère(s) en cours"), #owned) .. (under > 0 and ("  ·  " .. UI:Hex(C.negative) .. string.format(T("%d sous-cotée(s)"), under) .. "|r") or ""))
         end
         local c = A.Config()
         local q = A.lastQuick
@@ -359,9 +360,9 @@ local function build()
             r.name:SetText((WK.GetItemInfo(o.id) or ("#" .. o.id)) .. (o.qty > 1 and ("  x" .. o.qty) or ""))
             local mine = o.unit and UI:ExactMoney(o.unit) or "?"
             local st
-            if o.state == "under" then st = "|cffe06666" .. T("plus bas") .. " " .. UI:ExactMoney(o.lowest) .. "|r"
-            elseif o.state == "ok" then st = "|cff9ed17a" .. T("au plus bas") .. "|r"
-            elseif o.state == "alone" then st = "|cff9ed17a" .. T("seul en vente") .. "|r"
+            if o.state == "under" then st = UI:Hex(C.negative) .. T("plus bas") .. " " .. UI:ExactMoney(o.lowest) .. "|r"
+            elseif o.state == "ok" then st = UI:Hex(C.positive) .. T("au plus bas") .. "|r"
+            elseif o.state == "alone" then st = UI:Hex(C.positive) .. T("seul en vente") .. "|r"
             else st = T("à vérifier") end
             r.sub:SetText(mine .. "  ·  " .. st)
             r.cancel:SetShown(o.state == "under")
@@ -416,7 +417,7 @@ local function build()
             local price = S:Price(id)
             local missing = math.max(0, want - have)
             if price then cost = cost + price * missing elseif missing > 0 then unknown = unknown + 1 end
-            local hv = done and ("|cff9ed17a" .. T("tout est là") .. "|r") or (price and (T("HV") .. " " .. UI:GoldText(price)) or T("pas vu à l'HV"))
+            local hv = done and (UI:Hex(C.positive) .. T("tout est là") .. "|r") or (price and (T("HV") .. " " .. UI:GoldText(price)) or T("pas vu à l'HV"))
             r.sub:SetText(string.format("%d / %d", math.min(have, want), want) .. "  ·  " .. hv)
             r.go:SetShown(not done)
             r.go:SetScript("OnClick", function() S:SearchItem(id) end)
@@ -426,7 +427,7 @@ local function build()
         if self.lscroll.UpdateBar then self.lscroll:UpdateBar() end
         self.total:SetShown(list ~= nil)
         self:PaintBuy(list)
-        self.total:SetText(T("Reste à acheter :") .. " " .. UI:GoldText(cost) .. (unknown > 0 and ("  |cff999999" .. string.format(T("(+%d sans prix)"), unknown) .. "|r") or ""))
+        self.total:SetText(T("Reste à acheter :") .. " " .. UI:GoldText(cost) .. (unknown > 0 and ("  " .. UI:Hex(C.muted) .. string.format(T("(+%d sans prix)"), unknown) .. "|r") or ""))
     end
 
     -- Bouton d'achat : ce que fera le prochain clic
@@ -444,7 +445,7 @@ local function build()
             -- garde-fou : prix bien au-dessus du prix relevé par le scan
             local ref = S:Price(b.id)
             local high = ref and b.unit and b.unit > ref * 2.5
-            self.buyBtn:SetLabel(string.format(T("Confirmer %d %s : %s"), b.qty, nm(b.id), UI:PlainMoney(b.total or 0)) .. (high and ("  |cffe06666" .. T("(cher !)") .. "|r") or ""))
+            self.buyBtn:SetLabel(string.format(T("Confirmer %d %s : %s"), b.qty, nm(b.id), UI:PlainMoney(b.total or 0)) .. (high and ("  " .. UI:Hex(C.negative) .. T("(cher !)") .. "|r") or ""))
             self.buyBtn:SetStyle("primary")
         elseif b and b.phase == "wait" then
             self.buyBtn:SetLabel(T("Achat en cours..."))
@@ -477,7 +478,6 @@ local function show()
     local h = host()
     if not h then return end
     panel = panel or build()
-    panel.hidden = nil
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", h, "TOPRIGHT", 6, -12)
     panel:SetFrameStrata(h:GetFrameStrata() or "MEDIUM")

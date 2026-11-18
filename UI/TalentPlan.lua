@@ -29,10 +29,15 @@ local function build()
     f:SetScript("OnDragStart", function(s) if not s.anchored then s:StartMoving() end end)
     f:SetScript("OnDragStop", function(s) s:StopMovingOrSizing() end)
     UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.96 }, { UI:Accent() })
+    UI:OnAccent(function() f.border:SetColor(UI:Accent()) end)
     f.title = UI:Text(f, 13); f.title:SetPoint("TOPLEFT", 14, -12); f.title:SetText(T("Plan de montée"))
     f.by = UI:Text(f, 10, C.dim); f.by:SetPoint("LEFT", f.title, "RIGHT", 8, 0); f.by:SetText("Warband Keeper")
     f.close = UI:IconButton(f, "close", 16, nil, "accent"); f.close:SetPoint("TOPRIGHT", -8, -8)
+    -- fermé à la croix : ne se rouvre plus tout seul avec la fenêtre des talents jusqu'à /wk plan
+    -- (ou « Ouvrir le panneau » de la fiche), ou jusqu'à la prochaine session
     f.close:SetScript("OnClick", function() f.userHidden = true; f:Hide() end)
+    -- la lueur (posée sur UIParent, animée) disparaît avec le panneau
+    f:SetScript("OnHide", function() if glow then glow:Hide() end end)
     -- plan actif (clic : plan suivant)
     f.planBtn = UI:Button(f, "", 272, 26, "secondary"); f.planBtn:SetPoint("TOPLEFT", 14, -36)
     f.planBtn:SetScript("OnClick", function()
@@ -47,6 +52,7 @@ local function build()
     f.now = CreateFrame("Frame", nil, f)
     f.now:SetPoint("TOPLEFT", 14, -70); f.now:SetPoint("TOPRIGHT", -14, -70); f.now:SetHeight(84)
     UI:Panel(f.now, 9, C.surface, { UI:Accent() })
+    UI:OnAccent(function() f.now.border:SetColor(UI:Accent()) end)
     f.nowLvl = UI:Text(f.now, 10, C.muted); f.nowLvl:SetPoint("TOPLEFT", 10, -8)
     f.nowIcon = UI:RoundIcon(f.now, 26); f.nowIcon:SetPoint("TOPLEFT", 10, -24)
     f.nowName = UI:Text(f.now, 13); f.nowName:SetPoint("TOPLEFT", 44, -28); f.nowName:SetPoint("RIGHT", -8, 0)
@@ -194,7 +200,12 @@ function UI:ShowTalentPlan(anchorTo)
     panel:Show()
 end
 function UI:ToggleTalentPlan()
-    if panel and panel:IsShown() then panel:Hide() else UI:ShowTalentPlan(host and host:IsShown() and host or nil) end
+    if panel and panel:IsShown() then
+        panel.userHidden = true
+        panel:Hide()
+    else
+        UI:ShowTalentPlan(host and host:IsShown() and host or nil)
+    end
 end
 -- Un plan supprimé : on ferme le panneau et la fenêtre des talents du jeu à laquelle il est collé (hors combat)
 function UI:CloseTalentPlan()
@@ -214,7 +225,7 @@ local function tryHook()
             fr.wkPlanHooked = true
             fr:HookScript("OnShow", function(s)
                 host = s
-                if enabled() and #P:Plans(WK:CharKey()) > 0 then UI:ShowTalentPlan(s) end
+                if enabled() and #P:Plans(WK:CharKey()) > 0 and not (panel and panel.userHidden) then UI:ShowTalentPlan(s) end
             end)
             fr:HookScript("OnHide", function(s)
                 if panel and panel.anchored then panel:Hide() end

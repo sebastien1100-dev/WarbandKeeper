@@ -40,8 +40,11 @@ end
 
 -- Une fenêtre de butin peut déclencher deux évènements : on ne compte qu'une fois.
 local lastKey, lastAt = nil, 0
+-- Version des récoltes : montée à chaque relevé et à l'effacement (cache de Modules/Nodes.lua)
+M.version = 0
+
 local function onLoot()
-    if not cfg().record then return end
+    if not WK:FeatureOn("nodes") or not cfg().record then return end
     if not kindOf then buildKinds() end
     local found = {}
     for i = 1, (GetNumLootItems and GetNumLootItems() or 0) do
@@ -63,6 +66,7 @@ local function onLoot()
         table.insert(list, { x = x, y = y, k = f.k, i = f.id, n = f.n, t = time() })
     end
     while #list > MAX_PER_MAP do table.remove(list, 1) end
+    M.version = M.version + 1
     if M.Redraw then M:Redraw() end
 end
 WK:On("LOOT_OPENED", onLoot)
@@ -98,6 +102,7 @@ end
 
 function M:Clear()
     wipe(spots())
+    M.version = M.version + 1
     if self.Redraw then self:Redraw() end
 end
 

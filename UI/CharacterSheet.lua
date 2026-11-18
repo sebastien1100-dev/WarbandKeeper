@@ -518,6 +518,7 @@ local function build(parent)
     dlg:SetFrameLevel(f:GetFrameLevel() + 40)
     dlg:EnableMouse(true)
     UI:Panel(dlg, 12, C.bg, { UI:Accent() })
+    UI:OnAccent(function() dlg.border:SetColor(UI:Accent()) end)
     dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 16, -14)
     dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 16, -38); dlg.text:SetPoint("RIGHT", -16, 0)
     dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
@@ -584,7 +585,8 @@ local function build(parent)
     -- bandeau du mode plan, au-dessus des arbres
     f.planBar = CreateFrame("Frame", nil, tsc.child)
     f.planBar:SetHeight(26)
-    UI:Panel(f.planBar, 8, { 0.14, 0.10, 0.18, 1 }, { 0.71, 0.49, 0.95, 1 })
+    -- fond : violet du mode plan (C.plan) très assombri
+    UI:Panel(f.planBar, 8, { C.plan[1] * 0.2, C.plan[2] * 0.2, C.plan[3] * 0.19, 1 }, C.plan)
     f.planBarText = UI:Text(f.planBar, 11); f.planBarText:SetPoint("LEFT", 10, 0)
     f.planDone = UI:Button(f.planBar, "Terminer", nil, 20, "primary"); f.planDone:SetPoint("RIGHT", -4, 0)
     f.planDone:SetScript("OnClick", function() f.planEdit = nil; f:Refresh() end)
@@ -652,6 +654,7 @@ local function build(parent)
     menu:SetSize(170, 6 * 26 + 12)
     menu:SetFrameLevel(bsc.child:GetFrameLevel() + 30)
     UI:Panel(menu, 10, C.bg, { UI:Accent() })
+    UI:OnAccent(function() menu.border:SetColor(UI:Accent()) end)
     menu:Hide()
     f.bisMenu = menu
     f.bisMore:SetScript("OnClick", function() menu:SetShown(not menu:IsShown()) end)
@@ -836,6 +839,7 @@ local function build(parent)
     pk:SetFrameLevel(f:GetFrameLevel() + 30)
     pk:EnableMouse(true)
     UI:Panel(pk, 12, C.bg, { UI:Accent() })
+    UI:OnAccent(function() pk.border:SetColor(UI:Accent()) end)
     pk:Hide()
     f.picker = pk
     pk.title = UI:Text(pk, 14); pk.title:SetPoint("TOPLEFT", 16, -18)
@@ -1246,8 +1250,8 @@ local function refreshTalents(f, c)
             shownTrees[ti] = nt
         end
         f.planBar:ClearAllPoints(); f.planBar:SetPoint("TOPLEFT", 0, -26); f.planBar:SetWidth(W); f.planBar:Show()
-        f.planBarText:SetText(string.format(T("Mode plan : |cffb57ef2%s|r · %d point(s), niveaux %d à %d · clic : point suivant · clic droit : retirer le dernier"),
-            editPlan.name or "", #editPlan.steps, P.FIRST_LEVEL, P.FIRST_LEVEL + math.max(0, #editPlan.steps - 1)))
+        f.planBarText:SetText(string.format(T("Mode plan : %s · %d point(s), niveaux %d à %d · clic : point suivant · clic droit : retirer le dernier"),
+            UI:Hex(C.plan) .. (editPlan.name or "") .. "|r", #editPlan.steps, P.FIRST_LEVEL, P.FIRST_LEVEL + math.max(0, #editPlan.steps - 1)))
         ty = 58
     else
         f.planBar:Hide()
@@ -1300,9 +1304,9 @@ local function refreshTalents(f, c)
         row.level:ClearAllPoints(); row.level:SetPoint("LEFT", XS[3] - 8, 0); row.level:SetText(bd.level or "-")
         local add, rem = G:Diff(bd, trees)
         row.diff:ClearAllPoints(); row.diff:SetPoint("LEFT", XS[4] - 8, 0)
-        if add == 0 and rem == 0 then row.diff:SetText("|cff9ed17a" .. T("actif") .. "|r")
+        if add == 0 and rem == 0 then row.diff:SetText(UI:Hex(C.positive) .. T("actif") .. "|r")
         elseif rem == 0 then row.diff:SetText(string.format(T("+%d point(s) à placer"), add))
-        else row.diff:SetText(string.format("|cffe86b6b" .. T("%d à retirer") .. "|r · " .. T("%d à placer"), rem, add)) end
+        else row.diff:SetText(string.format(UI:Hex(C.negative) .. T("%d à retirer") .. "|r · " .. T("%d à placer"), rem, add)) end
         row.apply:SetShown(mine and (add > 0))
         row.apply:SetScript("OnClick", function()
             f:Ask(string.format(T("Appliquer « %s » ?"), bd.name or ""), rem > 0
@@ -1346,7 +1350,7 @@ local function refreshTalents(f, c)
     for i, pl in ipairs(plans) do
         local row = f.prows:Get()
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -ry); row:SetPoint("TOPRIGHT", -8, -ry)
-        row.name:SetText((pl.name or "?") .. (i == active and ("  |cff9ed17a" .. T("suivi") .. "|r") or "") .. (f.planEdit == i and ("  |cffb57ef2" .. T("en cours de modification") .. "|r") or ""))
+        row.name:SetText((pl.name or "?") .. (i == active and ("  " .. UI:Hex(C.positive) .. T("suivi") .. "|r") or "") .. (f.planEdit == i and ("  " .. UI:Hex(C.plan) .. T("en cours de modification") .. "|r") or ""))
         row.info:ClearAllPoints(); row.info:SetPoint("LEFT", math.floor(W * 0.42), 0)
         row.info:SetText(#pl.steps > 0 and string.format(T("%d point(s) · niveaux %d à %d"), #pl.steps, P.FIRST_LEVEL, P.FIRST_LEVEL + #pl.steps - 1) or T("vide"))
         row.act:SetShown(i ~= active)
@@ -1434,7 +1438,7 @@ paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
                 local col = rank >= max and C.gold or rank > 0 and C.positive or (open and { r, g, b } or C.border)
                 if cur then
                     local now = WK.modules.Gear.CurRank(cur, i, j, d)
-                    if rank > now then col = { 0.71, 0.49, 0.95 } elseif rank < now then col = C.negative end
+                    if rank > now then col = C.plan elseif rank < now then col = C.negative end
                 end
                 cell.edge:SetVertexColor(col[1], col[2], col[3], 1)
                 cell.rk:SetText(rank .. "/" .. max)

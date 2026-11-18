@@ -30,6 +30,14 @@ local function levelColor(lvl, me)
     return C.dim
 end
 
+-- Choix du menu des persos (rebâti à chaque rafraîchissement : persos renommés ou supprimés).
+local function charOptions()
+    local opts = {}
+    for key, c in pairs(WK.DB.global.characters) do table.insert(opts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
+    table.sort(opts, function(a, b) return a[2] < b[2] end)
+    return opts
+end
+
 UI:RegisterPage({
     key = "rares", order = 9, nav = "Rares",
 
@@ -48,9 +56,7 @@ UI:RegisterPage({
         of:SetPoint("TOPRIGHT", -(190 + 8 + 150 + 8), -9)
         of:SetText(T("Collection de"))
         self.ofLabel = of
-        local charOpts = {}
-        for key, c in pairs(WK.DB.global.characters) do table.insert(charOpts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
-        table.sort(charOpts, function(a, b) return a[2] < b[2] end)
+        local charOpts = charOptions()
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
         self.charDd:SetPoint("TOPRIGHT", -(150 + 8), 0)
         self.charDd:Select(self.viewKey)
@@ -251,6 +257,11 @@ UI:RegisterPage({
 
     Refresh = function(self)
         local cfg = R:Config()
+        -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
+        self.charDd:SetOptions(charOptions())
+        if self.charDd.selected ~= self.viewKey then
+            if WK.DB.global.characters[self.viewKey] then self.charDd:Select(self.viewKey) else self.viewKey = self.charDd.selected end
+        end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
         local myLevel = c.level or UnitLevel("player") or 1
@@ -298,7 +309,7 @@ UI:RegisterPage({
         -- rares de la zone choisie
         self.rrows:Reset()
         local rares = self.zone and R:OnMap(self.zone) or {}
-        self.lTitle:SetText((self.zone and R:ZoneName(self.zone) or "") .. "  |cff999999· " .. string.format(T("%d rares"), #rares) .. "|r")
+        self.lTitle:SetText((self.zone and R:ZoneName(self.zone) or "") .. "  " .. UI:Hex(C.muted) .. "· " .. string.format(T("%d rares"), #rares) .. "|r")
         self.lSub:SetText(T("trié par niveau"))
         local LW = (self.lscroll:GetWidth() or 600)
         if LW < 100 then LW = 600 end
@@ -314,13 +325,13 @@ UI:RegisterPage({
                 row.lv:SetTextColor(unpack(levelColor(r.min, myLevel)))
                 local mc = r.elite and C.gold or C.rare
                 row.med:SetVertexColor(unpack(killedAt and C.dim or mc)); row.star:SetVertexColor(unpack(killedAt and C.dim or mc))
-                row.name:SetText(R:Name(r) .. (r.elite and ("  |cffe0bd72" .. T("élite") .. "|r") or ""))
+                row.name:SetText(R:Name(r) .. (r.elite and ("  " .. UI:Hex(C.gold) .. T("élite") .. "|r") or ""))
                 row.name:SetTextColor(unpack(killedAt and C.dim or C.text))
                 -- détail : butin utile, sinon qui d'autre l'a tué
                 local loot = R:Loot(r.id)
                 local sub
                 for _, l in ipairs(loot) do
-                    if l.prof and #l.who > 0 then sub = (WK.GetItemInfo(l.id) or "") .. "  |cff9ed17a· " .. T(l.prof) .. " (" .. table.concat(l.who, ", ") .. ")|r" break end
+                    if l.prof and #l.who > 0 then sub = (WK.GetItemInfo(l.id) or "") .. "  " .. UI:Hex(C.positive) .. "· " .. T(l.prof) .. " (" .. table.concat(l.who, ", ") .. ")|r" break end
                 end
                 if not sub and loot[1] then sub = WK.GetItemInfo(loot[1].id) or "" end
                 if not sub then
