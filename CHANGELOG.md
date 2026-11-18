@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.20.9 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Objets verrouillés : Alt + clic ne faisait rien dans le sac de WoW Forever. Le clic est maintenant capté où qu'il passe.
+- Cadenas et étoile BiS : il suffit de survoler un objet pour que toutes les cases du même sac soient reconnues (avant, chaque case devait être survolée).
+
 ## v1.20.8 — 18/11/2026
 
 _Un /reload suffit._

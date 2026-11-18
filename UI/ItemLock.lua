@@ -169,16 +169,25 @@ local function decorate(btn)
     o.block:SetScript("OnLeave", function() GameTooltip:Hide() end)
     o.block:Hide()
     -- Alt + clic sur la case (hors marchand) : verrouiller / déverrouiller
+    -- (les sacs de WoW Forever ne passent pas toujours par OnClick : GLOBAL_MOUSE_DOWN plus bas fait le même travail)
     btn:HookScript("OnClick", function(b, button)
         if button ~= "LeftButton" or not modDown() then return end
-        local id = itemAt(bagSlot(b))
-        if id then
-            if CursorHasItem and CursorHasItem() and ClearCursor then ClearCursor() end
-            L:Toggle(id)
-        end
+        UI.ItemLockAltClick(b)
     end)
     btn.wkLock = o
     return o
+end
+
+-- Bascule du verrou d'une case (un seul passage par clic, quel que soit le chemin qui l'a vu)
+local lastToggle = 0
+function UI.ItemLockAltClick(b)
+    local now = GetTime()
+    if now - lastToggle < 0.25 then return end
+    local id = itemAt(bagSlot(b))
+    if not id then return end
+    lastToggle = now
+    if CursorHasItem and CursorHasItem() and ClearCursor then ClearCursor() end
+    L:Toggle(id)
 end
 
 local function paint(btn)
@@ -238,6 +247,21 @@ local function learnButton(owner, id)
     if itemAt(bag, slot) ~= id then return end
     known[owner] = true
     paint(owner)
+    -- les cases voisines (même parent, même genre de cadre) sont des cases de sac elles aussi
+    local parent = owner:GetParent()
+    if parent and parent.GetChildren then
+        local kind = owner.GetObjectType and owner:GetObjectType()
+        for _, ch in ipairs({ parent:GetChildren() }) do
+            if ch ~= owner and not known[ch] and ch.GetID and (ch.GetObjectType and ch:GetObjectType()) == kind
+                and not (ch.IsForbidden and ch:IsForbidden()) then
+                local b2, s2 = bagSlot(ch)
+                if type(b2) == "number" and type(s2) == "number" and s2 >= 1 and b2 >= -3 and b2 <= 12 then
+                    known[ch] = true
+                    paint(ch)
+                end
+            end
+        end
+    end
 end
 UI.ItemLockLearn = learnButton
 
@@ -256,6 +280,15 @@ driver:SetScript("OnUpdate", function(s, el)
     if anyBagOpen() then UI:RefreshItemLocks() end
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() UI:RefreshItemLocks() end)
+-- Clic n'importe où : Alt + clic gauche sur une case de sac connue
+driver:RegisterEvent("GLOBAL_MOUSE_DOWN")
+driver:SetScript("OnEvent", function(_, ev, button)
+    if ev ~= "GLOBAL_MOUSE_DOWN" or button ~= "LeftButton" or not modDown() or not WK:FeatureOn("inventory") then return end
+    if L:MerchantOpen() then return end -- chez le marchand, le cache de la case s'en occupe
+    local hit
+    eachButton(function(b) if not hit and b:IsVisible() and MouseIsOver(b) then hit = b end end)
+    if hit then UI.ItemLockAltClick(hit) end
+end)
 
 ---------------------------------------------------------------------------
 -- Infobulle

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.9", date = "18/11/2026",
+        fixed = {
+            "Objets verrouillés : Alt + clic ne faisait rien dans le sac de WoW Forever. Le clic est maintenant capté où qu'il passe.",
+            "Cadenas et étoile BiS : il suffit de survoler un objet pour que toutes les cases du même sac soient reconnues (avant, chaque case devait être survolée).",
+        },
+    },
+    {
         version = "1.20.8", date = "18/11/2026",
         fixed = {
             "Objets verrouillés et repère BiS : sur certains sacs, l'addon ne trouvait pas les cases ; ni cadenas, ni étoile, et Alt + clic ne faisait rien. Une case est maintenant aussi reconnue dès que tu la survoles (infobulle de l'objet).",
