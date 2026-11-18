@@ -371,15 +371,8 @@ UI:RegisterPage({
                 local e = sb.e
                 if not e then return end
                 WK.UI:TooltipOwner(sb, "ANCHOR_RIGHT")
+                -- l'infobulle de l'objet dit déjà le verrou et les persos qui l'ont : seulement l'action ici
                 if GameTooltip.SetItemByID then GameTooltip:SetItemByID(e.id) end
-                GameTooltip:AddLine(" ")
-                if e.reason == "manual" then
-                    local r1, g1, b1 = UI:Accent()
-                    GameTooltip:AddLine(T("Verrouillé à la main"), r1, g1, b1)
-                else
-                    GameTooltip:AddLine(string.format(T("Verrouillé par règle : %s"), e.reason), C.rule[1], C.rule[2], C.rule[3])
-                end
-                GameTooltip:AddLine(#e.who > 0 and (table.concat(e.who, ", ") .. (e.count > 0 and ("  ·  " .. e.count) or "")) or T("pas sur le compte"), 0.8, 0.8, 0.8, true)
                 if e.reason == "manual" then GameTooltip:AddLine(T("Clic droit : déverrouiller"), 0.6, 0.6, 0.6)
                 else GameTooltip:AddLine(T("Coupe la règle plus bas pour l'enlever."), 0.6, 0.6, 0.6) end
                 GameTooltip:Show()

@@ -1615,7 +1615,8 @@ local function refresh(f)
     local race = c.race and T(RACE[c.race] or c.race) or ""
     f.sub:SetText(string.format(T("%s %s · niveau %s · %s"), cls, race, tostring(c.level or "?"), UI:FactionRealm(c)))
     f.mine:SetShown(key ~= WK:CharKey() and WK.DB.global.characters[WK:CharKey()] ~= nil)
-    f.mine:ClearAllPoints(); f.mine:SetPoint("LEFT", f.title, "RIGHT", 14, 0)
+    -- à droite de l'en-tête, avant le niveau moyen : le nom et la ligne de classe restent seuls à gauche
+    f.mine:ClearAllPoints(); f.mine:SetPoint("TOPRIGHT", f.score, "TOPLEFT", -24, -4)
     local avg = averageIlvl(c.gear)
     f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
     f.score:SetTextColor(viewAccent(f, c))

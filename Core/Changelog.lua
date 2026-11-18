@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.27.1", date = "18/11/2026",
+        changed = {
+            "Fiche d'un autre perso : le bouton « Mon perso » est à droite de l'en-tête, à côté du niveau moyen, au lieu d'être collé au nom.",
+            "Objets verrouillés : la touche ne se choisit plus que dans Inventaire > Objets verrouillés (retirée des Options, en double).",
+        },
+        fixed = {
+            "Inventaire > Objets verrouillés : l'infobulle d'une icône répétait le verrou et les persos qui ont l'objet ; il ne reste que l'action (clic droit pour déverrouiller).",
+        },
+    },
+    {
         version = "1.27.0", date = "18/11/2026", restart = true,
         added = {
             "Rangement intelligent (Inventaire > Rangement) : chaque composant va au perso qui s'en sert, d'après ses métiers : composants de ses guides de montée jusqu'au palier visé, composants de ses recettes connues, recettes de son métier qu'il ne connaît pas encore. La liste est rangée par perso, avec la raison (« guide : 40 jusqu'à 125 », « recette à apprendre »…).",
