@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.24.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- LFG : l'infobulle d'un groupe liste ses buffs, d'après la classe et le niveau de chaque membre : « Dans le groupe », « Avec toi en plus » (ce que ton perso ajouterait) et « Manquants ». Les buffs de talent sont marqués « si talent » (le jeu ne dit pas les talents des autres). En bas, les buffs qui annulent un objet de camp (Robustesse et Secourisme, Intelligence des arcanes et Herboristerie…).
+
 ## v1.23.1 — 18/11/2026
 
 _Un /reload suffit._

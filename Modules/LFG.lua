@@ -246,6 +246,65 @@ local function readResult(id)
     return r
 end
 
+---------------------------------------------------------------------------
+-- Buffs d'un groupe : d'après les classes et niveaux des membres (le jeu ne dit rien des talents)
+--   { nom, niveau où le sort s'apprend, talent? } par classe ; missing = libellé court d'une classe absente
+---------------------------------------------------------------------------
+M.BUFFS = {
+    WARRIOR = { { "Cri de guerre", 1 } },
+    PRIEST  = { { "Mot de pouvoir : Robustesse", 1 }, { "Protection contre l'Ombre", 30 }, { "Esprit divin", 30, true } },
+    MAGE    = { { "Intelligence des arcanes", 1 } },
+    DRUID   = { { "Marque du fauve", 1 }, { "Aura de sélénien", 40, true } },
+    PALADIN = { { "Aura de dévotion", 1 }, { "Bénédiction de puissance", 4 }, { "Bénédiction de sagesse", 14 },
+                { "Bénédiction des rois", 20, true }, { "Bénédiction de salut", 26 } },
+    SHAMAN  = { { "Totem de peau de pierre", 4 }, { "Totem de Force de la Terre", 10 }, { "Totem Fontaine de mana", 26 },
+                { "Totem Furie-des-vents", 32 }, { "Totem de grâce aérienne", 42 } },
+    HUNTER  = { { "Aspect de la meute", 30 }, { "Aura de précision", 40, true } },
+    WARLOCK = { { "Lien de sang (diablotin)", 4 }, { "Pierre de soins", 10 }, { "Pierre d'âme", 18 } },
+    ROGUE   = {},
+}
+M.BUFF_SHORT = { WARRIOR = "Cri de guerre", PRIEST = "Robustesse", MAGE = "Intelligence des arcanes", DRUID = "Marque du fauve",
+    PALADIN = "Bénédictions et auras", SHAMAN = "Totems", HUNTER = "Aspect de la meute", WARLOCK = "Pierres de soins et d'âme" }
+local BUFF_ORDER = { "WARRIOR", "PRIEST", "MAGE", "DRUID", "PALADIN", "SHAMAN", "HUNTER", "WARLOCK" }
+
+-- r : résultat lu (r.list = membres). Renvoie { have = { { name, class, talent } }, mine = {…}, missing = { { label, class } },
+-- camp = { « nom du buff » = métier dont l'objet de camp est annulé } }
+function M:GroupBuffs(r)
+    local inGroup, best = {}, {}
+    for _, m in ipairs(r and r.list or {}) do
+        if m.class then
+            inGroup[m.class] = true
+            best[m.class] = math.max(best[m.class] or 0, m.level or 60)
+        end
+    end
+    local out = { have = {}, mine = {}, missing = {}, camp = {} }
+    local function add(list, class, lvl)
+        for _, b in ipairs(M.BUFFS[class] or {}) do
+            if (lvl or 60) >= b[2] then table.insert(list, { name = b[1], class = class, talent = b[3] }) end
+        end
+    end
+    for _, cl in ipairs(BUFF_ORDER) do if inGroup[cl] then add(out.have, cl, best[cl]) end end
+    local me = WK.DB:Me()
+    local myClass = me and me.class
+    if myClass and not inGroup[myClass] then add(out.mine, myClass, (UnitLevel and UnitLevel("player")) or me.level) end
+    for _, cl in ipairs(BUFF_ORDER) do
+        if not inGroup[cl] and cl ~= myClass and M.BUFF_SHORT[cl] then table.insert(out.missing, { label = M.BUFF_SHORT[cl], class = cl }) end
+    end
+    -- objets de camp annulés par un buff du groupe ou par les tiens (WoW Forever)
+    local Cp = WK.modules.Camp
+    for _, list in ipairs({ out.have, out.mine }) do
+        for _, b in ipairs(list) do
+            local low = b.name:lower()
+            for _, o in ipairs(Cp and Cp.OBJECTS or {}) do
+                for _, pat in ipairs(o.excl or {}) do
+                    if low:find(pat, 1, true) then out.camp[b.name] = o.prof end
+                end
+            end
+        end
+    end
+    return out
+end
+
 function M:ReadResults()
     local list = {}
     if C_LFGList.GetFilteredSearchResults then

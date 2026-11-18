@@ -378,6 +378,39 @@ UI:RegisterPage({
                         cls .. (m.level and (" " .. m.level) or "") .. (m.role and (" · " .. T(RW[m.role])) or ""),
                         cr, cg, cb, 0.8, 0.8, 0.8)
                 end
+                -- buffs du groupe (classes et niveaux des membres), ce que tu ajoutes, ce qui manque
+                if s.r.list and #s.r.list > 0 then
+                    local gb = LFG:GroupBuffs(s.r)
+                    local dim = C.dim
+                    GameTooltip:AddLine(" ")
+                    GameTooltip:AddLine(T("Buffs du groupe"), 1, 1, 1)
+                    local function buffLine(b, prefix, lr, lg, lb)
+                        local cr, cg, cb = UI:ClassColor(b.class)
+                        local who = T(WK.modules.QoL.CLASS_LABEL[b.class or ""] or "?")
+                        GameTooltip:AddDoubleLine(prefix .. T(b.name) .. (b.talent and (" " .. UI:Hex(C.dim) .. T("(si talent)") .. "|r") or ""),
+                            who, lr or 0.92, lg or 0.92, lb or 0.92, cr, cg, cb)
+                    end
+                    if #gb.have > 0 then
+                        GameTooltip:AddLine(UI:Upper(T("Dans le groupe")), dim[1], dim[2], dim[3])
+                        for _, b in ipairs(gb.have) do buffLine(b, "") end
+                    end
+                    if #gb.mine > 0 then
+                        GameTooltip:AddLine(UI:Upper(T("Avec toi en plus")), C.positive[1], C.positive[2], C.positive[3])
+                        for _, b in ipairs(gb.mine) do buffLine(b, UI:Hex(C.positive) .. "+|r ") end
+                    end
+                    if #gb.missing > 0 then
+                        GameTooltip:AddLine(UI:Upper(T("Manquants")), dim[1], dim[2], dim[3])
+                        for _, m in ipairs(gb.missing) do
+                            GameTooltip:AddDoubleLine(T(m.label), T(WK.modules.QoL.CLASS_LABEL[m.class] or "?"), dim[1], dim[2], dim[3], dim[1], dim[2], dim[3])
+                        end
+                    end
+                    local camp = {}
+                    for name, prof in pairs(gb.camp) do table.insert(camp, string.format(T("%s annule l'objet de camp (%s)"), T(name), T(prof))) end
+                    if #camp > 0 then
+                        table.sort(camp)
+                        GameTooltip:AddLine(T("Camp :") .. " " .. table.concat(camp, " ; "), C.gold[1], C.gold[2], C.gold[3], true)
+                    end
+                end
                 local ps = LFG:PlaystyleLabel(s.r.playstyle)
                 if ps then GameTooltip:AddLine(T(ps), 0.7, 0.7, 0.7) end
                 local rt = LFG:Rating(s.r.leader)

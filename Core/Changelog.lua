@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.0", date = "18/11/2026",
+        added = {
+            "LFG : l'infobulle d'un groupe liste ses buffs, d'après la classe et le niveau de chaque membre : « Dans le groupe », « Avec toi en plus » (ce que ton perso ajouterait) et « Manquants ». Les buffs de talent sont marqués « si talent » (le jeu ne dit pas les talents des autres). En bas, les buffs qui annulent un objet de camp (Robustesse et Secourisme, Intelligence des arcanes et Herboristerie…).",
+        },
+    },
+    {
         version = "1.23.1", date = "18/11/2026",
         changed = {
             "Apparence : un seul thème, Graphite (gris sobre, couleur de ta classe en accent), pour tous les persos. Le choix des thèmes et le thème personnalisé sont retirés des Options ; couleurs, police et taille restent réglables.",
