@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Talents : les talents de rangées accessibles (5 points par rangée au-dessus, dans le même arbre) sont en couleur avec un liseré à ta couleur ; ceux des rangées pas encore ouvertes restent grisés. Aussi dans l'aperçu des builds et en mode plan.
+- Mode plan : un talent d'une rangée pas encore ouverte est refusé, avec le nombre de points qu'il manque dans l'arbre.
+
 ## v1.19.2 — 18/11/2026
 
 _Un /reload suffit._

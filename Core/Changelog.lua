@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.3", date = "18/11/2026",
+        changed = {
+            "Talents : les talents de rangées accessibles (5 points par rangée au-dessus, dans le même arbre) sont en couleur avec un liseré à ta couleur ; ceux des rangées pas encore ouvertes restent grisés. Aussi dans l'aperçu des builds et en mode plan.",
+            "Mode plan : un talent d'une rangée pas encore ouverte est refusé, avec le nombre de points qu'il manque dans l'arbre.",
+        },
+    },
+    {
         version = "1.19.2", date = "18/11/2026",
         changed = {
             "Panneau « Plan de montée » : toutes les étapes du plan dans une liste qui défile ; celles déjà apprises sont grisées et marquées « appris », l'étape en cours est surlignée. L'encart du haut n'apparaît plus que s'il reste un talent à prendre (plus de point d'interrogation quand le plan est terminé).",

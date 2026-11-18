@@ -64,8 +64,14 @@ function M:AddStep(key, i, ti, j)
     local c = WK.DB.global.characters[key]
     local d = c and c.talents and c.talents[ti] and c.talents[ti].list and c.talents[ti].list[j]
     if not (p and d) then return false end
-    local r = self:Ranks(p)[ti .. ":" .. j] or 0
-    if r >= (d[6] or 1) then return false end
+    local ranks = self:Ranks(p)
+    local r = ranks[ti .. ":" .. j] or 0
+    if r >= (d[6] or 1) then return false, T("Ce talent est déjà au maximum dans le plan.") end
+    -- rangée accessible : 5 points par rangée au-dessus, dans le même arbre
+    local inTree = 0
+    for k, v in pairs(ranks) do if k:match("^(%d+):") == tostring(ti) then inTree = inTree + v end end
+    local need = ((d[3] or 1) - 1) * 5
+    if inTree < need then return false, string.format(T("Rangée pas encore accessible : il faut %d points dans cet arbre (%d pour l'instant)."), need, inTree) end
     table.insert(p.steps, { ti, j, d[8], d[1] })
     WK:NotifyChanged()
     return true

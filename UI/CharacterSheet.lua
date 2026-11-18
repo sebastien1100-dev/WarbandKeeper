@@ -418,7 +418,10 @@ local function build(parent)
             if not f.planEdit or tr.preview then return end
             local P = WK.modules.TalentPlan
             if btn == "RightButton" then P:RemoveLast(f.key, f.planEdit)
-            elseif not P:AddStep(f.key, f.planEdit, s.tab, s.index) then WK:Print(T("Ce talent est déjà au maximum dans le plan.")) end
+            else
+                local ok, why = P:AddStep(f.key, f.planEdit, s.tab, s.index)
+                if not ok and why then WK:Print(why) end
+            end
         end)
         b.edge = b:CreateTexture(nil, "BACKGROUND")
         b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
@@ -1349,9 +1352,11 @@ paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
                 cell:SetPoint("TOPLEFT", gx + (d[4] - 1) * (cs + cg), -46 - (d[3] - 1) * (cs + cg))
                 cell.icon:SetTexture(d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
                 local rank, max = d[5] or 0, d[6] or 1
-                if cell.icon.SetDesaturated then cell.icon:SetDesaturated(rank == 0) end
-                cell.icon:SetAlpha(rank == 0 and 0.45 or 1)
-                local col = rank >= max and C.gold or rank > 0 and C.positive or C.border
+                -- rangée accessible : 5 points par rangée au-dessus dans cet arbre
+                local open = pts >= ((d[3] or 1) - 1) * 5
+                if cell.icon.SetDesaturated then cell.icon:SetDesaturated(rank == 0 and not open) end
+                cell.icon:SetAlpha(rank > 0 and 1 or (open and 0.9 or 0.3))
+                local col = rank >= max and C.gold or rank > 0 and C.positive or (open and { r, g, b } or C.border)
                 if cur then
                     local now = WK.modules.Gear.CurRank(cur, i, j, d)
                     if rank > now then col = { 0.71, 0.49, 0.95 } elseif rank < now then col = C.negative end
