@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.6", date = "18/11/2026",
+        fixed = {
+            "Carte : un bateau appris en le prenant avait deux traits au départ du quai (son vrai trajet et un trait droit vers la destination) ; seul le vrai trajet reste.",
+        },
+    },
+    {
         version = "1.31.5", date = "18/11/2026",
         changed = {
             "Bandeau au quai : il apparaît dès le ponton (à 120 m du quai au lieu de 60) et reste affiché tant que tu attends dessus (jusqu'à 200 m), au lieu de disparaître en avançant vers le bateau.",

@@ -29,6 +29,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.31.6 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte : un bateau appris en le prenant avait deux traits au départ du quai (son vrai trajet et un trait droit vers la destination) ; seul le vrai trajet reste.
+
 ## v1.31.5 — 18/11/2026
 
 _Un /reload suffit._

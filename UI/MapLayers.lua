@@ -196,6 +196,8 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         local len = 0.16 * w
         local function room(p0, dp, maxv) if dp > 0 then return (maxv - p0) / dp elseif dp < 0 then return -p0 / dp end return math.huge end
         len = math.max(0, math.min(len, room(x0, dx, w) - 8, room(y0, dy, h) - 8))
+        -- trajet appris : son vrai tracé est déjà dessiné (UI:DrawBoatPaths), pas de trait de direction en plus
+        if d.path and d.path.pts and #d.path.pts >= 4 then len = 0 end
         local ds = math.max(3 * UI.MapIconScale(), 5 * scale)
         r.lines = r.lines or UI:LinePool(3)
         r.lines:Reset()
