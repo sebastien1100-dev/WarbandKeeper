@@ -1983,7 +1983,7 @@ UI:RegisterPage({
 
             -- Munitions
             if QoL.AMMO[class] then
-                local am = card("Munitions", 186, class == "HUNTER" and nil or "si tu tires à l'arc, au fusil ou à l'arbalète")
+                local am = card("Munitions", 186, class ~= "HUNTER" and "si tu tires à l'arc, au fusil ou à l'arbalète" or nil)
                 UI:SettingRow(am, -40, "Alerte quand il en reste peu", "Type de munitions équipé, compté dans les sacs (0 : pas d'alerte au nombre).",
                     UI:Slider(am, 240, 0, 2000, 100, function() return cc.ammo.min or 0 end, function(v) cc.ammo.min = v; WK:NotifyChanged() end, "%d"), 260)
                 UI:SettingRow(am, -88, "Ou en minutes de tir", "Alerte quand il reste moins de ce temps de tir, d'après ta vitesse de tir (0 : pas d'alerte en minutes).",

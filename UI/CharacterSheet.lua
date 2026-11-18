@@ -768,7 +768,8 @@ local function build(parent)
         end)
         b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         local function drop(s)
-            local kind, id = GetCursorInfo and GetCursorInfo()
+            local kind, id
+            if GetCursorInfo then kind, id = GetCursorInfo() end
             if kind == "item" and id then B:Set(f.key, s.slot, id); if ClearCursor then ClearCursor() end return true end
         end
         b:SetScript("OnReceiveDrag", drop)
@@ -803,7 +804,7 @@ local function build(parent)
         local n = 0
         for _, s in ipairs(B.SLOTS) do
             local id = list[s[1]]
-            local _, link = id and WK.GetItemInfo(id)
+            local link = id and select(2, WK.GetItemInfo(id))
             if link and #text + #link + 1 < 250 then text = text .. " " .. link; n = n + 1 end
         end
         if n == 0 then WK:Print(T("Liste vide (ou objets pas encore chargés par le jeu : réessaie).")) return end

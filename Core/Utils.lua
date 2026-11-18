@@ -156,3 +156,10 @@ function WK.Container.Pickup(bag, slot)
     if C and C.PickupContainerItem then return C.PickupContainerItem(bag, slot) end
     return PickupContainerItem(bag, slot)
 end
+
+-- Équiper un objet : C_Item.EquipItemByName sur les clients récents (la globale n'existe plus), sinon l'ancienne
+function WK.EquipItem(item, slot)
+    local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
+    if not f then return false end
+    return pcall(f, item, slot)
+end

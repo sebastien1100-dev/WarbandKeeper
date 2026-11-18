@@ -13,7 +13,8 @@ local function gcfg() return WK.modules.Guide:Config() end
 -- Points d'un vol : chemin réel déjà parcouru une fois (Modules/Flight.lua), sinon ligne droite
 local function flyPoints(out, from, to, ax, ay, bx, by, fromIdx)
     local F = WK.modules.Flight
-    local _, pts = F and F.Path and F:Path(from, to)
+    local pts
+    if F and F.Path then pts = select(2, F:Path(from, to)) end
     if pts and #pts >= 4 then
         for k = (fromIdx or 1), #pts / 2 do out[#out + 1] = { pts[k * 2 - 1], pts[k * 2], true } end
         return true

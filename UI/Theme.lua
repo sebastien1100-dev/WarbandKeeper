@@ -342,7 +342,7 @@ function UI:FactionRealm(c)
     local kind
     if r:find("rp%s*%-?%s*pvp") or r:find("rppvp") then kind = WK.T("JdR-JcJ")
     elseif r:find("pvp") then kind = WK.T("JcJ")
-    elseif r:find("rp") and (r:find("%frp%f[%A]") or r:find("roleplay")) then kind = WK.T("JdR")
+    elseif r:find("rp") and (r:find("%f[%a]rp%f[%A]") or r:find("roleplay")) then kind = WK.T("JdR")
     elseif r:find("pve") or r:find("normal") then kind = WK.T("JcE") end
     local parts = {}
     if fac then table.insert(parts, fac) end

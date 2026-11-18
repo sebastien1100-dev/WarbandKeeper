@@ -584,9 +584,9 @@ function M:AutoBuy()
                 if n > 0 then
                     table.insert(bought, n .. " " .. (WK.GetItemInfo(best.id) or T("munitions")))
                     -- Meilleure que celle équipée : on l'équipe (hors combat).
-                    if best.id ~= (c.ammo and c.ammo.id) and EquipItemByName then
+                    if best.id ~= (c.ammo and c.ammo.id) then
                         C_Timer.After(0.8, function()
-                            if not (InCombatLockdown and InCombatLockdown()) then pcall(EquipItemByName, best.id) end
+                            if not (InCombatLockdown and InCombatLockdown()) then WK.EquipItem(best.id) end
                         end)
                     end
                 end
@@ -914,8 +914,8 @@ function M:EquipWeaponSet(which)
     if InCombatLockdown and InCombatLockdown() then WK:Print(T("Pas en combat.")) return end
     local s = self:WeaponSets()[which]
     if not s or not s.main then WK:Print(T("Équipement pas encore enregistré.")) return end
-    EquipItemByName(s.main, 16)
-    if s.off then C_Timer.After(0.3, function() EquipItemByName(s.off, 17) end) end
+    WK.EquipItem(s.main, 16)
+    if s.off then C_Timer.After(0.3, function() WK.EquipItem(s.off, 17) end) end
 end
 
 ---------------------------------------------------------------------------

@@ -101,7 +101,8 @@ end
 -- Rappels
 ---------------------------------------------------------------------------
 local function groupInstance()
-    local inInst, kind = IsInInstance and IsInInstance()
+    local inInst, kind
+    if IsInInstance then inInst, kind = IsInInstance() end
     return inInst and (kind == "party" or kind == "raid")
 end
 
@@ -130,7 +131,8 @@ function M:UpdateAlerts()
         and growl == false and UnitExists and UnitExists("pet"), {
         icon = spellIcon(GROWL), text = T("Grondement désactivé en solo"), prio = 4 })
     -- Pistage des humanoïdes en champ de bataille
-    local _, kind = IsInInstance and IsInInstance()
+    local kind
+    if IsInInstance then kind = select(2, IsInInstance()) end
     UI:SetAlert("hunter.track", on and cc.remTrack and kind == "pvp" and not inCombat and self.tracking == false, {
         icon = spellIcon(TRACK_HUMANOIDS), text = T("Pistage des humanoïdes inactif"), prio = 4 })
 end

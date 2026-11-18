@@ -52,7 +52,8 @@ function M:Get(i) return db().profiles[i] end
 function M:EffectiveIndex()
     local d = db()
     local zone = GetRealZoneText and GetRealZoneText() or ""
-    local _, itype = IsInInstance and IsInInstance()
+    local itype
+    if IsInInstance then itype = select(2, IsInInstance()) end
     if itype == "arena" then itype = "pvp" end
     local farming = WK.modules.Farm and WK.modules.Farm:Active()
     local best, bestRank

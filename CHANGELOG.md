@@ -30,6 +30,21 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.21.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Persos et fiche : erreur Lua avec un royaume dont le nom contient « rp » (royaume JdR) ; la page Persos et l'en-tête de la fiche plantaient.
+- Résumé, « À faire » : un clic sur une ligne de courrier ou de métier faisait une erreur quand le module était coupé. Ces lignes ne s'affichent plus quand leur module est coupé.
+- Guerrier : les boutons « Deux mains » et « Arme et bouclier » faisaient une erreur et n'équipaient rien.
+- Chasseur : les munitions achetées automatiquement sont maintenant équipées quand elles sont meilleures.
+- Chasseur : les rappels Grondement (en groupe en donjon ou en raid) et Pistage des humanoïdes (en champ de bataille) ne se déclenchaient jamais : l'addon ne voyait pas le type d'instance.
+- Filtre de butin : les règles qui dépendent du type de zone (donjon, raid, champ de bataille) ne s'appliquaient pas.
+- Liste BiS : glisser un objet sur une case ne faisait rien ; « Partager » disait toujours « Liste vide ».
+- Guidage : les étapes de vol suivent maintenant le vrai trajet déjà fait au lieu d'une ligne droite.
+- QoL, carte Munitions du chasseur : la phrase « si tu tires à l'arc… », prévue pour les autres classes, ne s'affiche plus.
+
 ## v1.20.9 — 18/11/2026
 
 _Un /reload suffit._

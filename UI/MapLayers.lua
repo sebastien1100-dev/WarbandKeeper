@@ -98,7 +98,8 @@ function UI:MapLayersProbe()
     local function n(v) return v and string.format("%.0f", v) or "?" end
     local cx, cy = p:GetCenter()
     local par = p:GetParent()
-    local l, b, w, h = par and par:GetRect()
+    local l, b, w, h
+    if par then l, b, w, h = par:GetRect() end
     local ic = p.icon and p.icon:GetTexture()
     return string.format("pastille 1 : montrée %s, visible %s, alpha %.2f (effectif %.2f), taille %sx%s, échelle %.2f, centre %s/%s, parent %s/%s (%s,%s %sx%s), %s/%s, texture %s",
         tostring(p:IsShown()), tostring(p:IsVisible()), p:GetAlpha() or -1, p.GetEffectiveAlpha and p:GetEffectiveAlpha() or -1,
