@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.17.1", date = "18/11/2026",
+        added = {
+            "Fiche du perso : aperçu 3D du perso au centre de l'équipement, comme la fenêtre de perso du jeu (glisser pour le tourner, molette pour zoomer). Pour un autre perso, l'aperçu prend sa race et son équipement si le jeu le permet ; sinon, le portrait de classe reste.",
+            "Onglet Talents : l'icône de chaque spécialisation devant le nom de l'arbre (aussi dans l'aperçu des builds).",
+        },
+        changed = {
+            "Fiche du perso : la carte Équipement garde des proportions proches de la fenêtre de perso du jeu (680 de large au plus) ; la place en plus va aux Stats et aux Métiers.",
+        },
+    },
+    {
         version = "1.17.0", date = "18/11/2026", restart = true,
         added = {
             "Liste BiS en mannequin : les emplacements disposés comme dans la Fiche (à gauche, à droite, armes au centre sous le portrait), chacun avec l'objet choisi en couleur de qualité, son emplacement, sa source et son état (porté, dans les sacs, à la banque, à obtenir). En haut : progression « obtenus », Copier depuis un autre perso, Partager (liens dans le chat), Vider.",

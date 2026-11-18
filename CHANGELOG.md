@@ -30,6 +30,17 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.17.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fiche du perso : aperçu 3D du perso au centre de l'équipement, comme la fenêtre de perso du jeu (glisser pour le tourner, molette pour zoomer). Pour un autre perso, l'aperçu prend sa race et son équipement si le jeu le permet ; sinon, le portrait de classe reste.
+- Onglet Talents : l'icône de chaque spécialisation devant le nom de l'arbre (aussi dans l'aperçu des builds).
+
+### Modifications
+- Fiche du perso : la carte Équipement garde des proportions proches de la fenêtre de perso du jeu (680 de large au plus) ; la place en plus va aux Stats et aux Métiers.
+
 ## v1.17.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

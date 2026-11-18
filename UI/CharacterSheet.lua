@@ -251,9 +251,31 @@ local function build(parent)
     end
     local mid = CreateFrame("Frame", nil, gear)
     mid:SetPoint("TOPLEFT", 14 + SLOT_W + 8, -44); mid:SetPoint("TOPRIGHT", -(14 + SLOT_W + 8), -44)
-    mid:SetHeight(178)
+    mid:SetHeight(8 * SLOT_STEP - 120)
     UI:Panel(mid, 12, C.bg, C.border)
     f.mid = mid
+    -- aperçu 3D du perso (perso connecté ; les autres si le jeu permet de changer de race), glisser pour tourner
+    local ok, model = pcall(CreateFrame, "DressUpModel", nil, mid)
+    if ok and model then
+        model:SetPoint("TOPLEFT", 4, -4); model:SetPoint("BOTTOMRIGHT", -4, 4)
+        model:EnableMouse(true)
+        model:SetScript("OnMouseDown", function(s) s.drag = GetCursorPosition() end)
+        model:SetScript("OnMouseUp", function(s) s.drag = nil end)
+        model:SetScript("OnUpdate", function(s)
+            if not s.drag then return end
+            local x = GetCursorPosition()
+            s.rot = (s.rot or 0) + (x - s.drag) * 0.01
+            s.drag = x
+            if s.SetFacing then s:SetFacing(s.rot) end
+        end)
+        model:EnableMouseWheel(true)
+        model:SetScript("OnMouseWheel", function(s, d)
+            s.zoom = math.max(0, math.min(0.7, (s.zoom or 0) + d * 0.1))
+            if s.SetPortraitZoom then s:SetPortraitZoom(s.zoom) end
+        end)
+        model:Hide()
+        f.model = model
+    end
     f.big = UI:Icon(mid, "ring", 78, nil, "ARTWORK")
     f.big:SetPoint("TOP", 0, -22)
     f.bigCls = mid:CreateTexture(nil, "ARTWORK", nil, -1)
@@ -785,6 +807,34 @@ local function refreshGear(f, c)
         if (t.points or 0) > 0 and (not spec or t.points > spec.points) then spec = t end
     end
     f.spec:SetText(spec and (cls .. "  ·  " .. spec.name) or cls)
+    -- aperçu 3D : portrait de classe s'il n'est pas possible
+    local RACE_ID = { Human = 1, Orc = 2, Dwarf = 3, NightElf = 4, Scourge = 5, Tauren = 6, Gnome = 7, Troll = 8, BloodElf = 10, Draenei = 11 }
+    local shown = false
+    local m = f.model
+    if m then
+        local mine = c.key == WK:CharKey()
+        local okm = pcall(function()
+            m:SetUnit("player")
+            if not mine then
+                if not (m.SetCustomRace and RACE_ID[c.race or ""]) then error("race") end
+                m:SetCustomRace(RACE_ID[c.race], (c.sex == 3) and 1 or 0)
+                if m.Undress then m:Undress() end
+                for _, link in pairs(c.gear or {}) do pcall(m.TryOn, m, link) end
+            end
+            if m.SetFacing then m:SetFacing(m.rot or 0) end
+        end)
+        shown = okm
+        m:SetShown(shown)
+    end
+    f.big:SetShown(not shown); f.bigCls:SetShown(not shown)
+    f.spec:ClearAllPoints(); f.seen:ClearAllPoints()
+    if shown then
+        f.spec:SetPoint("TOP", f.mid, "TOP", 0, -10)
+    else
+        f.spec:SetPoint("TOP", f.big, "BOTTOM", 0, -10)
+    end
+    f.seen:SetPoint("TOP", f.spec, "BOTTOM", 0, -4)
+    f.spec:SetDrawLayer("OVERLAY", 7); f.seen:SetDrawLayer("OVERLAY", 7)
     f.seen:SetText(c.key == WK:CharKey() and T("connecté") or (c.lastSeen and string.format(T("vu %s"), UI:Ago(c.lastSeen)) or ""))
     f:PlaceKpis()
     local s = c.stats or {}
@@ -844,7 +894,7 @@ local function refreshStats(f, c)
         { "shadow", "Ombre", "b48cff" }, { "arcane", "Arcanes", "ffe27a" } }
     local parts = {}
     for _, x in ipairs(RES) do table.insert(parts, "|cff" .. x[3] .. T(x[2]) .. " " .. (res[x[1]] or 0) .. "|r") end
-    local cw = SIDE_W - 28
+    local cw = (f.sideW or SIDE_W) - 28
     f.res:ClearAllPoints(); f.res:SetPoint("TOPLEFT", 14, -(y + 18)); f.res:SetWidth(cw)
     f.res:SetText(s and table.concat(parts, "   ") or "-")
     y = y + 18 + math.max(16, f.res:GetStringHeight() or 16) + 10
@@ -1033,9 +1083,23 @@ local function refreshTalents(f, c)
     f.tsc:SetContentHeight(by + y + 16)
 end
 
+-- Icônes des spécialisations (ordre classique des arbres, de gauche à droite)
+local SPEC_ICONS = {
+    WARRIOR = { "Ability_Warrior_SavageBlow", "Ability_Warrior_InnerRage", "INV_Shield_06" },
+    PALADIN = { "Spell_Holy_HolyBolt", "Spell_Holy_DevotionAura", "Spell_Holy_AuraOfLight" },
+    HUNTER = { "Ability_Hunter_BeastTaming", "Ability_Marksmanship", "Ability_Hunter_SwiftStrike" },
+    ROGUE = { "Ability_Rogue_Eviscerate", "Ability_BackStab", "Ability_Stealth" },
+    PRIEST = { "Spell_Holy_WordFortitude", "Spell_Holy_GuardianSpirit", "Spell_Shadow_ShadowWordPain" },
+    SHAMAN = { "Spell_Nature_Lightning", "Spell_Nature_LightningShield", "Spell_Nature_MagicImmunity" },
+    MAGE = { "Spell_Holy_MagicalSentry", "Spell_Fire_FireBolt02", "Spell_Frost_FrostBolt02" },
+    WARLOCK = { "Spell_Shadow_DeathCoil", "Spell_Shadow_Metamorphosis", "Spell_Shadow_RainOfFire" },
+    DRUID = { "Spell_Nature_StarFall", "Ability_Racial_BearForm", "Spell_Nature_HealingTouch" },
+}
 -- Dessine des arbres de talents (set de cartes) à la hauteur y ; cur = talents actuels pour marquer les écarts
 paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
     local r, g, b = UI:Accent()
+    local c = WK.DB.global.characters[f.key]
+    local icons = c and #trees == 3 and SPEC_ICONS[c.class or ""]
     local parent = set == f.ptrees and f.bcard or nil
     for i, tr in ipairs(set) do
         local t = trees[i]
@@ -1046,6 +1110,15 @@ paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
             tr:SetPoint("TOPLEFT", (x0 or 0) + (i - 1) * (tw + (parent and 10 or 12)), -y)
             tr:SetSize(tw, th)
             tr.title:SetText(t.name)
+            -- icône de la spécialisation devant le nom
+            if not tr.sicon then
+                tr.sicon = UI:RoundIcon(tr, 24)
+                tr.sicon:SetPoint("TOPLEFT", 12, -9)
+            end
+            local ic = t.icon or (icons and icons[i] and ("Interface\\Icons\\" .. icons[i]))
+            tr.sicon:SetShown(ic ~= nil)
+            if ic then tr.sicon:SetTexture(ic) end
+            tr.title:ClearAllPoints(); tr.title:SetPoint("TOPLEFT", ic and 44 or 16, -14)
             local pts = 0
             for _, d in ipairs(t.list) do pts = pts + (d[5] or 0) end
             tr.pts:SetText(pts)
@@ -1199,7 +1272,10 @@ local function refresh(f)
     -- largeurs : colonne de droite fixe, la gauche prend le reste
     local W = math.max(600, (f.sc:GetWidth() or 840) - 12)
     f.sc.child:SetWidth(W)
-    local leftW = W - SIDE_W - COL_GAP
+    -- équipement au format de la fenêtre de perso du jeu : pas plus large que 680, la place qui reste va aux Stats
+    local leftW = math.min(W - SIDE_W - COL_GAP, 680)
+    local sideW = W - leftW - COL_GAP
+    f.sideW = sideW
     local view = setmetatable({ key = key }, { __index = c })
     -- deux rangées alignées : Équipement | Stats, puis Réputations | Métiers (chaque rangée à la hauteur
     -- de sa plus grande carte)
@@ -1209,12 +1285,12 @@ local function refresh(f)
     local row1 = math.max(GEAR_H, sh)
     f.gearCard:ClearAllPoints(); f.gearCard:SetPoint("TOPLEFT", 0, 0); f.gearCard:SetSize(leftW, row1)
     f:PlaceKpis()
-    f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetSize(SIDE_W, row1)
+    f.statCard:ClearAllPoints(); f.statCard:SetPoint("TOPLEFT", leftW + COL_GAP, 0); f.statCard:SetSize(sideW, row1)
     local y2 = row1 + COL_GAP
     f.repCard:ClearAllPoints(); f.repCard:SetPoint("TOPLEFT", 0, -y2); f.repCard:SetWidth(leftW)
-    f.profCard:ClearAllPoints(); f.profCard:SetPoint("TOPLEFT", leftW + COL_GAP, -y2); f.profCard:SetWidth(SIDE_W)
+    f.profCard:ClearAllPoints(); f.profCard:SetPoint("TOPLEFT", leftW + COL_GAP, -y2); f.profCard:SetWidth(sideW)
     local rh = refreshReps(f, c, f.repCard, leftW)
-    local ph = refreshProfs(f, c, f.profCard, SIDE_W)
+    local ph = refreshProfs(f, c, f.profCard, sideW)
     local row2 = math.max(rh, ph)
     f.repCard:SetHeight(row2); f.profCard:SetHeight(row2)
     f.sc:SetContentHeight(y2 + row2 + 8)
