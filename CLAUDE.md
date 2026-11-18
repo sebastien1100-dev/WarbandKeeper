@@ -75,6 +75,10 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 
 `UI/MerchantPanel.lua` : panneau collé à `MerchantFrame` (« Pour monter tes métiers »), composants manquants de chaque guide de métier jusqu'au palier `settings.ui.guideTarget[métier]` (`Recipes:GuidePlan`), filtrés sur ce que vend le marchand ; achat sur clic (`BuyMerchantItem`). Réglage `settings.ui.merchantPanel`.
 
+## Aides de métiers
+
+`Modules/Gathering.lua` (fin du fichier) : rang suivant (`rankSeen`), ressources débloquées (`lastRank`, `M.DATA`), rappel du pistage (sorts 2383 / 2580, `C_Minimap.GetTrackingInfo`), compétence requise dans l'infobulle de la minicarte (`TooltipDataProcessor` `MinimapMouseover`, herbes par nom d'objet, filons par mots-clés `ORE_WORDS`) ; réglages `WK.DB.global.gatherHelp` (carte « Métiers et récolte » de QoL > Carte). Idées de Professions (Naowh) : aucun code ni donnée repris.
+
 ## Lieux et guidage
 
 `Modules/PlacesDB.lua` est **généré** par `python3 tools/gen_places.py <clone de QuestieDB>` (`git clone --depth 1 https://github.com/Questie/QuestieDB`) : boîtes aux lettres, banquiers, marchands (munitions, composants, poisons…) et maîtres de classe de WoW Forever, avec noms français. Données Questie (GPLv3 selon son équipe) : garder la mention dans l'en-tête du fichier généré et dans Options > À propos. `Modules/Guide.lua` cherche le lieu le plus proche et gère la cible ; `UI/GuideArrow.lua` dessine la flèche, `UI/MapPins.lua` le repère sur la carte, `UI/NavPin.lua` l'épingle à l'écran (accrochée à `C_Navigation.GetFrame()`, le repère du point suivi du jeu, rendu invisible pendant ce temps ; bandeau d'arrivée et arrêt du guidage à moins de 10 m).

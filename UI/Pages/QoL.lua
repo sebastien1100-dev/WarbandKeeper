@@ -1077,6 +1077,20 @@ UI:RegisterPage({
             local learned, roads = NV:Stats()
             return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
         end):SetPoint("TOPLEFT", 16, -232)
+        -- Métiers et récolte (Modules/Gathering.lua) : rang suivant, nouvelles ressources, pistage, infobulle de la minicarte
+        do
+            local GA = WK.modules.Gathering
+            local hc = GA:HelpConfig()
+            local mcard = card("Métiers et récolte", 40 + 4 * 46 + 8, "petites aides, sans rien à cliquer")
+            UI:SettingRow(mcard, -40, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
+                toggle(mcard, function() return hc.rankAlert end, function(v) hc.rankAlert = v end), 80)
+            UI:SettingRow(mcard, -86, "Nouvelles ressources", "Une montée d'Herboristerie ou de Minage qui débloque une herbe ou un filon le nomme.",
+                toggle(mcard, function() return hc.nodeToast end, function(v) hc.nodeToast = v end), 80)
+            UI:SettingRow(mcard, -132, "Rappel du pistage", "Herboristerie ou Minage connus mais pistage éteint : rappel en changeant de zone (hors ville et donjon).",
+                toggle(mcard, function() return hc.trackRemind end, function(v) hc.trackRemind = v end), 80)
+            UI:SettingRow(mcard, -178, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon sur la minicarte : la compétence requise et la tienne, aux couleurs du jeu.",
+                toggle(mcard, function() return hc.nodeTip end, function(v) hc.nodeTip = v end), 80)
+        end
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")

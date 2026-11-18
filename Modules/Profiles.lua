@@ -26,6 +26,7 @@ local KEYS = {
     mapLayers = {},
     gatherMap = {},
     stash = {},
+    gatherHelp = { rankSeen = true, lastRank = true },
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau
 

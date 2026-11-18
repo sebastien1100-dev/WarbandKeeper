@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.36.0", date = "18/11/2026",
+        added = {
+            "Métiers : un métier au plafond de son rang (75, 150, 225) le signale une fois : « va voir un maître pour apprendre le rang suivant (Expert…) ».",
+            "Récolte : une montée d'Herboristerie ou de Minage qui débloque de nouvelles herbes ou de nouveaux filons les nomme.",
+            "Récolte : rappel quand tu connais Herboristerie ou Minage mais que le pistage est éteint (en changeant de zone, hors ville et donjon).",
+            "Minicarte : au survol d'une herbe ou d'un filon, la compétence requise et la tienne, aux couleurs du jeu (rouge trop bas, orange, jaune, vert, gris).",
+            "QoL > Carte : carte « Métiers et récolte » pour couper chacune de ces aides.",
+        },
+    },
+    {
         version = "1.35.0", date = "18/11/2026",
         fixed = {
             "Hôtel des ventes, Vente : les durées étaient fausses (12, 24 et 48 h) ; ce sont celles du jeu sur WoW Forever (2, 8 et 24 h), avec leurs libellés lus dans le jeu et la durée du jeu par défaut.",
@@ -2957,6 +2967,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Métiers, idées de Professions (Naowh) : aide au désenchantement (objets des sacs, valeur attendue contre la vente), enchantements proposés dans la fenêtre d'échange, file de fabrication avec minuteur, coût de la montée de compétence, favoris chez le maître et consommables conseillés.",
     "Hôtel des ventes, idées de The Market : valeur des sacs à l'HV (sur les sacs et dans l'infobulle d'un courrier), composants « fabriquer ou vendre ? », zones de récolte classées par valeur à l'heure avec une tournée guidée.",
     "Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
     "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",

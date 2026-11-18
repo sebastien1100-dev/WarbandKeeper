@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Métiers, idées de Professions (Naowh) : aide au désenchantement (objets des sacs, valeur attendue contre la vente), enchantements proposés dans la fenêtre d'échange, file de fabrication avec minuteur, coût de la montée de compétence, favoris chez le maître et consommables conseillés.
 - Hôtel des ventes, idées de The Market : valeur des sacs à l'HV (sur les sacs et dans l'infobulle d'un courrier), composants « fabriquer ou vendre ? », zones de récolte classées par valeur à l'heure avec une tournée guidée.
 - Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
@@ -28,6 +29,17 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.36.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Métiers : un métier au plafond de son rang (75, 150, 225) le signale une fois : « va voir un maître pour apprendre le rang suivant (Expert…) ».
+- Récolte : une montée d'Herboristerie ou de Minage qui débloque de nouvelles herbes ou de nouveaux filons les nomme.
+- Récolte : rappel quand tu connais Herboristerie ou Minage mais que le pistage est éteint (en changeant de zone, hors ville et donjon).
+- Minicarte : au survol d'une herbe ou d'un filon, la compétence requise et la tienne, aux couleurs du jeu (rouge trop bas, orange, jaune, vert, gris).
+- QoL > Carte : carte « Métiers et récolte » pour couper chacune de ces aides.
 
 ## v1.35.0 — 18/11/2026
 
