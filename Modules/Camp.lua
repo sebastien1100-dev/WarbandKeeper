@@ -157,6 +157,15 @@ local function itemCooldown(id)
     if not ok or type(start) ~= "number" or type(dur) ~= "number" then return nil end
     return start, dur
 end
+-- Recharge d'un objet précis (feu, sac de couchage…) : secondes restantes, début, durée (nil si aucune)
+function M:ItemCooldown(id)
+    local start, dur = itemCooldown(id)
+    if start and dur and dur > 2 and start > 0 then
+        local left = start + dur - GetTime()
+        if left > 0 then return left, start, dur end
+    end
+    return nil
+end
 function M:Cooldown()
     for id in pairs(M.byItem) do
         if self:Count(id) > 0 then

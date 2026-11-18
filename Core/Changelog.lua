@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.5", date = "18/11/2026",
+        added = {
+            "Kit de camp : timers sur les icônes, comme les barres d'action du jeu (voile qui tourne, temps restant au centre). Feu et sac de couchage : leur recharge ; objets de camp : la recharge commune d'1 h ; nourriture : le « Bien nourri » qu'il te reste, en vert. Les recharges sont en jaune.",
+        },
+    },
+    {
         version = "1.20.4", date = "18/11/2026",
         added = {
             "Mode édition : la barre d'outils (Grille, Aimant, Disposition, Tester, Terminer) se déplace en la glissant par son fond ; sa place est gardée. Double-clic sur la barre pour la remettre en bas de l'écran.",

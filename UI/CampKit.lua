@@ -73,11 +73,27 @@ local function build()
         s.acc = (s.acc or 0) + el
         if s.acc < 0.5 then return end
         s.acc = 0
+        -- timers sur les icônes (voile qui tourne + temps au centre) : jaune = recharge, vert = « Bien nourri » actif
         local rem, start, dur = M:Cooldown()
+        local fed = M.auras and M.auras.fed
+        local fedLeft = fed and M.Remaining(fed)
         for _, b in ipairs(s.buttons) do
-            if b:IsShown() and b.kind == "object" then
-                if rem and rem > 0 and start then
-                    b.cd:SetCooldown(start, dur); b.cdText:SetText(short(rem))
+            if b:IsShown() then
+                local left, st, du, col
+                if b.kind == "object" then
+                    if rem and rem > 0 and start then left, st, du = rem, start, dur end
+                elseif b.kind == "fire" or b.kind == "bag" then
+                    left, st, du = M:ItemCooldown(b.id)
+                elseif b.kind == "fed" and fedLeft and fedLeft > 0 then
+                    local total = (type(fed.duration) == "number" and fed.duration > 0) and fed.duration or fedLeft
+                    left, st, du, col = fedLeft, GetTime() + fedLeft - total, total, C.positive
+                end
+                if left and st and du then
+                    b.cd:SetCooldown(st, du)
+                    if b.cd.SetReverse then b.cd:SetReverse(col ~= nil) end
+                    b.cdText:SetText(short(left))
+                    local tc = col or { 0.96, 0.84, 0.43 }
+                    b.cdText:SetTextColor(tc[1], tc[2], tc[3])
                 else
                     b.cd:Clear(); b.cdText:SetText("")
                 end
