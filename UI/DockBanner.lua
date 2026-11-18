@@ -3,17 +3,18 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau au quai : à moins de 60 m d'un quai de bateau ou de zeppelin, le prochain départ appris
+-- Bandeau au quai : à moins de 120 m d'un quai (gardé jusqu'à 200 m) de bateau ou de zeppelin, le prochain départ appris
 -- (Modules/BoatTimes.lua) pour chaque destination ; barre qui se vide jusqu'au départ, verte quand le
 -- bateau est à quai. Caché une fois à bord. Réglage Guide:Config().dockBanner (QoL > Carte, Navigation).
-local RANGE, W = 60, 340
+-- 120 m pour apparaître (le ponton peut être long), 200 m pour disparaître : il reste affiché tant qu'on attend sur le ponton
+local RANGE_IN, RANGE_OUT, W = 120, 200, 340
 local banner
 
 local function BT() return WK.modules.BoatTimes end
 local function dist(ax, ay, bx, by) local dx, dy = ax - bx, ay - by; return math.sqrt(dx * dx + dy * dy) end
 
--- destinations du quai le plus proche (moins de RANGE m) : { { line, side, to, kind } }
-local function nearDock()
+-- destinations du quai le plus proche (moins de range m) : { { line, side, to, kind } }
+local function nearDock(range)
     local G, L = WK.modules.Guide, WK.modules.MapLayers
     local p = G and G:PlayerPos()
     if not (p and p.cont and L) then return nil end
@@ -27,7 +28,7 @@ local function nearDock()
                 local c, x, y = G.ToWorld(here[1], here[2] / 100, here[3] / 100)
                 if c == p.cont and x then
                     local d = dist(x, y, p.wx, p.wy)
-                    if d < RANGE then
+                    if d < range then
                         table.insert(out, { line = l, side = sd, to = (sd == "a" and l.b or l.a)[4], kind = l.kind, d = d })
                         bestD = math.min(bestD or d, d)
                     end
@@ -132,8 +133,13 @@ function UI:RefreshDockBanner()
         or (IsInInstance and IsInInstance()) then
         banner:Hide() return
     end
-    local docks = nearDock()
-    if not docks then banner:Hide() return end
+    local docks = nearDock(banner:IsShown() and RANGE_OUT or RANGE_IN)
+    if not docks then
+        -- position illisible un instant (chargement, carte) : on garde le bandeau quelques secondes
+        if banner:IsShown() and banner.lastSeen and GetTime() - banner.lastSeen < 5 and not (WK.modules.Guide:PlayerPos() or {}).cont then return end
+        banner:Hide() return
+    end
+    banner.lastSeen = GetTime()
     local list = {}
     for _, d in ipairs(docks) do table.insert(list, { to = d.to, kind = d.kind, st = BT():State(d.line, d.side) }) end
     -- le départ le plus proche en tête

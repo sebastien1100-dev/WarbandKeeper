@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.5", date = "18/11/2026",
+        changed = {
+            "Bandeau au quai : il apparaît dès le ponton (à 120 m du quai au lieu de 60) et reste affiché tant que tu attends dessus (jusqu'à 200 m), au lieu de disparaître en avançant vers le bateau.",
+        },
+    },
+    {
         version = "1.31.4", date = "18/11/2026",
         fixed = {
             "Carte du monde : erreur Lua en boucle sous l'épingle du guidage (étiquette sur trois lignes) depuis la 1.31.3.",
