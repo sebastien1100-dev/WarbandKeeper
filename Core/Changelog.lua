@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.4", date = "18/11/2026",
+        added = {
+            "Mode édition : la barre d'outils (Grille, Aimant, Disposition, Tester, Terminer) se déplace en la glissant par son fond ; sa place est gardée. Double-clic sur la barre pour la remettre en bas de l'écran.",
+        },
+    },
+    {
         version = "1.20.3", date = "18/11/2026",
         changed = {
             "Panneau « Plan de montée » : le mot « appris » reste en vert vif sur les étapes faites ; seul le reste de la ligne est grisé.",

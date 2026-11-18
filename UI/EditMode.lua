@@ -325,16 +325,44 @@ local function buildOverlay()
     end)
 
     toolbar = CreateFrame("Frame", nil, overlay)
-    toolbar:SetPoint("BOTTOM", 0, 34) -- en bas de l'écran, au-dessus de la consigne
     toolbar:SetSize(560, 44)
     toolbar:SetFrameLevel(overlay:GetFrameLevel() + 40)
     UI:Panel(toolbar, 12, { C.bg[1], C.bg[2], C.bg[3], 0.96 }, C.border)
     toolbar:EnableMouse(true)
+    -- déplaçable : glisser la barre (hors boutons) ; position gardée (settings.ui.editBar), double-clic = en bas
+    toolbar:SetMovable(true)
+    toolbar:SetClampedToScreen(true)
+    toolbar:RegisterForDrag("LeftButton")
+    local function placeBar()
+        local pos = WK.DB.global.settings.ui.editBar
+        toolbar:ClearAllPoints()
+        if pos then toolbar:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pos[1], pos[2])
+        else toolbar:SetPoint("BOTTOM", overlay, "BOTTOM", 0, 34) end -- en bas de l'écran, au-dessus de la consigne
+    end
+    placeBar()
+    toolbar:SetScript("OnDragStart", function(s) s:StartMoving() end)
+    toolbar:SetScript("OnDragStop", function(s)
+        s:StopMovingOrSizing()
+        local x, y = s:GetCenter()
+        if x and y then WK.DB.global.settings.ui.editBar = { x, y } end
+        placeBar()
+    end)
+    toolbar:SetScript("OnMouseUp", function(s, btn)
+        local now = GetTime()
+        if btn == "LeftButton" and s.lastClick and now - s.lastClick < 0.35 then
+            WK.DB.global.settings.ui.editBar = nil
+            placeBar()
+        end
+        s.lastClick = now
+    end)
+    toolbar.grip = UI:Icon(toolbar, "grip", 14, nil, "ARTWORK")
+    toolbar.grip:SetPoint("LEFT", 6, 0)
+    toolbar.grip:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 1)
     local title = UI:Text(toolbar, 13)
-    title:SetPoint("LEFT", 16, 0)
+    title:SetPoint("LEFT", 24, 0)
     title:SetText("Mode édition")
     UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
-    local x = title:GetStringWidth() + 32
+    local x = title:GetStringWidth() + 40
     local function tb(text, style, fn, tip)
         local b = UI:Button(toolbar, text, nil, 28, style)
         b:SetPoint("LEFT", x, 0)
@@ -374,7 +402,7 @@ local function buildOverlay()
     toolbar:SetWidth(x + 8)
     local hint = UI:Text(overlay, 11, C.text)
     hint:SetPoint("TOP", toolbar, "BOTTOM", 0, -6)
-    hint:SetText("Glisser pour déplacer · coin pour la taille · clic pour les réglages · flèches pour ajuster · Échap pour quitter")
+    hint:SetText("Glisser pour déplacer · coin pour la taille · clic pour les réglages · flèches pour ajuster · Échap pour quitter · cette barre se déplace aussi (double-clic : la remettre en bas)")
     popup = buildPopup()
 end
 
