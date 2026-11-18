@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.22.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs EUI : cadenas et étoiles BiS n'apparaissaient qu'au survol. Les cadres de sac d'EUI se faisaient passer pour des cases et arrêtaient la recherche ; seules les vraies cases (boutons) sont prises, jusqu'au fond du sac.
+- /wk sacs : indique pour chaque sac le nombre de cases trouvées, et marque d'une * les cadres qui se présentent comme une case.
+
 ## v1.22.1 — 18/11/2026
 
 _Un /reload suffit._

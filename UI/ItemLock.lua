@@ -229,8 +229,12 @@ end
 -- les cadres sont recyclés) : on retient le cadre racine du sac et on y cherche les cases à chaque passage.
 local roots = setmetatable({}, { __mode = "k" })
 local ROOT_NAMES = { "EUI_MainBagFrame", "EUI_BankFrame", "EUI_BagFrame" }
+-- une case est un bouton (les cadres de sac d'EUI ont aussi GetBagID : ce ne sont pas des cases)
+local BUTTON_TYPES = { Button = true, ItemButton = true, CheckButton = true }
 local function isBagButton(f)
     if not (f and f.GetBagID and f.GetID) or (f.IsForbidden and f:IsForbidden()) then return false end
+    local t = f.GetObjectType and f:GetObjectType()
+    if t and not BUTTON_TYPES[t] then return false end
     local bag, slot = bagSlot(f)
     return type(bag) == "number" and type(slot) == "number" and slot >= 1 and bag >= -3 and bag <= 12
 end
@@ -256,7 +260,8 @@ local function walk(f, fn, depth)
     if depth > 8 or not f.GetChildren then return end
     for _, ch in ipairs({ f:GetChildren() }) do
         if ch:IsVisible() then
-            if isBagButton(ch) then fn(ch) else walk(ch, fn, depth + 1) end
+            if isBagButton(ch) then fn(ch) end
+            walk(ch, fn, depth + 1) -- on descend toujours : une case peut être plus bas qu'un cadre de sac
         end
     end
 end
@@ -404,6 +409,12 @@ function UI:BagDiag()
     local k = 0
     for _ in pairs(known) do k = k + 1 end
     table.insert(out, string.format("Cases trouvées : %d (%d avec un objet, %d décorées ; %d repérées au survol)", n, withItem, deco, k))
+    for r in pairs(roots) do
+        local c = 0
+        if r:IsVisible() then walk(r, function() c = c + 1 end, 0) end
+        table.insert(out, string.format("Sac %s : %s, %d cases trouvées dedans", (r.GetName and r:GetName()) or "?", r:IsVisible() and "visible" or "caché", c))
+    end
+    table.insert(out, "(* = cadre avec GetBagID)")
     table.insert(out, "Module Inventaire : " .. (WK:FeatureOn("inventory") and "actif" or "coupé") .. " ; touche : " .. tostring(L:Config().key))
     local foci = GetMouseFoci and GetMouseFoci() or { GetMouseFocus and GetMouseFocus() }
     local f = foci and foci[1]
@@ -412,7 +423,8 @@ function UI:BagDiag()
         local p = f
         for _ = 1, 5 do
             if not p then break end
-            table.insert(chain, (p.GetName and p:GetName()) or ("<" .. (p.GetObjectType and p:GetObjectType() or "?") .. ">"))
+            table.insert(chain, ((p.GetName and p:GetName()) or ("<" .. (p.GetObjectType and p:GetObjectType() or "?") .. ">"))
+                .. (p.GetBagID and "*" or ""))
             p = p.GetParent and p:GetParent()
         end
         local bag, slot = bagSlot(f)

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.22.2", date = "18/11/2026",
+        fixed = {
+            "Sacs EUI : cadenas et étoiles BiS n'apparaissaient qu'au survol. Les cadres de sac d'EUI se faisaient passer pour des cases et arrêtaient la recherche ; seules les vraies cases (boutons) sont prises, jusqu'au fond du sac.",
+            "/wk sacs : indique pour chaque sac le nombre de cases trouvées, et marque d'une * les cadres qui se présentent comme une case.",
+        },
+    },
+    {
         version = "1.22.1", date = "18/11/2026",
         fixed = {
             "Objets verrouillés et étoile BiS : le cadenas n'apparaissait pas après un Alt + clic (le verrou était bien posé, mais les cases n'étaient jamais redessinées).",
