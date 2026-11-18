@@ -10,7 +10,13 @@ local T = function(s) return WK.T(s) end
 -- verrouillé vendu quand même, confirmation avant une vente chère (objet non verrouillé), et la vente
 -- automatique des objets gris, l'envoi par courrier (verrou à la main) le respectent.
 -- Hors profils : ce sont des données (sauf les réglages, dans itemLock.cfg).
-local DEFAULTS = { key = "alt", rebuy = true, confirm = true, ratio = 5, confirmMin = 10000,
+-- touche pour (dé)verrouiller dans les sacs (UI/ItemLock.lua) : Alt + clic molette par défaut, rarement prise ailleurs
+M.KEY_OPTIONS = {
+    { "altmid", "Alt + clic molette" }, { "mid", "Clic molette" }, { "ctrlmid", "Ctrl + clic molette" },
+    { "alt", "Alt + clic" }, { "ctrl", "Ctrl + clic" }, { "shiftalt", "Maj + Alt + clic" },
+    { "ctrlalt", "Ctrl + Alt + clic" }, { "ctrlshift", "Ctrl + Maj + clic" },
+}
+local DEFAULTS = { key = "altmid", rebuy = true, confirm = true, ratio = 5, confirmMin = 10000,
     rules = { epic = true, wish = true, recipes = true, quest = false, value = false }, valueMin = 50000 }
 -- Recettes : sous-classe d'objet » métier. c.professions est rangé par nom dans la langue du jeu :
 -- on compare au nom français, au nom anglais et au n° de ligne de compétence (skillLine) quand il est noté.
@@ -32,6 +38,11 @@ local function db()
         end
     end
     for k, v in pairs(DEFAULTS.rules) do if d.cfg.rules[k] == nil then d.cfg.rules[k] = v end end
+    -- une fois : l'ancien défaut (Alt + clic, pris par d'autres addons) passe à Alt + clic molette
+    if not d.cfg.keyV2 then
+        if d.cfg.key == "alt" then d.cfg.key = "altmid" end
+        d.cfg.keyV2 = true
+    end
     return d
 end
 function M:Config() return db().cfg end

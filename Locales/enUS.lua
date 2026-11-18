@@ -767,6 +767,8 @@ WK.Locales.enUS.text = {
     ["Clic molette"] = "Middle click", ["Alt + clic molette"] = "Alt + middle click", ["Ctrl + clic molette"] = "Ctrl + middle click",
     ["Verrouillé à la main"] = "Locked by hand", ["Clic droit : déverrouiller"] = "Right-click: unlock",
     ["Coupe la règle plus bas pour l'enlever."] = "Turn the rule off below to remove it.", ["À la main"] = "By hand",
+    ["Touche pour verrouiller un objet"] = "Key to lock an item",
+    ["Dans les sacs : verrouille ou déverrouille l'objet (il ne sera jamais vendu). Choisis une touche que tes autres addons n'utilisent pas."] = "In your bags: locks or unlocks the item (it will never be sold). Pick a key your other addons don't use.",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

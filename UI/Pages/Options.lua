@@ -199,6 +199,15 @@ UI:RegisterPage({
             UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
         UI:SettingRow(ttCard, -148, "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
             UI:Toggle(ttCard, function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end), 80)
+        -- touche des objets verrouillés (aussi dans Inventaire > Objets verrouillés)
+        local lockCard = card("Objets verrouillés", 96)
+        local IL = WK.modules.ItemLock
+        local lockOpts = {}
+        for i, o in ipairs(IL.KEY_OPTIONS) do lockOpts[i] = { o[1], WK.T(o[2]) } end
+        local lockDd = UI:Dropdown(lockCard, 220, 30, lockOpts, function(v) IL:Config().key = v; WK:NotifyChanged() end)
+        lockDd:Select(IL:Config().key or "altmid")
+        self.lockKeyDd = lockDd
+        UI:SettingRow(lockCard, -40, "Touche pour verrouiller un objet", "Dans les sacs : verrouille ou déverrouille l'objet (il ne sera jamais vendu). Choisis une touche que tes autres addons n'utilisent pas.", lockDd, 220)
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
 
         -- Prix des objets ------------------------------------------------------------
@@ -384,6 +393,7 @@ UI:RegisterPage({
 
     Refresh = function(self)
         self:RefreshThemes()
+        if self.lockKeyDd then self.lockKeyDd:Select(WK.modules.ItemLock:Config().key or "altmid") end
         if self.priceDesc and self.priceDesc.SetText then
             local V = WK.modules.Value
             if not V:HasAHPrices() then

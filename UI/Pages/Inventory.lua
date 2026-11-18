@@ -421,16 +421,17 @@ UI:RegisterPage({
         -- réglages
         local sets = UI:Card(root, T("Protection"))
         self.lockSets = sets
-        local keyDd = UI:Dropdown(sets, 200, 30, { { "alt", T("Alt + clic") }, { "ctrl", T("Ctrl + clic") }, { "shiftalt", T("Maj + Alt + clic") },
-            { "ctrlalt", T("Ctrl + Alt + clic") }, { "ctrlshift", T("Ctrl + Maj + clic") },
-            { "mid", T("Clic molette") }, { "altmid", T("Alt + clic molette") }, { "ctrlmid", T("Ctrl + clic molette") } },
+        local keyOpts = {}
+        for i, o in ipairs(IL.KEY_OPTIONS) do keyOpts[i] = { o[1], T(o[2]) } end
+        local keyDd = UI:Dropdown(sets, 200, 30, keyOpts,
             function(v)
                 cfg.key = v
                 if self.lockEmpty and UI.ItemLockKeyLabel then
                     self.lockEmpty:SetText(string.format(T("Aucun objet verrouillé. %s sur un objet dans tes sacs pour le verrouiller."), UI.ItemLockKeyLabel()))
                 end
             end)
-        keyDd:Select(cfg.key or "alt")
+        keyDd:Select(cfg.key or "altmid")
+        self.lockKeyDd = keyDd
         UI:SettingRow(sets, -40, "Touche pour verrouiller", "Sur un objet dans les sacs du jeu.", keyDd, 200)
         UI:SettingRow(sets, -86, "Racheter un objet verrouillé vendu par erreur", "Aussitôt, chez le marchand (onglet de rachat).",
             UI:Toggle(sets, function() return cfg.rebuy end, function(v) cfg.rebuy = v end), 80)
@@ -496,6 +497,10 @@ UI:RegisterPage({
                 end
                 y = y + math.ceil(#g.items / per) * (LS + IG) + 6
             end
+        end
+        if self.lockKeyDd then self.lockKeyDd:Select(IL:Config().key or "altmid") end
+        if UI.ItemLockKeyLabel then
+            self.lockEmpty:SetText(string.format(T("Aucun objet verrouillé. %s sur un objet dans tes sacs pour le verrouiller."), UI.ItemLockKeyLabel()))
         end
         self.lockEmpty:SetShown(#list == 0)
         if #list == 0 then y = y + 24 end

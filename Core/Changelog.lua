@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.26.1", date = "18/11/2026",
+        changed = {
+            "Objets verrouillés : la touche se choisit aussi dans Options > Général (carte « Objets verrouillés »). Par défaut : Alt + clic molette, rarement prise par les autres addons ; si tu avais gardé l'ancien défaut (Alt + clic), il passe à Alt + clic molette.",
+        },
+    },
+    {
         version = "1.26.0", date = "18/11/2026",
         changed = {
             "Objets verrouillés (Inventaire) : une icône par objet au lieu d'une ligne, rangées par raison (À la main, Objets de quête, Recettes avec le détail par métier, autres règles), avec la quantité sur le compte. Survol : raison et persos qui l'ont ; clic droit : déverrouiller.",

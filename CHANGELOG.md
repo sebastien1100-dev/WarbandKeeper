@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.26.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Objets verrouillés : la touche se choisit aussi dans Options > Général (carte « Objets verrouillés »). Par défaut : Alt + clic molette, rarement prise par les autres addons ; si tu avais gardé l'ancien défaut (Alt + clic), il passe à Alt + clic molette.
+
 ## v1.26.0 — 18/11/2026
 
 _Un /reload suffit._

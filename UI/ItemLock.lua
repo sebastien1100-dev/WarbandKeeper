@@ -18,7 +18,7 @@ local COMBOS = {
     mid = { btn = "MiddleButton" }, altmid = { alt = true, btn = "MiddleButton" }, ctrlmid = { ctrl = true, btn = "MiddleButton" },
 }
 local function modDown(button)
-    local c = COMBOS[L:Config().key] or COMBOS.alt
+    local c = COMBOS[L:Config().key] or COMBOS.altmid
     if button and button ~= (c.btn or "LeftButton") then return false end
     return (IsAltKeyDown() and true or false) == (c.alt or false)
         and (IsControlKeyDown() and true or false) == (c.ctrl or false)
@@ -109,11 +109,9 @@ end
 ---------------------------------------------------------------------------
 -- Libellé de la touche choisie pour (dé)verrouiller (réglage key : alt, ctrl ou shiftalt)
 local function keyLabel()
-    local k = L:Config().key
-    return k == "ctrl" and T("Ctrl + clic") or k == "shiftalt" and T("Maj + Alt + clic")
-        or k == "ctrlalt" and T("Ctrl + Alt + clic") or k == "ctrlshift" and T("Ctrl + Maj + clic")
-        or k == "mid" and T("Clic molette") or k == "altmid" and T("Alt + clic molette") or k == "ctrlmid" and T("Ctrl + clic molette")
-        or T("Alt + clic")
+    local k = L:Config().key or "altmid"
+    for _, o in ipairs(L.KEY_OPTIONS) do if o[1] == k then return T(o[2]) end end
+    return T("Alt + clic molette")
 end
 UI.ItemLockKeyLabel = keyLabel
 local function blockMsg(id)
