@@ -171,6 +171,10 @@ local function build(parent)
     f.back:SetScript("OnClick", function() UI:ShowPage("characters") end)
     f.ring = UI:Icon(f, "ring", 50, nil, "ARTWORK")
     f.ring:SetPoint("LEFT", f.back, "RIGHT", 12, 0)
+    -- fiche d'un autre perso : retour direct au perso connecté
+    f.mine = UI:Button(f, "Mon perso", nil, 24, "secondary", "users")
+    f.mine:SetScript("OnClick", function() UI:ShowCharSheet(WK:CharKey()) end)
+    f.mine:Hide()
     f.cls = f:CreateTexture(nil, "ARTWORK", nil, -1)
     f.cls:SetSize(40, 40)
     f.cls:SetPoint("CENTER", f.ring)
@@ -1534,6 +1538,8 @@ local function refresh(f)
     local cls = c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class] or ""
     local race = c.race and T(RACE[c.race] or c.race) or ""
     f.sub:SetText(string.format(T("%s %s · niveau %s · %s"), cls, race, tostring(c.level or "?"), UI:FactionRealm(c)))
+    f.mine:SetShown(key ~= WK:CharKey() and WK.DB.global.characters[WK:CharKey()] ~= nil)
+    f.mine:ClearAllPoints(); f.mine:SetPoint("LEFT", f.title, "RIGHT", 14, 0)
     local avg = averageIlvl(c.gear)
     f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
     f.score:SetTextColor(UI:Accent())
@@ -1586,6 +1592,18 @@ UI:RegisterPage({
 })
 
 WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsVisible() then sheet:Refresh() end end)
+-- La fiche montre le perso connecté par défaut : on oublie le perso choisi à la connexion
+-- et quand la fenêtre se ferme (un autre perso ne s'affiche que sur un clic dans Persos ou le Résumé)
+WK:On("PLAYER_LOGIN", function()
+    UI.charSheetKey = nil
+    C_Timer.After(1, function()
+        local f = UI.frame
+        if f and not f.wkSheetHooked then
+            f.wkSheetHooked = true
+            f:HookScript("OnHide", function() UI.charSheetKey = nil end)
+        end
+    end)
+end)
 
 -- Pastilles de l'en-tête : le perso affiché
 UI.CHIPS.charsheet = function()

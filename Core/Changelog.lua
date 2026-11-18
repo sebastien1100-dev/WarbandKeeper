@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.7", date = "18/11/2026",
+        fixed = {
+            "Fiche du perso : après avoir regardé un autre perso, la fiche (Fiche, Talents, BiS) pouvait rester sur lui ; elle revient maintenant au perso connecté à la connexion et quand la fenêtre se ferme.",
+        },
+        added = {
+            "Fiche d'un autre perso : bouton « Mon perso » à côté du nom pour revenir au perso connecté.",
+        },
+    },
+    {
         version = "1.19.6", date = "18/11/2026",
         changed = {
             "Plans de montée : supprimer un plan du perso connecté ferme le panneau « Plan de montée » et la fenêtre des talents du jeu à laquelle il est collé (hors combat).",

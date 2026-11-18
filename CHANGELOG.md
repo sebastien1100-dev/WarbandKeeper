@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.7 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fiche d'un autre perso : bouton « Mon perso » à côté du nom pour revenir au perso connecté.
+
+### Corrections
+- Fiche du perso : après avoir regardé un autre perso, la fiche (Fiche, Talents, BiS) pouvait rester sur lui ; elle revient maintenant au perso connecté à la connexion et quand la fenêtre se ferme.
+
 ## v1.19.6 — 18/11/2026
 
 _Un /reload suffit._
