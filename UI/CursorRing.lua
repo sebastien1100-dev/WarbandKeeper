@@ -143,9 +143,11 @@ local function sweepGCD()
     end
 end
 
-function UI:SyncCursorRing()
+-- combat : à PLAYER_REGEN_DISABLED, InCombatLockdown() est encore faux ; l'évènement passe l'état voulu
+function UI:SyncCursorRing(combat)
     local c = cfg()
-    local want = on() and c.ring and (not c.combatOnly or inCombat())
+    if combat == nil then combat = inCombat() or (UnitAffectingCombat and UnitAffectingCombat("player")) end
+    local want = on() and c.ring and (not c.combatOnly or combat)
     if want then
         build()
         setSize()
@@ -157,8 +159,8 @@ function UI:SyncCursorRing()
 end
 
 WK:On("PLAYER_ENTERING_WORLD", function() UI:SyncCursorRing() end)
-WK:On("PLAYER_REGEN_DISABLED", function() UI:SyncCursorRing() end)
-WK:On("PLAYER_REGEN_ENABLED", function() UI:SyncCursorRing() end)
+WK:On("PLAYER_REGEN_DISABLED", function() UI:SyncCursorRing(true) end)
+WK:On("PLAYER_REGEN_ENABLED", function() UI:SyncCursorRing(false) end)
 WK:On("SPELL_UPDATE_COOLDOWN", function()
     if ring and ring:IsShown() and cfg().sweep then sweepGCD() end
 end)

@@ -404,7 +404,7 @@ local function build()
         if LW < 100 then LW = W - 12 end
         for _, it in ipairs(list and list.items or {}) do
             local id, want = it[1], it[2]
-            local have = (Inv and Inv.AccountCount and Inv:AccountCount(id)) or 0
+            local have = S:Have(id)
             local r = self.rows:Get()
             r.id = id
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(LW - 10)

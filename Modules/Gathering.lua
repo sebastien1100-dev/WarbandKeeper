@@ -113,8 +113,9 @@ end
 
 -- Niveau maximal des monstres qu'on peut dépecer avec ce niveau de métier.
 function M:SkinMaxLevel(rank)
-    if rank < 100 then return math.max(10, math.floor(rank / 5)) end
-    return math.floor(rank / 10) + 10
+    -- règle du jeu : jusqu'à 100, niveau = compétence / 10 + 10 ; au-delà, compétence / 5
+    if rank < 100 then return math.floor(rank / 10) + 10 end
+    return math.floor(rank / 5)
 end
 
 function M:SkinColor(tier, rank)

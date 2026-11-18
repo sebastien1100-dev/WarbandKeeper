@@ -175,7 +175,7 @@ UI:RegisterPage({
         self.chart = UI:LineChart(area, 2.5, true)
         self.chart:SetAllPoints()
         UI:ChartHover(area, self.chart, function(pt)
-            return self.series == "gold" and WK:FormatMoney(pt.v) or ("x" .. pt.v)
+            return (self.series == "gold" or self.series == "value") and WK:FormatMoney(pt.v) or ("x" .. pt.v)
         end)
         UI:OnResize(p, function() if self.chart then UI:RefreshSoon() end end)
     end,

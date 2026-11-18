@@ -128,9 +128,19 @@ local function build()
     f:Hide()
     UI:RegisterHUD("petCard", f, {
         label = T("Cadre du familier"), protected = true, default = { 0, -260 },
+        -- aperçu : cadre montré même sans familier (le pilote d'état le cache), puis tout est rendu au retour
         sample = function(on)
             f.sample = on or nil
-            if on then f:Paint(true) end
+            if inCombat() then return end
+            if on then
+                if UnregisterStateDriver then UnregisterStateDriver(f, "visibility") end
+                f:Show()
+                f:SetAlpha(1)
+                if f.Paint then f:Paint(true) end
+            else
+                UI:SyncPetCard()
+                if f.Paint then f:Paint() end
+            end
         end,
     })
     return f

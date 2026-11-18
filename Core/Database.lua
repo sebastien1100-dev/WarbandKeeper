@@ -92,6 +92,11 @@ local function copyDefaults(src, dst)
     end
 end
 
+-- Remet les valeurs par défaut manquantes (après l'application d'un profil capturé avec une version plus ancienne)
+function DB:FillDefaults()
+    if WarbandKeeperDB then copyDefaults(defaults, WarbandKeeperDB) end
+end
+
 function DB:Init()
     WarbandKeeperDB = WarbandKeeperDB or {}
     WarbandKeeperCharDB = WarbandKeeperCharDB or {}

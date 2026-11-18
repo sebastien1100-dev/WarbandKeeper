@@ -89,6 +89,8 @@ UI:RegisterPage({
             self.profUse:SetOptions(names()); self.profUse:Select(cur)
             self.profPick:SetOptions(names())
             if self.profPicked then self.profPick:Select(self.profPicked) end
+            -- le menu affiche toujours un profil : c'est lui que visent Copier et Supprimer
+            self.profPicked = self.profPick.selected
             local users = P:Users(cur)
             self.profInfo:SetText(string.format(T("%d profil(s) · celui-ci sert à : %s"), #P:Names(),
                 #users > 0 and table.concat(users, ", ") or T("aucun perso")))

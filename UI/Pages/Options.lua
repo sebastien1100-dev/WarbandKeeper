@@ -121,8 +121,8 @@ UI:RegisterPage({
             self.sections[key] = current
             root, y = sc.child, 0
         end
-        local function card(title, h)
-            local c = UI:Card(root, title)
+        local function card(title, h, subtitle)
+            local c = UI:Card(root, title, subtitle)
             c:SetSize(W, h)
             c:SetPoint("TOPLEFT", 0, -y)
             c:SetPoint("TOPRIGHT", 0, -y)
@@ -200,6 +200,20 @@ UI:RegisterPage({
             tile:SetPoint("TOPLEFT", 16 + ((i - 1) % perRow) * (tw + 10), -44 - math.floor((i - 1) / perRow) * 106)
             self.themeTiles[th.key] = tile
         end
+        -- largeur des vignettes : suit la carte quand la fenêtre change de taille
+        UI:OnResize(themeCard, function(cw)
+            local w2 = (cw - 32 - (perRow - 1) * 10) / perRow
+            local i = 0
+            for _, th in ipairs(UI.themes) do
+                local tile = self.themeTiles[th.key]
+                if tile then
+                    tile:SetWidth(w2)
+                    tile:ClearAllPoints()
+                    tile:SetPoint("TOPLEFT", 16 + (i % perRow) * (w2 + 10), -44 - math.floor(i / perRow) * 106)
+                end
+                i = i + 1
+            end
+        end)
         function self:RefreshThemes()
             for key, tile in pairs(self.themeTiles) do tile:Refresh(key == cfg.theme) end
         end
@@ -232,8 +246,17 @@ UI:RegisterPage({
         end)
         local sw = (W - 32 - 6 * 10) / 7
         local customBase = UI:ThemeBase("custom")
+        local swatches = {}
+        UI:OnResize(cust, function(cw)
+            local w2 = (cw - 32 - 6 * 10) / 7
+            for i, b in ipairs(swatches) do
+                b:SetWidth(w2)
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 16 + (i - 1) * (w2 + 10), -44)
+            end
+        end)
         for i, k in ipairs(UI.CUSTOM_KEYS) do
             local b = CreateFrame("Button", nil, cust)
+            swatches[i] = b
             b:SetSize(sw, 64)
             b:SetPoint("TOPLEFT", 16 + (i - 1) * (sw + 10), -44)
             local swatch = CreateFrame("Frame", nil, b)
@@ -496,6 +519,13 @@ UI:RegisterPage({
         notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)
         notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
         current.scroll:SetContentHeight(y)
+        -- hauteur selon le texte (il passe sur plus de lignes dans une fenêtre étroite)
+        local aboutScroll, aboutY = current.scroll, y - 270 - GAP
+        UI:OnResize(about, function()
+            local h = math.max(270, math.ceil(t:GetStringHeight() or 0) + 42 + 56)
+            about:SetHeight(h)
+            aboutScroll:SetContentHeight(aboutY + h + GAP)
+        end)
         self:ShowSection(cfg.optSection or "general")
     end,
 

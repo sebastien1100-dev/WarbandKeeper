@@ -16,7 +16,10 @@ local function record(index)
     local invoiceType, itemName, _, bid, _, deposit, consignment, _, _, _, count = GetInboxInvoiceInfo(index)
     if invoiceType ~= "seller" and invoiceType ~= "buyer" then return end
     local _, _, sender, subject, money, _, daysLeft = GetInboxHeaderInfo(index)
-    local key = table.concat({ tostring(sender), tostring(subject), tostring(money), string.format("%.3f", daysLeft or 0) }, "|")
+    -- date d'expiration du courrier (fixe pour un même courrier, à la seconde près) : deux ventes identiques
+    -- arrivées à quelques secondes d'écart restent deux ventes
+    local expires = math.floor((time() + (daysLeft or 0) * 86400) / 3 + 0.5)
+    local key = table.concat({ tostring(sender), tostring(subject), tostring(money), tostring(expires) }, "|")
     if seen[key] then return end
     seen[key] = true
     local entry = { t = time(), char = select(2, WK.DB:Me()), item = itemName, count = count or 1 }

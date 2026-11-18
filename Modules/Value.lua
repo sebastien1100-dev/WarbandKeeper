@@ -88,9 +88,15 @@ function M:Wealth(force)
     return self:AccountGold() + self:StockValue(force)
 end
 
-function M:Record()
+-- Appelé à chaque relevé des sacs, de la banque ou du courrier : le calcul complet (tous les objets de
+-- tous les persos) ne se refait qu'une fois par minute au plus, sinon on garde la dernière valeur.
+local lastRecord = -1000
+function M:Record(force)
     local h = WK.DB.global.history
     h.value = h.value or {}
+    local now = GetTime()
+    if not force and now - lastRecord < 60 then return end
+    lastRecord = now
     WK.DB:PushHistory(h.value, self:Wealth(true))
 end
 
@@ -105,5 +111,5 @@ end
 
 -- La richesse s'enregistre un peu après le chargement (prix et sacs lus).
 function M:OnLogin()
-    C_Timer.After(15, function() M:Record(); WK:NotifyChanged() end)
+    C_Timer.After(15, function() M:Record(true); WK:NotifyChanged() end)
 end

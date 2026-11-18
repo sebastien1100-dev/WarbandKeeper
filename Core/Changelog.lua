@@ -8,6 +8,36 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.21.1", date = "18/11/2026",
+        fixed = {
+            "Listes d'achat de l'HV : la quantité était comptée deux fois (ce qui manquait, moins encore ce que tu avais) ; rien n'était acheté et la ligne disparaissait alors qu'il en manquait. La liste retient maintenant la quantité à avoir sur le compte ; les listes déjà faites sont converties.",
+            "Objets verrouillés par règle : une envie ajoutée, un scan de l'HV ou un nouveau métier sont pris en compte tout de suite (avant : après /reload seulement).",
+            "Profils : un profil enregistré avec une ancienne version pouvait effacer un réglage ajouté depuis (risque d'erreur après une mise à jour).",
+            "Profils : les alertes de prix de l'HV, les morts récentes de rares et les armes enregistrées du guerrier ne changent plus avec le profil (ce sont des données).",
+            "Dépôt en banque : sans banque de bataillon utilisable, les règles « bataillon » déposent dans la banque du perso au lieu d'annoncer « banque pleine ».",
+            "Journal de l'HV : deux ventes identiques arrivées à quelques secondes d'écart ne comptent plus pour une seule.",
+            "Filtre de butin : un objet qui demande une confirmation (lié quand ramassé) n'est plus annoncé « sacs pleins » et la fenêtre ne se ferme plus pendant la confirmation.",
+            "Moins de saccades en farm : la fortune totale n'est plus recalculée à chaque relevé des sacs (une fois par minute au plus).",
+            "Dépeçage : le niveau maximum des monstres était faux (à 300, niveau 40 au lieu de 60) ; couleurs des cuirs et zones conseillées corrigées.",
+            "Donjons : le passage en cours (boss tués) est gardé si tu sors et reviens dans l'heure (wipe, cimetière dehors, /reload).",
+            "Donjons : l'alerte « envie tombée » ne sonne plus qu'une fois par objet, et seulement en instance (plus pour un achat chez un marchand).",
+            "Vols : durée estimée et barre de vol plus justes sur un trajet pas encore appris (vitesse et longueur mesurées de la même façon).",
+            "Chaman : la recharge de Réincarnation est de nouveau lue.",
+            "Voleur : l'achat automatique de poisons prend le rang le plus élevé du marchand.",
+            "Fiche perso : en passant à un autre perso, le mode plan, le build déplié, la fenêtre de choix BiS et les confirmations ouvertes se ferment (un clic pouvait modifier ou supprimer le plan ou le build de l'autre perso).",
+            "Fiche perso : le niveau moyen de l'équipement était gonflé (17 emplacements divisés par 16).",
+            "Fiche perso : moins de rafraîchissements quand le jeu charge beaucoup d'objets d'un coup.",
+            "Anneau du curseur « en combat seulement » : il ne s'affichait jamais.",
+            "Micro menu déplié : il ne se recalcule plus à chaque image (moins de charge avec « toujours déplié »).",
+            "Carte du familier : en mode édition elle s'affiche même sans familier, et elle ne garde plus les valeurs d'exemple après.",
+            "LFG : « Mes demandes » et « Récents » défilent au lieu de passer sous « MON MESSAGE » ; les champs du message et des niveaux retrouvent leur bordure et leur texte d'aide.",
+            "Stats : au survol de la courbe « Richesse totale », le montant s'affiche en or.",
+            "Donjons : le passage en cours n'apparaît plus quand la page montre un autre perso.",
+            "Profils : « Copier dans mon profil » et « Supprimer » agissent sur le profil affiché dans le menu, sans devoir le rouvrir.",
+            "Options et Patch notes : les vignettes de thème, la carte « À propos » et les notes s'adaptent à la largeur de la fenêtre (plus de débordement en petite taille).",
+        },
+    },
+    {
         version = "1.21.0", date = "18/11/2026",
         fixed = {
             "Persos et fiche : erreur Lua avec un royaume dont le nom contient « rp » (royaume JdR) ; la page Persos et l'en-tête de la fiche plantaient.",

@@ -6,7 +6,8 @@ local T = function(s) return WK.T(s) end
 -- boss tués, ce que chaque perso peut porter, liste d'envies et alertes.
 --   WK.DB.global.dungeons = { wish = { [perso] = { [objet] = clé du donjon } },
 --                             kills = { [perso] = { [clé] = { [boss] = date } } }, cfg = { ... } }
--- Le passage en cours (M.run) note les boss tués depuis l'entrée ; il s'efface à la sortie.
+-- Le passage en cours (M.run) note les boss tués depuis l'entrée ; gardé dans dungeons.runs[perso], repris si
+-- on revient dans le même donjon moins d'1 h après en être sorti.
 -- Affichage : UI/DungeonPanel.lua (à côté de la carte en donjon), UI/Pages/Dungeons.lua (page).
 
 local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me" }
@@ -226,7 +227,8 @@ function M:IsWished(id, key) return wishOf(key or WK:CharKey())[id] ~= nil end
 function M:ToggleWish(id, dkey, key)
     local w = wishOf(key or WK:CharKey())
     if w[id] then w[id] = nil else w[id] = dkey or true end
-    WK:NotifyChanged()
+    local L = WK.modules.ItemLock
+    if L and L.Changed then L.Changed() else WK:NotifyChanged() end
 end
 -- Envies : { { char, id, dungeon } } (tous les persos, ou un seul)
 function M:Wishes(key)
@@ -316,7 +318,10 @@ local function record(b)
     local d = b.dungeon
     local inst = instanceNow()
     if inst then M:LearnInstance(inst, d) end
-    if not M.run or M.run.key ~= d.key then M.run = newRun(d.key) end
+    if not M.run or M.run.key ~= d.key then
+        M.run = newRun(d.key)
+        local st = db(); st.runs = st.runs or {}; st.runs[WK:CharKey()] = M.run
+    end
     if M.run.killed[b.id] then return end
     M.run.killed[b.id] = time()
     local k = db().kills
@@ -419,13 +424,25 @@ WK:On("LOOT_OPENED", function()
     end
 end)
 
--- Entrée et sortie de donjon : passage remis à zéro, alerte des envies
+-- Entrée et sortie de donjon : alerte des envies ; le passage en cours est gardé (par perso, dans les données)
+-- si on revient dans le même donjon moins d'1 h après en être sorti (wipe, cimetière dehors, /reload)
 local lastKey
+local RUN_KEEP = 3600
 local function onZone()
     local d = M:Current()
+    local store = db()
+    store.runs = store.runs or {}
+    local me = WK:CharKey()
     if d then
         if lastKey ~= d.key then
-            M.run = newRun(d.key)
+            local saved = store.runs[me]
+            if saved and saved.key == d.key and (not saved.left or time() - saved.left < RUN_KEEP) then
+                saved.left = nil
+                M.run = saved
+            else
+                M.run = newRun(d.key)
+                store.runs[me] = M.run
+            end
             lastKey = d.key
             if M:Config().alertEnter and WK:FeatureOn("dungeons") then
                 local n = 0
@@ -438,6 +455,7 @@ local function onZone()
             end
         end
     else
+        if M.run then M.run.left = time() end
         lastKey, M.run = nil, nil
     end
     if M.OnChange then M:OnChange() end
@@ -446,11 +464,20 @@ WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, onZone) end)
 WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(1, onZone) end)
 
 -- Un objet d'une liste d'envies tombe (message de butin du groupe)
+local dropSeen = {}
 WK:On("CHAT_MSG_LOOT", function(msg)
     if not (M:Config().alertDrop and WK:FeatureOn("dungeons")) or type(msg) ~= "string" then return end
     if issecretvalue and issecretvalue(msg) then return end
+    -- en donjon seulement (pas les achats chez un marchand), une fois par objet : un même butin donne
+    -- plusieurs messages (Besoin, jet, gagné, reçu)
+    if not (IsInInstance and IsInInstance()) then return end
     for idStr in msg:gmatch("item:(%d+)") do
         local id = tonumber(idStr)
+        local last = dropSeen[id]
+        if last and GetTime() - last < 120 then return end
+        local wanted = false
+        for _, w in pairs(db().wish) do if w[id] then wanted = true end end
+        if wanted then dropSeen[id] = GetTime() end
         for ck, w in pairs(db().wish) do
             if w[id] then
                 local c = WK.DB.global.characters[ck]

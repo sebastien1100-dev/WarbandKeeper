@@ -64,7 +64,8 @@ local function averageIlvl(gear)
         if d and d.ilvl then total = total + d.ilvl; n = n + 1 end
     end
     if n == 0 then return nil end
-    return total / 16
+    -- 17 emplacements comptés (1-3, 5-18, distance comprise), cases vides à 0, comme le jeu
+    return total / 17
 end
 
 local function fmt(v, pct)
@@ -1189,7 +1190,6 @@ end
 
 function UI:ShowCharSheet(key)
     if not WK.DB.global.characters[key] then return end
-    if sheet then sheet.repAll = false end
     UI.charSheetKey = key
     UI:Create():Show()
     UI:ShowPage("charsheet")
@@ -1658,12 +1658,26 @@ UI:RegisterPage({
     end,
     Refresh = function(self)
         if not sheet then return end
-        sheet.key = UI.charSheetKey or WK:CharKey()
+        local key = UI.charSheetKey or WK:CharKey()
+        if sheet.key ~= key then
+            -- autre perso : rien de l'ancien ne doit rester actif (mode plan, build déplié, fenêtres ouvertes)
+            sheet.planEdit, sheet.openBuild, sheet.repAll, sheet.talentTried = nil, nil, false, nil
+            if sheet.picker then sheet.picker:Hide() end
+            if sheet.dlg then sheet.dlg:Hide() end
+            if sheet.bisMenu then sheet.bisMenu:Hide() end
+        end
+        sheet.key = key
         sheet:Refresh()
     end,
 })
 
-WK:On("GET_ITEM_INFO_RECEIVED", function() if sheet and sheet:IsVisible() then sheet:Refresh() end end)
+-- objets reçus du serveur : un seul rafraîchissement par demi-seconde (ils arrivent par dizaines)
+local itemRefresh
+WK:On("GET_ITEM_INFO_RECEIVED", function()
+    if itemRefresh or not (sheet and sheet:IsVisible()) then return end
+    itemRefresh = true
+    C_Timer.After(0.5, function() itemRefresh = nil; if sheet and sheet:IsVisible() then sheet:Refresh() end end)
+end)
 -- La fiche montre le perso connecté par défaut : on oublie le perso choisi à la connexion
 -- et quand la fenêtre se ferme (un autre perso ne s'affiche que sur un clic dans Persos ou le Résumé)
 WK:On("PLAYER_LOGIN", function()

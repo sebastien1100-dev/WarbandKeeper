@@ -273,7 +273,8 @@ UI:RegisterPage({
         det:ClearAllPoints(); det:SetPoint("TOPLEFT", 0, -y); det:SetWidth(W)
         det.title:SetText(D:Name(d))
         local done, n = D:Progress(d, key)
-        local inRun = D:InRun(d)
+        -- le passage en cours est celui du perso connecté : seulement quand la page le montre lui
+        local inRun = D:InRun(d) and key == WK:CharKey()
         if inRun then
             local k, m = 0, 0
             for _, b in ipairs(D:Bosses(d)) do
@@ -470,8 +471,8 @@ UI:RegisterPage({
         local det = self.det
         local f = det.focus
         local r1, g1, b1 = UI:Accent()
-        local inRun = D:InRun(d)
-        local run = D.run
+        local inRun = D:InRun(d) and key == WK:CharKey()
+        local run = inRun and D.run or nil
         local bosses = D:Bosses(d)
         local nextB = D:Next(d, key)
         local function find(id) for _, b in ipairs(bosses) do if b.id == id then return b end end end

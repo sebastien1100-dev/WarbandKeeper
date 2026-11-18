@@ -13,24 +13,21 @@ local SECTIONS = {
 
 local function notesSeen() return WK.DB.global.settings.notesSeenVersion == WK.version end
 
--- Texte à la ligne automatique ; renvoie la hauteur occupée.
-local function wrapped(parent, text, x, y, width, color, size)
+-- Texte à la ligne automatique (largeur posée par la mise en page de la carte)
+local function wrapped(parent, text, color, size)
     local fs = UI:Text(parent, size or 12, color)
     if fs.SetWordWrap then fs:SetWordWrap(true) end
     fs:SetJustifyH("LEFT")
     fs:SetJustifyV("TOP")
     fs:SetSpacing(3)
-    fs:SetWidth(width)
-    fs:SetPoint("TOPLEFT", x, y)
     fs:SetText(text)
-    return fs:GetStringHeight() or (size or 12) * 1.3
+    return fs
 end
 
--- Carte d'une version (ou de la feuille de route) ; renvoie sa hauteur.
-local function VersionCard(parent, y, entry, isCurrent, width)
+-- Carte d'une version (ou de la feuille de route). Les éléments sont créés une fois ;
+-- card:Layout(largeur) les place et renvoie la hauteur (appelé à chaque changement de taille).
+local function VersionCard(parent, entry, isCurrent)
     local card = UI:Card(parent, nil, nil, isCurrent)
-    card:SetPoint("TOPLEFT", 0, -y)
-    card:SetPoint("TOPRIGHT", 0, -y)
 
     local title = UI:Text(card, 16)
     title:SetPoint("TOPLEFT", 18, -16)
@@ -57,40 +54,53 @@ local function VersionCard(parent, y, entry, isCurrent, width)
         hint:SetText("prévu, pas encore commencé")
     end
 
-    local h = 48
-    local textW = width - 18 - 34 - 18
+    -- éléments à placer : { kind = "bullet", dot, fs } / { kind = "head", badge, stripe } / { kind = "end", stripe }
+    local parts = {}
     local function bullets(list, color)
         for _, line in ipairs(list) do
-            local dot = UI:Icon(card, "circle", 5, color or C.muted, "ARTWORK")
-            dot:SetPoint("TOPLEFT", 30, -h - 6)
-            local th = wrapped(card, line, 44, -h, textW, C.text, 12)
-            h = h + th + 7
+            table.insert(parts, { kind = "bullet", dot = UI:Icon(card, "circle", 5, color or C.muted, "ARTWORK"),
+                fs = wrapped(card, line, C.text, 12) })
         end
     end
-
     if entry.roadmap then
         bullets(entry.items, C.dim)
     else
         for _, sec in ipairs(SECTIONS) do
             local list = entry[sec[1]]
             if list and #list > 0 then
-                local top = h
-                local badge = UI:Badge(card, sec[2], sec[3])
-                badge:SetPoint("TOPLEFT", 26, -h)
-                h = h + 26
-                bullets(list, sec[3])
-                -- Liseré de la couleur de la rubrique, sur toute sa hauteur
+                -- liseré de la couleur de la rubrique, sur toute sa hauteur
                 local stripe = card:CreateTexture(nil, "ARTWORK")
                 stripe:SetColorTexture(unpack(sec[3]))
-                stripe:SetPoint("TOPLEFT", 16, -top)
-                stripe:SetSize(3, h - top - 2)
-                h = h + 6
+                table.insert(parts, { kind = "head", badge = UI:Badge(card, sec[2], sec[3]), stripe = stripe })
+                bullets(list, sec[3])
+                table.insert(parts, { kind = "end", stripe = stripe })
             end
         end
     end
-    h = h + 10
-    card:SetHeight(h)
-    return h
+
+    function card:Layout(width)
+        local h, top = 48, 0
+        local textW = width - 18 - 34 - 18
+        for _, e in ipairs(parts) do
+            if e.kind == "head" then
+                top = h
+                e.badge:ClearAllPoints(); e.badge:SetPoint("TOPLEFT", 26, -h)
+                h = h + 26
+            elseif e.kind == "bullet" then
+                e.dot:ClearAllPoints(); e.dot:SetPoint("TOPLEFT", 30, -h - 6)
+                e.fs:ClearAllPoints(); e.fs:SetPoint("TOPLEFT", 44, -h); e.fs:SetWidth(textW)
+                h = h + (e.fs:GetStringHeight() or 16) + 7
+            else
+                e.stripe:ClearAllPoints(); e.stripe:SetPoint("TOPLEFT", 16, -top)
+                e.stripe:SetSize(3, math.max(1, h - top - 2))
+                h = h + 6
+            end
+        end
+        h = h + 10
+        self:SetHeight(h)
+        return h
+    end
+    return card
 end
 
 UI:RegisterPage({
@@ -102,16 +112,24 @@ UI:RegisterPage({
     Build = function(self, p)
         local scroll = UI:Scroll(p)
         scroll:SetAllPoints()
-        local width = UI.PAGE_W - 12
-        local y = 0
         -- « À venir » toujours en haut, puis les versions de la plus récente à la plus ancienne.
-        if #WK.Roadmap > 0 then
-            y = y + VersionCard(scroll.child, y, { roadmap = true, items = WK.Roadmap }, false, width) + 12
-        end
+        local cards = {}
+        if #WK.Roadmap > 0 then table.insert(cards, VersionCard(scroll.child, { roadmap = true, items = WK.Roadmap }, false)) end
         for i, entry in ipairs(WK.Changelog) do
-            y = y + VersionCard(scroll.child, y, entry, i == 1 and entry.version == WK.version, width) + 12
+            table.insert(cards, VersionCard(scroll.child, entry, i == 1 and entry.version == WK.version))
         end
-        scroll:SetContentHeight(y)
+        -- largeur et hauteurs recalculées quand la fenêtre change de taille
+        UI:OnResize(scroll, function(w)
+            local width = math.max(400, (w or UI.PAGE_W) - 12)
+            local y = 0
+            for _, c in ipairs(cards) do
+                c:ClearAllPoints()
+                c:SetPoint("TOPLEFT", 0, -y)
+                c:SetPoint("TOPRIGHT", 0, -y)
+                y = y + c:Layout(width) + 12
+            end
+            scroll:SetContentHeight(y)
+        end)
     end,
 
     Refresh = function()

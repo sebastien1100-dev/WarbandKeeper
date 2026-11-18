@@ -19,9 +19,9 @@ local KEYS = {
     settings = { trackedItems = true, lastSeenVersion = true, statsHidden = true },
     qol = { petFoods = true },
     glow = { saved = true, otherOff = true },
-    rares = { kills = true },
+    rares = { kills = true, dead = true },
     quests = {},
-    ah = { realms = true, lists = true, curList = true },
+    ah = { realms = true, lists = true, curList = true, alerts = true },
     modulesOff = {},
     mapLayers = {},
     gatherMap = {},
@@ -69,6 +69,8 @@ local function apply(snap)
         end
         g[key] = fresh
     end
+    -- un profil capturé avant l'ajout d'un réglage n'en a pas la valeur par défaut
+    if WK.DB.FillDefaults then WK.DB:FillDefaults() end
 end
 
 function M:Current() return store().loaded end

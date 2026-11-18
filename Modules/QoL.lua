@@ -385,8 +385,15 @@ end
 
 function M:ScanReincarnation()
     local c = WK.DB:Me()
-    if c.class ~= "SHAMAN" or not GetSpellCooldown then return end
-    local start, duration = GetSpellCooldown(SPELL_REINCARNATION)
+    if c.class ~= "SHAMAN" then return end
+    local start, duration
+    if C_Spell and C_Spell.GetSpellCooldown then
+        local ok, info = pcall(C_Spell.GetSpellCooldown, SPELL_REINCARNATION)
+        if ok and type(info) == "table" then start, duration = info.startTime, info.duration end
+    elseif GetSpellCooldown then
+        start, duration = GetSpellCooldown(SPELL_REINCARNATION)
+    end
+    if issecretvalue and (issecretvalue(start) or issecretvalue(duration)) then return end
     if start and duration and duration > 1.5 then
         c.reincarnation = time() + math.floor(start + duration - GetTime())
     elseif start then
@@ -486,7 +493,7 @@ local function merchantIndex(ids)
         if id and want[id] then
             -- On préfère le dernier de la liste (rang le plus élevé chez les poisons) sauf objet déjà en sac.
             local inBags = (WK.DB:Me().bags or {})[id] or 0
-            if not found or inBags > found.inBags then found = { index = i, id = id, inBags = inBags } end
+            if not found or inBags >= found.inBags then found = { index = i, id = id, inBags = inBags } end
         end
     end
     return found
@@ -897,11 +904,17 @@ end
 -- Classes : guerrier (deux équipements d'armes)
 ---------------------------------------------------------------------------
 -- sets[clé du perso] = { two = { main = lien }, shield = { main = lien, off = lien } }
+-- Armes enregistrées par perso : données, hors profils (WK.DB.global.weaponSets ; reprend qol.classes.WARRIOR.sets)
 function M:WeaponSets(key)
-    local cc = self:Class("WARRIOR")
     key = key or WK:CharKey()
-    cc.sets[key] = cc.sets[key] or {}
-    return cc.sets[key]
+    local g = WK.DB.global
+    g.weaponSets = g.weaponSets or {}
+    if not g.weaponSets[key] then
+        local cc = self:Class("WARRIOR")
+        g.weaponSets[key] = (cc.sets and cc.sets[key]) or {}
+        if cc.sets then cc.sets[key] = nil end
+    end
+    return g.weaponSets[key]
 end
 
 function M:SaveWeaponSet(which)

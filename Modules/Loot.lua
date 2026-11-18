@@ -243,8 +243,16 @@ end
 
 -- Vérification juste après le passage du filtre : fenêtre vide -> fermée ; objet voulu encore
 -- là -> nouvel essai (puis message si les sacs sont pleins) ; plus que des objets laissés -> fermée.
+-- Objet « lié quand ramassé » : le jeu attend une confirmation du joueur (LOOT_BIND_CONFIRM) ;
+-- on ne conclut pas « sacs pleins » et on ne ferme pas la fenêtre pendant ce temps
+local bindPending = false
+local function waitingConfirm()
+    if bindPending then return true end
+    return StaticPopup_Visible and (StaticPopup_Visible("LOOT_BIND") or StaticPopup_Visible("CONFIRM_LOOT_ROLL")) and true or false
+end
 local function verify(p, attempt)
     if not lootOpen then return end
+    if waitingConfirm() then return end
     local total, wanted, rolled = remaining(p)
     if total == 0 then return CloseLoot() end
     -- Maître du butin avec des objets à attribuer : la fenêtre reste ouverte.
@@ -311,7 +319,9 @@ end
 
 WK:On("LOOT_READY", onLoot)
 WK:On("LOOT_OPENED", function() lootOpen = true; onLoot() end)
-WK:On("LOOT_CLOSED", function() handled = false; lootOpen = false end)
+WK:On("LOOT_CLOSED", function() handled = false; lootOpen = false; bindPending = false end)
+WK:On("LOOT_BIND_CONFIRM", function() bindPending = true end)
+WK:On("LOOT_SLOT_CLEARED", function() bindPending = false end)
 
 -- Prévient quand une activation automatique change le profil.
 local lastEffective

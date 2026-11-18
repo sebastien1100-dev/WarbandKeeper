@@ -95,7 +95,10 @@ function M:Run()
     if #plan == 0 then return end
     queue, done, full = {}, {}, {}
     -- Pas de banque de bataillon sur ce client : on dépose dans la banque du perso.
-    local hasWarband = #WK.modules.Inventory:WarbandList() > 0
+    local hasWarband = false
+    for _, bag in ipairs(WK.modules.Inventory:WarbandList()) do
+        if (WK.Container.NumSlots(bag) or 0) > 0 then hasWarband = true break end
+    end
     for _, e in ipairs(plan) do
         local target = (e.rule.target == "warband" and hasWarband) and "warband" or "bank"
         for _, op in ipairs(e.ops) do

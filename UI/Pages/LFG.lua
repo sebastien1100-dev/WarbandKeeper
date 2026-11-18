@@ -191,9 +191,15 @@ UI:RegisterPage({
             function(v) self.rightTab = v; self:Refresh() end, 24)
         self.rightSeg:SetPoint("TOPLEFT", 12, -10)
         self.rightSeg:Select("requests")
+        -- liste de droite (demandes ou récents) : zone qui défile, entre les onglets et « MON MESSAGE »
+        local rlist = UI:Scroll(right)
+        rlist:SetPoint("TOPLEFT", 0, -42)
+        rlist:SetPoint("BOTTOMRIGHT", -4, 150)
+        rlist.child:SetWidth(RIGHT_W - 16)
+        self.rlist = rlist
         -- joueurs croisés en groupe, avec leur note (1 à 3 étoiles)
         self.recents = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, right)
+            local r = CreateFrame("Frame", nil, rlist.child)
             r:SetSize(RIGHT_W - 28, 40)
             r.name = UI:Text(r, 12)
             r.name:SetPoint("TOPLEFT", 0, 0)
@@ -227,7 +233,7 @@ UI:RegisterPage({
         self.noRecent:SetJustifyH("LEFT")
         self.noRecent:SetText(T("Les joueurs avec qui tu fais un groupe apparaîtront ici. Note-les de 1 à 3 étoiles : 1 étoile les met en bas des listes et tu es prévenu s'ils rejoignent ton groupe."))
         self.reqs = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, right)
+            local r = CreateFrame("Frame", nil, rlist.child)
             r:SetSize(RIGHT_W - 28, 50)
             r.dot = UI:Icon(r, "circle", 8, nil, "ARTWORK")
             r.dot:SetPoint("TOPLEFT", 0, -5)
@@ -253,7 +259,7 @@ UI:RegisterPage({
         self.msgBox = UI:Input(right, RIGHT_W - 28, 30)
         self.msgBox:SetPoint("BOTTOMLEFT", 14, 92)
         self.msgBox:SetText(cfg.message)
-        self.msgBox.edit:SetScript("OnEditFocusLost", function() cfg.message = self.msgBox:GetText(); self:Refresh() end)
+        self.msgBox.edit:HookScript("OnEditFocusLost", function() cfg.message = self.msgBox:GetText(); self:Refresh() end)
         self.msgPreview = UI:Text(right, 11, C.text)
         self.msgPreview:SetPoint("TOPLEFT", self.msgBox, "BOTTOMLEFT", 0, -8)
         self.msgPreview:SetPoint("RIGHT", -14, 0)
@@ -475,7 +481,7 @@ UI:RegisterPage({
             local box = UI:Input(pnl, 60, 26, ph)
             box:SetPoint("TOPLEFT", x, y + 4)
             box:SetText(f[field] and tostring(f[field]) or "")
-            box.edit:SetScript("OnEditFocusLost", function()
+            box.edit:HookScript("OnEditFocusLost", function()
                 f[field] = tonumber(box:GetText()); self:Refresh()
             end)
             return box
@@ -779,9 +785,9 @@ UI:RegisterPage({
         local _, g = LFG:Config()
         self.noRecent:SetShown(not showReq and #g.recent == 0)
         if not showReq then
-            local ry2 = 46
+            local ry2 = 4
             for i, e in ipairs(g.recent) do
-                if i > 12 then break end
+                if i > 30 then break end
                 local row = self.recents:Get()
                 row.player = e.name
                 row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry2)
@@ -797,13 +803,14 @@ UI:RegisterPage({
                 end
                 ry2 = ry2 + 42
             end
+            self.rlist:SetContentHeight(ry2)
         end
         local list = {}
         for name, q in pairs(LFG.requests) do table.insert(list, { name = name, q = q }) end
         table.sort(list, function(a, b) return a.q.t > b.q.t end)
-        local ry = 46
+        local ry = 4
         for i, e in ipairs(list) do
-            if i > 6 or not showReq then break end
+            if i > 30 or not showReq then break end
             local row = self.reqs:Get()
             row:ClearAllPoints(); row:SetPoint("TOPLEFT", 14, -ry)
             local q = e.q
@@ -817,6 +824,7 @@ UI:RegisterPage({
             row.l2:SetText(q.activity or "")
             ry = ry + 54
         end
+        if showReq then self.rlist:SetContentHeight(ry) end
         self.noReq:SetShown(showReq and #list == 0)
         self.refineDot:SetShown(LFG:FiltersActive())
         self.refineDot:SetVertexColor(UI:Accent())

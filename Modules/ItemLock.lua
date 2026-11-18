@@ -33,9 +33,11 @@ end
 function M:Config() return db().cfg end
 function M:Manual() return db().items end
 
-local cache = {}
+-- Cache des règles : vidé à chaque changement connu, et de toute façon toutes les 5 s
+-- (liste d'envies, scan de l'HV, nouveau métier : les règles en dépendent)
+local cache, cacheAt = {}, 0
 local function changed()
-    wipe(cache)
+    wipe(cache); cacheAt = GetTime()
     if WK.UI and WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end
     WK:NotifyChanged()
 end
@@ -72,6 +74,7 @@ function M:Reason(id)
     if not id then return nil end
     local d = db()
     if d.items[id] then return "manual" end
+    if GetTime() - cacheAt > 5 then wipe(cache); cacheAt = GetTime() end
     local c = cache[id]
     if c ~= nil then return c or nil end
     local r = d.cfg.rules

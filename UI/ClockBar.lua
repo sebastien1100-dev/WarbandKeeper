@@ -569,7 +569,16 @@ local function build()
         local before = self.open
         if self.open < want then self.open = math.min(1, self.open + el * 6)
         elseif self.open > want then self.open = math.max(0, self.open - el * 6) end
-        if self.open ~= before or self.open > 0 or self.relayout then self.relayout = nil; self:Layout() end
+        -- déplié : on ne replace que si l'ouverture change, si le curseur bouge dessus (effet loupe),
+        -- ou toutes les 0,5 s (pastilles, compteurs) ; avant, tout était refait à chaque image
+        local cx = GetCursorPosition()
+        local now = GetTime()
+        if self.open ~= before or self.relayout
+            or (self.open > 0 and ((over and cx ~= self.lastCx) or now - (self.lastLayout or 0) > 0.5)) then
+            self.relayout = nil
+            self.lastCx, self.lastLayout = cx, now
+            self:Layout()
+        end
     end
 
     -- Souris sur l'un des trois fonds (les côtés seulement quand ils sont dépliés)

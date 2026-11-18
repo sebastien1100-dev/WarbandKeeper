@@ -317,6 +317,13 @@ end
 function M:Lists()
     local cfg = self:Config()
     cfg.lists = cfg.lists or {}
+    -- anciennes listes (v1) : la quantité était « ce qui manque » ; on la convertit en quantité à avoir
+    for _, l in pairs(cfg.lists) do
+        if not l.v then
+            for _, it in ipairs(l.items or {}) do it[2] = (it[2] or 0) + self:Have(it[1]) end
+            l.v = 2
+        end
+    end
     local names = {}
     for name in pairs(cfg.lists) do table.insert(names, name) end
     table.sort(names, function(a, b) return (cfg.lists[a].at or 0) > (cfg.lists[b].at or 0) end)
@@ -326,15 +333,17 @@ function M:GetList(name)
     local _, lists = self:Lists()
     return name and lists[name]
 end
--- entries : { { itemID, missing } } ; renvoie le nombre d'objets gardés
+-- entries : { { itemID, missing } } ; renvoie le nombre d'objets gardés.
+-- La liste retient la quantité à AVOIR sur le compte (manquant + déjà possédé), pas ce qui manque :
+-- l'achat, l'élagage et le panneau comparent tous à ce qu'il y a sur le compte (M:Have).
 function M:SaveList(name, entries)
     local _, lists = self:Lists()
     local items = {}
     for _, e in ipairs(entries or {}) do
-        if (e.missing or 0) > 0 and e.itemID then table.insert(items, { e.itemID, e.missing }) end
+        if (e.missing or 0) > 0 and e.itemID then table.insert(items, { e.itemID, e.missing + self:Have(e.itemID) }) end
     end
     if #items == 0 then return 0 end
-    lists[name] = { items = items, at = time() }
+    lists[name] = { items = items, at = time(), v = 2 }
     self:Config().curList = name
     if self.OnProgress then self:OnProgress() end
     WK:NotifyChanged()
@@ -388,10 +397,19 @@ function M:CanBuy()
     local A = AH()
     return A and A.StartCommoditiesPurchase and A.ConfirmCommoditiesPurchase and true or false
 end
+-- Achats faits mais pas encore vus dans les sacs (le relevé du compte arrive un peu après) : { [id] = { base, qty, at } }
+local pendingBuy = {}
 local function have(id)
     local Inv = WK.modules.Inventory
-    return (Inv and Inv.AccountCount and Inv:AccountCount(id)) or 0
+    local n = (Inv and Inv.AccountCount and Inv:AccountCount(id)) or 0
+    local p = pendingBuy[id]
+    if p then
+        if n >= p.base + p.qty or GetTime() - p.at > 30 then pendingBuy[id] = nil
+        else n = math.max(n, p.base + p.qty) end
+    end
+    return n
 end
+M.Have = function(_, id) return have(id) end
 -- Objet suivant à acheter dans la liste : id, quantité
 function M:NextToBuy(name)
     local list = self:GetList(name)
@@ -411,17 +429,13 @@ local function isCommodity(id)
     end
     return true
 end
--- Retire de la liste ce qui est acheté (qty) ou déjà sur le compte
+-- Achat réussi : compté tout de suite comme possédé (la liste est élaguée juste après par PruneList)
 local function consume(name, id, qty)
-    local list = M:GetList(name)
-    if not list then return end
-    for i = #list.items, 1, -1 do
-        local it = list.items[i]
-        if it[1] == id then
-            it[2] = it[2] - (qty or 0)
-            if it[2] <= 0 then table.remove(list.items, i) end
-        end
-    end
+    if not (id and qty and qty > 0) then return end
+    local Inv = WK.modules.Inventory
+    local base = (Inv and Inv.AccountCount and Inv:AccountCount(id)) or 0
+    local p = pendingBuy[id]
+    pendingBuy[id] = { base = p and p.base or base, qty = (p and p.qty or 0) + qty, at = GetTime() }
 end
 function M:PruneList(name)
     local list = self:GetList(name)

@@ -179,8 +179,12 @@ local function onTaxi() return UnitOnTaxi and UnitOnTaxi("player") end
 function M:Start()
     if not pending then return end
     local key = pending.from .. "|" .. pending.to
-    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = pending.dist, stops = pending.stops,
-               est = db().routes[key] or self:Estimate(pending.dist), learned = db().routes[key] ~= nil,
+    -- distance mesurée comme le chemin parcouru (vrai trajet s'il est connu, sinon lignes droites entre relais)
+    local dist = pending.dist
+    local _, pts = self:Path(pending.from, pending.to)
+    if pts and #pts >= 4 and M.PathLength then dist = M.PathLength(pts) end
+    flight = { from = pending.from, to = pending.to, start = GetTime(), dist = dist, stops = pending.stops,
+               est = db().routes[key] or self:Estimate(dist), learned = db().routes[key] ~= nil,
                traveled = 0 }
     pending = nil
     if self.OnStart then self:OnStart(flight) end
@@ -204,8 +208,10 @@ function M:Finish()
         end
         d.routes[f.from .. "|" .. f.to] = math.floor(secs + 0.5)
         d.speed = nil -- ancienne mesure, en unités de carte
-        if f.dist and f.dist > 0 then
-            local sp = f.dist / secs
+        -- vitesse sur le chemin réellement parcouru (même grandeur que PathLength dans RouteTime)
+        local len = (f.pts and #f.pts >= 4 and M.PathLength) and M.PathLength(f.pts) or f.dist
+        if len and len > 0 then
+            local sp = len / secs
             d.worldSpeed = d.worldSpeed and (d.worldSpeed * 0.7 + sp * 0.3) or sp
         end
     end
