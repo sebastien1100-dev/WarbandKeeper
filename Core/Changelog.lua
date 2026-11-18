@@ -17,7 +17,7 @@ WK.Changelog = {
         version = "1.20.0", date = "18/11/2026",
         changed = {
             "BiS, nouvelle mise en page : tes listes en onglets en haut (avec « obtenus / total » et « + Nouvelle »), mannequin centré comme la fenêtre de perso du jeu, 8 emplacements de chaque côté (Chemise et Tabard ajoutés), noms tournés vers le personnage, aperçu 3D plus grand au centre avec la bascule « La liste / Mon équipement », armes en dessous.",
-            "BiS : « Équiper ce que j'ai » reste en bouton ; Partager, Copier d'un perso et un menu « ⋯ » (Dupliquer, Renommer, Code, Importer, Vider, Supprimer) passent en petites icônes à droite des onglets. Un emplacement vide n'affiche plus que son nom en gris.",
+            "BiS : « Équiper ce que j'ai » reste en bouton ; Partager, Copier d'un perso et un menu « … » (Dupliquer, Renommer, Code, Importer, Vider, Supprimer) passent en petites icônes à droite des onglets. Un emplacement vide n'affiche plus que son nom en gris.",
         },
     },
     {
