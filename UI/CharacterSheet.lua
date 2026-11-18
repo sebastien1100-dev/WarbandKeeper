@@ -672,7 +672,7 @@ local function build(parent)
     menu:SetScript("OnShow", function(s) s.wasDown = true end)
     menu:SetScript("OnUpdate", function(s)
         local down = IsMouseButtonDown and (IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton"))
-        if down and not s.wasDown and not (MouseIsOver(s) or MouseIsOver(f.bisMore)) then s:Hide() end
+        if down and not s.wasDown and not (s:IsMouseOver() or f.bisMore:IsMouseOver()) then s:Hide() end
         s.wasDown = down
     end)
     f.bisNew:SetScript("OnClick", function()

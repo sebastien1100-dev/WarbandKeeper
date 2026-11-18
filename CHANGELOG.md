@@ -30,6 +30,22 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.25.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Objets verrouillés : nouvelles touches au clic molette (Clic molette, Alt + clic molette, Ctrl + clic molette), pour ne pas gêner les addons qui prennent les combinaisons au clic gauche (Polstar et Ctrl + Alt + clic).
+
+### Modifications
+- Étoile BiS sur les cases des sacs : en bas à gauche de la case.
+- Halo : portée de 15 m au plus ; le mode pêche la monte à 60 m seulement le temps de pêcher.
+
+### Corrections
+- Liste BiS, menu « … » : erreur Lua à chaque clic quand le menu était ouvert (fonction absente sur ce client).
+- Halo : après la pêche, la portée restait à 60 m au lieu de revenir à la tienne.
+- Objets verrouillés : la recherche de la case sous la souris utilisait la même fonction absente.
+
 ## v1.25.2 — 18/11/2026
 
 _Un /reload suffit._

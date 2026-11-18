@@ -52,8 +52,8 @@ function M:Config()
     end
     -- « Autres objets » éclairait le mobilier (chaises…) : décochée une fois par défaut
     if not g.otherOff then g.otherOff = true; g.cats.other = false end
-    -- portée de désignation : jusqu'à 60 m, comme le mode pêche
-    if (g.range or 15) > 60 then g.range = 60 end
+    -- portée du halo : 15 m au plus (le jeu perd l'objet désigné au-delà) ; seul le mode pêche monte à 60 m
+    if (g.range or 15) > 15 then g.range = 15 end
     return g
 end
 
@@ -84,10 +84,10 @@ function M:ApplyCVars()
         setCVar(name, value)
     end
     if g.saved.SoftTargetInteractRange == nil then g.saved.SoftTargetInteractRange = getCVar("SoftTargetInteractRange") end
-    -- mode pêche ouvert : il lui faut 60 m (flotteur au loin), on ne la réduit jamais pendant ce temps
+    -- pendant que le mode pêche tient la désignation (flotteur au loin) : 60 m ; sinon la portée du halo
     local range = g.range or 15
     local F = WK.modules.Fishing
-    if F and F.active then range = math.max(range, 60) end
+    if F and F.Config and F:Config().savedSoft then range = math.max(range, 60) end
     setCVar("SoftTargetInteractRange", tostring(range))
     if g.saved[PLATE_DIST] == nil then g.saved[PLATE_DIST] = getCVar(PLATE_DIST) end
     local dist = math.max(tonumber(g.saved[PLATE_DIST]) or 0, g.range or 15)

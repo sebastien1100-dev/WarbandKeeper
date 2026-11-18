@@ -168,9 +168,9 @@ UI:RegisterPage({
             b.n = b:CreateFontString(nil, "OVERLAY")
             b.n:SetFont(UI.FONT, 11, "OUTLINE")
             b.n:SetPoint("BOTTOMRIGHT", -2, 3)
-            -- repère BiS : étoile en haut à gauche (or : liste du perso connecté, gris : autre perso)
+            -- repère BiS : étoile en bas à gauche (or : liste du perso connecté, gris : autre perso)
             b.bisRing = b:CreateTexture(nil, "OVERLAY", nil, 5)
-            b.bisRing:SetTexture(UI.MEDIA .. "circle"); b.bisRing:SetSize(17, 17); b.bisRing:SetPoint("TOPLEFT", -3, 3)
+            b.bisRing:SetTexture(UI.MEDIA .. "circle"); b.bisRing:SetSize(17, 17); b.bisRing:SetPoint("BOTTOMLEFT", -3, -3)
             b.bisRing:SetVertexColor(0, 0, 0, 0.9)
             b.bisBadge = b:CreateTexture(nil, "OVERLAY", nil, 6)
             b.bisBadge:SetTexture(UI.MEDIA .. "circle"); b.bisBadge:SetSize(15, 15); b.bisBadge:SetPoint("CENTER", b.bisRing, "CENTER")
@@ -393,7 +393,8 @@ UI:RegisterPage({
         local sets = UI:Card(root, T("Protection"))
         self.lockSets = sets
         local keyDd = UI:Dropdown(sets, 200, 30, { { "alt", T("Alt + clic") }, { "ctrl", T("Ctrl + clic") }, { "shiftalt", T("Maj + Alt + clic") },
-            { "ctrlalt", T("Ctrl + Alt + clic") }, { "ctrlshift", T("Ctrl + Maj + clic") } },
+            { "ctrlalt", T("Ctrl + Alt + clic") }, { "ctrlshift", T("Ctrl + Maj + clic") },
+            { "mid", T("Clic molette") }, { "altmid", T("Alt + clic molette") }, { "ctrlmid", T("Ctrl + clic molette") } },
             function(v)
                 cfg.key = v
                 if self.lockEmpty and UI.ItemLockKeyLabel then

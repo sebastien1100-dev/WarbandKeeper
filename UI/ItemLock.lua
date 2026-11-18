@@ -10,13 +10,16 @@ local T = function(s) return WK.T(s) end
 local L = WK.modules.ItemLock
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
--- Combinaison exacte (les autres touches relâchées) : alt, ctrl, shiftalt, ctrlalt, ctrlshift
+-- Combinaison exacte (les autres touches relâchées) et bouton de la souris : alt, ctrl, shiftalt, ctrlalt, ctrlshift
+-- (clic gauche), mid, altmid, ctrlmid (clic molette, rarement pris par le jeu ou les autres addons dans les sacs)
 local COMBOS = {
     alt = { alt = true }, ctrl = { ctrl = true }, shiftalt = { shift = true, alt = true },
     ctrlalt = { ctrl = true, alt = true }, ctrlshift = { ctrl = true, shift = true },
+    mid = { btn = "MiddleButton" }, altmid = { alt = true, btn = "MiddleButton" }, ctrlmid = { ctrl = true, btn = "MiddleButton" },
 }
-local function modDown()
+local function modDown(button)
     local c = COMBOS[L:Config().key] or COMBOS.alt
+    if button and button ~= (c.btn or "LeftButton") then return false end
     return (IsAltKeyDown() and true or false) == (c.alt or false)
         and (IsControlKeyDown() and true or false) == (c.ctrl or false)
         and (IsShiftKeyDown() and true or false) == (c.shift or false)
@@ -108,7 +111,9 @@ end
 local function keyLabel()
     local k = L:Config().key
     return k == "ctrl" and T("Ctrl + clic") or k == "shiftalt" and T("Maj + Alt + clic")
-        or k == "ctrlalt" and T("Ctrl + Alt + clic") or k == "ctrlshift" and T("Ctrl + Maj + clic") or T("Alt + clic")
+        or k == "ctrlalt" and T("Ctrl + Alt + clic") or k == "ctrlshift" and T("Ctrl + Maj + clic")
+        or k == "mid" and T("Clic molette") or k == "altmid" and T("Alt + clic molette") or k == "ctrlmid" and T("Ctrl + clic molette")
+        or T("Alt + clic")
 end
 UI.ItemLockKeyLabel = keyLabel
 local function blockMsg(id)
@@ -137,11 +142,11 @@ local function decorate(btn)
     o.icon:SetSize(9, 9)
     o.icon:SetPoint("CENTER", o.badge, "CENTER")
     o.icon:SetVertexColor(0.08, 0.06, 0.07, 1)
-    -- repère BiS (Modules/BiS.lua) : étoile en haut à gauche
+    -- repère BiS (Modules/BiS.lua) : étoile en bas à gauche
     o.bisRing = o:CreateTexture(nil, "OVERLAY", nil, 5)
     o.bisRing:SetTexture(UI.MEDIA .. "circle")
     o.bisRing:SetSize(17, 17)
-    o.bisRing:SetPoint("TOPLEFT", -3, 3)
+    o.bisRing:SetPoint("BOTTOMLEFT", -3, -3)
     o.bisRing:SetVertexColor(0, 0, 0, 0.9)
     o.bisBadge = o:CreateTexture(nil, "OVERLAY", nil, 6)
     o.bisBadge:SetTexture(UI.MEDIA .. "circle")
@@ -162,7 +167,7 @@ local function decorate(btn)
         local bag, slot = bagSlot(btn)
         local id = itemAt(bag, slot)
         if not id then return end
-        if modDown() and button == "LeftButton" then L:Toggle(id) return end
+        if modDown(button) then L:Toggle(id) return end
         if L:IsLocked(id) then blockMsg(id) return end
         local exp, ah, vendor = L:Expensive(id)
         if exp and button == "RightButton" then confirm(bag, slot, id, ah, vendor) end
@@ -183,7 +188,7 @@ local function decorate(btn)
     -- (les sacs de WoW Forever ne passent pas toujours par OnClick : GLOBAL_MOUSE_DOWN plus bas fait le même travail ;
     -- OnClick ne sert que de secours, pour un appui que GLOBAL_MOUSE_DOWN n'a pas déjà traité)
     btn:HookScript("OnClick", function(b, button)
-        if button ~= "LeftButton" or not modDown() or UI.ItemLockPressHandled() then return end
+        if not modDown(button) or UI.ItemLockPressHandled() then return end
         UI.ItemLockAltClick(b)
     end)
     btn.wkLock = o
@@ -358,14 +363,14 @@ driver:SetScript("OnEvent", function(_, ev, button)
         if pressAt then C_Timer.After(0, function() pressAt = nil end) end
         return
     end
-    if ev ~= "GLOBAL_MOUSE_DOWN" or button ~= "LeftButton" or not modDown() or not WK:FeatureOn("inventory") then return end
+    if ev ~= "GLOBAL_MOUSE_DOWN" or not modDown(button) or not WK:FeatureOn("inventory") then return end
     if L:MerchantOpen() then return end -- chez le marchand, le cache de la case s'en occupe
     -- d'abord la case réellement sous la souris (les cases recyclées d'une liste qui défile changent d'objet)
     local foci = GetMouseFoci and GetMouseFoci()
     local focus = (foci and foci[1]) or (GetMouseFocus and GetMouseFocus())
     local hit = findBagButton(focus)
     if hit then local r = rootOf(hit); if r then roots[r] = true end end
-    if not hit then eachButton(function(b) if not hit and b:IsVisible() and MouseIsOver(b) then hit = b end end) end
+    if not hit then eachButton(function(b) if not hit and b:IsVisible() and b:IsMouseOver() then hit = b end end) end
     if hit then
         pressAt = GetTime()
         UI.ItemLockAltClick(hit)
@@ -442,7 +447,7 @@ function UI:BagDiag()
     -- toutes les cases connues sous la souris : laquelle porte le cadenas, et est-il visible ?
     local function nm(b) return (b.GetName and b:GetName()) or ("<" .. (b.GetObjectType and b:GetObjectType() or "?") .. ">") end
     eachButton(function(b)
-        if b:IsVisible() and MouseIsOver(b) then
+        if b:IsVisible() and b:IsMouseOver() then
             local bag, slot = bagSlot(b)
             local id = itemAt(bag, slot)
             local o = b.wkLock

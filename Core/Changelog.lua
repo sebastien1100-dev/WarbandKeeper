@@ -8,6 +8,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.25.3", date = "18/11/2026",
+        added = {
+            "Objets verrouillés : nouvelles touches au clic molette (Clic molette, Alt + clic molette, Ctrl + clic molette), pour ne pas gêner les addons qui prennent les combinaisons au clic gauche (Polstar et Ctrl + Alt + clic).",
+        },
+        changed = {
+            "Étoile BiS sur les cases des sacs : en bas à gauche de la case.",
+            "Halo : portée de 15 m au plus ; le mode pêche la monte à 60 m seulement le temps de pêcher.",
+        },
+        fixed = {
+            "Liste BiS, menu « … » : erreur Lua à chaque clic quand le menu était ouvert (fonction absente sur ce client).",
+            "Halo : après la pêche, la portée restait à 60 m au lieu de revenir à la tienne.",
+            "Objets verrouillés : la recherche de la case sous la souris utilisait la même fonction absente.",
+        },
+    },
+    {
         version = "1.25.2", date = "18/11/2026",
         fixed = {
             "Carte : à Auberdine (et ailleurs), des quais apparaissaient en double. C'étaient des trajets en bateau appris avant la 1.24.5 qui doublaient les trajets connus (Menethil, Rut'theran) : ils sont retirés. Deux quais au même endroit ne font plus qu'une pastille, avec toutes leurs destinations au survol.",
