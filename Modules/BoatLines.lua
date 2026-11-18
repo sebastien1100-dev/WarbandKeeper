@@ -358,3 +358,53 @@ function M:ChatText(l, s)
     return string.format(st.atDock and T("%s (%s) : à quai, départ dans %s") or T("%s (%s) : départ dans %s, puis toutes les %s"),
         name, vessel, pre .. Clock(st.inn), Clock(st.P))
 end
+
+---------------------------------------------------------------------------
+-- Annonces des maîtres de quai (« Le … à destination de … vient d'arriver ») : quand tu es près d'un quai,
+-- l'arrivée annoncée cale l'heure de la ligne sans la prendre. La ligne est celle du quai le plus proche
+-- dont l'autre quai est nommé dans l'annonce (ou la seule ligne de ce quai).
+---------------------------------------------------------------------------
+local ARRIVED = { "vient d'arriver", "vient d'accoster", "est arriv", "est à quai", "just arrived", "has arrived", "now docked" }
+local function lower(s) return (s or ""):lower() end
+local lastAnnounce = {}
+local function onAnnounce(msg)
+    if type(msg) ~= "string" or (issecretvalue and issecretvalue(msg)) then return end
+    local m = lower(msg)
+    local hit = false
+    for _, w in ipairs(ARRIVED) do if m:find(w, 1, true) then hit = true break end end
+    if not hit then return end
+    local G = WK.modules.Guide
+    local p = G and G:PlayerPos()
+    if not (p and p.cont) then return end
+    local cands = {}
+    for _, l in ipairs(M:All()) do
+        for s, st in ipairs(l.stops) do
+            if st.c == p.cont and dist(st.x, st.y, p.wx, p.wy) < 250 then table.insert(cands, { l = l, s = s }) end
+        end
+    end
+    if #cands == 0 then return end
+    local pick
+    if #cands == 1 then pick = cands[1]
+    else
+        for _, c in ipairs(cands) do
+            for k = 1, #c.l.stops do
+                if k ~= c.s then
+                    local fr = lower(c.l.stops[k].name)
+                    local tr = lower(T(c.l.stops[k].name))
+                    if m:find(fr, 1, true) or m:find(tr, 1, true) then pick = c break end
+                end
+            end
+            if pick then break end
+        end
+    end
+    if not pick then return end
+    local key = pick.l.key .. pick.s
+    if lastAnnounce[key] and GetTime() - lastAnnounce[key] < 60 then return end
+    lastAnnounce[key] = GetTime()
+    M:Observe(pick.l, pick.s, "arrive")
+    if WK.modules.Nav and WK.modules.Nav.BoatLog then
+        WK.modules.Nav.BoatLog(string.format("arrivée annoncée au quai : %s", M:LineName(pick.l)))
+    end
+end
+WK:On("CHAT_MSG_MONSTER_SAY", onAnnounce)
+WK:On("CHAT_MSG_MONSTER_YELL", onAnnounce)

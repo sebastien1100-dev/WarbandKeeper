@@ -62,6 +62,10 @@ local function build()
     for _, cdef in ipairs(cols) do
         local h = UI:Text(f, 9, C.dim); h:SetPoint("TOPLEFT", cdef[2], -52); h:SetText(cdef[1])
     end
+    f.help = UI:Text(f, 10, C.muted)
+    f.help:SetJustifyH("LEFT")
+    if f.help.SetWordWrap then f.help:SetWordWrap(true) end
+    f.help:SetText(T("Pour qu'un navire avance et que ses départs s'affichent, il suffit d'un départ vu : prends-le une fois, ou sur le quai clique « Il part » / « Il arrive » dans le bandeau, ou attends l'annonce du maître de quai (repérée toute seule), ou qu'un membre de ta guilde ou de ton groupe la partage."))
     f.rows = {}
     local function row(i)
         local r = f.rows[i]
@@ -77,8 +81,8 @@ local function build()
         r.tour = UI:Text(r, 11); r.tour:SetPoint("LEFT", 300, 0)
         r.track = r:CreateTexture(nil, "ARTWORK"); r.track:SetSize(80, 5); r.track:SetPoint("LEFT", 350, 0)
         r.fill = r:CreateTexture(nil, "ARTWORK", nil, 2); r.fill:SetHeight(5); r.fill:SetPoint("LEFT", r.track, "LEFT")
-        r.dep = UI:Text(r, 11); r.dep:SetPoint("TOPLEFT", 446, -4); r.dep:SetWidth(80); r.dep:SetJustifyH("LEFT")
-        r.from = UI:Text(r, 9, C.muted); r.from:SetPoint("TOPLEFT", 446, -19); r.from:SetWidth(80); r.from:SetJustifyH("LEFT")
+        r.dep = UI:Text(r, 11); r.dep:SetPoint("TOPLEFT", 446, -4); r.dep:SetPoint("RIGHT", -34, 0); r.dep:SetJustifyH("LEFT")
+        r.from = UI:Text(r, 9, C.muted); r.from:SetPoint("TOPLEFT", 446, -19); r.from:SetPoint("RIGHT", -34, 0); r.from:SetJustifyH("LEFT")
         if r.from.SetWordWrap then r.from:SetWordWrap(false) end
         r.share = UI:IconButton(r, "send", 22, T("Partager dans le chat"))
         r.share:SetPoint("RIGHT", -8, 0)
@@ -154,14 +158,17 @@ local function build()
                 r.dep:SetText(st.atDock and (UI:Hex(C.positive) .. T("à quai") .. " " .. Clock(st.inn) .. "|r") or (pre .. Clock(st.inn)))
                 r.from:SetText(string.format(T("de %s"), B:StopName(l, nearestStop(l))))
             else
-                r.dep:SetText(UI:Hex(C.dim) .. T("à caler") .. "|r")
-                r.from:SetText(T("prends-le ou signale-le"))
+                r.dep:SetText(UI:Hex(C.dim) .. T("heure inconnue") .. "|r")
+                r.from:SetText("")
             end
             r:Show()
         end
         for i = #list + 1, #self.rows do self.rows[i]:Hide() end
         self.sub:SetText(string.format(T("%d lignes · heure calée pour %d · trajets et tours tirés des fichiers du jeu et de Nauticus"), #list, known))
-        self:SetHeight(HEAD + #list * ROW + 14)
+        -- aucune heure calée : expliquer comment faire (une seule fois suffit par ligne)
+        self.help:SetShown(known < #list)
+        self.help:ClearAllPoints(); self.help:SetPoint("TOPLEFT", 16, -(HEAD + #list * ROW + 8)); self.help:SetPoint("RIGHT", -16, 0)
+        self:SetHeight(HEAD + #list * ROW + 14 + (known < #list and 46 or 0))
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el

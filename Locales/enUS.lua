@@ -1015,6 +1015,8 @@ WK.Locales.enUS.text = {
     ["Mon prix"] = "My price",
     ["Reste"] = "Left",
     ["Scanner"] = "Scan",
+    ["heure inconnue"] = "time unknown",
+    ["Pour qu'un navire avance et que ses départs s'affichent, il suffit d'un départ vu : prends-le une fois, ou sur le quai clique « Il part » / « Il arrive » dans le bandeau, ou attends l'annonce du maître de quai (repérée toute seule), ou qu'un membre de ta guilde ou de ton groupe la partage."] = "For a ship to move and its departures to show, one seen departure is enough: take it once, or on the dock click \"Leaving\" / \"Arriving\" in the banner, or wait for the dockmaster's announcement (picked up automatically), or for a guild or group member to share it.",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

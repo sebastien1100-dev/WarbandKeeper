@@ -28,6 +28,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.34.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Bateaux : l'annonce du maître de quai (« … vient d'arriver ») est repérée quand tu es près du quai et cale l'heure de la ligne toute seule, sans prendre le bateau ni cliquer.
+
+### Modifications
+- Tableau des bateaux : tant qu'une ligne n'a pas d'heure, il dit « heure inconnue » et explique en bas comment la caler (un seul départ vu suffit), au lieu d'un texte coupé.
+
 ## v1.34.1 — 18/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.34.2", date = "18/11/2026",
+        added = {
+            "Bateaux : l'annonce du maître de quai (« … vient d'arriver ») est repérée quand tu es près du quai et cale l'heure de la ligne toute seule, sans prendre le bateau ni cliquer.",
+        },
+        changed = {
+            "Tableau des bateaux : tant qu'une ligne n'a pas d'heure, il dit « heure inconnue » et explique en bas comment la caler (un seul départ vu suffit), au lieu d'un texte coupé.",
+        },
+    },
+    {
         version = "1.34.1", date = "18/11/2026",
         fixed = {
             "Hôtel des ventes : nos onglets passaient sous des éléments de la fenêtre du jeu (texte « 10% », titre d'onglet par-dessus) ; ils sont maintenant au-dessus de tout.",
