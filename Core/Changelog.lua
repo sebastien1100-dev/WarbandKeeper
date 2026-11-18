@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.6", date = "18/11/2026",
+        changed = {
+            "Plans de montée : supprimer un plan du perso connecté ferme le panneau « Plan de montée » et la fenêtre des talents du jeu à laquelle il est collé (hors combat).",
+        },
+    },
+    {
         version = "1.19.5", date = "18/11/2026",
         fixed = {
             "Plans de montée : « Ouvrir le panneau » (et /wk plan) ouvrait le panneau derrière la fenêtre de l'addon, invisible ; il s'ouvre maintenant au premier plan, collé à droite de la fenêtre.",

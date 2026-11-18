@@ -179,6 +179,14 @@ end
 function UI:ToggleTalentPlan()
     if panel and panel:IsShown() then panel:Hide() else UI:ShowTalentPlan(host and host:IsShown() and host or nil) end
 end
+-- Un plan supprimé : on ferme le panneau et la fenêtre des talents du jeu à laquelle il est collé (hors combat)
+function UI:CloseTalentPlan()
+    if panel and panel:IsShown() then panel:Hide() end
+    if glow then glow:Hide() end
+    if host and host:IsShown() and not (InCombatLockdown and InCombatLockdown()) then
+        if HideUIPanel then pcall(HideUIPanel, host) else pcall(host.Hide, host) end
+    end
+end
 function UI:RefreshTalentPlan() if panel and panel:IsShown() then panel:Paint() end end
 
 -- Accroche à la fenêtre des talents du jeu (chargée à la demande)

@@ -32,6 +32,7 @@ function M:New(key, name)
 end
 function M:Delete(key, i)
     local s = store(key)
+    if key == WK:CharKey() and WK.UI and WK.UI.CloseTalentPlan then WK.UI:CloseTalentPlan() end
     table.remove(s.list, i)
     if s.active == i then s.active = nil elseif s.active and s.active > i then s.active = s.active - 1 end
     WK:NotifyChanged()
