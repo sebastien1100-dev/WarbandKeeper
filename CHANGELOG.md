@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.29.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire : colonne de gauche plus sobre. Deux groupes, « Outils » et « Persos », une ligne par entrée et le chiffre dans une pastille à droite (à la couleur d'accent pour l'entrée choisie, en or quand il y a quelque chose à faire : à ranger, à regrouper, oubliés). Le détail (« 13 objets dispersés »…) est dans l'infobulle.
+
 ## v1.29.0 — 18/11/2026
 
 _Un /reload suffit._

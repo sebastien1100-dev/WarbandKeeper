@@ -843,6 +843,8 @@ WK.Locales.enUS.text = {
     ["au marchand"] = "to the vendor",
     ["moins de %s à l'HV · %s"] = "under %s on the AH · %s",
     ["+ %d autres"] = "+ %d more",
+    ["Outils"] = "Tools",
+    ["Verrouillés"] = "Locked",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

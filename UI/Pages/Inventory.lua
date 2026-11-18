@@ -72,31 +72,57 @@ UI:RegisterPage({
         self.tabScroll = ts
         self.tabs = UI:Pool(function()
             local b = CreateFrame("Button", nil, ts.child)
-            b:SetHeight(42)
-            b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 1)
+            b:SetHeight(32)
+            b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
             b.bar = CreateFrame("Frame", nil, b)
             b.bar:SetSize(3, 18)
             b.bar:SetPoint("LEFT", 0, 0)
             b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
-            b.icon = UI:RoundIcon(b, 24)
+            b.icon = UI:RoundIcon(b, 22)
             b.icon:SetPoint("LEFT", 10, 0)
             b.glyph = UI:Icon(b, "users", 16)
             b.glyph:SetPoint("CENTER", b.icon, "CENTER")
+            -- chiffre dans une pastille à droite (accent si sélectionné, or s'il y a quelque chose à faire)
+            b.pill = CreateFrame("Frame", nil, b)
+            b.pill:SetSize(30, 16); b.pill:SetPoint("RIGHT", -8, 0)
+            b.pillBg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 2)
+            b.pillT = UI:Text(b.pill, 10, C.muted); b.pillT:SetPoint("CENTER", 0, 0)
             b.name = UI:Text(b, 12)
-            b.name:SetPoint("TOPLEFT", 42, -7)
-            b.name:SetPoint("TOPRIGHT", -8, -7)
-            b.sub = UI:Text(b, 10, C.muted)
-            b.sub:SetPoint("TOPLEFT", b.name, "BOTTOMLEFT", 0, -3)
-            b.sub:SetPoint("TOPRIGHT", b.name, "BOTTOMRIGHT", 0, -3)
+            b.name:SetPoint("LEFT", 40, 0)
+            b.name:SetPoint("RIGHT", b.pill, "LEFT", -6, 0)
+            -- détail (« 13 objets dispersés »…) gardé pour l'infobulle
+            b.sub = { SetText = function(t, v) t.text = v end }
+            function b:SetCount(n, warn)
+                self.count, self.warn = n, warn
+                self.pillT:SetText(n and tostring(n) or "")
+                self.pill:SetShown(n ~= nil)
+                self.pill:SetWidth(math.max(22, (self.pillT:GetStringWidth() or 10) + 12))
+            end
             function b:Paint()
                 local sel = self.selected
-                self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+                local r, g, bb = UI:Accent()
+                if sel then self.bg:SetColor(r, g, bb, 0.12) else self.bg:SetColor(unpack(C.hover)) end
                 self.bg:SetShown(sel or self.hover)
                 self.bar:SetShown(sel)
-                self.barTex:SetColor(UI:Accent())
+                self.barTex:SetColor(r, g, bb)
+                if sel then
+                    self.pillBg:SetColor(r, g, bb, 1); self.pillT:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+                elseif self.warn then
+                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2); self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                else
+                    self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1); self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                end
             end
-            b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
-            b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+            b:SetScript("OnEnter", function(s)
+                s.hover = true; s:Paint()
+                if s.sub.text and s.sub.text ~= "" then
+                    WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                    GameTooltip:SetText(s.name:GetText() or "", 1, 1, 1)
+                    GameTooltip:AddLine(s.sub.text, 0.75, 0.75, 0.75)
+                    GameTooltip:Show()
+                end
+            end)
+            b:SetScript("OnLeave", function(s) s.hover = false; s:Paint(); GameTooltip:Hide() end)
             b:SetScript("OnClick", function(s)
                 self.char = s.key
                 cfg.invChar = s.key
@@ -776,9 +802,25 @@ UI:RegisterPage({
         if wb then table.insert(entries, { key = "warband" }) end
 
         self.tabs:Reset()
-        local y = 0
+        -- deux groupes : OUTILS (tout le compte et les vues d'aide) puis PERSOS (et le bataillon)
+        if not self.tabHeads then
+            self.tabHeads = {}
+            for i, label in ipairs({ "Outils", "Persos" }) do
+                local h = UI:Text(self.tabScroll.child, 10, C.dim)
+                h:SetText(UI:Upper(T(label)))
+                self.tabHeads[i] = h
+            end
+        end
+        local y = 4
         local accountTotal = 0
-        for _, e in ipairs(entries) do
+        local function head(i)
+            local h = self.tabHeads[i]
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 10, -y)
+            y = y + 18
+        end
+        head(1)
+        for i, e in ipairs(entries) do
+            if e.c and not entries.persoHead then entries.persoHead = true; y = y + 10; head(2) end
             local b = self.tabs:Get()
             b.key = e.key
             b:ClearAllPoints()
@@ -793,44 +835,53 @@ UI:RegisterPage({
                 b.name:SetText(WK:CharName(e.c, e.key))
                 b.name:SetTextColor(UI:ClassColor(e.c.class))
                 b.sub:SetText(string.format(T("%d objets"), n))
+                b:SetCount(n)
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
                 local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send" }
                 b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Objets verrouillés", stash = "Rangement" }
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement" }
                 b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
                     local n = countItems(wb.items)
                     b.sub:SetText(string.format(T("%d objets"), n))
+                    b:SetCount(n)
                 elseif e.key == "spread" then
                     local n = #WK.modules.Inventory:Spread()
                     b.sub:SetText(string.format(T("%d objets dispersés"), n))
+                    b:SetCount(n, n > 0)
                 elseif e.key == "stash" then
                     local r = WK.modules.Stash:Route()
                     local n = #r.ah.list + #r.vendor.list
                     for _, d in pairs(r.dest) do n = n + #d.list end
                     b.sub:SetText(string.format(T("%d objets à ranger"), n))
+                    b:SetCount(n, n > 0)
                 elseif e.key == "locks" then
                     local n = 0
                     for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
                     b.sub:SetText(string.format(T("%d à la main"), n))
+                    b:SetCount(#WK.modules.ItemLock:List())
                 elseif e.key == "old" then
                     local n = #WK.modules.Inventory:Forgotten(self.oldDays)
                     b.sub:SetText(string.format(T("%d depuis %d j"), n, self.oldDays))
+                    b:SetCount(n, n > 0)
+                else
+                    b:SetCount(nil)
                 end
                 e.button = b
             end
             b.selected = (self.char == e.key)
             b:Paint()
-            y = y + 46
+            y = y + 34
         end
-        -- Total du compte sous « Tout le compte ».
+        -- Total du compte sur « Tout le compte ».
         local all = entries[1].button
         local wbn = wb and countItems(wb.items) or 0
         all.sub:SetText(string.format(T("%d objets"), accountTotal + wbn))
+        all:SetCount(accountTotal + wbn); all:Paint()
         self.tabScroll:SetContentHeight(y)
     end,
 

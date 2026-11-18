@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.29.1", date = "18/11/2026",
+        changed = {
+            "Inventaire : colonne de gauche plus sobre. Deux groupes, « Outils » et « Persos », une ligne par entrée et le chiffre dans une pastille à droite (à la couleur d'accent pour l'entrée choisie, en or quand il y a quelque chose à faire : à ranger, à regrouper, oubliés). Le détail (« 13 objets dispersés »…) est dans l'infobulle.",
+        },
+    },
+    {
         version = "1.29.0", date = "18/11/2026",
         changed = {
             "Inventaire > Rangement : plus lisible. En haut, trois chiffres (à envoyer à tes persos, pour l'HV avec la valeur, au marchand) ; dessous, une colonne par destination (ton perso à sa couleur de classe avec ses métiers, le perso HV en or, le marchand). Chaque objet a sa raison et qui le détient en petit dessous (« de Lapine ») ; au-delà de 6 objets, « + N autres » déplie la colonne.",
