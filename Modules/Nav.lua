@@ -646,6 +646,13 @@ function M:Boats()
 end
 local ride, lastS
 local function epoch() return (GetServerTime and GetServerTime()) or time() end
+-- journal des traversées (/wk bateau) : début, fin et raison d'un refus ; 12 dernières lignes
+M.boatLog = {}
+local function blog(msg)
+    table.insert(M.boatLog, date("%H:%M:%S") .. "  " .. msg)
+    while #M.boatLog > 12 do table.remove(M.boatLog, 1) end
+end
+M.BoatLog = blog
 local function zoneName(map)
     local R = WK.modules.Rares
     local ok, n = pcall(function() return R and R:ZoneName(map) end)
@@ -668,10 +675,11 @@ local function endRide(endP, arr)
 end
 learnRide = function(r, endP, learn)
     local len = lineLen(r.pts)
-    if not r.crossed and len < 150 then return end
+    if not r.crossed and len < 150 then blog(string.format("fin : trop court (%d m)", len)) return end
     local a, b = dock(r.start), dock(endP)
-    if not validBoat(a, b) then return end
-    if knownRoute(a, b) then learn() return end
+    if not validBoat(a, b) then blog(string.format("fin : refusé (%s » %s, %s)", tostring(a.name), tostring(b.name), a.c ~= b.c and "autre continent" or "même zone ou moins de 500 m")) return end
+    if knownRoute(a, b) then blog(string.format("fin : trajet connu %s » %s, horaires notés", tostring(a.name), tostring(b.name))); learn() return end
+    blog(string.format("fin : %s » %s (%d m)", tostring(a.name), tostring(b.name), len))
     local boats = M:Boats()
     local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
     for i = 1, #path.pts do path.pts[i] = floor(path.pts[i] + 0.5) end
@@ -692,7 +700,8 @@ learnRide = function(r, endP, learn)
     if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
 end
 local function rideTick()
-    if not cfg().learn then ride = nil; lastS = nil return end
+    if not cfg().learn then ride = nil; lastS = nil; M.rideOff = true return end
+    M.rideOff = nil
     local p = Gd():PlayerPos()
     if not (p and p.cont) then return end
     local now = GetTime()
@@ -701,24 +710,46 @@ local function rideTick()
         local dt = now - lastS.t
         if lastS.cont ~= p.cont then
             -- écran de chargement pendant le trajet : arrivée sur l'autre continent
-            if ride then ride.crossed = true; endRide(p, epoch()) end
+            if ride then ride.crossed = true; endRide(p, epoch())
+            else blog("changement de continent sans traversée repérée") end
         elseif dt > 0 then
             local v = dist(p.wx, p.wy, lastS.wx, lastS.wy) / dt
             local moving = (IsPlayerMoving and IsPlayerMoving()) or (GetUnitSpeed and (GetUnitSpeed("player") or 0) > 0 and not IsPlayerMoving)
-            if not taxi and not moving and v > 3 and v < 60 then
-                if not ride then ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) } end
+            -- porté par un transport : immobile et la position avance ; ou, même en marchant sur le pont,
+            -- la position avance bien plus vite que le perso ne peut courir
+            local own = GetUnitSpeed and GetUnitSpeed("player") or 7
+            local carried = (not moving and v > 3) or (v > math.max(12, (own or 7) * 1.6))
+            if not taxi and carried and v < 80 then
+                if not ride then
+                    ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) }
+                    blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
+                end
                 ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy
                 ride.still, ride.last = 0, p
             elseif ride then
                 ride.still = ride.still + dt
                 -- il descend du bateau, ou le bateau est à quai depuis un moment
-                if moving or taxi or ride.still > 8 then endRide(ride.last, epoch() - ride.still) end
+                if moving or taxi or ride.still > 8 then
+                    blog(moving and "arrêt : le perso bouge" or taxi and "arrêt : vol" or "arrêt : immobile 8 s")
+                    endRide(ride.last, epoch() - ride.still)
+                end
             end
         end
     end
     lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now }
 end
 M.IsRiding = function() return ride ~= nil end
+-- /wk bateau : état de la détection et journal des traversées
+function M:BoatDiag()
+    local out = {}
+    local p = Gd():PlayerPos()
+    table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d",
+        M.rideOff and "coupé (QoL > Carte, Apprendre les chemins)" or "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
+        ride and "oui" or "non", #M:Boats()))
+    for _, l in ipairs(M.boatLog) do table.insert(out, l) end
+    if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end
+    return out
+end
 
 WK:On("PLAYER_LOGOUT", function() M:EndTrail() end)
 WK:On("PLAYER_LOGIN", function()

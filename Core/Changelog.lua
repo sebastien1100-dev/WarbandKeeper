@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.2", date = "18/11/2026",
+        fixed = {
+            "Bateaux : une traversée n'était pas repérée quand le jeu considérait le perso en mouvement sur le pont ; elle l'est maintenant aussi quand la position avance bien plus vite que le perso ne peut courir.",
+        },
+        added = {
+            "/wk bateau : la détection des bateaux est-elle active, es-tu en traversée, et le journal des derniers trajets (début, fin, ou pourquoi un trajet n'a pas été retenu).",
+        },
+    },
+    {
         version = "1.31.1", date = "18/11/2026",
         fixed = {
             "Infobulles d'objets de l'addon (butin des donjons, listes…) : la comparaison avec l'objet équipé ne s'ouvre plus à côté, par-dessus ; Maj enfoncée la montre quand même.",

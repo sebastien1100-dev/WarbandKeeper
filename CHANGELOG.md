@@ -29,6 +29,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.31.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk bateau : la détection des bateaux est-elle active, es-tu en traversée, et le journal des derniers trajets (début, fin, ou pourquoi un trajet n'a pas été retenu).
+
+### Corrections
+- Bateaux : une traversée n'était pas repérée quand le jeu considérait le perso en mouvement sur le pont ; elle l'est maintenant aussi quand la position avance bien plus vite que le perso ne peut courir.
+
 ## v1.31.1 — 18/11/2026
 
 _Un /reload suffit._
