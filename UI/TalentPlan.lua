@@ -10,7 +10,6 @@ local T = function(s) return WK.T(s) end
 local P = WK.modules.TalentPlan
 local panel, glow, host
 local FRAMES = { "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame", "TalentFrame" }
-local ROWS = 12
 
 local function enabled()
     local s = WK.DB.global.settings.ui
@@ -56,18 +55,25 @@ local function build()
         local ok, why = P:PlaceNext()
         if not ok then WK:Print(why or "") end
     end)
-    f.stepsHead = UI:Text(f, 10, C.dim); f.stepsHead:SetPoint("TOPLEFT", 14, -164); f.stepsHead:SetText(UI:Upper(T("Étapes")))
+    f.stepsHead = UI:Text(f, 10, C.dim); f.stepsHead:SetText(UI:Upper(T("Étapes")))
+    -- toutes les étapes du plan, dans une liste qui défile ; celles déjà apprises sont grisées
+    f.list = UI:Scroll(f)
+    f.list:SetPoint("BOTTOMRIGHT", -6, 28)
     f.rows = {}
-    for i = 1, ROWS do
-        local r = CreateFrame("Frame", nil, f)
+    function f:Row(i)
+        local r = self.rows[i]
+        if r then return r end
+        r = CreateFrame("Frame", nil, self.list.child)
         r:SetHeight(22)
-        r:SetPoint("TOPLEFT", 10, -178 - (i - 1) * 23); r:SetPoint("TOPRIGHT", -10, -178 - (i - 1) * 23)
+        r:SetPoint("TOPLEFT", 4, -(i - 1) * 23); r:SetPoint("TOPRIGHT", -4, -(i - 1) * 23)
         r.bg = r:CreateTexture(nil, "BACKGROUND"); r.bg:SetTexture("Interface\\Buttons\\WHITE8X8"); r.bg:SetAllPoints()
-        r.lv = UI:Text(r, 11); r.lv:SetPoint("LEFT", 4, 0); r.lv:SetWidth(26); r.lv:SetJustifyH("CENTER")
-        r.icon = UI:RoundIcon(r, 18); r.icon:SetPoint("LEFT", 34, 0)
-        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 58, 0); r.name:SetPoint("RIGHT", -20, 0)
-        r.ok = UI:Text(r, 11, C.positive); r.ok:SetPoint("RIGHT", -4, 0)
-        f.rows[i] = r
+        r.lv = UI:Text(r, 11); r.lv:SetPoint("LEFT", 2, 0); r.lv:SetWidth(26); r.lv:SetJustifyH("CENTER")
+        r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(18, 18); r.icon:SetPoint("LEFT", 32, 0)
+        r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 56, 0); r.name:SetPoint("RIGHT", -48, 0)
+        r.ok = UI:Text(r, 11, C.positive); r.ok:SetPoint("RIGHT", -2, 0)
+        self.rows[i] = r
+        return r
     end
     f.foot = UI:Text(f, 10, C.dim); f.foot:SetPoint("BOTTOMLEFT", 14, 10)
 
@@ -79,40 +85,43 @@ local function build()
         self.planBtn:SetLabel(plan and (plan.name .. "  ·  " .. T("changer")) or T("Aucun plan : crée-le dans la fiche (onglet Talents)"))
         local pr = P:Progress(key)
         local hasStep = pr and pr.step and pr.talent
-        self.now:SetShown(plan ~= nil)
-        if plan then
-            if hasStep then
-                self.nowLvl:SetText(string.format(T("Niveau %d · %d point(s) libre(s)"), P.FIRST_LEVEL + pr.next - 1, pr.free))
-                self.nowIcon:SetTexture(pr.talent[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
-                self.nowName:SetText(string.format("%s |cff9ca3ab(%d/%d)|r", pr.talent[1], P:StepRank(plan, pr.next), pr.talent[6] or 1))
-                self.place:Show(); self.place:SetEnabled(pr.free > 0)
-            else
-                self.nowLvl:SetText(T("Plan terminé"))
-                self.nowIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-                self.nowName:SetText(string.format(T("%d point(s) prévus, tous placés"), #plan.steps))
-                self.place:Hide()
-            end
+        -- encart de l'étape en cours, seulement s'il reste un point à prendre
+        self.now:SetShown(hasStep and true or false)
+        if hasStep then
+            self.nowLvl:SetText(string.format(T("Niveau %d · %d point(s) libre(s)"), P.FIRST_LEVEL + pr.next - 1, pr.free))
+            self.nowIcon:SetTexture(pr.talent[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
+            self.nowName:SetText(string.format("%s |cff9ca3ab(%d/%d)|r", pr.talent[1], P:StepRank(plan, pr.next), pr.talent[6] or 1))
+            self.place:SetEnabled(pr.free > 0)
         end
-        -- étapes autour de l'étape en cours
+        local listTop = hasStep and -162 or -70
+        self.stepsHead:ClearAllPoints(); self.stepsHead:SetPoint("TOPLEFT", 14, listTop)
+        self.list:ClearAllPoints(); self.list:SetPoint("TOPLEFT", 6, listTop - 14); self.list:SetPoint("BOTTOMRIGHT", -6, 28)
+        -- toutes les étapes : grisées quand le talent a déjà ce rang
         local cur = pr and pr.next or 1
-        local first = math.max(1, cur - 2)
-        for i, r in ipairs(self.rows) do
-            local n = first + i - 1
-            local st = plan and plan.steps[n]
+        local n = plan and #plan.steps or 0
+        for i = 1, math.max(n, #self.rows) do
+            local r = self:Row(i)
+            local st = plan and plan.steps[i]
             if st then
                 local d = P:Talent(c, st)
-                r.lv:SetText(P.FIRST_LEVEL + n - 1)
+                local want = P:StepRank(plan, i)
+                local learned = d and (d[5] or 0) >= want
+                r.lv:SetText(P.FIRST_LEVEL + i - 1)
                 r.icon:SetTexture(d and d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
-                r.name:SetText(string.format("%s |cff9ca3ab%d/%d|r", d and d[1] or st[4] or "?", P:StepRank(plan, n), d and d[6] or 1))
-                local done = n < cur
-                r:SetAlpha(done and 0.45 or 1)
-                r.ok:SetText(done and "•" or "")
-                r.bg:SetVertexColor(r1, g1, b1, n == cur and 0.18 or 0)
+                if r.icon.SetDesaturated then r.icon:SetDesaturated(learned) end
+                r.name:SetText(string.format("%s |cff9ca3ab%d/%d|r", d and d[1] or st[4] or "?", want, d and d[6] or 1))
+                r:SetAlpha(learned and 0.4 or 1)
+                r.ok:SetText(learned and T("appris") or "")
+                r.bg:SetVertexColor(r1, g1, b1, (not learned and i == cur) and 0.18 or 0)
                 r:Show()
             else
                 r:Hide()
             end
         end
+        self.list.child:SetWidth(math.max(200, (self.list:GetWidth() or 288) - 14))
+        self.list:SetContentHeight(n * 23 + 4)
+        -- l'étape en cours reste visible
+        if self.list.SetVerticalScroll and cur > 4 then pcall(self.list.SetVerticalScroll, self.list, (cur - 3) * 23) end
         self.foot:SetText(plan and string.format(T("%d / %d points du plan"), pr and pr.spent or 0, #plan.steps) or "")
         UI:TalentPlanGlow()
     end

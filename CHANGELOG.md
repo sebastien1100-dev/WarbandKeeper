@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Panneau « Plan de montée » : toutes les étapes du plan dans une liste qui défile ; celles déjà apprises sont grisées et marquées « appris », l'étape en cours est surlignée. L'encart du haut n'apparaît plus que s'il reste un talent à prendre (plus de point d'interrogation quand le plan est terminé).
+
 ## v1.19.1 — 18/11/2026
 
 _Un /reload suffit._

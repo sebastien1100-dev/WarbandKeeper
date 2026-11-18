@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.2", date = "18/11/2026",
+        changed = {
+            "Panneau « Plan de montée » : toutes les étapes du plan dans une liste qui défile ; celles déjà apprises sont grisées et marquées « appris », l'étape en cours est surlignée. L'encart du haut n'apparaît plus que s'il reste un talent à prendre (plus de point d'interrogation quand le plan est terminé).",
+        },
+    },
+    {
         version = "1.19.1", date = "18/11/2026",
         fixed = {
             "Barre d'expérience : la partie repos paraissait grise (bleu trop transparent sur le fond sombre) ; elle est maintenant d'un bleu franc.",
