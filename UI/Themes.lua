@@ -42,6 +42,12 @@ local function palette(b)
         negative = { 0.91, 0.42, 0.42, 1 },
         warning  = { 0.95, 0.66, 0.30, 1 },
         gold     = { 0.878, 0.741, 0.447, 1 },
+        -- couleurs de sens, communes à tous les thèmes (à utiliser au lieu de valeurs en dur dans les pages)
+        info     = { 0.30, 0.58, 1.00, 1 },  -- bleu : repos, information
+        rule     = { 0.31, 0.82, 0.77, 1 },  -- turquoise : automatique, par règle
+        plan     = { 0.71, 0.49, 0.95, 1 },  -- violet : mode plan, prévu
+        silver   = { 0.72, 0.74, 0.78, 1 },  -- argent : secondaire (autre perso)
+        mint     = { 0.66, 0.88, 0.71, 1 },  -- menthe : pastille de compte
         -- rôles de groupe (onglet LFG)
         tank     = { 0.48, 0.65, 0.86, 1 },
         heal     = { 0.56, 0.82, 0.54, 1 },
