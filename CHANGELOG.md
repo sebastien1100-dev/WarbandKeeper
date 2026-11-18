@@ -12,7 +12,6 @@ _Prévu, pas encore commencé._
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
 - Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.
 - Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
-- Objets verrouillés : ne verrouiller que les recettes qu'aucun de tes persos n'a encore apprises.
 - Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).
 - Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
@@ -30,6 +29,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.29.2 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Objets verrouillés, règle « Recettes » : une recette qu'un de tes persos a déjà apprise n'est plus verrouillée ; tu peux la vendre. Seules restent verrouillées celles qu'aucun de tes persos ne connaît encore.
 
 ## v1.29.1 — 18/11/2026
 

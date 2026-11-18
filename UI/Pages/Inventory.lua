@@ -430,7 +430,7 @@ UI:RegisterPage({
         end
         rule("Objets épiques et plus", nil, "epic")
         rule("Objets de ma liste d'envies", "Donjons > Mes envies, tous les persos.", "wish")
-        rule("Recettes", "Celles d'un métier qu'un de tes persos a appris.", "recipes")
+        rule("Recettes", "Celles d'un métier qu'un de tes persos a appris, et qu'aucun de tes persos n'a encore apprises.", "recipes")
         rule("Objets de quête", nil, "quest")
         rule("Valeur HV au-dessus d'un seuil", "Prix relevé par le scan de l'hôtel des ventes.", "value")
         UI:SettingRow(rules, y, "Seuil de valeur HV", nil, UI:Slider(rules, 220, 1, 100, 1,

@@ -93,6 +93,27 @@ local function profHeld(sub)
     return false
 end
 
+-- Recette déjà apprise par un de tes persos (RecipeDB : objet fabriqué ou sort) ? Inconnue de RecipeDB : non.
+local learned, learnedAt = nil, -10
+local function knownByAnyone(id)
+    local S = WK.modules.Stash
+    local rec = S and S.RecipeOf and S:RecipeOf(id)
+    if not rec then return false end
+    if not learned or GetTime() - learnedAt > 5 then
+        learned, learnedAt = { names = {} }, GetTime()
+        local R = WK.modules.Recipes
+        for _, c in pairs(WK.DB.global.characters) do
+            local k = R and R:KnownOutputs(c) or { names = {} }
+            for out in pairs(k) do if out ~= "names" then learned[out] = true end end
+            for nm in pairs(k.names or {}) do learned.names[nm] = true end
+        end
+    end
+    if rec.o and learned[rec.o] then return true end
+    local name = rec.s and WK.SpellInfo and WK.SpellInfo(rec.s)
+    return name ~= nil and learned.names[name] == true
+end
+M.KnownByAnyone = function(_, id) return knownByAnyone(id) end
+
 -- Raison du verrou : "manual", ou le libellé de la règle ; nil si l'objet n'est pas verrouillé
 function M:Reason(id)
     if not id then return nil end
@@ -104,7 +125,7 @@ function M:Reason(id)
     local r = d.cfg.rules
     local why = false
     local classID, subID = instant(id)
-    if r.recipes and classID == 9 and RECIPE_PROF[subID] and profHeld(subID) then
+    if r.recipes and classID == 9 and RECIPE_PROF[subID] and profHeld(subID) and not knownByAnyone(id) then
         why = string.format(T("recette de %s"), T(RECIPE_PROF[subID]):lower())
     elseif r.quest and classID == 12 then
         why = T("objet de quête")
