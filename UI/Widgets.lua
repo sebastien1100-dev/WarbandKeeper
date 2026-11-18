@@ -937,8 +937,26 @@ function UI:UnskinTooltip(tt)
     end
 end
 
+-- Nos infobulles d'objet n'ouvrent pas la comparaison du jeu à côté (deux infobulles qui se chevauchent) ;
+-- Maj enfoncée la montre quand même.
+local compareHooked
+local function hookCompare()
+    if compareHooked then return end
+    compareHooked = true
+    GameTooltip:HookScript("OnHide", function(t) t.wkOwned = nil end)
+    for _, name in ipairs({ "ShoppingTooltip1", "ShoppingTooltip2", "ShoppingTooltip3" }) do
+        local st = _G[name]
+        if st and st.HookScript then
+            st:HookScript("OnShow", function(s)
+                if GameTooltip.wkOwned and GameTooltip:IsShown() and not (IsShiftKeyDown and IsShiftKeyDown()) then s:Hide() end
+            end)
+        end
+    end
+end
 function UI:TooltipOwner(owner, anchor, x, y)
+    hookCompare()
     GameTooltip:SetOwner(owner, anchor, x, y)
+    GameTooltip.wkOwned = true
     UI:SkinTooltip(GameTooltip)
 end
 

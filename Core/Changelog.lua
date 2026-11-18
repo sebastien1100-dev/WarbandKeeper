@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.1", date = "18/11/2026",
+        fixed = {
+            "Infobulles d'objets de l'addon (butin des donjons, listes…) : la comparaison avec l'objet équipé ne s'ouvre plus à côté, par-dessus ; Maj enfoncée la montre quand même.",
+        },
+    },
+    {
         version = "1.31.0", date = "18/11/2026", restart = true,
         added = {
             "Horaires des bateaux et zeppelins, appris en les prenant : chaque traversée note l'heure du départ et la durée du trajet ; le tour se déduit des départs vus (« ~ » tant qu'il est encore estimé, il se précise à chaque traversée).",

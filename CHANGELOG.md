@@ -29,6 +29,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.31.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Infobulles d'objets de l'addon (butin des donjons, listes…) : la comparaison avec l'objet équipé ne s'ouvre plus à côté, par-dessus ; Maj enfoncée la montre quand même.
+
 ## v1.31.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
