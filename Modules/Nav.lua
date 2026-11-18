@@ -317,7 +317,7 @@ local function compute(target)
                     local thc = Gd().ToWorld(there[1], there[2] / 100, there[3] / 100)
                     if hc == cont and thc == tc then
                         local d = dist(sx, sy, hx, hy)
-                        if not bd or d < bd then best, bd = { here = here, there = there, x = hx, y = hy, kind = r.kind }, d end
+                        if not bd or d < bd then best, bd = { here = here, there = there, x = hx, y = hy, kind = r.kind, line = r }, d end
                     end
                 end
             end
@@ -325,7 +325,8 @@ local function compute(target)
         if not best then return { legs = {}, cont = cont, noRoute = true } end
         local pts = walk(cont, sx, sy, best.x, best.y, 4)
         legs[1] = { kind = "walk", pts = pts, len = lineLen(pts) }
-        legs[2] = { kind = best.kind, to = best.there[4], from = best.here[4] }
+        legs[2] = { kind = best.kind, to = best.there[4], from = best.here[4], line = best.line,
+                    side = best.line and (best.here == best.line.a and "a" or "b") }
         return { legs = legs, cont = cont, partial = true }
     end
     local D = dist(sx, sy, tx, ty)
@@ -444,7 +445,19 @@ function M:Waypoint()
         local nextLeg = r.legs[r.leg + 1]
         local text
         if nextLeg and nextLeg.kind == "fly" then text = string.format(T("Vers le maître de vol (%s)"), nextLeg.from)
-        elseif nextLeg then text = string.format(T("Vers le quai : %s"), nextLeg.from or "?") end
+        elseif nextLeg then
+            text = string.format(T("Vers le quai : %s"), nextLeg.from or "?")
+            -- horaires appris : départ, et si on arrive à temps (marche jusqu'au quai)
+            local BT = WK.modules.BoatTimes
+            local st = BT and nextLeg.line and BT:State(nextLeg.line, nextLeg.side)
+            if st then
+                local walkT = rest / speed()
+                local pre = st.est and "~" or ""
+                text = text .. "  ·  " .. string.format(T("départ dans %s"), pre .. BT.Clock(st.inn))
+                if walkT <= st.inn - 3 then text = text .. "  ·  " .. T("tu arrives à temps")
+                else text = text .. "  ·  " .. string.format(T("le suivant dans %s"), pre .. BT.Clock(st.following)) end
+            end
+        end
         for j = r.leg + 1, #r.legs do
             local l = r.legs[j]
             if l.kind == "walk" then rest = rest + (l.len or 0) end
@@ -458,7 +471,15 @@ function M:Waypoint()
         end
         return leg.ax, leg.ay, string.format(T("Vol : %s » %s"), leg.from, leg.to), nil
     else
-        return nil, nil, string.format(T("Prends le %s pour %s"), leg.kind == "zeppelin" and T("zeppelin") or T("bateau"), leg.to or "?"), nil
+        local txt = string.format(T("Prends le %s pour %s"), leg.kind == "zeppelin" and T("zeppelin") or T("bateau"), leg.to or "?")
+        local BT = WK.modules.BoatTimes
+        local st = BT and leg.line and BT:State(leg.line, leg.side)
+        if st then
+            local pre = st.est and "~" or ""
+            txt = txt .. "  ·  " .. (st.atDock and string.format(T("à quai, départ dans %s"), pre .. BT.Clock(st.inn))
+                or string.format(T("départ dans %s"), pre .. BT.Clock(st.inn)))
+        end
+        return nil, nil, txt, nil
     end
 end
 
@@ -624,6 +645,7 @@ function M:Boats()
     return d.boats
 end
 local ride, lastS
+local function epoch() return (GetServerTime and GetServerTime()) or time() end
 local function zoneName(map)
     local R = WK.modules.Rares
     local ok, n = pcall(function() return R and R:ZoneName(map) end)
@@ -632,15 +654,24 @@ end
 local function dock(p)
     return { map = p.map, x = floor(p.x * 10000) / 100, y = floor(p.y * 10000) / 100, name = zoneName(p.map), c = p.cont, wx = floor(p.wx), wy = floor(p.wy) }
 end
-local function endRide(endP)
+local learnRide
+local function endRide(endP, arr)
     local r = ride
     ride = nil
     if not (r and endP and endP.cont) then return end
+    -- horaires (Modules/BoatTimes.lua) : départ et arrivée de cette traversée, une fois la ligne connue
+    local function learn()
+        local BT = WK.modules.BoatTimes
+        if BT and r.t0 then pcall(BT.Learn, BT, dock(r.start), dock(endP), r.t0, arr) end
+    end
+    learnRide(r, endP, learn)
+end
+learnRide = function(r, endP, learn)
     local len = lineLen(r.pts)
     if not r.crossed and len < 150 then return end
     local a, b = dock(r.start), dock(endP)
     if not validBoat(a, b) then return end
-    if knownRoute(a, b) then return end
+    if knownRoute(a, b) then learn() return end
     local boats = M:Boats()
     local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
     for i = 1, #path.pts do path.pts[i] = floor(path.pts[i] + 0.5) end
@@ -650,11 +681,13 @@ local function endRide(endP)
         local rev = (e.b.c == a.c and dist(e.b.wx, e.b.wy, a.wx, a.wy) < 150 and e.a.c == b.c and dist(e.a.wx, e.a.wy, b.wx, b.wy) < 250)
         if same or rev then
             if same and (#path.pts > #(e.path and e.path.pts or {})) then e.path = path end
+            learn()
             return
         end
     end
     table.insert(boats, { kind = "boat", a = a, b = b, path = path })
     graphs = {}
+    learn()
     WK:Print(string.format(T("Nouveau trajet en bateau appris : %s » %s."), a.name, b.name))
     if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
 end
@@ -668,18 +701,18 @@ local function rideTick()
         local dt = now - lastS.t
         if lastS.cont ~= p.cont then
             -- écran de chargement pendant le trajet : arrivée sur l'autre continent
-            if ride then ride.crossed = true; endRide(p) end
+            if ride then ride.crossed = true; endRide(p, epoch()) end
         elseif dt > 0 then
             local v = dist(p.wx, p.wy, lastS.wx, lastS.wy) / dt
             local moving = (IsPlayerMoving and IsPlayerMoving()) or (GetUnitSpeed and (GetUnitSpeed("player") or 0) > 0 and not IsPlayerMoving)
             if not taxi and not moving and v > 3 and v < 60 then
-                if not ride then ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0 } end
+                if not ride then ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) } end
                 ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy
                 ride.still, ride.last = 0, p
             elseif ride then
                 ride.still = ride.still + dt
                 -- il descend du bateau, ou le bateau est à quai depuis un moment
-                if moving or taxi or ride.still > 8 then endRide(ride.last) end
+                if moving or taxi or ride.still > 8 then endRide(ride.last, epoch() - ride.still) end
             end
         end
     end

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.0", date = "18/11/2026", restart = true,
+        added = {
+            "Horaires des bateaux et zeppelins, appris en les prenant : chaque traversée note l'heure du départ et la durée du trajet ; le tour se déduit des départs vus (« ~ » tant qu'il est encore estimé, il se précise à chaque traversée).",
+            "Carte du monde : sous chaque quai déjà pris, le prochain départ (« dans 3:10 », vert « à quai · 0:42 » quand le bateau est là) ; au survol, départ, suivant, durée du trajet et du tour, pour chaque destination.",
+            "Au quai : à moins de 60 m, un bandeau donne le prochain départ avec une barre qui se vide, « À quai : monte, il part dans… », et les autres destinations du quai. À placer en mode édition ; réglage dans QoL > Carte, Navigation.",
+            "Navigation : vers un quai, la flèche dit « départ dans X » et « tu arrives à temps » ou « le suivant dans X » ; au quai, « à quai, départ dans X ».",
+        },
+    },
+    {
         version = "1.30.0", date = "18/11/2026", restart = true,
         added = {
             "Donjons > Parcours : chrono du passage en tête de l'onglet, avec le record du donjon (temps, perso, date), ton avance ou ton retard au dernier boss, la moyenne de tes passages complets et une barre d'avancée (trait or : où en était le record au même moment).",
@@ -2827,7 +2836,6 @@ WK.Roadmap = {
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
-    "Voyages : horaires des bateaux et zeppelins (compte à rebours jusqu'au prochain départ, « bateau à quai »), appris en les prenant ; la navigation dirait « départ dans X » au quai.",
     "Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).",
     "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
     "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",

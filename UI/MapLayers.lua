@@ -40,6 +40,15 @@ local function getPin(i, cv)
             GameTooltip:SetText(name, 1, 1, 1)
             if sub then GameTooltip:AddLine(sub, 0.8, 0.8, 0.8) end
             GameTooltip:AddLine(T(s.layer.label), col[1], col[2], col[3])
+            -- quai : horaires appris (Modules/BoatTimes.lua), une ligne par destination
+            local BT = WK.modules.BoatTimes
+            if s.docks and BT then
+                for _, d in ipairs(s.docks) do
+                    GameTooltip:AddLine(" ")
+                    GameTooltip:AddLine(string.format(T("vers %s"), d.to), 1, 0.85, 0.4)
+                    for _, ln in ipairs(BT:TooltipLines(d.line, d.side)) do GameTooltip:AddLine(ln[1], ln[2], ln[3], ln[4], true) end
+                end
+            end
             GameTooltip:AddLine(T("Clic : guider jusqu'ici"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
@@ -74,6 +83,27 @@ local function paintDock(p, kind, layer)
     p.icon:SetVertexColor(col[1], col[2], col[3], 1)
     if p.icon.SetRotation then p.icon:SetRotation(0) end
     return col
+end
+
+-- compte à rebours sous un quai : le départ le plus proche parmi ses destinations, vert quand le bateau est à quai
+local function dockLabelTick(lb, el)
+    lb.acc = (lb.acc or 0) + (el or 0)
+    if lb.acc < 1 then return end
+    lb.acc = 0
+    local BT = WK.modules.BoatTimes
+    local best, bs
+    for _, d in ipairs(lb.docks or {}) do
+        local txt, st
+        if BT then txt, st = BT:Label(d.line, d.side) end
+        if txt and st and (not bs or st.inn < bs.inn) then best, bs = txt, st end
+    end
+    if not best then lb.text:SetText(""); lb:SetSize(1, 1); lb.bg:Hide() return end
+    lb.bg:Show()
+    lb.text:SetText(best)
+    local col = bs.atDock and C.positive or (bs.inn < 60 and C.gold or C.text)
+    lb.text:SetTextColor(col[1], col[2], col[3])
+    lb.bg:SetColor(0.04, 0.04, 0.05, 0.85)
+    lb:SetSize((lb.text:GetStringWidth() or 30) + 10, 15)
 end
 
 local function getRoute(i, cv)
@@ -191,13 +221,15 @@ function UI:DrawMapLayers(cv, mapID, w, h)
                     (d.kind == "zeppelin" and T("Zeppelin") or T("Bateau")) .. " " .. string.format(T("vers %s"), d.to) }
         if twin then
             -- même quai : la destination s'ajoute à la pastille déjà posée
+            table.insert(twin.docks, d)
             if not twin.dest[d.to] then
                 twin.dest[d.to] = true
                 twin.e[6] = twin.e[6] .. ", " .. d.to
                 twin.e[7] = twin.e[7] .. ", " .. d.to
             end
         else
-            placed[#placed + 1] = { x = d.x, y = d.y, kind = d.kind or "boat", e = e, dest = { [d.to] = true } }
+            placed[#placed + 1] = { x = d.x, y = d.y, kind = d.kind or "boat", e = e, dest = { [d.to] = true }, docks = { d } }
+            r.pin.docks = placed[#placed].docks
         end
         r.pin.e, r.pin.layer, r.pin.mapID = e, tl, mapID
         paintPin(r.pin, tl, size)
@@ -206,8 +238,14 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         r.pin:ClearAllPoints()
         r.pin:SetPoint("CENTER", cv, "TOPLEFT", x0, -y0)
         r.pin:SetShown(not twin)
-        -- destination dans l'infobulle du quai seulement (plus d'étiquette posée sur la carte)
-        r.label:Hide()
+        -- destination dans l'infobulle du quai ; sous le quai, le prochain départ appris (compte à rebours)
+        r.label.docks = (not twin) and r.pin.docks or nil
+        r.label:ClearAllPoints(); r.label:SetPoint("TOP", r.pin, "BOTTOM", 0, -1)
+        r.label:SetFrameLevel(lvl + 2)
+        r.label:SetShown(not twin)
+        r.label.acc = 1
+        r.label:SetScript("OnUpdate", dockLabelTick)
+        dockLabelTick(r.label, 1)
     end
 end
 
