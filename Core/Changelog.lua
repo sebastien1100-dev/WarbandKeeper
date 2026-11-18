@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.8", date = "18/11/2026",
+        fixed = {
+            "Horaires des bateaux : le « ~ » devant les temps s'affichait mal avec la police du jeu ; il est remplacé par « env. » (« dans env. 1:20 »).",
+            "Bateaux : le quai d'arrivée pouvait prendre le nom du continent (« Bateau pour Kalimdor ») quand le jeu donne la carte du continent à bord ; c'est maintenant la zone sous le perso. Ces trajets mal nommés sont oubliés une fois.",
+        },
+    },
+    {
         version = "1.31.7", date = "18/11/2026",
         fixed = {
             "Bateaux vers un autre continent : la traversée se terminait à l'écran de chargement, en pleine mer (quai nommé « Royaumes de l'Est », durée du trajet trop courte, horaires faux). Elle se termine maintenant quand le bateau s'arrête au vrai quai. Les trajets et horaires appris avant sont oubliés une fois : reprends le bateau pour les réapprendre.",

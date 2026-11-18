@@ -160,11 +160,11 @@ function M.Clock(sec)
     if sec >= 3600 then return string.format("%d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60) end
     return string.format("%d:%02d", sec / 60, sec % 60)
 end
--- Texte court sous un quai : « à quai · 0:42 », « dans 3:10 » (« ~ » : tour encore estimé)
+-- Texte court sous un quai : « à quai · 0:42 », « dans 3:10 » (« env. » : tour encore estimé)
 function M:Label(l, side)
     local s = self:State(l, side)
     if not s or s.guess then return nil end
-    local pre = s.est and "~" or ""
+    local pre = s.est and T("env. ") or ""
     if s.atDock then return string.format(T("à quai · %s"), pre .. M.Clock(s.inn)), s end
     return string.format(T("dans %s"), pre .. M.Clock(s.inn)), s
 end
@@ -187,7 +187,7 @@ function M:TooltipLines(l, side)
         table.insert(out, { T("Horaires en cours d'apprentissage : prends-le encore une fois, ou signale son départ depuis le bandeau du quai."), 0.6, 0.6, 0.6 })
         return out
     end
-    local pre = s.est and "~" or ""
+    local pre = s.est and T("env. ") or ""
     if s.atDock then table.insert(out, { string.format(T("À quai, départ dans %s"), pre .. M.Clock(s.inn)), 0.62, 0.85, 0.48 })
     else table.insert(out, { string.format(T("Départ dans %s"), pre .. M.Clock(s.inn)), 1, 1, 1 }) end
     table.insert(out, { string.format(T("Suivant dans %s · trajet %s · tour %s"), pre .. M.Clock(s.following), M.Clock(s.travel), M.Clock(s.P)), 0.75, 0.75, 0.75 })

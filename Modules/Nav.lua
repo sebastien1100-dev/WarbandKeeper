@@ -452,7 +452,7 @@ function M:Waypoint()
             local st = BT and nextLeg.line and BT:State(nextLeg.line, nextLeg.side)
             if st then
                 local walkT = rest / speed()
-                local pre = st.est and "~" or ""
+                local pre = st.est and T("env. ") or ""
                 text = text .. "  ·  " .. string.format(T("départ dans %s"), pre .. BT.Clock(st.inn))
                 if walkT <= st.inn - 3 then text = text .. "  ·  " .. T("tu arrives à temps")
                 else text = text .. "  ·  " .. string.format(T("le suivant dans %s"), pre .. BT.Clock(st.following)) end
@@ -475,7 +475,7 @@ function M:Waypoint()
         local BT = WK.modules.BoatTimes
         local st = BT and leg.line and BT:State(leg.line, leg.side)
         if st then
-            local pre = st.est and "~" or ""
+            local pre = st.est and T("env. ") or ""
             txt = txt .. "  ·  " .. (st.atDock and string.format(T("à quai, départ dans %s"), pre .. BT.Clock(st.inn))
                 or string.format(T("départ dans %s"), pre .. BT.Clock(st.inn)))
         end
@@ -653,6 +653,16 @@ function M:Boats()
         for i = #d.boats, 1, -1 do if sea(d.boats[i].a) or sea(d.boats[i].b) then table.remove(d.boats, i) end end
         d.sched = nil
     end
+    -- une fois encore (1.31.8) : quai noté sur la carte du continent quand on est à bord
+    if not d.boatsChecked4 and C_Map and C_Map.GetMapInfo then
+        d.boatsChecked4 = true
+        for i = #d.boats, 1, -1 do
+            for _, q in ipairs({ d.boats[i].a, d.boats[i].b }) do
+                local ok, info = pcall(C_Map.GetMapInfo, q and q.map)
+                if ok and info and info.mapType and info.mapType <= 2 then table.remove(d.boats, i) break end
+            end
+        end
+    end
     return d.boats
 end
 local ride, lastS
@@ -670,7 +680,21 @@ local function zoneName(map)
     return (ok and n) or (GetZoneText and GetZoneText()) or "?"
 end
 local function dock(p)
-    return { map = p.map, x = floor(p.x * 10000) / 100, y = floor(p.y * 10000) / 100, name = zoneName(p.map), c = p.cont, wx = floor(p.wx), wy = floor(p.wy) }
+    local map, x, y = p.map, p.x, p.y
+    -- à bord, le jeu peut donner la carte du continent : on prend la zone sous le perso
+    local ok, info = pcall(C_Map.GetMapInfo, map)
+    if ok and info and info.mapType and info.mapType <= 2 and C_Map.GetMapInfoAtPosition then
+        local ok2, sub = pcall(C_Map.GetMapInfoAtPosition, map, x, y)
+        if ok2 and sub and sub.mapID and sub.mapID ~= map and CreateVector2D then
+            local ok3, _, pos = pcall(C_Map.GetMapPosFromWorldPos, p.cont, CreateVector2D(p.wx, p.wy), sub.mapID)
+            if ok3 and pos then
+                local mx, my = pos.x, pos.y
+                if pos.GetXY then mx, my = pos:GetXY() end
+                if mx and my then map, x, y = sub.mapID, mx, my end
+            end
+        end
+    end
+    return { map = map, x = floor(x * 10000) / 100, y = floor(y * 10000) / 100, name = zoneName(map), c = p.cont, wx = floor(p.wx), wy = floor(p.wy) }
 end
 local learnRide
 local function endRide(endP, arr)

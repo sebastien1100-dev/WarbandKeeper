@@ -897,6 +897,7 @@ WK.Locales.enUS.text = {
     ["Départ noté : les horaires de ce bateau se précisent."] = "Departure noted: this boat's schedule gets more precise.",
     ["Arrivée notée : les horaires de ce bateau se précisent."] = "Arrival noted: this boat's schedule gets more precise.",
     ["Prends ce bateau une fois d'abord : il faut connaître la durée du trajet."] = "Take this boat once first: the crossing time is needed.",
+    ["env. "] = "approx. ",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

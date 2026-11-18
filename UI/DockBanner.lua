@@ -92,7 +92,7 @@ local function build()
             self.sub:SetText(T("Horaires en cours d'apprentissage : signale son départ ou son arrivée, ou reprends-le."))
             self.track:Hide(); self.fill:Hide()
         elseif st then
-            local pre = st.est and "~" or ""
+            local pre = st.est and T("env. ") or ""
             self.time:SetText(pre .. Clock(st.inn))
             local col = st.atDock and C.positive or (st.inn < 60 and C.gold or C.text)
             self.time:SetTextColor(col[1], col[2], col[3])
@@ -114,7 +114,7 @@ local function build()
         for i = 2, #list do
             local o = list[i]
             local txt = o.to or "?"
-            if o.st and not o.st.guess then txt = txt .. " " .. (o.st.est and "~" or "") .. Clock(o.st.inn) end
+            if o.st and not o.st.guess then txt = txt .. " " .. (o.st.est and T("env. ") or "") .. Clock(o.st.inn) end
             table.insert(others, txt)
         end
         self.more:SetShown(#others > 0)

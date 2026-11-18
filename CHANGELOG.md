@@ -29,6 +29,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.31.8 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Horaires des bateaux : le « ~ » devant les temps s'affichait mal avec la police du jeu ; il est remplacé par « env. » (« dans env. 1:20 »).
+- Bateaux : le quai d'arrivée pouvait prendre le nom du continent (« Bateau pour Kalimdor ») quand le jeu donne la carte du continent à bord ; c'est maintenant la zone sous le perso. Ces trajets mal nommés sont oubliés une fois.
+
 ## v1.31.7 — 18/11/2026
 
 _Un /reload suffit._
