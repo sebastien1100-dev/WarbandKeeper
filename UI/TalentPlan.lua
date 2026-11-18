@@ -82,7 +82,22 @@ local function build()
         local c = WK.DB.global.characters[key]
         local plan = P:Active(key)
         local r1, g1, b1 = UI:Accent()
-        self.planBtn:SetLabel(plan and (plan.name .. "  ·  " .. T("changer")) or T("Aucun plan : crée-le dans la fiche (onglet Talents)"))
+        -- aucun plan : un texte sur plusieurs lignes au lieu du bouton (le libellé débordait)
+        if not self.empty then
+            self.empty = UI:Text(self, 12, C.muted)
+            self.empty:SetPoint("TOPLEFT", 14, -40); self.empty:SetPoint("RIGHT", -14, 0)
+            self.empty:SetJustifyH("LEFT")
+            if self.empty.SetWordWrap then self.empty:SetWordWrap(true) end
+            self.empty:SetText(T("Aucun plan de montée pour ce perso. Crée-le dans la fiche du perso, onglet Talents, carte « Plans de montée »."))
+        end
+        self.empty:SetShown(plan == nil)
+        self.planBtn:SetShown(plan ~= nil)
+        self.stepsHead:SetShown(plan ~= nil)
+        local label = plan and (plan.name .. "  ·  " .. T("changer")) or ""
+        self.planBtn:SetLabel(label)
+        -- nom de plan trop long : coupé dans le bouton
+        self.planBtn.label:SetWidth(self.planBtn:GetWidth() - 20)
+        if self.planBtn.label.SetWordWrap then self.planBtn.label:SetWordWrap(false) end
         local pr = P:Progress(key)
         local hasStep = pr and pr.step and pr.talent
         -- encart de l'étape en cours, seulement s'il reste un point à prendre

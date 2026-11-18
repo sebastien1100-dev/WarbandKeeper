@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.10", date = "18/11/2026",
+        fixed = {
+            "Panneau « Plan de montée » : sans plan, le texte d'aide débordait du bouton et du panneau ; il s'affiche maintenant sur plusieurs lignes dans le panneau. Un nom de plan trop long est coupé dans son bouton.",
+        },
+    },
+    {
         version = "1.19.9", date = "18/11/2026",
         fixed = {
             "Talents : pour certaines classes (le chasseur par exemple), un talent isolé à droite créait un 4e arbre « Arbre 4 », et les arbres perdaient leurs noms et leurs icônes. Les talents sont maintenant toujours rangés en trois arbres (un bloc isolé rejoint l'arbre voisin), avec les noms et icônes de spécialisation de la classe.",
