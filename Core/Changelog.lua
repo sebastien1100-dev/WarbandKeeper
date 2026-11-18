@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.17.0", date = "18/11/2026", restart = true,
+        added = {
+            "Liste BiS en mannequin : les emplacements disposés comme dans la Fiche (à gauche, à droite, armes au centre sous le portrait), chacun avec l'objet choisi en couleur de qualité, son emplacement, sa source et son état (porté, dans les sacs, à la banque, à obtenir). En haut : progression « obtenus », Copier depuis un autre perso, Partager (liens dans le chat), Vider.",
+            "Clic sur un emplacement : fenêtre de choix avec tous les objets du jeu de cet emplacement que ta classe peut porter (plus de 5 000 objets verts et plus, noms en français), recherche par nom, filtres de source (donjons, raids, artisanat, quêtes, autres), de qualité, de niveau et de type d'armure. Chaque ligne donne le niveau requis, où l'obtenir et les caractéristiques ; clic pour choisir. Clic droit sur un emplacement : retirer. Glisser-déposer et Maj+clic marchent toujours.",
+        },
+    },
+    {
         version = "1.16.0", date = "18/11/2026",
         added = {
             "Fiche du perso, onglet Talents : « Mes builds » sous les arbres. « Enregistrer le build actuel » garde tes talents sous un nom (répartition, niveau) ; plusieurs builds par perso. Chaque ligne dit l'écart avec tes talents actuels (actif, points à placer, points à retirer).",
@@ -2322,7 +2329,6 @@ WK.Roadmap = {
     "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",
     "Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.",
     "Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.",
-    "BiS, suite : ta liste en mannequin (emplacements disposés comme dans la Fiche, progression « obtenus »), fenêtre de choix par emplacement listant tous les objets du jeu que ta classe peut porter (recherche, filtres de source, d'armure, de niveau et de qualité ; données du jeu d'opendata, noms français), copier la liste d'un autre perso, la partager dans le chat.",
     "Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.",
     "Objets verrouillés : ne verrouiller que les recettes qu'aucun de tes persos n'a encore apprises.",
     "Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).",

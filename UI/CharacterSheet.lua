@@ -513,80 +513,258 @@ local function build(parent)
         end, T("Importer"))
     end)
 
-    -- Onglet BiS : meilleur objet trouvable en donjon par emplacement
+    -- Onglet BiS : ta liste, en mannequin (emplacements comme dans la Fiche) ; clic sur un emplacement = fenêtre de choix
     local bsc = UI:Scroll(f)
     bsc:SetPoint("TOPLEFT", 0, -98)
     bsc:SetPoint("BOTTOMRIGHT")
     bsc:Hide()
     f.bsc = bsc
+    local B = WK.modules.BiS
+    f.bisTitle = UI:Text(bsc.child, 13)
+    f.bisTitle:SetText(T("Ma liste BiS"))
+    f.bisProg = UI:Progress(bsc.child, 7)
     f.bisInfo = UI:Text(bsc.child, 11, C.muted)
-    f.bisCard = UI:Card(bsc.child, "")
-    f.bisNote = UI:Text(bsc.child, 10, C.dim)
-    f.bisNote:SetText(T("Meilleur objet des donjons (hors raids) que ta classe peut porter, selon ce qui compte pour elle. Clic sur un objet : guidage vers le donjon."))
     f.bisClear = UI:Button(bsc.child, "Vider", nil, 24, "danger")
-    f.bisClear:SetScript("OnClick", function() WK.modules.BiS:ClearList(f.key) end)
-    f.bisHeads = {}
-    for i, h in ipairs({ "Emplacement", "Porté", "Meilleur trouvable", "Où", "Gain" }) do
-        local t = UI:Text(f.bisCard, 10, C.dim)
-        t:SetText(UI:Upper(T(h)))
-        f.bisHeads[i] = t
+    f.bisShare = UI:Button(bsc.child, "Partager (lien chat)", nil, 24, "secondary")
+    f.bisCopy = UI:Button(bsc.child, "Copier depuis un autre perso", nil, 24, "secondary")
+    f.bisMid = CreateFrame("Frame", nil, bsc.child)
+    UI:Panel(f.bisMid, 12, C.bg, C.border)
+    f.bisRing = UI:Icon(f.bisMid, "ring", 78, nil, "ARTWORK")
+    f.bisRing:SetPoint("TOP", 0, -24)
+    f.bisCls = f.bisMid:CreateTexture(nil, "ARTWORK", nil, -1)
+    f.bisCls:SetSize(64, 64); f.bisCls:SetPoint("CENTER", f.bisRing)
+    if f.bisMid.CreateMaskTexture then
+        local m = f.bisMid:CreateMaskTexture()
+        m:SetTexture(UI.MEDIA .. "circle", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        m:SetAllPoints(f.bisCls); f.bisCls:AddMaskTexture(m)
     end
-    f.bisRows = {}
-    for i = 1, #WK.modules.BiS.SLOTS do
-        local r = CreateFrame("Frame", nil, f.bisCard)
-        r:SetHeight(28)
-        r.slot = UI:Text(r, 12, C.muted)
-        r.wIcon = r:CreateTexture(nil, "ARTWORK"); r.wIcon:SetSize(20, 20)
-        r.wText = UI:Text(r, 11, C.muted)
-        r.item = CreateFrame("Button", nil, r)
-        r.item:SetHeight(24)
-        r.bIcon = r.item:CreateTexture(nil, "ARTWORK"); r.bIcon:SetSize(20, 20); r.bIcon:SetPoint("LEFT", 0, 0)
-        r.bText = UI:Text(r.item, 12); r.bText:SetPoint("LEFT", 26, 0); r.bText:SetPoint("RIGHT", 0, 0)
-        r.where = UI:Text(r, 11, C.muted)
-        r.gain = UI:Text(r, 12, C.positive)
-        r.wish = UI:Button(r, "Envie", 76, 22, "secondary", "star")
-        r.item:SetScript("OnEnter", function(s)
-            if not r.e then return end
+    f.bisClass = UI:Text(f.bisMid, 13); f.bisClass:SetPoint("TOP", f.bisRing, "BOTTOM", 0, -10)
+    f.bisHint = UI:Text(f.bisMid, 10, C.dim); f.bisHint:SetPoint("TOP", f.bisClass, "BOTTOM", 0, -4)
+    f.bisHint:SetText(T("clic : choisir · clic droit : retirer"))
+    -- une tuile d'emplacement : icône (liseré de qualité), nom, emplacement · source · état
+    local function tile(parent, side)
+        local b = CreateFrame("Button", nil, parent)
+        b:SetHeight(44)
+        if b.RegisterForClicks then b:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+        UI:Panel(b, 8, C.surface, C.border)
+        b.edge = b:CreateTexture(nil, "ARTWORK")
+        b.edge:SetTexture("Interface\\Buttons\\WHITE8X8")
+        b.edge:SetSize(36, 36)
+        b.icon = b:CreateTexture(nil, "ARTWORK", nil, 1)
+        b.icon:SetSize(32, 32); b.icon:SetPoint("CENTER", b.edge)
+        b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        b.plus = UI:Text(b, 18); b.plus:SetPoint("CENTER", b.edge); b.plus:SetText("+")
+        b.name = UI:Text(b, 12); b.sub = UI:Text(b, 10, C.muted)
+        if side == "right" then
+            b.edge:SetPoint("RIGHT", -6, 0)
+            b.name:SetPoint("TOPRIGHT", -50, -7); b.sub:SetPoint("TOPRIGHT", -50, -24)
+            b.name:SetJustifyH("RIGHT"); b.sub:SetJustifyH("RIGHT")
+            b.name:SetPoint("LEFT", 8, 0); b.sub:SetPoint("LEFT", 8, 0)
+        elseif side == "left" then
+            b.edge:SetPoint("LEFT", 6, 0)
+            b.name:SetPoint("TOPLEFT", 50, -7); b.sub:SetPoint("TOPLEFT", 50, -24)
+            b.name:SetPoint("RIGHT", -8, 0); b.sub:SetPoint("RIGHT", -8, 0)
+        else
+            b:SetSize(44, 44)
+            b.edge:SetPoint("CENTER")
+            b.name:Hide(); b.sub:Hide()
+        end
+        b:SetScript("OnEnter", function(s)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            if GameTooltip.SetItemByID then GameTooltip:SetItemByID(r.e.id) end
+            if s.id and GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) else GameTooltip:SetText(T(s.label or ""), 1, 1, 1) end
             GameTooltip:AddLine(" ")
-            GameTooltip:AddLine(T("Clic : guidage vers le donjon"), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(s.id and T("Clic : changer · clic droit : retirer") or T("Clic : choisir un objet (ou glisse-le ici)"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
-        r.item:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        r.item:SetScript("OnClick", function() if r.e then WK.modules.Dungeons:GuideTo(r.e.d) end end)
-        r.wish:SetScript("OnClick", function()
-            if r.e then WK.modules.Dungeons:ToggleWish(r.e.id, r.e.d.key, f.key); f:Refresh() end
-        end)
-        -- Ma liste BiS : champ (Maj+clic sur un objet, glisser-déposer ou n°) et bouton Retirer
-        r.input = UI:Input(r, 240, 24, T("Maj+clic, glisse un objet ou tape son n°"))
-        r.input.edit.acceptLinks = true
-        local function setFrom(id)
-            if not id or not r.slotID then return end
-            WK.modules.BiS:Set(f.key, r.slotID, id)
-            r.input:SetText("")
-            r.input.edit:ClearFocus()
-        end
-        r.input.onChange = function(text, user)
-            if not text or text == "" then return end
-            local id = WK:ParseItemID(text) or (text:match("^%s*(%d+)%s*$") and tonumber(text))
-            if id and (text:find("|H", 1, true) or not user) then setFrom(id) end
-        end
-        r.input.onEnter = function(text)
-            local id = WK:ParseItemID(text) or tonumber(text or "")
-            if id then setFrom(id) end
-        end
-        local function drop()
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        local function drop(s)
             local kind, id = GetCursorInfo and GetCursorInfo()
-            if kind == "item" and id then setFrom(id); if ClearCursor then ClearCursor() end end
+            if kind == "item" and id then B:Set(f.key, s.slot, id); if ClearCursor then ClearCursor() end return true end
         end
-        r.item:SetScript("OnReceiveDrag", drop)
-        r.item:HookScript("OnMouseUp", drop)
-        r:EnableMouse(true)
-        r:SetScript("OnReceiveDrag", drop)
-        r.clear = UI:Button(r, "Retirer", 76, 22, "danger")
-        r.clear:SetScript("OnClick", function() if r.slotID then WK.modules.BiS:Set(f.key, r.slotID, nil) end end)
-        f.bisRows[i] = r
+        b:SetScript("OnReceiveDrag", drop)
+        b:SetScript("OnClick", function(s, btn)
+            if drop(s) then return end
+            if btn == "RightButton" then B:Set(f.key, s.slot, nil) return end
+            f:OpenPicker(s.slot, s.label)
+        end)
+        return b
+    end
+    f.bisTiles = {}
+    local LEFT_S, RIGHT_S, MID_S = { 1, 2, 3, 15, 5, 9 }, { 10, 6, 7, 8, 11, 12, 13, 14 }, { 16, 17, 18 }
+    for _, sl in ipairs(LEFT_S) do local t = tile(bsc.child, "left"); t.slot = sl; t.side = "left"; table.insert(f.bisTiles, t) end
+    for _, sl in ipairs(RIGHT_S) do local t = tile(bsc.child, "right"); t.slot = sl; t.side = "right"; table.insert(f.bisTiles, t) end
+    for _, sl in ipairs(MID_S) do local t = tile(f.bisMid, "mid"); t.slot = sl; t.side = "mid"; table.insert(f.bisTiles, t) end
+    f.bisWeap = UI:Text(f.bisMid, 10, C.dim)
+    f.bisWeap:SetText(T("Main droite · Main gauche · Distance"))
+    f.bisNote = UI:Text(bsc.child, 10, C.dim)
+    f.bisNote:SetText(T("Objets du jeu : wowlayerup-forever/opendata (CC BY 4.0). Maj+clic sur un objet avec la recherche active, ou glisser-déposer sur un emplacement, marchent aussi."))
+    f.bisClear:SetScript("OnClick", function()
+        f:Ask(T("Vider la liste BiS ?"), T("Tous les objets de la liste de ce perso seront retirés."), nil, function() B:ClearList(f.key) end, T("Vider"))
+    end)
+    f.bisShare:SetScript("OnClick", function()
+        local list = B:List(f.key)
+        local c = WK.DB.global.characters[f.key]
+        local text = T("Ma BiS") .. " (" .. ((c and c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class]) or "") .. ") :"
+        local n = 0
+        for _, s in ipairs(B.SLOTS) do
+            local id = list[s[1]]
+            local _, link = id and WK.GetItemInfo(id)
+            if link and #text + #link + 1 < 250 then text = text .. " " .. link; n = n + 1 end
+        end
+        if n == 0 then WK:Print(T("Liste vide (ou objets pas encore chargés par le jeu : réessaie).")) return end
+        WK.ChatInsert(text)
+    end)
+    f.bisCopy:SetScript("OnClick", function()
+        local names, keys = {}, {}
+        for key, c in pairs(WK.DB.global.characters) do
+            if key ~= f.key and next(B:List(key)) then table.insert(keys, key); table.insert(names, WK:CharName(c, key)) end
+        end
+        if #keys == 0 then WK:Print(T("Aucun autre perso n'a de liste BiS.")) return end
+        f:Ask(T("Copier une liste BiS"), T("Tape le nom du perso dont copier la liste : ") .. table.concat(names, ", "), names[1], function(v)
+            for i, nm in ipairs(names) do
+                if nm:lower() == (v or ""):lower() then
+                    local dst = B:List(f.key)
+                    for slot, id in pairs(B:List(keys[i])) do dst[slot] = id end
+                    WK:NotifyChanged()
+                    return
+                end
+            end
+            WK:Print(T("Perso introuvable."))
+        end, T("Copier"))
+    end)
+
+    -- Fenêtre de choix d'un objet pour un emplacement
+    local pk = CreateFrame("Frame", nil, f)
+    pk:SetSize(700, 470)
+    pk:SetPoint("CENTER", 0, -20)
+    pk:SetFrameLevel(f:GetFrameLevel() + 30)
+    pk:EnableMouse(true)
+    UI:Panel(pk, 12, C.bg, { UI:Accent() })
+    pk:Hide()
+    f.picker = pk
+    pk.title = UI:Text(pk, 14); pk.title:SetPoint("TOPLEFT", 16, -18)
+    pk.close = UI:Button(pk, "Fermer", nil, 26, "secondary"); pk.close:SetPoint("TOPRIGHT", -12, -12)
+    pk.close:SetScript("OnClick", function() pk:Hide() end)
+    pk.search = UI:Input(pk, 400, 28, T("Rechercher un objet…"), "search")
+    pk.search:SetPoint("TOPLEFT", 110, -12)
+    pk.search.edit.acceptLinks = true
+    pk.search.onChange = function(text, user)
+        local id = text and text:find("|H", 1, true) and WK:ParseItemID(text)
+        if id then B:Set(f.key, pk.slot, id); pk:Hide() return end
+        pk.f.query = text; pk:Fill()
+    end
+    pk.filters = { source = "all", quality = 3 }
+    pk.chips = UI:Pool(function()
+        local b = UI:Button(pk, "", nil, 22, "secondary")
+        return b
+    end)
+    pk.rows = {}
+    local list = UI:Scroll(pk)
+    list:SetPoint("TOPLEFT", 12, -110); list:SetPoint("BOTTOMRIGHT", -12, 34)
+    pk.list = list
+    pk.count = UI:Text(pk, 10, C.dim); pk.count:SetPoint("BOTTOMLEFT", 16, 12)
+    pk.heads = {}
+    for i, h in ipairs({ "Objet", "Niv.", "Où", "Caractéristiques" }) do
+        local t = UI:Text(pk, 10, C.dim); t:SetText(UI:Upper(T(h))); pk.heads[i] = t
+    end
+    local PX = { 4, 290, 330, 520 }
+    for i, t in ipairs(pk.heads) do t:SetPoint("TOPLEFT", 12 + PX[i], -94) end
+    local function prow(i)
+        local r = pk.rows[i]
+        if r then return r end
+        r = CreateFrame("Button", nil, list.child)
+        r:SetHeight(28)
+        r.hl = r:CreateTexture(nil, "HIGHLIGHT"); r.hl:SetTexture("Interface\\Buttons\\WHITE8X8"); r.hl:SetAllPoints(); r.hl:SetVertexColor(1, 1, 1, 0.06)
+        r.edge = r:CreateTexture(nil, "ARTWORK"); r.edge:SetTexture("Interface\\Buttons\\WHITE8X8"); r.edge:SetSize(24, 24); r.edge:SetPoint("LEFT", PX[1], 0)
+        r.icon = r:CreateTexture(nil, "ARTWORK", nil, 1); r.icon:SetSize(20, 20); r.icon:SetPoint("CENTER", r.edge); r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", PX[1] + 32, 0); r.name:SetWidth(PX[2] - PX[1] - 40)
+        r.lvl = UI:Text(r, 12); r.lvl:SetPoint("LEFT", PX[2], 0)
+        r.src = UI:Text(r, 11, C.muted); r.src:SetPoint("LEFT", PX[3], 0); r.src:SetWidth(PX[4] - PX[3] - 10)
+        r.stats = UI:Text(r, 11); r.stats:SetPoint("LEFT", PX[4], 0); r.stats:SetPoint("RIGHT", -6, 0)
+        r:SetScript("OnEnter", function(s) UI:TooltipOwner(s, "ANCHOR_RIGHT"); if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end; GameTooltip:Show() end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(s) B:Set(f.key, pk.slot, s.id); pk:Hide() end)
+        pk.rows[i] = r
+        return r
+    end
+    local MAXR = 150
+    function pk:Fill()
+        local c = WK.DB.global.characters[f.key]
+        if not c then return end
+        local fl = self.f
+        local items = B:Candidates(self.slot, c, fl)
+        for _, r in ipairs(self.rows) do r:Hide() end
+        local y = 0
+        for i, e in ipairs(items) do
+            if i > MAXR then break end
+            local r = prow(i)
+            r.id = e[1]
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+            local qc = QUALITY[e[5]] or QUALITY[2]
+            r.edge:SetVertexColor(qc[1], qc[2], qc[3], 1)
+            r.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(e[1])) or "Interface\\Icons\\INV_Misc_QuestionMark")
+            r.name:SetText(e[8]); r.name:SetTextColor(qc[1], qc[2], qc[3])
+            r.lvl:SetText(e[7] > 0 and e[7] or "-")
+            local _, where = B:SourceOf(e[1])
+            r.src:SetText(where)
+            r.stats:SetText(e[9])
+            r:Show()
+            y = y + 30
+        end
+        list:SetContentHeight(y)
+        self.count:SetText(#items > MAXR and string.format(T("%d objets (les %d premiers affichés : affine la recherche)"), #items, MAXR)
+            or string.format(T("%d objet(s) pour cet emplacement · clic : choisir · survol : infobulle"), #items))
+    end
+    -- rangées de filtres : source, qualité, niveau, type d'armure (emplacements d'armure seulement)
+    local ARMOR_SLOTS = { [1] = true, [3] = true, [5] = true, [9] = true, [10] = true, [6] = true, [7] = true, [8] = true }
+    function pk:Chips()
+        self.chips:Reset()
+        local fl = self.f
+        local x, y = 16, -50
+        local function chip(label, sel, fn)
+            local b = self.chips:Get()
+            b:SetLabel(T(label)); b:SetWidth(b.label:GetStringWidth() + 22)
+            b:SetStyle(sel and "primary" or "secondary")
+            if x + b:GetWidth() > 690 then x = 16; y = y - 26 end
+            b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, y)
+            b:SetScript("OnClick", function() fn(); self:Chips(); self:Fill() end)
+            x = x + b:GetWidth() + 5
+        end
+        for _, s in ipairs({ { "all", "Toutes sources" }, { "dungeon", "Donjons" }, { "raid", "Raids" }, { "craft", "Artisanat" }, { "quest", "Quêtes" }, { "other", "Autres" } }) do
+            chip(s[2], fl.source == s[1], function() fl.source = s[1] end)
+        end
+        x = x + 10
+        for _, q in ipairs({ { 2, "Vert et +" }, { 3, "Bleu et +" }, { 4, "Violet et +" } }) do
+            chip(q[2], fl.quality == q[1], function() fl.quality = q[1] end)
+        end
+        x = x + 10
+        for _, l in ipairs({ { nil, "Tous niveaux" }, { { 50, 60 }, "Niv. 50-60" }, { { 30, 49 }, "Niv. 30-49" }, { { 0, 29 }, "Niv. 1-29" } }) do
+            chip(l[2], (fl.level and l[1] and fl.level[1] == l[1][1]) or (not fl.level and not l[1]), function() fl.level = l[1] end)
+        end
+        if ARMOR_SLOTS[self.slot] then
+            x = x + 10
+            local c = WK.DB.global.characters[f.key]
+            chip("Toutes armures", not fl.armor, function() fl.armor = nil end)
+            for _, sub in ipairs(B:ArmorTypes(c)) do
+                chip(B.ARMOR[sub], fl.armor == sub, function() fl.armor = sub end)
+            end
+        end
+        -- la liste commence sous la dernière rangée de filtres
+        for i, t in ipairs(self.heads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", 12 + PX[i], y - 32) end
+        self.list:ClearAllPoints(); self.list:SetPoint("TOPLEFT", 12, y - 48); self.list:SetPoint("BOTTOMRIGHT", -12, 34)
+    end
+    function f:OpenPicker(slot, label)
+        pk.slot = slot
+        pk.title:SetText(T(label or ""))
+        pk.f = { source = pk.filters.source, quality = pk.filters.quality }
+        local c = WK.DB.global.characters[f.key]
+        -- armure : par défaut la meilleure que la classe porte au niveau 60
+        if ARMOR_SLOTS[slot] and c then local a = B:ArmorTypes(c); pk.f.armor = a[#a] end
+        pk.f.level = { 50, 60 }
+        pk.search:SetText("")
+        pk:Chips()
+        pk:Fill()
+        pk:Show()
     end
     return f
 end
@@ -906,84 +1084,94 @@ paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
 end
 
 
--- Onglet BiS, « Ma liste BiS » : objets choisis à la main par emplacement
-local refreshBisList
--- Onglet BiS
+-- Onglet BiS : ta liste en mannequin
+local SLOT_LABEL = {}
 local function refreshBis(f, c)
+    local B = WK.modules.BiS
+    for _, s in ipairs(B.SLOTS) do SLOT_LABEL[s[1]] = s[2] end
     local W = math.max(600, (f.bsc:GetWidth() or 840) - 12)
     f.bsc.child:SetWidth(W)
-    return refreshBisList(f, c, W)
-end
-
-refreshBisList = function(f, c, W)
-    local B, D = WK.modules.BiS, WK.modules.Dungeons
     local list = B:List(f.key)
-    local n, worn = 0, 0
     local gear = c.gear or {}
     local wornSet = {}
     for _, l in pairs(gear) do local id = WK:ParseItemID(l); if id then wornSet[id] = true end end
-    for _, id in pairs(list) do n = n + 1; if wornSet[id] then worn = worn + 1 end end
-    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("TOPLEFT", f.bsc.child, "TOPLEFT", 4, -10)
-    f.bisInfo:SetText(string.format(T("Ma liste BiS  ·  %d / %d portés"), worn, n))
-    f.bisClear:ClearAllPoints(); f.bisClear:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -4, -4)
-    local card = f.bisCard
-    card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -38); card:SetWidth(W)
-    local XS = { 16, 120, 220, math.floor(W * 0.55), W - 190 }
-    for i, t in ipairs(f.bisHeads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", XS[i], -16) end
-    f.bisHeads[3]:SetText(UI:Upper(T("Objet de ta liste"))); f.bisHeads[5]:SetText(UI:Upper(T("État")))
-    local y = -38
-    for i, r in ipairs(f.bisRows) do
-        local def = B.SLOTS[i]
-        r.slotID = def[1]
-        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:SetPoint("TOPRIGHT", 0, y)
-        r.slot:ClearAllPoints(); r.slot:SetPoint("LEFT", XS[1], 0); r.slot:SetText(T(def[2]))
-        r.wIcon:ClearAllPoints(); r.wIcon:SetPoint("LEFT", XS[2], 0)
-        r.wText:ClearAllPoints(); r.wText:SetPoint("LEFT", XS[2] + 26, 0)
-        local wl = gear[def[1]]
-        if wl then
-            local d = itemData(wl)
-            r.wIcon:SetTexture(d and d.icon or nil); r.wIcon:Show()
-            r.wText:SetText(d and d.ilvl and string.format(T("niv. %d"), d.ilvl) or "")
-        else
-            r.wIcon:Hide(); r.wText:SetText(T("vide"))
-        end
-        r.wish:Hide()
-        r.where:ClearAllPoints(); r.where:SetPoint("LEFT", XS[4], 0); r.where:SetWidth(XS[5] - XS[4] - 10)
-        r.gain:ClearAllPoints(); r.gain:SetPoint("LEFT", XS[5], 0)
-        r.clear:ClearAllPoints(); r.clear:SetPoint("RIGHT", -12, 0)
-        local id = list[def[1]]
-        if id then
-            r.input:Hide(); r.item:Show(); r.clear:Show()
-            r.item:ClearAllPoints(); r.item:SetPoint("LEFT", XS[3], 0); r.item:SetWidth(XS[4] - XS[3] - 12)
-            local name, _, q = WK.GetItemInfo(id)
-            local qc = QUALITY[q or 1] or QUALITY[1]
-            r.bIcon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)) or nil); r.bIcon:Show()
-            r.bText:SetText(name or ("#" .. id)); r.bText:SetTextColor(qc[1], qc[2], qc[3])
-            local d, boss, drop = B:Source(id)
-            r.e = d and { id = id, d = d } or nil
-            if d then
-                local where = D:Name(d) .. " · " .. (boss.trash and T("monstres") or D:BossName(boss))
-                if drop then where = where .. string.format(" · %s %%", string.format("%.0f", drop)) end
-                r.where:SetText(where)
-            else
-                r.where:SetText(T("hors donjon (artisanat, quête, raid…)"))
-            end
-            if wornSet[id] then r.gain:SetText(T("porté")); r.gain:SetTextColor(unpack(C.positive))
-            elseif c.bags and c.bags[id] then r.gain:SetText(T("dans les sacs")); r.gain:SetTextColor(unpack(C.gold))
-            elseif c.bank and c.bank[id] then r.gain:SetText(T("à la banque")); r.gain:SetTextColor(unpack(C.gold))
-            else r.gain:SetText(T("à obtenir")); r.gain:SetTextColor(unpack(C.muted)) end
-        else
-            r.e = nil
-            r.item:Hide(); r.bIcon:Hide(); r.clear:Hide()
-            r.input:ClearAllPoints(); r.input:SetPoint("LEFT", XS[3], 0); r.input:SetWidth(math.max(160, XS[4] - XS[3] - 12)); r.input:Show()
-            r.where:SetText(""); r.gain:SetText("")
-        end
-        y = y - 30
+    local n, worn, bags = 0, 0, 0
+    for _, id in pairs(list) do
+        n = n + 1
+        if wornSet[id] then worn = worn + 1 elseif (c.bags and c.bags[id]) or (c.bank and c.bank[id]) then bags = bags + 1 end
     end
-    card:SetHeight(-y + 10)
-    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", card, "BOTTOMLEFT", 4, -8)
-    f.bisNote:SetText(T("Ta liste, à remplir toi-même (par exemple pour le niveau 60) : Maj+clic sur un objet avec le champ actif, glisser-déposer, ou son n°. Les objets de ta liste le disent dans leur infobulle."))
-    f.bsc:SetContentHeight(38 - y + 40)
+    -- barre du haut
+    f.bisTitle:ClearAllPoints(); f.bisTitle:SetPoint("TOPLEFT", 4, -10)
+    f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("LEFT", f.bisTitle, "RIGHT", 12, 0); f.bisProg:SetWidth(180)
+    f.bisProg.color = { UI:Accent() }; f.bisProg:SetValue(n > 0 and worn / n or 0)
+    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisProg, "RIGHT", 12, 0)
+    f.bisInfo:SetText(string.format(T("%d / %d obtenus · %d dans les sacs ou la banque"), worn, n, bags))
+    f.bisClear:ClearAllPoints(); f.bisClear:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -4, -4)
+    f.bisShare:ClearAllPoints(); f.bisShare:SetPoint("RIGHT", f.bisClear, "LEFT", -6, 0)
+    f.bisCopy:ClearAllPoints(); f.bisCopy:SetPoint("RIGHT", f.bisShare, "LEFT", -6, 0)
+    -- trois colonnes : gauche, centre (portrait et armes), droite
+    local MIDW = 200
+    local colW = math.floor((W - MIDW - 24) / 2)
+    local top, step = 40, 50
+    local li, ri = 0, 0
+    for _, t in ipairs(f.bisTiles) do
+        t.label = SLOT_LABEL[t.slot]
+        local id = list[t.slot]
+        t.id = id
+        local e = id and B:Info(id)
+        local name, _, q = nil, nil, nil
+        if id then name, _, q = WK.GetItemInfo(id) end
+        q = q or (e and e[5]) or 1
+        local qc = QUALITY[q] or QUALITY[1]
+        if id then
+            t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)) or "Interface\\Icons\\INV_Misc_QuestionMark")
+            t.icon:Show(); t.plus:Hide()
+            t.edge:SetVertexColor(qc[1], qc[2], qc[3], 1)
+        else
+            t.icon:Hide(); t.plus:Show(); t.plus:SetTextColor(UI:Accent())
+            t.edge:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+        end
+        if t.side ~= "mid" then
+            if id then
+                t.name:SetText(name or (e and e[8]) or ("#" .. id)); t.name:SetTextColor(qc[1], qc[2], qc[3])
+                local _, where = B:SourceOf(id)
+                local state = wornSet[id] and ("|cff9ed17a" .. T("porté") .. "|r")
+                    or ((c.bags and c.bags[id]) and ("|cfff5d76e" .. T("dans les sacs") .. "|r"))
+                    or ((c.bank and c.bank[id]) and ("|cfff5d76e" .. T("à la banque") .. "|r"))
+                    or T("à obtenir")
+                t.sub:SetText(T(t.label) .. " · " .. where .. " · " .. state)
+            else
+                local r, g, b = UI:Accent()
+                t.name:SetText(string.format("%s · |cff%02x%02x%02x%s|r", T(t.label), r * 255, g * 255, b * 255, T("choisir…")))
+                t.name:SetTextColor(unpack(C.text))
+                t.sub:SetText(T("vide"))
+            end
+        end
+        t:ClearAllPoints()
+        if t.side == "left" then
+            t:SetPoint("TOPLEFT", 0, -(top + li * step)); t:SetWidth(colW); li = li + 1
+        elseif t.side == "right" then
+            t:SetPoint("TOPLEFT", colW + MIDW + 24, -(top + ri * step)); t:SetWidth(colW); ri = ri + 1
+        end
+    end
+    local rows = math.max(li, ri)
+    local h = rows * step - 6
+    f.bisMid:ClearAllPoints(); f.bisMid:SetPoint("TOPLEFT", colW + 12, -top); f.bisMid:SetSize(MIDW, h)
+    UI:SetClassIcon(f.bisCls, c.class)
+    local cr, cg, cb = UI:ClassColor(c.class)
+    f.bisRing:SetVertexColor(cr, cg, cb)
+    f.bisClass:SetText(c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class] or "")
+    local mi = 0
+    for _, t in ipairs(f.bisTiles) do
+        if t.side == "mid" then
+            t:ClearAllPoints(); t:SetPoint("BOTTOM", f.bisMid, "BOTTOM", (mi - 1) * 54, 30); mi = mi + 1
+        end
+    end
+    f.bisWeap:ClearAllPoints(); f.bisWeap:SetPoint("BOTTOM", 0, 12)
+    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(top + h + 10)); f.bisNote:SetPoint("RIGHT", -4, 0)
+    f.bisNote:SetJustifyH("LEFT")
+    f.bsc:SetContentHeight(top + h + 34)
+    if f.picker:IsShown() then f.picker:Fill() end
 end
 
 -- Mise à jour de la fiche : en-tête, puis les deux colonnes
@@ -1004,6 +1192,7 @@ local function refresh(f)
     f.score:SetTextColor(UI:Accent())
     for _, b in pairs(f.tabs) do b:Paint() end
     f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
+    if f.tab ~= "bis" then f.picker:Hide() end
     if f.tab == "talents" then return refreshTalents(f, c) end
     if f.tab == "bis" then return refreshBis(f, c) end
     f.lrows:Reset(); f.lheads:Reset()

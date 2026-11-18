@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -131,6 +131,41 @@ def everloot_encounters():
         return None
 
 
+OPENDATA_URL = "https://github.com/wowlayerup-forever/opendata"
+
+
+def opendata_items():
+    """Données ouvertes wowlayerup-forever/opendata (CC BY 4.0) : clone partiel de data/client (objets, quêtes,
+    recettes) et table ItemSparse du jeu en français (wago.tools). Rend (dossier, csv français ou None), ou (None, None)."""
+    import json
+    dest = os.path.join(CACHE, "opendata")
+    try:
+        if not os.path.isdir(os.path.join(dest, ".git")):
+            os.makedirs(CACHE, exist_ok=True)
+            subprocess.run(["git", "clone", "-q", "--depth", "1", "--filter=blob:none", "--sparse", OPENDATA_URL, dest], check=True)
+            git("sparse-checkout", "set", "data/client", cwd=dest)
+        else:
+            git("fetch", "-q", "--depth", "1", "origin", cwd=dest)
+            git("reset", "-q", "--hard", "FETCH_HEAD", cwd=dest)
+    except Exception as e:
+        log("  ! opendata indisponible :", e)
+        return None, None
+    fr = None
+    try:
+        wdir = os.path.join(CACHE, "wago")
+        os.makedirs(wdir, exist_ok=True)
+        builds = os.path.join(wdir, "builds.json")
+        if fetch(WAGO + "/api/builds", builds):
+            with open(builds, encoding="utf-8") as f:
+                version = json.load(f)["wowf"][0]["version"]
+            path = os.path.join(wdir, "ItemSparse-frFR.csv")
+            if fetch("%s/db2/ItemSparse/csv?build=%s&locale=frFR" % (WAGO, version), path):
+                fr = path
+    except Exception as e:
+        log("  ! noms français des objets indisponibles :", e)
+    return dest, fr
+
+
 # ---------------------------------------------------------------------------
 # Chiffres de chaque fichier généré (chargé avec lupa : sert aussi de contrôle)
 # ---------------------------------------------------------------------------
@@ -164,6 +199,8 @@ def metrics():
         elif name == "EverlootDB":
             out["Objets avec taux de drop observé"] = size(WK.EverDrops)
             out["Trajets de vol (fichiers du jeu)"] = size(WK.FlightGame.paths) if WK.FlightGame else 0
+        elif name == "ItemsDB":
+            out["Objets portables (liste BiS)"] = size(WK.ItemsDB)
         elif name == "DungeonsDB":
             stats = L.eval("""function(db, items)
                 local d, b, nb, it, und = 0, 0, 0, 0, 0
@@ -272,6 +309,14 @@ def main():
                 sources.append("Everloot (taux de drop, vols)")
             except subprocess.CalledProcessError as e:
                 log("  ! Everloot indisponible, fichier gardé tel quel :", e)
+        # objets portables du jeu pour la liste BiS (opendata, CC BY 4.0 ; noms français de wago.tools)
+        odir, ofr = opendata_items()
+        if odir:
+            try:
+                run(os.path.join(HERE, "gen_items.py"), odir, *([ofr] if ofr else []))
+                sources.append("opendata (objets)")
+            except subprocess.CalledProcessError as e:
+                log("  ! objets non régénérés, fichier gardé tel quel :", e)
         after = metrics()
     except Exception as e:
         log("ÉCHEC :", e, "-> fichiers remis comme avant")
