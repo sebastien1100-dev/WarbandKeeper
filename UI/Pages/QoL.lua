@@ -1461,6 +1461,72 @@ UI:RegisterPage({
             local Cp = WK.modules.Camp
             local campCfg = Cp:Config()
             local function cupdate() Cp:Update() end
+            -- objets de camp par métier, en tête de l'onglet : une tuile par métier (3 colonnes), puis les feux
+            local TH, FH, TG = 128, 52, 10
+            local nrows = math.ceil(#Cp.OBJECTS / 3)
+            local tbl = card("Objets de camp par métier", 40 + nrows * (TH + TG) + 24 + FH + 16,
+                "effet à ton niveau · en clair : palier atteint par un de tes persos")
+            local function txt(parent, size, color) local t = UI:Text(parent, size, color); t:SetJustifyH("LEFT"); return t end
+            local tiles, fires = {}, {}
+            for i, o in ipairs(Cp.OBJECTS) do
+                local t = CreateFrame("Frame", nil, tbl)
+                t:SetHeight(TH)
+                UI:Panel(t, 8, C.surface2, C.border)
+                t.icon = UI:RoundIcon(t, 30)
+                t.icon:SetPoint("TOPLEFT", 12, -10)
+                local first = o.ids[1] or o.ids[2]
+                t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(first)) or "Interface\\Icons\\INV_Misc_QuestionMark")
+                t.title = txt(t, 13, C.text); t.title:SetPoint("TOPLEFT", 52, -10); t.title:SetText(T(o.prof))
+                t.eff = txt(t, 12); t.eff:SetPoint("TOPLEFT", 52, -27); t.eff:SetPoint("TOPRIGHT", -10, -27)
+                if t.eff.SetWordWrap then t.eff:SetWordWrap(false) end
+                t.excl = txt(t, 10, C.dim); t.excl:SetPoint("TOPLEFT", 12, -50); t.excl:SetPoint("TOPRIGHT", -10, -50)
+                if t.excl.SetWordWrap then t.excl:SetWordWrap(false) end
+                t.line = t:CreateTexture(nil, "ARTWORK")
+                t.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+                t.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.8)
+                t.line:SetHeight(1)
+                t.line:SetPoint("TOPLEFT", 12, -66); t.line:SetPoint("TOPRIGHT", -12, -66)
+                t.tiers = {}
+                for k = 1, 3 do
+                    local y = -72 - (k - 1) * 17
+                    local rk = txt(t, 10, C.dim); rk:SetPoint("TOPLEFT", 12, y); rk:SetWidth(30); rk:SetText(Cp.RANKS[k])
+                    local nm = txt(t, 11, C.muted); nm:SetPoint("TOPLEFT", 44, y); nm:SetPoint("TOPRIGHT", -10, y)
+                    if nm.SetWordWrap then nm:SetWordWrap(false) end
+                    t.tiers[k] = { rk = rk, nm = nm }
+                end
+                tiles[i] = t
+            end
+            local fhead = txt(tbl, 10, C.dim)
+            fhead:SetText(UI:Upper(T("Feux de camp (Cuisine)")))
+            for i in ipairs(Cp.FIRES) do
+                local f = CreateFrame("Frame", nil, tbl)
+                f:SetHeight(FH)
+                UI:Panel(f, 8, C.surface2, C.border)
+                f.icon = UI:RoundIcon(f, 26)
+                f.icon:SetPoint("LEFT", 12, 0)
+                f.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(Cp.FIRES[i][1])) or "Interface\\Icons\\INV_Misc_QuestionMark")
+                f.name = txt(f, 12, C.text); f.name:SetPoint("TOPLEFT", 46, -10); f.name:SetPoint("TOPRIGHT", -10, -10)
+                if f.name.SetWordWrap then f.name:SetWordWrap(false) end
+                f.sub = txt(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 46, -29)
+                f.sub:SetText(string.format(T("Cuisine %d · %d objets de camp en plus"), Cp.FIRES[i][3], Cp.FIRES[i][4]))
+                fires[i] = f
+            end
+            UI:OnResize(tbl, function(w)
+                local tw = (w - 32 - 2 * TG) / 3
+                for i, t in ipairs(tiles) do
+                    local c, r = (i - 1) % 3, math.floor((i - 1) / 3)
+                    t:ClearAllPoints()
+                    t:SetPoint("TOPLEFT", 16 + c * (tw + TG), -42 - r * (TH + TG))
+                    t:SetWidth(tw)
+                end
+                local fy = -42 - nrows * (TH + TG) - 4
+                fhead:ClearAllPoints(); fhead:SetPoint("TOPLEFT", 16, fy)
+                for i, f in ipairs(fires) do
+                    f:ClearAllPoints()
+                    f:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + TG), fy - 18)
+                    f:SetWidth(tw)
+                end
+            end)
             -- rappel
             local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "icône et encart près du camp")
             UI:SettingRow(rem, -224, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
@@ -1540,72 +1606,6 @@ UI:RegisterPage({
             ctext:SetJustifyH("LEFT")
             if ctext.SetWordWrap then ctext:SetWordWrap(false) end
 
-            -- objets de camp par métier : une tuile par métier (3 colonnes), puis les feux
-            local TH, FH, TG = 128, 52, 10
-            local nrows = math.ceil(#Cp.OBJECTS / 3)
-            local tbl = card("Objets de camp par métier", 40 + nrows * (TH + TG) + 24 + FH + 16,
-                "effet à ton niveau · en clair : palier atteint par un de tes persos")
-            local function txt(parent, size, color) local t = UI:Text(parent, size, color); t:SetJustifyH("LEFT"); return t end
-            local tiles, fires = {}, {}
-            for i, o in ipairs(Cp.OBJECTS) do
-                local t = CreateFrame("Frame", nil, tbl)
-                t:SetHeight(TH)
-                UI:Panel(t, 8, C.surface2, C.border)
-                t.icon = UI:RoundIcon(t, 30)
-                t.icon:SetPoint("TOPLEFT", 12, -10)
-                local first = o.ids[1] or o.ids[2]
-                t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(first)) or "Interface\\Icons\\INV_Misc_QuestionMark")
-                t.title = txt(t, 13, C.text); t.title:SetPoint("TOPLEFT", 52, -10); t.title:SetText(T(o.prof))
-                t.eff = txt(t, 12); t.eff:SetPoint("TOPLEFT", 52, -27); t.eff:SetPoint("TOPRIGHT", -10, -27)
-                if t.eff.SetWordWrap then t.eff:SetWordWrap(false) end
-                t.excl = txt(t, 10, C.dim); t.excl:SetPoint("TOPLEFT", 12, -50); t.excl:SetPoint("TOPRIGHT", -10, -50)
-                if t.excl.SetWordWrap then t.excl:SetWordWrap(false) end
-                t.line = t:CreateTexture(nil, "ARTWORK")
-                t.line:SetTexture("Interface\\Buttons\\WHITE8X8")
-                t.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.8)
-                t.line:SetHeight(1)
-                t.line:SetPoint("TOPLEFT", 12, -66); t.line:SetPoint("TOPRIGHT", -12, -66)
-                t.tiers = {}
-                for k = 1, 3 do
-                    local y = -72 - (k - 1) * 17
-                    local rk = txt(t, 10, C.dim); rk:SetPoint("TOPLEFT", 12, y); rk:SetWidth(30); rk:SetText(Cp.RANKS[k])
-                    local nm = txt(t, 11, C.muted); nm:SetPoint("TOPLEFT", 44, y); nm:SetPoint("TOPRIGHT", -10, y)
-                    if nm.SetWordWrap then nm:SetWordWrap(false) end
-                    t.tiers[k] = { rk = rk, nm = nm }
-                end
-                tiles[i] = t
-            end
-            local fhead = txt(tbl, 10, C.dim)
-            fhead:SetText(UI:Upper(T("Feux de camp (Cuisine)")))
-            for i in ipairs(Cp.FIRES) do
-                local f = CreateFrame("Frame", nil, tbl)
-                f:SetHeight(FH)
-                UI:Panel(f, 8, C.surface2, C.border)
-                f.icon = UI:RoundIcon(f, 26)
-                f.icon:SetPoint("LEFT", 12, 0)
-                f.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(Cp.FIRES[i][1])) or "Interface\\Icons\\INV_Misc_QuestionMark")
-                f.name = txt(f, 12, C.text); f.name:SetPoint("TOPLEFT", 46, -10); f.name:SetPoint("TOPRIGHT", -10, -10)
-                if f.name.SetWordWrap then f.name:SetWordWrap(false) end
-                f.sub = txt(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 46, -29)
-                f.sub:SetText(string.format(T("Cuisine %d · %d objets de camp en plus"), Cp.FIRES[i][3], Cp.FIRES[i][4]))
-                fires[i] = f
-            end
-            UI:OnResize(tbl, function(w)
-                local tw = (w - 32 - 2 * TG) / 3
-                for i, t in ipairs(tiles) do
-                    local c, r = (i - 1) % 3, math.floor((i - 1) / 3)
-                    t:ClearAllPoints()
-                    t:SetPoint("TOPLEFT", 16 + c * (tw + TG), -42 - r * (TH + TG))
-                    t:SetWidth(tw)
-                end
-                local fy = -42 - nrows * (TH + TG) - 4
-                fhead:ClearAllPoints(); fhead:SetPoint("TOPLEFT", 16, fy)
-                for i, f in ipairs(fires) do
-                    f:ClearAllPoints()
-                    f:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + TG), fy - 18)
-                    f:SetWidth(tw)
-                end
-            end)
             table.insert(self.dyn, function()
                 local level = (UnitLevel and UnitLevel("player")) or 1
                 local r1, g1, b1 = UI:Accent()

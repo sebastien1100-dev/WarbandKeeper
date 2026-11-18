@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.22.5", date = "18/11/2026",
+        changed = {
+            "QoL > Feu de camp : la carte « Objets de camp par métier » est en tête de l'onglet, avant les réglages.",
+        },
+    },
+    {
         version = "1.22.4", date = "18/11/2026",
         added = {
             "Objets verrouillés : deux nouvelles touches au choix, Ctrl + Alt + clic et Ctrl + Maj + clic, pour ne pas gêner les autres addons qui utilisent Alt + clic (Inventaire > Objets verrouillés > Touche pour verrouiller). Chaque combinaison est exacte : Alt + clic ne réagit plus si Ctrl ou Maj est aussi enfoncé.",
