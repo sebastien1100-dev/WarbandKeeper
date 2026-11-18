@@ -10,6 +10,7 @@ _Prévu, pas encore commencé._
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
 - Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.
+- BiS, suite : ta liste en mannequin (emplacements disposés comme dans la Fiche, progression « obtenus »), fenêtre de choix par emplacement listant tous les objets du jeu que ta classe peut porter (recherche, filtres de source, d'armure, de niveau et de qualité ; données du jeu d'opendata, noms français), copier la liste d'un autre perso, la partager dans le chat.
 - Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - Objets verrouillés : ne verrouiller que les recettes qu'aucun de tes persos n'a encore apprises.
 - Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).
@@ -29,6 +30,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.15.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fiche du perso, onglet BiS : plus de suggestions automatiques par niveau ; l'onglet est maintenant uniquement ta propre liste BiS (un objet par emplacement, à remplir par Maj+clic, glisser-déposer ou n°), avec la source de chaque objet et son état (porté, dans les sacs, à la banque, à obtenir). Le bouton « Remplir avec le meilleur trouvable » est retiré.
 
 ## v1.14.1 — 17/11/2026
 

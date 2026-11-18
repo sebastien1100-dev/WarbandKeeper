@@ -430,17 +430,10 @@ local function build(parent)
     bsc:SetPoint("BOTTOMRIGHT")
     bsc:Hide()
     f.bsc = bsc
-    f.bisLevel = nil
-    f.bisSeg = {}
     f.bisInfo = UI:Text(bsc.child, 11, C.muted)
     f.bisCard = UI:Card(bsc.child, "")
     f.bisNote = UI:Text(bsc.child, 10, C.dim)
     f.bisNote:SetText(T("Meilleur objet des donjons (hors raids) que ta classe peut porter, selon ce qui compte pour elle. Clic sur un objet : guidage vers le donjon."))
-    f.bisFill = UI:Button(bsc.child, "Remplir avec le meilleur trouvable", nil, 24, "secondary")
-    f.bisFill:SetScript("OnClick", function()
-        local c = WK.DB.global.characters[f.key]
-        if c then WK.modules.BiS:FillFromBest(setmetatable({ key = f.key }, { __index = c })) end
-    end)
     f.bisClear = UI:Button(bsc.child, "Vider", nil, 24, "danger")
     f.bisClear:SetScript("OnClick", function() WK.modules.BiS:ClearList(f.key) end)
     f.bisHeads = {}
@@ -664,7 +657,7 @@ end
 
 function UI:ShowCharSheet(key)
     if not WK.DB.global.characters[key] then return end
-    if sheet then sheet.repAll = false; if UI.charSheetKey ~= key then sheet.bisLevel = nil end end
+    if sheet then sheet.repAll = false end
     UI.charSheetKey = key
     UI:Create():Show()
     UI:ShowPage("charsheet")
@@ -748,102 +741,13 @@ end
 -- Onglet BiS, « Ma liste BiS » : objets choisis à la main par emplacement
 local refreshBisList
 -- Onglet BiS
-local LEVELS = { 30, 40, 50, 60 }
 local function refreshBis(f, c)
-    local B = WK.modules.BiS
     local W = math.max(600, (f.bsc:GetWidth() or 840) - 12)
     f.bsc.child:SetWidth(W)
-    local lvl = c.level or 1
-    local opts = { lvl }
-    for _, l in ipairs(LEVELS) do if l > lvl then table.insert(opts, l) end end
-    table.insert(opts, "list")
-    local target = f.bisLevel
-    if target ~= "list" and (not target or target < lvl) then target = lvl end
-    -- choix du niveau visé
-    for _, b in pairs(f.bisSeg) do b:Hide() end
-    local x = 4
-    for i, l in ipairs(opts) do
-        local b = f.bisSeg[i]
-        if not b then
-            b = UI:Button(f.bsc.child, "", nil, 24, "secondary")
-            f.bisSeg[i] = b
-        end
-        b:SetLabel(l == "list" and T("Ma liste BiS") or i == 1 and string.format(T("Niveau %d (actuel)"), l) or string.format(T("Niveau %d"), l))
-        b:SetWidth(b.label:GetStringWidth() + 28)
-        b:SetScript("OnClick", function() f.bisLevel = l; f:Refresh() end)
-        b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, -4)
-        b:SetStyle(l == target and "primary" or "secondary")
-        b:Show()
-        x = x + b:GetWidth() + 6
-    end
-    local listMode = target == "list"
-    f.bisFill:SetShown(listMode); f.bisClear:SetShown(listMode)
-    if listMode then return refreshBisList(f, c, opts, W) end
-    f.bisNote:SetText(T("Meilleur objet des donjons (hors raids) que ta classe peut porter, selon ce qui compte pour elle. Clic sur un objet : guidage vers le donjon."))
-    local rows = B:Rows(c, target)
-    local n, wished = 0, 0
-    for _, row in ipairs(rows) do
-        if row.best then
-            n = n + 1
-            if WK.modules.Dungeons:IsWished(row.best.id, f.key) then wished = wished + 1 end
-        end
-    end
-    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisSeg[#opts], "RIGHT", 12, 0)
-    f.bisInfo:SetText(string.format(T("%d amélioration(s) possible(s) · %d dans ta liste d'envies"), n, wished))
-    local card = f.bisCard
-    card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -38); card:SetWidth(W)
-    local XS = { 16, 120, 220, math.floor(W * 0.55), W - 150 }
-    for i, t in ipairs(f.bisHeads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", XS[i], -16) end
-    f.bisHeads[3]:SetText(UI:Upper(T("Meilleur trouvable"))); f.bisHeads[5]:SetText(UI:Upper(T("Gain")))
-    local y = -38
-    for i, r in ipairs(f.bisRows) do
-        local row = rows[i]
-        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:SetPoint("TOPRIGHT", 0, y)
-        r.slot:ClearAllPoints(); r.slot:SetPoint("LEFT", XS[1], 0); r.slot:SetText(T(row.label))
-        r.wIcon:ClearAllPoints(); r.wIcon:SetPoint("LEFT", XS[2], 0)
-        r.wText:ClearAllPoints(); r.wText:SetPoint("LEFT", XS[2] + 26, 0)
-        if row.worn then
-            local d = itemData(row.worn)
-            r.wIcon:SetTexture(d and d.icon or nil); r.wIcon:Show()
-            r.wText:SetText(d and d.ilvl and string.format(T("niv. %d"), d.ilvl) or "")
-        else
-            r.wIcon:Hide(); r.wText:SetText(T("vide"))
-        end
-        r.item:ClearAllPoints(); r.item:SetPoint("LEFT", XS[3], 0); r.item:SetWidth(XS[4] - XS[3] - 12)
-        r.where:ClearAllPoints(); r.where:SetPoint("LEFT", XS[4], 0); r.where:SetWidth(XS[5] - XS[4] - 10)
-        r.gain:ClearAllPoints(); r.gain:SetPoint("LEFT", XS[5], 0)
-        r.wish:ClearAllPoints(); r.wish:SetPoint("RIGHT", -12, 0)
-        r.input:Hide(); r.clear:Hide(); r.item:Show(); r.slotID = nil
-        local e = row.best
-        r.e = e
-        if e then
-            local name, _, q = WK.GetItemInfo(e.id)
-            local qc = QUALITY[q or e.quality or 1] or QUALITY[1]
-            r.bIcon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(e.id)) or nil); r.bIcon:Show()
-            r.bText:SetText(name or ("#" .. e.id)); r.bText:SetTextColor(qc[1], qc[2], qc[3])
-            local D = WK.modules.Dungeons
-            local where = D:Name(e.d)
-            if e.boss then where = where .. " · " .. (e.boss.trash and T("monstres") or D:BossName(e.boss)) end
-            if e.drop then where = where .. string.format(" · %s %%", (string.format("%.0f", e.drop))) end
-            r.where:SetText(where)
-            r.gain:SetText(string.format("+%d", math.floor(row.gain + 0.5)))
-            local w = D:IsWished(e.id, f.key)
-            r.wish:SetLabel(w and T("Retirer") or T("Envie"))
-            r.wish:Show(); r.where:Show(); r.gain:Show()
-        else
-            r.bIcon:Hide()
-            r.bText:SetText(row.worn and T("déjà le meilleur trouvable") or T("rien de mieux en donjon"))
-            r.bText:SetTextColor(unpack(C.dim))
-            r.where:SetText(""); r.gain:SetText(""); r.wish:Hide()
-        end
-        y = y - 30
-    end
-    card:SetHeight(-y + 10)
-    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", card, "BOTTOMLEFT", 4, -8)
-    f.bsc:SetContentHeight(38 - y + 40)
+    return refreshBisList(f, c, W)
 end
 
-refreshBisList = function(f, c, opts, W)
+refreshBisList = function(f, c, W)
     local B, D = WK.modules.BiS, WK.modules.Dungeons
     local list = B:List(f.key)
     local n, worn = 0, 0
@@ -851,10 +755,9 @@ refreshBisList = function(f, c, opts, W)
     local wornSet = {}
     for _, l in pairs(gear) do local id = WK:ParseItemID(l); if id then wornSet[id] = true end end
     for _, id in pairs(list) do n = n + 1; if wornSet[id] then worn = worn + 1 end end
-    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisSeg[#opts], "RIGHT", 12, 0)
-    f.bisInfo:SetText(string.format(T("%d / %d portés"), worn, n))
+    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("TOPLEFT", f.bsc.child, "TOPLEFT", 4, -10)
+    f.bisInfo:SetText(string.format(T("Ma liste BiS  ·  %d / %d portés"), worn, n))
     f.bisClear:ClearAllPoints(); f.bisClear:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -4, -4)
-    f.bisFill:ClearAllPoints(); f.bisFill:SetPoint("RIGHT", f.bisClear, "LEFT", -8, 0)
     local card = f.bisCard
     card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -38); card:SetWidth(W)
     local XS = { 16, 120, 220, math.floor(W * 0.55), W - 190 }
