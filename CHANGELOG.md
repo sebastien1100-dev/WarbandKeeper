@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.28.6 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Feu de camp, objets par métier : le nom du perso qui a le palier est écrit à sa couleur de classe, contour compris.
+
 ## v1.28.5 — 18/11/2026
 
 _Un /reload suffit._

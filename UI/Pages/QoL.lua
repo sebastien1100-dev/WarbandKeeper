@@ -1682,7 +1682,7 @@ UI:RegisterPage({
                 local accentHex = string.format("|cff%02x%02x%02x", r1 * 255, g1 * 255, b1 * 255)
                 -- meilleure compétence de tes persos dans chaque métier
                 -- et compétence du perso connecté : « à toi » seulement s'il a le palier, sinon le nom du perso qui l'a
-                local best, bestWho, mine = {}, {}, {}
+                local best, bestWho, bestClass, mine = {}, {}, {}, {}
                 local meKey = WK:CharKey()
                 for key, c in pairs(WK.DB.global.characters) do
                     for prof, p in pairs(c.professions or {}) do
@@ -1690,6 +1690,7 @@ UI:RegisterPage({
                         if rk > (best[prof] or 0) or (rk == best[prof] and key == meKey) then
                             best[prof] = rk
                             bestWho[prof] = c.name or string.match(key, "^([^%-]+)") or key
+                            bestClass[prof] = c.class
                         end
                         if key == meKey then mine[prof] = rk end
                     end
@@ -1731,9 +1732,10 @@ UI:RegisterPage({
                             pl.t:SetText(label)
                             pl:SetWidth(math.min(96, (pl.t:GetStringWidth() or 30) + 12))
                             if reach and (mine[o.prof] or 0) < need then
-                                -- palier tenu par un autre de tes persos : contour accent, nom en accent
-                                pl.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1); pl.edge:SetColor(r1, g1, b1, 1)
-                                pl.t:SetTextColor(r1, g1, b1)
+                                -- palier tenu par un autre de tes persos : son nom et le contour à sa couleur de classe
+                                local cr, cg, cb = UI:ClassColor(bestClass[o.prof])
+                                pl.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1); pl.edge:SetColor(cr, cg, cb, 1)
+                                pl.t:SetTextColor(cr, cg, cb)
                             elseif reach then
                                 pl.bg:SetColor(r1, g1, b1, 1); pl.edge:SetColor(r1, g1, b1, 1)
                                 pl.t:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])

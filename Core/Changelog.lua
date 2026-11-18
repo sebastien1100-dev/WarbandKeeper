@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.6", date = "18/11/2026",
+        changed = {
+            "QoL > Feu de camp, objets par métier : le nom du perso qui a le palier est écrit à sa couleur de classe, contour compris.",
+        },
+    },
+    {
         version = "1.28.5", date = "18/11/2026",
         changed = {
             "QoL > Feu de camp, « Comment ça marche » : les 4 étapes en tuiles bien visibles (gros numéro à la couleur d'accent, titre court, texte en clair) au lieu de petites lignes grises ; les effets de camp rencontrés sont plus gros, leur type à la couleur d'accent.",
