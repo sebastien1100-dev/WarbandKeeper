@@ -11,6 +11,24 @@ local pins = {}
 -- Aides communes aux pastilles de la minicarte (UI/NodePins.lua, UI/MapLayers.lua, UI/MapNotes.lua,
 -- UI/NavRoute.lua, chargés après ce fichier)
 ---------------------------------------------------------------------------
+-- Zoom de la carte du monde : les pastilles et les tracés gardent à peu près leur taille à l'écran
+-- (sans ça, tout grossit avec la carte et devient illisible). Facteur à multiplier aux tailles sur la toile.
+function UI.MapIconScale()
+    local sc = WorldMapFrame and WorldMapFrame.ScrollContainer
+    if not (sc and sc.GetCanvasScale) then return 1 end
+    local ok, cur = pcall(sc.GetCanvasScale, sc)
+    if not (ok and type(cur) == "number" and cur > 0) then return 1 end
+    local min
+    if sc.GetScaleForMinZoom then
+        local ok2, v = pcall(sc.GetScaleForMinZoom, sc)
+        if ok2 and type(v) == "number" and v > 0 then min = v end
+    end
+    min = min or (sc.zoomLevels and sc.zoomLevels[1] and sc.zoomLevels[1].scale) or cur
+    local z = cur / min
+    if z <= 1.01 then return 1 end
+    return 1 / z ^ 0.85 -- grossit un tout petit peu, pour garder la sensation de zoom
+end
+
 -- Rayon de la minicarte en mètres du jeu, par niveau de zoom (dehors, dedans)
 local RADIUS_OUT = { [0] = 233.3, 200, 166.7, 133.3, 100, 66.7 }
 local RADIUS_IN = { [0] = 150, 120, 90, 60, 40, 25 }
@@ -155,7 +173,7 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnMouseUp", function(_, b) if b == "RightButton" then G:Stop() end end)
     end
     targetPin:SetParent(cv)
-    local size = 30 * (w / 1000)
+    local size = 30 * ((w / 1000) * UI.MapIconScale())
     targetPin:SetSize(size, size)
     targetPin.shadow:SetSize(size * 1.06, size * 1.06)
     targetPin.shadow:ClearAllPoints()
@@ -242,6 +260,16 @@ local function hook()
         if UI.MapLayersReset then UI:MapLayersReset() end
     end)
     if WorldMapFrame.OnMapChanged then hooksecurefunc(WorldMapFrame, "OnMapChanged", function() redraw("changement de carte") end) end
+    -- zoom : on redessine aux nouvelles tailles (regroupé : le zoom s'anime sur plusieurs images)
+    local zoomPending
+    local function onZoom()
+        if zoomPending then return end
+        zoomPending = true
+        C_Timer.After(0.08, function() zoomPending = nil; if WorldMapFrame:IsShown() then redraw("zoom") end end)
+    end
+    if WorldMapFrame.OnCanvasScaleChanged then hooksecurefunc(WorldMapFrame, "OnCanvasScaleChanged", onZoom) end
+    local sc = WorldMapFrame.ScrollContainer
+    if sc and sc.SetZoomTarget then hooksecurefunc(sc, "SetZoomTarget", onZoom) end
 end
 WK:On("PLAYER_LOGIN", hook)
 WK:On("ADDON_LOADED", function(name) if name == "Blizzard_WorldMap" then hook() end end)

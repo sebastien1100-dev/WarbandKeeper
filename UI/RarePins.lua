@@ -172,7 +172,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
     top:SetFrameLevel(holder:GetFrameLevel() + 20)
     top:EnableMouse(false)
     local nt = 0
-    local scale = w / 1000
+    local scale = (w / 1000) * UI.MapIconScale()
     local me = WK:CharKey()
     local nd = 0
     local shown = 0
@@ -221,14 +221,14 @@ function UI:DrawRarePins(cv, mapID, w, h)
             for k = 3, #m.spawns, 2 do
                 nt = nt + 1
                 local d = getTopDot(nt)
-                sizeDot(d, math.max(8, 10 * scale), col[1], col[2], col[3], 1)
+                sizeDot(d, math.max(8 * UI.MapIconScale(), 10 * scale), col[1], col[2], col[3], 1)
                 d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[k] / 100 * w, -m.spawns[k + 1] / 100 * h)
             end
         end
         if showPath then
             local path = m.path
             local pa = (hovered == r) and 1 or 0.8
-            local ds, gap = math.max(5, 6.5 * scale), math.max(9, 13 * scale)
+            local ds, gap = math.max(5 * UI.MapIconScale(), 6.5 * scale), math.max(9 * UI.MapIconScale(), 13 * scale)
             for k = 1, #path - 2, 2 do
                 local x1, y1, x2, y2 = path[k] / 100 * w, path[k + 1] / 100 * h, path[k + 2] / 100 * w, path[k + 3] / 100 * h
                 local len = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)

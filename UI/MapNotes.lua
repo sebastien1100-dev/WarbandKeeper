@@ -71,7 +71,7 @@ local mapPins = {}
 function UI:HideMapNotes() for _, p in ipairs(mapPins) do p:Hide() end end
 function UI:DrawMapNotes(cv, mapID, w, h)
     if not WK:FeatureOn("maplayers") then return end
-    local size = math.max(14, (N:Config().size or 18) * (w / 1000) * 1.3)
+    local size = math.max(14 * UI.MapIconScale(), (N:Config().size or 18) * ((w / 1000) * UI.MapIconScale()) * 1.3)
     local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 30
     for i, n in ipairs(N:ForMap(mapID)) do
         local p = mapPins[i]

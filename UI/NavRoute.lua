@@ -144,8 +144,8 @@ function UI:DrawBoatPaths(cv, mapID, w, h)
     local col = { UI:Accent() }
     local tl = L.LAYER and L.LAYER.transport
     if tl and L.FAMILY[tl.family] then col = L.FAMILY[tl.family].color end
-    local scale = w / 1000
-    local size, gap = math.max(3, 4.5 * scale), math.max(8, 13 * scale)
+    local scale = (w / 1000) * UI.MapIconScale()
+    local size, gap = math.max(3 * UI.MapIconScale(), 4.5 * scale), math.max(8 * UI.MapIconScale(), 13 * scale)
     local n = 0
     for _, b in ipairs(N:Boats()) do
         local pts = b.path and b.path.pts
@@ -158,7 +158,7 @@ function UI:DrawBoatPaths(cv, mapID, w, h)
                 if mx and mx > -0.1 and mx < 1.1 and my > -0.1 and my < 1.1 then
                     local x, y = mx * w, my * h
                     if px and canLine(cv) then
-                        boatLines:Add(cv, px, py, x, y, math.max(1.6, 2.2 * scale), col[1], col[2], col[3], 0.95)
+                        boatLines:Add(cv, px, py, x, y, math.max(1.6 * UI.MapIconScale(), 2.2 * scale), col[1], col[2], col[3], 0.95)
                     elseif px then
                         local dx, dy = x - px, y - py
                         local len = math.sqrt(dx * dx + dy * dy)
@@ -228,9 +228,9 @@ function UI:DrawNavRoute(cv, mapID, w, h)
     local pts, cont = remaining()
     if not pts or #pts < 2 then return end
     local r, g, b = UI:Accent()
-    local scale = w / 1000
-    local size = math.max(5, 7.5 * scale)
-    local gap = math.max(9, 14 * scale)
+    local scale = (w / 1000) * UI.MapIconScale()
+    local size = math.max(5 * UI.MapIconScale(), 7.5 * scale)
+    local gap = math.max(9 * UI.MapIconScale(), 14 * scale)
     local n = 0
     local px, py
     for i, pt in ipairs(pts) do
@@ -245,7 +245,7 @@ function UI:DrawNavRoute(cv, mapID, w, h)
                 local inside = (mx > -0.05 and mx < 1.05 and my > -0.05 and my < 1.05) or (px > -0.05 * w and px < 1.05 * w and py > -0.05 * h and py < 1.05 * h)
                 if len > 0 and inside and fly and canLine(cv) then
                     -- étape de vol : trait fin continu
-                    flyLines:Add(cv, px, py, x, y, math.max(1.8, 2.4 * scale), r, g, b, 0.95)
+                    flyLines:Add(cv, px, py, x, y, math.max(1.8 * UI.MapIconScale(), 2.4 * scale), r, g, b, 0.95)
                 elseif len > 0 and inside then
                     local k = 0
                     while k < len and n < MAX_MAP do

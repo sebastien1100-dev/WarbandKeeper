@@ -135,8 +135,8 @@ end
 function UI:DrawMapLayers(cv, mapID, w, h)
     if not on() then return end
     local cfg = L:Config()
-    local scale = w / 1000
-    local size = math.max(12, (cfg.size or 18) * scale * 1.2)
+    local scale = (w / 1000) * UI.MapIconScale()
+    local size = math.max(12 * UI.MapIconScale(), (cfg.size or 18) * scale * 1.2)
     local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 10 -- au-dessus des calques de la carte du jeu (UI/MapPins.lua)
     local n = 0
     local places = L:Places(mapID, "map")
@@ -166,12 +166,12 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         local len = 0.16 * w
         local function room(p0, dp, maxv) if dp > 0 then return (maxv - p0) / dp elseif dp < 0 then return -p0 / dp end return math.huge end
         len = math.max(0, math.min(len, room(x0, dx, w) - 8, room(y0, dy, h) - 8))
-        local ds = math.max(3, 5 * scale)
+        local ds = math.max(3 * UI.MapIconScale(), 5 * scale)
         r.lines = r.lines or UI:LinePool(3)
         r.lines:Reset()
         if cv.CreateLine and len > 12 then
             -- trait fin du quai vers la destination (les points restent cachés)
-            r.lines:Add(cv, x0, y0, x0 + dx * len, y0 + dy * len, math.max(1.6, 2.2 * scale), col[1], col[2], col[3], 0.95)
+            r.lines:Add(cv, x0, y0, x0 + dx * len, y0 + dy * len, math.max(1.6 * UI.MapIconScale(), 2.2 * scale), col[1], col[2], col[3], 0.95)
             for _, dot in ipairs(r.dots) do dot:Hide() end
         else
         for k, dot in ipairs(r.dots) do

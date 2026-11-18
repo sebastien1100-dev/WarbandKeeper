@@ -147,7 +147,7 @@ function UI:DrawNodePins(cv, mapID, w, h)
     -- une icône par case et par ressource : la carte reste lisible dans les zones très fournies
     local cell = #list > MAX_MAP and 0.02 or 0.008
     local seen = {}
-    local size = (o.size or 14) * (w / 1000) * 1.1
+    local size = (o.size or 14) * ((w / 1000) * UI.MapIconScale()) * 1.1
     for _, n in ipairs(list) do
         local key = n.id * 1000000 + math.floor(n.x / cell) * 1000 + math.floor(n.y / cell)
         if not seen[key] then

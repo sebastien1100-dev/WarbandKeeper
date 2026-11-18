@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.27.2", date = "18/11/2026",
+        changed = {
+            "Carte du monde : quand on zoome, les icônes (lieux, rares, filons, notes, quais, repère) et les tracés (patrouilles des rares, trajets, bateaux) gardent à peu près leur taille à l'écran au lieu de grossir avec la carte ; plus de pâté illisible en zoom.",
+        },
+    },
+    {
         version = "1.27.1", date = "18/11/2026",
         changed = {
             "Fiche d'un autre perso : le bouton « Mon perso » est à droite de l'en-tête, à côté du niveau moyen, au lieu d'être collé au nom.",
