@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.23.1", date = "18/11/2026",
+        changed = {
+            "Apparence : un seul thème, Graphite (gris sobre, couleur de ta classe en accent), pour tous les persos. Le choix des thèmes et le thème personnalisé sont retirés des Options ; couleurs, police et taille restent réglables.",
+        },
+    },
+    {
         version = "1.23.0", date = "18/11/2026", restart = true,
         added = {
             "Curseur : traînée scintillante derrière la souris (QoL > Curseur > Traînée). Trois styles : Étincelles (petites étoiles qui scintillent), Comète (ruban lumineux qui s'affine) et Poussière d'étoiles (paillettes qui tombent). Couleur d'accent, de classe, or, arc-en-ciel ou blanc ; longueur, densité, et option « pas en combat ». Rien quand la souris ne bouge pas, aucun clic bloqué ; le bouton « Tester » du mode édition la fait tourner en cercle.",

@@ -180,6 +180,8 @@ function UI:ApplyTheme()
     local cfg = WK.DB.global.settings.ui
     -- Anciennes versions : accent n°1 (or) = accent du thème Coffre-fort.
     if cfg.accent == 1 and (cfg.theme or "vault") == "vault" then cfg.accent = "theme" end
+    -- un seul thème proposé : Graphite (les autres et le thème personnalisé ne sont plus dans les Options)
+    cfg.theme = "graphite"
     local t = self.themeByKey[cfg.theme] or self.themes[1]
     local b = t.base()
     local p = palette(b)

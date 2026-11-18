@@ -752,6 +752,7 @@ WK.Locales.enUS.text = {
     ["trié par niveau"] = "sorted by level",
     ["il y a %s"] = "%s ago",
     ["Ctrl + Alt + clic"] = "Ctrl + Alt + click", ["Ctrl + Maj + clic"] = "Ctrl + Shift + click",
+    ["Couleurs, police, taille"] = "Colors, font, size", ["Couleur de ta classe"] = "Your class color",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

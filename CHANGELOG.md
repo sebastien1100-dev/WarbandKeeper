@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.23.1 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Apparence : un seul thème, Graphite (gris sobre, couleur de ta classe en accent), pour tous les persos. Le choix des thèmes et le thème personnalisé sont retirés des Options ; couleurs, police et taille restent réglables.
+
 ## v1.23.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

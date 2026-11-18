@@ -69,7 +69,7 @@ local defaults = {
             closeInCombat = false, -- ferme la fenêtre principale au début d'un combat
             loginPopup = true,     -- fenêtre de rappels à la connexion (UI/LoginPopup.lua)
             portraits = true,      -- portrait à côté du nom des persos (sinon icône de classe)
-            theme = "vault",       -- clé de UI.themes
+            theme = "graphite",    -- clé de UI.themes (seul thème proposé : Graphite)
             font = "friz",         -- clé de UI.fonts
             rounding = 1,          -- 1 = arrondi fort, 0.6 = moyen, 0.25 = presque carré
             opacity = 1,           -- opacité du fond de la fenêtre

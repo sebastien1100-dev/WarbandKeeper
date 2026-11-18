@@ -39,58 +39,6 @@ local function AccentDot(parent, key, color, tooltip)
     return b
 end
 
--- Vignette d'aperçu d'un thème : mini-fenêtre dessinée avec sa palette.
-local function ThemeTile(parent, theme, width, onClick)
-    local pal, accent = UI:ThemePalette(theme.key)
-    local b = CreateFrame("Button", nil, parent)
-    b:SetSize(width, 96)
-    local prev = CreateFrame("Frame", nil, b)
-    prev:SetPoint("TOPLEFT")
-    prev:SetPoint("TOPRIGHT")
-    prev:SetHeight(66)
-    b.sel = UI:Rounded(prev, 12, 0, "BACKGROUND", 0)
-    UI:Rounded(prev, 10, 2, "BACKGROUND", 1):SetColor(unpack(pal.frame))
-    UI:Rounded(prev, 9, 3, "BACKGROUND", 2):SetColor(pal.bg[1], pal.bg[2], pal.bg[3], 1)
-    -- barre du haut, pilule d'accent, deux cartes
-    local bar = prev:CreateTexture(nil, "ARTWORK")
-    bar:SetColorTexture(unpack(pal.border))
-    bar:SetPoint("TOPLEFT", 10, -20); bar:SetPoint("TOPRIGHT", -10, -20); bar:SetHeight(1)
-    local logo = UI:Icon(prev, "circle", 8, { accent[1], accent[2], accent[3], 1 })
-    logo:SetPoint("TOPLEFT", 10, -8)
-    local pill = CreateFrame("Frame", nil, prev)
-    pill:SetSize(26, 8)
-    pill:SetPoint("TOPRIGHT", -10, -8)
-    UI:Rounded(pill, 4, 0, "ARTWORK", 1):SetColor(accent[1], accent[2], accent[3], 1)
-    for i = 1, 2 do
-        local cardF = CreateFrame("Frame", nil, prev)
-        cardF:SetPoint("TOPLEFT", 10 + (i - 1) * ((width - 26) / 2 + 6), -28)
-        cardF:SetSize((width - 26) / 2, 28)
-        UI:Rounded(cardF, 6, 0, "ARTWORK", 1):SetColor(unpack(pal.border))
-        UI:Rounded(cardF, 5, 1, "ARTWORK", 2):SetColor(unpack(pal.surface))
-        local line = cardF:CreateTexture(nil, "OVERLAY")
-        line:SetColorTexture(pal.text[1], pal.text[2], pal.text[3], 0.7)
-        line:SetPoint("TOPLEFT", 6, -8); line:SetSize((width - 26) / 4, 3)
-        local line2 = cardF:CreateTexture(nil, "OVERLAY")
-        line2:SetColorTexture(pal.muted[1], pal.muted[2], pal.muted[3], 0.6)
-        line2:SetPoint("TOPLEFT", 6, -16); line2:SetSize((width - 26) / 3, 3)
-    end
-    b.label = UI:Text(b, 12)
-    b.label:SetPoint("TOP", prev, "BOTTOM", 0, -8)
-    b.label:SetText(theme.label)
-    function b:Refresh(selected)
-        if selected then self.sel:SetColor(UI:Accent()) self.sel:Show() else self.sel:Hide() end
-        self.label:SetTextColor(unpack(selected and C.text or C.muted))
-    end
-    b:SetScript("OnClick", onClick)
-    b:SetScript("OnEnter", function(self)
-        WK.UI:TooltipOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(WK.T(theme.label), 1, 1, 1)
-        GameTooltip:AddLine(WK.T(theme.desc), 0.8, 0.8, 0.8, true)
-        GameTooltip:Show()
-    end)
-    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    return b
-end
 
 UI:RegisterPage({
     key = "options", order = 10, navIcon = "gear",
@@ -142,7 +90,7 @@ UI:RegisterPage({
             { "mail", "Courrier", "mail", "Envoi, réception, dépôt" },
             { "glow", "Récolte", "filter", "Coins de récolte" },
             { "alerts", "Alertes", "clock", "Banque et courrier" },
-            { "look", "Apparence", "logo", "Thème, couleurs, police" },
+            { "look", "Apparence", "logo", "Couleurs, police, taille" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -185,104 +133,13 @@ UI:RegisterPage({
 
         -- Apparence : thème puis couleurs, police, taille ---------------------------
         section("look")
-        local perRow = 4
-        local rowsN = math.ceil(#UI.themes / perRow)
-        local themeCard = card("Thème", 48 + rowsN * 106)
-        local tw = (W - 32 - (perRow - 1) * 10) / perRow
-        self.themeTiles = {}
-        for i, th in ipairs(UI.themes) do
-            local tile = ThemeTile(themeCard, th, tw, function()
-                cfg.theme = th.key
-                cfg.accent = "theme"
-                UI:SetAccent("theme")
-                apply()
-            end)
-            tile:SetPoint("TOPLEFT", 16 + ((i - 1) % perRow) * (tw + 10), -44 - math.floor((i - 1) / perRow) * 106)
-            self.themeTiles[th.key] = tile
-        end
-        -- largeur des vignettes : suit la carte quand la fenêtre change de taille
-        UI:OnResize(themeCard, function(cw)
-            local w2 = (cw - 32 - (perRow - 1) * 10) / perRow
-            local i = 0
-            for _, th in ipairs(UI.themes) do
-                local tile = self.themeTiles[th.key]
-                if tile then
-                    tile:SetWidth(w2)
-                    tile:ClearAllPoints()
-                    tile:SetPoint("TOPLEFT", 16 + (i % perRow) * (w2 + 10), -44 - math.floor(i / perRow) * 106)
-                end
-                i = i + 1
-            end
-        end)
-        function self:RefreshThemes()
-            for key, tile in pairs(self.themeTiles) do tile:Refresh(key == cfg.theme) end
-        end
-
-        -- Thème personnalisé ----------------------------------------------------------
-        local cust = card("Thème personnalisé", 132)
-        local copy = UI:Button(cust, "Partir du thème actuel", nil, 28, "secondary")
-        copy:SetPoint("TOPRIGHT", -12, -8)
-        copy.tooltip = "Copie les couleurs du thème actuel pour les modifier."
-        local function saveCustom(key, r, g, b)
-            cfg.custom = cfg.custom or {}
-            cfg.custom[key] = { r, g, b }
-            cfg.theme = "custom"
-            if cfg.accent ~= "class" and type(cfg.accent) ~= "number" then cfg.accent = "theme" end
-            -- Le sélecteur envoie beaucoup de valeurs pendant qu'on le fait glisser : on attend un peu.
-            self.customToken = (self.customToken or 0) + 1
-            local token = self.customToken
-            C_Timer.After(0.4, function() if token == self.customToken then apply() end end)
-        end
-        copy:SetScript("OnClick", function()
-            local base = UI:ThemeBase(cfg.theme == "custom" and "vault" or cfg.theme)
-            cfg.custom = {}
-            for _, k in ipairs(UI.CUSTOM_KEYS) do
-                local c = base[k[1]]
-                cfg.custom[k[1]] = { c[1], c[2], c[3] }
-            end
-            cfg.theme = "custom"
-            cfg.accent = "theme"
-            apply()
-        end)
-        local sw = (W - 32 - 6 * 10) / 7
-        local customBase = UI:ThemeBase("custom")
-        local swatches = {}
-        UI:OnResize(cust, function(cw)
-            local w2 = (cw - 32 - 6 * 10) / 7
-            for i, b in ipairs(swatches) do
-                b:SetWidth(w2)
-                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 16 + (i - 1) * (w2 + 10), -44)
-            end
-        end)
-        for i, k in ipairs(UI.CUSTOM_KEYS) do
-            local b = CreateFrame("Button", nil, cust)
-            swatches[i] = b
-            b:SetSize(sw, 64)
-            b:SetPoint("TOPLEFT", 16 + (i - 1) * (sw + 10), -44)
-            local swatch = CreateFrame("Frame", nil, b)
-            swatch:SetPoint("TOPLEFT"); swatch:SetPoint("TOPRIGHT"); swatch:SetHeight(34)
-            UI:Rounded(swatch, 10, 0, "BACKGROUND", 1):SetColor(unpack(C.border))
-            local fill = UI:Rounded(swatch, 9, 1, "BACKGROUND", 2)
-            local c = customBase[k[1]]
-            fill:SetColor(c[1], c[2], c[3], 1)
-            local lbl = UI:Text(b, 11, C.muted)
-            lbl:SetPoint("TOP", swatch, "BOTTOM", 0, -8)
-            lbl:SetText(k[2])
-            b:SetScript("OnClick", function()
-                local cur = UI:ThemeBase("custom")[k[1]]
-                UI:PickColor(cur[1], cur[2], cur[3], function(r, g, bl)
-                    fill:SetColor(r, g, bl, 1)
-                    saveCustom(k[1], r, g, bl)
-                end)
-            end)
-            b:SetScript("OnEnter", function() WK.UI:TooltipOwner(b, "ANCHOR_TOP"); GameTooltip:SetText(WK.T("Clique pour choisir la couleur"), 1, 1, 1); GameTooltip:Show() end)
-            b:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        end
+        -- (thèmes : Graphite seulement, plus de choix ni de thème personnalisé)
+        function self:RefreshThemes() end
 
         local look = card("Couleurs, police et taille", 356)
         local dots = CreateFrame("Frame", nil, look)
         local choices = {
-            { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
+            { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Couleur de ta classe" },
             { "class", function()
                 local _, class = UnitClass("player")
                 local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
