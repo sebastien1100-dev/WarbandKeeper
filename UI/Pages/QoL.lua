@@ -1692,7 +1692,7 @@ UI:RegisterPage({
             local xsec = current
             local function xrefresh() if UI.RefreshXPBar then UI:RefreshXPBar() end end
             -- barre
-            local xb = card("Barre d'expérience", 40 + 7 * 46 + 8, "XP, repos et quêtes à rendre")
+            local xb = card("Barre d'expérience", 40 + 6 * 46 + 8, "XP, repos et quêtes à rendre")
             UI:SettingRow(xb, -40, "Afficher la barre", "Accent : ton XP ; bleu : ton repos ; jaune : l'XP des quêtes terminées à rendre (un trait marque où tu arriverais). Cachée au niveau maximum.",
                 toggle(xb, function() return xcfg.bar end, function(v) xcfg.bar = v; xrefresh() end), 80)
             UI:SettingRow(xb, -86, "Compacte", "Juste la barre, sans les libellés (tout reste dans l'infobulle).",
@@ -1705,9 +1705,6 @@ UI:RegisterPage({
                 toggle(xb, function() return xcfg.levelAlert end, function(v) xcfg.levelAlert = v end), 80)
             UI:SettingRow(xb, -270, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
                 toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
-            local xplace = UI:Button(xb, "Placer la barre", 150, 28, "secondary")
-            xplace:SetScript("OnClick", function() UI:EnterEditMode() end)
-            UI:SettingRow(xb, -316, "Position", "En mode édition, avec les autres éléments à l'écran.", xplace, 150)
 
             local function hbar(parent, color)
                 local tr = parent:CreateTexture(nil, "ARTWORK")

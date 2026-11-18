@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.24.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Expérience : la ligne « Position » (bouton « Placer la barre ») est retirée ; la barre se place toujours avec le mode édition.
+
 ## v1.24.2 — 18/11/2026
 
 _Un /reload suffit._

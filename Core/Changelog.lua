@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.24.3", date = "18/11/2026",
+        changed = {
+            "QoL > Expérience : la ligne « Position » (bouton « Placer la barre ») est retirée ; la barre se place toujours avec le mode édition.",
+        },
+    },
+    {
         version = "1.24.2", date = "18/11/2026",
         changed = {
             "QoL > Expérience : la carte « Repos » est retirée (le repos de chaque perso reste dans « Tous tes persos » et sur la barre d'expérience).",
