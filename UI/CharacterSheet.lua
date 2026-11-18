@@ -976,6 +976,18 @@ local function refreshGear(f, c)
     local s = c.stats or {}
     f.kpis[1].v:SetText(fmt(s.armor)); f.kpis[1].l:SetText(T("armure"))
     f.kpis[2].v:SetText(c.durability and (math.floor(c.durability) .. " %") or (c.gear and "100 %" or "-")); f.kpis[2].l:SetText(T("durabilité"))
+    -- couleur selon l'usure : vert à 100 %, jaune vers 50 %, rouge à 0 %
+    local dur = c.durability or (c.gear and 100)
+    if dur then
+        local p = math.max(0, math.min(1, dur / 100))
+        local g, n = C.positive, C.negative
+        local y = { 0.96, 0.84, 0.43 }
+        local a, b, t
+        if p >= 0.5 then a, b, t = y, g, (p - 0.5) * 2 else a, b, t = n, y, p * 2 end
+        f.kpis[2].v:SetTextColor(a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t)
+    else
+        f.kpis[2].v:SetTextColor(unpack(C.text))
+    end
     f.kpis[3].v:SetText(c.totalSlots and ((c.freeSlots or 0) .. "/" .. c.totalSlots) or "-"); f.kpis[3].l:SetText(T("sacs libres"))
     f.noGear:SetShown(not gear)
     f.noGear:SetText(T("Équipement pas encore relevé : connecte ce perso une fois avec cette version."))

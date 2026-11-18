@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.8", date = "18/11/2026",
+        changed = {
+            "Fiche du perso : la durabilité se colore selon l'usure, vert à 100 %, jaune vers 50 %, rouge à 0 %.",
+        },
+    },
+    {
         version = "1.19.7", date = "18/11/2026",
         fixed = {
             "Fiche du perso : après avoir regardé un autre perso, la fiche (Fiche, Talents, BiS) pouvait rester sur lui ; elle revient maintenant au perso connecté à la connexion et quand la fenêtre se ferme.",
