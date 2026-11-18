@@ -28,6 +28,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.34.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Hôtel des ventes : nos onglets (Achat, Vente, Annulation, Scan) ont maintenant l'allure de ceux du jeu (texte, trait de séparation, souligné à la couleur d'accent quand choisi, même police et même hauteur), collés à droite des siens sur un fond de barre d'onglets, au lieu de gros boutons roses posés par-dessus le reste.
+
 ## v1.34.2 — 18/11/2026
 
 _Un /reload suffit._

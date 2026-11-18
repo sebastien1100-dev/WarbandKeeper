@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.34.3", date = "18/11/2026",
+        changed = {
+            "Hôtel des ventes : nos onglets (Achat, Vente, Annulation, Scan) ont maintenant l'allure de ceux du jeu (texte, trait de séparation, souligné à la couleur d'accent quand choisi, même police et même hauteur), collés à droite des siens sur un fond de barre d'onglets, au lieu de gros boutons roses posés par-dessus le reste.",
+        },
+    },
+    {
         version = "1.34.2", date = "18/11/2026",
         added = {
             "Bateaux : l'annonce du maître de quai (« … vient d'arriver ») est repérée quand tu es près du quai et cale l'heure de la ligne toute seule, sans prendre le bateau ni cliquer.",

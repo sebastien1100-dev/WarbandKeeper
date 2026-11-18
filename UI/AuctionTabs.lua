@@ -212,29 +212,62 @@ local function build(host)
     f.scanInfo = UI:Text(f, 10, C.muted); f.scanInfo:SetPoint("RIGHT", f.scanBtn, "LEFT", -8, 0)
     f.views = {}
 
-    -- onglets à nous, après ceux du jeu
+    -- onglets à nous, après ceux du jeu et dans leur style : texte, trait de séparation, soulignés quand
+    -- choisis ; même hauteur et même police que le dernier onglet du jeu, sur un fond de la barre d'onglets
     f.tabs = {}
-    local last
+    local gameTabs = host.Tabs
+    local anchor = gameTabs and gameTabs[#gameTabs]
+    local fontObj = anchor and anchor.GetFontString and anchor:GetFontString()
+    local tabH = (anchor and anchor.GetHeight and anchor:GetHeight()) or 28
+    if not tabH or tabH < 18 then tabH = 28 end
+    local strip = CreateFrame("Frame", nil, host)
+    strip:SetHeight(tabH)
+    if anchor then strip:SetPoint("LEFT", anchor, "RIGHT", 0, 0) else strip:SetPoint("TOPLEFT", host, "BOTTOMLEFT", 300, 0) end
+    strip:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 305))
+    strip.bg = strip:CreateTexture(nil, "BACKGROUND")
+    strip.bg:SetAllPoints()
+    strip.bg:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], 0.96)
+    f.strip = strip
+    local x = 0
     for i, def in ipairs(TABS) do
-        local b = UI:Button(host, def[2], nil, 24, "secondary")
+        local b = CreateFrame("Button", nil, strip)
         b.key = def[1]
-        if i == 1 then
-            local gameTabs = host.Tabs
-            local anchor = gameTabs and gameTabs[#gameTabs]
-            if anchor then b:SetPoint("LEFT", anchor, "RIGHT", 18, 0) else b:SetPoint("TOPLEFT", host, "BOTTOMLEFT", 300, 2) end
-        else
-            b:SetPoint("LEFT", last, "RIGHT", 4, 0)
+        b:SetHeight(tabH)
+        b.sep = b:CreateTexture(nil, "ARTWORK")
+        b.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+        b.sep:SetSize(1, tabH * 0.5); b.sep:SetPoint("LEFT", 0, 0)
+        b.text = b:CreateFontString(nil, "OVERLAY")
+        local font, size, flags = fontObj and fontObj:GetFont()
+        if font then b.text:SetFont(font, size or 12, flags or "") else b.text:SetFont(UI.FONT, 12, "") end
+        b.text:SetPoint("CENTER", 0, 0)
+        b.text:SetText(T(def[2]))
+        b.line = b:CreateTexture(nil, "OVERLAY")
+        b.line:SetHeight(2); b.line:SetPoint("BOTTOMLEFT", 8, 1); b.line:SetPoint("BOTTOMRIGHT", -8, 1)
+        b.hl = b:CreateTexture(nil, "BACKGROUND")
+        b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
+        local w = (b.text:GetStringWidth() or 50) + 36
+        b:SetWidth(w)
+        b:SetPoint("LEFT", strip, "LEFT", x, 0)
+        x = x + w
+        function b:Paint(on)
+            local r, g, bb = UI:Accent()
+            self.on = on
+            self.line:SetColorTexture(r, g, bb, 1)
+            self.line:SetShown(on)
+            if on then self.text:SetTextColor(1, 1, 1) else self.text:SetTextColor(C.muted[1], C.muted[2], C.muted[3]) end
         end
-        b:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 310))
+        b:SetScript("OnEnter", function(s) s.hl:Show(); if not s.on then s.text:SetTextColor(C.text[1], C.text[2], C.text[3]) end end)
+        b:SetScript("OnLeave", function(s) s.hl:Hide(); s:Paint(s.on) end)
         b:SetScript("OnClick", function() f:Open(def[1]) end)
+        b:Paint(false)
         f.tabs[def[1]] = b
-        last = b
     end
+    strip:SetWidth(x + 8)
 
     function f:Open(key)
         cfg().ahTab = key
         self.tab = key
-        for k, b in pairs(self.tabs) do if b.SetStyle then b:SetStyle(k == key and "primary" or "secondary") end end
+        for k, b in pairs(self.tabs) do b:Paint(k == key) end
         for k, v in pairs(self.views) do v:SetShown(k == key) end
         -- les onglets du jeu ne paraissent plus choisis
         if PanelTemplates_DeselectTab then
@@ -251,7 +284,7 @@ local function build(host)
         self:Hide()
         -- l'onglet du jeu en cours reprend son air choisi
         if PanelTemplates_SetTab and host.selectedTab then pcall(PanelTemplates_SetTab, host, host.selectedTab) end
-        for _, b in pairs(self.tabs) do if b.SetStyle then b:SetStyle("secondary") end end
+        for _, b in pairs(self.tabs) do b:Paint(false) end
     end
 
     -----------------------------------------------------------------------
@@ -761,7 +794,7 @@ local function attach()
             if tb.HookScript then tb:HookScript("OnClick", function() if view then view:Close() end end) end
         end
     end
-    for _, b in pairs(view.tabs) do b:Show() end
+    view.strip:Show()
 end
 WK:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.15, attach) end)
 WK:On("AUCTION_HOUSE_CLOSED", function()
