@@ -88,8 +88,10 @@ function M:Model(l)
     local base = ta + tb
     local P, est
     local function offB(p) return (p + ta - tb) / 2 end -- départ du quai b après celui du quai a
+    local guess = false
     if #obs < 2 then
-        P, est = base + 2 * DWELL, true
+        -- un seul départ vu : le tour n'est pas connu, pas de compte à rebours affiché (deviné seulement)
+        P, est, guess = base + 2 * DWELL, true, true
     else
         local function score(p)
             local sc, off = 0, offB(p)
@@ -123,7 +125,7 @@ function M:Model(l)
     local ref = obs[1]
     for _, o in ipairs(obs) do if o[2] > ref[2] then ref = o end end
     local tA = ref[1] == "a" and ref[2] or (ref[2] - offB(P))
-    m = { P = P, ta = ta, tb = tb, w = w, tA = tA, est = est, n = #obs, at = e.at }
+    m = { P = P, ta = ta, tb = tb, w = w, tA = tA, est = est, guess = guess, n = #obs, at = e.at }
     models[key] = m
     return m
 end
@@ -137,7 +139,7 @@ function M:State(l, side, t)
     local dep0 = m.tA + (side == "a" and 0 or (m.ta + m.w))
     local k = math.ceil((t - dep0) / m.P)
     local inn = dep0 + k * m.P - t
-    return { inn = inn, following = inn + m.P, atDock = inn <= m.w, est = m.est, P = m.P, w = m.w,
+    return { inn = inn, following = inn + m.P, atDock = inn <= m.w, est = m.est, guess = m.guess, P = m.P, w = m.w,
              travel = side == "a" and m.ta or m.tb, n = m.n }
 end
 -- Où est le bateau : fraction du trajet a » b (0 = quai a, 1 = quai b) et sens ("ab", "ba" ou nil à quai)
@@ -161,7 +163,7 @@ end
 -- Texte court sous un quai : « à quai · 0:42 », « dans 3:10 » (« ~ » : tour encore estimé)
 function M:Label(l, side)
     local s = self:State(l, side)
-    if not s then return nil end
+    if not s or s.guess then return nil end
     local pre = s.est and "~" or ""
     if s.atDock then return string.format(T("à quai · %s"), pre .. M.Clock(s.inn)), s end
     return string.format(T("dans %s"), pre .. M.Clock(s.inn)), s
@@ -181,10 +183,38 @@ function M:TooltipLines(l, side)
         table.insert(out, { T("Horaires pas encore connus : prends-le une fois pour les apprendre."), 0.6, 0.6, 0.6 })
         return out
     end
+    if s.guess then
+        table.insert(out, { T("Horaires en cours d'apprentissage : prends-le encore une fois, ou signale son départ depuis le bandeau du quai."), 0.6, 0.6, 0.6 })
+        return out
+    end
     local pre = s.est and "~" or ""
     if s.atDock then table.insert(out, { string.format(T("À quai, départ dans %s"), pre .. M.Clock(s.inn)), 0.62, 0.85, 0.48 })
     else table.insert(out, { string.format(T("Départ dans %s"), pre .. M.Clock(s.inn)), 1, 1, 1 }) end
     table.insert(out, { string.format(T("Suivant dans %s · trajet %s · tour %s"), pre .. M.Clock(s.following), M.Clock(s.travel), M.Clock(s.P)), 0.75, 0.75, 0.75 })
     if s.est then table.insert(out, { T("Tour encore estimé : il se précise à chaque traversée."), 0.6, 0.6, 0.6 }) end
     return out
+end
+
+-- Vu du quai, sans le prendre : « il part » (départ de ce quai maintenant) ou « il arrive » (il vient
+-- de l'autre quai : départ de là-bas = maintenant - durée du trajet). Il faut la durée du trajet (une traversée faite).
+function M:Observe(l, side, kind)
+    local key = M.Key(l)
+    local e = store()[key]
+    if not e then return false end
+    local t = now()
+    local s2, dep = side, t
+    if kind == "arrive" then
+        s2 = side == "a" and "b" or "a"
+        local tr = s2 == "a" and (e.ta or e.tb) or (e.tb or e.ta)
+        if not tr then return false end
+        dep = t - tr
+    end
+    e[s2] = e[s2] or {}
+    for _, x in ipairs(e[s2]) do if math.abs(x - dep) < 20 then return true end end
+    table.insert(e[s2], dep)
+    table.sort(e[s2])
+    while #e[s2] > KEEP do table.remove(e[s2], 1) end
+    e.at = now()
+    models[key] = nil
+    return true
 end

@@ -642,6 +642,17 @@ function M:Boats()
         d.boatsChecked2 = true
         for i = #d.boats, 1, -1 do if knownRoute(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
     end
+    -- une fois : les traversées vers un autre continent finissaient au chargement, en pleine mer (quai au nom
+    -- du continent, horaires faux) ; ces trajets et les horaires appris avant la correction sont oubliés
+    if not d.boatsChecked3 and C_Map and C_Map.GetMapInfo then
+        d.boatsChecked3 = true
+        local function sea(q)
+            local ok, info = pcall(C_Map.GetMapInfo, q and q.map)
+            return not (ok and info) or (info.mapType and info.mapType <= 2)
+        end
+        for i = #d.boats, 1, -1 do if sea(d.boats[i].a) or sea(d.boats[i].b) then table.remove(d.boats, i) end end
+        d.sched = nil
+    end
     return d.boats
 end
 local ride, lastS
@@ -709,8 +720,11 @@ local function rideTick()
     if lastS then
         local dt = now - lastS.t
         if lastS.cont ~= p.cont then
-            -- écran de chargement pendant le trajet : arrivée sur l'autre continent
-            if ride then ride.crossed = true; endRide(p, epoch())
+            -- écran de chargement pendant le trajet : le bateau continue jusqu'au quai de l'autre continent ;
+            -- la traversée se termine quand il s'y arrête (vraie heure d'arrivée, vrai quai)
+            if ride then
+                ride.crossed, ride.last, ride.still = true, p, 0
+                blog("chargement : autre continent, suite de la traversée")
             else blog("changement de continent sans traversée repérée") end
         elseif dt > 0 then
             local v = dist(p.wx, p.wy, lastS.wx, lastS.wy) / dt
@@ -724,7 +738,8 @@ local function rideTick()
                     ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) }
                     blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
                 end
-                ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy
+                -- le tracé reste sur le continent du départ (coordonnées d'un seul continent)
+                if p.cont == ride.start.cont then ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy end
                 ride.still, ride.last = 0, p
             elseif ride then
                 ride.still = ride.still + dt

@@ -58,11 +58,27 @@ local function build()
     f.track = f:CreateTexture(nil, "ARTWORK"); f.track:SetHeight(4)
     f.track:SetPoint("BOTTOMLEFT", 14, 10); f.track:SetPoint("BOTTOMRIGHT", -14, 10)
     f.fill = f:CreateTexture(nil, "ARTWORK", nil, 2); f.fill:SetHeight(4); f.fill:SetPoint("LEFT", f.track, "LEFT")
+    -- vu du quai : signaler le départ ou l'arrivée du bateau (affine les horaires sans le prendre)
+    f.go = UI:Button(f, "Il part", 70, 20, "secondary")
+    f.come = UI:Button(f, "Il arrive", 76, 20, "secondary")
+    local function observe(kind)
+        local first = f.first
+        if not (first and first.line) then return end
+        if BT():Observe(first.line, first.side, kind) then
+            WK:Print(kind == "leave" and T("Départ noté : les horaires de ce bateau se précisent.") or T("Arrivée notée : les horaires de ce bateau se précisent."))
+        else
+            WK:Print(T("Prends ce bateau une fois d'abord : il faut connaître la durée du trajet."))
+        end
+        UI:RefreshDockBanner()
+    end
+    f.go:SetScript("OnClick", function() observe("leave") end)
+    f.come:SetScript("OnClick", function() observe("arrive") end)
     f.more = UI:Text(f, 10, C.dim); f.more:SetPoint("BOTTOMLEFT", 14, 18); f.more:SetPoint("RIGHT", -14, 0)
     if f.more.SetWordWrap then f.more:SetWordWrap(false) end
     -- list = { { to, kind, st (BoatTimes:State) ou nil } }
     function f:Paint(list)
         local first = list[1]
+        self.first = first
         local st = first.st
         local zep = first.kind == "zeppelin"
         self.icon:SetTexture(UI.MEDIA .. (zep and "zeppelin" or "boat"))
@@ -71,7 +87,11 @@ local function build()
         self.title:SetText(string.format(zep and T("Zeppelin pour %s") or T("Bateau pour %s"), first.to or "?"))
         local Clock = BT().Clock
         local h = 60
-        if st then
+        if st and st.guess then
+            self.time:SetText("")
+            self.sub:SetText(T("Horaires en cours d'apprentissage : signale son départ ou son arrivée, ou reprends-le."))
+            self.track:Hide(); self.fill:Hide()
+        elseif st then
             local pre = st.est and "~" or ""
             self.time:SetText(pre .. Clock(st.inn))
             local col = st.atDock and C.positive or (st.inn < 60 and C.gold or C.text)
@@ -94,7 +114,7 @@ local function build()
         for i = 2, #list do
             local o = list[i]
             local txt = o.to or "?"
-            if o.st then txt = txt .. " " .. (o.st.est and "~" or "") .. Clock(o.st.inn) end
+            if o.st and not o.st.guess then txt = txt .. " " .. (o.st.est and "~" or "") .. Clock(o.st.inn) end
             table.insert(others, txt)
         end
         self.more:SetShown(#others > 0)
@@ -103,6 +123,17 @@ local function build()
             self.track:ClearAllPoints(); self.track:SetPoint("BOTTOMLEFT", 14, 10); self.track:SetPoint("BOTTOMRIGHT", -14, 10)
             h = 74
             self.more:ClearAllPoints(); self.more:SetPoint("TOPLEFT", 46, -48); self.more:SetPoint("RIGHT", -14, 0)
+        end
+        -- boutons sous le reste, seulement quand la ligne a déjà été prise (durée du trajet connue)
+        local can = st ~= nil and first.line ~= nil
+        self.go:SetShown(can); self.come:SetShown(can)
+        if can then
+            self.track:ClearAllPoints(); self.track:SetPoint("TOPLEFT", 14, -(h - 12)); self.track:SetPoint("TOPRIGHT", -14, -(h - 12))
+            self.go:ClearAllPoints(); self.go:SetPoint("TOPLEFT", 46, -(h - 2))
+            self.come:ClearAllPoints(); self.come:SetPoint("LEFT", self.go, "RIGHT", 6, 0)
+            h = h + 28
+        else
+            self.track:ClearAllPoints(); self.track:SetPoint("BOTTOMLEFT", 14, 10); self.track:SetPoint("BOTTOMRIGHT", -14, 10)
         end
         self:SetHeight(h)
     end
@@ -141,11 +172,12 @@ function UI:RefreshDockBanner()
     end
     banner.lastSeen = GetTime()
     local list = {}
-    for _, d in ipairs(docks) do table.insert(list, { to = d.to, kind = d.kind, st = BT():State(d.line, d.side) }) end
+    for _, d in ipairs(docks) do table.insert(list, { to = d.to, kind = d.kind, line = d.line, side = d.side, st = BT():State(d.line, d.side) }) end
     -- le départ le plus proche en tête
+    local function known(x) return x.st ~= nil and not x.st.guess end
     table.sort(list, function(a, b)
-        if (a.st ~= nil) ~= (b.st ~= nil) then return a.st ~= nil end
-        return a.st and b.st and a.st.inn < b.st.inn or false
+        if known(a) ~= known(b) then return known(a) end
+        return known(a) and known(b) and a.st.inn < b.st.inn or false
     end)
     banner:Paint(list)
     banner:Show()

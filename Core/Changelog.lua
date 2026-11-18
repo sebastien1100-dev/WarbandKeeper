@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.7", date = "18/11/2026",
+        fixed = {
+            "Bateaux vers un autre continent : la traversée se terminait à l'écran de chargement, en pleine mer (quai nommé « Royaumes de l'Est », durée du trajet trop courte, horaires faux). Elle se termine maintenant quand le bateau s'arrête au vrai quai. Les trajets et horaires appris avant sont oubliés une fois : reprends le bateau pour les réapprendre.",
+            "Horaires : plus de compte à rebours tant qu'un seul départ est connu (il était deviné et souvent faux) ; « en cours d'apprentissage » à la place.",
+        },
+        added = {
+            "Bandeau au quai : boutons « Il part » et « Il arrive » pour signaler le bateau que tu vois partir ou arriver, sans le prendre ; chaque signalement précise les horaires.",
+        },
+    },
+    {
         version = "1.31.6", date = "18/11/2026",
         fixed = {
             "Carte : un bateau appris en le prenant avait deux traits au départ du quai (son vrai trajet et un trait droit vers la destination) ; seul le vrai trajet reste.",
