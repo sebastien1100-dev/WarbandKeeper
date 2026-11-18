@@ -10,6 +10,8 @@ local T = function(s) return WK.T(s) end
 local DEFAULTS = {
     ring = false, combatOnly = false, size = 56, alpha = 0.85, sweep = true, range = true,
     fadeIdle = true, hideMouselook = true, clip = false,
+    -- traînée scintillante (UI/CursorTrail.lua)
+    trail = false, trailStyle = "sparks", trailColor = "accent", trailLen = 600, trailDensity = 60, trailNoCombat = false,
 }
 local GCD_SPELL = 61304
 -- portée retenue pour « hors de portée » : mêlée pour les classes au contact, sinon distance des sorts

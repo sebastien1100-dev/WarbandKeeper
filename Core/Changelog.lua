@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.23.0", date = "18/11/2026", restart = true,
+        added = {
+            "Curseur : traînée scintillante derrière la souris (QoL > Curseur > Traînée). Trois styles : Étincelles (petites étoiles qui scintillent), Comète (ruban lumineux qui s'affine) et Poussière d'étoiles (paillettes qui tombent). Couleur d'accent, de classe, or, arc-en-ciel ou blanc ; longueur, densité, et option « pas en combat ». Rien quand la souris ne bouge pas, aucun clic bloqué ; le bouton « Tester » du mode édition la fait tourner en cercle.",
+        },
+    },
+    {
         version = "1.22.5", date = "18/11/2026",
         changed = {
             "QoL > Feu de camp : la carte « Objets de camp par métier » est en tête de l'onglet, avant les réglages.",

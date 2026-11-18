@@ -1150,6 +1150,24 @@ UI:RegisterPage({
             UI:SettingRow(rgc, -270, "Rouge hors de portée", "Quand ta cible attaquable est trop loin (mêlée pour guerrier, voleur et paladin ; 35 m pour le chasseur ; 30 m sinon).", ctoggle(rgc, "range"), 80)
             UI:SettingRow(rgc, -316, "Estomper quand la souris ne bouge pas", "Après 3 secondes, hors combat.", ctoggle(rgc, "fadeIdle"), 80)
             UI:SettingRow(rgc, -362, "Masquer en tournant la caméra", "Pendant que le clic droit est enfoncé.", ctoggle(rgc, "hideMouselook"), 80)
+            -- traînée scintillante (UI/CursorTrail.lua)
+            local function tsync() if UI.SyncCursorTrail then UI:SyncCursorTrail() end end
+            local trc = card("Traînée", 40 + 6 * 46 + 8, "scintille derrière la souris quand elle bouge")
+            UI:SettingRow(trc, -40, "Traînée scintillante", "Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner.",
+                ctoggle(trc, "trail", tsync), 80)
+            local styleSeg = UI:Segmented(trc, { { "sparks", T("Étincelles") }, { "comet", T("Comète") }, { "dust", T("Poussière") } },
+                function(v) cc.trailStyle = v end, 26)
+            styleSeg:Select(cc.trailStyle or "sparks")
+            UI:SettingRow(trc, -86, "Style", "Étincelles : petites étoiles qui scintillent. Comète : ruban lumineux qui s'affine. Poussière : paillettes qui tombent.", styleSeg, 280)
+            local colDd = UI:Dropdown(trc, 200, 30, { { "accent", T("Couleur d'accent") }, { "class", T("Couleur de classe") },
+                { "gold", T("Or") }, { "rainbow", T("Arc-en-ciel") }, { "white", T("Blanc") } }, function(v) cc.trailColor = v end)
+            colDd:Select(cc.trailColor or "accent")
+            UI:SettingRow(trc, -132, "Couleur", nil, colDd, 200)
+            UI:SettingRow(trc, -178, "Longueur", "Temps avant que la traînée s'éteigne.",
+                UI:Slider(trc, 220, 200, 1500, 100, function() return cc.trailLen or 600 end, function(v) cc.trailLen = v end, "%d ms"), 240)
+            UI:SettingRow(trc, -224, "Densité", nil,
+                UI:Slider(trc, 220, 20, 100, 10, function() return cc.trailDensity or 60 end, function(v) cc.trailDensity = v end, "%d %%"), 240)
+            UI:SettingRow(trc, -270, "Pas en combat", "La traînée s'arrête pendant les combats.", ctoggle(trc, "trailNoCombat"), 80)
             local clc = card("Curseur en combat", 40 + 46 + 30, "pour ne pas cliquer hors du jeu sur un deuxième écran")
             UI:SettingRow(clc, -40, "Garder le curseur dans la fenêtre en combat", "Le curseur ne sort plus de la fenêtre du jeu pendant un combat ; ton réglage revient à la sortie du combat.",
                 ctoggle(clc, "clip", function() if not cc.clip then UI:CursorClipOff() end end), 80)

@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.23.0 — 18/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Curseur : traînée scintillante derrière la souris (QoL > Curseur > Traînée). Trois styles : Étincelles (petites étoiles qui scintillent), Comète (ruban lumineux qui s'affine) et Poussière d'étoiles (paillettes qui tombent). Couleur d'accent, de classe, or, arc-en-ciel ou blanc ; longueur, densité, et option « pas en combat ». Rien quand la souris ne bouge pas, aucun clic bloqué ; le bouton « Tester » du mode édition la fait tourner en cercle.
+
 ## v1.22.5 — 18/11/2026
 
 _Un /reload suffit._
