@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.27.0", date = "18/11/2026", restart = true,
+        added = {
+            "Rangement intelligent (Inventaire > Rangement) : chaque composant va au perso qui s'en sert, d'après ses métiers : composants de ses guides de montée jusqu'au palier visé, composants de ses recettes connues, recettes de son métier qu'il ne connaît pas encore. La liste est rangée par perso, avec la raison (« guide : 40 jusqu'à 125 », « recette à apprendre »…).",
+            "Perso HV : choisis le perso qui vend à l'HV ; ce dont personne n'a besoin part chez lui si le lot vaut au moins le seuil (50 pa par défaut) au prix du scan, sinon il est proposé au marchand. Réglages : prix proposé, durée, réserve à garder.",
+            "Boîte aux lettres : un panneau « Rangement » liste ce que ce perso doit envoyer (vers le perso qui s'en sert, ou vers le perso HV), coché par défaut ; « Envoyer » fait les courriers. Tes règles d'envoi passent toujours avant, et rien de verrouillé n'est proposé.",
+        },
+    },
+    {
         version = "1.26.1", date = "18/11/2026",
         changed = {
             "Objets verrouillés : la touche se choisit aussi dans Options > Général (carte « Objets verrouillés »). Par défaut : Alt + clic molette, rarement prise par les autres addons ; si tu avais gardé l'ancien défaut (Alt + clic), il passe à Alt + clic molette.",
@@ -2703,6 +2711,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Rangement, suite : onglet « À vendre » du panneau de l'HV sur le perso HV (prix du scan, mise en vente pas à pas), place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
     "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",
     "Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.",
     "Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.",

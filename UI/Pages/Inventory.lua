@@ -139,6 +139,7 @@ UI:RegisterPage({
         self.empty = UI:Text(p, 12, C.muted)
         self.empty:SetPoint("CENTER", scroll, "CENTER")
         self:BuildLocks(p, x0)
+        self:BuildStash(p, x0)
 
         -- sacs par catégorie et leurs cases
         self.bags = UI:Pool(function()
@@ -443,6 +444,170 @@ UI:RegisterPage({
         UI:OnResize(pane, function() if self.char == "locks" then self:RefreshLocks() end end)
     end,
 
+    -- Rangement (Modules/Stash.lua) : qui a besoin de quoi, ce qui part au perso HV ou chez le marchand, réglages
+    BuildStash = function(self, p, x0)
+        local S = WK.modules.Stash
+        local cfg = S:Config()
+        local pane = UI:Scroll(p)
+        pane:SetPoint("TOPLEFT", x0, 0)
+        pane:SetPoint("BOTTOMRIGHT")
+        pane:Hide()
+        self.stashPane = pane
+        local root = pane.child
+        local list = UI:Card(root, T("Rangement par perso"), " ")
+        self.stashList = list
+        local note = UI:Text(list, 11, C.muted)
+        note:SetPoint("TOPRIGHT", -14, -14)
+        note:SetJustifyH("RIGHT")
+        note:SetText(T("les envois se font à la boîte aux lettres de chaque perso"))
+        self.stashHeads = UI:Pool(function()
+            local h = CreateFrame("Frame", nil, list)
+            h:SetHeight(22)
+            h.name = UI:Text(h, 12); h.name:SetPoint("LEFT")
+            h.badge = UI:Badge(h, T("perso HV"), C.gold); h.badge:SetPoint("LEFT", h.name, "RIGHT", 8, 0)
+            h.sub = UI:Text(h, 10, C.muted)
+            h.right = UI:Text(h, 11, C.gold); h.right:SetPoint("RIGHT"); h.right:SetJustifyH("RIGHT")
+            return h
+        end)
+        self.stashRows = UI:Pool(function()
+            local r = CreateFrame("Button", nil, list)
+            r:SetHeight(22)
+            r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(18, 18); r.icon:SetPoint("LEFT", 14, 0)
+            r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 40, 0); r.name:SetJustifyH("LEFT")
+            if r.name.SetWordWrap then r.name:SetWordWrap(false) end
+            r.val = UI:Text(r, 11, C.gold); r.val:SetPoint("RIGHT", 0, 0); r.val:SetWidth(90); r.val:SetJustifyH("RIGHT")
+            r.qty = UI:Text(r, 11, C.muted); r.qty:SetPoint("RIGHT", r.val, "LEFT", -6, 0); r.qty:SetWidth(50); r.qty:SetJustifyH("RIGHT")
+            r.why = UI:Text(r, 10, C.dim); r.why:SetPoint("RIGHT", r.qty, "LEFT", -10, 0); r.why:SetJustifyH("RIGHT")
+            if r.why.SetWordWrap then r.why:SetWordWrap(false) end
+            r:SetScript("OnEnter", function(sb)
+                if not sb.e then return end
+                WK.UI:TooltipOwner(sb, "ANCHOR_RIGHT")
+                if GameTooltip.SetItemByID then GameTooltip:SetItemByID(sb.e.id) end
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine(sb.e.why or "", 0.8, 0.8, 0.8, true)
+                local chars = WK.DB.global.characters
+                for key, n in pairs(sb.e.from or {}) do
+                    local c = chars[key]
+                    if c then
+                        local cr, cg, cb = UI:ClassColor(c.class)
+                        GameTooltip:AddDoubleLine(string.format(T("chez %s"), WK:CharName(c, key)), "x" .. n, cr, cg, cb, 1, 1, 1)
+                    end
+                end
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            return r
+        end)
+        self.stashEmpty = UI:Text(list, 11, C.muted)
+        self.stashEmpty:SetPoint("TOPLEFT", 16, -46)
+        self.stashEmpty:SetText(T("Rien à ranger : chaque composant est déjà chez le perso qui s'en sert."))
+        -- réglages du perso HV
+        local sets = UI:Card(root, T("Perso HV"), T("reçoit ce dont personne n'a besoin et le met en vente"))
+        self.stashSets = sets
+        local charDd = UI:Dropdown(sets, 220, 30, {}, function(v) cfg.ahChar = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged() end)
+        self.stashCharDd = charDd
+        UI:SettingRow(sets, -40, "Perso qui vend à l'HV", "Il reçoit par courrier les composants dont aucun de tes persos n'a besoin. « Aucun » : tout est proposé au marchand.", charDd, 220)
+        UI:SettingRow(sets, -86, "Vendre à l'HV à partir de", "Valeur du lot au prix du scan de l'HV ; en dessous, il est proposé au marchand.",
+            UI:Slider(sets, 220, 0, 500, 10, function() return math.floor((cfg.minAH or 5000) / 100) end,
+                function(v) cfg.minAH = v * 100; S:Invalidate(); WK:NotifyChanged() end, "%d pa"), 240)
+        local priceDd = UI:Dropdown(sets, 220, 30, { { "lowest", T("Plus bas moins 1 pc") }, { "avg", T("Moyenne sur 14 jours") } },
+            function(v) cfg.price = v end)
+        priceDd:Select(cfg.price or "lowest")
+        UI:SettingRow(sets, -132, "Prix proposé", "Pour la mise en vente à l'HV (prix du dernier scan).", priceDd, 220)
+        local durDd = UI:Dropdown(sets, 220, 30, { { 12, T("12 h") }, { 24, T("24 h") }, { 48, T("48 h") } }, function(v) cfg.duration = v end)
+        durDd:Select(cfg.duration or 24)
+        UI:SettingRow(sets, -178, "Durée des enchères", nil, durDd, 220)
+        UI:SettingRow(sets, -224, "Garder une réserve", "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
+            UI:Slider(sets, 220, 0, 100, 5, function() return cfg.reserve or 0 end, function(v) cfg.reserve = v; S:Invalidate(); WK:NotifyChanged() end, "%d"), 240)
+        UI:SettingRow(sets, -270, "Proposer les envois à la boîte aux lettres", "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
+            UI:Toggle(sets, function() return cfg.mailPanel end, function(v) cfg.mailPanel = v end), 80)
+        sets:SetHeight(40 + 6 * 46 + 8)
+        UI:OnResize(pane, function() if self.char == "stash" then self:RefreshStash() end end)
+    end,
+
+    RefreshStash = function(self)
+        local S = WK.modules.Stash
+        local cfg = S:Config()
+        local chars = WK.DB.global.characters
+        local W = math.max(400, (self.stashPane:GetWidth() or 600) - 14)
+        self.stashPane.child:SetWidth(W)
+        -- menu du perso HV
+        local opts = { { "none", T("Aucun") } }
+        for _, e in ipairs(UI:SortedCharacters()) do table.insert(opts, { e.key, WK:CharName(e.c, e.key) }) end
+        self.stashCharDd:SetOptions(opts)
+        self.stashCharDd:Select(cfg.ahChar or "none")
+        local r = S:Route()
+        self.stashHeads:Reset(); self.stashRows:Reset()
+        local y, total = 44, 0
+        local function head(text, color, sub, right, hv)
+            local h = self.stashHeads:Get()
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 14, -y); h:SetPoint("TOPRIGHT", -14, -y)
+            h.name:SetText(text); h.name:SetTextColor(color[1], color[2], color[3])
+            h.badge:SetShown(hv and true or false)
+            h.sub:ClearAllPoints(); h.sub:SetPoint("LEFT", hv and h.badge or h.name, "RIGHT", 8, 0)
+            h.sub:SetText(sub or "")
+            h.right:SetText(right or "")
+            y = y + 24
+        end
+        local function row(e, showValue)
+            local rw = self.stashRows:Get()
+            rw.e = e
+            rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", 14, -y); rw:SetPoint("TOPRIGHT", -14, -y)
+            local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
+            rw.icon:SetTexture(icon)
+            rw.name:SetText(name); rw.name:SetTextColor(qr, qg, qb)
+            rw.name:SetWidth(math.max(120, (W - 28) * 0.42))
+            rw.why:SetText(e.why or "")
+            rw.qty:SetText("x" .. e.count)
+            rw.val:SetText(showValue and e.unit and WK:FormatMoney(e.unit * e.count) or "")
+            y = y + 22
+            total = total + 1
+        end
+        local function profs(c)
+            local parts = {}
+            for prof, p in pairs(c.professions or {}) do
+                if type(p) == "table" and p.rank then table.insert(parts, T(prof) .. " " .. p.rank) end
+            end
+            table.sort(parts)
+            return table.concat(parts, "  ·  ")
+        end
+        -- par perso qui en a besoin
+        for _, ce in ipairs(UI:SortedCharacters()) do
+            local d = r.dest[ce.key]
+            if d and #d.list > 0 then
+                head(WK:CharName(ce.c, ce.key), { UI:ClassColor(ce.c.class) }, profs(ce.c), nil, ce.key == cfg.ahChar)
+                for _, e in ipairs(d.list) do row(e) end
+                y = y + 6
+            end
+        end
+        local hvc = cfg.ahChar and chars[cfg.ahChar]
+        if #r.ah.list > 0 then
+            head(string.format(T("Pour l'HV » %s"), hvc and WK:CharName(hvc, cfg.ahChar) or "?"), C.gold, nil, "~ " .. WK:FormatMoney(r.ah.value or 0))
+            for _, e in ipairs(r.ah.list) do row(e, true) end
+            y = y + 6
+        end
+        if #r.sell.list > 0 then
+            head(T("À vendre sur le perso HV"), C.gold, nil, "~ " .. WK:FormatMoney(r.sell.value or 0))
+            for _, e in ipairs(r.sell.list) do row(e, true) end
+            y = y + 6
+        end
+        if #r.vendor.list > 0 then
+            head(cfg.ahChar and string.format(T("Au marchand (moins de %s à l'HV)"), WK:FormatMoney(cfg.minAH or 0)) or T("Au marchand"),
+                C.muted, nil, WK:FormatMoney(r.vendor.value or 0))
+            for _, e in ipairs(r.vendor.list) do row(e, true) end
+            y = y + 6
+        end
+        if self.stashList.subtitle then self.stashList.subtitle:SetText(string.format(T("%d objets à ranger"), total)) end
+        self.stashEmpty:SetShown(total == 0)
+        if total == 0 then y = y + 24 end
+        self.stashList:ClearAllPoints(); self.stashList:SetPoint("TOPLEFT", 0, 0); self.stashList:SetSize(W, y + 10)
+        local ly = y + 10 + 12
+        self.stashSets:ClearAllPoints(); self.stashSets:SetPoint("TOPLEFT", 0, -ly); self.stashSets:SetWidth(W)
+        ly = ly + self.stashSets:GetHeight() + 10
+        self.stashPane:SetContentHeight(ly)
+    end,
+
     RefreshLocks = function(self)
         local IL = WK.modules.ItemLock
         local W = math.max(400, (self.lockPane:GetWidth() or 600) - 14)
@@ -516,10 +681,10 @@ UI:RegisterPage({
     -- Onglets : tout le compte, chaque personnage, banque de bataillon.
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        local special = { spread = true, old = true, locks = true }
+        local special = { spread = true, old = true, locks = true, stash = true }
         if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
         -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
-        local entries = { { key = "all" }, { key = "spread" }, { key = "old" }, { key = "locks" } }
+        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" } }
         for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
         local wb = WK.DB.global.warbank
         if wb then table.insert(entries, { key = "warband" }) end
@@ -545,10 +710,10 @@ UI:RegisterPage({
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
-                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock" }
+                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send" }
                 b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Objets verrouillés" }
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Objets verrouillés", stash = "Rangement" }
                 b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
@@ -557,6 +722,11 @@ UI:RegisterPage({
                 elseif e.key == "spread" then
                     local n = #WK.modules.Inventory:Spread()
                     b.sub:SetText(string.format(T("%d objets dispersés"), n))
+                elseif e.key == "stash" then
+                    local r = WK.modules.Stash:Route()
+                    local n = #r.ah.list + #r.vendor.list
+                    for _, d in pairs(r.dest) do n = n + #d.list end
+                    b.sub:SetText(string.format(T("%d objets à ranger"), n))
                 elseif e.key == "locks" then
                     local n = 0
                     for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
@@ -585,11 +755,13 @@ UI:RegisterPage({
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
         -- objets verrouillés : leur propre panneau à la place de la liste
-        local locks = sel == "locks"
+        local locks, stash = sel == "locks", sel == "stash"
         self.lockPane:SetShown(locks)
-        for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not locks) end
-        if locks then
+        self.stashPane:SetShown(stash)
+        for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not (locks or stash)) end
+        if locks or stash then
             self.whereSeg:Hide(); self.empty:Hide()
+            if stash then return self:RefreshStash() end
             return self:RefreshLocks()
         end
         if sel == "spread" or sel == "old" then

@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Rangement, suite : onglet « À vendre » du panneau de l'HV sur le perso HV (prix du scan, mise en vente pas à pas), place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
 - Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.
@@ -29,6 +30,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.27.0 — 18/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Rangement intelligent (Inventaire > Rangement) : chaque composant va au perso qui s'en sert, d'après ses métiers : composants de ses guides de montée jusqu'au palier visé, composants de ses recettes connues, recettes de son métier qu'il ne connaît pas encore. La liste est rangée par perso, avec la raison (« guide : 40 jusqu'à 125 », « recette à apprendre »…).
+- Perso HV : choisis le perso qui vend à l'HV ; ce dont personne n'a besoin part chez lui si le lot vaut au moins le seuil (50 pa par défaut) au prix du scan, sinon il est proposé au marchand. Réglages : prix proposé, durée, réserve à garder.
+- Boîte aux lettres : un panneau « Rangement » liste ce que ce perso doit envoyer (vers le perso qui s'en sert, ou vers le perso HV), coché par défaut ; « Envoyer » fait les courriers. Tes règles d'envoi passent toujours avant, et rien de verrouillé n'est proposé.
 
 ## v1.26.1 — 18/11/2026
 

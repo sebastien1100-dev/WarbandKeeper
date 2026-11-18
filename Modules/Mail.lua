@@ -150,6 +150,34 @@ function M:BuildQueue()
     end
 end
 
+-- Envoi d'une liste préparée ailleurs (Modules/Stash.lua) : store = { items = { [objet] = { to, keep } }, cats = {} }
+function M:SendWith(store)
+    if sending then return false end
+    wipe(queue)
+    local byRecipient = {}
+    local p = WK.modules.Rules:Plan(store, function(rule, id, bound)
+        local IL = WK.modules.ItemLock
+        if IL and IL:Manual()[id] then return false end
+        return rule.to and rule.to ~= "" and not bound and not isMe(rule.to)
+    end)
+    for _, e in ipairs(p) do
+        local to = M:Recipient(e.rule.to)
+        byRecipient[to] = byRecipient[to] or {}
+        for _, op in ipairs(e.ops) do table.insert(byRecipient[to], op) end
+    end
+    for to, ops in pairs(byRecipient) do
+        for i = 1, #ops, MAX_ATTACH do
+            local batch = {}
+            for j = i, math.min(i + MAX_ATTACH - 1, #ops) do table.insert(batch, ops[j]) end
+            table.insert(queue, { recipient = to, items = batch })
+        end
+    end
+    if #queue == 0 then return false end
+    self:SendNext()
+    return true
+end
+function M:IsSending() return sending end
+
 -- Nombre d'objets des sacs qui partiraient au prochain passage à la boîte aux lettres.
 function M:PendingCount()
     local n = 0

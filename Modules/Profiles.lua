@@ -25,6 +25,7 @@ local KEYS = {
     modulesOff = {},
     mapLayers = {},
     gatherMap = {},
+    stash = {},
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau
 
