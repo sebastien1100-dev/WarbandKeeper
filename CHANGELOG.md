@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.28.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Kit de camp : le temps restant sur les icônes (« 59m ») était assombri par le voile de recharge. Il passe au-dessus, plus gros et cerné de noir ; le nombre d'objets aussi.
+
 ## v1.28.2 — 18/11/2026
 
 _Un /reload suffit._

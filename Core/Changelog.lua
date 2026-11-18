@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.3", date = "18/11/2026",
+        fixed = {
+            "Kit de camp : le temps restant sur les icônes (« 59m ») était assombri par le voile de recharge. Il passe au-dessus, plus gros et cerné de noir ; le nombre d'objets aussi.",
+        },
+    },
+    {
         version = "1.28.2", date = "18/11/2026",
         changed = {
             "QoL > Expérience, « Tous tes persos » : une carte par perso (3 par ligne) au lieu du tableau. Icône de classe, nom, « vu il y a… », niveau en grand, barre XP comme celle du jeu avec le repos en bleu juste devant, puis l'XP restante, le repos en % d'un niveau (pastille « plein » à 150 %) et dans combien de temps il sera plein, en auberge ou dehors.",
