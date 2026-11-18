@@ -1781,42 +1781,50 @@ UI:RegisterPage({
             xreset:SetPoint("BOTTOMLEFT", 16, 12)
             xreset:SetScript("OnClick", function() X:ResetSession(); WK:NotifyChanged() end)
 
-            -- tous tes persos : tableau (perso, niveau, XP, repos estimé, vu)
-            local AROWS = 16
-            local function aHeight(n) return 40 + 22 + math.max(1, n) * 28 + 10 end
+            -- tous tes persos : une carte par perso (3 par ligne, 2 en fenêtre étroite) : niveau, barre XP + repos,
+            -- XP restante, repos, plein dans combien de temps
+            local AMAX, TH2, TG2 = 18, 116, 10
+            local acols = 3
+            local function aHeight(n) return 40 + math.max(1, math.ceil(n / acols)) * (TH2 + TG2) + 4 end
             local xa = card("Tous tes persos", aHeight(0), "repos estimé depuis leur déconnexion")
-            local AX = { 16, 170, 225, 420, 660 }
-            for i, h in ipairs({ "Perso", "Niveau", "XP", "Repos estimé", "Vu" }) do
-                local t = UI:Text(xa, 10, C.dim)
-                t:SetPoint("TOPLEFT", AX[i], -42)
-                t:SetText(UI:Upper(T(h)))
-            end
             local aempty = UI:Text(xa, 11, C.muted)
-            aempty:SetPoint("TOPLEFT", 16, -68)
+            aempty:SetPoint("TOPLEFT", 16, -44)
             aempty:SetText(T("Connecte tes persos une fois pour relever leur expérience."))
-            local arows = {}
-            for i = 1, AROWS do
-                local r = CreateFrame("Frame", nil, xa)
-                r:SetHeight(26)
-                r:SetPoint("TOPLEFT", 0, -62 - (i - 1) * 28); r:SetPoint("TOPRIGHT", 0, -62 - (i - 1) * 28)
-                r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", AX[1], 0)
-                r.name:SetWidth(AX[2] - AX[1] - 8); r.name:SetJustifyH("LEFT")
-                r.lvl = UI:Text(r, 12); r.lvl:SetPoint("LEFT", AX[2], 0)
-                r.xtr, r.xset = hbar(r)
-                r.xtr:SetPoint("LEFT", AX[3], 0); r.xtr:SetWidth(120)
-                r.xpc = UI:Text(r, 12); r.xpc:SetPoint("LEFT", AX[3] + 128, 0)
-                r.rtr, r.rset = hbar(r)
-                r.rtr:SetPoint("LEFT", AX[4], 0); r.rtr:SetWidth(120)
-                r.rpc = UI:Text(r, 12); r.rpc:SetPoint("LEFT", AX[4] + 128, 0)
-                r.full = CreateFrame("Frame", nil, r)
-                r.full:SetSize(40, 18)
-                r.full:SetPoint("LEFT", r.rpc, "RIGHT", 6, 0)
-                UI:Panel(r.full, 9, { C.positive[1] * 0.35, C.positive[2] * 0.35, C.positive[3] * 0.35, 0.9 })
-                r.full.t = UI:Text(r.full, 10, C.positive); r.full.t:SetPoint("CENTER")
-                r.full.t:SetText(T("plein"))
-                r.seen = UI:Text(r, 11, C.muted); r.seen:SetPoint("LEFT", AX[5], 0)
-                r.seen:SetPoint("RIGHT", -16, 0); r.seen:SetJustifyH("LEFT")
-                arows[i] = r
+            local atiles = {}
+            local function kv(t, y)
+                local l = UI:Text(t, 11, C.muted); l:SetPoint("TOPLEFT", 12, y)
+                local v = UI:Text(t, 11, C.text); v:SetPoint("TOPRIGHT", -12, y); v:SetJustifyH("RIGHT")
+                return l, v
+            end
+            for i = 1, AMAX do
+                local t = CreateFrame("Frame", nil, xa)
+                t:SetHeight(TH2)
+                UI:Panel(t, 9, C.surface2, C.border)
+                t.icon = UI:RoundIcon(t, 28); t.icon:SetPoint("TOPLEFT", 12, -10)
+                t.name = UI:Text(t, 12); t.name:SetPoint("TOPLEFT", 48, -10); t.name:SetPoint("TOPRIGHT", -52, -10); t.name:SetJustifyH("LEFT")
+                if t.name.SetWordWrap then t.name:SetWordWrap(false) end
+                t.sub = UI:Text(t, 10, C.muted); t.sub:SetPoint("TOPLEFT", 48, -27); t.sub:SetPoint("TOPRIGHT", -52, -27); t.sub:SetJustifyH("LEFT")
+                if t.sub.SetWordWrap then t.sub:SetWordWrap(false) end
+                t.lvl = UI:Text(t, 20); t.lvl:SetPoint("TOPRIGHT", -12, -10)
+                -- barre comme celle du jeu : XP à la couleur d'accent, repos en bleu juste devant
+                t.track = t:CreateTexture(nil, "ARTWORK")
+                t.track:SetTexture("Interface\\Buttons\\WHITE8X8")
+                t.track:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.7)
+                t.track:SetPoint("TOPLEFT", 12, -48); t.track:SetPoint("TOPRIGHT", -12, -48); t.track:SetHeight(8)
+                t.xfill = t:CreateTexture(nil, "OVERLAY", nil, 1); t.xfill:SetTexture("Interface\\Buttons\\WHITE8X8")
+                t.xfill:SetPoint("TOPLEFT", t.track, "TOPLEFT"); t.xfill:SetHeight(8)
+                t.rfill = t:CreateTexture(nil, "OVERLAY", nil, 0); t.rfill:SetTexture("Interface\\Buttons\\WHITE8X8")
+                t.rfill:SetHeight(8)
+                t.l1, t.v1 = kv(t, -64); t.l1:SetText(T("XP"))
+                t.l2, t.v2 = kv(t, -80); t.l2:SetText(T("Repos"))
+                t.l3, t.v3 = kv(t, -96); t.l3:SetText(T("Plein dans"))
+                t.full = CreateFrame("Frame", nil, t)
+                t.full:SetSize(40, 15)
+                UI:Panel(t.full, 7, { C.positive[1] * 0.3, C.positive[2] * 0.3, C.positive[3] * 0.3, 0.9 })
+                t.full.t = UI:Text(t.full, 10, C.positive); t.full.t:SetPoint("CENTER")
+                t.full.t:SetText(T("plein"))
+                t:Hide()
+                atiles[i] = t
             end
             local function ago(sec)
                 if sec < 3600 then return string.format(T("il y a %d min"), math.max(1, math.floor(sec / 60))) end
@@ -1839,46 +1847,65 @@ UI:RegisterPage({
             local extra = 0
             xsec.extraY = function() return extra end
 
-            table.insert(self.dyn, function()
+            local function layoutTiles()
                 local me = X:Me()
-                -- persos
                 local rows = {}
                 for _, e in ipairs(UI:SortedCharacters()) do
                     if e.c.xp or e.c.level then table.insert(rows, e) end
                 end
-                local na = math.min(#rows, AROWS)
+                local na = math.min(#rows, AMAX)
                 aempty:SetShown(na == 0)
+                local W = xa:GetWidth() or 840
+                acols = W >= 900 and 3 or 2
+                local tw = (W - 32 - (acols - 1) * TG2) / acols
+                local bw = tw - 24
                 local ar, ag, ab = UI:Accent()
-                for i, r in ipairs(arows) do
+                for i, t in ipairs(atiles) do
                     local e = rows[i]
-                    if not e then r:Hide() else
+                    if not e or i > na then t:Hide() else
                         local c, x = e.c, e.c.xp
                         local mine = e.key == WK:CharKey()
                         if mine then x = { level = me.level, cur = me.cur, max = me.max, rested = me.rested, resting = me.resting, at = time() } end
+                        local col, row = (i - 1) % acols, math.floor((i - 1) / acols)
+                        t:ClearAllPoints(); t:SetPoint("TOPLEFT", 16 + col * (tw + TG2), -40 - row * (TH2 + TG2)); t:SetWidth(tw)
+                        UI:SetClassIcon(t.icon, c.class)
                         local cr, cg, cb = UI:ClassColor(c.class)
-                        r.name:SetText(WK:CharName(c, e.key)); r.name:SetTextColor(cr, cg, cb)
+                        t.name:SetText(WK:CharName(c, e.key)); t.name:SetTextColor(cr, cg, cb)
+                        local cls = T(WK.modules.QoL.CLASS_LABEL[c.class or ""] or "")
+                        local seen = mine and T("maintenant") or (x and x.at and (ago(time() - x.at) .. " · " .. (x.resting and T("auberge") or T("dehors")))) or T("pas encore relevé")
+                        t.sub:SetText(cls ~= "" and (cls .. " · " .. seen) or seen)
                         local lvl = (x and x.level) or c.level or 0
-                        r.lvl:SetText(lvl)
+                        t.lvl:SetText(lvl)
                         local maxed = lvl >= X:MaxLevel()
-                        r.full:Hide()
-                        if maxed then
-                            r.xset(1, ar, ag, ab); r.xpc:SetText(T("max"))
-                            r.rset(0, 0, 0, 0); r.rpc:SetText("-")
-                        elseif x then
-                            local pc = (x.cur or 0) / math.max(1, x.max or 1)
-                            r.xset(pc, ar, ag, ab); r.xpc:SetText(string.format("%d %%", math.floor(pc * 100)))
-                            local frac = X:RestOf(e.key) or 0
-                            r.rset(frac / X.REST_MAX, C.info[1], C.info[2], C.info[3])
-                            r.rpc:SetText(string.format("%d %%", math.floor(frac * 100)))
-                            r.full:SetShown(frac >= X.REST_MAX - 0.001)
+                        t.xfill:SetVertexColor(ar, ag, ab, 1)
+                        t.rfill:SetVertexColor(C.info[1], C.info[2], C.info[3], 0.85)
+                        t.full:Hide()
+                        if maxed or not x then
+                            t.xfill:SetWidth(maxed and bw or 0.01); t.rfill:Hide()
+                            t.v1:SetText(maxed and T("niveau maximum") or "?")
+                            t.v2:SetText("-"); t.v3:SetText("-")
+                            t.v2:SetTextColor(C.muted[1], C.muted[2], C.muted[3]); t.v3:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
                         else
-                            r.xset(0, ar, ag, ab); r.xpc:SetText("?")
-                            r.rset(0, 0, 0, 0); r.rpc:SetText("?")
+                            local mx = math.max(1, x.max or 1)
+                            local pc = math.max(0, math.min(1, (x.cur or 0) / mx))
+                            local frac = X:RestOf(e.key) or 0
+                            t.xfill:SetWidth(math.max(0.01, bw * pc))
+                            local rw = math.min(1 - pc, frac) * bw
+                            t.rfill:ClearAllPoints(); t.rfill:SetPoint("TOPLEFT", t.track, "TOPLEFT", bw * pc, 0)
+                            t.rfill:SetWidth(math.max(0.01, rw)); t.rfill:SetShown(rw > 0.5)
+                            t.v1:SetText(string.format(T("%d %% · %s restants"), math.floor(pc * 100), fmt(mx - (x.cur or 0))))
+                            t.v2:SetText(string.format(T("%d %% d'un niveau"), math.floor(frac * 100)))
+                            t.v2:SetTextColor(C.info[1], C.info[2], C.info[3])
+                            local full = frac >= X.REST_MAX - 0.001
+                            if full then
+                                t.full:ClearAllPoints(); t.full:SetPoint("RIGHT", t.v2, "LEFT", -6, 0); t.full:Show()
+                                t.v3:SetText(T("déjà plein")); t.v3:SetTextColor(C.positive[1], C.positive[2], C.positive[3])
+                            else
+                                t.v3:SetText("~ " .. xdur(X:RestFullIn(frac, x.resting)) .. " " .. (x.resting and T("en auberge") or T("dehors")))
+                                t.v3:SetTextColor(C.text[1], C.text[2], C.text[3])
+                            end
                         end
-                        if mine then r.seen:SetText(T("maintenant"))
-                        elseif x and x.at then r.seen:SetText(ago(time() - x.at) .. " · " .. (x.resting and T("auberge") or T("dehors")))
-                        else r.seen:SetText(T("pas encore relevé")) end
-                        r:Show()
+                        t:Show()
                     end
                 end
                 xa:SetHeight(aHeight(na))
@@ -1888,7 +1915,9 @@ UI:RegisterPage({
                     extra = e2
                     if xsec.tailY then xsec.scroll:SetContentHeight(xsec.tailY + extra) end
                 end
-            end)
+            end
+            table.insert(self.dyn, layoutTiles)
+            UI:OnResize(xa, function() if xa:IsVisible() then layoutTiles() end end)
         end
 
         -----------------------------------------------------------------------

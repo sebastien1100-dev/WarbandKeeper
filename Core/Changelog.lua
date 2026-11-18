@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.28.2", date = "18/11/2026",
+        changed = {
+            "QoL > Expérience, « Tous tes persos » : une carte par perso (3 par ligne) au lieu du tableau. Icône de classe, nom, « vu il y a… », niveau en grand, barre XP comme celle du jeu avec le repos en bleu juste devant, puis l'XP restante, le repos en % d'un niveau (pastille « plein » à 150 %) et dans combien de temps il sera plein, en auberge ou dehors.",
+        },
+    },
+    {
         version = "1.28.1", date = "18/11/2026",
         added = {
             "Halo, Atelier > Donneurs de quêtes : option « Seulement les quêtes de ton journal ». Seuls brillent les PNJ où rendre une quête de ton journal ou liés à une quête en cours, pas ceux qui proposent une nouvelle quête (ni les monstres à tuer).",
