@@ -109,7 +109,7 @@ local function nodeData(cfgID, nodeID)
         end
     end
     if type(name) ~= "string" then return nil end
-    return { name = name, icon = icon, spell = spell, x = num(n.posX) or 0, y = num(n.posY) or 0,
+    return { node = nodeID, name = name, icon = icon, spell = spell, x = num(n.posX) or 0, y = num(n.posY) or 0,
         rank = num(n.currentRank) or num(n.activeRank) or 0, max = num(n.maxRanks) or 1, sub = num(n.subTreeID) }
 end
 -- Noms des trois arbres par classe (ordre classique de gauche à droite), quand le jeu ne les donne pas
@@ -198,7 +198,7 @@ local function scanTraits(c)
         local tree = { name = type(name) == "string" and name or string.format(T("Arbre %d"), i), points = 0, list = {}, cols = #xs }
         for _, d in ipairs(g.list) do
             tree.points = tree.points + d.rank
-            table.insert(tree.list, { d.name, d.icon, yi[d.y], xi[d.x], d.rank, d.max, d.spell })
+            table.insert(tree.list, { d.name, d.icon, yi[d.y], xi[d.x], d.rank, d.max, d.spell, d.node })
         end
         table.insert(out, tree)
     end
@@ -355,3 +355,137 @@ function M:TalentDiag()
 end
 WK:On("UPDATE_FACTION", function() later({ reps = true }) end)
 WK:On("PLAYER_LEVEL_UP", function() later() end)
+
+
+---------------------------------------------------------------------------
+-- Builds de talents (onglet Talents de la fiche) : WK.DB.global.talentBuilds[perso] = { { name, at, level, trees } }
+-- trees = copie des arbres relevés (mêmes champs que c.talents). Comparaison talent par talent (n° de nœud,
+-- sinon place dans l'arbre), code de partage, application des points libres (perso connecté, hors combat).
+---------------------------------------------------------------------------
+local function buildStore(key)
+    local g = WK.DB.global
+    g.talentBuilds = g.talentBuilds or {}
+    g.talentBuilds[key] = g.talentBuilds[key] or {}
+    return g.talentBuilds[key]
+end
+local function copyTrees(trees)
+    local out = {}
+    for i, t in ipairs(trees or {}) do
+        local nt = { name = t.name, points = t.points, cols = t.cols, list = {} }
+        for j, d in ipairs(t.list or {}) do nt.list[j] = { d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8] } end
+        out[i] = nt
+    end
+    return out
+end
+function M:Builds(key) return buildStore(key) end
+function M:SaveBuild(key, name)
+    local c = WK.DB.global.characters[key]
+    if not (c and c.talents and c.talents[1] and c.talents[1].list) then return nil end
+    local b = { name = name, at = time(), level = c.level, trees = copyTrees(c.talents) }
+    table.insert(buildStore(key), b)
+    WK:NotifyChanged()
+    return b
+end
+function M:DeleteBuild(key, i) table.remove(buildStore(key), i); WK:NotifyChanged() end
+function M:RenameBuild(key, i, name)
+    local b = buildStore(key)[i]
+    if b and name and name ~= "" then b.name = name; WK:NotifyChanged() end
+end
+function M:Split(trees)
+    local out = {}
+    for i, t in ipairs(trees or {}) do
+        local n = 0
+        for _, d in ipairs(t.list or {}) do n = n + (d[5] or 0) end
+        out[i] = n
+    end
+    return table.concat(out, " / ")
+end
+-- Rang actuel du talent d'un build (même n° de nœud, sinon même place)
+local function curRank(cur, ti, j, d)
+    local t = cur and cur[ti]
+    if not t then return 0 end
+    if d[8] then
+        for _, e in ipairs(t.list or {}) do if e[8] == d[8] then return e[5] or 0 end end
+    end
+    local e = t.list and t.list[j]
+    return e and (e[5] or 0) or 0
+end
+M.CurRank = curRank
+-- Écart entre un build et les talents actuels : points à placer, points à retirer
+function M:Diff(build, cur)
+    local add, rem = 0, 0
+    for ti, t in ipairs(build.trees or {}) do
+        for j, d in ipairs(t.list or {}) do
+            local now = curRank(cur, ti, j, d)
+            local want = d[5] or 0
+            if want > now then add = add + want - now elseif want < now then rem = rem + now - want end
+        end
+    end
+    return add, rem
+end
+-- Code de partage : WK1:CLASSE:rangs de chaque arbre (un chiffre par talent), arbres séparés par « - »
+function M:ExportBuild(key, i)
+    local b = buildStore(key)[i]
+    local c = WK.DB.global.characters[key]
+    if not b then return nil end
+    local parts = {}
+    for ti, t in ipairs(b.trees) do
+        local r = {}
+        for j, d in ipairs(t.list or {}) do r[j] = tostring(math.min(9, d[5] or 0)) end
+        parts[ti] = table.concat(r)
+    end
+    return "WK1:" .. ((c and c.class) or "?") .. ":" .. table.concat(parts, "-")
+end
+-- Importe un code sur la structure des talents relevés du perso ; rend le build ou nil et la raison
+function M:ImportBuild(key, code, name)
+    local c = WK.DB.global.characters[key]
+    if not (c and c.talents and c.talents[1] and c.talents[1].list) then return nil, T("talents de ce perso pas encore relevés") end
+    local cls, body = (code or ""):match("^%s*WK1:(%u+):([%d%-]+)%s*$")
+    if not cls then return nil, T("code non reconnu") end
+    if cls ~= c.class then return nil, T("ce code est pour une autre classe") end
+    local trees = copyTrees(c.talents)
+    local ti = 0
+    for part in body:gmatch("[^%-]+") do
+        ti = ti + 1
+        local t = trees[ti]
+        if not t or #part ~= #t.list then return nil, T("le code ne correspond pas à tes arbres") end
+        for j = 1, #part do t.list[j][5] = math.min(t.list[j][6] or 9, tonumber(part:sub(j, j)) or 0) end
+    end
+    if ti ~= #trees then return nil, T("le code ne correspond pas à tes arbres") end
+    local b = { name = name or T("Build importé"), at = time(), level = c.level, trees = trees }
+    table.insert(buildStore(key), b)
+    WK:NotifyChanged()
+    return b
+end
+-- Place les points libres du perso connecté vers le build (rangée par rangée). Rend placés, raison
+function M:ApplyBuild(key, i)
+    if key ~= WK:CharKey() then return 0, T("seulement pour le perso connecté") end
+    if InCombatLockdown and InCombatLockdown() then return 0, T("pas en combat") end
+    local b = buildStore(key)[i]
+    if not b then return 0 end
+    local c = WK.DB:Me()
+    local _, rem = self:Diff(b, c.talents)
+    if rem > 0 then return 0, string.format(T("%d point(s) à retirer : réinitialise tes talents chez ton maître de classe, puis recommence"), rem) end
+    local cfgID = traitConfig()
+    if not (cfgID and C_Traits and C_Traits.PurchaseRank) then return 0, T("le jeu ne permet pas à l'addon de placer les points : place-les dans la fenêtre des talents") end
+    -- ordre : rangée puis colonne
+    local todo = {}
+    for ti, t in ipairs(b.trees) do
+        for j, d in ipairs(t.list or {}) do
+            local now = curRank(c.talents, ti, j, d)
+            if d[8] and (d[5] or 0) > now then table.insert(todo, { node = d[8], n = d[5] - now, row = d[3] or 0, col = d[4] or 0, tree = ti }) end
+        end
+    end
+    table.sort(todo, function(a, z) if a.row ~= z.row then return a.row < z.row end if a.tree ~= z.tree then return a.tree < z.tree end return a.col < z.col end)
+    local placed = 0
+    for _, e in ipairs(todo) do
+        for _ = 1, e.n do
+            local ok, res = pcall(C_Traits.PurchaseRank, cfgID, e.node)
+            if ok and res ~= false then placed = placed + 1 end
+        end
+    end
+    if placed > 0 and C_Traits.CommitConfig then pcall(C_Traits.CommitConfig, cfgID) end
+    C_Timer.After(1, function() M:Scan({ talents = true }) end)
+    if placed == 0 then return 0, T("aucun point placé (pas de point libre, ou talent pas encore accessible)") end
+    return placed
+end

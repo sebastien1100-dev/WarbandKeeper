@@ -424,6 +424,95 @@ local function build(parent)
         return b
     end
 
+    -- Builds de talents : carte sous les arbres, une ligne par build ; clic = aperçu déplié
+    f.ptrees = {}
+    for i = 1, 4 do
+        local tr = UI:Card(tsc.child, "")
+        tr.pts = UI:Text(tr, 14)
+        tr.pts:SetPoint("TOPRIGHT", -14, -12)
+        tr.cells = {}
+        tr:Hide()
+        f.ptrees[i] = tr
+    end
+    f.bcard = UI:Card(tsc.child, T("Mes builds"))
+    f.bcount = UI:Text(f.bcard, 11, C.muted)
+    f.bcount:SetPoint("LEFT", f.bcard.title, "RIGHT", 10, 0)
+    f.bsave = UI:Button(f.bcard, "Enregistrer le build actuel", nil, 26, "primary")
+    f.bsave:SetPoint("TOPRIGHT", -12, -10)
+    f.bimport = UI:Button(f.bcard, "Importer un code", nil, 26, "secondary")
+    f.bimport:SetPoint("RIGHT", f.bsave, "LEFT", -8, 0)
+    f.bempty = UI:Text(f.bcard, 11, C.muted)
+    f.bempty:SetPoint("TOPLEFT", 16, -48)
+    f.bempty:SetText(T("Aucun build enregistré : « Enregistrer le build actuel » garde tes talents sous un nom."))
+    f.bheads = {}
+    for i, h in ipairs({ "Nom", "Répartition", "Niveau", "Différences" }) do
+        local t = UI:Text(f.bcard, 10, C.dim); t:SetText(UI:Upper(T(h))); f.bheads[i] = t
+    end
+    f.brows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, f.bcard)
+        r:SetHeight(32)
+        r.hl = r:CreateTexture(nil, "BACKGROUND")
+        r.hl:SetTexture("Interface\\Buttons\\WHITE8X8")
+        r.hl:SetAllPoints()
+        r.line = r:CreateTexture(nil, "ARTWORK")
+        r.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+        r.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.8)
+        r.line:SetHeight(1); r.line:SetPoint("TOPLEFT"); r.line:SetPoint("TOPRIGHT")
+        r.arrow = UI:Text(r, 11, C.muted); r.arrow:SetPoint("LEFT", 6, 0)
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 22, 0)
+        r.split = UI:Text(r, 12); r.level = UI:Text(r, 12); r.diff = UI:Text(r, 11, C.muted)
+        r.del = UI:Button(r, "Suppr.", nil, 22, "danger"); r.del:SetPoint("RIGHT", -6, 0)
+        r.ren = UI:Button(r, "Renommer", nil, 22, "secondary"); r.ren:SetPoint("RIGHT", r.del, "LEFT", -6, 0)
+        r.code = UI:Button(r, "Code", nil, 22, "secondary"); r.code:SetPoint("RIGHT", r.ren, "LEFT", -6, 0)
+        r.apply = UI:Button(r, "Appliquer", nil, 22, "primary"); r.apply:SetPoint("RIGHT", r.code, "LEFT", -6, 0)
+        r:SetScript("OnEnter", function(s) s.hover = true; s.hl:SetVertexColor(C.hover[1], C.hover[2], C.hover[3], 0.6) end)
+        r:SetScript("OnLeave", function(s) s.hover = false; s.hl:SetVertexColor(0, 0, 0, 0) end)
+        r:SetScript("OnClick", function(s) f.openBuild = (f.openBuild ~= s.index) and s.index or nil; f:Refresh() end)
+        return r
+    end)
+    -- petite fenêtre : nom d'un build, code à copier ou à coller, confirmation
+    local dlg = CreateFrame("Frame", nil, f)
+    dlg:SetSize(440, 150)
+    dlg:SetPoint("CENTER")
+    dlg:SetFrameLevel(f:GetFrameLevel() + 40)
+    dlg:EnableMouse(true)
+    UI:Panel(dlg, 12, C.bg, { UI:Accent() })
+    dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 16, -14)
+    dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 16, -38); dlg.text:SetPoint("RIGHT", -16, 0)
+    dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
+    dlg.input = UI:Input(dlg, 408, 30, "")
+    dlg.input:SetPoint("TOPLEFT", 16, -64)
+    dlg.ok = UI:Button(dlg, "OK", 100, 28, "primary"); dlg.ok:SetPoint("BOTTOMRIGHT", -16, 12)
+    dlg.cancel = UI:Button(dlg, "Annuler", 100, 28, "secondary"); dlg.cancel:SetPoint("RIGHT", dlg.ok, "LEFT", -8, 0)
+    dlg.cancel:SetScript("OnClick", function() dlg:Hide() end)
+    dlg:Hide()
+    f.dlg = dlg
+    -- title, text, valeur du champ (nil = pas de champ), action OK (reçoit le texte)
+    function f:Ask(title, text, value, onOk, okLabel)
+        dlg.title:SetText(title); dlg.text:SetText(text or "")
+        dlg.input:SetShown(value ~= nil)
+        dlg.input:SetText(value or "")
+        dlg.ok:SetLabel(okLabel or T("OK"))
+        dlg.ok:SetScript("OnClick", function() local v = dlg.input:GetText(); dlg:Hide(); if onOk then onOk(v) end end)
+        dlg.input.onEnter = function(v) dlg:Hide(); if onOk then onOk(v) end end
+        dlg:Show()
+        if value ~= nil then dlg.input.edit:SetFocus(); dlg.input.edit:HighlightText() end
+    end
+    local G = WK.modules.Gear
+    f.bsave:SetScript("OnClick", function()
+        local c = WK.DB.global.characters[f.key]
+        local def = string.format(T("Build du %s"), date("%d/%m"))
+        f:Ask(T("Enregistrer le build actuel"), string.format(T("Répartition %s · donne-lui un nom."), G:Split(c and c.talents)), def, function(v)
+            if not G:SaveBuild(f.key, (v ~= "" and v) or def) then WK:Print(T("Talents pas encore relevés pour ce perso.")) end
+        end, T("Enregistrer"))
+    end)
+    f.bimport:SetScript("OnClick", function()
+        f:Ask(T("Importer un code"), T("Colle un code de build (WK1:…) partagé par un autre joueur de la même classe."), "", function(v)
+            local b, why = G:ImportBuild(f.key, v)
+            if not b then WK:Print(T("Import impossible : ") .. (why or "")) end
+        end, T("Importer"))
+    end)
+
     -- Onglet BiS : meilleur objet trouvable en donjon par emplacement
     local bsc = UI:Scroll(f)
     bsc:SetPoint("TOPLEFT", 0, -98)
@@ -665,6 +754,7 @@ end
 
 -- Onglet Talents
 local CELL, CGAP = 34, 10
+local paintTrees
 local function refreshTalents(f, c)
     -- perso connecté sans détail : on relève tout de suite (talents pas prêts à la connexion)
     if f.key == WK:CharKey() and not (c.talents and c.talents[1] and c.talents[1].list) and not f.talentTried then
@@ -698,21 +788,95 @@ local function refreshTalents(f, c)
     local cg = math.max(4, math.floor(cs * 0.3))
     local th = 52 + maxTier * cs + (maxTier - 1) * cg + 14
     local mine = f.key == WK:CharKey()
-    for i, tr in ipairs(f.trees) do
+    paintTrees(f, f.trees, trees, 28, tw, cs, cg, th, mine, nil)
+    -- builds sous les arbres
+    local G = WK.modules.Gear
+    local builds = G:Builds(f.key)
+    local by = (any and (28 + th) or 60) + 12
+    local card = f.bcard
+    card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -by); card:SetWidth(W)
+    f.bcount:SetText(string.format(T("%s · %d enregistré(s)"), WK:CharName(c, f.key), #builds))
+    f.bsave:SetEnabled(any)
+    f.bempty:SetShown(#builds == 0)
+    local XS = { 22, math.floor(W * 0.36), math.floor(W * 0.47), math.floor(W * 0.55) }
+    for i, t in ipairs(f.bheads) do t:ClearAllPoints(); t:SetPoint("TOPLEFT", XS[i], -44); t:SetShown(#builds > 0) end
+    f.brows:Reset()
+    for _, tr in ipairs(f.ptrees) do tr:Hide() end
+    local y = #builds > 0 and 62 or 70
+    local ptw = math.floor((W - 24 - (nt - 1) * 10) / nt)
+    local pcs = math.max(20, math.min(36, cs))
+    local pcg = math.max(4, math.floor(pcs * 0.3))
+    local pth = 52 + maxTier * pcs + (maxTier - 1) * pcg + 14
+    for i, bd in ipairs(builds) do
+        local row = f.brows:Get()
+        row.index = i
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -y); row:SetPoint("TOPRIGHT", -8, -y)
+        row.hl:SetVertexColor(0, 0, 0, 0)
+        local open = f.openBuild == i
+        row.arrow:SetText(open and "-" or "+")
+        row.name:SetText(bd.name or "?")
+        row.name:SetTextColor(unpack(open and C.text or C.text))
+        row.split:ClearAllPoints(); row.split:SetPoint("LEFT", XS[2] - 8, 0); row.split:SetText(G:Split(bd.trees)); row.split:SetTextColor(r, g, b)
+        row.level:ClearAllPoints(); row.level:SetPoint("LEFT", XS[3] - 8, 0); row.level:SetText(bd.level or "-")
+        local add, rem = G:Diff(bd, trees)
+        row.diff:ClearAllPoints(); row.diff:SetPoint("LEFT", XS[4] - 8, 0)
+        if add == 0 and rem == 0 then row.diff:SetText("|cff9ed17a" .. T("actif") .. "|r")
+        elseif rem == 0 then row.diff:SetText(string.format(T("+%d point(s) à placer"), add))
+        else row.diff:SetText(string.format("|cffe86b6b" .. T("%d à retirer") .. "|r · " .. T("%d à placer"), rem, add)) end
+        row.apply:SetShown(mine and (add > 0))
+        row.apply:SetScript("OnClick", function()
+            f:Ask(string.format(T("Appliquer « %s » ?"), bd.name or ""), rem > 0
+                and string.format(T("%d point(s) à retirer d'abord : réinitialise tes talents chez ton maître de classe, puis reviens ici."), rem)
+                or string.format(T("%d point(s) à placer, dans l'ordre du build, avec tes points libres (%d)."), add, c.talentFree or 0), nil, function()
+                local n, why = G:ApplyBuild(f.key, i)
+                if n and n > 0 then WK:Print(string.format(T("%d point(s) placé(s)."), n)) else WK:Print(why or T("Rien à placer.")) end
+            end, rem > 0 and T("Compris") or T("Placer"))
+        end)
+        row.code:SetScript("OnClick", function()
+            f:Ask(T("Code du build"), T("Copie ce code (Ctrl+C) pour le partager ; « Importer un code » le reprend sur un perso de la même classe."), G:ExportBuild(f.key, i) or "", nil, T("Fermer"))
+        end)
+        row.ren:SetScript("OnClick", function()
+            f:Ask(T("Renommer le build"), nil, bd.name or "", function(v) G:RenameBuild(f.key, i, v) end, T("Renommer"))
+        end)
+        row.del:SetScript("OnClick", function()
+            f:Ask(T("Supprimer le build ?"), string.format(T("« %s » sera supprimé."), bd.name or ""), nil, function()
+                if f.openBuild == i then f.openBuild = nil end
+                G:DeleteBuild(f.key, i)
+            end, T("Supprimer"))
+        end)
+        y = y + 34
+        if open then
+            -- aperçu : arbres du build, liseré violet = à ajouter, rouge = à retirer
+            paintTrees(f, f.ptrees, bd.trees, y, ptw, pcs, pcg, pth, false, trees, 12)
+            y = y + pth + 10
+        end
+    end
+    card:SetHeight(y + 8)
+    f.tsc:SetContentHeight(by + y + 16)
+end
+
+-- Dessine des arbres de talents (set de cartes) à la hauteur y ; cur = talents actuels pour marquer les écarts
+paintTrees = function(f, set, trees, y, tw, cs, cg, th, mine, cur, x0)
+    local r, g, b = UI:Accent()
+    local parent = set == f.ptrees and f.bcard or nil
+    for i, tr in ipairs(set) do
         local t = trees[i]
-        tr:SetShown(any and t ~= nil)
-        if any and t then
+        tr:SetShown(t ~= nil and t.list ~= nil)
+        if t and t.list then
+            if parent then tr:SetParent(parent); tr:SetFrameLevel(parent:GetFrameLevel() + 2) end
             tr:ClearAllPoints()
-            tr:SetPoint("TOPLEFT", (i - 1) * (tw + 12), -(any and 28 or 48))
+            tr:SetPoint("TOPLEFT", (x0 or 0) + (i - 1) * (tw + (parent and 10 or 12)), -y)
             tr:SetSize(tw, th)
             tr.title:SetText(t.name)
-            tr.pts:SetText(t.points or 0)
-            if (t.points or 0) > 0 then tr.pts:SetTextColor(r, g, b) else tr.pts:SetTextColor(unpack(C.dim)) end
+            local pts = 0
+            for _, d in ipairs(t.list) do pts = pts + (d[5] or 0) end
+            tr.pts:SetText(pts)
+            if pts > 0 then tr.pts:SetTextColor(r, g, b) else tr.pts:SetTextColor(unpack(C.dim)) end
             local cols = t.cols or 4
-            for _, d in ipairs(t.list or {}) do cols = math.max(cols, d[4]) end
+            for _, d in ipairs(t.list) do cols = math.max(cols, d[4]) end
             local gx = math.floor((tw - (cols * cs + (cols - 1) * cg)) / 2)
             for _, cell in ipairs(tr.cells) do cell:Hide() end
-            for j, d in ipairs(t.list or {}) do
+            for j, d in ipairs(t.list) do
                 local cell = f.talentCell(tr, j)
                 cell.data, cell.tab, cell.index, cell.mine = d, i, j, mine
                 cell:ClearAllPoints()
@@ -725,9 +889,13 @@ local function refreshTalents(f, c)
                 if cell.icon.SetDesaturated then cell.icon:SetDesaturated(rank == 0) end
                 cell.icon:SetAlpha(rank == 0 and 0.45 or 1)
                 local col = rank >= max and C.gold or rank > 0 and C.positive or C.border
+                if cur then
+                    local now = WK.modules.Gear.CurRank(cur, i, j, d)
+                    if rank > now then col = { 0.71, 0.49, 0.95 } elseif rank < now then col = C.negative end
+                end
                 cell.edge:SetVertexColor(col[1], col[2], col[3], 1)
                 cell.rk:SetText(rank .. "/" .. max)
-                local tc = rank > 0 and col or C.dim
+                local tc = (rank > 0 or cur) and col or C.dim
                 cell.rk:SetTextColor(tc[1], tc[2], tc[3])
                 cell.rkBox:SetWidth(math.max(22, math.ceil(cell.rk:GetStringWidth() or 0) + 8))
                 cell.rkBox.border:SetColor(col[1], col[2], col[3], rank > 0 and 1 or 0.6)
@@ -735,8 +903,8 @@ local function refreshTalents(f, c)
             end
         end
     end
-    f.tsc:SetContentHeight((any and (28 + th) or 60) + 8)
 end
+
 
 -- Onglet BiS, « Ma liste BiS » : objets choisis à la main par emplacement
 local refreshBisList

@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.16.0", date = "18/11/2026",
+        added = {
+            "Fiche du perso, onglet Talents : « Mes builds » sous les arbres. « Enregistrer le build actuel » garde tes talents sous un nom (répartition, niveau) ; plusieurs builds par perso. Chaque ligne dit l'écart avec tes talents actuels (actif, points à placer, points à retirer).",
+            "Clic sur un build : il se déplie et montre ses arbres en aperçu, liseré violet sur ce qu'il faudrait ajouter, rouge sur ce qu'il faudrait retirer. Re-clic pour replier.",
+            "Boutons d'un build : Appliquer (perso connecté, hors combat : place tes points libres dans l'ordre du build ; s'il faut en retirer, l'addon te dit de réinitialiser chez ton maître de classe), Code (à copier pour le partager), Renommer, Supprimer. « Importer un code » reprend le build d'un autre joueur de la même classe.",
+        },
+    },
+    {
         version = "1.15.0", date = "18/11/2026",
         changed = {
             "Fiche du perso, onglet BiS : plus de suggestions automatiques par niveau ; l'onglet est maintenant uniquement ta propre liste BiS (un objet par emplacement, à remplir par Maj+clic, glisser-déposer ou n°), avec la source de chaque objet et son état (porté, dans les sacs, à la banque, à obtenir). Le bouton « Remplir avec le meilleur trouvable » est retiré.",
