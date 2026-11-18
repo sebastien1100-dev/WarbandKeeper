@@ -8,7 +8,7 @@ local T = function(s) return WK.T(s) end
 -- Emplacements affichés : { n° d'emplacement, libellé, groupe }
 M.SLOTS = {
     { 1, "Tête", "head" }, { 2, "Cou", "neck" }, { 3, "Épaules", "shoulder" }, { 15, "Dos", "back" },
-    { 5, "Torse", "chest" }, { 9, "Poignets", "wrist" }, { 10, "Mains", "hands" }, { 6, "Taille", "waist" },
+    { 5, "Torse", "chest" }, { 4, "Chemise", "shirt" }, { 19, "Tabard", "tabard" }, { 9, "Poignets", "wrist" }, { 10, "Mains", "hands" }, { 6, "Taille", "waist" },
     { 7, "Jambes", "legs" }, { 8, "Pieds", "feet" }, { 11, "Doigt", "finger" }, { 12, "Doigt", "finger" },
     { 13, "Bijou", "trinket" }, { 14, "Bijou", "trinket" }, { 16, "Main droite", "main" }, { 17, "Main gauche", "off" },
     { 18, "Distance", "ranged" },
@@ -152,6 +152,7 @@ local GROUPS = {
     [1] = { "head" }, [2] = { "neck" }, [3] = { "shoulder" }, [15] = { "back" }, [5] = { "chest" }, [9] = { "wrist" },
     [10] = { "hands" }, [6] = { "waist" }, [7] = { "legs" }, [8] = { "feet" }, [11] = { "finger" }, [12] = { "finger" },
     [13] = { "trinket" }, [14] = { "trinket" }, [16] = { "main", "one", "two" }, [17] = { "off" }, [18] = { "ranged" },
+    [4] = { "shirt" }, [19] = { "tabard" },
 }
 local DUAL = { WARRIOR = true, ROGUE = true, HUNTER = true, SHAMAN = true }
 local PROF = { [164] = "Forge", [165] = "Travail du cuir", [171] = "Alchimie", [197] = "Couture", [202] = "Ingénierie",
