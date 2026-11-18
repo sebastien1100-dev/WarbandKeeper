@@ -144,6 +144,29 @@ function M:Holders(id)
     return out
 end
 
+-- Repère dans les sacs : « mine » (une liste du perso connecté), « other » (liste d'un autre perso), nil
+-- (ensemble recalculé au plus une fois par seconde : appelé pour chaque case des sacs ouverts)
+local markSet, markAt = nil, -10
+function M:Mark(id)
+    if not id then return nil end
+    local now = GetTime and GetTime() or 0
+    if not markSet or now - markAt > 1 or now < markAt then
+        markSet, markAt = {}, now
+        local me = WK:CharKey()
+        for key, st in pairs(WK.DB.global.bisLists or {}) do
+            local mine = key == me
+            if WK.DB.global.characters[key] then
+                for _, l in ipairs(st.lists or {}) do
+                    for _, v in pairs(l.items or {}) do
+                        if mine then markSet[v] = "mine" elseif not markSet[v] then markSet[v] = "other" end
+                    end
+                end
+            end
+        end
+    end
+    return markSet[id]
+end
+
 ---------------------------------------------------------------------------
 -- Tous les objets portables du jeu (Modules/ItemsDB.lua, généré) : candidats d'un emplacement, avec filtres
 ---------------------------------------------------------------------------

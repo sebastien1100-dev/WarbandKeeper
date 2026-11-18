@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.20.6 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Sacs : une étoile en haut à gauche de la case repère les objets de tes listes BiS (sacs du jeu et page Inventaire). Étoile dorée : liste du perso connecté ; étoile grise : liste d'un autre de tes persos (l'infobulle dit lequel).
+
 ## v1.20.5 — 18/11/2026
 
 _Un /reload suffit._

@@ -117,6 +117,21 @@ local function decorate(btn)
     o.icon:SetSize(9, 9)
     o.icon:SetPoint("CENTER", o.badge, "CENTER")
     o.icon:SetVertexColor(0.08, 0.06, 0.07, 1)
+    -- repère BiS (Modules/BiS.lua) : étoile en haut à gauche
+    o.bisRing = o:CreateTexture(nil, "OVERLAY", nil, 5)
+    o.bisRing:SetTexture(UI.MEDIA .. "circle")
+    o.bisRing:SetSize(17, 17)
+    o.bisRing:SetPoint("TOPLEFT", -3, 3)
+    o.bisRing:SetVertexColor(0, 0, 0, 0.9)
+    o.bisBadge = o:CreateTexture(nil, "OVERLAY", nil, 6)
+    o.bisBadge:SetTexture(UI.MEDIA .. "circle")
+    o.bisBadge:SetSize(15, 15)
+    o.bisBadge:SetPoint("CENTER", o.bisRing, "CENTER")
+    o.bisStar = o:CreateTexture(nil, "OVERLAY", nil, 7)
+    o.bisStar:SetTexture(UI.MEDIA .. "star")
+    o.bisStar:SetSize(10, 10)
+    o.bisStar:SetPoint("CENTER", o.bisRing, "CENTER")
+    o.bisStar:SetVertexColor(0.08, 0.06, 0.07, 1)
     -- cache chez le marchand : prend le clic à la place de la case
     o.block = CreateFrame("Button", nil, btn)
     o.block:SetAllPoints()
@@ -167,6 +182,11 @@ local function paint(btn)
     if why then
         if why == "manual" then o.badge:SetVertexColor(r1, g1, b1, 1) else o.badge:SetVertexColor(RULE[1], RULE[2], RULE[3], 1) end
     end
+    local B = WK.modules.BiS
+    local mark = id and B and WK:FeatureOn("characters") and B:Mark(id)
+    o.bisRing:SetShown(mark and true or false); o.bisBadge:SetShown(mark and true or false); o.bisStar:SetShown(mark and true or false)
+    if mark == "mine" then o.bisBadge:SetVertexColor(1, 0.82, 0.25, 1)
+    elseif mark then o.bisBadge:SetVertexColor(0.72, 0.74, 0.78, 1) end
     if not inCombat() then
         local guard = L:MerchantOpen() and id ~= nil and (why ~= nil or L:Expensive(id))
         o.block:SetShown(guard and true or false)

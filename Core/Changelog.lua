@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.20.6", date = "18/11/2026",
+        added = {
+            "Sacs : une étoile en haut à gauche de la case repère les objets de tes listes BiS (sacs du jeu et page Inventaire). Étoile dorée : liste du perso connecté ; étoile grise : liste d'un autre de tes persos (l'infobulle dit lequel).",
+        },
+    },
+    {
         version = "1.20.5", date = "18/11/2026",
         added = {
             "Kit de camp : timers sur les icônes, comme les barres d'action du jeu (voile qui tourne, temps restant au centre). Feu et sac de couchage : leur recharge ; objets de camp : la recharge commune d'1 h ; nourriture : le « Bien nourri » qu'il te reste, en vert. Les recharges sont en jaune.",

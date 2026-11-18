@@ -168,6 +168,15 @@ UI:RegisterPage({
             b.n = b:CreateFontString(nil, "OVERLAY")
             b.n:SetFont(UI.FONT, 11, "OUTLINE")
             b.n:SetPoint("BOTTOMRIGHT", -2, 3)
+            -- repère BiS : étoile en haut à gauche (or : liste du perso connecté, gris : autre perso)
+            b.bisRing = b:CreateTexture(nil, "OVERLAY", nil, 5)
+            b.bisRing:SetTexture(UI.MEDIA .. "circle"); b.bisRing:SetSize(17, 17); b.bisRing:SetPoint("TOPLEFT", -3, 3)
+            b.bisRing:SetVertexColor(0, 0, 0, 0.9)
+            b.bisBadge = b:CreateTexture(nil, "OVERLAY", nil, 6)
+            b.bisBadge:SetTexture(UI.MEDIA .. "circle"); b.bisBadge:SetSize(15, 15); b.bisBadge:SetPoint("CENTER", b.bisRing, "CENTER")
+            b.bisStar = b:CreateTexture(nil, "OVERLAY", nil, 7)
+            b.bisStar:SetTexture(UI.MEDIA .. "star"); b.bisStar:SetSize(10, 10); b.bisStar:SetPoint("CENTER", b.bisRing, "CENTER")
+            b.bisStar:SetVertexColor(0.08, 0.06, 0.07, 1)
             b:SetScript("OnEnter", function(s)
                 local it = s.it
                 if not it then return end
@@ -644,6 +653,9 @@ UI:RegisterPage({
                     local q = it.color or { 0.4, 0.4, 0.4 }
                     local plain = q[1] > 0.95 and q[2] > 0.95 and q[3] > 0.95
                     sl.edge:SetVertexColor(plain and C.border[1] or q[1], plain and C.border[2] or q[2], plain and C.border[3] or q[3], 1)
+                    local mark = WK:FeatureOn("characters") and WK.modules.BiS and WK.modules.BiS:Mark(it.id)
+                    sl.bisRing:SetShown(mark and true or false); sl.bisBadge:SetShown(mark and true or false); sl.bisStar:SetShown(mark and true or false)
+                    if mark == "mine" then sl.bisBadge:SetVertexColor(1, 0.82, 0.25, 1) elseif mark then sl.bisBadge:SetVertexColor(0.72, 0.74, 0.78, 1) end
                     sl.n:SetText(it.total > 1 and (it.total > 9999 and "9999+" or tostring(it.total)) or "")
                 end
             end
