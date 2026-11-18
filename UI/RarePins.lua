@@ -150,6 +150,8 @@ function UI:HideRarePins()
     for _, p in ipairs(pins) do p:Hide() end
     for _, d in ipairs(dots) do d:Hide(); d.o:Hide() end
     for _, d in ipairs(topDots) do d:Hide(); d.o:Hide() end
+    if holder and holder.pathLines then holder.pathLines:Reset() end
+    if top and top.pathLines then top.pathLines:Reset() end
 end
 
 local last -- dernier dessin (pour redessiner au survol)
@@ -162,7 +164,11 @@ function UI:DrawRarePins(cv, mapID, w, h)
     local list = R:OnMap(mapID)
     if UI.SyncRareList then UI:SyncRareList(mapID, list) end
     if not R:Config().map then return end
-    if #list == 0 then return end
+    if #list == 0 then
+        if holder and holder.pathLines then holder.pathLines:Reset() end
+        if top and top.pathLines then top.pathLines:Reset() end
+        return
+    end
     if not holder then holder = CreateFrame("Frame", nil, cv); holder.wk = true end
     holder:SetParent(cv)
     holder:SetAllPoints(cv)
@@ -173,6 +179,12 @@ function UI:DrawRarePins(cv, mapID, w, h)
     top:EnableMouse(false)
     local nt = 0
     local scale = (w / 1000) * UI.MapIconScale()
+    -- patrouilles en ligne fine continue (liseré sombre pour rester lisible) ; celle du rare survolé au-dessus
+    if UI.LinePool and holder.CreateLine then
+        holder.pathLines = holder.pathLines or UI:LinePool(3)
+        top.pathLines = top.pathLines or UI:LinePool(5)
+        holder.pathLines:Reset(); top.pathLines:Reset()
+    end
     local me = WK:CharKey()
     local nd = 0
     local shown = 0
@@ -229,7 +241,15 @@ function UI:DrawRarePins(cv, mapID, w, h)
             local path = m.path
             local pa = (hovered == r) and 1 or 0.8
             local ds, gap = math.max(5 * UI.MapIconScale(), 6.5 * scale), math.max(9 * UI.MapIconScale(), 13 * scale)
-            for k = 1, #path - 2, 2 do
+            local lines = holder.pathLines and ((hovered == r) and top.pathLines or holder.pathLines)
+            local thick = math.max(1.4 * UI.MapIconScale(), ((hovered == r) and 2.6 or 2) * scale)
+            if lines then
+                for k = 1, #path - 2, 2 do
+                    lines:Add(lines == top.pathLines and top or holder, path[k] / 100 * w, path[k + 1] / 100 * h,
+                        path[k + 2] / 100 * w, path[k + 3] / 100 * h, thick, col[1], col[2], col[3], pa)
+                end
+            end
+            for k = 1, (lines and 0 or #path - 2), 2 do
                 local x1, y1, x2, y2 = path[k] / 100 * w, path[k + 1] / 100 * h, path[k + 2] / 100 * w, path[k + 3] / 100 * h
                 local len = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
                 local n = math.max(1, math.floor(len / gap))

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.27.3", date = "18/11/2026",
+        changed = {
+            "Carte : la patrouille d'un rare est une ligne fine continue, avec un liseré sombre pour rester visible, au lieu de gros points ; celle du rare survolé est un peu plus épaisse et passe au-dessus.",
+        },
+    },
+    {
         version = "1.27.2", date = "18/11/2026",
         changed = {
             "Carte du monde : quand on zoome, les icônes (lieux, rares, filons, notes, quais, repère) et les tracés (patrouilles des rares, trajets, bateaux) gardent à peu près leur taille à l'écran au lieu de grossir avec la carte ; plus de pâté illisible en zoom.",

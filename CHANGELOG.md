@@ -31,6 +31,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.27.3 — 18/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte : la patrouille d'un rare est une ligne fine continue, avec un liseré sombre pour rester visible, au lieu de gros points ; celle du rare survolé est un peu plus épaisse et passe au-dessus.
+
 ## v1.27.2 — 18/11/2026
 
 _Un /reload suffit._
