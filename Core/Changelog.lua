@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.31.3", date = "18/11/2026",
+        changed = {
+            "Carte du monde, guidage : le trajet à pied est un trait fin et plein à la couleur d'accent, cerné de sombre, au lieu de gros points.",
+            "Carte du monde : sous l'épingle du guidage, la destination sur trois lignes (nom, ce que c'est comme « Maître des gryphons », distance).",
+        },
+    },
+    {
         version = "1.31.2", date = "18/11/2026",
         fixed = {
             "Bateaux : une traversée n'était pas repérée quand le jeu considérait le perso en mouvement sur le pont ; elle l'est maintenant aussi quand la position avance bien plus vite que le perso ne peut courir.",

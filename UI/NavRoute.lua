@@ -210,9 +210,11 @@ local function mapDot(i, cv)
     return d
 end
 local flyLines = UI:LinePool(5)
+local walkLines = UI:LinePool(6)
 function UI:HideNavRoute()
     for _, d in ipairs(mapDots) do d:Hide(); d.o:Hide() end
     flyLines:Reset()
+    walkLines:Reset()
 end
 local function toMap(cont, x, y, mapID)
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
@@ -246,6 +248,9 @@ function UI:DrawNavRoute(cv, mapID, w, h)
                 if len > 0 and inside and fly and canLine(cv) then
                     -- étape de vol : trait fin continu
                     flyLines:Add(cv, px, py, x, y, math.max(1.8 * UI.MapIconScale(), 2.4 * scale), r, g, b, 0.95)
+                elseif len > 0 and inside and canLine(cv) then
+                    -- à pied : trait fin et plein, cerné de sombre pour rester visible sur la carte
+                    walkLines:Add(cv, px, py, x, y, math.max(2.2 * UI.MapIconScale(), 3 * scale), r, g, b, 1)
                 elseif len > 0 and inside then
                     local k = 0
                     while k < len and n < MAX_MAP do

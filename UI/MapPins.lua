@@ -140,8 +140,14 @@ function UI:RefreshGuidePinLabel()
     if not (t and targetPin) then return end
     if G:Config().mapPin then gamePinAlpha(0) end -- le jeu peut réafficher son losange en rafraîchissant la carte
     local d = UI.GuideDistance and UI:GuideDistance(t)
-    targetPin.label:SetText(G:PlaceName(t) .. (d and ("  ·  |cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") or ""))
-    targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 16, 18)
+    -- trois lignes : nom, ce que c'est (« Maître des gryphons »), distance
+    local name, sub = G:PlaceParts(t)
+    if not name or name == "?" then name, sub = G:PlaceName(t), nil end
+    local lines = { name }
+    if sub and sub ~= "" then table.insert(lines, UI:Hex(C.muted) .. sub .. "|r") end
+    if d then table.insert(lines, "|cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") end
+    targetPin.label:SetText(table.concat(lines, "\n"))
+    targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 18, #lines * 13 + 8)
 end
 local function drawTarget(cv, mapID, w, h)
     local G = WK.modules.Guide
@@ -162,6 +168,8 @@ local function drawTarget(cv, mapID, w, h)
         targetPin.pill.bg = UI:Rounded(targetPin.pill, 9, 0, "BACKGROUND", 1)
         targetPin.label = UI:Text(targetPin.pill, 11)
         targetPin.label:SetPoint("CENTER")
+        targetPin.label:SetJustifyH("CENTER")
+        if targetPin.label.SetSpacing then targetPin.label:SetSpacing(2) end
         targetPin:SetScript("OnEnter", function(s)
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(G:PlaceName(G.target), 1, 1, 1)
