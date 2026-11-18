@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.19.0", date = "18/11/2026",
+        added = {
+            "BiS : plusieurs listes par perso (JcE, tank, montée, JcJ…). Colonne « Mes listes BiS » avec la progression de chacune ; clic sur une liste pour la charger. + Nouvelle, Dupliquer, Renommer, Code (partage), Importer, Supprimer ; « Copier d'un perso » reprend la liste affichée d'un autre perso comme nouvelle liste. L'ancienne liste devient « Ma liste BiS ».",
+            "BiS : aperçu 3D au centre du mannequin, habillé avec les objets de la liste (glisser pour tourner) ; « Comparer avec mon équipement » bascule l'aperçu sur ce que tu portes.",
+            "BiS : « Équiper ce que j'ai » met sur le perso connecté, hors combat, les objets de la liste déjà dans ses sacs.",
+            "BiS : pastille d'état sur chaque objet (vert porté, jaune dans les sacs ou la banque, gris à obtenir) ; l'infobulle d'un objet dit dans quelle liste et pour quel perso il est prévu.",
+        },
+        changed = {
+            "BiS : mannequin au format de la fenêtre de perso du jeu (700 de large au plus), à droite des listes.",
+        },
+    },
+    {
         version = "1.18.1", date = "18/11/2026",
         fixed = {
             "Fiche du perso, équipement : le survol d'un objet porté ouvrait aussi l'infobulle de comparaison « Équipé » du jeu (le même objet en double) ; elle n'apparaît plus.",

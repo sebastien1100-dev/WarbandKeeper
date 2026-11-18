@@ -617,7 +617,58 @@ local function build(parent)
     f.bisInfo = UI:Text(bsc.child, 11, C.muted)
     f.bisClear = UI:Button(bsc.child, "Vider", nil, 24, "danger")
     f.bisShare = UI:Button(bsc.child, "Partager (lien chat)", nil, 24, "secondary")
-    f.bisCopy = UI:Button(bsc.child, "Copier depuis un autre perso", nil, 24, "secondary")
+    f.bisCopy = UI:Button(bsc.child, "Copier d'un perso", nil, 24, "secondary")
+    f.bisCompare = UI:Button(bsc.child, "Comparer avec mon équipement", nil, 24, "secondary")
+    f.bisCompare:SetScript("OnClick", function() f.bisShowWorn = not f.bisShowWorn; f:Refresh() end)
+    f.bisEquip = UI:Button(bsc.child, "Équiper ce que j'ai", nil, 24, "primary")
+    f.bisEquip:SetScript("OnClick", function()
+        local n, why = B:EquipOwned()
+        WK:Print(n > 0 and string.format(T("%d objet(s) de la liste équipé(s)."), n) or (why or T("Rien à équiper : aucun objet de la liste dans tes sacs.")))
+    end)
+    -- Mes listes BiS (colonne de gauche) : clic = charger la liste
+    f.bisLists = UI:Card(bsc.child, T("Mes listes BiS"))
+    f.bisNew = UI:Button(f.bisLists, "+ Nouvelle", nil, 22, "primary"); f.bisNew:SetPoint("TOPRIGHT", -10, -10)
+    f.bisLRows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, f.bisLists)
+        r:SetHeight(46)
+        UI:Panel(r, 8, C.bg, C.border)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 10, -7); r.name:SetPoint("RIGHT", -8, 0)
+        r.sub = UI:Text(r, 10, C.muted); r.sub:SetPoint("TOPLEFT", 10, -22)
+        r.bar = UI:Progress(r, 4); r.bar:SetPoint("BOTTOMLEFT", 10, 6); r.bar:SetPoint("BOTTOMRIGHT", -10, 6)
+        r:SetScript("OnClick", function(s) B:SetActiveList(f.key, s.index) end)
+        return r
+    end)
+    f.bisLBtns = {}
+    for i, lab in ipairs({ "Dupliquer", "Renommer", "Code", "Importer", "Suppr." }) do
+        f.bisLBtns[i] = UI:Button(f.bisLists, lab, nil, 22, i == 5 and "danger" or "secondary")
+    end
+    f.bisNew:SetScript("OnClick", function()
+        f:Ask(T("Nouvelle liste BiS"), T("Donne-lui un nom (JcE, tank, montée, JcJ…)."), T("Nouvelle liste"), function(v)
+            B:NewList(f.key, (v ~= "" and v) or T("Nouvelle liste"))
+        end, T("Créer"))
+    end)
+    f.bisLBtns[1]:SetScript("OnClick", function()
+        local i = B:ActiveIndex(f.key)
+        local l = B:Lists(f.key)[i]
+        B:NewList(f.key, (l.name or "") .. " " .. T("(copie)"), l.items)
+    end)
+    f.bisLBtns[2]:SetScript("OnClick", function()
+        local i = B:ActiveIndex(f.key)
+        f:Ask(T("Renommer la liste"), nil, B:Lists(f.key)[i].name or "", function(v) B:RenameList(f.key, i, v) end, T("Renommer"))
+    end)
+    f.bisLBtns[3]:SetScript("OnClick", function()
+        f:Ask(T("Code de la liste"), T("Copie ce code (Ctrl+C) pour la partager ; « Importer » la reprend."), B:ExportList(f.key, B:ActiveIndex(f.key)) or "", nil, T("Fermer"))
+    end)
+    f.bisLBtns[4]:SetScript("OnClick", function()
+        f:Ask(T("Importer une liste"), T("Colle un code de liste BiS (WKB1:…)."), "", function(v)
+            local i, why = B:ImportList(f.key, v)
+            if not i then WK:Print(T("Import impossible : ") .. (why or "")) end
+        end, T("Importer"))
+    end)
+    f.bisLBtns[5]:SetScript("OnClick", function()
+        local i = B:ActiveIndex(f.key)
+        f:Ask(T("Supprimer la liste ?"), string.format(T("« %s » sera supprimée."), B:Lists(f.key)[i].name or ""), nil, function() B:DeleteList(f.key, i) end, T("Supprimer"))
+    end)
     f.bisMid = CreateFrame("Frame", nil, bsc.child)
     UI:Panel(f.bisMid, 12, C.bg, C.border)
     f.bisRing = UI:Icon(f.bisMid, "ring", 78, nil, "ARTWORK")
@@ -632,6 +683,21 @@ local function build(parent)
     f.bisClass = UI:Text(f.bisMid, 13); f.bisClass:SetPoint("TOP", f.bisRing, "BOTTOM", 0, -10)
     f.bisHint = UI:Text(f.bisMid, 10, C.dim); f.bisHint:SetPoint("TOP", f.bisClass, "BOTTOM", 0, -4)
     f.bisHint:SetText(T("clic : choisir · clic droit : retirer"))
+    local okm, bm = pcall(CreateFrame, "DressUpModel", nil, f.bisMid)
+    if okm and bm then
+        bm:SetPoint("TOPLEFT", 4, -40); bm:SetPoint("BOTTOMRIGHT", -4, 70)
+        bm:EnableMouse(true)
+        bm:SetScript("OnMouseDown", function(m) m.drag = GetCursorPosition() end)
+        bm:SetScript("OnMouseUp", function(m) m.drag = nil end)
+        bm:SetScript("OnUpdate", function(m)
+            if not m.drag then return end
+            local x = GetCursorPosition()
+            m.rot = (m.rot or 0) + (x - m.drag) * 0.01; m.drag = x
+            if m.SetFacing then m:SetFacing(m.rot) end
+        end)
+        bm:Hide()
+        f.bisModel = bm
+    end
     -- une tuile d'emplacement : icône (liseré de qualité), nom, emplacement · source · état
     local function tile(parent, side)
         local b = CreateFrame("Button", nil, parent)
@@ -645,6 +711,10 @@ local function build(parent)
         b.icon:SetSize(32, 32); b.icon:SetPoint("CENTER", b.edge)
         b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
         b.plus = UI:Text(b, 18); b.plus:SetPoint("CENTER", b.edge); b.plus:SetText("+")
+        -- pastille d'état : vert porté, jaune dans les sacs ou la banque, gris à obtenir
+        b.dot = b:CreateTexture(nil, "OVERLAY", nil, 3)
+        b.dot:SetTexture(UI.MEDIA .. "circle"); b.dot:SetSize(10, 10)
+        b.dot:SetPoint("CENTER", b.edge, "BOTTOMRIGHT", -1, 1)
         b.name = UI:Text(b, 12); b.sub = UI:Text(b, 10, C.muted)
         if side == "right" then
             b.edge:SetPoint("RIGHT", -6, 0)
@@ -711,12 +781,11 @@ local function build(parent)
             if key ~= f.key and next(B:List(key)) then table.insert(keys, key); table.insert(names, WK:CharName(c, key)) end
         end
         if #keys == 0 then WK:Print(T("Aucun autre perso n'a de liste BiS.")) return end
-        f:Ask(T("Copier une liste BiS"), T("Tape le nom du perso dont copier la liste : ") .. table.concat(names, ", "), names[1], function(v)
+        f:Ask(T("Copier une liste BiS"), T("Tape le nom du perso dont copier la liste affichée (elle devient une nouvelle liste ici) : ") .. table.concat(names, ", "), names[1], function(v)
             for i, nm in ipairs(names) do
                 if nm:lower() == (v or ""):lower() then
-                    local dst = B:List(f.key)
-                    for slot, id in pairs(B:List(keys[i])) do dst[slot] = id end
-                    WK:NotifyChanged()
+                    local src = B:Lists(keys[i])[B:ActiveIndex(keys[i])]
+                    B:NewList(f.key, (src.name or "") .. " · " .. nm, src.items)
                     return
                 end
             end
@@ -1302,33 +1371,74 @@ end
 
 -- Onglet BiS : ta liste en mannequin
 local SLOT_LABEL = {}
+local RACE_IDS = { Human = 1, Orc = 2, Dwarf = 3, NightElf = 4, Scourge = 5, Tauren = 6, Gnome = 7, Troll = 8, BloodElf = 10, Draenei = 11 }
 local function refreshBis(f, c)
     local B = WK.modules.BiS
     for _, s in ipairs(B.SLOTS) do SLOT_LABEL[s[1]] = s[2] end
     local W = math.max(600, (f.bsc:GetWidth() or 840) - 12)
     f.bsc.child:SetWidth(W)
-    local list = B:List(f.key)
+    local mine = f.key == WK:CharKey()
     local gear = c.gear or {}
     local wornSet = {}
     for _, l in pairs(gear) do local id = WK:ParseItemID(l); if id then wornSet[id] = true end end
-    local n, worn, bags = 0, 0, 0
-    for _, id in pairs(list) do
-        n = n + 1
-        if wornSet[id] then worn = worn + 1 elseif (c.bags and c.bags[id]) or (c.bank and c.bank[id]) then bags = bags + 1 end
+    local function counts(items)
+        local n, worn, bags = 0, 0, 0
+        for _, id in pairs(items) do
+            n = n + 1
+            if wornSet[id] then worn = worn + 1 elseif (c.bags and c.bags[id]) or (c.bank and c.bank[id]) then bags = bags + 1 end
+        end
+        return n, worn, bags
     end
-    -- barre du haut
-    f.bisTitle:ClearAllPoints(); f.bisTitle:SetPoint("TOPLEFT", 4, -10)
-    f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("LEFT", f.bisTitle, "RIGHT", 12, 0); f.bisProg:SetWidth(180)
-    f.bisProg.color = { UI:Accent() }; f.bisProg:SetValue(n > 0 and worn / n or 0)
-    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisProg, "RIGHT", 12, 0)
+    -- colonne de gauche : mes listes
+    local LW = 250
+    local lists, active = B:Lists(f.key), B:ActiveIndex(f.key)
+    local lc = f.bisLists
+    lc:ClearAllPoints(); lc:SetPoint("TOPLEFT", 0, 0); lc:SetWidth(LW)
+    f.bisLRows:Reset()
+    local ly = 44
+    local r1, g1, b1 = UI:Accent()
+    for i, l in ipairs(lists) do
+        local row = f.bisLRows:Get()
+        row.index = i
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 10, -ly); row:SetPoint("TOPRIGHT", -10, -ly)
+        local n, worn = counts(l.items)
+        row.name:SetText((l.name or "?") .. (i == active and ("  |cff%02x%02x%02x" .. T("affichée") .. "|r"):format(r1 * 255, g1 * 255, b1 * 255) or ""))
+        row.sub:SetText(string.format(T("%d / %d obtenus"), worn, n))
+        row.bar:SetValue(n > 0 and worn / n or 0)
+        row.border:SetColor(i == active and r1 or C.border[1], i == active and g1 or C.border[2], i == active and b1 or C.border[3], 1)
+        ly = ly + 52
+    end
+    local bx, by = 10, ly + 4
+    for _, btn in ipairs(f.bisLBtns) do
+        if bx + btn:GetWidth() > LW - 10 then bx = 10; by = by + 28 end
+        btn:ClearAllPoints(); btn:SetPoint("TOPLEFT", bx, -by)
+        bx = bx + btn:GetWidth() + 5
+    end
+    lc:SetHeight(by + 34)
+    -- mannequin : à droite des listes, au format de la fenêtre de perso
+    local x0 = LW + 12
+    local DW = math.min(W - x0, 700)
+    local list = B:List(f.key)
+    local n, worn, bags = counts(list)
+    f.bisTitle:ClearAllPoints(); f.bisTitle:SetPoint("TOPLEFT", x0 + 4, -8)
+    f.bisTitle:SetText(lists[active].name or T("Ma liste BiS"))
+    f.bisProg:ClearAllPoints(); f.bisProg:SetPoint("LEFT", f.bisTitle, "RIGHT", 12, 0); f.bisProg:SetWidth(140)
+    f.bisProg.color = { r1, g1, b1 }; f.bisProg:SetValue(n > 0 and worn / n or 0)
+    f.bisInfo:ClearAllPoints(); f.bisInfo:SetPoint("LEFT", f.bisProg, "RIGHT", 10, 0)
     f.bisInfo:SetText(string.format(T("%d / %d obtenus · %d dans les sacs ou la banque"), worn, n, bags))
-    f.bisClear:ClearAllPoints(); f.bisClear:SetPoint("TOPRIGHT", f.bsc.child, "TOPRIGHT", -4, -4)
-    f.bisShare:ClearAllPoints(); f.bisShare:SetPoint("RIGHT", f.bisClear, "LEFT", -6, 0)
-    f.bisCopy:ClearAllPoints(); f.bisCopy:SetPoint("RIGHT", f.bisShare, "LEFT", -6, 0)
-    -- trois colonnes : gauche, centre (portrait et armes), droite
-    local MIDW = 200
-    local colW = math.floor((W - MIDW - 24) / 2)
-    local top, step = 40, 50
+    local bx2 = x0
+    f.bisCompare:SetLabel(f.bisShowWorn and T("Voir la liste") or T("Comparer avec mon équipement"))
+    f.bisCompare:SetWidth(f.bisCompare.label:GetStringWidth() + 32)
+    f.bisEquip:SetShown(mine)
+    for _, btn in ipairs({ f.bisCompare, f.bisEquip, f.bisCopy, f.bisShare, f.bisClear }) do
+        if btn:IsShown() then
+            btn:ClearAllPoints(); btn:SetPoint("TOPLEFT", bx2, -32)
+            bx2 = bx2 + btn:GetWidth() + 6
+        end
+    end
+    local colW = math.min(200, math.floor((DW - 200 - 24) / 2))
+    local MIDW = DW - 2 * colW - 24
+    local top, step = 66, 50
     local li, ri = 0, 0
     for _, t in ipairs(f.bisTiles) do
         t.label = SLOT_LABEL[t.slot]
@@ -1339,54 +1449,79 @@ local function refreshBis(f, c)
         if id then name, _, q = WK.GetItemInfo(id) end
         q = q or (e and e[5]) or 1
         local qc = QUALITY[q] or QUALITY[1]
+        local inBags = id and ((c.bags and c.bags[id]) or (c.bank and c.bank[id]))
         if id then
             t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)) or "Interface\\Icons\\INV_Misc_QuestionMark")
             t.icon:Show(); t.plus:Hide()
             t.edge:SetVertexColor(qc[1], qc[2], qc[3], 1)
+            local dc = wornSet[id] and C.positive or inBags and { 0.96, 0.84, 0.43 } or C.dim
+            t.dot:SetVertexColor(dc[1], dc[2], dc[3], 1); t.dot:Show()
         else
-            t.icon:Hide(); t.plus:Show(); t.plus:SetTextColor(UI:Accent())
+            t.icon:Hide(); t.plus:Show(); t.plus:SetTextColor(r1, g1, b1)
             t.edge:SetVertexColor(C.border[1], C.border[2], C.border[3], 1)
+            t.dot:Hide()
         end
         if t.side ~= "mid" then
             if id then
                 t.name:SetText(name or (e and e[8]) or ("#" .. id)); t.name:SetTextColor(qc[1], qc[2], qc[3])
                 local _, where = B:SourceOf(id)
-                local state = wornSet[id] and ("|cff9ed17a" .. T("porté") .. "|r")
-                    or ((c.bags and c.bags[id]) and ("|cfff5d76e" .. T("dans les sacs") .. "|r"))
-                    or ((c.bank and c.bank[id]) and ("|cfff5d76e" .. T("à la banque") .. "|r"))
-                    or T("à obtenir")
-                t.sub:SetText(T(t.label) .. " · " .. where .. " · " .. state)
+                t.sub:SetText(T(t.label) .. " · " .. where)
             else
-                local r, g, b = UI:Accent()
-                t.name:SetText(string.format("%s · |cff%02x%02x%02x%s|r", T(t.label), r * 255, g * 255, b * 255, T("choisir…")))
-                t.name:SetTextColor(unpack(C.text))
-                t.sub:SetText(T("vide"))
+                t.name:SetText(T("choisir…")); t.name:SetTextColor(r1, g1, b1)
+                t.sub:SetText(T(t.label))
             end
         end
         t:ClearAllPoints()
         if t.side == "left" then
-            t:SetPoint("TOPLEFT", 0, -(top + li * step)); t:SetWidth(colW); li = li + 1
+            t:SetPoint("TOPLEFT", x0, -(top + li * step)); t:SetWidth(colW); li = li + 1
         elseif t.side == "right" then
-            t:SetPoint("TOPLEFT", colW + MIDW + 24, -(top + ri * step)); t:SetWidth(colW); ri = ri + 1
+            t:SetPoint("TOPLEFT", x0 + colW + MIDW + 24, -(top + ri * step)); t:SetWidth(colW); ri = ri + 1
         end
     end
     local rows = math.max(li, ri)
     local h = rows * step - 6
-    f.bisMid:ClearAllPoints(); f.bisMid:SetPoint("TOPLEFT", colW + 12, -top); f.bisMid:SetSize(MIDW, h)
+    f.bisMid:ClearAllPoints(); f.bisMid:SetPoint("TOPLEFT", x0 + colW + 12, -top); f.bisMid:SetSize(MIDW, h)
     UI:SetClassIcon(f.bisCls, c.class)
     local cr, cg, cb = UI:ClassColor(c.class)
     f.bisRing:SetVertexColor(cr, cg, cb)
-    f.bisClass:SetText(c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class] or "")
+    f.bisClass:SetText(f.bisShowWorn and T("Équipement porté") or (lists[active].name or ""))
+    -- aperçu 3D habillé avec la liste (ou l'équipement porté)
+    local shown = false
+    local m = f.bisModel
+    if m then
+        shown = pcall(function()
+            m:SetUnit("player")
+            if not mine then
+                if not (m.SetCustomRace and RACE_IDS[c.race or ""]) then error("race") end
+                m:SetCustomRace(RACE_IDS[c.race], (c.sex == 3) and 1 or 0)
+            end
+            if m.Undress then m:Undress() end
+            if f.bisShowWorn then
+                for _, l in pairs(gear) do pcall(m.TryOn, m, l) end
+            else
+                for _, id in pairs(list) do pcall(m.TryOn, m, "item:" .. id) end
+            end
+            if m.SetFacing then m:SetFacing(m.rot or 0) end
+        end)
+        m:SetShown(shown)
+    end
+    f.bisRing:SetShown(not shown); f.bisCls:SetShown(not shown)
+    f.bisClass:ClearAllPoints()
+    if shown then f.bisClass:SetPoint("TOP", f.bisMid, "TOP", 0, -10) else f.bisClass:SetPoint("TOP", f.bisRing, "BOTTOM", 0, -10) end
+    f.bisHint:ClearAllPoints(); f.bisHint:SetPoint("TOP", f.bisClass, "BOTTOM", 0, -3)
+    f.bisHint:SetText(shown and T("glisser pour tourner") or T("clic : choisir · clic droit : retirer"))
     local mi = 0
     for _, t in ipairs(f.bisTiles) do
         if t.side == "mid" then
-            t:ClearAllPoints(); t:SetPoint("BOTTOM", f.bisMid, "BOTTOM", (mi - 1) * 54, 30); mi = mi + 1
+            t:ClearAllPoints(); t:SetPoint("BOTTOM", f.bisMid, "BOTTOM", (mi - 1) * 54, 26); mi = mi + 1
         end
     end
-    f.bisWeap:ClearAllPoints(); f.bisWeap:SetPoint("BOTTOM", 0, 12)
-    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(top + h + 10)); f.bisNote:SetPoint("RIGHT", -4, 0)
+    f.bisWeap:ClearAllPoints(); f.bisWeap:SetPoint("BOTTOM", 0, 10)
+    local bottom = math.max(top + h, lc:GetHeight())
+    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(bottom + 10)); f.bisNote:SetPoint("RIGHT", -4, 0)
     f.bisNote:SetJustifyH("LEFT")
-    f.bsc:SetContentHeight(top + h + 34)
+    f.bisNote:SetText(T("Pastilles : vert porté, jaune dans les sacs ou la banque, gris à obtenir. Clic sur un emplacement : choisir · clic droit : retirer · glisser-déposer un objet. Objets du jeu : wowlayerup-forever/opendata (CC BY 4.0)."))
+    f.bsc:SetContentHeight(bottom + 40)
     if f.picker:IsShown() then f.picker:Fill() end
 end
 

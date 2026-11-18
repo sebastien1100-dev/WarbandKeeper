@@ -14,25 +14,100 @@ M.SLOTS = {
     { 18, "Distance", "ranged" },
 }
 ---------------------------------------------------------------------------
--- Ma liste BiS : objets choisis à la main, par perso et par emplacement (WK.DB.global.bisList[perso][emplacement])
+-- Listes BiS : plusieurs par perso, une affichée (« active »), objets choisis à la main par emplacement.
+--   WK.DB.global.bisLists[perso] = { lists = { { name, items = { [emplacement] = objet } } }, active = n° }
+-- (reprend l'ancienne liste unique WK.DB.global.bisList[perso] à la première lecture)
 ---------------------------------------------------------------------------
-local function store()
+local function store(key)
     local g = WK.DB.global
-    g.bisList = g.bisList or {}
-    return g.bisList
+    g.bisLists = g.bisLists or {}
+    local s = g.bisLists[key]
+    if not s then
+        s = { lists = {} }
+        local old = g.bisList and g.bisList[key]
+        if old and next(old) then table.insert(s.lists, { name = T("Ma liste BiS"), items = old }) end
+        if g.bisList then g.bisList[key] = nil end
+        if #s.lists == 0 then table.insert(s.lists, { name = T("Ma liste BiS"), items = {} }) end
+        s.active = 1
+        g.bisLists[key] = s
+    end
+    if not s.lists[s.active or 0] then s.active = 1 end
+    if #s.lists == 0 then table.insert(s.lists, { name = T("Ma liste BiS"), items = {} }) end
+    return s
 end
+function M:Lists(key) return store(key).lists end
+function M:ActiveIndex(key) return store(key).active end
+function M:SetActiveList(key, i) store(key).active = i; WK:NotifyChanged() end
+-- Objets de la liste affichée : [emplacement] = objet
 function M:List(key)
-    local s = store()
-    s[key] = s[key] or {}
-    return s[key]
+    local s = store(key)
+    return s.lists[s.active].items
 end
 function M:Set(key, slot, id)
     self:List(key)[slot] = id
     WK:NotifyChanged()
 end
 function M:ClearList(key)
-    store()[key] = {}
+    local s = store(key)
+    s.lists[s.active].items = {}
     WK:NotifyChanged()
+end
+function M:NewList(key, name, items)
+    local s = store(key)
+    local copy = {}
+    for k, v in pairs(items or {}) do copy[k] = v end
+    table.insert(s.lists, { name = name, items = copy })
+    s.active = #s.lists
+    WK:NotifyChanged()
+    return s.active
+end
+function M:RenameList(key, i, name)
+    local l = store(key).lists[i]
+    if l and name and name ~= "" then l.name = name; WK:NotifyChanged() end
+end
+function M:DeleteList(key, i)
+    local s = store(key)
+    table.remove(s.lists, i)
+    if #s.lists == 0 then table.insert(s.lists, { name = T("Ma liste BiS"), items = {} }) end
+    if s.active >= i then s.active = math.max(1, s.active - 1) end
+    WK:NotifyChanged()
+end
+-- Code de partage : WKB1:emplacement=objet,…
+function M:ExportList(key, i)
+    local l = store(key).lists[i]
+    if not l then return nil end
+    local parts = {}
+    for _, sl in ipairs(M.SLOTS) do
+        local id = l.items[sl[1]]
+        if id then table.insert(parts, sl[1] .. "=" .. id) end
+    end
+    return "WKB1:" .. table.concat(parts, ",")
+end
+function M:ImportList(key, code, name)
+    local body = (code or ""):match("^%s*WKB1:([%d=,]*)%s*$")
+    if not body then return nil, T("code non reconnu") end
+    local items = {}
+    for slot, id in body:gmatch("(%d+)=(%d+)") do items[tonumber(slot)] = tonumber(id) end
+    if not next(items) then return nil, T("code vide") end
+    return self:NewList(key, name or T("Liste importée"), items)
+end
+-- Équipe les objets de la liste affichée déjà dans les sacs (perso connecté, hors combat) ; rend le nombre
+function M:EquipOwned()
+    if InCombatLockdown and InCombatLockdown() then return 0, T("pas en combat") end
+    local key = WK:CharKey()
+    local c = WK.DB:Me()
+    local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
+    if not f then return 0, T("le jeu ne permet pas à l'addon d'équiper") end
+    local worn = {}
+    for _, l in pairs(c.gear or {}) do local id = WK:ParseItemID(l); if id then worn[id] = true end end
+    local n = 0
+    for slot, id in pairs(self:List(key)) do
+        local gearId = c.gear and c.gear[slot] and WK:ParseItemID(c.gear[slot])
+        if gearId ~= id and c.bags and c.bags[id] then
+            if pcall(f, id, slot) then n = n + 1 end
+        end
+    end
+    return n
 end
 -- Où tombe un objet : donjon et boss (ou monstres), % de drop
 local sourceOf
@@ -51,15 +126,17 @@ function M:Source(id)
     local info = WK.modules.Dungeons:ItemInfo(id)
     return s.d, s.boss, info and info.drop
 end
--- Persos dont la liste BiS contient l'objet (noms)
+-- Persos dont une liste BiS contient l'objet : « Perso (nom de la liste) »
 function M:Holders(id)
     local out = {}
-    for key, list in pairs(store()) do
-        for _, v in pairs(list) do
-            if v == id then
-                local c = WK.DB.global.characters[key]
-                if c then table.insert(out, WK:CharName(c, key)) end
-                break
+    for key, st in pairs(WK.DB.global.bisLists or {}) do
+        local c = WK.DB.global.characters[key]
+        for _, l in ipairs(st.lists or {}) do
+            for _, v in pairs(l.items or {}) do
+                if v == id and c then
+                    table.insert(out, WK:CharName(c, key) .. (#st.lists > 1 and (" (" .. (l.name or "") .. ")") or ""))
+                    break
+                end
             end
         end
     end

@@ -30,6 +30,19 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.19.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- BiS : plusieurs listes par perso (JcE, tank, montée, JcJ…). Colonne « Mes listes BiS » avec la progression de chacune ; clic sur une liste pour la charger. + Nouvelle, Dupliquer, Renommer, Code (partage), Importer, Supprimer ; « Copier d'un perso » reprend la liste affichée d'un autre perso comme nouvelle liste. L'ancienne liste devient « Ma liste BiS ».
+- BiS : aperçu 3D au centre du mannequin, habillé avec les objets de la liste (glisser pour tourner) ; « Comparer avec mon équipement » bascule l'aperçu sur ce que tu portes.
+- BiS : « Équiper ce que j'ai » met sur le perso connecté, hors combat, les objets de la liste déjà dans ses sacs.
+- BiS : pastille d'état sur chaque objet (vert porté, jaune dans les sacs ou la banque, gris à obtenir) ; l'infobulle d'un objet dit dans quelle liste et pour quel perso il est prévu.
+
+### Modifications
+- BiS : mannequin au format de la fenêtre de perso du jeu (700 de large au plus), à droite des listes.
+
 ## v1.18.1 — 18/11/2026
 
 _Un /reload suffit._
