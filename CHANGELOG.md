@@ -39,7 +39,7 @@ _Un /reload suffit._
 - LFG : l'infobulle d'un groupe montre ses buffs en icônes de sorts : une rangée pour le groupe, une rangée « + » pour ce que tu ajouterais, une rangée éteinte pour ce qui manque, et « Camp : N de tes objets annulés ». Maj enfoncée : la liste avec les noms (s'actualise sans bouger la souris).
 
 ### Corrections
-- LFG : les pseudos en cyrillique (joueurs russes) s'affichaient en carrés ; ils sont écrits en lettres latines (« Морог » devient « Morog ») dans les cartes, l'infobulle, les récents et les demandes.
+- LFG : les pseudos en cyrillique (joueurs russes) s'affichaient en carrés ; ils sont écrits en lettres latines (Morog au lieu de carrés) dans les cartes, l'infobulle, les récents et les demandes.
 
 ## v1.27.4 — 18/11/2026
 
