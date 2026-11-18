@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.32.0", date = "18/11/2026",
+        added = {
+            "Horaires des bateaux partagés avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ appris ou signalé (« Il part », « Il arrive ») leur est envoyé, et tu reçois les leurs ; à la connexion, les départs récents sont échangés. Les horaires sont donc vite justes sans prendre chaque bateau plusieurs fois.",
+            "QoL > Carte, Navigation : réglage « Partager les horaires des bateaux » ; /wk bateau compte les horaires reçus.",
+        },
+    },
+    {
         version = "1.31.8", date = "18/11/2026",
         fixed = {
             "Horaires des bateaux : le « ~ » devant les temps s'affichait mal avec la police du jeu ; il est remplacé par « env. » (« dans env. 1:20 »).",
@@ -2893,7 +2900,6 @@ WK.Roadmap = {
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
     "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
-    "Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).",
     "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
     "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",
     "Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.",

@@ -782,9 +782,10 @@ M.IsRiding = function() return ride ~= nil end
 function M:BoatDiag()
     local out = {}
     local p = Gd():PlayerPos()
-    table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d",
+    local BT = WK.modules.BoatTimes
+    table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d · horaires reçus : %d (partage %s)",
         M.rideOff and "coupé (QoL > Carte, Apprendre les chemins)" or "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
-        ride and "oui" or "non", #M:Boats()))
+        ride and "oui" or "non", #M:Boats(), BT and BT.received or 0, cfg().boatShare == false and "coupé" or "actif"))
     for _, l in ipairs(M.boatLog) do table.insert(out, l) end
     if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end
     return out

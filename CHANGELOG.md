@@ -16,7 +16,6 @@ _Prévu, pas encore commencé._
 - Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
-- Voyages : partager les horaires des bateaux avec le groupe et la guilde (ceux qui ont Warband Keeper).
 - Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
 - Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
 - Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
@@ -28,6 +27,14 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.32.0 — 18/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Horaires des bateaux partagés avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ appris ou signalé (« Il part », « Il arrive ») leur est envoyé, et tu reçois les leurs ; à la connexion, les départs récents sont échangés. Les horaires sont donc vite justes sans prendre chaque bateau plusieurs fois.
+- QoL > Carte, Navigation : réglage « Partager les horaires des bateaux » ; /wk bateau compte les horaires reçus.
 
 ## v1.31.8 — 18/11/2026
 

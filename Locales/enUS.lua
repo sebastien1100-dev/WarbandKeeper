@@ -898,6 +898,8 @@ WK.Locales.enUS.text = {
     ["Arrivée notée : les horaires de ce bateau se précisent."] = "Arrival noted: this boat's schedule gets more precise.",
     ["Prends ce bateau une fois d'abord : il faut connaître la durée du trajet."] = "Take this boat once first: the crossing time is needed.",
     ["env. "] = "approx. ",
+    ["Partager les horaires des bateaux"] = "Share boat schedules",
+    ["Avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ que tu vois leur est envoyé, et tu reçois les leurs."] = "With your group and guild (those who have Warband Keeper): every departure you see is sent to them, and you get theirs.",
     ["Traînée"] = "Trail", ["scintille derrière la souris quand elle bouge"] = "sparkles behind the mouse when it moves",
     ["Traînée scintillante"] = "Sparkle trail",
     ["Derrière le curseur quand la souris bouge ; ne prend jamais la souris. Bouton « Tester » du mode édition pour la voir tourner."] = "Behind the cursor while the mouse moves; never blocks clicks. Use the edit mode \"Test\" button to see it spin.",

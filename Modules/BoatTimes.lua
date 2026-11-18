@@ -49,25 +49,31 @@ function M:Learn(from, to, dep, arr)
     local l, side = self:Match(from, to)
     if not (l and dep) then return nil end
     local key = M.Key(l)
+    local tr = arr and (arr - dep)
+    if not (tr and tr > 15 and tr < 1500) then tr = nil end
+    if M.AddObs(key, side, dep, tr) then M:Broadcast(key, side, dep, tr) end
+    return l
+end
+-- Ajoute un départ (et la durée du trajet) à une ligne ; false si déjà connu (même départ à 20 s près)
+function M.AddObs(key, side, dep, tr, weight)
     local s = store()
     local e = s[key] or { a = {}, b = {} }
     s[key] = e
     e.a, e.b = e.a or {}, e.b or {}
     local list = e[side]
-    -- même départ noté deux fois (rechargement pendant la traversée) : ignoré
-    for _, t in ipairs(list) do if math.abs(t - dep) < 20 then return l end end
+    for _, t in ipairs(list) do if math.abs(t - dep) < 20 then return false end end
     table.insert(list, dep)
     table.sort(list)
     while #list > KEEP do table.remove(list, 1) end
-    local tr = arr and (arr - dep)
-    if tr and tr > 15 and tr < 1500 then
+    if tr then
         local f = side == "a" and "ta" or "tb"
-        e[f] = e[f] and math.floor(e[f] * 0.6 + tr * 0.4 + 0.5) or tr
+        local wgt = weight or 0.4
+        e[f] = e[f] and math.floor(e[f] * (1 - wgt) + tr * wgt + 0.5) or tr
     end
     e.n = (e.n or 0) + 1
     e.at = now()
     models[key] = nil
-    return l
+    return true
 end
 
 -- Modèle d'une ligne : tour P, trajets, attente w (supposée égale aux deux quais), départ de référence du quai a
@@ -209,12 +215,92 @@ function M:Observe(l, side, kind)
         if not tr then return false end
         dep = t - tr
     end
-    e[s2] = e[s2] or {}
-    for _, x in ipairs(e[s2]) do if math.abs(x - dep) < 20 then return true end end
-    table.insert(e[s2], dep)
-    table.sort(e[s2])
-    while #e[s2] > KEEP do table.remove(e[s2], 1) end
-    e.at = now()
-    models[key] = nil
+    if M.AddObs(key, s2, dep) then M:Broadcast(key, s2, dep, nil) end
     return true
 end
+
+---------------------------------------------------------------------------
+-- Partage avec le groupe et la guilde (joueurs qui ont Warband Keeper) : chaque départ appris ou signalé
+-- est envoyé (message d'addon « WKboat », « S;ligne;côté;départ;trajet »), et à la connexion les départs
+-- des 36 dernières heures. Reçu : ajouté s'il concerne une ligne connue ici. Jamais renvoyé plus loin.
+-- Réglage Guide:Config().boatShare. Heure du serveur : la même pour tous les joueurs du royaume.
+---------------------------------------------------------------------------
+local PREFIX = "WKboat"
+local queue, sending = {}, false
+M.received = 0
+local function shareOn()
+    local G = WK.modules.Guide
+    return G and G:Config().boatShare ~= false
+end
+local function channels()
+    local out = {}
+    if IsInGuild and IsInGuild() then table.insert(out, "GUILD") end
+    if IsInRaid and IsInRaid() then table.insert(out, "RAID")
+    elseif IsInGroup and IsInGroup() and not (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and not IsInGroup(LE_PARTY_CATEGORY_HOME)) then
+        table.insert(out, "PARTY")
+    end
+    return out
+end
+local function pump()
+    if #queue == 0 then sending = false return end
+    sending = true
+    local msg = table.remove(queue, 1)
+    if not ((InCombatLockdown and InCombatLockdown()) or (IsInInstance and select(1, IsInInstance()))) then
+        for _, ch in ipairs(channels()) do pcall(C_ChatInfo.SendAddonMessage, PREFIX, msg, ch) end
+    end
+    C_Timer.After(0.4, pump)
+end
+local function send(msg)
+    if not (shareOn() and C_ChatInfo and C_ChatInfo.SendAddonMessage) then return end
+    if #queue > 60 then return end
+    table.insert(queue, msg)
+    if not sending then pump() end
+end
+function M:Broadcast(key, side, dep, tr)
+    send(string.format("S;%s;%s;%d;%d", key, side, math.floor(dep), tr and math.floor(tr) or 0))
+end
+-- lignes connues ici (quais d'avance et bateaux appris), par clé
+local function knownKeys()
+    local L = WK.modules.MapLayers
+    local out = {}
+    for _, l in ipairs(L and L:AllTransports() or {}) do out[M.Key(l)] = true end
+    return out
+end
+WK:On("PLAYER_LOGIN", function()
+    if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIX) end
+    -- à la connexion : les départs récents de chaque ligne (les plus récents d'abord, au plus 3 par quai)
+    C_Timer.After(25, function()
+        local t = now()
+        for key, e in pairs(store()) do
+            for _, side in ipairs({ "a", "b" }) do
+                local list = e[side] or {}
+                for i = #list, math.max(1, #list - 2), -1 do
+                    if t - list[i] < WINDOW then
+                        M:Broadcast(key, side, list[i], side == "a" and e.ta or e.tb)
+                    end
+                end
+            end
+        end
+    end)
+end)
+WK:On("CHAT_MSG_ADDON", function(prefix, msg, _, sender)
+    local rd = WK.modules.QoL and WK.modules.QoL.Readable or function(v) return v end
+    prefix, msg, sender = rd(prefix), rd(msg), rd(sender)
+    if prefix ~= PREFIX or type(msg) ~= "string" or not shareOn() then return end
+    local me = UnitName and UnitName("player")
+    if type(sender) == "string" and me and sender:match("^[^%-]+") == me then return end
+    local key, side, dep, tr = msg:match("^S;([^;]+);([ab]);(%d+);(%d+)$")
+    dep, tr = tonumber(dep), tonumber(tr)
+    if not (key and dep) then return end
+    local t = now()
+    if dep > t + 60 or t - dep > WINDOW then return end
+    if not knownKeys()[key] then return end
+    if tr and (tr <= 15 or tr >= 1500) then tr = nil end
+    -- durée reçue : prise si on n'en a pas, à peine mélangée sinon
+    if M.AddObs(key, side, dep, tr, 0.2) then
+        M.received = M.received + 1
+        if WK.modules.Nav and WK.modules.Nav.BoatLog then
+            WK.modules.Nav.BoatLog(string.format("horaire reçu de %s", tostring(sender):match("^[^%-]+") or "?"))
+        end
+    end
+end)
