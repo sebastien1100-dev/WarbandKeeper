@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.22.3", date = "18/11/2026",
+        added = {
+            "Traduction anglaise complète : plus de 1 100 textes ajoutés (réglages, pages, cartes, infobulles, alertes). Seules les sorties de diagnostic des commandes /wk restent en français.",
+        },
+    },
+    {
         version = "1.22.2", date = "18/11/2026",
         fixed = {
             "Sacs EUI : cadenas et étoiles BiS n'apparaissaient qu'au survol. Les cadres de sac d'EUI se faisaient passer pour des cases et arrêtaient la recherche ; seules les vraies cases (boutons) sont prises, jusqu'au fond du sac.",
