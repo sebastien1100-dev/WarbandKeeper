@@ -1055,7 +1055,7 @@ UI:RegisterPage({
         local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()
         local function replan() if GD.target then NV:Plan(GD.target) end; if UI.RefreshNavRoute then UI:RefreshNavRoute() end end
-        local rcard = card("Navigation", 40 + 6 * 46 + 44, "trajet du guidage, appris en jouant")
+        local rcard = card("Navigation", 40 + 4 * 46 + 44, "trajet du guidage, appris en jouant")
         UI:SettingRow(rcard, -40, "Trajet sur la carte du monde", "Pointillés de ta couleur, de toi jusqu'au lieu guidé, en suivant les chemins connus (vols compris).",
             toggle(rcard, function() return gdc.route end, function(v) gdc.route = v; replan() end), 80)
         UI:SettingRow(rcard, -86, "Trajet sur la minicarte", nil,
@@ -1072,15 +1072,28 @@ UI:RegisterPage({
             b.armed = nil; b:SetLabel(T("Oublier les chemins appris"))
             NV:Forget(); WK:NotifyChanged()
         end)
-        UI:SettingRow(rcard, -178, "Horaires des bateaux au quai", "Près d'un quai, un bandeau donne le prochain départ (appris en prenant le bateau) ; sur la carte, le compte à rebours sous chaque quai.",
-            toggle(rcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
-        UI:SettingRow(rcard, -224, "Partager les horaires des bateaux", "Avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ que tu vois leur est envoyé, et tu reçois les leurs.",
-            toggle(rcard, function() return gdc.boatShare end, function(v) gdc.boatShare = v end), 80)
-        UI:SettingRow(rcard, -270, "Chemins appris", nil, forget, 240)
+        UI:SettingRow(rcard, -178, "Chemins appris", nil, forget, 240)
         dynText(rcard, 11, C.muted, function()
             local learned, roads = NV:Stats()
             return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
-        end):SetPoint("TOPLEFT", 16, -324)
+        end):SetPoint("TOPLEFT", 16, -232)
+        -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
+        do
+            local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")
+            UI:SettingRow(bcard, -40, "Bandeau au quai", "Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé », et les boutons « Il part » / « Il arrive ».",
+                toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
+            UI:SettingRow(bcard, -86, "Alertes au quai", "Le bateau arrive au quai dans 30 s, puis il part dans 15 s (quand tu es sur le quai).",
+                toggle(bcard, function() return gdc.dockAlerts ~= false end, function(v) gdc.dockAlerts = v end), 80)
+            UI:SettingRow(bcard, -132, "Son des alertes", nil,
+                toggle(bcard, function() return gdc.dockSound ~= false end, function(v) gdc.dockSound = v end), 80)
+            UI:SettingRow(bcard, -178, "Navires sur la carte", "Le trajet de chaque ligne et le bateau là où il est, qui avance ; sur la minicarte quand il est proche.",
+                toggle(bcard, function() return gdc.shipsMap ~= false end, function(v) gdc.shipsMap = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("navires") end end), 80)
+            UI:SettingRow(bcard, -224, "Partager les horaires des bateaux", "Avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ que tu vois leur est envoyé, et tu reçois les leurs.",
+                toggle(bcard, function() return gdc.boatShare end, function(v) gdc.boatShare = v end), 80)
+            local open = UI:Button(bcard, "Ouvrir le tableau des bateaux", nil, 28, "primary")
+            open:SetPoint("TOPLEFT", 16, -274)
+            open:SetScript("OnClick", function() UI:ToggleBoatBoard(true) end)
+        end
         -- Points de vol à apprendre (Modules/Flight.lua) : maîtres de vol du continent pas encore appris
         do
             local FL = WK.modules.Flight

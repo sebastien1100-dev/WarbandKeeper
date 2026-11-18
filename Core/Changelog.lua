@@ -8,6 +8,19 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.33.0", date = "18/11/2026", restart = true,
+        added = {
+            "Bateaux et zeppelins tirés des fichiers du jeu : les 12 lignes de WoW Forever sont connues dès l'installation (Hurlevent – Auberdine, Austrivage, Plumelune, Île de Zephras, Port de Poudrefuse…), avec leurs quais, leur trajet et la durée exacte de leur tour (mesurée par Nauticus). Un seul départ vu (traversée, « Il part » / « Il arrive », ou partagé par la guilde ou le groupe) suffit à caler l'heure.",
+            "Carte du monde : le trajet de chaque ligne et le navire là où il est, qui avance chaque seconde ; survol = où il va et quand, clic = tableau des bateaux. Minicarte : le navire quand il est proche.",
+            "Bandeau au quai : les 3 prochains départs avec l'heure d'arrivée de l'autre côté, « exact » ou « estimé », et des alertes (le bateau arrive au quai dans 30 s, il part dans 15 s), avec son au choix.",
+            "Tableau des bateaux et zeppelins : chaque ligne avec son navire, son tour, où il en est et le prochain départ du quai le plus proche ; clic = guidage vers le quai, bouton « partager » = le prochain départ écrit dans le chat. Ouvert par le nouveau raccourci « Bateaux » du micro menu, /wk bateaux, ou le bouton de QoL > Carte.",
+            "QoL > Carte : nouvelle carte « Bateaux et zeppelins » (bandeau, alertes, son, navires sur la carte, partage).",
+        },
+        changed = {
+            "Les bateaux appris en jeu qui sont des lignes du jeu (comme Hurlevent – Auberdine) sont remplacés par la ligne du jeu.",
+        },
+    },
+    {
         version = "1.32.0", date = "18/11/2026",
         added = {
             "Horaires des bateaux partagés avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ appris ou signalé (« Il part », « Il arrive ») leur est envoyé, et tu reçois les leurs ; à la connexion, les départs récents sont échangés. Les horaires sont donc vite justes sans prendre chaque bateau plusieurs fois.",

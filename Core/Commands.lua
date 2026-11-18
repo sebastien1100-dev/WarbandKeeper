@@ -101,6 +101,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         local any = false
         for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
+    elseif cmd == "bateaux" or cmd == "boats" then
+        WK.UI:ToggleBoatBoard()
     elseif cmd == "bateau" or cmd == "boat" then
         WK:Print(WK.T("Bateaux : diagnostic"))
         for _, l in ipairs(WK.modules.Nav:BoatDiag()) do WK:Print("  " .. l) end

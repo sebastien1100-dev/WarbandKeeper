@@ -46,6 +46,9 @@ end
 local models = {}
 -- Traversée faite : départ (heure du serveur) et arrivée
 function M:Learn(from, to, dep, arr)
+    -- ligne des fichiers du jeu (Modules/BoatLines.lua) : départ noté là-bas
+    local BL = WK.modules.BoatLines
+    if BL and dep and BL:Learn(from, to, dep) then return true end
     local l, side = self:Match(from, to)
     if not (l and dep) then return nil end
     local key = M.Key(l)
@@ -138,7 +141,10 @@ end
 function M:Known(l) return self:Model(l) ~= nil end
 
 -- État au quai side ("a" ou "b") : secondes avant le départ, à quai ?, départ suivant, estimation ?
+-- quai d'une paire de ligne du jeu (MapLayers:AllTransports) : côté a = quai si, côté b = quai sj
+local function gameStop(l, side) return l.game and (side == "a" and l.si or l.sj) end
 function M:State(l, side, t)
+    if l.game then return WK.modules.BoatLines:State(l.game, gameStop(l, side), t) end
     local m = self:Model(l)
     if not m then return nil end
     t = t or now()
@@ -185,6 +191,22 @@ end
 function M:TooltipLines(l, side)
     local out = {}
     local s = self:State(l, side)
+    if l.game then
+        local BL = WK.modules.BoatLines
+        local g = l.game
+        table.insert(out, { T(g.vessel or ""), 0.75, 0.75, 0.75 })
+        if not s then
+            table.insert(out, { T("Heure pas encore calée : prends-le, ou signale son départ depuis le bandeau du quai (tour connu : ") .. (g.period and M.Clock(g.period) or "?") .. ")", 0.6, 0.6, 0.6, true })
+            return out
+        end
+        local pre = s.est and T("env. ") or ""
+        local to = BL:StopName(g, s.next)
+        if s.atDock then table.insert(out, { string.format(T("À quai, départ vers %s dans %s"), to, pre .. M.Clock(s.inn)), 0.62, 0.85, 0.48 })
+        else table.insert(out, { string.format(T("Départ vers %s dans %s"), to, pre .. M.Clock(s.inn)), 1, 1, 1 }) end
+        table.insert(out, { string.format(T("Suivant dans %s · trajet %s · tour %s"), pre .. M.Clock(s.following), M.Clock(s.travel), M.Clock(s.P)), 0.75, 0.75, 0.75 })
+        if s.est then table.insert(out, { T("Heure estimée : elle se précise à chaque départ vu ou partagé."), 0.6, 0.6, 0.6, true }) end
+        return out
+    end
     if not s then
         table.insert(out, { T("Horaires pas encore connus : prends-le une fois pour les apprendre."), 0.6, 0.6, 0.6 })
         return out
@@ -204,6 +226,7 @@ end
 -- Vu du quai, sans le prendre : « il part » (départ de ce quai maintenant) ou « il arrive » (il vient
 -- de l'autre quai : départ de là-bas = maintenant - durée du trajet). Il faut la durée du trajet (une traversée faite).
 function M:Observe(l, side, kind)
+    if l.game then return WK.modules.BoatLines:Observe(l.game, gameStop(l, side), kind) end
     local key = M.Key(l)
     local e = store()[key]
     if not e then return false end
@@ -256,6 +279,7 @@ local function send(msg)
     table.insert(queue, msg)
     if not sending then pump() end
 end
+M.Send = send
 function M:Broadcast(key, side, dep, tr)
     send(string.format("S;%s;%s;%d;%d", key, side, math.floor(dep), tr and math.floor(tr) or 0))
 end
@@ -271,6 +295,8 @@ WK:On("PLAYER_LOGIN", function()
     -- à la connexion : les départs récents de chaque ligne (les plus récents d'abord, au plus 3 par quai)
     C_Timer.After(25, function()
         local t = now()
+        local BL = WK.modules.BoatLines
+        for _, r in ipairs(BL and BL:Recent() or {}) do BL:Broadcast(r[1], r[2], r[3]) end
         for key, e in pairs(store()) do
             for _, side in ipairs({ "a", "b" }) do
                 local list = e[side] or {}
@@ -289,6 +315,16 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, _, sender)
     if prefix ~= PREFIX or type(msg) ~= "string" or not shareOn() then return end
     local me = UnitName and UnitName("player")
     if type(sender) == "string" and me and sender:match("^[^%-]+") == me then return end
+    if msg:sub(1, 2) == "G;" then
+        local BL = WK.modules.BoatLines
+        if BL and BL:Receive(msg, sender) then
+            M.received = M.received + 1
+            if WK.modules.Nav and WK.modules.Nav.BoatLog then
+                WK.modules.Nav.BoatLog(string.format("horaire reçu de %s", tostring(sender):match("^[^%-]+") or "?"))
+            end
+        end
+        return
+    end
     local key, side, dep, tr = msg:match("^S;([^;]+);([ab]);(%d+);(%d+)$")
     dep, tr = tonumber(dep), tonumber(tr)
     if not (key and dep) then return end

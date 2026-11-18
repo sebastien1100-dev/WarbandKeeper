@@ -617,6 +617,9 @@ local function validBoat(a, b)
 end
 -- Trajet déjà dans les données (MapLayers.TRANSPORTS : bateaux et zeppelins connus), dans un sens ou dans l'autre
 local function knownRoute(a, b)
+    -- ligne des fichiers du jeu (Modules/BoatLines.lua) : déjà connue, jamais apprise en double
+    local BL = WK.modules.BoatLines
+    if BL and a and b and a.wx and b.wx and BL:StopNear(a.c, a.wx, a.wy, 300) and BL:StopNear(b.c, b.wx, b.wy, 400) then return true end
     local L, P = WK.modules.MapLayers, WK.modules.Guide
     if not (P and P.ToWorld and a and b and a.wx and b.wx) then return false end
     for _, t in ipairs(L and L.TRANSPORTS or {}) do
@@ -652,6 +655,12 @@ function M:Boats()
         end
         for i = #d.boats, 1, -1 do if sea(d.boats[i].a) or sea(d.boats[i].b) then table.remove(d.boats, i) end end
         d.sched = nil
+    end
+    -- une fois (1.33.0) : les bateaux appris qui sont des lignes des fichiers du jeu (Modules/BoatLines.lua)
+    -- sont oubliés : la ligne du jeu les remplace (tracé, quais, horaires)
+    if not d.boatsChecked5 and WK.BoatLines and #WK.BoatLines > 0 then
+        d.boatsChecked5 = true
+        for i = #d.boats, 1, -1 do if knownRoute(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
     end
     -- une fois encore (1.31.8) : quai noté sur la carte du continent quand on est à bord
     if not d.boatsChecked4 and C_Map and C_Map.GetMapInfo then

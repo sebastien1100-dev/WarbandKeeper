@@ -256,6 +256,17 @@ local SHORTCUTS = {
     { key = "fishing", label = "Mode pêche", icon = function() return UI.MEDIA .. "fish" end, tint = true,
       run = function() WK.modules.Fishing:Toggle() end,
       dot = function() return WK.modules.Fishing.active and C.positive or nil end },
+    { key = "boats", label = "Bateaux et zeppelins", icon = function() return UI.MEDIA .. "boat" end, tint = true,
+      run = function() if UI.ToggleBoatBoard then UI:ToggleBoatBoard() end end,
+      -- pastille verte : un bateau de ta faction est à quai près de toi
+      dot = function()
+          local B, G = WK.modules.BoatLines, WK.modules.Guide
+          local p = G and G:PlayerPos()
+          if not (B and p and p.cont) then return nil end
+          local l, s, d = B:StopNear(p.cont, p.wx, p.wy, 200)
+          local st = l and B:Mine(l) and B:State(l, s)
+          return st and st.atDock and C.positive or nil
+      end },
     { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton", "GameMenuMicroButton" },
       icon = function() return UI.MEDIA .. "gear" end, tint = true,
       -- vérifié après le clic : si le bouton du jeu n'a rien ouvert, on ouvre le menu directement
@@ -288,6 +299,10 @@ local function cfg()
     if not q.clock.lfgAdded then
         q.clock.lfgAdded = true
         if q.clock.side.lfg == nil then q.clock.side.lfg = "R" end
+    end
+    if not q.clock.boatsAdded then
+        q.clock.boatsAdded = true
+        if q.clock.side.boats == nil then q.clock.side.boats = "R" end
     end
     if not q.clock.fishAdded then
         q.clock.fishAdded = true

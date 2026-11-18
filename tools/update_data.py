@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -201,6 +201,8 @@ def metrics():
             out["Trajets de vol (fichiers du jeu)"] = size(WK.FlightGame.paths) if WK.FlightGame else 0
         elif name == "ItemsDB":
             out["Objets portables (liste BiS)"] = size(WK.ItemsDB)
+        elif name == "BoatLinesDB":
+            out["Lignes de bateaux et zeppelins"] = size(WK.BoatLines)
         elif name == "DungeonsDB":
             stats = L.eval("""function(db, items)
                 local d, b, nb, it, und = 0, 0, 0, 0, 0
@@ -309,6 +311,12 @@ def main():
                 sources.append("Everloot (taux de drop, vols)")
             except subprocess.CalledProcessError as e:
                 log("  ! Everloot indisponible, fichier gardé tel quel :", e)
+        # lignes de bateaux et de zeppelins (table TaxiPathNode du jeu, wago.tools ; tours : Nauticus, MIT)
+        try:
+            run(os.path.join(HERE, "gen_boats.py"))
+            sources.append("trajets des bateaux (wago.tools)")
+        except subprocess.CalledProcessError as e:
+            log("  ! lignes de bateaux non régénérées, fichier gardé tel quel :", e)
         # objets portables du jeu pour la liste BiS (opendata, CC BY 4.0 ; noms français de wago.tools)
         odir, ofr = opendata_items()
         if odir:

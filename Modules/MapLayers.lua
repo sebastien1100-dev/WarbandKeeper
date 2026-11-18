@@ -54,13 +54,27 @@ M.TRANSPORTS = {
 }
 
 -- Trajets connus : ceux de la liste + les bateaux appris en les prenant (Modules/Nav.lua)
+-- Lignes : celles des fichiers du jeu (Modules/BoatLines.lua : quais, tour, horaires), puis les quais relevés
+-- à la main et les bateaux appris en jeu qui n'y sont pas déjà (même quai à 300 m près)
 function M:AllTransports()
     local out = {}
-    for _, r in ipairs(M.TRANSPORTS) do out[#out + 1] = r end
+    local BL = WK.modules.BoatLines
+    local G = WK.modules.Guide
+    local game = BL and BL:Pairs() or {}
+    for _, r in ipairs(game) do out[#out + 1] = r end
+    local function covered(pt)
+        if not (BL and G and G.ToWorld and pt) then return false end
+        local c, x, y = G.ToWorld(pt[1], pt[2] / 100, pt[3] / 100)
+        return c ~= nil and BL:StopNear(c, x, y, 300) ~= nil
+    end
+    for _, r in ipairs(M.TRANSPORTS) do
+        if not (#game > 0 and covered(r.a) and covered(r.b)) then out[#out + 1] = r end
+    end
     local Nv = WK.modules.Nav
     for _, b in ipairs(Nv and Nv.Boats and Nv:Boats() or {}) do
-        out[#out + 1] = { kind = b.kind or "boat", learned = true, path = b.path,
-                          a = { b.a.map, b.a.x, b.a.y, b.a.name }, b = { b.b.map, b.b.x, b.b.y, b.b.name } }
+        local e = { kind = b.kind or "boat", learned = true, path = b.path,
+                    a = { b.a.map, b.a.x, b.a.y, b.a.name }, b = { b.b.map, b.b.x, b.b.y, b.b.name } }
+        if not (#game > 0 and covered(e.a) and covered(e.b)) then out[#out + 1] = e end
     end
     return out
 end
