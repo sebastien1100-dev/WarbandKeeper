@@ -1637,7 +1637,6 @@ local function Settings(page, parent)
     local settings = UI:Scroll(parent)
     settings:SetPoint("TOPLEFT", 0, TOP)
     settings:SetPoint("BOTTOMRIGHT")
-    settings:Hide()
     local sroot = settings.child
     local scards = {}
     local function scard(title, sub, nRows, extra)
@@ -1824,7 +1823,7 @@ local function Settings(page, parent)
         for _, tg in ipairs(stoggles) do tg:Refresh() end
         layoutSettings()
     end
-    function tab:Refresh() self:RefreshSettings() end
+    function tab:Refresh() settings:Show(); self:RefreshSettings() end
     function tab:Pick(key, prof) self.key, self.prof = key, prof end
     return tab
 end

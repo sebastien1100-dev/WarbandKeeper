@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.39.1", date = "19/11/2026",
+        fixed = {
+            "Métiers : la roue dentée ouvrait une page vide ; les réglages des métiers s'affichent de nouveau.",
+        },
+    },
+    {
         version = "1.39.0", date = "19/11/2026",
         changed = {
             "QoL > Carte : les réglages sont rangés en onglets (Lieux, Mes notes, Guidage, Bateaux, Vols) au lieu d'une longue page.",

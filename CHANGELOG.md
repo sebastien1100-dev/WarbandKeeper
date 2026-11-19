@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.39.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Métiers : la roue dentée ouvrait une page vide ; les réglages des métiers s'affichent de nouveau.
+
 ## v1.39.0 — 19/11/2026
 
 _Un /reload suffit._
