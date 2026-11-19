@@ -1864,7 +1864,7 @@ local function build(host)
         local rows, open = {}, self.cat and self.cat[1]
         for i, c in ipairs(cats) do
             -- le jeton WoW n'existe pas sur WoW Forever : sa catégorie est retirée
-            local token = c.name == _G.TOKEN_FILTER_LABEL or c.name:find("[Jj]eton") or c.name:find("[Tt]oken")
+            local token = c.name and (c.name == _G.TOKEN_FILTER_LABEL or c.name:find("[Jj]eton") or c.name:find("[Tt]oken"))
             if c.name and not c.implicitFilter and not token then
                 table.insert(rows, { path = { i }, name = c.name, depth = 0, icon = catIcon(c) })
                 if open == i then
