@@ -195,8 +195,9 @@ UI:RegisterPage({
         local ttCard = card("Infobulles", 196)
         UI:SettingRow(ttCard, -94, "Police fine pour les infobulles du jeu", "Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon.",
             UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
-        UI:SettingRow(ttCard, -40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
-            UI:Toggle(ttCard, function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end), 80)
+        local ttGo = UI:Button(ttCard, "Réglages des métiers", nil, 28, "secondary", "gear")
+        ttGo:SetScript("OnClick", function() UI:OpenProfSettings() end)
+        UI:SettingRow(ttCard, -40, "Métiers dans l'infobulle", "Montée des métiers et valeur de désenchantement : Métiers > un métier > roue dentée.", ttGo, ttGo:GetWidth())
         UI:SettingRow(ttCard, -148, "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
             UI:Toggle(ttCard, function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end), 80)
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur

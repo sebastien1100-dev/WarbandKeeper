@@ -406,8 +406,9 @@ UI:RegisterPage({
             toggle(shop, function() return g.sellGrey end, function(v) g.sellGrey = v end), 80)
         UI:SettingRow(shop, -226, "Fermer la fenêtre après la réparation", "Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte.",
             toggle(shop, function() return g.closeAfterRepair end, function(v) g.closeAfterRepair = v end), 80)
-        UI:SettingRow(shop, -274, "Composants de métier à côté du marchand", "Ce qui manque pour monter tes métiers jusqu'au palier choisi dans le guide (75, 150… ou Max), avec Acheter et Tout acheter. Seulement chez un marchand qui en vend.",
-            toggle(shop, function() return ui.merchantPanel ~= false end, function(v) ui.merchantPanel = v end), 80)
+        local shopGo = UI:Button(shop, "Réglages des métiers", nil, 28, "secondary", "gear")
+        shopGo:SetScript("OnClick", function() UI:OpenProfSettings() end)
+        UI:SettingRow(shop, -274, "Composants de métier à côté du marchand", "Se règle avec les autres aides de métiers : Métiers > un métier > roue dentée.", shopGo, shopGo:GetWidth())
 
         -- État des persos : seuils puis une ligne par perso
         local chars = UI:SortedCharacters()
@@ -1077,37 +1078,12 @@ UI:RegisterPage({
             local learned, roads = NV:Stats()
             return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
         end):SetPoint("TOPLEFT", 16, -232)
-        -- Métiers et récolte (Modules/Gathering.lua) : rang suivant, nouvelles ressources, pistage, infobulle de la minicarte
+        -- Métiers : tous leurs réglages sont dans la fiche de métier (roue dentée)
         do
-            local GA = WK.modules.Gathering
-            local hc = GA:HelpConfig()
-            local mcard = card("Métiers et récolte", 40 + 4 * 46 + 8, "petites aides, sans rien à cliquer")
-            UI:SettingRow(mcard, -40, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
-                toggle(mcard, function() return hc.rankAlert end, function(v) hc.rankAlert = v end), 80)
-            UI:SettingRow(mcard, -86, "Nouvelles ressources", "Une montée d'Herboristerie ou de Minage qui débloque une herbe ou un filon le nomme.",
-                toggle(mcard, function() return hc.nodeToast end, function(v) hc.nodeToast = v end), 80)
-            UI:SettingRow(mcard, -132, "Rappel du pistage", "Herboristerie ou Minage connus mais pistage éteint : rappel en changeant de zone (hors ville et donjon).",
-                toggle(mcard, function() return hc.trackRemind end, function(v) hc.trackRemind = v end), 80)
-            UI:SettingRow(mcard, -178, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon sur la minicarte : la compétence requise et la tienne, aux couleurs du jeu.",
-                toggle(mcard, function() return hc.nodeTip end, function(v) hc.nodeTip = v end), 80)
-        end
-        -- Aides de métiers (Modules/ProfHelp.lua, UI/ProfPanels.lua)
-        do
-            local pc = WK.modules.ProfHelp:Config()
-            local rows = {
-                { "Désenchanter : valeur dans l'infobulle", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.", "deTip" },
-                { "Désenchanter ou vendre, à côté des sacs", "Enchanteur : objets des sacs à désenchanter, à vendre à l'HV ou au marchand, et un bouton pour enchaîner (/wk de).", "dePanel" },
-                { "Enchantements à l'échange", "Fenêtre d'échange : tes enchantements pour l'objet posé, et l'annonce de ce que tu sais faire.", "trade" },
-                { "File de fabrication à l'écran", "Fenêtre du métier ouverte : la prochaine recette de ta file et un bouton pour la fabriquer.", "queueHud" },
-                { "Décompter la file en fabriquant", "Chaque fabrication réussie retire une ligne de la file.", "queueAuto" },
-                { "Recharge terminée", "Transmutation, étoffe lunaire… : un message quand elle est de nouveau prête, sur n'importe quel perso.", "cdAlert" },
-                { "Chez le maître de métier", "Les recettes à apprendre ici : favoris, utiles pour le guide, déjà connues d'un autre perso.", "trainer" },
-            }
-            local acard = card("Aides de métiers", 40 + #rows * 46 + 8, "désenchantement, échange, file, maître")
-            for i, row in ipairs(rows) do
-                UI:SettingRow(acard, -40 - (i - 1) * 46, row[1], row[2],
-                    toggle(acard, function() return pc[row[3]] end, function(v) pc[row[3]] = v end), 80)
-            end
+            local mcard = card("Métiers et récolte", 40 + 46 + 8)
+            local go = UI:Button(mcard, "Réglages des métiers", nil, 28, "primary", "gear")
+            UI:SettingRow(mcard, -40, "Aides de métiers et de récolte", "Infobulles, panneaux du marchand, de l'échange et du maître, file, recharges, récolte : Métiers > un métier > roue dentée.", go, go:GetWidth())
+            go:SetScript("OnClick", function() UI:OpenProfSettings() end)
         end
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do

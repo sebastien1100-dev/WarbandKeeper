@@ -30,6 +30,15 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.38.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers : une roue dentée à droite des onglets Recettes, Guide et Manquantes ouvre l'onglet « Réglages », qui regroupe tous les réglages des métiers en cartes : ce métier (texte du lien, palier visé, recevoir les composants), infobulles, fenêtres du jeu (marchand, sacs, échange, maître), file et recharges, récolte, désenchantements notés.
+- Le texte ajouté au lien du métier se règle maintenant dans cet onglet (l'ancienne petite fenêtre de l'en-tête est retirée).
+- QoL et Options ne répètent plus ces réglages : un bouton « Réglages des métiers » y mène directement.
+
 ## v1.37.0 — 18/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
