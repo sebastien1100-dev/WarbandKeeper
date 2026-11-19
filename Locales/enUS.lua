@@ -17,6 +17,7 @@ WK.Locales.enUS.keys = {
     HELP_DUNGEON    = "/wk donjon - Current dungeon panel: bosses, loot, wish list",
     HELP_BOAT       = "/wk bateau - Boats: is the crossing detected? (log of the last rides)",
     HELP_PERF       = "/wk perf [seconds] - Measure what the addon costs (time per event, memory); run again to stop",
+    HELP_BUFF       = "/wk buff          - \"Buff next\" button diagnostic (why it is hidden)",
     HELP_FP         = "/wk vol - Guide to the nearest flight point not learned yet",
     HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
     HELP_BAGS       = "/wk sacs          - Bags diagnostic (lock icon, BiS star)",
@@ -3606,4 +3607,5 @@ WK.Locales.enUS.text = {
     ["Fabrication"] = "Crafting",
     ["À bord : arrivée vers %s"] = "On board: arriving around %s",
     ["À bord : durée de la traversée pas encore connue."] = "On board: crossing time not known yet.",
+    ["Bouton « Buffer le suivant » : diagnostic"] = "\"Buff next\" button: diagnostic",
 }

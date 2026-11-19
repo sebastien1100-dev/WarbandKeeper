@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.13", date = "19/11/2026",
+        added = {
+            "/wk buff : dit pourquoi le bouton « Buffer le suivant » est caché (réglage, monture, instance, combat, plaques de nom amies) et, joueur par joueur autour de toi, pourquoi il est écarté (JcJ, déjà buffé, hors de portée, en combat…) ou s'il est bon.",
+        },
+    },
+    {
         version = "1.77.12", date = "19/11/2026",
         fixed = {
             "Bandeau du quai, bateau Auberdine » Menethil : il affichait « Bateau pour Austrivage », sans heure, à cause d'un trajet appris en jeu qui double la ligne du jeu. Un quai appris à moins de 400 m d'un arrêt d'une ligne du jeu est maintenant ignoré par le bandeau : la ligne du jeu s'affiche, avec sa vraie destination et ses horaires.",

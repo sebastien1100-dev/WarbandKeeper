@@ -8,7 +8,7 @@ local function plainBars(s) return (s:gsub("|", "||")) end
 local function help()
     WK:Print(L.HELP_TITLE)
     for _, k in ipairs({ "HELP_OPEN", "HELP_NOTES", "HELP_FARM", "HELP_TAKE", "HELP_GOLD", "HELP_CHARS", "HELP_FIND", "HELP_PROF", "HELP_STATS",
-                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_BAGS", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP", "HELP_BOAT", "HELP_PERF" }) do
+                         "HELP_MAIL_ADD", "HELP_MAIL_DEL", "HELP_MAIL_LIST", "HELP_MAIL_TOG", "HELP_NAME", "HELP_LINK", "HELP_GUIDE", "HELP_EDIT", "HELP_HALO", "HELP_MICRO", "HELP_BAGS", "HELP_NAV", "HELP_FISH", "HELP_HV", "HELP_ALERT", "HELP_HUD", "HELP_DUNGEON", "HELP_FP", "HELP_BOAT", "HELP_PERF", "HELP_BUFF" }) do
         if L[k] then WK:Print("  " .. plainBars(L[k])) end
     end
 end
@@ -159,6 +159,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Recipes:LinkReport()
     elseif cmd == "notes" then
         WK.UI:ToggleWindow("notes")
+    elseif cmd == "buff" then
+        WK:Print(WK.T("Bouton « Buffer le suivant » : diagnostic"))
+        for _, l in ipairs(WK.UI.BuffDiag and WK.UI:BuffDiag() or {}) do WK:Print("  " .. l) end
     elseif cmd == "perf" then
         WK.modules.Maintenance:PerfStart(rest)
     elseif cmd == "options" then

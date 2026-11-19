@@ -290,5 +290,66 @@ WK:On("PLAYER_LOGIN", function()
     end)
 end)
 
+-- /wk buff : pourquoi le bouton est (ou n'est pas) affiché, joueur par joueur
+function UI:BuffDiag()
+    local out = {}
+    local c = cfg()
+    local cls = myClass() or "?"
+    local function yn(v) return v and "oui" or "non" end
+    table.insert(out, string.format("classe %s (buffe : %s) · réglage « Buffer autour » : %s · module Classes : %s · plaques amies : %s (réglage %s)",
+        cls, yn(WK.BUFF_CLASSES[cls]), yn(c and c.buffAround ~= false), yn(WK:FeatureOn("classes")),
+        tostring(GetCVar and GetCVar("nameplateShowFriends")), yn(c and c.buffPlates ~= false)))
+    local inInst = IsInInstance and select(1, IsInInstance())
+    table.insert(out, string.format("en combat : %s · monture : %s (permis : %s) · instance : %s (permis : %s) · mort : %s · JcJ : %s",
+        yn(inCombat()), yn(IsMounted and IsMounted()), yn(c and c.buffMounted), yn(inInst), yn(c and c.buffInstance),
+        yn(UnitIsDeadOrGhost("player")), yn(UnitIsPVP and UnitIsPVP("player"))))
+    table.insert(out, "affichage permis : " .. yn(shouldShow()) .. " · bouton : " .. yn(btn and btn:IsShown()))
+    -- joueurs vus, avec la raison quand ils sont écartés
+    local units = { "player" }
+    if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then for i = 1, 4 do table.insert(units, "party" .. i) end end
+    local nplates = 0
+    if C_NamePlate and C_NamePlate.GetNamePlates then
+        for _, plate in ipairs(C_NamePlate.GetNamePlates() or {}) do
+            nplates = nplates + 1
+            if plate.namePlateUnitToken then table.insert(units, plate.namePlateUnitToken) end
+        end
+    end
+    table.insert(out, string.format("plaques de nom à l'écran : %d", nplates))
+    local refresh = ((c and c.buffRefresh) or 3) * 60
+    local mePvp = UnitIsPVP and UnitIsPVP("player")
+    local shown, seen = 0, {}
+    for _, u in ipairs(units) do
+        if UnitExists(u) and shown < 10 then
+            local guid = UnitGUID(u)
+            if guid and not seen[guid] then
+                seen[guid] = true
+                local why
+                if not UnitIsPlayer(u) then why = nil -- PNJ : on ne les liste pas
+                elseif not UnitCanAssist("player", u) then why = "pas aidable"
+                elseif UnitIsDeadOrGhost(u) then why = "mort"
+                elseif u ~= "player" and UnitAffectingCombat(u) then why = "en combat"
+                elseif not mePvp and UnitIsPVP and UnitIsPVP(u) then why = "JcJ (pas toi)"
+                else
+                    local id, has = buffFor(u)
+                    local name = id and WK.SpellInfo(id)
+                    if not name then why = "aucun buff prévu"
+                    else
+                        local left = auraLeft(u, has)
+                        if left and (left == 0 or left >= refresh) then why = name .. " déjà là"
+                        elseif not inRange(name, u) then why = name .. " hors de portée"
+                        else why = "OK : " .. name end
+                    end
+                end
+                if why then
+                    shown = shown + 1
+                    table.insert(out, "  " .. (UnitName(u) or u) .. " : " .. why)
+                end
+            end
+        end
+    end
+    return out
+end
+
+
 BINDING_HEADER_WARBANDKEEPER = "Warband Keeper"
 _G["BINDING_NAME_CLICK WarbandKeeperBuffButton:LeftButton"] = T("Buffer le suivant")

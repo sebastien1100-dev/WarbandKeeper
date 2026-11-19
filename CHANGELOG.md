@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.13 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk buff : dit pourquoi le bouton « Buffer le suivant » est caché (réglage, monture, instance, combat, plaques de nom amies) et, joueur par joueur autour de toi, pourquoi il est écarté (JcJ, déjà buffé, hors de portée, en combat…) ou s'il est bon.
+
 ## v1.77.12 — 19/11/2026
 
 _Un /reload suffit._
