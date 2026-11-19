@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- HV, Parcourir : la catégorie « Jeton WoW » est retirée (le jeton n'existe pas sur WoW Forever).
+
 ## v1.56.0 — 19/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.1", date = "19/11/2026",
+        fixed = {
+            "HV, Parcourir : la catégorie « Jeton WoW » est retirée (le jeton n'existe pas sur WoW Forever).",
+        },
+    },
+    {
         version = "1.56.0", date = "19/11/2026",
         added = {
             "HV, Scan et réglages : à gauche le scan (« Scanner maintenant », barre, quand le prochain scan complet est possible, objets connus, relevés du jour, alertes déclenchées, durée du dernier scan) et la liste des derniers scans.",
