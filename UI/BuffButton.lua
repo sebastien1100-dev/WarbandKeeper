@@ -131,6 +131,21 @@ local function candidates()
     return out
 end
 
+-- Macro du bouton. WoW Forever ignore les unités de plaque de nom (@nameplate1…) dans /cast, sans message :
+-- un joueur pris sur sa plaque est ciblé par son nom (/targetexact), le sort part sur la cible, puis la cible
+-- d'avant revient (/targetlasttarget, ou /cleartarget s'il n'y en avait pas). Toi, ta cible, ta focalisation
+-- et ton groupe : directement (@unité).
+function UI.BuffMacro(e)
+    local u = e.unit
+    if type(u) ~= "string" or not u:find("^nameplate") then return "/cast [@" .. tostring(u) .. ",help,nodead] " .. e.spell end
+    if UnitIsUnit(u, "target") then return "/cast [@target,help,nodead] " .. e.spell end
+    if UnitIsUnit(u, "focus") then return "/cast [@focus,help,nodead] " .. e.spell end
+    local name = (GetUnitName and GetUnitName(u, true)) or UnitName(u)
+    if not name then return "/cast [@" .. u .. ",help,nodead] " .. e.spell end
+    local back = UnitExists("target") and "/targetlasttarget" or "/cleartarget"
+    return "/targetexact " .. name .. "\n/cast [@target,help,nodead] " .. e.spell .. "\n" .. back
+end
+
 ---------------------------------------------------------------------------
 -- Bouton
 ---------------------------------------------------------------------------
@@ -258,7 +273,7 @@ function UI:RefreshBuffButton()
     list = shouldShow() and candidates() or {}
     local e = list[1]
     if e then
-        btn:SetAttribute("macrotext", "/cast [@" .. e.unit .. ",help,nodead] " .. e.spell)
+        btn:SetAttribute("macrotext", UI.BuffMacro(e))
         btn.paint(spellIcon(e.id), #list)
         btn:Show()
         -- plaque de nom : le jeu refuse ici les unités de groupe (party1, raid3…) ; on prend l'unité de plaque
@@ -319,6 +334,8 @@ end
 
 -- juste avant le combat (encore permis) : bouton et liseré cachés
 WK:On("PLAYER_REGEN_DISABLED", function() if btn and not btn.sample then btn:Hide(); mark:Hide() end end)
+-- la macro dépend de la cible (cible d'avant rendue ou effacée) : remise à jour quand elle change
+WK:On("PLAYER_TARGET_CHANGED", function() if btn and btn:IsShown() and not inCombat() then UI:RefreshBuffButton() end end)
 WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(0.5, function() UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end)
 WK:On("PLAYER_LOGIN", function()
     -- toutes les classes : un perso qui ne buffe pas rend la valeur d'avant des plaques amies

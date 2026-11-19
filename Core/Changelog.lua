@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.80.1", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : rien ne partait sur un joueur pris sur sa plaque de nom (WoW Forever ignore ces cibles dans /cast, sans message). Le bouton cible maintenant ce joueur par son nom, lance la bénédiction, puis remet ta cible d'avant (ou aucune). Sur toi, ta cible, ta focalisation ou ton groupe, rien ne change.",
+        },
+    },
+    {
         version = "1.80.0", date = "19/11/2026", restart = true,
         added = {
             "Carte sans brouillard : les zones que ton perso n'a pas encore découvertes sont dessinées quand même sur la carte du monde, un peu plus sombres pour voir ce qui reste à explorer (QoL > Carte et guidage > Lieux, carte « Filtres et affichage »).",

@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.80.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton « Buffer le suivant » : rien ne partait sur un joueur pris sur sa plaque de nom (WoW Forever ignore ces cibles dans /cast, sans message). Le bouton cible maintenant ce joueur par son nom, lance la bénédiction, puis remet ta cible d'avant (ou aucune). Sur toi, ta cible, ta focalisation ou ton groupe, rien ne change.
+
 ## v1.80.0 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
