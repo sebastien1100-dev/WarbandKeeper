@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.64.0", date = "19/11/2026", restart = true,
+        added = {
+            "Paladin : barre des bénédictions à l'écran (à placer en mode édition). En tête ton aure (clic pour la lancer) et ton sceau ; une ligne par classe du groupe (et par exception) avec ta bénédiction, le temps restant le plus court et le nombre de joueurs sans. Clic : bénit le prochain joueur de la ligne qui en a besoin ; survol : chaque joueur et son temps ; clic droit : la répartition.",
+            "Paladin : répartition des bénédictions entre paladins (QoL > Classes > Paladin, onglet « Bénédictions »). Une ligne par paladin du groupe, une colonne par classe et l'aure ; automatique (chacun prend une bénédiction que les autres n'ont pas) ou à la main ; exceptions par joueur (« Cible actuelle ») ; le chef du groupe peut changer les lignes, les autres seulement si tu le permets.",
+            "Compatible avec PallyPower : les paladins qui l'utilisent apparaissent dans le tableau (pastille « PallyPower »), leurs choix arrivent chez toi et les tiens partent chez eux. Plus besoin de PallyPower pour toi.",
+            "Le bouton « Buffer le suivant » du paladin suit cette répartition.",
+            "Nouveaux fichiers : redémarrer le jeu.",
+        },
+    },
+    {
         version = "1.63.1", date = "19/11/2026",
         added = {
             "Patch notes > À venir : chaque idée a une pastille de priorité (Haute, Moyenne, Basse). Vue « Par priorité » (trois colonnes Haute / Moyenne / Basse, le thème en pastille sur chaque carte) ou « Par thème » (cartes triées par priorité).",
@@ -3597,7 +3607,7 @@ WK.Roadmap = {
     { prio = 3, theme = "char", title = "Expérience, suite", text = "Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu." },
     { prio = 3, theme = "char", title = "Feu de camp, suite", text = "Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage)." },
     { prio = 3, theme = "char", title = "Feu de camp, plus tard", text = "Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé." },
-    { prio = 2, theme = "class", title = "Bénédictions du paladin", text = "Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels." },
+    { prio = 2, theme = "class", title = "Rappels de bénédiction", text = "Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank." },
     { prio = 3, theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
     { prio = 1, theme = "class", title = "Sorts de classe à apprendre", text = "Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe." },
     { prio = 1, theme = "class", title = "Panneau chez le maître de classe", text = "Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise)." },

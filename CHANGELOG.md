@@ -54,7 +54,7 @@ _Prévu, pas encore commencé._
 - **Panneau chez le maître de classe** (haute) — Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise).
 - **Sorts au passage de niveau** (haute) — Rappel « N sorts à apprendre » dans la pile avec « Guider vers le maître », et alerte dans « À faire ».
 - **Sorts de classe à apprendre** (haute) — Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe.
-- **Bénédictions du paladin** (moyenne) — Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels.
+- **Rappels de bénédiction** (moyenne) — Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank.
 - **Aides de combat** (basse) — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
 - **Curseur retrouvé** (basse) — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
 - **Gain d'un rang** (basse) — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
@@ -83,6 +83,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.64.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Paladin : barre des bénédictions à l'écran (à placer en mode édition). En tête ton aure (clic pour la lancer) et ton sceau ; une ligne par classe du groupe (et par exception) avec ta bénédiction, le temps restant le plus court et le nombre de joueurs sans. Clic : bénit le prochain joueur de la ligne qui en a besoin ; survol : chaque joueur et son temps ; clic droit : la répartition.
+- Paladin : répartition des bénédictions entre paladins (QoL > Classes > Paladin, onglet « Bénédictions »). Une ligne par paladin du groupe, une colonne par classe et l'aure ; automatique (chacun prend une bénédiction que les autres n'ont pas) ou à la main ; exceptions par joueur (« Cible actuelle ») ; le chef du groupe peut changer les lignes, les autres seulement si tu le permets.
+- Compatible avec PallyPower : les paladins qui l'utilisent apparaissent dans le tableau (pastille « PallyPower »), leurs choix arrivent chez toi et les tiens partent chez eux. Plus besoin de PallyPower pour toi.
+- Le bouton « Buffer le suivant » du paladin suit cette répartition.
+- Nouveaux fichiers : redémarrer le jeu.
 
 ## v1.63.1 — 19/11/2026
 

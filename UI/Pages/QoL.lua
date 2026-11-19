@@ -2608,6 +2608,11 @@ UI:RegisterPage({
                 UI:SettingRow(rm, -40, REMIND[class][1], REMIND[class][2],
                     toggle(rm, function() return cc.buffReminder end, function(v) cc.buffReminder = v end), 80)
             end
+            -- Bénédictions du paladin : barre, répartition entre paladins (UI/BlessingBar.lua)
+            if class == "PALADIN" and UI.BuildBlessingCards then
+                subtab("Bénédictions", 8)
+                UI:BuildBlessingCards(card, toggle, self.dyn)
+            end
             -- Buffer les joueurs autour (UI/BuffButton.lua)
             if WK.BUFF_CLASSES and WK.BUFF_CLASSES[class] then
                 subtab("Buffer autour", 7)

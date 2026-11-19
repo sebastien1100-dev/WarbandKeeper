@@ -35,6 +35,10 @@ end
 local function buffFor(unit)
     local class = myClass()
     if class == "PALADIN" then
+        -- répartition des bénédictions (Modules/Blessings.lua) : ce qui m'est attribué pour ce joueur
+        local BL = WK.modules.Blessings
+        local bi = BL and BL:On() and BL:ForUnit(unit)
+        if bi then return BL.BLESS[bi][1], BL.BLESS[bi] end
         local c = cfg() or {}
         if c.kingsFirst ~= false and known(KINGS[1]) then return KINGS[1], KINGS end
         local _, tc = UnitClass(unit)
