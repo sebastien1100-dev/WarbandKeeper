@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.2"
+CLIENT_VERSION = "1.7.3"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1974,8 +1974,11 @@ class App:
         self.root = tk.Tk()
         self.root.title("Warband Keeper")
         self.root.configure(bg=C["bg"])
-        self.root.geometry("780x480")
-        self.root.minsize(680, 420)
+        # taille par défaut : tout le Tableau de bord (six tuiles) et les Réglages visibles sans agrandir,
+        # bornée à l'écran (barre des tâches comprise)
+        w, h = self.default_size()
+        self.root.geometry("%dx%d" % (w, h))
+        self.root.minsize(min(900, w), min(600, h))
         self.setup_fonts()
         self.set_icon()
         self.cfg = load_config()
@@ -2102,6 +2105,12 @@ class App:
         import ctypes
         return ctypes.windll.user32.GetParent(self.root.winfo_id())
 
+    DEFAULT_W, DEFAULT_H = 1100, 760
+
+    def default_size(self):
+        sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        return min(self.DEFAULT_W, max(700, sw - 40)), min(self.DEFAULT_H, max(480, sh - 90))
+
     def build_chrome(self):
         self.frameless = IS_WIN and "--native-frame" not in sys.argv
         self.maxed, self.normalGeo = False, None
@@ -2110,7 +2119,7 @@ class App:
         root = self.root
         root.update_idletasks()
         # centrée à l'écran
-        w, h = 780, 480
+        w, h = self.default_size()
         x = max(0, (root.winfo_screenwidth() - w) // 2)
         y = max(0, (root.winfo_screenheight() - h) // 3)
         root.geometry("%dx%d+%d+%d" % (w, h, x, y))
