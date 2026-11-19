@@ -125,8 +125,12 @@ local CLASS_DEFAULTS = {
     portalText = "Portail vers %s, chuchote-moi !",
 }
 
+-- Appelé très souvent (plusieurs fois par image par les cadres animés) : les valeurs par défaut ne sont
+-- posées qu'une fois par table (un profil chargé en pose une nouvelle, contrôlée à son tour).
+local ready
 function M:Config()
     local q = WK.DB.global.qol
+    if q and q == ready and q.general and q.classes and q.petFoods then return q end
     if not q then q = {}; WK.DB.global.qol = q end
     q.general = q.general or {}
     for k, v in pairs(GENERAL_DEFAULTS) do if q.general[k] == nil then q.general[k] = v end end
@@ -148,6 +152,7 @@ function M:Config()
         end
         c.sets = c.sets or {}
     end
+    ready = q
     return q
 end
 function M:General() return self:Config().general end

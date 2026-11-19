@@ -289,8 +289,10 @@ local DEFAULTS = {
     perf = true, perfStyle = "bars", perfCount = 8, perfSort = "mem", perfFps = true, perfDelta = true, perfWarn = 50, perfGC = false,
     side = { wk = "L", mail = "L", hearth = "L", char = "R", spells = "R", talents = "R", map = "R" },
 }
+local cfgReady
 local function cfg()
     local q = WK.modules.QoL:Config()
+    if q.clock and q.clock == cfgReady and q.clock.side then return q.clock end
     q.clock = q.clock or {}
     for k, v in pairs(DEFAULTS) do
         if q.clock[k] == nil then
@@ -310,6 +312,7 @@ local function cfg()
         q.clock.fishAdded = true
         if q.clock.side.fishing == nil then q.clock.side.fishing = "R" end
     end
+    cfgReady = q.clock
     return q.clock
 end
 UI.ClockConfig = cfg
@@ -757,11 +760,17 @@ local function build()
         -- ou toutes les 0,5 s (pastilles, compteurs) ; avant, tout était refait à chaque image
         local cx = GetCursorPosition()
         local now = GetTime()
+        -- placement : seulement quand quelque chose bouge (avant : toutes les 0,5 s, même immobile)
         if self.open ~= before or self.relayout
-            or (self.open > 0 and ((over and cx ~= self.lastCx) or now - (self.lastLayout or 0) > 0.5)) then
+            or (self.open > 0 and ((over and cx ~= self.lastCx) or now - (self.lastLayout or 0) > 5)) then
             self.relayout = nil
             self.lastCx, self.lastLayout = cx, now
             self:Layout()
+        end
+        -- icônes, pastilles et compteurs : une fois par seconde, et seulement si la barre est dépliée
+        if self.open > 0 and (self.decorAt == nil or now - self.decorAt > 1) then
+            self.decorAt = now
+            self:Decor()
         end
     end
 
@@ -817,11 +826,15 @@ local function build()
             self.probe = self.clockBtn:CreateFontString(nil, "BACKGROUND")
             self.probe:Hide()
         end
-        self.probe:SetFont(font, fs, "")
-        self.probe:SetText("0")
-        local cell = self.probe:GetStringWidth() or 0
-        self.probe:SetText("1")
-        local one = self.probe:GetStringWidth() or 0
+        if self.probeKey ~= fkey then
+            self.probeKey = fkey
+            self.probe:SetFont(font, fs, "")
+            self.probe:SetText("0")
+            self.cell = self.probe:GetStringWidth() or 0
+            self.probe:SetText("1")
+            self.one = self.probe:GetStringWidth() or 0
+        end
+        local cell, one = self.cell, self.one
         local txt = self.time:GetText() or ""
         local lead, trail = 0, 0
         if cell > 0 and one > cell * 0.8 then -- chiffres tabulaires
@@ -862,8 +875,19 @@ local function build()
         side(L, self.lp, -1)
         side(R, self.rp, 1)
         for _, def in ipairs(SHORTCUTS) do
+            if not o.side[def.key] then self.icons[def.key]:Hide() end
+        end
+        self:Decor()
+        -- largeur du cadre : place pour tous les raccourcis (stable, pour le mode édition)
+        local n = #L > #R and #L or #R
+        self:SetWidth(math.max(120, n * (base + IGAP) * 2 + clockW + 2 * (GAP + PAD) + 20))
+    end
+
+    -- Icônes, couleurs, pastilles et compteurs (rien ne bouge : possible sans tout replacer)
+    function bar:Decor()
+        self.decorAt = GetTime()
+        for _, def in ipairs(SHORTCUTS) do
             local ic = self.icons[def.key]
-            if not o.side[def.key] then ic:Hide() end
             ic.tex:SetTexture(def.icon())
             if def.tint then ic.tex:SetVertexColor(UI:Accent()) end
             ic.bg:SetColor(unpack(C.surface2))
@@ -873,9 +897,6 @@ local function build()
             if dc then ic.dot:SetVertexColor(unpack(dc)) end
         end
         UI:ClockCounts()
-        -- largeur du cadre : place pour tous les raccourcis (stable, pour le mode édition)
-        local n = #L > #R and #L or #R
-        self:SetWidth(math.max(120, n * (base + IGAP) * 2 + clockW + 2 * (GAP + PAD) + 20))
     end
 
     UI:RegisterHUD("clock", bar, { label = T("Micro menu"), protected = true, point = "TOP",

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.73.3", date = "19/11/2026",
+        improved = {
+            "Addon plus léger à chaque image : les réglages de confort ne sont plus revérifiés en entier plusieurs fois par image par le micro menu, l'anneau du curseur et les pastilles de la mini-carte.",
+            "Micro menu : la barre ne se replace plus toutes les demi-secondes quand rien ne bouge ; icônes, pastilles et compteurs sont rafraîchis une fois par seconde, et seulement quand la barre est dépliée.",
+            "Anneau du curseur : il ne se replace que quand la souris bouge.",
+            "Mini-carte : la position du perso n'est lue qu'une fois par image, même si plusieurs calques (tracé, nœuds, lieux, notes) en ont besoin. Moins de mémoire consommée en continu.",
+        },
+    },
+    {
         version = "1.73.2", date = "19/11/2026",
         fixed = {
             "/wk perf : erreur au lancement (« attempt to call a nil value ») quand un autre addon (le compteur de dégâts du jeu, par exemple) donne à ses cadres un nom qui n'est pas un texte.",

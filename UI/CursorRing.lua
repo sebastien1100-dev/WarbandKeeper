@@ -18,10 +18,13 @@ local GCD_SPELL = 61304
 local MELEE = { WARRIOR = true, ROGUE = true, PALADIN = true, DRUID = false }
 local readable = function(v) return WK.modules.QoL.Readable(v) end
 
+local cfgReady
 local function cfg()
     local q = WK.modules.QoL:Config()
+    if q.cursor and q.cursor == cfgReady then return q.cursor end
     q.cursor = q.cursor or {}
     for k, v in pairs(DEFAULTS) do if q.cursor[k] == nil then q.cursor[k] = v end end
+    cfgReady = q.cursor
     return q.cursor
 end
 UI.CursorConfig = cfg
@@ -96,14 +99,22 @@ local function build()
         local x, y = GetCursorPosition()
         local sc = UIParent:GetEffectiveScale()
         if x ~= lastX or y ~= lastY then still = 0; lastX, lastY = x, y else still = still + el end
-        local hide = c.hideMouselook and ((IsMouselooking and IsMouselooking()) or (IsMouseButtonDown and IsMouseButtonDown("RightButton")))
-        self.tex:SetShown(not hide)
-        self.cd:SetShown(not hide and c.sweep)
-        self:ClearAllPoints()
-        self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / sc, y / sc)
+        local hide = c.hideMouselook and ((IsMouselooking and IsMouselooking()) or (IsMouseButtonDown and IsMouseButtonDown("RightButton"))) and true or false
+        local sweep = (not hide and c.sweep) and true or false
+        if hide ~= self.wasHidden or sweep ~= self.wasSweep then
+            self.wasHidden, self.wasSweep = hide, sweep
+            self.tex:SetShown(not hide)
+            self.cd:SetShown(sweep)
+        end
+        -- on ne replace l'anneau que si la souris (ou l'échelle) a bougé
+        if still == 0 or sc ~= self.lastSc then
+            self.lastSc = sc
+            self:ClearAllPoints()
+            self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / sc, y / sc)
+        end
         local a = c.alpha or 0.85
         if c.fadeIdle and still > 3 and not inCombat() then a = a * 0.25 end
-        self:SetAlpha(a)
+        if a ~= self.lastA then self.lastA = a; self:SetAlpha(a) end
         tick = tick + el
         if tick > 0.2 then
             tick = 0

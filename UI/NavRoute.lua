@@ -363,8 +363,7 @@ WK:On("PLAYER_LOGIN", function()
                     if UI.MapNote then UI.MapNote("pastilles masquées : réaffichage") end
                     if UI.RedrawWorldMap then UI.RedrawWorldMap("réparation") end
                 end
-                local flying = WK.modules.Flight and WK.modules.Flight:Current()
-                if s.mapAcc > 1 and (N.route or flying) and WorldMapFrame and WorldMapFrame:IsShown() then
+                if s.mapAcc > 1 and (N.route or (WK.modules.Flight and WK.modules.Flight:Current())) and WorldMapFrame and WorldMapFrame:IsShown() then
                     s.mapAcc = 0
                     local cv = WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.Child
                     local mapID = WorldMapFrame.GetMapID and WorldMapFrame:GetMapID()

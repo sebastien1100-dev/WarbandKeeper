@@ -69,7 +69,17 @@ local function entryWorld(mapID, e)
     return w or nil
 end
 
+-- Lue par plusieurs cadres de la mini-carte à chaque rafraîchissement : une seule lecture par image
+-- (même table rendue, à ne pas modifier).
+local posAt, posVal, posSrc
+local readPos
 function M:PlayerPos()
+    local now = GetTime and GetTime()
+    if posVal and now and now == posAt and posSrc == C_Map then return posVal end
+    posVal, posAt, posSrc = readPos(), now, C_Map
+    return posVal
+end
+readPos = function()
     if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
     local map = C_Map.GetBestMapForUnit("player")
     if not map then return nil end
