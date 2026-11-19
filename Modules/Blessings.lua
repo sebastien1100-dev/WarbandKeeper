@@ -5,7 +5,7 @@ local T = function(s) return WK.T(s) end
 -- Bénédictions du paladin : qui donne quoi à quelle classe dans le groupe, ce qui manque, et la répartition
 -- entre paladins. Compatible avec PallyPower : mêmes messages d'addon (préfixe PLPWR, format public de ses
 -- messages : SELF, ASELF, ASSIGN, PASSIGN, MASSIGN, NASSIGN, AASSIGN, REQ, CLEAR, FREEASSIGN), mêmes numéros
--- de bénédiction, d'aure et de classe que sa version WoW Forever (le chaman en 9e classe, l'espace des noms
+-- de bénédiction, d'aura et de classe que sa version WoW Forever (le chaman en 9e classe, l'espace des noms
 -- « Prénom Nom » transmis en « _ »). Aucun code de PallyPower n'est repris (licence « tous droits réservés ») :
 -- seulement ce format d'échange, pour se répartir les bénédictions avec ceux qui l'utilisent.
 -- Les paladins sous Warband Keeper se reconnaissent en plus par le préfixe WKbless (« HI »).
@@ -25,7 +25,7 @@ M.BLESS = {
     { 20911, 25899 }, -- 6 Sanctuaire
 }
 M.SHORT = { "Sa", "Pu", "Ro", "Sl", "Lu", "Sc" }
--- n° d'aure (format PallyPower)
+-- n° d'aura (format PallyPower)
 M.AURAS = { 465, 7294, 19746, 19876, 19888, 19891, 20218 }
 -- n° de classe (format PallyPower WoW Forever)
 M.CLASSES = { "WARRIOR", "ROGUE", "PRIEST", "DRUID", "PALADIN", "HUNTER", "MAGE", "WARLOCK", "SHAMAN" }
@@ -224,7 +224,7 @@ function M:AutoAssign()
             if e.demo then e.assign = e.assign or {}; e.assign[ci] = pick end
         end
     end
-    -- aure : la 1re de la liste que personne d'autre n'a prise
+    -- aura : la 1re de la liste que personne d'autre n'a prise
     local myAura = 0
     for _, name in ipairs(list) do
         local e = pallys[name]
@@ -422,7 +422,7 @@ local function send(msg, target, prefix)
 end
 M.Send = send
 
--- Mon état : bénédictions connues, attribution par classe, aure, exceptions, assignation libre
+-- Mon état : bénédictions connues, attribution par classe, aura, exceptions, assignation libre
 function M:SendSelf(target)
     if not (self:On() and channel()) then return end
     local e = myEntry()

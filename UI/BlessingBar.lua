@@ -4,12 +4,12 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Bénédictions du paladin (Modules/Blessings.lua) :
---  · barre à l'écran (HUD « blessBar », mode édition) : en tête ton aure (clic = la lancer) et ton sceau,
+--  · barre à l'écran (HUD « blessBar », mode édition) : en tête ton aura (clic = la lancer) et ton sceau,
 --    puis une ligne par classe présente (et une par exception) : ta bénédiction, le temps restant le plus
 --    court, le nombre de joueurs sans. Clic gauche = bénir le prochain joueur de la ligne qui en a besoin
 --    (bouton protégé : sort et cible posés hors combat), clic droit = tableau de répartition, survol = détail.
 --  · tableau de répartition (QoL > Classes > Paladin, onglet « Bénédictions ») : une ligne par paladin du
---    groupe (pastille Warband Keeper ou PallyPower), une colonne par classe + l'aure ; clic = suivante,
+--    groupe (pastille Warband Keeper ou PallyPower), une colonne par classe + l'aura ; clic = suivante,
 --    clic droit = aucune ; exceptions par joueur.
 local B = function() return WK.modules.Blessings end
 local function inCombat() return InCombatLockdown and InCombatLockdown() or false end
@@ -60,7 +60,7 @@ local function build()
     f:SetFrameStrata("MEDIUM")
     f.bg = UI:Rounded(f, 10, 0, "BACKGROUND", 1)
     f.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
-    -- en tête : aure (bouton protégé), nom de l'aure, sceau et son temps
+    -- en tête : aura (bouton protégé), nom de l'aura, sceau et son temps
     f.aura = CreateFrame("Button", "WarbandKeeperBlessAura", f, "SecureActionButtonTemplate")
     f.aura:SetSize(22, 22); f.aura:SetPoint("TOPLEFT", 8, -8)
     f.aura:RegisterForClicks("AnyUp", "AnyDown")
@@ -125,7 +125,7 @@ local function build()
         local M = B()
         local c = M:Me()
         local an = M:AuraName(c.aura or 0)
-        self.auraName:SetText(an or T("Aucune aure"))
+        self.auraName:SetText(an or T("Aucune aura"))
         self.aura.icon:SetTexture(M.AURAS[c.aura or 0] and M.Icon(M.AURAS[c.aura]) or "Interface\\Icons\\INV_Misc_QuestionMark")
         if not inCombat() then
             local sn, exp = sealInfo()
@@ -233,7 +233,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 
     -- tableau couché : une ligne par paladin du groupe (toi d'abord, bande à gauche : accent = Warband Keeper,
-    -- gris = PallyPower), une colonne par classe (icône, nom au survol ; grisée si absente du groupe) puis l'aure
+    -- gris = PallyPower), une colonne par classe (icône, nom au survol ; grisée si absente du groupe) puis l'aura
     local NCOLS = #M.CLASSES + 1
     local RH, TOPY, IC, LABW = 58, 124, 44, 150
     local function cardH(n) return TOPY + math.max(1, n) * (RH + 6) + 48 end
@@ -252,14 +252,14 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     tc.banner.bg = UI:Rounded(tc.banner, 8, 0, "BACKGROUND", 1)
     tc.banner.t = UI:Text(tc.banner, 11, C.muted); tc.banner.t:SetPoint("LEFT", 12, 0); tc.banner.t:SetPoint("RIGHT", -12, 0)
     tc.banner.t:SetJustifyH("LEFT")
-    -- en-têtes de colonnes : icône de la classe, « Aure » pour la dernière
+    -- en-têtes de colonnes : icône de la classe, « Aura » pour la dernière
     tc.heads = {}
     for k = 1, NCOLS do
         local h = CreateFrame("Frame", nil, tc)
         h:SetHeight(40)
         h.ci = k <= #M.CLASSES and k or nil
         h.icon = h:CreateTexture(nil, "ARTWORK"); h.icon:SetSize(36, 36); h.icon:SetPoint("CENTER")
-        h.label = UI:Text(h, 11, C.muted); h.label:SetPoint("CENTER")
+        h.label = UI:Text(h, 14, C.text); h.label:SetPoint("CENTER") -- lisible comme les icônes de classe
         if h.ci then
             UI:SetClassIcon(h.icon, M.CLASSES[h.ci])
             h.label:Hide()
@@ -272,7 +272,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             h:SetScript("OnLeave", function() GameTooltip:Hide() end)
         else
             h.icon:Hide()
-            h.label:SetText(T("Aure"))
+            h.label:SetText(T("Aura"))
         end
         tc.heads[k] = h
     end

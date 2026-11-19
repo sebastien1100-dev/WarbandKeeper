@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.13", date = "19/11/2026",
+        fixed = {
+            "Bénédictions : « Aure » corrigé en « Aura » (en-tête de colonne, « Aucune aura » dans la barre) ; l'en-tête de la colonne est plus grand et en clair, aussi lisible que les icônes de classe.",
+        },
+    },
+    {
         version = "1.76.12", date = "19/11/2026",
         changed = {
             "Les réglages du vol (Barre de vol, Statistiques en vol à la place de la carte, Ouvrir les statistiques au décollage) passent d'Interface > Général > Confort à Aventure > Carte et guidage, onglet Vols, dans une carte « Pendant le vol ».",
