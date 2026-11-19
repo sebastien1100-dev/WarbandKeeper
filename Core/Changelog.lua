@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.1", date = "19/11/2026",
+        fixed = {
+            "Guidage vers un autre continent, carte d'Azeroth (les deux continents à l'écran) : le départ et l'arrivée s'affichaient mais pas le trajet. Le chemin jusqu'au quai est maintenant tracé sur cette carte aussi, et la traversée en bateau ou en zeppelin est dessinée d'un quai à l'autre.",
+        },
+    },
+    {
         version = "1.77.0", date = "19/11/2026",
         added = {
             "Barre de fabrication : quand tu fabriques plusieurs objets d'affilée (« Créer tout » ou une quantité), une barre montre l'avancée sur la durée TOTALE de la série : icône, « 7 / 20 », une marque par fabrication, temps restant, durée d'une fabrication, heure de fin, niveau du métier avec les points gagnés depuis le début, recette suivante de ta file, et un bouton Arrêter. Elle disparaît à la fin (son en option).",

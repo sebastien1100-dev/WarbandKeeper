@@ -216,13 +216,36 @@ function UI:HideNavRoute()
     flyLines:Reset()
     walkLines:Reset()
 end
-local function toMap(cont, x, y, mapID)
-    if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
+-- Carte d'un continent (n° d'instance » carte) : passage obligé pour la carte d'Azeroth, où le jeu ne
+-- convertit pas directement une position du monde
+local CONTMAP = { [0] = 1415, [1] = 1414 }
+local function rawToMap(cont, x, y, mapID)
     local ok, _, pos = pcall(C_Map.GetMapPosFromWorldPos, cont, CreateVector2D(x, y), mapID)
     if not ok or not pos then return nil end
     local mx, my = pos.x, pos.y
     if pos.GetXY then mx, my = pos:GetXY() end
     return mx, my
+end
+local function toMap(cont, x, y, mapID)
+    if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
+    local mx, my = rawToMap(cont, x, y, mapID)
+    if mx then return mx, my end
+    -- repli : position sur la carte du continent, puis rectangle du continent sur la carte affichée
+    local cm = CONTMAP[cont]
+    if not (cm and cm ~= mapID and C_Map.GetMapRectOnMap) then return nil end
+    local cx, cy = rawToMap(cont, x, y, cm)
+    if not cx then return nil end
+    local okR, x0, x1, y0, y1 = pcall(C_Map.GetMapRectOnMap, cm, mapID)
+    if not (okR and x0 and x1 and y0 and y1 and x1 > x0 and y1 > y0) then return nil end
+    return x0 + cx * (x1 - x0), y0 + cy * (y1 - y0)
+end
+-- Position d'un quai (carte de zone, x, y en %) sur la carte affichée
+local function dockOnMap(dock, mapID)
+    if not dock then return nil end
+    local G = WK.modules.Guide
+    local c, wx, wy = G.ToWorld(dock[1], dock[2] / 100, dock[3] / 100)
+    if not c then return nil end
+    return toMap(c, wx, wy, mapID)
 end
 function UI:DrawNavRoute(cv, mapID, w, h)
     UI:HideNavRoute()
@@ -273,6 +296,18 @@ function UI:DrawNavRoute(cv, mapID, w, h)
             px, py = nil, nil
         end
         if n >= MAX_MAP then break end
+    end
+    -- traversée vers un autre continent (bateau, zeppelin) : trait d'un quai à l'autre quand la carte
+    -- affichée montre les deux (carte d'Azeroth)
+    local r0 = N.route
+    for _, l in ipairs(r0 and r0.legs or {}) do
+        if l.here and l.there and canLine(cv) then
+            local ax, ay = dockOnMap(l.here, mapID)
+            local bx, by = dockOnMap(l.there, mapID)
+            if ax and bx then
+                flyLines:Add(cv, ax * w, ay * h, bx * w, by * h, math.max(1.8 * UI.MapIconScale(), 2.4 * scale), r, g, b, 0.75)
+            end
+        end
     end
 end
 

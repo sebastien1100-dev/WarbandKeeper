@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage vers un autre continent, carte d'Azeroth (les deux continents à l'écran) : le départ et l'arrivée s'affichaient mais pas le trajet. Le chemin jusqu'au quai est maintenant tracé sur cette carte aussi, et la traversée en bateau ou en zeppelin est dessinée d'un quai à l'autre.
+
 ## v1.77.0 — 19/11/2026
 
 _Un /reload suffit._

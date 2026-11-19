@@ -431,7 +431,8 @@ computeFrom = function(cont, sx, sy, target)
         local pts = walk(cont, sx, sy, best.x, best.y, 4)
         legs[1] = { kind = "walk", pts = pts, len = lineLen(pts) }
         legs[2] = { kind = best.kind, to = best.there[4], from = best.here[4], line = best.line,
-                    side = best.line and (best.here == best.line.a and "a" or "b") }
+                    side = best.line and (best.here == best.line.a and "a" or "b"),
+                    here = best.here, there = best.there } -- quais (carte, x, y) : traversée dessinée sur la carte d'Azeroth
         return { legs = legs, cont = cont, partial = true }
     end
     local D = dist(sx, sy, tx, ty)
