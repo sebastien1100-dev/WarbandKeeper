@@ -375,16 +375,8 @@ local function build()
     f.close = UI:IconButton(right, "close", 24, "Fermer (Échap)")
     f.close:SetPoint("TOPRIGHT", -12, -12)
     f.close:SetScript("OnClick", function() f:Hide() end)
-    f.mapBtn = UI:Button(right, "Carte", 70, 24, "secondary")
-    f.mapBtn:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
-    f.mapBtn.tooltip = "Ouvrir la carte du monde du jeu."
-    f.mapBtn:SetScript("OnClick", function()
-        f.allowMap = true
-        f:Hide()
-        if ToggleWorldMap then ToggleWorldMap() elseif WorldMapFrame then WorldMapFrame:Show() end
-    end)
     f.next = UI:Button(right, "›", 28, 24, "secondary")
-    f.next:SetPoint("RIGHT", f.mapBtn, "LEFT", -8, 0)
+    f.next:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
     f.next:SetScript("OnClick", function() f:Step(1) end)
     f.prev = UI:Button(right, "‹", 28, 24, "secondary")
     f.prev:SetPoint("RIGHT", f.next, "LEFT", -4, 0)

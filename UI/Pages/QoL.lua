@@ -589,7 +589,7 @@ UI:RegisterPage({
             toggle(comfort, function() return g.skipCinematics end, function(v) g.skipCinematics = v end), 80)
         UI:SettingRow(comfort, -226, "Barre de vol", "Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition.",
             toggle(comfort, function() return WK.modules.Flight:Config().enabled end, function(v) WK.modules.Flight:Config().enabled = v end), 80)
-        UI:SettingRow(comfort, -272, "Statistiques en vol à la place de la carte", "En vol, la touche de la carte (M) ouvre les statistiques du compte ; leur bouton « Carte » ouvre quand même la carte.",
+        UI:SettingRow(comfort, -272, "Statistiques en vol à la place de la carte", "En vol, la touche de la carte (M) ouvre les statistiques du compte à la place de la carte. Décoché : M ouvre la carte.",
             toggle(comfort, function() return WK.modules.Flight:Config().stats ~= false end, function(v) WK.modules.Flight:Config().stats = v end), 80)
         UI:SettingRow(comfort, -318, "Ouvrir les statistiques au décollage", "Elles s'ouvrent seules à chaque vol et se ferment à l'atterrissage.",
             toggle(comfort, function() return WK.modules.Flight:Config().statsAuto end, function(v) WK.modules.Flight:Config().statsAuto = v end), 80)

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.8", date = "19/11/2026",
+        changed = {
+            "Statistiques en vol : le bouton « Carte » est retiré ; la fenêtre ne montre que les statistiques. Pour la carte en vol, décoche « Statistiques en vol à la place de la carte » (Interface > Général > Confort).",
+        },
+    },
+    {
         version = "1.76.7", date = "19/11/2026",
         changed = {
             "Bénédictions > Répartition : une bénédiction ou une aure pas apprise garde son icône en couleur ; seuls le cadre orange et le « ! » la signalent.",
