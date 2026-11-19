@@ -8,6 +8,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.52.0", date = "19/11/2026",
+        added = {
+            "HV, Mes enchères : un clic sur une enchère la déplie : la file des vendeurs autour de ta place (prix et quantités), combien sont moins chers que toi et ton prix moyen de vente de la semaine.",
+            "HV, Mes enchères : « Reposter » (sur l'enchère dépliée, ou « Reposter la suivante sous-cotée » en haut) annule l'enchère, puis la page Vendre s'ouvre sur l'objet revenu, au prix du moins cher moins l'écart : un clic sur « Mettre en vente » la remet.",
+            "HV, Mes enchères : à droite, le bilan du jour (vendu, acheté, expirées, en vente) et, pour chaque objet, combien sont vendus et combien ont expiré sur 7 jours.",
+            "Les enchères expirées sont notées quand tu prends l'objet dans le courrier (pour le bilan et « Tes objets »).",
+        },
+        changed = {
+            "HV, Mes enchères : filtres Toutes / Sous-cotées / Bientôt finies en haut, avec leur nombre ; temps restant en orange sous 2 h. Un clic sur une enchère ne l'annule plus directement (bouton « Annuler » dans le détail).",
+        },
+        fixed = {
+            "HV, Vendre : la pastille « Cachés » sortait du cadre des sacs.",
+        },
+    },
+    {
         version = "1.51.2", date = "19/11/2026",
         changed = {
             "Infobulles : toutes les infobulles du jeu (objets dans les sacs, PNJ, sorts, liens du chat, comparaisons d'objets) prennent le style de l'addon : fond et bordure des cartes, police de l'interface. Avant, seules celles des fenêtres de l'addon l'avaient.",

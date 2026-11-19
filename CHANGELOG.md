@@ -26,6 +26,22 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.52.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- HV, Mes enchères : un clic sur une enchère la déplie : la file des vendeurs autour de ta place (prix et quantités), combien sont moins chers que toi et ton prix moyen de vente de la semaine.
+- HV, Mes enchères : « Reposter » (sur l'enchère dépliée, ou « Reposter la suivante sous-cotée » en haut) annule l'enchère, puis la page Vendre s'ouvre sur l'objet revenu, au prix du moins cher moins l'écart : un clic sur « Mettre en vente » la remet.
+- HV, Mes enchères : à droite, le bilan du jour (vendu, acheté, expirées, en vente) et, pour chaque objet, combien sont vendus et combien ont expiré sur 7 jours.
+- Les enchères expirées sont notées quand tu prends l'objet dans le courrier (pour le bilan et « Tes objets »).
+
+### Modifications
+- HV, Mes enchères : filtres Toutes / Sous-cotées / Bientôt finies en haut, avec leur nombre ; temps restant en orange sous 2 h. Un clic sur une enchère ne l'annule plus directement (bouton « Annuler » dans le détail).
+
+### Corrections
+- HV, Vendre : la pastille « Cachés » sortait du cadre des sacs.
+
 ## v1.51.2 — 19/11/2026
 
 _Un /reload suffit._

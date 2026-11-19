@@ -3,7 +3,8 @@ local M = WK:NewModule("Auction")
 
 -- Ventes et achats à l'hôtel des ventes, lus sur les factures des courriers de l'HV
 -- au moment où on en prend l'or (vente) ou l'objet (achat), à la main ou par « Tout prendre ».
--- WK.DB.global.auction.log = { { t, kind = "sale"|"buy", char, item, count, gross, net }, ... }
+-- WK.DB.global.auction.log = { { t, kind = "sale"|"buy"|"expired", char, item, count, gross, net }, ... }
+-- (« expired » : enchère revenue par courrier, sujet AUCTION_EXPIRED_MAIL_SUBJECT, notée quand on prend l'objet)
 local MAX_LOG = 1000
 
 local function log() return WK.DB.global.auction.log end
@@ -14,8 +15,25 @@ local seen = {}
 local function record(index)
     if not GetInboxInvoiceInfo or not index then return end
     local invoiceType, itemName, _, bid, _, deposit, consignment, _, _, _, count = GetInboxInvoiceInfo(index)
-    if invoiceType ~= "seller" and invoiceType ~= "buyer" then return end
     local _, _, sender, subject, money, _, daysLeft = GetInboxHeaderInfo(index)
+    if invoiceType ~= "seller" and invoiceType ~= "buyer" then
+        -- enchère expirée : « Enchère expirée : <objet> »
+        local fmt = _G.AUCTION_EXPIRED_MAIL_SUBJECT
+        if not (fmt and subject) then return end
+        local pat = "^" .. fmt:gsub("([%(%)%.%+%-%*%?%[%]%^%$])", "%%%1"):gsub("%%s", "(.+)") .. "$"
+        local name = subject:match(pat)
+        if not name then return end
+        local key = "exp|" .. tostring(subject) .. "|" .. math.floor((time() + (daysLeft or 0) * 86400) / 3 + 0.5)
+        if seen[key] then return end
+        seen[key] = true
+        local n = 1
+        if GetInboxItem then local _, _, _, c = GetInboxItem(index, 1); n = c or 1 end
+        local l = log()
+        table.insert(l, 1, { t = time(), kind = "expired", char = select(2, WK.DB:Me()), item = name, count = n, gross = 0, net = 0 })
+        while #l > MAX_LOG do table.remove(l) end
+        WK:NotifyChanged()
+        return
+    end
     -- date d'expiration du courrier (fixe pour un même courrier, à la seconde près) : deux ventes identiques
     -- arrivées à quelques secondes d'écart restent deux ventes
     local expires = math.floor((time() + (daysLeft or 0) * 86400) / 3 + 0.5)
@@ -67,7 +85,7 @@ function M:Summary(days)
             local b = byItem[e.item or "?"] or { item = e.item or "?", count = 0, net = 0 }
             b.count, b.net = b.count + (e.count or 1), b.net + (e.net or 0)
             byItem[e.item or "?"] = b
-        else
+        elseif e.kind == "buy" then
             buys, nBuys = buys + (e.gross or 0), nBuys + 1
         end
     end
