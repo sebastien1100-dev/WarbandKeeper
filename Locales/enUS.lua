@@ -2965,4 +2965,7 @@ WK.Locales.enUS.text = {
     ["Bientôt"] = "Soon",
     ["Plus haut"] = "Higher",
     ["Déjà dépassés"] = "Already outlevelled",
+    ["Carnet"] = "Log",
+    ["Réglages de pêche"] = "Fishing settings",
+    ["collection, carnet et réglages"] = "collection, log and settings",
 }

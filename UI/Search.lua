@@ -157,6 +157,7 @@ function UI:GoToSetting(row, pk, sk)
     if sk and def.ShowSection then def:ShowSection(sk) end
     local sec = sk and def.sections and def.sections[sk]
     -- section en onglets (QoL) : ouvrir l'onglet qui contient le réglage
+    if def.RevealSetting then def:RevealSetting(row) end
     if sec and sec.tabOf then
         local i = sec.tabOf(row)
         if i then sec.showTab(i) end

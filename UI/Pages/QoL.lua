@@ -130,7 +130,7 @@ end
 -- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
-    { "fishing", "Pêche", "fish" }, { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
+    { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
     { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "xp", "Expérience", "chart" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
@@ -264,6 +264,8 @@ UI:RegisterPage({
         end
         local function card(title, h, subtitle)
             local c = UI:Card(root, title, subtitle)
+            current.cards = current.cards or {}
+            table.insert(current.cards, c)
             c:SetSize(W, h)
             c:SetPoint("TOPLEFT", 0, -y)
             c:SetPoint("TOPRIGHT", 0, -y)
@@ -373,7 +375,7 @@ UI:RegisterPage({
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "fishing", "maplayers", "ah", "cursor", "campfire", "xp", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "maplayers", "ah", "cursor", "campfire", "xp", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -1372,7 +1374,10 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         -- Pêche (Modules/Fishing.lua, UI/FishingBar.lua)
         -----------------------------------------------------------------------
+        -- Pêche : ces cartes sont construites ici (aides de la page QoL) mais montrées dans la page
+        -- Pêche (UI/Pages/FishCollection.lua : roue dentée et onglet Carnet), qui les reprend.
         section("fishing")
+        self.fishSection = current
         local Fi = WK.modules.Fishing
         local fo = Fi:Config()
         local function ftoggle(parent, field, after)
@@ -1393,6 +1398,7 @@ UI:RegisterPage({
         local FL = WK.modules.FishingLog
         local ZROWS, JROWS = 6, 10
         local fbook = card("Carnet de pêche", 40 + 30 + 22 + ZROWS * 34 + 8, "relevé à chaque prise, sur tout le compte")
+        fbook.journal = true
         local fsum = dynText(fbook, 12, C.text, function()
             local d = FL:Data()
             local rate = FL.Rate(d.total, d.time)
@@ -1450,6 +1456,7 @@ UI:RegisterPage({
             end
         end)
         local fj = card("Dernières prises", 40 + JROWS * 26 + 8, "« nouveau » : première prise de cette espèce sur le compte")
+        fj.journal = true
         local jrows = {}
         for i = 1, JROWS do
             local r = CreateFrame("Frame", nil, fj)

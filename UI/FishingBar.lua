@@ -229,7 +229,7 @@ local function buildMini()
     end
     UI:OnAccent(function() b:Paint() end)
     b:SetScript("OnClick", function(_, button)
-        if button == "RightButton" then UI:Create():Show(); UI:ShowPage("qol"); UI.pages.qol:ShowSection("fishing")
+        if button == "RightButton" then UI:Create():Show(); UI:OpenFishSettings()
         else F:Toggle() end
     end)
     b:SetScript("OnDragStart", function(s)

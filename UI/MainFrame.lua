@@ -678,12 +678,23 @@ function UI:ShowPage(key)
     for k, d in pairs(self.pages) do
         if d.frame then d.frame:SetShown(k == def.key) end
     end
+    self:EnsurePage(def.key)
+    self:Refresh()
+end
+
+-- Construit une page sans l'afficher (une page qui en emprunte une autre : Pêche prend les cartes
+-- de réglages de QoL). Renvoie la définition de la page.
+function UI:EnsurePage(key)
+    local def = self.pages[key]
+    if not def then return nil end
+    if not self.frame then self:Create() end
     if not def.frame then
         def.frame = CreateFrame("Frame", nil, self.pageHost)
         def.frame:SetAllPoints()
+        def.frame:SetShown(self.current == key)
         self:InAccentScope("window", def.Build, def, def.frame)
     end
-    self:Refresh()
+    return def
 end
 
 -- Sous-entrées de QoL (section affichée, pastilles).

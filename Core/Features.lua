@@ -16,7 +16,7 @@ WK.FEATURES = {
     { key = "stats", label = "Stats", icon = "chart", group = "TRÉSORERIE", page = "stats" },
     { key = "mail", label = "Règles d'envoi", icon = "mail", group = "TRÉSORERIE", page = "mail" },
     { key = "professions", label = "Métiers", icon = "hammer", group = "ARTISANAT", page = "professions", desc = "page et infobulle" },
-    { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", desc = "page et réglages QoL", reload = true },
+    { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", desc = "collection, carnet et réglages", reload = true },
     { key = "farm", label = "Session de farm", icon = "play", group = "BUTIN", page = "farm" },
     { key = "loot", label = "Filtre de loot", icon = "filter", group = "BUTIN", page = "loot" },
     { key = "journal", label = "Journal", icon = "clock", group = "BUTIN", page = "journal" },

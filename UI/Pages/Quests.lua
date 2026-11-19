@@ -214,7 +214,7 @@ UI:RegisterPage({
         if h < 100 then h = 500 end
         local top = 30 + GAP
         self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
-        self.side:SetPoint("TOPRIGHT", 0, 0)
+        self.side:SetPoint("TOPRIGHT", 0, -top) -- aligné sur les tuiles des zones
         self.side:SetPoint("BOTTOMRIGHT")
         self.side:SetWidth(SIDE_W)
         self.side.child:SetSize(SIDE_W - 8, self.sideH or 400)

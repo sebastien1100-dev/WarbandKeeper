@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.41.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Pêche : les réglages du mode pêche quittent QoL pour la page Artisanat > Pêche. Une roue dentée à droite les ouvre en cartes sur deux colonnes (mode pêche, une seule touche, tenue et appâts, confort, récapitulatif) ; un second clic revient à l'onglet d'avant.
+- Pêche : nouvel onglet « Carnet » à côté de « Collection », avec le carnet de pêche et les dernières prises.
+- Le clic droit sur le bouton de pêche de la minicarte ouvre ces réglages, et la recherche de la barre latérale y mène.
+- Quêtes : la colonne des réglages à droite descend pour s'aligner sur les tuiles des zones.
+
 ## v1.40.1 — 19/11/2026
 
 _Un /reload suffit._

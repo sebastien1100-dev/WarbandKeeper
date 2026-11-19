@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.41.0", date = "19/11/2026",
+        changed = {
+            "Pêche : les réglages du mode pêche quittent QoL pour la page Artisanat > Pêche. Une roue dentée à droite les ouvre en cartes sur deux colonnes (mode pêche, une seule touche, tenue et appâts, confort, récapitulatif) ; un second clic revient à l'onglet d'avant.",
+            "Pêche : nouvel onglet « Carnet » à côté de « Collection », avec le carnet de pêche et les dernières prises.",
+            "Le clic droit sur le bouton de pêche de la minicarte ouvre ces réglages, et la recherche de la barre latérale y mène.",
+            "Quêtes : la colonne des réglages à droite descend pour s'aligner sur les tuiles des zones.",
+        },
+    },
+    {
         version = "1.40.1", date = "19/11/2026",
         fixed = {
             "Métiers : le palier visé proposait « 300 » et « Max », qui reviennent au même. Il reste 75, 150, 225 et Max, dans le guide, les réglages des métiers et le panneau du marchand (un ancien choix « 300 » devient Max).",
