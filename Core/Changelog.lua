@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.45.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.4.5 (fenêtre plus petite).",
+        },
+    },
+    {
         version = "1.45.0", date = "19/11/2026",
         added = {
             "Métiers : conseil pour monter. Dans la fiche d'un métier, un bandeau donne la recette orange (un point sûr), sinon jaune, la moins chère au prix du jour parmi celles que le perso connaît, avec son coût, ses composants, combien tu peux en faire et un bouton pour l'ajouter à la file.",
