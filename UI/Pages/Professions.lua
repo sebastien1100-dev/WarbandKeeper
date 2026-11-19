@@ -1003,7 +1003,7 @@ local function Detail(page, parent)
     matsCard:SetWidth(MATS_W)
     matsCard:SetPoint("TOPRIGHT")
     matsCard:SetPoint("BOTTOMRIGHT")
-    -- jusqu'où compter les matériaux : 75, 150, 225, 300 ou tout le guide (retenu par métier)
+    -- jusqu'où compter les matériaux : 75, 150, 225 ou tout le guide (Max = 300, retenu par métier)
     local function targets()
         local ui = WK.DB.global.settings.ui
         ui.guideTarget = ui.guideTarget or {}
@@ -1011,10 +1011,10 @@ local function Detail(page, parent)
     end
     function tab:Target()
         local t = targets()[self.prof or ""]
-        if t == "max" or not t then return nil end
+        if t == "max" or not t or t >= 300 then return nil end -- 300 = bout du guide = Max
         return t
     end
-    local tgtSeg = UI:Segmented(matsCard, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } },
+    local tgtSeg = UI:Segmented(matsCard, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { "max", "Max" } },
         function(v)
             targets()[tab.prof or ""] = v
             if tab.lastC and tab.lastPr then tab:RefreshGuide(tab.lastC, tab.lastPr) end
@@ -1164,7 +1164,7 @@ local function Detail(page, parent)
         -- cible déjà atteinte : on passe au palier suivant
         if target and rank >= target then
             target = nil
-            for _, t in ipairs({ 75, 150, 225, 300 }) do if t > rank then target = t break end end
+            for _, t in ipairs({ 75, 150, 225 }) do if t > rank then target = t break end end
         end
         self.effTarget = target
         self.tgtSeg:Select(target or "max")
@@ -1683,7 +1683,7 @@ local function Settings(page, parent)
     tgtRow:SetPoint("TOPLEFT", 16, -158); tgtRow:SetPoint("RIGHT", -16, 0); tgtRow:SetHeight(32)
     local tgtLbl = UI:Text(tgtRow, 12); tgtLbl:SetPoint("TOPLEFT", 0, -2); tgtLbl:SetText("Palier visé du guide")
     local tgtDesc = UI:Text(tgtRow, 10, C.muted); tgtDesc:SetPoint("TOPLEFT", 0, -18); tgtDesc:SetText("Matériaux comptés jusque-là (guide, marchand).")
-    local tgtSeg2 = UI:Segmented(tgtRow, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } },
+    local tgtSeg2 = UI:Segmented(tgtRow, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { "max", "Max" } },
         function(v) targets()[tab.prof or ""] = v end, 24)
     tgtSeg2:SetPoint("TOPRIGHT", 0, -2)
     local mailRow = CreateFrame("Frame", nil, mine)
@@ -1807,7 +1807,8 @@ local function Settings(page, parent)
         tgtRow:SetShown(hasGuide); mailRow:SetShown(hasGuide)
         if hasGuide then
             tgtRow:ClearAllPoints(); tgtRow:SetPoint("TOPLEFT", 16, y); tgtRow:SetPoint("RIGHT", -16, 0)
-            tgtSeg2:Select(targets()[self.prof or ""] or "max")
+            local tv = targets()[self.prof or ""]
+            tgtSeg2:Select((tv == nil or tv == "max" or (tonumber(tv) or 0) >= 300) and "max" or tv)
             mailRow:ClearAllPoints(); mailRow:SetPoint("TOPLEFT", 16, y - 40); mailRow:SetPoint("RIGHT", -16, 0)
             y = y - 80
         end

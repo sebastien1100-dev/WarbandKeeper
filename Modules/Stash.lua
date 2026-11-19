@@ -63,7 +63,7 @@ function M:Needs()
             local guide = R:Guide(prof)
             if guide then
                 local target = targets[prof]
-                if type(target) ~= "number" then target = nil end -- « max » : jusqu'au bout du guide
+                if type(target) ~= "number" or target >= 300 then target = nil end -- « max » (ou 300) : jusqu'au bout du guide
                 local _, mats = R:GuidePlan(prof, rank, known, target)
                 local upTo = target or guideEnd(guide)
                 for _, m in ipairs(mats or {}) do

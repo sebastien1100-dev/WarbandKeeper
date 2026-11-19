@@ -4,7 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Panneau collé à la fenêtre du marchand : pour chaque métier du perso qui a un guide de montée,
--- les composants qui manquent jusqu'au palier choisi (75, 150, 225, 300 ou Max, le même que dans
+-- les composants qui manquent jusqu'au palier choisi (75, 150, 225 ou Max (300), le même que dans
 -- Métiers > guide : settings.ui.guideTarget[métier]), d'après Recipes:GuidePlan.
 -- Ce que ce marchand vend vient en premier, avec « Acheter » (la quantité qui manque) et
 -- « Tout acheter » ; le reste est compté en bas (HV, récolte, autre marchand).
@@ -23,7 +23,7 @@ local function targets()
 end
 local function targetOf(prof)
     local t = targets()[prof]
-    if t == "max" or not t then return nil end
+    if t == "max" or not t or t >= 300 then return nil end -- 300 = Max
     return t
 end
 
@@ -120,7 +120,7 @@ local function build()
         h:SetHeight(46)
         h.name = UI:Text(h, 12)
         h.name:SetPoint("TOPLEFT", 10, -4)
-        h.seg = UI:Segmented(h, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } }, function(v)
+        h.seg = UI:Segmented(h, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { "max", "Max" } }, function(v)
             targets()[h.prof] = v
             f:Refresh()
         end, 20)

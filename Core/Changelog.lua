@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.40.1", date = "19/11/2026",
+        fixed = {
+            "Métiers : le palier visé proposait « 300 » et « Max », qui reviennent au même. Il reste 75, 150, 225 et Max, dans le guide, les réglages des métiers et le panneau du marchand (un ancien choix « 300 » devient Max).",
+        },
+    },
+    {
         version = "1.40.0", date = "19/11/2026",
         changed = {
             "Donjons : la grille de tuiles est remplacée par une colonne à gauche, une ligne par donjon (niveaux en couleur, boss tués). Les donjons sont groupés selon le niveau du perso : pour ton niveau, bientôt, plus haut, déjà dépassés, raids. Clic sur un groupe pour le replier (retenu), recherche en haut.",
