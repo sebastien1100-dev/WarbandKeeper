@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.5.0"
+CLIENT_VERSION = "1.5.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -395,6 +395,32 @@ def _lua_value(it, tok):
         return tok
 
 
+_SCAN = re.compile(r'"(?:\\.|[^"\\])*"|--\[\[.*?\]\]|--[^\n]*|[{}]', re.S)
+_AFTER_KEY = re.compile(r'\s*\]\s*=\s*\{')
+
+
+def _top_key(text, key):
+    """Position de l'accolade ouvrante de WarbandKeeperDB[key] (clé au premier niveau seulement :
+    d'autres tables, profils par exemple, ont aussi une clé « characters »)."""
+    start = text.find("WarbandKeeperDB")
+    if start < 0:
+        return None
+    depth, want = 0, '"%s"' % key
+    for m in _SCAN.finditer(text, start):
+        tok = m.group(0)
+        if tok == "{":
+            depth += 1
+        elif tok == "}":
+            depth -= 1
+            if depth <= 0:
+                return None
+        elif depth == 1 and tok == want:
+            a = _AFTER_KEY.match(text, m.end())
+            if a:
+                return a.end() - 1
+    return None
+
+
 _chars_cache = {}
 
 
@@ -411,9 +437,9 @@ def read_characters(addons):
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
             text = f.read()
-        i = text.find('["characters"] = {')
-        if i >= 0:
-            it = _lua_tokens(text, text.index("{", i))
+        i = _top_key(text, "characters")
+        if i is not None:
+            it = _lua_tokens(text, i)
             chars = _lua_value(it, next(it))
             for key, c in (chars or {}).items():
                 if isinstance(c, dict):

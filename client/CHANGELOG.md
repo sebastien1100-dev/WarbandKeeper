@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.5.1 — 19/11/2026
+
+### Corrections
+- Accueil : la liste de tes persos était fausse (noms comme « Précision », aucun niveau, aucun or) : le client lisait une autre table « characters » des réglages (celle d'un profil). Il lit maintenant la bonne.
+
 ## 1.5.0 — 19/11/2026
 
 ### Ajouts

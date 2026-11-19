@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.47.4", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.1 (liste de tes persos corrigée sur l'accueil).",
+        },
+    },
+    {
         version = "1.47.3", date = "19/11/2026",
         changed = {
             "Options > Général : réglages rangés en onglets (Langue, Infobulles, Fenêtre) au lieu d'une longue page ; l'onglet choisi est retenu et la recherche ouvre le bon.",
