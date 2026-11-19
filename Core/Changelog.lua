@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.1", date = "19/11/2026",
+        changed = {
+            "Quêtes et Rares, carte du continent : elle est cadrée sur les terres (les zones du continent remplissent le cadre) au lieu de montrer tout le continent avec la mer autour ; les bulles sont plus espacées.",
+        },
+    },
+    {
         version = "1.76.0", date = "19/11/2026",
         changed = {
             "Pages Quêtes et Rares refaites : un bandeau de chiffres en haut (quêtes faites ou rares tués du perso avec une barre, quêtes à rendre avec leur XP et un clic pour guider, quêtes pour ton niveau, zone conseillée ; rares de ta zone, morts récentes, rares pas tués qui donnent une recette pour tes métiers).",

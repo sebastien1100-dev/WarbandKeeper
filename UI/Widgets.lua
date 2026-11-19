@@ -1427,14 +1427,28 @@ function UI:ZoneMap(parent)
             return
         end
         self.empty:Hide()
-        -- le continent entier, proportions gardées (cartes de continent ~ 3:2)
+        -- cadrage sur les terres : le rectangle qui englobe les zones du continent (plus une marge)
+        -- remplit le cadre, proportions gardées ; la carte déborde (coupée) plutôt que de montrer la mer
         local okL, layers = pcall(C_Map.GetMapArtLayers, cont)
         local L = okL and layers and layers[1]
         local ratio = L and L.layerWidth and L.layerHeight and (L.layerWidth / L.layerHeight) or 1.5
-        local w, h = AW, AW / ratio
-        if h > AH then h = AH; w = AH * ratio end
-        local x, y = (AW - w) / 2, (AH - h) / 2
-        local key = cont .. ":" .. math.floor(AW) .. "x" .. math.floor(AH)
+        local u0, u1, v0, v1 = 1, 0, 1, 0
+        for _, z in ipairs(self.zones or {}) do
+            if continentOf(z.map) == cont then
+                local r = rectOn(z.map, cont)
+                if r then u0, u1, v0, v1 = math.min(u0, r[1]), math.max(u1, r[2]), math.min(v0, r[3]), math.max(v1, r[4]) end
+            end
+        end
+        if u1 <= u0 or v1 <= v0 then u0, u1, v0, v1 = 0, 1, 0, 1 end
+        local pu, pv = (u1 - u0) * 0.04, (v1 - v0) * 0.04
+        u0, u1 = math.max(0, u0 - pu), math.min(1, u1 + pu)
+        v0, v1 = math.max(0, v0 - pv), math.min(1, v1 + pv)
+        -- largeur de la carte entière (px) pour que le cadrage tienne en largeur et en hauteur
+        local w = math.min(AW / (u1 - u0), AH * ratio / (v1 - v0), AW * 5)
+        local h = w / ratio
+        local x = AW / 2 - (u0 + u1) / 2 * w
+        local y = AH / 2 - (v0 + v1) / 2 * h
+        local key = cont .. ":" .. math.floor(AW) .. "x" .. math.floor(AH) .. ":" .. math.floor(w)
         if self.artKey ~= key then self.artKey = key; paintArt(cont, x, y, w, h) end
         self.shade:ClearAllPoints(); self.shade:SetAllPoints(self.area)
         -- bulles : d'abord les grosses, puis les étiquettes sans chevauchement (zone choisie, ta zone,
