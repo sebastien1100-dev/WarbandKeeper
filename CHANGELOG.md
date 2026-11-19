@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.42.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- En-tête : le bouton « Scan » est retiré ; le perso est relu tout seul (connexion, sacs, or, métiers).
+- Hôtel des ventes : l'onglet « Achat » s'appelle maintenant « Liste d'achat ».
+
 ## v1.42.0 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

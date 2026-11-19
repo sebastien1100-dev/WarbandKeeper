@@ -189,7 +189,7 @@ end
 ---------------------------------------------------------------------------
 -- Construction
 ---------------------------------------------------------------------------
-local TABS = { { "buy", "Achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
+local TABS = { { "buy", "Liste d'achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
 
 local function panelBox(parent, title)
     local b = CreateFrame("Frame", nil, parent)
@@ -1165,7 +1165,7 @@ local function build(host)
         if not self:IsShown() then return end
         local d = S:Data()
         self.scanInfo:SetText(d.last and string.format(T("dernier scan : %s"), date("%d/%m %H:%M", d.last)) or T("jamais scanné"))
-        local titles = { buy = "Achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
+        local titles = { buy = "Liste d'achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
         self.head:SetText(T(titles[self.tab] or ""))
         local v = self.views[self.tab]
         if v and v.Refresh then v:Refresh() end

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.42.1", date = "19/11/2026",
+        changed = {
+            "En-tête : le bouton « Scan » est retiré ; le perso est relu tout seul (connexion, sacs, or, métiers).",
+            "Hôtel des ventes : l'onglet « Achat » s'appelle maintenant « Liste d'achat ».",
+        },
+    },
+    {
         version = "1.42.0", date = "19/11/2026", restart = true,
         added = {
             "Trésorerie > Hôtel des ventes : nouvelle page qui regroupe tous les réglages de l'HV (source des prix, panneau et scan, prix relevés, vente, alertes de prix), avec ses pastilles (prix connus, listes d'achat, alertes).",

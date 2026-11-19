@@ -548,12 +548,10 @@ createWindow = function(self)
             prevIcon = ib
         end
     end
-    -- puis les boutons : Scan, et Éditer (mode édition, sur toutes les pages)
-    local scan = UI:Button(header, "Scan", nil, 28, "secondary", "refresh")
-    scan:SetPoint("RIGHT", prevIcon, "LEFT", -10, 0)
-    scan.tooltip = "Scanner ce personnage (sacs, or, métiers)."
+    -- puis le bouton Éditer (mode édition, sur toutes les pages) ; plus de bouton Scan : le perso est
+    -- relu tout seul (connexion, sacs, or, métiers)
     local editBtn = UI:Button(header, "Éditer", nil, 28, "primary")
-    editBtn:SetPoint("RIGHT", scan, "LEFT", -8, 0)
+    editBtn:SetPoint("RIGHT", prevIcon, "LEFT", -10, 0)
     editBtn.tooltip = "Placer et redimensionner les éléments à l'écran (aussi : /wk edit)."
     editBtn:SetScript("OnClick", function() UI:EnterEditMode() end)
     self.editBtn = editBtn
@@ -580,13 +578,6 @@ createWindow = function(self)
     end)
     upd:Hide()
     self.updBtn = upd
-    scan:SetScript("OnClick", function()
-        WK.modules.Characters:UpdateBasics()
-        WK.modules.Characters:UpdateMoney()
-        WK.modules.Inventory:ScanBags()
-        WK.modules.Professions:Scan()
-        UI:Refresh()
-    end)
 
     self.pageHost = CreateFrame("Frame", nil, f)
     -- Les pages sont élastiques : elles suivent la taille en direct (UI:OnResize).
