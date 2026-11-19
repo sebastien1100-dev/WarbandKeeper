@@ -658,7 +658,8 @@ local Fl = F()
 local prevStart, prevFinish = Fl.OnStart, Fl.OnFinish
 Fl.OnStart = function(...)
     if prevStart then prevStart(...) end
-    if cfg().statsAuto and cfg().stats ~= false then C_Timer.After(1, function() if onTaxi() then UI:ShowFlightStats() end end) end
+    -- réglage indépendant de « à la place de la carte » : il ouvre les statistiques même si M ouvre la carte
+    if cfg().statsAuto then C_Timer.After(1, function() if onTaxi() then UI:ShowFlightStats() end end) end
 end
 Fl.OnFinish = function(...)
     if prevFinish then prevFinish(...) end

@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.11 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- « Ouvrir les statistiques au décollage » ne marchait pas quand « Statistiques en vol à la place de la carte » était décoché. Les deux réglages sont maintenant indépendants : les statistiques s'ouvrent au décollage, et M ouvre quand même la carte.
+
 ## v1.76.10 — 19/11/2026
 
 _Un /reload suffit._
