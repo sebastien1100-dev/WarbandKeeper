@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.5"
+CLIENT_VERSION = "1.8.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1301,140 +1301,175 @@ def tline(parent, left, right, rightColor="muted"):
     return row
 
 
+def plural(n, one, many=None):
+    return "%d %s" % (n, one if n <= 1 else (many or one + "s"))
+
+
 @page("dash", "Tableau de bord", "▦")
 class DashPage(Page):
-    """Tuiles tirées du résumé que l'addon écrit à la déconnexion : or et sa courbe, dernière séance,
-    enchères, recharges, listes d'achat, Rangement et courrier."""
+    """Tiré du résumé que l'addon écrit à la déconnexion : quatre chiffres clés, la courbe de l'or
+    (7 / 30 / 90 jours) et « À surveiller », une liste triée par urgence. Tout tient dans la fenêtre fixe."""
+
+    RANGES = [(7, "7 j"), (30, "30 j"), (90, "90 j")]
 
     def __init__(self, app, parent):
         super().__init__(app, parent)
-        self.area = ScrollArea(self, bar=False)
-        self.area.pack(fill="both", expand=True)
-        self.foot = label(self, "", fg="dim", font="small")
-        self.foot.pack(anchor="w", pady=(6, 0))
-        self.mt = None
+        # sous-titre à côté du titre de la page
+        self.when = label(self, "", fg="dim", font="small")
+        self.when.place(in_=self, x=190, y=8)
+        self.body = tk.Frame(self, bg=C["bg"])
+        self.body.pack(fill="both", expand=True)
+        self.key = None
 
     def on_show(self):
-        self.fill()
+        self.fill(True)
 
     def on_state(self):
         self.fill()
 
     def fill(self, force=False):
         dash = read_dash(self.app.addons)
-        key = (id(dash), self.app.addons)
-        if key == self.mt and not force:
+        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30))
+        if key == self.key and not force:
             return
-        self.mt = key
-        host = self.area.inner
-        for w in host.winfo_children():
+        self.key = key
+        for w in self.body.winfo_children():
             w.destroy()
         if not isinstance(dash, dict):
-            label(host, "Rien à montrer pour l'instant : joue un perso avec l'addon 1.69 ou plus récent, puis déconnecte-toi "
-                        "(ou /reload) ; le tableau de bord se remplit avec ce que l'addon sait.", fg="muted", wraplength=480).pack(anchor="w")
-            self.foot.configure(text="")
+            self.when.configure(text="")
+            label(self.body, "Rien à montrer pour l'instant : joue un perso avec l'addon 1.69 ou plus récent, puis déconnecte-toi "
+                             "(ou /reload) ; le tableau de bord se remplit avec ce que l'addon sait.", fg="muted", wraplength=520).pack(anchor="w")
             return
-        grid = tk.Frame(host, bg=C["bg"])
-        grid.pack(fill="both", expand=True)
-        grid.columnconfigure(0, weight=1, uniform="t")
-        grid.columnconfigure(1, weight=1, uniform="t")
         now = time.time()
-        tiles = []
-
-        # Or du compte : total, évolution sur 7 jours, courbe sur 30 jours
+        self.when.configure(text="sauvegarde lue %s · déconnexion de %s" % (ago_text(dash.get("at")), dash.get("char") or "?"))
         gold = [int(v or 0) for v in lua_list(dash.get("gold"))]
-        t = tile(grid, "Or du compte", None)
-        cur = gold[-1] if gold else 0
-        label(t.body, money_text(cur), fg="warning", font="h1").pack(anchor="w")
-        if len(gold) > 7:
-            dv = cur - gold[-8]
-            label(t.body, "%s%s sur 7 jours" % ("+" if dv >= 0 else "-", money_text(abs(dv))), fg="positive" if dv >= 0 else "negative",
-                  font="small").pack(anchor="w")
-        cv = tk.Canvas(t.body, height=56, bg=C["surface"], highlightthickness=0)
-        cv.pack(fill="x", pady=(6, 0))
-
-        def draw(e, gold=gold, cv=cv):
-            cv.delete("all")
-            if len(gold) < 2:
-                return
-            lo, hi = min(gold), max(gold)
-            span = max(1, hi - lo)
-            w, h = e.width, e.height
-            pts = []
-            for i, v in enumerate(gold):
-                pts += [i * (w - 4) / (len(gold) - 1) + 2, h - 4 - (v - lo) / span * (h - 8)]
-            cv.create_line(*pts, fill=C["warning"], width=2, smooth=True)
-        cv.bind("<Configure>", draw)
-        tiles.append(t)
-
-        # Dernière séance
-        s = dash.get("session") or {}
-        t = tile(grid, "Dernière séance")
-        g = int(s.get("gold") or 0)
-        label(t.body, ("+" if g >= 0 else "-") + money_text(abs(g)), fg="positive" if g >= 0 else "negative", font="h1").pack(anchor="w")
-        dur = int(s.get("dur") or 0)
-        label(t.body, "%d h %02d · %s" % (dur // 3600, dur % 3600 // 60, s.get("char") or "?"), fg="muted", font="small").pack(anchor="w")
-        ah = int(s.get("ah") or 0)
-        tline(t.body, "Ventes HV", ("+" + money_text(ah)) if ah else "-", "warning" if ah else "dim")
-        tline(t.body, "Butin, quêtes et le reste", ("+" if g - ah >= 0 else "-") + money_text(abs(g - ah)))
-        tiles.append(t)
-
-        # Enchères
+        sess = dash.get("session") or {}
         auc = [a for a in lua_list(dash.get("auctions")) if isinstance(a, dict) and (a.get("exp") or 0) > now]
+        mail = [m for m in lua_list(dash.get("mail")) if isinstance(m, dict)]
+        chars = read_characters(self.app.addons)
+
+        # -- quatre chiffres clés
+        kp = tk.Frame(self.body, bg=C["bg"])
+        kp.pack(fill="x")
+        for i in range(4):
+            kp.columnconfigure(i, weight=1, uniform="k")
+
+        def kpi(col, title, value, color, sub, subColor="dim"):
+            c = Card(kp)
+            c.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 5, 0 if col == 3 else 5))
+            label(c.body, title, fg="muted", font="small").pack(anchor="w")
+            label(c.body, value, fg=color, font="h2").pack(anchor="w", pady=(1, 1))
+            label(c.body, sub, fg=subColor, font="small").pack(anchor="w")
+        cur = gold[-1] if gold else 0
+        dv = cur - gold[-8] if len(gold) > 7 else 0
+        kpi(0, "Or du compte", money_text(cur), "warning", "%s%s sur 7 jours" % ("+" if dv >= 0 else "-", money_text(abs(dv))),
+            "positive" if dv >= 0 else "negative")
+        g = int(sess.get("gold") or 0)
+        dur = int(sess.get("dur") or 0)
+        kpi(1, "Dernière séance", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
+            "%s · %s" % (("%d h %02d" % (dur // 3600, dur % 3600 // 60)) if dur >= 3600 else "%d min" % max(1, dur // 60), sess.get("char") or "?"))
         soon = [a for a in auc if (a.get("exp") or 0) <= now + 86400]
-        t = tile(grid, "Enchères", ("%d expirent" % len(soon)) if soon else None)
-        label(t.body, str(len(auc)), font="h1").pack(anchor="w")
-        label(t.body, "en vente sur %d perso%s (dernier passage à l'HV)" % (len({a.get("char") for a in auc}),
-                                                                           "s" if len({a.get("char") for a in auc}) > 1 else ""),
-              fg="muted", font="small").pack(anchor="w")
-        for a in auc[:3]:
-            tline(t.body, "%s x%d · %s" % (a.get("name"), a.get("qty") or 1, a.get("char")), until_text(a.get("exp")),
-                  "warning" if (a.get("exp") or 0) <= now + 86400 else "muted")
-        tiles.append(t)
+        kpi(2, "Enchères en vente", str(len(auc)), "text",
+            (plural(len(soon), "expire", "expirent") + " sous 24 h") if soon else ("aucune n'expire" if auc else "dernier passage à l'HV"),
+            "warning" if soon else "dim")
+        letters = sum(int(m.get("count") or 0) for m in mail)
+        first = min([m.get("exp") or 0 for m in mail if (m.get("exp") or 0) > now] or [0])
+        kpi(3, "Courrier à prendre", plural(letters, "lettre"), "text",
+            ("%s · la 1re %s" % (plural(len(mail), "perso"), until_text(first))) if mail else "rien en attente")
 
-        # Recharges de métier
-        t = tile(grid, "Recharges de métier")
+        # -- courbe de l'or et « À surveiller »
+        low = tk.Frame(self.body, bg=C["bg"])
+        low.pack(fill="both", expand=True, pady=(10, 0))
+        low.columnconfigure(0, weight=5, uniform="l")
+        low.columnconfigure(1, weight=4, uniform="l")
+        low.rowconfigure(0, weight=1)
+        ch = Card(low, "Or du compte")
+        ch.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        days = self.app.cfg.get("dashRange", 30)
+        seg = tk.Frame(ch.head, bg=C["surface"])
+        seg.pack(side="right")
+        for d, txt in self.RANGES:
+            b = label(seg, " %s " % txt, fg="text" if d == days else "muted", font="small", cursor="hand2")
+            b.configure(bg=C["surface2"] if d == days else C["surface"])
+            b.pack(side="left", padx=2)
+            b.bind("<Button-1>", lambda e, d=d: (self.app.cfg.__setitem__("dashRange", d), save_config(self.app.cfg), self.fill(True)))
+        pts = gold[-(days + 1):] if gold else []
+        cv = tk.Canvas(ch.body, height=150, bg=C["surface"], highlightthickness=0)
+        cv.pack(fill="both", expand=True, pady=(4, 6))
+
+        def draw(e, pts=pts, cv=cv):
+            cv.delete("all")
+            w, h = e.width, e.height
+            if len(pts) < 2:
+                cv.create_text(w / 2, h / 2, text="Pas encore assez de jours suivis.", fill=C["dim"], font=App.fonts["small"])
+                return
+            lo, hi = min(pts), max(pts)
+            span = max(1, hi - lo)
+            for f in (0.15, 0.5, 0.85):
+                cv.create_line(0, h * f, w, h * f, fill=C["border"])
+            cv.create_text(2, h * 0.15 - 8, text=money_text(hi), fill=C["dim"], font=App.fonts["small"], anchor="w")
+            cv.create_text(2, h * 0.85 - 8, text=money_text(lo), fill=C["dim"], font=App.fonts["small"], anchor="w")
+            xy = []
+            for i, v in enumerate(pts):
+                xy += [i * (w - 4) / (len(pts) - 1) + 2, h * 0.85 - (v - lo) / span * h * 0.7]
+            cv.create_polygon(*(xy + [w - 2, h, 2, h]), fill="#2a2416", outline="")
+            cv.create_line(*xy, fill=C["warning"], width=2, smooth=True)
+        cv.bind("<Configure>", draw)
+        foot = tk.Frame(ch.body, bg=C["surface"])
+        foot.pack(fill="x")
+        for k, v in (("Plus haut", money_text(max(pts) if pts else 0)), ("Ventes HV (séance)", money_text(sess.get("ah") or 0)),
+                     ("Persos", str(len(chars)))):
+            label(foot, k + " ", fg="muted", font="small").pack(side="left")
+            label(foot, v, font="smallb").pack(side="left", padx=(0, 14))
+
+        wc = Card(low, "À surveiller", "du plus urgent au moins urgent")
+        wc.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        rows = []  # (rang, couleur du point, texte, droite, couleur de droite)
+        for a in soon:
+            rows.append((1, C["warning"], "Enchère : %s x%d (%s)" % (a.get("name"), a.get("qty") or 1, a.get("char")), until_text(a.get("exp")), "warning"))
+        for m in mail:
+            left = (m.get("exp") or 0) - now
+            urgent = 0 < left < 3 * 86400
+            rows.append((0 if urgent else 3, C["negative"] if urgent else C["warning"],
+                         "Courrier de %s (%s)" % (m.get("char"), plural(int(m.get("count") or 0), "lettre")),
+                         ("expire " + until_text(m.get("exp"))) if left > 0 else "à prendre", "negative" if urgent else "warning"))
+        for x in [x for x in lua_list(dash.get("stash")) if isinstance(x, dict)]:
+            rows.append((2, C["accent"], "Rangement : %s de %s pour %s" % (plural(int(x.get("n") or 0), "lot"), x.get("from"), x.get("to")),
+                         "à envoyer", "accent"))
         cds = sorted([c for c in lua_list(dash.get("cds")) if isinstance(c, dict)], key=lambda c: c.get("readyAt") or 0)
-        if not cds:
-            label(t.body, "Aucune recharge suivie.", fg="dim", font="small").pack(anchor="w")
-        for c in cds[:5]:
+        for c in cds[:3]:
             ready = (c.get("readyAt") or 0) <= now
-            tline(t.body, "%s · %s" % (c.get("name"), c.get("char")), "prête" if ready else until_text(c.get("readyAt")),
-                  "positive" if ready else "muted")
-        tiles.append(t)
-
-        # Listes d'achat et file de fabrication
-        t = tile(grid, "Listes d'achat")
+            rows.append((2 if ready else 5, C["positive"] if ready else C["muted"], "%s · %s" % (c.get("name"), c.get("char")),
+                         "prête" if ready else until_text(c.get("readyAt")), "positive" if ready else "muted"))
+        for r in [r for r in lua_list(dash.get("rest")) if isinstance(r, dict) and r.get("full")][:2]:
+            rows.append((4, C["positive"], "Repos plein : %s" % r.get("char"), "150 %", "positive"))
         lists = [l for l in lua_list(dash.get("lists")) if isinstance(l, dict)]
-        if isinstance(dash.get("lists"), dict) and not lists:
-            lists = [v for v in dash["lists"].values() if isinstance(v, dict)]
-        for l in lists[:4]:
-            tline(t.body, str(l.get("name")), "%d manquent / %d" % (l.get("missing") or 0, l.get("need") or 0),
-                  "warning" if (l.get("missing") or 0) else "positive")
+        for l in lists[:2]:
+            short = int(l.get("short") or 0)
+            if short:
+                cost = int(l.get("cost") or 0)
+                rows.append((6, C["muted"], "Liste « %s » : %s" % (l.get("name"), plural(short, "objet manque", "objets manquent")),
+                             ("~ " + money_text(cost)) if cost else "prix inconnu", "muted"))
         q = dash.get("queue") or {}
         if q.get("n"):
-            tline(t.body, "File de fabrication", "%d recettes · %d composants manquants" % (q.get("n") or 0, q.get("missing") or 0))
-        if not lists and not q.get("n"):
-            label(t.body, "Aucune liste.", fg="dim", font="small").pack(anchor="w")
-        tiles.append(t)
-
-        # Rangement et courrier
-        st = [x for x in lua_list(dash.get("stash")) if isinstance(x, dict)]
-        t = tile(grid, "Rangement et courrier", ("%d envois" % sum(int(x.get("n") or 0) for x in st)) if st else None, C["accent"])
-        for x in st[:3]:
-            tline(t.body, "%s » %s" % (x.get("from"), x.get("to")), "%d lot%s" % (x.get("n") or 0, "s" if (x.get("n") or 0) > 1 else ""))
-        for m in [m for m in lua_list(dash.get("mail")) if isinstance(m, dict)][:3]:
-            urgent = 0 < (m.get("exp") or 0) - now < 3 * 86400
-            tline(t.body, "Courrier · %s (%d)" % (m.get("char"), m.get("count") or 0),
-                  money_text(m.get("money")) if m.get("money") else until_text(m.get("exp")), "negative" if urgent else "warning")
-        if not st and not lua_list(dash.get("mail")):
-            label(t.body, "Rien en attente.", fg="dim", font="small").pack(anchor="w")
-        tiles.append(t)
-
-        for i, t in enumerate(tiles):
-            t.grid(row=i // 2, column=i % 2, sticky="nsew", padx=(0 if i % 2 == 0 else 6, 6 if i % 2 == 0 else 0), pady=(0, 10))
-        self.foot.configure(text="Sauvegarde lue : %s (déconnexion de %s). Elle est réécrite à chaque déconnexion ou /reload."
-                                 % (ago_text(dash.get("at")), dash.get("char") or "?"))
+            rows.append((6, C["muted"], "File de fabrication : %s" % plural(int(q.get("n") or 0), "recette"),
+                         plural(int(q.get("missing") or 0), "composant manquant", "composants manquants"), "muted"))
+        if not cds:
+            rows.append((9, C["dim"], "Recharges de métier", "aucune suivie", "dim"))
+        if not auc:
+            rows.append((9, C["dim"], "Enchères", "rien en vente", "dim"))
+        rows.sort(key=lambda r: r[0])
+        for _, col, txt, right, rcol in rows[:9]:
+            row = tk.Frame(wc.body, bg=C["surface"])
+            row.pack(fill="x", pady=3)
+            dot = tk.Canvas(row, width=10, height=10, bg=C["surface"], highlightthickness=0)
+            dot.create_oval(1, 1, 9, 9, fill=col, outline="")
+            dot.pack(side="left", padx=(0, 8))
+            label(row, right, fg=rcol, font="small").pack(side="right", padx=(8, 0))
+            lt = label(row, txt, font="small")
+            lt.pack(side="left", fill="x", expand=True)
+        if len(rows) > 9:
+            label(wc.body, "+ %d de plus" % (len(rows) - 9), fg="dim", font="small").pack(anchor="w", pady=(4, 0))
 
 
 class NotifyPanel:
@@ -1980,9 +2015,10 @@ class App:
         self.root.configure(bg=C["bg"])
         # taille par défaut : tout le Tableau de bord (six tuiles) et les Réglages visibles sans agrandir,
         # bornée à l'écran (barre des tâches comprise)
+        # fenêtre fixe : chaque page tient dans 1000 × 600 sans défiler
         w, h = self.default_size()
         self.root.geometry("%dx%d" % (w, h))
-        self.root.minsize(min(900, w), min(600, h))
+        self.root.resizable(False, False)
         self.setup_fonts()
         self.set_icon()
         self.cfg = load_config()
@@ -2109,7 +2145,7 @@ class App:
         import ctypes
         return ctypes.windll.user32.GetParent(self.root.winfo_id())
 
-    DEFAULT_W, DEFAULT_H = 1100, 760
+    DEFAULT_W, DEFAULT_H = 1000, 600
 
     def default_size(self):
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -2158,11 +2194,10 @@ class App:
             self.chromeBtns[key] = b
             return b
         btn("min", self.minimize, C["hover"])
-        btn("max", self.toggle_max, C["hover"])
         btn("close", root.destroy, "#c42b1c")
         # glisser : le haut de la fenêtre et la colonne de gauche ; double-clic en haut : agrandir
         strip = tk.Frame(root, bg=C["bg"], height=14, cursor="fleur")
-        strip.place(x=220, y=0, relwidth=1.0, width=-(220 + 150))
+        strip.place(x=220, y=0, relwidth=1.0, width=-(220 + 100))
         drag = {}
 
         def start(e):
@@ -2175,27 +2210,7 @@ class App:
         for wdg in (strip, self.side, self.brand) + tuple(self.brand.winfo_children()):
             wdg.bind("<ButtonPress-1>", start, add="+")
             wdg.bind("<B1-Motion>", move, add="+")
-        strip.bind("<Double-Button-1>", lambda e: self.toggle_max())
-        # poignée de redimensionnement (coin bas droit)
-        grip = tk.Canvas(root, width=14, height=14, bg=C["bg"], highlightthickness=0, cursor="size_nw_se")
-        for i in range(3):
-            o = 4 + i * 4
-            grip.create_line(13, o, o, 13, fill=C["dim"])
-        grip.place(relx=1.0, rely=1.0, x=-2, y=-2, anchor="se")
-        size = {}
-
-        def gstart(e):
-            size["w"], size["h"], size["x"], size["y"] = root.winfo_width(), root.winfo_height(), e.x_root, e.y_root
-
-        def gmove(e):
-            if self.maxed or "w" not in size:
-                return
-            nw = max(680, size["w"] + e.x_root - size["x"])
-            nh = max(420, size["h"] + e.y_root - size["y"])
-            root.geometry("%dx%d" % (nw, nh))
-        grip.bind("<ButtonPress-1>", gstart)
-        grip.bind("<B1-Motion>", gmove)
-        self.grip = grip
+        # fenêtre fixe : ni agrandir ni redimensionner
 
     def minimize(self):
         if not getattr(self, "frameless", False):
@@ -2227,8 +2242,8 @@ class App:
                 pass
             root.geometry("%dx%d+%d+%d" % (w, h, x, y))
             self.maxed = True
-        self.chromeBtns["max"].configure(text=self.glyph["restore" if self.maxed else "max"])
-        self.grip.place_forget() if self.maxed else self.grip.place(relx=1.0, rely=1.0, x=-2, y=-2, anchor="se")
+        if "max" in self.chromeBtns:
+            self.chromeBtns["max"].configure(text=self.glyph["restore" if self.maxed else "max"])
 
     def show(self, key):
         self.current = key

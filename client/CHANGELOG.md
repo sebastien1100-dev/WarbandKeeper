@@ -3,6 +3,16 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.0 — 19/11/2026
+
+### Modifications
+- Tableau de bord refait : quatre chiffres clés en haut (or du compte, dernière séance, enchères en vente, courrier à prendre), la courbe de l'or à gauche (7, 30 ou 90 jours, plus haut, ventes HV de la séance, nombre de persos) et « À surveiller » à droite, une seule liste triée par urgence (enchères qui expirent, courrier, Rangement, recharges, repos plein, listes d'achat, file de fabrication).
+- Fenêtre fixe de 1000 × 600 (réduite sur un petit écran) : tout se voit sans défiler ; plus de bouton agrandir ni de poignée de redimensionnement.
+
+### Corrections
+- « 1 envois » : les pluriels sont justes.
+- Listes d'achat : « 6219 manquent / 6251 » comptait des unités ; c'est maintenant le nombre d'objets qui manquent et leur coût estimé à l'HV (addon 1.71 ou plus récent).
+
 ## 1.7.5 — 19/11/2026
 
 ### Modifications

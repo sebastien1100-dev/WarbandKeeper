@@ -6,11 +6,12 @@ local M = WK:NewModule("ClientDash")
 -- résumé, sans refaire les calculs de l'addon. Hors profils ; toutes les dates en secondes (time()).
 --   WK.DB.global.clientDash = {
 --     at, char,                               -- quand et sur quel perso
---     gold = { or du compte, 31 jours, du plus ancien à aujourd'hui },
+--     gold = { or du compte, 91 jours, du plus ancien à aujourd'hui },
 --     session = { char, start, dur, gold, ah },
 --     auctions = { { char, name, qty, exp } },  -- enchères vues au dernier passage à l'HV
 --     cds = { { char, name, readyAt } },        -- recharges de métier
---     lists = { { name, need, missing } },      -- listes d'achat (objets voulus, objets qui manquent)
+--     lists = { { name, need, missing, items, short, cost } }, -- listes d'achat : unités voulues / manquantes,
+--                                               -- objets différents, objets qui manquent encore, coût estimé (HV)
 --     queue = { n, missing },                   -- file de fabrication
 --     stash = { { from, to, n } },              -- envois du Rangement en attente
 --     mail = { { char, count, money, exp } },   -- courrier non pris
@@ -36,7 +37,7 @@ function M:Build()
     -- or du compte, un point par jour
     local S = WK.modules.Statistics
     d.gold = {}
-    for i = 30, 0, -1 do
+    for i = 90, 0, -1 do
         local ok, v = pcall(S.AccountGoldAt, S, now - i * DAY)
         table.insert(d.gold, ok and math.floor(v or 0) or 0)
     end
@@ -70,13 +71,20 @@ function M:Build()
     local A = WK.modules.AHScan
     local okL, _, lists = pcall(A.Lists, A)
     for lname, l in pairs(okL and lists or {}) do
-        local need, missing = 0, 0
+        local need, missing, items, short, cost = 0, 0, 0, 0, 0
         for _, it in ipairs(l.items or {}) do
+            items = items + 1
             need = need + (it[2] or 0)
             local okH, have = pcall(A.Have, A, it[1])
-            missing = missing + math.max(0, (it[2] or 0) - (okH and have or 0))
+            local miss = math.max(0, (it[2] or 0) - (okH and have or 0))
+            missing = missing + miss
+            if miss > 0 then
+                short = short + 1
+                local okP, price = pcall(A.Price, A, it[1])
+                if okP and type(price) == "number" then cost = cost + price * miss end
+            end
         end
-        table.insert(d.lists, { name = lname, need = need, missing = missing })
+        table.insert(d.lists, { name = lname, need = need, missing = missing, items = items, short = short, cost = math.floor(cost) })
     end
     local okQ, q = pcall(PH.Queue, PH)
     if okQ then

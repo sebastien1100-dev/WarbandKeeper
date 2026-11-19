@@ -60,7 +60,7 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 
 ## Résumé pour le client PC
 
-`Modules/ClientDash.lua` : `ClientDash:Build()` à `PLAYER_LOGOUT` (déconnexion et /reload) écrit `WK.DB.global.clientDash` (or du compte sur 31 jours, séance, enchères `c.auctionsSeen` relevées par `Modules/AHSell.lua`, recharges, listes d'achat, file, Rangement, courrier, repos ; dates en secondes). Le client (`read_dash`, page `DashPage`, `due_notifications`, `notify_windows` par PowerShell, réglages `notify` / `notified`) ne lit que ce résumé : un nouveau chiffre du tableau de bord s'ajoute d'abord ici.
+`Modules/ClientDash.lua` : `ClientDash:Build()` à `PLAYER_LOGOUT` (déconnexion et /reload) écrit `WK.DB.global.clientDash` (or du compte sur 91 jours, listes d'achat en objets manquants + coût, séance, enchères `c.auctionsSeen` relevées par `Modules/AHSell.lua`, recharges, listes d'achat, file, Rangement, courrier, repos ; dates en secondes). Le client (fenêtre fixe 1000 × 600 : chaque page doit y tenir sans défiler ; `read_dash`, page `DashPage` : quatre chiffres clés, courbe 7/30/90 j, « À surveiller » trié par urgence, `due_notifications`, `notify_windows` par PowerShell, réglages `notify` / `notified`) ne lit que ce résumé : un nouveau chiffre du tableau de bord s'ajoute d'abord ici.
 
 ## Données Everloot
 

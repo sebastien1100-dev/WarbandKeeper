@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.71.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Client PC : le résumé écrit à la déconnexion garde la courbe de l'or sur 90 jours et compte les listes d'achat en objets qui manquent avec leur coût estimé à l'HV (au lieu des unités). Va avec le client PC 1.8.0 et son tableau de bord refait.
+
 ## v1.70.5 — 19/11/2026
 
 _Un /reload suffit._
