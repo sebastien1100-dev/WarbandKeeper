@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.8 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte d'Azeroth, calque Navires : les traversées d'un continent à l'autre partaient en zigzag vers des côtes sans quai (le « saut » de continent du jeu). Chaque traversée est maintenant un arc net d'un quai à l'autre, tracé une seule fois pour l'aller et le retour.
+
 ## v1.77.7 — 19/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.8", date = "19/11/2026",
+        fixed = {
+            "Carte d'Azeroth, calque Navires : les traversées d'un continent à l'autre partaient en zigzag vers des côtes sans quai (le « saut » de continent du jeu). Chaque traversée est maintenant un arc net d'un quai à l'autre, tracé une seule fois pour l'aller et le retour.",
+        },
+    },
+    {
         version = "1.77.7", date = "19/11/2026",
         fixed = {
             "Carte, calque Navires : on voyait les deux quais d'une ligne mais pas le trajet entre eux tant que tu ne l'avais pas pris une fois. Toutes les lignes sont maintenant tracées (plus pâles si tu ne les as jamais prises).",
