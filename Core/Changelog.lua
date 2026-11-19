@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.78.2", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : cliquer dessus ne lançait rien. Il lance maintenant le sort par une macro « /cast » sur le joueur choisi, et ne vise plus le joueur survolé (il n'est plus survolé quand la souris arrive sur le bouton). /wk buff montre la macro posée et le dernier clic.",
+        },
+    },
+    {
         version = "1.78.1", date = "19/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : les plaques de nom étaient bien à l'écran mais leurs joueurs n'étaient pas lus (le champ utilisé n'existe pas sur WoW Forever). Les joueurs des plaques sont maintenant lus par leur unité (nameplate1 à 40) ; /wk buff dit combien d'unités et de joueurs il en tire.",

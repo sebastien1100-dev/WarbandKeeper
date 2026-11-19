@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.78.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton « Buffer le suivant » : cliquer dessus ne lançait rien. Il lance maintenant le sort par une macro « /cast » sur le joueur choisi, et ne vise plus le joueur survolé (il n'est plus survolé quand la souris arrive sur le bouton). /wk buff montre la macro posée et le dernier clic.
+
 ## v1.78.1 — 19/11/2026
 
 _Un /reload suffit._

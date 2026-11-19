@@ -104,7 +104,8 @@ end
 local function candidates()
     local c = cfg() or {}
     -- toi, puis ta cible, le joueur survolé et ta focalisation (marche même sans plaques de nom)
-    local units, seen, out = { "player", "target", "mouseover", "focus" }, {}, {}
+    -- (pas « mouseover » : le joueur survolé disparaît dès que la souris va sur le bouton)
+    local units, seen, out = { "player", "target", "focus" }, {}, {}
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
@@ -141,7 +142,8 @@ local function build()
     btn:SetFrameStrata("MEDIUM")
     btn:SetClampedToScreen(true)
     if btn.RegisterForClicks then btn:RegisterForClicks("AnyUp", "AnyDown") end
-    btn:SetAttribute("type", "spell")
+    -- macro « /cast [@unité] sort » : le jeu résout le nom et l'unité au moment du clic
+    btn:SetAttribute("type", "macro")
     btn.edge = UI:Rounded(btn, 11, 0, "BACKGROUND", 1)
     btn.icon = btn:CreateTexture(nil, "ARTWORK")
     btn.icon:SetPoint("TOPLEFT", 3, -3); btn.icon:SetPoint("BOTTOMRIGHT", -3, 3)
@@ -169,6 +171,11 @@ local function build()
         GameTooltip:Show()
     end)
     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    btn:HookScript("PostClick", function(s, button, down)
+        local e = list and list[1]
+        UI.buffLastClick = { at = GetTime(), button = button, down = down, macro = s:GetAttribute("macrotext"),
+            unit = e and e.unit, who = e and e.unit and UnitName(e.unit), exists = e and e.unit and UnitExists(e.unit) }
+    end)
     btn:HookScript("PostClick", function() C_Timer.After(0.4, function() UI:RefreshBuffButton() end) end)
     -- liseré sur la plaque de nom du joueur visé
     mark = CreateFrame("Frame", nil, UIParent)
@@ -242,8 +249,7 @@ function UI:RefreshBuffButton()
     list = shouldShow() and candidates() or {}
     local e = list[1]
     if e then
-        btn:SetAttribute("spell", e.spell)
-        btn:SetAttribute("unit", e.unit)
+        btn:SetAttribute("macrotext", "/cast [@" .. e.unit .. ",help,nodead] " .. e.spell)
         btn.paint(spellIcon(e.id), #list)
         btn:Show()
         -- plaque de nom : le jeu refuse ici les unités de groupe (party1, raid3…) ; on prend l'unité de plaque
@@ -329,9 +335,14 @@ function UI:BuffDiag()
     table.insert(out, string.format("en combat : %s · monture : %s (permis : %s) · instance : %s (permis : %s) · mort : %s · JcJ : %s",
         yn(inCombat()), yn(IsMounted and IsMounted()), yn(c and c.buffMounted), yn(inInst), yn(c and c.buffInstance),
         yn(UnitIsDeadOrGhost("player")), yn(UnitIsPVP and UnitIsPVP("player"))))
-    table.insert(out, "affichage permis : " .. yn(shouldShow()) .. " · bouton : " .. yn(btn and btn:IsShown()))
+    table.insert(out, "affichage permis : " .. yn(shouldShow()) .. " · bouton : " .. yn(btn and btn:IsShown())
+        .. (btn and (" · macro : " .. tostring(btn:GetAttribute("macrotext"))) or ""))
+    local lc = UI.buffLastClick
+    table.insert(out, lc and string.format("dernier clic : il y a %ds (%s, %s) · %s · cible %s (%s)",
+        math.floor(GetTime() - lc.at), tostring(lc.button), lc.down and "appui" or "relâché", tostring(lc.macro),
+        tostring(lc.who or lc.unit), lc.exists and "visible" or "introuvable") or "dernier clic : aucun depuis le chargement")
     -- joueurs vus, avec la raison quand ils sont écartés
-    local units = { "player", "target", "mouseover", "focus" }
+    local units = { "player", "target", "focus" }
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then for i = 1, 4 do table.insert(units, "party" .. i) end end
     local nplates = C_NamePlate and C_NamePlate.GetNamePlates and #(C_NamePlate.GetNamePlates() or {}) or 0
     local before = #units
