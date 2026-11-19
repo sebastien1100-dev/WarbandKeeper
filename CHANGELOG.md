@@ -60,6 +60,7 @@ _Prévu, pas encore commencé._
 - **Gain d'un rang** (basse) — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
 - **Grimoires de démons** (basse) — Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard).
 - **Réticule au centre** (basse) — Pour le combat à la souris, d'une autre couleur hors de portée.
+- **Salut choisi par classe** (basse) — Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu.
 
 ### Donjons et quêtes
 - **Camps d'objectifs des quêtes** (haute) — D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans).
@@ -83,6 +84,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.65.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Paladin > Bénédictions : un tank (guerrier ou druide marqué tank dans le groupe) reçoit Rois plutôt que Puissance quand aucun autre paladin ne la donne déjà ; sa ligne s'affiche à part dans la barre (« · tank »).
+- Paladin > Bénédictions : Salut collectif. Le Salut se cumule avec la bénédiction de classe : une ligne « Salut » à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks. Se coupe dans les réglages des bénédictions.
+
+### Modifications
+- Paladin > Bénédictions : la répartition automatique suit maintenant les priorités de WoW Forever. Puissance puis Rois pour les guerriers, voleurs et chasseurs ; Rois puis Sagesse pour les mages et démonistes ; Sagesse puis Rois pour les prêtres, chamans, paladins et druides. Le Sanctuaire (supprimé) et le Salut ne sont plus choisis d'office.
 
 ## v1.64.4 — 19/11/2026
 

@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.65.0", date = "19/11/2026",
+        changed = {
+            "Paladin > Bénédictions : la répartition automatique suit maintenant les priorités de WoW Forever. Puissance puis Rois pour les guerriers, voleurs et chasseurs ; Rois puis Sagesse pour les mages et démonistes ; Sagesse puis Rois pour les prêtres, chamans, paladins et druides. Le Sanctuaire (supprimé) et le Salut ne sont plus choisis d'office.",
+        },
+        added = {
+            "Paladin > Bénédictions : un tank (guerrier ou druide marqué tank dans le groupe) reçoit Rois plutôt que Puissance quand aucun autre paladin ne la donne déjà ; sa ligne s'affiche à part dans la barre (« · tank »).",
+            "Paladin > Bénédictions : Salut collectif. Le Salut se cumule avec la bénédiction de classe : une ligne « Salut » à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks. Se coupe dans les réglages des bénédictions.",
+        },
+    },
+    {
         version = "1.64.4", date = "19/11/2026",
         fixed = {
             "Paladin > Bénédictions : cliquer une case du tableau ne changeait rien quand l'addon ne voyait qu'une bénédiction apprise (le jeu remplace parfois le rang 1 par un rang supérieur). Le clic fait maintenant défiler toutes les bénédictions puis « aucune » ; une bénédiction pas encore apprise est marquée « pas apprise ». Les bénédictions connues sont aussi mieux reconnues (par leur nom).",
@@ -3618,6 +3628,7 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
+    { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 1, theme = "ui", title = "Boîte aux lettres refaite", text = "Notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
     { prio = 2, theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },

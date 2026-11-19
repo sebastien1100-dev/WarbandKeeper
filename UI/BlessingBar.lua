@@ -43,6 +43,12 @@ local function sealInfo()
         if name and names[name] then return name, WK.modules.QoL.Readable(d.expirationTime) end
     end
 end
+-- libellé d'une ligne de la barre : joueur à part, Salut, classe (tank)
+local function rowLabel(d)
+    if d.except then return firstName(d.except) .. " *" end
+    if d.salut then return T("Salut") end
+    return className(d.class) .. (d.tank and (" · " .. T("tank")) or "")
+end
 
 ---------------------------------------------------------------------------
 -- Barre à l'écran
@@ -81,7 +87,7 @@ local function build()
         r:SetScript("OnEnter", function(s)
             if not s.data then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            GameTooltip:AddLine((s.data.except and firstName(s.data.except) or className(s.data.class)) .. " · " .. (B():Name(s.data.b) or "?"), 1, 1, 1)
+            GameTooltip:AddLine(rowLabel(s.data) .. " · " .. (B():Name(s.data.b) or "?"), 1, 1, 1)
             for _, m in ipairs(s.data.members) do
                 local txt = m.dead and T("mort ou absent") or (m.left and (m.left == math.huge and T("sans fin") or short(m.left)) or T("sans"))
                 local col = m.dead and C.dim or (m.left and (m.left < 300 and C.warning or C.positive) or C.negative)
@@ -105,8 +111,8 @@ local function build()
             if d and r:IsShown() then
                 local id = B().BLESS[d.b] and B().BLESS[d.b][1]
                 r.icon:SetTexture(id and B().Icon(id))
-                r.name:SetText(d.except and (firstName(d.except) .. " *") or className(d.class))
-                r.name:SetTextColor(unpack(classColor(d.class)))
+                r.name:SetText(rowLabel(d))
+                r.name:SetTextColor(unpack(d.salut and C.text or classColor(d.class)))
                 r.miss:SetShown(d.missing > 0)
                 if d.missing > 0 then r.miss:Set(string.format(T("%d sans"), d.missing), C.negative) end
                 local soon = d.min and d.min < 300
@@ -168,10 +174,11 @@ function UI:RefreshBlessBar()
                 if on then
                     local M = B()
                     local demo = {
-                        { class = "WARRIOR", b = 3, missing = 0, min = 3120, members = {} },
+                        { class = "WARRIOR", b = 2, missing = 0, min = 3120, members = {} },
                         { class = "PRIEST", b = 1, missing = 2, members = {} },
                         { class = "ROGUE", b = 2, missing = 0, min = 180, members = {} },
                         { class = "SHAMAN", b = 1, missing = 0, min = 2460, members = {} },
+                        { b = 4, salut = true, missing = 1, members = {} },
                     }
                     for i, r in ipairs(bar.rows) do r:SetShown(i <= #demo); r:SetAttribute("unit1", nil); r:SetAttribute("spell1", nil) end
                     bar:SetHeight(44 + #demo * (ROWH + 2) + 4)
@@ -214,13 +221,15 @@ local MAXP = 6
 function UI:BuildBlessingCards(card, toggle, dyn)
     local M = B()
     -- réglages
-    local sc = card("Bénédictions", 40 + 3 * 46 + 8, "barre à l'écran et répartition entre paladins")
+    local sc = card("Bénédictions", 40 + 4 * 46 + 8, "barre à l'écran et répartition entre paladins")
     UI:SettingRow(sc, -40, "Barre des bénédictions", "Se place en mode édition. Une ligne par classe du groupe : ta bénédiction, le temps restant, qui n'en a pas ; clic = bénir le suivant.",
         toggle(sc, function() return M:Config().bar ~= false end, function(v) M:Config().bar = v; UI:RefreshBlessBar() end), 80)
     local mode = UI:Segmented(sc, { { "auto", "Automatique" }, { "hand", "À la main" } }, function(v) M:SetMode(v) end, 26)
-    UI:SettingRow(sc, -86, "Répartition", "Automatique : chaque paladin prend une bénédiction que les autres n'ont pas (Rois, Sagesse, Puissance…). Compatible avec les paladins sous PallyPower.", mode, 230)
+    UI:SettingRow(sc, -86, "Répartition", "Automatique : Puissance puis Rois pour guerriers, voleurs et chasseurs ; Rois puis Sagesse pour mages et démonistes ; Sagesse puis Rois pour les soigneurs et le mana ; Rois pour les tanks. Chaque paladin prend ce que les autres n'ont pas. Compatible avec PallyPower.", mode, 230)
     UI:SettingRow(sc, -132, "Les autres peuvent changer ma ligne", "Sinon, seul le chef du groupe (ou ses assistants) le peut.",
         toggle(sc, function() return M:Me().free end, function(v) M:SetFree(v) end), 80)
+    UI:SettingRow(sc, -178, "Salut collectif", "Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks.",
+        toggle(sc, function() return M:Config().salut ~= false end, function(v) M:Config().salut = v; UI:RefreshBlessBar() end), 80)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 
     -- tableau (version « planning ») : les classes en lignes (toutes, grisées si absentes du groupe), puis

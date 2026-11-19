@@ -3386,4 +3386,8 @@ WK.Locales.enUS.text = {
     ["Clic : bénédiction suivante · clic droit : aucune"] = "Click: next blessing · right-click: none",
     ["%d paladins dans le groupe"] = "%d paladins in the group",
     ["pas apprise"] = "not learned",
+    ["Salut"] = "Salvation",
+    ["Salut collectif"] = "Group Salvation",
+    ["Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks."] = "Salvation stacks with the class blessing: a separate bar row for warriors, rogues, hunters, mages and warlocks, never tanks.",
+    ["Automatique : Puissance puis Rois pour guerriers, voleurs et chasseurs ; Rois puis Sagesse pour mages et démonistes ; Sagesse puis Rois pour les soigneurs et le mana ; Rois pour les tanks. Chaque paladin prend ce que les autres n'ont pas. Compatible avec PallyPower."] = "Automatic: Might then Kings for warriors, rogues and hunters; Kings then Wisdom for mages and warlocks; Wisdom then Kings for healers and mana users; Kings for tanks. Each paladin takes what the others don't. Works with PallyPower.",
 }

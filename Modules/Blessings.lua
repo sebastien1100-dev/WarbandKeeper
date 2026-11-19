@@ -31,11 +31,19 @@ M.AURAS = { 465, 7294, 19746, 19876, 19888, 19891, 20218 }
 M.CLASSES = { "WARRIOR", "ROGUE", "PRIEST", "DRUID", "PALADIN", "HUNTER", "MAGE", "WARLOCK", "SHAMAN" }
 M.CLASS_ID = {}
 for i, c in ipairs(M.CLASSES) do M.CLASS_ID[c] = i end
--- ordre de préférence par classe pour la répartition automatique (n° de bénédiction)
+-- ordre de préférence par classe pour la répartition automatique (n° de bénédiction). Sur WoW Forever le
+-- Sanctuaire n'existe plus et le Salut se cumule avec une autre bénédiction : ni l'un ni l'autre n'entre ici.
+--   1 paladin : la 1re ; un 2e paladin prend la 2e, etc.
 local PRIO = {
-    WARRIOR = { 2, 3, 5, 6, 4, 1 }, ROGUE = { 2, 3, 4, 5, 6, 1 }, HUNTER = { 2, 1, 3, 4, 5, 6 },
-    DEFAULT = { 1, 3, 4, 5, 6, 2 },
+    WARRIOR = { 2, 3, 1, 5 }, ROGUE = { 2, 3, 1, 5 }, HUNTER = { 2, 3, 1, 5 },
+    MAGE = { 3, 1, 2, 5 }, WARLOCK = { 3, 1, 2, 5 },
+    PRIEST = { 1, 3, 2, 5 }, SHAMAN = { 1, 3, 2, 5 }, PALADIN = { 1, 3, 2, 5 }, DRUID = { 1, 3, 2, 5 },
+    DEFAULT = { 1, 3, 2, 5 },
+    TANK = { 3, 2, 1, 5 }, -- guerrier ou druide qui tanke : Rois d'abord
 }
+M.PRIO = PRIO
+-- classes qui reçoivent le Salut (jamais les tanks)
+M.SALUT = { WARRIOR = true, ROGUE = true, HUNTER = true, MAGE = true, WARLOCK = true }
 local AURA_PRIO = { 1, 2, 3, 6, 5, 4, 7 }
 
 local function readable(v) return WK.modules.QoL.Readable(v) end
@@ -63,6 +71,7 @@ function M:Config()
     g.blessings = g.blessings or {}
     local d = g.blessings
     if d.bar == nil then d.bar = true end
+    if d.salut == nil then d.salut = true end
     d.chars = d.chars or {}
     return d
 end
@@ -240,11 +249,36 @@ function M:ForClass(class)
     local b = ci and self:Me().mine[ci]
     if b and b > 0 and self:Known(b) then return b end
 end
+-- vrai si je donne déjà cette bénédiction à une classe (alors pas de ligne Salut à part)
+function M:ForClassUses(b)
+    for _, v in pairs(self:Me().mine) do if v == b then return true end end
+    return false
+end
+local function isTank(unit)
+    if not UnitGroupRolesAssigned then return false end
+    local ok, r = pcall(UnitGroupRolesAssigned, unit)
+    return ok and readable(r) == "TANK"
+end
+M.IsTank = isTank
 function M:ForUnit(unit)
     local name = fullName(unit)
     local x = name and self:Me().except[name]
     if x and x.b and x.b > 0 and self:Known(x.b) then return x.b end
-    return self:ForClass(select(2, UnitClass(unit)))
+    local cl = select(2, UnitClass(unit))
+    local b = self:ForClass(cl)
+    -- un tank prend Rois si aucun autre paladin ne la donne déjà à sa classe
+    if b and isTank(unit) then
+        local want = PRIO.TANK[1]
+        local ci = self.CLASS_ID[cl or ""]
+        if b ~= want and ci and self:Known(want) then
+            local covered = false
+            for _, e in pairs(pallys) do
+                if not e.me and e.assign and e.assign[ci] == want then covered = true end
+            end
+            if not covered then return want, true end
+        end
+    end
+    return b
 end
 
 ---------------------------------------------------------------------------
@@ -294,17 +328,20 @@ end
 function M:Status()
     local rows, byClass = {}, {}
     local c = self:Me()
+    -- le Salut n'est pas affecté par classe : une ligne à part, pour qui le connaît
+    local salut = (self:Config().salut ~= false and self:Known(4) and not self:ForClassUses(4))
+        and { b = 4, salut = true, members = {}, missing = 0 } or nil
     for _, u in ipairs(groupUnits()) do
         if UnitExists(u) and UnitIsPlayer(u) then
             local name = fullName(u)
             local cl = select(2, UnitClass(u))
-            local b = self:ForUnit(u)
+            local b, tank = self:ForUnit(u)
             if name and cl and b then
                 local ex = c.except[name] ~= nil
-                local key = ex and ("x:" .. name) or cl
+                local key = ex and ("x:" .. name) or (cl .. ":" .. b)
                 local r = byClass[key]
                 if not r then
-                    r = { class = cl, b = b, members = {}, missing = 0, except = ex and name or nil }
+                    r = { class = cl, b = b, members = {}, missing = 0, except = ex and name or nil, tank = tank or nil }
                     byClass[key] = r
                     table.insert(rows, r)
                 end
@@ -314,12 +351,23 @@ function M:Status()
                 if not dead and not left then r.missing = r.missing + 1 end
                 if left and (not r.min or left < r.min) then r.min = left end
             end
+            -- Salut : se cumule avec la bénédiction de classe, pour les classes prévues, jamais les tanks
+            if name and cl and salut and self.SALUT[cl] and not isTank(u) then
+                local dead = UnitIsDeadOrGhost(u) or not UnitIsConnected(u)
+                local left = (not dead) and self:Left(u, 4) or nil
+                table.insert(salut.members, { unit = u, name = name, left = left, dead = dead })
+                if not dead and not left then salut.missing = salut.missing + 1 end
+                if left and (not salut.min or left < salut.min) then salut.min = left end
+            end
         end
     end
     table.sort(rows, function(a, b2)
         if (a.except ~= nil) ~= (b2.except ~= nil) then return a.except == nil end
-        return (self.CLASS_ID[a.class] or 99) < (self.CLASS_ID[b2.class] or 99)
+        local ca, cb = self.CLASS_ID[a.class] or 99, self.CLASS_ID[b2.class] or 99
+        if ca ~= cb then return ca < cb end
+        return (a.tank and 1 or 0) > (b2.tank and 1 or 0)
     end)
+    if salut and #salut.members > 0 then table.insert(rows, salut) end
     return rows
 end
 
