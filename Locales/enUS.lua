@@ -3342,4 +3342,6 @@ WK.Locales.enUS.text = {
     ["jeu"] = "game",
     ["Modifications"] = "Changes",
     ["Corrections"] = "Fixes",
+    ["Nouveautés et à venir"] = "What's new and coming soon",
+    ["Un jeu de réglages par perso"] = "One set of settings per character",
 }

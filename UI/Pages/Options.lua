@@ -44,6 +44,8 @@ UI:RegisterPage({
     key = "options", order = 10, navIcon = "gear",
     title = "Options",
     subtitle = "Réglages rangés par catégorie.",
+    -- point sur l'icône des Options : patch notes pas encore lues
+    count = function() return UI.notesDef and UI.notesDef.count() or "" end,
 
     Build = function(self, p)
         local cfg = WK.DB.global.settings.ui
@@ -85,6 +87,15 @@ UI:RegisterPage({
             if not self.sections[key] or not self.sectionButtons[key] then key = "general" end
             cfg.optSection = key
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
+            if key == "notes" and UI.notesDef then
+                local ns = self.sections.notes
+                if not ns.built then
+                    ns.built = true
+                    UI:InAccentScope("window", UI.notesDef.Build, UI.notesDef, ns.scroll)
+                end
+                UI.notesDef:Refresh()
+                if UI.RefreshChips then UI:RefreshChips() end
+            end
             if key == "general" and self.sections.general.showTab then self.sections.general.showTab(cfg.optGenTab or "lang") end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
@@ -94,6 +105,7 @@ UI:RegisterPage({
             -- la page Courrier, les réglages des métiers et QoL > Général > Alertes (sections cachées).
             { "look", "Apparence", "logo", "Couleurs, police, taille" },
             { "profiles", "Profils", "users", "Un jeu de réglages par perso" },
+            { "notes", "Patch notes", "notes", "Nouveautés et à venir" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -378,6 +390,11 @@ UI:RegisterPage({
         section("profiles")
         UI:BuildProfileCards(self, card)
 
+        -- Patch notes (UI/Pages/Notes.lua) : page entière, construite à la première ouverture
+        local notesHost = CreateFrame("Frame", nil, host)
+        notesHost:SetAllPoints(); notesHost:Hide()
+        self.sections.notes = { scroll = notesHost }
+
         -- À propos ----------------------------------------------------------------
         section("about")
         -- en-tête (logo, version, boutons), trois tuiles (ouvrir, commandes, à faire une fois), puis le tableau
@@ -420,7 +437,7 @@ UI:RegisterPage({
         paintHead(); UI:OnAccent(paintHead)
         local notesBtn = UI:Button(about, "Voir les patch notes", nil, 30, "primary", "notes")
         notesBtn:SetPoint("TOPRIGHT", -16, -23)
-        notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
+        notesBtn:SetScript("OnClick", function() self:ShowSection("notes") end)
         local cmdBtn = UI:Button(about, "Commandes du chat", nil, 30, "secondary")
         cmdBtn:SetPoint("RIGHT", notesBtn, "LEFT", -8, 0)
         cmdBtn.tooltip = "Écrit la liste des commandes /wk dans le chat."

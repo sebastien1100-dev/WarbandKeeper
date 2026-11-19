@@ -23,7 +23,7 @@ local GROUPS = {
     { "AVENTURE", { "quests", "rares", "dungeons", "lfg", "qol:maplayers" }, "map" },
     { "INTERFACE", { "qol:general", "qol:halo", "qol:cursor", "qol:micro" }, "gear" },
 }
-local BOTTOM = { "notes", "options" }
+local BOTTOM = { "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
     mail = "mail", auction = "coin", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
@@ -686,6 +686,9 @@ function UI:RefreshSoon()
 end
 
 function UI:ShowPage(key)
+    -- les patch notes sont une section des Options
+    local sub
+    if key == "notes" then key, sub = "options", "notes"; WK.DB.global.settings.ui.optSection = "notes" end
     if key and not WK:PageOn(key) then key = "overview" end -- module coupé
     local def = self.pages[key] or self.pages.overview
     if not self.frame then self:Create() end
@@ -697,6 +700,7 @@ function UI:ShowPage(key)
         if d.frame then d.frame:SetShown(k == def.key) end
     end
     self:EnsurePage(def.key)
+    if sub and def.ShowSection then def:ShowSection(sub) end
     self:Refresh()
 end
 

@@ -40,6 +40,13 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.62.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes : maintenant dans les Options, section « Patch notes » sous Profils. L'icône en haut à droite de la fenêtre est retirée ; le point qui signale des notes pas encore lues passe sur l'icône des Options. /wk notes et « Voir les patch notes » ouvrent directement cette section.
+
 ## v1.62.2 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

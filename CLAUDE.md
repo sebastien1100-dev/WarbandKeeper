@@ -147,7 +147,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Modules
 
-La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque section de Réglages QoL) a son module dans le même groupe ; Récolte et Distance en plus. Patch notes et Options sont des icônes de l'en-tête (`UI.headIcons`), plus dans la barre ; les Profils sont une section des Options (sous Apparence, `UI:BuildProfileCards` de `UI/Pages/Profiles.lua`).
+La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque section de Réglages QoL) a son module dans le même groupe ; Récolte et Distance en plus. Options est une icône de l'en-tête (`UI.headIcons`) ; Profils et Patch notes sont des sections des Options, sous Apparence (`UI:BuildProfileCards` de `UI/Pages/Profiles.lua` ; `UI.notesDef` de `UI/Pages/Notes.lua`, construit à la première ouverture ; `UI:ShowPage("notes")` ouvre cette section).
 
 `Core/Features.lua` : liste des modules qu'on peut couper (`WK.FEATURES` : clé, nom, icône, groupe, page ou section de QoL, `reload` s'il affiche quelque chose à l'écran), `WK:FeatureOn(clé)`, `WK:PageOn(page)`, `WK:SetFeature(clé, actif)`. Réglage : `WK.DB.global.modulesOff` (dans les profils). Un nouveau module doit y être ajouté et vérifier `WK:FeatureOn` à ses points d'entrée (infobulle, dessin, détection, éléments à l'écran) ; sa page et sa section de QoL sont masquées automatiquement. Carte « Modules » : bas de `UI/Pages/Overview.lua`.
 

@@ -19,10 +19,9 @@ local function wrapped(parent, text, color, size)
     return fs
 end
 
-UI:RegisterPage({
-    key = "notes", order = 9, navIcon = "notes",
-    title = "Patch notes",
-    subtitle = "Tout ce qui a été ajouté, modifié et corrigé, version par version.",
+-- Patch notes : section « Patch notes » des Options (sous Profils), construite à la première ouverture
+-- (UI/Pages/Options.lua). UI:ShowPage("notes") ouvre les Options sur cette section.
+UI.notesDef = {
     count = function() return notesSeen() and "" or "•" end,
 
     Build = function(self, p)
@@ -316,4 +315,4 @@ UI:RegisterPage({
     Refresh = function()
         WK.DB.global.settings.notesSeenVersion = WK.version
     end,
-})
+}
