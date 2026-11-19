@@ -411,6 +411,20 @@ def icon_lfg():
     save(img, "lfg", 64)
 
 
+def icon_warn():
+    """Triangle d'avertissement aux coins arrondis, point d'exclamation évidé (corrections des patch notes)."""
+    img, d, s = canvas(64)
+    pts = [(0.5, 0.10), (0.94, 0.88), (0.06, 0.88)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in pts], fill=W)
+    for i in range(3):
+        a, b = pts[i], pts[(i + 1) % 3]
+        line(d, s, [a, b], 0.10)
+    O = (255, 255, 255, 0)
+    d.rounded_rectangle([P(0.455, s), P(0.36, s), P(0.545, s), P(0.66, s)], radius=0.04 * s, fill=O)
+    d.ellipse([P(0.45, s), P(0.71, s), P(0.55, s), P(0.81, s)], fill=O)
+    save(img, "warn", 64)
+
+
 def icon_fish():
     """Poisson (pêche) : corps en amande, queue en triangle, œil évidé."""
     img, d, s = canvas(64)
@@ -778,6 +792,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn]:
         fn()
     print("OK")

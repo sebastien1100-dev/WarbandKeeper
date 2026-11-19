@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.2", date = "19/11/2026", restart = true,
+        changed = {
+            "Patch notes : les corrections sont marquées d'un petit triangle d'avertissement rouge au lieu du « ! », dans les compteurs des jours, devant chaque note et sur le filtre « Corrections ». Nouvelle texture : redémarrer le jeu.",
+        },
+    },
+    {
         version = "1.62.1", date = "19/11/2026",
         changed = {
             "Patch notes : les modifications sont marquées d'une petite icône de flèches circulaires (ambre) au lieu du « ~ », dans les compteurs des jours, devant chaque note et sur le filtre « Modifications ».",

@@ -72,7 +72,7 @@ UI:RegisterPage({
             return b
         end
         local x = 242
-        for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "Modifications", "refresh" }, { "fixed", "! Corrections" } }) do
+        for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "Modifications", "refresh" }, { "fixed", "Corrections", "warn" } }) do
             local b = chip(c[1], c[2], c[3]); b:SetPoint("LEFT", x, 0); x = x + b:GetWidth() + 6
         end
         if newCount > 0 then
@@ -107,13 +107,13 @@ UI:RegisterPage({
 
         local scroll = UI:Scroll(nv)
         scroll:SetAllPoints()
-        local SEC = { added = { "+", "positive" }, changed = { "", "warning" }, fixed = { "!", "negative" } }
-        -- signe d'une rubrique dans un texte : + et ! en lettres, modification = petite icône de flèches
-        -- circulaires teintée (le « ~ » des polices du jeu est disgracieux)
+        local SEC = { added = { "+", "positive" }, changed = { "refresh", "warning" }, fixed = { "warn", "negative" } }
+        -- signe d'une rubrique dans un texte : + en lettre, modification = flèches circulaires, correction =
+        -- triangle d'avertissement (petites icônes teintées ; le « ~ » des polices du jeu est disgracieux)
         local function glyph(k, size)
             local col = C[SEC[k][2]]
-            if k ~= "changed" then return UI:Hex(col) .. SEC[k][1] end
-            return string.format("|T%srefresh:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t%s", UI.MEDIA, size or 11, size or 11,
+            if k == "added" then return UI:Hex(col) .. "+" end
+            return string.format("|T%s%s:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t%s", UI.MEDIA, SEC[k][1], size or 11, size or 11,
                 math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255), UI:Hex(col))
         end
         local ORDER = { "added", "changed", "fixed" }
@@ -179,7 +179,7 @@ UI:RegisterPage({
                     for _, v in ipairs(vers) do if v[2].restart then restart = true end end
                     local parts = { string.format(#vers > 1 and T("%d versions") or T("%d version"), #vers) }
                     for _, k in ipairs(ORDER) do
-                        if cnt[k] > 0 then parts[#parts + 1] = glyph(k) .. (k == "changed" and " " or "") .. cnt[k] .. "|r" end
+                        if cnt[k] > 0 then parts[#parts + 1] = glyph(k) .. (k ~= "added" and " " or "") .. cnt[k] .. "|r" end
                     end
                     parts[#parts + 1] = restart and (UI:Hex(C.warning) .. T("redémarrer le jeu") .. "|r") or T("/reload suffit")
                     c.meta:SetText(table.concat(parts, "  ·  "))

@@ -3341,4 +3341,5 @@ WK.Locales.enUS.text = {
     ["cité"] = "credited",
     ["jeu"] = "game",
     ["Modifications"] = "Changes",
+    ["Corrections"] = "Fixes",
 }
