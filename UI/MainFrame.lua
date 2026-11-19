@@ -201,7 +201,7 @@ local function SubItem(parent, sec)
         self.alertList = list
         for i, t in ipairs(self.alerts) do
             local k = kinds[i]
-            t:SetShown(k ~= nil and not rail)
+            t:SetShown(false) -- plus d'icônes d'alerte dans le menu (coffre, sac…) : détail au survol seulement
             if k then
                 t:SetTexture(UI.MEDIA .. k.icon)
                 t:SetVertexColor(unpack(k.urgent and C.negative or C.warning))

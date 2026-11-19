@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.47.2", date = "19/11/2026",
+        changed = {
+            "Menu de gauche : les icônes d'alerte (coffre, sac, marteau) ne s'affichent plus à côté de « Général » ; le détail reste au survol.",
+        },
+    },
+    {
         version = "1.47.1", date = "19/11/2026",
         fixed = {
             "Persos > Expérience : un bout de la première ligne de perso dépassait au-dessus du volet, et la bande du haut restait vide ; elle affiche maintenant le titre « Expérience de tes persos » et le volet commence juste dessous.",
