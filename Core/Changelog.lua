@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.47.3", date = "19/11/2026",
+        changed = {
+            "Options > Général : réglages rangés en onglets (Langue, Infobulles, Fenêtre) au lieu d'une longue page ; l'onglet choisi est retenu et la recherche ouvre le bon.",
+        },
+    },
+    {
         version = "1.47.2", date = "19/11/2026",
         changed = {
             "Menu de gauche : les icônes d'alerte (coffre, sac, marteau) ne s'affichent plus à côté de « Général » ; le détail reste au survol.",

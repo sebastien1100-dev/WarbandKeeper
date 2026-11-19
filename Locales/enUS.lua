@@ -3074,4 +3074,5 @@ WK.Locales.enUS.text = {
     ["%s ajouté à la liste « %s »."] = "%s added to the list \"%s\".",
     ["Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans la fenêtre du jeu."] = "No item from your scans has this name: run a scan, or search it in the game window.",
     ["Expérience de tes persos"] = "Your characters' experience",
+    ["Fenêtre"] = "Window",
 }

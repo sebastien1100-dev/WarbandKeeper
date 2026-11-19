@@ -85,6 +85,7 @@ UI:RegisterPage({
             if not self.sections[key] or not self.sectionButtons[key] then key = "general" end
             cfg.optSection = key
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
+            if key == "general" and self.sections.general.showTab then self.sections.general.showTab(cfg.optGenTab or "lang") end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
         local SECTIONS = {
@@ -402,6 +403,54 @@ UI:RegisterPage({
             about:SetHeight(h)
             aboutScroll:SetContentHeight(aboutY + h + GAP)
         end)
+        -- Général en onglets par catégorie : Langue, Infobulles, Fenêtre (bouton minimap, combat)
+        do
+            local gsec = self.sections.general
+            local child = gsec.scroll.child
+            local TABS = { { "lang", "Langue", { ["Langue"] = true } }, { "tips", "Infobulles", { ["Infobulles"] = true } },
+                { "win", "Fenêtre", { ["Bouton minimap"] = true, ["Combat"] = true } } }
+            local function tabOf(c)
+                for _, t in ipairs(TABS) do if t[3][c.cardKey or ""] then return t[1] end end
+            end
+            local seg
+            function gsec.showTab(key)
+                cfg.optGenTab = key
+                if seg then seg:Select(key) end
+                local yy = 46
+                for _, c in ipairs(gsec.cards or {}) do
+                    local mine = c:GetParent() == child and tabOf(c)
+                    if mine then
+                        c:SetShown(mine == key)
+                        if mine == key then
+                            c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -yy); c:SetPoint("TOPRIGHT", 0, -yy)
+                            yy = yy + c:GetHeight() + GAP
+                        end
+                    end
+                end
+                gsec.scroll:SetContentHeight(yy)
+                if gsec.scroll.SetVerticalScroll then gsec.scroll:SetVerticalScroll(0) end
+            end
+            local items = {}
+            for _, t in ipairs(TABS) do table.insert(items, { t[1], t[2] }) end
+            seg = UI:Segmented(child, items, function(k) gsec.showTab(k) end, 32)
+            seg:SetPoint("TOPLEFT", 0, 0)
+            gsec.tabOf = function(row)
+                local f = row
+                while f do
+                    if f.cardKey then
+                        local k = tabOf(f)
+                        if k then for i, t in ipairs(TABS) do if t[1] == k then return i end end end
+                    end
+                    f = f:GetParent()
+                end
+            end
+            local showByIndex = gsec.showTab
+            gsec.showTab = function(k)
+                if type(k) == "number" then k = TABS[k] and TABS[k][1] or "lang" end
+                showByIndex(k)
+            end
+            gsec.showTab(cfg.optGenTab or "lang")
+        end
         self:ShowSection(cfg.optSection or "general")
     end,
 
