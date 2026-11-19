@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.10 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Statistiques en vol : les boutons pour passer d'une histoire à l'autre sont des boutons ronds avec un chevron bien visible (les « ‹ › » étaient minuscules) ; au survol, ils rappellent que la molette marche aussi.
+
 ## v1.76.9 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

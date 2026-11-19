@@ -3589,4 +3589,5 @@ WK.Locales.enUS.text = {
     ["Clic droit sur l'heure : coche « Clic droit sur l'heure : libérer la mémoire » dans Interface > Micro menu (carte Survol de l'heure)."] = "Right-click on the clock: tick \"Right-click on the clock: free memory\" in Interface > Micro menu (Clock hover card).",
     ["Pas en combat : la mémoire sera libérable à la sortie du combat."] = "Not in combat: memory can be freed after combat.",
     ["Mémoire libérée : %s (addons : %s maintenant)."] = "Memory freed: %s (addons: %s now).",
+    ["Histoire suivante (molette)"] = "Next story (mouse wheel)", ["Histoire précédente (molette)"] = "Previous story (mouse wheel)",
 }

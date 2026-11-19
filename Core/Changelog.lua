@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.10", date = "19/11/2026",
+        changed = {
+            "Statistiques en vol : les boutons pour passer d'une histoire à l'autre sont des boutons ronds avec un chevron bien visible (les « ‹ › » étaient minuscules) ; au survol, ils rappellent que la molette marche aussi.",
+        },
+    },
+    {
         version = "1.76.9", date = "19/11/2026", restart = true,
         changed = {
             "Statistiques en vol : le griffon sur le trajet est remplacé par une flèche blanche bordée de noir, tournée dans le sens du vol (ton cap), sur un halo de la couleur de l'apparence ; on voit d'un coup d'œil où tu es et où tu vas.",
