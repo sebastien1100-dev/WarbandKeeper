@@ -3340,4 +3340,5 @@ WK.Locales.enUS.text = {
     ["Distances (indicateur du chasseur)"] = "Distances (hunter indicator)",
     ["cité"] = "credited",
     ["jeu"] = "game",
+    ["Modifications"] = "Changes",
 }

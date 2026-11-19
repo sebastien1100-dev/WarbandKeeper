@@ -5,11 +5,6 @@ local T = function(s) return WK.T(s) end
 
 -- Couleurs de sens de la palette (UI/Themes.lua), lues à l'affichage : ajouts en vert (positive),
 -- modifications en ambre (warning), corrections en rouge doux (negative).
-local SECTIONS = {
-    { "added", "+  AJOUTS", "positive" },
-    { "changed", "~  MODIFICATIONS", "warning" },
-    { "fixed", "!  CORRECTIONS", "negative" },
-}
 
 local function notesSeen() return WK.DB.global.settings.notesSeenVersion == WK.version end
 
@@ -66,8 +61,8 @@ UI:RegisterPage({
         for i, e in ipairs(WK.Changelog) do if e.version == prevSeen then newCount = i - 1 break end end
         local chips = {}
         local render
-        local function chip(key, label)
-            local b = UI:Button(bar, label, nil, 26, "ghost")
+        local function chip(key, label, icon)
+            local b = UI:Button(bar, label, nil, 26, "ghost", icon)
             b:SetScript("OnClick", function()
                 st.filter = (st.filter == key and key ~= "all") and "all" or key
                 for k, c in pairs(chips) do c:SetStyle(k == st.filter and "secondary" or "ghost") end
@@ -77,8 +72,8 @@ UI:RegisterPage({
             return b
         end
         local x = 242
-        for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "~ Modifications" }, { "fixed", "! Corrections" } }) do
-            local b = chip(c[1], c[2]); b:SetPoint("LEFT", x, 0); x = x + b:GetWidth() + 6
+        for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "Modifications", "refresh" }, { "fixed", "! Corrections" } }) do
+            local b = chip(c[1], c[2], c[3]); b:SetPoint("LEFT", x, 0); x = x + b:GetWidth() + 6
         end
         if newCount > 0 then
             local b = chip("new", string.format(T("Depuis ma dernière visite · %d"), newCount)); b:SetPoint("LEFT", x, 0)
@@ -112,7 +107,15 @@ UI:RegisterPage({
 
         local scroll = UI:Scroll(nv)
         scroll:SetAllPoints()
-        local SEC = { added = { "+", "positive" }, changed = { "~", "warning" }, fixed = { "!", "negative" } }
+        local SEC = { added = { "+", "positive" }, changed = { "", "warning" }, fixed = { "!", "negative" } }
+        -- signe d'une rubrique dans un texte : + et ! en lettres, modification = petite icône de flèches
+        -- circulaires teintée (le « ~ » des polices du jeu est disgracieux)
+        local function glyph(k, size)
+            local col = C[SEC[k][2]]
+            if k ~= "changed" then return UI:Hex(col) .. SEC[k][1] end
+            return string.format("|T%srefresh:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t%s", UI.MEDIA, size or 11, size or 11,
+                math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255), UI:Hex(col))
+        end
         local ORDER = { "added", "changed", "fixed" }
         local cardPool = UI:Pool(function()
             local c = UI:Card(scroll.child)
@@ -176,7 +179,7 @@ UI:RegisterPage({
                     for _, v in ipairs(vers) do if v[2].restart then restart = true end end
                     local parts = { string.format(#vers > 1 and T("%d versions") or T("%d version"), #vers) }
                     for _, k in ipairs(ORDER) do
-                        if cnt[k] > 0 then parts[#parts + 1] = UI:Hex(C[SEC[k][2]]) .. SEC[k][1] .. cnt[k] .. "|r" end
+                        if cnt[k] > 0 then parts[#parts + 1] = glyph(k) .. (k == "changed" and " " or "") .. cnt[k] .. "|r" end
                     end
                     parts[#parts + 1] = restart and (UI:Hex(C.warning) .. T("redémarrer le jeu") .. "|r") or T("/reload suffit")
                     c.meta:SetText(table.concat(parts, "  ·  "))
@@ -202,7 +205,7 @@ UI:RegisterPage({
                                 local l = linePool:Get()
                                 local col = C[SEC[ln[1]][2]]
                                 l.tag.bg:SetColor(col[1], col[2], col[3], 0.18)
-                                l.tag.t:SetText(SEC[ln[1]][1]); l.tag.t:SetTextColor(unpack(col))
+                                l.tag.t:SetText(glyph(ln[1], 10) .. "|r"); l.tag.t:SetTextColor(unpack(col))
                                 l.fs:SetWidth(textW); l.fs:SetText(ln[2])
                                 local lh = math.max(16, l.fs:GetStringHeight() or 16)
                                 l:ClearAllPoints(); l:SetPoint("TOPLEFT", c, "TOPLEFT", 16 + 90, -h); l:SetSize(textW + 28, lh)

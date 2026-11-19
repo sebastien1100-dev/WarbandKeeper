@@ -40,6 +40,13 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.62.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes : les modifications sont marquées d'une petite icône de flèches circulaires (ambre) au lieu du « ~ », dans les compteurs des jours, devant chaque note et sur le filtre « Modifications ».
+
 ## v1.62.0 — 19/11/2026
 
 _Un /reload suffit._

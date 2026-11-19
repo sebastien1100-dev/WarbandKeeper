@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.1", date = "19/11/2026",
+        changed = {
+            "Patch notes : les modifications sont marquées d'une petite icône de flèches circulaires (ambre) au lieu du « ~ », dans les compteurs des jours, devant chaque note et sur le filtre « Modifications ».",
+        },
+    },
+    {
         version = "1.62.0", date = "19/11/2026",
         changed = {
             "Options > À propos plus lisible : en-tête avec le logo, la version et les boutons « Commandes du chat » et « Voir les patch notes », trois tuiles (ouvrir, commandes, à faire une fois), puis un tableau des sources des données (ce qui en vient, la source, la licence en pastille ; la mention complète au survol d'une ligne).",
