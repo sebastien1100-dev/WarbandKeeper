@@ -26,6 +26,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.53.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- HV, À acheter : un résumé à droite : combien à l'HV, chez le marchand, chez tes persos, ce qui est introuvable, ton or, « Chercher les prix » et « Tout acheter à l'HV » avec sa progression.
+- HV, À acheter : pour chaque objet, l'action qui va : « Acheter N » à l'HV ; « au marchand » quand un marchand le vend moins cher (objets vus chez les marchands, avec le nom au survol) ; « Liora en a 12 » quand un autre perso en a assez ; « introuvable » quand personne n'en vend. « Tout acheter » passe ces objets-là.
+- HV, À acheter : « Prix surveillés » est une liste comme les autres (seuil, plus bas, « ça y est », Chercher ; clic droit pour ne plus surveiller).
+
+### Modifications
+- HV, À acheter : listes à gauche avec leur nombre en pastille (la file de fabrication en tête), colonnes Pour, Il manque, Plus bas, En vente et Total ; « Ajouter un objet » en bas des listes.
+
 ## v1.52.1 — 19/11/2026
 
 _Un /reload suffit._

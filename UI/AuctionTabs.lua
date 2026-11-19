@@ -1041,48 +1041,84 @@ local function build(host)
     end
 
     -----------------------------------------------------------------------
-    -- Achat
+    -- À acheter : listes à gauche (la « File de fabrication » en tête, « Prix surveillés »), tableau au milieu
+    -- (pour qui, ce qu'il manque, plus bas, en vente, total, l'action qui va), résumé à droite (à l'HV, chez le
+    -- marchand, chez tes persos, introuvable, ton or, « Tout acheter » et sa progression).
     -----------------------------------------------------------------------
     local bv = CreateFrame("Frame", nil, f.content)
     bv:SetAllPoints(f.content)
     f.views.buy = bv
-    bv.lists = panelBox(bv, "Listes d'achat")
-    bv.lists:SetPoint("TOPLEFT"); bv.lists:SetPoint("BOTTOMLEFT"); bv.lists:SetWidth(230)
-    -- recherche : n'importe quel objet de tes scans, à acheter ou à mettre dans la liste
-    bv.search = UI:Input(bv.lists, 208, 26, "Acheter un objet…", "search")
-    bv.search:SetPoint("TOPLEFT", 10, -28)
-    bv.search.onChange = function() bv:Refresh() end
+    local QNAME, WATCH = "File de fabrication", "__watch"
+    bv.lists = panelBox(bv, "Listes")
+    bv.lists:SetPoint("TOPLEFT"); bv.lists:SetPoint("BOTTOMLEFT"); bv.lists:SetWidth(180)
     bv.lrows = {}
-    for i = 1, 9 do
+    for i = 1, 12 do
         local r = textRow(bv.lists, 24)
-        r:SetPoint("TOPLEFT", 6, -62 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -6, -62 - (i - 1) * 26)
-        r.icon:Hide(); r.a:SetPoint("LEFT", 8, 0); r.a:SetPoint("RIGHT", -40, 0)
-        r.b:SetPoint("RIGHT", -8, 0)
+        r:SetPoint("TOPLEFT", 6, -30 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -6, -30 - (i - 1) * 26)
+        r.icon:Hide(); r.a:SetPoint("LEFT", 8, 0); r.a:SetPoint("RIGHT", -34, 0)
+        r.pill = CreateFrame("Frame", nil, r)
+        r.pill:SetSize(20, 16); r.pill:SetPoint("RIGHT", -6, 0)
+        r.pill.bg = UI:Rounded(r.pill, 8, 0, "BACKGROUND", 1)
+        r.pill.t = UI:Text(r.pill, 10, C.onAccent); r.pill.t:SetPoint("CENTER")
         r:SetScript("OnClick", function(s) if s.name then cfg().curList = s.name; bv.search:SetText(""); bv:Refresh() end end)
+        r:Hide()
         bv.lrows[i] = r
     end
-    bv.searchAll = UI:Button(bv.lists, "Tout chercher", nil, 28, "primary")
-    bv.searchAll:SetPoint("BOTTOMLEFT", 10, 44); bv.searchAll:SetPoint("BOTTOMRIGHT", -10, 44)
-    bv.buyAll = UI:Button(bv.lists, "Tout acheter", nil, 28, "secondary")
-    bv.buyAll:SetPoint("BOTTOMLEFT", 10, 10); bv.buyAll:SetPoint("BOTTOMRIGHT", -10, 10)
+    -- ajouter un objet : n'importe quel objet de tes scans, à acheter ou à mettre dans la liste
+    bv.search = UI:Input(bv.lists, 160, 26, "Ajouter un objet…", "search")
+    bv.search:SetPoint("BOTTOMLEFT", 10, 10)
+    bv.search.onChange = function() bv:Refresh() end
+
+    -- résumé
+    bv.sum = panelBox(bv, "Ce qu'il faut")
+    bv.sum:SetPoint("TOPRIGHT"); bv.sum:SetPoint("BOTTOMRIGHT"); bv.sum:SetWidth(220)
+    bv.sumLines = {}
+    for i = 1, 5 do
+        local l = UI:Text(bv.sum, 11, C.muted); l:SetPoint("TOPLEFT", 12, -32 - (i - 1) * 24)
+        local v = UI:Text(bv.sum, 11, C.text); v:SetPoint("TOPRIGHT", -12, -32 - (i - 1) * 24); v:SetJustifyH("RIGHT")
+        bv.sumLines[i] = { l, v }
+    end
+    bv.searchAll = UI:Button(bv.sum, "Chercher les prix", nil, 26, "secondary")
+    bv.searchAll:SetPoint("TOPLEFT", 12, -160); bv.searchAll:SetPoint("TOPRIGHT", -12, -160)
+    bv.buyAll = UI:Button(bv.sum, "Tout acheter", nil, 32, "primary")
+    bv.buyAll:SetPoint("TOPLEFT", 12, -194); bv.buyAll:SetPoint("TOPRIGHT", -12, -194)
+    bv.prog = CreateFrame("Frame", nil, bv.sum)
+    bv.prog:SetPoint("TOPLEFT", 12, -236); bv.prog:SetPoint("TOPRIGHT", -12, -236); bv.prog:SetHeight(6)
+    bv.prog.bg = UI:Rounded(bv.prog, 3, 0, "BACKGROUND", 1); bv.prog.bg:SetColor(C.border[1], C.border[2], C.border[3], 1)
+    bv.prog.fillF = CreateFrame("Frame", nil, bv.prog); bv.prog.fillF:SetPoint("TOPLEFT"); bv.prog.fillF:SetPoint("BOTTOMLEFT")
+    bv.prog.fill = UI:Rounded(bv.prog.fillF, 3, 0, "ARTWORK", 1)
+    bv.progText = UI:Text(bv.sum, 10, C.dim); bv.progText:SetPoint("TOPLEFT", 12, -248); bv.progText:SetPoint("RIGHT", -12, 0)
+    bv.progText:SetJustifyH("LEFT")
+    bv.sumNote = UI:Text(bv.sum, 10, C.dim); bv.sumNote:SetPoint("BOTTOMLEFT", 12, 10); bv.sumNote:SetPoint("RIGHT", -12, 0)
+    bv.sumNote:SetJustifyH("LEFT")
+    if bv.sumNote.SetWordWrap then bv.sumNote:SetWordWrap(true) end
+    bv.sumNote:SetText(T("Un clic par objet : prix demandé, puis confirmé (le jeu l'exige). Ce qui est acheté sort de la liste."))
+
+    -- tableau
     bv.main = panelBox(bv, "")
-    bv.main:SetPoint("TOPLEFT", bv.lists, "TOPRIGHT", 8, 0); bv.main:SetPoint("BOTTOMRIGHT")
-    bv.total = UI:Text(bv.main, 11, C.muted); bv.total:SetPoint("TOPRIGHT", -12, -10)
-    local cols = { { "Objet", 34 }, { "Besoin", -260 }, { "Plus bas", -180 }, { "Dispo", -110 } }
-    for _, cdef in ipairs(cols) do
+    bv.main:SetPoint("TOPLEFT", bv.lists, "TOPRIGHT", 8, 0); bv.main:SetPoint("BOTTOMRIGHT", bv.sum, "BOTTOMLEFT", -8, 0)
+    local BCOLS = { { "Objet", 34, "LEFT" }, { "Pour", -326, "LEFT2" }, { "Il manque", -284 }, { "Plus bas", -212 }, { "En vente", -166 }, { "Total", -96 } }
+    for _, cdef in ipairs(BCOLS) do
         local h = UI:Text(bv.main, 9, C.dim)
-        if cdef[2] > 0 then h:SetPoint("TOPLEFT", cdef[2], -30) else h:SetPoint("TOPRIGHT", cdef[2], -30) end
+        if cdef[3] == "LEFT" then h:SetPoint("TOPLEFT", cdef[2], -30)
+        elseif cdef[3] == "LEFT2" then h:SetPoint("TOPLEFT", bv.main, "TOPRIGHT", cdef[2] - 80, -30)
+        else h:SetPoint("TOPRIGHT", cdef[2], -30) end
         h:SetText(UI:Upper(T(cdef[1])))
     end
     bv.irows = {}
     for i = 1, 16 do
         local r = textRow(bv.main, 26)
         r:SetPoint("TOPLEFT", 6, -44 - (i - 1) * 28); r:SetPoint("TOPRIGHT", -6, -44 - (i - 1) * 28)
-        r.a:SetPoint("RIGHT", -300, 0)
-        r.b:SetPoint("RIGHT", -260, 0); r.b:SetWidth(60)
-        r.c:SetPoint("RIGHT", -180, 0); r.c:SetWidth(90); r.c:SetTextColor(C.text[1], C.text[2], C.text[3])
-        r.d:SetPoint("RIGHT", -110, 0); r.d:SetWidth(60)
-        r.btn = UI:Button(r, "Acheter", 100, 22, "primary"); r.btn:SetPoint("RIGHT", -2, 0)
+        if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+        r.a:SetPoint("RIGHT", -412, 0)
+        r.who = UI:Text(r, 11, C.muted); r.who:SetPoint("RIGHT", -326, 0); r.who:SetWidth(80); r.who:SetJustifyH("LEFT")
+        if r.who.SetWordWrap then r.who:SetWordWrap(false) end
+        r.b:SetPoint("RIGHT", -284, 0); r.b:SetWidth(40)
+        r.c:SetPoint("RIGHT", -212, 0); r.c:SetWidth(68); r.c:SetTextColor(C.text[1], C.text[2], C.text[3])
+        r.d:SetPoint("RIGHT", -166, 0); r.d:SetWidth(42)
+        r.tot = UI:Text(r, 11, C.gold); r.tot:SetPoint("RIGHT", -96, 0); r.tot:SetWidth(66); r.tot:SetJustifyH("RIGHT")
+        r.btn = UI:Button(r, "Acheter", 88, 22, "primary"); r.btn:SetPoint("RIGHT", -2, 0)
+        r.tag = UI:Badge(r, "", C.muted); r.tag:SetPoint("RIGHT", -4, 0)
         r.add = UI:IconButton(r, "plus", 22, "Ajouter à la liste d'achat")
         r.add:SetPoint("RIGHT", r.btn, "LEFT", -6, 0)
         r.add:SetScript("OnClick", function(s)
@@ -1090,7 +1126,7 @@ local function build(host)
             if not row.id then return end
             local _, lists = S:Lists()
             local name = cfg().curList
-            if not (name and lists[name]) then name = T("Mes achats") end
+            if not (name and lists[name]) or name == QNAME then name = T("Mes achats") end
             local l = lists[name] or { items = {}, at = time(), v = 2 }
             lists[name] = l
             local q = math.max(1, bv.qty:GetNumber() > 0 and bv.qty:GetNumber() or 1)
@@ -1106,14 +1142,25 @@ local function build(host)
             if not s.id then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
+            if s.vendor then GameTooltip:AddLine(string.format(T("Vu chez %s à %s"), s.vendor.npc or "?", money(s.vendor.p or 0)), 0.31, 0.79, 0.75) end
+            if s.watch then GameTooltip:AddLine(T("Clic droit : ne plus surveiller"), 0.6, 0.6, 0.6) end
             GameTooltip:Show()
         end)
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(s, button)
+            if button == "RightButton" and s.watch and s.id then
+                A.Config().alerts[s.id] = nil
+                bv:Refresh()
+            end
+        end)
         r.btn:SetScript("OnClick", function(s)
             local row = s:GetParent()
             local id, need = row.id, row.need
             if not id then return end
-            if not isCommodity(id) then S:SearchItem(id) return end
+            if row.watch or not isCommodity(id) then
+                if not UI:AHWindowSearch(id, WK.GetItemInfo(id)) then S:SearchItem(id) end
+                return
+            end
             local b = S.buy
             local a = AH()
             if b and b.id == id and b.phase == "confirm" then
@@ -1125,9 +1172,10 @@ local function build(host)
             end
             bv:Refresh()
         end)
+        r:Hide()
         bv.irows[i] = r
     end
-    bv.empty = UI:Text(bv.main, 11, C.muted); bv.empty:SetPoint("CENTER")
+    bv.empty = UI:Text(bv.main, 11, C.muted); bv.empty:SetPoint("CENTER"); bv.empty:SetWidth(380)
     bv.qtyLabel = UI:Text(bv.main, 11, C.muted); bv.qtyLabel:SetPoint("TOPRIGHT", -74, -10); bv.qtyLabel:SetText(T("Quantité"))
     bv.qty = UI:NumberInput(bv.main, 56, 22, "1"); bv.qty:SetPoint("TOPRIGHT", -12, -6)
     bv.qty.edit:SetText("1")
@@ -1136,8 +1184,14 @@ local function build(host)
         for _, it in ipairs(l and l.items or {}) do search(it[1]) end
         pump()
     end)
-    bv.buyAll:SetScript("OnClick", function() S:BuyStep(); bv:Refresh() end)
-    -- résultats de la recherche : objets de tes scans dont le nom contient le texte
+    bv.buyAll:SetScript("OnClick", function()
+        local b = S.buy
+        -- premier clic : ce qui va au marchand, chez un perso ou qui est introuvable est passé
+        if not (b and b.list) then S.buy = { list = cfg().curList, skip = bv.skipSet or {}, spent = 0, count = 0 } end
+        S:BuyStep(); bv:Refresh()
+    end)
+
+    -- résultats de la recherche « Ajouter un objet » : objets de tes scans dont le nom contient le texte
     function bv:RefreshSearch(q)
         local list = {}
         for id in pairs(S:Data().items) do
@@ -1148,11 +1202,12 @@ local function build(host)
         self.main.title:SetText(T("Résultats"))
         self.main.sub:SetText(string.format(T("%d objets"), #list))
         self.empty:SetShown(#list == 0)
-        self.empty:SetText(T("Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans la fenêtre du jeu."))
+        self.empty:SetText(T("Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans Parcourir."))
         local qn = math.max(1, self.qty:GetNumber() > 0 and self.qty:GetNumber() or 1)
         local b = S.buy
         for i, r in ipairs(self.irows) do
             local e = list[i]
+            r.watch, r.vendor = nil, nil
             if e then
                 local id = e.id
                 r.id, r.need = id, qn
@@ -1160,12 +1215,14 @@ local function build(host)
                 local _, _, quality = WK.GetItemInfo(id)
                 r.a:SetText(e.name)
                 if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
-                r.b:SetText(UI:Hex(C.dim) .. S:Have(id) .. "|r")
+                r.who:SetText(string.format(T("à toi : %d"), S:Have(id)))
+                r.b:SetText("")
                 local low = lowestOther(id) or S:Price(id)
                 local av = available(id)
                 r.c:SetText(low and money(low) or "-")
                 r.d:SetText(av and tostring(av) or "")
-                r.btn:Show(); r.add:Show()
+                r.tot:SetText("")
+                r.tag:Hide(); r.btn:Show(); r.add:Show()
                 if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
                 elseif b and b.id == id and b.phase == "confirm" then r.btn:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
                 elseif b and b.id == id and (b.phase == "quote" or b.phase == "wait") then r.btn:SetLabel("…")
@@ -1173,11 +1230,9 @@ local function build(host)
                 r:Show()
             else r:Hide() end
         end
-        self.total:SetText("")
     end
     -- « File de fabrication » : ce qui manque à la file de tous tes persos (page Métiers), tenue à jour
     -- comme une liste d'achat (en tête) ; pour qui, dans bv.who
-    local QNAME = "File de fabrication"
     bv.who = {}
     local function syncQueue()
         local PH = WK.modules.ProfHelp
@@ -1200,37 +1255,67 @@ local function build(host)
         for _, id in ipairs(order) do table.insert(items, { id, need[id] + S:Have(id) }) end
         lists[QNAME] = { items = items, at = 2000000000, v = 2, auto = true }
     end
+    -- un autre perso en a assez : son nom et combien
+    local function altWith(id, need)
+        local me = WK:CharKey()
+        local Inv = WK.modules.Inventory
+        for key, c in pairs(WK.DB.global.characters) do
+            if key ~= me and Inv and Inv.CharCount then
+                local n = Inv:CharCount(c, id)
+                if n >= need then return WK:CharName(c, key), n end
+            end
+        end
+    end
+
     function bv:Refresh()
         syncQueue()
         local q = string.lower(self.search:GetText() or "")
         self.qty:SetShown(q ~= ""); self.qtyLabel:SetShown(q ~= "")
         for _, r in ipairs(self.irows) do r.add:Hide() end
         local names, lists = S:Lists()
+        -- la file en tête, les prix surveillés en dernier
+        local order = {}
+        if lists[QNAME] then table.insert(order, QNAME) end
+        for _, n in ipairs(names) do if n ~= QNAME then table.insert(order, n) end end
+        local alerts = A.Config().alerts or {}
+        local nWatch = 0
+        for _ in pairs(alerts) do nWatch = nWatch + 1 end
+        table.insert(order, WATCH)
         local cur = cfg().curList
-        if not (cur and lists[cur]) then cur = names[1]; cfg().curList = cur end
+        if not (cur == WATCH or (cur and lists[cur])) then cur = order[1] ~= WATCH and order[1] or WATCH; cfg().curList = cur end
         local ar, ag, ab = UI:Accent()
         for i, r in ipairs(self.lrows) do
-            local n = names[i]
+            local n = order[i]
             r.name = n
             if n then
-                r.a:SetText(n == QNAME and T(QNAME) or n); r.b:SetText(tostring(#(lists[n].items or {})))
+                local count = n == WATCH and nWatch or #(lists[n].items or {})
+                r.a:SetText(n == QNAME and T(QNAME) or n == WATCH and T("Prix surveillés") or n)
+                r.a:SetTextColor(unpack(n == cur and C.text or C.muted))
+                r.pill.t:SetText(count)
+                r.pill:SetWidth(math.max(18, r.pill.t:GetStringWidth() + 10))
+                r.pill.bg:SetColor(ar, ag, ab, 1)
+                r.pill:SetShown(count > 0)
                 r.hl:SetColorTexture(ar, ag, ab, n == cur and 0.14 or 0)
                 r:Show()
             else r:Hide() end
         end
-        self.searchAll:SetEnabled(cur ~= nil); self.buyAll:SetEnabled(cur ~= nil)
         local b = S.buy
-        self.buyAll:SetLabel((b and b.phase == "confirm") and string.format(T("Confirmer %s"), money(b.total)) or T("Tout acheter"))
-        if q ~= "" then return self:RefreshSearch(q) end
+        if q ~= "" then
+            for _, sl in ipairs(self.sumLines) do sl[1]:SetText(""); sl[2]:SetText("") end
+            return self:RefreshSearch(q)
+        end
+        if cur == WATCH then return self:RefreshWatch(alerts) end
         local l = cur and lists[cur]
         self.main.title:SetText(cur and (cur == QNAME and T(QNAME) or cur) or T("Aucune liste"))
         self.empty:SetShown(not l)
         self.empty:SetText(T("Crée une liste d'achat depuis la page Métiers (guide de montée ou recettes), ou ajoute des recettes à la file de fabrication."))
+        local vseen = WK.DB.global.vendorSeen or {}
+        self.skipSet = {}
+        local sAH, nAH, sVendor, nVendor, nAlt, nNone, noneName, n = 0, 0, 0, 0, 0, 0, nil, 0
         f.buyCount = 0
-        if l then for _, it in ipairs(l.items) do if it[2] - S:Have(it[1]) > 0 then f.buyCount = f.buyCount + 1 end end end
-        local total, n = 0, 0
         for i, r in ipairs(self.irows) do
             local it = l and l.items[i]
+            r.watch = nil
             if it then
                 local id = it[1]
                 local have = S:Have(id)
@@ -1238,28 +1323,105 @@ local function build(host)
                 r.id, r.need = id, need
                 r.icon:SetTexture(itemIcon(id))
                 local name, _, quality = WK.GetItemInfo(id)
-                r.a:SetText((name or ("#" .. id)) .. (cur == QNAME and self.who[id] and (UI:Hex(C.dim) .. "  ·  " .. self.who[id] .. "|r") or ""))
+                r.a:SetText(name or ("#" .. id))
                 if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
-                r.b:SetText(need > 0 and (need .. UI:Hex(C.dim) .. " (" .. have .. ")|r") or (UI:Hex(C.positive) .. T("ok") .. "|r"))
+                r.who:SetText(cur == QNAME and self.who[id] or "")
+                r.b:SetText(need > 0 and tostring(need) or (UI:Hex(C.positive) .. T("ok") .. "|r"))
                 local low = lowestOther(id) or (results[id] == nil and S:Price(id)) or nil
                 local av = available(id)
-                r.c:SetText(results[id] and (low and money(low) or (UI:Hex(C.negative) .. T("aucune") .. "|r")) or (low and (UI:Hex(C.dim) .. money(low) .. "|r") or "-"))
+                local none = results[id] ~= nil and not lowestOther(id)
+                r.c:SetText(none and (UI:Hex(C.negative) .. T("aucun") .. "|r") or (low and money(low) or "-"))
                 r.d:SetText(av and tostring(av) or "")
-                if low and need > 0 then total = total + low * need end
-                n = n + 1
-                if need <= 0 then r.btn:Hide()
-                else
-                    r.btn:Show()
-                    if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
-                    elseif b and b.id == id and b.phase == "confirm" then r.btn:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
-                    elseif b and b.id == id and (b.phase == "quote" or b.phase == "wait") then r.btn:SetLabel("…")
-                    else r.btn:SetLabel(string.format(T("Acheter %d"), need)) end
+                local v = vseen[id]
+                r.vendor = v
+                local alt, altN = nil, nil
+                if need > 0 then alt, altN = altWith(id, need) end
+                -- l'action qui va : au marchand (moins cher qu'à l'HV), chez un perso, introuvable, sinon acheter
+                r.tag:Hide(); r.btn:Hide(); r.tot:SetText("")
+                if need > 0 then
+                    f.buyCount = f.buyCount + 1
+                    if v and (not low or v.p <= low) then
+                        r.tag:Set(T("au marchand"), C.rule); r.tag:Show()
+                        r.tot:SetText(money(v.p * need))
+                        sVendor, nVendor = sVendor + v.p * need, nVendor + 1
+                        self.skipSet[id] = true
+                    elseif alt then
+                        r.tag:Set(string.format(T("%s en a %d"), alt, altN), C.info); r.tag:Show()
+                        nAlt = nAlt + 1
+                        self.skipSet[id] = true
+                    elseif none then
+                        r.tag:Set(T("introuvable"), C.negative); r.tag:Show()
+                        nNone = nNone + 1; noneName = noneName or name
+                        self.skipSet[id] = true
+                    else
+                        r.tot:SetText(low and money(low * need) or "")
+                        if low then sAH = sAH + low * need end
+                        nAH = nAH + 1
+                        r.btn:Show()
+                        if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
+                        elseif b and b.id == id and b.phase == "confirm" then r.btn:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                        elseif b and b.id == id and (b.phase == "quote" or b.phase == "wait") then r.btn:SetLabel("…")
+                        else r.btn:SetLabel(string.format(T("Acheter %d"), need)) end
+                    end
                 end
+                n = n + 1
                 r:Show()
             else r:Hide() end
         end
         self.main.sub:SetText(l and string.format(T("%d objets"), n) or "")
-        self.total:SetText(total > 0 and (T("total") .. " ~ " .. money(total)) or "")
+        -- résumé
+        local lines = {
+            { string.format(T("À l'HV (%d)"), nAH), nAH > 0 and money(sAH) or "-" },
+            { string.format(T("Chez le marchand (%d)"), nVendor), nVendor > 0 and money(sVendor) or "-" },
+            { string.format(T("Chez tes persos (%d)"), nAlt), nAlt > 0 and (UI:Hex(C.info) .. T("par courrier") .. "|r") or "-" },
+            { string.format(T("Introuvable (%d)"), nNone), nNone > 0 and (UI:Hex(C.negative) .. (noneName or "") .. "|r") or "-" },
+            { T("Ton or"), UI:GoldText(GetMoney and GetMoney() or 0) },
+        }
+        for i, sl in ipairs(self.sumLines) do sl[1]:SetText(lines[i][1]); sl[2]:SetText(lines[i][2]) end
+        local inBuy = b and b.list == cur
+        self.buyAll:SetEnabled(cur ~= nil and nAH > 0 or (inBuy and b.phase == "confirm"))
+        self.searchAll:SetEnabled(cur ~= nil)
+        self.buyAll:SetLabel((b and b.phase == "confirm") and string.format(T("Confirmer %s"), money(b.total)) or string.format(T("Tout acheter à l'HV (%d)"), nAH))
+        local done = inBuy and (b.count or 0) or 0
+        local totalSteps = done + nAH
+        self.prog.fill:SetColor(ar, ag, ab, 1)
+        self.prog.fillF:SetWidth(math.max(1, (self.prog:GetWidth() or 190) * (totalSteps > 0 and done / totalSteps or 0)))
+        self.prog:SetShown(inBuy or false); self.progText:SetShown(inBuy or false)
+        if inBuy then self.progText:SetText(string.format(T("%d / %d acheté(s) · %s dépensés"), done, totalSteps, money(b.spent or 0))) end
+    end
+
+    -- Prix surveillés (alertes de prix) : seuil, plus bas, « ça y est »
+    function bv:RefreshWatch(alerts)
+        self.main.title:SetText(T("Prix surveillés"))
+        local list = {}
+        for id, max in pairs(alerts) do table.insert(list, { id = id, max = max, name = WK.GetItemInfo(id) or ("#" .. id) }) end
+        table.sort(list, function(x, y) return x.name < y.name end)
+        self.main.sub:SetText(string.format(T("%d objets"), #list))
+        self.empty:SetShown(#list == 0)
+        self.empty:SetText(T("Aucun prix surveillé : « Surveiller » dans Parcourir ou Prix."))
+        for i, r in ipairs(self.irows) do
+            local e = list[i]
+            r.watch, r.vendor = e and true or nil, nil
+            if e then
+                r.id, r.need = e.id, 1
+                r.icon:SetTexture(itemIcon(e.id))
+                r.a:SetText(e.name); r.a:SetTextColor(1, 1, 1)
+                r.who:SetText(T("sous") .. " " .. money(e.max))
+                r.b:SetText("")
+                local low = lowestOther(e.id) or S:Price(e.id)
+                r.c:SetText(low and money(low) or "-")
+                local av = available(e.id)
+                r.d:SetText(av and tostring(av) or "")
+                r.tot:SetText("")
+                r.tag:Hide()
+                r.btn:Show(); r.btn:SetLabel(T("Chercher"))
+                if low and low <= e.max then r.tot:SetText(UI:Hex(C.positive) .. T("ça y est") .. "|r") end
+                r:Show()
+            else r:Hide() end
+        end
+        for i, sl in ipairs(self.sumLines) do sl[1]:SetText(i == 1 and T("Ton or") or ""); sl[2]:SetText(i == 1 and UI:GoldText(GetMoney and GetMoney() or 0) or "") end
+        self.buyAll:SetEnabled(false); self.searchAll:SetEnabled(false)
+        self.prog:Hide(); self.progText:Hide()
     end
 
     -----------------------------------------------------------------------
@@ -2230,3 +2392,21 @@ function UI:AHWindowSearch(_, name)
     return true
 end
 function UI:AuctionTabs() return view end
+
+-- Objets vus chez les marchands (prix, nom du PNJ) : « au marchand » dans la page À acheter
+WK:On("MERCHANT_SHOW", function()
+    C_Timer.After(0.3, function()
+        local g = WK.DB.global
+        g.vendorSeen = g.vendorSeen or {}
+        local n = GetMerchantNumItems and GetMerchantNumItems() or 0
+        local npc = UnitName and UnitName("npc")
+        for i = 1, n do
+            local link = GetMerchantItemLink and GetMerchantItemLink(i)
+            local id = link and WK:ParseItemID(link)
+            local _, _, price, stack = WK.MerchantItemInfo(i)
+            if id and price and price > 0 then
+                g.vendorSeen[id] = { p = math.floor(price / math.max(1, stack or 1)), npc = npc, at = time() }
+            end
+        end
+    end)
+end)
