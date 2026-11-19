@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.70.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans le jeu : cette version livre le client PC 1.7.1 (page « Mises à jour » remaniée).",
+        },
+    },
+    {
         version = "1.70.0", date = "19/11/2026", restart = true,
         added = {
             "Statistiques du compte en vol : pendant un vol, la touche de la carte (M) ouvre une fenêtre à la place de la carte. À gauche le vol (trajet dessiné avec ta position, arrivée dans…, vols et temps en l'air des 30 derniers jours, trajet le plus pris) ; à droite « Le savais-tu ? », des chiffres du compte qui défilent toutes les 8 s (ventes HV de la semaine, or sur 30 jours, temps de jeu, record de donjon, pêche, quêtes, rares, plus belle vente…), molette ou flèches pour passer. Le bouton « Carte » ouvre quand même la carte ; la fenêtre se ferme à l'atterrissage.",

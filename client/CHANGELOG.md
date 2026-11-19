@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.7.1 — 19/11/2026
+
+### Modifications
+- « Accueil » devient « Mises à jour » et ne parle plus que de l'addon : la version et le bouton « Mettre à jour » en haut, trois tuiles (dernière sauvegarde, prochaine vérification, dossier de l'addon), puis les nouveautés à installer (ou celles de la dernière version).
+- La liste « Tes persos » et le bouton « Lancer WoW Forever » sont retirés (les persos sont dans le Tableau de bord).
+- Barre latérale dans l'ordre : Tableau de bord, Mises à jour, Nouveautés, Sauvegardes, Notifications, Réglages.
+
 ## 1.7.0 — 19/11/2026
 
 ### Ajouts

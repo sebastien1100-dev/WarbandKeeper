@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.0"
+CLIENT_VERSION = "1.7.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1471,7 +1471,7 @@ class NotifyPage(Page):
             self.app.toast("Warband Keeper · Les notifications fonctionnent.", "positive")
 
 
-@page("home", "Accueil", "⌂")
+@page("home", "Mises à jour", "⟳")
 class HomePage(Page):
     def __init__(self, app, parent):
         super().__init__(app, parent)
@@ -1502,73 +1502,31 @@ class HomePage(Page):
         self.status.pack(anchor="w", fill="x", pady=(10, 0))
         b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
 
-        # (les nouveautés sont dans leur page, plus sur l'accueil)
-        # Dessous : tes persos (lus dans tes réglages) à gauche ; sauvegarde, vérification et raccourcis à droite
-        low = tk.Frame(self, bg=C["bg"])
-        low.pack(fill="both", expand=True, pady=(12, 0))
-        side = tk.Frame(low, bg=C["bg"], width=210)
-        side.pack(side="right", fill="y", padx=(12, 0))
-        side.pack_propagate(False)
-        pc = Card(low, "Tes persos")
-        pc.pack(side="left", fill="both", expand=True)
-        self.persos = pc.body
-        # sauvegarde et prochaine vérification dans une seule carte (tout tient dans la fenêtre)
-        sc = Card(side)
-        sc.pack(fill="x")
-        label(sc.body, "SAUVEGARDE", fg="dim", font="smallb").pack(anchor="w")
-        self.sv = label(sc.body, "", font="body")
-        self.sv.pack(anchor="w", pady=(1, 1))
-        save = label(sc.body, "Sauvegarder maintenant", fg="accent", font="small", cursor="hand2")
-        save.pack(anchor="w")
-        save.bind("<Button-1>", lambda e: self.app.pages["backups"].backup_now())
-        label(sc.body, "PROCHAINE VÉRIFICATION", fg="dim", font="smallb").pack(anchor="w", pady=(8, 0))
-        self.nextCheck = label(sc.body, "", font="body")
-        self.nextCheck.pack(anchor="w", pady=(1, 0))
-        self.launch = Button(side, "▶  Lancer WoW Forever", self.launch_game, "secondary", width=210, height=30)
-        self.launch.pack(fill="x", pady=(8, 0))
-        Button(side, "Dossier AddOns", self.app.open_addons, "secondary", width=210, height=30).pack(fill="x", pady=(6, 0))
+        # Dessous : trois tuiles (sauvegarde, prochaine vérification, dossier), puis ce que contiennent
+        # les versions à installer (ou la dernière). Les persos sont dans le Tableau de bord.
+        tiles = tk.Frame(self, bg=C["bg"])
+        tiles.pack(fill="x", pady=(12, 0))
+        for i in range(3):
+            tiles.columnconfigure(i, weight=1, uniform="t")
 
-    def launch_game(self):
-        exe = game_exe(self.app.addons) if self.app.addons else None
-        if not exe:
-            return self.app.toast("Jeu introuvable à côté du dossier AddOns.", "warning")
-        try:
-            if IS_WIN:
-                os.startfile(exe)
-            else:
-                subprocess.Popen([exe])
-            self.app.toast("Lancement de WoW Forever…", "positive")
-        except OSError as e:
-            self.app.toast("Impossible de lancer le jeu : %s" % e, "negative")
-
-    def fill_persos(self):
-        for w in self.persos.winfo_children():
-            w.destroy()
-        chars = read_characters(self.app.addons) if self.app.addons else []
-        if not chars:
-            label(self.persos, "Lance le jeu une fois avec l'addon : tes persos apparaîtront ici.", fg="muted", font="small",
-                  wraplength=320).pack(anchor="w")
-            return
-        total = sum(int(c["money"] or 0) for c in chars)
-        label(self.persos, "%d perso%s · %s au total" % (len(chars), "s" if len(chars) > 1 else "", money_text(total)),
-              fg="muted", font="small").pack(anchor="w", pady=(0, 4))
-        # tableau aligné : pastille, nom, niveau, or, dernière connexion (colonnes de largeur fixe)
-        grid = tk.Frame(self.persos, bg=C["surface"])
-        grid.pack(fill="x")
-        grid.columnconfigure(1, weight=1, minsize=96)
-        grid.columnconfigure(2, minsize=36)
-        grid.columnconfigure(3, minsize=72)
-        grid.columnconfigure(4, minsize=80)
-        for col, txt, st in ((1, "PERSO", "w"), (2, "NIV.", "e"), (3, "OR", "e"), (4, "VU", "e")):
-            label(grid, txt, fg="dim", font="smallb").grid(row=0, column=col, sticky=st, pady=(0, 4))
-        for i, c in enumerate(chars[:8], start=1):
-            dot = tk.Canvas(grid, width=10, height=10, bg=C["surface"], highlightthickness=0)
-            dot.create_oval(1, 1, 9, 9, fill=CLASS_COLORS.get(c["cls"], C["muted"]), outline="")
-            dot.grid(row=i, column=0, padx=(0, 8), pady=3)
-            label(grid, c["name"], font="body").grid(row=i, column=1, sticky="w")
-            label(grid, str(c["level"] or "?"), fg="muted", font="small").grid(row=i, column=2, sticky="e")
-            label(grid, money_text(c["money"]), fg="text", font="small").grid(row=i, column=3, sticky="e")
-            label(grid, ago_text(c["seen"]), fg="dim", font="small").grid(row=i, column=4, sticky="e")
+        def tile(col, title, link, cmd):
+            c = Card(tiles)
+            c.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 6, 0 if col == 2 else 6))
+            label(c.body, title, fg="dim", font="smallb").pack(anchor="w")
+            v = label(c.body, "", font="bodyb")
+            v.pack(anchor="w", pady=(2, 2))
+            ln = label(c.body, link, fg="accent", font="small", cursor="hand2")
+            ln.pack(anchor="w")
+            ln.bind("<Button-1>", lambda e: cmd())
+            return v
+        self.sv = tile(0, "DERNIÈRE SAUVEGARDE", "Sauvegarder maintenant", lambda: self.app.pages["backups"].backup_now())
+        self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show("settings"))
+        self.folder = tile(2, "DOSSIER DE L'ADDON", "Ouvrir le dossier", self.app.open_addons)
+        nc = Card(self, "Nouveautés")
+        nc.pack(fill="both", expand=True, pady=(12, 0))
+        self.notesTitle = nc.head.winfo_children()[0]
+        wrap, self.notes = notes_view(nc.body, height=6)
+        wrap.pack(fill="both", expand=True)
 
     def set_busy(self, text, value=None):
         if value is None:
@@ -1655,8 +1613,10 @@ class HomePage(Page):
         else:
             left = max(0, every - (time.time() - a.lastCheck))
             self.nextCheck.configure(text="dans %d min" % (left // 60 + 1) if left < 3600 else "dans %d h" % (left // 3600 + 1))
-        self.launch.set(enabled=bool(a.addons and game_exe(a.addons)))
-        self.fill_persos()
+        self.folder.configure(text=short_path(game_dir(a.addons), 34) if a.addons else "pas choisi")
+        newer = a.newer() if (inst and latest and vtuple(inst) < vtuple(latest)) else []
+        self.notesTitle.configure(text="À installer" if newer else "Dernière version")
+        fill_notes(self.notes, newer or a.releases[:1], "Pas encore de notes : vérifie les versions.")
 
 
 @page("notes", "Nouveautés", "✦")
@@ -2092,6 +2052,9 @@ class App:
         tk.Label(tb, text="Warband Keeper", bg=C["sidebar"], fg=C["accent"], font=App.fonts["h3"]).pack(anchor="w")
         tk.Label(tb, text="Client " + CLIENT_VERSION, bg=C["sidebar"], fg=C["dim"], font=App.fonts["small"]).pack(anchor="w")
         self.nav = {}
+        # ordre de la barre latérale (les pages sont déclarées dans un autre ordre)
+        order = ["dash", "home", "notes", "backups", "notify", "settings"]
+        PAGES.sort(key=lambda c: order.index(c.key) if c.key in order else 99)
         for cls in PAGES:
             b = tk.Label(side, text="  %s   %s" % (cls.icon, cls.title), bg=C["sidebar"], fg=C["muted"], font=App.fonts["nav"],
                          anchor="w", padx=14, pady=9, cursor="hand2")
@@ -2479,7 +2442,7 @@ class App:
             if newer and latest != self.notified:
                 self.notified = latest
                 if not self.cfg["autoInstall"]:
-                    self.toast("Nouvelle version %s de Warband Keeper : « Mettre à jour » sur l'Accueil." % latest, "warning")
+                    self.toast("Nouvelle version %s de Warband Keeper : « Mettre à jour » dans la page Mises à jour." % latest, "warning")
                 flash_taskbar(self.root)
             # installation automatique (Réglages > Mises à jour), seulement sur un addon déjà installé
             if not err and self.cfg["autoInstall"] and inst and self.latest_version and not self.busy \
