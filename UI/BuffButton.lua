@@ -184,6 +184,23 @@ local function build()
                 if not inCombat() then btn:Show() end
             else UI:RefreshBuffButton() end
         end,
+        -- « Tester » : un buff part toutes les 2 s, le nombre de joueurs à buffer descend
+        test = function()
+            btn.sample = true
+            local id = buffFor("player") or (BUFFS[myClass() or ""] or {}).cast or 1126
+            local n = 4
+            paint(spellIcon(id), n)
+            if not inCombat() then btn:Show() end
+            btn.testTicker = C_Timer.NewTicker and C_Timer.NewTicker(2, function()
+                n = n > 1 and n - 1 or 4
+                paint(spellIcon(id), n)
+            end)
+        end,
+        testStop = function()
+            if btn.testTicker then btn.testTicker:Cancel(); btn.testTicker = nil end
+            btn.sample = nil
+            UI:RefreshBuffButton()
+        end,
     })
     btn:Hide()
 end

@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Mode édition, « Tester » : le chrono de donjon défile et un boss tombe au bout de 4 s ; les départs du bandeau des quais approchent seconde après seconde ; le bouton « Buffer le suivant » voit le nombre de joueurs à buffer descendre ; le rappel du Réal s'affiche avec le nom d'un boss.
+
 ## v1.56.1 — 19/11/2026
 
 _Un /reload suffit._

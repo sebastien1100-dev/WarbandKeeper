@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.2", date = "19/11/2026",
+        changed = {
+            "Mode édition, « Tester » : le chrono de donjon défile et un boss tombe au bout de 4 s ; les départs du bandeau des quais approchent seconde après seconde ; le bouton « Buffer le suivant » voit le nombre de joueurs à buffer descendre ; le rappel du Réal s'affiche avec le nom d'un boss.",
+        },
+    },
+    {
         version = "1.56.1", date = "19/11/2026",
         fixed = {
             "HV, Parcourir : la catégorie « Jeton WoW » est retirée (le jeton n'existe pas sur WoW Forever).",

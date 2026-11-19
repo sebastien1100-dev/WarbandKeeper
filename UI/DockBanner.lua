@@ -189,6 +189,29 @@ local function build()
             f.sample = on or nil
             if on then f:Paint(SAMPLE); f:Show() else UI:RefreshDockBanner() end
         end,
+        -- « Tester » : les départs approchent seconde après seconde
+        test = function()
+            f.sample = true
+            local data = {}
+            for i, e in ipairs(SAMPLE) do
+                local st = {}
+                for k, v in pairs(e.st) do st[k] = v end
+                data[i] = { to = e.to, kind = e.kind, st = st }
+            end
+            f:Paint(data); f:Show()
+            f.testTicker = C_Timer.NewTicker and C_Timer.NewTicker(1, function()
+                for _, e in ipairs(data) do
+                    e.st.inn = math.max(0, e.st.inn - 1)
+                    e.st.following = math.max(0, e.st.following - 1)
+                end
+                f:Paint(data)
+            end)
+        end,
+        testStop = function()
+            if f.testTicker then f.testTicker:Cancel(); f.testTicker = nil end
+            f.sample = nil
+            UI:RefreshDockBanner()
+        end,
     })
     return f
 end

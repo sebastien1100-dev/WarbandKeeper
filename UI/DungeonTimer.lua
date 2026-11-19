@@ -101,6 +101,29 @@ local function build()
             f.sample = on or nil
             if on then f:Paint(SAMPLE); f:Show() else UI:RefreshDungeonTimer() end
         end,
+        -- « Tester » : le chrono défile et le boss en cours tombe au bout de 4 s
+        test = function()
+            f.sample = true
+            local data = { name = SAMPLE.name, elapsed = SAMPLE.elapsed, record = SAMPLE.record, rows = {} }
+            for i, r in ipairs(SAMPLE.rows) do data.rows[i] = { r[1], r[2], r[3], r[4], r[5] } end
+            local n = 0
+            f:Paint(data); f:Show()
+            f.testTicker = C_Timer.NewTicker and C_Timer.NewTicker(1, function()
+                n = n + 1
+                data.elapsed = data.elapsed + 1
+                if n == 4 then
+                    local cur = data.rows[5]
+                    cur[2], cur[3], cur[5] = data.elapsed, data.elapsed - cur[4], nil
+                    data.rows[6][5] = true
+                end
+                f:Paint(data)
+            end)
+        end,
+        testStop = function()
+            if f.testTicker then f.testTicker:Cancel(); f.testTicker = nil end
+            f.sample = nil
+            UI:RefreshDungeonTimer()
+        end,
     })
     return f
 end
@@ -174,7 +197,10 @@ local function buildReal()
     setIcon()
     UI:RegisterHUD("realReminder", f, { label = T("Rappel du Réal"), default = { 0, 160 },
         enabled = function() return D():Config().real and WK:FeatureOn("dungeons") end,
-        sample = function(on) f.sample = on; if on then setIcon(); f:Show() else UI:RefreshRealReminder() end end })
+        sample = function(on) f.sample = on; if on then setIcon(); f:Show() else UI:RefreshRealReminder() end end,
+        -- « Tester » : comme après la victoire sur un boss
+        test = function() f.sample = true; f.boss = "Gorrak"; setIcon(); f:Show() end,
+        testStop = function() f.sample = nil; f.boss = nil; UI:RefreshRealReminder() end })
     f:Hide()
     return f
 end
