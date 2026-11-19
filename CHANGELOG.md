@@ -30,6 +30,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.41.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- LFG : le donjon choisi dans l'échelle est mis en valeur (fond et liseré à la couleur d'accent, nom en couleur), et les autres lignes s'éclairent au survol.
+
 ## v1.41.0 — 19/11/2026
 
 _Un /reload suffit._

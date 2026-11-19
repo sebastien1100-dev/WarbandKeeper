@@ -176,6 +176,12 @@ UI:RegisterPage({
             b.bar = b:CreateTexture(nil, "ARTWORK")
             b.bar:SetPoint("TOPLEFT", 32, -24)
             b.bar:SetHeight(3)
+            -- donjon choisi : liseré d'accent à gauche
+            b.edge = b:CreateTexture(nil, "ARTWORK", nil, 2)
+            b.edge:SetPoint("TOPLEFT", 0, -4); b.edge:SetPoint("BOTTOMLEFT", 0, 4); b.edge:SetWidth(3)
+            b.edge:Hide()
+            b:SetScript("OnEnter", function(s) if not s.sel then s.bg:SetColor(unpack(C.hover)); s.bg:Show() end end)
+            b:SetScript("OnLeave", function(s) if not s.sel then s.bg:Hide() end end)
             b:SetScript("OnClick", function(s)
                 self.sel = (self.sel == s.act) and nil or s.act
                 self:Refresh()
@@ -755,11 +761,16 @@ UI:RegisterPage({
             b.lv:SetText(a.min > 0 and tostring(a.min) or "")
             b.name:SetText(a.name .. (n > 0 and ("  " .. UI:Hex(C.muted) .. "· " .. n .. "|r") or ""))
             local far = a.min > 0 and (a.min > level + 5 or (a.max > 0 and a.max < level - 3))
-            b:SetAlpha(far and 0.45 or 1)
             local sel = self.sel == a.id
-            b.bg:SetColor(unpack(C.surface2)); b.bg:SetShown(sel)
-            b.name:SetTextColor(unpack(sel and C.text or C.text))
+            b.sel = sel
+            b:SetAlpha((far and not sel) and 0.45 or 1)
             local r, g, bl = UI:Accent()
+            -- mis en valeur : fond teinté d'accent, liseré, nom et niveau à la couleur d'accent
+            if sel then b.bg:SetColor(r, g, bl, 0.18) else b.bg:SetColor(unpack(C.hover)) end
+            b.bg:SetShown(sel)
+            b.edge:SetColorTexture(r, g, bl, 1); b.edge:SetShown(sel)
+            if sel then b.name:SetTextColor(r, g, bl); b.lv:SetTextColor(r, g, bl)
+            else b.name:SetTextColor(unpack(C.text)); b.lv:SetTextColor(unpack(C.dim)) end
             b.bar:SetColorTexture(r, g, bl, 1)
             b.bar:SetWidth(math.max(1, (lw - 40) * n / maxN)); b.bar:SetShown(n > 0)
             y = y + 36

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.41.1", date = "19/11/2026",
+        changed = {
+            "LFG : le donjon choisi dans l'échelle est mis en valeur (fond et liseré à la couleur d'accent, nom en couleur), et les autres lignes s'éclairent au survol.",
+        },
+    },
+    {
         version = "1.41.0", date = "19/11/2026",
         changed = {
             "Pêche : les réglages du mode pêche quittent QoL pour la page Artisanat > Pêche. Une roue dentée à droite les ouvre en cartes sur deux colonnes (mode pêche, une seule touche, tenue et appâts, confort, récapitulatif) ; un second clic revient à l'onglet d'avant.",
