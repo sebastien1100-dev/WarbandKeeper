@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.14 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton « Buffer le suivant » : il ne voyait aucun joueur autour de toi hors de ton groupe. Les plaques de nom amies n'étaient jamais allumées, car l'ancienne façon de changer un réglage du jeu n'existe plus sur WoW Forever. L'addon passe maintenant par la nouvelle (C_CVar).
+- Même correction pour les autres réglages du jeu lus ou changés par l'addon : minicarte tournante (pastilles, tracés, HUD de récolte), butin automatique, durée des ventes à l'HV, profilage du processeur.
+
 ## v1.77.13 — 19/11/2026
 
 _Un /reload suffit._

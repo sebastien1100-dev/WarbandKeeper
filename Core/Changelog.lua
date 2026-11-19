@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.14", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : il ne voyait aucun joueur autour de toi hors de ton groupe. Les plaques de nom amies n'étaient jamais allumées, car l'ancienne façon de changer un réglage du jeu n'existe plus sur WoW Forever. L'addon passe maintenant par la nouvelle (C_CVar).",
+            "Même correction pour les autres réglages du jeu lus ou changés par l'addon : minicarte tournante (pastilles, tracés, HUD de récolte), butin automatique, durée des ventes à l'HV, profilage du processeur.",
+        },
+    },
+    {
         version = "1.77.13", date = "19/11/2026",
         added = {
             "/wk buff : dit pourquoi le bouton « Buffer le suivant » est caché (réglage, monture, instance, combat, plaques de nom amies) et, joueur par joueur autour de toi, pourquoi il est écarté (JcJ, déjà buffé, hors de portée, en combat…) ou s'il est bon.",

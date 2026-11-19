@@ -46,7 +46,7 @@ local function show()
     saved = {
         parent = Minimap:GetParent(), points = pts, w = Minimap:GetWidth(), h = Minimap:GetHeight(),
         alpha = Minimap:GetAlpha(), zoom = Minimap.GetZoom and Minimap:GetZoom() or 0,
-        rotate = GetCVar and GetCVar("rotateMinimap"), mouse = (Minimap.IsMouseEnabled == nil) or Minimap:IsMouseEnabled(),
+        rotate = WK.GetCVar("rotateMinimap"), mouse = (Minimap.IsMouseEnabled == nil) or Minimap:IsMouseEnabled(),
         strata = Minimap:GetFrameStrata(),
     }
     Minimap:SetParent(holder)
@@ -55,7 +55,7 @@ local function show()
     Minimap:SetFrameStrata("BACKGROUND")
     Minimap:EnableMouse(false) -- les clics passent au travers (on joue « à travers » le HUD)
     if Minimap.SetZoom then Minimap:SetZoom(0) end -- le plus loin possible
-    if SetCVar then pcall(SetCVar, "rotateMinimap", "1") end -- le haut du HUD = devant le perso
+    WK.SetCVar("rotateMinimap", "1") -- le haut du HUD = devant le perso
     holder:Show()
     UI:ApplyGatherHUD()
 end
@@ -72,7 +72,7 @@ local function hide()
     Minimap:SetFrameStrata(s.strata or "LOW")
     Minimap:EnableMouse(s.mouse ~= false)
     if Minimap.SetZoom then Minimap:SetZoom(s.zoom or 0) end
-    if SetCVar and s.rotate then pcall(SetCVar, "rotateMinimap", s.rotate) end
+    if s.rotate then WK.SetCVar("rotateMinimap", s.rotate) end
     if holder then holder:Hide() end
 end
 

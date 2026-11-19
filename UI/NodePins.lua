@@ -72,7 +72,7 @@ local function updateMini()
     local radius = viewRadius()
     local limit = radius * 0.93
     local half = Minimap:GetWidth() / 2
-    local rotate = GetCVar and GetCVar("rotateMinimap") == "1"
+    local rotate = WK.GetCVar("rotateMinimap") == "1"
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or nil
     local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
     local w, h = size[1], size[2]

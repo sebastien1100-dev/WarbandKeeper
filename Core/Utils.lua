@@ -200,3 +200,39 @@ function WK.Latin(s)
     return (s:gsub("[\208-\211][\128-\191]", function(ch) return CYR[ch] or "?" end))
 end
 
+-- Réglages du jeu (CVar) : GetCVar / SetCVar ont disparu sur certains clients (WoW Forever) ; C_CVar d'abord.
+function WK.GetCVar(name)
+    if C_CVar and C_CVar.GetCVar then
+        local ok, v = pcall(C_CVar.GetCVar, name)
+        if ok then return v end
+    end
+    if GetCVar then
+        local ok, v = pcall(GetCVar, name)
+        if ok then return v end
+    end
+    return nil
+end
+function WK.GetCVarBool(name)
+    if C_CVar and C_CVar.GetCVarBool then
+        local ok, v = pcall(C_CVar.GetCVarBool, name)
+        if ok then return v end
+    end
+    if GetCVarBool then
+        local ok, v = pcall(GetCVarBool, name)
+        if ok then return v end
+    end
+    local v = WK.GetCVar(name)
+    return v == "1"
+end
+-- renvoie vrai si le réglage a été posé
+function WK.SetCVar(name, value)
+    if C_CVar and C_CVar.SetCVar then
+        local ok, r = pcall(C_CVar.SetCVar, name, value)
+        if ok and r ~= false then return true end
+    end
+    if SetCVar then
+        local ok = pcall(SetCVar, name, value)
+        if ok then return true end
+    end
+    return false
+end

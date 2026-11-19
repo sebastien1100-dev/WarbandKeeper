@@ -363,7 +363,7 @@ local function numAddOns() local f = (C_AddOns and C_AddOns.GetNumAddOns) or Get
 local function addOnInfo(i) local f = (C_AddOns and C_AddOns.GetAddOnInfo) or GetAddOnInfo; if f then return f(i) end end
 local function addOnLoaded(i) local f = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded; return f and f(i) end
 local memBase -- mémoire totale des addons un peu après la connexion (hausse depuis la connexion)
-local function profiling() return GetCVarBool and GetCVarBool("scriptProfile") and GetAddOnCPUUsage ~= nil end
+local function profiling() return WK.GetCVarBool("scriptProfile") and GetAddOnCPUUsage ~= nil end
 local function perfData()
     local out = { list = {}, total = 0, loaded = 0, count = 0 }
     out.fps = GetFramerate and math.floor(GetFramerate() + 0.5) or 0

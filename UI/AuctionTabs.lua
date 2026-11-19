@@ -28,7 +28,7 @@ local THROTTLE = 1.1
 local function cfg()
     local c = S:Config()
     if c.tabs == nil then c.tabs = true end
-    c.postDur = c.postDur or tonumber(GetCVar and GetCVar("auctionHouseDurationDropdown") or "") or 2
+    c.postDur = c.postDur or tonumber(WK.GetCVar("auctionHouseDurationDropdown") or "") or 2
     if c.postDur < 1 or c.postDur > 3 then c.postDur = 2 end
     c.posts = c.posts or {}
     c.sellFav, c.sellHidden, c.qtyMode = c.sellFav or {}, c.sellHidden or {}, c.qtyMode or {}

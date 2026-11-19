@@ -147,11 +147,11 @@ end
 -- Butin
 ---------------------------------------------------------------------------
 function M:GameAutoLoot()
-    return GetCVarBool and GetCVarBool("autoLootDefault")
+    return WK.GetCVarBool("autoLootDefault")
 end
 
 function M:DisableGameAutoLoot()
-    if SetCVar then SetCVar("autoLootDefault", "0") end
+    WK.SetCVar("autoLootDefault", "0")
     WK:NotifyChanged()
 end
 

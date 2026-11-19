@@ -263,16 +263,17 @@ end
 -- Plaques de nom des joueurs amis : allumées hors combat quand le bouton sert (valeur d'avant rendue sinon)
 function UI:SyncBuffPlates()
     local c = cfg()
-    if inCombat() or not (GetCVar and SetCVar) then return end
+    if inCombat() then return end
     local want = c and WK.BUFF_CLASSES[myClass() or ""] and c.buffAround ~= false and c.buffPlates ~= false and WK:FeatureOn("classes")
     local g = WK.DB.global
     if want then
-        if GetCVar("nameplateShowFriends") ~= "1" then
-            g.buffPlatesOld = GetCVar("nameplateShowFriends")
-            pcall(SetCVar, "nameplateShowFriends", "1")
+        local cur = WK.GetCVar("nameplateShowFriends")
+        if cur ~= "1" then
+            g.buffPlatesOld = g.buffPlatesOld or cur or "0"
+            UI.buffPlatesSet = WK.SetCVar("nameplateShowFriends", "1")
         end
     elseif g.buffPlatesOld then
-        pcall(SetCVar, "nameplateShowFriends", g.buffPlatesOld)
+        WK.SetCVar("nameplateShowFriends", g.buffPlatesOld)
         g.buffPlatesOld = nil
     end
 end
@@ -298,7 +299,8 @@ function UI:BuffDiag()
     local function yn(v) return v and "oui" or "non" end
     table.insert(out, string.format("classe %s (buffe : %s) · réglage « Buffer autour » : %s · module Classes : %s · plaques amies : %s (réglage %s)",
         cls, yn(WK.BUFF_CLASSES[cls]), yn(c and c.buffAround ~= false), yn(WK:FeatureOn("classes")),
-        tostring(GetCVar and GetCVar("nameplateShowFriends")), yn(c and c.buffPlates ~= false)))
+        tostring(WK.GetCVar("nameplateShowFriends")), yn(c and c.buffPlates ~= false))
+        .. (UI.buffPlatesSet == false and " · le jeu a refusé de les allumer" or ""))
     local inInst = IsInInstance and select(1, IsInInstance())
     table.insert(out, string.format("en combat : %s · monture : %s (permis : %s) · instance : %s (permis : %s) · mort : %s · JcJ : %s",
         yn(inCombat()), yn(IsMounted and IsMounted()), yn(c and c.buffMounted), yn(inInst), yn(c and c.buffInstance),
