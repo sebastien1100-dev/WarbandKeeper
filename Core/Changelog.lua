@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.78.1", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : les plaques de nom étaient bien à l'écran mais leurs joueurs n'étaient pas lus (le champ utilisé n'existe pas sur WoW Forever). Les joueurs des plaques sont maintenant lus par leur unité (nameplate1 à 40) ; /wk buff dit combien d'unités et de joueurs il en tire.",
+        },
+    },
+    {
         version = "1.78.0", date = "19/11/2026",
         fixed = {
             "Traversées en bateau : marcher sur le pont arrêtait la traversée en pleine mer, et le départ n'était alors pas noté. Elle ne s'arrête plus qu'en descendant au quai, quand le navire est à quai depuis 8 s, ou en prenant un vol ; l'heure d'arrivée retenue est celle où le navire s'est arrêté.",

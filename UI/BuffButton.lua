@@ -84,6 +84,22 @@ local function inRange(spell, unit)
     return CheckInteractDistance and CheckInteractDistance(unit, 4) and true or false
 end
 
+-- Unités des plaques de nom affichées : « nameplate1 » à « nameplate40 » (marche sur tous les clients ;
+-- le champ namePlateUnitToken des cadres de plaque n'existe pas partout)
+local function plateUnits(into)
+    for i = 1, 40 do
+        local u = "nameplate" .. i
+        if UnitExists(u) then table.insert(into, u) end
+    end
+    if C_NamePlate and C_NamePlate.GetNamePlates then
+        for _, plate in ipairs(C_NamePlate.GetNamePlates() or {}) do
+            local tok = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
+            if tok then table.insert(into, tok) end
+        end
+    end
+    return into
+end
+
 -- Joueurs à buffer, dans l'ordre : toi, ton groupe, puis les plaques de nom des joueurs amis
 local function candidates()
     local c = cfg() or {}
@@ -92,11 +108,7 @@ local function candidates()
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
-    if C_NamePlate and C_NamePlate.GetNamePlates then
-        for _, plate in ipairs(C_NamePlate.GetNamePlates() or {}) do
-            if plate.namePlateUnitToken then table.insert(units, plate.namePlateUnitToken) end
-        end
-    end
+    plateUnits(units)
     local refresh = (c.buffRefresh or 3) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     for _, u in ipairs(units) do
@@ -321,14 +333,12 @@ function UI:BuffDiag()
     -- joueurs vus, avec la raison quand ils sont écartés
     local units = { "player", "target", "mouseover", "focus" }
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then for i = 1, 4 do table.insert(units, "party" .. i) end end
-    local nplates = 0
-    if C_NamePlate and C_NamePlate.GetNamePlates then
-        for _, plate in ipairs(C_NamePlate.GetNamePlates() or {}) do
-            nplates = nplates + 1
-            if plate.namePlateUnitToken then table.insert(units, plate.namePlateUnitToken) end
-        end
-    end
-    table.insert(out, string.format("plaques de nom à l'écran : %d", nplates))
+    local nplates = C_NamePlate and C_NamePlate.GetNamePlates and #(C_NamePlate.GetNamePlates() or {}) or 0
+    local before = #units
+    plateUnits(units)
+    local players = 0
+    for k = before + 1, #units do if UnitIsPlayer(units[k]) then players = players + 1 end end
+    table.insert(out, string.format("plaques de nom à l'écran : %d (unités lues : %d, dont joueurs : %d)", nplates, #units - before, players))
     local refresh = ((c and c.buffRefresh) or 3) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     local shown, seen = 0, {}
