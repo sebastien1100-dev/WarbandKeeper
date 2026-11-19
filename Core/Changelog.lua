@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.67.0", date = "19/11/2026",
+        added = {
+            "Résumé : « Que faire maintenant ? » en tête de page. La meilleure idée en grand avec son action (Voir, Guider…), les deux suivantes en petit, les autres citées en une ligne. Les idées viennent de ce que l'addon sait déjà (courrier qui expire, recharges prêtes, quêtes terminées à rendre avec l'XP, envois du Rangement, enchères sous-cotées, gris à vendre, repos plein…), classées par urgence ; chacune dit ce qu'elle rapporte.",
+        },
+    },
+    {
         version = "1.66.0", date = "19/11/2026", restart = true,
         added = {
             "Options > Fiabilité, journal d'erreurs : chaque erreur de Warband Keeper est notée (message, fichier, version, nombre de fois). Un point rouge sur l'icône Options signale une erreur pas encore vue ; « Copier le rapport » ouvre le texte déjà sélectionné, à coller tel quel.",
@@ -89,7 +95,6 @@ WK.Changelog = {
         version = "1.63.1", date = "19/11/2026",
         added = {
             "Patch notes > À venir : chaque idée a une pastille de priorité (Haute, Moyenne, Basse). Vue « Par priorité » (trois colonnes Haute / Moyenne / Basse, le thème en pastille sur chaque carte) ou « Par thème » (cartes triées par priorité).",
-            "À venir : nouvelles idées de fiabilité (journal d'erreurs avec « Copier le rapport », nettoyage des données, diagnostic, notes allégées), client PC (tableau de bord hors jeu, notifications Windows, sauvegardes synchronisées), Warband (« Que faire maintenant ? », objectifs par perso, comparer deux persos, carte de la Warband), guilde (prix HV partagés, rares signalés, recettes des membres) et confort (taille du texte, mode daltonien, raccourcis vers les pages).",
         },
     },
     {
@@ -3700,7 +3705,6 @@ WK.Roadmap = {
     { prio = 3, theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
     { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
-    { prio = 1, theme = "char", title = "« Que faire maintenant ? »", text = "Sur le Résumé, une seule recommandation tirée de tout ce que l'addon sait : repos plein, recharge prête, enchères à reposter, rangement à envoyer, quêtes qui font monter." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 2, theme = "rel", title = "Notes de version allégées en jeu", text = "Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG." },
     { prio = 2, theme = "client", title = "Tableau de bord hors jeu", text = "Dans le client PC : or et sa courbe, ventes HV de la dernière session, enchères qui expirent, listes d'achat, rangement, recharges de métier prêtes." },

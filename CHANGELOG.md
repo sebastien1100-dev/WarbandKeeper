@@ -40,7 +40,6 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
-- **« Que faire maintenant ? »** (haute) — Sur le Résumé, une seule recommandation tirée de tout ce que l'addon sait : repos plein, recharge prête, enchères à reposter, rangement à envoyer, quêtes qui font monter.
 - **Compétences d'armes** (moyenne) — Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche.
 - **Objectifs par perso** (moyenne) — Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans ~6 h au rythme actuel »).
 - **Carte de la Warband** (basse) — Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord.
@@ -82,6 +81,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.67.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Résumé : « Que faire maintenant ? » en tête de page. La meilleure idée en grand avec son action (Voir, Guider…), les deux suivantes en petit, les autres citées en une ligne. Les idées viennent de ce que l'addon sait déjà (courrier qui expire, recharges prêtes, quêtes terminées à rendre avec l'XP, envois du Rangement, enchères sous-cotées, gris à vendre, repos plein…), classées par urgence ; chacune dit ce qu'elle rapporte.
 
 ## v1.66.0 — 19/11/2026
 
@@ -178,7 +184,6 @@ _Un /reload suffit._
 
 ### Ajouts
 - Patch notes > À venir : chaque idée a une pastille de priorité (Haute, Moyenne, Basse). Vue « Par priorité » (trois colonnes Haute / Moyenne / Basse, le thème en pastille sur chaque carte) ou « Par thème » (cartes triées par priorité).
-- À venir : nouvelles idées de fiabilité (journal d'erreurs avec « Copier le rapport », nettoyage des données, diagnostic, notes allégées), client PC (tableau de bord hors jeu, notifications Windows, sauvegardes synchronisées), Warband (« Que faire maintenant ? », objectifs par perso, comparer deux persos, carte de la Warband), guilde (prix HV partagés, rares signalés, recettes des membres) et confort (taille du texte, mode daltonien, raccourcis vers les pages).
 
 ## v1.63.0 — 19/11/2026
 

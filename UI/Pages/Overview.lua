@@ -4,6 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 local TOP_H = 250
+local NOW_H = 168 -- « Que faire maintenant ? »
 local TODO_W = 420
 
 -- Liste « À faire » : actions utiles maintenant, les plus urgentes d'abord.
@@ -141,6 +142,70 @@ local function todoItems()
     return items
 end
 UI.TodoItems = todoItems -- aussi pour la fenêtre de rappels à la connexion (UI/LoginPopup.lua)
+
+-- « Que faire maintenant ? » : les idées d'« À faire », plus celles qui ne valent que pour le perso connecté
+-- (quêtes à rendre, envois du Rangement, enchères sous-cotées, gris à vendre), chacune avec son gain et
+-- son action ; classées par urgence puis par gain. { prio, icon, title, sub, gain, gainCol, act, go }
+local function nowItems()
+    local out = {}
+    for _, it in ipairs(todoItems()) do
+        local main, rest = it.text:match("^(.-)%s+·%s+(.+)$")
+        table.insert(out, { prio = it.prio, icon = it.icon, title = main or it.text, sub = rest, color = it.color,
+            go = it.go, act = WK.T("Voir"), group = it.group })
+    end
+    local X = WK.modules.XP
+    if X and WK:FeatureOn("xp") and not X:Me().maxed then
+        local q = X:Pending()
+        if #q > 0 then
+            local xp = 0
+            for _, e in ipairs(q) do xp = xp + (e.xp or 0) end
+            table.insert(out, { prio = 3.5, icon = "star", color = C.info,
+                title = string.format(WK.T(#q > 1 and "%d quêtes terminées à rendre" or "%d quête terminée à rendre"), #q),
+                sub = WK.T("guidage vers la plus proche"), gain = xp > 0 and ("+" .. (UI.FormatXP and UI.FormatXP(xp) or tostring(xp)) .. " XP") or nil, gainCol = C.info,
+                act = WK.T("Guider"), go = function() X:GuideNearest() end })
+        end
+    end
+    local St = WK.modules.Stash
+    if St and WK:FeatureOn("inventory") then
+        local ok, ships = pcall(St.MyShipments, St)
+        if ok and #ships > 0 then
+            local by, n = {}, 0
+            for _, e in ipairs(ships) do by[e.to] = (by[e.to] or 0) + 1; n = n + 1 end
+            local best, bn = nil, 0
+            for to, k in pairs(by) do if k > bn then best, bn = to, k end end
+            local c = WK.DB.global.characters[best]
+            table.insert(out, { prio = 4.5, icon = "send", color = C.rule,
+                title = string.format(WK.T("Envoyer %d lots du Rangement"), n),
+                sub = string.format(WK.T("surtout à %s · à la prochaine boîte aux lettres"), c and WK:CharName(c, best) or tostring(best)),
+                gain = WK.T("Rangement"), gainCol = C.rule, act = WK.T("Voir"),
+                go = function() UI:ShowPage("inventory"); if UI.pages.inventory then UI.pages.inventory.char = "stash"; UI:Refresh() end end })
+        end
+    end
+    local AS = WK.modules.AHSell
+    if AS and AS.UnderCount and WK:PageOn("auction") then
+        local n = AS:UnderCount()
+        if n > 0 then
+            table.insert(out, { prio = 4, icon = "coin", color = C.warning,
+                title = string.format(WK.T(n > 1 and "%d enchères sous-cotées" or "%d enchère sous-cotée"), n),
+                sub = WK.T("un autre vendeur est moins cher : annule et reposte"), gain = WK.T("HV"), gainCol = C.gold,
+                act = WK.T("Voir"), go = function() UI:ShowPage("auction") end })
+        end
+    end
+    local Q = WK.modules.QoL
+    if Q and Q.GreyItems then
+        local ok, list = pcall(Q.GreyItems, Q)
+        local total = 0
+        if ok then for _, g in ipairs(list) do total = total + (g.price or 0) end end
+        if total >= 10000 then
+            table.insert(out, { prio = 6.5, icon = "bag", title = WK.T("Vendre les objets gris des sacs"),
+                sub = WK.T("au prochain marchand (vente automatique si elle est active)"),
+                gain = "+" .. UI:ShortGold(total), gainCol = C.gold })
+        end
+    end
+    table.sort(out, function(a, b) if a.prio ~= b.prio then return a.prio < b.prio end return a.title < b.title end)
+    return out
+end
+UI.NowItems = nowItems
 local GAP = 16
 local GOAL_H = 54
 local RANGES = { { 7, "7 j" }, { 30, "30 j" }, { 90, "90 j" }, { 365, "1 an" } }
@@ -181,9 +246,53 @@ UI:RegisterPage({
         local k = UI.PAGE_W / 924
         for i, c in ipairs(BASE_COLS) do COLS[i] = { c[1], math.floor(c[2] * k), c[3] } end
 
+        -- Que faire maintenant ? (toute la largeur) : la meilleure idée en grand, deux suivantes en petit,
+        -- les autres citées en une ligne ---------------------------------------------------
+        local now = UI:Card(p)
+        now:SetPoint("TOPLEFT"); now:SetPoint("TOPRIGHT")
+        now:SetHeight(NOW_H)
+        self.now = now
+        now.head = UI:Text(now, 13, C.text); now.head:SetPoint("TOPLEFT", 16, -14); now.head:SetText(WK.T("Que faire maintenant ?"))
+        now.ctx = UI:Text(now, 11, C.dim); now.ctx:SetPoint("LEFT", now.head, "RIGHT", 10, 0)
+        local function idea(parent, big)
+            local r = CreateFrame("Button", nil, parent)
+            r:SetHeight(big and 54 or 42)
+            r.bg = UI:Rounded(r, 9, 0, "BACKGROUND", 1); r.bg:SetColor(unpack(C.surface2))
+            r.edge = r:CreateTexture(nil, "ARTWORK"); r.edge:SetWidth(3)
+            r.edge:SetPoint("TOPLEFT", 0, -8); r.edge:SetPoint("BOTTOMLEFT", 0, 8)
+            local isz = big and 36 or 26
+            r.ibox = CreateFrame("Frame", nil, r); r.ibox:SetSize(isz, isz); r.ibox:SetPoint("LEFT", 12, 0)
+            r.ibox.bg = UI:Rounded(r.ibox, big and 9 or 7, 0, "BACKGROUND", 2)
+            r.icon = UI:Icon(r.ibox, "star", big and 20 or 15, nil, "ARTWORK"); r.icon:SetPoint("CENTER")
+            r.title = UI:Text(r, big and 14 or 12, C.text); r.title:SetPoint("TOPLEFT", r.ibox, "TOPRIGHT", 12, big and -1 or 1)
+            r.title:SetJustifyH("LEFT"); if r.title.SetWordWrap then r.title:SetWordWrap(false) end
+            r.sub = UI:Text(r, big and 11 or 10, C.muted); r.sub:SetPoint("TOPLEFT", r.title, "BOTTOMLEFT", 0, -3)
+            r.sub:SetJustifyH("LEFT"); if r.sub.SetWordWrap then r.sub:SetWordWrap(false) end
+            r.btn = UI:Button(r, "Voir", big and 130 or 80, big and 28 or 24, big and "primary" or "secondary")
+            r.btn:SetPoint("RIGHT", -10, 0)
+            r.btn:SetScript("OnClick", function() if r.go then r.go() end end)
+            r.gain = UI:Badge(r, "", C.gold); r.gain:SetPoint("RIGHT", r.btn, "LEFT", -10, 0)
+            r:SetScript("OnClick", function() if r.go then r.go() end end)
+            return r
+        end
+        now.big = idea(now, true)
+        now.big:SetPoint("TOPLEFT", 16, -40); now.big:SetPoint("TOPRIGHT", -16, -40)
+        now.s1 = idea(now, false); now.s2 = idea(now, false)
+        now.s1:SetPoint("TOPLEFT", now.big, "BOTTOMLEFT", 0, -6)
+        now.s2:SetPoint("TOPRIGHT", now.big, "BOTTOMRIGHT", 0, -6)
+        now.more = UI:Text(now, 11, C.dim); now.more:SetPoint("BOTTOMLEFT", 16, 10); now.more:SetPoint("RIGHT", -16, 0)
+        now.more:SetJustifyH("LEFT"); if now.more.SetWordWrap then now.more:SetWordWrap(false) end
+        now.empty = UI:Text(now, 12, C.muted); now.empty:SetPoint("LEFT", now.head, "RIGHT", 16, 0)
+        now.empty:SetText(WK.T("Rien de pressé : tout est à jour."))
+        UI:OnResize(now, function(w)
+            local half = math.floor(((w or 800) - 32 - 6) / 2)
+            now.s1:SetWidth(half); now.s2:SetWidth(half)
+        end)
+        self.nowOff = NOW_H + GAP
+
         -- À faire (moitié gauche) : groupes Urgent / Bientôt / À noter ---------------------
         local todo = UI:Card(p, "À faire")
-        todo:SetPoint("TOPLEFT")
+        todo:SetPoint("TOPLEFT", 0, -self.nowOff)
         todo:SetSize(TODO_W, TOP_H)
         self.todo = todo
         -- compteur en pastille d'accent à côté du titre
@@ -244,7 +353,7 @@ UI:RegisterPage({
         local card = UI:Card(p, nil, nil, true)
         self.chartCard = card
         card:SetPoint("TOPLEFT", todo, "TOPRIGHT", GAP, 0)
-        card:SetPoint("TOPRIGHT", 0, 0)
+        card:SetPoint("TOPRIGHT", 0, -self.nowOff)
         card:SetHeight(TOP_H)
         local ct = UI:Text(card, 12, C.muted)
         ct:SetPoint("TOPLEFT", 16, -16)
@@ -283,7 +392,7 @@ UI:RegisterPage({
         UI:ChartHover(area, self.chart, function(pt) return WK:FormatMoney(pt.v) end)
 
         -- Objectifs (bandeau affiché seulement s'il y en a) ---------------------------
-        self.goalTop = -(TOP_H + GAP)
+        self.goalTop = -(TOP_H + GAP + self.nowOff)
         self.goalCards = UI:Pool(function()
             local g = CreateFrame("Button", nil, p)
             g:SetHeight(GOAL_H)
@@ -311,7 +420,7 @@ UI:RegisterPage({
         -- Tableau des personnages ---------------------------------------------------
         local tableBox = CreateFrame("Frame", nil, p)
         self.tableBox = tableBox
-        tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4))
+        tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4 + self.nowOff))
         tableBox:SetPoint("BOTTOMRIGHT", 0, 56 + GAP)
         self.colHeaders = {}
         for i, col in ipairs(BASE_COLS) do
@@ -526,6 +635,7 @@ UI:RegisterPage({
         if self.tableBox then self.tableBox:SetShown(not open) end
         if self.todo then self.todo:SetShown(not open) end
         if self.chartCard then self.chartCard:SetShown(not open) end
+        if self.now then self.now:SetShown(not open) end
         for _, g in ipairs(self.goalCards and self.goalCards.items or {}) do if open then g:Hide() end end
     end,
 
@@ -603,6 +713,57 @@ UI:RegisterPage({
         at(r.seen, "LEFT", COLS[7][2])
     end,
 
+    -- Que faire maintenant ? : remplit la carte (meilleure idée, deux suivantes, les autres en une ligne)
+    RefreshNow = function(self)
+        local now = self.now
+        if not now then return end
+        local list = nowItems()
+        local me = select(2, WK.DB:Me())
+        local zone = GetZoneText and GetZoneText() or ""
+        now.ctx:SetText(string.format(WK.T("pour %s"), WK:CharName(me, WK:CharKey())) .. ((zone ~= "") and ("  ·  " .. zone) or ""))
+        local r1, g1, b1 = UI:Accent()
+        local function paint(r, it, big)
+            r:SetShown(it ~= nil)
+            if not it then return end
+            local col = it.color or { r1, g1, b1 }
+            r.go = it.go
+            r.edge:SetColorTexture(col[1], col[2], col[3], big and 1 or 0)
+            r.ibox.bg:SetColor(col[1], col[2], col[3], 0.18)
+            r.icon:SetTexture(UI.MEDIA .. (it.icon or "star")); r.icon:SetVertexColor(col[1], col[2], col[3])
+            r.title:SetText(it.title)
+            r.sub:SetText(it.sub or "")
+            r.btn:SetShown(it.go ~= nil)
+            if it.go then r.btn.label:SetText(it.act or WK.T("Voir")) end
+            r.gain:SetShown(it.gain ~= nil)
+            if it.gain then r.gain:Set(it.gain, it.gainCol or C.gold) end
+            r.gain:ClearAllPoints()
+            if it.go then r.gain:SetPoint("RIGHT", r.btn, "LEFT", -10, 0) else r.gain:SetPoint("RIGHT", -12, 0) end
+            local w = r:GetWidth() or 400
+            local right = (it.go and (r.btn:GetWidth() + 20) or 12) + (it.gain and (r.gain:GetWidth() + 10) or 0)
+            r.title:SetWidth(math.max(80, w - right - (big and 64 or 52)))
+            r.sub:SetWidth(math.max(80, w - right - (big and 64 or 52)))
+        end
+        paint(now.big, list[1], true)
+        paint(now.s1, list[2], false)
+        paint(now.s2, list[3], false)
+        now.empty:SetShown(#list == 0)
+        local rest = {}
+        for i = 4, math.min(#list, 8) do table.insert(rest, list[i].title) end
+        now.more:SetText(#rest > 0 and (WK.T("Aussi :") .. " " .. table.concat(rest, "  ·  ")) or "")
+        -- carte plus basse quand il y a peu d'idées
+        local h = #list == 0 and 44 or (#list == 1 and 104 or (#list <= 3 and 150 or NOW_H))
+        if now:GetHeight() ~= h then
+            now:SetHeight(h)
+            self.nowOff = h + GAP
+            self.todo:ClearAllPoints(); self.todo:SetPoint("TOPLEFT", 0, -self.nowOff)
+            self.todo:SetWidth(math.floor((UI.PAGE_W - GAP) / 2))
+            self.chartCard:ClearAllPoints()
+            self.chartCard:SetPoint("TOPLEFT", self.todo, "TOPRIGHT", GAP, 0)
+            self.chartCard:SetPoint("TOPRIGHT", 0, -self.nowOff)
+            self.goalTop = -(TOP_H + GAP + self.nowOff)
+        end
+    end,
+
     Refresh = function(self)
         local S = WK.modules.Statistics
         local now = time()
@@ -653,6 +814,8 @@ UI:RegisterPage({
         self.todoBadge.text:SetTextColor(unpack(C.onAccent))
         self.todoBadge:SetWidth(math.max(22, (self.todoBadge.text:GetStringWidth() or 8) + 14))
 
+        self:RefreshNow()
+
         -- Objectifs
         self.goalCards:Reset()
         local goals = WK.modules.Goals:List()
@@ -675,7 +838,7 @@ UI:RegisterPage({
             else g.eta:SetText("") end
         end
         self.tableBox:ClearAllPoints()
-        self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4) - (shown > 0 and (GOAL_H + 12) or 0))
+        self.tableBox:SetPoint("TOPLEFT", 0, -(TOP_H + GAP + 4 + self.nowOff) - (shown > 0 and (GOAL_H + 12) or 0))
         self.tableBox:SetPoint("BOTTOMRIGHT", 0, 56 + GAP)
         self:LayoutModules()
         self:RefreshModules()
