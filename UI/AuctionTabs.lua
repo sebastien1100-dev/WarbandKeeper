@@ -189,7 +189,7 @@ end
 ---------------------------------------------------------------------------
 -- Construction
 ---------------------------------------------------------------------------
-local TABS = { { "buy", "Liste d'achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
+local TABS = { { "buy", "Achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
 
 local function panelBox(parent, title)
     local b = CreateFrame("Frame", nil, parent)
@@ -782,15 +782,19 @@ local function build(host)
     local bv = CreateFrame("Frame", nil, f)
     bv:SetPoint("TOPLEFT", 8, -34); bv:SetPoint("BOTTOMRIGHT", -8, 8)
     f.views.buy = bv
-    bv.lists = panelBox(bv, "Listes")
+    bv.lists = panelBox(bv, "Listes d'achat")
     bv.lists:SetPoint("TOPLEFT"); bv.lists:SetPoint("BOTTOMLEFT"); bv.lists:SetWidth(230)
+    -- recherche : n'importe quel objet de tes scans, à acheter ou à mettre dans la liste
+    bv.search = UI:Input(bv.lists, 208, 26, "Acheter un objet…", "search")
+    bv.search:SetPoint("TOPLEFT", 10, -28)
+    bv.search.onChange = function() bv:Refresh() end
     bv.lrows = {}
-    for i = 1, 10 do
+    for i = 1, 9 do
         local r = textRow(bv.lists, 24)
-        r:SetPoint("TOPLEFT", 6, -28 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -6, -28 - (i - 1) * 26)
+        r:SetPoint("TOPLEFT", 6, -62 - (i - 1) * 26); r:SetPoint("TOPRIGHT", -6, -62 - (i - 1) * 26)
         r.icon:Hide(); r.a:SetPoint("LEFT", 8, 0); r.a:SetPoint("RIGHT", -40, 0)
         r.b:SetPoint("RIGHT", -8, 0)
-        r:SetScript("OnClick", function(s) if s.name then cfg().curList = s.name; bv:Refresh() end end)
+        r:SetScript("OnClick", function(s) if s.name then cfg().curList = s.name; bv.search:SetText(""); bv:Refresh() end end)
         bv.lrows[i] = r
     end
     bv.searchAll = UI:Button(bv.lists, "Tout chercher", nil, 28, "primary")
@@ -815,6 +819,25 @@ local function build(host)
         r.c:SetPoint("RIGHT", -180, 0); r.c:SetWidth(90); r.c:SetTextColor(C.text[1], C.text[2], C.text[3])
         r.d:SetPoint("RIGHT", -110, 0); r.d:SetWidth(60)
         r.btn = UI:Button(r, "Acheter", 100, 22, "primary"); r.btn:SetPoint("RIGHT", -2, 0)
+        r.add = UI:IconButton(r, "plus", 22, "Ajouter à la liste d'achat")
+        r.add:SetPoint("RIGHT", r.btn, "LEFT", -6, 0)
+        r.add:SetScript("OnClick", function(s)
+            local row = s:GetParent()
+            if not row.id then return end
+            local _, lists = S:Lists()
+            local name = cfg().curList
+            if not (name and lists[name]) then name = T("Mes achats") end
+            local l = lists[name] or { items = {}, at = time(), v = 2 }
+            lists[name] = l
+            local q = math.max(1, bv.qty:GetNumber() > 0 and bv.qty:GetNumber() or 1)
+            local found
+            for _, it in ipairs(l.items) do if it[1] == row.id then it[2] = it[2] + q; found = true end end
+            if not found then table.insert(l.items, { row.id, q + S:Have(row.id) }) end
+            cfg().curList = name
+            WK:Print(string.format(T("%s ajouté à la liste « %s »."), WK.GetItemInfo(row.id) or "?", name))
+            bv:Refresh()
+        end)
+        r.add:Hide()
         r:SetScript("OnEnter", function(s)
             if not s.id then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
@@ -841,13 +864,57 @@ local function build(host)
         bv.irows[i] = r
     end
     bv.empty = UI:Text(bv.main, 11, C.muted); bv.empty:SetPoint("CENTER")
+    bv.qtyLabel = UI:Text(bv.main, 11, C.muted); bv.qtyLabel:SetPoint("TOPRIGHT", -74, -10); bv.qtyLabel:SetText(T("Quantité"))
+    bv.qty = UI:NumberInput(bv.main, 56, 22, "1"); bv.qty:SetPoint("TOPRIGHT", -12, -6)
+    bv.qty.edit:SetText("1")
     bv.searchAll:SetScript("OnClick", function()
         local l = S:GetList(cfg().curList)
         for _, it in ipairs(l and l.items or {}) do search(it[1]) end
         pump()
     end)
     bv.buyAll:SetScript("OnClick", function() S:BuyStep(); bv:Refresh() end)
+    -- résultats de la recherche : objets de tes scans dont le nom contient le texte
+    function bv:RefreshSearch(q)
+        local list = {}
+        for id in pairs(S:Data().items) do
+            local name = WK.GetItemInfo(id)
+            if name and string.lower(name):find(q, 1, true) then table.insert(list, { id = id, name = name }) end
+        end
+        table.sort(list, function(a, b) return a.name < b.name end)
+        self.main.title:SetText(T("Résultats"))
+        self.main.sub:SetText(string.format(T("%d objets"), #list))
+        self.empty:SetShown(#list == 0)
+        self.empty:SetText(T("Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans la fenêtre du jeu."))
+        local qn = math.max(1, self.qty:GetNumber() > 0 and self.qty:GetNumber() or 1)
+        local b = S.buy
+        for i, r in ipairs(self.irows) do
+            local e = list[i]
+            if e then
+                local id = e.id
+                r.id, r.need = id, qn
+                r.icon:SetTexture(itemIcon(id))
+                local _, _, quality = WK.GetItemInfo(id)
+                r.a:SetText(e.name)
+                if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
+                r.b:SetText(UI:Hex(C.dim) .. S:Have(id) .. "|r")
+                local low = lowestOther(id) or S:Price(id)
+                local av = available(id)
+                r.c:SetText(low and money(low) or "-")
+                r.d:SetText(av and tostring(av) or "")
+                r.btn:Show(); r.add:Show()
+                if not isCommodity(id) then r.btn:SetLabel(T("Chercher"))
+                elseif b and b.id == id and b.phase == "confirm" then r.btn:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                elseif b and b.id == id and (b.phase == "quote" or b.phase == "wait") then r.btn:SetLabel("…")
+                else r.btn:SetLabel(string.format(T("Acheter %d"), qn)) end
+                r:Show()
+            else r:Hide() end
+        end
+        self.total:SetText("")
+    end
     function bv:Refresh()
+        local q = string.lower(self.search:GetText() or "")
+        self.qty:SetShown(q ~= ""); self.qtyLabel:SetShown(q ~= "")
+        for _, r in ipairs(self.irows) do r.add:Hide() end
         local names, lists = S:Lists()
         local cur = cfg().curList
         if not (cur and lists[cur]) then cur = names[1]; cfg().curList = cur end
@@ -864,6 +931,7 @@ local function build(host)
         self.searchAll:SetEnabled(cur ~= nil); self.buyAll:SetEnabled(cur ~= nil)
         local b = S.buy
         self.buyAll:SetLabel((b and b.phase == "confirm") and string.format(T("Confirmer %s"), money(b.total)) or T("Tout acheter"))
+        if q ~= "" then return self:RefreshSearch(q) end
         local l = cur and lists[cur]
         self.main.title:SetText(cur or T("Aucune liste"))
         self.empty:SetShown(not l)
@@ -1165,7 +1233,7 @@ local function build(host)
         if not self:IsShown() then return end
         local d = S:Data()
         self.scanInfo:SetText(d.last and string.format(T("dernier scan : %s"), date("%d/%m %H:%M", d.last)) or T("jamais scanné"))
-        local titles = { buy = "Liste d'achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
+        local titles = { buy = "Achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
         self.head:SetText(T(titles[self.tab] or ""))
         local v = self.views[self.tab]
         if v and v.Refresh then v:Refresh() end

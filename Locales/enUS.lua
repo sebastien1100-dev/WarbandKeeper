@@ -3068,4 +3068,9 @@ WK.Locales.enUS.text = {
     ["Minicarte"] = "Minimap",
     ["Carte du monde"] = "World map",
     ["une pastille par lieu ; carte du monde et minicarte, clic pour allumer"] = "one pin per place; world map and minimap, click to turn on",
+    ["Acheter un objet…"] = "Buy an item…",
+    ["Ajouter à la liste d'achat"] = "Add to the shopping list",
+    ["Mes achats"] = "My purchases",
+    ["%s ajouté à la liste « %s »."] = "%s added to the list \"%s\".",
+    ["Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans la fenêtre du jeu."] = "No item from your scans has this name: run a scan, or search it in the game window.",
 }

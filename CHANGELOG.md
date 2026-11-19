@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.47.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes : l'onglet redevient « Achat ». Il garde tes listes d'achat à gauche, et une recherche au-dessus permet d'acheter n'importe quel objet de tes scans : quantité au choix, bouton Acheter (ou Chercher pour un objet qui n'est pas en lot) et « + » pour l'ajouter à la liste d'achat.
+
 ## v1.46.1 — 19/11/2026
 
 _Un /reload suffit._

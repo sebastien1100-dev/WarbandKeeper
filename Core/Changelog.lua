@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.47.0", date = "19/11/2026",
+        added = {
+            "Hôtel des ventes : l'onglet redevient « Achat ». Il garde tes listes d'achat à gauche, et une recherche au-dessus permet d'acheter n'importe quel objet de tes scans : quantité au choix, bouton Acheter (ou Chercher pour un objet qui n'est pas en lot) et « + » pour l'ajouter à la liste d'achat.",
+        },
+    },
+    {
         version = "1.46.1", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.0 (accueil avec tes persos, ta sauvegarde, la prochaine vérification et le lancement du jeu).",
