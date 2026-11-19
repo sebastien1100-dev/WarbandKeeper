@@ -177,6 +177,11 @@ function M.Clock(sec)
     if sec >= 3600 then return string.format("%d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60) end
     return string.format("%d:%02d", sec / 60, sec % 60)
 end
+-- Attente moyenne d'une ligne sans heure calée (lignes du jeu au tour connu) : « attente moy. ~2:45 »
+function M:AvgText(l)
+    local avg = l and l.game and WK.modules.BoatLines:AvgWait(l.game)
+    return avg and string.format(T("attente moy. ~%s"), M.Clock(avg)) or nil
+end
 -- Texte court sous un quai : « à quai · 0:42 », « dans 3:10 » (« env. » : tour encore estimé)
 function M:Label(l, side)
     local s = self:State(l, side)
@@ -201,7 +206,9 @@ function M:TooltipLines(l, side)
         local g = l.game
         table.insert(out, { T(g.vessel or ""), 0.75, 0.75, 0.75 })
         if not s then
-            table.insert(out, { T("Heure pas encore connue : elle se cale toute seule (traversée, annonce du maître de quai, partage) (tour connu : ") .. (g.period and M.Clock(g.period) or "?") .. ")", 0.6, 0.6, 0.6, true })
+            local avg = BL:AvgWait(g)
+            if avg then table.insert(out, { string.format(T("Attente moyenne : ~%s (un départ toutes les %s)"), M.Clock(avg), M.Clock(avg * 2)), 0.85, 0.85, 0.85 }) end
+            table.insert(out, { T("Heure pas encore calée : elle se cale toute seule (traversée, annonce du maître de quai, partage)."), 0.6, 0.6, 0.6, true })
             return out
         end
         local pre = s.est and T("env. ") or ""

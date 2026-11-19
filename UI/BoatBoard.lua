@@ -98,7 +98,7 @@ local function build()
             GameTooltip:SetText(T(l.vessel or "?"), 1, 1, 1)
             for st = 1, #l.stops do
                 local state = BL():State(l, st)
-                local txt = state and (state.atDock and string.format(T("à quai, départ dans %s"), Clock(state.inn)) or string.format(T("départ dans %s"), Clock(state.inn))) or T("heure pas encore calée")
+                local txt = state and (state.atDock and string.format(T("à quai, départ dans %s"), Clock(state.inn)) or string.format(T("départ dans %s"), Clock(state.inn))) or (BL():AvgWait(l) and string.format(T("pas calée · attente moy. ~%s"), Clock(BL():AvgWait(l))) or T("heure pas encore calée"))
                 GameTooltip:AddDoubleLine(BL():StopName(l, st) .. " » " .. BL():StopName(l, st % #l.stops + 1), txt, 0.85, 0.85, 0.85, 1, 1, 1)
             end
             GameTooltip:AddLine(" ")
@@ -161,7 +161,8 @@ local function build()
                 r.dep:SetText(st.atDock and (UI:Hex(C.positive) .. T("à quai") .. " " .. Clock(st.inn) .. "|r") or (pre .. Clock(st.inn)))
                 r.from:SetText(string.format(T("de %s"), B:StopName(l, nearestStop(l))))
             else
-                r.dep:SetText(UI:Hex(C.dim) .. T("heure inconnue") .. "|r")
+                local avg = B:AvgWait(l)
+                r.dep:SetText(UI:Hex(C.dim) .. (avg and ("~" .. Clock(avg) .. " " .. T("moy.")) or T("heure inconnue")) .. "|r")
                 r.from:SetText("")
             end
             r:Show()

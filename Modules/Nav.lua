@@ -562,6 +562,8 @@ function M:Waypoint()
                 text = text .. "  ·  " .. string.format(T("départ dans %s"), pre .. BT.Clock(st.inn))
                 if walkT <= st.inn - 3 then text = text .. "  ·  " .. T("tu arrives à temps")
                 else text = text .. "  ·  " .. string.format(T("le suivant dans %s"), pre .. BT.Clock(st.following)) end
+            elseif BT and nextLeg.line and BT:AvgText(nextLeg.line) then
+                text = text .. "  ·  " .. BT:AvgText(nextLeg.line)
             end
         end
         for j = r.leg + 1, #r.legs do
@@ -592,6 +594,8 @@ function M:Waypoint()
             local pre = st.est and T("env. ") or ""
             txt = txt .. "  ·  " .. (st.atDock and string.format(T("à quai, départ dans %s"), pre .. BT.Clock(st.inn))
                 or string.format(T("départ dans %s"), pre .. BT.Clock(st.inn)))
+        elseif BT and leg.line and BT:AvgText(leg.line) then
+            txt = txt .. "  ·  " .. BT:AvgText(leg.line)
         end
         return nil, nil, txt, nil
     end
@@ -823,6 +827,9 @@ local learnRide
 local function endRide(endP, arr)
     local r = ride
     ride = nil
+    -- calage en route (positions à bord) : dernier calage et arrivée, avant les horaires du départ vu
+    local BLm = WK.modules.BoatLines
+    if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, arr) end
     if not (r and endP and endP.cont) then return end
     -- horaires (Modules/BoatTimes.lua) : départ et arrivée de cette traversée, une fois la ligne connue
     local function learn()
@@ -885,7 +892,11 @@ local function rideTick()
                 if not ride then
                     ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) }
                     blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
+                    local BLm = WK.modules.BoatLines
+                    if BLm and BLm.RideBegin then BLm:RideBegin(); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
                 end
+                local BLs = WK.modules.BoatLines
+                if BLs and BLs.RideSample then pcall(BLs.RideSample, BLs, p.cont, p.wx, p.wy) end
                 -- le tracé reste sur le continent du départ (coordonnées d'un seul continent)
                 if p.cont == ride.start.cont then ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy end
                 ride.still, ride.last = 0, p

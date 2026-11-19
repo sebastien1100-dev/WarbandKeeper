@@ -1,6 +1,6 @@
 local ADDON_NAME, WK = ...
 -- GÉNÉRÉ par tools/gen_boats.py : ne pas modifier à la main.
--- Lignes de bateaux et de zeppelins de WoW Forever (version du jeu fichier local).
+-- Lignes de bateaux et de zeppelins de WoW Forever (version du jeu 1.60.1.70959).
 -- Trajets : table TaxiPathNode des fichiers du jeu (wago.tools). Durées de tour : mesurées par
 -- NauticusClassicResurrected (MIT License, Copyright (c) 2020 psynct ; sam-k-taylor),
 -- https://github.com/sam-k-taylor/NauticusClassicResurrected
@@ -130,3 +130,6 @@ WK.BoatLines = {
       },
     },
 }
+-- Tram des profondeurs (table TransportAnimation) : tour, un départ de chaque station toutes les `every` s
+-- (les deux rames partent en même temps, chacune d'un bout), trajet et arrêt (s).
+WK.TramLine = { period = 143.333, every = 71.6665, ride = 58.6, dwell = 13.0 }

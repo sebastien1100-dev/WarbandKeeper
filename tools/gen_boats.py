@@ -8,7 +8,11 @@ https://github.com/sam-k-taylor/NauticusClassicResurrected) ; « exact » pour c
 jours, « approx » pour les lignes propres à WoW Forever (mesurées sur quelques tours) : l'addon les affine
 avec les départs vus en jeu. Une ligne sans durée connue est apprise en jeu.
 
-Usage : python3 tools/gen_boats.py [TaxiPathNode.csv]   (sans fichier : téléchargé sur wago.tools, dernière version wowf)
+Tram des profondeurs : table TransportAnimation des fichiers du jeu (positions des rames dans leur tour, en ms) :
+tour, départs (les deux rames partent en même temps, chacune d'un bout), durée du trajet et de l'arrêt.
+
+Usage : python3 tools/gen_boats.py [TaxiPathNode.csv [TransportAnimation.csv]]
+        (sans fichier : téléchargés sur wago.tools, dernière version wowf)
 """
 import csv
 import json
@@ -21,6 +25,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "Modules", "BoatLinesDB.lua")
 WAGO = "https://wago.tools"
+UA = "Mozilla/5.0 (WarbandKeeper data tools)"
+
+
+def get(url, timeout=120):
+    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=timeout)
 
 # n° de trajet du jeu » ligne. Noms des quais en français ; vessel = nom du navire ; period = tour (s).
 # Ordre des quais : celui du trajet du jeu, en partant du premier arrêt.
@@ -53,13 +62,56 @@ LINES = [
 ACCEL = 600.0  # longueur équivalente (m) d'un départ et d'un arrêt : partage du temps de trajet entre les étapes
 
 
+def wowf_version():
+    with get(WAGO + "/api/builds", 60) as r:
+        return json.load(r)["wowf"][0]["version"]
+
+
+def fetch_table(name, version):
+    url = "%s/db2/%s/csv?build=%s" % (WAGO, name, version)
+    path = os.path.join(HERE, ".cache", name + ".csv")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with get(url) as r, open(path, "wb") as f:
+        f.write(r.read())
+    return path
+
+
+# rames du tram des profondeurs (objets de transport du jeu) : 3 voitures par rame, une rame par voie
+TRAM_CARS = [176080, 176081, 176082, 176083, 176084, 176085]
+
+
+def tram(path):
+    """Tour du tram (s), départ toutes les `every` s de chaque station, trajet et arrêt (s)."""
+    cars = {}
+    with open(path, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            tid = int(r["TransportID"])
+            if tid in TRAM_CARS:
+                cars.setdefault(tid, []).append((int(r["TimeIndex"]), float(r["Pos_1"])))
+    if len(cars) < 2:
+        return None
+    period = max(t for v in cars.values() for t, _ in v)
+    rides, dwells = [], []
+    for v in cars.values():
+        v.sort()
+        far = max(v, key=lambda e: abs(e[1]))[1]
+        dep = next(t for t, y in v if abs(y) > 0.5)                       # quitte sa station
+        prev = [t for t, y in v if abs(y) < 0.5 and t < dep]
+        dep = max(prev) if prev else 0
+        at_far = [t for t, y in v if abs(y - far) < 0.5]                  # à l'autre station
+        rides.append((min(at_far) - dep) / 1000.0)
+        dwells.append((max(at_far) - min(at_far)) / 1000.0)
+    ride = sum(rides) / len(rides)
+    return {"period": period / 1000.0, "every": period / 2000.0, "ride": round(ride, 1),
+            "dwell": round(period / 2000.0 - ride, 1)}
+
+
 def fetch_nodes():
-    with urllib.request.urlopen(WAGO + "/api/builds", timeout=60) as r:
-        version = json.load(r)["wowf"][0]["version"]
+    version = wowf_version()
     url = "%s/db2/TaxiPathNode/csv?build=%s" % (WAGO, version)
     path = os.path.join(HERE, ".cache", "TaxiPathNode.csv")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with urllib.request.urlopen(url, timeout=120) as r, open(path, "wb") as f:
+    with get(url) as r, open(path, "wb") as f:
         f.write(r.read())
     return path, version
 
@@ -120,8 +172,10 @@ def lua_str(s):
 def main():
     if len(sys.argv) > 1:
         path, version = sys.argv[1], "fichier local"
+        anim = sys.argv[2] if len(sys.argv) > 2 else None
     else:
         path, version = fetch_nodes()
+        anim = fetch_table("TransportAnimation", version)
     nodes = load(path)
     out = []
     out.append("local ADDON_NAME, WK = ...\n")
@@ -153,6 +207,14 @@ def main():
             out.append("        { len = %s, pts = { %s } },\n" % (g["len"], flat))
         out.append("      },\n    },\n")
     out.append("}\n")
+    tr = tram(anim) if anim else None
+    if tr:
+        out.append("-- Tram des profondeurs (table TransportAnimation) : tour, un départ de chaque station toutes les `every` s\n")
+        out.append("-- (les deux rames partent en même temps, chacune d'un bout), trajet et arrêt (s).\n")
+        out.append("WK.TramLine = { period = %s, every = %s, ride = %s, dwell = %s }\n" % (
+            repr(round(tr["period"], 3)), repr(round(tr["every"], 4)), repr(tr["ride"]), repr(tr["dwell"])))
+    else:
+        print("  ! TransportAnimation absente : tram non généré")
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("".join(out))
     print("BoatLinesDB.lua : %d lignes" % total)

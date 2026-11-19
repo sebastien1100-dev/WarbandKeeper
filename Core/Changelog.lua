@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.79.0", date = "19/11/2026",
+        added = {
+            "Bateaux et zeppelins : l'heure se cale pendant la traversée. À bord, ta position est suivie sur le tracé de la ligne ; au bout d'une trentaine de secondes, l'addon sait quelle ligne tu as prise, quand le navire a quitté le quai et quand il arrivera, même si tu es monté au dernier moment ou si le départ n'a pas été vu.",
+            "Bandeau à bord : la destination et le temps restant viennent de ce calage (vraie heure d'arrivée) ; sans calage, la durée affichée est marquée « estimé ».",
+            "Attente moyenne : quand l'heure d'une ligne n'est pas encore calée, le bandeau du quai, le tableau des bateaux, les infobulles, le guidage et le message du chat donnent l'attente moyenne (« ~2:38 », la moitié du tour) au lieu de rien.",
+            "Tram des profondeurs : bandeau dans le tram avec la prochaine rame (une rame quitte chaque station toutes les 1:12, trajet d'environ 59 s, tirés des fichiers du jeu), l'heure se calant au premier départ vu : repéré à bord quand le jeu donne ta position, ou avec le bouton « Une rame part ». Partagé avec la guilde et le groupe comme les bateaux ; valable 6 h.",
+            "/wk bateau : ligne reconnue à bord (étape, arrivée, nombre de positions) et état du tram.",
+        },
+    },
+    {
         version = "1.78.2", date = "19/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : cliquer dessus ne lançait rien. Il lance maintenant le sort par une macro « /cast » sur le joueur choisi, et ne vise plus le joueur survolé (il n'est plus survolé quand la souris arrive sur le bouton). /wk buff montre la macro posée et le dernier clic.",

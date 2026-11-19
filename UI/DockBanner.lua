@@ -103,7 +103,61 @@ local function build()
         f.rows[i] = r
     end
 
+    -- tram : « Une rame part » cale l'heure (quand le jeu ne donne pas la position dans le tram)
+    f.tramBtn = UI:Button(f, T("Une rame part"), nil, 22, "secondary")
+    f.tramBtn:SetScript("OnClick", function()
+        WK.modules.BoatLines:TramObserve("leave", nil, true)
+        UI:RefreshDockBanner()
+    end)
+    f.tramBtn:Hide()
+    -- Tram des profondeurs : prochain départ (les deux stations partent en même temps), barre, 3 départs
+    function f:PaintTram()
+        local B = BL()
+        local d = B:Tram()
+        local st = B:TramState()
+        local Clock = BT().Clock
+        self.tramBtn:Show()
+        self.icon:SetTexture(UI.MEDIA .. "clock")
+        self.icon:SetVertexColor(C.info[1], C.info[2], C.info[3], 1)
+        self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", -80, 0)
+        self.title:SetText(T("Tram des profondeurs"))
+        self.pill:Hide()
+        self.head:Hide(); self.headD:Hide(); self.headA:Hide()
+        for _, row in ipairs(self.rows) do row.n:Hide(); row.d:Hide(); row.a:Hide() end
+        local y = 48
+        if st then
+            local col = st.atStation and C.positive or (st.inn < 20 and C.gold or C.text)
+            self.time:SetText(Clock(st.inn)); self.time:SetTextColor(col[1], col[2], col[3])
+            self.sub:SetText((st.atStation and T("Rame à quai : monte, elle part dans %s") or T("Prochaine rame dans %s")):format(Clock(st.inn))
+                .. "  ·  " .. string.format(T("trajet %s"), Clock(st.ride)))
+            local pc = st.est and C.gold or C.positive
+            self.pill.t:SetText(st.est and T("estimé") or T("exact")); self.pill.t:SetTextColor(pc[1], pc[2], pc[3])
+            self.pill.bg:SetColor(pc[1], pc[2], pc[3], 0.18)
+            self.pill:SetWidth((self.pill.t:GetStringWidth() or 30) + 12)
+            self.pill:ClearAllPoints(); self.pill:SetPoint("RIGHT", self.time, "LEFT", -8, 0)
+            self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", self.pill, "LEFT", -6, 0)
+            self.pill:Show()
+            self.track:ClearAllPoints(); self.track:SetPoint("TOPLEFT", 14, -y); self.track:SetPoint("TOPRIGHT", -14, -y)
+            self.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+            self.fill:SetColorTexture(col[1], col[2], col[3], 1)
+            self.fill:SetWidth(math.max(0.01, (W - 28) * (1 - math.max(0, math.min(1, st.inn / st.every)))))
+            self.track:Show(); self.fill:Show()
+            y = y + 12
+            self.tramBtn:SetLabel(T("Recaler : une rame part"))
+        else
+            local avg = d and d.every / 2 or 0
+            self.time:SetText("~" .. Clock(avg)); self.time:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+            self.sub:SetText(string.format(T("Une rame toutes les %s, attente moyenne : clique quand une rame part pour caler l'heure."), Clock(d and d.every or 0)))
+            self.track:Hide(); self.fill:Hide()
+            self.tramBtn:SetLabel(T("Une rame part"))
+        end
+        self.tramBtn:SetWidth(self.tramBtn.label:GetStringWidth() + 32)
+        self.tramBtn:ClearAllPoints(); self.tramBtn:SetPoint("TOPLEFT", 14, -(y + 2))
+        y = y + 30
+        self:SetHeight(y + 8)
+    end
     function f:Paint(list)
+        self.tramBtn:Hide()
         local first = list[1]
         self.first = first
         local st = first.st
@@ -143,8 +197,21 @@ local function build()
             self.track:Show(); self.fill:Show()
             y = y + 12
         else
-            self.time:SetText("")
-            self.sub:SetText(T("Heure pas encore connue : elle se cale toute seule à l'annonce du maître de quai, quand tu le prends, ou par le partage."))
+            -- heure pas calée : attente moyenne (la moitié du tour), en gris, sans compte à rebours
+            local avg = first.game and BL():AvgWait(first.game)
+            if avg then
+                self.time:SetText("~" .. Clock(avg)); self.time:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                self.pill.t:SetText(T("moyenne")); self.pill.t:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                self.pill.bg:SetColor(C.muted[1], C.muted[2], C.muted[3], 0.18)
+                self.pill:SetWidth((self.pill.t:GetStringWidth() or 30) + 12)
+                self.pill:ClearAllPoints(); self.pill:SetPoint("RIGHT", self.time, "LEFT", -8, 0)
+                self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", self.pill, "LEFT", -6, 0)
+                self.pill:Show()
+                self.sub:SetText(T("Attente moyenne : l'heure se cale à l'annonce du maître de quai, à bord, ou par le partage."))
+            else
+                self.time:SetText("")
+                self.sub:SetText(T("Heure pas encore connue : elle se cale toute seule à l'annonce du maître de quai, quand tu le prends, ou par le partage."))
+            end
             self.track:Hide(); self.fill:Hide()
         end
         -- prochains départs : les 3 de la première destination, puis le prochain des autres
@@ -198,6 +265,7 @@ local function build()
     end
     -- à bord : la traversée en cours (destination, temps restant estimé, barre d'avancement)
     function f:PaintRide(r)
+        self.tramBtn:Hide()
         local zep = r.kind == "zeppelin"
         local Clock = BT().Clock
         self.icon:SetTexture(UI.MEDIA .. (zep and "zeppelin" or "boat"))
@@ -207,15 +275,22 @@ local function build()
         self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", -80, 0)
         self.title:SetText(string.format(zep and T("Zeppelin pour %s") or T("Bateau pour %s"), r.to or "?"))
         local y = 48
-        if r.travel and r.travel > 0 then
-            local el = GetTime() - r.start
-            local left = math.max(0, r.travel - el)
+        -- calage en route (positions à bord) : vraie heure d'arrivée ; sinon durée de l'étape depuis la montée
+        local travel, el = r.travel, GetTime() - r.start
+        if r.arrAt and r.depAt then
+            local n0 = BL().Now()
+            travel, el = r.arrAt - r.depAt, n0 - r.depAt
+        end
+        if travel and travel > 0 then
+            local left = math.max(0, travel - el)
             self.time:SetText(Clock(left)); self.time:SetTextColor(C.text[1], C.text[2], C.text[3])
-            self.sub:SetText(string.format(T("À bord : arrivée vers %s"), date("%H:%M", time() + left)))
+            self.sub:SetText(string.format(T("À bord : arrivée vers %s"), date("%H:%M", time() + left))
+                .. (r.arrAt and "" or ("  ·  " .. T("estimé"))))
+            r.travel = travel
             self.track:ClearAllPoints(); self.track:SetPoint("TOPLEFT", 14, -y); self.track:SetPoint("TOPRIGHT", -14, -y)
             self.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
             self.fill:SetColorTexture(ic[1], ic[2], ic[3], 1)
-            self.fill:SetWidth(math.max(0.01, (W - 28) * math.min(1, el / r.travel)))
+            self.fill:SetWidth(math.max(0.01, (W - 28) * math.max(0, math.min(1, el / travel))))
             self.track:Show(); self.fill:Show()
             y = y + 12
         else
@@ -299,6 +374,13 @@ function UI:RefreshDockBanner()
     if not banner then banner = build() end
     if banner.sample then return end
     local Nv = WK.modules.Nav
+    -- tram des profondeurs : son propre bandeau dans l'instance du tram
+    if WK.modules.Guide:Config().dockBanner and BL() and BL():Tram() and BL():InTram() then
+        banner.ride = nil
+        banner:PaintTram()
+        banner:Show()
+        return
+    end
     if not WK.modules.Guide:Config().dockBanner or (UnitOnTaxi and UnitOnTaxi("player")) or (IsInInstance and IsInInstance()) then
         banner.ride = nil; banner:Hide() return
     end
@@ -325,9 +407,17 @@ function UI:RefreshDockBanner()
                     end
                 end
             end
-            if not lf then banner:Hide() return end
-            banner.ride = { to = lf.to, kind = lf.kind, start = GetTime(), travel = lf.st and lf.st.travel }
+            if lf then banner.ride = { to = lf.to, kind = lf.kind, start = GetTime(), travel = lf.st and lf.st.travel } end
         end
+        -- ligne repérée à bord par le calage en route : elle l'emporte (destination et heure d'arrivée)
+        local fit = BL() and BL().RideFit and BL():RideFit()
+        if fit then
+            banner.ride = banner.ride or { start = GetTime() }
+            banner.ride.to = BL():StopName(fit.l, fit.i % #fit.l.stops + 1)
+            banner.ride.kind = fit.l.kind
+            banner.ride.arrAt, banner.ride.depAt = fit.arr, fit.dep
+        end
+        if not banner.ride then banner:Hide() return end
         banner:PaintRide(banner.ride)
         banner:Show()
         return

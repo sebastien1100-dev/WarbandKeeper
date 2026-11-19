@@ -57,6 +57,12 @@ local function period(l)
     local e = sched(l)
     return (e and e.P) or l.period
 end
+M.Period = period
+-- Attente moyenne au quai quand l'heure n'est pas calée : en arrivant au hasard, la moitié du tour
+function M:AvgWait(l)
+    local P = l and period(l)
+    return P and P / 2 or nil
+end
 -- décalages dans le tour (t = 0 : départ du quai 1) : départ et arrivée de chaque quai
 -- temps à quai du quai i : mesuré en jeu (arrivée puis départ vus), sinon celui des données
 local function dwellOf(l, i)
@@ -146,7 +152,9 @@ end
 -- Ajoute un départ vu (quai s, heure du serveur t) ; false si déjà connu à 15 s près
 -- mine = départ vu par ce joueur (traversée, « Il part » / « Il arrive », maître de quai) : seuls ceux-là
 -- sont renvoyés à la connexion (les départs reçus d'autres joueurs ne sont jamais rediffusés)
-function M:AddObs(l, s, t, mine, strong)
+-- fitted = départ déduit des positions relevées à bord (calage en route) : il passe avant une estimation,
+-- mais un départ vraiment vu partir le remplace ; un nouveau calage remplace l'ancien
+function M:AddObs(l, s, t, mine, strong, fitted)
     local st = store()
     local e = st[l.key] or { obs = {} }
     st[l.key] = e
@@ -155,7 +163,9 @@ function M:AddObs(l, s, t, mine, strong)
     if strong then
         for k = #e.obs, 1, -1 do
             local o = e.obs[k]
-            if o.s == s and not o.k and math.abs(o.t - t) < 90 then table.remove(e.obs, k) end
+            if o.s == s and (not o.k or o.f) and math.abs(o.t - t) < 90 then
+                table.remove(e.obs, k)
+            end
         end
     end
     for _, o in ipairs(e.obs) do if o.s == s and math.abs(o.t - t) < 15 then return false end end
@@ -175,7 +185,7 @@ function M:AddObs(l, s, t, mine, strong)
             end
         end
     end
-    table.insert(e.obs, { s = s, t = t, me = mine or nil, k = strong and 1 or nil })
+    table.insert(e.obs, { s = s, t = t, me = mine or nil, k = strong and 1 or nil, f = fitted and 1 or nil })
     table.sort(e.obs, function(a, b) return a.t < b.t end)
     local cut = now() - WINDOW
     while #e.obs > 0 and (e.obs[1].t < cut or #e.obs > KEEP) do table.remove(e.obs, 1) end
@@ -362,6 +372,215 @@ function M:Observe(l, s, kind)
     return true
 end
 
+
+---------------------------------------------------------------------------
+-- Calage en route : à bord, chaque position relevée (toutes les 0,5 s par Nav) est posée sur le tracé
+-- des lignes ; l'avancée le long d'une étape en fonction du temps donne la vitesse du navire et l'heure
+-- où il a quitté le quai (et celle où il arrivera). Il suffit d'une trentaine de secondes à bord, même
+-- monté en route ou sans avoir vu le départ ; deux lignes qui partagent un bout de chemin sont départagées
+-- quand l'une est nettement mieux suivie que l'autre.
+---------------------------------------------------------------------------
+local NEAR = 45          -- m : distance au tracé pour qu'une position compte
+local FIT_N, FIT_SPAN = 10, 30   -- au moins 10 positions sur 30 s
+local LEAD = 1.25        -- avance nécessaire sur la 2e ligne candidate
+local MAX_RMS = 40       -- m : écart moyen toléré à la droite (vitesse constante)
+-- tronçons d'une étape : { c, x1, y1, x2, y2, d0 (distance depuis le quai), len }
+local function segsOf(l, i)
+    l._segs = l._segs or {}
+    if l._segs[i] then return l._segs[i] end
+    local pts, out, acc = l.legs[i].pts, {}, 0
+    for k = 1, #pts / 3 - 1 do
+        local c1, x1, y1 = pts[k * 3 - 2], pts[k * 3 - 1], pts[k * 3]
+        local c2, x2, y2 = pts[k * 3 + 1], pts[k * 3 + 2], pts[k * 3 + 3]
+        if c1 == c2 then
+            local sl = dist(x1, y1, x2, y2)
+            if sl > 0 then table.insert(out, { c1, x1, y1, x2, y2, acc, sl }) end
+            acc = acc + sl
+        end
+    end
+    l._segs[i] = out
+    return out
+end
+-- distance parcourue depuis le quai de départ de l'étape i pour une position (nil : trop loin du tracé)
+local function along(l, i, c, x, y)
+    local best, bd
+    for _, g in ipairs(segsOf(l, i)) do
+        if g[1] == c then
+            local dx, dy = g[4] - g[2], g[5] - g[3]
+            local u = ((x - g[2]) * dx + (y - g[3]) * dy) / (g[7] * g[7])
+            u = math.max(0, math.min(1, u))
+            local d = dist(x, y, g[2] + dx * u, g[3] + dy * u)
+            if d <= NEAR and (not bd or d < bd) then bd, best = d, g[6] + u * g[7] end
+        end
+    end
+    return best
+end
+local onboard  -- { cand = { [clé] = { l, i, ts, ds } }, done = { [clé] = true }, fit }
+function M:RideBegin() onboard = { cand = {}, done = {} } end
+function M:RideSample(c, x, y)
+    if not onboard then self:RideBegin() end
+    local gt = GetTime()
+    for _, l in ipairs(self:All()) do
+        for i = 1, #l.legs do
+            local d = along(l, i, c, x, y)
+            if d then
+                local key = l.key .. ":" .. i
+                local cd = onboard.cand[key]
+                if not cd then cd = { l = l, i = i, ts = {}, ds = {} }; onboard.cand[key] = cd end
+                if #cd.ts < 400 then table.insert(cd.ts, gt); table.insert(cd.ds, d) end
+            end
+        end
+    end
+    self:RideFitNow()
+end
+-- droite d = v (t - t1) + d1 par moindres carrés : vitesse, distance à l'instant t1, écart moyen
+local function line(ts, ds)
+    local n = #ts
+    local t1 = ts[1]
+    local st, sd, stt, std = 0, 0, 0, 0
+    for k = 1, n do
+        local t = ts[k] - t1
+        st, sd, stt, std = st + t, sd + ds[k], stt + t * t, std + t * ds[k]
+    end
+    local den = n * stt - st * st
+    if den <= 0 then return nil end
+    local v = (n * std - st * sd) / den
+    local b = (sd - v * st) / n
+    local e2 = 0
+    for k = 1, n do local r = ds[k] - (b + v * (ts[k] - t1)); e2 = e2 + r * r end
+    return v, b, math.sqrt(e2 / n), t1
+end
+function M:RideFitNow()
+    if not onboard then return nil end
+    local fits = {}
+    for key, cd in pairs(onboard.cand) do
+        local n = #cd.ts
+        if n >= FIT_N and cd.ts[n] - cd.ts[1] >= FIT_SPAN then
+            local v, b, rms, t1 = line(cd.ts, cd.ds)
+            if v and v > 4 and v < 60 and rms <= MAX_RMS then
+                fits[#fits + 1] = { key = key, cd = cd, n = n, v = v, b = b, t1 = t1, rms = rms }
+            end
+        end
+    end
+    table.sort(fits, function(a, b) return a.n > b.n end)
+    local best, second = fits[1], fits[2]
+    if not best or (second and best.n < LEAD * second.n) then return onboard.fit end
+    local l, i = best.cd.l, best.cd.i
+    -- heure (serveur) où la droite passe au quai de départ et à celui d'arrivée ; ACCEL : longueur
+    -- équivalente d'un démarrage et d'un arrêt (la moitié à chaque bout)
+    local off = now() - GetTime()
+    local half = ACCEL / 2 / best.v
+    local dep = best.t1 + (0 - best.b) / best.v - half + off
+    local arr = best.t1 + ((l.legs[i].len or 0) - best.b) / best.v + half + off
+    onboard.fit = { l = l, i = i, dep = dep, arr = arr, v = best.v, n = best.n }
+    -- noté une fois par traversée (puis affiné à l'arrivée : M:RideEnd)
+    if not onboard.done[best.key] then
+        onboard.done[best.key] = true
+        rode()[l.key] = true
+        if self:AddObs(l, i, math.floor(dep + 0.5), true, true, true) then self:Broadcast(l, i, math.floor(dep + 0.5)) end
+        if WK.modules.Nav and WK.modules.Nav.BoatLog then
+            WK.modules.Nav.BoatLog(string.format("calage en route : %s, étape %d (%d positions, %.0f m/s)", self:LineName(l), i, best.n, best.v))
+        end
+    end
+    return onboard.fit
+end
+-- ligne et étape repérées à bord : { l, i (quai de départ), dep, arr (heure serveur) } ou nil
+function M:RideFit() return onboard and onboard.fit end
+-- fin de traversée : dernier calage avec toutes les positions, arrivée notée (temps à quai)
+function M:RideEnd(arr)
+    if not onboard then return end
+    local f = onboard.fit
+    if f then
+        onboard.done = {}
+        f = self:RideFitNow() or f
+        local j = f.i % #f.l.stops + 1
+        if arr then
+            local e = store()[f.l.key]
+            if e then e.arrT = e.arrT or {}; e.arrT[j] = arr end
+        end
+    end
+    onboard = nil
+end
+
+
+---------------------------------------------------------------------------
+-- Tram des profondeurs (WK.TramLine, table TransportAnimation du jeu) : deux rames partent en même temps,
+-- chacune d'une station ; une rame quitte donc chaque station toutes les `every` s (71,7 s). Un départ
+-- vu (repéré à bord, ou « Une rame part » sur le bandeau) cale l'heure ; valable 6 h (le serveur redémarre).
+--   WK.DB.global.nav.tram = { t = départ (heure du serveur), me = vu ici }
+---------------------------------------------------------------------------
+local TRAM_MAP = 369        -- n° d'instance du tram (GetInstanceInfo)
+local TRAM_AGE = 6 * 3600
+local function tramStore()
+    local g = WK.DB.global
+    g.nav = g.nav or {}
+    return g.nav
+end
+function M:Tram() return WK.TramLine end
+function M:InTram()
+    if not GetInstanceInfo then return false end
+    local id = select(8, GetInstanceInfo())
+    return id == TRAM_MAP
+end
+-- { inn (s avant le prochain départ), atStation, every, ride, dwell, est } ; nil si pas calé (attente
+-- moyenne : M:Tram().every / 2)
+function M:TramState(t)
+    local d = WK.TramLine
+    local o = tramStore().tram
+    if not (d and o and o.t) then return nil end
+    t = t or now()
+    if t - o.t > TRAM_AGE then return nil end
+    local P = d.every
+    local inn = (o.t - t) % P
+    if inn < 1 then inn = inn + P end -- la rame qui part à l'instant : on montre la suivante
+    return { inn = inn, following = inn + P, atStation = inn <= d.dwell, every = P, ride = d.ride, dwell = d.dwell,
+             est = (t - o.t) > 3600 or not o.me }
+end
+-- départ vu : « leave » = une rame part maintenant ; « arrive » = une rame arrive (elle repart après l'arrêt)
+function M:TramObserve(kind, t, mine)
+    local d = WK.TramLine
+    if not d then return false end
+    t = t or now()
+    if kind == "arrive" then t = t + d.dwell end
+    local o = tramStore().tram
+    -- départ reçu d'un autre joueur : jamais à la place d'un départ vu ici depuis moins d'une heure
+    if not mine and o and o.me and now() - o.t < 3600 then return false end
+    tramStore().tram = { t = math.floor(t + 0.5), me = mine and true or nil }
+    if mine then self:Broadcast({ key = "TRAM" }, 1, t) end
+    return true
+end
+-- Repérage à bord : dans le tram, la position avance sans que le perso bouge (deux relevés de suite) ;
+-- départ = premier relevé où elle a bougé. Rien si le jeu ne donne pas la position dans le tram.
+local tramLast, tramMoves, tramRiding, tramFirst
+local function tramTick()
+    if not M:InTram() then tramLast, tramMoves, tramRiding = nil, 0, false return end
+    local map = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+    local pos = map and C_Map.GetPlayerMapPosition(map, "player")
+    if not pos then return end
+    local x, y = pos.x, pos.y
+    if pos.GetXY then x, y = pos:GetXY() end
+    if not x then return end
+    local moving = IsPlayerMoving and IsPlayerMoving()
+    local carried = tramLast and not moving and (math.abs(x - tramLast[1]) + math.abs(y - tramLast[2])) > 0.0004
+    if carried then
+        tramMoves = (tramMoves or 0) + 1
+        if tramMoves == 1 then tramFirst = GetTime() end
+        if tramMoves >= 2 and not tramRiding then
+            tramRiding = true
+            local t = now() - (GetTime() - (tramFirst or GetTime())) - 0.5
+            M:TramObserve("leave", t, true)
+            if WK.modules.Nav and WK.modules.Nav.BoatLog then WK.modules.Nav.BoatLog("tram : départ repéré à bord") end
+        end
+    elseif not moving then
+        tramMoves = 0
+        tramRiding = false
+    end
+    tramLast = { x, y }
+end
+WK:On("PLAYER_LOGIN", function()
+    if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(0.5, function() if M:InTram() or tramLast then pcall(tramTick) end end) end
+end)
+
 ---------------------------------------------------------------------------
 -- Position sur les cartes du jeu (carte de zone, x et y en %) d'un point monde
 ---------------------------------------------------------------------------
@@ -428,9 +647,13 @@ end
 function M:Receive(msg, sender)
     local key, s, t = msg:match("^G;([^;]+);(%d+);(%d+)$")
     s, t = tonumber(s), tonumber(t)
+    local n = now()
+    if key == "TRAM" and t then
+        if t > n + 120 or n - t > TRAM_AGE then return false end
+        return self:TramObserve("leave", t, false)
+    end
     local l = key and self:Get(key)
     if not (l and s and t and l.stops[s]) then return false end
-    local n = now()
     if t > n + 120 or n - t > WINDOW then return false end
     return self:AddObs(l, s, t)
 end
@@ -468,6 +691,16 @@ function M:Diag()
         end
     end
     if #out == 0 then table.insert(out, "aucune ligne calée : prends un bateau, ou attends l'annonce du maître de quai") end
+    if onboard then
+        local f = onboard.fit
+        local nc = 0
+        for _ in pairs(onboard.cand) do nc = nc + 1 end
+        table.insert(out, f and string.format("à bord : %s, étape %d, arrivée dans %d s (%d positions, %.0f m/s)", self:LineName(f.l), f.i,
+            math.floor(f.arr - n0), f.n, f.v) or string.format("à bord : ligne pas encore reconnue (%d tracés proches)", nc))
+    end
+    local ts = self:TramState()
+    table.insert(out, ts and string.format("tram : prochaine rame dans %d s (%s)", math.floor(ts.inn), ts.est and "estimé" or "exact")
+        or "tram : pas calé")
     return out
 end
 
@@ -476,7 +709,14 @@ function M:ChatText(l, s)
     local st = self:State(l, s)
     local name = self:StopName(l, s) .. " » " .. self:StopName(l, st and st.next or (s % #l.stops + 1))
     local vessel = T(l.vessel or "")
-    if not st then return string.format(T("%s (%s) : horaires pas encore connus"), name, vessel) end
+    if not st then
+        local avg = self:AvgWait(l)
+        if avg then
+            local Clk = WK.modules.BoatTimes.Clock
+            return string.format(T("%s (%s) : un départ toutes les %s, attente moyenne ~%s (heure pas encore calée)"), name, vessel, Clk(avg * 2), Clk(avg))
+        end
+        return string.format(T("%s (%s) : horaires pas encore connus"), name, vessel)
+    end
     local Clock = WK.modules.BoatTimes.Clock
     local pre = st.est and T("env. ") or ""
     return string.format(st.atDock and T("%s (%s) : à quai, départ dans %s") or T("%s (%s) : départ dans %s, puis toutes les %s"),
