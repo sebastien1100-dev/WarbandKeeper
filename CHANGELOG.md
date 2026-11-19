@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.59.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Chrono de donjon plus lisible : fond sombre plein aux coins arrondis (il ne s'efface plus à droite, là où sont les temps). Le gros chrono passe à droite du nom du donjon, le record et le compteur de l'heure tiennent sur une ligne avec le temps restant, les colonnes « Temps » et « Écart » ont un titre, et seuls les 2 derniers boss tués restent affichés (« + 3 boss tués plus tôt » pour les autres). « Fond plus discret » rend le fond un peu transparent.
+
 ## v1.58.2 — 19/11/2026
 
 _Un /reload suffit._

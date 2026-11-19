@@ -4,7 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Chrono du donjon à l'écran (réglage Dungeons:Config().timer, bandeau de l'onglet Parcours), allure des clés
--- mythiques : bandeau sombre qui s'efface vers la droite, large comme le suivi des quêtes (ou largeur fixe),
+-- mythiques : fond sombre plein aux coins arrondis, large comme le suivi des quêtes (ou largeur fixe),
 -- parties visibles au choix (préréglages Complet / Compact / Minimal), nom du donjon, gros
 -- chrono et record, barre du temps face au record, boss avec une pastille (tué en vert, en cours à la couleur
 -- d'accent), temps de chaque boss et écart avec le record (Modules/Dungeons.lua).
@@ -85,106 +85,146 @@ local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDungeonTimer", UIParent)
     f:SetSize(W, 60)
     f:SetFrameStrata("MEDIUM")
-    -- bandeau sombre qui s'efface vers la droite
-    f.bg = f:CreateTexture(nil, "BACKGROUND"); f.bg:SetAllPoints(); f.bg:SetTexture("Interface\\Buttons\\WHITE8X8")
-    f.name = UI:Text(f, 12, C.gold)
+    -- fond sombre plein, coins arrondis (lisible sur tous les décors)
+    f.bg = UI:Rounded(f, 8, 0, "BACKGROUND", 1)
+    -- 1re ligne : nom du donjon à gauche, gros chrono à droite
+    f.name = UI:Text(f, 13, C.gold)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
-    f.cap = UI:Text(f, 10, C.muted); f.cap:SetJustifyH("RIGHT")
-    f.time = UI:Text(f, 24)
-    f.rec = UI:Text(f, 13, C.muted); f.rec:SetPoint("BOTTOMLEFT", f.time, "BOTTOMRIGHT", 6, 2)
+    f.name:SetJustifyH("LEFT")
+    f.time = UI:Text(f, 24); f.time:SetJustifyH("RIGHT")
+    -- 2e ligne : record · compteur de l'heure, et à droite le temps restant (ou le dépassement)
+    f.rec = UI:Text(f, 11, C.muted); f.rec:SetJustifyH("LEFT")
+    if f.rec.SetWordWrap then f.rec:SetWordWrap(false) end
     f.left = UI:Text(f, 12); f.left:SetJustifyH("RIGHT")
+    f.cap = f.rec -- compteur dans la même ligne que le record
     -- barre : temps écoulé face au record
     f.bar = CreateFrame("Frame", nil, f)
     f.bar:SetHeight(6)
-    f.bar.bg = f.bar:CreateTexture(nil, "BACKGROUND"); f.bar.bg:SetAllPoints(); f.bar.bg:SetColorTexture(1, 1, 1, 0.12)
-    f.bar.fill = f.bar:CreateTexture(nil, "ARTWORK"); f.bar.fill:SetPoint("TOPLEFT"); f.bar.fill:SetPoint("BOTTOMLEFT")
+    f.bar.bg = UI:Rounded(f.bar, 3, 0, "BACKGROUND", 2); f.bar.bg:SetColor(1, 1, 1, 0.12)
+    f.bar.fillF = CreateFrame("Frame", nil, f.bar); f.bar.fillF:SetPoint("TOPLEFT"); f.bar.fillF:SetPoint("BOTTOMLEFT")
+    f.bar.fill = UI:Rounded(f.bar.fillF, 3, 0, "ARTWORK", 1)
+    -- en-têtes des colonnes
+    f.hdr = CreateFrame("Frame", nil, f); f.hdr:SetHeight(14)
+    f.hdr.n = UI:Text(f.hdr, 9, C.dim); f.hdr.n:SetPoint("LEFT", 18, 0); f.hdr.n:SetText(T("BOSS"))
+    f.hdr.dl = UI:Text(f.hdr, 9, C.dim); f.hdr.dl:SetPoint("RIGHT", -2, 0); f.hdr.dl:SetWidth(46); f.hdr.dl:SetJustifyH("RIGHT"); f.hdr.dl:SetText(T("ÉCART"))
+    f.hdr.t = UI:Text(f.hdr, 9, C.dim); f.hdr.t:SetWidth(46); f.hdr.t:SetJustifyH("RIGHT"); f.hdr.t:SetText(T("TEMPS"))
+    -- boss tués plus tôt, repliés
+    f.more = UI:Text(f, 11, C.muted); f.more:SetJustifyH("LEFT")
     f.rows = {}
     function f:Paint(data)
         if not data then return end
         local r1, g1, b1 = UI:Accent()
         local o = UI:DungeonTimerOpts()
         local sh = o.timerShow
-        self:SetWidth(o.timerWidth == "fixed" and o.timerFixed or trackerWidth())
-        local a1, a2 = 0.78, 0.12
-        if sh.soft then a1, a2 = 0.45, 0.04 end
-        if self.bg.SetGradient and CreateColor then
-            self.bg:SetGradient("HORIZONTAL", CreateColor(0, 0, 0, a1), CreateColor(0, 0, 0, a2))
-        else self.bg:SetColorTexture(0, 0, 0, (a1 + a2) / 2) end
-        local y = 8
-        self.name:SetShown(sh.name); self.cap:SetShown(sh.cap)
-        if sh.name or sh.cap then
-            self.name:ClearAllPoints(); self.name:SetPoint("TOPLEFT", 10, -y); self.name:SetPoint("RIGHT", sh.cap and -96 or -8, 0)
-            self.cap:ClearAllPoints(); self.cap:SetPoint("TOPRIGHT", -8, -(y + 1))
-            self.name:SetText(data.name or "")
-            local n = D():HourCount()
-            self.cap:SetText(UI:Hex(n >= D().CAP - 1 and C.negative or C.muted) .. string.format(T("%d / %d cette heure"), n, D().CAP) .. "|r")
-            y = y + 18
-        end
-        self.time:ClearAllPoints(); self.time:SetPoint("TOPLEFT", 10, -y)
-        self.left:ClearAllPoints(); self.left:SetPoint("TOPRIGHT", -8, -(y + 10))
-        self.rec:SetShown(sh.rec); self.left:SetShown(sh.left)
-        y = y + 32
-        self.bar:SetShown(sh.bar)
-        if sh.bar then
-            self.bar:ClearAllPoints(); self.bar:SetPoint("TOPLEFT", 10, -y); self.bar:SetPoint("TOPRIGHT", -8, -y)
-            y = y + 14
-        end
+        local W2 = o.timerWidth == "fixed" and o.timerFixed or trackerWidth()
+        self:SetWidth(W2)
+        self.bg:SetColor(C.bg[1] * 0.7, C.bg[2] * 0.7, C.bg[3] * 0.7, sh.soft and 0.6 or 0.9)
         local over = data.record and data.elapsed > data.record
+        local y = 8
+        -- nom et chrono
+        self.time:ClearAllPoints(); self.time:SetPoint("TOPRIGHT", -10, -y)
         self.time:SetText(D().Clock(data.elapsed))
         self.time:SetTextColor(unpack(over and C.negative or C.text))
-        self.rec:SetText(data.record and ("/ " .. D().Clock(data.record)) or T("pas de record"))
-        -- reste avant le record (vert) ou dépassement (rouge)
-        if data.record then
+        self.name:SetShown(sh.name)
+        self.name:ClearAllPoints(); self.name:SetPoint("TOPLEFT", 10, -(y + 8)); self.name:SetPoint("RIGHT", self.time, "LEFT", -8, 0)
+        self.name:SetText(data.name or "")
+        y = y + 28
+        -- record · compteur, temps restant
+        local parts = {}
+        if sh.rec then parts[#parts + 1] = data.record and string.format(T("record %s"), D().Clock(data.record)) or T("pas de record") end
+        if sh.cap then
+            local n = D():HourCount()
+            parts[#parts + 1] = UI:Hex(n >= D().CAP - 1 and C.negative or C.muted) .. string.format(T("%d / %d cette heure"), n, D().CAP) .. "|r"
+        end
+        self.rec:SetShown(#parts > 0)
+        self.rec:SetText(table.concat(parts, " · "))
+        if sh.left and data.record then
             local d = data.record - data.elapsed
             self.left:SetText(d >= 0 and (UI:Hex(C.positive) .. "-" .. D().Clock(d) .. "|r") or (UI:Hex(C.negative) .. "+" .. D().Clock(-d) .. "|r"))
         else self.left:SetText("") end
-        local w = (self:GetWidth() or W) - 18
-        local frac = data.record and data.record > 0 and math.min(1, data.elapsed / data.record) or 0
-        self.bar.fill:SetWidth(math.max(1, w * frac))
-        if over then self.bar.fill:SetColorTexture(C.negative[1], C.negative[2], C.negative[3], 1)
-        else self.bar.fill:SetColorTexture(r1, g1, b1, 1) end
-        self.bar.fill:SetShown(frac > 0)
+        self.left:SetShown(sh.left)
+        if #parts > 0 or (sh.left and data.record) then
+            self.rec:ClearAllPoints(); self.rec:SetPoint("TOPLEFT", 10, -y); self.rec:SetPoint("RIGHT", self.left, "LEFT", -6, 0)
+            self.left:ClearAllPoints(); self.left:SetPoint("TOPRIGHT", -10, -(y - 1))
+            y = y + 16
+        end
+        -- barre
+        self.bar:SetShown(sh.bar)
+        if sh.bar then
+            y = y + 2
+            self.bar:ClearAllPoints(); self.bar:SetPoint("TOPLEFT", 10, -y); self.bar:SetPoint("TOPRIGHT", -10, -y)
+            local frac = data.record and data.record > 0 and math.min(1, data.elapsed / data.record) or 0
+            self.bar.fillF:SetWidth(math.max(6, (W2 - 20) * frac))
+            if over then self.bar.fill:SetColor(C.negative[1], C.negative[2], C.negative[3], 1)
+            else self.bar.fill:SetColor(r1, g1, b1, 1) end
+            self.bar.fillF:SetShown(frac > 0)
+            y = y + 12
+        end
+        -- boss : les tués plus tôt se replient (les 2 derniers restent), « Masquer les boss tués » les cache tous
+        local list, done = {}, {}
+        if sh.boss then
+            for i, rw in ipairs(data.rows) do if rw[2] ~= nil then done[#done + 1] = i end end
+        end
+        local keep = sh.remain and 0 or 2
+        local hiddenN = math.max(0, #done - keep)
+        local skip = {}
+        for k = 1, hiddenN do skip[done[k]] = true end
+        if sh.boss then
+            for i, rw in ipairs(data.rows) do if not skip[i] then list[#list + 1] = rw end end
+        end
+        local cols = sh.bt or sh.dl
+        self.hdr:SetShown(#list > 0 and cols)
+        if #list > 0 and cols then
+            self.hdr:ClearAllPoints(); self.hdr:SetPoint("TOPLEFT", 6, -y); self.hdr:SetPoint("TOPRIGHT", -6, -y)
+            self.hdr.t:ClearAllPoints(); self.hdr.t:SetPoint("RIGHT", sh.dl and -52 or -2, 0)
+            self.hdr.t:SetShown(sh.bt); self.hdr.dl:SetShown(sh.dl)
+            y = y + 16
+        end
         local shown = 0
-        for _, rw in ipairs(sh.boss and data.rows or {}) do
-            if not (sh.remain and rw[2] ~= nil) then
-                shown = shown + 1
-                local i = shown
-                local r = self.rows[i]
-                if not r then
-                    r = CreateFrame("Frame", nil, self); r:SetHeight(ROW)
-                    r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
-                    r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetTexture(UI.MEDIA .. "circle"); r.dot:SetSize(8, 8); r.dot:SetPoint("LEFT", 4, 0)
-                    r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 18, 0); r.n:SetPoint("RIGHT", -100, 0)
-                    if r.n.SetWordWrap then r.n:SetWordWrap(false) end
-                    r.dl = UI:Text(r, 11); r.dl:SetPoint("RIGHT", -2, 0); r.dl:SetWidth(46); r.dl:SetJustifyH("RIGHT")
-                    r.t = UI:Text(r, 12); r.t:SetPoint("RIGHT", -52, 0); r.t:SetWidth(46); r.t:SetJustifyH("RIGHT")
-                    self.rows[i] = r
-                end
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
-                local name, t, dl, rs, cur = rw[1], rw[2], rw[3], rw[4], rw[5]
-                local done = t ~= nil
-                r.n:SetText(name)
-                r.n:SetTextColor(unpack(done and C.muted or cur and C.text or C.dim))
-                if done then r.dot:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1)
-                elseif cur then r.dot:SetVertexColor(r1, g1, b1, 1)
-                else r.dot:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.6) end
-                r.t:SetShown(sh.bt); r.dl:SetShown(sh.dl)
-                r.t:SetPoint("RIGHT", sh.dl and -52 or -2, 0)
-                r.n:SetPoint("RIGHT", -(sh.bt and 50 or 0) - (sh.dl and 50 or 0) - 2, 0)
-                r.t:SetText(done and D().Clock(t) or (cur and "..." or ""))
-                r.t:SetTextColor(unpack(done and C.positive or C.text))
-                if dl then
-                    r.dl:SetText(D().ClockDelta(dl)); r.dl:SetTextColor(unpack(dl <= 0 and C.positive or C.negative))
-                else
-                    r.dl:SetText(rs and D().Clock(rs) or ""); r.dl:SetTextColor(unpack(C.dim))
-                end
-                r.hl:SetColorTexture(r1, g1, b1, cur and 0.12 or 0)
-                r:Show()
-                y = y + ROW
+        for _, rw in ipairs(list) do
+            shown = shown + 1
+            local i = shown
+            local r = self.rows[i]
+            if not r then
+                r = CreateFrame("Frame", nil, self); r:SetHeight(ROW)
+                r.hl = r:CreateTexture(nil, "BACKGROUND", nil, 3); r.hl:SetAllPoints()
+                r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetTexture(UI.MEDIA .. "circle"); r.dot:SetSize(8, 8); r.dot:SetPoint("LEFT", 4, 0)
+                r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 18, 0); r.n:SetPoint("RIGHT", -100, 0)
+                if r.n.SetWordWrap then r.n:SetWordWrap(false) end
+                r.dl = UI:Text(r, 12); r.dl:SetPoint("RIGHT", -2, 0); r.dl:SetWidth(46); r.dl:SetJustifyH("RIGHT")
+                r.t = UI:Text(r, 12); r.t:SetPoint("RIGHT", -52, 0); r.t:SetWidth(46); r.t:SetJustifyH("RIGHT")
+                self.rows[i] = r
             end
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
+            local name, t, dl, rs, cur = rw[1], rw[2], rw[3], rw[4], rw[5]
+            local isDone = t ~= nil
+            r.n:SetText(name)
+            r.n:SetTextColor(unpack(isDone and C.muted or cur and C.text or C.dim))
+            if isDone then r.dot:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1)
+            elseif cur then r.dot:SetVertexColor(r1, g1, b1, 1)
+            else r.dot:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.8) end
+            r.t:SetShown(sh.bt); r.dl:SetShown(sh.dl)
+            r.t:ClearAllPoints(); r.t:SetPoint("RIGHT", sh.dl and -52 or -2, 0)
+            r.n:SetPoint("RIGHT", -(sh.bt and 50 or 0) - (sh.dl and 50 or 0) - 2, 0)
+            r.t:SetText(isDone and D().Clock(t) or (cur and "..." or ""))
+            r.t:SetTextColor(unpack(isDone and C.positive or C.text))
+            if dl then
+                r.dl:SetText(D().ClockDelta(dl)); r.dl:SetTextColor(unpack(dl <= 0 and C.positive or C.negative))
+            else
+                r.dl:SetText(rs and D().Clock(rs) or ""); r.dl:SetTextColor(unpack(C.muted))
+            end
+            r.hl:SetColorTexture(r1, g1, b1, cur and 0.15 or 0)
+            r:Show()
+            y = y + ROW
         end
         for i = shown + 1, #self.rows do self.rows[i]:Hide() end
-        self:SetHeight(y + (shown > 0 and 8 or 0))
+        self.more:SetShown(sh.boss and hiddenN > 0 and not sh.remain)
+        if self.more:IsShown() then
+            self.more:ClearAllPoints(); self.more:SetPoint("TOPLEFT", 24, -(y + 2))
+            self.more:SetText(hiddenN == 1 and T("+ 1 boss tué plus tôt") or string.format(T("+ %d boss tués plus tôt"), hiddenN))
+            y = y + 18
+        end
+        self:SetHeight(y + 6)
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el

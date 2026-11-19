@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.59.0", date = "19/11/2026",
+        changed = {
+            "Chrono de donjon plus lisible : fond sombre plein aux coins arrondis (il ne s'efface plus à droite, là où sont les temps). Le gros chrono passe à droite du nom du donjon, le record et le compteur de l'heure tiennent sur une ligne avec le temps restant, les colonnes « Temps » et « Écart » ont un titre, et seuls les 2 derniers boss tués restent affichés (« + 3 boss tués plus tôt » pour les autres). « Fond plus discret » rend le fond un peu transparent.",
+        },
+    },
+    {
         version = "1.58.2", date = "19/11/2026",
         changed = {
             "Carte du monde : icônes des rares environ 30 % plus petites, comme les autres icônes de la carte.",

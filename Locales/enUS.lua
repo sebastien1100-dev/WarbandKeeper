@@ -3295,4 +3295,9 @@ WK.Locales.enUS.text = {
     ["+ 1 autre"] = "+ 1 more",
     ["pas de record"] = "no record",
     ["AFFICHER"] = "SHOW",
+    ["BOSS"] = "BOSS",
+    ["ÉCART"] = "DIFF",
+    ["TEMPS"] = "TIME",
+    ["+ 1 boss tué plus tôt"] = "+ 1 boss killed earlier",
+    ["+ %d boss tués plus tôt"] = "+ %d bosses killed earlier",
 }
