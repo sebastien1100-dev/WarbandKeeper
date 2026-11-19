@@ -3586,4 +3586,7 @@ WK.Locales.enUS.text = {
     ["BUTIN UTILE"] = "USEFUL LOOT", ["rares pas tués avec une recette pour tes métiers"] = "rares not killed with a recipe for your professions",
     ["taille et couleur = rares tués · clic : voir la zone"] = "size and color = rares killed · click: show the zone",
     ["%d à tuer"] = "%d to kill", ["tous tués"] = "all killed", ["Carte indisponible"] = "Map unavailable",
+    ["Clic droit sur l'heure : coche « Clic droit sur l'heure : libérer la mémoire » dans Interface > Micro menu (carte Survol de l'heure)."] = "Right-click on the clock: tick \"Right-click on the clock: free memory\" in Interface > Micro menu (Clock hover card).",
+    ["Pas en combat : la mémoire sera libérable à la sortie du combat."] = "Not in combat: memory can be freed after combat.",
+    ["Mémoire libérée : %s (addons : %s maintenant)."] = "Memory freed: %s (addons: %s now).",
 }

@@ -680,10 +680,17 @@ local function build()
     bar.clockBtn:SetScript("OnClick", function(_, button)
         -- clic droit (réglage) : libérer la mémoire inutilisée des addons, hors combat
         if button == "RightButton" then
-            if cfg().perfGC and not (InCombatLockdown and InCombatLockdown()) then
+            -- jamais muet : on dit pourquoi rien ne se passe (réglage coupé, combat)
+            if not cfg().perfGC then
+                WK:Print(T("Clic droit sur l'heure : coche « Clic droit sur l'heure : libérer la mémoire » dans Interface > Micro menu (carte Survol de l'heure)."))
+            elseif InCombatLockdown and InCombatLockdown() then
+                WK:Print(T("Pas en combat : la mémoire sera libérable à la sortie du combat."))
+            else
                 local before = collectgarbage("count")
                 collectgarbage("collect")
-                WK:Print(string.format(T("Mémoire libérée : %s"), memText(math.max(0, before - collectgarbage("count")))))
+                local after = collectgarbage("count")
+                WK:Print(string.format(T("Mémoire libérée : %s (addons : %s maintenant)."), memText(math.max(0, before - after)), memText(after)))
+                if UI.HidePerfTip then UI:HidePerfTip() end
             end
             return
         end

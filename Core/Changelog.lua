@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.4", date = "19/11/2026",
+        fixed = {
+            "Micro menu : le clic droit sur l'heure ne faisait rien sans le dire quand « Clic droit sur l'heure : libérer la mémoire » n'était pas coché (il est coupé d'office) ou en combat. Il le dit maintenant dans le chat ; coché, il libère la mémoire, indique combien et ce qu'occupent les addons ensuite.",
+        },
+    },
+    {
         version = "1.76.3", date = "19/11/2026",
         fixed = {
             "Hôtel des ventes > Prix : pas d'infobulle au survol des objets de la liste (Ça bouge, Mes sacs, Mes ventes, Surveillés) ; elle s'affiche maintenant, avec nos lignes habituelles.",
