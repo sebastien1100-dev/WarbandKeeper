@@ -278,16 +278,78 @@ function M:AlertsFor(filter)
 end
 
 ---------------------------------------------------------------------------
--- Rappels à l'écran (au milieu, comme les erreurs du jeu), limités par sujet : une minute,
--- ou cinq (quiet) pour les rappels de buffs qui reviennent souvent.
+-- Rappels : dans la pile d'alertes (UI/AlertStack.lua, cadre « Rappels » rangé par thème), dans le texte
+-- rouge du jeu, les deux ou rien, au choix par genre de rappel (QoL > Général > Alertes, `remind`).
+-- Le texte rouge est limité par sujet : une minute, ou cinq (quiet) pour les rappels de buffs ;
+-- la pile garde le rappel tant qu'il est renouvelé (ttl), avec un bouton d'action s'il y en a un.
+--   M:Remind(clé, texte, r, g, b, quiet, opts)  opts : action, right, ttl, noText
 ---------------------------------------------------------------------------
+-- Genres de rappel : réglage, groupe de la pile, durée sans nouvelle (s), retirable d'un clic droit
+M.REMIND_KINDS = {
+    { key = "buffs", label = "Buffs de classe", desc = "Robustesse, aura, bénédiction, Marque du fauve.", group = "perso", ttl = 40 },
+    { key = "poisons", label = "Poisons", desc = "Poison des armes bientôt fini.", group = "perso", ttl = 40 },
+    { key = "pet", label = "Familier", desc = "Familier mécontent : à nourrir.", group = "perso", ttl = 600 },
+    { key = "travel", label = "Guidage et voyages", desc = "Besoins du guidage, maître de classe, points de vol à apprendre.", group = "world", ttl = 180, dismiss = true },
+    { key = "prof", label = "Métiers", desc = "Recharges prêtes, rang suivant, ressources débloquées, pistage.", group = "world", ttl = 120, dismiss = true },
+    { key = "dungeon", label = "Donjons", desc = "Limite d'instances, envies dans le donjon, envie tombée.", group = "perso", ttl = 300, dismiss = true },
+    { key = "ah", label = "Prix à l'HV", desc = "Alertes de prix après un scan.", group = "world", ttl = 600, dismiss = true },
+}
+local KIND_OF = { fort = "buffs", aura = "buffs", bless = "buffs", motw = "buffs", pet = "pet", trainer = "travel",
+    flightpoint = "travel", tracking = "prof", instCap = "dungeon", dungeonWish = "dungeon", ahprice = "ah" }
+local KIND_PREFIX = { { "poison", "poisons" }, { "guide", "travel" }, { "cd", "prof" }, { "rank", "prof" },
+    { "nodes", "prof" }, { "dungeonDrop", "dungeon" } }
+local KIND_BY_KEY = {}
+for _, k in ipairs(M.REMIND_KINDS) do KIND_BY_KEY[k.key] = k end
+-- par défaut : tout dans la pile ; les donjons aussi en texte rouge, avec un son
+local REMIND_DEFAULTS = { buffs = "stack", poisons = "stack", pet = "stack", travel = "stack", prof = "stack", dungeon = "both", ah = "stack" }
+local SOUND_DEFAULTS = { poisons = true, dungeon = true }
+
+function M:RemindKind(key)
+    if KIND_OF[key] then return KIND_OF[key] end
+    for _, p in ipairs(KIND_PREFIX) do
+        if key:sub(1, #p[1]) == p[1] then return p[2] end
+    end
+    return "travel"
+end
+function M:RemindCfg()
+    local q = self:Config()
+    q.remind = q.remind or {}
+    local r = q.remind
+    r.where = r.where or {}
+    r.sound = r.sound or {}
+    for k, v in pairs(REMIND_DEFAULTS) do if r.where[k] == nil then r.where[k] = v end end
+    for _, k in ipairs(M.REMIND_KINDS) do if r.sound[k.key] == nil then r.sound[k.key] = SOUND_DEFAULTS[k.key] or false end end
+    return r
+end
+
 local lastReminder = {}
-function M:Remind(key, text, r, g, b, quiet)
+function M:Remind(key, text, r, g, b, quiet, opts)
+    opts = opts or {}
+    local kind = self:RemindKind(key)
+    local cfg = self:RemindCfg()
+    local where = cfg.where[kind] or "stack"
+    if where == "off" then return end
     local now = GetTime and GetTime() or 0
-    if lastReminder[key] and now - lastReminder[key] < (quiet and 300 or 60) then return end
+    local fresh = not (lastReminder[key] and now - lastReminder[key] < (quiet and 300 or 60))
+    if (where == "stack" or where == "both") and WK.UI.SetAlert then
+        local kd = KIND_BY_KEY[kind] or {}
+        local color = r and { r, g or 0.82, b or 0.2 } or nil
+        local urgent = opts.urgent
+        WK.UI:SetAlert("qol." .. key, true, { text = text, color = urgent and WK.UI.colors.negative or color,
+            prio = urgent and 1 or 3, group = urgent and "urgent" or kd.group, right = opts.right, rightColor = opts.rightColor,
+            ttl = opts.ttl or kd.ttl, dismiss = kd.dismiss, action = opts.action, tip = opts.tip })
+    end
+    if not fresh then return end
     lastReminder[key] = now
+    if cfg.sound[kind] and PlaySound and SOUNDKIT and SOUNDKIT.RAID_WARNING then pcall(PlaySound, SOUNDKIT.RAID_WARNING) end
     -- À l'écran seulement : le chat reste réservé à l'essentiel.
-    if UIErrorsFrame and UIErrorsFrame.AddMessage then UIErrorsFrame:AddMessage(text, r or 1, g or 0.82, b or 0.2) end
+    if (where == "text" or where == "both") and not opts.noText and UIErrorsFrame and UIErrorsFrame.AddMessage then
+        UIErrorsFrame:AddMessage(text, r or 1, g or 0.82, b or 0.2)
+    end
+end
+-- Rappel réglé (buff remis, familier content…) : retiré de la pile.
+function M:ClearRemind(key)
+    if WK.UI.SetAlert then WK.UI:SetAlert("qol." .. key, false) end
 end
 
 ---------------------------------------------------------------------------
@@ -365,10 +427,13 @@ function M:ScanPet()
                   diet = self:PetDiet(), t = time() }
         local cc = M:Class("HUNTER")
         if cc.petAlert and happy and old and happy < old and happy < 3 then
-            M:Remind("pet", string.format(happy == 1 and T("%s est mécontent : nourris-le") or T("%s n'est plus heureux"), c.pet.name or T("Le familier")))
+            M:Remind("pet", string.format(happy == 1 and T("%s est mécontent : nourris-le") or T("%s n'est plus heureux"), c.pet.name or T("Le familier")),
+                nil, nil, nil, nil, { action = M:FeedAction() })
         end
+        if happy >= 3 then M:ClearRemind("pet") end
     elseif not hasPet then
         c.pet = nil
+        M:ClearRemind("pet")
     end
     WK:NotifyChanged()
 end
@@ -783,6 +848,11 @@ function M:FeedMacroBody()
     return "#showtooltip\n/cast " .. spell .. "\n/use " .. foodName
 end
 
+-- Bouton « Nourrir » de la pile d'alertes : même texte que la macro.
+function M:FeedAction()
+    return { label = T("Nourrir"), attrs = { type = "macro", macrotext = self:FeedMacroBody() } }
+end
+
 -- Crée (create = true) ou met à jour la macro « WK Nourrir » du perso. Hors combat seulement.
 function M:UpdateFeedMacro(create)
     if WK.DB:Me().class ~= "HUNTER" or not CreateMacro then return false end
@@ -816,6 +886,20 @@ function M:PoisonTimes()
 end
 
 local warnedPoison = {}
+-- Bouton « Poser » : le poison le plus fort des sacs sur l'arme (16 = principale, 17 = main gauche).
+function M:PoisonAction(slot)
+    local count = (C_Item and C_Item.GetItemCount) or GetItemCount
+    if not count then return nil end
+    local ids = {}
+    for _, r in ipairs(M.REAGENTS.ROGUE or {}) do if r.key == "poisons" then ids = r.ids end end
+    for i = #ids, 1, -1 do
+        if (count(ids[i]) or 0) > 0 then
+            return { label = T("Poser"), tip = (WK.GetItemInfo(ids[i])) or nil,
+                     attrs = { type = "macro", macrotext = "/use item:" .. ids[i] .. "\n/use " .. (slot == "main" and 16 or 17) } }
+        end
+    end
+    return nil
+end
 local function checkPoisons()
     local c = WK.DB:Me()
     if c.class ~= "ROGUE" then return end
@@ -825,13 +909,14 @@ local function checkPoisons()
     local limit = (cc.poisonMin or 5) * 60
     for slot, left in pairs({ main = main or false, off = off or false }) do
         if left and left > 0 and left <= limit then
-            if not warnedPoison[slot] then
-                warnedPoison[slot] = true
-                M:Remind("poison" .. slot, string.format(slot == "main" and T("Poison de l'arme principale : %d min restantes")
-                    or T("Poison de la main gauche : %d min restantes"), math.ceil(left / 60)))
-            end
+            -- la pile suit le temps restant ; le texte rouge une seule fois
+            M:Remind("poison" .. slot, slot == "main" and T("Poison de l'arme principale") or T("Poison de la main gauche"), nil, nil, nil, nil,
+                { right = string.format(T("%d min"), math.ceil(left / 60)), rightColor = WK.UI.colors.warning,
+                  noText = warnedPoison[slot], action = M:PoisonAction(slot) })
+            warnedPoison[slot] = true
         elseif not left or left > limit then
             warnedPoison[slot] = nil
+            M:ClearRemind("poison" .. slot)
         end
     end
 end
@@ -996,30 +1081,48 @@ local function canRemind()
     return true
 end
 
+-- Bouton « Lancer » : le sort simple de la liste (premier n°, par son nom : rang le plus haut), sur l'unité donnée.
+local function spellAction(ids, unit)
+    local id = ids and ids[1]
+    local name = id and WK.SpellInfo(id)
+    if not name then return nil end
+    local known = (IsPlayerSpell and IsPlayerSpell(id)) or (IsSpellKnown and IsSpellKnown(id))
+    if known == false then return nil end
+    return { label = T("Lancer"), attrs = { type = "spell", spell = name, unit = unit or "player" } }
+end
+
 local function checkBuffs()
     local c = WK.DB:Me()
     local cc = c.class and M:Class(c.class)
     if not cc or not cc.buffReminder or not canRemind() then return end
     if c.class == "PRIEST" and (c.level or 0) >= 1 then
-        local names, missing = buffNames(FORTITUDE), {}
+        local names, missing, firstUnit = buffNames(FORTITUDE), {}, nil
         for _, u in ipairs(groupUnits()) do
             if UnitExists(u) and UnitIsConnected(u) and not UnitIsDeadOrGhost(u) then
                 local left = buffLeft(u, names)
-                if not left or (left > 0 and left < 60) then table.insert(missing, readable((UnitName(u))) or "?") end
+                if not left or (left > 0 and left < 60) then
+                    table.insert(missing, readable((UnitName(u))) or "?")
+                    firstUnit = firstUnit or u
+                end
             end
         end
         if #missing > 0 then
-            M:Remind("fort", string.format(T("Robustesse à remettre : %s"), table.concat(missing, ", ")), 0.9, 0.9, 1, true)
+            M:Remind("fort", string.format(T("Robustesse à remettre : %s"), table.concat(missing, ", ")), 0.9, 0.9, 1, true,
+                { action = spellAction(FORTITUDE, firstUnit) })
+        else
+            M:ClearRemind("fort")
         end
     elseif c.class == "PALADIN" then
-        if GetShapeshiftForm and GetNumShapeshiftForms and GetNumShapeshiftForms() > 0 and GetShapeshiftForm() == 0 then
-            M:Remind("aura", T("Aucune aura active"), 0.96, 0.55, 0.73, true)
-        elseif not buffLeft("player", {}, { "bénédiction", "blessing" }) then
-            M:Remind("bless", T("Pas de bénédiction sur toi"), 0.96, 0.55, 0.73, true)
-        end
+        local noAura = GetShapeshiftForm and GetNumShapeshiftForms and GetNumShapeshiftForms() > 0 and GetShapeshiftForm() == 0
+        local noBless = not noAura and not buffLeft("player", {}, { "bénédiction", "blessing" })
+        if noAura then M:Remind("aura", T("Aucune aura active"), 0.96, 0.55, 0.73, true) else M:ClearRemind("aura") end
+        if noBless then M:Remind("bless", T("Pas de bénédiction sur toi"), 0.96, 0.55, 0.73, true) else M:ClearRemind("bless") end
     elseif c.class == "DRUID" then
-        if not buffLeft("player", buffNames(MARK_OF_WILD)) then
-            M:Remind("motw", T("Marque du fauve absente"), 1, 0.49, 0.04, true)
+        local names = buffNames(MARK_OF_WILD)
+        if not buffLeft("player", names) then
+            M:Remind("motw", T("Marque du fauve absente"), 1, 0.49, 0.04, true, { action = spellAction(MARK_OF_WILD, "player") })
+        else
+            M:ClearRemind("motw")
         end
     end
 end

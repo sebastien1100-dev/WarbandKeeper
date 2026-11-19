@@ -266,11 +266,13 @@ function M:Check()
         if shouldWarn(need.key) then
             local t = self:Nearest(self:KindsFor(need.what, need.r))
             local msg = need.text
+            local act
             if t then
+                act = { label = T("Guider"), ghost = true, onClick = function() M:Start(t, M.LABELS[need.what], need.what) end }
                 msg = msg .. " · " .. self:PlaceName(t) .. " " .. self:DistText(t)
                 if not self.target then self:Start(t, M.LABELS[need.what], need.what) end
             end
-            WK.modules.QoL:Remind("guide" .. need.key, msg, 1, 0.82, 0.2)
+            WK.modules.QoL:Remind("guide" .. need.key, msg, 1, 0.82, 0.2, nil, { action = act })
             return -- un besoin à la fois
         end
     end
@@ -306,7 +308,8 @@ WK:On("PLAYER_LEVEL_UP", function(level)
         end
         local msg = string.format(T("Niveau %d : nouveaux sorts chez ton maître de classe"), level)
         if t then msg = msg .. " · " .. M:PlaceName(t) .. " " .. M:DistText(t) end
-        WK.modules.QoL:Remind("trainer", msg, 0.4, 0.85, 1)
+        WK.modules.QoL:Remind("trainer", msg, 0.4, 0.85, 1, nil,
+            { action = t and { label = T("Guider"), ghost = true, onClick = function() M:Start(t, M.LABELS.trainer, "trainer") end } or nil })
     end)
 end)
 

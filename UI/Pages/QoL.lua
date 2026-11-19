@@ -549,6 +549,26 @@ UI:RegisterPage({
             end)
         end
 
+        -- Où vont les rappels : pile d'alertes (cadre « Rappels »), texte rouge du jeu, les deux ou rien ; son en plus
+        do
+            local kinds = QoL.REMIND_KINDS
+            local rc = card("Où vont les rappels", 48 + #kinds * 48, "pile d'alertes (à placer en mode édition) ou texte rouge du jeu")
+            local WHERE = { { "stack", "Pile" }, { "text", "Texte rouge" }, { "both", "Les deux" }, { "off", "Rien" } }
+            for i, k in ipairs(kinds) do
+                local box = CreateFrame("Frame", nil, rc)
+                box:SetSize(360, 26)
+                local seg = UI:Segmented(box, WHERE, function(v) QoL:RemindCfg().where[k.key] = v; WK:NotifyChanged() end, 26)
+                seg:SetPoint("LEFT")
+                local snd = toggle(box, function() return QoL:RemindCfg().sound[k.key] end, function(v) QoL:RemindCfg().sound[k.key] = v end)
+                snd:SetPoint("RIGHT")
+                local sl = UI:Text(box, 10, C.dim)
+                sl:SetPoint("RIGHT", snd, "LEFT", -6, 0)
+                sl:SetText(T("Son"))
+                UI:SettingRow(rc, -40 - (i - 1) * 48, k.label, k.desc, box, 360)
+                table.insert(self.dyn, function() seg:Select(QoL:RemindCfg().where[k.key]) end)
+            end
+        end
+
         subtab("Groupe et confort")
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",

@@ -507,7 +507,7 @@ function M:CountEntry(d)
         local msg = n >= self.CAP and string.format(T("Limite d'instances atteinte (%d / %d) : prochaine place dans %d min."), n, self.CAP, math.ceil((free or 0) / 60))
             or string.format(T("Attention : %d / %d instances cette heure ; la prochaine place se libère dans %d min."), n, self.CAP, math.ceil((free or 0) / 60))
         WK:Print(msg)
-        WK.modules.QoL:Remind("instCap", msg, 0.9, 0.4, 0.4)
+        WK.modules.QoL:Remind("instCap", msg, 0.9, 0.4, 0.4, nil, { urgent = true, ttl = math.max(60, free or 0) })
     end
 end
 WK:On("CHAT_MSG_SYSTEM", function(msg)

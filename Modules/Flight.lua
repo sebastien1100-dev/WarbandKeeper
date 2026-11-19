@@ -441,7 +441,8 @@ local function checkZone()
     local name = G:PlaceName(miss[1])
     local msg = string.format(T("Point de vol à apprendre ici : %s"), name) .. (#miss > 1 and string.format(T(" (+%d)"), #miss - 1) or "")
     WK:Print(msg .. "  ·  " .. T("/wk vol pour y être guidé"))
-    WK.modules.QoL:Remind("flightpoint", msg, 0.45, 0.78, 1)
+    WK.modules.QoL:Remind("flightpoint", msg, 0.45, 0.78, 1, nil,
+        { action = { label = T("Guider"), ghost = true, onClick = function() M:GuideToFlightPoint(miss[1]) end } })
 end
 WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(3, function() pcall(checkZone) end) end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(6, function() pcall(checkZone) end) end)

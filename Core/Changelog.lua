@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.49.0", date = "19/11/2026",
+        added = {
+            "Pile d'alertes : un cadre « Rappels » avec le nombre en pastille. Les rappels y sont rangés par thème (urgent, ton perso, voyage, métiers et HV), une ligne chacun. Clic sur le titre : replié en une ligne ; option « Replier en combat » dans le mode édition.",
+            "Les rappels de QoL y arrivent maintenant : buffs de classe, poisons (temps restant), familier, guidage, maître de classe, points de vol, recharges et rangs de métier, pistage, limite d'instances, envies de donjon, prix à l'HV. Ils restent tant que c'est à faire et partent seuls une fois réglés.",
+            "Boutons d'action dans la pile, hors combat : « Lancer » (Robustesse, Marque du fauve), « Poser » (poison des sacs), « Nourrir » (familier), « Guider » (lieu, maître, point de vol). Clic droit sur une info : la retirer.",
+            "QoL > Général > Alertes : carte « Où vont les rappels » : pour chaque genre, pile, texte rouge du jeu, les deux ou rien, et un son en plus.",
+        },
+    },
+    {
         version = "1.48.3", date = "19/11/2026",
         changed = {
             "Notes de patch : la liste « À venir » est remise à jour (« Qui peut fabriquer… ? » retiré, déjà dans Métiers > Recettes ; la pile d'alertes dit ce qu'il reste à y brancher).",
@@ -3191,7 +3200,6 @@ WK.Roadmap = {
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
-    "Pile d'alertes pour les rappels de QoL (buffs, poisons, guidage, familier), qui passent encore par le texte rouge du jeu : elle sert déjà au chasseur, à la pêche, au feu de camp et à l'expérience.",
 }
 
 
