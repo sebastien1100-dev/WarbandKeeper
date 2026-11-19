@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.6.1"
+CLIENT_VERSION = "1.6.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1208,16 +1208,23 @@ class HomePage(Page):
         total = sum(int(c["money"] or 0) for c in chars)
         label(self.persos, "%d perso%s · %s au total" % (len(chars), "s" if len(chars) > 1 else "", money_text(total)),
               fg="muted", font="small").pack(anchor="w", pady=(0, 4))
-        for c in chars[:8]:
-            row = tk.Frame(self.persos, bg=C["surface"])
-            row.pack(fill="x", pady=1)
-            dot = tk.Canvas(row, width=10, height=10, bg=C["surface"], highlightthickness=0)
+        # tableau aligné : pastille, nom, niveau, or, dernière connexion (colonnes de largeur fixe)
+        grid = tk.Frame(self.persos, bg=C["surface"])
+        grid.pack(fill="x")
+        grid.columnconfigure(1, weight=1)
+        grid.columnconfigure(2, minsize=44)
+        grid.columnconfigure(3, minsize=84)
+        grid.columnconfigure(4, minsize=96)
+        for col, txt, st in ((1, "PERSO", "w"), (2, "NIV.", "e"), (3, "OR", "e"), (4, "VU", "e")):
+            label(grid, txt, fg="dim", font="smallb").grid(row=0, column=col, sticky=st, pady=(0, 4))
+        for i, c in enumerate(chars[:8], start=1):
+            dot = tk.Canvas(grid, width=10, height=10, bg=C["surface"], highlightthickness=0)
             dot.create_oval(1, 1, 9, 9, fill=CLASS_COLORS.get(c["cls"], C["muted"]), outline="")
-            dot.pack(side="left", padx=(0, 6))
-            label(row, c["name"], font="body").pack(side="left")
-            label(row, "  %s" % (c["level"] or "?"), fg="dim", font="small").pack(side="left")
-            label(row, ago_text(c["seen"]), fg="dim", font="small").pack(side="right")
-            label(row, money_text(c["money"]) + "   ", fg="muted", font="small").pack(side="right")
+            dot.grid(row=i, column=0, padx=(0, 8), pady=3)
+            label(grid, c["name"], font="body").grid(row=i, column=1, sticky="w")
+            label(grid, str(c["level"] or "?"), fg="muted", font="small").grid(row=i, column=2, sticky="e")
+            label(grid, money_text(c["money"]), fg="text", font="small").grid(row=i, column=3, sticky="e")
+            label(grid, ago_text(c["seen"]), fg="dim", font="small").grid(row=i, column=4, sticky="e")
 
     def set_busy(self, text, value=None):
         if value is None:

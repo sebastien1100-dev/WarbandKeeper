@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.6.2 — 19/11/2026
+
+### Changements
+- Accueil : la liste de tes persos est un vrai tableau aligné (nom, niveau, or, dernière connexion en colonnes, avec leurs titres). Avant, niveau et or se décalaient selon la longueur du nom.
+
 ## 1.6.1 — 19/11/2026
 
 ### Corrections

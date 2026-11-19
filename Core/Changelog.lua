@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.55.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.2 (liste des persos de l'accueil alignée en colonnes).",
+        },
+    },
+    {
         version = "1.55.0", date = "19/11/2026",
         added = {
             "HV, Parcourir : filtre de qualité (toutes, inhabituel +, rare +, épique +), un clic pour passer au suivant.",
