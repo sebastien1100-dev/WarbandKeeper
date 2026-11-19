@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.58.2", date = "19/11/2026",
+        changed = {
+            "Carte du monde : icônes des rares environ 30 % plus petites, comme les autres icônes de la carte.",
+        },
+    },
+    {
         version = "1.58.1", date = "19/11/2026",
         changed = {
             "Carte du monde : le trajet d'un bateau ou d'un zeppelin n'est dessiné qu'une fois que tu l'as pris (à partir de ta prochaine traversée sur chaque ligne). Plus de trait droit au départ des quais.",

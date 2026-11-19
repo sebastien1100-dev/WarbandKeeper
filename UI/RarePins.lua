@@ -196,7 +196,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
         local m = r.maps[mapID]
         local p = getPin(i)
         p.r, p.mapID = r, mapID
-        local size = 26 * scale * 1.2
+        local size = 26 * scale * 0.85
         p:SetSize(size, size)
         p.bg:SetSize(size * 0.82, size * 0.82)
         p.ring:SetSize(size, size)
@@ -233,7 +233,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
             for k = 3, #m.spawns, 2 do
                 nt = nt + 1
                 local d = getTopDot(nt)
-                sizeDot(d, math.max(8 * UI.MapIconScale(), 10 * scale), col[1], col[2], col[3], 1)
+                sizeDot(d, math.max(6 * UI.MapIconScale(), 8 * scale), col[1], col[2], col[3], 1)
                 d:ClearAllPoints(); d:SetPoint("CENTER", cv, "TOPLEFT", m.spawns[k] / 100 * w, -m.spawns[k + 1] / 100 * h)
             end
         end

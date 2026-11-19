@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.58.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte du monde : icônes des rares environ 30 % plus petites, comme les autres icônes de la carte.
+
 ## v1.58.1 — 19/11/2026
 
 _Un /reload suffit._
