@@ -272,7 +272,7 @@ WK:On("GROUP_ROSTER_UPDATE", function() M:UpdateAlerts() end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, refresh) end)
 WK:On("PLAYER_LEVEL_UP", function() C_Timer.After(1, function() M:SyncPetButton() end) end)
 WK:On("UNIT_PET", function(unit) if unit == "player" then M:PaintPetButton(); M:UpdateAlerts() end end)
-WK:On("UNIT_HEALTH", function(unit) if unit == "pet" then M:PaintPetButton() end end)
+WK:OnUnit("UNIT_HEALTH", "pet", function() M:PaintPetButton() end)
 WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
     if unit ~= "player" or not isHunter() then return end
     -- En combat, les auras sont masquées : l'aspect lancé devient l'aspect actif.

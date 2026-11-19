@@ -2728,7 +2728,7 @@ local function build(host)
         -- chiffres
         local today = math.floor(time() / 86400)
         local nToday = 0
-        for _, e in pairs(d.items) do if e.h and e.h[today] then nToday = nToday + 1 end end
+        for _, e in pairs(d.items) do if S:HasDay(e, today) then nToday = nToday + 1 end end
         local nAlert = 0
         for id, max in pairs(A.Config().alerts or {}) do
             local p = S:Price(id)

@@ -64,6 +64,12 @@ M.Record = record -- (pour les tests)
 function M:OnInit()
     WK.DB.global.auction = WK.DB.global.auction or { log = {} }
     WK.DB.global.auction.log = WK.DB.global.auction.log or {}
+    -- en plus des 1000 lignes au plus (MAX_LOG) : rien de plus vieux que 180 jours (ordre gardé, récent d'abord)
+    do
+        local lg, lim, keep = WK.DB.global.auction.log, time() - 180 * 86400, {}
+        for _, e in ipairs(lg) do if (e.t or 0) >= lim then keep[#keep + 1] = e end end
+        if #keep ~= #lg then WK.DB.global.auction.log = keep end
+    end
     -- La facture est lue juste après la demande de prise, avant que le serveur ne retire le courrier.
     if hooksecurefunc then
         if TakeInboxMoney then hooksecurefunc("TakeInboxMoney", function(i) record(i) end) end

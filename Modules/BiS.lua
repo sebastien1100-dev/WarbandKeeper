@@ -184,7 +184,9 @@ M.ARMOR = { [1] = "Tissu", [2] = "Cuir", [3] = "Mailles", [4] = "Plaques" }
 local byGroup, byId
 local function index()
     byGroup, byId = {}, {}
-    for _, e in ipairs(WK.ItemsDB or {}) do
+    -- base décodée à la première utilisation (Modules/ItemsDB.lua)
+    local db = (WK.LoadItemsDB and WK.LoadItemsDB()) or WK.ItemsDB or {}
+    for _, e in ipairs(db) do
         byGroup[e[2]] = byGroup[e[2]] or {}
         table.insert(byGroup[e[2]], e)
         byId[e[1]] = e

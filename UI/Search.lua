@@ -78,6 +78,37 @@ local function locate(frame)
     end
 end
 
+-- Index retenu dans la sauvegarde (WK.DB.global.searchIndex, hors profils) : une fois toutes les pages
+-- construites pour une version de l'addon et une langue, les recherches suivantes (et aux sessions
+-- suivantes) n'ont plus besoin de construire les pages : seule celle qu'on ouvre l'est.
+local function stored()
+    local si = WK.DB.global.searchIndex
+    if si and si.v == WK.version and si.lang == WK.Lang() and type(si.list) == "table" then return si end
+end
+local function snapshot()
+    local list = {}
+    for _, e in ipairs(UI.settingIndex) do
+        local pk, sk = locate(e.row)
+        if pk and e.label then table.insert(list, { l = e.label, d = e.desc, p = pk, s = sk }) end
+    end
+    local secs = {}
+    for key, def in pairs(UI.pages) do
+        for sk, b in pairs(def.navButtons or def.sectionButtons or {}) do
+            local l = b.label and b.label:GetText()
+            if l then table.insert(secs, { l = plain(l), p = key, s = sk }) end
+        end
+    end
+    WK.DB.global.searchIndex = { v = WK.version, lang = WK.Lang(), list = list, secs = secs }
+end
+UI.SearchSnapshot = snapshot
+-- ligne d'un réglage d'après l'index retenu : la page est construite, puis la ligne retrouvée par son libellé
+local function findRow(pk, label)
+    UI:EnsurePage(pk)
+    for _, e in ipairs(UI.settingIndex) do
+        if e.label == label and locate(e.row) == pk then return e.row end
+    end
+end
+
 -- Résultats : { kind, label, sub, run }
 local function search(q)
     q = norm(q)
@@ -91,8 +122,35 @@ local function search(q)
         local l = pageLabel(def)
         if key ~= "charsheet" and WK:PageOn(key) and norm(l):find(q, 1, true) then add(T("Page"), l, nil, function() UI:ShowPage(key) end) end
     end
+    local si = not built and stored()
+    if si then
+        -- sections et réglages d'après l'index retenu (pages pas construites)
+        for _, e in ipairs(si.secs or {}) do
+            if WK:PageOn(e.p) and norm(e.l):find(q, 1, true) then
+                add(T("Section"), e.l, pageLabel(UI.pages[e.p] or { key = e.p }), function()
+                    local def = UI:EnsurePage(e.p)
+                    UI:ShowPage(e.p)
+                    if def and def.ShowSection then def:ShowSection(e.s) end
+                end)
+            end
+        end
+        for _, e in ipairs(si.list) do
+            local l, d = e.l or "", e.d or ""
+            local pk, sk = e.p, e.s
+            local off = not WK:PageOn(pk) or (pk == "qol" and sk and WK.FEATURE_BY_QOL[sk] and not WK:FeatureOn(WK.FEATURE_BY_QOL[sk]))
+            if not off and UI.pages[pk] and (norm(WK.T(l)):find(q, 1, true) or norm(WK.T(d)):find(q, 1, true)) then
+                local where = pageLabel(UI.pages[pk])
+                for _, sc in ipairs(si.secs or {}) do if sc.p == pk and sc.s == sk then where = where .. " · " .. sc.l break end end
+                add(T("Réglage"), plain(WK.T(l)), where, function()
+                    local row = findRow(pk, l)
+                    if row then UI:GoToSetting(row, pk, sk) else UI:ShowPage(pk) end
+                end)
+            end
+        end
+    end
     -- sections (colonnes de QoL et d'Options)
     for key, def in pairs(UI.pages) do
+        if si then break end
         for sk, b in pairs(def.navButtons or def.sectionButtons or {}) do
             local l = b.label and b.label:GetText()
             if l and norm(l):find(q, 1, true) then
@@ -104,7 +162,7 @@ local function search(q)
         end
     end
     -- réglages
-    for _, e in ipairs(UI.settingIndex) do
+    for _, e in ipairs(si and {} or UI.settingIndex) do
         local l, d = e.label or "", e.desc or ""
         if norm(WK.T(l)):find(q, 1, true) or norm(WK.T(d)):find(q, 1, true) then
             local pk, sk = locate(e.row)
@@ -235,7 +293,8 @@ function UI:BuildSideSearch(side)
     empty:SetText(T("Aucun résultat"))
     local function show(text)
         if not text or #text < 2 then list:Hide() return end
-        buildAll()
+        -- toutes les pages ne sont construites que s'il n'y a pas encore d'index pour cette version
+        if not stored() then buildAll(); pcall(snapshot) end
         results = search(text)
         for _, r in ipairs(rows) do r:Hide() end
         local y = -6

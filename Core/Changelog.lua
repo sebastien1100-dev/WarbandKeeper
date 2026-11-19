@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.73.0", date = "19/11/2026",
+        added = {
+            "/wk perf [secondes] : mesure ce que l'addon coûte pendant que tu joues (60 s par défaut) : temps passé par évènement, dans ses fonctions les plus appelées et ses mises à jour régulières, et mémoire prise pendant la mesure ; les plus coûteux s'affichent dans le chat.",
+        },
+        changed = {
+            "Moins de mémoire : l'historique des prix de l'HV est rangé en une ligne compacte par objet (environ 3 fois plus léger ; ta sauvegarde est convertie toute seule) ; la base des objets de la liste BiS n'est décodée qu'à la première ouverture de la liste (0,4 Mo au lieu de 1,2 Mo) ; la base des quêtes n'est plus copiée en mémoire pour être indexée.",
+            "Recherche de la barre latérale : l'index des réglages est retenu d'une session à l'autre ; les pages ne sont plus toutes construites à chaque recherche (seulement une fois par version de l'addon), seule celle qu'on ouvre l'est.",
+            "Plus fluide en groupe et en raid : la vie des unités n'est plus écoutée que pour le familier et la cible, et pour les boss seulement en donjon ou en raid.",
+            "Connexion plus légère : le compactage de l'historique ne passe plus deux fois mais une seule, quelques secondes après l'arrivée en jeu ; le journal des ventes HV oublie tout seul ce qui a plus de 180 jours.",
+        },
+    },
+    {
         version = "1.72.2", date = "19/11/2026",
         changed = {
             "Micro menu : les deux petites barres FPS et latence sous l'heure sont retirées, avec leur réglage ; ces chiffres sont dans le panneau au survol de l'heure.",

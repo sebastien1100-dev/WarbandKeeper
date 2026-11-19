@@ -8,7 +8,9 @@ local T = function(s) return WK.T(s) end
 --   (ancienne, celle des clients classiques). /wk hv dit laquelle ce client donne.
 --   Par objet : prix unitaire le plus bas en achat immédiat, quantité en vente, date, et le plus bas de
 --   chaque jour sur 14 jours.
--- Données : WK.DB.global.ah.realms["Royaume-Faction"].items[itemID] = { p, q, t, h = { [jour] = prix } }
+-- Données : WK.DB.global.ah.realms["Royaume-Faction"].items[itemID] = { p, q, t, c = "jour,prix,qté;…" }
+-- (historique compact : une seule chaîne par objet, du plus ancien au plus récent ; les anciennes tables
+-- h = { [jour] = prix } et hq = { [jour] = qté } sont converties au premier accès)
 -- Réglages : WK.DB.global.ah (tooltip, stack, auto, panel).
 
 local DEFAULTS = { tooltip = true, stack = true, auto = false, panel = true, bagValue = true, mailValue = true, keepDays = 30 }
@@ -27,11 +29,68 @@ end
 local function realmKey()
     return (GetRealmName and GetRealmName() or "?") .. "-" .. (UnitFactionGroup and UnitFactionGroup("player") or "?")
 end
+---------------------------------------------------------------------------
+-- Historique compact : lecture { { jour, prix, qté } } (triée), écriture, ajout d'un relevé
+---------------------------------------------------------------------------
+local function hread(e)
+    local out = {}
+    if not e then return out end
+    if e.c then
+        for d, p, q in e.c:gmatch("(%d+),(%d+),(%d*);") do
+            out[#out + 1] = { tonumber(d), tonumber(p), tonumber(q) }
+        end
+    elseif e.h then
+        for d, p in pairs(e.h) do out[#out + 1] = { d, p, e.hq and e.hq[d] } end
+        table.sort(out, function(a, b) return a[1] < b[1] end)
+    end
+    return out
+end
+local function hwrite(e, list)
+    local parts = {}
+    for i, x in ipairs(list) do
+        parts[i] = string.format("%d,%d,%s;", x[1], x[2], x[3] and tostring(math.floor(x[3])) or "")
+    end
+    e.c = #parts > 0 and table.concat(parts) or nil
+    e.h, e.hq = nil, nil
+end
+-- relevé du jour : plus bas prix et plus grande quantité vus ; les jours plus vieux que keep jours partent
+local function hput(e, day, low, qty, keep)
+    local list = hread(e)
+    local found
+    for _, x in ipairs(list) do
+        if x[1] == day then
+            found = x
+            if low < x[2] then x[2] = low end
+            if qty then x[3] = math.max(x[3] or 0, qty) end
+        end
+    end
+    if not found then list[#list + 1] = { day, low, qty } end
+    if keep then
+        local kept = {}
+        for _, x in ipairs(list) do if x[1] > day - keep then kept[#kept + 1] = x end end
+        list = kept
+    end
+    hwrite(e, list)
+end
+M.HistRead = hread
+-- vrai si l'objet a un relevé ce jour-là
+function M:HasDay(e, day)
+    if not e then return false end
+    if e.c then return e.c:find("^" .. day .. ",") ~= nil or e.c:find(";" .. day .. ",") ~= nil end
+    return e.h ~= nil and e.h[day] ~= nil
+end
+
 function M:Data()
     local r = self:Config().realms
     local k = realmKey()
     r[k] = r[k] or { items = {} }
-    return r[k]
+    local d = r[k]
+    -- une fois : les anciennes tables d'historique passent au format compact (bien plus léger)
+    if not d.compact then
+        for _, e in pairs(d.items) do if type(e) == "table" and e.h then hwrite(e, hread(e)) end end
+        d.compact = 1
+    end
+    return d
 end
 
 ---------------------------------------------------------------------------
@@ -52,11 +111,11 @@ end
 -- (« moyenne 7 j »), sinon tout l'historique gardé (keepDays)
 function M:Average(itemID, days)
     local e = self:Entry(itemID)
-    if not e or not e.h then return nil, 0 end
+    if not e or not (e.c or e.h) then return nil, 0 end
     local sum, n = 0, 0
     local from = days and (math.floor(time() / 86400) - days) or nil
-    for d, p in pairs(e.h) do
-        if not from or d > from then sum, n = sum + p, n + 1 end
+    for _, x in ipairs(hread(e)) do
+        if not from or x[1] > from then sum, n = sum + x[2], n + 1 end
     end
     if n == 0 then return nil, 0 end
     return math.floor(sum / n + 0.5), n
@@ -68,28 +127,22 @@ function M:SeenToday(itemID, low, qty)
     local e = d.items[itemID] or {}
     d.items[itemID] = e
     local day = math.floor(time() / 86400)
-    e.h = e.h or {}
-    if not e.h[day] or low < e.h[day] then e.h[day] = low end
-    if qty then e.hq = e.hq or {}; e.hq[day] = math.max(e.hq[day] or 0, qty) end
+    hput(e, day, low, qty)
     if not e.p then e.p, e.t = low, time() end
 end
 -- Courbe : { { day, price, qty } } des 14 derniers jours, du plus ancien au plus récent
 function M:History(itemID)
-    local e = self:Entry(itemID)
-    local out = {}
-    if not (e and e.h) then return out end
-    for day, p in pairs(e.h) do table.insert(out, { day, p, e.hq and e.hq[day] }) end
-    table.sort(out, function(a, b) return a[1] < b[1] end)
-    return out
+    return hread(self:Entry(itemID))
 end
 -- Objets qui ont le plus bougé sur 7 jours : { { id, change (fraction), now, before } }, du plus fort au plus faible
 function M:Movers(limit)
     local today = math.floor(time() / 86400)
     local out = {}
     for id, e in pairs(self:Data().items) do
-        if e.h and (e.p or 0) >= 100 then
+        if (e.c or e.h) and (e.p or 0) >= 100 then
             local recent, rd, older, sum, n = nil, -1, nil, 0, 0
-            for day, p in pairs(e.h) do
+            for _, x in ipairs(hread(e)) do
+                local day, p = x[1], x[2]
                 if day > rd then recent, rd = p, day end
                 if day < today - 1 and day >= today - 7 then sum, n = sum + p, n + 1 end
             end
@@ -174,13 +227,8 @@ local function finish(ok, why)
             n = n + 1
             local e = d.items[id] or {}
             e.p, e.q, e.t = s[1], s[2], now
-            e.h = e.h or {}
-            if not e.h[day] or s[1] < e.h[day] then e.h[day] = s[1] end
-            for dd in pairs(e.h) do if dd <= day - keep then e.h[dd] = nil end end
-            -- quantité en vente ce jour-là (la plus grande vue), pour la courbe des prix
-            e.hq = e.hq or {}
-            e.hq[day] = math.max(e.hq[day] or 0, s[2] or 0)
-            for dd in pairs(e.hq) do if dd <= day - keep then e.hq[dd] = nil end end
+            -- plus bas du jour et quantité en vente (la plus grande vue), pour la courbe des prix
+            hput(e, day, s[1], s[2] or 0, keep)
             d.items[id] = e
         end
         if sc.full then

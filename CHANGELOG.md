@@ -79,6 +79,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.73.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk perf [secondes] : mesure ce que l'addon coûte pendant que tu joues (60 s par défaut) : temps passé par évènement, dans ses fonctions les plus appelées et ses mises à jour régulières, et mémoire prise pendant la mesure ; les plus coûteux s'affichent dans le chat.
+
+### Modifications
+- Moins de mémoire : l'historique des prix de l'HV est rangé en une ligne compacte par objet (environ 3 fois plus léger ; ta sauvegarde est convertie toute seule) ; la base des objets de la liste BiS n'est décodée qu'à la première ouverture de la liste (0,4 Mo au lieu de 1,2 Mo) ; la base des quêtes n'est plus copiée en mémoire pour être indexée.
+- Recherche de la barre latérale : l'index des réglages est retenu d'une session à l'autre ; les pages ne sont plus toutes construites à chaque recherche (seulement une fois par version de l'addon), seule celle qu'on ouvre l'est.
+- Plus fluide en groupe et en raid : la vie des unités n'est plus écoutée que pour le familier et la cible, et pour les boss seulement en donjon ou en raid.
+- Connexion plus légère : le compactage de l'historique ne passe plus deux fois mais une seule, quelques secondes après l'arrivée en jeu ; le journal des ventes HV oublie tout seul ce qui a plus de 180 jours.
+
 ## v1.72.2 — 19/11/2026
 
 _Un /reload suffit._

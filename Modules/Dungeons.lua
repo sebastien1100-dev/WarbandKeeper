@@ -424,10 +424,26 @@ local function checkUnit(unit)
     if guid then pcall(onDeath, guid, type(name) == "string" and name or nil) end
 end
 local WATCH = { target = true, focus = true, mouseover = true }
-WK:On("UNIT_HEALTH", function(unit)
+-- UNIT_HEALTH (très fréquent en groupe) : écouté seulement en instance, sur un cadre à part
+local healthFrame = CreateFrame("Frame")
+healthFrame:SetScript("OnEvent", function(_, _, unit)
     if type(unit) ~= "string" or not active() then return end
-    if WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d") then checkUnit(unit) end
+    if WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d") then
+        local perf = WK.perf
+        local t0 = perf and debugprofilestop and debugprofilestop()
+        local ok, err = pcall(checkUnit, unit)
+        if not ok and WK.RecordError then pcall(WK.RecordError, err, "", "UNIT_HEALTH") end
+        if t0 then perf.add("évènement UNIT_HEALTH (donjon)", debugprofilestop() - t0) end
+    end
 end)
+local function watchHealth()
+    local inside = IsInInstance and select(2, IsInInstance())
+    local want = WK:FeatureOn("dungeons") and (inside == "party" or inside == "raid" or M.run ~= nil)
+    if want then pcall(healthFrame.RegisterEvent, healthFrame, "UNIT_HEALTH") else pcall(healthFrame.UnregisterEvent, healthFrame, "UNIT_HEALTH") end
+end
+M.WatchHealth = watchHealth
+WK:On("PLAYER_ENTERING_WORLD", function() watchHealth() end)
+WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(1, watchHealth) end)
 WK:On("PLAYER_TARGET_CHANGED", function() checkUnit("target") end)
 WK:On("LOOT_OPENED", function()
     if not (active() and GetNumLootItems and GetLootSourceInfo) then return end

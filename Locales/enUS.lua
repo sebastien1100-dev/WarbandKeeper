@@ -16,6 +16,7 @@ WK.Locales.enUS.keys = {
     HELP_HUD        = "/wk hud - Gathering HUD: the minimap enlarged in the middle of the screen (tracking dots visible from afar)",
     HELP_DUNGEON    = "/wk donjon - Current dungeon panel: bosses, loot, wish list",
     HELP_BOAT       = "/wk bateau - Boats: is the crossing detected? (log of the last rides)",
+    HELP_PERF       = "/wk perf [seconds] - Measure what the addon costs (time per event, memory); run again to stop",
     HELP_FP         = "/wk vol - Guide to the nearest flight point not learned yet",
     HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
     HELP_BAGS       = "/wk sacs          - Bags diagnostic (lock icon, BiS star)",
@@ -3568,4 +3569,8 @@ WK.Locales.enUS.text = {
     ["Un addon au-dessus passe en orange."] = "An addon above it turns orange.",
     ["Clic droit sur l'heure : libérer la mémoire"] = "Right-click the clock: free memory",
     ["Nettoie la mémoire inutilisée des addons (hors combat)."] = "Cleans unused addon memory (out of combat).",
+    ["Mesure terminée (%d s) : %.0f ms dans l'addon, soit %.1f ms par seconde ; mémoire %s%.0f Ko."] = "Measurement done (%d s): %.0f ms in the addon, %.1f ms per second; memory %s%.0f KB.",
+    ["Rien de mesuré."] = "Nothing measured.",
+    ["Mesure impossible sur ce client."] = "Measurement not available on this client.",
+    ["Mesure lancée pour %d s : joue normalement (sacs, carte, combat…). /wk perf pour arrêter avant."] = "Measurement started for %d s: play normally (bags, map, combat…). /wk perf to stop early.",
 }

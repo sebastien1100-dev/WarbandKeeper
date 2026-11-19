@@ -20,19 +20,30 @@ end
 local CLASS_BIT = { WARRIOR = 1, PALADIN = 2, HUNTER = 4, ROGUE = 8, PRIEST = 16, SHAMAN = 64, MAGE = 128,
                     WARLOCK = 256, DRUID = 1024 }
 
--- Index : quête par numéro, quêtes par donneur
+-- Index : quête par numéro, quêtes par donneur. Pas de copie des lignes de la base : chaque ligne reçoit une
+-- métatable qui lit ses champs par nom (q.name = ligne[2]…), la carte venant d'une petite table à part.
 local byID, byStarter
+local FIELD = { id = 1, name = 2, nameFR = 3, lvl = 4, req = 5, side = 6, cls = 7, kind = 8, skill = 9, x = 10, y = 11,
+    sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17 }
+local mapOf = {}
+local QMETA = { __index = function(t, k)
+    if k == "map" then return mapOf[rawget(t, 1)] end
+    if k == "xp" then return rawget(t, 13) or 0 end
+    local i = FIELD[k]
+    return i and rawget(t, i) or nil
+end }
 local function index()
     byID, byStarter = {}, {}
     for mapID, list in pairs(WK.QuestsDB or {}) do
-        for _, e in ipairs(list) do
-            local q = { id = e[1], name = e[2], nameFR = e[3], lvl = e[4], req = e[5], side = e[6], cls = e[7],
-                        kind = e[8], skill = e[9], x = e[10], y = e[11], sid = e[12], xp = e[13] or 0,
-                        pre = e[14], preAll = e[15], nxt = e[16], map = mapID, smap = e[17] }
-            byID[q.id] = q
-            if q.sid then
-                byStarter[q.sid] = byStarter[q.sid] or {}
-                table.insert(byStarter[q.sid], q)
+        for _, q in ipairs(list) do
+            setmetatable(q, QMETA)
+            local id = q[1]
+            mapOf[id] = mapID
+            byID[id] = q
+            local sid = q[12]
+            if sid then
+                byStarter[sid] = byStarter[sid] or {}
+                table.insert(byStarter[sid], q)
             end
         end
     end
@@ -48,7 +59,7 @@ end
 function M:OnMap(mapID)
     if not byID then index() end
     local out = {}
-    for _, e in ipairs((WK.QuestsDB or {})[mapID] or {}) do table.insert(out, byID[e[1]]) end
+    for _, e in ipairs((WK.QuestsDB or {})[mapID] or {}) do table.insert(out, byID[e[1]] or e) end
     return out
 end
 function M:ByStarter(sid)

@@ -223,7 +223,7 @@ WK:On("LOOT_OPENED", function()
     end
 end)
 -- Rare ciblé qui meurt (pas toujours de butin : déjà ramassé par un autre, etc.)
-WK:On("UNIT_HEALTH", function(unit)
+WK:OnUnit("UNIT_HEALTH", "target", function(unit)
     if unit ~= "target" then return end
     local ok, dead = pcall(UnitIsDead, "target")
     if not (ok and readable(dead) == true) then return end

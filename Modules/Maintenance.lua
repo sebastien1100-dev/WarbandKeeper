@@ -283,3 +283,93 @@ function M.Bytes(b)
     if b >= 1024 then return string.format("%d Ko", math.floor(b / 1024 + 0.5)) end
     return string.format("%d o", b)
 end
+
+---------------------------------------------------------------------------
+-- /wk perf [secondes] : mesure pendant un temps (60 s par défaut) le temps passé dans chaque évènement de
+-- l'addon, dans ses fonctions les plus appelées et dans les mises à jour régulières de ses cadres nommés,
+-- puis écrit dans le chat les plus coûteux et la mémoire prise pendant la mesure.
+---------------------------------------------------------------------------
+local HOT = {
+    { "UI", "Refresh" }, { "UI", "RefreshChips" }, { "UI", "RefreshBlessBar" }, { "UI", "RefreshXPBar" },
+    { "UI", "RefreshDungeonTimer" }, { "UI", "RefreshMaintenance" },
+    { "Stash", "Route" }, { "Inventory", "ScanBags" }, { "Statistics", "UpdateItems" }, { "QoL", "Alerts" },
+    { "ItemLock", "Prune" }, { "Blessings", "Status" }, { "AHScan", "Price" }, { "Value", "Price" },
+    { "Dungeons", "Current" }, { "Nav", "Waypoint" }, { "Guide", "PlayerPos" }, { "Camp", "CheckAlerts" },
+}
+local wrapped = {}
+local function memNow()
+    if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+    return GetAddOnMemoryUsage and GetAddOnMemoryUsage(ADDON_NAME) or collectgarbage("count")
+end
+local function wrap(tbl, key, label)
+    local fn = tbl and tbl[key]
+    if type(fn) ~= "function" then return end
+    table.insert(wrapped, { tbl, key, fn })
+    tbl[key] = function(...)
+        local p = WK.perf
+        if not p then return fn(...) end
+        local t0 = debugprofilestop()
+        local r = { fn(...) }
+        p.add(label, debugprofilestop() - t0)
+        return unpack(r)
+    end
+end
+function M:PerfStop()
+    local p = WK.perf
+    if not p then return end
+    WK.perf = nil
+    for i = #wrapped, 1, -1 do local w = wrapped[i]; w[1][w[2]] = w[3] end
+    wipe(wrapped)
+    for _, f in ipairs(p.frames) do f[1]:SetScript("OnUpdate", f[2]) end
+    local list = {}
+    for name, e in pairs(p.data) do table.insert(list, { name = name, n = e.n, ms = e.ms, max = e.max }) end
+    table.sort(list, function(a, b) return a.ms > b.ms end)
+    local secs = math.max(1, GetTime() - p.start)
+    local total = 0
+    for _, e in ipairs(list) do total = total + e.ms end
+    WK:Print(string.format(WK.T("Mesure terminée (%d s) : %.0f ms dans l'addon, soit %.1f ms par seconde ; mémoire %s%.0f Ko."),
+        secs, total, total / secs, (memNow() - p.mem) >= 0 and "+" or "", memNow() - p.mem))
+    for i = 1, math.min(12, #list) do
+        local e = list[i]
+        WK:Print(string.format("  %5.0f ms  %5d x  max %4.1f ms  %s", e.ms, e.n, e.max, e.name))
+    end
+    if #list == 0 then WK:Print(WK.T("Rien de mesuré.")) end
+end
+function M:PerfStart(secs)
+    if WK.perf then return self:PerfStop() end
+    if not debugprofilestop then WK:Print(WK.T("Mesure impossible sur ce client.")) return end
+    local acc = {}
+    local p = { data = acc, start = GetTime(), frames = {}, mem = memNow() }
+    function p.add(name, ms)
+        local e = acc[name]
+        if not e then e = { n = 0, ms = 0, max = 0 }; acc[name] = e end
+        e.n, e.ms = e.n + 1, e.ms + ms
+        if ms > e.max then e.max = ms end
+    end
+    WK.perf = p
+    for _, h in ipairs(HOT) do
+        local t = h[1] == "UI" and WK.UI or WK.modules[h[1]]
+        wrap(t, h[2], h[1] .. ":" .. h[2])
+    end
+    -- mises à jour régulières des cadres nommés de l'addon
+    if EnumerateFrames then
+        local f = EnumerateFrames()
+        while f do
+            local name = f.GetName and f:GetName()
+            local up = name and name:find("^WarbandKeeper") and f.GetScript and f:GetScript("OnUpdate")
+            if up then
+                table.insert(p.frames, { f, up })
+                local label = "OnUpdate " .. name:gsub("^WarbandKeeper", "")
+                f:SetScript("OnUpdate", function(...)
+                    local t0 = debugprofilestop()
+                    up(...)
+                    if WK.perf then WK.perf.add(label, debugprofilestop() - t0) end
+                end)
+            end
+            f = EnumerateFrames(f)
+        end
+    end
+    secs = math.max(5, math.min(600, tonumber(secs) or 60))
+    WK:Print(string.format(WK.T("Mesure lancée pour %d s : joue normalement (sacs, carte, combat…). /wk perf pour arrêter avant."), secs))
+    C_Timer.After(secs, function() if WK.perf == p then M:PerfStop() end end)
+end

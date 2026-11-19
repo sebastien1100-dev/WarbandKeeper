@@ -330,7 +330,7 @@ end
 
 local function refresh() if card then card:Paint() end end
 WK:On("PLAYER_LOGIN", function() C_Timer.After(1, function() UI:SyncPetCard() end) end)
-WK:On("UNIT_HEALTH", function(u) if u == "pet" then refresh() end end)
+WK:OnUnit("UNIT_HEALTH", "pet", function() refresh() end)
 WK:On("UNIT_MAXHEALTH", function(u) if u == "pet" then refresh() end end)
 WK:On("UNIT_HAPPINESS", refresh)
 WK:On("UNIT_PET", function(u) if u == "player" then refresh(); if not inCombat() then setActions() end end end)

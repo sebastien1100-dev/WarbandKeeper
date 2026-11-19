@@ -16,6 +16,7 @@ WK.Locales.frFR.keys = {
     HELP_HUD        = "/wk hud - HUD de récolte : la minicarte en grand au centre de l'écran (points de pistage visibles de loin)",
     HELP_DUNGEON    = "/wk donjon - Panneau du donjon en cours : boss, butin, liste d'envies",
     HELP_BOAT       = "/wk bateau - Bateaux : la traversée est-elle repérée ? (journal des derniers trajets)",
+    HELP_PERF       = "/wk perf [secondes] - Mesure ce que l'addon coûte (temps par évènement, mémoire) ; relancer pour arrêter",
     HELP_FP         = "/wk vol - Guidage vers le point de vol pas encore appris le plus proche",
     HELP_MICRO      = "/wk micro         - Diagnostic des raccourcis du micro menu",
     HELP_BAGS       = "/wk sacs          - Diagnostic des sacs (cadenas, étoile BiS)",

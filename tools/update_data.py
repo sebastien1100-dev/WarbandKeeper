@@ -200,7 +200,7 @@ def metrics():
             out["Objets avec taux de drop observé"] = size(WK.EverDrops)
             out["Trajets de vol (fichiers du jeu)"] = size(WK.FlightGame.paths) if WK.FlightGame else 0
         elif name == "ItemsDB":
-            out["Objets portables (liste BiS)"] = size(WK.ItemsDB)
+            out["Objets portables (liste BiS)"] = size(WK.LoadItemsDB() if WK.LoadItemsDB else WK.ItemsDB)
         elif name == "BoatLinesDB":
             out["Lignes de bateaux et zeppelins"] = size(WK.BoatLines)
         elif name == "DungeonsDB":

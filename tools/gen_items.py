@@ -16,6 +16,19 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "Modules", "ItemsDB.lua")
+LOADER = r'''function WK.LoadItemsDB()
+    if WK.ItemsDB then return WK.ItemsDB end
+    local out, raw = {}, WK.ItemsDBRaw or ""
+    for line in raw:gmatch("[^\n]+") do
+        local id, slot, cls, sub, q, ilvl, req, name, stats, src = line:match("^(%d+)\t([^\t]*)\t(%d+)\t(%d+)\t(%d+)\t(%d+)\t(%d+)\t([^\t]*)\t([^\t]*)\t([^\t]*)$")
+        if id then
+            out[#out + 1] = { tonumber(id), slot, tonumber(cls), tonumber(sub), tonumber(q), tonumber(ilvl), tonumber(req), name, stats, src }
+        end
+    end
+    WK.ItemsDB, WK.ItemsDBRaw = out, nil
+    return out
+end
+'''
 
 # type d'emplacement du jeu » groupe d'emplacement de la liste BiS
 SLOT = {1: "head", 2: "neck", 3: "shoulder", 16: "back", 5: "chest", 20: "chest", 9: "wrist", 10: "hands",
@@ -82,13 +95,18 @@ def main():
         o.write("-- Objets portables de WoW Forever (qualité verte et plus), pour la liste BiS.\n")
         o.write("-- Données : wowlayerup-forever/opendata (https://github.com/wowlayerup-forever/opendata), licence CC BY 4.0,\n")
         o.write("-- reprises et réduites ; noms français : table ItemSparse du client (wago.tools).\n")
-        o.write("-- WK.ItemsDB = { { n°, groupe d'emplacement, classe, sous-classe, qualité, niveau d'objet, niveau requis,\n")
+        o.write("-- WK.LoadItemsDB() rend WK.ItemsDB = { { n°, groupe d'emplacement, classe, sous-classe, qualité, niveau d'objet, niveau requis,\n")
         o.write("--   nom, caractéristiques, source (\"q<quête>\", \"c<métier>:<compétence>\" ou \"\") }, ... }\n")
-        o.write("local ADDON_NAME, WK = ...\nWK.ItemsDB = {\n")
+        # une ligne par objet, champs séparés par des tabulations, dans une seule chaîne : décodée à la
+        # première ouverture de la liste BiS (bien plus léger en mémoire qu'une table par objet)
+        o.write("-- Chargé à la demande (WK.LoadItemsDB) : une seule chaîne tant que la liste BiS n'est pas ouverte.\n")
+        o.write("local ADDON_NAME, WK = ...\nWK.ItemsDBRaw = [==[\n")
         for it in items:
-            o.write("{%d,%s,%d,%d,%d,%d,%d,%s,%s,%s},\n" % (it[0], lua_str(it[1]), it[2], it[3], it[4], it[5], it[6],
-                                                          lua_str(it[7]), lua_str(it[8]), lua_str(it[9])))
-        o.write("}\n")
+            for v in it:
+                if isinstance(v, str):
+                    assert "\t" not in v and "\n" not in v and "]==]" not in v, v
+            o.write("%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%s\t%s\n" % it)
+        o.write("]==]\n" + LOADER)
     print("ItemsDB.lua : %d objets (%d noms français), %d Ko" % (len(items), sum(1 for i in items if i[0] in fr),
                                                                os.path.getsize(OUT) // 1024))
 
