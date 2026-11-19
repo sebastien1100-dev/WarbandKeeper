@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.82.1", date = "19/11/2026",
+        changed = {
+            "Tableau des bateaux (raccourci « Bateaux » du micro menu, /wk bateaux) : rangé par port. Chaque port avec ses pontons et leurs destinations (navire, « neutre » pour les lignes des deux factions), le port le plus proche de toi en haut, encadré à ta couleur, avec la distance et la zone. Clic sur une destination : guidage vers son ponton.",
+        },
+    },
+    {
         version = "1.82.0", date = "19/11/2026",
         changed = {
             "Bateaux et zeppelins : plus aucun horaire. Le bandeau dit seulement où va le navire : au quai, le nom du navire de ton ponton et la frise de toutes les escales de sa ligne (ton quai à ta couleur, la prochaine escale en vert), les pontons voisins en dessous ; à bord, la frise avec la prochaine escale ; dans le tram des profondeurs, ses deux stations.",

@@ -3627,4 +3627,11 @@ WK.Locales.enUS.text = {
     ["Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon."] = "Items, NPCs, spells: the interface font chosen in Appearance, without outline, like the addon's tooltips.",
     ["Guilde et partage"] = "Guild and sharing",
     ["arrivée dans %s · trajet %s"] = "arrival in %s · flight %s",
+    ["autre continent"] = "other continent",
+    ["%.1f km"] = "%.1f km",
+    ["Ports et destinations"] = "Ports and destinations",
+    ["Clic sur une destination : guidage vers son ponton"] = "Click a destination: guidance to its pier",
+    ["Clic : guidage vers ce ponton"] = "Click: guidance to this pier",
+    ["neutre"] = "neutral",
+    ["%d m"] = "%d m",
 }
