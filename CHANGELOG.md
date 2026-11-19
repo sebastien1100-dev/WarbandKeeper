@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Boîte aux lettres : le panneau Rangement pouvait rester à l'écran après la fermeture du courrier ; il se ferme maintenant avec la boîte aux lettres, quelle que soit la façon de la fermer.
+
 ## v1.56.2 — 19/11/2026
 
 _Un /reload suffit._

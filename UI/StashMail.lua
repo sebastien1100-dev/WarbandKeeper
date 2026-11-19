@@ -127,6 +127,11 @@ local function show()
     local cfg = S():Config()
     if not (cfg.mailPanel and WK:FeatureOn("inventory") and MailFrame and MailFrame:IsShown()) then return end
     panel = panel or build()
+    -- la boîte aux lettres se ferme (quelle que soit la façon) : le panneau aussi
+    if not panel.hooked and MailFrame.HookScript then
+        panel.hooked = true
+        MailFrame:HookScript("OnHide", function() if panel then panel:Hide() end end)
+    end
     wipe(unchecked)
     S():Invalidate()
     panel:ClearAllPoints()
