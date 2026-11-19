@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.73.4", date = "19/11/2026",
+        fixed = {
+            "Marchand : le panneau « Pour monter tes métiers » passait sous les fenêtres d'autres addons ouvertes à côté ; il est maintenant toujours au-dessus. Même chose pour le panneau collé à la fenêtre de l'HV du jeu.",
+        },
+    },
+    {
         version = "1.73.3", date = "19/11/2026",
         improved = {
             "Addon plus léger à chaque image : les réglages de confort ne sont plus revérifiés en entier plusieurs fois par image par le micro menu, l'anneau du curseur et les pastilles de la mini-carte.",

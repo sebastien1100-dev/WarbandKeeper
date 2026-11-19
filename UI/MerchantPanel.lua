@@ -239,7 +239,9 @@ local function show()
     panel = panel or build()
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 6, -12)
-    panel:SetFrameStrata(MerchantFrame:GetFrameStrata() or "MEDIUM")
+    -- au-dessus des fenêtres des autres addons ouvertes à côté du marchand
+    panel:SetFrameStrata("DIALOG")
+    panel:SetToplevel(true)
     local count = panel:Refresh()
     -- marchand qui ne vend rien d'utile : on n'encombre pas l'écran
     if count == 0 then panel:Hide() return end
