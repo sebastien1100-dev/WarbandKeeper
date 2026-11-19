@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.65.4", date = "19/11/2026",
+        changed = {
+            "Paladin > Bénédictions : la répartition du groupe est couchée pour tenir dans la fenêtre. Une ligne par paladin (bande rose Warband Keeper ou grise PallyPower à gauche, ta ligne bordée de rose), une colonne par classe (icône en haut, nom au survol) puis l'aure. La carte grandit avec le nombre de paladins, sans place perdue.",
+        },
+    },
+    {
         version = "1.65.3", date = "19/11/2026",
         changed = {
             "Paladin > Bénédictions : la répartition du groupe est rangée en un panneau par paladin. Chaque colonne a sa bande de couleur en haut (rose Warband Keeper, gris PallyPower), le nom et l'addon centrés sans chevauchement, puis ses bénédictions centrées sous l'en-tête ; ta colonne est bordée de rose.",

@@ -232,13 +232,14 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         toggle(sc, function() return M:Config().salut ~= false end, function(v) M:Config().salut = v; UI:RefreshBlessBar() end), 80)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 
-    -- tableau (version « planning ») : les classes en lignes (toutes, grisées si absentes du groupe), puis
-    -- l'aure ; les paladins du groupe en colonnes (toi d'abord) ; chaque case = icône + nom de la bénédiction
-    local NROWS = #M.CLASSES + 1
-    local RH, TOPY, IC, HEADH = 52, 132, 44, 48
-    local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
+    -- tableau couché : une ligne par paladin du groupe (toi d'abord, bande à gauche : accent = Warband Keeper,
+    -- gris = PallyPower), une colonne par classe (icône, nom au survol ; grisée si absente du groupe) puis l'aure
+    local NCOLS = #M.CLASSES + 1
+    local RH, TOPY, IC, LABW = 58, 124, 44, 150
+    local function cardH(n) return TOPY + math.max(1, n) * (RH + 6) + 48 end
+    local tc = card("Répartition du groupe", cardH(3))
     UI.blessTable = tc
-    -- test hors groupe : deux paladins simulés ajoutent leurs colonnes
+    -- test hors groupe : deux paladins simulés ajoutent leurs lignes
     tc.test = UI:Button(tc, "Tester", 130, 24, "secondary")
     tc.test:SetPoint("TOPRIGHT", -16, -9)
     tc.test.tooltip = "Simule deux autres paladins (un sous Warband Keeper en automatique, un sous PallyPower) pour voir la répartition. Seulement hors groupe ; rien n'est envoyé."
@@ -251,51 +252,45 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     tc.banner.bg = UI:Rounded(tc.banner, 8, 0, "BACKGROUND", 1)
     tc.banner.t = UI:Text(tc.banner, 11, C.muted); tc.banner.t:SetPoint("LEFT", 12, 0); tc.banner.t:SetPoint("RIGHT", -12, 0)
     tc.banner.t:SetJustifyH("LEFT")
-    tc.classHead = UI:Text(tc, 9, C.dim); tc.classHead:SetText(T("CLASSE"))
-    tc.cols = {}
-    tc.classHead:Hide()
-    -- un panneau par paladin : bande de couleur en haut (accent = Warband Keeper, gris = PallyPower), nom et
-    -- addon centrés, puis ses cases ; ta colonne bordée à l'accent
-    for p = 1, MAXP do
+    -- en-têtes de colonnes : icône de la classe, « Aure » pour la dernière
+    tc.heads = {}
+    for k = 1, NCOLS do
         local h = CreateFrame("Frame", nil, tc)
-        h:SetHeight(HEADH + NROWS * (RH + 4) + 2)
-        h:SetFrameLevel(tc:GetFrameLevel() + 1)
-        h.edge = UI:Rounded(h, 10, 0, "BACKGROUND", 1)
-        h.fill = UI:Rounded(h, 10, 1, "BACKGROUND", 2); h.fill:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
-        h.stripe = h:CreateTexture(nil, "ARTWORK"); h.stripe:SetHeight(3)
-        h.stripe:SetPoint("TOPLEFT", 10, -1); h.stripe:SetPoint("TOPRIGHT", -10, -1)
-        h.name = UI:Text(h, 12, C.text); h.name:SetPoint("TOP", 0, -10); h.name:SetJustifyH("CENTER")
-        if h.name.SetWordWrap then h.name:SetWordWrap(false) end
-        h.tag = UI:Text(h, 10, C.muted); h.tag:SetPoint("TOP", h.name, "BOTTOM", 0, -3); h.tag:SetJustifyH("CENTER")
-        tc.cols[p] = h
-    end
-    tc.rows = {}
-    for ri = 1, NROWS do
-        local r = CreateFrame("Frame", nil, tc)
-        r:SetHeight(RH)
-        r:SetFrameLevel(tc:GetFrameLevel() + 4)
-        -- icône de la classe (nom au survol) ; l'aure garde son libellé
-        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(IC - 4, IC - 4); r.dot:SetPoint("LEFT", 14, 0)
-        r.label = UI:Text(r, 12, C.text); r.label:SetPoint("LEFT", 10, 0)
-        r.ci = ri <= #M.CLASSES and ri or nil
-        if r.ci then
-            UI:SetClassIcon(r.dot, M.CLASSES[r.ci])
-            r.label:Hide()
-            r.hit = CreateFrame("Frame", nil, r); r.hit:SetAllPoints(r.dot); r.hit:EnableMouse(true)
-            r.hit:SetScript("OnEnter", function(s)
-                UI:TooltipOwner(s, "ANCHOR_RIGHT")
-                GameTooltip:AddLine(className(M.CLASSES[r.ci]), unpack(classColor(M.CLASSES[r.ci])))
+        h:SetHeight(40)
+        h.ci = k <= #M.CLASSES and k or nil
+        h.icon = h:CreateTexture(nil, "ARTWORK"); h.icon:SetSize(36, 36); h.icon:SetPoint("CENTER")
+        h.label = UI:Text(h, 11, C.muted); h.label:SetPoint("CENTER")
+        if h.ci then
+            UI:SetClassIcon(h.icon, M.CLASSES[h.ci])
+            h.label:Hide()
+            h:EnableMouse(true)
+            h:SetScript("OnEnter", function(s)
+                UI:TooltipOwner(s, "ANCHOR_TOP")
+                GameTooltip:AddLine(className(M.CLASSES[h.ci]), unpack(classColor(M.CLASSES[h.ci])))
                 GameTooltip:Show()
             end)
-            r.hit:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            h:SetScript("OnLeave", function() GameTooltip:Hide() end)
         else
-            r.dot:Hide()
-            r.label:SetText(T("Aure"))
+            h.icon:Hide()
+            h.label:SetText(T("Aure"))
         end
+        tc.heads[k] = h
+    end
+    tc.rows = {}
+    for p = 1, MAXP do
+        local r = CreateFrame("Frame", nil, tc)
+        r:SetHeight(RH)
+        r.edge = UI:Rounded(r, 10, 0, "BACKGROUND", 1)
+        r.fill = UI:Rounded(r, 10, 1, "BACKGROUND", 2); r.fill:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+        r.stripe = r:CreateTexture(nil, "ARTWORK"); r.stripe:SetWidth(3)
+        r.stripe:SetPoint("TOPLEFT", 1, -10); r.stripe:SetPoint("BOTTOMLEFT", 1, 10)
+        r.name = UI:Text(r, 12, C.text); r.name:SetPoint("TOPLEFT", 14, -14); r.name:SetWidth(LABW - 20); r.name:SetJustifyH("LEFT")
+        if r.name.SetWordWrap then r.name:SetWordWrap(false) end
+        r.tag = UI:Text(r, 10, C.muted); r.tag:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
         r.cells = {}
-        for p = 1, MAXP do
+        for k = 1, NCOLS do
             local b = CreateFrame("Button", nil, r)
-            b:SetHeight(RH - 4)
+            b:SetHeight(RH - 6)
             b:EnableMouse(true)
             b:SetFrameLevel(r:GetFrameLevel() + 3)
             b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -315,16 +310,16 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                 GameTooltip:Show()
             end)
             b:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
-            b.col = p
-            b:SetScript("OnClick", function(s, btn)
-                local who = tc.colWho and tc.colWho[s.col]
+            local ci = k <= #M.CLASSES and k or nil
+            b:SetScript("OnClick", function(_, btn)
+                local who = tc.rowWho and tc.rowWho[p]
                 if not who then return end
                 local e = M.pallys[who] or {}
-                if r.ci then
+                if ci then
                     -- toutes les bénédictions défilent, puis « aucune » (une pas encore apprise est marquée)
-                    local cur = (e.assign and e.assign[r.ci]) or 0
+                    local cur = (e.assign and e.assign[ci]) or 0
                     local nxt = (btn ~= "RightButton") and ((cur + 1) % (#M.BLESS + 1)) or 0
-                    if not M:SetAssign(who, r.ci, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
+                    if not M:SetAssign(who, ci, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
                 else
                     local cur = e.aura or 0
                     local nxt = (btn ~= "RightButton") and ((cur + 1) % (#M.AURAS + 1)) or 0
@@ -333,9 +328,9 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                 UI:RefreshBlessCard()
                 UI:RefreshBlessBar()
             end)
-            r.cells[p] = b
+            r.cells[k] = b
         end
-        tc.rows[ri] = r
+        tc.rows[p] = r
     end
     -- exceptions (ma ligne)
     tc.exHead = UI:Text(tc, 11, C.muted); tc.exHead:SetText(T("Exceptions :"))
@@ -373,23 +368,21 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         return b
     end
 
-    local LABW, GAP = 76, 8
     local function layout(w)
         w = w or tc:GetWidth() or 800
-        local n = math.max(1, tc.nCols or 1)
-        local cw = math.min(140, math.floor((w - 32 - LABW) / n))
-        for p, h in ipairs(tc.cols) do
-            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (p - 1) * cw, -(TOPY - HEADH)); h:SetWidth(cw - GAP)
-            h.name:SetWidth(cw - GAP - 12); h.tag:SetWidth(cw - GAP - 12)
+        local n = math.max(1, tc.nRows or 1)
+        local cw = math.floor((w - 32 - LABW) / NCOLS)
+        for k, h in ipairs(tc.heads) do
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (k - 1) * cw, -(TOPY - 44)); h:SetWidth(cw)
         end
-        for ri, r in ipairs(tc.rows) do
-            local y = TOPY + (ri - 1) * (RH + 4)
+        for p, r in ipairs(tc.rows) do
+            local y = TOPY + (p - 1) * (RH + 6)
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -y); r:SetPoint("TOPRIGHT", -16, -y)
-            for p, b in ipairs(r.cells) do
-                b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (p - 1) * cw, -2); b:SetWidth(cw - GAP)
+            for k, b in ipairs(r.cells) do
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (k - 1) * cw, -3); b:SetWidth(cw)
             end
         end
-        local y = TOPY + NROWS * (RH + 4) + 10
+        local y = TOPY + n * (RH + 6) + 6
         tc.exHead:ClearAllPoints(); tc.exHead:SetPoint("TOPLEFT", 16, -(y + 5))
         tc.exY = y
     end
@@ -400,8 +393,8 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         local list = M:Pallys()
         local r1, g1, b1 = UI:Accent()
         local n = math.min(#list, MAXP)
-        if tc.nCols ~= n then tc.nCols = n; layout() end
-        tc.colWho = {}
+        if tc.nRows ~= n then tc.nRows = n; tc:SetHeight(cardH(n)); layout() end
+        tc.rowWho = {}
         -- classes présentes dans le groupe (toutes quand tu es seul)
         local present, alone = {}, not (IsInGroup and IsInGroup())
         for _, u in ipairs(M.GroupUnits()) do
@@ -412,37 +405,35 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         if M.demo then
             tc.banner.t:SetText(UI:Hex(C.warning) .. T("Test : Aerin et Brann sont simulés, rien n'est envoyé.") .. "|r  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
         elseif alone or n <= 1 then
-            tc.banner.t:SetText(T("Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une colonne.") .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
+            tc.banner.t:SetText(T("Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une ligne.") .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
         else
             tc.banner.t:SetText(string.format(T("%d paladins dans le groupe"), n) .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
         end
-        for p, h in ipairs(tc.cols) do
-            local it = list[p]
-            h:SetShown(it ~= nil and p <= n)
-            if it then
-                tc.colWho[p] = it.name
-                h.name:SetText(string.upper(it.e.me and T("Toi") or firstName(it.name)))
-                local col = it.e.wk and { r1, g1, b1 } or C.muted
-                h.tag:SetText(it.e.wk and "Warband Keeper" or "PallyPower")
-                h.tag:SetTextColor(unpack(col))
-                h.stripe:SetColorTexture(col[1], col[2], col[3], 1)
-                if it.e.me then h.edge:SetColor(r1, g1, b1, 0.6) else h.edge:SetColor(C.border[1], C.border[2], C.border[3], 1) end
-            end
+        for _, h in ipairs(tc.heads) do
+            local here = not h.ci or alone or present[M.CLASSES[h.ci]]
+            h.icon:SetAlpha(here and 1 or 0.3)
+            if h.icon.SetDesaturated then h.icon:SetDesaturated(not here) end
         end
-        for _, r in ipairs(tc.rows) do
-            local here = not r.ci or alone or present[M.CLASSES[r.ci]]
-            r.label:SetTextColor(unpack(here and C.text or C.dim))
-            r.dot:SetAlpha(here and 1 or 0.3)
-            if r.dot.SetDesaturated then r.dot:SetDesaturated(not here) end
-            for p, b in ipairs(r.cells) do
-                local it = list[p]
-                b:SetShown(it ~= nil and p <= n)
-                if it then
-                    local e = it.e
+        for p, r in ipairs(tc.rows) do
+            local it = list[p]
+            r:SetShown(it ~= nil and p <= n)
+            if it then
+                local e = it.e
+                tc.rowWho[p] = it.name
+                r.name:SetText(string.upper(e.me and T("Toi") or firstName(it.name)))
+                local col = e.wk and { r1, g1, b1 } or C.muted
+                r.tag:SetText(e.wk and "Warband Keeper" or "PallyPower")
+                r.tag:SetTextColor(unpack(col))
+                r.stripe:SetColorTexture(col[1], col[2], col[3], 1)
+                if e.me then r.edge:SetColor(r1, g1, b1, 0.6) else r.edge:SetColor(C.border[1], C.border[2], C.border[3], 1) end
+                local editable = M:CanEdit(it.name)
+                for k, b in ipairs(r.cells) do
+                    local ci = k <= #M.CLASSES and k or nil
+                    local here = not ci or alone or present[M.CLASSES[ci]]
                     local v, id, label
                     local learned = true
-                    if r.ci then
-                        v = e.assign and e.assign[r.ci] or 0
+                    if ci then
+                        v = e.assign and e.assign[ci] or 0
                         id = M.BLESS[v] and M.BLESS[v][1]
                         label = id and M:Name(v)
                         if id and e.me then learned = M:Known(v) end
@@ -460,7 +451,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                     b.empty:SetShown(id == nil)
                     b.tip, b.tipWarn = label or T("aucune"), (id ~= nil and not learned)
                     b.txt:SetText(label or T("aucune"))
-                    b:SetAlpha(M:CanEdit(it.name) and 1 or 0.6)
+                    b:SetAlpha(editable and 1 or 0.6)
                 end
             end
         end
