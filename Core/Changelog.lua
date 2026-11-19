@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.48.3", date = "19/11/2026",
+        changed = {
+            "Notes de patch : la liste « À venir » est remise à jour (« Qui peut fabriquer… ? » retiré, déjà dans Métiers > Recettes ; la pile d'alertes dit ce qu'il reste à y brancher).",
+        },
+    },
+    {
         version = "1.48.2", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.2 (messages longs passés à la ligne au lieu d'être coupés).",
@@ -3185,7 +3191,7 @@ WK.Roadmap = {
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
-    "Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.",
+    "Pile d'alertes pour les rappels de QoL (buffs, poisons, guidage, familier), qui passent encore par le texte rouge du jeu : elle sert déjà au chasseur, à la pêche, au feu de camp et à l'expérience.",
 }
 
 
