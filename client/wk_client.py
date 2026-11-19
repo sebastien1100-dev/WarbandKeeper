@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.3"
+CLIENT_VERSION = "1.8.4"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1590,8 +1590,7 @@ class HomePage(Page):
         right.pack(side="right")
         self.action = Button(right, "Mettre à jour", self.app.update_addon, "primary", width=190, height=44, font=App.fonts["btnL"])
         self.action.pack(anchor="e")
-        self.check = Button(right, "Vérifier maintenant", self.app.refresh, "secondary", width=190, height=34)
-        self.check.pack(anchor="e", pady=(8, 0))
+        # un seul bouton : « Mettre à jour » quand une version attend, sinon « Vérifier maintenant »
         self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
         self.status = label(b, "", fg="muted", font="small", wraplength=600)
@@ -1672,7 +1671,7 @@ class HomePage(Page):
         elif latest is None:
             self.versions.configure(text="Installée : %s" % (inst or "non installée"))
             self.chip.set("Recherche des versions…", C["muted"])
-            self.action.set("Mettre à jour", False, "primary")
+            self.action.set("Vérification…", False, "secondary")
         elif not inst:
             self.versions.configure(text="Pas encore installé dans %s · dernière version %s" % (flavor_label(a.addons), latest))
             self.chip.set("Prêt à installer", C["accent"])
@@ -1693,7 +1692,8 @@ class HomePage(Page):
                 self.chip.set("À jour · un /reload suffit", C["positive"])
             else:
                 self.chip.set("À jour", C["positive"])
-            self.action.set("✓  À jour", False, "ok")
+            self.action.set("Vérifier maintenant", not a.busy, "secondary")
+            self.action.command = a.refresh
         last = list_backups()
         self.sv.configure(text=datetime.fromtimestamp(last[0]["time"]).strftime("le %d/%m à %H:%M") if last else "aucune pour l'instant")
         every = {"1h": 3600, "6h": 6 * 3600}.get(a.cfg["checkEvery"])
@@ -2531,6 +2531,8 @@ class App:
         home = self.pages["home"]
         home.set_busy("Recherche des versions sur GitHub…")
         self.error = None
+        if getattr(home, "action", None):
+            home.action.set("Vérification…", False, "secondary")
 
         def job():
             g = GitHub(self.cfg["token"])
