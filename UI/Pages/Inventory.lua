@@ -180,6 +180,13 @@ UI:RegisterPage({
         self.gp.scroll:ClearAllPoints()
         self.gp.scroll:SetPoint("TOPLEFT", 0, -42)
         self.gp.scroll:SetPoint("BOTTOMRIGHT")
+        -- la bande au-dessus des cartes (à hauteur de la roue dentée) porte le titre du volet, au lieu de rester vide
+        self.gp.overlay.title = UI:Text(self.gp.overlay, 15, C.text)
+        self.gp.overlay.title:SetPoint("TOPLEFT", 4, -9)
+        self.gp.overlay.title:SetText(T("Réglages de l'inventaire"))
+        self.gp.overlay.sub = UI:Text(self.gp.overlay, 11, C.muted)
+        self.gp.overlay.sub:SetPoint("BOTTOMLEFT", self.gp.overlay.title, "BOTTOMRIGHT", 10, 1)
+        self.gp.overlay.sub:SetText(T("objets verrouillés, protection chez le marchand, Rangement"))
         -- consommables conseillés (UI/ProfPanels.lua)
         self.prepPane = UI:BuildPrepPane(p)
         self.prepPane:SetPoint("TOPLEFT", x0, 0)

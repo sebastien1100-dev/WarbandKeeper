@@ -3379,4 +3379,5 @@ WK.Locales.enUS.text = {
     ["+ Cible actuelle"] = "+ Current target",
     ["barre à l'écran et répartition entre paladins"] = "on-screen bar and sharing between paladins",
     ["clic : bénédiction suivante · clic droit : aucune"] = "click: next blessing · right-click: none",
+    ["objets verrouillés, protection chez le marchand, Rangement"] = "locked items, merchant protection, Stash",
 }

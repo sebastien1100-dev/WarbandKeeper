@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.64.2", date = "19/11/2026",
+        fixed = {
+            "Inventaire, roue dentée ouverte : la bande vide au-dessus des réglages porte maintenant leur titre (« Réglages de l'inventaire »).",
+        },
+    },
+    {
         version = "1.64.1", date = "19/11/2026",
         fixed = {
             "Carte du monde : sous l'épingle du guidage, le nom de la destination pouvait être coupé ; le cadre prend maintenant la largeur de sa ligne la plus longue.",
