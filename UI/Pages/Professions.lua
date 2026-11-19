@@ -839,7 +839,7 @@ local function Detail(page, parent)
     whereText:SetJustifyH("LEFT")
     if whereText.SetWordWrap then whereText:SetWordWrap(true) end
     -- Tuiles de zones : nom, niveau des monstres, ressources utiles (pastille de couleur).
-    local TILE_H = 66
+    local TILE_H = 90
     local tiles = UI:Pool(function()
         local t = CreateFrame("Frame", nil, where)
         t:SetHeight(TILE_H)
@@ -855,6 +855,12 @@ local function Detail(page, parent)
         t.res:SetJustifyH("LEFT")
         t.here = UI:Badge(t, "tu y es", C.positive)
         t.here:SetPoint("TOPRIGHT", -8, -8)
+        -- valeur à l'heure (tes sessions de farm) et tournée guidée par les coins déjà récoltés
+        t.rate = UI:Text(t, 11)
+        t.rate:SetPoint("TOPLEFT", 12, -46)
+        t.tour = UI:Button(t, "Tournée", nil, 20, "secondary", "map")
+        t.tour:SetPoint("TOPRIGHT", -8, -42)
+        t.tour:SetScript("OnClick", function(b) WK.modules.Gathering:StartTour(b.kind, b.zone, b.items) end)
         return t
     end)
     local gscroll = UI:Scroll(gather)
@@ -911,9 +917,20 @@ local function Detail(page, parent)
                 end
             end
         end
+        -- valeur à l'heure mesurée sur tes sessions : les zones mesurées d'abord, la meilleure en tête
+        local rates = G:ZoneRates(kind)
+        local rateOf = function(z) local e = rates[z] or rates[T(z)]; return e and e.rate or nil end
+        table.sort(best, function(a, b)
+            local ra, rb = rateOf(a), rateOf(b)
+            if (ra ~= nil) ~= (rb ~= nil) then return ra ~= nil end
+            if ra and rb and ra ~= rb then return ra > rb end
+            return false
+        end)
         for i, z in ipairs(best) do
             if z == here or T(z) == here then table.remove(best, i); table.insert(best, 1, z); break end
         end
+        local goodItems = {}
+        for _, d in ipairs(list) do if d.good then goodItems[d.id] = true end end
         tiles:Reset()
         local w = (where:GetWidth() or 0) > 100 and where:GetWidth() or (UI.PAGE_W or 840)
         local perRow = math.max(2, math.min(4, math.floor((w - 32 + 10) / 210)))
@@ -937,6 +954,17 @@ local function Detail(page, parent)
                 table.insert(parts, UI:Hex(col) .. "•|r " .. ((UI:ItemInfo(d.id)) or "?"))
             end
             t.res:SetText(table.concat(parts, "   "))
+            local e = rates[z] or rates[T(z)]
+            if e then
+                t.rate:SetText(UI:GoldText(math.floor(e.rate)) .. UI:Hex(C.muted) .. " " .. T("par heure") .. "  ·  "
+                    .. string.format(T("%d session(s)"), e.sessions) .. "|r")
+            else
+                t.rate:SetText(UI:Hex(C.dim) .. T("pas encore mesuré (session de farm)") .. "|r")
+            end
+            local spots = kind ~= "skin" and G:ZoneSpots(kind, z, goodItems) or {}
+            t.tour.kind, t.tour.zone, t.tour.items = kind, z, goodItems
+            t.tour:SetShown(#spots >= 2)
+            if #spots >= 2 then t.tour:SetLabel(string.format(T("Tournée (%d)"), #spots)); t.tour:SetWidth(t.tour.label:GetStringWidth() + 40) end
             t.here:SetShown(isHere)
             t.border:SetColor(unpack(isHere and { UI:Accent() } or C.border))
         end
@@ -1620,6 +1648,76 @@ local function Detail(page, parent)
 end
 
 ---------------------------------------------------------------------------
+-- Fabriquer ou vendre : composants du compte qu'une recette d'un de tes persos valorise mieux
+-- que la vente brute (Modules/ProfHelp.lua : CraftOrSellList). « File » : fabrications ajoutées à la file.
+---------------------------------------------------------------------------
+local function CraftSell(page, parent)
+    local tab = {}
+    local card = UI:Card(parent, "Fabriquer ou vendre ?", "composants de tes sacs, banques et courriers · prix HV du jour, sinon marchand")
+    card:SetPoint("TOPLEFT", 0, TOP)
+    card:SetPoint("BOTTOMRIGHT")
+    local cols = { { "VENDRE BRUT", -360 }, { "GAIN", -150 } }
+    local hName = UI:Text(card, 10, C.dim); hName:SetPoint("TOPLEFT", 16, -44); hName:SetText(T("COMPOSANT"))
+    local hRec = UI:Text(card, 10, C.dim); hRec:SetPoint("TOPRIGHT", -200, -44); hRec:SetText(T("MEILLEURE RECETTE"))
+    hRec:Hide()
+    for _, c in ipairs(cols) do
+        local h = UI:Text(card, 10, C.dim); h:SetPoint("TOPRIGHT", c[2], -44); h:SetJustifyH("RIGHT"); h:SetText(T(c[1]))
+    end
+    local sc = UI:Scroll(card)
+    sc:SetPoint("TOPLEFT", 10, -62)
+    sc:SetPoint("BOTTOMRIGHT", -8, 10)
+    local empty = UI:Text(card, 12, C.muted)
+    empty:SetPoint("TOPLEFT", 16, -70); empty:SetPoint("RIGHT", -16, 0); empty:SetJustifyH("LEFT")
+    if empty.SetWordWrap then empty:SetWordWrap(true) end
+    empty:SetText(T("Rien à fabriquer de plus rentable pour l'instant : il faut des prix HV (scan) et des recettes lues à l'ouverture des métiers."))
+    local rows = UI:Pool(function()
+        local r = CreateFrame("Frame", nil, sc.child)
+        r:SetHeight(40)
+        r.bg = UI:Rounded(r, 9, 0, "BACKGROUND", 1); r.bg:SetColor(unpack(C.surface2))
+        r.icon = UI:RoundIcon(r, 22); r.icon:SetPoint("LEFT", 8, 0)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 38, -5); r.name:SetPoint("RIGHT", -400, 0)
+        r.rec = UI:Text(r, 10, C.muted); r.rec:SetPoint("TOPLEFT", 38, -22); r.rec:SetPoint("RIGHT", -400, 0)
+        r.raw = UI:Text(r, 12); r.raw:SetPoint("RIGHT", -352, 0); r.raw:SetJustifyH("RIGHT")
+        r.gain = UI:Text(r, 12); r.gain:SetPoint("RIGHT", -142, 0); r.gain:SetJustifyH("RIGHT")
+        r.add = UI:Button(r, "File", nil, 24, "primary", "plus")
+        r.add:SetPoint("RIGHT", -10, 0)
+        r.add:SetScript("OnClick", function(b)
+            if b.key and b.n and b.n > 0 then
+                WK.modules.Recipes:AddToList(b.key, b.n)
+                WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), b.n, b.recName or "?"))
+            end
+        end)
+        return r
+    end)
+    function tab:Refresh()
+        rows:Reset()
+        local list = WK.modules.ProfHelp:CraftOrSellList()
+        local y, shown = 0, 0
+        for _, e in ipairs(list) do
+            if e.gain > 0 and shown < 60 then
+                shown = shown + 1
+                local r = rows:Get()
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+                local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
+                r.icon:SetTexture(icon)
+                r.name:SetText((name or "?") .. "  " .. UI:Hex(C.muted) .. "x" .. e.count .. "|r")
+                r.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+                local c = WK.DB.global.characters[e.best.crafter]
+                r.rec:SetText(string.format(T("%d x %s"), e.crafts, e.best.rec.name) .. (c and ("  ·  " .. WK:CharName(c, e.best.crafter)) or ""))
+                r.raw:SetText(UI:GoldText(math.floor(e.raw)))
+                r.gain:SetText(UI:Hex(C.positive) .. "+" .. WK:FormatMoney(math.floor(e.gain)) .. "|r")
+                r.add.key, r.add.n, r.add.recName = e.best.rec.key, e.crafts, e.best.rec.name
+                r.add:SetShown(e.crafts > 0)
+                y = y + 44
+            end
+        end
+        sc:SetContentHeight(y)
+        empty:SetShown(shown == 0)
+    end
+    return tab
+end
+
+---------------------------------------------------------------------------
 -- Réglages des métiers (roue dentée du bandeau) : ce métier (au choix), infobulles,
 -- fenêtres du jeu, file et recharges, récolte, désenchantements notés. Deux colonnes.
 ---------------------------------------------------------------------------
@@ -1848,7 +1946,7 @@ UI:RegisterPage({
     Build = function(self, p)
         self.tab = "levels"
         local frames, tabs = {}, {}
-        for _, k in ipairs({ "levels", "recipes", "shopping", "detail", "settings" }) do
+        for _, k in ipairs({ "levels", "recipes", "shopping", "craftsell", "detail", "settings" }) do
             local f = CreateFrame("Frame", nil, p)
             f:SetAllPoints()
             f:SetShown(k == "levels")
@@ -1863,6 +1961,7 @@ UI:RegisterPage({
         tabs.recipes = Recipes(self, frames.recipes)
         tabs.shopping = Shopping(self, frames.shopping)
         tabs.settings = Settings(self, frames.settings)
+        tabs.craftsell = CraftSell(self, frames.craftsell)
         UI:OnResize(p, function() UI:RefreshSoon() end) -- cartes des niveaux
         self.tabs = tabs
         local seg
@@ -1875,7 +1974,7 @@ UI:RegisterPage({
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
-        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" } }, setTab, 32)
+        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" }, { "craftsell", "Fabriquer ou vendre" } }, setTab, 32)
         seg:SetPoint("TOPLEFT")
         seg:Select("levels")
         -- Roue dentée : tous les réglages des métiers ; un second clic revient à l'onglet d'avant

@@ -194,7 +194,7 @@ UI:RegisterPage({
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
         -- Infobulles : toutes les lignes que l'addon ajoute aux infobulles, à un seul endroit
-        local ttCard = card("Infobulles", 40 + 8 * 54 + 8, "tout ce que l'addon ajoute aux infobulles")
+        local ttCard = card("Infobulles", 40 + 9 * 54 + 8, "tout ce que l'addon ajoute aux infobulles")
         local function ttRow(yy, label, desc, get, set)
             local t = UI:Toggle(ttCard, get, set)
             self.ttToggles = self.ttToggles or {}
@@ -204,6 +204,8 @@ UI:RegisterPage({
         local PHc = function() return WK.modules.ProfHelp:Config() end
         ttRow(-202, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
             function() return PHc().deTip end, function(v) PHc().deTip = v end)
+        ttRow(-472, "Fabriquer ou vendre", "Composant qu'une recette d'un de tes persos valorise mieux que la vente brute : la recette et ce qu'elle en tire à l'unité.",
+            function() return PHc().craftTip end, function(v) PHc().craftTip = v end)
         ttRow(-256, "Prix de l'hôtel des ventes", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.",
             function() return WK.modules.AHScan:Config().tooltip end, function(v) WK.modules.AHScan:Config().tooltip = v end)
         ttRow(-310, "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.",

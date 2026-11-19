@@ -8,7 +8,7 @@ local T = function(s) return WK.T(s) end
 --   de recharge, favoris chez le maître, consommables conseillés (carte « Avant de partir » d'Inventaire).
 -- Réglages : WK.DB.global.profHelp. Fenêtres : UI/ProfPanels.lua.
 
-local DEFAULTS = { deTip = true, dePanel = true, trade = true, queueHud = true, queueAuto = true,
+local DEFAULTS = { craftTip = true, deTip = true, dePanel = true, trade = true, queueHud = true, queueAuto = true,
     cdAlert = true, trainer = true, prepAlert = false, prepMode = "dungeon" }
 local PREP_MIN = { heal = 5, mana = 5, food = 10, drink = 10, bandage = 5, elixir = 2 }
 
@@ -169,9 +169,21 @@ end
 WK:On("SKILL_LINES_CHANGED", function() anyEnchanter = nil end)
 
 function M:AddTooltip(tooltip, itemID, header)
-    if not self:Config().deTip or not self:AnyEnchanter() then return false end
+    local any = false
+    -- fabriquer ou vendre : une recette d'un de tes persos en tire nettement plus
+    if self:Config().craftTip then
+        local r = self:CraftOrSell(itemID)
+        if r and r.best.perUnit > r.raw * 1.1 and r.best.perUnit - r.raw >= 1 then
+            header(); any = true
+            local c = WK.DB.global.characters[r.best.crafter]
+            local pct = r.raw > 0 and math.floor((r.best.perUnit / r.raw - 1) * 100 + 0.5) or nil
+            tooltip:AddDoubleLine(string.format(T("Mieux fabriqué : %s"), r.best.rec.name) .. (c and (" (" .. WK:CharName(c, r.best.crafter) .. ")") or ""),
+                WK:FormatMoney(math.floor(r.best.perUnit)) .. (pct and (" (+" .. pct .. " %)") or ""), 0.62, 0.82, 0.48, 1, 1, 1)
+        end
+    end
+    if not self:Config().deTip or not self:AnyEnchanter() then return any end
     local a = self:DEAdvice(itemID)
-    if not a or a.value <= 0 then return false end
+    if not a or a.value <= 0 then return any end
     header()
     local first = a.list[1]
     local what = first and string.format("%s %s", (first[2] >= 10 or first[2] == math.floor(first[2])) and string.format("%d", first[2]) or string.format("%.1f", first[2]):gsub("%.", ","),
@@ -549,4 +561,66 @@ function M:AddAlerts(out)
                 text = string.format(T("%s : %s bas (%d sur %d)"), WK:CharName(c, ck), name, r.bags, r.min) })
         end
     end
+end
+
+---------------------------------------------------------------------------
+-- Fabriquer ou vendre ? (idée de The Market, rien de repris) : pour un composant, la meilleure recette
+-- connue d'un de tes persos, ramenée à l'unité du composant : (prix de l'objet fabriqué x quantité
+-- - prix des autres composants) / nombre de ce composant. Comparée à la vente brute.
+---------------------------------------------------------------------------
+local usesCache, usesAt
+local function uses()
+    if usesCache and usesAt and time() - usesAt < 30 then return usesCache end
+    local list = WK.modules.Recipes:All()
+    usesCache, usesAt = {}, time()
+    for _, rec in ipairs(list) do
+        if rec.out then
+            for _, rg in ipairs(rec.reagents or {}) do
+                usesCache[rg[1]] = usesCache[rg[1]] or {}
+                table.insert(usesCache[rg[1]], rec)
+            end
+        end
+    end
+    return usesCache
+end
+-- { raw = prix brut, best = { rec, perUnit, crafter } } ou nil
+function M:CraftOrSell(itemID)
+    local recs = uses()[itemID]
+    if not recs then return nil end
+    local V = WK.modules.Value
+    local raw = V:Price(itemID) or 0
+    local best
+    for _, rec in ipairs(recs) do
+        local outP = V:Price(rec.out) or 0
+        if outP > 0 then
+            local mine, others = 0, 0
+            for _, rg in ipairs(rec.reagents or {}) do
+                if rg[1] == itemID then mine = mine + rg[2] else others = others + (V:Price(rg[1]) or 0) * rg[2] end
+            end
+            if mine > 0 then
+                local per = (outP * (rec.qty or 1) - others) / mine
+                if not best or per > best.perUnit then best = { rec = rec, perUnit = per, crafter = rec.crafters[1], need = mine } end
+            end
+        end
+    end
+    if not best then return nil end
+    return { raw = raw, best = best }
+end
+-- composants du compte qui rapportent plus fabriqués : { { id, count, raw, best, gain } }, du plus gros gain
+function M:CraftOrSellList()
+    local Inv = WK.modules.Inventory
+    local out = {}
+    for id in pairs(uses()) do
+        local n = Inv:AccountCount(id)
+        if n > 0 then
+            local r = self:CraftOrSell(id)
+            if r then
+                local crafts = math.floor(n / math.max(1, r.best.need))
+                local gain = (r.best.perUnit - r.raw) * crafts * r.best.need
+                table.insert(out, { id = id, count = n, raw = r.raw * n, best = r.best, gain = gain, crafts = crafts })
+            end
+        end
+    end
+    table.sort(out, function(a, b) return a.gain > b.gain end)
+    return out
 end

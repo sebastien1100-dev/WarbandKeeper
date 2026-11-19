@@ -1309,9 +1309,12 @@ UI:RegisterPage({
         local function atoggle(parent, field)
             return toggle(parent, function() return ac[field] end, function(v) ac[field] = v end)
         end
-        local hcard = card("Hôtel des ventes", 40 + 2 * 46 + 8, "scan et listes d'achat ; prix dans l'infobulle : Options > Infobulles")
+        local hcard = card("Hôtel des ventes", 40 + 4 * 46 + 8, "scan et listes d'achat ; prix dans l'infobulle : Options > Infobulles")
         UI:SettingRow(hcard, -40, "Panneau à côté de l'HV", "Nombre de prix connus, dernier scan et bouton « Scanner l'HV ».", atoggle(hcard, "panel"), 80)
         UI:SettingRow(hcard, -86, "Scan complet à l'ouverture", "Dès que le jeu l'autorise (environ toutes les 15 minutes).", atoggle(hcard, "auto"), 80)
+        UI:SettingRow(hcard, -132, "Valeur des sacs à l'HV", "Sous les sacs du jeu : ce que valent tes sacs à l'HV (et chez le marchand) ; au survol, les objets qui valent le plus.",
+            toggle(hcard, function() return ac.bagValue end, function(v) ac.bagValue = v; if UI.RefreshBagValue then UI:RefreshBagValue() end end), 80)
+        UI:SettingRow(hcard, -178, "Valeur des courriers", "Au survol d'un courrier de la boîte aux lettres : la valeur à l'HV de ses pièces jointes.", atoggle(hcard, "mailValue"), 80)
         local scard = card("Prix relevés", 40 + 2 * 46 + 8, "pour ce royaume et cette faction")
         local stat = dynText(scard, 12, C.text, function()
             local d = AS:Data()

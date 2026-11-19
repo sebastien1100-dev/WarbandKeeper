@@ -10,7 +10,8 @@ local T = function(s) return WK.T(s) end
 -- on revient dans le même donjon moins d'1 h après en être sorti.
 -- Affichage : UI/DungeonPanel.lua (à côté de la carte en donjon), UI/Pages/Dungeons.lua (page).
 
-local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false }
+local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false,
+    capAlert = true, summary = "me", real = true }
 local function db()
     local g = WK.DB.global
     g.dungeons = g.dungeons or {}
@@ -368,6 +369,7 @@ WK:On("ENCOUNTER_END", function(encounterID, encounterName, _, _, success)
         b.nameFR = encounterName
     end
     record(b)
+    M:RealBoss(b)
 end)
 
 -- Objet trouvé sur le corps du PNJ id : s'il n'est dans la table que d'un seul boss pas encore
@@ -419,6 +421,8 @@ WK:On("LOOT_OPENED", function()
     for i = 1, GetNumLootItems() do
         local ok, guid = pcall(GetLootSourceInfo, i)
         guid = ok and readable(guid) or nil
+        -- corps du boss du Réal ouvert : le rappel s'arrête
+        if guid and M.realPending and npcID(guid) == M.realPending.boss then M:OnRealClear() end
         if guid then
             pcall(onDeath, guid)
             local link = GetLootSlotLink and GetLootSlotLink(i)
@@ -440,13 +444,17 @@ local function onZone()
     if d then
         if lastKey ~= d.key then
             local saved = store.runs[me]
-            if saved and saved.key == d.key and (not saved.left or time() - saved.left < RUN_KEEP) then
+            -- même copie : retour moins d'1 h après, sans réinitialisation entre-temps
+            if saved and saved.key == d.key and (not saved.left or time() - saved.left < RUN_KEEP)
+                and not (store.resetAt and (saved.left or saved.start) < store.resetAt) then
                 saved.left = nil
                 M.run = saved
             else
                 M.run = newRun(d.key)
+                M.run.st = M.Snapshot()
                 store.runs[me] = M.run
                 M:SyncHistory(M.run)
+                M:CountEntry(d)
             end
             lastKey = d.key
             if M:Config().alertEnter and WK:FeatureOn("dungeons") then
@@ -460,11 +468,124 @@ local function onZone()
             end
         end
     else
-        if M.run then M.run.left = time() end
+        if M.run then
+            M.run.left = time()
+            M:LeaveSummary(M.run)
+        end
         lastKey, M.run = nil, nil
+        if M.OnRealClear then M:OnRealClear() end
     end
     if M.OnChange then M:OnChange() end
 end
+
+---------------------------------------------------------------------------
+-- Limite d'instances : 10 nouvelles instances par heure glissante, pour tout le compte
+-- (dungeons.entries = { { t, key, char } } ; une réinitialisation annoncée par le jeu ouvre une nouvelle copie)
+---------------------------------------------------------------------------
+M.CAP = 10
+function M:Entries()
+    local st = db()
+    st.entries = st.entries or {}
+    local now, keep = time(), {}
+    for _, e in ipairs(st.entries) do if now - e.t < 3600 then table.insert(keep, e) end end
+    st.entries = keep
+    return keep
+end
+-- nombre cette heure, et secondes avant la prochaine place libre
+function M:HourCount()
+    local list = self:Entries()
+    local free
+    if #list > 0 then free = 3600 - (time() - list[1].t) end
+    return #list, free
+end
+function M:CountEntry(d)
+    local list = self:Entries()
+    table.insert(list, { t = time(), key = d.key, char = WK:CharKey() })
+    local n = #list
+    if self:Config().capAlert and n >= self.CAP - 1 then
+        local _, free = self:HourCount()
+        local msg = n >= self.CAP and string.format(T("Limite d'instances atteinte (%d / %d) : prochaine place dans %d min."), n, self.CAP, math.ceil((free or 0) / 60))
+            or string.format(T("Attention : %d / %d instances cette heure ; la prochaine place se libère dans %d min."), n, self.CAP, math.ceil((free or 0) / 60))
+        WK:Print(msg)
+        WK.modules.QoL:Remind("instCap", msg, 0.9, 0.4, 0.4)
+    end
+end
+WK:On("CHAT_MSG_SYSTEM", function(msg)
+    if type(msg) ~= "string" or not INSTANCE_RESET_SUCCESS then return end
+    local pat = "^" .. INSTANCE_RESET_SUCCESS:gsub("([%(%)%.%-%+%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)") .. "$"
+    if msg:match(pat) then db().resetAt = time() end
+end)
+
+---------------------------------------------------------------------------
+-- Résumé de sortie : expérience, argent, morts, réputation et groupe, depuis l'entrée dans la copie
+---------------------------------------------------------------------------
+function M.Snapshot()
+    return { xp = UnitXP and UnitXP("player") or 0, xpMax = UnitXPMax and UnitXPMax("player") or 1,
+        lvl = UnitLevel and UnitLevel("player") or 1, money = GetMoney and GetMoney() or 0, deaths = 0, rep = {} }
+end
+WK:On("PLAYER_DEAD", function() if M.run and M.run.st then M.run.st.deaths = (M.run.st.deaths or 0) + 1 end end)
+WK:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(msg)
+    local st = M.run and M.run.st
+    if not st or type(msg) ~= "string" or not FACTION_STANDING_INCREASED then return end
+    local pat = "^" .. FACTION_STANDING_INCREASED:gsub("([%(%)%.%-%+%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)"):gsub("%%%%d", "(%%d+)") .. "$"
+    local f, n = msg:match(pat)
+    n = tonumber(n)
+    if f and n then st.rep[f] = (st.rep[f] or 0) + n end
+end)
+function M:SummaryText(run)
+    local st = run and run.st
+    if not st then return nil end
+    local d = self:Get(run.key)
+    local lvl = (UnitLevel and UnitLevel("player")) or st.lvl
+    local xp = (UnitXP and UnitXP("player")) or 0
+    local gained = lvl == st.lvl and (xp - st.xp) or ((st.xpMax - st.xp) + xp)
+    local money = ((GetMoney and GetMoney()) or 0) - st.money
+    local parts = { string.format("%s %s", d and self:Name(d) or "?", self.Clock and self.Clock(time() - run.start) or "") }
+    if gained > 0 and lvl < (GetMaxPlayerLevel and GetMaxPlayerLevel() or 60) then table.insert(parts, string.format(T("+%d XP"), gained)) end
+    if money ~= 0 then table.insert(parts, WK:FormatMoney(math.abs(money)) .. (money < 0 and (" " .. T("dépensés")) or "")) end
+    if (st.deaths or 0) > 0 then table.insert(parts, string.format(T("%d mort(s)"), st.deaths)) end
+    local bestF, bestN
+    for f, n in pairs(st.rep) do if not bestN or n > bestN then bestF, bestN = f, n end end
+    if bestF then table.insert(parts, string.format("+%d %s", bestN, bestF)) end
+    return table.concat(parts, " · ")
+end
+function M:LeaveSummary(run)
+    local mode = self:Config().summary
+    if mode == "off" or not run or not run.st or time() - run.start < 120 then return end
+    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return end -- mort : on reviendra
+    local txt = self:SummaryText(run)
+    if not txt then return end
+    WK:Print(txt)
+    if mode == "group" and IsInGroup and IsInGroup() and SendChatMessage then
+        -- message aux autres joueurs : sans codes de couleur
+        local plain = txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+        pcall(SendChatMessage, plain:sub(1, 250), IsInRaid and IsInRaid() and "RAID" or "PARTY")
+    end
+end
+
+---------------------------------------------------------------------------
+-- Réal de Terremine terni (objet 226404) : un par boss et par jour dans BRD, Pic Rochenoire, Hache-Tripes,
+-- Scholomance et Stratholme. Après la 1re victoire du jour sur un de ces boss, rappel jusqu'au butin du corps.
+---------------------------------------------------------------------------
+M.REAL_ITEM = 226404
+M.REAL_DUNGEONS = { [1584] = true, [1583] = true, [2557] = true, [2057] = true, [2017] = true }
+M.realPending = nil -- { boss = n° de PNJ, name, at }
+local function dayKey()
+    local left = C_DateAndTime and C_DateAndTime.GetSecondsUntilDailyReset and C_DateAndTime.GetSecondsUntilDailyReset()
+    return left and math.floor((time() + left) / 3600) or date("%Y%m%d")
+end
+function M:RealBoss(b)
+    if not (self:Config().real and b and b.dungeon and self.REAL_DUNGEONS[b.dungeon.key]) then return end
+    local c = WK.DB:Me()
+    c.realKills = c.realKills or {}
+    local day = dayKey()
+    if c.realKills.day ~= day then c.realKills = { day = day } end
+    if c.realKills[b.id] then return end
+    c.realKills[b.id] = true
+    self.realPending = { boss = b.id, name = self:BossName(b), at = time() }
+    if self.OnReal then self:OnReal(self.realPending) end
+end
+function M:OnRealClear() self.realPending = nil; if self.OnReal then self:OnReal(nil) end end
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, onZone) end)
 WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(1, onZone) end)
 

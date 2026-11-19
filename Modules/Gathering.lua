@@ -318,3 +318,134 @@ elseif GameTooltip and GameTooltip.HookScript then
         if tt:GetOwner() == Minimap then pcall(annotate, tt) end
     end)
 end
+
+---------------------------------------------------------------------------
+-- Zones de récolte classées par valeur à l'heure (idée de The Market, rien de repris) : mesurée sur tes
+-- sessions de farm terminées (Modules/Farm.lua), en ne comptant que les ressources de ce métier, au prix
+-- du jour (HV, sinon marchand). Tournée : boucle par les coins où tes persos ont déjà récolté.
+---------------------------------------------------------------------------
+local SPOT_KIND = { herb = "herb", mining = "ore", skin = "skin" }
+local itemsOf = {}
+local function kindItems(kind)
+    if not itemsOf[kind] then
+        itemsOf[kind] = {}
+        for _, d in ipairs(M.DATA[kind] or {}) do itemsOf[kind][d.id] = true end
+    end
+    return itemsOf[kind]
+end
+-- { [zone] = { rate = cuivre/h, hours, sessions } } pour ce genre de récolte
+function M:ZoneRates(kind)
+    local want = kindItems(kind)
+    local V = WK.modules.Value
+    local out = {}
+    for _, h in ipairs((WK.DB.global.farm and WK.DB.global.farm.history) or {}) do
+        local z = h.zone
+        if z and z ~= "" and (h.duration or 0) >= 300 then
+            local v = 0
+            for id, n in pairs(h.items or {}) do if want[id] then v = v + V:Price(id) * n end end
+            if v > 0 then
+                local e = out[z] or { value = 0, dur = 0, sessions = 0 }
+                e.value, e.dur, e.sessions = e.value + v, e.dur + h.duration, e.sessions + 1
+                out[z] = e
+            end
+        end
+    end
+    for _, e in pairs(out) do e.rate = e.value * 3600 / e.dur; e.hours = e.dur / 3600 end
+    return out
+end
+
+-- Coins récoltés connus dans une zone (nom), pour ce genre et les ressources données { [objet] = true }
+local function mapOfZone(zone)
+    local fr = WK.T(zone)
+    for map in pairs(WK.DB.global.gatherSpots or {}) do
+        local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(map)
+        if info and (info.name == zone or info.name == fr) then return map end
+    end
+end
+function M:ZoneSpots(kind, zone, items)
+    local map = mapOfZone(zone)
+    if not map then return {}, nil end
+    local sk = SPOT_KIND[kind]
+    local out = {}
+    for _, s in ipairs(WK.DB.global.gatherSpots[map] or {}) do
+        if s.k == sk and (not items or items[s.i]) then table.insert(out, s) end
+    end
+    return out, map
+end
+
+M.tour = nil -- { map, pts = { { x, y } }, i, label }
+function M:StartTour(kind, zone, items)
+    local pts, map = self:ZoneSpots(kind, zone, items)
+    if #pts < 2 then
+        WK:Print(T("Pas assez de coins récoltés dans cette zone pour une tournée : récolte un peu, ils seront notés."))
+        return false
+    end
+    -- boucle au plus proche voisin, à partir de toi si tu es sur cette carte
+    local start = 1
+    local G = WK.modules.Guide
+    local p = G:PlayerPos()
+    if p and p.map == map then
+        local bd
+        for i, s in ipairs(pts) do
+            local d = (s.x - p.x) ^ 2 + (s.y - p.y) ^ 2
+            if not bd or d < bd then start, bd = i, d end
+        end
+    end
+    local left, order = {}, {}
+    for i, s in ipairs(pts) do left[i] = s end
+    local cur = table.remove(left, start)
+    table.insert(order, cur)
+    while #left > 0 do
+        local bi, bd = 1, nil
+        for i, s in ipairs(left) do
+            local d = (s.x - cur.x) ^ 2 + (s.y - cur.y) ^ 2
+            if not bd or d < bd then bi, bd = i, d end
+        end
+        cur = table.remove(left, bi)
+        table.insert(order, cur)
+    end
+    self.tour = { map = map, pts = order, i = 0, zone = zone }
+    WK:Print(string.format(T("Tournée de récolte : %d coins dans %s. Le guidage passe au suivant à ton arrivée."), #order, WK.T(zone)))
+    self:NextTourPoint()
+    return true
+end
+function M:StopTour()
+    if not self.tour then return end
+    self.tour = nil
+    WK:Print(T("Tournée de récolte terminée."))
+end
+function M:NextTourPoint()
+    local t = self.tour
+    if not t then return end
+    t.i = t.i % #t.pts + 1
+    local s = t.pts[t.i]
+    local label = string.format(T("Tournée %d / %d"), t.i, #t.pts)
+    t.guiding = true
+    WK.modules.MapLayers:GuideTo(t.map, { s.x * 100, s.y * 100, 0, nil, nil, label, label, WK.T(t.zone) }, "Tournée")
+    t.target = WK.modules.Guide.target
+    t.guiding = false
+end
+-- suivi : arrivé à moins de 30 m » coin suivant ; guidage arrêté par le joueur » fin de la tournée
+local function tourTick()
+    local t = M.tour
+    if not t then return end
+    local G = WK.modules.Guide
+    local tg = t.target
+    local p = G:PlayerPos()
+    local near = false
+    if p and tg and tg.cont and p.cont == tg.cont then
+        local dx, dy = p.wx - tg.wx, p.wy - tg.wy
+        near = dx * dx + dy * dy < 30 * 30
+    end
+    if near then M:NextTourPoint() return end
+    if G.target ~= tg then
+        -- arrivée annoncée par l'épingle (le guidage s'arrête tout près) : on continue ; sinon, fin
+        if G.target == nil and t.lastNear then M:NextTourPoint() else M:StopTour() end
+        return
+    end
+    if p and tg and tg.cont and p.cont == tg.cont then
+        local dx, dy = p.wx - tg.wx, p.wy - tg.wy
+        t.lastNear = dx * dx + dy * dy < 60 * 60
+    end
+end
+if C_Timer.NewTicker then C_Timer.NewTicker(1, tourTick) end

@@ -7,8 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Idées d'Utilities (Naowh), en attente de ton choix : limite d'instances par heure, résumé de sortie de donjon, macros intelligentes, jeux de barres d'action, pistages de classe et de race, rappel du Réal d'Outremine, Pierre de foyer et téléports dans le guidage, inspection du groupe.
-- Hôtel des ventes, idées de The Market : valeur des sacs à l'HV (sur les sacs et dans l'infobulle d'un courrier), composants « fabriquer ou vendre ? », zones de récolte classées par valeur à l'heure avec une tournée guidée.
+- Idées d'Utilities (Naowh) encore en attente : macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
 - Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
 - Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
@@ -29,6 +28,19 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.44.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Donjons : limite d'instances du compte (10 par heure glissante) : compteur dans la colonne des donjons (survol : l'heure et le perso de chaque entrée), dans le chrono, et alerte à 9 sur 10 avec l'heure de la prochaine place libre. Une réinitialisation annoncée par le jeu ouvre une nouvelle copie.
+- Donjons : résumé en sortant d'un donjon (expérience, argent, morts, réputation, durée), pour toi ou envoyé au groupe.
+- Donjons : rappel du Réal de Terremine terni : après la 1re victoire du jour sur un boss de BRD, du Pic Rochenoire, d'Hache-Tripes, de Scholomance ou de Stratholme, une icône clignote jusqu'au butin de son corps (déplaçable en mode édition).
+- Guidage : la Pierre de foyer (ou le Retour astral), les téléports du mage et Reflet-de-Lune sont proposés quand ils font gagner beaucoup de temps et sont prêts. Le lieu de la pierre est noté chez l'aubergiste, l'arrivée des téléports à leur premier usage.
+- Hôtel des ventes : sous les sacs du jeu, ce que valent tes sacs à l'HV (et chez le marchand) ; au survol, les objets qui valent le plus. Au survol d'un courrier, la valeur à l'HV de ses pièces jointes.
+- Métiers : onglet « Fabriquer ou vendre » : les composants de ton compte qu'une recette d'un de tes persos valorise mieux que la vente brute, avec le gain et un bouton pour les mettre dans la file. Une ligne « Mieux fabriqué » dans l'infobulle des composants (Options > Infobulles).
+- Récolte : les zones conseillées affichent ce qu'elles rapportent par heure, mesuré sur tes sessions de farm, et sont classées par valeur. Bouton « Tournée » : boucle guidée par les coins déjà récoltés de la zone, le guidage passe au suivant à ton arrivée.
 
 ## v1.43.0 — 19/11/2026
 

@@ -296,9 +296,112 @@ local function playerWorld()
     return p.cont, p.wx, p.wy
 end
 
+local computeFrom
+-- Pierre de foyer et téléports (Retour astral du chaman, téléports du mage, Reflet-de-Lune du druide) :
+-- point d'arrivée appris en jeu (lieu de la pierre noté chez l'aubergiste, arrivée notée après chaque sort).
+local HEARTH_ITEM, HEARTH_SPELL, RECALL = 6948, 8690, 556
+local PORTS = { [3561] = true, [3562] = true, [3563] = true, [3565] = true, [3566] = true, [3567] = true, [18960] = true }
+local function hearthData()
+    local c = WK.DB:Me()
+    c.ports = c.ports or {}
+    return c
+end
+local function spellReady(id)
+    if not (IsPlayerSpell and IsPlayerSpell(id)) and not (IsSpellKnown and IsSpellKnown(id)) then return false end
+    local start, dur
+    if C_Spell and C_Spell.GetSpellCooldown then
+        local ok, info = pcall(C_Spell.GetSpellCooldown, id)
+        if ok and type(info) == "table" then start, dur = info.startTime, info.duration end
+    elseif GetSpellCooldown then start, dur = GetSpellCooldown(id) end
+    return not dur or dur <= 1.5 or (start or 0) + dur <= GetTime()
+end
+local function hearthReady()
+    local n = (C_Item and C_Item.GetItemCount and C_Item.GetItemCount(HEARTH_ITEM)) or (GetItemCount and GetItemCount(HEARTH_ITEM)) or 0
+    if n <= 0 then return false end
+    local start, dur
+    if C_Container and C_Container.GetItemCooldown then start, dur = C_Container.GetItemCooldown(HEARTH_ITEM)
+    elseif GetItemCooldown then start, dur = GetItemCooldown(HEARTH_ITEM) end
+    return not dur or dur == 0 or (start or 0) + dur <= GetTime()
+end
+-- moyens de voyage prêts : { { label, pc, px, py } }
+local function portOptions()
+    local c = hearthData()
+    local out = {}
+    local h = c.hearth
+    if h and h.cont then
+        if hearthReady() then
+            table.insert(out, { label = string.format(T("Pierre de foyer » %s"), h.name or "?"), pc = h.cont, px = h.wx, py = h.wy })
+        elseif spellReady(RECALL) then
+            table.insert(out, { label = string.format(T("Retour astral » %s"), h.name or "?"), pc = h.cont, px = h.wx, py = h.wy })
+        end
+    end
+    for id, pt in pairs(c.ports) do
+        if PORTS[id] and pt.cont and spellReady(id) then
+            local name = WK.SpellInfo(id)
+            table.insert(out, { label = name or T("Téléportation"), pc = pt.cont, px = pt.wx, py = pt.wy })
+        end
+    end
+    return out
+end
+-- apprentissage : lieu de la pierre (chez l'aubergiste) et arrivée des sorts
+WK:On("HEARTHSTONE_BOUND", function()
+    local cont, x, y = playerWorld()
+    if not cont then return end
+    local c = hearthData()
+    c.hearth = { cont = cont, wx = x, wy = y, name = GetBindLocation and GetBindLocation() or nil }
+end)
+local pendingPort
+WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+    if unit ~= "player" then return end
+    if spellID == HEARTH_SPELL or spellID == RECALL or PORTS[spellID] then
+        local cont, x, y = playerWorld()
+        pendingPort = { id = spellID, t = GetTime(), cont = cont, x = x, y = y }
+        C_Timer.After(6, function() M:NotePort() end)
+    end
+end)
+function M:NotePort()
+    local p = pendingPort
+    if not p or GetTime() - p.t > 90 then pendingPort = nil return end
+    local cont, x, y = playerWorld()
+    if not cont then return end
+    if cont == p.cont and p.x and dist(x, y, p.x, p.y) < 300 then return end -- pas encore arrivé
+    pendingPort = nil
+    local c = hearthData()
+    if p.id == HEARTH_SPELL or p.id == RECALL then
+        c.hearth = { cont = cont, wx = x, wy = y, name = (GetBindLocation and GetBindLocation()) or (c.hearth and c.hearth.name) }
+    else
+        c.ports[p.id] = { cont = cont, wx = x, wy = y }
+    end
+end
+WK:On("PLAYER_ENTERING_WORLD", function() if pendingPort then C_Timer.After(2, function() M:NotePort() end) end end)
+
+local PORT_COST = 30 -- incantation (10 s) et écran de chargement
 local function compute(target)
     local cont, sx, sy = playerWorld()
     if not cont then return nil end
+    local direct = computeFrom(cont, sx, sy, target)
+    local tc, tx, ty = target.cont, target.wx, target.wy
+    if not tc then tc, tx, ty = Gd().ToWorld(target.map, target.x, target.y) end
+    if not tc or not direct then return direct end
+    -- un moyen de voyage prêt fait-il gagner beaucoup de temps ?
+    local base = direct.seconds or (direct.partial and 3600) or 3600
+    local best, bestCost
+    for _, o in ipairs(portOptions()) do
+        if o.pc == tc then
+            local cost = PORT_COST + dist(o.px, o.py, tx, ty) * 1.25 / speed()
+            if cost < base * 0.75 and base - cost > 60 and (not bestCost or cost < bestCost) then best, bestCost = o, cost end
+        end
+    end
+    if not best then return direct end
+    local sub = computeFrom(best.pc, best.px, best.py, target)
+    if not sub then return direct end
+    local legs = { { kind = "port", label = best.label, pc = best.pc, px = best.px, py = best.py } }
+    for _, l in ipairs(sub.legs) do table.insert(legs, l) end
+    return { legs = legs, cont = cont, seconds = PORT_COST + (sub.seconds or 0), port = true }
+end
+M.PortOptions = portOptions
+
+computeFrom = function(cont, sx, sy, target)
     local tc, tx, ty = target.cont, target.wx, target.wy
     if not tc then tc, tx, ty = Gd().ToWorld(target.map, target.x, target.y) end
     if not tc then return nil end
@@ -463,6 +566,14 @@ function M:Waypoint()
             if l.kind == "walk" then rest = rest + (l.len or 0) end
         end
         return wx, wy, text, rest
+    elseif leg.kind == "port" then
+        -- pierre de foyer ou téléport : étape suivante une fois arrivé (même continent ; sinon le
+        -- changement de continent relance le calcul)
+        if cont == leg.pc and dist(px, py, leg.px, leg.py) < 250 then
+            r.leg, r.idx = r.leg + 1, 1
+            return self:Waypoint()
+        end
+        return nil, nil, leg.label .. "  ·  " .. T("prête"), nil
     elseif leg.kind == "fly" then
         -- arrivé près du point d'atterrissage : étape suivante
         if dist(px, py, leg.bx, leg.by) < 80 and not (UnitOnTaxi and UnitOnTaxi("player")) then

@@ -63,7 +63,7 @@ UI:RegisterPage({
         -- roue dentée : réglages des donjons (panneau, alertes, chrono)
         local dc = D:Config()
         local scard = UI:Card(p, T("Réglages des donjons"))
-        scard:SetHeight(40 + 4 * 46 + 8)
+        scard:SetHeight(40 + 7 * 46 + 8)
         local dtog = {}
         local function drow(i, label, desc, field, after)
             local t = UI:Toggle(scard, function() return dc[field] end, function(v) dc[field] = v; if after then after() end; WK:NotifyChanged() end)
@@ -75,6 +75,12 @@ UI:RegisterPage({
         drow(3, "Alerte de butin", "Un objet de ta liste d'envies vient de tomber.", "alertDrop")
         drow(4, "Chrono à l'écran", "Temps du passage et écart avec ton record, déplaçable en mode édition.", "timer",
             function() if UI.RefreshDungeonTimer then UI:RefreshDungeonTimer() end end)
+        drow(5, "Limite d'instances", "Alerte à 9 sur 10 nouvelles instances dans l'heure (limite du compte), et l'heure de la prochaine place libre.", "capAlert")
+        drow(6, "Rappel du Réal de Terremine", "Après la 1re victoire du jour sur un boss qui en donne un : une icône clignote jusqu'au butin de son corps.", "real",
+            function() if UI.RefreshRealReminder then UI:RefreshRealReminder() end end)
+        local sumSeg = UI:Segmented(scard, { { "off", "Non" }, { "me", "Pour moi" }, { "group", "Au groupe" } }, function(v) dc.summary = v end, 24)
+        sumSeg:Select(dc.summary or "me")
+        UI:SettingRow(scard, -40 - 6 * 46, "Résumé en sortant", "Expérience, argent, morts et réputation du passage, dans le chat (ou envoyé au groupe).", sumSeg, 230)
         self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1,
             cards = function() for _, t in ipairs(dtog) do t:Refresh() end; return { scard } end,
             onToggle = function(open)
@@ -97,8 +103,25 @@ UI:RegisterPage({
         local search = UI:Input(lc, LIST_W - 20, 30, "Rechercher un donjon...", "search")
         search:SetPoint("TOPLEFT", 10, -10)
         search.onChange = function(t) self.query = string.lower(t or ""); self:Refresh() end
+        -- instances cette heure (limite du compte)
+        self.capLine = CreateFrame("Frame", nil, lc)
+        self.capLine:SetPoint("TOPLEFT", 12, -46); self.capLine:SetPoint("TOPRIGHT", -12, -46); self.capLine:SetHeight(20)
+        self.capLine.t = UI:Text(self.capLine, 10, C.muted); self.capLine.t:SetPoint("LEFT")
+        self.capLine:EnableMouse(true)
+        self.capLine:SetScript("OnEnter", function(s)
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(T("Instances cette heure"), 1, 1, 1)
+            GameTooltip:AddLine(string.format(T("Le compte peut entrer dans %d nouvelles instances par heure glissante."), D.CAP), 0.8, 0.8, 0.8, true)
+            for _, e in ipairs(D:Entries()) do
+                local dd = D:Get(e.key)
+                local c = WK.DB.global.characters[e.char]
+                GameTooltip:AddDoubleLine(date("%H:%M", e.t) .. "  " .. (dd and D:Name(dd) or "?"), c and WK:CharName(c, e.char) or "", 1, 1, 1, 0.7, 0.7, 0.7)
+            end
+            GameTooltip:Show()
+        end)
+        self.capLine:SetScript("OnLeave", function() GameTooltip:Hide() end)
         local lsc = UI:Scroll(lc)
-        lsc:SetPoint("TOPLEFT", 6, -48)
+        lsc:SetPoint("TOPLEFT", 6, -70)
         lsc:SetPoint("BOTTOMRIGHT", -6, 8)
         self.lsc = lsc
         local ui = WK.DB.global.settings.ui
@@ -315,6 +338,13 @@ UI:RegisterPage({
             return
         end
         self.wcard:Hide()
+        -- instances cette heure
+        do
+            local n, free = D:HourCount()
+            local col = n >= D.CAP - 1 and C.negative or C.muted
+            self.capLine.t:SetText(UI:Hex(col) .. string.format(T("%d / %d instances cette heure"), n, D.CAP) .. "|r"
+                .. ((n > 0 and free) and ("  ·  " .. string.format(T("place dans %d min"), math.ceil(free / 60))) or ""))
+        end
         -- colonne des donjons, groupés selon le niveau du perso
         local list = D:All()
         if not self.sel then

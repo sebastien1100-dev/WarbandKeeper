@@ -80,7 +80,9 @@ local function build()
         end
         for i = #data.rows + 1, #self.rows do self.rows[i]:Hide() end
         self.foot:ClearAllPoints(); self.foot:SetPoint("TOPLEFT", 12, -(y + 6))
-        self.foot:SetText(data.record and string.format(T("Record %s"), UI:Hex(C.gold) .. D().Clock(data.record) .. "|r") or T("Pas encore de record"))
+        local n = D():HourCount()
+        self.foot:SetText((data.record and string.format(T("Record %s"), UI:Hex(C.gold) .. D().Clock(data.record) .. "|r") or T("Pas encore de record"))
+            .. "  ·  " .. UI:Hex(n >= D().CAP - 1 and C.negative or C.muted) .. string.format(T("%d / %d cette heure"), n, D().CAP) .. "|r")
         self:SetHeight(y + 26)
     end
     f:SetScript("OnUpdate", function(s, el)
@@ -118,3 +120,53 @@ D().OnChange = function(...)
     if prev then prev(...) end
     UI:RefreshDungeonTimer()
 end
+
+
+---------------------------------------------------------------------------
+-- Rappel « Réal de Terremine terni » (Modules/Dungeons.lua : RealBoss) : icône qui clignote après la
+-- 1re victoire du jour sur un boss qui en donne un, jusqu'au butin de son corps (clic : la cacher).
+---------------------------------------------------------------------------
+local real
+local function buildReal()
+    local f = CreateFrame("Button", "WarbandKeeperRealReminder", UIParent)
+    f:SetSize(150, 72)
+    f:SetFrameStrata("MEDIUM")
+    f.icon = UI:RoundIcon(f, 44); f.icon:SetPoint("TOP", 0, -2)
+    f.glow = UI:Icon(f, "fxhalo", 84, nil, "BACKGROUND"); f.glow:SetPoint("CENTER", f.icon, "CENTER")
+    f.text = UI:Text(f, 12, C.gold); f.text:SetPoint("TOP", f.icon, "BOTTOM", 0, -4); f.text:SetJustifyH("CENTER")
+    f.text:SetText(T("Ramasse le Réal"))
+    f:SetScript("OnClick", function() D():OnRealClear() end)
+    f:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        local name = WK.GetItemInfo(D().REAL_ITEM)
+        GameTooltip:SetText(name or T("Réal de Terremine terni"), 1, 0.82, 0)
+        if s.boss then GameTooltip:AddLine(string.format(T("Sur le corps de %s (un par boss et par jour)."), s.boss), 0.85, 0.85, 0.85, true) end
+        GameTooltip:AddLine(T("Clic : cacher"), 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    f:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f:SetScript("OnUpdate", function(s)
+        local a = 0.55 + 0.45 * math.abs(math.sin(GetTime() * 3))
+        s.glow:SetAlpha(a); s.icon:SetAlpha(0.6 + 0.4 * a)
+    end)
+    local function setIcon()
+        local tex = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(D().REAL_ITEM)) or (GetItemIcon and GetItemIcon(D().REAL_ITEM))
+        f.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_Coin_02")
+        f.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
+    end
+    setIcon()
+    UI:RegisterHUD("realReminder", f, { label = T("Rappel du Réal"), default = { 0, 160 },
+        enabled = function() return D():Config().real and WK:FeatureOn("dungeons") end,
+        sample = function(on) f.sample = on; if on then setIcon(); f:Show() else UI:RefreshRealReminder() end end })
+    f:Hide()
+    return f
+end
+function UI:RefreshRealReminder()
+    if not real then real = buildReal() end
+    if real.sample then return end
+    local p = D().realPending
+    real.boss = p and p.name
+    real:SetShown(p ~= nil and D():Config().real and WK:FeatureOn("dungeons"))
+end
+D().OnReal = function() UI:RefreshRealReminder() end
+WK:On("PLAYER_LOGIN", function() C_Timer.After(2, function() UI:RefreshRealReminder() end) end)

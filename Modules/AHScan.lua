@@ -11,7 +11,7 @@ local T = function(s) return WK.T(s) end
 -- Données : WK.DB.global.ah.realms["Royaume-Faction"].items[itemID] = { p, q, t, h = { [jour] = prix } }
 -- Réglages : WK.DB.global.ah (tooltip, stack, auto, panel).
 
-local DEFAULTS = { tooltip = true, stack = true, auto = false, panel = true }
+local DEFAULTS = { tooltip = true, stack = true, auto = false, panel = true, bagValue = true, mailValue = true }
 local HISTORY_DAYS = 14
 local FULL_COOLDOWN = 15 * 60
 local CHUNK = 400 -- enchères lues par image pendant le scan complet
