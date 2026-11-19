@@ -2,26 +2,11 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 
--- Page Profils (barre latérale, entre Patch notes et Options) : profils de réglages
--- (Modules/Profiles.lua). Choisir le profil de ce perso, en créer, copier, supprimer, réinitialiser.
-local GAP = 12
-
-UI:RegisterPage({
-    key = "profiles", order = 98, nav = "Profils",
-
-    Build = function(self, p)
-        local sc = UI:Scroll(p)
-        sc:SetAllPoints()
-        local root, y = sc.child, 0
-        local W = UI.PAGE_W - 12
-        local function card(title, h)
-            local c = UI:Card(root, title)
-            c:SetSize(W, h)
-            c:SetPoint("TOPLEFT", 0, -y)
-            c:SetPoint("TOPRIGHT", 0, -y)
-            y = y + h + GAP
-            return c
-        end
+-- Profils de réglages (Modules/Profiles.lua) : section « Profils » des Options, sous Apparence.
+-- Choisir le profil de ce perso, en créer, copier, supprimer, réinitialiser.
+-- UI:BuildProfileCards(def, card) : def = page Options (reçoit RefreshProfiles), card(titre, hauteur) = carte de la section.
+function UI.BuildProfileCards(_, self, card)
+    do
         local P = WK.modules.Profiles
         local T = WK.T
         local function names()
@@ -100,12 +85,5 @@ UI:RegisterPage({
             end
         end
         self:RefreshProfiles()
-
-        sc.child:SetSize(W, y)
-        UI:OnResize(p, function(w) sc.child:SetWidth(w) end)
-    end,
-
-    Refresh = function(self)
-        if self.RefreshProfiles then self:RefreshProfiles() end
-    end,
-})
+    end
+end

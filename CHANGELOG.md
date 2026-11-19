@@ -40,6 +40,13 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.61.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Profils : ils sont maintenant dans les Options, section « Profils » sous Apparence. L'icône des profils en haut à droite de la fenêtre est retirée.
+
 ## v1.61.0 — 19/11/2026
 
 _Un /reload suffit._

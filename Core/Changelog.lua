@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.61.1", date = "19/11/2026",
+        changed = {
+            "Profils : ils sont maintenant dans les Options, section « Profils » sous Apparence. L'icône des profils en haut à droite de la fenêtre est retirée.",
+        },
+    },
+    {
         version = "1.61.0", date = "19/11/2026",
         changed = {
             "Patch notes : plus de sommaire à gauche, les notes prennent toute la largeur. Elles sont groupées par jour : une carte par jour (le plus récent ouvert, les autres sur une ligne avec leur nombre de versions et leurs + ~ !, clic pour ouvrir), et dedans chaque version avec son numéro à gauche et toutes ses notes à droite, marquées + (ajout), ~ (modification) ou ! (correction).",

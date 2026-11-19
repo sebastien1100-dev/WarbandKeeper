@@ -93,6 +93,7 @@ UI:RegisterPage({
             -- Prix, Courrier, Récolte, Alertes : leurs cartes sont reprises par la page Hôtel des ventes,
             -- la page Courrier, les réglages des métiers et QoL > Général > Alertes (sections cachées).
             { "look", "Apparence", "logo", "Couleurs, police, taille" },
+            { "profiles", "Profils", "users", "Un jeu de réglages par perso" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -373,6 +374,10 @@ UI:RegisterPage({
             function(v) alerts.mailDays = v; WK:NotifyChanged() end, "%d j")
         UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
 
+        -- Profils (UI/Pages/Profiles.lua) -------------------------------------------
+        section("profiles")
+        UI:BuildProfileCards(self, card)
+
         -- À propos ----------------------------------------------------------------
         section("about")
         local about = card("À propos", 270)
@@ -477,6 +482,7 @@ UI:RegisterPage({
         for _, t in ipairs(self.glowToggles) do t:Refresh() end
         for _, t in ipairs(self.ttToggles or {}) do t:Refresh() end
         self.spotsInfo:SetText(string.format(WK.T("%d récoltes enregistrées"), WK.modules.GatherMap:Count()))
+        if self.RefreshProfiles then self:RefreshProfiles() end
 
     end,
 })

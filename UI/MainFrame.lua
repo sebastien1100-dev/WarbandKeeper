@@ -23,7 +23,7 @@ local GROUPS = {
     { "AVENTURE", { "quests", "rares", "dungeons", "lfg", "qol:maplayers" }, "map" },
     { "INTERFACE", { "qol:general", "qol:halo", "qol:cursor", "qol:micro" }, "gear" },
 }
-local BOTTOM = { "notes", "profiles", "options" }
+local BOTTOM = { "notes", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
     mail = "mail", auction = "coin", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
@@ -1037,12 +1037,6 @@ UI.CHIPS = {
         end
         table.insert(out, { T("Disponibles"), tostring(avail) })
         return out
-    end,
-    profiles = function()
-        local P = WK.modules.Profiles
-        local cur = P:Current()
-        return { { T("Profil actuel"), cur == P.DEFAULT and T("Défaut") or cur, C.gold }, { T("Profils"), tostring(#P:Names()) },
-                 { T("Persos sur ce profil"), tostring(#P:Users(cur)) } }
     end,
 }
 

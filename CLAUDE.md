@@ -147,7 +147,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Modules
 
-La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque section de Réglages QoL) a son module dans le même groupe ; Récolte et Distance en plus. Patch notes, Profils et Options sont des icônes de l'en-tête (`UI.headIcons`), plus dans la barre.
+La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque section de Réglages QoL) a son module dans le même groupe ; Récolte et Distance en plus. Patch notes et Options sont des icônes de l'en-tête (`UI.headIcons`), plus dans la barre ; les Profils sont une section des Options (sous Apparence, `UI:BuildProfileCards` de `UI/Pages/Profiles.lua`).
 
 `Core/Features.lua` : liste des modules qu'on peut couper (`WK.FEATURES` : clé, nom, icône, groupe, page ou section de QoL, `reload` s'il affiche quelque chose à l'écran), `WK:FeatureOn(clé)`, `WK:PageOn(page)`, `WK:SetFeature(clé, actif)`. Réglage : `WK.DB.global.modulesOff` (dans les profils). Un nouveau module doit y être ajouté et vérifier `WK:FeatureOn` à ses points d'entrée (infobulle, dessin, détection, éléments à l'écran) ; sa page et sa section de QoL sont masquées automatiquement. Carte « Modules » : bas de `UI/Pages/Overview.lua`.
 
@@ -185,4 +185,4 @@ La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque
 
 ## Recherche et profils
 
-`UI/Search.lua` : la recherche de la barre latérale. Chaque `UI:SettingRow` s'inscrit dans `UI.settingIndex` ; à la première recherche, les pages pas encore ouvertes sont construites (cachées) pour être indexées. Un nouveau réglage est donc trouvable s'il passe par `UI:SettingRow`. `Modules/Profiles.lua` : profils de réglages (page `UI/Pages/Profiles.lua`, en bas de la barre latérale), appliqués par `Core/Init.lua` juste après `WK.DB:Init()` (avant tout le reste). La liste `KEYS` dit ce qu'un profil contient (clés de `WK.DB.global`, sous-clés de données exclues) : un nouveau réglage rangé ailleurs doit y être ajouté, une nouvelle donnée de compte rangée dans ces clés doit y être exclue.
+`UI/Search.lua` : la recherche de la barre latérale. Chaque `UI:SettingRow` s'inscrit dans `UI.settingIndex` ; à la première recherche, les pages pas encore ouvertes sont construites (cachées) pour être indexées. Un nouveau réglage est donc trouvable s'il passe par `UI:SettingRow`. `Modules/Profiles.lua` : profils de réglages (section « Profils » des Options, cartes de `UI/Pages/Profiles.lua`), appliqués par `Core/Init.lua` juste après `WK.DB:Init()` (avant tout le reste). La liste `KEYS` dit ce qu'un profil contient (clés de `WK.DB.global`, sous-clés de données exclues) : un nouveau réglage rangé ailleurs doit y être ajouté, une nouvelle donnée de compte rangée dans ces clés doit y être exclue.
