@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.4"
+CLIENT_VERSION = "1.7.5"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1141,8 +1141,9 @@ class Segmented(tk.Frame):
 class ScrollArea(tk.Frame):
     """Contenu qui défile (molette) : on remplit self.inner."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, bar=True):
         super().__init__(parent, bg=C["bg"])
+        self.bar = bar
         self.cv = tk.Canvas(self, bg=C["bg"], highlightthickness=0, bd=0)
         self.sb = tk.Scrollbar(self, command=self.cv.yview, bg=C["bg"], troughcolor=C["bg"], bd=0,
                                activebackground=C["hover"], highlightthickness=0, width=10, elementborderwidth=0)
@@ -1150,9 +1151,19 @@ class ScrollArea(tk.Frame):
         self.win = self.cv.create_window(0, 0, window=self.inner, anchor="nw")
         self.cv.configure(yscrollcommand=self.sb.set)
         self.cv.pack(side="left", fill="both", expand=True)
-        self.sb.pack(side="right", fill="y")
-        self.inner.bind("<Configure>", lambda e: self.cv.configure(scrollregion=self.cv.bbox("all")))
-        self.cv.bind("<Configure>", lambda e: self.cv.itemconfigure(self.win, width=e.width - 4))
+        # barre de défilement seulement si le contenu dépasse (jamais quand bar=False : la molette suffit)
+        self.inner.bind("<Configure>", lambda e: self._fit())
+        self.cv.bind("<Configure>", lambda e: (self.cv.itemconfigure(self.win, width=e.width - 4), self._fit()))
+
+    def _fit(self):
+        self.cv.configure(scrollregion=self.cv.bbox("all"))
+        over = self.inner.winfo_reqheight() > self.cv.winfo_height() + 2
+        if self.bar and over and not self.sb.winfo_ismapped():
+            self.sb.pack(side="right", fill="y", before=self.cv)
+        elif (not over or not self.bar) and self.sb.winfo_ismapped():
+            self.sb.pack_forget()
+        if not over:
+            self.cv.yview_moveto(0)
         self.bind_all("<MouseWheel>", self._wheel, add="+")
         self.bind_all("<Button-4>", lambda e: self._scroll(-1), add="+")
         self.bind_all("<Button-5>", lambda e: self._scroll(1), add="+")
@@ -1297,7 +1308,7 @@ class DashPage(Page):
 
     def __init__(self, app, parent):
         super().__init__(app, parent)
-        self.area = ScrollArea(self)
+        self.area = ScrollArea(self, bar=False)
         self.area.pack(fill="both", expand=True)
         self.foot = label(self, "", fg="dim", font="small")
         self.foot.pack(anchor="w", pady=(6, 0))

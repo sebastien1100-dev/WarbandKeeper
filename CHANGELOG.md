@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.70.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rien ne change dans le jeu : cette version livre le client PC 1.7.5 (plus de barre de défilement sur le tableau de bord).
+
 ## v1.70.4 — 19/11/2026
 
 _Un /reload suffit._

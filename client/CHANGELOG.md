@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.7.5 — 19/11/2026
+
+### Modifications
+- Tableau de bord : plus de barre de défilement blanche à droite (la molette fait défiler si besoin). Ailleurs, la barre n'apparaît que quand le contenu dépasse.
+
 ## 1.7.4 — 19/11/2026
 
 ### Modifications
