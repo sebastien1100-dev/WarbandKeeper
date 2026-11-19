@@ -459,8 +459,9 @@ local function along(l, i, c, x, y)
     end
     return best
 end
-local onboard  -- { cand = { [clé] = { l, i, ts, ds } }, done = { [clé] = true }, fit }
-function M:RideBegin() onboard = { cand = {}, done = {} } end
+local onboard  -- { cand = { [clé] = { l, i, ts, ds } }, start = { c, x, y, t }, fit, fitKey }
+-- début de traversée : point et heure (serveur) où le navire a commencé à t'emporter
+function M:RideBegin(c, x, y, t) onboard = { cand = {}, start = c and { c = c, x = x, y = y, t = t } or nil } end
 function M:RideSample(c, x, y)
     if not onboard then self:RideBegin() end
     local gt = GetTime()
@@ -496,8 +497,8 @@ local function line(ts, ds)
     for k = 1, n do local r = ds[k] - (b + v * (ts[k] - t1)); e2 = e2 + r * r end
     return v, b, math.sqrt(e2 / n), t1
 end
-function M:RideFitNow()
-    if not onboard then return nil end
+-- Ligne et étape reconnues (assez de positions sur 30 s, nettement mieux suivie que la 2e) : clé, ajustement
+local function bestFit()
     local fits = {}
     for key, cd in pairs(onboard.cand) do
         local n = #cd.ts
@@ -510,24 +511,49 @@ function M:RideFitNow()
     end
     table.sort(fits, function(a, b) return a.n > b.n end)
     local best, second = fits[1], fits[2]
-    if not best or (second and best.n < LEAD * second.n) then return onboard.fit end
-    local l, i = best.cd.l, best.cd.i
-    -- heure (serveur) où la droite passe au quai de départ et à celui d'arrivée ; ACCEL : longueur
-    -- équivalente d'un démarrage et d'un arrêt (la moitié à chaque bout)
+    if not best or (second and best.n < LEAD * second.n) then return nil end
+    return best
+end
+-- Heure de départ de l'étape, de la source la plus sûre : départ vu au quai (montée au quai de l'étape),
+-- sinon horaire déjà calé de la ligne, sinon déduite des positions (droite distance-temps ; ACCEL :
+-- longueur équivalente d'un démarrage et d'un arrêt, la moitié à chaque bout)
+local function legDeparture(l, i, best)
+    local st = onboard.start
+    local q = l.stops[i]
+    if st and st.t and st.c == q.c and dist(st.x, st.y, q.x, q.y) < 300 then return st.t, "quai" end
+    local s = M:State(l, i)
+    if s then
+        -- départ de ce quai juste avant maintenant (le prochain moins un tour)
+        local d = now() + s.inn - s.P
+        if now() - d >= 0 and now() - d < s.P then return d, "horaire" end
+    end
     local off = now() - GetTime()
-    local half = ACCEL / 2 / best.v
-    local dep = best.t1 + (0 - best.b) / best.v - half + off
-    local arr = best.t1 + ((l.legs[i].len or 0) - best.b) / best.v + half + off
-    onboard.fit = { l = l, i = i, dep = dep, arr = arr, v = best.v, n = best.n }
-    -- noté une fois par traversée (puis affiné à l'arrivée : M:RideEnd)
-    if not onboard.done[best.key] then
-        onboard.done[best.key] = true
+    return best.t1 + (0 - best.b) / best.v - ACCEL / 2 / best.v + off, "positions"
+end
+function M:RideFitNow(final)
+    if not onboard then return nil end
+    local best = bestFit()
+    if not best then return onboard.fit end
+    -- une fois la ligne reconnue, le calage ne bouge plus (avant : recalculé à chaque relevé, le temps restant
+    -- sautait) ; seulement si une autre étape passe nettement devant, ou au dernier calage de l'arrivée
+    if onboard.fit and onboard.fitKey == best.key and not final then return onboard.fit end
+    local l, i = best.cd.l, best.cd.i
+    local dep, src = legDeparture(l, i, best)
+    local P = period(l)
+    local _, _, leg = offsets(l, P or 300)
+    local arr = dep + ((P and leg[i]) or (((l.legs[i].len or 0) + ACCEL) / best.v))
+    local first = onboard.fitKey ~= best.key
+    onboard.fit, onboard.fitKey = { l = l, i = i, dep = dep, arr = arr, v = best.v, n = best.n, src = src }, best.key
+    if first then
         rode()[l.key] = true
-        if self:AddObs(l, i, math.floor(dep + 0.5), true, false, true) then self:Broadcast(l, i, math.floor(dep + 0.5)) end
         if WK.modules.Nav and WK.modules.Nav.BoatLog then
-            WK.modules.Nav.BoatLog(string.format("calage en route : %s, étape %d (%d positions, %.0f m/s)", self:LineName(l), i, best.n, best.v))
+            WK.modules.Nav.BoatLog(string.format("à bord : %s, étape %d reconnue (%d positions, %.0f m/s), départ d'après %s",
+                self:LineName(l), i, best.n, best.v, src))
         end
     end
+    -- départ déduit des positions (monté en route, ligne pas calée) : noté pour toi seulement, jamais partagé
+    -- (moins précis qu'un départ vu) ; un départ vu au quai est noté par la fin de traversée (Learn)
+    if src == "positions" and (first or final) then self:AddObs(l, i, math.floor(dep + 0.5), true, false, true) end
     return onboard.fit
 end
 -- ligne et étape repérées à bord : { l, i (quai de départ), dep, arr (heure serveur) } ou nil
@@ -537,8 +563,7 @@ function M:RideEnd(arr)
     if not onboard then return end
     local f = onboard.fit
     if f then
-        onboard.done = {}
-        f = self:RideFitNow() or f
+        f = self:RideFitNow(true) or f
         local j = f.i % #f.l.stops + 1
         if arr then
             local e = store()[f.l.key]
@@ -547,7 +572,6 @@ function M:RideEnd(arr)
     end
     onboard = nil
 end
-
 
 ---------------------------------------------------------------------------
 -- Tram des profondeurs (WK.TramLine, table TransportAnimation du jeu) : deux rames partent en même temps,

@@ -893,7 +893,7 @@ local function rideTick()
                     ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) }
                     blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
                     local BLm = WK.modules.BoatLines
-                    if BLm and BLm.RideBegin then BLm:RideBegin(); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
+                    if BLm and BLm.RideBegin then BLm:RideBegin(lastS.cont, lastS.wx, lastS.wy, ride.t0); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
                 end
                 local BLs = WK.modules.BoatLines
                 if BLs and BLs.RideSample then pcall(BLs.RideSample, BLs, p.cont, p.wx, p.wy) end

@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.81.1", date = "19/11/2026",
+        fixed = {
+            "Bandeau à bord : le temps restant sautait d'une seconde à l'autre (l'arrivée était recalculée à chaque relevé de position). Une fois la ligne reconnue, l'arrivée est fixée : départ + durée exacte du trajet.",
+            "À bord, monté au quai : l'heure de départ retenue est celle où le navire est parti avec toi, et non plus une estimation tirée de sa vitesse (moins précise) ; monté en route, c'est l'horaire déjà calé de la ligne s'il existe.",
+            "Un départ estimé d'après les positions à bord n'est plus envoyé à la guilde et au groupe comme un vrai départ (il pouvait décaler leurs horaires).",
+        },
+        changed = {
+            "/wk bateau : à bord, la ligne reconnue dit d'où vient l'heure de départ (quai, horaire, positions).",
+        },
+    },
+    {
         version = "1.81.0", date = "19/11/2026",
         fixed = {
             "Bateau Menethil » Austrivage » Auberdine (Le Bravoure) : la durée de son tour était inconnue, l'addon la devinait d'après tes départs et ses horaires sautaient d'une fois à l'autre. Elle est maintenant connue (486 s, mesurée par NauticusClassicResurrected 1.5.4 sur 7 tours).",
