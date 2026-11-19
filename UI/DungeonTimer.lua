@@ -128,13 +128,21 @@ end
 ---------------------------------------------------------------------------
 local real
 local function buildReal()
+    -- encart aux couleurs de l'addon : fond sombre, liseré doré qui pulse, petite icône de l'objet
     local f = CreateFrame("Button", "WarbandKeeperRealReminder", UIParent)
-    f:SetSize(150, 72)
+    f:SetSize(230, 46)
     f:SetFrameStrata("MEDIUM")
-    f.icon = UI:RoundIcon(f, 44); f.icon:SetPoint("TOP", 0, -2)
-    f.glow = UI:Icon(f, "fxhalo", 84, nil, "BACKGROUND"); f.glow:SetPoint("CENTER", f.icon, "CENTER")
-    f.text = UI:Text(f, 12, C.gold); f.text:SetPoint("TOP", f.icon, "BOTTOM", 0, -4); f.text:SetJustifyH("CENTER")
-    f.text:SetText(T("Ramasse le Réal"))
+    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border)
+    f.pulse = UI:Rounded(f, 10, 0, "BORDER", 1)
+    f.pulse:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.18)
+    f.stripe = f:CreateTexture(nil, "ARTWORK")
+    f.stripe:SetPoint("TOPLEFT", 1, -6); f.stripe:SetPoint("BOTTOMLEFT", 1, 6); f.stripe:SetWidth(3)
+    f.stripe:SetColorTexture(C.gold[1], C.gold[2], C.gold[3], 1)
+    f.icon = UI:RoundIcon(f, 28); f.icon:SetPoint("LEFT", 12, 0)
+    f.text = UI:Text(f, 12, C.text); f.text:SetPoint("TOPLEFT", f.icon, "TOPRIGHT", 10, 0)
+    f.text:SetText(T("Ramasse le loot"))
+    f.sub = UI:Text(f, 10, C.gold); f.sub:SetPoint("TOPLEFT", f.text, "BOTTOMLEFT", 0, -3)
+    f.sub:SetPoint("RIGHT", -10, 0); f.sub:SetJustifyH("LEFT"); f.sub:SetWordWrap(false)
     f:SetScript("OnClick", function() D():OnRealClear() end)
     f:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_TOP")
@@ -146,14 +154,16 @@ local function buildReal()
     end)
     f:SetScript("OnLeave", function() GameTooltip:Hide() end)
     f:SetScript("OnUpdate", function(s)
-        local a = 0.55 + 0.45 * math.abs(math.sin(GetTime() * 3))
-        s.glow:SetAlpha(a); s.icon:SetAlpha(0.6 + 0.4 * a)
+        local a = math.abs(math.sin(GetTime() * 3))
+        s.pulse:SetAlpha(0.25 + 0.75 * a); s.stripe:SetAlpha(0.5 + 0.5 * a)
     end)
     local function setIcon()
         local tex = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(D().REAL_ITEM)) or (GetItemIcon and GetItemIcon(D().REAL_ITEM))
         f.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_Coin_02")
-        f.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
+        local name = WK.GetItemInfo(D().REAL_ITEM) or T("Réal de Terremine terni")
+        f.sub:SetText(f.boss and (name .. " · " .. f.boss) or name)
     end
+    f.setIcon = setIcon
     setIcon()
     UI:RegisterHUD("realReminder", f, { label = T("Rappel du Réal"), default = { 0, 160 },
         enabled = function() return D():Config().real and WK:FeatureOn("dungeons") end,
@@ -166,6 +176,7 @@ function UI:RefreshRealReminder()
     if real.sample then return end
     local p = D().realPending
     real.boss = p and p.name
+    real.setIcon()
     real:SetShown(p ~= nil and D():Config().real and WK:FeatureOn("dungeons"))
 end
 D().OnReal = function() UI:RefreshRealReminder() end

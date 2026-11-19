@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.49.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rappel du Réal de Terremine : encart aux couleurs de l'addon (fond sombre, liseré doré qui pulse, petite icône) au lieu de la grosse pièce qui clignote ; il dit « Ramasse le loot », avec le nom de l'objet et du boss en dessous.
+
 ## v1.49.0 — 19/11/2026
 
 _Un /reload suffit._

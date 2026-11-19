@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.49.1", date = "19/11/2026",
+        changed = {
+            "Rappel du Réal de Terremine : encart aux couleurs de l'addon (fond sombre, liseré doré qui pulse, petite icône) au lieu de la grosse pièce qui clignote ; il dit « Ramasse le loot », avec le nom de l'objet et du boss en dessous.",
+        },
+    },
+    {
         version = "1.49.0", date = "19/11/2026",
         added = {
             "Pile d'alertes : un cadre « Rappels » avec le nombre en pastille. Les rappels y sont rangés par thème (urgent, ton perso, voyage, métiers et HV), une ligne chacun. Clic sur le titre : replié en une ligne ; option « Replier en combat » dans le mode édition.",
