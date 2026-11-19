@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.5", date = "19/11/2026",
+        changed = {
+            "Bénédictions > Répartition : une bénédiction ou une aure pas encore apprise se voit bien mieux : icône grise mais nette (plus à moitié effacée), cadre orange autour et « ! » plus gros sur une pastille sombre.",
+        },
+    },
+    {
         version = "1.76.4", date = "19/11/2026",
         fixed = {
             "Micro menu : le clic droit sur l'heure ne faisait rien sans le dire quand « Clic droit sur l'heure : libérer la mémoire » n'était pas coché (il est coupé d'office) ou en combat. Il le dit maintenant dans le chat ; coché, il libère la mémoire, indique combien et ce qu'occupent les addons ensuite.",

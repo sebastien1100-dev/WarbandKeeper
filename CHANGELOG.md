@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bénédictions > Répartition : une bénédiction ou une aure pas encore apprise se voit bien mieux : icône grise mais nette (plus à moitié effacée), cadre orange autour et « ! » plus gros sur une pastille sombre.
+
 ## v1.76.4 — 19/11/2026
 
 _Un /reload suffit._
