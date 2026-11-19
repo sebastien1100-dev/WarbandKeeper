@@ -235,7 +235,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     -- tableau (version « planning ») : les classes en lignes (toutes, grisées si absentes du groupe), puis
     -- l'aure ; les paladins du groupe en colonnes (toi d'abord) ; chaque case = icône + nom de la bénédiction
     local NROWS = #M.CLASSES + 1
-    local RH, TOPY, IC = 52, 108, 44
+    local RH, TOPY, IC, HEADH = 52, 132, 44, 48
     local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
     UI.blessTable = tc
     -- test hors groupe : deux paladins simulés ajoutent leurs colonnes
@@ -253,21 +253,29 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     tc.banner.t:SetJustifyH("LEFT")
     tc.classHead = UI:Text(tc, 9, C.dim); tc.classHead:SetText(T("CLASSE"))
     tc.cols = {}
+    tc.classHead:Hide()
+    -- un panneau par paladin : bande de couleur en haut (accent = Warband Keeper, gris = PallyPower), nom et
+    -- addon centrés, puis ses cases ; ta colonne bordée à l'accent
     for p = 1, MAXP do
         local h = CreateFrame("Frame", nil, tc)
-        h:SetHeight(18)
-        h.name = UI:Text(h, 10, C.text); h.name:SetPoint("LEFT", 0, 0)
+        h:SetHeight(HEADH + NROWS * (RH + 4) + 2)
+        h:SetFrameLevel(tc:GetFrameLevel() + 1)
+        h.edge = UI:Rounded(h, 10, 0, "BACKGROUND", 1)
+        h.fill = UI:Rounded(h, 10, 1, "BACKGROUND", 2); h.fill:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+        h.stripe = h:CreateTexture(nil, "ARTWORK"); h.stripe:SetHeight(3)
+        h.stripe:SetPoint("TOPLEFT", 10, -1); h.stripe:SetPoint("TOPRIGHT", -10, -1)
+        h.name = UI:Text(h, 12, C.text); h.name:SetPoint("TOP", 0, -10); h.name:SetJustifyH("CENTER")
         if h.name.SetWordWrap then h.name:SetWordWrap(false) end
-        h.tag = UI:Badge(h, "", C.muted); h.tag:SetPoint("LEFT", h.name, "RIGHT", 6, 0)
+        h.tag = UI:Text(h, 10, C.muted); h.tag:SetPoint("TOP", h.name, "BOTTOM", 0, -3); h.tag:SetJustifyH("CENTER")
         tc.cols[p] = h
     end
     tc.rows = {}
     for ri = 1, NROWS do
         local r = CreateFrame("Frame", nil, tc)
         r:SetHeight(RH)
-        r.bg = UI:Rounded(r, 8, 0, "BACKGROUND", 1); r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+        r:SetFrameLevel(tc:GetFrameLevel() + 4)
         -- icône de la classe (nom au survol) ; l'aure garde son libellé
-        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(IC - 4, IC - 4); r.dot:SetPoint("LEFT", 10, 0)
+        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(IC - 4, IC - 4); r.dot:SetPoint("LEFT", 14, 0)
         r.label = UI:Text(r, 12, C.text); r.label:SetPoint("LEFT", 10, 0)
         r.ci = ri <= #M.CLASSES and ri or nil
         if r.ci then
@@ -293,7 +301,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
             -- icône seule de la bénédiction ; grisée avec un « ! » si pas encore apprise ; cercle pointillé si aucune
-            b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(IC, IC); b.icon:SetPoint("LEFT", 4, 0)
+            b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(IC, IC); b.icon:SetPoint("CENTER")
             b.empty = UI:Icon(b, "ring_dash", IC - 8, C.dim, "ARTWORK"); b.empty:SetPoint("CENTER", b.icon, "CENTER")
             b.warn = UI:Icon(b, "bang", 18, C.warning, "OVERLAY"); b.warn:SetPoint("BOTTOMRIGHT", b.icon, "BOTTOMRIGHT", 4, -4)
             b.txt = UI:Text(b, 12, C.text); b.txt:Hide()
@@ -365,21 +373,20 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         return b
     end
 
-    local LABW = 90
+    local LABW, GAP = 76, 8
     local function layout(w)
         w = w or tc:GetWidth() or 800
         local n = math.max(1, tc.nCols or 1)
-        local cw = math.min(160, math.floor((w - 32 - LABW) / n))
-        tc.classHead:ClearAllPoints(); tc.classHead:SetPoint("TOPLEFT", 26, -(TOPY - 22))
+        local cw = math.min(140, math.floor((w - 32 - LABW) / n))
         for p, h in ipairs(tc.cols) do
-            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (p - 1) * cw, -(TOPY - 26)); h:SetWidth(cw - 8)
-            h.name:SetWidth(math.max(40, cw - 100))
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (p - 1) * cw, -(TOPY - HEADH)); h:SetWidth(cw - GAP)
+            h.name:SetWidth(cw - GAP - 12); h.tag:SetWidth(cw - GAP - 12)
         end
         for ri, r in ipairs(tc.rows) do
             local y = TOPY + (ri - 1) * (RH + 4)
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -y); r:SetPoint("TOPRIGHT", -16, -y)
             for p, b in ipairs(r.cells) do
-                b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (p - 1) * cw, -2); b:SetWidth(cw - 8)
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (p - 1) * cw, -2); b:SetWidth(cw - GAP)
             end
         end
         local y = TOPY + NROWS * (RH + 4) + 10
@@ -415,7 +422,11 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             if it then
                 tc.colWho[p] = it.name
                 h.name:SetText(string.upper(it.e.me and T("Toi") or firstName(it.name)))
-                h.tag:Set(it.e.wk and "Warband Keeper" or "PallyPower", it.e.wk and { r1, g1, b1 } or C.muted)
+                local col = it.e.wk and { r1, g1, b1 } or C.muted
+                h.tag:SetText(it.e.wk and "Warband Keeper" or "PallyPower")
+                h.tag:SetTextColor(unpack(col))
+                h.stripe:SetColorTexture(col[1], col[2], col[3], 1)
+                if it.e.me then h.edge:SetColor(r1, g1, b1, 0.6) else h.edge:SetColor(C.border[1], C.border[2], C.border[3], 1) end
             end
         end
         for _, r in ipairs(tc.rows) do

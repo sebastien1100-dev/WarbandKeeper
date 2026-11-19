@@ -85,6 +85,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.65.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Paladin > Bénédictions : la répartition du groupe est rangée en un panneau par paladin. Chaque colonne a sa bande de couleur en haut (rose Warband Keeper, gris PallyPower), le nom et l'addon centrés sans chevauchement, puis ses bénédictions centrées sous l'en-tête ; ta colonne est bordée de rose.
+
 ## v1.65.2 — 19/11/2026
 
 _Un /reload suffit._

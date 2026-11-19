@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.65.3", date = "19/11/2026",
+        changed = {
+            "Paladin > Bénédictions : la répartition du groupe est rangée en un panneau par paladin. Chaque colonne a sa bande de couleur en haut (rose Warband Keeper, gris PallyPower), le nom et l'addon centrés sans chevauchement, puis ses bénédictions centrées sous l'en-tête ; ta colonne est bordée de rose.",
+        },
+    },
+    {
         version = "1.65.2", date = "19/11/2026",
         added = {
             "Paladin > Bénédictions : bouton « Tester » sur la répartition du groupe. Hors groupe, il ajoute deux paladins simulés (Aerin sous Warband Keeper en automatique, Brann sous PallyPower qui donne Rois partout) pour voir comment les bénédictions se partagent ; tu peux cliquer leurs cases. Rien n'est envoyé, et le test s'arrête au clic sur « Arrêter le test » ou en rejoignant un groupe.",
