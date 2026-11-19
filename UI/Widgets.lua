@@ -110,28 +110,36 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
     size = size or 28
     local b = CreateFrame("Button", nil, parent)
     b:SetSize(size, size)
-    b.bg = UI:Rounded(b, size / 2, 0, "BACKGROUND", 1)
+    -- rond teinté toujours visible : liseré et fond légers à la couleur d'accent (rouge pour danger),
+    -- icône pleine couleur ; plus foncé au survol, plein quand le bouton est « ouvert » (SetActive)
+    local big = size >= 20
+    b.ring = UI:Rounded(b, size / 2, 0, "BACKGROUND", 0)
+    b.bg = UI:Rounded(b, size / 2, big and 1 or 0, "BACKGROUND", 1)
     b.icon = UI:Icon(b, icon, math.floor(size * 0.55))
     b.icon:SetPoint("CENTER")
     b.tooltip = tooltip
-    -- danger = true : rouge ; danger = "accent" : icône de la couleur d'accent du thème.
     local function refresh(h)
-        if danger == "accent" then
-            local r, g, bl = UI:Accent()
-            b.bg:SetColor(r, g, bl, 0.18)
-            b.icon:SetVertexColor(r, g, bl, h and 1 or 0.85)
-        elseif danger then
-            b.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], 0.2)
-            b.icon:SetVertexColor(unpack(h and C.negative or C.muted))
+        local r, g, bl
+        if danger == true then r, g, bl = C.negative[1], C.negative[2], C.negative[3] else r, g, bl = UI:Accent() end
+        if b.active then
+            b.ring:SetColor(r, g, bl, 1); b.bg:SetColor(r, g, bl, 1)
+            b.icon:SetVertexColor(unpack(C.onAccent))
         else
-            local r, g, bl = UI:Accent()
-            b.bg:SetColor(r, g, bl, 0.16)
-            b.icon:SetVertexColor(r, g, bl, h and 1 or 0.8) -- couleur de l'apparence, même au repos
+            b.ring:SetColor(r, g, bl, big and (h and 0.75 or 0.45) or 0)
+            -- fond : mélange de l'accent et de la surface (opaque, pour garder le liseré fin)
+            local s = C.surface
+            local k = h and 0.32 or 0.16
+            b.bg:SetColor(s[1] + (r - s[1]) * k, s[2] + (g - s[2]) * k, s[3] + (bl - s[3]) * k, 1)
+            b.icon:SetVertexColor(r, g, bl, 1)
         end
-        b.bg:SetShown(h)
+        b.ring:SetShown(big or b.active)
+        b.bg:Show()
     end
+    b.Paint = refresh
+    function b:SetActive(on) self.active = on and true or false; refresh(self.hover) end
     refresh(false)
     b:SetScript("OnEnter", function(self)
+        self.hover = true
         refresh(true)
         if self.tooltip then
             WK.UI:TooltipOwner(self, "ANCHOR_TOP")
@@ -139,9 +147,8 @@ function UI:IconButton(parent, icon, size, tooltip, danger)
             GameTooltip:Show()
         end
     end)
-    b:SetScript("OnLeave", function() refresh(false); GameTooltip:Hide() end)
-    -- tout style sauf danger suit l'apparence (changement de thème sans attendre le survol)
-    if danger ~= true then UI:OnAccent(function() refresh(false) end) end
+    b:SetScript("OnLeave", function(self) self.hover = false; refresh(false); GameTooltip:Hide() end)
+    UI:OnAccent(function() refresh(b.hover) end)
     return b
 end
 
@@ -1003,18 +1010,6 @@ function UI:PageGear(p, opts, def)
     local gp = { open = false }
     local gear = UI:IconButton(p, opts.icon or "gear", opts.size or 32, opts.title or "Réglages")
     gp.gear = gear
-    function gear:SetActive(on)
-        self.active = on
-        local r, g, b = UI:Accent()
-        if on then
-            self.bg:SetColor(r, g, b, 1); self.bg:Show()
-            self.icon:SetVertexColor(unpack(C.onAccent))
-        else
-            self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
-        end
-    end
-    gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-    gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
     local ov = CreateFrame("Frame", nil, p)
     ov:SetPoint("TOPLEFT", 0, -(opts.top or 42))
     ov:SetPoint("BOTTOMRIGHT")

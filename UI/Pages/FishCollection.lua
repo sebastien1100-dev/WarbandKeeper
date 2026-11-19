@@ -26,18 +26,6 @@ UI:RegisterPage({
         -- roue dentée : réglages du mode pêche ; un second clic revient à l'onglet d'avant
         local gear = UI:IconButton(p, "gear", 32, "Réglages de pêche")
         gear:SetPoint("TOPRIGHT")
-        function gear:SetActive(on)
-            self.active = on
-            local r, g, b = UI:Accent()
-            if on then
-                self.bg:SetColor(r, g, b, 1); self.bg:Show()
-                self.icon:SetVertexColor(unpack(C.onAccent))
-            else
-                self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
-            end
-        end
-        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
         gear:SetScript("OnClick", function()
             if self.view == "settings" then
                 self.view = self.before or "coll"; self.before = nil

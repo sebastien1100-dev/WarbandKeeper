@@ -44,7 +44,7 @@ UI:RegisterPage({
         scroll:SetPoint("BOTTOMRIGHT")
         -- Bouton « Expérience » (en haut à droite) : rythme de la session et repos de tous tes persos
         -- (cartes reprises de QoL > Expérience, qui ne garde que les réglages de la barre)
-        self.xp = UI:PageGear(p, { title = "Expérience : rythme et repos de tes persos", icon = "chart", size = 22, top = 24, columns = 1,
+        self.xp = UI:PageGear(p, { title = "Expérience : rythme et repos de tes persos", icon = "chart", size = 26, top = 30, columns = 1,
             cards = function()
                 local out = {}
                 for _, c in ipairs(UI:SectionCards("qol", "xp")) do if c.xpData then table.insert(out, c) end end

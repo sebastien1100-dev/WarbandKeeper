@@ -2035,18 +2035,6 @@ UI:RegisterPage({
         -- Roue dentée : tous les réglages des métiers ; un second clic revient à l'onglet d'avant
         gear = UI:IconButton(p, "gear", 32, "Réglages des métiers")
         gear:SetPoint("TOPRIGHT", 0, 0)
-        function gear:SetActive(on)
-            self.active = on
-            local r, g, b = UI:Accent()
-            if on then
-                self.bg:SetColor(r, g, b, 1); self.bg:Show()
-                self.icon:SetVertexColor(unpack(C.onAccent))
-            else
-                self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
-            end
-        end
-        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
         gear:SetScript("OnClick", function()
             if self.tab == "settings" then
                 local back = self.beforeSettings or "levels"

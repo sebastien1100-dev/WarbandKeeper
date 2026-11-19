@@ -55,14 +55,6 @@ UI:RegisterPage({
         -- roue dentée : réglages (carte, alerte) ; un second clic revient à la collection
         local gear = UI:IconButton(p, "gear", 30, "Réglages des rares")
         gear:SetPoint("TOPRIGHT")
-        function gear:SetActive(on)
-            self.active = on
-            local r, g, b = UI:Accent()
-            if on then self.bg:SetColor(r, g, b, 1); self.bg:Show(); self.icon:SetVertexColor(unpack(C.onAccent))
-            else self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8) end
-        end
-        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
         gear:SetScript("OnClick", function() self:ShowSection(self.tab == "settings" and "collection" or "settings") end)
         self.gear = gear
         local of = UI:Text(p, 11, C.muted)

@@ -64,14 +64,6 @@ UI:RegisterPage({
         -- roue dentée : réglages (quêtes montrées, légende) à la place des tuiles et de la liste
         local gear = UI:IconButton(p, "gear", 30, "Réglages des quêtes")
         gear:SetPoint("TOPRIGHT")
-        function gear:SetActive(on)
-            self.active = on
-            local r, g, b = UI:Accent()
-            if on then self.bg:SetColor(r, g, b, 1); self.bg:Show(); self.icon:SetVertexColor(unpack(C.onAccent))
-            else self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8) end
-        end
-        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
         gear:SetScript("OnClick", function() self.settingsOpen = not self.settingsOpen; self:Layout(); self:Refresh() end)
         self.gear = gear
 

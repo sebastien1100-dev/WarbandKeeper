@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.46.0", date = "19/11/2026",
+        changed = {
+            "Boutons en icône (roues dentées, Expérience, fermer, partager…) bien plus visibles : un rond teinté à la couleur d'accent, avec un liseré, toujours affiché ; plus foncé au survol, plein quand la roue est ouverte.",
+        },
+    },
+    {
         version = "1.45.1", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.4.5 (fenêtre plus petite).",
