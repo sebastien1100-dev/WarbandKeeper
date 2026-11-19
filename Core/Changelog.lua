@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.0", date = "19/11/2026",
+        changed = {
+            "Options > À propos plus lisible : en-tête avec le logo, la version et les boutons « Commandes du chat » et « Voir les patch notes », trois tuiles (ouvrir, commandes, à faire une fois), puis un tableau des sources des données (ce qui en vient, la source, la licence en pastille ; la mention complète au survol d'une ligne).",
+        },
+    },
+    {
         version = "1.61.1", date = "19/11/2026",
         changed = {
             "Profils : ils sont maintenant dans les Options, section « Profils » sous Apparence. L'icône des profils en haut à droite de la fenêtre est retirée.",

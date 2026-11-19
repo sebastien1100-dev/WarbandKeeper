@@ -380,34 +380,134 @@ UI:RegisterPage({
 
         -- À propos ----------------------------------------------------------------
         section("about")
-        local about = card("À propos", 270)
-        local t = UI:Text(about, 12, C.muted)
-        t:SetPoint("TOPLEFT", 16, -42)
-        t:SetPoint("TOPRIGHT", -16, -42)
-        t:SetJustifyV("TOP")
-        if t.SetWordWrap then t:SetWordWrap(true) end
-        t:SetSpacing(4)
+        -- en-tête (logo, version, boutons), trois tuiles (ouvrir, commandes, à faire une fois), puis le tableau
+        -- des sources : ce qui en vient, la source, la licence en pastille ; la mention complète au survol
         local T = WK.T
-        t:SetText("Warband Keeper v" .. WK.version .. "\n"
-            .. T("Commandes : |cffffffff/wk|r ouvre cette fenêtre, |cffffffff/wk aide|r liste les commandes du chat.") .. "\n"
-            .. T("Connecte-toi une fois sur chaque personnage et ouvre sa banque pour qu'il soit enregistré.") .. "\n"
-            .. T("Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), monstres rares, quêtes, boss des donjons et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3).") .. "\n"
-            .. T("Guides de montée des métiers et tables de butin des donjons et raids de WoW Forever : wowtbc.gg.") .. "\n"
-            .. T("Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools). Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0).") .. "\n"
-            .. T("Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites.") .. "\n"
-            .. T("Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour mesurées par NauticusClassicResurrected (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected).") .. "\n"
-            .. T("Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)."))
-        local notesBtn = UI:Button(about, "Voir les patch notes", nil, 28, "secondary", "notes")
-        notesBtn:SetPoint("BOTTOMRIGHT", -12, 12)
+        local SRC = {
+            { "map", "Lieux, rares, quêtes, boss, chemins", "QuestieDB · github.com/Questie/QuestieDB", "GPLv3", "warning",
+                "Lieux du guidage (boîtes aux lettres, banques, marchands, maîtres de classe), monstres rares, quêtes, boss des donjons et chemins de base de la navigation (patrouilles des PNJ) : données de QuestieDB, base de l'addon Questie (github.com/Questie/QuestieDB, licence GPLv3)." },
+            { "hammer", "Guides des métiers, butin des donjons", "wowtbc.gg", "cité", "muted",
+                "Guides de montée des métiers et tables de butin des donjons et raids de WoW Forever : wowtbc.gg." },
+            { "book", "Noms français, n° d'instance et de rencontre", "Tables du client WoW Forever · wago.tools", "jeu", "muted",
+                "Noms français des donjons et des boss, numéros d'instance et de rencontre : tables du client WoW Forever (données du jeu, lues sur wago.tools)." },
+            { "chart", "Trajets de vol, taux de drop observés", "Everloot · everloot.app", "CC BY-SA 4.0", "info",
+                "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
+            { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",
+                "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
+            { "boat", "Bateaux et zeppelins (durées de tour)", "NauticusClassicResurrected", "MIT", "positive",
+                "Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour mesurées par NauticusClassicResurrected (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected)." },
+            { "crosshair", "Distances (indicateur du chasseur)", "LibRangeCheck-3.0 · WoWUIDev Community", "MIT", "positive",
+                "Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)." },
+        }
+        local ROWH = 34
+        local aboutH = 16 + 48 + 16 + 70 + 18 + 24 + #SRC * ROWH + 14
+        local about = card(nil, aboutH)
+        -- en-tête
+        local logoBox = CreateFrame("Frame", nil, about); logoBox:SetSize(44, 44); logoBox:SetPoint("TOPLEFT", 16, -16)
+        logoBox.ring = UI:Rounded(logoBox, 12, 0, "BACKGROUND", 1)
+        logoBox.bg = UI:Rounded(logoBox, 11, 1, "BACKGROUND", 2)
+        logoBox.ic = UI:Icon(logoBox, "logo", 26, nil, "ARTWORK"); logoBox.ic:SetPoint("CENTER")
+        local name = UI:Text(about, 16, C.text); name:SetPoint("TOPLEFT", logoBox, "TOPRIGHT", 14, -4)
+        local tag = UI:Text(about, 12, C.muted); tag:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -5)
+        tag:SetText(T("Tous tes persos, leur or, leurs sacs et leurs métiers, au même endroit."))
+        local function paintHead()
+            local r, g, b = UI:Accent()
+            logoBox.ring:SetColor(r, g, b, 1)
+            logoBox.bg:SetColor(C.surface[1] * 0.8 + r * 0.2, C.surface[2] * 0.8 + g * 0.2, C.surface[3] * 0.8 + b * 0.2, 1)
+            logoBox.ic:SetVertexColor(r, g, b, 1)
+            name:SetText("Warband Keeper " .. UI:Hex({ r, g, b }) .. "v" .. WK.version .. "|r")
+        end
+        paintHead(); UI:OnAccent(paintHead)
+        local notesBtn = UI:Button(about, "Voir les patch notes", nil, 30, "primary", "notes")
+        notesBtn:SetPoint("TOPRIGHT", -16, -23)
         notesBtn:SetScript("OnClick", function() UI:ShowPage("notes") end)
-        current.scroll:SetContentHeight(y)
-        -- hauteur selon le texte (il passe sur plus de lignes dans une fenêtre étroite)
-        local aboutScroll, aboutY = current.scroll, y - 270 - GAP
-        UI:OnResize(about, function()
-            local h = math.max(270, math.ceil(t:GetStringHeight() or 0) + 42 + 56)
-            about:SetHeight(h)
-            aboutScroll:SetContentHeight(aboutY + h + GAP)
+        local cmdBtn = UI:Button(about, "Commandes du chat", nil, 30, "secondary")
+        cmdBtn:SetPoint("RIGHT", notesBtn, "LEFT", -8, 0)
+        cmdBtn.tooltip = "Écrit la liste des commandes /wk dans le chat."
+        cmdBtn:SetScript("OnClick", function() if SlashCmdList and SlashCmdList.WARBANDKEEPER then SlashCmdList.WARBANDKEEPER("aide") end end)
+        local sep = about:CreateTexture(nil, "ARTWORK"); sep:SetHeight(1)
+        sep:SetPoint("TOPLEFT", 16, -76); sep:SetPoint("TOPRIGHT", -16, -76); sep:SetColorTexture(unpack(C.border))
+        -- tuiles
+        local TILES = {
+            { "OUVRIR", "|cffffffff/wk|r  ouvre cette fenêtre" },
+            { "COMMANDES", "|cffffffff/wk aide|r  les liste dans le chat" },
+            { "À FAIRE UNE FOIS", "Connecte chaque perso et ouvre sa banque pour qu'il soit enregistré." },
+        }
+        local tiles = {}
+        for i, tl in ipairs(TILES) do
+            local f = CreateFrame("Frame", nil, about)
+            UI:Panel(f, 10, C.surface2, C.border)
+            f.k = UI:Text(f, 10, C.dim); f.k:SetPoint("TOPLEFT", 12, -10); f.k:SetText(T(tl[1]))
+            f.t = UI:Text(f, 12, C.muted); f.t:SetPoint("TOPLEFT", 12, -28); f.t:SetPoint("RIGHT", -12, 0)
+            f.t:SetJustifyH("LEFT"); if f.t.SetWordWrap then f.t:SetWordWrap(true) end
+            f.t:SetText(T(tl[2]))
+            tiles[i] = f
+        end
+        -- tableau des sources
+        local srcHead = UI:Text(about, 10, C.dim); srcHead:SetPoint("TOPLEFT", 16, -(92 + 70 + 8)); srcHead:SetText(T("SOURCES DES DONNÉES"))
+        local colY = 92 + 70 + 8 + 20
+        local h1 = UI:Text(about, 9, C.dim); h1:SetText(T("CE QUI EN VIENT"))
+        local h2 = UI:Text(about, 9, C.dim); h2:SetText(T("SOURCE"))
+        local h3 = UI:Text(about, 9, C.dim); h3:SetText(T("LICENCE"))
+        local rowsA = {}
+        for i, sd in ipairs(SRC) do
+            local r = CreateFrame("Frame", nil, about)
+            r:SetHeight(ROWH)
+            r:EnableMouse(true)
+            r.line = r:CreateTexture(nil, "ARTWORK"); r.line:SetHeight(1); r.line:SetPoint("TOPLEFT"); r.line:SetPoint("TOPRIGHT")
+            r.line:SetColorTexture(unpack(C.border))
+            r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints(); r.hl:SetColorTexture(1, 1, 1, 0.03); r.hl:Hide()
+            r.icb = CreateFrame("Frame", nil, r); r.icb:SetSize(24, 24); r.icb:SetPoint("LEFT", 4, 0)
+            r.icb.ring = UI:Rounded(r.icb, 12, 0, "BACKGROUND", 1)
+            r.icb.bg = UI:Rounded(r.icb, 11, 1, "BACKGROUND", 2)
+            r.ic = UI:Icon(r.icb, sd[1], 13, nil, "ARTWORK"); r.ic:SetPoint("CENTER")
+            r.what = UI:Text(r, 12, C.text); r.what:SetText(T(sd[2])); r.what:SetJustifyH("LEFT")
+            r.src = UI:Text(r, 12, C.muted); r.src:SetText(sd[3]); r.src:SetJustifyH("LEFT")
+            for _, fs in ipairs({ r.what, r.src }) do if fs.SetWordWrap then fs:SetWordWrap(false) end end
+            r.lic = UI:Badge(r, sd[4], C[sd[5]] or C.muted)
+            r:SetScript("OnEnter", function(row)
+                row.hl:Show()
+                UI:TooltipOwner(row, "ANCHOR_TOP")
+                GameTooltip:AddLine(sd[3], 1, 1, 1)
+                GameTooltip:AddLine(T(sd[6]), 0.8, 0.8, 0.8, true)
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function(row) row.hl:Hide(); GameTooltip:Hide() end)
+            rowsA[i] = r
+        end
+        local function paintRows()
+            local r1, g1, b1 = UI:Accent()
+            for _, r in ipairs(rowsA) do
+                r.icb.ring:SetColor(r1, g1, b1, 1)
+                r.icb.bg:SetColor(C.surface[1] * 0.8 + r1 * 0.2, C.surface[2] * 0.8 + g1 * 0.2, C.surface[3] * 0.8 + b1 * 0.2, 1)
+                r.ic:SetVertexColor(r1, g1, b1, 1)
+            end
+        end
+        paintRows(); UI:OnAccent(paintRows)
+        -- mise en page élastique
+        UI:OnResize(about, function(w)
+            w = w or about:GetWidth() or 800
+            local inner = w - 32
+            local tw = math.floor((inner - 20) / 3)
+            for i, f in ipairs(tiles) do
+                f:ClearAllPoints(); f:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + 10), -92); f:SetSize(tw, 70)
+            end
+            local LIC_W = 110
+            local whatX = 40
+            local srcX = whatX + math.floor((inner - whatX - LIC_W) * 0.5)
+            local licX = inner - LIC_W
+            h1:ClearAllPoints(); h1:SetPoint("TOPLEFT", 16 + whatX, -colY)
+            h2:ClearAllPoints(); h2:SetPoint("TOPLEFT", 16 + srcX, -colY)
+            h3:ClearAllPoints(); h3:SetPoint("TOPLEFT", 16 + licX, -colY)
+            for i, r in ipairs(rowsA) do
+                local yy = colY + 18 + (i - 1) * ROWH
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -yy); r:SetPoint("TOPRIGHT", -16, -yy)
+                r.what:ClearAllPoints(); r.what:SetPoint("LEFT", whatX, 0); r.what:SetWidth(srcX - whatX - 12)
+                r.src:ClearAllPoints(); r.src:SetPoint("LEFT", srcX, 0); r.src:SetWidth(licX - srcX - 12)
+                r.lic:ClearAllPoints(); r.lic:SetPoint("LEFT", licX, 0)
+            end
         end)
+        current.scroll:SetContentHeight(y)
         -- Général en onglets par catégorie : Langue, Infobulles, Fenêtre (bouton minimap, combat)
         do
             local gsec = self.sections.general

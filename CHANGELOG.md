@@ -40,6 +40,13 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.62.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Options > À propos plus lisible : en-tête avec le logo, la version et les boutons « Commandes du chat » et « Voir les patch notes », trois tuiles (ouvrir, commandes, à faire une fois), puis un tableau des sources des données (ce qui en vient, la source, la licence en pastille ; la mention complète au survol d'une ligne).
+
 ## v1.61.1 — 19/11/2026
 
 _Un /reload suffit._
