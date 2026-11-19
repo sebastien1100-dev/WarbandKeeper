@@ -3294,4 +3294,5 @@ WK.Locales.enUS.text = {
     ["Scan des prix"] = "Price scan",
     ["+ 1 autre"] = "+ 1 more",
     ["pas de record"] = "no record",
+    ["AFFICHER"] = "SHOW",
 }

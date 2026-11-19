@@ -82,8 +82,55 @@ UI:RegisterPage({
         local sumSeg = UI:Segmented(scard, { { "off", "Non" }, { "me", "Pour moi" }, { "group", "Au groupe" } }, function(v) dc.summary = v end, 24)
         sumSeg:Select(dc.summary or "me")
         UI:SettingRow(scard, -40 - 6 * 46, "Résumé en sortant", "Expérience, argent, morts et réputation du passage, dans le chat (ou envoyé au groupe).", sumSeg, 230)
+        -- chrono à l'écran : préréglage, largeur, parties visibles (aperçu de quelques secondes à chaque changement)
+        local to = UI:DungeonTimerOpts()
+        local tcard = UI:Card(scard:GetParent(), T("Chrono à l'écran"))
+        local ttog = {}
+        local function tchanged() if UI.PreviewDungeonTimer then UI:PreviewDungeonTimer() end end
+        local preSeg = UI:Segmented(tcard, { { "full", "Complet" }, { "compact", "Compact" }, { "minimal", "Minimal" }, { "custom", "Personnalisé" } },
+            function(v)
+                if v ~= "custom" then UI:ApplyDungeonTimerPreset(v) else to.timerPreset = "custom" end
+                for _, t in ipairs(ttog) do t:Refresh() end
+                tchanged()
+            end, 24)
+        UI:SettingRow(tcard, -40, "Affichage", "Complet : tout. Compact : boss restants, sans les écarts. Minimal : chrono, record et barre.", preSeg, 330)
+        local wSeg
+        local wSl = UI:Slider(tcard, 220, 180, 400, 10, function() return to.timerFixed end,
+            function(v) to.timerFixed = v; to.timerWidth = "fixed"; wSeg:Select("fixed"); tchanged() end, "%d")
+        wSeg = UI:Segmented(tcard, { { "tracker", "Comme le suivi des quêtes" }, { "fixed", "Fixe" } },
+            function(v) to.timerWidth = v; tchanged() end, 24)
+        UI:SettingRow(tcard, -86, "Largeur", "Comme le suivi des quêtes : pose le chrono juste dessous en mode édition.", wSeg, 260)
+        UI:SettingRow(tcard, -132, "Largeur fixe", nil, wSl, 240)
+        local th = UI:Text(tcard, 10, C.dim); th:SetPoint("TOPLEFT", 16, -176); th:SetText(T("AFFICHER"))
+        local PL = {
+            { "name", "Nom du donjon" }, { "cap", "Compteur de l'heure" },
+            { "rec", "Record à côté du chrono" }, { "left", "Temps restant / dépassement" },
+            { "bar", "Barre de progression" }, { "boss", "Liste des boss" },
+            { "bt", "Temps de chaque boss" }, { "dl", "Écart avec le record" },
+            { "remain", "Masquer les boss tués" }, { "soft", "Fond plus discret" },
+        }
+        for i, pl in ipairs(PL) do
+            local k = pl[1]
+            local t = UI:Toggle(tcard, function() return to.timerShow[k] and true or false end, function(v)
+                to.timerShow[k] = v or nil
+                if k ~= "soft" then to.timerPreset = "custom"; preSeg:Select("custom") end
+                tchanged()
+            end)
+            local col, rowI = (i - 1) % 2, math.floor((i - 1) / 2)
+            local y = -196 - rowI * 32
+            if col == 0 then t:SetPoint("TOPLEFT", 16, y) else t:SetPoint("TOPLEFT", tcard, "TOP", 8, y) end
+            local l = UI:Text(tcard, 12, C.text); l:SetPoint("LEFT", t, "RIGHT", 8, 0); l:SetText(T(pl[2]))
+            table.insert(ttog, t)
+        end
+        tcard:SetHeight(196 + 5 * 32 + 8)
+        local function tsync()
+            to = UI:DungeonTimerOpts()
+            preSeg:Select(to.timerPreset); wSeg:Select(to.timerWidth)
+            for _, t in ipairs(ttog) do t:Refresh() end
+        end
+        tsync()
         self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1,
-            cards = function() for _, t in ipairs(dtog) do t:Refresh() end; return { scard } end,
+            cards = function() for _, t in ipairs(dtog) do t:Refresh() end; tsync(); return { scard, tcard } end,
             onToggle = function(open)
                 self.tabSeg:SetShown(not open); self.charDd:SetShown(not open); if self.ofLabel then self.ofLabel:SetShown(not open) end
             end }, self)

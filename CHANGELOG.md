@@ -27,6 +27,16 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.58.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Chrono de donjon : nouvelle carte « Chrono à l'écran » dans la roue dentée de la page Donjons. Trois préréglages (Complet, Compact avec seulement les boss restants, Minimal avec le chrono, le record et la barre), une largeur comme le suivi des quêtes ou fixe (180 à 400), et une case pour chaque partie : nom du donjon, compteur de l'heure, record, temps restant, barre, boss, temps et écarts des boss, boss tués masqués, fond plus discret. Chaque changement montre le chrono quelques secondes.
+
+### Modifications
+- Chrono de donjon : plus de liseré coloré sur le côté gauche.
+
 ## v1.57.0 — 19/11/2026
 
 _Un /reload suffit._
