@@ -263,11 +263,18 @@ local function dockOnMap(dock, mapID)
 end
 function UI:DrawNavRoute(cv, mapID, w, h)
     UI:HideNavRoute()
+    -- relevé pour /wk carte : guidage, état du calcul, points du trajet, combien sont placés, traversée
+    local G = WK.modules.Guide
+    local r0 = N.route
+    local st = { placed = 0, world = isWorldMap(mapID), docks = "-",
+                 guide = G.target and G:PlaceName(G.target) or "aucun",
+                 state = not r0 and "pas de trajet" or r0.noRoute and "aucun chemin (pas de bateau trouvé)"
+                     or r0.partial and "jusqu'au quai" or "complet",
+                 legs = r0 and r0.legs and #r0.legs or 0, option = gcfg().route and "oui" or "non" }
+    UI.navStats = st
     if not gcfg().route then return end
     local pts, cont = remaining()
-    -- relevé pour /wk carte : points du trajet, combien sont placés sur cette carte, traversée
-    local st = { pts = pts and #pts or 0, placed = 0, world = isWorldMap(mapID), cont = cont, docks = "-" }
-    UI.navStats = st
+    st.pts, st.cont = pts and #pts or 0, cont
     if not pts or #pts < 2 then return end
     local r, g, b = UI:Accent()
     local scale = (w / 1000) * UI.MapIconScale()
@@ -317,7 +324,6 @@ function UI:DrawNavRoute(cv, mapID, w, h)
     end
     -- traversée vers un autre continent (bateau, zeppelin) : trait d'un quai à l'autre quand la carte
     -- affichée montre les deux (carte d'Azeroth)
-    local r0 = N.route
     for _, l in ipairs(r0 and r0.legs or {}) do
         if l.here and l.there and canLine(cv) then
             local ax, ay = dockOnMap(l.here, mapID)

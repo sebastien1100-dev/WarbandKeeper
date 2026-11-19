@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.5", date = "19/11/2026",
+        changed = {
+            "/wk carte : la ligne « trajet » dit aussi vers quoi tu es guidé, où en est le calcul du chemin (complet, jusqu'au quai, aucun bateau trouvé) et si le tracé est activé, pour trouver pourquoi un trajet ne s'affiche pas.",
+        },
+    },
+    {
         version = "1.77.4", date = "19/11/2026",
         changed = {
             "Métiers > roue dentée : les réglages sont rangés en onglets par catégorie (Ce métier, Fenêtres du jeu, Fabrication, Récolte) au lieu d'une longue page ; l'onglet choisi est retenu, et la recherche de la barre latérale ouvre le bon onglet.",

@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk carte : la ligne « trajet » dit aussi vers quoi tu es guidé, où en est le calcul du chemin (complet, jusqu'au quai, aucun bateau trouvé) et si le tracé est activé, pour trouver pourquoi un trajet ne s'affiche pas.
+
 ## v1.77.4 — 19/11/2026
 
 _Un /reload suffit._
