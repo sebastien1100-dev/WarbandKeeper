@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.73.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans le jeu : cette version livre le client PC 1.8.5 (le compte à rebours de la prochaine vérification avance).",
+        },
+    },
+    {
         version = "1.73.0", date = "19/11/2026",
         added = {
             "/wk perf [secondes] : mesure ce que l'addon coûte pendant que tu joues (60 s par défaut) : temps passé par évènement, dans ses fonctions les plus appelées et ses mises à jour régulières, et mémoire prise pendant la mesure ; les plus coûteux s'affichent dans le chat.",

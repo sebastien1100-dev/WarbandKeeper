@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.5 — 19/11/2026
+
+### Corrections
+- Mises à jour : « Prochaine vérification » restait figée (« dans 60 min ») ; le compte à rebours avance maintenant tout seul, avec l'heure prévue (« dans 42 min (à 18:30) »).
+
 ## 1.8.4 — 19/11/2026
 
 ### Modifications

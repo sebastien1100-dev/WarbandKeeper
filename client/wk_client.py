@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.4"
+CLIENT_VERSION = "1.8.5"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1618,6 +1618,31 @@ class HomePage(Page):
         self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show_settings("updates"))
         self.folder = tile(2, "DOSSIER DE L'ADDON", "Ouvrir le dossier", self.app.open_addons)
 
+    def update_next(self):
+        """Prochaine vérification : recalculée toutes les 20 s (le compte à rebours avance tout seul)."""
+        a = self.app
+        every = {"1h": 3600, "6h": 6 * 3600}.get(a.cfg["checkEvery"])
+        if not every:
+            txt = "à la main (Réglages)" if a.cfg["checkEvery"] == "manual" else "au prochain démarrage"
+        elif a.busy:
+            txt = "en cours…"
+        elif not a.lastCheck:
+            txt = "bientôt"
+        else:
+            left = max(0, every - (time.time() - a.lastCheck))
+            if left < 60:
+                txt = "dans moins d'une minute"
+            elif left < 3600:
+                txt = "dans %d min" % -(-left // 60)
+            else:
+                h, m = int(left // 3600), int(left % 3600 // 60)
+                txt = "dans %d h %02d" % (h, m)
+            txt += " (à %s)" % datetime.fromtimestamp(a.lastCheck + every).strftime("%H:%M")
+        self.nextCheck.configure(text=txt)
+        if getattr(self, "_nextJob", None):
+            self.after_cancel(self._nextJob)
+        self._nextJob = self.after(20000, self.update_next)
+
     def set_busy(self, text, value=None):
         if value is None:
             self.progress.pack_forget()
@@ -1696,14 +1721,7 @@ class HomePage(Page):
             self.action.command = a.refresh
         last = list_backups()
         self.sv.configure(text=datetime.fromtimestamp(last[0]["time"]).strftime("le %d/%m à %H:%M") if last else "aucune pour l'instant")
-        every = {"1h": 3600, "6h": 6 * 3600}.get(a.cfg["checkEvery"])
-        if not every:
-            self.nextCheck.configure(text="à la main (Réglages)")
-        elif not a.lastCheck:
-            self.nextCheck.configure(text="bientôt")
-        else:
-            left = max(0, every - (time.time() - a.lastCheck))
-            self.nextCheck.configure(text="dans %d min" % (left // 60 + 1) if left < 3600 else "dans %d h" % (left // 3600 + 1))
+        self.update_next()
         self.folder.configure(text=short_path(game_dir(a.addons), 34) if a.addons else "pas choisi")
 
 
