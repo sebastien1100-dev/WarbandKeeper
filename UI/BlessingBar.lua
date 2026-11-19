@@ -235,7 +235,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     -- tableau (version « planning ») : les classes en lignes (toutes, grisées si absentes du groupe), puis
     -- l'aure ; les paladins du groupe en colonnes (toi d'abord) ; chaque case = icône + nom de la bénédiction
     local NROWS = #M.CLASSES + 1
-    local RH, TOPY = 30, 108
+    local RH, TOPY, IC = 52, 108, 44
     local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
     UI.blessTable = tc
     tc.banner = CreateFrame("Frame", nil, tc)
@@ -258,16 +258,22 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         local r = CreateFrame("Frame", nil, tc)
         r:SetHeight(RH)
         r.bg = UI:Rounded(r, 8, 0, "BACKGROUND", 1); r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
-        r.dot = UI:Icon(r, "circle", 12, nil, "ARTWORK"); r.dot:SetPoint("LEFT", 10, 0)
-        r.label = UI:Text(r, 12, C.text); r.label:SetPoint("LEFT", 28, 0)
+        -- icône de la classe (nom au survol) ; l'aure garde son libellé
+        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(IC - 4, IC - 4); r.dot:SetPoint("LEFT", 10, 0)
+        r.label = UI:Text(r, 12, C.text); r.label:SetPoint("LEFT", 10, 0)
         r.ci = ri <= #M.CLASSES and ri or nil
         if r.ci then
-            local col = classColor(M.CLASSES[r.ci])
-            r.dot:SetVertexColor(col[1], col[2], col[3], 1)
-            r.label:SetText(className(M.CLASSES[r.ci]))
+            UI:SetClassIcon(r.dot, M.CLASSES[r.ci])
+            r.label:Hide()
+            r.hit = CreateFrame("Frame", nil, r); r.hit:SetAllPoints(r.dot); r.hit:EnableMouse(true)
+            r.hit:SetScript("OnEnter", function(s)
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:AddLine(className(M.CLASSES[r.ci]), unpack(classColor(M.CLASSES[r.ci])))
+                GameTooltip:Show()
+            end)
+            r.hit:SetScript("OnLeave", function() GameTooltip:Hide() end)
         else
             r.dot:Hide()
-            r.label:SetPoint("LEFT", 10, 0)
             r.label:SetText(T("Aure"))
         end
         r.cells = {}
@@ -278,11 +284,21 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             b:SetFrameLevel(r:GetFrameLevel() + 3)
             b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
-            b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(22, 22); b.icon:SetPoint("LEFT", 2, 0)
-            b.txt = UI:Text(b, 12, C.text); b.txt:SetPoint("LEFT", b.icon, "RIGHT", 7, 0); b.txt:SetJustifyH("LEFT")
-            if b.txt.SetWordWrap then b.txt:SetWordWrap(false) end
-            b:SetScript("OnEnter", function(s) s.hl:Show() end)
-            b:SetScript("OnLeave", function(s) s.hl:Hide() end)
+            -- icône seule de la bénédiction ; grisée avec un « ! » si pas encore apprise ; cercle pointillé si aucune
+            b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(IC, IC); b.icon:SetPoint("LEFT", 4, 0)
+            b.empty = UI:Icon(b, "ring_dash", IC - 8, C.dim, "ARTWORK"); b.empty:SetPoint("CENTER", b.icon, "CENTER")
+            b.warn = UI:Icon(b, "bang", 18, C.warning, "OVERLAY"); b.warn:SetPoint("BOTTOMRIGHT", b.icon, "BOTTOMRIGHT", 4, -4)
+            b.txt = UI:Text(b, 12, C.text); b.txt:Hide()
+            b:SetScript("OnEnter", function(s)
+                s.hl:Show()
+                if not s.tip then return end
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:AddLine(s.tip, 1, 1, 1)
+                if s.tipWarn then GameTooltip:AddLine(T("pas apprise"), C.warning[1], C.warning[2], C.warning[3]) end
+                GameTooltip:AddLine(T("Clic : bénédiction suivante · clic droit : aucune"), 0.6, 0.6, 0.6)
+                GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
             b.col = p
             b:SetScript("OnClick", function(s, btn)
                 local who = tc.colWho and tc.colWho[s.col]
@@ -341,11 +357,11 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         return b
     end
 
-    local LABW = 150
+    local LABW = 90
     local function layout(w)
         w = w or tc:GetWidth() or 800
         local n = math.max(1, tc.nCols or 1)
-        local cw = math.min(240, math.floor((w - 32 - LABW) / n))
+        local cw = math.min(160, math.floor((w - 32 - LABW) / n))
         tc.classHead:ClearAllPoints(); tc.classHead:SetPoint("TOPLEFT", 26, -(TOPY - 22))
         for p, h in ipairs(tc.cols) do
             h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (p - 1) * cw, -(TOPY - 26)); h:SetWidth(cw - 8)
@@ -356,7 +372,6 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -y); r:SetPoint("TOPRIGHT", -16, -y)
             for p, b in ipairs(r.cells) do
                 b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (p - 1) * cw, -2); b:SetWidth(cw - 8)
-                b.txt:SetWidth(cw - 44)
             end
         end
         local y = TOPY + NROWS * (RH + 4) + 10
@@ -395,7 +410,8 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         for _, r in ipairs(tc.rows) do
             local here = not r.ci or alone or present[M.CLASSES[r.ci]]
             r.label:SetTextColor(unpack(here and C.text or C.dim))
-            r.dot:SetAlpha(here and 1 or 0.35)
+            r.dot:SetAlpha(here and 1 or 0.3)
+            if r.dot.SetDesaturated then r.dot:SetDesaturated(not here) end
             for p, b in ipairs(r.cells) do
                 local it = list[p]
                 b:SetShown(it ~= nil and p <= n)
@@ -414,11 +430,14 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                         label = id and M:AuraName(v)
                         if id and e.me then learned = M:KnownAura(v) end
                     end
-                    if label and not learned then label = label .. UI:Hex(C.warning) .. " · " .. T("pas apprise") .. "|r" end
                     b.icon:SetTexture(id and M.Icon(id) or nil)
                     b.icon:SetShown(id ~= nil)
-                    b.txt:SetText(label or (UI:Hex(C.dim) .. T("aucune") .. "|r"))
-                    b.txt:SetTextColor(unpack(here and C.text or C.muted))
+                    if b.icon.SetDesaturated then b.icon:SetDesaturated(not learned) end
+                    b.icon:SetAlpha(learned and (here and 1 or 0.5) or 0.4)
+                    b.warn:SetShown(id ~= nil and not learned)
+                    b.empty:SetShown(id == nil)
+                    b.tip, b.tipWarn = label or T("aucune"), (id ~= nil and not learned)
+                    b.txt:SetText(label or T("aucune"))
                     b:SetAlpha(M:CanEdit(it.name) and 1 or 0.6)
                 end
             end

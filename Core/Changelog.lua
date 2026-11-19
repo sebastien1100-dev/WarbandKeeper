@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.65.1", date = "19/11/2026",
+        changed = {
+            "Paladin > Bénédictions : le tableau de répartition est plus visuel. Chaque ligne commence par l'icône de la classe (son nom au survol) et chaque case ne montre plus que l'icône de la bénédiction, deux fois plus grande ; une bénédiction pas encore apprise est grisée avec un « ! », une case vide montre un cercle pointillé. Le nom de la bénédiction s'affiche au survol.",
+        },
+    },
+    {
         version = "1.65.0", date = "19/11/2026",
         changed = {
             "Paladin > Bénédictions : la répartition automatique suit maintenant les priorités de WoW Forever. Puissance puis Rois pour les guerriers, voleurs et chasseurs ; Rois puis Sagesse pour les mages et démonistes ; Sagesse puis Rois pour les prêtres, chamans, paladins et druides. Le Sanctuaire (supprimé) et le Salut ne sont plus choisis d'office.",

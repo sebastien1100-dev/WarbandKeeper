@@ -85,6 +85,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.65.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Paladin > Bénédictions : le tableau de répartition est plus visuel. Chaque ligne commence par l'icône de la classe (son nom au survol) et chaque case ne montre plus que l'icône de la bénédiction, deux fois plus grande ; une bénédiction pas encore apprise est grisée avec un « ! », une case vide montre un cercle pointillé. Le nom de la bénédiction s'affiche au survol.
+
 ## v1.65.0 — 19/11/2026
 
 _Un /reload suffit._
