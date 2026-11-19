@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.2", date = "19/11/2026",
+        changed = {
+            "Courrier > Envoyer : les noms proposés pour « À » s'affichent dans une liste sous le champ (jusqu'à 10) au lieu d'une ligne à côté qui manquait de place : tes persos d'abord, à la couleur de leur classe et marqués « mon perso », puis tes destinataires récents.",
+            "Courrier : dans la barre latérale, les destinataires récents qui sont tes persos sont à la couleur de leur classe.",
+        },
+    },
+    {
         version = "1.77.1", date = "19/11/2026",
         fixed = {
             "Guidage vers un autre continent, carte d'Azeroth (les deux continents à l'écran) : le départ et l'arrivée s'affichaient mais pas le trajet. Le chemin jusqu'au quai est maintenant tracé sur cette carte aussi, et la traversée en bateau ou en zeppelin est dessinée d'un quai à l'autre.",

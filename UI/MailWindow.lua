@@ -197,7 +197,13 @@ local function build(host)
         for i, r in ipairs(self.rrows) do
             local n = i <= room and list[i]
             r.name = n or nil
-            if n then r.t:SetText(n); r.icon:SetVertexColor(UI:Accent()); r:Show() else r:Hide() end
+            if n then
+                r.t:SetText(n); r.icon:SetVertexColor(UI:Accent())
+                -- un de tes persos : couleur de sa classe
+                local oc = Ml():Resolve(n)
+                if oc and oc.class then r.t:SetTextColor(UI:ClassColor(oc.class)) else r.t:SetTextColor(unpack(C.muted)) end
+                r:Show()
+            else r:Hide() end
         end
     end
 
@@ -372,9 +378,25 @@ local function build(host)
         v.to = UI:Input(v, 320, 30, T("Nom complet du destinataire"), "person")
         v.to:SetPoint("TOPLEFT", 0, -16)
         v.to.onChange = function() v:Suggest() end
+        -- suggestions : liste déroulante sous le champ (tes persos d'abord, à la couleur de leur classe,
+        -- puis les destinataires récents) ; jusqu'à SUGG noms, la place ne manque plus
+        local SUGG, SROW = 10, 24
+        v.suggBox = CreateFrame("Frame", nil, v)
+        v.suggBox:SetPoint("TOPLEFT", v.to, "BOTTOMLEFT", 0, -2)
+        v.suggBox:SetWidth(320)
+        v.suggBox:SetFrameLevel(v:GetFrameLevel() + 30)
+        UI:Panel(v.suggBox, 8, C.surface2, C.border)
+        v.suggBox:Hide()
         v.sugg = {}
-        for i = 1, 5 do
-            local b = UI:Button(v, "", nil, 22, "ghost")
+        for i = 1, SUGG do
+            local b = CreateFrame("Button", nil, v.suggBox)
+            b:SetHeight(SROW)
+            b:SetPoint("TOPLEFT", 4, -4 - (i - 1) * SROW); b:SetPoint("TOPRIGHT", -4, -4 - (i - 1) * SROW)
+            b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.06); b.hl:Hide()
+            b.label = UI:Text(b, 12); b.label:SetPoint("LEFT", 8, 0)
+            b.tag = UI:Text(b, 10, C.dim); b.tag:SetPoint("RIGHT", -8, 0); b.tag:SetJustifyH("RIGHT")
+            b:SetScript("OnEnter", function(s) s.hl:Show() end)
+            b:SetScript("OnLeave", function(s) s.hl:Hide() end)
             b:SetScript("OnClick", function(s) v.to:SetText(s.name); v.to.edit:ClearFocus(); v:Suggest(true) end)
             b:Hide()
             v.sugg[i] = b
@@ -467,28 +489,41 @@ local function build(host)
         function v:Suggest(hide)
             local q = (self.to:GetText() or ""):lower()
             local names, seen = {}, {}
-            local function add(n)
+            -- classe d'un nom : celle de ton perso qui le porte (les autres destinataires restent en blanc)
+            local classOf = {}
+            for key, c in pairs(WK.DB.global.characters) do
+                local mn = Ml():MailName(c)
+                if mn and key ~= WK:CharKey() then classOf[mn:lower()] = c.class end
+            end
+            local function add(n, mine)
                 if n and n ~= "" and not seen[n:lower()] and (q == "" or n:lower():find(q, 1, true)) and n:lower() ~= q then
-                    seen[n:lower()] = true; table.insert(names, n)
+                    seen[n:lower()] = true; table.insert(names, { n = n, mine = mine })
                 end
             end
             if not hide and self.to.edit:HasFocus() then
-                for _, n in ipairs(cfg().recent) do add(n) end
+                local mineList = {}
                 for key, c in pairs(WK.DB.global.characters) do
-                    if key ~= WK:CharKey() then add(Ml():MailName(c)) end
+                    if key ~= WK:CharKey() then table.insert(mineList, Ml():MailName(c)) end
                 end
+                table.sort(mineList, function(a, b) return (a or "") < (b or "") end)
+                for _, n in ipairs(mineList) do add(n, true) end
+                for _, n in ipairs(cfg().recent) do add(n, classOf[n:lower()] ~= nil) end
             end
-            local x = 0
+            local shown = 0
             for i, b in ipairs(self.sugg) do
-                local n = names[i]
-                b.name = n
-                if n then
-                    b.label:SetText(n); b:SetWidth(b.label:GetStringWidth() + 20)
-                    b:ClearAllPoints(); b:SetPoint("LEFT", self.to, "RIGHT", 10 + x, 0)
-                    x = x + b:GetWidth() + 4
-                    b:SetShown(x < 420)
+                local e = names[i]
+                b.name = e and e.n
+                if e then
+                    shown = i
+                    b.label:SetText(e.n)
+                    local cl = classOf[e.n:lower()]
+                    if cl then b.label:SetTextColor(UI:ClassColor(cl)) else b.label:SetTextColor(unpack(C.text)) end
+                    b.tag:SetText(e.mine and T("mon perso") or T("récent"))
+                    b:Show()
                 else b:Hide() end
             end
+            self.suggBox:SetHeight(shown * SROW + 8)
+            self.suggBox:SetShown(shown > 0)
         end
         v.to.edit:HookScript("OnEditFocusGained", function() v:Suggest() end)
         v.to.edit:HookScript("OnEditFocusLost", function() C_Timer.After(0.2, function() v:Suggest(true) end) end)

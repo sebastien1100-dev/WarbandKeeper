@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Courrier > Envoyer : les noms proposés pour « À » s'affichent dans une liste sous le champ (jusqu'à 10) au lieu d'une ligne à côté qui manquait de place : tes persos d'abord, à la couleur de leur classe et marqués « mon perso », puis tes destinataires récents.
+- Courrier : dans la barre latérale, les destinataires récents qui sont tes persos sont à la couleur de leur classe.
+
 ## v1.77.1 — 19/11/2026
 
 _Un /reload suffit._

@@ -3601,4 +3601,6 @@ WK.Locales.enUS.text = {
     ["Recette suivante de la file"] = "Next recipe in the queue", ["« ensuite : … » quand ta file de fabrication a une autre recette."] = "\"next: …\" when your crafting queue has another recipe.",
     ["Heure de fin et compétence"] = "End time and skill", ["« fin vers 18:42 » et le niveau du métier, avec les points gagnés depuis le début de la série."] = "\"done around 18:42\" and the profession level, with the points gained since the batch started.",
     ["Son à la fin"] = "Sound at the end", ["Quand toute la série est faite."] = "When the whole batch is done.",
+    ["mon perso"] = "my character",
+    ["récent"] = "recent",
 }
