@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.6", date = "19/11/2026",
+        changed = {
+            "Patch notes > À venir : nouvelles idées (mise en valeur des nœuds à l'approche, couches de serveur, horaires des autres addons de bateaux, carte, quêtes automatiques, sacs pleins et camelote, infobulles, aides de combat, groupe, chat, mini-jeux en vol).",
+        },
+    },
+    {
         version = "1.62.5", date = "19/11/2026",
         changed = {
             "Patch notes > À venir : nouvelles idées pour les quêtes (camps d'objectifs, guidage de la quête suivie) et la navigation (trajets qui suivent le terrain, chemins appris partagés).",
@@ -3556,6 +3562,17 @@ WK.Roadmap = {
     { theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
     { theme = "dung", title = "Camps d'objectifs des quêtes", text = "D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans)." },
     { theme = "dung", title = "Guidage de la quête suivie", text = "La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits." },
+    { theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
+    { theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
+    { theme = "map", title = "Horaires des autres addons de bateaux", text = "Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent." },
+    { theme = "map", title = "Carte, suite", text = "Zones inexplorées assombries, niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
+    { theme = "dung", title = "Quêtes automatiques", text = "Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
+    { theme = "eco", title = "Sacs pleins et camelote", text = "Sacs pleins : proposer de détruire le moins cher ; camelote marquée à la main ou par règles, vendue au marchand ; réapprovisionnement et réparation automatiques." },
+    { theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
+    { theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },
+    { theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe." },
+    { theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
+    { theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
 }
 

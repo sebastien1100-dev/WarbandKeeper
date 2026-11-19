@@ -12,6 +12,9 @@ _Prévu, pas encore commencé._
 - **Recherche globale** — Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte.
 - **Mini-fenêtre « À faire »** — Déplaçable, sans ouvrir la fenêtre principale.
 - **Idées d'Utilities en attente** — Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
+- **Infobulles, suite** — Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur.
+- **Chat et confort** — Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis.
+- **Mini-jeux en vol** — Quiz, mot du jour et jeu de visée pendant les vols.
 
 ### Carte et voyage
 - **Notes de carte partagées** — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
@@ -19,20 +22,26 @@ _Prévu, pas encore commencé._
 - **Trajets qui suivent le terrain** — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
 - **Chemins appris partagés** — Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde.
 - **« Prends le bateau »** — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
+- **Couches de serveur** — La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule.
+- **Horaires des autres addons de bateaux** — Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent.
+- **Carte, suite** — Zones inexplorées assombries, niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
 
 ### Inventaire et économie
 - **Rangement, suite** — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - **Prix moyen de vente** — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
+- **Sacs pleins et camelote** — Sacs pleins : proposer de détruire le moins cher ; camelote marquée à la main ou par règles, vendue au marchand ; réapprovisionnement et réparation automatiques.
 
 ### Métiers
 - **Qui peut fabriquer… ?** — Recherche d'une recette sur tous les persos.
 - **Annonce de métier** — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
+- **Mise en valeur à l'approche** — Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse.
 
 ### Personnages
 - **Expérience, suite** — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
 - **Feu de camp, suite** — Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage).
 - **Feu de camp, plus tard** — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
 - **Compétences d'armes** — Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche.
+- **Groupe** — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe.
 
 ### Classes et combat
 - **Bénédictions du paladin** — Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels.
@@ -43,12 +52,21 @@ _Prévu, pas encore commencé._
 - **Gain d'un rang** — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
 - **Grimoires de démons** — Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard).
 - **Curseur retrouvé** — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
+- **Aides de combat** — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
 
 ### Donjons et quêtes
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Camps d'objectifs des quêtes** — D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans).
 - **Guidage de la quête suivie** — La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits.
+- **Quêtes automatiques** — Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
+
+## v1.62.6 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes > À venir : nouvelles idées (mise en valeur des nœuds à l'approche, couches de serveur, horaires des autres addons de bateaux, carte, quêtes automatiques, sacs pleins et camelote, infobulles, aides de combat, groupe, chat, mini-jeux en vol).
 
 ## v1.62.5 — 19/11/2026
 
