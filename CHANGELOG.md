@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.48.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.2 (messages longs passés à la ligne au lieu d'être coupés).
+
 ## v1.48.1 — 19/11/2026
 
 _Un /reload suffit._

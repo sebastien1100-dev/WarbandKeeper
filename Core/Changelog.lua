@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.48.2", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.2 (messages longs passés à la ligne au lieu d'être coupés).",
+        },
+    },
+    {
         version = "1.48.1", date = "19/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et opendata : 3 objets de butin de plus, 3 objets de butin désormais découverts, guides de métiers revus par wowtbc.gg.",

@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.5.1"
+CLIENT_VERSION = "1.5.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1724,7 +1724,8 @@ class App:
         for cls in PAGES:
             p = cls(self, main)
             self.pages[cls.key] = p
-        self.toastBar = tk.Label(self.root, text="", bg=C["surface2"], fg=C["text"], font=App.fonts["body"], padx=14, pady=8)
+        self.toastBar = tk.Label(self.root, text="", bg=C["surface2"], fg=C["text"], font=App.fonts["body"], padx=14, pady=8,
+                                 justify="center")
         self.current = None
 
     def show(self, key):
@@ -1739,12 +1740,14 @@ class App:
             b.configure(bg=C["surface2"] if k == key else C["sidebar"], fg=C["text"] if k == key else C["muted"])
 
     def toast(self, text, kind="muted"):
-        self.toastBar.configure(text=text, fg=C.get(kind, C["text"]))
+        # message long : à la ligne dans la largeur de la fenêtre, et affiché plus longtemps
+        wrap = max(300, self.root.winfo_width() - 80)
+        self.toastBar.configure(text=text, fg=C.get(kind, C["text"]), wraplength=wrap)
         self.toastBar.place(relx=0.5, rely=1.0, y=-18, anchor="s")
         self.toastBar.lift()
         if getattr(self, "_toastJob", None):
             self.root.after_cancel(self._toastJob)
-        self._toastJob = self.root.after(4200, self.toastBar.place_forget)
+        self._toastJob = self.root.after(max(4200, 60 * len(text)), self.toastBar.place_forget)
 
     def pick_dialog(self, installs):
         win = tk.Toplevel(self.root, bg=C["surface"])

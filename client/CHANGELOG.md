@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.5.2 — 19/11/2026
+
+### Corrections
+- Les messages en bas de la fenêtre (par exemple l'erreur de droits du jeton GitHub) étaient coupés de chaque côté : ils passent maintenant à la ligne et restent affichés plus longtemps quand ils sont longs.
+
 ## 1.5.1 — 19/11/2026
 
 ### Corrections
