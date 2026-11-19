@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.51.1", date = "19/11/2026",
+        changed = {
+            "HV, page Vendre : tes sacs en liste à gauche (icône, nom, quantité, valeur à l'HV), avec un filtre, les pastilles Tout / Favoris / Rangement / Cachés et la valeur totale ; molette pour défiler. Un objet caché se repropose d'un clic dans « Cachés ».",
+            "HV, page Vendre : une jauge montre où tombe ton prix (de bon marché à cher) face au moins cher des autres et à la moyenne de la semaine, et la ligne du dépôt dit ce que tu touches après la commission.",
+            "HV, page Vendre : la courbe des prix de l'objet sur 14 jours en bas de la colonne des enchères.",
+        },
+    },
+    {
         version = "1.51.0", date = "19/11/2026", restart = true,
         added = {
             "Druide, prêtre, mage, paladin : bouton « Buffer le suivant ». Il vise le joueur ami le plus proche qui n'a pas ton buff (toi, ton groupe, puis les joueurs autour), avec l'icône du buff et le nombre de joueurs à buffer ; le joueur visé est entouré sur sa plaque de nom. Un clic ou une touche (Raccourcis > Warband Keeper) lance le buff, puis passe au suivant.",
