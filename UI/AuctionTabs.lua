@@ -393,7 +393,6 @@ local function build(host)
             if self.back then self.back:Hide() end
         end
         if key == "cancel" then A:Query() end
-        if key == "scan" and UI.AHPanelEmbed then UI:AHPanelEmbed(self.views.scan) end
         self:Refresh()
     end
     function f:Close()
@@ -2564,31 +2563,179 @@ local function build(host)
     end
 
     -----------------------------------------------------------------------
-    -- Scan : le panneau d'avant, posé dans l'onglet
+    -- Scan et réglages : le scan à gauche (bouton, barre, chiffres, derniers scans), les réglages de l'HV
+    -- à droite en trois cartes (Vente, Fenêtre, Données). Mêmes réglages que la page Hôtel des ventes de
+    -- l'addon (ils changent ensemble).
     -----------------------------------------------------------------------
     local scv = CreateFrame("Frame", nil, f.content)
     scv:SetAllPoints(f.content)
     f.views.scan = scv
-    scv.note = UI:Text(scv, 11, C.muted); scv.note:SetPoint("TOPLEFT", 330, -10); scv.note:SetPoint("RIGHT", -10, 0)
+    local LW = 470
+    scv.scan = panelBox(scv, "Scan des prix")
+    scv.scan:SetPoint("TOPLEFT"); scv.scan:SetPoint("BOTTOMLEFT"); scv.scan:SetWidth(LW)
+    scv.scan.sub:SetText(T("tout l'hôtel des ventes"))
+    scv.go = UI:Button(scv.scan, "Scanner maintenant", 170, 34, "primary"); scv.go:SetPoint("TOPLEFT", 12, -34)
+    scv.go:SetScript("OnClick", function() S:Start() end)
+    scv.bar = CreateFrame("Frame", nil, scv.scan)
+    scv.bar:SetPoint("TOPLEFT", 196, -40); scv.bar:SetPoint("TOPRIGHT", -12, -40); scv.bar:SetHeight(8)
+    scv.bar.bg = UI:Rounded(scv.bar, 4, 0, "BACKGROUND", 1); scv.bar.bg:SetColor(C.border[1], C.border[2], C.border[3], 1)
+    scv.bar.fillF = CreateFrame("Frame", nil, scv.bar); scv.bar.fillF:SetPoint("TOPLEFT"); scv.bar.fillF:SetPoint("BOTTOMLEFT")
+    scv.bar.fill = UI:Rounded(scv.bar.fillF, 4, 0, "ARTWORK", 1)
+    scv.info = UI:Text(scv.scan, 10, C.muted); scv.info:SetPoint("TOPLEFT", 196, -54); scv.info:SetPoint("RIGHT", -12, 0)
+    scv.info:SetJustifyH("LEFT")
+    if scv.info.SetWordWrap then scv.info:SetWordWrap(true) end
+    scv.tiles = {}
+    local TW = math.floor((LW - 24 - 3 * 8) / 4)
+    for i = 1, 4 do
+        local t = CreateFrame("Frame", nil, scv.scan)
+        UI:Panel(t, 8, C.bg, C.border)
+        t:SetSize(TW, 52); t:SetPoint("TOPLEFT", 12 + (i - 1) * (TW + 8), -86)
+        t.l = UI:Text(t, 9, C.dim); t.l:SetPoint("TOPLEFT", 8, -8); t.l:SetPoint("RIGHT", -6, 0); t.l:SetJustifyH("LEFT")
+        t.v = UI:Text(t, 14, C.text); t.v:SetPoint("BOTTOMLEFT", 8, 8)
+        scv.tiles[i] = t
+    end
+    scv.histHead = UI:Text(scv.scan, 12); scv.histHead:SetPoint("TOPLEFT", 12, -154); scv.histHead:SetText(T("Derniers scans"))
+    scv.hrows = {}
+    for i = 1, 6 do
+        local r = CreateFrame("Frame", nil, scv.scan)
+        r:SetHeight(22); r:SetPoint("TOPLEFT", 12, -174 - (i - 1) * 24); r:SetPoint("TOPRIGHT", -12, -174 - (i - 1) * 24)
+        r.line = r:CreateTexture(nil, "BACKGROUND"); r.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.6)
+        r.line:SetPoint("TOPLEFT"); r.line:SetPoint("TOPRIGHT"); r.line:SetHeight(1)
+        r.a = UI:Text(r, 11, C.muted); r.a:SetPoint("LEFT", 2, 0)
+        r.b = UI:Text(r, 11); r.b:SetPoint("LEFT", 170, 0)
+        r.c = UI:Text(r, 11); r.c:SetPoint("RIGHT", -60, 0); r.c:SetJustifyH("RIGHT")
+        r.d = UI:Text(r, 11, C.muted); r.d:SetPoint("RIGHT", -2, 0); r.d:SetJustifyH("RIGHT")
+        r:Hide()
+        scv.hrows[i] = r
+    end
+    scv.note = UI:Text(scv.scan, 10, C.dim); scv.note:SetPoint("BOTTOMLEFT", 12, 12); scv.note:SetPoint("RIGHT", -12, 0)
     scv.note:SetJustifyH("LEFT")
     if scv.note.SetWordWrap then scv.note:SetWordWrap(true) end
-    scv.note:SetText(T("Le scan relève le prix de tout l'HV (un scan complet toutes les 15 minutes au plus). Ces prix servent partout : infobulles, valeur du compte, Rangement, prix proposé à la vente. Les alertes de prix préviennent quand un objet suivi passe sous ton prix."))
-    -- réglages de la vente
-    scv.opts = panelBox(scv, "Vente")
-    scv.opts:SetPoint("TOPLEFT", 330, -96); scv.opts:SetPoint("RIGHT", -10, 0); scv.opts:SetHeight(120)
-    local function opt(y, label, desc, get, set)
-        local t = UI:Toggle(scv.opts, get, set)
-        t:SetPoint("TOPLEFT", 12, y)
-        local l = UI:Text(scv.opts, 12); l:SetPoint("LEFT", t, "RIGHT", 10, 6); l:SetText(T(label))
-        local d = UI:Text(scv.opts, 10, C.muted); d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -2); d:SetPoint("RIGHT", scv.opts, "RIGHT", -12, 0)
-        d:SetJustifyH("LEFT"); d:SetText(T(desc))
+    scv.note:SetText(T("Le scan relève le prix de tout l'HV (un scan complet toutes les 15 minutes au plus). Ces prix servent partout : infobulles, valeur du compte, Rangement, prix proposé à la vente, alertes de prix."))
+
+    -- cartes de réglages : une ligne = libellé, description, commande à droite
+    local function settingsCard(title, rowsN, anchor)
+        local c = panelBox(scv, title)
+        if anchor then c:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -10); c:SetPoint("TOPRIGHT", anchor, "BOTTOMRIGHT", 0, -10)
+        else c:SetPoint("TOPLEFT", scv.scan, "TOPRIGHT", 10, 0); c:SetPoint("TOPRIGHT") end
+        c:SetHeight(34 + rowsN * 44)
+        c.y = -32
+        function c:Row(label, desc, ctl, w)
+            local l = UI:Text(self, 12); l:SetPoint("TOPLEFT", 12, self.y - 4); l:SetText(T(label))
+            local d
+            if desc then
+                d = UI:Text(self, 10, C.muted); d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -3); d:SetText(T(desc))
+                d:SetPoint("RIGHT", self, "RIGHT", -((w or 60) + 20), 0); d:SetJustifyH("LEFT")
+            end
+            ctl:SetParent(self); ctl:ClearAllPoints(); ctl:SetPoint("TOPRIGHT", -12, self.y - 2)
+            self.y = self.y - 44
+            return ctl, d
+        end
+        return c
+    end
+    scv.toggles = {}
+    local function tog(parent, get, set)
+        local t = UI:Toggle(parent, get, function(v) set(v); WK:NotifyChanged() end)
+        table.insert(scv.toggles, t)
         return t
     end
-    scv.t1 = opt(-34, "Mettre en vente au clavier", "Onglet Vente : Espace met en vente, S passe, Haut / Bas changent de palier de prix.",
-        function() return cfg().postKeys end, function(v) cfg().postKeys = v end)
-    scv.t2 = opt(-78, "Demander avant une vente à perte", "Un prix sous le prix du marchand, ou bien sous le cours (un zéro oublié), demande confirmation.",
-        function() return cfg().askBad ~= false end, function(v) cfg().askBad = v end)
-    function scv:Refresh() self.t1:Refresh(); self.t2:Refresh() end
+    -- Vente
+    local cv1 = settingsCard("Vente", 4)
+    cv1:Row("Mettre en vente au clavier", "Espace, S, Haut / Bas sur la page Vendre",
+        tog(cv1, function() return cfg().postKeys end, function(v) cfg().postKeys = v end))
+    cv1:Row("Demander avant une vente à perte", "Sous le marchand ou un zéro oublié",
+        tog(cv1, function() return cfg().askBad ~= false end, function(v) cfg().askBad = v end))
+    scv.under = UI:NumberInput(cv1, 60, 24, "1")
+    scv.under.onChange = function(txt, user) if user then A.Config().undercut = math.max(1, tonumber(txt) or 1) end end
+    cv1:Row("Marge sous le plus bas", "En pièces de cuivre", scv.under, 60)
+    local DUR2 = { { 1, _G.AUCTION_DURATION_ONE or "2 h" }, { 2, _G.AUCTION_DURATION_TWO or "8 h" }, { 3, _G.AUCTION_DURATION_THREE or "24 h" } }
+    scv.dur = UI:Segmented(cv1, DUR2, function(v) cfg().postDur = v end, 24)
+    cv1:Row("Durée par défaut", nil, scv.dur, 160)
+    -- Fenêtre
+    local cv2 = settingsCard("Fenêtre", 3, cv1)
+    cv2:Row("Fenêtre Warband Keeper", "Remplace celle du jeu chez l'encanteur",
+        tog(cv2, function() return S:Config().tabs ~= false end, function(v) S:Config().tabs = v end))
+    scv.openOn = UI:Segmented(cv2, { { "last", "Dernière page" }, { "browse", "Parcourir" }, { "sell", "Vendre" } }, function(v) cfg().openOn = v end, 24)
+    cv2:Row("Ouvrir sur", nil, scv.openOn, 240)
+    cv2:Row("Scan complet à l'ouverture", "Dès que le serveur l'autorise",
+        tog(cv2, function() return S:Config().auto end, function(v) S:Config().auto = v end))
+    -- Données
+    local cv3 = settingsCard("Données", 3, cv2)
+    scv.wipe = UI:Button(cv3, "Repartir de zéro", nil, 24, "secondary")
+    scv.wipe:SetScript("OnClick", function(b)
+        -- deux clics : le premier demande confirmation
+        if not b.armed then
+            b.armed = true; b:SetLabel(T("Sûr ? Clique encore")); b:SetWidth(b.label:GetStringWidth() + 28)
+            C_Timer.After(4, function() b.armed = nil; b:SetLabel(T("Repartir de zéro")); b:SetWidth(b.label:GetStringWidth() + 28) end)
+            return
+        end
+        b.armed = nil
+        local d = S:Data(); d.items = {}; d.last, d.lastFull, d.lastCount, d.scans = nil, nil, nil, nil
+        b:SetLabel(T("Repartir de zéro")); b:SetWidth(b.label:GetStringWidth() + 28)
+        WK:NotifyChanged(); f:Refresh()
+    end)
+    local _, dataDesc = cv3:Row("Prix relevés", " ", scv.wipe, 150)
+    scv.dataDesc = dataDesc
+    scv.keep = UI:Segmented(cv3, { { 14, "14 j" }, { 30, "30 j" }, { 90, "90 j" } }, function(v) S:Config().keepDays = v end, 24)
+    cv3:Row("Garder l'historique", "Courbes des prix (pages Prix et Parcourir)", scv.keep, 150)
+    cv3:Row("Valeur des sacs et du courrier", "Sous les sacs du jeu et au survol d'un courrier",
+        tog(cv3, function() return S:Config().bagValue ~= false end, function(v) S:Config().bagValue = v; S:Config().mailValue = v end))
+
+    function scv:Refresh()
+        local d = S:Data()
+        local sc = S.scan
+        local r, g, b = UI:Accent()
+        self.bar.fill:SetColor(r, g, b, 1)
+        local frac = sc and ((sc.total and sc.total > 0) and math.min(1, (sc.done or 0) / sc.total) or 0.05)
+            or (d.last and math.max(0.05, 1 - math.min(1, (time() - d.last) / 86400)) or 0)
+        self.bar.fillF:SetWidth(math.max(1, (self.bar:GetWidth() or 240) * frac))
+        local cd = S:FullCooldown()
+        self.info:SetText(sc and T("scan en cours…") or ((d.lastFull and string.format(T("dernier scan complet %s"), UI:Ago(d.lastFull)) or T("pas encore de scan complet"))
+            .. "  ·  " .. (cd > 0 and string.format(T("prochain possible dans %d min"), math.ceil(cd / 60)) or T("possible maintenant"))))
+        self.go:SetEnabled(sc == nil)
+        -- chiffres
+        local today = math.floor(time() / 86400)
+        local nToday = 0
+        for _, e in pairs(d.items) do if e.h and e.h[today] then nToday = nToday + 1 end end
+        local nAlert = 0
+        for id, max in pairs(A.Config().alerts or {}) do
+            local p = S:Price(id)
+            if p and p <= max then nAlert = nAlert + 1 end
+        end
+        local last = d.scans and d.scans[1]
+        local vals = {
+            { T("Objets connus"), tostring(S:Count()) },
+            { T("Relevés aujourd'hui"), tostring(nToday) },
+            { T("Alertes déclenchées"), tostring(nAlert) },
+            { T("Durée du scan"), (last and last.dur) and (last.dur >= 60 and string.format("%d min", math.floor(last.dur / 60)) or (last.dur .. " s")) or "-" },
+        }
+        for i, t in ipairs(self.tiles) do
+            t.l:SetText(UI:Upper(vals[i][1])); t.v:SetText(vals[i][2])
+            t.v:SetTextColor(unpack((i == 3 and nAlert > 0) and C.positive or C.text))
+        end
+        for i, row in ipairs(self.hrows) do
+            local e = d.scans and d.scans[i]
+            if e then
+                row.a:SetText(date("%d/%m %H:%M", e.at))
+                row.b:SetText(e.full and T("complet") or T("pages"))
+                row.c:SetText(string.format(T("%d objets"), e.n or 0))
+                row.d:SetText(e.dur and (e.dur >= 60 and string.format("%d min", math.floor(e.dur / 60)) or (e.dur .. " s")) or "")
+                row:Show()
+            else row:Hide() end
+        end
+        self.histHead:SetText(d.scans and T("Derniers scans") or T("Derniers scans : aucun pour l'instant"))
+        -- réglages
+        for _, t in ipairs(self.toggles) do t:Refresh() end
+        if not self.under.edit:HasFocus() then self.under:SetText(tostring((A.Config and A.Config().undercut) or 1)) end
+        self.dur:Select(cfg().postDur)
+        self.openOn:Select(cfg().openOn or "last")
+        self.keep:Select(S:Config().keepDays or 30)
+        if self.dataDesc and self.dataDesc.SetText then
+            local realm = GetRealmName and GetRealmName() or ""
+            local fac = UnitFactionGroup and UnitFactionGroup("player") or ""
+            self.dataDesc:SetText(string.format(T("%d objets · %s · %s"), S:Count(), realm, fac))
+        end
+    end
 
     function f:Refresh()
         if not self:IsShown() then return end
@@ -2662,7 +2809,10 @@ local function attach()
     local sw, sh = UIParent:GetWidth(), UIParent:GetHeight()
     view:SetSize(math.min(WIN_W, sw - 20), math.min(WIN_H, sh - 40))
     view.gameMode = false
-    view:Open(cfg().ahTab and view.views[cfg().ahTab] and cfg().ahTab or "browse")
+    -- page d'ouverture : la dernière, ou celle choisie (Scan et réglages > Fenêtre)
+    local o = cfg().openOn
+    local key = (o == "browse" or o == "sell") and o or (cfg().ahTab and view.views[cfg().ahTab] and cfg().ahTab) or "browse"
+    view:Open(key)
 end
 WK:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.15, attach) end)
 WK:On("AUCTION_HOUSE_CLOSED", function()

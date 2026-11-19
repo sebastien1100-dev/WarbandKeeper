@@ -11,7 +11,7 @@ local T = function(s) return WK.T(s) end
 -- Données : WK.DB.global.ah.realms["Royaume-Faction"].items[itemID] = { p, q, t, h = { [jour] = prix } }
 -- Réglages : WK.DB.global.ah (tooltip, stack, auto, panel).
 
-local DEFAULTS = { tooltip = true, stack = true, auto = false, panel = true, bagValue = true, mailValue = true }
+local DEFAULTS = { tooltip = true, stack = true, auto = false, panel = true, bagValue = true, mailValue = true, keepDays = 30 }
 local HISTORY_DAYS = 14
 local FULL_COOLDOWN = 15 * 60
 local CHUNK = 400 -- enchères lues par image pendant le scan complet
@@ -163,6 +163,8 @@ local function finish(ok, why)
         local d = M:Data()
         local now = time()
         local day = math.floor(now / 86400)
+        -- historique gardé : réglage keepDays (14, 30 ou 90 jours)
+        local keep = M:Config().keepDays or HISTORY_DAYS
         local n = 0
         for id, s in pairs(sc.seen) do
             n = n + 1
@@ -170,11 +172,11 @@ local function finish(ok, why)
             e.p, e.q, e.t = s[1], s[2], now
             e.h = e.h or {}
             if not e.h[day] or s[1] < e.h[day] then e.h[day] = s[1] end
-            for dd in pairs(e.h) do if dd <= day - HISTORY_DAYS then e.h[dd] = nil end end
+            for dd in pairs(e.h) do if dd <= day - keep then e.h[dd] = nil end end
             -- quantité en vente ce jour-là (la plus grande vue), pour la courbe des prix
             e.hq = e.hq or {}
             e.hq[day] = math.max(e.hq[day] or 0, s[2] or 0)
-            for dd in pairs(e.hq) do if dd <= day - HISTORY_DAYS then e.hq[dd] = nil end end
+            for dd in pairs(e.hq) do if dd <= day - keep then e.hq[dd] = nil end end
             d.items[id] = e
         end
         if sc.full then
@@ -183,6 +185,10 @@ local function finish(ok, why)
         d.last = now
         if sc.full then d.lastFull = now end
         d.lastCount = n
+        -- derniers scans (page Scan et réglages de la fenêtre d'HV) : date, complet ou non, objets, durée
+        d.scans = d.scans or {}
+        table.insert(d.scans, 1, { at = now, full = sc.full and true or false, n = n, dur = sc.started and math.floor(GetTime() - sc.started + 0.5) or nil })
+        while #d.scans > 6 do table.remove(d.scans) end
         WK:Print(string.format(T("Scan de l'HV terminé : %d objets, %d enchères."), n, sc.done or 0))
         if WK.modules.AHSell then pcall(WK.modules.AHSell.CheckAlerts, WK.modules.AHSell) end -- alertes de prix
         WK:NotifyChanged()

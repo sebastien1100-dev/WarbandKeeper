@@ -26,6 +26,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- HV, Scan et réglages : à gauche le scan (« Scanner maintenant », barre, quand le prochain scan complet est possible, objets connus, relevés du jour, alertes déclenchées, durée du dernier scan) et la liste des derniers scans.
+- HV, Scan et réglages : à droite trois cartes. Vente (vente au clavier, garde-fou, marge sous le plus bas, durée par défaut), Fenêtre (notre fenêtre, page d'ouverture : la dernière, Parcourir ou Vendre, scan complet à l'ouverture), Données (prix relevés et « Repartir de zéro » en deux clics, historique gardé 14, 30 ou 90 jours, valeur des sacs et du courrier). Ce sont les mêmes réglages que la page Hôtel des ventes de l'addon.
+
+### Modifications
+- HV : l'historique des prix est gardé 30 jours (14 avant) : la courbe sur 30 jours se remplit enfin.
+- HV, Scan et réglages : l'ancien panneau (scan, alertes, listes, ventes) n'y est plus posé ; tout est dans les pages de la fenêtre.
+
 ## v1.55.1 — 19/11/2026
 
 _Un /reload suffit._

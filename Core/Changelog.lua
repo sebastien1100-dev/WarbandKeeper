@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.0", date = "19/11/2026",
+        added = {
+            "HV, Scan et réglages : à gauche le scan (« Scanner maintenant », barre, quand le prochain scan complet est possible, objets connus, relevés du jour, alertes déclenchées, durée du dernier scan) et la liste des derniers scans.",
+            "HV, Scan et réglages : à droite trois cartes. Vente (vente au clavier, garde-fou, marge sous le plus bas, durée par défaut), Fenêtre (notre fenêtre, page d'ouverture : la dernière, Parcourir ou Vendre, scan complet à l'ouverture), Données (prix relevés et « Repartir de zéro » en deux clics, historique gardé 14, 30 ou 90 jours, valeur des sacs et du courrier). Ce sont les mêmes réglages que la page Hôtel des ventes de l'addon.",
+        },
+        changed = {
+            "HV : l'historique des prix est gardé 30 jours (14 avant) : la courbe sur 30 jours se remplit enfin.",
+            "HV, Scan et réglages : l'ancien panneau (scan, alertes, listes, ventes) n'y est plus posé ; tout est dans les pages de la fenêtre.",
+        },
+    },
+    {
         version = "1.55.1", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.2 (liste des persos de l'accueil alignée en colonnes).",
