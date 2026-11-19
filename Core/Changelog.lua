@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.15", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : il trouve maintenant le réglage des plaques de nom amies sous son nom sur ton client (l'ancien nom n'existe pas sur WoW Forever). Et ta cible, le joueur survolé à la souris et ta focalisation sont aussi proposés : le bouton marche même sans plaques de nom.",
+            "/wk buff : dit quel réglage des plaques amies a été trouvé et sa valeur, ou qu'il est introuvable (Maj+V pour les montrer).",
+        },
+    },
+    {
         version = "1.77.14", date = "19/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : il ne voyait aucun joueur autour de toi hors de ton groupe. Les plaques de nom amies n'étaient jamais allumées, car l'ancienne façon de changer un réglage du jeu n'existe plus sur WoW Forever. L'addon passe maintenant par la nouvelle (C_CVar).",

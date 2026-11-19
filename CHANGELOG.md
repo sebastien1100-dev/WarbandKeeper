@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.15 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton « Buffer le suivant » : il trouve maintenant le réglage des plaques de nom amies sous son nom sur ton client (l'ancien nom n'existe pas sur WoW Forever). Et ta cible, le joueur survolé à la souris et ta focalisation sont aussi proposés : le bouton marche même sans plaques de nom.
+- /wk buff : dit quel réglage des plaques amies a été trouvé et sa valeur, ou qu'il est introuvable (Maj+V pour les montrer).
+
 ## v1.77.14 — 19/11/2026
 
 _Un /reload suffit._

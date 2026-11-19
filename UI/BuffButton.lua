@@ -87,7 +87,8 @@ end
 -- Joueurs à buffer, dans l'ordre : toi, ton groupe, puis les plaques de nom des joueurs amis
 local function candidates()
     local c = cfg() or {}
-    local units, seen, out = { "player" }, {}, {}
+    -- toi, puis ta cible, le joueur survolé et ta focalisation (marche même sans plaques de nom)
+    local units, seen, out = { "player", "target", "mouseover", "focus" }, {}, {}
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
@@ -260,6 +261,15 @@ function UI:RefreshBuffButton()
     end
 end
 
+-- Nom du réglage des plaques de nom des joueurs amis : il change selon les clients ; le premier qui existe
+local PLATE_CVARS = { "nameplateShowFriends", "nameplateShowFriendlyPlayers" }
+local function plateCVar()
+    for _, n in ipairs(PLATE_CVARS) do
+        if WK.GetCVar(n) ~= nil then return n end
+    end
+end
+UI.BuffPlateCVar = plateCVar
+
 -- Plaques de nom des joueurs amis : allumées hors combat quand le bouton sert (valeur d'avant rendue sinon)
 function UI:SyncBuffPlates()
     local c = cfg()
@@ -267,13 +277,15 @@ function UI:SyncBuffPlates()
     local want = c and WK.BUFF_CLASSES[myClass() or ""] and c.buffAround ~= false and c.buffPlates ~= false and WK:FeatureOn("classes")
     local g = WK.DB.global
     if want then
-        local cur = WK.GetCVar("nameplateShowFriends")
-        if cur ~= "1" then
+        local cv = plateCVar()
+        local cur = cv and WK.GetCVar(cv)
+        if cv and cur ~= "1" then
             g.buffPlatesOld = g.buffPlatesOld or cur or "0"
-            UI.buffPlatesSet = WK.SetCVar("nameplateShowFriends", "1")
+            g.buffPlatesCVar = cv
+            UI.buffPlatesSet = WK.SetCVar(cv, "1")
         end
     elseif g.buffPlatesOld then
-        WK.SetCVar("nameplateShowFriends", g.buffPlatesOld)
+        WK.SetCVar(g.buffPlatesCVar or plateCVar() or "nameplateShowFriends", g.buffPlatesOld)
         g.buffPlatesOld = nil
     end
 end
@@ -299,7 +311,7 @@ function UI:BuffDiag()
     local function yn(v) return v and "oui" or "non" end
     table.insert(out, string.format("classe %s (buffe : %s) · réglage « Buffer autour » : %s · module Classes : %s · plaques amies : %s (réglage %s)",
         cls, yn(WK.BUFF_CLASSES[cls]), yn(c and c.buffAround ~= false), yn(WK:FeatureOn("classes")),
-        tostring(WK.GetCVar("nameplateShowFriends")), yn(c and c.buffPlates ~= false))
+        (plateCVar() and (plateCVar() .. " = " .. tostring(WK.GetCVar(plateCVar()))) or "réglage introuvable (Maj+V pour les montrer)"), yn(c and c.buffPlates ~= false))
         .. (UI.buffPlatesSet == false and " · le jeu a refusé de les allumer" or ""))
     local inInst = IsInInstance and select(1, IsInInstance())
     table.insert(out, string.format("en combat : %s · monture : %s (permis : %s) · instance : %s (permis : %s) · mort : %s · JcJ : %s",
@@ -307,7 +319,7 @@ function UI:BuffDiag()
         yn(UnitIsDeadOrGhost("player")), yn(UnitIsPVP and UnitIsPVP("player"))))
     table.insert(out, "affichage permis : " .. yn(shouldShow()) .. " · bouton : " .. yn(btn and btn:IsShown()))
     -- joueurs vus, avec la raison quand ils sont écartés
-    local units = { "player" }
+    local units = { "player", "target", "mouseover", "focus" }
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then for i = 1, 4 do table.insert(units, "party" .. i) end end
     local nplates = 0
     if C_NamePlate and C_NamePlate.GetNamePlates then
