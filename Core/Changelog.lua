@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.4", date = "19/11/2026",
+        changed = {
+            "Patch notes > À venir : nouvelles idées autour des maîtres de classe (sorts à apprendre par perso, panneau chez le maître, rappel au passage de niveau, gain d'un rang, grimoires de démons, compétences d'armes).",
+        },
+    },
+    {
         version = "1.62.3", date = "19/11/2026",
         changed = {
             "Patch notes : maintenant dans les Options, section « Patch notes » sous Profils. L'icône en haut à droite de la fenêtre est retirée ; le point qui signale des notes pas encore lues passe sur l'icône des Options. /wk notes et « Voir les patch notes » ouvrent directement cette section.",
@@ -3532,6 +3538,12 @@ WK.Roadmap = {
     { theme = "char", title = "Feu de camp, plus tard", text = "Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé." },
     { theme = "class", title = "Bénédictions du paladin", text = "Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels." },
     { theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
+    { theme = "class", title = "Sorts de classe à apprendre", text = "Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe." },
+    { theme = "class", title = "Panneau chez le maître de classe", text = "Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise)." },
+    { theme = "class", title = "Sorts au passage de niveau", text = "Rappel « N sorts à apprendre » dans la pile avec « Guider vers le maître », et alerte dans « À faire »." },
+    { theme = "class", title = "Gain d'un rang", text = "Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…)." },
+    { theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
+    { theme = "char", title = "Compétences d'armes", text = "Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche." },
     { theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
     { theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },

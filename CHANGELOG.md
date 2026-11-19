@@ -30,15 +30,28 @@ _Prévu, pas encore commencé._
 - **Expérience, suite** — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
 - **Feu de camp, suite** — Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage).
 - **Feu de camp, plus tard** — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
+- **Compétences d'armes** — Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche.
 
 ### Classes et combat
 - **Bénédictions du paladin** — Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels.
 - **Réticule au centre** — Pour le combat à la souris, d'une autre couleur hors de portée.
+- **Sorts de classe à apprendre** — Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe.
+- **Panneau chez le maître de classe** — Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise).
+- **Sorts au passage de niveau** — Rappel « N sorts à apprendre » dans la pile avec « Guider vers le maître », et alerte dans « À faire ».
+- **Gain d'un rang** — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
+- **Grimoires de démons** — Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard).
 - **Curseur retrouvé** — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
 
 ### Donjons et quêtes
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
+
+## v1.62.4 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes > À venir : nouvelles idées autour des maîtres de classe (sorts à apprendre par perso, panneau chez le maître, rappel au passage de niveau, gain d'un rang, grimoires de démons, compétences d'armes).
 
 ## v1.62.3 — 19/11/2026
 
