@@ -28,7 +28,7 @@ local function RuleEditor(page, parent, mode, top)
     local isMail = mode == "mail"
 
     local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
-    -- Les réglages (envoi / dépôt automatique, fermeture, tri) sont dans Options > Courrier.
+    -- Les réglages (envoi / dépôt automatique, fermeture, tri) sont derrière la roue dentée de la page.
     -- Nouvelle règle
     local ADD_H = 132
     local add = UI:Card(parent, "Nouvelle règle")
@@ -318,7 +318,7 @@ local function Reception(page, parent, top)
 end
 
 UI:RegisterPage({
-    key = "mail", order = 7, nav = "Règles d'envoi",
+    key = "mail", order = 7, nav = "Courrier",
     title = "Courrier et banque",
     subtitle = "Envoi du farm à tes persos, dépôt en banque et récupération du courrier.",
     count = function()
@@ -330,12 +330,14 @@ UI:RegisterPage({
         self.tab = "send"
         self.tabs = {}
         local frames = {}
+        local seg
         local function setTab(k)
             self.tab = k
+            if self.gp and self.gp:IsOpen() then self.gp:Open(false) end
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
-        local seg = UI:Segmented(p, { { "send", "Envoi" }, { "bank", "Dépôt banque" }, { "receive", "Réception" } }, setTab, 32)
+        seg = UI:Segmented(p, { { "send", "Envoi" }, { "bank", "Dépôt banque" }, { "receive", "Réception" } }, setTab, 32)
         function self:SetTab(k) seg:Select(k); setTab(k) end
         seg:SetPoint("TOPLEFT")
         seg:Select("send")
@@ -345,14 +347,13 @@ UI:RegisterPage({
             f:SetShown(key == "send")
             frames[key] = f
         end
-        -- Raccourci vers les réglages (Options > Courrier) et état de l'automatisme de l'onglet.
-        local settings = UI:Button(p, "Réglages", nil, 30, "secondary", "gear")
-        settings:SetPoint("TOPRIGHT", 0, -1)
-        settings.tooltip = "Envoi, réception et dépôt automatiques : Options > Courrier."
-        settings:SetScript("OnClick", function()
-            UI:ShowPage("options")
-            UI.pages.options:ShowSection("mail")
-        end)
+        -- Roue dentée : réglages du courrier (envoi, réception, dépôt en banque ; cartes reprises d'Options),
+        -- et état de l'automatisme de l'onglet.
+        self.gp = UI:PageGear(p, { title = "Réglages du courrier", top = 46,
+            cards = function() return UI:SectionCards("options", "mail") end,
+            onToggle = function(open) seg:Select(not open and self.tab or nil); self.status:SetShown(not open) end }, self)
+        local settings = self.gp.gear
+        settings:SetPoint("TOPRIGHT", 0, 0)
         self.status = UI:Text(p, 11, C.muted)
         self.status:SetPoint("RIGHT", settings, "LEFT", -12, 0)
         self.status:SetJustifyH("RIGHT")
@@ -363,6 +364,7 @@ UI:RegisterPage({
     end,
 
     Refresh = function(self)
+        if self.gp and self.gp:IsOpen() then self.gp:Refresh() end
         local t = self.tabs[self.tab]
         if t then t:Refresh() end
         local mail, bank = WK.DB.global.mail, WK.DB.global.bank

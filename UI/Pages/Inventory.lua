@@ -126,6 +126,7 @@ UI:RegisterPage({
             b:SetScript("OnClick", function(s)
                 self.char = s.key
                 cfg.invChar = s.key
+                if self.gp and self.gp:IsOpen() then self.gp:Open(false) end
                 self:Refresh()
             end)
             return b
@@ -140,13 +141,13 @@ UI:RegisterPage({
 
         self.whereSeg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
-        self.whereSeg:SetPoint("TOPRIGHT")
+        self.whereSeg:SetPoint("TOPRIGHT", -40, 0)
         self.whereSeg:Select("all")
         -- Objets oubliés : depuis combien de jours
         self.oldDays = 14
         self.oldSeg = UI:Segmented(p, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
             function(d) self.oldDays = d; self:Refresh() end, 34)
-        self.oldSeg:SetPoint("TOPRIGHT")
+        self.oldSeg:SetPoint("TOPRIGHT", -40, 0)
         self.oldSeg:Select(14)
         self.oldSeg:Hide()
 
@@ -166,6 +167,13 @@ UI:RegisterPage({
         self.empty:SetPoint("CENTER", scroll, "CENTER")
         self:BuildLocks(p, x0)
         self:BuildStash(p, x0)
+        -- Roue dentée : réglages des objets verrouillés (règles, protection) et du rangement (perso HV)
+        self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1,
+            cards = function() return { self.lockRules, self.lockSets, self.stashSets } end }, self)
+        self.gp.gear:SetPoint("TOPRIGHT")
+        self.gp.overlay:ClearAllPoints()
+        self.gp.overlay:SetPoint("TOPLEFT", x0, -42)
+        self.gp.overlay:SetPoint("BOTTOMRIGHT")
         -- consommables conseillés (UI/ProfPanels.lua)
         self.prepPane = UI:BuildPrepPane(p)
         self.prepPane:SetPoint("TOPLEFT", x0, 0)
@@ -720,8 +728,7 @@ UI:RegisterPage({
         if total == 0 then y = y + 24 end
         self.stashList:ClearAllPoints(); self.stashList:SetPoint("TOPLEFT", 0, 0); self.stashList:SetSize(W, y + 10)
         local ly = y + 10 + 12
-        self.stashSets:ClearAllPoints(); self.stashSets:SetPoint("TOPLEFT", 0, -ly); self.stashSets:SetWidth(W)
-        ly = ly + self.stashSets:GetHeight() + 10
+        -- (réglages « Perso HV » : roue dentée de la page)
         self.stashPane:SetContentHeight(ly)
     end,
 
@@ -788,10 +795,7 @@ UI:RegisterPage({
         if #list == 0 then y = y + 24 end
         self.lockList:ClearAllPoints(); self.lockList:SetPoint("TOPLEFT", 0, 0); self.lockList:SetSize(W, y + 10)
         local ly = y + 10 + 12
-        self.lockRules:ClearAllPoints(); self.lockRules:SetPoint("TOPLEFT", 0, -ly); self.lockRules:SetWidth(W)
-        ly = ly + self.lockRules:GetHeight() + 12
-        self.lockSets:ClearAllPoints(); self.lockSets:SetPoint("TOPLEFT", 0, -ly); self.lockSets:SetWidth(W)
-        ly = ly + self.lockSets:GetHeight() + 10
+        -- (règles automatiques et protection : roue dentée de la page)
         self.lockPane:SetContentHeight(ly)
     end,
 
@@ -896,6 +900,7 @@ UI:RegisterPage({
     end,
 
     Refresh = function(self)
+        if self.gp and self.gp:IsOpen() then self.gp:Refresh() end
         self:RefreshTabs()
         self.bags:Reset(); self.slots:Reset(); self.lastList = nil
         local chars = WK.DB.global.characters

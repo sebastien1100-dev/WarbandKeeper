@@ -59,11 +59,33 @@ UI:RegisterPage({
         self.tabSeg:SetPoint("TOPLEFT")
         local charOpts = charOptions()
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
-        self.charDd:SetPoint("TOPRIGHT")
+        self.charDd:SetPoint("TOPRIGHT", -38, 0)
+        -- roue dentée : réglages des donjons (panneau, alertes, chrono)
+        local dc = D:Config()
+        local scard = UI:Card(p, T("Réglages des donjons"))
+        scard:SetHeight(40 + 4 * 46 + 8)
+        local dtog = {}
+        local function drow(i, label, desc, field, after)
+            local t = UI:Toggle(scard, function() return dc[field] end, function(v) dc[field] = v; if after then after() end; WK:NotifyChanged() end)
+            table.insert(dtog, t)
+            UI:SettingRow(scard, -40 - (i - 1) * 46, label, desc, t, 80)
+        end
+        drow(1, "Panneau à côté de la carte", "En donjon : boss, butin et parcours collés à la carte du monde (aussi /wk donjon).", "panel")
+        drow(2, "Alerte en entrant", "Entrée dans un donjon qui contient des objets de ta liste d'envies.", "alertEnter")
+        drow(3, "Alerte de butin", "Un objet de ta liste d'envies vient de tomber.", "alertDrop")
+        drow(4, "Chrono à l'écran", "Temps du passage et écart avec ton record, déplaçable en mode édition.", "timer",
+            function() if UI.RefreshDungeonTimer then UI:RefreshDungeonTimer() end end)
+        self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1,
+            cards = function() for _, t in ipairs(dtog) do t:Refresh() end; return { scard } end,
+            onToggle = function(open)
+                self.tabSeg:SetShown(not open); self.charDd:SetShown(not open); if self.ofLabel then self.ofLabel:SetShown(not open) end
+            end }, self)
+        self.gp.gear:SetPoint("TOPRIGHT")
         self.charDd:Select(self.viewKey)
         local of = UI:Text(p, 11, C.muted)
         of:SetPoint("RIGHT", self.charDd, "LEFT", -8, 0)
         of:SetText(T("Pour"))
+        self.ofLabel = of
 
         -- colonne des donjons (groupes repliables, recherche)
         local lc = UI:Card(p)

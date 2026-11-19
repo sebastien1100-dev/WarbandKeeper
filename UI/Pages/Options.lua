@@ -71,6 +71,9 @@ UI:RegisterPage({
         end
         local function card(title, h, subtitle)
             local c = UI:Card(root, title, subtitle)
+            current.cards = current.cards or {}
+            table.insert(current.cards, c)
+            c.cardKey = title
             c:SetSize(W, h)
             c:SetPoint("TOPLEFT", 0, -y)
             c:SetPoint("TOPRIGHT", 0, -y)
@@ -79,17 +82,15 @@ UI:RegisterPage({
         end
         function self:ShowSection(key)
             if key == "theme" then key = "look" end -- ancienne section, fusionnée dans Apparence
-            if not self.sections[key] then key = "general" end
+            if not self.sections[key] or not self.sectionButtons[key] then key = "general" end
             cfg.optSection = key
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
         local SECTIONS = {
-            { "general", "Général", "home", "Langue, minimap, combat" },
-            { "prices", "Prix", "coin", "Source des prix" },
-            { "mail", "Courrier", "mail", "Envoi, réception, dépôt" },
-            { "glow", "Récolte", "filter", "Coins de récolte" },
-            { "alerts", "Alertes", "clock", "Banque et courrier" },
+            { "general", "Général", "home", "Langue, infobulles, minimap" },
+            -- Prix, Courrier, Récolte, Alertes : leurs cartes sont reprises par la page Hôtel des ventes,
+            -- la page Courrier, les réglages des métiers et QoL > Général > Alertes (sections cachées).
             { "look", "Apparence", "logo", "Couleurs, police, taille" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
@@ -192,12 +193,29 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
-        local ttCard = card("Infobulles", 196)
+        -- Infobulles : toutes les lignes que l'addon ajoute aux infobulles, à un seul endroit
+        local ttCard = card("Infobulles", 40 + 8 * 54 + 8, "tout ce que l'addon ajoute aux infobulles")
+        local function ttRow(yy, label, desc, get, set)
+            local t = UI:Toggle(ttCard, get, set)
+            self.ttToggles = self.ttToggles or {}
+            table.insert(self.ttToggles, t)
+            UI:SettingRow(ttCard, yy, label, desc, t, 80)
+        end
+        local PHc = function() return WK.modules.ProfHelp:Config() end
+        ttRow(-202, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
+            function() return PHc().deTip end, function(v) PHc().deTip = v end)
+        ttRow(-256, "Prix de l'hôtel des ventes", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.",
+            function() return WK.modules.AHScan:Config().tooltip end, function(v) WK.modules.AHScan:Config().tooltip = v end)
+        ttRow(-310, "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.",
+            function() return WK.modules.AHScan:Config().stack end, function(v) WK.modules.AHScan:Config().stack = v end)
+        ttRow(-364, "Quêtes du donneur", "Au survol d'un PNJ : ses quêtes que ce perso n'a pas encore faites.",
+            function() return WK.modules.Quests:Config().tooltip end, function(v) WK.modules.Quests:Config().tooltip = v; WK:NotifyChanged() end)
+        ttRow(-418, "Rares", "Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué.",
+            function() return WK.modules.Rares:Config().tooltip end, function(v) WK.modules.Rares:Config().tooltip = v end)
         UI:SettingRow(ttCard, -94, "Police fine pour les infobulles du jeu", "Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon.",
             UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
-        local ttGo = UI:Button(ttCard, "Réglages des métiers", nil, 28, "secondary", "gear")
-        ttGo:SetScript("OnClick", function() UI:OpenProfSettings() end)
-        UI:SettingRow(ttCard, -40, "Métiers dans l'infobulle", "Montée des métiers et valeur de désenchantement : Métiers > un métier > roue dentée.", ttGo, ttGo:GetWidth())
+        ttRow(-40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
+            function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end)
         UI:SettingRow(ttCard, -148, "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
             UI:Toggle(ttCard, function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end), 80)
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
@@ -231,6 +249,13 @@ UI:RegisterPage({
             UI.frame:ClearAllPoints()
             UI.frame:SetPoint("CENTER")
         end)
+        local winCard = card("Combat", 96)
+        self.combatToggle = UI:Toggle(winCard,
+            function() return cfg.closeInCombat end,
+            function(v) cfg.closeInCombat = v end)
+        UI:SettingRow(winCard, -40, "Fermer la fenêtre en combat",
+            "Au début d'un combat. La mini-fenêtre de la session de farm reste affichée.", self.combatToggle, 80)
+        -- (affichée dans QoL > Général > Alertes, qui la reprend : dernière de la section)
         local loginCard = card("Rappels à la connexion", 146)
         self.loginToggle = UI:Toggle(loginCard,
             function() return cfg.loginPopup ~= false end,
@@ -244,12 +269,6 @@ UI:RegisterPage({
             UI:Slider(loginCard, 200, 0, 60, 1,
                 function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
                 function(v) cfg.loginPopupTime = v end, "%d s"), 220)
-        local winCard = card("Combat", 96)
-        self.combatToggle = UI:Toggle(winCard,
-            function() return cfg.closeInCombat end,
-            function(v) cfg.closeInCombat = v end)
-        UI:SettingRow(winCard, -40, "Fermer la fenêtre en combat",
-            "Au début d'un combat. La mini-fenêtre de la session de farm reste affichée.", self.combatToggle, 80)
 
         -- Courrier : envoi, réception, dépôt en banque ---------------------------
         section("mail")
@@ -405,6 +424,7 @@ UI:RegisterPage({
         self.alertToggle:Refresh()
         for _, t in ipairs(self.mailToggles) do t:Refresh() end
         for _, t in ipairs(self.glowToggles) do t:Refresh() end
+        for _, t in ipairs(self.ttToggles or {}) do t:Refresh() end
         self.spotsInfo:SetText(string.format(WK.T("%d récoltes enregistrées"), WK.modules.GatherMap:Count()))
 
     end,

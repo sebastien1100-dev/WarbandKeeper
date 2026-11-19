@@ -989,3 +989,122 @@ function UI:HoverRow(r, border, bg, base, onClick)
         ch:HookScript("OnLeave", function() C_Timer.After(0, function() paint(r) end) end)
     end
 end
+
+---------------------------------------------------------------------------
+-- Roue dentée de réglages d'une page : un volet posé par-dessus le contenu (sous la barre du haut),
+-- qui reprend des cartes de réglages construites ailleurs (QoL, Options : un seul endroit par réglage).
+--   opts.top     : décalage du volet depuis le haut de la page (barre d'onglets au-dessus)
+--   opts.cards   : function() renvoie la liste des cartes à reprendre (appelée à chaque ouverture)
+--   opts.columns : 1 ou 2 (2 par défaut) ; opts.title : infobulle de la roue
+--   opts.onToggle(open) : la page cache ou montre ce qui doit l'être
+-- Renvoie gp : gp.gear (à placer), gp:Open(on), gp:IsOpen(), gp:Refresh().
+---------------------------------------------------------------------------
+function UI:PageGear(p, opts, def)
+    local gp = { open = false }
+    local gear = UI:IconButton(p, opts.icon or "gear", opts.size or 32, opts.title or "Réglages")
+    gp.gear = gear
+    function gear:SetActive(on)
+        self.active = on
+        local r, g, b = UI:Accent()
+        if on then
+            self.bg:SetColor(r, g, b, 1); self.bg:Show()
+            self.icon:SetVertexColor(unpack(C.onAccent))
+        else
+            self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
+        end
+    end
+    gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
+    gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
+    local ov = CreateFrame("Frame", nil, p)
+    ov:SetPoint("TOPLEFT", 0, -(opts.top or 42))
+    ov:SetPoint("BOTTOMRIGHT")
+    ov:SetFrameLevel((p:GetFrameLevel() or 1) + 40)
+    ov:EnableMouse(true)
+    ov.bg = ov:CreateTexture(nil, "BACKGROUND")
+    ov.bg:SetAllPoints()
+    ov.bg:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], 1)
+    ov:Hide()
+    local sc = UI:Scroll(ov)
+    sc:SetAllPoints()
+    gp.overlay, gp.scroll = ov, sc
+    local GAPV = 12
+    function gp:Layout()
+        local list = self.list or {}
+        local W = math.max(400, (sc:GetWidth() or 800) - 12)
+        sc.child:SetWidth(W)
+        local cols = (opts.columns == 1 or W < 760) and 1 or 2
+        local cw = cols == 1 and W or math.floor((W - GAPV) / 2)
+        local colY = { 0, 0 }
+        for _, c in ipairs(list) do
+            local col = (cols == 2 and colY[2] < colY[1]) and 2 or 1
+            c:ClearAllPoints()
+            c:SetPoint("TOPLEFT", (col - 1) * (cw + GAPV), -colY[col])
+            c:SetWidth(cw)
+            colY[col] = colY[col] + (c:GetHeight() or 100) + GAPV
+        end
+        sc:SetContentHeight(math.max(colY[1], colY[2]))
+    end
+    UI:OnResize(sc, function() if ov:IsShown() then gp:Layout() end end)
+    -- interrupteurs et textes des cartes reprises : tenus par leurs pages d'origine
+    local function refreshOwners()
+        for _, key in ipairs({ "qol", "options" }) do
+            local d = UI.pages and UI.pages[key]
+            if d and d.frame then
+                for _, t in ipairs(d.toggles or {}) do if t:IsVisible() then t:Refresh() end end
+                for _, fn in ipairs(d.dyn or {}) do pcall(fn) end
+                if key == "options" and d.Refresh then pcall(d.Refresh, d) end
+            end
+        end
+    end
+    -- reprise des cartes : dès la construction (la recherche les trouve ici), puis à chaque ouverture
+    function gp:Adopt()
+        local list = opts.cards and opts.cards() or {}
+        for _, c in ipairs(list) do
+            if c:GetParent() ~= sc.child then c:SetParent(sc.child) end
+            c:Show()
+        end
+        self.list = list
+    end
+    function gp:Refresh()
+        if not self.open then return end
+        self:Adopt()
+        refreshOwners() -- avant la mise en page : une carte peut changer de hauteur
+        self:Layout()
+    end
+    function gp:Open(on)
+        self.open = on and true or false
+        ov:SetShown(self.open)
+        gear:SetActive(self.open)
+        if opts.onToggle then opts.onToggle(self.open) end
+        if self.open then self:Refresh() end
+    end
+    function gp:IsOpen() return self.open end
+    gear:SetScript("OnClick", function() gp:Open(not gp.open) end)
+    gp:Adopt()
+    -- recherche de la barre latérale : un réglage du volet ouvre le volet
+    if def then
+        local prev = def.RevealSetting
+        def.RevealSetting = function(d, row)
+            local f = row
+            while f do
+                if f == sc.child then gp:Open(true) return end
+                f = f:GetParent()
+            end
+            if prev then prev(d, row) end
+        end
+    end
+    return gp
+end
+
+-- Cartes d'une section de la page QoL ou Options (construite au besoin), filtrées par titre.
+-- titles = nil : toutes ; sinon { ["Titre"] = true }.
+function UI:SectionCards(pageKey, sectionKey, titles)
+    local def = UI:EnsurePage(pageKey)
+    local sec = def and def.sections and def.sections[sectionKey]
+    local out = {}
+    for _, c in ipairs(sec and sec.cards or {}) do
+        local t = c.title and c.title:GetText()
+        if not titles or (t and (titles[t] or titles[WK.T(t)])) or (c.cardKey and titles[c.cardKey]) then table.insert(out, c) end
+    end
+    return out
+end

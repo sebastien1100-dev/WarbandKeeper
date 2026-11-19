@@ -16,7 +16,7 @@ local MIN_H = 600
 local HOME_PAGE = "overview"
 local GROUPS = {
     { "BATAILLON", { "characters", "inventory" }, "logo" },
-    { "TRÉSORERIE", { "stats", "mail" }, "coin" },
+    { "TRÉSORERIE", { "stats", "mail", "auction" }, "coin" },
     { "ARTISANAT", { "professions", "fishing" }, "hammer" },
     { "BUTIN", { "farm", "loot", "journal" }, "bag" },
     { "AVENTURE", { "quests", "rares", "dungeons", "lfg" }, "map" },
@@ -25,7 +25,7 @@ local GROUPS = {
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
     overview = "home", characters = "users", inventory = "bag", stats = "chart", professions = "hammer",
-    mail = "mail", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
+    mail = "mail", auction = "coin", farm = "play", loot = "filter", journal = "clock", notes = "notes", options = "gear", qol = "spark", lfg = "lfg", profiles = "users", rares = "star", quests = "bang", fishing = "fish", dungeons = "skull",
 }
 local LABELS = { notes = "Patch notes", options = "Options", farm = "Session de farm" }
 
@@ -809,9 +809,9 @@ UI.CHIPS = {
             for _, e in ipairs(alerts) do
                 table.insert(lines, "|cffffffff" .. WK:CharName(e.c, e.key) .. "|r : " .. e.alert.text)
             end
-            table.insert(lines, "|cff999999" .. T("Réglages : Options > Alertes") .. "|r")
-            table.insert(l, { T("Alertes"), tostring(#alerts), C.warning, "options", table.concat(lines, "\n"),
-                function() UI.pages.options:ShowSection("alerts") end })
+            table.insert(lines, "|cff999999" .. T("Réglages : QoL > Général > Alertes") .. "|r")
+            table.insert(l, { T("Alertes"), tostring(#alerts), C.warning, "qol", table.concat(lines, "\n"),
+                function() UI:OpenQoLAlerts() end })
         end
         return l
     end,
@@ -829,7 +829,7 @@ UI.CHIPS = {
                  { T("Valeur des stocks"), UI:PlainMoney(V:StockValue()), C.gold },
                  { T("Prix"), V:ShowBoth() and T("HV / marchand")
                      or ((WK.DB.global.settings.value.source ~= "vendor" and V:HasAHPrices()) and T("HV") or T("marchand")),
-                   nil, "options", T("Source des prix (Options > Prix)"), function() UI.pages.options:ShowSection("prices") end } }
+                   nil, "auction", T("Source des prix (Hôtel des ventes)") } }
     end,
     professions = function()
         -- Chaque métier et chaque recette comptés une seule fois, même si plusieurs persos les ont.
@@ -870,6 +870,17 @@ UI.CHIPS = {
                     function() UI.pages.journal.filter = "ah"; if UI.pages.journal.jseg then UI.pages.journal.jseg:Select("ah") end; UI:Refresh() end })
             end
         end
+        return l
+    end,
+    auction = function()
+        local S = WK.modules.AHScan
+        local nl = 0
+        for _ in pairs(S:Config().lists or {}) do nl = nl + 1 end
+        local l = { { T("Prix connus"), tostring(S:Count()), S:HasData() and nil or C.dim },
+                    { T("Listes d'achat"), tostring(nl) } }
+        local na = 0
+        for _ in pairs(S:Config().alerts or {}) do na = na + 1 end
+        if na > 0 then table.insert(l, { T("Alertes de prix"), tostring(na) }) end
         return l
     end,
     mail = function()

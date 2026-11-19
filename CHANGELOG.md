@@ -30,6 +30,25 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.42.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Trésorerie > Hôtel des ventes : nouvelle page qui regroupe tous les réglages de l'HV (source des prix, panneau et scan, prix relevés, vente, alertes de prix), avec ses pastilles (prix connus, listes d'achat, alertes).
+
+### Modifications
+- Réglages rangés : chaque réglage n'a plus qu'une seule place, à côté de la fonction (roue dentée en haut à droite des pages).
+- Courrier : « Règles d'envoi » devient « Courrier » ; sa roue dentée regroupe envoi, réception et dépôt en banque (avant dans Options).
+- Inventaire : roue dentée pour les règles des objets verrouillés, la protection et le perso HV ; les vues Verrouillés et Rangement ne montrent plus que les listes.
+- Rares, Quêtes, Donjons : même roue dentée partout. Les réglages des quêtes ne prennent plus une colonne à droite ; Donjons gagne des réglages (panneau, alertes d'envies, chrono).
+- Métiers : la roue reprend la récolte d'Options (coins de récolte, filons récoltés, HUD de récolte), à côté des aides de récolte.
+- QoL > Carte devient « Carte et guidage » : l'onglet Guidage regroupe la flèche, l'épingle, le trajet et les chemins appris (le guidage n'est plus dans Général).
+- QoL > Général : l'onglet Alertes regroupe l'état des persos, les alertes de banque et de courrier et les rappels à la connexion (avant en partie dans Options).
+- Options > Infobulles : toutes les lignes que l'addon ajoute aux infobulles au même endroit (montée des métiers, désenchantement, prix HV et de la pile, quêtes du donneur, rares, butin observé). Elles ne sont plus répétées ailleurs.
+- Persos : un bouton Expérience (en haut à droite) montre le rythme de la session et le repos de tous tes persos ; QoL > Expérience ne garde que les réglages de la barre.
+- Options ne garde que le global : Général (langue, infobulles, bouton minimap, combat), Apparence, À propos. Les renvois en double sont retirés.
+
 ## v1.41.1 — 19/11/2026
 
 _Un /reload suffit._

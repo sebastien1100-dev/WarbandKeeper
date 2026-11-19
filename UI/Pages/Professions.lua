@@ -1709,12 +1709,6 @@ local function Settings(page, parent)
                 or ("\n" .. T("Pas encore de lien : ouvre la fenêtre du métier sur ce perso."))))
     end
 
-    local tips = scard("Infobulles", nil, 2)
-    stoggle(tips, 1, "À quoi sert l'objet", "Les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
-        function() return uic().tooltipProf ~= false end, function(v) uic().tooltipProf = v end)
-    stoggle(tips, 2, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
-        function() return PHc().deTip end, function(v) PHc().deTip = v end)
-
     local wins = scard("Fenêtres du jeu", "panneaux collés aux fenêtres", 4)
     stoggle(wins, 1, "Marchand", "Ce qui manque pour monter tes métiers jusqu'au palier visé, avec Acheter et Tout acheter.",
         function() return uic().merchantPanel ~= false end, function(v) uic().merchantPanel = v end)
@@ -1768,7 +1762,20 @@ local function Settings(page, parent)
     end
     UI:OnResize(settings, function() if settings:IsShown() then layoutSettings() end end)
 
+    -- Récolte d'Options (coins de récolte, filons récoltés, HUD) : reprise ici, après la carte Récolte
+    local function adoptGather()
+        if tab.gatherAdopted then return end
+        tab.gatherAdopted = true
+        local at = #scards + 1
+        for i, cd in ipairs(scards) do if cd == gath then at = i + 1 end end
+        for _, oc in ipairs(UI:SectionCards("options", "glow")) do
+            oc:SetParent(sroot); oc:Show()
+            oc.h = oc:GetHeight()
+            table.insert(scards, at, oc); at = at + 1
+        end
+    end
     function tab:RefreshSettings()
+        adoptGather()
         local c = WK.DB.global.characters[self.key]
         local gk = WK.modules.Gathering:Kind(self.prof)
         local noLink = gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
@@ -1822,10 +1829,13 @@ local function Settings(page, parent)
         deInfo:SetText(string.format(T("%d désenchantement(s) sur %d palier(s)."), n, tiers))
         deClear:SetShown(n > 0)
         for _, tg in ipairs(stoggles) do tg:Refresh() end
+        local od = UI.pages and UI.pages.options
+        if od and od.frame and od.Refresh then pcall(od.Refresh, od) end
         layoutSettings()
     end
     function tab:Refresh() settings:Show(); self:RefreshSettings() end
     function tab:Pick(key, prof) self.key, self.prof = key, prof end
+    adoptGather() -- dès la construction : la recherche trouve ces réglages ici
     return tab
 end
 
@@ -1897,6 +1907,17 @@ UI:RegisterPage({
         end)
         self.gear = gear
         function self:SetTab(k) seg:Select(k); setTab(k) end
+        -- recherche de la barre latérale : un réglage des métiers ouvre la roue
+        function self:RevealSetting(row)
+            local f = row
+            while f do
+                if f == frames.settings then
+                    if self.tab ~= "settings" then gear:GetScript("OnClick")(gear) end
+                    return
+                end
+                f = f:GetParent()
+            end
+        end
         -- Fiche d'un métier (dans l'onglet Niveaux) ; ShowDetail(nil) revient aux niveaux.
         function self:ShowDetail(key, prof)
             if not key then self:SetTab("levels") return end

@@ -130,7 +130,7 @@ end
 -- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
-    { "maplayers", "Carte", "map" }, { "ah", "Hôtel des ventes", "coin" },
+    { "maplayers", "Carte et guidage", "map" },
     { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "xp", "Expérience", "chart" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
@@ -150,6 +150,16 @@ function UI:QoLSectionAlerts(key)
         if (key == "general") == (a.class == nil) then table.insert(out, a) end
     end
     return out
+end
+-- Ouvre QoL > Général, onglet Alertes (seuils et rappels).
+function UI:OpenQoLAlerts()
+    UI:ShowPage("qol")
+    local d = UI.pages.qol
+    if d and d.ShowSection then d:ShowSection("general") end
+    local sec = d and d.sections and d.sections.general
+    if sec and sec.tabs and sec.showTab then
+        for _, t in ipairs(sec.tabs) do if t.label == "Alertes" and t.index then sec.showTab(t.index) end end
+    end
 end
 -- Section affichée (« classes » pour une classe), pour la barre latérale.
 function UI:QoLCurrentSection()
@@ -266,6 +276,7 @@ UI:RegisterPage({
             local c = UI:Card(root, title, subtitle)
             current.cards = current.cards or {}
             table.insert(current.cards, c)
+            c.cardKey = title
             c:SetSize(W, h)
             c:SetPoint("TOPLEFT", 0, -y)
             c:SetPoint("TOPRIGHT", 0, -y)
@@ -362,7 +373,7 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
-        local mapBtn = navButton("maplayers", "Carte", -208, nil, "map")
+        local mapBtn = navButton("maplayers", "Carte et guidage", -208, nil, "map")
         mapBtn.desc:SetText("Lieux utiles et trajets")
         local ahBtn = navButton("ah", "Hôtel des ventes", -208, nil, "coin")
         ahBtn.desc:SetText("Scan et prix")
@@ -375,7 +386,7 @@ UI:RegisterPage({
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "maplayers", "ah", "cursor", "campfire", "xp", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "maplayers", "cursor", "campfire", "xp", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -467,7 +478,7 @@ UI:RegisterPage({
         local g = q.general
 
         subtab("Marchand")
-        local shop = card("Marchand", 322)
+        local shop = card("Marchand", 276)
         UI:SettingRow(shop, -40, "Réparation automatique", "Chez un marchand qui répare, tout l'équipement.",
             toggle(shop, function() return g.repair end, function(v) g.repair = v end), 80)
         UI:SettingRow(shop, -88, "Plafond de réparation", "Pas de réparation automatique au-delà (0 : sans limite).",
@@ -478,13 +489,10 @@ UI:RegisterPage({
             toggle(shop, function() return g.sellGrey end, function(v) g.sellGrey = v end), 80)
         UI:SettingRow(shop, -226, "Fermer la fenêtre après la réparation", "Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte.",
             toggle(shop, function() return g.closeAfterRepair end, function(v) g.closeAfterRepair = v end), 80)
-        local shopGo = UI:Button(shop, "Réglages des métiers", nil, 28, "secondary", "gear")
-        shopGo:SetScript("OnClick", function() UI:OpenProfSettings() end)
-        UI:SettingRow(shop, -274, "Composants de métier à côté du marchand", "Se règle avec les autres aides de métiers : Métiers > un métier > roue dentée.", shopGo, shopGo:GetWidth())
 
         -- État des persos : seuils puis une ligne par perso
         local chars = UI:SortedCharacters()
-        subtab("État des persos")
+        subtab("Alertes")
         local state = card("État des persos", 172 + #chars * 30)
         UI:SettingRow(state, -40, "Alerte de durabilité", "Quand la pièce la plus abîmée passe sous ce seuil (0 : pas d'alerte).",
             UI:Slider(state, 240, 0, 90, 5, function() return g.durability or 0 end, function(v) g.durability = v; WK:NotifyChanged() end, "%d %%"), 260)
@@ -541,53 +549,6 @@ UI:RegisterPage({
             end)
         end
 
-        -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
-        local G = WK.modules.Guide
-        local gcfg = G:Config()
-        subtab("Guidage")
-        local guide = card("Guidage", 410)
-        UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
-            "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
-            toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
-        UI:SettingRow(guide, -96, "Flèche à l'écran", "En plus de l'épingle et du trajet : flèche déplaçable vers le point suivant du chemin ; clic droit ou croix pour arrêter.",
-            toggle(guide, function() return gcfg.arrow end, function(v) gcfg.arrow = v; if G.OnTarget then G:OnTarget() end end), 80)
-        UI:SettingRow(guide, -144, "Repère sur la carte du monde", nil,
-            toggle(guide, function() return gcfg.mapPin end, function(v) gcfg.mapPin = v; if G.Redraw then G:Redraw() end end), 80)
-        UI:SettingRow(guide, -186, "Maître de classe à chaque niveau pair", "Nouveaux sorts tous les deux niveaux : guidage vers le maître de ta classe le plus proche.",
-            toggle(guide, function() return gcfg.trainerOnLevel end, function(v) gcfg.trainerOnLevel = v end), 80)
-        UI:SettingRow(guide, -232, "Épingle à l'écran", "Au-dessus du lieu guidé : épingle à l'icône de ce que tu suis, avec le nom et la distance restante.",
-            toggle(guide, function() return gcfg.screenPin end, function(v) gcfg.screenPin = v; if G.target then G:Start(G.target, G.target.reason, G.target.kind) end end), 80)
-        UI:SettingRow(guide, -278, "Son à l'arrivée", "Un bandeau « Arrivé » s'affiche et le guidage s'arrête ; avec un son si activé.",
-            toggle(guide, function() return gcfg.arriveSound end, function(v) gcfg.arriveSound = v end), 80)
-        -- Boutons « le plus proche » : passent à la ligne si la fenêtre est étroite (2 lignes prévues).
-        local goBar = CreateFrame("Frame", nil, guide)
-        goBar:SetPoint("BOTTOMLEFT", 16, 12)
-        goBar:SetPoint("BOTTOMRIGHT", -12, 12)
-        goBar:SetHeight(62)
-        local goLbl = UI:Text(goBar, 11, C.muted)
-        goLbl:SetText("Le plus proche :")
-        local goButtons = { goLbl }
-        for _, it in ipairs({ { "mail", "Boîte aux lettres" }, { "bank", "Banque" }, { "repair", "Réparation" },
-                              { "vendor", "Marchand" }, { "trainer", "Maître de classe" } }) do
-            local b = UI:Button(goBar, it[2], nil, 28, "primary")
-            b:SetScript("OnClick", function() G:GoTo(it[1]) end)
-            table.insert(goButtons, b)
-        end
-        UI:OnResize(goBar, function(w)
-            local x, row = 0, 0
-            for _, b in ipairs(goButtons) do
-                local isLabel = b == goLbl
-                local bw = isLabel and (goLbl:GetStringWidth() + 6) or b:GetWidth()
-                if x > 0 and x + bw > w then x, row = 0, row + 1 end
-                b:ClearAllPoints()
-                b:SetPoint("TOPLEFT", x, -row * 34 - (isLabel and 8 or 0))
-                x = x + bw + 6
-            end
-        end)
-        dynText(guide, 10, C.dim, function()
-            return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
-        end):SetPoint("TOPRIGHT", -16, -16)
-
         subtab("Groupe et confort")
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
@@ -610,6 +571,20 @@ UI:RegisterPage({
             toggle(comfort, function() return WK.modules.Flight:Config().enabled end, function(v) WK.modules.Flight:Config().enabled = v end), 80)
 
         -----------------------------------------------------------------------
+        -- Alertes : les seuils et rappels d'Options (banque, courrier, rappels à la connexion) rejoignent
+        -- l'onglet Alertes, sous l'état des persos (un seul endroit pour toutes les alertes).
+        subtab("Alertes")
+        for _, oc in ipairs(UI:SectionCards("options", "alerts")) do
+            oc:SetParent(root); oc:ClearAllPoints()
+            oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
+            y = y + oc:GetHeight() + GAP
+        end
+        for _, oc in ipairs(UI:SectionCards("options", "general", { ["Rappels à la connexion"] = true })) do
+            oc:SetParent(root); oc:ClearAllPoints()
+            oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
+            y = y + oc:GetHeight() + GAP
+        end
+
         -- Halo : l'objet visé (plante, filon, coffre, flotteur…) brille (Modules/Glow.lua)
         -----------------------------------------------------------------------
         section("halo")
@@ -1133,7 +1108,54 @@ UI:RegisterPage({
         local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()
         local function replan() if GD.target then NV:Plan(GD.target) end; if UI.RefreshNavRoute then UI:RefreshNavRoute() end end
-        subtab("Guidage", 3)
+        -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua) : onglet Guidage de la carte
+        do
+            subtab("Guidage", 3)
+            local G = WK.modules.Guide
+            local gcfg = G:Config()
+            local guide = card("Guidage", 410)
+            UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
+                "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
+                toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
+            UI:SettingRow(guide, -96, "Flèche à l'écran", "En plus de l'épingle et du trajet : flèche déplaçable vers le point suivant du chemin ; clic droit ou croix pour arrêter.",
+                toggle(guide, function() return gcfg.arrow end, function(v) gcfg.arrow = v; if G.OnTarget then G:OnTarget() end end), 80)
+            UI:SettingRow(guide, -144, "Repère sur la carte du monde", nil,
+                toggle(guide, function() return gcfg.mapPin end, function(v) gcfg.mapPin = v; if G.Redraw then G:Redraw() end end), 80)
+            UI:SettingRow(guide, -186, "Maître de classe à chaque niveau pair", "Nouveaux sorts tous les deux niveaux : guidage vers le maître de ta classe le plus proche.",
+                toggle(guide, function() return gcfg.trainerOnLevel end, function(v) gcfg.trainerOnLevel = v end), 80)
+            UI:SettingRow(guide, -232, "Épingle à l'écran", "Au-dessus du lieu guidé : épingle à l'icône de ce que tu suis, avec le nom et la distance restante.",
+                toggle(guide, function() return gcfg.screenPin end, function(v) gcfg.screenPin = v; if G.target then G:Start(G.target, G.target.reason, G.target.kind) end end), 80)
+            UI:SettingRow(guide, -278, "Son à l'arrivée", "Un bandeau « Arrivé » s'affiche et le guidage s'arrête ; avec un son si activé.",
+                toggle(guide, function() return gcfg.arriveSound end, function(v) gcfg.arriveSound = v end), 80)
+            -- Boutons « le plus proche » : passent à la ligne si la fenêtre est étroite (2 lignes prévues).
+            local goBar = CreateFrame("Frame", nil, guide)
+            goBar:SetPoint("BOTTOMLEFT", 16, 12)
+            goBar:SetPoint("BOTTOMRIGHT", -12, 12)
+            goBar:SetHeight(62)
+            local goLbl = UI:Text(goBar, 11, C.muted)
+            goLbl:SetText("Le plus proche :")
+            local goButtons = { goLbl }
+            for _, it in ipairs({ { "mail", "Boîte aux lettres" }, { "bank", "Banque" }, { "repair", "Réparation" },
+                                  { "vendor", "Marchand" }, { "trainer", "Maître de classe" } }) do
+                local b = UI:Button(goBar, it[2], nil, 28, "primary")
+                b:SetScript("OnClick", function() G:GoTo(it[1]) end)
+                table.insert(goButtons, b)
+            end
+            UI:OnResize(goBar, function(w)
+                local x, row = 0, 0
+                for _, b in ipairs(goButtons) do
+                    local isLabel = b == goLbl
+                    local bw = isLabel and (goLbl:GetStringWidth() + 6) or b:GetWidth()
+                    if x > 0 and x + bw > w then x, row = 0, row + 1 end
+                    b:ClearAllPoints()
+                    b:SetPoint("TOPLEFT", x, -row * 34 - (isLabel and 8 or 0))
+                    x = x + bw + 6
+                end
+            end)
+            dynText(guide, 10, C.dim, function()
+                return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
+            end):SetPoint("TOPRIGHT", -16, -16)
+        end
         local rcard = card("Navigation", 40 + 4 * 46 + 44, "trajet du guidage, appris en jouant")
         UI:SettingRow(rcard, -40, "Trajet sur la carte du monde", "Pointillés de ta couleur, de toi jusqu'au lieu guidé, en suivant les chemins connus (vols compris).",
             toggle(rcard, function() return gdc.route end, function(v) gdc.route = v; replan() end), 80)
@@ -1156,13 +1178,6 @@ UI:RegisterPage({
             local learned, roads = NV:Stats()
             return string.format(T("%.1f km appris · %.1f km de chemins de base (patrouilles des PNJ, QuestieDB)"), learned / 1000, roads / 1000)
         end):SetPoint("TOPLEFT", 16, -232)
-        -- Métiers : tous leurs réglages sont dans la fiche de métier (roue dentée)
-        do
-            local mcard = card("Métiers et récolte", 40 + 46 + 8)
-            local go = UI:Button(mcard, "Réglages des métiers", nil, 28, "primary", "gear")
-            UI:SettingRow(mcard, -40, "Aides de métiers et de récolte", "Infobulles, panneaux du marchand, de l'échange et du maître, file, recharges, récolte : Métiers > un métier > roue dentée.", go, go:GetWidth())
-            go:SetScript("OnClick", function() UI:OpenProfSettings() end)
-        end
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             subtab("Bateaux", 4)
@@ -1294,11 +1309,9 @@ UI:RegisterPage({
         local function atoggle(parent, field)
             return toggle(parent, function() return ac[field] end, function(v) ac[field] = v end)
         end
-        local hcard = card("Hôtel des ventes", 40 + 4 * 46 + 8, "scan, prix et listes d'achat")
+        local hcard = card("Hôtel des ventes", 40 + 2 * 46 + 8, "scan et listes d'achat ; prix dans l'infobulle : Options > Infobulles")
         UI:SettingRow(hcard, -40, "Panneau à côté de l'HV", "Nombre de prix connus, dernier scan et bouton « Scanner l'HV ».", atoggle(hcard, "panel"), 80)
         UI:SettingRow(hcard, -86, "Scan complet à l'ouverture", "Dès que le jeu l'autorise (environ toutes les 15 minutes).", atoggle(hcard, "auto"), 80)
-        UI:SettingRow(hcard, -132, "Prix dans l'infobulle", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.", atoggle(hcard, "tooltip"), 80)
-        UI:SettingRow(hcard, -178, "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.", atoggle(hcard, "stack"), 80)
         local scard = card("Prix relevés", 40 + 2 * 46 + 8, "pour ce royaume et cette faction")
         local stat = dynText(scard, 12, C.text, function()
             local d = AS:Data()
@@ -2004,18 +2017,9 @@ UI:RegisterPage({
                 return string.format(T("il y a %d j"), math.floor(sec / 86400))
             end
 
-            -- « Tous tes persos » en tête de l'onglet (à la place de la barre) ; les autres cartes suivent
-            -- la hauteur du tableau, chacune sous la précédente
-            local _, topRel, _, _, topY = xb:GetPoint(1)
-            topRel, topY = topRel or xb:GetParent(), topY or 0
-            xa:ClearAllPoints()
-            xa:SetPoint("TOPLEFT", topRel, "TOPLEFT", 0, topY)
-            xa:SetPoint("TOPRIGHT", topRel, "TOPRIGHT", 0, topY)
-            for _, pair in ipairs({ { xb, xa }, { xs, xb } }) do
-                pair[1]:ClearAllPoints()
-                pair[1]:SetPoint("TOPLEFT", pair[2], "BOTTOMLEFT", 0, -GAP)
-                pair[1]:SetPoint("TOPRIGHT", pair[2], "BOTTOMRIGHT", 0, -GAP)
-            end
+            -- « Rythme de la session » et « Tous tes persos » sont des données : la page Persos les reprend
+            -- (bouton Expérience) ; QoL > Expérience ne garde que la barre.
+            xs.xpData, xa.xpData = true, true
             local extra = 0
             xsec.extraY = function() return extra end
 
@@ -2621,5 +2625,8 @@ UI:RegisterPage({
             if not inp.box.edit:HasFocus() then inp.box:SetText(tostring(inp.get())) end
         end
         for _, fn in ipairs(self.dyn) do fn() end
+        -- cartes reprises d'Options (onglet Alertes) : leurs interrupteurs sont tenus par Options
+        local od = UI.pages.options
+        if od and od.frame and od.Refresh then pcall(od.Refresh, od) end
     end,
 })

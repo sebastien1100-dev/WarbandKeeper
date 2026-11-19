@@ -284,7 +284,7 @@ R.OnChange = function() UI:RedrawRarePins() end
 -- Compacte : une ligne par rare (étoile, nom, niveau ; le butin est dans l'infobulle).
 -- En-tête : clic = replier / déplier ; glisser = déplacer (position gardée par rapport au coin
 -- haut droit de la carte) ; clic droit = remettre en place ; croix = ne plus l'afficher
--- (réglage « Liste des rares de la zone » dans Rares > Carte et infobulle).
+-- (réglage « Liste des rares de la zone » dans Rares > roue dentée).
 local panel, rows = nil, {}
 local W_LIST, ROW = 200, 20
 local function place()
@@ -310,12 +310,12 @@ local function buildList()
     panel.title:SetText(T("Rares"))
     panel.count = UI:Text(panel, 10, C.muted)
     panel.count:SetPoint("LEFT", panel.title, "RIGHT", 6, 0)
-    panel.close = UI:IconButton(panel, "close", 14, "Ne plus afficher cette liste (réactivable dans Rares > Carte et infobulle)", "accent")
+    panel.close = UI:IconButton(panel, "close", 14, "Ne plus afficher cette liste (réactivable dans Rares > roue dentée)", "accent")
     panel.close:SetPoint("TOPRIGHT", -5, -4)
     panel.close:SetScript("OnClick", function()
         R:Config().list = false
         panel:Hide()
-        WK:Print(T("Liste des rares masquée : à réactiver dans Rares > Carte et infobulle."))
+        WK:Print(T("Liste des rares masquée : à réactiver dans Rares > roue dentée."))
     end)
     panel.toggle = CreateFrame("Button", nil, panel)
     panel.toggle:SetPoint("TOPLEFT"); panel.toggle:SetPoint("TOPRIGHT", -22, 0)

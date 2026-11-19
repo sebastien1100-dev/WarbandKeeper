@@ -6,7 +6,7 @@ local T = function(s) return WK.T(s) end
 -- Page Rares (Modules/Rares.lua) : la collection des rares, perso par perso.
 --   onglet « Collection » : une tuile par zone avec un anneau de progression (ta zone en premier),
 --                           les rares de la zone choisie en dessous ;
---   onglet « Carte et infobulle » : les réglages (carte, infobulle, alerte avec aperçu en direct).
+--   roue dentée : les réglages (carte, alerte avec aperçu en direct ; infobulle : Options > Infobulles).
 local R = WK.modules.Rares
 local GAP, SIDE_W, ROW_H = 12, 300, 44
 local TILE_W, TILE_H = 214, 74
@@ -48,20 +48,33 @@ UI:RegisterPage({
 
         -- Onglets et barre de commandes ----------------------------------------------
         self.tab = "collection"
-        self.tabSeg = UI:Segmented(p, { { "collection", "Collection" }, { "settings", "Carte et infobulle" } },
+        self.tabSeg = UI:Segmented(p, { { "collection", "Collection" } },
             function(v) self.tab = v; self:Layout(); self:Refresh() end, 30)
         self.tabSeg:SetPoint("TOPLEFT")
         self.tabSeg:Select("collection")
+        -- roue dentée : réglages (carte, alerte) ; un second clic revient à la collection
+        local gear = UI:IconButton(p, "gear", 30, "Réglages des rares")
+        gear:SetPoint("TOPRIGHT")
+        function gear:SetActive(on)
+            self.active = on
+            local r, g, b = UI:Accent()
+            if on then self.bg:SetColor(r, g, b, 1); self.bg:Show(); self.icon:SetVertexColor(unpack(C.onAccent))
+            else self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8) end
+        end
+        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
+        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
+        gear:SetScript("OnClick", function() self:ShowSection(self.tab == "settings" and "collection" or "settings") end)
+        self.gear = gear
         local of = UI:Text(p, 11, C.muted)
-        of:SetPoint("TOPRIGHT", -(190 + 8 + 150 + 8), -9)
+        of:SetPoint("TOPRIGHT", -(190 + 8 + 150 + 8 + 38), -9)
         of:SetText(T("Collection de"))
         self.ofLabel = of
         local charOpts = charOptions()
         self.charDd = UI:Dropdown(p, 190, 30, charOpts, function(v) self.viewKey = v; self:Refresh() end)
-        self.charDd:SetPoint("TOPRIGHT", -(150 + 8), 0)
+        self.charDd:SetPoint("TOPRIGHT", -(150 + 8 + 38), 0)
         self.charDd:Select(self.viewKey)
         self.hideBtn = UI:Button(p, "Masquer les tués", 150, 30, "ghost")
-        self.hideBtn:SetPoint("TOPRIGHT")
+        self.hideBtn:SetPoint("TOPRIGHT", -38, 0)
         self.hideBtn:SetScript("OnClick", function() cfg.pageHideKilled = not cfg.pageHideKilled; self:Refresh() end)
 
         self:BuildSettings(p)
@@ -160,7 +173,7 @@ UI:RegisterPage({
         self:Layout()
     end,
 
-    -- Onglet « Carte et infobulle » (mêmes réglages qu'avant dans QoL > Rares)
+    -- Réglages (roue dentée) : carte et alerte
     BuildSettings = function(self, p)
         local rc = R:Config()
         self.toggles = {}
@@ -185,12 +198,11 @@ UI:RegisterPage({
         end
         local function redraw() if UI.RedrawRarePins then UI:RedrawRarePins() end end
 
-        local mcard = card("Carte et infobulle", 40 + 5 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
+        local mcard = card("Sur la carte", 40 + 4 * 46 + 8, "monstres rares de WoW Forever, d'après QuestieDB")
         UI:SettingRow(mcard, -40, "Sur la carte du monde", "Un médaillon par rare (mauve, doré pour un élite, grisé si ce perso l'a tué). Au survol : apparitions et patrouille.", toggle(mcard, "map", redraw), 80)
         UI:SettingRow(mcard, -86, "Masquer les rares tués sur la carte", "Ceux que ce perso a déjà tués disparaissent de la carte.", toggle(mcard, "hideKilled", redraw), 80)
         UI:SettingRow(mcard, -132, "Liste des rares de la zone", "Sur le côté de la carte du monde, avec le guidage en un clic.", toggle(mcard, "list", redraw), 80)
-        UI:SettingRow(mcard, -178, "Dans l'infobulle d'un rare", "Son butin notable, et lesquels de tes persos l'ont déjà tué.", toggle(mcard, "tooltip"), 80)
-        UI:SettingRow(mcard, -224, "Patrouilles des rares sur la carte", "Le trajet de chaque rare qui se déplace, en pointillés de sa couleur, toujours affiché (sinon : seulement au survol de son médaillon).", toggle(mcard, "paths", redraw), 80)
+        UI:SettingRow(mcard, -178, "Patrouilles des rares sur la carte", "Le trajet de chaque rare qui se déplace, en pointillés de sa couleur, toujours affiché (sinon : seulement au survol de son médaillon).", toggle(mcard, "paths", redraw), 80)
 
         local acard = card("Alerte « Rare en vue »", 40 + 4 * 46 + 182, "quand un rare entre dans ton champ de vision")
         UI:SettingRow(acard, -40, "Alerte", "Se place en mode édition.", toggle(acard, "alert"), 80)
@@ -229,7 +241,8 @@ UI:RegisterPage({
 
     ShowSection = function(self, key)
         self.tab = key == "settings" and "settings" or "collection"
-        self.tabSeg:Select(self.tab)
+        self.tabSeg:Select(self.tab == "settings" and nil or "collection")
+        self.gear:SetActive(self.tab == "settings")
         self:Layout(); self:Refresh()
     end,
 

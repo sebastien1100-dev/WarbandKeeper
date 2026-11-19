@@ -42,6 +42,16 @@ UI:RegisterPage({
         local scroll = UI:Scroll(p)
         scroll:SetPoint("TOPLEFT", 0, -24)
         scroll:SetPoint("BOTTOMRIGHT")
+        -- Bouton « Expérience » (en haut à droite) : rythme de la session et repos de tous tes persos
+        -- (cartes reprises de QoL > Expérience, qui ne garde que les réglages de la barre)
+        self.xp = UI:PageGear(p, { title = "Expérience : rythme et repos de tes persos", icon = "chart", size = 22, top = 24, columns = 1,
+            cards = function()
+                local out = {}
+                for _, c in ipairs(UI:SectionCards("qol", "xp")) do if c.xpData then table.insert(out, c) end end
+                return out
+            end,
+            onToggle = function(open) for _, h in ipairs(self.colHeaders or {}) do h:SetShown(not open) end end }, self)
+        self.xp.gear:SetPoint("TOPRIGHT", 0, 0)
         self.scroll = scroll
         local child = scroll.child
 
@@ -119,6 +129,7 @@ UI:RegisterPage({
     end,
 
     Refresh = function(self)
+        if self.xp and self.xp:IsOpen() then self.xp:Refresh() end
         self.rows:Reset()
         local me = WK:CharKey()
         local y = 0

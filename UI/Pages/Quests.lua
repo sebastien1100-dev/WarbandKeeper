@@ -61,6 +61,19 @@ UI:RegisterPage({
         self.filterSeg:Select(cfg.filter)
 
         self:BuildSettings(p)
+        -- roue dentée : réglages (quêtes montrées, légende) à la place des tuiles et de la liste
+        local gear = UI:IconButton(p, "gear", 30, "Réglages des quêtes")
+        gear:SetPoint("TOPRIGHT")
+        function gear:SetActive(on)
+            self.active = on
+            local r, g, b = UI:Accent()
+            if on then self.bg:SetColor(r, g, b, 1); self.bg:Show(); self.icon:SetVertexColor(unpack(C.onAccent))
+            else self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8) end
+        end
+        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
+        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
+        gear:SetScript("OnClick", function() self.settingsOpen = not self.settingsOpen; self:Layout(); self:Refresh() end)
+        self.gear = gear
 
         -- Tuiles des zones -------------------------------------------------------------
         self.tscroll = UI:Scroll(p)
@@ -184,14 +197,6 @@ UI:RegisterPage({
         UI:SettingRow(lcard, -112, "Métier : si le perso l'a", nil, toggle(lcard, "profOnly"), 50)
         UI:SettingRow(lcard, -148, "Classe : celles du perso", nil, toggle(lcard, "classOnly"), 50)
 
-        local tcard = card("Infobulle", 40 + 36 + 34, "au survol d'un PNJ")
-        UI:SettingRow(tcard, -40, "Quêtes du donneur", nil, toggle(tcard, "tooltip"), 50)
-        local th = UI:Text(tcard, 10, C.dim)
-        th:SetPoint("TOPLEFT", 16, -82)
-        th:SetPoint("RIGHT", -16, 0)
-        th:SetJustifyH("LEFT")
-        th:SetText(T("Celles que ce perso n'a pas encore faites."))
-
         local states = { "avail", "log", "done", "high", "locked" }
         local gcard = card("Légende", 40 + #states * 24 + 8)
         for i, st in ipairs(states) do
@@ -208,23 +213,36 @@ UI:RegisterPage({
         self.sideH = y
     end,
 
+    -- recherche de la barre latérale : un réglage des quêtes ouvre la roue
+    RevealSetting = function(self, row)
+        local f = row
+        while f do
+            if f == self.side then self.settingsOpen = true; self:Layout(); self:Refresh() return end
+            f = f:GetParent()
+        end
+    end,
+
     Layout = function(self)
         local p = self.list:GetParent()
         local h = p:GetHeight() or 500
         if h < 100 then h = 500 end
         local top = 30 + GAP
         self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
-        self.side:SetPoint("TOPRIGHT", 0, -top) -- aligné sur les tuiles des zones
+        local open = self.settingsOpen == true
+        self.gear:SetActive(open)
+        self.side:SetShown(open); self.tscroll:SetShown(not open); self.list:SetShown(not open)
+        -- réglages : sur toute la largeur, sous la barre
+        self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
-        self.side:SetWidth(SIDE_W)
-        self.side.child:SetSize(SIDE_W - 8, self.sideH or 400)
+        local w = p:GetWidth() or 800
+        self.side.child:SetSize(math.min((w > 100 and w or 800) - 10, 560), self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
         local th = math.floor((h - top) * 0.40)
         self.tscroll:SetPoint("TOPLEFT", 0, -top)
-        self.tscroll:SetPoint("TOPRIGHT", -(SIDE_W + GAP), -top)
+        self.tscroll:SetPoint("TOPRIGHT", 0, -top)
         self.tscroll:SetHeight(th)
         self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
-        self.list:SetPoint("BOTTOMRIGHT", -(SIDE_W + GAP), 0)
+        self.list:SetPoint("BOTTOMRIGHT", 0, 0)
     end,
 
     Refresh = function(self)
