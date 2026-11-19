@@ -169,9 +169,14 @@ UI:RegisterPage({
             b.lv = UI:Text(b, 10, C.dim)
             b.lv:SetPoint("TOPRIGHT", b, "TOPLEFT", 26, -7)
             b.lv:SetJustifyH("RIGHT")
+            -- nombre de groupes : pastille à droite, toujours lisible (le nom se coupe avant)
+            b.cnt = CreateFrame("Frame", nil, b)
+            b.cnt:SetSize(22, 16); b.cnt:SetPoint("TOPRIGHT", -6, -6)
+            b.cnt.bg = UI:Rounded(b.cnt, 8, 0, "ARTWORK", 1)
+            b.cnt.t = UI:Text(b.cnt, 10, C.onAccent); b.cnt.t:SetPoint("CENTER", 0, 0)
             b.name = UI:Text(b, 12)
             b.name:SetPoint("TOPLEFT", 32, -6)
-            b.name:SetPoint("RIGHT", -6, 0)
+            b.name:SetPoint("RIGHT", b.cnt, "LEFT", -6, 0)
             b.name:SetJustifyH("LEFT")
             b.bar = b:CreateTexture(nil, "ARTWORK")
             b.bar:SetPoint("TOPLEFT", 32, -24)
@@ -759,7 +764,15 @@ UI:RegisterPage({
             b:SetPoint("TOPLEFT", 0, -y); b:SetWidth(lw)
             local n = counts[a.id] or 0
             b.lv:SetText(a.min > 0 and tostring(a.min) or "")
-            b.name:SetText(a.name .. (n > 0 and ("  " .. UI:Hex(C.muted) .. "· " .. n .. "|r") or ""))
+            b.name:SetText(a.name)
+            b.cnt:SetShown(n > 0)
+            if n > 0 then
+                local ar, ag, ab = UI:Accent()
+                b.cnt.bg:SetColor(ar, ag, ab, 1)
+                b.cnt.t:SetText(tostring(n))
+                b.cnt:SetWidth(math.max(22, (b.cnt.t:GetStringWidth() or 8) + 12))
+            end
+            b.name:SetPoint("RIGHT", n > 0 and b.cnt or b, n > 0 and "LEFT" or "RIGHT", -6, 0)
             local far = a.min > 0 and (a.min > level + 5 or (a.max > 0 and a.max < level - 3))
             local sel = self.sel == a.id
             b.sel = sel

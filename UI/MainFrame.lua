@@ -15,12 +15,13 @@ local MIN_H = 600
 -- Résumé (HOME_PAGE) est à part, tout en haut, jamais replié ; puis les groupes (titre, icône, pages).
 local HOME_PAGE = "overview"
 local GROUPS = {
-    { "BATAILLON", { "characters", "inventory" }, "logo" },
-    { "TRÉSORERIE", { "stats", "mail", "auction" }, "coin" },
-    { "ARTISANAT", { "professions", "fishing" }, "hammer" },
-    { "BUTIN", { "farm", "loot", "journal" }, "bag" },
-    { "AVENTURE", { "quests", "rares", "dungeons", "lfg" }, "map" },
-    { "RÉGLAGES QOL", { "qol" }, "gear" },   -- entrées = sections de la page QoL (UI.QOL_SECTIONS)
+    -- « qol:<section> » : une section de la page QoL, rangée avec le thème qui va avec
+    { "MES PERSOS", { "characters", "inventory", "qol:classes", "qol:xp" }, "logo" },
+    { "ARGENT", { "stats", "mail", "auction", "journal" }, "coin" },
+    { "ARTISANAT", { "professions", "fishing", "qol:campfire" }, "hammer" },
+    { "FARM", { "farm", "loot" }, "bag" },
+    { "AVENTURE", { "quests", "rares", "dungeons", "lfg", "qol:maplayers" }, "map" },
+    { "INTERFACE", { "qol:general", "qol:halo", "qol:cursor", "qol:micro" }, "gear" },
 }
 local BOTTOM = { "notes", "profiles", "options" }
 local ICONS = {
@@ -362,11 +363,14 @@ createWindow = function(self)
         local head = { label = lbl, items = {}, name = g[1] }
         table.insert(topList, head)
         for _, key in ipairs(g[2]) do
-            local def = self.pages[key]
-            if def and key == "qol" then
-                -- groupe QoL : une entrée par section de la page (pas d'entrée « QoL » elle-même)
-                table.insert(head.items, { key = "qol" })
-                for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
+            local secKey = key:match("^qol:(.+)$")
+            local def = self.pages[secKey and "qol" or key]
+            if def and secKey then
+                -- section de la page QoL, comme une entrée du groupe
+                local sec
+                for _, s2 in ipairs(UI.QOL_SECTIONS or {}) do if s2[1] == secKey then sec = s2 end end
+                if sec then
+                    table.insert(head.items, { key = "qol" })
                     local sub = SubItem(navChild, sec)
                     self.navSubs[sec[1]] = sub
                     table.insert(topList, { item = sub, key = "qol", section = sec[1], group = head, sub = true })
@@ -715,12 +719,11 @@ function UI:Refresh()
             for _, g in ipairs(GROUPS) do
                 if g[1] == head.name then
                     for _, k in ipairs(g[2]) do
-                        if k == "qol" then
-                            -- groupe QoL : pastilles de ses sections
-                            for _, sec in ipairs(UI.QOL_SECTIONS or {}) do
-                                local n = UI.QoLSectionCount and tonumber(UI:QoLSectionCount(sec[1]))
-                                if n and WK:PageOn("qol") then sum = sum + n end
-                            end
+                        local secKey = k:match("^qol:(.+)$")
+                        if secKey then
+                            -- section de QoL : sa pastille
+                            local n = UI.QoLSectionCount and tonumber(UI:QoLSectionCount(secKey))
+                            if n and WK:PageOn("qol") then sum = sum + n end
                         else
                             local def = self.pages[k]
                             local n = def and def.count and tonumber(def.count())

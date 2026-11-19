@@ -44,7 +44,7 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 
 ## Barre latérale
 
-`UI/MainFrame.lua` : Résumé (`HOME_PAGE`) à part en haut, puis un trait ; groupes (`GROUPS` : titre, pages, icône ; Bataillon, Trésorerie, Artisanat, Butin, Aventure, Réglages QoL) repliables par un clic sur leur titre (`GroupHead`, `settings.ui.navClosed[groupe]`, total des pastilles quand replié ; la page affichée reste visible) ; le groupe « Réglages QoL » a pour entrées les sections de la page QoL (`SubItem`, une par `UI.QOL_SECTIONS`, pas d'entrée « QoL » elle-même ; total de leurs alertes quand replié). Menu réduit en icônes : tout visible (sections comprises), sans titres. Les groupes de `Core/Features.lua` (carte Modules) sont les mêmes, chacun d'un seul tenant dans la liste.
+`UI/MainFrame.lua` : Résumé (`HOME_PAGE`) à part en haut, puis un trait ; groupes par thème (`GROUPS` : titre, entrées, icône ; Mes persos, Argent, Artisanat, Farm, Aventure, Interface) repliables par un clic sur leur titre (`GroupHead`, `settings.ui.navClosed[groupe]`, total des pastilles quand replié ; la page affichée reste visible). Une entrée « qol:<section> » est une section de la page QoL rangée avec son thème (`SubItem` : Classes et Expérience dans Mes persos, Feu de camp dans Artisanat, Carte et guidage dans Aventure, Général / Halo / Curseur / Micro menu dans Interface). Menu réduit en icônes : tout visible, sans titres. Les groupes de `Core/Features.lua` (carte Modules) sont les mêmes, chacun d'un seul tenant dans la liste.
 
 ## En-tête des pages
 

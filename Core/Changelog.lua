@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.43.0", date = "19/11/2026",
+        changed = {
+            "Menu de gauche rangé par thème : Mes persos (Persos, Inventaire, Classes, Expérience), Argent (Stats, Courrier, Hôtel des ventes, Journal), Artisanat (Métiers, Pêche, Feu de camp), Farm (Session de farm, Filtre de loot), Aventure (Quêtes, Rares, Donjons, LFG, Carte et guidage), Interface (Général, Halo, Curseur, Micro menu). Le groupe « Réglages QoL » disparaît ; la carte Modules suit le même rangement.",
+            "LFG : dans l'échelle des donjons, le nombre de groupes est une pastille à droite, toujours visible même quand le nom est coupé.",
+        },
+    },
+    {
         version = "1.42.1", date = "19/11/2026",
         changed = {
             "En-tête : le bouton « Scan » est retiré ; le perso est relu tout seul (connexion, sacs, or, métiers).",

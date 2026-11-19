@@ -2996,4 +2996,7 @@ WK.Locales.enUS.text = {
     ["prix, scan, vente, alertes"] = "prices, scan, selling, alerts",
     ["Au survol d'un PNJ : ses quêtes que ce perso n'a pas encore faites."] = "Hovering an NPC: their quests this character has not done yet.",
     ["Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué."] = "Hovering a rare: its notable loot, and which of your characters killed it.",
+    ["MES PERSOS"] = "MY CHARACTERS",
+    ["ARGENT"] = "MONEY",
+    ["INTERFACE"] = "INTERFACE",
 }
