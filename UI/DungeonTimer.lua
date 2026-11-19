@@ -3,9 +3,11 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Chrono du donjon à l'écran (réglage Dungeons:Config().timer, bandeau de l'onglet Parcours) :
--- temps du passage, temps de chaque boss depuis l'entrée et écart avec le record (Modules/Dungeons.lua).
-local W, ROW = 230, 17
+-- Chrono du donjon à l'écran (réglage Dungeons:Config().timer, bandeau de l'onglet Parcours), allure des clés
+-- mythiques : bandeau sombre qui s'efface vers la droite, large comme le suivi des quêtes, nom du donjon, gros
+-- chrono et record, barre du temps face au record, boss avec une pastille (tué en vert, en cours à la couleur
+-- d'accent), temps de chaque boss et écart avec le record (Modules/Dungeons.lua).
+local W, ROW = 260, 18
 local frame
 
 local function D() return WK.modules.Dungeons end
@@ -35,55 +37,95 @@ local function liveData()
     return { name = Dg:Name(d), elapsed = Dg:Elapsed(), record = rec and rec.dur or nil, rows = rows }
 end
 
+-- largeur du suivi des quêtes (le chrono se pose dessous, aussi large), sinon W
+local function trackerWidth()
+    for _, n in ipairs({ "ObjectiveTrackerFrame", "WatchFrame", "QuestWatchFrame" }) do
+        local t = _G[n]
+        local w = t and t.GetWidth and t:GetWidth()
+        if w and w > 150 and w < 500 then return math.floor(w) end
+    end
+    return W
+end
+
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDungeonTimer", UIParent)
     f:SetSize(W, 60)
     f:SetFrameStrata("MEDIUM")
-    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border)
-    f.time = UI:Text(f, 20); f.time:SetPoint("TOPLEFT", 12, -10)
-    f.name = UI:Text(f, 11, C.muted); f.name:SetPoint("LEFT", f.time, "RIGHT", 8, -1); f.name:SetPoint("RIGHT", -10, 0)
+    -- bandeau sombre qui s'efface vers la droite, liseré d'accent à gauche
+    f.bg = f:CreateTexture(nil, "BACKGROUND"); f.bg:SetAllPoints(); f.bg:SetTexture("Interface\\Buttons\\WHITE8X8")
+    if f.bg.SetGradient and CreateColor then
+        f.bg:SetGradient("HORIZONTAL", CreateColor(0, 0, 0, 0.78), CreateColor(0, 0, 0, 0.12))
+    else f.bg:SetVertexColor(0, 0, 0, 0.6) end
+    f.edge = f:CreateTexture(nil, "ARTWORK"); f.edge:SetPoint("TOPLEFT"); f.edge:SetPoint("BOTTOMLEFT"); f.edge:SetWidth(2)
+    f.name = UI:Text(f, 12, C.gold); f.name:SetPoint("TOPLEFT", 10, -8); f.name:SetPoint("RIGHT", -70, 0)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
+    f.cap = UI:Text(f, 10, C.muted); f.cap:SetPoint("TOPRIGHT", -8, -9); f.cap:SetJustifyH("RIGHT")
+    f.time = UI:Text(f, 24); f.time:SetPoint("TOPLEFT", 10, -26)
+    f.rec = UI:Text(f, 13, C.muted); f.rec:SetPoint("BOTTOMLEFT", f.time, "BOTTOMRIGHT", 6, 2)
+    f.left = UI:Text(f, 12); f.left:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -8, -50); f.left:SetJustifyH("RIGHT")
+    -- barre : temps écoulé face au record
+    f.bar = CreateFrame("Frame", nil, f)
+    f.bar:SetPoint("TOPLEFT", 10, -58); f.bar:SetPoint("TOPRIGHT", -8, -58); f.bar:SetHeight(6)
+    f.bar.bg = f.bar:CreateTexture(nil, "BACKGROUND"); f.bar.bg:SetAllPoints(); f.bar.bg:SetColorTexture(1, 1, 1, 0.12)
+    f.bar.fill = f.bar:CreateTexture(nil, "ARTWORK"); f.bar.fill:SetPoint("TOPLEFT"); f.bar.fill:SetPoint("BOTTOMLEFT")
     f.rows = {}
-    f.foot = UI:Text(f, 10, C.muted)
     function f:Paint(data)
         if not data then return end
         local r1, g1, b1 = UI:Accent()
-        self.time:SetText(D().Clock(data.elapsed))
+        self:SetWidth(trackerWidth())
+        self.edge:SetColorTexture(r1, g1, b1, 0.9)
         self.name:SetText(data.name or "")
-        local y = 40
+        local n = D():HourCount()
+        self.cap:SetText(UI:Hex(n >= D().CAP - 1 and C.negative or C.muted) .. string.format(T("%d / %d cette heure"), n, D().CAP) .. "|r")
+        local over = data.record and data.elapsed > data.record
+        self.time:SetText(D().Clock(data.elapsed))
+        self.time:SetTextColor(unpack(over and C.negative or C.text))
+        self.rec:SetText(data.record and ("/ " .. D().Clock(data.record)) or T("pas de record"))
+        -- reste avant le record (vert) ou dépassement (rouge)
+        if data.record then
+            local d = data.record - data.elapsed
+            self.left:SetText(d >= 0 and (UI:Hex(C.positive) .. "-" .. D().Clock(d) .. "|r") or (UI:Hex(C.negative) .. "+" .. D().Clock(-d) .. "|r"))
+        else self.left:SetText("") end
+        local w = self.bar:GetWidth() or 200
+        local frac = data.record and data.record > 0 and math.min(1, data.elapsed / data.record) or 0
+        self.bar.fill:SetWidth(math.max(1, w * frac))
+        if over then self.bar.fill:SetColorTexture(C.negative[1], C.negative[2], C.negative[3], 1)
+        else self.bar.fill:SetColorTexture(r1, g1, b1, 1) end
+        self.bar.fill:SetShown(frac > 0)
+        local y = 72
         for i, rw in ipairs(data.rows) do
             local r = self.rows[i]
             if not r then
                 r = CreateFrame("Frame", nil, self); r:SetHeight(ROW)
                 r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
-                r.n = UI:Text(r, 11); r.n:SetPoint("LEFT", 6, 0); r.n:SetPoint("RIGHT", -96, 0)
+                r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetTexture(UI.MEDIA .. "circle"); r.dot:SetSize(8, 8); r.dot:SetPoint("LEFT", 4, 0)
+                r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 18, 0); r.n:SetPoint("RIGHT", -100, 0)
                 if r.n.SetWordWrap then r.n:SetWordWrap(false) end
-                r.dl = UI:Text(r, 11); r.dl:SetPoint("RIGHT", -6, 0); r.dl:SetWidth(44); r.dl:SetJustifyH("RIGHT")
-                r.t = UI:Text(r, 11); r.t:SetPoint("RIGHT", r.dl, "LEFT", -4, 0); r.t:SetWidth(44); r.t:SetJustifyH("RIGHT")
+                r.dl = UI:Text(r, 11); r.dl:SetPoint("RIGHT", -2, 0); r.dl:SetWidth(46); r.dl:SetJustifyH("RIGHT")
+                r.t = UI:Text(r, 12); r.t:SetPoint("RIGHT", r.dl, "LEFT", -4, 0); r.t:SetWidth(46); r.t:SetJustifyH("RIGHT")
                 self.rows[i] = r
             end
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
             local name, t, dl, rs, cur = rw[1], rw[2], rw[3], rw[4], rw[5]
-            r.n:SetText(name)
             local done = t ~= nil
-            r.n:SetTextColor(unpack(done and C.text or cur and C.text or C.dim))
-            r.t:SetText(done and D().Clock(t) or (cur and "..." or "-"))
-            r.t:SetTextColor(unpack(done and C.text or C.dim))
+            r.n:SetText(name)
+            r.n:SetTextColor(unpack(done and C.muted or cur and C.text or C.dim))
+            if done then r.dot:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1)
+            elseif cur then r.dot:SetVertexColor(r1, g1, b1, 1)
+            else r.dot:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.6) end
+            r.t:SetText(done and D().Clock(t) or (cur and "..." or ""))
+            r.t:SetTextColor(unpack(done and C.positive or C.text))
             if dl then
                 r.dl:SetText(D().ClockDelta(dl)); r.dl:SetTextColor(unpack(dl <= 0 and C.positive or C.negative))
             else
                 r.dl:SetText(rs and D().Clock(rs) or ""); r.dl:SetTextColor(unpack(C.dim))
             end
-            r.hl:SetColorTexture(r1, g1, b1, cur and 0.14 or 0)
+            r.hl:SetColorTexture(r1, g1, b1, cur and 0.12 or 0)
             r:Show()
             y = y + ROW
         end
         for i = #data.rows + 1, #self.rows do self.rows[i]:Hide() end
-        self.foot:ClearAllPoints(); self.foot:SetPoint("TOPLEFT", 12, -(y + 6))
-        local n = D():HourCount()
-        self.foot:SetText((data.record and string.format(T("Record %s"), UI:Hex(C.gold) .. D().Clock(data.record) .. "|r") or T("Pas encore de record"))
-            .. "  ·  " .. UI:Hex(n >= D().CAP - 1 and C.negative or C.muted) .. string.format(T("%d / %d cette heure"), n, D().CAP) .. "|r")
-        self:SetHeight(y + 26)
+        self:SetHeight(y + 8)
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el

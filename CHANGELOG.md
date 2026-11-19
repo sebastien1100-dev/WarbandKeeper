@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.57.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Chrono de donjon à l'écran : nouvelle allure, comme les clés mythiques. Bandeau sombre qui s'efface vers la droite, aussi large que le suivi des quêtes, nom du donjon et compteur d'instances en haut, gros chrono avec le record à côté (rouge une fois le record dépassé), temps restant avant le record, barre du temps face au record, et les boss avec une pastille (verte une fois tué, à la couleur d'accent pour celui en cours).
+
 ## v1.56.11 — 19/11/2026
 
 _Un /reload suffit._

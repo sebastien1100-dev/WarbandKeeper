@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.57.0", date = "19/11/2026",
+        changed = {
+            "Chrono de donjon à l'écran : nouvelle allure, comme les clés mythiques. Bandeau sombre qui s'efface vers la droite, aussi large que le suivi des quêtes, nom du donjon et compteur d'instances en haut, gros chrono avec le record à côté (rouge une fois le record dépassé), temps restant avant le record, barre du temps face au record, et les boss avec une pastille (verte une fois tué, à la couleur d'accent pour celui en cours).",
+        },
+    },
+    {
         version = "1.56.11", date = "19/11/2026",
         fixed = {
             "Inventaire, réglages (roue dentée) : le haut du cadre du Rangement dépassait au-dessus des réglages (deux cadres superposés) ; le volet des réglages couvre maintenant tout le contenu.",
