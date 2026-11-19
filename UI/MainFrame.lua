@@ -56,6 +56,31 @@ end
 ---------------------------------------------------------------------------
 -- Élément de la barre latérale (icône + libellé + compteur).
 ---------------------------------------------------------------------------
+-- Pastille de nombre (comme dans l'échelle du LFG) : fond d'accent, chiffre foncé ; cachée si vide.
+local function CountPill(parent)
+    local p = CreateFrame("Frame", nil, parent)
+    p:SetSize(22, 16)
+    p:SetPoint("RIGHT", -10, 0)
+    p.bg = UI:Rounded(p, 8, 0, "ARTWORK", 1)
+    p.t = UI:Text(p, 10, C.onAccent)
+    p.t:SetPoint("CENTER", 0, 0)
+    p.val = ""
+    function p:SetText(v)
+        self.val = v or ""
+        self.t:SetText(self.val)
+        self:SetWidth(math.max(22, (self.t:GetStringWidth() or 8) + 12))
+        local r, g, b = UI:Accent()
+        self.bg:SetColor(r, g, b, 1)
+        self:SetShown(self.val ~= "" and not self.off)
+    end
+    function p:Allow(on)
+        self.off = not on
+        self:SetShown(self.val ~= "" and on)
+    end
+    UI:OnAccent(function() local r, g, b = UI:Accent(); p.bg:SetColor(r, g, b, 1) end)
+    return p
+end
+
 local function NavItem(parent, def)
     local b = CreateFrame("Button", nil, parent)
     b:SetHeight(34)
@@ -70,9 +95,7 @@ local function NavItem(parent, def)
     b.label:SetPoint("LEFT", 40, 0)
     b.label:SetPoint("RIGHT", -24, 0)
     b.label:SetText(LABELS[def.key] or def.nav or def.title)
-    b.count = UI:Text(b, 10, C.dim)
-    b.count:SetPoint("RIGHT", -10, 0)
-    b.count:SetJustifyH("RIGHT")
+    b.count = CountPill(b)
 
     function b:Refresh()
         local sel = UI.current == def.key or (def.key == "characters" and UI.current == "charsheet")
@@ -84,7 +107,7 @@ local function NavItem(parent, def)
         self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
         local collapsed = WK.DB.global.settings.ui.collapsed
         self.label:SetShown(not collapsed)
-        self.count:SetShown(not collapsed)
+        self.count:Allow(not collapsed)
     end
     b:SetScript("OnEnter", function(self)
         self.hover = true; self:Refresh()
@@ -116,7 +139,8 @@ local function GroupHead(parent, name, icon)
     b.label:SetText(WK.T(name))
     b.chev = UI:Icon(b, "chevron", 11)
     b.chev:SetPoint("RIGHT", -12, 0)
-    b.sum = UI:Text(b, 10)
+    b.sum = CountPill(b)
+    b.sum:ClearAllPoints()
     b.sum:SetPoint("RIGHT", b.chev, "LEFT", -6, 0)
     function b:Refresh()
         local closed = WK.DB.global.settings.ui.navClosed[name]
@@ -125,7 +149,6 @@ local function GroupHead(parent, name, icon)
         self.chev:SetVertexColor(r, g, bl, self.hover and 1 or 0.8)
         if self.chev.SetRotation then self.chev:SetRotation(closed and math.pi / 2 or 0) end
         if self.hover then self.label:SetTextColor(r, g, bl, 1) else self.label:SetTextColor(unpack(closed and C.muted or C.dim)) end
-        self.sum:SetTextColor(unpack(C.warning))
     end
     b:SetScript("OnEnter", function(s) s.hover = true; s:Refresh() end)
     b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh() end)

@@ -3054,4 +3054,5 @@ WK.Locales.enUS.text = {
     ["Au groupe"] = "To the group",
     ["Résumé en sortant"] = "Summary on leaving",
     ["Expérience, argent, morts et réputation du passage, dans le chat (ou envoyé au groupe)."] = "Experience, money, deaths and reputation of the run, in chat (or sent to the group).",
+    ["Objets par métier"] = "Items by profession",
 }

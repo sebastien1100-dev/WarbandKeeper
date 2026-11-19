@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.44.1", date = "19/11/2026",
+        changed = {
+            "Menu de gauche : les nombres sont des pastilles à la couleur d'accent, comme dans l'échelle du LFG (aussi sur les titres de groupe repliés).",
+            "Feu de camp : réglages rangés en onglets (Rappels, Objets par métier, Repos, Comment ça marche).",
+        },
+    },
+    {
         version = "1.44.0", date = "19/11/2026", restart = true,
         added = {
             "Donjons : limite d'instances du compte (10 par heure glissante) : compteur dans la colonne des donjons (survol : l'heure et le perso de chaque entrée), dans le chrono, et alerte à 9 sur 10 avec l'heure de la prochaine place libre. Une réinitialisation annoncée par le jeu ouvre une nouvelle copie.",

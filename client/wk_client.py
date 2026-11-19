@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.3"
+CLIENT_VERSION = "1.4.4"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -734,6 +734,8 @@ class Button(tk.Canvas):
         "secondary": ("surface2", "hover", "text", "border"),
         "ghost": ("surface", "hover", "muted", None),
         "danger": ("surface2", "hover", "negative", "border"),
+        "ok": ("positive", "positive", "bg", None),       # à jour : vert, même inactif
+        "alert": ("negative", "negative", "bg", None),    # mise à jour à faire : rouge
     }
 
     def __init__(self, parent, text, command=None, style="secondary", width=None, height=36, font=None):
@@ -779,7 +781,7 @@ class Button(tk.Canvas):
             rounded(self, 2, 2, w - 2, h - 2, 9, fill=fill)
         else:
             rounded(self, 1, 1, w - 1, h - 1, 10, fill=fill)
-        color = C[fg] if self.enabled else C["dim"]
+        color = C[fg] if (self.enabled or self.style in ("ok", "alert")) else C["dim"]
         if not self.enabled and self.style == "primary":
             self.delete("all")
             rounded(self, 1, 1, w - 1, h - 1, 10, fill=C["surface2"])
@@ -997,18 +999,15 @@ class HomePage(Page):
         right.pack(side="right")
         self.action = Button(right, "Mettre à jour", self.app.update_addon, "primary", width=190, height=44, font=App.fonts["btnL"])
         self.action.pack(anchor="e")
-        self.check = Button(right, "Vérifier", self.app.refresh, "ghost", width=190, height=30)
-        self.check.pack(anchor="e", pady=(6, 0))
+        self.check = Button(right, "⟳  Vérifier maintenant", self.app.refresh, "secondary", width=190, height=34)
+        self.check.pack(anchor="e", pady=(8, 0))
         self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
         self.status = label(b, "", fg="muted", font="small", wraplength=600)
         self.status.pack(anchor="w", fill="x", pady=(10, 0))
         b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
 
-        notes = Card(self, "Nouveautés", "depuis ta version")
-        notes.pack(fill="both", expand=True, pady=(12, 0))
-        wrap, self.notes = notes_view(notes.body)
-        wrap.pack(fill="both", expand=True)
+        # (les nouveautés sont dans leur page, plus sur l'accueil)
 
         bottom = tk.Frame(self, bg=C["bg"])
         bottom.pack(fill="x", pady=(12, 0))
@@ -1078,8 +1077,8 @@ class HomePage(Page):
         elif vtuple(inst) < vtuple(latest):
             self.versions.configure(text="Installée : %s   »   disponible : %s" % (inst, latest))
             n = len(a.newer())
-            self.chip.set("%d nouvelle%s version%s" % (n, "s" if n > 1 else "", "s" if n > 1 else ""), C["accent"])
-            self.action.set("Mettre à jour", not a.busy, "primary")
+            self.chip.set("%d nouvelle%s version%s" % (n, "s" if n > 1 else "", "s" if n > 1 else ""), C["negative"])
+            self.action.set("Mettre à jour", not a.busy, "alert")
             self.action.command = a.update_addon
         else:
             self.versions.configure(text="Installée : %s" % inst)
@@ -1090,10 +1089,7 @@ class HomePage(Page):
                 self.chip.set("À jour · un /reload suffit", C["positive"])
             else:
                 self.chip.set("À jour", C["positive"])
-            self.action.set("À jour", False, "primary")
-        newer = a.newer()
-        fill_notes(self.notes, newer if newer else a.releases[:1],
-                   "Les nouveautés s'afficheront ici." if not a.releases else "Rien de nouveau.")
+            self.action.set("✓  À jour", False, "ok")
         last = list_backups()
         self.sv.configure(text=("Dernière sauvegarde de tes réglages : " + datetime.fromtimestamp(last[0]["time"]).strftime("%d/%m/%Y %H:%M"))
                           if last else "Aucune sauvegarde de tes réglages pour l'instant.")

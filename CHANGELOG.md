@@ -29,6 +29,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.44.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Menu de gauche : les nombres sont des pastilles à la couleur d'accent, comme dans l'échelle du LFG (aussi sur les titres de groupe repliés).
+- Feu de camp : réglages rangés en onglets (Rappels, Objets par métier, Repos, Comment ça marche).
+
 ## v1.44.0 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

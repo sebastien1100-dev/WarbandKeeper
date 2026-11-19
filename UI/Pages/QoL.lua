@@ -1612,6 +1612,7 @@ UI:RegisterPage({
             -- objets de camp par métier, en tête de l'onglet : une tuile par métier (3 colonnes), puis les feux
             local TH, FH, TG = 136, 52, 10
             local nrows = math.ceil(#Cp.OBJECTS / 3)
+            subtab("Objets par métier", 2)
             local tbl = card("Objets de camp par métier", 40 + nrows * (TH + TG) + 24 + FH + 16,
                 "effet à ton niveau · en clair : palier atteint par un de tes persos")
             local function txt(parent, size, color) local t = UI:Text(parent, size, color); t:SetJustifyH("LEFT"); return t end
@@ -1685,6 +1686,7 @@ UI:RegisterPage({
                 end
             end)
             -- rappel
+            subtab("Rappels", 1)
             local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "icône et encart près du camp")
             UI:SettingRow(rem, -224, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
                 toggle(rem, function() return campCfg.icon end, function(v) campCfg.icon = v; cupdate() end), 80)
@@ -1714,6 +1716,7 @@ UI:RegisterPage({
             -- comment ça marche, et effets rencontrés
             -- 4 étapes en tuiles (gros numéro à la couleur d'accent, titre, texte), puis les effets rencontrés
             local STH, SG = 92, 10
+            subtab("Comment ça marche", 4)
             local how = card("Comment ça marche", 40 + 2 * (STH + SG) + 36 + 8 * 18 + 8)
             local STEPS = {
                 { "Approche-toi du feu", "1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres ») : elle allonge la durée des effets de camp." },
@@ -1783,6 +1786,7 @@ UI:RegisterPage({
 
             -- ce que tes persos peuvent apporter (selon leurs métiers)
             local CROWS = 10
+            subtab("Objets par métier", 2)
             local contrib = card("Ce que tes persos peuvent apporter", 40 + CROWS * 20 + 30, "un objet par joueur et par camp")
             local ctext = dynText(contrib, 11, C.text, function()
                 local list = Cp:Contributions()
@@ -1890,6 +1894,7 @@ UI:RegisterPage({
             end)
 
             -- bon à savoir : repos, sac de couchage
+            subtab("Repos", 3)
             local bag = card("Repos et Sac de couchage douillet", 40 + 4 * 18 + 46 + 8)
             local bt = UI:Text(bag, 11, C.muted)
             bt:SetPoint("TOPLEFT", 16, -42); bt:SetPoint("RIGHT", -16, 0)

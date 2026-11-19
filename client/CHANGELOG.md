@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.4.4 — 19/11/2026
+
+### Modifications
+- Accueil : le gros bouton est vert (« À jour ») quand l'addon est à jour, rouge (« Mettre à jour ») quand une nouvelle version est disponible.
+- Le bouton « Vérifier maintenant » est plus visible.
+- Les nouveautés ne sont plus affichées sur l'accueil : elles restent dans la page Nouveautés.
+
 ## 1.4.3 — 17/11/2026
 
 ### Corrections
