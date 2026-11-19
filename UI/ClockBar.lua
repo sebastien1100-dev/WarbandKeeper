@@ -282,7 +282,7 @@ local SHORTCUTS = {
 UI.CLOCK_SHORTCUTS = SHORTCUTS
 
 local DEFAULTS = {
-    enabled = true, server = false, h12 = false, magnify = 0.8, stats = true, size = 28,
+    enabled = true, server = false, h12 = false, magnify = 0.8, size = 28,
     always = false, clockAlways = true, -- raccourcis toujours dépliés ; horloge toujours visible
     bold = false, timeSize = 0, timeFont = "ui", -- heure : gras, taille (0 = suit la taille des raccourcis), police
     -- survol de l'heure : addons et mémoire (style barres / simple, nombre, tri, FPS, hausse, seuil en Mo, clic droit)
@@ -673,48 +673,6 @@ local function build()
     bar.timeBold:SetPoint("CENTER", bar.time, "CENTER", 1, 0)
     bar.timeBold:SetJustifyH("CENTER")
     bar.timeBold:Hide()
-    -- FPS et latence : deux barres côte à côte sous le cadre de l'heure (remplies selon la valeur),
-    -- valeurs au survol
-    local function meter(kind)
-        local m = CreateFrame("Frame", nil, bar.clockBtn)
-        m:SetSize(24, 5)
-        m.track = UI:Rounded(m, 2.5, 0, "ARTWORK", 0)
-        m.fill = m:CreateTexture(nil, "ARTWORK", nil, 1)
-        m.fill:SetPoint("TOPLEFT"); m.fill:SetPoint("BOTTOMLEFT")
-        -- zone de survol un peu plus haute que la barre
-        m.hit = CreateFrame("Frame", nil, m)
-        m.hit:SetPoint("TOPLEFT", -2, 4); m.hit:SetPoint("BOTTOMRIGHT", 2, -4)
-        m.hit:EnableMouse(true)
-        m.hit:SetScript("OnEnter", function(s)
-            WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
-            local fps, ms, fc, mc = stats()
-            if kind == "fps" then
-                GameTooltip:SetText(T("Images par seconde"), 1, 1, 1)
-                GameTooltip:AddDoubleLine(T("FPS"), tostring(fps), 0.8, 0.8, 0.8, fc[1], fc[2], fc[3])
-                GameTooltip:AddLine(T("Vert au-delà de 50, orange au-delà de 30."), 0.55, 0.57, 0.6, true)
-            else
-                GameTooltip:SetText(T("Latence"), 1, 1, 1)
-                local home, world = ms, ms
-                if GetNetStats then local _, _, h, w = GetNetStats(); home, world = h or ms, w or ms end
-                GameTooltip:AddDoubleLine(T("Domicile"), home .. " ms", 0.8, 0.8, 0.8, 1, 1, 1)
-                GameTooltip:AddDoubleLine(T("Monde"), world .. " ms", 0.8, 0.8, 0.8, mc[1], mc[2], mc[3])
-                GameTooltip:AddLine(T("Vert sous 100 ms, orange sous 200 ms."), 0.55, 0.57, 0.6, true)
-            end
-            GameTooltip:Show()
-        end)
-        m.hit:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        return m
-    end
-    bar.fpsBar = meter("fps")
-    bar.msBar = meter("ms")
-    -- (placées par Layout : sous l'heure, calées sur la largeur du texte)
-    function bar:Meter(m, frac, col)
-        m.frac, m.col = frac, col
-        -- fond de barre bien visible : sinon la partie vide disparaît et l'ensemble paraît décentré
-        m.track:SetColor(C.muted[1], C.muted[2], C.muted[3], 0.35)
-        m.fill:SetWidth(math.max(1, (m:GetWidth() or 24) * math.max(0.08, math.min(1, frac))))
-        m.fill:SetColorTexture(col[1], col[2], col[3], 1)
-    end
     bar.clockBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     bar.clockBtn:SetScript("OnClick", function(_, button)
         -- clic droit (réglage) : libérer la mémoire inutilisée des addons, hors combat
@@ -776,10 +734,6 @@ local function build()
             self.time:SetText(txt)
             self.timeBold:SetText(txt)
             if txt ~= self.lastTxt then self.lastTxt = txt; self.relayout = true end
-            local fps, ms, fc, mc = stats()
-            self:Meter(self.fpsBar, fps / 60, fc)
-            self:Meter(self.msBar, 1 - ms / 400, mc)
-            self.fpsBar:SetShown(o.stats); self.msBar:SetShown(o.stats)
             self.time:SetTextColor(UI:Accent())
             self.timeBold:SetTextColor(UI:Accent())
             self.timeBold:SetShown(o.bold and true or false)
@@ -877,15 +831,6 @@ local function build()
         local shift = (lead - trail) / 2
         self.time:ClearAllPoints()
         self.time:SetPoint("CENTER", self.clockBtn, "CENTER", (o.bold and -0.5 or 0) - shift, yoff)
-        -- sous le cadre de l'heure, sur sa largeur (moins les arrondis), un petit écart au milieu
-        local mw = math.floor((clockW - 16 - 6) / 2)
-        for _, m in ipairs({ self.fpsBar, self.msBar }) do
-            m:ClearAllPoints()
-            m:SetWidth(mw)
-            if m.frac then self:Meter(m, m.frac, m.col) end
-        end
-        self.fpsBar:SetPoint("TOPLEFT", self.bg, "BOTTOMLEFT", 8, -4)
-        self.msBar:SetPoint("TOPRIGHT", self.bg, "BOTTOMRIGHT", -8, -4)
         self.bg:SetSize(clockW, h)
         self:SetHeight(h)
         local left = self:GetLeft() or 0
