@@ -69,15 +69,42 @@ function M.Record(msg, stack, event)
 end
 WK.RecordError = M.Record
 
--- gestionnaire d'erreurs du jeu : on note les nôtres, puis on laisse faire l'ancien
-if geterrorhandler and seterrorhandler then
-    local old = geterrorhandler()
-    seterrorhandler(function(msg, ...)
-        local stack = debugstack and debugstack(2) or ""
-        if ours(msg) or ours(stack) then pcall(M.Record, msg, stack) end
+-- gestionnaire d'erreurs du jeu : on note les nôtres, puis on laisse faire l'ancien. Un addon d'erreurs
+-- (BugGrabber, BugSack…) peut remplacer le gestionnaire après nous : on se replace devant lui à la
+-- connexion puis régulièrement, et on écoute aussi BugGrabber directement s'il est là.
+local lastMsg, lastAt
+local function note(msg, stack)
+    if not (ours(msg) or ours(stack)) then return end
+    local now = GetTime and GetTime() or 0
+    if msg == lastMsg and lastAt and now - lastAt < 1 then return end -- déjà noté par l'autre chemin
+    lastMsg, lastAt = msg, now
+    pcall(M.Record, msg, stack)
+end
+local ourHandler
+local function hookHandler()
+    if not (geterrorhandler and seterrorhandler) then return end
+    local cur = geterrorhandler()
+    if cur == ourHandler then return end
+    local old = cur
+    ourHandler = function(msg, ...)
+        note(msg, debugstack and debugstack(2) or "")
         if old then return old(msg, ...) end
+    end
+    seterrorhandler(ourHandler)
+end
+hookHandler()
+local function hookBugGrabber()
+    local BG = _G.BugGrabber
+    if M.bgHooked or not (BG and BG.RegisterCallback) then return end
+    M.bgHooked = true
+    pcall(BG.RegisterCallback, M, "BugGrabber_BugGrabbed", function(_, err)
+        if type(err) == "table" then note(tostring(err.message or ""), tostring(err.stack or "")) end
     end)
 end
+WK:On("PLAYER_LOGIN", function()
+    hookHandler(); hookBugGrabber()
+    C_Timer.NewTicker(30, function() hookHandler(); hookBugGrabber() end)
+end)
 local function blocked(kind)
     return function(addon, func)
         if addon ~= ADDON_NAME then return end
@@ -355,8 +382,12 @@ function M:PerfStart(secs)
     if EnumerateFrames then
         local f = EnumerateFrames()
         while f do
-            local name = f.GetName and f:GetName()
-            local up = name and name:find("^WarbandKeeper") and f.GetScript and f:GetScript("OnUpdate")
+            -- (certains addons redéfinissent GetName sur leurs cadres : on ne garde que les vrais noms)
+            local okN, name = pcall(f.GetName, f)
+            if not okN or type(name) ~= "string" then name = nil end
+            local okU, up = false, nil
+            if name and name:find("^WarbandKeeper") then okU, up = pcall(f.GetScript, f, "OnUpdate") end
+            if not okU then up = nil end
             if up then
                 table.insert(p.frames, { f, up })
                 local label = "OnUpdate " .. name:gsub("^WarbandKeeper", "")

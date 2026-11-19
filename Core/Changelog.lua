@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.73.2", date = "19/11/2026",
+        fixed = {
+            "/wk perf : erreur au lancement (« attempt to call a nil value ») quand un autre addon (le compteur de dégâts du jeu, par exemple) donne à ses cadres un nom qui n'est pas un texte.",
+            "Options > Fiabilité : les erreurs de l'addon n'étaient pas notées quand un addon d'erreurs (BugSack, BugGrabber) prenait la main après nous. Le journal se replace maintenant devant lui et écoute aussi BugGrabber directement.",
+        },
+    },
+    {
         version = "1.73.1", date = "19/11/2026",
         changed = {
             "Rien ne change dans le jeu : cette version livre le client PC 1.8.5 (le compte à rebours de la prochaine vérification avance).",

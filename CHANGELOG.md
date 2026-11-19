@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.73.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- /wk perf : erreur au lancement (« attempt to call a nil value ») quand un autre addon (le compteur de dégâts du jeu, par exemple) donne à ses cadres un nom qui n'est pas un texte.
+- Options > Fiabilité : les erreurs de l'addon n'étaient pas notées quand un addon d'erreurs (BugSack, BugGrabber) prenait la main après nous. Le journal se replace maintenant devant lui et écoute aussi BugGrabber directement.
+
 ## v1.73.1 — 19/11/2026
 
 _Un /reload suffit._
