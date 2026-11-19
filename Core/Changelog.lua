@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.69.1", date = "19/11/2026",
+        changed = {
+            "Donjons, chrono : il part maintenant au premier pack (ton premier combat dans le donjon), plus en franchissant la porte ; en attendant il reste à 0 avec « au premier pack ». Un boss tué ou le chrono partagé par un membre du groupe le lancent aussi. Réglage « Départ du chrono » (au premier pack / en entrant) dans Donjons > roue dentée.",
+        },
+    },
+    {
         version = "1.69.0", date = "19/11/2026", restart = true,
         added = {
             "Client PC : l'addon écrit à chaque déconnexion (et /reload) un petit résumé pour le tableau de bord et les notifications Windows du client 1.7 : or du compte sur 30 jours, dernière séance, enchères vues à l'HV et leur expiration, recharges de métier, listes d'achat, Rangement, courrier non pris, repos.",

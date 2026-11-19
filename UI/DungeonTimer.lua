@@ -35,7 +35,9 @@ local function liveData()
             table.insert(rows, { Dg:BossName(b), k and (k - run.start) or nil, k and Dg:Delta(d, b.id) or nil, rs, b == nextB })
         end
     end
-    return { name = Dg:Name(d), elapsed = Dg:Elapsed(), record = rec and rec.dur or nil, rows = rows }
+    -- chrono en attente du premier combat : dit pourquoi il reste à 0
+    local name = Dg:Name(d) .. (run.wait and ("  ·  " .. WK.T("au premier pack")) or "")
+    return { name = name, elapsed = Dg:Elapsed(), record = rec and rec.dur or nil, rows = rows }
 end
 
 -- largeur du suivi des quêtes (le chrono se pose dessous, aussi large), sinon W

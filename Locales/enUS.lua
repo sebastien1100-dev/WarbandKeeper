@@ -3488,4 +3488,9 @@ WK.Locales.enUS.text = {
     ["Pièces jointes (clic droit sur un objet des sacs, ou glisse-le ici ; clic droit sur une case : retirer)"] = "Attachments (right-click a bag item or drag it here; right-click a slot: remove)",
     ["Notre fenêtre de courrier"] = "Our mail window",
     ["À la place de celle du jeu : Reçus, Envoyer, Rangement, Règles d'envoi et Historique au même endroit. « Fenêtre du jeu » y revient pour une visite."] = "Instead of the game's: Inbox, Send, Stash, Sending rules and History in one place. \"Game window\" goes back to it for one visit.",
+    ["au premier pack"] = "at first pull",
+    ["Départ du chrono"] = "Timer start",
+    ["Au premier pack"] = "At first pull",
+    ["En entrant"] = "On entering",
+    ["Au premier pack : le chrono attend ton premier combat dans le donjon (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie."] = "At first pull: the timer waits for your first fight in the dungeon (or a group member's timer). On entering: as soon as you walk in.",
 }

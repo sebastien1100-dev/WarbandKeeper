@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.69.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons, chrono : il part maintenant au premier pack (ton premier combat dans le donjon), plus en franchissant la porte ; en attendant il reste à 0 avec « au premier pack ». Un boss tué ou le chrono partagé par un membre du groupe le lancent aussi. Réglage « Départ du chrono » (au premier pack / en entrant) dans Donjons > roue dentée.
+
 ## v1.69.0 — 19/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

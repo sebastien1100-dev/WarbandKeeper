@@ -255,8 +255,21 @@ end
 ---------------------------------------------------------------------------
 -- Boss tués : passage en cours et, pour la progression, au moins une fois par perso
 ---------------------------------------------------------------------------
-M.run = nil -- { key, start = date, killed = { [boss] = date du kill }, skipped = { [boss] = true } }
-local function newRun(key) return { key = key, start = time(), killed = {}, skipped = {} } end
+M.run = nil -- { key, start = date, wait = vrai tant que le chrono attend le 1er combat, killed = { [boss] = date du kill }, skipped = { [boss] = true } }
+-- le chrono part au premier combat dans le donjon (réglage timerStart = "pull", par défaut), ou dès l'entrée ("enter")
+local function newRun(key)
+    local wait = (M:Config().timerStart or "pull") == "pull" or nil
+    return { key = key, start = time(), wait = wait, killed = {}, skipped = {} }
+end
+-- départ du chrono (premier combat, premier boss, ou chrono d'un membre du groupe)
+function M:Begin(t)
+    local run = self.run
+    if not (run and run.wait) then return end
+    run.wait = nil
+    run.start = t or time()
+    self:SyncHistory(run)
+    if self.OnChange then pcall(self.OnChange, self) end
+end
 local function npcID(guid)
     if not guid then return nil end
     local id = type(guid) == "string" and guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
@@ -324,6 +337,7 @@ local function record(b)
         local st = db(); st.runs = st.runs or {}; st.runs[WK:CharKey()] = M.run
     end
     if M.run.killed[b.id] then return end
+    M:Begin()
     M.run.killed[b.id] = time()
     M.run.lastBoss, M.run.lastAt = b.id, time()
     M:SyncHistory(M.run)
@@ -690,6 +704,7 @@ end
 -- temps depuis le début du passage en cours
 function M:Elapsed()
     if not (self.run and self.run.start) then return nil end
+    if self.run.wait then return 0 end
     local stop
     local d = self:Get(self.run.key)
     if d and not self:Next(d) then
@@ -802,7 +817,7 @@ end
 local SHARE = "WKrun"
 function M:Share(d)
     local ch = groupChannel()
-    if not (ch and self:InRun(d) and C_ChatInfo and C_ChatInfo.SendAddonMessage) then return false end
+    if not (ch and self:InRun(d) and C_ChatInfo and C_ChatInfo.SendAddonMessage) or self.run.wait then return false end
     local parts = {}
     for b, t in pairs(self.run.killed) do table.insert(parts, tostring(b) .. "=" .. (t - self.run.start)) end
     local msg = "R:" .. d.key .. ":" .. self:Elapsed() .. ":" .. table.concat(parts, ";")
@@ -835,7 +850,7 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, channel, sender)
     if not d then return end
     -- son chrono a commencé plus tôt : on le reprend
     local start = time() - elapsed
-    if start < M.run.start then M.run.start = start end
+    if M.run.wait then M:Begin(start) elseif start < M.run.start then M.run.start = start end
     local n = 0
     for bid, sec in list:gmatch("([^=;]+)=(%d+)") do
         for _, b in ipairs(M:Bosses(d)) do
@@ -877,3 +892,11 @@ function M:Quests(d, c)
     end
     return out
 end
+
+-- premier combat dans le donjon du passage en cours : le chrono démarre
+WK:On("PLAYER_REGEN_DISABLED", function()
+    local run = M.run
+    if not (run and run.wait) then return end
+    local d = M:Current()
+    if d and d.key == run.key then M:Begin() end
+end)
