@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.59.2", date = "19/11/2026",
+        fixed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.3 (faux persos sur l'accueil après une mise à jour, colonne des noms écrasée).",
+        },
+    },
+    {
         version = "1.59.1", date = "19/11/2026",
         added = {
             "Carte du monde : réglage « Taille des icônes sur la carte » (de 50 % à 200 %) pour toutes les icônes (lieux, quais, navires, rares, notes, filons, repère). À 100 %, la taille ne change pas. Il remplace « Taille des pastilles » dans les réglages de la carte, onglet Lieux, carte « Filtres et affichage ».",

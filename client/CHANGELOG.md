@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.6.3 — 19/11/2026
+
+### Corrections
+- Accueil : de faux persos pouvaient apparaître (nom coupé, niveau « ? », 0 pa, « jamais »), surtout après une mise à jour de l'addon. Les listes imbriquées des réglages (sacs, journaux…) étaient mal lues ; elles le sont maintenant, et seules les vraies fiches de perso sont gardées.
+- Accueil : la colonne des noms ne se fait plus écraser quand la fenêtre est étroite (titre « PERSO » coupé).
+
 ## 1.6.2 — 19/11/2026
 
 ### Changements

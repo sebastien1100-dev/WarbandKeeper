@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.6.2"
+CLIENT_VERSION = "1.6.3"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -346,18 +346,43 @@ def saved_variables(addons):
 _LUA_TOKEN = re.compile(r'\s+|--\[\[.*?\]\]|--[^\n]*|"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?|[A-Za-z_][A-Za-z0-9_]*|[{}\[\]=,;]', re.S)
 
 
+class _LuaTokens:
+    """Jetons Lua des réglages, avec un coup d'avance (peek) pour distinguer « nom = valeur » d'une valeur de liste."""
+
+    def __init__(self, text, start):
+        self.text, self.pos, self.ahead = text, start, None
+
+    def __iter__(self):
+        return self
+
+    def _read(self):
+        text, n = self.text, len(self.text)
+        while self.pos < n:
+            m = _LUA_TOKEN.match(text, self.pos)
+            if not m:
+                self.pos += 1
+                continue
+            tok = m.group(0)
+            self.pos = m.end()
+            if tok[0].isspace() or tok.startswith("--"):
+                continue
+            return tok
+        raise StopIteration
+
+    def __next__(self):
+        if self.ahead is not None:
+            tok, self.ahead = self.ahead, None
+            return tok
+        return self._read()
+
+    def peek(self):
+        if self.ahead is None:
+            self.ahead = self._read()
+        return self.ahead
+
+
 def _lua_tokens(text, start):
-    pos, n = start, len(text)
-    while pos < n:
-        m = _LUA_TOKEN.match(text, pos)
-        if not m:
-            pos += 1
-            continue
-        tok = m.group(0)
-        pos = m.end()
-        if tok[0].isspace() or tok.startswith("--"):
-            continue
-        yield tok
+    return _LuaTokens(text, start)
 
 
 def _lua_value(it, tok):
@@ -374,14 +399,13 @@ def _lua_value(it, tok):
                 next(it)  # ]
                 next(it)  # =
                 out[k] = _lua_value(it, next(it))
+            elif re.match(r"[A-Za-z_]", t) and t not in ("true", "false", "nil") and it.peek() == "=":
+                next(it)  # =
+                out[t] = _lua_value(it, next(it))
             else:
-                nxt = next(it)
-                if nxt == "=":
-                    out[t] = _lua_value(it, next(it))
-                else:
-                    out[arr] = _lua_value(it, t); arr += 1
-                    if nxt == "}":
-                        return out
+                # valeur de liste (y compris une table imbriquée)
+                out[arr] = _lua_value(it, t)
+                arr += 1
         return out
     if tok.startswith('"'):
         return bytes(tok[1:-1], "utf-8").decode("unicode_escape").encode("latin-1").decode("utf-8", "replace")
@@ -442,7 +466,8 @@ def read_characters(addons):
             it = _lua_tokens(text, i)
             chars = _lua_value(it, next(it))
             for key, c in (chars or {}).items():
-                if isinstance(c, dict):
+                # un perso : clé « Nom-Royaume » et une fiche (sinon ce n'est pas un perso)
+                if isinstance(c, dict) and isinstance(key, str) and "-" in key:
                     name = c.get("mailName") or c.get("fullName") or c.get("name") or str(key).split("-")[0].strip()
                     out.append({"name": name, "cls": c.get("class") or "", "level": c.get("level") or 0,
                                 "money": c.get("money") or 0, "seen": c.get("lastSeen") or 0})
@@ -1211,10 +1236,10 @@ class HomePage(Page):
         # tableau aligné : pastille, nom, niveau, or, dernière connexion (colonnes de largeur fixe)
         grid = tk.Frame(self.persos, bg=C["surface"])
         grid.pack(fill="x")
-        grid.columnconfigure(1, weight=1)
-        grid.columnconfigure(2, minsize=44)
-        grid.columnconfigure(3, minsize=84)
-        grid.columnconfigure(4, minsize=96)
+        grid.columnconfigure(1, weight=1, minsize=96)
+        grid.columnconfigure(2, minsize=36)
+        grid.columnconfigure(3, minsize=72)
+        grid.columnconfigure(4, minsize=80)
         for col, txt, st in ((1, "PERSO", "w"), (2, "NIV.", "e"), (3, "OR", "e"), (4, "VU", "e")):
             label(grid, txt, fg="dim", font="smallb").grid(row=0, column=col, sticky=st, pady=(0, 4))
         for i, c in enumerate(chars[:8], start=1):
