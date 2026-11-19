@@ -78,6 +78,29 @@ local function build(host)
     f:Hide()
     f.host = host
     f.views = {}
+    -- la fenêtre du jeu se ferme (on s'éloigne de la boîte, Échap, fin d'interaction) : la nôtre aussi.
+    -- Sur ce client, MAIL_CLOSED n'arrive pas toujours : on suit aussi la fenêtre du jeu elle-même.
+    host:HookScript("OnHide", function()
+        f.gameMode = false
+        if f:IsShown() then f:Close() end
+        if f.back then f.back:Hide() end
+    end)
+    f:SetScript("OnUpdate", function(s, el)
+        s.chk = (s.chk or 0) + el
+        if s.chk < 0.5 then return end
+        s.chk = 0
+        if not host:IsShown() then s.gameMode = false; s:Close() end
+    end)
+    -- Échap (ou toute autre fermeture) : la fenêtre du jeu redevient visible ; sans « Fenêtre du jeu »
+    -- demandée, la boîte aux lettres se ferme aussi
+    f:HookScript("OnHide", function()
+        host:SetAlpha(f.hostAlpha or 1)
+        if not f.gameMode and host:IsShown() then
+            if CloseMail then pcall(CloseMail) end
+            if host:IsShown() and HideUIPanel then pcall(HideUIPanel, host) end
+        end
+    end)
+    if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperMail") end
 
     -- barre de titre
     local head = CreateFrame("Frame", nil, f)
@@ -91,7 +114,12 @@ local function build(host)
     f.close = UI:IconButton(head, "close", 26, "Fermer la boîte aux lettres")
     f.close:SetPoint("RIGHT", -10, 0)
     f.close:SetScript("OnClick", function()
-        if CloseMail then CloseMail() elseif HideUIPanel then HideUIPanel(host) end
+        -- fermer la boîte aux lettres du jeu (et notre fenêtre avec, quoi qu'il arrive)
+        if CloseMail then pcall(CloseMail) end
+        if host:IsShown() and HideUIPanel then pcall(HideUIPanel, host) end
+        f.gameMode = false
+        f:Close()
+        if f.back then f.back:Hide() end
     end)
     f.game = UI:Button(head, "Fenêtre du jeu", nil, 26, "secondary")
     f.game:SetPoint("RIGHT", f.close, "LEFT", -10, 0)
@@ -683,6 +711,11 @@ function UI:MailWindow() return view end
 WK:On("MAIL_SHOW", function() C_Timer.After(0.15, attach) end)
 WK:On("MAIL_CLOSED", function()
     if view then view.gameMode = false; view:Close(); if view.back then view.back:Hide() end end
+end)
+-- fin d'interaction avec la boîte aux lettres (clients récents : MAIL_CLOSED n'arrive pas toujours)
+WK:On("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(kind)
+    local mailKind = Enum and Enum.PlayerInteractionType and Enum.PlayerInteractionType.MailInfo or 17
+    if kind == mailKind and view then view.gameMode = false; view:Close(); if view.back then view.back:Hide() end end
 end)
 local function soon()
     if not (view and view:IsShown()) or view.pending then return end

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.72.1", date = "19/11/2026",
+        fixed = {
+            "Boîte aux lettres : notre fenêtre restait affichée quand on s'éloignait de la boîte ou qu'on cliquait sur la croix. Elle se ferme maintenant avec la boîte aux lettres du jeu, quelle que soit la façon (s'éloigner, croix, Échap).",
+        },
+    },
+    {
         version = "1.72.0", date = "19/11/2026",
         added = {
             "Micro menu, survol de l'heure : un panneau « Performances » avec FPS, latence et mémoire des addons, puis les addons les plus gourmands avec une barre chacun (en orange au-dessus du seuil), la hausse depuis la connexion et le nombre d'addons chargés. La mémoire est relue à chaque survol, pas en continu.",

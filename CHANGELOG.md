@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.72.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Boîte aux lettres : notre fenêtre restait affichée quand on s'éloignait de la boîte ou qu'on cliquait sur la croix. Elle se ferme maintenant avec la boîte aux lettres du jeu, quelle que soit la façon (s'éloigner, croix, Échap).
+
 ## v1.72.0 — 19/11/2026
 
 _Un /reload suffit._
