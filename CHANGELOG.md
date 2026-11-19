@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.72.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Micro menu, survol de l'heure : un panneau « Performances » avec FPS, latence et mémoire des addons, puis les addons les plus gourmands avec une barre chacun (en orange au-dessus du seuil), la hausse depuis la connexion et le nombre d'addons chargés. La mémoire est relue à chaque survol, pas en continu.
+- Réglages dans Interface > Micro menu, carte « Survol de l'heure » : afficher ou non, style (barres ou texte simple), nombre d'addons (5, 8, 12, tous), tri (mémoire, processeur si le profilage du jeu est actif, nom), FPS et latence, hausse depuis la connexion, seuil d'alerte (20, 50, 100 Mo), clic droit sur l'heure pour libérer la mémoire (coupé d'office).
+
 ## v1.71.6 — 19/11/2026
 
 _Un /reload suffit._

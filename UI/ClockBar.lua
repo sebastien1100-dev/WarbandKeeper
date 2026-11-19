@@ -285,6 +285,8 @@ local DEFAULTS = {
     enabled = true, server = false, h12 = false, magnify = 0.8, stats = true, size = 28,
     always = false, clockAlways = true, -- raccourcis toujours dépliés ; horloge toujours visible
     bold = false, timeSize = 0, timeFont = "ui", -- heure : gras, taille (0 = suit la taille des raccourcis), police
+    -- survol de l'heure : addons et mémoire (style barres / simple, nombre, tri, FPS, hausse, seuil en Mo, clic droit)
+    perf = true, perfStyle = "bars", perfCount = 8, perfSort = "mem", perfFps = true, perfDelta = true, perfWarn = 50, perfGC = false,
     side = { wk = "L", mail = "L", hearth = "L", char = "R", spells = "R", talents = "R", map = "R" },
 }
 local function cfg()
@@ -348,6 +350,201 @@ local function stats()
     local mc = ms < 100 and C.positive or (ms < 200 and C.warning or C.negative)
     return fps, ms, fc, mc
 end
+
+---------------------------------------------------------------------------
+-- Survol de l'heure : addons et mémoire. Mémoire relue à chaque survol seulement (UpdateAddOnMemoryUsage
+-- coûte quelques millisecondes) ; processeur seulement si le profilage du jeu est actif (scriptProfile).
+---------------------------------------------------------------------------
+-- fonctions des addons (C_AddOns sur les clients récents), cherchées à l'appel
+local function numAddOns() local f = (C_AddOns and C_AddOns.GetNumAddOns) or GetNumAddOns; return f and f() or 0 end
+local function addOnInfo(i) local f = (C_AddOns and C_AddOns.GetAddOnInfo) or GetAddOnInfo; if f then return f(i) end end
+local function addOnLoaded(i) local f = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded; return f and f(i) end
+local memBase -- mémoire totale des addons un peu après la connexion (hausse depuis la connexion)
+local function profiling() return GetCVarBool and GetCVarBool("scriptProfile") and GetAddOnCPUUsage ~= nil end
+local function perfData()
+    local out = { list = {}, total = 0, loaded = 0, count = 0 }
+    out.fps = GetFramerate and math.floor(GetFramerate() + 0.5) or 0
+    if GetNetStats then local _, _, h, w = GetNetStats(); out.home, out.world = h or 0, w or 0 end
+    if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+    local cpu = profiling()
+    if cpu and UpdateAddOnCPUUsage then pcall(UpdateAddOnCPUUsage) end
+    out.cpu = cpu
+    local n = numAddOns()
+    out.count = n
+    for i = 1, n do
+        local ok, loaded = pcall(addOnLoaded, i)
+        if ok and loaded then
+            out.loaded = out.loaded + 1
+            local name, title = addOnInfo(i)
+            local kb = GetAddOnMemoryUsage and GetAddOnMemoryUsage(i) or 0
+            title = type(title) == "string" and title:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") or name
+            local e = { name = (title and title ~= "") and title or name or "?", kb = kb }
+            if cpu then local okc, c = pcall(GetAddOnCPUUsage, i); e.cpu = okc and c or 0 end
+            out.total = out.total + kb
+            table.insert(out.list, e)
+        end
+    end
+    return out
+end
+local function memText(kb)
+    if kb >= 1024 then return (string.format("%.1f Mo", kb / 1024):gsub("%.", ",")) end
+    return string.format("%d Ko", math.floor(kb + 0.5))
+end
+WK:On("PLAYER_LOGIN", function()
+    C_Timer.After(10, function()
+        if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+        local t = 0
+        for i = 1, numAddOns() do t = t + (GetAddOnMemoryUsage and GetAddOnMemoryUsage(i) or 0) end
+        memBase = t
+    end)
+end)
+
+local perfTip
+local function buildPerfTip()
+    local f = CreateFrame("Frame", "WarbandKeeperPerfTip", UIParent)
+    f:SetFrameStrata("TOOLTIP")
+    f:SetSize(360, 200)
+    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.97 }, C.border)
+    f.title = UI:Text(f, 13, C.text); f.title:SetPoint("TOPLEFT", 14, -12)
+    f.when = UI:Text(f, 10, C.dim); f.when:SetPoint("TOPRIGHT", -14, -14)
+    f.tiles = {}
+    for i = 1, 3 do
+        local t = CreateFrame("Frame", nil, f)
+        t:SetHeight(40)
+        t.bg = UI:Rounded(t, 7, 0, "BACKGROUND", 2); t.bg:SetColor(unpack(C.surface2))
+        t.l = UI:Text(t, 9, C.dim); t.l:SetPoint("TOPLEFT", 8, -6)
+        t.v = UI:Text(t, 14, C.text); t.v:SetPoint("TOPLEFT", t.l, "BOTTOMLEFT", 0, -2)
+        f.tiles[i] = t
+    end
+    f.rows = {}
+    function f:Row(i)
+        local r = self.rows[i]
+        if r then return r end
+        r = CreateFrame("Frame", nil, self)
+        r:SetHeight(18)
+        r.name = UI:Text(r, 11, C.text); r.name:SetPoint("LEFT"); r.name:SetWidth(120); r.name:SetJustifyH("LEFT")
+        if r.name.SetWordWrap then r.name:SetWordWrap(false) end
+        r.val = UI:Text(r, 11, C.text); r.val:SetPoint("RIGHT"); r.val:SetJustifyH("RIGHT")
+        r.track = r:CreateTexture(nil, "ARTWORK"); r.track:SetHeight(5)
+        r.track:SetPoint("LEFT", 128, 0); r.track:SetPoint("RIGHT", -70, 0)
+        r.track:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+        r.fill = r:CreateTexture(nil, "OVERLAY"); r.fill:SetHeight(5); r.fill:SetPoint("LEFT", r.track, "LEFT")
+        self.rows[i] = r
+        return r
+    end
+    f.foot = UI:Text(f, 11, C.muted); f.foot:SetJustifyH("LEFT")
+    f.hint = UI:Text(f, 10, C.dim); f.hint:SetJustifyH("LEFT")
+    f:Hide()
+    return f
+end
+
+-- remplit l'infobulle du jeu (style simple) ou notre panneau (style barres) ; anchor = le bouton de l'heure
+local function showPerf(anchor, showDate)
+    local o = cfg()
+    local d = perfData()
+    local key = o.perfSort == "cpu" and d.cpu and "cpu" or (o.perfSort == "name" and "name" or "kb")
+    table.sort(d.list, function(a, b)
+        if key == "name" then return a.name:lower() < b.name:lower() end
+        return (a[key] or 0) > (b[key] or 0)
+    end)
+    local count = o.perfCount == 0 and #d.list or math.min(#d.list, o.perfCount or 8)
+    local warnKb = (o.perfWarn or 50) * 1024
+    local function val(e) return key == "cpu" and string.format("%d ms", math.floor((e.cpu or 0) + 0.5)) or memText(e.kb) end
+    if o.perfStyle ~= "bars" then
+        showDate()
+        if o.perfFps then
+            GameTooltip:AddDoubleLine(T("FPS · latence"), string.format("%d · %d / %d ms", d.fps, d.home or 0, d.world or 0), 0.8, 0.8, 0.8, 1, 1, 1)
+        end
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddDoubleLine(T("Addons"), memText(d.total), 1, 1, 1, 1, 1, 1)
+        local rest, restKb = 0, 0
+        for i, e in ipairs(d.list) do
+            if i <= count then
+                local w = e.kb >= warnKb
+                GameTooltip:AddDoubleLine(e.name, val(e), 0.85, 0.85, 0.85, w and C.warning[1] or 1, w and C.warning[2] or 1, w and C.warning[3] or 1)
+            else rest, restKb = rest + 1, restKb + e.kb end
+        end
+        if rest > 0 then GameTooltip:AddDoubleLine(string.format(T(rest > 1 and "… %d autres" or "… %d autre"), rest), memText(restKb), 0.5, 0.5, 0.5, 0.5, 0.5, 0.5) end
+        if o.perfDelta and memBase then
+            local dv = d.total - memBase
+            GameTooltip:AddLine(string.format(T("Depuis la connexion : %s%s"), dv >= 0 and "+" or "-", memText(math.abs(dv))), 0.6, 0.6, 0.6)
+        end
+        if o.perfGC then GameTooltip:AddLine(T("Clic droit : libérer la mémoire"), 0.5, 0.5, 0.5) end
+        GameTooltip:Show()
+        return
+    end
+    perfTip = perfTip or buildPerfTip()
+    local f = perfTip
+    local r1, g1, b1 = UI:Accent()
+    if f.border then f.border:SetColor(r1, g1, b1, 0.5) end
+    local dt = date("*t")
+    f.title:SetText(T("Performances"))
+    f.when:SetText(string.format("%02d:%02d", dt.hour, dt.min) .. (GetGameTime and string.format("  ·  " .. T("serveur %02d:%02d"), GetGameTime()) or ""))
+    local y = -36
+    local W = 360
+    if o.perfFps then
+        local tw = (W - 28 - 12) / 3
+        local lat = math.max(d.home or 0, d.world or 0)
+        local vals = { { T("FPS"), tostring(d.fps), d.fps >= 50 and C.positive or (d.fps >= 30 and C.warning or C.negative) },
+            { T("LATENCE"), lat .. " ms", lat < 100 and C.positive or (lat < 200 and C.warning or C.negative) },
+            { T("MÉMOIRE"), memText(d.total), C.text } }
+        for i, t in ipairs(f.tiles) do
+            t:ClearAllPoints(); t:SetPoint("TOPLEFT", 14 + (i - 1) * (tw + 6), y); t:SetWidth(tw)
+            t.l:SetText(vals[i][1]); t.v:SetText(vals[i][2]); t.v:SetTextColor(unpack(vals[i][3])); t:Show()
+        end
+        y = y - 48
+    else
+        for _, t in ipairs(f.tiles) do t:Hide() end
+    end
+    local maxv = 0
+    for i = 1, count do local e = d.list[i]; maxv = math.max(maxv, key == "cpu" and (e.cpu or 0) or e.kb) end
+    for i, r in ipairs(f.rows) do if i > count + 1 then r:Hide() end end
+    local restN, restKb = 0, 0
+    for i = count + 1, #d.list do restN, restKb = restN + 1, restKb + d.list[i].kb end
+    for i = 1, count + (restN > 0 and 1 or 0) do
+        local r = f:Row(i)
+        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 14, y); r:SetPoint("TOPRIGHT", -14, y)
+        if i <= count then
+            local e = d.list[i]
+            local v = key == "cpu" and (e.cpu or 0) or e.kb
+            local w = e.kb >= warnKb
+            r.name:SetText(e.name); r.name:SetTextColor(unpack(C.text))
+            r.val:SetText(val(e)); r.val:SetTextColor(unpack(w and C.warning or C.text))
+            local tw = math.max(1, (r.track:GetWidth() or (W - 28 - 198)))
+            r.fill:SetWidth(math.max(1, tw * (maxv > 0 and v / maxv or 0)))
+            if w then r.fill:SetColorTexture(C.warning[1], C.warning[2], C.warning[3], 1) else r.fill:SetColorTexture(r1, g1, b1, 1) end
+            r.track:Show(); r.fill:Show()
+        else
+            r.name:SetText(string.format(T(restN > 1 and "… %d autres" or "… %d autre"), restN)); r.name:SetTextColor(unpack(C.dim))
+            r.val:SetText(memText(restKb)); r.val:SetTextColor(unpack(C.dim))
+            r.track:Hide(); r.fill:Hide()
+        end
+        r:Show()
+        y = y - 20
+    end
+    y = y - 6
+    local foot = {}
+    if o.perfDelta and memBase then
+        local dv = d.total - memBase
+        table.insert(foot, string.format(T("Depuis la connexion : %s"), UI:Hex(dv > 0 and C.warning or C.positive) .. (dv >= 0 and "+" or "-") .. memText(math.abs(dv)) .. "|r"))
+    end
+    table.insert(foot, string.format(T("%d addons chargés sur %d"), d.loaded, d.count))
+    f.foot:ClearAllPoints(); f.foot:SetPoint("TOPLEFT", 14, y); f.foot:SetText(table.concat(foot, "  ·  "))
+    y = y - 16
+    local hints = { T("Clic : calendrier") }
+    if o.perfGC then table.insert(hints, T("clic droit : libérer la mémoire")) end
+    if o.perfSort == "cpu" and not d.cpu then table.insert(hints, T("processeur : profilage du jeu coupé")) end
+    f.hint:ClearAllPoints(); f.hint:SetPoint("TOPLEFT", 14, y); f.hint:SetText(table.concat(hints, "  ·  "))
+    y = y - 22
+    f:SetSize(W, -y)
+    f:ClearAllPoints()
+    local _, cy = anchor:GetCenter()
+    if cy and cy > (UIParent:GetHeight() or 800) / 2 then f:SetPoint("TOP", anchor, "BOTTOM", 0, -6)
+    else f:SetPoint("BOTTOM", anchor, "TOP", 0, 6) end
+    f:Show()
+end
+function UI:HidePerfTip() if perfTip then perfTip:Hide() end end
+function UI:PerfTip() return perfTip end
 
 ---------------------------------------------------------------------------
 -- Construction
@@ -518,22 +715,40 @@ local function build()
         m.fill:SetWidth(math.max(1, (m:GetWidth() or 24) * math.max(0.08, math.min(1, frac))))
         m.fill:SetColorTexture(col[1], col[2], col[3], 1)
     end
-    bar.clockBtn:SetScript("OnClick", function()
+    bar.clockBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    bar.clockBtn:SetScript("OnClick", function(_, button)
+        -- clic droit (réglage) : libérer la mémoire inutilisée des addons, hors combat
+        if button == "RightButton" then
+            if cfg().perfGC and not (InCombatLockdown and InCombatLockdown()) then
+                local before = collectgarbage("count")
+                collectgarbage("collect")
+                WK:Print(string.format(T("Mémoire libérée : %s"), memText(math.max(0, before - collectgarbage("count")))))
+            end
+            return
+        end
         if ToggleCalendar then ToggleCalendar() elseif GameTimeFrame and GameTimeFrame.Click then GameTimeFrame:Click() else UI:ToggleWindow() end
     end)
-    bar.clockBtn:SetScript("OnEnter", function(s)
-        WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+    local function showDate()
+        WK.UI:TooltipOwner(bar.clockBtn, "ANCHOR_BOTTOM")
         local d = date("*t")
         local DAYS = { "dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi" }
         local MONTHS = { "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre" }
         GameTooltip:SetText(string.format("%s %d %s", T(DAYS[d.wday]), d.day, T(MONTHS[d.month])), 1, 1, 1)
         if GetGameTime then local h, m = GetGameTime(); GameTooltip:AddDoubleLine(T("Heure du serveur"), string.format("%02d:%02d", h, m), 0.8, 0.8, 0.8, 1, 1, 1) end
         GameTooltip:AddDoubleLine(T("Session de jeu"), WK:FormatTime(time() - (bar.loginAt or time())), 0.8, 0.8, 0.8, 1, 1, 1)
+    end
+    bar.clockBtn:SetScript("OnEnter", function(s)
+        -- addons et mémoire (réglage) ; sinon la date, la session et FPS · latence comme avant
+        if cfg().perf and not (InCombatLockdown and InCombatLockdown()) then
+            local ok = pcall(showPerf, s, showDate)
+            if ok then return end
+        end
+        showDate()
         local fps, ms = stats()
         GameTooltip:AddDoubleLine(T("FPS · latence"), fps .. " · " .. ms .. " ms", 0.8, 0.8, 0.8, 1, 1, 1)
         GameTooltip:Show()
     end)
-    bar.clockBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    bar.clockBtn:SetScript("OnLeave", function() GameTooltip:Hide(); UI:HidePerfTip() end)
     bar.loginAt = time()
     bar.icons = {}
     for _, def in ipairs(SHORTCUTS) do bar.icons[def.key] = makeIcon(def) end

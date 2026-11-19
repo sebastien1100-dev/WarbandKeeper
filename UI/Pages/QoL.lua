@@ -807,6 +807,31 @@ UI:RegisterPage({
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
         local clockCard = card("Horloge et raccourcis", 40 + 11 * 46 + 30 + 128, "les raccourcis se déplient au survol de l'heure")
+        -- survol de l'heure : addons et mémoire (UI/ClockBar.lua)
+        do
+            local pc = card("Survol de l'heure", 40 + 8 * 46 + 8, "addons, mémoire, FPS et latence")
+            local py = -40
+            local function prow(label, desc, ctl, w) UI:SettingRow(pc, py, label, desc, ctl, w); py = py - 46 end
+            prow("Addons et mémoire au survol", "Au survol de l'heure : les addons les plus gourmands et la mémoire de tous (relue à chaque survol).",
+                toggle(pc, function() return ck.perf ~= false end, function(v) ck.perf = v end), 80)
+            local st = UI:Segmented(pc, { { "simple", "Simple" }, { "bars", "Barres" } }, function(v) ck.perfStyle = v end, 26)
+            st:Select(ck.perfStyle or "bars")
+            prow("Style", "Simple : texte dans l'infobulle. Barres : panneau avec FPS, latence, mémoire et une barre par addon.", st, 180)
+            local nb = UI:Segmented(pc, { { 5, "5" }, { 8, "8" }, { 12, "12" }, { 0, "Tous" } }, function(v) ck.perfCount = v end, 26)
+            nb:Select(ck.perfCount or 8)
+            prow("Nombre d'addons", "Les autres sont regroupés en une ligne.", nb, 220)
+            local so = UI:Segmented(pc, { { "mem", "Mémoire" }, { "cpu", "Processeur" }, { "name", "Nom" } }, function(v) ck.perfSort = v end, 26)
+            so:Select(ck.perfSort or "mem")
+            prow("Trier par", "Le processeur seulement si le profilage du jeu est actif (il ralentit un peu le jeu).", so, 270)
+            prow("FPS et latence", "En tête du panneau.", toggle(pc, function() return ck.perfFps ~= false end, function(v) ck.perfFps = v end), 80)
+            prow("Hausse depuis la connexion", "Combien la mémoire des addons a grossi depuis ton arrivée.",
+                toggle(pc, function() return ck.perfDelta ~= false end, function(v) ck.perfDelta = v end), 80)
+            local wa = UI:Segmented(pc, { { 20, "20 Mo" }, { 50, "50 Mo" }, { 100, "100 Mo" } }, function(v) ck.perfWarn = v end, 26)
+            wa:Select(ck.perfWarn or 50)
+            prow("Seuil d'alerte", "Un addon au-dessus passe en orange.", wa, 240)
+            prow("Clic droit sur l'heure : libérer la mémoire", "Nettoie la mémoire inutilisée des addons (hors combat).",
+                toggle(pc, function() return ck.perfGC end, function(v) ck.perfGC = v end), 80)
+        end
         -- en haut : les raccourcis (barre telle qu'à l'écran) ; les réglages en dessous
         local TOPBOX = 40 + 26 + 56 + 8 + 34 + 26
         local cy = -TOPBOX

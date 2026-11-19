@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.72.0", date = "19/11/2026",
+        added = {
+            "Micro menu, survol de l'heure : un panneau « Performances » avec FPS, latence et mémoire des addons, puis les addons les plus gourmands avec une barre chacun (en orange au-dessus du seuil), la hausse depuis la connexion et le nombre d'addons chargés. La mémoire est relue à chaque survol, pas en continu.",
+            "Réglages dans Interface > Micro menu, carte « Survol de l'heure » : afficher ou non, style (barres ou texte simple), nombre d'addons (5, 8, 12, tous), tri (mémoire, processeur si le profilage du jeu est actif, nom), FPS et latence, hausse depuis la connexion, seuil d'alerte (20, 50, 100 Mo), clic droit sur l'heure pour libérer la mémoire (coupé d'office).",
+        },
+    },
+    {
         version = "1.71.6", date = "19/11/2026",
         changed = {
             "Rien ne change dans le jeu : cette version livre le client PC 1.8.4 (un seul bouton pour vérifier et mettre à jour).",
