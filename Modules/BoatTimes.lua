@@ -48,7 +48,7 @@ local models = {}
 function M:Learn(from, to, dep, arr)
     -- ligne des fichiers du jeu (Modules/BoatLines.lua) : départ noté là-bas
     local BL = WK.modules.BoatLines
-    if BL and dep and BL:Learn(from, to, dep) then return true end
+    if BL and dep and BL:Learn(from, to, dep, arr) then return true end
     local l, side = self:Match(from, to)
     if not (l and dep) then return nil end
     local key = M.Key(l)

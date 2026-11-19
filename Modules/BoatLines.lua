@@ -10,7 +10,9 @@ local T = function(s) return WK.T(s) end
 -- total (tour - arrêts) est partagé entre les étapes selon leur longueur (plus un départ et un arrêt).
 local ACCEL = 600     -- même valeur que tools/gen_boats.py
 local KEEP = 16       -- départs gardés par ligne
-local FRESH = 12 * 3600   -- au-delà, l'heure calée est dite « estimée »
+local FRESH = 12 * 3600   -- au-delà, les départs ne servent plus de base propre à leur quai
+local EXACT_AGE = 3 * 3600  -- « exact » : un départ vu à ce quai depuis moins de 3 h (ou trajets mesurés)
+local RESET_GAP = 45       -- un départ vu par toi à plus de 45 s de l'horaire prévu : le serveur a redémarré
 local WINDOW = 4 * 86400  -- départs plus vieux : oubliés (redémarrages du serveur)
 local CONTMAP = { [0] = 1415, [1] = 1414 } -- cartes des continents : Royaumes de l'Est, Kalimdor
 
@@ -56,23 +58,44 @@ local function period(l)
     return (e and e.P) or l.period
 end
 -- décalages dans le tour (t = 0 : départ du quai 1) : départ et arrivée de chaque quai
+-- temps à quai du quai i : mesuré en jeu (arrivée puis départ vus), sinon celui des données
+local function dwellOf(l, i)
+    local e = sched(l)
+    return (e and e.dwell and e.dwell[i]) or l.stops[i].dwell or 60
+end
+M.DwellOf = dwellOf
+-- Trajets mesurés en jeu (traversées faites : départ » arrivée) : pris tels quels ; le reste du tour est
+-- partagé entre les autres étapes selon leur longueur (avant : tout était partagé ainsi, à l'estime)
 local function offsets(l, P)
     local n = #l.stops
-    local dwell, w = 0, 0
-    for i = 1, n do dwell = dwell + (l.stops[i].dwell or 60); w = w + (l.legs[i].len or 0) + ACCEL end
-    local travel = math.max(10 * n, P - dwell)
+    local e = sched(l)
+    local legT = e and e.legT or {}
+    local dwell, known, w = 0, 0, 0
+    for i = 1, n do
+        dwell = dwell + dwellOf(l, i)
+        if legT[i] then known = known + legT[i] else w = w + (l.legs[i].len or 0) + ACCEL end
+    end
+    local rest = P - dwell - known
+    local useMeasured = rest >= 0 and (w > 0 or math.abs(rest) < 20)
+    if not useMeasured then
+        -- mesures incohérentes avec le tour : partage à l'estime
+        w, rest = 0, math.max(10 * n, P - dwell)
+        for i = 1, n do w = w + (l.legs[i].len or 0) + ACCEL end
+    end
     local dep, arr, leg = { [1] = 0 }, {}, {}
     local t = 0
     for i = 1, n do
-        local tr = travel * ((l.legs[i].len or 0) + ACCEL) / w
+        local tr
+        if useMeasured and legT[i] then tr = legT[i]
+        else tr = (w > 0) and rest * ((l.legs[i].len or 0) + ACCEL) / w or 0 end
         leg[i] = tr
         local j = i % n + 1
         t = t + tr
         arr[j] = t
-        if j ~= 1 then t = t + (l.stops[j].dwell or 60); dep[j] = t end
+        if j ~= 1 then t = t + dwellOf(l, j); dep[j] = t end
     end
-    arr[1] = P - (l.stops[1].dwell or 60)
-    return dep, arr, leg
+    arr[1] = P - dwellOf(l, 1)
+    return dep, arr, leg, useMeasured and known > 0
 end
 M.Offsets = offsets
 
@@ -84,8 +107,10 @@ local function refine(l, e)
     local span = obs[#obs].t - obs[1].t
     local P0 = l.period
     local lo, hi, step
-    if P0 and l.prec == "exact" then return end
-    if P0 then lo, hi, step = P0 - 1.5, P0 + 1.5, 0.002
+    -- lignes « exact » (tour mesuré sur WoW Classic) : WoW Forever peut tourner un poil différemment, on
+    -- affine aussi, dans une fenêtre étroite
+    if P0 and l.prec == "exact" then lo, hi, step = P0 - 0.8, P0 + 0.8, 0.002
+    elseif P0 then lo, hi, step = P0 - 1.5, P0 + 1.5, 0.002
     else
         local base = 0
         for i = 1, #l.stops do base = base + (l.stops[i].dwell or 60) + ((l.legs[i].len or 0) + ACCEL) / 40 end
@@ -121,13 +146,36 @@ end
 -- Ajoute un départ vu (quai s, heure du serveur t) ; false si déjà connu à 15 s près
 -- mine = départ vu par ce joueur (traversée, « Il part » / « Il arrive », maître de quai) : seuls ceux-là
 -- sont renvoyés à la connexion (les départs reçus d'autres joueurs ne sont jamais rediffusés)
-function M:AddObs(l, s, t, mine)
+function M:AddObs(l, s, t, mine, strong)
     local st = store()
     local e = st[l.key] or { obs = {} }
     st[l.key] = e
     e.obs = e.obs or {}
+    -- un départ vu partir remplace, au même quai, une estimation proche (arrivée annoncée + temps à quai)
+    if strong then
+        for k = #e.obs, 1, -1 do
+            local o = e.obs[k]
+            if o.s == s and not o.k and math.abs(o.t - t) < 90 then table.remove(e.obs, k) end
+        end
+    end
     for _, o in ipairs(e.obs) do if o.s == s and math.abs(o.t - t) < 15 then return false end end
-    table.insert(e.obs, { s = s, t = t, me = mine or nil })
+    -- départ vu par toi loin de l'horaire prévu : le serveur a redémarré (les navires repartent de zéro) ;
+    -- les départs d'avant ne valent plus rien
+    -- (seulement un départ vraiment vu partir : traversée faite ou « Il part », pas une arrivée annoncée)
+    if strong and #e.obs > 0 then
+        local pr = self:State(l, s, t - 1)
+        if pr then
+            local d = pr.inn % pr.P
+            if d > pr.P / 2 then d = pr.P - d end
+            if d > RESET_GAP then
+                e.obs, e.P = {}, nil
+                if WK.modules.Nav and WK.modules.Nav.BoatLog then
+                    WK.modules.Nav.BoatLog(string.format("recalage : %s (écart de %d s, serveur redémarré ?)", self:LineName(l), math.floor(d)))
+                end
+            end
+        end
+    end
+    table.insert(e.obs, { s = s, t = t, me = mine or nil, k = strong and 1 or nil })
     table.sort(e.obs, function(a, b) return a.t < b.t end)
     local cut = now() - WINDOW
     while #e.obs > 0 and (e.obs[1].t < cut or #e.obs > KEEP) do table.remove(e.obs, 1) end
@@ -146,13 +194,13 @@ local function anchor(l)
         -- pas de tour connu : il faut deux départs du même quai
         return nil
     end
-    local dep = offsets(l, P)
+    local dep, _, _, measured = offsets(l, P)
     local t0 = last.t - dep[last.s]
     local per = {}
     for _, o in ipairs(e.obs) do
         if last.t - o.t < FRESH then per[o.s] = o.t end
     end
-    return { P = P, t0 = t0, per = per, at = last.t, dep = dep }
+    return { P = P, t0 = t0, per = per, at = last.t, dep = dep, measured = measured }
 end
 
 -- État du quai s : secondes avant le prochain départ, à quai ?, départ suivant, quai suivant…
@@ -161,15 +209,22 @@ function M:State(l, s, t)
     local a = anchor(l)
     if not a then return nil end
     t = t or now()
-    local base = a.per[s] or (a.t0 + a.dep[s])
+    -- base : le départ vu à ce quai s'il est plus récent que 2 tours avant le dernier départ vu ; sinon le
+    -- dernier départ vu (à un autre quai) décalé par le calendrier du tour
+    local own = a.per[s]
+    if own and a.at - own >= 2 * a.P + 30 then own = nil end
+    local base = own or (a.t0 + a.dep[s])
     local k = math.ceil((t - base) / a.P)
     local inn = base + k * a.P - t
-    local dwell = l.stops[s].dwell or 60
+    local dwell = dwellOf(l, s)
     local _, _, leg = offsets(l, a.P)
-    local stale = (now() - a.at) > FRESH
-    local est = stale or (l.prec ~= "exact" and not (sched(l) and sched(l).P)) or not l.period
+    -- « exact » : tour sûr (mesuré ou affiné) et un départ récent de ce quai, ou un départ récent ailleurs
+    -- avec des trajets mesurés en jeu ; sinon « estimé »
+    local sure = (l.prec == "exact") or (sched(l) and sched(l).P ~= nil)
+    local age = now() - (own or a.at)
+    local est = not l.period or not sure or age > EXACT_AGE or (not own and not a.measured)
     return { inn = inn, following = inn + a.P, atDock = inn <= dwell, est = est, P = a.P, w = dwell,
-             travel = leg[s], next = s % #l.stops + 1, exactStop = a.per[s] ~= nil }
+             travel = leg[s], next = s % #l.stops + 1, exactStop = own ~= nil }
 end
 -- Prochains départs de ce quai : { { inn, arrive (secondes avant l'arrivée au quai suivant), to } }
 function M:Departures(l, s, count)
@@ -252,13 +307,38 @@ end
 function M:Rode(l) return l and rode()[l.key] == true end
 
 -- Traversée faite (départ { c, wx, wy } » arrivée) : départ noté au quai de départ. true si la ligne est connue.
-function M:Learn(from, to, dep)
+-- arr = heure d'arrivée au quai suivant (navire arrêté) : durée de l'étape mesurée, et arrivée notée pour
+-- mesurer le temps à quai quand on le voit repartir
+local function measure(l, field, i, v, lo, hi)
+    if not (v and v > lo and v < hi) then return end
+    local e = store()[l.key] or { obs = {} }
+    store()[l.key] = e
+    e[field] = e[field] or {}
+    local old = e[field][i]
+    e[field][i] = old and math.floor((old * 0.6 + v * 0.4) * 10 + 0.5) / 10 or v
+end
+-- départ vu au quai s : si on y avait vu l'arrivée juste avant, temps à quai mesuré
+local function noteDwell(l, s, t)
+    local e = store()[l.key]
+    local a = e and e.arrT and e.arrT[s]
+    if a and t - a > 10 and t - a < 300 then measure(l, "dwell", s, t - a, 10, 300) end
+end
+M.NoteDwell = noteDwell
+function M:Learn(from, to, dep, arr)
     for _, l in ipairs(self:All()) do
         for s, st in ipairs(l.stops) do
-            local nx = l.stops[s % #l.stops + 1]
+            local j = s % #l.stops + 1
+            local nx = l.stops[j]
             if st.c == from.c and dist(st.x, st.y, from.wx, from.wy) < 300 and nx.c == to.c and dist(nx.x, nx.y, to.wx, to.wy) < 400 then
                 rode()[l.key] = true
-                if self:AddObs(l, s, dep, true) then self:Broadcast(l, s, dep) end
+                noteDwell(l, s, dep)
+                if self:AddObs(l, s, dep, true, true) then self:Broadcast(l, s, dep) end
+                if arr then
+                    measure(l, "legT", s, arr - dep, 15, 1500)
+                    local e = store()[l.key]
+                    e.arrT = e.arrT or {}
+                    e.arrT[j] = arr
+                end
                 return true
             end
         end
@@ -268,8 +348,17 @@ end
 -- Vu du quai : « leave » = il part maintenant, « arrive » = il arrive maintenant (départ = maintenant + arrêt)
 function M:Observe(l, s, kind)
     local t = now()
-    if kind == "arrive" then t = t + (l.stops[s].dwell or 60) end
-    if self:AddObs(l, s, t, true) then self:Broadcast(l, s, t) end
+    if kind == "arrive" then
+        -- arrivée notée : le temps à quai sera mesuré au départ suivant
+        local e = store()[l.key] or { obs = {} }
+        store()[l.key] = e
+        e.arrT = e.arrT or {}
+        e.arrT[s] = t
+        t = t + dwellOf(l, s)
+    else
+        noteDwell(l, s, t)
+    end
+    if self:AddObs(l, s, t, true, kind ~= "arrive") then self:Broadcast(l, s, t) end
     return true
 end
 
@@ -357,6 +446,28 @@ function M:Recent()
             end
         end
     end
+    return out
+end
+
+-- /wk bateau : ce qui est connu de chaque ligne (départs vus, tour, trajets et arrêts mesurés)
+function M:Diag()
+    local out = {}
+    local n0 = now()
+    for _, l in ipairs(self:All()) do
+        local e = store()[l.key]
+        if e and e.obs and #e.obs > 0 then
+            local last = e.obs[#e.obs]
+            local legs, dw = 0, 0
+            for _ in pairs(e.legT or {}) do legs = legs + 1 end
+            for _ in pairs(e.dwell or {}) do dw = dw + 1 end
+            local P = period(l)
+            local src = e.P and "affiné" or (l.prec == "exact" and "Classic" or (l.period and "approché" or "inconnu"))
+            table.insert(out, string.format("%s : %d départ(s), dernier il y a %d min · tour %s (%s) · étapes mesurées %d/%d · arrêts mesurés %d",
+                self:LineName(l), #e.obs, math.max(0, math.floor((n0 - last.t) / 60)), P and string.format("%.1f s", P) or "?", src,
+                legs, #l.stops, dw))
+        end
+    end
+    if #out == 0 then table.insert(out, "aucune ligne calée : prends un bateau, ou attends l'annonce du maître de quai") end
     return out
 end
 

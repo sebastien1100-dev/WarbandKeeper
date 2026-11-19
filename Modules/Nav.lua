@@ -889,12 +889,30 @@ local function rideTick()
                 -- le tracé reste sur le continent du départ (coordonnées d'un seul continent)
                 if p.cont == ride.start.cont then ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy end
                 ride.still, ride.last = 0, p
+                ride.moved = epoch() -- dernier instant où le navire avançait (heure d'arrivée au quai)
             elseif ride then
-                ride.still = ride.still + dt
-                -- il descend du bateau, ou le bateau est à quai depuis un moment
-                if moving or taxi or ride.still > 8 then
-                    blog(moving and "arrêt : le perso bouge" or taxi and "arrêt : vol" or "arrêt : immobile 8 s")
-                    endRide(ride.last, epoch() - ride.still)
+                -- près d'un quai d'une ligne du jeu (ou d'un trajet appris) ?
+                local BLm = WK.modules.BoatLines
+                local _, _, dq = BLm and BLm:StopNear(p.cont, p.wx, p.wy, 400)
+                local atDock = dq ~= nil
+                if taxi then
+                    blog("arrêt : vol")
+                    endRide(ride.last, ride.moved)
+                elseif moving then
+                    -- il marche : descendu au quai (près d'un quai et plus porté) ; en mer, il marche sur le
+                    -- pont et la traversée continue (avant : elle s'arrêtait en pleine mer)
+                    ride.still = 0
+                    if atDock and v < (own or 7) + 2 then
+                        blog("arrêt : descendu au quai")
+                        endRide(ride.last, ride.moved)
+                    end
+                elseif v < 1.5 then
+                    ride.still = ride.still + dt
+                    -- le navire est à quai depuis un moment (ou immobile loin de tout quai : on abandonne)
+                    if ride.still > 8 then
+                        blog(atDock and "arrêt : à quai 8 s" or "arrêt : immobile 8 s")
+                        endRide(ride.last, ride.moved or (epoch() - ride.still))
+                    end
                 end
             end
         end
@@ -929,6 +947,9 @@ function M:BoatDiag()
         for i = 1, math.min(4, #docks) do parts[i] = string.format("%s %d m", docks[i].txt, math.floor(docks[i].d + 0.5)) end
         table.insert(out, "quais proches : " .. (#parts > 0 and table.concat(parts, " · ") or "aucun sur ce continent")
             .. string.format(" · bandeau sous %d m", (WK.UI and WK.UI.DockRange) or 0))
+    end
+    if WK.modules.BoatLines and WK.modules.BoatLines.Diag then
+        for _, l in ipairs(WK.modules.BoatLines:Diag()) do table.insert(out, "ligne · " .. l) end
     end
     for _, l in ipairs(M.boatLog) do table.insert(out, l) end
     if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end

@@ -79,6 +79,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.78.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk bateau : pour chaque ligne déjà calée, nombre de départs vus, âge du dernier, tour utilisé (Classic, affiné, approché), étapes et temps à quai mesurés.
+
+### Corrections
+- Traversées en bateau : marcher sur le pont arrêtait la traversée en pleine mer, et le départ n'était alors pas noté. Elle ne s'arrête plus qu'en descendant au quai, quand le navire est à quai depuis 8 s, ou en prenant un vol ; l'heure d'arrivée retenue est celle où le navire s'est arrêté.
+- Horaires des bateaux et zeppelins : la durée de chaque étape n'était qu'estimée (le tour partagé selon la longueur du trajet). Chaque traversée faite la mesure maintenant, et l'horaire des autres quais de la ligne en profite.
+- Temps à quai : il était supposé de 60 s partout (« à quai », « il arrive dans », calage par l'annonce du maître de quai). Il est mesuré quand on voit le navire arriver puis repartir.
+- Le tour des lignes « exact » (mesuré sur WoW Classic) est maintenant affiné aussi d'après les départs vus, au cas où WoW Forever tourne un peu différemment.
+- Après un redémarrage du serveur, un départ vu à plus de 45 s de l'horaire prévu efface les anciens départs (ils faussaient tout) ; un départ vu partir remplace l'estimation tirée de l'annonce d'arrivée.
+- « exact » n'est plus affiché à tort : il faut un départ vu à ce quai depuis moins de 3 h (ou des trajets mesurés) avec un tour sûr ; sinon « estimé ».
+
 ## v1.77.15 — 19/11/2026
 
 _Un /reload suffit._
