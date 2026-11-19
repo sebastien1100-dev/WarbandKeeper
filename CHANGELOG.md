@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Guidage sur la minicarte : le chemin est maintenant un trait continu, comme sur la carte du monde, au lieu d'une suite de points ; il s'arrête net au bord de la minicarte (trait plus fin et plus pâle pour les étapes en vol).
+
 ## v1.76.1 — 19/11/2026
 
 _Un /reload suffit._

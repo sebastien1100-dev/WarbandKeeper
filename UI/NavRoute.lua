@@ -293,8 +293,10 @@ local function miniDot(i)
     end
     return d
 end
+local miniLines
 local function updateMini()
     for _, d in ipairs(miniDots) do d:Hide(); d.o:Hide() end
+    if miniLines then miniLines:Reset() end
     if not gcfg().routeMini or not Minimap:IsVisible() then return end
     local pts, cont = remaining()
     if not pts or #pts < 2 then return end
@@ -308,35 +310,45 @@ local function updateMini()
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or nil
     local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
     local r, g, b = UI:Accent()
-    local spacing = radius / 12
+    -- trait continu (comme sur la carte du monde), coupé au bord de la minicarte
+    miniLines = miniLines or UI:LinePool(4)
+    miniLines:Reset()
+    local function toMini(x, y)
+        -- monde : x vers le nord, y vers l'ouest ; écran : dx vers l'est, dy vers le nord
+        local dx, dy = -(y - p.wy), x - p.wx
+        if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
+        return dx, dy
+    end
+    local L2 = limit * limit
     local n = 0
     for i = 2, #pts do
         local a, c = pts[i - 1], pts[i]
         local fly = c[3]
-        local len = N.Dist(a[1], a[2], c[1], c[2])
-        local k = 0
-        while k < len and n < MAX_MINI do
-            local x = a[1] + (c[1] - a[1]) * k / len
-            local y = a[2] + (c[2] - a[2]) * k / len
-            -- monde : x vers le nord, y vers l'ouest ; écran : dx vers l'est, dy vers le nord
-            local dx, dy = -(y - p.wy), x - p.wx
-            if dx * dx + dy * dy < limit * limit then
-                if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
-                n = n + 1
-                local d = miniDot(n)
-                local s = fly and 4 or 5
-                d:SetSize(s, s)
-                d:SetVertexColor(r, g, b, fly and 0.6 or 1)
-                d.o:SetSize(s + 3, s + 3)
-                d.o:SetVertexColor(0, 0, 0, fly and 0.45 or 0.8)
-                d.o:Show()
-                d:ClearAllPoints()
-                d:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
-                d:Show()
+        local x0, y0 = toMini(a[1], a[2])
+        local x1, y1 = toMini(c[1], c[2])
+        -- partie du segment dans le cercle : |P0 + t (P1 - P0)| <= limite
+        local ex, ey = x1 - x0, y1 - y0
+        local A = ex * ex + ey * ey
+        local B = 2 * (x0 * ex + y0 * ey)
+        local Cc = x0 * x0 + y0 * y0 - L2
+        local t0, t1
+        if A < 1e-6 then
+            if Cc <= 0 then t0, t1 = 0, 1 end
+        else
+            local disc = B * B - 4 * A * Cc
+            if disc >= 0 then
+                local sq = math.sqrt(disc)
+                t0, t1 = math.max(0, (-B - sq) / (2 * A)), math.min(1, (-B + sq) / (2 * A))
+                if t0 >= t1 then t0 = nil end
             end
-            k = k + (fly and spacing * 2 or spacing)
         end
-        if n >= MAX_MINI then break end
+        if t0 and n < MAX_MINI then
+            n = n + 1
+            local ax, ay = x0 + ex * t0, y0 + ey * t0
+            local bx, by = x0 + ex * t1, y0 + ey * t1
+            miniLines:Add(holder, half + ax / radius * half, half - ay / radius * half,
+                half + bx / radius * half, half - by / radius * half, fly and 2 or 3, r, g, b, fly and 0.6 or 1)
+        end
     end
 end
 

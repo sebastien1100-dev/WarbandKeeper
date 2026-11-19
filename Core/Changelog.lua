@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.2", date = "19/11/2026",
+        changed = {
+            "Guidage sur la minicarte : le chemin est maintenant un trait continu, comme sur la carte du monde, au lieu d'une suite de points ; il s'arrête net au bord de la minicarte (trait plus fin et plus pâle pour les étapes en vol).",
+        },
+    },
+    {
         version = "1.76.1", date = "19/11/2026",
         changed = {
             "Quêtes et Rares, carte du continent : elle est cadrée sur les terres (les zones du continent remplissent le cadre) au lieu de montrer tout le continent avec la mer autour ; les bulles sont plus espacées.",
