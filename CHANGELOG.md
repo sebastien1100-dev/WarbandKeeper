@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.53.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Mode édition : grilles de 4 et 8 en plus de 16, 32 et 64 (bouton « Grille », un clic pour passer à la suivante). Sur les grilles fines, un trait sur quatre est plus marqué ; la grille choisie est retenue.
+
 ## v1.53.0 — 19/11/2026
 
 _Un /reload suffit._

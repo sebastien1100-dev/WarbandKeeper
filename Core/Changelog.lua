@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.53.1", date = "19/11/2026",
+        changed = {
+            "Mode édition : grilles de 4 et 8 en plus de 16, 32 et 64 (bouton « Grille », un clic pour passer à la suivante). Sur les grilles fines, un trait sur quatre est plus marqué ; la grille choisie est retenue.",
+        },
+    },
+    {
         version = "1.53.0", date = "19/11/2026",
         added = {
             "HV, À acheter : un résumé à droite : combien à l'HV, chez le marchand, chez tes persos, ce qui est introuvable, ton or, « Chercher les prix » et « Tout acheter à l'HV » avec sa progression.",

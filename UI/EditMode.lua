@@ -142,7 +142,10 @@ local function drawGrid()
         gridLines[i] = t
         local strong = math.abs(pos) < 1
         local r, g, b = UI:Accent()
-        t:SetColorTexture(r, g, b, strong and 0.45 or 0.12)
+        -- grille fine (4, 8) : traits plus légers, un trait sur quatre un peu plus marqué
+        local fine = gridSize <= 8
+        local major = math.floor(math.abs(pos) / gridSize + 0.5) % 4 == 0
+        t:SetColorTexture(r, g, b, strong and 0.45 or (fine and (major and 0.12 or 0.05) or 0.12))
         t:ClearAllPoints()
         if vertical then
             t:SetPoint("TOP", overlay, "TOP", pos, 0); t:SetPoint("BOTTOM", overlay, "BOTTOM", pos, 0); t:SetWidth(1)
@@ -393,8 +396,15 @@ local function buildOverlay()
         return b
     end
     local gridBtn
+    local ui = WK.DB.global.settings.ui
+    gridSize = ui.editGrid or gridSize
     gridBtn = tb(string.format(T("Grille : %d"), gridSize), "secondary", function()
-        gridSize = gridSize == 16 and 32 or (gridSize == 32 and 64 or 16)
+        -- 4, 8, 16, 32, 64, puis on recommence ; le choix est retenu
+        local SIZES = { 4, 8, 16, 32, 64 }
+        local nxt = SIZES[1]
+        for i, v in ipairs(SIZES) do if v == gridSize then nxt = SIZES[i % #SIZES + 1] end end
+        gridSize = nxt
+        ui.editGrid = gridSize
         gridBtn.label:SetText(string.format(T("Grille : %d"), gridSize))
         drawGrid()
     end)
