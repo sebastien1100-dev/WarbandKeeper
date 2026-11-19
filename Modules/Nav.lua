@@ -869,8 +869,26 @@ local function rideTick()
     -- qui ne parle que des chemins à pied ou à monture
     M.rideOff = nil
     local p = Gd():PlayerPos()
-    if not (p and p.cont) then return end
     local now = GetTime()
+    if not (p and p.cont) then
+        -- position illisible (certaines villes, chargement) : au-delà de 15 s, la traversée est abandonnée
+        -- (avant : elle ne finissait jamais et le bandeau « À bord » restait affiché à terre)
+        if ride and now - (ride.lastOk or now) > 15 then
+            blog("arrêt : position illisible depuis 15 s")
+            ride = nil
+            local BLm = WK.modules.BoatLines
+            if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, nil) end
+        end
+        return
+    end
+    if ride then
+        ride.lastOk = now
+        -- garde-fou : aucune traversée ne dure 20 min
+        if now - (ride.started or now) > 1200 then
+            blog("arrêt : traversée de plus de 20 min")
+            endRide(ride.last, ride.moved)
+        end
+    end
     local taxi = (UnitOnTaxi and UnitOnTaxi("player")) or (IsFlying and IsFlying())
     if lastS then
         local dt = now - lastS.t
@@ -890,7 +908,7 @@ local function rideTick()
             local carried = (not moving and v > 3) or (v > math.max(12, (own or 7) * 1.6))
             if not taxi and carried and v < 80 then
                 if not ride then
-                    ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t) }
+                    ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t), started = now, lastOk = now }
                     blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
                     local BLm = WK.modules.BoatLines
                     if BLm and BLm.RideBegin then BLm:RideBegin(lastS.cont, lastS.wx, lastS.wy, ride.t0); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
@@ -899,9 +917,23 @@ local function rideTick()
                 if BLs and BLs.RideSample then pcall(BLs.RideSample, BLs, p.cont, p.wx, p.wy) end
                 -- le tracé reste sur le continent du départ (coordonnées d'un seul continent)
                 if p.cont == ride.start.cont then ride.pts[#ride.pts + 1] = p.wx; ride.pts[#ride.pts + 1] = p.wy end
-                ride.still, ride.last = 0, p
+                ride.still, ride.last, ride.free = 0, p, 0
                 ride.moved = epoch() -- dernier instant où le navire avançait (heure d'arrivée au quai)
+            elseif ride and v >= 80 then
+                -- téléport, pierre de foyer, mort : plus sur le navire
+                blog("arrêt : téléporté")
+                ride = nil
+                local BLm = WK.modules.BoatLines
+                if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, nil) end
             elseif ride then
+                -- plus porté depuis 15 s (descendu loin du quai, parti à pied ou à monture) : traversée finie
+                ride.free = (ride.free or 0) + dt
+                if ride.free > 15 then
+                    blog("arrêt : plus porté depuis 15 s")
+                    endRide(ride.last, ride.moved)
+                    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now }
+                    return
+                end
                 -- près d'un quai d'une ligne du jeu (ou d'un trajet appris) ?
                 local BLm = WK.modules.BoatLines
                 local _, _, dq = BLm and BLm:StopNear(p.cont, p.wx, p.wy, 400)

@@ -3,14 +3,14 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau au quai : près d'un quai de bateau ou de zeppelin (250 m pour apparaître, 400 m pour
--- disparaître, puis encore 8 s : il reste affiché tant qu'on attend sur le ponton ; le point d'arrêt du
+-- Bandeau au quai : près d'un quai de bateau ou de zeppelin (200 m pour apparaître, 260 m pour
+-- disparaître, puis encore 5 s : il reste affiché tant qu'on attend sur le ponton ; le point d'arrêt du
 -- navire est souvent au bout du ponton, voire dans l'eau), le prochain départ avec une barre qui se
 -- vide, « exact » ou « estimé », les 3 prochains départs (heure d'arrivée de l'autre côté), et des alertes :
 -- le bateau arrive au quai dans 30 s, il part dans 15 s (son en option). Lignes du jeu : Modules/BoatLines.lua ;
 -- bateaux appris en jeu : Modules/BoatTimes.lua. À bord, il reste affiché pendant la traversée (PaintRide : destination, temps restant, barre).
 -- Réglages Guide:Config() : dockBanner, dockAlerts, dockSound (QoL > Carte, Navigation).
-local RANGE_IN, RANGE_OUT, LINGER, W = 250, 400, 8, 360
+local RANGE_IN, RANGE_OUT, LINGER, W = 200, 260, 5, 360
 UI.DockRange = RANGE_IN
 local banner
 local alerted = {}
@@ -418,6 +418,8 @@ function UI:RefreshDockBanner()
             banner.ride.arrAt, banner.ride.depAt = fit.arr, fit.dep
         end
         if not banner.ride then banner:Hide() return end
+        -- arrivée prévue dépassée de plus d'une minute : tu n'es plus à bord (garde-fou)
+        if banner.ride.arrAt and BL().Now() > banner.ride.arrAt + 60 then banner:Hide() return end
         banner:PaintRide(banner.ride)
         banner:Show()
         return

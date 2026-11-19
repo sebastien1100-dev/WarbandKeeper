@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.81.2", date = "19/11/2026",
+        fixed = {
+            "Bandeau « À bord » qui restait affiché une fois à terre : la traversée ne se terminait qu'en descendant près du point d'amarrage ou en restant immobile 8 s. Elle se termine maintenant aussi quand le navire ne te porte plus depuis 15 s, quand ta position n'est plus lisible depuis 15 s (certaines villes), après un téléport ou une pierre de foyer, et au plus tard après 20 min ; le bandeau disparaît aussi une minute après l'arrivée prévue.",
+            "Bandeau du quai encore affiché loin du ponton : il apparaît maintenant à 200 m du point d'amarrage (avant 250 m), disparaît au-delà de 260 m (avant 400 m) et 5 s plus tard (avant 8 s).",
+        },
+    },
+    {
         version = "1.81.1", date = "19/11/2026",
         fixed = {
             "Bandeau à bord : le temps restant sautait d'une seconde à l'autre (l'arrivée était recalculée à chaque relevé de position). Une fois la ligne reconnue, l'arrivée est fixée : départ + durée exacte du trajet.",
