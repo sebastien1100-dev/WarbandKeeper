@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.3", date = "19/11/2026",
+        fixed = {
+            "Barre de fabrication : elle n'apparaissait pas en mode édition (ni pour la placer, ni avec « Tester ») tant qu'aucune série n'avait été lancée. Elle existe maintenant dès la connexion.",
+            "Guidage vers un autre continent : sur la carte d'Azeroth, le trajet passe maintenant toujours par la carte du continent pour être placé (le jeu y convertissait mal les positions). /wk carte dit en plus combien de points du trajet sont placés et si les deux quais le sont.",
+        },
+    },
+    {
         version = "1.77.2", date = "19/11/2026",
         changed = {
             "Courrier > Envoyer : les noms proposés pour « À » s'affichent dans une liste sous le champ (jusqu'à 10) au lieu d'une ligne à côté qui manquait de place : tes persos d'abord, à la couleur de leur classe et marqués « mon perso », puis tes destinataires récents.",

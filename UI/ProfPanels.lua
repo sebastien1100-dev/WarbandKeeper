@@ -684,6 +684,9 @@ function UI:TestCraftBar()
     UI:RefreshCraftBar()
 end
 
+-- créée dès la connexion : elle doit exister pour le mode édition (placer, Tester) avant toute série
+WK:On("PLAYER_LOGIN", function() if not cbar then cbar = buildBar() end end)
+
 local function startBatch(name, icon, n, spell)
     n = tonumber(n) or 1
     if not cfg().craftBar or n < (cfg().craftBarMin or 3) then return end

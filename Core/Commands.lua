@@ -93,6 +93,12 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             end
             WK:Print("  " .. table.concat(parts, " · "))
         end
+        -- trajet du guidage : points du chemin, combien sont placés sur cette carte, quais de la traversée
+        local ns = WK.UI.navStats
+        if ns then
+            WK:Print("  " .. string.format("trajet : %d points, %d placés · carte du monde : %s · continent : %s · traversée : %s",
+                ns.pts or 0, ns.placed or 0, tostring(ns.world), tostring(ns.cont), tostring(ns.docks)))
+        end
         if WK.UI.MapLayersProbe then
             local ok, txt = pcall(WK.UI.MapLayersProbe, WK.UI)
             WK:Print("  " .. tostring(ok and txt or ("sonde : " .. tostring(txt))))

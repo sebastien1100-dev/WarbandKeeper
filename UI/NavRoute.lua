@@ -226,10 +226,24 @@ local function rawToMap(cont, x, y, mapID)
     if pos.GetXY then mx, my = pos:GetXY() end
     return mx, my
 end
+-- carte du monde (Azeroth) ou plus haut : le jeu y convertit mal une position, on passe par le continent
+local worldMaps = {}
+local function isWorldMap(mapID)
+    local v = worldMaps[mapID]
+    if v == nil then
+        local ok, i = pcall(C_Map.GetMapInfo, mapID)
+        v = (ok and i and i.mapType ~= nil and i.mapType <= 1) and true or false
+        worldMaps[mapID] = v
+    end
+    return v
+end
 local function toMap(cont, x, y, mapID)
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
-    local mx, my = rawToMap(cont, x, y, mapID)
-    if mx then return mx, my end
+    local world = isWorldMap(mapID)
+    if not world then
+        local mx, my = rawToMap(cont, x, y, mapID)
+        if mx then return mx, my end
+    end
     -- repli : position sur la carte du continent, puis rectangle du continent sur la carte affichée
     local cm = CONTMAP[cont]
     if not (cm and cm ~= mapID and C_Map.GetMapRectOnMap) then return nil end
@@ -251,6 +265,9 @@ function UI:DrawNavRoute(cv, mapID, w, h)
     UI:HideNavRoute()
     if not gcfg().route then return end
     local pts, cont = remaining()
+    -- relevé pour /wk carte : points du trajet, combien sont placés sur cette carte, traversée
+    local st = { pts = pts and #pts or 0, placed = 0, world = isWorldMap(mapID), cont = cont, docks = "-" }
+    UI.navStats = st
     if not pts or #pts < 2 then return end
     local r, g, b = UI:Accent()
     local scale = (w / 1000) * UI.MapIconScale()
@@ -261,6 +278,7 @@ function UI:DrawNavRoute(cv, mapID, w, h)
     for i, pt in ipairs(pts) do
         local mx, my = toMap(cont, pt[1], pt[2], mapID)
         if mx then
+            st.placed = st.placed + 1
             local x, y = mx * w, my * h
             if px then
                 local fly = pt[3]
@@ -304,6 +322,7 @@ function UI:DrawNavRoute(cv, mapID, w, h)
         if l.here and l.there and canLine(cv) then
             local ax, ay = dockOnMap(l.here, mapID)
             local bx, by = dockOnMap(l.there, mapID)
+            st.docks = (ax and "départ ok" or "départ ?") .. ", " .. (bx and "arrivée ok" or "arrivée ?")
             if ax and bx then
                 flyLines:Add(cv, ax * w, ay * h, bx * w, by * h, math.max(1.8 * UI.MapIconScale(), 2.4 * scale), r, g, b, 0.75)
             end

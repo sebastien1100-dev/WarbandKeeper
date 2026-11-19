@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre de fabrication : elle n'apparaissait pas en mode édition (ni pour la placer, ni avec « Tester ») tant qu'aucune série n'avait été lancée. Elle existe maintenant dès la connexion.
+- Guidage vers un autre continent : sur la carte d'Azeroth, le trajet passe maintenant toujours par la carte du continent pour être placé (le jeu y convertissait mal les positions). /wk carte dit en plus combien de points du trajet sont placés et si les deux quais le sont.
+
 ## v1.77.2 — 19/11/2026
 
 _Un /reload suffit._
