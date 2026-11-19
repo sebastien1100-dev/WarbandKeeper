@@ -1799,7 +1799,18 @@ local function build(host)
     bw.maxL = UI:NumberInput(bw, 52, 26, "max"); bw.maxL:SetPoint("LEFT", bw.minL, "RIGHT", 4, 0)
     bw.minL.onEnter = function() bw:Run() end
     bw.maxL.onEnter = function() bw:Run() end
-    bw.go = UI:Button(bw, "Chercher", nil, 28, "primary"); bw.go:SetPoint("LEFT", bw.maxL, "RIGHT", 8, 0)
+    -- qualité minimale (filtre des résultats) : toutes, inhabituel, rare, épique
+    local QUALS = { { nil, "Qualité : toutes" }, { 2, "Inhabituel +" }, { 3, "Rare +" }, { 4, "Épique +" } }
+    bw.qual = UI:Button(bw, QUALS[1][2], nil, 26, "ghost"); bw.qual:SetPoint("LEFT", bw.maxL, "RIGHT", 8, 0)
+    bw.qual:SetScript("OnClick", function()
+        local i = 1
+        for k, qd in ipairs(QUALS) do if qd[1] == bw.minQ then i = k end end
+        local nx = QUALS[i % #QUALS + 1]
+        bw.minQ = nx[1]
+        bw.qual:SetLabel(T(nx[2])); bw.qual:SetWidth(bw.qual.label:GetStringWidth() + 28)
+        bw:PaintChips(); bw.offset = 0; bw:RefreshResults()
+    end)
+    bw.go = UI:Button(bw, "Chercher", nil, 28, "primary"); bw.go:SetPoint("LEFT", bw.qual, "RIGHT", 8, 0)
     bw.go:SetScript("OnClick", function() bw:Run() end)
     bw.save = UI:IconButton(bw, "star", 28, "Garder cette recherche dans la barre de gauche.")
     bw.save:SetPoint("LEFT", bw.go, "RIGHT", 6, 0)
@@ -1813,6 +1824,7 @@ local function build(host)
     function bw:PaintChips()
         self.usable:SetStyle(cfg().browseUsable and "primary" or "ghost")
         self.deal:SetStyle(self.dealOnly and "primary" or "ghost")
+        self.qual:SetStyle(self.minQ and "primary" or "ghost")
     end
 
     -- gauche : catégories du jeu (AuctionCategories), une dépliée à la fois
@@ -1823,6 +1835,7 @@ local function build(host)
         local r = textRow(bw.cats, 20)
         r:SetPoint("TOPLEFT", 4, -28 - (i - 1) * 20); r:SetPoint("TOPRIGHT", -4, -28 - (i - 1) * 20)
         r.icon:Hide(); r.a:SetPoint("RIGHT", -4, 0)
+        r.ci = UI:Icon(r, "chevron", 12); r.ci:SetPoint("LEFT", 6, 0)
         r:SetScript("OnClick", function(s)
             if not s.path then return end
             local same = bw.cat and table.concat(bw.cat, ".") == table.concat(s.path, ".")
@@ -1840,12 +1853,19 @@ local function build(host)
         end
         return node
     end
+    -- icône d'une catégorie, d'après la classe d'objet de son premier filtre
+    local CAT_ICON = { [0] = "fire", [1] = "bag", [2] = "crosshair", [3] = "star", [4] = "safe", [5] = "spark", [7] = "hammer",
+        [9] = "book", [12] = "notes", [15] = "menu", [16] = "notes", [17] = "users" }
+    local function catIcon(node)
+        local fl = node and node.filters and node.filters[1]
+        return (fl and CAT_ICON[fl.classID]) or "menu"
+    end
     function bw:RefreshCats()
         local cats = _G.AuctionCategories or {}
         local rows, open = {}, self.cat and self.cat[1]
         for i, c in ipairs(cats) do
             if c.name and not c.implicitFilter then
-                table.insert(rows, { path = { i }, name = c.name, depth = 0 })
+                table.insert(rows, { path = { i }, name = c.name, depth = 0, icon = catIcon(c) })
                 if open == i then
                     for j, sc in ipairs(c.subCategories or {}) do
                         if sc.name then table.insert(rows, { path = { i, j }, name = sc.name, depth = 1 }) end
@@ -1859,9 +1879,15 @@ local function build(host)
             local e = rows[i]
             r.path = e and e.path
             if e then
-                r.a:SetPoint("LEFT", 8 + e.depth * 12, 0)
-                r.a:SetText(e.name)
                 local on = key == table.concat(e.path, ".")
+                -- une icône par catégorie ; la sous-catégorie choisie marquée d'un chevron
+                r.ci:SetShown(e.depth == 0 or on)
+                r.ci:ClearAllPoints(); r.ci:SetPoint("LEFT", e.depth == 0 and 6 or 16, 0)
+                r.ci:SetTexture(UI.MEDIA .. (e.depth == 0 and e.icon or "chevron"))
+                if r.ci.SetRotation then r.ci:SetRotation(e.depth == 0 and 0 or math.pi / 2) end
+                r.ci:SetVertexColor(ar, ag, ab, (on or (self.cat and self.cat[1] == e.path[1])) and 1 or 0.6)
+                r.a:SetPoint("LEFT", e.depth == 0 and 24 or 30, 0)
+                r.a:SetText(e.name)
                 r.a:SetTextColor(unpack((on or e.depth == 0) and C.text or C.muted))
                 r.hl:SetColorTexture(ar, ag, ab, on and 0.16 or 0)
                 r:Show()
@@ -1873,7 +1899,7 @@ local function build(host)
     -- milieu : résultats
     bw.res = panelBox(bw, "Résultats")
     bw.res:SetPoint("TOPLEFT", bw.cats, "TOPRIGHT", 8, 0); bw.res:SetPoint("BOTTOM"); bw.res:SetPoint("RIGHT", -318, 0)
-    local RCOLS = { { "name", "Objet", 30, "LEFT" }, { "qty", "En vente", -172, "RIGHT" }, { "low", "Plus bas", -90, "RIGHT" }, { "delta", "vs 7 j", -32, "RIGHT" } }
+    local RCOLS = { { "name", "Objet", 30, "LEFT" }, { "qty", "En vente", -248, "RIGHT" }, { "low", "Plus bas", -174, "RIGHT" }, { "delta", "vs 7 j", -126, "RIGHT" } }
     bw.heads = {}
     for _, cdef in ipairs(RCOLS) do
         local h = CreateFrame("Button", nil, bw.res)
@@ -1892,11 +1918,14 @@ local function build(host)
     for i = 1, 22 do
         local r = textRow(bw.res, RROW)
         r:SetPoint("TOPLEFT", 6, -46 - (i - 1) * RROW); r:SetPoint("TOPRIGHT", -6, -46 - (i - 1) * RROW)
-        r.a:SetPoint("RIGHT", -236, 0)
-        r.b:SetPoint("RIGHT", -172, 0); r.b:SetWidth(56)
-        r.c:SetPoint("RIGHT", -90, 0); r.c:SetWidth(78); r.c:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
-        r.d:SetPoint("RIGHT", -30, 0); r.d:SetWidth(54)
-        r.tag = UI:Icon(r, "star", 11); r.tag:SetPoint("RIGHT", -10, 0)
+        r.a:SetPoint("RIGHT", -300, 0)
+        r.b:SetPoint("RIGHT", -248, 0); r.b:SetWidth(48)
+        r.c:SetPoint("RIGHT", -174, 0); r.c:SetWidth(72); r.c:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+        r.d:SetPoint("RIGHT", -126, 0); r.d:SetWidth(46)
+        -- petite courbe des 7 derniers jours, puis l'étiquette (affaire, à toi, liste)
+        r.spark = CreateFrame("Frame", nil, r)
+        r.spark:SetSize(46, 14); r.spark:SetPoint("RIGHT", -74, 0)
+        r.tag = UI:Badge(r, "", C.muted); r.tag:SetPoint("RIGHT", -2, 0)
         r:SetScript("OnClick", function(s) if s.e then bw:Pick(s.e.id, s.e.key) end end)
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
@@ -1907,6 +1936,26 @@ local function build(host)
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)
         r:Hide()
         bw.rrows[i] = r
+    end
+    bw.sparks = UI:LinePool(3)
+    -- courbe de 7 jours dans une ligne : verte en baisse, rouge en hausse, grise sinon
+    local function drawSpark(fr, id)
+        local all = S:History(id)
+        local today = math.floor(time() / 86400)
+        local pts = {}
+        for _, h in ipairs(all) do if h[1] > today - 7 then table.insert(pts, h) end end
+        if #pts < 2 then return end
+        local lo, hi = math.huge, 0
+        for _, h in ipairs(pts) do lo = math.min(lo, h[2]); hi = math.max(hi, h[2]) end
+        if hi == lo then hi = lo + 1 end
+        local W, H = 46, 14
+        local d = pts[#pts][2] - pts[1][2]
+        local col = (d < -pts[1][2] * 0.05) and C.positive or (d > pts[1][2] * 0.05) and C.negative or C.muted
+        for i = 2, #pts do
+            local a, b = pts[i - 1], pts[i]
+            bw.sparks:Add(fr, (a[1] - (today - 6)) / 6 * W, H - (a[2] - lo) / (hi - lo) * H,
+                (b[1] - (today - 6)) / 6 * W, H - (b[2] - lo) / (hi - lo) * H, 1.5, col[1], col[2], col[3], 1)
+        end
     end
     bw.res:EnableMouseWheel(true)
     bw.res:SetScript("OnMouseWheel", function(_, d)
@@ -1926,18 +1975,29 @@ local function build(host)
     bw.dName = UI:Text(bw.det, 13); bw.dName:SetPoint("TOPLEFT", 48, -10); bw.dName:SetPoint("RIGHT", -10, 0); bw.dName:SetJustifyH("LEFT")
     if bw.dName.SetWordWrap then bw.dName:SetWordWrap(false) end
     bw.dSub = UI:Text(bw.det, 10, C.muted); bw.dSub:SetPoint("TOPLEFT", 48, -28); bw.dSub:SetPoint("RIGHT", -10, 0); bw.dSub:SetJustifyH("LEFT")
+    -- onglets du détail : Enchères, Courbe, Infos
+    bw.dtab = "list"
+    bw.tabs = UI:Segmented(bw.det, { { "list", "Enchères" }, { "chart", "Courbe" }, { "info", "Infos" } },
+        function(v) bw.dtab = v; bw:RefreshDetail() end, 24)
+    bw.tabs:SetPoint("TOPLEFT", 10, -46)
+    bw.tabs:Select("list")
     bw.chart = makeChart(bw.det)
-    bw.chart:SetPoint("TOPLEFT", 4, -48); bw.chart:SetPoint("TOPRIGHT", -6, -48); bw.chart:SetHeight(96)
+    bw.chart:SetPoint("TOPLEFT", 4, -80); bw.chart:SetPoint("TOPRIGHT", -6, -80); bw.chart:SetHeight(190)
+    bw.chartNote = UI:Text(bw.det, 10, C.dim); bw.chartNote:SetPoint("TOPLEFT", 12, -278); bw.chartNote:SetPoint("RIGHT", -12, 0)
+    bw.chartNote:SetJustifyH("LEFT")
+    bw.info = UI:Text(bw.det, 11, C.muted); bw.info:SetPoint("TOPLEFT", 12, -84); bw.info:SetPoint("RIGHT", -12, 0)
+    bw.info:SetJustifyH("LEFT"); bw.info:SetJustifyV("TOP")
+    if bw.info.SetSpacing then bw.info:SetSpacing(6) end
     bw.lhead = CreateFrame("Frame", nil, bw.det)
-    bw.lhead:SetPoint("TOPLEFT", 6, -152); bw.lhead:SetPoint("TOPRIGHT", -6, -152); bw.lhead:SetHeight(12)
+    bw.lhead:SetPoint("TOPLEFT", 6, -82); bw.lhead:SetPoint("TOPRIGHT", -6, -82); bw.lhead:SetHeight(12)
     for _, hd in ipairs({ { "Prix", "LEFT", 6 }, { "Qté", "RIGHT", 140 }, { "Cumul", "LEFT", 154 } }) do
         local t = UI:Text(bw.lhead, 9, C.dim)
         t:SetPoint(hd[2], bw.lhead, "LEFT", hd[3], 0); t:SetText(UI:Upper(T(hd[1])))
     end
     bw.lrows = {}
-    for i = 1, 9 do
+    for i = 1, 10 do
         local r = textRow(bw.det, 22)
-        r:SetPoint("TOPLEFT", 6, -166 - (i - 1) * 22); r:SetPoint("TOPRIGHT", -6, -166 - (i - 1) * 22)
+        r:SetPoint("TOPLEFT", 6, -96 - (i - 1) * 22); r:SetPoint("TOPRIGHT", -6, -96 - (i - 1) * 22)
         r.icon:Hide(); r.a:SetPoint("LEFT", 6, 0); r.a:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
         r.b:SetPoint("RIGHT", r, "LEFT", 140, 0); r.b:SetWidth(50)
         r.c:SetPoint("LEFT", 154, 0); r.c:SetWidth(56); r.c:SetJustifyH("LEFT")
@@ -1948,26 +2008,57 @@ local function build(host)
         end)
         bw.lrows[i] = r
     end
-    bw.qLabel = UI:Text(bw.det, 11, C.muted); bw.qLabel:SetPoint("BOTTOMLEFT", 12, 92); bw.qLabel:SetText(T("Quantité"))
+    -- quantité : pastilles 1, une pile, cinq piles, tout ce qui est en vente ; ou à la main
+    bw.qchips = {}
+    local qx = 12
+    for _, qd in ipairs({ { "one", "1" }, { "stack", "Pile" }, { "five", "5 piles" }, { "max", "Max" } }) do
+        local b = UI:Button(bw.det, qd[2], nil, 22, "ghost")
+        b:SetWidth(b.label:GetStringWidth() + 18)
+        b:SetPoint("BOTTOMLEFT", qx, 126)
+        qx = qx + b:GetWidth() + 4
+        b:SetScript("OnClick", function()
+            local id = bw.id
+            if not id then return end
+            local st = stackOf(id)
+            local n = qd[1] == "one" and 1 or qd[1] == "stack" and st or qd[1] == "five" and st * 5 or (available(id) or 1)
+            bw.qty:SetText(tostring(math.max(1, n)))
+        end)
+        bw.qchips[qd[1]] = b
+    end
+    bw.qLabel = UI:Text(bw.det, 11, C.muted); bw.qLabel:SetPoint("BOTTOMLEFT", 12, 98); bw.qLabel:SetText(T("Quantité"))
     bw.qty = UI:NumberInput(bw.det, 64, 26, "1"); bw.qty:SetPoint("LEFT", bw.qLabel, "RIGHT", 8, 0)
     bw.qty.onChange = function() bw:RefreshDetail() end
-    bw.qMax = UI:Button(bw.det, "Max", nil, 22, "ghost"); bw.qMax:SetPoint("LEFT", bw.qty, "RIGHT", 6, 0)
-    bw.qMax:SetScript("OnClick", function() local n = available(bw.id); if n and n > 0 then bw.qty:SetText(tostring(n)) end end)
-    bw.sum = UI:Text(bw.det, 11, C.muted); bw.sum:SetPoint("BOTTOMLEFT", 12, 68); bw.sum:SetPoint("RIGHT", -12, 0); bw.sum:SetJustifyH("LEFT")
+    bw.sum = UI:Text(bw.det, 11, C.muted); bw.sum:SetPoint("BOTTOMLEFT", 12, 70); bw.sum:SetPoint("RIGHT", -12, 0); bw.sum:SetJustifyH("LEFT")
     bw.buy = UI:Button(bw.det, "Acheter", nil, 32, "primary")
-    bw.buy:SetPoint("BOTTOMLEFT", 12, 26); bw.buy:SetPoint("BOTTOMRIGHT", -12, 26)
+    bw.buy:SetPoint("BOTTOMLEFT", 12, 30); bw.buy:SetPoint("BOTTOMRIGHT", -12, 30)
     bw.buy:SetScript("OnClick", function() bw:BuyQty() end)
-    bw.watchIn = UI:Input(bw.det, 100, 22, "ex. 45pa", nil); bw.watchIn:SetPoint("BOTTOMLEFT", 12, 2)
+    bw.watchIn = UI:Input(bw.det, 96, 22, "ex. 45pa", nil); bw.watchIn:SetPoint("BOTTOMLEFT", 12, 4)
     bw.watch = UI:Button(bw.det, "Surveiller", nil, 22, "ghost"); bw.watch:SetPoint("LEFT", bw.watchIn, "RIGHT", 6, 0)
     bw.watch.tooltip = "Alerte de prix : prévenu après un scan quand le plus bas passe sous ce prix."
     bw.watch:SetScript("OnClick", function()
         local v = A.ParsePrice(bw.watchIn:GetText())
         if bw.id and v then A:AddAlert(bw.id, v); WK:Print(string.format(T("Alerte de prix : %s sous %s."), WK.GetItemInfo(bw.id) or "?", money(v))); bw:RefreshDetail() end
     end)
-    bw.toPrices = UI:Button(bw.det, "Courbe", nil, 22, "ghost"); bw.toPrices:SetPoint("LEFT", bw.watch, "RIGHT", 4, 0)
-    bw.toPrices:SetScript("OnClick", function() if bw.id then f.views.prices.id = bw.id; f:Open("prices") end end)
+    -- « + Liste » : la quantité voulue dans la liste d'achat choisie (sinon « Mes achats »)
+    bw.toList = UI:Button(bw.det, "+ Liste", nil, 22, "ghost"); bw.toList:SetPoint("LEFT", bw.watch, "RIGHT", 4, 0)
+    bw.toList.tooltip = "Ajouter la quantité voulue à ta liste d'achat (page À acheter)."
+    bw.toList:SetScript("OnClick", function()
+        local id = bw.id
+        if not id then return end
+        local _, lists = S:Lists()
+        local name = cfg().curList
+        if not (name and lists[name]) or (lists[name] and lists[name].auto) then name = T("Mes achats") end
+        local l = lists[name] or { items = {}, at = time(), v = 2 }
+        lists[name] = l
+        local q = math.max(1, bw.qty:GetNumber())
+        local found
+        for _, it in ipairs(l.items) do if it[1] == id then it[2] = it[2] + q; found = true end end
+        if not found then table.insert(l.items, { id, q + S:Have(id) }) end
+        cfg().curList = name
+        WK:Print(string.format(T("%s ajouté à la liste « %s »."), WK.GetItemInfo(id) or "?", name))
+    end)
     bw.dEmpty = UI:Text(bw.det, 11, C.muted); bw.dEmpty:SetPoint("CENTER"); bw.dEmpty:SetWidth(280)
-    bw.dEmpty:SetText(T("Choisis un objet dans les résultats : sa courbe, ses enchères et l'achat."))
+    bw.dEmpty:SetText(T("Choisis un objet dans les résultats : ses enchères, sa courbe et l'achat."))
 
     -- recherche envoyée au jeu (une à la fois ; la file des recherches d'objets attend)
     local browse = { rows = {}, busy = false }
@@ -2051,7 +2142,8 @@ local function build(host)
             local avg = S:Average(e.id)
             e.delta = (avg and avg > 0 and e.low) and (e.low - avg) / avg or nil
             e.name = e.name or WK.GetItemInfo(e.id)
-            if not self.dealOnly or (e.delta and e.delta <= -0.2) then table.insert(list, e) end
+            local q = self.minQ and select(3, WK.GetItemInfo(e.id))
+            if (not self.dealOnly or (e.delta and e.delta <= -0.2)) and (not self.minQ or (q and q >= self.minQ)) then table.insert(list, e) end
         end
         local k, rev = self.sortKey, self.sortRev
         table.sort(list, function(x, y)
@@ -2076,6 +2168,7 @@ local function build(host)
         end
         local listed = inLists()
         local ar, ag, ab = UI:Accent()
+        self.sparks:Reset()
         for i, r in ipairs(self.rrows) do
             local e = i <= fit and list[self.offset + i]
             r.e = e
@@ -2092,9 +2185,13 @@ local function build(host)
                     local col = pc <= -20 and C.positive or pc >= 20 and C.negative or C.muted
                     r.d:SetTextColor(col[1], col[2], col[3])
                 else r.d:SetText("-"); r.d:SetTextColor(C.dim[1], C.dim[2], C.dim[3]) end
-                -- étoile : dans une liste d'achat ; turquoise : tes persos en ont
-                r.tag:SetShown(listed[e.id] or S:Have(e.id) > 0)
-                if listed[e.id] then r.tag:SetVertexColor(ar, ag, ab, 1) else r.tag:SetVertexColor(C.rule[1], C.rule[2], C.rule[3], 1) end
+                -- étiquette : affaire (sous 80 % de la moyenne), dans une liste d'achat, ou combien tes persos en ont
+                local have = S:Have(e.id)
+                if e.delta and e.delta <= -0.2 then r.tag:Set(T("affaire"), C.positive); r.tag:Show()
+                elseif listed[e.id] then r.tag:Set(T("liste"), { ar, ag, ab }); r.tag:Show()
+                elseif have > 0 then r.tag:Set(string.format(T("à toi : %d"), have), C.rule); r.tag:Show()
+                else r.tag:Hide() end
+                drawSpark(r.spark, e.id)
                 r.hl:SetColorTexture(ar, ag, ab, e.id == self.id and 0.14 or 0)
                 r:Show()
             else r:Hide() end
@@ -2148,30 +2245,59 @@ local function build(host)
     function bw:RefreshDetail()
         local id = self.id
         local has = id ~= nil
-        for _, w in ipairs({ self.dIcon, self.dName, self.dSub, self.chart, self.lhead, self.watchIn, self.watch, self.toPrices }) do w:SetShown(has) end
+        local tab = self.dtab
+        for _, w in ipairs({ self.dIcon, self.dName, self.dSub, self.tabs, self.watchIn, self.watch, self.toList }) do w:SetShown(has) end
+        self.chart:SetShown(has and tab == "chart"); self.chartNote:SetShown(has and tab == "chart")
+        self.info:SetShown(has and tab == "info"); self.lhead:SetShown(has and tab == "list")
         self.dEmpty:SetShown(not has)
         local commodity = has and isCommodity(id)
-        for _, w in ipairs({ self.qLabel, self.qty, self.qMax, self.sum, self.buy }) do w:SetShown(has and commodity) end
+        for _, w in ipairs({ self.qLabel, self.qty, self.sum, self.buy }) do w:SetShown(has and commodity) end
+        for _, b in pairs(self.qchips) do b:SetShown(has and commodity) end
         for _, r in ipairs(self.lrows) do r:Hide() end
         if not has then return end
         local name, _, quality = WK.GetItemInfo(id)
         self.dIcon:SetTexture(itemIcon(id))
         self.dName:SetText(name or ("#" .. id))
         if quality and GetItemQualityColor then self.dName:SetTextColor(GetItemQualityColor(quality)) end
-        local _, avg = self.chart:Draw(id)
+        local avg = S:Average(id)
         local alert = (A.Config().alerts or {})[id]
-        self.dSub:SetText((commodity and T("marchandise") or T("objet unique")) .. (avg and ("  ·  " .. T("moyenne") .. " " .. money(avg)) or "")
-            .. "  ·  " .. string.format(T("à toi : %d"), S:Have(id)) .. (alert and ("  ·  " .. T("alerte sous") .. " " .. money(alert)) or ""))
+        self.dSub:SetText((commodity and T("marchandise") or T("objet unique")) .. (avg and ("  ·  " .. T("moyenne") .. " " .. money(avg)) or ""))
+        self.watch:SetLabel(alert and string.format(T("Alerte sous %s"), money(alert)) or T("Surveiller"))
+        self.watch:SetWidth(self.watch.label:GetStringWidth() + 24)
+        if tab == "chart" then
+            local hist, cavg = self.chart:Draw(id, 14, { bars = true })
+            local last = hist[#hist]
+            self.chartNote:SetText((last and (T("dernier") .. " " .. money(last[2]) .. "  ·  ") or "") .. (cavg and (T("moyenne") .. " " .. money(cavg)) or "")
+                .. "\n" .. T("14 jours · tirets : moyenne · barres : quantité en vente"))
+        elseif tab == "info" then
+            local vendor = select(11, WK.GetItemInfo(id)) or 0
+            local nSold, gross = 0, 0
+            local log = WK.DB.global.auction and WK.DB.global.auction.log or {}
+            for _, l in ipairs(log) do
+                if (l.t or 0) >= time() - 7 * 86400 and l.kind == "sale" and l.item == name then nSold = nSold + (l.count or 1); gross = gross + (l.gross or 0) end
+            end
+            local e = S:Entry(id)
+            local lines = {
+                T("À toi (compte)") .. " : " .. UI:Hex(C.text) .. S:Have(id) .. "|r",
+                T("Moyenne") .. " : " .. (avg and money(avg) or "-"),
+                T("Marchand") .. " : " .. (vendor > 0 and money(vendor) or "-"),
+                T("Tes ventes (7 j)") .. " : " .. (nSold > 0 and (nSold .. "  ·  " .. money(math.floor(gross / nSold))) or "-"),
+                T("Alerte de prix") .. " : " .. (alert and money(alert) or "-"),
+                T("Dernier relevé") .. " : " .. ((e and e.t) and UI:Ago(e.t) or "-"),
+            }
+            self.info:SetText(table.concat(lines, "\n"))
+        end
         local r = results[id]
         local want = math.max(1, self.qty:GetNumber())
         local b = S.buy
-        if not r then
-            local row = self.lrows[1]
-            row.x = nil; row.act:Hide(); row.a:SetText(UI:Hex(C.muted) .. T("recherche…") .. "|r"); row.b:SetText(""); row.c:SetText("")
-            row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
-            self.sum:SetText(""); self.buy:SetEnabled(false)
-            return
+        if tab == "list" then
+            if not r then
+                local row = self.lrows[1]
+                row.x = nil; row.act:Hide(); row.a:SetText(UI:Hex(C.muted) .. T("recherche…") .. "|r"); row.b:SetText(""); row.c:SetText("")
+                row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
+            end
         end
+        if not r then self.sum:SetText(""); self.buy:SetEnabled(false); return end
         -- enchères : prix, quantité, cumul ; celles qu'il faut pour la quantité voulue sont surlignées
         local cum, cost, got = 0, 0, 0
         local ar, ag, ab = UI:Accent()
@@ -2180,27 +2306,28 @@ local function build(host)
             row.x = x
             if x then
                 cum = cum + x.qty
-                row.a:SetText(money(x.unit))
-                row.b:SetText(tostring(x.qty))
-                row.c:SetText(x.mine and (UI:Hex(C.info) .. T("toi") .. "|r") or tostring(cum))
                 local inQty = commodity and got < want and not x.mine
                 if inQty then
                     local take = math.min(x.qty, want - got)
                     got = got + take; cost = cost + take * x.unit
                 end
-                row.hl:SetColorTexture(ar, ag, ab, inQty and 0.12 or 0)
-                row.act:SetShown(not x.mine)
-                row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty) or T("Acheter"))
-                row:Show()
+                if tab == "list" then
+                    row.a:SetText(money(x.unit))
+                    row.b:SetText(tostring(x.qty))
+                    row.c:SetText(x.mine and (UI:Hex(C.info) .. T("toi") .. "|r") or tostring(cum))
+                    row.hl:SetColorTexture(ar, ag, ab, inQty and 0.12 or 0)
+                    row.act:SetShown(not x.mine)
+                    row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty) or T("Acheter"))
+                    row:Show()
+                end
             end
         end
-        if #r.rows == 0 then
+        if #r.rows == 0 and tab == "list" then
             local row = self.lrows[1]
             row.x = nil; row.act:Hide(); row.a:SetText(UI:Hex(C.muted) .. T("personne n'en vend") .. "|r"); row.b:SetText(""); row.c:SetText("")
             row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
         end
         if commodity then
-            -- au-delà des 9 premières lignes : le reste au dernier prix vu
             local last = r.rows[math.min(#r.rows, #self.lrows)]
             if got < want and last then cost = cost + (want - got) * last.unit; got = want end
             self.sum:SetText(got > 0 and string.format(T("Environ %s l'unité · total %s"), money(math.floor(cost / math.max(1, got))), money(cost)) or "")
@@ -2209,6 +2336,13 @@ local function build(host)
             elseif busy then self.buy:SetLabel("…")
             else self.buy:SetLabel(string.format(T("Acheter %d"), want)) end
             self.buy:SetEnabled(not busy and #r.rows > 0)
+            -- pastille de quantité qui correspond
+            local st = stackOf(id)
+            local av = available(id)
+            for k, bt in pairs(self.qchips) do
+                local n = k == "one" and 1 or k == "stack" and st or k == "five" and st * 5 or av
+                bt:SetStyle(n == want and "primary" or "ghost")
+            end
         end
     end
     function bw:Refresh()

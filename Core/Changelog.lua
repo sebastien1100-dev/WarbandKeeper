@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.55.0", date = "19/11/2026",
+        added = {
+            "HV, Parcourir : filtre de qualité (toutes, inhabituel +, rare +, épique +), un clic pour passer au suivant.",
+            "HV, Parcourir : chaque résultat a une petite courbe des 7 derniers jours (verte en baisse, rouge en hausse) et une étiquette : « affaire » (sous 80 % de la moyenne), « liste » (dans une liste d'achat) ou « à toi : N ».",
+            "HV, Parcourir : l'objet choisi a trois onglets : Enchères (avec le cumul), Courbe (14 jours, quantité en vente en barres) et Infos (ce que tu en as, moyenne, marchand, tes ventes de la semaine, alerte, dernier relevé).",
+            "HV, Parcourir : quantité en pastilles (1, une pile, cinq piles, max) et « + Liste » pour mettre la quantité voulue dans ta liste d'achat.",
+        },
+        changed = {
+            "HV, Parcourir : catégories avec une icône, la sous-catégorie choisie marquée d'un chevron. Le bouton « Surveiller » montre l'alerte posée.",
+        },
+    },
+    {
         version = "1.54.2", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.1 (l'accueil tient dans la fenêtre sans l'agrandir).",
