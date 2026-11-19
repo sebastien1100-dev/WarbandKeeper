@@ -119,6 +119,8 @@ local CLASS_DEFAULTS = {
     shardMax = 20,
     -- Prêtre, Paladin, Druide : rappels de buffs
     buffReminder = true,
+    -- Druide, Prêtre, Mage, Paladin : bouton « Buffer le suivant » (UI/BuffButton.lua)
+    buffAround = true, kingsFirst = true, buffRefresh = 3, buffInstance = false, buffMounted = false, buffPlates = true,
     -- Mage
     portalText = "Portail vers %s, chuchote-moi !",
 }

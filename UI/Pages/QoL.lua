@@ -2602,6 +2602,30 @@ UI:RegisterPage({
                 UI:SettingRow(rm, -40, REMIND[class][1], REMIND[class][2],
                     toggle(rm, function() return cc.buffReminder end, function(v) cc.buffReminder = v end), 80)
             end
+            -- Buffer les joueurs autour (UI/BuffButton.lua)
+            if WK.BUFF_CLASSES and WK.BUFF_CLASSES[class] then
+                subtab("Buffer autour", 7)
+                local pal = class == "PALADIN"
+                local bb = card("Buffer autour de toi", 40 + (pal and 6 or 5) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
+                local function bt(field) return toggle(bb, function() return cc[field] ~= false end, function(v)
+                    cc[field] = v; UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end
+                local by = -40
+                UI:SettingRow(bb, by, "Bouton « Buffer le suivant »", "Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es).", bt("buffAround"), 80)
+                by = by - 46
+                if pal then
+                    UI:SettingRow(bb, by, "Rois d'abord", "Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres.", bt("kingsFirst"), 80)
+                    by = by - 46
+                end
+                local seg = UI:Segmented(bb, { { 1, "1 min" }, { 3, "3 min" }, { 0, "jamais" } }, function(v) cc.buffRefresh = v end, 26)
+                table.insert(self.dyn, function() seg:Select(cc.buffRefresh or 3) end)
+                UI:SettingRow(bb, by, "Remettre un buff qui finit dans moins de", nil, seg, 220)
+                by = by - 46
+                UI:SettingRow(bb, by, "En instance", nil, toggle(bb, function() return cc.buffInstance end, function(v) cc.buffInstance = v end), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Sur une monture", nil, toggle(bb, function() return cc.buffMounted end, function(v) cc.buffMounted = v end), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).", bt("buffPlates"), 80)
+            end
         end
         closeSection()
         self:ShowSection(ui.qolSection or "general")

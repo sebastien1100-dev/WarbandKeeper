@@ -26,6 +26,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.51.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Druide, prêtre, mage, paladin : bouton « Buffer le suivant ». Il vise le joueur ami le plus proche qui n'a pas ton buff (toi, ton groupe, puis les joueurs autour), avec l'icône du buff et le nombre de joueurs à buffer ; le joueur visé est entouré sur sa plaque de nom. Un clic ou une touche (Raccourcis > Warband Keeper) lance le buff, puis passe au suivant.
+- Paladin : la bénédiction suit la classe du joueur (Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres), ou Rois d'abord si tu la connais.
+- Jamais en combat, ni sur un joueur en combat ou JcJ quand tu ne l'es pas. Caché en instance et sur une monture (réglables). Réglages : QoL > Classes, onglet « Buffer autour ». Le bouton se place en mode édition.
+
+### Modifications
+- Rappel du Réal : bandeau compact comme la pile « Rappels » (fond sombre, liseré à la couleur d'accent qui respire, icône carrée, croix pour le cacher).
+
 ## v1.50.1 — 19/11/2026
 
 _Un /reload suffit._
