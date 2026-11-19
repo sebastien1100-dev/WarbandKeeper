@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.7 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Mode édition : le titre de chaque élément est centré au-dessus de son cadre (avant : collé à gauche).
+
 ## v1.56.6 — 19/11/2026
 
 _Un /reload suffit._

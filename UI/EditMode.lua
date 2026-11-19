@@ -182,7 +182,7 @@ local function buildBox(key)
         table.insert(b.edges, t)
     end
     b.tagF = CreateFrame("Frame", nil, b)
-    b.tagF:SetPoint("BOTTOMLEFT", b, "TOPLEFT", 0, 4)
+    b.tagF:SetPoint("BOTTOM", b, "TOP", 0, 4) -- titre centré au-dessus de l'élément
     b.tagF:SetHeight(18)
     b.tagBg = UI:Rounded(b.tagF, 6, 0, "BACKGROUND", 1)
     b.tag = UI:Text(b.tagF, 11, C.onAccent)

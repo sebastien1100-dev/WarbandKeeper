@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.7", date = "19/11/2026",
+        changed = {
+            "Mode édition : le titre de chaque élément est centré au-dessus de son cadre (avant : collé à gauche).",
+        },
+    },
+    {
         version = "1.56.6", date = "19/11/2026",
         changed = {
             "Métiers > Réglages : dans le menu « Ce métier », le nom du perso est à la couleur de sa classe.",
