@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.71.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes à rendre : « Guider » (Résumé > Que faire maintenant, Expérience) pouvait envoyer vers une quête que tu venais de rendre, le jeu la gardant un instant dans le journal. Une quête rendue est maintenant écartée tout de suite, et si tu étais guidé vers elle, le guidage passe à la prochaine quête à rendre (ou s'arrête s'il n'y en a plus).
+
 ## v1.71.4 — 19/11/2026
 
 _Un /reload suffit._

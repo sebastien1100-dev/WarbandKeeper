@@ -61,6 +61,8 @@ local function questXP(questID, index)
     return 0
 end
 
+-- quêtes rendues il y a peu : le journal du jeu les garde encore un instant après la remise
+local turnedIn = {}
 -- { { id, title, xp, map, x, y } } (triées par XP décroissante)
 function M:Pending()
     local out = {}
@@ -78,7 +80,7 @@ function M:Pending()
             local t, _, _, isHeader, _, isComplete, _, qid = GetQuestLogTitle(i)
             if not isHeader then id, title, complete = qid, t, isComplete == 1 or isComplete == true end
         end
-        if id and id > 0 and complete then
+        if id and id > 0 and complete and not (turnedIn[id] and GetTime() - turnedIn[id] < 120) then
             local e = { id = id, title = readable(title) or ("#" .. id), xp = questXP(id, i) }
             if C_QuestLog and C_QuestLog.GetNextWaypoint then
                 local ok, map, x, y = pcall(C_QuestLog.GetNextWaypoint, id)
@@ -110,6 +112,7 @@ local function target(e)
     local p = G:PlayerPos()
     t.distance = p and G:Vector(p, t) or nil
     t.e = { e.x * 100, e.y * 100, 0, nil, nil, e.title, e.title, T("Quête à rendre") }
+    t.qid = e.id
     return t
 end
 function M:GuideTo(e)
@@ -182,6 +185,19 @@ end)
 WK:On("QUEST_TURNED_IN", function(questID, xp)
     xp = num(xp)
     if xp and xp > 0 then M.session.quests = M.session.quests + xp end
+    questID = num(questID)
+    if not questID then return end
+    turnedIn[questID] = GetTime()
+    -- guidé vers cette quête : on passe à la suivante à rendre (ou on arrête le guidage)
+    local G = WK.modules.Guide
+    local t = G and G.target
+    if t and t.kind == "quest" and t.qid == questID then
+        C_Timer.After(0.5, function()
+            if G.target ~= t then return end
+            if not M:GuideNearest() then G:Stop() end
+        end)
+    end
+    WK:NotifyChanged()
 end)
 WK:On("CHAT_MSG_SYSTEM", function(msg)
     msg = readable(msg)

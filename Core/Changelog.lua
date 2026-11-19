@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.71.5", date = "19/11/2026",
+        fixed = {
+            "Quêtes à rendre : « Guider » (Résumé > Que faire maintenant, Expérience) pouvait envoyer vers une quête que tu venais de rendre, le jeu la gardant un instant dans le journal. Une quête rendue est maintenant écartée tout de suite, et si tu étais guidé vers elle, le guidage passe à la prochaine quête à rendre (ou s'arrête s'il n'y en a plus).",
+        },
+    },
+    {
         version = "1.71.4", date = "19/11/2026",
         changed = {
             "Rien ne change dans le jeu : cette version livre le client PC 1.8.3 (la pastille des mises à jour ne disparaît plus au survol).",
