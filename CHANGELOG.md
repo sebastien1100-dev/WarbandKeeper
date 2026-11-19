@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.38.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers : la roue dentée des réglages est maintenant dans le bandeau du haut, à droite de Niveaux, Recettes et File de fabrication (plus dans la fiche d'un métier). Un second clic revient à l'onglet d'avant.
+- Réglages des métiers : la carte « Ce métier » a un menu pour choisir le métier et le perso réglés (texte du lien, palier visé, recevoir les composants).
+
 ## v1.38.0 — 19/11/2026
 
 _Un /reload suffit._

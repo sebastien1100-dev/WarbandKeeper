@@ -768,30 +768,14 @@ local function Detail(page, parent)
         function(k) tab.filter = k; tab:Refresh() end, 34)
     filter:SetPoint("TOPLEFT", 0, fTop)
     filter:Select("all")
-    -- Roue dentée : tous les réglages des métiers (onglet « Réglages »)
-    local gearBtn = UI:IconButton(parent, "gear", 34, "Réglages des métiers")
-    gearBtn:SetPoint("TOPRIGHT", 0, fTop)
-    -- allumée (fond d'accent) quand l'onglet Réglages est ouvert
-    function gearBtn:SetActive(on)
-        self.active = on
-        local r, g, b = UI:Accent()
-        if on then
-            self.bg:SetColor(r, g, b, 1); self.bg:Show()
-            self.icon:SetVertexColor(unpack(C.onAccent))
-        else
-            self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
-        end
-    end
-    gearBtn:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
-    gearBtn:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
     local search = UI:Input(parent, 220, 34, "Rechercher une recette...", "search")
-    search:SetPoint("TOPRIGHT", gearBtn, "TOPLEFT", -8, 0)
+    search:SetPoint("TOPRIGHT", 0, fTop)
     search.onChange = function(t) tab.query = string.lower(t or ""); tab:Refresh() end
     local info = UI:Text(parent, 11, C.muted)
     info:SetPoint("LEFT", filter, "RIGHT", 14, 0)
     -- Recettes ou guide de montée (quand un guide existe pour ce métier)
     local modeSeg = UI:Segmented(parent, { { "recipes", "Recettes" }, { "guide", "Guide" }, { "missing", "Manquantes" } },
-        function(k) tab.mode = k; tab.prevMode = nil; tab.scrollToCurrent = (k == "guide"); tab:Refresh() end, 34)
+        function(k) tab.mode = k; tab.scrollToCurrent = (k == "guide"); tab:Refresh() end, 34)
     modeSeg:SetPoint("TOPLEFT", 0, fTop)
     modeSeg:Select("recipes")
 
@@ -1461,185 +1445,6 @@ local function Detail(page, parent)
         end
     end
 
-    -----------------------------------------------------------------------
-    -- Réglages des métiers (roue dentée) : ce métier, infobulles, fenêtres du jeu,
-    -- file et recharges, récolte, désenchantements notés. Cartes sur deux colonnes.
-    -----------------------------------------------------------------------
-    local settings = UI:Scroll(parent)
-    settings:SetPoint("TOPLEFT", 0, fTop - 46)
-    settings:SetPoint("BOTTOMRIGHT")
-    settings:Hide()
-    local sroot = settings.child
-    local scards = {}
-    local function scard(title, sub, nRows, extra)
-        local cd = UI:Card(sroot, title, sub)
-        cd.h = 40 + nRows * 46 + (extra or 0) + 8
-        cd:SetHeight(cd.h)
-        table.insert(scards, cd)
-        return cd
-    end
-    local stoggles = {}
-    local function stoggle(cd, i, label, desc, get, set)
-        local tg = UI:Toggle(cd, get, set)
-        table.insert(stoggles, tg)
-        return UI:SettingRow(cd, -40 - (i - 1) * 46, label, desc, tg, 80)
-    end
-    local PHc = function() return WK.modules.ProfHelp:Config() end
-    local GHc = function() return WK.modules.Gathering:HelpConfig() end
-    local uic = function() return WK.DB.global.settings.ui end
-
-    -- Ce métier : lien dans le chat, palier visé, composants envoyés
-    local mine = scard("Ce métier", " ", 1, 150)
-    local linkRow = stoggle(mine, 1, "Lien du métier dans le chat", "Texte ajouté après le lien (bouton « Link tchat », ou Maj + clic sur le métier).",
-        function() return tab.prof and WK.modules.Recipes:LinkSettings(tab.prof).on end,
-        function(v) if tab.prof then WK.modules.Recipes:LinkSettings(tab.prof).on = v; tab:RefreshSettings() end end)
-    local linkInput = UI:Input(mine, 300, 30, "Ex. : je fabrique gratuitement, apportez les composants")
-    linkInput:SetPoint("TOPLEFT", 16, -88)
-    linkInput:SetPoint("RIGHT", -16, 0)
-    linkInput.onChange = function(t)
-        if tab.prof and not tab.fillingLink then WK.modules.Recipes:LinkSettings(tab.prof).text = t or ""; tab:RefreshLinkPreview() end
-    end
-    local linkPreview = UI:Text(mine, 10, C.muted)
-    linkPreview:SetPoint("TOPLEFT", 16, -124)
-    linkPreview:SetPoint("RIGHT", -16, 0)
-    linkPreview:SetJustifyH("LEFT")
-    if linkPreview.SetWordWrap then linkPreview:SetWordWrap(true) end
-    local tgtRow = CreateFrame("Frame", nil, mine)
-    tgtRow:SetPoint("TOPLEFT", 16, -158); tgtRow:SetPoint("RIGHT", -16, 0); tgtRow:SetHeight(32)
-    local tgtLbl = UI:Text(tgtRow, 12); tgtLbl:SetPoint("TOPLEFT", 0, -2); tgtLbl:SetText("Palier visé du guide")
-    local tgtDesc = UI:Text(tgtRow, 10, C.muted); tgtDesc:SetPoint("TOPLEFT", 0, -18); tgtDesc:SetText("Matériaux comptés jusque-là (guide, marchand).")
-    local tgtSeg2 = UI:Segmented(tgtRow, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } },
-        function(v) targets()[tab.prof or ""] = v end, 24)
-    tgtSeg2:SetPoint("TOPRIGHT", 0, -2)
-    local mailRow = CreateFrame("Frame", nil, mine)
-    mailRow:SetPoint("TOPLEFT", 16, -196); mailRow:SetPoint("RIGHT", -16, 0); mailRow:SetHeight(32)
-    local mailLbl = UI:Text(mailRow, 12); mailLbl:SetPoint("TOPLEFT", 0, -2); mailLbl:SetText("Recevoir les composants")
-    local mailDesc = UI:Text(mailRow, 10, C.muted); mailDesc:SetPoint("TOPLEFT", 0, -18); mailDesc:SetText("Règles d'envoi : tes autres persos postent ce qui manque.")
-    local mailBtn2 = UI:Button(mailRow, "Créer les règles", nil, 26, "secondary", "mail")
-    mailBtn2:SetPoint("TOPRIGHT", 0, -2)
-    mailBtn2:SetScript("OnClick", function()
-        local added, skipped = WK.modules.Recipes:GuideMailRules(tab.prof, tab.key)
-        WK:Print(string.format(T("Guide : %d règle(s) d'envoi ajoutée(s), %d déjà existante(s)."), added, skipped))
-    end)
-    local mineNote = UI:Text(mine, 11, C.muted)
-    mineNote:SetPoint("TOPLEFT", 16, -44); mineNote:SetPoint("RIGHT", -16, 0); mineNote:SetJustifyH("LEFT")
-    if mineNote.SetWordWrap then mineNote:SetWordWrap(true) end
-    function tab:RefreshLinkPreview()
-        if not self.prof then return end
-        local c = WK.DB.global.characters[self.key]
-        local text, real = WK.modules.Recipes:LinkText(c, self.key, self.prof)
-        local saved = c and c.profLinks and c.profLinks[self.prof]
-        linkPreview:SetText(T("Aperçu : ") .. UI:Hex(C.text) .. text .. "|r" ..
-            (real and ("  ·  " .. string.format(T("Lien enregistré le %s"), date("%d/%m à %H:%M", saved.t)))
-                or ("\n" .. T("Pas encore de lien : ouvre la fenêtre du métier sur ce perso."))))
-    end
-
-    local tips = scard("Infobulles", nil, 2)
-    stoggle(tips, 1, "À quoi sert l'objet", "Les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
-        function() return uic().tooltipProf ~= false end, function(v) uic().tooltipProf = v end)
-    stoggle(tips, 2, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
-        function() return PHc().deTip end, function(v) PHc().deTip = v end)
-
-    local wins = scard("Fenêtres du jeu", "panneaux collés aux fenêtres", 4)
-    stoggle(wins, 1, "Marchand", "Ce qui manque pour monter tes métiers jusqu'au palier visé, avec Acheter et Tout acheter.",
-        function() return uic().merchantPanel ~= false end, function(v) uic().merchantPanel = v end)
-    stoggle(wins, 2, "Sacs : désenchanter ou vendre", "Enchanteur : objets à désenchanter ou à vendre, et un bouton pour enchaîner (/wk de).",
-        function() return PHc().dePanel end, function(v) PHc().dePanel = v end)
-    stoggle(wins, 3, "Échange : enchantements", "Tes enchantements pour l'objet posé, et l'annonce de ce que tu sais faire.",
-        function() return PHc().trade end, function(v) PHc().trade = v end)
-    stoggle(wins, 4, "Maître de métier", "Recettes à apprendre ici : favoris, utiles pour le guide, déjà connues d'un autre perso.",
-        function() return PHc().trainer end, function(v) PHc().trainer = v end)
-
-    local queue = scard("File et recharges", nil, 3)
-    stoggle(queue, 1, "File à l'écran", "Fenêtre du métier ouverte : la prochaine recette de ta file et un bouton pour la fabriquer.",
-        function() return PHc().queueHud end, function(v) PHc().queueHud = v; if UI.RefreshCraftHUD then UI:RefreshCraftHUD() end end)
-    stoggle(queue, 2, "Décompter en fabriquant", "Chaque fabrication réussie retire une ligne de la file.",
-        function() return PHc().queueAuto end, function(v) PHc().queueAuto = v end)
-    stoggle(queue, 3, "Recharge terminée", "Transmutation, étoffe lunaire… : un message quand elle est de nouveau prête, sur n'importe quel perso.",
-        function() return PHc().cdAlert end, function(v) PHc().cdAlert = v end)
-
-    local gath = scard("Récolte", "Herboristerie, Minage", 4)
-    stoggle(gath, 1, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
-        function() return GHc().rankAlert end, function(v) GHc().rankAlert = v end)
-    stoggle(gath, 2, "Nouvelles ressources", "Une montée d'Herboristerie ou de Minage qui débloque une herbe ou un filon le nomme.",
-        function() return GHc().nodeToast end, function(v) GHc().nodeToast = v end)
-    stoggle(gath, 3, "Rappel du pistage", "Herboristerie ou Minage connus mais pistage éteint : rappel en changeant de zone (hors ville et donjon).",
-        function() return GHc().trackRemind end, function(v) GHc().trackRemind = v end)
-    stoggle(gath, 4, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon : la compétence requise et la tienne, aux couleurs du jeu.",
-        function() return GHc().nodeTip end, function(v) GHc().nodeTip = v end)
-
-    local delog = scard("Désenchantements notés", "affinent les moyennes", 0, 56)
-    local deInfo = UI:Text(delog, 11, C.muted); deInfo:SetPoint("TOPLEFT", 16, -44); deInfo:SetPoint("RIGHT", -16, 0); deInfo:SetJustifyH("LEFT")
-    local deClear = UI:Button(delog, "Effacer", nil, 26, "danger", "trash")
-    deClear:SetPoint("TOPLEFT", 16, -68)
-    deClear:SetScript("OnClick", function() wipe(PHc().deLog); tab:RefreshSettings() end)
-
-    -- deux colonnes : chaque carte sous la précédente de sa colonne
-    local function layoutSettings()
-        local W = math.max(400, (settings:GetWidth() or 800) - 10)
-        sroot:SetWidth(W)
-        local cw = math.floor((W - GAP) / 2)
-        local colY = { 0, 0 }
-        for _, cd in ipairs(scards) do
-            if cd:IsShown() then
-                local col = colY[1] <= colY[2] and 1 or 2
-                cd:ClearAllPoints()
-                cd:SetPoint("TOPLEFT", (col - 1) * (cw + GAP), -colY[col])
-                cd:SetWidth(cw)
-                colY[col] = colY[col] + cd.h + GAP
-            end
-        end
-        settings:SetContentHeight(math.max(colY[1], colY[2]))
-    end
-    UI:OnResize(settings, function() if settings:IsShown() then layoutSettings() end end)
-
-    function tab:RefreshSettings()
-        local c = WK.DB.global.characters[self.key]
-        local gk = WK.modules.Gathering:Kind(self.prof)
-        local noLink = gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
-        local hasGuide = WK.modules.Recipes:Guide(self.prof) ~= nil
-        mine.subtitle:SetText((self.prof or "") .. (c and ("  ·  " .. WK:CharName(c, self.key)) or ""))
-        -- lignes de la carte « Ce métier » selon ce qui s'applique
-        local y = -40
-        linkRow:SetShown(not noLink)
-        linkInput:SetShown(not noLink); linkPreview:SetShown(not noLink)
-        if not noLink then
-            local cfg = WK.modules.Recipes:LinkSettings(self.prof)
-            if not linkInput.edit:HasFocus() then
-                self.fillingLink = true; linkInput:SetText(cfg.text or ""); self.fillingLink = nil
-            end
-            self:RefreshLinkPreview()
-            y = -40 - 118
-        end
-        tgtRow:SetShown(hasGuide); mailRow:SetShown(hasGuide)
-        if hasGuide then
-            tgtRow:ClearAllPoints(); tgtRow:SetPoint("TOPLEFT", 16, y); tgtRow:SetPoint("RIGHT", -16, 0)
-            tgtSeg2:Select(targets()[self.prof or ""] or "max")
-            mailRow:ClearAllPoints(); mailRow:SetPoint("TOPLEFT", 16, y - 40); mailRow:SetPoint("RIGHT", -16, 0)
-            y = y - 80
-        end
-        mineNote:SetShown(noLink and not hasGuide)
-        mineNote:SetText(T("Rien à régler pour ce métier : les réglages ci-dessous valent pour tous."))
-        if noLink and not hasGuide then y = y - 30 end
-        mine.h = -y + 10
-        mine:SetHeight(mine.h)
-        local n, tiers = 0, 0
-        for _, e in pairs(PHc().deLog) do n = n + (e.n or 0); tiers = tiers + 1 end
-        deInfo:SetText(string.format(T("%d désenchantement(s) sur %d palier(s)."), n, tiers))
-        deClear:SetShown(n > 0)
-        for _, tg in ipairs(stoggles) do tg:Refresh() end
-        layoutSettings()
-    end
-
-    gearBtn:SetScript("OnClick", function()
-        if tab.mode == "settings" then
-            tab.mode = tab.prevMode or "recipes"; tab.prevMode = nil
-        else
-            tab.prevMode = tab.mode; tab.mode = "settings"
-        end
-        tab:Refresh()
-    end)
-    function tab:SetMode(m) self.mode = m end
 
     function tab:Show(key, prof)
         if self.key ~= key or self.prof ~= prof then
@@ -1704,19 +1509,6 @@ local function Detail(page, parent)
             note:SetText("")
         end
 
-        -- Réglages (roue dentée) : à la place de tout le reste
-        local inSettings = self.mode == "settings"
-        settings:SetShown(inSettings)
-        gearBtn:SetActive(inSettings)
-        if inSettings then
-            gather:Hide(); filter:Hide(); search:Hide(); info:Hide(); scroll:Hide(); guide:Hide(); missing:Hide(); empty:Hide()
-            local hasG = WK.modules.Recipes:Guide(self.prof) ~= nil
-            modeSeg:SetShown(hasG)
-            if hasG then modeSeg:Select(nil) end
-            self:RefreshSettings()
-            return
-        end
-        if modeSeg.selected == nil and self.mode then modeSeg:Select(self.mode) end
         -- Métier de récolte : zones et ressources au lieu des recettes.
         local gkind = WK.modules.Gathering:Kind(self.prof)
         gather:SetShown(gkind ~= nil)
@@ -1827,6 +1619,217 @@ local function Detail(page, parent)
     return tab
 end
 
+---------------------------------------------------------------------------
+-- Réglages des métiers (roue dentée du bandeau) : ce métier (au choix), infobulles,
+-- fenêtres du jeu, file et recharges, récolte, désenchantements notés. Deux colonnes.
+---------------------------------------------------------------------------
+local function Settings(page, parent)
+    -----------------------------------------------------------------------
+    -- Réglages des métiers (roue dentée) : ce métier, infobulles, fenêtres du jeu,
+    -- file et recharges, récolte, désenchantements notés. Cartes sur deux colonnes.
+    -----------------------------------------------------------------------
+    local tab = {}
+    local function targets()
+        local ui = WK.DB.global.settings.ui
+        ui.guideTarget = ui.guideTarget or {}
+        return ui.guideTarget
+    end
+    local settings = UI:Scroll(parent)
+    settings:SetPoint("TOPLEFT", 0, TOP)
+    settings:SetPoint("BOTTOMRIGHT")
+    settings:Hide()
+    local sroot = settings.child
+    local scards = {}
+    local function scard(title, sub, nRows, extra)
+        local cd = UI:Card(sroot, title, sub)
+        cd.h = 40 + nRows * 46 + (extra or 0) + 8
+        cd:SetHeight(cd.h)
+        table.insert(scards, cd)
+        return cd
+    end
+    local stoggles = {}
+    local function stoggle(cd, i, label, desc, get, set)
+        local tg = UI:Toggle(cd, get, set)
+        table.insert(stoggles, tg)
+        return UI:SettingRow(cd, -40 - (i - 1) * 46, label, desc, tg, 80)
+    end
+    local PHc = function() return WK.modules.ProfHelp:Config() end
+    local GHc = function() return WK.modules.Gathering:HelpConfig() end
+    local uic = function() return WK.DB.global.settings.ui end
+
+    -- Ce métier : lien dans le chat, palier visé, composants envoyés
+    local mine = scard("Ce métier", nil, 1, 150)
+    -- choix du métier (et du perso) que règle cette carte
+    local profPick = UI:Dropdown(mine, 260, 26, {}, function(k)
+        local key, prof = k:match("^(.-)\001(.*)$")
+        tab.key, tab.prof = key, prof
+        tab:RefreshSettings()
+    end)
+    profPick:SetPoint("TOPRIGHT", -14, -9)
+    local linkRow = stoggle(mine, 1, "Lien du métier dans le chat", "Texte ajouté après le lien (bouton « Link tchat », ou Maj + clic sur le métier).",
+        function() return tab.prof and WK.modules.Recipes:LinkSettings(tab.prof).on end,
+        function(v) if tab.prof then WK.modules.Recipes:LinkSettings(tab.prof).on = v; tab:RefreshSettings() end end)
+    local linkInput = UI:Input(mine, 300, 30, "Ex. : je fabrique gratuitement, apportez les composants")
+    linkInput:SetPoint("TOPLEFT", 16, -88)
+    linkInput:SetPoint("RIGHT", -16, 0)
+    linkInput.onChange = function(t)
+        if tab.prof and not tab.fillingLink then WK.modules.Recipes:LinkSettings(tab.prof).text = t or ""; tab:RefreshLinkPreview() end
+    end
+    local linkPreview = UI:Text(mine, 10, C.muted)
+    linkPreview:SetPoint("TOPLEFT", 16, -124)
+    linkPreview:SetPoint("RIGHT", -16, 0)
+    linkPreview:SetJustifyH("LEFT")
+    if linkPreview.SetWordWrap then linkPreview:SetWordWrap(true) end
+    local tgtRow = CreateFrame("Frame", nil, mine)
+    tgtRow:SetPoint("TOPLEFT", 16, -158); tgtRow:SetPoint("RIGHT", -16, 0); tgtRow:SetHeight(32)
+    local tgtLbl = UI:Text(tgtRow, 12); tgtLbl:SetPoint("TOPLEFT", 0, -2); tgtLbl:SetText("Palier visé du guide")
+    local tgtDesc = UI:Text(tgtRow, 10, C.muted); tgtDesc:SetPoint("TOPLEFT", 0, -18); tgtDesc:SetText("Matériaux comptés jusque-là (guide, marchand).")
+    local tgtSeg2 = UI:Segmented(tgtRow, { { 75, "75" }, { 150, "150" }, { 225, "225" }, { 300, "300" }, { "max", "Max" } },
+        function(v) targets()[tab.prof or ""] = v end, 24)
+    tgtSeg2:SetPoint("TOPRIGHT", 0, -2)
+    local mailRow = CreateFrame("Frame", nil, mine)
+    mailRow:SetPoint("TOPLEFT", 16, -196); mailRow:SetPoint("RIGHT", -16, 0); mailRow:SetHeight(32)
+    local mailLbl = UI:Text(mailRow, 12); mailLbl:SetPoint("TOPLEFT", 0, -2); mailLbl:SetText("Recevoir les composants")
+    local mailDesc = UI:Text(mailRow, 10, C.muted); mailDesc:SetPoint("TOPLEFT", 0, -18); mailDesc:SetText("Règles d'envoi : tes autres persos postent ce qui manque.")
+    local mailBtn2 = UI:Button(mailRow, "Créer les règles", nil, 26, "secondary", "mail")
+    mailBtn2:SetPoint("TOPRIGHT", 0, -2)
+    mailBtn2:SetScript("OnClick", function()
+        local added, skipped = WK.modules.Recipes:GuideMailRules(tab.prof, tab.key)
+        WK:Print(string.format(T("Guide : %d règle(s) d'envoi ajoutée(s), %d déjà existante(s)."), added, skipped))
+    end)
+    local mineNote = UI:Text(mine, 11, C.muted)
+    mineNote:SetPoint("TOPLEFT", 16, -44); mineNote:SetPoint("RIGHT", -16, 0); mineNote:SetJustifyH("LEFT")
+    if mineNote.SetWordWrap then mineNote:SetWordWrap(true) end
+    function tab:RefreshLinkPreview()
+        if not self.prof then return end
+        local c = WK.DB.global.characters[self.key]
+        local text, real = WK.modules.Recipes:LinkText(c, self.key, self.prof)
+        local saved = c and c.profLinks and c.profLinks[self.prof]
+        linkPreview:SetText(T("Aperçu : ") .. UI:Hex(C.text) .. text .. "|r" ..
+            (real and ("  ·  " .. string.format(T("Lien enregistré le %s"), date("%d/%m à %H:%M", saved.t)))
+                or ("\n" .. T("Pas encore de lien : ouvre la fenêtre du métier sur ce perso."))))
+    end
+
+    local tips = scard("Infobulles", nil, 2)
+    stoggle(tips, 1, "À quoi sert l'objet", "Les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
+        function() return uic().tooltipProf ~= false end, function(v) uic().tooltipProf = v end)
+    stoggle(tips, 2, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
+        function() return PHc().deTip end, function(v) PHc().deTip = v end)
+
+    local wins = scard("Fenêtres du jeu", "panneaux collés aux fenêtres", 4)
+    stoggle(wins, 1, "Marchand", "Ce qui manque pour monter tes métiers jusqu'au palier visé, avec Acheter et Tout acheter.",
+        function() return uic().merchantPanel ~= false end, function(v) uic().merchantPanel = v end)
+    stoggle(wins, 2, "Sacs : désenchanter ou vendre", "Enchanteur : objets à désenchanter ou à vendre, et un bouton pour enchaîner (/wk de).",
+        function() return PHc().dePanel end, function(v) PHc().dePanel = v end)
+    stoggle(wins, 3, "Échange : enchantements", "Tes enchantements pour l'objet posé, et l'annonce de ce que tu sais faire.",
+        function() return PHc().trade end, function(v) PHc().trade = v end)
+    stoggle(wins, 4, "Maître de métier", "Recettes à apprendre ici : favoris, utiles pour le guide, déjà connues d'un autre perso.",
+        function() return PHc().trainer end, function(v) PHc().trainer = v end)
+
+    local queue = scard("File et recharges", nil, 3)
+    stoggle(queue, 1, "File à l'écran", "Fenêtre du métier ouverte : la prochaine recette de ta file et un bouton pour la fabriquer.",
+        function() return PHc().queueHud end, function(v) PHc().queueHud = v; if UI.RefreshCraftHUD then UI:RefreshCraftHUD() end end)
+    stoggle(queue, 2, "Décompter en fabriquant", "Chaque fabrication réussie retire une ligne de la file.",
+        function() return PHc().queueAuto end, function(v) PHc().queueAuto = v end)
+    stoggle(queue, 3, "Recharge terminée", "Transmutation, étoffe lunaire… : un message quand elle est de nouveau prête, sur n'importe quel perso.",
+        function() return PHc().cdAlert end, function(v) PHc().cdAlert = v end)
+
+    local gath = scard("Récolte", "Herboristerie, Minage", 4)
+    stoggle(gath, 1, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
+        function() return GHc().rankAlert end, function(v) GHc().rankAlert = v end)
+    stoggle(gath, 2, "Nouvelles ressources", "Une montée d'Herboristerie ou de Minage qui débloque une herbe ou un filon le nomme.",
+        function() return GHc().nodeToast end, function(v) GHc().nodeToast = v end)
+    stoggle(gath, 3, "Rappel du pistage", "Herboristerie ou Minage connus mais pistage éteint : rappel en changeant de zone (hors ville et donjon).",
+        function() return GHc().trackRemind end, function(v) GHc().trackRemind = v end)
+    stoggle(gath, 4, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon : la compétence requise et la tienne, aux couleurs du jeu.",
+        function() return GHc().nodeTip end, function(v) GHc().nodeTip = v end)
+
+    local delog = scard("Désenchantements notés", "affinent les moyennes", 0, 56)
+    local deInfo = UI:Text(delog, 11, C.muted); deInfo:SetPoint("TOPLEFT", 16, -44); deInfo:SetPoint("RIGHT", -16, 0); deInfo:SetJustifyH("LEFT")
+    local deClear = UI:Button(delog, "Effacer", nil, 26, "danger", "trash")
+    deClear:SetPoint("TOPLEFT", 16, -68)
+    deClear:SetScript("OnClick", function() wipe(PHc().deLog); tab:RefreshSettings() end)
+
+    -- deux colonnes : chaque carte sous la précédente de sa colonne
+    local function layoutSettings()
+        local W = math.max(400, (settings:GetWidth() or 800) - 10)
+        sroot:SetWidth(W)
+        local cw = math.floor((W - GAP) / 2)
+        local colY = { 0, 0 }
+        for _, cd in ipairs(scards) do
+            if cd:IsShown() then
+                local col = colY[1] <= colY[2] and 1 or 2
+                cd:ClearAllPoints()
+                cd:SetPoint("TOPLEFT", (col - 1) * (cw + GAP), -colY[col])
+                cd:SetWidth(cw)
+                colY[col] = colY[col] + cd.h + GAP
+            end
+        end
+        settings:SetContentHeight(math.max(colY[1], colY[2]))
+    end
+    UI:OnResize(settings, function() if settings:IsShown() then layoutSettings() end end)
+
+    function tab:RefreshSettings()
+        local c = WK.DB.global.characters[self.key]
+        local gk = WK.modules.Gathering:Kind(self.prof)
+        local noLink = gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
+        local hasGuide = WK.modules.Recipes:Guide(self.prof) ~= nil
+        -- métiers du compte : le perso connecté d'abord
+        local opts, myKey = {}, WK:CharKey()
+        for _, e in ipairs(UI:SortedCharacters()) do
+            local names = {}
+            for prof in pairs(e.c.professions or {}) do table.insert(names, prof) end
+            table.sort(names)
+            for _, prof in ipairs(names) do
+                local o = { e.key .. "\001" .. prof, prof .. "  ·  " .. WK:CharName(e.c, e.key) }
+                if e.key == myKey then table.insert(opts, 1, o) else table.insert(opts, o) end
+            end
+        end
+        if not self.prof and opts[1] then self.key, self.prof = opts[1][1]:match("^(.-)\001(.*)$") end
+        profPick:SetOptions(opts)
+        if self.prof then profPick:Select(self.key .. "\001" .. self.prof) end
+        profPick:SetShown(#opts > 0)
+        c = WK.DB.global.characters[self.key]
+        gk = WK.modules.Gathering:Kind(self.prof)
+        noLink = (not self.prof) or gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
+        hasGuide = self.prof ~= nil and WK.modules.Recipes:Guide(self.prof) ~= nil
+        -- lignes de la carte « Ce métier » selon ce qui s'applique
+        local y = -40
+        linkRow:SetShown(not noLink)
+        linkInput:SetShown(not noLink); linkPreview:SetShown(not noLink)
+        if not noLink then
+            local cfg = WK.modules.Recipes:LinkSettings(self.prof)
+            if not linkInput.edit:HasFocus() then
+                self.fillingLink = true; linkInput:SetText(cfg.text or ""); self.fillingLink = nil
+            end
+            self:RefreshLinkPreview()
+            y = -40 - 118
+        end
+        tgtRow:SetShown(hasGuide); mailRow:SetShown(hasGuide)
+        if hasGuide then
+            tgtRow:ClearAllPoints(); tgtRow:SetPoint("TOPLEFT", 16, y); tgtRow:SetPoint("RIGHT", -16, 0)
+            tgtSeg2:Select(targets()[self.prof or ""] or "max")
+            mailRow:ClearAllPoints(); mailRow:SetPoint("TOPLEFT", 16, y - 40); mailRow:SetPoint("RIGHT", -16, 0)
+            y = y - 80
+        end
+        mineNote:SetShown(noLink and not hasGuide)
+        mineNote:SetText(T("Rien à régler pour ce métier : les réglages ci-dessous valent pour tous."))
+        if noLink and not hasGuide then y = y - 30 end
+        mine.h = -y + 10
+        mine:SetHeight(mine.h)
+        local n, tiers = 0, 0
+        for _, e in pairs(PHc().deLog) do n = n + (e.n or 0); tiers = tiers + 1 end
+        deInfo:SetText(string.format(T("%d désenchantement(s) sur %d palier(s)."), n, tiers))
+        deClear:SetShown(n > 0)
+        for _, tg in ipairs(stoggles) do tg:Refresh() end
+        layoutSettings()
+    end
+    function tab:Refresh() self:RefreshSettings() end
+    function tab:Pick(key, prof) self.key, self.prof = key, prof end
+    return tab
+end
+
+
 UI:RegisterPage({
     key = "professions", order = 4, nav = "Métiers",
     title = "Métiers",
@@ -1835,7 +1838,7 @@ UI:RegisterPage({
     Build = function(self, p)
         self.tab = "levels"
         local frames, tabs = {}, {}
-        for _, k in ipairs({ "levels", "recipes", "shopping", "detail" }) do
+        for _, k in ipairs({ "levels", "recipes", "shopping", "detail", "settings" }) do
             local f = CreateFrame("Frame", nil, p)
             f:SetAllPoints()
             f:SetShown(k == "levels")
@@ -1849,25 +1852,58 @@ UI:RegisterPage({
         frames.detail:SetPoint("BOTTOMRIGHT")
         tabs.recipes = Recipes(self, frames.recipes)
         tabs.shopping = Shopping(self, frames.shopping)
+        tabs.settings = Settings(self, frames.settings)
         UI:OnResize(p, function() UI:RefreshSoon() end) -- cartes des niveaux
         self.tabs = tabs
         local seg
+        local gear
         local function setTab(k)
             self.tab = k
             self.detailOpen = nil
             if seg then seg:Show() end
+            if gear then gear:Show(); gear:SetActive(k == "settings") end
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
         seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" } }, setTab, 32)
         seg:SetPoint("TOPLEFT")
         seg:Select("levels")
+        -- Roue dentée : tous les réglages des métiers ; un second clic revient à l'onglet d'avant
+        gear = UI:IconButton(p, "gear", 32, "Réglages des métiers")
+        gear:SetPoint("TOPRIGHT", 0, 0)
+        function gear:SetActive(on)
+            self.active = on
+            local r, g, b = UI:Accent()
+            if on then
+                self.bg:SetColor(r, g, b, 1); self.bg:Show()
+                self.icon:SetVertexColor(unpack(C.onAccent))
+            else
+                self.bg:Hide(); self.icon:SetVertexColor(r, g, b, 0.8)
+            end
+        end
+        gear:HookScript("OnLeave", function(s) if s.active then s:SetActive(true) end end)
+        gear:HookScript("OnEnter", function(s) if s.active then s:SetActive(true) end end)
+        gear:SetScript("OnClick", function()
+            if self.tab == "settings" then
+                local back = self.beforeSettings or "levels"
+                self.beforeSettings = nil
+                if back == "detail" and self.detailKey then self:ShowDetail(self.detailKey, self.detailProf) else self:SetTab(back) end
+            else
+                self.beforeSettings = self.tab
+                if self.tab == "detail" then tabs.settings:Pick(tabs.detail.key, tabs.detail.prof) end
+                seg:Select(nil)
+                setTab("settings")
+            end
+        end)
+        self.gear = gear
         function self:SetTab(k) seg:Select(k); setTab(k) end
         -- Fiche d'un métier (dans l'onglet Niveaux) ; ShowDetail(nil) revient aux niveaux.
         function self:ShowDetail(key, prof)
             if not key then self:SetTab("levels") return end
             seg:Select("levels")
             seg:Hide() -- les onglets ne servent que sur la liste des métiers
+            gear:Hide() -- la roue est dans le bandeau des onglets, caché sur la fiche
+            self.detailKey, self.detailProf = key, prof
             self.tab = "detail"
             self.detailOpen = true
             for k, f in pairs(frames) do f:SetShown(k == "detail") end
@@ -1881,26 +1917,11 @@ UI:RegisterPage({
     end,
 })
 
--- Ouvre les réglages des métiers (roue dentée de la fiche) : sur un métier du perso connecté,
--- de préférence un métier qui a un guide. Appelé par les renvois de QoL et d'Options.
+-- Ouvre les réglages des métiers (roue dentée du bandeau de la page Métiers), réglés sur un métier
+-- du perso connecté. Appelé par les renvois de QoL et d'Options.
 function UI:OpenProfSettings()
-    local me, key = WK.DB:Me()
-    local best
-    for prof in pairs(me and me.professions or {}) do
-        if not best or (WK.modules.Recipes:Guide(prof) and not WK.modules.Recipes:Guide(best)) then best = prof end
-    end
-    -- aucun métier sur ce perso : un autre perso qui en a un
-    if not best then
-        for k, c in pairs(WK.DB.global.characters) do
-            local p = next(c.professions or {})
-            if p then key, best = k, p; break end
-        end
-    end
     UI:ShowPage("professions")
     local pg = UI.pages and UI.pages.professions
-    if not (pg and pg.ShowDetail and best) then return end
-    pg:ShowDetail(key, best)
-    pg.tabs.detail.prevMode = pg.tabs.detail.mode
-    pg.tabs.detail:SetMode("settings")
-    pg:Refresh()
+    if not (pg and pg.gear) then return end
+    if pg.tab ~= "settings" then pg.gear:GetScript("OnClick")(pg.gear) end
 end

@@ -77,7 +77,7 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 
 ## Aides de métiers
 
-Tous les réglages des métiers sont dans l'onglet « Réglages » de la fiche d'un métier (roue dentée `gearBtn`, `tab.mode = "settings"`, cartes `scard` sur deux colonnes dans `UI/Pages/Professions.lua`) ; `UI:OpenProfSettings()` y mène (renvois de QoL et d'Options). Un nouveau réglage de métier va dans cet onglet.
+Tous les réglages des métiers sont dans l'onglet « settings » de la page Métiers (roue dentée `self.gear` à droite du bandeau Niveaux / Recettes / File de fabrication, cachée sur la fiche d'un métier ; `Settings(page, parent)` dans `UI/Pages/Professions.lua` : cartes `scard` sur deux colonnes, menu `profPick` du métier réglé par « Ce métier ») ; `UI:OpenProfSettings()` y mène (renvois de QoL et d'Options). Un nouveau réglage de métier va dans cet onglet.
 
 `Modules/Gathering.lua` (fin du fichier) : rang suivant (`rankSeen`), ressources débloquées (`lastRank`, `M.DATA`), rappel du pistage (sorts 2383 / 2580, `C_Minimap.GetTrackingInfo`), compétence requise dans l'infobulle de la minicarte (`TooltipDataProcessor` `MinimapMouseover`, herbes par nom d'objet, filons par mots-clés `ORE_WORDS`) ; réglages `WK.DB.global.gatherHelp`. Idées de Professions (Naowh) : aucun code ni donnée repris.
 

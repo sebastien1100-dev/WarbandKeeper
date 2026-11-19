@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.38.1", date = "19/11/2026",
+        changed = {
+            "Métiers : la roue dentée des réglages est maintenant dans le bandeau du haut, à droite de Niveaux, Recettes et File de fabrication (plus dans la fiche d'un métier). Un second clic revient à l'onglet d'avant.",
+            "Réglages des métiers : la carte « Ce métier » a un menu pour choisir le métier et le perso réglés (texte du lien, palier visé, recevoir les composants).",
+        },
+    },
+    {
         version = "1.38.0", date = "19/11/2026",
         changed = {
             "Métiers : une roue dentée à droite des onglets Recettes, Guide et Manquantes ouvre l'onglet « Réglages », qui regroupe tous les réglages des métiers en cartes : ce métier (texte du lien, palier visé, recevoir les composants), infobulles, fenêtres du jeu (marchand, sacs, échange, maître), file et recharges, récolte, désenchantements notés.",
