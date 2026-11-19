@@ -70,8 +70,6 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 
 ### Fiabilité
-- **Journal d'erreurs** (haute) — Chaque erreur de l'addon notée (message, fichier, version), pastille sur l'icône Options et bouton « Copier le rapport » à coller tel quel.
-- **Nettoyage des données** (haute) — Place prise par chaque partie des sauvegardes (historique HV, chemins, journaux) et purge des plus anciennes, pour une connexion plus rapide.
 - **Diagnostic /wk diag** (moyenne) — Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes.
 - **Notes de version allégées en jeu** (moyenne) — Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG.
 
@@ -84,6 +82,14 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.66.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Options > Fiabilité, journal d'erreurs : chaque erreur de Warband Keeper est notée (message, fichier, version, nombre de fois). Un point rouge sur l'icône Options signale une erreur pas encore vue ; « Copier le rapport » ouvre le texte déjà sélectionné, à coller tel quel.
+- Options > Fiabilité, nettoyage : la taille de la sauvegarde et, case par case, ce que chaque purge libère (prix de l'HV pas vus depuis 30 jours, journal des ventes de plus de 90 jours, carnet de pêche réduit aux 500 dernières prises ; chemins appris et persos absents depuis 180 jours, décochés d'office). Un seul bouton « Nettoyer », confirmé par un second clic.
 
 ## v1.65.4 — 19/11/2026
 

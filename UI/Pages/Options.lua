@@ -45,7 +45,11 @@ UI:RegisterPage({
     title = "Options",
     subtitle = "Réglages rangés par catégorie.",
     -- point sur l'icône des Options : patch notes pas encore lues
-    count = function() return UI.notesDef and UI.notesDef.count() or "" end,
+    count = function()
+        local Mt = WK.modules.Maintenance
+        if Mt and Mt:Unseen() > 0 then return "!" end
+        return UI.notesDef and UI.notesDef.count() or ""
+    end,
 
     Build = function(self, p)
         local cfg = WK.DB.global.settings.ui
@@ -110,6 +114,7 @@ UI:RegisterPage({
             { "look", "Apparence", "logo", "Couleurs, police, taille" },
             { "profiles", "Profils", "users", "Un jeu de réglages par perso" },
             { "notes", "Patch notes", "notes", "Nouveautés et à venir" },
+            { "maint", "Fiabilité", "warn", "Erreurs et place des données" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -393,6 +398,10 @@ UI:RegisterPage({
         -- Profils (UI/Pages/Profiles.lua) -------------------------------------------
         section("profiles")
         UI:BuildProfileCards(self, card)
+
+        -- Fiabilité (UI/Maintenance.lua) : erreurs notées et nettoyage des sauvegardes
+        section("maint")
+        UI:BuildMaintenanceCards(self, card)
 
         -- Patch notes (UI/Pages/Notes.lua) : page entière, construite à la première ouverture
         local notesHost = CreateFrame("Frame", nil, host)

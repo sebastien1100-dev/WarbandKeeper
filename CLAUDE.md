@@ -187,6 +187,10 @@ La carte Modules est le miroir de la barre latérale : chaque entrée (et chaque
 
 `UI/EditMode.lua` : `UI:RegisterHUD(key, frame, opts)` (position, taille, opacité ; `opts.sample(on)` = aperçu en mode édition, `opts.test()` / `opts.testStop()` = comportement réel pour le bouton « Tester »). `UI:TestHUD()` efface les cadres et joue chaque élément 10 s ; `UI:RegisterHUDTest(start, stop)` pour un élément qui n'est pas placé (bandeau de connexion). Un nouvel élément à l'écran doit avoir son `sample`, et son `test` s'il a une minuterie, un son ou une animation.
 
+## Fiabilité
+
+`Modules/Maintenance.lua` (chargé juste après Core) : journal d'erreurs `WK.DB.global.errors` (`list` = { m, s, n, first, last, v, new }, 50 au plus, hors profils), alimenté par le gestionnaire d'erreurs du jeu (enrobé, l'ancien toujours appelé ; seulement nos fichiers), les erreurs des évènements de `WK:On` (`WK.RecordError`) et `ADDON_ACTION_BLOCKED` / `FORBIDDEN` ; `Unseen`, `MarkSeen`, `Report`, `Clear`. Nettoyage : `SizeOf` / `Total` (taille estimée), `PURGES` (clé, titre, cochée d'office, `scan` = nombre, octets, détail ; `run`), `Scan`, `Clean`. `UI/Maintenance.lua` : section « Fiabilité » des Options (`UI:BuildMaintenanceCards`, `UI:RefreshMaintenance`, fenêtre du rapport `UI:ShowErrorReport`) ; point rouge de l'icône Options (`count` = « ! »). Une nouvelle donnée qui grossit sans fin doit avoir sa purge dans `PURGES`.
+
 ## Recherche et profils
 
 `UI/Search.lua` : la recherche de la barre latérale. Chaque `UI:SettingRow` s'inscrit dans `UI.settingIndex` ; à la première recherche, les pages pas encore ouvertes sont construites (cachées) pour être indexées. Un nouveau réglage est donc trouvable s'il passe par `UI:SettingRow`. `Modules/Profiles.lua` : profils de réglages (section « Profils » des Options, cartes de `UI/Pages/Profiles.lua`), appliqués par `Core/Init.lua` juste après `WK.DB:Init()` (avant tout le reste). La liste `KEYS` dit ce qu'un profil contient (clés de `WK.DB.global`, sous-clés de données exclues) : un nouveau réglage rangé ailleurs doit y être ajouté, une nouvelle donnée de compte rangée dans ces clés doit y être exclue.

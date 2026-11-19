@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.65.4"
+WK.version = "1.66.0"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -24,7 +24,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
     if not list then return end
     for i = 1, #list do
         local ok, err = pcall(list[i], ...)
-        if not ok then WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err)) end
+        if not ok then
+            WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err))
+            if WK.RecordError then pcall(WK.RecordError, err, "", event) end
+        end
     end
 end)
 

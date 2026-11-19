@@ -1049,7 +1049,8 @@ function UI:RefreshUpdate()
     for key, ib in pairs(self.headIcons or {}) do
         local n = ib.def.count and ib.def.count() or ""
         ib.dot:SetShown(n ~= nil and n ~= "")
-        ib.dot:SetVertexColor(UI:Accent())
+        -- point rouge : une erreur de l'addon pas encore vue (Options > Fiabilité)
+        if n == "!" then ib.dot:SetVertexColor(unpack(C.negative)) else ib.dot:SetVertexColor(UI:Accent()) end
     end
     local b = self.updBtn
     if not b then return end

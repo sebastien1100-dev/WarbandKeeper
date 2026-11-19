@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.66.0", date = "19/11/2026", restart = true,
+        added = {
+            "Options > Fiabilité, journal d'erreurs : chaque erreur de Warband Keeper est notée (message, fichier, version, nombre de fois). Un point rouge sur l'icône Options signale une erreur pas encore vue ; « Copier le rapport » ouvre le texte déjà sélectionné, à coller tel quel.",
+            "Options > Fiabilité, nettoyage : la taille de la sauvegarde et, case par case, ce que chaque purge libère (prix de l'HV pas vus depuis 30 jours, journal des ventes de plus de 90 jours, carnet de pêche réduit aux 500 dernières prises ; chemins appris et persos absents depuis 180 jours, décochés d'office). Un seul bouton « Nettoyer », confirmé par un second clic.",
+        },
+    },
+    {
         version = "1.65.4", date = "19/11/2026",
         changed = {
             "Paladin > Bénédictions : la répartition du groupe est couchée pour tenir dans la fenêtre. Une ligne par paladin (bande rose Warband Keeper ou grise PallyPower à gauche, ta ligne bordée de rose), une colonne par classe (icône en haut, nom au survol) puis l'aure. La carte grandit avec le nombre de paladins, sans place perdue.",
@@ -3693,8 +3700,6 @@ WK.Roadmap = {
     { prio = 3, theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
     { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
-    { prio = 1, theme = "rel", title = "Journal d'erreurs", text = "Chaque erreur de l'addon notée (message, fichier, version), pastille sur l'icône Options et bouton « Copier le rapport » à coller tel quel." },
-    { prio = 1, theme = "rel", title = "Nettoyage des données", text = "Place prise par chaque partie des sauvegardes (historique HV, chemins, journaux) et purge des plus anciennes, pour une connexion plus rapide." },
     { prio = 1, theme = "char", title = "« Que faire maintenant ? »", text = "Sur le Résumé, une seule recommandation tirée de tout ce que l'addon sait : repos plein, recharge prête, enchères à reposter, rangement à envoyer, quêtes qui font monter." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 2, theme = "rel", title = "Notes de version allégées en jeu", text = "Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG." },
