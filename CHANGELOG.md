@@ -79,6 +79,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Pages Quêtes et Rares refaites : un bandeau de chiffres en haut (quêtes faites ou rares tués du perso avec une barre, quêtes à rendre avec leur XP et un clic pour guider, quêtes pour ton niveau, zone conseillée ; rares de ta zone, morts récentes, rares pas tués qui donnent une recette pour tes métiers).
+- La carte du continent du jeu en fond, avec une bulle par zone : sa taille et sa couleur disent l'avancement, ta zone est en pointillés, la zone choisie cerclée ; survol pour le détail, clic pour voir la zone ; onglets Royaumes de l'Est / Kalimdor.
+- À droite, la liste des zones (niveaux en couleur selon ton perso, barre d'avancement, ce qu'il reste) et, dessous, les quêtes ou les rares de la zone choisie, comme avant.
+
 ## v1.75.1 — 19/11/2026
 
 _Un /reload suffit._

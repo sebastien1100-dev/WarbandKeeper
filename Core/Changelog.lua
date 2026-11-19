@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.0", date = "19/11/2026",
+        changed = {
+            "Pages Quêtes et Rares refaites : un bandeau de chiffres en haut (quêtes faites ou rares tués du perso avec une barre, quêtes à rendre avec leur XP et un clic pour guider, quêtes pour ton niveau, zone conseillée ; rares de ta zone, morts récentes, rares pas tués qui donnent une recette pour tes métiers).",
+            "La carte du continent du jeu en fond, avec une bulle par zone : sa taille et sa couleur disent l'avancement, ta zone est en pointillés, la zone choisie cerclée ; survol pour le détail, clic pour voir la zone ; onglets Royaumes de l'Est / Kalimdor.",
+            "À droite, la liste des zones (niveaux en couleur selon ton perso, barre d'avancement, ce qu'il reste) et, dessous, les quêtes ou les rares de la zone choisie, comme avant.",
+        },
+    },
+    {
         version = "1.75.1", date = "19/11/2026",
         fixed = {
             "Carte et guidage > Bateaux : « Ouvrir le tableau des bateaux » semblait ne rien faire ; le tableau s'ouvrait derrière la fenêtre de l'addon. Il s'ouvre maintenant devant.",

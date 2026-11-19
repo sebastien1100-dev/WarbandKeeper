@@ -1228,3 +1228,346 @@ function UI:CharAlertIcons(parent)
     end
     return f
 end
+
+---------------------------------------------------------------------------
+-- Bandeau de chiffres clés (pages Quêtes et Rares) : n cartes côte à côte, la première plus large.
+-- k:Set(i, { label, value, sub, color, frac?, onClick? })
+---------------------------------------------------------------------------
+function UI:KpiRow(parent, n, height)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(height or 74)
+    row.cards = {}
+    for i = 1, n do
+        local c = CreateFrame("Button", nil, row)
+        UI:Panel(c, 10, C.surface, C.border)
+        c.tint = c:CreateTexture(nil, "BORDER")
+        c.tint:SetPoint("TOPLEFT", 4, -4); c.tint:SetPoint("BOTTOMRIGHT", -4, 4)
+        c.l = UI:Text(c, 10, C.muted); c.l:SetPoint("TOPLEFT", 12, -10); c.l:SetPoint("RIGHT", -10, 0)
+        c.v = UI:Text(c, 20, C.text); c.v:SetPoint("TOPLEFT", c.l, "BOTTOMLEFT", 0, -4); c.v:SetPoint("RIGHT", -10, 0)
+        c.s = UI:Text(c, 10, C.muted); c.s:SetPoint("BOTTOMLEFT", 12, 9); c.s:SetPoint("RIGHT", -10, 0)
+        c.barBg = c:CreateTexture(nil, "ARTWORK"); c.barBg:SetHeight(4)
+        c.barBg:SetPoint("BOTTOMLEFT", 12, 25); c.barBg:SetPoint("BOTTOMRIGHT", -12, 25)
+        c.barBg:SetColorTexture(1, 1, 1, 0.08)
+        c.bar = c:CreateTexture(nil, "OVERLAY"); c.bar:SetHeight(4); c.bar:SetPoint("TOPLEFT", c.barBg, "TOPLEFT")
+        c:SetScript("OnClick", function(s) if s.onClick then s.onClick() end end)
+        c:SetScript("OnEnter", function(s)
+            if not s.tip then return end
+            UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+            GameTooltip:SetText(s.tip, 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        c:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        row.cards[i] = c
+    end
+    local function place()
+        local w = row:GetWidth() or 800
+        if w < 100 then w = 800 end
+        local gap = 10
+        local unit = (w - gap * (n - 1)) / (n + 0.6) -- la première carte compte pour 1,6
+        local x = 0
+        for i, c in ipairs(row.cards) do
+            local cw = i == 1 and unit * 1.6 or unit
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", x, 0); c:SetSize(cw, row:GetHeight())
+            x = x + cw + gap
+        end
+    end
+    UI:OnResize(row, function() place() end)
+    function row:Set(i, e)
+        local c = self.cards[i]
+        if not c then return end
+        place()
+        local col = e.color or C.text
+        c.l:SetText(e.label or "")
+        c.v:SetText(e.value or "")
+        c.v:SetTextColor(col[1], col[2], col[3], 1)
+        c.s:SetText(e.sub or "")
+        c.onClick, c.tip = e.onClick, e.tip
+        c.barBg:SetShown(e.frac ~= nil); c.bar:SetShown(e.frac ~= nil and e.frac > 0)
+        if e.frac then
+            c.bar:SetWidth(math.max(1, ((c:GetWidth() or 200) - 24) * math.min(1, e.frac)))
+            c.bar:SetColorTexture(col[1], col[2], col[3], 1)
+        end
+        c.tint:SetColorTexture(1, 1, 1, 1)
+        local ok = i == 1 and c.tint.SetGradient and CreateColor and pcall(c.tint.SetGradient, c.tint, "HORIZONTAL",
+            CreateColor(col[1], col[2], col[3], 0.14), CreateColor(col[1], col[2], col[3], 0))
+        if not ok then c.tint:SetColorTexture(col[1], col[2], col[3], i == 1 and 0.06 or 0) end
+    end
+    return row
+end
+
+---------------------------------------------------------------------------
+-- Carte d'un continent (pages Quêtes et Rares) : la carte du jeu (tuiles C_Map) en fond, assombrie,
+-- une bulle par zone (taille et couleur = avancement), ta zone en pointillés, la zone choisie cerclée,
+-- onglets des continents. m:SetData(zones, opts) ; zones = { { map, name, frac, total, done } } ;
+-- opts = { selected, player, best, color = fn(z), onClick = fn(map), tip = fn(z) }.
+---------------------------------------------------------------------------
+local mapRects, contOf = {}, {}
+local function continentOf(mapID)
+    if contOf[mapID] then return contOf[mapID] end
+    local id, guard = mapID, 0
+    while id and guard < 8 do
+        local ok, i = pcall(C_Map.GetMapInfo, id)
+        if not (ok and i) then break end
+        if i.mapType == 2 then contOf[mapID] = id; return id, i.name end
+        id, guard = i.parentMapID, guard + 1
+    end
+    return nil
+end
+local function rectOn(mapID, cont)
+    local k = mapID .. ":" .. cont
+    if mapRects[k] ~= nil then return mapRects[k] or nil end
+    local r = false
+    if C_Map.GetMapRectOnMap then
+        local ok, x0, x1, y0, y1 = pcall(C_Map.GetMapRectOnMap, mapID, cont)
+        if ok and x0 and x1 and y0 and y1 and x1 > x0 and y1 > y0 then r = { x0, x1, y0, y1 } end
+    end
+    if r then mapRects[k] = r end
+    return r or nil
+end
+
+function UI:ZoneMap(parent)
+    local m = CreateFrame("Frame", nil, parent)
+    UI:Panel(m, 10, C.surface, C.border)
+    m.area = CreateFrame("Frame", nil, m)
+    m.area:SetPoint("TOPLEFT", 8, -42); m.area:SetPoint("BOTTOMRIGHT", -8, 24)
+    if m.area.SetClipsChildren then m.area:SetClipsChildren(true) end
+    m.areaBg = m.area:CreateTexture(nil, "BACKGROUND"); m.areaBg:SetAllPoints(); m.areaBg:SetColorTexture(0, 0, 0, 0.3)
+    m.tiles = {}
+    m.shade = m.area:CreateTexture(nil, "BORDER"); m.shade:SetColorTexture(0, 0, 0, 0.45)
+    m.pins = CreateFrame("Frame", nil, m.area); m.pins:SetAllPoints(); m.pins:SetFrameLevel(m.area:GetFrameLevel() + 5)
+    m.bubbles, m.labels = {}, {}
+    m.legend = UI:Text(m, 10, C.dim); m.legend:SetPoint("BOTTOMLEFT", 12, 7)
+    m.empty = UI:Text(m.area, 11, C.dim); m.empty:SetPoint("CENTER")
+    m.tabsHolder = CreateFrame("Frame", nil, m); m.tabsHolder:SetPoint("TOPLEFT", 8, -8); m.tabsHolder:SetSize(10, 26)
+
+    local function bubble(i)
+        local b = m.bubbles[i]
+        if b then return b end
+        b = CreateFrame("Button", nil, m.pins)
+        b.dot = b:CreateTexture(nil, "ARTWORK"); b.dot:SetAllPoints(); b.dot:SetTexture(UI.MEDIA .. "circle")
+        b.edge = b:CreateTexture(nil, "BACKGROUND"); b.edge:SetPoint("CENTER"); b.edge:SetTexture(UI.MEDIA .. "circle")
+        b.edge:SetVertexColor(0, 0, 0, 0.8)
+        b.ring = b:CreateTexture(nil, "OVERLAY"); b.ring:SetPoint("CENTER")
+        b:SetScript("OnClick", function(s) if m.opts.onClick then m.opts.onClick(s.z.map) end end)
+        b:SetScript("OnEnter", function(s)
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.z.name, 1, 1, 1)
+            if m.opts.tip then m.opts.tip(s.z, GameTooltip) end
+            GameTooltip:Show()
+        end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        m.bubbles[i] = b
+        return b
+    end
+    local function label(i)
+        local l = m.labels[i]
+        if not l then l = UI:Text(m.pins, 9, C.text); l:SetJustifyH("CENTER"); m.labels[i] = l end
+        return l
+    end
+
+    -- fond : tuiles du continent posées dans le rectangle (x, y, w, h) de la zone d'affichage
+    local function paintArt(cont, x, y, w, h)
+        for _, t in ipairs(m.tiles) do t:Hide() end
+        local okL, layers = pcall(C_Map.GetMapArtLayers, cont)
+        local L = okL and layers and layers[1]
+        local okT, files = pcall(C_Map.GetMapArtLayerTextures, cont, 1)
+        if not (L and okT and files) then return end
+        local tw, th = L.tileWidth or 256, L.tileHeight or 256
+        local lw, lh = L.layerWidth or tw, L.layerHeight or th
+        local cols = math.ceil(lw / tw)
+        for idx, file in ipairs(files) do
+            local col, row = (idx - 1) % cols, math.floor((idx - 1) / cols)
+            local t = m.tiles[idx]
+            if not t then t = m.area:CreateTexture(nil, "BACKGROUND", nil, 1); m.tiles[idx] = t end
+            t:SetTexture(file)
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", m.area, "TOPLEFT", x + col * tw / lw * w, -(y + row * th / lh * h))
+            t:SetSize(tw / lw * w, th / lh * h)
+            t:Show()
+        end
+    end
+
+    function m:SetData(zones, opts)
+        self.zones, self.opts = zones, opts or {}
+        -- continents présents (onglets), construits une fois
+        if not (self.contList and #self.contList > 0) then
+            local seen, list = {}, {}
+            for _, z in ipairs(zones) do
+                local c, name = continentOf(z.map)
+                if c and not seen[c] then
+                    seen[c] = true
+                    local _, nm = pcall(function() return C_Map.GetMapInfo(c).name end)
+                    table.insert(list, { c, name or nm or ("#" .. c) })
+                end
+            end
+            table.sort(list, function(a, b) return a[2] < b[2] end)
+            if #list > 0 then
+                if self.tabs then self.tabs:Hide() end
+                self.tabs = UI:Segmented(self.tabsHolder, list, function(v) self.cont = v; self:Paint() end, 26)
+                self.tabs:SetPoint("TOPLEFT")
+            end
+            self.contList = list
+        end
+        -- continent affiché : celui de la zone choisie (sinon de ta zone, sinon le premier)
+        local want = (opts.selected and continentOf(opts.selected)) or (opts.player and continentOf(opts.player))
+        if want and want ~= self.lastWant then self.cont = want end
+        self.lastWant = want
+        if not self.cont and self.contList and self.contList[1] then self.cont = self.contList[1][1] end
+        self:Paint()
+    end
+
+    function m:Paint()
+        local cont = self.cont
+        if self.tabs then self.tabs:Select(cont) end
+        for _, b in ipairs(self.bubbles) do b:Hide() end
+        for _, l in ipairs(self.labels) do l:Hide() end
+        local AW, AH = self.area:GetWidth() or 0, self.area:GetHeight() or 0
+        if not cont or AW < 50 or AH < 50 then
+            self.empty:SetText(WK.T("Carte indisponible")); self.empty:Show()
+            return
+        end
+        self.empty:Hide()
+        -- le continent entier, proportions gardées (cartes de continent ~ 3:2)
+        local okL, layers = pcall(C_Map.GetMapArtLayers, cont)
+        local L = okL and layers and layers[1]
+        local ratio = L and L.layerWidth and L.layerHeight and (L.layerWidth / L.layerHeight) or 1.5
+        local w, h = AW, AW / ratio
+        if h > AH then h = AH; w = AH * ratio end
+        local x, y = (AW - w) / 2, (AH - h) / 2
+        local key = cont .. ":" .. math.floor(AW) .. "x" .. math.floor(AH)
+        if self.artKey ~= key then self.artKey = key; paintArt(cont, x, y, w, h) end
+        self.shade:ClearAllPoints(); self.shade:SetAllPoints(self.area)
+        -- bulles : d'abord les grosses, puis les étiquettes sans chevauchement (zone choisie, ta zone,
+        -- conseillée en premier)
+        local items = {}
+        for _, z in ipairs(self.zones or {}) do
+            if continentOf(z.map) == cont then
+                local r = rectOn(z.map, cont)
+                if r then
+                    local cx, cy = x + (r[1] + r[2]) / 2 * w, y + (r[3] + r[4]) / 2 * h
+                    table.insert(items, { z = z, x = cx, y = cy })
+                end
+            end
+        end
+        local o = self.opts
+        local function prio(it)
+            local mp = it.z.map
+            if mp == o.selected then return 0 end
+            if mp == o.player then return 1 end
+            if mp == o.best then return 2 end
+            return 3
+        end
+        table.sort(items, function(a, b)
+            local pa, pb = prio(a), prio(b)
+            if pa ~= pb then return pa > pb end -- les prioritaires dessinées en dernier (au-dessus)
+            return (a.z.total or 0) > (b.z.total or 0)
+        end)
+        local placed = {}
+        local n = 0
+        for i, it in ipairs(items) do
+            local z = it.z
+            local b = bubble(i)
+            b.z = z
+            local frac = z.frac or 0
+            local size = math.floor(12 + 12 * frac)
+            b:SetSize(size, size); b.edge:SetSize(size + 3, size + 3)
+            b:ClearAllPoints(); b:SetPoint("CENTER", self.area, "TOPLEFT", it.x, -it.y)
+            local col = (o.color and o.color(z)) or C.text
+            b.dot:SetVertexColor(col[1], col[2], col[3], 0.9)
+            b:SetFrameLevel(self.pins:GetFrameLevel() + (4 - prio(it)))
+            local mp = z.map
+            if mp == o.selected then
+                b.ring:SetTexture(UI.MEDIA .. "ring"); b.ring:SetSize(size + 12, size + 12); b.ring:SetVertexColor(1, 1, 1, 1); b.ring:Show()
+            elseif mp == o.player then
+                b.ring:SetTexture(UI.MEDIA .. "ring_dash"); b.ring:SetSize(size + 14, size + 14); b.ring:SetVertexColor(1, 1, 1, 0.9); b.ring:Show()
+            else b.ring:Hide() end
+            b:Show()
+            n = i
+        end
+        -- étiquettes : priorité d'abord, puis les zones les plus fournies
+        local order = {}
+        for i = n, 1, -1 do table.insert(order, i) end
+        local li = 0
+        for _, i in ipairs(order) do
+            local it = items[i]
+            local tw = math.min(110, 6 * #(it.z.name or ""))
+            local lx0, ly0 = it.x - tw / 2, it.y + 10 + 6 * (it.z.frac or 0)
+            local ok = lx0 > 0 and lx0 + tw < AW and ly0 + 10 < AH
+            for _, r in ipairs(placed) do
+                if ok and lx0 < r[3] and lx0 + tw > r[1] and ly0 < r[4] and ly0 + 11 > r[2] then ok = false end
+            end
+            if ok then
+                li = li + 1
+                local l = label(li)
+                l:ClearAllPoints(); l:SetPoint("TOP", self.area, "TOPLEFT", it.x, -ly0)
+                l:SetText(it.z.name)
+                local pr = prio(it)
+                l:SetTextColor(unpack(pr < 3 and C.text or C.muted))
+                l:Show()
+                table.insert(placed, { lx0, ly0, lx0 + tw, ly0 + 11 })
+            end
+        end
+    end
+    UI:OnResize(m, function() if m.zones then m.artKey = nil; m:Paint() end end)
+    return m
+end
+
+-- Ligne d'une zone (pages Quêtes et Rares) : nom, étiquette, niveaux colorés selon le perso, barre
+-- d'avancement, texte à droite. r:Fill(z, { selected, frac, color, tag = { texte, couleur }, level, right })
+UI.ZONE_ROW_H = 30
+function UI:ZoneRow(parent, onClick)
+    local r = CreateFrame("Button", nil, parent)
+    r:SetHeight(UI.ZONE_ROW_H - 2)
+    r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
+    r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 10, 0); r.name:SetWidth(150)
+    r.tag = UI:Text(r, 10); r.tag:SetPoint("LEFT", r.name, "RIGHT", 4, 0)
+    r.right = UI:Text(r, 10, C.muted); r.right:SetPoint("RIGHT", -10, 0); r.right:SetJustifyH("RIGHT"); r.right:SetWidth(60)
+    r.lv = UI:Text(r, 10); r.lv:SetPoint("RIGHT", r.right, "LEFT", -8, 0); r.lv:SetJustifyH("RIGHT"); r.lv:SetWidth(38)
+    r.barBg = r:CreateTexture(nil, "ARTWORK"); r.barBg:SetHeight(4); r.barBg:SetColorTexture(1, 1, 1, 0.08)
+    r.barBg:SetPoint("RIGHT", r.lv, "LEFT", -10, 0); r.barBg:SetWidth(56)
+    r.bar = r:CreateTexture(nil, "OVERLAY"); r.bar:SetHeight(4); r.bar:SetPoint("LEFT", r.barBg, "LEFT")
+    r.count = UI:Text(r, 10, C.muted); r.count:SetPoint("RIGHT", r.barBg, "LEFT", -6, 0); r.count:SetJustifyH("RIGHT")
+    r:SetScript("OnClick", function(s) if s.z then onClick(s.z.map) end end)
+    r:SetScript("OnEnter", function(s) if not s.sel then s.bg:SetColor(1, 1, 1, 0.04) end end)
+    r:SetScript("OnLeave", function(s) if not s.sel then s.bg:SetColor(0, 0, 0, 0) end end)
+    function r:Fill(z, o)
+        self.z, self.sel = z, o.selected
+        local col = o.color or C.text
+        self.bg:SetColor(unpack(o.selected and { col[1], col[2], col[3], 0.16 } or { 0, 0, 0, 0 }))
+        self.name:SetText(z.name)
+        self.tag:SetShown(o.tag ~= nil)
+        if o.tag then self.tag:SetText(o.tag[1]); self.tag:SetTextColor(unpack(o.tag[2])) end
+        -- le nom prend la place qui reste (coupé s'il le faut)
+        local tagW = o.tag and ((self.tag:GetStringWidth() or 50) + 4) or 0
+        self.name:SetWidth(math.max(60, math.min((self.name:GetStringWidth() or 100) + 2, (self:GetWidth() or 400) - 236 - tagW)))
+        -- niveaux : vert = ton niveau, orange un peu haut, rouge trop haut, gris trop bas
+        local lvl, lc = o.level or 1, C.positive
+        if (z.min or 0) > lvl + 3 then lc = C.negative elseif (z.min or 0) > lvl then lc = C.warning
+        elseif (z.max or 0) < lvl - 10 then lc = C.dim end
+        self.lv:SetText((z.min or 0) .. "-" .. (z.max or 0)); self.lv:SetTextColor(unpack(lc))
+        local f = math.min(1, o.frac or 0)
+        self.bar:SetShown(f > 0); self.bar:SetWidth(math.max(1, 56 * f))
+        self.bar:SetColorTexture(f >= 1 and C.positive[1] or col[1], f >= 1 and C.positive[2] or col[2], f >= 1 and C.positive[3] or col[3], 1)
+        self.count:SetText((z.done or z.killed or 0) .. "/" .. (z.total or 0))
+        self.right:SetText(o.right or "")
+        self:Show()
+    end
+    return r
+end
+
+-- Disposition commune des pages Quêtes et Rares : bandeau, puis carte à gauche, zones et liste à droite.
+-- page = la définition (kpi, map, zcard, list) ; open = réglages ouverts (tout est caché).
+function UI:ZoneLayout(page, p, top, w, h, open)
+    local show = not open
+    for _, f in ipairs({ page.kpi, page.map, page.zcard, page.list }) do f:SetShown(show); f:ClearAllPoints() end
+    if open then return end
+    w = (w and w > 100) and w or 800
+    page.kpi:SetPoint("TOPLEFT", 0, -top); page.kpi:SetPoint("TOPRIGHT", 0, -top)
+    local y = top + page.kpi:GetHeight() + 12
+    local mw = math.floor(w * 0.46)
+    page.map:SetPoint("TOPLEFT", 0, -y); page.map:SetPoint("BOTTOMLEFT", 0, 0); page.map:SetWidth(mw)
+    local bodyH = math.max(200, h - y)
+    local zh = math.floor(bodyH * 0.40)
+    page.zcard:SetPoint("TOPLEFT", mw + 12, -y); page.zcard:SetPoint("TOPRIGHT", 0, -y); page.zcard:SetHeight(zh)
+    page.list:SetPoint("TOPLEFT", mw + 12, -(y + zh + 12)); page.list:SetPoint("BOTTOMRIGHT", 0, 0)
+end

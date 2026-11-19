@@ -139,7 +139,7 @@ Carnet de pêche : `Modules/FishingLog.lua` note chaque butin de pêche (`Record
 
 ## Quêtes
 
-`Modules/QuestsDB.lua` est **généré** par `python3 tools/gen_quests.py <clone de QuestieDB>` (il lui faut aussi `l10n/Classic/lookupQuests/frFR.lua` pour les noms français) : quêtes par zone (donjon : zone de l'entrée), niveau, faction, classes, métier, prérequis, donneur et XP ; quêtes répétables exclues. Données Questie (GPLv3) : garder la mention. `Modules/Quests.lua` : état d'une quête pour un perso (`ForChar`, `State`), zones, meilleure zone, guidage, infobulle du donneur ; quêtes faites et journal dans `characters[perso].quests`. `UI/Pages/Quests.lua` : même disposition que la page Rares (tuiles, liste, colonne de réglages).
+`Modules/QuestsDB.lua` est **généré** par `python3 tools/gen_quests.py <clone de QuestieDB>` (il lui faut aussi `l10n/Classic/lookupQuests/frFR.lua` pour les noms français) : quêtes par zone (donjon : zone de l'entrée), niveau, faction, classes, métier, prérequis, donneur et XP ; quêtes répétables exclues. Données Questie (GPLv3) : garder la mention. `Modules/Quests.lua` : état d'une quête pour un perso (`ForChar`, `State`), zones, meilleure zone, guidage, infobulle du donneur ; quêtes faites et journal dans `characters[perso].quests`. `UI/Pages/Quests.lua` : même disposition que la page Rares : bandeau de chiffres (`UI:KpiRow`), carte du continent du jeu avec une bulle par zone (`UI:ZoneMap` : tuiles `C_Map.GetMapArtLayerTextures`, zones placées par `GetMapRectOnMap`, onglets des continents), liste des zones (`UI:ZoneRow`) et liste de la zone choisie ; disposition commune `UI:ZoneLayout` (tout dans `UI/Widgets.lua`).
 
 ## Fiche de personnage
 

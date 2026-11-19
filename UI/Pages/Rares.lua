@@ -9,8 +9,6 @@ local T = function(s) return WK.T(s) end
 --   roue dentée : les réglages (carte, alerte avec aperçu en direct ; infobulle : Options > Infobulles).
 local R = WK.modules.Rares
 local GAP, SIDE_W, ROW_H = 12, 300, 44
-local TILE_W, TILE_H = 214, 74
-local DOTS = 28 -- points de l'anneau de progression
 
 -- Couleur du niveau d'un rare pour un perso (comme la difficulté des quêtes)
 -- Durée courte : « 5 min », « 3 h », « 2 j »
@@ -71,36 +69,14 @@ UI:RegisterPage({
 
         self:BuildSettings(p)
 
-        -- Vue Collection : tuiles ------------------------------------------------------
-        self.tscroll = UI:Scroll(p)
-        self.tiles = UI:Pool(function()
-            local t = CreateFrame("Button", nil, self.tscroll.child)
-            t:SetSize(TILE_W, TILE_H)
-            t.edge = UI:Rounded(t, 14, 0, "BACKGROUND", 0)
-            t.bg = UI:Rounded(t, 13, 1, "BACKGROUND", 1)
-            t.dots = {}
-            for i = 1, DOTS do
-                local d = t:CreateTexture(nil, "ARTWORK")
-                d:SetTexture(UI.MEDIA .. "circle")
-                d:SetSize(5, 5)
-                local a = -math.pi / 2 + (i - 1) / DOTS * 2 * math.pi
-                d:SetPoint("CENTER", t, "LEFT", 38 + math.cos(a) * 22, -math.sin(a) * 22)
-                t.dots[i] = d
-            end
-            t.n = UI:Text(t, 11)
-            t.n:SetPoint("CENTER", t, "LEFT", 38, 0)
-            t.n:SetJustifyH("CENTER")
-            t.name = UI:Text(t, 12)
-            t.name:SetPoint("TOPLEFT", 72, -16)
-            t.name:SetPoint("RIGHT", -10, 0)
-            t.name:SetJustifyH("LEFT")
-            t.sub = UI:Text(t, 10, C.muted)
-            t.sub:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -3)
-            t.tag = UI:Text(t, 10)
-            t.tag:SetPoint("TOPLEFT", t.sub, "BOTTOMLEFT", 0, -3)
-            t:SetScript("OnClick", function(s) self.zone = s.map; self:Refresh() end)
-            return t
-        end)
+        -- Vue Collection : bandeau de chiffres, carte du continent et liste des zones -------
+        self.kpi = UI:KpiRow(p, 4, 74)
+        self.map = UI:ZoneMap(p)
+        self.zcard = UI:Card(p)
+        self.zTitle = UI:Text(self.zcard, 12); self.zTitle:SetPoint("TOPLEFT", 14, -10)
+        self.zscroll = UI:Scroll(self.zcard)
+        self.zscroll:SetPoint("TOPLEFT", 4, -32); self.zscroll:SetPoint("BOTTOMRIGHT", -4, 6)
+        self.zrows = UI:Pool(function() return UI:ZoneRow(self.zscroll.child, function(map) self.zone = map; self:Refresh() end) end)
 
         -- Rares de la zone choisie -------------------------------------------------------
         local list = UI:Card(p)
@@ -244,20 +220,15 @@ UI:RegisterPage({
         if h < 100 then h = 500 end
         local top = 30 + GAP
         local coll = self.tab ~= "settings"
-        self.list:SetShown(coll); self.tscroll:SetShown(coll); self.side:SetShown(not coll)
+        self.side:SetShown(not coll)
         self.charDd:SetShown(coll); self.hideBtn:SetShown(coll); self.ofLabel:SetShown(coll)
-        self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
+        self.side:ClearAllPoints()
         self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
         local w = p:GetWidth() or 800
         self.side.child:SetSize((w > 100 and w or 800) - 10, self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
-        local th = math.floor((h - top) * 0.46)
-        self.tscroll:SetPoint("TOPLEFT", 0, -top)
-        self.tscroll:SetPoint("TOPRIGHT", 0, -top)
-        self.tscroll:SetHeight(th)
-        self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
-        self.list:SetPoint("BOTTOMRIGHT")
+        UI:ZoneLayout(self, p, top, w, h, not coll)
     end,
 
     Refresh = function(self)
@@ -277,39 +248,76 @@ UI:RegisterPage({
         for _, t in ipairs(self.toggles) do t:Refresh() end
         self.hideBtn.label:SetText(cfg.pageHideKilled and T("Montrer les tués") or T("Masquer les tués"))
 
-        -- tuiles
-        self.tiles:Reset()
-        local W = (self.tscroll:GetWidth() or 800)
-        if W < 100 then W = 800 end
-        local cols = math.max(1, math.floor((W - 14 + 10) / (TILE_W + 10)))
-        local tw = math.floor((W - 14 - (cols - 1) * 10) / cols) -- tuiles étirées sur toute la largeur
-        -- ta zone en premier
+        -- bandeau
+        local killed, total = R:Totals(key)
+        local rc = C.rare
+        local last, lastAt
+        for id, k in pairs(cfg.kills or {}) do
+            local at = k[key]
+            if at and (not lastAt or at > lastAt) then last, lastAt = id, at end
+        end
+        self.kpi:Set(1, { label = string.format(T("RARES TUÉS · %s"), WK:CharName(c, key)), value = killed .. UI:Hex(C.muted) .. " / " .. total .. "|r",
+            sub = last and R:Get(last) and string.format(T("dernier : %s, il y a %s"), R:Name(R:Get(last)), short(time() - lastAt)) or T("aucun pour l'instant"),
+            frac = total > 0 and killed / total or 0, color = rc })
+        local here, hereNew = 0, 0
+        for _, r in ipairs(playerZone and R:OnMap(playerZone) or {}) do
+            here = here + 1
+            if not R:Killed(r.id, key) then hereNew = hereNew + 1 end
+        end
+        self.kpi:Set(2, { label = T("DANS TA ZONE"), value = tostring(here), color = here > 0 and rc or C.muted,
+            sub = playerZone and string.format(T("dont %d pas encore tués"), hereNew) or T("pas de rare ici"),
+            onClick = playerZone and function() self.zone = playerZone; self:Refresh() end or nil })
+        local recent = 0
+        for id in pairs(cfg.dead or {}) do if R:RecentDeath(id) then recent = recent + 1 end end
+        self.kpi:Set(3, { label = T("MORTS RÉCENTES"), value = tostring(recent), color = recent > 0 and C.negative or C.muted,
+            sub = T("moins de 3 h : repop possible") })
+        -- butin utile : rares pas tués qui donnent une recette d'un métier de tes persos
+        local useful = 0
+        for _, z in ipairs(zones) do
+            for _, r in ipairs(R:OnMap(z.map)) do
+                if not R:Killed(r.id, key) then
+                    for _, l in ipairs(R:Loot(r.id)) do if l.prof and #l.who > 0 then useful = useful + 1; break end end
+                end
+            end
+        end
+        self.kpi:Set(4, { label = T("BUTIN UTILE"), value = tostring(useful), color = C.gold,
+            sub = T("rares pas tués avec une recette pour tes métiers") })
+
+        -- carte du continent
+        for _, z in ipairs(zones) do z.frac = z.total > 0 and z.killed / z.total or 0 end
+        self.map:SetData(zones, {
+            selected = self.zone, player = playerZone,
+            color = function(z)
+                if z.frac >= 1 then return C.positive end
+                if z.frac > 0 then return rc end
+                return C.dim
+            end,
+            onClick = function(map) self.zone = map; self:Refresh() end,
+            tip = function(z, tt)
+                tt:AddDoubleLine(T("Rares tués"), z.killed .. " / " .. z.total, 0.7, 0.7, 0.7, 1, 1, 1)
+                tt:AddDoubleLine(T("Niveaux"), z.min .. "-" .. z.max, 0.7, 0.7, 0.7, 1, 1, 1)
+            end,
+        })
+        self.map.legend:SetText(T("taille et couleur = rares tués · clic : voir la zone"))
+
+        -- liste des zones (ta zone en premier)
         local ordered = {}
         for _, z in ipairs(zones) do if z.map == playerZone then table.insert(ordered, z) end end
         for _, z in ipairs(zones) do if z.map ~= playerZone then table.insert(ordered, z) end end
+        self.zrows:Reset()
+        local ZW = (self.zscroll:GetWidth() or 400)
+        if ZW < 100 then ZW = 400 end
         for i, z in ipairs(ordered) do
-            local t = self.tiles:Get()
-            t.map = z.map
-            local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
-            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (tw + 10), -row * (TILE_H + 10)); t:SetWidth(tw)
-            local cur = z.map == playerZone
-            local sel = z.map == self.zone
-            t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border)) -- seule la zone choisie est entourée
-            t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
-            local frac = z.total > 0 and z.killed / z.total or 0
-            local col2 = frac >= 1 and C.positive or { r1, g1, b1, 1 }
-            for k, d in ipairs(t.dots) do
-                local on = (k - 0.5) / DOTS <= frac
-                d:SetVertexColor(unpack(on and col2 or C.border))
-            end
-            t.n:SetText(z.killed .. "/" .. z.total)
-            t.name:SetText(z.name)
-            t.sub:SetText(string.format(T("niveaux %d-%d"), z.min, z.max))
-            t.tag:SetText(cur and T("ta zone") or "")
-            t.tag:SetTextColor(r1, g1, b1)
+            local row = self.zrows:Get()
+            row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * UI.ZONE_ROW_H); row:SetWidth(ZW - 14)
+            local left = z.total - z.killed
+            row:Fill(z, { selected = z.map == self.zone, frac = z.frac, color = rc, level = myLevel,
+                tag = z.map == playerZone and { T("ta zone"), { r1, g1, b1 } } or nil,
+                right = left > 0 and string.format(T("%d à tuer"), left) or T("tous tués") })
         end
-        self.tscroll.child:SetSize(W, math.ceil(#ordered / cols) * (TILE_H + 10))
-        if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
+        self.zTitle:SetText(string.format(T("Zones · %d"), #ordered))
+        self.zscroll.child:SetSize(ZW - 14, #ordered * UI.ZONE_ROW_H)
+        if self.zscroll.UpdateBar then self.zscroll:UpdateBar() end
 
         -- rares de la zone choisie
         self.rrows:Reset()

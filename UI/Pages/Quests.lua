@@ -8,8 +8,6 @@ local T = function(s) return WK.T(s) end
 -- les réglages et la légende. Collection par perso (« Quêtes de »).
 local Q = WK.modules.Quests
 local GAP, SIDE_W, ROW_H = 12, 300, 44
-local TILE_W, TILE_H = 214, 74
-local DOTS = 28
 
 local function levelColor(lvl, me)
     local d = (lvl or 0) - (me or 1)
@@ -67,36 +65,14 @@ UI:RegisterPage({
         gear:SetScript("OnClick", function() self.settingsOpen = not self.settingsOpen; self:Layout(); self:Refresh() end)
         self.gear = gear
 
-        -- Tuiles des zones -------------------------------------------------------------
-        self.tscroll = UI:Scroll(p)
-        self.tiles = UI:Pool(function()
-            local t = CreateFrame("Button", nil, self.tscroll.child)
-            t:SetSize(TILE_W, TILE_H)
-            t.edge = UI:Rounded(t, 14, 0, "BACKGROUND", 0)
-            t.bg = UI:Rounded(t, 13, 1, "BACKGROUND", 1)
-            t.dots = {}
-            for i = 1, DOTS do
-                local d = t:CreateTexture(nil, "ARTWORK")
-                d:SetTexture(UI.MEDIA .. "circle")
-                d:SetSize(5, 5)
-                local a = -math.pi / 2 + (i - 1) / DOTS * 2 * math.pi
-                d:SetPoint("CENTER", t, "LEFT", 38 + math.cos(a) * 22, -math.sin(a) * 22)
-                t.dots[i] = d
-            end
-            t.n = UI:Text(t, 10)
-            t.n:SetPoint("CENTER", t, "LEFT", 38, 0)
-            t.n:SetJustifyH("CENTER")
-            t.name = UI:Text(t, 12)
-            t.name:SetPoint("TOPLEFT", 72, -16)
-            t.name:SetPoint("RIGHT", -10, 0)
-            t.name:SetJustifyH("LEFT")
-            t.sub = UI:Text(t, 10, C.muted)
-            t.sub:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -3)
-            t.tag = UI:Text(t, 10)
-            t.tag:SetPoint("TOPLEFT", t.sub, "BOTTOMLEFT", 0, -3)
-            t:SetScript("OnClick", function(s) self.zone = s.map; self:Refresh() end)
-            return t
-        end)
+        -- Bandeau de chiffres, carte du continent et liste des zones --------------------
+        self.kpi = UI:KpiRow(p, 4, 74)
+        self.map = UI:ZoneMap(p)
+        self.zcard = UI:Card(p)
+        self.zTitle = UI:Text(self.zcard, 12); self.zTitle:SetPoint("TOPLEFT", 14, -10)
+        self.zscroll = UI:Scroll(self.zcard)
+        self.zscroll:SetPoint("TOPLEFT", 4, -32); self.zscroll:SetPoint("BOTTOMRIGHT", -4, 6)
+        self.zrows = UI:Pool(function() return UI:ZoneRow(self.zscroll.child, function(map) self.zone = map; self:Refresh() end) end)
 
         -- Quêtes de la zone choisie ------------------------------------------------------
         local list = UI:Card(p)
@@ -219,22 +195,17 @@ UI:RegisterPage({
         local h = p:GetHeight() or 500
         if h < 100 then h = 500 end
         local top = 30 + GAP
-        self.list:ClearAllPoints(); self.tscroll:ClearAllPoints(); self.side:ClearAllPoints()
+        self.side:ClearAllPoints()
         local open = self.settingsOpen == true
         self.gear:SetActive(open)
-        self.side:SetShown(open); self.tscroll:SetShown(not open); self.list:SetShown(not open)
+        self.side:SetShown(open)
         -- réglages : sur toute la largeur, sous la barre
         self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
         local w = p:GetWidth() or 800
         self.side.child:SetSize(math.min((w > 100 and w or 800) - 10, 560), self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
-        local th = math.floor((h - top) * 0.40)
-        self.tscroll:SetPoint("TOPLEFT", 0, -top)
-        self.tscroll:SetPoint("TOPRIGHT", 0, -top)
-        self.tscroll:SetHeight(th)
-        self.list:SetPoint("TOPLEFT", 0, -(top + th + GAP))
-        self.list:SetPoint("BOTTOMRIGHT", 0, 0)
+        UI:ZoneLayout(self, p, top, w, h, open)
     end,
 
     Refresh = function(self)
@@ -254,44 +225,74 @@ UI:RegisterPage({
         self.zone = self.zone or playerZone or (best and best.map) or (zones[1] and zones[1].map)
         local r1, g1, b1 = UI:Accent()
 
-        -- tuiles (ta zone, puis la zone conseillée, puis par niveau)
-        self.tiles:Reset()
-        local W = (self.tscroll:GetWidth() or 800)
-        if W < 100 then W = 800 end
-        local cols = math.max(1, math.floor((W - 14 + 10) / (TILE_W + 10)))
-        local tw = math.floor((W - 14 - (cols - 1) * 10) / cols) -- tuiles étirées sur toute la largeur
+        -- bandeau
+        local qDone, qTotal = Q:Totals(key)
+        local accent = { r1, g1, b1 }
+        self.kpi:Set(1, { label = string.format(T("QUÊTES FAITES · %s"), WK:CharName(c, key)), value = qDone .. UI:Hex(C.muted) .. " / " .. qTotal .. "|r",
+            sub = qTotal > 0 and string.format(T("%d %% du total pour ce perso"), math.floor(qDone / qTotal * 100 + 0.5)) or "",
+            frac = qTotal > 0 and qDone / qTotal or 0, color = accent })
+        local X = WK.modules.XP
+        local pend = key == WK:CharKey() and X and X.Pending and X:Pending() or {}
+        local pxp = 0
+        for _, e in ipairs(pend) do pxp = pxp + (e.xp or 0) end
+        self.kpi:Set(2, { label = T("À RENDRE"), value = tostring(#pend), color = #pend > 0 and C.positive or C.muted,
+            sub = #pend > 0 and string.format(T("%s XP · clic : guider"), BreakUpLargeNumbers and BreakUpLargeNumbers(pxp) or pxp) or T("rien à rendre"),
+            onClick = #pend > 0 and function() X:GuideNearest() end or nil })
+        local near, nearZones = 0, 0
+        for _, z in ipairs(zones) do
+            local zn = 0
+            for _, q in ipairs(Q:OnMap(z.map)) do
+                if (q.lvl or 0) >= myLevel - 3 and (q.lvl or 0) <= myLevel + 3 and Q:ForChar(q, c) and Q:State(q, c) == "avail" then zn = zn + 1 end
+            end
+            near = near + zn
+            if zn > 0 then nearZones = nearZones + 1 end
+        end
+        self.kpi:Set(3, { label = string.format(T("POUR TON NIVEAU (%d)"), myLevel), value = tostring(near), color = C.gold,
+            sub = string.format(T("quêtes disponibles dans %d zones"), nearZones) })
+        self.kpi:Set(4, { label = T("ZONE CONSEILLÉE"), value = best and best.name or "-", color = C.positive,
+            sub = best and string.format(T("%d à faire · niveaux %d-%d"), best.avail, best.min, best.max) or T("aucune pour l'instant"),
+            onClick = best and function() self.zone = best.map; self:Refresh() end or nil })
+
+        -- carte du continent : une bulle par zone, couleur et taille = avancement
+        for _, z in ipairs(zones) do z.frac = z.total > 0 and z.done / z.total or 0 end
+        self.map:SetData(zones, {
+            selected = self.zone, player = playerZone, best = best and best.map,
+            color = function(z)
+                if z.frac >= 1 then return C.positive end
+                if z.frac >= 0.5 then return C.positive end
+                if z.frac >= 0.15 then return C.gold end
+                if z.frac > 0 then return accent end
+                return C.dim
+            end,
+            onClick = function(map) self.zone = map; self:Refresh() end,
+            tip = function(z, tt)
+                tt:AddDoubleLine(T("Quêtes faites"), z.done .. " / " .. z.total, 0.7, 0.7, 0.7, 1, 1, 1)
+                tt:AddDoubleLine(T("Niveaux"), z.min .. "-" .. z.max, 0.7, 0.7, 0.7, 1, 1, 1)
+                if z.avail > 0 then tt:AddDoubleLine(T("Disponibles"), tostring(z.avail), 0.7, 0.7, 0.7, 1, 1, 1) end
+            end,
+        })
+        self.map.legend:SetText(T("taille et couleur = avancement · clic : voir la zone"))
+
+        -- liste des zones (ta zone, la conseillée, puis par niveau)
         local ordered = {}
         for _, z in ipairs(zones) do if z.map == playerZone then table.insert(ordered, z) end end
         for _, z in ipairs(zones) do if best and z.map == best.map and z.map ~= playerZone then table.insert(ordered, z) end end
         for _, z in ipairs(zones) do if z.map ~= playerZone and not (best and z.map == best.map) then table.insert(ordered, z) end end
+        self.zrows:Reset()
+        local ZW = (self.zscroll:GetWidth() or 400)
+        if ZW < 100 then ZW = 400 end
         for i, z in ipairs(ordered) do
-            local t = self.tiles:Get()
-            t.map = z.map
-            local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
-            t:ClearAllPoints(); t:SetPoint("TOPLEFT", col * (tw + 10), -row * (TILE_H + 10)); t:SetWidth(tw)
-            local sel = z.map == self.zone
-            t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border))
-            t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
-            local frac = z.total > 0 and z.done / z.total or 0
-            local col2 = frac >= 1 and C.positive or { r1, g1, b1, 1 }
-            for k, d in ipairs(t.dots) do
-                d:SetVertexColor(unpack(((k - 0.5) / DOTS <= frac) and col2 or C.border))
-            end
-            t.n:SetText(z.done .. "/" .. z.total)
-            t.name:SetText(z.name)
-            t.sub:SetText(string.format(T("niveaux %d-%d"), z.min, z.max))
-            if z.map == playerZone then
-                t.tag:SetText(T("ta zone")); t.tag:SetTextColor(r1, g1, b1)
-            elseif best and z.map == best.map then
-                t.tag:SetText(T("conseillée pour monter")); t.tag:SetTextColor(unpack(C.positive))
-            elseif z.avail > 0 then
-                t.tag:SetText(string.format(T("%d à faire"), z.avail)); t.tag:SetTextColor(unpack(C.muted))
-            else
-                t.tag:SetText("")
-            end
+            local r = self.zrows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -(i - 1) * UI.ZONE_ROW_H); r:SetWidth(ZW - 14)
+            local tag
+            if z.map == playerZone then tag = { T("ta zone"), accent }
+            elseif best and z.map == best.map then tag = { T("conseillée"), C.positive } end
+            r:Fill(z, { selected = z.map == self.zone, frac = z.frac, color = accent, tag = tag, level = myLevel,
+                right = z.avail > 0 and string.format(T("%d à faire"), z.avail) or (z.done >= z.total and T("finie") or "") })
         end
-        self.tscroll.child:SetSize(W, math.ceil(#ordered / cols) * (TILE_H + 10))
-        if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
+        self.zTitle:SetText(string.format(T("Zones · %d"), #ordered))
+        self.zscroll.child:SetSize(ZW - 14, #ordered * UI.ZONE_ROW_H)
+        if self.zscroll.UpdateBar then self.zscroll:UpdateBar() end
 
         -- quêtes de la zone choisie
         self.qrows:Reset()
