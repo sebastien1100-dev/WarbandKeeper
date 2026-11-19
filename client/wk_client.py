@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.3"
+CLIENT_VERSION = "1.7.4"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1502,8 +1502,8 @@ class HomePage(Page):
         self.status.pack(anchor="w", fill="x", pady=(10, 0))
         b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
 
-        # Dessous : trois tuiles (sauvegarde, prochaine vérification, dossier), puis ce que contiennent
-        # les versions à installer (ou la dernière). Les persos sont dans le Tableau de bord.
+        # Dessous : trois tuiles (sauvegarde, prochaine vérification, dossier). Les nouveautés ont leur page,
+        # les persos sont dans le Tableau de bord.
         tiles = tk.Frame(self, bg=C["bg"])
         tiles.pack(fill="x", pady=(12, 0))
         for i in range(3):
@@ -1522,11 +1522,6 @@ class HomePage(Page):
         self.sv = tile(0, "DERNIÈRE SAUVEGARDE", "Sauvegarder maintenant", lambda: self.app.pages["backups"].backup_now())
         self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show_settings("updates"))
         self.folder = tile(2, "DOSSIER DE L'ADDON", "Ouvrir le dossier", self.app.open_addons)
-        nc = Card(self, "Nouveautés")
-        nc.pack(fill="both", expand=True, pady=(12, 0))
-        self.notesTitle = nc.head.winfo_children()[0]
-        wrap, self.notes = notes_view(nc.body, height=6)
-        wrap.pack(fill="both", expand=True)
 
     def set_busy(self, text, value=None):
         if value is None:
@@ -1614,9 +1609,7 @@ class HomePage(Page):
             left = max(0, every - (time.time() - a.lastCheck))
             self.nextCheck.configure(text="dans %d min" % (left // 60 + 1) if left < 3600 else "dans %d h" % (left // 3600 + 1))
         self.folder.configure(text=short_path(game_dir(a.addons), 34) if a.addons else "pas choisi")
-        newer = a.newer() if (inst and latest and vtuple(inst) < vtuple(latest)) else []
-        self.notesTitle.configure(text="À installer" if newer else "Dernière version")
-        fill_notes(self.notes, newer or a.releases[:1], "Pas encore de notes : vérifie les versions.")
+
 
 
 @page("notes", "Nouveautés", "✦")

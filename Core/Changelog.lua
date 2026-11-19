@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.70.4", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans le jeu : cette version livre le client PC 1.7.4 (page Mises à jour allégée).",
+        },
+    },
+    {
         version = "1.70.3", date = "19/11/2026",
         changed = {
             "Rien ne change dans le jeu : cette version livre le client PC 1.7.3 (fenêtre plus grande par défaut).",
