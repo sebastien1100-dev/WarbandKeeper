@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.80.3", date = "19/11/2026",
+        changed = {
+            "Bouton « Buffer le suivant » : le cadre rose autour du nom du joueur visé est remplacé par l'icône de la bénédiction qui va partir, dans un rond à ta couleur au-dessus de sa plaque de nom, avec une pointe vers lui ; un halo bat doucement quand le sort est prêt. Taille réglable (QoL > Classes > ta classe > Buffer autour).",
+        },
+    },
+    {
         version = "1.80.2", date = "19/11/2026",
         fixed = {
             "Bateaux, à bord : un zeppelin de l'autre faction pouvait être « reconnu » à la place de ton bateau quand leurs trajets passent l'un près de l'autre. Seules les lignes de ta faction comptent maintenant.",

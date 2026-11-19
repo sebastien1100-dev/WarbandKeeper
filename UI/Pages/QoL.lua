@@ -2652,7 +2652,7 @@ UI:RegisterPage({
             if WK.BUFF_CLASSES and WK.BUFF_CLASSES[class] then
                 subtab("Buffer autour", 7)
                 local pal = class == "PALADIN"
-                local bb = card("Buffer autour de toi", 40 + (pal and 6 or 5) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
+                local bb = card("Buffer autour de toi", 40 + (pal and 7 or 6) * 46 + 8, "un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche")
                 local function bt(field) return toggle(bb, function() return cc[field] ~= false end, function(v)
                     cc[field] = v; UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end
                 local by = -40
@@ -2671,6 +2671,9 @@ UI:RegisterPage({
                 UI:SettingRow(bb, by, "Sur une monture", nil, toggle(bb, function() return cc.buffMounted end, function(v) cc.buffMounted = v end), 80)
                 by = by - 46
                 UI:SettingRow(bb, by, "Plaques de nom des joueurs amis", "Allumées par l'addon hors combat : il en a besoin pour savoir qui est autour (rendues comme avant si tu coupes le bouton).", bt("buffPlates"), 80)
+                by = by - 46
+                UI:SettingRow(bb, by, "Taille du repère au-dessus du joueur", "L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer.",
+                    UI:Slider(bb, 220, 20, 48, 2, function() return cc.buffMarkSize or 30 end, function(v) cc.buffMarkSize = v; UI:RefreshBuffButton() end, "%d"), 240)
             end
         end
         closeSection()

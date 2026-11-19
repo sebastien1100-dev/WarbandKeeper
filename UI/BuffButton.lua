@@ -202,14 +202,45 @@ local function build()
     end)
     btn:HookScript("PostClick", function() C_Timer.After(0.4, function() UI:RefreshBuffButton() end) end)
     -- liseré sur la plaque de nom du joueur visé
+    -- repère au-dessus de la plaque de nom du joueur visé : l'icône du sort qui va partir dans un rond à la
+    -- couleur d'accent, une pointe vers le nom, un halo qui bat quand le sort est prêt (taille : buffMarkSize)
     mark = CreateFrame("Frame", nil, UIParent)
     mark:SetFrameStrata("LOW")
-    mark.edges = {}
-    for i = 1, 4 do mark.edges[i] = mark:CreateTexture(nil, "OVERLAY") end
-    mark.edges[1]:SetPoint("TOPLEFT"); mark.edges[1]:SetPoint("TOPRIGHT"); mark.edges[1]:SetHeight(2)
-    mark.edges[2]:SetPoint("BOTTOMLEFT"); mark.edges[2]:SetPoint("BOTTOMRIGHT"); mark.edges[2]:SetHeight(2)
-    mark.edges[3]:SetPoint("TOPLEFT"); mark.edges[3]:SetPoint("BOTTOMLEFT"); mark.edges[3]:SetWidth(2)
-    mark.edges[4]:SetPoint("TOPRIGHT"); mark.edges[4]:SetPoint("BOTTOMRIGHT"); mark.edges[4]:SetWidth(2)
+    mark.glow = UI:Icon(mark, "circle", 40, nil, "BACKGROUND"); mark.glow:SetPoint("CENTER")
+    mark.tail = mark:CreateTexture(nil, "BORDER")
+    mark.ring = UI:Icon(mark, "circle", 36, nil, "BORDER"); mark.ring:SetPoint("CENTER")
+    mark.ring:SetDrawLayer("BORDER", 1)
+    mark.icon = UI:RoundIcon(mark, 30); mark.icon:SetPoint("CENTER")
+    mark.icon:SetDrawLayer("ARTWORK", 1)
+    function mark:Layout(size)
+        self:SetSize(size + 12, size + 12)
+        self.glow:SetSize(size + 14, size + 14)
+        self.ring:SetSize(size + 6, size + 6)
+        self.icon:SetSize(size, size)
+        local tw = math.max(6, math.floor(size / 4))
+        self.tail:SetSize(tw, tw)
+        self.tail:ClearAllPoints(); self.tail:SetPoint("CENTER", self.ring, "BOTTOM", 0, 1)
+        if self.tail.SetRotation then self.tail:SetRotation(math.pi / 4) end
+    end
+    function mark:Paint(icon)
+        local r, g, b = UI:Accent()
+        self.ring:SetVertexColor(r, g, b, 1)
+        self.glow:SetVertexColor(r, g, b, 0.3)
+        self.tail:SetColorTexture(r, g, b, 1)
+        self.icon:SetTexture(icon)
+    end
+    mark:SetScript("OnUpdate", function(m)
+        -- le sort est prêt (hors temps de recharge global) : le halo bat doucement
+        local ready = true
+        if m.spell and WK.SpellCooldown then
+            local st, dur = WK.SpellCooldown(m.spell)
+            ready = not (st and dur and dur > 0 and st + dur > GetTime())
+        end
+        local a = ready and (0.25 + 0.2 * math.sin(GetTime() * 4)) or 0.12
+        local r, g, b = UI:Accent()
+        m.glow:SetVertexColor(r, g, b, a)
+    end)
+    mark:Layout(30)
     mark:Hide()
     local function paint(icon, n)
         local r, g, b = UI:Accent()
@@ -292,10 +323,11 @@ function UI:RefreshBuffButton()
             end
         end
         if plate and not UnitIsUnit(e.unit, "player") then
-            local r, g, b = UI:Accent()
-            for _, t in ipairs(mark.edges) do t:SetColorTexture(r, g, b, 0.95) end
+            mark:Layout((cfg() or {}).buffMarkSize or 30)
+            mark:Paint(spellIcon(e.id))
+            mark.spell = e.id
             mark:ClearAllPoints()
-            mark:SetPoint("TOPLEFT", plate, "TOPLEFT", -2, 2); mark:SetPoint("BOTTOMRIGHT", plate, "BOTTOMRIGHT", 2, -2)
+            mark:SetPoint("BOTTOM", plate, "TOP", 0, 2)
             mark:Show()
         else mark:Hide() end
     else
@@ -375,7 +407,7 @@ function UI:BuffDiag()
         yn(inCombat()), yn(IsMounted and IsMounted()), yn(c and c.buffMounted), yn(inInst), yn(c and c.buffInstance),
         yn(UnitIsDeadOrGhost("player")), yn(UnitIsPVP and UnitIsPVP("player"))))
     table.insert(out, "affichage permis : " .. yn(shouldShow()) .. " · bouton : " .. yn(btn and btn:IsShown())
-        .. (btn and (" · macro : " .. tostring(btn:GetAttribute("macrotext"))) or ""))
+        .. (btn and (" · macro : " .. tostring((btn:GetAttribute("macrotext")))) or ""))
     local lc = UI.buffLastClick
     table.insert(out, lc and string.format("dernier clic : il y a %ds (%s, %s) · %s · cible %s (%s)",
         math.floor(GetTime() - lc.at), tostring(lc.button), lc.down and "appui" or "relâché", tostring(lc.macro),

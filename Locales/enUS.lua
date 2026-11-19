@@ -3669,4 +3669,6 @@ WK.Locales.enUS.text = {
     ["Le meilleur que vend le marchand pour ton niveau."] = "The best the vendor sells for your level.",
     ["Nourriture (ce perso)"] = "Food (this character)",
     ["Et les objets que demande une quête de ton journal (jusqu'à ce qu'elle soit rendue)."] = "And items a quest in your log asks for (until it is handed in).",
+    ["Taille du repère au-dessus du joueur"] = "Size of the marker above the player",
+    ["L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer."] = "The icon of the spell about to be cast, above the nameplate of the player to buff.",
 }

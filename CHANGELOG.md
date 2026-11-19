@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.80.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bouton « Buffer le suivant » : le cadre rose autour du nom du joueur visé est remplacé par l'icône de la bénédiction qui va partir, dans un rond à ta couleur au-dessus de sa plaque de nom, avec une pointe vers lui ; un halo bat doucement quand le sort est prêt. Taille réglable (QoL > Classes > ta classe > Buffer autour).
+
 ## v1.80.2 — 19/11/2026
 
 _Un /reload suffit._
