@@ -2417,6 +2417,14 @@ local function build(host)
         r.a:SetPoint("RIGHT", -64, 0)
         r.b:SetPoint("RIGHT", -6, 0); r.b:SetWidth(58)
         r:SetScript("OnClick", function(s) if s.id then pv.id = s.id; pv:Refresh() end end)
+        -- survol : l'infobulle de l'objet (avec nos lignes : persos, prix…)
+        r:SetScript("OnEnter", function(s)
+            if not s.id then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
         r:Hide()
         pv.rows[i] = r
     end

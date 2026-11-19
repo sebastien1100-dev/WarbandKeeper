@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes > Prix : pas d'infobulle au survol des objets de la liste (Ça bouge, Mes sacs, Mes ventes, Surveillés) ; elle s'affiche maintenant, avec nos lignes habituelles.
+
 ## v1.76.2 — 19/11/2026
 
 _Un /reload suffit._

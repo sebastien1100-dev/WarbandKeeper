@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.3", date = "19/11/2026",
+        fixed = {
+            "Hôtel des ventes > Prix : pas d'infobulle au survol des objets de la liste (Ça bouge, Mes sacs, Mes ventes, Surveillés) ; elle s'affiche maintenant, avec nos lignes habituelles.",
+        },
+    },
+    {
         version = "1.76.2", date = "19/11/2026",
         changed = {
             "Guidage sur la minicarte : le chemin est maintenant un trait continu, comme sur la carte du monde, au lieu d'une suite de points ; il s'arrête net au bord de la minicarte (trait plus fin et plus pâle pour les étapes en vol).",
