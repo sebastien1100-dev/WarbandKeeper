@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.65.2", date = "19/11/2026",
+        added = {
+            "Paladin > Bénédictions : bouton « Tester » sur la répartition du groupe. Hors groupe, il ajoute deux paladins simulés (Aerin sous Warband Keeper en automatique, Brann sous PallyPower qui donne Rois partout) pour voir comment les bénédictions se partagent ; tu peux cliquer leurs cases. Rien n'est envoyé, et le test s'arrête au clic sur « Arrêter le test » ou en rejoignant un groupe.",
+        },
+    },
+    {
         version = "1.65.1", date = "19/11/2026",
         changed = {
             "Paladin > Bénédictions : le tableau de répartition est plus visuel. Chaque ligne commence par l'icône de la classe (son nom au survol) et chaque case ne montre plus que l'icône de la bénédiction, deux fois plus grande ; une bénédiction pas encore apprise est grisée avec un « ! », une case vide montre un cercle pointillé. Le nom de la bénédiction s'affiche au survol.",

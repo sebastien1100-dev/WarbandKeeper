@@ -238,6 +238,14 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     local RH, TOPY, IC = 52, 108, 44
     local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
     UI.blessTable = tc
+    -- test hors groupe : deux paladins simulés ajoutent leurs colonnes
+    tc.test = UI:Button(tc, "Tester", 130, 24, "secondary")
+    tc.test:SetPoint("TOPRIGHT", -16, -9)
+    tc.test.tooltip = "Simule deux autres paladins (un sous Warband Keeper en automatique, un sous PallyPower) pour voir la répartition. Seulement hors groupe ; rien n'est envoyé."
+    tc.test:SetScript("OnClick", function()
+        if not M:Demo(not M.demo) then WK:Print(T("Le test se lance hors groupe.")) end
+        UI:RefreshBlessCard(); UI:RefreshBlessBar()
+    end)
     tc.banner = CreateFrame("Frame", nil, tc)
     tc.banner:SetPoint("TOPLEFT", 16, -40); tc.banner:SetPoint("TOPRIGHT", -16, -40); tc.banner:SetHeight(30)
     tc.banner.bg = UI:Rounded(tc.banner, 8, 0, "BACKGROUND", 1)
@@ -393,7 +401,10 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             if UnitExists(u) then local cl = select(2, UnitClass(u)); if cl then present[cl] = true end end
         end
         tc.banner.bg:SetColor(r1, g1, b1, 0.10)
-        if alone or n <= 1 then
+        tc.test.label:SetText(T(M.demo and "Arrêter le test" or "Tester"))
+        if M.demo then
+            tc.banner.t:SetText(UI:Hex(C.warning) .. T("Test : Aerin et Brann sont simulés, rien n'est envoyé.") .. "|r  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
+        elseif alone or n <= 1 then
             tc.banner.t:SetText(T("Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une colonne.") .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
         else
             tc.banner.t:SetText(string.format(T("%d paladins dans le groupe"), n) .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")

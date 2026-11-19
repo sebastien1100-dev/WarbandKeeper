@@ -85,6 +85,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.65.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Paladin > Bénédictions : bouton « Tester » sur la répartition du groupe. Hors groupe, il ajoute deux paladins simulés (Aerin sous Warband Keeper en automatique, Brann sous PallyPower qui donne Rois partout) pour voir comment les bénédictions se partagent ; tu peux cliquer leurs cases. Rien n'est envoyé, et le test s'arrête au clic sur « Arrêter le test » ou en rejoignant un groupe.
+
 ## v1.65.1 — 19/11/2026
 
 _Un /reload suffit._

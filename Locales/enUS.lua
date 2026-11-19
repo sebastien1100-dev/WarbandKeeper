@@ -3390,4 +3390,7 @@ WK.Locales.enUS.text = {
     ["Salut collectif"] = "Group Salvation",
     ["Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks."] = "Salvation stacks with the class blessing: a separate bar row for warriors, rogues, hunters, mages and warlocks, never tanks.",
     ["Automatique : Puissance puis Rois pour guerriers, voleurs et chasseurs ; Rois puis Sagesse pour mages et démonistes ; Sagesse puis Rois pour les soigneurs et le mana ; Rois pour les tanks. Chaque paladin prend ce que les autres n'ont pas. Compatible avec PallyPower."] = "Automatic: Might then Kings for warriors, rogues and hunters; Kings then Wisdom for mages and warlocks; Wisdom then Kings for healers and mana users; Kings for tanks. Each paladin takes what the others don't. Works with PallyPower.",
+    ["Simule deux autres paladins (un sous Warband Keeper en automatique, un sous PallyPower) pour voir la répartition. Seulement hors groupe ; rien n'est envoyé."] = "Simulates two other paladins (one on Warband Keeper in automatic mode, one on PallyPower) to preview the split. Only outside a group; nothing is sent.",
+    ["Le test se lance hors groupe."] = "The test only runs outside a group.",
+    ["Test : Aerin et Brann sont simulés, rien n'est envoyé."] = "Test: Aerin and Brann are simulated, nothing is sent.",
 }

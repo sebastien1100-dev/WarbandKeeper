@@ -175,7 +175,7 @@ local function prune()
     for _, u in ipairs(groupUnits()) do
         if UnitExists(u) then local n = fullName(u); if n then present[n] = select(2, UnitClass(u)) end end
     end
-    for name in pairs(pallys) do if not present[name] then pallys[name] = nil end end
+    for name, e in pairs(pallys) do if not present[name] and not e.demo then pallys[name] = nil end end
     myEntry()
     return present
 end
@@ -199,11 +199,13 @@ end
 ---------------------------------------------------------------------------
 function M:AutoAssign()
     local c = self:Me()
-    if c.mode ~= "auto" then return end
+    local manual = c.mode ~= "auto"
+    -- à la main, ma ligne reste telle quelle (seuls les paladins simulés du test se répartissent encore)
+    if manual and not self.demo then return end
     prune()
     local list, fixed = {}, {}
     for name, e in pairs(pallys) do
-        if e.me or (e.wk and e.auto) then table.insert(list, name) else table.insert(fixed, e) end
+        if (e.me and not manual) or (not e.me and e.wk and e.auto) then table.insert(list, name) else table.insert(fixed, e) end
     end
     table.sort(list)
     local mine, takenAura = {}, {}
@@ -219,6 +221,7 @@ function M:AutoAssign()
             end
             if pick > 0 then taken[pick] = true end
             if e.me then mine[ci] = pick end
+            if e.demo then e.assign = e.assign or {}; e.assign[ci] = pick end
         end
     end
     -- aure : la 1re de la liste que personne d'autre n'a prise
@@ -231,7 +234,9 @@ function M:AutoAssign()
         end
         if pick > 0 then takenAura[pick] = true end
         if e.me then myAura = pick end
+        if e.demo then e.aura = pick end
     end
+    if manual then return end
     local changed = false
     for ci = 1, #self.CLASSES do if (c.mine[ci] or 0) ~= (mine[ci] or 0) then changed = true end end
     if changed or c.aura ~= myAura then
@@ -457,8 +462,8 @@ function M:SetAssign(name, ci, b)
         self:SendSelf()
     else
         local e = pallys[name]
-        if e then e.assign = e.assign or {}; e.assign[ci] = b end
-        send(string.format("ASSIGN %s %d %d", name, ci, b))
+        if e then e.assign = e.assign or {}; e.assign[ci] = b; e.auto = false end
+        if not (e and e.demo) then send(string.format("ASSIGN %s %d %d", name, ci, b)) end
     end
     if self.OnChange then self:OnChange() end
     return true
@@ -473,8 +478,8 @@ function M:SetAura(name, a)
         self:SendSelf()
     else
         local e = pallys[name]
-        if e then e.aura = a end
-        send(string.format("AASSIGN %s %d", name, a))
+        if e then e.aura = a; e.auto = false end
+        if not (e and e.demo) then send(string.format("AASSIGN %s %d", name, a)) end
     end
     if self.OnChange then self:OnChange() end
     return true
@@ -632,7 +637,33 @@ WK:On("PLAYER_LOGIN", function()
     end
     C_Timer.After(4, function() myName = nil; onRoster() end)
 end)
-WK:On("GROUP_ROSTER_UPDATE", onRoster)
+---------------------------------------------------------------------------
+-- Test hors groupe : deux paladins simulés (un sous Warband Keeper en automatique, un sous PallyPower qui
+-- donne Rois partout) pour voir la répartition ; rien n'est envoyé pour eux, arrêté en rejoignant un groupe
+---------------------------------------------------------------------------
+M.DEMO = { "Aerin Lune", "Brann Fer" }
+function M:Demo(on)
+    for _, n in ipairs(self.DEMO) do pallys[n] = nil end
+    self.demo = nil
+    if on then
+        if IsInGroup and IsInGroup() then return false end
+        self.demo = true
+        pallys["Aerin Lune"] = { demo = true, wk = true, auto = true, free = true,
+            known = { [1] = true, [2] = true, [3] = true, [5] = true }, assign = {}, aura = 0, normal = {} }
+        local kings = {}
+        for i = 1, #self.CLASSES do kings[i] = 3 end
+        pallys["Brann Fer"] = { demo = true, free = true, known = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true },
+            assign = kings, aura = 3, normal = {} }
+    end
+    self:AutoAssign()
+    if self.OnChange then self:OnChange() end
+    return true
+end
+
+WK:On("GROUP_ROSTER_UPDATE", function(...)
+    if M.demo and IsInGroup and IsInGroup() then M:Demo(false) end
+    return onRoster(...)
+end)
 WK:On("SPELLS_CHANGED", function() if M:On() then myEntry(); onRoster() end end)
 WK:On("CHAT_MSG_ADDON", function(prefix, msg, ch, sender)
     prefix, msg, ch, sender = readable(prefix), readable(msg), readable(ch), readable(sender)
@@ -653,4 +684,4 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, ch, sender)
 end)
 
 -- Pour les tests
-M._reset = function() for k in pairs(pallys) do pallys[k] = nil end; myName = nil; wipe(seen) end
+M._reset = function() for k in pairs(pallys) do pallys[k] = nil end; myName = nil; wipe(seen); M.demo = nil end
