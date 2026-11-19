@@ -84,6 +84,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.64.4 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Paladin > Bénédictions : cliquer une case du tableau ne changeait rien quand l'addon ne voyait qu'une bénédiction apprise (le jeu remplace parfois le rang 1 par un rang supérieur). Le clic fait maintenant défiler toutes les bénédictions puis « aucune » ; une bénédiction pas encore apprise est marquée « pas apprise ». Les bénédictions connues sont aussi mieux reconnues (par leur nom).
+
 ## v1.64.3 — 19/11/2026
 
 _Un /reload suffit._

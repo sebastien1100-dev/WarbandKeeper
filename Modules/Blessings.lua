@@ -83,7 +83,17 @@ function M:On() return isPaladin() and WK:FeatureOn("classes") end
 
 local function known(id)
     local k = (IsPlayerSpell and IsPlayerSpell(id)) or (IsSpellKnown and IsSpellKnown(id))
-    return k and true or false
+    if k then return true end
+    -- un rang supérieur peut remplacer le rang 1 dans le grimoire : on cherche aussi le sort par son nom
+    local name = WK.SpellInfo(id)
+    if name and C_Spell and C_Spell.GetSpellInfo then
+        local ok, info = pcall(C_Spell.GetSpellInfo, name)
+        if ok and type(info) == "table" and info.spellID then
+            local ok2, k2 = pcall(IsPlayerSpell or function() return false end, info.spellID)
+            if ok2 and k2 then return true end
+        end
+    end
+    return false
 end
 function M:Known(i) return self.BLESS[i] and known(self.BLESS[i][1]) end
 function M:KnownAura(i) return self.AURAS[i] and known(self.AURAS[i]) end

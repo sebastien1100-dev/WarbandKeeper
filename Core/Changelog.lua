@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.64.4", date = "19/11/2026",
+        fixed = {
+            "Paladin > Bénédictions : cliquer une case du tableau ne changeait rien quand l'addon ne voyait qu'une bénédiction apprise (le jeu remplace parfois le rang 1 par un rang supérieur). Le clic fait maintenant défiler toutes les bénédictions puis « aucune » ; une bénédiction pas encore apprise est marquée « pas apprise ». Les bénédictions connues sont aussi mieux reconnues (par leur nom).",
+        },
+    },
+    {
         version = "1.64.3", date = "19/11/2026",
         changed = {
             "Paladin > Bénédictions : le tableau de répartition se lit comme un planning. Les classes en lignes (grisées si elles ne sont pas dans le groupe), l'aure en dernière ligne, les paladins du groupe en colonnes (toi d'abord, pastille Warband Keeper ou PallyPower) ; chaque case montre l'icône et le nom de la bénédiction.",

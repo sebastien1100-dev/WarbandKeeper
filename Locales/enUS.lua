@@ -3385,4 +3385,5 @@ WK.Locales.enUS.text = {
     ["Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une colonne."] = "Alone for now: in a group, each other paladin (Warband Keeper or PallyPower) adds a column.",
     ["Clic : bénédiction suivante · clic droit : aucune"] = "Click: next blessing · right-click: none",
     ["%d paladins dans le groupe"] = "%d paladins in the group",
+    ["pas apprise"] = "not learned",
 }

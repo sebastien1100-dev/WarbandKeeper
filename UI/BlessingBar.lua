@@ -228,6 +228,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     local NROWS = #M.CLASSES + 1
     local RH, TOPY = 30, 108
     local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
+    UI.blessTable = tc
     tc.banner = CreateFrame("Frame", nil, tc)
     tc.banner:SetPoint("TOPLEFT", 16, -40); tc.banner:SetPoint("TOPRIGHT", -16, -40); tc.banner:SetHeight(30)
     tc.banner.bg = UI:Rounded(tc.banner, 8, 0, "BACKGROUND", 1)
@@ -264,6 +265,8 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         for p = 1, MAXP do
             local b = CreateFrame("Button", nil, r)
             b:SetHeight(RH - 4)
+            b:EnableMouse(true)
+            b:SetFrameLevel(r:GetFrameLevel() + 3)
             b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
             b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(22, 22); b.icon:SetPoint("LEFT", 2, 0)
@@ -277,25 +280,13 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                 if not who then return end
                 local e = M.pallys[who] or {}
                 if r.ci then
+                    -- toutes les bénédictions défilent, puis « aucune » (une pas encore apprise est marquée)
                     local cur = (e.assign and e.assign[r.ci]) or 0
-                    local nxt = 0
-                    if btn ~= "RightButton" then
-                        for k = 1, #M.BLESS do
-                            local cand = (cur + k - 1) % #M.BLESS + 1
-                            local ok = e.me and M:Known(cand) or (not e.me and (not e.known or not next(e.known) or e.known[cand]))
-                            if ok then nxt = cand break end
-                        end
-                    end
+                    local nxt = (btn ~= "RightButton") and ((cur + 1) % (#M.BLESS + 1)) or 0
                     if not M:SetAssign(who, r.ci, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
                 else
                     local cur = e.aura or 0
-                    local nxt = 0
-                    if btn ~= "RightButton" then
-                        for k = 1, #M.AURAS do
-                            local cand = (cur + k - 1) % #M.AURAS + 1
-                            if not e.me or M:KnownAura(cand) then nxt = cand break end
-                        end
-                    end
+                    local nxt = (btn ~= "RightButton") and ((cur + 1) % (#M.AURAS + 1)) or 0
                     if not M:SetAura(who, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
                 end
                 UI:RefreshBlessCard()
@@ -402,15 +393,19 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                 if it then
                     local e = it.e
                     local v, id, label
+                    local learned = true
                     if r.ci then
                         v = e.assign and e.assign[r.ci] or 0
                         id = M.BLESS[v] and M.BLESS[v][1]
                         label = id and M:Name(v)
+                        if id and e.me then learned = M:Known(v) end
                     else
                         v = e.aura or 0
                         id = M.AURAS[v]
                         label = id and M:AuraName(v)
+                        if id and e.me then learned = M:KnownAura(v) end
                     end
+                    if label and not learned then label = label .. UI:Hex(C.warning) .. " · " .. T("pas apprise") .. "|r" end
                     b.icon:SetTexture(id and M.Icon(id) or nil)
                     b.icon:SetShown(id ~= nil)
                     b.txt:SetText(label or (UI:Hex(C.dim) .. T("aucune") .. "|r"))
