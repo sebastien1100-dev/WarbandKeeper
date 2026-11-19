@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.75.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte et guidage > Bateaux : « Ouvrir le tableau des bateaux » semblait ne rien faire ; le tableau s'ouvrait derrière la fenêtre de l'addon. Il s'ouvre maintenant devant.
+
 ## v1.75.0 — 19/11/2026
 
 _Un /reload suffit._

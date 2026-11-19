@@ -41,7 +41,10 @@ local function build()
     local f = CreateFrame("Frame", "WarbandKeeperBoatBoard", UIParent)
     f:SetSize(W, 200)
     f:SetPoint("CENTER", 0, 80)
-    f:SetFrameStrata("HIGH")
+    -- au-dessus de la fenêtre de l'addon (strate HIGH, qui se remet devant à chaque clic) : le bouton
+    -- « Ouvrir le tableau des bateaux » de QoL l'ouvrait derrière elle
+    f:SetFrameStrata("DIALOG")
+    f:SetToplevel(true)
     f:SetClampedToScreen(true)
     f:EnableMouse(true); f:SetMovable(true); f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
@@ -183,5 +186,5 @@ end
 
 function UI:ToggleBoatBoard(show)
     if not board then board = build() end
-    if show == true or not board:IsShown() then board:Refresh(); board:Show() else board:Hide() end
+    if show == true or not board:IsShown() then board:Refresh(); board:Show(); board:Raise() else board:Hide() end
 end

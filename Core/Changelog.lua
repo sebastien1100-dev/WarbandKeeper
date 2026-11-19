@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.75.1", date = "19/11/2026",
+        fixed = {
+            "Carte et guidage > Bateaux : « Ouvrir le tableau des bateaux » semblait ne rien faire ; le tableau s'ouvrait derrière la fenêtre de l'addon. Il s'ouvre maintenant devant.",
+        },
+    },
+    {
         version = "1.75.0", date = "19/11/2026",
         changed = {
             "Statistiques en vol, plus vivantes : le trajet est dessiné sur la carte du continent du jeu (assombrie), la partie déjà faite en trait plein, le reste en pâle, et un griffon avance à ta position ; une barre de progression sous le titre, « arrivée dans » à gauche et la durée du trajet à droite.",
