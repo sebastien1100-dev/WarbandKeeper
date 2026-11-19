@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.12 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau du quai, bateau Auberdine » Menethil : il affichait « Bateau pour Austrivage », sans heure, à cause d'un trajet appris en jeu qui double la ligne du jeu. Un quai appris à moins de 400 m d'un arrêt d'une ligne du jeu est maintenant ignoré par le bandeau : la ligne du jeu s'affiche, avec sa vraie destination et ses horaires.
+
 ## v1.77.11 — 19/11/2026
 
 _Un /reload suffit._

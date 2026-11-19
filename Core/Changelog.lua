@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.12", date = "19/11/2026",
+        fixed = {
+            "Bandeau du quai, bateau Auberdine » Menethil : il affichait « Bateau pour Austrivage », sans heure, à cause d'un trajet appris en jeu qui double la ligne du jeu. Un quai appris à moins de 400 m d'un arrêt d'une ligne du jeu est maintenant ignoré par le bandeau : la ligne du jeu s'affiche, avec sa vraie destination et ses horaires.",
+        },
+    },
+    {
         version = "1.77.11", date = "19/11/2026",
         fixed = {
             "Bandeau du quai, port à plusieurs pontons (Auberdine) : il montrait le bateau du ponton d'à côté (Port de Hurlevent) au lieu de celui où tu attends, et cachait une ligne dont l'heure n'est pas encore connue. Le ponton le plus proche passe maintenant en tête, et les autres destinations sont listées, avec « ? » quand leur heure n'est pas connue.",

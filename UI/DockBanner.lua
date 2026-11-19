@@ -39,7 +39,16 @@ local function nearDock(range)
             end
         end
     end
-    -- bateaux appris en jeu (hors lignes du jeu)
+    -- bateaux appris en jeu (hors lignes du jeu) ; un quai appris qui double un arrêt d'une ligne du jeu
+    -- (moins de 400 m) est ignoré : la ligne du jeu, avec ses horaires et sa vraie destination, passe seule
+    local function nearGameStop(c, x, y)
+        for _, gl in ipairs(BL() and BL():All() or {}) do
+            for _, st in ipairs(gl.stops) do
+                if st.c == c and dist(st.x, st.y, x, y) < 400 then return true end
+            end
+        end
+        return false
+    end
     local fac = UnitFactionGroup and UnitFactionGroup("player")
     fac = fac == "Alliance" and "A" or fac == "Horde" and "H" or nil
     for _, l in ipairs(L and L:AllTransports() or {}) do
@@ -47,7 +56,7 @@ local function nearDock(range)
             for _, sd in ipairs({ "a", "b" }) do
                 local here = l[sd]
                 local c, x, y = G.ToWorld(here[1], here[2] / 100, here[3] / 100)
-                if c == p.cont and x then
+                if c == p.cont and x and not nearGameStop(c, x, y) then
                     local d = dist(x, y, p.wx, p.wy)
                     if d < range then
                         table.insert(out, { to = (sd == "a" and l.b or l.a)[4], kind = l.kind, pair = l, side = sd, st = BT():State(l, sd), d = d })
