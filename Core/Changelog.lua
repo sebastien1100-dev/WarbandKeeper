@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.10", date = "19/11/2026",
+        fixed = {
+            "Bandeau du quai, Auberdine » Menethil : rien ne s'affichait, ni au quai ni à bord. Il apparaît maintenant à 250 m du point d'arrêt du navire (400 m pour disparaître), et à bord il retrouve la ligne d'après l'endroit où la traversée a commencé, même s'il n'avait pas été vu au quai.",
+            "/wk bateau : liste les quais les plus proches avec leur distance et la distance d'apparition du bandeau.",
+        },
+    },
+    {
         version = "1.77.9", date = "19/11/2026",
         fixed = {
             "Bandeau du quai : il disparaissait quand on attendait sur le ponton (la distance était mesurée jusqu'au point d'arrêt du navire, souvent au bout du ponton). Il apparaît maintenant à 150 m, reste jusqu'à 300 m, puis encore 8 s.",

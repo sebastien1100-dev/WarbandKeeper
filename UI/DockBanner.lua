@@ -3,14 +3,15 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau au quai : près d'un quai de bateau ou de zeppelin (150 m pour apparaître, 300 m pour
+-- Bandeau au quai : près d'un quai de bateau ou de zeppelin (250 m pour apparaître, 400 m pour
 -- disparaître, puis encore 8 s : il reste affiché tant qu'on attend sur le ponton ; le point d'arrêt du
 -- navire est souvent au bout du ponton, voire dans l'eau), le prochain départ avec une barre qui se
 -- vide, « exact » ou « estimé », les 3 prochains départs (heure d'arrivée de l'autre côté), et des alertes :
 -- le bateau arrive au quai dans 30 s, il part dans 15 s (son en option). Lignes du jeu : Modules/BoatLines.lua ;
 -- bateaux appris en jeu : Modules/BoatTimes.lua. À bord, il reste affiché pendant la traversée (PaintRide : destination, temps restant, barre).
 -- Réglages Guide:Config() : dockBanner, dockAlerts, dockSound (QoL > Carte, Navigation).
-local RANGE_IN, RANGE_OUT, LINGER, W = 150, 300, 8, 360
+local RANGE_IN, RANGE_OUT, LINGER, W = 250, 400, 8, 360
+UI.DockRange = RANGE_IN
 local banner
 local alerted = {}
 
@@ -289,7 +290,26 @@ function UI:RefreshDockBanner()
     if Nv and Nv.IsRiding and Nv.IsRiding() then
         if not banner.ride then
             local lf = banner.lastFirst
-            if not (lf and banner.lastSeen and GetTime() - banner.lastSeen < 90) then banner:Hide() return end
+            if not (lf and banner.lastSeen and GetTime() - banner.lastSeen < 90) then
+                -- bandeau pas vu au quai : la ligne du quai le plus proche du point de départ de la traversée
+                lf = nil
+                local c, x, y = Nv.RideStart and Nv.RideStart()
+                local best
+                for _, l in ipairs(c and BL() and BL():All() or {}) do
+                    if BL():Mine(l) then
+                        for si, st in ipairs(l.stops) do
+                            if st.c == c then
+                                local d = dist(st.x, st.y, x, y)
+                                if d < 600 and (not best or d < best) then
+                                    best = d
+                                    lf = { to = BL():StopName(l, si % #l.stops + 1), kind = l.kind, st = BL():State(l, si) }
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if not lf then banner:Hide() return end
             banner.ride = { to = lf.to, kind = lf.kind, start = GetTime(), travel = lf.st and lf.st.travel }
         end
         banner:PaintRide(banner.ride)

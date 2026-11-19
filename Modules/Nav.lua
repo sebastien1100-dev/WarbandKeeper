@@ -902,6 +902,8 @@ local function rideTick()
     lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now }
 end
 M.IsRiding = function() return ride ~= nil end
+-- point de départ de la traversée en cours (continent, x, y) : le bandeau du quai y retrouve la ligne prise
+M.RideStart = function() return ride and ride.start and ride.start.cont, ride and ride.start and ride.start.wx, ride and ride.start and ride.start.wy end
 -- /wk bateau : état de la détection et journal des traversées
 function M:BoatDiag()
     local out = {}
@@ -910,6 +912,24 @@ function M:BoatDiag()
     table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d · horaires reçus : %d (partage %s)",
         "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
         ride and "oui" or "non", #M:Boats(), BT and BT.received or 0, cfg().boatShare == false and "coupé" or "actif"))
+    -- quais des lignes du jeu les plus proches (le bandeau apparaît sous WK.UI.DockRange m)
+    if p and p.cont and WK.modules.BoatLines then
+        local BL = WK.modules.BoatLines
+        local docks = {}
+        for _, l in ipairs(BL:All()) do
+            for si, st in ipairs(l.stops) do
+                if st.c == p.cont then
+                    table.insert(docks, { d = dist(st.x, st.y, p.wx, p.wy), txt = BL:StopName(l, si) .. " » " .. BL:StopName(l, si % #l.stops + 1)
+                        .. (BL:Mine(l) and "" or " (autre faction)") })
+                end
+            end
+        end
+        table.sort(docks, function(a, b) return a.d < b.d end)
+        local parts = {}
+        for i = 1, math.min(4, #docks) do parts[i] = string.format("%s %d m", docks[i].txt, math.floor(docks[i].d + 0.5)) end
+        table.insert(out, "quais proches : " .. (#parts > 0 and table.concat(parts, " · ") or "aucun sur ce continent")
+            .. string.format(" · bandeau sous %d m", (WK.UI and WK.UI.DockRange) or 0))
+    end
     for _, l in ipairs(M.boatLog) do table.insert(out, l) end
     if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end
     return out

@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.10 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau du quai, Auberdine » Menethil : rien ne s'affichait, ni au quai ni à bord. Il apparaît maintenant à 250 m du point d'arrêt du navire (400 m pour disparaître), et à bord il retrouve la ligne d'après l'endroit où la traversée a commencé, même s'il n'avait pas été vu au quai.
+- /wk bateau : liste les quais les plus proches avec leur distance et la distance d'apparition du bandeau.
+
 ## v1.77.9 — 19/11/2026
 
 _Un /reload suffit._
