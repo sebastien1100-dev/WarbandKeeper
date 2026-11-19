@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.4", date = "19/11/2026",
+        changed = {
+            "Rappel du Réal : l'icône de la pièce dans son cadre doré est remplacée par notre sac dans un rond teinté à la couleur d'accent, comme les boutons de l'addon.",
+        },
+    },
+    {
         version = "1.56.3", date = "19/11/2026",
         fixed = {
             "Boîte aux lettres : le panneau Rangement pouvait rester à l'écran après la fermeture du courrier ; il se ferme maintenant avec la boîte aux lettres, quelle que soit la façon de la fermer.",

@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.4 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rappel du Réal : l'icône de la pièce dans son cadre doré est remplacée par notre sac dans un rond teinté à la couleur d'accent, comme les boutons de l'addon.
+
 ## v1.56.3 — 19/11/2026
 
 _Un /reload suffit._
