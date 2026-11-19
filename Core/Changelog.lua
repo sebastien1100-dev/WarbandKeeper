@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.52.1", date = "19/11/2026",
+        fixed = {
+            "Infobulles de l'addon (par exemple tes sacs dans la page Vendre de l'HV) : la comparaison du jeu (« Équipé », l'arme que tu portes) s'ouvrait à côté, au style du jeu. Elle reste fermée ; Maj enfoncée la montre, à notre style.",
+        },
+    },
+    {
         version = "1.52.0", date = "19/11/2026",
         added = {
             "HV, Mes enchères : un clic sur une enchère la déplie : la file des vendeurs autour de ta place (prix et quantités), combien sont moins chers que toi et ton prix moyen de vente de la semaine.",

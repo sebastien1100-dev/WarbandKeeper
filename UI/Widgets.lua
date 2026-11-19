@@ -961,8 +961,12 @@ end
 local GAME_TOOLTIPS = { "GameTooltip", "ItemRefTooltip", "ShoppingTooltip1", "ShoppingTooltip2",
     "ItemRefShoppingTooltip1", "ItemRefShoppingTooltip2", "EmbeddedItemTooltip" }
 WK:On("PLAYER_LOGIN", function()
-    for _, name in ipairs(GAME_TOOLTIPS) do
-        local tt = _G[name]
+    local list, seen = {}, {}
+    for _, name in ipairs(GAME_TOOLTIPS) do local tt = _G[name]; if tt then seen[tt] = true; table.insert(list, tt) end end
+    for _, base in ipairs({ GameTooltip, ItemRefTooltip }) do
+        for _, st in ipairs(base and base.shoppingTooltips or {}) do if not seen[st] then seen[st] = true; table.insert(list, st) end end
+    end
+    for _, tt in ipairs(list) do
         if tt and tt.HookScript then
             tt:HookScript("OnShow", function(self)
                 if WK.DB.global.settings.ui.gameTooltipFont == false then return end
@@ -975,24 +979,49 @@ end)
 
 -- Nos infobulles d'objet n'ouvrent pas la comparaison du jeu à côté (deux infobulles qui se chevauchent) ;
 -- Maj enfoncée la montre quand même.
+-- Infobulles de comparaison : celles du jeu (GameTooltip.shoppingTooltips) et les noms connus.
+local function compareTooltips(tt)
+    local out, seen = {}, {}
+    for _, st in ipairs((tt and tt.shoppingTooltips) or {}) do if not seen[st] then seen[st] = true; table.insert(out, st) end end
+    for _, name in ipairs({ "ShoppingTooltip1", "ShoppingTooltip2", "ShoppingTooltip3" }) do
+        local st = _G[name]
+        if st and not seen[st] then seen[st] = true; table.insert(out, st) end
+    end
+    return out
+end
+UI.CompareTooltips = compareTooltips
+local function noCompare() return GameTooltip.wkOwned and not (IsShiftKeyDown and IsShiftKeyDown()) end
 local compareHooked
 local function hookCompare()
     if compareHooked then return end
     compareHooked = true
-    GameTooltip:HookScript("OnHide", function(t) t.wkOwned = nil end)
-    for _, name in ipairs({ "ShoppingTooltip1", "ShoppingTooltip2", "ShoppingTooltip3" }) do
-        local st = _G[name]
-        if st and st.HookScript then
-            st:HookScript("OnShow", function(s)
-                if GameTooltip.wkOwned and GameTooltip:IsShown() and not (IsShiftKeyDown and IsShiftKeyDown()) then s:Hide() end
-            end)
+    GameTooltip:HookScript("OnHide", function(t)
+        t.wkOwned = nil
+        if t.wkCompare ~= nil then t.supportsItemComparison = t.wkCompare; t.wkCompare = nil end
+    end)
+    for _, st in ipairs(compareTooltips(GameTooltip)) do
+        if st.HookScript then
+            st:HookScript("OnShow", function(s) if noCompare() then s:Hide() end end)
         end
+    end
+    -- le jeu (re)montre la comparaison après coup : on la referme aussitôt
+    if hooksecurefunc and GameTooltip_ShowCompareItem then
+        hooksecurefunc("GameTooltip_ShowCompareItem", function(tt)
+            if tt == GameTooltip and noCompare() then
+                for _, st in ipairs(compareTooltips(tt)) do st:Hide() end
+            end
+        end)
     end
 end
 function UI:TooltipOwner(owner, anchor, x, y)
     hookCompare()
     GameTooltip:SetOwner(owner, anchor, x, y)
     GameTooltip.wkOwned = true
+    -- pas de comparaison sur nos infobulles (Maj enfoncée : comme le jeu)
+    if GameTooltip.supportsItemComparison ~= nil and GameTooltip.wkCompare == nil then
+        GameTooltip.wkCompare = GameTooltip.supportsItemComparison
+        GameTooltip.supportsItemComparison = (IsShiftKeyDown and IsShiftKeyDown()) and true or false
+    end
     UI:SkinTooltip(GameTooltip)
 end
 

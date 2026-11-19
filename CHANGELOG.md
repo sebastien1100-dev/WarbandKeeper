@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.52.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Infobulles de l'addon (par exemple tes sacs dans la page Vendre de l'HV) : la comparaison du jeu (« Équipé », l'arme que tu portes) s'ouvrait à côté, au style du jeu. Elle reste fermée ; Maj enfoncée la montre, à notre style.
+
 ## v1.52.0 — 19/11/2026
 
 _Un /reload suffit._
