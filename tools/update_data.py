@@ -313,7 +313,7 @@ def main():
                 sources.append("Everloot (taux de drop, vols)")
             except subprocess.CalledProcessError as e:
                 log("  ! Everloot indisponible, fichier gardé tel quel :", e)
-        # lignes de bateaux et de zeppelins (table TaxiPathNode du jeu, wago.tools ; tours : Nauticus, MIT)
+        # lignes de bateaux et de zeppelins (table TaxiPathNode du jeu, wago.tools)
         try:
             run(os.path.join(HERE, "gen_boats.py"))
             sources.append("trajets des bateaux (wago.tools)")

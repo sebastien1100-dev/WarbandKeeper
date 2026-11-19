@@ -258,14 +258,13 @@ local SHORTCUTS = {
       dot = function() return WK.modules.Fishing.active and C.positive or nil end },
     { key = "boats", label = "Bateaux et zeppelins", icon = function() return UI.MEDIA .. "boat" end, tint = true,
       run = function() if UI.ToggleBoatBoard then UI:ToggleBoatBoard() end end,
-      -- pastille verte : un bateau de ta faction est à quai près de toi
+      -- pastille verte : un quai d'une ligne de ta faction est près de toi
       dot = function()
           local B, G = WK.modules.BoatLines, WK.modules.Guide
           local p = G and G:PlayerPos()
           if not (B and p and p.cont) then return nil end
-          local l, s, d = B:StopNear(p.cont, p.wx, p.wy, 200)
-          local st = l and B:Mine(l) and B:State(l, s)
-          return st and st.atDock and C.positive or nil
+          local l = B:StopNear(p.cont, p.wx, p.wy, 200)
+          return l and B:Mine(l) and C.positive or nil
       end },
     { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton", "GameMenuMicroButton" },
       icon = function() return UI.MEDIA .. "gear" end, tint = true,

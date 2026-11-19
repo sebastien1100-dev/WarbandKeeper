@@ -54,7 +54,7 @@ M.TRANSPORTS = {
 }
 
 -- Trajets connus : ceux de la liste + les bateaux appris en les prenant (Modules/Nav.lua)
--- Lignes : celles des fichiers du jeu (Modules/BoatLines.lua : quais, tour, horaires), puis les quais relevés
+-- Lignes : celles des fichiers du jeu (Modules/BoatLines.lua : quais et trajets), puis les quais relevés
 -- à la main et les bateaux appris en jeu qui n'y sont pas déjà (même quai à 300 m près)
 function M:AllTransports()
     local out = {}

@@ -553,18 +553,6 @@ function M:Waypoint()
         if nextLeg and nextLeg.kind == "fly" then text = string.format(T("Vers le maître de vol (%s)"), nextLeg.from)
         elseif nextLeg then
             text = string.format(T("Vers le quai : %s"), nextLeg.from or "?")
-            -- horaires appris : départ, et si on arrive à temps (marche jusqu'au quai)
-            local BT = WK.modules.BoatTimes
-            local st = BT and nextLeg.line and BT:State(nextLeg.line, nextLeg.side)
-            if st then
-                local walkT = rest / speed()
-                local pre = st.est and T("env. ") or ""
-                text = text .. "  ·  " .. string.format(T("départ dans %s"), pre .. BT.Clock(st.inn))
-                if walkT <= st.inn - 3 then text = text .. "  ·  " .. T("tu arrives à temps")
-                else text = text .. "  ·  " .. string.format(T("le suivant dans %s"), pre .. BT.Clock(st.following)) end
-            elseif BT and nextLeg.line and BT:AvgText(nextLeg.line) then
-                text = text .. "  ·  " .. BT:AvgText(nextLeg.line)
-            end
         end
         for j = r.leg + 1, #r.legs do
             local l = r.legs[j]
@@ -588,15 +576,6 @@ function M:Waypoint()
         return leg.ax, leg.ay, string.format(T("Vol : %s » %s"), leg.from, leg.to), nil
     else
         local txt = string.format(T("Prends le %s pour %s"), leg.kind == "zeppelin" and T("zeppelin") or T("bateau"), leg.to or "?")
-        local BT = WK.modules.BoatTimes
-        local st = BT and leg.line and BT:State(leg.line, leg.side)
-        if st then
-            local pre = st.est and T("env. ") or ""
-            txt = txt .. "  ·  " .. (st.atDock and string.format(T("à quai, départ dans %s"), pre .. BT.Clock(st.inn))
-                or string.format(T("départ dans %s"), pre .. BT.Clock(st.inn)))
-        elseif BT and leg.line and BT:AvgText(leg.line) then
-            txt = txt .. "  ·  " .. BT:AvgText(leg.line)
-        end
         return nil, nil, txt, nil
     end
 end
@@ -775,7 +754,7 @@ function M:Boats()
         d.sched = nil
     end
     -- une fois (1.33.0) : les bateaux appris qui sont des lignes des fichiers du jeu (Modules/BoatLines.lua)
-    -- sont oubliés : la ligne du jeu les remplace (tracé, quais, horaires)
+    -- sont oubliés : la ligne du jeu les remplace (tracé, quais)
     if not d.boatsChecked5 and WK.BoatLines and #WK.BoatLines > 0 then
         d.boatsChecked5 = true
         for i = #d.boats, 1, -1 do if knownRoute(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
@@ -827,14 +806,13 @@ local learnRide
 local function endRide(endP, arr)
     local r = ride
     ride = nil
-    -- calage en route (positions à bord) : dernier calage et arrivée, avant les horaires du départ vu
     local BLm = WK.modules.BoatLines
-    if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, arr) end
+    if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm) end
     if not (r and endP and endP.cont) then return end
-    -- horaires (Modules/BoatTimes.lua) : départ et arrivée de cette traversée, une fois la ligne connue
+    -- ligne du jeu prise (Modules/BoatLines.lua) : notée pour la carte
     local function learn()
         local BT = WK.modules.BoatTimes
-        if BT and r.t0 then pcall(BT.Learn, BT, dock(r.start), dock(endP), r.t0, arr) end
+        if BT then pcall(BT.Learn, BT, dock(r.start), dock(endP)) end
     end
     learnRide(r, endP, learn)
 end
@@ -843,7 +821,7 @@ learnRide = function(r, endP, learn)
     if not r.crossed and len < 150 then blog(string.format("fin : trop court (%d m)", len)) return end
     local a, b = dock(r.start), dock(endP)
     if not validBoat(a, b) then blog(string.format("fin : refusé (%s » %s, %s)", tostring(a.name), tostring(b.name), a.c ~= b.c and "autre continent" or "même zone ou moins de 500 m")) return end
-    if knownRoute(a, b) then blog(string.format("fin : trajet connu %s » %s, horaires notés", tostring(a.name), tostring(b.name))); learn() return end
+    if knownRoute(a, b) then blog(string.format("fin : trajet connu %s » %s", tostring(a.name), tostring(b.name))); learn() return end
     blog(string.format("fin : %s » %s (%d m)", tostring(a.name), tostring(b.name), len))
     local boats = M:Boats()
     local path = { c = r.start.cont, pts = simplify(r.pts, 6) }
@@ -865,7 +843,7 @@ learnRide = function(r, endP, learn)
     if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
 end
 local function rideTick()
-    -- les traversées (horaires, tracés des lignes prises) ne dépendent pas de « Apprendre les chemins »,
+    -- les traversées (lignes prises, bandeau à bord) ne dépendent pas de « Apprendre les chemins »,
     -- qui ne parle que des chemins à pied ou à monture
     M.rideOff = nil
     local p = Gd():PlayerPos()
@@ -877,7 +855,7 @@ local function rideTick()
             blog("arrêt : position illisible depuis 15 s")
             ride = nil
             local BLm = WK.modules.BoatLines
-            if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, nil) end
+            if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm) end
         end
         return
     end
@@ -911,7 +889,7 @@ local function rideTick()
                     ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t), started = now, lastOk = now }
                     blog(string.format("début : %s (%.0f m/s)", zoneName(lastS.map), v))
                     local BLm = WK.modules.BoatLines
-                    if BLm and BLm.RideBegin then BLm:RideBegin(lastS.cont, lastS.wx, lastS.wy, ride.t0); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
+                    if BLm and BLm.RideBegin then BLm:RideBegin(); pcall(BLm.RideSample, BLm, lastS.cont, lastS.wx, lastS.wy) end
                 end
                 local BLs = WK.modules.BoatLines
                 if BLs and BLs.RideSample then pcall(BLs.RideSample, BLs, p.cont, p.wx, p.wy) end
@@ -924,7 +902,7 @@ local function rideTick()
                 blog("arrêt : téléporté")
                 ride = nil
                 local BLm = WK.modules.BoatLines
-                if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm, nil) end
+                if BLm and BLm.RideEnd then pcall(BLm.RideEnd, BLm) end
             elseif ride then
                 -- plus porté depuis 15 s (descendu loin du quai, parti à pied ou à monture) : traversée finie
                 ride.free = (ride.free or 0) + dt
@@ -969,10 +947,8 @@ M.RideStart = function() return ride and ride.start and ride.start.cont, ride an
 function M:BoatDiag()
     local out = {}
     local p = Gd():PlayerPos()
-    local BT = WK.modules.BoatTimes
-    table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d · horaires reçus : %d (partage %s)",
-        "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
-        ride and "oui" or "non", #M:Boats(), BT and BT.received or 0, cfg().boatShare == false and "coupé" or "actif"))
+    table.insert(out, string.format("position : %s · en traversée : %s · bateaux appris : %d",
+        p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue", ride and "oui" or "non", #M:Boats()))
     -- quais des lignes du jeu les plus proches (le bandeau apparaît sous WK.UI.DockRange m)
     if p and p.cont and WK.modules.BoatLines then
         local BL = WK.modules.BoatLines

@@ -1274,19 +1274,13 @@ UI:RegisterPage({
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             subtab("Bateaux", 4)
-            local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")
-            UI:SettingRow(bcard, -40, "Bandeau au quai", "Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé ».",
+            local bcard = card("Bateaux et zeppelins", 40 + 2 * 46 + 46, "lignes, quais et trajets tirés des fichiers du jeu")
+            UI:SettingRow(bcard, -40, "Bandeau au quai et à bord", "Près d'un quai : le navire de ton ponton et toutes ses escales ; à bord : sa prochaine escale ; dans le tram : ses deux stations.",
                 toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
-            UI:SettingRow(bcard, -86, "Alertes au quai", "Le bateau arrive au quai dans 30 s, puis il part dans 15 s (quand tu es sur le quai).",
-                toggle(bcard, function() return gdc.dockAlerts ~= false end, function(v) gdc.dockAlerts = v end), 80)
-            UI:SettingRow(bcard, -132, "Son des alertes", nil,
-                toggle(bcard, function() return gdc.dockSound ~= false end, function(v) gdc.dockSound = v end), 80)
-            UI:SettingRow(bcard, -178, "Navires sur la carte", "Le trajet de chaque ligne et le bateau là où il est, qui avance ; sur la minicarte quand il est proche.",
+            UI:SettingRow(bcard, -86, "Tracés des lignes sur la carte", "Le trajet de chaque ligne sur la carte du monde, plus marqué pour celles déjà prises.",
                 toggle(bcard, function() return gdc.shipsMap ~= false end, function(v) gdc.shipsMap = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("navires") end end), 80)
-            UI:SettingRow(bcard, -224, "Partager les horaires des bateaux", "Avec ton groupe et ta guilde (ceux qui ont Warband Keeper) : chaque départ que tu vois leur est envoyé, et tu reçois les leurs.",
-                toggle(bcard, function() return gdc.boatShare end, function(v) gdc.boatShare = v end), 80)
             local open = UI:Button(bcard, "Ouvrir le tableau des bateaux", nil, 28, "primary")
-            open:SetPoint("TOPLEFT", 16, -274)
+            open:SetPoint("TOPLEFT", 16, -136)
             open:SetScript("OnClick", function() UI:ToggleBoatBoard(true) end)
         end
         -- Points de vol à apprendre (Modules/Flight.lua) : maîtres de vol du continent pas encore appris

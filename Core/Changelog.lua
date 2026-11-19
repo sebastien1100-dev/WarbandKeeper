@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.82.0", date = "19/11/2026",
+        changed = {
+            "Bateaux et zeppelins : plus aucun horaire. Le bandeau dit seulement où va le navire : au quai, le nom du navire de ton ponton et la frise de toutes les escales de sa ligne (ton quai à ta couleur, la prochaine escale en vert), les pontons voisins en dessous ; à bord, la frise avec la prochaine escale ; dans le tram des profondeurs, ses deux stations.",
+            "Tableau des bateaux : chaque ligne avec son navire, le quai le plus proche de toi et ses destinations (clic : guidage vers ce quai).",
+            "Carte : les tracés des lignes restent (plus marqués pour celles déjà prises) ; l'infobulle d'un quai donne le navire et sa destination.",
+            "Guidage : « Prends le bateau pour Auberdine », sans heure.",
+            "Retirés : comptes à rebours (bandeau, carte, tableau, infobulles, guidage), « exact » / « estimé », alertes « il arrive / il part », navires qui avancent sur la carte et la minicarte, partage des horaires (chat, guilde, groupe), boutons du tram ; les horaires déjà notés sont effacés. Réglages en moins : alertes et son au quai, partage.",
+        },
+    },
+    {
         version = "1.81.2", date = "19/11/2026",
         fixed = {
             "Bandeau « À bord » qui restait affiché une fois à terre : la traversée ne se terminait qu'en descendant près du point d'amarrage ou en restant immobile 8 s. Elle se termine maintenant aussi quand le navire ne te porte plus depuis 15 s, quand ta position n'est plus lisible depuis 15 s (certaines villes), après un téléport ou une pierre de foyer, et au plus tard après 20 min ; le bandeau disparaît aussi une minute après l'arrivée prévue.",
@@ -4187,7 +4197,6 @@ WK.Roadmap = {
     { prio = 1, theme = "dung", title = "Guidage de la quête suivie", text = "La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits." },
     { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
-    { prio = 2, theme = "map", title = "Horaires des autres addons de bateaux", text = "Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 2, theme = "dung", title = "Quêtes automatiques", text = "Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
     { prio = 1, theme = "eco", title = "Camelote", text = "Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris." },

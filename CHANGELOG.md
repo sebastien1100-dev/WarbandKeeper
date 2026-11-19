@@ -21,7 +21,6 @@ _Prévu, pas encore commencé._
 ### Carte et voyage
 - **Chemins appris partagés** (moyenne) — Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde.
 - **Couches de serveur** (moyenne) — La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule.
-- **Horaires des autres addons de bateaux** (moyenne) — Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent.
 - **« Prends le bateau »** (moyenne) — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
 - **Carte, suite** (basse) — Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
 - **Notes de carte partagées** (basse) — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
@@ -78,6 +77,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.82.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bateaux et zeppelins : plus aucun horaire. Le bandeau dit seulement où va le navire : au quai, le nom du navire de ton ponton et la frise de toutes les escales de sa ligne (ton quai à ta couleur, la prochaine escale en vert), les pontons voisins en dessous ; à bord, la frise avec la prochaine escale ; dans le tram des profondeurs, ses deux stations.
+- Tableau des bateaux : chaque ligne avec son navire, le quai le plus proche de toi et ses destinations (clic : guidage vers ce quai).
+- Carte : les tracés des lignes restent (plus marqués pour celles déjà prises) ; l'infobulle d'un quai donne le navire et sa destination.
+- Guidage : « Prends le bateau pour Auberdine », sans heure.
+- Retirés : comptes à rebours (bandeau, carte, tableau, infobulles, guidage), « exact » / « estimé », alertes « il arrive / il part », navires qui avancent sur la carte et la minicarte, partage des horaires (chat, guilde, groupe), boutons du tram ; les horaires déjà notés sont effacés. Réglages en moins : alertes et son au quai, partage.
 
 ## v1.81.2 — 19/11/2026
 
