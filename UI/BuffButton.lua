@@ -170,11 +170,20 @@ local function build()
         GameTooltip:AddLine(T("Clic ou touche : lancer"), 0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
-    btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    btn:SetScript("OnLeave", function(s)
+        GameTooltip:Hide()
+        -- clavier : l'action suit de nouveau le réglage du jeu (appui ou relâché)
+        if not inCombat() then s:SetAttribute("useOnKeyDown", nil) end
+    end)
+    -- souris : le bouton protégé agit à l'appui ou au relâché selon le réglage du jeu ; sous la souris, au
+    -- relâché seulement (une seule action, quel que soit le réglage)
+    btn:HookScript("OnEnter", function(s) if not inCombat() then s:SetAttribute("useOnKeyDown", false) end end)
     btn:HookScript("PostClick", function(s, button, down)
         local e = list and list[1]
         UI.buffLastClick = { at = GetTime(), button = button, down = down, macro = s:GetAttribute("macrotext"),
-            unit = e and e.unit, who = e and e.unit and UnitName(e.unit), exists = e and e.unit and UnitExists(e.unit) }
+            unit = e and e.unit, who = e and e.unit and UnitName(e.unit), exists = e and e.unit and UnitExists(e.unit),
+            type = s:GetAttribute("type"), keyDown = WK.GetCVar("ActionButtonUseKeyDown"), useOnKeyDown = s:GetAttribute("useOnKeyDown"),
+            events = {} }
     end)
     btn:HookScript("PostClick", function() C_Timer.After(0.4, function() UI:RefreshBuffButton() end) end)
     -- liseré sur la plaque de nom du joueur visé
@@ -321,6 +330,19 @@ WK:On("PLAYER_LOGIN", function()
     end)
 end)
 
+-- Ce que le jeu fait juste après un clic (2 s) : sort envoyé, raté, message d'erreur, action bloquée
+local function noteClickEvent(txt)
+    local lc = UI.buffLastClick
+    if lc and GetTime() - lc.at < 2 and #lc.events < 6 then table.insert(lc.events, txt) end
+end
+local function spellName(id) return tostring(id and WK.SpellInfo(id) or id or "?") end
+WK:OnUnit("UNIT_SPELLCAST_SENT", "player", function(_, target, _, spellID) noteClickEvent("sort envoyé " .. spellName(spellID) .. " » " .. tostring(target)) end)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, spellID) noteClickEvent("réussi " .. spellName(spellID)) end)
+WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID) noteClickEvent("raté " .. spellName(spellID)) end)
+WK:On("UI_ERROR_MESSAGE", function(_, msg) noteClickEvent("erreur : " .. tostring(msg)) end)
+WK:On("ADDON_ACTION_BLOCKED", function(addon, fn) noteClickEvent("action bloquée : " .. tostring(addon) .. " " .. tostring(fn)) end)
+WK:On("ADDON_ACTION_FORBIDDEN", function(addon, fn) noteClickEvent("action interdite : " .. tostring(addon) .. " " .. tostring(fn)) end)
+
 -- /wk buff : pourquoi le bouton est (ou n'est pas) affiché, joueur par joueur
 function UI:BuffDiag()
     local out = {}
@@ -341,6 +363,10 @@ function UI:BuffDiag()
     table.insert(out, lc and string.format("dernier clic : il y a %ds (%s, %s) · %s · cible %s (%s)",
         math.floor(GetTime() - lc.at), tostring(lc.button), lc.down and "appui" or "relâché", tostring(lc.macro),
         tostring(lc.who or lc.unit), lc.exists and "visible" or "introuvable") or "dernier clic : aucun depuis le chargement")
+    if lc then
+        table.insert(out, string.format("  type %s · ActionButtonUseKeyDown = %s · useOnKeyDown = %s · le jeu a répondu : %s",
+            tostring(lc.type), tostring(lc.keyDown), tostring(lc.useOnKeyDown), #lc.events > 0 and table.concat(lc.events, " ; ") or "rien"))
+    end
     -- joueurs vus, avec la raison quand ils sont écartés
     local units = { "player", "target", "focus" }
     if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then for i = 1, 4 do table.insert(units, "party" .. i) end end

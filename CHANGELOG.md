@@ -79,6 +79,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.79.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk buff : après un clic, dit ce que le jeu a répondu dans les 2 secondes (sort envoyé, réussi, raté, message d'erreur, action bloquée) et la valeur du réglage « lancer à l'appui » : de quoi trouver pourquoi le sort ne part pas.
+
+### Corrections
+- Bouton « Buffer le suivant » : sous la souris, le clic agit maintenant au relâché, une seule fois, quel que soit le réglage « lancer à l'appui » du jeu ; au clavier, il suit toujours ce réglage.
+
 ## v1.79.0 — 19/11/2026
 
 _Un /reload suffit._

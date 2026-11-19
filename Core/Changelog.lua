@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.79.1", date = "19/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » : sous la souris, le clic agit maintenant au relâché, une seule fois, quel que soit le réglage « lancer à l'appui » du jeu ; au clavier, il suit toujours ce réglage.",
+        },
+        changed = {
+            "/wk buff : après un clic, dit ce que le jeu a répondu dans les 2 secondes (sort envoyé, réussi, raté, message d'erreur, action bloquée) et la valeur du réglage « lancer à l'appui » : de quoi trouver pourquoi le sort ne part pas.",
+        },
+    },
+    {
         version = "1.79.0", date = "19/11/2026",
         added = {
             "Bateaux et zeppelins : l'heure se cale pendant la traversée. À bord, ta position est suivie sur le tracé de la ligne ; au bout d'une trentaine de secondes, l'addon sait quelle ligne tu as prise, quand le navire a quitté le quai et quand il arrivera, même si tu es monté au dernier moment ou si le départ n'a pas été vu.",
