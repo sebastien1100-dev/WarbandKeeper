@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.62.5", date = "19/11/2026",
+        changed = {
+            "Patch notes > À venir : nouvelles idées pour les quêtes (camps d'objectifs, guidage de la quête suivie) et la navigation (trajets qui suivent le terrain, chemins appris partagés).",
+        },
+    },
+    {
         version = "1.62.4", date = "19/11/2026",
         changed = {
             "Patch notes > À venir : nouvelles idées autour des maîtres de classe (sorts à apprendre par perso, panneau chez le maître, rappel au passage de niveau, gain d'un rang, grimoires de démons, compétences d'armes).",
@@ -3528,6 +3534,8 @@ WK.Roadmap = {
     { theme = "ui", title = "Idées d'Utilities en attente", text = "Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe." },
     { theme = "map", title = "Notes de carte partagées", text = "Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note." },
     { theme = "map", title = "Ping de groupe", text = "Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon." },
+    { theme = "map", title = "Trajets qui suivent le terrain", text = "Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit." },
+    { theme = "map", title = "Chemins appris partagés", text = "Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde." },
     { theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
     { theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
     { theme = "eco", title = "Prix moyen de vente", text = "Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan." },
@@ -3546,6 +3554,8 @@ WK.Roadmap = {
     { theme = "char", title = "Compétences d'armes", text = "Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche." },
     { theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
+    { theme = "dung", title = "Camps d'objectifs des quêtes", text = "D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans)." },
+    { theme = "dung", title = "Guidage de la quête suivie", text = "La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits." },
     { theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
 }
 

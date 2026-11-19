@@ -16,6 +16,8 @@ _Prévu, pas encore commencé._
 ### Carte et voyage
 - **Notes de carte partagées** — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - **Ping de groupe** — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
+- **Trajets qui suivent le terrain** — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
+- **Chemins appris partagés** — Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde.
 - **« Prends le bateau »** — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
 
 ### Inventaire et économie
@@ -44,7 +46,16 @@ _Prévu, pas encore commencé._
 
 ### Donjons et quêtes
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
+- **Camps d'objectifs des quêtes** — D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans).
+- **Guidage de la quête suivie** — La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
+
+## v1.62.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes > À venir : nouvelles idées pour les quêtes (camps d'objectifs, guidage de la quête suivie) et la navigation (trajets qui suivent le terrain, chemins appris partagés).
 
 ## v1.62.4 — 19/11/2026
 
