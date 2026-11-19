@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.6.0"
+CLIENT_VERSION = "1.6.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1065,7 +1065,7 @@ class Page(tk.Frame):
     def __init__(self, app, parent):
         super().__init__(parent, bg=C["bg"])
         self.app = app
-        label(self, self.title, font="h1").pack(anchor="w", pady=(0, 12))
+        label(self, self.title, font="h1").pack(anchor="w", pady=(0, 8))
 
     def on_show(self):
         pass
@@ -1168,22 +1168,21 @@ class HomePage(Page):
         pc = Card(low, "Tes persos")
         pc.pack(side="left", fill="both", expand=True)
         self.persos = pc.body
+        # sauvegarde et prochaine vérification dans une seule carte (tout tient dans la fenêtre)
         sc = Card(side)
         sc.pack(fill="x")
         label(sc.body, "SAUVEGARDE", fg="dim", font="smallb").pack(anchor="w")
         self.sv = label(sc.body, "", font="body")
-        self.sv.pack(anchor="w", pady=(2, 2))
+        self.sv.pack(anchor="w", pady=(1, 1))
         save = label(sc.body, "Sauvegarder maintenant", fg="accent", font="small", cursor="hand2")
         save.pack(anchor="w")
         save.bind("<Button-1>", lambda e: self.app.pages["backups"].backup_now())
-        vc = Card(side)
-        vc.pack(fill="x", pady=(8, 0))
-        label(vc.body, "PROCHAINE VÉRIFICATION", fg="dim", font="smallb").pack(anchor="w")
-        self.nextCheck = label(vc.body, "", font="body")
-        self.nextCheck.pack(anchor="w", pady=(2, 0))
-        self.launch = Button(side, "▶  Lancer WoW Forever", self.launch_game, "secondary", width=210, height=32)
+        label(sc.body, "PROCHAINE VÉRIFICATION", fg="dim", font="smallb").pack(anchor="w", pady=(8, 0))
+        self.nextCheck = label(sc.body, "", font="body")
+        self.nextCheck.pack(anchor="w", pady=(1, 0))
+        self.launch = Button(side, "▶  Lancer WoW Forever", self.launch_game, "secondary", width=210, height=30)
         self.launch.pack(fill="x", pady=(8, 0))
-        Button(side, "Dossier AddOns", self.app.open_addons, "secondary", width=210, height=32).pack(fill="x", pady=(6, 0))
+        Button(side, "Dossier AddOns", self.app.open_addons, "secondary", width=210, height=30).pack(fill="x", pady=(6, 0))
 
     def launch_game(self):
         exe = game_exe(self.app.addons) if self.app.addons else None
@@ -1723,7 +1722,7 @@ class App:
         self.clientBanner.pack(side="bottom", fill="x", padx=12, pady=12)
 
         main = tk.Frame(self.root, bg=C["bg"])
-        main.pack(side="left", fill="both", expand=True, padx=22, pady=(30, 18))
+        main.pack(side="left", fill="both", expand=True, padx=22, pady=(14, 14))
         self.pages = {}
         for cls in PAGES:
             p = cls(self, main)

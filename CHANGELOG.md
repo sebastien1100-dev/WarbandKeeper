@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.54.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.1 (l'accueil tient dans la fenêtre sans l'agrandir).
+
 ## v1.54.1 — 19/11/2026
 
 _Un /reload suffit._

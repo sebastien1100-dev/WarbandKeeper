@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.54.2", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.1 (l'accueil tient dans la fenêtre sans l'agrandir).",
+        },
+    },
+    {
         version = "1.54.1", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.0 (plus de barre de titre blanche de Windows : boutons réduire, agrandir et fermer sur le fond sombre).",

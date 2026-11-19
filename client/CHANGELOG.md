@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.6.1 — 19/11/2026
+
+### Corrections
+- Accueil : le bouton « Dossier AddOns » était coupé en bas de la fenêtre. Sauvegarde et prochaine vérification sont réunies dans une seule carte, et les marges du haut sont réduites : tout tient dans la fenêtre sans l'agrandir.
+
 ## 1.6.0 — 19/11/2026
 
 ### Changements
