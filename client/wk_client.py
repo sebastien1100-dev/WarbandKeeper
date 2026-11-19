@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.5.2"
+CLIENT_VERSION = "1.6.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1658,8 +1658,10 @@ class App:
             self.cfg["addons"] = use_install(pick) if pick else ""
             save_config(self.cfg)
         self.build()
+        self.build_chrome()
         if "--minimized" in sys.argv:
-            self.root.iconify()  # lancé avec Windows : réduit, il vérifie en arrière-plan
+            # lancé avec Windows : réduit, il vérifie en arrière-plan
+            self.root.after(150, self.minimize)
         self.show("home")
         self.state_changed()
         self.root.after(80, self.poll)
@@ -1698,7 +1700,9 @@ class App:
         side = tk.Frame(self.root, bg=C["sidebar"], width=220)
         side.pack(side="left", fill="y")
         side.pack_propagate(False)
+        self.side = side
         brand = tk.Frame(side, bg=C["sidebar"])
+        self.brand = brand
         brand.pack(fill="x", padx=14, pady=(18, 22))
         if self.logoSmall:
             tk.Label(brand, image=self.logoSmall, bg=C["sidebar"]).pack(side="left", padx=(0, 8))
@@ -1719,7 +1723,7 @@ class App:
         self.clientBanner.pack(side="bottom", fill="x", padx=12, pady=12)
 
         main = tk.Frame(self.root, bg=C["bg"])
-        main.pack(side="left", fill="both", expand=True, padx=22, pady=18)
+        main.pack(side="left", fill="both", expand=True, padx=22, pady=(30, 18))
         self.pages = {}
         for cls in PAGES:
             p = cls(self, main)
@@ -1727,6 +1731,126 @@ class App:
         self.toastBar = tk.Label(self.root, text="", bg=C["surface2"], fg=C["text"], font=App.fonts["body"], padx=14, pady=8,
                                  justify="center")
         self.current = None
+
+    # -- fenêtre sans barre de titre Windows : réduire / agrandir / fermer posés sur le fond (Windows seulement)
+    def hwnd(self):
+        import ctypes
+        return ctypes.windll.user32.GetParent(self.root.winfo_id())
+
+    def build_chrome(self):
+        self.frameless = IS_WIN and "--native-frame" not in sys.argv
+        self.maxed, self.normalGeo = False, None
+        if not self.frameless:
+            return
+        root = self.root
+        root.update_idletasks()
+        # centrée à l'écran
+        w, h = 780, 480
+        x = max(0, (root.winfo_screenwidth() - w) // 2)
+        y = max(0, (root.winfo_screenheight() - h) // 3)
+        root.geometry("%dx%d+%d+%d" % (w, h, x, y))
+        root.overrideredirect(True)
+        root.configure(highlightthickness=1, highlightbackground=C["border"], highlightcolor=C["border"])
+        # garder le bouton dans la barre des tâches (une fenêtre sans cadre n'en a pas d'office)
+        try:
+            import ctypes
+            GWL_EXSTYLE, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW = -20, 0x40000, 0x80
+            hwnd = self.hwnd()
+            st = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+            ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, (st & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW)
+            root.withdraw()
+            root.after(10, root.deiconify)
+        except Exception:
+            pass
+        # icônes de Windows (Segoe MDL2 Assets) si la police existe, sinon des caractères simples
+        mdl = "Segoe MDL2 Assets" in tkfont.families()
+        self.glyph = {"min": "\uE921" if mdl else "–", "max": "\uE922" if mdl else "□", "restore": "\uE923" if mdl else "▫",
+                      "close": "\uE8BB" if mdl else "×"}
+        gfont = (("Segoe MDL2 Assets", 9) if mdl else App.fonts["body"])
+        bar = tk.Frame(root, bg=C["bg"])
+        bar.place(relx=1.0, x=-1, y=1, anchor="ne")
+        self.chromeBtns = {}
+
+        def btn(key, cmd, hover):
+            b = tk.Label(bar, text=self.glyph[key], bg=C["bg"], fg=C["muted"], font=gfont, width=5, pady=7, cursor="hand2")
+            b.pack(side="left")
+            b.bind("<Button-1>", lambda e: cmd())
+            b.bind("<Enter>", lambda e: b.configure(bg=hover, fg=C["text"]))
+            b.bind("<Leave>", lambda e: b.configure(bg=C["bg"], fg=C["muted"]))
+            self.chromeBtns[key] = b
+            return b
+        btn("min", self.minimize, C["hover"])
+        btn("max", self.toggle_max, C["hover"])
+        btn("close", root.destroy, "#c42b1c")
+        # glisser : le haut de la fenêtre et la colonne de gauche ; double-clic en haut : agrandir
+        strip = tk.Frame(root, bg=C["bg"], height=14, cursor="fleur")
+        strip.place(x=220, y=0, relwidth=1.0, width=-(220 + 150))
+        drag = {}
+
+        def start(e):
+            drag["x"], drag["y"] = e.x_root - root.winfo_x(), e.y_root - root.winfo_y()
+
+        def move(e):
+            if self.maxed or "x" not in drag:
+                return
+            root.geometry("+%d+%d" % (e.x_root - drag["x"], e.y_root - drag["y"]))
+        for wdg in (strip, self.side, self.brand) + tuple(self.brand.winfo_children()):
+            wdg.bind("<ButtonPress-1>", start, add="+")
+            wdg.bind("<B1-Motion>", move, add="+")
+        strip.bind("<Double-Button-1>", lambda e: self.toggle_max())
+        # poignée de redimensionnement (coin bas droit)
+        grip = tk.Canvas(root, width=14, height=14, bg=C["bg"], highlightthickness=0, cursor="size_nw_se")
+        for i in range(3):
+            o = 4 + i * 4
+            grip.create_line(13, o, o, 13, fill=C["dim"])
+        grip.place(relx=1.0, rely=1.0, x=-2, y=-2, anchor="se")
+        size = {}
+
+        def gstart(e):
+            size["w"], size["h"], size["x"], size["y"] = root.winfo_width(), root.winfo_height(), e.x_root, e.y_root
+
+        def gmove(e):
+            if self.maxed or "w" not in size:
+                return
+            nw = max(680, size["w"] + e.x_root - size["x"])
+            nh = max(420, size["h"] + e.y_root - size["y"])
+            root.geometry("%dx%d" % (nw, nh))
+        grip.bind("<ButtonPress-1>", gstart)
+        grip.bind("<B1-Motion>", gmove)
+        self.grip = grip
+
+    def minimize(self):
+        if not getattr(self, "frameless", False):
+            self.root.iconify()
+            return
+        try:
+            import ctypes
+            ctypes.windll.user32.ShowWindow(self.hwnd(), 6)  # SW_MINIMIZE
+        except Exception:
+            self.root.iconify()
+
+    def toggle_max(self):
+        if not getattr(self, "frameless", False):
+            return
+        root = self.root
+        if self.maxed:
+            root.geometry(self.normalGeo)
+            self.maxed = False
+        else:
+            self.normalGeo = root.geometry()
+            x, y, w, h = 0, 0, root.winfo_screenwidth(), root.winfo_screenheight()
+            try:
+                import ctypes
+                from ctypes import wintypes
+                r = wintypes.RECT()
+                ctypes.windll.user32.SystemParametersInfoW(0x30, 0, ctypes.byref(r), 0)  # zone de travail (sans la barre des tâches)
+                x, y, w, h = r.left, r.top, r.right - r.left, r.bottom - r.top
+            except Exception:
+                pass
+            root.geometry("%dx%d+%d+%d" % (w, h, x, y))
+            self.maxed = True
+        self.chromeBtns["max"].configure(text=self.glyph["restore" if self.maxed else "max"])
+        self.grip.place_forget() if self.maxed else self.grip.place(relx=1.0, rely=1.0, x=-2, y=-2, anchor="se")
 
     def show(self, key):
         self.current = key

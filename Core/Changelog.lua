@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.54.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.0 (plus de barre de titre blanche de Windows : boutons réduire, agrandir et fermer sur le fond sombre).",
+        },
+    },
+    {
         version = "1.54.0", date = "19/11/2026",
         added = {
             "HV, Prix : la fiche d'un objet. Courbe sur 7, 14 ou 30 jours avec le plus bas de chaque jour, la moyenne, ton prix moyen de vente (pointillés verts) et la quantité en vente (barres) ; six chiffres : aujourd'hui, moyenne, min / max, en vente, tes ventes de la semaine, prix du marchand.",

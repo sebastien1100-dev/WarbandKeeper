@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.6.0 — 19/11/2026
+
+### Changements
+- Plus de barre de titre blanche de Windows : les boutons réduire, agrandir et fermer sont posés en haut à droite, sur le fond sombre du client. On déplace la fenêtre en la tenant par le haut ou par la colonne de gauche ; double-clic en haut pour l'agrandir ; poignée en bas à droite pour la redimensionner. Le client garde son bouton dans la barre des tâches.
+
 ## 1.5.2 — 19/11/2026
 
 ### Corrections
