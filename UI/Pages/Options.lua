@@ -314,6 +314,10 @@ UI:RegisterPage({
         UI:SettingRow(send, -136, "Trier les sacs ensuite",
             "Après l'envoi automatique (et la prise automatique si elle est activée).",
             toggle(send, function() return mcfg.sortAfter ~= false end, function(v) mcfg.sortAfter = v end), 80)
+        local win = card("Fenêtre", 88)
+        UI:SettingRow(win, -40, "Notre fenêtre de courrier",
+            "À la place de celle du jeu : Reçus, Envoyer, Rangement, Règles d'envoi et Historique au même endroit. « Fenêtre du jeu » y revient pour une visite.",
+            toggle(win, function() return mcfg.window ~= false end, function(v) mcfg.window = v end), 80)
         local recv = card("Réception", 88)
         UI:SettingRow(recv, -40, "Tout prendre automatiquement",
             "Après les envois : or et objets (sauf contre-remboursement), arrêt si les sacs sont pleins. Un bouton « Tout prendre » est aussi ajouté à la boîte de réception.",

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.68.0", date = "19/11/2026", restart = true,
+        added = {
+            "Boîte aux lettres refaite : notre fenêtre à la place de celle du jeu, comme l'hôtel des ventes. Barre latérale Reçus · Envoyer · Rangement · Règles d'envoi · Historique avec leurs pastilles, et les destinataires récents (clic = lettre prête).",
+            "Courrier > Reçus : chaque lettre avec son contenu, son montant et son expiration (en rouge sous 3 jours) ; « Tout prendre », « Or seulement », « Ventes HV », un bouton « Prendre » par lettre, recherche.",
+            "Courrier > Envoyer : destinataire avec suggestions (tes persos et les récents), 12 pièces jointes (clic droit dans les sacs), or ou contre-remboursement, port affiché.",
+            "Courrier > Règles d'envoi et Historique : les règles avec « Envoyer maintenant », et les envois et ventes HV des derniers jours. « Fenêtre du jeu » revient à l'ancienne pour une visite ; réglage dans Courrier > roue dentée > Fenêtre.",
+        },
+    },
+    {
         version = "1.67.0", date = "19/11/2026",
         added = {
             "Résumé : « Que faire maintenant ? » en tête de page. La meilleure idée en grand avec son action (Voir, Guider…), les deux suivantes en petit, les autres citées en une ligne. Les idées viennent de ce que l'addon sait déjà (courrier qui expire, recharges prêtes, quêtes terminées à rendre avec l'XP, envois du Rangement, enchères sous-cotées, gris à vendre, repos plein…), classées par urgence ; chacune dit ce qu'elle rapporte.",
@@ -3665,7 +3674,6 @@ WK.RoadmapPrio = {
 }
 WK.Roadmap = {
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
-    { prio = 1, theme = "ui", title = "Boîte aux lettres refaite", text = "Notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
     { prio = 2, theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },
     { prio = 3, theme = "ui", title = "Idées d'Utilities en attente", text = "Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe." },

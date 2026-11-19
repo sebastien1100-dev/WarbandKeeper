@@ -8,7 +8,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 ### Interface
-- **Boîte aux lettres refaite** (haute) — Notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.
 - **Mini-fenêtre « À faire »** (moyenne) — Déplaçable, sans ouvrir la fenêtre principale.
 - **Recherche globale** (moyenne) — Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte.
 - **Chat et confort** (basse) — Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis.
@@ -81,6 +80,16 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.68.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Boîte aux lettres refaite : notre fenêtre à la place de celle du jeu, comme l'hôtel des ventes. Barre latérale Reçus · Envoyer · Rangement · Règles d'envoi · Historique avec leurs pastilles, et les destinataires récents (clic = lettre prête).
+- Courrier > Reçus : chaque lettre avec son contenu, son montant et son expiration (en rouge sous 3 jours) ; « Tout prendre », « Or seulement », « Ventes HV », un bouton « Prendre » par lettre, recherche.
+- Courrier > Envoyer : destinataire avec suggestions (tes persos et les récents), 12 pièces jointes (clic droit dans les sacs), or ou contre-remboursement, port affiché.
+- Courrier > Règles d'envoi et Historique : les règles avec « Envoyer maintenant », et les envois et ventes HV des derniers jours. « Fenêtre du jeu » revient à l'ancienne pour une visite ; réglage dans Courrier > roue dentée > Fenêtre.
 
 ## v1.67.0 — 19/11/2026
 

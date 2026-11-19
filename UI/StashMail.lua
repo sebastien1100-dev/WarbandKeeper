@@ -123,7 +123,15 @@ local function build()
     return f
 end
 
+-- le même panneau, posé dans la page Rangement de notre fenêtre de courrier (UI/MailWindow.lua)
+function UI:StashMailPanel()
+    panel = panel or build()
+    return panel
+end
+
 local function show()
+    -- notre fenêtre de courrier ouverte : le panneau est dans sa page Rangement
+    if UI.MailWindowShown and UI:MailWindowShown() then return end
     local cfg = S():Config()
     if not (cfg.mailPanel and WK:FeatureOn("inventory") and MailFrame and MailFrame:IsShown()) then return end
     panel = panel or build()
@@ -143,7 +151,7 @@ local function show()
 end
 
 WK:On("MAIL_SHOW", function() C_Timer.After(1.2, show) end)
-WK:On("MAIL_CLOSED", function() if panel then panel:Hide() end end)
+WK:On("MAIL_CLOSED", function() if panel and not (UI.MailWindowShown and UI:MailWindowShown()) then panel:Hide() end end)
 WK:On("BAG_UPDATE_DELAYED", function()
     if panel and panel:IsShown() then C_Timer.After(0.5, function() S():Invalidate(); if panel:IsShown() then panel:Refresh() end end) end
 end)

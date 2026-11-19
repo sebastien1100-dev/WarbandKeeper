@@ -177,6 +177,7 @@ function M:SendWith(store)
     return true
 end
 function M:IsSending() return sending end
+function M:IsTaking() return taking end
 
 -- Nombre d'objets des sacs qui partiraient au prochain passage à la boîte aux lettres.
 function M:PendingCount()
@@ -325,6 +326,15 @@ end)
 ---------------------------------------------------------------------------
 local taking = false
 local takeStats, lastKey, sameCount, skip
+local takeFilter -- { index = n (une seule lettre), money = true (or seulement), ah = true (factures de l'HV) }
+
+-- lettre de l'hôtel des ventes (vente, achat, enchère expirée…)
+local function isAH(i)
+    if not GetInboxInvoiceInfo then return false end
+    local ok, kind = pcall(GetInboxInvoiceInfo, i)
+    return ok and kind ~= nil
+end
+M.IsAHLetter = isAH
 
 local function freeSlots()
     local n = 0
@@ -334,6 +344,7 @@ end
 
 local function finishTake(reason)
     taking = false
+    takeFilter = nil
     if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end
     local parts = {}
     if takeStats.money > 0 then table.insert(parts, WK:FormatMoney(takeStats.money)) end
@@ -351,8 +362,11 @@ local function takeStep()
     if not taking then return end
     local n = GetInboxNumItems() or 0
     for i = n, 1, -1 do
-        if not skip[i] then
+        local f = takeFilter or {}
+        local wanted = (not f.index or f.index == i) and (not f.ah or isAH(i))
+        if wanted and not skip[i] then
             local _, _, _, _, money, cod, _, hasItem = GetInboxHeaderInfo(i)
+            if f.money then hasItem = false end
             if (cod or 0) == 0 and ((money or 0) > 0 or hasItem) then
                 local key
                 -- (les stats ne comptent qu'une fois une opération répétée en attendant la mise à jour)
@@ -389,9 +403,11 @@ local function takeStep()
     finishTake()
 end
 
-function M:TakeAll()
+-- filter (facultatif) : { index = n } une seule lettre, { money = true } l'or seulement, { ah = true } l'HV seulement
+function M:TakeAll(filter)
     if taking or sending or not GetInboxNumItems then return end
     taking = true
+    takeFilter = filter
     takeStats = { money = 0, items = 0 }
     lastKey, sameCount, skip = nil, 0, {}
     if self.takeButton then self.takeButton:SetLabel(T("Récupération...")) end

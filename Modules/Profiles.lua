@@ -20,7 +20,7 @@ local KEYS = {
     settings = { trackedItems = true, lastSeenVersion = true, notesSeenVersion = true, statsHidden = true },
     dungeons = { __only = { cfg = true } },
     itemLock = { __only = { cfg = true } },
-    mail = { __only = { enabled = true, closeAfter = true, sortAfter = true, autoTake = true } },
+    mail = { __only = { enabled = true, closeAfter = true, sortAfter = true, autoTake = true, window = true } },
     bank = { __only = { enabled = true, sortAfter = true } },
     qol = { petFoods = true },
     glow = { saved = true, otherOff = true },
