@@ -240,12 +240,22 @@ function M:StopNear(c, x, y, range)
     return bl, bs, best
 end
 
+-- Lignes déjà prises (WK.DB.global.nav.rode[clé]) : seul leur tracé est dessiné sur la carte
+local function rode()
+    local g = WK.DB.global
+    g.nav = g.nav or {}
+    g.nav.rode = g.nav.rode or {}
+    return g.nav.rode
+end
+function M:Rode(l) return l and rode()[l.key] == true end
+
 -- Traversée faite (départ { c, wx, wy } » arrivée) : départ noté au quai de départ. true si la ligne est connue.
 function M:Learn(from, to, dep)
     for _, l in ipairs(self:All()) do
         for s, st in ipairs(l.stops) do
             local nx = l.stops[s % #l.stops + 1]
             if st.c == from.c and dist(st.x, st.y, from.wx, from.wy) < 300 and nx.c == to.c and dist(nx.x, nx.y, to.wx, to.wy) < 400 then
+                rode()[l.key] = true
                 if self:AddObs(l, s, dep) then self:Broadcast(l, s, dep) end
                 return true
             end

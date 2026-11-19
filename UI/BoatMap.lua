@@ -3,7 +3,7 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Navires sur les cartes : trajet du jeu de chaque ligne (Modules/BoatLines.lua) en trait fin, et le
+-- Navires sur les cartes : trajet du jeu de chaque ligne déjà prise (Modules/BoatLines.lua) en trait fin, et le
 -- bateau ou le zeppelin là où il est maintenant (heure calée), qui avance chaque seconde. Survol : ses
 -- horaires ; clic : tableau des bateaux. Minicarte : le navire quand il est à portée.
 -- Réglage Guide:Config().shipsMap ; calque « Bateaux » de la carte (MapLayers:Config().map.transport).
@@ -94,7 +94,7 @@ local function placeShips()
     if not (cv and on() and cv:IsVisible()) then return end
     local B = BL()
     local scale = (w / 1000) * UI.MapIconScale()
-    local size = math.max(16 * UI.MapIconScale(), 22 * scale)
+    local size = math.max(12 * UI.MapIconScale(), 16 * scale)
     local n = 0
     for _, l in ipairs(B:All()) do
         if B:Mine(l) or not WK.modules.MapLayers:Config().myFaction then
@@ -124,7 +124,8 @@ function UI:DrawShips(cv, mapID, w, h)
     local scale = (w / 1000) * UI.MapIconScale()
     local thick = math.max(1.4 * UI.MapIconScale(), 2 * scale)
     for _, l in ipairs(B:All()) do
-        if B:Mine(l) or not WK.modules.MapLayers:Config().myFaction then
+        -- tracé seulement pour les lignes déjà prises
+        if B:Rode(l) and (B:Mine(l) or not WK.modules.MapLayers:Config().myFaction) then
             local col = colorOf(l)
             for _, g in ipairs(l.legs) do
                 local pts = g.pts

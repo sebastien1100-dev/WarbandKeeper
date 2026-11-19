@@ -181,7 +181,7 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnMouseUp", function(_, b) if b == "RightButton" then G:Stop() end end)
     end
     targetPin:SetParent(cv)
-    local size = 30 * ((w / 1000) * UI.MapIconScale())
+    local size = 24 * ((w / 1000) * UI.MapIconScale())
     targetPin:SetSize(size, size)
     targetPin.shadow:SetSize(size * 1.06, size * 1.06)
     targetPin.shadow:ClearAllPoints()

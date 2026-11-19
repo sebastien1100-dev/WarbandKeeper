@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.58.1", date = "19/11/2026",
+        changed = {
+            "Carte du monde : le trajet d'un bateau ou d'un zeppelin n'est dessiné qu'une fois que tu l'as pris (à partir de ta prochaine traversée sur chaque ligne). Plus de trait droit au départ des quais.",
+            "Carte du monde : icônes encore plus petites (quais, lieux, navires, notes, filons, repère).",
+        },
+    },
+    {
         version = "1.58.0", date = "19/11/2026",
         added = {
             "Chrono de donjon : nouvelle carte « Chrono à l'écran » dans la roue dentée de la page Donjons. Trois préréglages (Complet, Compact avec seulement les boss restants, Minimal avec le chrono, le record et la barre), une largeur comme le suivi des quêtes ou fixe (180 à 400), et une case pour chaque partie : nom du donjon, compteur de l'heure, record, temps restant, barre, boss, temps et écarts des boss, boss tués masqués, fond plus discret. Chaque changement montre le chrono quelques secondes.",

@@ -27,6 +27,14 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.58.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte du monde : le trajet d'un bateau ou d'un zeppelin n'est dessiné qu'une fois que tu l'as pris (à partir de ta prochaine traversée sur chaque ligne). Plus de trait droit au départ des quais.
+- Carte du monde : icônes encore plus petites (quais, lieux, navires, notes, filons, repère).
+
 ## v1.58.0 — 19/11/2026
 
 _Un /reload suffit._
