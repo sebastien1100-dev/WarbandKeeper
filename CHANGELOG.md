@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.70.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Statistiques du compte en vol : pendant un vol, la touche de la carte (M) ouvre une fenêtre à la place de la carte. À gauche le vol (trajet dessiné avec ta position, arrivée dans…, vols et temps en l'air des 30 derniers jours, trajet le plus pris) ; à droite « Le savais-tu ? », des chiffres du compte qui défilent toutes les 8 s (ventes HV de la semaine, or sur 30 jours, temps de jeu, record de donjon, pêche, quêtes, rares, plus belle vente…), molette ou flèches pour passer. Le bouton « Carte » ouvre quand même la carte ; la fenêtre se ferme à l'atterrissage.
+- Réglages dans Interface > Général > Confort : « Statistiques en vol à la place de la carte » (oui par défaut) et « Ouvrir les statistiques au décollage ».
+
 ## v1.69.2 — 19/11/2026
 
 _Un /reload suffit._

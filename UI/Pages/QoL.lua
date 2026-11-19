@@ -578,7 +578,7 @@ UI:RegisterPage({
         UI:SettingRow(grp, -130, "Sauf ceux des amis et de la guilde", nil,
             toggle(grp, function() return g.duelFriends end, function(v) g.duelFriends = v end), 80)
 
-        local comfort = card("Confort", 284)
+        local comfort = card("Confort", 376)
         UI:SettingRow(comfort, -40, "Libérer l'esprit en champ de bataille", "Automatiquement à la mort (pas avec une pierre d'âme).",
             toggle(comfort, function() return g.releaseBG end, function(v) g.releaseBG = v end), 80)
         UI:SettingRow(comfort, -88, "Confirmer le butin lié quand ramassé", "Seulement quand tu es seul.",
@@ -589,6 +589,10 @@ UI:RegisterPage({
             toggle(comfort, function() return g.skipCinematics end, function(v) g.skipCinematics = v end), 80)
         UI:SettingRow(comfort, -226, "Barre de vol", "Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition.",
             toggle(comfort, function() return WK.modules.Flight:Config().enabled end, function(v) WK.modules.Flight:Config().enabled = v end), 80)
+        UI:SettingRow(comfort, -272, "Statistiques en vol à la place de la carte", "En vol, la touche de la carte (M) ouvre les statistiques du compte ; leur bouton « Carte » ouvre quand même la carte.",
+            toggle(comfort, function() return WK.modules.Flight:Config().stats ~= false end, function(v) WK.modules.Flight:Config().stats = v end), 80)
+        UI:SettingRow(comfort, -318, "Ouvrir les statistiques au décollage", "Elles s'ouvrent seules à chaque vol et se ferment à l'atterrissage.",
+            toggle(comfort, function() return WK.modules.Flight:Config().statsAuto end, function(v) WK.modules.Flight:Config().statsAuto = v end), 80)
 
         -----------------------------------------------------------------------
         -- Alertes : les seuils et rappels d'Options (banque, courrier, rappels à la connexion) rejoignent

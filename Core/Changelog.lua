@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.70.0", date = "19/11/2026", restart = true,
+        added = {
+            "Statistiques du compte en vol : pendant un vol, la touche de la carte (M) ouvre une fenêtre à la place de la carte. À gauche le vol (trajet dessiné avec ta position, arrivée dans…, vols et temps en l'air des 30 derniers jours, trajet le plus pris) ; à droite « Le savais-tu ? », des chiffres du compte qui défilent toutes les 8 s (ventes HV de la semaine, or sur 30 jours, temps de jeu, record de donjon, pêche, quêtes, rares, plus belle vente…), molette ou flèches pour passer. Le bouton « Carte » ouvre quand même la carte ; la fenêtre se ferme à l'atterrissage.",
+            "Réglages dans Interface > Général > Confort : « Statistiques en vol à la place de la carte » (oui par défaut) et « Ouvrir les statistiques au décollage ».",
+        },
+    },
+    {
         version = "1.69.2", date = "19/11/2026",
         fixed = {
             "Feu de camp : l'encart à l'écran était trop petit et coupait son texte (« Avantages du camp dans 5… »). Il est plus large, le texte passe à la ligne au lieu d'être coupé, et pendant la minute assise le décompte s'affiche en grand à droite avec une barre plus épaisse.",

@@ -22,6 +22,7 @@ local function cfg()
     q.flight = q.flight or {}
     if q.flight.enabled == nil then q.flight.enabled = true end
     if q.flight.fpRemind == nil then q.flight.fpRemind = true end
+    if q.flight.stats == nil then q.flight.stats = true end -- statistiques à la place de la carte, en vol
     return q.flight
 end
 M.Config = cfg
@@ -199,6 +200,13 @@ function M:Finish()
     local f = flight
     flight = nil
     local secs = GetTime() - f.start
+    -- carnet des vols (statistiques en vol : vols du mois, temps en l'air, trajet le plus pris), 400 au plus
+    do
+        local d = db()
+        d.log = d.log or {}
+        table.insert(d.log, { t = time(), from = f.from, to = f.to, dur = math.floor(secs + 0.5) })
+        while #d.log > 400 do table.remove(d.log, 1) end
+    end
     -- Atterrissage anticipé avec le bouton du jeu : posé loin du relais d'arrivée, le vol n'est pas complet
     if not f.early and f.dest then
         local p = WK.modules.Guide:PlayerPos()
