@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.9", date = "19/11/2026",
+        fixed = {
+            "Bandeau du quai : il disparaissait quand on attendait sur le ponton (la distance était mesurée jusqu'au point d'arrêt du navire, souvent au bout du ponton). Il apparaît maintenant à 150 m, reste jusqu'à 300 m, puis encore 8 s.",
+        },
+        changed = {
+            "Bandeau du quai : il reste affiché à bord, pendant toute la traversée : destination, temps restant estimé, heure d'arrivée et une barre d'avancement.",
+        },
+    },
+    {
         version = "1.77.8", date = "19/11/2026",
         fixed = {
             "Carte d'Azeroth, calque Navires : les traversées d'un continent à l'autre partaient en zigzag vers des côtes sans quai (le « saut » de continent du jeu). Chaque traversée est maintenant un arc net d'un quai à l'autre, tracé une seule fois pour l'aller et le retour.",

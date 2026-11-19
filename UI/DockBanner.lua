@@ -3,13 +3,14 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau au quai : près d'un quai de bateau ou de zeppelin (120 m pour apparaître, 200 m pour
--- disparaître : il reste affiché tant qu'on attend sur le ponton), le prochain départ avec une barre qui se
+-- Bandeau au quai : près d'un quai de bateau ou de zeppelin (150 m pour apparaître, 300 m pour
+-- disparaître, puis encore 8 s : il reste affiché tant qu'on attend sur le ponton ; le point d'arrêt du
+-- navire est souvent au bout du ponton, voire dans l'eau), le prochain départ avec une barre qui se
 -- vide, « exact » ou « estimé », les 3 prochains départs (heure d'arrivée de l'autre côté), et des alertes :
 -- le bateau arrive au quai dans 30 s, il part dans 15 s (son en option). Lignes du jeu : Modules/BoatLines.lua ;
--- bateaux appris en jeu : Modules/BoatTimes.lua. Caché une fois à bord.
+-- bateaux appris en jeu : Modules/BoatTimes.lua. À bord, il reste affiché pendant la traversée (PaintRide : destination, temps restant, barre).
 -- Réglages Guide:Config() : dockBanner, dockAlerts, dockSound (QoL > Carte, Navigation).
-local RANGE_IN, RANGE_OUT, W = 120, 200, 360
+local RANGE_IN, RANGE_OUT, LINGER, W = 150, 300, 8, 360
 local banner
 local alerted = {}
 
@@ -178,6 +179,37 @@ local function build()
         end
         self:SetHeight(y + 10)
     end
+    -- à bord : la traversée en cours (destination, temps restant estimé, barre d'avancement)
+    function f:PaintRide(r)
+        local zep = r.kind == "zeppelin"
+        local Clock = BT().Clock
+        self.icon:SetTexture(UI.MEDIA .. (zep and "zeppelin" or "boat"))
+        local ic = zep and C.warning or C.positive
+        self.icon:SetVertexColor(ic[1], ic[2], ic[3], 1)
+        self.pill:Hide()
+        self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", -80, 0)
+        self.title:SetText(string.format(zep and T("Zeppelin pour %s") or T("Bateau pour %s"), r.to or "?"))
+        local y = 48
+        if r.travel and r.travel > 0 then
+            local el = GetTime() - r.start
+            local left = math.max(0, r.travel - el)
+            self.time:SetText(Clock(left)); self.time:SetTextColor(C.text[1], C.text[2], C.text[3])
+            self.sub:SetText(string.format(T("À bord : arrivée vers %s"), date("%H:%M", time() + left)))
+            self.track:ClearAllPoints(); self.track:SetPoint("TOPLEFT", 14, -y); self.track:SetPoint("TOPRIGHT", -14, -y)
+            self.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+            self.fill:SetColorTexture(ic[1], ic[2], ic[3], 1)
+            self.fill:SetWidth(math.max(0.01, (W - 28) * math.min(1, el / r.travel)))
+            self.track:Show(); self.fill:Show()
+            y = y + 12
+        else
+            self.time:SetText("")
+            self.sub:SetText(T("À bord : durée de la traversée pas encore connue."))
+            self.track:Hide(); self.fill:Hide()
+        end
+        self.head:Hide(); self.headD:Hide(); self.headA:Hide()
+        for _, row in ipairs(self.rows) do row.n:Hide(); row.d:Hide(); row.a:Hide() end
+        self:SetHeight(y + 10)
+    end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el
         if s.acc < 1 then return end
@@ -250,14 +282,26 @@ function UI:RefreshDockBanner()
     if not banner then banner = build() end
     if banner.sample then return end
     local Nv = WK.modules.Nav
-    if not WK.modules.Guide:Config().dockBanner or (Nv and Nv.IsRiding and Nv.IsRiding()) or (UnitOnTaxi and UnitOnTaxi("player"))
-        or (IsInInstance and IsInInstance()) then
-        banner:Hide() return
+    if not WK.modules.Guide:Config().dockBanner or (UnitOnTaxi and UnitOnTaxi("player")) or (IsInInstance and IsInInstance()) then
+        banner.ride = nil; banner:Hide() return
     end
+    -- à bord : on garde le bandeau pendant la traversée (le navire qu'on attendait au quai)
+    if Nv and Nv.IsRiding and Nv.IsRiding() then
+        if not banner.ride then
+            local lf = banner.lastFirst
+            if not (lf and banner.lastSeen and GetTime() - banner.lastSeen < 90) then banner:Hide() return end
+            banner.ride = { to = lf.to, kind = lf.kind, start = GetTime(), travel = lf.st and lf.st.travel }
+        end
+        banner:PaintRide(banner.ride)
+        banner:Show()
+        return
+    end
+    banner.ride = nil
     local list = nearDock(banner:IsShown() and RANGE_OUT or RANGE_IN)
     if not list then
         -- position illisible un instant (chargement, carte) : on garde le bandeau quelques secondes
-        if banner:IsShown() and banner.lastSeen and GetTime() - banner.lastSeen < 5 and not (WK.modules.Guide:PlayerPos() or {}).cont then return end
+        -- position illisible un instant, ou on vient de s'éloigner un peu : on garde le bandeau quelques secondes
+        if banner:IsShown() and banner.lastSeen and GetTime() - banner.lastSeen < LINGER then return end
         banner:Hide() return
     end
     banner.lastSeen = GetTime()
@@ -268,6 +312,7 @@ function UI:RefreshDockBanner()
         return (a.d or 0) < (b.d or 0)
     end)
     banner:Paint(list)
+    banner.lastFirst = list[1]
     banner:Show()
     alerts(list)
 end

@@ -3604,4 +3604,6 @@ WK.Locales.enUS.text = {
     ["mon perso"] = "my character",
     ["récent"] = "recent",
     ["Fabrication"] = "Crafting",
+    ["À bord : arrivée vers %s"] = "On board: arriving around %s",
+    ["À bord : durée de la traversée pas encore connue."] = "On board: crossing time not known yet.",
 }

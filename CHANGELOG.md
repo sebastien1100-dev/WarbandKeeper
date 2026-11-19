@@ -79,6 +79,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.9 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bandeau du quai : il reste affiché à bord, pendant toute la traversée : destination, temps restant estimé, heure d'arrivée et une barre d'avancement.
+
+### Corrections
+- Bandeau du quai : il disparaissait quand on attendait sur le ponton (la distance était mesurée jusqu'au point d'arrêt du navire, souvent au bout du ponton). Il apparaît maintenant à 150 m, reste jusqu'à 300 m, puis encore 8 s.
+
 ## v1.77.8 — 19/11/2026
 
 _Un /reload suffit._
