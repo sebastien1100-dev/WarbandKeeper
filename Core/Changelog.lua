@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.0", date = "19/11/2026",
+        added = {
+            "Barre de fabrication : quand tu fabriques plusieurs objets d'affilée (« Créer tout » ou une quantité), une barre montre l'avancée sur la durée TOTALE de la série : icône, « 7 / 20 », une marque par fabrication, temps restant, durée d'une fabrication, heure de fin, niveau du métier avec les points gagnés depuis le début, recette suivante de ta file, et un bouton Arrêter. Elle disparaît à la fin (son en option).",
+            "Réglages dans Métiers > roue dentée, carte « Barre de fabrication » : l'afficher, où (à l'écran, placée en mode édition, ou collée sous la fenêtre du métier), à partir de combien de fabrications (2, 3, 5, 10), recette suivante, heure de fin et compétence, son à la fin. « Tester » du mode édition la fait tourner.",
+        },
+    },
+    {
         version = "1.76.13", date = "19/11/2026",
         fixed = {
             "Bénédictions : « Aure » corrigé en « Aura » (en-tête de colonne, « Aucune aura » dans la barre) ; l'en-tête de la colonne est plus grand et en clair, aussi lisible que les icônes de classe.",

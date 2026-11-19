@@ -9,7 +9,9 @@ local T = function(s) return WK.T(s) end
 -- Réglages : WK.DB.global.profHelp. Fenêtres : UI/ProfPanels.lua.
 
 local DEFAULTS = { craftTip = true, deTip = true, dePanel = true, trade = true, queueHud = true, queueAuto = true,
-    cdAlert = true, trainer = true, prepAlert = false, prepMode = "dungeon" }
+    cdAlert = true, trainer = true, prepAlert = false, prepMode = "dungeon",
+    -- barre de fabrication (UI/ProfPanels.lua) : temps total d'une série
+    craftBar = true, craftBarWhere = "screen", craftBarMin = 3, craftBarQueue = true, craftBarEnd = true, craftBarSound = false }
 local PREP_MIN = { heal = 5, mana = 5, food = 10, drink = 10, bandage = 5, elixir = 2 }
 
 function M:Config()

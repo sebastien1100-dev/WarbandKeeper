@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre de fabrication : quand tu fabriques plusieurs objets d'affilée (« Créer tout » ou une quantité), une barre montre l'avancée sur la durée TOTALE de la série : icône, « 7 / 20 », une marque par fabrication, temps restant, durée d'une fabrication, heure de fin, niveau du métier avec les points gagnés depuis le début, recette suivante de ta file, et un bouton Arrêter. Elle disparaît à la fin (son en option).
+- Réglages dans Métiers > roue dentée, carte « Barre de fabrication » : l'afficher, où (à l'écran, placée en mode édition, ou collée sous la fenêtre du métier), à partir de combien de fabrications (2, 3, 5, 10), recette suivante, heure de fin et compétence, son à la fin. « Tester » du mode édition la fait tourner.
+
 ## v1.76.13 — 19/11/2026
 
 _Un /reload suffit._

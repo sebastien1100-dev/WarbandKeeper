@@ -1880,6 +1880,24 @@ local function Settings(page, parent)
     stoggle(queue, 3, "Recharge terminée", "Transmutation, étoffe lunaire… : un message quand elle est de nouveau prête, sur n'importe quel perso.",
         function() return PHc().cdAlert end, function(v) PHc().cdAlert = v end)
 
+    -- Barre de fabrication (UI/ProfPanels.lua) : temps total d'une série
+    local cbar = scard("Barre de fabrication", "temps total des fabrications en série", 6)
+    stoggle(cbar, 1, "Afficher la barre", "Quand tu fabriques plusieurs objets d'affilée (« Créer tout » ou une quantité) : avancée sur la durée totale, temps restant, bouton Arrêter.",
+        function() return PHc().craftBar end, function(v) PHc().craftBar = v; if UI.RefreshCraftBar then UI:RefreshCraftBar() end end)
+    local cbWhere = UI:Segmented(cbar, { { "screen", "À l'écran" }, { "trade", "Sous le métier" } },
+        function(v) PHc().craftBarWhere = v; if UI.RefreshCraftBar then UI:RefreshCraftBar() end end, 24)
+    cbWhere:Select(PHc().craftBarWhere or "screen")
+    UI:SettingRow(cbar, -86, "Où", "À l'écran (se place en mode édition) ou collée sous la fenêtre du métier.", cbWhere, 230)
+    local cbMin = UI:Segmented(cbar, { { 2, "2" }, { 3, "3" }, { 5, "5" }, { 10, "10" } }, function(v) PHc().craftBarMin = v end, 24)
+    cbMin:Select(PHc().craftBarMin or 3)
+    UI:SettingRow(cbar, -132, "À partir de", "Nombre de fabrications d'une série pour afficher la barre.", cbMin, 170)
+    stoggle(cbar, 4, "Recette suivante de la file", "« ensuite : … » quand ta file de fabrication a une autre recette.",
+        function() return PHc().craftBarQueue end, function(v) PHc().craftBarQueue = v end)
+    stoggle(cbar, 5, "Heure de fin et compétence", "« fin vers 18:42 » et le niveau du métier, avec les points gagnés depuis le début de la série.",
+        function() return PHc().craftBarEnd end, function(v) PHc().craftBarEnd = v end)
+    stoggle(cbar, 6, "Son à la fin", "Quand toute la série est faite.",
+        function() return PHc().craftBarSound end, function(v) PHc().craftBarSound = v end)
+
     local gath = scard("Récolte", "Herboristerie, Minage", 4)
     stoggle(gath, 1, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
         function() return GHc().rankAlert end, function(v) GHc().rankAlert = v end)

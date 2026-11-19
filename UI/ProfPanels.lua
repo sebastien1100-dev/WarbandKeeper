@@ -517,3 +517,227 @@ function UI:BuildPrepPane(parent)
     end
     return pane
 end
+
+---------------------------------------------------------------------------
+-- Barre de fabrication : temps TOTAL d'une série (« Créer tout » ou une quantité), comme une barre
+-- d'incantation. Série repérée en accrochant C_TradeSkillUI.CraftRecipe / DoTradeSkill (quantité),
+-- fabrications comptées sur UNIT_SPELLCAST_SUCCEEDED du joueur (le sort de la 1re incantation qui suit).
+-- Durée par fabrication : celle de l'incantation, puis la moyenne mesurée entre deux fabrications.
+-- Réglages cfg().craftBar* (carte « Barre de fabrication » de la roue de Métiers) ; HUD « craftBar ».
+---------------------------------------------------------------------------
+local cbar, batch
+local TICKS = 40
+local function mmss(sec)
+    sec = math.max(0, math.floor((sec or 0) + 0.5))
+    if sec >= 3600 then return string.format("%d:%02d:%02d", math.floor(sec / 3600), math.floor(sec % 3600 / 60), sec % 60) end
+    return string.format("%d:%02d", math.floor(sec / 60), sec % 60)
+end
+local function profRank(prof)
+    local c = WK.DB.global.characters[WK:CharKey()]
+    local p = prof and c and c.professions and c.professions[prof]
+    return p and p.rank
+end
+-- temps restant et durée d'une fabrication
+local function remaining(b)
+    local now = GetTime()
+    local per = b.per or ((b.castDur or 3) + 0.35)
+    local left = b.n - b.done
+    local cur = 0
+    if b.casting and b.castEnd then cur = math.max(0, b.castEnd - now); left = left - 1 end
+    return cur + math.max(0, left) * per, per
+end
+local function tradeFrame()
+    for _, n in ipairs({ "ProfessionsFrame", "TradeSkillFrame" }) do
+        local f = _G[n]
+        if f and f:IsShown() then return f end
+    end
+end
+
+local function buildBar()
+    local f = CreateFrame("Frame", "WarbandKeeperCraftBar", UIParent)
+    f:SetSize(460, 64)
+    f:SetFrameStrata("MEDIUM")
+    UI:Panel(f, 10, C.surface, C.border)
+    f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetSize(36, 36); f.icon:SetPoint("LEFT", 12, 0)
+    f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    f.stop = UI:Button(f, T("Arrêter"), nil, 22, "secondary")
+    f.stop:SetPoint("RIGHT", -10, 0)
+    f.name = UI:Text(f, 13); f.name:SetPoint("TOPLEFT", f.icon, "TOPRIGHT", 10, 2)
+    f.count = UI:Text(f, 11, C.muted); f.count:SetPoint("LEFT", f.name, "RIGHT", 8, 0)
+    f.left = UI:Text(f, 13); f.left:SetPoint("TOPRIGHT", f.stop, "TOPLEFT", -10, 8); f.left:SetJustifyH("RIGHT")
+    f.bar = UI:Progress(f, 10)
+    f.bar:SetPoint("LEFT", f.icon, "RIGHT", 10, 0); f.bar:SetPoint("RIGHT", f.stop, "LEFT", -10, 0)
+    f.ticks = {}
+    for i = 1, TICKS do
+        local t = f.bar:CreateTexture(nil, "OVERLAY"); t:SetWidth(1); t:SetColorTexture(0, 0, 0, 0.45)
+        t:SetPoint("TOP"); t:SetPoint("BOTTOM"); t:Hide()
+        f.ticks[i] = t
+    end
+    f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("BOTTOMLEFT", f.icon, "BOTTOMRIGHT", 10, -3)
+    f.skill = UI:Text(f, 10, C.muted); f.skill:SetPoint("BOTTOMRIGHT", f.stop, "BOTTOMLEFT", -10, -9); f.skill:SetJustifyH("RIGHT")
+    f.stop:SetScript("OnClick", function()
+        if C_TradeSkillUI and C_TradeSkillUI.StopRecipeRepeat then pcall(C_TradeSkillUI.StopRecipeRepeat)
+        elseif StopTradeSkillRepeat then pcall(StopTradeSkillRepeat) end
+        UI:EndCraftBar(true)
+    end)
+    -- repères : une marque par fabrication (si la série n'est pas trop longue)
+    function f:Ticks(n)
+        local w = self.bar:GetWidth() or 0
+        for i, t in ipairs(self.ticks) do
+            if n > 1 and n <= TICKS + 1 and i < n and w > 0 then
+                t:ClearAllPoints(); t:SetPoint("TOP", self.bar, "TOPLEFT", w * i / n, 0); t:SetPoint("BOTTOM", self.bar, "BOTTOMLEFT", w * i / n, 0)
+                t:Show()
+            else t:Hide() end
+        end
+    end
+    function f:Fill(name, icon, done, n, left, per, sub2, skill)
+        self.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+        self.name:SetText(name or "?")
+        self.count:SetText(done .. " / " .. n)
+        self.left:SetText(string.format(T("reste %s"), mmss(left)))
+        self:Ticks(n)
+        self.sub:SetText(sub2 or "")
+        self.skill:SetText(skill or "")
+        self.stop:SetShown((C_TradeSkillUI and C_TradeSkillUI.StopRecipeRepeat or StopTradeSkillRepeat) ~= nil)
+    end
+    f:SetScript("OnUpdate", function(s, el)
+        s.acc = (s.acc or 0) + el
+        if s.acc < 0.1 or not batch then return end
+        s.acc = 0
+        UI:RefreshCraftBar()
+    end)
+    UI:RegisterHUD("craftBar", f, { label = T("Barre de fabrication"), default = { 0, -120 },
+        enabled = function() return cfg().craftBar and cfg().craftBarWhere ~= "trade" end,
+        sample = function(on)
+            if not on then return end
+            f:Fill(T("Bandage en lin épais"), "Interface\\Icons\\INV_Misc_Bandage_17", 7, 20, 39, 3,
+                T("3 s par fabrication") .. " · " .. string.format(T("fin vers %s"), date("%H:%M", time() + 39)), T("Secourisme 128 (+3)"))
+            f.bar:SetValue(0.35)
+        end,
+        test = function() UI:TestCraftBar() end,
+        testStop = function() UI:EndCraftBar(true) end })
+    f:Hide()
+    return f
+end
+
+function UI:RefreshCraftBar()
+    if not cbar then cbar = buildBar() end
+    if UI.editing then return end
+    local b = batch
+    if not (b and cfg().craftBar) then cbar:Hide() return end
+    local now = GetTime()
+    -- plus rien depuis longtemps (série coupée sans évènement d'interruption) : fin
+    local left, per = remaining(b)
+    if not b.casting and now - (b.last or b.t0) > per * 2 + 4 then UI:EndCraftBar(true) return end
+    local elapsed = now - b.t0
+    local frac = (elapsed + left) > 0 and elapsed / (elapsed + left) or 0
+    if b.done >= b.n then frac = 1 end
+    local parts = { string.format(T("%s par fabrication"), per >= 10 and mmss(per) or string.format(T("%.1f s"), per)) }
+    if cfg().craftBarEnd then table.insert(parts, string.format(T("fin vers %s"), date("%H:%M", time() + left))) end
+    -- la suite de la file de fabrication (autre recette) : « ensuite »
+    if cfg().craftBarQueue then
+        for _, e in ipairs(PH():Queue()) do
+            if e.mine and e.rec and e.rec.name ~= b.name and (e.qty or 0) > 0 then
+                table.insert(parts, string.format(T("ensuite : %s x%d"), e.rec.name, e.qty)); break
+            end
+        end
+    end
+    local skill
+    if cfg().craftBarEnd and b.prof then
+        local r = profRank(b.prof)
+        if r then skill = T(b.prof) .. " " .. r .. ((b.rank0 and r > b.rank0) and (" " .. UI:Hex(C.positive) .. "(+" .. (r - b.rank0) .. ")|r") or "") end
+    end
+    cbar:Fill(b.name, b.icon, b.done, b.n, left, per, table.concat(parts, " · "), skill)
+    cbar.bar:SetValue(frac)
+    -- place : sous la fenêtre de métier (réglage), sinon celle du mode édition
+    local tf = cfg().craftBarWhere == "trade" and tradeFrame()
+    if tf then
+        cbar:ClearAllPoints(); cbar:SetPoint("TOP", tf, "BOTTOM", 0, -6); cbar.docked = true
+    elseif cbar.docked then
+        cbar.docked = nil; UI:HUDApply("craftBar")
+    end
+    cbar:Show()
+end
+
+function UI:EndCraftBar(stopped)
+    local b = batch
+    batch = nil
+    if b and not stopped and cfg().craftBarSound and PlaySound then pcall(PlaySound, 8960) end -- prêt
+    if cbar then
+        if b and not stopped and cbar:IsShown() then
+            cbar.bar:SetValue(1); cbar.left:SetText(T("terminé"))
+            C_Timer.After(1.5, function() if not batch and cbar then cbar:Hide() end end)
+        else cbar:Hide() end
+    end
+end
+
+-- démo du mode édition (« Tester ») : une série de 10 fabrications de 1,5 s
+function UI:TestCraftBar()
+    batch = { name = T("Bandage en lin épais"), icon = "Interface\\Icons\\INV_Misc_Bandage_17", n = 10, done = 0, t0 = GetTime(),
+              castDur = 1.5, per = 1.5, test = true, last = GetTime() }
+    local function step()
+        if not (batch and batch.test) then return end
+        batch.done = batch.done + 1; batch.last = GetTime()
+        if batch.done >= batch.n then UI:EndCraftBar(false) else C_Timer.After(1.5, step) end
+    end
+    C_Timer.After(1.5, step)
+    UI:RefreshCraftBar()
+end
+
+local function startBatch(name, icon, n, spell)
+    n = tonumber(n) or 1
+    if not cfg().craftBar or n < (cfg().craftBarMin or 3) then return end
+    local prof = PH():OpenProfession()
+    batch = { name = name, icon = icon, n = n, done = 0, spell = spell, t0 = GetTime(), prof = prof, rank0 = profRank(prof) }
+    batch.last = batch.t0
+    UI:RefreshCraftBar()
+end
+if hooksecurefunc then
+    if C_TradeSkillUI and C_TradeSkillUI.CraftRecipe then
+        hooksecurefunc(C_TradeSkillUI, "CraftRecipe", function(recipeID, num)
+            local name, icon
+            local ok, info = pcall(C_TradeSkillUI.GetRecipeInfo, recipeID)
+            if ok and type(info) == "table" then name, icon = info.name, info.icon end
+            if not name then name, icon = WK.SpellInfo(recipeID) end
+            startBatch(name, icon, num, recipeID)
+        end)
+    end
+    if DoTradeSkill then
+        hooksecurefunc("DoTradeSkill", function(index, num)
+            local name = GetTradeSkillInfo and GetTradeSkillInfo(index)
+            local icon = GetTradeSkillIcon and GetTradeSkillIcon(index)
+            startBatch(name, icon, num)
+        end)
+    end
+end
+-- la 1re incantation après le lancement fixe le sort de la série (le n° de recette peut différer du sort)
+local function isMine(spellID)
+    local b = batch
+    if not b or b.test then return false end
+    if not b.locked then return true end
+    return spellID == b.spell
+end
+WK:OnUnit("UNIT_SPELLCAST_START", "player", function(_, _, spellID)
+    if not isMine(spellID) then return end
+    local b = batch
+    if not b.locked then b.locked, b.spell = true, spellID end
+    local _, _, _, s, e = UnitCastingInfo("player")
+    if s and e then b.castDur = (e - s) / 1000; b.castEnd = e / 1000; b.casting = true end
+end)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, spellID)
+    local b = batch
+    if not (b and not b.test and b.locked and spellID == b.spell) then return end
+    local now = GetTime()
+    b.done = b.done + 1
+    b.casting = false
+    b.first = b.first or now
+    if b.done >= 2 then b.per = (now - b.first) / (b.done - 1) end
+    b.last = now
+    if b.done >= b.n then UI:EndCraftBar(false) end
+end)
+WK:OnUnit("UNIT_SPELLCAST_STOP", "player", function(_, _, spellID)
+    if batch and batch.locked and spellID == batch.spell then batch.casting = false; batch.last = GetTime() end
+end)
+WK:OnUnit("UNIT_SPELLCAST_INTERRUPTED", "player", function(_, _, spellID)
+    if batch and batch.locked and spellID == batch.spell then UI:EndCraftBar(true) end
+end)
