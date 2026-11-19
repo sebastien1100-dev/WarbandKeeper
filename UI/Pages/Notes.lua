@@ -114,14 +114,27 @@ UI:RegisterPage({
         local scroll = UI:Scroll(p)
         scroll:SetAllPoints()
         -- « À venir » toujours en haut, puis les versions de la plus récente à la plus ancienne.
-        local cards = {}
+        -- Plus de 400 versions : les cartes sont créées par lots de 15 (bouton en bas), sinon la page
+        -- devient trop lourde à construire et reste vide.
+        local cards, made = {}, 0
+        local PAGE = 15
         if #WK.Roadmap > 0 then table.insert(cards, VersionCard(scroll.child, { roadmap = true, items = WK.Roadmap }, false)) end
-        for i, entry in ipairs(WK.Changelog) do
-            table.insert(cards, VersionCard(scroll.child, entry, i == 1 and entry.version == WK.version))
+        local more = UI:Button(scroll.child, "Versions plus anciennes", 240, 30, "secondary")
+        local layout
+        local function addBatch()
+            local last = math.min(#WK.Changelog, made + PAGE)
+            for i = made + 1, last do
+                local entry = WK.Changelog[i]
+                local ok, card = pcall(VersionCard, scroll.child, entry, i == 1 and entry.version == WK.version)
+                if ok and card then table.insert(cards, card) end
+            end
+            made = last
+            more:SetShown(made < #WK.Changelog)
+            more:SetLabel(string.format(T("Versions plus anciennes (%d)"), #WK.Changelog - made))
         end
         -- largeur et hauteurs recalculées quand la fenêtre change de taille
-        UI:OnResize(scroll, function(w)
-            local width = math.max(400, (w or UI.PAGE_W) - 12)
+        layout = function(w)
+            local width = math.max(400, (w or scroll:GetWidth() or UI.PAGE_W) - 12)
             local y = 0
             for _, c in ipairs(cards) do
                 c:ClearAllPoints()
@@ -129,8 +142,15 @@ UI:RegisterPage({
                 c:SetPoint("TOPRIGHT", 0, -y)
                 y = y + c:Layout(width) + 12
             end
+            if more:IsShown() then
+                more:ClearAllPoints(); more:SetPoint("TOP", scroll.child, "TOP", 0, -y)
+                y = y + 42
+            end
             scroll:SetContentHeight(y)
-        end)
+        end
+        more:SetScript("OnClick", function() addBatch(); layout() end)
+        addBatch()
+        UI:OnResize(scroll, layout)
     end,
 
     Refresh = function()

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.59.3", date = "19/11/2026",
+        fixed = {
+            "Patch notes : la page pouvait rester vide. Avec plus de 400 versions, elle construisait tout d'un coup ; elle montre maintenant « À venir » et les 15 dernières versions, et le bouton « Versions plus anciennes » en ajoute 15 de plus à chaque clic.",
+        },
+    },
+    {
         version = "1.59.2", date = "19/11/2026",
         fixed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.6.3 (faux persos sur l'accueil après une mise à jour, colonne des noms écrasée).",

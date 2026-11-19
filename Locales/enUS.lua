@@ -3302,4 +3302,6 @@ WK.Locales.enUS.text = {
     ["+ %d boss tués plus tôt"] = "+ %d bosses killed earlier",
     ["Taille des icônes sur la carte"] = "Map icon size",
     ["Lieux, quais, navires, rares, notes, filons et repère de la carte du monde. 100 % : taille par défaut."] = "Places, docks, ships, rares, notes, nodes and waypoint on the world map. 100 %: default size.",
+    ["Versions plus anciennes"] = "Older versions",
+    ["Versions plus anciennes (%d)"] = "Older versions (%d)",
 }

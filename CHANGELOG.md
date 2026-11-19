@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.59.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Patch notes : la page pouvait rester vide. Avec plus de 400 versions, elle construisait tout d'un coup ; elle montre maintenant « À venir » et les 15 dernières versions, et le bouton « Versions plus anciennes » en ajoute 15 de plus à chaque clic.
+
 ## v1.59.2 — 19/11/2026
 
 _Un /reload suffit._
