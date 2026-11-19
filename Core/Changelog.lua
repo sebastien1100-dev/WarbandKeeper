@@ -8,6 +8,21 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.80.0", date = "19/11/2026", restart = true,
+        added = {
+            "Carte sans brouillard : les zones que ton perso n'a pas encore découvertes sont dessinées quand même sur la carte du monde, un peu plus sombres pour voir ce qui reste à explorer (QoL > Carte et guidage > Lieux, carte « Filtres et affichage »).",
+            "Retour au corps : quand tu es mort, un bandeau donne la distance et le temps pour courir jusqu'au corps, ce que coûte l'ange gardien à ton niveau, et conseille le plus rapide ; la flèche et l'épingle guident vers le corps, puis ton guidage d'avant revient une fois en vie (QoL > Carte et guidage > Guidage).",
+            "Place dans les sacs : quand il ne reste plus que quelques cases libres (seuil réglable), un bouton à l'écran les compte ; un clic jette l'objet gris le moins cher (jamais un objet verrouillé, jamais en combat).",
+            "Réassort chez le marchand : choisis combien de boissons, de nourriture et d'autres objets garder sur chaque perso ; un bouton sous la fenêtre du marchand achète ce qui manque (le meilleur pour ton niveau) sur un clic, avec le prix total.",
+            "Amélioration à porter : un objet qui arrive dans tes sacs (butin, récompense, achat) et vaut mieux que celui que tu portes, d'après les caractéristiques de ta classe, est proposé avec « L'équiper » ou « Pas celui-là ». Rien n'est équipé tout seul.",
+            "Fenêtre de destruction du jeu : elle dit quand l'objet est encore demandé par une quête de ton journal.",
+            "Réglages de la place, du réassort et de l'amélioration : roue de la page Inventaire, carte « Sacs, marchand et équipement ».",
+        },
+        changed = {
+            "Objets de quête protégés par défaut : la règle « Objets de quête » des verrous compte aussi les objets que demande une quête de ton journal (cadenas dans les sacs, vente bloquée, rachat automatique s'il est vendu quand même), jusqu'à ce que la quête soit rendue.",
+        },
+    },
+    {
         version = "1.79.1", date = "19/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : sous la souris, le clic agit maintenant au relâché, une seule fois, quel que soit le réglage « lancer à l'appui » du jeu ; au clavier, il suit toujours ce réglage.",
@@ -4120,9 +4135,9 @@ WK.Roadmap = {
     { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
     { prio = 2, theme = "map", title = "Horaires des autres addons de bateaux", text = "Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent." },
-    { prio = 3, theme = "map", title = "Carte, suite", text = "Zones inexplorées assombries, niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
+    { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 2, theme = "dung", title = "Quêtes automatiques", text = "Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
-    { prio = 1, theme = "eco", title = "Sacs pleins et camelote", text = "Sacs pleins : proposer de détruire le moins cher ; camelote marquée à la main ou par règles, vendue au marchand ; réapprovisionnement et réparation automatiques." },
+    { prio = 1, theme = "eco", title = "Camelote", text = "Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
     { prio = 3, theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },
     { prio = 3, theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe." },

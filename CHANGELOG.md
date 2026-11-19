@@ -23,13 +23,13 @@ _Prévu, pas encore commencé._
 - **Couches de serveur** (moyenne) — La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule.
 - **Horaires des autres addons de bateaux** (moyenne) — Écouter NauticusClassic et ForeverTransport pour caler nos lignes plus souvent.
 - **« Prends le bateau »** (moyenne) — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
-- **Carte, suite** (basse) — Zones inexplorées assombries, niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
+- **Carte, suite** (basse) — Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
 - **Notes de carte partagées** (basse) — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - **Ping de groupe** (basse) — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
 
 ### Inventaire et économie
-- **Sacs pleins et camelote** (haute) — Sacs pleins : proposer de détruire le moins cher ; camelote marquée à la main ou par règles, vendue au marchand ; réapprovisionnement et réparation automatiques.
+- **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
 - **Prix moyen de vente** (moyenne) — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -78,6 +78,22 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.80.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Carte sans brouillard : les zones que ton perso n'a pas encore découvertes sont dessinées quand même sur la carte du monde, un peu plus sombres pour voir ce qui reste à explorer (QoL > Carte et guidage > Lieux, carte « Filtres et affichage »).
+- Retour au corps : quand tu es mort, un bandeau donne la distance et le temps pour courir jusqu'au corps, ce que coûte l'ange gardien à ton niveau, et conseille le plus rapide ; la flèche et l'épingle guident vers le corps, puis ton guidage d'avant revient une fois en vie (QoL > Carte et guidage > Guidage).
+- Place dans les sacs : quand il ne reste plus que quelques cases libres (seuil réglable), un bouton à l'écran les compte ; un clic jette l'objet gris le moins cher (jamais un objet verrouillé, jamais en combat).
+- Réassort chez le marchand : choisis combien de boissons, de nourriture et d'autres objets garder sur chaque perso ; un bouton sous la fenêtre du marchand achète ce qui manque (le meilleur pour ton niveau) sur un clic, avec le prix total.
+- Amélioration à porter : un objet qui arrive dans tes sacs (butin, récompense, achat) et vaut mieux que celui que tu portes, d'après les caractéristiques de ta classe, est proposé avec « L'équiper » ou « Pas celui-là ». Rien n'est équipé tout seul.
+- Fenêtre de destruction du jeu : elle dit quand l'objet est encore demandé par une quête de ton journal.
+- Réglages de la place, du réassort et de l'amélioration : roue de la page Inventaire, carte « Sacs, marchand et équipement ».
+
+### Modifications
+- Objets de quête protégés par défaut : la règle « Objets de quête » des verrous compte aussi les objets que demande une quête de ton journal (cadenas dans les sacs, vente bloquée, rachat automatique s'il est vendu quand même), jusqu'à ce que la quête soit rendue.
 
 ## v1.79.1 — 19/11/2026
 

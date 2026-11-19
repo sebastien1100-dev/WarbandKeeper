@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -203,6 +203,8 @@ def metrics():
             out["Objets portables (liste BiS)"] = size(WK.LoadItemsDB() if WK.LoadItemsDB else WK.ItemsDB)
         elif name == "BoatLinesDB":
             out["Lignes de bateaux et zeppelins"] = size(WK.BoatLines)
+        elif name == "MapRevealDB":
+            out["Cartes sans brouillard"] = size(WK.MapRevealDB)
         elif name == "DungeonsDB":
             stats = L.eval("""function(db, items)
                 local d, b, nb, it, und = 0, 0, 0, 0, 0
@@ -317,6 +319,12 @@ def main():
             sources.append("trajets des bateaux (wago.tools)")
         except subprocess.CalledProcessError as e:
             log("  ! lignes de bateaux non régénérées, fichier gardé tel quel :", e)
+        # zones à découvrir des cartes (tables WorldMapOverlay du jeu, wago.tools) : carte sans brouillard
+        try:
+            run(os.path.join(HERE, "gen_reveal.py"))
+            sources.append("zones des cartes (wago.tools)")
+        except subprocess.CalledProcessError as e:
+            log("  ! zones des cartes non régénérées, fichier gardé tel quel :", e)
         # objets portables du jeu pour la liste BiS (opendata, CC BY 4.0 ; noms français de wago.tools)
         odir, ofr = opendata_items()
         if odir:

@@ -268,6 +268,7 @@ local function redraw(src)
                 end
             end
         end
+        layer("Brouillard", UI.DrawMapReveal)   -- zones pas encore découvertes (UI/MapReveal.lua)
         layer("Lieux", UI.DrawMapLayers)        -- lieux utiles (UI/MapLayers.lua)
         layer("Filons et plantes", UI.DrawNodePins) -- nœuds récoltés (UI/NodePins.lua)
         layer("Rares", UI.DrawRarePins)         -- rares (UI/RarePins.lua)

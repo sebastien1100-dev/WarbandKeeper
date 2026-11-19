@@ -169,7 +169,7 @@ UI:RegisterPage({
         self:BuildStash(p, x0)
         -- Roue dentée : réglages des objets verrouillés (règles, protection) et du rangement (perso HV)
         self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1, seeThrough = true,
-            cards = function() return { self.lockRules, self.lockSets, self.stashSets } end }, self)
+            cards = function() return { self.lockRules, self.lockSets, self.bagSets, self.stashSets } end }, self)
         self.gp.gear:SetPoint("TOPRIGHT")
         -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
@@ -457,7 +457,7 @@ UI:RegisterPage({
         rule("Objets épiques et plus", nil, "epic")
         rule("Objets de ma liste d'envies", "Donjons > Mes envies, tous les persos.", "wish")
         rule("Recettes", "Celles d'un métier qu'un de tes persos a appris, et qu'aucun de tes persos n'a encore apprises.", "recipes")
-        rule("Objets de quête", nil, "quest")
+        rule("Objets de quête", "Et les objets que demande une quête de ton journal (jusqu'à ce qu'elle soit rendue).", "quest")
         rule("Valeur HV au-dessus d'un seuil", "Prix relevé par le scan de l'hôtel des ventes.", "value")
         UI:SettingRow(rules, y, "Seuil de valeur HV", nil, UI:Slider(rules, 220, 1, 100, 1,
             function() return math.floor((cfg.valueMin or 50000) / 10000) end,
@@ -486,6 +486,8 @@ UI:RegisterPage({
         UI:SettingRow(sets, -178, "Écart HV / marchand", "Demander si le prix HV vaut au moins ce multiple du prix marchand.",
             UI:Slider(sets, 220, 2, 20, 1, function() return cfg.ratio or 5 end, function(v) cfg.ratio = v end, "x %d"), 240)
         sets:SetHeight(232)
+        -- place dans les sacs, réassort, amélioration à porter (UI/BagHelp.lua)
+        self.bagSets = UI:BuildBagHelpCard(root)
         UI:OnResize(pane, function() if self.char == "locks" then self:RefreshLocks() end end)
     end,
 

@@ -33,6 +33,7 @@ local KEYS = {
     stash = {},
     gatherHelp = { rankSeen = true, lastRank = true },
     profHelp = { deLog = true },
+    bagHelp = { dismissed = true },
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau
 

@@ -79,7 +79,7 @@ function M:AllTransports()
     return out
 end
 
-local DEFAULTS = { myFaction = true, myClass = true, myProfs = true, toolbar = true, size = 18 }
+local DEFAULTS = { myFaction = true, myClass = true, myProfs = true, toolbar = true, size = 18, reveal = true, revealTint = true }
 function M:Config()
     local g = WK.DB.global
     g.mapLayers = g.mapLayers or {}

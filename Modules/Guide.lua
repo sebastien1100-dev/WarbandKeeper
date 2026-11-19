@@ -14,7 +14,7 @@ M.LABELS = {
     ammo = "Munitions", reagent = "Composants", trainer = "Maître de classe", stable = "Maître des écuries", fishing = "Fournitures de pêche", bags = "Boîte aux lettres, banque ou marchand",
 }
 
-local DEFAULTS = { auto = true, arrow = false, mapPin = true, screenPin = true, arriveSound = true, trainerOnLevel = true, route = true, routeMini = true, learn = true, dockBanner = true, boatShare = true, dockAlerts = true, dockSound = true, shipsMap = true }
+local DEFAULTS = { auto = true, arrow = false, mapPin = true, screenPin = true, arriveSound = true, trainerOnLevel = true, route = true, routeMini = true, learn = true, dockBanner = true, boatShare = true, dockAlerts = true, dockSound = true, shipsMap = true, corpse = true }
 function M:Config()
     local q = WK.modules.QoL:Config()
     q.guide = q.guide or {}

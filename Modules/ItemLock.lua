@@ -17,7 +17,7 @@ M.KEY_OPTIONS = {
     { "ctrlalt", "Ctrl + Alt + clic" }, { "ctrlshift", "Ctrl + Maj + clic" },
 }
 local DEFAULTS = { key = "altmid", rebuy = true, confirm = true, ratio = 5, confirmMin = 10000,
-    rules = { epic = true, wish = true, recipes = true, quest = false, value = false }, valueMin = 50000 }
+    rules = { epic = true, wish = true, recipes = true, quest = true, value = false }, valueMin = 50000 }
 -- Recettes : sous-classe d'objet » métier. c.professions est rangé par nom dans la langue du jeu :
 -- on compare au nom français, au nom anglais et au n° de ligne de compétence (skillLine) quand il est noté.
 local RECIPE_PROF = { [1] = "Travail du cuir", [2] = "Couture", [3] = "Ingénierie", [4] = "Forge", [5] = "Cuisine",
@@ -38,6 +38,8 @@ local function db()
         end
     end
     for k, v in pairs(DEFAULTS.rules) do if d.cfg.rules[k] == nil then d.cfg.rules[k] = v end end
+    -- une fois : les objets de quête protégés par défaut (objets demandés par le journal de quêtes en plus)
+    if not d.cfg.questV2 then d.cfg.rules.quest = true; d.cfg.questV2 = true end
     -- une fois : l'ancien défaut (Alt + clic, pris par d'autres addons) passe à Alt + clic molette
     if not d.cfg.keyV2 then
         if d.cfg.key == "alt" then d.cfg.key = "altmid" end
@@ -114,6 +116,41 @@ local function knownByAnyone(id)
 end
 M.KnownByAnyone = function(_, id) return knownByAnyone(id) end
 
+-- Objets demandés par les quêtes du journal (objectifs de type objet, faits ou pas : il faut encore les
+-- rendre) : { [nom de l'objet en minuscules] = titre de la quête } ; relu après chaque QUEST_LOG_UPDATE
+local questItems, questDirty = {}, true
+local function objectiveName(text)
+    if type(text) ~= "string" then return nil end
+    local name = text:match("^(.-)%s*:%s*%d+%s*/%s*%d+") or text:match("^%d+%s*/%s*%d+%s+(.+)$") or text
+    name = name:gsub("%s+$", "")
+    return name ~= "" and name:lower() or nil
+end
+local function readQuestItems()
+    questDirty = false
+    wipe(questItems)
+    local QL = C_QuestLog
+    if not (QL and QL.GetNumQuestLogEntries and QL.GetInfo and QL.GetQuestObjectives) then return end
+    local n = QL.GetNumQuestLogEntries() or 0
+    for i = 1, n do
+        local info = QL.GetInfo(i)
+        if info and not info.isHeader and info.questID then
+            for _, o in ipairs(QL.GetQuestObjectives(info.questID) or {}) do
+                if o.type == "item" then
+                    local nm = objectiveName(o.text)
+                    if nm then questItems[nm] = info.title or "?" end
+                end
+            end
+        end
+    end
+end
+-- titre de la quête qui demande cet objet (nil si aucune)
+function M:QuestFor(id)
+    if questDirty then readQuestItems() end
+    local name = id and WK.GetItemInfo(id)
+    return name and questItems[name:lower()] or nil
+end
+WK:On("QUEST_LOG_UPDATE", function() questDirty = true; wipe(cache) end)
+
 -- Raison du verrou : "manual", ou le libellé de la règle ; nil si l'objet n'est pas verrouillé
 function M:Reason(id)
     if not id then return nil end
@@ -127,8 +164,9 @@ function M:Reason(id)
     local classID, subID = instant(id)
     if r.recipes and classID == 9 and RECIPE_PROF[subID] and profHeld(subID) and not knownByAnyone(id) then
         why = string.format(T("recette de %s"), T(RECIPE_PROF[subID]):lower())
-    elseif r.quest and classID == 12 then
-        why = T("objet de quête")
+    elseif r.quest and (classID == 12 or M:QuestFor(id)) then
+        local q = M:QuestFor(id)
+        why = q and string.format(T("quête : %s"), q) or T("objet de quête")
     elseif r.wish and wished(id) then
         why = T("liste d'envies")
     else

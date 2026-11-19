@@ -1178,7 +1178,7 @@ UI:RegisterPage({
                 chip:SetWidth(cw)
             end
         end)
-        local fcard = card("Filtres et affichage", 40 + 5 * 46 + 8)
+        local fcard = card("Filtres et affichage", 40 + 7 * 46 + 8)
         UI:SettingRow(fcard, -40, "Seulement ma faction", "Pas les lieux ni les trajets réservés à l'autre faction.",
             toggle(fcard, function() return mlc.myFaction end, function(v) mlc.myFaction = v; mlRefresh() end), 80)
         UI:SettingRow(fcard, -86, "Seulement ma classe", "Maître de classe, familiers et démons, munitions (chasseur), poisons (voleur), écuries.",
@@ -1191,6 +1191,10 @@ UI:RegisterPage({
             UI:Slider(fcard, 220, 50, 200, 10, function() return mlc.iconScale or 100 end, function(v)
                 mlc.iconScale = v; mlRefresh(); if UI.RedrawWorldMap then UI.RedrawWorldMap("taille") end
             end, "%d %%"), 240)
+        UI:SettingRow(fcard, -270, "Carte sans brouillard", "Les zones que ce perso n'a pas encore découvertes sont dessinées quand même sur la carte du monde.",
+            toggle(fcard, function() return mlc.reveal ~= false end, function(v) mlc.reveal = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("brouillard") end end), 80)
+        UI:SettingRow(fcard, -316, "Zones pas découvertes plus sombres", "Pour voir d'un coup d'œil ce qui reste à explorer.",
+            toggle(fcard, function() return mlc.revealTint ~= false end, function(v) mlc.revealTint = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("brouillard") end end), 80)
         -- Navigation : trajet en pointillé qui suit les chemins connus, appris en jouant (Modules/Nav.lua)
         local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()
@@ -1200,7 +1204,7 @@ UI:RegisterPage({
             subtab("Guidage", 3)
             local G = WK.modules.Guide
             local gcfg = G:Config()
-            local guide = card("Guidage", 410)
+            local guide = card("Guidage", 456)
             UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
                 "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
                 toggle(guide, function() return gcfg.auto end, function(v) gcfg.auto = v end), 80)
@@ -1214,6 +1218,8 @@ UI:RegisterPage({
                 toggle(guide, function() return gcfg.screenPin end, function(v) gcfg.screenPin = v; if G.target then G:Start(G.target, G.target.reason, G.target.kind) end end), 80)
             UI:SettingRow(guide, -278, "Son à l'arrivée", "Un bandeau « Arrivé » s'affiche et le guidage s'arrête ; avec un son si activé.",
                 toggle(guide, function() return gcfg.arriveSound end, function(v) gcfg.arriveSound = v end), 80)
+            UI:SettingRow(guide, -324, "Retour au corps", "Mort : bandeau avec la distance et le temps jusqu'au corps, ce que coûte l'ange gardien, et guidage vers le corps.",
+                toggle(guide, function() return gcfg.corpse ~= false end, function(v) gcfg.corpse = v; if UI.RefreshCorpse then UI:RefreshCorpse() end end), 80)
             -- Boutons « le plus proche » : passent à la ligne si la fenêtre est étroite (2 lignes prévues).
             local goBar = CreateFrame("Frame", nil, guide)
             goBar:SetPoint("BOTTOMLEFT", 16, 12)

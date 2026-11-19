@@ -2,7 +2,7 @@
 ## Title: Warband Keeper
 ## Notes: Gestion de compte : sacs, banques, métiers, or, temps de jeu, statistiques et envoi automatique du farm par courrier.
 ## Author: sebastien1100-dev
-## Version: 1.79.1
+## Version: 1.80.0
 ## IconTexture: Interface\Icons\INV_Misc_Bag_10
 ## AddonCompartmentFunc: WarbandKeeper_OnAddonCompartmentClick
 ## SavedVariables: WarbandKeeperDB
@@ -28,6 +28,7 @@ Modules\Characters.lua
 Modules\Gear.lua
 Modules\TalentPlan.lua
 Modules\ItemLock.lua
+Modules\BagHelp.lua
 Modules\Inventory.lua
 Modules\Professions.lua
 Modules\Statistics.lua
@@ -71,6 +72,7 @@ Modules\Nodes.lua
 Modules\RaresDB.lua
 Modules\Rares.lua
 Modules\MapLayers.lua
+Modules\MapRevealDB.lua
 Modules\QuestsDB.lua
 Modules\Quests.lua
 Modules\XP.lua
@@ -110,6 +112,7 @@ UI\Pages\Options.lua
 UI\Pages\Profiles.lua
 UI\MinimapButton.lua
 UI\EditMode.lua
+UI\MapReveal.lua
 UI\MapPins.lua
 UI\NodePins.lua
 UI\RarePins.lua
@@ -117,6 +120,7 @@ UI\RareAlert.lua
 UI\AuctionPanel.lua
 UI\AuctionTabs.lua
 UI\MerchantPanel.lua
+UI\BagHelp.lua
 UI\ProfPanels.lua
 UI\BagValue.lua
 UI\StashMail.lua
@@ -131,6 +135,7 @@ UI\GatherHUD.lua
 UI\DungeonPanel.lua
 UI\DungeonTimer.lua
 UI\DockBanner.lua
+UI\CorpseBanner.lua
 UI\BoatBoard.lua
 UI\AlertStack.lua
 UI\FlightBar.lua

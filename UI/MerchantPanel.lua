@@ -72,6 +72,8 @@ local function buy(s, need)
     return bought
 end
 
+UI.MerchantStock, UI.MerchantBuy = merchantStock, buy -- aussi pour le réassort (UI/BagHelp.lua)
+
 -- Besoins par métier : { { prof, rank, target, here = { mats vendus ici }, elsewhere = n, cost } }
 local function needs(stock)
     local c = WK.DB:Me()
