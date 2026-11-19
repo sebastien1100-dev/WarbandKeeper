@@ -79,6 +79,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.7 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte, calque Navires : on voyait les deux quais d'une ligne mais pas le trajet entre eux tant que tu ne l'avais pas pris une fois. Toutes les lignes sont maintenant tracées (plus pâles si tu ne les as jamais prises).
+- Carte d'Azeroth (les deux continents) : les trajets des bateaux et zeppelins y sont tracés, traversée d'un continent à l'autre comprise (les positions passent par la carte du continent).
+
 ## v1.77.6 — 19/11/2026
 
 _Un /reload suffit._

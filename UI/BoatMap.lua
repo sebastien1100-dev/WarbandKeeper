@@ -21,6 +21,8 @@ local function onMini()
     return WK:FeatureOn("maplayers") and L and L:Config().mini.transport and WK.modules.Guide:Config().shipsMap ~= false
 end
 local function toMap(c, x, y, mapID)
+    -- conversion commune (UI/NavRoute.lua) : elle sait passer par le continent sur la carte d'Azeroth
+    if UI.WorldToMap then return UI.WorldToMap(c, x, y, mapID) end
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
     local ok, _, pos = pcall(C_Map.GetMapPosFromWorldPos, c, CreateVector2D(x, y), mapID)
     if not (ok and pos) then return nil end
@@ -123,21 +125,29 @@ function UI:DrawShips(cv, mapID, w, h)
     local B = BL()
     local scale = (w / 1000) * UI.MapIconScale()
     local thick = math.max(1.4 * UI.MapIconScale(), 2 * scale)
+    -- carte d'Azeroth : les deux continents y sont, le saut d'un continent à l'autre est tracé aussi
+    local world = UI.IsWorldMap and UI.IsWorldMap(mapID)
     for _, l in ipairs(B:All()) do
-        -- tracé seulement pour les lignes déjà prises
-        if B:Rode(l) and (B:Mine(l) or not WK.modules.MapLayers:Config().myFaction) then
+        -- toutes les lignes (avant : seulement celles déjà prises) ; une ligne pas encore prise est plus pâle
+        if B:Mine(l) or not WK.modules.MapLayers:Config().myFaction then
             local col = colorOf(l)
+            local rode = B:Rode(l)
+            local a, tk = rode and 0.75 or 0.4, rode and thick or thick * 0.8
             for _, g in ipairs(l.legs) do
                 local pts = g.pts
                 local px, py, pc
-                for k = 1, #pts / 3 do
+                -- ligne pas encore prise : un point sur trois suffit (moins de traits à poser)
+                local n3 = #pts / 3
+                for k = 1, n3 do
+                  if rode or k % 3 == 1 or k == n3 or (k > 1 and pts[k * 3 - 2] ~= pts[k * 3 - 5]) then
                     local c, x, y = pts[k * 3 - 2], pts[k * 3 - 1], pts[k * 3]
                     local mx, my = toMap(c, x, y, mapID)
                     local inside = mx and mx > -0.05 and mx < 1.05 and my > -0.05 and my < 1.05
-                    if inside and px and pc == c then
-                        lines:Add(cv, px * w, py * h, mx * w, my * h, thick, col[1], col[2], col[3], 0.75)
+                    if inside and px and (pc == c or world) then
+                        lines:Add(cv, px * w, py * h, mx * w, my * h, tk, col[1], col[2], col[3], a)
                     end
                     if inside then px, py, pc = mx, my, c else px, py, pc = nil, nil, nil end
+                  end
                 end
             end
         end

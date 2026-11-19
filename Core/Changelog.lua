@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.7", date = "19/11/2026",
+        fixed = {
+            "Carte, calque Navires : on voyait les deux quais d'une ligne mais pas le trajet entre eux tant que tu ne l'avais pas pris une fois. Toutes les lignes sont maintenant tracées (plus pâles si tu ne les as jamais prises).",
+            "Carte d'Azeroth (les deux continents) : les trajets des bateaux et zeppelins y sont tracés, traversée d'un continent à l'autre comprise (les positions passent par la carte du continent).",
+        },
+    },
+    {
         version = "1.77.6", date = "19/11/2026",
         fixed = {
             "Bandeau du quai : la pastille « estimé » passait sous le temps quand le nom du quai était long. Elle est maintenant juste à gauche du temps, le titre s'arrête avant elle, et le grand temps n'a plus « env. » (la pastille le dit déjà).",

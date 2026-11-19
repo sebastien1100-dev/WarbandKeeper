@@ -253,6 +253,10 @@ local function toMap(cont, x, y, mapID)
     if not (okR and x0 and x1 and y0 and y1 and x1 > x0 and y1 > y0) then return nil end
     return x0 + cx * (x1 - x0), y0 + cy * (y1 - y0)
 end
+-- partagé avec le calque des navires (UI/BoatMap.lua) : même repli pour la carte d'Azeroth
+UI.WorldToMap = toMap
+UI.IsWorldMap = isWorldMap
+
 -- Position d'un quai (carte de zone, x, y en %) sur la carte affichée
 local function dockOnMap(dock, mapID)
     if not dock then return nil end
