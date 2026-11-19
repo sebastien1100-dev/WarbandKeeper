@@ -79,6 +79,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.80.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk bateau : pour chaque ligne, les départs de moins de 6 h (dont ceux vus par toi) et les derniers avec leur source (vu partir, calé à bord, annoncé, reçu).
+
+### Corrections
+- Bateaux, à bord : un zeppelin de l'autre faction pouvait être « reconnu » à la place de ton bateau quand leurs trajets passent l'un près de l'autre. Seules les lignes de ta faction comptent maintenant.
+- Horaires des bateaux qui changeaient d'une fois à l'autre sur une ligne prise souvent : les départs vus restaient utilisés 4 jours, alors que chaque redémarrage du serveur remet les navires à zéro. Seuls les départs de moins de 6 h comptent ; au-delà, l'attente moyenne est affichée au lieu d'une heure fausse.
+- Le tour des lignes mesurées (« Classic ») n'est plus recalculé d'après nos départs : mélangés à des départs d'avant un redémarrage, ils donnaient un tour faux et des heures qui dérivaient.
+- Un départ reçu d'un autre joueur ne passe plus devant le tien de moins d'une heure (un départ faux partagé décalait tout).
+- Remise à zéro de l'horaire (serveur redémarré) : décidée seulement d'après ton dernier départ vu au même quai ; avant, l'heure estimée d'un autre quai la déclenchait pour rien.
+- Un départ calé à bord ne déclenche plus de remise à zéro et laisse la place à un départ vraiment vu partir.
+
 ## v1.80.1 — 19/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,20 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.80.2", date = "19/11/2026",
+        fixed = {
+            "Bateaux, à bord : un zeppelin de l'autre faction pouvait être « reconnu » à la place de ton bateau quand leurs trajets passent l'un près de l'autre. Seules les lignes de ta faction comptent maintenant.",
+            "Horaires des bateaux qui changeaient d'une fois à l'autre sur une ligne prise souvent : les départs vus restaient utilisés 4 jours, alors que chaque redémarrage du serveur remet les navires à zéro. Seuls les départs de moins de 6 h comptent ; au-delà, l'attente moyenne est affichée au lieu d'une heure fausse.",
+            "Le tour des lignes mesurées (« Classic ») n'est plus recalculé d'après nos départs : mélangés à des départs d'avant un redémarrage, ils donnaient un tour faux et des heures qui dérivaient.",
+            "Un départ reçu d'un autre joueur ne passe plus devant le tien de moins d'une heure (un départ faux partagé décalait tout).",
+            "Remise à zéro de l'horaire (serveur redémarré) : décidée seulement d'après ton dernier départ vu au même quai ; avant, l'heure estimée d'un autre quai la déclenchait pour rien.",
+            "Un départ calé à bord ne déclenche plus de remise à zéro et laisse la place à un départ vraiment vu partir.",
+        },
+        changed = {
+            "/wk bateau : pour chaque ligne, les départs de moins de 6 h (dont ceux vus par toi) et les derniers avec leur source (vu partir, calé à bord, annoncé, reçu).",
+        },
+    },
+    {
         version = "1.80.1", date = "19/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : rien ne partait sur un joueur pris sur sa plaque de nom (WoW Forever ignore ces cibles dans /cast, sans message). Le bouton cible maintenant ce joueur par son nom, lance la bénédiction, puis remet ta cible d'avant (ou aucune). Sur toi, ta cible, ta focalisation ou ton groupe, rien ne change.",
