@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.6", date = "19/11/2026",
+        fixed = {
+            "Bandeau du quai : la pastille « estimé » passait sous le temps quand le nom du quai était long. Elle est maintenant juste à gauche du temps, le titre s'arrête avant elle, et le grand temps n'a plus « env. » (la pastille le dit déjà).",
+        },
+    },
+    {
         version = "1.77.5", date = "19/11/2026",
         changed = {
             "/wk carte : la ligne « trajet » dit aussi vers quoi tu es guidé, où en est le calcul du chemin (complet, jusqu'au quai, aucun bateau trouvé) et si le tracé est activé, pour trouver pourquoi un trajet ne s'affiche pas.",

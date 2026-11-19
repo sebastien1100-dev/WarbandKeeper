@@ -104,9 +104,11 @@ local function build()
         self.title:SetText(string.format(zep and T("Zeppelin pour %s") or T("Bateau pour %s"), first.to or "?"))
         local y = 48
         self.pill:Hide()
+        self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", -80, 0)
         if known(first) then
             local pre = st.est and T("env. ") or ""
-            self.time:SetText(pre .. Clock(st.inn))
+            -- grand temps sans « env. » : la pastille « estimé » le dit déjà
+            self.time:SetText(Clock(st.inn))
             local col = st.atDock and C.positive or (st.inn < 60 and C.gold or C.text)
             self.time:SetTextColor(col[1], col[2], col[3])
             self.sub:SetText(st.atDock and string.format(T("À quai : monte, il part dans %s"), pre .. Clock(st.inn))
@@ -117,7 +119,9 @@ local function build()
             self.pill.t:SetTextColor(pc[1], pc[2], pc[3])
             self.pill.bg:SetColor(pc[1], pc[2], pc[3], 0.18)
             self.pill:SetWidth((self.pill.t:GetStringWidth() or 30) + 12)
-            self.pill:ClearAllPoints(); self.pill:SetPoint("LEFT", self.title, "LEFT", (self.title:GetStringWidth() or 100) + 8, 0)
+            -- pastille juste à gauche du temps ; le titre s'arrête avant elle (coupé s'il est trop long)
+            self.pill:ClearAllPoints(); self.pill:SetPoint("RIGHT", self.time, "LEFT", -8, 0)
+            self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 46, -12); self.title:SetPoint("RIGHT", self.pill, "LEFT", -6, 0)
             self.pill:Show()
             local tw = W - 28
             local frac = 1 - math.max(0, math.min(1, st.inn / math.max(1, st.P)))

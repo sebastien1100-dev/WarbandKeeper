@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.6 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau du quai : la pastille « estimé » passait sous le temps quand le nom du quai était long. Elle est maintenant juste à gauche du temps, le titre s'arrête avant elle, et le grand temps n'a plus « env. » (la pastille le dit déjà).
+
 ## v1.77.5 — 19/11/2026
 
 _Un /reload suffit._
