@@ -1940,7 +1940,9 @@ local function Settings(page, parent)
             for prof in pairs(e.c.professions or {}) do table.insert(names, prof) end
             table.sort(names)
             for _, prof in ipairs(names) do
-                local o = { e.key .. "\001" .. prof, prof .. "  ·  " .. WK:CharName(e.c, e.key) }
+                -- le perso en couleur de classe
+                local cr, cg, cb = UI:ClassColor(e.c.class)
+                local o = { e.key .. "\001" .. prof, prof .. "  ·  " .. UI:Hex({ cr, cg, cb }) .. WK:CharName(e.c, e.key) .. "|r" }
                 if e.key == myKey then table.insert(opts, 1, o) else table.insert(opts, o) end
             end
         end

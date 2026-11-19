@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.6", date = "19/11/2026",
+        changed = {
+            "Métiers > Réglages : dans le menu « Ce métier », le nom du perso est à la couleur de sa classe.",
+        },
+    },
+    {
         version = "1.56.5", date = "19/11/2026",
         changed = {
             "Donjons : le groupe « Déjà dépassés » passe en tête de la colonne des donjons, avant « Pour ton niveau ».",
