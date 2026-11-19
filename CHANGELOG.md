@@ -30,6 +30,16 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.39.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Carte : les réglages sont rangés en onglets (Lieux, Mes notes, Guidage, Bateaux, Vols) au lieu d'une longue page.
+- QoL > Général : onglets Marchand, État des persos, Guidage, Groupe et confort.
+- QoL > Classes : chaque classe range ses réglages en onglets sous les tuiles des persos (Composants, Munitions, Familier, Poisons, Distance, Aspects, Rappels… selon la classe).
+- L'onglet choisi est retenu par section, et la recherche ouvre directement l'onglet du réglage trouvé.
+
 ## v1.38.1 — 19/11/2026
 
 _Un /reload suffit._

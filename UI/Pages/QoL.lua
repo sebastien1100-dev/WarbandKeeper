@@ -183,13 +183,82 @@ UI:RegisterPage({
         local root, y, current
 
         local CLASSBAR_H = 64
+        local TABS_H = 46
+        ui.qolTabs = ui.qolTabs or {}
+        -- Onglets d'une section : subtab(nom, ordre) range les cartes qui suivent dans un onglet
+        -- (un nom déjà vu reprend son onglet). Ce qui précède le premier onglet reste au-dessus.
+        -- La barre est posée à la fin de la section ; un onglet sans carte n'y figure pas.
+        local function subtab(label, order)
+            local sec = current
+            if not sec.tabs then sec.tabs, sec.byLabel, sec.base = {}, {}, y end
+            if sec.cur then sec.cur.h = y end
+            local t = sec.byLabel[label]
+            if not t then
+                local pane = CreateFrame("Frame", nil, sec.scroll.child)
+                pane:SetPoint("TOPLEFT", 0, -(sec.base + TABS_H))
+                pane:SetPoint("TOPRIGHT", 0, -(sec.base + TABS_H))
+                pane:SetHeight(1)
+                t = { label = label, pane = pane, h = 0, order = order or (#sec.tabs + 1) }
+                sec.byLabel[label] = t
+                table.insert(sec.tabs, t)
+            end
+            sec.cur = t
+            root, y = t.pane, t.h
+        end
+        local function closeSection()
+            local sec = current
+            if not sec then return end
+            if not sec.tabs then
+                sec.tailY = y
+                sec.scroll:SetContentHeight(y + (sec.extraY and sec.extraY() or 0))
+                return
+            end
+            sec.cur.h = y
+            local shown = {}
+            for _, t in ipairs(sec.tabs) do
+                if t.h > 0 then table.insert(shown, t) else t.pane:Hide() end
+            end
+            table.sort(shown, function(a, b) return a.order < b.order end)
+            local items = {}
+            for i, t in ipairs(shown) do t.index = i; table.insert(items, { i, t.label }) end
+            local key = sec.key
+            function sec.showTab(i)
+                if not shown[i] then i = 1 end
+                ui.qolTabs[key] = shown[i] and shown[i].label
+                for j, t in ipairs(shown) do t.pane:SetShown(j == i) end
+                if sec.seg then sec.seg:Select(i) end
+                sec.scroll:SetContentHeight(sec.base + TABS_H + (shown[i] and shown[i].h or 0))
+                if sec.scroll.SetVerticalScroll then sec.scroll:SetVerticalScroll(0) end
+            end
+            function sec.tabOf(frame)
+                local f = frame
+                while f do
+                    for i, t in ipairs(shown) do if f == t.pane then return i end end
+                    f = f:GetParent()
+                end
+            end
+            if #shown > 1 then
+                sec.seg = UI:Segmented(sec.scroll.child, items, function(i) sec.showTab(i) end, 32)
+                sec.seg:SetPoint("TOPLEFT", 0, -sec.base)
+            else
+                -- un seul onglet : pas de barre, son contenu remonte
+                for _, t in ipairs(shown) do
+                    t.pane:ClearAllPoints()
+                    t.pane:SetPoint("TOPLEFT", 0, -sec.base); t.pane:SetPoint("TOPRIGHT", 0, -sec.base)
+                end
+                sec.base = sec.base - TABS_H
+            end
+            local want = 1
+            for i, t in ipairs(shown) do if t.label == ui.qolTabs[key] then want = i end end
+            sec.showTab(want)
+        end
         local function section(key, top)
-            if current then current.tailY = y; current.scroll:SetContentHeight(y + (current.extraY and current.extraY() or 0)) end
+            closeSection()
             local sc = UI:Scroll(host)
             sc:SetPoint("TOPLEFT", 0, -(top or 0))
             sc:SetPoint("BOTTOMRIGHT")
             sc:Hide()
-            current = { scroll = sc }
+            current = { scroll = sc, key = key }
             self.sections[key] = current
             root, y = sc.child, 0
         end
@@ -395,6 +464,7 @@ UI:RegisterPage({
         section("general")
         local g = q.general
 
+        subtab("Marchand")
         local shop = card("Marchand", 322)
         UI:SettingRow(shop, -40, "Réparation automatique", "Chez un marchand qui répare, tout l'équipement.",
             toggle(shop, function() return g.repair end, function(v) g.repair = v end), 80)
@@ -412,6 +482,7 @@ UI:RegisterPage({
 
         -- État des persos : seuils puis une ligne par perso
         local chars = UI:SortedCharacters()
+        subtab("État des persos")
         local state = card("État des persos", 172 + #chars * 30)
         UI:SettingRow(state, -40, "Alerte de durabilité", "Quand la pièce la plus abîmée passe sous ce seuil (0 : pas d'alerte).",
             UI:Slider(state, 240, 0, 90, 5, function() return g.durability or 0 end, function(v) g.durability = v; WK:NotifyChanged() end, "%d %%"), 260)
@@ -471,6 +542,7 @@ UI:RegisterPage({
         -- Guidage vers le lieu utile le plus proche (Modules/Guide.lua)
         local G = WK.modules.Guide
         local gcfg = G:Config()
+        subtab("Guidage")
         local guide = card("Guidage", 410)
         UI:SettingRow(guide, -40, "Guider quand une alerte se déclenche",
             "Sacs pleins, réparation, composants ou munitions : guidage vers le lieu le plus proche (hors combat).",
@@ -514,6 +586,7 @@ UI:RegisterPage({
             return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
         end):SetPoint("TOPRIGHT", -16, -16)
 
+        subtab("Groupe et confort")
         local grp = card("Groupe et duels", 184)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)
@@ -925,6 +998,7 @@ UI:RegisterPage({
             local MN = WK.modules.MapNotes
             local nc = MN:Config()
             local LIST_H = 250
+            subtab("Mes notes", 2)
             local ncard = card("Mes notes de carte", 40 + 3 * 46 + 44 + LIST_H + 12, "perso : vues par tous tes persos, jamais envoyées")
             local placeDd = UI:Dropdown(ncard, 220, 30, { { "alt", T("Alt + clic") }, { "ctrl", T("Ctrl + clic") }, { "shiftalt", T("Maj + Alt + clic") } },
                 function(v) nc.place = v end)
@@ -1008,6 +1082,7 @@ UI:RegisterPage({
         local mlc = ML:Config()
         local function mlRefresh() if UI.RefreshMapLayers then UI:RefreshMapLayers() end end
         local nRows, nFam = #ML.LAYERS, #ML.FAMILIES
+        subtab("Lieux", 1)
         local lcard = card("Sur les cartes", 40 + 22 + nFam * 26 + nRows * 36 + 8, "une pastille par lieu ; sur la carte du monde, clic pour guider")
         local hdr1 = UI:Text(lcard, 10, C.dim)
         hdr1:SetPoint("TOPRIGHT", -78, -44)
@@ -1056,6 +1131,7 @@ UI:RegisterPage({
         local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()
         local function replan() if GD.target then NV:Plan(GD.target) end; if UI.RefreshNavRoute then UI:RefreshNavRoute() end end
+        subtab("Guidage", 3)
         local rcard = card("Navigation", 40 + 4 * 46 + 44, "trajet du guidage, appris en jouant")
         UI:SettingRow(rcard, -40, "Trajet sur la carte du monde", "Pointillés de ta couleur, de toi jusqu'au lieu guidé, en suivant les chemins connus (vols compris).",
             toggle(rcard, function() return gdc.route end, function(v) gdc.route = v; replan() end), 80)
@@ -1087,6 +1163,7 @@ UI:RegisterPage({
         end
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
+            subtab("Bateaux", 4)
             local bcard = card("Bateaux et zeppelins", 40 + 5 * 46 + 46, "lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé")
             UI:SettingRow(bcard, -40, "Bandeau au quai", "Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé ».",
                 toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
@@ -1107,6 +1184,7 @@ UI:RegisterPage({
             local FL = WK.modules.Flight
             local flc = FL.Config()
             local FPR = 6
+            subtab("Vols", 5)
             local fpcard = card("Points de vol à apprendre", 40 + 46 + 22 + FPR * 30 + 16, "maîtres de vol de ta faction sur ce continent, du plus proche au plus loin")
             UI:SettingRow(fpcard, -40, "Rappel en arrivant dans une zone", "Une fois par zone et par session, si un maître de vol de la zone n'est pas encore appris. /wk vol guide au plus proche.",
                 toggle(fpcard, function() return flc.fpRemind end, function(v) flc.fpRemind = v end), 80)
@@ -2114,6 +2192,7 @@ UI:RegisterPage({
             -- Composants
             local reags = QoL.REAGENTS[class]
             if reags then
+                subtab("Composants", 1)
                 local rc = card("Composants", 92 + #reags * 46)
                 local colA = UI:Text(rc, 10, C.dim); colA:SetPoint("TOPRIGHT", -176, -18); colA:SetText("ALERTE SOUS")
                 local colB = UI:Text(rc, 10, C.dim); colB:SetPoint("TOPRIGHT", -84, -18); colB:SetText("ACHAT JUSQU'À")
@@ -2160,6 +2239,7 @@ UI:RegisterPage({
 
             -- Munitions
             if QoL.AMMO[class] then
+                subtab("Munitions", 2)
                 local am = card("Munitions", 186, class ~= "HUNTER" and "si tu tires à l'arc, au fusil ou à l'arbalète" or nil)
                 UI:SettingRow(am, -40, "Alerte quand il en reste peu", "Type de munitions équipé, compté dans les sacs (0 : pas d'alerte au nombre).",
                     UI:Slider(am, 240, 0, 2000, 100, function() return cc.ammo.min or 0 end, function(v) cc.ammo.min = v; WK:NotifyChanged() end, "%d"), 260)
@@ -2176,6 +2256,7 @@ UI:RegisterPage({
 
             -- Aides propres à la classe
             if class == "HUNTER" then
+                subtab("Familier", 3)
                 local pet = card("Familier", 232)
                 UI:SettingRow(pet, -40, "Alerte si le familier n'est plus heureux", "À l'écran quand il change d'humeur, et dans « À faire ».",
                     toggle(pet, function() return cc.petAlert end, function(v) cc.petAlert = v end), 80)
@@ -2203,6 +2284,7 @@ UI:RegisterPage({
                 stable.tooltip = "Guide vers le maître des écuries le plus proche (aussi : /wk guide ecurie)."
                 stable:SetScript("OnClick", function() WK.modules.Guide:GoTo("stable") end)
             elseif class == "ROGUE" then
+                subtab("Poisons", 3)
                 local po = card("Poisons", 184)
                 UI:SettingRow(po, -40, "Alerte avant la fin des poisons", "Sur l'arme principale et la main gauche.",
                     toggle(po, function() return cc.poisonAlert end, function(v) cc.poisonAlert = v end), 80)
@@ -2215,6 +2297,7 @@ UI:RegisterPage({
                     now.desc:SetText(string.format(T("Arme principale : %s · Main gauche : %s"),
                         main and minutes(main) or T("rien"), off and minutes(off) or T("rien")))
                 end)
+                subtab("Crochetage", 4)
                 local lock = card("Crochetage et vol à la tire", 196)
                 local lt = dynText(lock, 12, C.text, function()
                     local boxes = QoL:Lockboxes()
@@ -2243,6 +2326,7 @@ UI:RegisterPage({
                 if lt.SetWordWrap then lt:SetWordWrap(true) end
                 lt:SetSpacing(5)
             elseif class == "WARLOCK" then
+                subtab("Fragments d'âme", 3)
                 local sh = card("Fragments d'âme", 140)
                 UI:SettingRow(sh, -40, "Garder au maximum", "Le bouton supprime ceux en trop (Maj + clic, perso connecté).",
                     UI:Slider(sh, 240, 3, 40, 1, function() return cc.shardMax or 20 end, function(v) cc.shardMax = v; WK:NotifyChanged() end, "%d"), 260)
@@ -2257,6 +2341,7 @@ UI:RegisterPage({
                 del.tooltip = "Maj + clic : supprime les fragments au-delà du maximum."
                 del:SetScript("OnClick", function() if IsShiftKeyDown() then QoL:DeleteExtraShards() end end)
             elseif class == "MAGE" then
+                subtab("Portails", 3)
                 local pt = card("Annonce de portail", 140)
                 local input = UI:Input(pt, 320, 28, "Portail vers %s, chuchote-moi !")
                 input:SetText(cc.portalText or "")
@@ -2293,6 +2378,7 @@ UI:RegisterPage({
                     end
                 end)
             elseif class == "WARRIOR" then
+                subtab("Armes", 3)
                 local wp = card("Changement d'armes", 140)
                 local function setRow(yy, which, label)
                     local ctl = CreateFrame("Frame", nil, wp)
@@ -2317,6 +2403,7 @@ UI:RegisterPage({
                 setRow(-40, "two", "Deux mains")
                 setRow(-88, "shield", "Arme et bouclier")
             elseif class == "SHAMAN" then
+                subtab("Réincarnation", 3)
                 local rc = card("Réincarnation", 52 + math.max(1, #list) * 22 + 12)
                 local t = dynText(rc, 12, C.text, function()
                     if #list == 0 then return T("Aucun chaman pour l'instant.") end
@@ -2337,6 +2424,7 @@ UI:RegisterPage({
                 local H = WK.modules.Hunter
                 -- Cadre du familier (UI/PetCard.lua)
                 local pc = UI.PetCardConfig()
+                subtab("Familier", 3)
                 local pcard = card("Cadre du familier", 40 + 12 * 46 + 8, "position et taille en mode édition")
                 local py = -40
                 local function prow(label, desc, ctl, w)
@@ -2370,6 +2458,7 @@ UI:RegisterPage({
 
                 -- Indicateur de distance (UI/RangeRing.lua)
                 local rg = UI.RangeConfig()
+                subtab("Distance", 4)
                 local rcard = card("Indicateur de distance", 40 + 7 * 46 + 8, "position et taille en mode édition")
                 local ry = -40
                 local function rrow(label, desc, field, after)
@@ -2390,6 +2479,7 @@ UI:RegisterPage({
                 -- Bouton d'aspect (UI/AspectButton.lua)
                 local ab = UI.AspectButtonConfig()
                 local H = WK.modules.Hunter
+                subtab("Aspects", 5)
                 local acard = card("Bouton d'aspect", 40 + (2 + #H.ASPECT_ORDER) * 44 + 8, "raccourcis : Options > Raccourcis > AddOns")
                 local ay = -40
                 local function arow(label, desc, ctl, w) UI:SettingRow(acard, ay, label, desc, ctl, w); ay = ay - 44 end
@@ -2406,6 +2496,7 @@ UI:RegisterPage({
                         function(v) ab.list[key] = v or nil; UI:AspectButtonSetup() end), 80)
                 end
 
+                subtab("Rappels", 6)
                 local rm = card("Rappels", 232, "dans la pile d'alertes, déplaçable")
                 local function rt(field)
                     return toggle(rm, function() return cc[field] end, function(v) cc[field] = v; H:UpdateAlerts() end)
@@ -2421,13 +2512,13 @@ UI:RegisterPage({
                 DRUID = { "Marque du fauve", "À l'écran, hors combat, quand tu n'as plus la Marque ou le Don du fauve." },
             }
             if REMIND[class] then
+                subtab("Rappels", 6)
                 local rm = card("Rappels", 96)
                 UI:SettingRow(rm, -40, REMIND[class][1], REMIND[class][2],
                     toggle(rm, function() return cc.buffReminder end, function(v) cc.buffReminder = v end), 80)
             end
         end
-        current.tailY = y
-        current.scroll:SetContentHeight(y + (current.extraY and current.extraY() or 0))
+        closeSection()
         self:ShowSection(ui.qolSection or "general")
     end,
 

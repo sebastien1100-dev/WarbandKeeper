@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.39.0", date = "19/11/2026",
+        changed = {
+            "QoL > Carte : les réglages sont rangés en onglets (Lieux, Mes notes, Guidage, Bateaux, Vols) au lieu d'une longue page.",
+            "QoL > Général : onglets Marchand, État des persos, Guidage, Groupe et confort.",
+            "QoL > Classes : chaque classe range ses réglages en onglets sous les tuiles des persos (Composants, Munitions, Familier, Poisons, Distance, Aspects, Rappels… selon la classe).",
+            "L'onglet choisi est retenu par section, et la recherche ouvre directement l'onglet du réglage trouvé.",
+        },
+    },
+    {
         version = "1.38.1", date = "19/11/2026",
         changed = {
             "Métiers : la roue dentée des réglages est maintenant dans le bandeau du haut, à droite de Niveaux, Recettes et File de fabrication (plus dans la fiche d'un métier). Un second clic revient à l'onglet d'avant.",

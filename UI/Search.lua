@@ -156,6 +156,11 @@ function UI:GoToSetting(row, pk, sk)
     local def = UI.pages[pk]
     if sk and def.ShowSection then def:ShowSection(sk) end
     local sec = sk and def.sections and def.sections[sk]
+    -- section en onglets (QoL) : ouvrir l'onglet qui contient le réglage
+    if sec and sec.tabOf then
+        local i = sec.tabOf(row)
+        if i then sec.showTab(i) end
+    end
     C_Timer.After(0.05, function()
         if sec and sec.scroll and row:GetTop() and sec.scroll.child:GetTop() then
             local off = sec.scroll.child:GetTop() - row:GetTop() - 20

@@ -69,7 +69,7 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 
 ## Qualité de vie (QoL)
 
-`Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (sections Général… Classes, choisies dans la barre latérale sous « QoL » : `UI.QOL_SECTIONS`, `UI:QoLSectionCount`, `UI:QoLCurrentSection` ; la colonne interne est masquée). Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
+`Modules/QoL.lua` porte les données (composants par classe dans `M.REAGENTS`, coffres, villes de portail), les réglages (`WK.DB.global.qol`, complétés par `QoL:Config()`), les alertes (`QoL:Alerts()`, reprises par « À faire » et les pastilles) et les automatisations. `UI/Pages/QoL.lua` est la page (sections Général… Classes, choisies dans la barre latérale sous « QoL » : `UI.QOL_SECTIONS`, `UI:QoLSectionCount`, `UI:QoLCurrentSection` ; la colonne interne est masquée). Onglets dans une section : `subtab(nom, ordre)` avant les cartes (un nom déjà vu reprend son onglet, ce qui précède le premier reste au-dessus), barre posée par `closeSection` (onglets vides retirés, un seul onglet = pas de barre), onglet retenu dans `settings.ui.qolTabs[section]`, `sec.showTab(i)` / `sec.tabOf(cadre)` (utilisé par la recherche). Carte, Général et chaque classe sont en onglets. Les actions que le jeu protège (supprimer un objet, nourrir le familier, changer d'armes) passent par un clic du joueur ou une macro, jamais en combat.
 
 ## Marchand
 

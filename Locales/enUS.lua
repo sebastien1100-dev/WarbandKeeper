@@ -2952,4 +2952,11 @@ WK.Locales.enUS.text = {
     ["Se règle avec les autres aides de métiers : Métiers > un métier > roue dentée."] = "Set with the other profession helpers: Professions > a profession > gear.",
     ["Métiers dans l'infobulle"] = "Professions in the tooltip",
     ["Montée des métiers et valeur de désenchantement : Métiers > un métier > roue dentée."] = "Profession skill-up and disenchant value: Professions > a profession > gear.",
+    ["Groupe et confort"] = "Group and comfort",
+    ["Lieux"] = "Places",
+    ["Mes notes"] = "My notes",
+    ["Bateaux"] = "Boats",
+    ["Vols"] = "Flights",
+    ["Crochetage"] = "Lockpicking",
+    ["Portails"] = "Portals",
 }
