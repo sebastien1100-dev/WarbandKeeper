@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.4 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers > roue dentée : les réglages sont rangés en onglets par catégorie (Ce métier, Fenêtres du jeu, Fabrication, Récolte) au lieu d'une longue page ; l'onglet choisi est retenu, et la recherche de la barre latérale ouvre le bon onglet.
+
 ## v1.77.3 — 19/11/2026
 
 _Un /reload suffit._

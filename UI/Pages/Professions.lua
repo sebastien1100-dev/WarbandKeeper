@@ -1787,15 +1787,24 @@ local function Settings(page, parent)
         ui.guideTarget = ui.guideTarget or {}
         return ui.guideTarget
     end
+    -- onglets des catégories de réglages (retenu dans settings.ui.profSetTab)
+    local CATS = { { "mine", "Ce métier" }, { "wins", "Fenêtres du jeu" }, { "craft", "Fabrication" }, { "gath", "Récolte" } }
+    local uiSet = WK.DB.global.settings.ui
+    local cat = uiSet.profSetTab or "mine"
+    local layoutSettings
+    local catSeg = UI:Segmented(parent, CATS, function(v) cat = v; uiSet.profSetTab = v; layoutSettings() end, 28)
+    catSeg:SetPoint("TOPLEFT", 0, TOP)
+    catSeg:Select(cat)
     local settings = UI:Scroll(parent)
-    settings:SetPoint("TOPLEFT", 0, TOP)
+    settings:SetPoint("TOPLEFT", 0, TOP - 40)
     settings:SetPoint("BOTTOMRIGHT")
     local sroot = settings.child
     local scards = {}
-    local function scard(title, sub, nRows, extra)
+    local function scard(title, sub, nRows, extra, catKey)
         local cd = UI:Card(sroot, title, sub)
         cd.h = 40 + nRows * 46 + (extra or 0) + 8
         cd:SetHeight(cd.h)
+        cd.cat = catKey
         table.insert(scards, cd)
         return cd
     end
@@ -1810,7 +1819,7 @@ local function Settings(page, parent)
     local uic = function() return WK.DB.global.settings.ui end
 
     -- Ce métier : lien dans le chat, palier visé, composants envoyés
-    local mine = scard("Ce métier", nil, 1, 150)
+    local mine = scard("Ce métier", nil, 1, 150, "mine")
     -- choix du métier (et du perso) que règle cette carte
     local profPick = UI:Dropdown(mine, 260, 26, {}, function(k)
         local key, prof = k:match("^(.-)\001(.*)$")
@@ -1862,7 +1871,7 @@ local function Settings(page, parent)
                 or ("\n" .. T("Pas encore de lien : ouvre la fenêtre du métier sur ce perso."))))
     end
 
-    local wins = scard("Fenêtres du jeu", "panneaux collés aux fenêtres", 4)
+    local wins = scard("Fenêtres du jeu", "panneaux collés aux fenêtres", 4, nil, "wins")
     stoggle(wins, 1, "Marchand", "Ce qui manque pour monter tes métiers jusqu'au palier visé, avec Acheter et Tout acheter.",
         function() return uic().merchantPanel ~= false end, function(v) uic().merchantPanel = v end)
     stoggle(wins, 2, "Sacs : désenchanter ou vendre", "Enchanteur : objets à désenchanter ou à vendre, et un bouton pour enchaîner (/wk de).",
@@ -1872,7 +1881,7 @@ local function Settings(page, parent)
     stoggle(wins, 4, "Maître de métier", "Recettes à apprendre ici : favoris, utiles pour le guide, déjà connues d'un autre perso.",
         function() return PHc().trainer end, function(v) PHc().trainer = v end)
 
-    local queue = scard("File et recharges", nil, 3)
+    local queue = scard("File et recharges", nil, 3, nil, "craft")
     stoggle(queue, 1, "File à l'écran", "Fenêtre du métier ouverte : la prochaine recette de ta file et un bouton pour la fabriquer.",
         function() return PHc().queueHud end, function(v) PHc().queueHud = v; if UI.RefreshCraftHUD then UI:RefreshCraftHUD() end end)
     stoggle(queue, 2, "Décompter en fabriquant", "Chaque fabrication réussie retire une ligne de la file.",
@@ -1881,7 +1890,7 @@ local function Settings(page, parent)
         function() return PHc().cdAlert end, function(v) PHc().cdAlert = v end)
 
     -- Barre de fabrication (UI/ProfPanels.lua) : temps total d'une série
-    local cbar = scard("Barre de fabrication", "temps total des fabrications en série", 6)
+    local cbar = scard("Barre de fabrication", "temps total des fabrications en série", 6, nil, "craft")
     stoggle(cbar, 1, "Afficher la barre", "Quand tu fabriques plusieurs objets d'affilée (« Créer tout » ou une quantité) : avancée sur la durée totale, temps restant, bouton Arrêter.",
         function() return PHc().craftBar end, function(v) PHc().craftBar = v; if UI.RefreshCraftBar then UI:RefreshCraftBar() end end)
     local cbWhere = UI:Segmented(cbar, { { "screen", "À l'écran" }, { "trade", "Sous le métier" } },
@@ -1898,7 +1907,7 @@ local function Settings(page, parent)
     stoggle(cbar, 6, "Son à la fin", "Quand toute la série est faite.",
         function() return PHc().craftBarSound end, function(v) PHc().craftBarSound = v end)
 
-    local gath = scard("Récolte", "Herboristerie, Minage", 4)
+    local gath = scard("Récolte", "Herboristerie, Minage", 4, nil, "gath")
     stoggle(gath, 1, "Rang suivant à apprendre", "Un métier au plafond de son rang (75, 150, 225) : un message te dit d'aller voir un maître.",
         function() return GHc().rankAlert end, function(v) GHc().rankAlert = v end)
     stoggle(gath, 2, "Nouvelles ressources", "Une montée d'Herboristerie ou de Minage qui débloque une herbe ou un filon le nomme.",
@@ -1908,19 +1917,20 @@ local function Settings(page, parent)
     stoggle(gath, 4, "Compétence sur la minicarte", "Au survol d'une herbe ou d'un filon : la compétence requise et la tienne, aux couleurs du jeu.",
         function() return GHc().nodeTip end, function(v) GHc().nodeTip = v end)
 
-    local delog = scard("Désenchantements notés", "affinent les moyennes", 0, 56)
+    local delog = scard("Désenchantements notés", "affinent les moyennes", 0, 56, "wins")
     local deInfo = UI:Text(delog, 11, C.muted); deInfo:SetPoint("TOPLEFT", 16, -44); deInfo:SetPoint("RIGHT", -16, 0); deInfo:SetJustifyH("LEFT")
     local deClear = UI:Button(delog, "Effacer", nil, 26, "danger", "trash")
     deClear:SetPoint("TOPLEFT", 16, -68)
     deClear:SetScript("OnClick", function() wipe(PHc().deLog); tab:RefreshSettings() end)
 
-    -- deux colonnes : chaque carte sous la précédente de sa colonne
-    local function layoutSettings()
+    -- deux colonnes : chaque carte de l'onglet choisi sous la précédente de sa colonne
+    layoutSettings = function()
         local W = math.max(400, (settings:GetWidth() or 800) - 10)
         sroot:SetWidth(W)
         local cw = math.floor((W - GAP) / 2)
         local colY = { 0, 0 }
         for _, cd in ipairs(scards) do
+            cd:SetShown((cd.cat or "mine") == cat)
             if cd:IsShown() then
                 local col = colY[1] <= colY[2] and 1 or 2
                 cd:ClearAllPoints()
@@ -1942,6 +1952,7 @@ local function Settings(page, parent)
         for _, oc in ipairs(UI:SectionCards("options", "glow")) do
             oc:SetParent(sroot); oc:Show()
             oc.h = oc:GetHeight()
+            oc.cat = "gath"
             table.insert(scards, at, oc); at = at + 1
         end
     end
@@ -2007,6 +2018,17 @@ local function Settings(page, parent)
         layoutSettings()
     end
     function tab:Refresh() settings:Show(); self:RefreshSettings() end
+    -- recherche : un réglage trouvé ouvre l'onglet de sa carte
+    function tab:RevealRow(row)
+        local f = row
+        while f and f ~= sroot do
+            if f.cat then
+                cat = f.cat; uiSet.profSetTab = cat; catSeg:Select(cat); layoutSettings()
+                return
+            end
+            f = f:GetParent()
+        end
+    end
     function tab:Pick(key, prof) self.key, self.prof = key, prof end
     adoptGather() -- dès la construction : la recherche trouve ces réglages ici
     return tab
@@ -2075,6 +2097,7 @@ UI:RegisterPage({
             while f do
                 if f == frames.settings then
                     if self.tab ~= "settings" then gear:GetScript("OnClick")(gear) end
+                    if tabs.settings and tabs.settings.RevealRow then tabs.settings:RevealRow(row) end
                     return
                 end
                 f = f:GetParent()

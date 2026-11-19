@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.4", date = "19/11/2026",
+        changed = {
+            "Métiers > roue dentée : les réglages sont rangés en onglets par catégorie (Ce métier, Fenêtres du jeu, Fabrication, Récolte) au lieu d'une longue page ; l'onglet choisi est retenu, et la recherche de la barre latérale ouvre le bon onglet.",
+        },
+    },
+    {
         version = "1.77.3", date = "19/11/2026",
         fixed = {
             "Barre de fabrication : elle n'apparaissait pas en mode édition (ni pour la placer, ni avec « Tester ») tant qu'aucune série n'avait été lancée. Elle existe maintenant dès la connexion.",

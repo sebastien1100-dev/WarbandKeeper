@@ -3603,4 +3603,5 @@ WK.Locales.enUS.text = {
     ["Son à la fin"] = "Sound at the end", ["Quand toute la série est faite."] = "When the whole batch is done.",
     ["mon perso"] = "my character",
     ["récent"] = "recent",
+    ["Fabrication"] = "Crafting",
 }
