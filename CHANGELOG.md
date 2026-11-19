@@ -40,6 +40,16 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.61.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Patch notes : recherche dans les notes, filtres Ajouts / Modifications / Corrections, et « Depuis ma dernière visite » (les versions sorties depuis la dernière fois que tu as ouvert la page).
+
+### Modifications
+- Patch notes : plus de sommaire à gauche, les notes prennent toute la largeur. Elles sont groupées par jour : une carte par jour (le plus récent ouvert, les autres sur une ligne avec leur nombre de versions et leurs + ~ !, clic pour ouvrir), et dedans chaque version avec son numéro à gauche et toutes ses notes à droite, marquées + (ajout), ~ (modification) ou ! (correction).
+
 ## v1.60.2 — 19/11/2026
 
 _Un /reload suffit._

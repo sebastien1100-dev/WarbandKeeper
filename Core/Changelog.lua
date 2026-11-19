@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.61.0", date = "19/11/2026",
+        changed = {
+            "Patch notes : plus de sommaire à gauche, les notes prennent toute la largeur. Elles sont groupées par jour : une carte par jour (le plus récent ouvert, les autres sur une ligne avec leur nombre de versions et leurs + ~ !, clic pour ouvrir), et dedans chaque version avec son numéro à gauche et toutes ses notes à droite, marquées + (ajout), ~ (modification) ou ! (correction).",
+        },
+        added = {
+            "Patch notes : recherche dans les notes, filtres Ajouts / Modifications / Corrections, et « Depuis ma dernière visite » (les versions sorties depuis la dernière fois que tu as ouvert la page).",
+        },
+    },
+    {
         version = "1.60.2", date = "19/11/2026",
         changed = {
             "Patch notes, sommaire des versions plus lisible : dans sa propre carte, versions groupées sous leur date, numéro plus gros, contenu en couleur à droite (+ ajouts, ~ modifications, ! corrections), point vert sur la version installée, version choisie à la couleur d'accent avec un trait à gauche, survol, et « + N plus anciennes » en bouton.",

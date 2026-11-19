@@ -24,86 +24,6 @@ local function wrapped(parent, text, color, size)
     return fs
 end
 
--- Carte d'une version (ou de la feuille de route). Les éléments sont créés une fois ;
--- card:Layout(largeur) les place et renvoie la hauteur (appelé à chaque changement de taille).
-local function VersionCard(parent, entry, isCurrent)
-    local card = UI:Card(parent, nil, nil, isCurrent)
-
-    local title = UI:Text(card, 16)
-    title:SetPoint("TOPLEFT", 18, -16)
-    title:SetText(entry.roadmap and "À venir" or ("v" .. entry.version))
-    UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
-    local after = title
-    if entry.date then
-        local d = UI:Badge(card, entry.date, C.muted)
-        d:SetPoint("LEFT", after, "RIGHT", 10, 0)
-        after = d
-    end
-    if not entry.roadmap then
-        local r = entry.restart and UI:Badge(card, T("redémarrer le jeu"), C.warning) or UI:Badge(card, T("/reload suffit"), C.muted)
-        r:SetPoint("LEFT", after, "RIGHT", 6, 0)
-        after = r
-    end
-    if isCurrent then
-        local cur = UI:Badge(card, "version installée")
-        cur:SetPoint("LEFT", after, "RIGHT", 6, 0)
-    end
-    if entry.roadmap then
-        local hint = UI:Text(card, 11, C.muted)
-        hint:SetPoint("LEFT", title, "RIGHT", 12, 0)
-        hint:SetText("prévu, pas encore commencé")
-    end
-
-    -- éléments à placer : { kind = "bullet", dot, fs } / { kind = "head", badge, stripe } / { kind = "end", stripe }
-    local parts = {}
-    local function bullets(list, color)
-        for _, line in ipairs(list) do
-            table.insert(parts, { kind = "bullet", dot = UI:Icon(card, "circle", 5, color or C.muted, "ARTWORK"),
-                fs = wrapped(card, line, C.text, 12) })
-        end
-    end
-    if entry.roadmap then
-        bullets(entry.items, C.dim)
-    else
-        for _, sec in ipairs(SECTIONS) do
-            local list = entry[sec[1]]
-            if list and #list > 0 then
-                -- liseré de la couleur de la rubrique, sur toute sa hauteur
-                local stripe = card:CreateTexture(nil, "ARTWORK")
-                local col = C[sec[3]]
-                stripe:SetColorTexture(unpack(col))
-                table.insert(parts, { kind = "head", badge = UI:Badge(card, sec[2], col), stripe = stripe })
-                bullets(list, col)
-                table.insert(parts, { kind = "end", stripe = stripe })
-            end
-        end
-    end
-
-    function card:Layout(width)
-        local h, top = 48, 0
-        local textW = width - 18 - 34 - 18
-        for _, e in ipairs(parts) do
-            if e.kind == "head" then
-                top = h
-                e.badge:ClearAllPoints(); e.badge:SetPoint("TOPLEFT", 26, -h)
-                h = h + 26
-            elseif e.kind == "bullet" then
-                e.dot:ClearAllPoints(); e.dot:SetPoint("TOPLEFT", 30, -h - 6)
-                e.fs:ClearAllPoints(); e.fs:SetPoint("TOPLEFT", 44, -h); e.fs:SetWidth(textW)
-                h = h + (e.fs:GetStringHeight() or 16) + 7
-            else
-                e.stripe:ClearAllPoints(); e.stripe:SetPoint("TOPLEFT", 16, -top)
-                e.stripe:SetSize(3, math.max(1, h - top - 2))
-                h = h + 6
-            end
-        end
-        h = h + 10
-        self:SetHeight(h)
-        return h
-    end
-    return card
-end
-
 UI:RegisterPage({
     key = "notes", order = 9, navIcon = "notes",
     title = "Patch notes",
@@ -115,7 +35,7 @@ UI:RegisterPage({
         local nTodo = #(WK.Roadmap or {})
         local views = {}
         local tabSeg = UI:Segmented(p, { { "notes", "Notes de version" }, { "todo", string.format(T("À venir · %d"), nTodo) } },
-            function(v) for k, f in pairs(views) do f:SetShown(k == v) end end, 30)
+            function(v) for k, f in pairs(views) do f:SetShown(k == v or (k == "notesBar" and v == "notes")) end end, 30)
         tabSeg:SetPoint("TOPLEFT")
         local function view(key)
             local f = CreateFrame("Frame", nil, p)
@@ -128,118 +48,184 @@ UI:RegisterPage({
         -- Notes de version : sommaire à gauche (clic : saute à la version), cartes à droite.
         -- Plus de 400 versions : cartes créées par lots de 15 (sinon la page est trop lourde et reste vide).
         -----------------------------------------------------------------
+        -- Notes de version : fil groupé par jour. Chaque jour = une carte (le plus récent déplié, les autres
+        -- sur une ligne, clic = déplier) ; chaque version = son numéro à gauche et ses notes en entier à droite,
+        -- marquées + ~ !. Recherche et filtres en haut (ajouts, modifications, corrections, depuis ta dernière
+        -- visite). Seuls les jours dépliés créent leurs lignes (plus de 400 versions).
+        -----------------------------------------------------------------
         local nv = view("notes")
-        local IDX_W = 196
-        -- sommaire dans sa propre carte : versions groupées par date, contenu en pastilles (+ ~ !)
-        local idxCard = UI:Card(nv)
-        idxCard:SetPoint("TOPLEFT"); idxCard:SetPoint("BOTTOMLEFT"); idxCard:SetWidth(IDX_W)
-        local idx = UI:Scroll(idxCard)
-        idx:SetPoint("TOPLEFT", 6, -8); idx:SetPoint("BOTTOMRIGHT", -2, 8)
+        local bar = CreateFrame("Frame", nil, p)
+        bar:SetPoint("TOPLEFT", tabSeg, "TOPRIGHT", 12, 0); bar:SetPoint("RIGHT", p, "RIGHT"); bar:SetHeight(30)
+        views.notesBar = bar
+        local search = UI:Input(bar, 230, 30, "Rechercher dans les notes...", "search")
+        search:SetPoint("LEFT")
+        local st = { filter = "all", query = "", open = {} }
+        -- versions plus récentes que la dernière visite (retenue avant que la page ne la mette à jour)
+        local prevSeen = WK.DB.global.settings.notesSeenVersion
+        local newCount = 0
+        for i, e in ipairs(WK.Changelog) do if e.version == prevSeen then newCount = i - 1 break end end
+        local chips = {}
+        local render
+        local function chip(key, label)
+            local b = UI:Button(bar, label, nil, 26, "ghost")
+            b:SetScript("OnClick", function()
+                st.filter = (st.filter == key and key ~= "all") and "all" or key
+                for k, c in pairs(chips) do c:SetStyle(k == st.filter and "secondary" or "ghost") end
+                render()
+            end)
+            chips[key] = b
+            return b
+        end
+        local x = 242
+        for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "~ Modifications" }, { "fixed", "! Corrections" } }) do
+            local b = chip(c[1], c[2]); b:SetPoint("LEFT", x, 0); x = x + b:GetWidth() + 6
+        end
+        if newCount > 0 then
+            local b = chip("new", string.format(T("Depuis ma dernière visite · %d"), newCount)); b:SetPoint("LEFT", x, 0)
+        end
+        chips.all:SetStyle("secondary")
+        search.onChange = function(t) st.query = string.lower(t or ""); render() end
+
+        -- jours
+        local DAYS = { "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi" }
+        local MONTHS = { "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre" }
+        local function dayName(d)
+            local dd, mm, yy = (d or ""):match("(%d+)/(%d+)/(%d+)")
+            if not dd then return d or "?" end
+            local wd
+            if time and date then
+                local ok, t = pcall(time, { year = tonumber(yy), month = tonumber(mm), day = tonumber(dd), hour = 12 })
+                if ok and t then wd = tonumber(date("%w", t)) end
+            end
+            local txt = tonumber(dd) .. " " .. T(MONTHS[tonumber(mm)] or mm)
+            if wd then txt = T(DAYS[wd + 1]) .. " " .. txt end
+            if tonumber(yy) ~= tonumber(date and date("%Y") or yy) then txt = txt .. " " .. yy end
+            return txt
+        end
+        local days = {}
+        for i, e in ipairs(WK.Changelog) do
+            local last = days[#days]
+            if not last or last.date ~= e.date then last = { date = e.date, list = {} }; days[#days + 1] = last end
+            last.list[#last.list + 1] = i
+        end
+        st.open[1] = true
+
         local scroll = UI:Scroll(nv)
-        scroll:SetPoint("TOPLEFT", IDX_W + 12, 0); scroll:SetPoint("BOTTOMRIGHT")
-        local cards, rows, made = {}, {}, 0
-        local PAGE = 15
-        local more = UI:Button(scroll.child, "Versions plus anciennes", 240, 30, "secondary")
-        local idxMoreB = UI:Button(idx.child, "+ plus anciennes", IDX_W - 24, 26, "ghost")
-        local heads = {}   -- titres de date : { fs, before = n° de la 1re ligne de ce jour }
-        local sel = 1
-        local layout
-        local function paintRows()
+        scroll:SetAllPoints()
+        local SEC = { added = { "+", "positive" }, changed = { "~", "warning" }, fixed = { "!", "negative" } }
+        local ORDER = { "added", "changed", "fixed" }
+        local cardPool = UI:Pool(function()
+            local c = UI:Card(scroll.child)
+            c.head = CreateFrame("Button", nil, c); c.head:SetPoint("TOPLEFT"); c.head:SetPoint("TOPRIGHT"); c.head:SetHeight(40)
+            c.chev = UI:Icon(c.head, "chevron", 12, C.muted, "ARTWORK"); c.chev:SetPoint("LEFT", 14, 0)
+            c.title = UI:Text(c.head, 14, C.text); c.title:SetPoint("LEFT", 32, 0)
+            c.meta = UI:Text(c.head, 11, C.muted); c.meta:SetPoint("LEFT", c.title, "RIGHT", 10, 0)
+            c.head:SetScript("OnClick", function() st.open[c.day] = not st.open[c.day]; render() end)
+            return c
+        end)
+        local verPool = UI:Pool(function()
+            local v = UI:Text(scroll.child, 13, C.text)
+            return v
+        end)
+        local subPool = UI:Pool(function() return UI:Text(scroll.child, 10, C.positive) end)
+        local linePool = UI:Pool(function()
+            local l = CreateFrame("Frame", nil, scroll.child)
+            l.tag = CreateFrame("Frame", nil, l); l.tag:SetSize(20, 16); l.tag:SetPoint("TOPLEFT", 0, 0)
+            l.tag.bg = UI:Rounded(l.tag, 8, 0, "BACKGROUND", 1)
+            l.tag.t = UI:Text(l.tag, 11); l.tag.t:SetPoint("CENTER", 0, 0)
+            l.fs = wrapped(l, "", C.text, 12); l.fs:SetPoint("TOPLEFT", 28, -1)
+            return l
+        end)
+        local empty = UI:Text(scroll.child, 12, C.muted)
+
+        local function matches(line, key, idx)
+            if st.filter == "new" and idx > newCount then return false end
+            if st.filter ~= "all" and st.filter ~= "new" and st.filter ~= key then return false end
+            if st.query ~= "" and not string.find(string.lower(line), st.query, 1, true) then return false end
+            return true
+        end
+
+        render = function()
+            local W = math.max(400, (scroll:GetWidth() or UI.PAGE_W) - 12)
+            scroll.child:SetWidth(W)
+            cardPool:Reset(); verPool:Reset(); subPool:Reset(); linePool:Reset()
             local r1, g1, b1 = UI:Accent()
-            for i, r in ipairs(rows) do
-                local on = i == sel
-                r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], on and 1 or (r.hover and 0.55 or 0))
-                r.bar:SetColorTexture(r1, g1, b1, 1); r.bar:SetShown(on)
-                if on then r.v:SetTextColor(r1, g1, b1) else r.v:SetTextColor(unpack(r.hover and C.text or C.muted)) end
-            end
-        end
-        UI:OnAccent(paintRows)
-        local function counts(entry)
-            local parts = {}
-            for _, sec in ipairs(SECTIONS) do
-                local n = entry[sec[1]] and #entry[sec[1]] or 0
-                if n > 0 then parts[#parts + 1] = UI:Hex(C[sec[3]]) .. sec[2]:sub(1, 1) .. n .. "|r" end
-            end
-            return table.concat(parts, " ")
-        end
-        local function addBatch()
-            local last = math.min(#WK.Changelog, made + PAGE)
-            for i = made + 1, last do
-                local entry = WK.Changelog[i]
-                local ok, card = pcall(VersionCard, scroll.child, entry, i == 1 and entry.version == WK.version)
-                if ok and card then
-                    table.insert(cards, card)
-                    local n = #rows + 1
-                    local prev = WK.Changelog[i - 1]
-                    if i == 1 or not prev or prev.date ~= entry.date then
-                        local h = UI:Text(idx.child, 10, C.dim)
-                        h:SetText(entry.date or "")
-                        heads[#heads + 1] = { fs = h, before = n }
+            local filtering = st.filter ~= "all" or st.query ~= ""
+            local y, shownDays, budget = 0, 0, 400
+            for di, day in ipairs(days) do
+                -- lignes retenues de ce jour : { idx, entry, { { key, texte } } }
+                local vers, nLines, cnt = {}, 0, { added = 0, changed = 0, fixed = 0 }
+                for _, idx in ipairs(day.list) do
+                    local e = WK.Changelog[idx]
+                    local ls = {}
+                    for _, k in ipairs(ORDER) do
+                        for _, line in ipairs(e[k] or {}) do
+                            if matches(line, k, idx) then ls[#ls + 1] = { k, line }; cnt[k] = cnt[k] + 1 end
+                        end
                     end
-                    local r = CreateFrame("Button", nil, idx.child)
-                    r:SetHeight(26)
-                    r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
-                    r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT", 0, -5); r.bar:SetPoint("BOTTOMLEFT", 0, 5); r.bar:SetWidth(3)
-                    r.v = UI:Text(r, 13, C.muted); r.v:SetPoint("LEFT", 12, 0); r.v:SetText("v" .. entry.version)
-                    r.d = UI:Text(r, 10, C.muted); r.d:SetPoint("RIGHT", -8, 0); r.d:SetText(counts(entry))
-                    if i == 1 and entry.version == WK.version then
-                        r.cur = UI:Icon(r, "circle", 6, C.positive, "ARTWORK"); r.cur:SetPoint("LEFT", r.v, "RIGHT", 5, 0)
+                    if #ls > 0 then vers[#vers + 1] = { idx, e, ls }; nLines = nLines + #ls end
+                end
+                if #vers > 0 then
+                    shownDays = shownDays + 1
+                    local open = st.open[di] or (filtering and budget > 0)
+                    local c = cardPool:Get()
+                    c.day = di
+                    c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -y); c:SetPoint("TOPRIGHT", 0, -y)
+                    c.title:SetText(dayName(day.date))
+                    local restart = false
+                    for _, v in ipairs(vers) do if v[2].restart then restart = true end end
+                    local parts = { string.format(#vers > 1 and T("%d versions") or T("%d version"), #vers) }
+                    for _, k in ipairs(ORDER) do
+                        if cnt[k] > 0 then parts[#parts + 1] = UI:Hex(C[SEC[k][2]]) .. SEC[k][1] .. cnt[k] .. "|r" end
                     end
-                    r:SetScript("OnEnter", function() r.hover = true; paintRows() end)
-                    r:SetScript("OnLeave", function() r.hover = false; paintRows() end)
-                    r:SetScript("OnClick", function()
-                        sel = n; paintRows()
-                        scroll:SetVerticalScroll(math.min(scroll:MaxScroll(), card.y or 0)); scroll:UpdateBar()
-                    end)
-                    rows[n] = r
+                    parts[#parts + 1] = restart and (UI:Hex(C.warning) .. T("redémarrer le jeu") .. "|r") or T("/reload suffit")
+                    c.meta:SetText(table.concat(parts, "  ·  "))
+                    c.chev:SetRotation(open and 0 or math.pi / 2)
+                    local h = 40
+                    if open then
+                        local textW = W - 16 - 90 - 28 - 16
+                        for _, v in ipairs(vers) do
+                            local idx, e, ls = v[1], v[2], v[3]
+                            local vf = verPool:Get()
+                            vf:ClearAllPoints(); vf:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -h)
+                            vf:SetText(e.version); vf:SetTextColor(r1, g1, b1)
+                            local vy = h
+                            if idx == 1 and e.version == WK.version then
+                                local sub = subPool:Get(); sub:SetTextColor(unpack(C.positive))
+                                sub:ClearAllPoints(); sub:SetPoint("TOPLEFT", vf, "BOTTOMLEFT", 0, -2); sub:SetText(T("installée"))
+                            elseif e.restart then
+                                local sub = subPool:Get(); sub:SetTextColor(unpack(C.warning))
+                                sub:ClearAllPoints(); sub:SetPoint("TOPLEFT", vf, "BOTTOMLEFT", 0, -2); sub:SetText(T("redémarrer"))
+                            end
+                            for _, ln in ipairs(ls) do
+                                budget = budget - 1
+                                local l = linePool:Get()
+                                local col = C[SEC[ln[1]][2]]
+                                l.tag.bg:SetColor(col[1], col[2], col[3], 0.18)
+                                l.tag.t:SetText(SEC[ln[1]][1]); l.tag.t:SetTextColor(unpack(col))
+                                l.fs:SetWidth(textW); l.fs:SetText(ln[2])
+                                local lh = math.max(16, l.fs:GetStringHeight() or 16)
+                                l:ClearAllPoints(); l:SetPoint("TOPLEFT", c, "TOPLEFT", 16 + 90, -h); l:SetSize(textW + 28, lh)
+                                h = h + lh + 6
+                            end
+                            h = math.max(h, vy + 34) + 6
+                        end
+                        h = h + 6
+                    end
+                    c:SetHeight(h)
+                    y = y + h + 10
                 end
             end
-            made = last
-            more:SetShown(made < #WK.Changelog)
-            more:SetLabel(string.format(T("Versions plus anciennes (%d)"), #WK.Changelog - made))
-            idxMoreB:SetShown(made < #WK.Changelog)
-            idxMoreB:SetLabel(string.format(T("+ %d plus anciennes"), #WK.Changelog - made))
-            paintRows()
-        end
-        layout = function(w)
-            local width = math.max(360, (w or scroll:GetWidth() or UI.PAGE_W) - 12)
-            local y = 0
-            for _, c in ipairs(cards) do
-                c:ClearAllPoints()
-                c:SetPoint("TOPLEFT", 0, -y)
-                c:SetPoint("TOPRIGHT", 0, -y)
-                c.y = y
-                y = y + c:Layout(width) + 12
-            end
-            if more:IsShown() then
-                more:ClearAllPoints(); more:SetPoint("TOP", scroll.child, "TOP", 0, -y)
-                y = y + 42
-            end
+            empty:SetShown(shownDays == 0)
+            empty:ClearAllPoints(); empty:SetPoint("TOPLEFT", 4, -4)
+            empty:SetText(T("Aucune note ne correspond."))
             scroll:SetContentHeight(y)
-            local iy = 0
-            idx.child:SetWidth(IDX_W - 8)
-            local hi = 1
-            for n, r in ipairs(rows) do
-                local h = heads[hi]
-                if h and h.before == n then
-                    h.fs:ClearAllPoints(); h.fs:SetPoint("TOPLEFT", 12, -(iy + (n > 1 and 8 or 2)))
-                    iy = iy + (n > 1 and 24 or 18)
-                    hi = hi + 1
-                end
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -iy); r:SetPoint("TOPRIGHT", -10, -iy)
-                iy = iy + 28
-            end
-            if idxMoreB:IsShown() then
-                idxMoreB:ClearAllPoints(); idxMoreB:SetPoint("TOPLEFT", 6, -(iy + 6))
-                iy = iy + 38
-            end
-            idx:SetContentHeight(iy)
+            self.feedHeight, self.feedDays = y, shownDays
         end
-        local function loadMore() addBatch(); layout() end
-        more:SetScript("OnClick", loadMore)
-        idxMoreB:SetScript("OnClick", loadMore)
-        addBatch()
-        UI:OnResize(scroll, layout)
+        self.feedRender = render
+        self.feedState = st
+        UI:OnResize(scroll, function() render() end)
+        UI:OnAccent(function() if nv:IsVisible() then render() end end)
 
         -----------------------------------------------------------------
         -- À venir : une colonne par thème (masonry sur 3 colonnes), une carte par idée (titre + phrase)
