@@ -85,7 +85,7 @@ local function readResults(id)
             local ok, r = pcall(a.GetItemSearchResultInfo, key, i)
             if ok and r and r.buyoutAmount then
                 local q = r.quantity or 1
-                table.insert(rows, { unit = math.floor(r.buyoutAmount / math.max(1, q)), qty = q, mine = r.containsOwnerItem and true or false, auctionID = r.auctionID })
+                table.insert(rows, { unit = math.floor(r.buyoutAmount / math.max(1, q)), qty = q, buyout = r.buyoutAmount, mine = r.containsOwnerItem and true or false, auctionID = r.auctionID })
             end
         end
     end
@@ -600,7 +600,7 @@ local function build(host)
     end
     sv.bags:EnableMouseWheel(true)
     sv.bags:SetScript("OnMouseWheel", function(_, d) sv.offset = math.max(0, sv.offset - d * 3); sv:Refresh() end)
-    sv.bagNote = UI:Text(sv.bags, 10, C.dim); sv.bagNote:SetPoint("BOTTOMLEFT", 10, 10); sv.bagNote:SetPoint("RIGHT", -10, 0)
+    sv.bagNote = UI:Text(sv.bags, 10, C.dim); sv.bagNote:SetPoint("BOTTOMLEFT", 10, 10); sv.bagNote:SetPoint("BOTTOMRIGHT", -10, 10)
     sv.bagNote:SetJustifyH("LEFT")
     if sv.bagNote.SetWordWrap then sv.bagNote:SetWordWrap(true) end
     sv.bagNote:SetText(T("Clic droit : favori · Maj + clic droit : cacher · étoile : à vendre d'après le Rangement · clic droit sur un objet des sacs du jeu : il arrive ici"))
@@ -638,7 +638,7 @@ local function build(host)
                 A:Query()
                 WK:Print(T("Enchère pas encore relevée : réessaie dans un instant."))
             elseif not isCommodity(id) and x.auctionID and a and a.PlaceBid then
-                if not pcall(a.PlaceBid, x.auctionID, x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
+                if not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
             elseif a and a.StartCommoditiesPurchase then
                 local b = S.buy
                 if b and b.id == id and b.phase == "confirm" then
@@ -658,7 +658,7 @@ local function build(host)
     sv.chart:SetPoint("BOTTOMLEFT", 2, 26); sv.chart:SetPoint("BOTTOMRIGHT", -6, 26); sv.chart:SetHeight(110)
     sv.chartNote = UI:Text(sv.right, 9, C.dim); sv.chartNote:SetPoint("BOTTOMLEFT", 10, 10)
     sv.chartNote:SetText(T("14 jours · tirets : moyenne"))
-    sv.hist = UI:Text(sv.right, 10, C.muted); sv.hist:SetPoint("TOPLEFT", 10, -232); sv.hist:SetPoint("RIGHT", -10, 0)
+    sv.hist = UI:Text(sv.right, 10, C.muted); sv.hist:SetPoint("TOPLEFT", 10, -232); sv.hist:SetPoint("TOPRIGHT", -10, -232)
     sv.hist:SetJustifyH("LEFT"); sv.hist:SetJustifyV("TOP")
     if sv.hist.SetSpacing then sv.hist:SetSpacing(3) end
 
@@ -667,12 +667,12 @@ local function build(host)
     sv.mid.title:Hide()
     sv.itemIcon = sv.mid:CreateTexture(nil, "ARTWORK"); sv.itemIcon:SetSize(36, 36); sv.itemIcon:SetPoint("TOPLEFT", 12, -12)
     sv.itemIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    sv.itemName = UI:Text(sv.mid, 13); sv.itemName:SetPoint("TOPLEFT", 56, -12); sv.itemName:SetPoint("RIGHT", -12, 0)
+    sv.itemName = UI:Text(sv.mid, 13); sv.itemName:SetPoint("TOPLEFT", 56, -12); sv.itemName:SetPoint("TOPRIGHT", -12, -12)
     sv.itemName:SetJustifyH("LEFT")
     if sv.itemName.SetWordWrap then sv.itemName:SetWordWrap(false) end
-    sv.itemSub = UI:Text(sv.mid, 10, C.muted); sv.itemSub:SetPoint("TOPLEFT", 56, -29); sv.itemSub:SetPoint("RIGHT", -12, 0)
+    sv.itemSub = UI:Text(sv.mid, 10, C.muted); sv.itemSub:SetPoint("TOPLEFT", 56, -29); sv.itemSub:SetPoint("TOPRIGHT", -12, -29)
     sv.itemSub:SetJustifyH("LEFT")
-    sv.rank = UI:Text(sv.mid, 10, C.muted); sv.rank:SetPoint("TOPLEFT", 56, -42); sv.rank:SetPoint("RIGHT", -12, 0)
+    sv.rank = UI:Text(sv.mid, 10, C.muted); sv.rank:SetPoint("TOPLEFT", 56, -42); sv.rank:SetPoint("TOPRIGHT", -12, -42)
     sv.rank:SetJustifyH("LEFT")
     local function label(txt, y, x)
         local l = UI:Text(sv.mid, 9, C.dim); l:SetPoint("TOPLEFT", x or 12, y); l:SetText(UI:Upper(T(txt)))
@@ -681,7 +681,7 @@ local function build(host)
     label("Prix unitaire", -62)
     sv.price = UI:Input(sv.mid, 160, 28, "ex. 1po 61pa 99", nil)
     sv.price:SetPoint("TOPLEFT", 12, -74)
-    sv.priceHint = UI:Text(sv.mid, 10, C.muted); sv.priceHint:SetPoint("TOPLEFT", 12, -106); sv.priceHint:SetPoint("RIGHT", -12, 0)
+    sv.priceHint = UI:Text(sv.mid, 10, C.muted); sv.priceHint:SetPoint("TOPLEFT", 12, -106); sv.priceHint:SetPoint("TOPRIGHT", -12, -106)
     sv.priceHint:SetJustifyH("LEFT")
     label("Quantité", -124)
     sv.qty = UI:Input(sv.mid, 60, 26, "1", nil)
@@ -701,8 +701,8 @@ local function build(host)
     local DUR = { { 1, _G.AUCTION_DURATION_ONE or "2 h" }, { 2, _G.AUCTION_DURATION_TWO or "8 h" }, { 3, _G.AUCTION_DURATION_THREE or "24 h" } }
     sv.dur = UI:Segmented(sv.mid, DUR, function(v) cfg().postDur = v; sv:Update() end, 24)
     sv.dur:SetPoint("TOPLEFT", 12, -182)
-    sv.total = UI:Text(sv.mid, 12); sv.total:SetPoint("TOPLEFT", 12, -214); sv.total:SetPoint("RIGHT", -12, 0); sv.total:SetJustifyH("LEFT")
-    sv.deposit = UI:Text(sv.mid, 10, C.muted); sv.deposit:SetPoint("TOPLEFT", 12, -232); sv.deposit:SetPoint("RIGHT", -12, 0); sv.deposit:SetJustifyH("LEFT")
+    sv.total = UI:Text(sv.mid, 12); sv.total:SetPoint("TOPLEFT", 12, -214); sv.total:SetPoint("TOPRIGHT", -12, -214); sv.total:SetJustifyH("LEFT")
+    sv.deposit = UI:Text(sv.mid, 10, C.muted); sv.deposit:SetPoint("TOPLEFT", 12, -232); sv.deposit:SetPoint("TOPRIGHT", -12, -232); sv.deposit:SetJustifyH("LEFT")
     -- jauge : où tombe ton prix, de bon marché à cher, face au plus bas des autres et à la moyenne de la semaine
     sv.gauge = CreateFrame("Frame", nil, sv.mid)
     sv.gauge:SetPoint("TOPLEFT", 12, -258); sv.gauge:SetPoint("TOPRIGHT", -12, -258); sv.gauge:SetHeight(8)
@@ -712,7 +712,7 @@ local function build(host)
     sv.gLo = UI:Text(sv.mid, 9, C.dim); sv.gLo:SetPoint("TOPLEFT", sv.gauge, "BOTTOMLEFT", 0, -4); sv.gLo:SetText(T("bon marché"))
     sv.gHi = UI:Text(sv.mid, 9, C.dim); sv.gHi:SetPoint("TOPRIGHT", sv.gauge, "BOTTOMRIGHT", 0, -4); sv.gHi:SetText(T("cher"))
     sv.gMid = UI:Text(sv.mid, 10, C.muted); sv.gMid:SetPoint("TOP", sv.gauge, "BOTTOM", 0, -16)
-    sv.keys = UI:Text(sv.mid, 9, C.dim); sv.keys:SetPoint("BOTTOMLEFT", 12, 50); sv.keys:SetPoint("RIGHT", -12, 0); sv.keys:SetJustifyH("LEFT")
+    sv.keys = UI:Text(sv.mid, 9, C.dim); sv.keys:SetPoint("BOTTOMLEFT", 12, 50); sv.keys:SetPoint("BOTTOMRIGHT", -12, 50); sv.keys:SetJustifyH("LEFT")
     sv.post = UI:Button(sv.mid, "Mettre en vente", nil, 32, "primary")
     sv.post:SetPoint("BOTTOMLEFT", 12, 12); sv.post:SetPoint("BOTTOMRIGHT", -96, 12)
     sv.skip = UI:Button(sv.mid, "Passer", 76, 32, "secondary"); sv.skip:SetPoint("BOTTOMRIGHT", -12, 12)
@@ -720,7 +720,7 @@ local function build(host)
     sv.warn = CreateFrame("Frame", nil, sv.mid)
     sv.warn:SetPoint("BOTTOMLEFT", 12, 50); sv.warn:SetPoint("BOTTOMRIGHT", -12, 50); sv.warn:SetHeight(64)
     UI:Panel(sv.warn, 8, { C.negative[1] * 0.25, C.negative[2] * 0.25, C.negative[3] * 0.25, 0.95 }, C.negative)
-    sv.warn.t = UI:Text(sv.warn, 11); sv.warn.t:SetPoint("TOPLEFT", 10, -8); sv.warn.t:SetPoint("RIGHT", -10, 0); sv.warn.t:SetJustifyH("LEFT")
+    sv.warn.t = UI:Text(sv.warn, 11); sv.warn.t:SetPoint("TOPLEFT", 10, -8); sv.warn.t:SetPoint("TOPRIGHT", -10, -8); sv.warn.t:SetJustifyH("LEFT")
     if sv.warn.t.SetWordWrap then sv.warn.t:SetWordWrap(true) end
     sv.warn.yes = UI:Button(sv.warn, "Vendre quand même", nil, 22, "primary"); sv.warn.yes:SetPoint("BOTTOMLEFT", 10, 8)
     sv.warn.no = UI:Button(sv.warn, "Corriger", nil, 22, "secondary"); sv.warn.no:SetPoint("LEFT", sv.warn.yes, "RIGHT", 6, 0)
@@ -820,7 +820,7 @@ local function build(host)
         self.deposit:SetText((dep and (T("Dépôt") .. " : " .. money(dep) .. "  ·  ") or "") .. T("commission 5 %")
             .. (net and ("  ·  " .. T("tu touches") .. " " .. money(net)) or ""))
         local low = lowestOther(id)
-        local avg = S:Average(id)
+        local avg = S:Average(id, 7)
         local ref = low or avg
         local show = unit ~= nil and ref ~= nil
         for _, w in ipairs({ self.gauge, self.gLo, self.gHi, self.gMid }) do w:SetShown(show) end
@@ -874,6 +874,18 @@ local function build(host)
     end
     local function doPost(id, e, unit, qty)
         local a = AH()
+        -- les sacs ont pu bouger depuis le choix de l'objet (rangement, autre visite) : la case doit encore
+        -- contenir cet objet, sinon on le retrouve par son n°, sinon on ne poste rien
+        local function holds(b, sl)
+            return WK.Container.Info(b, sl) == id
+        end
+        if not holds(e.bag, e.slot) then
+            local found
+            for _, it in ipairs(bagItems()) do if it.id == id and holds(it.bag, it.slot) then found = it break end end
+            if not found then WK:Print(T("Objet introuvable dans tes sacs : mise en vente annulée.")) return end
+            e = found
+            qty = math.min(qty, found.count or qty)
+        end
         local loc = ItemLocation and ItemLocation:CreateFromBagAndSlot(e.bag, e.slot)
         local dur = cfg().postDur
         local ok, needs
@@ -881,8 +893,9 @@ local function build(host)
             ok, needs = pcall(a.PostCommodity, loc, dur, qty, unit)
             if ok and needs == true and a.ConfirmPostCommodity then pcall(a.ConfirmPostCommodity, loc, dur, qty, unit) end
         elseif a and a.PostItem then
-            ok, needs = pcall(a.PostItem, loc, dur, qty, nil, unit * qty)
-            if ok and needs == true and a.ConfirmPostItem then pcall(a.ConfirmPostItem, loc, dur, qty, nil, unit * qty) end
+            -- objet non marchandise : chaque exemplaire devient une enchère à ce prix (pas qty fois le prix)
+            ok, needs = pcall(a.PostItem, loc, dur, qty, nil, unit)
+            if ok and needs == true and a.ConfirmPostItem then pcall(a.ConfirmPostItem, loc, dur, qty, nil, unit) end
         end
         if not ok then WK:Print(T("Mise en vente refusée par le jeu.") .. (needs and (" (" .. tostring(needs) .. ")") or "")) return end
         -- la fenêtre de vente du jeu ne suit pas les sacs : on la vide (comme le jeu après sa propre vente)
@@ -941,7 +954,15 @@ local function build(host)
         local typing = s.price.edit:HasFocus() or s.qty.edit:HasFocus()
         local mine = not typing and not (InCombatLockdown and InCombatLockdown()) and s.id ~= nil
             and (key == "SPACE" or key == "S" or key == "UP" or key == "DOWN" or (key == "ENTER" and s.warn:IsShown()))
-        if s.SetPropagateKeyboardInput then s:SetPropagateKeyboardInput(not mine) end
+        -- en combat on ne touche pas à la propagation (réservé au jeu) : elle est toujours remise à « oui »
+        -- juste après une touche gardée, donc rien n'est avalé en combat
+        if InCombatLockdown and InCombatLockdown() then return end
+        if s.SetPropagateKeyboardInput then
+            s:SetPropagateKeyboardInput(not mine)
+            if mine then C_Timer.After(0, function()
+                if not (InCombatLockdown and InCombatLockdown()) then s:SetPropagateKeyboardInput(true) end
+            end) end
+        end
         if not mine then return end
         if s.warn:IsShown() then
             if key == "ENTER" then s.warn.yes:GetScript("OnClick")(s.warn.yes) end
@@ -1054,7 +1075,7 @@ local function build(host)
         end
         local log = WK.DB.global.auction and WK.DB.global.auction.log or {}
         local sold = 0
-        for i = #log, 1, -1 do
+        for i = 1, #log do -- le journal va du plus récent au plus ancien
             local l = log[i]
             if l.kind == "sale" and l.item == name and sold < 3 then
                 sold = sold + 1
@@ -1098,7 +1119,12 @@ local function build(host)
         r.pill:SetSize(20, 16); r.pill:SetPoint("RIGHT", -6, 0)
         r.pill.bg = UI:Rounded(r.pill, 8, 0, "BACKGROUND", 1)
         r.pill.t = UI:Text(r.pill, 10, C.onAccent); r.pill.t:SetPoint("CENTER")
-        r:SetScript("OnClick", function(s) if s.name then cfg().curList = s.name; bv.search:SetText(""); bv:Refresh() end end)
+        r:SetScript("OnClick", function(s)
+            if not s.name then return end
+            -- autre liste : l'achat en cours (prix, objets passés, total) ne la suit pas
+            if s.name ~= cfg().curList and S.buy and S.buy.list then S:CancelBuy() end
+            cfg().curList = s.name; bv.search:SetText(""); bv:Refresh()
+        end)
         r:Hide()
         bv.lrows[i] = r
     end
@@ -1125,9 +1151,9 @@ local function build(host)
     bv.prog.bg = UI:Rounded(bv.prog, 3, 0, "BACKGROUND", 1); bv.prog.bg:SetColor(C.border[1], C.border[2], C.border[3], 1)
     bv.prog.fillF = CreateFrame("Frame", nil, bv.prog); bv.prog.fillF:SetPoint("TOPLEFT"); bv.prog.fillF:SetPoint("BOTTOMLEFT")
     bv.prog.fill = UI:Rounded(bv.prog.fillF, 3, 0, "ARTWORK", 1)
-    bv.progText = UI:Text(bv.sum, 10, C.dim); bv.progText:SetPoint("TOPLEFT", 12, -248); bv.progText:SetPoint("RIGHT", -12, 0)
+    bv.progText = UI:Text(bv.sum, 10, C.dim); bv.progText:SetPoint("TOPLEFT", 12, -248); bv.progText:SetPoint("TOPRIGHT", -12, -248)
     bv.progText:SetJustifyH("LEFT")
-    bv.sumNote = UI:Text(bv.sum, 10, C.dim); bv.sumNote:SetPoint("BOTTOMLEFT", 12, 10); bv.sumNote:SetPoint("RIGHT", -12, 0)
+    bv.sumNote = UI:Text(bv.sum, 10, C.dim); bv.sumNote:SetPoint("BOTTOMLEFT", 12, 10); bv.sumNote:SetPoint("BOTTOMRIGHT", -12, 10)
     bv.sumNote:SetJustifyH("LEFT")
     if bv.sumNote.SetWordWrap then bv.sumNote:SetWordWrap(true) end
     bv.sumNote:SetText(T("Un clic par objet : prix demandé, puis confirmé (le jeu l'exige). Ce qui est acheté sort de la liste."))
@@ -1488,7 +1514,7 @@ local function build(host)
     cv.dayBox = panelBox(cv.side, "Aujourd'hui")
     cv.dayBox:SetPoint("TOPLEFT"); cv.dayBox:SetPoint("TOPRIGHT"); cv.dayBox:SetHeight(150)
     cv.dayBox.sub:SetText(T("factures du courrier"))
-    cv.day = UI:Text(cv.dayBox, 11, C.muted); cv.day:SetPoint("TOPLEFT", 12, -32); cv.day:SetPoint("RIGHT", -12, 0)
+    cv.day = UI:Text(cv.dayBox, 11, C.muted); cv.day:SetPoint("TOPLEFT", 12, -32); cv.day:SetPoint("TOPRIGHT", -12, -32)
     cv.day:SetJustifyH("LEFT"); cv.day:SetJustifyV("TOP")
     if cv.day.SetSpacing then cv.day:SetSpacing(5) end
     cv.itemsBox = panelBox(cv.side, "Tes objets")
@@ -1509,7 +1535,7 @@ local function build(host)
         r:Hide()
         cv.irows[i] = r
     end
-    cv.itemsNote = UI:Text(cv.itemsBox, 10, C.dim); cv.itemsNote:SetPoint("BOTTOMLEFT", 12, 10); cv.itemsNote:SetPoint("RIGHT", -12, 0)
+    cv.itemsNote = UI:Text(cv.itemsBox, 10, C.dim); cv.itemsNote:SetPoint("BOTTOMLEFT", 12, 10); cv.itemsNote:SetPoint("BOTTOMRIGHT", -12, 10)
     cv.itemsNote:SetJustifyH("LEFT")
     if cv.itemsNote.SetWordWrap then cv.itemsNote:SetWordWrap(true) end
     cv.itemsNote:SetText(T("Un objet qui expire souvent : baisse son prix ou garde-le."))
@@ -1571,7 +1597,7 @@ local function build(host)
         m:Hide()
         cv.marks[i] = m
     end
-    cv.det.info = UI:Text(cv.det, 11, C.muted); cv.det.info:SetPoint("BOTTOMLEFT", 12, 12); cv.det.info:SetPoint("RIGHT", -230, 0)
+    cv.det.info = UI:Text(cv.det, 11, C.muted); cv.det.info:SetPoint("BOTTOMLEFT", 12, 12); cv.det.info:SetPoint("BOTTOMRIGHT", -230, 12)
     cv.det.info:SetJustifyH("LEFT")
     if cv.det.info.SetWordWrap then cv.det.info:SetWordWrap(true) end
     cv.det.cancel = UI:Button(cv.det, "Annuler", nil, 24, "secondary"); cv.det.cancel:SetPoint("BOTTOMRIGHT", -10, 8)
@@ -1587,9 +1613,13 @@ local function build(host)
     -- annule, puis (objet revenu dans les sacs) la page Vendre s'ouvre dessus, au prix voulu
     local function repost(o)
         if not o then return end
-        f.repost = { id = o.id, price = repostPrice(o), at = GetTime() }
+        -- combien on en a déjà : la page Vendre ne s'ouvre que quand l'objet annulé est revenu (en plus)
+        local okB, _, by = pcall(bagItems)
+        local have = okB and by and by[o.id] and by[o.id].count or 0
+        f.repost = { id = o.id, price = repostPrice(o), at = GetTime(), have = have }
         A:Cancel(o.auctionID)
         cv.open = nil
+        WK:Print(T("Enchère annulée : l'objet revient par le courrier. La page Vendre s'ouvrira dessus, au bon prix, dès qu'il sera dans tes sacs."))
     end
     cv.det.cancel:SetScript("OnClick", function() local o = cv.openO; if o then A:Cancel(o.auctionID); cv.open = nil; cv:Refresh() end end)
     cv.det.repost:SetScript("OnClick", function() repost(cv.openO); cv:Refresh() end)
@@ -1963,7 +1993,7 @@ local function build(host)
         bw.offset = math.max(0, bw.offset - d * 3)
         bw:RefreshResults()
     end)
-    bw.status = UI:Text(bw.res, 10, C.dim); bw.status:SetPoint("BOTTOMLEFT", 10, 8); bw.status:SetPoint("RIGHT", -10, 0); bw.status:SetJustifyH("LEFT")
+    bw.status = UI:Text(bw.res, 10, C.dim); bw.status:SetPoint("BOTTOMLEFT", 10, 8); bw.status:SetPoint("BOTTOMRIGHT", -10, 8); bw.status:SetJustifyH("LEFT")
     bw.empty = UI:Text(bw.res, 11, C.muted); bw.empty:SetPoint("CENTER"); bw.empty:SetWidth(320)
     bw.empty:SetText(T("Tape un nom ou choisis une catégorie, puis « Chercher »."))
 
@@ -1973,9 +2003,9 @@ local function build(host)
     bw.det.title:Hide()
     bw.dIcon = bw.det:CreateTexture(nil, "ARTWORK"); bw.dIcon:SetSize(30, 30); bw.dIcon:SetPoint("TOPLEFT", 10, -10)
     bw.dIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    bw.dName = UI:Text(bw.det, 13); bw.dName:SetPoint("TOPLEFT", 48, -10); bw.dName:SetPoint("RIGHT", -10, 0); bw.dName:SetJustifyH("LEFT")
+    bw.dName = UI:Text(bw.det, 13); bw.dName:SetPoint("TOPLEFT", 48, -10); bw.dName:SetPoint("TOPRIGHT", -10, -10); bw.dName:SetJustifyH("LEFT")
     if bw.dName.SetWordWrap then bw.dName:SetWordWrap(false) end
-    bw.dSub = UI:Text(bw.det, 10, C.muted); bw.dSub:SetPoint("TOPLEFT", 48, -28); bw.dSub:SetPoint("RIGHT", -10, 0); bw.dSub:SetJustifyH("LEFT")
+    bw.dSub = UI:Text(bw.det, 10, C.muted); bw.dSub:SetPoint("TOPLEFT", 48, -28); bw.dSub:SetPoint("TOPRIGHT", -10, -28); bw.dSub:SetJustifyH("LEFT")
     -- onglets du détail : Enchères, Courbe, Infos
     bw.dtab = "list"
     bw.tabs = UI:Segmented(bw.det, { { "list", "Enchères" }, { "chart", "Courbe" }, { "info", "Infos" } },
@@ -1984,9 +2014,9 @@ local function build(host)
     bw.tabs:Select("list")
     bw.chart = makeChart(bw.det)
     bw.chart:SetPoint("TOPLEFT", 4, -80); bw.chart:SetPoint("TOPRIGHT", -6, -80); bw.chart:SetHeight(190)
-    bw.chartNote = UI:Text(bw.det, 10, C.dim); bw.chartNote:SetPoint("TOPLEFT", 12, -278); bw.chartNote:SetPoint("RIGHT", -12, 0)
+    bw.chartNote = UI:Text(bw.det, 10, C.dim); bw.chartNote:SetPoint("TOPLEFT", 12, -278); bw.chartNote:SetPoint("TOPRIGHT", -12, -278)
     bw.chartNote:SetJustifyH("LEFT")
-    bw.info = UI:Text(bw.det, 11, C.muted); bw.info:SetPoint("TOPLEFT", 12, -84); bw.info:SetPoint("RIGHT", -12, 0)
+    bw.info = UI:Text(bw.det, 11, C.muted); bw.info:SetPoint("TOPLEFT", 12, -84); bw.info:SetPoint("TOPRIGHT", -12, -84)
     bw.info:SetJustifyH("LEFT"); bw.info:SetJustifyV("TOP")
     if bw.info.SetSpacing then bw.info:SetSpacing(6) end
     bw.lhead = CreateFrame("Frame", nil, bw.det)
@@ -2029,7 +2059,7 @@ local function build(host)
     bw.qLabel = UI:Text(bw.det, 11, C.muted); bw.qLabel:SetPoint("BOTTOMLEFT", 12, 98); bw.qLabel:SetText(T("Quantité"))
     bw.qty = UI:NumberInput(bw.det, 64, 26, "1"); bw.qty:SetPoint("LEFT", bw.qLabel, "RIGHT", 8, 0)
     bw.qty.onChange = function() bw:RefreshDetail() end
-    bw.sum = UI:Text(bw.det, 11, C.muted); bw.sum:SetPoint("BOTTOMLEFT", 12, 70); bw.sum:SetPoint("RIGHT", -12, 0); bw.sum:SetJustifyH("LEFT")
+    bw.sum = UI:Text(bw.det, 11, C.muted); bw.sum:SetPoint("BOTTOMLEFT", 12, 70); bw.sum:SetPoint("BOTTOMRIGHT", -12, 70); bw.sum:SetJustifyH("LEFT")
     bw.buy = UI:Button(bw.det, "Acheter", nil, 32, "primary")
     bw.buy:SetPoint("BOTTOMLEFT", 12, 30); bw.buy:SetPoint("BOTTOMRIGHT", -12, 30)
     bw.buy:SetScript("OnClick", function() bw:BuyQty() end)
@@ -2140,7 +2170,7 @@ local function build(host)
     function bw:RefreshResults()
         local list = {}
         for _, e in ipairs(browse.rows) do
-            local avg = S:Average(e.id)
+            local avg = S:Average(e.id, 7)
             e.delta = (avg and avg > 0 and e.low) and (e.low - avg) / avg or nil
             e.name = e.name or WK.GetItemInfo(e.id)
             local q = self.minQ and select(3, WK.GetItemInfo(e.id))
@@ -2221,7 +2251,7 @@ local function build(host)
         local id, a = self.id, AH()
         if not (id and a) then return end
         if not isCommodity(id) and x.auctionID and a.PlaceBid then
-            if not pcall(a.PlaceBid, x.auctionID, x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
+            if not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
             C_Timer.After(1, function() search(id, true) end)
             return
         end
@@ -2260,7 +2290,7 @@ local function build(host)
         self.dIcon:SetTexture(itemIcon(id))
         self.dName:SetText(name or ("#" .. id))
         if quality and GetItemQualityColor then self.dName:SetTextColor(GetItemQualityColor(quality)) end
-        local avg = S:Average(id)
+        local avg = S:Average(id, 7)
         local alert = (A.Config().alerts or {})[id]
         self.dSub:SetText((commodity and T("marchandise") or T("objet unique")) .. (avg and ("  ·  " .. T("moyenne") .. " " .. money(avg)) or ""))
         self.watch:SetLabel(alert and string.format(T("Alerte sous %s"), money(alert)) or T("Surveiller"))
@@ -2583,7 +2613,7 @@ local function build(host)
     scv.bar.bg = UI:Rounded(scv.bar, 4, 0, "BACKGROUND", 1); scv.bar.bg:SetColor(C.border[1], C.border[2], C.border[3], 1)
     scv.bar.fillF = CreateFrame("Frame", nil, scv.bar); scv.bar.fillF:SetPoint("TOPLEFT"); scv.bar.fillF:SetPoint("BOTTOMLEFT")
     scv.bar.fill = UI:Rounded(scv.bar.fillF, 4, 0, "ARTWORK", 1)
-    scv.info = UI:Text(scv.scan, 10, C.muted); scv.info:SetPoint("TOPLEFT", 196, -54); scv.info:SetPoint("RIGHT", -12, 0)
+    scv.info = UI:Text(scv.scan, 10, C.muted); scv.info:SetPoint("TOPLEFT", 196, -54); scv.info:SetPoint("TOPRIGHT", -12, -54)
     scv.info:SetJustifyH("LEFT")
     if scv.info.SetWordWrap then scv.info:SetWordWrap(true) end
     scv.tiles = {}
@@ -2592,7 +2622,7 @@ local function build(host)
         local t = CreateFrame("Frame", nil, scv.scan)
         UI:Panel(t, 8, C.bg, C.border)
         t:SetSize(TW, 52); t:SetPoint("TOPLEFT", 12 + (i - 1) * (TW + 8), -86)
-        t.l = UI:Text(t, 9, C.dim); t.l:SetPoint("TOPLEFT", 8, -8); t.l:SetPoint("RIGHT", -6, 0); t.l:SetJustifyH("LEFT")
+        t.l = UI:Text(t, 9, C.dim); t.l:SetPoint("TOPLEFT", 8, -8); t.l:SetPoint("TOPRIGHT", -6, -8); t.l:SetJustifyH("LEFT")
         t.v = UI:Text(t, 14, C.text); t.v:SetPoint("BOTTOMLEFT", 8, 8)
         scv.tiles[i] = t
     end
@@ -2610,7 +2640,7 @@ local function build(host)
         r:Hide()
         scv.hrows[i] = r
     end
-    scv.note = UI:Text(scv.scan, 10, C.dim); scv.note:SetPoint("BOTTOMLEFT", 12, 12); scv.note:SetPoint("RIGHT", -12, 0)
+    scv.note = UI:Text(scv.scan, 10, C.dim); scv.note:SetPoint("BOTTOMLEFT", 12, 12); scv.note:SetPoint("BOTTOMRIGHT", -12, 12)
     scv.note:SetJustifyH("LEFT")
     if scv.note.SetWordWrap then scv.note:SetWordWrap(true) end
     scv.note:SetText(T("Le scan relève le prix de tout l'HV (un scan complet toutes les 15 minutes au plus). Ces prix servent partout : infobulles, valeur du compte, Rangement, prix proposé à la vente, alertes de prix."))
@@ -2743,9 +2773,9 @@ local function build(host)
         if not self:IsShown() then return end
         -- « Reposter » : l'objet annulé est revenu dans les sacs : la page Vendre s'ouvre dessus, au prix voulu
         local rp = self.repost
-        if rp and GetTime() - rp.at < 30 then
+        if rp and GetTime() - rp.at < 900 then
             local okB, _, by = pcall(bagItems)
-            if okB and by and by[rp.id] then
+            if okB and by and by[rp.id] and by[rp.id].count > (rp.have or 0) then
                 self.repost = nil
                 self:Open("sell")
                 local sv2 = self.views.sell
@@ -2819,15 +2849,23 @@ end
 WK:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.15, attach) end)
 WK:On("AUCTION_HOUSE_CLOSED", function()
     if view then view.gameMode = false; view:Close() end
-    wipe(queue); pending = nil
+    -- les prix vus ne valent que pour cette visite : à la prochaine, le prix proposé et le garde-fou
+    -- attendent une recherche fraîche
+    wipe(queue); wipe(results); pending = nil
 end)
 WK:On("PLAYER_MONEY", function() if view and view:IsShown() then view.gold:SetText(UI:GoldText(GetMoney())) end end)
 WK:On("BAG_UPDATE_DELAYED", function() if view and view:IsShown() and view.tab ~= "scan" then view:Refresh() end end)
 WK:On("OWNED_AUCTIONS_UPDATED", function() C_Timer.After(0.1, function() if view and view:IsShown() then view:Refresh() end end) end)
 local prevProgress = S.OnProgress
+-- pendant un scan, la progression arrive à chaque image : la page n'est redessinée qu'une fois par demi-seconde
+local progAt = 0
 S.OnProgress = function(...)
     if prevProgress then prevProgress(...) end
-    if view and view:IsShown() then view:Refresh() end
+    if not (view and view:IsShown()) then return end
+    local t = GetTime()
+    if S.scan and t - progAt < 0.5 then return end
+    progAt = t
+    view:Refresh()
 end
 local prevChange = A.OnChange
 A.OnChange = function(...)

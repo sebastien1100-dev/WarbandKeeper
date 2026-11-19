@@ -82,8 +82,9 @@ local function build()
     end)
     UI:RegisterHUD("camp", f, {
         label = T("Feu de camp"), default = { 0, -180 },
-        enabled = function() return M:Config().enabled end,
-        sample = function(on) f.sample = on or nil; if on then f:Paint(true); f:Show() else f:Hide() end end,
+        enabled = function() return M:Config().enabled and WK:FeatureOn("campfire") end,
+        -- fin de l'aperçu : l'état réel revient (pas seulement caché)
+        sample = function(on) f.sample = on or nil; if on then f:Paint(true); f:Show() else f:Hide(); M:OnChange(true) end end,
     })
     return f
 end
@@ -169,8 +170,8 @@ local function buildIcon()
     b:Hide()
     UI:RegisterHUD("campIcon", b, {
         label = T("Icône du feu de camp"), default = { -220, -120 },
-        enabled = function() return M:Config().icon end,
-        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide() end end,
+        enabled = function() return M:Config().icon and WK:FeatureOn("campfire") end,
+        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide(); M:OnChange(true) end end,
     })
     return b
 end

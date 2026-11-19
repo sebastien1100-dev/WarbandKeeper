@@ -99,7 +99,7 @@ UI:RegisterPage({
             function(v) to.timerFixed = v; to.timerWidth = "fixed"; wSeg:Select("fixed"); tchanged() end, "%d")
         wSeg = UI:Segmented(tcard, { { "tracker", "Comme le suivi des quêtes" }, { "fixed", "Fixe" } },
             function(v) to.timerWidth = v; tchanged() end, 24)
-        UI:SettingRow(tcard, -86, "Largeur", "Comme le suivi des quêtes : pose le chrono juste dessous en mode édition.", wSeg, 260)
+        UI:SettingRow(tcard, -86, "Largeur", "Comme le suivi des quêtes : même largeur que lui ; place le chrono juste dessous en mode édition.", wSeg, 260)
         UI:SettingRow(tcard, -132, "Largeur fixe", nil, wSl, 240)
         local th = UI:Text(tcard, 10, C.dim); th:SetPoint("TOPLEFT", 16, -176); th:SetText(T("AFFICHER"))
         local PL = {

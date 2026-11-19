@@ -48,8 +48,10 @@ UI.notesDef = {
         -- visite). Seuls les jours dépliés créent leurs lignes (plus de 400 versions).
         -----------------------------------------------------------------
         local nv = view("notes")
+        -- recherche et filtres sur leur propre ligne, sous les onglets (à côté, ils sortaient de la fenêtre)
+        nv:SetPoint("TOPLEFT", 0, -82)
         local bar = CreateFrame("Frame", nil, p)
-        bar:SetPoint("TOPLEFT", tabSeg, "TOPRIGHT", 12, 0); bar:SetPoint("RIGHT", p, "RIGHT"); bar:SetHeight(30)
+        bar:SetPoint("TOPLEFT", 0, -40); bar:SetPoint("TOPRIGHT", 0, -40); bar:SetHeight(30)
         views.notesBar = bar
         local search = UI:Input(bar, 230, 30, "Rechercher dans les notes...", "search")
         search:SetPoint("LEFT")

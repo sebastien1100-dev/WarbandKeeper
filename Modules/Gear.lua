@@ -289,6 +289,9 @@ local function scanTalents(c)
             or (GetUnspentTalentPoints and num(call(GetUnspentTalentPoints)))
         c.talentFree = free
         c.talentsAt = time()
+    else
+        -- l'ancienne API existe mais ne rend aucun arbre : le système de traits prend le relais
+        pcall(scanTraits, c)
     end
 end
 

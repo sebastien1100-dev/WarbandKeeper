@@ -63,7 +63,7 @@ local function paintPin(p, l, size)
     local col = familyColor(l)
     p:SetSize(size, size)
     p.ring:SetVertexColor(col[1], col[2], col[3], 1)
-    p.inner:SetSize(size - 4, size - 4)
+    p.inner:SetSize(size * 0.78, size * 0.78)
     p.inner:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
     p.icon:SetTexture(UI.MEDIA .. l.icon)
     p.icon:SetSize(size * 0.52, size * 0.52)
@@ -163,10 +163,11 @@ function UI:HideMapLayers()
 end
 
 function UI:DrawMapLayers(cv, mapID, w, h)
+    lastDrawn = 0 -- module coupé : rien à « réparer » (sinon la carte est redessinée chaque seconde)
     if not on() then return end
     local cfg = L:Config()
     local scale = (w / 1000) * UI.MapIconScale()
-    local size = math.max(10 * UI.MapIconScale(), (cfg.size or 18) * scale * 0.9) * UI.MapIconSize()
+    local size = math.max(10 * UI.MapIconScale(), 18 * scale * 0.9) * UI.MapIconSize()
     local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 10 -- au-dessus des calques de la carte du jeu (UI/MapPins.lua)
     local n = 0
     local places = L:Places(mapID, "map")
@@ -189,33 +190,11 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     local placed = {}
     for i, d in ipairs(L:Docks(mapID, "map")) do
         local r = getRoute(i, cv)
-        local _, col = transportLook(d.kind, tl)
         local x0, y0 = d.x / 100 * w, d.y / 100 * h
-        local dx, dy = L:Heading(d.here, d.other)
-        -- pointillés vers la destination, sans sortir de la carte
-        local len = 0.16 * w
-        local function room(p0, dp, maxv) if dp > 0 then return (maxv - p0) / dp elseif dp < 0 then return -p0 / dp end return math.huge end
-        len = math.max(0, math.min(len, room(x0, dx, w) - 8, room(y0, dy, h) - 8))
         -- pas de trait de direction : seul le vrai tracé d'un bateau déjà pris est dessiné
         -- (UI:DrawBoatPaths, UI:DrawShips)
-        len = 0
-        local ds = math.max(3 * UI.MapIconScale(), 5 * scale)
-        r.lines = r.lines or UI:LinePool(3)
-        r.lines:Reset()
-        if cv.CreateLine and len > 12 then
-            -- trait fin du quai vers la destination (les points restent cachés)
-            r.lines:Add(cv, x0, y0, x0 + dx * len, y0 + dy * len, math.max(1.6 * UI.MapIconScale(), 2.2 * scale), col[1], col[2], col[3], 0.95)
-            for _, dot in ipairs(r.dots) do dot:Hide() end
-        else
-        for k, dot in ipairs(r.dots) do
-            local f = k / DOTS
-            dot:SetSize(ds, ds)
-            dot:SetVertexColor(col[1], col[2], col[3], 0.9)
-            dot:ClearAllPoints()
-            dot:SetPoint("CENTER", cv, "TOPLEFT", x0 + dx * len * f, -(y0 + dy * len * f))
-            dot:SetShown(len > 12)
-        end
-        end
+        for _, dot in ipairs(r.dots) do dot:Hide() end
+        if r.lines then r.lines:Reset() end
         local twin
         for _, q in ipairs(placed) do
             if q.kind == (d.kind or "boat") and math.abs(q.x - d.x) < 1.5 and math.abs(q.y - d.y) < 1.5 then twin = q break end
@@ -245,6 +224,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
         r.label.docks = (not twin) and r.pin.docks or nil
         r.label:ClearAllPoints(); r.label:SetPoint("TOP", r.pin, "BOTTOM", 0, -1)
         r.label:SetFrameLevel(lvl + 2)
+        r.label:SetScale(UI.MapLabelScale())
         r.label:SetShown(not twin)
         r.label.acc = 1
         r.label:SetScript("OnUpdate", dockLabelTick)

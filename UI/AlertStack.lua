@@ -303,6 +303,7 @@ layout = function()
                             local ic = a.icons[k]
                             ii = ii + 1
                             local ib = getIconBtn(ii)
+                            for _, an in ipairs({ "type", "spell", "unit", "macrotext", "item" }) do ib:SetAttribute(an, nil) end
                             for an, av in pairs(ic.attrs or {}) do ib:SetAttribute(an, av) end
                             ib.icon:SetTexture(ic.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
                             ib.edge:SetColorTexture(r, g, b, 0.9)
@@ -365,13 +366,27 @@ local function sameAction(a, b)
     return true
 end
 
+-- mêmes icônes de buff (texture et attributs : le sort et l'unité visés peuvent changer d'un relevé à l'autre)
+local function sameIcons(a, b)
+    a, b = a or {}, b or {}
+    if #a ~= #b then return false end
+    for i = 1, #a do
+        if a[i].icon ~= b[i].icon then return false end
+        local x, y = a[i].attrs or {}, b[i].attrs or {}
+        for k, v in pairs(x) do if y[k] ~= v then return false end end
+        for k, v in pairs(y) do if x[k] ~= v then return false end end
+    end
+    return true
+end
+
 function UI:SetAlert(key, shown, data)
     local cur = active[key]
     if shown then
         local now = GetTime and GetTime() or 0
         local untilT = data.ttl and (now + data.ttl) or nil
         if cur and cur.text == data.text and cur.icon == data.icon and cur.prio == data.prio and cur.right == data.right
-            and #(cur.icons or {}) == #(data.icons or {})
+            and sameIcons(cur.icons, data.icons) and cur.tip == data.tip and sameColor(cur.rightColor, data.rightColor)
+            and cur.dismiss == data.dismiss
             and cur.group == data.group and sameColor(cur.color, data.color) and sameAction(cur.action, data.action) then
             cur["until"] = untilT
             return

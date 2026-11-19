@@ -226,6 +226,8 @@ local function checkLevelAlert()
         icon = "Interface\\Icons\\INV_Misc_Note_01" })
 end
 
+M.CheckLevelAlert = function() checkLevelAlert() end
+
 local pending = false
 local function later()
     if pending then return end

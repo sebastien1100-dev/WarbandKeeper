@@ -90,11 +90,15 @@ UI:RegisterPage({
             if key == "notes" and UI.notesDef then
                 local ns = self.sections.notes
                 if not ns.built then
-                    ns.built = true
                     UI:InAccentScope("window", UI.notesDef.Build, UI.notesDef, ns.scroll)
+                    ns.built = true
                 end
-                UI.notesDef:Refresh()
-                if UI.RefreshChips then UI:RefreshChips() end
+                -- lues seulement si on les voit vraiment (les Options peuvent être construites cachées :
+                -- recherche, cartes reprises par d'autres pages)
+                if ns.scroll:IsVisible() then
+                    UI.notesDef:Refresh()
+                    if UI.RefreshChips then UI:RefreshChips() end
+                end
             end
             if key == "general" and self.sections.general.showTab then self.sections.general.showTab(cfg.optGenTab or "lang") end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
@@ -125,7 +129,7 @@ UI:RegisterPage({
             b.label:SetText(sec[2])
             b.desc = UI:Text(b, 10, C.muted)
             b.desc:SetPoint("TOPLEFT", b.label, "BOTTOMLEFT", 0, -4)
-            b.desc:SetPoint("RIGHT", b, "RIGHT", -6, 0)
+            b.desc:SetPoint("TOPRIGHT", b, "TOPRIGHT", -6, -26)
             b.desc:SetText(sec[4])
             function b:Paint()
                 local sel = self.selected
@@ -417,7 +421,8 @@ UI:RegisterPage({
                 "Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)." },
         }
         local ROWH = 34
-        local aboutH = 16 + 48 + 16 + 70 + 18 + 24 + #SRC * ROWH + 14
+        -- en-tête 92, tuiles 70, titre et colonnes 28, en-têtes 18, lignes, marge
+        local aboutH = 92 + 70 + 8 + 20 + 18 + #SRC * ROWH + 16
         local about = card(nil, aboutH)
         -- en-tête
         local logoBox = CreateFrame("Frame", nil, about); logoBox:SetSize(44, 44); logoBox:SetPoint("TOPLEFT", 16, -16)
@@ -505,6 +510,11 @@ UI:RegisterPage({
         UI:OnResize(about, function(w)
             w = w or about:GetWidth() or 800
             local inner = w - 32
+            -- nom et phrase s'arrêtent avant les boutons (retour à la ligne si la fenêtre est étroite)
+            local textW = math.max(120, w - 74 - (notesBtn:GetWidth() + cmdBtn:GetWidth() + 8) - 32)
+            name:SetWidth(textW); name:SetJustifyH("LEFT")
+            tag:SetWidth(textW); tag:SetJustifyH("LEFT")
+            if tag.SetWordWrap then tag:SetWordWrap(true) end
             local tw = math.floor((inner - 20) / 3)
             for i, f in ipairs(tiles) do
                 f:ClearAllPoints(); f:SetPoint("TOPLEFT", 16 + (i - 1) * (tw + 10), -92); f:SetSize(tw, 70)

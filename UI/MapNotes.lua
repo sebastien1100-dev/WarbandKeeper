@@ -51,7 +51,7 @@ local function paintPin(p, n, size, onMap)
     p:SetSize(size, size)
     p.shadow:SetSize(size + 4, size + 4); p.shadow:ClearAllPoints(); p.shadow:SetPoint("CENTER", 0, -1)
     p.ring:SetAllPoints(); p.ring:SetVertexColor(col[1], col[2], col[3], 1)
-    p.inner:ClearAllPoints(); p.inner:SetPoint("CENTER"); p.inner:SetSize(size - 4, size - 4)
+    p.inner:ClearAllPoints(); p.inner:SetPoint("CENTER"); p.inner:SetSize(size * 0.78, size * 0.78)
     p.inner:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
     p.icon:ClearAllPoints(); p.icon:SetPoint("CENTER"); p.icon:SetSize(size * 0.55, size * 0.55)
     p.icon:SetTexture(UI.MEDIA .. (n.icon or "star"))
@@ -61,6 +61,7 @@ local function paintPin(p, n, size, onMap)
     p.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.88)
     p.pill:ClearAllPoints(); p.pill:SetPoint("LEFT", p, "RIGHT", 3, 0)
     p.labelOn = onMap and (n.label or N:Config().labels) or false
+    p.pill:SetScale(onMap and UI.MapLabelScale() or 1)
     p.pill:SetShown(p.labelOn)
 end
 

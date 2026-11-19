@@ -512,7 +512,8 @@ function M:CountEntry(d)
 end
 WK:On("CHAT_MSG_SYSTEM", function(msg)
     if type(msg) ~= "string" or not INSTANCE_RESET_SUCCESS then return end
-    local pat = "^" .. INSTANCE_RESET_SUCCESS:gsub("([%(%)%.%-%+%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)") .. "$"
+    -- le « % » du format est échappé aussi, puis « %%s » (format échappé) devient une capture
+    local pat = "^" .. INSTANCE_RESET_SUCCESS:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)") .. "$"
     if msg:match(pat) then db().resetAt = time() end
 end)
 
@@ -527,7 +528,7 @@ WK:On("PLAYER_DEAD", function() if M.run and M.run.st then M.run.st.deaths = (M.
 WK:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(msg)
     local st = M.run and M.run.st
     if not st or type(msg) ~= "string" or not FACTION_STANDING_INCREASED then return end
-    local pat = "^" .. FACTION_STANDING_INCREASED:gsub("([%(%)%.%-%+%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)"):gsub("%%%%d", "(%%d+)") .. "$"
+    local pat = "^" .. FACTION_STANDING_INCREASED:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)"):gsub("%%%%d", "(%%d+)") .. "$"
     local f, n = msg:match(pat)
     n = tonumber(n)
     if f and n then st.rep[f] = (st.rep[f] or 0) + n end
@@ -643,7 +644,9 @@ function M:SyncHistory(run)
     if not d then return end
     local list = self:History(run.key)
     local me = WK:CharKey()
-    local id = run.start .. ":" .. me
+    -- identifiant fixé une fois pour toutes : un partage qui recale le début ne crée pas de doublon
+    run.hid = run.hid or (run.start .. ":" .. me)
+    local id = run.hid
     local e
     for _, x in ipairs(list) do if x.id == id then e = x break end end
     if not e then
@@ -671,10 +674,13 @@ function M:SyncHistory(run)
     e.loot = run.loot or e.loot or {}
 end
 -- record (passage complet le plus rapide), moyenne des passages complets
-function M:Record(d)
+-- exceptCurrent : sans le passage en cours (chrono, écarts, annonce : sinon, une fois le record battu, il se
+-- compare à lui-même et tout affiche « -0:00 »)
+function M:Record(d, exceptCurrent)
     local best, sum, cnt
+    local cur = exceptCurrent and self.run and self.run.key == d.key and self.run.hid or nil
     for _, e in ipairs(self:History(d.key)) do
-        if e.dur then
+        if e.dur and e.id ~= cur then
             cnt = (cnt or 0) + 1; sum = (sum or 0) + e.dur
             if not best or e.dur < best.dur then best = e end
         end
@@ -693,7 +699,7 @@ function M:Elapsed()
 end
 -- écart avec le record à ce boss (secondes, négatif = en avance) ; nil sans record ou sans temps
 function M:Delta(d, bossID)
-    local rec = self:Record(d)
+    local rec = self:Record(d, true)
     if not (rec and self.run and self.run.key == d.key) then return nil end
     local k = self.run.killed[bossID]
     local r = rec.splits and rec.splits[tostring(bossID)]
@@ -776,7 +782,7 @@ function M:AnnounceText(d)
     local n, last = 0, nil
     for _, b in ipairs(main) do if self.run.killed[b.id] then n = n + 1; last = b end end
     local txt = string.format(T("%s : %d/%d boss en %s"), self:Name(d), n, #main, M.Clock(self:Elapsed()))
-    local rec = self:Record(d)
+    local rec = self:Record(d, true)
     if rec then
         local dl = last and self:Delta(d, last.id)
         txt = txt .. string.format(T(" (record %s%s)"), M.Clock(rec.dur), dl and (", " .. M.ClockDelta(dl)) or "")
@@ -807,13 +813,22 @@ end
 WK:On("PLAYER_LOGIN", function()
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then pcall(C_ChatInfo.RegisterAddonMessagePrefix, SHARE) end
 end)
-WK:On("CHAT_MSG_ADDON", function(prefix, msg, _, sender)
+-- déconnexion en plein passage : l'heure est notée, le passage n'est repris que dans l'heure (pas le lendemain)
+WK:On("PLAYER_LOGOUT", function()
+    local store = db()
+    local saved = store.runs and store.runs[WK:CharKey()]
+    if saved and not saved.left then saved.left = time() end
+end)
+local SHARE_CHANNELS = { PARTY = true, RAID = true, INSTANCE_CHAT = true }
+WK:On("CHAT_MSG_ADDON", function(prefix, msg, channel, sender)
     local rd = WK.modules.QoL.Readable
-    prefix, msg, sender = rd(prefix), rd(msg), rd(sender)
+    prefix, msg, channel, sender = rd(prefix), rd(msg), rd(channel), rd(sender)
     if prefix ~= SHARE or type(msg) ~= "string" then return end
+    -- seulement le groupe (pas un chuchotement d'addon), et un chrono plausible (au plus 6 h)
+    if not SHARE_CHANNELS[channel] then return end
     local key, elapsed, list = msg:match("^R:([^:]+):(%d+):(.*)$")
     elapsed = tonumber(elapsed)
-    if not (key and elapsed and M.run and tostring(M.run.key) == key) then return end
+    if not (key and elapsed and elapsed <= 6 * 3600 and M.run and tostring(M.run.key) == key) then return end
     local me = UnitName and UnitName("player")
     if type(sender) == "string" and me and sender:match("^[^%-]+") == me then return end
     local d = M:Get(M.run.key)

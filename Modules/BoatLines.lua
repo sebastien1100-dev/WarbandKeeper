@@ -119,13 +119,15 @@ local function refine(l, e)
 end
 
 -- Ajoute un départ vu (quai s, heure du serveur t) ; false si déjà connu à 15 s près
-function M:AddObs(l, s, t)
+-- mine = départ vu par ce joueur (traversée, « Il part » / « Il arrive », maître de quai) : seuls ceux-là
+-- sont renvoyés à la connexion (les départs reçus d'autres joueurs ne sont jamais rediffusés)
+function M:AddObs(l, s, t, mine)
     local st = store()
     local e = st[l.key] or { obs = {} }
     st[l.key] = e
     e.obs = e.obs or {}
     for _, o in ipairs(e.obs) do if o.s == s and math.abs(o.t - t) < 15 then return false end end
-    table.insert(e.obs, { s = s, t = t })
+    table.insert(e.obs, { s = s, t = t, me = mine or nil })
     table.sort(e.obs, function(a, b) return a.t < b.t end)
     local cut = now() - WINDOW
     while #e.obs > 0 and (e.obs[1].t < cut or #e.obs > KEEP) do table.remove(e.obs, 1) end
@@ -256,7 +258,7 @@ function M:Learn(from, to, dep)
             local nx = l.stops[s % #l.stops + 1]
             if st.c == from.c and dist(st.x, st.y, from.wx, from.wy) < 300 and nx.c == to.c and dist(nx.x, nx.y, to.wx, to.wy) < 400 then
                 rode()[l.key] = true
-                if self:AddObs(l, s, dep) then self:Broadcast(l, s, dep) end
+                if self:AddObs(l, s, dep, true) then self:Broadcast(l, s, dep) end
                 return true
             end
         end
@@ -267,7 +269,7 @@ end
 function M:Observe(l, s, kind)
     local t = now()
     if kind == "arrive" then t = t + (l.stops[s].dwell or 60) end
-    if self:AddObs(l, s, t) then self:Broadcast(l, s, t) end
+    if self:AddObs(l, s, t, true) then self:Broadcast(l, s, t) end
     return true
 end
 
@@ -343,14 +345,15 @@ function M:Receive(msg, sender)
     if t > n + 120 or n - t > WINDOW then return false end
     return self:AddObs(l, s, t)
 end
--- départs récents à envoyer à la connexion (au plus 2 par ligne)
+-- départs récents vus par ce joueur, à envoyer à la connexion (au plus 2 par ligne)
 function M:Recent()
     local out = {}
     for key, e in pairs(store()) do
         local l = self:Get(key)
         if l and e.obs then
             for i = #e.obs, math.max(1, #e.obs - 1), -1 do
-                if now() - e.obs[i].t < FRESH then table.insert(out, { l, e.obs[i].s, e.obs[i].t }) end
+                local o = e.obs[i]
+                if o.me and now() - o.t < FRESH then table.insert(out, { l, o.s, o.t }) end
             end
         end
     end

@@ -61,6 +61,38 @@ _Prévu, pas encore commencé._
 - **Quêtes automatiques** — Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.63.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes : après avoir rangé tes sacs, « Mettre en vente » pouvait poster l'objet qui occupait maintenant la case (au prix de l'autre). L'objet est retrouvé par son numéro, sinon rien n'est posté.
+- Hôtel des ventes : poster plusieurs exemplaires d'un objet (pas une marchandise) les mettait chacun à N fois le prix ; acheter une pile pouvait être refusé (prix arrondi).
+- Hôtel des ventes : le prix proposé et le garde-fou reprenaient les prix d'une visite précédente ; ils attendent maintenant la recherche de la visite en cours.
+- Hôtel des ventes : « moyenne 7 j », « Bonne affaire » et la jauge comptaient tout l'historique gardé (30 jours) au lieu de 7 jours ; « Tes ventes » montrait les plus anciennes au lieu des plus récentes.
+- Hôtel des ventes : un achat isolé (Parcourir, Vendre) affichait « Liste d'achat terminée » ; changer de liste gardait l'achat en cours de l'ancienne ; la page ralentissait le jeu pendant un scan ; les touches de vente pouvaient être avalées en combat.
+- Hôtel des ventes : « Reposter » ne faisait rien quand l'objet annulé revenait par le courrier ; la page Vendre s'ouvre maintenant dessus dès qu'il arrive dans tes sacs (dans les 15 min).
+- Hôtel des ventes : textes de la page Vendre (nom, total, dépôt…) qui pouvaient être coupés (ancrages).
+- Bateaux : couper « Apprendre les chemins » arrêtait aussi la détection des traversées (plus de tracés ni d'horaires appris en bateau).
+- Bateaux : les départs reçus d'autres joueurs étaient rediffusés à la connexion (une erreur se propageait dans la guilde) ; seuls tes propres départs sont renvoyés.
+- Bateaux : sur la ligne Menethil » Austrivage » Auberdine, un quai pouvait annoncer la mauvaise destination (et le guidage proposer le mauvais bateau).
+- Carte : la liste des rares sur le côté de la carte pouvait clignoter sous la souris ; l'intérieur des pastilles disparaissait sur les petites icônes ; l'ancienne taille des pastilles s'appliquait encore sans réglage ; carte redessinée chaque seconde avec le module coupé ; étiquettes (départs, notes, « mort », repère) trop grosses en zoomant ; navires de l'autre faction absents de la minicarte malgré le réglage.
+- Guidage : sans l'épingle à l'écran, l'arrivée n'arrêtait jamais le guidage.
+- Donjons : la réinitialisation d'une instance n'était jamais reconnue (passage repris à tort, compteur d'instances faux) et la réputation gagnée manquait au résumé de sortie.
+- Donjons : une fois le record battu, le chrono, les écarts et l'annonce se comparaient au passage en cours (« -0:00 ») ; ils comparent maintenant à l'ancien record.
+- Donjons : le partage du parcours n'accepte plus que le groupe (pas un chuchotement d'addon) et ne crée plus de doublons dans l'historique ; un passage n'est plus repris le lendemain après une déconnexion dedans.
+- Chrono de donjon : nom du donjon et ligne du record qui pouvaient être coupés.
+- Métiers : fermer le panneau Désenchantement ou Échange en combat déclenchait une erreur ; le journal des désenchantements pouvait noter le butin d'un cadavre après un sort raté ; « Tout acheter » chez le marchand enchaînait des achats au-delà de ton or ou du stock.
+- Talents : le plan « Montée enregistrée » pouvait être vidé à la connexion ; aucun relevé des talents si l'ancienne interface ne rendait aucun arbre.
+- Bouton « Buffer le suivant » et kit de camp : construits en combat après un /reload (actions bloquées) ; plaques de nom amies jamais rendues sur un perso d'une autre classe ; icônes et kit d'exemple utilisables pour de vrai pendant « Tester ».
+- Pile « Rappels » : une icône de buff pouvait viser l'ancien membre du groupe ; changer « Où vont les rappels » laissait les rappels déjà affichés ; décocher « Prévenir d'un niveau à rendre » ne retirait pas le rappel.
+- Feu de camp : encart et icône cachés après le mode édition ou « Tester » ; leurs aperçus apparaissaient avec le module coupé.
+- Couper un module (Curseur, Donjons, Expérience, Feu de camp, Classes…) cache maintenant tout de suite ses éléments à l'écran.
+- Patch notes : marquées « lues » dès qu'on ouvrait le Courrier ou la recherche ; recherche et filtres qui sortaient de la fenêtre (maintenant sous les onglets).
+- Options > À propos : la phrase passait sous les boutons et la dernière source dépassait de la carte.
+- Profils : le chrono de donjon, les objets verrouillés et les interrupteurs du courrier et de la banque n'étaient pas dans les profils ; changer de profil faisait revenir le point des patch notes.
+- Résumé : erreur au clic sur la pastille du courrier quand le module Courrier est coupé ; recherche d'un objet qui n'affichait rien si l'Inventaire était sur « Verrouillés » ; /wk notes ne refermait pas la fenêtre ; pastilles de l'en-tête masquées trop tôt.
+
 ## v1.62.6 — 19/11/2026
 
 _Un /reload suffit._

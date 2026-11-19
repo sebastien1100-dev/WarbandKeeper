@@ -117,7 +117,7 @@ UI.ItemLockKeyLabel = keyLabel
 local function blockMsg(id)
     local msg = string.format(T("Verrouillé : %s n'a pas été vendu (%s pour le déverrouiller)."),
         WK.GetItemInfo(id) or ("#" .. id), keyLabel())
-    if UIErrorsFrame then UIErrorsFrame:AddMessage(msg, 0.96, 0.55, 0.73) end
+    if UIErrorsFrame then local r, g, b = UI:Accent(); UIErrorsFrame:AddMessage(msg, r, g, b) end
 end
 
 local function decorate(btn)

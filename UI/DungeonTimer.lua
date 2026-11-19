@@ -25,7 +25,7 @@ local function liveData()
     local run = Dg.run
     local d = run and Dg:Get(run.key)
     if not d then return nil end
-    local rec = Dg:Record(d)
+    local rec = Dg:Record(d, true)
     local nextB = Dg:Next(d)
     local rows = {}
     for _, b in ipairs(Dg:Bosses(d)) do
@@ -126,7 +126,9 @@ local function build()
         self.time:SetText(D().Clock(data.elapsed))
         self.time:SetTextColor(unpack(over and C.negative or C.text))
         self.name:SetShown(sh.name)
-        self.name:ClearAllPoints(); self.name:SetPoint("TOPLEFT", 10, -(y + 8)); self.name:SetPoint("RIGHT", self.time, "LEFT", -8, 0)
+        -- largeur plutôt qu'un 2e ancrage centré (TOPLEFT + RIGHT écrasait la hauteur du texte)
+        self.name:ClearAllPoints(); self.name:SetPoint("TOPLEFT", 10, -(y + 8))
+        self.name:SetWidth(math.max(40, W2 - 28 - (self.time:GetStringWidth() or 60)))
         self.name:SetText(data.name or "")
         y = y + 28
         -- record · compteur, temps restant
@@ -144,7 +146,8 @@ local function build()
         else self.left:SetText("") end
         self.left:SetShown(sh.left)
         if #parts > 0 or (sh.left and data.record) then
-            self.rec:ClearAllPoints(); self.rec:SetPoint("TOPLEFT", 10, -y); self.rec:SetPoint("RIGHT", self.left, "LEFT", -6, 0)
+            self.rec:ClearAllPoints(); self.rec:SetPoint("TOPLEFT", 10, -y)
+            self.rec:SetWidth(math.max(40, W2 - 26 - (sh.left and (self.left:GetStringWidth() or 40) or 0)))
             self.left:ClearAllPoints(); self.left:SetPoint("TOPRIGHT", -10, -(y - 1))
             y = y + 16
         end
@@ -231,7 +234,7 @@ local function build()
         if s.acc < 1 then return end
         s.acc = 0
         if s.sample then return end
-        local data = liveData()
+        local data = D():Config().timer and WK:FeatureOn("dungeons") and liveData()
         if data then s:Paint(data) else s:Hide() end
     end)
     f:Hide()
@@ -371,19 +374,4 @@ function UI:RefreshRealReminder()
     real:SetShown(p ~= nil and D():Config().real and WK:FeatureOn("dungeons"))
 end
 D().OnReal = function() UI:RefreshRealReminder() end
--- aperçu de quelques secondes après un changement d'option (hors passage en cours)
-local previewN = 0
-function UI:PreviewDungeonTimer()
-    if not frame then frame = build() end
-    if frame.sample and not frame.preview then return end -- mode édition
-    if liveData() and D():Config().timer then frame.sample, frame.preview = nil, nil; UI:RefreshDungeonTimer() return end
-    previewN = previewN + 1
-    local mine = previewN
-    frame.sample, frame.preview = true, mine
-    frame:Paint(SAMPLE); frame:Show()
-    C_Timer.After(6, function()
-        if frame.preview == mine then frame.sample, frame.preview = nil, nil; UI:RefreshDungeonTimer() end
-    end)
-end
-
 WK:On("PLAYER_LOGIN", function() C_Timer.After(2, function() UI:RefreshRealReminder() end) end)

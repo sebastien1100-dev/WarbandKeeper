@@ -330,6 +330,7 @@ function M:Remind(key, text, r, g, b, quiet, opts)
     local kind = self:RemindKind(key)
     local cfg = self:RemindCfg()
     local where = cfg.where[kind] or "stack"
+    if where ~= "stack" and where ~= "both" and WK.UI.SetAlert then WK.UI:SetAlert("qol." .. key, false) end
     if where == "off" then return end
     local now = GetTime and GetTime() or 0
     local fresh = not (lastReminder[key] and now - lastReminder[key] < (quiet and 300 or 60))

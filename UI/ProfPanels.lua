@@ -10,6 +10,18 @@ local T = function(s) return WK.T(s) end
 local function PH() return WK.modules.ProfHelp end
 local function cfg() return PH():Config() end
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
+-- Panneaux qui contiennent un bouton protégé : on ne peut pas les cacher en combat ; ils deviennent
+-- invisibles et sont cachés pour de bon à la sortie du combat
+local hideLater = {}
+local function safeHide(f)
+    if not inCombat() then f:Hide() return end
+    f:SetAlpha(0)
+    hideLater[f] = true
+end
+WK:On("PLAYER_REGEN_ENABLED", function()
+    for f in pairs(hideLater) do f:Hide(); f:SetAlpha(1) end
+    wipe(hideLater)
+end)
 local ROW = 30
 
 -- Panneau de base : titre, fermer, liste défilante, pied pour les boutons.
@@ -25,7 +37,7 @@ local function panel(name, title, icon, w, h)
     f.title = UI:Text(f, 12); f.title:SetPoint("LEFT", f.logo, "RIGHT", 6, 0); f.title:SetText(title)
     f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 16, -32); f.sub:SetPoint("RIGHT", -16, 0)
     f.close = UI:IconButton(f, "close", 16); f.close:SetPoint("TOPRIGHT", -10, -10)
-    f.close:SetScript("OnClick", function() f.closed = true; f:Hide() end)
+    f.close:SetScript("OnClick", function() f.closed = true; safeHide(f) end)
     f.scroll = UI:Scroll(f)
     f.scroll:SetPoint("TOPLEFT", 6, -50)
     f.scroll:SetPoint("BOTTOMRIGHT", -6, 74)
@@ -161,6 +173,7 @@ function UI:ToggleDEPanel(show, anchor)
     de.closed = nil
     de:ClearAllPoints()
     if anchor then de:SetPoint("TOPRIGHT", anchor, "TOPLEFT", -8, 0) else de:SetPoint("CENTER", -200, 60) end
+    hideLater[de] = nil; de:SetAlpha(1)
     de:Refresh(); de:Show()
 end
 
@@ -278,10 +291,11 @@ WK:On("TRADE_SHOW", function()
     if not trade then trade = buildTrade() end
     trade.pick = nil
     trade:ClearAllPoints(); trade:SetPoint("TOPLEFT", TradeFrame, "TOPRIGHT", 6, 0)
+    hideLater[trade] = nil; trade:SetAlpha(1)
     trade:Refresh(); trade:Show()
 end)
 WK:On("TRADE_TARGET_ITEM_CHANGED", function() if trade and trade:IsShown() and not inCombat() then trade:Refresh() end end)
-WK:On("TRADE_CLOSED", function() if trade then trade:Hide() end end)
+WK:On("TRADE_CLOSED", function() if trade then safeHide(trade) end end)
 
 ---------------------------------------------------------------------------
 -- Maître de métier

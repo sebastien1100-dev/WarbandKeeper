@@ -68,6 +68,13 @@ function WK:SetFeature(key, on)
         if UI.RefreshNodePins then UI:RefreshNodePins() end
         if UI.RedrawRarePins then UI:RedrawRarePins() end
         if UI.RefreshMapLayers then UI:RefreshMapLayers() end
+        -- éléments à l'écran : un module coupé les cache tout de suite (rallumé : ils reviennent)
+        for _, fn in ipairs({ "SyncCursorRing", "SyncCursorTrail", "RefreshDungeonTimer", "RefreshRealReminder",
+            "RefreshXPBar", "RefreshCampKit", "SyncBuffPlates", "RefreshBuffButton", "SyncPetCard", "SyncAspectButton" }) do
+            if UI[fn] then pcall(UI[fn], UI) end
+        end
+        local Camp = WK.modules.Camp
+        if Camp and Camp.OnChange then pcall(Camp.OnChange, Camp, false) end
     end
     if key == "fishing" and not on and WK.modules.Fishing and WK.modules.Fishing.active then WK.modules.Fishing:Stop() end
     if key == "halo" and WK.modules.Glow and WK.modules.Glow.Update then pcall(WK.modules.Glow.Update, WK.modules.Glow) end

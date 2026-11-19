@@ -148,7 +148,9 @@ function M:Docks(mapID, which)
     for _, r in ipairs(M:AllTransports()) do
         if not (cfg.myFaction and r.side and r.side ~= fac) then
             if r.a[1] == mapID then table.insert(out, { x = r.a[2], y = r.a[3], to = r.b[4], kind = r.kind, other = r.b, here = r.a, path = r.path, line = r, side = "a" }) end
-            if r.b[1] == mapID then table.insert(out, { x = r.b[2], y = r.b[3], to = r.a[4], kind = r.kind, other = r.a, here = r.b, path = r.path, line = r, side = "b" }) end
+            -- ligne du jeu à plus de 2 quais : le bateau qui part du quai b va au quai suivant, pas à a
+            local loop = r.game and r.game.stops and #r.game.stops > 2
+            if r.b[1] == mapID and not loop then table.insert(out, { x = r.b[2], y = r.b[3], to = r.a[4], kind = r.kind, other = r.a, here = r.b, path = r.path, line = r, side = "b" }) end
         end
     end
     return out

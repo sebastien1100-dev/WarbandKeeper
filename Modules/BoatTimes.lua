@@ -68,6 +68,11 @@ function M.AddObs(key, side, dep, tr, weight)
     table.insert(list, dep)
     table.sort(list)
     while #list > KEEP do table.remove(list, 1) end
+    -- départs vus par ce joueur (weight absent) : seuls renvoyés à la connexion
+    if not weight then
+        e.mine = e.mine or {}
+        e.mine[side .. dep] = true
+    end
     if tr then
         local f = side == "a" and "ta" or "tb"
         local wgt = weight or 0.4
@@ -298,10 +303,16 @@ WK:On("PLAYER_LOGIN", function()
         local BL = WK.modules.BoatLines
         for _, r in ipairs(BL and BL:Recent() or {}) do BL:Broadcast(r[1], r[2], r[3]) end
         for key, e in pairs(store()) do
+            -- ménage : ne garder que les marques des départs encore notés
+            local keep = {}
+            for _, side in ipairs({ "a", "b" }) do
+                for _, d in ipairs(e[side] or {}) do if e.mine and e.mine[side .. d] then keep[side .. d] = true end end
+            end
+            e.mine = next(keep) and keep or nil
             for _, side in ipairs({ "a", "b" }) do
                 local list = e[side] or {}
                 for i = #list, math.max(1, #list - 2), -1 do
-                    if t - list[i] < WINDOW then
+                    if t - list[i] < WINDOW and e.mine and e.mine[side .. list[i]] then
                         M:Broadcast(key, side, list[i], side == "a" and e.ta or e.tb)
                     end
                 end

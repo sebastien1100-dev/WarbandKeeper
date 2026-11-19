@@ -199,7 +199,7 @@ UI:RegisterPage({
         self.todoScroll = tscroll
         self.todoEmpty = UI:Text(todo, 13, C.muted)
         self.todoEmpty:SetPoint("CENTER", 0, -10)
-        self.todoEmpty:SetText("Rien à faire : tout est à jour.")
+        self.todoEmpty:SetText(WK.T("Rien à faire : tout est à jour."))
         self.todoHeads = UI:Pool(function()
             local t = UI:Text(tscroll.child, 10)
             return t
@@ -278,7 +278,7 @@ UI:RegisterPage({
         end
         self.empty = UI:Text(card, 12, C.muted)
         self.empty:SetPoint("CENTER", area)
-        self.empty:SetText("L'historique se remplit au fil de tes sessions.")
+        self.empty:SetText(WK.T("L'historique se remplit au fil de tes sessions."))
 
         UI:ChartHover(area, self.chart, function(pt) return WK:FormatMoney(pt.v) end)
 
@@ -755,7 +755,7 @@ UI:RegisterPage({
 
             local free, total = c.freeSlots, c.totalSlots
             r.bags:SetText(total and total > 0 and string.format("%d / %d", total - (free or 0), total) or "-")
-            r.seen:SetText(isMe and "maintenant" or UI:Ago(c.lastSeen))
+            r.seen:SetText(isMe and WK.T("maintenant") or UI:Ago(c.lastSeen))
             y = y + 48
         end
         self.scroll:SetContentHeight(y)

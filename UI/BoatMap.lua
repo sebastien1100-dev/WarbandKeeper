@@ -145,6 +145,13 @@ function UI:DrawShips(cv, mapID, w, h)
     placeShips()
 end
 
+-- carte fermée ou redessin interrompu : tracés et navires cachés, plus de placement sur l'ancienne carte
+function UI:HideShips()
+    lines:Reset()
+    for _, p in ipairs(ships) do if p.map then p:Hide() end end
+    state.cv = nil
+end
+
 local ticker = CreateFrame("Frame")
 ticker:SetScript("OnUpdate", function(s, el)
     s.acc = (s.acc or 0) + el
@@ -171,8 +178,9 @@ function UI:RefreshMiniShips()
     local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
     local B = BL()
     local n = 0
+    local all = not WK.modules.MapLayers:Config().myFaction
     for _, l in ipairs(B:All()) do
-        if B:Mine(l) then
+        if B:Mine(l) or all then
             local c, x, y = B:ShipPos(l)
             if c == pl.cont then
                 local dx, dy = -(y - pl.wy), x - pl.wx

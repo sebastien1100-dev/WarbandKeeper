@@ -543,7 +543,7 @@ createWindow = function(self)
         c:SetScript("OnClick", function(s)
             if s.page then
                 UI:ShowPage(s.page)
-                if s.after then s.after() end
+                if s.after and UI.current == s.page then s.after() end
             end
         end)
         return c
@@ -1068,7 +1068,7 @@ function UI:RefreshChips()
     if f then ok, list = pcall(f) end
     if not ok or type(list) ~= "table" then list = {} end
     local x = PAD - 5
-    local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0) - 70 - 3 * 32
+    local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0) - 70 - #BOTTOM * 34
         - ((self.updBtn and self.updBtn:IsShown()) and (self.updBtn:GetWidth() + 8) or 0)
     for _, ch in ipairs(list) do
         local c = self.chips:Get()
@@ -1096,7 +1096,8 @@ end
 
 function UI:ToggleWindow(page)
     local f = self:Create()
-    if f:IsShown() and (not page or page == self.current) then
+    local cur = page == "notes" and "options" or page
+    if f:IsShown() and (not page or (cur == self.current and (page ~= "notes" or WK.DB.global.settings.ui.optSection == "notes"))) then
         f:Hide()
     else
         f:Show()

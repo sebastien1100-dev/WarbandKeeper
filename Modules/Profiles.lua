@@ -14,9 +14,14 @@ local T = function(s) return WK.T(s) end
 local DEFAULT = "Défaut"
 M.DEFAULT = DEFAULT
 
--- Ce qu'un profil contient : clé de WK.DB.global, et sous-clés à laisser de côté (données ou état)
+-- Ce qu'un profil contient : clé de WK.DB.global, et sous-clés à laisser de côté (données ou état) ;
+-- __only = seulement ces sous-clés (le reste de la table est fait de données du compte)
 local KEYS = {
-    settings = { trackedItems = true, lastSeenVersion = true, statsHidden = true },
+    settings = { trackedItems = true, lastSeenVersion = true, notesSeenVersion = true, statsHidden = true },
+    dungeons = { __only = { cfg = true } },
+    itemLock = { __only = { cfg = true } },
+    mail = { __only = { enabled = true, closeAfter = true, sortAfter = true, autoTake = true } },
+    bank = { __only = { enabled = true, sortAfter = true } },
     qol = { petFoods = true },
     glow = { saved = true, otherOff = true },
     rares = { kills = true, dead = true },
@@ -53,15 +58,31 @@ end
 -- Réglages en place -> copie
 local function capture()
     local snap = {}
-    for key, skip in pairs(KEYS) do snap[key] = copy(WK.DB.global[key], skip) end
+    for key, skip in pairs(KEYS) do
+        if skip.__only then
+            local live, part = WK.DB.global[key] or {}, {}
+            for k in pairs(skip.__only) do part[k] = copy(live[k]) end
+            snap[key] = part
+        else
+            snap[key] = copy(WK.DB.global[key], skip)
+        end
+    end
     return snap
 end
 
 -- Copie -> réglages en place (les sous-clés de données restent celles du compte)
-local function apply(snap)
+local function apply(snap, reset)
     local g = WK.DB.global
     for key, skip in pairs(KEYS) do
         local live = g[key] or {}
+        if skip.__only then
+            -- seulement les sous-clés de réglages : le reste (données) ne bouge pas ; une valeur absente du
+            -- profil (capturé avant l'ajout de la clé) garde la valeur en place
+            local part = snap and snap[key]
+            if part then for k in pairs(skip.__only) do if part[k] ~= nil then live[k] = copy(part[k]) end end end
+            if reset then for k in pairs(skip.__only) do live[k] = nil end end
+            g[key] = live
+        else
         local kept = {}
         for k in pairs(skip) do kept[k] = live[k] end
         local fresh = copy((snap and snap[key]) or {})
@@ -71,6 +92,7 @@ local function apply(snap)
             fresh.fishing.savedSound, fresh.fishing.savedSoft = live.fishing.savedSound, live.fishing.savedSoft
         end
         g[key] = fresh
+        end
     end
     -- un profil capturé avant l'ajout d'un réglage n'en a pas la valeur par défaut
     if WK.DB.FillDefaults then WK.DB:FillDefaults() end
@@ -145,7 +167,7 @@ end
 
 -- Remet le profil en place aux réglages d'origine (puis recharge).
 function M:Reset()
-    apply({})
+    apply({}, true)
     if ReloadUI then ReloadUI() end
 end
 

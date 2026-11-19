@@ -39,7 +39,7 @@ local function paint(p, node, ranks, size, alpha)
     local col = N:Color(node, ranks)
     p.ring:SetSize(size, size)
     p.ring:SetVertexColor(col[1], col[2], col[3], alpha)
-    p.icon:SetSize(size - 3, size - 3)
+    p.icon:SetSize(size * 0.82, size * 0.82)
     p.icon:SetTexture(itemIcon(node.id))
     p.icon:SetAlpha(alpha)
 end

@@ -150,6 +150,13 @@ end
 -- Boucle (cadre toujours actif pendant le guidage : l'épingle peut être cachée sans l'arrêter)
 local function update()
     local t = G.target
+    -- distance : par le trajet si on l'a, sinon à vol d'oiseau ; l'arrivée (moins de 10 m) arrête le guidage
+    -- même quand l'épingle à l'écran est coupée
+    local d, p
+    if t then
+        d, p = UI:GuideDistance(t)
+        if d and d < 10 and p and t.map then arrive(t); t = G.target end
+    end
     if not t or not G:Config().screenPin then
         if pin then pin:Hide() end
         showGameMarker(true)
@@ -157,9 +164,6 @@ local function update()
     end
     pin = pin or build()
     local f = pin
-    -- distance : par le trajet si on l'a, sinon à vol d'oiseau
-    local d, p = UI:GuideDistance(t)
-    if d and d < 10 and p and t.map then arrive(t) end
     local nf, clamped = navFrame()
     showGameMarker(false)
     local atEdge = false

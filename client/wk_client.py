@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.6.3"
+CLIENT_VERSION = "1.6.4"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -822,7 +822,11 @@ def install_zip(addons, zpath, old_version):
     try:
         safe_extract(zpath, addons)
     except Exception:
-        if moved and not os.path.isdir(target):
+        # extraction ratée en cours de route (disque plein, fichier verrouillé) : on retire le morceau
+        # installé et on remet l'ancienne version, pour que « rien n'a été changé » soit vrai
+        if os.path.isdir(target):
+            shutil.rmtree(target, ignore_errors=True)
+        if moved and os.path.isdir(moved) and not os.path.isdir(target):
             shutil.move(moved, target)
         raise
     if oldFiles is None:
@@ -886,9 +890,14 @@ def self_update(exe_path):
     """Remplace l'exe du client par exe_path (téléchargé) à la fermeture, puis le relance (environnement propre)."""
     cur = sys.executable
     bat = os.path.join(tempfile.gettempdir(), "wk-client-update.bat")
-    with open(bat, "w", encoding="mbcs" if IS_WIN else "utf-8") as f:
-        f.write('@echo off\r\n:wait\r\ntimeout /t 1 /nobreak >nul\r\n'
-                'move /y "%s" "%s" >nul 2>&1 || goto wait\r\n'
+    # en UTF-8 avec « chcp 65001 » : un chemin accentué (C:\Users\Hélène) est lu correctement par cmd.exe ;
+    # au plus 60 essais (une minute) pour remplacer l'exe, puis on relance quand même l'ancien
+    with open(bat, "w", encoding="utf-8") as f:
+        f.write('@echo off\r\nchcp 65001 >nul\r\nset n=0\r\n:wait\r\ntimeout /t 1 /nobreak >nul\r\n'
+                'set /a n+=1\r\n'
+                'move /y "%s" "%s" >nul 2>&1 && goto done\r\n'
+                'if %%n%% lss 60 goto wait\r\n'
+                ':done\r\n'
                 'timeout /t 2 /nobreak >nul\r\n'  # laisse l'ancien client finir de ranger ses fichiers temporaires
                 'start "" "%s"\r\ndel "%%~f0"\r\n' % (exe_path, cur, cur))
     subprocess.Popen(["cmd", "/c", bat], env=clean_env(), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
@@ -2071,16 +2080,24 @@ class App:
         self.q.put(("call", fn, a, None))
 
     def poll(self):
+        # une erreur dans un rappel ne doit jamais arrêter la boucle (sinon plus aucune tâche de fond n'aboutit)
         try:
             while True:
                 kind, fn, res, err = self.q.get_nowait()
-                if kind == "call":
-                    fn(*res)
-                elif fn:
-                    fn(res, err)
+                try:
+                    if kind == "call":
+                        fn(*res)
+                    elif fn:
+                        fn(res, err)
+                except Exception as e:
+                    try:
+                        self.toast("Erreur : %s" % e, "negative")
+                    except Exception:
+                        pass
         except queue.Empty:
             pass
-        self.root.after(80, self.poll)
+        finally:
+            self.root.after(80, self.poll)
 
     def refresh(self):
         home = self.pages["home"]

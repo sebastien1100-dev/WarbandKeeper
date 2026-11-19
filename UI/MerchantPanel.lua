@@ -46,19 +46,26 @@ end
 local function buy(s, need)
     if (s.available or -1) == 0 then return 0 end
     local bought = 0
+    -- l'achat passe par le serveur : l'argent et le stock sont décomptés ici, sinon une rafale d'achats
+    -- dépasserait ce qu'on a ou ce que le marchand propose (messages d'erreur en série)
+    local money = GetMoney()
+    local stock = (s.available or -1) > 0 and s.available or math.huge
     if s.batch > 1 then
         for _ = 1, math.min(math.ceil(need / s.batch), 40) do
-            if s.price > GetMoney() then break end
+            if s.price > money or stock <= 0 then break end
             BuyMerchantItem(s.index)
+            money, stock = money - s.price, stock - 1
             bought = bought + s.batch
         end
     else
         local maxStack = GetMerchantItemMaxStack and GetMerchantItemMaxStack(s.index) or 20
-        local left = need
+        local left = math.min(need, stock)
         while left > 0 do
             local n = math.min(left, maxStack)
-            if s.price * n > GetMoney() then break end
+            if s.price * n > money then n = math.floor(money / math.max(1, s.price)) end
+            if n <= 0 then break end
             BuyMerchantItem(s.index, n)
+            money = money - s.price * n
             bought, left = bought + n, left - n
         end
     end

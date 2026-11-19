@@ -56,7 +56,7 @@ function UI:ResetSearchIndex(root)
 end
 
 local function pageLabel(def)
-    return WK.T(def.nav or def.key)
+    return WK.T(def.nav or def.title or def.key)
 end
 
 -- Page et section qui contiennent un cadre
@@ -89,7 +89,7 @@ local function search(q)
     -- pages
     for key, def in pairs(UI.pages) do
         local l = pageLabel(def)
-        if WK:PageOn(key) and norm(l):find(q, 1, true) then add(T("Page"), l, nil, function() UI:ShowPage(key) end) end
+        if key ~= "charsheet" and WK:PageOn(key) and norm(l):find(q, 1, true) then add(T("Page"), l, nil, function() UI:ShowPage(key) end) end
     end
     -- sections (colonnes de QoL et d'Options)
     for key, def in pairs(UI.pages) do
@@ -140,6 +140,12 @@ local function search(q)
                         add(T("Objet"), name, string.format(T("%d sur le compte"), total), function()
                             UI:ShowPage("inventory")
                             local inv = UI.pages.inventory
+                            -- vue « tous les persos » : sur Verrouillés, Rangement… la recherche ne montrerait rien
+                            if inv and inv.char ~= "all" then
+                                inv.char = "all"
+                                WK.DB.global.settings.ui.invChar = "all"
+                                if inv.Refresh then pcall(inv.Refresh, inv) end
+                            end
                             if inv and inv.search then inv.search:SetText(name) end
                         end)
                     end

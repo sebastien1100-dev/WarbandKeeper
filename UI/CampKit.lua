@@ -110,14 +110,16 @@ local function build()
     f:Hide()
     UI:RegisterHUD("campKit", f, {
         label = T("Kit de camp"), protected = true, default = { -170, -120 },
-        enabled = function() return M:Config().kit end,
+        enabled = function() return M:Config().kit and WK:FeatureOn("campfire") end,
         sample = function(on)
             f.sample = on or nil
             if inCombat() then return end
             if on then
                 local demo = { { id = M.FIRES[1][1], kind = "fire", count = 2 }, { id = 279944, kind = "object", count = 1 },
                     { id = 279967, kind = "object", count = 1 }, { id = M.SLEEPING_BAG, kind = "bag", count = 1 } }
-                f:Fill(demo); f:Show()
+                f:Fill(demo)
+                for _, b in ipairs(f.buttons) do b:SetAttribute("type", nil) end -- aperçu : un clic n'utilise rien
+                f:Show()
             else
                 UI:RefreshCampKit()
             end
@@ -133,6 +135,7 @@ local function build()
             local e = list[i]
             if e and i <= n then
                 b.id, b.kind = e.id, e.kind
+                b:SetAttribute("type", "item") -- rendu après un aperçu (qui l'avait retiré)
                 b:SetAttribute("item", "item:" .. e.id)
                 b.icon:SetTexture(itemIcon(e.id))
                 b.n:SetText((e.count or 0) > 1 and e.count or "")
@@ -152,9 +155,10 @@ local function build()
 end
 
 function UI:RefreshCampKit()
+    -- boutons protégés : jamais construits ni changés en combat (rejoué à PLAYER_REGEN_ENABLED)
+    if inCombat() then pending = true return end
     if not kit then kit = build() end
     if kit.sample then return end
-    if inCombat() then pending = true return end
     pending = false
     local cfg = M:Config()
     local list = (cfg.kit and WK:FeatureOn("campfire")) and M:Kit() or {}

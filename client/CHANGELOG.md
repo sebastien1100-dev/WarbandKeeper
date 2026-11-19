@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.6.4 — 19/11/2026
+
+### Corrections
+- Mise à jour du client : sur un compte Windows au nom accentué (ou un exe rangé sans droit d'écriture), le remplacement de l'exe pouvait tourner en boucle sans fin et le client ne redémarrait jamais. Le chemin est maintenant lu correctement, et après une minute d'essais l'ancien client est relancé.
+- Une erreur pendant une tâche de fond (vérification, téléchargement) pouvait bloquer toutes les suivantes jusqu'à la fermeture du client.
+- Installation interrompue (disque plein, fichier verrouillé par l'antivirus) : l'addon restait à moitié installé alors que le message disait « rien n'a été changé ». L'ancienne version est maintenant remise.
+
 ## 1.6.3 — 19/11/2026
 
 ### Corrections

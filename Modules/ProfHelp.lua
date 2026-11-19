@@ -200,8 +200,17 @@ function M:ExpectDE(itemID)
     local key = itemID and self:DETier(itemID)
     pendingDE = key and { key = key, t = GetTime and GetTime() or 0 } or nil
 end
+-- le butin ne compte que si le désenchantement a vraiment abouti (sinon un cadavre fouillé juste après
+-- serait noté comme résultat) ; un sort raté ou interrompu oublie l'objet visé
+local DE_SPELL = 13262
+WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+    if unit == "player" and spellID == DE_SPELL and pendingDE then pendingDE.ok = true end
+end)
+for _, ev in ipairs({ "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED" }) do
+    WK:On(ev, function(unit, _, spellID) if unit == "player" and spellID == DE_SPELL then pendingDE = nil end end)
+end
 WK:On("LOOT_OPENED", function()
-    if not pendingDE or ((GetTime and GetTime() or 0) - pendingDE.t) > 12 then return end
+    if not pendingDE or not pendingDE.ok or ((GetTime and GetTime() or 0) - pendingDE.t) > 12 then return end
     local items = {}
     for i = 1, (GetNumLootItems and GetNumLootItems() or 0) do
         local id = WK:ParseItemID(GetLootSlotLink and GetLootSlotLink(i))

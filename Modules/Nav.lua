@@ -414,7 +414,9 @@ computeFrom = function(cont, sx, sy, target)
         local best, bd
         for _, r in ipairs(L and L:AllTransports() or {}) do
             if not (r.side and r.side ~= fac) then
-                for _, pair in ipairs({ { r.a, r.b }, { r.b, r.a } }) do
+                -- ligne du jeu à plus de 2 quais (boucle) : chaque étape ne va que de a vers b
+                local loop = r.game and r.game.stops and #r.game.stops > 2
+                for _, pair in ipairs(loop and { { r.a, r.b } } or { { r.a, r.b }, { r.b, r.a } }) do
                     local here, there = pair[1], pair[2]
                     local hc, hx, hy = Gd().ToWorld(here[1], here[2] / 100, here[3] / 100)
                     local thc = Gd().ToWorld(there[1], there[2] / 100, there[3] / 100)
@@ -855,7 +857,8 @@ learnRide = function(r, endP, learn)
     if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
 end
 local function rideTick()
-    if not cfg().learn then ride = nil; lastS = nil; M.rideOff = true return end
+    -- les traversées (horaires, tracés des lignes prises) ne dépendent pas de « Apprendre les chemins »,
+    -- qui ne parle que des chemins à pied ou à monture
     M.rideOff = nil
     local p = Gd():PlayerPos()
     if not (p and p.cont) then return end
@@ -904,7 +907,7 @@ function M:BoatDiag()
     local p = Gd():PlayerPos()
     local BT = WK.modules.BoatTimes
     table.insert(out, string.format("apprentissage : %s · position : %s · en traversée : %s · bateaux appris : %d · horaires reçus : %d (partage %s)",
-        M.rideOff and "coupé (QoL > Carte, Apprendre les chemins)" or "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
+        "actif", p and p.cont and (zoneName(p.map) .. " / continent " .. tostring(p.cont)) or "inconnue",
         ride and "oui" or "non", #M:Boats(), BT and BT.received or 0, cfg().boatShare == false and "coupé" or "actif"))
     for _, l in ipairs(M.boatLog) do table.insert(out, l) end
     if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end

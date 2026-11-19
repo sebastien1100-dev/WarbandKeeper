@@ -174,7 +174,7 @@ local function build()
     end
     btn.paint = paint
     UI:RegisterHUD("buffButton", btn, {
-        label = T("Buffer autour"), default = { 220, -140 },
+        label = T("Buffer autour"), default = { 220, -140 }, protected = true,
         enabled = function() local c = cfg(); return WK.BUFF_CLASSES[myClass() or ""] and c and c.buffAround ~= false and WK:FeatureOn("classes") end,
         sample = function(on)
             btn.sample = on
@@ -218,6 +218,7 @@ end
 function UI:RefreshBuffButton()
     if not btn then
         if not WK.BUFF_CLASSES[myClass() or ""] then return end
+        if inCombat() then return end -- bouton protégé : construit hors combat (rappelé à PLAYER_REGEN_ENABLED)
         build()
     end
     if btn.sample or inCombat() then return end
@@ -260,9 +261,10 @@ end
 
 -- juste avant le combat (encore permis) : bouton et liseré cachés
 WK:On("PLAYER_REGEN_DISABLED", function() if btn and not btn.sample then btn:Hide(); mark:Hide() end end)
-WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(0.5, function() UI:RefreshBuffButton() end) end)
+WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(0.5, function() UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end)
 WK:On("PLAYER_LOGIN", function()
-    if not WK.BUFF_CLASSES[myClass() or ""] then return end
+    -- toutes les classes : un perso qui ne buffe pas rend la valeur d'avant des plaques amies
+    if not WK.BUFF_CLASSES[myClass() or ""] then C_Timer.After(3, function() UI:SyncBuffPlates() end) return end
     C_Timer.After(3, function()
         UI:SyncBuffPlates()
         UI:RefreshBuffButton()

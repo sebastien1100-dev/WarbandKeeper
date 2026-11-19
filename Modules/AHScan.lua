@@ -48,12 +48,16 @@ function M:Age(itemID)
     if not e or not e.t then return nil end
     return math.floor((time() - e.t) / 86400)
 end
--- Moyenne des plus bas de chaque jour (14 jours) et nombre de jours relevés
-function M:Average(itemID)
+-- Moyenne des plus bas de chaque jour et nombre de jours relevés ; days = seulement les derniers jours
+-- (« moyenne 7 j »), sinon tout l'historique gardé (keepDays)
+function M:Average(itemID, days)
     local e = self:Entry(itemID)
     if not e or not e.h then return nil, 0 end
     local sum, n = 0, 0
-    for _, p in pairs(e.h) do sum, n = sum + p, n + 1 end
+    local from = days and (math.floor(time() / 86400) - days) or nil
+    for d, p in pairs(e.h) do
+        if not from or d > from then sum, n = sum + p, n + 1 end
+    end
     if n == 0 then return nil, 0 end
     return math.floor(sum / n + 0.5), n
 end
@@ -583,6 +587,13 @@ WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
     local b = M.buy
     if not b then return end
     WK:Print(string.format(T("Acheté : %d %s pour %s."), b.qty, WK.GetItemInfo(b.id) or "?", WK:FormatMoney(b.total or 0)))
+    -- achat isolé (Parcourir, Vendre) : pas de liste, donc ni décompte ni objet suivant
+    if not b.list then
+        M.buy = nil
+        WK:NotifyChanged()
+        if M.OnProgress then M:OnProgress() end
+        return
+    end
     consume(b.list, b.id, b.qty)
     M:PruneList(b.list)
     b.spent, b.count = (b.spent or 0) + (b.total or 0), (b.count or 0) + 1

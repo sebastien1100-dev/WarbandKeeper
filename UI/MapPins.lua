@@ -19,6 +19,11 @@ function UI.MapIconSize()
     local v = L and L.Config and L:Config().iconScale or 100
     return math.max(0.5, math.min(2, (tonumber(v) or 100) / 100))
 end
+-- Échelle des étiquettes posées sur la toile (comptes à rebours, noms, « mort · … ») : suit le zoom et
+-- le réglage de taille des icônes, pour rester à la mesure de l'icône qu'elles accompagnent
+function UI.MapLabelScale()
+    return math.max(0.4, UI.MapIconScale() * UI.MapIconSize())
+end
 function UI.MapIconScale()
     local sc = WorldMapFrame and WorldMapFrame.ScrollContainer
     if not (sc and sc.GetCanvasScale) then return 1 end
@@ -133,6 +138,7 @@ local function hideAll()
     if UI.HideMapLayers then UI:HideMapLayers() end
     if UI.HideNavRoute then UI:HideNavRoute() end
     if UI.HideBoatPaths then UI:HideBoatPaths() end
+    if UI.HideShips then UI:HideShips() end
     if UI.HideMapNotes then UI:HideMapNotes() end
 end
 
@@ -154,6 +160,7 @@ function UI:RefreshGuidePinLabel()
     if d then table.insert(lines, "|cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") end
     targetPin.label:SetText(table.concat(lines, "\n"))
     targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 18, #lines * 13 + 8)
+    targetPin.pill:SetScale(UI.MapLabelScale())
 end
 local function drawTarget(cv, mapID, w, h)
     local G = WK.modules.Guide

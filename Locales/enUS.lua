@@ -3344,4 +3344,6 @@ WK.Locales.enUS.text = {
     ["Corrections"] = "Fixes",
     ["Nouveautés et à venir"] = "What's new and coming soon",
     ["Un jeu de réglages par perso"] = "One set of settings per character",
+    ["Objet introuvable dans tes sacs : mise en vente annulée."] = "Item not found in your bags: listing cancelled.",
+    ["Enchère annulée : l'objet revient par le courrier. La page Vendre s'ouvrira dessus, au bon prix, dès qu'il sera dans tes sacs."] = "Auction cancelled: the item comes back by mail. The Sell page will open on it, at the right price, as soon as it is in your bags.",
 }

@@ -193,8 +193,16 @@ function M:Record(c, old, new)
     local s = store(key)
     local rec
     for i, p in ipairs(s.list) do if p.auto then rec = i end end
-    -- talents réinitialisés : on repart de zéro
-    if total(new) == 0 and rec then s.list[rec].steps = {} return end
+    -- talents réinitialisés : on repart de zéro (seulement une vraie remise à zéro : des points avant et des
+    -- points libres maintenant ; un relevé tout à zéro pendant le chargement ne vide pas le plan)
+    if total(new) == 0 then
+        local free
+        if UnitCharacterPoints then local ok, v = pcall(UnitCharacterPoints, "player"); if ok then free = v end end
+        if type(free) ~= "number" and GetUnspentTalentPoints then free = GetUnspentTalentPoints() end
+        if type(free) ~= "number" then free = c and c.talentFree end
+        if rec and total(old) > 0 and (type(free) == "number" and free > 0) then s.list[rec].steps = {} end
+        return
+    end
     for ti, t in ipairs(new) do
         local ot = old[ti]
         for j, d in ipairs(t.list or {}) do

@@ -220,6 +220,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
         end
         p.skull:SetShown(ago ~= nil)
         p.deadPill:SetShown(ago ~= nil)
+        p.deadPill:SetScale(UI.MapLabelScale())
         p:SetAlpha((dead and not ago) and 0.45 or 1)
         local grey = dead and not ago
         if p.bg.SetDesaturated then p.bg:SetDesaturated(grey); p.ring:SetDesaturated(grey); p.star:SetDesaturated(grey) end
@@ -393,7 +394,9 @@ function UI:SyncRareList(mapID, list)
     panel.count:SetText(left .. " / " .. #list)
     panel.chev:SetRotation(cfg.listCollapsed and math.pi / 2 or 0)
     panel.chev:SetVertexColor(unpack(C.muted))
-    for _, rw in ipairs(rows) do rw:Hide() end
+    -- seulement les lignes en trop sont cachées : cacher la ligne survolée déclenche son OnLeave, qui
+    -- relance ce dessin (clignotement sans fin)
+    local used = 0
     local y = -24
     if not cfg.listCollapsed then
         for i, r in ipairs(list) do
@@ -415,10 +418,12 @@ function UI:SyncRareList(mapID, list)
                 rw.lvl:SetTextColor(unpack(C.negative))
             end
             rw:Show()
+            used = i
             y = y - ROW
         end
         y = y - 4
     end
+    for k = used + 1, #rows do rows[k]:Hide() end
     panel:SetHeight(-y + 2)
     panel:Show()
 end

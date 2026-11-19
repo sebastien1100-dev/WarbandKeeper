@@ -2002,7 +2002,11 @@ UI:RegisterPage({
             UI:SettingRow(xb, -178, "Épaisseur", "Hauteur de la barre elle-même.",
                 UI:Slider(xb, 240, 4, 24, 1, function() return xcfg.thick or 8 end, function(v) xcfg.thick = v; xrefresh() end, "%d px"), 260)
             UI:SettingRow(xb, -224, "Prévenir d'un niveau à rendre", "À l'écran et dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
-                toggle(xb, function() return xcfg.levelAlert end, function(v) xcfg.levelAlert = v end), 80)
+                toggle(xb, function() return xcfg.levelAlert end, function(v)
+                    xcfg.levelAlert = v
+                    local XPm = WK.modules.XP
+                    if XPm and XPm.CheckLevelAlert then XPm.CheckLevelAlert() end
+                end), 80)
             UI:SettingRow(xb, -270, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
                 toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
 
