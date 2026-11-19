@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.2"
+CLIENT_VERSION = "1.8.3"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -2178,8 +2178,11 @@ class App:
             b.bind("<Leave>", lambda e, b=b, k=cls.key: b.configure(bg=C["surface2"] if k == self.current else C["sidebar"]))
             self.nav[cls.key] = b
         # pastille sur « Mises à jour » : nombre de versions à installer (ou « client » pour le client seul)
-        self.navBadge = tk.Label(self.nav["home"], text="", bg=C["negative"], fg="#ffffff", font=App.fonts["smallb"], padx=6, pady=0)
+        # (sœur de l'entrée, posée par-dessus : redessiner l'entrée au survol ne l'efface plus)
+        self.navBadge = tk.Label(side, text="", bg=C["negative"], fg="#ffffff", font=App.fonts["smallb"], padx=6, pady=0, cursor="hand2")
         self.navBadge.bind("<Button-1>", lambda e: self.show("home"))
+        for ev in ("<Enter>", "<Leave>", "<Button-1>"):
+            self.nav["home"].bind(ev, lambda e: self.root.after_idle(self.navBadge.lift), add="+")
         self.clientBanner = tk.Frame(side, bg=C["sidebar"])
         self.clientBanner.pack(side="bottom", fill="x", padx=12, pady=12)
 
@@ -2480,7 +2483,8 @@ class App:
         text = str(n) if n else ("client" if client else "")
         if text:
             self.navBadge.configure(text=text)
-            self.navBadge.place(relx=1.0, rely=0.5, x=-10, anchor="e")
+            self.navBadge.place(in_=self.nav["home"], relx=1.0, rely=0.5, x=-10, anchor="e")
+            self.navBadge.lift()
         else:
             self.navBadge.place_forget()
 
