@@ -168,7 +168,7 @@ UI:RegisterPage({
         self:BuildLocks(p, x0)
         self:BuildStash(p, x0)
         -- Roue dentée : réglages des objets verrouillés (règles, protection) et du rangement (perso HV)
-        self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1,
+        self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1, seeThrough = true,
             cards = function() return { self.lockRules, self.lockSets, self.stashSets } end }, self)
         self.gp.gear:SetPoint("TOPRIGHT")
         -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient

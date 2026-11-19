@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.6", date = "19/11/2026",
+        fixed = {
+            "Inventaire, roue dentée : un bandeau plus sombre restait derrière le titre « Réglages de l'inventaire » (le volet cachait le halo du haut de la fenêtre). Le volet est maintenant transparent ; ce qui est dessous est masqué tant qu'il est ouvert.",
+        },
+    },
+    {
         version = "1.76.5", date = "19/11/2026",
         changed = {
             "Bénédictions > Répartition : une bénédiction ou une aure pas encore apprise se voit bien mieux : icône grise mais nette (plus à moitié effacée), cadre orange autour et « ! » plus gros sur une pastille sombre.",

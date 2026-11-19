@@ -1124,8 +1124,32 @@ function UI:PageGear(p, opts, def)
         refreshOwners() -- avant la mise en page : une carte peut changer de hauteur
         self:Layout()
     end
+    -- opts.seeThrough : fond du volet transparent (le halo de la fenêtre reste visible, pas de bande plus
+    -- sombre) ; ce qui est dessous dans la zone du volet est caché pendant qu'il est ouvert, puis rendu
+    local hidden = {}
+    local function coverUnder(open)
+        if not opts.seeThrough then return end
+        if open then
+            local left = ov:GetLeft() or 0
+            -- rendu invisible (alpha) plutôt que caché : un rafraîchissement de la page qui le remontre
+            -- ne le fait pas réapparaître sous le volet ; les clics vont au volet, posé au-dessus
+            local function take(x)
+                if x ~= ov and x ~= gear and (x:GetLeft() or left) >= left - 1 then
+                    table.insert(hidden, { x, x:GetAlpha() }); x:SetAlpha(0)
+                end
+            end
+            for _, c in ipairs({ p:GetChildren() }) do take(c) end
+            for _, r in ipairs({ p:GetRegions() }) do take(r) end
+        else
+            for _, e in ipairs(hidden) do e[1]:SetAlpha(e[2] or 1) end
+            wipe(hidden)
+        end
+    end
+    if opts.seeThrough then ov.bg:SetColorTexture(0, 0, 0, 0) end
     function gp:Open(on)
+        local was = self.open
         self.open = on and true or false
+        if self.open ~= was then coverUnder(self.open) end
         ov:SetShown(self.open)
         gear:SetActive(self.open)
         if opts.onToggle then opts.onToggle(self.open) end
