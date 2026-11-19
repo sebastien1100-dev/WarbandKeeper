@@ -624,3 +624,27 @@ function M:CraftOrSellList()
     table.sort(out, function(a, b) return a.gain > b.gain end)
     return out
 end
+
+---------------------------------------------------------------------------
+-- Conseil de métier : parmi les recettes que le perso connaît, l'orange (un point sûr) puis la jaune la
+-- moins chère au prix du jour ; et combien il peut en faire avec ce qu'il a (sacs, banque, courrier).
+---------------------------------------------------------------------------
+function M:Advice(c, prof)
+    if not c or not prof then return nil end
+    local R, Inv = WK.modules.Recipes, WK.modules.Inventory
+    local best
+    for _, rec in ipairs(R:ForProfession(c, prof)) do
+        if (rec.diff == "optimal" or rec.diff == "medium") and rec.reagents and #rec.reagents > 0 then
+            local cost = R:Economics(rec)
+            local can = math.huge
+            for _, rg in ipairs(rec.reagents) do
+                can = math.min(can, math.floor(Inv:CharCount(c, rg[1]) / math.max(1, rg[2])))
+            end
+            local rank = rec.diff == "optimal" and 1 or 2
+            if not best or rank < best.rank or (rank == best.rank and cost < best.cost) then
+                best = { rec = rec, cost = cost, can = can == math.huge and 0 or can, rank = rank, color = rec.diff }
+            end
+        end
+    end
+    return best
+end

@@ -1058,41 +1058,85 @@ UI:RegisterPage({
         local ML = WK.modules.MapLayers
         local mlc = ML:Config()
         local function mlRefresh() if UI.RefreshMapLayers then UI:RefreshMapLayers() end end
-        local nRows, nFam = #ML.LAYERS, #ML.FAMILIES
-        subtab("Lieux", 1)
-        local lcard = card("Sur les cartes", 40 + 22 + nFam * 26 + nRows * 36 + 8, "une pastille par lieu ; sur la carte du monde, clic pour guider")
-        local hdr1 = UI:Text(lcard, 10, C.dim)
-        hdr1:SetPoint("TOPRIGHT", -78, -44)
-        hdr1:SetText(T("CARTE"))
-        local hdr2 = UI:Text(lcard, 10, C.dim)
-        hdr2:SetPoint("TOPRIGHT", -16, -44)
-        hdr2:SetText(T("MINICARTE"))
-        local ly = -62
+        -- grille de puces (3 colonnes) : pastille du lieu, nom, puis deux boutons carte / minicarte
+        local COLS, CH, CG = 3, 34, 6
+        local famRows, lh = {}, 40
         for _, fam in ipairs(ML.FAMILIES) do
-            local fl = UI:Text(lcard, 10, C.dim)
-            fl:SetPoint("TOPLEFT", 16, ly - 8)
-            fl:SetText(UI:Upper(T(fam.label)))
-            ly = ly - 26
-            for _, l in ipairs(ML.LAYERS) do
-                if l.family == fam.key then
-                    local ctl = CreateFrame("Frame", nil, lcard)
-                    ctl:SetSize(130, 24)
-                    local t1 = toggle(ctl, function() return mlc.map[l.key] end, function(v) mlc.map[l.key] = v; mlRefresh() end)
-                    t1:SetPoint("RIGHT", -72, 0)
-                    local t2 = toggle(ctl, function() return mlc.mini[l.key] end, function(v) mlc.mini[l.key] = v; mlRefresh() end)
-                    t2:SetPoint("RIGHT", -8, 0)
-                    local row = UI:SettingRow(lcard, ly, l.label, nil, ctl, 130)
-                    local dot = UI:Icon(row, "circle", 18, nil, "ARTWORK")
-                    dot:SetPoint("LEFT", 0, 0)
-                    dot:SetVertexColor(fam.color[1], fam.color[2], fam.color[3])
-                    local ic = UI:Icon(row, l.icon, 10, nil, "OVERLAY")
-                    ic:SetPoint("CENTER", dot, "CENTER")
-                    ic:SetVertexColor(unpack(C.bg))
-                    row.label:ClearAllPoints(); row.label:SetPoint("LEFT", 28, 0)
-                    ly = ly - 36
+            local n = 0
+            for _, l in ipairs(ML.LAYERS) do if l.family == fam.key then n = n + 1 end end
+            famRows[fam.key] = math.ceil(n / COLS)
+            if n > 0 then lh = lh + 22 + famRows[fam.key] * (CH + CG) end
+        end
+        subtab("Lieux", 1)
+        local lcard = card("Sur les cartes", lh + 8, "une pastille par lieu ; carte du monde et minicarte, clic pour allumer")
+        local chips = {}
+        local function chipToggle(chip, icon, tip, get, set)
+            local b = CreateFrame("Button", nil, chip)
+            b:SetSize(24, 24)
+            b.bg = UI:Rounded(b, 6, 0, "BACKGROUND", 2)
+            b.ic = UI:Icon(b, icon, 12, nil, "ARTWORK"); b.ic:SetPoint("CENTER")
+            function b:Refresh()
+                local on = get()
+                local r, g, bl = UI:Accent()
+                if on then
+                    self.bg:SetColor(r, g, bl, 1); self.ic:SetVertexColor(unpack(C.onAccent))
+                else
+                    self.bg:SetColor(C.hover[1], C.hover[2], C.hover[3], self.hover and 1 or 0.6); self.ic:SetVertexColor(r, g, bl, 0.55)
                 end
             end
+            b:SetScript("OnClick", function(s) set(not get()); s:Refresh(); WK:NotifyChanged() end)
+            b:SetScript("OnEnter", function(s)
+                s.hover = true; s:Refresh()
+                WK.UI:TooltipOwner(s, "ANCHOR_TOP"); GameTooltip:SetText(T(tip), 1, 1, 1); GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh(); GameTooltip:Hide() end)
+            UI:OnAccent(function() b:Refresh() end)
+            table.insert(self.toggles, b)
+            b:Refresh()
+            return b
         end
+        local ly = -40
+        local famHeads = {}
+        for _, fam in ipairs(ML.FAMILIES) do
+            local list = {}
+            for _, l in ipairs(ML.LAYERS) do if l.family == fam.key then table.insert(list, l) end end
+            if #list > 0 then
+                local fl = UI:Text(lcard, 10, C.dim)
+                fl:SetPoint("TOPLEFT", 16, ly - 6)
+                fl:SetText(UI:Upper(T(fam.label)))
+                ly = ly - 22
+                for i, l in ipairs(list) do
+                    local chip = CreateFrame("Frame", nil, lcard)
+                    chip:SetHeight(CH)
+                    chip.bg = UI:Rounded(chip, 8, 0, "BACKGROUND", 1); chip.bg:SetColor(unpack(C.surface2))
+                    local dot = UI:Icon(chip, "circle", 18, nil, "ARTWORK"); dot:SetPoint("LEFT", 8, 0)
+                    dot:SetVertexColor(fam.color[1], fam.color[2], fam.color[3])
+                    local ic = UI:Icon(chip, l.icon, 10, nil, "OVERLAY"); ic:SetPoint("CENTER", dot, "CENTER")
+                    ic:SetVertexColor(unpack(C.bg))
+                    local t2 = chipToggle(chip, "ring", "Minicarte", function() return mlc.mini[l.key] end, function(v) mlc.mini[l.key] = v; mlRefresh() end)
+                    t2:SetPoint("RIGHT", -5, 0)
+                    local t1 = chipToggle(chip, "map", "Carte du monde", function() return mlc.map[l.key] end, function(v) mlc.map[l.key] = v; mlRefresh() end)
+                    t1:SetPoint("RIGHT", t2, "LEFT", -4, 0)
+                    chip.label = UI:Text(chip, 12); chip.label:SetPoint("LEFT", 32, 0); chip.label:SetPoint("RIGHT", t1, "LEFT", -6, 0)
+                    chip.label:SetText(l.label)
+                    chip.col, chip.row, chip.y = (i - 1) % COLS, math.floor((i - 1) / COLS), ly
+                    table.insert(chips, chip)
+                    -- trouvable par la recherche de la barre latérale
+                    UI.settingIndex = UI.settingIndex or {}
+                    table.insert(UI.settingIndex, { row = chip, label = l.label })
+                end
+                ly = ly - famRows[fam.key] * (CH + CG)
+            end
+        end
+        UI:OnResize(lcard, function(w)
+            if not w or w <= 0 then return end
+            local cw = math.floor((w - 32 - (COLS - 1) * CG) / COLS)
+            for _, chip in ipairs(chips) do
+                chip:ClearAllPoints()
+                chip:SetPoint("TOPLEFT", 16 + chip.col * (cw + CG), chip.y - chip.row * (CH + CG))
+                chip:SetWidth(cw)
+            end
+        end)
         local fcard = card("Filtres et affichage", 40 + 5 * 46 + 8)
         UI:SettingRow(fcard, -40, "Seulement ma faction", "Pas les lieux ni les trajets réservés à l'autre faction.",
             toggle(fcard, function() return mlc.myFaction end, function(v) mlc.myFaction = v; mlRefresh() end), 80)

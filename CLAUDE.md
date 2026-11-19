@@ -87,7 +87,7 @@ Un nouveau réglage va dans la roue de sa page ; une nouvelle ligne d'infobulle 
 
 ## Aides de métiers
 
-Fabriquer ou vendre : `ProfHelp:CraftOrSell(objet)` / `CraftOrSellList()` (onglet `craftsell` de Métiers, ligne d'infobulle `craftTip`). Zones de récolte : `Gathering:ZoneRates(genre)` (sessions de farm, ressources du métier au prix du jour), `ZoneSpots`, tournée `StartTour` / `NextTourPoint` / `StopTour` (plus proche voisin, avance à moins de 30 m). Valeur à l'HV des sacs et des courriers : `UI/BagValue.lua` (réglages `AHScan:Config().bagValue`, `mailValue`). Idées de The Market seulement.
+Conseil de métier : `ProfHelp:Advice(perso, métier)` (orange puis jaune, la moins chère, nombre faisable), bandeau `RefreshAdvice` de la fiche et ligne `t.advice` des tuiles de Niveaux. Fabriquer ou vendre : `ProfHelp:CraftOrSell(objet)` / `CraftOrSellList()` (onglet `craftsell` de Métiers, ligne d'infobulle `craftTip`). Zones de récolte : `Gathering:ZoneRates(genre)` (sessions de farm, ressources du métier au prix du jour), `ZoneSpots`, tournée `StartTour` / `NextTourPoint` / `StopTour` (plus proche voisin, avance à moins de 30 m). Valeur à l'HV des sacs et des courriers : `UI/BagValue.lua` (réglages `AHScan:Config().bagValue`, `mailValue`). Idées de The Market seulement.
 
 Tous les réglages des métiers sont dans l'onglet « settings » de la page Métiers (roue dentée `self.gear` à droite du bandeau Niveaux / Recettes / File de fabrication, cachée sur la fiche d'un métier ; `Settings(page, parent)` dans `UI/Pages/Professions.lua` : cartes `scard` sur deux colonnes, menu `profPick` du métier réglé par « Ce métier ») ; `UI:OpenProfSettings()` y mène (renvois de QoL et d'Options). Un nouveau réglage de métier va dans cet onglet.
 

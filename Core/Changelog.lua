@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.45.0", date = "19/11/2026",
+        added = {
+            "Métiers : conseil pour monter. Dans la fiche d'un métier, un bandeau donne la recette orange (un point sûr), sinon jaune, la moins chère au prix du jour parmi celles que le perso connaît, avec son coût, ses composants, combien tu peux en faire et un bouton pour l'ajouter à la file.",
+            "Métiers > Niveaux : chaque tuile affiche aussi ce conseil (recette et coût).",
+        },
+        changed = {
+            "QoL > Carte et guidage > Lieux : « Sur les cartes » devient une grille de puces sur trois colonnes, avec deux petits boutons par lieu (carte du monde, minicarte) au lieu d'une ligne et deux interrupteurs.",
+        },
+    },
+    {
         version = "1.44.1", date = "19/11/2026",
         changed = {
             "Menu de gauche : les nombres sont des pastilles à la couleur d'accent, comme dans l'échelle du LFG (aussi sur les titres de groupe repliés).",
@@ -3108,7 +3118,6 @@ WK.Roadmap = {
     "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
     "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
     "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
-    "Conseil de métier : la recette orange ou jaune la moins chère parmi celles que le perso connaît.",
     "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
     "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
     "Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.",

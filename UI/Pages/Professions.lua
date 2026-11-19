@@ -7,6 +7,14 @@ local GAP = 12
 local TOP = -46
 local MAX_RECIPES = 150
 
+-- Couleurs de difficulté du jeu (comme les couleurs de qualité, elles ne dépendent pas du thème).
+local DIFF = {
+    optimal = { color = { 1, 0.5, 0.25 }, label = "Orange" },
+    medium  = { color = { 1, 0.82, 0 }, label = "Jaune" },
+    easy    = { color = { 0.25, 0.75, 0.25 }, label = "Vert" },
+    trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
+}
+
 -- Nom et icône d'une étape de guide : l'objet fabriqué, sinon la recette (enchantements).
 local function stepInfo(st)
     if st.out then
@@ -55,7 +63,7 @@ local function Levels(page, parent)
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, TOP)
     scroll:SetPoint("BOTTOMRIGHT")
-    local TILE_H, TILE_MIN = 74, 230
+    local TILE_H, TILE_MIN = 92, 230
 
     -- Ligne d'état d'une tuile : ce qu'il y a à faire ensuite pour ce métier.
     local function status(c, key, prof, pr)
@@ -130,6 +138,10 @@ local function Levels(page, parent)
                 tk:SetSize(2, 10)
                 t.ticks[i] = tk
             end
+            -- conseil : la recette orange ou jaune la moins chère que le perso connaît
+            t.advice = UI:Text(t, 11)
+            t.advice:SetPoint("TOPLEFT", 12, -52)
+            t.advice:SetPoint("TOPRIGHT", -12, -52)
             t.state = UI:Text(t, 10, C.muted)
             t.state:SetPoint("BOTTOMLEFT", 12, 10)
             t.state:SetPoint("BOTTOMRIGHT", -12, 10)
@@ -197,6 +209,13 @@ local function Levels(page, parent)
                     t.ticks[k]:ClearAllPoints()
                     t.ticks[k]:SetPoint("CENTER", t.bar, "LEFT", bw * k / 4, 0)
                     t.ticks[k]:SetColorTexture(unpack(C.surface2))
+                end
+                local adv = WK.modules.ProfHelp:Advice(c, name)
+                if adv then
+                    local col = DIFF[adv.color].color
+                    t.advice:SetText("* " .. UI:Hex(col) .. adv.rec.name .. "|r" .. UI:Hex(C.muted) .. "  ·  " .. WK:FormatMoney(math.floor(adv.cost)) .. "|r")
+                else
+                    t.advice:SetText("")
                 end
                 local txt, warn = status(c, e.key, name, pr)
                 t.warn = warn
@@ -589,12 +608,6 @@ end
 -- leur couleur, composants du compte, rentabilité, et ouverture du métier.
 ---------------------------------------------------------------------------
 -- Couleurs de difficulté du jeu (comme les couleurs de qualité, elles ne dépendent pas du thème).
-local DIFF = {
-    optimal = { color = { 1, 0.5, 0.25 }, label = "Orange" },
-    medium  = { color = { 1, 0.82, 0 }, label = "Jaune" },
-    easy    = { color = { 0.25, 0.75, 0.25 }, label = "Vert" },
-    trivial = { color = { 0.55, 0.55, 0.55 }, label = "Gris" },
-}
 
 -- Recette à l'hôtel des ventes (prix relevé par le scan) : texte court et couleur.
 local function recipeAH(itemID)
@@ -637,7 +650,7 @@ local function Detail(page, parent)
     local tab = { query = "", filter = "all", mode = "recipes" }
 
     -- En-tête : retour, perso, métier, ouverture, puis la barre des rangs de 1 à 300.
-    local HEAD_H = 118
+    local HEAD_H = 164
     local head = UI:Card(parent)
     head:SetHeight(HEAD_H)
     head:SetPoint("TOPLEFT", 0, TOP)
@@ -654,6 +667,47 @@ local function Detail(page, parent)
     local sub = UI:Text(head, 11, C.muted)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
     sub:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", 0, -4)
+
+    -- Conseil pour monter : la recette orange (puis jaune) la moins chère que ce perso connaît
+    local adv = CreateFrame("Frame", nil, head)
+    adv:SetPoint("TOPLEFT", 14, -58); adv:SetPoint("TOPRIGHT", -14, -58); adv:SetHeight(42)
+    adv.bg = UI:Rounded(adv, 9, 0, "BACKGROUND", 1)
+    adv.star = UI:Icon(adv, "star", 16, nil, "ARTWORK"); adv.star:SetPoint("LEFT", 12, 0)
+    adv.head = UI:Text(adv, 9, C.muted); adv.head:SetPoint("TOPLEFT", 38, -6); adv.head:SetText(UI:Upper(T("Conseil pour monter")))
+    adv.name = UI:Text(adv, 12); adv.name:SetPoint("TOPLEFT", 38, -19); adv.name:SetPoint("RIGHT", -190, 0)
+    adv.add = UI:Button(adv, "Ajouter à la file", nil, 26, "primary", "plus")
+    adv.add:SetPoint("RIGHT", -8, 0)
+    adv.add:SetScript("OnClick", function(b)
+        if b.key then
+            WK.modules.Recipes:AddToList(b.key, math.max(1, b.n or 1))
+            WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), math.max(1, b.n or 1), b.recName or "?"))
+        end
+    end)
+    function tab:RefreshAdvice(c, prof)
+        local a = WK.modules.ProfHelp:Advice(c, prof)
+        local r, g, b = UI:Accent()
+        adv.bg:SetColor(r, g, b, 0.12)
+        adv.star:SetVertexColor(r, g, b, 1)
+        if not a then
+            local gk = WK.modules.Gathering:Kind(prof)
+            adv.name:SetText(UI:Hex(C.muted) .. (gk and T("Métier de récolte : les zones conseillées sont plus bas.")
+                or T("Aucune recette orange ou jaune connue : regarde le guide ou les recettes à apprendre.")) .. "|r")
+            adv.add:Hide()
+            return
+        end
+        local col = DIFF[a.color].color
+        local parts = {}
+        for _, rg in ipairs(a.rec.reagents or {}) do table.insert(parts, rg[2] .. " " .. ((UI:ItemInfo(rg[1])) or "?")) end
+        adv.name:SetText(UI:Hex(col) .. a.rec.name .. "|r" .. UI:Hex(C.muted) .. "  ·  "
+            .. (a.color == "optimal" and T("1 point sûr") or T("point probable")) .. "  ·  "
+            .. string.format(T("coût %s"), WK:FormatMoney(math.floor(a.cost)))
+            .. "  ·  " .. (a.can > 0 and string.format(T("tu as tout pour %d"), a.can) or T("composants à réunir"))
+            .. "  ·  " .. table.concat(parts, ", ") .. "|r")
+        adv.add.key, adv.add.n, adv.add.recName = a.rec.key, a.can, a.rec.name
+        adv.add:SetLabel(a.can > 1 and string.format(T("Ajouter %d à la file"), a.can) or T("Ajouter à la file"))
+        adv.add:SetWidth(adv.add.label:GetStringWidth() + 44)
+        adv.add:Show()
+    end
 
     -- Barre des rangs : Apprenti (75), Compagnon (150), Expert (225), Artisan (300).
     local RANKS = { { "Apprenti", 75 }, { "Compagnon", 150 }, { "Expert", 225 }, { "Artisan", 300 } }
@@ -1500,6 +1554,7 @@ local function Detail(page, parent)
         local r, g, b = UI:ClassColor(c.class)
         title:SetText(string.format("%s  |cff%02x%02x%02x%s|r", self.prof, r * 255, g * 255, b * 255, WK:CharName(c, self.key)))
         placeRanks(pr.rank or 0)
+        self:RefreshAdvice(c, self.prof)
 
         local all = R:ForProfession(c, self.prof)
         local counts = { optimal = 0, medium = 0, easy = 0, trivial = 0 }
