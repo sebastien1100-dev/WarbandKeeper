@@ -173,9 +173,13 @@ UI:RegisterPage({
         self.gp.gear:SetPoint("TOPRIGHT")
         -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
+        -- le volet couvre tout le contenu (rien ne dépasse au-dessus) ; ses cartes commencent sous la roue dentée
         self.gp.overlay:ClearAllPoints()
-        self.gp.overlay:SetPoint("TOPLEFT", x0, -42)
+        self.gp.overlay:SetPoint("TOPLEFT", x0, 0)
         self.gp.overlay:SetPoint("BOTTOMRIGHT")
+        self.gp.scroll:ClearAllPoints()
+        self.gp.scroll:SetPoint("TOPLEFT", 0, -42)
+        self.gp.scroll:SetPoint("BOTTOMRIGHT")
         -- consommables conseillés (UI/ProfPanels.lua)
         self.prepPane = UI:BuildPrepPane(p)
         self.prepPane:SetPoint("TOPLEFT", x0, 0)

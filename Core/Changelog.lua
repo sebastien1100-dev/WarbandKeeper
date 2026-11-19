@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.11", date = "19/11/2026",
+        fixed = {
+            "Inventaire, réglages (roue dentée) : le haut du cadre du Rangement dépassait au-dessus des réglages (deux cadres superposés) ; le volet des réglages couvre maintenant tout le contenu.",
+        },
+    },
+    {
         version = "1.56.10", date = "19/11/2026",
         changed = {
             "Inventaire > Rangement : le titre (« Rangement par perso », le nombre d'objets et la note sur les envois) passe au-dessus du cadre ; plus rien ne chevauche la roue dentée.",
