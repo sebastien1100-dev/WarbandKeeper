@@ -15,7 +15,6 @@ _Prévu, pas encore commencé._
 - Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).
 - Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
-- Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.
 - Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
 - Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
 - Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
@@ -27,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
+
+## v1.46.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.0 (accueil avec tes persos, ta sauvegarde, la prochaine vérification et le lancement du jeu).
 
 ## v1.46.0 — 19/11/2026
 

@@ -3,6 +3,15 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.5.0 — 19/11/2026
+
+### Ajouts
+- Accueil : sous le bandeau, la liste de tes persos (classe en couleur, niveau, or, dernière connexion) et l'or total, lus dans les réglages de l'addon, sans ouvrir le jeu.
+- Accueil : à droite, la dernière sauvegarde de tes réglages (avec « Sauvegarder maintenant »), l'heure de la prochaine vérification, et les boutons « Lancer WoW Forever » et « Dossier AddOns ».
+
+### Corrections
+- Le bouton « Vérifier maintenant » affichait un carré devant son texte : le symbole est retiré.
+
 ## 1.4.5 — 19/11/2026
 
 ### Modifications

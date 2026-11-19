@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.5"
+CLIENT_VERSION = "1.5.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -340,6 +340,131 @@ def saved_variables(addons):
                 if os.path.isfile(p):
                     out.append(p)
     return out
+
+
+# --- Lecture des réglages de l'addon (hors du jeu) : persos du compte -------------------------------
+_LUA_TOKEN = re.compile(r'\s+|--\[\[.*?\]\]|--[^\n]*|"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?|[A-Za-z_][A-Za-z0-9_]*|[{}\[\]=,;]', re.S)
+
+
+def _lua_tokens(text, start):
+    pos, n = start, len(text)
+    while pos < n:
+        m = _LUA_TOKEN.match(text, pos)
+        if not m:
+            pos += 1
+            continue
+        tok = m.group(0)
+        pos = m.end()
+        if tok[0].isspace() or tok.startswith("--"):
+            continue
+        yield tok
+
+
+def _lua_value(it, tok):
+    """Valeur Lua des réglages (tables, chaînes, nombres, booléens) à partir du jeton tok."""
+    if tok == "{":
+        out, arr = {}, 1
+        for t in it:
+            if t == "}":
+                return out
+            if t in (",", ";"):
+                continue
+            if t == "[":
+                k = _lua_value(it, next(it))
+                next(it)  # ]
+                next(it)  # =
+                out[k] = _lua_value(it, next(it))
+            else:
+                nxt = next(it)
+                if nxt == "=":
+                    out[t] = _lua_value(it, next(it))
+                else:
+                    out[arr] = _lua_value(it, t); arr += 1
+                    if nxt == "}":
+                        return out
+        return out
+    if tok.startswith('"'):
+        return bytes(tok[1:-1], "utf-8").decode("unicode_escape").encode("latin-1").decode("utf-8", "replace")
+    if tok == "true":
+        return True
+    if tok in ("false", "nil"):
+        return False if tok == "false" else None
+    try:
+        return float(tok) if "." in tok or "e" in tok.lower() else int(tok)
+    except ValueError:
+        return tok
+
+
+_chars_cache = {}
+
+
+def read_characters(addons):
+    """Persos du compte lus dans WarbandKeeper.lua (le plus récent) : [{ name, cls, level, money, seen }]."""
+    files = [p for p in saved_variables(addons) if p.endswith(".lua")]
+    if not files:
+        return []
+    path = max(files, key=os.path.getmtime)
+    mt = os.path.getmtime(path)
+    if _chars_cache.get("path") == path and _chars_cache.get("mt") == mt:
+        return _chars_cache["list"]
+    out = []
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            text = f.read()
+        i = text.find('["characters"] = {')
+        if i >= 0:
+            it = _lua_tokens(text, text.index("{", i))
+            chars = _lua_value(it, next(it))
+            for key, c in (chars or {}).items():
+                if isinstance(c, dict):
+                    name = c.get("mailName") or c.get("fullName") or c.get("name") or str(key).split("-")[0].strip()
+                    out.append({"name": name, "cls": c.get("class") or "", "level": c.get("level") or 0,
+                                "money": c.get("money") or 0, "seen": c.get("lastSeen") or 0})
+    except Exception:
+        out = []
+    out.sort(key=lambda e: -(e["seen"] or 0))
+    _chars_cache.update(path=path, mt=mt, list=out)
+    return out
+
+
+CLASS_COLORS = {"WARRIOR": "#c79c6e", "PALADIN": "#f58cba", "HUNTER": "#abd473", "ROGUE": "#fff569", "PRIEST": "#ffffff",
+                "SHAMAN": "#0070de", "MAGE": "#69ccf0", "WARLOCK": "#9482c9", "DRUID": "#ff7d0a"}
+
+
+def money_text(c):
+    c = int(c or 0)
+    g, s = c // 10000, (c // 100) % 100
+    return ("%s po" % format(g, ",").replace(",", " ")) if g else ("%d pa" % s)
+
+
+def ago_text(t):
+    if not t:
+        return "jamais"
+    d = time.time() - t
+    if d < 120:
+        return "maintenant"
+    if d < 3600:
+        return "il y a %d min" % (d // 60)
+    if d < 86400:
+        return "il y a %d h" % (d // 3600)
+    return "il y a %d j" % (d // 86400)
+
+
+def game_exe(addons):
+    """Exécutable du jeu à côté du dossier Interface (WoW Forever), ou None."""
+    d = game_dir(addons)
+    try:
+        names = os.listdir(d)
+    except OSError:
+        return None
+    for want in ("WowClassic.exe", "Wow.exe", "WoWForever.exe", "WowForever.exe"):
+        for n in names:
+            if n.lower() == want.lower():
+                return os.path.join(d, n)
+    for n in names:
+        if n.lower().endswith(".exe") and "wow" in n.lower() and "launcher" not in n.lower():
+            return os.path.join(d, n)
+    return None
 
 
 def game_running():
@@ -999,7 +1124,7 @@ class HomePage(Page):
         right.pack(side="right")
         self.action = Button(right, "Mettre à jour", self.app.update_addon, "primary", width=190, height=44, font=App.fonts["btnL"])
         self.action.pack(anchor="e")
-        self.check = Button(right, "⟳  Vérifier maintenant", self.app.refresh, "secondary", width=190, height=34)
+        self.check = Button(right, "Vérifier maintenant", self.app.refresh, "secondary", width=190, height=34)
         self.check.pack(anchor="e", pady=(8, 0))
         self.picker = tk.Frame(b, bg=C["surface"])
         self.progress = Progress(b)
@@ -1008,12 +1133,66 @@ class HomePage(Page):
         b.bind("<Configure>", lambda e: self.status.configure(wraplength=max(300, e.width - 10)), add="+")
 
         # (les nouveautés sont dans leur page, plus sur l'accueil)
+        # Dessous : tes persos (lus dans tes réglages) à gauche ; sauvegarde, vérification et raccourcis à droite
+        low = tk.Frame(self, bg=C["bg"])
+        low.pack(fill="both", expand=True, pady=(12, 0))
+        side = tk.Frame(low, bg=C["bg"], width=210)
+        side.pack(side="right", fill="y", padx=(12, 0))
+        side.pack_propagate(False)
+        pc = Card(low, "Tes persos")
+        pc.pack(side="left", fill="both", expand=True)
+        self.persos = pc.body
+        sc = Card(side)
+        sc.pack(fill="x")
+        label(sc.body, "SAUVEGARDE", fg="dim", font="smallb").pack(anchor="w")
+        self.sv = label(sc.body, "", font="body")
+        self.sv.pack(anchor="w", pady=(2, 2))
+        save = label(sc.body, "Sauvegarder maintenant", fg="accent", font="small", cursor="hand2")
+        save.pack(anchor="w")
+        save.bind("<Button-1>", lambda e: self.app.pages["backups"].backup_now())
+        vc = Card(side)
+        vc.pack(fill="x", pady=(8, 0))
+        label(vc.body, "PROCHAINE VÉRIFICATION", fg="dim", font="smallb").pack(anchor="w")
+        self.nextCheck = label(vc.body, "", font="body")
+        self.nextCheck.pack(anchor="w", pady=(2, 0))
+        self.launch = Button(side, "▶  Lancer WoW Forever", self.launch_game, "secondary", width=210, height=32)
+        self.launch.pack(fill="x", pady=(8, 0))
+        Button(side, "Dossier AddOns", self.app.open_addons, "secondary", width=210, height=32).pack(fill="x", pady=(6, 0))
 
-        bottom = tk.Frame(self, bg=C["bg"])
-        bottom.pack(fill="x", pady=(12, 0))
-        self.sv = label(bottom, "", fg="muted", font="small")
-        self.sv.pack(side="left")
-        Button(bottom, "Dossier AddOns", self.app.open_addons, "ghost", height=30).pack(side="right")
+    def launch_game(self):
+        exe = game_exe(self.app.addons) if self.app.addons else None
+        if not exe:
+            return self.app.toast("Jeu introuvable à côté du dossier AddOns.", "warning")
+        try:
+            if IS_WIN:
+                os.startfile(exe)
+            else:
+                subprocess.Popen([exe])
+            self.app.toast("Lancement de WoW Forever…", "positive")
+        except OSError as e:
+            self.app.toast("Impossible de lancer le jeu : %s" % e, "negative")
+
+    def fill_persos(self):
+        for w in self.persos.winfo_children():
+            w.destroy()
+        chars = read_characters(self.app.addons) if self.app.addons else []
+        if not chars:
+            label(self.persos, "Lance le jeu une fois avec l'addon : tes persos apparaîtront ici.", fg="muted", font="small",
+                  wraplength=320).pack(anchor="w")
+            return
+        total = sum(int(c["money"] or 0) for c in chars)
+        label(self.persos, "%d perso%s · %s au total" % (len(chars), "s" if len(chars) > 1 else "", money_text(total)),
+              fg="muted", font="small").pack(anchor="w", pady=(0, 4))
+        for c in chars[:8]:
+            row = tk.Frame(self.persos, bg=C["surface"])
+            row.pack(fill="x", pady=1)
+            dot = tk.Canvas(row, width=10, height=10, bg=C["surface"], highlightthickness=0)
+            dot.create_oval(1, 1, 9, 9, fill=CLASS_COLORS.get(c["cls"], C["muted"]), outline="")
+            dot.pack(side="left", padx=(0, 6))
+            label(row, c["name"], font="body").pack(side="left")
+            label(row, "  %s" % (c["level"] or "?"), fg="dim", font="small").pack(side="left")
+            label(row, ago_text(c["seen"]), fg="dim", font="small").pack(side="right")
+            label(row, money_text(c["money"]) + "   ", fg="muted", font="small").pack(side="right")
 
     def set_busy(self, text, value=None):
         if value is None:
@@ -1091,8 +1270,17 @@ class HomePage(Page):
                 self.chip.set("À jour", C["positive"])
             self.action.set("✓  À jour", False, "ok")
         last = list_backups()
-        self.sv.configure(text=("Dernière sauvegarde de tes réglages : " + datetime.fromtimestamp(last[0]["time"]).strftime("%d/%m/%Y %H:%M"))
-                          if last else "Aucune sauvegarde de tes réglages pour l'instant.")
+        self.sv.configure(text=datetime.fromtimestamp(last[0]["time"]).strftime("le %d/%m à %H:%M") if last else "aucune pour l'instant")
+        every = {"1h": 3600, "6h": 6 * 3600}.get(a.cfg["checkEvery"])
+        if not every:
+            self.nextCheck.configure(text="à la main (Réglages)")
+        elif not a.lastCheck:
+            self.nextCheck.configure(text="bientôt")
+        else:
+            left = max(0, every - (time.time() - a.lastCheck))
+            self.nextCheck.configure(text="dans %d min" % (left // 60 + 1) if left < 3600 else "dans %d h" % (left // 3600 + 1))
+        self.launch.set(enabled=bool(a.addons and game_exe(a.addons)))
+        self.fill_persos()
 
 
 @page("notes", "Nouveautés", "✦")

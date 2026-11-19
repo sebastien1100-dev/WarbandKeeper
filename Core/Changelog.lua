@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.46.1", date = "19/11/2026",
+        changed = {
+            "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.0 (accueil avec tes persos, ta sauvegarde, la prochaine vérification et le lancement du jeu).",
+        },
+    },
+    {
         version = "1.46.0", date = "19/11/2026",
         changed = {
             "Boutons en icône (roues dentées, Expérience, fermer, partager…) bien plus visibles : un rond teinté à la couleur d'accent, avec un liseré, toujours affiché ; plus foncé au survol, plein quand la roue est ouverte.",
@@ -3121,7 +3127,6 @@ WK.Roadmap = {
     "Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.",
     "Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).",
     "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
-    "Client PC, suite : lancer le jeu, résumé de tes persos (lu dans tes réglages) hors du jeu.",
     "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
     "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
     "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",
