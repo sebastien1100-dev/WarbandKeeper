@@ -32,8 +32,13 @@ if roadmap:
     out.append("")
     out.append("_Prévu, pas encore commencé._")
     out.append("")
-    out.extend(f"- {line}" for line in roadmap)
-    out.append("")
+    themes = items(wk.RoadmapThemes)
+    for th in themes:
+        lines = [r for r in roadmap if r.theme == th.key]
+        if lines:
+            out.append(f"### {th.label}")
+            out.extend(f"- **{r.title}** — {r.text}" for r in lines)
+            out.append("")
 for i, entry in enumerate(items(wk.Changelog)):
     out.append(f"## v{entry.version} — {entry.date}")
     out.append("")

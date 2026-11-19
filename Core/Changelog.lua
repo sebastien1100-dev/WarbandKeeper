@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.60.0", date = "19/11/2026",
+        changed = {
+            "Patch notes en deux onglets. « Notes de version » : un sommaire des versions à gauche (clic : la page saute à la version), les notes à droite, chargées par 15 (« + N plus anciennes »). « À venir » : ce qui est prévu, rangé par thème sur trois colonnes (Interface, Carte et voyage, Inventaire et économie, Métiers, Personnages, Classes et combat, Donjons et quêtes), une carte par idée avec un titre court et une phrase.",
+        },
+    },
+    {
         version = "1.59.3", date = "19/11/2026",
         fixed = {
             "Patch notes : la page pouvait rester vide. Avec plus de 400 versions, elle construisait tout d'un coup ; elle montre maintenant « À venir » et les 15 dernières versions, et le bouton « Versions plus anciennes » en ajoute 15 de plus à chaque clic.",
@@ -3448,26 +3454,36 @@ WK.Changelog = {
 }
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
+-- Onglet « À venir » des Patch notes, rangé par thème (WK.RoadmapThemes) : un titre court et une phrase.
+WK.RoadmapThemes = {
+    { key = "ui", label = "Interface", color = "accent" },
+    { key = "map", label = "Carte et voyage", color = "positive" },
+    { key = "eco", label = "Inventaire et économie", color = "gold" },
+    { key = "prof", label = "Métiers", color = "warning" },
+    { key = "char", label = "Personnages", color = "info" },
+    { key = "class", label = "Classes et combat", color = "negative" },
+    { key = "dung", label = "Donjons et quêtes", color = "muted" },
+}
 WK.Roadmap = {
-    "Boîte aux lettres refaite entièrement pour nos besoins : notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.",
-    "Idées d'Utilities (Naowh) encore en attente : macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.",
-    "Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
-    "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",
-    "Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.",
-    "Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.",
-    "Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.",
-    "Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).",
-    "Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.",
-    "Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.",
-    "Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.",
-    "Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).",
-    "Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.",
-    "Donjons : les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.",
-    "Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.",
-    "Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.",
-    "Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.",
-    "Recherche « Qui peut fabriquer… ? » sur tous les persos.",
-    "Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.",
+    { theme = "ui", title = "Boîte aux lettres refaite", text = "Notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit." },
+    { theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
+    { theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },
+    { theme = "ui", title = "Idées d'Utilities en attente", text = "Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe." },
+    { theme = "map", title = "Notes de carte partagées", text = "Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note." },
+    { theme = "map", title = "Ping de groupe", text = "Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon." },
+    { theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
+    { theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
+    { theme = "eco", title = "Prix moyen de vente", text = "Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan." },
+    { theme = "prof", title = "Qui peut fabriquer… ?", text = "Recherche d'une recette sur tous les persos." },
+    { theme = "prof", title = "Annonce de métier", text = "Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes." },
+    { theme = "char", title = "Expérience, suite", text = "Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu." },
+    { theme = "char", title = "Feu de camp, suite", text = "Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage)." },
+    { theme = "char", title = "Feu de camp, plus tard", text = "Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé." },
+    { theme = "class", title = "Bénédictions du paladin", text = "Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels." },
+    { theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
+    { theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
+    { theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
+    { theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
 }
 
 

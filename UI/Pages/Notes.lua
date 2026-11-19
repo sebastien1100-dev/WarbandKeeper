@@ -111,35 +111,78 @@ UI:RegisterPage({
     count = function() return notesSeen() and "" or "•" end,
 
     Build = function(self, p)
-        local scroll = UI:Scroll(p)
-        scroll:SetAllPoints()
-        -- « À venir » toujours en haut, puis les versions de la plus récente à la plus ancienne.
-        -- Plus de 400 versions : les cartes sont créées par lots de 15 (bouton en bas), sinon la page
-        -- devient trop lourde à construire et reste vide.
-        local cards, made = {}, 0
+        -- deux onglets : notes de version (sommaire à gauche) et « À venir » rangé par thème
+        local nTodo = #(WK.Roadmap or {})
+        local views = {}
+        local tabSeg = UI:Segmented(p, { { "notes", "Notes de version" }, { "todo", string.format(T("À venir · %d"), nTodo) } },
+            function(v) for k, f in pairs(views) do f:SetShown(k == v) end end, 30)
+        tabSeg:SetPoint("TOPLEFT")
+        local function view(key)
+            local f = CreateFrame("Frame", nil, p)
+            f:SetPoint("TOPLEFT", 0, -44); f:SetPoint("BOTTOMRIGHT")
+            views[key] = f
+            return f
+        end
+
+        -----------------------------------------------------------------
+        -- Notes de version : sommaire à gauche (clic : saute à la version), cartes à droite.
+        -- Plus de 400 versions : cartes créées par lots de 15 (sinon la page est trop lourde et reste vide).
+        -----------------------------------------------------------------
+        local nv = view("notes")
+        local IDX_W = 170
+        local idx = UI:Scroll(nv)
+        idx:SetPoint("TOPLEFT"); idx:SetPoint("BOTTOMLEFT"); idx:SetWidth(IDX_W)
+        local scroll = UI:Scroll(nv)
+        scroll:SetPoint("TOPLEFT", IDX_W + 12, 0); scroll:SetPoint("BOTTOMRIGHT")
+        local cards, rows, made = {}, {}, 0
         local PAGE = 15
-        if #WK.Roadmap > 0 then table.insert(cards, VersionCard(scroll.child, { roadmap = true, items = WK.Roadmap }, false)) end
         local more = UI:Button(scroll.child, "Versions plus anciennes", 240, 30, "secondary")
+        local idxMore = UI:Text(idx.child, 11, C.text)
+        local idxMoreB = CreateFrame("Button", nil, idx.child); idxMoreB:SetAllPoints(idxMore)
+        UI:OnAccent(function() idxMore:SetTextColor(UI:Accent()) end)
+        local sel = 1
         local layout
+        local function paintRows()
+            for i, r in ipairs(rows) do
+                r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], i == sel and 1 or 0)
+                r.v:SetTextColor(unpack(i == sel and C.text or C.muted))
+            end
+        end
         local function addBatch()
             local last = math.min(#WK.Changelog, made + PAGE)
             for i = made + 1, last do
                 local entry = WK.Changelog[i]
                 local ok, card = pcall(VersionCard, scroll.child, entry, i == 1 and entry.version == WK.version)
-                if ok and card then table.insert(cards, card) end
+                if ok and card then
+                    table.insert(cards, card)
+                    local r = CreateFrame("Button", nil, idx.child)
+                    r:SetHeight(24)
+                    r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
+                    r.v = UI:Text(r, 12, C.muted); r.v:SetPoint("LEFT", 10, 0); r.v:SetText("v" .. entry.version)
+                    r.d = UI:Text(r, 10, C.dim); r.d:SetPoint("RIGHT", -8, 0); r.d:SetText(entry.date and entry.date:sub(1, 5) or "")
+                    local n = #rows + 1
+                    r:SetScript("OnClick", function()
+                        sel = n; paintRows()
+                        scroll:SetVerticalScroll(math.min(scroll:MaxScroll(), card.y or 0)); scroll:UpdateBar()
+                    end)
+                    rows[n] = r
+                end
             end
             made = last
             more:SetShown(made < #WK.Changelog)
             more:SetLabel(string.format(T("Versions plus anciennes (%d)"), #WK.Changelog - made))
+            idxMore:SetShown(made < #WK.Changelog)
+            idxMore:SetText(string.format(T("+ %d plus anciennes"), #WK.Changelog - made))
+            paintRows()
         end
-        -- largeur et hauteurs recalculées quand la fenêtre change de taille
         layout = function(w)
-            local width = math.max(400, (w or scroll:GetWidth() or UI.PAGE_W) - 12)
+            local width = math.max(360, (w or scroll:GetWidth() or UI.PAGE_W) - 12)
             local y = 0
             for _, c in ipairs(cards) do
                 c:ClearAllPoints()
                 c:SetPoint("TOPLEFT", 0, -y)
                 c:SetPoint("TOPRIGHT", 0, -y)
+                c.y = y
                 y = y + c:Layout(width) + 12
             end
             if more:IsShown() then
@@ -147,10 +190,89 @@ UI:RegisterPage({
                 y = y + 42
             end
             scroll:SetContentHeight(y)
+            local iy = 0
+            idx.child:SetWidth(IDX_W)
+            for _, r in ipairs(rows) do
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -iy); r:SetPoint("TOPRIGHT", -6, -iy)
+                iy = iy + 26
+            end
+            if idxMore:IsShown() then
+                idxMore:ClearAllPoints(); idxMore:SetPoint("TOPLEFT", 10, -(iy + 6))
+                iy = iy + 28
+            end
+            idx:SetContentHeight(iy)
         end
-        more:SetScript("OnClick", function() addBatch(); layout() end)
+        local function loadMore() addBatch(); layout() end
+        more:SetScript("OnClick", loadMore)
+        idxMoreB:SetScript("OnClick", loadMore)
         addBatch()
         UI:OnResize(scroll, layout)
+
+        -----------------------------------------------------------------
+        -- À venir : une colonne par thème (masonry sur 3 colonnes), une carte par idée (titre + phrase)
+        -----------------------------------------------------------------
+        local tv = view("todo")
+        local ts = UI:Scroll(tv)
+        ts:SetAllPoints()
+        local blocks = {}
+        for _, th in ipairs(WK.RoadmapThemes or {}) do
+            local list = {}
+            for _, it in ipairs(WK.Roadmap or {}) do if it.theme == th.key then list[#list + 1] = it end end
+            if #list > 0 then
+                local blk = CreateFrame("Frame", nil, ts.child)
+                blk.dot = UI:Icon(blk, "circle", 8, nil, "ARTWORK"); blk.dot:SetPoint("TOPLEFT", 2, -4)
+                blk.head = UI:Text(blk, 10, C.dim); blk.head:SetPoint("TOPLEFT", 16, -2)
+                blk.head:SetText(string.upper(T(th.label)))
+                local function tint()
+                    local col = th.color == "accent" and { UI:Accent() } or C[th.color] or C.muted
+                    blk.dot:SetVertexColor(col[1], col[2], col[3], 1)
+                end
+                tint(); UI:OnAccent(tint)
+                blk.items = {}
+                for _, it in ipairs(list) do
+                    local box = CreateFrame("Frame", nil, blk)
+                    UI:Panel(box, 9, C.surface2, C.border)
+                    box.t = UI:Text(box, 12, C.text); box.t:SetPoint("TOPLEFT", 11, -9); box.t:SetJustifyH("LEFT")
+                    box.t:SetText(T(it.title))
+                    box.d = wrapped(box, T(it.text), C.muted, 11)
+                    box.d:SetPoint("TOPLEFT", box.t, "BOTTOMLEFT", 0, -4)
+                    table.insert(blk.items, box)
+                end
+                function blk.Layout(b, w)
+                    local y = 22
+                    for _, box in ipairs(b.items) do
+                        box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -y); box:SetWidth(w)
+                        box.t:SetWidth(w - 22); box.d:SetWidth(w - 22)
+                        local h = 9 + (box.t:GetStringHeight() or 14) + 4 + (box.d:GetStringHeight() or 14) + 10
+                        box:SetHeight(h)
+                        y = y + h + 7
+                    end
+                    b:SetSize(w, y)
+                    return y
+                end
+                table.insert(blocks, blk)
+            end
+        end
+        UI:OnResize(ts, function(w)
+            local W = math.max(360, (w or ts:GetWidth() or UI.PAGE_W) - 12)
+            local cols = W < 760 and 2 or 3
+            local GAP = 12
+            local cw = math.floor((W - GAP * (cols - 1)) / cols)
+            local colY = {}
+            for c = 1, cols do colY[c] = 0 end
+            for _, blk in ipairs(blocks) do
+                local best = 1
+                for c = 2, cols do if colY[c] < colY[best] then best = c end end
+                blk:ClearAllPoints(); blk:SetPoint("TOPLEFT", (best - 1) * (cw + GAP), -colY[best])
+                colY[best] = colY[best] + blk:Layout(cw) + 14
+            end
+            local maxY = 0
+            for c = 1, cols do maxY = math.max(maxY, colY[c]) end
+            ts:SetContentHeight(maxY)
+        end)
+
+        tabSeg:Select("notes")
+        views.todo:Hide()
     end,
 
     Refresh = function()

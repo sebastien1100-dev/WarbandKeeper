@@ -7,25 +7,45 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
-- Boîte aux lettres refaite entièrement pour nos besoins : notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.
-- Idées d'Utilities (Naowh) encore en attente : macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
-- Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
-- Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
-- Feu de camp, suite : ce qu'il manque pour un camp complet (objets que tes persos présents pourraient poser, feu qui accepte plus d'objets) et lien avec le repos (tente, sac de couchage) dans la section Expérience.
-- Feu de camp, plus tard : camps des autres joueurs lus dans Happy Camper s'il est installé (lecture seule, source citée), bouton pour annoncer ton camp dans le chat, historique des endroits où tu as campé.
-- Notes de carte, suite : les partager avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
-- Recherche globale dans tout l'addon (persos, objets, recettes, quêtes, notes de carte).
-- Carte, suite des notes : ping partagé avec le groupe (repère éphémère avec annotation), point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
-- Bénédictions du paladin (QoL > Classes > Paladin) : tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement (un bouton par classe, répartition entre paladins qui ont Warband Keeper) et rappels.
-- Curseur : réticule au centre de l'écran (combat à la souris), avec couleur hors de portée.
-- Curseur : le retrouver d'un coup (secouer la souris ou un raccourci : grand anneau qui se resserre sur lui).
-- Navigation : sur un trajet qui passe par un bateau du même continent, la flèche et l'épingle disent « prends le bateau » au lieu de viser le quai d'arrivée ; masquer aussi le repère du jeu sur la minicarte si le client le permet.
-- Donjons : les raids de Classic (Cœur du Magma, Zul'Gurub…) si WoW Forever les ouvre.
-- Quêtes, suite : « À faire maintenant » (quêtes dispo autour de toi), vue d'une chaîne de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
-- Prix moyen de vente : ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
-- Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.
-- Recherche « Qui peut fabriquer… ? » sur tous les persos.
-- Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
+### Interface
+- **Boîte aux lettres refaite** — Notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.
+- **Recherche globale** — Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte.
+- **Mini-fenêtre « À faire »** — Déplaçable, sans ouvrir la fenêtre principale.
+- **Idées d'Utilities en attente** — Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
+
+### Carte et voyage
+- **Notes de carte partagées** — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
+- **Ping de groupe** — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
+- **« Prends le bateau »** — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
+
+### Inventaire et économie
+- **Rangement, suite** — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
+- **Prix moyen de vente** — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
+
+### Métiers
+- **Qui peut fabriquer… ?** — Recherche d'une recette sur tous les persos.
+- **Annonce de métier** — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
+
+### Personnages
+- **Expérience, suite** — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
+- **Feu de camp, suite** — Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage).
+- **Feu de camp, plus tard** — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
+
+### Classes et combat
+- **Bénédictions du paladin** — Tableau du groupe (bénédiction par classe, temps restant, qui en manque), panneau de lancement et rappels.
+- **Réticule au centre** — Pour le combat à la souris, d'une autre couleur hors de portée.
+- **Curseur retrouvé** — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
+
+### Donjons et quêtes
+- **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
+- **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
+
+## v1.60.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes en deux onglets. « Notes de version » : un sommaire des versions à gauche (clic : la page saute à la version), les notes à droite, chargées par 15 (« + N plus anciennes »). « À venir » : ce qui est prévu, rangé par thème sur trois colonnes (Interface, Carte et voyage, Inventaire et économie, Métiers, Personnages, Classes et combat, Donjons et quêtes), une carte par idée avec un titre court et une phrase.
 
 ## v1.59.3 — 19/11/2026
 
