@@ -488,10 +488,14 @@ UI:RegisterPage({
         pane:Hide()
         self.stashPane = pane
         local root = pane.child
-        local list = UI:Card(root, T("Rangement par perso"), " ")
+        -- titre au-dessus du cadre (la roue dentée de la page reste à droite, sans rien chevaucher)
+        local head = UI:Text(root, 13, C.text); head:SetPoint("TOPLEFT", 4, -8); head:SetText(T("Rangement par perso"))
+        local headSub = UI:Text(root, 11, C.muted); headSub:SetPoint("LEFT", head, "RIGHT", 8, 0)
+        local list = UI:Card(root)
+        list.subtitle = headSub
         self.stashList = list
-        local note = UI:Text(list, 11, C.muted)
-        note:SetPoint("TOPRIGHT", -52, -14) -- laisse la place de la roue dentée
+        local note = UI:Text(root, 11, C.muted)
+        note:SetPoint("LEFT", headSub, "RIGHT", 16, 0)
         note:SetJustifyH("RIGHT")
         note:SetText(T("les envois se font à la boîte aux lettres de chaque perso"))
         -- variante A : 3 chiffres en haut (à tes persos, HV, marchand), puis une colonne par destination
@@ -557,7 +561,7 @@ UI:RegisterPage({
             return r
         end)
         self.stashEmpty = UI:Text(list, 11, C.muted)
-        self.stashEmpty:SetPoint("TOPLEFT", 16, -46)
+        self.stashEmpty:SetPoint("TOPLEFT", 16, -16)
         self.stashEmpty:SetText(T("Rien à ranger : chaque composant est déjà chez le perso qui s'en sert."))
         -- réglages du perso HV
         local sets = UI:Card(root, T("Perso HV"), T("reçoit ce dont personne n'a besoin et le met en vente"))
@@ -663,7 +667,7 @@ UI:RegisterPage({
         local cw3 = (W - 28 - 2 * GAP) / 3
         for i, ch in ipairs(self.stashChips) do
             local dta = chipData[i]
-            ch:ClearAllPoints(); ch:SetPoint("TOPLEFT", 14 + (i - 1) * (cw3 + GAP), -44); ch:SetWidth(cw3)
+            ch:ClearAllPoints(); ch:SetPoint("TOPLEFT", 14 + (i - 1) * (cw3 + GAP), -14); ch:SetWidth(cw3)
             ch.n:SetText(tostring(dta[1])); ch.n:SetTextColor(dta[2][1], dta[2][2], dta[2][3])
             ch.t:SetText(dta[3]); ch.s:SetText(dta[4])
             ch:SetShown(total > 0)
@@ -672,7 +676,7 @@ UI:RegisterPage({
         local MAXR, RH, HEAD = 6, 34, 38
         local ncol = W >= 900 and 3 or 2
         local cw = (W - 28 - (ncol - 1) * GAP) / ncol
-        local y = 44 + 48 + GAP
+        local y = 14 + 48 + GAP
         local rowH = 0
         for i, col in ipairs(cols) do
             local ci = (i - 1) % ncol
@@ -721,12 +725,12 @@ UI:RegisterPage({
             local c = self.stashCols.items[i]
             c:SetHeight(c.h or 40)
         end
-        if #cols > 0 then y = y + rowH + 4 else y = 44 end
+        if #cols > 0 then y = y + rowH + 4 else y = 14 end
         if self.stashList.subtitle then self.stashList.subtitle:SetText(string.format(T("%d objets à ranger"), total)) end
         self.stashEmpty:SetShown(total == 0)
         if total == 0 then y = y + 24 end
-        self.stashList:ClearAllPoints(); self.stashList:SetPoint("TOPLEFT", 0, 0); self.stashList:SetSize(W, y + 10)
-        local ly = y + 10 + 12
+        self.stashList:ClearAllPoints(); self.stashList:SetPoint("TOPLEFT", 0, -34); self.stashList:SetSize(W, y + 10)
+        local ly = 34 + y + 10 + 12
         -- (réglages « Perso HV » : roue dentée de la page)
         self.stashPane:SetContentHeight(ly)
     end,

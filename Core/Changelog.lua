@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.10", date = "19/11/2026",
+        changed = {
+            "Inventaire > Rangement : le titre (« Rangement par perso », le nombre d'objets et la note sur les envois) passe au-dessus du cadre ; plus rien ne chevauche la roue dentée.",
+        },
+    },
+    {
         version = "1.56.9", date = "19/11/2026",
         changed = {
             "Notes de patch, « À venir » : la boîte aux lettres refaite entièrement, notre propre fenêtre comme pour l'hôtel des ventes.",

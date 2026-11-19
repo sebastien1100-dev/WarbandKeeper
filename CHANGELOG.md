@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.10 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire > Rangement : le titre (« Rangement par perso », le nombre d'objets et la note sur les envois) passe au-dessus du cadre ; plus rien ne chevauche la roue dentée.
+
 ## v1.56.9 — 19/11/2026
 
 _Un /reload suffit._
