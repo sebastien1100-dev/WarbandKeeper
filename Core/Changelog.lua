@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.64.1", date = "19/11/2026",
+        fixed = {
+            "Carte du monde : sous l'épingle du guidage, le nom de la destination pouvait être coupé ; le cadre prend maintenant la largeur de sa ligne la plus longue.",
+        },
+    },
+    {
         version = "1.64.0", date = "19/11/2026", restart = true,
         added = {
             "Paladin : barre des bénédictions à l'écran (à placer en mode édition). En tête ton aure (clic pour la lancer) et ton sceau ; une ligne par classe du groupe (et par exception) avec ta bénédiction, le temps restant le plus court et le nombre de joueurs sans. Clic : bénit le prochain joueur de la ligne qui en a besoin ; survol : chaque joueur et son temps ; clic droit : la répartition.",

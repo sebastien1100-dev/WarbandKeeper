@@ -158,8 +158,21 @@ function UI:RefreshGuidePinLabel()
     local lines = { name }
     if sub and sub ~= "" then table.insert(lines, UI:Hex(UI.colors.muted) .. sub .. "|r") end
     if d then table.insert(lines, "|cff" .. WK:AccentHex() .. string.format(T("%d m"), math.floor(d)) .. "|r") end
+    -- largeur de la ligne la plus longue, mesurée ligne par ligne (la largeur du texte entier, sur plusieurs
+    -- lignes, ne correspond à aucune et coupait la destination)
+    local wMax = 40
+    targetPin.measure = targetPin.measure or UI:Text(targetPin.pill, 11)
+    targetPin.measure:Hide()
+    for _, ln in ipairs(lines) do
+        targetPin.measure:SetText(ln)
+        wMax = math.max(wMax, math.ceil(targetPin.measure:GetStringWidth() or 0))
+    end
+    targetPin.label:SetWidth(wMax + 2)
+    if targetPin.label.SetWordWrap then targetPin.label:SetWordWrap(true) end -- garde les retours à la ligne
     targetPin.label:SetText(table.concat(lines, "\n"))
-    targetPin.pill:SetSize((targetPin.label:GetStringWidth() or 60) + 18, #lines * 13 + 8)
+    local hText = math.max(#lines * 13, math.ceil(targetPin.label:GetStringHeight() or 0))
+    targetPin.label:SetHeight(hText)
+    targetPin.pill:SetSize(wMax + 20, hText + 10)
     targetPin.pill:SetScale(UI.MapLabelScale())
 end
 local function drawTarget(cv, mapID, w, h)
