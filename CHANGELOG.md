@@ -30,6 +30,14 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.40.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : la grille de tuiles est remplacée par une colonne à gauche, une ligne par donjon (niveaux en couleur, boss tués). Les donjons sont groupés selon le niveau du perso : pour ton niveau, bientôt, plus haut, déjà dépassés, raids. Clic sur un groupe pour le replier (retenu), recherche en haut.
+- Donjons : le détail (Parcours, Butin, Quêtes) prend toute la hauteur à droite. « Mes envies » garde toute la largeur.
+
 ## v1.39.1 — 19/11/2026
 
 _Un /reload suffit._

@@ -2959,4 +2959,10 @@ WK.Locales.enUS.text = {
     ["Vols"] = "Flights",
     ["Crochetage"] = "Lockpicking",
     ["Portails"] = "Portals",
+    ["Rechercher un donjon..."] = "Search a dungeon...",
+    ["Pour ton niveau (%d)"] = "For your level (%d)",
+    ["Pour ton niveau"] = "For your level",
+    ["Bientôt"] = "Soon",
+    ["Plus haut"] = "Higher",
+    ["Déjà dépassés"] = "Already outlevelled",
 }

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.40.0", date = "19/11/2026",
+        changed = {
+            "Donjons : la grille de tuiles est remplacée par une colonne à gauche, une ligne par donjon (niveaux en couleur, boss tués). Les donjons sont groupés selon le niveau du perso : pour ton niveau, bientôt, plus haut, déjà dépassés, raids. Clic sur un groupe pour le replier (retenu), recherche en haut.",
+            "Donjons : le détail (Parcours, Butin, Quêtes) prend toute la hauteur à droite. « Mes envies » garde toute la largeur.",
+        },
+    },
+    {
         version = "1.39.1", date = "19/11/2026",
         fixed = {
             "Métiers : la roue dentée ouvrait une page vide ; les réglages des métiers s'affichent de nouveau.",

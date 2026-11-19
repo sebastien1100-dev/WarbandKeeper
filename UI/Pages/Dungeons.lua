@@ -3,15 +3,28 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Page « Donjons » (groupe Exploration) : tuiles des donjons par niveau (couleur selon le niveau du perso
--- choisi, barre = boss tués au moins une fois), puis les boss du donjon choisi et leur butin, filtré
+-- Page « Donjons » (groupe Exploration) : colonne des donjons à gauche, groupés selon le niveau du perso
+-- choisi (pour ton niveau, bientôt, plus haut, déjà dépassés, raids ; groupes repliables, recherche), puis les boss du donjon choisi et leur butin, filtré
 -- « Pour <perso> » ou « Tout », avec la liste d'envies (étoile). Le détail a trois onglets : « Parcours » (carte
 -- du prochain boss, puis la frise des boss dans l'ordre du jeu, par aile), « Butin » (boss et monstres du
 -- donjon) et « Quêtes » (quêtes du donjon pour le perso, filtre À faire / Toutes).
 -- Onglet « Mes envies » : tous les objets voulus, par perso. Boutons : panneau en jeu, Chercher un groupe
 -- (LFG), Guider vers l'entrée.
 local D = WK.modules.Dungeons
-local TILE_W, TILE_H, GAP, ITEM_H = 200, 64, 10, 22
+local GAP, ITEM_H = 10, 22
+local LIST_W, ROW_H = 280, 26
+-- groupes de la colonne, selon le niveau du perso choisi
+local GROUPS = {
+    { "now", "Pour ton niveau" }, { "soon", "Bientôt" }, { "high", "Plus haut" },
+    { "past", "Déjà dépassés" }, { "raid", "Raids" },
+}
+local function groupOf(d, lvl)
+    if d.raid then return "raid" end
+    if lvl > d.max then return "past" end
+    if lvl >= d.min - 2 then return "now" end
+    if d.min <= lvl + 8 then return "soon" end
+    return "high"
+end
 
 local function levelColor(d, lvl)
     if lvl < d.min - 2 then return C.negative end
@@ -52,31 +65,58 @@ UI:RegisterPage({
         of:SetPoint("RIGHT", self.charDd, "LEFT", -8, 0)
         of:SetText(T("Pour"))
 
+        -- colonne des donjons (groupes repliables, recherche)
+        local lc = UI:Card(p)
+        lc:SetWidth(LIST_W)
+        lc:SetPoint("TOPLEFT", 0, -42)
+        lc:SetPoint("BOTTOMLEFT")
+        self.listCard = lc
+        self.query = ""
+        local search = UI:Input(lc, LIST_W - 20, 30, "Rechercher un donjon...", "search")
+        search:SetPoint("TOPLEFT", 10, -10)
+        search.onChange = function(t) self.query = string.lower(t or ""); self:Refresh() end
+        local lsc = UI:Scroll(lc)
+        lsc:SetPoint("TOPLEFT", 6, -48)
+        lsc:SetPoint("BOTTOMRIGHT", -6, 8)
+        self.lsc = lsc
+        local ui = WK.DB.global.settings.ui
+        ui.dgnClosed = ui.dgnClosed or { past = true }
+        self.gheads = UI:Pool(function()
+            local h = CreateFrame("Button", nil, lsc.child)
+            h:SetHeight(24)
+            h.label = UI:Text(h, 10, C.dim); h.label:SetPoint("LEFT", 8, 0)
+            h.count = UI:Text(h, 10, C.dim); h.count:SetPoint("RIGHT", -24, 0)
+            h.arrow = UI:Icon(h, "chevron", 12, C.dim); h.arrow:SetPoint("RIGHT", -8, 0)
+            h:SetScript("OnClick", function(s) ui.dgnClosed[s.key] = not ui.dgnClosed[s.key] or nil; self:Refresh() end)
+            return h
+        end)
+        self.drows = UI:Pool(function()
+            local r = CreateFrame("Button", nil, lsc.child)
+            r:SetHeight(ROW_H)
+            r.bg = UI:Rounded(r, 7, 0, "BACKGROUND", 1)
+            r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetSize(3, 16); r.bar:SetPoint("LEFT", 0, 0)
+            r.dot = UI:Icon(r, "circle", 8, nil, "ARTWORK"); r.dot:SetPoint("LEFT", 10, 0)
+            r.kills = UI:Text(r, 10, C.dim); r.kills:SetPoint("RIGHT", -8, 0); r.kills:SetJustifyH("RIGHT"); r.kills:SetWidth(36)
+            r.lv = UI:Text(r, 10); r.lv:SetPoint("RIGHT", r.kills, "LEFT", -4, 0); r.lv:SetJustifyH("RIGHT"); r.lv:SetWidth(44)
+            r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 24, 0); r.name:SetPoint("RIGHT", r.lv, "LEFT", -6, 0)
+            r:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+            r:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+            r:SetScript("OnClick", function(s) self.sel = s.key; self:Refresh() end)
+            function r:Paint()
+                local ar, ag, ab = UI:Accent()
+                if self.selected then self.bg:SetColor(ar, ag, ab, 0.14) else self.bg:SetColor(unpack(C.hover)) end
+                self.bg:SetShown(self.selected or self.hover)
+                self.bar:SetShown(self.selected)
+                self.bar:SetColorTexture(ar, ag, ab, 1)
+            end
+            return r
+        end)
+
         local sc = UI:Scroll(p)
-        sc:SetPoint("TOPLEFT", 0, -42)
+        sc:SetPoint("TOPLEFT", LIST_W + GAP, -42)
         sc:SetPoint("BOTTOMRIGHT")
         self.sc = sc
         local root = sc.child
-
-        -- tuiles
-        self.tiles = UI:Pool(function()
-            local t = CreateFrame("Button", nil, root)
-            t:SetSize(TILE_W, TILE_H)
-            t.edge = UI:Rounded(t, 12, 0, "BACKGROUND", 0)
-            t.bg = UI:Rounded(t, 11, 1, "BACKGROUND", 1)
-            t.name = UI:Text(t, 12)
-            t.name:SetPoint("TOPLEFT", 12, -10)
-            t.name:SetPoint("RIGHT", -10, 0)
-            t.name:SetJustifyH("LEFT")
-            t.name:SetWordWrap(false)
-            t.sub = UI:Text(t, 10, C.muted)
-            t.sub:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -3)
-            t.bar = UI:Progress(t, 4)
-            t.bar:SetPoint("BOTTOMLEFT", 12, 10)
-            t.bar:SetPoint("BOTTOMRIGHT", -12, 10)
-            t:SetScript("OnClick", function(s) self.sel = s.key; self:Refresh() end)
-            return t
-        end)
 
         -- détail du donjon choisi
         local det = UI:Card(root)
@@ -213,7 +253,7 @@ UI:RegisterPage({
         local key = self.viewKey
         local lvl = c.level or 1
         self.tabSeg:Select(self.tab)
-        self.tiles:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset(); self.qrows:Reset()
+        self.gheads:Reset(); self.drows:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset(); self.qrows:Reset()
         self.steps:Reset(); self.wheads:Reset(); self.ficons:Reset()
         self.det.focus:Hide()
         -- entrée dans un donjon : la page se place dessus, onglet Parcours
@@ -224,7 +264,13 @@ UI:RegisterPage({
             self.lastCur = curKey
         end
         local r1, g1, b1 = UI:Accent()
-        if self.tab == "wish" then
+        -- « Mes envies » : sur toute la largeur, sans la colonne des donjons
+        local wish = self.tab == "wish"
+        self.listCard:SetShown(not wish)
+        self.sc:ClearAllPoints()
+        self.sc:SetPoint("TOPLEFT", wish and 0 or (LIST_W + GAP), -42)
+        self.sc:SetPoint("BOTTOMRIGHT")
+        if wish then
             self.det:Hide()
             local wc = self.wcard
             wc:Show()
@@ -247,35 +293,61 @@ UI:RegisterPage({
             return
         end
         self.wcard:Hide()
-        -- tuiles
-        local cols = math.max(1, math.floor((W + GAP) / (TILE_W + GAP)))
-        local tw = (W - (cols - 1) * GAP) / cols
+        -- colonne des donjons, groupés selon le niveau du perso
         local list = D:All()
         if not self.sel then
             for _, d in ipairs(list) do if lvl >= d.min - 2 and lvl <= d.max then self.sel = d.key break end end
             self.sel = self.sel or (list[1] and list[1].key)
         end
-        for i, d in ipairs(list) do
-            local t = self.tiles:Get()
-            t.key = d.key
-            t:SetSize(tw, TILE_H)
-            t:ClearAllPoints()
-            t:SetPoint("TOPLEFT", ((i - 1) % cols) * (tw + GAP), -math.floor((i - 1) / cols) * (TILE_H + GAP))
-            local sel = d.key == self.sel
-            t.edge:SetColor(unpack(sel and { r1, g1, b1, 1 } or C.border))
-            t.bg:SetColor(unpack(sel and C.surface2 or C.surface))
-            t.name:SetText(D:Name(d))
-            local done, n = D:Progress(d, key)
-            if d.raid then
-                t.sub:SetText(string.format(T("raid · niv. %d · %d boss"), d.max, n))
-            else
-                t.sub:SetText(string.format(T("niv. %d-%d · %d boss"), d.min, d.max, n))
+        local closed = WK.DB.global.settings.ui.dgnClosed
+        local q = self.query or ""
+        local byGroup = {}
+        for _, d in ipairs(list) do
+            if q == "" or string.find(string.lower(D:Name(d)), q, 1, true) then
+                local g = groupOf(d, lvl)
+                byGroup[g] = byGroup[g] or {}
+                table.insert(byGroup[g], d)
             end
-            t.sub:SetTextColor(unpack(levelColor(d, lvl)))
-            t.bar.color = { r1, g1, b1, 1 }
-            t.bar:SetValue(n > 0 and done / n or 0)
         end
-        local y = math.ceil(#list / cols) * (TILE_H + GAP) + 4
+        local selGroup
+        do local sd = D:Get(self.sel); selGroup = sd and groupOf(sd, lvl) end
+        local ly = 2
+        for _, gdef in ipairs(GROUPS) do
+            local g = byGroup[gdef[1]]
+            if g then
+                local h = self.gheads:Get()
+                h.key = gdef[1]
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -ly); h:SetPoint("TOPRIGHT", 0, -ly)
+                local label = gdef[1] == "now" and string.format(T("Pour ton niveau (%d)"), lvl) or T(gdef[2])
+                h.label:SetText(UI:Upper(label))
+                h.count:SetText(tostring(#g))
+                -- groupe replié, sauf pendant une recherche ou s'il contient le donjon choisi
+                local isClosed = closed[gdef[1]] and q == "" and gdef[1] ~= selGroup
+                h.arrow:SetRotation(isClosed and (math.pi / 2) or 0)
+                ly = ly + 24
+                if not isClosed then
+                    for _, d in ipairs(g) do
+                        local r = self.drows:Get()
+                        r.key = d.key
+                        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ly); r:SetPoint("TOPRIGHT", 0, -ly)
+                        r.selected = d.key == self.sel
+                        r:Paint()
+                        local col = levelColor(d, lvl)
+                        r.dot:SetVertexColor(col[1], col[2], col[3], 1)
+                        r.name:SetText(D:Name(d))
+                        r.lv:SetText(d.raid and T("raid") or (d.min .. "-" .. d.max))
+                        r.lv:SetTextColor(col[1], col[2], col[3])
+                        local done, n = D:Progress(d, key)
+                        r.kills:SetText(done .. "/" .. n)
+                        r.kills:SetTextColor(unpack(n > 0 and done >= n and C.positive or C.dim))
+                        ly = ly + ROW_H + 2
+                    end
+                end
+                ly = ly + 6
+            end
+        end
+        self.lsc:SetContentHeight(ly)
+        local y = 0
         -- détail
         local d = D:Get(self.sel)
         local det = self.det
