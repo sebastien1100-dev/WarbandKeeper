@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.1"
+CLIENT_VERSION = "1.8.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1138,6 +1138,58 @@ class Segmented(tk.Frame):
             b.set(style="primary" if v == cur else "ghost")
 
 
+class ThinScroll(tk.Canvas):
+    """Barre de défilement du thème : rail sombre, curseur arrondi fin (bleu au survol et au glisser),
+    cachée quand tout le contenu se voit. S'utilise comme un tk.Scrollbar (command / set)."""
+
+    def __init__(self, parent, command, bg=None, width=10):
+        super().__init__(parent, width=width, highlightthickness=0, bd=0, bg=bg or parent["bg"], cursor="hand2")
+        self.command, self.first, self.last, self.hover, self.drag = command, 0.0, 1.0, False, None
+        self.bind("<Configure>", lambda e: self.draw())
+        self.bind("<Enter>", lambda e: self._hover(True))
+        self.bind("<Leave>", lambda e: self._hover(False))
+        self.bind("<ButtonPress-1>", self._press)
+        self.bind("<B1-Motion>", self._move)
+        self.bind("<ButtonRelease-1>", lambda e: (setattr(self, "drag", None), self.draw()))
+
+    def set(self, first, last):
+        self.first, self.last = float(first), float(last)
+        self.draw()
+
+    def _hover(self, v):
+        self.hover = v
+        self.draw()
+
+    def _press(self, e):
+        h = max(1, self.winfo_height())
+        if self.first * h <= e.y <= self.last * h:
+            self.drag = (e.y, self.first)
+        else:
+            # clic sur le rail : le curseur vient se centrer sous la souris
+            span = self.last - self.first
+            self.command("moveto", max(0.0, min(1.0 - span, e.y / h - span / 2)))
+
+    def _move(self, e):
+        if not self.drag:
+            return
+        h = max(1, self.winfo_height())
+        y0, f0 = self.drag
+        span = self.last - self.first
+        self.command("moveto", max(0.0, min(1.0 - span, f0 + (e.y - y0) / h)))
+
+    def draw(self):
+        self.delete("all")
+        if self.last - self.first >= 0.999:
+            return
+        w, h = self.winfo_width(), self.winfo_height()
+        bw = 6 if (self.hover or self.drag) else 4
+        x = (w - bw) / 2
+        rounded(self, x, 2, x + bw, h - 2, bw / 2, fill=C["surface2"], outline="")
+        y1, y2 = 2 + self.first * (h - 4), 2 + self.last * (h - 4)
+        y2 = max(y2, y1 + 24)
+        rounded(self, x, y1, x + bw, y2, bw / 2, fill=C["accent"] if (self.hover or self.drag) else C["border"], outline="")
+
+
 class ScrollArea(tk.Frame):
     """Contenu qui défile (molette) : on remplit self.inner."""
 
@@ -1145,8 +1197,7 @@ class ScrollArea(tk.Frame):
         super().__init__(parent, bg=C["bg"])
         self.bar = bar
         self.cv = tk.Canvas(self, bg=C["bg"], highlightthickness=0, bd=0)
-        self.sb = tk.Scrollbar(self, command=self.cv.yview, bg=C["bg"], troughcolor=C["bg"], bd=0,
-                               activebackground=C["hover"], highlightthickness=0, width=10, elementborderwidth=0)
+        self.sb = ThinScroll(self, self.cv.yview, C["bg"])
         self.inner = tk.Frame(self.cv, bg=C["bg"])
         self.win = self.cv.create_window(0, 0, window=self.inner, anchor="nw")
         self.cv.configure(yscrollcommand=self.sb.set)
@@ -1238,8 +1289,7 @@ def notes_view(parent, height=10):
     txt = tk.Text(wrap, bg=C["surface"], fg=C["text"], bd=0, highlightthickness=0, wrap="word",
                   font=App.fonts["body"], height=height, padx=2, pady=2, cursor="arrow",
                   selectbackground=C["hover"], insertwidth=0, spacing1=2, spacing3=2)
-    sb = tk.Scrollbar(wrap, command=txt.yview, bg=C["surface"], troughcolor=C["surface"], bd=0,
-                      activebackground=C["hover"], highlightthickness=0, width=10, elementborderwidth=0)
+    sb = ThinScroll(wrap, txt.yview, C["surface"])
     txt.configure(yscrollcommand=sb.set)
     sb.pack(side="right", fill="y")
     txt.pack(side="left", fill="both", expand=True)

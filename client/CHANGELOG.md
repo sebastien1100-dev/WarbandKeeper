@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.2 — 19/11/2026
+
+### Modifications
+- Barres de défilement aux couleurs du client (Nouveautés, Sauvegardes…) : rail sombre et curseur fin arrondi, bleu au survol, à la place de la barre blanche de Windows ; cachées quand tout se voit.
+
 ## 1.8.1 — 19/11/2026
 
 ### Ajouts
