@@ -5,7 +5,7 @@ local T = function(s) return WK.T(s) end
 
 -- Barre de vol « ruban » (Modules/Flight.lua) : une pilule fine avec la destination, une barre de
 -- progression (un trait par relais) et le temps restant. Au survol, un volet s'ouvre dessous : le
--- trajet complet (départ › relais › arrivée), heures de départ et d'arrivée, « Atterrir à … » et Carte.
+-- trajet complet (départ › relais › arrivée), heures de départ et d'arrivée, « Atterrir à … » et Statistiques.
 -- Placée en mode édition.
 local F = WK.modules.Flight
 local bar
@@ -100,9 +100,14 @@ local function build()
     m.bar:SetPoint("TOPRIGHT", -16, -50)
     m.times = UI:Text(m, 10, C.muted)
     m.times:SetPoint("BOTTOMLEFT", 16, 16)
-    m.map = UI:Button(m, "Carte", nil, 24, "secondary")
+    -- statistiques du compte en vol (UI/FlightStats.lua), même quand la carte (M) reste la carte
+    m.map = UI:Button(m, "Statistiques", nil, 24, "secondary")
     m.map:SetPoint("BOTTOMRIGHT", -14, 10)
-    m.map:SetScript("OnClick", function() if ToggleWorldMap then ToggleWorldMap() end end)
+    m.map.tooltip = "Statistiques du compte pendant le vol."
+    m.map:SetScript("OnClick", function()
+        local v = UI.FlightStats and UI:FlightStats()
+        if v and v:IsShown() then v:Hide() elseif UI.ShowFlightStats then UI:ShowFlightStats() end
+    end)
     m.land = UI:Button(m, "Atterrir", nil, 24, "primary")
     m.land:SetPoint("RIGHT", m.map, "LEFT", -6, 0)
     m.land:SetScript("OnClick", function() F:LandEarly() end)

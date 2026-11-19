@@ -3532,4 +3532,5 @@ WK.Locales.enUS.text = {
     ["En vol, la touche de la carte (M) ouvre les statistiques du compte ; leur bouton « Carte » ouvre quand même la carte."] = "In flight, the map key (M) opens account statistics; their 'Map' button still opens the map.",
     ["Ouvrir les statistiques au décollage"] = "Open statistics at takeoff",
     ["Elles s'ouvrent seules à chaque vol et se ferment à l'atterrissage."] = "They open on every flight and close on landing.",
+    ["Statistiques du compte pendant le vol."] = "Account statistics during the flight.",
 }

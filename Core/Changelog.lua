@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.71.1", date = "19/11/2026",
+        changed = {
+            "Barre de vol : le bouton « Carte » devient « Statistiques » et ouvre (ou ferme) les statistiques du compte en vol.",
+        },
+    },
+    {
         version = "1.71.0", date = "19/11/2026",
         changed = {
             "Client PC : le résumé écrit à la déconnexion garde la courbe de l'or sur 90 jours et compte les listes d'achat en objets qui manquent avec leur coût estimé à l'HV (au lieu des unités). Va avec le client PC 1.8.0 et son tableau de bord refait.",
