@@ -37,7 +37,9 @@ if roadmap:
         lines = [r for r in roadmap if r.theme == th.key]
         if lines:
             out.append(f"### {th.label}")
-            out.extend(f"- **{r.title}** — {r.text}" for r in lines)
+            prios = items(wk.RoadmapPrio)
+            lines.sort(key=lambda r: (r.prio or 3, r.title))
+            out.extend(f"- **{r.title}** ({prios[(r.prio or 3) - 1].label.lower() if prios else ''}) — {r.text}" for r in lines)
             out.append("")
 for i, entry in enumerate(items(wk.Changelog)):
     out.append(f"## v{entry.version} — {entry.date}")

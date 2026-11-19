@@ -232,49 +232,94 @@ UI.notesDef = {
         UI:OnAccent(function() if nv:IsVisible() then render() end end)
 
         -----------------------------------------------------------------
-        -- À venir : une colonne par thème (masonry sur 3 colonnes), une carte par idée (titre + phrase)
+        -- À venir : par priorité (Haute / Moyenne / Basse, pastille du thème sur chaque carte) ou par thème
+        -- (cartes triées par priorité, pastille de priorité) ; grille de 3 groupes par rangée, cartes alignées
         -----------------------------------------------------------------
         local tv = view("todo")
+        local cfgUI = WK.DB.global.settings.ui
         local ts = UI:Scroll(tv)
-        ts:SetAllPoints()
-        local blocks = {}
+        ts:SetPoint("TOPLEFT", 0, -40); ts:SetPoint("BOTTOMRIGHT")
+        local PRIO = WK.RoadmapPrio or {}
+        local themeOf = {}
+        for _, th in ipairs(WK.RoadmapThemes or {}) do themeOf[th.key] = th end
+        local function colorOf(name)
+            if name == "accent" then return { UI:Accent() } end
+            return C[name] or C.muted
+        end
+        local function sorted(list)
+            table.sort(list, function(i1, i2)
+                if (i1.prio or 3) ~= (i2.prio or 3) then return (i1.prio or 3) < (i2.prio or 3) end
+                return i1.title < i2.title
+            end)
+            return list
+        end
+        -- groupe (en-tête + cartes) ; pill(it) = { texte, couleur } de la pastille de chaque carte
+        local function makeBlock(label, color, list, pill)
+            local blk = CreateFrame("Frame", nil, ts.child)
+            blk.dot = UI:Icon(blk, "circle", 8, nil, "ARTWORK"); blk.dot:SetPoint("TOPLEFT", 2, -4)
+            blk.head = UI:Text(blk, 10, C.dim); blk.head:SetPoint("TOPLEFT", 16, -2)
+            blk.head:SetText(string.upper(T(label)) .. "  " .. #list)
+            blk.items = {}
+            for _, it in ipairs(list) do
+                local box = CreateFrame("Frame", nil, blk)
+                UI:Panel(box, 9, C.surface2, C.border)
+                local pt, pc = pill(it)
+                box.pill = UI:Badge(box, T(pt), pc)
+                box.pill:SetPoint("TOPRIGHT", -8, -8)
+                box.pillColor = pc
+                box.t = UI:Text(box, 12, C.text); box.t:SetPoint("TOPLEFT", 11, -9); box.t:SetJustifyH("LEFT")
+                if box.t.SetWordWrap then box.t:SetWordWrap(true) end
+                box.t:SetText(T(it.title))
+                box.d = wrapped(box, T(it.text), C.muted, 11)
+                box.d:SetPoint("TOPLEFT", box.t, "BOTTOMLEFT", 0, -4)
+                table.insert(blk.items, box)
+            end
+            local function tint()
+                local col = colorOf(color)
+                blk.dot:SetVertexColor(col[1], col[2], col[3], 1)
+            end
+            tint(); UI:OnAccent(tint)
+            -- hauteur naturelle de chaque carte à la largeur w (alignées ensuite rangée par rangée)
+            function blk.Measure(bk, w)
+                bk.hs = {}
+                for k, box in ipairs(bk.items) do
+                    box.t:SetWidth(w - 22 - (box.pill:GetWidth() or 50) - 6); box.d:SetWidth(w - 22)
+                    bk.hs[k] = 9 + (box.t:GetStringHeight() or 14) + 4 + (box.d:GetStringHeight() or 14) + 10
+                end
+            end
+            return blk
+        end
+        local sets = { prio = {}, theme = {} }
+        for i, pr in ipairs(PRIO) do
+            local list = {}
+            for _, it in ipairs(WK.Roadmap or {}) do if (it.prio or 3) == i then list[#list + 1] = it end end
+            if #list > 0 then
+                table.sort(list, function(i1, i2)
+                    local tx, ty = i1.theme or "", i2.theme or ""
+                    if tx ~= ty then return tx < ty end
+                    return i1.title < i2.title
+                end)
+                table.insert(sets.prio, makeBlock(pr.label, pr.color, list, function(it)
+                    local th = themeOf[it.theme] or {}
+                    return th.label or "?", colorOf(th.color or "muted")
+                end))
+            end
+        end
         for _, th in ipairs(WK.RoadmapThemes or {}) do
             local list = {}
             for _, it in ipairs(WK.Roadmap or {}) do if it.theme == th.key then list[#list + 1] = it end end
             if #list > 0 then
-                local blk = CreateFrame("Frame", nil, ts.child)
-                blk.dot = UI:Icon(blk, "circle", 8, nil, "ARTWORK"); blk.dot:SetPoint("TOPLEFT", 2, -4)
-                blk.head = UI:Text(blk, 10, C.dim); blk.head:SetPoint("TOPLEFT", 16, -2)
-                blk.head:SetText(string.upper(T(th.label)))
-                local function tint()
-                    local col = th.color == "accent" and { UI:Accent() } or C[th.color] or C.muted
-                    blk.dot:SetVertexColor(col[1], col[2], col[3], 1)
-                end
-                tint(); UI:OnAccent(tint)
-                blk.items = {}
-                for _, it in ipairs(list) do
-                    local box = CreateFrame("Frame", nil, blk)
-                    UI:Panel(box, 9, C.surface2, C.border)
-                    box.t = UI:Text(box, 12, C.text); box.t:SetPoint("TOPLEFT", 11, -9); box.t:SetJustifyH("LEFT")
-                    box.t:SetText(T(it.title))
-                    box.d = wrapped(box, T(it.text), C.muted, 11)
-                    box.d:SetPoint("TOPLEFT", box.t, "BOTTOMLEFT", 0, -4)
-                    table.insert(blk.items, box)
-                end
-                -- hauteur naturelle de chaque carte à la largeur w (alignées ensuite rangée par rangée)
-                function blk.Measure(b, w)
-                    b.hs = {}
-                    for k, box in ipairs(b.items) do
-                        box.t:SetWidth(w - 22); box.d:SetWidth(w - 22)
-                        b.hs[k] = 9 + (box.t:GetStringHeight() or 14) + 4 + (box.d:GetStringHeight() or 14) + 10
-                    end
-                end
-                table.insert(blocks, blk)
+                table.insert(sets.theme, makeBlock(th.label, th.color, sorted(list), function(it)
+                    local pr = PRIO[it.prio or 3] or {}
+                    return pr.label or "?", colorOf(pr.color or "muted")
+                end))
             end
         end
-        -- grille : les thèmes par rangées de 3 (2 si étroit), même haut pour chaque rangée ; dans une rangée,
+        -- grille : les groupes par rangées de 3 (2 si étroit), même haut pour chaque rangée ; dans une rangée,
         -- la k-ième carte a la même hauteur dans toutes les colonnes (les cartes s'alignent d'une colonne à l'autre)
-        UI:OnResize(ts, function(w)
+        local function layoutTodo(w)
+            local blocks = sets[cfgUI.todoBy == "theme" and "theme" or "prio"]
+            for k, set in pairs(sets) do for _, blk in ipairs(set) do blk:SetShown(set == blocks) end end
             local W = math.max(360, (w or ts:GetWidth() or UI.PAGE_W) - 12)
             local cols = W < 760 and 2 or 3
             local GAP, VG, HEAD = 12, 7, 22
@@ -308,7 +353,13 @@ UI.notesDef = {
                 y = y + h + 14
             end
             ts:SetContentHeight(y)
-        end)
+        end
+        local bySeg = UI:Segmented(tv, { { "prio", "Par priorité" }, { "theme", "Par thème" } },
+            function(v) cfgUI.todoBy = v; layoutTodo() end, 28)
+        bySeg:SetPoint("TOPLEFT")
+        bySeg:Select(cfgUI.todoBy == "theme" and "theme" or "prio")
+        self.todoLayout = layoutTodo
+        UI:OnResize(ts, layoutTodo)
 
         tabSeg:Select("notes")
         views.todo:Hide()
