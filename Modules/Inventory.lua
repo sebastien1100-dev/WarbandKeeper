@@ -196,36 +196,70 @@ local NO_TOOLTIP = {
     [6948] = true, -- Pierre de foyer
 }
 
+-- Icônes des lignes de l'infobulle (taille du texte)
+local ICON_BAG = "|TInterface\\Icons\\INV_Misc_Bag_08:0|t"
+local ICON_BANK = "|TInterface\\Icons\\INV_Box_02:0|t"
+local ICON_MAIL = "|TInterface\\Icons\\INV_Letter_15:0|t"
+local ICON_WARBANK = "|TInterface\\Icons\\INV_Misc_Bag_10_Blue:0|t"
+local ICON_PROF = "Interface\\Icons\\INV_Misc_Note_01"
+local DIM, NEED = "|cff8a8f98", "|cfff5a742"
+
 -- Info-bulle : quantité par personnage (pas sur les infobulles de comparaison).
 local function onTooltip(tooltip, data)
     if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip then return end
     local itemID = tooltipItemID(tooltip, data)
     if not itemID or NO_TOOLTIP[itemID] then return end
     local any = false
+    -- Une ligne par perso : sacs, banque (courrier s'il y en a) en icônes, puis ce qu'il lui reste à
+    -- utiliser pour monter ses métiers (icône du métier + nombre) ; total du compte sur la ligne de titre.
+    local R = WK.modules.Recipes
+    local needs = R and R.TooltipNeeds and R:TooltipNeeds(itemID)
+    local rows, account = {}, 0
     for key, c in pairs(WK.DB.global.characters) do
         local total, b, k, m = M:CharCount(c, itemID)
-        if total > 0 then
-            if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+        account = account + total
+        local need = needs and needs[key]
+        if total > 0 or need then
+            table.insert(rows, { key = key, c = c, total = total, b = b, k = k, m = m, need = need })
+        end
+    end
+    table.sort(rows, function(a, b)
+        if a.total ~= b.total then return a.total > b.total end
+        return a.key < b.key
+    end)
+    local wb = WK.DB.global.warbank
+    local w = wb and wb.items[itemID] or 0
+    account = account + w
+    if #rows > 0 or w > 0 then
+        any = true
+        tooltip:AddLine(" ")
+        tooltip:AddDoubleLine(WK:Tag(), account > 0 and (DIM .. WK.T("total") .. "|r " .. account) or "", 1, 1, 1, 1, 1, 1)
+        for _, row in ipairs(rows) do
+            local c = row.c
             local r, g, bl = 1, 1, 1
             local cc = c.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[c.class]
             if cc then r, g, bl = cc.r, cc.g, cc.b end
-            local detail = string.format("%s %d, %s %d", WK.L.BAGS, b, WK.L.BANK, k)
-            if m > 0 then detail = detail .. string.format(", %s %d", WK.L.MAILBOX, m) end
-            tooltip:AddDoubleLine(WK:CharName(c, key), string.format("%d (%s)", total, detail), r, g, bl, 1, 1, 1)
+            local parts = {}
+            if row.total > 0 then
+                table.insert(parts, ICON_BAG .. " " .. row.b .. "  " .. ICON_BANK .. " " .. row.k)
+                if row.m > 0 then table.insert(parts, ICON_MAIL .. " " .. row.m) end
+            end
+            for i, n in ipairs(row.need or {}) do
+                if i > 2 then break end
+                local icon = R.PROF_ICONS[n.en or ""] or ICON_PROF
+                table.insert(parts, (#parts > 0 and (DIM .. "·|r ") or "") .. "|T" .. icon .. ":0|t " .. NEED .. n.left .. "|r")
+            end
+            local name = WK:CharName(c, row.key)
+            if row.need then name = name .. DIM .. " (" .. row.need[1].rank .. ")|r" end
+            tooltip:AddDoubleLine(name, table.concat(parts, "  "), r, g, bl, 1, 1, 1)
         end
+        if w > 0 then tooltip:AddDoubleLine(WK.L.WARBANK, ICON_WARBANK .. " " .. w, 0.8, 0.8, 0.8, 1, 1, 1) end
     end
-    local wb = WK.DB.global.warbank
-    local w = wb and wb.items[itemID] or 0
-    if w > 0 then
-        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
-        tooltip:AddDoubleLine(WK.L.WARBANK, tostring(w), 1, 1, 1, 1, 1, 1)
-    end
-    -- à quoi sert l'objet pour monter les métiers (guides)
-    local R = WK.modules.Recipes
+    -- à quoi sert encore l'objet pour monter les métiers (recettes, outils, métiers que personne ne monte)
     if R and R.AddTooltip then
         if R:AddTooltip(tooltip, itemID, function()
             if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
-        end) then any = true end
+        end, true) then any = true end
     end
     -- désenchantement : valeur attendue (Modules/ProfHelp.lua)
     local PH = WK.modules.ProfHelp

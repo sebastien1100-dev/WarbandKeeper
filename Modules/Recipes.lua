@@ -305,8 +305,45 @@ function M:TooltipEnabled()
     return WK.DB.global.settings.ui.tooltipProf ~= false
 end
 
+-- Icône d'un métier (nom anglais du guide) pour les lignes d'infobulle
+M.PROF_ICONS = {
+    Alchemy = "Interface\\Icons\\Trade_Alchemy", Blacksmithing = "Interface\\Icons\\Trade_BlackSmithing",
+    Cooking = "Interface\\Icons\\INV_Misc_Food_15", Enchanting = "Interface\\Icons\\Trade_Engraving",
+    Engineering = "Interface\\Icons\\Trade_Engineering", ["First Aid"] = "Interface\\Icons\\Spell_Holy_SealOfSacrifice",
+    Leatherworking = "Interface\\Icons\\INV_Misc_ArmorKit_17", Tailoring = "Interface\\Icons\\Trade_Tailoring",
+}
+
+-- Ce que chaque perso doit encore utiliser de cet objet pour monter ses métiers (composant des guides) :
+-- needs[perso] = { { prof, en, rank, left }, ... } (le plus gros besoin d'abord).
+function M:TooltipNeeds(itemID)
+    if not self:TooltipEnabled() or not WK:FeatureOn("professions") then return nil end
+    if not uses then buildUses() end
+    local list = uses[itemID]
+    if not list then return nil end
+    local out
+    for _, u in ipairs(list) do
+        if u.kind == "reagent" then
+            for key, c in pairs(WK.DB.global.characters) do
+                local p = c.professions and (c.professions[u.prof] or (u.en and c.professions[u.en]))
+                if p then
+                    local left = remaining(u, p.rank or 0)
+                    if left > 0 then
+                        out = out or {}
+                        out[key] = out[key] or {}
+                        table.insert(out[key], { prof = u.prof, en = u.en, rank = p.rank or 0, left = left })
+                    end
+                end
+            end
+        end
+    end
+    if out then for _, l in pairs(out) do table.sort(l, function(a, b) return a.left > b.left end) end end
+    return out
+end
+
 -- Ajoute les lignes à l'infobulle. header() pose l'en-tête Warband Keeper s'il n'y est pas encore.
-function M:AddTooltip(tooltip, itemID, header)
+-- merged = true : les besoins des persos sont déjà sur leur ligne (Modules/Inventory.lua) ; ne restent
+-- que les recettes, outils et métiers que personne ne monte.
+function M:AddTooltip(tooltip, itemID, header, merged)
     if not self:TooltipEnabled() or not WK:FeatureOn("professions") then return false end
     if not uses then buildUses() end
     local list = uses[itemID]
@@ -325,8 +362,9 @@ function M:AddTooltip(tooltip, itemID, header)
             end
             table.sort(who, function(a, b) return a.left > b.left end)
         end
-        table.insert(lines, { u = u, who = who })
+        if not (merged and u.kind == "reagent" and #who > 0) then table.insert(lines, { u = u, who = who }) end
     end
+    if #lines == 0 then return false end
     header()
     tooltip:AddLine(T("Montée des métiers"), 0.88, 0.74, 0.45)
     local shown = 0

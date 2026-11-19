@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.74.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Infobulle des objets, plus courte : une seule ligne par perso, avec en icônes ce qu'il a dans ses sacs, sa banque (et son courrier s'il y en a), puis l'icône de son métier et ce qu'il lui reste à utiliser pour le monter (son niveau entre parenthèses). Le total du compte est à droite de « Warband Keeper » ; les lignes « Montée des métiers » et « sur le compte » ne restent que pour les recettes, les outils et les métiers que personne ne monte.
+
 ## v1.73.4 — 19/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.74.0", date = "19/11/2026",
+        changed = {
+            "Infobulle des objets, plus courte : une seule ligne par perso, avec en icônes ce qu'il a dans ses sacs, sa banque (et son courrier s'il y en a), puis l'icône de son métier et ce qu'il lui reste à utiliser pour le monter (son niveau entre parenthèses). Le total du compte est à droite de « Warband Keeper » ; les lignes « Montée des métiers » et « sur le compte » ne restent que pour les recettes, les outils et les métiers que personne ne monte.",
+        },
+    },
+    {
         version = "1.73.4", date = "19/11/2026",
         fixed = {
             "Marchand : le panneau « Pour monter tes métiers » passait sous les fenêtres d'autres addons ouvertes à côté ; il est maintenant toujours au-dessus. Même chose pour le panneau collé à la fenêtre de l'HV du jeu.",
