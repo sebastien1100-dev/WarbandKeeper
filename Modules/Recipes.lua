@@ -699,6 +699,6 @@ function M:ExportToList(entries, listName)
         WK:Print(T("Rien à acheter : tu as déjà tous les composants."))
         return false
     end
-    WK:Print(string.format(T("Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, onglet « Achat » de Warband Keeper (en bas de la fenêtre)."), listName, n))
+    WK:Print(string.format(T("Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, page « À acheter » de la fenêtre Warband Keeper."), listName, n))
     return true
 end

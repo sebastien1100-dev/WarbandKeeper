@@ -6,7 +6,7 @@ local T = function(s) return WK.T(s) end
 -- Page « Hôtel des ventes » (groupe Trésorerie) : tous les réglages de l'HV au même endroit, en cartes
 -- sur deux colonnes : source des prix (reprise d'Options), panneau et scan, prix relevés, vente, alertes
 -- de prix (reprises de la section « ah » de QoL, cachée). Les prix dans l'infobulle sont dans
--- Options > Infobulles ; les onglets de l'HV eux-mêmes sont en jeu (UI/AuctionTabs.lua).
+-- Options > Infobulles ; la fenêtre de l'HV elle-même est en jeu (UI/AuctionTabs.lua).
 local GAP = 12
 
 UI:RegisterPage({

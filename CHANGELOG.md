@@ -26,6 +26,22 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.50.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Hôtel des ventes : notre propre fenêtre remplace celle du jeu chez l'encanteur, avec une barre latérale comme la fenêtre de l'addon : Parcourir, Vendre, Mes enchères, À acheter, Prix, Scan et réglages, avec des pastilles (objets à vendre, enchères sous-cotées en rouge, objets à acheter). En haut : le scan des prix avec sa barre, ton or, « Fenêtre du jeu » pour revenir à l'HV de base le reste de la visite, et fermer.
+- Parcourir : recherche par nom et par catégorie, filtres « Utilisable par moi », niveau et « Bonne affaire » (plus bas sous 80 % de la moyenne de la semaine). Résultats triables (clic sur un titre) qui défilent à la molette, avec l'écart avec la semaine et une étoile pour ce qui est dans une liste d'achat ou chez tes persos.
+- Parcourir, l'objet choisi : sa courbe de 14 jours, ses enchères avec le cumul, les lignes qu'il faut pour ta quantité surlignées, le prix moyen et le total, puis « Acheter N » (prix demandé puis confirmation). Un objet unique s'achète sur sa ligne. « Surveiller » pose une alerte de prix.
+- Recherches enregistrées (étoile) et les six dernières dans la barre de gauche : un clic les relance, clic droit pour enregistrer ou retirer.
+- Mes enchères : filtre par nom, Toutes / Sous-cotées / Bientôt finies, et le bilan du jour (vendu, acheté, en vente, dernières ventes).
+- À acheter : la « File de fabrication » arrive toute seule en tête : ce qui manque à la file des métiers de tous tes persos, avec pour qui.
+
+### Modifications
+- Les onglets ajoutés sous la fenêtre de l'HV du jeu disparaissent : Vente, Achat, Annulation, Prix et Scan sont des pages de la nouvelle fenêtre, en plus grand.
+- Hôtel des ventes (page de l'addon) : réglage « Fenêtre Warband Keeper » pour garder la fenêtre du jeu et l'ancien panneau à côté.
+
 ## v1.49.1 — 19/11/2026
 
 _Un /reload suffit._

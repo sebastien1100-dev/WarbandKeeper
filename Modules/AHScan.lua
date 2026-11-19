@@ -412,6 +412,8 @@ function M:SearchItem(itemID)
         WK:Print(T("Objet pas encore chargé par le jeu : réessaie dans un instant."))
         return false
     end
+    -- notre fenêtre d'HV ouverte : la recherche se fait dans sa page Parcourir
+    if WK.UI.AHWindowSearch and WK.UI:AHWindowSearch(itemID, name) then return true end
     local f = AuctionHouseFrame
     local bar = f and f.SearchBar
     if bar then

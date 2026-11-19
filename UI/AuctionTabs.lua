@@ -3,18 +3,23 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Hôtel des ventes façon Auctionator : quatre onglets ajoutés en bas de la fenêtre de l'HV du jeu
--- (AuctionHouseFrame), à côté des siens. Un onglet à nous recouvre le contenu de la fenêtre ; un onglet
--- du jeu le referme.
---   Vente      : objets des sacs vendables (liés, verrouillés à la main et objets de quête cachés) et ceux que
+-- Hôtel des ventes Warband Keeper : notre fenêtre (WarbandKeeperAH) prend la place de celle du jeu, qui reste
+-- ouverte mais invisible (alpha 0) sous la nôtre. Barre de titre (scan, or, « Fenêtre du jeu » pour revenir à celle
+-- du jeu le reste de la visite, fermer), barre latérale (pages avec pastilles, recherches enregistrées et récentes).
+--   Parcourir  : recherche par nom et catégorie (SendBrowseQuery, AuctionCategories), filtres (utilisable,
+--                niveau, bonne affaire = plus bas sous 80 % de la moyenne de 7 j), résultats triables qui défilent ;
+--                objet choisi : courbe, enchères avec cumul, achat (unique : PlaceBid ; marchandise : prix puis
+--                confirmation), alerte de prix.
+--   Vendre     : objets des sacs vendables (liés, verrouillés à la main et objets de quête cachés) et ceux que
 --                le Rangement met en vente sur ce perso ; prix proposé (plus bas des autres moins l'écart, sinon
 --                prix du scan), quantité, durée, dépôt ; « Mettre en vente » puis objet suivant ; enchères en cours
 --                de l'objet (la plus basse et la tienne surlignées) ; tes derniers prix et ventes.
---   Achat      : listes d'achat (Modules/AHScan.lua) cherchées d'un coup, plus bas et quantité en vente par objet,
---                « Acheter N » (demande de prix puis confirmation, un clic chacun : le jeu l'exige).
---   Annulation : tes enchères (Modules/AHSell.lua), sous-cotées en rouge, « Annuler la suivante ».
---   Scan       : le panneau d'avant (scan, alertes de prix, listes, ventes), posé dans l'onglet.
--- Réglage AHScan:Config().tabs (sinon l'ancien panneau sur le côté).
+--   Mes enchères : tes enchères (Modules/AHSell.lua), filtres, « Annuler la suivante », bilan du jour.
+--   À acheter  : listes d'achat (Modules/AHScan.lua) et « File de fabrication » (ce qui manque à la file des
+--                métiers de tous tes persos), « Acheter N » (demande de prix puis confirmation : le jeu l'exige).
+--   Prix       : courbe du plus bas de chaque jour, objets qui bougent, alerte de prix.
+--   Scan et réglages : le panneau d'avant (scan, alertes de prix, listes, ventes) et les réglages de la vente.
+-- Réglage AHScan:Config().tabs (sinon la fenêtre du jeu et l'ancien panneau sur le côté).
 local S = WK.modules.AHScan
 local A = WK.modules.AHSell
 local AH = function() return C_AuctionHouse end
@@ -28,6 +33,7 @@ local function cfg()
     c.posts = c.posts or {}
     c.sellFav, c.sellHidden, c.qtyMode = c.sellFav or {}, c.sellHidden or {}, c.qtyMode or {}
     if c.askBad == nil then c.askBad = true end
+    c.searches, c.recent = c.searches or {}, c.recent or {}
     return c
 end
 local function money(v) return v and WK:FormatMoney(v) or "-" end
@@ -189,7 +195,11 @@ end
 ---------------------------------------------------------------------------
 -- Construction
 ---------------------------------------------------------------------------
-local TABS = { { "buy", "Achat" }, { "sell", "Vente" }, { "cancel", "Annulation" }, { "prices", "Prix" }, { "scan", "Scan" } }
+local NAV = {
+    { "browse", "Parcourir", "search" }, { "sell", "Vendre", "coin" }, { "cancel", "Mes enchères", "clock" },
+    { "buy", "À acheter", "bag" }, { "prices", "Prix", "chart" }, { "scan", "Scan et réglages", "gear" },
+}
+local WIN_W, WIN_H, SIDE_W, HEAD_H = 1180, 660, 196, 46
 
 local function panelBox(parent, title)
     local b = CreateFrame("Frame", nil, parent)
@@ -214,102 +224,196 @@ local function textRow(parent, h)
 end
 
 local function build(host)
-    local f = CreateFrame("Frame", "WarbandKeeperAHTabs", host)
-    f:SetPoint("TOPLEFT", host, "TOPLEFT", 6, -24)
-    f:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -6, 4)
-    -- au-dessus de tout le contenu de la fenêtre du jeu (certains de ses cadres sont très hauts)
-    f:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 300))
+    -- notre fenêtre, posée sur celle du jeu (rendue invisible tant que la nôtre est ouverte)
+    local f = CreateFrame("Frame", "WarbandKeeperAH", UIParent)
+    f:SetSize(WIN_W, WIN_H)
+    f:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
+    local strata = host:GetFrameStrata()
+    f:SetFrameStrata((strata == "HIGH" or strata == "DIALOG") and "DIALOG" or "HIGH")
+    f:SetToplevel(true)
+    f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    UI:Panel(f, 8, { C.bg[1], C.bg[2], C.bg[3], 0.99 }, C.border)
+    UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.99 }, C.border)
     f:Hide()
-    f.head = UI:Text(f, 13); f.head:SetPoint("TOPLEFT", 14, -10)
-    f.headSub = UI:Text(f, 10, C.muted); f.headSub:SetPoint("LEFT", f.head, "RIGHT", 10, 0)
-    f.scanBtn = UI:Button(f, "Scanner", 90, 22, "secondary")
-    f.scanBtn:SetPoint("TOPRIGHT", -10, -6)
-    f.scanBtn:SetScript("OnClick", function() S:Start() end)
-    f.scanInfo = UI:Text(f, 10, C.muted); f.scanInfo:SetPoint("RIGHT", f.scanBtn, "LEFT", -8, 0)
+    f.host = host
     f.views = {}
 
-    -- onglets à nous, après ceux du jeu et dans leur style : texte, trait de séparation, soulignés quand
-    -- choisis ; même hauteur et même police que le dernier onglet du jeu, sur un fond de la barre d'onglets
-    f.tabs = {}
-    local gameTabs = host.Tabs
-    local anchor = gameTabs and gameTabs[#gameTabs]
-    local fontObj = anchor and anchor.GetFontString and anchor:GetFontString()
-    local tabH = (anchor and anchor.GetHeight and anchor:GetHeight()) or 28
-    if not tabH or tabH < 18 then tabH = 28 end
-    local strip = CreateFrame("Frame", nil, host)
-    strip:SetHeight(tabH)
-    if anchor then strip:SetPoint("LEFT", anchor, "RIGHT", 0, 0) else strip:SetPoint("TOPLEFT", host, "BOTTOMLEFT", 300, 0) end
-    strip:SetFrameLevel(math.min(9000, host:GetFrameLevel() + 305))
-    strip.bg = strip:CreateTexture(nil, "BACKGROUND")
-    strip.bg:SetAllPoints()
-    strip.bg:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], 0.96)
-    f.strip = strip
-    local x = 0
-    for i, def in ipairs(TABS) do
-        local b = CreateFrame("Button", nil, strip)
-        b.key = def[1]
-        b:SetHeight(tabH)
-        b.sep = b:CreateTexture(nil, "ARTWORK")
-        b.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-        b.sep:SetSize(1, tabH * 0.5); b.sep:SetPoint("LEFT", 0, 0)
-        b.text = b:CreateFontString(nil, "OVERLAY")
-        local font, size, flags = fontObj and fontObj:GetFont()
-        if font then b.text:SetFont(font, size or 12, flags or "") else b.text:SetFont(UI.FONT, 12, "") end
-        b.text:SetPoint("CENTER", 0, 0)
-        b.text:SetText(T(def[2]))
-        b.line = b:CreateTexture(nil, "OVERLAY")
-        b.line:SetHeight(2); b.line:SetPoint("BOTTOMLEFT", 8, 1); b.line:SetPoint("BOTTOMRIGHT", -8, 1)
-        b.hl = b:CreateTexture(nil, "BACKGROUND")
-        b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
-        local w = (b.text:GetStringWidth() or 50) + 36
-        b:SetWidth(w)
-        b:SetPoint("LEFT", strip, "LEFT", x, 0)
-        x = x + w
-        function b:Paint(on)
-            local r, g, bb = UI:Accent()
-            self.on = on
-            self.line:SetColorTexture(r, g, bb, 1)
-            self.line:SetShown(on)
-            if on then self.text:SetTextColor(1, 1, 1) else self.text:SetTextColor(C.muted[1], C.muted[2], C.muted[3]) end
+    -- barre de titre : nom, royaume, scan (barre + bouton), or, retour à la fenêtre du jeu, fermer
+    local head = CreateFrame("Frame", nil, f)
+    head:SetPoint("TOPLEFT"); head:SetPoint("TOPRIGHT"); head:SetHeight(HEAD_H)
+    head.line = head:CreateTexture(nil, "ARTWORK")
+    head.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    head.line:SetPoint("BOTTOMLEFT"); head.line:SetPoint("BOTTOMRIGHT"); head.line:SetHeight(1)
+    f.logo = UI:Icon(head, "coin", 18); f.logo:SetPoint("LEFT", 14, 0)
+    f.head = UI:Text(head, 14); f.head:SetPoint("LEFT", f.logo, "RIGHT", 8, 0)
+    f.head:SetText(T("Hôtel des ventes"))
+    f.headSub = UI:Text(head, 11, C.muted); f.headSub:SetPoint("LEFT", f.head, "RIGHT", 8, 0)
+    f.close = UI:IconButton(head, "close", 26, "Fermer l'hôtel des ventes")
+    f.close:SetPoint("RIGHT", -10, 0)
+    f.close:SetScript("OnClick", function()
+        local a = AH()
+        if a and a.CloseAuctionHouse then pcall(a.CloseAuctionHouse) elseif HideUIPanel then HideUIPanel(host) end
+    end)
+    f.game = UI:Button(head, "Fenêtre du jeu", nil, 26, "secondary")
+    f.game:SetPoint("RIGHT", f.close, "LEFT", -10, 0)
+    f.game.tooltip = "Revenir à l'hôtel des ventes du jeu pour le reste de cette visite."
+    f.game:SetScript("OnClick", function() f.gameMode = true; f:Close() end)
+    f.gold = UI:Text(head, 12, C.gold); f.gold:SetPoint("RIGHT", f.game, "LEFT", -16, 0)
+    f.scanBtn = UI:Button(head, "Scanner", nil, 24, "secondary")
+    f.scanBtn:SetPoint("LEFT", f.headSub, "RIGHT", 24, 0)
+    f.scanBtn:SetScript("OnClick", function() S:Start() end)
+    f.scanBar = CreateFrame("Frame", nil, head)
+    f.scanBar:SetSize(110, 6); f.scanBar:SetPoint("LEFT", f.scanBtn, "RIGHT", 10, 0)
+    f.scanBar.bg = UI:Rounded(f.scanBar, 3, 0, "BACKGROUND", 1)
+    f.scanBar.bg:SetColor(C.border[1], C.border[2], C.border[3], 1)
+    f.scanBar.fillF = CreateFrame("Frame", nil, f.scanBar)
+    f.scanBar.fillF:SetPoint("TOPLEFT"); f.scanBar.fillF:SetPoint("BOTTOMLEFT")
+    f.scanBar.fill = UI:Rounded(f.scanBar.fillF, 3, 0, "ARTWORK", 1)
+    f.scanInfo = UI:Text(head, 10, C.muted); f.scanInfo:SetPoint("LEFT", f.scanBar, "RIGHT", 8, 0)
+
+    -- barre latérale : pages, puis tes recherches (enregistrées et récentes)
+    local side = CreateFrame("Frame", nil, f)
+    side:SetPoint("TOPLEFT", 0, -HEAD_H); side:SetPoint("BOTTOMLEFT"); side:SetWidth(SIDE_W)
+    side.line = side:CreateTexture(nil, "ARTWORK")
+    side.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    side.line:SetPoint("TOPRIGHT"); side.line:SetPoint("BOTTOMRIGHT"); side.line:SetWidth(1)
+    f.side = side
+    f.nav = {}
+    for i, def in ipairs(NAV) do
+        local b = CreateFrame("Button", nil, side)
+        b:SetHeight(30)
+        b:SetPoint("TOPLEFT", 8, -10 - (i - 1) * 32); b:SetPoint("TOPRIGHT", -8, -10 - (i - 1) * 32)
+        b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
+        b.icon = UI:Icon(b, def[3], 14); b.icon:SetPoint("LEFT", 10, 0)
+        b.text = UI:Text(b, 12); b.text:SetPoint("LEFT", 32, 0); b.text:SetText(T(def[2]))
+        b.pill = CreateFrame("Frame", nil, b)
+        b.pill:SetSize(20, 16); b.pill:SetPoint("RIGHT", -8, 0)
+        b.pill.bg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 1)
+        b.pill.t = UI:Text(b.pill, 10, C.onAccent); b.pill.t:SetPoint("CENTER")
+        b.pill:Hide()
+        function b:Paint()
+            local r, g, bl = UI:Accent()
+            local on = f.tab == def[1]
+            self.bg:SetColor(r, g, bl, on and 0.16 or (self.hover and 0.07 or 0))
+            self.text:SetTextColor(unpack(on and C.text or C.muted))
+            self.icon:SetVertexColor(r, g, bl, on and 1 or 0.75)
         end
-        b:SetScript("OnEnter", function(s) s.hl:Show(); if not s.on then s.text:SetTextColor(C.text[1], C.text[2], C.text[3]) end end)
-        b:SetScript("OnLeave", function(s) s.hl:Hide(); s:Paint(s.on) end)
+        function b:SetCount(n, col)
+            self.pill:SetShown(n and n > 0)
+            if not (n and n > 0) then return end
+            self.pill.t:SetText(n)
+            self.pill:SetWidth(math.max(18, self.pill.t:GetStringWidth() + 10))
+            local r, g, bl = UI:Accent()
+            if col then r, g, bl = col[1], col[2], col[3] end
+            self.pill.bg:SetColor(r, g, bl, 1)
+        end
+        b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+        b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
         b:SetScript("OnClick", function() f:Open(def[1]) end)
-        b:Paint(false)
-        f.tabs[def[1]] = b
+        f.nav[def[1]] = b
     end
-    strip:SetWidth(x + 8)
+    f.searchHead = UI:Text(side, 9, C.dim)
+    f.searchHead:SetPoint("TOPLEFT", 16, -22 - #NAV * 32)
+    f.searchHead:SetText(UI:Upper(T("Recherches")))
+    f.srows = {}
+    for i = 1, 10 do
+        local r = CreateFrame("Button", nil, side)
+        r:SetHeight(22)
+        r:SetPoint("TOPLEFT", 8, -38 - #NAV * 32 - (i - 1) * 23); r:SetPoint("TOPRIGHT", -8, -38 - #NAV * 32 - (i - 1) * 23)
+        if r.RegisterForClicks then r:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+        r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1); r.bg:SetColor(1, 1, 1, 0)
+        r.icon = UI:Icon(r, "star", 11); r.icon:SetPoint("LEFT", 10, 0)
+        r.t = UI:Text(r, 11, C.muted); r.t:SetPoint("LEFT", 28, 0); r.t:SetPoint("RIGHT", -6, 0); r.t:SetJustifyH("LEFT")
+        if r.t.SetWordWrap then r.t:SetWordWrap(false) end
+        r:SetScript("OnEnter", function(s)
+            local ar, ag, ab = UI:Accent(); s.bg:SetColor(ar, ag, ab, 0.08)
+            if not s.q then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.q.name or s.q.text or "", 1, 1, 1)
+            GameTooltip:AddLine(T("Clic : relancer cette recherche"), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(s.saved and T("Clic droit : retirer") or T("Clic droit : enregistrer"), 0.6, 0.6, 0.6)
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function(s) s.bg:SetColor(1, 1, 1, 0); GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(s, button)
+            if not s.q then return end
+            if button == "RightButton" then
+                local c = cfg()
+                if s.saved then table.remove(c.searches, s.index)
+                else table.insert(c.searches, s.q) end
+                f:RefreshSide()
+                return
+            end
+            f:Open("browse")
+            f.views.browse:Run(s.q)
+        end)
+        f.srows[i] = r
+    end
+    function f:RefreshSide()
+        local c = cfg()
+        local list = {}
+        for i, q in ipairs(c.searches) do table.insert(list, { q = q, saved = true, index = i }) end
+        for _, q in ipairs(c.recent) do
+            local dup = false
+            for _, sq in ipairs(c.searches) do if sq.key == q.key then dup = true end end
+            if not dup then table.insert(list, { q = q }) end
+        end
+        local room = math.max(0, math.floor((side:GetHeight() - 48 - #NAV * 32) / 23))
+        f.searchHead:SetShown(#list > 0)
+        for i, r in ipairs(self.srows) do
+            local e = i <= room and list[i]
+            r.q, r.saved, r.index = e and e.q, e and e.saved, e and e.index
+            if e then
+                r.t:SetText(e.q.name or e.q.text ~= "" and e.q.text or T("(catégorie)"))
+                r.icon:SetTexture(UI.MEDIA .. (e.saved and "star" or "refresh"))
+                local ar, ag, ab = UI:Accent()
+                r.icon:SetVertexColor(ar, ag, ab, e.saved and 1 or 0.6)
+                r:Show()
+            else r:Hide() end
+        end
+    end
+
+    f.content = CreateFrame("Frame", nil, f)
+    f.content:SetPoint("TOPLEFT", SIDE_W + 12, -HEAD_H - 12)
+    f.content:SetPoint("BOTTOMRIGHT", -12, 12)
 
     function f:Open(key)
         cfg().ahTab = key
         self.tab = key
-        for k, b in pairs(self.tabs) do b:Paint(k == key) end
+        for _, b in pairs(self.nav) do b:Paint() end
         for k, v in pairs(self.views) do v:SetShown(k == key) end
-        -- les onglets du jeu ne paraissent plus choisis
-        if PanelTemplates_DeselectTab then
-            for _, tb in ipairs(host.Tabs or {}) do pcall(PanelTemplates_DeselectTab, tb) end
+        if not self:IsShown() then
+            -- la fenêtre du jeu reste ouverte (ses évènements) mais invisible, sous la nôtre
+            self.hostAlpha = host:GetAlpha()
+            host:SetAlpha(0)
+            self:Show()
+            if self.back then self.back:Hide() end
         end
-        -- onglet Scan : le panneau a déjà son bouton et son heure
-        self.scanBtn:SetShown(key ~= "scan"); self.scanInfo:SetShown(key ~= "scan")
-        self:Show()
         if key == "cancel" then A:Query() end
         if key == "scan" and UI.AHPanelEmbed then UI:AHPanelEmbed(self.views.scan) end
         self:Refresh()
     end
     function f:Close()
         self:Hide()
-        -- l'onglet du jeu en cours reprend son air choisi
-        if PanelTemplates_SetTab and host.selectedTab then pcall(PanelTemplates_SetTab, host, host.selectedTab) end
-        for _, b in pairs(self.tabs) do b:Paint(false) end
+        host:SetAlpha(self.hostAlpha or 1)
+        -- retour à la nôtre depuis la fenêtre du jeu
+        if self.gameMode and host:IsShown() then
+            if not self.back then
+                self.back = UI:Button(host, "Warband Keeper", nil, 24, "primary", "coin")
+                self.back:SetPoint("TOPRIGHT", host, "TOPRIGHT", -34, -2)
+                self.back:SetFrameLevel(host:GetFrameLevel() + 50)
+                self.back:SetScript("OnClick", function() f.gameMode = false; f:Open(cfg().ahTab or "browse") end)
+            end
+            self.back:Show()
+        end
     end
+    f:SetScript("OnSizeChanged", function() f:RefreshSide() end)
 
     -----------------------------------------------------------------------
     -- Vente
     -----------------------------------------------------------------------
-    local sv = CreateFrame("Frame", nil, f)
-    sv:SetPoint("TOPLEFT", 8, -34); sv:SetPoint("BOTTOMRIGHT", -8, 8)
+    local sv = CreateFrame("Frame", nil, f.content)
+    sv:SetAllPoints(f.content)
     f.views.sell = sv
     sv.bags = panelBox(sv, "Mes sacs")
     sv.bags:SetPoint("TOPLEFT"); sv.bags:SetPoint("BOTTOMLEFT"); sv.bags:SetWidth(262)
@@ -767,7 +871,8 @@ local function build(host)
     -- clic droit sur un objet des sacs du jeu, HV ouvert : il arrive dans notre Vente (le jeu le prend aussi)
     if hooksecurefunc and host.SetPostItem then
         hooksecurefunc(host, "SetPostItem", function(_, loc)
-            if not (f:IsShown() and f.tab == "sell") then return end
+            if not f:IsShown() then return end
+            if f.tab ~= "sell" then f:Open("sell") end
             local ok, id = pcall(C_Item.GetItemID, loc)
             if ok and id then
                 if C_Item.UnlockItem then pcall(C_Item.UnlockItem, loc) end
@@ -779,8 +884,8 @@ local function build(host)
     -----------------------------------------------------------------------
     -- Achat
     -----------------------------------------------------------------------
-    local bv = CreateFrame("Frame", nil, f)
-    bv:SetPoint("TOPLEFT", 8, -34); bv:SetPoint("BOTTOMRIGHT", -8, 8)
+    local bv = CreateFrame("Frame", nil, f.content)
+    bv:SetAllPoints(f.content)
     f.views.buy = bv
     bv.lists = panelBox(bv, "Listes d'achat")
     bv.lists:SetPoint("TOPLEFT"); bv.lists:SetPoint("BOTTOMLEFT"); bv.lists:SetWidth(230)
@@ -811,7 +916,7 @@ local function build(host)
         h:SetText(UI:Upper(T(cdef[1])))
     end
     bv.irows = {}
-    for i = 1, 12 do
+    for i = 1, 16 do
         local r = textRow(bv.main, 26)
         r:SetPoint("TOPLEFT", 6, -44 - (i - 1) * 28); r:SetPoint("TOPRIGHT", -6, -44 - (i - 1) * 28)
         r.a:SetPoint("RIGHT", -300, 0)
@@ -911,7 +1016,33 @@ local function build(host)
         end
         self.total:SetText("")
     end
+    -- « File de fabrication » : ce qui manque à la file de tous tes persos (page Métiers), tenue à jour
+    -- comme une liste d'achat (en tête) ; pour qui, dans bv.who
+    local QNAME = "File de fabrication"
+    bv.who = {}
+    local function syncQueue()
+        local PH = WK.modules.ProfHelp
+        local _, lists = S:Lists()
+        local ok, q = pcall(function() return PH and PH:Queue() or {} end)
+        local need, order = {}, {}
+        wipe(bv.who)
+        for _, e in ipairs(ok and q or {}) do
+            for _, m in ipairs(e.missing or {}) do
+                if not m.where then
+                    if not need[m.id] then table.insert(order, m.id) end
+                    need[m.id] = (need[m.id] or 0) + m.n
+                    local c = WK.DB.global.characters[e.crafter or ""]
+                    bv.who[m.id] = c and WK:CharName(c, e.crafter) or nil
+                end
+            end
+        end
+        if #order == 0 then lists[QNAME] = nil return end
+        local items = {}
+        for _, id in ipairs(order) do table.insert(items, { id, need[id] + S:Have(id) }) end
+        lists[QNAME] = { items = items, at = 2000000000, v = 2, auto = true }
+    end
     function bv:Refresh()
+        syncQueue()
         local q = string.lower(self.search:GetText() or "")
         self.qty:SetShown(q ~= ""); self.qtyLabel:SetShown(q ~= "")
         for _, r in ipairs(self.irows) do r.add:Hide() end
@@ -923,7 +1054,7 @@ local function build(host)
             local n = names[i]
             r.name = n
             if n then
-                r.a:SetText(n); r.b:SetText(tostring(#(lists[n].items or {})))
+                r.a:SetText(n == QNAME and T(QNAME) or n); r.b:SetText(tostring(#(lists[n].items or {})))
                 r.hl:SetColorTexture(ar, ag, ab, n == cur and 0.14 or 0)
                 r:Show()
             else r:Hide() end
@@ -933,9 +1064,11 @@ local function build(host)
         self.buyAll:SetLabel((b and b.phase == "confirm") and string.format(T("Confirmer %s"), money(b.total)) or T("Tout acheter"))
         if q ~= "" then return self:RefreshSearch(q) end
         local l = cur and lists[cur]
-        self.main.title:SetText(cur or T("Aucune liste"))
+        self.main.title:SetText(cur and (cur == QNAME and T(QNAME) or cur) or T("Aucune liste"))
         self.empty:SetShown(not l)
-        self.empty:SetText(T("Crée une liste d'achat depuis la page Métiers (guide de montée ou recettes)."))
+        self.empty:SetText(T("Crée une liste d'achat depuis la page Métiers (guide de montée ou recettes), ou ajoute des recettes à la file de fabrication."))
+        f.buyCount = 0
+        if l then for _, it in ipairs(l.items) do if it[2] - S:Have(it[1]) > 0 then f.buyCount = f.buyCount + 1 end end end
         local total, n = 0, 0
         for i, r in ipairs(self.irows) do
             local it = l and l.items[i]
@@ -946,7 +1079,7 @@ local function build(host)
                 r.id, r.need = id, need
                 r.icon:SetTexture(itemIcon(id))
                 local name, _, quality = WK.GetItemInfo(id)
-                r.a:SetText(name or ("#" .. id))
+                r.a:SetText((name or ("#" .. id)) .. (cur == QNAME and self.who[id] and (UI:Hex(C.dim) .. "  ·  " .. self.who[id] .. "|r") or ""))
                 if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) end
                 r.b:SetText(need > 0 and (need .. UI:Hex(C.dim) .. " (" .. have .. ")|r") or (UI:Hex(C.positive) .. T("ok") .. "|r"))
                 local low = lowestOther(id) or (results[id] == nil and S:Price(id)) or nil
@@ -973,21 +1106,33 @@ local function build(host)
     -----------------------------------------------------------------------
     -- Annulation
     -----------------------------------------------------------------------
-    local cv = CreateFrame("Frame", nil, f)
-    cv:SetPoint("TOPLEFT", 8, -34); cv:SetPoint("BOTTOMRIGHT", -8, 8)
+    local cv = CreateFrame("Frame", nil, f.content)
+    cv:SetAllPoints(f.content)
     f.views.cancel = cv
     cv.side = panelBox(cv, "Sous-cotées")
-    cv.side:SetPoint("TOPRIGHT"); cv.side:SetPoint("BOTTOMRIGHT"); cv.side:SetWidth(230)
+    cv.side:SetPoint("TOPRIGHT"); cv.side:SetPoint("BOTTOMRIGHT"); cv.side:SetWidth(290)
     cv.next = UI:Button(cv.side, "Annuler la suivante", nil, 32, "primary")
     cv.next:SetPoint("TOPLEFT", 10, -36); cv.next:SetPoint("TOPRIGHT", -10, -36)
     cv.note = UI:Text(cv.side, 10, C.muted); cv.note:SetPoint("TOPLEFT", 10, -78); cv.note:SetPoint("RIGHT", -10, 0)
     cv.note:SetJustifyH("LEFT")
     if cv.note.SetWordWrap then cv.note:SetWordWrap(true) end
-    cv.note:SetText(T("Un clic par enchère (le jeu l'exige). Elle revient dans tes sacs : remets-la en vente depuis l'onglet Vente, au bon prix."))
+    cv.note:SetText(T("Un clic par enchère (le jeu l'exige). Elle revient dans tes sacs : remets-la en vente depuis la page Vendre, au bon prix."))
     cv.main = panelBox(cv, "Mes enchères")
     cv.main:SetPoint("TOPLEFT"); cv.main:SetPoint("BOTTOMRIGHT", cv.side, "BOTTOMLEFT", -8, 0)
     cv.check = UI:Button(cv.main, "Vérifier les prix", nil, 22, "secondary"); cv.check:SetPoint("TOPRIGHT", -8, -6)
     cv.check:SetScript("OnClick", function() A:Check() end)
+    cv.filter = UI:Input(cv.main, 170, 22, "Filtrer…", "search"); cv.filter:SetPoint("RIGHT", cv.check, "LEFT", -8, 0)
+    cv.filter.onChange = function() cv:Refresh() end
+    cv.show = "all"
+    cv.seg = UI:Segmented(cv.side, { { "all", "Toutes" }, { "under", "Sous-cotées" }, { "soon", "Bientôt finies" } },
+        function(v) cv.show = v; cv:Refresh() end, 24)
+    cv.seg:SetPoint("TOPLEFT", 10, -134)
+    cv.seg:Select("all")
+    -- bilan du jour (factures du courrier, Modules/Auction.lua)
+    cv.dayHead = UI:Text(cv.side, 12); cv.dayHead:SetPoint("TOPLEFT", 10, -176); cv.dayHead:SetText(T("Aujourd'hui"))
+    cv.day = UI:Text(cv.side, 11, C.muted); cv.day:SetPoint("TOPLEFT", 10, -196); cv.day:SetPoint("RIGHT", -10, 0)
+    cv.day:SetJustifyH("LEFT"); cv.day:SetJustifyV("TOP")
+    if cv.day.SetSpacing then cv.day:SetSpacing(4) end
     local ccols = { { "Objet", 34 }, { "Qté", -330 }, { "Mon prix", -250 }, { "Plus bas", -170 }, { "Reste", -110 } }
     for _, cdef in ipairs(ccols) do
         local h = UI:Text(cv.main, 9, C.dim)
@@ -995,7 +1140,7 @@ local function build(host)
         h:SetText(UI:Upper(T(cdef[1])))
     end
     cv.rows = {}
-    for i = 1, 12 do
+    for i = 1, 18 do
         local r = textRow(cv.main, 26)
         r:SetPoint("TOPLEFT", 6, -46 - (i - 1) * 28); r:SetPoint("TOPRIGHT", -6, -46 - (i - 1) * 28)
         r.a:SetPoint("RIGHT", -360, 0)
@@ -1022,13 +1167,50 @@ local function build(host)
             if o.state == "under" then A:Cancel(o.auctionID) return end
         end
     end)
+    -- ventes, achats et dépôts du jour, lus sur les factures
+    local function daySummary()
+        local log = WK.DB.global.auction and WK.DB.global.auction.log or {}
+        local t0 = time() - (tonumber(date("%H")) * 3600 + tonumber(date("%M")) * 60 + tonumber(date("%S")))
+        local sold, bought, n, last = 0, 0, 0, {}
+        for _, l in ipairs(log) do
+            if (l.t or 0) >= t0 then
+                if l.kind == "sale" then
+                    sold = sold + (l.net or 0); n = n + 1
+                    if #last < 4 then table.insert(last, string.format("%s x%d  ·  %s", l.item or "?", l.count or 1, money(l.net or 0))) end
+                elseif l.kind == "buy" then bought = bought + (l.gross or 0) end
+            end
+        end
+        local listed = 0
+        for _, o in ipairs(A.owned or {}) do listed = listed + (o.unit or 0) * (o.qty or 1) end
+        local lines = {
+            T("Vendu") .. " : " .. UI:Hex(C.positive) .. "+" .. money(sold) .. "|r" .. (n > 0 and (" (" .. n .. ")") or ""),
+            T("Acheté") .. " : " .. UI:Hex(C.negative) .. "-" .. money(bought) .. "|r",
+            T("En vente") .. " : " .. money(listed),
+        }
+        if #last > 0 then
+            table.insert(lines, " ")
+            table.insert(lines, UI:Hex(C.text) .. T("Dernières ventes") .. "|r")
+            for _, x in ipairs(last) do table.insert(lines, x) end
+        end
+        return table.concat(lines, "\n")
+    end
     function cv:Refresh()
-        local owned = A.owned or {}
+        local all = A.owned or {}
+        local q = string.lower(self.filter:GetText() or "")
+        local owned = {}
+        for _, o in ipairs(all) do
+            local name = WK.GetItemInfo(o.id) or ""
+            local okName = q == "" or string.lower(name):find(q, 1, true)
+            local okShow = self.show == "all" or (self.show == "under" and o.state == "under")
+                or (self.show == "soon" and o.timeLeft and o.timeLeft < 2 * 3600)
+            if okName and okShow then table.insert(owned, o) end
+        end
+        self.day:SetText(daySummary())
         local under = A:UnderCount()
         self.side.title:SetText(string.format(T("Sous-cotées : %d"), under))
         self.next:SetEnabled(under > 0)
         local done, total = A:Progress()
-        self.main.sub:SetText(string.format(T("%d en cours"), #owned) .. (A.checking and ("  ·  " .. string.format(T("vérification %d/%d"), done, total)) or ""))
+        self.main.sub:SetText(string.format(T("%d en cours"), #all) .. (A.checking and ("  ·  " .. string.format(T("vérification %d/%d"), done, total)) or ""))
         self.empty:SetShown(#owned == 0)
         for i, r in ipairs(self.rows) do
             local o = owned[i]
@@ -1053,10 +1235,539 @@ local function build(host)
     end
 
     -----------------------------------------------------------------------
+    -- Courbe des prix (plus bas de chaque jour, moyenne en tirets or), commune à Parcourir et Prix
+    -----------------------------------------------------------------------
+    local function makeChart(parent)
+        local ch = CreateFrame("Frame", nil, parent)
+        ch.plot = CreateFrame("Frame", nil, ch)
+        ch.plot:SetPoint("TOPLEFT", 54, -4); ch.plot:SetPoint("BOTTOMRIGHT", -6, 4)
+        local ax = ch.plot:CreateTexture(nil, "BACKGROUND"); ax:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+        ax:SetPoint("BOTTOMLEFT"); ax:SetPoint("BOTTOMRIGHT"); ax:SetHeight(1)
+        local ay = ch.plot:CreateTexture(nil, "BACKGROUND"); ay:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+        ay:SetPoint("TOPLEFT"); ay:SetPoint("BOTTOMLEFT"); ay:SetWidth(1)
+        ch.yTop = UI:Text(ch, 9, C.dim); ch.yTop:SetPoint("TOPRIGHT", ch.plot, "TOPLEFT", -4, 0)
+        ch.yBot = UI:Text(ch, 9, C.dim); ch.yBot:SetPoint("BOTTOMRIGHT", ch.plot, "BOTTOMLEFT", -4, 0)
+        ch.lines = UI:LinePool(4)
+        ch.dots = {}
+        ch.empty = UI:Text(ch, 11, C.muted); ch.empty:SetPoint("CENTER")
+        local function dot(i)
+            local d = ch.dots[i]
+            if not d then
+                d = CreateFrame("Button", nil, ch.plot)
+                d:SetSize(12, 12)
+                d.t = d:CreateTexture(nil, "OVERLAY"); d.t:SetTexture(UI.MEDIA .. "circle"); d.t:SetSize(7, 7); d.t:SetPoint("CENTER")
+                d:SetScript("OnEnter", function(s)
+                    UI:TooltipOwner(s, "ANCHOR_TOP")
+                    GameTooltip:SetText(date("%d/%m", s.day * 86400 + 43200), 1, 1, 1)
+                    GameTooltip:AddDoubleLine(T("Plus bas"), money(s.price), 0.7, 0.7, 0.7, 1, 1, 1)
+                    if s.qty and s.qty > 0 then GameTooltip:AddDoubleLine(T("En vente"), tostring(s.qty), 0.7, 0.7, 0.7, 1, 1, 1) end
+                    GameTooltip:Show()
+                end)
+                d:SetScript("OnLeave", function() GameTooltip:Hide() end)
+                ch.dots[i] = d
+            end
+            return d
+        end
+        function ch:Draw(id)
+            self.lines:Reset()
+            for _, d in ipairs(self.dots) do d:Hide() end
+            local hist = id and S:History(id) or {}
+            local avg = id and S:Average(id)
+            self.empty:SetShown(#hist < 1)
+            self.empty:SetText(id and T("Pas encore de prix relevé pour cet objet : lance un scan.") or "")
+            if #hist < 1 then self.yTop:SetText(""); self.yBot:SetText(""); return hist, avg end
+            local lo, hi = math.huge, 0
+            for _, h in ipairs(hist) do lo = math.min(lo, h[2]); hi = math.max(hi, h[2]) end
+            if avg then lo, hi = math.min(lo, avg), math.max(hi, avg) end
+            if hi == lo then hi = lo + 1 end
+            local pad = (hi - lo) * 0.1
+            lo, hi = math.max(0, lo - pad), hi + pad
+            self.yTop:SetText(money(math.floor(hi))); self.yBot:SetText(money(math.floor(lo)))
+            local W, H = self.plot:GetWidth() or 400, self.plot:GetHeight() or 150
+            local today = math.floor(time() / 86400)
+            local first = today - 13
+            local function px(day) return (day - first) / 13 * W end
+            local function py(p) return H - (p - lo) / (hi - lo) * H end
+            if avg then
+                local k = 0
+                while k < W do
+                    self.lines:Add(self.plot, k, py(avg), math.min(W, k + 8), py(avg), 1.5, C.gold[1], C.gold[2], C.gold[3], 0.8)
+                    k = k + 14
+                end
+            end
+            local ar, ag, ab = UI:Accent()
+            local prevX, prevY
+            for i, h in ipairs(hist) do
+                if h[1] >= first then
+                    local x, y = px(h[1]), py(h[2])
+                    if prevX then self.lines:Add(self.plot, prevX, prevY, x, y, 2.5, ar, ag, ab, 1) end
+                    prevX, prevY = x, y
+                    local d = dot(i)
+                    d.day, d.price, d.qty = h[1], h[2], h[3]
+                    d.t:SetVertexColor(ar, ag, ab, 1)
+                    d:ClearAllPoints(); d:SetPoint("CENTER", self.plot, "TOPLEFT", x, -y)
+                    d:Show()
+                end
+            end
+            return hist, avg
+        end
+        return ch
+    end
+
+    -----------------------------------------------------------------------
+    -- Parcourir : recherche par nom et catégorie (la nôtre, à la place de l'onglet Acheter du jeu),
+    -- filtres, résultats triables qui défilent ; à droite l'objet choisi : courbe, enchères, achat.
+    -----------------------------------------------------------------------
+    local bw = CreateFrame("Frame", nil, f.content)
+    bw:SetAllPoints(f.content)
+    f.views.browse = bw
+    bw.q = { text = "" }
+    bw.sortKey, bw.sortRev = "low", false
+    bw.offset = 0
+    -- haut : recherche, filtres, chercher, enregistrer
+    bw.search = UI:Input(bw, 210, 30, "Chercher un objet…", "search")
+    bw.search:SetPoint("TOPLEFT", 0, 0)
+    bw.search.onEnter = function() bw:Run() end
+    local function chip(label, tip)
+        local b = UI:Button(bw, label, nil, 26, "ghost")
+        b.tooltip = tip
+        return b
+    end
+    bw.usable = chip("Utilisable par moi", "Seulement ce que ce perso peut utiliser.")
+    bw.usable:SetPoint("LEFT", bw.search, "RIGHT", 8, 0)
+    bw.usable:SetScript("OnClick", function() cfg().browseUsable = not cfg().browseUsable; bw:PaintChips() end)
+    bw.deal = chip("Bonne affaire", "Plus bas sous 80 % de la moyenne des 7 derniers jours.")
+    bw.deal:SetPoint("LEFT", bw.usable, "RIGHT", 4, 0)
+    bw.deal:SetScript("OnClick", function() bw.dealOnly = not bw.dealOnly; bw:PaintChips(); bw:RefreshResults() end)
+    bw.minL = UI:NumberInput(bw, 52, 26, "niv."); bw.minL:SetPoint("LEFT", bw.deal, "RIGHT", 10, 0)
+    bw.maxL = UI:NumberInput(bw, 52, 26, "max"); bw.maxL:SetPoint("LEFT", bw.minL, "RIGHT", 4, 0)
+    bw.minL.onEnter = function() bw:Run() end
+    bw.maxL.onEnter = function() bw:Run() end
+    bw.go = UI:Button(bw, "Chercher", nil, 28, "primary"); bw.go:SetPoint("LEFT", bw.maxL, "RIGHT", 8, 0)
+    bw.go:SetScript("OnClick", function() bw:Run() end)
+    bw.save = UI:IconButton(bw, "star", 28, "Garder cette recherche dans la barre de gauche.")
+    bw.save:SetPoint("LEFT", bw.go, "RIGHT", 6, 0)
+    bw.save:SetScript("OnClick", function()
+        local q = bw.last
+        if not q then return end
+        for _, sq in ipairs(cfg().searches) do if sq.key == q.key then return end end
+        table.insert(cfg().searches, q)
+        f:RefreshSide()
+    end)
+    function bw:PaintChips()
+        self.usable:SetStyle(cfg().browseUsable and "primary" or "ghost")
+        self.deal:SetStyle(self.dealOnly and "primary" or "ghost")
+    end
+
+    -- gauche : catégories du jeu (AuctionCategories), une dépliée à la fois
+    bw.cats = panelBox(bw, "Catégories")
+    bw.cats:SetPoint("TOPLEFT", 0, -40); bw.cats:SetPoint("BOTTOMLEFT"); bw.cats:SetWidth(156)
+    bw.crows = {}
+    for i = 1, 24 do
+        local r = textRow(bw.cats, 20)
+        r:SetPoint("TOPLEFT", 4, -28 - (i - 1) * 20); r:SetPoint("TOPRIGHT", -4, -28 - (i - 1) * 20)
+        r.icon:Hide(); r.a:SetPoint("RIGHT", -4, 0)
+        r:SetScript("OnClick", function(s)
+            if not s.path then return end
+            local same = bw.cat and table.concat(bw.cat, ".") == table.concat(s.path, ".")
+            bw.cat = (same and #s.path == 1) and nil or s.path
+            bw:RefreshCats()
+            bw:Run()
+        end)
+        bw.crows[i] = r
+    end
+    local function catAt(path)
+        local list, node = _G.AuctionCategories, nil
+        for _, i in ipairs(path or {}) do
+            node = list and list[i]
+            list = node and node.subCategories
+        end
+        return node
+    end
+    function bw:RefreshCats()
+        local cats = _G.AuctionCategories or {}
+        local rows, open = {}, self.cat and self.cat[1]
+        for i, c in ipairs(cats) do
+            if c.name and not c.implicitFilter then
+                table.insert(rows, { path = { i }, name = c.name, depth = 0 })
+                if open == i then
+                    for j, sc in ipairs(c.subCategories or {}) do
+                        if sc.name then table.insert(rows, { path = { i, j }, name = sc.name, depth = 1 }) end
+                    end
+                end
+            end
+        end
+        local key = self.cat and table.concat(self.cat, ".")
+        local ar, ag, ab = UI:Accent()
+        for i, r in ipairs(self.crows) do
+            local e = rows[i]
+            r.path = e and e.path
+            if e then
+                r.a:SetPoint("LEFT", 8 + e.depth * 12, 0)
+                r.a:SetText(e.name)
+                local on = key == table.concat(e.path, ".")
+                r.a:SetTextColor(unpack((on or e.depth == 0) and C.text or C.muted))
+                r.hl:SetColorTexture(ar, ag, ab, on and 0.16 or 0)
+                r:Show()
+            else r:Hide() end
+        end
+        self.cats.sub:SetText(#cats == 0 and T("indisponibles") or "")
+    end
+
+    -- milieu : résultats
+    bw.res = panelBox(bw, "Résultats")
+    bw.res:SetPoint("TOPLEFT", bw.cats, "TOPRIGHT", 8, 0); bw.res:SetPoint("BOTTOM"); bw.res:SetPoint("RIGHT", -318, 0)
+    local RCOLS = { { "name", "Objet", 30, "LEFT" }, { "qty", "En vente", -172, "RIGHT" }, { "low", "Plus bas", -90, "RIGHT" }, { "delta", "vs 7 j", -32, "RIGHT" } }
+    bw.heads = {}
+    for _, cdef in ipairs(RCOLS) do
+        local h = CreateFrame("Button", nil, bw.res)
+        h:SetSize(80, 16)
+        if cdef[4] == "LEFT" then h:SetPoint("TOPLEFT", cdef[3], -28) else h:SetPoint("TOPRIGHT", cdef[3], -28) end
+        h.t = UI:Text(h, 9, C.dim); h.t:SetPoint(cdef[4]); h.t:SetText(UI:Upper(T(cdef[2])))
+        h:SetScript("OnClick", function()
+            if bw.sortKey == cdef[1] then bw.sortRev = not bw.sortRev else bw.sortKey, bw.sortRev = cdef[1], false end
+            bw.offset = 0
+            bw:RefreshResults()
+        end)
+        bw.heads[cdef[1]] = h
+    end
+    bw.rrows = {}
+    local RROW = 24
+    for i = 1, 22 do
+        local r = textRow(bw.res, RROW)
+        r:SetPoint("TOPLEFT", 6, -46 - (i - 1) * RROW); r:SetPoint("TOPRIGHT", -6, -46 - (i - 1) * RROW)
+        r.a:SetPoint("RIGHT", -236, 0)
+        r.b:SetPoint("RIGHT", -172, 0); r.b:SetWidth(56)
+        r.c:SetPoint("RIGHT", -90, 0); r.c:SetWidth(78); r.c:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+        r.d:SetPoint("RIGHT", -30, 0); r.d:SetWidth(54)
+        r.tag = UI:Icon(r, "star", 11); r.tag:SetPoint("RIGHT", -10, 0)
+        r:SetScript("OnClick", function(s) if s.e then bw:Pick(s.e.id, s.e.key) end end)
+        r:SetScript("OnEnter", function(s)
+            if not s.e then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.e.id) end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:Hide()
+        bw.rrows[i] = r
+    end
+    bw.res:EnableMouseWheel(true)
+    bw.res:SetScript("OnMouseWheel", function(_, d)
+        bw.offset = math.max(0, bw.offset - d * 3)
+        bw:RefreshResults()
+    end)
+    bw.status = UI:Text(bw.res, 10, C.dim); bw.status:SetPoint("BOTTOMLEFT", 10, 8); bw.status:SetPoint("RIGHT", -10, 0); bw.status:SetJustifyH("LEFT")
+    bw.empty = UI:Text(bw.res, 11, C.muted); bw.empty:SetPoint("CENTER"); bw.empty:SetWidth(320)
+    bw.empty:SetText(T("Tape un nom ou choisis une catégorie, puis « Chercher »."))
+
+    -- droite : l'objet choisi
+    bw.det = panelBox(bw, "")
+    bw.det:SetPoint("TOPRIGHT", 0, -40); bw.det:SetPoint("BOTTOMRIGHT"); bw.det:SetWidth(310)
+    bw.det.title:Hide()
+    bw.dIcon = bw.det:CreateTexture(nil, "ARTWORK"); bw.dIcon:SetSize(30, 30); bw.dIcon:SetPoint("TOPLEFT", 10, -10)
+    bw.dIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    bw.dName = UI:Text(bw.det, 13); bw.dName:SetPoint("TOPLEFT", 48, -10); bw.dName:SetPoint("RIGHT", -10, 0); bw.dName:SetJustifyH("LEFT")
+    if bw.dName.SetWordWrap then bw.dName:SetWordWrap(false) end
+    bw.dSub = UI:Text(bw.det, 10, C.muted); bw.dSub:SetPoint("TOPLEFT", 48, -28); bw.dSub:SetPoint("RIGHT", -10, 0); bw.dSub:SetJustifyH("LEFT")
+    bw.chart = makeChart(bw.det)
+    bw.chart:SetPoint("TOPLEFT", 4, -48); bw.chart:SetPoint("TOPRIGHT", -6, -48); bw.chart:SetHeight(96)
+    bw.lhead = CreateFrame("Frame", nil, bw.det)
+    bw.lhead:SetPoint("TOPLEFT", 6, -152); bw.lhead:SetPoint("TOPRIGHT", -6, -152); bw.lhead:SetHeight(12)
+    for _, hd in ipairs({ { "Prix", "LEFT", 6 }, { "Qté", "RIGHT", 140 }, { "Cumul", "LEFT", 154 } }) do
+        local t = UI:Text(bw.lhead, 9, C.dim)
+        t:SetPoint(hd[2], bw.lhead, "LEFT", hd[3], 0); t:SetText(UI:Upper(T(hd[1])))
+    end
+    bw.lrows = {}
+    for i = 1, 9 do
+        local r = textRow(bw.det, 22)
+        r:SetPoint("TOPLEFT", 6, -166 - (i - 1) * 22); r:SetPoint("TOPRIGHT", -6, -166 - (i - 1) * 22)
+        r.icon:Hide(); r.a:SetPoint("LEFT", 6, 0); r.a:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+        r.b:SetPoint("RIGHT", r, "LEFT", 140, 0); r.b:SetWidth(50)
+        r.c:SetPoint("LEFT", 154, 0); r.c:SetWidth(56); r.c:SetJustifyH("LEFT")
+        r.act = UI:Button(r, "Acheter", 76, 18, "secondary"); r.act:SetPoint("RIGHT", -2, 0)
+        r.act:SetScript("OnClick", function(s)
+            local row = s:GetParent()
+            if row.x and bw.id then bw:BuyRow(row.x) end
+        end)
+        bw.lrows[i] = r
+    end
+    bw.qLabel = UI:Text(bw.det, 11, C.muted); bw.qLabel:SetPoint("BOTTOMLEFT", 12, 92); bw.qLabel:SetText(T("Quantité"))
+    bw.qty = UI:NumberInput(bw.det, 64, 26, "1"); bw.qty:SetPoint("LEFT", bw.qLabel, "RIGHT", 8, 0)
+    bw.qty.onChange = function() bw:RefreshDetail() end
+    bw.qMax = UI:Button(bw.det, "Max", nil, 22, "ghost"); bw.qMax:SetPoint("LEFT", bw.qty, "RIGHT", 6, 0)
+    bw.qMax:SetScript("OnClick", function() local n = available(bw.id); if n and n > 0 then bw.qty:SetText(tostring(n)) end end)
+    bw.sum = UI:Text(bw.det, 11, C.muted); bw.sum:SetPoint("BOTTOMLEFT", 12, 68); bw.sum:SetPoint("RIGHT", -12, 0); bw.sum:SetJustifyH("LEFT")
+    bw.buy = UI:Button(bw.det, "Acheter", nil, 32, "primary")
+    bw.buy:SetPoint("BOTTOMLEFT", 12, 26); bw.buy:SetPoint("BOTTOMRIGHT", -12, 26)
+    bw.buy:SetScript("OnClick", function() bw:BuyQty() end)
+    bw.watchIn = UI:Input(bw.det, 100, 22, "ex. 45pa", nil); bw.watchIn:SetPoint("BOTTOMLEFT", 12, 2)
+    bw.watch = UI:Button(bw.det, "Surveiller", nil, 22, "ghost"); bw.watch:SetPoint("LEFT", bw.watchIn, "RIGHT", 6, 0)
+    bw.watch.tooltip = "Alerte de prix : prévenu après un scan quand le plus bas passe sous ce prix."
+    bw.watch:SetScript("OnClick", function()
+        local v = A.ParsePrice(bw.watchIn:GetText())
+        if bw.id and v then A:AddAlert(bw.id, v); WK:Print(string.format(T("Alerte de prix : %s sous %s."), WK.GetItemInfo(bw.id) or "?", money(v))); bw:RefreshDetail() end
+    end)
+    bw.toPrices = UI:Button(bw.det, "Courbe", nil, 22, "ghost"); bw.toPrices:SetPoint("LEFT", bw.watch, "RIGHT", 4, 0)
+    bw.toPrices:SetScript("OnClick", function() if bw.id then f.views.prices.id = bw.id; f:Open("prices") end end)
+    bw.dEmpty = UI:Text(bw.det, 11, C.muted); bw.dEmpty:SetPoint("CENTER"); bw.dEmpty:SetWidth(280)
+    bw.dEmpty:SetText(T("Choisis un objet dans les résultats : sa courbe, ses enchères et l'achat."))
+
+    -- recherche envoyée au jeu (une à la fois ; la file des recherches d'objets attend)
+    local browse = { rows = {}, busy = false }
+    function bw:Query()
+        local q = { text = self.search:GetText() or "", usable = cfg().browseUsable or nil,
+                    minL = self.minL:GetNumber() > 0 and self.minL:GetNumber() or nil,
+                    maxL = self.maxL:GetNumber() > 0 and self.maxL:GetNumber() or nil, cat = self.cat }
+        local node = catAt(q.cat)
+        local parts = { q.text }
+        if node and node.name then table.insert(parts, 1, node.name) end
+        q.name = table.concat(parts, " · "):gsub("^ · ", ""):gsub(" · $", "")
+        q.key = table.concat({ q.text, table.concat(q.cat or {}, "."), tostring(q.usable), tostring(q.minL), tostring(q.maxL) }, "|")
+        return q, node
+    end
+    function bw:Run(q)
+        if q then
+            -- recherche enregistrée ou récente : elle remplit les champs
+            self.search:SetText(q.text or "")
+            self.minL:SetText(q.minL and tostring(q.minL) or ""); self.maxL:SetText(q.maxL and tostring(q.maxL) or "")
+            cfg().browseUsable = q.usable or nil
+            self.cat = q.cat
+            self:PaintChips(); self:RefreshCats()
+        end
+        local query, node = self:Query()
+        if query.text == "" and not node then return end
+        local a = AH()
+        if not (a and a.SendBrowseQuery) then WK:Print(T("Ce client ne permet pas la recherche depuis l'addon.")) return end
+        local filters = {}
+        if query.usable and Enum and Enum.AuctionHouseFilter and Enum.AuctionHouseFilter.UsableOnly then
+            table.insert(filters, Enum.AuctionHouseFilter.UsableOnly)
+        end
+        local po = Enum and Enum.AuctionHouseSortOrder and Enum.AuctionHouseSortOrder.Price or 0
+        local sq = { searchString = query.text, sorts = { { sortOrder = po, reverseSort = false } }, filters = filters,
+                     itemClassFilters = node and node.filters or {} }
+        if query.minL then sq.minLevel = query.minL end
+        if query.maxL then sq.maxLevel = query.maxL end
+        pending, pendingAt = "browse", GetTime()
+        browse = { rows = {}, busy = true, at = GetTime() }
+        self.offset = 0
+        if not pcall(a.SendBrowseQuery, sq) then browse.busy = false; pending = nil end
+        self.last = query
+        -- récentes : la dernière en tête, six au plus
+        local rec = cfg().recent
+        for i = #rec, 1, -1 do if rec[i].key == query.key then table.remove(rec, i) end end
+        table.insert(rec, 1, query)
+        while #rec > 6 do table.remove(rec) end
+        f:RefreshSide()
+        self:RefreshResults()
+    end
+    local function readBrowse()
+        local a = AH()
+        if not (a and a.GetBrowseResults) then return end
+        local ok, list = pcall(a.GetBrowseResults)
+        if not ok or type(list) ~= "table" then return end
+        local rows = {}
+        for _, r in ipairs(list) do
+            local key = r.itemKey
+            local id = key and key.itemID
+            if id then
+                table.insert(rows, { id = id, key = key, qty = r.totalQuantity or 0, low = r.minPrice, mine = r.containsOwnerItem })
+                if r.minPrice and r.minPrice > 0 then pcall(S.SeenToday, S, id, r.minPrice, r.totalQuantity or 0) end
+            end
+        end
+        browse.rows, browse.busy = rows, false
+        browse.full = not (a.HasFullBrowseResults and not a.HasFullBrowseResults())
+        if pending == "browse" then pending = nil end
+        if bw:IsShown() then bw:RefreshResults() end
+    end
+    WK:On("AUCTION_HOUSE_BROWSE_RESULTS_UPDATED", function() readBrowse() end)
+    WK:On("AUCTION_HOUSE_BROWSE_RESULTS_ADDED", function() readBrowse() end)
+
+    local function inLists()
+        local set = {}
+        local _, lists = S:Lists()
+        for _, l in pairs(lists) do for _, it in ipairs(l.items or {}) do set[it[1]] = true end end
+        return set
+    end
+    function bw:RefreshResults()
+        local list = {}
+        for _, e in ipairs(browse.rows) do
+            local avg = S:Average(e.id)
+            e.delta = (avg and avg > 0 and e.low) and (e.low - avg) / avg or nil
+            e.name = e.name or WK.GetItemInfo(e.id)
+            if not self.dealOnly or (e.delta and e.delta <= -0.2) then table.insert(list, e) end
+        end
+        local k, rev = self.sortKey, self.sortRev
+        table.sort(list, function(x, y)
+            local vx, vy
+            if k == "name" then vx, vy = x.name or "", y.name or ""
+            elseif k == "qty" then vx, vy = x.qty or 0, y.qty or 0
+            elseif k == "delta" then vx, vy = x.delta or 9, y.delta or 9
+            else vx, vy = x.low or math.huge, y.low or math.huge end
+            if vx == vy then return x.id < y.id end
+            if rev then return vx > vy end
+            return vx < vy
+        end)
+        local rows = #self.rrows
+        local fit = math.max(1, math.floor(((self.res:GetHeight() or 400) - 76) / RROW))
+        fit = math.min(fit, rows)
+        self.offset = math.max(0, math.min(self.offset, #list - fit))
+        -- on arrive au bout : la suite des résultats
+        local a = AH()
+        if not browse.full and not browse.busy and self.offset + fit >= #list - 2 and a and a.RequestMoreBrowseResults and #list > 0 then
+            browse.busy = true
+            pcall(a.RequestMoreBrowseResults)
+        end
+        local listed = inLists()
+        local ar, ag, ab = UI:Accent()
+        for i, r in ipairs(self.rrows) do
+            local e = i <= fit and list[self.offset + i]
+            r.e = e
+            if e then
+                r.icon:SetTexture(itemIcon(e.id))
+                local name, _, quality = WK.GetItemInfo(e.id)
+                r.a:SetText(name or ("#" .. e.id))
+                if quality and GetItemQualityColor then r.a:SetTextColor(GetItemQualityColor(quality)) else r.a:SetTextColor(1, 1, 1) end
+                r.b:SetText(tostring(e.qty or 0))
+                r.c:SetText(e.low and money(e.low) or "-")
+                if e.delta then
+                    local pc = math.floor(e.delta * 100 + 0.5)
+                    r.d:SetText((pc > 0 and "+" or "") .. pc .. " %")
+                    local col = pc <= -20 and C.positive or pc >= 20 and C.negative or C.muted
+                    r.d:SetTextColor(col[1], col[2], col[3])
+                else r.d:SetText("-"); r.d:SetTextColor(C.dim[1], C.dim[2], C.dim[3]) end
+                -- étoile : dans une liste d'achat ; turquoise : tes persos en ont
+                r.tag:SetShown(listed[e.id] or S:Have(e.id) > 0)
+                if listed[e.id] then r.tag:SetVertexColor(ar, ag, ab, 1) else r.tag:SetVertexColor(C.rule[1], C.rule[2], C.rule[3], 1) end
+                r.hl:SetColorTexture(ar, ag, ab, e.id == self.id and 0.14 or 0)
+                r:Show()
+            else r:Hide() end
+        end
+        self.empty:SetShown(#list == 0)
+        if browse.busy and #list == 0 then self.empty:SetText(T("Recherche…"))
+        elseif self.last and #list == 0 then self.empty:SetText(T("Rien en vente pour cette recherche."))
+        else self.empty:SetText(T("Tape un nom ou choisis une catégorie, puis « Chercher ».")) end
+        self.res.sub:SetText(#list > 0 and string.format(T("%d objets"), #list) .. (browse.full and "" or "+") or "")
+        self.status:SetText(#list > fit and string.format(T("%d-%d sur %d · molette pour défiler · clic sur un titre : trier"), self.offset + 1, math.min(#list, self.offset + fit), #list) or "")
+        for key, h in pairs(self.heads) do
+            local on = key == self.sortKey
+            if on then h.t:SetTextColor(ar, ag, ab) else h.t:SetTextColor(C.dim[1], C.dim[2], C.dim[3]) end
+        end
+    end
+
+    function bw:Pick(id)
+        self.id = id
+        self.qty:SetText("")
+        search(id, true); pump()
+        self:RefreshResults()
+        self:RefreshDetail()
+    end
+    -- achat d'une ligne : objet unique au prix d'achat immédiat ; marchandise : la quantité de la ligne
+    function bw:BuyRow(x)
+        local id, a = self.id, AH()
+        if not (id and a) then return end
+        if not isCommodity(id) and x.auctionID and a.PlaceBid then
+            if not pcall(a.PlaceBid, x.auctionID, x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
+            C_Timer.After(1, function() search(id, true) end)
+            return
+        end
+        self.qty:SetText(tostring(x.qty))
+        self:BuyQty()
+    end
+    -- marchandise : 1er clic = prix demandé au jeu, 2e clic = confirmation (le jeu l'exige)
+    function bw:BuyQty()
+        local id, a = self.id, AH()
+        if not (id and a and a.StartCommoditiesPurchase) then return end
+        local b = S.buy
+        if b and b.id == id and b.phase == "confirm" then
+            b.phase = "wait"
+            if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
+        elseif not (b and (b.phase == "quote" or b.phase == "wait")) then
+            local n = math.max(1, self.qty:GetNumber())
+            S.buy = { id = id, qty = n, phase = "quote", skip = {}, spent = 0, count = 0 }
+            if not pcall(a.StartCommoditiesPurchase, id, n) then S.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) end
+        end
+        self:RefreshDetail()
+    end
+    function bw:RefreshDetail()
+        local id = self.id
+        local has = id ~= nil
+        for _, w in ipairs({ self.dIcon, self.dName, self.dSub, self.chart, self.lhead, self.watchIn, self.watch, self.toPrices }) do w:SetShown(has) end
+        self.dEmpty:SetShown(not has)
+        local commodity = has and isCommodity(id)
+        for _, w in ipairs({ self.qLabel, self.qty, self.qMax, self.sum, self.buy }) do w:SetShown(has and commodity) end
+        for _, r in ipairs(self.lrows) do r:Hide() end
+        if not has then return end
+        local name, _, quality = WK.GetItemInfo(id)
+        self.dIcon:SetTexture(itemIcon(id))
+        self.dName:SetText(name or ("#" .. id))
+        if quality and GetItemQualityColor then self.dName:SetTextColor(GetItemQualityColor(quality)) end
+        local _, avg = self.chart:Draw(id)
+        local alert = (A.Config().alerts or {})[id]
+        self.dSub:SetText((commodity and T("marchandise") or T("objet unique")) .. (avg and ("  ·  " .. T("moyenne") .. " " .. money(avg)) or "")
+            .. "  ·  " .. string.format(T("à toi : %d"), S:Have(id)) .. (alert and ("  ·  " .. T("alerte sous") .. " " .. money(alert)) or ""))
+        local r = results[id]
+        local want = math.max(1, self.qty:GetNumber())
+        local b = S.buy
+        if not r then
+            local row = self.lrows[1]
+            row.x = nil; row.act:Hide(); row.a:SetText(UI:Hex(C.muted) .. T("recherche…") .. "|r"); row.b:SetText(""); row.c:SetText("")
+            row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
+            self.sum:SetText(""); self.buy:SetEnabled(false)
+            return
+        end
+        -- enchères : prix, quantité, cumul ; celles qu'il faut pour la quantité voulue sont surlignées
+        local cum, cost, got = 0, 0, 0
+        local ar, ag, ab = UI:Accent()
+        for i, row in ipairs(self.lrows) do
+            local x = r.rows[i]
+            row.x = x
+            if x then
+                cum = cum + x.qty
+                row.a:SetText(money(x.unit))
+                row.b:SetText(tostring(x.qty))
+                row.c:SetText(x.mine and (UI:Hex(C.info) .. T("toi") .. "|r") or tostring(cum))
+                local inQty = commodity and got < want and not x.mine
+                if inQty then
+                    local take = math.min(x.qty, want - got)
+                    got = got + take; cost = cost + take * x.unit
+                end
+                row.hl:SetColorTexture(ar, ag, ab, inQty and 0.12 or 0)
+                row.act:SetShown(not x.mine)
+                row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty) or T("Acheter"))
+                row:Show()
+            end
+        end
+        if #r.rows == 0 then
+            local row = self.lrows[1]
+            row.x = nil; row.act:Hide(); row.a:SetText(UI:Hex(C.muted) .. T("personne n'en vend") .. "|r"); row.b:SetText(""); row.c:SetText("")
+            row.hl:SetColorTexture(0, 0, 0, 0); row:Show()
+        end
+        if commodity then
+            -- au-delà des 9 premières lignes : le reste au dernier prix vu
+            local last = r.rows[math.min(#r.rows, #self.lrows)]
+            if got < want and last then cost = cost + (want - got) * last.unit; got = want end
+            self.sum:SetText(got > 0 and string.format(T("Environ %s l'unité · total %s"), money(math.floor(cost / math.max(1, got))), money(cost)) or "")
+            local busy = b and b.id == id and (b.phase == "quote" or b.phase == "wait")
+            if b and b.id == id and b.phase == "confirm" then self.buy:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+            elseif busy then self.buy:SetLabel("…")
+            else self.buy:SetLabel(string.format(T("Acheter %d"), want)) end
+            self.buy:SetEnabled(not busy and #r.rows > 0)
+        end
+    end
+    function bw:Refresh()
+        self:PaintChips()
+        if not self.catsDone then self.catsDone = true; self:RefreshCats() end
+        self:RefreshResults()
+        self:RefreshDetail()
+    end
+    bw:SetScript("OnSizeChanged", function() if bw:IsVisible() then bw:RefreshResults() end end)
+
+    -----------------------------------------------------------------------
     -- Prix : courbe du plus bas de chaque jour sur 14 jours, objets qui ont le plus bougé
     -----------------------------------------------------------------------
-    local pv = CreateFrame("Frame", nil, f)
-    pv:SetPoint("TOPLEFT", 8, -34); pv:SetPoint("BOTTOMRIGHT", -8, 8)
+    local pv = CreateFrame("Frame", nil, f.content)
+    pv:SetAllPoints(f.content)
     f.views.prices = pv
     pv.left = panelBox(pv, "Objets")
     pv.left:SetPoint("TOPLEFT"); pv.left:SetPoint("BOTTOMLEFT"); pv.left:SetWidth(250)
@@ -1066,7 +1777,7 @@ local function build(host)
     pv.search.onChange = function() pv:Refresh() end
     pv.head = UI:Text(pv.left, 9, C.dim); pv.head:SetPoint("TOPLEFT", 12, -66)
     pv.rows = {}
-    for i = 1, 12 do
+    for i = 1, 16 do
         local r = textRow(pv.left, 22)
         r:SetPoint("TOPLEFT", 6, -80 - (i - 1) * 23); r:SetPoint("TOPRIGHT", -6, -80 - (i - 1) * 23)
         r.a:SetPoint("RIGHT", -60, 0)
@@ -1077,16 +1788,8 @@ local function build(host)
     pv.main = panelBox(pv, "")
     pv.main:SetPoint("TOPLEFT", pv.left, "TOPRIGHT", 8, 0); pv.main:SetPoint("BOTTOMRIGHT")
     pv.stats = UI:Text(pv.main, 11, C.muted); pv.stats:SetPoint("TOPRIGHT", -12, -10)
-    pv.chart = CreateFrame("Frame", nil, pv.main)
-    pv.chart:SetPoint("TOPLEFT", 60, -40); pv.chart:SetPoint("BOTTOMRIGHT", -16, 80)
-    pv.axis = pv.chart:CreateTexture(nil, "BACKGROUND"); pv.axis:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-    pv.axis:SetPoint("BOTTOMLEFT"); pv.axis:SetPoint("BOTTOMRIGHT"); pv.axis:SetHeight(1)
-    pv.axisY = pv.chart:CreateTexture(nil, "BACKGROUND"); pv.axisY:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-    pv.axisY:SetPoint("TOPLEFT"); pv.axisY:SetPoint("BOTTOMLEFT"); pv.axisY:SetWidth(1)
-    pv.yTop = UI:Text(pv.main, 9, C.dim); pv.yTop:SetPoint("TOPRIGHT", pv.chart, "TOPLEFT", -4, 0)
-    pv.yBot = UI:Text(pv.main, 9, C.dim); pv.yBot:SetPoint("BOTTOMRIGHT", pv.chart, "BOTTOMLEFT", -4, 0)
-    pv.lines = UI:LinePool(4)
-    pv.dots = {}
+    pv.chart = makeChart(pv.main)
+    pv.chart:SetPoint("TOPLEFT", 6, -40); pv.chart:SetPoint("BOTTOMRIGHT", -16, 80)
     pv.empty = UI:Text(pv.main, 11, C.muted); pv.empty:SetPoint("CENTER")
     pv.note = UI:Text(pv.main, 10, C.dim); pv.note:SetPoint("BOTTOMLEFT", 16, 50); pv.note:SetPoint("RIGHT", -16, 0); pv.note:SetJustifyH("LEFT")
     pv.note:SetText(T("Survol d'un point : prix et quantité en vente ce jour · trait or : moyenne · la courbe se remplit à chaque scan et à chaque recherche de l'objet"))
@@ -1100,24 +1803,6 @@ local function build(host)
     end)
     pv.sellBtn = UI:Button(pv.main, "Vendre", nil, 26, "secondary"); pv.sellBtn:SetPoint("LEFT", pv.watchBtn, "RIGHT", 6, 0)
     pv.sellBtn:SetScript("OnClick", function() if pv.id then f:Open("sell"); f.views.sell:Select(pv.id) end end)
-    local function dot(i)
-        local d = pv.dots[i]
-        if not d then
-            d = CreateFrame("Button", nil, pv.chart)
-            d:SetSize(12, 12)
-            d.t = d:CreateTexture(nil, "OVERLAY"); d.t:SetTexture(UI.MEDIA .. "circle"); d.t:SetSize(7, 7); d.t:SetPoint("CENTER")
-            d:SetScript("OnEnter", function(s)
-                UI:TooltipOwner(s, "ANCHOR_TOP")
-                GameTooltip:SetText(date("%d/%m", s.day * 86400 + 43200), 1, 1, 1)
-                GameTooltip:AddDoubleLine(T("Plus bas"), money(s.price), 0.7, 0.7, 0.7, 1, 1, 1)
-                if s.qty and s.qty > 0 then GameTooltip:AddDoubleLine(T("En vente"), tostring(s.qty), 0.7, 0.7, 0.7, 1, 1, 1) end
-                GameTooltip:Show()
-            end)
-            d:SetScript("OnLeave", function() GameTooltip:Hide() end)
-            pv.dots[i] = d
-        end
-        return d
-    end
     function pv:Refresh()
         local q = string.lower(self.search:GetText() or "")
         local list = {}
@@ -1126,11 +1811,11 @@ local function build(host)
             for id in pairs(S:Data().items) do
                 local name = WK.GetItemInfo(id)
                 if name and string.lower(name):find(q, 1, true) then table.insert(list, { id, nil }) end
-                if #list >= 12 then break end
+                if #list >= 16 then break end
             end
         else
             self.head:SetText(UI:Upper(T("Ont le plus bougé (7 j)")))
-            for _, m in ipairs(S:Movers(12)) do table.insert(list, { m[1], m[2] }) end
+            for _, m in ipairs(S:Movers(16)) do table.insert(list, { m[1], m[2] }) end
         end
         if not self.id and list[1] then self.id = list[1][1] end
         local ar, ag, ab = UI:Accent()
@@ -1153,60 +1838,23 @@ local function build(host)
             else r:Hide() end
         end
         -- courbe
-        self.lines:Reset()
-        for _, d in ipairs(self.dots) do d:Hide() end
         local id = self.id
-        local hist = id and S:History(id) or {}
         local name = id and WK.GetItemInfo(id)
         self.main.title:SetText(name or "")
         self.main.sub:SetText(id and T("plus bas de chaque jour · 14 jours") or "")
-        self.empty:SetShown(#hist < 1)
-        self.empty:SetText(id and T("Pas encore de prix relevé pour cet objet : lance un scan.") or T("Choisis un objet : il a le plus bougé, ou cherche-le."))
-        local avg = id and S:Average(id)
+        local hist, avg = self.chart:Draw(id)
+        self.empty:SetShown(not id)
+        self.empty:SetText(T("Choisis un objet : il a le plus bougé, ou cherche-le."))
         local alert = id and (A.Config().alerts or {})[id]
         self.stats:SetText(id and ((hist[#hist] and (T("dernier") .. " " .. money(hist[#hist][2]) .. "  ·  ") or "") .. (avg and (T("moyenne") .. " " .. money(avg)) or "") .. (alert and ("  ·  " .. T("alerte sous") .. " " .. money(alert)) or "")) or "")
         for _, w in ipairs({ self.watchLabel, self.watch, self.watchBtn, self.sellBtn, self.note }) do w:SetShown(id ~= nil) end
-        if #hist < 1 then self.yTop:SetText(""); self.yBot:SetText(""); return end
-        local lo, hi = math.huge, 0
-        for _, h in ipairs(hist) do lo = math.min(lo, h[2]); hi = math.max(hi, h[2]) end
-        if avg then lo, hi = math.min(lo, avg), math.max(hi, avg) end
-        if hi == lo then hi = lo + 1 end
-        local pad = (hi - lo) * 0.1
-        lo, hi = math.max(0, lo - pad), hi + pad
-        self.yTop:SetText(money(math.floor(hi))); self.yBot:SetText(money(math.floor(lo)))
-        local W, H = self.chart:GetWidth() or 400, self.chart:GetHeight() or 150
-        local today = math.floor(time() / 86400)
-        local first = today - 13
-        local function px(day) return (day - first) / 13 * W end
-        local function py(p) return H - (p - lo) / (hi - lo) * H end
-        if avg then
-            -- moyenne en tirets or
-            local k = 0
-            while k < W do
-                self.lines:Add(self.chart, k, py(avg), math.min(W, k + 8), py(avg), 1.5, C.gold[1], C.gold[2], C.gold[3], 0.8)
-                k = k + 14
-            end
-        end
-        local prevX, prevY
-        for i, h in ipairs(hist) do
-            if h[1] >= first then
-                local x, y = px(h[1]), py(h[2])
-                if prevX then self.lines:Add(self.chart, prevX, prevY, x, y, 2.5, ar, ag, ab, 1) end
-                prevX, prevY = x, y
-                local d = dot(i)
-                d.day, d.price, d.qty = h[1], h[2], h[3]
-                d.t:SetVertexColor(ar, ag, ab, 1)
-                d:ClearAllPoints(); d:SetPoint("CENTER", self.chart, "TOPLEFT", x, -y)
-                d:Show()
-            end
-        end
     end
 
     -----------------------------------------------------------------------
     -- Scan : le panneau d'avant, posé dans l'onglet
     -----------------------------------------------------------------------
-    local scv = CreateFrame("Frame", nil, f)
-    scv:SetPoint("TOPLEFT", 8, -34); scv:SetPoint("BOTTOMRIGHT", -8, 8)
+    local scv = CreateFrame("Frame", nil, f.content)
+    scv:SetAllPoints(f.content)
     f.views.scan = scv
     scv.note = UI:Text(scv, 11, C.muted); scv.note:SetPoint("TOPLEFT", 330, -10); scv.note:SetPoint("RIGHT", -10, 0)
     scv.note:SetJustifyH("LEFT")
@@ -1232,9 +1880,28 @@ local function build(host)
     function f:Refresh()
         if not self:IsShown() then return end
         local d = S:Data()
-        self.scanInfo:SetText(d.last and string.format(T("dernier scan : %s"), date("%d/%m %H:%M", d.last)) or T("jamais scanné"))
-        local titles = { buy = "Achat", sell = "Vente", cancel = "Annulation", prices = "Prix", scan = "Scan" }
-        self.head:SetText(T(titles[self.tab] or ""))
+        local sc = S.scan
+        local r, g, b = UI:Accent()
+        self.scanBar.fill:SetColor(r, g, b, 1)
+        local frac = 1
+        if sc then
+            frac = (sc.total and sc.total > 0) and math.min(1, (sc.done or 0) / sc.total) or 0.05
+            self.scanInfo:SetText(T("scan en cours…"))
+        else
+            frac = d.last and math.max(0.05, 1 - math.min(1, (time() - d.last) / 86400)) or 0
+            self.scanInfo:SetText(d.last and string.format(T("scanné %s"), UI:Ago(d.last)) or T("jamais scanné"))
+        end
+        self.scanBar.fillF:SetWidth(math.max(1, 110 * frac))
+        self.scanBtn:SetEnabled(sc == nil)
+        self.headSub:SetText(GetRealmName and GetRealmName() or "")
+        self.gold:SetText(UI:GoldText(GetMoney and GetMoney() or 0))
+        -- pastilles : objets à vendre, enchères sous-cotées (rouge), objets qui manquent dans la liste choisie
+        local okB, list = pcall(bagItems)
+        self.nav.sell:SetCount(okB and #list or 0)
+        self.nav.cancel:SetCount(A:UnderCount(), C.negative)
+        self.nav.buy:SetCount(self.buyCount or 0)
+        for _, nb in pairs(self.nav) do nb:Paint() end
+        self:RefreshSide()
         local v = self.views[self.tab]
         if v and v.Refresh then v:Refresh() end
     end
@@ -1249,29 +1916,25 @@ local function build(host)
 end
 
 ---------------------------------------------------------------------------
--- Accroche à la fenêtre de l'HV du jeu
+-- Notre fenêtre à la place de celle du jeu (réglage AHScan:Config().tabs ; sinon le panneau d'avant)
 ---------------------------------------------------------------------------
 local function attach()
     if not (cfg().tabs and WK:FeatureOn("ah")) then return end
     local host = AuctionHouseFrame
-    if not host then return end
-    if not view then
-        view = build(host)
-        -- un onglet du jeu choisi : nos onglets se referment
-        if host.SetDisplayMode and hooksecurefunc then
-            hooksecurefunc(host, "SetDisplayMode", function() if view and view:IsShown() and not view.opening then view:Close() end end)
-        end
-        for _, tb in ipairs(host.Tabs or {}) do
-            if tb.HookScript then tb:HookScript("OnClick", function() if view then view:Close() end end) end
-        end
-    end
-    view.strip:Show()
+    if not host or not host:IsShown() then return end
+    if not view then view = build(host) end
+    -- pas plus grande que l'écran
+    local sw, sh = UIParent:GetWidth(), UIParent:GetHeight()
+    view:SetSize(math.min(WIN_W, sw - 20), math.min(WIN_H, sh - 40))
+    view.gameMode = false
+    view:Open(cfg().ahTab and view.views[cfg().ahTab] and cfg().ahTab or "browse")
 end
 WK:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.15, attach) end)
 WK:On("AUCTION_HOUSE_CLOSED", function()
-    if view then view:Close() end
+    if view then view.gameMode = false; view:Close() end
     wipe(queue); pending = nil
 end)
+WK:On("PLAYER_MONEY", function() if view and view:IsShown() then view.gold:SetText(UI:GoldText(GetMoney())) end end)
 WK:On("BAG_UPDATE_DELAYED", function() if view and view:IsShown() and view.tab ~= "scan" then view:Refresh() end end)
 WK:On("OWNED_AUCTIONS_UPDATED", function() C_Timer.After(0.1, function() if view and view:IsShown() then view:Refresh() end end) end)
 local prevProgress = S.OnProgress
@@ -1283,5 +1946,15 @@ local prevChange = A.OnChange
 A.OnChange = function(...)
     if prevChange then prevChange(...) end
     if view and view:IsShown() then view:Refresh() end
+end
+-- recherche d'un objet (listes d'achat, « Chercher ») : dans Parcourir quand notre fenêtre est ouverte
+function UI:AHWindowSearch(_, name)
+    if not (view and view:IsShown() and name) then return false end
+    view:Open("browse")
+    local bw = view.views.browse
+    bw.cat = nil
+    bw.search:SetText(name)
+    bw:Run()
+    return true
 end
 function UI:AuctionTabs() return view end
