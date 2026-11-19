@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.60.2", date = "19/11/2026",
+        changed = {
+            "Patch notes, sommaire des versions plus lisible : dans sa propre carte, versions groupées sous leur date, numéro plus gros, contenu en couleur à droite (+ ajouts, ~ modifications, ! corrections), point vert sur la version installée, version choisie à la couleur d'accent avec un trait à gauche, survol, et « + N plus anciennes » en bouton.",
+        },
+    },
+    {
         version = "1.60.1", date = "19/11/2026",
         changed = {
             "Patch notes > À venir : les thèmes sont rangés en grille (trois par rangée, alignés en haut) et les cartes d'une même rangée ont la même hauteur d'une colonne à l'autre, au lieu d'être posées en quinconce.",

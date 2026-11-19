@@ -129,24 +129,38 @@ UI:RegisterPage({
         -- Plus de 400 versions : cartes créées par lots de 15 (sinon la page est trop lourde et reste vide).
         -----------------------------------------------------------------
         local nv = view("notes")
-        local IDX_W = 170
-        local idx = UI:Scroll(nv)
-        idx:SetPoint("TOPLEFT"); idx:SetPoint("BOTTOMLEFT"); idx:SetWidth(IDX_W)
+        local IDX_W = 196
+        -- sommaire dans sa propre carte : versions groupées par date, contenu en pastilles (+ ~ !)
+        local idxCard = UI:Card(nv)
+        idxCard:SetPoint("TOPLEFT"); idxCard:SetPoint("BOTTOMLEFT"); idxCard:SetWidth(IDX_W)
+        local idx = UI:Scroll(idxCard)
+        idx:SetPoint("TOPLEFT", 6, -8); idx:SetPoint("BOTTOMRIGHT", -2, 8)
         local scroll = UI:Scroll(nv)
         scroll:SetPoint("TOPLEFT", IDX_W + 12, 0); scroll:SetPoint("BOTTOMRIGHT")
         local cards, rows, made = {}, {}, 0
         local PAGE = 15
         local more = UI:Button(scroll.child, "Versions plus anciennes", 240, 30, "secondary")
-        local idxMore = UI:Text(idx.child, 11, C.text)
-        local idxMoreB = CreateFrame("Button", nil, idx.child); idxMoreB:SetAllPoints(idxMore)
-        UI:OnAccent(function() idxMore:SetTextColor(UI:Accent()) end)
+        local idxMoreB = UI:Button(idx.child, "+ plus anciennes", IDX_W - 24, 26, "ghost")
+        local heads = {}   -- titres de date : { fs, before = n° de la 1re ligne de ce jour }
         local sel = 1
         local layout
         local function paintRows()
+            local r1, g1, b1 = UI:Accent()
             for i, r in ipairs(rows) do
-                r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], i == sel and 1 or 0)
-                r.v:SetTextColor(unpack(i == sel and C.text or C.muted))
+                local on = i == sel
+                r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], on and 1 or (r.hover and 0.55 or 0))
+                r.bar:SetColorTexture(r1, g1, b1, 1); r.bar:SetShown(on)
+                if on then r.v:SetTextColor(r1, g1, b1) else r.v:SetTextColor(unpack(r.hover and C.text or C.muted)) end
             end
+        end
+        UI:OnAccent(paintRows)
+        local function counts(entry)
+            local parts = {}
+            for _, sec in ipairs(SECTIONS) do
+                local n = entry[sec[1]] and #entry[sec[1]] or 0
+                if n > 0 then parts[#parts + 1] = UI:Hex(C[sec[3]]) .. sec[2]:sub(1, 1) .. n .. "|r" end
+            end
+            return table.concat(parts, " ")
         end
         local function addBatch()
             local last = math.min(#WK.Changelog, made + PAGE)
@@ -155,12 +169,24 @@ UI:RegisterPage({
                 local ok, card = pcall(VersionCard, scroll.child, entry, i == 1 and entry.version == WK.version)
                 if ok and card then
                     table.insert(cards, card)
-                    local r = CreateFrame("Button", nil, idx.child)
-                    r:SetHeight(24)
-                    r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
-                    r.v = UI:Text(r, 12, C.muted); r.v:SetPoint("LEFT", 10, 0); r.v:SetText("v" .. entry.version)
-                    r.d = UI:Text(r, 10, C.dim); r.d:SetPoint("RIGHT", -8, 0); r.d:SetText(entry.date and entry.date:sub(1, 5) or "")
                     local n = #rows + 1
+                    local prev = WK.Changelog[i - 1]
+                    if i == 1 or not prev or prev.date ~= entry.date then
+                        local h = UI:Text(idx.child, 10, C.dim)
+                        h:SetText(entry.date or "")
+                        heads[#heads + 1] = { fs = h, before = n }
+                    end
+                    local r = CreateFrame("Button", nil, idx.child)
+                    r:SetHeight(26)
+                    r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
+                    r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT", 0, -5); r.bar:SetPoint("BOTTOMLEFT", 0, 5); r.bar:SetWidth(3)
+                    r.v = UI:Text(r, 13, C.muted); r.v:SetPoint("LEFT", 12, 0); r.v:SetText("v" .. entry.version)
+                    r.d = UI:Text(r, 10, C.muted); r.d:SetPoint("RIGHT", -8, 0); r.d:SetText(counts(entry))
+                    if i == 1 and entry.version == WK.version then
+                        r.cur = UI:Icon(r, "circle", 6, C.positive, "ARTWORK"); r.cur:SetPoint("LEFT", r.v, "RIGHT", 5, 0)
+                    end
+                    r:SetScript("OnEnter", function() r.hover = true; paintRows() end)
+                    r:SetScript("OnLeave", function() r.hover = false; paintRows() end)
                     r:SetScript("OnClick", function()
                         sel = n; paintRows()
                         scroll:SetVerticalScroll(math.min(scroll:MaxScroll(), card.y or 0)); scroll:UpdateBar()
@@ -171,8 +197,8 @@ UI:RegisterPage({
             made = last
             more:SetShown(made < #WK.Changelog)
             more:SetLabel(string.format(T("Versions plus anciennes (%d)"), #WK.Changelog - made))
-            idxMore:SetShown(made < #WK.Changelog)
-            idxMore:SetText(string.format(T("+ %d plus anciennes"), #WK.Changelog - made))
+            idxMoreB:SetShown(made < #WK.Changelog)
+            idxMoreB:SetLabel(string.format(T("+ %d plus anciennes"), #WK.Changelog - made))
             paintRows()
         end
         layout = function(w)
@@ -191,14 +217,21 @@ UI:RegisterPage({
             end
             scroll:SetContentHeight(y)
             local iy = 0
-            idx.child:SetWidth(IDX_W)
-            for _, r in ipairs(rows) do
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -iy); r:SetPoint("TOPRIGHT", -6, -iy)
-                iy = iy + 26
-            end
-            if idxMore:IsShown() then
-                idxMore:ClearAllPoints(); idxMore:SetPoint("TOPLEFT", 10, -(iy + 6))
+            idx.child:SetWidth(IDX_W - 8)
+            local hi = 1
+            for n, r in ipairs(rows) do
+                local h = heads[hi]
+                if h and h.before == n then
+                    h.fs:ClearAllPoints(); h.fs:SetPoint("TOPLEFT", 12, -(iy + (n > 1 and 8 or 2)))
+                    iy = iy + (n > 1 and 24 or 18)
+                    hi = hi + 1
+                end
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -iy); r:SetPoint("TOPRIGHT", -10, -iy)
                 iy = iy + 28
+            end
+            if idxMoreB:IsShown() then
+                idxMoreB:ClearAllPoints(); idxMoreB:SetPoint("TOPLEFT", 6, -(iy + 6))
+                iy = iy + 38
             end
             idx:SetContentHeight(iy)
         end
