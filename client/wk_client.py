@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.6.4"
+CLIENT_VERSION = "1.7.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -62,7 +62,8 @@ def data_dir():
 
 CONFIG_PATH = os.path.join(data_dir(), "config.json")
 DEFAULTS = {"addons": "", "token": "", "checkEvery": "1h", "autoInstall": False, "backupBefore": True, "keepBackups": 15,
-            "startup": False}
+            "startup": False,
+            "notify": {"auctions": True, "cds": True, "rest": False, "mail": True, "quiet": True}, "notified": {}}
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 RUN_NAME = "WarbandKeeperClient"
 SCHEDULE_PATH = "tools/update_schedule.json"
@@ -76,6 +77,9 @@ def load_config():
             cfg.update(json.load(f))
     except (OSError, ValueError):
         pass
+    # copies (les réglages par défaut ne doivent pas être modifiés), nouvelles clés ajoutées
+    cfg["notify"] = dict(DEFAULTS["notify"], **(cfg.get("notify") if isinstance(cfg.get("notify"), dict) else {}))
+    cfg["notified"] = dict(cfg.get("notified") if isinstance(cfg.get("notified"), dict) else {})
     if cfg.pop("checkOnStart", True) is False and cfg.get("checkEvery") == "start":
         cfg["checkEvery"] = "manual"  # réglage du client 1.0-1.2
     if not cfg.get("hourly14"):
@@ -476,6 +480,115 @@ def read_characters(addons):
     out.sort(key=lambda e: -(e["seen"] or 0))
     _chars_cache.update(path=path, mt=mt, list=out)
     return out
+
+
+_dash_cache = {}
+
+
+def read_dash(addons):
+    """Résumé écrit par l'addon à la déconnexion (WarbandKeeperDB.clientDash, Modules/ClientDash.lua), ou None."""
+    files = [p for p in saved_variables(addons) if p.endswith(".lua")] if addons else []
+    if not files:
+        return None
+    path = max(files, key=os.path.getmtime)
+    mt = os.path.getmtime(path)
+    if _dash_cache.get("path") == path and _dash_cache.get("mt") == mt:
+        return _dash_cache["dash"]
+    dash = None
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            text = f.read()
+        i = _top_key(text, "clientDash")
+        if i is not None:
+            it = _lua_tokens(text, i)
+            dash = _lua_value(it, next(it))
+    except Exception:
+        dash = None
+    _dash_cache.update(path=path, mt=mt, dash=dash)
+    return dash
+
+
+def lua_list(t):
+    """Liste Lua lue ({1: a, 2: b}) en liste Python, dans l'ordre."""
+    if isinstance(t, list):
+        return t
+    if not isinstance(t, dict):
+        return []
+    return [t[k] for k in sorted(k for k in t if isinstance(k, int))]
+
+
+def until_text(t):
+    """« dans 2 j 4 h », « dans 18 h », « dans 12 min », ou « prête »."""
+    d = (t or 0) - time.time()
+    if d <= 0:
+        return "prête"
+    if d < 3600:
+        return "dans %d min" % max(1, d // 60)
+    if d < 86400:
+        return "dans %d h" % (d // 3600)
+    return "dans %d j %d h" % (d // 86400, (d % 86400) // 3600)
+
+
+def notify_windows(title, text):
+    """Notification Windows (toast) par PowerShell, sans dépendance ; rend True si elle est partie."""
+    if not IS_WIN:
+        return False
+    import base64
+    from xml.sax.saxutils import escape
+    xml = ('<toast><visual><binding template="ToastGeneric"><text>%s</text><text>%s</text></binding></visual></toast>'
+           % (escape(title), escape(text)))
+    ps = ("[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null;"
+          "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] > $null;"
+          "$x = New-Object Windows.Data.Xml.Dom.XmlDocument; $x.LoadXml('%s');"
+          "$t = [Windows.UI.Notifications.ToastNotification]::new($x);"
+          "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("
+          "'{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe').Show($t)") % xml.replace("'", "''")
+    try:
+        enc = base64.b64encode(ps.encode("utf-16-le")).decode("ascii")
+        subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-EncodedCommand", enc],
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=clean_env())
+        return True
+    except OSError:
+        return False
+
+
+def due_notifications(dash, opts, now=None):
+    """Notifications à envoyer d'après le résumé : [(id, titre, texte)] ; l'id évite les doublons."""
+    now = now or time.time()
+    out = []
+    if not isinstance(dash, dict):
+        return out
+    if opts.get("auctions"):
+        soon = [a for a in lua_list(dash.get("auctions")) if isinstance(a, dict) and now < (a.get("exp") or 0) <= now + 86400]
+        if soon:
+            names = ", ".join(sorted({str(a.get("name")) for a in soon})[:3])
+            chars = ", ".join(sorted({str(a.get("char")) for a in soon}))
+            out.append(("auc:" + datetime.fromtimestamp(now).strftime("%Y-%m-%d"),
+                        "%d enchère%s expire%s dans moins de 24 h" % (len(soon), "s" if len(soon) > 1 else "", "nt" if len(soon) > 1 else ""),
+                        "%s… (%s)" % (names, chars)))
+    if opts.get("cds"):
+        for cd in lua_list(dash.get("cds")):
+            if isinstance(cd, dict) and now - 7 * 86400 < (cd.get("readyAt") or 0) <= now:
+                out.append(("cd:%s:%s:%s" % (cd.get("char"), cd.get("name"), cd.get("readyAt")),
+                            "%s prête pour %s" % (cd.get("name"), cd.get("char")), "Recharge de métier terminée."))
+    if opts.get("rest"):
+        for r in lua_list(dash.get("rest")):
+            if isinstance(r, dict) and (r.get("at") or 0) <= now:
+                out.append(("rest:%s:%s" % (r.get("char"), int((r.get("at") or 0) // 86400)),
+                            "Repos plein pour %s" % r.get("char"), "150 % d'XP de repos : c'est le moment de le jouer."))
+    if opts.get("mail"):
+        for m in lua_list(dash.get("mail")):
+            if isinstance(m, dict) and 0 < (m.get("exp") or 0) - now < 3 * 86400:
+                out.append(("mail:%s:%s" % (m.get("char"), m.get("exp")),
+                            "Courrier de %s bientôt renvoyé" % m.get("char"),
+                            "%d lettre%s non prise%s, la première expire %s." % (m.get("count") or 0, "s" if (m.get("count") or 0) > 1 else "",
+                                                                                 "s" if (m.get("count") or 0) > 1 else "", until_text(m.get("exp")))))
+    return out
+
+
+def quiet_now(now=None):
+    h = datetime.fromtimestamp(now or time.time()).hour
+    return h >= 23 or h < 8
 
 
 CLASS_COLORS = {"WARRIOR": "#c79c6e", "PALADIN": "#f58cba", "HUNTER": "#abd473", "ROGUE": "#fff569", "PRIEST": "#ffffff",
@@ -1161,6 +1274,203 @@ def fill_notes(txt, releases, empty="Rien de nouveau."):
     txt.yview_moveto(0)
 
 
+def tile(parent, title, chip=None, chipColor=None):
+    """Tuile du tableau de bord : carte avec titre (et pastille)."""
+    c = Card(parent, title)
+    if chip:
+        Chip(c.head, chip, chipColor or C["warning"]).pack(side="left", padx=(8, 0))
+    return c
+
+
+def tline(parent, left, right, rightColor="muted"):
+    row = tk.Frame(parent, bg=C["surface"])
+    row.pack(fill="x", pady=1)
+    label(row, left, font="small").pack(side="left")
+    label(row, right, fg=rightColor, font="small").pack(side="right")
+    return row
+
+
+@page("dash", "Tableau de bord", "▦")
+class DashPage(Page):
+    """Tuiles tirées du résumé que l'addon écrit à la déconnexion : or et sa courbe, dernière séance,
+    enchères, recharges, listes d'achat, Rangement et courrier."""
+
+    def __init__(self, app, parent):
+        super().__init__(app, parent)
+        self.area = ScrollArea(self)
+        self.area.pack(fill="both", expand=True)
+        self.foot = label(self, "", fg="dim", font="small")
+        self.foot.pack(anchor="w", pady=(6, 0))
+        self.mt = None
+
+    def on_show(self):
+        self.fill()
+
+    def on_state(self):
+        self.fill()
+
+    def fill(self, force=False):
+        dash = read_dash(self.app.addons)
+        key = (id(dash), self.app.addons)
+        if key == self.mt and not force:
+            return
+        self.mt = key
+        host = self.area.inner
+        for w in host.winfo_children():
+            w.destroy()
+        if not isinstance(dash, dict):
+            label(host, "Rien à montrer pour l'instant : joue un perso avec l'addon 1.69 ou plus récent, puis déconnecte-toi "
+                        "(ou /reload) ; le tableau de bord se remplit avec ce que l'addon sait.", fg="muted", wraplength=480).pack(anchor="w")
+            self.foot.configure(text="")
+            return
+        grid = tk.Frame(host, bg=C["bg"])
+        grid.pack(fill="both", expand=True)
+        grid.columnconfigure(0, weight=1, uniform="t")
+        grid.columnconfigure(1, weight=1, uniform="t")
+        now = time.time()
+        tiles = []
+
+        # Or du compte : total, évolution sur 7 jours, courbe sur 30 jours
+        gold = [int(v or 0) for v in lua_list(dash.get("gold"))]
+        t = tile(grid, "Or du compte", None)
+        cur = gold[-1] if gold else 0
+        label(t.body, money_text(cur), fg="warning", font="h1").pack(anchor="w")
+        if len(gold) > 7:
+            dv = cur - gold[-8]
+            label(t.body, "%s%s sur 7 jours" % ("+" if dv >= 0 else "-", money_text(abs(dv))), fg="positive" if dv >= 0 else "negative",
+                  font="small").pack(anchor="w")
+        cv = tk.Canvas(t.body, height=56, bg=C["surface"], highlightthickness=0)
+        cv.pack(fill="x", pady=(6, 0))
+
+        def draw(e, gold=gold, cv=cv):
+            cv.delete("all")
+            if len(gold) < 2:
+                return
+            lo, hi = min(gold), max(gold)
+            span = max(1, hi - lo)
+            w, h = e.width, e.height
+            pts = []
+            for i, v in enumerate(gold):
+                pts += [i * (w - 4) / (len(gold) - 1) + 2, h - 4 - (v - lo) / span * (h - 8)]
+            cv.create_line(*pts, fill=C["warning"], width=2, smooth=True)
+        cv.bind("<Configure>", draw)
+        tiles.append(t)
+
+        # Dernière séance
+        s = dash.get("session") or {}
+        t = tile(grid, "Dernière séance")
+        g = int(s.get("gold") or 0)
+        label(t.body, ("+" if g >= 0 else "-") + money_text(abs(g)), fg="positive" if g >= 0 else "negative", font="h1").pack(anchor="w")
+        dur = int(s.get("dur") or 0)
+        label(t.body, "%d h %02d · %s" % (dur // 3600, dur % 3600 // 60, s.get("char") or "?"), fg="muted", font="small").pack(anchor="w")
+        ah = int(s.get("ah") or 0)
+        tline(t.body, "Ventes HV", ("+" + money_text(ah)) if ah else "-", "warning" if ah else "dim")
+        tline(t.body, "Butin, quêtes et le reste", ("+" if g - ah >= 0 else "-") + money_text(abs(g - ah)))
+        tiles.append(t)
+
+        # Enchères
+        auc = [a for a in lua_list(dash.get("auctions")) if isinstance(a, dict) and (a.get("exp") or 0) > now]
+        soon = [a for a in auc if (a.get("exp") or 0) <= now + 86400]
+        t = tile(grid, "Enchères", ("%d expirent" % len(soon)) if soon else None)
+        label(t.body, str(len(auc)), font="h1").pack(anchor="w")
+        label(t.body, "en vente sur %d perso%s (dernier passage à l'HV)" % (len({a.get("char") for a in auc}),
+                                                                           "s" if len({a.get("char") for a in auc}) > 1 else ""),
+              fg="muted", font="small").pack(anchor="w")
+        for a in auc[:3]:
+            tline(t.body, "%s x%d · %s" % (a.get("name"), a.get("qty") or 1, a.get("char")), until_text(a.get("exp")),
+                  "warning" if (a.get("exp") or 0) <= now + 86400 else "muted")
+        tiles.append(t)
+
+        # Recharges de métier
+        t = tile(grid, "Recharges de métier")
+        cds = sorted([c for c in lua_list(dash.get("cds")) if isinstance(c, dict)], key=lambda c: c.get("readyAt") or 0)
+        if not cds:
+            label(t.body, "Aucune recharge suivie.", fg="dim", font="small").pack(anchor="w")
+        for c in cds[:5]:
+            ready = (c.get("readyAt") or 0) <= now
+            tline(t.body, "%s · %s" % (c.get("name"), c.get("char")), "prête" if ready else until_text(c.get("readyAt")),
+                  "positive" if ready else "muted")
+        tiles.append(t)
+
+        # Listes d'achat et file de fabrication
+        t = tile(grid, "Listes d'achat")
+        lists = [l for l in lua_list(dash.get("lists")) if isinstance(l, dict)]
+        if isinstance(dash.get("lists"), dict) and not lists:
+            lists = [v for v in dash["lists"].values() if isinstance(v, dict)]
+        for l in lists[:4]:
+            tline(t.body, str(l.get("name")), "%d manquent / %d" % (l.get("missing") or 0, l.get("need") or 0),
+                  "warning" if (l.get("missing") or 0) else "positive")
+        q = dash.get("queue") or {}
+        if q.get("n"):
+            tline(t.body, "File de fabrication", "%d recettes · %d composants manquants" % (q.get("n") or 0, q.get("missing") or 0))
+        if not lists and not q.get("n"):
+            label(t.body, "Aucune liste.", fg="dim", font="small").pack(anchor="w")
+        tiles.append(t)
+
+        # Rangement et courrier
+        st = [x for x in lua_list(dash.get("stash")) if isinstance(x, dict)]
+        t = tile(grid, "Rangement et courrier", ("%d envois" % sum(int(x.get("n") or 0) for x in st)) if st else None, C["accent"])
+        for x in st[:3]:
+            tline(t.body, "%s » %s" % (x.get("from"), x.get("to")), "%d lot%s" % (x.get("n") or 0, "s" if (x.get("n") or 0) > 1 else ""))
+        for m in [m for m in lua_list(dash.get("mail")) if isinstance(m, dict)][:3]:
+            urgent = 0 < (m.get("exp") or 0) - now < 3 * 86400
+            tline(t.body, "Courrier · %s (%d)" % (m.get("char"), m.get("count") or 0),
+                  money_text(m.get("money")) if m.get("money") else until_text(m.get("exp")), "negative" if urgent else "warning")
+        if not st and not lua_list(dash.get("mail")):
+            label(t.body, "Rien en attente.", fg="dim", font="small").pack(anchor="w")
+        tiles.append(t)
+
+        for i, t in enumerate(tiles):
+            t.grid(row=i // 2, column=i % 2, sticky="nsew", padx=(0 if i % 2 == 0 else 6, 6 if i % 2 == 0 else 0), pady=(0, 10))
+        self.foot.configure(text="Sauvegarde lue : %s (déconnexion de %s). Elle est réécrite à chaque déconnexion ou /reload."
+                                 % (ago_text(dash.get("at")), dash.get("char") or "?"))
+
+
+@page("notify", "Notifications", "◔")
+class NotifyPage(Page):
+    """Notifications Windows tirées du résumé de l'addon, vérifiées chaque minute tant que le client tourne."""
+
+    ITEMS = [("auctions", "Enchères qui expirent", "moins de 24 h avant, une fois par jour, regroupées"),
+             ("cds", "Recharges de métier prêtes", "transmutation, étoffe lunaire, sel raffiné…"),
+             ("rest", "Repos plein", "un perso arrive à 150 % d'XP de repos"),
+             ("mail", "Courrier qui va être renvoyé", "moins de 3 jours avant expiration"),
+             ("quiet", "Heures calmes", "rien entre 23 h et 8 h (les notifications attendent le matin)")]
+
+    def __init__(self, app, parent):
+        super().__init__(app, parent)
+        c = Card(self, "Notifications Windows", "sans lancer le jeu")
+        c.pack(fill="x")
+        opts = app.cfg.setdefault("notify", dict(DEFAULTS["notify"]))
+        self.vars = {}
+        for key, text, sub in self.ITEMS:
+            row = tk.Frame(c.body, bg=C["surface"])
+            row.pack(fill="x", pady=3)
+            v = tk.BooleanVar(value=bool(opts.get(key)))
+            tk.Checkbutton(row, text="  " + text, variable=v, bg=C["surface"], fg=C["text"], selectcolor=C["surface2"],
+                           activebackground=C["surface"], activeforeground=C["text"], bd=0, highlightthickness=0,
+                           font=App.fonts["body"], anchor="w", command=lambda k=key, v=v: self.set(k, v.get())).pack(anchor="w")
+            label(row, "      " + sub, fg="dim", font="small").pack(anchor="w")
+            self.vars[key] = v
+        label(c.body, "Le client doit tourner (réduit, ou lancé avec Windows : Réglages > Mises à jour). Les heures viennent de "
+                      "la dernière sauvegarde de l'addon : une enchère vendue depuis ne sera connue qu'à la prochaine connexion.",
+              fg="muted", font="small", wraplength=520).pack(anchor="w", pady=(8, 8))
+        row = tk.Frame(c.body, bg=C["surface"])
+        row.pack(fill="x")
+        Button(row, "Tester une notification", self.test, "secondary", height=30).pack(side="left")
+        self.info = label(row, "", fg="muted", font="small")
+        self.info.pack(side="left", padx=(10, 0))
+
+    def set(self, k, v):
+        self.app.cfg.setdefault("notify", {})[k] = v
+        save_config(self.app.cfg)
+
+    def test(self):
+        ok = notify_windows("Warband Keeper", "Les notifications fonctionnent.")
+        self.info.configure(text="Envoyée." if ok else "Notifications Windows seulement (affichée ici).")
+        if not ok:
+            self.app.toast("Warband Keeper · Les notifications fonctionnent.", "positive")
+
+
 @page("home", "Accueil", "⌂")
 class HomePage(Page):
     def __init__(self, app, parent):
@@ -1702,7 +2012,7 @@ class App:
         if "--minimized" in sys.argv:
             # lancé avec Windows : réduit, il vérifie en arrière-plan
             self.root.after(150, self.minimize)
-        self.show("home")
+        self.show("dash" if read_dash(self.cfg["addons"]) else "home")
         self.state_changed()
         self.root.after(80, self.poll)
         if self.cfg["checkEvery"] != "manual":
@@ -1714,7 +2024,38 @@ class App:
         every = {"1h": 3600, "6h": 6 * 3600}.get(self.cfg["checkEvery"])
         if every and not self.busy and time.time() - self.lastCheck >= every:
             self.refresh()
+        try:
+            self.check_notifications()
+            if self.current == "dash":
+                self.pages["dash"].fill()
+        except Exception as e:
+            print("notifications", e)
         self.root.after(60000, self.tick)
+
+    def check_notifications(self, now=None):
+        """Notifications Windows dues d'après le résumé de l'addon (une seule fois chacune)."""
+        opts = self.cfg.get("notify") or {}
+        if not self.addons:
+            return []
+        dash = read_dash(self.addons)
+        sent = self.cfg.setdefault("notified", {})
+        now = now or time.time()
+        if opts.get("quiet") and quiet_now(now):
+            return []
+        out = []
+        for nid, title, text in due_notifications(dash, opts, now):
+            if nid in sent:
+                continue
+            sent[nid] = int(now)
+            out.append((title, text))
+            if not notify_windows(title, text):
+                self.toast("%s · %s" % (title, text), "warning")
+        if out:
+            # on oublie les notifications de plus de 30 jours
+            for k in [k for k, t in sent.items() if now - t > 30 * 86400]:
+                del sent[k]
+            save_config(self.cfg)
+        return out
 
     # -- présentation
     def setup_fonts(self):

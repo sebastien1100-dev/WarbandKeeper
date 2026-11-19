@@ -233,7 +233,21 @@ function UI:RefreshBuffButton()
         btn:SetAttribute("unit", e.unit)
         btn.paint(spellIcon(e.id), #list)
         btn:Show()
-        local plate = C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(e.unit)
+        -- plaque de nom : le jeu refuse ici les unités de groupe (party1, raid3…) ; on prend l'unité de plaque
+        -- (nameplateN) ou la cible / le focus, et l'appel reste protégé
+        local plate
+        if C_NamePlate and C_NamePlate.GetNamePlateForUnit and type(e.unit) == "string"
+            and (e.unit:find("^nameplate") or e.unit == "target" or e.unit == "focus") then
+            local ok, p = pcall(C_NamePlate.GetNamePlateForUnit, e.unit)
+            plate = ok and p or nil
+        elseif C_NamePlate and C_NamePlate.GetNamePlates then
+            -- membre du groupe : sa plaque, retrouvée parmi celles affichées
+            local ok, plates = pcall(C_NamePlate.GetNamePlates)
+            for _, p in ipairs(ok and plates or {}) do
+                local tok = p.namePlateUnitToken or (p.UnitFrame and p.UnitFrame.unit)
+                if tok and UnitIsUnit(tok, e.unit) then plate = p break end
+            end
+        end
         if plate and not UnitIsUnit(e.unit, "player") then
             local r, g, b = UI:Accent()
             for _, t in ipairs(mark.edges) do t:SetColorTexture(r, g, b, 0.95) end

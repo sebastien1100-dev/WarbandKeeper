@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.7.0 — 19/11/2026
+
+### Ajouts
+- Tableau de bord (nouvelle page, ouverte au démarrage) : or du compte avec sa courbe sur 30 jours, dernière séance (gain, ventes HV), enchères en vente et celles qui expirent, recharges de métier, listes d'achat et file de fabrication, Rangement et courrier non pris. Tiré du résumé que l'addon (1.69 ou plus récent) écrit à chaque déconnexion ou /reload : rien n'est demandé au jeu.
+- Notifications Windows (nouvelle page) : enchères qui expirent dans les 24 h, recharges de métier prêtes, repos plein, courrier bientôt renvoyé ; chacune une seule fois, heures calmes de 23 h à 8 h, bouton « Tester une notification ». Le client doit tourner (réduit ou lancé avec Windows).
+
 ## 1.6.4 — 19/11/2026
 
 ### Corrections

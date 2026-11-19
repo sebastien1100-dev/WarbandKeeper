@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.69.0", date = "19/11/2026", restart = true,
+        added = {
+            "Client PC : l'addon écrit à chaque déconnexion (et /reload) un petit résumé pour le tableau de bord et les notifications Windows du client 1.7 : or du compte sur 30 jours, dernière séance, enchères vues à l'HV et leur expiration, recharges de métier, listes d'achat, Rangement, courrier non pris, repos.",
+        },
+        fixed = {
+            "Bouton « Buffer le suivant » : en groupe, une erreur se répétait (« Raid<n>/Party<n> unit tokens are not allowed ») quand le joueur à bénir était un membre du groupe. Sa plaque de nom est maintenant retrouvée autrement, sans erreur.",
+        },
+    },
+    {
         version = "1.68.0", date = "19/11/2026", restart = true,
         added = {
             "Boîte aux lettres refaite : notre fenêtre à la place de celle du jeu, comme l'hôtel des ventes. Barre latérale Reçus · Envoyer · Rangement · Règles d'envoi · Historique avec leurs pastilles, et les destinataires récents (clic = lettre prête).",
@@ -3715,8 +3724,6 @@ WK.Roadmap = {
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 2, theme = "rel", title = "Notes de version allégées en jeu", text = "Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG." },
-    { prio = 2, theme = "client", title = "Tableau de bord hors jeu", text = "Dans le client PC : or et sa courbe, ventes HV de la dernière session, enchères qui expirent, listes d'achat, rangement, recharges de métier prêtes." },
-    { prio = 2, theme = "client", title = "Notifications Windows", text = "« 3 enchères expirent demain », « transmutation prête sur Liora »… sans lancer le jeu." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
     { prio = 2, theme = "char", title = "Objectifs par perso", text = "Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans ~6 h au rythme actuel »)." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },

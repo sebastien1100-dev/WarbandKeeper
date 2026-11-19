@@ -72,14 +72,22 @@ _Prévu, pas encore commencé._
 - **Notes de version allégées en jeu** (moyenne) — Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG.
 
 ### Client PC
-- **Notifications Windows** (moyenne) — « 3 enchères expirent demain », « transmutation prête sur Liora »… sans lancer le jeu.
-- **Tableau de bord hors jeu** (moyenne) — Dans le client PC : or et sa courbe, ventes HV de la dernière session, enchères qui expirent, listes d'achat, rangement, recharges de métier prêtes.
 - **Sauvegardes synchronisées** (basse) — Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière.
 
 ### Guilde et partage
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.69.0 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Client PC : l'addon écrit à chaque déconnexion (et /reload) un petit résumé pour le tableau de bord et les notifications Windows du client 1.7 : or du compte sur 30 jours, dernière séance, enchères vues à l'HV et leur expiration, recharges de métier, listes d'achat, Rangement, courrier non pris, repos.
+
+### Corrections
+- Bouton « Buffer le suivant » : en groupe, une erreur se répétait (« Raid<n>/Party<n> unit tokens are not allowed ») quand le joueur à bénir était un membre du groupe. Sa plaque de nom est maintenant retrouvée autrement, sans erreur.
 
 ## v1.68.0 — 19/11/2026
 

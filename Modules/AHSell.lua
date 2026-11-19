@@ -124,6 +124,15 @@ local function readOwned()
         return (a.id or 0) < (b.id or 0)
     end)
     M.owned = out
+    -- relevé gardé pour le client PC (enchères qui expirent, Modules/ClientDash.lua)
+    local c = WK.DB:Me()
+    if c then
+        local list, now = {}, time()
+        for _, o in ipairs(out) do
+            if o.timeLeft then table.insert(list, { id = o.id, qty = o.qty, exp = now + o.timeLeft }) end
+        end
+        c.auctionsSeen = { at = now, list = list }
+    end
     notify()
 end
 WK:On("OWNED_AUCTIONS_UPDATED", function() pcall(readOwned) end)
