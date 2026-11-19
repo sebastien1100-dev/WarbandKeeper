@@ -578,7 +578,7 @@ UI:RegisterPage({
         UI:SettingRow(grp, -130, "Sauf ceux des amis et de la guilde", nil,
             toggle(grp, function() return g.duelFriends end, function(v) g.duelFriends = v end), 80)
 
-        local comfort = card("Confort", 376)
+        local comfort = card("Confort", 232)
         UI:SettingRow(comfort, -40, "Libérer l'esprit en champ de bataille", "Automatiquement à la mort (pas avec une pierre d'âme).",
             toggle(comfort, function() return g.releaseBG end, function(v) g.releaseBG = v end), 80)
         UI:SettingRow(comfort, -88, "Confirmer le butin lié quand ramassé", "Seulement quand tu es seul.",
@@ -587,12 +587,6 @@ UI:RegisterPage({
             toggle(comfort, function() return g.dismount end, function(v) g.dismount = v end), 80)
         UI:SettingRow(comfort, -184, "Passer les cinématiques", nil,
             toggle(comfort, function() return g.skipCinematics end, function(v) g.skipCinematics = v end), 80)
-        UI:SettingRow(comfort, -226, "Barre de vol", "Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition.",
-            toggle(comfort, function() return WK.modules.Flight:Config().enabled end, function(v) WK.modules.Flight:Config().enabled = v end), 80)
-        UI:SettingRow(comfort, -272, "Statistiques en vol à la place de la carte", "En vol, la touche de la carte (M) ouvre les statistiques du compte à la place de la carte. Décoché : M ouvre la carte.",
-            toggle(comfort, function() return WK.modules.Flight:Config().stats ~= false end, function(v) WK.modules.Flight:Config().stats = v end), 80)
-        UI:SettingRow(comfort, -318, "Ouvrir les statistiques au décollage", "Elles s'ouvrent seules à chaque vol et se ferment à l'atterrissage.",
-            toggle(comfort, function() return WK.modules.Flight:Config().statsAuto end, function(v) WK.modules.Flight:Config().statsAuto = v end), 80)
 
         -----------------------------------------------------------------------
         -- Alertes : les seuils et rappels d'Options (banque, courrier, rappels à la connexion) rejoignent
@@ -1295,6 +1289,14 @@ UI:RegisterPage({
             local flc = FL.Config()
             local FPR = 6
             subtab("Vols", 5)
+            -- pendant le vol : barre, statistiques (déplacés d'Interface > Général > Confort)
+            local flyc = card("Pendant le vol", 40 + 3 * 46 + 8)
+            UI:SettingRow(flyc, -40, "Barre de vol", "Trajet, temps restant et bouton « Atterrir » pendant un vol. Se place en mode édition.",
+                toggle(flyc, function() return flc.enabled end, function(v) flc.enabled = v end), 80)
+            UI:SettingRow(flyc, -86, "Statistiques en vol à la place de la carte", "En vol, la touche de la carte (M) ouvre les statistiques du compte à la place de la carte. Décoché : M ouvre la carte.",
+                toggle(flyc, function() return flc.stats ~= false end, function(v) flc.stats = v end), 80)
+            UI:SettingRow(flyc, -132, "Ouvrir les statistiques au décollage", "Elles s'ouvrent seules à chaque vol et se ferment à l'atterrissage.",
+                toggle(flyc, function() return flc.statsAuto end, function(v) flc.statsAuto = v end), 80)
             local fpcard = card("Points de vol à apprendre", 40 + 46 + 22 + FPR * 30 + 16, "maîtres de vol de ta faction sur ce continent, du plus proche au plus loin")
             UI:SettingRow(fpcard, -40, "Rappel en arrivant dans une zone", "Une fois par zone et par session, si un maître de vol de la zone n'est pas encore appris. /wk vol guide au plus proche.",
                 toggle(fpcard, function() return flc.fpRemind end, function(v) flc.fpRemind = v end), 80)

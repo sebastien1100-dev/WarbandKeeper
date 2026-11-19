@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.12", date = "19/11/2026",
+        changed = {
+            "Les réglages du vol (Barre de vol, Statistiques en vol à la place de la carte, Ouvrir les statistiques au décollage) passent d'Interface > Général > Confort à Aventure > Carte et guidage, onglet Vols, dans une carte « Pendant le vol ».",
+        },
+    },
+    {
         version = "1.76.11", date = "19/11/2026",
         fixed = {
             "« Ouvrir les statistiques au décollage » ne marchait pas quand « Statistiques en vol à la place de la carte » était décoché. Les deux réglages sont maintenant indépendants : les statistiques s'ouvrent au décollage, et M ouvre quand même la carte.",
