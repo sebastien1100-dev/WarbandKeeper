@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.47.1", date = "19/11/2026",
+        fixed = {
+            "Persos > Expérience : un bout de la première ligne de perso dépassait au-dessus du volet, et la bande du haut restait vide ; elle affiche maintenant le titre « Expérience de tes persos » et le volet commence juste dessous.",
+        },
+    },
+    {
         version = "1.47.0", date = "19/11/2026",
         added = {
             "Hôtel des ventes : l'onglet redevient « Achat ». Il garde tes listes d'achat à gauche, et une recherche au-dessus permet d'acheter n'importe quel objet de tes scans : quantité au choix, bouton Acheter (ou Chercher pour un objet qui n'est pas en lot) et « + » pour l'ajouter à la liste d'achat.",

@@ -44,14 +44,23 @@ UI:RegisterPage({
         scroll:SetPoint("BOTTOMRIGHT")
         -- Bouton « Expérience » (en haut à droite) : rythme de la session et repos de tous tes persos
         -- (cartes reprises de QoL > Expérience, qui ne garde que les réglages de la barre)
-        self.xp = UI:PageGear(p, { title = "Expérience : rythme et repos de tes persos", icon = "chart", size = 26, top = 30, columns = 1,
+        self.xp = UI:PageGear(p, { title = "Expérience : rythme et repos de tes persos", icon = "chart", size = 26, top = 24, columns = 1,
             cards = function()
                 local out = {}
                 for _, c in ipairs(UI:SectionCards("qol", "xp")) do if c.xpData then table.insert(out, c) end end
                 return out
             end,
-            onToggle = function(open) for _, h in ipairs(self.colHeaders or {}) do h:SetShown(not open) end end }, self)
-        self.xp.gear:SetPoint("TOPRIGHT", 0, 0)
+            onToggle = function(open)
+                for _, h in ipairs(self.colHeaders or {}) do h:SetShown(not open) end
+                self.xpTitle:SetShown(open)
+            end }, self)
+        self.xp.gear:SetPoint("TOPRIGHT", 0, 2)
+        -- au-dessus du volet (qui commence juste sous la ligne des titres de colonnes)
+        self.xp.gear:SetFrameLevel(self.xp.overlay:GetFrameLevel() + 5)
+        self.xpTitle = UI:Text(p, 12)
+        self.xpTitle:SetPoint("TOPLEFT", 4, -4)
+        self.xpTitle:SetText(T("Expérience de tes persos"))
+        self.xpTitle:Hide()
         self.scroll = scroll
         local child = scroll.child
 
