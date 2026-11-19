@@ -295,7 +295,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
             b:SetFrameLevel(r:GetFrameLevel() + 3)
             b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
-            -- icône seule de la bénédiction ; grisée avec un « ! » si pas encore apprise ; cercle pointillé si aucune
+            -- icône seule de la bénédiction ; cadre orange et « ! » si pas encore apprise ; cercle pointillé si aucune
             b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(IC, IC); b.icon:SetPoint("CENTER")
             b.empty = UI:Icon(b, "ring_dash", IC - 8, C.dim, "ARTWORK"); b.empty:SetPoint("CENTER", b.icon, "CENTER")
             -- pas apprise : cadre orange autour de l'icône et « ! » sur une pastille sombre, bien visibles
@@ -454,8 +454,9 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                     end
                     b.icon:SetTexture(id and M.Icon(id) or nil)
                     b.icon:SetShown(id ~= nil)
-                    if b.icon.SetDesaturated then b.icon:SetDesaturated(not learned) end
-                    b.icon:SetAlpha(learned and (here and 1 or 0.5) or 0.85)
+                    -- pas apprise : icône en couleur, signalée par le cadre orange et le « ! » seulement
+                    if b.icon.SetDesaturated then b.icon:SetDesaturated(false) end
+                    b.icon:SetAlpha(here and 1 or 0.5)
                     local unl = id ~= nil and not learned
                     b.warn:SetShown(unl); b.warnDot:SetShown(unl); b.warnBox:SetShown(unl)
                     b.empty:SetShown(id == nil)
