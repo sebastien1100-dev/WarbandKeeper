@@ -40,6 +40,13 @@ _Prévu, pas encore commencé._
 - **Raids de Classic** — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 - **Quêtes, suite** — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 
+## v1.60.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Patch notes > À venir : les thèmes sont rangés en grille (trois par rangée, alignés en haut) et les cartes d'une même rangée ont la même hauteur d'une colonne à l'autre, au lieu d'être posées en quinconce.
+
 ## v1.60.0 — 19/11/2026
 
 _Un /reload suffit._

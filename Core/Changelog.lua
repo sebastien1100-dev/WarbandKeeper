@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.60.1", date = "19/11/2026",
+        changed = {
+            "Patch notes > À venir : les thèmes sont rangés en grille (trois par rangée, alignés en haut) et les cartes d'une même rangée ont la même hauteur d'une colonne à l'autre, au lieu d'être posées en quinconce.",
+        },
+    },
+    {
         version = "1.60.0", date = "19/11/2026",
         changed = {
             "Patch notes en deux onglets. « Notes de version » : un sommaire des versions à gauche (clic : la page saute à la version), les notes à droite, chargées par 15 (« + N plus anciennes »). « À venir » : ce qui est prévu, rangé par thème sur trois colonnes (Interface, Carte et voyage, Inventaire et économie, Métiers, Personnages, Classes et combat, Donjons et quêtes), une carte par idée avec un titre court et une phrase.",

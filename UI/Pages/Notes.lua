@@ -238,37 +238,53 @@ UI:RegisterPage({
                     box.d:SetPoint("TOPLEFT", box.t, "BOTTOMLEFT", 0, -4)
                     table.insert(blk.items, box)
                 end
-                function blk.Layout(b, w)
-                    local y = 22
-                    for _, box in ipairs(b.items) do
-                        box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -y); box:SetWidth(w)
+                -- hauteur naturelle de chaque carte à la largeur w (alignées ensuite rangée par rangée)
+                function blk.Measure(b, w)
+                    b.hs = {}
+                    for k, box in ipairs(b.items) do
                         box.t:SetWidth(w - 22); box.d:SetWidth(w - 22)
-                        local h = 9 + (box.t:GetStringHeight() or 14) + 4 + (box.d:GetStringHeight() or 14) + 10
-                        box:SetHeight(h)
-                        y = y + h + 7
+                        b.hs[k] = 9 + (box.t:GetStringHeight() or 14) + 4 + (box.d:GetStringHeight() or 14) + 10
                     end
-                    b:SetSize(w, y)
-                    return y
                 end
                 table.insert(blocks, blk)
             end
         end
+        -- grille : les thèmes par rangées de 3 (2 si étroit), même haut pour chaque rangée ; dans une rangée,
+        -- la k-ième carte a la même hauteur dans toutes les colonnes (les cartes s'alignent d'une colonne à l'autre)
         UI:OnResize(ts, function(w)
             local W = math.max(360, (w or ts:GetWidth() or UI.PAGE_W) - 12)
             local cols = W < 760 and 2 or 3
-            local GAP = 12
+            local GAP, VG, HEAD = 12, 7, 22
             local cw = math.floor((W - GAP * (cols - 1)) / cols)
-            local colY = {}
-            for c = 1, cols do colY[c] = 0 end
-            for _, blk in ipairs(blocks) do
-                local best = 1
-                for c = 2, cols do if colY[c] < colY[best] then best = c end end
-                blk:ClearAllPoints(); blk:SetPoint("TOPLEFT", (best - 1) * (cw + GAP), -colY[best])
-                colY[best] = colY[best] + blk:Layout(cw) + 14
+            for _, blk in ipairs(blocks) do blk:Measure(cw) end
+            local y = 0
+            for r0 = 1, #blocks, cols do
+                local maxN = 0
+                for c = 0, cols - 1 do local blk = blocks[r0 + c]; if blk then maxN = math.max(maxN, #blk.items) end end
+                local rowH = {}
+                for k = 1, maxN do
+                    rowH[k] = 0
+                    for c = 0, cols - 1 do
+                        local blk = blocks[r0 + c]
+                        if blk and blk.hs[k] then rowH[k] = math.max(rowH[k], blk.hs[k]) end
+                    end
+                end
+                local h = HEAD
+                for k = 1, maxN do h = h + rowH[k] + VG end
+                for c = 0, cols - 1 do
+                    local blk = blocks[r0 + c]
+                    if blk then
+                        blk:ClearAllPoints(); blk:SetPoint("TOPLEFT", c * (cw + GAP), -y); blk:SetSize(cw, h)
+                        local by = HEAD
+                        for k, box in ipairs(blk.items) do
+                            box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -by); box:SetSize(cw, rowH[k])
+                            by = by + rowH[k] + VG
+                        end
+                    end
+                end
+                y = y + h + 14
             end
-            local maxY = 0
-            for c = 1, cols do maxY = math.max(maxY, colY[c]) end
-            ts:SetContentHeight(maxY)
+            ts:SetContentHeight(y)
         end)
 
         tabSeg:Select("notes")
