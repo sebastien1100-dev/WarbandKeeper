@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.48.1", date = "19/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et opendata : 3 objets de butin de plus, 3 objets de butin désormais découverts, guides de métiers revus par wowtbc.gg.",
+        },
+    },
+    {
         version = "1.48.0", date = "19/11/2026",
         added = {
             "Persos et Résumé : les alertes de chaque perso s'affichent en petites icônes à côté de son nom : sac (sacs), coffre (banque), marteau (réparation), étincelle (composants, munitions), étoile (familier). Rond rouge si c'est plein ou urgent, orange si c'est presque ; au survol, le détail.",

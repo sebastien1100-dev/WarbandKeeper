@@ -12,18 +12,26 @@
   {
    "skill": [
     41,
-    72
+    75
    ],
-   "recipe": 1244431,
-   "crafts": 38
+   "recipe": 3276,
+   "crafts": 47
   },
   {
    "skill": [
-    72,
-    90
+    75,
+    80
    ],
    "recipe": 1244432,
-   "crafts": 19
+   "crafts": 5
+  },
+  {
+   "skill": [
+    80,
+    90
+   ],
+   "recipe": 7934,
+   "crafts": 12
   },
   {
    "skill": [
@@ -95,14 +103,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    72
+    75
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    72,
+    75,
     125
    ],
    "trainers": {
@@ -514,7 +522,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 1,
-     "price": 611
+     "price": 571
     }
    ],
    "source": "trainer",
@@ -532,7 +540,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 2,
-     "price": 611
+     "price": 571
     }
    ],
    "source": "trainer",
@@ -550,7 +558,25 @@
      "id": 2589,
      "name": "Linen Cloth",
      "count": 1,
-     "price": 24
+     "price": 26
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3276": {
+   "name": "Heavy Linen Bandage",
+   "item": {
+    "id": 2581,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2589,
+     "name": "Linen Cloth",
+     "count": 2,
+     "price": 26
     }
    ],
    "source": "trainer",
@@ -568,7 +594,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 1,
-     "price": 539
+     "price": 555
     }
    ],
    "source": "recipe",
@@ -596,7 +622,7 @@
      "id": 3174,
      "name": "Spider Ichor",
      "count": 1,
-     "price": 20
+     "price": 17
     },
     {
      "id": 2678,
@@ -609,36 +635,6 @@
      "name": "Bottle of Dalaran Noir",
      "count": 1,
      "price": 50
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "1244431": {
-   "name": "Minor Healing Potion",
-   "item": {
-    "id": 118,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 3371,
-     "name": "Empty Vial",
-     "count": 1,
-     "price": 4
-    },
-    {
-     "id": 2678,
-     "name": "Mild Spices",
-     "count": 1,
-     "price": 2
-    },
-    {
-     "id": 2447,
-     "name": "Peacebloom",
-     "count": 1,
-     "price": 42
     }
    ],
    "source": "trainer",
@@ -668,7 +664,7 @@
      "id": 2450,
      "name": "Briarthorn",
      "count": 1,
-     "price": 92
+     "price": 187
     }
    ],
    "source": "trainer",
@@ -698,7 +694,7 @@
      "id": 2453,
      "name": "Bruiseweed",
      "count": 1,
-     "price": 100
+     "price": 99
     }
    ],
    "source": "trainer",
@@ -716,7 +712,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 2,
-     "price": 539
+     "price": 555
     }
    ],
    "source": "trainer",
@@ -734,7 +730,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 1,
-     "price": 195
+     "price": 200
     }
    ],
    "source": "trainer",
@@ -752,7 +748,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 2,
-     "price": 195
+     "price": 200
     }
    ],
    "source": "recipe",
@@ -768,6 +764,24 @@
      "price": 2200
     }
    ]
+  },
+  "7934": {
+   "name": "Anti-Venom",
+   "item": {
+    "id": 6452,
+    "count": 3
+   },
+   "reagents": [
+    {
+     "id": 1475,
+     "name": "Small Venom Sac",
+     "count": 1,
+     "price": 101
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
   }
  }
 }

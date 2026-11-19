@@ -12,14 +12,15 @@
   {
    "skill": [
     26,
-    65
+    67
    ],
    "recipe": 3320,
-   "crafts": 49
+   "crafts": 65,
+   "craftAll": true
   },
   {
    "skill": [
-    65,
+    67,
     76
    ],
    "recipe": 3326,
@@ -37,18 +38,10 @@
   {
    "skill": [
     81,
-    85
-   ],
-   "recipe": 19666,
-   "crafts": 8
-  },
-  {
-   "skill": [
-    85,
     100
    ],
    "recipe": 2668,
-   "crafts": 15
+   "crafts": 19
   },
   {
    "skill": [
@@ -118,27 +111,27 @@
   {
    "skill": [
     175,
-    179
+    178
    ],
    "recipe": 9918,
-   "crafts": 6
+   "crafts": 4
   },
   {
    "skill": [
-    179,
-    182
+    178,
+    183
    ],
    "recipe": 9920,
-   "crafts": 29,
+   "crafts": 32,
    "craftAll": true
   },
   {
    "skill": [
-    182,
+    183,
     185
    ],
    "recipe": 19668,
-   "crafts": 6
+   "crafts": 4
   },
   {
    "skill": [
@@ -151,26 +144,18 @@
   {
    "skill": [
     190,
-    204
+    201
    ],
    "recipe": 9928,
-   "crafts": 15
+   "crafts": 11
   },
   {
    "skill": [
-    204,
-    206
-   ],
-   "recipe": 9931,
-   "crafts": 2
-  },
-  {
-   "skill": [
-    206,
+    201,
     211
    ],
    "recipe": 9935,
-   "crafts": 5
+   "crafts": 10
   },
   {
    "skill": [
@@ -250,14 +235,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    65
+    67
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    65,
+    67,
     125
    ],
    "trainers": {
@@ -301,7 +286,7 @@
    "rank": "Expert",
    "skill": [
     125,
-    204
+    201
    ],
    "trainers": {
     "alliance": [
@@ -323,7 +308,7 @@
   {
    "rank": "Artisan",
    "skill": [
-    204,
+    201,
     300
    ],
    "trainers": {
@@ -1443,8 +1428,11 @@
    "learn": 110,
    "src": "recipe",
    "recipe": 285289,
-   "price": null,
-   "vendors": []
+   "price": 5000,
+   "vendors": [
+    "Gor'mak",
+    "Stondry Darkhammer"
+   ]
   },
   {
    "id": 6518,
@@ -2557,7 +2545,7 @@
    "out": 7929,
    "learn": 210,
    "src": "recipe",
-   "recipe": null,
+   "recipe": 7994,
    "price": null,
    "vendors": []
   },
@@ -4624,7 +4612,7 @@
      "id": 12365,
      "name": "Dense Stone",
      "count": 1,
-     "price": 505
+     "price": 313
     }
    ],
    "source": "trainer",
@@ -4642,13 +4630,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 8,
-     "price": 159
+     "price": 169
     },
     {
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 430
+     "price": 479
     },
     {
      "id": 3478,
@@ -4674,7 +4662,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 3,
-     "price": 361
+     "price": 386
     }
    ],
    "source": "trainer",
@@ -4692,7 +4680,7 @@
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 430
+     "price": 479
     },
     {
      "id": 3470,
@@ -4718,13 +4706,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 20,
-     "price": 2319
+     "price": 2400
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 1,
-     "price": 5841
+     "price": 6137
     }
    ],
    "source": "recipe",
@@ -4751,19 +4739,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 16,
-     "price": 1047
+     "price": 1167
     },
     {
      "id": 7971,
      "name": "Black Pearl",
      "count": 1,
-     "price": 1111
+     "price": 1186
     },
     {
      "id": 1210,
      "name": "Shadowgem",
      "count": 4,
-     "price": 270
+     "price": 249
     },
     {
      "id": 7966,
@@ -4775,7 +4763,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 2,
-     "price": 659
+     "price": 550
     }
    ],
    "source": "trainer",
@@ -4795,19 +4783,19 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 34,
-     "price": 2319
+     "price": 2400
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 1,
-     "price": 5841
+     "price": 6137
     },
     {
      "id": 7909,
      "name": "Aquamarine",
      "count": 1,
-     "price": 1154
+     "price": 1688
     }
    ],
    "source": "recipe",
@@ -4834,19 +4822,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 28,
-     "price": 1047
+     "price": 1167
     },
     {
      "id": 7972,
      "name": "Ichor of Undeath",
      "count": 10,
-     "price": 409
+     "price": 400
     },
     {
      "id": 6037,
      "name": "Truesilver Bar",
      "count": 10,
-     "price": 1549
+     "price": 1500
     },
     {
      "id": 7966,
@@ -4858,7 +4846,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 6,
-     "price": 659
+     "price": 550
     }
    ],
    "source": "trainer",
@@ -4878,7 +4866,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 6,
-     "price": 297
+     "price": 272
     },
     {
      "id": 2605,
@@ -4904,7 +4892,7 @@
      "id": 3859,
      "name": "Steel Bar",
      "count": 5,
-     "price": 903
+     "price": 780
     },
     {
      "id": 3486,
@@ -4930,7 +4918,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 1,
-     "price": 167
+     "price": 169
     }
    ],
    "source": "trainer",
@@ -4948,7 +4936,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 297
+     "price": 272
     }
    ],
    "source": "trainer",
@@ -4968,7 +4956,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 4,
-     "price": 167
+     "price": 169
     }
    ],
    "source": "trainer",
@@ -4986,33 +4974,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 6,
-     "price": 1047
+     "price": 1167
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 4,
-     "price": 539
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
-   "taught_by": []
-  },
-  "9931": {
-   "name": "Mithril Plate Pants",
-   "item": {
-    "id": 7920,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 3860,
-     "name": "Mithril Bar",
-     "count": 12,
-     "price": 1047
+     "price": 555
     }
    ],
    "source": "trainer",
@@ -5032,37 +5000,11 @@
      "id": 3859,
      "name": "Steel Bar",
      "count": 14,
-     "price": 903
+     "price": 780
     },
     {
      "id": 7966,
      "name": "Solid Grinding Stone",
-     "count": 1,
-     "price": null
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Blacksmith Hammer"
-   ],
-   "taught_by": []
-  },
-  "19666": {
-   "name": "Silver Skeleton Key",
-   "item": {
-    "id": 15869,
-    "count": 2
-   },
-   "reagents": [
-    {
-     "id": 2842,
-     "name": "Silver Bar",
-     "count": 1,
-     "price": 430
-    },
-    {
-     "id": 3470,
-     "name": "Rough Grinding Stone",
      "count": 1,
      "price": null
     }
@@ -5084,7 +5026,7 @@
      "id": 6037,
      "name": "Truesilver Bar",
      "count": 1,
-     "price": 1549
+     "price": 1500
     },
     {
      "id": 7966,
@@ -5110,13 +5052,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 44,
-     "price": 2319
+     "price": 2400
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 2,
-     "price": 5841
+     "price": 6137
     }
    ],
    "source": "recipe",
@@ -5143,7 +5085,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 1,
-     "price": 8
+     "price": 6
     }
    ],
    "source": "trainer",
@@ -5161,13 +5103,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 10,
-     "price": 1047
+     "price": 1167
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 6,
-     "price": 539
+     "price": 555
     }
    ],
    "source": "trainer",
@@ -5187,7 +5129,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 6,
-     "price": 159
+     "price": 169
     }
    ],
    "source": "trainer",
@@ -5207,7 +5149,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 5,
-     "price": 159
+     "price": 169
     },
     {
      "id": 3478,
@@ -5233,13 +5175,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 14,
-     "price": 1047
+     "price": 1167
     },
     {
      "id": 4304,
      "name": "Thick Leather",
      "count": 4,
-     "price": 659
+     "price": 550
     }
    ],
    "source": "trainer",
@@ -5259,7 +5201,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 1,
-     "price": 361
+     "price": 386
     }
    ],
    "source": "trainer",
@@ -5277,7 +5219,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 2,
-     "price": 8
+     "price": 6
     }
    ],
    "source": "trainer",
@@ -5295,7 +5237,7 @@
      "id": 2836,
      "name": "Coarse Stone",
      "count": 2,
-     "price": 59
+     "price": 111
     }
    ],
    "source": "trainer",

@@ -4,18 +4,18 @@
   {
    "skill": [
     1,
-    54
+    51
    ],
    "recipe": 2540,
-   "crafts": 55
+   "crafts": 51
   },
   {
    "skill": [
-    54,
+    51,
     100
    ],
    "recipe": 6499,
-   "crafts": 49
+   "crafts": 52
   },
   {
    "skill": [
@@ -44,34 +44,34 @@
   {
    "skill": [
     175,
-    210
+    200
    ],
-   "recipe": 7828,
+   "recipe": 20916,
+   "crafts": 25
+  },
+  {
+   "skill": [
+    200,
+    235
+   ],
+   "recipe": 20916,
    "crafts": 45
   },
   {
    "skill": [
-    210,
-    225
+    235,
+    250
    ],
-   "recipe": 20916,
+   "recipe": 21175,
    "crafts": 18
   },
   {
    "skill": [
-    225,
-    285
-   ],
-   "recipe": 18238,
-   "crafts": 70
-  },
-  {
-   "skill": [
-    285,
+    250,
     300
    ],
-   "recipe": 18240,
-   "crafts": 26
+   "recipe": 18244,
+   "crafts": 53
   }
  ],
  "sections": [
@@ -79,14 +79,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    54
+    51
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    54,
+    51,
     125
    ],
    "trainers": {
@@ -130,7 +130,7 @@
    "rank": "Expert",
    "skill": [
     125,
-    210
+    200
    ],
    "trainers": {
     "alliance": [
@@ -153,7 +153,7 @@
   {
    "rank": "Artisan",
    "skill": [
-    210,
+    200,
     300
    ],
    "trainers": {
@@ -210,8 +210,7 @@
     "Lizbeth Cromwell",
     "Catherine Leland",
     "Harn Longcast",
-    "Gretta Ganter",
-    "Nyalah Brightfire"
+    "Gretta Ganter"
    ]
   },
   {
@@ -1213,8 +1212,10 @@
    "learn": 200,
    "src": "recipe",
    "recipe": 274972,
-   "price": null,
-   "vendors": []
+   "price": 2000,
+   "vendors": [
+    "Fimbo Greasemitz"
+   ]
   },
   {
    "id": 1247741,
@@ -1578,39 +1579,6 @@
  "skillOnly": [],
  "craftedTools": {},
  "recipes": {
-  "18240": {
-   "name": "Grilled Squid",
-   "item": {
-    "id": 13928,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 13755,
-     "name": "Raw Winter Squid",
-     "count": 1,
-     "price": 300
-    },
-    {
-     "id": 3713,
-     "name": "Soothing Spices",
-     "count": 1,
-     "price": 160
-    }
-   ],
-   "source": "recipe",
-   "tools": [],
-   "taught_by": [
-    {
-     "id": 13942,
-     "name": "Recipe: Grilled Squid",
-     "vendors": [
-      "Gikkix"
-     ],
-     "price": 16000
-    }
-   ]
-  },
   "6499": {
    "name": "Boiled Clams",
    "item": {
@@ -1622,7 +1590,7 @@
      "id": 5503,
      "name": "Clam Meat",
      "count": 1,
-     "price": 35
+     "price": 25
     },
     {
      "id": 159,
@@ -1646,7 +1614,7 @@
      "id": 5504,
      "name": "Tangy Clam Meat",
      "count": 1,
-     "price": 50
+     "price": 60
     },
     {
      "id": 2692,
@@ -1659,6 +1627,33 @@
    "tools": [],
    "taught_by": []
   },
+  "18244": {
+   "name": "Poached Sunscale Salmon",
+   "item": {
+    "id": 13932,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 13760,
+     "name": "Raw Sunscale Salmon",
+     "count": 1,
+     "price": 100
+    }
+   ],
+   "source": "recipe",
+   "tools": [],
+   "taught_by": [
+    {
+     "id": 13946,
+     "name": "Recipe: Poached Sunscale Salmon",
+     "vendors": [
+      "Gikkix"
+     ],
+     "price": 20000
+    }
+   ]
+  },
   "7755": {
    "name": "Bristle Whisker Catfish",
    "item": {
@@ -1670,7 +1665,7 @@
      "id": 6308,
      "name": "Raw Bristle Whisker Catfish",
      "count": 1,
-     "price": 7
+     "price": 6
     }
    ],
    "source": "recipe",
@@ -1711,41 +1706,6 @@
    "tools": [],
    "taught_by": []
   },
-  "7828": {
-   "name": "Rockscale Cod",
-   "item": {
-    "id": 4594,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 6362,
-     "name": "Raw Rockscale Cod",
-     "count": 1,
-     "price": 5
-    }
-   ],
-   "source": "recipe",
-   "tools": [],
-   "taught_by": [
-    {
-     "id": 6369,
-     "name": "Recipe: Rockscale Cod",
-     "vendors": [
-      "Lindea Rabonne",
-      "Kelsey Yance",
-      "Stuart Fleming",
-      "Shankys",
-      "Heldan Galesong",
-      "Lizbeth Cromwell",
-      "Tansy Puddlefizz",
-      "Wulan",
-      "Wik'Tar"
-     ],
-     "price": 2200
-    }
-   ]
-  },
   "20916": {
    "name": "Mithril Headed Trout",
    "item": {
@@ -1757,7 +1717,7 @@
      "id": 8365,
      "name": "Raw Mithril Head Trout",
      "count": 1,
-     "price": 95
+     "price": 49
     }
    ],
    "source": "recipe",
@@ -1781,32 +1741,23 @@
     }
    ]
   },
-  "18238": {
-   "name": "Spotted Yellowtail",
+  "21175": {
+   "name": "Spider Sausage",
    "item": {
-    "id": 6887,
+    "id": 17222,
     "count": 1
    },
    "reagents": [
     {
-     "id": 4603,
-     "name": "Raw Spotted Yellowtail",
-     "count": 1,
-     "price": 34
+     "id": 12205,
+     "name": "White Spider Meat",
+     "count": 2,
+     "price": 255
     }
    ],
-   "source": "recipe",
+   "source": "trainer",
    "tools": [],
-   "taught_by": [
-    {
-     "id": 13939,
-     "name": "Recipe: Spotted Yellowtail",
-     "vendors": [
-      "Gikkix"
-     ],
-     "price": 16000
-    }
-   ]
+   "taught_by": []
   }
  }
 }

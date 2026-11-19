@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 - Pile d'alertes pour tous les rappels (buffs, poisons, guidage, familier) : elle sert déjà aux rappels du chasseur.
 
+## v1.48.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et opendata : 3 objets de butin de plus, 3 objets de butin désormais découverts, guides de métiers revus par wowtbc.gg.
+
 ## v1.48.0 — 19/11/2026
 
 _Un /reload suffit._
