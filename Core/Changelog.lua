@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.9", date = "19/11/2026",
+        changed = {
+            "Notes de patch, « À venir » : la boîte aux lettres refaite entièrement, notre propre fenêtre comme pour l'hôtel des ventes.",
+        },
+    },
+    {
         version = "1.56.8", date = "19/11/2026",
         fixed = {
             "Inventaire : la roue dentée des réglages était cachée en haut à droite par la vue Rangement ; elle passe devant, et le texte du Rangement lui laisse la place.",
@@ -3379,6 +3385,7 @@ WK.Changelog = {
 
 -- Ce qui est prévu (pas encore commencé). Retiré d'ici quand c'est livré.
 WK.Roadmap = {
+    "Boîte aux lettres refaite entièrement pour nos besoins : notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.",
     "Idées d'Utilities (Naowh) encore en attente : macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.",
     "Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.",
     "Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.",

@@ -7,6 +7,7 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 
 _Prévu, pas encore commencé._
 
+- Boîte aux lettres refaite entièrement pour nos besoins : notre propre fenêtre à la place de celle du jeu (comme l'hôtel des ventes), avec réception, envoi, règles et Rangement au même endroit.
 - Idées d'Utilities (Naowh) encore en attente : macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
 - Rangement, suite : place libre par perso avec ce qui libèrerait le plus de cases, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 - Expérience, suite : historique des niveaux (temps passé à chaque niveau, par perso), barre de réputation suivie au même endroit, variante fine de la barre collée sous le micro menu.
@@ -25,6 +26,13 @@ _Prévu, pas encore commencé._
 - Mini-fenêtre « À faire » déplaçable, sans ouvrir la fenêtre principale.
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
+
+## v1.56.9 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Notes de patch, « À venir » : la boîte aux lettres refaite entièrement, notre propre fenêtre comme pour l'hôtel des ventes.
 
 ## v1.56.8 — 19/11/2026
 
