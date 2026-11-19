@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.77.11 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau du quai, port à plusieurs pontons (Auberdine) : il montrait le bateau du ponton d'à côté (Port de Hurlevent) au lieu de celui où tu attends, et cachait une ligne dont l'heure n'est pas encore connue. Le ponton le plus proche passe maintenant en tête, et les autres destinations sont listées, avec « ? » quand leur heure n'est pas connue.
+
 ## v1.77.10 — 19/11/2026
 
 _Un /reload suffit._

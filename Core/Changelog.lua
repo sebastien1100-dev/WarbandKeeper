@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.77.11", date = "19/11/2026",
+        fixed = {
+            "Bandeau du quai, port à plusieurs pontons (Auberdine) : il montrait le bateau du ponton d'à côté (Port de Hurlevent) au lieu de celui où tu attends, et cachait une ligne dont l'heure n'est pas encore connue. Le ponton le plus proche passe maintenant en tête, et les autres destinations sont listées, avec « ? » quand leur heure n'est pas connue.",
+        },
+    },
+    {
         version = "1.77.10", date = "19/11/2026",
         fixed = {
             "Bandeau du quai, Auberdine » Menethil : rien ne s'affichait, ni au quai ni à bord. Il apparaît maintenant à 250 m du point d'arrêt du navire (400 m pour disparaître), et à bord il retrouve la ligne d'après l'endroit où la traversée a commencé, même s'il n'avait pas été vu au quai.",

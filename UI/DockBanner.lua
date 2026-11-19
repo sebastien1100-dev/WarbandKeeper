@@ -148,9 +148,15 @@ local function build()
                 table.insert(rows, { first.to, st.following, st.following + (st.travel or 0), st.est })
             end
         end
+        -- les autres destinations des pontons voisins, même sans heure connue (« ? »)
+        local seenTo = { [first.to or ""] = true }
         for i = 2, #list do
             local o = list[i]
-            if known(o) and #rows < 4 then table.insert(rows, { o.to, o.st.inn, o.st.inn + (o.st.travel or 0), o.st.est }) end
+            if #rows < 4 and not seenTo[o.to or ""] then
+                seenTo[o.to or ""] = true
+                if known(o) then table.insert(rows, { o.to, o.st.inn, o.st.inn + (o.st.travel or 0), o.st.est })
+                else table.insert(rows, { o.to }) end
+            end
         end
         self.head:SetShown(#rows > 0); self.headD:SetShown(#rows > 0); self.headA:SetShown(#rows > 0)
         if #rows > 0 then
@@ -172,7 +178,8 @@ local function build()
                 r.a:ClearAllPoints(); r.a:SetPoint("TOPRIGHT", -14, -y); r.a:SetWidth(70)
                 r.d:ClearAllPoints(); r.d:SetPoint("TOPRIGHT", -94, -y); r.d:SetWidth(80)
                 r.n:SetText(row[1])
-                r.d:SetText(pre .. Clock(row[2])); r.a:SetText(Clock(row[3]))
+                if row[2] then r.d:SetText(pre .. Clock(row[2])); r.a:SetText(Clock(row[3]))
+                else r.d:SetText(UI:Hex(C.dim) .. "?|r"); r.a:SetText(UI:Hex(C.dim) .. "?|r") end
                 local dc = (i == 1 and st and st.atDock) and C.positive or C.text
                 r.d:SetTextColor(dc[1], dc[2], dc[3])
                 y = y + 15
@@ -325,11 +332,14 @@ function UI:RefreshDockBanner()
         banner:Hide() return
     end
     banner.lastSeen = GetTime()
-    -- le départ le plus proche en tête, puis le quai le plus proche
+    -- le ponton le plus proche en tête (celui où tu attends), même si son heure n'est pas connue ; à
+    -- distance voisine (moins de 60 m d'écart), le départ le plus proche
     table.sort(list, function(a, b)
+        local da, db = a.d or 0, b.d or 0
+        if math.abs(da - db) > 60 then return da < db end
         if known(a) ~= known(b) then return known(a) end
         if known(a) and known(b) then return a.st.inn < b.st.inn end
-        return (a.d or 0) < (b.d or 0)
+        return da < db
     end)
     banner:Paint(list)
     banner.lastFirst = list[1]
