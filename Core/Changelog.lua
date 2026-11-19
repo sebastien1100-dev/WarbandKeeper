@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.48.0", date = "19/11/2026",
+        added = {
+            "Persos et Résumé : les alertes de chaque perso s'affichent en petites icônes à côté de son nom : sac (sacs), coffre (banque), marteau (réparation), étincelle (composants, munitions), étoile (familier). Rond rouge si c'est plein ou urgent, orange si c'est presque ; au survol, le détail.",
+        },
+    },
+    {
         version = "1.47.4", date = "19/11/2026",
         changed = {
             "Rien ne change dans l'addon : cette version sert à livrer le client PC 1.5.1 (liste de tes persos corrigée sur l'accueil).",

@@ -353,6 +353,9 @@ UI:RegisterPage({
                 if button == "LeftButton" and s.key then UI:ShowCharSheet(s.key) end
             end)
             r:HoverChild(r.mail)
+            -- alertes du perso (sacs, banque, réparation…) en petites icônes
+            r.alerts = UI:CharAlertIcons(r)
+            for _, ic in ipairs(r.alerts.icons) do r:HoverChild(ic) end
             r.level = UI:Text(r, 12)
             r.gold = UI:Text(r, 12)
             r.gold:SetJustifyH("RIGHT")
@@ -736,6 +739,9 @@ UI:RegisterPage({
             else
                 r.mail:Hide()
             end
+            r.alerts:ClearAllPoints()
+            r.alerts:SetPoint("LEFT", r.mail:IsShown() and r.mail or (isMe and r.here or r.name), "RIGHT", 6, 0)
+            r.alerts:Set(e.key)
             r.level:SetText(tostring(c.level or "-"))
             r.gold:SetText(UI:GoldText(c.money))
 

@@ -1103,3 +1103,70 @@ function UI:SectionCards(pageKey, sectionKey, titles)
     end
     return out
 end
+
+---------------------------------------------------------------------------
+-- Alertes d'un perso en petites icônes (lignes de Persos et du Résumé) : sac (sacs), coffre (banque),
+-- marteau (réparation), étincelle (composants, munitions), étoile (familier) ; rond rouge si plein ou
+-- urgent, orange si presque. Survol : le détail. icons:Set(clé du perso) ; renvoie la largeur prise.
+---------------------------------------------------------------------------
+local ALERT_ICON = { durability = "hammer", reagent = "spark", ammo = "spark", poison = "spark", pet = "star" }
+function UI:CharAlertIcons(parent)
+    local f = CreateFrame("Frame", nil, parent)
+    f:SetSize(1, 20)
+    f.icons = {}
+    for i = 1, 4 do
+        local b = CreateFrame("Frame", nil, f)
+        b:SetSize(20, 20)
+        b.ring = UI:Rounded(b, 10, 0, "BACKGROUND", 0)
+        b.bg = UI:Rounded(b, 10, 1, "BACKGROUND", 1)
+        b.ic = UI:Icon(b, "bag", 12, nil, "ARTWORK"); b.ic:SetPoint("CENTER")
+        b:SetPoint("LEFT", (i - 1) * 23, 0)
+        b:EnableMouse(true)
+        b:SetScript("OnEnter", function(s)
+            WK.UI:TooltipOwner(s, "ANCHOR_TOP")
+            GameTooltip:SetText(s.title or "", 1, 1, 1)
+            for _, a in ipairs(s.list or {}) do
+                local col = a.red and C.negative or C.warning
+                GameTooltip:AddLine(a.text, col[1], col[2], col[3], true)
+            end
+            GameTooltip:Show()
+        end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        b:Hide()
+        f.icons[i] = b
+    end
+    function f:Set(key)
+        local Q = WK.modules.QoL
+        local c = WK.DB.global.characters[key]
+        local groups, order = {}, {}
+        for _, a in ipairs(Q and Q:Alerts() or {}) do
+            if a.key == key then
+                local ic = (a.kind == "bags" and a.bank) and "safe" or (a.kind == "bags" and "bag") or ALERT_ICON[a.kind] or "bang"
+                local red = a.urgent or (a.kind == "bags" and a.bank and c and c.bankFree == 0) or false
+                local g = groups[ic]
+                if not g then g = { icon = ic, list = {}, red = false }; groups[ic] = g; table.insert(order, g) end
+                table.insert(g.list, { text = a.text, red = red })
+                if red then g.red = true end
+            end
+        end
+        for i, b in ipairs(self.icons) do
+            local g = order[i]
+            b:SetShown(g ~= nil)
+            if g then
+                local col = g.red and C.negative or C.warning
+                b.ic:SetTexture(UI.MEDIA .. g.icon)
+                b.ic:SetVertexColor(col[1], col[2], col[3], 1)
+                b.ring:SetColor(col[1], col[2], col[3], 0.9)
+                local s = C.surface
+                b.bg:SetColor(s[1] + (col[1] - s[1]) * 0.22, s[2] + (col[2] - s[2]) * 0.22, s[3] + (col[3] - s[3]) * 0.22, 1)
+                b.title = c and WK:CharName(c, key) or ""
+                b.list = g.list
+            end
+        end
+        local n = math.min(#order, #self.icons)
+        self:SetWidth(math.max(1, n * 23))
+        self:SetShown(n > 0)
+        return n > 0 and n * 23 or 0
+    end
+    return f
+end

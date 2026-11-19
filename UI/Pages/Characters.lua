@@ -80,6 +80,8 @@ UI:RegisterPage({
             r.realm:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
             r.badge = UI:Badge(r, "connecté")
             r.badge:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
+            -- alertes du perso (sacs, banque, réparation…) en petites icônes
+            r.alerts = UI:CharAlertIcons(r)
             r.level = cell(r)
             r.gold = UI:Text(r, 12)
             r.gold:SetJustifyH("RIGHT")
@@ -152,11 +154,14 @@ UI:RegisterPage({
             r.key = e.key
             r.name:SetText(WK:CharName(c, e.key))
             -- Nom long : borné à sa colonne (place gardée pour le badge « connecté »).
-            local maxW = COLS[2][2] - 52 - 12 - (e.key == me and (r.badge:GetWidth() + 8) or 0)
+            local aw = r.alerts:Set(e.key)
+            local maxW = COLS[2][2] - 52 - 12 - (e.key == me and (r.badge:GetWidth() + 8) or 0) - (aw > 0 and aw + 8 or 0)
             r.name:SetWidth(math.max(40, math.min(maxW, r.name:GetStringWidth() + 2)))
             r.name:SetTextColor(UI:ClassColor(c.class))
             r.realm:SetText(UI:FactionRealm(c))
             r.badge:SetShown(e.key == me)
+            r.alerts:ClearAllPoints()
+            r.alerts:SetPoint("LEFT", e.key == me and r.badge or r.name, "RIGHT", 6, 0)
             r.level:SetText(tostring(c.level or "-"))
             r.gold:SetText(UI:GoldText(c.money))
             r.played:SetText(WK:FormatTime(c.played))
