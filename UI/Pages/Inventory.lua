@@ -171,6 +171,8 @@ UI:RegisterPage({
         self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1,
             cards = function() return { self.lockRules, self.lockSets, self.stashSets } end }, self)
         self.gp.gear:SetPoint("TOPRIGHT")
+        -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient
+        self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
         self.gp.overlay:ClearAllPoints()
         self.gp.overlay:SetPoint("TOPLEFT", x0, -42)
         self.gp.overlay:SetPoint("BOTTOMRIGHT")
@@ -489,7 +491,7 @@ UI:RegisterPage({
         local list = UI:Card(root, T("Rangement par perso"), " ")
         self.stashList = list
         local note = UI:Text(list, 11, C.muted)
-        note:SetPoint("TOPRIGHT", -14, -14)
+        note:SetPoint("TOPRIGHT", -52, -14) -- laisse la place de la roue dentée
         note:SetJustifyH("RIGHT")
         note:SetText(T("les envois se font à la boîte aux lettres de chaque perso"))
         -- variante A : 3 chiffres en haut (à tes persos, HV, marchand), puis une colonne par destination
@@ -639,7 +641,7 @@ UI:RegisterPage({
             for _, e in ipairs(r.sell.list) do table.insert(rows, { e = e, sub = T("déjà sur lui : à mettre en vente") }) end
             nAH = #rows
             table.insert(cols, { key = "ah", name = string.format(T("HV · %s"), hvc and WK:CharName(hvc, cfg.ahChar) or "?"), color = C.gold,
-                right = "~ " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0)), rows = rows })
+                right = T("env.") .. " " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0)), rows = rows })
         end
         if #r.vendor.list > 0 then
             local rows = {}
@@ -653,7 +655,7 @@ UI:RegisterPage({
         local ar, ag, ab = UI:Accent()
         local chipData = {
             { nDest, { ar, ag, ab }, T("à envoyer à tes persos"), T("ils s'en servent pour leurs métiers") },
-            { nAH, C.gold, T("pour l'HV"), cfg.ahChar and ("~ " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0))) or T("aucun perso HV choisi") },
+            { nAH, C.gold, T("pour l'HV"), cfg.ahChar and (T("env.") .. " " .. WK:FormatMoney((r.ah.value or 0) + (r.sell.value or 0))) or T("aucun perso HV choisi") },
             { nVendor, C.muted, T("au marchand"), cfg.ahChar and string.format(T("moins de %s à l'HV · %s"), WK:FormatMoney(cfg.minAH or 0), WK:FormatMoney(r.vendor.value or 0))
                 or WK:FormatMoney(r.vendor.value or 0) },
         }
@@ -703,7 +705,7 @@ UI:RegisterPage({
             c.more.key = col.key
             if #col.rows > MAXR then
                 c.more:ClearAllPoints(); c.more:SetPoint("TOPLEFT", 0, -ry); c.more:SetPoint("TOPRIGHT", 0, -ry)
-                c.more.t:SetText(open and T("Replier") or string.format(T("+ %d autres"), #col.rows - MAXR))
+                c.more.t:SetText(open and T("Replier") or (#col.rows - MAXR == 1 and T("+ 1 autre") or string.format(T("+ %d autres"), #col.rows - MAXR)))
                 c.more.t:SetTextColor(ar, ag, ab)
                 c.more:Show()
                 ry = ry + 24
@@ -713,14 +715,11 @@ UI:RegisterPage({
             c.h = ry + 6
             rowH = math.max(rowH, c.h)
         end
-        -- même hauteur pour les colonnes d'une ligne
+        -- chaque colonne à la hauteur de son contenu (la ligne suivante part sous la plus haute)
         local used = self.stashCols.used or 0
         for i = 1, used do
             local c = self.stashCols.items[i]
-            local first = math.floor((i - 1) / ncol) * ncol + 1
-            local mh = 0
-            for k = first, math.min(used, first + ncol - 1) do mh = math.max(mh, self.stashCols.items[k].h or 0) end
-            c:SetHeight(mh)
+            c:SetHeight(c.h or 40)
         end
         if #cols > 0 then y = y + rowH + 4 else y = 44 end
         if self.stashList.subtitle then self.stashList.subtitle:SetText(string.format(T("%d objets à ranger"), total)) end

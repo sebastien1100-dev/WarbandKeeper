@@ -3292,4 +3292,5 @@ WK.Locales.enUS.text = {
     ["Valeur des sacs et du courrier"] = "Bags and mail value",
     ["Sous les sacs du jeu et au survol d'un courrier"] = "Below the game bags and when hovering a mail",
     ["Scan des prix"] = "Price scan",
+    ["+ 1 autre"] = "+ 1 more",
 }

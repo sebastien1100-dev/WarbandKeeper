@@ -26,6 +26,15 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.8 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Inventaire : la roue dentée des réglages était cachée en haut à droite par la vue Rangement ; elle passe devant, et le texte du Rangement lui laisse la place.
+- Rangement : « env. » au lieu du « ~ » qui s'affichait mal devant les prix de l'HV, et « + 1 autre » au singulier.
+- Rangement : chaque colonne a la hauteur de ses objets (avant : toutes aussi hautes que la plus remplie, avec beaucoup de vide).
+
 ## v1.56.7 — 19/11/2026
 
 _Un /reload suffit._

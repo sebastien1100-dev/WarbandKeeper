@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.8", date = "19/11/2026",
+        fixed = {
+            "Inventaire : la roue dentée des réglages était cachée en haut à droite par la vue Rangement ; elle passe devant, et le texte du Rangement lui laisse la place.",
+            "Rangement : « env. » au lieu du « ~ » qui s'affichait mal devant les prix de l'HV, et « + 1 autre » au singulier.",
+            "Rangement : chaque colonne a la hauteur de ses objets (avant : toutes aussi hautes que la plus remplie, avec beaucoup de vide).",
+        },
+    },
+    {
         version = "1.56.7", date = "19/11/2026",
         changed = {
             "Mode édition : le titre de chaque élément est centré au-dessus de son cadre (avant : collé à gauche).",
