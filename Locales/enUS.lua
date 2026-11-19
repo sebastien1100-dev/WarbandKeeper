@@ -3573,4 +3573,5 @@ WK.Locales.enUS.text = {
     ["Rien de mesuré."] = "Nothing measured.",
     ["Mesure impossible sur ce client."] = "Measurement not available on this client.",
     ["Mesure lancée pour %d s : joue normalement (sacs, carte, combat…). /wk perf pour arrêter avant."] = "Measurement started for %d s: play normally (bags, map, combat…). /wk perf to stop early.",
+    ["autres"] = "others", ["arrivée dans %s"] = "arriving in %s", ["%s de trajet"] = "%s flight",
 }

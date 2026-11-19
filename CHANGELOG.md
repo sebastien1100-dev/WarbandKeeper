@@ -79,6 +79,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.75.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Statistiques en vol, plus vivantes : le trajet est dessiné sur la carte du continent du jeu (assombrie), la partie déjà faite en trait plein, le reste en pâle, et un griffon avance à ta position ; une barre de progression sous le titre, « arrivée dans » à gauche et la durée du trajet à droite.
+- Les trois chiffres des vols ont leur icône de couleur (vols, temps en l'air, trajet le plus pris).
+- « Le savais-tu ? » : chaque catégorie a son icône et sa couleur (or pour l'argent, rouge pour les donjons, bleu pour la pêche, orange pour les quêtes…), avec un liseré et une légère teinte ; la grande carte « Persos » montre une barre du temps de jeu par perso avec sa légende.
+
 ## v1.74.0 — 19/11/2026
 
 _Un /reload suffit._

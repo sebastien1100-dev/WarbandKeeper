@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.75.0", date = "19/11/2026",
+        changed = {
+            "Statistiques en vol, plus vivantes : le trajet est dessiné sur la carte du continent du jeu (assombrie), la partie déjà faite en trait plein, le reste en pâle, et un griffon avance à ta position ; une barre de progression sous le titre, « arrivée dans » à gauche et la durée du trajet à droite.",
+            "Les trois chiffres des vols ont leur icône de couleur (vols, temps en l'air, trajet le plus pris).",
+            "« Le savais-tu ? » : chaque catégorie a son icône et sa couleur (or pour l'argent, rouge pour les donjons, bleu pour la pêche, orange pour les quêtes…), avec un liseré et une légère teinte ; la grande carte « Persos » montre une barre du temps de jeu par perso avec sa légende.",
+        },
+    },
+    {
         version = "1.74.0", date = "19/11/2026",
         changed = {
             "Infobulle des objets, plus courte : une seule ligne par perso, avec en icônes ce qu'il a dans ses sacs, sa banque (et son courrier s'il y en a), puis l'icône de son métier et ce qu'il lui reste à utiliser pour le monter (son niveau entre parenthèses). Le total du compte est à droite de « Warband Keeper » ; les lignes « Montée des métiers » et « sur le compte » ne restent que pour les recettes, les outils et les métiers que personne ne monte.",
