@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.76.9 — 19/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Statistiques en vol : le griffon sur le trajet est remplacé par une flèche blanche bordée de noir, tournée dans le sens du vol (ton cap), sur un halo de la couleur de l'apparence ; on voit d'un coup d'œil où tu es et où tu vas.
+
 ## v1.76.8 — 19/11/2026
 
 _Un /reload suffit._

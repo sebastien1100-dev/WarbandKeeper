@@ -344,9 +344,13 @@ local function build()
         d:SetTexture(UI.MEDIA .. "circle")
         f.dots[i] = d
     end
-    -- le perso : un griffon qui avance sur le trajet
+    -- le perso : une flèche blanche tournée dans le sens du vol, sur un halo de la couleur de l'apparence
+    f.halo = f.route2:CreateTexture(nil, "OVERLAY", nil, 5)
+    f.halo:SetTexture(UI.MEDIA .. "circle"); f.halo:SetSize(30, 30)
+    f.halo2 = f.route2:CreateTexture(nil, "OVERLAY", nil, 6)
+    f.halo2:SetTexture(UI.MEDIA .. "circle"); f.halo2:SetSize(20, 20)
     f.plane = f.route2:CreateTexture(nil, "OVERLAY", nil, 7)
-    f.plane:SetTexture(UI.MEDIA .. "griffon"); f.plane:SetSize(22, 22)
+    f.plane:SetTexture(UI.MEDIA .. "navarrow"); f.plane:SetSize(20, 20)
     f.fromT = UI:Text(f.route2, 10, C.muted); f.toT = UI:Text(f.route2, 10, C.text)
     f.mapEmpty = UI:Text(f.route2, 11, C.dim); f.mapEmpty:SetPoint("CENTER"); f.mapEmpty:SetText(T("trajet pas encore connu"))
     f.stat = {}
@@ -498,7 +502,7 @@ local function build()
         end
         self.lines:Reset()
         for _, d in ipairs(self.dots) do d:Hide() end
-        self.plane:Hide()
+        self.plane:Hide(); self.halo:Hide(); self.halo2:Hide()
         self.fromT:SetText(""); self.toT:SetText("")
         local cont, pts
         if fl then cont, pts = F():Path(fl.from, fl.to) end
@@ -531,11 +535,12 @@ local function build()
         end
         local done = (frac or 0) * total
         local acc, px, py, hx, hy = 0, nil, nil, nil, nil
+        local dirx, diry -- sens du vol à l'écran (segment en cours)
         local cv = self.route2
         for i = 1, #pts - 2, 2 do
             local x1, y1 = at(pts[i], pts[i + 1])
             local x2, y2 = at(pts[i + 2], pts[i + 3])
-            if i == 1 then px, py = x1, y1 end
+            if i == 1 then px, py = x1, y1; dirx, diry = x2 - x1, y2 - y1 end
             local d = segs[(i + 1) / 2]
             if acc + d <= done then
                 self.lines:Add(cv, x1, y1, x2, y2, 3, r1, g1, b1, 1) -- déjà fait : trait plein
@@ -547,6 +552,7 @@ local function build()
                 self.lines:Add(cv, x1, y1, mx, my, 3, r1, g1, b1, 1)
                 self.lines:Add(cv, mx, my, x2, y2, 2, r1, g1, b1, 0.45)
                 hx, hy = mx, my
+                dirx, diry = x2 - x1, y2 - y1
             end
             acc = acc + d
         end
@@ -567,8 +573,19 @@ local function build()
             if x > 0 and y > 0 and x < cv:GetWidth() and y < cv:GetHeight() then hx, hy = x, y end
         end
         if hx then
-            self.plane:ClearAllPoints(); self.plane:SetPoint("CENTER", cv, "TOPLEFT", hx, -hy)
-            self.plane:SetVertexColor(1, 1, 1, 1); self.plane:Show()
+            -- orientation : le cap du perso (radians, sens antihoraire depuis le nord = haut de la carte),
+            -- sinon la direction du segment en cours
+            local rot
+            local okF, facing = pcall(function() return GetPlayerFacing and GetPlayerFacing() end)
+            if okF and type(facing) == "number" then rot = facing
+            elseif dirx and (dirx ~= 0 or diry ~= 0) then rot = math.atan2(-dirx, -diry) end
+            for _, t in ipairs({ self.halo, self.halo2, self.plane }) do
+                t:ClearAllPoints(); t:SetPoint("CENTER", cv, "TOPLEFT", hx, -hy); t:Show()
+            end
+            self.halo:SetVertexColor(r1, g1, b1, 0.14)
+            self.halo2:SetVertexColor(r1, g1, b1, 0.26)
+            self.plane:SetVertexColor(1, 1, 1, 1)
+            if self.plane.SetRotation then self.plane:SetRotation(rot or 0) end
         end
     end
     function f:PaintLog()

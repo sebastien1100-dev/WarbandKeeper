@@ -788,10 +788,21 @@ def icon_griffon():
     poly([(0, 37), (5, 39), (2, 44)])
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "griffon.tga"))
 
+def icon_navarrow():
+    """Flèche de navigation (statistiques en vol) : pointe vers le haut, blanche bordée de noir,
+    tournée par le jeu dans le sens du vol (pas teintée)."""
+    img, d, s = canvas(64)
+    out = [(0.5, 0.06), (0.86, 0.9), (0.5, 0.7), (0.14, 0.9)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in out], fill=(0, 0, 0, 235))
+    inner = [(0.5, 0.17), (0.77, 0.8), (0.5, 0.64), (0.23, 0.8)]
+    d.polygon([(P(x, s), P(y, s)) for x, y in inner], fill=W)
+    save(img, "navarrow", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow]:
         fn()
     print("OK")

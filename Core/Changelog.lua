@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.76.9", date = "19/11/2026", restart = true,
+        changed = {
+            "Statistiques en vol : le griffon sur le trajet est remplacé par une flèche blanche bordée de noir, tournée dans le sens du vol (ton cap), sur un halo de la couleur de l'apparence ; on voit d'un coup d'œil où tu es et où tu vas.",
+        },
+    },
+    {
         version = "1.76.8", date = "19/11/2026",
         changed = {
             "Statistiques en vol : le bouton « Carte » est retiré ; la fenêtre ne montre que les statistiques. Pour la carte en vol, décoche « Statistiques en vol à la place de la carte » (Interface > Général > Confort).",
