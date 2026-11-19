@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.1 — 19/11/2026
+
+### Ajouts
+- Barre latérale : une pastille rouge sur « Mises à jour » quand une nouvelle version de l'addon est disponible (le nombre de versions à installer), ou « client » quand seul le client a une nouvelle version.
+
 ## 1.8.0 — 19/11/2026
 
 ### Modifications

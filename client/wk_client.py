@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.0"
+CLIENT_VERSION = "1.8.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -2127,6 +2127,9 @@ class App:
             b.bind("<Enter>", lambda e, b=b, k=cls.key: b.configure(bg=C["hover"] if k != self.current else C["surface2"]))
             b.bind("<Leave>", lambda e, b=b, k=cls.key: b.configure(bg=C["surface2"] if k == self.current else C["sidebar"]))
             self.nav[cls.key] = b
+        # pastille sur « Mises à jour » : nombre de versions à installer (ou « client » pour le client seul)
+        self.navBadge = tk.Label(self.nav["home"], text="", bg=C["negative"], fg="#ffffff", font=App.fonts["smallb"], padx=6, pady=0)
+        self.navBadge.bind("<Button-1>", lambda e: self.show("home"))
         self.clientBanner = tk.Frame(side, bg=C["sidebar"])
         self.clientBanner.pack(side="bottom", fill="x", padx=12, pady=12)
 
@@ -2417,6 +2420,19 @@ class App:
             except Exception as e:  # une page ne doit pas bloquer les autres
                 print("page", p.key, e)
         self.client_banner()
+        self.update_badge()
+
+    def update_badge(self):
+        """Pastille rouge sur « Mises à jour » quand l'addon (ou le client) a une version plus récente."""
+        n = len(self.newer()) if (self.installed and self.releases) else 0
+        asset, ver = best_client(self.releases) if self.releases else (None, None)
+        client = bool(asset and ver and vtuple(ver) > vtuple(CLIENT_VERSION))
+        text = str(n) if n else ("client" if client else "")
+        if text:
+            self.navBadge.configure(text=text)
+            self.navBadge.place(relx=1.0, rely=0.5, x=-10, anchor="e")
+        else:
+            self.navBadge.place_forget()
 
     def open_addons(self):
         if self.addons:
