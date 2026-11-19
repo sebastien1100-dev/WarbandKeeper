@@ -11,13 +11,19 @@ avec les départs vus en jeu. Une ligne sans durée connue est apprise en jeu.
 Tram des profondeurs : table TransportAnimation des fichiers du jeu (positions des rames dans leur tour, en ms) :
 tour, départs (les deux rames partent en même temps, chacune d'un bout), durée du trajet et de l'arrêt.
 
+Minutage des quais : trajets enregistrés point par point par NauticusClassicResurrected 1.5.4 (licence MIT),
+importés une fois dans tools/boats/nauticus.json : heure d'arrivée et de départ de chaque quai dans le tour,
+d'où les temps d'escale et de trajet exacts (avant : estimés d'après la longueur des trajets).
+
 Usage : python3 tools/gen_boats.py [TaxiPathNode.csv [TransportAnimation.csv]]
         (sans fichier : téléchargés sur wago.tools, dernière version wowf)
+        python3 tools/gen_boats.py --import-nauticus <data.lua de NauticusClassicResurrected>
 """
 import csv
 import json
 import math
 import os
+import re
 import sys
 import urllib.request
 
@@ -41,7 +47,7 @@ LINES = [
     {"path": 292, "key": "MEN_THE", "kind": "boat", "side": "A", "vessel": "La Dame Mehley",
      "stops": ["Port de Menethil", "Theramore"], "period": 329.3162968069666, "prec": "exact"},
     {"path": 11167, "key": "MEN_AUS_AUB", "kind": "boat", "side": "A", "vessel": "Le Bravoure",
-     "stops": ["Port de Menethil", "Austrivage", "Auberdine"], "period": None, "prec": None},
+     "stops": ["Port de Menethil", "Austrivage", "Auberdine"], "period": 486.226, "prec": "approx"},
     {"path": 303, "key": "PLU_COTE", "kind": "boat", "side": "A", "vessel": "Bac de Plumelune",
      "stops": ["Bastion de Plumelune", "Côte Oubliée"], "period": 317.0452004189944, "prec": "exact"},
     {"path": 241, "key": "RAT_BB", "kind": "boat", "side": None, "vessel": "La Belle Demoiselle",
@@ -59,6 +65,82 @@ LINES = [
     {"path": 11398, "key": "DAL_ZEP", "kind": "zeppelin", "side": "A", "vessel": "Tranche-ciel",
      "stops": ["Dalaran", "Île de Zephras"], "period": 353.0, "prec": "approx"},
 ]
+# ligne de NauticusClassicResurrected (n°) et son quai (platN) de chacun de nos quais, dans notre ordre
+NAUTICUS = {
+    "ORG_FOS": (1, [1, 2]), "GG_ORG": (2, [2, 1]), "GG_FOS": (3, [2, 1]), "RAT_BB": (4, [1, 2]),
+    "MEN_AUS_AUB": (5, [1, 2, 3]), "MEN_THE": (6, [1, 2]), "RUT_AUB": (7, [1, 2]), "PLU_COTE": (8, [1, 2]),
+    "AUB_SW": (11, [2, 1]), "MUL_ZEP": (12, [2, 1]), "DAL_ZEP": (13, [2, 1]), "GENT_POUD": (14, [2, 1]),
+}
+NAUT_JSON = os.path.join(HERE, "boats", "nauticus.json")
+
+
+def lua_block(text, start):
+    """Texte entre l'accolade ouvrante qui suit `start` et son accolade fermante."""
+    i = text.index("{", text.index(start))
+    depth = 0
+    for j in range(i, len(text)):
+        if text[j] == "{":
+            depth += 1
+        elif text[j] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[i + 1:j]
+    raise ValueError(start)
+
+
+def import_nauticus(path):
+    """Lit data.lua de NauticusClassicResurrected : tour de chaque ligne et, pour chaque quai (platN),
+    arrivée et départ dans le tour (secondes depuis le début de son trajet enregistré)."""
+    text = open(path, encoding="utf-8").read()
+    rtts = {}
+    for m in re.finditer(r"^\s*([0-9.]+),\s*--\s*\[(\d+)\]", lua_block(text, "NauticusClassic.rtts ="), re.M):
+        rtts[int(m.group(2))] = float(m.group(1))
+    for m in re.finditer(r"\[(\d+)\]\s*=\s*([0-9.]+)", lua_block(text, "NauticusClassic.rtts_forever")):
+        rtts[int(m.group(1))] = float(m.group(2))
+
+    def routes(block):
+        out = {}
+        for m in re.finditer(r"\[(\d+)\]\s*=\s*\{", block):
+            body = lua_block(block[m.start():], "[" + m.group(1) + "]")
+            out[int(m.group(1))] = re.findall(r'"([^"]+)"', body)
+        return out
+    packed = routes(lua_block(text, "NauticusClassic.packedData ="))
+    packed.update({k: v for k, v in routes(lua_block(text, "NauticusClassic.packedData_forever")).items() if v})
+    out = {}
+    for nid, pts in packed.items():
+        if nid not in rtts:
+            continue
+        off, prev, plats = 0.0, 0.0, {}
+        for p in pts:
+            f = p.split(":")
+            prev, off = off, off + float(f[2])
+            for tag in f[5:]:
+                if tag.startswith("plat"):
+                    plats[int(tag[4:])] = {"arr": round(prev, 3), "dep": round(off, 3)}
+        out[nid] = {"P": rtts[nid], "plats": plats}
+    os.makedirs(os.path.dirname(NAUT_JSON), exist_ok=True)
+    with open(NAUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=1, sort_keys=True)
+    print("nauticus.json : %d lignes" % len(out))
+
+
+def times_of(line, naut):
+    """Départ et arrivée de chacun de nos quais dans le tour (t = 0 : départ de notre quai 1), ou None."""
+    m = NAUTICUS.get(line["key"])
+    e = naut.get(str(m[0])) if m else None
+    if not e:
+        return None
+    P = e["P"]
+    try:
+        plats = [e["plats"][str(n)] for n in m[1]]
+    except KeyError:
+        return None
+    d0 = plats[0]["dep"]
+    dep = [round((p["dep"] - d0) % P, 2) for p in plats]
+    arr = [round((p["arr"] - d0) % P, 2) for p in plats]
+    return {"P": P, "dep": dep, "arr": arr}
+
+
 ACCEL = 600.0  # longueur équivalente (m) d'un départ et d'un arrêt : partage du temps de trajet entre les étapes
 
 
@@ -170,6 +252,12 @@ def lua_str(s):
 
 
 def main():
+    if len(sys.argv) > 2 and sys.argv[1] == "--import-nauticus":
+        return import_nauticus(sys.argv[2])
+    naut = {}
+    if os.path.exists(NAUT_JSON):
+        with open(NAUT_JSON, encoding="utf-8") as f:
+            naut = json.load(f)
     if len(sys.argv) > 1:
         path, version = sys.argv[1], "fichier local"
         anim = sys.argv[2] if len(sys.argv) > 2 else None
@@ -184,6 +272,8 @@ def main():
     out.append("-- Trajets : table TaxiPathNode des fichiers du jeu (wago.tools). Durées de tour : mesurées par\n")
     out.append("-- NauticusClassicResurrected (MIT License, Copyright (c) 2020 psynct ; sam-k-taylor),\n")
     out.append("-- https://github.com/sam-k-taylor/NauticusClassicResurrected\n")
+    out.append("-- Minutage des quais (times : départ et arrivée de chaque quai dans le tour, t = 0 au départ du quai 1) :\n")
+    out.append("-- trajets enregistrés par NauticusClassicResurrected 1.5.4 (même licence MIT).\n")
     out.append("-- stops = { name, c (continent), x, y (monde), dwell (s à quai) } ; legs[i] = du quai i au suivant :\n")
     out.append("-- len (m, hors sauts), pts = { c, x, y, ... } ; period = tour (s, nil = appris en jeu) ; prec = exact / approx.\n")
     out.append("WK.BoatLines = {\n")
@@ -198,6 +288,10 @@ def main():
         out.append("    { key = %s, path = %d, kind = %s, side = %s, vessel = %s, period = %s, prec = %s,\n" % (
             lua_str(line["key"]), line["path"], lua_str(line["kind"]), lua_str(line["side"]) if line["side"] else "nil",
             lua_str(line["vessel"]), repr(line["period"]) if line["period"] else "nil", lua_str(line["prec"]) if line["prec"] else "nil"))
+        tm = times_of(line, naut)
+        if tm:
+            out.append("      times = { P = %s, dep = { %s }, arr = { %s } },\n" % (
+                repr(tm["P"]), ", ".join(repr(x) for x in tm["dep"]), ", ".join(repr(x) for x in tm["arr"])))
         out.append("      stops = {\n")
         for s in stops:
             out.append("        { name = %s, c = %d, x = %s, y = %s, dwell = %d },\n" % (lua_str(s["name"]), s["c"], s["x"], s["y"], s["dwell"]))

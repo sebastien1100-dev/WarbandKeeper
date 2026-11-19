@@ -67,6 +67,9 @@ end
 -- décalages dans le tour (t = 0 : départ du quai 1) : départ et arrivée de chaque quai
 -- temps à quai du quai i : mesuré en jeu (arrivée puis départ vus), sinon celui des données
 local function dwellOf(l, i)
+    -- minutage des quais enregistré (Nauticus) : temps à quai exact
+    local tm = l.times
+    if tm and tm.dep[i] and tm.arr[i] then return (tm.dep[i] - tm.arr[i]) % tm.P end
     local e = sched(l)
     return (e and e.dwell and e.dwell[i]) or l.stops[i].dwell or 60
 end
@@ -75,6 +78,19 @@ M.DwellOf = dwellOf
 -- partagé entre les autres étapes selon leur longueur (avant : tout était partagé ainsi, à l'estime)
 local function offsets(l, P)
     local n = #l.stops
+    -- minutage des quais enregistré (Nauticus, MIT) : départ et arrivée de chaque quai, mis à l'échelle si le
+    -- tour retenu diffère un peu du tour enregistré ; plus d'estimation par la longueur des trajets
+    local tm = l.times
+    if tm and P and #tm.dep == n then
+        local k = P / tm.P
+        local dep, arr, leg = {}, {}, {}
+        for i = 1, n do dep[i] = tm.dep[i] * k; arr[i] = tm.arr[i] * k end
+        for i = 1, n do
+            local j = i % n + 1
+            leg[i] = (arr[j] - dep[i]) % P
+        end
+        return dep, arr, leg, true
+    end
     local e = sched(l)
     local legT = e and e.legT or {}
     local dwell, known, w = 0, 0, 0
@@ -288,7 +304,7 @@ function M:ShipPos(l, t)
     for i = 1, n do
         local j = i % n + 1
         local d0 = dep[i]
-        local a1 = (j == 1) and (P - (l.stops[1].dwell or 60)) or arr[j]
+        local a1 = (j == 1) and (arr[1] or (P - dwellOf(l, 1))) or arr[j]
         if x >= d0 and x < a1 then
             local f = (x - d0) / math.max(1, a1 - d0)
             local g = l.legs[i]
@@ -313,7 +329,7 @@ function M:ShipPos(l, t)
     end
     -- à quai : celui dont l'arrêt contient x
     for i = 1, n do
-        local a1 = (i == 1) and (P - (l.stops[1].dwell or 60)) or arr[i]
+        local a1 = (i == 1) and (arr[1] or (P - dwellOf(l, 1))) or arr[i]
         local d1 = (i == 1) and P or dep[i]
         if x >= a1 and x < d1 then local si = l.stops[i]; return si.c, si.x, si.y, i, nil, nil end
     end

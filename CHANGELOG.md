@@ -79,6 +79,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.81.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Horaires des bateaux et zeppelins : l'heure d'arrivée et de départ à chaque quai et le temps d'escale viennent maintenant des trajets enregistrés seconde par seconde par NauticusClassicResurrected (12 lignes, celles de WoW Forever comprises) ; avant, ils étaient estimés d'après la longueur des trajets, avec plusieurs dizaines de secondes d'erreur aux quais que tu n'avais pas vus. Le navire sur la carte suit aussi ce minutage.
+
+### Corrections
+- Bateau Menethil » Austrivage » Auberdine (Le Bravoure) : la durée de son tour était inconnue, l'addon la devinait d'après tes départs et ses horaires sautaient d'une fois à l'autre. Elle est maintenant connue (486 s, mesurée par NauticusClassicResurrected 1.5.4 sur 7 tours).
+
 ## v1.80.3 — 19/11/2026
 
 _Un /reload suffit._

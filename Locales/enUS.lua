@@ -937,7 +937,7 @@ WK.Locales.enUS.text = {
     ["arrive"] = "arrives",
     ["%s pour %s : il arrive au quai dans 30 s"] = "%s to %s: docking in 30 s",
     ["%s pour %s : il part dans 15 s"] = "%s to %s: leaving in 15 s",
-    ["Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour mesurées par NauticusClassicResurrected (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected)."] = "Boats and zeppelins: routes and docks from the game files' TaxiPathNode table (wago.tools); round-trip times measured by NauticusClassicResurrected (psynct, sam-k-taylor, MIT license, github.com/sam-k-taylor/NauticusClassicResurrected).",
+    ["Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour et minutage des quais (arrivée, départ, temps à quai) mesurés par NauticusClassicResurrected 1.5.4 (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected)."] = "Boats and zeppelins: routes and docks from the game files' TaxiPathNode table (wago.tools); round-trip times and dock timings (arrival, departure, time at dock) measured by NauticusClassicResurrected 1.5.4 (psynct, sam-k-taylor, MIT license, github.com/sam-k-taylor/NauticusClassicResurrected).",
     ["lignes et tours tirés des fichiers du jeu ; l'heure se cale sur un départ vu ou partagé"] = "lines and round trips from the game files; the time is set from a departure seen or shared",
     ["Bandeau au quai"] = "Dock banner",
     ["Près d'un quai : le prochain départ, les 3 suivants avec l'heure d'arrivée, « exact » ou « estimé »."] = "Near a dock: the next departure, the following 3 with arrival time, \"exact\" or \"estimated\".",
@@ -3671,4 +3671,5 @@ WK.Locales.enUS.text = {
     ["Et les objets que demande une quête de ton journal (jusqu'à ce qu'elle soit rendue)."] = "And items a quest in your log asks for (until it is handed in).",
     ["Taille du repère au-dessus du joueur"] = "Size of the marker above the player",
     ["L'icône du sort qui va partir, au-dessus de la plaque de nom du joueur à buffer."] = "The icon of the spell about to be cast, above the nameplate of the player to buff.",
+    ["Bateaux et zeppelins (tours et quais)"] = "Boats and zeppelins (round trips and docks)",
 }

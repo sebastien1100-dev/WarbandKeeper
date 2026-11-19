@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.81.0", date = "19/11/2026",
+        fixed = {
+            "Bateau Menethil » Austrivage » Auberdine (Le Bravoure) : la durée de son tour était inconnue, l'addon la devinait d'après tes départs et ses horaires sautaient d'une fois à l'autre. Elle est maintenant connue (486 s, mesurée par NauticusClassicResurrected 1.5.4 sur 7 tours).",
+        },
+        changed = {
+            "Horaires des bateaux et zeppelins : l'heure d'arrivée et de départ à chaque quai et le temps d'escale viennent maintenant des trajets enregistrés seconde par seconde par NauticusClassicResurrected (12 lignes, celles de WoW Forever comprises) ; avant, ils étaient estimés d'après la longueur des trajets, avec plusieurs dizaines de secondes d'erreur aux quais que tu n'avais pas vus. Le navire sur la carte suit aussi ce minutage.",
+        },
+    },
+    {
         version = "1.80.3", date = "19/11/2026",
         changed = {
             "Bouton « Buffer le suivant » : le cadre rose autour du nom du joueur visé est remplacé par l'icône de la bénédiction qui va partir, dans un rond à ta couleur au-dessus de sa plaque de nom, avec une pointe vers lui ; un halo bat doucement quand le sort est prêt. Taille réglable (QoL > Classes > ta classe > Buffer autour).",

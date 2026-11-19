@@ -4,10 +4,13 @@ local ADDON_NAME, WK = ...
 -- Trajets : table TaxiPathNode des fichiers du jeu (wago.tools). Durées de tour : mesurées par
 -- NauticusClassicResurrected (MIT License, Copyright (c) 2020 psynct ; sam-k-taylor),
 -- https://github.com/sam-k-taylor/NauticusClassicResurrected
+-- Minutage des quais (times : départ et arrivée de chaque quai dans le tour, t = 0 au départ du quai 1) :
+-- trajets enregistrés par NauticusClassicResurrected 1.5.4 (même licence MIT).
 -- stops = { name, c (continent), x, y (monde), dwell (s à quai) } ; legs[i] = du quai i au suivant :
 -- len (m, hors sauts), pts = { c, x, y, ... } ; period = tour (s, nil = appris en jeu) ; prec = exact / approx.
 WK.BoatLines = {
     { key = "AUB_SW", path = 11616, kind = "boat", side = "A", vessel = "Navire de Hurlevent", period = 246.5, prec = "approx",
+      times = { P = 246.5, dep = { 0.0, 128.51 }, arr = { 186.5, 68.88 } },
       stops = {
         { name = "Auberdine", c = 1, x = 6548.3, y = 942.2, dwell = 60 },
         { name = "Port de Hurlevent", c = 0, x = -8654.5, y = 1344.4, dwell = 60 },
@@ -18,6 +21,7 @@ WK.BoatLines = {
       },
     },
     { key = "RUT_AUB", path = 293, kind = "boat", side = "A", vessel = "Le Chant-de-lune", period = 316.254198816156, prec = "exact",
+      times = { P = 316.254198816156, dep = { 0.0, 164.47 }, arr = { 256.25, 104.47 } },
       stops = {
         { name = "Rut'theran", c = 1, x = 8532.0, y = 1023.7, dwell = 60 },
         { name = "Auberdine", c = 1, x = 6594.4, y = 759.8, dwell = 60 },
@@ -28,6 +32,7 @@ WK.BoatLines = {
       },
     },
     { key = "MEN_THE", path = 292, kind = "boat", side = "A", vessel = "La Dame Mehley", period = 329.3162968069666, prec = "exact",
+      times = { P = 329.3162968069666, dep = { 0.0, 164.0 }, arr = { 269.32, 104.0 } },
       stops = {
         { name = "Port de Menethil", c = 0, x = -3905.2, y = -585.8, dwell = 60 },
         { name = "Theramore", c = 1, x = -4016.4, y = -4740.6, dwell = 60 },
@@ -37,7 +42,8 @@ WK.BoatLines = {
         { len = 2536.2, pts = { 1, -4016.4, -4740.6, 1, -3952.5, -4813.7, 1, -3927.4, -4889.9, 1, -3902.8, -5033.0, 1, -3816.9, -5148.3, 1, -3668.6, -5204.6, 1, -3476.4, -5208.8, 1, -3214.0, -5261.7, 1, -3157.3, -5280.2, 0, -3609.4, 309.0, 0, -3787.5, 178.1, 0, -4037.3, 15.7, 0, -4151.5, -165.9, 0, -4199.9, -372.3, 0, -4150.9, -531.3, 0, -4088.9, -599.1, 0, -3996.3, -611.3, 0, -3905.2, -585.8 } },
       },
     },
-    { key = "MEN_AUS_AUB", path = 11167, kind = "boat", side = "A", vessel = "Le Bravoure", period = nil, prec = nil,
+    { key = "MEN_AUS_AUB", path = 11167, kind = "boat", side = "A", vessel = "Le Bravoure", period = 486.226, prec = "approx",
+      times = { P = 486.226, dep = { 0.0, 202.28, 345.0 }, arr = { 426.23, 142.26, 285.8 } },
       stops = {
         { name = "Port de Menethil", c = 0, x = -3709.5, y = -575.1, dwell = 60 },
         { name = "Austrivage", c = 0, x = -1102.6, y = -554.7, dwell = 60 },
@@ -50,6 +56,7 @@ WK.BoatLines = {
       },
     },
     { key = "PLU_COTE", path = 303, kind = "boat", side = "A", vessel = "Bac de Plumelune", period = 317.0452004189944, prec = "exact",
+      times = { P = 317.0452004189944, dep = { 0.0, 119.88 }, arr = { 257.05, 59.88 } },
       stops = {
         { name = "Bastion de Plumelune", c = 1, x = -4197.3, y = 3286.6, dwell = 60 },
         { name = "Côte Oubliée", c = 1, x = -4347.8, y = 2444.4, dwell = 60 },
@@ -60,6 +67,7 @@ WK.BoatLines = {
       },
     },
     { key = "RAT_BB", path = 241, kind = "boat", side = nil, vessel = "La Belle Demoiselle", period = 350.8233330757341, prec = "exact",
+      times = { P = 350.8233330757341, dep = { 0.0, 166.81 }, arr = { 290.82, 106.81 } },
       stops = {
         { name = "Cabestan", c = 1, x = -1005.6, y = -3841.6, dwell = 60 },
         { name = "Baie-du-Butin", c = 0, x = -14277.7, y = 582.9, dwell = 60 },
@@ -70,6 +78,7 @@ WK.BoatLines = {
       },
     },
     { key = "GENT_POUD", path = 11391, kind = "boat", side = nil, vessel = "Navire des Paluns", period = 271.4125, prec = "approx",
+      times = { P = 271.4125, dep = { 0.0, 137.97 }, arr = { 211.41, 77.97 } },
       stops = {
         { name = "Port de Gentepression", c = 1, x = -6932.6, y = -4950.8, dwell = 60 },
         { name = "Port de Poudrefuse", c = 0, x = -8232.3, y = -5800.8, dwell = 60 },
@@ -80,6 +89,7 @@ WK.BoatLines = {
       },
     },
     { key = "ORG_FOS", path = 302, kind = "zeppelin", side = "H", vessel = "Le Porte-tonnerre", period = 356.28836360078276, prec = "exact",
+      times = { P = 356.28836360078276, dep = { 0.0, 191.14 }, arr = { 296.29, 131.14 } },
       stops = {
         { name = "Orgrimmar", c = 1, x = 1318.1, y = -4658.0, dwell = 60 },
         { name = "Fossoyeuse", c = 0, x = 2062.4, y = 293.0, dwell = 60 },
@@ -90,6 +100,7 @@ WK.BoatLines = {
       },
     },
     { key = "GG_ORG", path = 285, kind = "zeppelin", side = "H", vessel = "L'Aigle de fer", period = 303.4671353784595, prec = "exact",
+      times = { P = 303.4671353784595, dep = { 0.0, 165.15 }, arr = { 243.47, 105.15 } },
       stops = {
         { name = "Grom'gol", c = 0, x = -12464.0, y = 231.6, dwell = 60 },
         { name = "Orgrimmar", c = 1, x = 1360.9, y = -4631.3, dwell = 60 },
@@ -100,6 +111,7 @@ WK.BoatLines = {
       },
     },
     { key = "GG_FOS", path = 301, kind = "zeppelin", side = "H", vessel = "La Princesse pourpre", period = 335.2982692023634, prec = "exact",
+      times = { P = 335.2982692023634, dep = { 0.0, 179.32 }, arr = { 275.3, 119.32 } },
       stops = {
         { name = "Grom'gol", c = 0, x = -12406.9, y = 211.8, dwell = 60 },
         { name = "Fossoyeuse", c = 0, x = 2062.6, y = 235.3, dwell = 60 },
@@ -110,6 +122,7 @@ WK.BoatLines = {
       },
     },
     { key = "MUL_ZEP", path = 11457, kind = "zeppelin", side = "H", vessel = "Tranche-ciel", period = 347.0, prec = "approx",
+      times = { P = 347.0, dep = { 0.0, 134.16 }, arr = { 287.0, 104.56 } },
       stops = {
         { name = "Mulgore", c = 1, x = -802.0, y = 366.5, dwell = 60 },
         { name = "Île de Zephras", c = 2991, x = 1952.1, y = 1017.1, dwell = 60 },
@@ -120,6 +133,7 @@ WK.BoatLines = {
       },
     },
     { key = "DAL_ZEP", path = 11398, kind = "zeppelin", side = "A", vessel = "Tranche-ciel", period = 353.0, prec = "approx",
+      times = { P = 353.0, dep = { 0.0, 168.23 }, arr = { 292.98, 109.03 } },
       stops = {
         { name = "Dalaran", c = 0, x = 544.8, y = 424.2, dwell = 60 },
         { name = "Île de Zephras", c = 2991, x = 1848.3, y = 569.1, dwell = 60 },

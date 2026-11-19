@@ -428,8 +428,8 @@ UI:RegisterPage({
                 "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
             { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",
                 "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
-            { "boat", "Bateaux et zeppelins (durées de tour)", "NauticusClassicResurrected", "MIT", "positive",
-                "Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour mesurées par NauticusClassicResurrected (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected)." },
+            { "boat", "Bateaux et zeppelins (tours et quais)", "NauticusClassicResurrected", "MIT", "positive",
+                "Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools) ; durées de tour et minutage des quais (arrivée, départ, temps à quai) mesurés par NauticusClassicResurrected 1.5.4 (psynct, sam-k-taylor, licence MIT, github.com/sam-k-taylor/NauticusClassicResurrected)." },
             { "crosshair", "Distances (indicateur du chasseur)", "LibRangeCheck-3.0 · WoWUIDev Community", "MIT", "positive",
                 "Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)." },
         }
