@@ -446,26 +446,65 @@ local function build(host)
             end
             return d
         end
-        function ch:Draw(id)
+        ch.bars = {}
+        -- days : 7, 14 ou 30 (14 par défaut) ; opts.mine = ton prix moyen de vente (pointillés verts),
+        -- opts.bars = quantité en vente de chaque jour (barres bleues)
+        function ch:Draw(id, days, opts)
+            days = days or 14
+            opts = opts or {}
             self.lines:Reset()
             for _, d in ipairs(self.dots) do d:Hide() end
-            local hist = id and S:History(id) or {}
-            local avg = id and S:Average(id)
+            for _, b in ipairs(self.bars) do b:Hide() end
+            local all = id and S:History(id) or {}
+            local today0 = math.floor(time() / 86400)
+            local hist = {}
+            for _, h in ipairs(all) do if h[1] > today0 - days then table.insert(hist, h) end end
+            local avg
+            if #hist > 0 then
+                local sum = 0
+                for _, h in ipairs(hist) do sum = sum + h[2] end
+                avg = math.floor(sum / #hist + 0.5)
+            end
             self.empty:SetShown(#hist < 1)
             self.empty:SetText(id and T("Pas encore de prix relevé pour cet objet : lance un scan.") or "")
             if #hist < 1 then self.yTop:SetText(""); self.yBot:SetText(""); return hist, avg end
             local lo, hi = math.huge, 0
             for _, h in ipairs(hist) do lo = math.min(lo, h[2]); hi = math.max(hi, h[2]) end
             if avg then lo, hi = math.min(lo, avg), math.max(hi, avg) end
+            if opts.mine then lo, hi = math.min(lo, opts.mine), math.max(hi, opts.mine) end
             if hi == lo then hi = lo + 1 end
             local pad = (hi - lo) * 0.1
             lo, hi = math.max(0, lo - pad), hi + pad
             self.yTop:SetText(money(math.floor(hi))); self.yBot:SetText(money(math.floor(lo)))
             local W, H = self.plot:GetWidth() or 400, self.plot:GetHeight() or 150
             local today = math.floor(time() / 86400)
-            local first = today - 13
-            local function px(day) return (day - first) / 13 * W end
+            local first = today - (days - 1)
+            local function px(day) return (day - first) / (days - 1) * W end
             local function py(p) return H - (p - lo) / (hi - lo) * H end
+            -- quantité en vente : barres en bas (le quart de la hauteur)
+            if opts.bars then
+                local qmax = 0
+                for _, h in ipairs(hist) do qmax = math.max(qmax, h[3] or 0) end
+                for i, h in ipairs(hist) do
+                    if (h[3] or 0) > 0 and qmax > 0 then
+                        local b = self.bars[i]
+                        if not b then b = self.plot:CreateTexture(nil, "BACKGROUND", nil, 2); self.bars[i] = b end
+                        b:SetColorTexture(C.info[1], C.info[2], C.info[3], 0.3)
+                        local bh = math.max(2, h[3] / qmax * H * 0.25)
+                        b:ClearAllPoints()
+                        b:SetPoint("BOTTOM", self.plot, "BOTTOMLEFT", px(h[1]), 1)
+                        b:SetSize(math.max(3, math.min(12, W / days * 0.5)), bh)
+                        b:Show()
+                    end
+                end
+            end
+            if opts.mine then
+                local k, my = 0, py(opts.mine)
+                while k < W do
+                    self.lines:Add(self.plot, k, my, math.min(W, k + 3), my, 1.5, C.positive[1], C.positive[2], C.positive[3], 0.85)
+                    k = k + 7
+                end
+            end
             if avg then
                 local k = 0
                 while k < W do
@@ -2181,59 +2220,139 @@ local function build(host)
     bw:SetScript("OnSizeChanged", function() if bw:IsVisible() then bw:RefreshResults() end end)
 
     -----------------------------------------------------------------------
-    -- Prix : courbe du plus bas de chaque jour sur 14 jours, objets qui ont le plus bougé
+    -- Prix : la fiche d'un objet. À gauche la liste (recherche, Ça bouge, Mes sacs, Mes ventes, Surveillés) ;
+    -- au milieu la courbe 7 / 14 / 30 jours (plus bas, moyenne, ton prix moyen de vente, quantité en vente),
+    -- six chiffres clés, combien tu en as, Vendre les miens / Surveiller / Chercher.
     -----------------------------------------------------------------------
     local pv = CreateFrame("Frame", nil, f.content)
     pv:SetAllPoints(f.content)
     f.views.prices = pv
+    pv.mode, pv.days = "movers", 14
     pv.left = panelBox(pv, "Objets")
-    pv.left:SetPoint("TOPLEFT"); pv.left:SetPoint("BOTTOMLEFT"); pv.left:SetWidth(250)
-    pv.left.sub:SetText(T("de tes scans"))
-    pv.search = UI:Input(pv.left, 228, 26, "Rechercher…", "search")
+    pv.left:SetPoint("TOPLEFT"); pv.left:SetPoint("BOTTOMLEFT"); pv.left:SetWidth(260)
+    pv.search = UI:Input(pv.left, 238, 26, "Chercher un objet scanné…", "search")
     pv.search:SetPoint("TOPLEFT", 10, -30)
     pv.search.onChange = function() pv:Refresh() end
-    pv.head = UI:Text(pv.left, 9, C.dim); pv.head:SetPoint("TOPLEFT", 12, -66)
+    pv.modes = {}
+    local px0, py0 = 10, -62
+    for _, md in ipairs({ { "movers", "Ça bouge" }, { "bags", "Mes sacs" }, { "sales", "Mes ventes" }, { "watch", "Surveillés" } }) do
+        local b = UI:Button(pv.left, md[2], nil, 22, "ghost")
+        b:SetWidth(b.label:GetStringWidth() + 18)
+        if px0 + b:GetWidth() > 250 then px0, py0 = 10, py0 - 26 end
+        b:SetPoint("TOPLEFT", px0, py0)
+        px0 = px0 + b:GetWidth() + 4
+        b:SetScript("OnClick", function() pv.mode = md[1]; pv.search:SetText(""); pv:Refresh() end)
+        pv.modes[md[1]] = b
+    end
+    local LTOP = py0 - 30
     pv.rows = {}
-    for i = 1, 16 do
+    for i = 1, 18 do
         local r = textRow(pv.left, 22)
-        r:SetPoint("TOPLEFT", 6, -80 - (i - 1) * 23); r:SetPoint("TOPRIGHT", -6, -80 - (i - 1) * 23)
-        r.a:SetPoint("RIGHT", -60, 0)
-        r.b:SetPoint("RIGHT", -6, 0); r.b:SetWidth(54)
+        r:SetPoint("TOPLEFT", 6, LTOP - (i - 1) * 23); r:SetPoint("TOPRIGHT", -6, LTOP - (i - 1) * 23)
+        r.a:SetPoint("RIGHT", -64, 0)
+        r.b:SetPoint("RIGHT", -6, 0); r.b:SetWidth(58)
         r:SetScript("OnClick", function(s) if s.id then pv.id = s.id; pv:Refresh() end end)
+        r:Hide()
         pv.rows[i] = r
     end
+    pv.lempty = UI:Text(pv.left, 11, C.muted); pv.lempty:SetPoint("TOP", 0, LTOP - 20); pv.lempty:SetWidth(220)
+
+    -- courbe
     pv.main = panelBox(pv, "")
-    pv.main:SetPoint("TOPLEFT", pv.left, "TOPRIGHT", 8, 0); pv.main:SetPoint("BOTTOMRIGHT")
-    pv.stats = UI:Text(pv.main, 11, C.muted); pv.stats:SetPoint("TOPRIGHT", -12, -10)
+    pv.main:SetPoint("TOPLEFT", pv.left, "TOPRIGHT", 8, 0); pv.main:SetPoint("TOPRIGHT"); pv.main:SetHeight(330)
+    pv.icon = pv.main:CreateTexture(nil, "ARTWORK"); pv.icon:SetSize(20, 20); pv.icon:SetPoint("TOPLEFT", 10, -7)
+    pv.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    pv.main.title:ClearAllPoints(); pv.main.title:SetPoint("LEFT", pv.icon, "RIGHT", 8, 0)
+    pv.range = UI:Segmented(pv.main, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } }, function(v) pv.days = v; pv:Refresh() end, 24)
+    pv.range:SetPoint("TOPRIGHT", -10, -6)
+    pv.range:Select(14)
     pv.chart = makeChart(pv.main)
-    pv.chart:SetPoint("TOPLEFT", 6, -40); pv.chart:SetPoint("BOTTOMRIGHT", -16, 80)
+    pv.chart:SetPoint("TOPLEFT", 6, -40); pv.chart:SetPoint("BOTTOMRIGHT", -16, 30)
+    pv.legend = UI:Text(pv.main, 10, C.dim); pv.legend:SetPoint("BOTTOMLEFT", 16, 10)
     pv.empty = UI:Text(pv.main, 11, C.muted); pv.empty:SetPoint("CENTER")
-    pv.note = UI:Text(pv.main, 10, C.dim); pv.note:SetPoint("BOTTOMLEFT", 16, 50); pv.note:SetPoint("RIGHT", -16, 0); pv.note:SetJustifyH("LEFT")
-    pv.note:SetText(T("Survol d'un point : prix et quantité en vente ce jour · trait or : moyenne · la courbe se remplit à chaque scan et à chaque recherche de l'objet"))
-    pv.watchLabel = UI:Text(pv.main, 11); pv.watchLabel:SetPoint("BOTTOMLEFT", 16, 18)
-    pv.watchLabel:SetText(T("Me prévenir sous"))
-    pv.watch = UI:Input(pv.main, 130, 26, "ex. 45pa", nil); pv.watch:SetPoint("LEFT", pv.watchLabel, "RIGHT", 8, 0)
-    pv.watchBtn = UI:Button(pv.main, "Surveiller", nil, 26, "primary"); pv.watchBtn:SetPoint("LEFT", pv.watch, "RIGHT", 6, 0)
+
+    -- six chiffres
+    pv.tiles = {}
+    for i = 1, 6 do
+        local t = CreateFrame("Frame", nil, pv)
+        UI:Panel(t, 8, C.surface, C.border)
+        t:SetHeight(50)
+        t.l = UI:Text(t, 9, C.dim); t.l:SetPoint("TOPLEFT", 10, -8)
+        t.v = UI:Text(t, 14, C.text); t.v:SetPoint("TOPLEFT", 10, -24)
+        pv.tiles[i] = t
+    end
+    local function layoutTiles()
+        local w = (pv.main:GetWidth() or 680)
+        local tw = math.floor((w - 5 * 8) / 6)
+        for i, t in ipairs(pv.tiles) do
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", pv.main, "BOTTOMLEFT", (i - 1) * (tw + 8), -10)
+            t:SetWidth(tw)
+        end
+    end
+    pv.main:SetScript("OnSizeChanged", layoutTiles)
+
+    -- combien tu en as, actions
+    pv.have = UI:Text(pv, 11, C.muted)
+    pv.have:SetPoint("TOPLEFT", pv.main, "BOTTOMLEFT", 4, -80)
+    pv.find = UI:Button(pv, "Chercher", nil, 26, "secondary")
+    pv.find:SetPoint("TOPRIGHT", pv.main, "BOTTOMRIGHT", 0, -74)
+    pv.find:SetScript("OnClick", function() if pv.id then UI:AHWindowSearch(pv.id, WK.GetItemInfo(pv.id)) end end)
+    pv.watchBtn = UI:Button(pv, "Surveiller", nil, 26, "secondary"); pv.watchBtn:SetPoint("RIGHT", pv.find, "LEFT", -6, 0)
+    pv.watch = UI:Input(pv, 110, 26, "ex. 45pa", nil); pv.watch:SetPoint("RIGHT", pv.watchBtn, "LEFT", -6, 0)
     pv.watchBtn:SetScript("OnClick", function()
         local v = A.ParsePrice(pv.watch:GetText())
         if pv.id and v then A:AddAlert(pv.id, v); WK:Print(string.format(T("Alerte de prix : %s sous %s."), WK.GetItemInfo(pv.id) or "?", money(v))); pv:Refresh() end
     end)
-    pv.sellBtn = UI:Button(pv.main, "Vendre", nil, 26, "secondary"); pv.sellBtn:SetPoint("LEFT", pv.watchBtn, "RIGHT", 6, 0)
+    pv.sellBtn = UI:Button(pv, "Vendre les miens", nil, 26, "primary"); pv.sellBtn:SetPoint("RIGHT", pv.watch, "LEFT", -10, 0)
     pv.sellBtn:SetScript("OnClick", function() if pv.id then f:Open("sell"); f.views.sell:Select(pv.id) end end)
-    function pv:Refresh()
-        local q = string.lower(self.search:GetText() or "")
+    pv.note = UI:Text(pv, 10, C.dim); pv.note:SetPoint("TOPLEFT", pv.main, "BOTTOMLEFT", 4, -112); pv.note:SetPoint("RIGHT", pv, "RIGHT", 0, 0)
+    pv.note:SetJustifyH("LEFT")
+    pv.note:SetText(T("Survol d'un point : prix et quantité en vente ce jour. La courbe se remplit à chaque scan et à chaque recherche de l'objet."))
+
+    -- tes ventes d'un objet sur 7 jours (factures du courrier) : nombre, prix moyen
+    local function mySales(name, days)
+        local log = WK.DB.global.auction and WK.DB.global.auction.log or {}
+        local since = time() - (days or 7) * 86400
+        local n, gross = 0, 0
+        for _, l in ipairs(log) do
+            if (l.t or 0) >= since and l.kind == "sale" and l.item == name then n = n + (l.count or 1); gross = gross + (l.gross or 0) end
+        end
+        return n, n > 0 and math.floor(gross / n) or nil
+    end
+    -- objets de la liste selon le mode
+    local function listFor(mode, q)
         local list = {}
         if q ~= "" then
-            self.head:SetText(UI:Upper(T("Résultats")))
             for id in pairs(S:Data().items) do
                 local name = WK.GetItemInfo(id)
-                if name and string.lower(name):find(q, 1, true) then table.insert(list, { id, nil }) end
-                if #list >= 16 then break end
+                if name and string.lower(name):find(q, 1, true) then table.insert(list, { id }) end
+                if #list >= 40 then break end
             end
+        elseif mode == "bags" then
+            local okB, items = pcall(bagItems)
+            for _, e in ipairs(okB and items or {}) do if S:Price(e.id) then table.insert(list, { e.id, nil, e.count }) end end
+        elseif mode == "sales" then
+            local seen = {}
+            local log = WK.DB.global.auction and WK.DB.global.auction.log or {}
+            local byName = {}
+            for id in pairs(S:Data().items) do local n = WK.GetItemInfo(id); if n then byName[n] = id end end
+            for _, l in ipairs(log) do
+                local id = l.kind == "sale" and l.item and byName[l.item]
+                if id and not seen[id] then seen[id] = true; table.insert(list, { id }) end
+            end
+        elseif mode == "watch" then
+            for id in pairs(A.Config().alerts or {}) do table.insert(list, { id }) end
         else
-            self.head:SetText(UI:Upper(T("Ont le plus bougé (7 j)")))
-            for _, m in ipairs(S:Movers(16)) do table.insert(list, { m[1], m[2] }) end
+            for _, m in ipairs(S:Movers(18)) do table.insert(list, { m[1], m[2] }) end
         end
+        return list
+    end
+
+    function pv:Refresh()
+        local q = string.lower(self.search:GetText() or "")
+        for k, b in pairs(self.modes) do b:SetStyle((q == "" and k == self.mode) and "primary" or "ghost") end
+        local list = listFor(self.mode, q)
         if not self.id and list[1] then self.id = list[1][1] end
         local ar, ag, ab = UI:Accent()
         for i, r in ipairs(self.rows) do
@@ -2249,22 +2368,65 @@ local function build(host)
                     r.b:SetText((pc > 0 and "+" or "") .. pc .. " %")
                     local col = pc >= 0 and C.positive or C.negative
                     r.b:SetTextColor(col[1], col[2], col[3])
-                else r.b:SetText("") end
+                else
+                    local p = S:Price(it[1])
+                    r.b:SetText(p and money(p) or ""); r.b:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                end
                 r.hl:SetColorTexture(ar, ag, ab, it[1] == self.id and 0.14 or 0)
                 r:Show()
             else r:Hide() end
         end
-        -- courbe
+        self.lempty:SetShown(#list == 0)
+        self.lempty:SetText(T("Rien ici pour l'instant."))
+        -- fiche
         local id = self.id
+        local has = id ~= nil
         local name = id and WK.GetItemInfo(id)
+        self.icon:SetShown(has)
+        if has then self.icon:SetTexture(itemIcon(id)) end
         self.main.title:SetText(name or "")
-        self.main.sub:SetText(id and T("plus bas de chaque jour · 14 jours") or "")
-        local hist, avg = self.chart:Draw(id)
-        self.empty:SetShown(not id)
-        self.empty:SetText(T("Choisis un objet : il a le plus bougé, ou cherche-le."))
-        local alert = id and (A.Config().alerts or {})[id]
-        self.stats:SetText(id and ((hist[#hist] and (T("dernier") .. " " .. money(hist[#hist][2]) .. "  ·  ") or "") .. (avg and (T("moyenne") .. " " .. money(avg)) or "") .. (alert and ("  ·  " .. T("alerte sous") .. " " .. money(alert)) or "")) or "")
-        for _, w in ipairs({ self.watchLabel, self.watch, self.watchBtn, self.sellBtn, self.note }) do w:SetShown(id ~= nil) end
+        self.main.sub:SetText(has and T("plus bas de chaque jour") or "")
+        local nSold, myAvg = 0, nil
+        if name then nSold, myAvg = mySales(name, 7) end
+        local hist, avg = self.chart:Draw(id, self.days, { mine = myAvg, bars = true })
+        self.empty:SetShown(not has)
+        self.empty:SetText(T("Choisis un objet dans la liste, ou cherche-le."))
+        self.legend:SetText(has and (UI:Hex(C.text) .. "—|r " .. T("plus bas") .. "    " .. UI:Hex(C.gold) .. "- -|r " .. T("moyenne")
+            .. (myAvg and ("    " .. UI:Hex(C.positive) .. "..|r " .. T("ton prix moyen de vente")) or "") .. "    " .. UI:Hex(C.info) .. "|||r " .. T("quantité en vente")) or "")
+        -- chiffres clés
+        local lo, hi
+        for _, h in ipairs(hist) do lo = lo and math.min(lo, h[2]) or h[2]; hi = hi and math.max(hi, h[2]) or h[2] end
+        local last = hist[#hist]
+        local today = lowestOther(id or 0) or (last and last[2])
+        local qty = available(id or 0) or (last and last[3])
+        local vendor = id and select(11, WK.GetItemInfo(id)) or 0
+        local tiles = {
+            { T("Aujourd'hui"), today and money(today) or "-" },
+            { string.format(T("Moyenne %d j"), self.days), avg and money(avg) or "-" },
+            { T("Min / max"), lo and (money(lo) .. " / " .. money(hi)) or "-" },
+            { T("En vente"), qty and tostring(qty) or "-" },
+            { T("Tes ventes (7 j)"), nSold > 0 and (nSold .. " · " .. money(myAvg)) or "-" },
+            { T("Marchand"), vendor > 0 and money(vendor) or "-" },
+        }
+        for i, t in ipairs(self.tiles) do
+            t.l:SetText(UI:Upper(tiles[i][1])); t.v:SetText(tiles[i][2])
+            t.v:SetTextColor(unpack(i == 5 and nSold > 0 and C.positive or C.text))
+            t:SetShown(has)
+        end
+        layoutTiles()
+        -- combien tu en as
+        if has then
+            local Inv = WK.modules.Inventory
+            local total, b, k = 0, 0, 0
+            if Inv and Inv.CharCount then total, b, k = Inv:CharCount(WK.DB:Me(), id) end
+            local acc = S:Have(id)
+            self.have:SetText(string.format(T("Tu en as %d (sacs %d, banque %d)"), total, b, k) .. (acc > total and ("  ·  " .. string.format(T("%d sur le compte"), acc)) or ""))
+            local alert = (A.Config().alerts or {})[id]
+            self.watchBtn:SetLabel(alert and string.format(T("Alerte sous %s"), money(alert)) or T("Surveiller"))
+            self.watchBtn:SetWidth(self.watchBtn.label:GetStringWidth() + 28)
+            self.sellBtn:SetEnabled(b > 0)
+        end
+        for _, w in ipairs({ self.have, self.find, self.watchBtn, self.watch, self.sellBtn, self.note }) do w:SetShown(has) end
     end
 
     -----------------------------------------------------------------------
@@ -2323,11 +2485,16 @@ local function build(host)
             self.scanInfo:SetText(T("scan en cours…"))
         else
             frac = d.last and math.max(0.05, 1 - math.min(1, (time() - d.last) / 86400)) or 0
-            self.scanInfo:SetText(d.last and string.format(T("scanné %s"), UI:Ago(d.last)) or T("jamais scanné"))
+            local n = S:Count()
+            self.scanInfo:SetText((d.last and string.format(T("scanné %s"), UI:Ago(d.last)) or T("jamais scanné"))
+                .. (n > 0 and ("  ·  " .. string.format(T("%s objets"), BreakUpLargeNumbers and BreakUpLargeNumbers(n) or tostring(n))) or ""))
         end
         self.scanBar.fillF:SetWidth(math.max(1, 110 * frac))
         self.scanBtn:SetEnabled(sc == nil)
-        self.headSub:SetText(GetRealmName and GetRealmName() or "")
+        -- type de serveur seulement (PvE, PvP, JdR…), le nom complet au survol
+        local realm = GetRealmName and GetRealmName() or ""
+        local kind = realm:match("[Rr][Pp]%-?[Pp][Vv][Pp]%s*$") or realm:match("[Pp][Vv][PpEe]%s*$") or realm:match("%f[%a][Rr][Pp]%s*$")
+        self.headSub:SetText(kind and kind:upper():gsub("%s", "") or realm)
         self.gold:SetText(UI:GoldText(GetMoney and GetMoney() or 0))
         -- pastilles : objets à vendre, enchères sous-cotées (rouge), objets qui manquent dans la liste choisie
         local okB, list = pcall(bagItems)

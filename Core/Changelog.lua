@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.54.0", date = "19/11/2026",
+        added = {
+            "HV, Prix : la fiche d'un objet. Courbe sur 7, 14 ou 30 jours avec le plus bas de chaque jour, la moyenne, ton prix moyen de vente (pointillés verts) et la quantité en vente (barres) ; six chiffres : aujourd'hui, moyenne, min / max, en vente, tes ventes de la semaine, prix du marchand.",
+            "HV, Prix : liste à gauche avec la recherche et Ça bouge / Mes sacs / Mes ventes / Surveillés ; sous la fiche, combien tu en as (sacs, banque, compte), « Vendre les miens », « Surveiller » (le bouton montre l'alerte posée) et « Chercher ».",
+        },
+        changed = {
+            "HV, en-tête : le type de serveur seul (PVE, PVP, RP…) au lieu du nom complet, et le nombre d'objets scannés à côté de l'heure du scan.",
+        },
+    },
+    {
         version = "1.53.1", date = "19/11/2026",
         changed = {
             "Mode édition : grilles de 4 et 8 en plus de 16, 32 et 64 (bouton « Grille », un clic pour passer à la suivante). Sur les grilles fines, un trait sur quatre est plus marqué ; la grille choisie est retenue.",

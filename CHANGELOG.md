@@ -26,6 +26,17 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.54.0 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- HV, Prix : la fiche d'un objet. Courbe sur 7, 14 ou 30 jours avec le plus bas de chaque jour, la moyenne, ton prix moyen de vente (pointillés verts) et la quantité en vente (barres) ; six chiffres : aujourd'hui, moyenne, min / max, en vente, tes ventes de la semaine, prix du marchand.
+- HV, Prix : liste à gauche avec la recherche et Ça bouge / Mes sacs / Mes ventes / Surveillés ; sous la fiche, combien tu en as (sacs, banque, compte), « Vendre les miens », « Surveiller » (le bouton montre l'alerte posée) et « Chercher ».
+
+### Modifications
+- HV, en-tête : le type de serveur seul (PVE, PVP, RP…) au lieu du nom complet, et le nombre d'objets scannés à côté de l'heure du scan.
+
 ## v1.53.1 — 19/11/2026
 
 _Un /reload suffit._
