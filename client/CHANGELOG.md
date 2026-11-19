@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.4.5 — 19/11/2026
+
+### Modifications
+- Fenêtre du client plus petite à l'ouverture (780 × 480 au lieu de 940 × 640) ; elle peut être réduite jusqu'à 680 × 420.
+
 ## 1.4.4 — 19/11/2026
 
 ### Modifications

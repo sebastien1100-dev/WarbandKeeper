@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.4.4"
+CLIENT_VERSION = "1.4.5"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1429,8 +1429,8 @@ class App:
         self.root = tk.Tk()
         self.root.title("Warband Keeper")
         self.root.configure(bg=C["bg"])
-        self.root.geometry("940x640")
-        self.root.minsize(820, 560)
+        self.root.geometry("780x480")
+        self.root.minsize(680, 420)
         self.setup_fonts()
         self.set_icon()
         self.cfg = load_config()
