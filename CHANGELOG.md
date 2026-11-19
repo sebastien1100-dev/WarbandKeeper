@@ -84,6 +84,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.64.3 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Paladin > Bénédictions : le tableau de répartition se lit comme un planning. Les classes en lignes (grisées si elles ne sont pas dans le groupe), l'aure en dernière ligne, les paladins du groupe en colonnes (toi d'abord, pastille Warband Keeper ou PallyPower) ; chaque case montre l'icône et le nom de la bénédiction.
+
+### Corrections
+- Paladin > Bénédictions : le message « Seul pour l'instant » chevauchait ta ligne, et des lignes vides prenaient la moitié de la carte ; le message est maintenant un bandeau à part.
+
 ## v1.64.2 — 19/11/2026
 
 _Un /reload suffit._

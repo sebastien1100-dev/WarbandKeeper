@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.64.3", date = "19/11/2026",
+        changed = {
+            "Paladin > Bénédictions : le tableau de répartition se lit comme un planning. Les classes en lignes (grisées si elles ne sont pas dans le groupe), l'aure en dernière ligne, les paladins du groupe en colonnes (toi d'abord, pastille Warband Keeper ou PallyPower) ; chaque case montre l'icône et le nom de la bénédiction.",
+        },
+        fixed = {
+            "Paladin > Bénédictions : le message « Seul pour l'instant » chevauchait ta ligne, et des lignes vides prenaient la moitié de la carte ; le message est maintenant un bandeau à part.",
+        },
+    },
+    {
         version = "1.64.2", date = "19/11/2026",
         fixed = {
             "Inventaire, roue dentée ouverte : la bande vide au-dessus des réglages porte maintenant leur titre (« Réglages de l'inventaire »).",

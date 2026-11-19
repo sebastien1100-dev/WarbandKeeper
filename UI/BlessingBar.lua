@@ -223,44 +223,61 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         toggle(sc, function() return M:Me().free end, function(v) M:SetFree(v) end), 80)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 
-    -- tableau
-    local tc = card("Répartition du groupe", 40 + 24 + MAXP * 36 + 64, "clic : bénédiction suivante · clic droit : aucune")
-    tc.empty = UI:Text(tc, 11, C.muted); tc.empty:SetPoint("TOPLEFT", 16, -70)
-    tc.heads = {}
-    local cols = {}
-    for i, cl in ipairs(M.CLASSES) do cols[i] = cl end
-    for i = 1, #cols + 1 do
-        local h = UI:Text(tc, 9, C.dim)
-        h:SetText(i <= #cols and string.upper(className(cols[i])) or T("AURE"))
-        h:SetJustifyH("CENTER")
-        tc.heads[i] = h
+    -- tableau (version « planning ») : les classes en lignes (toutes, grisées si absentes du groupe), puis
+    -- l'aure ; les paladins du groupe en colonnes (toi d'abord) ; chaque case = icône + nom de la bénédiction
+    local NROWS = #M.CLASSES + 1
+    local RH, TOPY = 30, 108
+    local tc = card("Répartition du groupe", TOPY + NROWS * (RH + 4) + 52)
+    tc.banner = CreateFrame("Frame", nil, tc)
+    tc.banner:SetPoint("TOPLEFT", 16, -40); tc.banner:SetPoint("TOPRIGHT", -16, -40); tc.banner:SetHeight(30)
+    tc.banner.bg = UI:Rounded(tc.banner, 8, 0, "BACKGROUND", 1)
+    tc.banner.t = UI:Text(tc.banner, 11, C.muted); tc.banner.t:SetPoint("LEFT", 12, 0); tc.banner.t:SetPoint("RIGHT", -12, 0)
+    tc.banner.t:SetJustifyH("LEFT")
+    tc.classHead = UI:Text(tc, 9, C.dim); tc.classHead:SetText(T("CLASSE"))
+    tc.cols = {}
+    for p = 1, MAXP do
+        local h = CreateFrame("Frame", nil, tc)
+        h:SetHeight(18)
+        h.name = UI:Text(h, 10, C.text); h.name:SetPoint("LEFT", 0, 0)
+        if h.name.SetWordWrap then h.name:SetWordWrap(false) end
+        h.tag = UI:Badge(h, "", C.muted); h.tag:SetPoint("LEFT", h.name, "RIGHT", 6, 0)
+        tc.cols[p] = h
     end
     tc.rows = {}
-    local function cellButton(parent)
-        local b = CreateFrame("Button", nil, parent)
-        b:SetSize(28, 28)
-        b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-        b.bg = UI:Rounded(b, 7, 0, "BACKGROUND", 1); b.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
-        b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
-        b.txt = UI:Text(b, 10, C.dim); b.txt:SetPoint("CENTER"); b.txt:SetText("-")
-        return b
-    end
-    for p = 1, MAXP do
+    for ri = 1, NROWS do
         local r = CreateFrame("Frame", nil, tc)
-        r:SetHeight(32)
-        r.name = UI:Text(r, 12, C.text); r.name:SetPoint("LEFT", 0, 6); r.name:SetWidth(120); r.name:SetJustifyH("LEFT")
-        if r.name.SetWordWrap then r.name:SetWordWrap(false) end
-        r.tag = UI:Text(r, 9, C.muted); r.tag:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
+        r:SetHeight(RH)
+        r.bg = UI:Rounded(r, 8, 0, "BACKGROUND", 1); r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+        r.dot = UI:Icon(r, "circle", 12, nil, "ARTWORK"); r.dot:SetPoint("LEFT", 10, 0)
+        r.label = UI:Text(r, 12, C.text); r.label:SetPoint("LEFT", 28, 0)
+        r.ci = ri <= #M.CLASSES and ri or nil
+        if r.ci then
+            local col = classColor(M.CLASSES[r.ci])
+            r.dot:SetVertexColor(col[1], col[2], col[3], 1)
+            r.label:SetText(className(M.CLASSES[r.ci]))
+        else
+            r.dot:Hide()
+            r.label:SetPoint("LEFT", 10, 0)
+            r.label:SetText(T("Aure"))
+        end
         r.cells = {}
-        for i = 1, #cols + 1 do
-            local b = cellButton(r)
-            b.col = i
+        for p = 1, MAXP do
+            local b = CreateFrame("Button", nil, r)
+            b:SetHeight(RH - 4)
+            b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            b.hl = b:CreateTexture(nil, "BACKGROUND"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.05); b.hl:Hide()
+            b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(22, 22); b.icon:SetPoint("LEFT", 2, 0)
+            b.txt = UI:Text(b, 12, C.text); b.txt:SetPoint("LEFT", b.icon, "RIGHT", 7, 0); b.txt:SetJustifyH("LEFT")
+            if b.txt.SetWordWrap then b.txt:SetWordWrap(false) end
+            b:SetScript("OnEnter", function(s) s.hl:Show() end)
+            b:SetScript("OnLeave", function(s) s.hl:Hide() end)
+            b.col = p
             b:SetScript("OnClick", function(s, btn)
-                local who = r.who
+                local who = tc.colWho and tc.colWho[s.col]
                 if not who then return end
                 local e = M.pallys[who] or {}
-                if s.col <= #cols then
-                    local cur = (e.assign and e.assign[s.col]) or 0
+                if r.ci then
+                    local cur = (e.assign and e.assign[r.ci]) or 0
                     local nxt = 0
                     if btn ~= "RightButton" then
                         for k = 1, #M.BLESS do
@@ -269,7 +286,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                             if ok then nxt = cand break end
                         end
                     end
-                    if not M:SetAssign(who, s.col, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
+                    if not M:SetAssign(who, r.ci, nxt) then WK:Print(T("Seul le chef du groupe peut changer la ligne de ce paladin.")) end
                 else
                     local cur = e.aura or 0
                     local nxt = 0
@@ -284,10 +301,9 @@ function UI:BuildBlessingCards(card, toggle, dyn)
                 UI:RefreshBlessCard()
                 UI:RefreshBlessBar()
             end)
-            r.cells[i] = b
+            r.cells[p] = b
         end
-        r:Hide()
-        tc.rows[p] = r
+        tc.rows[ri] = r
     end
     -- exceptions (ma ligne)
     tc.exHead = UI:Text(tc, 11, C.muted); tc.exHead:SetText(T("Exceptions :"))
@@ -325,20 +341,25 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         return b
     end
 
+    local LABW = 150
     local function layout(w)
         w = w or tc:GetWidth() or 800
-        local nameW = 140
-        local cw = math.max(30, math.floor((w - 32 - nameW) / (#cols + 1)))
-        for i, h in ipairs(tc.heads) do
-            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + nameW + (i - 1) * cw, -44); h:SetWidth(cw)
+        local n = math.max(1, tc.nCols or 1)
+        local cw = math.min(240, math.floor((w - 32 - LABW) / n))
+        tc.classHead:ClearAllPoints(); tc.classHead:SetPoint("TOPLEFT", 26, -(TOPY - 22))
+        for p, h in ipairs(tc.cols) do
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 16 + LABW + (p - 1) * cw, -(TOPY - 26)); h:SetWidth(cw - 8)
+            h.name:SetWidth(math.max(40, cw - 100))
         end
-        for p, r in ipairs(tc.rows) do
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -64 - (p - 1) * 36); r:SetPoint("TOPRIGHT", -16, -64 - (p - 1) * 36)
-            for i, b in ipairs(r.cells) do
-                b:ClearAllPoints(); b:SetPoint("LEFT", nameW + (i - 1) * cw + (cw - 28) / 2, 0)
+        for ri, r in ipairs(tc.rows) do
+            local y = TOPY + (ri - 1) * (RH + 4)
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 16, -y); r:SetPoint("TOPRIGHT", -16, -y)
+            for p, b in ipairs(r.cells) do
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", LABW + (p - 1) * cw, -2); b:SetWidth(cw - 8)
+                b.txt:SetWidth(cw - 44)
             end
         end
-        local y = 64 + MAXP * 36 + 8
+        local y = TOPY + NROWS * (RH + 4) + 10
         tc.exHead:ClearAllPoints(); tc.exHead:SetPoint("TOPLEFT", 16, -(y + 5))
         tc.exY = y
     end
@@ -348,34 +369,56 @@ function UI:BuildBlessingCards(card, toggle, dyn)
         if not tc:IsVisible() then return end
         local list = M:Pallys()
         local r1, g1, b1 = UI:Accent()
-        for p, r in ipairs(tc.rows) do
+        local n = math.min(#list, MAXP)
+        if tc.nCols ~= n then tc.nCols = n; layout() end
+        tc.colWho = {}
+        -- classes présentes dans le groupe (toutes quand tu es seul)
+        local present, alone = {}, not (IsInGroup and IsInGroup())
+        for _, u in ipairs(M.GroupUnits()) do
+            if UnitExists(u) then local cl = select(2, UnitClass(u)); if cl then present[cl] = true end end
+        end
+        tc.banner.bg:SetColor(r1, g1, b1, 0.10)
+        if alone or n <= 1 then
+            tc.banner.t:SetText(T("Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une colonne.") .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
+        else
+            tc.banner.t:SetText(string.format(T("%d paladins dans le groupe"), n) .. "  " .. UI:Hex(C.dim) .. T("Clic : bénédiction suivante · clic droit : aucune") .. "|r")
+        end
+        for p, h in ipairs(tc.cols) do
             local it = list[p]
-            r.who = it and it.name
-            r:SetShown(it ~= nil)
+            h:SetShown(it ~= nil and p <= n)
             if it then
-                local e = it.e
-                r.name:SetText(it.e.me and T("Toi") or firstName(it.name))
-                r.tag:SetText(e.me and "Warband Keeper" or (e.wk and "Warband Keeper" or "PallyPower"))
-                r.tag:SetTextColor(e.wk and r1 or C.muted[1], e.wk and g1 or C.muted[2], e.wk and b1 or C.muted[3])
-                local editable = M:CanEdit(it.name)
-                for i, b in ipairs(r.cells) do
-                    local v, id
-                    if i <= #cols then
-                        v = e.assign and e.assign[i] or 0
+                tc.colWho[p] = it.name
+                h.name:SetText(string.upper(it.e.me and T("Toi") or firstName(it.name)))
+                h.tag:Set(it.e.wk and "Warband Keeper" or "PallyPower", it.e.wk and { r1, g1, b1 } or C.muted)
+            end
+        end
+        for _, r in ipairs(tc.rows) do
+            local here = not r.ci or alone or present[M.CLASSES[r.ci]]
+            r.label:SetTextColor(unpack(here and C.text or C.dim))
+            r.dot:SetAlpha(here and 1 or 0.35)
+            for p, b in ipairs(r.cells) do
+                local it = list[p]
+                b:SetShown(it ~= nil and p <= n)
+                if it then
+                    local e = it.e
+                    local v, id, label
+                    if r.ci then
+                        v = e.assign and e.assign[r.ci] or 0
                         id = M.BLESS[v] and M.BLESS[v][1]
+                        label = id and M:Name(v)
                     else
                         v = e.aura or 0
                         id = M.AURAS[v]
+                        label = id and M:AuraName(v)
                     end
                     b.icon:SetTexture(id and M.Icon(id) or nil)
                     b.icon:SetShown(id ~= nil)
-                    b.txt:SetShown(id == nil)
-                    b:SetAlpha(editable and 1 or 0.6)
+                    b.txt:SetText(label or (UI:Hex(C.dim) .. T("aucune") .. "|r"))
+                    b.txt:SetTextColor(unpack(here and C.text or C.muted))
+                    b:SetAlpha(M:CanEdit(it.name) and 1 or 0.6)
                 end
             end
         end
-        tc.empty:SetShown(#list <= 1 and not IsInGroup())
-        tc.empty:SetText(T("Seul pour l'instant : en groupe, les autres paladins (Warband Keeper ou PallyPower) apparaissent ici."))
         -- exceptions
         local x = 16 + (tc.exHead:GetStringWidth() or 70) + 10
         local i = 0

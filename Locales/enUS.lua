@@ -3380,4 +3380,9 @@ WK.Locales.enUS.text = {
     ["barre à l'écran et répartition entre paladins"] = "on-screen bar and sharing between paladins",
     ["clic : bénédiction suivante · clic droit : aucune"] = "click: next blessing · right-click: none",
     ["objets verrouillés, protection chez le marchand, Rangement"] = "locked items, merchant protection, Stash",
+    ["CLASSE"] = "CLASS",
+    ["Aure"] = "Aura",
+    ["Seul pour l'instant : en groupe, chaque autre paladin (Warband Keeper ou PallyPower) ajoute une colonne."] = "Alone for now: in a group, each other paladin (Warband Keeper or PallyPower) adds a column.",
+    ["Clic : bénédiction suivante · clic droit : aucune"] = "Click: next blessing · right-click: none",
+    ["%d paladins dans le groupe"] = "%d paladins in the group",
 }
