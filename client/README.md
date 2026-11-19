@@ -6,7 +6,7 @@ Après chaque mise à jour, il dit s'il faut redémarrer complètement le jeu (n
 
 - **Tableau de bord** : or et sa courbe, dernière séance, enchères, recharges, listes d'achat, Rangement et courrier (résumé écrit par l'addon à chaque déconnexion).
 - **Mises à jour** : version installée et dernière version publiée, bouton « Mettre à jour », dernière sauvegarde, prochaine vérification, dossier de l'addon, nouveautés à installer.
-- **Notifications** : notifications Windows (enchères qui expirent, recharges prêtes, repos plein, courrier), heures calmes.
+- **Réglages**, en onglets : Dossier, GitHub, Mises à jour, Notifications (notifications Windows : enchères qui expirent, recharges prêtes, repos plein, courrier ; heures calmes), Données.
 - **Nouveautés** : les notes de toutes les versions.
 - **Sauvegardes** : tes réglages de l'addon (SavedVariables) sont sauvegardés avant chaque mise à jour,
   restaurables en un clic (jeu fermé) ; la version précédente de l'addon est gardée (« Revenir à cette version »).

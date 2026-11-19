@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.7.1"
+CLIENT_VERSION = "1.7.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1426,9 +1426,9 @@ class DashPage(Page):
                                  % (ago_text(dash.get("at")), dash.get("char") or "?"))
 
 
-@page("notify", "Notifications", "◔")
-class NotifyPage(Page):
-    """Notifications Windows tirées du résumé de l'addon, vérifiées chaque minute tant que le client tourne."""
+class NotifyPanel:
+    """Notifications Windows tirées du résumé de l'addon, vérifiées chaque minute tant que le client tourne
+    (onglet « Notifications » des Réglages)."""
 
     ITEMS = [("auctions", "Enchères qui expirent", "moins de 24 h avant, une fois par jour, regroupées"),
              ("cds", "Recharges de métier prêtes", "transmutation, étoffe lunaire, sel raffiné…"),
@@ -1437,8 +1437,8 @@ class NotifyPage(Page):
              ("quiet", "Heures calmes", "rien entre 23 h et 8 h (les notifications attendent le matin)")]
 
     def __init__(self, app, parent):
-        super().__init__(app, parent)
-        c = Card(self, "Notifications Windows", "sans lancer le jeu")
+        self.app = app
+        c = Card(parent, "Notifications Windows", "sans lancer le jeu")
         c.pack(fill="x")
         opts = app.cfg.setdefault("notify", dict(DEFAULTS["notify"]))
         self.vars = {}
@@ -1451,7 +1451,7 @@ class NotifyPage(Page):
                            font=App.fonts["body"], anchor="w", command=lambda k=key, v=v: self.set(k, v.get())).pack(anchor="w")
             label(row, "      " + sub, fg="dim", font="small").pack(anchor="w")
             self.vars[key] = v
-        label(c.body, "Le client doit tourner (réduit, ou lancé avec Windows : Réglages > Mises à jour). Les heures viennent de "
+        label(c.body, "Le client doit tourner (réduit, ou lancé avec Windows : onglet Mises à jour). Les heures viennent de "
                       "la dernière sauvegarde de l'addon : une enchère vendue depuis ne sera connue qu'à la prochaine connexion.",
               fg="muted", font="small", wraplength=520).pack(anchor="w", pady=(8, 8))
         row = tk.Frame(c.body, bg=C["surface"])
@@ -1520,7 +1520,7 @@ class HomePage(Page):
             ln.bind("<Button-1>", lambda e: cmd())
             return v
         self.sv = tile(0, "DERNIÈRE SAUVEGARDE", "Sauvegarder maintenant", lambda: self.app.pages["backups"].backup_now())
-        self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show("settings"))
+        self.nextCheck = tile(1, "PROCHAINE VÉRIFICATION", "Changer dans Réglages", lambda: self.app.show_settings("updates"))
         self.folder = tile(2, "DOSSIER DE L'ADDON", "Ouvrir le dossier", self.app.open_addons)
         nc = Card(self, "Nouveautés")
         nc.pack(fill="both", expand=True, pady=(12, 0))
@@ -1574,7 +1574,7 @@ class HomePage(Page):
             self.chip.set(a.error, C["negative"])
             if "jeton" in a.error:
                 self.action.set("Ajouter le jeton", True, "secondary")
-                self.action.command = lambda: a.show("settings")
+                self.action.command = lambda: a.show_settings("github")
             else:
                 self.action.set("Réessayer", True, "secondary")
                 self.action.command = a.refresh
@@ -1735,10 +1735,17 @@ class SettingsPage(Page):
     def __init__(self, app, parent):
         super().__init__(app, parent)
         cfg = app.cfg
-        area = ScrollArea(self)
-        area.pack(fill="both", expand=True)
-        host = area.inner
-        g = Card(host, "Dossier de l'addon", "Interface\\AddOns de WoW Forever")
+        # un onglet par catégorie (le dernier ouvert est retenu)
+        TABS = [("folder", "Dossier"), ("github", "GitHub"), ("updates", "Mises à jour"), ("notify", "Notifications"), ("data", "Données")]
+        self.tabFrames = {}
+        holder = tk.Frame(self, bg=C["bg"])
+        self.tabBar = Segmented(self, TABS, lambda: self.app.cfg.get("settingsTab", "folder"), self.set_tab)
+        self.tabBar.pack(anchor="w", pady=(0, 12))
+        holder.pack(fill="both", expand=True)
+        for key, _ in TABS:
+            self.tabFrames[key] = tk.Frame(holder, bg=C["bg"])
+        tab = self.tabFrames
+        g = Card(tab["folder"], "Dossier de l'addon", "Interface\\AddOns de WoW Forever")
         g.pack(fill="x")
         row = tk.Frame(g.body, bg=C["surface"])
         row.pack(fill="x")
@@ -1752,10 +1759,10 @@ class SettingsPage(Page):
         self.pathInfo = label(g.body, "", fg="muted", font="small")
         self.pathInfo.pack(anchor="w", pady=(8, 0))
 
-        t = Card(host, "Accès à GitHub", "dépôt privé : jeton fine-grained")
-        t.pack(fill="x", pady=(12, 0))
+        t = Card(tab["github"], "Accès à GitHub", "dépôt privé : jeton fine-grained")
+        t.pack(fill="x")
         label(t.body, "Limité au dépôt WarbandKeeper. Pour installer l'addon : Contents « Read-only ».\n"
-                      "Pour régler les données (plus bas) : Contents et Actions « Read and write ». Gardé seulement sur ce PC.",
+                      "Pour régler les données (onglet Données) : Contents et Actions « Read and write ». Gardé seulement sur ce PC.",
               fg="muted", font="small").pack(anchor="w")
         row2 = tk.Frame(t.body, bg=C["surface"])
         row2.pack(fill="x", pady=(8, 0))
@@ -1767,8 +1774,8 @@ class SettingsPage(Page):
         Button(row2, "Créer un jeton", lambda: webbrowser.open(TOKEN_URL), "ghost", height=34).pack(side="left", padx=(6, 0))
 
         # Mises à jour de l'addon (sur ce PC)
-        u = Card(host, "Mises à jour", "de l'addon, sur ce PC")
-        u.pack(fill="x", pady=(12, 0))
+        u = Card(tab["updates"], "Mises à jour", "de l'addon, sur ce PC")
+        u.pack(fill="x")
         label(u.body, "Chercher les nouvelles versions", fg="muted", font="small").pack(anchor="w")
         Segmented(u.body, [("1h", "Toutes les heures"), ("6h", "Toutes les 6 h"), ("start", "Au démarrage seulement"), ("manual", "À la demande")],
                   lambda: self.app.cfg["checkEvery"], lambda v: self.set_opt("checkEvery", v)).pack(anchor="w", pady=(4, 2))
@@ -1788,8 +1795,9 @@ class SettingsPage(Page):
             self.opts[key] = v
 
         # Données (sur GitHub) : planning de .github/workflows/update-data.yml
-        d = Card(host, "Données", "QuestieDB et wowtbc.gg, vérifiées sur GitHub")
-        d.pack(fill="x", pady=(12, 0))
+        NotifyPanel(app, tab["notify"])
+        d = Card(tab["data"], "Données", "QuestieDB et wowtbc.gg, vérifiées sur GitHub")
+        d.pack(fill="x")
         self.sched, self.schedSha = None, None
         label(d.body, "Fréquence de la vérification", fg="muted", font="small").pack(anchor="w")
         self.freq = Segmented(d.body, [("quotidienne", "Chaque jour"), ("hebdomadaire", "Chaque lundi"), ("manuelle", "À la demande")],
@@ -1808,9 +1816,22 @@ class SettingsPage(Page):
         self.dataInfo.pack(anchor="w", pady=(8, 0))
         self.loaded = False
 
-    def on_show(self):
-        if not self.loaded:
+    def set_tab(self, key):
+        if key not in self.tabFrames:
+            key = "folder"
+        self.app.cfg["settingsTab"] = key
+        save_config(self.app.cfg)
+        for k, f in self.tabFrames.items():
+            if k == key:
+                f.pack(fill="both", expand=True)
+            else:
+                f.pack_forget()
+        self.tabBar.refresh()
+        if key == "data" and not self.loaded:
             self.load_schedule()
+
+    def on_show(self):
+        self.set_tab(self.app.cfg.get("settingsTab", "folder"))
 
     def load_schedule(self):
         a = self.app
@@ -2053,7 +2074,7 @@ class App:
         tk.Label(tb, text="Client " + CLIENT_VERSION, bg=C["sidebar"], fg=C["dim"], font=App.fonts["small"]).pack(anchor="w")
         self.nav = {}
         # ordre de la barre latérale (les pages sont déclarées dans un autre ordre)
-        order = ["dash", "home", "notes", "backups", "notify", "settings"]
+        order = ["dash", "home", "notes", "backups", "settings"]
         PAGES.sort(key=lambda c: order.index(c.key) if c.key in order else 99)
         for cls in PAGES:
             b = tk.Label(side, text="  %s   %s" % (cls.icon, cls.title), bg=C["sidebar"], fg=C["muted"], font=App.fonts["nav"],
@@ -2206,6 +2227,11 @@ class App:
                 p.pack_forget()
         for k, b in self.nav.items():
             b.configure(bg=C["surface2"] if k == key else C["sidebar"], fg=C["text"] if k == key else C["muted"])
+
+    def show_settings(self, tab):
+        """Réglages, ouverts sur un onglet (folder, github, updates, notify, data)."""
+        self.cfg["settingsTab"] = tab
+        self.show("settings")
 
     def toast(self, text, kind="muted"):
         # message long : à la ligne dans la largeur de la fenêtre, et affiché plus longtemps
@@ -2368,7 +2394,7 @@ class App:
         if self.addons:
             open_folder(self.addons)
         else:
-            self.show("settings")
+            self.show_settings("folder")
 
     # -- tâches en arrière-plan (le résultat revient par la file, traité dans poll)
     def run(self, fn, done=None):

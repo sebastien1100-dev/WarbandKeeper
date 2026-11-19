@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.7.2 — 19/11/2026
+
+### Modifications
+- Réglages en onglets, un par catégorie : Dossier, GitHub, Mises à jour, Notifications, Données (le dernier ouvert est retenu). Les notifications Windows y sont rangées : la page « Notifications » de la barre latérale disparaît.
+- Les liens vers les réglages ouvrent le bon onglet (prochaine vérification, jeton GitHub, dossier).
+
 ## 1.7.1 — 19/11/2026
 
 ### Modifications
