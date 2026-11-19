@@ -26,6 +26,14 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.51.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Infobulles : toutes les infobulles du jeu (objets dans les sacs, PNJ, sorts, liens du chat, comparaisons d'objets) prennent le style de l'addon : fond et bordure des cartes, police de l'interface. Avant, seules celles des fenêtres de l'addon l'avaient.
+- Options > Général > Infobulles : « Police fine pour les infobulles du jeu » devient « Infobulles du jeu au style de l'addon » (coupé : le style du jeu, comme avant).
+
 ## v1.51.1 — 19/11/2026
 
 _Un /reload suffit._

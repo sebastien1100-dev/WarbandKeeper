@@ -827,22 +827,24 @@ function UI:EditCharName(key)
 end
 
 ---------------------------------------------------------------------------
--- Infobulles aux couleurs de l'addon. UI:TooltipOwner remplace GameTooltip:SetOwner
--- dans l'addon : le cadre du jeu est masqué le temps de l'infobulle, puis rendu
--- tel quel à sa fermeture (les infobulles du jeu et des autres addons ne changent pas).
+-- Infobulles aux couleurs de l'addon : fond et bordure des cartes, police de l'interface.
+-- UI:TooltipOwner (dans l'addon) les habille toujours ; les infobulles du jeu (objets, PNJ, sorts, liens du
+-- chat, comparaisons) aussi quand le réglage settings.ui.gameTooltipFont est actif (par défaut). Le cadre du
+-- jeu est masqué le temps de l'infobulle et rendu à sa fermeture. Un habillage par infobulle (skins[tt]).
 ---------------------------------------------------------------------------
-local ttSkin
+local skins = {} -- [infobulle] = { border, bg, accent, backdrop, active, reshow }
 local function hideGameFrame(tt)
+    local sk = skins[tt]
     if type(tt.NineSlice) == "table" and tt.NineSlice.Hide then tt.NineSlice:Hide() end
-    if tt.SetBackdropColor and ttSkin.backdrop then
+    if tt.SetBackdropColor and sk and sk.backdrop then
         tt:SetBackdropColor(0, 0, 0, 0)
         tt:SetBackdropBorderColor(0, 0, 0, 0)
     end
 end
 
--- Police des infobulles de l'addon : celle de l'interface (Options > Apparence), sans contour,
+-- Police des infobulles : celle de l'interface (Options > Apparence), sans contour,
 -- 13 pour le titre et 12 pour le reste. Les polices d'origine sont rendues à la fermeture.
-local ttFonts = {} -- [FontString] = { police, taille, contour } d'origine
+local ttFonts = {} -- [FontString] = { police, taille, contour, infobulle } d'origine
 local function applyTooltipFonts(tt)
     local name = tt.GetName and tt:GetName()
     if not name or not tt.NumLines then return false end
@@ -854,7 +856,7 @@ local function applyTooltipFonts(tt)
                 local f, sz, fl = fs:GetFont()
                 local want = i == 1 and 13 or 12
                 if f ~= UI.FONT or math.floor((sz or 0) + 0.5) ~= want or (fl or "") ~= "" then
-                    if not ttFonts[fs] then ttFonts[fs] = { f, sz, fl } end
+                    if not ttFonts[fs] then ttFonts[fs] = { f, sz, fl, tt } end
                     fs:SetFont(UI.FONT, want, "")
                     changed = true
                 end
@@ -863,11 +865,13 @@ local function applyTooltipFonts(tt)
     end
     return changed
 end
-local function restoreTooltipFonts()
+local function restoreTooltipFonts(tt)
     for fs, o in pairs(ttFonts) do
-        if o[1] then pcall(fs.SetFont, fs, o[1], o[2], o[3] or "") end
+        if o[4] == tt then
+            if o[1] then pcall(fs.SetFont, fs, o[1], o[2], o[3] or "") end
+            ttFonts[fs] = nil
+        end
     end
-    for fs in pairs(ttFonts) do ttFonts[fs] = nil end
 end
 
 -- Infobulles du jeu (objets, PNJ, sorts…) : même police fine, par les polices partagées du jeu.
@@ -895,54 +899,79 @@ WK:On("PLAYER_LOGIN", function() UI:ApplyGameTooltipFonts() end)
 
 function UI:SkinTooltip(tt)
     tt = tt or GameTooltip
-    if not ttSkin then
-        ttSkin = {
+    local sk = skins[tt]
+    if not sk then
+        sk = {
             border = UI:Rounded(tt, 8, 0, "BACKGROUND", -7),
             bg = UI:Rounded(tt, 7, 1, "BACKGROUND", -6),
         }
-        ttSkin.accent = tt:CreateTexture(nil, "BACKGROUND", nil, -5)
-        ttSkin.accent:SetHeight(2)
-        ttSkin.accent:SetPoint("TOPLEFT", tt, "TOPLEFT", 10, -1)
-        ttSkin.accent:SetPoint("TOPRIGHT", tt, "TOPRIGHT", -10, -1)
+        skins[tt] = sk
+        sk.accent = tt:CreateTexture(nil, "BACKGROUND", nil, -5)
+        sk.accent:SetHeight(2)
+        sk.accent:SetPoint("TOPLEFT", tt, "TOPLEFT", 10, -1)
+        sk.accent:SetPoint("TOPRIGHT", tt, "TOPRIGHT", -10, -1)
         if tt.GetBackdropColor and tt:GetBackdropColor() then
-            ttSkin.backdrop = { { tt:GetBackdropColor() }, { tt:GetBackdropBorderColor() } }
+            sk.backdrop = { { tt:GetBackdropColor() }, { tt:GetBackdropBorderColor() } }
         end
-        ttSkin.border:Hide(); ttSkin.bg:Hide(); ttSkin.accent:Hide()
+        sk.border:Hide(); sk.bg:Hide(); sk.accent:Hide()
         tt:HookScript("OnHide", function(self) UI:UnskinTooltip(self) end)
         -- Le jeu peut remettre son cadre en remplissant l'infobulle : on le retire à nouveau.
-        tt:HookScript("OnShow", function(self) if ttSkin.active then hideGameFrame(self) end end)
+        tt:HookScript("OnShow", function(self) if sk.active then hideGameFrame(self) end end)
         -- à chaque Show (lignes ajoutées) : police de l'addon, puis taille recalculée
         if hooksecurefunc then
             hooksecurefunc(tt, "Show", function(self)
-                if not ttSkin.active or ttSkin.reshow then return end
+                if not sk.active or sk.reshow then return end
                 if applyTooltipFonts(self) then
-                    ttSkin.reshow = true
+                    sk.reshow = true
                     self:Show()
-                    ttSkin.reshow = nil
+                    sk.reshow = nil
                 end
             end)
         end
     end
     -- Mêmes couleurs que les cadres (cartes) du thème choisi : fond et bordure.
-    ttSkin.border:SetColor(unpack(C.border))
-    ttSkin.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
-    ttSkin.border:Show(); ttSkin.bg:Show(); ttSkin.accent:Hide()
+    sk.border:SetColor(unpack(C.border))
+    sk.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
+    sk.border:Show(); sk.bg:Show(); sk.accent:Hide()
     hideGameFrame(tt)
-    ttSkin.active = true
+    sk.active = true
+    -- habillée après coup (déjà affichée) : polices et taille tout de suite
+    if tt:IsShown() and not sk.reshow and applyTooltipFonts(tt) then
+        sk.reshow = true
+        tt:Show()
+        sk.reshow = nil
+    end
 end
 
 function UI:UnskinTooltip(tt)
-    if not ttSkin or not ttSkin.active then return end
     tt = tt or GameTooltip
-    ttSkin.active = false
-    restoreTooltipFonts()
-    ttSkin.border:Hide(); ttSkin.bg:Hide(); ttSkin.accent:Hide()
+    local sk = skins[tt]
+    if not sk or not sk.active then return end
+    sk.active = false
+    restoreTooltipFonts(tt)
+    sk.border:Hide(); sk.bg:Hide(); sk.accent:Hide()
     if type(tt.NineSlice) == "table" and tt.NineSlice.Show then tt.NineSlice:Show() end
-    if tt.SetBackdropColor and ttSkin.backdrop then
-        tt:SetBackdropColor(unpack(ttSkin.backdrop[1]))
-        tt:SetBackdropBorderColor(unpack(ttSkin.backdrop[2]))
+    if tt.SetBackdropColor and sk.backdrop then
+        tt:SetBackdropColor(unpack(sk.backdrop[1]))
+        tt:SetBackdropBorderColor(unpack(sk.backdrop[2]))
     end
 end
+
+-- Infobulles du jeu au style de l'addon (réglage settings.ui.gameTooltipFont) : habillées à chaque affichage.
+local GAME_TOOLTIPS = { "GameTooltip", "ItemRefTooltip", "ShoppingTooltip1", "ShoppingTooltip2",
+    "ItemRefShoppingTooltip1", "ItemRefShoppingTooltip2", "EmbeddedItemTooltip" }
+WK:On("PLAYER_LOGIN", function()
+    for _, name in ipairs(GAME_TOOLTIPS) do
+        local tt = _G[name]
+        if tt and tt.HookScript then
+            tt:HookScript("OnShow", function(self)
+                if WK.DB.global.settings.ui.gameTooltipFont == false then return end
+                local sk = skins[self]
+                if not (sk and sk.active) then UI:SkinTooltip(self) end
+            end)
+        end
+    end
+end)
 
 -- Nos infobulles d'objet n'ouvrent pas la comparaison du jeu à côté (deux infobulles qui se chevauchent) ;
 -- Maj enfoncée la montre quand même.

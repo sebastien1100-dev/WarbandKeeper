@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.51.2", date = "19/11/2026",
+        changed = {
+            "Infobulles : toutes les infobulles du jeu (objets dans les sacs, PNJ, sorts, liens du chat, comparaisons d'objets) prennent le style de l'addon : fond et bordure des cartes, police de l'interface. Avant, seules celles des fenêtres de l'addon l'avaient.",
+            "Options > Général > Infobulles : « Police fine pour les infobulles du jeu » devient « Infobulles du jeu au style de l'addon » (coupé : le style du jeu, comme avant).",
+        },
+    },
+    {
         version = "1.51.1", date = "19/11/2026",
         changed = {
             "HV, page Vendre : tes sacs en liste à gauche (icône, nom, quantité, valeur à l'HV), avec un filtre, les pastilles Tout / Favoris / Rangement / Cachés et la valeur totale ; molette pour défiler. Un objet caché se repropose d'un clic dans « Cachés ».",

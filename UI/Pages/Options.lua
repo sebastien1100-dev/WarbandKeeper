@@ -215,7 +215,7 @@ UI:RegisterPage({
             function() return WK.modules.Quests:Config().tooltip end, function(v) WK.modules.Quests:Config().tooltip = v; WK:NotifyChanged() end)
         ttRow(-418, "Rares", "Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué.",
             function() return WK.modules.Rares:Config().tooltip end, function(v) WK.modules.Rares:Config().tooltip = v end)
-        UI:SettingRow(ttCard, -94, "Police fine pour les infobulles du jeu", "Objets, PNJ, sorts : la police de l'interface choisie dans Apparence, sans contour, comme les infobulles de l'addon.",
+        UI:SettingRow(ttCard, -94, "Infobulles du jeu au style de l'addon", "Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu.",
             UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
         ttRow(-40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
             function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end)

@@ -3186,4 +3186,6 @@ WK.Locales.enUS.text = {
     ["Cachés"] = "Hidden",
     ["Tes sacs"] = "Your bags",
     ["Favoris"] = "Favorites",
+    ["Infobulles du jeu au style de l'addon"] = "Game tooltips in the addon's style",
+    ["Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu."] = "Items, NPCs, spells, chat links, comparisons: the addon's background, border and font. Off: the game's style.",
 }
