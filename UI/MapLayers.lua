@@ -166,7 +166,7 @@ function UI:DrawMapLayers(cv, mapID, w, h)
     if not on() then return end
     local cfg = L:Config()
     local scale = (w / 1000) * UI.MapIconScale()
-    local size = math.max(10 * UI.MapIconScale(), (cfg.size or 18) * scale * 0.9)
+    local size = math.max(10 * UI.MapIconScale(), (cfg.size or 18) * scale * 0.9) * UI.MapIconSize()
     local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 10 -- au-dessus des calques de la carte du jeu (UI/MapPins.lua)
     local n = 0
     local places = L:Places(mapID, "map")

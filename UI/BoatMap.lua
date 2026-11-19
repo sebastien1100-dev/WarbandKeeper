@@ -94,7 +94,7 @@ local function placeShips()
     if not (cv and on() and cv:IsVisible()) then return end
     local B = BL()
     local scale = (w / 1000) * UI.MapIconScale()
-    local size = math.max(12 * UI.MapIconScale(), 16 * scale)
+    local size = math.max(12 * UI.MapIconScale(), 16 * scale) * UI.MapIconSize()
     local n = 0
     for _, l in ipairs(B:All()) do
         if B:Mine(l) or not WK.modules.MapLayers:Config().myFaction then

@@ -1166,8 +1166,10 @@ UI:RegisterPage({
             toggle(fcard, function() return mlc.myProfs end, function(v) mlc.myProfs = v; mlRefresh() end), 80)
         UI:SettingRow(fcard, -178, "Barre de filtres sur la carte du monde", "En haut de la carte : clic sur une famille pour l'afficher ou la masquer, clic droit pour le détail.",
             toggle(fcard, function() return mlc.toolbar end, function(v) mlc.toolbar = v; mlRefresh() end), 80)
-        UI:SettingRow(fcard, -224, "Taille des pastilles", nil,
-            UI:Slider(fcard, 220, 12, 30, 1, function() return mlc.size or 18 end, function(v) mlc.size = v; mlRefresh() end, "%d"), 240)
+        UI:SettingRow(fcard, -224, "Taille des icônes sur la carte", "Lieux, quais, navires, rares, notes, filons et repère de la carte du monde. 100 % : taille par défaut.",
+            UI:Slider(fcard, 220, 50, 200, 10, function() return mlc.iconScale or 100 end, function(v)
+                mlc.iconScale = v; mlRefresh(); if UI.RedrawWorldMap then UI.RedrawWorldMap("taille") end
+            end, "%d %%"), 240)
         -- Navigation : trajet en pointillé qui suit les chemins connus, appris en jouant (Modules/Nav.lua)
         local GD, NV = WK.modules.Guide, WK.modules.Nav
         local gdc = GD:Config()

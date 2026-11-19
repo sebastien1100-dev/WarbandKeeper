@@ -13,6 +13,12 @@ local pins = {}
 ---------------------------------------------------------------------------
 -- Zoom de la carte du monde : les pastilles et les tracés gardent à peu près leur taille à l'écran
 -- (sans ça, tout grossit avec la carte et devient illisible). Facteur à multiplier aux tailles sur la toile.
+-- Taille choisie des icônes de la carte du monde (MapLayers:Config().iconScale, en %, 100 = taille d'origine)
+function UI.MapIconSize()
+    local L = WK.modules.MapLayers
+    local v = L and L.Config and L:Config().iconScale or 100
+    return math.max(0.5, math.min(2, (tonumber(v) or 100) / 100))
+end
 function UI.MapIconScale()
     local sc = WorldMapFrame and WorldMapFrame.ScrollContainer
     if not (sc and sc.GetCanvasScale) then return 1 end
@@ -181,7 +187,7 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnMouseUp", function(_, b) if b == "RightButton" then G:Stop() end end)
     end
     targetPin:SetParent(cv)
-    local size = 24 * ((w / 1000) * UI.MapIconScale())
+    local size = 24 * ((w / 1000) * UI.MapIconScale()) * UI.MapIconSize()
     targetPin:SetSize(size, size)
     targetPin.shadow:SetSize(size * 1.06, size * 1.06)
     targetPin.shadow:ClearAllPoints()

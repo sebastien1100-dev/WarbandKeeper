@@ -196,7 +196,7 @@ function UI:DrawRarePins(cv, mapID, w, h)
         local m = r.maps[mapID]
         local p = getPin(i)
         p.r, p.mapID = r, mapID
-        local size = 26 * scale * 0.85
+        local size = 26 * scale * 0.85 * UI.MapIconSize()
         p:SetSize(size, size)
         p.bg:SetSize(size * 0.82, size * 0.82)
         p.ring:SetSize(size, size)

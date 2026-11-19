@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.59.1", date = "19/11/2026",
+        added = {
+            "Carte du monde : réglage « Taille des icônes sur la carte » (de 50 % à 200 %) pour toutes les icônes (lieux, quais, navires, rares, notes, filons, repère). À 100 %, la taille ne change pas. Il remplace « Taille des pastilles » dans les réglages de la carte, onglet Lieux, carte « Filtres et affichage ».",
+        },
+    },
+    {
         version = "1.59.0", date = "19/11/2026",
         changed = {
             "Chrono de donjon plus lisible : fond sombre plein aux coins arrondis (il ne s'efface plus à droite, là où sont les temps). Le gros chrono passe à droite du nom du donjon, le record et le compteur de l'heure tiennent sur une ligne avec le temps restant, les colonnes « Temps » et « Écart » ont un titre, et seuls les 2 derniers boss tués restent affichés (« + 3 boss tués plus tôt » pour les autres). « Fond plus discret » rend le fond un peu transparent.",

@@ -27,6 +27,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.59.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte du monde : réglage « Taille des icônes sur la carte » (de 50 % à 200 %) pour toutes les icônes (lieux, quais, navires, rares, notes, filons, repère). À 100 %, la taille ne change pas. Il remplace « Taille des pastilles » dans les réglages de la carte, onglet Lieux, carte « Filtres et affichage ».
+
 ## v1.59.0 — 19/11/2026
 
 _Un /reload suffit._
