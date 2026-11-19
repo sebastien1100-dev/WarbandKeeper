@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.69.2", date = "19/11/2026",
+        fixed = {
+            "Feu de camp : l'encart à l'écran était trop petit et coupait son texte (« Avantages du camp dans 5… »). Il est plus large, le texte passe à la ligne au lieu d'être coupé, et pendant la minute assise le décompte s'affiche en grand à droite avec une barre plus épaisse.",
+        },
+    },
+    {
         version = "1.69.1", date = "19/11/2026",
         changed = {
             "Donjons, chrono : il part maintenant au premier pack (ton premier combat dans le donjon), plus en franchissant la porte ; en attendant il reste à 0 avec « au premier pack ». Un boss tué ou le chrono partagé par un membre du groupe le lancent aussi. Réglage « Départ du chrono » (au premier pack / en entrant) dans Donjons > roue dentée.",

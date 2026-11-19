@@ -3493,4 +3493,5 @@ WK.Locales.enUS.text = {
     ["Au premier pack"] = "At first pull",
     ["En entrant"] = "On entering",
     ["Au premier pack : le chrono attend ton premier combat dans le donjon (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie."] = "At first pull: the timer waits for your first fight in the dungeon (or a group member's timer). On entering: as soon as you walk in.",
+    ["Les avantages du camp arrivent à la fin de la minute."] = "Camp perks arrive at the end of the minute.",
 }

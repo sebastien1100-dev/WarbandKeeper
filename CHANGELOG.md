@@ -79,6 +79,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.69.2 — 19/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Feu de camp : l'encart à l'écran était trop petit et coupait son texte (« Avantages du camp dans 5… »). Il est plus large, le texte passe à la ligne au lieu d'être coupé, et pendant la minute assise le décompte s'affiche en grand à droite avec une barre plus épaisse.
+
 ## v1.69.1 — 19/11/2026
 
 _Un /reload suffit._

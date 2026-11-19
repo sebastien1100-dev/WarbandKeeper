@@ -11,20 +11,23 @@ local card
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperCampCard", UIParent)
-    f:SetSize(320, 64)
+    f:SetSize(380, 64)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.94 }, C.border)
-    f.icon = UI:RoundIcon(f, 36)
+    f.icon = UI:RoundIcon(f, 40)
     f.icon:SetPoint("LEFT", 12, 0)
-    f.title = UI:Text(f, 13)
-    f.title:SetPoint("TOPLEFT", 58, -12)
-    f.title:SetPoint("RIGHT", -96, 0)
+    f.title = UI:Text(f, 14)
+    f.title:SetPoint("TOPLEFT", 62, -12)
     f.title:SetJustifyH("LEFT")
-    f.sub = UI:Text(f, 11, C.muted)
+    f.sub = UI:Text(f, 12, C.text)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
-    f.sub:SetPoint("RIGHT", -96, 0)
     f.sub:SetJustifyH("LEFT")
+    if f.sub.SetWordWrap then f.sub:SetWordWrap(true) end
+    if f.sub.SetMaxLines then f.sub:SetMaxLines(3) end
+    -- décompte en grand à droite pendant la minute assise
+    f.count = UI:Text(f, 24, C.text)
+    f.count:SetPoint("RIGHT", -18, 2); f.count:SetJustifyH("RIGHT")
     f.sit = UI:Button(f, "S'asseoir", 84, 28, "primary")
     f.sit:SetPoint("RIGHT", -10, 0)
     f.sit:SetScript("OnClick", function() M:Sit() end)
@@ -32,10 +35,10 @@ local function build()
     f.close:SetPoint("TOPRIGHT", -4, -4)
     f.close:SetScript("OnClick", function() f.dismissed = M.state; f:Hide() end)
     f.track = f:CreateTexture(nil, "ARTWORK")
-    f.track:SetHeight(3)
-    f.track:SetPoint("BOTTOMLEFT", 12, 2); f.track:SetPoint("BOTTOMRIGHT", -12, 2)
+    f.track:SetHeight(5)
+    f.track:SetPoint("BOTTOMLEFT", 12, 6); f.track:SetPoint("BOTTOMRIGHT", -12, 6)
     f.fill = f:CreateTexture(nil, "OVERLAY")
-    f.fill:SetHeight(3)
+    f.fill:SetHeight(5)
     f.fill:SetPoint("BOTTOMLEFT", f.track, "BOTTOMLEFT")
     f:Hide()
 
@@ -49,7 +52,7 @@ local function build()
         self.fill:SetColorTexture(r1, g1, b1, 1)
         local src = a.sit or a.flame or a.perk
         self.icon:SetTexture((src and src.icon) or "Interface\\Icons\\Spell_Fire_Fire")
-        self.sit:Hide(); self.track:Hide(); self.fill:Hide()
+        self.sit:Hide(); self.track:Hide(); self.fill:Hide(); self.count:SetText("")
         if state == "sit" or state == "early" then
             self.title:SetText(state == "early" and T("Relevé trop tôt") or T("Feu de camp à proximité"))
             local left = M.Remaining(a.perk)
@@ -60,7 +63,8 @@ local function build()
             self.title:SetText(T("Reste assis…"))
             local left = sample and 42 or M.Remaining(a.sit) or 0
             local total = (a.sit and type(a.sit.duration) == "number" and a.sit.duration > 0) and a.sit.duration or 60
-            self.sub:SetText(string.format(T("Avantages du camp dans %d s"), math.max(0, math.ceil(left))))
+            self.sub:SetText(T("Les avantages du camp arrivent à la fin de la minute."))
+            self.count:SetText(string.format("%d s", math.max(0, math.ceil(left))))
             self.track:Show(); self.fill:Show()
             self.fill:SetWidth(math.max(0.01, (self.track:GetWidth() or 0) * (1 - left / total)))
         elseif state == "done" then
@@ -69,6 +73,12 @@ local function build()
             local txt = M:PerkText()
             self.sub:SetText((txt and (txt:gsub("\n", " · ") .. "  ·  ") or "") .. (left and string.format(T("%s restantes"), UI:AgoShort(left, true)) or ""))
         end
+        -- place du texte : jusqu'au bouton ou au décompte s'ils sont là, sinon jusqu'à la croix
+        local right = self.sit:IsShown() and 104 or ((self.count:GetText() or "") ~= "" and 84 or 30)
+        local w = (self:GetWidth() or 380) - 62 - right
+        self.title:SetWidth(w); self.sub:SetWidth(w)
+        local h = 12 + (self.title:GetStringHeight() or 16) + 4 + (self.sub:GetStringHeight() or 14) + (self.track:IsShown() and 22 or 14)
+        self:SetHeight(math.max(64, math.ceil(h)))
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el
