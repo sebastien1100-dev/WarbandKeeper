@@ -3152,4 +3152,6 @@ WK.Locales.enUS.text = {
     ["À l'encanteur, notre fenêtre remplace celle du jeu (Parcourir, Vendre, Mes enchères, À acheter, Prix). Sinon : la fenêtre du jeu et le panneau ci-dessous."] = "At the auctioneer, our window replaces the game's (Browse, Sell, My auctions, To buy, Prices). Otherwise: the game window and the panel below.",
     ["Avec la fenêtre du jeu : nombre de prix connus, dernier scan et bouton « Scanner l'HV »."] = "With the game window: number of known prices, last scan and \"Scan the AH\" button.",
     ["Warband Keeper"] = "Warband Keeper",
+    ["Clic : lancer"] = "Click: cast",
+    ["Exemple : pas de bénédiction sur toi"] = "Example: no blessing on you",
 }

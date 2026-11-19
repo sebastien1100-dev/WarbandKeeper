@@ -26,6 +26,18 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.50.1 — 19/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Pile d'alertes : les rappels de buffs montrent les icônes des sorts que tu connais (bénédictions, auras, Robustesse, Marque du fauve) ; un clic sur une icône lance le sort (hors combat).
+- Pile d'alertes : posée en bas de l'écran, elle se déplie vers le haut (titre en bas). Ça se règle tout seul en la glissant par son titre, ou dans le mode édition (« Empiler vers »).
+- Mode édition, « Tester » : la pile montre un rappel de chaque groupe (avec icônes de buff et bouton), et le temps du poison défile.
+
+### Corrections
+- Rappel du Réal : erreur Lua à chaque image depuis la 1.49.1 (le liseré qui pulse).
+
 ## v1.50.0 — 19/11/2026
 
 _Un /reload suffit._

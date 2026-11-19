@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.50.1", date = "19/11/2026",
+        added = {
+            "Pile d'alertes : les rappels de buffs montrent les icônes des sorts que tu connais (bénédictions, auras, Robustesse, Marque du fauve) ; un clic sur une icône lance le sort (hors combat).",
+            "Pile d'alertes : posée en bas de l'écran, elle se déplie vers le haut (titre en bas). Ça se règle tout seul en la glissant par son titre, ou dans le mode édition (« Empiler vers »).",
+            "Mode édition, « Tester » : la pile montre un rappel de chaque groupe (avec icônes de buff et bouton), et le temps du poison défile.",
+        },
+        fixed = {
+            "Rappel du Réal : erreur Lua à chaque image depuis la 1.49.1 (le liseré qui pulse).",
+        },
+    },
+    {
         version = "1.50.0", date = "19/11/2026",
         added = {
             "Hôtel des ventes : notre propre fenêtre remplace celle du jeu chez l'encanteur, avec une barre latérale comme la fenêtre de l'addon : Parcourir, Vendre, Mes enchères, À acheter, Prix, Scan et réglages, avec des pastilles (objets à vendre, enchères sous-cotées en rouge, objets à acheter). En haut : le scan des prix avec sa barre, ton or, « Fenêtre du jeu » pour revenir à l'HV de base le reste de la visite, et fermer.",

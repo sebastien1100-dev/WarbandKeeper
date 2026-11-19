@@ -9,7 +9,10 @@ local T = function(s) return WK.T(s) end
 --   UI:SetAlert(key, shown, { text, color = {r,g,b}, prio = 1, icon = texture, group = "urgent"|"perso"|"world",
 --                              right = "3 min", ttl = secondes, dismiss = true,
 --                              action = { label = "Guider", onClick = fn }                 -- bouton simple
---                                    ou { label = "Lancer", attrs = { type = "spell", spell = "…", unit = "…" } } })
+--                                    ou { label = "Lancer", attrs = { type = "spell", spell = "…", unit = "…" } },
+--                              icons = { { icon = texture, tip = "…", attrs = { … } } } })    -- petites icônes à cliquer (buffs)
+-- Pile en bas de l'écran (« Empiler vers le haut », choisi aussi tout seul en la glissant) : le titre passe en bas
+-- et la pile se déplie vers le haut.
 -- Les boutons d'attributs sont protégés : posés hors combat seulement, retirés juste avant un combat.
 -- Glisser le titre déplace la pile (position gardée).
 local W, HEAD, SECH, LINE, PAD = 290, 26, 16, 22, 6
@@ -63,7 +66,14 @@ local function build()
         layout()
     end)
     head:SetScript("OnDragStart", function() if not UI.editing then anchor:StartMoving() end end)
-    head:SetScript("OnDragStop", function() anchor:StopMovingOrSizing(); UI:HUDCapture("alerts") end)
+    head:SetScript("OnDragStop", function()
+        anchor:StopMovingOrSizing()
+        -- posée dans la moitié basse de l'écran : elle se déplie vers le haut (et inversement)
+        local top, bottom = anchor:GetTop(), anchor:GetBottom()
+        if top and bottom then entry().growUp = (top + bottom) / 2 < UIParent:GetHeight() / 2 end
+        UI:HUDCapture("alerts")
+        layout()
+    end)
     head:SetScript("OnEnter", function(s)
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         GameTooltip:SetText(T("Rappels Warband Keeper"), 1, 1, 1)
@@ -96,11 +106,20 @@ local function build()
             { type = "toggle", label = "Icônes", get = function(e) return e.icons ~= false end, set = function(e, v) e.icons = v end },
             { type = "toggle", label = "Replier en combat", get = function(e) return e.combatFold and true or false end, set = function(e, v) e.combatFold = v end },
         },
-        sample = function(on)
-            UI:SetAlert("demo.1", on, { text = T("Exemple : limite d'instances 9/10"), color = C.negative, prio = 1, group = "urgent", right = "12 min" })
-            UI:SetAlert("demo.2", on, { text = T("Exemple : poison de l'arme principale"), group = "perso", right = "3 min" })
-            UI:SetAlert("demo.3", on, { text = T("Exemple : point de vol à apprendre"), color = C.info, group = "world",
-                action = { label = T("Guider"), onClick = function() end } })
+        sample = function(on) UI:AlertDemo(on) end,
+        -- « Tester » : les mêmes rappels, et le temps du poison qui défile
+        test = function()
+            UI:AlertDemo(true)
+            local left = 180
+            anchor.testTicker = C_Timer.NewTicker and C_Timer.NewTicker(1, function()
+                left = math.max(0, left - 1)
+                UI:SetAlert("demo.2", true, { text = T("Exemple : poison de l'arme principale"), group = "perso",
+                    right = string.format("%d:%02d", math.floor(left / 60), left % 60), rightColor = C.warning })
+            end)
+        end,
+        testStop = function()
+            if anchor.testTicker then anchor.testTicker:Cancel(); anchor.testTicker = nil end
+            UI:AlertDemo(false)
         end,
         onApply = function() if layout then layout() end end,
     })
@@ -167,8 +186,32 @@ local function getAct(i)
     acts[i] = b
     return b
 end
+-- Petite icône protégée (un buff à lancer) : même règle, jamais touchée en combat.
+local icons = {}
+local function getIconBtn(i)
+    local b = icons[i]
+    if b then return b end
+    b = CreateFrame("Button", "WarbandKeeperAlertIcon" .. i, UIParent, "SecureActionButtonTemplate")
+    if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
+    b:SetFrameStrata("MEDIUM")
+    b:SetSize(18, 18)
+    b.edge = b:CreateTexture(nil, "BACKGROUND"); b.edge:SetPoint("TOPLEFT", -1, 1); b.edge:SetPoint("BOTTOMRIGHT", 1, -1)
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.hl = b:CreateTexture(nil, "HIGHLIGHT"); b.hl:SetAllPoints(); b.hl:SetColorTexture(1, 1, 1, 0.2)
+    b:SetScript("OnEnter", function(s)
+        WK.UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(s.tip or "", 1, 1, 1)
+        GameTooltip:AddLine(T("Clic : lancer"), 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b:Hide()
+    icons[i] = b
+    return b
+end
 local function hideActs()
     for _, b in ipairs(acts) do b:Hide(); b:ClearAllPoints() end
+    for _, b in ipairs(icons) do b:Hide(); b:ClearAllPoints() end
 end
 
 local function sorted()
@@ -194,7 +237,8 @@ layout = function()
     if not anchor then return end
     local list = sorted()
     local e = entry()
-    local icons = e.icons ~= false
+    local showIcons = e.icons ~= false
+    local up = e.growUp and true or false
     local fold = folded()
     local combat = inCombat()
     local r, g, b = UI:Accent()
@@ -202,11 +246,20 @@ layout = function()
     head.pill.text:SetText(#list)
     head.pill:SetWidth(math.max(18, head.pill.text:GetStringWidth() + 10))
     head.chev:SetVertexColor(r, g, b, 0.9)
-    if head.chev.SetRotation then head.chev:SetRotation(fold and math.pi / 2 or 0) end
+    -- chevron : vers la droite replié ; ouvert, vers le bas (ou le haut quand la pile se déplie vers le haut)
+    if head.chev.SetRotation then head.chev:SetRotation(fold and math.pi / 2 or (up and math.pi or 0)) end
+    head:ClearAllPoints(); head.line:ClearAllPoints()
+    if up then
+        head:SetPoint("BOTTOMLEFT"); head:SetPoint("BOTTOMRIGHT")
+        head.line:SetPoint("TOPLEFT", 6, 0); head.line:SetPoint("TOPRIGHT", -6, 0)
+    else
+        head:SetPoint("TOPLEFT"); head:SetPoint("TOPRIGHT")
+        head.line:SetPoint("BOTTOMLEFT", 6, 0); head.line:SetPoint("BOTTOMRIGHT", -6, 0)
+    end
     head.line:SetShown(not fold and #list > 0)
 
     if not combat then hideActs() end
-    local y, ri, si, ai = HEAD + 2, 0, 0, 0
+    local y, ri, si, ai, ii = up and 4 or (HEAD + 2), 0, 0, 0, 0
     if not fold then
         for _, gdef in ipairs(GROUPS) do
             local first = true
@@ -227,7 +280,7 @@ layout = function()
                     row:ClearAllPoints()
                     row:SetPoint("TOPLEFT", 0, -y); row:SetPoint("TOPRIGHT", 0, -y)
                     local col = a.color or C.warning
-                    local hasIcon = icons and a.icon ~= nil
+                    local hasIcon = showIcons and a.icon ~= nil
                     row.icon:SetShown(hasIcon)
                     if hasIcon then row.icon:SetTexture(a.icon) end
                     row.dot:SetShown(not hasIcon)
@@ -243,6 +296,23 @@ layout = function()
                         row.btn.fn = act.onClick
                         row.btn:Show()
                         bw = row.btn:GetWidth() + 6
+                    elseif a.icons and not combat then
+                        -- une icône par buff applicable, de droite à gauche
+                        local x = -6
+                        for k = #a.icons, 1, -1 do
+                            local ic = a.icons[k]
+                            ii = ii + 1
+                            local ib = getIconBtn(ii)
+                            for an, av in pairs(ic.attrs or {}) do ib:SetAttribute(an, av) end
+                            ib.icon:SetTexture(ic.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+                            ib.edge:SetColorTexture(r, g, b, 0.9)
+                            ib.tip = ic.tip
+                            ib:SetFrameLevel(row:GetFrameLevel() + 5)
+                            ib:SetPoint("RIGHT", row, "RIGHT", x, 0)
+                            ib:Show()
+                            x = x - 22
+                        end
+                        bw = -x - 2
                     elseif act and act.attrs and not combat then
                         ai = ai + 1
                         local sb = getAct(ai)
@@ -272,7 +342,7 @@ layout = function()
     end
     for i = ri + 1, #rows do rows[i]:Hide() end
     for i = si + 1, #secs do secs[i]:Hide() end
-    anchor:SetSize(W, fold and HEAD or (y + PAD - 2))
+    anchor:SetSize(W, fold and HEAD or (y + (up and (HEAD + 2) or (PAD - 2))))
     -- pile vide : cachée (le mode édition la montre avec ses exemples)
     anchor:SetShown(#list > 0 or UI.editing)
 end
@@ -301,6 +371,7 @@ function UI:SetAlert(key, shown, data)
         local now = GetTime and GetTime() or 0
         local untilT = data.ttl and (now + data.ttl) or nil
         if cur and cur.text == data.text and cur.icon == data.icon and cur.prio == data.prio and cur.right == data.right
+            and #(cur.icons or {}) == #(data.icons or {})
             and cur.group == data.group and sameColor(cur.color, data.color) and sameAction(cur.action, data.action) then
             cur["until"] = untilT
             return
@@ -316,6 +387,17 @@ function UI:SetAlert(key, shown, data)
 end
 
 function UI:ActiveAlerts() return active end
+
+-- Exemples (mode édition et « Tester ») : un rappel de chaque groupe, avec bouton et icônes de buff
+function UI:AlertDemo(on)
+    local function sp(id) return (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id)) end
+    UI:SetAlert("demo.1", on, { text = T("Exemple : limite d'instances 9/10"), color = C.negative, prio = 1, group = "urgent", right = "12 min" })
+    UI:SetAlert("demo.2", on, { text = T("Exemple : poison de l'arme principale"), group = "perso", right = "3:00", rightColor = C.warning })
+    UI:SetAlert("demo.4", on, { text = T("Exemple : pas de bénédiction sur toi"), group = "perso",
+        icons = { { icon = sp(19740), tip = WK.SpellInfo(19740) }, { icon = sp(19742), tip = WK.SpellInfo(19742) }, { icon = sp(20217), tip = WK.SpellInfo(20217) } } })
+    UI:SetAlert("demo.3", on, { text = T("Exemple : point de vol à apprendre"), color = C.info, group = "world",
+        action = { label = T("Guider"), onClick = function() end } })
+end
 
 -- La pile existe dès la connexion (vide), pour pouvoir la placer en mode édition.
 WK:On("PLAYER_LOGIN", function()

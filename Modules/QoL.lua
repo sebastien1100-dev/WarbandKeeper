@@ -337,7 +337,7 @@ function M:Remind(key, text, r, g, b, quiet, opts)
         local urgent = opts.urgent
         WK.UI:SetAlert("qol." .. key, true, { text = text, color = urgent and WK.UI.colors.negative or color,
             prio = urgent and 1 or 3, group = urgent and "urgent" or kd.group, right = opts.right, rightColor = opts.rightColor,
-            ttl = opts.ttl or kd.ttl, dismiss = kd.dismiss, action = opts.action, tip = opts.tip })
+            ttl = opts.ttl or kd.ttl, dismiss = kd.dismiss, action = opts.action, icons = opts.icons, tip = opts.tip })
     end
     if not fresh then return end
     lastReminder[key] = now
@@ -1081,15 +1081,22 @@ local function canRemind()
     return true
 end
 
--- Bouton « Lancer » : le sort simple de la liste (premier n°, par son nom : rang le plus haut), sur l'unité donnée.
-local function spellAction(ids, unit)
-    local id = ids and ids[1]
-    local name = id and WK.SpellInfo(id)
-    if not name then return nil end
-    local known = (IsPlayerSpell and IsPlayerSpell(id)) or (IsSpellKnown and IsSpellKnown(id))
-    if known == false then return nil end
-    return { label = T("Lancer"), attrs = { type = "spell", spell = name, unit = unit or "player" } }
+-- Icônes de la pile : un bouton par sort connu de la liste (bénédictions, auras…), lancé sur l'unité donnée.
+local BLESSINGS = { 19740, 19742, 20217, 1038, 19977, 20911 } -- Puissance, Sagesse, Rois, Salut, Lumière, Sanctuaire
+local AURAS = { 465, 7294, 19746, 19876, 19888, 19891, 20218 } -- Dévotion, Vindicte, Concentration, Ombre, Givre, Feu, Sainteté
+local function spellIcons(ids, unit)
+    local out = {}
+    for _, id in ipairs(ids) do
+        local known = (IsPlayerSpell and IsPlayerSpell(id)) or (IsSpellKnown and IsSpellKnown(id))
+        local name = WK.SpellInfo(id)
+        if known ~= false and name then
+            local tex = (C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id)) or (GetSpellTexture and GetSpellTexture(id))
+            table.insert(out, { icon = tex, tip = name, attrs = { type = "spell", spell = name, unit = unit or "player" } })
+        end
+    end
+    return #out > 0 and out or nil
 end
+M.BLESSINGS, M.AURAS, M.SpellIcons = BLESSINGS, AURAS, spellIcons
 
 local function checkBuffs()
     local c = WK.DB:Me()
@@ -1108,19 +1115,19 @@ local function checkBuffs()
         end
         if #missing > 0 then
             M:Remind("fort", string.format(T("Robustesse à remettre : %s"), table.concat(missing, ", ")), 0.9, 0.9, 1, true,
-                { action = spellAction(FORTITUDE, firstUnit) })
+                { icons = spellIcons(FORTITUDE, firstUnit) })
         else
             M:ClearRemind("fort")
         end
     elseif c.class == "PALADIN" then
         local noAura = GetShapeshiftForm and GetNumShapeshiftForms and GetNumShapeshiftForms() > 0 and GetShapeshiftForm() == 0
         local noBless = not noAura and not buffLeft("player", {}, { "bénédiction", "blessing" })
-        if noAura then M:Remind("aura", T("Aucune aura active"), 0.96, 0.55, 0.73, true) else M:ClearRemind("aura") end
-        if noBless then M:Remind("bless", T("Pas de bénédiction sur toi"), 0.96, 0.55, 0.73, true) else M:ClearRemind("bless") end
+        if noAura then M:Remind("aura", T("Aucune aura active"), 0.96, 0.55, 0.73, true, { icons = spellIcons(AURAS) }) else M:ClearRemind("aura") end
+        if noBless then M:Remind("bless", T("Pas de bénédiction sur toi"), 0.96, 0.55, 0.73, true, { icons = spellIcons(BLESSINGS) }) else M:ClearRemind("bless") end
     elseif c.class == "DRUID" then
         local names = buffNames(MARK_OF_WILD)
         if not buffLeft("player", names) then
-            M:Remind("motw", T("Marque du fauve absente"), 1, 0.49, 0.04, true, { action = spellAction(MARK_OF_WILD, "player") })
+            M:Remind("motw", T("Marque du fauve absente"), 1, 0.49, 0.04, true, { icons = spellIcons(MARK_OF_WILD, "player") })
         else
             M:ClearRemind("motw")
         end
