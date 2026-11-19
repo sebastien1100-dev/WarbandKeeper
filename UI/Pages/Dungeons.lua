@@ -14,9 +14,10 @@ local D = WK.modules.Dungeons
 local GAP, ITEM_H = 10, 22
 local LIST_W, ROW_H = 280, 26
 -- groupes de la colonne, selon le niveau du perso choisi
+-- « Déjà dépassés » en tête (replié, il ne prend qu'une ligne), puis du niveau actuel vers le plus haut
 local GROUPS = {
-    { "now", "Pour ton niveau" }, { "soon", "Bientôt" }, { "high", "Plus haut" },
-    { "past", "Déjà dépassés" }, { "raid", "Raids" },
+    { "past", "Déjà dépassés" }, { "now", "Pour ton niveau" }, { "soon", "Bientôt" }, { "high", "Plus haut" },
+    { "raid", "Raids" },
 }
 local function groupOf(d, lvl)
     if d.raid then return "raid" end

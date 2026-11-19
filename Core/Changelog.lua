@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.56.5", date = "19/11/2026",
+        changed = {
+            "Donjons : le groupe « Déjà dépassés » passe en tête de la colonne des donjons, avant « Pour ton niveau ».",
+        },
+    },
+    {
         version = "1.56.4", date = "19/11/2026",
         changed = {
             "Rappel du Réal : l'icône de la pièce dans son cadre doré est remplacée par notre sac dans un rond teinté à la couleur d'accent, comme les boutons de l'addon.",

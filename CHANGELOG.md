@@ -26,6 +26,13 @@ _Prévu, pas encore commencé._
 - Recherche « Qui peut fabriquer… ? » sur tous les persos.
 - Annonce de métier : une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
+## v1.56.5 — 19/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : le groupe « Déjà dépassés » passe en tête de la colonne des donjons, avant « Pour ton niveau ».
+
 ## v1.56.4 — 19/11/2026
 
 _Un /reload suffit._
