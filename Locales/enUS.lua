@@ -4061,4 +4061,5 @@ WK.Locales.enUS.text = {
     ["… niveaux %d à %d · %d sorts"] = "… levels %d to %d · %d spells",
     ["Prix des sorts de classe chez le maître"] = "Class spell prices at the trainer",
     ["Prix de base des sorts de classe chez le maître (avant remise de réputation) : addon What's Training (github.com/fusionpit/WhatsTraining, licence MIT). Le prix relevé chez le maître passe devant."] = "Base prices of class spells at the trainer (before reputation discount): What's Training addon (github.com/fusionpit/WhatsTraining, MIT licence). The price seen at the trainer takes precedence.",
+    ["repos < 1 %"] = "rest < 1 %",
 }

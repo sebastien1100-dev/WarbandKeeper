@@ -142,11 +142,21 @@ local function build()
         local hex, mu = UI:Hex({ r1, g1, b1 }), UI:Hex(bare and C.text or C.muted)
         self.right:SetTextColor(unpack(bare and C.text or C.muted))
         self.left:SetText(string.format(hex .. T("Niv. %d") .. "|r  " .. mu .. "·|r  %s / %s  " .. mu .. "(%d %%)|r", x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
-        local parts = {}
-        if x.rested > 0 then table.insert(parts, string.format(UI:Hex(C.info) .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end
-        if pend > 0 then table.insert(parts, string.format(UI:Hex(C.gold) .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq)) end
-        if x.cur + pend >= x.max then table.insert(parts, UI:Hex(C.positive) .. T("niveau en rendant tout") .. "|r") end
-        self.right:SetText(table.concat(parts, "  " .. mu .. "·|r  "))
+        -- texte de droite : du plus complet au plus court, le premier qui tient à côté de celui de gauche
+        -- (barre étroite : les deux textes se chevauchaient)
+        local restPct = math.floor(x.rested / x.max * 100)
+        local rest = x.rested > 0 and (UI:Hex(C.info) .. (restPct >= 1 and string.format(T("repos %d %%"), restPct) or T("repos < 1 %")) .. "|r") or nil
+        local pendTxt = pend > 0 and string.format(UI:Hex(C.gold) .. T("à rendre +%s (%d)") .. "|r", fmt(pend), nq) or nil
+        local pendShort = pend > 0 and (UI:Hex(C.gold) .. "+" .. fmt(pend) .. "|r") or nil
+        local lvlUp = x.cur + pend >= x.max and (UI:Hex(C.positive) .. T("niveau en rendant tout") .. "|r") or nil
+        local variants = { { rest, pendTxt, lvlUp }, { rest, pendTxt }, { pendTxt }, { pendShort }, {} }
+        local avail = (self.trackF:GetWidth() or 0) - 12
+        for _, v in ipairs(variants) do
+            local parts = {}
+            for i = 1, 3 do if v[i] then table.insert(parts, v[i]) end end
+            self.right:SetText(table.concat(parts, "  " .. mu .. "·|r  "))
+            if avail <= 0 or (self.left:GetStringWidth() or 0) + (self.right:GetStringWidth() or 0) <= avail then break end
+        end
     end
 
     f:SetScript("OnEnter", function(s)

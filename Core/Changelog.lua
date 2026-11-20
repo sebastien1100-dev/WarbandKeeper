@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.2", date = "20/11/2026",
+        fixed = {
+            "Barre d'expérience : sur une barre étroite, le texte de droite (repos, XP à rendre, « niveau en rendant tout ») chevauchait le niveau et l'XP. Il se raccourcit maintenant pour tenir (tout reste dans l'infobulle).",
+            "Barre d'expérience : un tout petit repos s'affiche « repos < 1 % » au lieu de « repos 0 % ».",
+        },
+    },
+    {
         version = "1.99.1", date = "20/11/2026",
         fixed = {
             "Carte du monde : le calque « Quêtes » plantait (« attempt to perform arithmetic on local 'y' ») quand une quête prête à rendre avait un lieu de rendu connu ; ses repères ne s'affichaient plus.",
