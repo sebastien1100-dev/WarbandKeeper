@@ -209,13 +209,15 @@ function M:StepsNow()
     end
     -- maître de classe : les sorts à apprendre maintenant (Modules/ClassSpells.lua) ; sinon tous les deux niveaux
     local CS = WK.modules.ClassSpells
-    local cr = CS and CS:ForChar()
-    if cr and #cr.now > 0 then
+    -- option « Maître de classe » coupée (trainerTour = false) : pas d'étape de maître
+    local trainerOn = cfg.trainerTour ~= false
+    local cr = CS and trainerOn and CS:ForChar() or nil
+    if trainerOn and cr and #cr.now > 0 then
         add({ key = "trainer:" .. lvl .. ":" .. #cr.now, kind = "trainer",
             title = string.format(T("Maître de classe : %d sort(s) à apprendre"), #cr.now),
             sub = cr.costNow > 0 and CS:Money(cr.costNow) or T("le maître le plus proche"), auto = true,
             act = function() G():GoTo("trainer") end })
-    elseif not cr then
+    elseif trainerOn and not cr then
         local seen = cfg.trainer[key] or 0
         if lvl >= 2 and lvl % 2 == 0 and seen < lvl then
             add({ key = "trainer:" .. lvl, kind = "trainer", title = string.format(T("Maître de classe : nouveaux sorts (niveau %d)"), lvl),

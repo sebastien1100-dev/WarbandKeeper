@@ -884,17 +884,28 @@ UI:RegisterPage({
         -- maître de classe dans la tournée (oui par défaut : réglage trainerTour ~= false)
         sc.trainer = UI:Toggle(sc, function() return not (LG() and LG():Config().trainerTour == false) end,
             function(v)
-                if LG() then LG():Config().trainerTour = v and nil or false end
-                if QP() then QP():Invalidate() end
+                -- oui = réglage effacé (oui par défaut), non = false
+                if LG() then
+                    if v then LG():Config().trainerTour = nil else LG():Config().trainerTour = false end
+                    LG():Invalidate()
+                end
+                -- tournée en cours : refaite avec ou sans le maître
+                if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
                 self.lgAt = nil; self:RefreshMontee()
             end)
         sc.trainer.label = UI:Text(sc, 12); sc.trainer.label:SetPoint("LEFT", sc.trainer, "RIGHT", 8, 0)
-        sc.trainer.label:SetText(T("Maître de classe dans la tournée"))
-        sc.trainer.tooltip = "Quand des sorts sont à apprendre, la tournée de quêtes passe par le maître de classe le plus proche."
+        sc.trainer.label:SetText(T("Maître de classe"))
+        sc.trainer.tooltip = "Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche)."
         table.insert(self.toggles or {}, sc.trainer)
         sc.noProf = cfgToggle("noProf", "Sans métiers")
         sc.recalc = UI:Button(sc, "Recalculer", nil, 30, "secondary", "refresh")
-        sc.recalc:SetScript("OnClick", function() self.lgAt = nil; self:RefreshMontee() end)
+        -- recalcul complet : guide (zones, étapes) et quêtes de la zone ; la tournée en cours est refaite
+        sc.recalc:SetScript("OnClick", function()
+            if LG() then LG():Invalidate() end
+            if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
+            self.lgAt = nil; self:RefreshMontee()
+            WK:Print(T("Guide de montée recalculé."))
+        end)
         -- recalcul toutes les 3 s tant que l'onglet est affiché
         local acc = 0
         hold:SetScript("OnUpdate", function(_, el)

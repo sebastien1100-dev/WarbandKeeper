@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.5 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Montée en niveaux : l'interrupteur du maître de classe ne pouvait pas se rallumer, et l'étape « Maître de classe » du guide restait affichée une fois coupé. L'option s'appelle maintenant « Maître de classe » et règle les deux (étape du guide et étape de la tournée) ; la tournée en cours est refaite en la changeant.
+- « Recalculer » ne faisait rien : il relisait des résultats gardés quelques secondes. Il recalcule maintenant tout (zones, étapes, quêtes de la zone), refait la tournée en cours et le dit dans le chat.
+
 ## v1.101.4 — 20/11/2026
 
 _Un /reload suffit._
