@@ -241,8 +241,8 @@ local function show()
     panel = panel or build()
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 6, -12)
-    -- au-dessus des fenêtres des autres addons ouvertes à côté du marchand
-    panel:SetFrameStrata("DIALOG")
+    -- au niveau de la fenêtre du marchand
+    UI:MatchHost(panel, MerchantFrame)
     panel:SetToplevel(true)
     local count = panel:Refresh()
     -- marchand qui ne vend rien d'utile : on n'encombre pas l'écran

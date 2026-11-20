@@ -108,6 +108,7 @@ function UI:RefreshRestock()
     rsBtn:SetWidth(rsBtn.label:GetStringWidth() + 32)
     rsBtn:ClearAllPoints()
     rsBtn:SetPoint("TOPLEFT", MerchantFrame, "BOTTOMLEFT", 4, -4)
+    UI:MatchHost(rsBtn, MerchantFrame)
     rsBtn:Show()
 end
 WK:On("MERCHANT_SHOW", function() C_Timer.After(0.3, function() UI:RefreshRestock() end) end)

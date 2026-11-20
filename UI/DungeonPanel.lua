@@ -213,7 +213,7 @@ local function showFor(d, docked)
     if docked and WorldMapFrame then
         panel:SetPoint("TOPLEFT", WorldMapFrame, "TOPRIGHT", 4, 0)
         panel:SetPoint("BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", 4, 0)
-        panel:SetFrameStrata(WorldMapFrame:GetFrameStrata() or "HIGH")
+        UI:MatchHost(panel, WorldMapFrame)
     else
         panel:SetPoint("RIGHT", UIParent, "RIGHT", -60, 40)
         panel:SetFrameStrata("MEDIUM")

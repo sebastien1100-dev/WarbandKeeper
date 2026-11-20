@@ -175,6 +175,16 @@ function UI:Panel(frame, radius, bg, border)
     return frame
 end
 
+-- Fenêtre collée à une fenêtre du jeu (talents, marchand, HV, courrier, sacs, métiers, carte…) : même strate
+-- que celle-ci et juste au-dessus de son niveau, pour passer devant ou derrière les autres fenêtres avec elle
+-- (la fenêtre de l'addon, au-dessus, la couvre comme elle couvre la fenêtre du jeu).
+function UI:MatchHost(f, host, add)
+    if not (f and host and host.GetFrameStrata and f.SetFrameStrata) then return end
+    if InCombatLockdown and InCombatLockdown() and f.IsProtected and f:IsProtected() then return end
+    f:SetFrameStrata(host:GetFrameStrata() or "MEDIUM")
+    if host.GetFrameLevel and f.SetFrameLevel then f:SetFrameLevel(math.min(9000, (host:GetFrameLevel() or 1) + (add or 5))) end
+end
+
 function UI:Text(parent, size, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY")
     fs:SetFont(UI.FONT, size or 12, "")

@@ -211,7 +211,6 @@ function UI:TalentPlanGlow()
     if not btn then return end
     if not glow then
         glow = CreateFrame("Frame", nil, UIParent)
-        glow:SetFrameStrata("DIALOG")
         glow.tex = glow:CreateTexture(nil, "OVERLAY")
         glow.tex:SetTexture(UI.MEDIA .. "ring")
         glow.tex:SetAllPoints()
@@ -222,6 +221,8 @@ function UI:TalentPlanGlow()
         end)
     end
     UI.talentGlow, UI.talentGlowBtn = glow, btn
+    -- au niveau de la fenêtre des talents, juste au-dessus de ses boutons
+    UI:MatchHost(glow, btn, 10)
     glow:ClearAllPoints()
     glow:SetPoint("TOPLEFT", btn, "TOPLEFT", -6, 6); glow:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 6, -6)
     glow:Show()
@@ -231,9 +232,9 @@ function UI:ShowTalentPlan(anchorTo)
     if not panel then panel = build() end
     panel:ClearAllPoints()
     panel.anchored = anchorTo ~= nil
-    -- au-dessus de la fenêtre de l'addon (même strate « HIGH ») : collé à sa droite, sinon au centre
-    panel:SetFrameStrata("DIALOG")
-    panel:Raise()
+    -- collé à la fenêtre des talents du jeu : même strate et même niveau qu'elle ; sinon au-dessus de la
+    -- fenêtre de l'addon (collé à sa droite, sinon au centre)
+    if anchorTo then UI:MatchHost(panel, anchorTo) else panel:SetFrameStrata("DIALOG"); panel:Raise() end
     local main = UI.frame
     if anchorTo then panel:SetPoint("TOPLEFT", anchorTo, "TOPRIGHT", 4, 0)
     elseif main and main:IsShown() then panel:SetPoint("TOPLEFT", main, "TOPRIGHT", 6, 0)

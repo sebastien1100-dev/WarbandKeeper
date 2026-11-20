@@ -500,8 +500,8 @@ local function show()
     panel.seg:Show(); panel.close:Show()
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", h, "TOPRIGHT", 6, -12)
-    -- au-dessus des fenêtres des autres addons ouvertes à côté de l'HV
-    panel:SetFrameStrata("DIALOG")
+    -- au niveau de la fenêtre de l'HV du jeu
+    UI:MatchHost(panel, h)
     panel:SetToplevel(true)
     panel:Show()
     panel:Layout()

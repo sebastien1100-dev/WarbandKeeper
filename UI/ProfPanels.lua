@@ -172,7 +172,8 @@ function UI:ToggleDEPanel(show, anchor)
     if show == false or (show == nil and de:IsShown()) then de:Hide() return end
     de.closed = nil
     de:ClearAllPoints()
-    if anchor then de:SetPoint("TOPRIGHT", anchor, "TOPLEFT", -8, 0) else de:SetPoint("CENTER", -200, 60) end
+    if anchor then de:SetPoint("TOPRIGHT", anchor, "TOPLEFT", -8, 0); UI:MatchHost(de, anchor)
+    else de:SetPoint("CENTER", -200, 60); de:SetFrameStrata("HIGH") end
     hideLater[de] = nil; de:SetAlpha(1)
     de:Refresh(); de:Show()
 end
@@ -291,6 +292,7 @@ WK:On("TRADE_SHOW", function()
     if not trade then trade = buildTrade() end
     trade.pick = nil
     trade:ClearAllPoints(); trade:SetPoint("TOPLEFT", TradeFrame, "TOPRIGHT", 6, 0)
+    UI:MatchHost(trade, TradeFrame)
     hideLater[trade] = nil; trade:SetAlpha(1)
     trade:Refresh(); trade:Show()
 end)
@@ -362,6 +364,7 @@ local function trainerRefresh()
     if not tf then return end
     if not trainer then trainer = buildTrainer() end
     trainer:ClearAllPoints(); trainer:SetPoint("TOPLEFT", tf, "TOPRIGHT", 6, 0)
+    UI:MatchHost(trainer, tf)
     trainer:Refresh()
 end
 WK:On("TRAINER_SHOW", function() C_Timer.After(0.1, trainerRefresh) end)
@@ -653,8 +656,9 @@ function UI:RefreshCraftBar()
     local tf = cfg().craftBarWhere == "trade" and tradeFrame()
     if tf then
         cbar:ClearAllPoints(); cbar:SetPoint("TOP", tf, "BOTTOM", 0, -6); cbar.docked = true
+        UI:MatchHost(cbar, tf)
     elseif cbar.docked then
-        cbar.docked = nil; UI:HUDApply("craftBar")
+        cbar.docked = nil; cbar:SetFrameStrata("MEDIUM"); UI:HUDApply("craftBar")
     end
     cbar:Show()
 end

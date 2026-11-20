@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.7", date = "20/11/2026",
+        fixed = {
+            "Les fenêtres collées à une fenêtre du jeu prennent son niveau : plan de montée (fenêtre des talents), panneau du marchand et bouton Réassort, panneau de l'HV, Rangement au courrier, valeur des sacs, désenchantement, enchantements à l'échange, colonne du maître de métier, barre de fabrication collée au métier, panneau du donjon sur la carte. Avant, elles passaient au-dessus de tout, même de la fenêtre de l'addon ouverte par-dessus.",
+            "Le cercle du prochain talent suit aussi le niveau de la fenêtre des talents.",
+        },
+    },
+    {
         version = "1.87.6", date = "20/11/2026",
         added = {
             "Plans de montée : réglage « Cercle autour du prochain talent dans la fenêtre du jeu », à côté de « Panneau collé à la fenêtre des talents du jeu » (fiche du perso > Talents, carte Plans de montée).",

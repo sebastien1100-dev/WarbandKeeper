@@ -144,6 +144,7 @@ local function show()
     S():Invalidate()
     panel:ClearAllPoints()
     panel:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", 8, 0)
+    UI:MatchHost(panel, MailFrame)
     panel:Refresh()
     -- rien à envoyer : pas de panneau
     if #(panel.list or {}) == 0 then panel:Hide() return end
