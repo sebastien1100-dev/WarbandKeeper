@@ -143,7 +143,7 @@ local function build()
         self.tour, self.guide = true, nil
         local W2 = 300
         self:SetWidth(W2)
-        bgAlpha(0.5, false)
+        bgAlpha((Q():Config().tourBg or 50) / 100, false)
         v.head:SetText(UI:Upper(T("Tournée")) .. (d.zone and (" · " .. UI:Upper(d.zone)) or "")
             .. (d.paused and ("  " .. UI:Hex(C.warning) .. T("EN PAUSE") .. "|r") or ""))
         v.headR:SetText(string.format("%d/%d · %s", d.idx, d.count, string.format(T("env. %d min"), d.mins))

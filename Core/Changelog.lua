@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.3", date = "20/11/2026",
+        added = {
+            "Roue de la page Quêtes, carte « Quête suivie » : réglage « Fond de la carte de tournée » (opacité de 0 à 100 %, 50 % d'office ; 0 % = texte seul, ombré).",
+        },
+    },
+    {
         version = "1.101.2", date = "20/11/2026",
         changed = {
             "Carte du monde : la barre de filtres (courrier, marchands, maîtres, carte…) est transparente au repos et redevient pleine au survol de la souris (ou menu de détail ouvert), avec un fondu doux.",

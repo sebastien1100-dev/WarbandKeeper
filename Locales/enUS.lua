@@ -4147,4 +4147,6 @@ WK.Locales.enUS.text = {
     ["Maître de classe dans la tournée"] = "Class trainer in the tour",
     ["Quand des sorts sont à apprendre, la tournée de quêtes passe par le maître de classe le plus proche."] = "When spells are to be learned, the quest tour goes by the nearest class trainer.",
     ["apprendre tes sorts"] = "learn your spells",
+    ["Fond de la carte de tournée"] = "Tour card background",
+    ["Opacité du fond de la carte de tournée à l'écran (0 % : texte seul, ombré)."] = "Opacity of the on-screen tour card background (0 %: shadowed text only).",
 }
