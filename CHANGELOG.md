@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.109.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes : bouton corbeille « Vider la liste » ; il décoche toutes les quêtes de la zone (et arrête la tournée en cours).
+
+### Modifications
+- Tournée de quêtes : Passer l'étape, Pause / Reprendre, Réordonner et Arrêter deviennent de petits boutons ronds discrets (le nom au survol), sur une seule ligne.
+
 ## v1.109.0 — 20/11/2026
 
 _Un /reload suffit._

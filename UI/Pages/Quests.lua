@@ -1749,7 +1749,7 @@ UI:RegisterPage({
         local tc = UI:Card(p)
         self.tList = tc
         self.tHead = UI:Text(tc, 13)
-        self.tHead:SetPoint("TOPLEFT", 14, -12); self.tHead:SetPoint("TOPRIGHT", -14, -12)
+        self.tHead:SetPoint("TOPLEFT", 14, -12); self.tHead:SetPoint("TOPRIGHT", -44, -12)
         self.tHead:SetJustifyH("LEFT")
         if self.tHead.SetWordWrap then self.tHead:SetWordWrap(true) end
         self.tSub = UI:Text(tc, 11, C.muted)
@@ -1816,18 +1816,19 @@ UI:RegisterPage({
             if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
         end, "Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche).")
         gb:Hide()
-        self.tSkip = UI:Button(tc, "Passer l'étape", nil, 30, "secondary")
-        self.tSkip:SetPoint("BOTTOMLEFT", 14, 12)
+        -- commandes de la tournée lancée : petits boutons ronds discrets (infobulle au survol)
+        self.tSkip = UI:IconButton(tc, "chevron", 26, "Passer l'étape")
+        if self.tSkip.icon and self.tSkip.icon.SetRotation then self.tSkip.icon:SetRotation(math.pi / 2) end
         self.tSkip:SetScript("OnClick", act(function(P) P:Skip() end))
-        self.tPause = UI:Button(tc, "Reprendre", 110, 30, "secondary")
-        self.tPause:SetPoint("BOTTOMLEFT", self.tSkip, "BOTTOMRIGHT", 8, 0)
+        self.tPause = UI:IconButton(tc, "pause", 26, "Pause")
         self.tPause:SetScript("OnClick", act(function(P) local t = P:Tour(); P:Pause(not (t and t.paused)) end))
-        self.tReorder = UI:Button(tc, "Réordonner", nil, 30, "secondary", "refresh")
-        self.tReorder:SetPoint("BOTTOMLEFT", self.tPause, "BOTTOMRIGHT", 8, 0)
+        self.tReorder = UI:IconButton(tc, "refresh", 26, "Réordonner (depuis l'endroit où tu es)")
         self.tReorder:SetScript("OnClick", act(function(P) P:Reorder() end))
-        self.tStop = UI:Button(tc, "Arrêter", nil, 30, "danger")
-        self.tStop:SetPoint("BOTTOMLEFT", self.tReorder, "BOTTOMRIGHT", 8, 0)
+        self.tStop = UI:IconButton(tc, "stop", 26, "Arrêter la tournée", true)
         self.tStop:SetScript("OnClick", act(function(P) P:Stop() end))
+        -- vider la liste : plus aucune quête cochée dans la zone (et la tournée en cours s'arrête)
+        self.tClear = UI:IconButton(tc, "trash", 26, "Vider la liste (décocher toutes les quêtes)", true)
+        self.tClear:SetScript("OnClick", act(function(P) P:ClearPicks() end))
         self.tsteps = UI:Pool(function()
             local r = CreateFrame("Frame", nil, self.tscroll.child)
             r:SetHeight(48)
@@ -1902,11 +1903,12 @@ UI:RegisterPage({
             b:ClearAllPoints(); b:SetWidth(bw)
             b:SetPoint("BOTTOMLEFT", 12 + (i - 1) * (bw + 8), 48)
         end
-        local grid = { { self.tSkip, 0, 48 }, { self.tPause, 1, 48 }, { self.tReorder, 0, 12 }, { self.tStop, 1, 12 } }
-        for _, g in ipairs(grid) do
-            g[1]:ClearAllPoints(); g[1]:SetWidth(bw)
-            g[1]:SetPoint("BOTTOMLEFT", 12 + g[2] * (bw + 8), g[3])
+        -- tournée lancée : une rangée de petits boutons ronds, la corbeille à droite
+        local x = 12
+        for _, b in ipairs({ self.tSkip, self.tPause, self.tReorder, self.tStop }) do
+            b:ClearAllPoints(); b:SetPoint("BOTTOMLEFT", x, 12); x = x + 26 + 8
         end
+        self.tClear:ClearAllPoints(); self.tClear:SetPoint("BOTTOMRIGHT", -12, 12)
     end,
 
     -- sous-ligne d'une étape
@@ -2010,7 +2012,13 @@ UI:RegisterPage({
             gb.follow:SetLabel(L:Following() and T("Ne plus suivre") or T("Suivre le guide"))
         end
         for _, b in ipairs({ self.tSkip, self.tPause, self.tReorder, self.tStop }) do b:SetShown(tour ~= nil) end
-        self.tPause:SetLabel(tour and tour.paused and "Reprendre" or "Pause")
+        self.tPause.icon:SetTexture(UI.MEDIA .. ((tour and tour.paused) and "play" or "pause"))
+        self.tPause.tooltip = (tour and tour.paused) and "Reprendre" or "Pause"
+        -- corbeille : seule en bas à droite pendant la tournée ; avant, à côté du titre
+        self.tClear:ClearAllPoints()
+        if tour then self.tClear:SetPoint("BOTTOMRIGHT", -12, 12)
+        else self.tClear:SetPoint("TOPRIGHT", -10, -8) end
+        self.tClear:SetShown(#steps > 0 or tour ~= nil)
         self.tourSteps, self.tourIdx = steps, idx
         self:PaintTourMap()
     end,

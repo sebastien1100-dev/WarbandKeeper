@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.109.1", date = "20/11/2026",
+        changed = {
+            "Tournée de quêtes : Passer l'étape, Pause / Reprendre, Réordonner et Arrêter deviennent de petits boutons ronds discrets (le nom au survol), sur une seule ligne.",
+        },
+        added = {
+            "Tournée de quêtes : bouton corbeille « Vider la liste » ; il décoche toutes les quêtes de la zone (et arrête la tournée en cours).",
+        },
+    },
+    {
         version = "1.109.0", date = "20/11/2026",
         changed = {
             "Page Quêtes : plus de sous-onglets « Montée en niveaux », « Mon journal » et « Quêtes de ma zone ». « Ma progression » ouvre directement la tournée de quêtes.",

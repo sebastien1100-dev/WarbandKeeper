@@ -554,6 +554,19 @@ function M:CompleteZone()
     return t
 end
 
+-- Vider la liste : toutes les quêtes de la zone décochées (la tournée en cours s'arrête)
+function M:ClearPicks()
+    local c = self:Config()
+    local k = WK:CharKey()
+    c.picked[k] = c.picked[k] or {}
+    for _, e in ipairs(self:Candidates()) do c.picked[k][e.id] = false end
+    c.allZone = nil
+    if self:Tour() then self:Stop() end
+    self:Invalidate()
+    WK:NotifyChanged()
+    WK:Print(T("Liste vidée : coche des quêtes (Choisir les quêtes) pour une nouvelle tournée."))
+end
+
 function M:Stop()
     self:Config().tour[WK:CharKey()] = nil
     self:Config().allZone = nil
