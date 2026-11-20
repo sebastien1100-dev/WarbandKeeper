@@ -69,6 +69,7 @@ local function build()
     f.tv = tv
     local function shade(fs) if fs.SetShadowOffset then fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1) end return fs end
     tv.head = shade(UI:Text(tv, 9, C.muted)); tv.head:SetPoint("TOPLEFT", 12, -9)
+    tv.head:SetJustifyH("LEFT"); if tv.head.SetWordWrap then tv.head:SetWordWrap(false) end
     tv.headR = shade(UI:Text(tv, 9, C.muted)); tv.headR:SetPoint("TOPRIGHT", -12, -9); tv.headR:SetJustifyH("RIGHT")
     tv.barBg = tv:CreateTexture(nil, "ARTWORK"); tv.barBg:SetHeight(3)
     tv.barBg:SetPoint("TOPLEFT", 12, -24); tv.barBg:SetPoint("TOPRIGHT", -12, -24)
@@ -204,6 +205,8 @@ local function build()
             v.headR:SetText(string.format("%d/%d · %s", d.idx, d.count, string.format(T("env. %d min"), d.mins))
                 .. ((d.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. d.xp .. " XP|r") or ""))
         end
+        -- le titre de gauche s'arrête avant les chiffres de droite (ils se chevauchaient)
+        v.head:SetWidth(math.max(40, W2 - 24 - (v.headR:GetStringWidth() or 0) - 10))
         -- boutons au survol : guide = arrêter de suivre, passer l'étape, lancer l'étape
         v.close.tooltip = d.guide and "Ne plus suivre le guide de montée" or "Arrêter la tournée"
         v.skip.tooltip = "Passer l'étape"
@@ -473,11 +476,13 @@ function UI:RefreshQuestTracker()
         end
         local pct = max > 0 and math.floor(cur / max * 100) or 0
         card:PaintTour({ guide = true, kind = s1 and s1.kind or "zone",
-            head = UI:Upper(string.format(T("Montée en niveaux · niveau %d"), lvl)),
-            headR = string.format(T("%d %% du niveau"), pct) .. (max > cur and (" · " .. UI:Hex(C.gold) .. string.format(T("reste %d XP"), max - cur) .. "|r") or ""),
+            -- en-tête court (il chevauchait les chiffres de droite) ; pas les objectifs de la quête suivie, sans
+            -- rapport avec l'étape (point de vol, maître…)
+            head = UI:Upper(string.format(T("Niveau %d"), lvl)),
+            headR = string.format("%d %%", pct) .. (max > cur and (" · " .. UI:Hex(C.gold) .. string.format(T("reste %s XP"), BreakUpLargeNumbers and BreakUpLargeNumbers(max - cur) or tostring(max - cur)) .. "|r") or ""),
             prog = max > 0 and cur / max or 0,
             title = s1 and s1.title or T("Rien à faire pour l'instant"), sub = s1 and s1.sub or "",
-            objs = objs, nexts = nexts })
+            objs = {}, nexts = nexts })
         card:Show()
         return
     end

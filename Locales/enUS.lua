@@ -4223,4 +4223,5 @@ WK.Locales.enUS.text = {
     ["Affichage"] = "Display",
     ["Liste"] = "List",
     ["Messages éclair"] = "Flash messages",
+    ["reste %s XP"] = "%s XP left",
 }

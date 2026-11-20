@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.1", date = "20/11/2026",
+        fixed = {
+            "Montée en niveaux : l'en-tête de la carte ne chevauche plus les chiffres de droite (« NIVEAU 28 » à gauche, « 75 % · reste 10 279 XP » à droite).",
+            "Montée en niveaux : les objectifs de la quête suivie ne s'affichent plus sous une étape sans rapport (point de vol, maître…).",
+        },
+    },
+    {
         version = "1.107.0", date = "20/11/2026",
         changed = {
             "Rappels : la grande pile laisse place à une barre d'icônes, une pastille ronde par rappel et rien d'autre. Liseré rouge qui bat = urgent, orange = bientôt, gris = quand tu as le temps ; le temps restant en petit dessous.",
