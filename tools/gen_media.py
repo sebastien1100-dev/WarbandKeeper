@@ -819,10 +819,24 @@ def icon_paw():
     save(img, "paw", 64)
 
 
+def icon_shop():
+    """Marchand : étal à auvent festonné et comptoir."""
+    img, d, s = canvas(64)
+    # auvent : bande pleine et festons ronds dessous
+    rrect(d, s, 0.10, 0.14, 0.90, 0.34, 0.04)
+    for cx in (0.20, 0.40, 0.60, 0.80):
+        circle(d, s, cx, 0.34, 0.10)
+    # montants et comptoir
+    rrect(d, s, 0.16, 0.40, 0.24, 0.86, 0.02)
+    rrect(d, s, 0.76, 0.40, 0.84, 0.86, 0.02)
+    rrect(d, s, 0.10, 0.66, 0.90, 0.86, 0.04)
+    save(img, "shop", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw, icon_shop]:
         fn()
     print("OK")

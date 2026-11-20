@@ -72,6 +72,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.108.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Barre « sacs, marchand et maître » à l'écran (remplace la case « Place dans les sacs ») : trois cases dans un seul cadre. Sac : cases libres, clic pour jeter le gris le moins cher. Marchand : distance du plus proche, clic pour y aller, clic droit pour le forgeron (réparer). Maître de classe : sorts à apprendre (sinon la distance), clic pour y aller.
+- Couleurs selon l'urgence : sac orange sous le seuil et rouge plein ; marchand rouge quand les sacs sont presque pleins ou l'équipement sous 25 % (orange sous 50 %) ; maître en bleu quand des sorts t'attendent.
+- Inventaire > roue > Sacs et marchand : cases du marchand et du maître à afficher ou non. Nouveau pictogramme : étal (marchand).
+
+### Modifications
+- La barre reste à l'écran tout le temps (avant : la case du sac n'apparaissait que sous le seuil de cases libres).
+
 ## v1.107.5 — 20/11/2026
 
 _Un /reload suffit._

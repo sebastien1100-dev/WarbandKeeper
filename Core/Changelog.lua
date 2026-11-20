@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.108.0", date = "20/11/2026", restart = true,
+        added = {
+            "Barre « sacs, marchand et maître » à l'écran (remplace la case « Place dans les sacs ») : trois cases dans un seul cadre. Sac : cases libres, clic pour jeter le gris le moins cher. Marchand : distance du plus proche, clic pour y aller, clic droit pour le forgeron (réparer). Maître de classe : sorts à apprendre (sinon la distance), clic pour y aller.",
+            "Couleurs selon l'urgence : sac orange sous le seuil et rouge plein ; marchand rouge quand les sacs sont presque pleins ou l'équipement sous 25 % (orange sous 50 %) ; maître en bleu quand des sorts t'attendent.",
+            "Inventaire > roue > Sacs et marchand : cases du marchand et du maître à afficher ou non. Nouveau pictogramme : étal (marchand).",
+        },
+        changed = {
+            "La barre reste à l'écran tout le temps (avant : la case du sac n'apparaissait que sous le seuil de cases libres).",
+        },
+    },
+    {
         version = "1.107.5", date = "20/11/2026",
         changed = {
             "Inventaire, roue des réglages : onglets par catégorie à côté du titre (Verrous auto, Protection, Sacs et marchand, Rangement) au lieu d'une longue liste ; l'onglet choisi est retenu, et la recherche ouvre le bon onglet.",

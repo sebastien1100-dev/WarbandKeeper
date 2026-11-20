@@ -14,23 +14,94 @@ local function BH() return WK.modules.BagHelp end
 local function inCombat() return InCombatLockdown and InCombatLockdown() or false end
 
 ---------------------------------------------------------------------------
--- Place dans les sacs
+-- Barre « sacs, marchand, maître » (HUD bagSpace) : trois cases dans un seul cadre, séparées d'un trait fin.
+--   sac : cases libres (clic = jeter le gris le moins cher) ;
+--   marchand : distance du plus proche (clic = guidage, clic droit = forgeron pour réparer) ;
+--   maître de classe : sorts à apprendre, sinon la distance (clic = guidage).
+-- Couleur selon l'urgence : rouge quand c'est pressé (sacs pleins, équipement abîmé), orange bientôt,
+-- bleu quand des sorts attendent, sinon discret. Réglages bagHelp : space (barre), low (seuil),
+-- vendorTile, trainerTile.
 ---------------------------------------------------------------------------
 local space
-local function buildSpace()
-    local b = CreateFrame("Button", "WarbandKeeperBagSpace", UIParent)
-    b:SetSize(46, 46)
-    b:SetFrameStrata("MEDIUM")
-    b.bg = UI:Rounded(b, 11, 0, "BACKGROUND", 1)
-    b.icon = UI:Icon(b, "bag", 22, nil, "ARTWORK"); b.icon:SetPoint("CENTER", 0, 4)
-    b.n = UI:Text(b, 11); b.n:SetPoint("BOTTOM", 0, 4)
-    function b:Paint(free)
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
-        local col = free <= 0 and C.negative or C.warning
-        self.icon:SetVertexColor(col[1], col[2], col[3], 1)
-        self.n:SetText(tostring(free)); self.n:SetTextColor(col[1], col[2], col[3])
+local TILE = 46
+-- usure la plus basse de l'équipement porté (en %), ou nil
+local function minDurability()
+    if not GetInventoryItemDurability then return nil end
+    local low
+    for slot = 1, 18 do
+        local cur, max = GetInventoryItemDurability(slot)
+        if cur and max and max > 0 then
+            local p = cur / max * 100
+            if not low or p < low then low = p end
+        end
     end
-    b:SetScript("OnEnter", function(s)
+    return low
+end
+-- lieux les plus proches, gardés 10 s (la recherche parcourt tous les lieux)
+local near = {}
+local function nearest(what)
+    local G = WK.modules.Guide
+    local now = GetTime()
+    local n = near[what]
+    if not n or now - n.at > 10 then
+        local class = what == "trainer" and select(2, UnitClass("player")) or nil
+        local ok, t = pcall(G.Nearest, G, G:KindsFor(what), class)
+        n = { at = now, t = ok and t or nil }
+        near[what] = n
+    end
+    local t = n.t
+    if not t then return nil end
+    local p = G:PlayerPos()
+    local d = p and t.cont and G:Vector(p, t) or t.distance
+    return t, d
+end
+-- sorts à apprendre maintenant, gardé 10 s (le catalogue des sorts est lourd à relire toutes les 2 s)
+local spellsAt, spellsN = 0, 0
+local function spellsToLearn()
+    if GetTime() - spellsAt > 10 then
+        spellsAt = GetTime()
+        local CS = WK.modules.ClassSpells
+        local ok, cr = pcall(function() return CS and CS:ForChar() end)
+        spellsN = ok and cr and #cr.now or 0
+    end
+    return spellsN
+end
+local function distText(d)
+    if not d then return "" end
+    if d >= 1000 then return string.format("%.1f km", d / 1000):gsub("%.", ",") end
+    return string.format(T("%d m"), math.floor(d + 0.5))
+end
+
+local function newTile(parent, glyph)
+    local b = CreateFrame("Button", nil, parent)
+    b:SetSize(TILE, TILE)
+    b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    b.icon = UI:Icon(b, glyph, 22, nil, "ARTWORK"); b.icon:SetPoint("CENTER", 0, 4)
+    b.n = UI:Text(b, 11); b.n:SetPoint("BOTTOM", 0, 4)
+    b.hl = b:CreateTexture(nil, "HIGHLIGHT"); b.hl:SetPoint("TOPLEFT", 3, -3); b.hl:SetPoint("BOTTOMRIGHT", -3, 3)
+    b.hl:SetColorTexture(1, 1, 1, 0.06)
+    function b:Paint(col, txt)
+        self.icon:SetVertexColor(col[1], col[2], col[3], 1)
+        self.n:SetText(txt or ""); self.n:SetTextColor(col[1], col[2], col[3])
+    end
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    return b
+end
+
+local function buildSpace()
+    local f = CreateFrame("Frame", "WarbandKeeperBagSpace", UIParent)
+    f:SetSize(TILE, TILE)
+    f:SetFrameStrata("MEDIUM")
+    f.bg = UI:Rounded(f, 11, 0, "BACKGROUND", 1)
+    f.seps = {}
+    for i = 1, 2 do
+        local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
+        s:SetColorTexture(1, 1, 1, 0.08)
+        f.seps[i] = s
+    end
+    -- sac
+    f.bag = newTile(f, "bag")
+    f.bag:SetScript("OnEnter", function(s)
         local free, total = BH():FreeSlots()
         UI:TooltipOwner(s, "ANCHOR_TOP")
         GameTooltip:SetText(string.format(T("%d case(s) libre(s) sur %d"), free, total), 1, 1, 1)
@@ -43,25 +114,107 @@ local function buildSpace()
         end
         GameTooltip:Show()
     end)
-    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    b:SetScript("OnClick", function(s)
+    f.bag:SetScript("OnClick", function(s, btn)
+        if btn ~= "LeftButton" then return end
         if BH():DeleteCheapest() then C_Timer.After(0.3, function() UI:RefreshBagSpace(); if s:IsMouseOver() then s:GetScript("OnEnter")(s) end end) end
     end)
-    b:Hide()
-    UI:RegisterHUD("bagSpace", b, {
-        label = T("Place dans les sacs"), default = { 300, -200 },
+    -- marchand
+    f.vendor = newTile(f, "shop")
+    f.vendor:SetScript("OnEnter", function(s)
+        local t, d = nearest("vendor")
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Marchand le plus proche"), 1, 1, 1)
+        if t then GameTooltip:AddLine(WK.modules.Guide:PlaceName(t) .. " · " .. distText(d), 0.85, 0.85, 0.85, true) end
+        local dur = minDurability()
+        if dur and dur < 100 then GameTooltip:AddLine(string.format(T("Équipement à %d %%"), math.floor(dur + 0.5)), 0.85, 0.85, 0.85) end
+        GameTooltip:AddLine(T("Clic : guider · clic droit : forgeron (réparer)"), 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    f.vendor:SetScript("OnClick", function(_, btn)
+        WK.modules.Guide:GoTo(btn == "RightButton" and "repair" or "vendor")
+    end)
+    -- maître de classe
+    f.trainer = newTile(f, "book")
+    f.trainer:SetScript("OnEnter", function(s)
+        local t, d = nearest("trainer")
+        local CS = WK.modules.ClassSpells
+        local cr = CS and CS:ForChar()
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Maître de classe le plus proche"), 1, 1, 1)
+        if t then GameTooltip:AddLine(WK.modules.Guide:PlaceName(t) .. " · " .. distText(d), 0.85, 0.85, 0.85, true) end
+        local n = cr and #cr.now or 0
+        GameTooltip:AddLine(n > 0 and string.format(T("%d sort(s) à apprendre"), n) or T("Rien à apprendre pour l'instant"), 0.85, 0.85, 0.85)
+        GameTooltip:AddLine(T("Clic : guider"), 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    f.trainer:SetScript("OnClick", function() WK.modules.Guide:GoTo("trainer") end)
+    -- mise en page : cases visibles côte à côte, trait entre deux cases
+    function f:Arrange(showV, showT)
+        local tiles = { self.bag }
+        if showV then tiles[#tiles + 1] = self.vendor end
+        if showT then tiles[#tiles + 1] = self.trainer end
+        self.vendor:SetShown(showV and true or false)
+        self.trainer:SetShown(showT and true or false)
+        for i, t in ipairs(tiles) do
+            t:ClearAllPoints(); t:SetPoint("LEFT", (i - 1) * (TILE + 1), 0)
+        end
+        for i, s in ipairs(self.seps) do
+            s:ClearAllPoints()
+            if tiles[i + 1] then
+                s:SetPoint("TOPLEFT", tiles[i], "TOPRIGHT", 0, -9); s:SetPoint("BOTTOMLEFT", tiles[i], "BOTTOMRIGHT", 0, 9)
+                s:Show()
+            else s:Hide() end
+        end
+        self:SetWidth(#tiles * TILE + (#tiles - 1))
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
+    end
+    -- exemple du mode édition
+    function f:Paint(free)
+        self:Arrange(true, true)
+        self.bag:Paint(free <= 0 and C.negative or C.warning, tostring(free))
+        self.vendor:Paint(C.negative, "85 m")
+        self.trainer:Paint(C.info, "3")
+    end
+    f:Hide()
+    f:SetScript("OnUpdate", function(s, el)
+        s.acc = (s.acc or 0) + el
+        if s.acc < 2 then return end
+        s.acc = 0
+        if not s.sample then UI:RefreshBagSpace() end
+    end)
+    UI:RegisterHUD("bagSpace", f, {
+        label = T("Sacs, marchand et maître"), default = { 300, -200 },
         enabled = function() return BH():Config().space end,
-        sample = function(on) b.sample = on or nil; if on then b:Paint(2); b:Show() else UI:RefreshBagSpace() end end,
+        sample = function(on) f.sample = on or nil; if on then f:Paint(2); f:Show() else UI:RefreshBagSpace() end end,
     })
-    return b
+    return f
 end
 function UI:RefreshBagSpace()
     space = space or buildSpace()
     if space.sample then return end
     local cfg = BH():Config()
+    if not cfg.space or not WK:FeatureOn("inventory") then space:Hide() return end
     local free = BH():FreeSlots()
-    if not cfg.space or free > (cfg.low or 3) or not WK:FeatureOn("inventory") then space:Hide() return end
-    space:Paint(free)
+    local low = cfg.low or 3
+    local showV, showT = cfg.vendorTile ~= false, cfg.trainerTile ~= false
+    space:Arrange(showV, showT)
+    -- sac : rouge plein, orange sous le seuil, sinon discret
+    space.bag:Paint(free <= 0 and C.negative or (free <= low and C.warning) or C.muted, tostring(free))
+    if showV then
+        local _, d = nearest("vendor")
+        local dur = minDurability()
+        -- pressé : sacs sous le seuil ou équipement sous 25 % ; bientôt : sous 50 %
+        local col = ((free <= low) or (dur and dur < 25)) and C.negative or ((dur and dur < 50) and C.warning) or { UI:Accent() }
+        space.vendor:Paint(col, distText(d))
+    end
+    if showT then
+        local n = spellsToLearn()
+        if n > 0 then space.trainer:Paint(C.info, tostring(n))
+        else
+            local _, d = nearest("trainer")
+            space.trainer:Paint(C.muted, distText(d))
+        end
+    end
     space:Show()
 end
 
@@ -306,9 +459,13 @@ function UI:BuildBagHelpCard(root)
     local card = UI:Card(root, T("Sacs, marchand et équipement"))
     local y = -40
     local function row(label, desc, ctrl, w) UI:SettingRow(card, y, label, desc, ctrl, w); y = y - 46 end
-    row("Place dans les sacs", "Sous le seuil, un bouton à l'écran montre les cases libres ; un clic jette l'objet gris le moins cher.",
+    row("Barre sacs, marchand et maître", "À l'écran (se place en mode édition) : cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé.",
         UI:Toggle(card, function() return cfg.space end, function(v) cfg.space = v; UI:RefreshBagSpace() end), 80)
-    row("Seuil de cases libres", nil, UI:Slider(card, 220, 0, 12, 1, function() return cfg.low or 3 end, function(v) cfg.low = v; UI:RefreshBagSpace() end, "%d"), 240)
+    row("Seuil de cases libres", "En dessous, le sac passe en orange et le marchand en rouge.", UI:Slider(card, 220, 0, 12, 1, function() return cfg.low or 3 end, function(v) cfg.low = v; UI:RefreshBagSpace() end, "%d"), 240)
+    row("Case du marchand", "Clic droit : le forgeron le plus proche, pour réparer.",
+        UI:Toggle(card, function() return cfg.vendorTile ~= false end, function(v) cfg.vendorTile = v; UI:RefreshBagSpace() end), 80)
+    row("Case du maître de classe", "Le nombre de sorts à apprendre, sinon la distance.",
+        UI:Toggle(card, function() return cfg.trainerTile ~= false end, function(v) cfg.trainerTile = v; UI:RefreshBagSpace() end), 80)
     row("Amélioration à porter", "Un objet qui arrive dans les sacs et vaut mieux que celui porté est proposé (jamais équipé tout seul).",
         UI:Toggle(card, function() return cfg.wear end, function(v) cfg.wear = v; UI:RefreshWearOffer() end), 80)
     row("Réassort chez le marchand", "Un bouton sous la fenêtre du marchand complète ce qui manque, sur un clic (munitions et composants de classe : QoL > Classes).",
