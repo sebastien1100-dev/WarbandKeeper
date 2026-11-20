@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.6", date = "20/11/2026",
+        changed = {
+            "Page Quêtes, roue des réglages : sur une fenêtre assez large, les cartes sont rangées en deux colonnes (à gauche quête suivie, quêtes montrées et légende ; à droite les quêtes automatiques et leurs détails) pour tenir dans la fenêtre ; une seule colonne sur une fenêtre étroite.",
+        },
+    },
+    {
         version = "1.101.5", date = "20/11/2026",
         fixed = {
             "Montée en niveaux : l'interrupteur du maître de classe ne pouvait pas se rallumer, et l'étape « Maître de classe » du guide restait affichée une fois coupé. L'option s'appelle maintenant « Maître de classe » et règle les deux (étape du guide et étape de la tournée) ; la tournée en cours est refaite en la changeant.",

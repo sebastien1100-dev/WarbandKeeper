@@ -449,11 +449,13 @@ UI:RegisterPage({
         self.side = side
         local root = side.child
         local y = 0
-        local function card(title, h, subtitle)
+        -- cartes rangées par Layout (PlaceSide) : une colonne, ou deux quand la fenêtre est large
+        -- (colonne 1 : suivi des quêtes ; colonne 2 : quêtes automatiques)
+        self.sideCards = {}
+        local function card(title, h, subtitle, col)
             local c = UI:Card(root, title, subtitle)
             c:SetHeight(h)
-            c:SetPoint("TOPLEFT", 0, -y)
-            c:SetPoint("TOPRIGHT", 0, -y)
+            table.insert(self.sideCards, { c = c, col = col or 1 })
             y = y + h + GAP
             return c
         end
@@ -540,7 +542,7 @@ UI:RegisterPage({
             local AQ = WK.modules.AutoQuest
             if AQ then
                 local ac = AQ:Config()
-                local mcard = card("Quêtes automatiques", 40 + 74 + 14 + 18 + 5 * 17 + 36, "prendre et rendre en parlant au PNJ")
+                local mcard = card("Quêtes automatiques", 40 + 74 + 14 + 18 + 5 * 17 + 36, "prendre et rendre en parlant au PNJ", 2)
                 local MODES = {
                     { "manual", "Manuel", "Rien d'automatique." },
                     { "assist", "Assisté", "Prend les quêtes cochées, rend les quêtes ; tu choisis la récompense." },
@@ -601,8 +603,7 @@ UI:RegisterPage({
                 mcard.more:SetPoint("BOTTOMLEFT", 10, 8)
 
                 -- détails : Prendre, Rendre, Exceptions
-                local yBefore = y
-                local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50, "prendre, rendre, exceptions")
+                local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50, "prendre, rendre, exceptions", 2)
                 local function at(field, after)
                     local t = UI:Toggle(dcard, function() return ac[field] end, function(v) ac[field] = v; if after then after(v) end WK:NotifyChanged() end)
                     table.insert(self.toggles, t)
@@ -662,22 +663,19 @@ UI:RegisterPage({
                 dcard.clear = UI:Button(dcard, "Tout réautoriser", nil, 24, "ghost")
                 dcard.clear:SetPoint("LEFT", dcard.bn, "RIGHT", 8, 0)
                 dcard.clear:SetScript("OnClick", function() wipe(ac.quests); wipe(ac.npcs); paintList(); WK:NotifyChanged() end)
-                local yAfter = y
                 -- repli des détails (fermés au départ)
+                dcard.wkFoldable = true
                 local function fold(open)
                     dcard:SetShown(open)
                     mcard.more:SetLabel(open and T("Masquer les détails") or T("Détails"))
                     mcard.more:SetWidth(mcard.more.label:GetStringWidth() + 28)
-                    self.sideH = open and yAfter or yBefore
                     if self.Layout then self:Layout() end
                 end
                 mcard.more:SetScript("OnClick", function() self.autoOpen = not self.autoOpen; fold(self.autoOpen) end)
                 self.autoFold = fold
-                y = yAfter
                 C_Timer.After(0, function() fold(self.autoOpen and true or false) end)
             end
         end
-        self.sideH = y
     end,
 
     -- recherche de la barre latérale : un réglage des quêtes ouvre la roue
@@ -687,6 +685,28 @@ UI:RegisterPage({
             if f == self.side then self.settingsOpen = true; self:Layout(); self:Refresh() return end
             f = f:GetParent()
         end
+    end,
+
+    -- cartes des réglages : deux colonnes (largeur ≥ 1000) ou une seule ; cartes cachées sautées
+    PlaceSide = function(self, w)
+        local cards = self.sideCards or {}
+        local two = w >= 1000
+        local colW = two and math.min(560, math.floor((w - 10 - GAP) / 2)) or math.min(w - 10, 560)
+        local ys = { 0, 0 }
+        for _, e in ipairs(cards) do
+            if e.c:IsShown() or not e.c.wkFoldable then
+                local col = two and e.col or 1
+                local yy = ys[col]
+                if not two then yy = ys[1] end
+                e.c:ClearAllPoints()
+                e.c:SetPoint("TOPLEFT", (col - 1) * (colW + GAP), -yy)
+                e.c:SetWidth(colW)
+                local hh = e.c:IsShown() and (e.c:GetHeight() + GAP) or 0
+                if two then ys[col] = yy + hh else ys[1] = yy + hh end
+            end
+        end
+        local total = math.max(ys[1], ys[2])
+        self.side.child:SetSize(two and (2 * colW + GAP) or colW, math.max(total, 10))
     end,
 
     Layout = function(self)
@@ -718,7 +738,7 @@ UI:RegisterPage({
         -- réglages : sur toute la largeur, sous la barre
         self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
-        self.side.child:SetSize(math.min(w - 10, 560), self.sideH or 400)
+        self:PlaceSide(w)
         if self.side.UpdateBar then self.side:UpdateBar() end
         -- onglet affiché : zones (barre « Quêtes de », filtre) ou journal
         self.ofLabel:SetShown(zonesView and not open); self.charDd:SetShown(zonesView and not open); self.filterSeg:SetShown(zonesView and not open)
