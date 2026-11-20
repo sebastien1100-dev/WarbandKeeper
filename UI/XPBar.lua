@@ -85,10 +85,20 @@ local function build()
         self:SetWidth(math.max(200, cfg.width or W))
         self:SetHeight(compact and (bh + 14) or (bh + 32))
         self.trackF:ClearAllPoints()
-        self.trackF:SetPoint("BOTTOMLEFT", 10, 7); self.trackF:SetPoint("BOTTOMRIGHT", -10, 7)
+        -- texte au-dessus (défaut) ou en dessous de la barre (réglage textPos)
+        local below = cfg.textPos == "below" and not compact
+        if below then
+            self.trackF:SetPoint("TOPLEFT", 10, -7); self.trackF:SetPoint("TOPRIGHT", -10, -7)
+        else
+            self.trackF:SetPoint("BOTTOMLEFT", 10, 7); self.trackF:SetPoint("BOTTOMRIGHT", -10, 7)
+        end
         self.trackF:SetHeight(bh)
-        self.left:ClearAllPoints(); self.left:SetPoint("TOPLEFT", 10, -7)
-        self.right:ClearAllPoints(); self.right:SetPoint("TOPRIGHT", -10, -7)
+        self.left:ClearAllPoints(); self.right:ClearAllPoints()
+        if below then
+            self.left:SetPoint("BOTTOMLEFT", 10, 7); self.right:SetPoint("BOTTOMRIGHT", -10, 7)
+        else
+            self.left:SetPoint("TOPLEFT", 10, -7); self.right:SetPoint("TOPRIGHT", -10, -7)
+        end
         -- texte au survol (réglage) : libellés cachés tant que la souris n'est pas sur la barre (place gardée)
         local showText = not compact and (not cfg.textHover or self.hovered or self.sample) and true or false
         self.left:SetShown(showText); self.right:SetShown(showText)

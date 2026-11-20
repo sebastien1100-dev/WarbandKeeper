@@ -3685,4 +3685,8 @@ WK.Locales.enUS.text = {
     ["Dans la pile de rappels, tant qu'un point libre attend le talent suivant du plan."] = "In the reminder stack, while a free point waits for the plan's next talent.",
     ["Ligne « Liste BiS de… » dans les infobulles"] = "“BiS list of…” line in tooltips",
     ["Sur un objet de ta liste BiS : quels persos le veulent."] = "On an item from your BiS list: which characters want it.",
+    ["Au-dessus"] = "Above",
+    ["En dessous"] = "Below",
+    ["Place du texte"] = "Text position",
+    ["Libellés (niveau, repos, à rendre) au-dessus ou en dessous de la barre."] = "Labels (level, rested, to turn in) above or below the bar.",
 }

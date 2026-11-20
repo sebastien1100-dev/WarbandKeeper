@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.88.2", date = "20/11/2026",
+        added = {
+            "Barre d'expérience : réglage « Place du texte » (QoL > Expérience) pour mettre le niveau, le repos et l'XP à rendre au-dessus ou en dessous de la barre.",
+        },
+    },
+    {
         version = "1.88.1", date = "20/11/2026",
         fixed = {
             "Plan de montée : le panneau (et un cercle mal placé) s'ouvraient aussi sur le Grimoire, qui partage la même fenêtre que les Talents. Ils n'apparaissent plus que sur l'onglet des talents, et suivent le passage d'un onglet à l'autre sans rouvrir la fenêtre.",
