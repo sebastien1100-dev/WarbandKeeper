@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.6", date = "20/11/2026",
+        added = {
+            "Plans de montée : réglage « Cercle autour du prochain talent dans la fenêtre du jeu », à côté de « Panneau collé à la fenêtre des talents du jeu » (fiche du perso > Talents, carte Plans de montée).",
+        },
+        fixed = {
+            "Plans de montée : le cercle qui montre le prochain talent à prendre n'apparaissait pas dans la fenêtre des talents de WoW Forever ; le talent est maintenant retrouvé parmi ses boutons (par son nœud, sinon son icône), aussi quand la fenêtre met un instant à s'afficher.",
+        },
+    },
+    {
         version = "1.87.5", date = "20/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » : il restait bloqué sur un joueur qui avait déjà le buff d'un autre lanceur (Puissance d'un autre paladin, souvent plus forte) dès que ce buff approchait de sa fin ; le jeu refusait le sort et le bouton ne passait pas au suivant.",

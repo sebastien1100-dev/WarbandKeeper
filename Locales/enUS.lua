@@ -3670,4 +3670,5 @@ WK.Locales.enUS.text = {
     ["Clic : voir ce port dans la liste"] = "Click: show this port in the list",
     ["Texte au survol"] = "Text on hover",
     ["Les libellés (niveau, repos, à rendre) n'apparaissent qu'au survol de la barre ; leur place est gardée."] = "Labels (level, rested, to turn in) only show when hovering the bar; their space is kept.",
+    ["Cercle autour du prochain talent dans la fenêtre du jeu"] = "Ring around the next talent in the game window",
 }

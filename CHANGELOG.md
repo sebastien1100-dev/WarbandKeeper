@@ -78,6 +78,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.87.6 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Plans de montée : réglage « Cercle autour du prochain talent dans la fenêtre du jeu », à côté de « Panneau collé à la fenêtre des talents du jeu » (fiche du perso > Talents, carte Plans de montée).
+
+### Corrections
+- Plans de montée : le cercle qui montre le prochain talent à prendre n'apparaissait pas dans la fenêtre des talents de WoW Forever ; le talent est maintenant retrouvé parmi ses boutons (par son nœud, sinon son icône), aussi quand la fenêtre met un instant à s'afficher.
+
 ## v1.87.5 — 20/11/2026
 
 _Un /reload suffit._

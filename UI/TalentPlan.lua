@@ -6,7 +6,8 @@ local T = function(s) return WK.T(s) end
 -- Panneau « Plan de montée » (Modules/TalentPlan.lua), collé à droite de la fenêtre des talents du jeu
 -- (nom selon le client : PlayerSpellsFrame, ClassTalentFrame, PlayerTalentFrame, TalentFrame) ; s'ouvre et se ferme
 -- avec elle. /wk plan l'ouvre seul (déplaçable). Le talent à prendre est entouré dans la fenêtre du jeu quand elle
--- expose ses boutons (GetTalentButtonByNodeID). Réglage : settings.ui.talentPlanPanel.
+-- expose ses boutons (GetTalentButtonByNodeID, sinon ses boutons parcourus : n° de nœud ou icône du talent).
+-- Réglages (carte « Plans de montée » de l'onglet Talents) : settings.ui.talentPlanPanel, talentPlanGlow.
 local P = WK.modules.TalentPlan
 local panel, glow, host
 local FRAMES = { "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame", "TalentFrame" }
@@ -17,6 +18,46 @@ local function enabled()
     return s.talentPlanPanel
 end
 UI.TalentPlanEnabled = enabled
+-- cercle autour du prochain talent du plan dans la fenêtre du jeu (settings.ui.talentPlanGlow, actif d'office)
+local function glowOn()
+    local s = WK.DB.global.settings.ui
+    if s.talentPlanGlow == nil then s.talentPlanGlow = true end
+    return s.talentPlanGlow
+end
+UI.TalentPlanGlowEnabled = glowOn
+
+-- Bouton d'un talent dans la fenêtre du jeu quand elle n'a pas GetTalentButtonByNodeID (fenêtre de WoW Forever) :
+-- parcours de ses boutons visibles ; reconnu par son n° de nœud (champ ou méthode), sinon par l'icône du talent
+local function nodeOf(b)
+    local n = b.nodeID or b.NodeID or (type(b.nodeInfo) == "table" and b.nodeInfo.ID)
+    if type(n) ~= "number" and type(b.GetNodeID) == "function" then local ok, v = pcall(b.GetNodeID, b); n = ok and v or nil end
+    if type(n) ~= "number" and type(b.GetNodeInfo) == "function" then
+        local ok, v = pcall(b.GetNodeInfo, b); n = ok and type(v) == "table" and v.ID or nil
+    end
+    return type(n) == "number" and n or nil
+end
+local function iconOf(b)
+    local t = b.Icon or b.icon or b.IconTexture or (b.GetNormalTexture and b:GetNormalTexture())
+    return t and t.GetTexture and t:GetTexture()
+end
+local function findButton(root, node, icon)
+    local byIcon
+    local function walk(fr, depth)
+        if depth > 8 or not fr.GetChildren then return nil end
+        for _, ch in ipairs({ fr:GetChildren() }) do
+            if ch.IsVisible and ch:IsVisible() then
+                if node and nodeOf(ch) == node then return ch end
+                if icon and not byIcon and ch.IsObjectType and ch:IsObjectType("Button") then
+                    local ti = iconOf(ch)
+                    if ti and (ti == icon or tostring(ti):lower() == tostring(icon):lower()) then byIcon = ch end
+                end
+                local r = walk(ch, depth + 1)
+                if r then return r end
+            end
+        end
+    end
+    return walk(root, 0) or byIcon
+end
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperTalentPlan", UIParent)
@@ -155,17 +196,18 @@ end
 -- Talent à prendre entouré dans la fenêtre du jeu (si elle expose ses boutons)
 function UI:TalentPlanGlow()
     if glow then glow:Hide() end
-    if not (host and host:IsShown() and panel and panel:IsShown()) then return end
+    if not (glowOn() and host and host:IsShown() and panel and panel:IsShown()) then return end
     local pr = P:Progress(WK:CharKey())
     local node = pr and pr.step and (pr.step[3] or (pr.talent and pr.talent[8]))
     if not node then return end
     local btn
     for _, sub in ipairs({ host.TalentsFrame or false, host.TalentsTab or false, host }) do
-        if sub and sub.GetTalentButtonByNodeID then
+        if type(sub) == "table" and type(sub.GetTalentButtonByNodeID) == "function" then
             local ok, b = pcall(sub.GetTalentButtonByNodeID, sub, node)
             if ok and b then btn = b break end
         end
     end
+    if not btn then btn = findButton(host, node, pr.talent and pr.talent[2]) end
     if not btn then return end
     if not glow then
         glow = CreateFrame("Frame", nil, UIParent)
@@ -179,6 +221,7 @@ function UI:TalentPlanGlow()
             s.tex:SetVertexColor(r, g, b, 0.6 + 0.4 * math.sin(s.t * 5))
         end)
     end
+    UI.talentGlow, UI.talentGlowBtn = glow, btn
     glow:ClearAllPoints()
     glow:SetPoint("TOPLEFT", btn, "TOPLEFT", -6, 6); glow:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 6, -6)
     glow:Show()
@@ -226,6 +269,8 @@ local function tryHook()
             fr:HookScript("OnShow", function(s)
                 host = s
                 if enabled() and #P:Plans(WK:CharKey()) > 0 and not (panel and panel.userHidden) then UI:ShowTalentPlan(s) end
+                -- boutons des talents posés un peu après l'ouverture : le cercle est recherché à nouveau
+                C_Timer.After(0.5, function() UI:TalentPlanGlow() end)
             end)
             fr:HookScript("OnHide", function(s)
                 if panel and panel.anchored then panel:Hide() end

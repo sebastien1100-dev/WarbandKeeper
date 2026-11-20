@@ -569,6 +569,9 @@ local function build(parent)
     f.ptoggle = UI:Toggle(f.pcard, function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end,
         function(v) WK.DB.global.settings.ui.talentPlanPanel = v end)
     f.ptoggleL = UI:Text(f.pcard, 11, C.muted); f.ptoggleL:SetText(T("Panneau collé à la fenêtre des talents du jeu"))
+    f.gtoggle = UI:Toggle(f.pcard, function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
+        function(v) WK.DB.global.settings.ui.talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end)
+    f.gtoggleL = UI:Text(f.pcard, 11, C.muted); f.gtoggleL:SetText(T("Cercle autour du prochain talent dans la fenêtre du jeu"))
     f.prows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, f.pcard)
         r:SetHeight(32)
@@ -1373,8 +1376,11 @@ local function refreshTalents(f, c)
     f.ptoggle:ClearAllPoints(); f.ptoggle:SetPoint("TOPLEFT", 14, -(ry + 8))
     f.ptoggleL:ClearAllPoints(); f.ptoggleL:SetPoint("LEFT", f.ptoggle, "RIGHT", 10, 0)
     if f.ptoggle.Refresh then f.ptoggle:Refresh() end
-    pcard:SetHeight(ry + 44)
-    f.tsc:SetContentHeight(py + ry + 52)
+    f.gtoggle:ClearAllPoints(); f.gtoggle:SetPoint("TOPLEFT", 14, -(ry + 38))
+    f.gtoggleL:ClearAllPoints(); f.gtoggleL:SetPoint("LEFT", f.gtoggle, "RIGHT", 10, 0)
+    if f.gtoggle.Refresh then f.gtoggle:Refresh() end
+    pcard:SetHeight(ry + 74)
+    f.tsc:SetContentHeight(py + ry + 82)
 end
 
 -- Icônes des spécialisations (ordre classique des arbres, de gauche à droite)
