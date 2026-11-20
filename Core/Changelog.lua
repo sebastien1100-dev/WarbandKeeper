@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.1", date = "20/11/2026",
+        added = {
+            "Tournée de quêtes : quand des sorts sont à apprendre, la tournée passe par le maître de classe le plus proche (étape bleue « Maître de classe : N sort(s) à apprendre », placée là où elle rallonge le moins le trajet ; finie après la visite). Option « Maître de classe dans la tournée » sous le guide de la Montée en niveaux (activée d'office).",
+        },
+        changed = {
+            "Carte du monde : les pastilles numérotées de la tournée sont à la taille des autres repères (rares, marchands) ; deux étapes au même endroit partagent une pastille « 2·30 » au lieu de se chevaucher.",
+        },
+    },
+    {
         version = "1.101.0", date = "20/11/2026", restart = true,
         added = {
             "Quêtes automatiques (roue de la page Quêtes) : trois modes d'un clic. Manuel : rien d'automatique. Assisté (par défaut) : prend les quêtes cochées dans « Quêtes de ma zone » ou la tournée, rend les quêtes finies, et te laisse choisir la récompense quand il y en a plusieurs. Automatique : prend et rend tout, et choisit la récompense (l'amélioration pour ton perso, sinon la plus chère).",

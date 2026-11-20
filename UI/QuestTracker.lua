@@ -123,7 +123,7 @@ local function build()
         if over ~= v.over then v.over = over; hoverButtons(over) end
     end)
 
-    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" } }
+    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" }, trainer = { "info", nil } }
     local function kindColor(k)
         local e = KIND[k]
         if e and e[1] then return C[e[1]] end

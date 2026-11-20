@@ -878,6 +878,17 @@ UI:RegisterPage({
             return t
         end
         sc.noDgn = cfgToggle("noDungeons", "Sans donjons")
+        -- maître de classe dans la tournée (oui par défaut : réglage trainerTour ~= false)
+        sc.trainer = UI:Toggle(sc, function() return not (LG() and LG():Config().trainerTour == false) end,
+            function(v)
+                if LG() then LG():Config().trainerTour = v and nil or false end
+                if QP() then QP():Invalidate() end
+                self.lgAt = nil; self:RefreshMontee()
+            end)
+        sc.trainer.label = UI:Text(sc, 12); sc.trainer.label:SetPoint("LEFT", sc.trainer, "RIGHT", 8, 0)
+        sc.trainer.label:SetText(T("Maître de classe dans la tournée"))
+        sc.trainer.tooltip = "Quand des sorts sont à apprendre, la tournée de quêtes passe par le maître de classe le plus proche."
+        table.insert(self.toggles or {}, sc.trainer)
         sc.noProf = cfgToggle("noProf", "Sans métiers")
         sc.recalc = UI:Button(sc, "Recalculer", nil, 30, "secondary", "refresh")
         sc.recalc:SetScript("OnClick", function() self.lgAt = nil; self:RefreshMontee() end)
@@ -1003,7 +1014,8 @@ UI:RegisterPage({
         sc.noDgn:ClearAllPoints(); sc.noDgn:SetPoint("TOPLEFT", sc.follow, "TOPRIGHT", 20, -4)
         sc.noProf:ClearAllPoints(); sc.noProf:SetPoint("TOPLEFT", sc.noDgn.label, "TOPRIGHT", 20, 4)
         sc.recalc:ClearAllPoints(); sc.recalc:SetPoint("TOPRIGHT", -16, -ry)
-        sc.noDgn:Refresh(); sc.noProf:Refresh()
+        sc.trainer:ClearAllPoints(); sc.trainer:SetPoint("TOPLEFT", sc.noProf.label, "TOPRIGHT", 20, 4)
+        sc.noDgn:Refresh(); sc.noProf:Refresh(); sc.trainer:Refresh()
         sc:SetHeight(ry + 30 + 16)
         self.mscroll.child:SetSize(W, y + ry + 46 + 8)
         if self.mscroll.UpdateBar then self.mscroll:UpdateBar() end
@@ -1724,6 +1736,7 @@ UI:RegisterPage({
         local txt
         if s.kind == "pick" then txt = T("parler au donneur")
         elseif s.kind == "turn" then txt = T("rendre au PNJ")
+        elseif s.kind == "trainer" then txt = (s.title and (s.title .. " · ") or "") .. T("apprendre tes sorts")
         else
             local objs = P:StepObjectives(s)
             local left = {}
@@ -1769,7 +1782,7 @@ UI:RegisterPage({
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(W - 14)
             local past = tour and i < idx
             local cur = tour and i == idx
-            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { ar, ag, ab }
+            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { ar, ag, ab }
             r.dot:SetVertexColor(col[1], col[2], col[3], 1)
             r.num:SetText(tostring(i))
             r.num:SetTextColor(unpack(past and C.text or C.onAccent))
@@ -1819,7 +1832,7 @@ UI:RegisterPage({
                 local b = stepPin(mc, n)
                 b.step, b.idx = s, i
                 b:SetSize(size, size); b.edge:SetSize(size + 4, size + 4)
-                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { ar, ag, ab }
+                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { ar, ag, ab }
                 b:ClearAllPoints(); b:SetPoint("CENTER", mc.area, "TOPLEFT", x, -y)
                 b.dot:SetVertexColor(col[1], col[2], col[3], 1)
                 b.num:SetText(tostring(i)); b.num:SetTextColor(unpack(past and C.text or C.onAccent))

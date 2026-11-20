@@ -142,21 +142,42 @@ local function drawTour(cv, mapID, w, h, lvl)
     if not t then return end
     local r, g, b = UI:Accent()
     local prev, nl = nil, 0
+    -- pastilles à la taille des autres repères de la carte (rares, marchands) ; deux étapes au même endroit :
+    -- une seule pastille « 2·30 », plus large
+    local k = UI.MapIconScale and UI.MapIconScale() or 1
+    local placed = {}
+    local np = 0
     for i, s in ipairs(t.steps) do
         local x, y = mapPos(s, mapID)
         if x then
-            local p = numPin(i, cv)
             local cur = i == t.idx
-            local sz = cur and 26 or 20
+            local px, py = x * w, y * h
+            local same
+            for _, q in ipairs(placed) do
+                if math.abs(q.px - px) < 9 * k and math.abs(q.py - py) < 9 * k then same = q break end
+            end
+            if same then
+                same.nums = same.nums .. "·" .. i
+                same.p.n:SetText(same.nums)
+                same.p:SetWidth(math.max(same.p:GetHeight(), (same.p.n:GetStringWidth() or 10) + 8))
+                same.p.tip = same.p.tip .. "|n" .. i .. ". " .. P:StepTitle(s)
+                if cur then same.p:SetHeight(17 * k) end
+            else
+            np = np + 1
+            local p = numPin(np, cv)
+            local sz = (cur and 17 or 14) * k
             p:SetSize(sz, sz)
-            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { r, g, b }
+            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { r, g, b }
             p.ring:SetVertexColor(1, 1, 1, cur and 1 or 0.8)
             p.dot:SetVertexColor(col[1], col[2], col[3], i < t.idx and 0.4 or 1)
+            if p.n.SetFont and UI.FONT then p.n:SetFont(UI.FONT, math.max(7, math.floor((cur and 9 or 8) * k + 0.5)), "") end
             p.n:SetText(i)
-            p.tip = P:StepTitle(s)
+            p.tip = i .. ". " .. P:StepTitle(s)
             p:SetFrameLevel(lvl + 8)
-            p:ClearAllPoints(); p:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)
+            p:ClearAllPoints(); p:SetPoint("CENTER", cv, "TOPLEFT", px, -py)
             p:Show()
+            table.insert(placed, { px = px, py = py, p = p, nums = tostring(i) })
+            end
             if prev and i > t.idx - 1 then
                 nl = nl + 1
                 local l = line(nl, cv)

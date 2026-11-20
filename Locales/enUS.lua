@@ -4144,4 +4144,7 @@ WK.Locales.enUS.text = {
     ["Exclure la quête suivie"] = "Exclude the tracked quest",
     ["Exclure le PNJ ciblé"] = "Exclude the targeted NPC",
     ["Tout réautoriser"] = "Allow all again",
+    ["Maître de classe dans la tournée"] = "Class trainer in the tour",
+    ["Quand des sorts sont à apprendre, la tournée de quêtes passe par le maître de classe le plus proche."] = "When spells are to be learned, the quest tour goes by the nearest class trainer.",
+    ["apprendre tes sorts"] = "learn your spells",
 }

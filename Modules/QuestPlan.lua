@@ -244,6 +244,24 @@ function M:BuildNow(coins)
             end
         end
     end
+    -- visite du maître de classe (réglage levelGuide.trainerTour, oui par défaut) : quand des sorts sont à
+    -- apprendre maintenant, le maître le plus proche devient une étape, placée là où elle coûte le moins
+    local LGc = WK.modules.LevelGuide and WK.modules.LevelGuide:Config()
+    local CS = WK.modules.ClassSpells
+    if LGc and LGc.trainerTour ~= false and CS and #nodes > 0 then
+        local cr = CS:ForChar()
+        if cr and #cr.now > 0 then
+            local g = G()
+            local tg = g:Nearest(g:KindsFor("trainer"), select(2, UnitClass("player")))
+            if tg then
+                local p = point(tg.map, tg.x, tg.y)
+                if not nodes[1] or dist(nodes[1], p) < 100000 then
+                    table.insert(nodes, { kind = "trainer", map = p.map, x = p.x, y = p.y, cont = p.cont, wx = p.wx, wy = p.wy,
+                        qids = {}, secs = 60, title = g:PlaceName(tg), spells = #cr.now })
+                end
+            end
+        end
+    end
     -- au plus proche, en respectant l'ordre prendre > faire > rendre
     local me = G():PlayerPos() or (nodes[1] and point(nodes[1].map, nodes[1].x, nodes[1].y))
     local order, used = {}, {}
@@ -304,7 +322,8 @@ function M:BuildNow(coins)
         travel = travel + d
         local secs = d / SPEED + (n.secs or (n.kind == "do" and 0 or 15))
         total = total + secs
-        table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.label })
+        table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.label,
+            title = n.kind == "trainer" and n.title or nil, spells = n.spells, level = n.kind == "trainer" and (UnitLevel and UnitLevel("player")) or nil })
         prev = n
     end
     return { steps = steps, idx = 1, start = time(), secs = math.floor(total), meters = math.floor(travel),
@@ -375,7 +394,15 @@ end
 
 local function inLog(qid) return Q():InLog(qid) end
 function M:StepDone(s)
-    if s.kind == "pick" then
+    if s.kind == "trainer" then
+        -- fini quand il ne reste rien à apprendre, ou après une visite chez le maître depuis le début de l'étape
+        local CS = WK.modules.ClassSpells
+        local cr = CS and CS:ForChar()
+        if not cr or #cr.now == 0 then return true end
+        local LG = WK.modules.LevelGuide
+        local seen = LG and (LG:Config().trainer or {})[WK:CharKey()] or 0
+        return seen >= (s.level or 999)
+    elseif s.kind == "pick" then
         for _, q in ipairs(s.qids) do if not inLog(q) then return false end end
         return true
     elseif s.kind == "do" then
@@ -393,6 +420,9 @@ end
 
 -- Titre lisible d'une étape
 function M:StepTitle(s)
+    if s.kind == "trainer" then
+        return string.format(T("Maître de classe : %d sort(s) à apprendre"), s.spells or 0)
+    end
     local names = {}
     for _, q in ipairs(s.qids) do
         local qq = WK.modules.Quests:Get(q)

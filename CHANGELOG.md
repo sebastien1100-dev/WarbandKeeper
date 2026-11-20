@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes : quand des sorts sont à apprendre, la tournée passe par le maître de classe le plus proche (étape bleue « Maître de classe : N sort(s) à apprendre », placée là où elle rallonge le moins le trajet ; finie après la visite). Option « Maître de classe dans la tournée » sous le guide de la Montée en niveaux (activée d'office).
+
+### Modifications
+- Carte du monde : les pastilles numérotées de la tournée sont à la taille des autres repères (rares, marchands) ; deux étapes au même endroit partagent une pastille « 2·30 » au lieu de se chevaucher.
+
 ## v1.101.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
