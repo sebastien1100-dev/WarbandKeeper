@@ -460,8 +460,9 @@ end
 ---------------------------------------------------------------------------
 function UI:Card(parent, title, subtitle, highlight)
     local f = CreateFrame("Frame", nil, parent)
-    UI:Panel(f, 12, C.surface, C.border)
-    if highlight then UI:TopHighlight(f) end
+    -- style des cartes (Options > Apparence) : liseré (défaut), plat (sans bordure), halo (lueur en haut)
+    UI:Panel(f, 12, C.surface, UI.cardStyle == "flat" and C.surface or C.border)
+    if highlight or UI.cardStyle == "halo" then UI:TopHighlight(f) end
     if title then
         f.title = UI:Text(f, 13, C.text)
         f.title:SetPoint("TOPLEFT", 16, -14)

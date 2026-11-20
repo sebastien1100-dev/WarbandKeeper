@@ -37,6 +37,9 @@ UI.accents = {
     { 0.200, 0.800, 0.620 }, -- émeraude
     { 0.400, 0.760, 1.000 }, -- bleu
     { 0.700, 0.560, 1.000 }, -- violet
+    { 0.960, 0.550, 0.730 }, -- rose
+    { 1.000, 0.420, 0.420 }, -- rouge
+    { 0.860, 0.870, 0.900 }, -- argent
 }
 
 -- Dégradé sur une texture (API moderne SetGradient, ancienne SetGradientAlpha).
@@ -64,6 +67,10 @@ function UI:Accent()
         if c then return c.r, c.g, c.b end
     elseif type(choice) == "number" then
         a = self.accents[choice]
+    elseif choice == "custom" then
+        -- ta couleur (Options > Apparence : code #RRGGBB)
+        local c = WK.DB.global.settings.ui.accentRGB
+        if type(c) == "table" and c[1] then a = c end
     end
     a = a or self.themeAccent or self.accents[1]
     return a[1], a[2], a[3]
@@ -187,7 +194,7 @@ end
 
 function UI:Text(parent, size, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY")
-    fs:SetFont(UI.FONT, size or 12, "")
+    fs:SetFont(UI.FONT, math.floor((size or 12) * (UI.textScale or 1) + 0.5), "")
     fs:SetTextColor(unpack(color or UI.colors.text))
     fs:SetJustifyH("LEFT")
     if fs.SetWordWrap then fs:SetWordWrap(false) end

@@ -171,7 +171,11 @@ end
 UI.fonts = {
     { key = "friz", label = "Friz Quadrata", path = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF" },
     { key = "arialn", label = "Arial Narrow", path = "Fonts\\ARIALN.TTF" },
+    { key = "morpheus", label = "Morpheus", path = "Fonts\\MORPHEUS.TTF" },
+    { key = "skurri", label = "Skurri", path = "Fonts\\SKURRI.TTF" },
 }
+-- Teinte du fond (Options > Apparence) : décalage léger du graphite vers le bleu ou le brun
+local TINTS = { cold = { -0.008, 0.002, 0.020 }, warm = { 0.020, 0.008, -0.010 } }
 
 -- Applique le thème choisi : la palette est recopiée dans UI.colors (même table,
 -- donc tous les fichiers qui ont gardé une référence la voient). À faire avant de
@@ -184,14 +188,25 @@ function UI:ApplyTheme()
     cfg.theme = "graphite"
     local t = self.themeByKey[cfg.theme] or self.themes[1]
     local b = t.base()
+    local tint = TINTS[cfg.bgTint or ""]
+    if tint then
+        for _, k in ipairs({ "bg", "line", "frame", "glow" }) do
+            local c = b[k]
+            if c then b[k] = { math.max(0, c[1] + tint[1]), math.max(0, c[2] + tint[2]), math.max(0, c[3] + tint[3]) } end
+        end
+    end
     local p = palette(b)
     p.bg[4] = 0.98 * (cfg.opacity or 1)
     for k, v in pairs(p) do self.colors[k] = v end
     self.themeAccent = b.accent
     self.TITLE_FONT = t.titleFont or (STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
+    self.FONT = self.fonts[1].path
     for _, f in ipairs(self.fonts) do
         if f.key == cfg.font then self.FONT = f.path end
     end
     self.radiusScale = cfg.rounding or 1
+    -- taille du texte (tous les textes de l'addon créés par UI:Text) et style des cartes (plat, liseré, halo)
+    self.textScale = math.max(0.8, math.min(1.3, cfg.textScale or 1))
+    self.cardStyle = cfg.cardStyle or "line"
     self.theme = t
 end

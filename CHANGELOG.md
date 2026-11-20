@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.91.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Options > Apparence refaite : réglages groupés (Couleurs, Texte, Formes, Fenêtre) avec un aperçu en direct à droite (titre, pastille, carte avec jauge, boutons, interrupteur) qui suit chaque changement.
+- Nouveaux réglages : 3 couleurs d'accent en plus (rose, rouge, argent) et ta couleur à toi en code #RRGGBB ; teinte du fond (froid, neutre, chaud) ; 2 polices en plus (Morpheus, Skurri) ; taille du texte (85 à 125 %) ; arrondi au curseur (de carré à très rond) ; style des cartes (plat, liseré, halo).
+
 ## v1.90.5 — 20/11/2026
 
 _Un /reload suffit._

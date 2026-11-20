@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.91.0", date = "20/11/2026",
+        added = {
+            "Options > Apparence refaite : réglages groupés (Couleurs, Texte, Formes, Fenêtre) avec un aperçu en direct à droite (titre, pastille, carte avec jauge, boutons, interrupteur) qui suit chaque changement.",
+            "Nouveaux réglages : 3 couleurs d'accent en plus (rose, rouge, argent) et ta couleur à toi en code #RRGGBB ; teinte du fond (froid, neutre, chaud) ; 2 polices en plus (Morpheus, Skurri) ; taille du texte (85 à 125 %) ; arrondi au curseur (de carré à très rond) ; style des cartes (plat, liseré, halo).",
+        },
+    },
+    {
         version = "1.90.5", date = "20/11/2026",
         changed = {
             "Point sur l'icône des Options (en haut à droite) : son infobulle dit maintenant ce qu'il signale (des nouveautés pas encore lues, ou en rouge une erreur de l'addon pas encore vue), et un clic mène droit aux Patch notes ou à Fiabilité. Il s'éteint une fois lu.",
