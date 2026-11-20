@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.102.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bateaux : le bandeau n'apparaît et ne disparaît plus sans cesse sur le ponton. « À bord » ne s'affiche qu'après 4 s de traversée et 25 m parcourus, l'arrêt après une course à monture ne passe plus pour un départ du navire, et le bandeau du quai reste 8 s quand on s'éloigne un instant.
+
 ## v1.102.1 — 20/11/2026
 
 _Un /reload suffit._

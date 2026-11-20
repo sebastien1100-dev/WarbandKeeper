@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.102.2", date = "20/11/2026",
+        fixed = {
+            "Bateaux : le bandeau n'apparaît et ne disparaît plus sans cesse sur le ponton. « À bord » ne s'affiche qu'après 4 s de traversée et 25 m parcourus, l'arrêt après une course à monture ne passe plus pour un départ du navire, et le bandeau du quai reste 8 s quand on s'éloigne un instant.",
+        },
+    },
+    {
         version = "1.102.1", date = "20/11/2026",
         fixed = {
             "Bateaux : le bandeau « À bord » ne s'affiche plus en marchant sur le ponton. Un arrêt juste avant la mesure passait pour un départ du navire (« début … 4 m/s » dans /wk bateau) ; il faut maintenant deux mesures de suite.",

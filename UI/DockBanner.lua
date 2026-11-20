@@ -12,7 +12,7 @@ local T = function(s) return WK.T(s) end
 --     BoatLines:RideFit, sinon celle du ponton quitté, navire au départ) ;
 --   * dans le tram des profondeurs : ses deux stations.
 -- Lignes du jeu : Modules/BoatLines.lua ; bateaux appris en jeu : Nav:Boats(). Réglage Guide:Config().dockBanner.
-local LINGER, W = 5, 400
+local LINGER, W = 8, 400
 -- distance d'apparition (réglage Guide:Config().dockRange, 30 m par défaut : sur le ponton) ; le bandeau
 -- reste affiché jusqu'à 15 m de plus
 local function rangeIn()
@@ -347,7 +347,7 @@ function UI:RefreshDockBanner()
         banner.ride = nil; banner:Hide() return
     end
     -- à bord : la ligne reconnue par les positions, sinon celle du ponton quitté
-    if Nv and Nv.IsRiding and Nv.IsRiding() then
+    if Nv and Nv.RideConfirmed and Nv.RideConfirmed() then
         local fit = BL() and BL():RideFit()
         if fit then
             banner.ride = { game = fit.l, s = fit.i, kind = fit.l.kind }

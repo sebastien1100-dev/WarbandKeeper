@@ -912,10 +912,15 @@ local function rideTick()
             -- faux départs sur le ponton : le perso s'arrête juste avant la mesure, et la vitesse moyenne de
             -- son dernier pas (4 à 6 m/s) passait pour « porté ». Il faut maintenant deux mesures de suite,
             -- sans que le perso marchait à la précédente
-            if carried and not ride and v <= math.max(12, (own or 7) * 1.6) then
+            -- (la vitesse du perso est lue à la mesure d'avant aussi : à l'arrêt elle vaut 0, et la fin d'une
+            -- course à monture passait pour un navire rapide)
+            own = math.max(own or 0, lastS.own or 0)
+            carried = (not moving and v > 3) or (v > math.max(12, own * 1.6))
+            if carried and not ride and v < 30 then
                 local cand = not lastS.moving
                 if not (cand and lastS.cand) then
-                    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now, moving = moving, cand = cand }
+                    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now, moving = moving, cand = cand,
+                        own = GetUnitSpeed and GetUnitSpeed("player") or 0 }
                     return
                 end
             end
@@ -975,9 +980,18 @@ local function rideTick()
         end
     end
     lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now,
-        moving = (IsPlayerMoving and IsPlayerMoving()) or false }
+        moving = (IsPlayerMoving and IsPlayerMoving()) or false, own = GetUnitSpeed and GetUnitSpeed("player") or 0 }
 end
 M.IsRiding = function() return ride ~= nil end
+-- traversée sûre (bandeau « À bord ») : depuis 4 s au moins et à plus de 25 m du point de départ, ou après un
+-- changement de continent ; une fausse traversée sur le ponton ne fait plus clignoter le bandeau
+M.RideConfirmed = function()
+    if not ride then return false end
+    if ride.crossed then return true end
+    local l = ride.last
+    if not (l and ride.start and l.wx and ride.start.wx) then return false end
+    return GetTime() - (ride.started or GetTime()) >= 4 and dist(l.wx, l.wy, ride.start.wx, ride.start.wy) >= 25
+end
 -- point de départ de la traversée en cours (continent, x, y) : le bandeau du quai y retrouve la ligne prise
 M.RideStart = function() return ride and ride.start and ride.start.cont, ride and ride.start and ride.start.wx, ride and ride.start and ride.start.wy end
 -- /wk bateau : état de la détection et journal des traversées
