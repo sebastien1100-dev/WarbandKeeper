@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.84.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Statistiques : trois onglets en haut de la page. « Courbes » (comme avant), « Journal de l'or » (chaque gain ou perte : quand, quel perso, pourquoi, combien ; sur 24 h, 7 ou 30 jours, tous les persos ou celui-ci, avec le total gagné, dépensé et le solde) et « Dépenses » (répartition en barres des dépenses par cause, des gains par cause, et ce que chaque perso a gagné ou perdu, avec les pourcentages).
+
 ## v1.83.0 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.84.0", date = "20/11/2026",
+        added = {
+            "Statistiques : trois onglets en haut de la page. « Courbes » (comme avant), « Journal de l'or » (chaque gain ou perte : quand, quel perso, pourquoi, combien ; sur 24 h, 7 ou 30 jours, tous les persos ou celui-ci, avec le total gagné, dépensé et le solde) et « Dépenses » (répartition en barres des dépenses par cause, des gains par cause, et ce que chaque perso a gagné ou perdu, avec les pourcentages).",
+        },
+    },
+    {
         version = "1.83.0", date = "20/11/2026",
         added = {
             "Journal de l'or : chaque gain ou perte d'or est noté avec sa cause (réparations, vols, achats ou ventes chez le marchand, Hôtel des ventes, courrier, maître, quêtes, butin, échange), sur 35 jours. Le client PC s'en sert pour sa carte « Dernières 24 h » (client 1.8.6) : l'or de tous tes persos depuis 24 h et ce qui a le plus pesé.",
