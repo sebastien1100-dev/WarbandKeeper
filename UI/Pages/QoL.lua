@@ -2210,7 +2210,7 @@ UI:RegisterPage({
                                 t.full:ClearAllPoints(); t.full:SetPoint("RIGHT", t.v2, "LEFT", -6, 0); t.full:Show()
                                 t.v3:SetText(T("déjà plein")); t.v3:SetTextColor(C.positive[1], C.positive[2], C.positive[3])
                             else
-                                t.v3:SetText("~ " .. xdur(X:RestFullIn(frac, x.resting)) .. " " .. (x.resting and T("en auberge") or T("dehors")))
+                                t.v3:SetText(T("env.") .. " " .. xdur(X:RestFullIn(frac, x.resting)) .. " " .. (x.resting and T("en auberge") or T("dehors")))
                                 t.v3:SetTextColor(C.text[1], C.text[2], C.text[3])
                             end
                         end

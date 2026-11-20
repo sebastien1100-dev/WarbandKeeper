@@ -48,8 +48,8 @@ local STEP_COL = { trainer = "info", flight = "gold", zone = "gold", dungeon = "
 -- durée lisible : « ~45 min », « ~1 h 20 »
 local function fmtDur(s)
     local m = math.max(1, math.floor((s or 0) / 60 + 0.5))
-    if m < 60 then return string.format(T("~%d min"), m) end
-    return string.format(T("~%d h %02d"), math.floor(m / 60), m % 60)
+    if m < 60 then return string.format(T("env. %d min"), m) end
+    return string.format(T("env. %d h %02d"), math.floor(m / 60), m % 60)
 end
 
 -- petites capitales d'un nom de zone : ASCII et lettres accentuées (é » É…) en UTF-8
@@ -1585,7 +1585,7 @@ UI:RegisterPage({
             elseif #objs > 0 then txt = T("objectifs faits")
             else txt = T("objectifs connus une fois la quête prise") end
         end
-        if (s.secs or 0) >= 30 then txt = txt .. "  ·  " .. string.format(T("~%d min"), math.max(1, math.floor(s.secs / 60 + 0.5))) end
+        if (s.secs or 0) >= 30 then txt = txt .. "  ·  " .. string.format(T("env. %d min"), math.max(1, math.floor(s.secs / 60 + 0.5))) end
         return txt
     end,
 
@@ -1598,7 +1598,7 @@ UI:RegisterPage({
         local idx = tour and tour.idx or 0
         local secs = tour and P:Remaining() or (data.secs or 0)
         local km = (string.format("%.1f", (data.meters or 0) / 1000):gsub("%.", ","))
-        self.tHead:SetText(string.format(T("Tournée · %d étapes · ~%d min · %s km"), #steps, math.max(1, math.floor(secs / 60 + 0.5)), km))
+        self.tHead:SetText(string.format(T("Tournée · %d étapes · env. %d min · %s km"), #steps, math.max(1, math.floor(secs / 60 + 0.5)), km))
         if not tour then
             self.tSub:SetText(#steps > 0 and T("Aperçu : la tournée n'est pas lancée.") or "")
         elseif tour.paused then

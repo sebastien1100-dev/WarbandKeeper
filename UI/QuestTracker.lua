@@ -143,7 +143,7 @@ function UI:RefreshQuestTracker()
         local objs = P:StepObjectives(s)
         local mins = math.max(1, math.floor(P:Remaining() / 60 + 0.5))
         card:Paint({ tour = true, title = string.format(T("Étape %d / %d"), tour.idx, #tour.steps),
-            sub = P:StepTitle(s) .. " · " .. string.format(T("~%d min restantes"), mins),
+            sub = P:StepTitle(s) .. " · " .. string.format(T("env. %d min restantes"), mins),
             prog = (tour.idx - 1) / #tour.steps, objs = objs,
             goal = (tour.paused and T("En pause")) or (nxt and (T("Ensuite : ") .. P:StepTitle(nxt))) or T("Dernière étape"),
             b1 = T("Passer l'étape"), b2 = tour.paused and T("Reprendre") or T("Pause"), canNext = true })

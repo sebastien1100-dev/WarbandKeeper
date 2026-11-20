@@ -1717,7 +1717,7 @@ local function build(host)
                 local col = o.state == "under" and C.negative or C.positive
                 r.d:SetTextColor(col[1], col[2], col[3])
                 local tl = o.timeLeft
-                r.left:SetText(tl and (tl >= 3600 and string.format("~ %d h", math.floor(tl / 3600)) or string.format("~ %d min", math.max(1, math.floor(tl / 60)))) or "")
+                r.left:SetText(tl and (tl >= 3600 and string.format(T("env. %d h"), math.floor(tl / 3600)) or string.format(T("env. %d min"), math.max(1, math.floor(tl / 60)))) or "")
                 local lc = (tl and tl < 2 * 3600) and C.warning or C.muted
                 r.left:SetTextColor(lc[1], lc[2], lc[3])
                 local st = o.state

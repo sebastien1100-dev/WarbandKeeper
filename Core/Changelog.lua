@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.1", date = "20/11/2026",
+        fixed = {
+            "Le « ~ » des estimations s'affichait mal avec la police du jeu : remplacé par « env. » partout (étapes de tournée, durées du guide de montée et de la carte de quête, coût des sorts jusqu'au 60, retour au corps, temps restant des enchères, repos, taille de la sauvegarde).",
+        },
+    },
+    {
         version = "1.98.0", date = "20/11/2026",
         changed = {
             "Page Quêtes : deux grands onglets en haut, « Carte des zones » (onglet principal, ouvert par défaut) et « Ma progression » ; dans Ma progression, les sous-onglets Montée, Mon journal, À prendre et Tournée.",
@@ -4561,7 +4567,7 @@ WK.Roadmap = {
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 2, theme = "rel", title = "Notes de version allégées en jeu", text = "Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
-    { prio = 2, theme = "char", title = "Objectifs par perso", text = "Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans ~6 h au rythme actuel »)." },
+    { prio = 2, theme = "char", title = "Objectifs par perso", text = "Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »)." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },
     { prio = 3, theme = "char", title = "Carte de la Warband", text = "Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord." },
     { prio = 2, theme = "guild", title = "Prix HV partagés en guilde", text = "Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même." },

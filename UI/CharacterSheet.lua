@@ -1693,7 +1693,7 @@ spellChips = function(r, c)
     if r.nextLevel then
         table.insert(out, { label = "Prochain niveau", value = string.format(T("%d sorts"), #r.next), tip = string.format(T("Au niveau %d"), r.nextLevel) })
     end
-    table.insert(out, { label = "Jusqu'au 60", value = (r.unknownPrice > 0 and "~" or "") .. money(r.costAll), color = C.gold,
+    table.insert(out, { label = "Jusqu'au 60", value = (r.unknownPrice > 0 and (T("env.") .. " ") or "") .. money(r.costAll), color = C.gold,
         tip = r.unknownPrice > 0 and string.format(T("%d prix encore inconnus"), r.unknownPrice) or nil })
     table.insert(out, { label = "Or du perso", value = c.money and UI:ShortGold(c.money) or "-" })
     return out
@@ -1862,7 +1862,7 @@ refreshSpells = function(f, c)
     local sx, sy = wide and (leftW + COL_GAP) or 0, wide and 0 or (y + 10 + COL_GAP)
     tc:ClearAllPoints(); tc:SetPoint("TOPLEFT", sx, -sy); tc:SetWidth(sideW)
     local count = #r.now + #r.next + #r.later
-    tc.sum:SetText(string.format(T("%d sorts · %s"), count, (r.unknownPrice > 0 and "~" or "") .. money(r.costAll)))
+    tc.sum:SetText(string.format(T("%d sorts · %s"), count, (r.unknownPrice > 0 and (T("env.") .. " ") or "") .. money(r.costAll)))
     -- coût par tranche de 10 niveaux, à partir de la tranche actuelle (les sorts en retard y comptent)
     local lvl = r.level or 1
     local byLevel = M and M:CostByLevel(f.key) or {}

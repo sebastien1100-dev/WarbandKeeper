@@ -40,7 +40,7 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 - Ne pas mélanger un ancrage haut/bas (`TOPLEFT`…) et un ancrage centré (`LEFT`, `RIGHT`) sur une même région : utiliser `TOPRIGHT` avec le même décalage vertical.
 - Fonctions globales absentes sur ce client : passer par `WK.GetItemInfo`, `WK.InsertChatLink`, `WK.Container.*`.
 - Dans une page (`UI:RegisterPage`), `self` est la définition de la page : ne pas y créer de champs `title`, `subtitle`, `nav`, `navIcon`, `count`, `key`, `order`, `frame` ou `noHeader`, utilisés par `UI/MainFrame.lua`.
-- Les polices du jeu ne couvrent que le jeu de caractères Windows-1252 : pas de « → », « ≈ », « ✓ »… dans les textes affichés (utiliser « » », « ~ », « · », « • »).
+- Les polices du jeu ne couvrent que le jeu de caractères Windows-1252 : pas de « → », « ≈ », « ✓ »… dans les textes affichés (utiliser « » », « · », « • »). Une estimation s'écrit « env. » (« env. 12 min ») : le « ~ » s'affiche mal avec la police du jeu.
 - Noms de personnages en deux parties sur WoW Forever (« Prénom Nom », avec un espace) : le courrier exige le nom complet. Ne jamais découper un nom sur les espaces ; pour un destinataire, passer par `WK.modules.Mail:Recipient()` / `:Resolve()` / `:IsMe()`.
 
 ## Barre latérale

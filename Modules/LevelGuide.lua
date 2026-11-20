@@ -260,7 +260,7 @@ function M:StepsNow()
             end
             add({ key = "tour:" .. (here or 0) .. ":" .. #plan.steps, kind = "tour", auto = true,
                 title = string.format(T("Tournée de la zone : %d étapes"), #plan.steps),
-                sub = string.format(T("~%d min · +%d XP · niveau %.1f à la fin"), math.max(1, math.floor(plan.secs / 60 + 0.5)), xp, self:LevelAfter(xp)),
+                sub = string.format(T("env. %d min · +%d XP · niveau %.1f à la fin"), math.max(1, math.floor(plan.secs / 60 + 0.5)), xp, self:LevelAfter(xp)),
                 act = function() P():Start() end })
         end
     end

@@ -1176,7 +1176,7 @@ UI.CHIPS = {
                     { T("À prendre ici"), tostring(ps.here) },
                     { T("Dans ton journal"), tostring(ps.inLog) },
                     { T("XP du plan"), tostring(ps.xp), C.positive },
-                    { T("Durée estimée"), string.format(T("~%d min"), math.max(1, math.floor((ps.secs or 0) / 60 + 0.5))) },
+                    { T("Durée estimée"), string.format(T("env. %d min"), math.max(1, math.floor((ps.secs or 0) / 60 + 0.5))) },
                 }
             elseif pg and (pg.view == "log" or pg.view == "tour") then
                 for i = #jr, 1, -1 do table.insert(out, 1, jr[i]) end

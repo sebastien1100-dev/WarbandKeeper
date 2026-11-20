@@ -39,7 +39,7 @@ _Prévu, pas encore commencé._
 
 ### Personnages
 - **Compétences d'armes** (moyenne) — Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche.
-- **Objectifs par perso** (moyenne) — Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans ~6 h au rythme actuel »).
+- **Objectifs par perso** (moyenne) — Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »).
 - **Carte de la Warband** (basse) — Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord.
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.98.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Le « ~ » des estimations s'affichait mal avec la police du jeu : remplacé par « env. » partout (étapes de tournée, durées du guide de montée et de la carte de quête, coût des sorts jusqu'au 60, retour au corps, temps restant des enchères, repos, taille de la sauvegarde).
 
 ## v1.98.0 — 20/11/2026
 

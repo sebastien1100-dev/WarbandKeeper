@@ -159,7 +159,7 @@ function UI:BuildMaintenanceCards(page, card)
             cc.scan = M:Scan()
             cc.size = M:Total()
         end
-        cc.total:SetText(string.format(T("sauvegarde ~ %s"), M.Bytes(cc.size)))
+        cc.total:SetText(string.format(T("sauvegarde env. %s"), M.Bytes(cc.size)))
         local gain = 0
         for _, r in ipairs(cc.rows) do
             local s = cc.scan[r.p.key] or { n = 0, bytes = 0 }
