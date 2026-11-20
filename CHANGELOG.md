@@ -72,6 +72,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.110.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte des zones, liste des quêtes de la zone choisie : une case sur chaque quête à prendre ou déjà dans le journal, et en tête « Toutes les quêtes » (même les grises) et « De mon niveau » (de ton niveau − 3 jusqu'au réglage « au-dessus de ton niveau »).
+- Pastilles « groupe » et « donjon » : les quêtes de groupe et de donjon n'entrent dans la sélection que si leur pastille est allumée.
+- En bas : le nombre de quêtes, l'XP et le temps estimé, et « Envoyer dans Ma progression », qui prépare la tournée de ces quêtes (même pour une autre zone que la tienne) et l'ouvre.
+
 ## v1.109.1 — 20/11/2026
 
 _Un /reload suffit._

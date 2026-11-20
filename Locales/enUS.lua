@@ -4253,4 +4253,11 @@ WK.Locales.enUS.text = {
     ["Liste vidée : coche des quêtes (Choisir les quêtes) pour une nouvelle tournée."] = "List cleared: tick quests (Choose quests) for a new tour.",
     ["Réordonner (depuis l'endroit où tu es)"] = "Reorder (from where you are)",
     ["Vider la liste (décocher toutes les quêtes)"] = "Clear the list (untick all quests)",
+    ["Tournée prête : %d quêtes, %d étapes (Ma progression)."] = "Tour ready: %d quests, %d steps (My progress).",
+    ["inclure :"] = "include:",
+    ["%d quête(s)"] = "%d quest(s)",
+    ["Coche des quêtes, ou « Toutes les quêtes » / « De mon niveau »."] = "Tick quests, or 'All quests' / 'My level'.",
+    ["Toutes les quêtes"] = "All quests",
+    ["De mon niveau"] = "My level",
+    ["Envoyer dans Ma progression"] = "Send to My progress",
 }
