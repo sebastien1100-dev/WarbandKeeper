@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.103.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Paladin : en groupe, en raid ou en donjon, le bouton « Buffer le suivant » prend le relais du panneau des bénédictions. Il bénit chaque membre avec la bénédiction que la répartition lui donne (et le Salut), d'abord ceux qui ne l'ont pas, puis ceux dont elle finit le plus tôt. En donjon, il s'affiche même si « En instance » est coupé.
+- Prêtre, mage, druide : en raid, le bouton « Buffer le suivant » passe aussi sur tous les membres du raid (avant : seulement le groupe de 5).
+
 ## v1.102.3 — 20/11/2026
 
 _Un /reload suffit._

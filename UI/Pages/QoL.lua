@@ -2698,7 +2698,7 @@ UI:RegisterPage({
                 local function bt(field) return toggle(bb, function() return cc[field] ~= false end, function(v)
                     cc[field] = v; UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end
                 local by = -40
-                UI:SettingRow(bb, by, "Bouton « Buffer le suivant »", "Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es).", bt("buffAround"), 80)
+                UI:SettingRow(bb, by, "Bouton « Buffer le suivant »", "Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es). Paladin en groupe, raid ou donjon : il bénit tout le monde selon la répartition des bénédictions.", bt("buffAround"), 80)
                 by = by - 46
                 if pal then
                     UI:SettingRow(bb, by, "Rois d'abord", "Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres.", bt("kingsFirst"), 80)

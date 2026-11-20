@@ -107,13 +107,53 @@ local function plateUnits(into)
     return into
 end
 
+-- Paladin en groupe, raid ou donjon : le bouton prend le relais du panneau des bénédictions
+-- (Modules/Blessings.lua, Status) : chaque membre reçoit la bénédiction que la répartition lui donne (et le
+-- Salut), les joueurs sans ta bénédiction d'abord, puis ceux dont elle finit le plus tôt
+local function groupBlessings(seenGuid)
+    local BL = WK.modules.Blessings
+    if not (myClass() == "PALADIN" and BL and BL:On() and IsInGroup and IsInGroup()) then return nil end
+    local c = cfg() or {}
+    local refresh = (c.buffRefresh or 3) * 60
+    local mePvp = UnitIsPVP and UnitIsPVP("player")
+    local out = {}
+    for _, r in ipairs(BL:Status()) do
+        local spell = BL:Name(r.b)
+        local id = BL.BLESS[r.b] and BL.BLESS[r.b][1]
+        for _, m in ipairs(r.members) do
+            local u = m.unit
+            local guid = UnitExists(u) and UnitGUID(u)
+            if guid then seenGuid[guid] = true end
+            if guid and spell and not m.dead and (UnitIsUnit(u, "player") or not UnitAffectingCombat(u))
+                and (mePvp or not (UnitIsPVP and UnitIsPVP(u)))
+                and not (refused[guid] and GetTime() - refused[guid] < 120)
+                and (not m.left or m.left < refresh) and inRange(spell, u) then
+                table.insert(out, { unit = u, id = id, spell = spell, who = UnitName(u), class = select(2, UnitClass(u)),
+                    left = m.left or -1, b = r.b })
+            end
+        end
+    end
+    table.sort(out, function(a, b) return a.left < b.left end)
+    return out
+end
+UI.BuffGroupBlessings = groupBlessings
+
 -- Joueurs à buffer, dans l'ordre : toi, ton groupe, puis les plaques de nom des joueurs amis
 local function candidates()
+    local seenGroup = {}
+    local grouped = groupBlessings(seenGroup)
+    -- en instance : seulement le groupe ; dehors, les autres joueurs autour viennent après
+    if grouped and IsInInstance and select(1, IsInInstance()) then return grouped end
     local c = cfg() or {}
     -- toi, puis ta cible, le joueur survolé et ta focalisation (marche même sans plaques de nom)
     -- (pas « mouseover » : le joueur survolé disparaît dès que la souris va sur le bouton)
-    local units, seen, out = { "player", "target", "focus" }, {}, {}
-    if IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) then
+    local units, seen, out = { "player", "target", "focus" }, {}, grouped or {}
+    if grouped then
+        -- membres du groupe déjà traités par la répartition
+        for g in pairs(seenGroup) do seen[g] = true end
+    elseif IsInRaid and IsInRaid() then
+        for i = 1, 40 do table.insert(units, "raid" .. i) end
+    elseif IsInGroup and IsInGroup() then
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
     plateUnits(units)
@@ -299,7 +339,8 @@ local function shouldShow()
     if not (c and WK.BUFF_CLASSES[myClass() or ""] and c.buffAround ~= false and WK:FeatureOn("classes")) then return false end
     if UnitIsDeadOrGhost("player") or (UnitOnTaxi and UnitOnTaxi("player")) then return false end
     local inInst = IsInInstance and select(1, IsInInstance())
-    if inInst and not c.buffInstance then return false end
+    -- en groupe (donjon, raid), le bouton sert à buffer tout le monde : affiché même si « En instance » est coupé
+    if inInst and not c.buffInstance and not (IsInGroup and IsInGroup()) then return false end
     if IsMounted and IsMounted() and not c.buffMounted then return false end
     return true
 end

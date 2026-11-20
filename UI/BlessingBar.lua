@@ -101,6 +101,7 @@ local function build()
                 GameTooltip:AddDoubleLine(firstName(m.name), txt, 0.85, 0.85, 0.85, col[1], col[2], col[3])
             end
             GameTooltip:AddLine(T("Clic : bénir le suivant · clic droit : répartition"), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(T("En groupe, le bouton « Buffer le suivant » bénit tout le monde selon cette répartition."), 0.6, 0.6, 0.6, true)
             GameTooltip:Show()
         end)
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)

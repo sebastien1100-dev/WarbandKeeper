@@ -3111,6 +3111,7 @@ WK.Locales.enUS.text = {
     ["un bouton : le joueur proche qui n'a pas ton buff, un clic ou une touche"] = "one button: the nearby player without your buff, one click or key",
     ["Bouton « Buffer le suivant »"] = "\"Buff the next one\" button",
     ["Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es)."] = "Placed in edit mode. Key: Game options > Keybindings > Warband Keeper. Never in combat, nor on a player in combat or PvP (unless you are).",
+    ["Se place en mode édition. Touche : Options du jeu > Raccourcis > Warband Keeper. Jamais en combat, ni sur un joueur en combat ou JcJ (sauf si tu l'es). Paladin en groupe, raid ou donjon : il bénit tout le monde selon la répartition des bénédictions."] = "Placed in edit mode. Key: Game options > Keybindings > Warband Keeper. Never in combat, nor on a player in combat or PvP (unless you are). Paladin in a group, raid or dungeon: it blesses everyone following the blessing assignment.",
     ["Rois d'abord"] = "Kings first",
     ["Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres."] = "If you know Kings; otherwise Might for warriors, rogues and hunters, Wisdom for the others.",
     ["Remettre un buff qui finit dans moins de"] = "Rebuff when it ends in less than",
@@ -4176,4 +4177,5 @@ WK.Locales.enUS.text = {
     ["Œufs de faucon"] = "Hawk eggs",
     ["détour env. %d min"] = "detour approx. %d min",
     ["clic : ajouter"] = "click: add",
+    ["En groupe, le bouton « Buffer le suivant » bénit tout le monde selon cette répartition."] = "In a group, the \"Buff next\" button blesses everyone following this assignment.",
 }
