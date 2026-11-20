@@ -247,6 +247,8 @@ local function drawTarget(cv, mapID, w, h)
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(G:PlaceName(G.target), 1, 1, 1)
             if G.target and G.target.reason then GameTooltip:AddLine(T(G.target.reason), 0.8, 0.8, 0.8) end
+            local d = G.target and UI.GuideDistance and UI:GuideDistance(G.target)
+            if d then GameTooltip:AddLine(string.format(T("%d m"), math.floor(d)), UI:Accent()) end
             GameTooltip:AddLine(T("Guidage Warband Keeper · clic droit pour arrêter"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
@@ -271,6 +273,8 @@ local function drawTarget(cv, mapID, w, h)
     targetPin.pill:ClearAllPoints()
     targetPin.pill:SetPoint("TOP", targetPin, "BOTTOM", 0, -2)
     targetPin.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.85)
+    -- pas d'étiquette sous l'épingle (elle chargeait la carte) : nom et distance dans l'infobulle au survol
+    targetPin.pill:Hide()
     targetPin:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 40)
     targetPin:ClearAllPoints()
     targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", t.x * w, -t.y * h) -- la pointe de l'épingle sur le lieu

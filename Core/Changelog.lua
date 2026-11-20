@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.8", date = "20/11/2026",
+        changed = {
+            "Carte du monde : plus d'étiquette (nom, genre, distance) sous l'épingle du guidage, qu'il mène à une étape de tournée, un marchand, un maître… La carte est moins chargée ; tout est dans l'infobulle au survol de l'épingle, distance comprise.",
+        },
+    },
+    {
         version = "1.101.7", date = "20/11/2026",
         added = {
             "Carte de tournée à l'écran : une petite roue parmi les boutons du survol ouvre directement les réglages de la page Quêtes (dont « Fond de la carte de tournée » pour l'opacité du fond).",
