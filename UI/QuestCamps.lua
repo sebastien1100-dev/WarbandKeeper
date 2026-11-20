@@ -25,6 +25,30 @@ local function mapPos(p, mapID)
     return x, y, false
 end
 
+-- Contour fin en pointillés : segments de ligne (1,5 px) autour du cercle, quelle que soit sa taille (la
+-- texture d'anneau grossissait avec le cercle et donnait un bord épais)
+local SEGS = 40
+local function thinRing(f, size, r, g, b, a)
+    if not f.CreateLine then return end
+    f.segs = f.segs or {}
+    local rad = size / 2
+    local n = SEGS
+    if rad < 14 then n = 20 end
+    for k = 1, SEGS do
+        local l = f.segs[k]
+        if k <= n and k % 2 == 1 then
+            if not l then l = f:CreateLine(nil, "OVERLAY"); f.segs[k] = l end
+            local a1, a2 = (k - 1) / n * 2 * math.pi, k / n * 2 * math.pi
+            l:SetStartPoint("CENTER", f, math.cos(a1) * rad, math.sin(a1) * rad)
+            l:SetEndPoint("CENTER", f, math.cos(a2) * rad, math.sin(a2) * rad)
+            l:SetThickness(1.5)
+            l:SetColorTexture(r, g, b, a)
+            l:Show()
+        elseif l then
+            l:Hide()
+        end
+    end
+end
 local function campFrame(i, cv)
     local f = camps[i]
     if not f then
@@ -239,9 +263,10 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
                             f:SetSize(size, size)
                             local col = o.type == "item" and C.warning or { UI:Accent() }
                             -- bien visibles sur le parchemin de la carte (les repères du jeu sont masqués)
-                            f.fill:SetVertexColor(col[1], col[2], col[3], main and 0.38 or 0.28)
-                            f.ring:SetVertexColor(col[1], col[2], col[3], 1)
-                            f.glow:SetVertexColor(col[1], col[2], col[3], main and 0.45 or 0.3)
+                            -- zone fine : remplissage léger, contour fin en pointillés, sans halo ni gros anneau
+                            f.fill:SetVertexColor(col[1], col[2], col[3], main and 0.2 or 0.13)
+                            f.ring:Hide(); f.edge:Hide(); f.glow:Hide()
+                            thinRing(f, size, col[1], col[2], col[3], main and 0.95 or 0.7)
                             f.info = { title = title, text = (o.name ~= "" and o.name or o.text) .. string.format(" · %d/%d", o.have or 0, o.need or 0), camp = c }
                             f:SetFrameLevel(lvl)
                             f:ClearAllPoints(); f:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)

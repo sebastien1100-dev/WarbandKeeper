@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.11", date = "20/11/2026",
+        changed = {
+            "Carte du monde : zones de quête plus fines. Remplissage léger et contour fin en pointillés (même épaisseur quelle que soit la taille de la zone), sans halo ni gros anneau qui grossissait avec les grandes zones.",
+        },
+    },
+    {
         version = "1.101.10", date = "20/11/2026",
         fixed = {
             "Carte de tournée : le titre de l'étape et les objectifs étaient coupés. Le titre passe sur deux lignes au besoin, et un objectif garde le nom seul suivi du compte (« Murloc Branchie-bleue  0/12 » au lieu de « Murloc Branchie-bleue : 0/12 personnages tué… »), sur deux lignes s'il le faut.",
