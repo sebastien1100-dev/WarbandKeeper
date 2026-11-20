@@ -35,7 +35,7 @@ local KIND = { d = "Donjon", c = "Classe" }
 local LOG_W, LROW_H, LHEAD_H = 330, 28, 26
 local COL_W, COL_W_NARROW = 270, 230      -- colonne de gauche de Mon journal et Tournée (la carte prend le reste)
 local BIG_W, BIG_H, SUB_H = 240, 46, 28   -- grands onglets, rangée des sous-onglets
-local SUBS = { { "montee", "Montée" }, { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" } }
+local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" } }
 local function QT() return WK.modules.QuestTrack end
 local function QP() return WK.modules.QuestPlan end
 local function LG() return WK.modules.LevelGuide end
@@ -821,7 +821,7 @@ UI:RegisterPage({
         local sc = self.mSteps
         sc:ClearAllPoints(); sc:SetPoint("TOPLEFT", 0, -y); sc:SetWidth(W)
         local lvl = UnitLevel and UnitLevel("player") or 1
-        sc.head:SetText(string.format(T("Montée · niveau %d"), lvl))
+        sc.head:SetText(string.format(T("Montée en niveaux · niveau %d"), lvl))
         local cur, max = (UnitXP and UnitXP("player")) or 0, (UnitXPMax and UnitXPMax("player")) or 0
         sc.bar:SetValue(max > 0 and cur / max or 0)
         sc.xpt:SetText(max > 0 and string.format(T("%s / %s XP"), BreakUpLargeNumbers and BreakUpLargeNumbers(cur) or cur,

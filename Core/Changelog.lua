@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.15", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : l'onglet « Montée » s'appelle maintenant « Montée en niveaux » (et sa carte « Montée en niveaux · niveau N », aussi sur la carte de quête à l'écran).",
+        },
+    },
+    {
         version = "1.100.14", date = "20/11/2026",
         changed = {
             "Guide de montée : un donjon dont tu as déjà fait toutes les quêtes n'est plus proposé (le suivant à ton niveau l'est) ; l'étape donjon dit combien de quêtes il te reste à y faire.",

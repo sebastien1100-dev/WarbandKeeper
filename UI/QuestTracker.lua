@@ -343,7 +343,7 @@ function UI:RefreshQuestTracker()
                 table.insert(objs, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done })
             end
         end
-        card:Paint({ guide = true, title = string.format(T("Montée · niveau %d"), lvl),
+        card:Paint({ guide = true, title = string.format(T("Montée en niveaux · niveau %d"), lvl),
             sub = s1 and s1.title or T("Rien à faire pour l'instant"),
             prog = max > 0 and cur / max or 0, objs = objs,
             goal = (s1 and s1.sub and (s1.sub .. (s2 and ("|n" .. T("Ensuite : ") .. s2.title) or ""))) or (s2 and (T("Ensuite : ") .. s2.title)) or "",
