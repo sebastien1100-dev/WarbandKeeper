@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.9", date = "20/11/2026",
+        changed = {
+            "Quêtes : les « camps » s'appellent maintenant « zones de quête » partout (carte du monde, page Quêtes, carte de quête à l'écran, réglages) : « Zone suivante », « Zones : toutes », « 3 zones · la plus proche à 240 m »…",
+        },
+    },
+    {
         version = "1.100.8", date = "20/11/2026",
         changed = {
             "Carte du monde : les zones de quête (camps) sont bien plus visibles : remplissage plus marqué, anneau plein de couleur avec un contour sombre, halo doux autour, et taille minimale plus grande. Elles remplacent les repères du jeu masqués.",

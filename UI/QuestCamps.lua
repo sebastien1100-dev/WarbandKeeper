@@ -43,7 +43,7 @@ local function campFrame(i, cv)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.info.title, 1, 1, 1)
             GameTooltip:AddLine(s.info.text, C.text[1], C.text[2], C.text[3], true)
-            GameTooltip:AddLine(T("Clic : guider jusqu'à ce camp"), C.muted[1], C.muted[2], C.muted[3])
+            GameTooltip:AddLine(T("Clic : guider jusqu'à cette zone de quête"), C.muted[1], C.muted[2], C.muted[3])
             GameTooltip:Show()
         end)
         f:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -280,7 +280,7 @@ local function buildPanel()
         c.map = (c.map == "all") and "tracked" or "all"
         if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
     end)
-    panel.mode.tooltip = "Camps de la quête suivie seulement, ou de toutes les quêtes du journal."
+    panel.mode.tooltip = "Zones de quête de la quête suivie seulement, ou de toutes les quêtes du journal."
 end
 
 function UI:RefreshQuestMapPanel()
@@ -319,7 +319,7 @@ function UI:RefreshQuestMapPanel()
             b:Hide()
         end
     end
-    panel.mode:SetLabel(Q():Config().map == "all" and T("Camps : toutes") or T("Camps : la suivie"))
+    panel.mode:SetLabel(Q():Config().map == "all" and T("Zones : toutes") or T("Zones : la suivie"))
     panel.mode:SetWidth(panel.mode.label:GetStringWidth() + 24)
     panel.mode:ClearAllPoints(); panel.mode:SetPoint("TOPLEFT", 8, -36 - n * 18 - 6)
     panel:SetHeight(36 + n * 18 + 6 + 20 + 10)

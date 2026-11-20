@@ -481,7 +481,7 @@ UI:RegisterPage({
             UI:SettingRow(tcard, -76, "Carte de quête à l'écran", nil, qtoggle("hud", function()
                 if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
             end), 50)
-            UI:SettingRow(tcard, -112, "Flèche vers les camps", nil, qtoggle("guide", function(v)
+            UI:SettingRow(tcard, -112, "Flèche vers les zones de quête", nil, qtoggle("guide", function(v)
                 local g = G()
                 if v then QT():Retarget(true)
                 elseif g and g.target and g.target.kind == "qtrack" then g:Stop() end
@@ -492,9 +492,9 @@ UI:RegisterPage({
                     if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
                     QT():Changed()
                 end, 26)
-            UI:SettingRow(tcard, -148, "Camps sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
+            UI:SettingRow(tcard, -148, "Zones de quête sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
             self.campSeg:Select(QT():Config().map)
-            UI:SettingRow(tcard, -184, "Masquer les repères de quête du jeu", "Sur la carte du monde, tant que nos camps de quête y sont affichés.",
+            UI:SettingRow(tcard, -184, "Masquer les repères de quête du jeu", "Sur la carte du monde, tant que nos zones de quête y sont affichées.",
                 qtoggle("hideGame", function() if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end end), 50)
             -- plan de quêtes (Modules/QuestPlan.lua) : alerte près d'un donneur, niveau des quêtes proposées
             if QP() then
@@ -962,7 +962,7 @@ UI:RegisterPage({
             f.info:SetPoint("TOPLEFT", 34, -34); f.info:SetPoint("TOPRIGHT", -40, -34)
             f.info:SetJustifyH("LEFT")
             if f.info.SetWordWrap then f.info:SetWordWrap(true) end
-            f.go = UI:GuideButton(f, 24, "Guider jusqu'au camp le plus proche de cet objectif")
+            f.go = UI:GuideButton(f, 24, "Guider jusqu'à la zone la plus proche de cet objectif")
             f.go:SetPoint("TOPRIGHT", -10, -32)
             return f
         end)
@@ -988,7 +988,7 @@ UI:RegisterPage({
         end)
 
         -- carte de la zone : camps de toutes les quêtes du journal (la choisie en avant), cliquables
-        local mc = newMini(p, "cercles : camps · ? : rendu · point : toi")
+        local mc = newMini(p, "cercles : zones de quête · ? : rendu · point : toi")
         self.jMap = mc
         mc.onCamp = function(b, on)
             b.hoverSelf = on
@@ -1002,7 +1002,7 @@ UI:RegisterPage({
                 if b.oname then
                     GameTooltip:AddLine(b.oname .. ((b.need or 0) > 0 and ("  " .. (b.have or 0) .. "/" .. b.need) or ""), 0.8, 0.8, 0.8, true)
                 end
-                GameTooltip:AddLine(T("Clic : guider jusqu'à ce camp"), 0.6, 0.6, 0.6, true)
+                GameTooltip:AddLine(T("Clic : guider jusqu'à cette zone de quête"), 0.6, 0.6, 0.6, true)
                 GameTooltip:Show()
             else
                 GameTooltip:Hide()
@@ -1164,7 +1164,7 @@ UI:RegisterPage({
         self.trackBtn:SetShown(has); self.mapBtn:SetShown(has)
         self.dEmpty:SetShown(not has)
         if not has then
-            self.dEmpty:SetText(T("Ton journal est vide. Prends des quêtes : elles s'afficheront ici avec les camps de leurs objectifs et leur point de rendu."))
+            self.dEmpty:SetText(T("Ton journal est vide. Prends des quêtes : elles s'afficheront ici avec les zones de leurs objectifs et leur point de rendu."))
             self.miniMap = nil
             self:PaintMini(nil)
             return
@@ -1225,17 +1225,17 @@ UI:RegisterPage({
                     local camp, d = nearestCamp(o.camps)
                     local txt
                     if n == 1 then
-                        txt = d and string.format(T("1 camp · à %d m"), math.floor(d + 0.5)) or T("1 camp · dans une autre zone")
+                        txt = d and string.format(T("1 zone · à %d m"), math.floor(d + 0.5)) or T("1 zone · sur une autre carte")
                     else
-                        txt = d and string.format(T("%d camps · le plus proche à %d m"), n, math.floor(d + 0.5))
-                            or string.format(T("%d camps · dans une autre zone"), n)
+                        txt = d and string.format(T("%d zones · la plus proche à %d m"), n, math.floor(d + 0.5))
+                            or string.format(T("%d zones · sur une autre carte"), n)
                     end
                     f.info:SetText(txt); f.info:Show()
-                    f.go.tooltip = "Guider jusqu'au camp le plus proche de cet objectif"
+                    f.go.tooltip = "Guider jusqu'à la zone la plus proche de cet objectif"
                     f.go:SetScript("OnClick", function() guideTo(camp.map, camp.x, camp.y, name, title, "Quête suivie", qid) end)
                     f.go:Show()
                 else
-                    f.info:SetText(T("Pas de camp connu pour cet objectif.")); f.info:Show()
+                    f.info:SetText(T("Pas de zone connue pour cet objectif.")); f.info:Show()
                 end
                 h = math.max(60, 34 + math.max(14, f.info:GetStringHeight() or 14) + 10)
             end
@@ -1580,7 +1580,7 @@ UI:RegisterPage({
             local objs = P:StepObjectives(s)
             local left = {}
             for _, o in ipairs(objs) do if not o.done then table.insert(left, o) end end
-            if #left >= 3 then txt = string.format(T("%d objectifs au même camp"), #left)
+            if #left >= 3 then txt = string.format(T("%d objectifs dans la même zone"), #left)
             elseif #left > 0 then
                 local parts = {}
                 for _, o in ipairs(left) do

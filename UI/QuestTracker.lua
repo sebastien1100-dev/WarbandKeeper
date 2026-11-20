@@ -46,12 +46,12 @@ local function build()
         r:Hide()
         f.rows[i] = r
     end
-    f.next = UI:Button(f, T("Camp suivant"), nil, 22, "secondary")
+    f.next = UI:Button(f, T("Zone suivante"), nil, 22, "secondary")
     f.next:SetScript("OnClick", function()
         if f.guide then local LG = WK.modules.LevelGuide; local s = LG:Steps()[1]; if s then LG:Skip(s.key) end
         elseif f.tour then WK.modules.QuestPlan:Skip() else Q():NextCamp() end
     end)
-    f.next.tooltip = "Vise un autre camp d'un objectif pas fini (du plus proche au plus loin)."
+    f.next.tooltip = "Vise une autre zone d'un objectif pas fini (de la plus proche à la plus lointaine)."
     f.turn = UI:Button(f, T("Rendu"), nil, 22, "secondary")
     f.turn:SetScript("OnClick", function()
         if f.guide then WK.modules.LevelGuide:Run(1)
@@ -228,7 +228,7 @@ local function build()
         self.guide = data.guide
         self.prog:SetShown(data.prog ~= nil)
         if data.prog then self.prog:SetValue(data.prog); y = -52 end
-        self.next:SetLabel(data.b1 or T("Camp suivant")); self.next:SetWidth(self.next.label:GetStringWidth() + 26)
+        self.next:SetLabel(data.b1 or T("Zone suivante")); self.next:SetWidth(self.next.label:GetStringWidth() + 26)
         self.turn:SetLabel(data.b2 or T("Rendu")); self.turn:SetWidth(self.turn.label:GetStringWidth() + 26)
         self.close.tooltip = (data.guide and "Ne plus suivre le guide de montée") or (data.tour and "Arrêter la tournée") or "Ne plus suivre cette quête"
         for i, r in ipairs(self.rows) do
@@ -281,7 +281,7 @@ local function build()
                     nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes") }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar") } } })
                 f:Show()
             elseif on then
-                f:Paint({ title = T("La chasse aux loups"), sub = T("Sombrivage · niveau 14"), goal = T("Camp à 140 m"),
+                f:Paint({ title = T("La chasse aux loups"), sub = T("Sombrivage · niveau 14"), goal = T("Zone à 140 m"),
                     objs = { { name = T("Loup de Sombrivage"), have = 6, need = 10 }, { name = T("Croc de loup"), have = 4, need = 4, done = true } } })
                 f:Show()
             else
@@ -372,11 +372,11 @@ function UI:RefreshQuestTracker()
         if goal.turnIn then
             gtext = d and string.format(T("Rendu à %d m"), math.floor(d + 0.5)) or T("Rendu dans une autre zone")
         else
-            gtext = d and string.format(T("%s · camp à %d m"), goal.name, math.floor(d + 0.5))
-                or string.format(T("%s · camp dans une autre zone"), goal.name)
+            gtext = d and string.format(T("%s · zone à %d m"), goal.name, math.floor(d + 0.5))
+                or string.format(T("%s · zone sur une autre carte"), goal.name)
         end
     elseif not complete then
-        gtext = T("Pas de camp connu pour ces objectifs.")
+        gtext = T("Pas de zone connue pour ces objectifs.")
     end
     local zone = goal and goal.map and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(goal.map)
     local sub = {}
