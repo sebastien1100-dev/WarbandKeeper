@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.97.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- QoL > Classes : nouvel onglet « Général » avant les 9 classes (icône : les logos des classes en mosaïque), pour les réglages communs à toutes les classes. Les réglages des sorts de classe (rappel, panneau chez le maître, tout apprendre) y sont rangés et quittent la roue de la fiche du perso.
+
 ## v1.97.1 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.97.2", date = "20/11/2026",
+        changed = {
+            "QoL > Classes : nouvel onglet « Général » avant les 9 classes (icône : les logos des classes en mosaïque), pour les réglages communs à toutes les classes. Les réglages des sorts de classe (rappel, panneau chez le maître, tout apprendre) y sont rangés et quittent la roue de la fiche du perso.",
+        },
+    },
+    {
         version = "1.97.1", date = "20/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.8.8 (plus de consigne de redémarrage quand le jeu est fermé pendant la mise à jour).",

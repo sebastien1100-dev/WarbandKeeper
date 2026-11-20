@@ -297,6 +297,7 @@ UI:RegisterPage({
 
         local isClass = {}
         for _, cl in ipairs(QoL.CLASSES) do isClass[cl[1]] = true end
+        isClass.CLASSGEN = true -- onglet « Général » des classes (réglages communs : sorts de classe)
         -- « classes » ouvre la dernière classe vue (sinon celle du perso joué)
         function self:ShowSection(key)
             if key == "classes" then
@@ -417,13 +418,30 @@ UI:RegisterPage({
         classBar:Hide()
         self.classBar, self.classTabs = classBar, {}
         local tabList = {}
-        for _, cl in ipairs(QoL.CLASSES) do
+        local tabDefs = { { "CLASSGEN", "Général" } }
+        for _, cl in ipairs(QoL.CLASSES) do table.insert(tabDefs, cl) end
+        for _, cl in ipairs(tabDefs) do
             local key = cl[1]
             local t = CreateFrame("Button", nil, classBar)
             t:SetHeight(48)
             t.bg = UI:Rounded(t, 10, 0, "BACKGROUND", 1)
-            t.icon = UI:RoundIcon(t, 24)
-            UI:SetClassIcon(t.icon, key)
+            if key == "CLASSGEN" then
+                -- icône : les 9 logos de classe en mosaïque 3 × 3
+                t.icon = CreateFrame("Frame", nil, t); t.icon:SetSize(24, 24)
+                t.icon.parts = {}
+                for i, c2 in ipairs(QoL.CLASSES) do
+                    local part = t.icon:CreateTexture(nil, "ARTWORK")
+                    part:SetSize(7.5, 7.5)
+                    part:SetPoint("TOPLEFT", ((i - 1) % 3) * 8.25, -math.floor((i - 1) / 3) * 8.25)
+                    UI:SetClassIcon(part, c2[1])
+                    t.icon.parts[i] = part
+                end
+                t.icon.SetDesaturated = function(fr, v) for _, part in ipairs(fr.parts) do part:SetDesaturated(v) end end
+                t.played = true
+            else
+                t.icon = UI:RoundIcon(t, 24)
+                UI:SetClassIcon(t.icon, key)
+            end
             t.icon:SetPoint("TOP", 0, -5)
             t.label = UI:Text(t, 10)
             t.label:SetPoint("TOP", t.icon, "BOTTOM", 0, -3)
@@ -2212,6 +2230,28 @@ UI:RegisterPage({
         end
 
         -----------------------------------------------------------------------
+        -- Classes > Général : réglages communs à toutes les classes
+        -----------------------------------------------------------------------
+        do
+            section("CLASSGEN", CLASSBAR_H)
+            local CSc = function() local M = WK.modules.ClassSpells; return M and M:Config() or {} end
+            local sp = card("Sorts de classe", 3 * 48 + 56)
+            local rows = {
+                { "Rappel au passage de niveau", "Dans la pile de rappels : les sorts à apprendre et leur coût.",
+                    function() return CSc().alert end,
+                    function(v) CSc().alert = v; local M = WK.modules.ClassSpells; if M then M:CheckAlert() end end },
+                { "Panneau chez le maître de classe", "À côté de la fenêtre du maître : ce qui est à apprendre, écartés compris.",
+                    function() return CSc().panel end,
+                    function(v) CSc().panel = v; if UI.RefreshClassTrainer then UI:RefreshClassTrainer() end end },
+                { "Tout apprendre en ouvrant le maître", "Les sorts pas écartés, les moins chers d'abord, sans dépasser ton or.",
+                    function() return CSc().autoLearn end, function(v) CSc().autoLearn = v end },
+            }
+            for i, r in ipairs(rows) do
+                UI:SettingRow(sp, -44 - (i - 1) * 48, r[1], r[2], toggle(sp, r[3], r[4]), 80)
+            end
+        end
+
+        -----------------------------------------------------------------------
         -- Fiches de classe
         -----------------------------------------------------------------------
         self.tiles = {}
@@ -2726,6 +2766,7 @@ UI:RegisterPage({
             b:Paint()
         end
         for key, t in pairs(self.classTabs) do
+          if key ~= "CLASSGEN" then
             local n = #QoL:CharsOf(key)
             t.played = played[key] or false
             t.tip = n == 0 and T("Aucun perso") or string.format(n > 1 and T("%d persos") or T("%d perso"), n)
@@ -2733,6 +2774,7 @@ UI:RegisterPage({
             t.count:SetShown(a > 0)
             if a > 0 then t.count:Set(tostring(a), C.warning) end
             t:Paint()
+          end
         end
         -- tuiles de classe : perso supprimé masqué, les suivantes remontent
         local slot = {}

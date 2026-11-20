@@ -2021,7 +2021,6 @@ UI:RegisterPage({
         end
         local S = sheetCfg
         local ui = function() return WK.DB.global.settings.ui end
-        local CSc = function() local M = WK.modules.ClassSpells; return M and M:Config() or {} end
         -- pastilles d'en-tête : un bouton par chiffre possible, allumé s'il est affiché (dans l'ordre des clics)
         local chipCard = UI:Card(sheet, T("En-tête : pastilles"))
         chipCard.note = UI:Text(chipCard, 10, C.muted); chipCard.note:SetPoint("TOPLEFT", 16, -38); chipCard.note:SetPoint("RIGHT", -16, 0)
@@ -2078,16 +2077,6 @@ UI:RegisterPage({
                     function() return ui().talentPlanAlert ~= false end,
                     function(v) ui().talentPlanAlert = v; local P = WK.modules.TalentPlan; if P and P.CheckAlert then P:CheckAlert() end end },
             }) },
-            spells = { card("Sorts", {
-                { "Rappel au passage de niveau", "Dans la pile de rappels : les sorts à apprendre et leur coût.",
-                    function() return CSc().alert end,
-                    function(v) CSc().alert = v; local M = WK.modules.ClassSpells; if M then M:CheckAlert() end end },
-                { "Panneau chez le maître de classe", "À côté de la fenêtre du maître : ce qui est à apprendre, écartés compris.",
-                    function() return CSc().panel end,
-                    function(v) CSc().panel = v; if UI.RefreshClassTrainer then UI:RefreshClassTrainer() end end },
-                { "Tout apprendre en ouvrant le maître", "Les sorts pas écartés, les moins chers d'abord, sans dépasser ton or.",
-                    function() return CSc().autoLearn end, function(v) CSc().autoLearn = v end },
-            }) },
             bis = { card("BiS", {
                 { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",
                     function() return ui().bisTooltip ~= false end, function(v) ui().bisTooltip = v end },
@@ -2096,7 +2085,8 @@ UI:RegisterPage({
         -- onglets du volet, comme ceux de la fiche ; ouvert sur l'onglet affiché
         local tabCard = CreateFrame("Frame", nil, sheet); tabCard:SetHeight(34)
         sheet.setTab = "sheet"
-        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" }, { "spells", "Sorts" } }, function(v)
+        -- (réglages des sorts de classe : QoL > Classes > Général)
+        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }, function(v)
             sheet.setTab = v
             if self.gp then self.gp:Refresh() end
         end, 28)
@@ -2118,7 +2108,10 @@ UI:RegisterPage({
                 -- volet ouvert : seuls ses onglets à lui (ceux de la fiche sont masqués, le volet prend leur place)
                 for _, b in pairs(sheet.tabs) do b:SetShown(not open) end
                 sheet.tabLine:SetShown(not open)
-                if open then sheet.setTab = sheet.tab or "sheet"; seg:Select(sheet.setTab); chipCard:Paint() end
+                if open then
+                    sheet.setTab = (sheet.tab and cards[sheet.tab]) and sheet.tab or "sheet"
+                    seg:Select(sheet.setTab); chipCard:Paint()
+                end
             end }, self)
         self.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", -6, -24)
         self.gp.gear:SetFrameLevel(sheet:GetFrameLevel() + 20)
