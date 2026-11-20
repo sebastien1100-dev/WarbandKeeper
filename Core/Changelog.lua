@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.14", date = "20/11/2026",
+        added = {
+            "Quêtes de ma zone : bouton « Compléter la zone ». Il coche toutes les quêtes de la zone où tu es, même celles un peu au-dessus de ton niveau, et lance la tournée depuis ta position.",
+            "Carte > Bateaux : curseur « Distance d'apparition du bandeau » (10 à 100 m). « /wk bateau » donne ta distance aux quais proches.",
+        },
+        fixed = {
+            "Bateaux : le bandeau du quai n'apparaît plus qu'au bout du ponton (30 m du point d'arrêt du navire par défaut, au lieu de 60 m).",
+        },
+    },
+    {
         version = "1.101.13", date = "20/11/2026",
         fixed = {
             "Tournée et « Quêtes de ma zone » : les quêtes à porter ou à livrer (sans zone d'objectifs connue) étaient écartées ; elles sont maintenant proposées dès que leur rendu est dans la zone (prendre, puis rendre).",

@@ -72,6 +72,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.14 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Quêtes de ma zone : bouton « Compléter la zone ». Il coche toutes les quêtes de la zone où tu es, même celles un peu au-dessus de ton niveau, et lance la tournée depuis ta position.
+- Carte > Bateaux : curseur « Distance d'apparition du bandeau » (10 à 100 m). « /wk bateau » donne ta distance aux quais proches.
+
+### Corrections
+- Bateaux : le bandeau du quai n'apparaît plus qu'au bout du ponton (30 m du point d'arrêt du navire par défaut, au lieu de 60 m).
+
 ## v1.101.13 — 20/11/2026
 
 _Un /reload suffit._

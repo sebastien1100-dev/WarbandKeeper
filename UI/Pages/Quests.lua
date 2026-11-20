@@ -1504,6 +1504,19 @@ UI:RegisterPage({
         self.pTourBtn = UI:Button(hold, "Créer la tournée", 160, 30, "primary")
         self.pTourBtn:SetPoint("BOTTOMLEFT", self.pGuideBtn, "BOTTOMRIGHT", 8, 0)
         self.pTourBtn:SetScript("OnClick", function() self:ShowTab("tour") end)
+        self.pAllBtn = UI:Button(hold, "Compléter la zone", 170, 30, "secondary", "play")
+        self.pAllBtn:SetPoint("BOTTOMLEFT", self.pTourBtn, "BOTTOMRIGHT", 8, 0)
+        self.pAllBtn:HookScript("OnEnter", function(s)
+            UI:TooltipOwner(s, "ANCHOR_TOP")
+            GameTooltip:SetText(T("Compléter la zone"), 1, 1, 1)
+            GameTooltip:AddLine(T("Coche toutes les quêtes de la zone où tu es, même celles un peu au-dessus de ton niveau, et lance la tournée depuis ta position."), 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+        end)
+        self.pAllBtn:HookScript("OnLeave", function() GameTooltip:Hide() end)
+        self.pAllBtn:SetScript("OnClick", function()
+            local P = QP()
+            if P and P:CompleteZone() then self:ShowTab("tour") end
+        end)
 
         local child = self.pscroll.child
         local function paintBox(box, on)
@@ -1609,6 +1622,7 @@ UI:RegisterPage({
         self.pGuideBtn:SetLabel(string.format(T("Guider vers les donneurs (%d)"), #givers))
         self.pGuideBtn:SetEnabled(#givers > 0)
         self.pTourBtn:SetEnabled(self.pickStats.steps > 0)
+        self.pAllBtn:SetEnabled(#(list or {}) > 0)
 
         self.pcards:Reset()
         local W = self.pscroll:GetWidth() or 600

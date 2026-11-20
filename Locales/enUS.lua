@@ -4159,4 +4159,10 @@ WK.Locales.enUS.text = {
     ["Pas proposées ici :"] = "Not offered here:",
     ["Les suites sont ajoutées à la tournée dès qu'elles s'ouvrent."] = "Follow-ups are added to the tour as soon as they open.",
     ["Suite ajoutée à la tournée : %s"] = "Follow-up added to the tour: %s",
+    ["Aucune quête à faire dans cette zone."] = "No quest to do in this zone.",
+    ["Zone à compléter : %d quêtes, %d étapes."] = "Zone to complete: %d quests, %d steps.",
+    ["Compléter la zone"] = "Complete the zone",
+    ["Coche toutes les quêtes de la zone où tu es, même celles un peu au-dessus de ton niveau, et lance la tournée depuis ta position."] = "Ticks every quest of the zone you are in, even those a little above your level, and starts the tour from where you are.",
+    ["Distance d'apparition du bandeau"] = "Banner appearance distance",
+    ["Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (au bout du ponton). « /wk bateau » donne ta distance aux quais proches."] = "The banner shows when you are closer than this to the ship's stopping point (at the end of the pier). \"/wk bateau\" gives your distance to nearby docks.",
 }

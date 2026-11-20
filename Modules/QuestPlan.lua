@@ -358,6 +358,21 @@ function M:Start()
     return t
 end
 
+-- Compléter la zone : coche toutes les quêtes proposées dans la zone (même celles au-dessus de ton niveau)
+-- et lance la tournée depuis l'endroit où tu es (une tournée en cours est remplacée)
+function M:CompleteZone()
+    local list = self:Candidates()
+    if #list == 0 then WK:Print(T("Aucune quête à faire dans cette zone.")) return nil end
+    local c = self:Config()
+    local k = WK:CharKey()
+    c.picked[k] = c.picked[k] or {}
+    for _, e in ipairs(list) do c.picked[k][e.id] = true end
+    c.tour[k] = nil
+    local t = self:Start()
+    if t then WK:Print(string.format(T("Zone à compléter : %d quêtes, %d étapes."), #list, #t.steps)) end
+    return t
+end
+
 function M:Stop()
     self:Config().tour[WK:CharKey()] = nil
     local g = G()

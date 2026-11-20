@@ -1289,13 +1289,15 @@ UI:RegisterPage({
         -- Bateaux et zeppelins (Modules/BoatLines.lua, UI/DockBanner.lua, UI/BoatMap.lua, UI/BoatBoard.lua)
         do
             subtab("Bateaux", 4)
-            local bcard = card("Bateaux et zeppelins", 40 + 2 * 46 + 46, "lignes, quais et trajets tirés des fichiers du jeu")
+            local bcard = card("Bateaux et zeppelins", 40 + 3 * 46 + 46, "lignes, quais et trajets tirés des fichiers du jeu")
             UI:SettingRow(bcard, -40, "Bandeau au quai et à bord", "Près d'un quai : le navire de ton ponton et toutes ses escales ; à bord : sa prochaine escale ; dans le tram : ses deux stations.",
                 toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
             UI:SettingRow(bcard, -86, "Tracés des lignes sur la carte", "Le trajet de chaque ligne sur la carte du monde, plus marqué pour celles déjà prises.",
                 toggle(bcard, function() return gdc.shipsMap ~= false end, function(v) gdc.shipsMap = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("navires") end end), 80)
+            UI:SettingRow(bcard, -132, "Distance d'apparition du bandeau", "Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (au bout du ponton). « /wk bateau » donne ta distance aux quais proches.",
+                UI:Slider(bcard, 240, 10, 100, 5, function() return gdc.dockRange or 30 end, function(v) gdc.dockRange = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end, "%d m"), 260)
             local open = UI:Button(bcard, "Ouvrir le tableau des bateaux", nil, 28, "primary")
-            open:SetPoint("TOPLEFT", 16, -136)
+            open:SetPoint("TOPLEFT", 16, -182)
             open:SetScript("OnClick", function() UI:ToggleBoatBoard(true) end)
         end
         -- Points de vol à apprendre (Modules/Flight.lua) : maîtres de vol du continent pas encore appris
