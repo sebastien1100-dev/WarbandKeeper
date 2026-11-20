@@ -167,21 +167,30 @@ local function build()
         v.markIcon:SetShown(letter == nil)
         v.title:SetText((d.title or "") .. (d.lvl and ("  " .. UI:Hex(C.dim) .. "[" .. d.lvl .. "]|r") or ""))
         v.title:SetTextColor(unpack(d.paused and C.muted or C.text))
+        -- titre sur deux lignes au besoin (il était coupé), puis la ligne d'infos dessous
+        if v.title.SetWordWrap then v.title:SetWordWrap(true) end
+        if v.title.SetMaxLines then v.title:SetMaxLines(2) end
+        v.title:SetWidth(W2 - 34 - 10)
+        local th = math.max(16, math.min(34, v.title:GetStringHeight() or 16))
+        v.sub:ClearAllPoints(); v.sub:SetPoint("TOPLEFT", 34, -34 - th - 2); v.sub:SetPoint("RIGHT", -10, 0)
         v.sub:SetText(d.sub or "")
         v.pp.icon:SetTexture(UI.MEDIA .. (d.paused and "play" or "pause"))
         v.pp.tooltip = d.paused and "Reprendre" or "Pause"
-        local y = (d.sub and d.sub ~= "") and -70 or -54
+        local y = -34 - th - 2 - ((d.sub and d.sub ~= "") and 18 or 0)
         -- objectifs
         for i, fs in ipairs(v.objs) do
             local o = d.objs[i]
             if o then
                 fs:ClearAllPoints(); fs:SetPoint("TOPLEFT", 34, y); fs:SetPoint("RIGHT", -10, 0)
+                if fs.SetWordWrap then fs:SetWordWrap(true) end
                 local need = o.need or 0
                 local cnt = need > 0 and string.format("  %d/%d", o.have or 0, need) or ""
-                if o.done then fs:SetText(UI:Hex(C.positive) .. o.name .. cnt .. "|r")
-                else fs:SetText(o.name .. UI:Hex(C.muted) .. cnt .. "|r") end
+                -- texte du jeu « Murloc : 0/12 personnages tués » : le nom seul, le compte à part
+                local name = tostring(o.name or ""):gsub("%s*:%s*%d+%s*/%s*%d+.*$", "")
+                if o.done then fs:SetText(UI:Hex(C.positive) .. name .. cnt .. "|r")
+                else fs:SetText(name .. UI:Hex(C.muted) .. cnt .. "|r") end
                 fs:Show()
-                y = y - 15
+                y = y - math.max(15, (fs:GetStringHeight() or 13) + 2)
             else
                 fs:Hide()
             end

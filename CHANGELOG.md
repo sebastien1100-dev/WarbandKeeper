@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.10 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte de tournée : le titre de l'étape et les objectifs étaient coupés. Le titre passe sur deux lignes au besoin, et un objectif garde le nom seul suivi du compte (« Murloc Branchie-bleue  0/12 » au lieu de « Murloc Branchie-bleue : 0/12 personnages tué… »), sur deux lignes s'il le faut.
+
 ## v1.101.9 — 20/11/2026
 
 _Un /reload suffit._

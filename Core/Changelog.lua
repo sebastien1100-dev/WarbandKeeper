@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.10", date = "20/11/2026",
+        fixed = {
+            "Carte de tournée : le titre de l'étape et les objectifs étaient coupés. Le titre passe sur deux lignes au besoin, et un objectif garde le nom seul suivi du compte (« Murloc Branchie-bleue  0/12 » au lieu de « Murloc Branchie-bleue : 0/12 personnages tué… »), sur deux lignes s'il le faut.",
+        },
+    },
+    {
         version = "1.101.9", date = "20/11/2026",
         fixed = {
             "Bandeau des bateaux : il apparaissait à 200 m du quai, bien avant d'y être. Il faut maintenant être sur le ponton (60 m du point d'arrêt du navire) ; il disparaît à 85 m.",
