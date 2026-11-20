@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.108.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes de ma zone, « Compléter la zone » : les quêtes bien en dessous de ton niveau (grises) étaient laissées de côté ; elles entrent maintenant aussi dans la tournée, jusqu'à la fin de celle-ci.
+
 ## v1.108.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

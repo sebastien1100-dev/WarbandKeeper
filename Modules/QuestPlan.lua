@@ -107,7 +107,8 @@ function M:Candidates()
             if st == "locked" then stats.locked = stats.locked + 1
             elseif st == "avail" or st == "high" then
                 if (q.lvl or 0) > lvl + 4 or st == "high" then stats.high = stats.high + 1
-                elseif (q.lvl or 0) < lvl - 8 then stats.low = stats.low + 1
+                -- trop basse : écartée, sauf « Compléter la zone » lancé dans cette zone (toutes les quêtes)
+                elseif (q.lvl or 0) < lvl - 8 and cfg.allZone ~= zone .. ":" .. WK:CharKey() then stats.low = stats.low + 1
                 else
                     local gm = q.smap or zone
                     add({ id = q.id, title = Qs:Name(q), lvl = q.lvl, xp = q.xp or 0, giver = point(gm, q.x / 100, q.y / 100),
@@ -537,6 +538,10 @@ end
 -- Compléter la zone : coche toutes les quêtes proposées dans la zone (même celles au-dessus de ton niveau)
 -- et lance la tournée depuis l'endroit où tu es (une tournée en cours est remplacée)
 function M:CompleteZone()
+    -- toutes les quêtes de la zone, même celles bien en dessous de ton niveau (gardé jusqu'à la fin de la tournée)
+    local zone = WK.modules.Quests:PlayerZone()
+    self:Config().allZone = zone and (zone .. ":" .. WK:CharKey()) or nil
+    self:Invalidate()
     local list = self:Candidates()
     if #list == 0 then WK:Print(T("Aucune quête à faire dans cette zone.")) return nil end
     local c = self:Config()
@@ -551,6 +556,7 @@ end
 
 function M:Stop()
     self:Config().tour[WK:CharKey()] = nil
+    self:Config().allZone = nil
     local g = G()
     if g.target and g.target.kind == "qtour" then g:Stop() end
     self.lastKey = nil
@@ -735,6 +741,7 @@ end
 function M:Finish()
     local t = self:Tour()
     if not t then return end
+    self:Config().allZone = nil
     local XP = WK.modules.XP
     local gained = XP and XP.session and (XP.session.gained - (t.gained0 or 0)) or 0
     local mins = math.max(1, math.floor((time() - (t.start or time())) / 60 + 0.5))

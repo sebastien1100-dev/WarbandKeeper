@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.108.1", date = "20/11/2026",
+        fixed = {
+            "Quêtes de ma zone, « Compléter la zone » : les quêtes bien en dessous de ton niveau (grises) étaient laissées de côté ; elles entrent maintenant aussi dans la tournée, jusqu'à la fin de celle-ci.",
+        },
+    },
+    {
         version = "1.108.0", date = "20/11/2026", restart = true,
         added = {
             "Barre « sacs, marchand et maître » à l'écran (remplace la case « Place dans les sacs ») : trois cases dans un seul cadre. Sac : cases libres, clic pour jeter le gris le moins cher. Marchand : distance du plus proche, clic pour y aller, clic droit pour le forgeron (réparer). Maître de classe : sorts à apprendre (sinon la distance), clic pour y aller.",
