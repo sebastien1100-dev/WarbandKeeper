@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.11", date = "20/11/2026",
+        changed = {
+            "Carte du monde, volet « Quêtes du journal » : plus petit et plus discret (fond léger, texte fin, 6 quêtes au plus) ; « Toutes / Suivie » devient un simple mot cliquable dans l'en-tête ; clic sur le titre : replier (il garde alors juste le nombre de quêtes).",
+        },
+        added = {
+            "Roue de la page Quêtes, carte « Quête suivie » : interrupteur « Volet des quêtes sur la carte » pour le cacher.",
+        },
+    },
+    {
         version = "1.100.10", date = "20/11/2026",
         fixed = {
             "Carte du monde : le tracé du guidage (et ceux des bateaux, des navires et de la tournée de quêtes) était bien calculé mais caché sous les calques de la carte de WoW Forever ; il est maintenant dessiné au-dessus, juste sous nos pastilles. Il se voyait déjà sur la minicarte.",

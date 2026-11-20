@@ -21,6 +21,7 @@ function M:Config()
     if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
     if c.mini == nil then c.mini = true end               -- camp visé sur la minicarte
     if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
+    if c.panel == nil then c.panel = true end             -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
     return c
 end
 

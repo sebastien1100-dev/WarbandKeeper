@@ -249,25 +249,52 @@ end
 -- Volet « Quêtes » sur la carte
 ---------------------------------------------------------------------------
 local panel
-local ROWS = 8
+local ROWS = 6
 local function buildPanel()
     local parent = WorldMapFrame and (WorldMapFrame.ScrollContainer or WorldMapFrame)
     if not (parent and parent.GetFrameLevel) then return end
     panel = CreateFrame("Frame", "WarbandKeeperQuestMapPanel", parent)
-    panel:SetWidth(220)
+    -- volet discret : petit, fond léger, une ligne d'en-tête (titre repliable + choix Toutes / Suivie)
+    panel:SetWidth(186)
     panel:SetFrameLevel((parent:GetFrameLevel() or 1) + 40)
     panel:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 8, 8)
-    UI:Panel(panel, 9, { C.bg[1], C.bg[2], C.bg[3], 0.9 }, C.border)
-    panel.title = UI:Text(panel, 11); panel.title:SetPoint("TOPLEFT", 10, -8); panel.title:SetText(T("Quêtes du journal"))
-    panel.hint = UI:Text(panel, 9, C.muted); panel.hint:SetPoint("TOPLEFT", panel.title, "BOTTOMLEFT", 0, -2)
-    panel.hint:SetText(T("Clic : suivre la quête"))
+    UI:Panel(panel, 7, { C.bg[1], C.bg[2], C.bg[3], 0.72 }, { C.border[1], C.border[2], C.border[3], 0.6 })
+    panel.head = CreateFrame("Button", nil, panel)
+    panel.head:SetPoint("TOPLEFT", 0, 0); panel.head:SetPoint("TOPRIGHT", -58, 0); panel.head:SetHeight(20)
+    panel.chev = UI:Icon(panel.head, "chevron", 9); panel.chev:SetPoint("LEFT", 8, 0)
+    panel.chev:SetVertexColor(C.muted[1], C.muted[2], C.muted[3], 1)
+    panel.title = UI:Text(panel.head, 10, C.muted); panel.title:SetPoint("LEFT", 21, 0); panel.title:SetText(T("Quêtes du journal"))
+    panel.head:SetScript("OnClick", function()
+        local c = Q():Config(); c.panelFold = not c.panelFold; UI:RefreshQuestMapPanel()
+    end)
+    panel.head:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Quêtes du journal"), 1, 1, 1)
+        GameTooltip:AddLine(T("Clic sur une quête : la suivre · clic ici : replier"), C.muted[1], C.muted[2], C.muted[3], true)
+        GameTooltip:Show()
+    end)
+    panel.head:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    panel.mode = CreateFrame("Button", nil, panel)
+    panel.mode:SetPoint("TOPRIGHT", -8, 0); panel.mode:SetSize(52, 20)
+    panel.mode.text = UI:Text(panel.mode, 10); panel.mode.text:SetPoint("RIGHT", 0, 0); panel.mode.text:SetJustifyH("RIGHT")
+    panel.mode:SetScript("OnClick", function()
+        local c = Q():Config()
+        c.map = (c.map == "all") and "tracked" or "all"
+        if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
+    end)
+    panel.mode:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Zones de quête de la quête suivie seulement, ou de toutes les quêtes du journal."), 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    panel.mode:SetScript("OnLeave", function() GameTooltip:Hide() end)
     panel.rows = {}
     for i = 1, ROWS do
         local b = CreateFrame("Button", nil, panel)
-        b:SetHeight(17)
-        b:SetPoint("TOPLEFT", 8, -36 - (i - 1) * 18); b:SetPoint("RIGHT", -8, 0)
-        b.box = b:CreateTexture(nil, "ARTWORK"); b.box:SetSize(10, 10); b.box:SetPoint("LEFT", 2, 0)
-        b.text = UI:Text(b, 10, C.text); b.text:SetPoint("LEFT", 18, 0); b.text:SetPoint("RIGHT", 0, 0); b.text:SetJustifyH("LEFT")
+        b:SetHeight(14)
+        b:SetPoint("TOPLEFT", 8, -20 - (i - 1) * 15); b:SetPoint("RIGHT", -8, 0)
+        b.box = b:CreateTexture(nil, "ARTWORK"); b.box:SetSize(7, 7); b.box:SetPoint("LEFT", 2, 0)
+        b.text = UI:Text(b, 9, C.text); b.text:SetPoint("LEFT", 14, 0); b.text:SetPoint("RIGHT", 0, 0); b.text:SetJustifyH("LEFT")
         if b.text.SetWordWrap then b.text:SetWordWrap(false) end
         b:SetScript("OnClick", function(s)
             if not s.qid then return end
@@ -277,17 +304,10 @@ local function buildPanel()
         b:Hide()
         panel.rows[i] = b
     end
-    panel.mode = UI:Button(panel, "", nil, 20, "secondary")
-    panel.mode:SetScript("OnClick", function()
-        local c = Q():Config()
-        c.map = (c.map == "all") and "tracked" or "all"
-        if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
-    end)
-    panel.mode.tooltip = "Zones de quête de la quête suivie seulement, ou de toutes les quêtes du journal."
 end
 
 function UI:RefreshQuestMapPanel()
-    if not WK:FeatureOn("quests") or Q():Config().map == "off" or not (WorldMapFrame and WorldMapFrame:IsShown()) then
+    if not WK:FeatureOn("quests") or Q():Config().map == "off" or Q():Config().panel == false or not (WorldMapFrame and WorldMapFrame:IsShown()) then
         if panel then panel:Hide() end
         return
     end
@@ -304,9 +324,10 @@ function UI:RefreshQuestMapPanel()
         if (a.id == tracked) ~= (b.id == tracked) then return a.id == tracked end
         return (a.level or 0) < (b.level or 0)
     end)
+    local fold = Q():Config().panelFold
     local n = 0
     for i, b in ipairs(panel.rows) do
-        local e = list[i]
+        local e = not fold and list[i]
         if e then
             n = i
             b.qid = e.id
@@ -315,18 +336,20 @@ function UI:RefreshQuestMapPanel()
             if e.complete then b.box:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1)
             elseif on then b.box:SetVertexColor(UI:Accent())
             else b.box:SetVertexColor(C.muted[1], C.muted[2], C.muted[3], 1) end
-            b.text:SetText(string.format("[%d] %s%s", e.level or 0, e.title or "?", e.complete and (" · " .. T("à rendre")) or ""))
+            b.text:SetText(string.format("%s%d|r  %s%s", UI:Hex(C.dim), e.level or 0, e.title or "?",
+                e.complete and ("  " .. UI:Hex(C.positive) .. T("à rendre") .. "|r") or ""))
             b.text:SetTextColor(unpack(on and C.text or C.muted))
             b:Show()
         else
             b:Hide()
         end
     end
-    panel.mode:SetLabel(Q():Config().map == "all" and T("Zones : toutes") or T("Zones : la suivie"))
-    panel.mode:SetWidth(panel.mode.label:GetStringWidth() + 24)
-    panel.mode:ClearAllPoints(); panel.mode:SetPoint("TOPLEFT", 8, -36 - n * 18 - 6)
-    panel:SetHeight(36 + n * 18 + 6 + 20 + 10)
-    if n == 0 then panel.hint:SetText(T("Journal vide")) else panel.hint:SetText(T("Clic : suivre la quête")) end
+    local r, g, b = UI:Accent()
+    panel.mode.text:SetText(Q():Config().map == "all" and T("Toutes") or T("Suivie"))
+    panel.mode.text:SetTextColor(r, g, b, 1)
+    if panel.chev.SetRotation then panel.chev:SetRotation(fold and math.pi / 2 or 0) end
+    panel.title:SetText(fold and string.format(T("Quêtes du journal (%d)"), #list) or T("Quêtes du journal"))
+    panel:SetHeight(n > 0 and (20 + n * 15 + 6) or 20)
     panel:Show()
 end
 
