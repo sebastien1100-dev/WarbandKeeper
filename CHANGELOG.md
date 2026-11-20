@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.91.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche du perso, roue des réglages ouverte : les onglets Fiche / Talents / BiS de la fiche apparaissaient en double au-dessus de ceux des réglages. Ils sont masqués tant que la roue est ouverte ; seuls les onglets des réglages restent, à leur place.
+
 ## v1.91.0 — 20/11/2026
 
 _Un /reload suffit._

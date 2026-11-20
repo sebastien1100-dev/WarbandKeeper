@@ -1826,7 +1826,7 @@ UI:RegisterPage({
         sheet.setCards = all
         for _, c in ipairs(all) do c:Hide() end
         sheet.setByTab = cards
-        self.gp = UI:PageGear(p, { title = "Réglages de la fiche", top = 92, columns = 1,
+        self.gp = UI:PageGear(p, { title = "Réglages de la fiche", top = 64, columns = 1,
             cards = function()
                 for _, c in ipairs(all) do c:Hide() end
                 local out = { tabCard }
@@ -1834,6 +1834,9 @@ UI:RegisterPage({
                 return out
             end,
             onToggle = function(open)
+                -- volet ouvert : seuls ses onglets à lui (ceux de la fiche sont masqués, le volet prend leur place)
+                for _, b in pairs(sheet.tabs) do b:SetShown(not open) end
+                sheet.tabLine:SetShown(not open)
                 if open then sheet.setTab = sheet.tab or "sheet"; seg:Select(sheet.setTab); chipCard:Paint() end
             end }, self)
         self.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", -6, -24)

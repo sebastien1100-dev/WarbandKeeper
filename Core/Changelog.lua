@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.91.1", date = "20/11/2026",
+        fixed = {
+            "Fiche du perso, roue des réglages ouverte : les onglets Fiche / Talents / BiS de la fiche apparaissaient en double au-dessus de ceux des réglages. Ils sont masqués tant que la roue est ouverte ; seuls les onglets des réglages restent, à leur place.",
+        },
+    },
+    {
         version = "1.91.0", date = "20/11/2026",
         added = {
             "Options > Apparence refaite : réglages groupés (Couleurs, Texte, Formes, Fenêtre) avec un aperçu en direct à droite (titre, pastille, carte avec jauge, boutons, interrupteur) qui suit chaque changement.",
