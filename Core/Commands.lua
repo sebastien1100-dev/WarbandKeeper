@@ -117,6 +117,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "bateau" or cmd == "boat" then
         WK:Print(WK.T("Bateaux : diagnostic"))
         for _, l in ipairs(WK.modules.Nav:BoatDiag()) do WK:Print("  " .. l) end
+    elseif (cmd == "vol" or cmd == "fp") and (rest or ""):lower():find("diag") then
+        WK:Print(WK.T("Vols : diagnostic"))
+        for _, l in ipairs(WK.modules.Flight:TaxiDiag()) do WK:Print("  " .. l) end
     elseif cmd == "vol" or cmd == "fp" then
         WK.modules.Flight:GuideToFlightPoint()
     elseif cmd == "donjon" or cmd == "dungeon" then

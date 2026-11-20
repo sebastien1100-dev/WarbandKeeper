@@ -57,9 +57,28 @@ local function nodeWorld(i)
             end
         end
     end
+    -- carte des vols « classique » (sans C_TaxiMap ou sans n° de carte) : position du relais sur la carte du
+    -- continent où tu es (TaxiNodePosition, 0-1)
+    if not w and TaxiNodePosition and C_Map and C_Map.GetBestMapForUnit and C_Map.GetMapInfo then
+        local x, y = TaxiNodePosition(i)
+        local m = C_Map.GetBestMapForUnit("player")
+        local cont = Enum and Enum.UIMapType and Enum.UIMapType.Continent or 2
+        local guard = 0
+        while m and guard < 8 do
+            local info = C_Map.GetMapInfo(m)
+            if not info then m = nil break end
+            if info.mapType == cont then break end
+            m, guard = info.parentMapID, guard + 1
+        end
+        if x and y and m and m ~= 0 then
+            local c, wx, wy = WK.modules.Guide.ToWorld(m, x, y)
+            if c then w = { c, wx, wy } end
+        end
+    end
     worldCache[i] = w
     return w
 end
+M.NodeWorld = function(_, i) return nodeWorld(i) end
 local function nodeDist(a, b)
     local wa, wb = nodeWorld(a), nodeWorld(b)
     if wa and wb and wa[1] == wb[1] then
@@ -180,7 +199,7 @@ WK:On("TAXIMAP_OPENED", function() worldCache = {} end)
 -- Vol du guidage : à l'ouverture de la carte des vols, encart « vole jusqu'à … » collé à la carte, avec
 -- « Prendre ce vol » (TakeTaxiNode sur clic) ; destination = étape de vol du trajet (Nav:PlannedFlight)
 ---------------------------------------------------------------------------
-local hint
+local hint, hintWhy = nil, "carte des vols pas encore ouverte"
 local function plain(s) return (tostring(s or ""):lower():gsub("%s+", " ")) end
 local function findNode(name)
     if not (NumTaxiNodes and name) then return nil end
@@ -217,9 +236,14 @@ local function showHint()
             if best and far > 1500 and bd < far * 0.5 then leg = { to = nodeName(best), near = true } end
         end
     end
-    if not leg or not leg.to then return end
+    if not leg or not leg.to then
+        local G = WK.modules.Guide
+        hintWhy = not (G and G.target) and "aucun guidage en cours" or "pas de vol prévu ni de relais qui rapproche de la destination"
+        return
+    end
     local host = (FlightMapFrame and FlightMapFrame:IsShown() and FlightMapFrame) or (TaxiFrame and TaxiFrame:IsShown() and TaxiFrame)
-    if not host then return end
+    if not host then hintWhy = "fenêtre de la carte des vols introuvable" return end
+    hintWhy = "affiché : " .. leg.to
     local UI, C = WK.UI, WK.UI.colors
     if not hint then
         hint = CreateFrame("Frame", "WarbandKeeperFlightHint", UIParent)
@@ -263,6 +287,31 @@ end
 WK:On("TAXIMAP_OPENED", function() C_Timer.After(0.2, showHint) end)
 WK:On("TAXIMAP_CLOSED", hideHint)
 M.ShowFlightHint = showHint
+
+-- /wk vol diag : ce que l'addon lit de la carte des vols ouverte et pourquoi l'encart du guidage s'affiche ou pas
+function M:TaxiDiag()
+    local out = {}
+    local function yn(v) return v and "oui" or "non" end
+    table.insert(out, string.format("API : GetTaxiMapID %s (%s) · C_TaxiMap.GetAllTaxiNodes %s · TaxiNodePosition %s · NumTaxiNodes %s",
+        yn(GetTaxiMapID), tostring(GetTaxiMapID and GetTaxiMapID() or "-"), yn(C_TaxiMap and C_TaxiMap.GetAllTaxiNodes), yn(TaxiNodePosition), yn(NumTaxiNodes)))
+    local n, placed, reach = NumTaxiNodes and NumTaxiNodes() or 0, 0, 0
+    for i = 1, n do
+        if nodeWorld(i) then placed = placed + 1 end
+        if TaxiNodeGetType and TaxiNodeGetType(i) == "REACHABLE" then reach = reach + 1 end
+    end
+    table.insert(out, string.format("relais sur la carte ouverte : %d, %d placés, %d accessibles", n, placed, reach))
+    local known = 0
+    for _ in pairs(WK.DB:Me().taxi or {}) do known = known + 1 end
+    table.insert(out, string.format("relais connus de ce perso (pour les trajets) : %d", known))
+    local G = WK.modules.Guide
+    local t = G and G.target
+    table.insert(out, "guidage : " .. (t and (G:PlaceName(t) .. " (" .. tostring(t.kind) .. ")") or "aucun"))
+    local Nv = WK.modules.Nav
+    local leg = Nv and Nv.PlannedFlight and Nv:PlannedFlight()
+    table.insert(out, "vol prévu par le trajet : " .. (leg and (tostring(leg.from) .. " » " .. tostring(leg.to)) or "aucun"))
+    table.insert(out, "encart : " .. hintWhy)
+    return out
+end
 
 ---------------------------------------------------------------------------
 -- Décollage et atterrissage (le jeu ne prévient pas : on regarde si le perso est en vol)

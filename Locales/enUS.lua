@@ -4092,4 +4092,5 @@ WK.Locales.enUS.text = {
     ["Rendre : Le viaduc de Thandol"] = "Turn in: Thandol Span",
     ["Coin du loch : 3 quêtes"] = "Loch corner: 3 quests",
     ["Prendre : Thelsamar"] = "Pick up: Thelsamar",
+    ["Vols : diagnostic"] = "Flights: diagnostic",
 }

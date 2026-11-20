@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.5 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk vol diag : ce que l'addon lit de la carte des vols ouverte (relais, positions, relais connus, guidage, vol prévu) et pourquoi l'encart du guidage s'affiche ou pas.
+
+### Corrections
+- Carte des vols « classique » de WoW Forever : la position des relais n'était pas lue, donc les trajets ne prévoyaient jamais de vol et l'encart « vole jusqu'à … » ne pouvait pas choisir de relais. Elle est maintenant lue relais par relais sur la carte du continent.
+
 ## v1.100.4 — 20/11/2026
 
 _Un /reload suffit._

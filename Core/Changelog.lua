@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.5", date = "20/11/2026",
+        added = {
+            "/wk vol diag : ce que l'addon lit de la carte des vols ouverte (relais, positions, relais connus, guidage, vol prévu) et pourquoi l'encart du guidage s'affiche ou pas.",
+        },
+        fixed = {
+            "Carte des vols « classique » de WoW Forever : la position des relais n'était pas lue, donc les trajets ne prévoyaient jamais de vol et l'encart « vole jusqu'à … » ne pouvait pas choisir de relais. Elle est maintenant lue relais par relais sur la carte du continent.",
+        },
+    },
+    {
         version = "1.100.4", date = "20/11/2026",
         fixed = {
             "Carte des vols : l'encart du guidage n'apparaissait que si le trajet prévoyait déjà un vol. Quand ta destination est loin, il propose maintenant aussi le relais le plus proche de ta destination ; il est posé en bas de la carte des vols (dessous, il sortait de l'écran).",

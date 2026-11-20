@@ -253,11 +253,25 @@ local function myTaxi()
     me.taxi = me.taxi or {}
     return me.taxi
 end
+-- carte des vols « classique » : relais lus un par un (nom, genre, position via Flight:NodeWorld)
+local function classicTaxi()
+    local F = WK.modules.Flight
+    if not (NumTaxiNodes and TaxiNodeName and F and F.NodeWorld) then return end
+    local known = myTaxi()
+    for i = 1, NumTaxiNodes() do
+        local ty = TaxiNodeGetType and TaxiNodeGetType(i)
+        local name = TaxiNodeName(i)
+        if name and ty ~= "NONE" and ty ~= "DISTANT" then
+            local w = F:NodeWorld(i)
+            if w then known[name] = { w[1], floor(w[2]), floor(w[3]) } end
+        end
+    end
+end
 WK:On("TAXIMAP_OPENED", function()
-    if not (C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and GetTaxiMapID) then return end
-    local mapID = GetTaxiMapID()
-    local ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, mapID)
-    if not ok or type(nodes) ~= "table" then return end
+    local mapID = GetTaxiMapID and GetTaxiMapID()
+    local ok, nodes = false, nil
+    if C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and mapID then ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, mapID) end
+    if not ok or type(nodes) ~= "table" or #nodes == 0 then return C_Timer.After(0.1, classicTaxi) end
     local known = myTaxi()
     local unreach = Enum and Enum.FlightPathState and Enum.FlightPathState.Unreachable or 2
     for _, n in ipairs(nodes) do
