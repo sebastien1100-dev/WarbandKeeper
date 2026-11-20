@@ -15,11 +15,31 @@ function UI.BuildProfileCards(_, self, card)
     local box = card("Profils", 420, "tes réglages, par perso, et leur partage")
     box.title:Hide(); if box.subtitle then box.subtitle:Hide() end
     local left = CreateFrame("Frame", nil, box)
-    left:SetPoint("TOPLEFT", PAD, -PAD); left:SetPoint("BOTTOMLEFT", PAD, PAD)
     local right = CreateFrame("Frame", nil, box)
-    right:SetPoint("TOPLEFT", left, "TOPRIGHT", 22, 0); right:SetPoint("BOTTOMRIGHT", -PAD, PAD)
-    box:SetScript("OnSizeChanged", function(b, w) left:SetWidth(math.max(380, math.floor(((w or b:GetWidth()) - 2 * PAD - 22) * 0.55))) end)
-    left:SetWidth(460)
+    -- deux colonnes si la carte est assez large (une ligne de profil et ses quatre boutons demandent 480 px,
+    -- Partager 300), sinon Partager passe sous la liste ; hauteur de la carte = celle du contenu
+    local RIGHT_H = 360
+    local leftH = RIGHT_H
+    local function layout(w)
+        w = w or box:GetWidth() or 0
+        if w < 50 then return end
+        local stacked = w < 2 * PAD + 22 + 480 + 300
+        left:ClearAllPoints(); right:ClearAllPoints()
+        left:SetPoint("TOPLEFT", PAD, -PAD)
+        if stacked then
+            left:SetPoint("TOPRIGHT", -PAD, -PAD); left:SetHeight(leftH)
+            right:SetPoint("TOPLEFT", left, "BOTTOMLEFT", 0, -16); right:SetPoint("TOPRIGHT", left, "BOTTOMRIGHT", 0, -16)
+            right:SetHeight(RIGHT_H)
+        else
+            left:SetPoint("BOTTOMLEFT", PAD, PAD); left:SetWidth(math.max(480, math.floor((w - 2 * PAD - 22) * 0.55)))
+            right:SetPoint("TOPLEFT", left, "TOPRIGHT", 22, 0); right:SetPoint("BOTTOMRIGHT", -PAD, PAD)
+        end
+        local h = (stacked and (leftH + 16 + RIGHT_H) or math.max(leftH, RIGHT_H)) + 2 * PAD
+        if math.abs((box:GetHeight() or 0) - h) > 0.5 then box:SetHeight(h) end
+        local sec = self.sections and self.sections.profiles
+        if sec and sec.scroll then sec.scroll:SetContentHeight(h + 8) end
+    end
+    UI:OnResize(box, layout)
     -- fond de la colonne Partager
     right.bg = UI:Rounded(right, 10, 0, "BACKGROUND", 2); right.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 0.6)
 
@@ -217,13 +237,12 @@ function UI.BuildProfileCards(_, self, card)
         local code, err = P:Export(self.profPicked)
         self.profCode = code
         expL:SetText(string.format(T("EXPORTER « %s »"), label(self.profPicked)))
-        codeBox:SetText(code or err or "")
+        -- (pas remis s'il n'a pas changé : le texte sélectionné pour Ctrl+C ne le resterait pas)
+        if codeBox:GetText() ~= (code or err or "") then codeBox:SetText(code or err or "") end
         selBtn:SetShown(code ~= nil)
-        -- hauteur : la plus grande des deux colonnes
-        local h = math.max(y + 44, 360) + 2 * PAD
-        box:SetHeight(h)
-        local sec = self.sections and self.sections.profiles
-        if sec and sec.scroll then sec.scroll:SetContentHeight(h + 8) end
+        -- hauteur : celle de la liste, Partager à côté ou dessous
+        leftH = y + 44
+        layout()
     end
     self:RefreshProfiles()
 end

@@ -192,11 +192,20 @@ end
 local function onSkills()
     if not WK.modules.Gathering then return end
     local c = M:HelpConfig()
+    -- rangs vus et derniers rangs : par perso (un reroll ne déclenche ni ne cache les rappels d'un autre) ;
+    -- l'ancien format (par métier pour tout le compte) est oublié
+    local ck = WK:CharKey()
+    for _, t in ipairs({ c.rankSeen, c.lastRank }) do
+        for k, v in pairs(t) do if type(v) ~= "table" then t[k] = nil end end
+    end
+    c.rankSeen[ck] = c.rankSeen[ck] or {}
+    c.lastRank[ck] = c.lastRank[ck] or {}
+    local rankSeen, lastRank = c.rankSeen[ck], c.lastRank[ck]
     for name, p in pairs(myProfs()) do
         if type(p) == "table" and p.rank and p.max then
             -- rang suivant à apprendre chez le maître
-            if c.rankAlert and p.max < RANK_CAP and p.rank >= p.max and c.rankSeen[name] ~= p.max then
-                c.rankSeen[name] = p.max
+            if c.rankAlert and p.max < RANK_CAP and p.rank >= p.max and rankSeen[name] ~= p.max then
+                rankSeen[name] = p.max
                 local msg = string.format(T("%s %d/%d : va voir un maître de %s pour apprendre le rang suivant%s."),
                     T(name), p.rank, p.max, T(name):lower(), NEXT_RANK[p.max] and (" (" .. T(NEXT_RANK[p.max]) .. ")") or "")
                 WK:Print(msg)
@@ -204,7 +213,7 @@ local function onSkills()
             end
             -- ressources débloquées par cette montée
             local kind = KIND[name]
-            local last = c.lastRank[name]
+            local last = lastRank[name]
             if c.nodeToast and last and p.rank > last and (kind == "herb" or kind == "mining") then
                 local names = {}
                 for _, d in ipairs(M.DATA[kind] or {}) do
@@ -219,7 +228,7 @@ local function onSkills()
                     WK.modules.QoL:Remind("nodes" .. name, msg, 0.6, 0.9, 0.5)
                 end
             end
-            c.lastRank[name] = p.rank
+            lastRank[name] = p.rank
         end
     end
 end

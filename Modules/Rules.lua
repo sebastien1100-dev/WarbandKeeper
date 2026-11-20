@@ -131,7 +131,7 @@ function M:Plan(store, accept)
             for _, s in ipairs(e.slots) do
                 if toMove <= 0 then break end
                 if s.count <= toMove then
-                    table.insert(ops, { bag = s.bag, slot = s.slot, count = s.count })
+                    table.insert(ops, { bag = s.bag, slot = s.slot, count = s.count, id = id })
                     toMove = toMove - s.count
                     s.used = true
                 end
@@ -140,7 +140,7 @@ function M:Plan(store, accept)
             if toMove > 0 then
                 for _, s in ipairs(e.slots) do
                     if not s.used and s.count > toMove then
-                        table.insert(ops, { bag = s.bag, slot = s.slot, count = toMove, split = toMove })
+                        table.insert(ops, { bag = s.bag, slot = s.slot, count = toMove, split = toMove, id = id })
                         break
                     end
                 end

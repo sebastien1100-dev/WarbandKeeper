@@ -36,7 +36,9 @@ local function merchantStock()
         if not id and GetMerchantItemLink then id = WK:ParseItemID(GetMerchantItemLink(i)) end
         if id then
             local _, _, price, batch, available = WK.MerchantItemInfo(i)
-            out[id] = { index = i, price = price or 0, batch = math.max(1, batch or 1), available = available }
+            -- payé en monnaie ou en objets (jetons, insignes…) : jamais acheté par nos boutons
+            local ext = GetMerchantItemCostInfo and (GetMerchantItemCostInfo(i) or 0) > 0 or false
+            if not ext then out[id] = { index = i, price = price or 0, batch = math.max(1, batch or 1), available = available } end
         end
     end
     return out

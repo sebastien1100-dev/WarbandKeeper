@@ -131,6 +131,8 @@ function UI:SetAccent(index)
         cfg.accent = index
     end
     for _, fn in ipairs(self.accentHooks) do fn() end
+    -- halo teinté par l'accent (styles prêts, UI:ApplyTheme) : il n'est recalculé qu'en reconstruisant
+    if cfg.glowTint and self.Rebuild then self:Rebuild() end
 end
 
 ---------------------------------------------------------------------------

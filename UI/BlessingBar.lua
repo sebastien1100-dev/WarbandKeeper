@@ -50,6 +50,13 @@ local function rowLabel(d)
     return className(d.class) .. (d.tank and (" · " .. T("tank")) or "")
 end
 
+-- clé d'une ligne (classe et bénédiction, exception ou Salut) : retrouve sa ligne en combat
+local function rowKey(d)
+    if d.except then return "x:" .. d.except end
+    if d.salut then return "salut" end
+    return tostring(d.class) .. ":" .. tostring(d.b)
+end
+
 ---------------------------------------------------------------------------
 -- Barre à l'écran
 ---------------------------------------------------------------------------
@@ -105,8 +112,12 @@ local function build()
     -- Paint : textes (permis en combat) ; Arm : attributs, nombre de lignes, taille (hors combat seulement)
     function f:Paint(rows)
         local r1, g1, b1 = UI:Accent()
+        -- en combat, les attributs (sort, cible) restent ceux d'avant : chaque ligne garde sa bénédiction
+        local byKey
+        if inCombat() then byKey = {}; for _, d in ipairs(rows) do byKey[rowKey(d)] = d end end
         for i, r in ipairs(self.rows) do
             local d = rows[i]
+            if byKey then d = r.armKey and byKey[r.armKey] or nil end
             r.data = d
             if d and r:IsShown() then
                 local id = B().BLESS[d.b] and B().BLESS[d.b][1]
@@ -146,9 +157,11 @@ local function build()
                 local tgt = M:NextTarget(d, 300)
                 r:SetAttribute("spell1", M:Name(d.b))
                 r:SetAttribute("unit1", tgt and tgt.unit or nil)
+                r.armKey = rowKey(d)
                 r:Show()
             else
                 r:SetAttribute("unit1", nil)
+                r.armKey = nil
                 r:Hide()
             end
         end

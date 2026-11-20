@@ -87,7 +87,7 @@ UI:RegisterPage({
         self.scroll = scroll
         self.empty = UI:Text(p, 12, C.muted)
         self.empty:SetPoint("CENTER", scroll, "CENTER")
-        self.empty:SetText("Rien pour l'instant : joue un peu, tout s'inscrira ici.")
+        self.empty:SetText(T("Rien pour l'instant : joue un peu, tout s'inscrira ici."))
 
         self.headers = UI:Pool(function()
             local h = UI:Text(scroll.child, 11, C.dim)

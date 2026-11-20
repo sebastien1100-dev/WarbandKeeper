@@ -33,9 +33,18 @@ end
 local function gameLevel(cv)
     local wm = WorldMapFrame
     if wm and wm.EnumeratePinsByTemplate then
-        local ok, it = pcall(wm.EnumeratePinsByTemplate, wm, "MapExplorationPinTemplate")
-        if ok and it then
-            for pin in it do if pin.GetFrameLevel then return pin:GetFrameLevel() end end
+        -- l'énumération du jeu renvoie un itérateur complet (fonction, table, départ), comme pairs() :
+        -- n'en garder que la fonction faisait échouer tout le calque
+        local ok, f, st, k0 = pcall(wm.EnumeratePinsByTemplate, wm, "MapExplorationPinTemplate")
+        if ok and type(f) == "function" then
+            local lv
+            pcall(function()
+                for k, v in f, st, k0 do
+                    local pin = (type(k) == "table" and k.GetFrameLevel and k) or (type(v) == "table" and v.GetFrameLevel and v)
+                    if pin then lv = pin:GetFrameLevel() return end
+                end
+            end)
+            if lv then return lv end
         end
     end
     return (cv:GetFrameLevel() or 1) + 1

@@ -479,6 +479,17 @@ local function build(host)
             local m = money()
             if n == 0 and m == 0 and (v.subject:GetText() or "") == "" then v.warn:SetText(T("Rien à envoyer.")) return end
             if v.cod and n == 0 then v.warn:SetText(T("Un contre-remboursement demande une pièce jointe.")) return end
+            -- de l'or part (pas un contre-remboursement) : la fenêtre du jeu le fait confirmer, nous aussi
+            -- (deuxième clic dans les 8 s, même destinataire et même montant)
+            if not v.cod and m > 0 then
+                local key = to .. "|" .. m
+                if v.confirmKey ~= key or GetTime() - (v.confirmAt or 0) > 8 then
+                    v.confirmKey, v.confirmAt = key, GetTime()
+                    v.warn:SetText(string.format(T("Envoyer %s à %s ? Clique encore sur Envoyer pour confirmer."), UI:GoldText(m), to))
+                    return
+                end
+            end
+            v.confirmKey = nil
             if v.cod then SetSendMailCOD(m); SetSendMailMoney(0) else SetSendMailCOD(0); SetSendMailMoney(m) end
             local subject = v.subject:GetText() or ""
             if subject == "" then subject = first or T("Courrier") end
@@ -542,7 +553,10 @@ local function build(host)
             local me = Ml():Resolve(self.to:GetText() or "")
             self.post:SetText(string.format(T("Port : %s"), UI:GoldText(price)) .. (me and ("  ·  " .. T("arrivée immédiate (perso du compte)")) or ""))
             self.send:SetEnabled(not Ml():IsSending())
-            self.warn:SetText(Ml():IsSending() and T("Envoi automatique en cours…") or "")
+            -- (la demande de confirmation de l'or reste affichée tant qu'elle vaut)
+            local asking = not self.cod and self.confirmKey and GetTime() - (self.confirmAt or 0) <= 8
+                and self.confirmKey == (Ml():Recipient(self.to:GetText() or "") .. "|" .. money())
+            if Ml():IsSending() or not asking then self.warn:SetText(Ml():IsSending() and T("Envoi automatique en cours…") or "") end
         end
     end
 
@@ -685,7 +699,7 @@ local function build(host)
             end
             for _, e in ipairs(WK.DB.global.auction and WK.DB.global.auction.log or {}) do
                 if e.kind == "sale" and (e.t or 0) > time() - 30 * 86400 then
-                    local name = e.item and WK.GetItemInfo(e.item) or "?"
+                    local name = e.item and (WK.GetItemInfo(e.item) or e.item) or "?"
                     table.insert(list, { t = e.t, icon = "coin", text = string.format(T("Vente HV : %s x%d"), name, e.count or 1), v = e.net })
                 end
             end

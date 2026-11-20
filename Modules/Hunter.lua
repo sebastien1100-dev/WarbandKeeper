@@ -198,6 +198,19 @@ function M:BuildPetButton()
     self:PaintPetButton()
     WK.UI:RegisterHUD("petButton", petBtn, {
         label = T("Bouton du familier"), protected = true, default = { 0, -180 },
+        -- coupé dans ses réglages : absent du mode édition
+        enabled = function() return isHunter() and cfg().petButton ~= false and not M:OtherAddonLoaded() end,
+        -- aperçu : le bouton montré même avec un familier (le pilote d'état le cache), rendu au retour
+        sample = function(on)
+            if InCombatLockdown and InCombatLockdown() then return end
+            if on then
+                if UnregisterStateDriver then UnregisterStateDriver(petBtn, "visibility") end
+                M:PaintPetButton()
+                petBtn:Show()
+            else
+                M:SyncPetButton()
+            end
+        end,
         legacy = function()
             local pos = cfg().petButtonPos -- position des versions précédentes
             if not pos then return false end
@@ -264,7 +277,7 @@ local function refresh()
     M:UpdateAlerts()
     if WK.UI.AspectButtonPaint then WK.UI:AspectButtonPaint() end
 end
-WK:On("UNIT_AURA", function(unit) if unit == "player" then refresh() end end)
+WK:OnUnit("UNIT_AURA", "player", function() refresh() end)
 WK:On("PLAYER_REGEN_ENABLED", function() refresh(); M:SyncPetButton() end)
 WK:On("PLAYER_REGEN_DISABLED", function() M:UpdateAlerts() end)
 WK:On("PET_BAR_UPDATE", function() M:UpdateAlerts() end)
@@ -273,7 +286,7 @@ WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, refresh) end)
 WK:On("PLAYER_LEVEL_UP", function() C_Timer.After(1, function() M:SyncPetButton() end) end)
 WK:On("UNIT_PET", function(unit) if unit == "player" then M:PaintPetButton(); M:UpdateAlerts() end end)
 WK:OnUnit("UNIT_HEALTH", "pet", function() M:PaintPetButton() end)
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit ~= "player" or not isHunter() then return end
     -- En combat, les auras sont masquées : l'aspect lancé devient l'aspect actif.
     local key = aspectNames()[spellName(spellID) or ""]

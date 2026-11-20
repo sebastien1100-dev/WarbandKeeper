@@ -503,7 +503,7 @@ function M:Repair()
     RepairAllItems()
     shopNote(string.format(T("réparé %s"), WK:FormatMoney(cost)))
     C_Timer.After(0.5, function() M:ScanDurability() end)
-    return true
+    return true, cost
 end
 
 local function useContainerItem(bag, slot)
@@ -588,7 +588,7 @@ local function buy(index, need, budget)
             bought = bought + batch
         end
     else
-        local maxStack = GetMerchantItemMaxStack and GetMerchantItemMaxStack(index) or 20
+        local maxStack = math.max(1, tonumber(GetMerchantItemMaxStack and GetMerchantItemMaxStack(index)) or 20)
         local left = need
         while left > 0 do
             local n = math.min(left, maxStack)
@@ -639,12 +639,13 @@ function M:BestMerchantAmmo(c)
     return best
 end
 
-function M:AutoBuy()
+function M:AutoBuy(spent)
     local c = WK.DB:Me()
     local cc = c.class and self:Class(c.class)
     if not cc then return end
     local bought = {}
-    local budget = { left = GetMoney() } -- argent restant, décompté à chaque achat
+    -- argent restant, décompté à chaque achat (GetMoney ne compte pas encore la réparation de cette image)
+    local budget = { left = math.max(0, GetMoney() - (spent or 0)) }
     for _, r in ipairs(M.REAGENTS[c.class] or {}) do
         local s = cc.reag[r.key]
         if s and s.auto and r.buy and (s.buy or 0) > 0 and M:Relevant(r, c.level) then
@@ -686,8 +687,8 @@ WK:On("MERCHANT_SHOW", function()
     local keepOpen = IsShiftKeyDown and IsShiftKeyDown()
     C_Timer.After(0.2, function()
         if not merchantOpen then return end
-        local repaired = M:Repair()
-        M:AutoBuy()
+        local repaired, spent = M:Repair()
+        M:AutoBuy(spent)
         M:SellGrey(function()
             shopFlush()
             if repaired and M:General().closeAfterRepair and not keepOpen then

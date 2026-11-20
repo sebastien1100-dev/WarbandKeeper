@@ -212,6 +212,20 @@ function M:Prune()
     if M:MerchantOpen() or not next(db().items) then return 0 end
     local present = {}
     for _, e in ipairs(self:List()) do if #e.who > 0 then present[e.id] = true end end
+    -- objets portés (équipement relevé de chaque perso, et celui du perso connecté lu tout de suite) :
+    -- un objet verrouillé puis équipé n'est plus dans les sacs, mais il garde son verrou
+    for _, c in pairs(WK.DB.global.characters) do
+        for _, link in pairs(c.gear or {}) do
+            local id = type(link) == "string" and WK:ParseItemID(link) or (type(link) == "number" and link) or nil
+            if id then present[id] = true end
+        end
+    end
+    if GetInventoryItemID then
+        for slot = 1, 19 do
+            local id = GetInventoryItemID("player", slot)
+            if id then present[id] = true end
+        end
+    end
     local n = 0
     for id in pairs(db().items) do
         if not present[id] and not inBuyback(id) then db().items[id] = nil; n = n + 1 end
@@ -291,7 +305,7 @@ local function checkBuyback()
         local link = GetBuybackItemLink(i)
         local id = link and WK:ParseItemID(link)
         if id and M:IsLocked(id) then
-            local price = select(3, GetBuybackItemInfo(i)) or 0
+            local price = (GetBuybackItemInfo and select(3, GetBuybackItemInfo(i))) or 0
             if price > GetMoney() then return end
             lastBuy = GetTime()
             BuybackItem(i)

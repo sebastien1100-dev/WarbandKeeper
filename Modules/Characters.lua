@@ -113,6 +113,12 @@ function M:Delete(key)
             if type(d[name]) == "table" then d[name][key] = nil end
         end
     end
+    local gh = g.gatherHelp
+    if gh then
+        for _, name in ipairs({ "rankSeen", "lastRank" }) do
+            if type(gh[name]) == "table" then gh[name][key] = nil end
+        end
+    end
     for _, per in pairs((g.rares and g.rares.kills) or {}) do
         if type(per) == "table" then per[key] = nil end
     end

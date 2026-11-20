@@ -216,7 +216,6 @@ local function redrawMap() if WK.modules.GatherMap.Redraw then WK.modules.Gather
 
 local function buildMenu()
     menu = CreateFrame("Frame", nil, bar)
-    menu:SetFrameStrata("DIALOG")
     menu.edge = UI:Rounded(menu, 10, 0, "BACKGROUND", 0)
     menu.bg = UI:Rounded(menu, 9, 1, "BACKGROUND", 1)
     menu.title = UI:Text(menu, 10, C.dim)
@@ -270,6 +269,7 @@ local function openMenu(btn, fam)
     menu.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
     menu:ClearAllPoints()
     menu:SetPoint("TOP", btn, "BOTTOM", 0, -6)
+    UI:MatchHost(menu, bar, 20) -- strate de la carte, au-dessus de la barre
     menu:Show()
 end
 
@@ -277,7 +277,6 @@ local function buildBar()
     local wm = WorldMapFrame
     local host = wm.ScrollContainer or wm
     bar = CreateFrame("Frame", "WarbandKeeperMapBar", wm)
-    bar:SetFrameStrata("HIGH")
     bar:SetHeight(38)
     bar.edge = UI:Rounded(bar, 12, 0, "BACKGROUND", 0)
     bar.bg = UI:Rounded(bar, 11, 1, "BACKGROUND", 1)
@@ -362,6 +361,9 @@ local function buildBar()
     bar:SetWidth(x + 32)
     function bar:Place()
         local cfg = L:Config()
+        -- strate de la carte (UI:MatchHost), au-dessus de ses calques et de nos pastilles (UI.mapBase)
+        UI:MatchHost(self, wm)
+        self:SetFrameLevel(math.min(9000, math.max(self:GetFrameLevel() or 1, (UI.mapBase or 0) + 60)))
         self:ClearAllPoints()
         if cfg.barX and cfg.barY then
             self:SetPoint("CENTER", host, "TOP", cfg.barX, cfg.barY)
@@ -389,7 +391,7 @@ function UI:SyncMapBar()
     if want and not bar then buildBar() end
     if bar then
         bar:SetShown(want and true or false)
-        if want then bar:Paint() end
+        if want then bar:Place(); bar:Paint() end
         if menu and not want then menu:Hide() end
     end
 end

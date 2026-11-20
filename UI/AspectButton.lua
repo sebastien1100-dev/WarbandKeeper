@@ -142,7 +142,7 @@ function UI:AspectButtonPaint()
 end
 
 -- /castsequence avance quand le sort attendu réussit : on avance avec lui
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit ~= "player" or not btn or not btn.seqKeys or #btn.seqKeys < 2 then return end
     local name = WK.SpellInfo(spellID)
     local step = btn.step or 1

@@ -137,8 +137,9 @@ local function addTime(index)
     if not cfg().enabled or not index then return end
     local sec, learned = M:RouteTime(index)
     if not sec then return end
+    local r, g, b = WK.UI:Accent()
     GameTooltip:AddLine(learned and string.format(T("Durée du vol : %s"), clock(sec))
-        or string.format(T("Durée du vol : environ %s (estimée)"), clock(sec)), 0.96, 0.55, 0.73)
+        or string.format(T("Durée du vol : environ %s (estimée)"), clock(sec)), r, g, b)
     GameTooltip:Show()
 end
 if hooksecurefunc then

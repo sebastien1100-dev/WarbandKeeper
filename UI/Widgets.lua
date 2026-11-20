@@ -505,7 +505,11 @@ function UI:SettingRow(parent, y, label, desc, control, width)
         d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -4)
         d:SetJustifyH("LEFT")
         -- Largeur = ligne moins la commande, recalculée quand la fenêtre change de taille.
-        UI:OnResize(row, function(w) d:SetWidth(math.max(100, w - (width or 60) - 8)) end)
+        -- (place de la commande : au moins sa vraie largeur, la largeur annoncée peut être plus petite)
+        UI:OnResize(row, function(w)
+            local cw = math.max(width or 60, control and control.GetWidth and control:GetWidth() or 0)
+            d:SetWidth(math.max(100, w - cw - 8))
+        end)
         d:SetText(desc)
         row.desc = d
     end
@@ -1697,7 +1701,7 @@ function UI:ReloadDiag()
 end
 
 -- en combat : retirés (un bouton protégé ne se déplace ni ne se cache plus ensuite) ; remis après
-WK:On("PLAYER_REGEN_DISABLED", function() for _, s in ipairs(reloads) do s:Hide() end end)
+WK:On("PLAYER_REGEN_DISABLED", function() for _, s in ipairs(reloads) do s:Hide(); s:ClearAllPoints() end end)
 WK:On("PLAYER_REGEN_ENABLED", function() for _, s in ipairs(reloads) do placeReload(s) end end)
 
 -- Petite fenêtre « recharger maintenant ? » (changement de profil…) : le bouton recharge par /reload protégé.
@@ -1721,6 +1725,8 @@ function UI:AskReload(text)
         f:Hide()
         reloadAsk = f
     end
+    -- bouton protégé pas encore posé (première demande pendant un combat) : posé maintenant si possible
+    UI:SecureReload(reloadAsk.go)
     reloadAsk.text:SetText(text or WK.T("Recharger l'interface pour appliquer le changement."))
     reloadAsk:Show()
 end

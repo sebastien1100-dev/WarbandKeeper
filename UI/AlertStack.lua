@@ -317,6 +317,8 @@ layout = function()
                     elseif act and act.attrs and not combat then
                         ai = ai + 1
                         local sb = getAct(ai)
+                        -- bouton réutilisé : les attributs d'un rappel précédent (unité visée…) sont effacés
+                        for _, an in ipairs({ "type", "spell", "unit", "macrotext", "item" }) do sb:SetAttribute(an, nil) end
                         for k, v in pairs(act.attrs) do sb:SetAttribute(k, v) end
                         sb.label:SetText(act.label or "")
                         sb:SetWidth(sb.label:GetStringWidth() + 18)

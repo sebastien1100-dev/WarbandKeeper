@@ -183,7 +183,8 @@ local function build()
         if M:Config().textHover and not s.sample then s.left:Hide(); s.right:Hide() end
     end)
     f:SetScript("OnMouseUp", function()
-        UI:ToggleWindow("qol")
+        -- ouvrir (jamais refermer : la fenêtre ouverte sur une autre section de QoL se fermait)
+        UI:Create():Show(); UI:ShowPage("qol")
         if UI.pages.qol and UI.pages.qol.ShowSection then UI.pages.qol:ShowSection("xp") end
     end)
 

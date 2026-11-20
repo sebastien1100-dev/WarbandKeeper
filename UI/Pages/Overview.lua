@@ -715,7 +715,7 @@ UI:RegisterPage({
         local now = self.now
         if not now then return end
         local list = nowItems()
-        local me = select(2, WK.DB:Me())
+        local me = WK.DB:Me() -- (Me() rend la fiche du perso, puis sa clé)
         local zone = GetZoneText and GetZoneText() or ""
         now.ctx:SetText(string.format(WK.T("pour %s"), WK:CharName(me, WK:CharKey())) .. ((zone ~= "") and ("  ·  " .. zone) or ""))
         local r1, g1, b1 = UI:Accent()
@@ -875,7 +875,7 @@ UI:RegisterPage({
                 tk.label:ClearAllPoints(); tk.label:SetPoint("RIGHT", area, "BOTTOMLEFT", -8, gy)
                 local txt
                 if v > 0 and v < 10000 then txt = math.floor(v / 100) .. " " .. WK.T("pa")
-                elseif stepY < 10000 then txt = string.format("%.1f", v / 10000):gsub("%.", ",") .. " " .. WK.T("po")
+                elseif stepY < 10000 then txt = string.format("%.1f", v / 10000):gsub("%.", WK.Lang() == "frFR" and "," or ".") .. " " .. WK.T("po")
                 else txt = UI:ShortGold(v) end
                 tk.label:SetText(txt)
                 tk.label:Show()

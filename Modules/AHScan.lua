@@ -619,7 +619,12 @@ function M:QuoteNext(name, fromClick)
 end
 WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
     local b = M.buy
-    if not b or b.phase ~= "quote" then return end
+    if not b or not (b.phase == "quote" or b.phase == "confirm" or b.phase == "wait") then return end
+    -- prix changé après la demande (ou pendant la confirmation : le serveur attend alors une nouvelle
+    -- confirmation) : nouveau prix affiché, et il faut recliquer pour l'accepter
+    if b.phase ~= "quote" and b.total and total and total ~= b.total then
+        WK:Print(string.format(T("Le prix a changé : %s pour %d %s. Reclique pour confirmer."), WK:FormatMoney(total), b.qty or 0, WK.GetItemInfo(b.id) or "?"))
+    end
     b.unit, b.total, b.phase = unit, total, "confirm"
     if M.OnProgress then M:OnProgress() end
 end)

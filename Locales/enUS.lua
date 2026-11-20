@@ -3634,7 +3634,7 @@ WK.Locales.enUS.text = {
     ["Clic sur une destination : guidage vers son ponton"] = "Click a destination: guidance to its pier",
     ["Clic : guidage vers ce ponton"] = "Click: guidance to this pier",
     ["neutre"] = "neutral",
-    ["%d m"] = "%d m",
+    ["%d m"] = "%d yd",
     ["Journal de l'or"] = "Gold log",
     ["Aucun mouvement d'or noté sur cette période (le journal commence avec la version 1.83.0)."] = "No gold movement logged for this period (the log starts with version 1.83.0).",
     ["%d mouvements · gagné %s · dépensé %s · total %s"] = "%d movements · earned %s · spent %s · total %s",
@@ -3837,4 +3837,6 @@ WK.Locales.enUS.text = {
     ["Partager mon style"] = "Share my style",
     ["Apparence d'origine"] = "Default look",
     ["Chaque style change toute la fenêtre : couleur, fond, polices, arrondi, cartes et halo. Règle ensuite le détail dans les autres onglets."] = "Each style changes the whole window: color, background, fonts, roundness, cards and glow. Fine-tune it in the other tabs.",
+    ["Le prix a changé : %s pour %d %s. Reclique pour confirmer."] = "Price changed: %s for %d %s. Click again to confirm.",
+    ["Envoyer %s à %s ? Clique encore sur Envoyer pour confirmer."] = "Send %s to %s? Click Send again to confirm.",
 }

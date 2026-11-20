@@ -78,6 +78,36 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.92.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Hôtel des ventes : acheter une enchère unique demande deux clics (« Confirmer <prix> »), pour ne plus acheter par erreur.
+- Courrier : envoyer de l'or demande un 2e clic sur Envoyer, comme dans la fenêtre du jeu.
+- Marchand : les boutons d'achat et le Réassort ignorent les objets payés en jetons ou en objets.
+- Options > Apparence et Profils : la disposition s'adapte aux fenêtres étroites (aperçu et partage passent dessous) ; un style prêt n'est plus marqué choisi quand tu en changes un réglage.
+- Les réglages des bénédictions (barre, Salut) font partie des profils.
+
+### Corrections
+- Carte sans brouillard : le calque plantait et ne s'affichait jamais.
+- Courrier : pendant « Tout prendre », les boutons restaient cliquables et une 2e prise pouvait démarrer par-dessus.
+- Courrier et banque : l'envoi automatique, le Rangement et le dépôt pouvaient joindre un autre objet si les sacs avaient bougé, ou envoyer une lettre vide.
+- Hôtel des ventes : un prix qui changeait pendant l'achat d'une marchandise bloquait le bouton Acheter.
+- Un objet verrouillé puis équipé perdait son verrou.
+- Bouton de rechargement : en combat, il restait accroché à la fenêtre, qui risquait d'être bloquée ; « Recharger maintenant » ne marchait pas si la 1re demande arrivait en combat.
+- Micro menu : les raccourcis protégés (rechargement, pierre de foyer) partent au relâchement du clic, même avec l'option « touche enfoncée » du jeu.
+- Bénédictions : les attributions des autres paladins (et de PallyPower) pour les noms en deux parties arrivaient sur la mauvaise ligne ; un joueur non paladin pouvait créer une fausse ligne ; en combat, une ligne pouvait afficher une autre bénédiction que celle lancée.
+- Achat automatique chez le marchand : boucle sans fin possible, et coût de la réparation non déduit.
+- Récolte : les rappels « rang suivant » et « nouvelles ressources » étaient partagés entre tous les persos.
+- Fiche de personnage : en rouvrant la fenêtre, l'ancien perso choisi restait affiché.
+- Barre de fabrication : saccades possibles pendant une série.
+- Médaillons des rares qui restaient sur la carte après les avoir désactivés ; barre de filtres de la carte parfois sous la carte.
+- Clic sur la barre d'XP : fermait la fenêtre au lieu d'ouvrir QoL > Expérience.
+- Infobulles du jeu qui gardaient l'ancienne police après un changement de police ou de style ; halo teinté qui ne suivait pas l'accent.
+- Patch notes : filtres qui dépassaient de la fenêtre ; « Que faire maintenant » qui n'affichait pas le nom du perso.
+- Bouton du familier du chasseur absent du mode édition ; quelques couleurs qui ne suivaient pas le thème ; distances en mètres en anglais.
+
 ## v1.92.1 — 20/11/2026
 
 _Un /reload suffit._

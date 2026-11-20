@@ -106,7 +106,7 @@ local function slotButton(parent, side)
     b.lvl:SetShadowOffset(1, -1)
     b.dot = UI:Icon(b.box, "circle", 7, nil, "OVERLAY")
     b.dot:SetPoint("TOPLEFT", 3, -3)
-    b.dot:SetVertexColor(0.38, 0.71, 1)
+    b.dot:SetVertexColor(C.info[1], C.info[2], C.info[3])
     b.name = UI:Text(b, 11)
     b.sub = UI:Text(b, 10, C.dim)
     if side == "right" then
@@ -1260,7 +1260,14 @@ end
 function UI:ShowCharSheet(key)
     if not WK.DB.global.characters[key] then return end
     UI.charSheetKey = key
-    UI:Create():Show()
+    local f = UI:Create()
+    -- fenêtre fermée : on oublie le perso choisi (la fenêtre est créée à la demande, et recréée par
+    -- un changement d'apparence : le crochet est posé ici, sur la fenêtre du moment)
+    if not f.wkSheetHooked then
+        f.wkSheetHooked = true
+        f:HookScript("OnHide", function() UI.charSheetKey = nil end)
+    end
+    f:Show()
     UI:ShowPage("charsheet")
 end
 
@@ -1867,16 +1874,7 @@ WK:On("GET_ITEM_INFO_RECEIVED", function()
 end)
 -- La fiche montre le perso connecté par défaut : on oublie le perso choisi à la connexion
 -- et quand la fenêtre se ferme (un autre perso ne s'affiche que sur un clic dans Persos ou le Résumé)
-WK:On("PLAYER_LOGIN", function()
-    UI.charSheetKey = nil
-    C_Timer.After(1, function()
-        local f = UI.frame
-        if f and not f.wkSheetHooked then
-            f.wkSheetHooked = true
-            f:HookScript("OnHide", function() UI.charSheetKey = nil end)
-        end
-    end)
-end)
+WK:On("PLAYER_LOGIN", function() UI.charSheetKey = nil end)
 
 -- Pastilles de l'en-tête : le perso affiché
 UI.CHIPS.charsheet = function()

@@ -54,7 +54,7 @@ UI.notesDef = {
         bar:SetPoint("TOPLEFT", 0, -40); bar:SetPoint("TOPRIGHT", 0, -40); bar:SetHeight(30)
         views.notesBar = bar
         local search = UI:Input(bar, 230, 30, "Rechercher dans les notes...", "search")
-        search:SetPoint("LEFT")
+        search:SetPoint("TOPLEFT")
         local st = { filter = "all", query = "", open = {} }
         -- versions plus récentes que la dernière visite (retenue avant que la page ne la mette à jour)
         local prevSeen = WK.DB.global.settings.notesSeenVersion
@@ -72,13 +72,25 @@ UI.notesDef = {
             chips[key] = b
             return b
         end
-        local x = 242
+        local chipOrder = {}
         for _, c in ipairs({ { "all", "Tout" }, { "added", "+ Ajouts" }, { "changed", "Modifications", "refresh" }, { "fixed", "Corrections", "warn" } }) do
-            local b = chip(c[1], c[2], c[3]); b:SetPoint("LEFT", x, 0); x = x + b:GetWidth() + 6
+            table.insert(chipOrder, chip(c[1], c[2], c[3]))
         end
         if newCount > 0 then
-            local b = chip("new", string.format(T("Depuis ma dernière visite · %d"), newCount)); b:SetPoint("LEFT", x, 0)
+            table.insert(chipOrder, chip("new", string.format(T("Depuis ma dernière visite · %d"), newCount)))
         end
+        -- filtres à droite de la recherche, sur une 2e ligne s'ils ne tiennent pas (fenêtre étroite)
+        UI:OnResize(bar, function(w)
+            if not w or w < 50 then return end
+            local x, line = 242, 0
+            for _, b in ipairs(chipOrder) do
+                if x + b:GetWidth() > w and x > 0 then x, line = 0, line + 1 end
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, -2 - line * 34)
+                x = x + b:GetWidth() + 6
+            end
+            bar:SetHeight(30 + line * 34)
+            nv:SetPoint("TOPLEFT", 0, -(82 + line * 34))
+        end)
         chips.all:SetStyle("secondary")
         search.onChange = function(t) st.query = string.lower(t or ""); render() end
 

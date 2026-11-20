@@ -282,7 +282,10 @@ createWindow = function(self)
         f:SetPoint("CENTER")
     end
     f:Hide()
-    table.insert(UISpecialFrames, "WarbandKeeperFrame") -- fermeture avec Échap
+    -- fermeture avec Échap (une seule fois : la fenêtre est refaite à chaque UI:Rebuild)
+    local listed = false
+    for _, n in ipairs(UISpecialFrames) do if n == "WarbandKeeperFrame" then listed = true end end
+    if not listed then table.insert(UISpecialFrames, "WarbandKeeperFrame") end
 
     -- Cadre : bordure dorée, liseré, bordure intérieure, fond.
     UI:Rounded(f, 16, 0, "BACKGROUND", -8):SetColor(unpack(C.frame))
@@ -1187,6 +1190,8 @@ function UI:Rebuild()
         local wasShown = self.frame and self.frame:IsShown()
         local page = self.current
         UI:ApplyTheme()
+        -- police des infobulles du jeu : la nouvelle (UI.FONT n'est à jour qu'après ApplyTheme)
+        if self.ApplyGameTooltipFonts then self:ApplyGameTooltipFonts() end
         -- Les widgets masqués de la fenêtre n'ont plus besoin des mises à jour de l'accent
         -- (les éléments à l'écran qui ne sont pas reconstruits gardent les leurs).
         self:DropAccentHooks("window")

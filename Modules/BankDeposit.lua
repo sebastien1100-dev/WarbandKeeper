@@ -68,6 +68,9 @@ local function step()
     local job = table.remove(queue, 1)
     if not job then return finish() end
     if full[job.target] then return step() end
+    -- la case doit encore contenir l'objet prévu (sacs bougés depuis le plan) : sinon on la passe
+    local cur, _, locked = WK.Container.Info(job.op.bag, job.op.slot)
+    if cur ~= job.itemID or locked then return step() end
     local bag, slot = destination(job.target, job.itemID, job.op.count)
     if not bag then
         full[job.target] = true

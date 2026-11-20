@@ -483,7 +483,7 @@ local function build()
                 local col = dd.kind == "zeppelin" and zepCol() or C.positive
                 r.ring:SetVertexColor(col[1], col[2], col[3], 1)
                 r.icon:SetTexture(UI.MEDIA .. (dd.kind == "zeppelin" and "zeppelin" or "boat"))
-                r.icon:SetVertexColor(0.06, 0.06, 0.07, 1)
+                r.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
                 r.text:SetText(dd.text)
                 r.vessel:SetText(dd.vessel .. (dd.neutral and ("  " .. UI:Hex(C.dim) .. "(" .. T("neutre") .. ")|r") or ""))
                 r:Show()

@@ -128,6 +128,15 @@ local function lowestOther(id)
     for _, row in ipairs(r.rows) do if not row.mine then return row.unit end end
     return nil, r.rows[1] and r.rows[1].mine
 end
+-- achat d'une enchère unique (PlaceBid, au prix d'achat immédiat) : le 1er clic arme le bouton (« Confirmer »),
+-- un 2e clic sur la même enchère dans les 5 s achète ; un clic égaré n'achète rien
+local bidArm
+local function bidArmed(x) return bidArm ~= nil and x ~= nil and bidArm.id == x.auctionID and GetTime() - bidArm.at < 5 end
+local function armBid(x)
+    if bidArmed(x) then bidArm = nil return true end
+    bidArm = { id = x.auctionID, at = GetTime() }
+    return false
+end
 local function available(id)
     local r = results[id]
     if not r then return nil end
@@ -638,7 +647,7 @@ local function build(host)
                 A:Query()
                 WK:Print(T("Enchère pas encore relevée : réessaie dans un instant."))
             elseif not isCommodity(id) and x.auctionID and a and a.PlaceBid then
-                if not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
+                if armBid(x) and not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
             elseif a and a.StartCommoditiesPurchase then
                 local b = S.buy
                 if b and b.id == id and b.phase == "confirm" then
@@ -1058,6 +1067,7 @@ local function build(host)
                     row.act:Show()
                     if x.mine then row.act:SetLabel(T("Annuler"))
                     elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) then row.act:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                    elseif bidArmed(x) then row.act:SetLabel(string.format(T("Confirmer %s"), money(x.buyout or x.unit * x.qty)))
                     else row.act:SetLabel(T("Acheter")) end
                     row:Show()
                 end
@@ -2251,6 +2261,7 @@ local function build(host)
         local id, a = self.id, AH()
         if not (id and a) then return end
         if not isCommodity(id) and x.auctionID and a.PlaceBid then
+            if not armBid(x) then self:RefreshDetail() return end
             if not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
             C_Timer.After(1, function() search(id, true) end)
             return
@@ -2348,7 +2359,8 @@ local function build(host)
                     row.c:SetText(x.mine and (UI:Hex(C.info) .. T("toi") .. "|r") or tostring(cum))
                     row.hl:SetColorTexture(ar, ag, ab, inQty and 0.12 or 0)
                     row.act:SetShown(not x.mine)
-                    row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty) or T("Acheter"))
+                    row.act:SetLabel(commodity and string.format(T("Prendre %d"), x.qty)
+                        or (bidArmed(x) and string.format(T("Confirmer %s"), money(x.buyout or x.unit * x.qty))) or T("Acheter"))
                     row:Show()
                 end
             end

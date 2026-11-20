@@ -178,13 +178,13 @@ WK:On("SPELL_UPDATE_COOLDOWN", function()
     if ring and ring:IsShown() and cfg().sweep then sweepGCD() end
 end)
 for _, ev in ipairs({ "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_CHANNEL_UPDATE" }) do
-    WK:On(ev, function(unit)
-        if unit == "player" and ring and ring:IsShown() and cfg().sweep then sweepCast() end
+    WK:OnUnit(ev, "player", function()
+        if ring and ring:IsShown() and cfg().sweep then sweepCast() end
     end)
 end
 for _, ev in ipairs({ "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTED", "UNIT_SPELLCAST_FAILED" }) do
-    WK:On(ev, function(unit)
-        if unit == "player" and ring and ring.cd then ring.cd:Clear() end
+    WK:OnUnit(ev, "player", function()
+        if ring and ring.cd then ring.cd:Clear() end
     end)
 end
 

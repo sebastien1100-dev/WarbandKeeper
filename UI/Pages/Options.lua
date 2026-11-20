@@ -104,6 +104,7 @@ UI:RegisterPage({
                     if UI.RefreshChips then UI:RefreshChips() end
                 end
             end
+            if key == "profiles" and self.RefreshProfiles then self:RefreshProfiles() end
             if key == "general" and self.sections.general.showTab then self.sections.general.showTab(cfg.optGenTab or "lang") end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
@@ -160,16 +161,36 @@ UI:RegisterPage({
         -- (thèmes : Graphite seulement, plus de choix ni de thème personnalisé)
         function self:RefreshThemes() end
 
-        -- Apparence : onglets Styles / Couleurs / Texte / Formes / Fenêtre à gauche (tient dans la fenêtre sans
-        -- défiler), aperçu en direct à droite, partage du style et retour d'origine en bas. La fenêtre se
+        -- Apparence : onglets Styles / Couleurs / Texte / Formes / Fenêtre à gauche, aperçu en direct à droite
+        -- (dessous si la carte est étroite), partage du style et retour d'origine en bas. La fenêtre se
         -- reconstruit à chaque changement : l'aperçu montre tout de suite le résultat.
-        local look = card("Couleurs, police et taille", 470)
+        local LOOK_H, PV_H = 470, 330
+        local look = card("Couleurs, police et taille", LOOK_H)
+        local lookSec = current
         local lc = CreateFrame("Frame", nil, look)
-        lc:SetPoint("TOPLEFT", 0, 0); lc:SetPoint("BOTTOMLEFT", 0, 0)
         local rc = CreateFrame("Frame", nil, look)
-        rc:SetPoint("TOPLEFT", lc, "TOPRIGHT", 8, 0); rc:SetPoint("BOTTOMRIGHT", -16, 16)
-        look:SetScript("OnSizeChanged", function(c, w) lc:SetWidth(math.max(470, math.floor((w or c:GetWidth()) * 0.62))) end)
-        lc:SetWidth(520)
+        -- réglages à gauche et aperçu à droite si la carte est assez large, sinon l'aperçu passe dessous
+        -- (la grille des styles demande 500 px, l'aperçu 250)
+        local lookStacked
+        UI:OnResize(look, function(w)
+            if not w or w < 50 then return end
+            local st = w < 800
+            lc:ClearAllPoints(); rc:ClearAllPoints()
+            lc:SetPoint("TOPLEFT", 0, 0)
+            if st then
+                lc:SetPoint("TOPRIGHT", 0, 0); lc:SetHeight(LOOK_H)
+                rc:SetPoint("TOPLEFT", lc, "BOTTOMLEFT", 16, 30); rc:SetPoint("TOPRIGHT", lc, "BOTTOMRIGHT", -16, 30); rc:SetHeight(PV_H)
+            else
+                lc:SetPoint("BOTTOMLEFT", 0, 0); lc:SetWidth(math.max(520, math.floor(w * 0.62)))
+                rc:SetPoint("TOPLEFT", lc, "TOPRIGHT", 8, 0); rc:SetPoint("BOTTOMRIGHT", -16, 16)
+            end
+            if st ~= lookStacked then
+                lookStacked = st
+                local h = st and (LOOK_H - 30 + PV_H + 6) or LOOK_H
+                look:SetHeight(h)
+                lookSec.scroll:SetContentHeight(h + GAP)
+            end
+        end)
         local LOOK_TABS = { { "styles", "Styles" }, { "colors", "Couleurs" }, { "text", "Texte" }, { "shapes", "Formes" }, { "window", "Fenêtre" } }
         local panes = {}
         for _, t in ipairs(LOOK_TABS) do
@@ -261,8 +282,15 @@ UI:RegisterPage({
                 name:SetText(WK.T(st[2])); name:SetTextColor(a[1], a[2], a[3])
                 b.sel = UI:Icon(b, "circle", 10, nil, "OVERLAY"); b.sel:SetPoint("BOTTOMRIGHT", -10, 10)
                 b.sel:SetVertexColor(a[1], a[2], a[3], 1)
+                -- style en place : mêmes réglages que ceux du style (un réglage changé ensuite le désélectionne)
+                local function same(k, want, have)
+                    if k == "glow" or k == "rounding" then return math.abs((want or 1) - (have or 1)) < 0.01 end
+                    if k == "font" then return (want or "friz") == (have or "friz") end
+                    return want == have
+                end
                 local function paint()
-                    local on = cfg.style == st[1]
+                    local on = UI:AccentChoice() == d.accent
+                    for _, k in ipairs(STYLE_FIELDS) do if on and not same(k, d[k], cfg[k]) then on = false end end
                     b.sel:SetShown(on)
                     if on then b.edge:SetColor(a[1], a[2], a[3], 1) else b.edge:SetColor(line[1], line[2], line[3], 1) end
                 end
@@ -272,9 +300,9 @@ UI:RegisterPage({
                 b:SetScript("OnClick", function()
                     for _, k in ipairs(STYLE_FIELDS) do cfg[k] = d[k] end
                     if cfg.glow == 1 then cfg.glow = nil end
-                    cfg.style = st[1]
+                    cfg.style = nil -- (ancien repère du style choisi : la sélection se lit sur les réglages)
                     UI:SetAccent(d.accent)
-                    apply(); UI:ApplyGameTooltipFonts()
+                    apply()
                 end)
             end
         end
@@ -412,6 +440,7 @@ UI:RegisterPage({
                     UI:Relayout()
                 end, 28)
             sideSeg:Select(cfg.collapsed and "icons" or (cfg.sideRight and "right" or "left"))
+            self.sideSeg = sideSeg -- aussi repliée par le bouton du bas de la barre : relu au rafraîchissement
             UI:SettingRow(pf, 0, "Barre latérale", "Côté du menu, ou menu réduit en icônes.", sideSeg, 330)
             local opacity = UI:Slider(pf, 180, 0.6, 1, 0.05, function() return cfg.opacity or 1 end,
                 function(v) cfg.opacity = v; apply() end, "%.2f")
@@ -433,30 +462,47 @@ UI:RegisterPage({
 
         ---------------------------------------------------------------- Partage et retour d'origine
         local STYLE_KEYS = { "accent", "accentRGB", "accent2", "bgTint", "font", "titleFont", "textScale", "rounding", "cardStyle",
-            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed", "style" }
+            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed" }
+        -- bornes des curseurs : un code collé ne peut pas sortir de ce que l'Apparence propose
+        local STYLE_RANGE = { rounding = { 0, 1.4 }, textScale = { 0.85, 1.25 }, opacity = { 0.6, 1 }, glow = { 0, 2 }, tipOpacity = { 0.6, 1 } }
         local P = WK.modules.Profiles
-        local dlg = CreateFrame("Frame", "WarbandKeeperStyleCode", UIParent)
-        dlg:SetSize(480, 160); dlg:SetPoint("CENTER", 0, 80)
-        dlg:SetFrameStrata("FULLSCREEN_DIALOG"); dlg:EnableMouse(true)
-        UI:Panel(dlg, 12, C.surface, C.border)
-        dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 18, -16)
-        dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 18, -40); dlg.text:SetPoint("RIGHT", -18, 0)
-        dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
-        dlg.input = UI:Input(dlg, 444, 30, ""); dlg.input:SetPoint("TOPLEFT", 18, -76)
-        if dlg.input.edit.SetMaxLetters then dlg.input.edit:SetMaxLetters(0) end
-        dlg.ok = UI:Button(dlg, "Appliquer", nil, 28, "primary"); dlg.ok:SetPoint("BOTTOMRIGHT", -18, 14)
-        dlg.close = UI:Button(dlg, "Fermer", nil, 28, "ghost"); dlg.close:SetPoint("RIGHT", dlg.ok, "LEFT", -8, 0)
-        dlg.close:SetScript("OnClick", function() dlg:Hide() end)
+        -- fenêtre du code de style : créée une seule fois (la page est refaite à chaque UI:Rebuild)
+        local dlg = UI.styleCodeDlg
+        if not dlg then
+            dlg = UI:InAccentScope("styleCode", function()
+                local f = CreateFrame("Frame", "WarbandKeeperStyleCode", UIParent)
+                f:SetSize(480, 160); f:SetPoint("CENTER", 0, 80)
+                f:SetFrameStrata("FULLSCREEN_DIALOG"); f:EnableMouse(true)
+                UI:Panel(f, 12, C.surface, C.border)
+                f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", 18, -16)
+                f.text = UI:Text(f, 11, C.muted); f.text:SetPoint("TOPLEFT", 18, -40); f.text:SetPoint("RIGHT", -18, 0)
+                f.text:SetJustifyH("LEFT"); if f.text.SetWordWrap then f.text:SetWordWrap(true) end
+                f.input = UI:Input(f, 444, 30, ""); f.input:SetPoint("TOPLEFT", 18, -76)
+                if f.input.edit.SetMaxLetters then f.input.edit:SetMaxLetters(0) end
+                f.ok = UI:Button(f, "Appliquer", nil, 28, "primary"); f.ok:SetPoint("BOTTOMRIGHT", -18, 14)
+                f.close = UI:Button(f, "Fermer", nil, 28, "ghost"); f.close:SetPoint("RIGHT", f.ok, "LEFT", -8, 0)
+                f.close:SetScript("OnClick", function() f:Hide() end)
+                f:Hide()
+                if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperStyleCode") end
+                return f
+            end)
+            UI.styleCodeDlg = dlg
+        end
         dlg:Hide()
-        if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperStyleCode") end
+        dlg.bg:SetColor(unpack(C.surface)); dlg.border:SetColor(unpack(C.border)) -- couleurs du thème en place
         local function applyStyle(t)
             local uc = WK.DB.global.settings.ui -- la table en place (un profil peut l'avoir remplacée)
             for _, k in ipairs(STYLE_KEYS) do
                 local v = t[k]
                 local ok = v == nil or type(v) == "number" or type(v) == "string" or type(v) == "boolean"
                     or (k == "accentRGB" and type(v) == "table" and type(v[1]) == "number" and type(v[2]) == "number" and type(v[3]) == "number")
+                if ok and type(v) == "number" and STYLE_RANGE[k] then v = math.max(STYLE_RANGE[k][1], math.min(STYLE_RANGE[k][2], v)) end
+                if ok and k == "accentRGB" and v then
+                    v = { math.max(0, math.min(1, v[1])), math.max(0, math.min(1, v[2])), math.max(0, math.min(1, v[3])) }
+                end
                 if ok then uc[k] = v end
             end
+            uc.style = nil
             if uc.accentPerChar and uc.charAccent then uc.charAccent[WK:CharKey()] = nil end
             apply()
         end
@@ -952,12 +998,17 @@ UI:RegisterPage({
         self.combatToggle:Refresh()
         self.loginToggle:Refresh()
         self.portraitToggle:Refresh()
+        if self.sideSeg then
+            local ui = WK.DB.global.settings.ui
+            self.sideSeg:Select(ui.collapsed and "icons" or (ui.sideRight and "right" or "left"))
+        end
         self.alertToggle:Refresh()
         for _, t in ipairs(self.mailToggles) do t:Refresh() end
         for _, t in ipairs(self.glowToggles) do t:Refresh() end
         for _, t in ipairs(self.ttToggles or {}) do t:Refresh() end
         self.spotsInfo:SetText(string.format(WK.T("%d récoltes enregistrées"), WK.modules.GatherMap:Count()))
-        if self.RefreshProfiles then self:RefreshProfiles() end
-
+        -- profils : seulement quand la section est affichée (le code d'export recopie tous les réglages)
+        local ps = self.sections and self.sections.profiles
+        if self.RefreshProfiles and ps and ps.scroll:IsVisible() then self:RefreshProfiles() end
     end,
 })

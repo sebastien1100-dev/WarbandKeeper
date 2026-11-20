@@ -638,12 +638,18 @@ function UI:RefreshCraftBar()
     local parts = { string.format(T("%s par fabrication"), per >= 10 and mmss(per) or string.format(T("%.1f s"), per)) }
     if cfg().craftBarEnd then table.insert(parts, string.format(T("fin vers %s"), date("%H:%M", time() + left))) end
     -- la suite de la file de fabrication (autre recette) : « ensuite »
+    -- (file relue toutes les 2 s seulement : Queue() parcourt les recettes de tout le compte, et la barre
+    -- est rafraîchie 10 fois par seconde)
     if cfg().craftBarQueue then
-        for _, e in ipairs(PH():Queue()) do
-            if e.mine and e.rec and e.rec.name ~= b.name and (e.qty or 0) > 0 then
-                table.insert(parts, string.format(T("ensuite : %s x%d"), e.rec.name, e.qty)); break
+        if not b.nextAt or now - b.nextAt > 2 then
+            b.nextAt, b.nextText = now, nil
+            for _, e in ipairs(PH():Queue()) do
+                if e.mine and e.rec and e.rec.name ~= b.name and (e.qty or 0) > 0 then
+                    b.nextText = string.format(T("ensuite : %s x%d"), e.rec.name, e.qty); break
+                end
             end
         end
+        if b.nextText then table.insert(parts, b.nextText) end
     end
     local skill
     if cfg().craftBarEnd and b.prof then

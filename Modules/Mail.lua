@@ -12,6 +12,13 @@ local sending = false
 local sentSummary = {} -- [destinataire] = objets envoyés pendant cette ouverture de la boîte
 local lastError        -- dernier message d'erreur du jeu pendant un envoi (diagnostic)
 local current -- courrier en cours d'envoi (pour le créditer au destinataire)
+local taking = false -- « Tout prendre » en cours (déclaré ici : M:IsTaking le lit plus haut que sa section)
+
+-- notre fenêtre de courrier (UI/MailWindow.lua) se repeint quand un envoi ou une prise se termine
+local function refreshWindow()
+    local v = WK.UI and WK.UI.MailWindow and WK.UI:MailWindow()
+    if v and v:IsShown() and v.Refresh then C_Timer.After(0.1, function() if v:IsShown() then v:Refresh() end end) end
+end
 
 ---------------------------------------------------------------------------
 -- Noms des personnages. Sur WoW Forever un nom est en deux parties (« Prénom Nom »)
@@ -199,6 +206,7 @@ function M:SendNext()
             if #parts > 0 then WK:Print(T("Courrier envoyé : ") .. table.concat(parts, ", ")) end
             wipe(sentSummary)
             sending = false
+            refreshWindow()
             if WK.DB.global.mail.autoTake then
                 afterTake = afterSend
                 C_Timer.After(0.5, function() M:TakeAll() end)
@@ -210,6 +218,15 @@ function M:SendNext()
     end
     sending = true
     lastError = nil
+    -- les sacs ont pu bouger depuis le plan : seule une case qui contient encore l'objet prévu (non
+    -- verrouillé par le jeu) est jointe ; sinon on enverrait autre chose, ou une lettre vide
+    local ops = {}
+    for _, op in ipairs(mail.items) do
+        local id, _, locked = WK.Container.Info(op.bag, op.slot)
+        if id and not locked and (not op.id or id == op.id) then table.insert(ops, op) end
+    end
+    if #ops == 0 then return M:SendNext() end
+    mail.items = ops
     current = mail
     mail.content = {}
     for _, op in ipairs(mail.items) do
@@ -281,6 +298,7 @@ WK:On("MAIL_FAILED", function()
             WK:Print(T("Si le nom est incomplet : clic droit sur le perso dans Courrier > Nouvelle règle, ou /wk nom."))
         end
         current, lastError = nil, nil
+        refreshWindow()
     end
 end)
 
@@ -324,7 +342,6 @@ end)
 -- « Tout prendre » : or et objets de chaque lettre, une opération à la fois.
 -- Ignore les contre-remboursements et s'arrête quand les sacs sont pleins.
 ---------------------------------------------------------------------------
-local taking = false
 local takeStats, lastKey, sameCount, skip
 local takeFilter -- { index = n (une seule lettre), money = true (or seulement), ah = true (factures de l'HV) }
 
@@ -351,6 +368,7 @@ local function finishTake(reason)
     if takeStats.items > 0 then table.insert(parts, string.format(T("%d objet(s)"), takeStats.items)) end
     if #parts > 0 then WK:Print(T("Récupéré : ") .. table.concat(parts, ", ")) end
     if reason then WK:Print(reason) end
+    refreshWindow()
     if afterTake then
         local f = afterTake
         afterTake = nil

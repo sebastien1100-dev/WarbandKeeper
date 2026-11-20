@@ -134,11 +134,6 @@ local function groupUnits()
     return out
 end
 M.GroupUnits = groupUnits
-local function leaderName()
-    for _, u in ipairs(groupUnits()) do
-        if UnitExists(u) and UnitIsGroupLeader and UnitIsGroupLeader(u) then return fullName(u) end
-    end
-end
 local function isLeader(name)
     if not name then return false end
     for _, u in ipairs(groupUnits()) do
@@ -463,7 +458,7 @@ function M:SetAssign(name, ci, b)
     else
         local e = pallys[name]
         if e then e.assign = e.assign or {}; e.assign[ci] = b; e.auto = false end
-        if not (e and e.demo) then send(string.format("ASSIGN %s %d %d", name, ci, b)) end
+        if not (e and e.demo) then send(string.format("ASSIGN %s %d %d", wire(name), ci, b)) end
     end
     if self.OnChange then self:OnChange() end
     return true
@@ -479,7 +474,7 @@ function M:SetAura(name, a)
     else
         local e = pallys[name]
         if e then e.aura = a; e.auto = false end
-        if not (e and e.demo) then send(string.format("AASSIGN %s %d", name, a)) end
+        if not (e and e.demo) then send(string.format("AASSIGN %s %d", wire(name), a)) end
     end
     if self.OnChange then self:OnChange() end
     return true
@@ -535,8 +530,9 @@ end
 
 function M:Receive(sender, msg)
     if sender == me() then return end
-    local e = entryOf(sender)
     if msg == "REQ" then self:SendSelf(sender) return end
+    -- ligne du paladin qui écrit : créée seulement par ses propres messages (pas par un REQ ou un CLEAR)
+    local e = pallys[sender] or ((msg:find("^A?SELF ") or msg:find("FREEASSIGN")) and entryOf(sender)) or {}
     local numbers, assign = msg:match("^SELF ([0-9a-fn]*)@([0-9n]*)")
     if numbers then
         e.known = {}
@@ -552,14 +548,14 @@ function M:Receive(sender, msg)
     if an then e.aura = tonumber(aa) or 0 return true end
     local name, ci, b = msg:match("^ASSIGN (.+) (%d+) (%d+)$")
     if name then
-        name, ci, b = bare(name), tonumber(ci), tonumber(b)
+        name, ci, b = bare(unwire(name)), tonumber(ci), tonumber(b)
         if not allowed(sender, name) then return end
         if name == me() then applyMine(ci, b) else entryOf(name).assign[ci] = b end
         return true
     end
     local pn, p9 = msg:match("^PASSIGN (.+)@([0-9n]*)$")
     if pn then
-        pn = bare(pn)
+        pn = bare(unwire(pn))
         if not allowed(sender, pn) then return end
         local list = chars9(p9)
         if pn == me() then for i, v in ipairs(list) do self:Me().mine[i] = v end applyMine() else entryOf(pn).assign = list end
@@ -567,7 +563,7 @@ function M:Receive(sender, msg)
     end
     local mn, mb = msg:match("^MASSIGN (.+) (%d+)$")
     if mn then
-        mn, mb = bare(mn), tonumber(mb)
+        mn, mb = bare(unwire(mn)), tonumber(mb)
         if not allowed(sender, mn) then return end
         for i = 1, #self.CLASSES do
             if mn == me() then self:Me().mine[i] = mb else entryOf(mn).assign[i] = mb end
@@ -594,7 +590,7 @@ function M:Receive(sender, msg)
     end
     local aun, aua = msg:match("^AASSIGN (.+) (%d+)$")
     if aun then
-        aun, aua = bare(aun), tonumber(aua)
+        aun, aua = bare(unwire(aun)), tonumber(aua)
         if not allowed(sender, aun) then return end
         if aun == me() then self:Me().aura = aua; applyMine() else entryOf(aun).aura = aua end
         return true

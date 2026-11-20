@@ -186,7 +186,7 @@ local function build()
         if hasStep then
             self.nowLvl:SetText(string.format(T("Niveau %d · %d point(s) libre(s)"), P.FIRST_LEVEL + pr.next - 1, pr.free))
             self.nowIcon:SetTexture(pr.talent[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
-            self.nowName:SetText(string.format("%s |cff9ca3ab(%d/%d)|r", pr.talent[1], P:StepRank(plan, pr.next), pr.talent[6] or 1))
+            self.nowName:SetText(string.format("%s %s(%d/%d)|r", pr.talent[1], UI:Hex(C.muted), P:StepRank(plan, pr.next), pr.talent[6] or 1))
             self.place:SetEnabled(pr.free > 0)
         end
         local listTop = hasStep and -162 or -70
@@ -205,7 +205,7 @@ local function build()
                 r.lv:SetText(P.FIRST_LEVEL + i - 1)
                 r.icon:SetTexture(d and d[2] or "Interface\\Icons\\INV_Misc_QuestionMark")
                 if r.icon.SetDesaturated then r.icon:SetDesaturated(learned) end
-                r.name:SetText(string.format("%s |cff9ca3ab%d/%d|r", d and d[1] or st[4] or "?", want, d and d[6] or 1))
+                r.name:SetText(string.format("%s %s%d/%d|r", d and d[1] or st[4] or "?", UI:Hex(C.muted), want, d and d[6] or 1))
                 r:SetAlpha(learned and 0.4 or 1)
                 r.ok:SetText(learned and T("appris") or "")
                 r.bg:SetVertexColor(r1, g1, b1, (not learned and i == cur) and 0.18 or 0)

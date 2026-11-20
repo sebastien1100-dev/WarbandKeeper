@@ -602,6 +602,9 @@ local function makeIcon(def)
     elseif def.secure then
         b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
         if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
+        -- clic de souris : au relâchement, quel que soit le réglage « touche enfoncée » du jeu (comme
+        -- UI:SecureReload : avec ce réglage, un clic sur le bouton protégé ne partait pas)
+        b:SetAttribute("useOnKeyDown", false)
         -- attributs du bouton protégé : type + item (pierre de foyer) ou macrotext (/reload)
         for k, v in pairs(def.secure) do b:SetAttribute(k, v) end
     else

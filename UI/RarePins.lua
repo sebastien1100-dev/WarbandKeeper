@@ -159,11 +159,12 @@ function UI:DrawRarePins(cv, mapID, w, h)
     last = { cv, mapID, w, h }
     if not WK:FeatureOn("rares") then
         if UI.SyncRareList then UI:SyncRareList(mapID, {}) end
+        UI:HideRarePins() -- module coupé carte ouverte : les médaillons déjà posés partent aussi
         return
     end
     local list = R:OnMap(mapID)
     if UI.SyncRareList then UI:SyncRareList(mapID, list) end
-    if not R:Config().map then return end
+    if not R:Config().map then UI:HideRarePins() return end
     if #list == 0 then
         if holder and holder.pathLines then holder.pathLines:Reset() end
         if top and top.pathLines then top.pathLines:Reset() end

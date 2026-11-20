@@ -129,7 +129,7 @@ local function build()
             if e then
                 row.icon:SetTexture(itemIcon(e[1]))
                 row.name:SetText(WK.GetItemInfo(e[1]) or ("#" .. e[1]))
-                row.n:SetText(e[2] .. (sv.new[e[1]] and ("  |cff" .. string.format("%02x%02x%02x", r * 255, g * 255, b * 255) .. T("nouveau") .. "|r") or ""))
+                row.n:SetText(e[2] .. (sv.new[e[1]] and ("  " .. UI:Hex({ r, g, b }) .. T("nouveau") .. "|r") or ""))
             end
         end
         local gain = (sv.skill1 and sv.skill0) and (sv.skill1 - sv.skill0) or 0

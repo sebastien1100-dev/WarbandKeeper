@@ -198,7 +198,7 @@ end
 function UI:TestRareAlert(state)
     local r = R:Get(100)
     show({ name = (r and R:Name(r)) or "Gruff Swiftbite", level = 12, id = 100, rare = r, elite = state == "elite",
-           killedAt = state == "killed" and (time() - 2 * 86400) or (state and false) or nil })
+           killedAt = state == "killed" and (time() - 2 * 86400) or (state and false) })
 end
 
 -- Aperçu pour la page de réglages : { Fill(state, style) }
