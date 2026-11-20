@@ -60,57 +60,69 @@ local function build()
     f.turn.tooltip = "Guide vers le personnage qui reprend la quête."
     f.goal = UI:Text(f, 10, C.muted); f.goal:SetJustifyH("LEFT")
 
-    -- Vue « tournée » : pastille du genre d'étape, titre et lieu, boutons ronds (pause, passer, arrêter),
-    -- bandeau de distance, objectifs, frise des étapes, temps restant et les 2 étapes suivantes
+    -- Vue « tournée » : liste fine au texte ombré dans un cadre léger (fond transparent, sans bordure) ;
+    -- en-tête (zone, avancée, temps, XP) et barre fine, étape en cours (genre, titre, niveau, PNJ, distance et
+    -- direction, XP), objectifs, 2 étapes suivantes avec leur distance ; boutons visibles seulement au survol
     local tv = CreateFrame("Frame", nil, f)
     tv:SetAllPoints()
     tv:Hide()
     f.tv = tv
-    tv.badge = CreateFrame("Frame", nil, tv); tv.badge:SetSize(30, 30); tv.badge:SetPoint("TOPLEFT", 12, -12)
-    tv.badge.bg = tv.badge:CreateTexture(nil, "ARTWORK"); tv.badge.bg:SetAllPoints(); tv.badge.bg:SetTexture(UI.MEDIA .. "circle")
-    tv.badge.shine = tv.badge:CreateTexture(nil, "OVERLAY"); tv.badge.shine:SetTexture(UI.MEDIA .. "circle")
-    tv.badge.shine:SetSize(14, 8); tv.badge.shine:SetPoint("TOP", 0, -4); tv.badge.shine:SetVertexColor(1, 1, 1, 0.3)
-    tv.badge.txt = tv.badge:CreateFontString(nil, "OVERLAY")
-    if not (UI.FONT and tv.badge.txt:SetFont(UI.FONT, 16, "")) then tv.badge.txt:SetFont("Fonts\\FRIZQT__.TTF", 16, "") end
-    tv.badge.txt:SetPoint("CENTER", 0, 0); tv.badge.txt:SetTextColor(unpack(C.bg))
-    tv.badge.icon = UI:Icon(tv.badge, "crosshair", 16, nil, "OVERLAY"); tv.badge.icon:SetPoint("CENTER")
-    tv.badge.icon:SetVertexColor(unpack(C.bg))
-    tv.close = UI:IconButton(tv, "close", 20, "Arrêter la tournée")
-    tv.close:SetPoint("TOPRIGHT", -10, -14)
-    tv.close:SetScript("OnClick", function() WK.modules.QuestPlan:Stop() end)
-    tv.skip = UI:IconButton(tv, "chevron", 20, "Passer l'étape")
-    if tv.skip.icon.SetRotation then tv.skip.icon:SetRotation(math.pi / 2) end -- chevron vers la droite
-    tv.skip:SetPoint("RIGHT", tv.close, "LEFT", -5, 0)
-    tv.skip:SetScript("OnClick", function() WK.modules.QuestPlan:Skip() end)
-    tv.pp = UI:IconButton(tv, "pause", 20, "Pause")
-    tv.pp:SetPoint("RIGHT", tv.skip, "LEFT", -5, 0)
-    tv.pp:SetScript("OnClick", function() local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) end)
-    tv.title = UI:Text(tv, 13, C.text); tv.title:SetPoint("TOPLEFT", tv.badge, "TOPRIGHT", 9, 0); tv.title:SetPoint("RIGHT", tv.pp, "LEFT", -6, 0)
+    local function shade(fs) if fs.SetShadowOffset then fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1) end return fs end
+    tv.head = shade(UI:Text(tv, 9, C.muted)); tv.head:SetPoint("TOPLEFT", 12, -9)
+    tv.headR = shade(UI:Text(tv, 9, C.muted)); tv.headR:SetPoint("TOPRIGHT", -12, -9); tv.headR:SetJustifyH("RIGHT")
+    tv.barBg = tv:CreateTexture(nil, "ARTWORK"); tv.barBg:SetHeight(3)
+    tv.barBg:SetPoint("TOPLEFT", 12, -24); tv.barBg:SetPoint("TOPRIGHT", -12, -24)
+    tv.barBg:SetColorTexture(1, 1, 1, 0.12)
+    tv.bar = tv:CreateTexture(nil, "OVERLAY"); tv.bar:SetHeight(3); tv.bar:SetPoint("TOPLEFT", tv.barBg, "TOPLEFT")
+    tv.dot = tv:CreateTexture(nil, "ARTWORK"); tv.dot:SetSize(16, 16); tv.dot:SetTexture(UI.MEDIA .. "circle")
+    tv.dot:SetPoint("TOPLEFT", 12, -34)
+    tv.mark = tv:CreateFontString(nil, "OVERLAY")
+    if not (UI.FONT and tv.mark:SetFont(UI.FONT, 11, "")) then tv.mark:SetFont("Fonts\\FRIZQT__.TTF", 11, "") end
+    tv.mark:SetPoint("CENTER", tv.dot, "CENTER", 0, 0); tv.mark:SetTextColor(unpack(C.bg))
+    tv.markIcon = UI:Icon(tv, "crosshair", 10, nil, "OVERLAY"); tv.markIcon:SetPoint("CENTER", tv.dot, "CENTER")
+    tv.markIcon:SetVertexColor(unpack(C.bg))
+    tv.title = shade(UI:Text(tv, 13, C.text)); tv.title:SetPoint("TOPLEFT", 34, -34); tv.title:SetPoint("RIGHT", -10, 0)
     tv.title:SetJustifyH("LEFT"); if tv.title.SetWordWrap then tv.title:SetWordWrap(false) end
-    tv.sub = UI:Text(tv, 10, C.muted); tv.sub:SetPoint("TOPLEFT", tv.title, "BOTTOMLEFT", 0, -3); tv.sub:SetPoint("RIGHT", -12, 0)
+    tv.sub = shade(UI:Text(tv, 11, C.muted)); tv.sub:SetPoint("TOPLEFT", 34, -52); tv.sub:SetPoint("RIGHT", -10, 0)
     tv.sub:SetJustifyH("LEFT"); if tv.sub.SetWordWrap then tv.sub:SetWordWrap(false) end
-    -- bandeau de distance
-    tv.band = CreateFrame("Frame", nil, tv); tv.band:SetHeight(26)
-    tv.band.bg = UI:Rounded(tv.band, 7, 0, "BACKGROUND", 1); tv.band.bg:SetColor(unpack(C.surface2))
-    tv.band.icon = UI:Icon(tv.band, "navarrow", 12, nil, "ARTWORK"); tv.band.icon:SetPoint("LEFT", 9, 0)
-    tv.band.txt = UI:Text(tv.band, 12, C.text); tv.band.txt:SetPoint("LEFT", 27, 0); tv.band.txt:SetPoint("RIGHT", -9, 0)
-    tv.band.txt:SetJustifyH("LEFT")
-    -- frise des étapes
-    tv.dots = {}
-    tv.foot = UI:Text(tv, 10, C.muted); tv.foot:SetJustifyH("LEFT")
-    tv.footR = UI:Text(tv, 10, C.muted); tv.footR:SetJustifyH("RIGHT")
-    -- 2 étapes suivantes
+    tv.objs = {}
+    for i = 1, ROWS do
+        local r = shade(UI:Text(tv, 11, C.text)); r:SetJustifyH("LEFT"); if r.SetWordWrap then r:SetWordWrap(false) end
+        tv.objs[i] = r
+    end
     tv.nexts = {}
     for i = 1, 2 do
-        local r = CreateFrame("Frame", nil, tv); r:SetHeight(18)
-        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(16, 16); r.dot:SetPoint("LEFT", 0, 0); r.dot:SetTexture(UI.MEDIA .. "circle")
-        r.num = UI:Text(r, 9, C.bg); r.num:SetPoint("CENTER", r.dot, "CENTER", 0, 0)
-        r.txt = UI:Text(r, 11, C.muted); r.txt:SetPoint("LEFT", 22, 0); r.txt:SetPoint("RIGHT", 0, 0); r.txt:SetJustifyH("LEFT")
+        local r = CreateFrame("Frame", nil, tv); r:SetHeight(16)
+        r.dot = r:CreateTexture(nil, "ARTWORK"); r.dot:SetSize(14, 14); r.dot:SetPoint("LEFT", 0, 0); r.dot:SetTexture(UI.MEDIA .. "circle")
+        r.num = UI:Text(r, 8, C.bg); r.num:SetPoint("CENTER", r.dot, "CENTER", 0, 0)
+        r.txt = shade(UI:Text(r, 11, C.muted)); r.txt:SetPoint("LEFT", 22, 0); r.txt:SetPoint("RIGHT", 0, 0); r.txt:SetJustifyH("LEFT")
         if r.txt.SetWordWrap then r.txt:SetWordWrap(false) end
         tv.nexts[i] = r
     end
+    -- boutons (pause / reprendre, passer, arrêter) : petits, à la place des chiffres de l'en-tête au survol
+    tv.close = UI:IconButton(tv, "close", 16, "Arrêter la tournée")
+    tv.close:SetPoint("TOPRIGHT", -8, -4)
+    tv.close:SetScript("OnClick", function() WK.modules.QuestPlan:Stop() end)
+    tv.skip = UI:IconButton(tv, "chevron", 16, "Passer l'étape")
+    if tv.skip.icon.SetRotation then tv.skip.icon:SetRotation(math.pi / 2) end -- chevron vers la droite
+    tv.skip:SetPoint("RIGHT", tv.close, "LEFT", -4, 0)
+    tv.skip:SetScript("OnClick", function() WK.modules.QuestPlan:Skip() end)
+    tv.pp = UI:IconButton(tv, "pause", 16, "Pause")
+    tv.pp:SetPoint("RIGHT", tv.skip, "LEFT", -4, 0)
+    tv.pp:SetScript("OnClick", function() local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) end)
+    local function hoverButtons(on)
+        for _, b in ipairs({ tv.close, tv.skip, tv.pp }) do b:SetShown(on) end
+        tv.headR:SetShown(not on)
+    end
+    hoverButtons(false)
+    tv:SetScript("OnUpdate", function(v, el)
+        v.h = (v.h or 0) + el
+        if v.h < 0.1 then return end
+        v.h = 0
+        local over = f:IsMouseOver() and true or false
+        if over ~= v.over then v.over = over; hoverButtons(over) end
+    end)
 
-    -- data = { title, sub, objs = { { name, have, need, done } }, goal } (aperçu ou quête suivie)
     local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" } }
     local function kindColor(k)
         local e = KIND[k]
@@ -118,105 +130,76 @@ local function build()
         return { UI:Accent() }
     end
     local CLASSIC = { "title", "sub", "close", "prog", "next", "turn", "goal" }
+    local function bgAlpha(a, border)
+        if f.bg then f.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], a) end
+        if f.border then f.border:SetShown(border) end
+    end
+    -- d = { kind, title, lvl, sub, paused, objs, idx, count, mins, xp, zone, nexts = { { n, kind, title, dist } } }
     function f:PaintTour(d)
         for _, k in ipairs(CLASSIC) do self[k]:Hide() end
+        for _, r in ipairs(self.rows) do r:Hide() end
         local v = self.tv
-        tv:Show()
+        v:Show()
         self.tour, self.guide = true, nil
-        local W2 = 292
+        local W2 = 300
         self:SetWidth(W2)
+        bgAlpha(0.5, false)
+        v.head:SetText(UI:Upper(T("Tournée")) .. (d.zone and (" · " .. UI:Upper(d.zone)) or "")
+            .. (d.paused and ("  " .. UI:Hex(C.warning) .. T("EN PAUSE") .. "|r") or ""))
+        v.headR:SetText(string.format("%d/%d · %s", d.idx, d.count, string.format(T("env. %d min"), d.mins))
+            .. ((d.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. d.xp .. " XP|r") or ""))
+        local r, g, b = UI:Accent()
+        v.bar:SetColorTexture(r, g, b, 1)
+        v.bar:SetWidth(math.max(1, (W2 - 24) * math.max(0, d.idx - 1) / math.max(1, d.count)))
         local col = kindColor(d.kind)
-        v.badge.bg:SetVertexColor(col[1], col[2], col[3], d.paused and 0.45 or 1)
+        v.dot:SetVertexColor(col[1], col[2], col[3], d.paused and 0.45 or 1)
         local letter = KIND[d.kind] and KIND[d.kind][2]
-        v.badge.txt:SetText(letter or ""); v.badge.txt:SetShown(letter ~= nil)
-        v.badge.icon:SetShown(letter == nil)
-        v.title:SetText(d.title or "")
+        v.mark:SetText(letter or ""); v.mark:SetShown(letter ~= nil)
+        v.markIcon:SetShown(letter == nil)
+        v.title:SetText((d.title or "") .. (d.lvl and ("  " .. UI:Hex(C.dim) .. "[" .. d.lvl .. "]|r") or ""))
         v.title:SetTextColor(unpack(d.paused and C.muted or C.text))
-        v.sub:SetText((d.paused and (UI:Hex(C.warning) .. T("EN PAUSE") .. "|r  ") or "") .. (d.sub or ""))
+        v.sub:SetText(d.sub or "")
         v.pp.icon:SetTexture(UI.MEDIA .. (d.paused and "play" or "pause"))
         v.pp.tooltip = d.paused and "Reprendre" or "Pause"
-        local y = -52
-        -- distance
-        if d.dist and not d.paused then
-            v.band:ClearAllPoints(); v.band:SetPoint("TOPLEFT", 12, y); v.band:SetPoint("RIGHT", -12, 0)
-            local r, g, b = UI:Accent(); v.band.icon:SetVertexColor(r, g, b, 1)
-            v.band.txt:SetText(string.format(T("%d m"), math.floor(d.dist + 0.5)) .. "  " .. UI:Hex(C.muted) .. "· "
-                .. string.format(T("env. %d min"), math.max(1, math.floor(d.dist / 7 / 60 + 0.5))) .. "|r")
-            v.band:Show()
-            y = y - 32
-        else
-            v.band:Hide()
-        end
+        local y = (d.sub and d.sub ~= "") and -70 or -54
         -- objectifs
-        for i, r in ipairs(self.rows) do
+        for i, fs in ipairs(v.objs) do
             local o = d.objs[i]
             if o then
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 14, y); r:SetPoint("RIGHT", -14, 0)
-                r.name:SetWidth(150)
-                y = y - 20
-                if o.done then
-                    r.box:SetTexture(UI.MEDIA .. "circle"); r.box:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1)
-                else
-                    r.box:SetTexture(UI.MEDIA .. "ring"); r.box:SetVertexColor(C.muted[1], C.muted[2], C.muted[3], 1)
-                end
-                r.name:SetText(o.name)
-                r.name:SetTextColor(unpack(o.done and C.positive or C.text))
+                fs:ClearAllPoints(); fs:SetPoint("TOPLEFT", 34, y); fs:SetPoint("RIGHT", -10, 0)
                 local need = o.need or 0
-                r.count:SetText(need > 0 and string.format("%d/%d", o.have or 0, need) or (o.done and T("fait") or ""))
-                r.count:SetTextColor(unpack(o.done and C.positive or C.muted))
-                r.bar.color = o.done and C.positive or nil
-                r.bar:SetShown(need > 0 and not o.done)
-                r.bar:SetValue(need > 0 and (o.have or 0) / need or 0)
-                r:Show()
+                local cnt = need > 0 and string.format("  %d/%d", o.have or 0, need) or ""
+                if o.done then fs:SetText(UI:Hex(C.positive) .. o.name .. cnt .. "|r")
+                else fs:SetText(o.name .. UI:Hex(C.muted) .. cnt .. "|r") end
+                fs:Show()
+                y = y - 15
             else
-                r:Hide()
+                fs:Hide()
             end
         end
-        -- frise : une case par étape (faites en vert, en cours à l'accent)
-        y = y - 6
-        local n = d.count
-        local inner = W2 - 24
-        local gap = n > 16 and 2 or 4
-        local dw = math.max(3, (inner - (n - 1) * gap) / n)
-        for i = 1, math.max(n, #v.dots) do
-            local t = v.dots[i]
-            if i <= n then
-                if not t then t = tv:CreateTexture(nil, "ARTWORK"); t:SetTexture("Interface\\Buttons\\WHITE8X8"); v.dots[i] = t end
-                t:ClearAllPoints(); t:SetPoint("TOPLEFT", 12 + (i - 1) * (dw + gap), y); t:SetSize(dw, 4)
-                local c = (i < d.idx and C.positive) or (i == d.idx and { UI:Accent() }) or C.surface2
-                t:SetVertexColor(c[1], c[2], c[3], 1)
-                t:Show()
-            elseif t then
-                t:Hide()
-            end
-        end
-        y = y - 10
-        v.foot:ClearAllPoints(); v.foot:SetPoint("TOPLEFT", 12, y)
-        v.foot:SetText(string.format(T("Étape %d / %d"), d.idx, n))
-        v.footR:ClearAllPoints(); v.footR:SetPoint("TOPRIGHT", -12, y)
-        v.footR:SetText(string.format(T("reste env. %d min"), d.mins))
-        y = y - 18
+        if #d.objs > 0 then y = y - 4 end
         -- 2 étapes suivantes
-        for i, r in ipairs(v.nexts) do
+        for i, row in ipairs(v.nexts) do
             local nx = d.nexts[i]
             if nx then
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 12, y); r:SetPoint("RIGHT", -12, 0)
+                row:ClearAllPoints(); row:SetPoint("TOPLEFT", 12, y - 2); row:SetPoint("RIGHT", -10, 0)
                 local c = kindColor(nx.kind)
-                r.dot:SetVertexColor(c[1], c[2], c[3], 1)
-                r.num:SetText(tostring(nx.n))
-                r.txt:SetText(nx.title)
-                r:Show()
-                y = y - 20
+                row.dot:SetVertexColor(c[1], c[2], c[3], 1)
+                row.num:SetText(tostring(nx.n))
+                row.txt:SetText(nx.title .. (nx.dist and ("  " .. UI:Hex(C.dim) .. "· " .. string.format(T("%d m"), math.floor(nx.dist + 0.5)) .. "|r") or ""))
+                row:Show()
+                y = y - 18
             else
-                r:Hide()
+                row:Hide()
             end
         end
-        self:SetHeight(-y + 10)
+        self:SetHeight(-y + 8)
     end
 
     function f:Paint(data)
         if self.tv then
             self.tv:Hide()
+            bgAlpha(0.92, true)
             for _, k in ipairs(CLASSIC) do if k ~= "prog" then self[k]:Show() end end
             self:SetWidth(W)
             for _, r in ipairs(self.rows) do r.name:SetWidth(104); r.count:SetTextColor(unpack(C.muted)) end
@@ -276,9 +259,9 @@ local function build()
             f.sample = on or nil
             if on and WK.modules.QuestPlan and WK.modules.QuestPlan:Tour() then
                 -- tournée en cours : aperçu de la carte de tournée
-                f:PaintTour({ kind = "turn", title = T("Rendre : Le viaduc de Thandol"), sub = T("Les Paluns"), dist = 160,
-                    objs = {}, idx = 4, count = 7, mins = 18,
-                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes") }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar") } } })
+                f:PaintTour({ kind = "turn", title = T("Rendre : Le viaduc de Thandol"), lvl = 31, sub = "160 m nord-est · +2500 XP",
+                    objs = {}, idx = 4, count = 7, mins = 18, xp = 7400, zone = T("Les Paluns"),
+                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes"), dist = 420 }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar"), dist = 900 } } })
                 f:Show()
             elseif on then
                 f:Paint({ title = T("La chasse aux loups"), sub = T("Sombrivage · niveau 14"), goal = T("Zone à 140 m"),
@@ -315,17 +298,52 @@ function UI:RefreshQuestTracker()
             dist = G:Vector(me, t)
         end
         local zone = s.map and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(s.map)
+        local Qs = WK.modules.Quests
+        -- niveau, XP et PNJ de l'étape (première quête ; XP de toutes)
+        local lvl, xp, npc
+        for i, qid in ipairs(s.qids or {}) do
+            local qq = Qs and Qs:Get(qid)
+            if qq then
+                xp = (xp or 0) + (qq.xp or 0)
+                if i == 1 then
+                    lvl = qq.lvl
+                    local n = s.kind == "pick" and qq.sid and WK.EverNpcs and WK.EverNpcs[qq.sid]
+                    if n then npc = (WK.Lang and WK.Lang() == "frFR" and n[2]) or n[1] end
+                end
+            end
+        end
         local sub = {}
-        if zone and zone.name then table.insert(sub, zone.name) end
-        if s.kind == "do" and #s.qids > 1 then table.insert(sub, string.format(T("%d quêtes ici"), #s.qids))
-        elseif s.kind ~= "do" and #s.qids > 1 then table.insert(sub, string.format(T("%d quêtes"), #s.qids)) end
+        if npc then table.insert(sub, npc) end
+        if #(s.qids or {}) > 1 then table.insert(sub, string.format(T("%d quêtes"), #s.qids)) end
+        if dist and not tour.paused then
+            local dir = P.Direction and me and me.map == s.map and P:Direction(me, { map = s.map, x = s.x, y = s.y })
+            table.insert(sub, UI:Hex({ UI:Accent() }) .. string.format(T("%d m"), math.floor(dist + 0.5))
+                .. ((dir and dir ~= "") and (" " .. dir) or "") .. "|r")
+        end
+        if (xp or 0) > 0 and s.kind ~= "pick" then table.insert(sub, UI:Hex(C.gold) .. "+" .. xp .. " XP|r") end
+        -- XP qui reste à gagner dans la tournée (rendus à venir)
+        local left = 0
+        for i = tour.idx, #tour.steps do
+            local st = tour.steps[i]
+            if st.kind == "turn" then
+                for _, qid in ipairs(st.qids or {}) do local qq = Qs and Qs:Get(qid); left = left + (qq and qq.xp or 0) end
+            end
+        end
         local nexts = {}
         for i = 1, 2 do
             local ns = tour.steps[tour.idx + i]
-            if ns then table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns) }) end
+            if ns then
+                local nd
+                if me and ns.map then
+                    local t = { map = ns.map, x = ns.x, y = ns.y }
+                    t.cont, t.wx, t.wy = G.ToWorld(ns.map, ns.x, ns.y)
+                    nd = G:Vector(me, t)
+                end
+                table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns), dist = nd })
+            end
         end
-        card:PaintTour({ kind = s.kind, title = P:StepTitle(s), sub = table.concat(sub, " · "), paused = tour.paused,
-            dist = dist, objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, nexts = nexts })
+        card:PaintTour({ kind = s.kind, title = P:StepTitle(s), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
+            objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts })
         card:Show()
         return
     end

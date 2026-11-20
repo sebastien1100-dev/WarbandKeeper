@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.19", date = "20/11/2026",
+        changed = {
+            "Tournée de quêtes, carte à l'écran plus discrète : texte fin et ombré dans un cadre léger et transparent, sans bordure. En tête « TOURNÉE · ZONE », l'avancée, le temps restant et l'XP qui reste à gagner, avec une barre très fine.",
+            "Étape en cours avec plus d'infos : niveau de la quête, PNJ (quand il est connu), nombre de quêtes, distance et direction (« 36 m nord-est »), XP du rendu ; objectifs ligne par ligne ; les 2 étapes suivantes avec leur distance.",
+            "Pause, passer l'étape et arrêter n'apparaissent qu'au survol de la carte.",
+        },
+    },
+    {
         version = "1.100.18", date = "20/11/2026",
         changed = {
             "Page Quêtes : l'onglet « Tournée » s'appelle maintenant « Tournée de quêtes ».",
