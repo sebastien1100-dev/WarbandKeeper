@@ -2057,6 +2057,10 @@ UI:RegisterPage({
         -- boutons
         self.tStart:SetShown(not tour); self.tStart:SetEnabled(#steps > 0)
         self.tChoose:SetShown(not tour); self.tAll:SetShown(not tour)
+        -- bas de la liste : une rangée de petits boutons pendant la tournée, deux rangées avant le lancement
+        self.tscroll:ClearAllPoints()
+        self.tscroll:SetPoint("TOPLEFT", 4, -74)
+        self.tscroll:SetPoint("BOTTOMRIGHT", -4, tour and 46 or 90)
         -- bloc de la montée
         local gb, L = self.gBlock, LG()
         if gb and L then

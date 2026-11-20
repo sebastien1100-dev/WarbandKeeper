@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.110.2", date = "20/11/2026",
+        fixed = {
+            "Tournée de quêtes lancée : la liste des étapes descend jusqu'aux petits boutons (il restait un espace vide au-dessus d'eux).",
+        },
+    },
+    {
         version = "1.110.1", date = "20/11/2026",
         added = {
             "Carte des zones, liste des quêtes de la zone choisie : une case sur chaque quête à prendre ou déjà dans le journal, et en tête « Toutes les quêtes » (même les grises) et « De mon niveau » (de ton niveau moins 3 jusqu'au réglage « au-dessus de ton niveau »).",
