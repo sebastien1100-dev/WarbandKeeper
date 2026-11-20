@@ -383,23 +383,81 @@ UI:RegisterPage({
         self.lSub = UI:Text(list, 11, C.muted)
         self.lSub:SetPoint("TOPRIGHT", -14, -14)
         self.lscroll = UI:Scroll(list)
-        self.lscroll:SetPoint("TOPLEFT", 4, -38)
-        self.lscroll:SetPoint("BOTTOMRIGHT", -4, 6)
+        self.lscroll:SetPoint("TOPLEFT", 4, -72)
+        self.lscroll:SetPoint("BOTTOMRIGHT", -4, 50)
+        -- sélection des quêtes de la zone pour une tournée (envoyée dans « Ma progression ») :
+        -- deux boutons de sélection, deux pastilles groupe / donjon, cases sur les lignes, total et envoi en bas
+        self.zsel, self.zselInc = {}, { group = false, dungeon = false }
+        local function selectBy(test)
+            self.zsel = {}
+            for _, q in ipairs(self.zoneQuests or {}) do
+                if q.pickable and test(q) and self:ZselAllowed(q) then self.zsel[q.id] = true end
+            end
+            self:Refresh()
+        end
+        self.zAllBtn = UI:Button(list, "Toutes les quêtes", nil, 24, "secondary")
+        self.zAllBtn:SetPoint("TOPLEFT", 14, -38)
+        self.zAllBtn:SetScript("OnClick", function() selectBy(function() return true end) end)
+        self.zLvlBtn = UI:Button(list, "De mon niveau", nil, 24, "secondary")
+        self.zLvlBtn:SetPoint("LEFT", self.zAllBtn, "RIGHT", 8, 0)
+        self.zLvlBtn:SetScript("OnClick", function()
+            local me = UnitLevel and UnitLevel("player") or 1
+            local above = QP() and QP():Config().maxAbove or 2
+            selectBy(function(q) return (q.lvl or 0) >= me - 3 and (q.lvl or 0) <= me + above end)
+        end)
+        self.zIncLbl = UI:Text(list, 11, C.muted); self.zIncLbl:SetPoint("LEFT", self.zLvlBtn, "RIGHT", 14, 0)
+        self.zIncLbl:SetText(T("inclure :"))
+        local function chip(key, label)
+            local b = UI:Button(list, label, nil, 22, "ghost")
+            b:SetScript("OnClick", function()
+                self.zselInc[key] = not self.zselInc[key]
+                -- pastille coupée : ces quêtes sortent de la sélection
+                if not self.zselInc[key] then
+                    for _, q in ipairs(self.zoneQuests or {}) do if not self:ZselAllowed(q) then self.zsel[q.id] = nil end end
+                end
+                self:Refresh()
+            end)
+            return b
+        end
+        self.zGrpChip = chip("group", "groupe")
+        self.zGrpChip:SetPoint("LEFT", self.zIncLbl, "RIGHT", 6, 0)
+        self.zDgnChip = chip("dungeon", "donjon")
+        self.zDgnChip:SetPoint("LEFT", self.zGrpChip, "RIGHT", 6, 0)
+        self.zFoot = UI:Text(list, 12); self.zFoot:SetPoint("BOTTOMLEFT", 14, 18)
+        self.zSend = UI:Button(list, "Envoyer dans Ma progression", nil, 28, "primary", "play")
+        self.zSend:SetPoint("BOTTOMRIGHT", -12, 11)
+        self.zSend:SetScript("OnClick", function()
+            local ids = {}
+            for id in pairs(self.zsel) do ids[#ids + 1] = id end
+            if #ids == 0 or not QP() or not self.zone then return end
+            if QP():PlanZone(self.zone, ids) then self:ShowTab("tour") end
+        end)
         self.qrows = UI:Pool(function()
             local r = CreateFrame("Frame", nil, self.lscroll.child)
             r:SetHeight(ROW_H)
             r.line = r:CreateTexture(nil, "BACKGROUND")
             r.line:SetPoint("BOTTOMLEFT", 8, 0); r.line:SetPoint("BOTTOMRIGHT", -8, 0); r.line:SetHeight(1)
+            -- case de sélection (tournée) : seulement pour une quête qu'on peut prendre ou déjà dans le journal
+            r.box = CreateFrame("Button", nil, r)
+            r.box:SetSize(16, 16); r.box:SetPoint("LEFT", 10, 0)
+            r.box.border = UI:Rounded(r.box, 4, 0, "BACKGROUND", 1)
+            r.box.fill = UI:Rounded(r.box, 3, 3, "ARTWORK", 1)
+            r.box:SetScript("OnClick", function(b)
+                local q = b:GetParent().q
+                if not q then return end
+                self.zsel[q.id] = not self.zsel[q.id] or nil
+                self:Refresh()
+            end)
             r.lv = UI:Text(r, 12)
-            r.lv:SetPoint("LEFT", 8, 0)
+            r.lv:SetPoint("LEFT", 30, 0)
             r.lv:SetWidth(26)
             r.lv:SetJustifyH("RIGHT")
             r.med = UI:Icon(r, "ring", 22, nil, "ARTWORK")
-            r.med:SetPoint("LEFT", 42, 0)
+            r.med:SetPoint("LEFT", 64, 0)
             r.mark = UI:Icon(r, "bang", 12, nil, "OVERLAY")
             r.mark:SetPoint("CENTER", r.med, "CENTER")
             r.name = UI:Text(r, 13)
-            r.name:SetPoint("TOPLEFT", 74, -6)
+            r.name:SetPoint("TOPLEFT", 96, -6)
             r.name:SetPoint("RIGHT", -190, 0)
             r.name:SetJustifyH("LEFT")
             r.sub = UI:Text(r, 11, C.muted)
@@ -2062,6 +2120,13 @@ UI:RegisterPage({
         end
     end,
 
+    -- quête permise par les pastilles « groupe » et « donjon » de la sélection
+    ZselAllowed = function(self, q)
+        if q.grp == 1 and not self.zselInc.group then return false end
+        if q.kind == "d" and not self.zselInc.dungeon then return false end
+        return true
+    end,
+
     Refresh = function(self)
         local cfg = Q:Config()
         if self.PaintAutoLog and self.settingsOpen then self.PaintAutoLog() end
@@ -2164,6 +2229,11 @@ UI:RegisterPage({
         -- quêtes de la zone choisie
         self.qrows:Reset()
         local all = self.zone and Q:OnMap(self.zone) or {}
+        -- sélection propre à la zone affichée
+        if self.zselZone ~= self.zone then self.zsel = {}; self.zselZone = self.zone end
+        self.zoneQuests = {}
+        local selN, selXP = 0, 0
+        local ar, ag, ab = UI:Accent()
         local LW = (self.lscroll:GetWidth() or 600)
         if LW < 100 then LW = 600 end
         local ly, shown, total = 0, 0, 0
@@ -2194,11 +2264,29 @@ UI:RegisterPage({
                     row.sub:SetText(table.concat(parts, "  ·  "))
                     row.state:Set(label, col)
                     row.guide:SetShown(q.x ~= nil and st ~= "done")
+                    -- case : quête à prendre ou dans le journal (pas faite, pas bloquée)
+                    local pickable = (st == "avail" or st == "log") and key == WK:CharKey()
+                    self.zoneQuests[#self.zoneQuests + 1] = { id = q.id, lvl = q.lvl, pickable = pickable, kind = q.kind, grp = q.grp }
+                    local on = pickable and self.zsel[q.id] and true or false
+                    row.box:SetShown(pickable)
+                    row.box.border:SetColor(ar, ag, ab, on and 1 or 0.7)
+                    row.box.fill:SetColor(ar, ag, ab, 1); row.box.fill:SetShown(on)
+                    if on then selN = selN + 1; selXP = selXP + (q.xp or 0) end
+                    if q.grp == 1 then table.insert(parts, 1, UI:Hex(C.warning) .. T("groupe") .. "|r"); row.sub:SetText(table.concat(parts, "  ·  ")) end
                     row.guide:SetScript("OnClick", function() Q:GuideTo(q) end)
                     ly = ly + ROW_H
                 end
             end
         end
+        -- total de la sélection et pastilles
+        local mins = math.max(0, math.floor(selN * 4))
+        self.zFoot:SetText(selN > 0 and (string.format(T("%d quête(s)"), selN) .. UI:Hex(C.muted) .. "  ·  +" .. (BreakUpLargeNumbers and BreakUpLargeNumbers(selXP) or selXP) .. " XP  ·  " .. string.format(T("env. %d min"), math.max(1, mins)) .. "|r")
+            or UI:Hex(C.muted) .. T("Coche des quêtes, ou « Toutes les quêtes » / « De mon niveau ».") .. "|r")
+        self.zSend:SetEnabled(selN > 0)
+        self.zGrpChip:SetStyle(self.zselInc.group and "primary" or "ghost")
+        self.zDgnChip:SetStyle(self.zselInc.dungeon and "primary" or "ghost")
+        local mine = key == WK:CharKey()
+        for _, b in ipairs({ self.zAllBtn, self.zLvlBtn, self.zGrpChip, self.zDgnChip, self.zSend }) do b:SetEnabled(mine and (b ~= self.zSend or selN > 0)) end
         local zname = self.zone and WK.modules.Rares:ZoneName(self.zone) or ""
         self.lTitle:SetText(zname .. "  " .. UI:Hex(C.muted) .. "· " .. string.format(T("%d quêtes"), total) .. "|r")
         self.lSub:SetText(Q:Known(key) and T("triées par niveau") or T("connecte ce perso pour lire ses quêtes faites"))

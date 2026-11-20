@@ -68,7 +68,8 @@ end
 
 -- { { id, title, lvl, xp, inLog, complete, giver = point?, camps = {…}, center = point?, turnIn = point?, coin } }
 function M:Candidates()
-    local zone = WK.modules.Quests:PlayerZone()
+    -- zone de la tournée : celle choisie dans « Carte des zones » (PlanZone), sinon celle où tu es
+    local zone = M:Config().planZone or WK.modules.Quests:PlayerZone()
     local out = {}
     if not zone then return out, nil end
     local Qs = WK.modules.Quests
@@ -106,7 +107,8 @@ function M:Candidates()
             local st = Qs:State(q, me)
             if st == "locked" then stats.locked = stats.locked + 1
             elseif st == "avail" or st == "high" then
-                if (q.lvl or 0) > lvl + 4 or st == "high" then stats.high = stats.high + 1
+                local every = cfg.allZone == zone .. ":" .. WK:CharKey()
+                if ((q.lvl or 0) > lvl + 4 and not every) or st == "high" then stats.high = stats.high + 1
                 -- trop basse : écartée, sauf « Compléter la zone » lancé dans cette zone (toutes les quêtes)
                 elseif (q.lvl or 0) < lvl - 8 and cfg.allZone ~= zone .. ":" .. WK:CharKey() then stats.low = stats.low + 1
                 else
@@ -527,7 +529,7 @@ function M:Start()
     self:Invalidate()
     local t = self:Build()
     if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « Quêtes de ma zone ».")) return nil end
-    t.zone = WK.modules.Quests:PlayerZone()
+    t.zone = self:Config().planZone or WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = t
     self.lastKey = nil
     self:Advance()
@@ -540,6 +542,7 @@ end
 function M:CompleteZone()
     -- toutes les quêtes de la zone, même celles bien en dessous de ton niveau (gardé jusqu'à la fin de la tournée)
     local zone = WK.modules.Quests:PlayerZone()
+    self:Config().planZone = nil
     self:Config().allZone = zone and (zone .. ":" .. WK:CharKey()) or nil
     self:Invalidate()
     local list = self:Candidates()
@@ -554,6 +557,26 @@ function M:CompleteZone()
     return t
 end
 
+-- Tournée d'une zone choisie dans « Carte des zones » : ces quêtes cochées, les autres de la zone décochées ;
+-- la tournée vise cette zone même si tu es ailleurs (gardée jusqu'à la fin de la tournée)
+function M:PlanZone(zone, ids)
+    local c = self:Config()
+    local k = WK:CharKey()
+    if self:Tour() then self:Stop() end
+    c.planZone = (zone ~= WK.modules.Quests:PlayerZone()) and zone or nil
+    c.allZone = zone .. ":" .. k
+    self:Invalidate()
+    c.picked[k] = c.picked[k] or {}
+    local want = {}
+    for _, id in ipairs(ids) do want[id] = true end
+    for _, e in ipairs(self:Candidates()) do c.picked[k][e.id] = want[e.id] or false end
+    for id in pairs(want) do c.picked[k][id] = true end
+    self:Invalidate()
+    local t = self:Start()
+    if t then WK:Print(string.format(T("Tournée prête : %d quêtes, %d étapes (Ma progression)."), #ids, #t.steps)) end
+    return t
+end
+
 -- Vider la liste : toutes les quêtes de la zone décochées (la tournée en cours s'arrête)
 function M:ClearPicks()
     local c = self:Config()
@@ -561,6 +584,7 @@ function M:ClearPicks()
     c.picked[k] = c.picked[k] or {}
     for _, e in ipairs(self:Candidates()) do c.picked[k][e.id] = false end
     c.allZone = nil
+    c.planZone = nil
     if self:Tour() then self:Stop() end
     self:Invalidate()
     WK:NotifyChanged()
@@ -570,6 +594,7 @@ end
 function M:Stop()
     self:Config().tour[WK:CharKey()] = nil
     self:Config().allZone = nil
+    self:Config().planZone = nil
     local g = G()
     if g.target and g.target.kind == "qtour" then g:Stop() end
     self.lastKey = nil
@@ -608,7 +633,7 @@ function M:Reorder()
     self:Invalidate()
     local n = self:Build()
     n.start, n.gained0, n.turned = keep.start, keep.gained0, keep.turned
-    n.zone = WK.modules.Quests:PlayerZone()
+    n.zone = self:Config().planZone or WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = n
     self.lastKey = nil
     self:Advance()
@@ -755,6 +780,7 @@ function M:Finish()
     local t = self:Tour()
     if not t then return end
     self:Config().allZone = nil
+    self:Config().planZone = nil
     local XP = WK.modules.XP
     local gained = XP and XP.session and (XP.session.gained - (t.gained0 or 0)) or 0
     local mins = math.max(1, math.floor((time() - (t.start or time())) / 60 + 0.5))
@@ -863,7 +889,7 @@ WK:On("ZONE_CHANGED_NEW_AREA", function()
         local t = M:Tour()
         if not (on() and t and not t.paused) then return end
         local zone = WK.modules.Quests:PlayerZone()
-        if not zone or zone == t.zone then return end
+        if not zone or zone == t.zone or M:Config().planZone then return end
         M:Reorder()
         local n = M:Tour()
         if n then WK:Print(string.format(T("Tournée refaite pour cette zone : %d étapes."), #n.steps)) end
