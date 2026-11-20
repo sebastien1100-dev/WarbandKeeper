@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.4", date = "20/11/2026",
+        changed = {
+            "Carte des bateaux : les zeppelins sont en orange (tracés et pastilles de la liste), bien distincts des bateaux en bleu et de la carte dorée.",
+        },
+    },
+    {
         version = "1.87.3", date = "20/11/2026",
         fixed = {
             "Carte des bateaux : les tracés se voyaient mal sur la carte du jeu, surtout les zeppelins ; traits plus épais et plus clairs avec un contour sombre, zeppelins en longs tirets or vif, lignes estompées moins pâles.",

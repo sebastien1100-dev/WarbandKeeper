@@ -18,6 +18,8 @@ local AZEROTH = 947                         -- carte du monde du jeu (fond, coul
 local board
 
 local function BL() return WK.modules.BoatLines end
+-- orange des zeppelins (tiré de C.warning, plus franc) : sur la carte et dans la liste
+local function zepCol() local w = C.warning; return { w[1], w[2] * 0.72, w[3] * 0.4 } end
 local function dist(ax, ay, bx, by) local dx, dy = ax - bx, ay - by; return math.sqrt(dx * dx + dy * dy) end
 
 -- nom de la zone d'un point monde
@@ -336,9 +338,9 @@ local function build()
             if (self.showAll or mine) and not drawn[l.key] then
                 drawn[l.key] = true
                 local zep = l.kind == "zeppelin"
-                -- couleurs éclaircies (lisibles sur la carte du jeu) : bateau bleu clair, zeppelin or vif
-                local base = zep and C.warning or C.info
-                local lift = zep and 0.15 or 0.3
+                -- couleurs lisibles sur la carte du jeu : bateau bleu clair, zeppelin orange
+                local base = zep and zepCol() or C.info
+                local lift = zep and 0 or 0.3
                 local col = { base[1] + (1 - base[1]) * lift, base[2] + (1 - base[2]) * lift, base[3] + (1 - base[3]) * lift }
                 local hl = (hover and hover.key == l.key) or (not hover and selLines[l.key])
                 local a = hl and 1 or ((hover or sel) and 0.5 or 0.95)
@@ -478,7 +480,7 @@ local function build()
                 local r = destRow(c, k)
                 r.dd = dd
                 r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -ry); r:SetPoint("RIGHT", c, "RIGHT", -6, 0)
-                local col = dd.kind == "zeppelin" and C.warning or C.positive
+                local col = dd.kind == "zeppelin" and zepCol() or C.positive
                 r.ring:SetVertexColor(col[1], col[2], col[3], 1)
                 r.icon:SetTexture(UI.MEDIA .. (dd.kind == "zeppelin" and "zeppelin" or "boat"))
                 r.icon:SetVertexColor(0.06, 0.06, 0.07, 1)
