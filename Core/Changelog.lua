@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.6", date = "20/11/2026",
+        fixed = {
+            "Talents : le cercle du talent suivant pouvait disparaître (panneau rouvert, fenêtre redessinée) sans revenir ; il est reposé tout seul tant que la fenêtre des talents est ouverte.",
+        },
+        changed = {
+            "/wk plan diag dit aussi pourquoi le cercle n'est pas affiché et la version de l'addon.",
+        },
+    },
+    {
         version = "1.99.5", date = "20/11/2026",
         fixed = {
             "Talents : le bouton « Plan de montée » et le cercle du talent suivant étaient bien posés mais restaient cachés sous le décor de la fenêtre des talents de WoW Forever. Ils passent maintenant au-dessus.",

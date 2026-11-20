@@ -252,12 +252,15 @@ local function build()
 end
 
 -- Talent à prendre entouré dans la fenêtre du jeu (si elle expose ses boutons)
+local glowWhy = "pas encore calculé"
 function UI:TalentPlanGlow()
     if glow then glow:Hide() end
-    if not (glowOn() and talentsShown(host) and panel and panel:IsShown()) then return end
+    if not glowOn() then glowWhy = "réglage coupé" return end
+    if not talentsShown(host) then glowWhy = "onglet des talents pas affiché" return end
+    if not (panel and panel:IsShown()) then glowWhy = "panneau du plan fermé" return end
     local pr = P:Progress(WK:CharKey())
     local node = pr and pr.step and (pr.step[3] or (pr.talent and pr.talent[8]))
-    if not node then return end
+    if not node then glowWhy = "pas de talent suivant (plan fini ?)" return end
     local btn
     for _, sub in ipairs({ host.TalentsFrame or false, host.TalentsTab or false, host }) do
         if type(sub) == "table" and type(sub.GetTalentButtonByNodeID) == "function" then
@@ -266,7 +269,8 @@ function UI:TalentPlanGlow()
         end
     end
     if not btn then btn = findButton(talentsPart(host) or host, node, pr.talent and pr.talent[2]) end
-    if not btn then return end
+    if not btn then glowWhy = "bouton du talent introuvable" return end
+    glowWhy = "affiché"
     if not glow then
         glow = CreateFrame("Frame", nil, UIParent)
         glow.tex = glow:CreateTexture(nil, "OVERLAY")
@@ -298,8 +302,8 @@ function UI:ShowTalentPlan(anchorTo)
     elseif main and main:IsShown() then panel:SetPoint("TOPLEFT", main, "TOPRIGHT", 6, 0)
     else panel:SetPoint("CENTER", 0, 0) end
     panel.userHidden = nil
-    panel:Paint()
     panel:Show()
+    panel:Paint()
     paintToggle()
 end
 function UI:ToggleTalentPlan()
@@ -369,6 +373,12 @@ watcher:SetScript("OnUpdate", function(w, el)
     w.acc = 0
     if not (host and host:IsShown()) then w:Hide() return end
     sync()
+    -- cercle perdu (fenêtre redessinée, panneau rouvert…) : reposé, au plus une fois par seconde
+    w.g = (w.g or 0) + 1
+    if lastVis and w.g >= 4 then
+        w.g = 0
+        if not (glow and glow:IsShown()) then UI:TalentPlanGlow() end
+    end
 end)
 UI.TalentPlanSync = sync
 
@@ -422,7 +432,8 @@ function UI:TalentPlanDiag()
     local icon = pr and pr.talent and pr.talent[2]
     local btn = host and node and findButton(talentsPart(host) or host, node, icon)
     table.insert(out, string.format("talent suivant : nœud %s, icône %s · bouton trouvé : %s · cercle : %s", tostring(node), tostring(icon),
-        btn and ((btn.GetName and btn:GetName()) or "sans nom") or "non", tostring(glow and glow:IsShown() or false)))
+        btn and ((btn.GetName and btn:GetName()) or "sans nom") or "non", tostring(glow and glow:IsShown() or false) .. " (" .. glowWhy .. ")"))
+    table.insert(out, "version " .. tostring(WK.version))
     return out
 end
 WK:On("ADDON_LOADED", function() tryHook() end)

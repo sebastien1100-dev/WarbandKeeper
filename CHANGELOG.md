@@ -73,6 +73,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.6 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- /wk plan diag dit aussi pourquoi le cercle n'est pas affiché et la version de l'addon.
+
+### Corrections
+- Talents : le cercle du talent suivant pouvait disparaître (panneau rouvert, fenêtre redessinée) sans revenir ; il est reposé tout seul tant que la fenêtre des talents est ouverte.
+
 ## v1.99.5 — 20/11/2026
 
 _Un /reload suffit._
