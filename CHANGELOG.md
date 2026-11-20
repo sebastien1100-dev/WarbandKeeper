@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.85.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bandeau des bateaux, version marine : en haut (graphite comme l'addon) « Bateau pour » et la destination en gros, le navire et « Ce ponton · vers … » à droite ; en bas une bande de mer bleue dont les vagues ondulent, avec la frise du trajet (ton ponton en bleu, la prochaine escale en vert) et un petit bateau qui tangue au ponton.
+- À bord, le bateau avance sur la frise au fil de la traversée (« traversée 45 % »), d'après sa position sur le tracé de la ligne, avec un trait qui montre le chemin parcouru et un sillage. Pour les zeppelins la bande devient un ciel, pour le tram des profondeurs une bande graphite.
+
 ## v1.84.3 — 20/11/2026
 
 _Un /reload suffit._

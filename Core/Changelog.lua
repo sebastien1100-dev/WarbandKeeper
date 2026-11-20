@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.85.0", date = "20/11/2026",
+        changed = {
+            "Bandeau des bateaux, version marine : en haut (graphite comme l'addon) « Bateau pour » et la destination en gros, le navire et « Ce ponton · vers … » à droite ; en bas une bande de mer bleue dont les vagues ondulent, avec la frise du trajet (ton ponton en bleu, la prochaine escale en vert) et un petit bateau qui tangue au ponton.",
+            "À bord, le bateau avance sur la frise au fil de la traversée (« traversée 45 % »), d'après sa position sur le tracé de la ligne, avec un trait qui montre le chemin parcouru et un sillage. Pour les zeppelins la bande devient un ciel, pour le tram des profondeurs une bande graphite.",
+        },
+    },
+    {
         version = "1.84.3", date = "20/11/2026",
         changed = {
             "Bandeau au quai : ton ponton est marqué en bleu sur la frise (au lieu de la couleur d'accent), la prochaine escale reste en vert.",

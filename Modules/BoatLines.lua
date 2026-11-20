@@ -145,6 +145,7 @@ function M:RideSample(c, x, y)
                 local cd = onboard.cand[key]
                 if not cd then cd = { l = l, i = i, ts = {}, ds = {} }; onboard.cand[key] = cd end
                 if #cd.ts < 400 then table.insert(cd.ts, gt); table.insert(cd.ds, d) end
+                cd.last = d
             end
         end
     end
@@ -169,6 +170,18 @@ function M:RideSample(c, x, y)
 end
 -- ligne et étape repérées à bord : { l, i (quai de départ) } ou nil
 function M:RideFit() return onboard and onboard.fit end
+-- avancement de la traversée reconnue, de 0 (quai de départ) à 1 (escale suivante), d'après la dernière
+-- position posée sur le tracé de l'étape ; nil tant que l'étape n'est pas reconnue
+function M:RideProgress()
+    local f = onboard and onboard.fit
+    local cd = f and onboard.cand[f.key]
+    if not (cd and cd.last) then return nil end
+    local segs = segsOf(f.l, f.i)
+    local g = segs[#segs]
+    local total = g and (g[6] + g[7]) or 0
+    if total <= 0 then return nil end
+    return math.max(0, math.min(1, cd.last / total))
+end
 function M:RideEnd() onboard = nil end
 
 ---------------------------------------------------------------------------

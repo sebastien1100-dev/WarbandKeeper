@@ -3,15 +3,16 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau des bateaux et zeppelins, sans aucun horaire : où va le navire.
---   * au quai (200 m pour apparaître, 260 m pour disparaître, puis encore 5 s) : le navire de ton ponton, la
---     frise de toutes les escales de sa ligne (ton quai à la couleur de l'apparence, la prochaine escale en
---     vert) et les pontons voisins en dessous ;
---   * à bord (Nav.IsRiding) : le navire et la frise, la prochaine escale en vert (ligne reconnue par
---     BoatLines:RideFit, sinon celle du ponton quitté) ;
+-- Bandeau des bateaux et zeppelins, sans aucun horaire : où va le navire. En haut (graphite) « Bateau pour »
+-- et la destination, le navire et « Ce ponton · vers … » ; en bas une bande de mer animée (ciel pour les
+-- zeppelins) avec la frise des escales, ton ponton à gauche en bleu, la prochaine escale en vert.
+--   * au quai (200 m pour apparaître, 260 m pour disparaître, puis encore 5 s) : le navire de ton ponton
+--     tangue au départ de la frise ; les pontons voisins entre les deux ;
+--   * à bord (Nav.IsRiding) : le navire avance sur la frise selon BoatLines:RideProgress (ligne reconnue par
+--     BoatLines:RideFit, sinon celle du ponton quitté, navire au départ) ;
 --   * dans le tram des profondeurs : ses deux stations.
 -- Lignes du jeu : Modules/BoatLines.lua ; bateaux appris en jeu : Nav:Boats(). Réglage Guide:Config().dockBanner.
-local RANGE_IN, RANGE_OUT, LINGER, W = 200, 260, 5, 360
+local RANGE_IN, RANGE_OUT, LINGER, W = 200, 260, 5, 400
 UI.DockRange = RANGE_IN
 local banner
 
@@ -77,10 +78,6 @@ local function routeOf(e)
     end
     return { e.from or "?", e.to or "?" }, 1, 2
 end
-local function titleOf(e)
-    if e.game and e.game.vessel then return T(e.game.vessel) end
-    return string.format(e.kind == "zeppelin" and T("Zeppelin pour %s") or T("Bateau pour %s"), e.to or "?")
-end
 
 local SAMPLE = {
     { game = { vessel = "Le Bravoure", kind = "boat", stops = { { name = "Port de Menethil" }, { name = "Austrivage" }, { name = "Auberdine" } } }, s = 1, kind = "boat" },
@@ -88,23 +85,32 @@ local SAMPLE = {
 }
 
 local MAXN = 4 -- escales dessinées au plus
+local TOP_H, SEA_H, COLW = 54, 70, 5 -- haut graphite, bande de mer, largeur d'une colonne de vague
+local LINE_Y = 42                    -- frise : distance depuis le haut de la bande de mer
+
+-- teintes de la bande, tirées du bleu du thème : mer (bateau), ciel (zeppelin), rail (tram, graphite)
+local function bandColors(kind)
+    local i = C.info
+    if kind == "tram" then return C.surface2, C.border, 0 end
+    local foam = { i[1] + (1 - i[1]) * 0.45, i[2] + (1 - i[2]) * 0.45, i[3] + (1 - i[3]) * 0.45 }
+    if kind == "zeppelin" then return { i[1] * 0.55, i[2] * 0.70, i[3] * 0.75 }, foam, 1.2 end
+    return { i[1] * 0.40, i[2] * 0.55, i[3] * 0.50 }, foam, 3
+end
+
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDockBanner", UIParent)
-    f:SetSize(W, 60)
+    f:SetSize(W, TOP_H + SEA_H)
     f:SetFrameStrata("MEDIUM")
-    UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border)
-    f.icon = UI:Icon(f, "boat", 22, nil, "ARTWORK"); f.icon:SetPoint("TOPLEFT", 14, -14)
-    f.title = UI:Text(f, 13); f.title:SetPoint("TOPLEFT", 46, -12); f.title:SetPoint("RIGHT", -14, 0)
+    UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.94 }, C.border)
+    -- haut graphite : « Bateau pour » et la destination à gauche, le navire et le ponton à droite
+    f.kicker = UI:Text(f, 11, C.muted); f.kicker:SetPoint("TOPLEFT", 16, -11)
+    f.title = UI:Text(f, 16); f.title:SetPoint("TOPLEFT", 16, -27); f.title:SetPoint("RIGHT", f, "CENTER", 40, 0)
+    f.title:SetJustifyH("LEFT")
     if f.title.SetWordWrap then f.title:SetWordWrap(false) end
-    f.sub = UI:Text(f, 11, C.muted); f.sub:SetPoint("TOPLEFT", 46, -30); f.sub:SetPoint("RIGHT", -14, 0)
+    f.vessel = UI:Text(f, 10, C.muted); f.vessel:SetPoint("TOPRIGHT", -16, -12); f.vessel:SetJustifyH("RIGHT")
+    f.sub = UI:Text(f, 11); f.sub:SetPoint("TOPRIGHT", -16, -30); f.sub:SetJustifyH("RIGHT")
+    f.sub:SetPoint("LEFT", f, "CENTER", 40, 0)
     if f.sub.SetWordWrap then f.sub:SetWordWrap(false) end
-    -- frise des escales : points, traits et noms
-    f.dots, f.names, f.segs = {}, {}, {}
-    for i = 1, MAXN do
-        f.dots[i] = UI:Icon(f, "circle", 12, nil, "ARTWORK")
-        f.names[i] = UI:Text(f, 10, C.muted); f.names[i]:SetJustifyH("CENTER"); f.names[i]:SetWidth(90)
-        if i < MAXN then f.segs[i] = f:CreateTexture(nil, "BORDER"); f.segs[i]:SetHeight(2) end
-    end
     f.sep = f:CreateTexture(nil, "BORDER"); f.sep:SetHeight(1)
     f.rows = {}
     for i = 1, 3 do
@@ -113,74 +119,151 @@ local function build()
         f.rows[i] = r
     end
 
-    -- frise : noms des escales, quai courant (bleu) et prochaine escale (vert) ; renvoie le bas de la frise
-    function f:Route(names, cur, nx, y)
+    -- bande de mer en bas : fond arrondi, crête en colonnes qui ondulent, frise et bateau par-dessus
+    local sea = CreateFrame("Frame", nil, f)
+    sea:SetPoint("BOTTOMLEFT", 0, 0); sea:SetPoint("BOTTOMRIGHT", 0, 0); sea:SetHeight(SEA_H)
+    f.sea = sea
+    local bodyF = CreateFrame("Frame", nil, sea)
+    bodyF:SetPoint("BOTTOMLEFT", 0, 0); bodyF:SetPoint("BOTTOMRIGHT", 0, 0); bodyF:SetHeight(SEA_H - 10)
+    f.body = UI:Rounded(bodyF, 11, 1, "BACKGROUND", 2)
+    -- calques au-dessus du fond : vagues, puis frise et navire
+    local waveF = CreateFrame("Frame", nil, sea); waveF:SetAllPoints(sea); waveF:SetFrameLevel(bodyF:GetFrameLevel() + 1)
+    local fg = CreateFrame("Frame", nil, sea); fg:SetAllPoints(sea); fg:SetFrameLevel(bodyF:GetFrameLevel() + 2)
+    f.cols, f.foam = {}, {}
+    local ncol = math.floor((W - 2) / COLW)
+    for k = 1, ncol do
+        local c = waveF:CreateTexture(nil, "BACKGROUND", nil, 3)
+        c:SetWidth(k == ncol and (W - 2 - (ncol - 1) * COLW) or COLW)
+        c:SetPoint("BOTTOMLEFT", sea, "BOTTOMLEFT", 1 + (k - 1) * COLW, SEA_H - 10 - 12)
+        local fm = waveF:CreateTexture(nil, "BACKGROUND", nil, 4)
+        fm:SetHeight(2); fm:SetPoint("BOTTOMLEFT", c, "TOPLEFT", 0, -2); fm:SetPoint("BOTTOMRIGHT", c, "TOPRIGHT", 0, -2)
+        f.cols[k], f.foam[k] = c, fm
+    end
+    -- vaguelettes fixes dans la mer
+    f.ripples = {}
+    for k = 1, 9 do
+        local t = waveF:CreateTexture(nil, "BACKGROUND", nil, 4)
+        t:SetSize(16, 1)
+        t:SetPoint("TOPLEFT", sea, "TOPLEFT", 14 + (k - 1) * 44 + (k % 2) * 12, -(26 + (k % 3) * 12))
+        f.ripples[k] = t
+    end
+    -- frise : pointillés, trait parcouru, points des escales et noms
+    f.dashes = {}
+    for k = 1, math.floor((W - 72) / 9) do
+        local t = fg:CreateTexture(nil, "ARTWORK", nil, 1); t:SetSize(4, 2)
+        f.dashes[k] = t
+    end
+    f.done = fg:CreateTexture(nil, "ARTWORK", nil, 2); f.done:SetHeight(2)
+    f.dots, f.names = {}, {}
+    for i = 1, MAXN do
+        f.dots[i] = UI:Icon(fg, "circle", 10, nil, "OVERLAY")
+        f.names[i] = UI:Text(fg, 10); f.names[i]:SetWidth(120)
+    end
+    f.wake = fg:CreateTexture(nil, "ARTWORK", nil, 3); f.wake:SetSize(14, 1)
+    f.ship = UI:Icon(fg, "boat", 22, nil, "OVERLAY")
+
+    local function X(i, n) return 36 + (i - 1) * ((W - 72) / math.max(1, n - 1)) end
+
+    -- frise : noms des escales (ton quai à gauche en bleu, prochaine escale en vert), bateau à la part p du
+    -- trajet entre les deux premières escales (nil : au ponton)
+    function f:Route(kind, names, p)
+        local body, foam, amp = bandColors(kind)
+        self.amp = amp
+        self.body:SetColor(body[1], body[2], body[3], 1)
+        for k, c in ipairs(self.cols) do
+            c:SetColorTexture(body[1], body[2], body[3], 1)
+            self.foam[k]:SetColorTexture(foam[1], foam[2], foam[3], amp > 0 and 0.55 or 0)
+        end
+        for _, t in ipairs(self.ripples) do t:SetColorTexture(foam[1], foam[2], foam[3], kind == "tram" and 0 or 0.14) end
         local n = math.min(#names, MAXN)
-        local x0, x1 = 30, W - 30
-        local step = n > 1 and (x1 - x0) / (n - 1) or 0
+        local x0, x1 = X(1, n), X(n, n)
+        for k, t in ipairs(self.dashes) do
+            local x = x0 + 8 + (k - 1) * 9
+            t:ClearAllPoints(); t:SetPoint("LEFT", self.sea, "TOPLEFT", x, -LINE_Y)
+            t:SetColorTexture(foam[1], foam[2], foam[3], 0.4)
+            t:SetShown(x < x1 - 8)
+        end
         for i = 1, MAXN do
             local shown = i <= n
-            self.dots[i]:SetShown(shown); self.names[i]:SetShown(shown)
-            if self.segs[i] then self.segs[i]:SetShown(i < n) end
+            local dot, nm = self.dots[i], self.names[i]
+            dot:SetShown(shown); nm:SetShown(shown)
             if shown then
-                local x = x0 + (i - 1) * step
-                local dot = self.dots[i]
-                dot:ClearAllPoints(); dot:SetPoint("CENTER", self, "TOPLEFT", x, -(y + 6))
-                local nm = self.names[i]
-                nm:ClearAllPoints(); nm:SetPoint("TOP", self, "TOPLEFT", x, -(y + 16))
+                local x = X(i, n)
+                dot:ClearAllPoints(); dot:SetPoint("CENTER", self.sea, "TOPLEFT", x, -LINE_Y)
+                nm:ClearAllPoints()
+                if i == 1 then nm:SetPoint("TOPLEFT", self.sea, "TOPLEFT", x - 8, -(LINE_Y + 9)); nm:SetJustifyH("LEFT")
+                elseif i == n then nm:SetPoint("TOPRIGHT", self.sea, "TOPLEFT", x + 8, -(LINE_Y + 9)); nm:SetJustifyH("RIGHT")
+                else nm:SetPoint("TOP", self.sea, "TOPLEFT", x, -(LINE_Y + 9)); nm:SetJustifyH("CENTER") end
                 nm:SetText(names[i])
-                if i == cur then
-                    dot:SetVertexColor(C.info[1], C.info[2], C.info[3], 1); nm:SetTextColor(C.info[1], C.info[2], C.info[3])
-                elseif i == nx then
-                    dot:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1); nm:SetTextColor(C.positive[1], C.positive[2], C.positive[3])
-                else
-                    dot:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); nm:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
-                end
-                local sg = self.segs[i]
-                if sg and i < n then
-                    sg:ClearAllPoints()
-                    sg:SetPoint("LEFT", self, "TOPLEFT", x + 8, -(y + 6)); sg:SetWidth(math.max(1, step - 16))
-                    -- trait qui mène à la prochaine escale : vert ; les autres discrets
-                    if i + 1 == nx then sg:SetColorTexture(C.positive[1], C.positive[2], C.positive[3], 0.8)
-                    else sg:SetColorTexture(C.border[1], C.border[2], C.border[3], 1) end
-                end
+                local col = (i == 1 and kind ~= "tram") and foam or (i == 2 and kind ~= "tram") and C.positive or foam
+                dot:SetVertexColor(col[1], col[2], col[3], 1)
+                nm:SetTextColor(col[1], col[2], col[3], (i <= 2 or kind == "tram") and 1 or 0.65)
             end
         end
-        return y + 32
+        -- bateau (ou zeppelin) : au ponton, ou là où il en est de la traversée ; pas de navire pour le tram
+        local seg = n > 1 and (X(2, n) - x0) or 0
+        local sx = p and (x0 + seg * p) or (x0 + 16)
+        self.shipX = sx
+        self.ship:SetShown(kind ~= "tram")
+        self.ship:SetTexture(UI.MEDIA .. (kind == "zeppelin" and "zeppelin" or "boat"))
+        self.ship:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
+        self.wake:SetShown(kind == "boat" and p ~= nil)
+        self.wake:ClearAllPoints(); self.wake:SetPoint("RIGHT", self.sea, "TOPLEFT", sx - 12, -(LINE_Y - 4))
+        self.wake:SetColorTexture(foam[1], foam[2], foam[3], 0.5)
+        self.done:SetShown(p ~= nil and sx > x0 + 2)
+        self.done:ClearAllPoints()
+        self.done:SetPoint("LEFT", self.sea, "TOPLEFT", x0, -LINE_Y); self.done:SetWidth(math.max(1, sx - x0))
+        self.done:SetColorTexture(foam[1], foam[2], foam[3], 0.95)
+        self:Animate(0)
     end
-    function f:Rows(rows, y)
+    -- houle : la crête ondule, le navire tangue (appelé ~20 fois par seconde tant que le bandeau est visible)
+    function f:Animate(t)
+        local amp = self.amp or 0
+        for k, c in ipairs(self.cols) do
+            c:SetHeight(12 + 4 + amp * math.sin(k * 0.42 - t * 1.6) + amp * 0.4 * math.sin(k * 0.17 + t * 0.9))
+        end
+        if self.ship:IsShown() then
+            local bob = amp > 0 and math.sin(t * 2.2) * 1.5 or 0
+            self.ship:ClearAllPoints(); self.ship:SetPoint("BOTTOM", self.sea, "TOPLEFT", (self.shipX or 36), -(LINE_Y - 4) + bob)
+            if self.ship.SetRotation then self.ship:SetRotation(amp > 0 and math.sin(t * 1.7) * 0.08 or 0) end
+        end
+    end
+    function f:Rows(rows)
+        local y = TOP_H
         self.sep:SetShown(#rows > 0)
         if #rows > 0 then
-            self.sep:ClearAllPoints(); self.sep:SetPoint("TOPLEFT", 14, -(y + 4)); self.sep:SetPoint("TOPRIGHT", -14, -(y + 4))
+            self.sep:ClearAllPoints(); self.sep:SetPoint("TOPLEFT", 16, -(y - 2)); self.sep:SetPoint("TOPRIGHT", -16, -(y - 2))
             self.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-            y = y + 10
+            y = y + 6
         end
         for i, r in ipairs(self.rows) do
             local row = rows[i]
             r.n:SetShown(row ~= nil); r.v:SetShown(row ~= nil)
             if row then
-                r.n:ClearAllPoints(); r.n:SetPoint("TOPLEFT", 14, -y); r.n:SetText(row[1])
-                r.v:ClearAllPoints(); r.v:SetPoint("TOPRIGHT", -14, -y); r.v:SetText(row[2] or "")
+                r.n:ClearAllPoints(); r.n:SetPoint("TOPLEFT", 16, -y); r.n:SetText(row[1])
+                r.v:ClearAllPoints(); r.v:SetPoint("TOPRIGHT", -16, -y); r.v:SetText(row[2] or "")
                 y = y + 16
             end
         end
-        return y
+        if #rows > 0 then y = y + 6 end
+        self:SetHeight(y + SEA_H)
     end
-    function f:Head(kind, title, sub)
-        local zep = kind == "zeppelin"
-        self.icon:SetTexture(UI.MEDIA .. (kind == "tram" and "clock" or (zep and "zeppelin" or "boat")))
-        local ic = kind == "tram" and C.info or (zep and C.warning or C.positive)
-        self.icon:SetVertexColor(ic[1], ic[2], ic[3], 1)
-        self.title:SetText(title)
+    function f:Head(kicker, title, vessel, sub)
+        self.kicker:SetText(kicker or "")
+        self.title:SetText(title or "")
+        self.vessel:SetText(vessel or "")
         self.sub:SetText(sub or "")
     end
 
-    -- au quai : le navire du ponton le plus proche, sa frise, les autres pontons en dessous
+    -- au quai : « Bateau pour » la prochaine escale, la frise depuis ton ponton, les autres pontons au milieu
     function f:Paint(list)
         local first = list[1]
-        local names, cur, nx = routeOf(first)
-        self:Head(first.kind, titleOf(first), string.format(first.kind == "zeppelin" and T("Cette tour · vers %s") or T("Ce ponton · vers %s"), names[nx] or "?"))
-        local y = self:Route(names, cur, nx, 48)
+        local names = routeOf(first)
+        local to = names[2] or "?"
+        local zep = first.kind == "zeppelin"
+        self:Head(zep and T("Zeppelin pour") or T("Bateau pour"), to,
+            first.game and first.game.vessel and T(first.game.vessel) or (zep and T("Zeppelin") or T("Bateau")),
+            string.format(zep and T("Cette tour · vers %s") or T("Ce ponton · vers %s"), to))
         local rows, seen = {}, { [first.game or first.pair or 0] = true }
         for i = 2, #list do
             local o = list[i]
@@ -188,33 +271,35 @@ local function build()
             if #rows < 3 and not seen[key] then
                 seen[key] = true
                 local on, _, onx = routeOf(o)
-                local to = on[onx] or "?"
-                if o.game and #o.game.stops > 2 then to = table.concat(BL() and BL():Destinations(o.game, o.s or 1) or { to }, " » ") end
-                table.insert(rows, { to, (o.kind == "zeppelin" and T("autre tour") or T("ponton voisin")) .. (o.game and o.game.vessel and (" · " .. T(o.game.vessel)) or "") })
+                local dest = on[onx] or "?"
+                if o.game and #o.game.stops > 2 then dest = table.concat(BL() and BL():Destinations(o.game, o.s or 1) or { dest }, " » ") end
+                table.insert(rows, { dest, (o.kind == "zeppelin" and T("autre tour") or T("ponton voisin")) .. (o.game and o.game.vessel and (" · " .. T(o.game.vessel)) or "") })
             end
         end
-        y = self:Rows(rows, y)
-        self:SetHeight(y + 10)
+        self:Rows(rows)
+        self:Route(first.kind or "boat", names, nil)
     end
-    -- à bord : le navire, la frise, la prochaine escale en vert
-    function f:PaintRide(e)
-        local names, _, nx = routeOf(e)
-        local vessel = e.game and e.game.vessel and T(e.game.vessel)
-        self:Head(e.kind, vessel and string.format(T("À bord : %s"), vessel) or (e.kind == "zeppelin" and T("À bord du zeppelin") or T("À bord du bateau")),
-            string.format(T("En route vers %s"), names[nx] or "?"))
-        local y = self:Route(names, nil, nx, 48)
-        y = self:Rows({}, y)
-        self:SetHeight(y + 10)
+    -- à bord : « en route vers » l'escale suivante, le navire là où il en est de la traversée
+    function f:PaintRide(e, p)
+        local names = routeOf(e)
+        local zep = e.kind == "zeppelin"
+        self:Head(T("À bord · en route vers"), names[2] or "?",
+            e.game and e.game.vessel and T(e.game.vessel) or (zep and T("Zeppelin") or T("Bateau")),
+            p and string.format(T("traversée %d %%"), math.floor(p * 100 + 0.5)) or (zep and T("Dans les airs") or T("En mer")))
+        self:Rows({})
+        self:Route(e.kind or "boat", names, p)
     end
     -- tram des profondeurs : ses deux stations, sans horaire
     function f:PaintTram()
-        self:Head("tram", T("Tram des profondeurs"), T("Entre Hurlevent et Forgefer"))
-        local y = self:Route({ T("Hurlevent"), T("Forgefer") }, nil, nil, 48)
-        y = self:Rows({}, y)
-        self:SetHeight(y + 10)
+        self:Head(T("Tram des profondeurs"), T("Entre Hurlevent et Forgefer"), "", "")
+        self:Rows({})
+        self:Route("tram", { T("Hurlevent"), T("Forgefer") }, nil)
     end
 
     f:SetScript("OnUpdate", function(s, el)
+        s.clock = (s.clock or 0) + el
+        s.anim = (s.anim or 0) + el
+        if s.anim >= 0.05 then s.anim = 0; s:Animate(s.clock) end
         s.acc = (s.acc or 0) + el
         if s.acc < 1 then return end
         s.acc = 0
@@ -273,7 +358,7 @@ function UI:RefreshDockBanner()
             banner.ride = lf
         end
         if not banner.ride then banner:Hide() return end
-        banner:PaintRide(banner.ride)
+        banner:PaintRide(banner.ride, fit and BL():RideProgress() or nil)
         banner:Show()
         return
     end

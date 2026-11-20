@@ -3655,4 +3655,10 @@ WK.Locales.enUS.text = {
     ["Maître (apprentissage)"] = "Trainer (training)",
     ["Échange"] = "Trade",
     ["Autre"] = "Other",
+    ["Zeppelin pour"] = "Zeppelin to",
+    ["Bateau pour"] = "Boat to",
+    ["À bord · en route vers"] = "On board · heading to",
+    ["traversée %d %%"] = "crossing %d %%",
+    ["Dans les airs"] = "In the air",
+    ["En mer"] = "At sea",
 }
