@@ -528,7 +528,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 13 or 7) * 36 + 16, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 12 or 7) * 36 + 16, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -566,18 +566,14 @@ UI:RegisterPage({
                 qtoggle("panel", function() if UI.RefreshQuestMapPanel then UI:RefreshQuestMapPanel() end end), 50)
             -- plan de quêtes (Modules/QuestPlan.lua) : alerte près d'un donneur, niveau des quêtes proposées
             if QP() then
-                local nt = UI:Toggle(tcard, function() return QP():Config().nearAlert end,
-                    function(v) QP():Config().nearAlert = v; WK:NotifyChanged() end)
-                table.insert(self.toggles, nt)
-                UI:SettingRow(tcard, -292, "Prévenir près d'un donneur utile", nil, nt, 50)
                 self.maxSeg = UI:Segmented(tcard, { { 0, "0" }, { 1, "1" }, { 2, "2" }, { 3, "3" } },
                     function(v) QP():Config().maxAbove = v; WK:NotifyChanged() end, 26)
-                UI:SettingRow(tcard, -328, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
+                UI:SettingRow(tcard, -292, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
                 self.maxSeg:Select(QP():Config().maxAbove)
                 local gt = UI:Toggle(tcard, function() return QP():Config().noGroup end,
                     function(v) QP():Config().noGroup = v; QP():Invalidate(); WK:NotifyChanged() end)
                 table.insert(self.toggles, gt)
-                UI:SettingRow(tcard, -364, "Éviter les quêtes de groupe", "Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main.", gt, 50)
+                UI:SettingRow(tcard, -328, "Éviter les quêtes de groupe", "Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main.", gt, 50)
                 -- guide de montée (Modules/LevelGuide.lua) : réglages repris du bloc de « Ma progression »
                 local function lgc() return LG() and LG():Config() or {} end
                 local function lgToggle(get, set)
@@ -590,11 +586,11 @@ UI:RegisterPage({
                     table.insert(self.toggles, t)
                     return t
                 end
-                UI:SettingRow(tcard, -406, "Guide de montée : sans donjons", nil,
+                UI:SettingRow(tcard, -370, "Guide de montée : sans donjons", nil,
                     lgToggle(function() return lgc().noDungeons and true or false end, function(v) lgc().noDungeons = v or nil end), 50)
-                UI:SettingRow(tcard, -442, "Guide de montée : sans métiers", nil,
+                UI:SettingRow(tcard, -406, "Guide de montée : sans métiers", nil,
                     lgToggle(function() return lgc().noProf and true or false end, function(v) lgc().noProf = v or nil end), 50)
-                UI:SettingRow(tcard, -478, "Passer chez le maître de classe", "Quand des sorts sont à apprendre : étape du guide de montée, et étape de la tournée de quêtes (au maître le plus proche).",
+                UI:SettingRow(tcard, -442, "Passer chez le maître de classe", "Quand des sorts sont à apprendre : étape du guide de montée, et étape de la tournée de quêtes (au maître le plus proche).",
                     lgToggle(function() return lgc().trainerTour ~= false end, function(v)
                         if v then lgc().trainerTour = nil else lgc().trainerTour = false end
                         if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end

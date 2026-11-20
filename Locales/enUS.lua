@@ -4265,4 +4265,7 @@ WK.Locales.enUS.text = {
     ["Guide de montée : sans métiers"] = "Levelling guide: no professions",
     ["Passer chez le maître de classe"] = "Visit the class trainer",
     ["Quand des sorts sont à apprendre : étape du guide de montée, et étape de la tournée de quêtes (au maître le plus proche)."] = "When spells can be learned: a levelling guide step, and a quest tour step (at the nearest trainer).",
+    ["à l'écran, se place en mode édition"] = "on screen, placed in edit mode",
+    ["Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé."] = "Free slots (click: throw away the cheapest grey item), nearest vendor and class trainer (click: guide). Red when urgent.",
+    ["Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau."] = "In \"To do\": turning in your finished quests would get you a level.",
 }

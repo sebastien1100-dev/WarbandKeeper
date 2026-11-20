@@ -2212,9 +2212,6 @@ UI:RegisterPage({
                 { "Faire clignoter le prochain talent dans la fenêtre du jeu", "Le talent à prendre selon ton plan clignote.",
                     function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
                     function(v) ui().talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end },
-                { "Rappel du prochain talent", "Dans la pile de rappels, tant qu'un point libre attend le talent suivant du plan.",
-                    function() return ui().talentPlanAlert ~= false end,
-                    function(v) ui().talentPlanAlert = v; local P = WK.modules.TalentPlan; if P and P.CheckAlert then P:CheckAlert() end end },
             }) },
             bis = { card("BiS", {
                 { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",

@@ -508,6 +508,21 @@ UI:RegisterPage({
         UI:SettingRow(shop, -226, "Fermer la fenêtre après la réparation", "Après la vente des gris et les achats automatiques. Maj enfoncée en parlant au marchand : elle reste ouverte.",
             toggle(shop, function() return g.closeAfterRepair end, function(v) g.closeAfterRepair = v end), 80)
 
+        -- barre à l'écran sacs / marchand / maître (UI/BagHelp.lua, HUD bagSpace) : un seul endroit pour ses réglages
+        do
+            local bcfg = WK.modules.BagHelp:Config()
+            local function bref() if UI.RefreshBagSpace then UI:RefreshBagSpace() end end
+            local bar = card("Barre sacs, marchand et maître", 40 + 4 * 46 + 8, "à l'écran, se place en mode édition")
+            UI:SettingRow(bar, -40, "Afficher la barre", "Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé.",
+                toggle(bar, function() return bcfg.space end, function(v) bcfg.space = v; bref() end), 80)
+            UI:SettingRow(bar, -86, "Seuil de cases libres", "En dessous, le sac passe en orange et le marchand en rouge.",
+                UI:Slider(bar, 220, 0, 12, 1, function() return bcfg.low or 3 end, function(v) bcfg.low = v; bref() end, "%d"), 240)
+            UI:SettingRow(bar, -132, "Case du marchand", "Clic droit : le forgeron le plus proche, pour réparer.",
+                toggle(bar, function() return bcfg.vendorTile ~= false end, function(v) bcfg.vendorTile = v; bref() end), 80)
+            UI:SettingRow(bar, -178, "Case du maître de classe", "Le nombre de sorts à apprendre, sinon la distance.",
+                toggle(bar, function() return bcfg.trainerTile ~= false end, function(v) bcfg.trainerTile = v; bref() end), 80)
+        end
+
         -- État des persos : seuils puis une ligne par perso
         local chars = UI:SortedCharacters()
         subtab("Alertes")
@@ -565,26 +580,6 @@ UI:RegisterPage({
                     end
                 end
             end)
-        end
-
-        -- Où vont les rappels : pile d'alertes (cadre « Rappels »), texte rouge du jeu, les deux ou rien ; son en plus
-        do
-            local kinds = QoL.REMIND_KINDS
-            local rc = card("Où vont les rappels", 48 + #kinds * 48, "pile d'alertes (à placer en mode édition) ou texte rouge du jeu")
-            local WHERE = { { "stack", "Pile" }, { "text", "Texte rouge" }, { "both", "Les deux" }, { "off", "Rien" } }
-            for i, k in ipairs(kinds) do
-                local box = CreateFrame("Frame", nil, rc)
-                box:SetSize(360, 26)
-                local seg = UI:Segmented(box, WHERE, function(v) QoL:RemindCfg().where[k.key] = v; WK:NotifyChanged() end, 26)
-                seg:SetPoint("LEFT")
-                local snd = toggle(box, function() return QoL:RemindCfg().sound[k.key] end, function(v) QoL:RemindCfg().sound[k.key] = v end)
-                snd:SetPoint("RIGHT")
-                local sl = UI:Text(box, 10, C.dim)
-                sl:SetPoint("RIGHT", snd, "LEFT", -6, 0)
-                sl:SetText(T("Son"))
-                UI:SettingRow(rc, -40 - (i - 1) * 48, k.label, k.desc, box, 360)
-                table.insert(self.dyn, function() seg:Select(QoL:RemindCfg().where[k.key]) end)
-            end
         end
 
         subtab("Groupe et confort")
@@ -1813,19 +1808,13 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp et rappels", 40 + 6 * 46 + 8, "colonne de boutons près de la flamme")
+            local kc = card("Kit de camp", 40 + 3 * 46 + 8, "colonne de boutons près de la flamme")
             UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
                 toggle(kc, function() return campCfg.kitAlways end, function(v) campCfg.kitAlways = v; cupdate() end), 80)
             UI:SettingRow(kc, -132, "Pastilles sous la flamme", "Avantages restants, recharge des objets de camp, « Bien nourri ».",
                 toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
-            UI:SettingRow(kc, -178, "Objet de camp de nouveau prêt", "Une alerte quand la recharge commune d'1 h est finie.",
-                toggle(kc, function() return campCfg.alertCd end, function(v) campCfg.alertCd = v end), 80)
-            UI:SettingRow(kc, -224, "Avantages bientôt finis", "Une alerte, même loin du camp, sous le seuil « Proposer de renouveler ».",
-                toggle(kc, function() return campCfg.alertExpire end, function(v) campCfg.alertExpire = v; cupdate() end), 80)
-            UI:SettingRow(kc, -270, "« Bien nourri » au camp", "Une alerte près d'un feu quand tu n'as pas « Bien nourri » et que tu as de quoi manger.",
-                toggle(kc, function() return campCfg.alertFood end, function(v) campCfg.alertFood = v; cupdate() end), 80)
 
             -- comment ça marche, et effets rencontrés
             -- 4 étapes en tuiles (gros numéro à la couleur d'accent, titre, texte), puis les effets rencontrés
@@ -2056,7 +2045,7 @@ UI:RegisterPage({
                 UI:Slider(xb, 240, 200, 1600, 20, function() return xcfg.width or 520 end, function(v) xcfg.width = v; xrefresh() end, "%d px"), 260)
             UI:SettingRow(xb, -316, "Épaisseur", "Hauteur de la barre elle-même.",
                 UI:Slider(xb, 240, 4, 24, 1, function() return xcfg.thick or 8 end, function(v) xcfg.thick = v; xrefresh() end, "%d px"), 260)
-            UI:SettingRow(xb, -362, "Prévenir d'un niveau à rendre", "À l'écran et dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
+            UI:SettingRow(xb, -362, "Prévenir d'un niveau à rendre", "Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
                 toggle(xb, function() return xcfg.levelAlert end, function(v)
                     xcfg.levelAlert = v
                     local XPm = WK.modules.XP
@@ -2664,26 +2653,6 @@ UI:RegisterPage({
                         function(v) ab.list[key] = v or nil; UI:AspectButtonSetup() end), 80)
                 end
 
-                subtab("Rappels", 6)
-                local rm = card("Rappels", 232, "dans la pile d'alertes, déplaçable")
-                local function rt(field)
-                    return toggle(rm, function() return cc[field] end, function(v) cc[field] = v; H:UpdateAlerts() end)
-                end
-                UI:SettingRow(rm, -40, "Aucun aspect actif", "Hors combat, à partir du niveau 10.", rt("remAspect"), 80)
-                UI:SettingRow(rm, -88, "Guépard ou Meute en combat", "Tout de suite, même en combat : tu vas être hébété.", rt("remCheetah"), 80)
-                UI:SettingRow(rm, -136, "Grondement du familier", "Désactivé en donjon et raid, activé en solo.", rt("remGrowl"), 80)
-                UI:SettingRow(rm, -184, "Pistage en champ de bataille", "Pister les humanoïdes.", rt("remTrack"), 80)
-            end
-            local REMIND = {
-                PRIEST = { "Robustesse du groupe", "À l'écran, hors combat, quand un membre du groupe n'a plus Robustesse (ou presque plus)." },
-                PALADIN = { "Aura et bénédiction", "À l'écran, hors combat, quand tu n'as pas d'aura ou pas de bénédiction." },
-                DRUID = { "Marque du fauve", "À l'écran, hors combat, quand tu n'as plus la Marque ou le Don du fauve." },
-            }
-            if REMIND[class] then
-                subtab("Rappels", 6)
-                local rm = card("Rappels", 96)
-                UI:SettingRow(rm, -40, REMIND[class][1], REMIND[class][2],
-                    toggle(rm, function() return cc.buffReminder end, function(v) cc.buffReminder = v end), 80)
             end
             -- Bénédictions du paladin : barre, répartition entre paladins (UI/BlessingBar.lua)
             if class == "PALADIN" and UI.BuildBlessingCards then

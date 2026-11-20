@@ -459,13 +459,7 @@ function UI:BuildBagHelpCard(root)
     local card = UI:Card(root, T("Sacs, marchand et équipement"))
     local y = -40
     local function row(label, desc, ctrl, w) UI:SettingRow(card, y, label, desc, ctrl, w); y = y - 46 end
-    row("Barre sacs, marchand et maître", "À l'écran (se place en mode édition) : cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé.",
-        UI:Toggle(card, function() return cfg.space end, function(v) cfg.space = v; UI:RefreshBagSpace() end), 80)
-    row("Seuil de cases libres", "En dessous, le sac passe en orange et le marchand en rouge.", UI:Slider(card, 220, 0, 12, 1, function() return cfg.low or 3 end, function(v) cfg.low = v; UI:RefreshBagSpace() end, "%d"), 240)
-    row("Case du marchand", "Clic droit : le forgeron le plus proche, pour réparer.",
-        UI:Toggle(card, function() return cfg.vendorTile ~= false end, function(v) cfg.vendorTile = v; UI:RefreshBagSpace() end), 80)
-    row("Case du maître de classe", "Le nombre de sorts à apprendre, sinon la distance.",
-        UI:Toggle(card, function() return cfg.trainerTile ~= false end, function(v) cfg.trainerTile = v; UI:RefreshBagSpace() end), 80)
+    -- barre à l'écran (sacs, marchand, maître) : réglages dans QoL > Général > Marchand
     row("Amélioration à porter", "Un objet qui arrive dans les sacs et vaut mieux que celui porté est proposé (jamais équipé tout seul).",
         UI:Toggle(card, function() return cfg.wear end, function(v) cfg.wear = v; UI:RefreshWearOffer() end), 80)
     row("Réassort chez le marchand", "Un bouton sous la fenêtre du marchand complète ce qui manque, sur un clic (munitions et composants de classe : QoL > Classes).",

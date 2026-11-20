@@ -47,7 +47,6 @@ _Prévu, pas encore commencé._
 - **Groupe** (basse) — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe.
 
 ### Classes et combat
-- **Rappels de bénédiction** (moyenne) — Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank.
 - **Aides de combat** (basse) — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
 - **Curseur retrouvé** (basse) — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
 - **Gain d'un rang** (basse) — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
@@ -71,6 +70,15 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.112.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Rappels à l'écran retirés : plus de barre d'icônes, de pile « Rappels », de messages éclair ni de texte rouge. Ce qui compte (envie tombée en donjon, alerte de prix, point de vol à apprendre…) reste écrit dans le chat.
+- Réglages des rappels retirés avec eux : « Où vont les rappels », rappels du chasseur, du prêtre, du paladin et du druide, alertes du kit de camp, rappel du prochain talent, alerte près d'un donneur de quête.
+- Barre sacs, marchand et maître : son interrupteur « Afficher la barre » et ses réglages sont maintenant dans QoL > Général > Marchand (ils quittent la roue d'Inventaire).
 
 ## v1.111.2 — 20/11/2026
 

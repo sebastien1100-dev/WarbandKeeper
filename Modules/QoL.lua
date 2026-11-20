@@ -285,80 +285,12 @@ function M:AlertsFor(filter)
 end
 
 ---------------------------------------------------------------------------
--- Rappels : dans la pile d'alertes (UI/AlertStack.lua, cadre « Rappels » rangé par thème), dans le texte
--- rouge du jeu, les deux ou rien, au choix par genre de rappel (QoL > Général > Alertes, `remind`).
--- Le texte rouge est limité par sujet : une minute, ou cinq (quiet) pour les rappels de buffs ;
--- la pile garde le rappel tant qu'il est renouvelé (ttl), avec un bouton d'action s'il y en a un.
---   M:Remind(clé, texte, r, g, b, quiet, opts)  opts : action, right, ttl, noText
+-- Rappels : retirés à la demande du joueur (pile, pastilles, messages éclair, texte rouge).
+-- Remind / ClearRemind restent pour les modules qui les appellent, sans rien afficher ;
+-- ce qui compte (envie tombée, alerte de prix…) passe toujours par le chat de ces modules.
 ---------------------------------------------------------------------------
--- Genres de rappel : réglage, groupe de la pile, durée sans nouvelle (s), retirable d'un clic droit
-M.REMIND_KINDS = {
-    { key = "buffs", label = "Buffs de classe", desc = "Robustesse, aura, bénédiction, Marque du fauve.", group = "perso", ttl = 40 },
-    { key = "poisons", label = "Poisons", desc = "Poison des armes bientôt fini.", group = "perso", ttl = 40 },
-    { key = "pet", label = "Familier", desc = "Familier mécontent : à nourrir.", group = "perso", ttl = 600 },
-    { key = "travel", label = "Guidage et voyages", desc = "Besoins du guidage, maître de classe, points de vol à apprendre.", group = "world", ttl = 180, dismiss = true },
-    { key = "prof", label = "Métiers", desc = "Recharges prêtes, rang suivant, ressources débloquées, pistage.", group = "world", ttl = 120, dismiss = true },
-    { key = "dungeon", label = "Donjons", desc = "Limite d'instances, envies dans le donjon, envie tombée.", group = "perso", ttl = 300, dismiss = true },
-    { key = "ah", label = "Prix à l'HV", desc = "Alertes de prix après un scan.", group = "world", ttl = 600, dismiss = true },
-}
-local KIND_OF = { fort = "buffs", aura = "buffs", bless = "buffs", motw = "buffs", pet = "pet", trainer = "travel",
-    flightpoint = "travel", tracking = "prof", instCap = "dungeon", dungeonWish = "dungeon", ahprice = "ah" }
-local KIND_PREFIX = { { "poison", "poisons" }, { "guide", "travel" }, { "cd", "prof" }, { "rank", "prof" },
-    { "nodes", "prof" }, { "dungeonDrop", "dungeon" } }
-local KIND_BY_KEY = {}
-for _, k in ipairs(M.REMIND_KINDS) do KIND_BY_KEY[k.key] = k end
--- par défaut : tout dans la pile ; les donjons aussi en texte rouge, avec un son
-local REMIND_DEFAULTS = { buffs = "stack", poisons = "stack", pet = "stack", travel = "stack", prof = "stack", dungeon = "both", ah = "stack" }
-local SOUND_DEFAULTS = { poisons = true, dungeon = true }
-
-function M:RemindKind(key)
-    if KIND_OF[key] then return KIND_OF[key] end
-    for _, p in ipairs(KIND_PREFIX) do
-        if key:sub(1, #p[1]) == p[1] then return p[2] end
-    end
-    return "travel"
-end
-function M:RemindCfg()
-    local q = self:Config()
-    q.remind = q.remind or {}
-    local r = q.remind
-    r.where = r.where or {}
-    r.sound = r.sound or {}
-    for k, v in pairs(REMIND_DEFAULTS) do if r.where[k] == nil then r.where[k] = v end end
-    for _, k in ipairs(M.REMIND_KINDS) do if r.sound[k.key] == nil then r.sound[k.key] = SOUND_DEFAULTS[k.key] or false end end
-    return r
-end
-
-local lastReminder = {}
-function M:Remind(key, text, r, g, b, quiet, opts)
-    opts = opts or {}
-    local kind = self:RemindKind(key)
-    local cfg = self:RemindCfg()
-    local where = cfg.where[kind] or "stack"
-    if where ~= "stack" and where ~= "both" and WK.UI.SetAlert then WK.UI:SetAlert("qol." .. key, false) end
-    if where == "off" then return end
-    local now = GetTime and GetTime() or 0
-    local fresh = not (lastReminder[key] and now - lastReminder[key] < (quiet and 300 or 60))
-    if (where == "stack" or where == "both") and WK.UI.SetAlert then
-        local kd = KIND_BY_KEY[kind] or {}
-        local color = r and { r, g or 0.82, b or 0.2 } or nil
-        local urgent = opts.urgent
-        WK.UI:SetAlert("qol." .. key, true, { text = text, color = urgent and WK.UI.colors.negative or color,
-            prio = urgent and 1 or 3, group = urgent and "urgent" or kd.group, right = opts.right, rightColor = opts.rightColor,
-            ttl = opts.ttl or kd.ttl, dismiss = kd.dismiss, action = opts.action, icons = opts.icons, tip = opts.tip })
-    end
-    if not fresh then return end
-    lastReminder[key] = now
-    if cfg.sound[kind] and PlaySound and SOUNDKIT and SOUNDKIT.RAID_WARNING then pcall(PlaySound, SOUNDKIT.RAID_WARNING) end
-    -- À l'écran seulement : le chat reste réservé à l'essentiel.
-    if (where == "text" or where == "both") and not opts.noText and UIErrorsFrame and UIErrorsFrame.AddMessage then
-        UIErrorsFrame:AddMessage(text, r or 1, g or 0.82, b or 0.2)
-    end
-end
--- Rappel réglé (buff remis, familier content…) : retiré de la pile.
-function M:ClearRemind(key)
-    if WK.UI.SetAlert then WK.UI:SetAlert("qol." .. key, false) end
-end
+function M:Remind() end
+function M:ClearRemind() end
 
 ---------------------------------------------------------------------------
 -- Relevés sur le perso connecté

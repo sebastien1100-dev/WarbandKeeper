@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.112.0", date = "20/11/2026", restart = true,
+        changed = {
+            "Rappels à l'écran retirés : plus de barre d'icônes, de pile « Rappels », de messages éclair ni de texte rouge. Ce qui compte (envie tombée en donjon, alerte de prix, point de vol à apprendre…) reste écrit dans le chat.",
+            "Réglages des rappels retirés avec eux : « Où vont les rappels », rappels du chasseur, du prêtre, du paladin et du druide, alertes du kit de camp, rappel du prochain talent, alerte près d'un donneur de quête.",
+            "Barre sacs, marchand et maître : son interrupteur « Afficher la barre » et ses réglages sont maintenant dans QoL > Général > Marchand (ils quittent la roue d'Inventaire).",
+        },
+    },
+    {
         version = "1.111.2", date = "20/11/2026",
         changed = {
             "Quêtes, Ma progression : les interrupteurs « Sans donjons », « Sans métiers » et « Maître de classe » quittent le bloc du guide de montée ; ils sont dans la roue de la page Quêtes (carte « Quête suivie »).",
@@ -5152,7 +5160,6 @@ WK.Roadmap = {
     { prio = 3, theme = "char", title = "Expérience, suite", text = "Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu." },
     { prio = 3, theme = "char", title = "Feu de camp, suite", text = "Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage)." },
     { prio = 3, theme = "char", title = "Feu de camp, plus tard", text = "Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé." },
-    { prio = 2, theme = "class", title = "Rappels de bénédiction", text = "Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank." },
     { prio = 3, theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
     { prio = 3, theme = "class", title = "Gain d'un rang", text = "Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…)." },
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
