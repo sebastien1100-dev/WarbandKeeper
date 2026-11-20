@@ -73,6 +73,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.98.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Page Quêtes : deux grands onglets en haut, « Carte des zones » (onglet principal, ouvert par défaut) et « Ma progression » ; dans Ma progression, les sous-onglets Montée, Mon journal, À prendre et Tournée.
+- Mon journal et Tournée : la carte de la zone passe au premier plan (deux tiers de la largeur, toute la hauteur), liste et détail dans une colonne à gauche. Camps de toutes tes quêtes sur la carte (la quête choisie en avant, étiquettes « objectif · 3/8 »), survol d'une quête = ses camps s'allument, clic sur un camp ou une étape = guidage.
+
 ## v1.97.4 — 20/11/2026
 
 _Un /reload suffit._

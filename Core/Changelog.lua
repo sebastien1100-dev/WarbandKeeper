@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.0", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : deux grands onglets en haut, « Carte des zones » (onglet principal, ouvert par défaut) et « Ma progression » ; dans Ma progression, les sous-onglets Montée, Mon journal, À prendre et Tournée.",
+            "Mon journal et Tournée : la carte de la zone passe au premier plan (deux tiers de la largeur, toute la hauteur), liste et détail dans une colonne à gauche. Camps de toutes tes quêtes sur la carte (la quête choisie en avant, étiquettes « objectif · 3/8 »), survol d'une quête = ses camps s'allument, clic sur un camp ou une étape = guidage.",
+        },
+    },
+    {
         version = "1.97.4", date = "20/11/2026",
         changed = {
             "Pastille de l'icône Options toujours rouge (patch notes pas lues ou erreur pas vue), et pastille rouge aussi sur la section concernée des Options (Patch notes ou Fiabilité) ; elle s'éteint une fois lues ou vues.",

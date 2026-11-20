@@ -4040,4 +4040,9 @@ WK.Locales.enUS.text = {
     ["sorts"] = "spells",
     ["Ouvre ou ferme le plan de montée à côté de la fenêtre des talents."] = "Opens or closes the leveling plan next to the talent window.",
     ["Point rouge : des nouveautés pas encore lues. Clic : Patch notes."] = "Red dot: news not read yet. Click: Patch notes.",
+    ["Ma progression"] = "My progress",
+    ["montée, journal, tournée"] = "levelling, quest log, route",
+    ["%d zones · %d quêtes disponibles"] = "%d zones · %d quests available",
+    ["Clic : guider jusqu'à cette étape"] = "Click: guide to this step",
+    ["Étape %d"] = "Step %d",
 }
