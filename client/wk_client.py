@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.5"
+CLIENT_VERSION = "1.8.6"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1414,10 +1414,23 @@ class DashPage(Page):
         dv = cur - gold[-8] if len(gold) > 7 else 0
         kpi(0, "Or du compte", money_text(cur), "warning", "%s%s sur 7 jours" % ("+" if dv >= 0 else "-", money_text(abs(dv))),
             "positive" if dv >= 0 else "negative")
-        g = int(sess.get("gold") or 0)
-        dur = int(sess.get("dur") or 0)
-        kpi(1, "Dernière séance", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
-            "%s · %s" % (("%d h %02d" % (dur // 3600, dur % 3600 // 60)) if dur >= 3600 else "%d min" % max(1, dur // 60), sess.get("char") or "?"))
+        day = dash.get("day") if isinstance(dash.get("day"), dict) else None
+        if day is not None:
+            # or des dernières 24 h, tous persos, avec ce qui a le plus pesé (journal de l'or de l'addon)
+            g = int(day.get("net") or 0)
+            by = [b for b in lua_list(day.get("by")) if isinstance(b, dict)]
+            if by:
+                top = by[0]
+                v = int(top.get("v") or 0)
+                sub = "surtout %s (%s%s)" % (str(top.get("s") or "?").lower(), "+" if v >= 0 else "-", money_text(abs(v)))
+            else:
+                sub = "aucun mouvement d'or"
+            kpi(1, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative", sub)
+        else:
+            g = int(sess.get("gold") or 0)
+            dur = int(sess.get("dur") or 0)
+            kpi(1, "Dernière séance", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
+                "%s · %s" % (("%d h %02d" % (dur // 3600, dur % 3600 // 60)) if dur >= 3600 else "%d min" % max(1, dur // 60), sess.get("char") or "?"))
         soon = [a for a in auc if (a.get("exp") or 0) <= now + 86400]
         kpi(2, "Enchères en vente", str(len(auc)), "text",
             (plural(len(soon), "expire", "expirent") + " sous 24 h") if soon else ("aucune n'expire" if auc else "dernier passage à l'HV"),

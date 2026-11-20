@@ -8,6 +8,8 @@ local M = WK:NewModule("ClientDash")
 --     at, char,                               -- quand et sur quel perso
 --     gold = { or du compte, 91 jours, du plus ancien à aujourd'hui },
 --     session = { char, start, dur, gold, ah },
+--     day = { net, spent, earned, by = { { s = cause, v = somme } } }, -- or des dernières 24 h, tous persos
+
 --     auctions = { { char, name, qty, exp } },  -- enchères vues au dernier passage à l'HV
 --     cds = { { char, name, readyAt } },        -- recharges de métier
 --     lists = { { name, need, missing, items, short, cost } }, -- listes d'achat : unités voulues / manquantes,
@@ -20,9 +22,69 @@ local M = WK:NewModule("ClientDash")
 local DAY = 86400
 local login = { at = 0, money = 0 }
 
+---------------------------------------------------------------------------
+-- Journal de l'or : chaque mouvement avec sa cause (fenêtre ouverte à ce moment), pour dire d'où vient une
+-- perte ou un gain. WK.DB.global.moneyLog = { { t, c = perso, d = écart, s = cause } }, 35 jours, 1500 au plus.
+---------------------------------------------------------------------------
+local open, lastMoney, repairAt, questAt, taxiAt = {}, nil, 0, 0, 0
+local function flag(on, off, key)
+    WK:On(on, function() open[key] = true end)
+    WK:On(off, function() C_Timer.After(1, function() open[key] = nil end) end)
+end
+flag("MERCHANT_SHOW", "MERCHANT_CLOSED", "merchant")
+flag("MAIL_SHOW", "MAIL_CLOSED", "mail")
+flag("AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "ah")
+flag("TRAINER_SHOW", "TRAINER_CLOSED", "trainer")
+flag("LOOT_OPENED", "LOOT_CLOSED", "loot")
+flag("TRADE_SHOW", "TRADE_CLOSED", "trade")
+flag("TAXIMAP_OPENED", "TAXIMAP_CLOSED", "taxi")
+WK:On("QUEST_TURNED_IN", function() questAt = GetTime() end)
+if hooksecurefunc then
+    if RepairAllItems then hooksecurefunc("RepairAllItems", function() repairAt = GetTime() end) end
+    if TakeTaxiNode then hooksecurefunc("TakeTaxiNode", function() taxiAt = GetTime() end) end
+end
+local function cause(d)
+    local now = GetTime()
+    if now - repairAt < 3 and d < 0 then return "Réparations" end
+    if now - taxiAt < 3 or open.taxi then return "Vols" end
+    if now - questAt < 3 then return "Quêtes" end
+    if open.trainer then return "Maître (apprentissage)" end
+    if open.ah then return "Hôtel des ventes" end
+    if open.mail then return "Courrier" end
+    if open.merchant then return d < 0 and "Achats chez le marchand" or "Ventes au marchand" end
+    if open.trade then return "Échange" end
+    if open.loot then return "Butin" end
+    return "Autre"
+end
+local function moneyLog()
+    local g = WK.DB.global
+    g.moneyLog = g.moneyLog or {}
+    return g.moneyLog
+end
+WK:On("PLAYER_MONEY", function()
+    local m = GetMoney and GetMoney() or 0
+    if not lastMoney then lastMoney = m return end
+    local d = m - lastMoney
+    lastMoney = m
+    if d == 0 then return end
+    local log = moneyLog()
+    local t, c, s = time(), WK:CharKey(), cause(d)
+    local last = log[#log]
+    -- même cause, même perso, même sens, moins d'une minute : une seule ligne (achats en série, butin)
+    if last and last.c == c and last.s == s and t - last.t < 60 and (last.d < 0) == (d < 0) then
+        last.d, last.t = last.d + d, t
+    else
+        table.insert(log, { t = t, c = c, d = d, s = s })
+    end
+    local cut = t - 35 * DAY
+    while #log > 0 and (#log > 1500 or log[1].t < cut) do table.remove(log, 1) end
+end)
+M.MoneyCause = cause
+
 WK:On("PLAYER_LOGIN", function()
     login.at = time()
     login.money = GetMoney and GetMoney() or 0
+    lastMoney = login.money
 end)
 
 local function name(key)
@@ -48,6 +110,20 @@ function M:Build()
     end
     d.session = { char = d.char, start = login.at, dur = math.max(0, now - login.at),
         gold = (GetMoney and GetMoney() or 0) - login.money, ah = ah }
+    -- or des dernières 24 h (tous les persos), par cause
+    local day = { net = 0, spent = 0, earned = 0, by = {} }
+    local byS = {}
+    for _, e in ipairs(g.moneyLog or {}) do
+        if (e.t or 0) >= now - DAY then
+            day.net = day.net + e.d
+            if e.d < 0 then day.spent = day.spent - e.d else day.earned = day.earned + e.d end
+            byS[e.s] = (byS[e.s] or 0) + e.d
+        end
+    end
+    for k, v in pairs(byS) do table.insert(day.by, { s = k, v = v }) end
+    table.sort(day.by, function(a, b) return math.abs(a.v) > math.abs(b.v) end)
+    while #day.by > 4 do table.remove(day.by) end
+    d.day = day
     -- enchères (dernier relevé de chaque perso)
     d.auctions = {}
     for key, c in pairs(g.characters) do

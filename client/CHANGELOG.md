@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.6 — 20/11/2026
+
+### Modifications
+- Tableau de bord : « Dernière séance » devient « Dernières 24 h » : l'or gagné ou perdu sur tous tes persos depuis 24 h, et ce qui a le plus pesé (réparations, vols, achats chez le marchand, Hôtel des ventes, quêtes…), d'après le journal de l'or de l'addon 1.83.0. Avec un addon plus ancien, la carte reste « Dernière séance ».
+
 ## 1.8.5 — 19/11/2026
 
 ### Corrections

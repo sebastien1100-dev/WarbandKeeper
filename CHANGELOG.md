@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.83.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Journal de l'or : chaque gain ou perte d'or est noté avec sa cause (réparations, vols, achats ou ventes chez le marchand, Hôtel des ventes, courrier, maître, quêtes, butin, échange), sur 35 jours. Le client PC s'en sert pour sa carte « Dernières 24 h » (client 1.8.6) : l'or de tous tes persos depuis 24 h et ce qui a le plus pesé.
+
 ## v1.82.1 — 19/11/2026
 
 _Un /reload suffit._

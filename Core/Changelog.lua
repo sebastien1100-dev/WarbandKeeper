@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.83.0", date = "20/11/2026",
+        added = {
+            "Journal de l'or : chaque gain ou perte d'or est noté avec sa cause (réparations, vols, achats ou ventes chez le marchand, Hôtel des ventes, courrier, maître, quêtes, butin, échange), sur 35 jours. Le client PC s'en sert pour sa carte « Dernières 24 h » (client 1.8.6) : l'or de tous tes persos depuis 24 h et ce qui a le plus pesé.",
+        },
+    },
+    {
         version = "1.82.1", date = "19/11/2026",
         changed = {
             "Tableau des bateaux (raccourci « Bateaux » du micro menu, /wk bateaux) : rangé par port. Chaque port avec ses pontons et leurs destinations (navire, « neutre » pour les lignes des deux factions), le port le plus proche de toi en haut, encadré à ta couleur, avec la distance et la zone. Clic sur une destination : guidage vers son ponton.",
