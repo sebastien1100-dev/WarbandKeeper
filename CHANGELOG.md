@@ -72,6 +72,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.104.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes : étape « Acheter » pour les quêtes qui demandent un objet vendu (79 quêtes, comme La IIIe flotte). Elle mène chez le marchand de ta faction le plus proche qui le vend, avant le rendu, et se valide dès que l'objet est dans tes sacs. Plusieurs achats chez le même marchand forment une seule étape.
+- Sans marchand connu sur ton continent, l'objet est signalé sur l'étape de rendu (« à acheter : … »).
+- Chez le marchand : bouton « Pour tes quêtes » sous sa fenêtre, qui achète la quantité qui manque aux quêtes de ton journal. Achat sans clic en option (Quêtes > roue > Quêtes automatiques > Détails > Acheter), jusqu'à un plafond réglable (1 po par défaut) ; Maj enfoncée garde la main.
+
+### Corrections
+- Tournée de quêtes : un objet à acheter n'envoie plus là où il tombe d'un monstre rare.
+
 ## v1.103.0 — 20/11/2026
 
 _Un /reload suffit._

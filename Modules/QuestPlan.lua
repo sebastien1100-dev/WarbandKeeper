@@ -264,6 +264,24 @@ local function predicted(list, zone)
 end
 M.Predicted = predicted
 
+-- Achats (A) : le marchand de ta faction le plus proche de toi qui vend cet objet, sur ton continent
+local function nearestVendor(item, from, alt)
+    local fac = UnitFactionGroup and UnitFactionGroup("player")
+    local letter = fac == "Alliance" and "A" or fac == "Horde" and "H" or nil
+    local best, bd
+    for _, v in ipairs(Q():Vendors(item)) do
+        if not letter or v.fac:find(letter, 1, true) then
+            local p = point(v.map, v.x, v.y)
+            local d = from and dist(from, p) or 0
+            -- position du perso illisible ou sur une autre carte sans coordonnées du monde : depuis le rendu
+            if d >= 100000 and alt then d = dist(alt, p) end
+            if d < 100000 and (not bd or d < bd) then best, bd = { p = p, v = v }, d end
+        end
+    end
+    return best
+end
+M.NearestVendor = nearestVendor
+
 local DO_JOIN = 140 -- camps à moins de 140 m : une seule étape « faire »
 function M:BuildNow(coins)
     local nodes = {}
@@ -283,6 +301,7 @@ function M:BuildNow(coins)
         table.insert(nodes, n)
         return n
     end
+    local here = G():PlayerPos()
     local list, zone = {}, nil
     for _, k in ipairs(coins) do
         for _, e in ipairs(k.quests) do if e.picked then table.insert(list, e); zone = zone or k.map end end
@@ -308,9 +327,30 @@ function M:BuildNow(coins)
                 table.insert(dos, dn)
             end
         end
+        -- objets à acheter : une étape chez le marchand le plus proche (A), sinon une note sur le rendu (B)
+        local buys, noVendor = {}, {}
+        for _, it in ipairs(Q():BuyMissing(e.id)) do
+            local bv = nearestVendor(it.id, here, e.turnIn)
+            if bv then
+                local bn = node("buy", bv.p, e.id, depth)
+                bn.vendor = bv.v
+                bn.items = bn.items or {}
+                local need = Q():BuyNeed(e.id, it.id)
+                local found = false
+                for _, x in ipairs(bn.items) do if x.id == it.id then x.need = x.need + need; found = true end end
+                if not found then table.insert(bn.items, { id = it.id, need = need }) end
+                bn.secs = 20
+                if e.predicted then bn.preds[e.id] = true end
+                table.insert(buys, bn)
+            else
+                table.insert(noVendor, it)
+            end
+        end
         if e.turnIn then
             local tn = node("turn", e.turnIn, e.id, depth, e.title)
             for _, dn in ipairs(dos) do tn.after[dn] = true end
+            for _, bn in ipairs(buys) do tn.after[bn] = true end
+            for _, it in ipairs(noVendor) do tn.buyMissing = tn.buyMissing or {}; table.insert(tn.buyMissing, it) end
             if pick then tn.after[pick] = true end
             if e.predicted then tn.preds[e.id] = true end
             turnOf[e] = tn
@@ -419,7 +459,8 @@ function M:BuildNow(coins)
         table.sort(pr)
         table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.kind == "do" and M:Direction(me, n) or nil,
             title = n.kind == "trainer" and n.title or nil, spells = n.spells, level = n.kind == "trainer" and (UnitLevel and UnitLevel("player")) or nil,
-            preds = #pr > 0 and pr or nil })
+            preds = #pr > 0 and pr or nil, items = n.items, vendor = n.vendor and Q():VendorName(n.vendor) or nil,
+            vendorRole = n.vendor and select(2, Q():VendorName(n.vendor)) or nil, buyMissing = n.buyMissing })
         prev = n
     end
     return { steps = steps, idx = 1, start = time(), secs = math.floor(total), meters = math.floor(travel), returns = returns,
@@ -560,6 +601,18 @@ function M:StepDone(s)
         local LG = WK.modules.LevelGuide
         local seen = LG and (LG:Config().trainer or {})[WK:CharKey()] or 0
         return seen >= (s.level or 999)
+    elseif s.kind == "buy" then
+        -- fini quand tout est dans les sacs (ou que les quêtes sont déjà rendues)
+        local open = false
+        local done = (WK.DB:Me() or {}).quests
+        done = done and done.done or {}
+        for _, q in ipairs(s.qids) do
+            local turned = done[q] or (C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted and C_QuestLog.IsQuestFlaggedCompleted(q))
+            if inLog(q) or not turned then open = true end
+        end
+        if not open then return true end
+        for _, it in ipairs(s.items or {}) do if Q():ItemCount(it.id) < (it.need or 1) then return false end end
+        return true
     elseif s.kind == "pick" then
         for _, q in ipairs(s.qids) do if not inLog(q) then return false end end
         return true
@@ -584,6 +637,16 @@ end
 function M:StepTitle(s)
     if s.kind == "trainer" then
         return string.format(T("Maître de classe : %d sort(s) à apprendre"), s.spells or 0)
+    end
+    if s.kind == "buy" then
+        local parts = {}
+        for _, it in ipairs(s.items or {}) do
+            local n = WK.GetItemInfo and WK.GetItemInfo(it.id)
+            -- nom pas encore connu du jeu : demandé, le titre se met à jour au rafraîchissement suivant
+            if not n and C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, it.id) end
+            table.insert(parts, (n or string.format(T("objet %d"), it.id)) .. ((it.need or 1) > 1 and (" ×" .. it.need) or ""))
+        end
+        return string.format(T("Acheter : %s"), table.concat(parts, ", "))
     end
     local names = {}
     local pred = {}

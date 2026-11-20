@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.104.0", date = "20/11/2026",
+        added = {
+            "Tournée de quêtes : étape « Acheter » pour les quêtes qui demandent un objet vendu (79 quêtes, comme La IIIe flotte). Elle mène chez le marchand de ta faction le plus proche qui le vend, avant le rendu, et se valide dès que l'objet est dans tes sacs. Plusieurs achats chez le même marchand forment une seule étape.",
+            "Sans marchand connu sur ton continent, l'objet est signalé sur l'étape de rendu (« à acheter : … »).",
+            "Chez le marchand : bouton « Pour tes quêtes » sous sa fenêtre, qui achète la quantité qui manque aux quêtes de ton journal. Achat sans clic en option (Quêtes > roue > Quêtes automatiques > Détails > Acheter), jusqu'à un plafond réglable (1 po par défaut) ; Maj enfoncée garde la main.",
+        },
+        fixed = {
+            "Tournée de quêtes : un objet à acheter n'envoie plus là où il tombe d'un monstre rare.",
+        },
+    },
+    {
         version = "1.103.0", date = "20/11/2026",
         added = {
             "Paladin : en groupe, en raid ou en donjon, le bouton « Buffer le suivant » prend le relais du panneau des bénédictions. Il bénit chaque membre avec la bénédiction que la répartition lui donne (et le Salut), d'abord ceux qui ne l'ont pas, puis ceux dont elle finit le plus tôt. En donjon, il s'affiche même si « En instance » est coupé.",

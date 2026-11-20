@@ -158,7 +158,7 @@ local function build()
         if over ~= v.over then v.over = over; hoverButtons(over) end
     end)
 
-    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" }, trainer = { "info", nil } }
+    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" }, trainer = { "info", nil }, buy = { "info", "$" } }
     local function kindColor(k)
         local e = KIND[k]
         if e and e[1] then return C[e[1]] end
@@ -373,6 +373,7 @@ function UI:RefreshQuestTracker()
             end
         end
         local sub = {}
+        if s.kind == "buy" and s.vendor then npc = s.vendor end
         if npc then table.insert(sub, npc) end
         if #(s.qids or {}) > 1 then table.insert(sub, string.format(T("%d quêtes"), #s.qids)) end
         if dist and not tour.paused then
@@ -380,7 +381,17 @@ function UI:RefreshQuestTracker()
             table.insert(sub, UI:Hex({ UI:Accent() }) .. string.format(T("%d m"), math.floor(dist + 0.5))
                 .. ((dir and dir ~= "") and (" " .. dir) or "") .. "|r")
         end
-        if (xp or 0) > 0 and s.kind ~= "pick" then table.insert(sub, UI:Hex(C.gold) .. "+" .. xp .. " XP|r") end
+        if (xp or 0) > 0 and s.kind ~= "pick" and s.kind ~= "buy" then table.insert(sub, UI:Hex(C.gold) .. "+" .. xp .. " XP|r") end
+        -- B : objet à acheter sans marchand connu sur ton continent, signalé sur le rendu
+        if s.kind == "turn" and s.buyMissing and #s.buyMissing > 0 then
+            local parts = {}
+            for _, it in ipairs(s.buyMissing) do
+                if (WK.modules.QuestTrack:ItemCount(it.id) or 0) < (it.n or 1) then
+                    parts[#parts + 1] = (WK.GetItemInfo(it.id) or ("#" .. it.id)) .. " ×" .. (it.n or 1)
+                end
+            end
+            if #parts > 0 then table.insert(sub, UI:Hex(C.info) .. T("à acheter :") .. " " .. table.concat(parts, ", ") .. "|r") end
+        end
         -- XP qui reste à gagner dans la tournée (rendus à venir)
         local left = 0
         for i = tour.idx, #tour.steps do

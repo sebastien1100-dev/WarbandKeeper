@@ -8,7 +8,8 @@ local T = function(s) return WK.T(s) end
 --                récompense est laissée au joueur quand il y a un choix ;
 --   « auto »   : prend et rend tout (avec les exceptions), choisit la récompense (reward = me / price).
 -- Détails : pickChecked (assisté : toujours), noHigh, noGroup, skipGossip, share, noGold, fallbackPrice,
--- shift (Maj enfoncée = manuel), chat, quests[n°] / npcs[n°] = nom (jamais d'automatique), log (5 dernières).
+-- shift (Maj enfoncée = manuel), chat, buy / buyCap (objets de quête achetés chez le marchand, UI/BagHelp.lua),
+-- quests[n°] / npcs[n°] = nom (jamais d'automatique), log (5 dernières).
 local M = {}
 WK.modules.AutoQuest = M
 
@@ -19,9 +20,10 @@ function M:Config()
     if c.mode == nil then c.mode = "assist" end
     if c.reward == nil then c.reward = "me" end
     for k, v in pairs({ noHigh = true, noGroup = true, skipGossip = true, share = false, noGold = true,
-        fallbackPrice = true, shift = true, chat = true }) do
+        fallbackPrice = true, shift = true, chat = true, buy = false }) do
         if c[k] == nil then c[k] = v end
     end
+    c.buyCap = c.buyCap or 10000 -- achat d'objets de quête sans confirmer jusqu'à 1 po
     c.quests = c.quests or {}
     c.npcs = c.npcs or {}
     c.log = c.log or {}

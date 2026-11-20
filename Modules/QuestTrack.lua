@@ -107,6 +107,72 @@ function M:Level(qid)
     return info and info.level
 end
 
+---------------------------------------------------------------------------
+-- Objets de quête à acheter (Modules/QuestObjDB.lua : WK.QuestBuy, WK.QuestVendors, tirés de QuestieDB)
+---------------------------------------------------------------------------
+local buyCache, vendCache = {}, {}
+-- marchands d'un objet : { { map, x, y (0-1), fac = "A"|"H"|"AH", name } }
+function M:Vendors(item)
+    if vendCache[item] then return vendCache[item] end
+    local out = {}
+    local raw = WK.QuestVendors and WK.QuestVendors[item]
+    for e in (raw or ""):gmatch("[^;]+") do
+        local map, x, y, fac, name = e:match("^(%d+),([%d%.]+),([%d%.]+),(%a+),(.*)$")
+        if map then
+            table.insert(out, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100, fac = fac, name = name })
+        end
+    end
+    vendCache[item] = out
+    return out
+end
+-- objets à acheter pour une quête : { n° d'objet, … }
+function M:BuyItems(qid)
+    if buyCache[qid] then return buyCache[qid] end
+    local out = {}
+    local raw = WK.QuestBuy and WK.QuestBuy[qid]
+    for id in (raw or ""):gmatch("%d+") do table.insert(out, tonumber(id)) end
+    buyCache[qid] = out
+    return out
+end
+-- nom d'un marchand (français quand Modules/PlacesDB.lua le connaît) et son rôle
+function M:VendorName(v)
+    local fr = WK.Lang and WK.Lang() == "frFR"
+    for _, p in ipairs(WK.PlacesDB and WK.PlacesDB[v.map] or {}) do
+        if p[6] == v.name and math.abs(p[1] / 100 - v.x) < 0.006 and math.abs(p[2] / 100 - v.y) < 0.006 then
+            return (fr and p[7]) or p[6], p[8]
+        end
+    end
+    return v.name, nil
+end
+-- quantité demandée d'un objet (objectif du journal quand la quête y est, sinon 1)
+function M:BuyNeed(qid, item)
+    if not self:InLog(qid) then return 1 end
+    local name = WK.GetItemInfo and WK.GetItemInfo(item)
+    local objs = self:Objectives(qid)
+    local items = {}
+    for _, o in ipairs(objs) do if o.type == "item" then table.insert(items, o) end end
+    for _, o in ipairs(items) do
+        if name and o.name == name then return math.max(1, o.need or 1) end
+    end
+    if #items == 1 and #self:BuyItems(qid) == 1 then return math.max(1, items[1].need or 1) end
+    return 1
+end
+function M:ItemCount(item)
+    local f = (C_Item and C_Item.GetItemCount) or GetItemCount
+    return f and (f(item) or 0) or 0
+end
+-- objets qui manquent encore pour une quête : { { id, n } } (n = combien en acheter)
+function M:BuyMissing(qid)
+    local out = {}
+    if self:InLog(qid) and self:IsComplete(qid) then return out end
+    for _, id in ipairs(self:BuyItems(qid)) do
+        local need = self:BuyNeed(qid, id)
+        local miss = need - self:ItemCount(id)
+        if miss > 0 then table.insert(out, { id = id, n = miss }) end
+    end
+    return out
+end
+
 -- Quêtes du journal (sans les en-têtes) : { { id, title, level, complete } }
 function M:LogQuests()
     local out = {}

@@ -603,7 +603,7 @@ UI:RegisterPage({
                 mcard.more:SetPoint("BOTTOMLEFT", 10, 8)
 
                 -- détails : Prendre, Rendre, Exceptions
-                local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50, "prendre, rendre, exceptions", 2)
+                local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50 + 94, "prendre, rendre, acheter, exceptions", 2)
                 local function at(field, after)
                     local t = UI:Toggle(dcard, function() return ac[field] end, function(v) ac[field] = v; if after then after(v) end WK:NotifyChanged() end)
                     table.insert(self.toggles, t)
@@ -630,6 +630,10 @@ UI:RegisterPage({
                 self.rewardSeg:Select(ac.reward)
                 row("Si rien ne sert : la plus chère", nil, at("fallbackPrice"))
                 row("Pas les quêtes qui coûtent de l'or", nil, at("noGold"))
+                head("Acheter")
+                row("Acheter les objets de quête", "Chez un marchand qui vend un objet demandé par une quête du journal : la quantité qui manque, sans clic (sinon un bouton sous sa fenêtre).", at("buy"))
+                row("Sans confirmer jusqu'à", "Au-delà, le bouton sous la fenêtre du marchand attend ton clic.",
+                    UI:Slider(dcard, 200, 0, 100, 1, function() return math.floor((ac.buyCap or 10000) / 100) end, function(v) ac.buyCap = v * 100 end, "%d pa"), 220)
                 head("Exceptions")
                 row("Maj enfoncée : manuel", "Garde la main sur une quête en tenant Maj en parlant au PNJ.", at("shift"))
                 row("Récapitulatif dans le chat", "« Prise : … » · « Rendue : … »", at("chat"))
@@ -1804,7 +1808,15 @@ UI:RegisterPage({
     StepSub = function(self, P, s)
         local txt
         if s.kind == "pick" then txt = T("parler au donneur")
-        elseif s.kind == "turn" then txt = T("rendre au PNJ")
+        elseif s.kind == "turn" then
+            txt = T("rendre au PNJ")
+            -- B : objet à acheter sans marchand connu sur ton continent
+            if s.buyMissing and #s.buyMissing > 0 then
+                local parts = {}
+                for _, it in ipairs(s.buyMissing) do parts[#parts + 1] = (WK.GetItemInfo(it.id) or ("#" .. it.id)) .. " ×" .. (it.n or 1) end
+                txt = txt .. "  ·  " .. UI:Hex(C.info) .. T("à acheter avant :") .. " " .. table.concat(parts, ", ") .. "|r"
+            end
+        elseif s.kind == "buy" then txt = (s.vendor or T("marchand")) .. (s.vendorRole and (" · " .. s.vendorRole) or "")
         elseif s.kind == "trainer" then txt = (s.title and (s.title .. " · ") or "") .. T("apprendre tes sorts")
         else
             local objs = P:StepObjectives(s)
@@ -1860,7 +1872,7 @@ UI:RegisterPage({
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(W - 14)
             local past = tour and i < idx
             local cur = tour and i == idx
-            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { ar, ag, ab }
+            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { ar, ag, ab }
             r.dot:SetVertexColor(col[1], col[2], col[3], 1)
             r.num:SetText(tostring(i))
             r.num:SetTextColor(unpack(past and C.text or C.onAccent))
@@ -1910,7 +1922,7 @@ UI:RegisterPage({
                 local b = stepPin(mc, n)
                 b.step, b.idx = s, i
                 b:SetSize(size, size); b.edge:SetSize(size + 4, size + 4)
-                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { ar, ag, ab }
+                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { ar, ag, ab }
                 b:ClearAllPoints(); b:SetPoint("CENTER", mc.area, "TOPLEFT", x, -y)
                 b.dot:SetVertexColor(col[1], col[2], col[3], 1)
                 b.num:SetText(tostring(i)); b.num:SetTextColor(unpack(past and C.text or C.onAccent))

@@ -191,7 +191,7 @@ local function drawTour(cv, mapID, w, h, lvl)
             local p = numPin(np, cv)
             local sz = (cur and 17 or 14) * k
             p:SetSize(sz, sz)
-            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or (s.kind == "trainer" and C.info) or { r, g, b }
+            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { r, g, b }
             p.ring:SetVertexColor(1, 1, 1, cur and 1 or 0.8)
             p.dot:SetVertexColor(col[1], col[2], col[3], i < t.idx and 0.4 or 1)
             if p.n.SetFont and UI.FONT then p.n:SetFont(UI.FONT, math.max(7, math.floor((cur and 9 or 8) * k + 0.5)), "") end

@@ -15,6 +15,10 @@ Format (une chaîne par quête, décodée par Modules/QuestTrack.lua à la deman
     o = objet au sol) ; bloc vide (« m: ») si aucun camp connu ;
   - après « @ » : où rendre la quête (premier PNJ ou objet qui la termine).
   WK.QuestItemStart[objet] = quête : objets qui démarrent une quête.
+  WK.QuestBuy[quête] = "objet,objet" : objets demandés par la quête qui se vendent chez un marchand
+    (leur bloc « i: » reste vide : on les achète au lieu de les chercher sur un monstre).
+  WK.QuestVendors[objet] = "carte,x,y,faction,nom;…" : marchands qui vendent cet objet (première apparition,
+    faction « A », « H » ou « AH », nom anglais ; le nom français vient de Modules/PlacesDB.lua).
 """
 import math
 import os
@@ -118,6 +122,23 @@ def main(root, out):
                     return "%d,%.1f,%.1f" % p[0]
         return None
 
+    vend = {}  # objet -> ["carte,x,y,faction,nom"]
+
+    def vendors_of(iid):
+        if iid in vend:
+            return vend[iid]
+        it = items[iid]
+        out = []
+        for nid in (lst(it[14]) if it and it[14] else []):
+            n = npcs[nid]
+            p = npc_pts(nid)
+            if n and p:
+                fac = n[13] or "AH"
+                out.append("%d,%.1f,%.1f,%s,%s" % (p[0][0], p[0][1], p[0][2], fac, str(n[1]).replace(";", " ")))
+        vend[iid] = out[:40]
+        return vend[iid]
+
+    buy = {}  # quête -> [objets à acheter]
     lines, n_obj, n_camp = [], 0, 0
     starts = {}  # objet qui démarre une quête (clic droit dessus) : objet -> quête
     for qid in sorted(quests.keys()):
@@ -140,7 +161,16 @@ def main(root, out):
                         pts += npc_pts(nid)
                     mons.append(("m", pts))
             obs = [("o", obj_pts(o[1])) for o in lst(ob[2]) if o and o[1]]
-            its = [("i", item_pts(o[1])) for o in lst(ob[3]) if o and o[1]]
+            its = []
+            for o in lst(ob[3]):
+                if not (o and o[1]):
+                    continue
+                v = vendors_of(o[1])
+                if v:
+                    buy.setdefault(qid, []).append(o[1])
+                    its.append(("i", []))
+                else:
+                    its.append(("i", item_pts(o[1])))
             for kind, pts in mons + its + obs:
                 c = camps(pts)
                 n_obj += 1
@@ -159,8 +189,13 @@ def main(root, out):
         f.write("\n".join(lines))
         f.write("\n}\n-- objets qui démarrent une quête : [objet] = quête\nWK.QuestItemStart = {\n")
         f.write("".join("[%d]=%d," % (k, starts[k]) for k in sorted(starts)))
+        f.write("\n}\n-- objets de quête vendus chez un marchand : [quête] = \"objet,objet\"\nWK.QuestBuy = {\n")
+        f.write("\n".join('[%d]="%s",' % (q, ",".join(str(i) for i in buy[q])) for q in sorted(buy)))
+        used = sorted({i for q in buy for i in buy[q]})
+        f.write("\n}\n-- marchands de ces objets : [objet] = \"carte,x,y,faction,nom;…\"\nWK.QuestVendors = {\n")
+        f.write("\n".join('[%d]="%s",' % (i, ";".join(vend[i]).replace('"', "'")) for i in used))
         f.write("\n}\n")
-    print("%d quêtes, %d objectifs, %d camps, %d objets qui démarrent une quête" % (len(lines), n_obj, n_camp, len(starts)))
+    print("%d quêtes, %d objectifs, %d camps, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, len(starts), len(buy)))
 
 
 if __name__ == "__main__":

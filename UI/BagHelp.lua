@@ -111,7 +111,106 @@ function UI:RefreshRestock()
     UI:MatchHost(rsBtn, MerchantFrame)
     rsBtn:Show()
 end
-WK:On("MERCHANT_SHOW", function() C_Timer.After(0.3, function() UI:RefreshRestock() end) end)
+
+---------------------------------------------------------------------------
+-- Objets de quête vendus ici (Modules/QuestTrack.lua : BuyMissing) : bouton sous la fenêtre du marchand,
+-- ou achat sans clic (réglage autoQuest.buy) jusqu'à autoQuest.buyCap ; jamais plus que ce qui manque
+---------------------------------------------------------------------------
+local qbBtn
+local function questPlan()
+    local QT = WK.modules.QuestTrack
+    local stock = UI.MerchantStock and UI.MerchantStock() or {}
+    local out, byId = {}, {}
+    if not (QT and QT.BuyMissing) then return out end
+    for _, l in ipairs(QT:LogQuests()) do
+        for _, it in ipairs(QT:BuyMissing(l.id)) do
+            local st = stock[it.id]
+            if st then
+                local e = byId[it.id]
+                if e then e.need = math.max(e.need, it.n); e.quests[#e.quests + 1] = l.title
+                else
+                    e = { id = it.id, need = it.n, stock = st, quests = { l.title } }
+                    byId[it.id] = e
+                    table.insert(out, e)
+                end
+            end
+        end
+    end
+    return out
+end
+UI.QuestBuyPlan = questPlan
+local function buyAll(p)
+    local n = 0
+    for _, e in ipairs(p or {}) do n = n + (UI.MerchantBuy(e.stock, e.need) or 0) end
+    if n > 0 then
+        local names = {}
+        for _, e in ipairs(p) do names[#names + 1] = (select(2, WK.GetItemInfo(e.id)) or ("#" .. e.id)) .. " x" .. e.need end
+        WK:Print(string.format(T("Objets de quête achetés : %s"), table.concat(names, ", ")))
+    end
+    return n
+end
+local function buildQuestBuy()
+    local b = UI:Button(UIParent, T("Pour tes quêtes"), nil, 26, "primary")
+    b:SetFrameStrata("DIALOG")
+    b:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_BOTTOM")
+        GameTooltip:SetText(T("Objets demandés par tes quêtes"), 1, 1, 1)
+        for _, e in ipairs(s.plan or {}) do
+            local _, link = WK.GetItemInfo(e.id)
+            GameTooltip:AddDoubleLine((link or ("#" .. e.id)) .. " x" .. e.need,
+                WK:FormatMoney(math.ceil(e.stock.price / math.max(1, e.stock.batch) * e.need)), 1, 1, 1, 1, 1, 1)
+            GameTooltip:AddLine("   " .. table.concat(e.quests, ", "), 0.6, 0.6, 0.6)
+        end
+        GameTooltip:AddLine(T("Achat sans clic : Quêtes > roue > Quêtes automatiques > Détails."), 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b:SetScript("OnClick", function(s)
+        buyAll(s.plan)
+        C_Timer.After(1, function() UI:RefreshQuestBuy() end)
+    end)
+    b:Hide()
+    return b
+end
+local function planCost(p)
+    local total = 0
+    for _, e in ipairs(p) do total = total + math.ceil(e.stock.price / math.max(1, e.stock.batch) * e.need) end
+    return total
+end
+function UI:RefreshQuestBuy(auto)
+    qbBtn = qbBtn or buildQuestBuy()
+    if not (MerchantFrame and MerchantFrame:IsShown() and WK:FeatureOn("quests")) then qbBtn:Hide() return end
+    local p = questPlan()
+    qbBtn.plan = p
+    if #p == 0 then qbBtn:Hide() return end
+    local cost = planCost(p)
+    local AQ = WK.modules.AutoQuest
+    local ac = AQ and AQ:Config()
+    -- achat sans clic : réglage, mode des quêtes automatiques pas « manuel », Maj pas enfoncée, sous le plafond
+    if auto and ac and ac.buy and ac.mode ~= "manual" and not (ac.shift and IsShiftKeyDown and IsShiftKeyDown())
+        and cost <= (ac.buyCap or 10000) and cost <= ((GetMoney and GetMoney()) or 0) then
+        buyAll(p)
+        qbBtn:Hide()
+        C_Timer.After(1, function() UI:RefreshQuestBuy() end)
+        return
+    end
+    qbBtn:SetLabel(string.format(T("Pour tes quêtes : %d objet(s), %s"), #p, UI:PlainMoney(cost)))
+    qbBtn:SetWidth(qbBtn.label:GetStringWidth() + 32)
+    qbBtn:ClearAllPoints()
+    -- sous la fenêtre du marchand, à côté du bouton « Réassort » s'il est là
+    if rsBtn and rsBtn:IsShown() then qbBtn:SetPoint("LEFT", rsBtn, "RIGHT", 6, 0)
+    else qbBtn:SetPoint("TOPLEFT", MerchantFrame, "BOTTOMLEFT", 4, -4) end
+    UI:MatchHost(qbBtn, MerchantFrame)
+    qbBtn:Show()
+end
+WK:On("MERCHANT_SHOW", function()
+    C_Timer.After(0.3, function()
+        UI:RefreshRestock()
+        UI:RefreshQuestBuy(true)
+    end)
+end)
+WK:On("MERCHANT_CLOSED", function() if qbBtn then qbBtn:Hide() end end)
+
 WK:On("MERCHANT_CLOSED", function() if rsBtn then rsBtn:Hide() end end)
 WK:On("MERCHANT_UPDATE", function() if rsBtn and rsBtn:IsShown() then C_Timer.After(0.3, function() UI:RefreshRestock() end) end end)
 
