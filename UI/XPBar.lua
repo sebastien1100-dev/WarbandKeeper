@@ -94,10 +94,13 @@ local function build()
         local bare = cfg.noBg and true or false
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bare and 0 or 0.92)
         self.border:SetColor(C.border[1], C.border[2], C.border[3], bare and 0 or (C.border[4] or 1))
+        -- sans fond : police contourée un peu plus grande, ombre portée et gris éclaircis (lisible sur un décor clair)
         for _, t in ipairs({ self.left, self.right }) do
-            t:SetShadowColor(0, 0, 0, bare and 1 or 0)
+            t:SetFont(UI.FONT, bare and 12 or 11, bare and "OUTLINE" or "")
+            t:SetShadowColor(0, 0, 0, bare and 0.9 or 0)
             t:SetShadowOffset(bare and 1 or 0, bare and -1 or 0)
         end
+        self.bare = bare
         local w = self:GetWidth() - 22
         local r1, g1, b1 = UI:Accent()
         self.cur:SetVertexColor(r1, g1, b1, 1)
@@ -124,7 +127,8 @@ local function build()
             t:SetPoint("LEFT", self.trackF, "LEFT", 1 + w * i / 10, 0)
             t:SetColorTexture(0, 0, 0, 0.35)
         end
-        local hex, mu = UI:Hex({ r1, g1, b1 }), UI:Hex(C.muted)
+        local hex, mu = UI:Hex({ r1, g1, b1 }), UI:Hex(bare and C.text or C.muted)
+        self.right:SetTextColor(unpack(bare and C.text or C.muted))
         self.left:SetText(string.format(hex .. T("Niv. %d") .. "|r  " .. mu .. "·|r  %s / %s  " .. mu .. "(%d %%)|r", x.level, fmt(x.cur), fmt(x.max), math.floor(x.cur / x.max * 100)))
         local parts = {}
         if x.rested > 0 then table.insert(parts, string.format(UI:Hex(C.info) .. T("repos %d %%") .. "|r", math.floor(x.rested / x.max * 100))) end

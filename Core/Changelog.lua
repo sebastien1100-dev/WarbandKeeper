@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.86.3", date = "20/11/2026",
+        fixed = {
+            "Barre d'expérience « Sans fond » : les libellés étaient peu lisibles sur un décor clair ; ils passent en police contourée, un peu plus grande, avec les gris éclaircis.",
+        },
+    },
+    {
         version = "1.86.2", date = "20/11/2026",
         added = {
             "Barre d'expérience : option « Sans fond » (QoL > Expérience) qui retire le cadre sombre autour de la barre ; les libellés sont alors ombrés pour rester lisibles.",
