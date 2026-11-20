@@ -126,11 +126,14 @@ local function numPin(i, cv)
     return p
 end
 local function line(i, cv)
+    -- traits sur le calque des tracés (au-dessus des calques du jeu de la carte de WoW Forever)
+    if UI.MapLineLayer then cv = UI.MapLineLayer(cv) end
     local l = lines[i]
     if not l then
         l = cv:CreateLine(nil, "ARTWORK")
         lines[i] = l
     end
+    if l:GetParent() ~= cv then l:SetParent(cv) end
     return l
 end
 local function drawTour(cv, mapID, w, h, lvl)

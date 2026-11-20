@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.10 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte du monde : le tracé du guidage (et ceux des bateaux, des navires et de la tournée de quêtes) était bien calculé mais caché sous les calques de la carte de WoW Forever ; il est maintenant dessiné au-dessus, juste sous nos pastilles. Il se voyait déjà sur la minicarte.
+
 ## v1.100.9 — 20/11/2026
 
 _Un /reload suffit._

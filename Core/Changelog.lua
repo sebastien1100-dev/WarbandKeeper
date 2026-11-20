@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.10", date = "20/11/2026",
+        fixed = {
+            "Carte du monde : le tracé du guidage (et ceux des bateaux, des navires et de la tournée de quêtes) était bien calculé mais caché sous les calques de la carte de WoW Forever ; il est maintenant dessiné au-dessus, juste sous nos pastilles. Il se voyait déjà sur la minicarte.",
+        },
+    },
+    {
         version = "1.100.9", date = "20/11/2026",
         changed = {
             "Quêtes : les « camps » s'appellent maintenant « zones de quête » partout (carte du monde, page Quêtes, carte de quête à l'écran, réglages) : « Zone suivante », « Zones : toutes », « 3 zones · la plus proche à 240 m »…",

@@ -33,6 +33,7 @@ end
 function UI:DrawShips(cv, mapID, w, h)
     lines:Reset()
     if not on() then return end
+    if UI.MapLineLayer then cv = UI.MapLineLayer(cv) end -- au-dessus des calques du jeu
     local B = BL()
     local scale = (w / 1000) * UI.MapIconScale()
     local thick = math.max(1.4 * UI.MapIconScale(), 2 * scale)

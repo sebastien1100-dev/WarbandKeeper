@@ -131,6 +131,25 @@ function UI:LinePool(layerSub)
     return pool
 end
 local canLine = function(cv) return cv and cv.CreateLine ~= nil end
+-- Calque des tracés : cadre posé sur la toile de la carte, au-dessus des calques du jeu (sur la carte de
+-- WoW Forever, ses calques passaient devant les traits dessinés sur la toile même : tracé invisible)
+local holders = {}
+local function overlay(cv)
+    if not cv then return cv end
+    local h = holders[cv]
+    if not h then
+        h = CreateFrame("Frame", nil, cv)
+        h.wk = true
+        h:SetAllPoints(cv)
+        if h.EnableMouse then h:EnableMouse(false) end
+        holders[cv] = h
+    end
+    -- juste sous nos pastilles (UI.mapBase = plus haut calque du jeu + 5), au-dessus des calques du jeu
+    h:SetFrameLevel(math.max(1, UI.mapBase and (UI.mapBase - 2) or ((cv:GetFrameLevel() or 1) + 1)))
+    h:Show()
+    return h
+end
+UI.MapLineLayer = overlay
 
 -- Trajets de bateau appris (Modules/Nav.lua) : leur chemin réel, en trait fin de la couleur des transports
 local boatDots = {}
@@ -138,6 +157,7 @@ local boatLines = UI:LinePool(4)
 function UI:DrawBoatPaths(cv, mapID, w, h)
     for _, d in ipairs(boatDots) do d:Hide() end
     boatLines:Reset()
+    cv = overlay(cv)
     local L = WK.modules.MapLayers
     if not (L and WK:FeatureOn("maplayers") and L:Config().map.transport) then return end
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return end
@@ -277,6 +297,7 @@ function UI:DrawNavRoute(cv, mapID, w, h)
                  legs = r0 and r0.legs and #r0.legs or 0, option = gcfg().route and "oui" or "non" }
     UI.navStats = st
     if not gcfg().route then return end
+    cv = overlay(cv)
     local pts, cont = remaining()
     st.pts, st.cont = pts and #pts or 0, cont
     if not pts or #pts < 2 then return end
