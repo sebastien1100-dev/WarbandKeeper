@@ -701,7 +701,29 @@ function M:StepDone(s)
 end
 
 -- Titre lisible d'une étape
-function M:StepTitle(s)
+-- Avancement d'une quête : « new » (pas dans le journal), « started » (rien de fait), « partial »
+-- (objectifs entamés), « ready » (prête à rendre), avec la part faite (0 à 1)
+function M:QuestProgress(qid)
+    if not inLog(qid) then return "new", 0 end
+    if Q():IsComplete(qid) then return "ready", 1 end
+    local have, need = 0, 0
+    for _, o in ipairs(Q():Objectives(qid)) do
+        local n = math.max(1, o.need or 0)
+        need = need + n
+        have = have + (o.done and n or math.min(n, o.have or 0))
+    end
+    local frac = need > 0 and have / need or 0
+    return frac > 0 and "partial" or "started", frac
+end
+-- couleur de chaque avancement (à prendre : or, comme le « ! » du jeu ; entamée : orange ; prête : vert)
+M.PROGRESS_COLOR = { new = "gold", started = "text", partial = "warning", ready = "positive" }
+function M:ProgressColor(qid)
+    local st = self:QuestProgress(qid)
+    return WK.UI.colors[self.PROGRESS_COLOR[st] or "text"] or WK.UI.colors.text, st
+end
+
+-- Titre d'une étape ; colored = nom de chaque quête à la couleur de son avancement
+function M:StepTitle(s, colored)
     if s.kind == "trainer" then
         return string.format(T("Maître de classe : %d sort(s) à apprendre"), s.spells or 0)
     end
@@ -724,6 +746,7 @@ function M:StepTitle(s)
         -- suite prévue pas encore prise
         if pred[q] and not inLog(q) then n = n .. " " .. T("(suite)") end
         if WK.QuestIsGroup(q) then n = n .. " " .. T("(groupe)") end
+        if colored then n = WK.UI:Hex(self:ProgressColor(q)) .. n .. "|r" end
         table.insert(names, n)
     end
     local list = table.concat(names, ", ")

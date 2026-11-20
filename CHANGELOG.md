@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.111.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes : chaque quête est colorée selon son avancement, à l'écran comme dans la liste des étapes. En or : à prendre ; en blanc : prise, rien de fait ; en orange : objectifs entamés ; en vert : prête à rendre.
+
 ## v1.111.0 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.111.1", date = "20/11/2026",
+        added = {
+            "Tournée de quêtes : chaque quête est colorée selon son avancement, à l'écran comme dans la liste des étapes. En or : à prendre ; en blanc : prise, rien de fait ; en orange : objectifs entamés ; en vert : prête à rendre.",
+        },
+    },
+    {
         version = "1.111.0", date = "20/11/2026",
         added = {
             "Base de quêtes : les quêtes propres à WoW Forever (et leurs donneurs, monstres et objets) entrent dans la base : 4707 quêtes placées sur les cartes au lieu de 3565, et 5325 quêtes avec leurs objectifs au lieu de 4162.",

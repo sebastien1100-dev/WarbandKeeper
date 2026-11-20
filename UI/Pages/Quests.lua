@@ -2042,7 +2042,7 @@ UI:RegisterPage({
             r.dot:SetVertexColor(col[1], col[2], col[3], 1)
             r.num:SetText(tostring(i))
             r.num:SetTextColor(unpack(past and C.text or C.onAccent))
-            r.title:SetText(P:StepTitle(s))
+            r.title:SetText(P:StepTitle(s, not past))
             r.title:SetTextColor(unpack(past and C.muted or C.text))
             r.sub:SetText(self:StepSub(P, s))
             if cur then

@@ -438,7 +438,7 @@ function UI:RefreshQuestTracker()
                     t.cont, t.wx, t.wy = G.ToWorld(ns.map, ns.x, ns.y)
                     nd = G:Vector(me, t)
                 end
-                table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns), dist = nd })
+                table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd })
             end
         end
         -- quête sur le chemin (pas dans la tournée)
@@ -449,7 +449,7 @@ function UI:RefreshQuestTracker()
                 sub = string.format(T("détour env. %d min"), ow.mins or 1) .. ((ow.e.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. ow.e.xp .. " XP|r") or "")
                     .. " · " .. T("clic : ajouter") }
         end
-        card:PaintTour({ kind = s.kind, title = P:StepTitle(s), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
+        card:PaintTour({ kind = s.kind, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
             objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts, way = way })
         card:Show()
         return
