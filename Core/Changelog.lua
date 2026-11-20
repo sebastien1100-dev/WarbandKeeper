@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.1", date = "20/11/2026",
+        fixed = {
+            "Tournée de quêtes : les étapes passées, et celles d'une quête déjà rendue, disparaissent de la carte du monde et de la carte de l'onglet Tournée (avant : elles restaient affichées, pâlies).",
+            "Tournée de quêtes : une étape « Prendre » d'une quête déjà rendue ne bloque plus la tournée.",
+        },
+    },
+    {
         version = "1.105.0", date = "20/11/2026",
         added = {
             "Sacs : option « Ouvrir tout seul certains objets » (Inventaire > roue > Sacs, marchand et équipement). Les palourdes et les objets de ta liste (glissés sur la case) s'ouvrent un par un, hors combat ; ou, au choix, tout ce qui s'ouvre sauf les coffrets fermés à clé. Jamais chez un marchand, à la banque, à la boîte aux lettres, à l'échange ou à l'hôtel des ventes, ni sans case libre. Coupée par défaut.",

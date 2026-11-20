@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.105.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tournée de quêtes : les étapes passées, et celles d'une quête déjà rendue, disparaissent de la carte du monde et de la carte de l'onglet Tournée (avant : elles restaient affichées, pâlies).
+- Tournée de quêtes : une étape « Prendre » d'une quête déjà rendue ne bloque plus la tournée.
+
 ## v1.105.0 — 20/11/2026
 
 _Un /reload suffit._

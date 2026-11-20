@@ -172,7 +172,9 @@ local function drawTour(cv, mapID, w, h, lvl)
     local placed = {}
     local np = 0
     for i, s in ipairs(t.steps) do
-        local x, y = mapPos(s, mapID)
+        -- étapes passées, ou dont les quêtes sont déjà rendues : retirées de la carte
+        local x, y
+        if i >= t.idx and not (i > t.idx and P.StepSpent and P:StepSpent(s)) then x, y = mapPos(s, mapID) end
         if x then
             local cur = i == t.idx
             local px, py = x * w, y * h
@@ -193,7 +195,7 @@ local function drawTour(cv, mapID, w, h, lvl)
             p:SetSize(sz, sz)
             local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { r, g, b }
             p.ring:SetVertexColor(1, 1, 1, cur and 1 or 0.8)
-            p.dot:SetVertexColor(col[1], col[2], col[3], i < t.idx and 0.4 or 1)
+            p.dot:SetVertexColor(col[1], col[2], col[3], 1)
             if p.n.SetFont and UI.FONT then p.n:SetFont(UI.FONT, math.max(7, math.floor((cur and 9 or 8) * k + 0.5)), "") end
             p.n:SetText(i)
             p.tip = i .. ". " .. P:StepTitle(s)
@@ -202,7 +204,7 @@ local function drawTour(cv, mapID, w, h, lvl)
             p:Show()
             table.insert(placed, { px = px, py = py, p = p, nums = tostring(i) })
             end
-            if prev and i > t.idx - 1 then
+            if prev then
                 nl = nl + 1
                 local l = line(nl, cv)
                 l:SetThickness(2)

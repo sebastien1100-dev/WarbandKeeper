@@ -592,6 +592,20 @@ function M:Reorder()
     self:Changed()
 end
 
+-- quête déjà rendue (journal du jeu, ou quêtes faites relevées pour le perso)
+local function turned(q)
+    local d = (WK.DB:Me() or {}).quests
+    if d and d.done and d.done[q] then return true end
+    return C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted and C_QuestLog.IsQuestFlaggedCompleted(q) and true or false
+end
+M.Turned = turned
+-- étape dont toutes les quêtes sont déjà rendues (faite hors de l'ordre de la tournée)
+function M:StepSpent(s)
+    if not s.qids or #s.qids == 0 then return false end
+    for _, q in ipairs(s.qids) do if inLog(q) or not turned(q) then return false end end
+    return true
+end
+
 function M:StepDone(s)
     if s.kind == "trainer" then
         -- fini quand il ne reste rien à apprendre, ou après une visite chez le maître depuis le début de l'étape
@@ -604,17 +618,15 @@ function M:StepDone(s)
     elseif s.kind == "buy" then
         -- fini quand tout est dans les sacs (ou que les quêtes sont déjà rendues)
         local open = false
-        local done = (WK.DB:Me() or {}).quests
-        done = done and done.done or {}
         for _, q in ipairs(s.qids) do
-            local turned = done[q] or (C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted and C_QuestLog.IsQuestFlaggedCompleted(q))
-            if inLog(q) or not turned then open = true end
+            if inLog(q) or not turned(q) then open = true end
         end
         if not open then return true end
         for _, it in ipairs(s.items or {}) do if Q():ItemCount(it.id) < (it.need or 1) then return false end end
         return true
     elseif s.kind == "pick" then
-        for _, q in ipairs(s.qids) do if not inLog(q) then return false end end
+        -- prise, ou déjà rendue (sinon la tournée restait bloquée sur une quête finie ailleurs)
+        for _, q in ipairs(s.qids) do if not inLog(q) and not turned(q) then return false end end
         return true
     elseif s.kind == "do" then
         for _, q in ipairs(s.qids) do

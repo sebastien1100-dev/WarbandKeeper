@@ -1911,10 +1911,13 @@ UI:RegisterPage({
         local size = math.max(14, math.min(22, AW / 34))
         local n, nl, prev = 0, 0, nil
         for i, s in ipairs(steps) do
-            if s.map == map and s.x then
+            -- tournée lancée : étapes passées ou déjà rendues retirées, comme sur la carte du monde
+            local Pq = QP()
+            local gone = idx > 0 and (i < idx or (i > idx and Pq and Pq:StepSpent(s)))
+            if s.map == map and s.x and not gone then
                 n = n + 1
                 local x, y = s.x * AW, s.y * AH
-                local past = idx > 0 and i < idx
+                local past = false
                 if prev then
                     nl = nl + 1
                     mapLine(mc, nl, prev[1], prev[2], x, y, past and C.dim or { ar, ag, ab }, math.max(2, size / 10))
