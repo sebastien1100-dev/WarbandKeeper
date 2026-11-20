@@ -98,6 +98,65 @@ local function storeButton(menu)
         if t and BLIZZARD_STORE and t == BLIZZARD_STORE then return b end
     end
 end
+-- Habillage : quand les boutons voisins sont habillés (EllesmereUI : textures du bouton masquées, fond
+-- sombre et fin liseré), le nôtre prend le même style ; sinon il garde celui du jeu. Le bouton vient de la
+-- réserve du menu (recyclé pour d'autres entrées) : nos textures sont cachées sur les autres boutons.
+local function skinPieces(b)
+    if b.wkSkin then return b.wkSkin end
+    local k = {}
+    k.bg = b:CreateTexture(nil, "BACKGROUND", nil, -6); k.bg:SetPoint("TOPLEFT", 2, -2); k.bg:SetPoint("BOTTOMRIGHT", -2, 2)
+    k.bg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+    k.edges = {}
+    for i, pt in ipairs({ { "TOPLEFT", "TOPRIGHT", true }, { "BOTTOMLEFT", "BOTTOMRIGHT", true }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
+        local e = b:CreateTexture(nil, "BORDER", nil, 7)
+        e:SetColorTexture(1, 1, 1, 0.16)
+        e:SetPoint(pt[1], k.bg, pt[1]); e:SetPoint(pt[2], k.bg, pt[2])
+        if pt[3] then e:SetHeight(1) else e:SetWidth(1) end
+        k.edges[i] = e
+    end
+    k.hl = b:CreateTexture(nil, "HIGHLIGHT"); k.hl:SetAllPoints(k.bg); k.hl:SetColorTexture(1, 1, 1, 0.08)
+    k.own = { [k.bg] = true, [k.hl] = true }
+    for _, e in ipairs(k.edges) do k.own[e] = true end
+    b.wkSkin = k
+    return k
+end
+local function showSkin(b, on)
+    local k = b.wkSkin
+    if not k then return end
+    k.bg:SetShown(on); k.hl:SetShown(on)
+    for _, e in ipairs(k.edges) do e:SetShown(on) end
+end
+local function skinned(b)
+    local l = b and rawget(b, "Left")
+    if type(l) ~= "table" and b and b.GetNormalTexture then l = b:GetNormalTexture() end
+    return type(l) == "table" and l.GetAlpha and (l:GetAlpha() or 1) < 0.05
+end
+local function skinGameMenuButton(menu, btn)
+    if not (menu and menu.buttonPool and btn) then return end
+    local ref
+    for b in menu.buttonPool:EnumerateActive() do
+        if b ~= btn then
+            if b.wkSkin then showSkin(b, false) end
+            if not ref and skinned(b) then ref = b end
+        end
+    end
+    if not ref then showSkin(btn, false) return end
+    local k = skinPieces(btn)
+    showSkin(btn, true)
+    for _, r in ipairs({ btn:GetRegions() }) do
+        if r.IsObjectType and r:IsObjectType("Texture") and not k.own[r] then r:SetAlpha(0) end
+    end
+    for _, key in ipairs({ "Left", "Middle", "Right" }) do
+        local t = rawget(btn, key)
+        if type(t) == "table" and t.SetAlpha then t:SetAlpha(0) end
+    end
+    local fs, rfs = btn.GetFontString and btn:GetFontString(), ref.GetFontString and ref:GetFontString()
+    if fs and rfs and rfs.GetFont then
+        local font, size, flags = rfs:GetFont()
+        if font then fs:SetFont(font, size, flags or "") end
+        fs:SetTextColor(1, 1, 1, 1)
+    end
+end
 local function addGameMenuButton(menu)
     gmBtn = nil
     if not gameMenuOn() or not (menu and menu.AddButton) then return end
@@ -126,6 +185,9 @@ local function addGameMenuButton(menu)
     end
     if target and target.layoutIndex then btn.layoutIndex = target.layoutIndex - 0.5 end
     if menu.MarkDirty then menu:MarkDirty() end
+    -- habillage : maintenant, puis une image plus tard (EllesmereUI habille les boutons à l'ouverture du menu)
+    skinGameMenuButton(menu, btn)
+    if C_Timer and C_Timer.After then C_Timer.After(0, function() if gmBtn == btn then skinGameMenuButton(menu, btn) end end) end
 end
 -- Après la mise en page (et après celle d'EllesmereUI) : notre bouton prend la place du sien, sous la
 -- Boutique, et le sien passe juste sous le nôtre ; les autres boutons ne bougent pas

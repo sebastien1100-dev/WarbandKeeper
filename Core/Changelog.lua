@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.4", date = "20/11/2026",
+        fixed = {
+            "Menu Échap : avec EllesmereUI, le bouton « Warband Keeper » restait rouge (style du jeu). Il prend maintenant le même style que les boutons voisins : fond sombre, fin liseré, même police ; sans habillage, il garde celui du jeu.",
+        },
+    },
+    {
         version = "1.101.3", date = "20/11/2026",
         added = {
             "Roue de la page Quêtes, carte « Quête suivie » : réglage « Fond de la carte de tournée » (opacité de 0 à 100 %, 50 % d'office ; 0 % = texte seul, ombré).",
