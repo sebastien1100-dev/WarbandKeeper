@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.89.2", date = "20/11/2026",
+        changed = {
+            "Options > Général > Infobulles : les réglages sont rangés en cartes par thème au lieu d'une seule longue liste : Apparence des infobulles, Objets : prix (HV, pile, désenchantement), Objets : métiers (montée, fabriquer ou vendre), Objets : butin (butin observé), PNJ (quêtes du donneur, rares).",
+        },
+    },
+    {
         version = "1.89.1", date = "20/11/2026",
         fixed = {
             "Changer de profil (Options > Profils) déclenchait l'erreur « a tenté d'appeler la fonction protégée Reload() » : le jeu interdit à un addon de recharger l'interface de lui-même. Une petite fenêtre propose maintenant « Recharger maintenant » (ou « Plus tard ») ; copier ou remettre à zéro un profil font de même.",

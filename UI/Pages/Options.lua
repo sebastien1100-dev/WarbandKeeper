@@ -216,33 +216,50 @@ UI:RegisterPage({
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 
-        -- Infobulles : toutes les lignes que l'addon ajoute aux infobulles, à un seul endroit
-        local ttCard = card("Infobulles", 40 + 9 * 54 + 8, "tout ce que l'addon ajoute aux infobulles")
-        local function ttRow(yy, label, desc, get, set)
-            local t = UI:Toggle(ttCard, get, set)
-            self.ttToggles = self.ttToggles or {}
-            table.insert(self.ttToggles, t)
-            UI:SettingRow(ttCard, yy, label, desc, t, 80)
+        -- Infobulles : toutes les lignes que l'addon ajoute aux infobulles, à un seul endroit (onglet Infobulles),
+        -- rangées en cartes par thème : apparence, prix, métiers, butin, PNJ
+        do
+            local function ttCard(title, sub, rows)
+                local c = card(title, 40 + #rows * 54 + 8, sub)
+                for n, r in ipairs(rows) do
+                    local t = UI:Toggle(c, r[3], r[4])
+                    self.ttToggles = self.ttToggles or {}
+                    table.insert(self.ttToggles, t)
+                    UI:SettingRow(c, -40 - (n - 1) * 54, r[1], r[2], t, 80)
+                end
+                return c
+            end
+            local PHc = function() return WK.modules.ProfHelp:Config() end
+            local AHc = function() return WK.modules.AHScan:Config() end
+            ttCard("Apparence des infobulles", "fond, bordure et police", {
+                { "Infobulles du jeu au style de l'addon", "Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu.",
+                    function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end },
+            })
+            ttCard("Objets : prix", "ce que vaut un objet", {
+                { "Prix de l'hôtel des ventes", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.",
+                    function() return AHc().tooltip end, function(v) AHc().tooltip = v end },
+                { "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.",
+                    function() return AHc().stack end, function(v) AHc().stack = v end },
+                { "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
+                    function() return PHc().deTip end, function(v) PHc().deTip = v end },
+            })
+            ttCard("Objets : métiers", "à quoi sert un composant", {
+                { "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
+                    function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end },
+                { "Fabriquer ou vendre", "Composant qu'une recette d'un de tes persos valorise mieux que la vente brute : la recette et ce qu'elle en tire à l'unité.",
+                    function() return PHc().craftTip end, function(v) PHc().craftTip = v end },
+            })
+            ttCard("Objets : butin", "d'où vient un objet", {
+                { "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
+                    function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end },
+            })
+            ttCard("PNJ", "au survol d'un personnage", {
+                { "Quêtes du donneur", "Au survol d'un PNJ : ses quêtes que ce perso n'a pas encore faites.",
+                    function() return WK.modules.Quests:Config().tooltip end, function(v) WK.modules.Quests:Config().tooltip = v; WK:NotifyChanged() end },
+                { "Rares", "Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué.",
+                    function() return WK.modules.Rares:Config().tooltip end, function(v) WK.modules.Rares:Config().tooltip = v end },
+            })
         end
-        local PHc = function() return WK.modules.ProfHelp:Config() end
-        ttRow(-202, "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
-            function() return PHc().deTip end, function(v) PHc().deTip = v end)
-        ttRow(-472, "Fabriquer ou vendre", "Composant qu'une recette d'un de tes persos valorise mieux que la vente brute : la recette et ce qu'elle en tire à l'unité.",
-            function() return PHc().craftTip end, function(v) PHc().craftTip = v end)
-        ttRow(-256, "Prix de l'hôtel des ventes", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.",
-            function() return WK.modules.AHScan:Config().tooltip end, function(v) WK.modules.AHScan:Config().tooltip = v end)
-        ttRow(-310, "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.",
-            function() return WK.modules.AHScan:Config().stack end, function(v) WK.modules.AHScan:Config().stack = v end)
-        ttRow(-364, "Quêtes du donneur", "Au survol d'un PNJ : ses quêtes que ce perso n'a pas encore faites.",
-            function() return WK.modules.Quests:Config().tooltip end, function(v) WK.modules.Quests:Config().tooltip = v; WK:NotifyChanged() end)
-        ttRow(-418, "Rares", "Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué.",
-            function() return WK.modules.Rares:Config().tooltip end, function(v) WK.modules.Rares:Config().tooltip = v end)
-        UI:SettingRow(ttCard, -94, "Infobulles du jeu au style de l'addon", "Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu.",
-            UI:Toggle(ttCard, function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end), 80)
-        ttRow(-40, "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
-            function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end)
-        UI:SettingRow(ttCard, -148, "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
-            UI:Toggle(ttCard, function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end), 80)
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
 
         -- Prix des objets ------------------------------------------------------------
@@ -552,7 +569,8 @@ UI:RegisterPage({
         do
             local gsec = self.sections.general
             local child = gsec.scroll.child
-            local TABS = { { "lang", "Langue", { ["Langue"] = true } }, { "tips", "Infobulles", { ["Infobulles"] = true } },
+            local TABS = { { "lang", "Langue", { ["Langue"] = true } }, { "tips", "Infobulles", { ["Apparence des infobulles"] = true, ["Objets : prix"] = true,
+                ["Objets : métiers"] = true, ["Objets : butin"] = true, ["PNJ"] = true } },
                 { "win", "Fenêtre", { ["Bouton minimap"] = true, ["Combat"] = true } } }
             local function tabOf(c)
                 for _, t in ipairs(TABS) do if t[3][c.cardKey or ""] then return t[1] end end
