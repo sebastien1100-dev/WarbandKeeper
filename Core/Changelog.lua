@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.97.1", date = "20/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.8.8 (plus de consigne de redémarrage quand le jeu est fermé pendant la mise à jour).",
+        },
+    },
+    {
         version = "1.97.0", date = "20/11/2026", restart = true,
         added = {
             "Fiche du perso, onglet « Sorts » : sorts de classe à apprendre maintenant, au prochain niveau et plus tard, avec leur prix ; coût jusqu'au 60 et ce que l'or du compte permet de payer ; maître le plus proche. Marche aussi pour les persos pas connectés. Clic droit sur un sort : l'écarter (il n'est plus compté ni proposé).",
