@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.112.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Rappel du Réal : il n'apparaissait que si le jeu annonçait la fin de la rencontre ; il vient maintenant aussi quand le boss est reconnu à sa mort ou à son butin. Un donjon où tu ramasses un Réal est retenu et donne le rappel les fois suivantes.
+- Rappel du Réal : il pouvait apparaître juste après avoir fouillé le corps du boss ; il s'arrête maintenant bien au butin.
+- Résumé de sortie de donjon : il ne venait pas quand tu sortais en fantôme, ni quand le donjon n'était reconnu qu'au premier boss. Il s'écrit maintenant dans le chat (« Bilan du donjon : … »), une fois revenu à la vie si tu es sorti mort.
+
 ## v1.112.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

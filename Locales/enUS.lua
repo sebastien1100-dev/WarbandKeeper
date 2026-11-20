@@ -4268,4 +4268,5 @@ WK.Locales.enUS.text = {
     ["à l'écran, se place en mode édition"] = "on screen, placed in edit mode",
     ["Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé."] = "Free slots (click: throw away the cheapest grey item), nearest vendor and class trainer (click: guide). Red when urgent.",
     ["Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau."] = "In \"To do\": turning in your finished quests would get you a level.",
+    ["Bilan du donjon :"] = "Dungeon summary:",
 }

@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.112.1", date = "20/11/2026",
+        fixed = {
+            "Rappel du Réal : il n'apparaissait que si le jeu annonçait la fin de la rencontre ; il vient maintenant aussi quand le boss est reconnu à sa mort ou à son butin. Un donjon où tu ramasses un Réal est retenu et donne le rappel les fois suivantes.",
+            "Rappel du Réal : il pouvait apparaître juste après avoir fouillé le corps du boss ; il s'arrête maintenant bien au butin.",
+            "Résumé de sortie de donjon : il ne venait pas quand tu sortais en fantôme, ni quand le donjon n'était reconnu qu'au premier boss. Il s'écrit maintenant dans le chat (« Bilan du donjon : … »), une fois revenu à la vie si tu es sorti mort.",
+        },
+    },
+    {
         version = "1.112.0", date = "20/11/2026", restart = true,
         changed = {
             "Rappels à l'écran retirés : plus de barre d'icônes, de pile « Rappels », de messages éclair ni de texte rouge. Ce qui compte (envie tombée en donjon, alerte de prix, point de vol à apprendre…) reste écrit dans le chat.",

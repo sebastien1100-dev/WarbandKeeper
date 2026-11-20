@@ -334,9 +334,12 @@ local function record(b)
     if inst then M:LearnInstance(inst, d) end
     if not M.run or M.run.key ~= d.key then
         M.run = newRun(d.key)
+        -- passage ouvert par un boss (donjon pas reconnu à l'entrée) : point de départ du résumé de sortie
+        M.run.st = M.Snapshot()
         local st = db(); st.runs = st.runs or {}; st.runs[WK:CharKey()] = M.run
     end
     if M.run.killed[b.id] then return end
+    M:RealBoss(b)
     M:Begin()
     M.run.killed[b.id] = time()
     M.run.lastBoss, M.run.lastAt = b.id, time()
@@ -383,7 +386,6 @@ WK:On("ENCOUNTER_END", function(encounterID, encounterName, _, _, success)
         b.nameFR = encounterName
     end
     record(b)
-    M:RealBoss(b)
 end)
 
 -- Objet trouvé sur le corps du PNJ id : s'il n'est dans la table que d'un seul boss pas encore
@@ -451,14 +453,19 @@ WK:On("LOOT_OPENED", function()
     for i = 1, GetNumLootItems() do
         local ok, guid = pcall(GetLootSourceInfo, i)
         guid = ok and readable(guid) or nil
-        -- corps du boss du Réal ouvert : le rappel s'arrête
-        if guid and M.realPending and npcID(guid) == M.realPending.boss then M:OnRealClear() end
         if guid then
             pcall(onDeath, guid)
             local link = GetLootSlotLink and GetLootSlotLink(i)
             local item = link and WK:ParseItemID(link)
             if item then pcall(learnFromLoot, npcID(guid), item) end
+            -- Réal sur ce corps : son donjon en donne (retenu pour les prochaines fois)
+            if item == M.REAL_ITEM then
+                local d = M:Current()
+                if d then db().realLearned = db().realLearned or {}; db().realLearned[d.key] = true end
+            end
         end
+        -- corps du boss du Réal ouvert (après la reconnaissance du boss) : le rappel s'arrête
+        if guid and M.realPending and npcID(guid) == M.realPending.boss then M:OnRealClear() end
     end
 end)
 
@@ -478,6 +485,7 @@ local function onZone()
             if saved and saved.key == d.key and (not saved.left or time() - saved.left < RUN_KEEP)
                 and not (store.resetAt and (saved.left or saved.start) < store.resetAt) then
                 saved.left = nil
+                saved.st = saved.st or M.Snapshot()
                 M.run = saved
             else
                 M.run = newRun(d.key)
@@ -500,7 +508,8 @@ local function onZone()
     else
         if M.run then
             M.run.left = time()
-            M:LeaveSummary(M.run)
+            if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then M.summaryLater = M.run
+            else M:LeaveSummary(M.run) end
         end
         lastKey, M.run = nil, nil
         if M.OnRealClear then M:OnRealClear() end
@@ -554,6 +563,16 @@ function M.Snapshot()
     return { xp = UnitXP and UnitXP("player") or 0, xpMax = UnitXPMax and UnitXPMax("player") or 1,
         lvl = UnitLevel and UnitLevel("player") or 1, money = GetMoney and GetMoney() or 0, deaths = 0, rep = {} }
 end
+-- sorti en fantôme : le résumé vient une fois en vie, dehors (rentré dans la même copie : il attendra la sortie)
+local function lateSummary()
+    local run = M.summaryLater
+    if not run or (UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) then return end
+    M.summaryLater = nil
+    if M.run == run then return end
+    M:LeaveSummary(run)
+end
+WK:On("PLAYER_ALIVE", function() C_Timer.After(1, lateSummary) end)
+WK:On("PLAYER_UNGHOST", function() C_Timer.After(1, lateSummary) end)
 WK:On("PLAYER_DEAD", function() if M.run and M.run.st then M.run.st.deaths = (M.run.st.deaths or 0) + 1 end end)
 WK:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(msg)
     local st = M.run and M.run.st
@@ -583,10 +602,9 @@ end
 function M:LeaveSummary(run)
     local mode = self:Config().summary
     if mode == "off" or not run or not run.st or time() - run.start < 120 then return end
-    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return end -- mort : on reviendra
     local txt = self:SummaryText(run)
     if not txt then return end
-    WK:Print(txt)
+    WK:Print(T("Bilan du donjon :") .. " " .. txt)
     if mode == "group" and IsInGroup and IsInGroup() and SendChatMessage then
         -- message aux autres joueurs : sans codes de couleur
         local plain = txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
@@ -605,8 +623,11 @@ local function dayKey()
     local left = C_DateAndTime and C_DateAndTime.GetSecondsUntilDailyReset and C_DateAndTime.GetSecondsUntilDailyReset()
     return left and math.floor((time() + left) / 3600) or date("%Y%m%d")
 end
+function M:RealGiver(key)
+    return self.REAL_DUNGEONS[key] or (db().realLearned or {})[key] or false
+end
 function M:RealBoss(b)
-    if not (self:Config().real and b and b.dungeon and self.REAL_DUNGEONS[b.dungeon.key]) then return end
+    if not (self:Config().real and b and b.dungeon and self:RealGiver(b.dungeon.key)) then return end
     local c = WK.DB:Me()
     c.realKills = c.realKills or {}
     local day = dayKey()
