@@ -266,17 +266,33 @@ function M:StepsNow()
     end
     -- donjon à ton niveau
     if not cfg.noDungeons and WK.modules.Dungeons then
-        local pick, pd
-        for _, d in ipairs(WK.modules.Dungeons:All()) do
+        -- quêtes du donjon encore à faire pour ce perso (un donjon dont toutes les quêtes sont faites est écarté)
+        local Dg, Qm = WK.modules.Dungeons, Qs()
+        local function questsLeft(d)
+            if not (Dg.Quests and Qm and Qm.State) then return nil, 0 end
+            local list = Dg:Quests(d, me)
+            local left = 0
+            for _, q in ipairs(list) do
+                local ok, st = pcall(Qm.State, Qm, q, me)
+                if ok and st ~= "done" then left = left + 1 end
+            end
+            return left, #list
+        end
+        local pick, pd, pickLeft
+        for _, d in ipairs(Dg:All()) do
             if not d.raid and d.min and d.max and lvl >= d.min and lvl <= d.max - 2 then
-                local mid = (d.min + d.max) / 2
-                local dd = math.abs(mid - lvl)
-                if not pd or dd < pd then pick, pd = d, dd end
+                local left, total = questsLeft(d)
+                if not (total > 0 and left == 0) then
+                    local mid = (d.min + d.max) / 2
+                    local dd = math.abs(mid - lvl)
+                    if not pd or dd < pd then pick, pd, pickLeft = d, dd, left end
+                end
             end
         end
         if pick then
             add({ key = "dungeon:" .. pick.key, kind = "dungeon", title = string.format(T("Donjon à ton niveau : %s"), pick.name),
-                sub = string.format(T("niveau %d à %d · cherche un groupe (page LFG)"), pick.min, pick.max),
+                sub = string.format(T("niveau %d à %d · cherche un groupe (page LFG)"), pick.min, pick.max)
+                    .. ((pickLeft or 0) > 0 and (" · " .. string.format(T("%d quête(s) à faire"), pickLeft)) or ""),
                 act = function() WK.modules.Dungeons:GuideTo(pick) end })
         end
     end

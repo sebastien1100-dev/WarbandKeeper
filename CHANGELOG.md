@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.14 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Guide de montée : un donjon dont tu as déjà fait toutes les quêtes n'est plus proposé (le suivant à ton niveau l'est) ; l'étape donjon dit combien de quêtes il te reste à y faire.
+
 ## v1.100.13 — 20/11/2026
 
 _Un /reload suffit._

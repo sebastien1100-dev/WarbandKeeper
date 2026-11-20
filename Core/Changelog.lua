@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.14", date = "20/11/2026",
+        changed = {
+            "Guide de montée : un donjon dont tu as déjà fait toutes les quêtes n'est plus proposé (le suivant à ton niveau l'est) ; l'étape donjon dit combien de quêtes il te reste à y faire.",
+        },
+    },
+    {
         version = "1.100.13", date = "20/11/2026",
         changed = {
             "Carte du monde, liste « Rares » : même allure discrète que le volet des quêtes (plus petite, fond léger, texte fin, 8 rares au plus, croix plus petite). Toujours repliable d'un clic sur le titre, déplaçable, et désactivable (croix ou Rares > roue dentée).",

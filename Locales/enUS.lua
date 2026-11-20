@@ -4098,4 +4098,5 @@ WK.Locales.enUS.text = {
     ["Volet des quêtes sur la carte"] = "Quest panel on the map",
     ["Petite liste des quêtes du journal en bas à gauche de la carte du monde (clic : suivre une quête)."] = "Small list of your logged quests at the bottom left of the world map (click: track a quest).",
     ["rendre"] = "turn in",
+    ["%d quête(s) à faire"] = "%d quest(s) to do",
 }
