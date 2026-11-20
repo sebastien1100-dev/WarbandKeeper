@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.4", date = "20/11/2026",
+        changed = {
+            "Menu Échap avec EllesmereUI : le bouton « Warband Keeper » colle mieux à ses voisins (fond plus sombre, liseré à peine visible) et son nom est en deux tons comme eux (« Keeper » à la couleur de l'apparence).",
+        },
+    },
+    {
         version = "1.107.3", date = "20/11/2026",
         changed = {
             "Paladin : la barre des bénédictions ne s'affiche plus quand tu es seul, seulement en groupe, en raid ou en donjon. Réglage « Aussi quand je suis seul » (QoL > Classes > Paladin > Bénédictions) pour la garder tout le temps.",

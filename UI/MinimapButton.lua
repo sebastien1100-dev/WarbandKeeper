@@ -105,11 +105,11 @@ local function skinPieces(b)
     if b.wkSkin then return b.wkSkin end
     local k = {}
     k.bg = b:CreateTexture(nil, "BACKGROUND", nil, -6); k.bg:SetPoint("TOPLEFT", 2, -2); k.bg:SetPoint("BOTTOMRIGHT", -2, 2)
-    k.bg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+    k.bg:SetColorTexture(0.065, 0.065, 0.065, 0.96) -- fond des voisins (plus sombre, presque opaque)
     k.edges = {}
     for i, pt in ipairs({ { "TOPLEFT", "TOPRIGHT", true }, { "BOTTOMLEFT", "BOTTOMRIGHT", true }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
         local e = b:CreateTexture(nil, "BORDER", nil, 7)
-        e:SetColorTexture(1, 1, 1, 0.16)
+        e:SetColorTexture(1, 1, 1, 0.06) -- liseré à peine visible, comme les voisins
         e:SetPoint(pt[1], k.bg, pt[1]); e:SetPoint(pt[2], k.bg, pt[2])
         if pt[3] then e:SetHeight(1) else e:SetWidth(1) end
         k.edges[i] = e
@@ -140,7 +140,7 @@ local function skinGameMenuButton(menu, btn)
             if not ref and skinned(b) then ref = b end
         end
     end
-    if not ref then showSkin(btn, false) return end
+    if not ref then showSkin(btn, false); btn:SetText("Warband Keeper") return end
     local k = skinPieces(btn)
     showSkin(btn, true)
     for _, r in ipairs({ btn:GetRegions() }) do
@@ -155,6 +155,8 @@ local function skinGameMenuButton(menu, btn)
         local font, size, flags = rfs:GetFont()
         if font then fs:SetFont(font, size, flags or "") end
         fs:SetTextColor(1, 1, 1, 1)
+        -- nom de marque en deux tons, comme « Naowh Forever » et « EllesmereUI » : « Keeper » à l'accent
+        btn:SetText("Warband " .. UI:Hex({ UI:Accent() }) .. "Keeper|r")
     end
 end
 local function addGameMenuButton(menu)

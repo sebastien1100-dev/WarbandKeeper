@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.107.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Menu Échap avec EllesmereUI : le bouton « Warband Keeper » colle mieux à ses voisins (fond plus sombre, liseré à peine visible) et son nom est en deux tons comme eux (« Keeper » à la couleur de l'apparence).
+
 ## v1.107.3 — 20/11/2026
 
 _Un /reload suffit._
