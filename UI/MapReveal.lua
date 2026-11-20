@@ -103,3 +103,42 @@ function UI:DrawMapReveal(cv, mapID, cw, ch)
     end
     UI.mapRevealCount = used -- /wk carte
 end
+
+-- Carte entière (toutes les zones, découvertes ou pas) dans un cadre de l'addon (cartes de la page Quêtes) :
+-- textures prises dans la liste « list » (créées sur « frame » au besoin), à la taille w × h ; renvoie leur nombre
+function UI:PaintMapOverlays(frame, list, mapID, w, h)
+    for _, t in ipairs(list) do t:Hide() end
+    local d = WK.MapRevealDB and WK.MapRevealDB[mapID]
+    if not d then return 0 end
+    local sx, sy = w / d[1], h / d[2]
+    local n = 0
+    for k = 3, #d do
+        local o = d[k]
+        local ow, oh, ox, oy = o[1], o[2], o[3], o[4]
+        local ids = {}
+        for id in o[5]:gmatch("%d+") do ids[#ids + 1] = tonumber(id) end
+        local cols, rows = math.ceil(ow / TILE), math.ceil(oh / TILE)
+        for j = 1, rows do
+            local ph = (j < rows) and TILE or (oh - TILE * (rows - 1))
+            local fh = (j < rows) and TILE or fileSize(ph)
+            for i = 1, cols do
+                local id = ids[(j - 1) * cols + i]
+                if id and id > 0 then
+                    local pw = (i < cols) and TILE or (ow - TILE * (cols - 1))
+                    local fw = (i < cols) and TILE or fileSize(pw)
+                    n = n + 1
+                    local t = list[n]
+                    if not t then t = frame:CreateTexture(nil, "BACKGROUND", nil, 2); list[n] = t end
+                    t:SetTexture(id)
+                    t:SetTexCoord(0, pw / fw, 0, ph / fh)
+                    t:SetSize(pw * sx, ph * sy)
+                    t:ClearAllPoints()
+                    t:SetPoint("TOPLEFT", frame, "TOPLEFT", (ox + TILE * (i - 1)) * sx, -(oy + TILE * (j - 1)) * sy)
+                    t:SetVertexColor(1, 1, 1, 1)
+                    t:Show()
+                end
+            end
+        end
+    end
+    return n
+end

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.1", date = "20/11/2026",
+        changed = {
+            "Page Quêtes, cartes de « Mon journal » et de la « Tournée » : la zone est dessinée en entier (toutes ses parties, découvertes ou pas), comme une carte explorée, au lieu du fond vide.",
+        },
+    },
+    {
         version = "1.100.0", date = "20/11/2026", restart = true,
         added = {
             "Fiche du perso : nouvel onglet « Armes » (entre Sorts et BiS). À gauche, chaque arme apprise avec sa jauge (vert au maximum, orange un peu en retard, rouge très en retard) et « équipée » sur celle en main ; au survol, le retard et comment le rattraper.",

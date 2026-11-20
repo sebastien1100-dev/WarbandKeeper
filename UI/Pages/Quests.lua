@@ -204,6 +204,7 @@ local function paintMiniBase(mc, map, emptyText)
     mc.me:Hide(); mc.meEdge:Hide(); mc.turn:Hide(); mc.turnBg:Hide()
     if not map or AW < 20 or AH < 20 then
         for _, t in ipairs(mc.tiles) do t:Hide() end
+        for _, t in ipairs(mc.overlays or {}) do t:Hide() end
         mc.artKey = nil
         mc.name:SetText(T("Carte"))
         mc.none:SetText(T(emptyText)); mc.none:Show()
@@ -234,6 +235,9 @@ local function paintMiniBase(mc, map, emptyText)
                 t:Show()
             end
         end
+        -- carte entière : toutes les zones dessinées, découvertes ou pas (morceaux de Modules/MapRevealDB.lua)
+        mc.overlays = mc.overlays or {}
+        if UI.PaintMapOverlays then UI:PaintMapOverlays(mc.area, mc.overlays, map, AW, AH) end
     end
     -- tailles à l'échelle de la carte
     local k = math.max(1, AW / 360)
