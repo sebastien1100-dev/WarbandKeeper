@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.86.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Micro menu sans animation : les raccourcis apparaissent d'un coup au survol de l'heure et disparaissent de même, sans glissement ni effet loupe ; l'infobulle de chaque raccourci suffit. Plus léger : la barre n'est redessinée que quand elle s'ouvre ou se ferme. Le réglage « Effet loupe » est retiré.
+
 ## v1.86.0 — 20/11/2026
 
 _Un /reload suffit._

@@ -4,8 +4,8 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Horloge en haut de l'écran : au repos, l'heure et deux petites barres dessous (FPS, latence).
--- Au survol, les raccourcis glissent de chaque côté de l'heure, sans fond (chaque icône a sa
--- tuile) ; effet loupe façon dock (réglable). Des zones invisibles suivent les icônes pour le survol. Repli quand
+-- Au survol, les raccourcis apparaissent de chaque côté de l'heure (chaque icône a sa tuile, infobulle
+-- au survol), sans animation ni effet loupe : rien n'est redessiné tant que rien ne change. Repli quand
 -- la souris s'en va. Hors combat seulement pour le dépliage (la pierre de foyer est un
 -- bouton protégé que le jeu interdit de bouger en combat).
 -- Réglages : WK.modules.QoL:Config().clock
@@ -284,7 +284,7 @@ local SHORTCUTS = {
 UI.CLOCK_SHORTCUTS = SHORTCUTS
 
 local DEFAULTS = {
-    enabled = true, server = false, h12 = false, magnify = 0.8, size = 28,
+    enabled = true, server = false, h12 = false, size = 28,
     always = false, clockAlways = true, -- raccourcis toujours dépliés ; horloge toujours visible
     bold = false, timeSize = 0, timeFont = "ui", -- heure : gras, taille (0 = suit la taille des raccourcis), police
     -- survol de l'heure : addons et mémoire (style barres / simple, nombre, tri, FPS, hausse, seuil en Mo, clic droit)
@@ -726,7 +726,7 @@ local function build()
     bar.loginAt = time()
     bar.icons = {}
     for _, def in ipairs(SHORTCUTS) do bar.icons[def.key] = makeIcon(def) end
-    bar.open = 0 -- 0 replié, 1 déplié (animé)
+    bar.open = 0 -- 0 replié, 1 déplié
     bar.acc = 0
     bar:SetScript("OnUpdate", function(s, el) s:Tick(el) end)
 
@@ -760,24 +760,17 @@ local function build()
         local want = (o.always or over or (self.leftAt and GetTime() - self.leftAt < 0.4)) and 1 or 0
         -- horloge masquée au repos (option) : elle revient au survol de son emplacement
         local ca = (o.clockAlways ~= false or over or (not o.always and self.open > 0)) and 1 or 0
-        self.clockA = self.clockA or 1
         if self.clockA ~= ca then
-            self.clockA = self.clockA < ca and math.min(1, self.clockA + el * 6) or math.max(0, self.clockA - el * 6)
-            self.bg:SetAlpha(self.clockA); self.clockBtn:SetAlpha(self.clockA)
+            self.clockA = ca
+            self.bg:SetAlpha(ca); self.clockBtn:SetAlpha(ca)
         end
         if inCombat() then want = self.open > 0.5 and 1 or 0 end
-        local before = self.open
-        if self.open < want then self.open = math.min(1, self.open + el * 6)
-        elseif self.open > want then self.open = math.max(0, self.open - el * 6) end
-        -- déplié : on ne replace que si l'ouverture change, si le curseur bouge dessus (effet loupe),
-        -- ou toutes les 0,5 s (pastilles, compteurs) ; avant, tout était refait à chaque image
-        local cx = GetCursorPosition()
+        -- dépliage d'un coup, sans animation ; on ne replace que si l'état change (ou toutes les 5 s déplié)
         local now = GetTime()
-        -- placement : seulement quand quelque chose bouge (avant : toutes les 0,5 s, même immobile)
-        if self.open ~= before or self.relayout
-            or (self.open > 0 and ((over and cx ~= self.lastCx) or now - (self.lastLayout or 0) > 5)) then
+        if self.open ~= want or self.relayout or (self.open > 0 and now - (self.lastLayout or 0) > 5) then
+            self.open = want
             self.relayout = nil
-            self.lastCx, self.lastLayout = cx, now
+            self.lastLayout = now
             self:Layout()
         end
         -- icônes, pastilles et compteurs : une fois par seconde, et seulement si la barre est dépliée
@@ -797,8 +790,7 @@ local function build()
         return false
     end
 
-    -- Place les raccourcis : effet loupe selon la distance du curseur (hors combat). Chaque fond de
-    -- côté épouse ses icônes : il grandit avec elles.
+    -- Place les raccourcis (hors combat). Chaque fond de côté épouse ses icônes.
     function bar:Layout()
         if inCombat() then return end
         local o = cfg()
@@ -806,15 +798,7 @@ local function build()
         local k = base / BASE
         local L, R = self:Lists()
         local open = self.open
-        local scale = self:GetEffectiveScale()
-        local cx = (GetCursorPosition()) / scale
-        local over = open > 0.05 and self:Over()
-        local function sizeOf(x)
-            if not over then return base end
-            local d = math.abs(cx - x)
-            local f = math.max(0, 1 - d / (base * 3))
-            return math.floor(base * (1 + (o.magnify or 0) * f * f) + 0.5)
-        end
+        local function sizeOf() return base end
         local fs = (o.timeSize or 0) > 0 and o.timeSize or math.floor(18 * k + 0.5)
         local font = timeFont(o.timeFont)
         local fkey = font .. fs
@@ -859,10 +843,9 @@ local function build()
         self.time:SetPoint("CENTER", self.clockBtn, "CENTER", (o.bold and -0.5 or 0) - shift, yoff)
         self.bg:SetSize(clockW, h)
         self:SetHeight(h)
-        local left = self:GetLeft() or 0
         local mid = (self:GetWidth() or 120) / 2
         local top = PAD + math.floor((h - base - PAD * 2) / 2) -- icônes centrées sur la hauteur de l'heure
-        local slide = (1 - open) * 14 -- les côtés glissent depuis l'heure
+        local slide = 0
         local function side(list, panel, dir)
             panel:SetShown(#list > 0 and open > 0.05)
             if #list == 0 then return end
@@ -870,7 +853,7 @@ local function build()
             local x = edge + dir * PAD
             local maxH = 0
             for _, ic in ipairs(list) do
-                local sz = sizeOf(left + x + dir * base / 2)
+                local sz = sizeOf()
                 local x0 = dir > 0 and x or x - sz
                 ic:SetSize(sz, sz)
                 ic:ClearAllPoints()

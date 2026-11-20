@@ -800,7 +800,7 @@ UI:RegisterPage({
         section("micro")
         local ck = UI.ClockConfig()
         local SC = UI.CLOCK_SHORTCUTS
-        local clockCard = card("Horloge et raccourcis", 40 + 10 * 46 + 30 + 128, "les raccourcis se déplient au survol de l'heure")
+        local clockCard = card("Horloge et raccourcis", 40 + 9 * 46 + 30 + 128, "les raccourcis se déplient au survol de l'heure")
         -- survol de l'heure : addons et mémoire (UI/ClockBar.lua)
         do
             local pc = card("Survol de l'heure", 40 + 8 * 46 + 8, "addons, mémoire, FPS et latence")
@@ -856,9 +856,6 @@ UI:RegisterPage({
                 function(v) ck.timeSize = v; csync() end, "%d"), 240)
         crow("Heure en gras", nil,
             toggle(clockCard, function() return ck.bold end, function(v) ck.bold = v; csync() end), 80)
-        crow("Effet loupe", "Grossissement des raccourcis sous la souris (0 : aucun).",
-            UI:Slider(clockCard, 220, 0, 150, 10, function() return math.floor((ck.magnify or 0) * 100 + 0.5) end,
-                function(v) ck.magnify = v / 100 end, "%d %%"), 240)
         -- Raccourcis : la barre telle qu'à l'écran. Clic : gauche > droite > masqué ;
         -- Maj + clic gauche / droit : décaler d'un cran ; clic droit : masquer.
         local hdr = UI:Text(clockCard, 10, C.dim)
