@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.6", date = "20/11/2026",
+        fixed = {
+            "Carte des vols : l'encart « Guidage : vole jusqu'à … » était calculé mais caché sous la carte des vols ; il passe maintenant au-dessus. La destination est aussi marquée sur la carte par un anneau qui clignote.",
+        },
+    },
+    {
         version = "1.100.5", date = "20/11/2026",
         added = {
             "/wk vol diag : ce que l'addon lit de la carte des vols ouverte (relais, positions, relais connus, guidage, vol prévu) et pourquoi l'encart du guidage s'affiche ou pas.",

@@ -212,7 +212,7 @@ local function findNode(name)
     end
     return loose
 end
-local function hideHint() if hint then hint:Hide() end end
+local function hideHint() if hint then hint:Hide(); if hint.ring then hint.ring:Hide() end end end
 local function showHint()
     hideHint()
     local Nv = WK.modules.Nav
@@ -275,7 +275,31 @@ local function showHint()
         hint.go:Hide()
     end
     hint.go:SetWidth(hint.go.label:GetStringWidth() + 32)
-    UI:MatchHost(hint, host, 20)
+    -- strate juste au-dessus de la carte des vols (au même niveau, l'encart restait caché sous la carte)
+    local NEXT = { BACKGROUND = "LOW", LOW = "MEDIUM", MEDIUM = "HIGH", HIGH = "DIALOG", DIALOG = "FULLSCREEN",
+        FULLSCREEN = "FULLSCREEN_DIALOG", FULLSCREEN_DIALOG = "TOOLTIP" }
+    local st = host:GetFrameStrata() or "MEDIUM"
+    hint:SetFrameStrata(NEXT[st] or st); hint:SetFrameLevel(20)
+    -- anneau qui clignote sur le relais de destination (bouton de la carte des vols classique)
+    local btn = i and (_G["TaxiButton" .. i])
+    if btn and btn.IsShown and btn:IsShown() then
+        if not hint.ring then
+            hint.ring = CreateFrame("Frame", nil, UIParent)
+            hint.ring.tex = hint.ring:CreateTexture(nil, "OVERLAY"); hint.ring.tex:SetAllPoints()
+            hint.ring.tex:SetTexture(UI.MEDIA .. "ring")
+            hint.ring:SetScript("OnUpdate", function(f, el)
+                f.t = (f.t or 0) + el
+                local rr, gg, bb = UI:Accent()
+                f.tex:SetVertexColor(rr, gg, bb, 0.55 + 0.45 * math.sin(f.t * 6))
+            end)
+        end
+        hint.ring:SetFrameStrata(hint:GetFrameStrata()); hint.ring:SetFrameLevel(21)
+        hint.ring:ClearAllPoints()
+        hint.ring:SetPoint("CENTER", btn, "CENTER", 0, 0); hint.ring:SetSize(34, 34)
+        hint.ring:Show()
+    elseif hint.ring then
+        hint.ring:Hide()
+    end
     -- posé en bas de la carte des vols, dedans (dessous, il sortait de l'écran)
     hint:ClearAllPoints()
     hint:SetPoint("BOTTOMLEFT", host, "BOTTOMLEFT", 12, 14)
@@ -310,6 +334,11 @@ function M:TaxiDiag()
     local leg = Nv and Nv.PlannedFlight and Nv:PlannedFlight()
     table.insert(out, "vol prévu par le trajet : " .. (leg and (tostring(leg.from) .. " » " .. tostring(leg.to)) or "aucun"))
     table.insert(out, "encart : " .. hintWhy)
+    if hint and hint:IsShown() then
+        table.insert(out, string.format("encart : %s/%d, %s, visible %s", tostring((hint:GetFrameStrata())), hint:GetFrameLevel() or 0,
+            hint.GetLeft and hint:GetLeft() and string.format("%d,%d %dx%d", hint:GetLeft(), hint:GetBottom() or 0, hint:GetWidth() or 0, hint:GetHeight() or 0) or "pas de position",
+            tostring((hint:IsVisible()))))
+    end
     return out
 end
 

@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.6 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte des vols : l'encart « Guidage : vole jusqu'à … » était calculé mais caché sous la carte des vols ; il passe maintenant au-dessus. La destination est aussi marquée sur la carte par un anneau qui clignote.
+
 ## v1.100.5 — 20/11/2026
 
 _Un /reload suffit._
