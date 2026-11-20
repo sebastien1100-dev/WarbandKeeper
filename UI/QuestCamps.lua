@@ -190,7 +190,7 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
             if x then
                 nt = nt + 1
                 local pin = turnPin(nt, cv)
-                local s = main and 22 or 16
+                local s = main and 18 or 14
                 pin:SetSize(s, s)
                 pin.title = title
                 pin:SetFrameLevel(lvl + 6)

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.6", date = "20/11/2026",
+        fixed = {
+            "Repère de rendu de quête : il s'affichait en carré doré au lieu du médaillon rond ; il est maintenant rond, avec un reflet clair en haut.",
+        },
+        changed = {
+            "Cartes de Mon journal et de la Tournée : repères plus petits (camps, étapes numérotées, rendu, ta position) ; repère de rendu un peu plus petit aussi sur la carte du monde.",
+        },
+    },
+    {
         version = "1.98.5", date = "20/11/2026",
         added = {
             "Menu du jeu (Échap) : bouton « Warband Keeper » qui ouvre la fenêtre, placé juste au-dessus d'EllesmereUI (ou d'« Add-ons » sans lui). Interrupteur « Raccourci dans le menu du jeu » dans Options > Général > Fenêtre.",

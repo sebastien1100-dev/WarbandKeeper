@@ -73,6 +73,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.98.6 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Cartes de Mon journal et de la Tournée : repères plus petits (camps, étapes numérotées, rendu, ta position) ; repère de rendu un peu plus petit aussi sur la carte du monde.
+
+### Corrections
+- Repère de rendu de quête : il s'affichait en carré doré au lieu du médaillon rond ; il est maintenant rond, avec un reflet clair en haut.
+
 ## v1.98.5 — 20/11/2026
 
 _Un /reload suffit._

@@ -237,8 +237,8 @@ local function paintMiniBase(mc, map, emptyText)
     end
     -- tailles à l'échelle de la carte
     local k = math.max(1, AW / 360)
-    mc.me:SetSize(9 * k, 9 * k); mc.meEdge:SetSize(13 * k, 13 * k)
-    mc.turnBg:SetSize(18 * k, 18 * k)
+    mc.me:SetSize(7 * k, 7 * k); mc.meEdge:SetSize(10 * k, 10 * k)
+    mc.turnBg:SetSize(13 * k, 13 * k)
     local me = G() and G():PlayerPos()
     if me and me.map == map and me.x then
         mc.me:ClearAllPoints(); mc.me:SetPoint("CENTER", mc.area, "TOPLEFT", me.x * AW, -me.y * AH)
@@ -1061,7 +1061,7 @@ UI:RegisterPage({
                 if c.map == map then
                     n = n + 1
                     local b = campPin(mc, n)
-                    local size = math.max(14, math.min(160, (c.r or 0.02) * 2 * AW))
+                    local size = math.max(10, math.min(120, (c.r or 0.02) * 1.6 * AW))
                     b:SetSize(size, size)
                     b:ClearAllPoints(); b:SetPoint("CENTER", mc.area, "TOPLEFT", c.x * AW, -c.y * AH)
                     b.qid, b.qtitle, b.oi, b.oname, b.have, b.need, b.done, b.sel, b.camp = qid, qtitle, oi,
@@ -1650,7 +1650,7 @@ UI:RegisterPage({
         local AW, AH = paintMiniBase(mc, map, "Aucune étape à montrer.")
         if not AW then return end
         local ar, ag, ab = UI:Accent()
-        local size = math.max(20, math.min(34, AW / 22))
+        local size = math.max(14, math.min(22, AW / 34))
         local n, nl, prev = 0, 0, nil
         for i, s in ipairs(steps) do
             if s.map == map and s.x then
