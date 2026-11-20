@@ -1623,8 +1623,11 @@ local function placeReload(s)
     local b = s.owner
     if b:IsVisible() then
         s:ClearAllPoints(); s:SetAllPoints(b)
-        s:SetFrameStrata(b:GetFrameStrata() or "HIGH")
-        s:SetFrameLevel(math.min(9000, (b:GetFrameLevel() or 1) + 5))
+        -- une strate au-dessus de notre bouton : aucune partie de notre fenêtre (remontée au clic) ne le couvre
+        local UP = { BACKGROUND = "LOW", LOW = "MEDIUM", MEDIUM = "HIGH", HIGH = "DIALOG", DIALOG = "FULLSCREEN",
+            FULLSCREEN = "FULLSCREEN_DIALOG", FULLSCREEN_DIALOG = "TOOLTIP", TOOLTIP = "TOOLTIP" }
+        s:SetFrameStrata(UP[b:GetFrameStrata() or "HIGH"] or "DIALOG")
+        s:SetFrameLevel(10)
         s:Show()
     else
         s:Hide()
@@ -1643,6 +1646,10 @@ function UI:SecureReload(b)
     -- survol transmis à notre bouton (surbrillance, infobulle)
     s:SetScript("OnEnter", function() local fn = b:GetScript("OnEnter"); if fn then fn(b) end end)
     s:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
+    -- diagnostic (/wk rechargement) : dernier clic reçu et ce que le jeu a dit juste après
+    s:HookScript("PreClick", function(_, button, down)
+        UI.reloadLast = { at = GetTime(), button = button, down = down, keyDown = WK.GetCVar and WK.GetCVar("ActionButtonUseKeyDown") }
+    end)
     s:Hide()
     b:HookScript("OnShow", function() placeReload(s) end)
     -- notre fenêtre passe devant au clic (niveau relevé) : le bouton protégé est remonté au-dessus de b dès
@@ -1656,6 +1663,23 @@ function UI:SecureReload(b)
     C_Timer.After(0, function() placeReload(s) end)
     return s
 end
+-- /wk rechargement : état des boutons de rechargement (affiché, devant, souris dessus, dernier clic)
+function UI:ReloadDiag()
+    local out = {}
+    for i, s in ipairs(reloads) do
+        local b = s.owner
+        table.insert(out, string.format("%d. bouton %s · notre bouton %s, %s %d · protégé %s, %s %d · souris dessus : %s / %s · macro « %s »",
+            i, tostring(b.tooltip or (b.label and (b.label:GetText())) or "?"), b:IsVisible() and "visible" or "caché",
+            tostring((b:GetFrameStrata())), b:GetFrameLevel() or 0, s:IsShown() and "affiché" or "caché",
+            tostring((s:GetFrameStrata())), s:GetFrameLevel() or 0,
+            tostring((b:IsMouseOver())), tostring((s:IsMouseOver())), tostring((s:GetAttribute("macrotext")))))
+    end
+    local l = UI.reloadLast
+    table.insert(out, l and string.format("dernier clic reçu il y a %.0f s (%s, %s, touche enfoncée du jeu : %s)", GetTime() - l.at,
+        tostring(l.button), l.down and "enfoncé" or "relâché", tostring(l.keyDown)) or "aucun clic reçu par le bouton protégé")
+    return out
+end
+
 -- en combat : retirés (un bouton protégé ne se déplace ni ne se cache plus ensuite) ; remis après
 WK:On("PLAYER_REGEN_DISABLED", function() for _, s in ipairs(reloads) do s:Hide() end end)
 WK:On("PLAYER_REGEN_ENABLED", function() for _, s in ipairs(reloads) do placeReload(s) end end)

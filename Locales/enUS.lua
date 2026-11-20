@@ -18,6 +18,7 @@ WK.Locales.enUS.keys = {
     HELP_BOAT       = "/wk bateau - Boats: is the crossing detected? (log of the last rides)",
     HELP_PERF       = "/wk perf [seconds] - Measure what the addon costs (time per event, memory); run again to stop",
     HELP_BUFF       = "/wk buff          - \"Buff next\" button diagnostic (why it is hidden)",
+    HELP_RELOAD     = "/wk rechargement  - \"Reload UI\" buttons diagnostic",
     HELP_FP         = "/wk vol - Guide to the nearest flight point not learned yet",
     HELP_MICRO      = "/wk micro         - Micro menu shortcuts diagnostic",
     HELP_BAGS       = "/wk sacs          - Bags diagnostic (lock icon, BiS star)",
@@ -3756,4 +3757,5 @@ WK.Locales.enUS.text = {
     ["Colle ici un code WKP1:… (Ctrl+V)"] = "Paste a WKP1:… code here (Ctrl+V)",
     ["Nom (facultatif)"] = "Name (optional)",
     ["tes réglages, par perso, et leur partage"] = "your settings, per character, and sharing them",
+    ["Boutons de rechargement :"] = "Reload buttons:",
 }

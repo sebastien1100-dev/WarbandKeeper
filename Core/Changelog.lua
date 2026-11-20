@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.3", date = "20/11/2026",
+        fixed = {
+            "Icône « Recharger l'interface » de l'en-tête : toujours sans effet. Le bouton qui lance /reload est maintenant posé une strate au-dessus de la fenêtre de l'addon, pour que rien de la fenêtre ne le recouvre.",
+        },
+        added = {
+            "/wk rechargement : diagnostic des boutons de rechargement (affichés, devant ou non, souris dessus, dernier clic reçu).",
+        },
+    },
+    {
         version = "1.90.2", date = "20/11/2026",
         changed = {
             "Options > Profils refait : une carte en deux colonnes. À gauche « Mes profils » : chaque profil sur sa ligne avec les persos qui l'utilisent et ses actions (Utiliser, Exporter, Copier, Supprimer en Maj + clic), le tien encadré avec la pastille « ce perso », Créer en haut et Réinitialiser en bas.",
