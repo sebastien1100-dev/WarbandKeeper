@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.113.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Onglet LFG : avec un donjon choisi à gauche, un bandeau donne ses quêtes (à prendre, dans ton journal, plus tard, faites).
+- Bouton « Prendre les quêtes (n) » : les quêtes à prendre du donjon sont cochées dans tes quêtes (prises toutes seules en mode Assisté) et la flèche mène au donneur le plus proche, puis au suivant après chaque quête acceptée. Leur liste est dans l'infobulle du bouton.
+
 ## v1.112.1 — 20/11/2026
 
 _Un /reload suffit._

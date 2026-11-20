@@ -144,7 +144,8 @@ local function hasProf(c, prof)
 end
 
 -- La quête concerne-t-elle ce perso ? (faction, classe, métier selon les réglages)
-function M:ForChar(q, c)
+-- anyKind : quête de donjon gardée même si « Quêtes de donjon » est coupé (onglet LFG, donjon choisi)
+function M:ForChar(q, c, anyKind)
     if q.side then
         local f = c.faction
         if f == "Alliance" and q.side ~= 1 then return false end
@@ -155,7 +156,7 @@ function M:ForChar(q, c)
         local bit = CLASS_BIT[c.class or ""]
         if bit and (math.floor(q.cls / bit) % 2) == 0 then return false end
     end
-    if q.kind == "d" and not cfg.dungeons then return false end
+    if q.kind == "d" and not cfg.dungeons and not anyKind then return false end
     if q.skill and cfg.profOnly and not hasProf(c, q.skill) then return false end
     return true
 end

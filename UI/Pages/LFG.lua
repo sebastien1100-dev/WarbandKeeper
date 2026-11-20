@@ -820,6 +820,59 @@ UI:RegisterPage({
         mine, others = bottomLow(mine, first), bottomLow(others, first)
         solos = bottomLow(solos, function(r) return r end)
         local cy = 0
+        -- quêtes du donjon choisi : nombre à prendre, et un bouton qui les coche et mène aux donneurs
+        do
+            local qs = self.questStrip
+            if not qs then
+                qs = UI:Card(self.scroll.child)
+                qs:SetHeight(46)
+                qs.icon = UI:Icon(qs, "book", 18, nil, "ARTWORK"); qs.icon:SetPoint("LEFT", 14, 0)
+                qs.text = UI:Text(qs, 12); qs.text:SetPoint("LEFT", qs.icon, "RIGHT", 10, 0)
+                qs.text:SetPoint("RIGHT", qs, "RIGHT", -210, 0); qs.text:SetJustifyH("LEFT"); qs.text:SetWordWrap(false)
+                qs.btn = UI:Button(qs, T("Prendre les quêtes"), 190, 28, "primary", "guide")
+                qs.btn:SetPoint("RIGHT", -10, 0)
+                qs.btn:SetScript("OnClick", function()
+                    local Dg = WK.modules.Dungeons
+                    if qs.dungeon and Dg then Dg:PickQuests(qs.dungeon) end
+                    self:Refresh()
+                end)
+                qs.btn:SetScript("OnEnter", function(s)
+                    UI:TooltipOwner(s, "ANCHOR_TOP")
+                    GameTooltip:SetText(T("Prendre les quêtes du donjon"), 1, 1, 1)
+                    for _, q in ipairs(qs.avail or {}) do
+                        GameTooltip:AddLine("• " .. WK.modules.Quests:Name(q) .. "  " .. UI:Hex(C.dim) .. "[" .. (q.lvl or "?") .. "]|r", 0.85, 0.85, 0.85)
+                    end
+                    GameTooltip:AddLine(T("Elles sont cochées dans tes quêtes, et la flèche mène au donneur le plus proche, puis au suivant."), 0.6, 0.6, 0.6, true)
+                    GameTooltip:Show()
+                end)
+                qs.btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+                self.questStrip = qs
+            end
+            local Dg = WK.modules.Dungeons
+            local actName = self.sel and LFG:Activity(self.sel)
+            local d = Dg and actName and Dg:ByName(actName)
+            if d then
+                local s = Dg:QuestSummary(d)
+                qs.dungeon, qs.avail = d, s.avail
+                local n = #s.avail
+                local parts = {}
+                table.insert(parts, UI:Hex(n > 0 and C.gold or C.muted) .. string.format(T("%d à prendre"), n) .. "|r")
+                if s.log > 0 then table.insert(parts, UI:Hex(C.positive) .. string.format(T("%d dans ton journal"), s.log) .. "|r") end
+                if s.later > 0 then table.insert(parts, UI:Hex(C.muted) .. string.format(T("%d plus tard"), s.later) .. "|r") end
+                if s.done > 0 then table.insert(parts, UI:Hex(C.dim) .. string.format(T("%d faites"), s.done) .. "|r") end
+                local total = n + s.log + s.later + s.done
+                qs.text:SetText(total > 0 and (T("Quêtes du donjon :") .. " " .. table.concat(parts, "  ·  "))
+                    or T("Aucune quête connue pour ce donjon."))
+                local active = Dg.questPick and Dg.questPick.key == d.key
+                qs.btn:SetLabel(active and T("Donneur suivant") or string.format(T("Prendre les quêtes (%d)"), n))
+                qs.btn:SetShown(n > 0)
+                qs:ClearAllPoints(); qs:SetPoint("TOPLEFT", 0, 0); qs:SetWidth(W - 14)
+                qs:Show()
+                cy = 46 + 12
+            else
+                qs:Hide(); qs.dungeon, qs.avail = nil, nil
+            end
+        end
         local function head(title, sub)
             local h = self.heads:Get()
             h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -cy); h:SetWidth(W - 14)
@@ -863,11 +916,11 @@ UI:RegisterPage({
         local where = act or T("tous les donjons")
         if #LFG.results == 0 then
             self.empty:Show()
-            self.empty:ClearAllPoints(); self.empty:SetPoint("TOPLEFT", 0, -4); self.empty:SetWidth(W - 14)
+            self.empty:ClearAllPoints(); self.empty:SetPoint("TOPLEFT", 0, -(cy + 4)); self.empty:SetWidth(W - 14)
             self.empty:SetText(LFG.searching and T("Recherche en cours…")
                 or LFG.failed and T("La recherche a échoué (le jeu n'a pas répondu). Clique Actualiser pour réessayer.")
                 or T("Choisis un donjon à gauche (ou aucun pour tous), puis clique Actualiser."))
-            cy = 40
+            cy = cy + 40
         elseif cfg.mode == "players" then
             head(T("Joueurs seuls"), string.format(T("%d pour %s"), #solos, where))
             soloRow()

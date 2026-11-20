@@ -918,17 +918,105 @@ function M:GuideTo(d)
     return true
 end
 -- Quêtes de donjon de la zone de l'entrée, à peu près au niveau du donjon
-function M:Quests(d, c)
+function M:Quests(d, c, anyKind)
     local Q = WK.modules.Quests
     if not (Q and d.entry) then return {} end
     local out = {}
     for _, q in ipairs(Q:OnMap(d.entry[1])) do
-        if q.kind == "d" and (q.lvl or 0) >= d.min - 4 and (q.lvl or 0) <= d.max + 2 and (not c or Q:ForChar(q, c)) then
+        if q.kind == "d" and (q.lvl or 0) >= d.min - 4 and (q.lvl or 0) <= d.max + 2 and (not c or Q:ForChar(q, c, anyKind)) then
             table.insert(out, q)
         end
     end
     return out
 end
+
+-- Donjon d'après un nom donné par le jeu (recherche de groupe : « Monastère Écarlate (cimetière) »…)
+function M:ByName(name)
+    if type(name) ~= "string" or name == "" then return nil end
+    if not byKey then index() end
+    local n = norm(name)
+    local base = norm((name:gsub("%s*%b()", "")))
+    local found
+    for _, x in ipairs(WK.DungeonsDB or {}) do
+        local a, b, c = norm(x.name), norm(x.en), norm(db().names[x.key])
+        if a == n or b == n or c == n then return x end
+        if not found and (a == base or b == base or c == base) then found = x end
+    end
+    return found
+end
+
+-- Quêtes d'un donjon pour le perso connecté : à prendre (avail), dans le journal, plus tard, faites
+function M:QuestSummary(d)
+    local Q = WK.modules.Quests
+    local c = WK.DB:Me() or {}
+    local s = { avail = {}, log = 0, later = 0, done = 0 }
+    if not (Q and d) then return s end
+    for _, q in ipairs(self:Quests(d, c, true)) do
+        local st = Q:State(q, c)
+        if st == "avail" then table.insert(s.avail, q)
+        elseif st == "log" then s.log = s.log + 1
+        elseif st == "done" then s.done = s.done + 1
+        else s.later = s.later + 1 end
+    end
+    return s
+end
+
+-- Prendre les quêtes d'un donjon : cochées dans le plan de quêtes (les quêtes automatiques en mode
+-- assisté les acceptent), puis la flèche mène de donneur en donneur, du plus proche au suivant
+M.questPick = nil -- { key, name, ids = { [n°] = vrai } }
+local function giverDist(q)
+    local G = WK.modules.Guide
+    local map = q.smap or q.map
+    local p = G and G:PlayerPos()
+    if not (q.x and map and p) then return math.huge end
+    local t = { map = map, x = q.x / 100, y = q.y / 100 }
+    t.cont, t.wx, t.wy = G.ToWorld(map, t.x, t.y)
+    local ok, dd = pcall(G.Vector, G, p, t)
+    return ok and dd or math.huge
+end
+function M:NextQuestGiver()
+    local qp = self.questPick
+    if not qp then return nil end
+    local Q = WK.modules.Quests
+    local c = WK.DB:Me() or {}
+    local best, bd
+    for id in pairs(qp.ids) do
+        local q = Q:Get(id)
+        if q and q.x and Q:State(q, c) == "avail" then
+            local dd = giverDist(q)
+            if not bd or dd < bd then best, bd = q, dd end
+        end
+    end
+    if not best then
+        self.questPick = nil
+        WK:Print(string.format(T("Quêtes de %s : tout est pris."), qp.name))
+        if self.OnChange then pcall(self.OnChange, self) end
+        return nil
+    end
+    Q:GuideTo(best)
+    return best
+end
+function M:PickQuests(d)
+    local s = self:QuestSummary(d)
+    if #s.avail == 0 then return 0 end
+    local P = WK.modules.QuestPlan
+    local ids = {}
+    for _, q in ipairs(s.avail) do
+        ids[q.id] = true
+        if P then P:SetPicked(q.id, true) end
+    end
+    self.questPick = { key = d.key, name = self:Name(d), ids = ids }
+    WK:Print(string.format(T("%d quête(s) de %s cochées : la flèche mène au donneur le plus proche, puis au suivant."), #s.avail, self:Name(d)))
+    self:NextQuestGiver()
+    return #s.avail
+end
+-- quête du donjon acceptée : donneur suivant (le journal est relu juste après)
+WK:On("QUEST_ACCEPTED", function(a, b)
+    local qp = M.questPick
+    if not qp then return end
+    if not (qp.ids[a] or qp.ids[b]) then return end
+    C_Timer.After(1.5, function() if M.questPick == qp then M:NextQuestGiver() end end)
+end)
 
 -- premier combat dans le donjon du passage en cours : le chrono démarre
 WK:On("PLAYER_REGEN_DISABLED", function()

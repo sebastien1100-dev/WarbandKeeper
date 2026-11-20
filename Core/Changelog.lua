@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.113.0", date = "20/11/2026",
+        added = {
+            "Onglet LFG : avec un donjon choisi à gauche, un bandeau donne ses quêtes (à prendre, dans ton journal, plus tard, faites).",
+            "Bouton « Prendre les quêtes (n) » : les quêtes à prendre du donjon sont cochées dans tes quêtes (prises toutes seules en mode Assisté) et la flèche mène au donneur le plus proche, puis au suivant après chaque quête acceptée. Leur liste est dans l'infobulle du bouton.",
+        },
+    },
+    {
         version = "1.112.1", date = "20/11/2026",
         fixed = {
             "Rappel du Réal : il n'apparaissait que si le jeu annonçait la fin de la rencontre ; il vient maintenant aussi quand le boss est reconnu à sa mort ou à son butin. Un donjon où tu ramasses un Réal est retenu et donne le rappel les fois suivantes.",
