@@ -4152,4 +4152,11 @@ WK.Locales.enUS.text = {
     ["Guide de montée recalculé."] = "Levelling guide recalculated.",
     ["Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche)."] = "Class trainer visit when spells are to be learned: guide step, and quest tour step (nearest trainer).",
     ["Réglages de la carte (opacité du fond…)"] = "Card settings (background opacity…)",
+    ["%d après une autre quête"] = "%d after another quest",
+    ["%d trop hautes"] = "%d too high",
+    ["%d trop basses"] = "%d too low",
+    ["%d sans lieu connu"] = "%d with no known place",
+    ["Pas proposées ici :"] = "Not offered here:",
+    ["Les suites sont ajoutées à la tournée dès qu'elles s'ouvrent."] = "Follow-ups are added to the tour as soon as they open.",
+    ["Suite ajoutée à la tournée : %s"] = "Follow-up added to the tour: %s",
 }

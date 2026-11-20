@@ -1651,6 +1651,27 @@ UI:RegisterPage({
             self.pEmpty:SetText(zone and T("Rien à prendre ou à faire autour de toi pour ton niveau. Essaie la zone conseillée dans « Carte des zones ».")
                 or T("Zone inconnue : la liste se remplit une fois en jeu, dans une zone qui a des quêtes."))
         end
+        -- quêtes de la zone pas proposées, et pourquoi
+        local st = P.lastStats
+        if not self.pNote then
+            self.pNote = UI:Text(self.pscroll.child, 11, C.muted); self.pNote:SetJustifyH("LEFT")
+            if self.pNote.SetWordWrap then self.pNote:SetWordWrap(true) end
+        end
+        local parts = {}
+        if st then
+            if st.locked > 0 then table.insert(parts, string.format(T("%d après une autre quête"), st.locked)) end
+            if st.high > 0 then table.insert(parts, string.format(T("%d trop hautes"), st.high)) end
+            if st.low > 0 then table.insert(parts, string.format(T("%d trop basses"), st.low)) end
+            if st.noArea > 0 then table.insert(parts, string.format(T("%d sans lieu connu"), st.noArea)) end
+        end
+        self.pNote:ClearAllPoints(); self.pNote:SetPoint("TOPLEFT", 6, -(y + 6)); self.pNote:SetPoint("RIGHT", self.pscroll.child, "RIGHT", -6, 0)
+        if #parts > 0 then
+            self.pNote:SetText(T("Pas proposées ici :") .. " " .. table.concat(parts, " · ") .. ". " .. T("Les suites sont ajoutées à la tournée dès qu'elles s'ouvrent."))
+            self.pNote:Show()
+            y = y + 6 + math.max(14, self.pNote:GetStringHeight() or 14) + 6
+        else
+            self.pNote:Hide()
+        end
         self.pscroll.child:SetSize(W - 14, math.max(y, 30))
         if self.pscroll.UpdateBar then self.pscroll:UpdateBar() end
         if UI.RefreshChips and UI.current == "quests" then UI:RefreshChips() end

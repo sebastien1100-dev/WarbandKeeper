@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.13", date = "20/11/2026",
+        fixed = {
+            "Tournée et « Quêtes de ma zone » : les quêtes à porter ou à livrer (sans zone d'objectifs connue) étaient écartées ; elles sont maintenant proposées dès que leur rendu est dans la zone (prendre, puis rendre).",
+        },
+        added = {
+            "Tournée : quand une quête rendue a une suite dans la zone, la tournée est refaite pour l'inclure (« Suite ajoutée à la tournée : … »).",
+            "« Quêtes de ma zone » : sous la liste, combien de quêtes de la zone ne sont pas proposées et pourquoi (après une autre quête, trop hautes, trop basses, sans lieu connu).",
+        },
+    },
+    {
         version = "1.101.12", date = "20/11/2026",
         fixed = {
             "Tournée de quêtes : juste après avoir pris une quête, le jeu ne donne pas encore ses objectifs ; la tournée prenait cette liste vide pour « tout est fait », sautait l'étape « faire » et demandait de rendre la quête tout de suite. Une quête du journal pas finie garde maintenant son étape tant que ses objectifs ne sont pas faits.",

@@ -74,6 +74,9 @@ function M:Candidates()
     local lvl = UnitLevel and UnitLevel("player") or me.level or 1
     local cfg = self:Config()
     local seen = {}
+    -- quêtes de la zone pas proposées, et pourquoi (affiché sous « Quêtes de ma zone »)
+    local stats = { low = 0, high = 0, locked = 0, noArea = 0 }
+    self.lastStats = stats
     local function add(e)
         local camps = zoneCamps(e.id, zone)
         if #camps > 0 then
@@ -87,18 +90,28 @@ function M:Candidates()
         if ti then e.turnIn = point(ti.map, ti.x, ti.y) end
         -- quête finie : seulement si on la rend dans cette zone (sinon, depuis une capitale, la tournée
         -- se réduisait à un rendu à l'autre bout du continent)
-        if e.center or (e.complete and e.turnIn and e.turnIn.map == zone) then table.insert(out, e); seen[e.id] = true end
+        -- quête à porter ou à livrer (pas de zone d'objectifs connue) : prise puis rendue dans la zone
+        local carry = not e.inLog and e.giver and e.turnIn and e.turnIn.map == zone
+        if e.center or carry or (e.complete and e.turnIn and e.turnIn.map == zone) then table.insert(out, e); seen[e.id] = true
+        else stats.noArea = stats.noArea + 1 end
     end
     for _, l in ipairs(Q():LogQuests()) do
         local q = Qs:Get(l.id)
         add({ id = l.id, title = l.title, lvl = l.level or (q and q.lvl) or lvl, xp = q and q.xp or 0, inLog = true, complete = l.complete })
     end
     for _, q in ipairs(Qs:OnMap(zone)) do
-        if not seen[q.id] and q.x and Qs:ForChar(q, me) and Qs:State(q, me) == "avail"
-            and (q.lvl or 0) <= lvl + 4 and (q.lvl or 0) >= lvl - 8 then
-            local gm = q.smap or zone
-            add({ id = q.id, title = Qs:Name(q), lvl = q.lvl, xp = q.xp or 0, giver = point(gm, q.x / 100, q.y / 100),
-                giverName = q.sid })
+        if not seen[q.id] and q.x and Qs:ForChar(q, me) then
+            local st = Qs:State(q, me)
+            if st == "locked" then stats.locked = stats.locked + 1
+            elseif st == "avail" or st == "high" then
+                if (q.lvl or 0) > lvl + 4 or st == "high" then stats.high = stats.high + 1
+                elseif (q.lvl or 0) < lvl - 8 then stats.low = stats.low + 1
+                else
+                    local gm = q.smap or zone
+                    add({ id = q.id, title = Qs:Name(q), lvl = q.lvl, xp = q.xp or 0, giver = point(gm, q.x / 100, q.y / 100),
+                        giverName = q.sid })
+                end
+            end
         end
     end
     -- choix : coché d'office si le niveau va (au plus maxAbove au-dessus du perso)
@@ -549,10 +562,27 @@ local function soon()
 end
 WK:On("QUEST_LOG_UPDATE", soon)
 WK:On("QUEST_ACCEPTED", soon)
-WK:On("QUEST_TURNED_IN", function()
+WK:On("QUEST_TURNED_IN", function(qid)
     local t = M:Tour()
     if t then t.turned = (t.turned or 0) + 1 end
     soon()
+    -- suite de la quête rendue dans la zone : la tournée est refaite pour l'inclure
+    local q = qid and WK.modules.Quests and WK.modules.Quests:Get(qid)
+    if t and q and q.nxt then
+        C_Timer.After(1.5, function()
+            local t2 = M:Tour()
+            if not (on() and t2 and not t2.paused) then return end
+            M:Invalidate()
+            local list = M:Candidates()
+            for _, e in ipairs(list) do
+                if e.id == q.nxt and e.picked then
+                    M:Reorder()
+                    WK:Print(string.format(T("Suite ajoutée à la tournée : %s"), e.title or ("#" .. e.id)))
+                    return
+                end
+            end
+        end)
+    end
 end)
 WK:On("PLAYER_LOGIN", function()
     if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(5, nearCheck) end

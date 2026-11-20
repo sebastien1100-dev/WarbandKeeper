@@ -72,6 +72,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.13 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée : quand une quête rendue a une suite dans la zone, la tournée est refaite pour l'inclure (« Suite ajoutée à la tournée : … »).
+- « Quêtes de ma zone » : sous la liste, combien de quêtes de la zone ne sont pas proposées et pourquoi (après une autre quête, trop hautes, trop basses, sans lieu connu).
+
+### Corrections
+- Tournée et « Quêtes de ma zone » : les quêtes à porter ou à livrer (sans zone d'objectifs connue) étaient écartées ; elles sont maintenant proposées dès que leur rendu est dans la zone (prendre, puis rendre).
+
 ## v1.101.12 — 20/11/2026
 
 _Un /reload suffit._
