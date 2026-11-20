@@ -6,13 +6,13 @@ local T = function(s) return WK.T(s) end
 -- Bandeau des bateaux et zeppelins, sans aucun horaire : où va le navire. En haut (graphite) « Bateau pour »
 -- et la destination, le navire et « Ce ponton · vers … » ; en bas une bande de mer animée (ciel pour les
 -- zeppelins) avec la frise des escales, ton ponton à gauche en bleu, la prochaine escale en vert.
---   * au quai (200 m pour apparaître, 260 m pour disparaître, puis encore 5 s) : le navire de ton ponton
+--   * au quai (60 m pour apparaître : sur le ponton ; 85 m pour disparaître, puis encore 5 s) : le navire de ton ponton
 --     tangue au départ de la frise ; les pontons voisins entre les deux ;
 --   * à bord (Nav.IsRiding) : le navire avance sur la frise selon BoatLines:RideProgress (ligne reconnue par
 --     BoatLines:RideFit, sinon celle du ponton quitté, navire au départ) ;
 --   * dans le tram des profondeurs : ses deux stations.
 -- Lignes du jeu : Modules/BoatLines.lua ; bateaux appris en jeu : Nav:Boats(). Réglage Guide:Config().dockBanner.
-local RANGE_IN, RANGE_OUT, LINGER, W = 200, 260, 5, 400
+local RANGE_IN, RANGE_OUT, LINGER, W = 60, 85, 5, 400 -- sur le ponton (le point d'arrêt du navire est au bout)
 UI.DockRange = RANGE_IN
 local banner
 

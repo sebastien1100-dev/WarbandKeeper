@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.9", date = "20/11/2026",
+        fixed = {
+            "Bandeau des bateaux : il apparaissait à 200 m du quai, bien avant d'y être. Il faut maintenant être sur le ponton (60 m du point d'arrêt du navire) ; il disparaît à 85 m.",
+        },
+    },
+    {
         version = "1.101.8", date = "20/11/2026",
         changed = {
             "Carte du monde : plus d'étiquette (nom, genre, distance) sous l'épingle du guidage, qu'il mène à une étape de tournée, un marchand, un maître… La carte est moins chargée ; tout est dans l'infobulle au survol de l'épingle, distance comprise.",
