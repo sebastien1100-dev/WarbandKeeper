@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.106.2", date = "20/11/2026",
+        changed = {
+            "Montée en niveaux : la carte à l'écran prend le design de la carte de tournée (texte ombré sur fond léger, en-tête niveau et avancée, fine barre d'XP, étape en cours avec sa pastille, objectifs, 2 étapes suivantes). Les boutons Arrêter, Passer et Lancer apparaissent au survol.",
+        },
+    },
+    {
         version = "1.106.1", date = "20/11/2026",
         changed = {
             "Retour au corps : le temps de course n'est plus répété sous le titre ; la ligne dit seulement la distance du corps.",

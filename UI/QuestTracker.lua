@@ -128,11 +128,20 @@ local function build()
     -- boutons (pause / reprendre, passer, arrêter) : petits, à la place des chiffres de l'en-tête au survol
     tv.close = UI:IconButton(tv, "close", 16, "Arrêter la tournée")
     tv.close:SetPoint("TOPRIGHT", -8, -4)
-    tv.close:SetScript("OnClick", function() WK.modules.QuestPlan:Stop() end)
+    -- même carte pour la tournée et pour le guide de montée (f.tvGuide) : les boutons suivent le mode
+    tv.close:SetScript("OnClick", function()
+        if f.tvGuide then WK.modules.LevelGuide:Follow(false) else WK.modules.QuestPlan:Stop() end
+    end)
     tv.skip = UI:IconButton(tv, "chevron", 16, "Passer l'étape")
     if tv.skip.icon.SetRotation then tv.skip.icon:SetRotation(math.pi / 2) end -- chevron vers la droite
     tv.skip:SetPoint("RIGHT", tv.close, "LEFT", -4, 0)
-    tv.skip:SetScript("OnClick", function() WK.modules.QuestPlan:Skip() end)
+    tv.skip:SetScript("OnClick", function()
+        if f.tvGuide then
+            local LG = WK.modules.LevelGuide
+            local st = LG:Steps()[1]
+            if st then LG:Skip(st.key) end
+        else WK.modules.QuestPlan:Skip() end
+    end)
     tv.pp = UI:IconButton(tv, "pause", 16, "Pause")
     tv.pp:SetPoint("RIGHT", tv.skip, "LEFT", -4, 0)
     -- roue : réglages de la carte (opacité du fond…) dans la roue de la page Quêtes
@@ -144,7 +153,10 @@ local function build()
         local def = UI.pages and UI.pages.quests
         if def and def.side then def.settingsOpen = true; def:Layout(); def:Refresh() end
     end)
-    tv.pp:SetScript("OnClick", function() local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) end)
+    tv.pp:SetScript("OnClick", function()
+        if f.tvGuide then WK.modules.LevelGuide:Run(1) return end
+        local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused)
+    end)
     local function hoverButtons(on)
         for _, b in ipairs({ tv.close, tv.skip, tv.pp, tv.gear }) do b:SetShown(on) end
         tv.headR:SetShown(not on)
@@ -158,7 +170,9 @@ local function build()
         if over ~= v.over then v.over = over; hoverButtons(over) end
     end)
 
-    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" }, trainer = { "info", nil }, buy = { "info", "$" } }
+    local KIND = { pick = { "gold", "!" }, ["do"] = { nil, nil }, turn = { "positive", "?" }, trainer = { "info", nil }, buy = { "info", "$" },
+        -- étapes du guide de montée (Modules/LevelGuide.lua)
+        flight = { "gold", nil }, hearth = { "info", nil }, dungeon = { "warning", nil }, item = { "gold", "!" }, zone = { nil, nil }, tour = { nil, nil } }
     local function kindColor(k)
         local e = KIND[k]
         if e and e[1] then return C[e[1]] end
@@ -176,16 +190,27 @@ local function build()
         local v = self.tv
         v:Show()
         self.tour, self.guide = true, nil
+        self.tvGuide = d.guide or nil
         local W2 = 300
         self:SetWidth(W2)
         bgAlpha((Q():Config().tourBg or 50) / 100, false)
-        v.head:SetText(UI:Upper(T("Tournée")) .. (d.zone and (" · " .. UI:Upper(d.zone)) or "")
-            .. (d.paused and ("  " .. UI:Hex(C.warning) .. T("EN PAUSE") .. "|r") or ""))
-        v.headR:SetText(string.format("%d/%d · %s", d.idx, d.count, string.format(T("env. %d min"), d.mins))
-            .. ((d.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. d.xp .. " XP|r") or ""))
+        if d.head then v.head:SetText(d.head)
+        else
+            v.head:SetText(UI:Upper(T("Tournée")) .. (d.zone and (" · " .. UI:Upper(d.zone)) or "")
+                .. (d.paused and ("  " .. UI:Hex(C.warning) .. T("EN PAUSE") .. "|r") or ""))
+        end
+        if d.headR then v.headR:SetText(d.headR)
+        else
+            v.headR:SetText(string.format("%d/%d · %s", d.idx, d.count, string.format(T("env. %d min"), d.mins))
+                .. ((d.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. d.xp .. " XP|r") or ""))
+        end
+        -- boutons au survol : guide = arrêter de suivre, passer l'étape, lancer l'étape
+        v.close.tooltip = d.guide and "Ne plus suivre le guide de montée" or "Arrêter la tournée"
+        v.skip.tooltip = "Passer l'étape"
         local r, g, b = UI:Accent()
         v.bar:SetColorTexture(r, g, b, 1)
-        v.bar:SetWidth(math.max(1, (W2 - 24) * math.max(0, d.idx - 1) / math.max(1, d.count)))
+        local frac = d.prog or (math.max(0, (d.idx or 1) - 1) / math.max(1, d.count or 1))
+        v.bar:SetWidth(math.max(1, (W2 - 24) * math.max(0, math.min(1, frac))))
         local col = kindColor(d.kind)
         v.dot:SetVertexColor(col[1], col[2], col[3], d.paused and 0.45 or 1)
         local letter = KIND[d.kind] and KIND[d.kind][2]
@@ -200,8 +225,8 @@ local function build()
         local th = math.max(16, math.min(34, v.title:GetStringHeight() or 16))
         v.sub:ClearAllPoints(); v.sub:SetPoint("TOPLEFT", 34, -34 - th - 2); v.sub:SetPoint("RIGHT", -10, 0)
         v.sub:SetText(d.sub or "")
-        v.pp.icon:SetTexture(UI.MEDIA .. (d.paused and "play" or "pause"))
-        v.pp.tooltip = d.paused and "Reprendre" or "Pause"
+        v.pp.icon:SetTexture(UI.MEDIA .. ((d.paused or d.guide) and "play" or "pause"))
+        v.pp.tooltip = d.guide and "Lancer l'étape" or (d.paused and "Reprendre" or "Pause")
         local y = -34 - th - 2 - ((d.sub and d.sub ~= "") and 18 or 0)
         -- objectifs
         for i, fs in ipairs(v.objs) do
@@ -430,7 +455,7 @@ function UI:RefreshQuestTracker()
     local LG = WK.modules.LevelGuide
     if shown() and LG and LG:Following() then
         local steps = LG:Steps()
-        local s1, s2 = steps[1], steps[2]
+        local s1 = steps[1]
         local lvl = UnitLevel and UnitLevel("player") or 1
         local cur, max = (UnitXP and UnitXP("player")) or 0, (UnitXPMax and UnitXPMax("player")) or 1
         local qid0 = q:Tracked()
@@ -440,11 +465,19 @@ function UI:RefreshQuestTracker()
                 table.insert(objs, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done })
             end
         end
-        card:Paint({ guide = true, title = string.format(T("Montée en niveaux · niveau %d"), lvl),
-            sub = s1 and s1.title or T("Rien à faire pour l'instant"),
-            prog = max > 0 and cur / max or 0, objs = objs,
-            goal = (s1 and s1.sub and (s1.sub .. (s2 and ("|n" .. T("Ensuite : ") .. s2.title) or ""))) or (s2 and (T("Ensuite : ") .. s2.title)) or "",
-            b1 = T("Passer"), b2 = T("Lancer"), canNext = s1 ~= nil })
+        -- même carte que la tournée : en-tête (niveau, avancée), étape en cours, objectifs, 2 étapes suivantes
+        local nexts = {}
+        for i = 2, 3 do
+            local st = steps[i]
+            if st then table.insert(nexts, { n = i, kind = st.kind, title = st.title }) end
+        end
+        local pct = max > 0 and math.floor(cur / max * 100) or 0
+        card:PaintTour({ guide = true, kind = s1 and s1.kind or "zone",
+            head = UI:Upper(string.format(T("Montée en niveaux · niveau %d"), lvl)),
+            headR = string.format(T("%d %% du niveau"), pct) .. (max > cur and (" · " .. UI:Hex(C.gold) .. string.format(T("reste %d XP"), max - cur) .. "|r") or ""),
+            prog = max > 0 and cur / max or 0,
+            title = s1 and s1.title or T("Rien à faire pour l'instant"), sub = s1 and s1.sub or "",
+            objs = objs, nexts = nexts })
         card:Show()
         return
     end

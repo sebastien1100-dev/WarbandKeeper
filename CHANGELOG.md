@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.106.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Montée en niveaux : la carte à l'écran prend le design de la carte de tournée (texte ombré sur fond léger, en-tête niveau et avancée, fine barre d'XP, étape en cours avec sa pastille, objectifs, 2 étapes suivantes). Les boutons Arrêter, Passer et Lancer apparaissent au survol.
+
 ## v1.106.1 — 20/11/2026
 
 _Un /reload suffit._
