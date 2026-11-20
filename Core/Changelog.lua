@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.1", date = "20/11/2026",
+        fixed = {
+            "Icône « Recharger l'interface » de l'en-tête (et bouton « Recharger » des modules) : le clic ne faisait plus rien dès que la fenêtre de l'addon passait au premier plan ; le bouton qui lance /reload restait caché dessous. Il est remonté au survol et part au relâchement du clic.",
+        },
+    },
+    {
         version = "1.90.0", date = "20/11/2026",
         added = {
             "Options > Profils : carte « Partager un profil ». « Exporter » affiche le code du profil choisi (à copier avec Ctrl+C) ; « Importer » : colle un code (Ctrl+V), avec un nom si tu veux, et il devient un nouveau profil (« (2) » ajouté si le nom existe déjà). Rien ne change avant que tu le choisisses pour ton perso.",

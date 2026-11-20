@@ -1635,7 +1635,9 @@ function UI:SecureReload(b)
     if InCombatLockdown and InCombatLockdown() then return nil end
     local s = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
     s.owner = b
+    -- clic de souris : au relâchement (avec « touche enfoncée » du jeu, un clic ne partait pas)
     if s.RegisterForClicks then s:RegisterForClicks("AnyUp", "AnyDown") end
+    s:SetAttribute("useOnKeyDown", false)
     s:SetAttribute("type", "macro")
     s:SetAttribute("macrotext", "/reload")
     -- survol transmis à notre bouton (surbrillance, infobulle)
@@ -1643,6 +1645,11 @@ function UI:SecureReload(b)
     s:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
     s:Hide()
     b:HookScript("OnShow", function() placeReload(s) end)
+    -- notre fenêtre passe devant au clic (niveau relevé) : le bouton protégé est remonté au-dessus de b dès
+    -- que la souris arrive dessus, pour recevoir le clic
+    b:HookScript("OnEnter", function()
+        if (s:GetFrameLevel() or 0) <= (b:GetFrameLevel() or 0) or not s:IsShown() then placeReload(s) end
+    end)
     b:HookScript("OnHide", function() placeReload(s) end)
     b.reloadSec = s
     table.insert(reloads, s)

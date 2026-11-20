@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.90.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Icône « Recharger l'interface » de l'en-tête (et bouton « Recharger » des modules) : le clic ne faisait plus rien dès que la fenêtre de l'addon passait au premier plan ; le bouton qui lance /reload restait caché dessous. Il est remonté au survol et part au relâchement du clic.
+
 ## v1.90.0 — 20/11/2026
 
 _Un /reload suffit._
