@@ -528,7 +528,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 10 or 7) * 36 + 6, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 13 or 7) * 36 + 16, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -578,6 +578,27 @@ UI:RegisterPage({
                     function(v) QP():Config().noGroup = v; QP():Invalidate(); WK:NotifyChanged() end)
                 table.insert(self.toggles, gt)
                 UI:SettingRow(tcard, -364, "Éviter les quêtes de groupe", "Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main.", gt, 50)
+                -- guide de montée (Modules/LevelGuide.lua) : réglages repris du bloc de « Ma progression »
+                local function lgc() return LG() and LG():Config() or {} end
+                local function lgToggle(get, set)
+                    local t = UI:Toggle(tcard, get, function(v)
+                        set(v)
+                        if LG() then LG():Invalidate() end
+                        self.lgAt = nil
+                        if self.RefreshTour then self:RefreshTour() end
+                    end)
+                    table.insert(self.toggles, t)
+                    return t
+                end
+                UI:SettingRow(tcard, -406, "Guide de montée : sans donjons", nil,
+                    lgToggle(function() return lgc().noDungeons and true or false end, function(v) lgc().noDungeons = v or nil end), 50)
+                UI:SettingRow(tcard, -442, "Guide de montée : sans métiers", nil,
+                    lgToggle(function() return lgc().noProf and true or false end, function(v) lgc().noProf = v or nil end), 50)
+                UI:SettingRow(tcard, -478, "Passer chez le maître de classe", "Quand des sorts sont à apprendre : étape du guide de montée, et étape de la tournée de quêtes (au maître le plus proche).",
+                    lgToggle(function() return lgc().trainerTour ~= false end, function(v)
+                        if v then lgc().trainerTour = nil else lgc().trainerTour = false end
+                        if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
+                    end), 50)
             end
         end
 
@@ -1855,25 +1876,7 @@ UI:RegisterPage({
             if st then L:Skip(st.key) end
             self:RefreshTour()
         end)
-        -- réglages du guide (repris de l'ancien onglet Montée) : sans donjons, sans métiers, maître de classe
-        gb:SetHeight(92)
-        local gx = 14
-        local function gToggle(label, get, set, tip)
-            local t = UI:Toggle(gb, get, function(v) set(v); local L = LG(); if L then L:Invalidate() end; self:RefreshTour() end)
-            t:SetPoint("BOTTOMLEFT", gx, 10)
-            local l = UI:Text(gb, 11); l:SetPoint("LEFT", t, "RIGHT", 6, 0); l:SetText(T(label))
-            t.tooltip = tip
-            table.insert(self.toggles or {}, t)
-            gx = gx + (t:GetWidth() or 36) + 6 + (l:GetStringWidth() or 60) + 18
-            return t
-        end
-        local function lgc() return LG() and LG():Config() or {} end
-        gToggle("Sans donjons", function() return lgc().noDungeons and true or false end, function(v) lgc().noDungeons = v or nil end)
-        gToggle("Sans métiers", function() return lgc().noProf and true or false end, function(v) lgc().noProf = v or nil end)
-        gToggle("Maître de classe", function() return lgc().trainerTour ~= false end, function(v)
-            if v then lgc().trainerTour = nil else lgc().trainerTour = false end
-            if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
-        end, "Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche).")
+        -- réglages du guide (sans donjons, sans métiers, maître de classe) : dans la roue de la page
         gb:Hide()
         -- commandes de la tournée lancée : petits boutons ronds discrets (infobulle au survol)
         self.tSkip = UI:IconButton(tc, "chevron", 26, "Passer l'étape")

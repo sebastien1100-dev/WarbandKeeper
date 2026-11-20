@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.111.2", date = "20/11/2026",
+        changed = {
+            "Quêtes, Ma progression : les interrupteurs « Sans donjons », « Sans métiers » et « Maître de classe » quittent le bloc du guide de montée ; ils sont dans la roue de la page Quêtes (carte « Quête suivie »).",
+        },
+    },
+    {
         version = "1.111.1", date = "20/11/2026",
         added = {
             "Tournée de quêtes : chaque quête est colorée selon son avancement, à l'écran comme dans la liste des étapes. En or : à prendre ; en blanc : prise, rien de fait ; en orange : objectifs entamés ; en vert : prête à rendre.",

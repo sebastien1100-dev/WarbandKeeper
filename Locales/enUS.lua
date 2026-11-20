@@ -4261,4 +4261,8 @@ WK.Locales.enUS.text = {
     ["De mon niveau"] = "My level",
     ["Envoyer dans Ma progression"] = "Send to My progress",
     ["absente de la base · position donnée par le jeu"] = "not in the database · position given by the game",
+    ["Guide de montée : sans donjons"] = "Levelling guide: no dungeons",
+    ["Guide de montée : sans métiers"] = "Levelling guide: no professions",
+    ["Passer chez le maître de classe"] = "Visit the class trainer",
+    ["Quand des sorts sont à apprendre : étape du guide de montée, et étape de la tournée de quêtes (au maître le plus proche)."] = "When spells can be learned: a levelling guide step, and a quest tour step (at the nearest trainer).",
 }
