@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.7", date = "20/11/2026",
+        fixed = {
+            "Talents : le bouton « Plan de montée » restait caché derrière le pied de la fenêtre des talents (barre « Appliquer changements »). Il passe maintenant au premier plan, en bas à droite.",
+        },
+    },
+    {
         version = "1.98.6", date = "20/11/2026",
         fixed = {
             "Repère de rendu de quête : il s'affichait en carré doré au lieu du médaillon rond ; il est maintenant rond, avec un reflet clair en haut.",

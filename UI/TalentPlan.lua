@@ -313,6 +313,17 @@ local function placeToggle(vis)
         toggleBtn:SetScript("OnClick", function() UI:ToggleTalentPlan(); paintToggle() end)
     end
     UI:MatchHost(toggleBtn, host, 12)
+    -- au-dessus de tout ce que contient la fenêtre (son pied « Appliquer changements » a un niveau plus haut qu'elle)
+    local top = 0
+    local function scan(fr, depth)
+        if depth > 4 or not fr.GetChildren then return end
+        for _, c in ipairs({ fr:GetChildren() }) do
+            if c.GetFrameLevel then top = math.max(top, c:GetFrameLevel() or 0) end
+            scan(c, depth + 1)
+        end
+    end
+    scan(host, 1)
+    if top > 0 and toggleBtn.SetFrameLevel then toggleBtn:SetFrameLevel(math.min(9000, math.max(toggleBtn:GetFrameLevel() or 0, top + 5))) end
     toggleBtn:ClearAllPoints()
     toggleBtn:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -14, 12)
     toggleBtn:Show()
