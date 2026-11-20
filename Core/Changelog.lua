@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.2", date = "20/11/2026",
+        changed = {
+            "Tournée de quêtes, carte à l'écran refaite : pastille du genre d'étape (! doré pour prendre, cible pour faire, ? vert pour rendre), titre et zone, bandeau « distance · env. N min », objectifs avec jauges (coche verte une fois finis), frise d'une case par étape (vertes faites, à l'accent en cours), temps restant, et les 2 étapes suivantes en dessous.",
+            "Tournée : pause / reprise, passer l'étape et arrêter deviennent 3 petits boutons ronds en haut à droite ; en pause, la carte se ternit avec « EN PAUSE ».",
+        },
+    },
+    {
         version = "1.100.1", date = "20/11/2026",
         changed = {
             "Page Quêtes, cartes de « Mon journal » et de la « Tournée » : la zone est dessinée en entier (toutes ses parties, découvertes ou pas), comme une carte explorée, au lieu du fond vide.",

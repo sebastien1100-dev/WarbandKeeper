@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Tournée de quêtes, carte à l'écran refaite : pastille du genre d'étape (! doré pour prendre, cible pour faire, ? vert pour rendre), titre et zone, bandeau « distance · env. N min », objectifs avec jauges (coche verte une fois finis), frise d'une case par étape (vertes faites, à l'accent en cours), temps restant, et les 2 étapes suivantes en dessous.
+- Tournée : pause / reprise, passer l'étape et arrêter deviennent 3 petits boutons ronds en haut à droite ; en pause, la carte se ternit avec « EN PAUSE ».
+
 ## v1.100.1 — 20/11/2026
 
 _Un /reload suffit._

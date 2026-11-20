@@ -4081,4 +4081,7 @@ WK.Locales.enUS.text = {
     ["Vert : au maximum · orange : un peu en retard · rouge : très en retard (tu rates plus souvent). Survol : le détail."] = "Green: maxed · orange: a bit behind · red: far behind (you miss more often). Hover: details.",
     ["Toutes les armes de ta classe sont apprises."] = "All your class weapons are learned.",
     ["Aucun maître d'armes connu pour ta faction."] = "No known weapon master for your faction.",
+    ["EN PAUSE"] = "PAUSED",
+    ["reste env. %d min"] = "approx. %d min left",
+    ["%d quêtes ici"] = "%d quests here",
 }
