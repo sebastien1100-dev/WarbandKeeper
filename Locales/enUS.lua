@@ -3698,4 +3698,10 @@ WK.Locales.enUS.text = {
     ["Puiss. des sorts"] = "Spell power",
     ["Crit. des sorts"] = "Spell crit",
     ["Niveau d'objet moyen de l'équipement porté"] = "Average item level of worn gear",
+    ["Profil changé : recharge l'interface pour l'appliquer."] = "Profile changed: reload the UI to apply it.",
+    ["Réglages copiés : recharge l'interface pour les appliquer."] = "Settings copied: reload the UI to apply them.",
+    ["Profil remis à zéro : recharge l'interface pour l'appliquer."] = "Profile reset: reload the UI to apply it.",
+    ["Recharger l'interface pour appliquer le changement."] = "Reload the UI to apply the change.",
+    ["Recharger maintenant"] = "Reload now",
+    ["Plus tard"] = "Later",
 }

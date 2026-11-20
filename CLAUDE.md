@@ -35,6 +35,7 @@ La fenêtre est redimensionnable en direct et les pages ne sont **jamais reconst
 
 - Journal de combat (`COMBAT_LOG_EVENT_UNFILTERED`) : réservé au jeu, s'y inscrire ou s'en désinscrire déclenche ADDON_ACTION_FORBIDDEN. Ne jamais l'utiliser.
 - `GetMerchantItemInfo` est absent : passer par `WK.MerchantItemInfo(index)`.
+- `ReloadUI()` est bloqué pour les addons (ADDON_ACTION_BLOCKED « Reload() », même sur un clic) : `UI:SecureReload(bouton)` pose sur notre bouton un bouton protégé (enfant d'UIParent, macro `/reload`, retiré en combat) ; pour proposer de recharger après un changement : `UI:AskReload(texte)` (`UI/Widgets.lua`).
 
 - Ne pas mélanger un ancrage haut/bas (`TOPLEFT`…) et un ancrage centré (`LEFT`, `RIGHT`) sur une même région : utiliser `TOPRIGHT` avec le même décalage vertical.
 - Fonctions globales absentes sur ce client : passer par `WK.GetItemInfo`, `WK.InsertChatLink`, `WK.Container.*`.

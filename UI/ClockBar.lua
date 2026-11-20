@@ -266,9 +266,9 @@ local SHORTCUTS = {
           local l = B:StopNear(p.cont, p.wx, p.wy, 200)
           return l and B:Mine(l) and C.positive or nil
       end },
-    -- /reload : recharge l'interface (ReloadUI n'est pas protégée, permise même en combat)
+    -- /reload : bouton protégé qui lance la commande (ReloadUI() est bloqué pour les addons sur ce client)
     { key = "reload", label = "Recharger l'interface", icon = function() return UI.MEDIA .. "refresh" end, tint = true,
-      run = function() if ReloadUI then ReloadUI() end end },
+      secure = { type = "macro", macrotext = "/reload" } },
     { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton", "GameMenuMicroButton" },
       icon = function() return UI.MEDIA .. "gear" end, tint = true,
       -- vérifié après le clic : si le bouton du jeu n'a rien ouvert, on ouvre le menu directement
@@ -602,8 +602,8 @@ local function makeIcon(def)
     elseif def.secure then
         b = CreateFrame("Button", "WarbandKeeperClock_" .. def.key, bar, "SecureActionButtonTemplate")
         if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
-        b:SetAttribute("type", def.secure.type)
-        b:SetAttribute(def.secure.type, def.secure.item)
+        -- attributs du bouton protégé : type + item (pierre de foyer) ou macrotext (/reload)
+        for k, v in pairs(def.secure) do b:SetAttribute(k, v) end
     else
         b = CreateFrame("Button", nil, bar)
         b:SetScript("OnClick", function()

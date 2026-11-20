@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.89.1", date = "20/11/2026",
+        fixed = {
+            "Changer de profil (Options > Profils) déclenchait l'erreur « a tenté d'appeler la fonction protégée Reload() » : le jeu interdit à un addon de recharger l'interface de lui-même. Une petite fenêtre propose maintenant « Recharger maintenant » (ou « Plus tard ») ; copier ou remettre à zéro un profil font de même.",
+            "Même cause corrigée sur le raccourci « Recharger l'interface » du micro menu, l'icône de rechargement de l'en-tête et le bouton « Recharger » de la carte Modules : ils lancent /reload par un bouton du jeu (indisponibles en combat).",
+        },
+    },
+    {
         version = "1.89.0", date = "20/11/2026",
         added = {
             "Fiche du perso : en haut à droite, des pastilles comme dans l'en-tête de l'addon à la place du « niv. moyen » seul. Par défaut niveau d'objet (mis en avant), armure et durabilité ; dans la roue, carte « En-tête : pastilles », choisis jusqu'à 5 chiffres parmi niveau d'objet, armure, durabilité, sacs libres, Force, Agilité, Endurance, Intelligence, Esprit, puissance d'attaque, critique, toucher, puissance des sorts, soins, critique des sorts, esquive, parade, blocage et or (dans l'ordre des clics).",

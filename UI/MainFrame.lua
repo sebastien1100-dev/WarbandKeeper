@@ -554,10 +554,8 @@ createWindow = function(self)
     -- Recharger l'interface (/reload)
     local reload = UI:IconButton(header, "power", 30, "Recharger l'interface (/reload)")
     reload:SetPoint("RIGHT", close, "LEFT", -4, 0)
-    reload:SetScript("OnClick", function()
-        if InCombatLockdown and InCombatLockdown() then WK:Print(WK.T("Pas de rechargement en combat.")) return end
-        ReloadUI()
-    end)
+    -- /reload par un bouton protégé posé dessus (ReloadUI est bloqué pour les addons sur ce client)
+    UI:SecureReload(reload)
     -- Patch notes, Profils, Options : icônes à droite, avec recharger et fermer (point = notes pas encore lues)
     self.headIcons = {}
     local prevIcon = reload

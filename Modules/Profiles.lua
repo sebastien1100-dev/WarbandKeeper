@@ -155,7 +155,7 @@ function M:Use(name)
     p.list[p.loaded] = capture()
     apply(p.list[name])
     p.loaded = name
-    if ReloadUI then ReloadUI() end
+    WK.UI:AskReload(WK.T("Profil changé : recharge l'interface pour l'appliquer."))
 end
 
 -- Copie les réglages d'un autre profil dans le profil en place (puis recharge).
@@ -163,13 +163,13 @@ function M:CopyFrom(name)
     local p = store()
     if name == p.loaded then return end
     if name == DEFAULT and not p.list[DEFAULT] then apply({}) else apply(p.list[name]) end
-    if ReloadUI then ReloadUI() end
+    WK.UI:AskReload(WK.T("Réglages copiés : recharge l'interface pour les appliquer."))
 end
 
 -- Remet le profil en place aux réglages d'origine (puis recharge).
 function M:Reset()
     apply({}, true)
-    if ReloadUI then ReloadUI() end
+    WK.UI:AskReload(WK.T("Profil remis à zéro : recharge l'interface pour l'appliquer."))
 end
 
 -- Supprime un profil (ni « Défaut », ni celui en place). Ses persos reviennent sur « Défaut ».

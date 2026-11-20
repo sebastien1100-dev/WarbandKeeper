@@ -1609,3 +1609,71 @@ function UI:ZoneLayout(page, p, top, w, h, open)
     page.zcard:SetPoint("TOPLEFT", mw + 12, -y); page.zcard:SetPoint("TOPRIGHT", 0, -y); page.zcard:SetHeight(zh)
     page.list:SetPoint("TOPLEFT", mw + 12, -(y + zh + 12)); page.list:SetPoint("BOTTOMRIGHT", 0, 0)
 end
+
+---------------------------------------------------------------------------
+-- Recharger l'interface : sur ce client, ReloadUI() appelé par un addon est bloqué (ADDON_ACTION_BLOCKED,
+-- même après un clic). Seule la commande /reload passe, lancée par un bouton protégé du jeu (macro).
+-- UI:SecureReload(b) pose ce bouton, invisible, sur un de nos boutons (b garde son style et son infobulle).
+---------------------------------------------------------------------------
+-- Le bouton protégé est un enfant d'UIParent (jamais de notre fenêtre : elle deviendrait protégée et ne
+-- s'ouvrirait plus en combat), posé hors combat sur notre bouton tant qu'il est visible, retiré en combat.
+local reloads = {}
+local function placeReload(s)
+    if InCombatLockdown and InCombatLockdown() then return end
+    local b = s.owner
+    if b:IsVisible() then
+        s:ClearAllPoints(); s:SetAllPoints(b)
+        s:SetFrameStrata(b:GetFrameStrata() or "HIGH")
+        s:SetFrameLevel(math.min(9000, (b:GetFrameLevel() or 1) + 5))
+        s:Show()
+    else
+        s:Hide()
+    end
+end
+function UI:SecureReload(b)
+    if b.reloadSec then return b.reloadSec end
+    if InCombatLockdown and InCombatLockdown() then return nil end
+    local s = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
+    s.owner = b
+    if s.RegisterForClicks then s:RegisterForClicks("AnyUp", "AnyDown") end
+    s:SetAttribute("type", "macro")
+    s:SetAttribute("macrotext", "/reload")
+    -- survol transmis à notre bouton (surbrillance, infobulle)
+    s:SetScript("OnEnter", function() local fn = b:GetScript("OnEnter"); if fn then fn(b) end end)
+    s:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
+    s:Hide()
+    b:HookScript("OnShow", function() placeReload(s) end)
+    b:HookScript("OnHide", function() placeReload(s) end)
+    b.reloadSec = s
+    table.insert(reloads, s)
+    C_Timer.After(0, function() placeReload(s) end)
+    return s
+end
+-- en combat : retirés (un bouton protégé ne se déplace ni ne se cache plus ensuite) ; remis après
+WK:On("PLAYER_REGEN_DISABLED", function() for _, s in ipairs(reloads) do s:Hide() end end)
+WK:On("PLAYER_REGEN_ENABLED", function() for _, s in ipairs(reloads) do placeReload(s) end end)
+
+-- Petite fenêtre « recharger maintenant ? » (changement de profil…) : le bouton recharge par /reload protégé.
+local reloadAsk
+function UI:AskReload(text)
+    if not reloadAsk then
+        local f = CreateFrame("Frame", "WarbandKeeperReloadAsk", UIParent)
+        f:SetSize(380, 120)
+        f:SetPoint("CENTER", 0, 120)
+        f:SetFrameStrata("FULLSCREEN_DIALOG")
+        f:EnableMouse(true)
+        UI:Panel(f, 12, C.surface, C.border)
+        f.text = UI:Text(f, 12); f.text:SetPoint("TOPLEFT", 18, -18); f.text:SetPoint("RIGHT", -18, 0)
+        f.text:SetJustifyH("LEFT"); if f.text.SetWordWrap then f.text:SetWordWrap(true) end
+        f.go = UI:Button(f, "Recharger maintenant", nil, 28, "primary", "power")
+        f.go:SetPoint("BOTTOMRIGHT", -14, 14)
+        f.later = UI:Button(f, "Plus tard", nil, 28, "ghost")
+        f.later:SetPoint("RIGHT", f.go, "LEFT", -8, 0)
+        f.later:SetScript("OnClick", function() f:Hide() end)
+        UI:SecureReload(f.go)
+        f:Hide()
+        reloadAsk = f
+    end
+    reloadAsk.text:SetText(text or WK.T("Recharger l'interface pour appliquer le changement."))
+    reloadAsk:Show()
+end

@@ -509,9 +509,7 @@ UI:RegisterPage({
         end)
         self.modReload = UI:Button(card, "Recharger", 110, 24, "primary", "power")
         self.modReload:SetPoint("RIGHT", self.modToggle, "LEFT", -8, 0)
-        self.modReload:SetScript("OnClick", function()
-            if not (InCombatLockdown and InCombatLockdown()) then ReloadUI() end
-        end)
+        UI:SecureReload(self.modReload) -- /reload par un bouton protégé (ReloadUI bloqué pour les addons)
         self.modReload:Hide()
         self.modReloadHint = UI:Text(card, 10, C.muted)
         self.modReloadHint:SetPoint("RIGHT", self.modReload, "LEFT", -8, 0)

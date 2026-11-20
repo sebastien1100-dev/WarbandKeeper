@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.89.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Changer de profil (Options > Profils) déclenchait l'erreur « a tenté d'appeler la fonction protégée Reload() » : le jeu interdit à un addon de recharger l'interface de lui-même. Une petite fenêtre propose maintenant « Recharger maintenant » (ou « Plus tard ») ; copier ou remettre à zéro un profil font de même.
+- Même cause corrigée sur le raccourci « Recharger l'interface » du micro menu, l'icône de rechargement de l'en-tête et le bouton « Recharger » de la carte Modules : ils lancent /reload par un bouton du jeu (indisponibles en combat).
+
 ## v1.89.0 — 20/11/2026
 
 _Un /reload suffit._
