@@ -281,6 +281,14 @@ local function buildBar()
     bar.edge = UI:Rounded(bar, 12, 0, "BACKGROUND", 0)
     bar.bg = UI:Rounded(bar, 11, 1, "BACKGROUND", 1)
     bar.btns = {}
+    -- discrète au repos (transparente), pleine au survol ou quand son menu de détail est ouvert ; fondu doux
+    bar:SetAlpha(0.35)
+    bar:SetScript("OnUpdate", function(b, el)
+        local want = (b:IsMouseOver() or (menu and menu:IsShown())) and 1 or 0.35
+        local a = b:GetAlpha() or 1
+        if math.abs(a - want) < 0.02 then if a ~= want then b:SetAlpha(want) end return end
+        b:SetAlpha(a + (want - a) * math.min(1, el * 10))
+    end)
     -- poignée : glisser pour déplacer la barre sur la carte ; clic droit pour la remettre en haut
     local grip = CreateFrame("Button", nil, bar)
     grip:SetSize(22, 28)

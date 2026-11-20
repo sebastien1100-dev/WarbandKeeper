@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.2", date = "20/11/2026",
+        changed = {
+            "Carte du monde : la barre de filtres (courrier, marchands, maîtres, carte…) est transparente au repos et redevient pleine au survol de la souris (ou menu de détail ouvert), avec un fondu doux.",
+        },
+    },
+    {
         version = "1.101.1", date = "20/11/2026",
         added = {
             "Tournée de quêtes : quand des sorts sont à apprendre, la tournée passe par le maître de classe le plus proche (étape bleue « Maître de classe : N sort(s) à apprendre », placée là où elle rallonge le moins le trajet ; finie après la visite). Option « Maître de classe dans la tournée » sous le guide de la Montée en niveaux (activée d'office).",
