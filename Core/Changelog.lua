@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.1", date = "20/11/2026",
+        added = {
+            "Barre d'expérience : option « Texte au survol » (QoL > Expérience) ; le niveau, le repos et l'XP à rendre n'apparaissent qu'en passant la souris sur la barre.",
+        },
+    },
+    {
         version = "1.87.0", date = "20/11/2026",
         added = {
             "Bateaux et zeppelins (raccourci du micro menu, /wk bateaux) : la fenêtre s'élargit avec une carte à gauche. Kalimdor et les Royaumes de l'Est (cartes du jeu assombries) et chaque ligne en courbe douce, bateau en trait plein, zeppelin en pointillés ; ton quai en bleu.",

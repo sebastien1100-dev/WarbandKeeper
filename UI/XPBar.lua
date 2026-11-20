@@ -89,7 +89,9 @@ local function build()
         self.trackF:SetHeight(bh)
         self.left:ClearAllPoints(); self.left:SetPoint("TOPLEFT", 10, -7)
         self.right:ClearAllPoints(); self.right:SetPoint("TOPRIGHT", -10, -7)
-        self.left:SetShown(not compact); self.right:SetShown(not compact)
+        -- texte au survol (réglage) : libellés cachés tant que la souris n'est pas sur la barre (place gardée)
+        local showText = not compact and (not cfg.textHover or self.hovered or self.sample) and true or false
+        self.left:SetShown(showText); self.right:SetShown(showText)
         -- sans fond (réglage) : cadre et liseré transparents, textes ombrés pour rester lisibles ; la piste reste
         local bare = cfg.noBg and true or false
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bare and 0 or 0.92)
@@ -138,6 +140,8 @@ local function build()
     end
 
     f:SetScript("OnEnter", function(s)
+        s.hovered = true
+        if M:Config().textHover then s.left:SetShown(not M:Config().compact); s.right:SetShown(not M:Config().compact) end
         UI:TooltipOwner(s, "ANCHOR_TOP")
         local x, pend, nq = data(s.sample)
         GameTooltip:SetText(string.format(T("Niveau %d"), x.level), 1, 1, 1)
@@ -163,7 +167,11 @@ local function build()
         GameTooltip:AddLine(T("Clic : section Expérience"), 0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
-    f:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f:SetScript("OnLeave", function(s)
+        GameTooltip:Hide()
+        s.hovered = nil
+        if M:Config().textHover and not s.sample then s.left:Hide(); s.right:Hide() end
+    end)
     f:SetScript("OnMouseUp", function()
         UI:ToggleWindow("qol")
         if UI.pages.qol and UI.pages.qol.ShowSection then UI.pages.qol:ShowSection("xp") end

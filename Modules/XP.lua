@@ -9,7 +9,7 @@ local T = function(s) return WK.T(s) end
 --   repos estimé des autres persos depuis leur déconnexion (5 % d'un niveau par 8 h en auberge, 4 fois moins
 --   dehors, au plus 150 %).
 -- Réglages : QoL:Config().xp
-local DEFAULTS = { bar = true, compact = false, noBg = false, levelAlert = true, restAlert = true, width = 520, thick = 8 }
+local DEFAULTS = { bar = true, compact = false, noBg = false, textHover = false, levelAlert = true, restAlert = true, width = 520, thick = 8 }
 local REST_PER_8H = 0.05   -- part d'un niveau gagnée en 8 h de repos en auberge
 local REST_MAX = 1.5       -- 150 % d'un niveau
 

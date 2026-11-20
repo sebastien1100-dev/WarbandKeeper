@@ -3668,4 +3668,6 @@ WK.Locales.enUS.text = {
     ["Kalimdor"] = "Kalimdor",
     ["Royaumes de l'Est"] = "Eastern Kingdoms",
     ["Clic : voir ce port dans la liste"] = "Click: show this port in the list",
+    ["Texte au survol"] = "Text on hover",
+    ["Les libellés (niveau, repos, à rendre) n'apparaissent qu'au survol de la barre ; leur place est gardée."] = "Labels (level, rested, to turn in) only show when hovering the bar; their space is kept.",
 }
