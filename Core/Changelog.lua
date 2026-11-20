@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.7", date = "20/11/2026",
+        added = {
+            "Carte de tournée à l'écran : une petite roue parmi les boutons du survol ouvre directement les réglages de la page Quêtes (dont « Fond de la carte de tournée » pour l'opacité du fond).",
+        },
+    },
+    {
         version = "1.101.6", date = "20/11/2026",
         changed = {
             "Page Quêtes, roue des réglages : sur une fenêtre assez large, les cartes sont rangées en deux colonnes (à gauche quête suivie, quêtes montrées et légende ; à droite les quêtes automatiques et leurs détails) pour tenir dans la fenêtre ; une seule colonne sur une fenêtre étroite.",

@@ -109,9 +109,18 @@ local function build()
     tv.skip:SetScript("OnClick", function() WK.modules.QuestPlan:Skip() end)
     tv.pp = UI:IconButton(tv, "pause", 16, "Pause")
     tv.pp:SetPoint("RIGHT", tv.skip, "LEFT", -4, 0)
+    -- roue : réglages de la carte (opacité du fond…) dans la roue de la page Quêtes
+    tv.gear = UI:IconButton(tv, "gear", 16, "Réglages de la carte (opacité du fond…)")
+    tv.gear:SetPoint("RIGHT", tv.pp, "LEFT", -4, 0)
+    tv.gear:SetScript("OnClick", function()
+        if UI.ToggleWindow and not (UI.frame and UI.frame:IsShown()) then UI:ToggleWindow() end
+        UI:ShowPage("quests")
+        local def = UI.pages and UI.pages.quests
+        if def and def.side then def.settingsOpen = true; def:Layout(); def:Refresh() end
+    end)
     tv.pp:SetScript("OnClick", function() local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) end)
     local function hoverButtons(on)
-        for _, b in ipairs({ tv.close, tv.skip, tv.pp }) do b:SetShown(on) end
+        for _, b in ipairs({ tv.close, tv.skip, tv.pp, tv.gear }) do b:SetShown(on) end
         tv.headR:SetShown(not on)
     end
     hoverButtons(false)

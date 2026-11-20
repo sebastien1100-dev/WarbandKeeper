@@ -4151,4 +4151,5 @@ WK.Locales.enUS.text = {
     ["Opacité du fond de la carte de tournée à l'écran (0 % : texte seul, ombré)."] = "Opacity of the on-screen tour card background (0 %: shadowed text only).",
     ["Guide de montée recalculé."] = "Levelling guide recalculated.",
     ["Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche)."] = "Class trainer visit when spells are to be learned: guide step, and quest tour step (nearest trainer).",
+    ["Réglages de la carte (opacité du fond…)"] = "Card settings (background opacity…)",
 }
