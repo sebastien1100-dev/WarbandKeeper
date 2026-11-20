@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.105.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Paladin : un clic sur une ligne du panneau des bénédictions (ou sur l'aura) lance de nouveau la bénédiction sur le bon joueur. Le sort passe maintenant par une macro « /cast », comme le bouton « Buffer le suivant », et ne part qu'une fois, au relâché du clic.
+- Paladin : quand tout le monde a déjà sa bénédiction, le clic sur une ligne renouvelle celle qui finit le plus tôt (avant : le clic ne faisait rien).
+
 ## v1.105.2 — 20/11/2026
 
 _Un /reload suffit._

@@ -71,8 +71,11 @@ local function build()
     f.aura = CreateFrame("Button", "WarbandKeeperBlessAura", f, "SecureActionButtonTemplate")
     f.aura:SetSize(22, 22); f.aura:SetPoint("TOPLEFT", 8, -8)
     f.aura:RegisterForClicks("AnyUp", "AnyDown")
-    f.aura:SetAttribute("type", "spell")
+    -- macro « /cast » (comme le bouton « Buffer le suivant ») : le type « spell » restait sans effet sur WoW Forever
+    f.aura:SetAttribute("type", "macro")
     f.aura.icon = f.aura:CreateTexture(nil, "ARTWORK"); f.aura.icon:SetAllPoints()
+    f.aura:SetScript("OnEnter", function(s) if not inCombat() then s:SetAttribute("useOnKeyDown", false) end end)
+    f.aura:SetScript("OnLeave", function(s) if not inCombat() then s:SetAttribute("useOnKeyDown", nil) end end)
     f.auraName = UI:Text(f, 12, C.text); f.auraName:SetPoint("LEFT", f.aura, "RIGHT", 6, 0)
     f.seal = UI:Text(f, 10, C.muted); f.seal:SetPoint("TOPRIGHT", -8, -13); f.seal:SetJustifyH("RIGHT")
     f.line = f:CreateTexture(nil, "ARTWORK"); f.line:SetHeight(1)
@@ -83,7 +86,7 @@ local function build()
         r:SetHeight(ROWH)
         r:SetPoint("TOPLEFT", 6, -40 - (i - 1) * (ROWH + 2)); r:SetPoint("TOPRIGHT", -6, -40 - (i - 1) * (ROWH + 2))
         r:RegisterForClicks("AnyUp", "AnyDown")
-        r:SetAttribute("type1", "spell")
+        r:SetAttribute("type1", "macro")
         r.hl = UI:Rounded(r, 7, 0, "BACKGROUND", 2)
         r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(22, 22); r.icon:SetPoint("LEFT", 2, 0)
         r.name = UI:Text(r, 12, C.text); r.name:SetPoint("LEFT", r.icon, "RIGHT", 7, 0); r.name:SetWidth(96); r.name:SetJustifyH("LEFT")
@@ -104,7 +107,13 @@ local function build()
             GameTooltip:AddLine(T("En groupe, le bouton « Buffer le suivant » bénit tout le monde selon cette répartition."), 0.6, 0.6, 0.6, true)
             GameTooltip:Show()
         end)
-        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        r:SetScript("OnLeave", function(s)
+            GameTooltip:Hide()
+            if not inCombat() then s:SetAttribute("useOnKeyDown", nil) end
+        end)
+        -- souris : une seule action, au relâché, quel que soit le réglage « lancer à l'appui » du jeu
+        r:HookScript("OnEnter", function(s) if not inCombat() then s:SetAttribute("useOnKeyDown", false) end end)
+        r:HookScript("PostClick", function() C_Timer.After(0.4, function() if not inCombat() then UI:RefreshBlessBar() end end) end)
         r:Hide()
         f.rows[i] = r
     end
@@ -150,18 +159,19 @@ local function build()
         local M = B()
         local c = M:Me()
         local an = M:AuraName(c.aura or 0)
-        self.aura:SetAttribute("spell", an)
+        self.aura:SetAttribute("macrotext", an and ("/cast " .. an) or nil)
         local n = math.min(#rows, MAXROWS)
         for i, r in ipairs(self.rows) do
             local d = rows[i]
             if d and i <= n then
-                local tgt = M:NextTarget(d, 300)
-                r:SetAttribute("spell1", M:Name(d.b))
-                r:SetAttribute("unit1", tgt and tgt.unit or nil)
+                -- le joueur de la ligne qui en a besoin, sinon celui dont la bénédiction finit le plus tôt
+                local tgt = M:NextTarget(d, 300) or M:NextTarget(d, math.huge)
+                local spell = M:Name(d.b)
+                r:SetAttribute("macrotext1", (tgt and spell) and UI.BuffMacro({ unit = tgt.unit, spell = spell }) or nil)
                 r.armKey = rowKey(d)
                 r:Show()
             else
-                r:SetAttribute("unit1", nil)
+                r:SetAttribute("macrotext1", nil)
                 r.armKey = nil
                 r:Hide()
             end
@@ -194,11 +204,11 @@ function UI:RefreshBlessBar()
                         { class = "SHAMAN", b = 1, missing = 0, min = 2460, members = {} },
                         { b = 4, salut = true, missing = 1, members = {} },
                     }
-                    for i, r in ipairs(bar.rows) do r:SetShown(i <= #demo); r:SetAttribute("unit1", nil); r:SetAttribute("spell1", nil) end
+                    for i, r in ipairs(bar.rows) do r:SetShown(i <= #demo); r:SetAttribute("macrotext1", nil) end
                     bar:SetHeight(44 + #demo * (ROWH + 2) + 4)
                     bar:Paint(demo)
                     bar:Show()
-                    if M then bar.aura:SetAttribute("spell", nil) end
+                    if M then bar.aura:SetAttribute("macrotext", nil) end
                 else
                     UI:RefreshBlessBar()
                 end

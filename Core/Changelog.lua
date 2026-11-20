@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.3", date = "20/11/2026",
+        fixed = {
+            "Paladin : un clic sur une ligne du panneau des bénédictions (ou sur l'aura) lance de nouveau la bénédiction sur le bon joueur. Le sort passe maintenant par une macro « /cast », comme le bouton « Buffer le suivant », et ne part qu'une fois, au relâché du clic.",
+            "Paladin : quand tout le monde a déjà sa bénédiction, le clic sur une ligne renouvelle celle qui finit le plus tôt (avant : le clic ne faisait rien).",
+        },
+    },
+    {
         version = "1.105.2", date = "20/11/2026",
         changed = {
             "Guidage : le trajet suit davantage les chemins connus et ceux que tu as déjà parcourus, au lieu de couper en ligne droite à travers champs, falaises ou eau (hors chemin trois fois plus coûteux, chemins appris nettement préférés).",
