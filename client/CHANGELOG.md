@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.8 — 20/11/2026
+
+### Modifications
+- Mise à jour de l'addon jeu fermé : plus de consigne « redémarre le jeu » ou « un /reload suffit », inutile puisque la nouvelle version se charge au lancement. La consigne ne s'affiche que si le jeu tourne pendant l'installation (et tant qu'il tourne).
+
 ## 1.8.7 — 20/11/2026
 
 ### Corrections

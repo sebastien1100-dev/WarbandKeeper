@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.7"
+CLIENT_VERSION = "1.8.8"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -631,15 +631,24 @@ def game_exe(addons):
     return None
 
 
+_running = [0.0, False]
+
+
 def game_running():
+    """Le jeu tourne-t-il ? (liste des processus, gardée 5 s : l'accueil la relit à chaque rafraîchissement)"""
     if not IS_WIN:
         return False
+    now = time.time()
+    if now - _running[0] < 5:
+        return _running[1]
     try:
         out = subprocess.run(["tasklist", "/FO", "CSV", "/NH"], capture_output=True, text=True,
                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.lower()
-        return any(l.startswith('"wow') for l in out.splitlines())
+        res = any(l.startswith('"wow') for l in out.splitlines())
     except OSError:
-        return False
+        res = False
+    _running[0], _running[1] = now, res
+    return res
 
 
 def open_folder(path):
@@ -1724,9 +1733,11 @@ class HomePage(Page):
         else:
             self.versions.configure(text="Installée : %s" % inst)
             last = getattr(a, "lastInstall", None)
-            if last and last[0] == inst and last[1]:
+            # consigne seulement si le jeu tournait à l'installation et tourne encore
+            live = last and last[0] == inst and last[1] is not None and game_running()
+            if live and last[1]:
                 self.chip.set("À jour · redémarre complètement le jeu", C["warning"])
-            elif last and last[0] == inst:
+            elif live:
                 self.chip.set("À jour · un /reload suffit", C["positive"])
             else:
                 self.chip.set("À jour", C["positive"])
@@ -2642,17 +2653,19 @@ class App:
             else:
                 ver, restart, first = res
                 running = game_running()
-                if first:
-                    how = "Relance complètement le jeu pour la charger." if running else "Elle se chargera au lancement du jeu."
+                # jeu fermé : il chargera la nouvelle version à son lancement, rien à faire ni à dire
+                if not running:
+                    how = ""
+                elif first:
+                    how = "Relance complètement le jeu pour la charger."
                 elif restart:
-                    how = ("Redémarrage complet du jeu nécessaire : de nouveaux fichiers sont arrivés (un /reload ne suffit pas)."
-                           if running else "Elle se chargera au prochain lancement du jeu (nouveaux fichiers : un /reload ne suffirait pas).")
+                    how = "Redémarrage complet du jeu nécessaire : de nouveaux fichiers sont arrivés (un /reload ne suffit pas)."
                 else:
-                    how = "Un /reload en jeu suffit." if running else "Un /reload suffit (ou au prochain lancement du jeu)."
-                self.lastInstall = (ver, restart and not first, how)
-                home.set_busy("Version %s installée. %s" % (ver, how), 1.0)
+                    how = "Un /reload en jeu suffit."
+                self.lastInstall = (ver, restart and not first, how) if running else (ver, None, "")
+                home.set_busy(("Version %s installée. %s" % (ver, how)).strip(), 1.0)
                 self.root.after(2500, lambda: home.set_busy(home.status["text"]))
-                self.toast("Installé. " + how, "warning" if (restart and running) else "positive")
+                self.toast(("Installé. " + how).strip(), "warning" if (restart and running) else "positive")
             self.state_changed()
         self.run(job, done)
 
