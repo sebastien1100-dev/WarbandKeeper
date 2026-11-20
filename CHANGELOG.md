@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.113.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Onglet LFG, quêtes du donjon : les prérequis sont pris en compte. Une quête bloquée par une autre compte « après prérequis », et « Prendre les quêtes » ajoute les prérequis à prendre d'abord (toute la chaîne, même dans une autre zone) ; leur liste et la quête qu'ils ouvrent sont dans l'infobulle du bouton.
+- Les quêtes du donjon qui attendent leur prérequis sont cochées aussi : prises dès qu'elles s'ouvrent (mode Assisté), « Donneur suivant » relance la flèche.
+
 ## v1.113.0 — 20/11/2026
 
 _Un /reload suffit._

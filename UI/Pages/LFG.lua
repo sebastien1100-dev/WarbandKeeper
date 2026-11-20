@@ -839,8 +839,17 @@ UI:RegisterPage({
                 qs.btn:SetScript("OnEnter", function(s)
                     UI:TooltipOwner(s, "ANCHOR_TOP")
                     GameTooltip:SetText(T("Prendre les quêtes du donjon"), 1, 1, 1)
-                    for _, q in ipairs(qs.avail or {}) do
-                        GameTooltip:AddLine("• " .. WK.modules.Quests:Name(q) .. "  " .. UI:Hex(C.dim) .. "[" .. (q.lvl or "?") .. "]|r", 0.85, 0.85, 0.85)
+                    local Qm = WK.modules.Quests
+                    local s = qs.summary or { avail = {}, pre = {}, waiting = {} }
+                    for _, q in ipairs(s.avail) do
+                        GameTooltip:AddLine("• " .. Qm:Name(q) .. "  " .. UI:Hex(C.dim) .. "[" .. (q.lvl or "?") .. "]|r", 0.85, 0.85, 0.85)
+                    end
+                    if #s.pre > 0 then
+                        GameTooltip:AddLine(" ")
+                        GameTooltip:AddLine(T("Prérequis à faire d'abord :"), C.warning[1], C.warning[2], C.warning[3])
+                        for _, e in ipairs(s.pre) do
+                            GameTooltip:AddLine("• " .. Qm:Name(e.q) .. "  " .. UI:Hex(C.dim) .. "[" .. (e.q.lvl or "?") .. "] » " .. Qm:Name(e.unlock) .. "|r", 0.85, 0.85, 0.85, true)
+                        end
                     end
                     GameTooltip:AddLine(T("Elles sont cochées dans tes quêtes, et la flèche mène au donneur le plus proche, puis au suivant."), 0.6, 0.6, 0.6, true)
                     GameTooltip:Show()
@@ -853,14 +862,17 @@ UI:RegisterPage({
             local d = Dg and actName and Dg:ByName(actName)
             if d then
                 local s = Dg:QuestSummary(d)
-                qs.dungeon, qs.avail = d, s.avail
-                local n = #s.avail
+                qs.dungeon, qs.summary = d, s
+                local n = Dg:PickCount(s)
                 local parts = {}
-                table.insert(parts, UI:Hex(n > 0 and C.gold or C.muted) .. string.format(T("%d à prendre"), n) .. "|r")
+                table.insert(parts, UI:Hex(#s.avail > 0 and C.gold or C.muted) .. string.format(T("%d à prendre"), #s.avail) .. "|r")
+                if #s.pre > 0 or #s.waiting > 0 then
+                    table.insert(parts, UI:Hex(C.warning) .. string.format(T("%d après prérequis"), #s.waiting) .. "|r")
+                end
                 if s.log > 0 then table.insert(parts, UI:Hex(C.positive) .. string.format(T("%d dans ton journal"), s.log) .. "|r") end
                 if s.later > 0 then table.insert(parts, UI:Hex(C.muted) .. string.format(T("%d plus tard"), s.later) .. "|r") end
                 if s.done > 0 then table.insert(parts, UI:Hex(C.dim) .. string.format(T("%d faites"), s.done) .. "|r") end
-                local total = n + s.log + s.later + s.done
+                local total = #s.avail + #s.waiting + s.log + s.later + s.done
                 qs.text:SetText(total > 0 and (T("Quêtes du donjon :") .. " " .. table.concat(parts, "  ·  "))
                     or T("Aucune quête connue pour ce donjon."))
                 local active = Dg.questPick and Dg.questPick.key == d.key
@@ -870,7 +882,7 @@ UI:RegisterPage({
                 qs:Show()
                 cy = 46 + 12
             else
-                qs:Hide(); qs.dungeon, qs.avail = nil, nil
+                qs:Hide(); qs.dungeon, qs.summary = nil, nil
             end
         end
         local function head(title, sub)

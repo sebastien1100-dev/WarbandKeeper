@@ -945,17 +945,58 @@ function M:ByName(name)
     return found
 end
 
--- Quêtes d'un donjon pour le perso connecté : à prendre (avail), dans le journal, plus tard, faites
+-- Prérequis manquants d'une quête (tous ceux de preAll, et un seul de pre quand aucun n'est fait)
+local function missingPre(Q, q, done)
+    local out = {}
+    for _, p in ipairs(q.preAll or {}) do if not done[p] and Q:Get(p) then table.insert(out, p) end end
+    if q.pre and #q.pre > 0 then
+        local any, first = false, nil
+        for _, p in ipairs(q.pre) do
+            if done[p] or not Q:Get(p) then any = true break end
+            first = first or p
+        end
+        if not any and first then table.insert(out, first) end
+    end
+    return out
+end
+-- Quêtes d'un donjon pour le perso connecté : à prendre (avail), prérequis à prendre d'abord (pre :
+-- { q, unlock = quête du donjon }), quêtes du donjon qui attendent leurs prérequis (waiting), dans le
+-- journal, plus tard (niveau trop haut, prérequis introuvable), faites
 function M:QuestSummary(d)
     local Q = WK.modules.Quests
     local c = WK.DB:Me() or {}
-    local s = { avail = {}, log = 0, later = 0, done = 0 }
+    local s = { avail = {}, pre = {}, waiting = {}, log = 0, later = 0, done = 0, preLog = 0 }
     if not (Q and d) then return s end
+    local done = (c.quests and c.quests.done) or {}
+    local seenPre = {}
+    -- remonte la chaîne d'une quête bloquée : rend vrai si un prérequis à prendre ou en cours a été trouvé
+    local function climb(q, unlock, depth, visited)
+        if depth > 8 then return false end
+        local found = false
+        for _, pid in ipairs(missingPre(Q, q, done)) do
+            if not visited[pid] then
+                visited[pid] = true
+                local p = Q:Get(pid)
+                local st = p and Q:State(p, c)
+                if st == "avail" then
+                    if not seenPre[pid] then seenPre[pid] = true; table.insert(s.pre, { q = p, unlock = unlock }) end
+                    found = true
+                elseif st == "log" then
+                    if not seenPre[pid] then seenPre[pid] = true; s.preLog = s.preLog + 1 end
+                    found = true
+                elseif st == "locked" then
+                    if climb(p, unlock, depth + 1, visited) then found = true end
+                end
+            end
+        end
+        return found
+    end
     for _, q in ipairs(self:Quests(d, c, true)) do
         local st = Q:State(q, c)
         if st == "avail" then table.insert(s.avail, q)
         elseif st == "log" then s.log = s.log + 1
         elseif st == "done" then s.done = s.done + 1
+        elseif st == "locked" and climb(q, q, 1, {}) then table.insert(s.waiting, q)
         else s.later = s.later + 1 end
     end
     return s
@@ -989,27 +1030,47 @@ function M:NextQuestGiver()
     end
     if not best then
         self.questPick = nil
-        WK:Print(string.format(T("Quêtes de %s : tout est pris."), qp.name))
+        -- rien à prendre pour l'instant : des quêtes du donjon attendent peut-être un prérequis en cours
+        local wait = 0
+        for id in pairs(qp.ids) do
+            local q = Q:Get(id)
+            if q and Q:State(q, c) == "locked" then wait = wait + 1 end
+        end
+        if wait > 0 then
+            WK:Print(string.format(T("Quêtes de %s : tout ce qui peut l'être est pris ; %d attendent un prérequis (cochées, à prendre ensuite)."), qp.name, wait))
+        else
+            WK:Print(string.format(T("Quêtes de %s : tout est pris."), qp.name))
+        end
         if self.OnChange then pcall(self.OnChange, self) end
         return nil
     end
     Q:GuideTo(best)
     return best
 end
+-- quêtes à prendre maintenant (celles du donjon et les prérequis de celles qui attendent)
+function M:PickCount(s) return #s.avail + #s.pre end
 function M:PickQuests(d)
     local s = self:QuestSummary(d)
-    if #s.avail == 0 then return 0 end
+    local n = self:PickCount(s)
+    if n == 0 then return 0 end
     local P = WK.modules.QuestPlan
     local ids = {}
-    for _, q in ipairs(s.avail) do
-        ids[q.id] = true
-        if P then P:SetPicked(q.id, true) end
-    end
-    self.questPick = { key = d.key, name = self:Name(d), ids = ids }
-    WK:Print(string.format(T("%d quête(s) de %s cochées : la flèche mène au donneur le plus proche, puis au suivant."), #s.avail, self:Name(d)))
+    local function pick(q) ids[q.id] = true; if P then P:SetPicked(q.id, true) end end
+    for _, q in ipairs(s.avail) do pick(q) end
+    for _, e in ipairs(s.pre) do pick(e.q) end
+    -- quêtes du donjon qui attendent leurs prérequis : cochées aussi, la flèche y mène dès qu'elles s'ouvrent
+    for _, q in ipairs(s.waiting) do pick(q) end
+    self.questPick = { key = d.key, name = self:Name(d), ids = ids, waiting = #s.waiting }
+    local msg = string.format(T("%d quête(s) de %s cochées : la flèche mène au donneur le plus proche, puis au suivant."), n, self:Name(d))
+    if #s.pre > 0 then msg = msg .. " " .. string.format(T("Dont %d prérequis, à faire avant les quêtes du donjon."), #s.pre) end
+    WK:Print(msg)
     self:NextQuestGiver()
-    return #s.avail
+    return n
 end
+-- prérequis rendu : une quête du donjon s'ouvre peut-être (cochée : reprise par le plan de quêtes)
+WK:On("QUEST_TURNED_IN", function()
+    if M.OnChange then C_Timer.After(1.5, function() pcall(M.OnChange, M) end) end
+end)
 -- quête du donjon acceptée : donneur suivant (le journal est relu juste après)
 WK:On("QUEST_ACCEPTED", function(a, b)
     local qp = M.questPick

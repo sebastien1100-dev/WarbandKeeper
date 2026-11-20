@@ -4282,4 +4282,8 @@ WK.Locales.enUS.text = {
     ["Aucune quête connue pour ce donjon."] = "No known quest for this dungeon.",
     ["Donneur suivant"] = "Next giver",
     ["Prendre les quêtes (%d)"] = "Pick up the quests (%d)",
+    ["Dont %d prérequis, à faire avant les quêtes du donjon."] = "Including %d prerequisite(s), to do before the dungeon quests.",
+    ["Quêtes de %s : tout ce qui peut l'être est pris ; %d attendent un prérequis (cochées, à prendre ensuite)."] = "%s quests: everything available is picked up; %d wait for a prerequisite (ticked, to pick up later).",
+    ["Prérequis à faire d'abord :"] = "Prerequisites to do first:",
+    ["%d après prérequis"] = "%d after prerequisites",
 }

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.113.1", date = "20/11/2026",
+        added = {
+            "Onglet LFG, quêtes du donjon : les prérequis sont pris en compte. Une quête bloquée par une autre compte « après prérequis », et « Prendre les quêtes » ajoute les prérequis à prendre d'abord (toute la chaîne, même dans une autre zone) ; leur liste et la quête qu'ils ouvrent sont dans l'infobulle du bouton.",
+            "Les quêtes du donjon qui attendent leur prérequis sont cochées aussi : prises dès qu'elles s'ouvrent (mode Assisté), « Donneur suivant » relance la flèche.",
+        },
+    },
+    {
         version = "1.113.0", date = "20/11/2026",
         added = {
             "Onglet LFG : avec un donjon choisi à gauche, un bandeau donne ses quêtes (à prendre, dans ton journal, plus tard, faites).",
