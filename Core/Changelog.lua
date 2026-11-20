@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.84.2", date = "20/11/2026",
+        fixed = {
+            "Bandeau au quai : la frise des escales part toujours de ton ponton (à gauche) vers la prochaine escale (à droite). Avant, elle suivait l'ordre de la ligne et pouvait laisser croire que tu arrivais au lieu de partir ; le sous-titre dit maintenant « Ce ponton · vers Auberdine ».",
+        },
+    },
+    {
         version = "1.84.1", date = "20/11/2026",
         changed = {
             "Résumé, « Évolution de l'or » : les montants sont écrits à gauche du graphique (graduations rondes en po, pa sous 1 po, avec une décimale quand l'écart est faible) et les repères sont en pointillés, pour voir d'un coup d'œil de combien l'or a bougé.",

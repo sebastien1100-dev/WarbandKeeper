@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.84.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau au quai : la frise des escales part toujours de ton ponton (à gauche) vers la prochaine escale (à droite). Avant, elle suivait l'ordre de la ligne et pouvait laisser croire que tu arrivais au lieu de partir ; le sous-titre dit maintenant « Ce ponton · vers Auberdine ».
+
 ## v1.84.1 — 20/11/2026
 
 _Un /reload suffit._

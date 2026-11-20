@@ -65,13 +65,15 @@ local function nearDock(range)
     return out
 end
 
--- noms des escales d'une entrée, quai courant et prochaine escale (indices dans la liste)
+-- noms des escales d'une entrée dans l'ordre du trajet, en partant du quai courant : ton quai à gauche,
+-- la prochaine escale juste à droite (quai courant et prochaine escale : indices 1 et 2)
 local function routeOf(e)
     if e.game then
         local l = e.game
+        local n, s = #l.stops, e.s or 1
         local names = {}
-        for i = 1, #l.stops do names[i] = BL():StopName(l, i) end
-        return names, e.s, e.s % #l.stops + 1
+        for k = 1, n do names[k] = BL():StopName(l, (s + k - 2) % n + 1) end
+        return names, 1, n > 1 and 2 or nil
     end
     return { e.from or "?", e.to or "?" }, 1, 2
 end
@@ -178,7 +180,7 @@ local function build()
     function f:Paint(list)
         local first = list[1]
         local names, cur, nx = routeOf(first)
-        self:Head(first.kind, titleOf(first), first.kind == "zeppelin" and T("Cette tour · prochaine escale en vert") or T("Ce ponton · prochaine escale en vert"))
+        self:Head(first.kind, titleOf(first), string.format(first.kind == "zeppelin" and T("Cette tour · vers %s") or T("Ce ponton · vers %s"), names[nx] or "?"))
         local y = self:Route(names, cur, nx, 48)
         local rows, seen = {}, { [first.game or first.pair or 0] = true }
         for i = 2, #list do
@@ -186,9 +188,9 @@ local function build()
             local key = o.game or o.pair
             if #rows < 3 and not seen[key] then
                 seen[key] = true
-                local on, os, onx = routeOf(o)
+                local on, _, onx = routeOf(o)
                 local to = on[onx] or "?"
-                if o.game and #o.game.stops > 2 then to = table.concat(BL() and BL():Destinations(o.game, os) or { to }, " » ") end
+                if o.game and #o.game.stops > 2 then to = table.concat(BL() and BL():Destinations(o.game, o.s or 1) or { to }, " » ") end
                 table.insert(rows, { to, (o.kind == "zeppelin" and T("autre tour") or T("ponton voisin")) .. (o.game and o.game.vessel and (" · " .. T(o.game.vessel)) or "") })
             end
         end
