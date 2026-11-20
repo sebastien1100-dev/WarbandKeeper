@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.88.1", date = "20/11/2026",
+        fixed = {
+            "Plan de montée : le panneau (et un cercle mal placé) s'ouvraient aussi sur le Grimoire, qui partage la même fenêtre que les Talents. Ils n'apparaissent plus que sur l'onglet des talents, et suivent le passage d'un onglet à l'autre sans rouvrir la fenêtre.",
+        },
+    },
+    {
         version = "1.88.0", date = "20/11/2026",
         added = {
             "Fiche du perso : petite roue en haut à droite avec les réglages des trois onglets, une carte chacun. Fiche : niveau d'objet sur les icônes, point bleu des objets enchantés, stats utiles en couleur. Talents : panneau collé à la fenêtre des talents du jeu, cercle autour du prochain talent, rappel du prochain talent (nouveau). BiS : ligne « Liste BiS de… » dans les infobulles (nouveau).",

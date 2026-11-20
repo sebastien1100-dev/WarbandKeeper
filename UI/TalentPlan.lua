@@ -40,6 +40,38 @@ local function iconOf(b)
     local t = b.Icon or b.icon or b.IconTexture or (b.GetNormalTexture and b:GetNormalTexture())
     return t and t.GetTexture and t:GetTexture()
 end
+-- Partie « talents » de la fenêtre du jeu : le Grimoire et les Talents peuvent être une seule fenêtre
+-- (PlayerSpellsFrame) ; le panneau et le cercle ne vont qu'avec l'onglet des talents
+local function part(fr, keys)
+    for _, k in ipairs(keys) do
+        local v = rawget(fr, k)
+        if type(v) == "table" and v.IsShown then return v end
+    end
+end
+local function talentsPart(h) return h and part(h, { "TalentsFrame", "TalentsTab", "TalentFrame" }) end
+local function titleOf(h)
+    local t = rawget(h, "TitleText") or (type(rawget(h, "TitleContainer")) == "table" and rawget(h.TitleContainer, "TitleText"))
+    if type(t) == "table" and t.GetText then return t:GetText() end
+    if type(h.GetTitleText) == "function" then
+        local ok, r = pcall(h.GetTitleText, h)
+        if ok and type(r) == "table" and r.GetText then return r:GetText() elseif ok and type(r) == "string" then return r end
+    end
+end
+local function talentsShown(h)
+    if not (h and h:IsShown()) then return false end
+    local tp = talentsPart(h)
+    if tp then return tp:IsShown() and true or false end
+    local sb = part(h, { "SpellBookFrame", "SpellbookFrame", "SpellBookTab" })
+    if sb and sb:IsShown() then return false end
+    local title = titleOf(h)
+    if type(title) == "string" and title ~= "" then
+        local tl = title:lower()
+        return tl:find("talent", 1, true) ~= nil
+    end
+    return true
+end
+UI.TalentPlanTalentsShown = talentsShown
+
 local function findButton(root, node, icon)
     local byIcon
     local function walk(fr, depth)
@@ -196,7 +228,7 @@ end
 -- Talent à prendre entouré dans la fenêtre du jeu (si elle expose ses boutons)
 function UI:TalentPlanGlow()
     if glow then glow:Hide() end
-    if not (glowOn() and host and host:IsShown() and panel and panel:IsShown()) then return end
+    if not (glowOn() and talentsShown(host) and panel and panel:IsShown()) then return end
     local pr = P:Progress(WK:CharKey())
     local node = pr and pr.step and (pr.step[3] or (pr.talent and pr.talent[8]))
     if not node then return end
@@ -207,7 +239,7 @@ function UI:TalentPlanGlow()
             if ok and b then btn = b break end
         end
     end
-    if not btn then btn = findButton(host, node, pr.talent and pr.talent[2]) end
+    if not btn then btn = findButton(talentsPart(host) or host, node, pr.talent and pr.talent[2]) end
     if not btn then return end
     if not glow then
         glow = CreateFrame("Frame", nil, UIParent)
@@ -261,6 +293,31 @@ function UI:CloseTalentPlan()
 end
 function UI:RefreshTalentPlan() if panel and panel:IsShown() then panel:Paint() end end
 
+-- Panneau et cercle selon l'onglet affiché : vérifié 4 fois par seconde tant que la fenêtre du jeu est ouverte
+-- (passer du Grimoire aux Talents ne rouvre pas la fenêtre)
+local watcher = CreateFrame("Frame"); watcher:Hide()
+local lastVis
+local function sync()
+    local vis = talentsShown(host)
+    if vis == lastVis then return end
+    lastVis = vis
+    if vis then
+        if enabled() and #P:Plans(WK:CharKey()) > 0 and not (panel and panel.userHidden) then UI:ShowTalentPlan(host) end
+        C_Timer.After(0.5, function() UI:TalentPlanGlow() end)
+    else
+        if panel and panel.anchored then panel:Hide() end
+        if glow then glow:Hide() end
+    end
+end
+watcher:SetScript("OnUpdate", function(w, el)
+    w.acc = (w.acc or 0) + el
+    if w.acc < 0.25 then return end
+    w.acc = 0
+    if not (host and host:IsShown()) then w:Hide() return end
+    sync()
+end)
+UI.TalentPlanSync = sync
+
 -- Accroche à la fenêtre des talents du jeu (chargée à la demande)
 local function tryHook()
     for _, name in ipairs(FRAMES) do
@@ -269,11 +326,12 @@ local function tryHook()
             fr.wkPlanHooked = true
             fr:HookScript("OnShow", function(s)
                 host = s
-                if enabled() and #P:Plans(WK:CharKey()) > 0 and not (panel and panel.userHidden) then UI:ShowTalentPlan(s) end
-                -- boutons des talents posés un peu après l'ouverture : le cercle est recherché à nouveau
-                C_Timer.After(0.5, function() UI:TalentPlanGlow() end)
+                lastVis = nil
+                sync()
+                watcher:Show()
             end)
             fr:HookScript("OnHide", function(s)
+                watcher:Hide(); lastVis = nil
                 if panel and panel.anchored then panel:Hide() end
                 if glow then glow:Hide() end
             end)
