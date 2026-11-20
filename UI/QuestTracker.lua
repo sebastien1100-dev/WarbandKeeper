@@ -320,7 +320,7 @@ local function build()
                 -- tournée en cours : aperçu de la carte de tournée
                 f:PaintTour({ kind = "turn", title = T("Rendre : Le viaduc de Thandol"), lvl = 31, sub = "160 m nord-est · +2500 XP",
                     objs = {}, idx = 4, count = 7, mins = 18, xp = 7400, zone = T("Les Paluns"),
-                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes"), dist = 420 }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar"), dist = 900 } },
+                    nexts = { { n = 5, kind = "do", title = T("Les trogg du loch"), dist = 420 }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar"), dist = 900 } },
                     way = { title = T("Œufs de faucon"), lvl = 30, sub = string.format(T("détour env. %d min"), 3) .. " · " .. UI:Hex(C.gold) .. "+1150 XP|r · " .. T("clic : ajouter") } })
                 f:Show()
             elseif on then

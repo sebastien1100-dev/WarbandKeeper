@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.5", date = "20/11/2026",
+        changed = {
+            "Tournée de quêtes : une étape à faire affiche seulement le nom de ses quêtes (plus de « Coin nord : … »).",
+        },
+    },
+    {
         version = "1.105.4", date = "20/11/2026",
         fixed = {
             "Guidage : après un détour (marchand pour vider les sacs, boîte aux lettres, maître…), la tournée de quêtes ou la quête suivie reprend le guidage. Avant, il n'y avait plus de guidage pour la suite de la tournée.",

@@ -674,7 +674,8 @@ function M:StepTitle(s)
     if s.kind == "pick" then return string.format(T("Prendre : %s"), list)
     elseif s.kind == "turn" then return string.format(T("Rendre : %s"), list)
     end
-    return string.format(T("Coin %s : %s"), s.label or "", list)
+    -- étape « faire » : le nom des quêtes seul (plus de « Coin nord : … »)
+    return list
 end
 
 -- Objectifs pas finis d'une étape « faire » : { name, have, need, done }

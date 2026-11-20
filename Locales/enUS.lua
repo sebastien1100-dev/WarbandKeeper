@@ -4207,4 +4207,5 @@ WK.Locales.enUS.text = {
     ["dernier il y a %d s"] = "last one %d s ago",
     ["tronçon en cours : %d points"] = "current segment: %d points",
     ["hors des chemins connus : env. %d m sur %d m de marche (en ligne droite, faute de chemin appris)"] = "off known paths: approx. %d m of %d m walking (straight line, no learned path)",
+    ["Les trogg du loch"] = "Loch troggs",
 }
