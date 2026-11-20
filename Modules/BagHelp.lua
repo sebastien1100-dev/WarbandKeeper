@@ -11,7 +11,7 @@ local T = function(s) return WK.T(s) end
 --     celui porté (poids des caractéristiques de la classe, UI.StatWeights) est proposé, jamais équipé d'office.
 -- Réglages WK.DB.global.bagHelp (dans les profils, sauf dismissed) : space, low (seuil de cases libres),
 -- restock, rs[perso] = { drink, food, items = { [objet] = quantité } }, wear, dismissed[perso][objet].
-local DEFAULTS = { space = true, low = 3, restock = true, wear = true }
+local DEFAULTS = { space = true, low = 3, restock = true, wear = true, autoOpen = false, openMode = "list" }
 
 function M:Config()
     local g = WK.DB.global
@@ -145,6 +145,94 @@ function M:PlanCost(plan)
     local total = 0
     for _, p in ipairs(plan) do total = total + math.ceil(p.stock.price / math.max(1, p.stock.batch) * p.need) end
     return total
+end
+
+---------------------------------------------------------------------------
+-- Ouvrir tout seul certains objets des sacs (palourdes…) : réglages autoOpen, openMode (« list » : la liste
+-- openList ; « all » : tout ce qui s'ouvre, sauf les coffrets fermés à clé). Un objet à la fois, jamais en combat,
+-- en lançant un sort, avec une fenêtre de butin ouverte, sans case libre, ni chez un marchand, à la banque, à la
+-- boîte aux lettres, à l'échange ou à l'hôtel des ventes (un clic droit y vendrait, déposerait ou joindrait l'objet)
+---------------------------------------------------------------------------
+-- palourdes : petite palourde couverte de bernaches, palourde à coquille épaisse, palourde à grande bouche,
+-- palourde à coquille molle
+M.OPEN_DEFAULT = { [5523] = true, [5524] = true, [7973] = true, [15874] = true }
+local BUSY_FRAMES = { "MerchantFrame", "BankFrame", "TradeFrame", "MailFrame", "AuctionFrame", "AuctionHouseFrame",
+    "GuildBankFrame", "LootFrame" }
+function M:OpenList()
+    local c = self:Config()
+    if not c.openList then
+        c.openList = {}
+        for id in pairs(self.OPEN_DEFAULT) do c.openList[id] = true end
+    end
+    return c.openList
+end
+local function lockedBox(bag, slot)
+    if not (C_TooltipInfo and C_TooltipInfo.GetBagItem) then return false end
+    local ok, d = pcall(C_TooltipInfo.GetBagItem, bag, slot)
+    local want = _G.LOCKED or "Locked"
+    for _, l in ipairs(ok and d and d.lines or {}) do
+        if l.leftText == want then return true end
+    end
+    return false
+end
+local function lootable(bag, slot)
+    local Cn = C_Container
+    if Cn and Cn.GetContainerItemInfo then
+        local info = Cn.GetContainerItemInfo(bag, slot)
+        return info and info.hasLoot or false
+    end
+    if GetContainerItemInfo then return select(6, GetContainerItemInfo(bag, slot)) and true or false end
+    return false
+end
+-- pourquoi on n'ouvre pas maintenant (nil : on peut)
+function M:OpenBusy()
+    if InCombatLockdown and InCombatLockdown() then return "combat" end
+    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return "mort" end
+    if (UnitCastingInfo and UnitCastingInfo("player")) or (UnitChannelInfo and UnitChannelInfo("player")) then return "sort" end
+    for _, n in ipairs(BUSY_FRAMES) do
+        local f = _G[n]
+        if f and f.IsShown and f:IsShown() == true then return n end
+    end
+    if (self:FreeSlots() or 0) < 1 then return "sacs pleins" end
+    return nil
+end
+-- prochain objet à ouvrir : bag, slot, id
+function M:NextToOpen()
+    local c = self:Config()
+    local list = self:OpenList()
+    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, _, isLocked = WK.Container.Info(bag, slot)
+            if id and not isLocked and (list[id] or (c.openMode == "all" and lootable(bag, slot) and not lockedBox(bag, slot))) then
+                return bag, slot, id
+            end
+        end
+    end
+end
+local lastOpen = 0
+function M:OpenNext()
+    local c = self:Config()
+    if not c.autoOpen or not WK:FeatureOn("inventory") then return false end
+    if GetTime() - lastOpen < 1 then return false end
+    if self:OpenBusy() then return false end
+    local bag, slot = self:NextToOpen()
+    if not bag then return false end
+    lastOpen = GetTime()
+    local use = (C_Container and C_Container.UseContainerItem) or UseContainerItem
+    if use then pcall(use, bag, slot) end
+    return true
+end
+local openPending
+local function openSoon(delay)
+    if openPending then return end
+    openPending = true
+    C_Timer.After(delay or 0.6, function() openPending = nil; M:OpenNext() end)
+end
+WK:On("BAG_UPDATE_DELAYED", function() openSoon(0.6) end)
+WK:On("LOOT_CLOSED", function() openSoon(0.8) end)
+WK:On("PLAYER_REGEN_ENABLED", function() openSoon(1.5) end)
+for _, ev in ipairs({ "MERCHANT_CLOSED", "BANKFRAME_CLOSED", "MAIL_CLOSED", "TRADE_CLOSED", "AUCTION_HOUSE_CLOSED" }) do
+    WK:On(ev, function() openSoon(1) end)
 end
 
 ---------------------------------------------------------------------------

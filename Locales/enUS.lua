@@ -4194,4 +4194,11 @@ WK.Locales.enUS.text = {
     ["%d pa"] = "%d s",
     ["prendre, rendre, acheter, exceptions"] = "pick up, turn in, buy, exceptions",
     ["Sur la carte du monde et la minicarte, tant que nos zones de quête sont affichées ; notre repère prend leur place sur la minicarte."] = "On the world map and the minimap, while our quest areas are shown; our marker takes their place on the minimap.",
+    ["Ouvrir tout seul certains objets"] = "Open some items automatically",
+    ["Palourdes et objets de la liste, un par un, hors combat ; jamais chez un marchand, à la banque, à la boîte aux lettres ni à l'échange, ni sans case libre."] = "Clams and listed items, one by one, out of combat; never at a vendor, the bank, the mailbox or a trade, nor without a free slot.",
+    ["Tout ce qui s'ouvre"] = "Everything that opens",
+    ["Quoi ouvrir"] = "What to open",
+    ["« Tout ce qui s'ouvre » : sacs, coffrets et palourdes, sauf les coffrets fermés à clé."] = "\"Everything that opens\": bags, boxes and clams, except locked boxes.",
+    ["Objets à ouvrir"] = "Items to open",
+    ["Glisse un objet des sacs sur la case pour l'ajouter."] = "Drag an item from your bags onto the slot to add it.",
 }

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.0", date = "20/11/2026",
+        added = {
+            "Sacs : option « Ouvrir tout seul certains objets » (Inventaire > roue > Sacs, marchand et équipement). Les palourdes et les objets de ta liste (glissés sur la case) s'ouvrent un par un, hors combat ; ou, au choix, tout ce qui s'ouvre sauf les coffrets fermés à clé. Jamais chez un marchand, à la banque, à la boîte aux lettres, à l'échange ou à l'hôtel des ventes, ni sans case libre. Coupée par défaut.",
+        },
+    },
+    {
         version = "1.104.2", date = "20/11/2026",
         fixed = {
             "Quêtes : « La chute de Dun Modr » n'est plus proposée avant « Une tâche sinistre » (Les Paluns), comme le demande le jeu.",

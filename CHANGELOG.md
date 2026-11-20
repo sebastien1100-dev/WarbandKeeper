@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.105.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Sacs : option « Ouvrir tout seul certains objets » (Inventaire > roue > Sacs, marchand et équipement). Les palourdes et les objets de ta liste (glissés sur la case) s'ouvrent un par un, hors combat ; ou, au choix, tout ce qui s'ouvre sauf les coffrets fermés à clé. Jamais chez un marchand, à la banque, à la boîte aux lettres, à l'échange ou à l'hôtel des ventes, ni sans case libre. Coupée par défaut.
+
 ## v1.104.2 — 20/11/2026
 
 _Un /reload suffit._
