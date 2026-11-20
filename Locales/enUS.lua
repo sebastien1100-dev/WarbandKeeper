@@ -4243,4 +4243,6 @@ WK.Locales.enUS.text = {
     ["Clic droit : le forgeron le plus proche, pour réparer."] = "Right-click: the nearest blacksmith, to repair.",
     ["Case du maître de classe"] = "Class trainer slot",
     ["Le nombre de sorts à apprendre, sinon la distance."] = "The number of spells to learn, otherwise the distance.",
+    ["À prendre"] = "To pick up",
+    ["Plus tard (trop dures pour l'instant)"] = "Later (too hard for now)",
 }

@@ -1637,38 +1637,62 @@ UI:RegisterPage({
         local W = self.pscroll:GetWidth() or 600
         if W < 100 then W = 600 end
         local y = 0
-        for _, k in ipairs(coins or {}) do
-            local cd = self.pcards:Get()
-            cd:ClearAllPoints(); cd:SetPoint("TOPLEFT", 0, -y); cd:SetWidth(W - 14)
-            cd.head:SetText(string.format(T("Coin %s"), k.label or ""))
-            local n = #k.quests
-            cd.tag:Set(n == 1 and T("1 quête") or string.format(T("%d quêtes au même endroit"), n))
-            cd.dist:SetText((k.d and k.d < 100000) and string.format(T("à %d m"), math.floor(k.d + 0.5)) or "")
-            cd.xp:SetText((k.xp or 0) > 0 and ("+" .. k.xp .. " XP") or "")
-            cd.rows:Reset()
-            local ry = 44
-            for _, e in ipairs(k.quests) do
-                local r = cd.rows:Get()
-                r.e = e
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ry); r:SetPoint("TOPRIGHT", 0, -ry)
-                r:PaintBox()
-                r.lv:Set(e.lvl and tostring(e.lvl) or "?", e.lvl and levelColor(e.lvl, myLevel) or C.muted)
-                r.name:SetText(e.title or ("#" .. e.id))
-                r.name:SetTextColor(unpack((e.hard and not e.inLog) and C.muted or C.text))
-                local info
-                if e.inLog then info = e.complete and T("à rendre") or T("dans le journal")
-                elseif e.hard then info = T("trop dur pour l'instant")
-                elseif e.giver then
-                    local d = distTo(e.giver.map, e.giver.x, e.giver.y)
-                    info = d and string.format(T("donneur · %d m"), math.floor(d + 0.5)) or T("donneur")
-                else info = "" end
-                -- quête de groupe : annoncée en tête de l'info
-                if e.group then info = UI:Hex(C.warning) .. T("groupe") .. "|r" .. (info ~= "" and ("  ·  " .. info) or "") end
-                r.info:SetText(info)
-                ry = ry + 28
+        -- une carte par état (plus de « Coin nord… ») : à rendre, dans ton journal, à prendre, plus tard ;
+        -- dans chaque carte, de la plus proche à la plus lointaine, avec la distance et la direction
+        local me = G() and G():PlayerPos()
+        local function where(e)
+            local pt = (e.inLog and (e.complete and e.turnIn or e.center)) or e.giver or e.center or e.turnIn
+            if not pt then return nil, "" end
+            local d = distTo(pt.map, pt.x, pt.y)
+            local dir = me and P:Direction(me, pt) or ""
+            return d, dir
+        end
+        local GROUPS_PICK = {
+            { T("À rendre"), function(e) return e.inLog and e.complete end },
+            { T("Dans ton journal"), function(e) return e.inLog and not e.complete end },
+            { T("À prendre"), function(e) return not e.inLog and not e.hard end },
+            { T("Plus tard (trop dures pour l'instant)"), function(e) return not e.inLog and e.hard end },
+        }
+        for _, gdef in ipairs(GROUPS_PICK) do
+            local items, xpSum = {}, 0
+            for _, e in ipairs(list or {}) do
+                if gdef[2](e) then
+                    local d, dir = where(e)
+                    items[#items + 1] = { e = e, d = d, dir = dir }
+                    xpSum = xpSum + (e.xp or 0)
+                end
             end
-            cd:SetHeight(ry + 10)
-            y = y + ry + 10 + GAP
+            if #items > 0 then
+                table.sort(items, function(x, z) return (x.d or 1e12) < (z.d or 1e12) end)
+                local cd = self.pcards:Get()
+                cd:ClearAllPoints(); cd:SetPoint("TOPLEFT", 0, -y); cd:SetWidth(W - 14)
+                cd.head:SetText(gdef[1])
+                cd.tag:Set(#items == 1 and T("1 quête") or string.format(T("%d quêtes"), #items))
+                cd.dist:SetText("")
+                cd.xp:SetText(xpSum > 0 and ("+" .. xpSum .. " XP") or "")
+                cd.rows:Reset()
+                local ry = 44
+                for _, it in ipairs(items) do
+                    local e = it.e
+                    local r = cd.rows:Get()
+                    r.e = e
+                    r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ry); r:SetPoint("TOPRIGHT", 0, -ry)
+                    r:PaintBox()
+                    r.lv:Set(e.lvl and tostring(e.lvl) or "?", e.lvl and levelColor(e.lvl, myLevel) or C.muted)
+                    r.name:SetText(e.title or ("#" .. e.id))
+                    r.name:SetTextColor(unpack((e.hard and not e.inLog) and C.muted or C.text))
+                    local parts = {}
+                    if e.group then parts[#parts + 1] = UI:Hex(C.warning) .. T("groupe") .. "|r" end
+                    if it.d then
+                        local dt = it.d >= 1000 and (string.format("%.1f km", it.d / 1000):gsub("%.", ",")) or string.format(T("%d m"), math.floor(it.d + 0.5))
+                        parts[#parts + 1] = dt .. ((it.dir ~= "" and it.dir ~= T("dans la zone")) and (" " .. it.dir) or "")
+                    end
+                    r.info:SetText(table.concat(parts, "  ·  "))
+                    ry = ry + 28
+                end
+                cd:SetHeight(ry + 10)
+                y = y + ry + 10 + GAP
+            end
         end
         local none = #(coins or {}) == 0
         self.pEmpty:SetShown(none)

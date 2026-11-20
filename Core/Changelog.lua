@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.108.2", date = "20/11/2026",
+        changed = {
+            "Quêtes de ma zone : plus de cartes « Coin nord », « Coin est »… Les quêtes sont rangées en quatre cartes (À rendre, Dans ton journal, À prendre, Plus tard), de la plus proche à la plus lointaine, avec la distance et la direction sur chaque ligne (« 563 m est »).",
+        },
+    },
+    {
         version = "1.108.1", date = "20/11/2026",
         fixed = {
             "Quêtes de ma zone, « Compléter la zone » : les quêtes bien en dessous de ton niveau (grises) étaient laissées de côté ; elles entrent maintenant aussi dans la tournée, jusqu'à la fin de celle-ci.",

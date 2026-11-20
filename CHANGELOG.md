@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.108.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Quêtes de ma zone : plus de cartes « Coin nord », « Coin est »… Les quêtes sont rangées en quatre cartes (À rendre, Dans ton journal, À prendre, Plus tard), de la plus proche à la plus lointaine, avec la distance et la direction sur chaque ligne (« 563 m est »).
+
 ## v1.108.1 — 20/11/2026
 
 _Un /reload suffit._
