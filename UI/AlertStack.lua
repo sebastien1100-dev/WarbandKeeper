@@ -3,6 +3,8 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
+-- Rappels : par défaut une barre d'icônes (une pastille par rappel, voir layoutIcons) et des messages éclair ;
+-- au choix (option « Affichage » du mode édition) l'ancienne pile :
 -- Pile d'alertes : un cadre « Rappels » (nombre en pastille, repliable d'un clic sur le titre), rappels
 -- rangés par thème (urgent, ton perso, voyage et métiers), une ligne par rappel avec un bouton d'action.
 -- Une alerte reste affichée tant que sa condition est vraie (ou jusqu'à `ttl` secondes).
@@ -103,6 +105,10 @@ local function build()
                   e.y = v and (e.y - h) or (e.y + h) -- le haut (ou le bas) de la pile reste en place
                   e.growUp = v
               end },
+            { type = "seg", label = "Affichage", items = { { "icons", "Icônes" }, { "list", "Liste" } },
+              get = function(e) return e.style == "list" and "list" or "icons" end,
+              set = function(e, v) e.style = v end },
+            { type = "toggle", label = "Messages éclair", get = function(e) return e.toasts ~= false end, set = function(e, v) e.toasts = v end },
             { type = "toggle", label = "Icônes", get = function(e) return e.icons ~= false end, set = function(e, v) e.icons = v end },
             { type = "toggle", label = "Replier en combat", get = function(e) return e.combatFold and true or false end, set = function(e, v) e.combatFold = v end },
         },
@@ -233,10 +239,273 @@ local function groupOf(a)
     return (a.prio or 5) <= 1 and "urgent" or "perso"
 end
 
+
+---------------------------------------------------------------------------
+-- Affichage « icônes » (par défaut) : une pastille ronde par rappel, rien d'autre à l'écran.
+-- Liseré rouge qui bat = urgent, orange = bientôt, gris = quand tu as le temps ; petit texte dessous
+-- (temps restant). Survol : le détail ; clic : l'action ; clic droit : « plus tard » (masqué 30 min).
+-- Rappels à bouton protégé (sort, objet) : bouton protégé enfant d'UIParent, posé hors combat seulement.
+-- Messages éclair : un nouveau rappel important s'affiche 5 s en toutes lettres à côté de la barre.
+---------------------------------------------------------------------------
+local ISIZE, IGAP = 28, 8
+local ICON_BY_KEY = {
+    { "fort", "Interface\\Icons\\Spell_Holy_WordFortitude" }, { "motw", "Interface\\Icons\\Spell_Nature_Regeneration" },
+    { "bless", "Interface\\Icons\\Spell_Holy_FistOfJustice" }, { "aura", "Interface\\Icons\\Spell_Holy_DevotionAura" },
+    { "poison", "Interface\\Icons\\Ability_Poisons" }, { "pet", "Interface\\Icons\\Ability_Hunter_BeastTraining" },
+    { "hunter", "Interface\\Icons\\Ability_Hunter_AspectOfTheMonkey" }, { "trainer", "Interface\\Icons\\INV_Misc_Book_09" },
+    { "cspells", "Interface\\Icons\\INV_Misc_Book_09" }, { "flightpoint", "Interface\\Icons\\Ability_Mount_Gryphon_01" },
+    { "guide", "Interface\\Icons\\INV_Misc_Map_01" }, { "tracking", "Interface\\Icons\\Spell_Nature_Earthquake" },
+    { "nodes", "Interface\\Icons\\INV_Ore_Copper_01" }, { "rank", "Interface\\Icons\\INV_Misc_Note_02" },
+    { "cd", "Interface\\Icons\\INV_Misc_PocketWatch_01" }, { "instCap", "Interface\\Icons\\Spell_Holy_BorrowedTime" },
+    { "dungeon", "Interface\\Icons\\INV_Misc_Bag_10" }, { "ahprice", "Interface\\Icons\\INV_Misc_Coin_01" },
+    { "qplan", "Interface\\GossipFrame\\AvailableQuestIcon" }, { "lguide", "Interface\\GossipFrame\\AvailableQuestIcon" },
+    { "camp", "Interface\\Icons\\Spell_Fire_Fire" }, { "fish", "Interface\\Icons\\Trade_Fishing" },
+    { "talent", "Interface\\Icons\\Ability_Marksmanship" }, { "xp", "Interface\\Icons\\Spell_Holy_SurgeOfLight" },
+}
+local function iconFor(key, a)
+    if a.icon then return a.icon end
+    if a.icons and a.icons[1] and a.icons[1].icon then return a.icons[1].icon end
+    local k = key:gsub("^qol%.", "")
+    for _, e in ipairs(ICON_BY_KEY) do
+        if k:sub(1, #e[1]) == e[1] then return e[2] end
+    end
+    return "Interface\\Icons\\INV_Misc_Note_01"
+end
+local function urgentOf(a) return (a.prio or 5) <= 1 or a.group == "urgent" end
+local function ringColor(a)
+    if urgentOf(a) then return C.negative end
+    if a.color == C.negative or a.color == C.warning or a.rightColor == C.warning then return C.warning end
+    return C.border
+end
+
+-- « plus tard » : rappel masqué 30 min (clic droit)
+local snoozed = {}
+local function isSnoozed(key) return snoozed[key] and GetTime() < snoozed[key] end
+function UI:SnoozeAlert(key, delay)
+    snoozed[key] = GetTime() + (delay or 1800)
+    if layout then layout() end
+end
+
+-- pastille ronde (bouton simple ou protégé) : icône dans un rond, liseré de couleur, petit texte dessous
+local function paintChip(b)
+    b:SetSize(ISIZE, ISIZE)
+    b.ring = b.ring or UI:Icon(b, "circle", ISIZE + 4, nil, "BACKGROUND")
+    b.ring:ClearAllPoints(); b.ring:SetPoint("CENTER")
+    b.pic = b.pic or UI:RoundIcon(b, ISIZE - 4)
+    b.pic:ClearAllPoints(); b.pic:SetPoint("CENTER")
+    b.sub = b.sub or UI:Text(b, 9, C.text)
+    b.sub:ClearAllPoints(); b.sub:SetPoint("TOP", b, "BOTTOM", 0, -2)
+    if b.sub.SetShadowOffset then b.sub:SetShadowOffset(1, -1); b.sub:SetShadowColor(0, 0, 0, 1) end
+end
+local function chipTip(s)
+    local a = s.key and active[s.key]
+    if not a then return end
+    WK.UI:TooltipOwner(s, "ANCHOR_TOP")
+    GameTooltip:SetText(a.text or "", 1, 1, 1, 1, true)
+    if a.right and a.right ~= "" then GameTooltip:AddLine(a.right, 0.85, 0.85, 0.85) end
+    if a.tip then GameTooltip:AddLine(a.tip, 0.7, 0.7, 0.7, true) end
+    if a.icons and #a.icons > 1 then
+        local n = {}
+        for _, ic in ipairs(a.icons) do n[#n + 1] = ic.tip or "?" end
+        GameTooltip:AddLine(T("Au choix :") .. " " .. table.concat(n, ", "), 0.7, 0.7, 0.7, true)
+    end
+    local act = a.action
+    local label = (act and act.label) or (a.icons and T("lancer")) or nil
+    if label then GameTooltip:AddLine(T("Clic :") .. " " .. label, 0.6, 0.6, 0.6) end
+    GameTooltip:AddLine(T("Clic droit : plus tard (30 min)"), 0.6, 0.6, 0.6)
+    GameTooltip:Show()
+end
+local chips, schips = {}, {}
+local function getChip(i)
+    local b = chips[i]
+    if b then return b end
+    b = CreateFrame("Button", nil, anchor)
+    b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    paintChip(b)
+    b:SetScript("OnClick", function(s, btn)
+        local a = s.key and active[s.key]
+        if not a then return end
+        if btn == "RightButton" then UI:SnoozeAlert(s.key) return end
+        if a.action and a.action.onClick then pcall(a.action.onClick) end
+    end)
+    b:SetScript("OnEnter", chipTip)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    chips[i] = b
+    return b
+end
+local function getSecureChip(i)
+    local b = schips[i]
+    if b then return b end
+    b = CreateFrame("Button", "WarbandKeeperAlertChip" .. i, UIParent, "SecureActionButtonTemplate")
+    if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
+    b:SetFrameStrata("MEDIUM")
+    paintChip(b)
+    b:SetScript("OnEnter", function(s)
+        -- souris : une seule action, au relâché
+        if not inCombat() then s:SetAttribute("useOnKeyDown", false) end
+        chipTip(s)
+    end)
+    b:SetScript("OnLeave", function(s)
+        GameTooltip:Hide()
+        if not inCombat() then s:SetAttribute("useOnKeyDown", nil) end
+    end)
+    b:HookScript("OnClick", function(s, btn) if btn == "RightButton" and s.key then UI:SnoozeAlert(s.key) end end)
+    b:Hide()
+    schips[i] = b
+    return b
+end
+local SECURE_ATTRS = { "type", "spell", "unit", "macrotext", "item", "target-slot" }
+local function hideSecureChips()
+    for _, b in ipairs(schips) do b:Hide(); b:ClearAllPoints() end
+end
+
+-- messages éclair : 3 au plus, 5 s chacun
+local toasts, seen = {}, {}
+local function getToast(i)
+    local t = toasts[i]
+    if t then return t end
+    t = CreateFrame("Frame", nil, UIParent)
+    t:SetSize(260, 26)
+    t:SetFrameStrata("MEDIUM")
+    t.bg = UI:Rounded(t, 6, 0, "BACKGROUND", 1)
+    t.bar = t:CreateTexture(nil, "ARTWORK"); t.bar:SetWidth(3)
+    t.bar:SetPoint("TOPLEFT"); t.bar:SetPoint("BOTTOMLEFT")
+    t.text = UI:Text(t, 11, C.text)
+    t.text:SetPoint("LEFT", 10, 0); t.text:SetPoint("RIGHT", -8, 0); t.text:SetJustifyH("LEFT")
+    if t.text.SetWordWrap then t.text:SetWordWrap(false) end
+    t:Hide()
+    toasts[i] = t
+    return t
+end
+local queue = {}
+local function paintToasts()
+    if not anchor then return end
+    local e = entry()
+    local up = e.growUp and true or false
+    local now = GetTime()
+    for i = #queue, 1, -1 do if now > queue[i].at + 5 then table.remove(queue, i) end end
+    for i = 1, 3 do
+        local q, t = queue[i], toasts[i]
+        if q then
+            t = getToast(i)
+            local col = q.col
+            t.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.85)
+            t.bar:SetColorTexture(col[1], col[2], col[3], 1)
+            t.text:SetText(q.text)
+            t:ClearAllPoints()
+            local off = (i - 1) * 30 + ISIZE + 18
+            if up then t:SetPoint("BOTTOMLEFT", anchor, "BOTTOMLEFT", 0, off)
+            else t:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, -off) end
+            t:SetAlpha(math.min(1, (q.at + 5 - now) / 0.6))
+            t:Show()
+        elseif t then t:Hide() end
+    end
+end
+local toastTicker
+local function toast(key, a)
+    local e = entry()
+    if e.toasts == false or e.style == "list" or UI.editing then return end
+    local col = urgentOf(a) and C.negative or (a.color or { UI:Accent() })
+    for _, q in ipairs(queue) do if q.key == key then return end end
+    table.insert(queue, 1, { key = key, text = a.text or "", col = col, at = GetTime() })
+    while #queue > 3 do table.remove(queue) end
+    paintToasts()
+    if not toastTicker then
+        toastTicker = CreateFrame("Frame")
+        toastTicker:SetScript("OnUpdate", function(s, el)
+            s.acc = (s.acc or 0) + el
+            if s.acc < 0.1 then return end
+            s.acc = 0
+            paintToasts()
+            if #queue == 0 then for _, t in ipairs(toasts) do t:Hide() end end
+        end)
+    end
+end
+UI.AlertToast = toast
+-- nouveau rappel important (urgent, couleur forte, ou bouton d'action) : message éclair
+local function maybeToast(key, a)
+    if seen[key] then return end
+    seen[key] = true
+    if urgentOf(a) or a.color == C.negative or a.color == C.warning or a.action or a.icons then toast(key, a) end
+end
+
+local function layoutIcons(list)
+    head:Hide()
+    for i = 1, #rows do rows[i]:Hide() end
+    for i = 1, #secs do secs[i]:Hide() end
+    hideActs()
+    if anchor.bg then anchor.bg:Hide() end
+    if anchor.border then anchor.border:Hide() end
+    local combat = inCombat()
+    if not combat then hideSecureChips() end
+    local x, n, sn = 0, 0, 0
+    for _, it in ipairs(list) do
+        local a, key = it.a, it.key
+        if not isSnoozed(key) then
+            local act = a.action
+            local secure = (act and act.attrs) or (a.icons and a.icons[1] and a.icons[1].attrs)
+            local b
+            if secure then
+                if not combat then
+                    sn = sn + 1
+                    b = getSecureChip(sn)
+                    for _, an in ipairs(SECURE_ATTRS) do b:SetAttribute(an, nil); b:SetAttribute(an .. "1", nil) end
+                    -- attributs du clic gauche seulement (clic droit = plus tard)
+                    for k, v in pairs((act and act.attrs) or a.icons[1].attrs) do b:SetAttribute(k .. "1", v) end
+                    b:SetFrameLevel(anchor:GetFrameLevel() + 5)
+                    b:ClearAllPoints(); b:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, 0)
+                    b:SetScale(anchor:GetEffectiveScale() / UIParent:GetEffectiveScale())
+                end
+            else
+                n = n + 1
+                b = getChip(n)
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, 0)
+            end
+            if b then
+                b.key = key
+                local col = ringColor(a)
+                b.ring:SetVertexColor(col[1], col[2], col[3], 1)
+                b.urgent = urgentOf(a)
+                b.pic:SetTexture(iconFor(key, a))
+                local r = a.right
+                b.sub:SetText((r and #r <= 6) and r or "")
+                b:Show()
+                x = x + ISIZE + IGAP
+            end
+        end
+    end
+    for i = n + 1, #chips do chips[i]:Hide() end
+    anchor:SetSize(math.max(ISIZE, x - IGAP), ISIZE + 12)
+    anchor:SetShown(x > 0 or UI.editing)
+    paintToasts()
+end
+
+-- liseré des rappels urgents : il bat
+local pulse = CreateFrame("Frame")
+pulse:SetScript("OnUpdate", function(s, el)
+    s.t = (s.t or 0) + el
+    if s.t < 0.05 then return end
+    local a = 0.55 + 0.45 * math.abs(math.sin(GetTime() * 3))
+    s.t = 0
+    for _, list in ipairs({ chips, schips }) do
+        for _, b in ipairs(list) do
+            if b.urgent and b:IsShown() then b.ring:SetAlpha(a) elseif b.ring then b.ring:SetAlpha(1) end
+        end
+    end
+end)
+
 layout = function()
     if not anchor then return end
     local list = sorted()
     local e = entry()
+    -- affichage « icônes » (par défaut) ou « liste » (l'ancienne pile)
+    if e.style ~= "list" then layoutIcons(list) return end
+    if not inCombat() then hideSecureChips() end
+    for _, c in ipairs(chips) do c:Hide() end
+    for _, t in ipairs(toasts) do t:Hide() end
+    head:Show()
+    if anchor.bg then anchor.bg:Show() end
+    if anchor.border then anchor.border:Show() end
     local showIcons = e.icons ~= false
     local up = e.growUp and true or false
     local fold = folded()
@@ -395,7 +664,10 @@ function UI:SetAlert(key, shown, data)
         end
         data["until"] = untilT
         active[key] = data
+        if not anchor then build() end
+        maybeToast(key, data)
     else
+        seen[key] = nil
         if not cur then return end
         active[key] = nil
     end
@@ -432,6 +704,7 @@ end)
 -- juste avant le combat (encore permis) : boutons protégés retirés ; repli en combat ; retour après
 WK:On("PLAYER_REGEN_DISABLED", function()
     hideActs()
+    hideSecureChips()
     if anchor then C_Timer.After(0, layout) end
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() if anchor then layout() end end)

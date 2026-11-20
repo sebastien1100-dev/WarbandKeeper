@@ -72,6 +72,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.107.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Rappels : messages éclair. Un nouveau rappel important s'affiche 5 s en toutes lettres à côté de la barre, puis il ne reste que son icône.
+- Mode édition, Rappels : « Affichage » Icônes ou Liste (l'ancienne pile) et « Messages éclair » à couper.
+
+### Modifications
+- Rappels : la grande pile laisse place à une barre d'icônes, une pastille ronde par rappel et rien d'autre. Liseré rouge qui bat = urgent, orange = bientôt, gris = quand tu as le temps ; le temps restant en petit dessous.
+- Rappels : survol = le détail ; clic = l'action (lancer le buff, guider, ouvrir) ; clic droit = « plus tard » (masqué 30 min).
+
 ## v1.106.2 — 20/11/2026
 
 _Un /reload suffit._

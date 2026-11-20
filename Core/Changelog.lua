@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.0", date = "20/11/2026",
+        changed = {
+            "Rappels : la grande pile laisse place à une barre d'icônes, une pastille ronde par rappel et rien d'autre. Liseré rouge qui bat = urgent, orange = bientôt, gris = quand tu as le temps ; le temps restant en petit dessous.",
+            "Rappels : survol = le détail ; clic = l'action (lancer le buff, guider, ouvrir) ; clic droit = « plus tard » (masqué 30 min).",
+        },
+        added = {
+            "Rappels : messages éclair. Un nouveau rappel important s'affiche 5 s en toutes lettres à côté de la barre, puis il ne reste que son icône.",
+            "Mode édition, Rappels : « Affichage » Icônes ou Liste (l'ancienne pile) et « Messages éclair » à couper.",
+        },
+    },
+    {
         version = "1.106.2", date = "20/11/2026",
         changed = {
             "Montée en niveaux : la carte à l'écran prend le design de la carte de tournée (texte ombré sur fond léger, en-tête niveau et avancée, fine barre d'XP, étape en cours avec sa pastille, objectifs, 2 étapes suivantes). Les boutons Arrêter, Passer et Lancer apparaissent au survol.",

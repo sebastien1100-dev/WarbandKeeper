@@ -4216,4 +4216,11 @@ WK.Locales.enUS.text = {
     ["%d %% du niveau"] = "%d %% of the level",
     ["reste %d XP"] = "%d XP left",
     ["Lancer l'étape"] = "Start the step",
+    ["Au choix :"] = "Any of:",
+    ["lancer"] = "cast",
+    ["Clic :"] = "Click:",
+    ["Clic droit : plus tard (30 min)"] = "Right-click: later (30 min)",
+    ["Affichage"] = "Display",
+    ["Liste"] = "List",
+    ["Messages éclair"] = "Flash messages",
 }
