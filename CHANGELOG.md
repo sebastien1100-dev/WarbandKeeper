@@ -72,6 +72,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.109.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Page Quêtes : plus de sous-onglets « Montée en niveaux », « Mon journal » et « Quêtes de ma zone ». « Ma progression » ouvre directement la tournée de quêtes.
+- Ma progression, en haut : la prochaine étape de la montée en niveaux, avec Passer, Lancer et Suivre le guide, et les réglages Sans donjons, Sans métiers et Maître de classe.
+- Sous la tournée, avant de la lancer : « Choisir les quêtes » (la liste des quêtes de la zone à cocher prend la place des étapes ; « Voir la tournée » pour revenir) et « Compléter la zone ».
+
 ## v1.108.2 — 20/11/2026
 
 _Un /reload suffit._

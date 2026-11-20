@@ -304,13 +304,14 @@ UI:RegisterPage({
         -- « Ma progression » les sous-onglets Montée / Mon journal / À prendre / Tournée. Onglet retenu dans
         -- settings.ui.questTab (zones par défaut) ---------------------------------------------------
         local ui = WK.DB.global.settings.ui
-        self.view = VIEWS[ui.questTab or ""] and ui.questTab or "zones"
-        self.lastSub = self.view ~= "zones" and self.view or "montee"
+        -- plus de sous-onglets : « Ma progression » = la tournée (avec la montée et le choix des quêtes)
+        self.view = (ui.questTab == "zones" or not ui.questTab) and "zones" or "tour"
+        self.lastSub = "tour"
         self.bigZones = self:BigTab(p, "map", "Carte des zones", function() self:ShowTab("zones") end)
         self.bigZones:SetPoint("TOPLEFT", 0, 0)
-        self.bigProg = self:BigTab(p, "chart", "Ma progression", function() self:ShowTab(self.lastSub or "montee") end)
+        self.bigProg = self:BigTab(p, "chart", "Ma progression", function() self:ShowTab("tour") end)
         self.bigProg:SetPoint("TOPLEFT", self.bigZones, "TOPRIGHT", 12, 0)
-        self.bigProg.sub:SetText(T("montée, journal, tournée"))
+        self.bigProg.sub:SetText(T("montée et tournée de quêtes"))
         self.subTabs = {}
         local prev
         for _, t in ipairs(SUBS) do
@@ -736,11 +737,11 @@ UI:RegisterPage({
         -- réglages ouverts : pas de sous-onglets ni de barre « Quêtes de » (ils ne servent pas aux réglages)
         if open then top = BIG_H + GAP
         elseif zonesView then top = BIG_H + GAP + (second and (30 + GAP) or 0)
-        else top = BIG_H + 8 + SUB_H + GAP end
+        else top = BIG_H + GAP end
         -- grands onglets et sous-onglets
         self.bigZones:Paint(); self.bigProg:Paint()
-        for _, b in pairs(self.subTabs) do b:SetShown(not zonesView and not open); b:Paint() end
-        self.subLine:SetShown(not zonesView and not open)
+        for _, b in pairs(self.subTabs) do b:Hide() end
+        self.subLine:Hide()
         self.side:ClearAllPoints()
         self.gear:SetActive(open)
         self.side:SetShown(open)
@@ -752,10 +753,19 @@ UI:RegisterPage({
         -- onglet affiché : zones (barre « Quêtes de », filtre) ou journal
         self.ofLabel:SetShown(zonesView and not open); self.charDd:SetShown(zonesView and not open); self.filterSeg:SetShown(zonesView and not open)
         UI:ZoneLayout(self, p, top, w, h, open or not zonesView)
-        self:LayoutMontee(top, w, h, open or self.view ~= "montee")
-        self:LayoutLog(top, w, h, open or self.view ~= "log")
-        self:LayoutPick(top, w, h, open or self.view ~= "pick")
-        self:LayoutTour(top, w, h, open or self.view ~= "tour")
+        self:LayoutMontee(top, w, h, true)
+        self:LayoutLog(top, w, h, true)
+        -- Ma progression : bloc de la montée en haut, puis la tournée (ou le choix des quêtes à sa place)
+        local tourView = not open and self.view == "tour"
+        self.gBlock:SetShown(tourView)
+        local ttop = top
+        if tourView then
+            self.gBlock:ClearAllPoints()
+            self.gBlock:SetPoint("TOPLEFT", 0, -top); self.gBlock:SetPoint("TOPRIGHT", 0, -top)
+            ttop = top + self.gBlock:GetHeight() + GAP
+        end
+        self:LayoutTour(ttop, w, h, not tourView, self.choosing)
+        self:LayoutPick(ttop, w, h, not (tourView and self.choosing))
     end,
 
     -- Grand onglet : icône dans un carré arrondi, titre et sous-titre ; plein à la couleur d'accent quand il
@@ -815,6 +825,9 @@ UI:RegisterPage({
 
     -- onglet choisi (boutons d'onglet, pastille « Suivie » de l'en-tête)
     ShowTab = function(self, v)
+        -- anciens sous-onglets : tout est dans « Ma progression » ; « Quêtes de ma zone » = choisir les quêtes
+        if v == "pick" then self.choosing = true elseif v == "tour" then self.choosing = false end
+        if v == "montee" or v == "log" or v == "pick" then v = "tour" end
         self.view = VIEWS[v or ""] and v or "zones"
         WK.DB.global.settings.ui.questTab = self.view
         if self.view ~= "zones" then self.lastSub = self.view end
@@ -1510,11 +1523,12 @@ UI:RegisterPage({
         self.pGuideBtn = UI:Button(hold, string.format(T("Guider vers les donneurs (%d)"), 0), 230, 30, "secondary", "guide")
         self.pGuideBtn:SetPoint("BOTTOMLEFT", 0, 6)
         self.pGuideBtn:SetScript("OnClick", function() self:GuideGivers() end)
-        self.pTourBtn = UI:Button(hold, "Créer la tournée", 160, 30, "primary")
+        self.pTourBtn = UI:Button(hold, "Voir la tournée", 160, 30, "primary")
         self.pTourBtn:SetPoint("BOTTOMLEFT", self.pGuideBtn, "BOTTOMRIGHT", 8, 0)
         self.pTourBtn:SetScript("OnClick", function() self:ShowTab("tour") end)
         self.pAllBtn = UI:Button(hold, "Compléter la zone", 170, 30, "secondary", "play")
         self.pAllBtn:SetPoint("BOTTOMLEFT", self.pTourBtn, "BOTTOMRIGHT", 8, 0)
+        self.pAllBtn:Hide() -- « Compléter la zone » est sous la tournée (Ma progression)
         self.pAllBtn:HookScript("OnEnter", function(s)
             UI:TooltipOwner(s, "ANCHOR_TOP")
             GameTooltip:SetText(T("Compléter la zone"), 1, 1, 1)
@@ -1587,8 +1601,10 @@ UI:RegisterPage({
         self.pHold:ClearAllPoints()
         self.pHold:SetShown(not hide)
         if hide then return end
+        -- à la place de la liste des étapes, plus large qu'elle ; la carte de la tournée reste à droite
         self.pHold:SetPoint("TOPLEFT", 0, -top)
-        self.pHold:SetPoint("BOTTOMRIGHT", 0, 0)
+        self.pHold:SetPoint("BOTTOMLEFT", 0, 0)
+        self.pHold:SetWidth(self.pickW or 460)
     end,
 
     -- donneurs cochés pas encore pris : { e, d }, du plus proche au plus loin
@@ -1631,7 +1647,7 @@ UI:RegisterPage({
         self.pGuideBtn:SetLabel(string.format(T("Guider vers les donneurs (%d)"), #givers))
         self.pGuideBtn:SetEnabled(#givers > 0)
         self.pTourBtn:SetEnabled(self.pickStats.steps > 0)
-        self.pAllBtn:SetEnabled(#(list or {}) > 0)
+        self.pAllBtn:SetEnabled(#(list or {}) > 0); self.pAllBtn:Hide()
 
         self.pcards:Reset()
         local W = self.pscroll:GetWidth() or 600
@@ -1753,6 +1769,53 @@ UI:RegisterPage({
         self.tStart = UI:Button(tc, "Lancer la tournée", 170, 30, "primary", "play")
         self.tStart:SetPoint("BOTTOMLEFT", 14, 12)
         self.tStart:SetScript("OnClick", act(function(P) P:Start() end))
+        self.tChoose = UI:Button(tc, "Choisir les quêtes", nil, 30, "secondary")
+        self.tChoose:SetScript("OnClick", function() self:ShowTab("pick") end)
+        self.tAll = UI:Button(tc, "Compléter la zone", nil, 30, "secondary")
+        self.tAll:SetScript("OnClick", act(function(P) P:CompleteZone() end))
+        -- bloc « Montée en niveaux » en haut de Ma progression : prochaine étape du guide (Modules/LevelGuide.lua)
+        local gb = UI:Card(p)
+        gb:SetHeight(64)
+        self.gBlock = gb
+        gb.kicker = UI:Text(gb, 10, C.muted); gb.kicker:SetPoint("TOPLEFT", 14, -11)
+        gb.title = UI:Text(gb, 13); gb.title:SetPoint("TOPLEFT", 14, -26); gb.title:SetPoint("RIGHT", -300, 0)
+        if gb.title.SetWordWrap then gb.title:SetWordWrap(false) end
+        gb.sub = UI:Text(gb, 11, C.muted); gb.sub:SetPoint("TOPLEFT", 14, -44); gb.sub:SetPoint("RIGHT", -300, 0)
+        if gb.sub.SetWordWrap then gb.sub:SetWordWrap(false) end
+        gb.follow = UI:Button(gb, "Suivre le guide", 150, 28, "secondary")
+        gb.follow:SetPoint("RIGHT", -14, 0)
+        gb.follow:SetScript("OnClick", function() local L = LG(); if L then L:Follow(not L:Following()) end; self:RefreshTour() end)
+        gb.run = UI:Button(gb, "Lancer", 100, 28, "primary", "play")
+        gb.run:SetPoint("RIGHT", gb.follow, "LEFT", -8, 0)
+        gb.run:SetScript("OnClick", function() local L = LG(); if L then L:Run(1) end; self:RefreshTour() end)
+        gb.skip = UI:Button(gb, "Passer", 80, 28, "ghost")
+        gb.skip:SetPoint("RIGHT", gb.run, "LEFT", -8, 0)
+        gb.skip:SetScript("OnClick", function()
+            local L = LG()
+            local st = L and L:Steps()[1]
+            if st then L:Skip(st.key) end
+            self:RefreshTour()
+        end)
+        -- réglages du guide (repris de l'ancien onglet Montée) : sans donjons, sans métiers, maître de classe
+        gb:SetHeight(92)
+        local gx = 14
+        local function gToggle(label, get, set, tip)
+            local t = UI:Toggle(gb, get, function(v) set(v); local L = LG(); if L then L:Invalidate() end; self:RefreshTour() end)
+            t:SetPoint("BOTTOMLEFT", gx, 10)
+            local l = UI:Text(gb, 11); l:SetPoint("LEFT", t, "RIGHT", 6, 0); l:SetText(T(label))
+            t.tooltip = tip
+            table.insert(self.toggles or {}, t)
+            gx = gx + (t:GetWidth() or 36) + 6 + (l:GetStringWidth() or 60) + 18
+            return t
+        end
+        local function lgc() return LG() and LG():Config() or {} end
+        gToggle("Sans donjons", function() return lgc().noDungeons and true or false end, function(v) lgc().noDungeons = v or nil end)
+        gToggle("Sans métiers", function() return lgc().noProf and true or false end, function(v) lgc().noProf = v or nil end)
+        gToggle("Maître de classe", function() return lgc().trainerTour ~= false end, function(v)
+            if v then lgc().trainerTour = nil else lgc().trainerTour = false end
+            if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
+        end, "Visite du maître de classe quand des sorts sont à apprendre : étape du guide, et étape de la tournée de quêtes (au maître le plus proche).")
+        gb:Hide()
         self.tSkip = UI:Button(tc, "Passer l'étape", nil, 30, "secondary")
         self.tSkip:SetPoint("BOTTOMLEFT", 14, 12)
         self.tSkip:SetScript("OnClick", act(function(P) P:Skip() end))
@@ -1815,11 +1878,17 @@ UI:RegisterPage({
     end,
 
     -- Disposition de l'onglet tournée : colonne de gauche (étapes et boutons), la carte prend le reste
-    LayoutTour = function(self, top, w, h, hide)
+    LayoutTour = function(self, top, w, h, hide, choosing)
         for _, f in ipairs({ self.tList, self.tMap }) do f:SetShown(not hide); f:ClearAllPoints() end
         if hide then return end
         w = (w and w > 100) and w or 800
         local colW = w >= 900 and COL_W or COL_W_NARROW
+        -- choix des quêtes : la colonne de gauche s'élargit (liste des quêtes), la liste des étapes est cachée
+        if choosing then
+            colW = math.max(colW, math.min(520, math.floor(w * 0.48)))
+            self.pickW = colW
+            self.tList:SetShown(false)
+        end
         self.tList:SetWidth(colW)
         self.tList:SetPoint("TOPLEFT", 0, -top); self.tList:SetPoint("BOTTOMLEFT", 0, 0)
         local mc = self.tMap
@@ -1828,6 +1897,11 @@ UI:RegisterPage({
         -- boutons : « Lancer » sur toute la largeur, sinon deux par ligne
         local bw = math.floor((colW - 24 - 8) / 2)
         self.tStart:ClearAllPoints(); self.tStart:SetPoint("BOTTOMLEFT", 12, 12); self.tStart:SetPoint("BOTTOMRIGHT", -12, 12)
+        -- avant le lancement : choisir les quêtes et compléter la zone, au-dessus de « Lancer »
+        for i, b in ipairs({ self.tChoose, self.tAll }) do
+            b:ClearAllPoints(); b:SetWidth(bw)
+            b:SetPoint("BOTTOMLEFT", 12 + (i - 1) * (bw + 8), 48)
+        end
         local grid = { { self.tSkip, 0, 48 }, { self.tPause, 1, 48 }, { self.tReorder, 0, 12 }, { self.tStop, 1, 12 } }
         for _, g in ipairs(grid) do
             g[1]:ClearAllPoints(); g[1]:SetWidth(bw)
@@ -1922,6 +1996,19 @@ UI:RegisterPage({
         if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
         -- boutons
         self.tStart:SetShown(not tour); self.tStart:SetEnabled(#steps > 0)
+        self.tChoose:SetShown(not tour); self.tAll:SetShown(not tour)
+        -- bloc de la montée
+        local gb, L = self.gBlock, LG()
+        if gb and L then
+            local ok, list = pcall(L.Steps, L)
+            local st = ok and list and list[1]
+            local lvl = UnitLevel and UnitLevel("player") or 1
+            gb.kicker:SetText(UI:Upper(string.format(T("Montée en niveaux · niveau %d"), lvl)) .. "  ·  " .. T("prochaine étape"))
+            gb.title:SetText(st and st.title or T("Rien à faire pour l'instant"))
+            gb.sub:SetText(st and st.sub or "")
+            gb.run:SetEnabled(st ~= nil); gb.skip:SetEnabled(st ~= nil)
+            gb.follow:SetLabel(L:Following() and T("Ne plus suivre") or T("Suivre le guide"))
+        end
         for _, b in ipairs({ self.tSkip, self.tPause, self.tReorder, self.tStop }) do b:SetShown(tour ~= nil) end
         self.tPause:SetLabel(tour and tour.paused and "Reprendre" or "Pause")
         self.tourSteps, self.tourIdx = steps, idx
@@ -1982,7 +2069,11 @@ UI:RegisterPage({
         if self.view == "montee" then self:RefreshMontee() return end
         if self.view == "log" then self:RefreshLog() return end
         if self.view == "pick" then self:RefreshPick() return end
-        if self.view == "tour" then self:RefreshTour() return end
+        if self.view == "tour" then
+            self:RefreshTour()
+            if self.choosing then self:RefreshPick() end
+            return
+        end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
         local myLevel = c.level or 1

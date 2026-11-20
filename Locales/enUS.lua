@@ -4245,4 +4245,9 @@ WK.Locales.enUS.text = {
     ["Le nombre de sorts à apprendre, sinon la distance."] = "The number of spells to learn, otherwise the distance.",
     ["À prendre"] = "To pick up",
     ["Plus tard (trop dures pour l'instant)"] = "Later (too hard for now)",
+    ["montée et tournée de quêtes"] = "levelling and quest tour",
+    ["prochaine étape"] = "next step",
+    ["Suivre le guide"] = "Follow the guide",
+    ["Choisir les quêtes"] = "Choose quests",
+    ["Voir la tournée"] = "See the tour",
 }

@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.109.0", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : plus de sous-onglets « Montée en niveaux », « Mon journal » et « Quêtes de ma zone ». « Ma progression » ouvre directement la tournée de quêtes.",
+            "Ma progression, en haut : la prochaine étape de la montée en niveaux, avec Passer, Lancer et Suivre le guide, et les réglages Sans donjons, Sans métiers et Maître de classe.",
+            "Sous la tournée, avant de la lancer : « Choisir les quêtes » (la liste des quêtes de la zone à cocher prend la place des étapes ; « Voir la tournée » pour revenir) et « Compléter la zone ».",
+        },
+    },
+    {
         version = "1.108.2", date = "20/11/2026",
         changed = {
             "Quêtes de ma zone : plus de cartes « Coin nord », « Coin est »… Les quêtes sont rangées en quatre cartes (À rendre, Dans ton journal, À prendre, Plus tard), de la plus proche à la plus lointaine, avec la distance et la direction sur chaque ligne (« 563 m est »).",
