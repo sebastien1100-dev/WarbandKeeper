@@ -1315,3 +1315,16 @@ WK:On("PLAYER_REGEN_DISABLED", function()
     local cfg = WK.DB and WK.DB.global and WK.DB.global.settings.ui
     if cfg and cfg.closeInCombat and UI.frame and UI.frame:IsShown() then UI.frame:Hide() end
 end)
+
+-- À la connexion et à chaque /reload : chaque page s'ouvre sur son premier onglet (le choix d'onglet n'est
+-- retenu que pendant la séance)
+WK:On("PLAYER_LOGIN", function()
+    local ui = WK.DB.global.settings.ui
+    ui.questTab, ui.statsTab, ui.optSection, ui.lookTab, ui.optGenTab, ui.profSetTab, ui.qolSection = nil, nil, nil, nil, nil, nil, nil
+    ui.qolTabs = {}
+    ui.qolClass = "CLASSGEN"
+    if ui.fishCol then ui.fishCol.tab = "album" end
+    local S = WK.modules.AHScan
+    if S and S.Config then local c = S:Config(); c.ahTab, c.panelTab = nil, nil end
+    if WK.DB.global.mail then WK.DB.global.mail.tab = nil end
+end)

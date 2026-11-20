@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.98.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- À la connexion et après un /reload, chaque page s'ouvre sur son premier onglet (Quêtes : Carte des zones ; Classes : Général ; Options, Statistiques, Métiers, sections de QoL, hôtel des ventes, courrier, pêche…). L'onglet choisi reste retenu pendant la séance.
+
 ## v1.98.2 — 20/11/2026
 
 _Un /reload suffit._

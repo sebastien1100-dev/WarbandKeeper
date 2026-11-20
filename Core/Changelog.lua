@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.3", date = "20/11/2026",
+        changed = {
+            "À la connexion et après un /reload, chaque page s'ouvre sur son premier onglet (Quêtes : Carte des zones ; Classes : Général ; Options, Statistiques, Métiers, sections de QoL, hôtel des ventes, courrier, pêche…). L'onglet choisi reste retenu pendant la séance.",
+        },
+    },
+    {
         version = "1.98.2", date = "20/11/2026",
         changed = {
             "Repère de rendu de quête redessiné : médaillon doré bombé, liseré clair, « ? » sombre au centre et légère lueur dorée, à la place du gros disque noir. Partout : carte du monde, grande carte de la page Quêtes et détail du rendu.",
