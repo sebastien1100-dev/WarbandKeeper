@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.16 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tournée de quêtes : lancée depuis une autre zone (une capitale…), elle ne gardait que le rendu d'une quête finie à l'autre bout du continent, et cette tournée d'une étape restait une fois arrivé. Une quête finie n'y entre plus que si on la rend dans la zone, et en arrivant dans une autre zone de quêtes la tournée est refaite avec les quêtes cochées d'ici (message dans le chat).
+
 ## v1.100.15 — 20/11/2026
 
 _Un /reload suffit._

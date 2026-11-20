@@ -85,7 +85,9 @@ function M:Candidates()
         local d = Q():Data(e.id)
         local ti = (e.inLog and Q():TurnIn(e.id)) or (d and d.turnIn)
         if ti then e.turnIn = point(ti.map, ti.x, ti.y) end
-        if e.center or (e.complete and e.turnIn) then table.insert(out, e); seen[e.id] = true end
+        -- quête finie : seulement si on la rend dans cette zone (sinon, depuis une capitale, la tournée
+        -- se réduisait à un rendu à l'autre bout du continent)
+        if e.center or (e.complete and e.turnIn and e.turnIn.map == zone) then table.insert(out, e); seen[e.id] = true end
     end
     for _, l in ipairs(Q():LogQuests()) do
         local q = Qs:Get(l.id)
@@ -316,6 +318,7 @@ function M:Start()
     self:Invalidate()
     local t = self:Build()
     if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « À prendre ».")) return nil end
+    t.zone = WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = t
     self.lastKey = nil
     self:Advance()
@@ -363,6 +366,7 @@ function M:Reorder()
     self:Invalidate()
     local n = self:Build()
     n.start, n.gained0, n.turned = keep.start, keep.gained0, keep.turned
+    n.zone = WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = n
     self.lastKey = nil
     self:Advance()
@@ -518,4 +522,17 @@ WK:On("QUEST_TURNED_IN", function()
 end)
 WK:On("PLAYER_LOGIN", function()
     if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(5, nearCheck) end
+end)
+-- arrivée dans une autre zone de quêtes : une tournée faite ailleurs est refaite avec les quêtes d'ici
+-- (étapes qui restent + quêtes cochées de la zone), au plus une fois par zone
+WK:On("ZONE_CHANGED_NEW_AREA", function()
+    C_Timer.After(2, function()
+        local t = M:Tour()
+        if not (on() and t and not t.paused) then return end
+        local zone = WK.modules.Quests:PlayerZone()
+        if not zone or zone == t.zone then return end
+        M:Reorder()
+        local n = M:Tour()
+        if n then WK:Print(string.format(T("Tournée refaite pour cette zone : %d étapes."), #n.steps)) end
+    end)
 end)
