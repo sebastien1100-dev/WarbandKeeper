@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.2", date = "20/11/2026",
+        changed = {
+            "Options > Profils refait : une carte en deux colonnes. À gauche « Mes profils » : chaque profil sur sa ligne avec les persos qui l'utilisent et ses actions (Utiliser, Exporter, Copier, Supprimer en Maj + clic), le tien encadré avec la pastille « ce perso », Créer en haut et Réinitialiser en bas.",
+            "À droite « Partager » : le code du profil choisi (« Exporter » sur une ligne, le tien d'office) prêt à copier, et une case pour coller un code avec un aperçu immédiat (« Code valide : « Raid », 12 groupes de réglages » ou la raison du refus) avant d'importer.",
+        },
+    },
+    {
         version = "1.90.1", date = "20/11/2026",
         fixed = {
             "Icône « Recharger l'interface » de l'en-tête (et bouton « Recharger » des modules) : le clic ne faisait plus rien dès que la fenêtre de l'addon passait au premier plan ; le bouton qui lance /reload restait caché dessous. Il est remonté au survol et part au relâchement du clic.",

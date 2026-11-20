@@ -269,18 +269,32 @@ end
 
 -- Nouveau profil depuis un code (seules les clés de réglages connues sont reprises). Rend true et le nom
 -- donné au profil, ou false et la raison.
-function M:Import(code, wanted)
+-- Code lu : nom d'origine et réglages reconnus (clés de KEYS), ou nil et la raison
+local function decode(code)
     code = type(code) == "string" and code:gsub("^%s+", ""):gsub("%s+$", "") or ""
-    if code:sub(1, #PREFIX) ~= PREFIX then return false, T("Ce n'est pas un code de profil Warband Keeper (WKP1:…).") end
-    if #code > 2000000 then return false, T("Code trop long.") end
+    if code:sub(1, #PREFIX) ~= PREFIX then return nil, T("Ce n'est pas un code de profil Warband Keeper (WKP1:…).") end
+    if #code > 2000000 then return nil, T("Code trop long.") end
     local raw = b64dec(code:sub(#PREFIX + 1))
     local t = raw and des(raw, 1, 0)
-    if type(t) ~= "table" or type(t.data) ~= "table" then return false, T("Code abîmé : copie-le en entier.") end
-    local data = {}
+    if type(t) ~= "table" or type(t.data) ~= "table" then return nil, T("Code abîmé : copie-le en entier.") end
+    local data, n = {}, 0
     for key in pairs(KEYS) do
-        if type(t.data[key]) == "table" then data[key] = t.data[key] end
+        if type(t.data[key]) == "table" then data[key] = t.data[key]; n = n + 1 end
     end
-    if not next(data) then return false, T("Ce code ne contient aucun réglage.") end
+    if n == 0 then return nil, T("Ce code ne contient aucun réglage.") end
+    return { name = type(t.name) == "string" and t.name or nil, data = data, n = n }
+end
+-- Aperçu d'un code collé, sans rien créer : true, nom, nombre de groupes de réglages ; ou false, raison
+function M:Peek(code)
+    local d, err = decode(code)
+    if not d then return false, err end
+    return true, d.name, d.n
+end
+
+function M:Import(code, wanted)
+    local d, err = decode(code)
+    if not d then return false, err end
+    local t, data = { name = d.name }, d.data
     -- nom libre (24 caractères au plus), sinon celui du code ; « (2) », « (3) »… s'il existe déjà
     local base = (type(wanted) == "string" and wanted:match("%S") and wanted) or (type(t.name) == "string" and t.name) or T("Importé")
     base = base:gsub("^%s+", ""):gsub("%s+$", ""):sub(1, 20)

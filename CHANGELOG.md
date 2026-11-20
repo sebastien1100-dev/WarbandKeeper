@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.90.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Options > Profils refait : une carte en deux colonnes. À gauche « Mes profils » : chaque profil sur sa ligne avec les persos qui l'utilisent et ses actions (Utiliser, Exporter, Copier, Supprimer en Maj + clic), le tien encadré avec la pastille « ce perso », Créer en haut et Réinitialiser en bas.
+- À droite « Partager » : le code du profil choisi (« Exporter » sur une ligne, le tien d'office) prêt à copier, et une case pour coller un code avec un aperçu immédiat (« Code valide : « Raid », 12 groupes de réglages » ou la raison du refus) avant d'importer.
+
 ## v1.90.1 — 20/11/2026
 
 _Un /reload suffit._
