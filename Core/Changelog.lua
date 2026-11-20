@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.111.0", date = "20/11/2026",
+        added = {
+            "Base de quêtes : les quêtes propres à WoW Forever (et leurs donneurs, monstres et objets) entrent dans la base : 4707 quêtes placées sur les cartes au lieu de 3565, et 5325 quêtes avec leurs objectifs au lieu de 4162.",
+        },
+        changed = {
+            "Base de quêtes : niveaux, races, donneurs, prérequis et zones corrigés pour WoW Forever (corrections de la communauté Questie) ; les quêtes de camping, sans lieu fixe, comptent dans les totaux sans place sur la carte.",
+        },
+    },
+    {
         version = "1.110.4", date = "20/11/2026",
         fixed = {
             "Quêtes, compteur « Quêtes faites » : les quêtes faites absentes de la base de quêtes (propres à WoW Forever) n'étaient pas comptées ; elles le sont maintenant, dans les faites et dans le total.",

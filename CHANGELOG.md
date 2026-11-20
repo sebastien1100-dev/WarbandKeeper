@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.111.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Base de quêtes : les quêtes propres à WoW Forever (et leurs donneurs, monstres et objets) entrent dans la base : 4707 quêtes placées sur les cartes au lieu de 3565, et 5325 quêtes avec leurs objectifs au lieu de 4162.
+
+### Modifications
+- Base de quêtes : niveaux, races, donneurs, prérequis et zones corrigés pour WoW Forever (corrections de la communauté Questie) ; les quêtes de camping, sans lieu fixe, comptent dans les totaux sans place sur la carte.
+
 ## v1.110.4 — 20/11/2026
 
 _Un /reload suffit._

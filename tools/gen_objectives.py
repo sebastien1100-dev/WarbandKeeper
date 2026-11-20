@@ -46,6 +46,11 @@ def main(root, out):
     npcs = L.execute("return load(QDB.npcData)()")
     objs = L.execute("return load(QDB.objectData)()")
     items = L.execute("return load(QDB.itemData)()")
+    # corrections WoW Forever de QuestieDB (lues comme du texte, voir questie_forever.py)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from questie_forever import apply_forever
+    for mod, (n, new, unk) in apply_forever(L, root, quests=quests, npcs=npcs, objects=objs, items=items).items():
+        print("  %s : %d corrigés, %d nouveaux" % (mod, n, new), file=sys.stderr)
     amap = L.execute("return load(ZDB.private.areaIdToUiMapId)()")
 
     def lst(t):
