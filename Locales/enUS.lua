@@ -3664,4 +3664,8 @@ WK.Locales.enUS.text = {
     ["Recharger l'interface"] = "Reload UI",
     ["Retire le cadre sombre autour de la barre : il ne reste que la barre et ses libellés (ombrés pour rester lisibles)."] = "Removes the dark frame around the bar: only the bar and its labels remain (shadowed to stay readable).",
     ["Sans fond"] = "No background",
+    ["Clic sur un quai de la carte ou une destination de la liste"] = "Click a dock on the map or a destination in the list",
+    ["Kalimdor"] = "Kalimdor",
+    ["Royaumes de l'Est"] = "Eastern Kingdoms",
+    ["Clic : voir ce port dans la liste"] = "Click: show this port in the list",
 }

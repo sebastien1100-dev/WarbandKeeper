@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.0", date = "20/11/2026",
+        added = {
+            "Bateaux et zeppelins (raccourci du micro menu, /wk bateaux) : la fenêtre s'élargit avec une carte à gauche. Kalimdor et les Royaumes de l'Est (cartes du jeu assombries) et chaque ligne en courbe douce, bateau en trait plein, zeppelin en pointillés ; ton quai en bleu.",
+            "Ta liste par port reste à droite, inchangée. Clic sur un quai de la carte ou sur un encart : ce port remonte en haut, encadré, et ses lignes brillent sur la carte ; survol d'une destination : sa ligne s'allume ; clic : guidage vers son ponton.",
+        },
+    },
+    {
         version = "1.86.3", date = "20/11/2026",
         fixed = {
             "Barre d'expérience « Sans fond » : les libellés étaient peu lisibles sur un décor clair ; ils passent en police contourée, un peu plus grande, avec les gris éclaircis.",

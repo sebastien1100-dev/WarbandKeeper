@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.87.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Bateaux et zeppelins (raccourci du micro menu, /wk bateaux) : la fenêtre s'élargit avec une carte à gauche. Kalimdor et les Royaumes de l'Est (cartes du jeu assombries) et chaque ligne en courbe douce, bateau en trait plein, zeppelin en pointillés ; ton quai en bleu.
+- Ta liste par port reste à droite, inchangée. Clic sur un quai de la carte ou sur un encart : ce port remonte en haut, encadré, et ses lignes brillent sur la carte ; survol d'une destination : sa ligne s'allume ; clic : guidage vers son ponton.
+
 ## v1.86.3 — 20/11/2026
 
 _Un /reload suffit._
