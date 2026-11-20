@@ -4084,4 +4084,8 @@ WK.Locales.enUS.text = {
     ["EN PAUSE"] = "PAUSED",
     ["reste env. %d min"] = "approx. %d min left",
     ["%d quêtes ici"] = "%d quests here",
+    ["Prendre ce vol"] = "Take this flight",
+    ["Guidage : vole jusqu'à"] = "Guidance: fly to",
+    ["Guidage : prends le vol pour %s."] = "Guidance: take the flight to %s.",
+    ["Guidage : vol prévu pour %s, pas proposé par ce maître de vol."] = "Guidance: flight planned to %s, not offered by this flight master.",
 }

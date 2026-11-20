@@ -580,6 +580,17 @@ function M:Waypoint()
     end
 end
 
+-- Vol prévu par le trajet en cours (étape de vol en cours ou juste après la marche vers le maître de vol) :
+-- { from, to } (noms des relais de la carte des vols), sinon nil
+function M:PlannedFlight()
+    local r = M.route
+    if not (r and r.legs and r.leg) then return nil end
+    for j = r.leg, math.min(#r.legs, r.leg + 1) do
+        local l = r.legs[j]
+        if l and l.kind == "fly" then return l end
+    end
+end
+
 -- Changement de continent (bateau, zeppelin, portail) : on recalcule depuis le nouveau continent
 WK:On("ZONE_CHANGED_NEW_AREA", function()
     local r = M.route

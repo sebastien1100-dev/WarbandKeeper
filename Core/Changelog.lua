@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.3", date = "20/11/2026",
+        fixed = {
+            "Guidage par les vols : arrivé au maître de vol, rien ne disait où aller. La carte des vols affiche maintenant un encart « Guidage : vole jusqu'à … » avec un bouton « Prendre ce vol », et le chat le rappelle ; si ce maître ne propose pas ce vol, l'encart le dit.",
+        },
+    },
+    {
         version = "1.100.2", date = "20/11/2026",
         changed = {
             "Tournée de quêtes, carte à l'écran refaite : pastille du genre d'étape (! doré pour prendre, cible pour faire, ? vert pour rendre), titre et zone, bandeau « distance · env. N min », objectifs avec jauges (coche verte une fois finis), frise d'une case par étape (vertes faites, à l'accent en cours), temps restant, et les 2 étapes suivantes en dessous.",

@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage par les vols : arrivé au maître de vol, rien ne disait où aller. La carte des vols affiche maintenant un encart « Guidage : vole jusqu'à … » avec un bouton « Prendre ce vol », et le chat le rappelle ; si ce maître ne propose pas ce vol, l'encart le dit.
+
 ## v1.100.2 — 20/11/2026
 
 _Un /reload suffit._

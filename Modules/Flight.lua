@@ -177,6 +177,71 @@ end
 WK:On("TAXIMAP_OPENED", function() worldCache = {} end)
 
 ---------------------------------------------------------------------------
+-- Vol du guidage : à l'ouverture de la carte des vols, encart « vole jusqu'à … » collé à la carte, avec
+-- « Prendre ce vol » (TakeTaxiNode sur clic) ; destination = étape de vol du trajet (Nav:PlannedFlight)
+---------------------------------------------------------------------------
+local hint
+local function plain(s) return (tostring(s or ""):lower():gsub("%s+", " ")) end
+local function findNode(name)
+    if not (NumTaxiNodes and name) then return nil end
+    local want, short = plain(name), plain(name):match("^([^,]+)")
+    local loose
+    for i = 1, NumTaxiNodes() do
+        local n = plain(nodeName(i))
+        if n == want then return i end
+        if not loose and short and n:match("^([^,]+)") == short then loose = i end
+    end
+    return loose
+end
+local function hideHint() if hint then hint:Hide() end end
+local function showHint()
+    hideHint()
+    local Nv = WK.modules.Nav
+    local leg = Nv and Nv.PlannedFlight and Nv:PlannedFlight()
+    if not leg or not leg.to then return end
+    local host = (FlightMapFrame and FlightMapFrame:IsShown() and FlightMapFrame) or (TaxiFrame and TaxiFrame:IsShown() and TaxiFrame)
+    if not host then return end
+    local UI, C = WK.UI, WK.UI.colors
+    if not hint then
+        hint = CreateFrame("Frame", "WarbandKeeperFlightHint", UIParent)
+        hint:SetHeight(46)
+        UI:Panel(hint, 10, { C.bg[1], C.bg[2], C.bg[3], 0.95 }, C.border)
+        hint.icon = UI:Icon(hint, "griffon", 22, nil, "ARTWORK"); hint.icon:SetPoint("LEFT", 12, 0)
+        hint.txt = UI:Text(hint, 12, C.text); hint.txt:SetPoint("LEFT", 42, 0); hint.txt:SetJustifyH("LEFT")
+        hint.go = UI:Button(hint, T("Prendre ce vol"), nil, 26, "primary")
+        hint.go:SetPoint("RIGHT", -10, 0)
+        hint.go:SetScript("OnClick", function(b) if b.node and TakeTaxiNode then TakeTaxiNode(b.node) end end)
+        hint.txt:SetPoint("RIGHT", hint.go, "LEFT", -10, 0)
+    end
+    local i = findNode(leg.to)
+    local r, g, b = UI:Accent()
+    hint.icon:SetVertexColor(r, g, b, 1)
+    local here = i and TaxiNodeGetType and TaxiNodeGetType(i) == "CURRENT"
+    if i and not here then
+        hint.txt:SetText(T("Guidage : vole jusqu'à") .. " " .. UI:Hex({ r, g, b }) .. leg.to .. "|r")
+        hint.go.node = i
+        hint.go:Show()
+        if hint.told ~= leg.to then
+            hint.told = leg.to
+            WK:Print(string.format(T("Guidage : prends le vol pour %s."), leg.to))
+        end
+    else
+        hint.txt:SetText(string.format(T("Guidage : vol prévu pour %s, pas proposé par ce maître de vol."), leg.to))
+        hint.go.node = nil
+        hint.go:Hide()
+    end
+    hint.go:SetWidth(hint.go.label:GetStringWidth() + 32)
+    UI:MatchHost(hint, host, 20)
+    hint:ClearAllPoints()
+    hint:SetPoint("TOPLEFT", host, "BOTTOMLEFT", 0, -4)
+    hint:SetWidth(math.max(360, math.min(560, host:GetWidth() or 400)))
+    hint:Show()
+end
+WK:On("TAXIMAP_OPENED", function() C_Timer.After(0.2, showHint) end)
+WK:On("TAXIMAP_CLOSED", hideHint)
+M.ShowFlightHint = showHint
+
+---------------------------------------------------------------------------
 -- Décollage et atterrissage (le jeu ne prévient pas : on regarde si le perso est en vol)
 ---------------------------------------------------------------------------
 local function onTaxi() return UnitOnTaxi and UnitOnTaxi("player") end
