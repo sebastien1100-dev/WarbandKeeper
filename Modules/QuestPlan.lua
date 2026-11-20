@@ -317,7 +317,7 @@ function M:Active() local t = self:Tour(); return t and not t.paused and t.steps
 function M:Start()
     self:Invalidate()
     local t = self:Build()
-    if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « À prendre ».")) return nil end
+    if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « Quêtes de ma zone ».")) return nil end
     t.zone = WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = t
     self.lastKey = nil

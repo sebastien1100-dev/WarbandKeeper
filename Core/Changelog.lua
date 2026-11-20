@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.17", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : l'onglet « À prendre » s'appelle maintenant « Quêtes de ma zone » (quêtes de la zone où se trouve ton perso, à prendre ou dans ton journal).",
+        },
+    },
+    {
         version = "1.100.16", date = "20/11/2026",
         fixed = {
             "Tournée de quêtes : lancée depuis une autre zone (une capitale…), elle ne gardait que le rendu d'une quête finie à l'autre bout du continent, et cette tournée d'une étape restait une fois arrivé. Une quête finie n'y entre plus que si on la rend dans la zone, et en arrivant dans une autre zone de quêtes la tournée est refaite avec les quêtes cochées d'ici (message dans le chat).",

@@ -35,7 +35,7 @@ local KIND = { d = "Donjon", c = "Classe" }
 local LOG_W, LROW_H, LHEAD_H = 330, 28, 26
 local COL_W, COL_W_NARROW = 270, 230      -- colonne de gauche de Mon journal et Tournée (la carte prend le reste)
 local BIG_W, BIG_H, SUB_H = 240, 46, 28   -- grands onglets, rangée des sous-onglets
-local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" } }
+local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "pick", "Quêtes de ma zone" }, { "tour", "Tournée" } }
 local function QT() return WK.modules.QuestTrack end
 local function QP() return WK.modules.QuestPlan end
 local function LG() return WK.modules.LevelGuide end
@@ -1639,7 +1639,7 @@ UI:RegisterPage({
             y = y + 50
         end
         self.tEmpty:SetShown(#steps == 0)
-        self.tEmpty:SetText(T("Aucune étape : coche des quêtes dans « À prendre »."))
+        self.tEmpty:SetText(T("Aucune étape : coche des quêtes dans « Quêtes de ma zone »."))
         self.tscroll.child:SetSize(W - 14, math.max(y, 30))
         if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
         -- boutons
