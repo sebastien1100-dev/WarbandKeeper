@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.12", date = "20/11/2026",
+        fixed = {
+            "Tournée de quêtes : juste après avoir pris une quête, le jeu ne donne pas encore ses objectifs ; la tournée prenait cette liste vide pour « tout est fait », sautait l'étape « faire » et demandait de rendre la quête tout de suite. Une quête du journal pas finie garde maintenant son étape tant que ses objectifs ne sont pas faits.",
+        },
+    },
+    {
         version = "1.101.11", date = "20/11/2026",
         changed = {
             "Carte du monde : zones de quête plus fines. Remplissage léger et contour fin en pointillés (même épaisseur quelle que soit la taille de la zone), sans halo ni gros anneau qui grossissait avec les grandes zones.",

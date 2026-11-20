@@ -408,7 +408,11 @@ function M:StepDone(s)
     elseif s.kind == "do" then
         for _, q in ipairs(s.qids) do
             if inLog(q) and not Q():IsComplete(q) then
-                for _, o in ipairs(Q():Objectives(q)) do if not o.done then return false end end
+                -- objectifs pas encore donnés par le jeu (juste après la prise) : pas fini (avant, la liste
+                -- vide passait pour « tout est fait » et la tournée sautait au rendu)
+                local objs = Q():Objectives(q)
+                if #objs == 0 then return false end
+                for _, o in ipairs(objs) do if not o.done then return false end end
             end
         end
         return true

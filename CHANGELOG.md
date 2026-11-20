@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.101.12 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tournée de quêtes : juste après avoir pris une quête, le jeu ne donne pas encore ses objectifs ; la tournée prenait cette liste vide pour « tout est fait », sautait l'étape « faire » et demandait de rendre la quête tout de suite. Une quête du journal pas finie garde maintenant son étape tant que ses objectifs ne sont pas faits.
+
 ## v1.101.11 — 20/11/2026
 
 _Un /reload suffit._
