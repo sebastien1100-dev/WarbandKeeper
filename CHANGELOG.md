@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.7 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Statistiques en vol, « Le savais-tu ? » : toutes les cartes sur une seule page quand elles tiennent (cartes plus compactes, le chiffre à droite du titre ; une carte à graphique en pleine largeur s'il reste la place). Plus de grande carte à moitié vide ; les pages et les flèches ne reviennent que si tout ne tient pas.
+
+### Corrections
+- Statistiques en vol : « Trajet le plus pris » était coupé ; le trajet passe sur sa propre ligne, sous le libellé.
+
 ## v1.100.6 — 20/11/2026
 
 _Un /reload suffit._

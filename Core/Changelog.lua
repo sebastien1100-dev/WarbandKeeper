@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.7", date = "20/11/2026",
+        changed = {
+            "Statistiques en vol, « Le savais-tu ? » : toutes les cartes sur une seule page quand elles tiennent (cartes plus compactes, le chiffre à droite du titre ; une carte à graphique en pleine largeur s'il reste la place). Plus de grande carte à moitié vide ; les pages et les flèches ne reviennent que si tout ne tient pas.",
+        },
+        fixed = {
+            "Statistiques en vol : « Trajet le plus pris » était coupé ; le trajet passe sur sa propre ligne, sous le libellé.",
+        },
+    },
+    {
         version = "1.100.6", date = "20/11/2026",
         fixed = {
             "Carte des vols : l'encart « Guidage : vole jusqu'à … » était calculé mais caché sous la carte des vols ; il passe maintenant au-dessus. La destination est aussi marquée sur la carte par un anneau qui clignote.",

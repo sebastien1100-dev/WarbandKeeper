@@ -5,7 +5,8 @@ local T = function(s) return WK.T(s) end
 
 -- Statistiques du compte pendant un vol : à la place de la carte du monde (touche M) tant que le perso est
 -- en vol, ou d'office au décollage (réglage). À gauche le vol (trajet dessiné, arrivée, chiffres des vols),
--- à droite « Le savais-tu ? » : des chiffres du compte en cartes qui défilent toutes les 8 s.
+-- à droite « Le savais-tu ? » : des chiffres du compte en cartes, toutes sur une page quand elles tiennent
+-- (sinon par pages qui défilent toutes les 8 s).
 -- Réglages QoL:Config().flight : stats (à la place de la carte), statsAuto (au décollage).
 local F = function() return WK.modules.Flight end
 local W, H, LEFT_W = 920, 540, 320
@@ -214,12 +215,13 @@ local function card(parent, big)
     c.cat = UI:Text(c, 10, C.muted)
     if big then c.cat:SetPoint("TOPLEFT", c.chip, "TOPRIGHT", 12, -1)
     else c.cat:SetPoint("LEFT", c.chip, "RIGHT", 8, 0) end
-    c.big = UI:Text(c, big and 30 or 20, C.text)
+    c.big = UI:Text(c, big and 30 or 18, C.text)
+    -- petite carte compacte : le chiffre à droite, sur la ligne de la catégorie
     if big then c.big:SetPoint("TOPLEFT", c.cat, "BOTTOMLEFT", 0, -2)
-    else c.big:SetPoint("TOPLEFT", c.chip, "BOTTOMLEFT", 0, -6) end
+    else c.big:SetPoint("TOPRIGHT", -14, -13); c.big:SetJustifyH("RIGHT") end
     c.text = UI:Text(c, big and 13 or 11, C.text)
     if big then c.text:SetPoint("TOPLEFT", c.chip, "BOTTOMLEFT", 0, -10)
-    else c.text:SetPoint("TOPLEFT", c.big, "BOTTOMLEFT", 0, -4) end
+    else c.text:SetPoint("TOPLEFT", c.chip, "BOTTOMLEFT", 0, -8) end
     c.text:SetPoint("RIGHT", -14, 0); c.text:SetJustifyH("LEFT")
     if c.text.SetWordWrap then c.text:SetWordWrap(true) end
     if big then
@@ -388,41 +390,97 @@ local function build()
     f.prev:SetPoint("RIGHT", f.next, "LEFT", -6, 0)
     if f.prev.icon.SetRotation then f.prev.icon:SetRotation(-math.pi / 2) end
     f.prev:SetScript("OnClick", function() f:Step(-1) end)
-    f.hero = card(right, true)
-    f.hero:SetPoint("TOPLEFT", 16, -52); f.hero:SetPoint("TOPRIGHT", -16, -52); f.hero:SetHeight(210)
-    f.small = {}
-    for i = 1, 4 do
-        local c = card(right, false)
-        c:SetHeight(122)
-        f.small[i] = c
+    -- toutes les cartes sur une page quand elles tiennent : les histoires à graphique (barres, parts) en
+    -- pleine largeur, les autres en deux colonnes, hauteur selon leur texte ; sinon plusieurs pages
+    f.bigs, f.smalls = {}, {}
+    local AVAIL = H - 52 - 14
+    local function bigCard(n)
+        if not f.bigs[n] then f.bigs[n] = card(right, true) end
+        return f.bigs[n]
     end
-    local function place()
-        local w = ((right:GetWidth() or (W - LEFT_W)) - 32 - 10) / 2
-        for i, c in ipairs(f.small) do
-            local col, row = (i - 1) % 2, math.floor((i - 1) / 2)
-            c:ClearAllPoints()
-            c:SetPoint("TOPLEFT", 16 + col * (w + 10), -272 - row * 132)
-            c:SetWidth(w)
+    local function smallCard(n)
+        if not f.smalls[n] then f.smalls[n] = card(right, false) end
+        return f.smalls[n]
+    end
+    local function isWide(e) return e.bars ~= nil end
+    -- découpe en pages : { { { e, wide }, … }, … } ; petites cartes estimées à 84 de haut (lignes de 94),
+    -- une carte à graphique en pleine largeur (190) seulement s'il reste la place
+    local ROW, WIDE = 94, 190
+    function f:Paginate()
+        local list = self.list or {}
+        local rows = math.ceil(#list / 2)
+        local pages = {}
+        local wideIdx
+        for k, e in ipairs(list) do if isWide(e) then wideIdx = k break end end
+        if wideIdx and math.ceil((#list - 1) / 2) * ROW + WIDE <= AVAIL then
+            local page = { { list[wideIdx], true } }
+            for k, e in ipairs(list) do if k ~= wideIdx then table.insert(page, { e, false }) end end
+            pages[1] = page
+        elseif rows * ROW <= AVAIL then
+            local page = {}
+            for _, e in ipairs(list) do table.insert(page, { e, false }) end
+            pages[1] = page
+        else
+            local per = math.max(2, math.floor(AVAIL / ROW) * 2)
+            for k, e in ipairs(list) do
+                local pi = math.floor((k - 1) / per) + 1
+                pages[pi] = pages[pi] or {}
+                table.insert(pages[pi], { e, false })
+            end
         end
+        self.pages = pages
     end
-    place()
-    -- molette : histoire suivante / précédente
+    -- molette : page suivante / précédente
     f:EnableMouseWheel(true)
     f:SetScript("OnMouseWheel", function(_, d) f:Step(d < 0 and 1 or -1) end)
 
     function f:Step(d)
-        local n = #(self.list or {})
-        if n == 0 then return end
+        local n = #(self.pages or {})
+        if n <= 1 then return end
         self.i = ((self.i or 1) - 1 + d) % n + 1
         self.acc = 0
         self:PaintStories()
     end
     function f:PaintStories()
-        local list, n = self.list or {}, #(self.list or {})
-        self.pos:SetText(n > 0 and string.format("%d / %d", self.i or 1, n) or "")
-        self.hero:Set(list[self.i or 1])
-        for k, c in ipairs(self.small) do
-            c:Set(n > k and list[((self.i or 1) - 1 + k) % n + 1] or nil)
+        local pages = self.pages or {}
+        local n = #pages
+        self.i = math.min(self.i or 1, math.max(1, n))
+        self.pos:SetText(n > 1 and string.format("%d / %d", self.i, n) or "")
+        self.next:SetShown(n > 1); self.prev:SetShown(n > 1)
+        for _, c in ipairs(self.bigs) do c:Hide() end
+        for _, c in ipairs(self.smalls) do c:Hide() end
+        local page = pages[self.i] or {}
+        local w = (right:GetWidth() or (W - LEFT_W)) - 32
+        local hw = (w - 10) / 2
+        local y, nb, ns, col, rowH = 52, 0, 0, 0, 0
+        for _, it in ipairs(page) do
+            local e, wide = it[1], it[2]
+            if wide then
+                nb = nb + 1
+                local c = bigCard(nb)
+                c:ClearAllPoints(); c:SetPoint("TOPLEFT", 16, -y); c:SetWidth(w); c:SetHeight(180)
+                c:Set(e)
+                y = y + 190
+            else
+                ns = ns + 1
+                local c = smallCard(ns)
+                c:ClearAllPoints(); c:SetPoint("TOPLEFT", 16 + col * (hw + 10), -y); c:SetWidth(hw)
+                c:Set(e)
+                local hh = 12 + 24 + 8 + (c.text:GetStringHeight() or 14) + 12
+                c:SetHeight(math.max(76, hh))
+                rowH = math.max(rowH, math.max(76, hh))
+                col = col + 1
+                if col == 2 then y = y + rowH + 10; col, rowH = 0, 0 end
+            end
+        end
+        -- même hauteur pour les deux cartes d'une ligne
+        local k = 1
+        while k <= ns do
+            local a, b = self.smalls[k], self.smalls[k + 1]
+            if a and b and b:IsShown() then
+                local m = math.max(a:GetHeight(), b:GetHeight()); a:SetHeight(m); b:SetHeight(m)
+            end
+            k = k + 2
         end
     end
 
@@ -607,12 +665,22 @@ local function build()
             { T("Trajet le plus pris"), best or "-" } }
         for i, r in ipairs(self.stat) do
             r.a:SetText(rows[i][1]); r.b:SetText(rows[i][2])
-            r.b:SetWidth(LEFT_W - 36 - 30 - (r.a:GetStringWidth() or 80) - 8)
             if r.b.SetWordWrap then r.b:SetWordWrap(false) end
+            if i == 3 then
+                -- trajet le plus pris : sur sa propre ligne, sous le libellé (à côté, il était coupé)
+                r:SetHeight(44)
+                r.a:ClearAllPoints(); r.a:SetPoint("TOPLEFT", r.chip, "TOPRIGHT", 8, 1)
+                r.b:ClearAllPoints(); r.b:SetPoint("TOPLEFT", r.a, "BOTTOMLEFT", 0, -4); r.b:SetPoint("RIGHT", 0, 0)
+                r.b:SetJustifyH("LEFT")
+                r.chip:ClearAllPoints(); r.chip:SetPoint("TOPLEFT", 0, -4)
+            else
+                r.b:SetWidth(LEFT_W - 36 - 30 - (r.a:GetStringWidth() or 80) - 8)
+            end
         end
     end
     f:SetScript("OnShow", function(s)
         s.list = stories()
+        s:Paginate()
         s.i = 1
         s.acc = 0
         s:PaintStories(); s:PaintFlight(); s:PaintLog()
@@ -620,7 +688,7 @@ local function build()
     f:SetScript("OnUpdate", function(s, el)
         s.tick = (s.tick or 0) + el
         if s.tick >= 1 then s.tick = 0; s:PaintFlight() end
-        if s:IsMouseOver() then return end
+        if s:IsMouseOver() or #(s.pages or {}) <= 1 then return end
         s.acc = (s.acc or 0) + el
         if s.acc >= ROTATE then s:Step(1) end
     end)
