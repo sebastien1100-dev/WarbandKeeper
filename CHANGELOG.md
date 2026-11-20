@@ -72,6 +72,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.106.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Quêtes de groupe annoncées : « groupe » dans « Quêtes de ma zone », « (groupe) » après leur nom dans la tournée et la carte de tournée (265 quêtes repérées : un monstre élite à tuer, ou un objet qui ne tombe que sur des élites).
+- Réglage « Éviter les quêtes de groupe » (Quêtes > roue > Quête suivie) : elles sont décochées d'office et la tournée ne prévoit pas de suite de groupe ; tu peux toujours les cocher à la main.
+
+### Modifications
+- Quêtes automatiques : « Pas les quêtes de groupe » écarte aussi les quêtes de groupe repérées ainsi, en plus de celles que le jeu conseille à plusieurs.
+
 ## v1.105.5 — 20/11/2026
 
 _Un /reload suffit._

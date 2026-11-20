@@ -29,7 +29,8 @@ SORT_CLASS = {-61, -81, -82, -141, -161, -162, -261, -262, -263}
 
 
 # Corrections constatées en jeu sur WoW Forever (QuestieDB se trompe ou n'a pas l'info) :
-# quête -> { "preAll": [quêtes à faire avant], "pre": [une de ces quêtes avant], "nxt": suite }
+# quête -> { "preAll": [quêtes à faire avant], "pre": [une de ces quêtes avant], "nxt": suite,
+#           "group": True / False (quête de groupe, si le rang des monstres trompe) }
 FIXES = {
     472: {"preAll": [304]},  # La chute de Dun Modr : après « Une tâche sinistre » (Les Paluns)
 }
@@ -49,6 +50,7 @@ def main(root):
     run("data/Forever/foreverQuestDB.lua")
     run("data/Forever/foreverNpcDB.lua")
     run("data/Forever/foreverObjectDB.lua")
+    run("data/Forever/foreverItemDB.lua")
     run("support/Forever/Zones/areaIdToUiMapId.lua")
     run("support/Forever/QuestXP/xpDB-classic.lua")
     run("support/Forever/QuestXP/xpDB-traces.lua")
@@ -56,6 +58,7 @@ def main(root):
     quests = L.execute("return load(QDB.questData)()")
     npcs = L.execute("return load(QDB.npcData)()")
     objs = L.execute("return load(QDB.objectData)()")
+    items = L.execute("return load(QDB.itemData)()")
     amap = L.execute("return load(ZDB.private.areaIdToUiMapId)()")
     xp = L.globals().QXP.db
     fr = L.globals().L10N.questLookup["frFR"]
@@ -96,6 +99,30 @@ def main(root):
                 if pos:
                     return sign * sid, pos
         return None, {}
+
+    def elite(nid):
+        e = npcs[nid]
+        return bool(e and (e[6] or 0) in (1, 2, 3))  # élite, rare élite, boss
+
+    def group_quest(q):
+        """quête de groupe : un monstre à tuer est élite, ou un objet ne tombe que sur des élites
+        (QuestieDB n'a pas le nombre de joueurs conseillé : déduit du rang des monstres)"""
+        ob = q[10]
+        if not ob:
+            return False
+        for o in lst(ob[1]):
+            if o and o[1] and elite(o[1]):
+                return True
+        for kc in lst(ob[5]):
+            if kc and kc[1] and any(elite(n) for n in lst(kc[1])):
+                return True
+        for o in lst(ob[3]):
+            it = o and o[1] and items[o[1]]
+            if it:
+                drops = lst(it[2])
+                if drops and not lst(it[3]) and not lst(it[14]) and all(elite(n) for n in drops):
+                    return True
+        return False
 
     per_map = {}
     skipped = 0
@@ -154,7 +181,8 @@ def main(root):
         per_map.setdefault(mp, []).append(dict(
             id=qid, name=q[1], fr=f[1] if f else None, lvl=q[5] or 0, req=q[4] or 0, side=side,
             cls=q[7] or 0, kind=kind, skill=skill, x=x, y=y, smap=smap, sid=sid,
-            xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=fx.get("nxt", q[22] or 0)))
+            xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=fx.get("nxt", q[22] or 0),
+            grp=1 if (kind != "d" and fx.get("group", group_quest(q))) else 0))
 
     def s(x):
         return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"' if x else "nil"
@@ -170,7 +198,7 @@ def main(root):
         "-- WK.QuestsDB[uiMapID] = { { id, nom, nom fr, niveau, niveau requis, faction (1 Alliance, 2 Horde),",
         "--   classes (masque), genre (\"d\" donjon, \"p\" métier, \"c\" classe), métier, x, y (donneur, 0-100),",
         "--   donneur (PNJ > 0, objet < 0), XP, { une de ces quêtes avant }, { toutes ces quêtes avant }, suivante,",
-        "--   carte du donneur s'il est dans une autre zone }, ... }",
+        "--   carte du donneur s'il est dans une autre zone, 1 si quête de groupe (monstre élite à tuer) }, ... }",
         "local ADDON_NAME, WK = ...",
         "WK.QuestsDB = {",
     ]
@@ -179,12 +207,12 @@ def main(root):
         lines.append("[%d] = {" % mp)
         for e in sorted(per_map[mp], key=lambda e: (e["lvl"], e["id"])):
             total += 1
-            lines.append("{%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s}," % (
+            lines.append("{%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%s}," % (
                 e["id"], s(e["name"]), s(e["fr"]), e["lvl"], e["req"], n(e["side"]), n(e["cls"]),
                 s(e["kind"]), s(e["skill"]), n(e["x"]), n(e["y"]), n(e["sid"]), n(e["xp"]),
                 ("{" + ",".join(map(str, e["pre"])) + "}") if e["pre"] else "nil",
                 ("{" + ",".join(map(str, e["preAll"])) + "}") if e["preAll"] else "nil",
-                n(e["nxt"]), n(e["smap"])))
+                n(e["nxt"]), n(e["smap"]), ",1" if e["grp"] else ""))
         lines.append("},")
     lines.append("}")
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Modules", "QuestsDB.lua")

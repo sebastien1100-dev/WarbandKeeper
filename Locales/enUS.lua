@@ -4208,4 +4208,8 @@ WK.Locales.enUS.text = {
     ["tronçon en cours : %d points"] = "current segment: %d points",
     ["hors des chemins connus : env. %d m sur %d m de marche (en ligne droite, faute de chemin appris)"] = "off known paths: approx. %d m of %d m walking (straight line, no learned path)",
     ["Les trogg du loch"] = "Loch troggs",
+    ["(groupe)"] = "(group)",
+    ["groupe"] = "group",
+    ["Éviter les quêtes de groupe"] = "Avoid group quests",
+    ["Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main."] = "Quests with an elite monster to kill: unticked in \"Quests in my zone\", no planned follow-up in the tour. You can still tick them by hand.",
 }

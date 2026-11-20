@@ -24,8 +24,14 @@ local CLASS_BIT = { WARRIOR = 1, PALADIN = 2, HUNTER = 4, ROGUE = 8, PRIEST = 16
 -- métatable qui lit ses champs par nom (q.name = ligne[2]…), la carte venant d'une petite table à part.
 local byID, byStarter
 local FIELD = { id = 1, name = 2, nameFR = 3, lvl = 4, req = 5, side = 6, cls = 7, kind = 8, skill = 9, x = 10, y = 11,
-    sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17 }
+    sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17, grp = 18 }
 local mapOf = {}
+-- quête de groupe (monstre élite à tuer, d'après le rang des monstres de QuestieDB ; tools/gen_quests.py)
+function WK.QuestIsGroup(qid)
+    local Q = WK.modules.Quests
+    local q = Q and Q:Get(qid)
+    return q ~= nil and q.grp == 1
+end
 local QMETA = { __index = function(t, k)
     if k == "map" then return mapOf[rawget(t, 1)] end
     if k == "xp" then return rawget(t, 13) or 0 end

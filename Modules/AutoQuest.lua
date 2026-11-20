@@ -89,6 +89,7 @@ function M:WantPick(qid, level)
     if suspended() or not qid or c.quests[qid] then return false end
     if c.mode == "assist" then return checked(qid) end
     if c.noHigh and tooHigh(qid, level) then return false end
+    if c.noGroup and WK.QuestIsGroup(qid) then return false end
     return true
 end
 

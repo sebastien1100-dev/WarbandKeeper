@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.106.0", date = "20/11/2026",
+        added = {
+            "Quêtes de groupe annoncées : « groupe » dans « Quêtes de ma zone », « (groupe) » après leur nom dans la tournée et la carte de tournée (265 quêtes repérées : un monstre élite à tuer, ou un objet qui ne tombe que sur des élites).",
+            "Réglage « Éviter les quêtes de groupe » (Quêtes > roue > Quête suivie) : elles sont décochées d'office et la tournée ne prévoit pas de suite de groupe ; tu peux toujours les cocher à la main.",
+        },
+        changed = {
+            "Quêtes automatiques : « Pas les quêtes de groupe » écarte aussi les quêtes de groupe repérées ainsi, en plus de celles que le jeu conseille à plusieurs.",
+        },
+    },
+    {
         version = "1.105.5", date = "20/11/2026",
         changed = {
             "Tournée de quêtes : une étape à faire affiche seulement le nom de ses quêtes (plus de « Coin nord : … »).",

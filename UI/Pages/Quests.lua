@@ -468,7 +468,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 9 or 7) * 36 + 6, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 10 or 7) * 36 + 6, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -514,6 +514,10 @@ UI:RegisterPage({
                     function(v) QP():Config().maxAbove = v; WK:NotifyChanged() end, 26)
                 UI:SettingRow(tcard, -328, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
                 self.maxSeg:Select(QP():Config().maxAbove)
+                local gt = UI:Toggle(tcard, function() return QP():Config().noGroup end,
+                    function(v) QP():Config().noGroup = v; QP():Invalidate(); WK:NotifyChanged() end)
+                table.insert(self.toggles, gt)
+                UI:SettingRow(tcard, -364, "Éviter les quêtes de groupe", "Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main.", gt, 50)
             end
         end
 
@@ -1658,6 +1662,8 @@ UI:RegisterPage({
                     local d = distTo(e.giver.map, e.giver.x, e.giver.y)
                     info = d and string.format(T("donneur · %d m"), math.floor(d + 0.5)) or T("donneur")
                 else info = "" end
+                -- quête de groupe : annoncée en tête de l'info
+                if e.group then info = UI:Hex(C.warning) .. T("groupe") .. "|r" .. (info ~= "" and ("  ·  " .. info) or "") end
                 r.info:SetText(info)
                 ry = ry + 28
             end

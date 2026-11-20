@@ -23,6 +23,7 @@ function M:Config()
     c.tour = c.tour or {}
     if c.nearAlert == nil then c.nearAlert = true end
     c.maxAbove = c.maxAbove or 2
+    if c.noGroup == nil then c.noGroup = false end -- quêtes de groupe décochées d'office
     return c
 end
 local function Q() return WK.modules.QuestTrack end
@@ -119,7 +120,9 @@ function M:Candidates()
     local picked = cfg.picked[WK:CharKey()] or {}
     for _, e in ipairs(out) do
         local p = picked[e.id]
-        if p == nil then p = e.inLog or (e.lvl or 0) <= lvl + cfg.maxAbove end
+        e.group = WK.QuestIsGroup(e.id) or nil
+        -- quête de groupe : décochée d'office quand le réglage « Éviter les quêtes de groupe » est mis
+        if p == nil then p = e.inLog or ((e.lvl or 0) <= lvl + cfg.maxAbove and not (e.group and cfg.noGroup)) end
         e.picked = p and true or false
         e.hard = (e.lvl or 0) > lvl + cfg.maxAbove
     end
@@ -241,6 +244,7 @@ local function predicted(list, zone)
         local nid = q and q.nxt
         local nq = nid and not have[nid] and not done[nid] and not inLog(nid) and Qs:Get(nid)
         if not (nq and Qs:ForChar(nq, me)) or (nq.lvl or 0) > lvl + maxAbove then return end
+        if M:Config().noGroup and nq.grp == 1 then return end
         local n = { id = nid, title = Qs:Name(nq), lvl = nq.lvl, xp = nq.xp or 0, predicted = depth, parent = e, picked = true }
         n.camps = zoneCamps(nid, zone)
         if #n.camps > 0 then
@@ -668,6 +672,7 @@ function M:StepTitle(s)
         local n = (inLog(q) and Q():Title(q)) or (qq and WK.modules.Quests:Name(qq)) or ("#" .. q)
         -- suite prévue pas encore prise
         if pred[q] and not inLog(q) then n = n .. " " .. T("(suite)") end
+        if WK.QuestIsGroup(q) then n = n .. " " .. T("(groupe)") end
         table.insert(names, n)
     end
     local list = table.concat(names, ", ")
