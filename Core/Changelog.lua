@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.85.1", date = "20/11/2026",
+        fixed = {
+            "Bandeau des bateaux : l'eau ondule maintenant de façon fluide (dessinée à chaque image, sans arrondi au pixel, vagues plus fines et un peu plus lentes) au lieu d'être saccadée.",
+        },
+    },
+    {
         version = "1.85.0", date = "20/11/2026",
         changed = {
             "Bandeau des bateaux, version marine : en haut (graphite comme l'addon) « Bateau pour » et la destination en gros, le navire et « Ce ponton · vers … » à droite ; en bas une bande de mer bleue dont les vagues ondulent, avec la frise du trajet (ton ponton en bleu, la prochaine escale en vert) et un petit bateau qui tangue au ponton.",

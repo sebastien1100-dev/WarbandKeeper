@@ -85,7 +85,7 @@ local SAMPLE = {
 }
 
 local MAXN = 4 -- escales dessinées au plus
-local TOP_H, SEA_H, COLW = 54, 70, 5 -- haut graphite, bande de mer, largeur d'une colonne de vague
+local TOP_H, SEA_H, COLW = 54, 70, 3 -- haut graphite, bande de mer, largeur d'une colonne de vague
 local LINE_Y = 42                    -- frise : distance depuis le haut de la bande de mer
 
 -- teintes de la bande, tirées du bleu du thème : mer (bateau), ciel (zeppelin), rail (tram, graphite)
@@ -137,6 +137,11 @@ local function build()
         c:SetPoint("BOTTOMLEFT", sea, "BOTTOMLEFT", 1 + (k - 1) * COLW, SEA_H - 10 - 12)
         local fm = waveF:CreateTexture(nil, "BACKGROUND", nil, 4)
         fm:SetHeight(2); fm:SetPoint("BOTTOMLEFT", c, "TOPLEFT", 0, -2); fm:SetPoint("BOTTOMRIGHT", c, "TOPRIGHT", 0, -2)
+        -- pas d'arrondi au pixel : la crête monte et descend en douceur
+        for _, t in ipairs({ c, fm }) do
+            if t.SetSnapToPixelGrid then t:SetSnapToPixelGrid(false) end
+            if t.SetTexelSnappingBias then t:SetTexelSnappingBias(0) end
+        end
         f.cols[k], f.foam[k] = c, fm
     end
     -- vaguelettes fixes dans la mer
@@ -216,15 +221,16 @@ local function build()
         self.done:SetColorTexture(foam[1], foam[2], foam[3], 0.95)
         self:Animate(0)
     end
-    -- houle : la crête ondule, le navire tangue (appelé ~20 fois par seconde tant que le bandeau est visible)
+    -- houle : la crête ondule, le navire tangue (à chaque image tant que le bandeau est visible)
     function f:Animate(t)
         local amp = self.amp or 0
         for k, c in ipairs(self.cols) do
-            c:SetHeight(12 + 4 + amp * math.sin(k * 0.42 - t * 1.6) + amp * 0.4 * math.sin(k * 0.17 + t * 0.9))
+            c:SetHeight(12 + 4 + amp * math.sin(k * 0.25 - t * 1.3) + amp * 0.4 * math.sin(k * 0.10 + t * 0.7))
         end
         if self.ship:IsShown() then
             local bob = amp > 0 and math.sin(t * 2.2) * 1.5 or 0
             self.ship:ClearAllPoints(); self.ship:SetPoint("BOTTOM", self.sea, "TOPLEFT", (self.shipX or 36), -(LINE_Y - 4) + bob)
+            if self.ship.SetSnapToPixelGrid then self.ship:SetSnapToPixelGrid(false); self.ship:SetTexelSnappingBias(0) end
             if self.ship.SetRotation then self.ship:SetRotation(amp > 0 and math.sin(t * 1.7) * 0.08 or 0) end
         end
     end
@@ -299,7 +305,8 @@ local function build()
     f:SetScript("OnUpdate", function(s, el)
         s.clock = (s.clock or 0) + el
         s.anim = (s.anim or 0) + el
-        if s.anim >= 0.05 then s.anim = 0; s:Animate(s.clock) end
+        -- houle à chaque image (au plus 60 par seconde) pour une eau fluide
+        if s.anim >= 0.016 then s.anim = 0; s:Animate(s.clock) end
         s.acc = (s.acc or 0) + el
         if s.acc < 1 then return end
         s.acc = 0
