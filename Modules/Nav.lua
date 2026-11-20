@@ -1023,6 +1023,21 @@ function M:BoatDiag()
     end
     for _, l in ipairs(M.boatLog) do table.insert(out, l) end
     if #M.boatLog == 0 then table.insert(out, "rien de noté depuis la connexion") end
+    -- trajets appris en jeu : distance à leurs deux quais
+    for _, b in ipairs(M:Boats()) do
+        local parts = {}
+        for _, e in ipairs({ b.a, b.b }) do
+            if e then
+                local d = (p and p.cont and e.c == p.cont and e.wx) and string.format(" %d m", math.floor(dist(e.wx, e.wy, p.wx, p.wy) + 0.5)) or ""
+                parts[#parts + 1] = (e.name or "?") .. d
+            end
+        end
+        table.insert(out, "appris : " .. table.concat(parts, " » "))
+    end
+    -- bandeau : dernières apparitions et leur raison (UI/DockBanner.lua)
+    local dl = WK.UI and WK.UI.dockLog or {}
+    if #dl == 0 then table.insert(out, "bandeau : pas affiché depuis la connexion") end
+    for _, l in ipairs(dl) do table.insert(out, "bandeau · " .. l) end
     return out
 end
 

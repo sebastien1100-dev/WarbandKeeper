@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.102.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- « /wk bateau » note maintenant chaque apparition et disparition du bandeau avec sa raison (quai à N m, à bord, plus de quai…), ainsi que la distance aux quais des trajets appris en jeu.
+
 ## v1.102.2 — 20/11/2026
 
 _Un /reload suffit._

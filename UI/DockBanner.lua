@@ -321,6 +321,14 @@ local function build()
         UI:RefreshDockBanner()
     end)
     f:Hide()
+    -- journal des apparitions (/wk bateau) : heure, état, raison
+    UI.dockLog = UI.dockLog or {}
+    local function note(state)
+        table.insert(UI.dockLog, date("%H:%M:%S") .. "  " .. state .. " : " .. (f.why or "?"))
+        while #UI.dockLog > 10 do table.remove(UI.dockLog, 1) end
+    end
+    f:HookScript("OnShow", function(s) if not s.sample then note("affiché") end end)
+    f:HookScript("OnHide", function(s) if not s.sample then note("caché") end end)
     UI:RegisterHUD("dockBanner", f, {
         label = T("Bateaux au quai"), default = { 0, 220 },
         enabled = function() return WK.modules.Guide:Config().dockBanner end,
@@ -339,12 +347,13 @@ function UI:RefreshDockBanner()
     -- tram des profondeurs : son propre bandeau dans l'instance du tram
     if WK.modules.Guide:Config().dockBanner and BL() and BL():InTram() then
         banner.ride = nil
+        banner.why = "tram"
         banner:PaintTram()
         banner:Show()
         return
     end
     if not WK.modules.Guide:Config().dockBanner or (UnitOnTaxi and UnitOnTaxi("player")) or (IsInInstance and IsInInstance()) then
-        banner.ride = nil; banner:Hide() return
+        banner.ride = nil; banner.why = "bandeau coupé, en vol ou en instance"; banner:Hide() return
     end
     -- à bord : la ligne reconnue par les positions, sinon celle du ponton quitté
     if Nv and Nv.RideConfirmed and Nv.RideConfirmed() then
@@ -372,7 +381,8 @@ function UI:RefreshDockBanner()
             end
             banner.ride = lf
         end
-        if not banner.ride then banner:Hide() return end
+        if not banner.ride then banner.why = "à bord, ligne inconnue"; banner:Hide() return end
+        banner.why = "à bord"
         banner:PaintRide(banner.ride, fit and BL():RideProgress() or nil)
         banner:Show()
         return
@@ -382,9 +392,11 @@ function UI:RefreshDockBanner()
     if not list then
         -- position illisible un instant, ou on vient de s'éloigner un peu : on garde le bandeau quelques secondes
         if banner:IsShown() and banner.lastSeen and GetTime() - banner.lastSeen < LINGER then return end
+        banner.why = string.format("plus de quai à moins de %d m", rangeIn() + (banner:IsShown() and 15 or 0))
         banner:Hide() return
     end
     banner.lastSeen = GetTime()
+    banner.why = string.format("quai à %d m", math.floor(list[1].d + 0.5)) .. (list[1].pair and " (trajet appris)" or "")
     banner:Paint(list)
     banner.lastFirst = list[1]
     banner:Show()

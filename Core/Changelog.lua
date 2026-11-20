@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.102.3", date = "20/11/2026",
+        added = {
+            "« /wk bateau » note maintenant chaque apparition et disparition du bandeau avec sa raison (quai à N m, à bord, plus de quai…), ainsi que la distance aux quais des trajets appris en jeu.",
+        },
+    },
+    {
         version = "1.102.2", date = "20/11/2026",
         fixed = {
             "Bateaux : le bandeau n'apparaît et ne disparaît plus sans cesse sur le ponton. « À bord » ne s'affiche qu'après 4 s de traversée et 25 m parcourus, l'arrêt après une course à monture ne passe plus pour un départ du navire, et le bandeau du quai reste 8 s quand on s'éloigne un instant.",
