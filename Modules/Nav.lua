@@ -909,6 +909,16 @@ local function rideTick()
             -- la position avance bien plus vite que le perso ne peut courir
             local own = GetUnitSpeed and GetUnitSpeed("player") or 7
             local carried = (not moving and v > 3) or (v > math.max(12, (own or 7) * 1.6))
+            -- faux départs sur le ponton : le perso s'arrête juste avant la mesure, et la vitesse moyenne de
+            -- son dernier pas (4 à 6 m/s) passait pour « porté ». Il faut maintenant deux mesures de suite,
+            -- sans que le perso marchait à la précédente
+            if carried and not ride and v <= math.max(12, (own or 7) * 1.6) then
+                local cand = not lastS.moving
+                if not (cand and lastS.cand) then
+                    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now, moving = moving, cand = cand }
+                    return
+                end
+            end
             if not taxi and carried and v < 80 then
                 if not ride then
                     ride = { start = lastS, pts = { lastS.wx, lastS.wy }, still = 0, t0 = epoch() - (now - lastS.t), started = now, lastOk = now }
@@ -964,7 +974,8 @@ local function rideTick()
             end
         end
     end
-    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now }
+    lastS = { cont = p.cont, wx = p.wx, wy = p.wy, map = p.map, x = p.x, y = p.y, t = now,
+        moving = (IsPlayerMoving and IsPlayerMoving()) or false }
 end
 M.IsRiding = function() return ride ~= nil end
 -- point de départ de la traversée en cours (continent, x, y) : le bandeau du quai y retrouve la ligne prise

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.102.1", date = "20/11/2026",
+        fixed = {
+            "Bateaux : le bandeau « À bord » ne s'affiche plus en marchant sur le ponton. Un arrêt juste avant la mesure passait pour un départ du navire (« début … 4 m/s » dans /wk bateau) ; il faut maintenant deux mesures de suite.",
+        },
+    },
+    {
         version = "1.102.0", date = "20/11/2026",
         added = {
             "Tournée de quêtes : les suites sont prévues. La quête qui suit une quête cochée est prise à son rendu et ses objectifs entrent dans la même boucle, au lieu de repartir en arrière ensuite. Elle est marquée « (suite) » tant qu'elle n'est pas prise.",
