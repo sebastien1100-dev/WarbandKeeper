@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.3", date = "20/11/2026",
+        fixed = {
+            "Carte des bateaux : les tracés se voyaient mal sur la carte du jeu, surtout les zeppelins ; traits plus épais et plus clairs avec un contour sombre, zeppelins en longs tirets or vif, lignes estompées moins pâles.",
+        },
+    },
+    {
         version = "1.87.2", date = "20/11/2026",
         changed = {
             "Carte des bateaux : le fond est la carte d'Azeroth du jeu, dans ses couleurs d'origine (sans la flèche ni les repères), à la place des continents assombris ; fenêtre un peu plus large pour qu'elle tienne en entier. Noms des quais contourés, lisibles sur la carte.",

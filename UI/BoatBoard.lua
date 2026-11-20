@@ -336,9 +336,12 @@ local function build()
             if (self.showAll or mine) and not drawn[l.key] then
                 drawn[l.key] = true
                 local zep = l.kind == "zeppelin"
-                local col = zep and C.warning or C.info
+                -- couleurs éclaircies (lisibles sur la carte du jeu) : bateau bleu clair, zeppelin or vif
+                local base = zep and C.warning or C.info
+                local lift = zep and 0.15 or 0.3
+                local col = { base[1] + (1 - base[1]) * lift, base[2] + (1 - base[2]) * lift, base[3] + (1 - base[3]) * lift }
                 local hl = (hover and hover.key == l.key) or (not hover and selLines[l.key])
-                local a = hl and 1 or ((hover or sel) and 0.28 or 0.75)
+                local a = hl and 1 or ((hover or sel) and 0.5 or 0.95)
                 if not mine then a = a * 0.6 end
                 for s = 1, #l.legs do
                     local pa = portOf[l.key .. ":" .. s]
@@ -352,14 +355,16 @@ local function build()
                         local side = (li % 2 == 0) and 1 or -1
                         local k = 0.22 * side
                         local cx, cy = (x1 + x2) / 2 - dy * k, (y1 + y2) / 2 + dx * k
-                        local N = 24
+                        local N = zep and 36 or 24
                         local px, py = x1, y1
                         for n = 1, N do
                             local qx, qy = qbez(n / N, x1, y1, cx, cy, x2, y2)
-                            if not zep or n % 2 == 1 then
-                                if hl then seg(px, py, qx, qy, 7, col[1], col[2], col[3], 0.22) end
-                                seg(px, py, qx, qy, (hl and 2.6 or 1.8) + 2, 0, 0, 0, 0.45 * a)
-                                seg(px, py, qx, qy, hl and 2.6 or 1.8, col[1], col[2], col[3], a)
+                            -- zeppelin : longs tirets (2 morceaux sur 3) ; contour sombre sous chaque trait
+                            if not zep or n % 3 ~= 0 then
+                                local th = hl and 4 or 3
+                                if hl then seg(px, py, qx, qy, 10, col[1], col[2], col[3], 0.25) end
+                                seg(px, py, qx, qy, th + 3, 0, 0, 0, 0.7 * a)
+                                seg(px, py, qx, qy, th, col[1], col[2], col[3], a)
                             end
                             px, py = qx, qy
                         end

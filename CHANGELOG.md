@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.87.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte des bateaux : les tracés se voyaient mal sur la carte du jeu, surtout les zeppelins ; traits plus épais et plus clairs avec un contour sombre, zeppelins en longs tirets or vif, lignes estompées moins pâles.
+
 ## v1.87.2 — 20/11/2026
 
 _Un /reload suffit._
