@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.110.4", date = "20/11/2026",
+        fixed = {
+            "Quêtes, compteur « Quêtes faites » : les quêtes faites absentes de la base de quêtes (propres à WoW Forever) n'étaient pas comptées ; elles le sont maintenant, dans les faites et dans le total.",
+            "Base de quêtes : 70 quêtes sans zone connue étaient écartées ; elles comptent maintenant dans les totaux (sans place sur la carte).",
+        },
+    },
+    {
         version = "1.110.3", date = "20/11/2026",
         fixed = {
             "Carte des zones : les quêtes de ton journal propres à WoW Forever (absentes de la base de quêtes, comme « Butin de guerre » ou « Dangers alchimiques ») n'apparaissaient pas dans la liste de leur zone ; elles y sont maintenant (selon la zone où le jeu les range), cochables, avec « position donnée par le jeu ».",

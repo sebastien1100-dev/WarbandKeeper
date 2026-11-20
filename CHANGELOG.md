@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.110.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes, compteur « Quêtes faites » : les quêtes faites absentes de la base de quêtes (propres à WoW Forever) n'étaient pas comptées ; elles le sont maintenant, dans les faites et dans le total.
+- Base de quêtes : 70 quêtes sans zone connue étaient écartées ; elles comptent maintenant dans les totaux (sans place sur la carte).
+
 ## v1.110.3 — 20/11/2026
 
 _Un /reload suffit._

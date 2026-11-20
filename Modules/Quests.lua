@@ -53,6 +53,11 @@ local function index()
             end
         end
     end
+    -- quêtes sans zone connue (tools/gen_quests.py) : dans l'index (totaux, état, infobulles), sur aucune carte
+    for _, q in ipairs(WK.QuestsOther or {}) do
+        setmetatable(q, QMETA)
+        if not byID[q[1]] then byID[q[1]] = q end
+    end
 end
 function M:Get(id)
     if not byID then index() end
@@ -211,6 +216,14 @@ function M:Totals(key)
             total = total + 1
             local st = self:State(q, c)
             if st == "done" then done = done + 1 elseif st == "avail" then avail = avail + 1 end
+        end
+    end
+    -- quêtes faites absentes de la base (propres à WoW Forever, ou d'une autre zone que la base ne range pas) :
+    -- comptées dans les faites et dans le total, comme le jeu les compte
+    local qs = c.quests and c.quests.done
+    if qs then
+        for id in pairs(qs) do
+            if not byID[id] then done = done + 1; total = total + 1 end
         end
     end
     return done, total, avail

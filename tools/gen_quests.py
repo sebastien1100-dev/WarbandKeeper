@@ -163,8 +163,9 @@ def main(root):
                 a, x, y = dungeon_parent[a], None, None
             mp = ui(a)
         if not mp:
-            skipped += 1
-            continue
+            # aucune zone connue (ni zone de la quête, ni donneur placé) : gardée à part (WK.QuestsOther),
+            # comptée dans les totaux mais sur aucune carte
+            mp = 0
         races = q[6] or 0
         side = 0
         if races and not (races & HORDE):
@@ -203,6 +204,15 @@ def main(root):
         "WK.QuestsDB = {",
     ]
     total = 0
+    other = per_map.pop(0, [])
+
+    def row(e):
+        return "{%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%s}," % (
+            e["id"], s(e["name"]), s(e["fr"]), e["lvl"], e["req"], n(e["side"]), n(e["cls"]),
+            s(e["kind"]), s(e["skill"]), n(e["x"]), n(e["y"]), n(e["sid"]), n(e["xp"]),
+            ("{" + ",".join(map(str, e["pre"])) + "}") if e["pre"] else "nil",
+            ("{" + ",".join(map(str, e["preAll"])) + "}") if e["preAll"] else "nil",
+            n(e["nxt"]), n(e["smap"]), ",1" if e["grp"] else "")
     for mp in sorted(per_map):
         lines.append("[%d] = {" % mp)
         for e in sorted(per_map[mp], key=lambda e: (e["lvl"], e["id"])):
@@ -215,10 +225,15 @@ def main(root):
                 n(e["nxt"]), n(e["smap"]), ",1" if e["grp"] else ""))
         lines.append("},")
     lines.append("}")
+    # quêtes sans zone connue : même format, comptées dans les totaux (Modules/Quests.lua), sur aucune carte
+    lines.append("WK.QuestsOther = {")
+    for e in sorted(other, key=lambda e: (e["lvl"], e["id"])):
+        lines.append(row(e))
+    lines.append("}")
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Modules", "QuestsDB.lua")
     with open(out, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-    print("%d quêtes sur %d cartes (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), skipped, out, os.path.getsize(out) // 1024))
+    print("%d quêtes sur %d cartes, %d sans zone (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), len(other), skipped, out, os.path.getsize(out) // 1024))
 
 
 if __name__ == "__main__":
