@@ -191,6 +191,7 @@ function M:Start(target, reason, kind)
 end
 
 function M:Stop()
+    local was = self.target
     self.target = nil
     if WK.modules.Nav then WK.modules.Nav:Clear() end
     if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
@@ -198,6 +199,21 @@ function M:Stop()
     if self.OnTarget then self:OnTarget() end
     if self.Redraw then self:Redraw() end
     WK:NotifyChanged()
+    -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main
+    if was and was.kind ~= "qtour" and was.kind ~= "qtrack" and C_Timer then
+        C_Timer.After(0.5, function() M:Resume() end)
+    end
+end
+function M:Resume()
+    if self.target then return end
+    local P = WK.modules.QuestPlan
+    if P and P.Active and P:Active() then
+        P.lastKey = nil
+        P:Retarget()
+        return
+    end
+    local QT = WK.modules.QuestTrack
+    if QT and QT.Retarget then pcall(QT.Retarget, QT, true) end
 end
 
 -- Aller au plus proche d'un genre : "mail", "bank", "repair", "vendor", "ammo", "trainer", "bags", ou

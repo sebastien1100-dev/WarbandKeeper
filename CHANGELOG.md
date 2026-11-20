@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.105.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage : après un détour (marchand pour vider les sacs, boîte aux lettres, maître…), la tournée de quêtes ou la quête suivie reprend le guidage. Avant, il n'y avait plus de guidage pour la suite de la tournée.
+
 ## v1.105.3 — 20/11/2026
 
 _Un /reload suffit._

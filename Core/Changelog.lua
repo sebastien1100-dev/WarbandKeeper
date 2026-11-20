@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.4", date = "20/11/2026",
+        fixed = {
+            "Guidage : après un détour (marchand pour vider les sacs, boîte aux lettres, maître…), la tournée de quêtes ou la quête suivie reprend le guidage. Avant, il n'y avait plus de guidage pour la suite de la tournée.",
+        },
+    },
+    {
         version = "1.105.3", date = "20/11/2026",
         fixed = {
             "Paladin : un clic sur une ligne du panneau des bénédictions (ou sur l'aura) lance de nouveau la bénédiction sur le bon joueur. Le sort passe maintenant par une macro « /cast », comme le bouton « Buffer le suivant », et ne part qu'une fois, au relâché du clic.",
