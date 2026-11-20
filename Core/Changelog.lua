@@ -8,6 +8,19 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.0", date = "20/11/2026", restart = true,
+        added = {
+            "Sorts de classe : prix de base de chaque sort chez le maître, connus d'avance (données de What's Training, licence MIT). Le prix relevé chez le maître, remise de réputation comprise, passe toujours devant ; un sort sans prix connu est estimé d'après ceux du même niveau, marqué « env. ».",
+        },
+        changed = {
+            "Fiche du perso, onglet Sorts : nouvelle présentation en frise. Une ligne par niveau (disponibles, prochain niveau, puis les suivants), les sorts en vignettes et le coût du niveau au bout. En tête : le total maintenant et jusqu'au 60, l'or du compte et « Guider vers le maître ». Clic droit sur une vignette : écarter ou remettre le sort.",
+        },
+        fixed = {
+            "Sorts de classe : un rang remplacé par le rang suivant (auras du paladin, Imposition des mains…) n'apparaît plus comme « à apprendre ».",
+            "Sorts de classe : « Jusqu'au 60 » n'affiche plus « env. 0pc » quand les prix ne sont pas encore connus.",
+        },
+    },
+    {
         version = "1.98.7", date = "20/11/2026",
         fixed = {
             "Talents : le bouton « Plan de montée » restait caché derrière le pied de la fenêtre des talents (barre « Appliquer changements »). Il passe maintenant au premier plan, en bas à droite.",

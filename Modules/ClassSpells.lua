@@ -71,10 +71,49 @@ function M:Catalog(class)
     return cat
 end
 
+-- Prix de base (Modules/ClassPricesDB.lua, What's Training) : { [sort] = cuivre }, lu une fois
+local basePrice
+local function baseOf(id)
+    if not basePrice then
+        basePrice = {}
+        for sid, cost in (WK.ClassBasePrice or ""):gmatch("(%d+):(%d+)") do basePrice[tonumber(sid)] = tonumber(cost) end
+    end
+    return id and basePrice[id]
+end
+
+-- Prix de base médian des sorts d'une classe à un niveau : estimation d'un sort sans prix connu
+local levelMedian = {}
+local function estimate(class, level)
+    local byLvl = levelMedian[class]
+    if not byLvl then
+        byLvl, levelMedian[class] = {}, {}
+        local lists = {}
+        for _, e in ipairs(M:Catalog(class)) do
+            local b = baseOf(e.id)
+            if b then lists[e.level] = lists[e.level] or {}; table.insert(lists[e.level], b) end
+        end
+        for lvl, l in pairs(lists) do table.sort(l); byLvl[lvl] = l[math.floor((#l + 1) / 2)] end
+        levelMedian[class] = byLvl
+    end
+    for d = 0, 4 do
+        local v = byLvl[level - d] or byLvl[level + d]
+        if v then return v end
+    end
+end
+
+-- Prix d'un sort et sa provenance : celui relevé chez le maître (remise comprise, « exact »), sinon le
+-- prix de base (« base »), sinon une estimation d'après les sorts du même niveau (« est »)
 function M:Price(class, e)
     local p = self:Config().prices[class]
     local r = p and p[e.name .. "|" .. (e.rank or "")]
-    return r and r[1] or nil
+    if r and r[1] then return r[1], "exact" end
+    local b = baseOf(e.id)
+    if b then return b, "base" end
+    if (e.level or 0) > 1 then
+        local v = estimate(class, e.level)
+        if v then return v, "est" end
+    end
+    return nil
 end
 
 ---------------------------------------------------------------------------
@@ -115,18 +154,26 @@ function M:ForChar(key)
     local skip = cfg.skip[key] or {}
     local cat = self:Catalog(class)
     -- sorts de talent : seulement si le perso en connaît un rang (il a le talent)
-    local hasName = {}
-    for _, e in ipairs(cat) do if self:Known(key, e.id) then hasName[e.name] = true end end
+    -- rang le plus haut connu de chaque sort : le jeu ne dit plus « connu » pour un rang remplacé par le
+    -- suivant (auras du paladin…), les rangs en dessous comptent donc comme appris
+    local hasName, topKnown = {}, {}
+    for _, e in ipairs(cat) do
+        if self:Known(key, e.id) then
+            hasName[e.name] = true
+            if (topKnown[e.name] or 0) < e.level then topKnown[e.name] = e.level end
+        end
+    end
     local r = { now = {}, next = {}, later = {}, skipped = {}, costNow = 0, costNext = 0, costAll = 0, unknownPrice = 0 }
     local nextLevel
     for _, e in ipairs(cat) do
-        if not self:Known(key, e.id) and (not e.talent or hasName[e.name]) then
-            local cost = self:Price(class, e)
-            local item = { id = e.id, name = e.name, rank = e.rank, level = e.level, icon = e.icon, cost = cost, talent = e.talent }
+        local learned = self:Known(key, e.id) or (topKnown[e.name] and e.level < topKnown[e.name])
+        if not learned and (not e.talent or hasName[e.name]) then
+            local cost, src = self:Price(class, e)
+            local item = { id = e.id, name = e.name, rank = e.rank, level = e.level, icon = e.icon, cost = cost, src = src, talent = e.talent }
             if skip[e.name] then
                 table.insert(r.skipped, item)
             else
-                if not cost then r.unknownPrice = r.unknownPrice + 1 end
+                if not cost then r.unknownPrice = r.unknownPrice + 1 elseif src == "est" then r.estimated = (r.estimated or 0) + 1 end
                 r.costAll = r.costAll + (cost or 0)
                 if e.level <= lvl then
                     table.insert(r.now, item); r.costNow = r.costNow + (cost or 0)

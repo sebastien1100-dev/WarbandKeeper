@@ -846,6 +846,8 @@ UI:RegisterPage({
                 "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
             { "boat", "Bateaux et zeppelins (trajets et quais)", "Fichiers du jeu · wago.tools", "jeu", "muted",
                 "Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools)." },
+            { "book", "Prix des sorts de classe chez le maître", "What's Training · github.com/fusionpit/WhatsTraining", "MIT", "positive",
+                "Prix de base des sorts de classe chez le maître (avant remise de réputation) : addon What's Training (github.com/fusionpit/WhatsTraining, licence MIT). Le prix relevé chez le maître passe devant." },
             { "crosshair", "Distances (indicateur du chasseur)", "LibRangeCheck-3.0 · WoWUIDev Community", "MIT", "positive",
                 "Distances de l'indicateur du chasseur : bibliothèque LibRangeCheck-3.0 (WoWUIDev Community, licence MIT)." },
         }

@@ -318,6 +318,12 @@ def main():
                 sources.append("Everloot (taux de drop, vols)")
             except subprocess.CalledProcessError as e:
                 log("  ! Everloot indisponible, fichier gardé tel quel :", e)
+        # prix de base des sorts de classe chez le maître (What's Training, licence MIT)
+        try:
+            run(os.path.join(HERE, "gen_trainprices.py"))
+            sources.append("prix des sorts de classe (What's Training)")
+        except subprocess.CalledProcessError as e:
+            log("  ! prix des sorts non régénérés, fichier gardé tel quel :", e)
         # lignes de bateaux et de zeppelins (table TaxiPathNode du jeu, wago.tools)
         try:
             run(os.path.join(HERE, "gen_boats.py"))

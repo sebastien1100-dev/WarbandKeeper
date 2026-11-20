@@ -73,6 +73,20 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Sorts de classe : prix de base de chaque sort chez le maître, connus d'avance (données de What's Training, licence MIT). Le prix relevé chez le maître, remise de réputation comprise, passe toujours devant ; un sort sans prix connu est estimé d'après ceux du même niveau, marqué « env. ».
+
+### Modifications
+- Fiche du perso, onglet Sorts : nouvelle présentation en frise. Une ligne par niveau (disponibles, prochain niveau, puis les suivants), les sorts en vignettes et le coût du niveau au bout. En tête : le total maintenant et jusqu'au 60, l'or du compte et « Guider vers le maître ». Clic droit sur une vignette : écarter ou remettre le sort.
+
+### Corrections
+- Sorts de classe : un rang remplacé par le rang suivant (auras du paladin, Imposition des mains…) n'apparaît plus comme « à apprendre ».
+- Sorts de classe : « Jusqu'au 60 » n'affiche plus « env. 0pc » quand les prix ne sont pas encore connus.
+
 ## v1.98.7 — 20/11/2026
 
 _Un /reload suffit._
