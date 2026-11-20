@@ -4,16 +4,17 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Tableau des bateaux et zeppelins, sans horaires : « d'ici, où je peux aller ? ». À gauche la carte des
--- lignes (Kalimdor et les Royaumes de l'Est, cartes du jeu assombries ; chaque ligne en courbe douce, bateau
+-- lignes (carte d'Azeroth du jeu, couleurs d'origine, sans repères ; chaque ligne en courbe douce, bateau
 -- en trait plein, zeppelin en pointillés ; lignes du port choisi en surbrillance), à droite la liste par port
 -- (quais des lignes du jeu à moins de 500 m l'un de l'autre, Modules/BoatLines.lua) avec ses pontons et leurs
 -- destinations ; le port choisi (le plus proche d'office) en haut, encadré. Clic sur un quai de la carte :
 -- ce port ; survol d'une destination : sa ligne brille ; clic : guidage vers son ponton. Ouvert par le
 -- raccourci « Bateaux » du micro menu et /wk bateaux.
-local W, H, PORT_GAP, DEST_H = 920, 560, 8, 24
+local W, H, PORT_GAP, DEST_H = 1016, 500, 8, 24
 local LIST_W = 340            -- colonne de la liste
 local MAP_W = W - LIST_W - 36 -- carte
-local CONTMAP = { [0] = 1415, [1] = 1414 } -- cartes des continents du jeu
+local CONTMAP = { [0] = 1415, [1] = 1414 } -- cartes des continents du jeu (repli)
+local AZEROTH = 947                         -- carte du monde du jeu (fond, couleurs d'origine)
 local board
 
 local function BL() return WK.modules.BoatLines end
@@ -165,6 +166,10 @@ local function build()
         b.label:SetPoint("TOP", mf, "TOPLEFT", b.x + b.w / 2, -9)
         b.cont = c
     end
+    -- fond principal : la carte d'Azeroth du jeu entière, sans désaturation (les continents ci-dessus ne
+    -- servent que si elle manque)
+    f.world = CreateFrame("Frame", nil, mf); f.world:SetAllPoints(mf); f.world:SetFrameLevel(mf:GetFrameLevel() + 2)
+    f.worldTiles = {}
     -- courbes : traits recyclés (CreateLine) sur un cadre au-dessus des continents
     local lineF = CreateFrame("Frame", nil, mf); lineF:SetAllPoints(mf); lineF:SetFrameLevel(mf:GetFrameLevel() + 4)
     local dotF = CreateFrame("Frame", nil, mf); dotF:SetAllPoints(mf); dotF:SetFrameLevel(mf:GetFrameLevel() + 6)
@@ -190,7 +195,9 @@ local function build()
         d.edge = d:CreateTexture(nil, "ARTWORK"); d.edge:SetTexture(UI.MEDIA .. "circle"); d.edge:SetPoint("CENTER"); d.edge:SetSize(11, 11)
         d.edge:SetVertexColor(0, 0, 0, 0.9)
         d.dot = d:CreateTexture(nil, "OVERLAY"); d.dot:SetTexture(UI.MEDIA .. "circle"); d.dot:SetPoint("CENTER"); d.dot:SetSize(8, 8)
-        d.label = UI:Text(dotF, 9)
+        d.label = UI:Text(dotF, 10)
+        -- contour : lisible sur les couleurs de la carte du jeu
+        d.label:SetFont(UI.FONT, 10, "OUTLINE")
         d:SetScript("OnClick", function(s) f.selected = s.port.name; f:Refresh() end)
         d:SetScript("OnEnter", function(s)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
@@ -207,6 +214,54 @@ local function build()
     -- fond : carte du jeu du continent, cadrée sur ses quais, assombrie et teintée aux couleurs de l'addon
     function f:Layout(list)
         local pos = {}
+        -- carte d'Azeroth : tout le fond, couleurs du jeu ; quais placés par le jeu
+        local wa = artOf(AZEROTH)
+        for _, t in ipairs(self.worldTiles) do t:Hide() end
+        if wa then
+            local sc = math.min(MAP_W / wa.lw, mapH / wa.lh)
+            local ox, oy = (MAP_W - wa.lw * sc) / 2, (mapH - wa.lh * sc) / 2
+            local cols = math.ceil(wa.lw / wa.tw)
+            for idx, file in ipairs(wa.files) do
+                local col, row = (idx - 1) % cols, math.floor((idx - 1) / cols)
+                local t = self.worldTiles[idx]
+                if not t then t = self.world:CreateTexture(nil, "BACKGROUND", nil, 2); self.worldTiles[idx] = t end
+                t:SetTexture(file)
+                if t.SetDesaturated then t:SetDesaturated(false) end
+                t:SetVertexColor(1, 1, 1, 1)
+                t:ClearAllPoints()
+                t:SetPoint("TOPLEFT", self.world, "TOPLEFT", ox + col * wa.tw * sc, -(oy + row * wa.th * sc))
+                t:SetSize(wa.tw * sc, wa.th * sc)
+                t:Show()
+            end
+            local placed = 0
+            for _, p in ipairs(list) do
+                local u, v
+                if C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D then
+                    local ok, _, mp = pcall(C_Map.GetMapPosFromWorldPos, p.c, CreateVector2D(p.x, p.y), AZEROTH)
+                    if ok and mp then
+                        u, v = mp.x, mp.y
+                        if mp.GetXY then u, v = mp:GetXY() end
+                    end
+                end
+                if u and u > 0 and u < 1 and v > 0 and v < 1 then
+                    pos[p.name] = { ox + u * wa.lw * sc, oy + v * wa.lh * sc }
+                    placed = placed + 1
+                end
+            end
+            if placed >= 2 then
+                -- île hors des cartes du jeu (Zephras…) : au milieu de la mer, en haut
+                local k = 0
+                for _, p in ipairs(list) do
+                    if not pos[p.name] then k = k + 1; pos[p.name] = { ox + wa.lw * sc * 0.5, oy + wa.lh * sc * (0.2 + 0.08 * k) } end
+                end
+                for _, b in pairs(self.boxes) do b.frame:Hide(); b.label:Hide() end
+                self.pos = pos
+                return
+            end
+            for _, t in ipairs(self.worldTiles) do t:Hide() end
+            pos = {}
+        end
+        for _, b in pairs(self.boxes) do b.frame:Show(); b.label:Show() end
         for c, b in pairs(self.boxes) do
             b.art = artOf(CONTMAP[c])
             -- cadrage : rectangle des quais du continent, avec une marge
@@ -289,7 +344,9 @@ local function build()
                     local pa = portOf[l.key .. ":" .. s]
                     local pb = portOf[l.key .. ":" .. (s % #l.stops + 1)]
                     local A, Bp = pa and pos[pa], pb and pos[pb]
-                    if A and Bp and pa ~= pb then
+                    local pk = l.key .. ":" .. ((pa or "") < (pb or "") and ((pa or "") .. ">" .. (pb or "")) or ((pb or "") .. ">" .. (pa or "")))
+                    if A and Bp and pa ~= pb and not drawn[pk] then
+                        drawn[pk] = true
                         local x1, y1, x2, y2 = A[1], A[2], Bp[1], Bp[2]
                         local dx, dy = x2 - x1, y2 - y1
                         local side = (li % 2 == 0) and 1 or -1
@@ -301,6 +358,7 @@ local function build()
                             local qx, qy = qbez(n / N, x1, y1, cx, cy, x2, y2)
                             if not zep or n % 2 == 1 then
                                 if hl then seg(px, py, qx, qy, 7, col[1], col[2], col[3], 0.22) end
+                                seg(px, py, qx, qy, (hl and 2.6 or 1.8) + 2, 0, 0, 0, 0.45 * a)
                                 seg(px, py, qx, qy, hl and 2.6 or 1.8, col[1], col[2], col[3], a)
                             end
                             px, py = qx, qy
@@ -325,11 +383,12 @@ local function build()
                 d.dot:SetVertexColor(c[1], c[2], c[3], 1)
                 d.halo:SetVertexColor(c[1], c[2], c[3], 0.3); d.halo:SetShown(near or isSel)
                 d.label:ClearAllPoints()
-                local right = xy[1] > MAP_W / 2
+                -- étiquette du côté où elle tient : à droite près du bord gauche, à gauche près du bord droit
+                local right = xy[1] < 110 or (xy[1] > MAP_W / 2 and xy[1] < MAP_W - 110)
                 if right then d.label:SetPoint("LEFT", d, "RIGHT", 1, 6) else d.label:SetPoint("RIGHT", d, "LEFT", -1, 6) end
                 d.label:SetJustifyH(right and "LEFT" or "RIGHT")
                 d.label:SetText((p.name:gsub("^Port de ", "")))
-                local tc = (near or isSel) and c or C.muted
+                local tc = (near or isSel) and c or C.text
                 d.label:SetTextColor(tc[1], tc[2], tc[3], 1)
                 d:Show(); d.label:Show()
             end

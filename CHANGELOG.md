@@ -78,6 +78,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.87.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte des bateaux : le fond est la carte d'Azeroth du jeu, dans ses couleurs d'origine (sans la flèche ni les repères), à la place des continents assombris ; fenêtre un peu plus large pour qu'elle tienne en entier. Noms des quais contourés, lisibles sur la carte.
+
+### Corrections
+- Carte des bateaux : une ligne aller-retour (Auberdine - Hurlevent) était tracée deux fois en deux arcs ; une seule courbe par trajet. Les noms près des bords (Bastion de Plumelune) ne sont plus coupés.
+
 ## v1.87.1 — 20/11/2026
 
 _Un /reload suffit._

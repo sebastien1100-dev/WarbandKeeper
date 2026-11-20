@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.87.2", date = "20/11/2026",
+        changed = {
+            "Carte des bateaux : le fond est la carte d'Azeroth du jeu, dans ses couleurs d'origine (sans la flèche ni les repères), à la place des continents assombris ; fenêtre un peu plus large pour qu'elle tienne en entier. Noms des quais contourés, lisibles sur la carte.",
+        },
+        fixed = {
+            "Carte des bateaux : une ligne aller-retour (Auberdine - Hurlevent) était tracée deux fois en deux arcs ; une seule courbe par trajet. Les noms près des bords (Bastion de Plumelune) ne sont plus coupés.",
+        },
+    },
+    {
         version = "1.87.1", date = "20/11/2026",
         added = {
             "Barre d'expérience : option « Texte au survol » (QoL > Expérience) ; le niveau, le repos et l'XP à rendre n'apparaissent qu'en passant la souris sur la barre.",
