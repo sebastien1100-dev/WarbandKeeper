@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.97.0", date = "20/11/2026", restart = true,
+        added = {
+            "Fiche du perso, onglet « Sorts » : sorts de classe à apprendre maintenant, au prochain niveau et plus tard, avec leur prix ; coût jusqu'au 60 et ce que l'or du compte permet de payer ; maître le plus proche. Marche aussi pour les persos pas connectés. Clic droit sur un sort : l'écarter (il n'est plus compté ni proposé).",
+            "Chez ton maître de classe : panneau « À apprendre ici » avec les prix et « Tout apprendre » (les moins chers d'abord, sans dépasser ton or, sans les sorts écartés). Les prix vus chez le maître sont retenus pour tous tes persos de la même classe.",
+            "Rappel au passage de niveau : « Niveau N : n sort(s) à apprendre (coût) » avec Guider ; ligne dans « À faire » du Résumé pour chaque perso concerné ; le guide de montée affiche le vrai nombre de sorts.",
+            "Réglages dans la roue de la fiche, onglet Sorts : rappel, panneau, tout apprendre en ouvrant le maître.",
+        },
+    },
+    {
         version = "1.96.0", date = "20/11/2026", restart = true,
         added = {
             "Guide de montée calculé en direct (de quoi se passer d'un guide écrit d'avance) : nouvel onglet « Montée » en tête de la page Quêtes.",
@@ -4502,9 +4511,6 @@ WK.Roadmap = {
     { prio = 3, theme = "char", title = "Feu de camp, plus tard", text = "Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé." },
     { prio = 2, theme = "class", title = "Rappels de bénédiction", text = "Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank." },
     { prio = 3, theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
-    { prio = 1, theme = "class", title = "Sorts de classe à apprendre", text = "Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe." },
-    { prio = 1, theme = "class", title = "Panneau chez le maître de classe", text = "Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise)." },
-    { prio = 1, theme = "class", title = "Sorts au passage de niveau", text = "Rappel « N sorts à apprendre » dans la pile avec « Guider vers le maître », et alerte dans « À faire »." },
     { prio = 3, theme = "class", title = "Gain d'un rang", text = "Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…)." },
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
     { prio = 2, theme = "char", title = "Compétences d'armes", text = "Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche." },

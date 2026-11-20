@@ -65,6 +65,20 @@ local function todoItems()
                     { g = "clock", group = "cd", n = 1 })
             end
         end
+        -- Sorts de classe à apprendre (Modules/ClassSpells.lua) ; un autre perso seulement si ses sorts
+        -- connus ont été relevés (sinon tout paraîtrait à apprendre)
+        local CS = WK.modules.ClassSpells
+        if CS and WK:FeatureOn("classes") and c.class and (e.key == WK:CharKey() or CS:Config().known[e.key]) then
+            local ok, r = pcall(CS.ForChar, CS, e.key)
+            local n = ok and r and #r.now or 0
+            if n > 0 then
+                local key = e.key
+                add(5, "book", string.format(WK.T("%s : %d sort(s) à apprendre (%s)"), name, n,
+                    r.costNow > 0 and CS:Money(r.costNow) or WK.T("prix inconnu")),
+                    function() UI:ShowCharSheet(key, "spells") end, C.info,
+                    { g = "book", group = "spells", n = n, short = WK.T("sorts") })
+            end
+        end
         -- Banque pas vue (alertes)
         for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
             if a.kind == "bank" then

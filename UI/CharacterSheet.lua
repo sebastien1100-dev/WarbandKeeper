@@ -26,6 +26,7 @@ local HEAD_MAX = 5 -- pastilles d'en-tête au plus
 -- Données : Modules/Gear.lua (relevées à chaque connexion du perso), c.professions.
 local SQ = 34
 local sheet
+local buildSpells, refreshSpells, spellChips -- onglet Sorts (plus bas)
 
 local QUALITY = { [0] = { 0.62, 0.62, 0.62 }, { 1, 1, 1 }, { 0.12, 1, 0 }, { 0, 0.44, 0.87 }, { 0.64, 0.21, 0.93 }, { 1, 0.5, 0 }, { 0.9, 0.8, 0.5 } }
 -- emplacements : n° du jeu, nom, texture vide
@@ -272,7 +273,7 @@ local function build(parent)
     f.tabLine:SetHeight(1)
     f.tabLine:SetPoint("TOPLEFT", 0, -90); f.tabLine:SetPoint("TOPRIGHT", 0, -90)
     local prev
-    for _, t in ipairs({ { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }) do
+    for _, t in ipairs({ { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" }, { "spells", "Sorts" } }) do
         local b = CreateFrame("Button", nil, f)
         b:SetHeight(26)
         b.label = UI:Text(b, 12)
@@ -668,6 +669,9 @@ local function build(parent)
             if not i then WK:Print(T("Import impossible : ") .. (why or "")) end
         end, T("Importer"))
     end)
+
+    -- Onglet Sorts : sorts de classe à apprendre (Modules/ClassSpells.lua)
+    buildSpells(f)
 
     -- Onglet BiS : ta liste, en mannequin (emplacements comme dans la Fiche) ; clic sur un emplacement = fenêtre de choix
     local bsc = UI:Scroll(f)
@@ -1257,9 +1261,10 @@ local function refreshReps(f, c, card, w)
     return (nReal == 0 and 74) or (y + 8)
 end
 
-function UI:ShowCharSheet(key)
+function UI:ShowCharSheet(key, tab)
     if not WK.DB.global.characters[key] then return end
     UI.charSheetKey = key
+    UI.charSheetTab = tab -- onglet à ouvrir (« spells » depuis « À faire »), lu par Refresh
     local f = UI:Create()
     -- fenêtre fermée : on oublie le perso choisi (la fenêtre est créée à la demande, et recréée par
     -- un changement d'apparence : le crochet est posé ici, sur la fenêtre du moment)
@@ -1670,6 +1675,260 @@ local function refreshBis(f, c)
     if f.picker:IsShown() then f.picker:Fill() end
 end
 
+-- Onglet Sorts : à gauche les sorts à apprendre (maintenant, au prochain niveau, plus tard, écartés),
+-- à droite « Jusqu'au 60 » (coût par tranche de niveaux, or du compte) et le maître de classe
+local SPELL_SIDE, SPELL_ROW = 240, 30
+local function CS() return WK.modules.ClassSpells end
+local function money(c) local M = CS(); return M and M:Money(c) or "?" end
+local function accountGold()
+    local g = 0
+    for _, c in pairs(WK.DB.global.characters) do g = g + (c.money or 0) end
+    return g
+end
+
+spellChips = function(r, c)
+    local out = {}
+    table.insert(out, { label = "À apprendre", value = #r.now .. (#r.now > 0 and (" · " .. (r.costNow > 0 and money(r.costNow) or "?")) or ""),
+        color = #r.now > 0 and C.info or nil })
+    if r.nextLevel then
+        table.insert(out, { label = "Prochain niveau", value = string.format(T("%d sorts"), #r.next), tip = string.format(T("Au niveau %d"), r.nextLevel) })
+    end
+    table.insert(out, { label = "Jusqu'au 60", value = (r.unknownPrice > 0 and "~" or "") .. money(r.costAll), color = C.gold,
+        tip = r.unknownPrice > 0 and string.format(T("%d prix encore inconnus"), r.unknownPrice) or nil })
+    table.insert(out, { label = "Or du perso", value = c.money and UI:ShortGold(c.money) or "-" })
+    return out
+end
+
+buildSpells = function(f)
+    local ssc = UI:Scroll(f)
+    ssc:SetPoint("TOPLEFT", 0, -98)
+    ssc:SetPoint("BOTTOMRIGHT")
+    ssc:Hide()
+    f.ssc = ssc
+    local root = ssc.child
+    -- liste des sorts
+    local lc = UI:Card(root)
+    f.spList = lc
+    f.spHeads = UI:Pool(function()
+        local h = CreateFrame("Frame", nil, lc)
+        h:SetHeight(26)
+        h.t = UI:Text(h, 10, C.muted); h.t:SetPoint("TOPLEFT", 16, -10)
+        h.r = UI:Text(h, 11, C.gold); h.r:SetPoint("TOPRIGHT", -16, -9); h.r:SetJustifyH("RIGHT")
+        h.more = UI:Button(h, "Tout voir", nil, 20, "ghost")
+        h.more:SetPoint("TOPRIGHT", -12, -4)
+        return h
+    end)
+    f.spRows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, lc)
+        r:SetHeight(SPELL_ROW)
+        r:RegisterForClicks("RightButtonUp")
+        r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
+        r.hl:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 0.5); r.hl:Hide()
+        r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(22, 22); r.icon:SetPoint("TOPLEFT", 16, -4)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 46, -9); r.name:SetPoint("TOPRIGHT", -150, -9)
+        r.strike = r:CreateTexture(nil, "OVERLAY"); r.strike:SetHeight(1); r.strike:SetPoint("TOPLEFT", r.name, "TOPLEFT", 0, -7)
+        r.strike:SetColorTexture(C.dim[1], C.dim[2], C.dim[3], 1)
+        r.price = UI:Text(r, 12, C.gold); r.price:SetPoint("TOPRIGHT", -16, -9); r.price:SetJustifyH("RIGHT")
+        r.lvl = UI:Text(r, 11, C.muted); r.lvl:SetPoint("TOPRIGHT", -96, -10); r.lvl:SetJustifyH("RIGHT")
+        r:SetScript("OnClick", function(s)
+            local M = CS()
+            if not (M and s.e) then return end
+            M:Skip(f.key, s.e.name, not s.skipped)
+            f:Refresh()
+        end)
+        r:SetScript("OnEnter", function(s)
+            s.hl:Show()
+            if not s.e then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            if s.e.id and GameTooltip.SetSpellByID then pcall(GameTooltip.SetSpellByID, GameTooltip, s.e.id)
+            else GameTooltip:SetText(s.e.name or "", 1, 1, 1) end
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddDoubleLine(T("Niveau"), tostring(s.e.level or "?"), 0.6, 0.6, 0.6, 1, 1, 1)
+            GameTooltip:AddDoubleLine(T("Prix"), money(s.e.cost), 0.6, 0.6, 0.6, 1, 0.82, 0.3)
+            GameTooltip:AddLine(s.skipped and T("Clic droit : remettre ce sort") or T("Clic droit : écarter ce sort (tous ses rangs)"), 0.6, 0.6, 0.6, true)
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
+        return r
+    end)
+    -- Jusqu'au 60
+    local tc = UI:Card(root, T("Jusqu'au 60"))
+    f.spTot = tc
+    tc.sum = UI:Text(tc, 13); tc.sum:SetPoint("TOPLEFT", 16, -40)
+    tc.chart = CreateFrame("Frame", nil, tc)
+    tc.chart:SetPoint("TOPLEFT", 16, -66); tc.chart:SetPoint("TOPRIGHT", -16, -66); tc.chart:SetHeight(80)
+    tc.bars, tc.labels = {}, {}
+    tc.phrase = UI:Text(tc, 11, C.muted)
+    tc.phrase:SetPoint("TOPLEFT", 16, -168); tc.phrase:SetPoint("TOPRIGHT", -16, -168)
+    tc.phrase:SetJustifyH("LEFT")
+    if tc.phrase.SetWordWrap then tc.phrase:SetWordWrap(true) end
+    -- Maître de classe
+    local mc = UI:Card(root, T("Maître de classe"))
+    f.spTrainer = mc
+    mc.text = UI:Text(mc, 11, C.muted)
+    mc.text:SetPoint("TOPLEFT", 16, -40); mc.text:SetPoint("TOPRIGHT", -16, -40)
+    mc.text:SetJustifyH("LEFT")
+    if mc.text.SetWordWrap then mc.text:SetWordWrap(true) end
+    mc.go = UI:Button(mc, "Guider", 110, 28, "secondary", "guide")
+    mc.go:SetPoint("TOPLEFT", 16, -64)
+    mc.go:SetScript("OnClick", function() local G = WK.modules.Guide; if G then G:GoTo("trainer") end end)
+    mc.note = UI:Text(mc, 10, C.warning)
+    mc.note:SetJustifyH("LEFT")
+    if mc.note.SetWordWrap then mc.note:SetWordWrap(true) end
+end
+
+refreshSpells = function(f, c)
+    local M = CS()
+    local r = f.spR or (M and M:ForChar(f.key))
+    if not r then return end
+    local W = math.max(600, (f.ssc:GetWidth() or 840) - 12)
+    f.ssc.child:SetWidth(W)
+    local wide = W >= 900
+    local leftW = wide and (W - SPELL_SIDE - COL_GAP) or W
+    local mine = f.key == WK:CharKey()
+    local lc = f.spList
+    f.spHeads:Reset(); f.spRows:Reset()
+    local y = 6
+    local function head(text, right, more)
+        local h = f.spHeads:Get()
+        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetPoint("TOPRIGHT", 0, -y)
+        h.t:SetText(text)
+        h.r:SetText(right or "")
+        h.r:SetShown(not more)
+        h.more:SetShown(more ~= nil)
+        if more then h.more:SetLabel(more[1]); h.more:SetScript("OnClick", more[2]) end
+        y = y + 28
+    end
+    local function row(e, skipped)
+        local rr = f.spRows:Get()
+        rr.e, rr.skipped = e, skipped
+        rr:ClearAllPoints(); rr:SetPoint("TOPLEFT", 0, -y); rr:SetPoint("TOPRIGHT", 0, -y)
+        rr.icon:SetTexture(e.icon or 134400)
+        rr.icon:SetDesaturated(skipped and true or false)
+        rr.icon:SetAlpha(skipped and 0.5 or 1)
+        local txt = (e.name or "?")
+        if e.rank and e.rank ~= "" then txt = txt .. "  " .. UI:Hex(C.muted) .. e.rank .. "|r" end
+        if e.talent then txt = txt .. "  " .. UI:Hex(C.plan) .. T("talent") .. "|r" end
+        rr.name:SetText(txt)
+        rr.name:SetTextColor(unpack(skipped and C.dim or C.text))
+        rr.strike:SetShown(skipped and true or false)
+        if skipped then rr.strike:SetWidth(math.max(10, math.min(rr.name:GetStringWidth() or 60, leftW - 200))) end
+        rr.lvl:SetText(string.format(T("niv. %d"), e.level or 0))
+        rr.price:SetText(money(e.cost))
+        rr.price:SetTextColor(unpack(skipped and C.dim or C.gold))
+        y = y + SPELL_ROW
+    end
+    local function none(text)
+        local h = f.spHeads:Get()
+        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetPoint("TOPRIGHT", 0, -y)
+        h.t:SetText(UI:Hex(C.dim) .. text .. "|r"); h.r:SetText(""); h.more:Hide()
+        y = y + 26
+    end
+    -- maintenant
+    head(T("À APPRENDRE MAINTENANT") .. "  ·  " .. UI:Hex(C.positive) .. string.format(T("niveau %d"), r.level or 0) .. "|r",
+        #r.now > 0 and money(r.costNow) or nil)
+    if #r.now == 0 then none(T("Rien à apprendre pour l'instant.")) end
+    for _, e in ipairs(r.now) do row(e) end
+    -- prochain niveau
+    if r.nextLevel then
+        y = y + 6
+        head(UI:Hex(C.warning) .. string.format(T("AU NIVEAU %d"), r.nextLevel) .. "|r", money(r.costNext))
+        for _, e in ipairs(r.next) do row(e) end
+    end
+    -- plus tard (replié par défaut)
+    if #r.later > 0 then
+        y = y + 6
+        local open = f.spLaterOpen
+        head(T("PLUS TARD") .. "  " .. UI:Hex(C.dim) .. "(" .. #r.later .. ")|r", nil,
+            { open and T("Replier") or string.format(T("Tout voir (%d)"), #r.later), function() f.spLaterOpen = not f.spLaterOpen; f:Refresh() end })
+        if open then for _, e in ipairs(r.later) do row(e) end end
+    end
+    -- écartés
+    if #r.skipped > 0 then
+        y = y + 6
+        head(T("ÉCARTÉS") .. "  " .. UI:Hex(C.dim) .. "(" .. #r.skipped .. ")|r")
+        for _, e in ipairs(r.skipped) do row(e, true) end
+    end
+    -- sorts connus jamais relevés pour ce perso : tout paraît à apprendre
+    if not mine and M and not M:Config().known[f.key] then
+        y = y + 4
+        none(T("Sorts connus relevés à la prochaine connexion de ce perso."))
+    end
+    lc:ClearAllPoints(); lc:SetPoint("TOPLEFT", 0, 0); lc:SetWidth(leftW); lc:SetHeight(y + 10)
+
+    -- Jusqu'au 60
+    local tc = f.spTot
+    local sideW = wide and SPELL_SIDE or W
+    local sx, sy = wide and (leftW + COL_GAP) or 0, wide and 0 or (y + 10 + COL_GAP)
+    tc:ClearAllPoints(); tc:SetPoint("TOPLEFT", sx, -sy); tc:SetWidth(sideW)
+    local count = #r.now + #r.next + #r.later
+    tc.sum:SetText(string.format(T("%d sorts · %s"), count, (r.unknownPrice > 0 and "~" or "") .. money(r.costAll)))
+    -- coût par tranche de 10 niveaux, à partir de la tranche actuelle (les sorts en retard y comptent)
+    local lvl = r.level or 1
+    local byLevel = M and M:CostByLevel(f.key) or {}
+    local cur = math.floor((lvl - 1) / 10) + 1
+    local brackets, maxV = {}, 0
+    for b = cur, 6 do brackets[#brackets + 1] = { b = b, v = 0 } end
+    for L, v in pairs(byLevel) do
+        local b = math.floor((math.max(L, lvl) - 1) / 10) + 1
+        local e = brackets[b - cur + 1]
+        if e then e.v = e.v + v end
+    end
+    for _, e in ipairs(brackets) do if e.v > maxV then maxV = e.v end end
+    local ar, ag, ab = UI:Accent()
+    local cw = (sideW - 32)
+    local n = #brackets
+    local bw = n > 0 and math.floor((cw - (n - 1) * 6) / n) or 0
+    for _, t in ipairs(tc.bars) do t:Hide() end
+    for _, t in ipairs(tc.labels) do t:Hide() end
+    for i, e in ipairs(brackets) do
+        local bar = tc.bars[i]
+        if not bar then bar = tc.chart:CreateTexture(nil, "ARTWORK"); tc.bars[i] = bar end
+        local lab = tc.labels[i]
+        if not lab then lab = UI:Text(tc.chart, 9, C.muted); tc.labels[i] = lab end
+        local hgt = maxV > 0 and math.max(2, math.floor(e.v / maxV * 62)) or 2
+        bar:ClearAllPoints(); bar:SetPoint("BOTTOMLEFT", tc.chart, "BOTTOMLEFT", (i - 1) * (bw + 6), 16)
+        bar:SetSize(math.max(4, bw), hgt)
+        bar:SetColorTexture(ar, ag, ab, i == 1 and 1 or 0.5)
+        lab:ClearAllPoints(); lab:SetPoint("BOTTOM", bar, "BOTTOM", 0, -14)
+        lab:SetText(((e.b - 1) * 10 + 1) .. "-" .. (e.b * 10))
+        bar:Show(); lab:Show()
+    end
+    -- jusqu'à quel niveau l'or du compte paie tout
+    local gold = accountGold()
+    local cum, reach = 0, nil
+    for L = lvl, 60 do
+        local v = 0
+        if L == lvl then for k, x in pairs(byLevel) do if k <= lvl then v = v + x end end else v = byLevel[L] or 0 end
+        cum = cum + v
+        if cum <= gold then reach = L else break end
+    end
+    if reach then
+        tc.phrase:SetText(string.format(T("Avec l'or du compte (%s) : de quoi tout payer jusqu'au niveau %d."), money(gold), reach))
+    else
+        tc.phrase:SetText(string.format(T("Avec l'or du compte (%s) : pas assez pour les sorts de ton niveau."), money(gold)))
+    end
+    local ph = math.max(14, tc.phrase:GetStringHeight() or 14)
+    tc:SetHeight(168 + ph + 16)
+
+    -- Maître de classe
+    local mc = f.spTrainer
+    local ty = wide and (tc:GetHeight() + COL_GAP) or (sy + tc:GetHeight() + COL_GAP)
+    mc:ClearAllPoints(); mc:SetPoint("TOPLEFT", sx, -ty); mc:SetWidth(sideW)
+    mc.text:SetText(mine and T("Le maître de classe le plus proche, avec la flèche de guidage.")
+        or T("Guidage possible quand ce perso est connecté."))
+    mc.go:SetShown(mine)
+    local my = mine and 64 + 28 + 10 or 64
+    mc.note:ClearAllPoints(); mc.note:SetPoint("TOPLEFT", 16, -my); mc.note:SetPoint("TOPRIGHT", -16, -my)
+    mc.note:SetShown(r.unknownPrice > 0)
+    mc.note:SetText(T("Prix connus après une visite chez le maître de classe."))
+    if r.unknownPrice > 0 then my = my + math.max(12, mc.note:GetStringHeight() or 12) + 4 end
+    mc:SetHeight(my + 12)
+
+    local bottom = wide and math.max(y + 10, ty + mc:GetHeight()) or (ty + mc:GetHeight())
+    f.ssc:SetContentHeight(bottom + 8)
+end
+
 -- Mise à jour de la fiche : en-tête, puis les deux colonnes
 local function refresh(f)
     local key = f.key
@@ -1686,7 +1945,9 @@ local function refresh(f)
     f.mine:SetShown(key ~= WK:CharKey() and WK.DB.global.characters[WK:CharKey()] ~= nil)
     -- à droite de l'en-tête, avant le niveau moyen : le nom et la ligne de classe restent seuls à gauche
     -- pastilles d'en-tête (roue > Fiche) : de droite à gauche depuis la roue ; la 1re en accent
-    local chips = UI.SheetChipValues(c)
+    -- onglet Sorts : ses propres pastilles (à apprendre, prochain niveau, jusqu'au 60, or)
+    f.spR = (f.tab == "spells" and WK.modules.ClassSpells) and WK.modules.ClassSpells:ForChar(key) or nil
+    local chips = f.spR and spellChips(f.spR, c) or UI.SheetChipValues(c)
     local ar, ag, ab = viewAccent(f, c)
     local x, shown = 46, 0
     for i, ch in ipairs(f.hchips) do
@@ -1707,8 +1968,10 @@ local function refresh(f)
     if shown > 0 then f.mine:SetPoint("RIGHT", f.hchips[shown], "LEFT", -16, 0) else f.mine:SetPoint("TOPRIGHT", -62, -28) end
     for _, b in pairs(f.tabs) do b:Paint() end
     f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
+    f.ssc:SetShown(f.tab == "spells")
     if f.tab ~= "bis" then f.picker:Hide() end
     if f.tab == "talents" then return refreshTalents(f, c) end
+    if f.tab == "spells" then return refreshSpells(f, c) end
     if f.tab == "bis" then return refreshBis(f, c) end
     f.lrows:Reset(); f.lheads:Reset()
     -- largeurs : colonne de droite fixe, la gauche prend le reste
@@ -1758,6 +2021,7 @@ UI:RegisterPage({
         end
         local S = sheetCfg
         local ui = function() return WK.DB.global.settings.ui end
+        local CSc = function() local M = WK.modules.ClassSpells; return M and M:Config() or {} end
         -- pastilles d'en-tête : un bouton par chiffre possible, allumé s'il est affiché (dans l'ordre des clics)
         local chipCard = UI:Card(sheet, T("En-tête : pastilles"))
         chipCard.note = UI:Text(chipCard, 10, C.muted); chipCard.note:SetPoint("TOPLEFT", 16, -38); chipCard.note:SetPoint("RIGHT", -16, 0)
@@ -1814,6 +2078,16 @@ UI:RegisterPage({
                     function() return ui().talentPlanAlert ~= false end,
                     function(v) ui().talentPlanAlert = v; local P = WK.modules.TalentPlan; if P and P.CheckAlert then P:CheckAlert() end end },
             }) },
+            spells = { card("Sorts", {
+                { "Rappel au passage de niveau", "Dans la pile de rappels : les sorts à apprendre et leur coût.",
+                    function() return CSc().alert end,
+                    function(v) CSc().alert = v; local M = WK.modules.ClassSpells; if M then M:CheckAlert() end end },
+                { "Panneau chez le maître de classe", "À côté de la fenêtre du maître : ce qui est à apprendre, écartés compris.",
+                    function() return CSc().panel end,
+                    function(v) CSc().panel = v; if UI.RefreshClassTrainer then UI:RefreshClassTrainer() end end },
+                { "Tout apprendre en ouvrant le maître", "Les sorts pas écartés, les moins chers d'abord, sans dépasser ton or.",
+                    function() return CSc().autoLearn end, function(v) CSc().autoLearn = v end },
+            }) },
             bis = { card("BiS", {
                 { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",
                     function() return ui().bisTooltip ~= false end, function(v) ui().bisTooltip = v end },
@@ -1822,7 +2096,7 @@ UI:RegisterPage({
         -- onglets du volet, comme ceux de la fiche ; ouvert sur l'onglet affiché
         local tabCard = CreateFrame("Frame", nil, sheet); tabCard:SetHeight(34)
         sheet.setTab = "sheet"
-        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }, function(v)
+        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" }, { "spells", "Sorts" } }, function(v)
             sheet.setTab = v
             if self.gp then self.gp:Refresh() end
         end, 28)
@@ -1861,6 +2135,7 @@ UI:RegisterPage({
             if sheet.bisMenu then sheet.bisMenu:Hide() end
         end
         sheet.key = key
+        if UI.charSheetTab then sheet.tab = UI.charSheetTab; UI.charSheetTab = nil end
         sheet:Refresh()
     end,
 })

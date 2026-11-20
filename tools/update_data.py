@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -82,7 +82,7 @@ def questie(path):
 
 
 WAGO = "https://wago.tools"
-WAGO_TABLES = ["Map", "DungeonEncounter"]
+WAGO_TABLES = ["Map", "DungeonEncounter", "SkillLineAbility", "SkillLine", "SpellLevels", "SpellName", "Talent"]
 
 
 def wago_tables():
@@ -192,6 +192,8 @@ def metrics():
             out["Rares"] = count(WK.RaresDB)
         elif name == "QuestsDB":
             out["Quêtes"] = count(WK.QuestsDB)
+        elif name == "ClassSpellsDB":
+            out["Sorts de classe"] = L.eval("function(t) local n = 0 for _, v in pairs(t or {}) do for _ in v:gmatch(';') do n = n + 1 end n = n + 1 end return n end")(WK.ClassSpellsRaw)
         elif name == "QuestObjDB":
             out["Quêtes avec camps d'objectifs"] = size(WK.QuestObjRaw)
         elif name == "Guides":
@@ -304,6 +306,7 @@ def main():
             wdir, wver = wago_tables()
             if wdir:
                 run(os.path.join(HERE, "gen_dungeons.py"), "--import-wago", wdir, wver)
+                run(os.path.join(HERE, "gen_classspells.py"), wdir)   # sorts de classe et niveau requis
                 sources.append("tables du jeu %s (wago.tools)" % wver)
             sources.append("wowtbc.gg (%d guides, %d tables de butin)" % (len(pages), len(slugs)))
         if do_questie:

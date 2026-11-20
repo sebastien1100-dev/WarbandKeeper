@@ -48,9 +48,6 @@ _Prévu, pas encore commencé._
 - **Groupe** (basse) — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe.
 
 ### Classes et combat
-- **Panneau chez le maître de classe** (haute) — Tout apprendre en un clic, sorts écartés au clic droit, vrai prix retenu (remise de réputation comprise).
-- **Sorts au passage de niveau** (haute) — Rappel « N sorts à apprendre » dans la pile avec « Guider vers le maître », et alerte dans « À faire ».
-- **Sorts de classe à apprendre** (haute) — Par perso : à apprendre maintenant, au prochain niveau, route vers le 60 avec le coût total ; prix appris chez le maître et partagés entre persos de la même classe.
 - **Rappels de bénédiction** (moyenne) — Dans la pile : joueurs sans ta bénédiction (bouton « Bénir »), bénédiction qui expire, même aure qu'un autre paladin, Fureur vertueuse oubliée en tank.
 - **Aides de combat** (basse) — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
 - **Curseur retrouvé** (basse) — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
@@ -75,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.97.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Fiche du perso, onglet « Sorts » : sorts de classe à apprendre maintenant, au prochain niveau et plus tard, avec leur prix ; coût jusqu'au 60 et ce que l'or du compte permet de payer ; maître le plus proche. Marche aussi pour les persos pas connectés. Clic droit sur un sort : l'écarter (il n'est plus compté ni proposé).
+- Chez ton maître de classe : panneau « À apprendre ici » avec les prix et « Tout apprendre » (les moins chers d'abord, sans dépasser ton or, sans les sorts écartés). Les prix vus chez le maître sont retenus pour tous tes persos de la même classe.
+- Rappel au passage de niveau : « Niveau N : n sort(s) à apprendre (coût) » avec Guider ; ligne dans « À faire » du Résumé pour chaque perso concerné ; le guide de montée affiche le vrai nombre de sorts.
+- Réglages dans la roue de la fiche, onglet Sorts : rappel, panneau, tout apprendre en ouvrant le maître.
 
 ## v1.96.0 — 20/11/2026
 

@@ -207,11 +207,20 @@ function M:StepsNow()
         add({ key = "tour", kind = "tour", title = string.format(T("Tournée en cours : étape %d / %d"), tour.idx, #tour.steps),
             sub = P():StepTitle(tour.steps[tour.idx]) })
     end
-    -- maître de classe : nouveaux sorts tous les deux niveaux
-    local seen = cfg.trainer[key] or 0
-    if lvl >= 2 and lvl % 2 == 0 and seen < lvl then
-        add({ key = "trainer:" .. lvl, kind = "trainer", title = string.format(T("Maître de classe : nouveaux sorts (niveau %d)"), lvl),
-            sub = T("le maître le plus proche"), auto = true, act = function() G():GoTo("trainer") end })
+    -- maître de classe : les sorts à apprendre maintenant (Modules/ClassSpells.lua) ; sinon tous les deux niveaux
+    local CS = WK.modules.ClassSpells
+    local cr = CS and CS:ForChar()
+    if cr and #cr.now > 0 then
+        add({ key = "trainer:" .. lvl .. ":" .. #cr.now, kind = "trainer",
+            title = string.format(T("Maître de classe : %d sort(s) à apprendre"), #cr.now),
+            sub = cr.costNow > 0 and CS:Money(cr.costNow) or T("le maître le plus proche"), auto = true,
+            act = function() G():GoTo("trainer") end })
+    elseif not cr then
+        local seen = cfg.trainer[key] or 0
+        if lvl >= 2 and lvl % 2 == 0 and seen < lvl then
+            add({ key = "trainer:" .. lvl, kind = "trainer", title = string.format(T("Maître de classe : nouveaux sorts (niveau %d)"), lvl),
+                sub = T("le maître le plus proche"), auto = true, act = function() G():GoTo("trainer") end })
+        end
     end
     -- point de vol de la zone pas encore appris
     local F = WK.modules.Flight
