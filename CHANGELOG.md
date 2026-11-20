@@ -76,6 +76,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.96.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Guide de montée calculé en direct (de quoi se passer d'un guide écrit d'avance) : nouvel onglet « Montée » en tête de la page Quêtes.
+- Où monter maintenant : les 3 meilleures zones pour ton niveau, d'où tu es (XP des quêtes faisables, temps de quête et de trajet, niveau atteint, point de vol à apprendre) ; « Y aller » ou « Préparer la tournée ».
+- Étapes du guide, recalculées à chaque quête rendue, niveau ou zone : objet qui démarre une quête, maître de classe aux niveaux pairs, point de vol de la zone, pierre de foyer à lier, tournée de la zone, donjon à ton niveau, zone suivante. « Suivre ce guide » les enchaîne (la tournée suivante se lance seule) ; Sans donjons, Sans métiers.
+- Carte de quête à l'écran : quand tu suis le guide, elle montre « Montée · niveau N », la progression du niveau, l'étape en cours et la suivante (Passer, Lancer).
+- Objet ramassé qui démarre une quête : rappel « clic droit dessus » (206 objets connus).
+- Le temps réel de chaque quête (prise » rendue) est noté et affine les durées des tournées ; une quête rendue qui a une suite dans le coin l'ajoute à la tournée en cours.
+
 ## v1.95.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

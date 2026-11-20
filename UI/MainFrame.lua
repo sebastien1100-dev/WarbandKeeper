@@ -1159,7 +1159,19 @@ UI.CHIPS = {
             end
             -- onglet « À prendre » : chiffres du plan (calculés par la page)
             local ps = pg and pg.view == "pick" and pg.pickStats
-            if ps then
+            if pg and pg.view == "montee" then
+                -- onglet « Montée » (Modules/LevelGuide.lua) : zones gardées par la page, pas recalculées ici
+                local LG = WK.modules.LevelGuide
+                local lvl = UnitLevel and UnitLevel("player") or 1
+                out = { { T("Niveau"), tostring(lvl), { UI:Accent() } } }
+                local z = pg.lgZones and pg.lgZones[1]
+                if z then table.insert(out, { T("Zone conseillée"), z.name or "?", C.positive }) end
+                if LG then
+                    local f = LG:Following()
+                    table.insert(out, { T("Guide"), f and T("suivi") or T("pas suivi"), f and C.positive or C.muted })
+                end
+                if tour and tour.steps and tour.steps[tour.idx] then table.insert(out, jr[1]) end
+            elseif ps then
                 out = {
                     { T("À prendre ici"), tostring(ps.here) },
                     { T("Dans ton journal"), tostring(ps.inLog) },

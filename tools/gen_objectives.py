@@ -14,6 +14,7 @@ Format (une chaîne par quête, décodée par Modules/QuestTrack.lua à la deman
   - un bloc par objectif, dans l'ordre du jeu par genre (m = monstre, i = objet à ramasser,
     o = objet au sol) ; bloc vide (« m: ») si aucun camp connu ;
   - après « @ » : où rendre la quête (premier PNJ ou objet qui la termine).
+  WK.QuestItemStart[objet] = quête : objets qui démarrent une quête.
 """
 import math
 import os
@@ -118,10 +119,15 @@ def main(root, out):
         return None
 
     lines, n_obj, n_camp = [], 0, 0
+    starts = {}  # objet qui démarre une quête (clic droit dessus) : objet -> quête
     for qid in sorted(quests.keys()):
         q = quests[qid]
         if not q or not q[1]:
             continue
+        if q[2]:
+            for iid in lst(q[2][3]):
+                if iid and iid not in starts:
+                    starts[iid] = qid
         ob = q[10]
         blocks = []
         if ob:
@@ -151,8 +157,10 @@ def main(root, out):
                 "-- licence de Questie (GPLv3 selon son équipe). Format décrit dans tools/gen_objectives.py.\n"
                 "local ADDON_NAME, WK = ...\nWK.QuestObjRaw = {\n")
         f.write("\n".join(lines))
+        f.write("\n}\n-- objets qui démarrent une quête : [objet] = quête\nWK.QuestItemStart = {\n")
+        f.write("".join("[%d]=%d," % (k, starts[k]) for k in sorted(starts)))
         f.write("\n}\n")
-    print("%d quêtes, %d objectifs, %d camps" % (len(lines), n_obj, n_camp))
+    print("%d quêtes, %d objectifs, %d camps, %d objets qui démarrent une quête" % (len(lines), n_obj, n_camp, len(starts)))
 
 
 if __name__ == "__main__":

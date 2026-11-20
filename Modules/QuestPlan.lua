@@ -175,6 +175,10 @@ end
 ---------------------------------------------------------------------------
 -- étapes : { kind = "pick"|"do"|"turn", qids = {…}, map, x, y, title, secs }
 local function objTime(qid, inLog)
+    -- temps réel déjà noté pour cette quête (Modules/LevelGuide.lua) : le plus juste
+    local LG = WK.modules.LevelGuide
+    local rec = LG and LG:QuestTime(qid)
+    if rec and not inLog then return rec end
     local s = 0
     if inLog then
         for _, o in ipairs(Q():Objectives(qid)) do

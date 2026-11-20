@@ -35,8 +35,19 @@ local KIND = { d = "Donjon", c = "Classe" }
 local LOG_W, MINI_W, LROW_H, LHEAD_H = 330, 250, 28, 26
 local function QT() return WK.modules.QuestTrack end
 local function QP() return WK.modules.QuestPlan end
-local VIEWS = { log = true, pick = true, tour = true, zones = true }
+local function LG() return WK.modules.LevelGuide end
+local VIEWS = { montee = true, log = true, pick = true, tour = true, zones = true }
 local function G() return WK.modules.Guide end
+
+local MZONE_H = 214
+-- couleur du rond d'une étape du guide de montée, par genre (nil = accent)
+local STEP_COL = { trainer = "info", flight = "gold", zone = "gold", dungeon = "warning", item = "rule", hearth = "rule" }
+-- durée lisible : « ~45 min », « ~1 h 20 »
+local function fmtDur(s)
+    local m = math.max(1, math.floor((s or 0) / 60 + 0.5))
+    if m < 60 then return string.format(T("~%d min"), m) end
+    return string.format(T("~%d h %02d"), math.floor(m / 60), m % 60)
+end
 
 -- petites capitales d'un nom de zone : ASCII et lettres accentuées (é » É…) en UTF-8
 local function smallCaps(s)
@@ -216,10 +227,11 @@ UI:RegisterPage({
         self.zone = Q:PlayerZone()
         cfg.filter = cfg.filter or "all"
 
-        -- Onglets : Mon journal / Carte des zones (retenu dans settings.ui.questTab) -----------
+        -- Onglets : Montée / Mon journal / À prendre / Tournée / Carte des zones (retenu dans
+        -- settings.ui.questTab ; Montée par défaut) ---------------------------------------------
         local ui = WK.DB.global.settings.ui
-        self.view = VIEWS[ui.questTab or ""] and ui.questTab or "log"
-        self.tabSeg = UI:Segmented(p, { { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" },
+        self.view = VIEWS[ui.questTab or ""] and ui.questTab or "montee"
+        self.tabSeg = UI:Segmented(p, { { "montee", "Montée" }, { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" },
             { "zones", "Carte des zones" } },
             function(v) self:ShowTab(v) end, 30)
         self.tabSeg:SetPoint("TOPLEFT")
@@ -312,6 +324,7 @@ UI:RegisterPage({
         end)
         self.empty = UI:Text(self.lscroll.child, 12, C.muted)
 
+        self:BuildMontee(p)
         self:BuildLog(p)
         self:BuildPick(p)
         self:BuildTour(p)
@@ -444,6 +457,7 @@ UI:RegisterPage({
         -- onglet affiché : zones (barre « Quêtes de », filtre) ou journal
         self.ofLabel:SetShown(zonesView); self.charDd:SetShown(zonesView); self.filterSeg:SetShown(zonesView)
         UI:ZoneLayout(self, p, top, w, h, open or not zonesView)
+        self:LayoutMontee(top, w, h, open or self.view ~= "montee")
         self:LayoutLog(top, w, h, open or self.view ~= "log")
         self:LayoutPick(top, w, h, open or self.view ~= "pick")
         self:LayoutTour(top, w, h, open or self.view ~= "tour")
@@ -451,13 +465,231 @@ UI:RegisterPage({
 
     -- onglet choisi (boutons d'onglet, pastille « Suivie » de l'en-tête)
     ShowTab = function(self, v)
-        self.view = VIEWS[v or ""] and v or "log"
+        self.view = VIEWS[v or ""] and v or "montee"
         WK.DB.global.settings.ui.questTab = self.view
         self.tabSeg:Select(self.view)
         self.settingsOpen = false
         self:Layout()
         self:Refresh()
         if UI.RefreshChips then UI:RefreshChips() end
+    end,
+
+    ---------------------------------------------------------------------------
+    -- Onglet « Montée » (Modules/LevelGuide.lua) : meilleures zones, puis étapes du guide
+    ---------------------------------------------------------------------------
+    BuildMontee = function(self, p)
+        local hold = CreateFrame("Frame", nil, p)
+        self.mHold = hold
+        self.mscroll = UI:Scroll(hold)
+        self.mscroll:SetAllPoints()
+        local child = self.mscroll.child
+        self.mEmpty = UI:Text(child, 12, C.muted)
+        self.mEmpty:SetJustifyH("LEFT")
+        if self.mEmpty.SetWordWrap then self.mEmpty:SetWordWrap(true) end
+        -- 3 cartes de zone
+        self.mzones = {}
+        for i = 1, 3 do
+            local cd = UI:Card(child)
+            cd:SetHeight(MZONE_H)
+            cd.name = UI:Text(cd, 14)
+            cd.name:SetPoint("TOPLEFT", 16, -14); cd.name:SetPoint("TOPRIGHT", -120, -14)
+            cd.tag = UI:Badge(cd, "")
+            cd.tag:SetPoint("TOPRIGHT", -14, -12)
+            cd.lv = UI:Text(cd, 11, C.muted)
+            cd.lv:SetPoint("TOPLEFT", 16, -36)
+            cd.reco = UI:Badge(cd, "conseillée")
+            cd.reco:SetPoint("TOPLEFT", cd.lv, "TOPRIGHT", 8, 3)
+            cd.xp = UI:Text(cd, 22, C.positive)
+            cd.xp:SetPoint("TOPLEFT", 16, -58)
+            cd.lines = {}
+            for j = 1, 4 do
+                local l = UI:Text(cd, 11, C.muted)
+                l:SetPoint("TOPLEFT", 16, -92 - (j - 1) * 20)
+                local v = UI:Text(cd, 11)
+                v:SetPoint("TOPRIGHT", -16, -92 - (j - 1) * 20); v:SetJustifyH("RIGHT")
+                cd.lines[j] = { l, v }
+            end
+            cd.btn = UI:Button(cd, "Y aller", 120, 30, "secondary")
+            cd.btn:SetPoint("BOTTOMLEFT", 14, 12); cd.btn:SetPoint("BOTTOMRIGHT", -14, 12)
+            self.mzones[i] = cd
+        end
+        -- carte « Montée · niveau N » : XP du niveau, étapes, commandes
+        local sc = UI:Card(child)
+        self.mSteps = sc
+        sc.head = UI:Text(sc, 14)
+        sc.head:SetPoint("TOPLEFT", 16, -14)
+        sc.xpt = UI:Text(sc, 11, C.muted)
+        sc.xpt:SetPoint("TOPRIGHT", -16, -15); sc.xpt:SetJustifyH("RIGHT")
+        sc.bar = UI:Progress(sc, 8)
+        sc.bar:SetPoint("TOPLEFT", 16, -40); sc.bar:SetPoint("TOPRIGHT", -16, -40)
+        sc.empty = UI:Text(sc, 12, C.muted)
+        sc.empty:SetPoint("TOPLEFT", 16, -62); sc.empty:SetPoint("TOPRIGHT", -16, -62)
+        sc.empty:SetJustifyH("LEFT")
+        sc.rows = UI:Pool(function()
+            local r = CreateFrame("Frame", nil, sc)
+            r:SetHeight(46)
+            r.bg = r:CreateTexture(nil, "BACKGROUND"); r.bg:SetAllPoints()
+            r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT"); r.bar:SetPoint("BOTTOMLEFT"); r.bar:SetWidth(3)
+            r.dot = r:CreateTexture(nil, "ARTWORK")
+            r.dot:SetTexture(UI.MEDIA .. "circle"); r.dot:SetSize(12, 12); r.dot:SetPoint("TOPLEFT", 16, -11)
+            r.title = UI:Text(r, 12)
+            r.title:SetPoint("TOPLEFT", 40, -8); r.title:SetPoint("TOPRIGHT", -190, -8)
+            r.sub = UI:Text(r, 11, C.muted)
+            r.sub:SetPoint("TOPLEFT", 40, -26); r.sub:SetPoint("TOPRIGHT", -190, -26)
+            r.skip = UI:Button(r, "Passer", 70, 24, "ghost")
+            r.skip:SetPoint("TOPRIGHT", -14, -11)
+            r.go = UI:Button(r, "Y aller", 90, 24, "secondary")
+            r.go:SetPoint("TOPRIGHT", r.skip, "TOPLEFT", -6, 0)
+            return r
+        end)
+        -- commandes sous la liste
+        sc.follow = UI:Button(sc, "Suivre ce guide", 160, 30, "primary")
+        sc.follow:SetScript("OnClick", function()
+            local lg = LG()
+            if lg then lg:Follow(not lg:Following()) end
+            self.lgAt = nil; self:RefreshMontee()
+        end)
+        local function cfgToggle(field, label)
+            local t = UI:Toggle(sc, function() return LG() and LG():Config()[field] and true or false end,
+                function(v) if LG() then LG():Config()[field] = v or nil end; self.lgAt = nil; self:RefreshMontee() end)
+            local l = UI:Text(sc, 12)
+            l:SetPoint("LEFT", t, "RIGHT", 8, 0)
+            l:SetText(label)
+            t.label = l
+            table.insert(self.toggles or {}, t)
+            return t
+        end
+        sc.noDgn = cfgToggle("noDungeons", "Sans donjons")
+        sc.noProf = cfgToggle("noProf", "Sans métiers")
+        sc.recalc = UI:Button(sc, "Recalculer", nil, 30, "secondary", "refresh")
+        sc.recalc:SetScript("OnClick", function() self.lgAt = nil; self:RefreshMontee() end)
+        -- recalcul toutes les 3 s tant que l'onglet est affiché
+        local acc = 0
+        hold:SetScript("OnUpdate", function(_, el)
+            acc = acc + (el or 0)
+            if acc < 3 then return end
+            acc = 0
+            if self.view == "montee" and not self.settingsOpen then self:RefreshMontee() end
+        end)
+    end,
+
+    LayoutMontee = function(self, top, w, h, hide)
+        self.mHold:ClearAllPoints()
+        self.mHold:SetShown(not hide)
+        if hide then return end
+        self.mHold:SetPoint("TOPLEFT", 0, -top)
+        self.mHold:SetPoint("BOTTOMRIGHT", 0, 0)
+    end,
+
+    RefreshMontee = function(self, force)
+        local lg = LG()
+        if not (lg and self.mHold) then return end
+        -- zones et étapes : gardées 3 s (BestZones parcourt toutes les zones)
+        local now = (GetTime and GetTime()) or time()
+        if force or not self.lgAt or now - self.lgAt >= 3 or now < self.lgAt then
+            local ok, steps, zones = pcall(lg.Steps, lg)
+            if not ok then steps, zones = {}, {} end
+            self.lgSteps, self.lgZones, self.lgAt = steps or {}, zones or {}, now
+        end
+        local steps, zones = self.lgSteps, self.lgZones
+        local W = self.mscroll:GetWidth() or 800
+        if W < 100 then W = 800 end
+        W = W - 14
+        local cols = W >= 900 and 3 or (W >= 560 and 2 or 1)
+        local cw = math.floor((W - (cols - 1) * GAP) / cols)
+        local ar, ag, ab = UI:Accent()
+        local y = 0
+        for i, cd in ipairs(self.mzones) do
+            local z = zones[i]
+            cd:SetShown(z ~= nil)
+            if z then
+                local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
+                cd:ClearAllPoints(); cd:SetPoint("TOPLEFT", col * (cw + GAP), -(row * (MZONE_H + GAP))); cd:SetWidth(cw)
+                if cd.border then
+                    if i == 1 then cd.border:SetColor(ar, ag, ab, 1) else cd.border:SetColor(unpack(UI.cardStyle == "flat" and C.surface or C.border)) end
+                end
+                cd.name:SetText(z.name or ("#" .. z.map))
+                cd.lv:SetText(string.format(T("niveau %d à %d"), z.min or 0, z.max or 0))
+                cd.reco:SetShown(i == 1)
+                if z.here then cd.tag:Set(T("tu es ici"))
+                elseif (z.travel or 0) >= 900 then cd.tag:Set(T("autre continent"), C.warning)
+                else cd.tag:Set(string.format(T("à %d min"), math.max(1, math.floor((z.travel or 0) / 60 + 0.5))), C.muted) end
+                cd.xp:SetText("+" .. (BreakUpLargeNumbers and BreakUpLargeNumbers(z.xp or 0) or tostring(z.xp or 0)) .. " XP")
+                local lines = {
+                    { T("Quêtes à ton niveau"), tostring(z.count or 0) },
+                    { T("Temps estimé"), fmtDur(z.secs) },
+                    { T("Te mène au niveau"), tostring(math.floor(z.reach or 0)) },
+                }
+                if z.flightMissing then table.insert(lines, { T("Point de vol"), T("pas appris"), C.warning }) end
+                for j, l in ipairs(cd.lines) do
+                    local e = lines[j]
+                    l[1]:SetShown(e ~= nil); l[2]:SetShown(e ~= nil)
+                    if e then l[1]:SetText(e[1]); l[2]:SetText(e[2]); l[2]:SetTextColor(unpack(e[3] or C.text)) end
+                end
+                if z.here then
+                    cd.btn:SetLabel("Préparer la tournée"); cd.btn:SetStyle("primary")
+                    cd.btn:SetScript("OnClick", function() self:ShowTab("tour") end)
+                else
+                    cd.btn:SetLabel("Y aller"); cd.btn:SetStyle("secondary")
+                    cd.btn:SetScript("OnClick", function() lg:GoToZone(z) end)
+                end
+                y = math.max(y, (row + 1) * (MZONE_H + GAP))
+            end
+        end
+        self.mEmpty:SetShown(#zones == 0)
+        if #zones == 0 then
+            self.mEmpty:ClearAllPoints(); self.mEmpty:SetPoint("TOPLEFT", 16, -8); self.mEmpty:SetWidth(W - 32)
+            self.mEmpty:SetText(T("Aucune zone n'a assez de quêtes à ton niveau. Regarde la « Carte des zones » ou fais un donjon."))
+            y = 44
+        end
+
+        -- étapes du guide
+        local sc = self.mSteps
+        sc:ClearAllPoints(); sc:SetPoint("TOPLEFT", 0, -y); sc:SetWidth(W)
+        local lvl = UnitLevel and UnitLevel("player") or 1
+        sc.head:SetText(string.format(T("Montée · niveau %d"), lvl))
+        local cur, max = (UnitXP and UnitXP("player")) or 0, (UnitXPMax and UnitXPMax("player")) or 0
+        sc.bar:SetValue(max > 0 and cur / max or 0)
+        sc.xpt:SetText(max > 0 and string.format(T("%s / %s XP"), BreakUpLargeNumbers and BreakUpLargeNumbers(cur) or cur,
+            BreakUpLargeNumbers and BreakUpLargeNumbers(max) or max) or "")
+        sc.rows:Reset()
+        local ry = 58
+        for i, s in ipairs(steps) do
+            local r = sc.rows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ry); r:SetPoint("TOPRIGHT", 0, -ry)
+            local col = STEP_COL[s.kind] and C[STEP_COL[s.kind]] or { ar, ag, ab }
+            r.dot:SetVertexColor(col[1], col[2], col[3], 1)
+            r.title:SetText(s.title or "")
+            r.sub:SetText(s.sub or "")
+            if i == 1 then
+                r.bg:SetColorTexture(unpack(C.surface2)); r.bg:Show()
+                r.bar:SetColorTexture(ar, ag, ab, 1); r.bar:Show()
+            else r.bg:Hide(); r.bar:Hide() end
+            r.go:SetShown(s.act ~= nil)
+            r.go:SetScript("OnClick", function()
+                if s.act then s.act() end
+                lg:Changed()
+                self.lgAt = nil; self:RefreshMontee()
+            end)
+            r.skip:SetScript("OnClick", function() lg:Skip(s.key); self.lgAt = nil; self:RefreshMontee() end)
+            ry = ry + 48
+        end
+        sc.empty:SetShown(#steps == 0)
+        sc.empty:SetText(T("Rien à faire pour l'instant : une étape apparaît dès qu'elle devient utile."))
+        if #steps == 0 then ry = ry + 30 end
+        ry = ry + 10
+        local following = lg:Following()
+        sc.follow:SetLabel(following and "Ne plus suivre" or "Suivre ce guide")
+        sc.follow:SetStyle(following and "secondary" or "primary")
+        sc.follow:ClearAllPoints(); sc.follow:SetPoint("TOPLEFT", 16, -ry)
+        sc.noDgn:ClearAllPoints(); sc.noDgn:SetPoint("TOPLEFT", sc.follow, "TOPRIGHT", 20, -4)
+        sc.noProf:ClearAllPoints(); sc.noProf:SetPoint("TOPLEFT", sc.noDgn.label, "TOPRIGHT", 20, 4)
+        sc.recalc:ClearAllPoints(); sc.recalc:SetPoint("TOPRIGHT", -16, -ry)
+        sc.noDgn:Refresh(); sc.noProf:Refresh()
+        sc:SetHeight(ry + 30 + 16)
+        self.mscroll.child:SetSize(W, y + ry + 46 + 8)
+        if self.mscroll.UpdateBar then self.mscroll:UpdateBar() end
+        if UI.RefreshChips and UI.current == "quests" then UI:RefreshChips() end
     end,
 
     ---------------------------------------------------------------------------
@@ -1208,6 +1440,7 @@ UI:RegisterPage({
         for _, t in ipairs(self.toggles) do t:Refresh() end
         if self.campSeg and QT() then self.campSeg:Select(QT():Config().map) end
         if self.maxSeg and QP() then self.maxSeg:Select(QP():Config().maxAbove) end
+        if self.view == "montee" then self:RefreshMontee() return end
         if self.view == "log" then self:RefreshLog() return end
         if self.view == "pick" then self:RefreshPick() return end
         if self.view == "tour" then self:RefreshTour() return end

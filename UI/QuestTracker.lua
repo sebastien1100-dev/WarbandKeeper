@@ -25,7 +25,8 @@ local function build()
     f.close = UI:IconButton(f, "close", 20, "Ne plus suivre cette quête")
     f.close:SetPoint("TOPRIGHT", -8, -8)
     f.close:SetScript("OnClick", function()
-        if f.tour then WK.modules.QuestPlan:Stop() else Q():Untrack() end
+        if f.guide then WK.modules.LevelGuide:Follow(false)
+        elseif f.tour then WK.modules.QuestPlan:Stop() else Q():Untrack() end
     end)
     -- tournée : jauge d'avancée sous le titre
     f.prog = UI:Progress(f, 4)
@@ -47,12 +48,14 @@ local function build()
     end
     f.next = UI:Button(f, T("Camp suivant"), nil, 22, "secondary")
     f.next:SetScript("OnClick", function()
-        if f.tour then WK.modules.QuestPlan:Skip() else Q():NextCamp() end
+        if f.guide then local LG = WK.modules.LevelGuide; local s = LG:Steps()[1]; if s then LG:Skip(s.key) end
+        elseif f.tour then WK.modules.QuestPlan:Skip() else Q():NextCamp() end
     end)
     f.next.tooltip = "Vise un autre camp d'un objectif pas fini (du plus proche au plus loin)."
     f.turn = UI:Button(f, T("Rendu"), nil, 22, "secondary")
     f.turn:SetScript("OnClick", function()
-        if f.tour then local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) else Q():GoTurnIn() end
+        if f.guide then WK.modules.LevelGuide:Run(1)
+        elseif f.tour then local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) else Q():GoTurnIn() end
     end)
     f.turn.tooltip = "Guide vers le personnage qui reprend la quête."
     f.goal = UI:Text(f, 10, C.muted); f.goal:SetJustifyH("LEFT")
@@ -63,11 +66,12 @@ local function build()
         self.sub:SetText(data.sub or "")
         local y = -44
         self.tour = data.tour
+        self.guide = data.guide
         self.prog:SetShown(data.prog ~= nil)
         if data.prog then self.prog:SetValue(data.prog); y = -52 end
         self.next:SetLabel(data.b1 or T("Camp suivant")); self.next:SetWidth(self.next.label:GetStringWidth() + 26)
         self.turn:SetLabel(data.b2 or T("Rendu")); self.turn:SetWidth(self.turn.label:GetStringWidth() + 26)
-        self.close.tooltip = data.tour and "Arrêter la tournée" or "Ne plus suivre cette quête"
+        self.close.tooltip = (data.guide and "Ne plus suivre le guide de montée") or (data.tour and "Arrêter la tournée") or "Ne plus suivre cette quête"
         for i, r in ipairs(self.rows) do
             local o = data.objs[i]
             if o then
@@ -92,7 +96,7 @@ local function build()
         end
         self.goal:ClearAllPoints(); self.goal:SetPoint("TOPLEFT", 14, y - 2); self.goal:SetPoint("RIGHT", -14, 0)
         self.goal:SetText(data.goal or "")
-        y = y - (data.goal and data.goal ~= "" and 16 or 2)
+        y = y - ((data.goal and data.goal ~= "") and ((self.goal:GetStringHeight() or 12) + 4) or 2)
         self.next:ClearAllPoints(); self.next:SetPoint("TOPLEFT", 14, y - 4)
         self.turn:ClearAllPoints(); self.turn:SetPoint("LEFT", self.next, "RIGHT", 6, 0)
         self.next:SetEnabled(data.canNext ~= false)
@@ -143,6 +147,28 @@ function UI:RefreshQuestTracker()
             prog = (tour.idx - 1) / #tour.steps, objs = objs,
             goal = (tour.paused and T("En pause")) or (nxt and (T("Ensuite : ") .. P:StepTitle(nxt))) or T("Dernière étape"),
             b1 = T("Passer l'étape"), b2 = tour.paused and T("Reprendre") or T("Pause"), canNext = true })
+        card:Show()
+        return
+    end
+    -- guide de montée suivi (Modules/LevelGuide.lua), sans tournée en cours
+    local LG = WK.modules.LevelGuide
+    if shown() and LG and LG:Following() then
+        local steps = LG:Steps()
+        local s1, s2 = steps[1], steps[2]
+        local lvl = UnitLevel and UnitLevel("player") or 1
+        local cur, max = (UnitXP and UnitXP("player")) or 0, (UnitXPMax and UnitXPMax("player")) or 1
+        local qid0 = q:Tracked()
+        local objs = {}
+        if qid0 then
+            for _, o in ipairs(q:Objectives(qid0)) do
+                table.insert(objs, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done })
+            end
+        end
+        card:Paint({ guide = true, title = string.format(T("Montée · niveau %d"), lvl),
+            sub = s1 and s1.title or T("Rien à faire pour l'instant"),
+            prog = max > 0 and cur / max or 0, objs = objs,
+            goal = (s1 and s1.sub and (s1.sub .. (s2 and ("|n" .. T("Ensuite : ") .. s2.title) or ""))) or (s2 and (T("Ensuite : ") .. s2.title)) or "",
+            b1 = T("Passer"), b2 = T("Lancer"), canNext = s1 ~= nil })
         card:Show()
         return
     end
