@@ -555,15 +555,17 @@ UI:RegisterPage({
         self.ofLabel:ClearAllPoints()
         if second then self.ofLabel:SetPoint("TOPLEFT", 0, -(BIG_H + GAP + 9))
         else self.ofLabel:SetPoint("TOPLEFT", self.bigProg, "TOPRIGHT", 14, -17) end
+        local open = self.settingsOpen == true
         local top
-        if zonesView then top = BIG_H + GAP + (second and (30 + GAP) or 0)
+        -- réglages ouverts : pas de sous-onglets ni de barre « Quêtes de » (ils ne servent pas aux réglages)
+        if open then top = BIG_H + GAP
+        elseif zonesView then top = BIG_H + GAP + (second and (30 + GAP) or 0)
         else top = BIG_H + 8 + SUB_H + GAP end
         -- grands onglets et sous-onglets
         self.bigZones:Paint(); self.bigProg:Paint()
-        for _, b in pairs(self.subTabs) do b:SetShown(not zonesView); b:Paint() end
-        self.subLine:SetShown(not zonesView)
+        for _, b in pairs(self.subTabs) do b:SetShown(not zonesView and not open); b:Paint() end
+        self.subLine:SetShown(not zonesView and not open)
         self.side:ClearAllPoints()
-        local open = self.settingsOpen == true
         self.gear:SetActive(open)
         self.side:SetShown(open)
         -- réglages : sur toute la largeur, sous la barre
@@ -572,7 +574,7 @@ UI:RegisterPage({
         self.side.child:SetSize(math.min(w - 10, 560), self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
         -- onglet affiché : zones (barre « Quêtes de », filtre) ou journal
-        self.ofLabel:SetShown(zonesView); self.charDd:SetShown(zonesView); self.filterSeg:SetShown(zonesView)
+        self.ofLabel:SetShown(zonesView and not open); self.charDd:SetShown(zonesView and not open); self.filterSeg:SetShown(zonesView and not open)
         UI:ZoneLayout(self, p, top, w, h, open or not zonesView)
         self:LayoutMontee(top, w, h, open or self.view ~= "montee")
         self:LayoutLog(top, w, h, open or self.view ~= "log")

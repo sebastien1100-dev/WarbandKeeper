@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.12 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Page Quêtes : roue des réglages ouverte, les sous-onglets (Montée, Mon journal, À prendre, Tournée) et la barre « Quêtes de » disparaissent ; les réglages remontent juste sous les grands onglets (un clic sur un grand onglet ferme les réglages).
+
 ## v1.100.11 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.12", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : roue des réglages ouverte, les sous-onglets (Montée, Mon journal, À prendre, Tournée) et la barre « Quêtes de » disparaissent ; les réglages remontent juste sous les grands onglets (un clic sur un grand onglet ferme les réglages).",
+        },
+    },
+    {
         version = "1.100.11", date = "20/11/2026",
         changed = {
             "Carte du monde, volet « Quêtes du journal » : plus petit et plus discret (fond léger, texte fin, 6 quêtes au plus) ; « Toutes / Suivie » devient un simple mot cliquable dans l'en-tête ; clic sur le titre : replier (il garde alors juste le nombre de quêtes).",
