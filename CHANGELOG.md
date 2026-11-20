@@ -78,6 +78,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.89.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fiche du perso : en haut à droite, des pastilles comme dans l'en-tête de l'addon à la place du « niv. moyen » seul. Par défaut niveau d'objet (mis en avant), armure et durabilité ; dans la roue, carte « En-tête : pastilles », choisis jusqu'à 5 chiffres parmi niveau d'objet, armure, durabilité, sacs libres, Force, Agilité, Endurance, Intelligence, Esprit, puissance d'attaque, critique, toucher, puissance des sorts, soins, critique des sorts, esquive, parade, blocage et or (dans l'ordre des clics).
+
+### Modifications
+- Roue de la fiche : réglages rangés en onglets Fiche / Talents / BiS ; elle s'ouvre sur l'onglet affiché.
+
 ## v1.88.2 — 20/11/2026
 
 _Un /reload suffit._

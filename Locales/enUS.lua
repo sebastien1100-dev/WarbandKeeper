@@ -3689,4 +3689,13 @@ WK.Locales.enUS.text = {
     ["En dessous"] = "Below",
     ["Place du texte"] = "Text position",
     ["Libellés (niveau, repos, à rendre) au-dessus ou en dessous de la barre."] = "Labels (level, rested, to turn in) above or below the bar.",
+    ["En-tête : pastilles"] = "Header: chips",
+    ["Choisis jusqu'à %d chiffres affichés en haut à droite de la fiche ; la 1re pastille est mise en avant."] = "Choose up to %d figures shown at the top right of the sheet; the first chip is highlighted.",
+    ["Niv. objet"] = "Item lvl",
+    ["Durabilité"] = "Durability",
+    ["Sacs libres"] = "Free bag slots",
+    ["Puiss. d'attaque"] = "Attack power",
+    ["Puiss. des sorts"] = "Spell power",
+    ["Crit. des sorts"] = "Spell crit",
+    ["Niveau d'objet moyen de l'équipement porté"] = "Average item level of worn gear",
 }

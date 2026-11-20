@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.89.0", date = "20/11/2026",
+        added = {
+            "Fiche du perso : en haut à droite, des pastilles comme dans l'en-tête de l'addon à la place du « niv. moyen » seul. Par défaut niveau d'objet (mis en avant), armure et durabilité ; dans la roue, carte « En-tête : pastilles », choisis jusqu'à 5 chiffres parmi niveau d'objet, armure, durabilité, sacs libres, Force, Agilité, Endurance, Intelligence, Esprit, puissance d'attaque, critique, toucher, puissance des sorts, soins, critique des sorts, esquive, parade, blocage et or (dans l'ordre des clics).",
+        },
+        changed = {
+            "Roue de la fiche : réglages rangés en onglets Fiche / Talents / BiS ; elle s'ouvre sur l'onglet affiché.",
+        },
+    },
+    {
         version = "1.88.2", date = "20/11/2026",
         added = {
             "Barre d'expérience : réglage « Place du texte » (QoL > Expérience) pour mettre le niveau, le repos et l'XP à rendre au-dessus ou en dessous de la barre.",

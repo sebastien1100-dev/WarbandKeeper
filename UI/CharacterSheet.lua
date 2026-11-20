@@ -11,9 +11,11 @@ local function sheetCfg()
     if c.ilvl == nil then c.ilvl = true end
     if c.enchant == nil then c.enchant = true end
     if c.statColor == nil then c.statColor = true end
+    if type(c.chips) ~= "table" then c.chips = { "ilvl", "armor", "dur" } end
     return c
 end
 UI.SheetConfig = sheetCfg
+local HEAD_MAX = 5 -- pastilles d'en-tête au plus
 
 -- Fiche de personnage : page « charsheet » de la fenêtre (hors barre latérale, Persos y reste en
 -- surbrillance), ouverte au clic sur un perso (pages Persos et Résumé), pour n'importe quel perso du compte.
@@ -172,6 +174,45 @@ local function kpi(parent)
 end
 
 
+-- Chiffres possibles des pastilles d'en-tête : { clé, libellé, valeur(c) -> texte, couleur?, infobulle }
+local function durColor(d)
+    if not d then return nil end
+    local p = math.max(0, math.min(1, d / 100))
+    local g, n, y = C.positive, C.negative, { 0.96, 0.84, 0.43 }
+    local a, b, t
+    if p >= 0.5 then a, b, t = y, g, (p - 0.5) * 2 else a, b, t = n, y, p * 2 end
+    return { a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t }
+end
+local function statOf(key, pct) return function(c) local v = c.stats and c.stats[key]; return v and fmt(v, pct) end end
+UI.SHEET_CHIPS = {
+    { "ilvl", "Niv. objet", function(c) local a = averageIlvl(c.gear); return a and (string.format("%.1f", a):gsub("%.", ",")) end, nil, "Niveau d'objet moyen de l'équipement porté" },
+    { "armor", "Armure", statOf("armor") },
+    { "dur", "Durabilité", function(c) local d = c.durability or (c.gear and 100); return d and (math.floor(d) .. " %") end },
+    { "bags", "Sacs libres", function(c) return c.totalSlots and ((c.freeSlots or 0) .. "/" .. c.totalSlots) end },
+    { "str", "Force", statOf("str") }, { "agi", "Agilité", statOf("agi") }, { "sta", "Endurance", statOf("sta") },
+    { "int", "Intelligence", statOf("int") }, { "spi", "Esprit", statOf("spi") },
+    { "ap", "Puiss. d'attaque", statOf("ap") }, { "crit", "Critique", statOf("crit", true) }, { "hit", "Toucher", statOf("hit", true) },
+    { "spell", "Puiss. des sorts", statOf("spell") }, { "heal", "Soins", statOf("heal") }, { "scrit", "Crit. des sorts", statOf("scrit", true) },
+    { "dodge", "Esquive", statOf("dodge", true) }, { "parry", "Parade", statOf("parry", true) }, { "block", "Blocage", statOf("block", true) },
+    { "gold", "Or", function(c) return c.money and UI:ShortGold(c.money) end },
+}
+-- valeurs des pastilles choisies pour ce perso : { { label, value, color, tip } }
+function UI.SheetChipValues(c)
+    local out = {}
+    local byKey = {}
+    for _, d in ipairs(UI.SHEET_CHIPS) do byKey[d[1]] = d end
+    for _, k in ipairs(sheetCfg().chips) do
+        local d = byKey[k]
+        if d and #out < HEAD_MAX then
+            local ok, v = pcall(d[3], c)
+            local color = d[4]
+            if k == "dur" then color = durColor(c.durability or (c.gear and 100)) end
+            table.insert(out, { label = d[2], value = (ok and v) or "-", color = color, tip = d[5] and T(d[5]) })
+        end
+    end
+    return out
+end
+
 local SIDE_W, COL_GAP = 290, 12
 local SLOT_W, SLOT_STEP = 124, SQ + 15
 local REP_SHORT = 6
@@ -203,11 +244,23 @@ local function build(parent)
     f.title:SetPoint("TOPLEFT", f.ring, "TOPRIGHT", 12, -6)
     f.sub = UI:Text(f, 11, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
-    f.score = UI:Text(f, 22)
-    f.score:SetPoint("TOPRIGHT", -46, -8) -- la roue des réglages est tout à droite
-    f.scoreL = UI:Text(f, 10, C.dim)
-    f.scoreL:SetPoint("TOPRIGHT", f.score, "BOTTOMRIGHT", 0, -2)
-    f.scoreL:SetText(T("niv. moyen"))
+    -- pastilles d'en-tête, à gauche de la roue des réglages : chiffres choisis dans la roue (Fiche)
+    f.hchips = {}
+    for i = 1, HEAD_MAX do
+        local ch = CreateFrame("Frame", nil, f)
+        ch:SetHeight(28)
+        ch.edge = UI:Rounded(ch, 14, 0, "BACKGROUND", 0)
+        ch.bg = UI:Rounded(ch, 13, 1, "BACKGROUND", 1)
+        ch.text = UI:Text(ch, 12); ch.text:SetPoint("CENTER")
+        ch:EnableMouse(true)
+        ch:SetScript("OnEnter", function(s)
+            if not s.tip then return end
+            UI:TooltipOwner(s, "ANCHOR_BOTTOM"); GameTooltip:SetText(s.tip, 1, 1, 1); GameTooltip:Show()
+        end)
+        ch:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        ch:Hide()
+        f.hchips[i] = ch
+    end
 
     -- tout le reste défile : à gauche Équipement puis Réputations, à droite Stats puis Métiers
     -- onglets sous l'en-tête : Fiche, Talents, BiS (soulignés, comme ceux des donjons)
@@ -1625,10 +1678,26 @@ local function refresh(f)
     f.sub:SetText(string.format(T("%s %s · niveau %s · %s"), cls, race, tostring(c.level or "?"), UI:FactionRealm(c)))
     f.mine:SetShown(key ~= WK:CharKey() and WK.DB.global.characters[WK:CharKey()] ~= nil)
     -- à droite de l'en-tête, avant le niveau moyen : le nom et la ligne de classe restent seuls à gauche
-    f.mine:ClearAllPoints(); f.mine:SetPoint("TOPRIGHT", f.score, "TOPLEFT", -24, -4)
-    local avg = averageIlvl(c.gear)
-    f.score:SetText(avg and (string.format("%.1f", avg):gsub("%.", ",")) or "-")
-    f.score:SetTextColor(viewAccent(f, c))
+    -- pastilles d'en-tête (roue > Fiche) : de droite à gauche depuis la roue ; la 1re en accent
+    local chips = UI.SheetChipValues(c)
+    local ar, ag, ab = viewAccent(f, c)
+    local x, shown = 46, 0
+    for i, ch in ipairs(f.hchips) do
+        local e = chips[#chips - i + 1]
+        if e then
+            local first = (#chips - i + 1) == 1
+            ch.text:SetText(UI:Hex(C.muted) .. T(e.label) .. "|r  " .. UI:Hex(e.color or (first and { ar, ag, ab } or C.text)) .. e.value .. "|r")
+            ch:SetWidth(math.ceil(ch.text:GetStringWidth() or 60) + 26)
+            if first then ch.edge:SetColor(ar, ag, ab, 0.55); ch.bg:SetColor(ar * 0.18, ag * 0.18, ab * 0.18, 1)
+            else ch.edge:SetColor(C.border[1], C.border[2], C.border[3], 1); ch.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1) end
+            ch.tip = e.tip
+            ch:ClearAllPoints(); ch:SetPoint("TOPRIGHT", f, "TOPRIGHT", -x, -27)
+            x = x + ch:GetWidth() + 8
+            ch:Show(); shown = i
+        else ch:Hide() end
+    end
+    f.mine:ClearAllPoints()
+    if shown > 0 then f.mine:SetPoint("RIGHT", f.hchips[shown], "LEFT", -16, 0) else f.mine:SetPoint("TOPRIGHT", -62, -28) end
     for _, b in pairs(f.tabs) do b:Paint() end
     f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
     if f.tab ~= "bis" then f.picker:Hide() end
@@ -1668,7 +1737,7 @@ UI:RegisterPage({
     Build = function(self, p)
         sheet = build(p)
         sheet.Refresh = refresh
-        -- roue en haut à droite : réglages des trois onglets (Fiche, Talents, BiS), une carte chacun
+        -- roue en haut à droite : réglages des trois onglets (Fiche, Talents, BiS), rangés en onglets dans le volet
         local function redraw() if sheet:IsVisible() then sheet:Refresh() end end
         local function card(title, rows)
             local c = UI:Card(sheet, T(title))
@@ -1682,16 +1751,53 @@ UI:RegisterPage({
         end
         local S = sheetCfg
         local ui = function() return WK.DB.global.settings.ui end
-        sheet.setCards = {
-            card("Fiche", {
+        -- pastilles d'en-tête : un bouton par chiffre possible, allumé s'il est affiché (dans l'ordre des clics)
+        local chipCard = UI:Card(sheet, T("En-tête : pastilles"))
+        chipCard.note = UI:Text(chipCard, 10, C.muted); chipCard.note:SetPoint("TOPLEFT", 16, -38); chipCard.note:SetPoint("RIGHT", -16, 0)
+        chipCard.note:SetJustifyH("LEFT")
+        chipCard.note:SetText(string.format(T("Choisis jusqu'à %d chiffres affichés en haut à droite de la fiche ; la 1re pastille est mise en avant."), HEAD_MAX))
+        chipCard.btns = {}
+        for _, d in ipairs(UI.SHEET_CHIPS) do
+            local b = UI:Button(chipCard, T(d[2]), nil, 24, "ghost")
+            b.key = d[1]
+            b:SetScript("OnClick", function(s)
+                local list = S().chips
+                local at
+                for n, k in ipairs(list) do if k == s.key then at = n end end
+                if at then table.remove(list, at) elseif #list < HEAD_MAX then table.insert(list, s.key) end
+                chipCard:Paint(); redraw()
+            end)
+            table.insert(chipCard.btns, b)
+        end
+        chipCard.Paint = function(cc)
+            local on = {}
+            for n, k in ipairs(S().chips) do on[k] = n end
+            for _, b in ipairs(cc.btns) do b:SetStyle(on[b.key] and "primary" or "ghost") end
+        end
+        -- boutons en lignes, à la largeur de la carte
+        chipCard.Flow = function(cc)
+            local w = (cc:GetWidth() or 600) - 32
+            local x, y = 0, 0
+            for _, b in ipairs(cc.btns) do
+                local bw = b:GetWidth() or 80
+                if x > 0 and x + bw > w then x = 0; y = y + 30 end
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 16 + x, -(62 + y))
+                x = x + bw + 6
+            end
+            cc:SetHeight(62 + y + 24 + 16)
+        end
+        chipCard:SetScript("OnSizeChanged", function(c) c:Flow() end)
+        chipCard:SetWidth(600); chipCard:Flow(); chipCard:Paint()
+        local cards = {
+            sheet = { chipCard, card("Fiche", {
                 { "Niveau d'objet sur les icônes", "Le niveau de chaque objet porté, en bas de son icône.",
                     function() return S().ilvl end, function(v) S().ilvl = v end },
                 { "Point bleu : objet enchanté", "Un petit point en haut de l'icône des objets enchantés.",
                     function() return S().enchant end, function(v) S().enchant = v end },
                 { "Stats utiles en couleur", "Les caractéristiques qui comptent pour la classe en couleur, les autres en gris.",
                     function() return S().statColor end, function(v) S().statColor = v end },
-            }),
-            card("Talents", {
+            }) },
+            talents = { card("Talents", {
                 { "Panneau collé à la fenêtre des talents du jeu", "Le plan de montée s'ouvre à côté de la fenêtre des talents.",
                     function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end, function(v) ui().talentPlanPanel = v end },
                 { "Cercle autour du prochain talent dans la fenêtre du jeu", "Le talent à prendre selon ton plan est entouré.",
@@ -1700,16 +1806,37 @@ UI:RegisterPage({
                 { "Rappel du prochain talent", "Dans la pile de rappels, tant qu'un point libre attend le talent suivant du plan.",
                     function() return ui().talentPlanAlert ~= false end,
                     function(v) ui().talentPlanAlert = v; local P = WK.modules.TalentPlan; if P and P.CheckAlert then P:CheckAlert() end end },
-            }),
-            card("BiS", {
+            }) },
+            bis = { card("BiS", {
                 { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",
                     function() return ui().bisTooltip ~= false end, function(v) ui().bisTooltip = v end },
-            }),
+            }) },
         }
-        for _, c in ipairs(sheet.setCards) do c:Hide() end
+        -- onglets du volet, comme ceux de la fiche ; ouvert sur l'onglet affiché
+        local tabCard = CreateFrame("Frame", nil, sheet); tabCard:SetHeight(34)
+        sheet.setTab = "sheet"
+        local seg = UI:Segmented(tabCard, { { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" } }, function(v)
+            sheet.setTab = v
+            if self.gp then self.gp:Refresh() end
+        end, 28)
+        seg:SetPoint("TOPLEFT", 0, 0)
+        sheet.setSeg = seg
+        local all = { chipCard }
+        for _, list in pairs(cards) do for _, c in ipairs(list) do table.insert(all, c) end end
+        sheet.setCards = all
+        for _, c in ipairs(all) do c:Hide() end
+        sheet.setByTab = cards
         self.gp = UI:PageGear(p, { title = "Réglages de la fiche", top = 92, columns = 1,
-            cards = function() return sheet.setCards end }, self)
-        self.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", -6, -12)
+            cards = function()
+                for _, c in ipairs(all) do c:Hide() end
+                local out = { tabCard }
+                for _, c in ipairs(cards[sheet.setTab] or cards.sheet) do table.insert(out, c) end
+                return out
+            end,
+            onToggle = function(open)
+                if open then sheet.setTab = sheet.tab or "sheet"; seg:Select(sheet.setTab); chipCard:Paint() end
+            end }, self)
+        self.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", -6, -24)
         self.gp.gear:SetFrameLevel(sheet:GetFrameLevel() + 20)
         UI:OnResize(p, function() if sheet:IsVisible() then sheet:Refresh() end end)
     end,
