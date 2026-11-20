@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.97.4", date = "20/11/2026",
+        changed = {
+            "Pastille de l'icône Options toujours rouge (patch notes pas lues ou erreur pas vue), et pastille rouge aussi sur la section concernée des Options (Patch notes ou Fiabilité) ; elle s'éteint une fois lues ou vues.",
+        },
+    },
+    {
         version = "1.97.3", date = "20/11/2026",
         added = {
             "Fenêtre des talents : bouton « Plan de montée » en bas à droite pour ouvrir ou fermer le panneau du plan (plein quand le panneau est ouvert). Il n'apparaît que sur l'onglet des talents et si le perso a un plan.",

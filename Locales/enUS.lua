@@ -4039,4 +4039,5 @@ WK.Locales.enUS.text = {
     ["prix inconnu"] = "price unknown",
     ["sorts"] = "spells",
     ["Ouvre ou ferme le plan de montée à côté de la fenêtre des talents."] = "Opens or closes the leveling plan next to the talent window.",
+    ["Point rouge : des nouveautés pas encore lues. Clic : Patch notes."] = "Red dot: news not read yet. Click: Patch notes.",
 }

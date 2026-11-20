@@ -137,7 +137,17 @@ UI:RegisterPage({
             b.desc:SetPoint("TOPLEFT", b.label, "BOTTOMLEFT", 0, -4)
             b.desc:SetPoint("TOPRIGHT", b, "TOPRIGHT", -6, -26)
             b.desc:SetText(sec[4])
+            -- point rouge sur la section qui a du nouveau : Patch notes pas lues, erreur pas vue (Fiabilité)
+            b.dot = UI:Icon(b, "circle", 8, nil, "OVERLAY")
+            b.dot:SetPoint("TOPRIGHT", -10, -10)
+            b.dot:SetVertexColor(unpack(C.negative))
+            b.dot:Hide()
+            local secKey = sec[1]
             function b:Paint()
+                local news = false
+                if secKey == "notes" then news = UI.notesDef and UI.notesDef.count and (UI.notesDef.count() or "") ~= "" or false
+                elseif secKey == "maint" then local Mt = WK.modules.Maintenance; news = Mt and Mt:Unseen() > 0 or false end
+                self.dot:SetShown(news)
                 local sel = self.selected
                 self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
                 self.bg:SetShown(sel or self.hover)
@@ -1004,6 +1014,8 @@ UI:RegisterPage({
 
     Refresh = function(self)
         self:RefreshThemes()
+        -- points rouges des sections (patch notes lues, erreurs vues : ils s'éteignent)
+        for _, b in pairs(self.sectionButtons or {}) do b:Paint() end
         if self.priceDesc and self.priceDesc.SetText then
             local V = WK.modules.Value
             if not V:HasAHPrices() then

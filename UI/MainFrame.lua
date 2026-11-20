@@ -1193,14 +1193,14 @@ function UI:RefreshUpdate()
     for key, ib in pairs(self.headIcons or {}) do
         local n = ib.def.count and ib.def.count() or ""
         ib.dot:SetShown(n ~= nil and n ~= "")
-        -- point rouge : une erreur de l'addon pas encore vue (Options > Fiabilité)
-        if n == "!" then ib.dot:SetVertexColor(unpack(C.negative)) else ib.dot:SetVertexColor(UI:Accent()) end
+        -- point rouge : patch notes pas lues ou erreur de l'addon pas vue (la section concernée a aussi son point)
+        ib.dot:SetVertexColor(unpack(C.negative))
         -- l'infobulle dit ce que signale le point, et où mène le clic
         local tip = T(ib.baseTip or "")
         if key == "options" and n == "!" then
             tip = tip .. "\n" .. UI:Hex(C.negative) .. T("Point rouge : une erreur de l'addon pas encore vue. Clic : Fiabilité.") .. "|r"
         elseif key == "options" and n ~= nil and n ~= "" then
-            tip = tip .. "\n" .. UI:Hex(C.muted) .. T("Point : des nouveautés pas encore lues. Clic : Patch notes.") .. "|r"
+            tip = tip .. "\n" .. UI:Hex(C.negative) .. T("Point rouge : des nouveautés pas encore lues. Clic : Patch notes.") .. "|r"
         end
         ib.tooltip = tip
     end

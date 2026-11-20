@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.97.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Pastille de l'icône Options toujours rouge (patch notes pas lues ou erreur pas vue), et pastille rouge aussi sur la section concernée des Options (Patch notes ou Fiabilité) ; elle s'éteint une fois lues ou vues.
+
 ## v1.97.3 — 20/11/2026
 
 _Un /reload suffit._
