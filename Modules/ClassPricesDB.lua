@@ -116,3 +116,32 @@ WK.ClassBasePrice = table.concat({
     "0,24975:700,24976:1150,24977:1700,25780:3000,25782:46000,25890:46000,25894:40000,25895:46000,25898:2070,25899:2070,25908:24000,25916:41400,25918:46000,27681:230",
     "0,27799:1200,27800:1900,27801:2300,27841:2300,27870:1200,27871:1500,29166:14000",
 })
+
+-- Compétences d'armes : classes qui les apprennent, niveau requis, prix de base (cuivre)
+WK.WeaponSkillsDB = {
+    [196] = { classes = "WARRIOR,PALADIN,HUNTER,SHAMAN", level = 0, cost = 1000 },
+    [197] = { classes = "WARRIOR,PALADIN,HUNTER", level = 0, cost = 1000 },
+    [198] = { classes = "WARRIOR,PALADIN,ROGUE,PRIEST,SHAMAN,DRUID", level = 0, cost = 1000 },
+    [199] = { classes = "WARRIOR,PALADIN,DRUID", level = 0, cost = 1000 },
+    [200] = { classes = "WARRIOR,PALADIN,HUNTER,DRUID", level = 20, cost = 10000 },
+    [201] = { classes = "WARRIOR,PALADIN,HUNTER,ROGUE,MAGE,WARLOCK", level = 0, cost = 1000 },
+    [202] = { classes = "WARRIOR,PALADIN,HUNTER", level = 0, cost = 1000 },
+    [227] = { classes = "WARRIOR,HUNTER,PRIEST,SHAMAN,DRUID,WARLOCK,MAGE", level = 0, cost = 1000 },
+    [264] = { classes = "WARRIOR,HUNTER,ROGUE", level = 0, cost = 1000 },
+    [266] = { classes = "WARRIOR,HUNTER,ROGUE", level = 0, cost = 1000 },
+    [1180] = { classes = "WARRIOR,HUNTER,ROGUE,PRIEST,SHAMAN,DRUID,WARLOCK,MAGE", level = 0, cost = 1000 },
+    [2567] = { classes = "WARRIOR,HUNTER,ROGUE", level = 0, cost = 1000 },
+    [5011] = { classes = "WARRIOR,HUNTER,ROGUE", level = 0, cost = 1000 },
+    [15590] = { classes = "WARRIOR,HUNTER,ROGUE,SHAMAN,DRUID", level = 0, cost = 1000 },
+}
+-- Maîtres d'armes : { n° de PNJ, faction, carte, x, y, sorts enseignés, nom anglais, nom français }
+WK.WeaponMasters = {
+    { 2704, "Horde", 1454, 0.815, 0.196, "196,197,227,264,2567", "Hanashi", "Hanashi" },
+    { 11865, "Alliance", 1455, 0.612, 0.895, "196,197,198,199,266,15590", "Buliwyf Stonehand", "Buliwyf Main-de-pierre" },
+    { 11866, "Alliance", 1457, 0.577, 0.460, "227,264,1180,2567,15590", "Ilyenia Moonfire", "Ilyenia Lunéclat" },
+    { 11867, "Alliance", 1453, 0.571, 0.577, "200,201,202,227,1180,5011", "Woo Ping", "Woo Ping" },
+    { 11868, "Horde", 1454, 0.817, 0.196, "196,197,227,264,1180,2567,15590", "Sayoc", "Sayoc" },
+    { 11869, "Horde", 1456, 0.400, 0.631, "198,199,227,266", "Ansekhwa", "Ansekhwa" },
+    { 11870, "Horde", 1458, 0.573, 0.328, "200,201,202,1180,5011", "Archibald", "Archibald" },
+    { 13084, "Alliance", 1455, 0.622, 0.896, "1180,2567,5011", "Bixi Wobblebonk", "Bixi Oscillognon" },
+}

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.0", date = "20/11/2026", restart = true,
+        added = {
+            "Fiche du perso : nouvel onglet « Armes » (entre Sorts et BiS). À gauche, chaque arme apprise avec sa jauge (vert au maximum, orange un peu en retard, rouge très en retard) et « équipée » sur celle en main ; au survol, le retard et comment le rattraper.",
+            "Onglet Armes, à droite : les armes que ta classe peut encore apprendre avec leur prix (les armes d'hast à partir du niveau 20), et le maître d'armes le plus proche qui les enseigne, avec « Guider ». Clic sur une arme : guidage vers un maître qui l'enseigne.",
+        },
+    },
+    {
         version = "1.99.7", date = "20/11/2026",
         changed = {
             "Talents : le prochain talent du plan clignote (voile de la couleur de l'apparence sur son icône) au lieu d'être entouré d'un cercle.",
@@ -4656,7 +4663,6 @@ WK.Roadmap = {
     { prio = 3, theme = "class", title = "Réticule au centre", text = "Pour le combat à la souris, d'une autre couleur hors de portée." },
     { prio = 3, theme = "class", title = "Gain d'un rang", text = "Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…)." },
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
-    { prio = 2, theme = "char", title = "Compétences d'armes", text = "Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
     { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },

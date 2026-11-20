@@ -27,6 +27,7 @@ local HEAD_MAX = 5 -- pastilles d'en-tête au plus
 local SQ = 34
 local sheet
 local buildSpells, refreshSpells, spellChips -- onglet Sorts (plus bas)
+local buildWeapons, refreshWeapons -- onglet Armes (plus bas)
 
 local QUALITY = { [0] = { 0.62, 0.62, 0.62 }, { 1, 1, 1 }, { 0.12, 1, 0 }, { 0, 0.44, 0.87 }, { 0.64, 0.21, 0.93 }, { 1, 0.5, 0 }, { 0.9, 0.8, 0.5 } }
 -- emplacements : n° du jeu, nom, texture vide
@@ -273,7 +274,7 @@ local function build(parent)
     f.tabLine:SetHeight(1)
     f.tabLine:SetPoint("TOPLEFT", 0, -90); f.tabLine:SetPoint("TOPRIGHT", 0, -90)
     local prev
-    for _, t in ipairs({ { "sheet", "Fiche" }, { "talents", "Talents" }, { "bis", "BiS" }, { "spells", "Sorts" } }) do
+    for _, t in ipairs({ { "sheet", "Fiche" }, { "talents", "Talents" }, { "spells", "Sorts" }, { "weapons", "Armes" }, { "bis", "BiS" } }) do
         local b = CreateFrame("Button", nil, f)
         b:SetHeight(26)
         b.label = UI:Text(b, 12)
@@ -672,6 +673,8 @@ local function build(parent)
 
     -- Onglet Sorts : sorts de classe à apprendre (Modules/ClassSpells.lua)
     buildSpells(f)
+    -- Onglet Armes : compétences d'armes (Modules/WeaponSkills.lua)
+    buildWeapons(f)
 
     -- Onglet BiS : ta liste, en mannequin (emplacements comme dans la Fiche) ; clic sur un emplacement = fenêtre de choix
     local bsc = UI:Scroll(f)
@@ -1881,6 +1884,187 @@ refreshSpells = function(f, c)
     f.ssc:SetContentHeight(y + 16)
 end
 
+-- Onglet Armes : à gauche les armes apprises (jauge vert / orange / rouge selon le retard, « équipée »),
+-- à droite les armes que la classe peut encore apprendre (prix) et le maître d'armes le plus proche
+-- (Modules/WeaponSkills.lua)
+local WEAP_SIDE, WEAP_ROW = 330, 34
+local function WS() return WK.modules.WeaponSkills end
+local LAG_COL = { ok = "positive", warn = "warning", bad = "negative" }
+
+buildWeapons = function(f)
+    local wsc = UI:Scroll(f)
+    wsc:SetPoint("TOPLEFT", 0, -98)
+    wsc:SetPoint("BOTTOMRIGHT")
+    wsc:Hide()
+    f.wsc = wsc
+    local root = wsc.child
+    -- armes apprises
+    local lc = UI:Card(root)
+    f.wpList = lc
+    lc.head = UI:Text(lc, 10, C.muted); lc.head:SetPoint("TOPLEFT", 16, -14)
+    lc.note = UI:Text(lc, 10, C.muted); lc.note:SetJustifyH("LEFT")
+    if lc.note.SetWordWrap then lc.note:SetWordWrap(true) end
+    f.wpRows = UI:Pool(function()
+        local r = CreateFrame("Frame", nil, lc)
+        r:SetHeight(WEAP_ROW)
+        r:EnableMouse(true)
+        r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(22, 22); r.icon:SetPoint("LEFT", 16, 0)
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 46, 0); r.name:SetWidth(200); r.name:SetJustifyH("LEFT")
+        r.bar = UI:Progress(r, 8)
+        r.bar:SetPoint("LEFT", 252, 0); r.bar:SetPoint("RIGHT", -112, 0)
+        r.val = UI:Text(r, 12); r.val:SetPoint("RIGHT", -16, 0); r.val:SetJustifyH("RIGHT")
+        r:SetScript("OnEnter", function(s)
+            if not s.e then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.e.name, 1, 1, 1)
+            local gap = (s.e.max or 0) - (s.e.rank or 0)
+            if gap > 0 then
+                GameTooltip:AddLine(string.format(T("%d points de retard : frappe avec cette arme pour les rattraper (tu rates plus souvent en attendant)."), gap),
+                    C.muted[1], C.muted[2], C.muted[3], true)
+            else
+                GameTooltip:AddLine(T("Au maximum pour ton niveau."), C.positive[1], C.positive[2], C.positive[3])
+            end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return r
+    end)
+    -- à apprendre + maître d'armes
+    local rc = UI:Card(root, T("À apprendre"))
+    f.wpLearn = rc
+    f.wpLearnRows = UI:Pool(function()
+        local r = CreateFrame("Button", nil, rc)
+        r:SetHeight(28)
+        r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
+        r.hl:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 0.5); r.hl:Hide()
+        r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 16, 0)
+        r.icon:SetDesaturated(true)
+        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 44, 0); r.name:SetPoint("RIGHT", -90, 0); r.name:SetJustifyH("LEFT")
+        r.cost = UI:Text(r, 12, C.gold); r.cost:SetPoint("RIGHT", -16, 0); r.cost:SetJustifyH("RIGHT")
+        r:SetScript("OnEnter", function(s)
+            s.hl:Show()
+            if not s.e then return end
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.e.name, 1, 1, 1)
+            local m = WS():Masters(s.e.id)[1]
+            if m then GameTooltip:AddLine(string.format(T("Enseignée par %s (%s)"), m.name, WS():Zone(m)), C.muted[1], C.muted[2], C.muted[3], true) end
+            if s.e.soon then GameTooltip:AddLine(string.format(T("À partir du niveau %d"), s.e.level), C.warning[1], C.warning[2], C.warning[3]) end
+            if f.key == WK:CharKey() and m then GameTooltip:AddLine(T("Clic : guider vers ce maître d'armes"), C.muted[1], C.muted[2], C.muted[3]) end
+            GameTooltip:Show()
+        end)
+        r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
+        r:SetScript("OnClick", function(s)
+            if not s.e or f.key ~= WK:CharKey() then return end
+            WS():GuideTo(WS():Masters(s.e.id)[1])
+        end)
+        return r
+    end)
+    rc.line = rc:CreateTexture(nil, "ARTWORK"); rc.line:SetHeight(1)
+    rc.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    rc.mt = UI:Text(rc, 11, C.muted); rc.mt:SetText(T("Maître d'armes le plus proche"))
+    rc.mname = UI:Text(rc, 12); rc.mname:SetJustifyH("LEFT")
+    if rc.mname.SetWordWrap then rc.mname:SetWordWrap(true) end
+    rc.go = UI:Button(rc, "Guider", 110, 28, "secondary", "guide")
+    rc.go:SetScript("OnClick", function() WS():GuideTo(rc.master) end)
+end
+
+refreshWeapons = function(f, c)
+    local M = WS()
+    if not M then return end
+    local r = M:ForChar(f.key)
+    local W = math.max(600, (f.wsc:GetWidth() or 840) - 12)
+    f.wsc.child:SetWidth(W)
+    local wide = W >= 900
+    local leftW = wide and (W - WEAP_SIDE - COL_GAP) or W
+    local mine = f.key == WK:CharKey()
+    -- armes apprises
+    local lc = f.wpList
+    f.wpRows:Reset()
+    lc.head:SetText(string.format(T("MES ARMES  ·  NIVEAU %d  ·  MAX %d"), r.level, r.max))
+    local y = 34
+    for _, e in ipairs(r.learned) do
+        local row = f.wpRows:Get()
+        row.e = e
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y); row:SetPoint("TOPRIGHT", 0, -y)
+        row.icon:SetTexture(e.icon)
+        row.name:SetText(e.name .. (e.equipped and ("  " .. UI:Hex({ UI:Accent() }) .. T("équipée") .. "|r") or ""))
+        local col = C[LAG_COL[M:Lag(e)]]
+        row.bar.color = col
+        row.bar:SetValue(e.max > 0 and e.rank / e.max or 0)
+        row.val:SetText(string.format("%d / %d", e.rank, e.max))
+        row.val:SetTextColor(unpack(col))
+        row:Show()
+        y = y + WEAP_ROW
+    end
+    if #r.learned == 0 then
+        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("RIGHT", -16, 0)
+        lc.note:SetText(r.recorded and T("Aucune compétence d'arme relevée.") or T("Compétences d'armes relevées à la prochaine connexion de ce perso."))
+        y = y + 24
+    else
+        y = y + 6
+        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("RIGHT", -16, 0)
+        lc.note:SetText(T("Vert : au maximum · orange : un peu en retard · rouge : très en retard (tu rates plus souvent). Survol : le détail."))
+        y = y + math.max(14, lc.note:GetStringHeight() or 14) + 6
+    end
+    lc:ClearAllPoints(); lc:SetPoint("TOPLEFT", 0, 0); lc:SetWidth(leftW); lc:SetHeight(y + 10)
+
+    -- à apprendre
+    local rc = f.wpLearn
+    local sideW = wide and WEAP_SIDE or W
+    local sx, sy = wide and (leftW + COL_GAP) or 0, wide and 0 or (y + 10 + COL_GAP)
+    rc:ClearAllPoints(); rc:SetPoint("TOPLEFT", sx, -sy); rc:SetWidth(sideW)
+    f.wpLearnRows:Reset()
+    local ry = 42
+    for _, e in ipairs(r.toLearn) do
+        local row = f.wpLearnRows:Get()
+        row.e = e
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -ry); row:SetPoint("TOPRIGHT", 0, -ry)
+        row.icon:SetTexture(e.icon)
+        row.name:SetText(e.name)
+        row.name:SetTextColor(unpack(e.soon and C.muted or C.text))
+        row.cost:SetText(e.soon and string.format(T("niv. %d"), e.level) or WK:FormatMoney(e.cost))
+        row.cost:SetTextColor(unpack(e.soon and C.muted or C.gold))
+        row:Show()
+        ry = ry + 28
+    end
+    rc.mt:ClearAllPoints(); rc.mname:ClearAllPoints(); rc.line:ClearAllPoints()
+    if #r.toLearn == 0 then
+        rc.mname:SetPoint("TOPLEFT", 16, -ry); rc.mname:SetPoint("RIGHT", -16, 0)
+        rc.mname:SetText(UI:Hex(C.positive) .. T("Toutes les armes de ta classe sont apprises.") .. "|r")
+        rc.mt:Hide(); rc.line:Hide(); rc.go:Hide()
+        rc:SetHeight(ry + 30)
+    else
+        ry = ry + 8
+        rc.line:SetPoint("TOPLEFT", 16, -ry); rc.line:SetPoint("TOPRIGHT", -16, -ry); rc.line:Show()
+        ry = ry + 10
+        rc.mt:SetPoint("TOPLEFT", 16, -ry); rc.mt:Show()
+        ry = ry + 18
+        -- le plus proche qui enseigne au moins une des armes à apprendre
+        local want = {}
+        for _, e in ipairs(r.toLearn) do want[e.id] = true end
+        local master
+        for _, m in ipairs(M:Masters()) do
+            for id in pairs(m.teaches) do if want[id] then master = m break end end
+            if master then break end
+        end
+        rc.master = master
+        rc.mname:SetPoint("TOPLEFT", 16, -ry); rc.mname:SetPoint("RIGHT", -16, 0)
+        if master then
+            local d = master.distance and mine and ("  " .. UI:Hex(C.muted) .. "· " .. string.format(T("%d m"), math.floor(master.distance)) .. "|r") or ""
+            rc.mname:SetText(master.name .. "  " .. UI:Hex(C.muted) .. "· " .. M:Zone(master) .. "|r" .. d)
+        else
+            rc.mname:SetText(UI:Hex(C.muted) .. T("Aucun maître d'armes connu pour ta faction.") .. "|r")
+        end
+        ry = ry + math.max(16, rc.mname:GetStringHeight() or 16) + 8
+        rc.go:ClearAllPoints(); rc.go:SetPoint("TOPLEFT", 16, -ry)
+        rc.go:SetShown(mine and master ~= nil)
+        if mine and master then ry = ry + 28 + 6 end
+        rc:SetHeight(ry + 12)
+    end
+    local bottom = wide and math.max(y + 10, rc:GetHeight()) or (sy + rc:GetHeight())
+    f.wsc:SetContentHeight(bottom + 8)
+end
+
 -- Mise à jour de la fiche : en-tête, puis les deux colonnes
 local function refresh(f)
     local key = f.key
@@ -1921,9 +2105,11 @@ local function refresh(f)
     for _, b in pairs(f.tabs) do b:Paint() end
     f.sc:SetShown(f.tab == "sheet"); f.tsc:SetShown(f.tab == "talents"); f.bsc:SetShown(f.tab == "bis")
     f.ssc:SetShown(f.tab == "spells")
+    f.wsc:SetShown(f.tab == "weapons")
     if f.tab ~= "bis" then f.picker:Hide() end
     if f.tab == "talents" then return refreshTalents(f, c) end
     if f.tab == "spells" then return refreshSpells(f, c) end
+    if f.tab == "weapons" then return refreshWeapons(f, c) end
     if f.tab == "bis" then return refreshBis(f, c) end
     f.lrows:Reset(); f.lheads:Reset()
     -- largeurs : colonne de droite fixe, la gauche prend le reste

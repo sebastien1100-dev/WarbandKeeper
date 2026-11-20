@@ -38,7 +38,6 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
-- **Compétences d'armes** (moyenne) — Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche.
 - **Objectifs par perso** (moyenne) — Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »).
 - **Carte de la Warband** (basse) — Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord.
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
@@ -72,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.100.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Fiche du perso : nouvel onglet « Armes » (entre Sorts et BiS). À gauche, chaque arme apprise avec sa jauge (vert au maximum, orange un peu en retard, rouge très en retard) et « équipée » sur celle en main ; au survol, le retard et comment le rattraper.
+- Onglet Armes, à droite : les armes que ta classe peut encore apprendre avec leur prix (les armes d'hast à partir du niveau 20), et le maître d'armes le plus proche qui les enseigne, avec « Guider ». Clic sur une arme : guidage vers un maître qui l'enseigne.
 
 ## v1.99.7 — 20/11/2026
 
