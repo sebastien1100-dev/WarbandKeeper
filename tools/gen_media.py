@@ -799,10 +799,30 @@ def icon_navarrow():
     save(img, "navarrow", 64)
 
 
+def icon_flask():
+    """Fiole (poisons) : col étroit, panse ronde, liquide évidé au-dessus d'une ligne."""
+    img, d, s = canvas(64)
+    rrect(d, s, 0.38, 0.06, 0.62, 0.16, 0.04)          # bouchon
+    rrect(d, s, 0.42, 0.14, 0.58, 0.42, 0.03)          # col
+    circle(d, s, 0.5, 0.64, 0.30)                      # panse
+    # reflet évidé, pour que la fiole se lise en petit
+    d.ellipse([P(0.33, s), P(0.50, s), P(0.43, s), P(0.66, s)], fill=(255, 255, 255, 0))
+    save(img, "flask", 64)
+
+
+def icon_paw():
+    """Patte (familier) : coussinet et quatre doigts."""
+    img, d, s = canvas(64)
+    d.ellipse([P(0.26, s), P(0.46, s), P(0.74, s), P(0.86, s)], fill=W)
+    for cx, cy, r in ((0.20, 0.42, 0.10), (0.37, 0.24, 0.10), (0.63, 0.24, 0.10), (0.80, 0.42, 0.10)):
+        circle(d, s, cx, cy, r)
+    save(img, "paw", 64)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw]:
         fn()
     print("OK")

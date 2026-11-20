@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.2", date = "20/11/2026", restart = true,
+        changed = {
+            "Rappels : icônes au style de l'addon (« trait clair ») : pictogramme blanc sur disque graphite, liseré de l'état (rouge qui bat, orange, gris). Les buffs à lancer gardent l'icône de leur sort.",
+        },
+        added = {
+            "Deux pictogrammes : fiole (poisons) et patte (familier).",
+        },
+    },
+    {
         version = "1.107.1", date = "20/11/2026",
         fixed = {
             "Montée en niveaux : l'en-tête de la carte ne chevauche plus les chiffres de droite (« NIVEAU 28 » à gauche, « 75 % · reste 10 279 XP » à droite).",

@@ -248,28 +248,29 @@ end
 -- Messages éclair : un nouveau rappel important s'affiche 5 s en toutes lettres à côté de la barre.
 ---------------------------------------------------------------------------
 local ISIZE, IGAP = 28, 8
-local ICON_BY_KEY = {
-    { "fort", "Interface\\Icons\\Spell_Holy_WordFortitude" }, { "motw", "Interface\\Icons\\Spell_Nature_Regeneration" },
-    { "bless", "Interface\\Icons\\Spell_Holy_FistOfJustice" }, { "aura", "Interface\\Icons\\Spell_Holy_DevotionAura" },
-    { "poison", "Interface\\Icons\\Ability_Poisons" }, { "pet", "Interface\\Icons\\Ability_Hunter_BeastTraining" },
-    { "hunter", "Interface\\Icons\\Ability_Hunter_AspectOfTheMonkey" }, { "trainer", "Interface\\Icons\\INV_Misc_Book_09" },
-    { "cspells", "Interface\\Icons\\INV_Misc_Book_09" }, { "flightpoint", "Interface\\Icons\\Ability_Mount_Gryphon_01" },
-    { "guide", "Interface\\Icons\\INV_Misc_Map_01" }, { "tracking", "Interface\\Icons\\Spell_Nature_Earthquake" },
-    { "nodes", "Interface\\Icons\\INV_Ore_Copper_01" }, { "rank", "Interface\\Icons\\INV_Misc_Note_02" },
-    { "cd", "Interface\\Icons\\INV_Misc_PocketWatch_01" }, { "instCap", "Interface\\Icons\\Spell_Holy_BorrowedTime" },
-    { "dungeon", "Interface\\Icons\\INV_Misc_Bag_10" }, { "ahprice", "Interface\\Icons\\INV_Misc_Coin_01" },
-    { "qplan", "Interface\\GossipFrame\\AvailableQuestIcon" }, { "lguide", "Interface\\GossipFrame\\AvailableQuestIcon" },
-    { "camp", "Interface\\Icons\\Spell_Fire_Fire" }, { "fish", "Interface\\Icons\\Trade_Fishing" },
-    { "talent", "Interface\\Icons\\Ability_Marksmanship" }, { "xp", "Interface\\Icons\\Spell_Holy_SurgeOfLight" },
+-- pictogrammes de l'addon (Media/, blancs, sur disque graphite) par début de clé ; les buffs gardent l'icône
+-- du sort (pour reconnaître lequel lancer)
+local GLYPH_BY_KEY = {
+    { "poison", "flask" }, { "pet", "paw" }, { "hunter.growl", "paw" }, { "hunter.risky", "warn" }, { "hunter.track", "search" },
+    { "trainer", "book" }, { "cspells", "book" }, { "flightpoint", "griffon" }, { "guide", "map" }, { "tracking", "search" },
+    { "nodes", "search" }, { "rank", "hammer" }, { "cd", "clock" }, { "instCap", "skull" }, { "dungeon", "star" },
+    { "ahprice", "coin" }, { "qplan", "bang" }, { "lguide", "bang" }, { "camp", "fire" }, { "fish", "fish" },
+    { "talent", "tree" }, { "xp", "spark" }, { "demo", "bang" },
 }
+local BUFF_KEYS = { "fort", "motw", "bless", "aura", "hunter.aspect" }
+-- renvoie ("glyph", nom) ou ("icon", texture du jeu)
 local function iconFor(key, a)
-    if a.icon then return a.icon end
-    if a.icons and a.icons[1] and a.icons[1].icon then return a.icons[1].icon end
     local k = key:gsub("^qol%.", "")
-    for _, e in ipairs(ICON_BY_KEY) do
-        if k:sub(1, #e[1]) == e[1] then return e[2] end
+    local buff = a.icons ~= nil
+    for _, p in ipairs(BUFF_KEYS) do if k:sub(1, #p) == p then buff = true end end
+    if buff or a.icon then
+        local tex = a.icon or (a.icons and a.icons[1] and a.icons[1].icon)
+        if tex then return "icon", tex end
     end
-    return "Interface\\Icons\\INV_Misc_Note_01"
+    for _, e in ipairs(GLYPH_BY_KEY) do
+        if k:sub(1, #e[1]) == e[1] then return "glyph", e[2] end
+    end
+    return "glyph", "bang"
 end
 local function urgentOf(a) return (a.prio or 5) <= 1 or a.group == "urgent" end
 local function ringColor(a)
@@ -293,6 +294,13 @@ local function paintChip(b)
     b.ring:ClearAllPoints(); b.ring:SetPoint("CENTER")
     b.pic = b.pic or UI:RoundIcon(b, ISIZE - 4)
     b.pic:ClearAllPoints(); b.pic:SetPoint("CENTER")
+    -- style « trait clair » : disque graphite et pictogramme blanc de l'addon
+    b.disc = b.disc or UI:Icon(b, "circle", ISIZE - 2, nil, "BORDER")
+    b.disc:ClearAllPoints(); b.disc:SetPoint("CENTER")
+    b.disc:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+    b.glyph = b.glyph or UI:Icon(b, "bang", 16, nil, "ARTWORK")
+    b.glyph:ClearAllPoints(); b.glyph:SetPoint("CENTER")
+    b.glyph:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
     b.sub = b.sub or UI:Text(b, 9, C.text)
     b.sub:ClearAllPoints(); b.sub:SetPoint("TOP", b, "BOTTOM", 0, -2)
     if b.sub.SetShadowOffset then b.sub:SetShadowOffset(1, -1); b.sub:SetShadowColor(0, 0, 0, 1) end
@@ -466,7 +474,9 @@ local function layoutIcons(list)
                 local col = ringColor(a)
                 b.ring:SetVertexColor(col[1], col[2], col[3], 1)
                 b.urgent = urgentOf(a)
-                b.pic:SetTexture(iconFor(key, a))
+                local how, what = iconFor(key, a)
+                b.pic:SetShown(how == "icon"); b.disc:SetShown(how ~= "icon"); b.glyph:SetShown(how ~= "icon")
+                if how == "icon" then b.pic:SetTexture(what) else b.glyph:SetTexture(UI.MEDIA .. what) end
                 local r = a.right
                 b.sub:SetText((r and #r <= 6) and r or "")
                 b:Show()
