@@ -99,6 +99,32 @@ local function build()
         if r.txt.SetWordWrap then r.txt:SetWordWrap(false) end
         tv.nexts[i] = r
     end
+    -- « Sur ton chemin » (Modules/QuestPlan.lua, OnTheWay) : une ligne discrète sous les étapes suivantes ;
+    -- clic gauche : ajouter à la tournée, clic droit : ignorer
+    tv.way = CreateFrame("Button", nil, tv)
+    tv.way:SetHeight(28)
+    tv.way:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    tv.way.txt = shade(UI:Text(tv.way, 11, C.text)); tv.way.txt:SetPoint("TOPLEFT", 22, 0); tv.way.txt:SetPoint("RIGHT", 0, 0)
+    tv.way.txt:SetJustifyH("LEFT"); if tv.way.txt.SetWordWrap then tv.way.txt:SetWordWrap(false) end
+    tv.way.sub = shade(UI:Text(tv.way, 10, C.muted)); tv.way.sub:SetPoint("TOPLEFT", 22, -14); tv.way.sub:SetPoint("RIGHT", 0, 0)
+    tv.way.sub:SetJustifyH("LEFT"); if tv.way.sub.SetWordWrap then tv.way.sub:SetWordWrap(false) end
+    tv.way.dot = tv.way:CreateTexture(nil, "ARTWORK"); tv.way.dot:SetSize(14, 14); tv.way.dot:SetPoint("TOPLEFT", 0, 0)
+    tv.way.dot:SetTexture(UI.MEDIA .. "circle")
+    tv.way.num = UI:Text(tv.way, 8, C.bg); tv.way.num:SetPoint("CENTER", tv.way.dot, "CENTER", 0, 0); tv.way.num:SetText("+")
+    tv.way:SetScript("OnClick", function(b, btn)
+        local P = WK.modules.QuestPlan
+        if not (P and b.qid) then return end
+        if btn == "RightButton" then P:IgnoreOnTheWay(b.qid) else P:AddOnTheWay(b.qid) end
+    end)
+    tv.way:SetScript("OnEnter", function(b)
+        UI:TooltipOwner(b, "ANCHOR_LEFT")
+        GameTooltip:SetText(T("Sur ton chemin"), 1, 1, 1)
+        GameTooltip:AddLine(T("Une quête toute proche du trajet vers l'étape en cours, pas encore dans la tournée."), 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine(T("Clic gauche : l'ajouter à la tournée · clic droit : ignorer"), 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    tv.way:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    tv.way:Hide()
     -- boutons (pause / reprendre, passer, arrêter) : petits, à la place des chiffres de l'en-tête au survol
     tv.close = UI:IconButton(tv, "close", 16, "Arrêter la tournée")
     tv.close:SetPoint("TOPRIGHT", -8, -4)
@@ -211,6 +237,21 @@ local function build()
                 row:Hide()
             end
         end
+        -- sur ton chemin
+        local wy = d.way
+        if wy then
+            y = y - 4
+            v.way:ClearAllPoints(); v.way:SetPoint("TOPLEFT", 12, y - 2); v.way:SetPoint("RIGHT", -10, 0)
+            local gc = C.gold
+            v.way.dot:SetVertexColor(gc[1], gc[2], gc[3], 1)
+            v.way.qid = wy.qid
+            v.way.txt:SetText(UI:Hex(C.gold) .. T("Sur ton chemin :") .. "|r " .. (wy.title or "") .. (wy.lvl and ("  " .. UI:Hex(C.dim) .. "[" .. wy.lvl .. "]|r") or ""))
+            v.way.sub:SetText(wy.sub or "")
+            v.way:Show()
+            y = y - 30
+        else
+            v.way:Hide(); v.way.qid = nil
+        end
         self:SetHeight(-y + 8)
     end
 
@@ -279,7 +320,8 @@ local function build()
                 -- tournée en cours : aperçu de la carte de tournée
                 f:PaintTour({ kind = "turn", title = T("Rendre : Le viaduc de Thandol"), lvl = 31, sub = "160 m nord-est · +2500 XP",
                     objs = {}, idx = 4, count = 7, mins = 18, xp = 7400, zone = T("Les Paluns"),
-                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes"), dist = 420 }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar"), dist = 900 } } })
+                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes"), dist = 420 }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar"), dist = 900 } },
+                    way = { title = T("Œufs de faucon"), lvl = 30, sub = string.format(T("détour env. %d min"), 3) .. " · " .. UI:Hex(C.gold) .. "+1150 XP|r · " .. T("clic : ajouter") } })
                 f:Show()
             elseif on then
                 f:Paint({ title = T("La chasse aux loups"), sub = T("Sombrivage · niveau 14"), goal = T("Zone à 140 m"),
@@ -360,8 +402,16 @@ function UI:RefreshQuestTracker()
                 table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns), dist = nd })
             end
         end
+        -- quête sur le chemin (pas dans la tournée)
+        local way
+        local ow = P.OnTheWay and P:OnTheWay()
+        if ow and ow.e then
+            way = { qid = ow.e.id, title = ow.e.title, lvl = ow.e.lvl,
+                sub = string.format(T("détour env. %d min"), ow.mins or 1) .. ((ow.e.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. ow.e.xp .. " XP|r") or "")
+                    .. " · " .. T("clic : ajouter") }
+        end
         card:PaintTour({ kind = s.kind, title = P:StepTitle(s), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
-            objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts })
+            objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts, way = way })
         card:Show()
         return
     end

@@ -28,6 +28,7 @@ end
 local function Q() return WK.modules.QuestTrack end
 local function G() return WK.modules.Guide end
 local function on() return WK:FeatureOn("quests") end
+local function inLog(qid) return Q():InLog(qid) end
 
 local function world(map, x, y)
     local c, wx, wy = G().ToWorld(map, x, y)
@@ -189,13 +190,13 @@ end
 -- Tournée
 ---------------------------------------------------------------------------
 -- étapes : { kind = "pick"|"do"|"turn", qids = {…}, map, x, y, title, secs }
-local function objTime(qid, inLog)
+local function objTime(qid, logged)
     -- temps réel déjà noté pour cette quête (Modules/LevelGuide.lua) : le plus juste
     local LG = WK.modules.LevelGuide
     local rec = LG and LG:QuestTime(qid)
-    if rec and not inLog then return rec end
+    if rec and not logged then return rec end
     local s = 0
-    if inLog then
+    if logged then
         for _, o in ipairs(Q():Objectives(qid)) do
             if not o.done then
                 local k = (o.type == "item" and "i") or (o.type == "object" and "o") or "m"
@@ -222,39 +223,97 @@ function M:CopyTour(t)
     return { steps = steps, idx = 1, start = time(), secs = t.secs, meters = t.meters,
         gained0 = WK.modules.XP and WK.modules.XP.session and WK.modules.XP.session.gained or 0, turned = 0 }
 end
+-- Suites prévues (B) : la quête qui suit une quête cochée (q.nxt), si elle se fait dans la zone et que son
+-- niveau va ; elle est prise au rendu de la précédente, ses objectifs entrent dans la même boucle. Deux
+-- niveaux de suite au plus. { id, title, xp, giver, camps, center, turnIn, predicted = profondeur, parent }
+local function predicted(list, zone)
+    local Qs = WK.modules.Quests
+    local me = WK.DB:Me() or {}
+    local lvl = UnitLevel and UnitLevel("player") or me.level or 1
+    local maxAbove = M:Config().maxAbove or 2
+    local done = me.quests and me.quests.done or {}
+    local have = {}
+    for _, e in ipairs(list) do have[e.id] = true end
+    local out = {}
+    local function follow(e, depth)
+        if depth > 2 then return end
+        local q = Qs:Get(e.id)
+        local nid = q and q.nxt
+        local nq = nid and not have[nid] and not done[nid] and not inLog(nid) and Qs:Get(nid)
+        if not (nq and Qs:ForChar(nq, me)) or (nq.lvl or 0) > lvl + maxAbove then return end
+        local n = { id = nid, title = Qs:Name(nq), lvl = nq.lvl, xp = nq.xp or 0, predicted = depth, parent = e, picked = true }
+        n.camps = zoneCamps(nid, zone)
+        if #n.camps > 0 then
+            local sx, sy = 0, 0
+            for _, c in ipairs(n.camps) do sx, sy = sx + c.camp.x, sy + c.camp.y end
+            n.center = point(zone, sx / #n.camps, sy / #n.camps)
+        end
+        -- prise : chez son donneur (souvent celui qui reprend la précédente)
+        if nq.x then n.giver = point(nq.smap or zone, nq.x / 100, nq.y / 100)
+        elseif e.turnIn then n.giver = e.turnIn end
+        local d = Q():Data(nid)
+        if d and d.turnIn then n.turnIn = point(d.turnIn.map, d.turnIn.x, d.turnIn.y) end
+        local here = (n.center ~= nil) or (n.turnIn and n.turnIn.map == zone)
+        if not (here and n.giver) then return end
+        have[nid] = true
+        table.insert(out, n)
+        follow(n, depth + 1)
+    end
+    for _, e in ipairs(list) do if e.picked and e.turnIn then follow(e, 1) end end
+    return out
+end
+M.Predicted = predicted
+
+local DO_JOIN = 140 -- camps à moins de 140 m : une seule étape « faire »
 function M:BuildNow(coins)
     local nodes = {}
-    local function node(kind, p, qid, title)
-        -- même endroit (moins de 25 m) et même genre : une seule étape
+    -- les nœuds ne se regroupent qu'entre quêtes de même profondeur (quête cochée, suite, suite de suite) :
+    -- sinon une suite prise au rendu formerait une boucle d'ordre (rendre avant de prendre avant de rendre)
+    local function node(kind, p, qid, depth, title)
         for _, n in ipairs(nodes) do
-            if n.kind == kind and dist(n, p) < 25 then table.insert(n.qids, qid) return n end
+            if n.kind == kind and n.depth == depth and dist(n, p) < (kind == "do" and DO_JOIN or 25) then
+                local dup = false
+                for _, q in ipairs(n.qids) do if q == qid then dup = true end end
+                if not dup then table.insert(n.qids, qid) end
+                return n
+            end
         end
-        local n = { kind = kind, map = p.map, x = p.x, y = p.y, cont = p.cont, wx = p.wx, wy = p.wy, qids = { qid }, title = title }
+        local n = { kind = kind, map = p.map, x = p.x, y = p.y, cont = p.cont, wx = p.wx, wy = p.wy, qids = { qid }, title = title,
+            depth = depth, after = {}, preds = {} }
         table.insert(nodes, n)
         return n
     end
+    local list, zone = {}, nil
     for _, k in ipairs(coins) do
-        local doNode
-        for _, e in ipairs(k.quests) do
-            if e.picked then
-                local pick = (not e.inLog) and e.giver and node("pick", e.giver, e.id, e.title) or nil
-                if e.center and not e.complete then
-                    if not doNode then
-                        doNode = { kind = "do", map = k.center.map, x = k.center.x, y = k.center.y, cont = k.center.cont,
-                            wx = k.center.wx, wy = k.center.wy, qids = {}, after = {}, label = k.label }
-                        table.insert(nodes, doNode)
-                    end
-                    table.insert(doNode.qids, e.id)
-                    if pick then doNode.after[pick] = true end
-                    doNode.secs = (doNode.secs or 0) + objTime(e.id, e.inLog)
-                end
-                if e.turnIn then
-                    local tn = node("turn", e.turnIn, e.id, e.title)
-                    tn.after = tn.after or {}
-                    if doNode then tn.after[doNode] = true end
-                    if pick then tn.after[pick] = true end
-                end
+        for _, e in ipairs(k.quests) do if e.picked then table.insert(list, e); zone = zone or k.map end end
+    end
+    zone = WK.modules.Quests:PlayerZone() or zone
+    for _, n in ipairs(zone and predicted(list, zone) or {}) do table.insert(list, n) end
+    local turnOf = {}
+    for _, e in ipairs(list) do
+        local depth = e.predicted or 0
+        local pick = (not e.inLog) and e.giver and node("pick", e.giver, e.id, depth, e.title) or nil
+        if pick and e.parent and turnOf[e.parent] then pick.after[turnOf[e.parent]] = true end
+        if pick and e.predicted then pick.preds[e.id] = true end
+        -- A : une étape « faire » par camp (plus au milieu de camps éloignés), regroupée avec les camps voisins
+        local dos = {}
+        if not e.complete and e.camps and #e.camps > 0 then
+            local per = objTime(e.id, e.inLog) / #e.camps
+            for _, c in ipairs(e.camps) do
+                local p = point(c.camp.map or zone, c.camp.x, c.camp.y)
+                local dn = node("do", p, e.id, depth)
+                dn.secs = (dn.secs or 0) + per
+                if pick then dn.after[pick] = true end
+                if e.predicted then dn.preds[e.id] = true end
+                table.insert(dos, dn)
             end
+        end
+        if e.turnIn then
+            local tn = node("turn", e.turnIn, e.id, depth, e.title)
+            for _, dn in ipairs(dos) do tn.after[dn] = true end
+            if pick then tn.after[pick] = true end
+            if e.predicted then tn.preds[e.id] = true end
+            turnOf[e] = tn
         end
     end
     -- visite du maître de classe (réglage levelGuide.trainerTour, oui par défaut) : quand des sorts sont à
@@ -270,7 +329,7 @@ function M:BuildNow(coins)
                 local p = point(tg.map, tg.x, tg.y)
                 if not nodes[1] or dist(nodes[1], p) < 100000 then
                     table.insert(nodes, { kind = "trainer", map = p.map, x = p.x, y = p.y, cont = p.cont, wx = p.wx, wy = p.wy,
-                        qids = {}, secs = 60, title = g:PlaceName(tg), spells = #cr.now })
+                        qids = {}, secs = 60, title = g:PlaceName(tg), spells = #cr.now, after = {}, preds = {} })
                 end
             end
         end
@@ -296,7 +355,9 @@ function M:BuildNow(coins)
         table.insert(order, best)
         cur = best
     end
-    -- 2-opt : inverser un segment s'il raccourcit la tournée et garde l'ordre valable
+    -- amélioration : 2-opt (inverser un segment) et déplacement d'une étape ailleurs (or-opt), tant que la
+    -- tournée raccourcit et que l'ordre reste valable ; les allers-retours au camp disparaissent ainsi : les
+    -- rendus d'un même PNJ ne forment qu'une étape, placée après tout ce qu'elle attend
     local function valid(seq)
         local pos = {}
         for i, n in ipairs(seq) do pos[n] = i end
@@ -311,36 +372,106 @@ function M:BuildNow(coins)
         return s
     end
     local improved, guard = true, 0
-    while improved and guard < 40 do
+    local N = #order
+    local budget = N <= 30 and 30 or 8
+    while improved and guard < budget do
         improved, guard = false, guard + 1
         local base = len(order)
-        for i = 1, #order - 1 do
-            for j = i + 1, #order do
+        for i = 1, N - 1 do
+            for j = i + 1, N do
                 local seq = {}
                 for k = 1, i - 1 do seq[#seq + 1] = order[k] end
                 for k = j, i, -1 do seq[#seq + 1] = order[k] end
-                for k = j + 1, #order do seq[#seq + 1] = order[k] end
+                for k = j + 1, N do seq[#seq + 1] = order[k] end
                 if valid(seq) then
                     local l = len(seq)
                     if l < base - 1 then order, base, improved = seq, l, true end
                 end
             end
         end
+        for i = 1, N do
+            for j = 1, N do
+                if j ~= i then
+                    local seq = {}
+                    for k = 1, N do if k ~= i then seq[#seq + 1] = order[k] end end
+                    table.insert(seq, j, order[i])
+                    if valid(seq) then
+                        local l = len(seq)
+                        if l < base - 1 then order, base, improved = seq, l, true end
+                    end
+                end
+            end
+        end
     end
-    -- étapes enregistrables (sans références entre nœuds)
+    -- étapes enregistrables (sans références entre nœuds) ; retours : passages à moins de 60 m d'un endroit
+    -- déjà visité plus tôt (hors étape juste avant)
     local steps, total, travel, prev = {}, 0, 0, me
-    for _, n in ipairs(order) do
+    local returns = 0
+    for i, n in ipairs(order) do
         local d = prev and dist(prev, n) or 0
         if d >= 100000 then d = 0 end
         travel = travel + d
+        for k = 1, i - 2 do if dist(order[k], n) < 60 and dist(order[i - 1], n) >= 60 then returns = returns + 1 break end end
         local secs = d / SPEED + (n.secs or (n.kind == "do" and 0 or 15))
         total = total + secs
-        table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.label,
-            title = n.kind == "trainer" and n.title or nil, spells = n.spells, level = n.kind == "trainer" and (UnitLevel and UnitLevel("player")) or nil })
+        local pr = {}
+        for q in pairs(n.preds or {}) do pr[#pr + 1] = q end
+        table.sort(pr)
+        table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.kind == "do" and M:Direction(me, n) or nil,
+            title = n.kind == "trainer" and n.title or nil, spells = n.spells, level = n.kind == "trainer" and (UnitLevel and UnitLevel("player")) or nil,
+            preds = #pr > 0 and pr or nil })
         prev = n
     end
-    return { steps = steps, idx = 1, start = time(), secs = math.floor(total), meters = math.floor(travel),
+    return { steps = steps, idx = 1, start = time(), secs = math.floor(total), meters = math.floor(travel), returns = returns,
         gained0 = WK.modules.XP and WK.modules.XP.session and WK.modules.XP.session.gained or 0, turned = 0 }
+end
+
+-- D · Sur ton chemin : quête de la zone pas dans la tournée (nouvelle depuis le calcul, ou un peu haute) dont le
+-- donneur ou la zone d'objectifs est à moins de 90 m du trajet vers l'étape en cours. Une coche enlevée à la main
+-- n'est jamais reproposée ; « Ignorer » l'écarte jusqu'à la fin de la session.
+local ignored = {}
+function M:IgnoreOnTheWay(qid) if qid then ignored[qid] = true end; self.way = nil; self:Changed() end
+function M:OnTheWay()
+    local t = self:Tour()
+    local s = t and not t.paused and t.steps[t.idx]
+    if not s or not s.map then return nil end
+    local me = G():PlayerPos()
+    if not me then return nil end
+    local now = GetTime and GetTime() or time()
+    if self.way and self.way.at and now - self.way.at < 3 and self.way.idx == t.idx then return self.way.e and self.way end
+    local inTour = {}
+    for _, st in ipairs(t.steps) do for _, q in ipairs(st.qids or {}) do inTour[q] = true end end
+    local picked = self:Config().picked[WK:CharKey()] or {}
+    local goal = point(s.map, s.x, s.y)
+    local base = dist(me, goal)
+    local _, _, list = self:Coins()
+    local best
+    if base < 100000 then
+        for _, e in ipairs(list or {}) do
+            if not inTour[e.id] and not ignored[e.id] and picked[e.id] ~= false and not e.complete then
+                for _, p in ipairs({ e.giver or false, e.center or false }) do
+                    if p and p.wx then
+                        local det = dist(me, p) + dist(p, goal) - base
+                        -- à moins de 90 m du trajet : détour aller-retour d'env. 180 m au plus
+                        if det <= 180 and (not best or det < best.det) then best = { e = e, det = det } end
+                    end
+                end
+            end
+        end
+    end
+    self.way = { at = now, idx = t.idx, e = best and best.e, det = best and best.det }
+    if not best then return nil end
+    self.way.mins = math.max(1, math.floor((best.det / SPEED + objTime(best.e.id, best.e.inLog)) / 60 + 0.5))
+    return self.way
+end
+function M:AddOnTheWay(qid)
+    if not qid then return end
+    self.way = nil
+    self:SetPicked(qid, true)
+    self:Reorder()
+    local Qs = WK.modules.Quests
+    local q = Qs and Qs:Get(qid)
+    WK:Print(string.format(T("Ajoutée à la tournée : %s"), (q and Qs:Name(q)) or ("#" .. qid)))
 end
 
 function M:Tour() return self:Config().tour[WK:CharKey()] end
@@ -420,7 +551,6 @@ function M:Reorder()
     self:Changed()
 end
 
-local function inLog(qid) return Q():InLog(qid) end
 function M:StepDone(s)
     if s.kind == "trainer" then
         -- fini quand il ne reste rien à apprendre, ou après une visite chez le maître depuis le début de l'étape
@@ -456,9 +586,14 @@ function M:StepTitle(s)
         return string.format(T("Maître de classe : %d sort(s) à apprendre"), s.spells or 0)
     end
     local names = {}
+    local pred = {}
+    for _, q in ipairs(s.preds or {}) do pred[q] = true end
     for _, q in ipairs(s.qids) do
         local qq = WK.modules.Quests:Get(q)
-        table.insert(names, (inLog(q) and Q():Title(q)) or (qq and WK.modules.Quests:Name(qq)) or ("#" .. q))
+        local n = (inLog(q) and Q():Title(q)) or (qq and WK.modules.Quests:Name(qq)) or ("#" .. q)
+        -- suite prévue pas encore prise
+        if pred[q] and not inLog(q) then n = n .. " " .. T("(suite)") end
+        table.insert(names, n)
     end
     local list = table.concat(names, ", ")
     if s.kind == "pick" then return string.format(T("Prendre : %s"), list)
@@ -581,9 +716,12 @@ WK:On("QUEST_TURNED_IN", function(qid)
     local t = M:Tour()
     if t then t.turned = (t.turned or 0) + 1 end
     soon()
-    -- suite de la quête rendue dans la zone : la tournée est refaite pour l'inclure
+    -- quête rendue qui a une suite : la tournée est refaite (la suite prévue devient une vraie quête à
+    -- prendre, ou disparaît si le jeu ne la propose pas)
     local q = qid and WK.modules.Quests and WK.modules.Quests:Get(qid)
     if t and q and q.nxt then
+        local planned = false
+        for _, st in ipairs(t.steps) do for _, x in ipairs(st.qids or {}) do if x == q.nxt then planned = true end end end
         C_Timer.After(1.5, function()
             local t2 = M:Tour()
             if not (on() and t2 and not t2.paused) then return end
@@ -592,15 +730,30 @@ WK:On("QUEST_TURNED_IN", function(qid)
             for _, e in ipairs(list) do
                 if e.id == q.nxt and e.picked then
                     M:Reorder()
-                    WK:Print(string.format(T("Suite ajoutée à la tournée : %s"), e.title or ("#" .. e.id)))
+                    if not planned then WK:Print(string.format(T("Suite ajoutée à la tournée : %s"), e.title or ("#" .. e.id))) end
                     return
                 end
             end
+            if planned then M:Reorder() end
         end)
     end
 end)
+-- « Sur ton chemin » : la carte de tournée est repeinte quand la quête proposée change
+local lastWay
+local function wayCheck()
+    if not (on() and M:Active()) then lastWay = nil return end
+    local w = M:OnTheWay()
+    local id = w and w.e and w.e.id or false
+    if id ~= lastWay then
+        lastWay = id
+        if WK.UI.RefreshQuestTracker then WK.UI:RefreshQuestTracker() end
+    end
+end
 WK:On("PLAYER_LOGIN", function()
-    if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(5, nearCheck) end
+    if C_Timer and C_Timer.NewTicker then
+        C_Timer.NewTicker(5, nearCheck)
+        C_Timer.NewTicker(4, wayCheck)
+    end
 end)
 -- arrivée dans une autre zone de quêtes : une tournée faite ailleurs est refaite avec les quêtes d'ici
 -- (étapes qui restent + quêtes cochées de la zone), au plus une fois par zone

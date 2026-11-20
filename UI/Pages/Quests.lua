@@ -1841,6 +1841,15 @@ UI:RegisterPage({
         else
             self.tSub:SetText(string.format(T("En cours · étape %d / %d"), idx, #steps))
         end
+        -- boucles : retours sur tes pas et suites prévues (Modules/QuestPlan.lua)
+        local preds = {}
+        for _, st in ipairs(steps) do for _, q in ipairs(st.preds or {}) do preds[q] = true end end
+        local np = 0
+        for _ in pairs(preds) do np = np + 1 end
+        local extra = {}
+        if data.returns then table.insert(extra, string.format(T("%d retour(s) sur tes pas"), data.returns)) end
+        if np > 0 then table.insert(extra, string.format(T("%d suite(s) prévue(s)"), np)) end
+        if #extra > 0 then self.tSub:SetText(self.tSub:GetText() .. (self.tSub:GetText() ~= "" and "  ·  " or "") .. UI:Hex(C.muted) .. table.concat(extra, " · ") .. "|r") end
         self.tsteps:Reset()
         local W = self.tscroll:GetWidth() or 500
         if W < 100 then W = 500 end

@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.102.0", date = "20/11/2026",
+        added = {
+            "Tournée de quêtes : les suites sont prévues. La quête qui suit une quête cochée est prise à son rendu et ses objectifs entrent dans la même boucle, au lieu de repartir en arrière ensuite. Elle est marquée « (suite) » tant qu'elle n'est pas prise.",
+            "Tournée de quêtes : « Sur ton chemin ». Pendant la tournée, une ligne sous les étapes suivantes propose une quête toute proche du trajet, pas encore dans la tournée, avec le détour et l'XP. Clic gauche pour l'ajouter, clic droit pour l'ignorer.",
+            "Onglet Tournée : nombre de retours sur tes pas et de suites prévues sous le titre.",
+        },
+        changed = {
+            "Tournée de quêtes : calcul en boucles. Tout est pris au camp, les zones de quête sont faites dans l'ordre d'un tour, puis tout est rendu en une fois ; un rendu sur le trajet est fait en passant. Une quête dont les objectifs sont dans deux zones a une étape dans chacune (avant : un point au milieu des deux).",
+        },
+    },
+    {
         version = "1.101.14", date = "20/11/2026",
         added = {
             "Quêtes de ma zone : bouton « Compléter la zone ». Il coche toutes les quêtes de la zone où tu es, même celles un peu au-dessus de ton niveau, et lance la tournée depuis ta position.",

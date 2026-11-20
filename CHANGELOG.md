@@ -72,6 +72,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.102.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes : les suites sont prévues. La quête qui suit une quête cochée est prise à son rendu et ses objectifs entrent dans la même boucle, au lieu de repartir en arrière ensuite. Elle est marquée « (suite) » tant qu'elle n'est pas prise.
+- Tournée de quêtes : « Sur ton chemin ». Pendant la tournée, une ligne sous les étapes suivantes propose une quête toute proche du trajet, pas encore dans la tournée, avec le détour et l'XP. Clic gauche pour l'ajouter, clic droit pour l'ignorer.
+- Onglet Tournée : nombre de retours sur tes pas et de suites prévues sous le titre.
+
+### Modifications
+- Tournée de quêtes : calcul en boucles. Tout est pris au camp, les zones de quête sont faites dans l'ordre d'un tour, puis tout est rendu en une fois ; un rendu sur le trajet est fait en passant. Une quête dont les objectifs sont dans deux zones a une étape dans chacune (avant : un point au milieu des deux).
+
 ## v1.101.14 — 20/11/2026
 
 _Un /reload suffit._
