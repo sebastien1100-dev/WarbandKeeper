@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.110.3 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte des zones : les quêtes de ton journal propres à WoW Forever (absentes de la base de quêtes, comme « Butin de guerre » ou « Dangers alchimiques ») n'apparaissaient pas dans la liste de leur zone ; elles y sont maintenant (selon la zone où le jeu les range), cochables, avec « position donnée par le jeu ».
+- Tournée de quêtes : ces quêtes y entrent aussi, à l'endroit que le jeu indique pour elles.
+
 ## v1.110.2 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.110.3", date = "20/11/2026",
+        fixed = {
+            "Carte des zones : les quêtes de ton journal propres à WoW Forever (absentes de la base de quêtes, comme « Butin de guerre » ou « Dangers alchimiques ») n'apparaissaient pas dans la liste de leur zone ; elles y sont maintenant (selon la zone où le jeu les range), cochables, avec « position donnée par le jeu ».",
+            "Tournée de quêtes : ces quêtes y entrent aussi, à l'endroit que le jeu indique pour elles.",
+        },
+    },
+    {
         version = "1.110.2", date = "20/11/2026",
         fixed = {
             "Tournée de quêtes lancée : la liste des étapes descend jusqu'aux petits boutons (il restait un espace vide au-dessus d'eux).",

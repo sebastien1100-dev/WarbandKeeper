@@ -4260,4 +4260,5 @@ WK.Locales.enUS.text = {
     ["Toutes les quêtes"] = "All quests",
     ["De mon niveau"] = "My level",
     ["Envoyer dans Ma progression"] = "Send to My progress",
+    ["absente de la base · position donnée par le jeu"] = "not in the database · position given by the game",
 }

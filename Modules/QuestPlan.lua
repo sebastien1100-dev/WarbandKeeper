@@ -91,6 +91,13 @@ function M:Candidates()
         local d = Q():Data(e.id)
         local ti = (e.inLog and Q():TurnIn(e.id)) or (d and d.turnIn)
         if ti then e.turnIn = point(ti.map, ti.x, ti.y) end
+        -- quête du journal absente de la base (quêtes propres à WoW Forever) : le point donné par le jeu
+        -- (C_QuestLog.GetNextWaypoint) sert de zone d'objectifs tant qu'elle n'est pas finie
+        if e.inLog and not e.complete and #camps == 0 and not (d and #(d.objs or {}) > 0) and ti and ti.map == zone then
+            e.camps = { { i = 1, kind = "m", camp = { map = ti.map, x = ti.x, y = ti.y } } }
+            e.center = point(ti.map, ti.x, ti.y)
+            e.gameOnly = true
+        end
         -- quête finie : seulement si on la rend dans cette zone (sinon, depuis une capitale, la tournée
         -- se réduisait à un rendu à l'autre bout du continent)
         -- quête à porter ou à livrer (pas de zone d'objectifs connue) : prise puis rendue dans la zone

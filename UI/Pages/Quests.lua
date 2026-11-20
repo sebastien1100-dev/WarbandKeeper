@@ -444,8 +444,9 @@ UI:RegisterPage({
             r.box.fill = UI:Rounded(r.box, 3, 3, "ARTWORK", 1)
             r.box:SetScript("OnClick", function(b)
                 local q = b:GetParent().q
-                if not q then return end
-                self.zsel[q.id] = not self.zsel[q.id] or nil
+                local id = q and q.id or b.qid
+                if not id then return end
+                self.zsel[id] = not self.zsel[id] or nil
                 self:Refresh()
             end)
             r.lv = UI:Text(r, 12)
@@ -2272,7 +2273,7 @@ UI:RegisterPage({
                     local pickable = (st == "avail" or st == "log") and key == WK:CharKey()
                     self.zoneQuests[#self.zoneQuests + 1] = { id = q.id, lvl = q.lvl, pickable = pickable, kind = q.kind, grp = q.grp }
                     local on = pickable and self.zsel[q.id] and true or false
-                    row.box:SetShown(pickable)
+                    row.box:SetShown(pickable); row.box.qid = q.id
                     row.box.border:SetColor(ar, ag, ab, on and 1 or 0.7)
                     row.box.fill:SetColor(ar, ag, ab, 1); row.box.fill:SetShown(on)
                     if on then selN = selN + 1; selXP = selXP + (q.xp or 0) end
@@ -2281,6 +2282,40 @@ UI:RegisterPage({
                     ly = ly + ROW_H
                 end
             end
+        end
+        -- quêtes du journal rangées par le jeu sous cette zone mais absentes de la base (propres à WoW Forever)
+        if key == WK:CharKey() and self.zone and QT() then
+            local zn = (WK.modules.Rares:ZoneName(self.zone) or ""):lower()
+            local known = {}
+            for _, q in ipairs(all) do known[q.id] = true end
+            for _, l in ipairs(QT():LogQuests()) do
+                if not known[l.id] and l.zone and l.zone:lower() == zn then
+                    total = total + 1; shown = shown + 1
+                    local row = self.qrows:Get()
+                    row.q = nil
+                    row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -ly); row:SetWidth(LW - 14)
+                    row.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.6)
+                    row.lv:SetText(l.level and tostring(l.level) or "-")
+                    row.lv:SetTextColor(unpack(l.level and levelColor(l.level, myLevel) or C.muted))
+                    local col, label = stateInfo("log")
+                    row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
+                    row.name:SetText(l.title or ("#" .. l.id))
+                    row.name:SetTextColor(unpack(C.text))
+                    row.sub:SetText(l.complete and T("à rendre") or T("absente de la base · position donnée par le jeu"))
+                    row.state:Set(label, col)
+                    row.guide:SetShown(true)
+                    row.guide:SetScript("OnClick", function() QT():Track(l.id) end)
+                    self.zoneQuests[#self.zoneQuests + 1] = { id = l.id, lvl = l.level, pickable = true }
+                    local on = self.zsel[l.id] and true or false
+                    row.box:SetShown(true)
+                    row.box.border:SetColor(ar, ag, ab, on and 1 or 0.7)
+                    row.box.fill:SetColor(ar, ag, ab, 1); row.box.fill:SetShown(on)
+                    row.box.qid = l.id
+                    if on then selN = selN + 1 end
+                    ly = ly + ROW_H
+                end
+            end
+            self.lscroll.child:SetSize(LW - 14, math.max(ly, 30))
         end
         -- total de la sélection et pastilles
         local mins = math.max(0, math.floor(selN * 4))
