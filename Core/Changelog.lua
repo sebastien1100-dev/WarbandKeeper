@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.4", date = "20/11/2026",
+        fixed = {
+            "Carte des vols : l'encart du guidage n'apparaissait que si le trajet prévoyait déjà un vol. Quand ta destination est loin, il propose maintenant aussi le relais le plus proche de ta destination ; il est posé en bas de la carte des vols (dessous, il sortait de l'écran).",
+            "Carte de tournée : le bouton « Passer l'étape » montre une flèche vers la droite (elle pointait vers le bas).",
+            "Mode édition : pendant une tournée, l'aperçu de la carte de quête montre la carte de tournée.",
+        },
+    },
+    {
         version = "1.100.3", date = "20/11/2026",
         fixed = {
             "Guidage par les vols : arrivé au maître de vol, rien ne disait où aller. La carte des vols affiche maintenant un encart « Guidage : vole jusqu'à … » avec un bouton « Prendre ce vol », et le chat le rappelle ; si ce maître ne propose pas ce vol, l'encart le dit.",

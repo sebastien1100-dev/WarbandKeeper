@@ -79,6 +79,7 @@ local function build()
     tv.close:SetPoint("TOPRIGHT", -10, -14)
     tv.close:SetScript("OnClick", function() WK.modules.QuestPlan:Stop() end)
     tv.skip = UI:IconButton(tv, "chevron", 20, "Passer l'étape")
+    if tv.skip.icon.SetRotation then tv.skip.icon:SetRotation(math.pi / 2) end -- chevron vers la droite
     tv.skip:SetPoint("RIGHT", tv.close, "LEFT", -5, 0)
     tv.skip:SetScript("OnClick", function() WK.modules.QuestPlan:Skip() end)
     tv.pp = UI:IconButton(tv, "pause", 20, "Pause")
@@ -273,7 +274,13 @@ local function build()
         enabled = function() return shown() end,
         sample = function(on)
             f.sample = on or nil
-            if on then
+            if on and WK.modules.QuestPlan and WK.modules.QuestPlan:Tour() then
+                -- tournée en cours : aperçu de la carte de tournée
+                f:PaintTour({ kind = "turn", title = T("Rendre : Le viaduc de Thandol"), sub = T("Les Paluns"), dist = 160,
+                    objs = {}, idx = 4, count = 7, mins = 18,
+                    nexts = { { n = 5, kind = "do", title = T("Coin du loch : 3 quêtes") }, { n = 6, kind = "pick", title = T("Prendre : Thelsamar") } } })
+                f:Show()
+            elseif on then
                 f:Paint({ title = T("La chasse aux loups"), sub = T("Sombrivage · niveau 14"), goal = T("Camp à 140 m"),
                     objs = { { name = T("Loup de Sombrivage"), have = 6, need = 10 }, { name = T("Croc de loup"), have = 4, need = 4, done = true } } })
                 f:Show()

@@ -198,6 +198,25 @@ local function showHint()
     hideHint()
     local Nv = WK.modules.Nav
     local leg = Nv and Nv.PlannedFlight and Nv:PlannedFlight()
+    -- trajet sans vol prévu (vol jugé pas rentable, relais pas encore connus…) mais une cible de guidage
+    -- loin : relais de cette carte le plus proche de la cible, s'il rapproche nettement
+    if not (leg and leg.to) then
+        local G = WK.modules.Guide
+        local t, p = G and G.target, G and G:PlayerPos()
+        if t and p and t.cont and p.cont == t.cont and NumTaxiNodes then
+            local far = math.sqrt((t.wx - p.wx) ^ 2 + (t.wy - p.wy) ^ 2)
+            local best, bd
+            for i = 1, NumTaxiNodes() do
+                local ty = TaxiNodeGetType and TaxiNodeGetType(i)
+                local w = (ty == "REACHABLE") and nodeWorld(i)
+                if w and w[1] == t.cont then
+                    local d = math.sqrt((w[2] - t.wx) ^ 2 + (w[3] - t.wy) ^ 2)
+                    if not bd or d < bd then best, bd = i, d end
+                end
+            end
+            if best and far > 1500 and bd < far * 0.5 then leg = { to = nodeName(best), near = true } end
+        end
+    end
     if not leg or not leg.to then return end
     local host = (FlightMapFrame and FlightMapFrame:IsShown() and FlightMapFrame) or (TaxiFrame and TaxiFrame:IsShown() and TaxiFrame)
     if not host then return end
@@ -218,7 +237,8 @@ local function showHint()
     hint.icon:SetVertexColor(r, g, b, 1)
     local here = i and TaxiNodeGetType and TaxiNodeGetType(i) == "CURRENT"
     if i and not here then
-        hint.txt:SetText(T("Guidage : vole jusqu'à") .. " " .. UI:Hex({ r, g, b }) .. leg.to .. "|r")
+        hint.txt:SetText(T("Guidage : vole jusqu'à") .. " " .. UI:Hex({ r, g, b }) .. leg.to .. "|r"
+            .. (leg.near and ("|n" .. UI:Hex(C.muted) .. T("le relais le plus proche de ta destination") .. "|r") or ""))
         hint.go.node = i
         hint.go:Show()
         if hint.told ~= leg.to then
@@ -232,9 +252,12 @@ local function showHint()
     end
     hint.go:SetWidth(hint.go.label:GetStringWidth() + 32)
     UI:MatchHost(hint, host, 20)
+    -- posé en bas de la carte des vols, dedans (dessous, il sortait de l'écran)
     hint:ClearAllPoints()
-    hint:SetPoint("TOPLEFT", host, "BOTTOMLEFT", 0, -4)
-    hint:SetWidth(math.max(360, math.min(560, host:GetWidth() or 400)))
+    hint:SetPoint("BOTTOMLEFT", host, "BOTTOMLEFT", 12, 14)
+    hint:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -12, 14)
+    hint:SetHeight(leg.near and 54 or 46)
+    hint:SetClampedToScreen(true)
     hint:Show()
 end
 WK:On("TAXIMAP_OPENED", function() C_Timer.After(0.2, showHint) end)

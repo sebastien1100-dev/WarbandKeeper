@@ -72,6 +72,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.100.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte des vols : l'encart du guidage n'apparaissait que si le trajet prévoyait déjà un vol. Quand ta destination est loin, il propose maintenant aussi le relais le plus proche de ta destination ; il est posé en bas de la carte des vols (dessous, il sortait de l'écran).
+- Carte de tournée : le bouton « Passer l'étape » montre une flèche vers la droite (elle pointait vers le bas).
+- Mode édition : pendant une tournée, l'aperçu de la carte de quête montre la carte de tournée.
+
 ## v1.100.3 — 20/11/2026
 
 _Un /reload suffit._
