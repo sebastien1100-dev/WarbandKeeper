@@ -1784,3 +1784,33 @@ function UI:AskReload(text)
     reloadAsk.text:SetText(text or WK.T("Recharger l'interface pour appliquer le changement."))
     reloadAsk:Show()
 end
+
+-- Repère de rendu de quête : médaillon doré bombé, liseré clair, « ? » sombre au centre, lueur dorée.
+-- Pose les textures sur le cadre f (sa taille fait celle du repère, les proportions suivent).
+function UI:TurnInMarker(f)
+    f.glow = f:CreateTexture(nil, "BACKGROUND")
+    f.glow:SetTexture(UI.MEDIA .. "fxhalo"); f.glow:SetBlendMode("ADD")
+    f.glow:SetPoint("CENTER"); f.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 0.8)
+    f.ring = f:CreateTexture(nil, "BORDER")
+    f.ring:SetTexture(UI.MEDIA .. "circle"); f.ring:SetAllPoints(); f.ring:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
+    f.edge = f:CreateTexture(nil, "ARTWORK", nil, 1)
+    f.edge:SetTexture(UI.MEDIA .. "circle"); f.edge:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+    f.disc = f:CreateTexture(nil, "ARTWORK", nil, 2)
+    f.disc:SetTexture(UI.MEDIA .. "circle")
+    UI:SetGradient(f.disc, "VERTICAL", { C.gold[1] * 0.78, C.gold[2] * 0.66, C.gold[3] * 0.3, 1 },
+        { math.min(1, C.gold[1] * 1.15), math.min(1, C.gold[2] * 1.15), math.min(1, C.gold[3] * 1.2 + 0.1), 1 })
+    f.q = f:CreateFontString(nil, "OVERLAY")
+    f.q:SetPoint("CENTER", 0.5, 0)
+    f.q:SetText("?")
+    local function size()
+        local w = math.max(8, f:GetWidth() or 18)
+        f.glow:SetSize(w * 2, w * 2)
+        f.edge:ClearAllPoints(); f.edge:SetPoint("TOPLEFT", w * 0.09, -w * 0.09); f.edge:SetPoint("BOTTOMRIGHT", -w * 0.09, w * 0.09)
+        f.disc:ClearAllPoints(); f.disc:SetPoint("TOPLEFT", w * 0.14, -w * 0.14); f.disc:SetPoint("BOTTOMRIGHT", -w * 0.14, w * 0.14)
+        f.q:SetFont(UI.TITLE_FONT or UI.FONT, math.max(7, math.floor(w * 0.62 + 0.5)), "")
+        f.q:SetTextColor(C.bg[1], C.bg[2], C.bg[3], 1)
+    end
+    f:HookScript("OnSizeChanged", size)
+    size()
+    return f
+end

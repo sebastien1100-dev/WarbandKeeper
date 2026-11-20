@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.2", date = "20/11/2026",
+        changed = {
+            "Repère de rendu de quête redessiné : médaillon doré bombé, liseré clair, « ? » sombre au centre et légère lueur dorée, à la place du gros disque noir. Partout : carte du monde, grande carte de la page Quêtes et détail du rendu.",
+        },
+    },
+    {
         version = "1.98.1", date = "20/11/2026",
         fixed = {
             "Le « ~ » des estimations s'affichait mal avec la police du jeu : remplacé par « env. » partout (étapes de tournée, durées du guide de montée et de la carte de quête, coût des sorts jusqu'au 60, retour au corps, temps restant des enchères, repos, taille de la sauvegarde).",

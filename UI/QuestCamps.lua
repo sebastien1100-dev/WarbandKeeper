@@ -74,8 +74,7 @@ local function turnPin(i, cv)
     if not p then
         p = CreateFrame("Frame", nil, cv)
         p.wk = true
-        p.dot = p:CreateTexture(nil, "ARTWORK"); p.dot:SetAllPoints(); p.dot:SetTexture(UI.MEDIA .. "circle")
-        p.q = UI:Text(p, 13, C.bg); p.q:SetPoint("CENTER", 0, 0); p.q:SetText("?")
+        UI:TurnInMarker(p)
         p:EnableMouse(true)
         p:SetScript("OnEnter", function(s)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
@@ -193,7 +192,6 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
                 local pin = turnPin(nt, cv)
                 local s = main and 22 or 16
                 pin:SetSize(s, s)
-                pin.dot:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
                 pin.title = title
                 pin:SetFrameLevel(lvl + 6)
                 pin:ClearAllPoints(); pin:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)
