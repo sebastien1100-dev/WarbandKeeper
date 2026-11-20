@@ -12,6 +12,7 @@ local P = WK.modules.TalentPlan
 local panel, glow, host
 local FRAMES = { "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame", "TalentFrame" }
 
+local paintToggle -- bouton « Plan de montée » de la fenêtre des talents (défini plus bas)
 local function enabled()
     local s = WK.DB.global.settings.ui
     if s.talentPlanPanel == nil then s.talentPlanPanel = true end
@@ -108,7 +109,7 @@ local function build()
     f.close = UI:IconButton(f, "close", 16, nil, "accent"); f.close:SetPoint("TOPRIGHT", -8, -8)
     -- fermé à la croix : ne se rouvre plus tout seul avec la fenêtre des talents jusqu'à /wk plan
     -- (ou « Ouvrir le panneau » de la fiche), ou jusqu'à la prochaine session
-    f.close:SetScript("OnClick", function() f.userHidden = true; f:Hide() end)
+    f.close:SetScript("OnClick", function() f.userHidden = true; f:Hide(); paintToggle() end)
     -- la lueur (posée sur UIParent, animée) disparaît avec le panneau
     f:SetScript("OnHide", function() if glow then glow:Hide() end end)
     -- plan actif (clic : plan suivant)
@@ -274,6 +275,7 @@ function UI:ShowTalentPlan(anchorTo)
     panel.userHidden = nil
     panel:Paint()
     panel:Show()
+    paintToggle()
 end
 function UI:ToggleTalentPlan()
     if panel and panel:IsShown() then
@@ -293,6 +295,30 @@ function UI:CloseTalentPlan()
 end
 function UI:RefreshTalentPlan() if panel and panel:IsShown() then panel:Paint() end end
 
+-- Bouton « Plan de montée » en bas à droite de la fenêtre des talents : ouvre / ferme le panneau
+local toggleBtn
+paintToggle = function()
+    if not toggleBtn then return end
+    local open = panel and panel:IsShown()
+    toggleBtn:SetStyle(open and "primary" or "secondary")
+end
+local function placeToggle(vis)
+    if not vis or not host or #P:Plans(WK:CharKey()) == 0 then
+        if toggleBtn then toggleBtn:Hide() end
+        return
+    end
+    if not toggleBtn then
+        toggleBtn = UI:Button(UIParent, T("Plan de montée"), nil, 24, "secondary", "book")
+        toggleBtn.tooltip = "Ouvre ou ferme le plan de montée à côté de la fenêtre des talents."
+        toggleBtn:SetScript("OnClick", function() UI:ToggleTalentPlan(); paintToggle() end)
+    end
+    UI:MatchHost(toggleBtn, host, 12)
+    toggleBtn:ClearAllPoints()
+    toggleBtn:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -14, 12)
+    toggleBtn:Show()
+    paintToggle()
+end
+
 -- Panneau et cercle selon l'onglet affiché : vérifié 4 fois par seconde tant que la fenêtre du jeu est ouverte
 -- (passer du Grimoire aux Talents ne rouvre pas la fenêtre)
 local watcher = CreateFrame("Frame"); watcher:Hide()
@@ -301,6 +327,7 @@ local function sync()
     local vis = talentsShown(host)
     if vis == lastVis then return end
     lastVis = vis
+    placeToggle(vis)
     if vis then
         if enabled() and #P:Plans(WK:CharKey()) > 0 and not (panel and panel.userHidden) then UI:ShowTalentPlan(host) end
         C_Timer.After(0.5, function() UI:TalentPlanGlow() end)
@@ -332,6 +359,7 @@ local function tryHook()
             end)
             fr:HookScript("OnHide", function(s)
                 watcher:Hide(); lastVis = nil
+                if toggleBtn then toggleBtn:Hide() end
                 if panel and panel.anchored then panel:Hide() end
                 if glow then glow:Hide() end
             end)

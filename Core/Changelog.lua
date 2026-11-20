@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.97.3", date = "20/11/2026",
+        added = {
+            "Fenêtre des talents : bouton « Plan de montée » en bas à droite pour ouvrir ou fermer le panneau du plan (plein quand le panneau est ouvert). Il n'apparaît que sur l'onglet des talents et si le perso a un plan.",
+        },
+    },
+    {
         version = "1.97.2", date = "20/11/2026",
         changed = {
             "QoL > Classes : nouvel onglet « Général » avant les 9 classes (icône : les logos des classes en mosaïque), pour les réglages communs à toutes les classes. Les réglages des sorts de classe (rappel, panneau chez le maître, tout apprendre) y sont rangés et quittent la roue de la fiche du perso.",

@@ -4038,4 +4038,5 @@ WK.Locales.enUS.text = {
     ["%s : %d sort(s) à apprendre (%s)"] = "%s: %d spell(s) to learn (%s)",
     ["prix inconnu"] = "price unknown",
     ["sorts"] = "spells",
+    ["Ouvre ou ferme le plan de montée à côté de la fenêtre des talents."] = "Opens or closes the leveling plan next to the talent window.",
 }
