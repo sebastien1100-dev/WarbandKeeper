@@ -30,8 +30,13 @@ local function campFrame(i, cv)
     if not f then
         f = CreateFrame("Frame", nil, cv)
         f.wk = true
+        -- halo doux autour de la zone (plus large que le camp), remplissage, contour sombre puis anneau en pointillés
+        f.glow = f:CreateTexture(nil, "BACKGROUND"); f.glow:SetPoint("TOPLEFT", -6, 6); f.glow:SetPoint("BOTTOMRIGHT", 6, -6)
+        f.glow:SetTexture(UI.MEDIA .. "fxhalo"); f.glow:SetBlendMode("ADD")
         f.fill = f:CreateTexture(nil, "ARTWORK"); f.fill:SetAllPoints(); f.fill:SetTexture(UI.MEDIA .. "circle")
-        f.ring = f:CreateTexture(nil, "OVERLAY"); f.ring:SetAllPoints(); f.ring:SetTexture(UI.MEDIA .. "ring_dash")
+        f.edge = f:CreateTexture(nil, "OVERLAY", nil, 0); f.edge:SetPoint("TOPLEFT", -1, 1); f.edge:SetPoint("BOTTOMRIGHT", 1, -1)
+        f.edge:SetTexture(UI.MEDIA .. "ring"); f.edge:SetVertexColor(0, 0, 0, 0.55)
+        f.ring = f:CreateTexture(nil, "OVERLAY", nil, 1); f.ring:SetAllPoints(); f.ring:SetTexture(UI.MEDIA .. "ring_dash")
         f:EnableMouse(true)
         f:SetScript("OnEnter", function(s)
             if not s.info then return end
@@ -206,11 +211,13 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
                         if x then
                             nc = nc + 1
                             local f = campFrame(nc, cv)
-                            local size = same and math.max(18, c.r * 2 * w) or (main and 14 or 10)
+                            local size = same and math.max(22, c.r * 2 * w) or (main and 16 or 12)
                             f:SetSize(size, size)
                             local col = o.type == "item" and C.warning or { UI:Accent() }
-                            f.fill:SetVertexColor(col[1], col[2], col[3], main and 0.24 or 0.14)
-                            f.ring:SetVertexColor(col[1], col[2], col[3], main and 0.95 or 0.55)
+                            -- bien visibles sur le parchemin de la carte (les repères du jeu sont masqués)
+                            f.fill:SetVertexColor(col[1], col[2], col[3], main and 0.38 or 0.28)
+                            f.ring:SetVertexColor(col[1], col[2], col[3], 1)
+                            f.glow:SetVertexColor(col[1], col[2], col[3], main and 0.45 or 0.3)
                             f.info = { title = title, text = (o.name ~= "" and o.name or o.text) .. string.format(" · %d/%d", o.have or 0, o.need or 0), camp = c }
                             f:SetFrameLevel(lvl)
                             f:ClearAllPoints(); f:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)

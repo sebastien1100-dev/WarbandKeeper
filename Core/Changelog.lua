@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.8", date = "20/11/2026",
+        changed = {
+            "Carte du monde : les zones de quête (camps) sont bien plus visibles : remplissage plus marqué, anneau plein de couleur avec un contour sombre, halo doux autour, et taille minimale plus grande. Elles remplacent les repères du jeu masqués.",
+        },
+    },
+    {
         version = "1.100.7", date = "20/11/2026",
         changed = {
             "Statistiques en vol, « Le savais-tu ? » : toutes les cartes sur une seule page quand elles tiennent (cartes plus compactes, le chiffre à droite du titre ; une carte à graphique en pleine largeur s'il reste la place). Plus de grande carte à moitié vide ; les pages et les flèches ne reviennent que si tout ne tient pas.",
