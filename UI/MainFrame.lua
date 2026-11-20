@@ -1124,6 +1124,38 @@ UI.CHIPS = {
                 string.format(T("%s XP de quêtes disponibles à ton niveau"), tostring(xp)) })
         end
         table.insert(out, { T("Disponibles"), tostring(avail) })
+        -- journal du perso connecté (Modules/QuestTrack.lua) : en tête sur l'onglet « Mon journal »
+        local QT = WK.modules.QuestTrack
+        if QT and QT.LogQuests then
+            local log = QT:LogQuests()
+            local maxQ = 25
+            if C_QuestLog and C_QuestLog.GetMaxNumQuestsCanAccept then
+                local okM, m = pcall(C_QuestLog.GetMaxNumQuestsCanAccept)
+                if okM and type(m) == "number" and m > 0 then maxQ = m end
+            end
+            local ready = 0
+            for _, q in ipairs(log) do if q.complete then ready = ready + 1 end end
+            local function toLog() if pg and pg.ShowTab then pg:ShowTab("log") end end
+            local jr = { { T("Journal"), #log .. " / " .. maxQ, #log >= maxQ and C.warning or nil, "quests", nil, toLog } }
+            if ready > 0 then table.insert(jr, { T("À rendre"), tostring(ready), C.positive, "quests", nil, toLog }) end
+            local tid = QT:Tracked()
+            if tid then
+                local title = QT:Title(tid) or ""
+                if #title > 28 then
+                    -- coupé sans casser une lettre accentuée (UTF-8)
+                    local cut = 26
+                    while cut > 1 and (title:byte(cut + 1) or 0) >= 128 and (title:byte(cut + 1) or 0) < 192 do cut = cut - 1 end
+                    title = title:sub(1, cut) .. "..."
+                end
+                table.insert(jr, { T("Suivie"), title, { UI:Accent() }, "quests", T("Clic : voir la quête dans Mon journal"),
+                    function() if pg then pg.sel = tid end; toLog() end })
+            end
+            if pg and pg.view == "log" then
+                for i = #jr, 1, -1 do table.insert(out, 1, jr[i]) end
+            else
+                for _, e in ipairs(jr) do table.insert(out, e) end
+            end
+        end
         return out
     end,
 }

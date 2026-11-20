@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.94.0", date = "20/11/2026", restart = true,
+        added = {
+            "Quête suivie : coche une quête dans le journal du jeu (ou clique « Suivre » dans l'addon) ; une carte à l'écran montre ses objectifs avec leurs jauges, « Camp suivant » et « Rendu ». À placer en mode édition.",
+            "La flèche guide vers le camp le plus proche d'un objectif pas fini (monstres, objets à ramasser, objets au sol), puis vers le personnage qui reprend la quête quand tout est fait. Elle ne remplace jamais un autre guidage en cours.",
+            "Carte du monde : camps des objectifs en pointillés (orange pour un objet à ramasser), étiquette avec l'avancée, « ? » doré où rendre une quête prête ; clic sur un camp = guidage. Volet « Quêtes du journal » en bas à gauche de la carte : clic = suivre, bouton pour voir les camps de toutes les quêtes.",
+            "Page Quêtes : nouvel onglet « Mon journal » (quêtes rangées par zone, détail des objectifs avec camps et distance, point de rendu, mini-carte, Suivre / Voir sur la carte) ; nouvelles pastilles Journal, À rendre et Suivie ; réglages du suivi dans la roue.",
+        },
+    },
+    {
         version = "1.93.0", date = "20/11/2026",
         added = {
             "Apparence > Styles : trois habillages qui changent la forme de toute la fenêtre, pas seulement ses couleurs. Héraldique : barre latérale pleine, titres des cartes sur un bandeau coloré, 1re pastille pleine. Encre : cartes sans fond ni bordure avec un trait de couleur à gauche, grands titres, boutons pleins. Cuir et or : fond de cuir, titres centrés soulignés d'un filet doré, cartes à double liseré, jauges dorées.",
@@ -4480,8 +4489,6 @@ WK.Roadmap = {
     { prio = 2, theme = "char", title = "Compétences d'armes", text = "Dans la fiche du perso : niveau de chaque arme, celles qui manquent et le maître d'armes le plus proche." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
-    { prio = 1, theme = "dung", title = "Camps d'objectifs des quêtes", text = "D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans)." },
-    { prio = 1, theme = "dung", title = "Guidage de la quête suivie", text = "La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits." },
     { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },

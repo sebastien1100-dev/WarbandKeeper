@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -192,6 +192,8 @@ def metrics():
             out["Rares"] = count(WK.RaresDB)
         elif name == "QuestsDB":
             out["Quêtes"] = count(WK.QuestsDB)
+        elif name == "QuestObjDB":
+            out["Quêtes avec camps d'objectifs"] = size(WK.QuestObjRaw)
         elif name == "Guides":
             out["Guides de métiers"] = size(WK.Guides)
         elif name == "RecipeDB":
@@ -267,7 +269,7 @@ def main():
             log("QuestieDB")
             qpath, qrev = questie(opt("--questie"))
             sources.append("QuestieDB `%s`" % qrev)
-            for gen in ["gen_places.py", "gen_roads.py", "gen_rares.py", "gen_quests.py"]:
+            for gen in ["gen_places.py", "gen_roads.py", "gen_rares.py", "gen_quests.py", "gen_objectives.py"]:
                 run(os.path.join(HERE, gen), qpath)
         if do_wowtbc:
             log("wowtbc.gg")

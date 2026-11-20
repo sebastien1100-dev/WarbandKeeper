@@ -60,8 +60,6 @@ _Prévu, pas encore commencé._
 - **Salut choisi par classe** (basse) — Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu.
 
 ### Donjons et quêtes
-- **Camps d'objectifs des quêtes** (haute) — D'après QuestieDB : où trouver les monstres et objets de chaque objectif, sur la carte, dans la page Quêtes et en guidage (entrée du donjon si l'objectif est dedans).
-- **Guidage de la quête suivie** (haute) — La quête cochée dans le journal : flèche vers son prochain camp, puis vers le point de rendu une fois les objectifs faits.
 - **Quêtes automatiques** (moyenne) — Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Quêtes, suite** (moyenne) — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
@@ -77,6 +75,16 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.94.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Quête suivie : coche une quête dans le journal du jeu (ou clique « Suivre » dans l'addon) ; une carte à l'écran montre ses objectifs avec leurs jauges, « Camp suivant » et « Rendu ». À placer en mode édition.
+- La flèche guide vers le camp le plus proche d'un objectif pas fini (monstres, objets à ramasser, objets au sol), puis vers le personnage qui reprend la quête quand tout est fait. Elle ne remplace jamais un autre guidage en cours.
+- Carte du monde : camps des objectifs en pointillés (orange pour un objet à ramasser), étiquette avec l'avancée, « ? » doré où rendre une quête prête ; clic sur un camp = guidage. Volet « Quêtes du journal » en bas à gauche de la carte : clic = suivre, bouton pour voir les camps de toutes les quêtes.
+- Page Quêtes : nouvel onglet « Mon journal » (quêtes rangées par zone, détail des objectifs avec camps et distance, point de rendu, mini-carte, Suivre / Voir sur la carte) ; nouvelles pastilles Journal, À rendre et Suivie ; réglages du suivi dans la roue.
 
 ## v1.93.0 — 20/11/2026
 
