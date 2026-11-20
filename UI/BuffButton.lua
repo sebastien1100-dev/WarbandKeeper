@@ -51,28 +51,35 @@ local function buffFor(unit)
     if b and known(b.cast) then return b.cast, b.has end
 end
 
--- Temps restant (secondes, 0 = sans fin) du premier de ces sorts sur l'unité, nil s'il n'y est pas
+-- Temps restant (secondes, 0 = sans fin) du premier de ces sorts sur l'unité, nil s'il n'y est pas ;
+-- 2e valeur : vrai si c'est toi qui l'as lancé (sinon un autre joueur, ou inconnu)
 local function auraLeft(unit, ids)
     local names = {}
     for _, id in ipairs(ids) do local n = WK.SpellInfo(id); if n then names[n] = true end end
     for i = 1, 40 do
-        local name, exp
+        local name, exp, src
         if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
             local d = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
             if not d then break end
-            name, exp = d.name, d.expirationTime
+            name, exp, src = d.name, d.expirationTime, d.sourceUnit
         elseif UnitBuff then
-            local n, _, _, _, _, e = UnitBuff(unit, i)
+            local n, _, _, _, _, e, s = UnitBuff(unit, i)
             if not n then break end
-            name, exp = n, e
+            name, exp, src = n, e, s
         else break end
         if name and names[name] then
-            if not exp or exp == 0 then return 0 end
-            return math.max(0, exp - GetTime())
+            local mine = src ~= nil and UnitIsUnit and UnitIsUnit(src, "player") or false
+            if not exp or exp == 0 then return 0, mine end
+            return math.max(0, exp - GetTime()), mine
         end
     end
     return nil
 end
+
+-- Joueurs que le jeu a refusé de buffer juste après un clic (« un sort plus puissant est déjà actif »,
+-- hors de vue…) : passés pendant 2 min, le bouton va au suivant
+local refused = {}
+UI.buffRefused = refused
 
 local function inRange(spell, unit)
     if UnitIsUnit and UnitIsUnit(unit, "player") then return true end
@@ -120,9 +127,11 @@ local function candidates()
             seen[guid] = true
             local id, has = buffFor(u)
             local name = id and WK.SpellInfo(id)
-            if name then
-                local left = auraLeft(u, has)
-                if (not left or (left > 0 and left < refresh)) and inRange(name, u) then
+            if name and not (refused[guid] and GetTime() - refused[guid] < 120) then
+                local left, mine = auraLeft(u, has)
+                -- buff d'un autre lanceur encore actif : on ne le remplace pas (le jeu refuserait un sort plus
+                -- faible) ; seul ton propre buff est rafraîchi avant la fin
+                if (not left or (mine and left > 0 and left < refresh)) and inRange(name, u) then
                     table.insert(out, { unit = u, id = id, spell = name, who = UnitName(u), class = select(2, UnitClass(u)) })
                 end
             end
@@ -196,6 +205,7 @@ local function build()
     btn:HookScript("PostClick", function(s, button, down)
         local e = list and list[1]
         UI.buffLastClick = { at = GetTime(), button = button, down = down, macro = s:GetAttribute("macrotext"),
+            guid = e and e.unit and UnitGUID(e.unit),
             unit = e and e.unit, who = e and e.unit and UnitName(e.unit), exists = e and e.unit and UnitExists(e.unit),
             type = s:GetAttribute("type"), keyDown = WK.GetCVar("ActionButtonUseKeyDown"), useOnKeyDown = s:GetAttribute("useOnKeyDown"),
             events = {} }
@@ -387,8 +397,17 @@ end
 local function spellName(id) return tostring(id and WK.SpellInfo(id) or id or "?") end
 WK:OnUnit("UNIT_SPELLCAST_SENT", "player", function(_, target, _, spellID) noteClickEvent("sort envoyé " .. spellName(spellID) .. " » " .. tostring(target)) end)
 WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, spellID) noteClickEvent("réussi " .. spellName(spellID)) end)
-WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID) noteClickEvent("raté " .. spellName(spellID)) end)
-WK:On("UI_ERROR_MESSAGE", function(_, msg) noteClickEvent("erreur : " .. tostring(msg)) end)
+-- refus du jeu juste après notre clic : ce joueur est passé 2 min, le bouton va au suivant
+local function refuse()
+    local lc = UI.buffLastClick
+    if lc and lc.guid and GetTime() - lc.at < 1.5 and not lc.refused then
+        lc.refused = true
+        refused[lc.guid] = GetTime()
+        C_Timer.After(0.1, function() if not inCombat() then UI:RefreshBuffButton() end end)
+    end
+end
+WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID) noteClickEvent("raté " .. spellName(spellID)); refuse() end)
+WK:On("UI_ERROR_MESSAGE", function(_, msg) noteClickEvent("erreur : " .. tostring(msg)); refuse() end)
 WK:On("ADDON_ACTION_BLOCKED", function(addon, fn) noteClickEvent("action bloquée : " .. tostring(addon) .. " " .. tostring(fn)) end)
 WK:On("ADDON_ACTION_FORBIDDEN", function(addon, fn) noteClickEvent("action interdite : " .. tostring(addon) .. " " .. tostring(fn)) end)
 

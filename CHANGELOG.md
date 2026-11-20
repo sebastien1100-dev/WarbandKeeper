@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.87.5 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton « Buffer le suivant » : il restait bloqué sur un joueur qui avait déjà le buff d'un autre lanceur (Puissance d'un autre paladin, souvent plus forte) dès que ce buff approchait de sa fin ; le jeu refusait le sort et le bouton ne passait pas au suivant.
+- Maintenant, le buff d'un autre joueur n'est jamais remplacé (seul le tien est rafraîchi avant la fin), et si le jeu refuse le sort juste après ton clic (sort plus puissant déjà actif, hors de vue…), ce joueur est passé pendant 2 min et le bouton va au suivant.
+
 ## v1.87.4 — 20/11/2026
 
 _Un /reload suffit._
