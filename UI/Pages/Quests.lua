@@ -35,7 +35,7 @@ local KIND = { d = "Donjon", c = "Classe" }
 local LOG_W, LROW_H, LHEAD_H = 330, 28, 26
 local COL_W, COL_W_NARROW = 270, 230      -- colonne de gauche de Mon journal et Tournée (la carte prend le reste)
 local BIG_W, BIG_H, SUB_H = 240, 46, 28   -- grands onglets, rangée des sous-onglets
-local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "pick", "Quêtes de ma zone" }, { "tour", "Tournée" } }
+local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "pick", "Quêtes de ma zone" }, { "tour", "Tournée de quêtes" } }
 local function QT() return WK.modules.QuestTrack end
 local function QP() return WK.modules.QuestPlan end
 local function LG() return WK.modules.LevelGuide end

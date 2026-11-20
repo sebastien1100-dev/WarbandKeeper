@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.18", date = "20/11/2026",
+        changed = {
+            "Page Quêtes : l'onglet « Tournée » s'appelle maintenant « Tournée de quêtes ».",
+        },
+    },
+    {
         version = "1.100.17", date = "20/11/2026",
         changed = {
             "Page Quêtes : l'onglet « À prendre » s'appelle maintenant « Quêtes de ma zone » (quêtes de la zone où se trouve ton perso, à prendre ou dans ton journal).",
