@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.90.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Options > Profils : carte « Partager un profil ». « Exporter » affiche le code du profil choisi (à copier avec Ctrl+C) ; « Importer » : colle un code (Ctrl+V), avec un nom si tu veux, et il devient un nouveau profil (« (2) » ajouté si le nom existe déjà). Rien ne change avant que tu le choisisses pour ton perso.
+- Seuls les réglages passent dans le code (jamais tes données : persos, prix, journaux) ; un code abîmé ou qui n'est pas un code de profil est refusé avec la raison.
+
 ## v1.89.2 — 20/11/2026
 
 _Un /reload suffit._

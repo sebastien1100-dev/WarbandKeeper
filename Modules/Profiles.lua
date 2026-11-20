@@ -172,6 +172,127 @@ function M:Reset()
     WK.UI:AskReload(WK.T("Profil remis à zéro : recharge l'interface pour l'appliquer."))
 end
 
+---------------------------------------------------------------------------
+-- Partage : un profil devient un code texte (« WKP1: » + base64), à coller chez un autre joueur ou sur un
+-- autre compte. Format interne simple et typé, relu par un analyseur (jamais de loadstring : rien ne s'exécute).
+--   table « T … E », texte « S<longueur>: », nombre « N<valeur>; », booléen « B1 » / « B0 »
+---------------------------------------------------------------------------
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+local function b64enc(data)
+    local out, n = {}, #data
+    for i = 1, n, 3 do
+        local a, b, c = data:byte(i, i + 2)
+        local v = a * 65536 + (b or 0) * 256 + (c or 0)
+        local c1, c2 = math.floor(v / 262144) % 64, math.floor(v / 4096) % 64
+        local c3, c4 = math.floor(v / 64) % 64, v % 64
+        out[#out + 1] = B64:sub(c1 + 1, c1 + 1) .. B64:sub(c2 + 1, c2 + 1)
+            .. (b and B64:sub(c3 + 1, c3 + 1) or "=") .. (c and B64:sub(c4 + 1, c4 + 1) or "=")
+    end
+    return table.concat(out)
+end
+local B64R = {}
+for i = 1, 64 do B64R[B64:byte(i)] = i - 1 end
+local function b64dec(s)
+    s = s:gsub("[^%w%+/=]", "")
+    local out = {}
+    for i = 1, #s, 4 do
+        local a, b, c, d = s:byte(i, i + 3)
+        local va, vb = B64R[a], B64R[b]
+        if not (va and vb) then return nil end
+        local vc, vd = c and B64R[c], d and B64R[d]
+        local v = va * 262144 + vb * 4096 + (vc or 0) * 64 + (vd or 0)
+        out[#out + 1] = string.char(math.floor(v / 65536) % 256)
+        if vc then out[#out + 1] = string.char(math.floor(v / 256) % 256) end
+        if vd then out[#out + 1] = string.char(v % 256) end
+    end
+    return table.concat(out)
+end
+local function ser(v, out, depth)
+    local t = type(v)
+    if t == "table" then
+        if depth > 20 then return end
+        out[#out + 1] = "T"
+        for k, x in pairs(v) do
+            local tk, tx = type(k), type(x)
+            local okNum = tx ~= "number" or (x == x and x ~= math.huge and x ~= -math.huge)
+            if (tk == "string" or tk == "number") and okNum and (tx == "table" or tx == "string" or tx == "number" or tx == "boolean") then
+                ser(k, out, depth + 1); ser(x, out, depth + 1)
+            end
+        end
+        out[#out + 1] = "E"
+    elseif t == "string" then out[#out + 1] = "S" .. #v .. ":" .. v
+    elseif t == "number" then out[#out + 1] = "N" .. string.format("%.17g", v) .. ";"
+    elseif t == "boolean" then out[#out + 1] = v and "B1" or "B0" end
+end
+-- analyseur : rend la valeur et la position suivante, ou nil si le texte est abîmé
+local function des(s, i, depth)
+    if depth > 22 or i > #s then return nil end
+    local c = s:sub(i, i)
+    if c == "T" then
+        local t = {}
+        i = i + 1
+        while true do
+            if i > #s then return nil end
+            if s:sub(i, i) == "E" then return t, i + 1 end
+            local k, v
+            k, i = des(s, i, depth + 1); if k == nil or type(k) == "table" then return nil end
+            v, i = des(s, i, depth + 1); if v == nil then return nil end
+            t[k] = v
+        end
+    elseif c == "S" then
+        local len, rest = s:match("^(%d+):()", i + 1)
+        len = tonumber(len)
+        if not len then return nil end
+        return s:sub(rest, rest + len - 1), rest + len
+    elseif c == "N" then
+        local num, rest = s:match("^([%-%d%.eE+naif]+);()", i + 1)
+        local v = tonumber(num)
+        if not v or v ~= v then return nil end
+        return v, rest
+    elseif c == "B" then
+        return s:sub(i + 1, i + 1) == "1", i + 2
+    end
+    return nil
+end
+local PREFIX = "WKP1:"
+
+-- Code d'un profil (celui en place : ses réglages du moment)
+function M:Export(name)
+    local p = store()
+    name = name or p.loaded
+    local data = (name == p.loaded) and capture() or p.list[name]
+    if not data then return nil, T("Ce profil n'a pas encore de réglages enregistrés.") end
+    local out = {}
+    ser({ v = 1, name = name, data = data }, out, 0)
+    return PREFIX .. b64enc(table.concat(out))
+end
+
+-- Nouveau profil depuis un code (seules les clés de réglages connues sont reprises). Rend true et le nom
+-- donné au profil, ou false et la raison.
+function M:Import(code, wanted)
+    code = type(code) == "string" and code:gsub("^%s+", ""):gsub("%s+$", "") or ""
+    if code:sub(1, #PREFIX) ~= PREFIX then return false, T("Ce n'est pas un code de profil Warband Keeper (WKP1:…).") end
+    if #code > 2000000 then return false, T("Code trop long.") end
+    local raw = b64dec(code:sub(#PREFIX + 1))
+    local t = raw and des(raw, 1, 0)
+    if type(t) ~= "table" or type(t.data) ~= "table" then return false, T("Code abîmé : copie-le en entier.") end
+    local data = {}
+    for key in pairs(KEYS) do
+        if type(t.data[key]) == "table" then data[key] = t.data[key] end
+    end
+    if not next(data) then return false, T("Ce code ne contient aucun réglage.") end
+    -- nom libre (24 caractères au plus), sinon celui du code ; « (2) », « (3) »… s'il existe déjà
+    local base = (type(wanted) == "string" and wanted:match("%S") and wanted) or (type(t.name) == "string" and t.name) or T("Importé")
+    base = base:gsub("^%s+", ""):gsub("%s+$", ""):sub(1, 20)
+    if base == DEFAULT then base = T("Importé") end
+    local taken = {}
+    for _, n in ipairs(self:Names()) do taken[n:lower()] = true end
+    local name, n = base, 1
+    while taken[name:lower()] do n = n + 1; name = base .. " (" .. n .. ")" end
+    store().list[name] = data
+    return true, name
+end
+
 -- Supprime un profil (ni « Défaut », ni celui en place). Ses persos reviennent sur « Défaut ».
 function M:Delete(name)
     local p = store()

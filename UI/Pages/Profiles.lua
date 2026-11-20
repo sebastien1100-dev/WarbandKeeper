@@ -69,6 +69,71 @@ function UI.BuildProfileCards(_, self, card)
         resetBtn:SetScript("OnClick", function() if IsShiftKeyDown() then P:Reset() end end)
         UI:SettingRow(manage, -178, "Réglages d'origine pour mon profil", "Maj + clic.", resetBtn, 130)
 
+        -- Partager : code d'un profil à copier, ou code collé qui devient un nouveau profil
+        local dlg = CreateFrame("Frame", "WarbandKeeperProfileCode", UIParent)
+        dlg:SetSize(520, 170); dlg:SetPoint("CENTER", 0, 80)
+        dlg:SetFrameStrata("FULLSCREEN_DIALOG"); dlg:EnableMouse(true)
+        UI:Panel(dlg, 12, C.surface, C.border)
+        dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 18, -16)
+        dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 18, -40); dlg.text:SetPoint("RIGHT", -18, 0)
+        dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
+        dlg.input = UI:Input(dlg, 484, 30, "")
+        dlg.input:SetPoint("TOPLEFT", 18, -78)
+        if dlg.input.edit.SetMaxLetters then dlg.input.edit:SetMaxLetters(0) end
+        dlg.name = UI:Input(dlg, 200, 30, T("Nom du profil (facultatif)"))
+        dlg.name:SetPoint("BOTTOMLEFT", 18, 16)
+        dlg.ok = UI:Button(dlg, "Importer", nil, 28, "primary")
+        dlg.ok:SetPoint("BOTTOMRIGHT", -18, 16)
+        dlg.close = UI:Button(dlg, "Fermer", nil, 28, "ghost")
+        dlg.close:SetPoint("RIGHT", dlg.ok, "LEFT", -8, 0)
+        dlg.close:SetScript("OnClick", function() dlg:Hide() end)
+        dlg:Hide()
+        if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperProfileCode") end
+        self.profDlg = dlg
+
+        local share = card("Partager un profil", 40 + 2 * 46 + 30)
+        local expBtn = UI:Button(share, "Exporter", 120, 28, "secondary")
+        expBtn.tooltip = "Affiche le code du profil choisi dans « Gérer les profils » (le tien par défaut), à copier avec Ctrl+C."
+        expBtn:SetScript("OnClick", function()
+            local name = self.profPicked or P:Current()
+            local code, err = P:Export(name)
+            dlg.title:SetText(string.format(T("Code du profil « %s »"), name == P.DEFAULT and T("Défaut") or name))
+            dlg.text:SetText(code and T("Ctrl+C pour copier, puis colle-le dans « Importer » chez un autre perso, un autre compte ou un ami.") or err)
+            dlg.input:SetText(code or ""); dlg.input:SetShown(code ~= nil)
+            dlg.name:Hide(); dlg.ok:Hide()
+            dlg:Show()
+            if code then dlg.input.edit:SetFocus(); dlg.input.edit:HighlightText() end
+        end)
+        UI:SettingRow(share, -40, "Exporter un profil", "Le profil choisi dans « Gérer les profils » devient un code texte à copier.", expBtn, 130)
+        local impBtn = UI:Button(share, "Importer", 120, 28, "primary")
+        impBtn:SetScript("OnClick", function()
+            dlg.title:SetText(T("Importer un profil"))
+            dlg.text:SetText(T("Colle un code de profil (WKP1:…) avec Ctrl+V. Il devient un nouveau profil : choisis-le ensuite dans « Profil de ce perso »."))
+            dlg.input:SetText(""); dlg.input:Show()
+            dlg.name:SetText(""); dlg.name:Show(); dlg.ok:Show()
+            dlg:Show(); dlg.input.edit:SetFocus()
+        end)
+        local function doImport()
+            local ok, res = P:Import(dlg.input:GetText(), dlg.name:GetText())
+            if ok then
+                dlg:Hide()
+                self.profMsg:SetText(string.format(T("Profil « %s » importé."), res))
+                self.profMsg:SetTextColor(unpack(C.positive))
+                self.shareMsg:SetText(string.format(T("Profil « %s » importé : choisis-le dans « Profil de ce perso »."), res))
+                self.shareMsg:SetTextColor(unpack(C.positive))
+                self.profPicked = res
+                self:RefreshProfiles()
+            else
+                dlg.text:SetText(res); dlg.text:SetTextColor(unpack(C.warning))
+                C_Timer.After(3, function() dlg.text:SetTextColor(unpack(C.muted)) end)
+            end
+        end
+        dlg.ok:SetScript("OnClick", doImport)
+        dlg.input.onEnter = function() if dlg.ok:IsShown() then doImport() end end
+        UI:SettingRow(share, -86, "Importer un profil", "Colle un code partagé : un nouveau profil est créé, rien ne change avant que tu le choisisses.", impBtn, 130)
+        self.shareMsg = UI:Text(share, 11, C.muted)
+        self.shareMsg:SetPoint("TOPLEFT", 16, -138)
+
         function self:RefreshProfiles()
             local cur = P:Current()
             self.profUse:SetOptions(names()); self.profUse:Select(cur)

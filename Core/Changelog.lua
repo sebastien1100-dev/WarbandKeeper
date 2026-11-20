@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.0", date = "20/11/2026",
+        added = {
+            "Options > Profils : carte « Partager un profil ». « Exporter » affiche le code du profil choisi (à copier avec Ctrl+C) ; « Importer » : colle un code (Ctrl+V), avec un nom si tu veux, et il devient un nouveau profil (« (2) » ajouté si le nom existe déjà). Rien ne change avant que tu le choisisses pour ton perso.",
+            "Seuls les réglages passent dans le code (jamais tes données : persos, prix, journaux) ; un code abîmé ou qui n'est pas un code de profil est refusé avec la raison.",
+        },
+    },
+    {
         version = "1.89.2", date = "20/11/2026",
         changed = {
             "Options > Général > Infobulles : les réglages sont rangés en cartes par thème au lieu d'une seule longue liste : Apparence des infobulles, Objets : prix (HV, pile, désenchantement), Objets : métiers (montée, fabriquer ou vendre), Objets : butin (butin observé), PNJ (quêtes du donneur, rares).",
