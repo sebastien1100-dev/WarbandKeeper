@@ -72,6 +72,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.104.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Minicarte : notre repère du lieu guidé (étape de la tournée, quête suivie), de la couleur de l'étape avec sa lettre (! prendre, ? rendre, $ acheter), posé au bord de la minicarte quand il est plus loin.
+- Chez un marchand qui vend un objet demandé par une de tes quêtes, sa boutique s'ouvre d'elle-même quand son dialogue propose plusieurs choix (quêtes, foyer, « Je voudrais acheter »), après ses quêtes à prendre ou à rendre. Pas en mode manuel ni avec Maj enfoncée.
+
+### Modifications
+- « Masquer les repères de quête du jeu » vaut aussi pour la minicarte : les points d'interrogation et zones d'objectifs du jeu y sont masqués et remis quand le réglage est coupé.
+
 ## v1.104.0 — 20/11/2026
 
 _Un /reload suffit._

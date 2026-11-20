@@ -167,6 +167,36 @@ local function gameQuestPins()
 end
 UI.GameQuestPins = gameQuestPins
 
+-- Minicarte : repères de quête du jeu (point d'interrogation du rendu, zones d'objectifs) masqués eux aussi,
+-- par les réglages du jeu qui les affichent (selon le client : un seul existe) ; valeurs d'origine gardées
+-- dans QuestTrack:Config().gameCVars et remises quand le masquage est coupé
+local QUEST_CVARS = { "questPOI", "questHelper", "showQuestObjectivesOnMap", "questPOIShowOnMinimap" }
+UI.QUEST_CVARS = QUEST_CVARS
+function UI:SyncGameQuestMinimap()
+    local QT = WK.modules.QuestTrack
+    local c = QT and QT:Config()
+    if not c then return end
+    c.gameCVars = c.gameCVars or {}
+    local hide = hideGameQuests()
+    for _, name in ipairs(QUEST_CVARS) do
+        local v = WK.GetCVar(name)
+        if v ~= nil then
+            if hide then
+                if v ~= "0" then c.gameCVars[name] = v; WK.SetCVar(name, "0") end
+            elseif c.gameCVars[name] then
+                WK.SetCVar(name, c.gameCVars[name]); c.gameCVars[name] = nil
+            end
+        end
+    end
+    -- zones d'objectifs dessinées par la minicarte elle-même
+    if Minimap then
+        for _, fn in ipairs({ "SetQuestBlobInsideAlpha", "SetQuestBlobOutsideAlpha", "SetQuestBlobRingAlpha" }) do
+            if Minimap[fn] then pcall(Minimap[fn], Minimap, hide and 0 or 1) end
+        end
+    end
+end
+WK:On("PLAYER_LOGIN", function() C_Timer.After(3, function() UI:SyncGameQuestMinimap() end) end)
+
 -- Journal (/wk carte) : redessins et masquages de la carte, pour comprendre une pastille disparue
 UI.mapLog = UI.mapLog or {}
 local function note(ev)

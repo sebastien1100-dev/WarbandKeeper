@@ -492,12 +492,13 @@ UI:RegisterPage({
                 function(v)
                     QT():Config().map = v
                     if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
+                    if UI.SyncGameQuestMinimap then UI:SyncGameQuestMinimap() end
                     QT():Changed()
                 end, 26)
             UI:SettingRow(tcard, -148, "Zones de quête sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
             self.campSeg:Select(QT():Config().map)
-            UI:SettingRow(tcard, -184, "Masquer les repères de quête du jeu", "Sur la carte du monde, tant que nos zones de quête y sont affichées.",
-                qtoggle("hideGame", function() if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end end), 50)
+            UI:SettingRow(tcard, -184, "Masquer les repères de quête du jeu", "Sur la carte du monde et la minicarte, tant que nos zones de quête sont affichées ; notre repère prend leur place sur la minicarte.",
+                qtoggle("hideGame", function() if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end; if UI.SyncGameQuestMinimap then UI:SyncGameQuestMinimap() end end), 50)
             UI:SettingRow(tcard, -256, "Fond de la carte de tournée", "Opacité du fond de la carte de tournée à l'écran (0 % : texte seul, ombré).",
                 UI:Slider(tcard, 200, 0, 100, 5, function() return QT():Config().tourBg or 50 end,
                     function(v) QT():Config().tourBg = v; if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end end, "%d %%"), 220)

@@ -129,9 +129,57 @@ end
 -- Évènements de la fenêtre de quête et du dialogue
 ---------------------------------------------------------------------------
 local G = C_GossipInfo
+-- Marchand qui vend un objet demandé par une quête du journal (Modules/QuestTrack.lua : BuyMissing) : son
+-- dialogue peut avoir plusieurs choix (quêtes, foyer, « Je voudrais acheter ») ; on ouvre sa boutique
+local function sellsNeeded()
+    local QT = WK.modules.QuestTrack
+    local name = UnitName and UnitName("npc")
+    if not (QT and QT.BuyMissing and name) then return false end
+    for _, l in ipairs(QT:LogQuests()) do
+        for _, it in ipairs(QT:BuyMissing(l.id)) do
+            for _, v in ipairs(QT:Vendors(it.id)) do
+                if v.name == name or QT:VendorName(v) == name then return true end
+            end
+        end
+    end
+    return false
+end
+M.SellsNeeded = sellsNeeded
+-- choix « boutique » du dialogue : n° de l'option, ou nil
+local function vendorOption()
+    if G and G.GetOptions then
+        local ok, opts = pcall(G.GetOptions)
+        for i, o in ipairs(ok and opts or {}) do
+            local icon = o.icon
+            if o.type == "vendor" or icon == 132060 or (type(icon) == "string" and icon:lower():find("vendorgossipicon", 1, true)) then
+                return o.gossipOptionID or o.orderIndex or i, o.gossipOptionID ~= nil
+            end
+        end
+    end
+    if GetGossipOptions then
+        local t = { GetGossipOptions() }
+        for i = 1, #t, 2 do if t[i + 1] == "vendor" then return (i + 1) / 2, false end end
+    end
+    return nil
+end
+local function openShop()
+    local id, isID = vendorOption()
+    if not id then return false end
+    if isID and G.SelectOption then G.SelectOption(id)
+    elseif G and G.SelectOptionByIndex then G.SelectOptionByIndex(id)
+    elseif SelectGossipOption then SelectGossipOption(id)
+    else return false end
+    return true
+end
+
 WK:On("GOSSIP_SHOW", function()
-    -- « sauter le dialogue » coupé : on attend que le joueur ouvre la quête lui-même
-    if suspended() or not G or not M:Config().skipGossip then return end
+    if suspended() or not G then return end
+    -- « sauter le dialogue » coupé : on attend que le joueur ouvre la quête lui-même ; la boutique d'un marchand
+    -- qui vend un objet de quête s'ouvre quand même (après les quêtes de ce PNJ)
+    if not M:Config().skipGossip then
+        if sellsNeeded() then openShop() end
+        return
+    end
     -- d'abord rendre une quête finie, puis prendre une quête voulue
     local okA, active = pcall(G.GetActiveQuests)
     for _, q in ipairs(okA and active or {}) do
@@ -141,6 +189,7 @@ WK:On("GOSSIP_SHOW", function()
     for _, q in ipairs(okB and avail or {}) do
         if not q.repeatable and M:WantPick(q.questID, q.questLevel) then return G.SelectAvailableQuest(q.questID) end
     end
+    if sellsNeeded() then openShop() end
 end)
 WK:On("QUEST_GREETING", function()
     if suspended() then return end

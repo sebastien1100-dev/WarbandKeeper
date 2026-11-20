@@ -379,9 +379,63 @@ local function miniDot(i)
     return d
 end
 local miniLines
+-- Notre repère sur la minicarte : le lieu guidé (étape de la tournée, quête suivie…), pastille de la couleur de
+-- l'étape avec sa lettre (! prendre, ? rendre, $ acheter), posée au bord quand il est plus loin que la minicarte
+local miniPin
+local PIN_KIND = { pick = { "gold", "!" }, turn = { "positive", "?" }, buy = { "info", "$" }, trainer = { "info", "" } }
+local function updateMiniPin()
+    local G = WK.modules.Guide
+    local t = G and G.target
+    local p = G and G:PlayerPos()
+    if not (t and t.cont and t.wx and p and p.cont == t.cont and Minimap:IsVisible()) then
+        if miniPin then miniPin:Hide() end
+        return
+    end
+    if not miniPin then
+        miniPin = CreateFrame("Frame", nil, holder)
+        miniPin:SetSize(16, 16)
+        miniPin:SetFrameLevel(holder:GetFrameLevel() + 2)
+        miniPin.o = miniPin:CreateTexture(nil, "OVERLAY", nil, 1); miniPin.o:SetTexture(UI.MEDIA .. "circle")
+        miniPin.o:SetPoint("CENTER"); miniPin.o:SetSize(16, 16); miniPin.o:SetVertexColor(0, 0, 0, 0.85)
+        miniPin.d = miniPin:CreateTexture(nil, "OVERLAY", nil, 2); miniPin.d:SetTexture(UI.MEDIA .. "circle")
+        miniPin.d:SetPoint("CENTER"); miniPin.d:SetSize(12, 12)
+        miniPin.t = UI:Text(miniPin, 9, C.bg); miniPin.t:SetPoint("CENTER", 0, 0)
+    end
+    -- genre : étape de la tournée en cours, sinon quête suivie (rendu si finie)
+    local kind
+    local P = WK.modules.QuestPlan
+    local tour = P and P:Tour()
+    if t.kind == "qtour" and tour and tour.steps[tour.idx] then kind = tour.steps[tour.idx].kind
+    elseif t.kind == "qtrack" then
+        local QT = WK.modules.QuestTrack
+        local q = QT and QT:Tracked()
+        kind = (q and QT:IsComplete(q)) and "turn" or nil
+    end
+    local e = PIN_KIND[kind or ""]
+    local col = e and C[e[1]] or { UI:Accent() }
+    miniPin.d:SetVertexColor(col[1], col[2], col[3], 1)
+    miniPin.t:SetText(e and e[2] or "")
+    local radius = viewRadius()
+    local half = Minimap:GetWidth() / 2
+    local dx, dy = -(t.wy - p.wy), t.wx - p.wx
+    local facing = WK.GetCVar("rotateMinimap") == "1" and GetPlayerFacing and GetPlayerFacing() or nil
+    if facing then
+        local cs, sn = math.cos(facing), math.sin(facing)
+        dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs
+    end
+    local d = math.sqrt(dx * dx + dy * dy)
+    local limit = radius * 0.9
+    local edge = d > limit
+    if edge then dx, dy = dx / d * limit, dy / d * limit end
+    miniPin:SetAlpha(edge and 0.75 or 1)
+    miniPin:ClearAllPoints()
+    miniPin:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
+    miniPin:Show()
+end
 local function updateMini()
     for _, d in ipairs(miniDots) do d:Hide(); d.o:Hide() end
     if miniLines then miniLines:Reset() end
+    pcall(updateMiniPin)
     if not gcfg().routeMini or not Minimap:IsVisible() then return end
     local pts, cont = remaining()
     if not pts or #pts < 2 then return end

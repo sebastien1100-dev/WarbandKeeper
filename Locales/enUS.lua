@@ -4193,4 +4193,5 @@ WK.Locales.enUS.text = {
     ["Au-delà, le bouton sous la fenêtre du marchand attend ton clic."] = "Above that, the button under the vendor window waits for your click.",
     ["%d pa"] = "%d s",
     ["prendre, rendre, acheter, exceptions"] = "pick up, turn in, buy, exceptions",
+    ["Sur la carte du monde et la minicarte, tant que nos zones de quête sont affichées ; notre repère prend leur place sur la minicarte."] = "On the world map and the minimap, while our quest areas are shown; our marker takes their place on the minimap.",
 }
