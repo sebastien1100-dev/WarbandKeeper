@@ -530,6 +530,150 @@ UI:RegisterPage({
                           high = "Trop haute pour le perso", locked = "Après une autre quête" }
             l:SetText(T(txt[st]))
         end
+
+        -- Quêtes automatiques (Modules/AutoQuest.lua) : trois modes d'un clic, ce qui s'est passé, puis les
+        -- détails (prendre, rendre, exceptions) repliés dans leur propre carte
+        do
+            local AQ = WK.modules.AutoQuest
+            if AQ then
+                local ac = AQ:Config()
+                local mcard = card("Quêtes automatiques", 40 + 74 + 14 + 18 + 5 * 17 + 36, "prendre et rendre en parlant au PNJ")
+                local MODES = {
+                    { "manual", "Manuel", "Rien d'automatique." },
+                    { "assist", "Assisté", "Prend les quêtes cochées, rend les quêtes ; tu choisis la récompense." },
+                    { "auto", "Automatique", "Prend et rend tout, choisit la récompense." },
+                }
+                mcard.tiles = {}
+                local function paintTiles()
+                    local r, g, b = UI:Accent()
+                    for _, t in ipairs(mcard.tiles) do
+                        local on = ac.mode == t.key
+                        t.edge:SetColor(r, g, b, on and 1 or 0)
+                        t.name:SetTextColor(unpack(on and C.text or C.muted))
+                    end
+                end
+                for i, m in ipairs(MODES) do
+                    local t = CreateFrame("Button", nil, mcard)
+                    t.key = m[1]
+                    t.edge = UI:Rounded(t, 9, 0, "BACKGROUND", 0)
+                    t.bgr = UI:Rounded(t, 8, 1, "BACKGROUND", 1); t.bgr:SetColor(unpack(C.surface2))
+                    t.name = UI:Text(t, 12); t.name:SetPoint("TOPLEFT", 10, -9); t.name:SetText(T(m[2]))
+                    t.desc = UI:Text(t, 10, C.muted); t.desc:SetPoint("TOPLEFT", 10, -27); t.desc:SetPoint("RIGHT", -8, 0)
+                    t.desc:SetJustifyH("LEFT"); if t.desc.SetWordWrap then t.desc:SetWordWrap(true) end
+                    t.desc:SetText(T(m[3]))
+                    t:SetHeight(70)
+                    t:SetScript("OnClick", function() ac.mode = m[1]; paintTiles(); WK:NotifyChanged() end)
+                    mcard.tiles[i] = t
+                end
+                UI:OnResize(mcard, function(w)
+                    local tw = math.floor(((w or 400) - 28 - 16) / 3)
+                    for i, t in ipairs(mcard.tiles) do
+                        t:ClearAllPoints(); t:SetPoint("TOPLEFT", 14 + (i - 1) * (tw + 8), -40); t:SetWidth(tw)
+                    end
+                end)
+                UI:OnAccent(paintTiles)
+                paintTiles()
+                -- ce qui s'est passé (5 dernières)
+                mcard.logHead = UI:Text(mcard, 10, C.muted); mcard.logHead:SetPoint("TOPLEFT", 14, -(40 + 74 + 10))
+                mcard.logHead:SetText(UI:Upper(T("Ce qui s'est passé")))
+                mcard.lines = {}
+                for i = 1, 5 do
+                    local l = UI:Text(mcard, 11, C.text); l:SetPoint("TOPLEFT", 14, -(40 + 74 + 28 + (i - 1) * 17)); l:SetPoint("RIGHT", -14, 0)
+                    l:SetJustifyH("LEFT"); if l.SetWordWrap then l:SetWordWrap(false) end
+                    mcard.lines[i] = l
+                end
+                function self.PaintAutoLog()
+                    for i, l in ipairs(mcard.lines) do
+                        local e = ac.log[i]
+                        if e then
+                            local col = e.k == "turn" and C.positive or { UI:Accent() }
+                            l:SetText(UI:Hex(col) .. (e.k == "turn" and T("Rendue") or T("Prise")) .. "|r  " .. (e.s or ""))
+                        else
+                            l:SetText(i == 1 and (UI:Hex(C.dim) .. T("Rien pour l'instant.") .. "|r") or "")
+                        end
+                    end
+                end
+                self.PaintAutoLog()
+                mcard.more = UI:Button(mcard, "Détails", nil, 24, "ghost")
+                mcard.more:SetPoint("BOTTOMLEFT", 10, 8)
+
+                -- détails : Prendre, Rendre, Exceptions
+                local yBefore = y
+                local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50, "prendre, rendre, exceptions")
+                local function at(field, after)
+                    local t = UI:Toggle(dcard, function() return ac[field] end, function(v) ac[field] = v; if after then after(v) end WK:NotifyChanged() end)
+                    table.insert(self.toggles, t)
+                    return t
+                end
+                local dy = -40
+                local function head(text)
+                    local h = UI:Text(dcard, 10, C.muted); h:SetPoint("TOPLEFT", 14, dy - 4); h:SetText(UI:Upper(T(text)))
+                    dy = dy - 22
+                end
+                local function row(label, desc, ctrl, w)
+                    UI:SettingRow(dcard, dy, label, desc, ctrl, w or 50)
+                    dy = dy - 36
+                end
+                head("Prendre")
+                row("Pas les quêtes trop hautes", "Mode automatique : au-delà de « Quêtes au-dessus de ton niveau ».", at("noHigh"))
+                row("Pas les quêtes de groupe", "Quêtes conseillées à plusieurs (élites).", at("noGroup"))
+                row("Sauter le dialogue du PNJ", "Ouvre directement la quête à prendre ou à rendre.", at("skipGossip"))
+                row("Partager avec le groupe", "Chaque quête prise est partagée aux membres du groupe.", at("share"))
+                head("Rendre")
+                self.rewardSeg = UI:Segmented(dcard, { { "me", "Pour moi" }, { "price", "Plus chère" } },
+                    function(v) ac.reward = v; WK:NotifyChanged() end, 24)
+                row("Récompense (mode automatique)", "Pour moi : l'amélioration pour ton perso ; sinon la plus chère à vendre.", self.rewardSeg, self.rewardSeg:GetWidth())
+                self.rewardSeg:Select(ac.reward)
+                row("Si rien ne sert : la plus chère", nil, at("fallbackPrice"))
+                row("Pas les quêtes qui coûtent de l'or", nil, at("noGold"))
+                head("Exceptions")
+                row("Maj enfoncée : manuel", "Garde la main sur une quête en tenant Maj en parlant au PNJ.", at("shift"))
+                row("Récapitulatif dans le chat", "« Prise : … » · « Rendue : … »", at("chat"))
+                dcard.list = UI:Text(dcard, 11, C.muted); dcard.list:SetPoint("TOPLEFT", 14, dy - 2); dcard.list:SetPoint("RIGHT", -14, 0)
+                dcard.list:SetJustifyH("LEFT"); if dcard.list.SetWordWrap then dcard.list:SetWordWrap(true) end
+                local function paintList()
+                    local names = {}
+                    for qid in pairs(ac.quests) do
+                        local qq = WK.modules.Quests and WK.modules.Quests:Get(qid)
+                        table.insert(names, (qq and WK.modules.Quests:Name(qq)) or ("#" .. qid))
+                    end
+                    for _, n in pairs(ac.npcs) do table.insert(names, T("PNJ :") .. " " .. n) end
+                    dcard.list:SetText(#names > 0 and (T("Jamais d'automatique pour :") .. " " .. table.concat(names, " · "))
+                        or T("Aucune exception."))
+                end
+                paintList()
+                dcard.bq = UI:Button(dcard, "Exclure la quête suivie", nil, 24, "secondary")
+                dcard.bq:SetPoint("TOPLEFT", 14, dy - 40)
+                dcard.bq:SetScript("OnClick", function()
+                    local qid = QT() and QT():Tracked()
+                    if qid then AQ:BlockQuest(qid, true) else WK:Print(T("Aucune quête suivie.")) end
+                    paintList()
+                end)
+                dcard.bn = UI:Button(dcard, "Exclure le PNJ ciblé", nil, 24, "secondary")
+                dcard.bn:SetPoint("LEFT", dcard.bq, "RIGHT", 8, 0)
+                dcard.bn:SetScript("OnClick", function()
+                    local id, name = AQ:TargetNpc()
+                    if id then AQ:BlockNpc(id, name, true) else WK:Print(T("Cible un PNJ d'abord.")) end
+                    paintList()
+                end)
+                dcard.clear = UI:Button(dcard, "Tout réautoriser", nil, 24, "ghost")
+                dcard.clear:SetPoint("LEFT", dcard.bn, "RIGHT", 8, 0)
+                dcard.clear:SetScript("OnClick", function() wipe(ac.quests); wipe(ac.npcs); paintList(); WK:NotifyChanged() end)
+                local yAfter = y
+                -- repli des détails (fermés au départ)
+                local function fold(open)
+                    dcard:SetShown(open)
+                    mcard.more:SetLabel(open and T("Masquer les détails") or T("Détails"))
+                    mcard.more:SetWidth(mcard.more.label:GetStringWidth() + 28)
+                    self.sideH = open and yAfter or yBefore
+                    if self.Layout then self:Layout() end
+                end
+                mcard.more:SetScript("OnClick", function() self.autoOpen = not self.autoOpen; fold(self.autoOpen) end)
+                self.autoFold = fold
+                y = yAfter
+                C_Timer.After(0, function() fold(self.autoOpen and true or false) end)
+            end
+        end
         self.sideH = y
     end,
 
@@ -1688,6 +1832,7 @@ UI:RegisterPage({
 
     Refresh = function(self)
         local cfg = Q:Config()
+        if self.PaintAutoLog and self.settingsOpen then self.PaintAutoLog() end
         -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
         self.charDd:SetOptions(charOptions())
         if self.charDd.selected ~= self.viewKey then

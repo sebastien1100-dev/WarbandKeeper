@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.101.0", date = "20/11/2026", restart = true,
+        added = {
+            "Quêtes automatiques (roue de la page Quêtes) : trois modes d'un clic. Manuel : rien d'automatique. Assisté (par défaut) : prend les quêtes cochées dans « Quêtes de ma zone » ou la tournée, rend les quêtes finies, et te laisse choisir la récompense quand il y en a plusieurs. Automatique : prend et rend tout, et choisit la récompense (l'amélioration pour ton perso, sinon la plus chère).",
+            "Les 5 dernières quêtes prises ou rendues sont rappelées sous les modes, et dans le chat (« Prise : … », « Rendue : … · récompense »).",
+            "Détails repliés sous un bouton : pas les quêtes trop hautes, pas les quêtes de groupe, sauter le dialogue du PNJ, partager avec le groupe, récompense « Pour moi » ou « Plus chère », pas les quêtes qui coûtent de l'or, Maj enfoncée pour garder la main, et des exceptions (la quête suivie ou le PNJ ciblé, jamais en automatique).",
+        },
+    },
+    {
         version = "1.100.19", date = "20/11/2026",
         changed = {
             "Tournée de quêtes, carte à l'écran plus discrète : texte fin et ombré dans un cadre léger et transparent, sans bordure. En tête « TOURNÉE · ZONE », l'avancée, le temps restant et l'XP qui reste à gagner, avec une barre très fine.",
@@ -4797,7 +4805,7 @@ WK.Roadmap = {
     { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
-    { prio = 2, theme = "dung", title = "Quêtes automatiques", text = "Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
+    { prio = 3, theme = "dung", title = "Quêtes, petits plus", text = "Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
     { prio = 1, theme = "eco", title = "Camelote", text = "Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
     { prio = 3, theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },

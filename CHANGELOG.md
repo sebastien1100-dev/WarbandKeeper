@@ -56,8 +56,8 @@ _Prévu, pas encore commencé._
 - **Salut choisi par classe** (basse) — Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu.
 
 ### Donjons et quêtes
-- **Quêtes automatiques** (moyenne) — Accepter et rendre tout seul (récompense retenue), prix de vente des récompenses, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Quêtes, suite** (moyenne) — « À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers.
+- **Quêtes, petits plus** (basse) — Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 
 ### Fiabilité
@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.101.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Quêtes automatiques (roue de la page Quêtes) : trois modes d'un clic. Manuel : rien d'automatique. Assisté (par défaut) : prend les quêtes cochées dans « Quêtes de ma zone » ou la tournée, rend les quêtes finies, et te laisse choisir la récompense quand il y en a plusieurs. Automatique : prend et rend tout, et choisit la récompense (l'amélioration pour ton perso, sinon la plus chère).
+- Les 5 dernières quêtes prises ou rendues sont rappelées sous les modes, et dans le chat (« Prise : … », « Rendue : … · récompense »).
+- Détails repliés sous un bouton : pas les quêtes trop hautes, pas les quêtes de groupe, sauter le dialogue du PNJ, partager avec le groupe, récompense « Pour moi » ou « Plus chère », pas les quêtes qui coûtent de l'or, Maj enfoncée pour garder la main, et des exceptions (la quête suivie ou le PNJ ciblé, jamais en automatique).
 
 ## v1.100.19 — 20/11/2026
 
