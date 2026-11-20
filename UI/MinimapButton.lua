@@ -83,3 +83,49 @@ function M:OnLogin() self:Update() end
 
 -- Menu "compartiment d'addons" du client (si disponible).
 function WarbandKeeper_OnAddonCompartmentClick() UI:ToggleWindow() end
+
+---------------------------------------------------------------------------
+-- Raccourci « Warband Keeper » dans le menu du jeu (Échap), juste au-dessus d'EllesmereUI s'il est là,
+-- sinon au-dessus d'« Add-ons » ; réglage settings.ui.gameMenu (Options > Général > Fenêtre).
+-- Menu du jeu moderne : GameMenuFrame:AddButton pendant InitButtons, ordre par layoutIndex.
+---------------------------------------------------------------------------
+local function plain(s) return (tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
+local function gameMenuOn() return WK.DB.global.settings.ui.gameMenu ~= false end
+local function addGameMenuButton(menu)
+    if not gameMenuOn() or not (menu and menu.AddButton) then return end
+    local btn = menu:AddButton("Warband Keeper", function()
+        if HideUIPanel then HideUIPanel(menu) else menu:Hide() end
+        UI:ToggleWindow()
+    end)
+    if not btn then return end
+    -- place : au-dessus d'EllesmereUI, sinon d'« Add-ons »
+    local target
+    if menu.buttonPool and menu.buttonPool.EnumerateActive then
+        local addons = ADDONS and plain(ADDONS) or "Add-ons"
+        for b in menu.buttonPool:EnumerateActive() do
+            if b ~= btn and b.GetText then
+                local t = plain(b:GetText())
+                if t:find("EllesmereUI", 1, true) then target = b break end
+                if t == addons and not target then target = b end
+            end
+        end
+    end
+    if target and target.layoutIndex then
+        btn.layoutIndex = target.layoutIndex - 0.5
+        if menu.MarkDirty then menu:MarkDirty() end
+    end
+end
+local hooked
+local function hookGameMenu()
+    if hooked or not (GameMenuFrame and GameMenuFrame.InitButtons) then return end
+    hooked = true
+    -- après les autres addons (EllesmereUI ajoute son bouton dans le même crochet)
+    hooksecurefunc(GameMenuFrame, "InitButtons", function(menu)
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0, function() if menu:IsShown() then addGameMenuButton(menu) end end)
+        else
+            addGameMenuButton(menu)
+        end
+    end)
+end
+WK:On("PLAYER_LOGIN", hookGameMenu)

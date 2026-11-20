@@ -4046,4 +4046,6 @@ WK.Locales.enUS.text = {
     ["Clic : guider jusqu'à cette étape"] = "Click: guide to this step",
     ["Étape %d"] = "Step %d",
     ["env. %d h"] = "approx. %d h",
+    ["Raccourci dans le menu du jeu"] = "Shortcut in the game menu",
+    ["Un bouton « Warband Keeper » dans le menu Échap, au-dessus d'EllesmereUI (ou d'Add-ons)."] = "A « Warband Keeper » button in the Escape menu, above EllesmereUI (or Add-ons).",
 }

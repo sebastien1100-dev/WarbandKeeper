@@ -674,13 +674,17 @@ UI:RegisterPage({
         -- Bouton minimap (section Général) ---------------------------------------------
         current.scroll:SetContentHeight(y)
         root, y, current = self.sections.general.scroll.child, generalY, self.sections.general
-        local mm = card("Bouton minimap", 136)
+        local mm = card("Bouton minimap", 184)
         self.mmToggle = UI:Toggle(mm,
             function() return not cfg.minimap.hide end,
             function(v) cfg.minimap.hide = not v; WK.modules.MinimapButton:Update() end)
         UI:SettingRow(mm, -40, "Afficher le bouton", "Clic gauche : ouvrir. Clic droit : options. Glisser pour le déplacer.", self.mmToggle, 80)
+        self.gmToggle = UI:Toggle(mm,
+            function() return cfg.gameMenu ~= false end,
+            function(v) cfg.gameMenu = v end)
+        UI:SettingRow(mm, -88, "Raccourci dans le menu du jeu", "Un bouton « Warband Keeper » dans le menu Échap, au-dessus d'EllesmereUI (ou d'Add-ons).", self.gmToggle, 80)
         local reset = UI:Button(mm, "Recentrer", nil, 28, "secondary")
-        UI:SettingRow(mm, -88, "Position de la fenêtre", nil, reset)
+        UI:SettingRow(mm, -136, "Position de la fenêtre", nil, reset)
         reset:SetScript("OnClick", function()
             cfg.point = nil
             UI.frame:ClearAllPoints()
@@ -1029,6 +1033,7 @@ UI:RegisterPage({
             end
         end
         self.mmToggle:Refresh()
+        if self.gmToggle then self.gmToggle:Refresh() end
         self.combatToggle:Refresh()
         self.loginToggle:Refresh()
         self.portraitToggle:Refresh()

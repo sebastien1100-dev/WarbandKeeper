@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.5", date = "20/11/2026",
+        added = {
+            "Menu du jeu (Échap) : bouton « Warband Keeper » qui ouvre la fenêtre, placé juste au-dessus d'EllesmereUI (ou d'« Add-ons » sans lui). Interrupteur « Raccourci dans le menu du jeu » dans Options > Général > Fenêtre.",
+        },
+    },
+    {
         version = "1.98.4", date = "20/11/2026",
         fixed = {
             "Page Quêtes : erreur « Font not set » à l'ouverture (le nouveau repère de rendu écrivait son « ? » avant d'avoir sa police, et la police des titres d'une autre addon pouvait ne pas se charger).",
