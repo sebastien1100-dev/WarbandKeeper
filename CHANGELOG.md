@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.107.5 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire, roue des réglages : onglets par catégorie à côté du titre (Verrous auto, Protection, Sacs et marchand, Rangement) au lieu d'une longue liste ; l'onglet choisi est retenu, et la recherche ouvre le bon onglet.
+
 ## v1.107.4 — 20/11/2026
 
 _Un /reload suffit._

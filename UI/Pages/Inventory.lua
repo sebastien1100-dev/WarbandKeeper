@@ -168,8 +168,40 @@ UI:RegisterPage({
         self:BuildLocks(p, x0)
         self:BuildStash(p, x0)
         -- Roue dentée : réglages des objets verrouillés (règles, protection) et du rangement (perso HV)
+        -- onglets par catégorie (retenu dans settings.ui.invSetTab) : une catégorie à la fois dans le volet
+        local SET_TABS = { { "rules", "Verrous auto" }, { "protect", "Protection" }, { "bags", "Sacs et marchand" }, { "stash", "Rangement" } }
+        local function tabCards()
+            return { rules = { self.lockRules }, protect = { self.lockSets }, bags = { self.bagSets }, stash = { self.stashSets } }
+        end
+        local function curTab()
+            local t = WK.DB.global.settings.ui.invSetTab
+            return tabCards()[t or ""] and t or "rules"
+        end
         self.gp = UI:PageGear(p, { title = "Réglages de l'inventaire", top = 0, columns = 1, seeThrough = true,
-            cards = function() return { self.lockRules, self.lockSets, self.bagSets, self.stashSets } end }, self)
+            cards = function()
+                local all, cur = tabCards(), curTab()
+                for k, list in pairs(all) do
+                    for _, c in ipairs(list) do if c and k ~= cur then c:Hide() end end
+                end
+                return all[cur]
+            end }, self)
+        -- recherche : un réglage d'une autre catégorie ouvre d'abord son onglet
+        local prevReveal = self.RevealSetting
+        self.RevealSetting = function(d, row)
+            for k, list in pairs(tabCards()) do
+                for _, c in ipairs(list) do
+                    local f = row
+                    while f do
+                        if f == c then
+                            WK.DB.global.settings.ui.invSetTab = k
+                            if self.setSeg then self.setSeg:Select(k) end
+                        end
+                        f = f:GetParent()
+                    end
+                end
+            end
+            if prevReveal then return prevReveal(d, row) end
+        end
         self.gp.gear:SetPoint("TOPRIGHT")
         -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
@@ -186,7 +218,14 @@ UI:RegisterPage({
         self.gp.overlay.title:SetText(T("Réglages de l'inventaire"))
         self.gp.overlay.sub = UI:Text(self.gp.overlay, 11, C.muted)
         self.gp.overlay.sub:SetPoint("BOTTOMLEFT", self.gp.overlay.title, "BOTTOMRIGHT", 10, 1)
-        self.gp.overlay.sub:SetText(T("objets verrouillés, protection chez le marchand, Rangement"))
+        self.gp.overlay.sub:SetText("")
+        self.setSeg = UI:Segmented(self.gp.overlay, SET_TABS, function(v)
+            WK.DB.global.settings.ui.invSetTab = v
+            self.gp:Refresh()
+            if self.gp.scroll.SetVerticalScroll then self.gp.scroll:SetVerticalScroll(0) end
+        end, 26)
+        self.setSeg:SetPoint("LEFT", self.gp.overlay.title, "RIGHT", 18, 0)
+        self.setSeg:Select(curTab())
         -- consommables conseillés (UI/ProfPanels.lua)
         self.prepPane = UI:BuildPrepPane(p)
         self.prepPane:SetPoint("TOPLEFT", x0, 0)

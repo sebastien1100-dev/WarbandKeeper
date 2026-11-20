@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.5", date = "20/11/2026",
+        changed = {
+            "Inventaire, roue des réglages : onglets par catégorie à côté du titre (Verrous auto, Protection, Sacs et marchand, Rangement) au lieu d'une longue liste ; l'onglet choisi est retenu, et la recherche ouvre le bon onglet.",
+        },
+    },
+    {
         version = "1.107.4", date = "20/11/2026",
         changed = {
             "Menu Échap avec EllesmereUI : le bouton « Warband Keeper » colle mieux à ses voisins (fond plus sombre, liseré à peine visible) et son nom est en deux tons comme eux (« Keeper » à la couleur de l'apparence).",
