@@ -34,6 +34,8 @@ local KIND = { d = "Donjon", c = "Classe" }
 ---------------------------------------------------------------------------
 local LOG_W, MINI_W, LROW_H, LHEAD_H = 330, 250, 28, 26
 local function QT() return WK.modules.QuestTrack end
+local function QP() return WK.modules.QuestPlan end
+local VIEWS = { log = true, pick = true, tour = true, zones = true }
 local function G() return WK.modules.Guide end
 
 -- petites capitales d'un nom de zone : ASCII et lettres accentuées (é » É…) en UTF-8
@@ -96,6 +98,107 @@ local function openWorldMap(map)
     end
 end
 
+-- Petite carte d'une zone (onglets Mon journal et Tournée) : fond = tuiles de la carte du jeu (comme
+-- UI:ZoneMap), repères posés par la page, point du joueur
+local function newMini(p, legend)
+    local mc = UI:Card(p)
+    mc.name = UI:Text(mc, 12)
+    mc.name:SetPoint("TOPLEFT", 12, -11); mc.name:SetPoint("TOPRIGHT", -12, -11)
+    mc.area = CreateFrame("Frame", nil, mc)
+    mc.area:SetPoint("TOP", 0, -34)
+    mc.area:SetSize(MINI_W - 16, math.floor((MINI_W - 16) * 2 / 3))
+    if mc.area.SetClipsChildren then mc.area:SetClipsChildren(true) end
+    mc.areaBg = mc.area:CreateTexture(nil, "BACKGROUND")
+    mc.areaBg:SetAllPoints()
+    mc.areaBg:SetColorTexture(unpack(C.inset))
+    mc.tiles = {}
+    mc.pins = CreateFrame("Frame", nil, mc.area)
+    mc.pins:SetAllPoints()
+    mc.pins:SetFrameLevel(mc.area:GetFrameLevel() + 5)
+    mc.top = CreateFrame("Frame", nil, mc.area)
+    mc.top:SetAllPoints()
+    mc.top:SetFrameLevel(mc.area:GetFrameLevel() + 8)
+    mc.fills, mc.rings = {}, {}
+    mc.me = mc.top:CreateTexture(nil, "OVERLAY")
+    mc.me:SetTexture(UI.MEDIA .. "circle"); mc.me:SetSize(9, 9); mc.me:SetVertexColor(unpack(C.text))
+    mc.meEdge = mc.top:CreateTexture(nil, "ARTWORK")
+    mc.meEdge:SetTexture(UI.MEDIA .. "circle"); mc.meEdge:SetSize(13, 13); mc.meEdge:SetVertexColor(unpack(C.inset))
+    mc.meEdge:SetPoint("CENTER", mc.me, "CENTER")
+    mc.turnBg = mc.top:CreateTexture(nil, "ARTWORK")
+    mc.turnBg:SetTexture(UI.MEDIA .. "circle"); mc.turnBg:SetSize(18, 18); mc.turnBg:SetVertexColor(unpack(C.inset))
+    mc.turn = UI:Text(mc.top, 14, C.gold)
+    mc.turn:SetPoint("CENTER", mc.turnBg, "CENTER", 0, 0)
+    mc.turn:SetText("?")
+    mc.none = UI:Text(mc.area, 11, C.dim)
+    mc.none:SetPoint("CENTER")
+    mc.legend = UI:Text(mc, 10, C.dim)
+    mc.legend:SetPoint("BOTTOMLEFT", 12, 9); mc.legend:SetPoint("BOTTOMRIGHT", -12, 9)
+    mc.legend:SetText(T(legend))
+    mc.marks, mc.nums, mc.lines = {}, {}, {}
+    return mc
+end
+
+-- Fond, nom et point du joueur ; renvoie la taille de la zone de dessin, ou nil (rien à montrer)
+local function paintMiniBase(mc, map, emptyText)
+    local AW, AH = mc.area:GetWidth() or 0, mc.area:GetHeight() or 0
+    for _, t in ipairs(mc.fills) do t:Hide() end
+    for _, t in ipairs(mc.rings) do t:Hide() end
+    for _, t in ipairs(mc.marks) do t:Hide() end
+    for _, t in ipairs(mc.nums) do t:Hide() end
+    for _, t in ipairs(mc.lines) do t:Hide() end
+    mc.me:Hide(); mc.meEdge:Hide(); mc.turn:Hide(); mc.turnBg:Hide()
+    if not map or AW < 20 or AH < 20 then
+        for _, t in ipairs(mc.tiles) do t:Hide() end
+        mc.artKey = nil
+        mc.name:SetText(T("Carte"))
+        mc.none:SetText(T(emptyText)); mc.none:Show()
+        return nil
+    end
+    mc.none:Hide()
+    mc.name:SetText(mapName(map) or ("#" .. map))
+    -- fond : tuiles de la carte de la zone, sinon le fond uni
+    local key = map .. ":" .. math.floor(AW) .. "x" .. math.floor(AH)
+    if mc.artKey ~= key then
+        mc.artKey = key
+        for _, t in ipairs(mc.tiles) do t:Hide() end
+        local okL, layers = pcall(C_Map.GetMapArtLayers, map)
+        local L = okL and type(layers) == "table" and layers[1]
+        local okT, files = pcall(C_Map.GetMapArtLayerTextures, map, 1)
+        if L and okT and type(files) == "table" then
+            local tw, th = L.tileWidth or 256, L.tileHeight or 256
+            local lw, lh = L.layerWidth or tw, L.layerHeight or th
+            local cols = math.max(1, math.ceil(lw / tw))
+            for idx, file in ipairs(files) do
+                local col, row = (idx - 1) % cols, math.floor((idx - 1) / cols)
+                local t = mc.tiles[idx]
+                if not t then t = mc.area:CreateTexture(nil, "BACKGROUND", nil, 1); mc.tiles[idx] = t end
+                t:SetTexture(file)
+                t:ClearAllPoints()
+                t:SetPoint("TOPLEFT", mc.area, "TOPLEFT", col * tw / lw * AW, -(row * th / lh * AH))
+                t:SetSize(tw / lw * AW, th / lh * AH)
+                t:Show()
+            end
+        end
+    end
+    local me = G() and G():PlayerPos()
+    if me and me.map == map and me.x then
+        mc.me:ClearAllPoints(); mc.me:SetPoint("CENTER", mc.area, "TOPLEFT", me.x * AW, -me.y * AH)
+        mc.me:Show(); mc.meEdge:Show()
+    end
+    return AW, AH
+end
+
+-- Taille de la petite carte : largeur de la carte, hauteur de la zone de dessin (proportions 3:2)
+local function sizeMini(mc, mapW, maxAH)
+    local AW = mapW - 16
+    if maxAH then AW = math.min(AW, math.floor(maxAH * 1.5)) end
+    local AH = math.floor(AW * 2 / 3)
+    mc.area:SetSize(AW, AH)
+    mc:SetHeight(34 + AH + 30)
+    mc.artKey = nil
+    return 34 + AH + 30
+end
+
 -- Choix du menu des persos (rebâti à chaque rafraîchissement : persos renommés ou supprimés).
 local function charOptions()
     local opts = {}
@@ -115,8 +218,9 @@ UI:RegisterPage({
 
         -- Onglets : Mon journal / Carte des zones (retenu dans settings.ui.questTab) -----------
         local ui = WK.DB.global.settings.ui
-        self.view = (ui.questTab == "zones") and "zones" or "log"
-        self.tabSeg = UI:Segmented(p, { { "log", "Mon journal" }, { "zones", "Carte des zones" } },
+        self.view = VIEWS[ui.questTab or ""] and ui.questTab or "log"
+        self.tabSeg = UI:Segmented(p, { { "log", "Mon journal" }, { "pick", "À prendre" }, { "tour", "Tournée" },
+            { "zones", "Carte des zones" } },
             function(v) self:ShowTab(v) end, 30)
         self.tabSeg:SetPoint("TOPLEFT")
         self.tabSeg:Select(self.view)
@@ -209,6 +313,8 @@ UI:RegisterPage({
         self.empty = UI:Text(self.lscroll.child, 12, C.muted)
 
         self:BuildLog(p)
+        self:BuildPick(p)
+        self:BuildTour(p)
 
         UI:OnResize(p, function() self:Layout(); self:Refresh() end)
         Q.OnChange = function() if p:IsVisible() then self:Refresh() end end
@@ -240,7 +346,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + 4 * 36 + 6, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 6 or 4) * 36 + 6, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -268,6 +374,17 @@ UI:RegisterPage({
                 end, 26)
             UI:SettingRow(tcard, -148, "Camps sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
             self.campSeg:Select(QT():Config().map)
+            -- plan de quêtes (Modules/QuestPlan.lua) : alerte près d'un donneur, niveau des quêtes proposées
+            if QP() then
+                local nt = UI:Toggle(tcard, function() return QP():Config().nearAlert end,
+                    function(v) QP():Config().nearAlert = v; WK:NotifyChanged() end)
+                table.insert(self.toggles, nt)
+                UI:SettingRow(tcard, -184, "Prévenir près d'un donneur utile", nil, nt, 50)
+                self.maxSeg = UI:Segmented(tcard, { { 0, "0" }, { 1, "1" }, { 2, "2" }, { 3, "3" } },
+                    function(v) QP():Config().maxAbove = v; WK:NotifyChanged() end, 26)
+                UI:SettingRow(tcard, -220, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
+                self.maxSeg:Select(QP():Config().maxAbove)
+            end
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
@@ -305,7 +422,16 @@ UI:RegisterPage({
         local p = self.list:GetParent()
         local h = p:GetHeight() or 500
         if h < 100 then h = 500 end
-        local top = 30 + GAP
+        local w = p:GetWidth() or 800
+        if w < 100 then w = 800 end
+        -- « Quêtes de » et le filtre (onglet zones) : à côté des onglets, ou dessous si la place manque
+        local zonesView = self.view == "zones"
+        local barW = (self.tabSeg:GetWidth() or 400) + 14 + 70 + 8 + 190 + 8 + (self.filterSeg:GetWidth() or 230) + 44
+        local second = zonesView and w < barW
+        self.ofLabel:ClearAllPoints()
+        if second then self.ofLabel:SetPoint("TOPLEFT", 0, -(30 + GAP + 9))
+        else self.ofLabel:SetPoint("TOPLEFT", self.tabSeg, "TOPRIGHT", 14, -9) end
+        local top = 30 + GAP + (second and (30 + GAP) or 0)
         self.side:ClearAllPoints()
         local open = self.settingsOpen == true
         self.gear:SetActive(open)
@@ -313,19 +439,19 @@ UI:RegisterPage({
         -- réglages : sur toute la largeur, sous la barre
         self.side:SetPoint("TOPLEFT", 0, -top)
         self.side:SetPoint("BOTTOMRIGHT")
-        local w = p:GetWidth() or 800
-        self.side.child:SetSize(math.min((w > 100 and w or 800) - 10, 560), self.sideH or 400)
+        self.side.child:SetSize(math.min(w - 10, 560), self.sideH or 400)
         if self.side.UpdateBar then self.side:UpdateBar() end
         -- onglet affiché : zones (barre « Quêtes de », filtre) ou journal
-        local zonesView = self.view == "zones"
         self.ofLabel:SetShown(zonesView); self.charDd:SetShown(zonesView); self.filterSeg:SetShown(zonesView)
         UI:ZoneLayout(self, p, top, w, h, open or not zonesView)
-        self:LayoutLog(top, w, h, open or zonesView)
+        self:LayoutLog(top, w, h, open or self.view ~= "log")
+        self:LayoutPick(top, w, h, open or self.view ~= "pick")
+        self:LayoutTour(top, w, h, open or self.view ~= "tour")
     end,
 
     -- onglet choisi (boutons d'onglet, pastille « Suivie » de l'en-tête)
     ShowTab = function(self, v)
-        self.view = (v == "zones") and "zones" or "log"
+        self.view = VIEWS[v or ""] and v or "log"
         WK.DB.global.settings.ui.questTab = self.view
         self.tabSeg:Select(self.view)
         self.settingsOpen = false
@@ -451,41 +577,8 @@ UI:RegisterPage({
             if self.view == "log" and not self.settingsOpen then self:RefreshLog() end
         end)
 
-        -- petite carte de la zone ------------------------------------------------------------
-        local mc = UI:Card(p)
-        self.jMap = mc
-        mc.name = UI:Text(mc, 12)
-        mc.name:SetPoint("TOPLEFT", 12, -11); mc.name:SetPoint("TOPRIGHT", -12, -11)
-        mc.area = CreateFrame("Frame", nil, mc)
-        mc.area:SetPoint("TOP", 0, -34)
-        mc.area:SetSize(MINI_W - 16, math.floor((MINI_W - 16) * 2 / 3))
-        if mc.area.SetClipsChildren then mc.area:SetClipsChildren(true) end
-        mc.areaBg = mc.area:CreateTexture(nil, "BACKGROUND")
-        mc.areaBg:SetAllPoints()
-        mc.areaBg:SetColorTexture(unpack(C.inset))
-        mc.tiles = {}
-        mc.pins = CreateFrame("Frame", nil, mc.area)
-        mc.pins:SetAllPoints()
-        mc.pins:SetFrameLevel(mc.area:GetFrameLevel() + 5)
-        mc.top = CreateFrame("Frame", nil, mc.area)
-        mc.top:SetAllPoints()
-        mc.top:SetFrameLevel(mc.area:GetFrameLevel() + 8)
-        mc.fills, mc.rings = {}, {}
-        mc.me = mc.top:CreateTexture(nil, "OVERLAY")
-        mc.me:SetTexture(UI.MEDIA .. "circle"); mc.me:SetSize(9, 9); mc.me:SetVertexColor(unpack(C.text))
-        mc.meEdge = mc.top:CreateTexture(nil, "ARTWORK")
-        mc.meEdge:SetTexture(UI.MEDIA .. "circle"); mc.meEdge:SetSize(13, 13); mc.meEdge:SetVertexColor(unpack(C.inset))
-        mc.meEdge:SetPoint("CENTER", mc.me, "CENTER")
-        mc.turnBg = mc.top:CreateTexture(nil, "ARTWORK")
-        mc.turnBg:SetTexture(UI.MEDIA .. "circle"); mc.turnBg:SetSize(18, 18); mc.turnBg:SetVertexColor(unpack(C.inset))
-        mc.turn = UI:Text(mc.top, 14, C.gold)
-        mc.turn:SetPoint("CENTER", mc.turnBg, "CENTER", 0, 0)
-        mc.turn:SetText("?")
-        mc.none = UI:Text(mc.area, 11, C.dim)
-        mc.none:SetPoint("CENTER")
-        mc.legend = UI:Text(mc, 10, C.dim)
-        mc.legend:SetPoint("BOTTOMLEFT", 12, 9); mc.legend:SetPoint("BOTTOMRIGHT", -12, 9)
-        mc.legend:SetText(T("cercles : camps · ? : rendu · point : toi"))
+        -- petite carte de la zone
+        self.jMap = newMini(p, "cercles : camps · ? : rendu · point : toi")
     end,
 
     -- Disposition de l'onglet journal : large = liste | détail | carte ; étroit = carte sous la liste
@@ -495,13 +588,9 @@ UI:RegisterPage({
         w = (w and w > 100) and w or 800
         local wide = w >= 1060
         local mapW = wide and MINI_W or LOG_W
-        local AW = mapW - 16
-        if not wide then AW = math.min(AW, math.floor(math.max(160, (h - top) * 0.36) * 1.5)) end
-        local AH = math.floor(AW * 2 / 3)
-        local mapH = 34 + AH + 30
         local mc = self.jMap
-        mc.area:SetSize(AW, AH)
-        mc:SetWidth(mapW); mc:SetHeight(mapH)
+        mc:SetWidth(mapW)
+        local mapH = sizeMini(mc, mapW, (not wide) and math.max(160, (h - top) * 0.36) or nil)
         self.jList:SetWidth(LOG_W)
         self.jList:SetPoint("TOPLEFT", 0, -top)
         if wide then
@@ -515,49 +604,13 @@ UI:RegisterPage({
             self.jDet:SetPoint("TOPLEFT", LOG_W + GAP, -top)
             self.jDet:SetPoint("BOTTOMRIGHT", 0, 0)
         end
-        mc.artKey = nil
     end,
 
     -- Petite carte : fond de la zone (tuiles du jeu, comme UI:ZoneMap), camps, rendu, joueur
     PaintMini = function(self, map, objs, turn)
         local mc = self.jMap
-        local AW, AH = mc.area:GetWidth() or 0, mc.area:GetHeight() or 0
-        for _, t in ipairs(mc.fills) do t:Hide() end
-        for _, t in ipairs(mc.rings) do t:Hide() end
-        mc.me:Hide(); mc.meEdge:Hide(); mc.turn:Hide(); mc.turnBg:Hide()
-        if not map or AW < 20 or AH < 20 then
-            for _, t in ipairs(mc.tiles) do t:Hide() end
-            mc.artKey = nil
-            mc.name:SetText(T("Carte"))
-            mc.none:SetText(T("Pas de lieu connu pour cette quête.")); mc.none:Show()
-            return
-        end
-        mc.none:Hide()
-        mc.name:SetText(mapName(map) or ("#" .. map))
-        -- fond : tuiles de la carte de la zone, sinon le fond uni
-        local key = map .. ":" .. math.floor(AW) .. "x" .. math.floor(AH)
-        if mc.artKey ~= key then
-            mc.artKey = key
-            for _, t in ipairs(mc.tiles) do t:Hide() end
-            local okL, layers = pcall(C_Map.GetMapArtLayers, map)
-            local L = okL and type(layers) == "table" and layers[1]
-            local okT, files = pcall(C_Map.GetMapArtLayerTextures, map, 1)
-            if L and okT and type(files) == "table" then
-                local tw, th = L.tileWidth or 256, L.tileHeight or 256
-                local lw, lh = L.layerWidth or tw, L.layerHeight or th
-                local cols = math.max(1, math.ceil(lw / tw))
-                for idx, file in ipairs(files) do
-                    local col, row = (idx - 1) % cols, math.floor((idx - 1) / cols)
-                    local t = mc.tiles[idx]
-                    if not t then t = mc.area:CreateTexture(nil, "BACKGROUND", nil, 1); mc.tiles[idx] = t end
-                    t:SetTexture(file)
-                    t:ClearAllPoints()
-                    t:SetPoint("TOPLEFT", mc.area, "TOPLEFT", col * tw / lw * AW, -(row * th / lh * AH))
-                    t:SetSize(tw / lw * AW, th / lh * AH)
-                    t:Show()
-                end
-            end
-        end
+        local AW, AH = paintMiniBase(mc, map, "Pas de lieu connu pour cette quête.")
+        if not AW then return end
         -- camps : cercle plein teinté + anneau en pointillés (vert si l'objectif est fait)
         local ar, ag, ab = UI:Accent()
         local n = 0
@@ -584,11 +637,6 @@ UI:RegisterPage({
         if turn and turn.map == map then
             mc.turnBg:ClearAllPoints(); mc.turnBg:SetPoint("CENTER", mc.area, "TOPLEFT", turn.x * AW, -turn.y * AH)
             mc.turnBg:Show(); mc.turn:Show()
-        end
-        local me = G() and G():PlayerPos()
-        if me and me.map == map and me.x then
-            mc.me:ClearAllPoints(); mc.me:SetPoint("CENTER", mc.area, "TOPLEFT", me.x * AW, -me.y * AH)
-            mc.me:Show(); mc.meEdge:Show()
         end
     end,
 
@@ -778,6 +826,378 @@ UI:RegisterPage({
         self:PaintMini(map, objs, turn)
     end,
 
+    ---------------------------------------------------------------------------
+    -- Onglet « À prendre » : quêtes autour de toi par coin (Modules/QuestPlan.lua), à cocher
+    ---------------------------------------------------------------------------
+    BuildPick = function(self, p)
+        local hold = CreateFrame("Frame", nil, p)
+        self.pHold = hold
+        self.pscroll = UI:Scroll(hold)
+        self.pscroll:SetPoint("TOPLEFT", 0, 0)
+        self.pscroll:SetPoint("BOTTOMRIGHT", 0, 46)
+        self.pEmpty = UI:Text(hold, 12, C.muted)
+        self.pEmpty:SetPoint("TOPLEFT", 16, -16); self.pEmpty:SetPoint("TOPRIGHT", -16, -16)
+        self.pEmpty:SetJustifyH("LEFT")
+        if self.pEmpty.SetWordWrap then self.pEmpty:SetWordWrap(true) end
+        self.pGuideBtn = UI:Button(hold, string.format(T("Guider vers les donneurs (%d)"), 0), 230, 30, "secondary", "guide")
+        self.pGuideBtn:SetPoint("BOTTOMLEFT", 0, 6)
+        self.pGuideBtn:SetScript("OnClick", function() self:GuideGivers() end)
+        self.pTourBtn = UI:Button(hold, "Créer la tournée", 160, 30, "primary")
+        self.pTourBtn:SetPoint("BOTTOMLEFT", self.pGuideBtn, "BOTTOMRIGHT", 8, 0)
+        self.pTourBtn:SetScript("OnClick", function() self:ShowTab("tour") end)
+
+        local child = self.pscroll.child
+        local function paintBox(box, on)
+            local ar, ag, ab = UI:Accent()
+            box.border:SetColor(ar, ag, ab, on and 1 or 0.7)
+            box.fill:SetColor(ar, ag, ab, 1)
+            box.fill:SetShown(on)
+        end
+        local function newRow(cd)
+            local r = CreateFrame("Button", nil, cd)
+            r:SetHeight(28)
+            r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints(); r.hl:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 0.5); r.hl:Hide()
+            r.box = CreateFrame("Frame", nil, r)
+            r.box:SetSize(16, 16); r.box:SetPoint("LEFT", 16, 0)
+            UI:Panel(r.box, 4, C.surface, C.border)
+            r.box.fill = UI:Rounded(r.box, 3, 3, "ARTWORK", 1)
+            r.lv = UI:Badge(r, "")
+            r.lv:SetPoint("LEFT", 42, 0)
+            r.name = UI:Text(r, 12)
+            r.name:SetPoint("LEFT", 80, 0); r.name:SetPoint("RIGHT", -200, 0)
+            r.info = UI:Text(r, 11, C.muted)
+            r.info:SetPoint("RIGHT", -16, 0); r.info:SetWidth(180); r.info:SetJustifyH("RIGHT")
+            r:SetScript("OnClick", function(s)
+                if not (s.e and QP()) then return end
+                QP():SetPicked(s.e.id, not s.e.picked)
+                self:RefreshPick()
+            end)
+            r:SetScript("OnEnter", function(s)
+                s.hl:Show()
+                if not s.e then return end
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:SetText(s.e.title or "", 1, 1, 1)
+                GameTooltip:AddDoubleLine(T("Niveau"), tostring(s.e.lvl or "?"), 0.6, 0.6, 0.6, 1, 1, 1)
+                if (s.e.xp or 0) > 0 then GameTooltip:AddDoubleLine(T("Expérience"), tostring(s.e.xp), 0.6, 0.6, 0.6, 1, 1, 1) end
+                GameTooltip:AddLine(T("Clic : cocher ou décocher pour la tournée"), 0.6, 0.6, 0.6, true)
+                GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
+            r.PaintBox = function(s) paintBox(s.box, s.e and s.e.picked) end
+            UI:OnAccent(function() r:PaintBox() end)
+            return r
+        end
+        self.pcards = UI:Pool(function()
+            local cd = UI:Card(child)
+            cd.head = UI:Text(cd, 13)
+            cd.head:SetPoint("TOPLEFT", 16, -13)
+            cd.tag = UI:Badge(cd, "")
+            cd.tag:SetPoint("LEFT", cd.head, "RIGHT", 10, 0)
+            cd.dist = UI:Text(cd, 11, C.muted)
+            cd.dist:SetPoint("LEFT", cd.tag, "RIGHT", 8, 0)
+            cd.xp = UI:Text(cd, 13, C.positive)
+            cd.xp:SetPoint("TOPRIGHT", -16, -13)
+            cd.rows = UI:Pool(function() return newRow(cd) end)
+            return cd
+        end)
+    end,
+
+    LayoutPick = function(self, top, w, h, hide)
+        self.pHold:ClearAllPoints()
+        self.pHold:SetShown(not hide)
+        if hide then return end
+        self.pHold:SetPoint("TOPLEFT", 0, -top)
+        self.pHold:SetPoint("BOTTOMRIGHT", 0, 0)
+    end,
+
+    -- donneurs cochés pas encore pris : { e, d }, du plus proche au plus loin
+    PickGivers = function(self, list)
+        local out = {}
+        for _, e in ipairs(list or {}) do
+            if e.picked and not e.inLog and e.giver then
+                table.insert(out, { e = e, d = distTo(e.giver.map, e.giver.x, e.giver.y) or math.huge })
+            end
+        end
+        table.sort(out, function(a, b) return a.d < b.d end)
+        return out
+    end,
+
+    GuideGivers = function(self)
+        local P, g = QP(), G()
+        if not (P and g) then return end
+        local _, _, list = P:Coins()
+        local first = self:PickGivers(list)[1]
+        if not first then return end
+        local e, gv = first.e, first.e.giver
+        local t = { map = gv.map, x = gv.x, y = gv.y, e = { gv.x * 100, gv.y * 100, 0, nil, nil, e.title, e.title, T("Donneur de quête") } }
+        t.cont, t.wx, t.wy = g.ToWorld(gv.map, gv.x, gv.y)
+        g:Start(t, "Quête", "quest")
+    end,
+
+    RefreshPick = function(self)
+        local P = QP()
+        if not (P and self.pHold) then return end
+        local coins, zone, list = P:Coins()
+        local myLevel = UnitLevel and UnitLevel("player") or 1
+        local here, inLog, xp = 0, 0, 0
+        for _, e in ipairs(list or {}) do
+            if e.inLog then inLog = inLog + 1 else here = here + 1 end
+            if e.picked then xp = xp + (e.xp or 0) end
+        end
+        local build = P:Build()
+        self.pickStats = { here = here, inLog = inLog, xp = xp, secs = build and build.secs or 0, steps = build and #build.steps or 0 }
+        local givers = self:PickGivers(list)
+        self.pGuideBtn:SetLabel(string.format(T("Guider vers les donneurs (%d)"), #givers))
+        self.pGuideBtn:SetEnabled(#givers > 0)
+        self.pTourBtn:SetEnabled(self.pickStats.steps > 0)
+
+        self.pcards:Reset()
+        local W = self.pscroll:GetWidth() or 600
+        if W < 100 then W = 600 end
+        local y = 0
+        for _, k in ipairs(coins or {}) do
+            local cd = self.pcards:Get()
+            cd:ClearAllPoints(); cd:SetPoint("TOPLEFT", 0, -y); cd:SetWidth(W - 14)
+            cd.head:SetText(string.format(T("Coin %s"), k.label or ""))
+            local n = #k.quests
+            cd.tag:Set(n == 1 and T("1 quête") or string.format(T("%d quêtes au même endroit"), n))
+            cd.dist:SetText((k.d and k.d < 100000) and string.format(T("à %d m"), math.floor(k.d + 0.5)) or "")
+            cd.xp:SetText((k.xp or 0) > 0 and ("+" .. k.xp .. " XP") or "")
+            cd.rows:Reset()
+            local ry = 44
+            for _, e in ipairs(k.quests) do
+                local r = cd.rows:Get()
+                r.e = e
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ry); r:SetPoint("TOPRIGHT", 0, -ry)
+                r:PaintBox()
+                r.lv:Set(e.lvl and tostring(e.lvl) or "?", e.lvl and levelColor(e.lvl, myLevel) or C.muted)
+                r.name:SetText(e.title or ("#" .. e.id))
+                r.name:SetTextColor(unpack((e.hard and not e.inLog) and C.muted or C.text))
+                local info
+                if e.inLog then info = e.complete and T("à rendre") or T("dans le journal")
+                elseif e.hard then info = T("trop dur pour l'instant")
+                elseif e.giver then
+                    local d = distTo(e.giver.map, e.giver.x, e.giver.y)
+                    info = d and string.format(T("donneur · %d m"), math.floor(d + 0.5)) or T("donneur")
+                else info = "" end
+                r.info:SetText(info)
+                ry = ry + 28
+            end
+            cd:SetHeight(ry + 10)
+            y = y + ry + 10 + GAP
+        end
+        local none = #(coins or {}) == 0
+        self.pEmpty:SetShown(none)
+        if none then
+            self.pEmpty:SetText(zone and T("Rien à prendre ou à faire autour de toi pour ton niveau. Essaie la zone conseillée dans « Carte des zones ».")
+                or T("Zone inconnue : la liste se remplit une fois en jeu, dans une zone qui a des quêtes."))
+        end
+        self.pscroll.child:SetSize(W - 14, math.max(y, 30))
+        if self.pscroll.UpdateBar then self.pscroll:UpdateBar() end
+        if UI.RefreshChips and UI.current == "quests" then UI:RefreshChips() end
+    end,
+
+    ---------------------------------------------------------------------------
+    -- Onglet « Tournée » : étapes de la tournée en cours (ou l'aperçu) et petite carte
+    ---------------------------------------------------------------------------
+    BuildTour = function(self, p)
+        local tc = UI:Card(p)
+        self.tList = tc
+        self.tHead = UI:Text(tc, 14)
+        self.tHead:SetPoint("TOPLEFT", 16, -14); self.tHead:SetPoint("TOPRIGHT", -16, -14)
+        self.tSub = UI:Text(tc, 11, C.muted)
+        self.tSub:SetPoint("TOPLEFT", self.tHead, "BOTTOMLEFT", 0, -5); self.tSub:SetPoint("TOPRIGHT", self.tHead, "BOTTOMRIGHT", 0, -5)
+        self.tscroll = UI:Scroll(tc)
+        self.tscroll:SetPoint("TOPLEFT", 4, -58)
+        self.tscroll:SetPoint("BOTTOMRIGHT", -4, 54)
+        self.tEmpty = UI:Text(self.tscroll.child, 12, C.muted)
+        self.tEmpty:SetPoint("TOPLEFT", 12, -8)
+        local function act(fn)
+            return function()
+                local P = QP()
+                if P then fn(P) end
+                self:RefreshTour()
+            end
+        end
+        self.tStart = UI:Button(tc, "Lancer la tournée", 170, 30, "primary", "play")
+        self.tStart:SetPoint("BOTTOMLEFT", 14, 12)
+        self.tStart:SetScript("OnClick", act(function(P) P:Start() end))
+        self.tSkip = UI:Button(tc, "Passer l'étape", nil, 30, "secondary")
+        self.tSkip:SetPoint("BOTTOMLEFT", 14, 12)
+        self.tSkip:SetScript("OnClick", act(function(P) P:Skip() end))
+        self.tPause = UI:Button(tc, "Reprendre", 110, 30, "secondary")
+        self.tPause:SetPoint("BOTTOMLEFT", self.tSkip, "BOTTOMRIGHT", 8, 0)
+        self.tPause:SetScript("OnClick", act(function(P) local t = P:Tour(); P:Pause(not (t and t.paused)) end))
+        self.tReorder = UI:Button(tc, "Réordonner", nil, 30, "secondary", "refresh")
+        self.tReorder:SetPoint("BOTTOMLEFT", self.tPause, "BOTTOMRIGHT", 8, 0)
+        self.tReorder:SetScript("OnClick", act(function(P) P:Reorder() end))
+        self.tStop = UI:Button(tc, "Arrêter", nil, 30, "danger")
+        self.tStop:SetPoint("BOTTOMLEFT", self.tReorder, "BOTTOMRIGHT", 8, 0)
+        self.tStop:SetScript("OnClick", act(function(P) P:Stop() end))
+        self.tsteps = UI:Pool(function()
+            local r = CreateFrame("Frame", nil, self.tscroll.child)
+            r:SetHeight(48)
+            r.bg = r:CreateTexture(nil, "BACKGROUND"); r.bg:SetAllPoints()
+            r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT"); r.bar:SetPoint("BOTTOMLEFT"); r.bar:SetWidth(3)
+            r.dot = r:CreateTexture(nil, "ARTWORK")
+            r.dot:SetTexture(UI.MEDIA .. "circle"); r.dot:SetSize(24, 24); r.dot:SetPoint("TOPLEFT", 12, -12)
+            r.num = UI:Text(r, 11)
+            r.num:SetPoint("CENTER", r.dot, "CENTER", 0, 0)
+            r.title = UI:Text(r, 12)
+            r.title:SetPoint("TOPLEFT", 46, -8); r.title:SetPoint("TOPRIGHT", -12, -8)
+            r.sub = UI:Text(r, 11, C.muted)
+            r.sub:SetPoint("TOPLEFT", 46, -27); r.sub:SetPoint("TOPRIGHT", -12, -27)
+            return r
+        end)
+        self.tMap = newMini(p, "numéros : étapes · point : toi")
+        -- point du joueur tenu à jour sur la petite carte
+        local acc = 0
+        tc:SetScript("OnUpdate", function(_, el)
+            acc = acc + (el or 0)
+            if acc < 2 then return end
+            acc = 0
+            if self.view == "tour" and not self.settingsOpen then self:PaintTourMap() end
+        end)
+    end,
+
+    LayoutTour = function(self, top, w, h, hide)
+        for _, f in ipairs({ self.tList, self.tMap }) do f:SetShown(not hide); f:ClearAllPoints() end
+        if hide then return end
+        w = (w and w > 100) and w or 800
+        local mc = self.tMap
+        self.tList:SetPoint("TOPLEFT", 0, -top)
+        if w >= 1060 then
+            mc:SetWidth(MINI_W)
+            sizeMini(mc, MINI_W)
+            mc:SetPoint("TOPRIGHT", 0, -top)
+            self.tList:SetPoint("BOTTOMRIGHT", -(MINI_W + GAP), 0)
+        else
+            -- étroit : carte sous la liste, sur toute la largeur
+            local mapH = sizeMini(mc, w, math.max(120, (h - top) * 0.32))
+            mc:SetPoint("BOTTOMLEFT", 0, 0); mc:SetPoint("BOTTOMRIGHT", 0, 0)
+            self.tList:SetPoint("BOTTOMRIGHT", 0, mapH + GAP)
+        end
+    end,
+
+    -- sous-ligne d'une étape
+    StepSub = function(self, P, s)
+        local txt
+        if s.kind == "pick" then txt = T("parler au donneur")
+        elseif s.kind == "turn" then txt = T("rendre au PNJ")
+        else
+            local objs = P:StepObjectives(s)
+            local left = {}
+            for _, o in ipairs(objs) do if not o.done then table.insert(left, o) end end
+            if #left >= 3 then txt = string.format(T("%d objectifs au même camp"), #left)
+            elseif #left > 0 then
+                local parts = {}
+                for _, o in ipairs(left) do
+                    table.insert(parts, (o.name or "") .. ((o.need or 0) > 0 and (" " .. (o.have or 0) .. "/" .. o.need) or ""))
+                end
+                txt = table.concat(parts, " · ")
+            elseif #objs > 0 then txt = T("objectifs faits")
+            else txt = T("objectifs connus une fois la quête prise") end
+        end
+        if (s.secs or 0) >= 30 then txt = txt .. "  ·  " .. string.format(T("~%d min"), math.max(1, math.floor(s.secs / 60 + 0.5))) end
+        return txt
+    end,
+
+    RefreshTour = function(self)
+        local P = QP()
+        if not (P and self.tList) then return end
+        local tour = P:Tour()
+        local data = tour or P:Build() or { steps = {} }
+        local steps = data.steps or {}
+        local idx = tour and tour.idx or 0
+        local secs = tour and P:Remaining() or (data.secs or 0)
+        local km = (string.format("%.1f", (data.meters or 0) / 1000):gsub("%.", ","))
+        self.tHead:SetText(string.format(T("Tournée · %d étapes · ~%d min · %s km"), #steps, math.max(1, math.floor(secs / 60 + 0.5)), km))
+        if not tour then
+            self.tSub:SetText(#steps > 0 and T("Aperçu : la tournée n'est pas lancée.") or "")
+        elseif tour.paused then
+            self.tSub:SetText(UI:Hex(C.warning) .. T("En pause") .. "|r  ·  " .. string.format(T("étape %d / %d"), idx, #steps))
+        else
+            self.tSub:SetText(string.format(T("En cours · étape %d / %d"), idx, #steps))
+        end
+        self.tsteps:Reset()
+        local W = self.tscroll:GetWidth() or 500
+        if W < 100 then W = 500 end
+        local ar, ag, ab = UI:Accent()
+        local y = 0
+        for i, s in ipairs(steps) do
+            local r = self.tsteps:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(W - 14)
+            local past = tour and i < idx
+            local cur = tour and i == idx
+            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { ar, ag, ab }
+            r.dot:SetVertexColor(col[1], col[2], col[3], 1)
+            r.num:SetText(tostring(i))
+            r.num:SetTextColor(unpack(past and C.text or C.onAccent))
+            r.title:SetText(P:StepTitle(s))
+            r.title:SetTextColor(unpack(past and C.muted or C.text))
+            r.sub:SetText(self:StepSub(P, s))
+            if cur then
+                r.bg:SetColorTexture(unpack(C.surface2)); r.bg:Show()
+                r.bar:SetColorTexture(ar, ag, ab, 1); r.bar:Show()
+            else r.bg:Hide(); r.bar:Hide() end
+            y = y + 50
+        end
+        self.tEmpty:SetShown(#steps == 0)
+        self.tEmpty:SetText(T("Aucune étape : coche des quêtes dans « À prendre »."))
+        self.tscroll.child:SetSize(W - 14, math.max(y, 30))
+        if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
+        -- boutons
+        self.tStart:SetShown(not tour); self.tStart:SetEnabled(#steps > 0)
+        for _, b in ipairs({ self.tSkip, self.tPause, self.tReorder, self.tStop }) do b:SetShown(tour ~= nil) end
+        self.tPause:SetLabel(tour and tour.paused and "Reprendre" or "Pause")
+        self.tourSteps, self.tourIdx = steps, idx
+        self:PaintTourMap()
+    end,
+
+    -- Petite carte de la tournée : étapes numérotées de la zone, reliées, et point du joueur
+    PaintTourMap = function(self)
+        local mc = self.tMap
+        local steps, idx = self.tourSteps or {}, self.tourIdx or 0
+        local cur = steps[idx] or steps[1]
+        local map = cur and cur.map
+        if not map then local me = G() and G():PlayerPos(); map = me and me.map end
+        local AW, AH = paintMiniBase(mc, map, "Aucune étape à montrer.")
+        if not AW then return end
+        local ar, ag, ab = UI:Accent()
+        local n, nl, prev = 0, 0, nil
+        for i, s in ipairs(steps) do
+            if s.map == map and s.x then
+                n = n + 1
+                local x, y = s.x * AW, s.y * AH
+                if prev and mc.pins.CreateLine then
+                    nl = nl + 1
+                    local ln = mc.lines[nl]
+                    if not ln then ln = mc.pins:CreateLine(nil, "ARTWORK"); mc.lines[nl] = ln end
+                    if ln then
+                        ln:SetThickness(2)
+                        ln:SetColorTexture(ar, ag, ab, 0.7)
+                        ln:SetStartPoint("TOPLEFT", mc.area, prev[1], -prev[2])
+                        ln:SetEndPoint("TOPLEFT", mc.area, x, -y)
+                        ln:Show()
+                    end
+                end
+                prev = { x, y }
+                local mk, num = mc.marks[n], mc.nums[n]
+                if not mk then
+                    mk = mc.top:CreateTexture(nil, "ARTWORK"); mk:SetTexture(UI.MEDIA .. "circle"); mk:SetSize(18, 18); mc.marks[n] = mk
+                    num = UI:Text(mc.top, 10); mc.nums[n] = num
+                    num:SetPoint("CENTER", mk, "CENTER", 0, 0)
+                end
+                local past = idx > 0 and i < idx
+                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { ar, ag, ab }
+                mk:ClearAllPoints(); mk:SetPoint("CENTER", mc.area, "TOPLEFT", x, -y)
+                mk:SetVertexColor(col[1], col[2], col[3], 1)
+                num:SetText(tostring(i)); num:SetTextColor(unpack(past and C.text or C.onAccent))
+                mk:Show(); num:Show()
+            end
+        end
+    end,
+
     Refresh = function(self)
         local cfg = Q:Config()
         -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
@@ -787,7 +1207,10 @@ UI:RegisterPage({
         end
         for _, t in ipairs(self.toggles) do t:Refresh() end
         if self.campSeg and QT() then self.campSeg:Select(QT():Config().map) end
-        if self.view ~= "zones" then self:RefreshLog() return end
+        if self.maxSeg and QP() then self.maxSeg:Select(QP():Config().maxAbove) end
+        if self.view == "log" then self:RefreshLog() return end
+        if self.view == "pick" then self:RefreshPick() return end
+        if self.view == "tour" then self:RefreshTour() return end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
         local myLevel = c.level or 1

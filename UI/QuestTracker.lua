@@ -20,10 +20,17 @@ local function build()
     f.title = UI:Text(f, 13, C.text); f.title:SetPoint("TOPLEFT", 14, -12); f.title:SetPoint("RIGHT", -34, 0)
     f.title:SetJustifyH("LEFT"); if f.title.SetWordWrap then f.title:SetWordWrap(false) end
     f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3); f.sub:SetPoint("RIGHT", -14, 0)
+    if f.sub.SetWordWrap then f.sub:SetWordWrap(false) end
     f.sub:SetJustifyH("LEFT")
     f.close = UI:IconButton(f, "close", 20, "Ne plus suivre cette quête")
     f.close:SetPoint("TOPRIGHT", -8, -8)
-    f.close:SetScript("OnClick", function() Q():Untrack() end)
+    f.close:SetScript("OnClick", function()
+        if f.tour then WK.modules.QuestPlan:Stop() else Q():Untrack() end
+    end)
+    -- tournée : jauge d'avancée sous le titre
+    f.prog = UI:Progress(f, 4)
+    f.prog:SetPoint("TOPLEFT", 14, -40); f.prog:SetPoint("RIGHT", -14, 0)
+    f.prog:Hide()
     f.rows = {}
     for i = 1, ROWS do
         local r = CreateFrame("Frame", nil, f)
@@ -39,10 +46,14 @@ local function build()
         f.rows[i] = r
     end
     f.next = UI:Button(f, T("Camp suivant"), nil, 22, "secondary")
-    f.next:SetScript("OnClick", function() Q():NextCamp() end)
+    f.next:SetScript("OnClick", function()
+        if f.tour then WK.modules.QuestPlan:Skip() else Q():NextCamp() end
+    end)
     f.next.tooltip = "Vise un autre camp d'un objectif pas fini (du plus proche au plus loin)."
     f.turn = UI:Button(f, T("Rendu"), nil, 22, "secondary")
-    f.turn:SetScript("OnClick", function() Q():GoTurnIn() end)
+    f.turn:SetScript("OnClick", function()
+        if f.tour then local P = WK.modules.QuestPlan; P:Pause(not (P:Tour() or {}).paused) else Q():GoTurnIn() end
+    end)
     f.turn.tooltip = "Guide vers le personnage qui reprend la quête."
     f.goal = UI:Text(f, 10, C.muted); f.goal:SetJustifyH("LEFT")
 
@@ -51,6 +62,12 @@ local function build()
         self.title:SetText(data.title or "")
         self.sub:SetText(data.sub or "")
         local y = -44
+        self.tour = data.tour
+        self.prog:SetShown(data.prog ~= nil)
+        if data.prog then self.prog:SetValue(data.prog); y = -52 end
+        self.next:SetLabel(data.b1 or T("Camp suivant")); self.next:SetWidth(self.next.label:GetStringWidth() + 26)
+        self.turn:SetLabel(data.b2 or T("Rendu")); self.turn:SetWidth(self.turn.label:GetStringWidth() + 26)
+        self.close.tooltip = data.tour and "Arrêter la tournée" or "Ne plus suivre cette quête"
         for i, r in ipairs(self.rows) do
             local o = data.objs[i]
             if o then
@@ -113,6 +130,22 @@ function UI:RefreshQuestTracker()
     end
     if card.sample then return end
     local q = Q()
+    -- tournée de quêtes en cours (Modules/QuestPlan.lua) : la carte suit la tournée
+    local P = WK.modules.QuestPlan
+    local tour = shown() and P and P:Tour()
+    if tour and tour.steps[tour.idx] then
+        local s = tour.steps[tour.idx]
+        local nxt = tour.steps[tour.idx + 1]
+        local objs = P:StepObjectives(s)
+        local mins = math.max(1, math.floor(P:Remaining() / 60 + 0.5))
+        card:Paint({ tour = true, title = string.format(T("Étape %d / %d"), tour.idx, #tour.steps),
+            sub = P:StepTitle(s) .. " · " .. string.format(T("~%d min restantes"), mins),
+            prog = (tour.idx - 1) / #tour.steps, objs = objs,
+            goal = (tour.paused and T("En pause")) or (nxt and (T("Ensuite : ") .. P:StepTitle(nxt))) or T("Dernière étape"),
+            b1 = T("Passer l'étape"), b2 = tour.paused and T("Reprendre") or T("Pause"), canNext = true })
+        card:Show()
+        return
+    end
     local qid = shown() and q:Tracked()
     if not qid then card:Hide() return end
     local objs = {}

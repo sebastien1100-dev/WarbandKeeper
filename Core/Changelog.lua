@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.95.0", date = "20/11/2026", restart = true,
+        added = {
+            "Page Quêtes, onglet « À prendre » : les quêtes de ton journal et celles que ton perso peut prendre autour de toi, regroupées par coin (quêtes dont les objectifs sont au même endroit), avec XP, niveau en couleur et distance au donneur ; coche celles à faire (les trop dures sont décochées d'office). « Guider vers les donneurs » mène au plus proche.",
+            "Onglet « Tournée » : l'ordre le plus court pour les quêtes cochées (prendre, faire les camps, rendre), les objectifs d'un même coin en une seule étape, durée et distance estimées, mini-carte avec les étapes numérotées. Lancer, passer une étape, pause, réordonner depuis là où tu es, arrêter.",
+            "Pendant une tournée, la carte de quête à l'écran montre l'étape en cours, ses objectifs, le temps restant et l'étape suivante ; la flèche passe toute seule à l'étape suivante. Bilan dans le chat à la fin (étapes, temps, XP, quêtes rendues).",
+            "Carte du monde : étapes de la tournée numérotées (or : prendre, accent : faire, vert : rendre) et reliées.",
+            "Alerte quand tu passes près du donneur d'une quête utile pour ton niveau ; réglages dans la roue de la page Quêtes (alerte, quêtes au-dessus de ton niveau).",
+        },
+    },
+    {
         version = "1.94.0", date = "20/11/2026", restart = true,
         added = {
             "Quête suivie : coche une quête dans le journal du jeu (ou clique « Suivre » dans l'addon) ; une carte à l'écran montre ses objectifs avec leurs jauges, « Camp suivant » et « Rendu ». À placer en mode édition.",

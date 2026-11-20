@@ -76,6 +76,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.95.0 — 20/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Page Quêtes, onglet « À prendre » : les quêtes de ton journal et celles que ton perso peut prendre autour de toi, regroupées par coin (quêtes dont les objectifs sont au même endroit), avec XP, niveau en couleur et distance au donneur ; coche celles à faire (les trop dures sont décochées d'office). « Guider vers les donneurs » mène au plus proche.
+- Onglet « Tournée » : l'ordre le plus court pour les quêtes cochées (prendre, faire les camps, rendre), les objectifs d'un même coin en une seule étape, durée et distance estimées, mini-carte avec les étapes numérotées. Lancer, passer une étape, pause, réordonner depuis là où tu es, arrêter.
+- Pendant une tournée, la carte de quête à l'écran montre l'étape en cours, ses objectifs, le temps restant et l'étape suivante ; la flèche passe toute seule à l'étape suivante. Bilan dans le chat à la fin (étapes, temps, XP, quêtes rendues).
+- Carte du monde : étapes de la tournée numérotées (or : prendre, accent : faire, vert : rendre) et reliées.
+- Alerte quand tu passes près du donneur d'une quête utile pour ton niveau ; réglages dans la roue de la page Quêtes (alerte, quêtes au-dessus de ton niveau).
+
 ## v1.94.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

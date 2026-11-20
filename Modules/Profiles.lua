@@ -34,7 +34,8 @@ local KEYS = {
     gatherHelp = { rankSeen = true, lastRank = true },
     profHelp = { deLog = true },
     bagHelp = { dismissed = true },
-    questTrack = { tracked = true }, -- réglages du suivi (la quête suivie de chaque perso reste à lui)
+    questTrack = { tracked = true },
+    questPlan = { picked = true, tour = true }, -- alerte et niveau ; choix et tournée restent au perso -- réglages du suivi (la quête suivie de chaque perso reste à lui)
     blessings = { chars = true }, -- barre et Salut (la répartition de chaque paladin reste à son perso)
 }
 local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau

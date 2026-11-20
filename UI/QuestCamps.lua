@@ -9,7 +9,7 @@ local T = function(s) return WK.T(s) end
 -- celles du journal (QuestTrack:Config().map). Petit volet « Quêtes » en haut à gauche de la carte : clic sur
 -- une quête = la suivre, « Toutes » / « Suivie » = ce que la carte dessine.
 local function Q() return WK.modules.QuestTrack end
-local camps, labels, turns = {}, {}, {}
+local camps, labels, turns, nums, lines = {}, {}, {}, {}, {}
 
 local function mapPos(p, mapID)
     if p.map == mapID then return p.x, p.y, true end
@@ -94,6 +94,74 @@ local function hideAll()
     for _, f in ipairs(camps) do f:Hide() end
     for _, f in ipairs(labels) do f:Hide() end
     for _, f in ipairs(turns) do f:Hide() end
+    for _, f in ipairs(nums) do f:Hide() end
+    for _, l in ipairs(lines) do l:Hide() end
+end
+
+-- Tournée de quêtes (Modules/QuestPlan.lua) : étapes numérotées (or : prendre, accent : faire, vert : rendre)
+-- reliées par un trait, l'étape en cours plus grande
+local function numPin(i, cv)
+    local p = nums[i]
+    if not p then
+        p = CreateFrame("Frame", nil, cv)
+        p.wk = true
+        p.ring = p:CreateTexture(nil, "ARTWORK"); p.ring:SetAllPoints(); p.ring:SetTexture(UI.MEDIA .. "circle")
+        p.dot = p:CreateTexture(nil, "ARTWORK", nil, 1); p.dot:SetPoint("TOPLEFT", 2, -2); p.dot:SetPoint("BOTTOMRIGHT", -2, 2)
+        p.dot:SetTexture(UI.MEDIA .. "circle")
+        p.n = UI:Text(p, 11, C.bg); p.n:SetPoint("CENTER", 0, 0)
+        p:EnableMouse(true)
+        p:SetScript("OnEnter", function(s)
+            UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.tip or "", 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        p:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        nums[i] = p
+    end
+    if p:GetParent() ~= cv then p:SetParent(cv) end
+    return p
+end
+local function line(i, cv)
+    local l = lines[i]
+    if not l then
+        l = cv:CreateLine(nil, "ARTWORK")
+        lines[i] = l
+    end
+    return l
+end
+local function drawTour(cv, mapID, w, h, lvl)
+    local P = WK.modules.QuestPlan
+    local t = P and P:Tour()
+    if not t then return end
+    local r, g, b = UI:Accent()
+    local prev, nl = nil, 0
+    for i, s in ipairs(t.steps) do
+        local x, y = mapPos(s, mapID)
+        if x then
+            local p = numPin(i, cv)
+            local cur = i == t.idx
+            local sz = cur and 26 or 20
+            p:SetSize(sz, sz)
+            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or { r, g, b }
+            p.ring:SetVertexColor(1, 1, 1, cur and 1 or 0.8)
+            p.dot:SetVertexColor(col[1], col[2], col[3], i < t.idx and 0.4 or 1)
+            p.n:SetText(i)
+            p.tip = P:StepTitle(s)
+            p:SetFrameLevel(lvl + 8)
+            p:ClearAllPoints(); p:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)
+            p:Show()
+            if prev and i > t.idx - 1 then
+                nl = nl + 1
+                local l = line(nl, cv)
+                l:SetThickness(2)
+                l:SetColorTexture(r, g, b, 0.75)
+                l:SetStartPoint("TOPLEFT", cv, prev[1] * w, -prev[2] * h)
+                l:SetEndPoint("TOPLEFT", cv, x * w, -y * h)
+                l:Show()
+            end
+            prev = { x, y }
+        end
+    end
 end
 
 function UI:DrawQuestCamps(cv, mapID, w, h)
@@ -101,7 +169,10 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
     if not WK:FeatureOn("quests") then return end
     local q = Q()
     local mode = q:Config().map
-    if mode == "off" then return end
+    if mode == "off" then
+        drawTour(cv, mapID, w, h, (UI.mapBase or cv:GetFrameLevel() or 1) + 20)
+        return
+    end
     local tracked = q:Tracked()
     local list = {}
     if mode == "all" then
@@ -161,6 +232,7 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
             end
         end
     end
+    drawTour(cv, mapID, w, h, lvl)
     UI:RefreshQuestMapPanel()
 end
 

@@ -1150,7 +1150,23 @@ UI.CHIPS = {
                 table.insert(jr, { T("Suivie"), title, { UI:Accent() }, "quests", T("Clic : voir la quête dans Mon journal"),
                     function() if pg then pg.sel = tid end; toLog() end })
             end
-            if pg and pg.view == "log" then
+            -- tournée en cours (Modules/QuestPlan.lua) : étape, cliquable vers l'onglet Tournée
+            local QP = WK.modules.QuestPlan
+            local tour = QP and QP.Tour and QP:Tour()
+            if tour and tour.steps and tour.steps[tour.idx] then
+                table.insert(jr, 1, { T("Tournée"), string.format(T("étape %d / %d"), tour.idx, #tour.steps),
+                    tour.paused and C.warning or { UI:Accent() }, "quests", nil, function() if pg and pg.ShowTab then pg:ShowTab("tour") end end })
+            end
+            -- onglet « À prendre » : chiffres du plan (calculés par la page)
+            local ps = pg and pg.view == "pick" and pg.pickStats
+            if ps then
+                out = {
+                    { T("À prendre ici"), tostring(ps.here) },
+                    { T("Dans ton journal"), tostring(ps.inLog) },
+                    { T("XP du plan"), tostring(ps.xp), C.positive },
+                    { T("Durée estimée"), string.format(T("~%d min"), math.max(1, math.floor((ps.secs or 0) / 60 + 0.5))) },
+                }
+            elseif pg and (pg.view == "log" or pg.view == "tour") then
                 for i = #jr, 1, -1 do table.insert(out, 1, jr[i]) end
             else
                 for _, e in ipairs(jr) do table.insert(out, e) end

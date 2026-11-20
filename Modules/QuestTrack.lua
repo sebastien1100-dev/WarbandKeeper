@@ -221,6 +221,8 @@ end
 function M:Retarget(force)
     local cfg = self:Config()
     if not on() or not cfg.guide then return end
+    -- une tournée de quêtes en cours (Modules/QuestPlan.lua) a la main sur le guidage
+    if WK.modules.QuestPlan and WK.modules.QuestPlan:Active() then return end
     local g = G()
     local mine = g.target and g.target.kind == "qtrack"
     if g.target and not mine then return end
