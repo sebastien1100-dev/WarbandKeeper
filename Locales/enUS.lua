@@ -3662,4 +3662,6 @@ WK.Locales.enUS.text = {
     ["Dans les airs"] = "In the air",
     ["En mer"] = "At sea",
     ["Recharger l'interface"] = "Reload UI",
+    ["Retire le cadre sombre autour de la barre : il ne reste que la barre et ses libellés (ombrés pour rester lisibles)."] = "Removes the dark frame around the bar: only the bar and its labels remain (shadowed to stay readable).",
+    ["Sans fond"] = "No background",
 }

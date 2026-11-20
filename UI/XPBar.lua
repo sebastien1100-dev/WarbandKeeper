@@ -90,6 +90,14 @@ local function build()
         self.left:ClearAllPoints(); self.left:SetPoint("TOPLEFT", 10, -7)
         self.right:ClearAllPoints(); self.right:SetPoint("TOPRIGHT", -10, -7)
         self.left:SetShown(not compact); self.right:SetShown(not compact)
+        -- sans fond (réglage) : cadre et liseré transparents, textes ombrés pour rester lisibles ; la piste reste
+        local bare = cfg.noBg and true or false
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bare and 0 or 0.92)
+        self.border:SetColor(C.border[1], C.border[2], C.border[3], bare and 0 or (C.border[4] or 1))
+        for _, t in ipairs({ self.left, self.right }) do
+            t:SetShadowColor(0, 0, 0, bare and 1 or 0)
+            t:SetShadowOffset(bare and 1 or 0, bare and -1 or 0)
+        end
         local w = self:GetWidth() - 22
         local r1, g1, b1 = UI:Accent()
         self.cur:SetVertexColor(r1, g1, b1, 1)

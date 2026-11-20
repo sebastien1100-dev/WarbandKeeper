@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.86.2", date = "20/11/2026",
+        added = {
+            "Barre d'expérience : option « Sans fond » (QoL > Expérience) qui retire le cadre sombre autour de la barre ; les libellés sont alors ombrés pour rester lisibles.",
+        },
+    },
+    {
         version = "1.86.1", date = "20/11/2026",
         changed = {
             "Micro menu sans animation : les raccourcis apparaissent d'un coup au survol de l'heure et disparaissent de même, sans glissement ni effet loupe ; l'infobulle de chaque raccourci suffit. Plus léger : la barre n'est redessinée que quand elle s'ouvre ou se ferme. Le réglage « Effet loupe » est retiré.",
