@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.8.7 — 20/11/2026
+
+### Corrections
+- Tableau de bord : la carte affichait encore « Dernière séance » quand la sauvegarde ne contenait pas encore le journal de l'or. Elle montre maintenant toujours « Dernières 24 h » : avec le détail par cause quand le journal est là, sinon l'écart de l'or du compte entre hier et aujourd'hui.
+
 ## 1.8.6 — 20/11/2026
 
 ### Modifications

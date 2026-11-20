@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.6"
+CLIENT_VERSION = "1.8.7"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -1427,10 +1427,10 @@ class DashPage(Page):
                 sub = "aucun mouvement d'or"
             kpi(1, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative", sub)
         else:
-            g = int(sess.get("gold") or 0)
-            dur = int(sess.get("dur") or 0)
-            kpi(1, "Dernière séance", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
-                "%s · %s" % (("%d h %02d" % (dur // 3600, dur % 3600 // 60)) if dur >= 3600 else "%d min" % max(1, dur // 60), sess.get("char") or "?"))
+            # sauvegarde d'un addon sans journal de l'or : écart de l'or du compte sur 24 h (courbe journalière)
+            g = (gold[-1] - gold[-2]) if len(gold) > 1 else 0
+            kpi(1, "Dernières 24 h", ("+" if g >= 0 else "-") + money_text(abs(g)), "positive" if g >= 0 else "negative",
+                "or du compte, d'hier à aujourd'hui")
         soon = [a for a in auc if (a.get("exp") or 0) <= now + 86400]
         kpi(2, "Enchères en vente", str(len(auc)), "text",
             (plural(len(soon), "expire", "expirent") + " sous 24 h") if soon else ("aucune n'expire" if auc else "dernier passage à l'HV"),
