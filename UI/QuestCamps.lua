@@ -255,7 +255,7 @@ local function buildPanel()
     if not (parent and parent.GetFrameLevel) then return end
     panel = CreateFrame("Frame", "WarbandKeeperQuestMapPanel", parent)
     -- volet discret : petit, fond léger, une ligne d'en-tête (titre repliable + choix Toutes / Suivie)
-    panel:SetWidth(186)
+    panel:SetWidth(204)
     panel:SetFrameLevel((parent:GetFrameLevel() or 1) + 40)
     panel:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 8, 8)
     UI:Panel(panel, 7, { C.bg[1], C.bg[2], C.bg[3], 0.72 }, { C.border[1], C.border[2], C.border[3], 0.6 })
@@ -337,7 +337,7 @@ function UI:RefreshQuestMapPanel()
             elseif on then b.box:SetVertexColor(UI:Accent())
             else b.box:SetVertexColor(C.muted[1], C.muted[2], C.muted[3], 1) end
             b.text:SetText(string.format("%s%d|r  %s%s", UI:Hex(C.dim), e.level or 0, e.title or "?",
-                e.complete and ("  " .. UI:Hex(C.positive) .. T("à rendre") .. "|r") or ""))
+                e.complete and ("  " .. UI:Hex(C.positive) .. T("rendre") .. "|r") or ""))
             b.text:SetTextColor(unpack(on and C.text or C.muted))
             b:Show()
         else

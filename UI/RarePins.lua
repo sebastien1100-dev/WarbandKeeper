@@ -288,7 +288,7 @@ R.OnChange = function() UI:RedrawRarePins() end
 -- haut droit de la carte) ; clic droit = remettre en place ; croix = ne plus l'afficher
 -- (réglage « Liste des rares de la zone » dans Rares > roue dentée).
 local panel, rows = nil, {}
-local W_LIST, ROW = 200, 20
+local W_LIST, ROW = 186, 15
 local function place()
     local cfg = R:Config()
     local parent = panel:GetParent()
@@ -304,16 +304,18 @@ local function buildList()
     panel:SetFrameLevel((parent:GetFrameLevel() or 1) + 40)
     panel:SetMovable(true)
     panel:SetClampedToScreen(true)
-    UI:Panel(panel, 9, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
-    panel.chev = UI:Icon(panel, "chevron", 10, nil, "ARTWORK")
-    panel.chev:SetPoint("TOPLEFT", 9, -9)
-    panel.title = UI:Text(panel, 11)
-    panel.title:SetPoint("TOPLEFT", 24, -7)
+    -- même allure discrète que le volet des quêtes : fond léger, texte fin, en-tête d'une ligne
+    UI:Panel(panel, 7, { C.bg[1], C.bg[2], C.bg[3], 0.72 }, { C.border[1], C.border[2], C.border[3], 0.6 })
+    panel.chev = UI:Icon(panel, "chevron", 9, nil, "ARTWORK")
+    panel.chev:SetPoint("TOPLEFT", 8, -6)
+    panel.title = UI:Text(panel, 10, C.muted)
+    panel.title:SetPoint("TOPLEFT", 21, -4)
     panel.title:SetText(T("Rares"))
     panel.count = UI:Text(panel, 10, C.muted)
     panel.count:SetPoint("LEFT", panel.title, "RIGHT", 6, 0)
-    panel.close = UI:IconButton(panel, "close", 14, "Ne plus afficher cette liste (réactivable dans Rares > roue dentée)", "accent")
+    panel.close = UI:IconButton(panel, "close", 12, "Ne plus afficher cette liste (réactivable dans Rares > roue dentée)", "accent")
     panel.close:SetPoint("TOPRIGHT", -5, -4)
+    panel.close:SetAlpha(0.7)
     panel.close:SetScript("OnClick", function()
         R:Config().list = false
         panel:Hide()
@@ -321,7 +323,7 @@ local function buildList()
     end)
     panel.toggle = CreateFrame("Button", nil, panel)
     panel.toggle:SetPoint("TOPLEFT"); panel.toggle:SetPoint("TOPRIGHT", -22, 0)
-    panel.toggle:SetHeight(22)
+    panel.toggle:SetHeight(20)
     panel.toggle:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     panel.toggle:RegisterForDrag("LeftButton")
     panel.toggle:SetScript("OnClick", function(_, btn)
@@ -354,12 +356,12 @@ local function getRow(i)
     if not r then
         r = CreateFrame("Button", nil, panel)
         r:SetHeight(ROW)
-        r.dot = UI:Icon(r, "star", 10, nil, "ARTWORK")
-        r.dot:SetPoint("LEFT", 8, 0)
-        r.lvl = UI:Text(r, 10, C.muted)
-        r.lvl:SetPoint("RIGHT", -8, 0)
-        r.name = UI:Text(r, 11)
-        r.name:SetPoint("LEFT", 22, 0)
+        r.dot = UI:Icon(r, "star", 8, nil, "ARTWORK")
+        r.dot:SetPoint("LEFT", 7, 0)
+        r.lvl = UI:Text(r, 9, C.muted)
+        r.lvl:SetPoint("RIGHT", -6, 0)
+        r.name = UI:Text(r, 9)
+        r.name:SetPoint("LEFT", 19, 0)
         r.name:SetPoint("RIGHT", r.lvl, "LEFT", -4, 0)
         r.name:SetJustifyH("LEFT")
         r.name:SetWordWrap(false)
@@ -398,10 +400,10 @@ function UI:SyncRareList(mapID, list)
     -- seulement les lignes en trop sont cachées : cacher la ligne survolée déclenche son OnLeave, qui
     -- relance ce dessin (clignotement sans fin)
     local used = 0
-    local y = -24
+    local y = -20
     if not cfg.listCollapsed then
         for i, r in ipairs(list) do
-            if i > 12 then break end
+            if i > 8 then break end
             local rw = getRow(i)
             rw.r = r
             rw:ClearAllPoints(); rw:SetPoint("TOPLEFT", 3, y); rw:SetPoint("TOPRIGHT", -3, y)
@@ -409,7 +411,7 @@ function UI:SyncRareList(mapID, list)
             local dead = R:Killed(r.id, me) ~= nil
             rw.dot:SetVertexColor(unpack(dead and C.dim or col))
             rw.name:SetText(R:Name(r))
-            rw.name:SetTextColor(unpack(dead and C.dim or C.text))
+            rw.name:SetTextColor(unpack(dead and C.dim or C.muted))
             rw.lvl:SetText(dead and T("tué") or tostring(r.min))
             rw.lvl:SetTextColor(unpack(C.muted))
             local ago = R:RecentDeath(r.id)
@@ -422,7 +424,7 @@ function UI:SyncRareList(mapID, list)
             used = i
             y = y - ROW
         end
-        y = y - 4
+        y = y - 3
     end
     for k = used + 1, #rows do rows[k]:Hide() end
     panel:SetHeight(-y + 2)

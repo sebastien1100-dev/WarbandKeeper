@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.100.13", date = "20/11/2026",
+        changed = {
+            "Carte du monde, liste « Rares » : même allure discrète que le volet des quêtes (plus petite, fond léger, texte fin, 8 rares au plus, croix plus petite). Toujours repliable d'un clic sur le titre, déplaçable, et désactivable (croix ou Rares > roue dentée).",
+            "Volet des quêtes de la carte : un peu plus large, « rendre » en vert n'est plus coupé.",
+        },
+    },
+    {
         version = "1.100.12", date = "20/11/2026",
         changed = {
             "Page Quêtes : roue des réglages ouverte, les sous-onglets (Montée, Mon journal, À prendre, Tournée) et la barre « Quêtes de » disparaissent ; les réglages remontent juste sous les grands onglets (un clic sur un grand onglet ferme les réglages).",
