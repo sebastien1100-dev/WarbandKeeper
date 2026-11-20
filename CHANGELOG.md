@@ -78,6 +78,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.88.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fiche du perso : petite roue en haut à droite avec les réglages des trois onglets, une carte chacun. Fiche : niveau d'objet sur les icônes, point bleu des objets enchantés, stats utiles en couleur. Talents : panneau collé à la fenêtre des talents du jeu, cercle autour du prochain talent, rappel du prochain talent (nouveau). BiS : ligne « Liste BiS de… » dans les infobulles (nouveau).
+
+### Modifications
+- Les deux interrupteurs qui étaient sous les plans de montée (onglet Talents) sont dans cette roue.
+
 ## v1.87.7 — 20/11/2026
 
 _Un /reload suffit._

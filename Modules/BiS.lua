@@ -265,6 +265,7 @@ end
 -- Infobulle : « Dans la liste BiS de … »
 local function onTooltip(tt, data)
     if tt ~= GameTooltip and tt ~= ItemRefTooltip then return end
+    if WK.DB.global.settings.ui.bisTooltip == false then return end
     local id = data and data.id
     if not id then return end
     local who = M:Holders(id)

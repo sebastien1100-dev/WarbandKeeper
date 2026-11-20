@@ -225,7 +225,7 @@ function M:CheckAlert()
     if UI and UI.RefreshTalentPlan then UI:RefreshTalentPlan() end
     if not (UI and UI.SetAlert) then return end
     local pr = self:Progress(WK:CharKey())
-    local on = pr and pr.step and pr.talent and pr.free > 0
+    local on = pr and pr.step and pr.talent and pr.free > 0 and WK.DB.global.settings.ui.talentPlanAlert ~= false
     UI:SetAlert("talent.plan", on and true or false, {
         text = on and string.format(T("Prochain talent : %s (%d/%d)"), pr.talent[1], self:StepRank(pr.plan, pr.next), pr.talent[6] or 1) or "",
         prio = 3, icon = on and pr.talent[2] or nil })

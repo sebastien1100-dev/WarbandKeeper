@@ -3,6 +3,18 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
+-- Réglages de la fiche (roue en haut à droite) : settings.ui.sheet = { ilvl, enchant, statColor }
+local function sheetCfg()
+    local s = WK.DB.global.settings.ui
+    s.sheet = s.sheet or {}
+    local c = s.sheet
+    if c.ilvl == nil then c.ilvl = true end
+    if c.enchant == nil then c.enchant = true end
+    if c.statColor == nil then c.statColor = true end
+    return c
+end
+UI.SheetConfig = sheetCfg
+
 -- Fiche de personnage : page « charsheet » de la fenêtre (hors barre latérale, Persos y reste en
 -- surbrillance), ouverte au clic sur un perso (pages Persos et Résumé), pour n'importe quel perso du compte.
 -- Une seule page qui défile : à gauche Équipement (emplacements autour du portrait : cadre à la couleur de
@@ -131,9 +143,9 @@ local function slotButton(parent, side)
             self.icon:SetTexture(d.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
             self.icon:SetDesaturated(false); self.icon:SetAlpha(1)
             self.name:SetTextColor(q[1], q[2], q[3])
-            self.lvl:SetText(d.ilvl and tostring(d.ilvl) or "")
+            self.lvl:SetText(d.ilvl and tostring(d.ilvl) or ""); self.lvl:SetShown(sheetCfg().ilvl)
             self.sub:SetText(d.ilvl and string.format(T("niv. %d"), d.ilvl) or "")
-            self.dot:SetShown(d.enchant)
+            self.dot:SetShown(d.enchant and sheetCfg().enchant)
         else
             self.edge:SetColor(unpack(C.border))
             self.icon:SetTexture("Interface\\PaperDoll\\UI-PaperDoll-Slot-" .. empty)
@@ -158,6 +170,7 @@ local function kpi(parent)
     f.l:SetPoint("BOTTOM", 0, 7)
     return f
 end
+
 
 local SIDE_W, COL_GAP = 290, 12
 local SLOT_W, SLOT_STEP = 124, SQ + 15
@@ -191,7 +204,7 @@ local function build(parent)
     f.sub = UI:Text(f, 11, C.muted)
     f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -4)
     f.score = UI:Text(f, 22)
-    f.score:SetPoint("TOPRIGHT", -8, -8)
+    f.score:SetPoint("TOPRIGHT", -46, -8) -- la roue des réglages est tout à droite
     f.scoreL = UI:Text(f, 10, C.dim)
     f.scoreL:SetPoint("TOPRIGHT", f.score, "BOTTOMRIGHT", 0, -2)
     f.scoreL:SetText(T("niv. moyen"))
@@ -566,12 +579,6 @@ local function build(parent)
     f.pempty = UI:Text(f.pcard, 11, C.muted); f.pempty:SetPoint("TOPLEFT", 16, -48)
     f.pempty:SetText(T("Aucun plan. « Nouveau plan » puis clique les talents dans l'ordre, un plan « Montée enregistrée » se remplit aussi tout seul quand tu prends tes talents."))
     f.pempty:SetPoint("RIGHT", -16, 0); f.pempty:SetJustifyH("LEFT"); if f.pempty.SetWordWrap then f.pempty:SetWordWrap(true) end
-    f.ptoggle = UI:Toggle(f.pcard, function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end,
-        function(v) WK.DB.global.settings.ui.talentPlanPanel = v end)
-    f.ptoggleL = UI:Text(f.pcard, 11, C.muted); f.ptoggleL:SetText(T("Panneau collé à la fenêtre des talents du jeu"))
-    f.gtoggle = UI:Toggle(f.pcard, function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
-        function(v) WK.DB.global.settings.ui.talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end)
-    f.gtoggleL = UI:Text(f.pcard, 11, C.muted); f.gtoggleL:SetText(T("Cercle autour du prochain talent dans la fenêtre du jeu"))
     f.prows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, f.pcard)
         r:SetHeight(32)
@@ -1075,13 +1082,14 @@ local function refreshStats(f, c)
     local w = WEIGHTS[c.class or ""] or {}
     local r1, g1, b1 = viewAccent(f, c)
     local cls = c.class and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class]
-    f.hUse:SetText(cls and T("en couleur : utile") or "")
+    local colorOn = sheetCfg().statColor
+    f.hUse:SetText((cls and colorOn) and T("en couleur : utile") or "")
     local maxV = 1
     for _, r in ipairs(f.statRows) do maxV = math.max(maxV, s and s[r.key] or 0) end
     for _, r in ipairs(f.statRows) do
         local v = s and s[r.key]
         r.val:SetText(v and fmt(v) or "-")
-        local useful = (w[r.key] or 0.5) >= 0.5
+        local useful = not colorOn or (w[r.key] or 0.5) >= 0.5
         r.name:SetTextColor(unpack(useful and C.text or C.muted))
         r.bar.color = useful and { r1, g1, b1, 1 } or C.dim
         r.bar:SetValue(v and v / maxV or 0)
@@ -1373,14 +1381,8 @@ local function refreshTalents(f, c)
         end)
         ry = ry + 34
     end
-    f.ptoggle:ClearAllPoints(); f.ptoggle:SetPoint("TOPLEFT", 14, -(ry + 8))
-    f.ptoggleL:ClearAllPoints(); f.ptoggleL:SetPoint("LEFT", f.ptoggle, "RIGHT", 10, 0)
-    if f.ptoggle.Refresh then f.ptoggle:Refresh() end
-    f.gtoggle:ClearAllPoints(); f.gtoggle:SetPoint("TOPLEFT", 14, -(ry + 38))
-    f.gtoggleL:ClearAllPoints(); f.gtoggleL:SetPoint("LEFT", f.gtoggle, "RIGHT", 10, 0)
-    if f.gtoggle.Refresh then f.gtoggle:Refresh() end
-    pcard:SetHeight(ry + 74)
-    f.tsc:SetContentHeight(py + ry + 82)
+    pcard:SetHeight(ry + 14)
+    f.tsc:SetContentHeight(py + ry + 22)
 end
 
 -- Icônes des spécialisations (ordre classique des arbres, de gauche à droite)
@@ -1666,6 +1668,49 @@ UI:RegisterPage({
     Build = function(self, p)
         sheet = build(p)
         sheet.Refresh = refresh
+        -- roue en haut à droite : réglages des trois onglets (Fiche, Talents, BiS), une carte chacun
+        local function redraw() if sheet:IsVisible() then sheet:Refresh() end end
+        local function card(title, rows)
+            local c = UI:Card(sheet, T(title))
+            local y = -44
+            for _, r in ipairs(rows) do
+                UI:SettingRow(c, y, r[1], r[2], UI:Toggle(c, r[3], function(v) r[4](v); redraw() end), 80)
+                y = y - 46
+            end
+            c:SetHeight(-y + 8)
+            return c
+        end
+        local S = sheetCfg
+        local ui = function() return WK.DB.global.settings.ui end
+        sheet.setCards = {
+            card("Fiche", {
+                { "Niveau d'objet sur les icônes", "Le niveau de chaque objet porté, en bas de son icône.",
+                    function() return S().ilvl end, function(v) S().ilvl = v end },
+                { "Point bleu : objet enchanté", "Un petit point en haut de l'icône des objets enchantés.",
+                    function() return S().enchant end, function(v) S().enchant = v end },
+                { "Stats utiles en couleur", "Les caractéristiques qui comptent pour la classe en couleur, les autres en gris.",
+                    function() return S().statColor end, function(v) S().statColor = v end },
+            }),
+            card("Talents", {
+                { "Panneau collé à la fenêtre des talents du jeu", "Le plan de montée s'ouvre à côté de la fenêtre des talents.",
+                    function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end, function(v) ui().talentPlanPanel = v end },
+                { "Cercle autour du prochain talent dans la fenêtre du jeu", "Le talent à prendre selon ton plan est entouré.",
+                    function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
+                    function(v) ui().talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end },
+                { "Rappel du prochain talent", "Dans la pile de rappels, tant qu'un point libre attend le talent suivant du plan.",
+                    function() return ui().talentPlanAlert ~= false end,
+                    function(v) ui().talentPlanAlert = v; local P = WK.modules.TalentPlan; if P and P.CheckAlert then P:CheckAlert() end end },
+            }),
+            card("BiS", {
+                { "Ligne « Liste BiS de… » dans les infobulles", "Sur un objet de ta liste BiS : quels persos le veulent.",
+                    function() return ui().bisTooltip ~= false end, function(v) ui().bisTooltip = v end },
+            }),
+        }
+        for _, c in ipairs(sheet.setCards) do c:Hide() end
+        self.gp = UI:PageGear(p, { title = "Réglages de la fiche", top = 92, columns = 1,
+            cards = function() return sheet.setCards end }, self)
+        self.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", -6, -12)
+        self.gp.gear:SetFrameLevel(sheet:GetFrameLevel() + 20)
         UI:OnResize(p, function() if sheet:IsVisible() then sheet:Refresh() end end)
     end,
     Refresh = function(self)

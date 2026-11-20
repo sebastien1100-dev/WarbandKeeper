@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.88.0", date = "20/11/2026",
+        added = {
+            "Fiche du perso : petite roue en haut à droite avec les réglages des trois onglets, une carte chacun. Fiche : niveau d'objet sur les icônes, point bleu des objets enchantés, stats utiles en couleur. Talents : panneau collé à la fenêtre des talents du jeu, cercle autour du prochain talent, rappel du prochain talent (nouveau). BiS : ligne « Liste BiS de… » dans les infobulles (nouveau).",
+        },
+        changed = {
+            "Les deux interrupteurs qui étaient sous les plans de montée (onglet Talents) sont dans cette roue.",
+        },
+    },
+    {
         version = "1.87.7", date = "20/11/2026",
         fixed = {
             "Les fenêtres collées à une fenêtre du jeu prennent son niveau : plan de montée (fenêtre des talents), panneau du marchand et bouton Réassort, panneau de l'HV, Rangement au courrier, valeur des sacs, désenchantement, enchantements à l'échange, colonne du maître de métier, barre de fabrication collée au métier, panneau du donjon sur la carte. Avant, elles passaient au-dessus de tout, même de la fenêtre de l'addon ouverte par-dessus.",
