@@ -38,8 +38,22 @@ local function nodeOf(b)
     return type(n) == "number" and n or nil
 end
 local function iconOf(b)
-    local t = b.Icon or b.icon or b.IconTexture or (b.GetNormalTexture and b:GetNormalTexture())
+    local t = b.Icon or b.icon or b.IconTexture
+    if not t and b.GetName and b:GetName() then t = _G[b:GetName() .. "IconTexture"] end
+    if not t and b.GetNormalTexture then t = b:GetNormalTexture() end
     return t and t.GetTexture and t:GetTexture()
+end
+-- une des textures du bouton porte-t-elle cette icône ? (boutons sans champ d'icône nommé)
+local function hasIcon(b, icon)
+    if not (b.GetRegions and icon) then return false end
+    local want = tostring(icon):lower()
+    for _, r in ipairs({ b:GetRegions() }) do
+        if r.IsObjectType and r:IsObjectType("Texture") and r.GetTexture then
+            local ti = r:GetTexture()
+            if ti and tostring(ti):lower() == want then return true end
+        end
+    end
+    return false
 end
 -- Partie « talents » de la fenêtre du jeu : le Grimoire et les Talents peuvent être une seule fenêtre
 -- (PlayerSpellsFrame) ; le panneau et le cercle ne vont qu'avec l'onglet des talents
@@ -60,15 +74,18 @@ local function titleOf(h)
 end
 local function talentsShown(h)
     if not (h and h:IsShown()) then return false end
+    -- le titre de la fenêtre d'abord : « Talents » sur la fenêtre de WoW Forever, dont la partie
+    -- « TalentsFrame » éventuelle peut rester cachée (elle dessine ses arbres ailleurs)
+    local title = titleOf(h)
+    if type(title) == "string" and title ~= "" then
+        local tl = title:lower()
+        if tl:find("talent", 1, true) then return true end
+        if tl:find("grimoire", 1, true) or tl:find("spell", 1, true) or tl:find("sorts", 1, true) then return false end
+    end
     local tp = talentsPart(h)
     if tp then return tp:IsShown() and true or false end
     local sb = part(h, { "SpellBookFrame", "SpellbookFrame", "SpellBookTab" })
     if sb and sb:IsShown() then return false end
-    local title = titleOf(h)
-    if type(title) == "string" and title ~= "" then
-        local tl = title:lower()
-        return tl:find("talent", 1, true) ~= nil
-    end
     return true
 end
 UI.TalentPlanTalentsShown = talentsShown
@@ -80,9 +97,9 @@ local function findButton(root, node, icon)
         for _, ch in ipairs({ fr:GetChildren() }) do
             if ch.IsVisible and ch:IsVisible() then
                 if node and nodeOf(ch) == node then return ch end
-                if icon and not byIcon and ch.IsObjectType and ch:IsObjectType("Button") then
+                if icon and not byIcon then
                     local ti = iconOf(ch)
-                    if ti and (ti == icon or tostring(ti):lower() == tostring(icon):lower()) then byIcon = ch end
+                    if (ti and (ti == icon or tostring(ti):lower() == tostring(icon):lower())) or hasIcon(ch, icon) then byIcon = ch end
                 end
                 local r = walk(ch, depth + 1)
                 if r then return r end
@@ -379,6 +396,36 @@ local function tryHook()
     end
 end
 UI.TalentPlanHook = tryHook
+
+-- /wk plan diag : ce que voit l'addon de la fenêtre des talents (bouton, cercle)
+function UI:TalentPlanDiag()
+    local out = {}
+    local function rect(f)
+        if not (f and f.GetLeft and f:GetLeft()) then return "pas de position" end
+        return string.format("%d,%d %dx%d", f:GetLeft(), f:GetBottom() or 0, f:GetWidth() or 0, f:GetHeight() or 0)
+    end
+    for _, name in ipairs(FRAMES) do
+        local fr = _G[name]
+        if fr then table.insert(out, string.format("%s : montrée %s, accrochée %s, %s", name, tostring((fr:IsShown())), tostring(fr.wkPlanHooked or false), rect(fr))) end
+    end
+    local hn = host and (host.GetName and host:GetName()) or "?"
+    table.insert(out, string.format("fenêtre suivie : %s · titre « %s » · partie talents %s · onglet talents %s",
+        host and hn or "aucune", tostring(host and titleOf(host) or "-"), tostring(host and talentsPart(host) and true or false), tostring(talentsShown(host))))
+    table.insert(out, string.format("plans : %d · panneau : %s", #P:Plans(WK:CharKey()), tostring(panel and panel:IsShown() or false)))
+    if toggleBtn then
+        table.insert(out, string.format("bouton : montré %s, visible %s, %s/%d, %s", tostring((toggleBtn:IsShown())), tostring((toggleBtn:IsVisible())),
+            tostring((toggleBtn:GetFrameStrata())), toggleBtn:GetFrameLevel() or 0, rect(toggleBtn)))
+    else
+        table.insert(out, "bouton : pas encore créé")
+    end
+    local pr = P:Progress(WK:CharKey())
+    local node = pr and pr.step and (pr.step[3] or (pr.talent and pr.talent[8]))
+    local icon = pr and pr.talent and pr.talent[2]
+    local btn = host and node and findButton(talentsPart(host) or host, node, icon)
+    table.insert(out, string.format("talent suivant : nœud %s, icône %s · bouton trouvé : %s · cercle : %s", tostring(node), tostring(icon),
+        btn and ((btn.GetName and btn:GetName()) or "sans nom") or "non", tostring(glow and glow:IsShown() or false)))
+    return out
+end
 WK:On("ADDON_LOADED", function() tryHook() end)
 WK:On("PLAYER_LOGIN", function() tryHook() end)
 WK:On("TRAIT_CONFIG_UPDATED", function() C_Timer.After(0.5, function() UI:RefreshTalentPlan() end) end)

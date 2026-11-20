@@ -69,6 +69,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "sacs" or cmd == "bags" then
         WK:Print(WK.T("Sacs : diagnostic"))
         for _, l in ipairs(WK.UI.BagDiag and WK.UI:BagDiag() or {}) do WK:Print("  " .. l) end
+    elseif cmd == "plan" and (rest or ""):lower():find("diag") then
+        WK:Print(WK.T("Plan de montée : diagnostic"))
+        for _, l in ipairs(WK.UI.TalentPlanDiag and WK.UI:TalentPlanDiag() or {}) do WK:Print("  " .. l) end
     elseif cmd == "plan" then
         if WK.UI.ToggleTalentPlan then WK.UI:ToggleTalentPlan() end
     elseif cmd == "talents" then

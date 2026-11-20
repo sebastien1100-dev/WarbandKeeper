@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.3", date = "20/11/2026",
+        added = {
+            "/wk plan diag : ce que l'addon voit de la fenêtre des talents (fenêtre, onglet, bouton « Plan de montée », talent suivant et son cercle), à copier si quelque chose manque.",
+        },
+        fixed = {
+            "Talents : la fenêtre des talents de WoW Forever n'était pas reconnue comme l'onglet des talents (sa partie talents du jeu reste cachée) : le bouton « Plan de montée » et le cercle autour du talent suivant ne s'affichaient pas. Le titre « Talents » de la fenêtre suffit maintenant.",
+            "Talents : le cercle du talent suivant retrouve aussi le bouton par son icône sur les fenêtres dont les boutons n'ont pas de champ d'icône.",
+            "Menu Échap : le bouton « Warband Keeper » est bien au-dessus d'EllesmereUI (il se retrouvait dessous) et prend l'habillage d'EllesmereUI comme les autres boutons (il restait rouge).",
+        },
+    },
+    {
         version = "1.99.2", date = "20/11/2026",
         fixed = {
             "Barre d'expérience : sur une barre étroite, le texte de droite (repos, XP à rendre, « niveau en rendant tout ») chevauchait le niveau et l'XP. Il se raccourcit maintenant pour tenir (tout reste dans l'infobulle).",
