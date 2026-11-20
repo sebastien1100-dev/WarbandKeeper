@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.5", date = "20/11/2026",
+        changed = {
+            "Point sur l'icône des Options (en haut à droite) : son infobulle dit maintenant ce qu'il signale (des nouveautés pas encore lues, ou en rouge une erreur de l'addon pas encore vue), et un clic mène droit aux Patch notes ou à Fiabilité. Il s'éteint une fois lu.",
+        },
+    },
+    {
         version = "1.90.4", date = "20/11/2026",
         changed = {
             "Options > Profils plus aéré : marges plus larges, chaque profil sur deux lignes (nom, puis « utilisé par… »), et dans Partager le code sur deux lignes, une case plus haute pour coller un code et un trait entre Exporter et Importer.",

@@ -564,7 +564,20 @@ createWindow = function(self)
         if def then
             local ib = UI:IconButton(header, ICONS[def.key] or "circle", 30, LABELS[def.key] or def.nav or def.title)
             ib:SetPoint("RIGHT", prevIcon, "LEFT", -4, 0)
-            ib:SetScript("OnClick", function() UI:ShowPage(def.key) end)
+            -- point allumé : le clic mène droit à ce qu'il signale (patch notes non lues, erreur pas vue)
+            ib:SetScript("OnClick", function()
+                local n = def.count and def.count() or ""
+                if def.key == "options" and n == "!" then
+                    WK.DB.global.settings.ui.optSection = "maint"; UI:ShowPage("options")
+                    local od = UI.pages.options
+                    if od and od.ShowSection then od:ShowSection("maint") end
+                elseif def.key == "options" and n ~= "" then
+                    UI:ShowPage("notes")
+                else
+                    UI:ShowPage(def.key)
+                end
+            end)
+            ib.baseTip = LABELS[def.key] or def.nav or def.title
             ib.dot = UI:Icon(ib, "circle", 7, nil, "OVERLAY")
             ib.dot:SetPoint("TOPRIGHT", -4, -4)
             ib.dot:Hide()
@@ -1049,6 +1062,14 @@ function UI:RefreshUpdate()
         ib.dot:SetShown(n ~= nil and n ~= "")
         -- point rouge : une erreur de l'addon pas encore vue (Options > Fiabilité)
         if n == "!" then ib.dot:SetVertexColor(unpack(C.negative)) else ib.dot:SetVertexColor(UI:Accent()) end
+        -- l'infobulle dit ce que signale le point, et où mène le clic
+        local tip = T(ib.baseTip or "")
+        if key == "options" and n == "!" then
+            tip = tip .. "\n" .. UI:Hex(C.negative) .. T("Point rouge : une erreur de l'addon pas encore vue. Clic : Fiabilité.") .. "|r"
+        elseif key == "options" and n ~= nil and n ~= "" then
+            tip = tip .. "\n" .. UI:Hex(C.muted) .. T("Point : des nouveautés pas encore lues. Clic : Patch notes.") .. "|r"
+        end
+        ib.tooltip = tip
     end
     local b = self.updBtn
     if not b then return end

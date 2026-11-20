@@ -3760,4 +3760,6 @@ WK.Locales.enUS.text = {
     ["Boutons de rechargement :"] = "Reload buttons:",
     ["Profil supprimé : ce perso repasse sur « Défaut ». Recharge l'interface pour l'appliquer."] = "Profile deleted: this character goes back to “Default”. Reload the UI to apply it.",
     ["utilisé par %s"] = "used by %s",
+    ["Point rouge : une erreur de l'addon pas encore vue. Clic : Fiabilité."] = "Red dot: an addon error you haven't seen yet. Click: Reliability.",
+    ["Point : des nouveautés pas encore lues. Clic : Patch notes."] = "Dot: release notes not read yet. Click: Patch notes.",
 }
