@@ -3836,4 +3836,5 @@ WK.Locales.enUS.text = {
     ["Vrai portrait pour le perso connecté, sinon icône de classe."] = "Real portrait for the logged-in character, otherwise class icon.",
     ["Partager mon style"] = "Share my style",
     ["Apparence d'origine"] = "Default look",
+    ["Chaque style change toute la fenêtre : couleur, fond, polices, arrondi, cartes et halo. Règle ensuite le détail dans les autres onglets."] = "Each style changes the whole window: color, background, fonts, roundness, cards and glow. Fine-tune it in the other tabs.",
 }

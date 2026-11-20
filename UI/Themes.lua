@@ -175,7 +175,20 @@ UI.fonts = {
     { key = "skurri", label = "Skurri", path = "Fonts\\SKURRI.TTF" },
 }
 -- Teinte du fond (Options > Apparence) : décalage léger du graphite vers le bleu ou le brun
-local TINTS = { cold = { -0.008, 0.002, 0.020 }, warm = { 0.020, 0.008, -0.010 } }
+-- (froid / chaud : réglage « Teinte du fond » ; les autres, plus marquées, viennent des styles prêts)
+local TINTS = {
+    cold = { -0.008, 0.002, 0.020 }, warm = { 0.020, 0.008, -0.010 },
+    night = { -0.012, 0.014, 0.060 }, forest = { -0.006, 0.030, 0.002 }, gold = { 0.046, 0.026, -0.012 },
+    violet = { 0.026, -0.006, 0.056 }, ember = { 0.056, -0.006, -0.012 },
+}
+UI.TINTS = TINTS
+-- fond et bordure d'un style (vignettes des styles prêts) : graphite + teinte
+function UI:TintedBase(tint)
+    local b = (self.themeByKey.graphite or self.themes[1]).base()
+    local t = TINTS[tint or ""] or { 0, 0, 0 }
+    local function sh(c) return { math.max(0, c[1] + t[1]), math.max(0, c[2] + t[2]), math.max(0, c[3] + t[3]) } end
+    return sh(b.bg), sh(b.line), sh(mix(b.bg, b.line, 0.25))
+end
 
 -- Applique le thème choisi : la palette est recopiée dans UI.colors (même table,
 -- donc tous les fichiers qui ont gardé une référence la voient). À faire avant de
@@ -205,6 +218,13 @@ function UI:ApplyTheme()
     p.bg[4] = 0.98 * (cfg.opacity or 1)
     for k, v in pairs(p) do self.colors[k] = v end
     self.themeAccent = b.accent
+    -- halo teinté par l'accent (styles prêts)
+    if cfg.glowTint then
+        local r, g, bl = self:Accent()
+        local gl = p.glow
+        p.glow = { gl[1] + (r - gl[1]) * 0.4, gl[2] + (g - gl[2]) * 0.4, gl[3] + (bl - gl[3]) * 0.4, gl[4] }
+        self.colors.glow = p.glow
+    end
     self.TITLE_FONT = t.titleFont or (STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
     self.FONT = self.fonts[1].path
     for _, f in ipairs(self.fonts) do

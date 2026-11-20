@@ -78,6 +78,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.92.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Apparence > Styles : chaque style prêt change maintenant toute la fenêtre (fond nettement teinté, fond texturé, polices, arrondi, cartes et halo à la couleur du style), plus seulement la couleur.
+- Les vignettes des styles sont de petites fenêtres qui montrent le rendu : fond, carte, police des titres et halo.
+
 ## v1.92.0 — 20/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.92.1", date = "20/11/2026",
+        changed = {
+            "Apparence > Styles : chaque style prêt change maintenant toute la fenêtre (fond nettement teinté, fond texturé, polices, arrondi, cartes et halo à la couleur du style), plus seulement la couleur.",
+            "Les vignettes des styles sont de petites fenêtres qui montrent le rendu : fond, carte, police des titres et halo.",
+        },
+    },
+    {
         version = "1.92.0", date = "20/11/2026",
         added = {
             "Options > Apparence en onglets (Styles, Couleurs, Texte, Formes, Fenêtre) qui tiennent dans la fenêtre sans défiler, l'aperçu en direct toujours à droite.",
