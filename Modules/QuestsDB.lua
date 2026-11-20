@@ -1857,7 +1857,7 @@ WK.QuestsDB = {
 {284,"The Search Continues","La recherche continue",25,20,1,nil,nil,nil,13.5,41.4,-261,510,{281},nil,285,nil},
 {285,"Search More Hovels","À la recherche d'autres taudis",25,20,1,nil,nil,nil,13.6,38.2,-142151,1000,{284},nil,286,nil},
 {286,"Return the Statuette","Rapporter la statuette",25,20,1,nil,nil,nil,13.9,34.8,-259,1500,{285},nil,nil,nil},
-{472,"Fall of Dun Modr","La chute de Dun Modr",25,25,1,nil,nil,nil,10.8,55.9,2097,1200,nil,nil,nil,nil},
+{472,"Fall of Dun Modr","La chute de Dun Modr",25,25,1,nil,nil,nil,10.8,55.9,2097,1200,nil,{304},nil,nil},
 {275,"Blisters on The Land","Fièvre sur le pays",26,20,1,nil,nil,nil,56.4,40.4,1244,2650,{277},nil,nil,nil},
 {471,"Apprentice's Duties","Les devoirs de l'apprenti",26,18,1,nil,nil,nil,8.6,55.7,2094,2100,{484},nil,nil,nil},
 {288,"The Third Fleet","La IIIe flotte",27,22,1,nil,nil,nil,10.9,59.6,1239,220,nil,nil,289,nil},

@@ -28,6 +28,13 @@ SORT_SKILL = {-24: "Herboristerie", -101: "Pêche", -121: "Forge", -181: "Alchim
 SORT_CLASS = {-61, -81, -82, -141, -161, -162, -261, -262, -263}
 
 
+# Corrections constatées en jeu sur WoW Forever (QuestieDB se trompe ou n'a pas l'info) :
+# quête -> { "preAll": [quêtes à faire avant], "pre": [une de ces quêtes avant], "nxt": suite }
+FIXES = {
+    472: {"preAll": [304]},  # La chute de Dun Modr : après « Une tâche sinistre » (Les Paluns)
+}
+
+
 def main(root):
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
     L.execute('QDB={}; ZDB={private={}}; QXP={}; L10N={questLookup={}}\n'
@@ -139,12 +146,15 @@ def main(root):
             side = 2
         pre = lst(q[13])
         preAll = lst(q[12])
+        fx = FIXES.get(qid, {})
+        pre = fx.get("pre", pre)
+        preAll = fx.get("preAll", preAll)
         f = fr[qid] if fr else None
         xpe = xp[qid]
         per_map.setdefault(mp, []).append(dict(
             id=qid, name=q[1], fr=f[1] if f else None, lvl=q[5] or 0, req=q[4] or 0, side=side,
             cls=q[7] or 0, kind=kind, skill=skill, x=x, y=y, smap=smap, sid=sid,
-            xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=q[22] or 0))
+            xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=fx.get("nxt", q[22] or 0)))
 
     def s(x):
         return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"' if x else "nil"

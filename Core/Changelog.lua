@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.104.2", date = "20/11/2026",
+        fixed = {
+            "Quêtes : « La chute de Dun Modr » n'est plus proposée avant « Une tâche sinistre » (Les Paluns), comme le demande le jeu.",
+        },
+    },
+    {
         version = "1.104.1", date = "20/11/2026",
         added = {
             "Minicarte : notre repère du lieu guidé (étape de la tournée, quête suivie), de la couleur de l'étape avec sa lettre (! prendre, ? rendre, $ acheter), posé au bord de la minicarte quand il est plus loin.",
