@@ -1801,13 +1801,18 @@ function UI:TurnInMarker(f)
         { math.min(1, C.gold[1] * 1.15), math.min(1, C.gold[2] * 1.15), math.min(1, C.gold[3] * 1.2 + 0.1), 1 })
     f.q = f:CreateFontString(nil, "OVERLAY")
     f.q:SetPoint("CENTER", 0.5, 0)
+    -- police posée avant le texte (sinon « Font not set ») ; celle de l'addon si l'autre ne se charge pas
+    local function setFont(sz)
+        if not (UI.FONT and f.q:SetFont(UI.FONT, sz, "")) then f.q:SetFont("Fonts\\FRIZQT__.TTF", sz, "") end
+    end
+    setFont(11)
     f.q:SetText("?")
     local function size()
         local w = math.max(8, f:GetWidth() or 18)
         f.glow:SetSize(w * 2, w * 2)
         f.edge:ClearAllPoints(); f.edge:SetPoint("TOPLEFT", w * 0.09, -w * 0.09); f.edge:SetPoint("BOTTOMRIGHT", -w * 0.09, w * 0.09)
         f.disc:ClearAllPoints(); f.disc:SetPoint("TOPLEFT", w * 0.14, -w * 0.14); f.disc:SetPoint("BOTTOMRIGHT", -w * 0.14, w * 0.14)
-        f.q:SetFont(UI.TITLE_FONT or UI.FONT, math.max(7, math.floor(w * 0.62 + 0.5)), "")
+        setFont(math.max(7, math.floor(w * 0.62 + 0.5)))
         f.q:SetTextColor(C.bg[1], C.bg[2], C.bg[3], 1)
     end
     f:HookScript("OnSizeChanged", size)

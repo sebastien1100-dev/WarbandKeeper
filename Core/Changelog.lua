@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.98.4", date = "20/11/2026",
+        fixed = {
+            "Page Quêtes : erreur « Font not set » à l'ouverture (le nouveau repère de rendu écrivait son « ? » avant d'avoir sa police, et la police des titres d'une autre addon pouvait ne pas se charger).",
+        },
+    },
+    {
         version = "1.98.3", date = "20/11/2026",
         changed = {
             "À la connexion et après un /reload, chaque page s'ouvre sur son premier onglet (Quêtes : Carte des zones ; Classes : Général ; Options, Statistiques, Métiers, sections de QoL, hôtel des ventes, courrier, pêche…). L'onglet choisi reste retenu pendant la séance.",
