@@ -4201,4 +4201,10 @@ WK.Locales.enUS.text = {
     ["« Tout ce qui s'ouvre » : sacs, coffrets et palourdes, sauf les coffrets fermés à clé."] = "\"Everything that opens\": bags, boxes and clams, except locked boxes.",
     ["Objets à ouvrir"] = "Items to open",
     ["Glisse un objet des sacs sur la case pour l'ajouter."] = "Drag an item from your bags onto the slot to add it.",
+    ["coupé (réglage)"] = "off (setting)",
+    ["en pause (vol, bateau, instance ou mort)"] = "paused (flight, boat, instance or dead)",
+    ["depuis la connexion : %d m en %d tronçon(s)"] = "since login: %d m in %d segment(s)",
+    ["dernier il y a %d s"] = "last one %d s ago",
+    ["tronçon en cours : %d points"] = "current segment: %d points",
+    ["hors des chemins connus : env. %d m sur %d m de marche (en ligne droite, faute de chemin appris)"] = "off known paths: approx. %d m of %d m walking (straight line, no learned path)",
 }

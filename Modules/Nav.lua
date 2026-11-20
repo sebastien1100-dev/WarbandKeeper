@@ -12,8 +12,8 @@ local T = function(s) return WK.T(s) end
 --     murs, falaises, eau). Les vols connus du perso (maîtres de vol découverts) entrent dans le calcul ;
 --     un autre continent mène au quai ou au zeppelin qui y va (Modules/MapLayers.lua).
 --   Suivi : point suivant sur le trajet pour la flèche, recalcul si on s'écarte, étapes (marche, vol, bateau).
-local OFF = 2.0        -- coût d'un mètre hors des chemins connus
-local LEARNED = 0.95   -- un chemin appris est sûr : légèrement préféré
+local OFF = 3.0        -- coût d'un mètre hors des chemins connus (2,0 avant : trop de lignes droites à travers champs)
+local LEARNED = 0.8    -- un chemin appris est sûr (tu y es passé) : nettement préféré
 local JOIN = 30        -- deux chemins à moins de JOIN m se rejoignent
 local JUMP = 160       -- saut hors chemin possible entre deux chemins (coût OFF)
 local START_R = 500    -- chemins atteignables depuis le départ
@@ -235,10 +235,19 @@ local function walk(cont, sx, sy, tx, ty, budget)
     -- remonter le trajet
     local rev = { tx, ty }
     local i = goalFrom
+    -- mètres hors des chemins connus sur ce trajet (/wk nav) : dernier bout vers le but, sauts, départ
+    local offLen = goalFrom == START and D or dist(g.X[goalFrom], g.Y[goalFrom], tx, ty)
     while i and i ~= START do
         rev[#rev + 1] = g.X[i]; rev[#rev + 1] = g.Y[i]
-        i = from[i]
+        local j = from[i]
+        local px, py
+        if j == START then px, py = sx, sy else px, py = g.X[j], g.Y[j] end
+        local d = dist(g.X[i], g.Y[i], px, py)
+        local c = best[i] - (j == START and 0 or best[j])
+        if d > 1 and c >= d * OFF * 0.99 then offLen = offLen + d end
+        i = j
     end
+    M.lastOff = offLen
     rev[#rev + 1] = sx; rev[#rev + 1] = sy
     local pts = {}
     for k = #rev - 1, 1, -2 do pts[#pts + 1] = rev[k]; pts[#pts + 1] = rev[k + 1] end
@@ -673,6 +682,9 @@ function M:EndTrail()
         d.trails[t.cont] = d.trails[t.cont] or {}
         table.insert(d.trails[t.cont], t.pts)
         nLearned = learnedPoints() + #t.pts / 2
+        M.sessionLearned = (M.sessionLearned or 0) + lineLen(t.pts)
+        M.sessionTrails = (M.sessionTrails or 0) + 1
+        M.lastTrailAt = GetTime and GetTime() or 0
         -- le graphe tient compte du tronçon tout de suite
         local g = graphs[t.cont]
         if g then
@@ -1080,6 +1092,19 @@ function M:Report()
     end
     WK:Print("  " .. T("Navigation") .. " : " .. string.format(T("%.1f km appris, %.1f km de base"), learned / 1000, roads / 1000)
         .. " · " .. T("trajet") .. " : " .. (r and table.concat(legs, " > ") or T("aucun")))
+    -- apprentissage : réglage, ce qui a été appris depuis la connexion, tronçon en cours, raison d'une pause
+    local why = not cfg().learn and T("coupé (réglage)") or (not canLearn() and T("en pause (vol, bateau, instance ou mort)")) or T("actif")
+    WK:Print("  " .. T("Apprentissage") .. " : " .. why .. " · " .. string.format(T("depuis la connexion : %d m en %d tronçon(s)"),
+        floor(M.sessionLearned or 0), M.sessionTrails or 0)
+        .. (M.lastTrailAt and (" · " .. string.format(T("dernier il y a %d s"), floor(GetTime() - M.lastTrailAt))) or "")
+        .. (cur and (" · " .. string.format(T("tronçon en cours : %d points"), #cur.pts / 2)) or "")
+        .. string.format(" · %d / %d", floor(learnedPoints()), MAX_LEARN))
+    local total = 0
+    for _, l in ipairs(r and r.legs or {}) do if l.kind == "walk" then total = total + (l.len or 0) end end
+    if r and M.lastOff then
+        WK:Print("  " .. string.format(T("hors des chemins connus : env. %d m sur %d m de marche (en ligne droite, faute de chemin appris)"),
+            floor(M.lastOff), floor(total)))
+    end
 end
 
 -- accès pour les tests

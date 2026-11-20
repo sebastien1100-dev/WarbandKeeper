@@ -72,6 +72,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.105.2 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- « /wk nav » dit si l'apprentissage des chemins est actif, ce qu'il a appris depuis la connexion et combien de mètres du trajet en cours passent hors des chemins connus.
+
+### Modifications
+- Guidage : le trajet suit davantage les chemins connus et ceux que tu as déjà parcourus, au lieu de couper en ligne droite à travers champs, falaises ou eau (hors chemin trois fois plus coûteux, chemins appris nettement préférés).
+
 ## v1.105.1 — 20/11/2026
 
 _Un /reload suffit._

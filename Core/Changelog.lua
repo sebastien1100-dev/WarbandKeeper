@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.105.2", date = "20/11/2026",
+        changed = {
+            "Guidage : le trajet suit davantage les chemins connus et ceux que tu as déjà parcourus, au lieu de couper en ligne droite à travers champs, falaises ou eau (hors chemin trois fois plus coûteux, chemins appris nettement préférés).",
+        },
+        added = {
+            "« /wk nav » dit si l'apprentissage des chemins est actif, ce qu'il a appris depuis la connexion et combien de mètres du trajet en cours passent hors des chemins connus.",
+        },
+    },
+    {
         version = "1.105.1", date = "20/11/2026",
         fixed = {
             "Tournée de quêtes : les étapes passées, et celles d'une quête déjà rendue, disparaissent de la carte du monde et de la carte de l'onglet Tournée (avant : elles restaient affichées, pâlies).",
