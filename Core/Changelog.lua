@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.5", date = "20/11/2026",
+        fixed = {
+            "Talents : le bouton « Plan de montée » et le cercle du talent suivant étaient bien posés mais restaient cachés sous le décor de la fenêtre des talents de WoW Forever. Ils passent maintenant au-dessus.",
+        },
+    },
+    {
         version = "1.99.4", date = "20/11/2026",
         added = {
             "Carte du monde : les repères de quête du jeu (points d'exclamation, rendus, zones d'objectif) sont masqués tant que nos camps de quête sont affichés, pour ne garder que les nôtres. Interrupteur « Masquer les repères de quête du jeu » dans la roue de la page Quêtes (carte « Quête suivie »).",

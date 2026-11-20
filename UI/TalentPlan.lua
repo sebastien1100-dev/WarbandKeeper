@@ -12,6 +12,14 @@ local P = WK.modules.TalentPlan
 local panel, glow, host
 local FRAMES = { "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame", "TalentFrame" }
 
+-- Strate au-dessus de celle d'une fenêtre du jeu (bouton et cercle posés SUR la fenêtre des talents)
+local NEXT_STRATA = { BACKGROUND = "LOW", LOW = "MEDIUM", MEDIUM = "HIGH", HIGH = "DIALOG", DIALOG = "FULLSCREEN",
+    FULLSCREEN = "FULLSCREEN_DIALOG", FULLSCREEN_DIALOG = "TOOLTIP" }
+local function aboveHost(f, h)
+    local st = h and h.GetFrameStrata and h:GetFrameStrata() or "MEDIUM"
+    f:SetFrameStrata(NEXT_STRATA[st] or st)
+    f:SetFrameLevel(20)
+end
 local paintToggle -- bouton « Plan de montée » de la fenêtre des talents (défini plus bas)
 local function enabled()
     local s = WK.DB.global.settings.ui
@@ -272,7 +280,7 @@ function UI:TalentPlanGlow()
     end
     UI.talentGlow, UI.talentGlowBtn = glow, btn
     -- au niveau de la fenêtre des talents, juste au-dessus de ses boutons
-    UI:MatchHost(glow, btn, 10)
+    aboveHost(glow, host or btn)
     glow:ClearAllPoints()
     glow:SetPoint("TOPLEFT", btn, "TOPLEFT", -6, 6); glow:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 6, -6)
     glow:Show()
@@ -329,18 +337,9 @@ local function placeToggle(vis)
         toggleBtn.tooltip = "Ouvre ou ferme le plan de montée à côté de la fenêtre des talents."
         toggleBtn:SetScript("OnClick", function() UI:ToggleTalentPlan(); paintToggle() end)
     end
-    UI:MatchHost(toggleBtn, host, 12)
-    -- au-dessus de tout ce que contient la fenêtre (son pied « Appliquer changements » a un niveau plus haut qu'elle)
-    local top = 0
-    local function scan(fr, depth)
-        if depth > 4 or not fr.GetChildren then return end
-        for _, c in ipairs({ fr:GetChildren() }) do
-            if c.GetFrameLevel then top = math.max(top, c:GetFrameLevel() or 0) end
-            scan(c, depth + 1)
-        end
-    end
-    scan(host, 1)
-    if top > 0 and toggleBtn.SetFrameLevel then toggleBtn:SetFrameLevel(math.min(9000, math.max(toggleBtn:GetFrameLevel() or 0, top + 5))) end
+    -- strate juste au-dessus de la fenêtre : celle de WoW Forever a des éléments au niveau maximum (9000),
+    -- un bouton de la même strate restait dessous quel que soit son niveau
+    aboveHost(toggleBtn, host)
     toggleBtn:ClearAllPoints()
     toggleBtn:SetPoint("BOTTOMRIGHT", host, "BOTTOMRIGHT", -14, 12)
     toggleBtn:Show()

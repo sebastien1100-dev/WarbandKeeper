@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.5 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Talents : le bouton « Plan de montée » et le cercle du talent suivant étaient bien posés mais restaient cachés sous le décor de la fenêtre des talents de WoW Forever. Ils passent maintenant au-dessus.
+
 ## v1.99.4 — 20/11/2026
 
 _Un /reload suffit._
