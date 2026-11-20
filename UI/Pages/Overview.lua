@@ -362,17 +362,16 @@ UI:RegisterPage({
         seg:SetPoint("TOPRIGHT", -12, -10)
         seg:Select(7)
 
-        local areaH = TOP_H - 52 - 30
+        -- zone de la courbe ; à gauche, les montants de l'axe (graduations en po, repères en pointillés)
         local area = CreateFrame("Frame", nil, card)
-        area:SetPoint("TOPLEFT", 16, -52)
+        area:SetPoint("TOPLEFT", 64, -52)
         area:SetPoint("BOTTOMRIGHT", -16, 30)
         self.area = area
-        for i = 1, 3 do
-            local g = area:CreateTexture(nil, "BACKGROUND", nil, 2)
-            g:SetColorTexture(unpack(C.border))
-            g:SetHeight(1)
-            g:SetPoint("LEFT", area, "BOTTOMLEFT", 0, areaH * (i - 1) / 2)
-            g:SetPoint("RIGHT", area, "BOTTOMRIGHT", 0, areaH * (i - 1) / 2)
+        self.yTicks = {}
+        for i = 1, 6 do
+            local tk = { label = UI:Text(card, 10, C.dim), dashes = {} }
+            tk.label:SetJustifyH("RIGHT")
+            self.yTicks[i] = tk
         end
         self.chart = UI:LineChart(area, 2.5, true)
         self.chart:SetAllPoints()
@@ -853,10 +852,50 @@ UI:RegisterPage({
             if v < minV then minV = v end
         end
         self.empty:SetShown(maxV == 0)
+        for _, tk in ipairs(self.yTicks) do tk.label:Hide(); for _, d in ipairs(tk.dashes) do d:Hide() end end
         if maxV > 0 then
             local pad = math.max((maxV - minV) * 0.15, maxV * 0.02)
-            self.chart:SetData(vals, { UI:Accent() }, math.max(0, minV - pad), maxV + pad)
+            local lo, hi = math.max(0, minV - pad), maxV + pad
+            -- pas « rond » (1, 2 ou 5 fois une puissance de dix, en pièces de cuivre) pour 4 intervalles environ
+            local raw = math.max(1, (hi - lo) / 4)
+            local mag = 10 ^ math.floor(math.log10(raw))
+            local stepY = mag * 10
+            for _, m in ipairs({ 1, 2, 5, 10 }) do if mag * m >= raw then stepY = mag * m break end end
+            lo, hi = math.floor(lo / stepY) * stepY, math.ceil(hi / stepY) * stepY
+            if hi <= lo then hi = lo + stepY end
+            self.chart:SetData(vals, { UI:Accent() }, lo, hi)
             for i, pt in ipairs(self.chart.points) do pt.t = now - (n - i) * step end
+            -- graduations : montant à gauche, repère en pointillés (trait plein pour le bas)
+            local area = self.area
+            local ah, aw = area:GetHeight(), area:GetWidth()
+            local k = 0
+            local v = lo
+            while v <= hi + 0.5 and k < #self.yTicks do
+                k = k + 1
+                local tk = self.yTicks[k]
+                local gy = (v - lo) / (hi - lo) * ah
+                tk.label:ClearAllPoints(); tk.label:SetPoint("RIGHT", area, "BOTTOMLEFT", -8, gy)
+                local txt
+                if v > 0 and v < 10000 then txt = math.floor(v / 100) .. " " .. WK.T("pa")
+                elseif stepY < 10000 then txt = string.format("%.1f", v / 10000):gsub("%.", ",") .. " " .. WK.T("po")
+                else txt = UI:ShortGold(v) end
+                tk.label:SetText(txt)
+                tk.label:Show()
+                local nd = k == 1 and 1 or math.max(1, math.floor(aw / 10))
+                for di = 1, nd do
+                    local d = tk.dashes[di]
+                    if not d then d = area:CreateTexture(nil, "BACKGROUND", nil, 2); tk.dashes[di] = d end
+                    d:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+                    d:ClearAllPoints()
+                    if k == 1 then
+                        d:SetHeight(1); d:SetPoint("LEFT", area, "BOTTOMLEFT", 0, gy); d:SetPoint("RIGHT", area, "BOTTOMRIGHT", 0, gy)
+                    else
+                        d:SetSize(5, 1); d:SetPoint("LEFT", area, "BOTTOMLEFT", (di - 1) * 10, gy)
+                    end
+                    d:Show()
+                end
+                v = v + stepY
+            end
         else
             self.chart:SetData({}, { UI:Accent() })
         end

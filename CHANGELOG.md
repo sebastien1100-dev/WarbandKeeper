@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.84.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Résumé, « Évolution de l'or » : les montants sont écrits à gauche du graphique (graduations rondes en po, pa sous 1 po, avec une décimale quand l'écart est faible) et les repères sont en pointillés, pour voir d'un coup d'œil de combien l'or a bougé.
+
 ## v1.84.0 — 20/11/2026
 
 _Un /reload suffit._

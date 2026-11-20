@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.84.1", date = "20/11/2026",
+        changed = {
+            "Résumé, « Évolution de l'or » : les montants sont écrits à gauche du graphique (graduations rondes en po, pa sous 1 po, avec une décimale quand l'écart est faible) et les repères sont en pointillés, pour voir d'un coup d'œil de combien l'or a bougé.",
+        },
+    },
+    {
         version = "1.84.0", date = "20/11/2026",
         added = {
             "Statistiques : trois onglets en haut de la page. « Courbes » (comme avant), « Journal de l'or » (chaque gain ou perte : quand, quel perso, pourquoi, combien ; sur 24 h, 7 ou 30 jours, tous les persos ou celui-ci, avec le total gagné, dépensé et le solde) et « Dépenses » (répartition en barres des dépenses par cause, des gains par cause, et ce que chaque perso a gagné ou perdu, avec les pourcentages).",
