@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.7 — 20/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Talents : le prochain talent du plan clignote (voile de la couleur de l'apparence sur son icône) au lieu d'être entouré d'un cercle.
+
 ## v1.99.6 — 20/11/2026
 
 _Un /reload suffit._

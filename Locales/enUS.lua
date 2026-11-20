@@ -4065,4 +4065,6 @@ WK.Locales.enUS.text = {
     ["Plan de montée : diagnostic"] = "Levelling plan: diagnostic",
     ["Masquer les repères de quête du jeu"] = "Hide the game's quest markers",
     ["Sur la carte du monde, tant que nos camps de quête y sont affichés."] = "On the world map, while our quest camps are shown there.",
+    ["Faire clignoter le prochain talent dans la fenêtre du jeu"] = "Flash the next talent in the game window",
+    ["Le talent à prendre selon ton plan clignote."] = "The talent to take according to your plan flashes.",
 }

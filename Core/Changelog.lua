@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.7", date = "20/11/2026",
+        changed = {
+            "Talents : le prochain talent du plan clignote (voile de la couleur de l'apparence sur son icône) au lieu d'être entouré d'un cercle.",
+        },
+    },
+    {
         version = "1.99.6", date = "20/11/2026",
         fixed = {
             "Talents : le cercle du talent suivant pouvait disparaître (panneau rouvert, fenêtre redessinée) sans revenir ; il est reposé tout seul tant que la fenêtre des talents est ouverte.",

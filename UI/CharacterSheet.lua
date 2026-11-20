@@ -2023,7 +2023,7 @@ UI:RegisterPage({
             talents = { card("Talents", {
                 { "Panneau collé à la fenêtre des talents du jeu", "Le plan de montée s'ouvre à côté de la fenêtre des talents.",
                     function() return UI.TalentPlanEnabled and UI.TalentPlanEnabled() end, function(v) ui().talentPlanPanel = v end },
-                { "Cercle autour du prochain talent dans la fenêtre du jeu", "Le talent à prendre selon ton plan est entouré.",
+                { "Faire clignoter le prochain talent dans la fenêtre du jeu", "Le talent à prendre selon ton plan clignote.",
                     function() return UI.TalentPlanGlowEnabled and UI.TalentPlanGlowEnabled() end,
                     function(v) ui().talentPlanGlow = v; if UI.TalentPlanGlow then UI:TalentPlanGlow() end end },
                 { "Rappel du prochain talent", "Dans la pile de rappels, tant qu'un point libre attend le talent suivant du plan.",

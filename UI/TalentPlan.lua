@@ -27,7 +27,7 @@ local function enabled()
     return s.talentPlanPanel
 end
 UI.TalentPlanEnabled = enabled
--- cercle autour du prochain talent du plan dans la fenêtre du jeu (settings.ui.talentPlanGlow, actif d'office)
+-- prochain talent du plan qui clignote dans la fenêtre du jeu (settings.ui.talentPlanGlow, actif d'office)
 local function glowOn()
     local s = WK.DB.global.settings.ui
     if s.talentPlanGlow == nil then s.talentPlanGlow = true end
@@ -273,20 +273,22 @@ function UI:TalentPlanGlow()
     glowWhy = "affiché"
     if not glow then
         glow = CreateFrame("Frame", nil, UIParent)
+        -- le talent clignote : voile de la couleur d'accent posé sur son icône, en mode lumière (ADD)
         glow.tex = glow:CreateTexture(nil, "OVERLAY")
-        glow.tex:SetTexture(UI.MEDIA .. "ring")
+        glow.tex:SetTexture("Interface\\Buttons\\WHITE8X8")
+        glow.tex:SetBlendMode("ADD")
         glow.tex:SetAllPoints()
         glow:SetScript("OnUpdate", function(s, el)
             s.t = (s.t or 0) + el
             local r, g, b = UI:Accent()
-            s.tex:SetVertexColor(r, g, b, 0.6 + 0.4 * math.sin(s.t * 5))
+            s.tex:SetVertexColor(r, g, b, 0.05 + 0.5 * (0.5 + 0.5 * math.sin(s.t * 6)))
         end)
     end
     UI.talentGlow, UI.talentGlowBtn = glow, btn
     -- au niveau de la fenêtre des talents, juste au-dessus de ses boutons
     aboveHost(glow, host or btn)
     glow:ClearAllPoints()
-    glow:SetPoint("TOPLEFT", btn, "TOPLEFT", -6, 6); glow:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 6, -6)
+    glow:SetPoint("TOPLEFT", btn, "TOPLEFT", 2, -2); glow:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -2, 2)
     glow:Show()
 end
 
