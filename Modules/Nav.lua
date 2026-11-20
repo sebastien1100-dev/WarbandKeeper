@@ -914,7 +914,8 @@ local function rideTick()
                 end
                 -- près d'un quai d'une ligne du jeu (ou d'un trajet appris) ?
                 local BLm = WK.modules.BoatLines
-                local _, _, dq = BLm and BLm:StopNear(p.cont, p.wx, p.wy, 400)
+                local dq
+                if BLm then dq = select(3, BLm:StopNear(p.cont, p.wx, p.wy, 400)) end
                 local atDock = dq ~= nil
                 if taxi then
                     blog("arrêt : vol")

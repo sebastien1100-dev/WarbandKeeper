@@ -114,7 +114,11 @@ local function gamePinAlpha(a)
             pcall(function()
                 for k, v in f, st, k0 do
                     local pin = (type(k) == "table" and k.SetAlpha and k) or (type(v) == "table" and v.SetAlpha and v)
-                    if pin then pin:SetAlpha(a) end
+                    if pin then
+                        pin:SetAlpha(a)
+                        -- masqué, il ne répond plus à la souris : son infobulle ne passe plus devant la nôtre
+                        if pin.EnableMouse then pcall(pin.EnableMouse, pin, a > 0) end
+                    end
                 end
             end)
         end

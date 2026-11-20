@@ -349,7 +349,8 @@ function UI:RefreshDockBanner()
             if not (lf and banner.lastSeen and GetTime() - banner.lastSeen < 90) then
                 -- bandeau pas vu au quai : la ligne du quai le plus proche du point de départ de la traversée
                 lf = nil
-                local c, x, y = Nv.RideStart and Nv.RideStart()
+                local c, x, y
+                if Nv.RideStart then c, x, y = Nv.RideStart() end
                 local best
                 for _, l in ipairs(c and BL() and BL():All() or {}) do
                     if BL():Mine(l) then

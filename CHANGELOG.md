@@ -73,6 +73,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.1 — 20/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte du monde : le calque « Quêtes » plantait (« attempt to perform arithmetic on local 'y' ») quand une quête prête à rendre avait un lieu de rendu connu ; ses repères ne s'affichaient plus.
+- Carte du monde : l'infobulle du jeu « Partage de repère cartographique » ne s'affiche plus par-dessus notre repère de guidage (le losange du jeu, masqué, ne répond plus à la souris).
+- Bateaux : la descente au quai n'était jamais reconnue (la traversée finissait seulement après 8 s immobile) ; le bandeau retrouve aussi la ligne du quai de départ.
+- Réassort chez le marchand (Inventaire, roue) : glisser un objet sur la case l'ajoute de nouveau à la liste (il était ignoré).
+
 ## v1.99.0 — 20/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

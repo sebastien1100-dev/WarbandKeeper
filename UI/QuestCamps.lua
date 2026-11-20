@@ -186,7 +186,8 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
         local main = qid == tracked
         if q:IsComplete(qid) then
             local p = q:TurnIn(qid)
-            local x, y = p and mapPos(p, mapID)
+            local x, y
+            if p then x, y = mapPos(p, mapID) end
             if x then
                 nt = nt + 1
                 local pin = turnPin(nt, cv)

@@ -245,7 +245,8 @@ function UI:BuildBagHelpCard(root)
         end
     end
     local function add()
-        local kind, id = GetCursorInfo and GetCursorInfo()
+        local kind, id
+        if GetCursorInfo then kind, id = GetCursorInfo() end
         if kind ~= "item" or not id then return end
         ClearCursor()
         local n = 0

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.1", date = "20/11/2026",
+        fixed = {
+            "Carte du monde : le calque « Quêtes » plantait (« attempt to perform arithmetic on local 'y' ») quand une quête prête à rendre avait un lieu de rendu connu ; ses repères ne s'affichaient plus.",
+            "Carte du monde : l'infobulle du jeu « Partage de repère cartographique » ne s'affiche plus par-dessus notre repère de guidage (le losange du jeu, masqué, ne répond plus à la souris).",
+            "Bateaux : la descente au quai n'était jamais reconnue (la traversée finissait seulement après 8 s immobile) ; le bandeau retrouve aussi la ligne du quai de départ.",
+            "Réassort chez le marchand (Inventaire, roue) : glisser un objet sur la case l'ajoute de nouveau à la liste (il était ignoré).",
+        },
+    },
+    {
         version = "1.99.0", date = "20/11/2026", restart = true,
         added = {
             "Sorts de classe : prix de base de chaque sort chez le maître, connus d'avance (données de What's Training, licence MIT). Le prix relevé chez le maître, remise de réputation comprise, passe toujours devant ; un sort sans prix connu est estimé d'après ceux du même niveau, marqué « env. ».",
