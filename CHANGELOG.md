@@ -73,6 +73,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.99.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte du monde : les repères de quête du jeu (points d'exclamation, rendus, zones d'objectif) sont masqués tant que nos camps de quête sont affichés, pour ne garder que les nôtres. Interrupteur « Masquer les repères de quête du jeu » dans la roue de la page Quêtes (carte « Quête suivie »).
+
 ## v1.99.3 — 20/11/2026
 
 _Un /reload suffit._

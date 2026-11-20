@@ -124,6 +124,49 @@ local function gamePinAlpha(a)
         end
     end
 end
+-- Repères de quête du jeu (point d'exclamation, rendu, zone d'objectif) masqués sur la carte du monde
+-- tant que notre calque « Quêtes » est affiché (QuestTrack:Config().hideGame) ; rendus sinon
+local QUEST_PIN_TEMPLATES = { "QuestPinTemplate", "QuestBlobPinTemplate", "QuestOfferPinTemplate", "QuestHubPinTemplate",
+    "StorylineQuestPinTemplate", "BonusObjectivePinTemplate", "ThreatObjectivePinTemplate" }
+local QUEST_TPL = {}
+for _, t in ipairs(QUEST_PIN_TEMPLATES) do QUEST_TPL[t] = true end
+local function hideGameQuests()
+    if not WK:FeatureOn("quests") then return false end
+    local QT = WK.modules.QuestTrack
+    local c = QT and QT:Config()
+    return c and c.hideGame and c.map ~= "off" or false
+end
+local questPinsHidden, acquireHooked = false, false
+local function gameQuestPins()
+    local wm = WorldMapFrame
+    if not (wm and wm.EnumeratePinsByTemplate) then return end
+    -- une pastille de quête reprise par le jeu (journal mis à jour) : masquée à l'image suivante
+    if not acquireHooked and wm.AcquirePin then
+        acquireHooked = true
+        hooksecurefunc(wm, "AcquirePin", function(_, tpl)
+            if QUEST_TPL[tpl] and hideGameQuests() then C_Timer.After(0, gameQuestPins) end
+        end)
+    end
+    local hide = hideGameQuests()
+    if not hide and not questPinsHidden then return end
+    questPinsHidden = hide
+    for _, tpl in ipairs(QUEST_PIN_TEMPLATES) do
+        local ok, f, st, k0 = pcall(wm.EnumeratePinsByTemplate, wm, tpl)
+        if ok and type(f) == "function" then
+            pcall(function()
+                for k, v in f, st, k0 do
+                    local pin = (type(k) == "table" and k.SetAlpha and k) or (type(v) == "table" and v.SetAlpha and v)
+                    if pin then
+                        pin:SetAlpha(hide and 0 or 1)
+                        if pin.EnableMouse then pcall(pin.EnableMouse, pin, not hide) end
+                    end
+                end
+            end)
+        end
+    end
+end
+UI.GameQuestPins = gameQuestPins
+
 -- Journal (/wk carte) : redessins et masquages de la carte, pour comprendre une pastille disparue
 UI.mapLog = UI.mapLog or {}
 local function note(ev)
@@ -237,6 +280,7 @@ end
 local function redraw(src)
     note("redessin" .. (type(src) == "string" and (" · " .. src) or ""))
     hideAll()
+    gameQuestPins()
     local cfg = WK.DB.global.gatherMap
     local wm, cv = WorldMapFrame, canvas()
     if not wm or not cv or not wm:IsShown() then return end

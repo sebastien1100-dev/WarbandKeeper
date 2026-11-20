@@ -462,7 +462,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 6 or 4) * 36 + 6, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 7 or 5) * 36 + 6, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -490,15 +490,17 @@ UI:RegisterPage({
                 end, 26)
             UI:SettingRow(tcard, -148, "Camps sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
             self.campSeg:Select(QT():Config().map)
+            UI:SettingRow(tcard, -184, "Masquer les repères de quête du jeu", "Sur la carte du monde, tant que nos camps de quête y sont affichés.",
+                qtoggle("hideGame", function() if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end end), 50)
             -- plan de quêtes (Modules/QuestPlan.lua) : alerte près d'un donneur, niveau des quêtes proposées
             if QP() then
                 local nt = UI:Toggle(tcard, function() return QP():Config().nearAlert end,
                     function(v) QP():Config().nearAlert = v; WK:NotifyChanged() end)
                 table.insert(self.toggles, nt)
-                UI:SettingRow(tcard, -184, "Prévenir près d'un donneur utile", nil, nt, 50)
+                UI:SettingRow(tcard, -220, "Prévenir près d'un donneur utile", nil, nt, 50)
                 self.maxSeg = UI:Segmented(tcard, { { 0, "0" }, { 1, "1" }, { 2, "2" }, { 3, "3" } },
                     function(v) QP():Config().maxAbove = v; WK:NotifyChanged() end, 26)
-                UI:SettingRow(tcard, -220, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
+                UI:SettingRow(tcard, -256, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
                 self.maxSeg:Select(QP():Config().maxAbove)
             end
         end

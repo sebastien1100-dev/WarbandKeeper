@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.99.4", date = "20/11/2026",
+        added = {
+            "Carte du monde : les repères de quête du jeu (points d'exclamation, rendus, zones d'objectif) sont masqués tant que nos camps de quête sont affichés, pour ne garder que les nôtres. Interrupteur « Masquer les repères de quête du jeu » dans la roue de la page Quêtes (carte « Quête suivie »).",
+        },
+    },
+    {
         version = "1.99.3", date = "20/11/2026",
         added = {
             "/wk plan diag : ce que l'addon voit de la fenêtre des talents (fenêtre, onglet, bouton « Plan de montée », talent suivant et son cercle), à copier si quelque chose manque.",

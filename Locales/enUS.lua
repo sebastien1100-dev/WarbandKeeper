@@ -4063,4 +4063,6 @@ WK.Locales.enUS.text = {
     ["Prix de base des sorts de classe chez le maître (avant remise de réputation) : addon What's Training (github.com/fusionpit/WhatsTraining, licence MIT). Le prix relevé chez le maître passe devant."] = "Base prices of class spells at the trainer (before reputation discount): What's Training addon (github.com/fusionpit/WhatsTraining, MIT licence). The price seen at the trainer takes precedence.",
     ["repos < 1 %"] = "rest < 1 %",
     ["Plan de montée : diagnostic"] = "Levelling plan: diagnostic",
+    ["Masquer les repères de quête du jeu"] = "Hide the game's quest markers",
+    ["Sur la carte du monde, tant que nos camps de quête y sont affichés."] = "On the world map, while our quest camps are shown there.",
 }

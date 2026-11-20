@@ -20,6 +20,7 @@ function M:Config()
     if c.guide == nil then c.guide = true end             -- flèche vers le camp puis le rendu
     if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
     if c.mini == nil then c.mini = true end               -- camp visé sur la minicarte
+    if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
     return c
 end
 
