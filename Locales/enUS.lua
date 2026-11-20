@@ -3839,4 +3839,7 @@ WK.Locales.enUS.text = {
     ["Chaque style change toute la fenêtre : couleur, fond, polices, arrondi, cartes et halo. Règle ensuite le détail dans les autres onglets."] = "Each style changes the whole window: color, background, fonts, roundness, cards and glow. Fine-tune it in the other tabs.",
     ["Le prix a changé : %s pour %d %s. Reclique pour confirmer."] = "Price changed: %s for %d %s. Click again to confirm.",
     ["Envoyer %s à %s ? Clique encore sur Envoyer pour confirmer."] = "Send %s to %s? Click Send again to confirm.",
+    ["Chaque style habille toute la fenêtre : barre latérale, cartes, pastilles, jauges et boutons. Règle ensuite le détail dans les autres onglets."] = "Each style dresses the whole window: sidebar, cards, chips, bars and buttons. Fine-tune it in the other tabs.",
+    ["Encre"] = "Ink",
+    ["Cuir et or"] = "Leather and gold",
 }

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.93.0", date = "20/11/2026",
+        added = {
+            "Apparence > Styles : trois habillages qui changent la forme de toute la fenêtre, pas seulement ses couleurs. Héraldique : barre latérale pleine, titres des cartes sur un bandeau coloré, 1re pastille pleine. Encre : cartes sans fond ni bordure avec un trait de couleur à gauche, grands titres, boutons pleins. Cuir et or : fond de cuir, titres centrés soulignés d'un filet doré, cartes à double liseré, jauges dorées.",
+        },
+        changed = {
+            "Les anciens styles de couleurs (Nuit bleue, Forêt, Or ancien, Améthyste, Braise) sont remplacés par ces habillages ; Graphite reste le style d'origine. La couleur, la police et le reste se règlent toujours dans les autres onglets.",
+        },
+    },
+    {
         version = "1.92.2", date = "20/11/2026",
         changed = {
             "Hôtel des ventes : acheter une enchère unique demande deux clics (« Confirmer <prix> »), pour ne plus acheter par erreur.",

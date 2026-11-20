@@ -182,9 +182,22 @@ local TINTS = {
     violet = { 0.026, -0.006, 0.056 }, ember = { 0.056, -0.006, -0.012 },
 }
 UI.TINTS = TINTS
+-- habillages : heraldic (barre latérale pleine, titres de cartes sur un bandeau), ink (cartes sans fond ni
+-- bordure, trait d'accent à gauche, grands titres), leather (cuir et or : titres centrés soulignés d'un filet)
+UI.SKINS = {
+    heraldic = { base = { bg = { 0.066, 0.070, 0.080 } } },
+    ink = { base = { bg = { 0.058, 0.062, 0.070 } } },
+    leather = { base = { bg = { 0.100, 0.070, 0.043 }, line = { 0.330, 0.235, 0.125 }, frame = { 0.400, 0.290, 0.150 },
+        glow = { 0.200, 0.140, 0.075 }, text = { 0.945, 0.902, 0.812 }, muted = { 0.720, 0.625, 0.470 } } },
+}
 -- fond et bordure d'un style (vignettes des styles prêts) : graphite + teinte
-function UI:TintedBase(tint)
+function UI:TintedBase(tint, skin)
     local b = (self.themeByKey.graphite or self.themes[1]).base()
+    local sk = skin and self.SKINS[skin]
+    if sk and sk.base then
+        for k, v in pairs(sk.base) do b[k] = v end
+        if sk.base.line then tint = nil end
+    end
     local t = TINTS[tint or ""] or { 0, 0, 0 }
     local function sh(c) return { math.max(0, c[1] + t[1]), math.max(0, c[2] + t[2]), math.max(0, c[3] + t[3]) } end
     return sh(b.bg), sh(b.line), sh(mix(b.bg, b.line, 0.25))
@@ -208,6 +221,11 @@ function UI:ApplyTheme()
             if c then b[k] = { math.max(0, c[1] + tint[1]), math.max(0, c[2] + tint[2]), math.max(0, c[3] + tint[3]) } end
         end
     end
+    -- habillage (styles prêts) : change la forme des cartes, de la barre latérale et des pastilles ; certains
+    -- donnent aussi leurs couleurs de base (le cuir ignore la teinte du fond)
+    local skin = UI.SKINS[cfg.skin or ""]
+    self.skin = skin and cfg.skin or nil
+    if skin and skin.base then for k, v in pairs(skin.base) do b[k] = v end end
     -- contraste des textes secondaires (doux : plus proches du fond ; fort : plus proches du texte)
     if cfg.contrast == "strong" then
         b.muted = mix(b.muted, b.text, 0.35)

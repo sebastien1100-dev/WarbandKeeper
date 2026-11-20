@@ -40,6 +40,12 @@ function UI:Button(parent, text, width, height, style, icon)
             self.bg:SetColor(C.negative[1], C.negative[2], C.negative[3], h and 0.28 or 0.16)
             self.bg:Show()
             fg = C.negative
+        elseif UI.skin == "ink" then
+            -- Encre : boutons pleins
+            local r, g, bl = UI:Accent()
+            self.bg:SetColor(r, g, bl, h and 1 or 0.85)
+            self.bg:Show()
+            fg = C.onAccent
         else
             local r, g, bl = UI:Accent()
             self.bg:SetColor(r, g, bl, h and 0.30 or 0.16)
@@ -207,6 +213,10 @@ function UI:Progress(parent, height)
         end
         -- dégradé d'accent (Options > Apparence) : 2e couleur sur les jauges à la couleur de l'accent
         local r2, g2, b2 = (not self.color) and UI:Accent2()
+        -- Cuir et or : jauges en dégradé doré (accent vers accent assombri)
+        if not r2 and not self.color and UI.skin == "leather" then
+            local r, g, b = UI:Accent(); r2, g2, b2 = r * 0.62, g * 0.62, b * 0.62
+        end
         if r2 then
             if not self.grad then
                 self.grad = self.fillFrame:CreateTexture(nil, "ARTWORK", nil, 2)
@@ -477,10 +487,54 @@ function UI:Card(parent, title, subtitle, highlight)
     -- style des cartes (Options > Apparence) : liseré (défaut), plat (sans bordure), halo (lueur en haut)
     UI:Panel(f, 12, C.surface, UI.cardStyle == "flat" and C.surface or C.border)
     if highlight or UI.cardStyle == "halo" then UI:TopHighlight(f) end
+    local skin = UI.skin
+    if skin == "ink" then
+        -- Encre : ni fond ni bordure, un trait d'accent à gauche
+        f.bg:Hide(); if f.border then f.border:Hide() end
+        f.skinBar = f:CreateTexture(nil, "BORDER")
+        f.skinBar:SetWidth(3); f.skinBar:SetPoint("TOPLEFT", 0, -4); f.skinBar:SetPoint("BOTTOMLEFT", 0, 4)
+        UI:OnAccent(function() f.skinBar:SetColorTexture(UI:Accent()) end)
+    elseif skin == "leather" then
+        -- Cuir et or : double liseré
+        f.inner = UI:Rounded(f, 9, 4, "BACKGROUND", 2)
+        f.inner:SetColor(C.border[1], C.border[2], C.border[3], 0.55)
+        f.inner2 = UI:Rounded(f, 8, 5, "BACKGROUND", 3)
+        f.inner2:SetColor(unpack(C.surface))
+    end
     if title then
-        f.title = UI:Text(f, 13, C.text)
-        if UI.CARD_TITLE_FONT then f.title:SetFont(UI.CARD_TITLE_FONT, math.floor(14 * (UI.textScale or 1) + 0.5), "") end
-        f.title:SetPoint("TOPLEFT", 16, -14)
+        local host = f
+        if skin == "heraldic" then
+            -- Héraldique : titre blanc sur un bandeau de couleur (coins du haut arrondis, bas droit)
+            f.band = CreateFrame("Frame", nil, f)
+            f.band:SetPoint("TOPLEFT", 1, -1); f.band:SetPoint("TOPRIGHT", -1, -1); f.band:SetHeight(36)
+            if f.band.SetClipsChildren then f.band:SetClipsChildren(true) end
+            local holder = CreateFrame("Frame", nil, f.band)
+            holder:SetPoint("TOPLEFT"); holder:SetPoint("TOPRIGHT"); holder:SetHeight(60)
+            local fill = UI:Rounded(holder, 11, 0, "BACKGROUND", 1)
+            UI:OnAccent(function() local r, g, b = UI:Accent(); fill:SetColor(r * 0.55, g * 0.55, b * 0.55, 1) end)
+            host = f.band
+        end
+        f.title = UI:Text(host, skin == "ink" and 17 or 13, C.text)
+        if UI.CARD_TITLE_FONT then f.title:SetFont(UI.CARD_TITLE_FONT, math.floor((skin == "ink" and 17 or 14) * (UI.textScale or 1) + 0.5), "") end
+        if skin == "heraldic" then f.title:SetTextColor(1, 1, 1) end
+        if skin == "leather" then
+            f.title:SetPoint("TOP", 0, -13)
+            UI:OnAccent(function() f.title:SetTextColor(UI:Accent()) end)
+            local fil = f:CreateTexture(nil, "ARTWORK")
+            fil:SetHeight(1); fil:SetPoint("TOPLEFT", 40, -32); fil:SetPoint("TOPRIGHT", f, "TOP", 0, -32)
+            UI:OnAccent(function()
+                local r, g, b = UI:Accent()
+                UI:SetGradient(fil, "HORIZONTAL", { r, g, b, 0 }, { r, g, b, 0.9 })
+            end)
+            local fil2 = f:CreateTexture(nil, "ARTWORK")
+            fil2:SetHeight(1); fil2:SetPoint("TOPLEFT", f, "TOP", 0, -32); fil2:SetPoint("TOPRIGHT", -40, -32)
+            UI:OnAccent(function()
+                local r, g, b = UI:Accent()
+                UI:SetGradient(fil2, "HORIZONTAL", { r, g, b, 0.9 }, { r, g, b, 0 })
+            end)
+        else
+            f.title:SetPoint("TOPLEFT", 16, skin == "ink" and -12 or -14)
+        end
         f.title:SetText(title)
         if subtitle then
             f.subtitle = UI:Text(f, 11, C.muted)

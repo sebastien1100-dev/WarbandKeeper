@@ -81,6 +81,27 @@ local function CountPill(parent)
     return p
 end
 
+-- Entrée de la barre latérale selon l'habillage : Héraldique (barre pleine, entrée choisie de la couleur de la
+-- page), Encre (pas de fond, trait d'accent), sinon fond en relief
+local WHITE, WHITE_DIM = { 1, 1, 1, 1 }, { 1, 1, 1, 0.72 }
+local function paintNav(self, sel)
+    local skin = UI.skin
+    if skin == "heraldic" then
+        self.bg:SetColor(unpack(sel and C.bg or { 1, 1, 1, 0.10 }))
+        self.bg:SetShown(sel or self.hover)
+        self.bar:SetShown(false)
+        if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(WHITE_DIM)) end
+        self.label:SetTextColor(unpack((sel or self.hover) and WHITE or WHITE_DIM))
+        return
+    end
+    self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
+    self.bg:SetShown((sel and skin ~= "ink") or self.hover)
+    self.bar:SetShown(sel)
+    self.barTex:SetColor(UI:Accent())
+    if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
+    self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+end
+
 local function NavItem(parent, def)
     local b = CreateFrame("Button", nil, parent)
     b:SetHeight(34)
@@ -99,12 +120,7 @@ local function NavItem(parent, def)
 
     function b:Refresh()
         local sel = UI.current == def.key or (def.key == "characters" and UI.current == "charsheet")
-        self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
-        self.bg:SetShown(sel or self.hover)
-        self.bar:SetShown(sel)
-        self.barTex:SetColor(UI:Accent())
-        if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
-        self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+        paintNav(self, sel)
         local collapsed = WK.DB.global.settings.ui.collapsed
         self.label:SetShown(not collapsed)
         self.count:Allow(not collapsed)
@@ -148,7 +164,10 @@ local function GroupHead(parent, name, icon)
         self.gicon:SetVertexColor(r, g, bl, 1)
         self.chev:SetVertexColor(r, g, bl, self.hover and 1 or 0.8)
         if self.chev.SetRotation then self.chev:SetRotation(closed and math.pi / 2 or 0) end
-        if self.hover then self.label:SetTextColor(r, g, bl, 1) else self.label:SetTextColor(unpack(closed and C.muted or C.dim)) end
+        if UI.skin == "heraldic" then
+            self.gicon:SetVertexColor(1, 1, 1, 0.6); self.chev:SetVertexColor(1, 1, 1, self.hover and 1 or 0.6)
+            self.label:SetTextColor(1, 1, 1, self.hover and 0.95 or 0.55)
+        elseif self.hover then self.label:SetTextColor(r, g, bl, 1) else self.label:SetTextColor(unpack(closed and C.muted or C.dim)) end
     end
     b:SetScript("OnEnter", function(s) s.hover = true; s:Refresh() end)
     b:SetScript("OnLeave", function(s) s.hover = false; s:Refresh() end)
@@ -210,12 +229,7 @@ local function SubItem(parent, sec)
     end
     function b:Refresh()
         local sel = UI.current == "qol" and UI.QoLCurrentSection and UI:QoLCurrentSection() == self.key
-        self.bg:SetColor(unpack(sel and C.surface2 or C.hover))
-        self.bg:SetShown(sel or self.hover)
-        self.bar:SetShown(sel)
-        self.barTex:SetColor(UI:Accent())
-        if sel then self.icon:SetVertexColor(UI:Accent()) else self.icon:SetVertexColor(unpack(C.muted)) end
-        self.label:SetTextColor(unpack((sel or self.hover) and C.text or C.muted))
+        paintNav(self, sel)
         local rail = WK.DB.global.settings.ui.collapsed
         self.label:SetShown(not rail)
         self.count:Hide()
@@ -347,7 +361,18 @@ createWindow = function(self)
     side:SetScript("OnDragStop", stopMove)
     local sideBg = side:CreateTexture(nil, "BACKGROUND", nil, -3)
     sideBg:SetAllPoints()
-    sideBg:SetColorTexture(0, 0, 0, 0.18)
+    if UI.skin == "heraldic" then
+        -- Héraldique : barre latérale pleine, couleur de l'accent assombrie
+        UI:OnAccent(function()
+            local r, g, b = UI:Accent()
+            sideBg:SetColorTexture(1, 1, 1, 1)
+            UI:SetGradient(sideBg, "VERTICAL", { r * 0.32, g * 0.32, b * 0.32, 1 }, { r * 0.5, g * 0.5, b * 0.5, 1 })
+        end)
+    elseif UI.skin == "ink" then
+        sideBg:SetColorTexture(0, 0, 0, 0)
+    else
+        sideBg:SetColorTexture(0, 0, 0, 0.18)
+    end
     local sep = side:CreateTexture(nil, "BORDER")
     sep:SetColorTexture(unpack(C.border))
     sep:SetWidth(1)
@@ -360,13 +385,14 @@ createWindow = function(self)
     local tileBg = UI:Rounded(tile, 11, 0, "BACKGROUND", 1)
     local logo = UI:Icon(tile, "logo", 24, C.onAccent)
     logo:SetPoint("CENTER")
-    UI:OnAccent(function() tileBg:SetColor(UI:Accent()) end)
+    UI:OnAccent(function() if UI.skin == "heraldic" then tileBg:SetColor(unpack(C.bg)) else tileBg:SetColor(UI:Accent()) end end)
     local title = side:CreateFontString(nil, "OVERLAY")
     title:SetFont(UI.TITLE_FONT, 15, "")
     title:SetText("Warband Keeper")
     title:SetPoint("TOPLEFT", tile, "TOPRIGHT", 10, 0)
-    UI:OnAccent(function() title:SetTextColor(UI:Accent()) end)
+    UI:OnAccent(function() if UI.skin == "heraldic" then title:SetTextColor(1, 1, 1) else title:SetTextColor(UI:Accent()) end end)
     local ver = UI:Text(side, 10, C.muted)
+    if UI.skin == "heraldic" then ver:SetTextColor(1, 1, 1, 0.6) end
     ver:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
     ver:SetText("v" .. WK.version)
     self.sideTitle, self.sideVer = title, ver
@@ -1137,11 +1163,22 @@ function UI:RefreshChips()
     local x = PAD - 5
     local maxX = (self.header:GetWidth() or 600) - 80 - (self.editBtn and (self.editBtn:GetWidth() + 10) or 0) - 70 - #BOTTOM * 34
         - ((self.updBtn and self.updBtn:IsShown()) and (self.updBtn:GetWidth() + 8) or 0)
-    for _, ch in ipairs(list) do
+    for i, ch in ipairs(list) do
         local c = self.chips:Get()
         c.label:SetText(ch[1])
         c.value:SetText(ch[2] or "")
         c.value:SetTextColor(unpack(ch[3] or C.text))
+        -- habillages : Héraldique = 1re pastille pleine ; Encre = pastilles sans cadre
+        local skin = UI.skin
+        c.label:SetTextColor(unpack(C.muted))
+        c.bg:SetShown(skin ~= "ink"); c.border:SetShown(skin ~= "ink")
+        c.bg:SetColor(unpack(C.surface))
+        if skin == "heraldic" and i == 1 then
+            local r, g, b = UI:Accent2()
+            if not r then r, g, b = UI:Accent() end
+            c.bg:SetColor(r, g, b, 1)
+            c.label:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3], 0.8); c.value:SetTextColor(unpack(C.onAccent))
+        end
         c.page, c.tip, c.after = ch[4], ch[5], ch[6]
         local w = c.label:GetStringWidth() + c.value:GetStringWidth() + 30
         c:SetWidth(w)

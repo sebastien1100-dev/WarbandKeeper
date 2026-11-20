@@ -218,41 +218,34 @@ UI:RegisterPage({
         self.lookShowTab = showTab
 
         ---------------------------------------------------------------- Styles prêts
-        -- chaque style change toute la fenêtre : couleur, teinte du fond (marquée), fond texturé, police du texte
-        -- et des titres, arrondi, cartes, halo (teinté par l'accent) et contraste
-        local STYLE_FIELDS = { "bgTint", "bgTexture", "font", "titleFont", "rounding", "cardStyle", "glow", "glowTint", "contrast" }
+        -- chaque style est un habillage (UI.SKINS) : forme des cartes, de la barre latérale, des pastilles, des
+        -- jauges et des boutons, plus sa couleur, sa police des titres et son fond
+        local STYLE_FIELDS = { "skin", "accent2", "bgTint", "bgTexture", "font", "titleFont", "rounding", "cardStyle", "glow", "glowTint", "contrast" }
         local STYLES = {
-            { "graphite", "Graphite rose", { accent = 7, rounding = 1, glow = 1 } },
-            { "night", "Nuit bleue", { accent = 5, bgTint = "night", font = "arialn", rounding = 0.8, cardStyle = "halo", glow = 1.4, glowTint = true, contrast = "strong" } },
-            { "forest", "Forêt", { accent = 3, bgTint = "forest", bgTexture = "stone", titleFont = "morpheus", rounding = 1.2, glow = 0.9, glowTint = true } },
-            { "gold", "Or ancien", { accent = 1, bgTint = "gold", bgTexture = "parchment", titleFont = "morpheus", rounding = 0.6, cardStyle = "halo", glow = 1.2, glowTint = true } },
-            { "violet", "Améthyste", { accent = 6, bgTint = "violet", font = "arialn", titleFont = "skurri", rounding = 1.4, cardStyle = "flat", glow = 1.6, glowTint = true } },
-            { "ember", "Braise", { accent = 8, bgTint = "ember", bgTexture = "grain", rounding = 0.3, glow = 1.8, glowTint = true, contrast = "strong" } },
+            { "graphite", "Graphite", { accent = 7, rounding = 1 } },
+            { "heraldic", "Héraldique", { skin = "heraldic", accent = 8, accent2 = 1, rounding = 0.8 } },
+            { "ink", "Encre", { skin = "ink", accent = 6, rounding = 1.2 } },
+            { "leather", "Cuir et or", { skin = "leather", accent = 1, titleFont = "morpheus", bgTexture = "grain", rounding = 0.6 } },
         }
         do
             local pf = panes.styles
             local note = UI:Text(pf, 11, C.muted); note:SetPoint("TOPLEFT", 16, -2); note:SetPoint("RIGHT", -16, 0)
             note:SetJustifyH("LEFT"); if note.SetWordWrap then note:SetWordWrap(true) end
-            note:SetText(WK.T("Chaque style change toute la fenêtre : couleur, fond, polices, arrondi, cartes et halo. Règle ensuite le détail dans les autres onglets."))
+            note:SetText(WK.T("Chaque style habille toute la fenêtre : barre latérale, cartes, pastilles, jauges et boutons. Règle ensuite le détail dans les autres onglets."))
             local fontPath = {}
             for _, f in ipairs(UI.fonts) do fontPath[f.key] = f.path end
             for n, st in ipairs(STYLES) do
                 local d = st[3]
                 local a = UI.accents[d.accent]
-                local bg, line, surf = UI:TintedBase(d.bgTint)
+                local bg, line, surf = UI:TintedBase(d.bgTint, d.skin)
                 local b = CreateFrame("Button", nil, pf)
-                b:SetSize(150, 92)
-                local col, row = (n - 1) % 3, math.floor((n - 1) / 3)
-                b:SetPoint("TOPLEFT", 16 + col * 158, -38 - row * 100)
+                b:SetSize(230, 96)
+                local col, row = (n - 1) % 2, math.floor((n - 1) / 2)
+                b:SetPoint("TOPLEFT", 16 + col * 238, -38 - row * 104)
                 local r0 = 4 + 8 * (d.rounding or 1)
-                -- mini-fenêtre : cadre, fond teinté, halo, carte, barre d'accent, titre dans la police du style
+                -- mini-fenêtre : cadre, fond, barre latérale, carte habillée, titre dans la police du style
                 b.edge = UI:Rounded(b, r0 + 1, 0, "BACKGROUND", 0); b.edge:SetColor(line[1], line[2], line[3], 1)
                 b.bg = UI:Rounded(b, r0, 1, "BACKGROUND", 1); b.bg:SetColor(bg[1], bg[2], bg[3], 1)
-                if d.glowTint or (d.glow or 1) > 1 then
-                    local gl = b:CreateTexture(nil, "BACKGROUND", nil, 2)
-                    gl:SetPoint("TOPLEFT", 4, -2); gl:SetPoint("TOPRIGHT", -4, -2); gl:SetHeight(26)
-                    UI:SetGradient(gl, "VERTICAL", { a[1], a[2], a[3], 0 }, { a[1], a[2], a[3], 0.18 * (d.glow or 1) })
-                end
                 if d.bgTexture then
                     local tx = b:CreateTexture(nil, "BACKGROUND", nil, 3)
                     tx:SetTexture(({ grain = "Interface\\DialogFrame\\UI-DialogBox-Background", stone = "Interface\\FrameGeneral\\UI-Background-Rock",
@@ -261,23 +254,52 @@ UI:RegisterPage({
                     if tx.SetDesaturated then tx:SetDesaturated(true) end
                     tx:SetVertexColor(1, 1, 1, 0.12)
                 end
-                local mc = CreateFrame("Frame", nil, b)
-                mc:SetPoint("TOPLEFT", 10, -28); mc:SetPoint("TOPRIGHT", -10, -28); mc:SetHeight(30)
-                local cr = math.max(2, r0 - 4)
-                mc.edge = UI:Rounded(mc, cr, 0, "BORDER", 0)
-                mc.edge:SetColor(d.cardStyle == "flat" and surf[1] or line[1], d.cardStyle == "flat" and surf[2] or line[2], d.cardStyle == "flat" and surf[3] or line[3], 1)
-                mc.bg = UI:Rounded(mc, cr - 1, 1, "BORDER", 1); mc.bg:SetColor(surf[1], surf[2], surf[3], 1)
-                if d.cardStyle == "halo" then
-                    local hl = mc:CreateTexture(nil, "ARTWORK", nil, 1)
-                    hl:SetPoint("TOPLEFT", 3, -1); hl:SetPoint("TOPRIGHT", -3, -1); hl:SetHeight(10)
-                    UI:SetGradient(hl, "VERTICAL", { 1, 1, 1, 0 }, { 1, 1, 1, 0.10 })
+                -- barre latérale
+                local sb = b:CreateTexture(nil, "BACKGROUND", nil, 4)
+                sb:SetPoint("TOPLEFT", 2, -2); sb:SetPoint("BOTTOMLEFT", 2, 2); sb:SetWidth(44)
+                if d.skin == "heraldic" then sb:SetColorTexture(a[1] * 0.45, a[2] * 0.45, a[3] * 0.45, 1)
+                elseif d.skin == "ink" then sb:SetColorTexture(0, 0, 0, 0)
+                else sb:SetColorTexture(0, 0, 0, 0.18) end
+                for k = 1, 4 do
+                    local it = b:CreateTexture(nil, "ARTWORK")
+                    it:SetSize(k == 1 and 30 or 24, 4); it:SetPoint("TOPLEFT", 9, -12 - k * 11)
+                    if d.skin == "heraldic" then it:SetColorTexture(1, 1, 1, k == 1 and 0.95 or 0.45)
+                    elseif k == 1 then it:SetColorTexture(a[1], a[2], a[3], 1)
+                    else it:SetColorTexture(surf[1] * 1.8, surf[2] * 1.8, surf[3] * 1.8, 1) end
                 end
-                local bar = mc:CreateTexture(nil, "ARTWORK", nil, 2); bar:SetColorTexture(a[1], a[2], a[3], 1)
-                bar:SetPoint("LEFT", 8, -4); bar:SetSize(70, 4)
-                local tt = UI:Text(mc, 10); tt:SetPoint("TOPLEFT", 8, -4)
+                -- carte
+                local mc = CreateFrame("Frame", nil, b)
+                mc:SetPoint("TOPLEFT", 54, -10); mc:SetPoint("TOPRIGHT", -10, -10); mc:SetHeight(52)
+                local cr = math.max(2, r0 - 4)
+                if d.skin ~= "ink" then
+                    mc.edge = UI:Rounded(mc, cr, 0, "BORDER", 0); mc.edge:SetColor(line[1], line[2], line[3], 1)
+                    mc.bg = UI:Rounded(mc, cr - 1, 1, "BORDER", 1); mc.bg:SetColor(surf[1], surf[2], surf[3], 1)
+                else
+                    local lb = mc:CreateTexture(nil, "ARTWORK"); lb:SetColorTexture(a[1], a[2], a[3], 1)
+                    lb:SetPoint("TOPLEFT", 0, -2); lb:SetPoint("BOTTOMLEFT", 0, 2); lb:SetWidth(2)
+                end
+                local tt = UI:Text(mc, d.skin == "ink" and 13 or 10)
                 if d.titleFont and fontPath[d.titleFont] then tt:SetFont(fontPath[d.titleFont], 10, "") end
-                tt:SetText(WK.T("Titre")); tt:SetTextColor(0.9, 0.9, 0.92)
-                local name = UI:Text(b, 11); name:SetPoint("BOTTOMLEFT", 11, 9)
+                tt:SetText(WK.T("Titre")); tt:SetTextColor(0.92, 0.92, 0.94)
+                if d.skin == "heraldic" then
+                    local band = mc:CreateTexture(nil, "ARTWORK", nil, 1)
+                    band:SetPoint("TOPLEFT", 1, -1); band:SetPoint("TOPRIGHT", -1, -1); band:SetHeight(16)
+                    band:SetColorTexture(a[1] * 0.55, a[2] * 0.55, a[3] * 0.55, 1)
+                    tt:SetPoint("TOPLEFT", 7, -3); tt:SetTextColor(1, 1, 1)
+                elseif d.skin == "leather" then
+                    tt:SetPoint("TOP", 0, -4); tt:SetTextColor(a[1], a[2], a[3])
+                    local fil = mc:CreateTexture(nil, "ARTWORK"); fil:SetColorTexture(a[1], a[2], a[3], 0.7)
+                    fil:SetPoint("TOP", 0, -17); fil:SetSize(70, 1)
+                    local in2 = UI:Rounded(mc, math.max(2, cr - 3), 3, "BORDER", 2); in2:SetColor(line[1], line[2], line[3], 0.6)
+                    local in3 = UI:Rounded(mc, math.max(2, cr - 4), 4, "BORDER", 3); in3:SetColor(surf[1], surf[2], surf[3], 1)
+                else
+                    tt:SetPoint("TOPLEFT", d.skin == "ink" and 8 or 7, -4)
+                end
+                local tr = mc:CreateTexture(nil, "ARTWORK", nil, 2); tr:SetColorTexture(0, 0, 0, 0.35)
+                tr:SetPoint("BOTTOMLEFT", 8, 9); tr:SetPoint("BOTTOMRIGHT", -8, 9); tr:SetHeight(d.skin == "ink" and 2 or 4)
+                local bar = mc:CreateTexture(nil, "ARTWORK", nil, 3); bar:SetColorTexture(a[1], a[2], a[3], 1)
+                bar:SetPoint("BOTTOMLEFT", 8, 9); bar:SetSize(90, d.skin == "ink" and 2 or 4)
+                local name = UI:Text(b, 11); name:SetPoint("BOTTOMLEFT", 56, 10)
                 if d.font and fontPath[d.font] then name:SetFont(fontPath[d.font], 11, "") end
                 name:SetText(WK.T(st[2])); name:SetTextColor(a[1], a[2], a[3])
                 b.sel = UI:Icon(b, "circle", 10, nil, "OVERLAY"); b.sel:SetPoint("BOTTOMRIGHT", -10, 10)
@@ -462,7 +484,7 @@ UI:RegisterPage({
 
         ---------------------------------------------------------------- Partage et retour d'origine
         local STYLE_KEYS = { "accent", "accentRGB", "accent2", "bgTint", "font", "titleFont", "textScale", "rounding", "cardStyle",
-            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed" }
+            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed", "skin" }
         -- bornes des curseurs : un code collé ne peut pas sortir de ce que l'Apparence propose
         local STYLE_RANGE = { rounding = { 0, 1.4 }, textScale = { 0.85, 1.25 }, opacity = { 0.6, 1 }, glow = { 0, 2 }, tipOpacity = { 0.6, 1 } }
         local P = WK.modules.Profiles
