@@ -256,6 +256,22 @@ local function des(s, i, depth)
 end
 local PREFIX = "WKP1:"
 
+-- Encodage commun (style de l'Apparence…) : table -> « préfixe » + base64 ; et retour (nil + raison si abîmé)
+function M:EncodeTable(t, prefix)
+    local out = {}
+    ser(t, out, 0)
+    return prefix .. b64enc(table.concat(out))
+end
+function M:DecodeTable(code, prefix)
+    code = type(code) == "string" and code:gsub("^%s+", ""):gsub("%s+$", "") or ""
+    if code:sub(1, #prefix) ~= prefix then return nil, string.format(T("Ce n'est pas un code %s…"), prefix) end
+    if #code > 200000 then return nil, T("Code trop long.") end
+    local raw = b64dec(code:sub(#prefix + 1))
+    local t = raw and des(raw, 1, 0)
+    if type(t) ~= "table" then return nil, T("Code abîmé : copie-le en entier.") end
+    return t
+end
+
 -- Code d'un profil (celui en place : ses réglages du moment)
 function M:Export(name)
     local p = store()

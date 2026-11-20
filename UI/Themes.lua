@@ -195,6 +195,12 @@ function UI:ApplyTheme()
             if c then b[k] = { math.max(0, c[1] + tint[1]), math.max(0, c[2] + tint[2]), math.max(0, c[3] + tint[3]) } end
         end
     end
+    -- contraste des textes secondaires (doux : plus proches du fond ; fort : plus proches du texte)
+    if cfg.contrast == "strong" then
+        b.muted = mix(b.muted, b.text, 0.35)
+    elseif cfg.contrast == "soft" then
+        b.muted = mix(b.muted, b.bg, 0.22)
+    end
     local p = palette(b)
     p.bg[4] = 0.98 * (cfg.opacity or 1)
     for k, v in pairs(p) do self.colors[k] = v end
@@ -208,5 +214,8 @@ function UI:ApplyTheme()
     -- taille du texte (tous les textes de l'addon créés par UI:Text) et style des cartes (plat, liseré, halo)
     self.textScale = math.max(0.8, math.min(1.3, cfg.textScale or 1))
     self.cardStyle = cfg.cardStyle or "line"
+    -- police des titres des cartes (nil : celle du texte)
+    self.CARD_TITLE_FONT = nil
+    for _, f in ipairs(self.fonts) do if f.key == cfg.titleFont then self.CARD_TITLE_FONT = f.path end end
     self.theme = t
 end

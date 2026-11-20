@@ -290,7 +290,8 @@ createWindow = function(self)
     UI:Rounded(f, 12, 4, "BACKGROUND", -6):SetColor(unpack(C.trim))
     UI:Rounded(f, 11, 5, "BACKGROUND", -5):SetColor(unpack(C.bg))
     -- Halo en haut, qui suit les coins arrondis.
-    local GH, GA, R = 220, 0.65, 11
+    -- halo : intensité réglable (Options > Apparence, settings.ui.glow, 0 à 2 ; 1 = d'origine)
+    local GH, GA, R = 220, 0.65 * math.max(0, math.min(2, cfg.glow or 1)), 11
     local gr, gg, gb = C.glow[1], C.glow[2], C.glow[3]
     local glow = f:CreateTexture(nil, "BACKGROUND", nil, -4)
     glow:SetPoint("TOPLEFT", 5 + R, -5)
@@ -309,6 +310,20 @@ createWindow = function(self)
         corner:SetSize(R, R)
         corner:SetPoint("TOP" .. side, side == "LEFT" and 5 or -5, -5)
         corner:SetVertexColor(gr, gg, gb, GA)
+    end
+
+    -- fond texturé (Options > Apparence) : texture du jeu très discrète par-dessus le fond uni
+    local BG_TEX = {
+        grain = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        stone = "Interface\\FrameGeneral\\UI-Background-Rock",
+        parchment = "Interface\\QuestFrame\\QuestBG",
+    }
+    if BG_TEX[cfg.bgTexture or ""] then
+        local tx = f:CreateTexture(nil, "BORDER", nil, -8)
+        tx:SetTexture(BG_TEX[cfg.bgTexture])
+        tx:SetPoint("TOPLEFT", 9, -9); tx:SetPoint("BOTTOMRIGHT", -9, 9)
+        if tx.SetDesaturated then tx:SetDesaturated(true) end
+        tx:SetVertexColor(1, 1, 1, cfg.bgTexture == "parchment" and 0.07 or 0.12)
     end
 
     local function startMove() f:StartMoving() end
@@ -334,6 +349,7 @@ createWindow = function(self)
     sep:SetColorTexture(unpack(C.border))
     sep:SetWidth(1)
     sep:SetPoint("TOPRIGHT"); sep:SetPoint("BOTTOMRIGHT")
+    self.sideSep = sep
 
     local tile = CreateFrame("Frame", nil, side)
     tile:SetSize(36, 36)
@@ -647,7 +663,20 @@ createWindow = function(self)
         UI:Refresh()
     end)
 
-    f:SetScript("OnShow", function() UI:Refresh() end)
+    f:SetScript("OnShow", function(s)
+        UI:Refresh()
+        -- animation (Options > Apparence) : fondu à l'ouverture, 0,15 s
+        if WK.DB.global.settings.ui.anim ~= "none" then
+            s:SetAlpha(0)
+            s.fadeT = 0
+            s:SetScript("OnUpdate", function(x, el)
+                x.fadeT = x.fadeT + el
+                local a = math.min(1, x.fadeT / 0.15)
+                x:SetAlpha(a)
+                if a >= 1 then x:SetScript("OnUpdate", nil) end
+            end)
+        end
+    end)
     self:ApplySide()
     self:ShowPage("overview")
     return f
@@ -666,10 +695,25 @@ function UI:ApplySide()
     self.collapseBtn.label:SetShown(not collapsed)
     self.collapseBtn.label:SetText(WK.T("Réduire le menu"))
     self.collapseBtn.icon:SetTexture(UI.MEDIA .. (collapsed and "arrow" or "back"))
-    self.header:SetPoint("TOPLEFT", w + 5, -5)
-    self.pageHost:ClearAllPoints()
-    self.pageHost:SetPoint("TOPLEFT", w + PAD, -TOP)
-    self.pageHost:SetPoint("BOTTOMRIGHT", -PAD, PAD)
+    -- barre latérale à gauche (défaut) ou à droite (Options > Apparence, settings.ui.sideRight)
+    local right = WK.DB.global.settings.ui.sideRight
+    self.side:ClearAllPoints(); self.header:ClearAllPoints(); self.pageHost:ClearAllPoints()
+    if right then
+        self.side:SetPoint("TOPRIGHT", -5, -5); self.side:SetPoint("BOTTOMRIGHT", -5, 5)
+        self.header:SetPoint("TOPLEFT", 5, -5); self.header:SetPoint("TOPRIGHT", -(w + 5), -5)
+        self.pageHost:SetPoint("TOPLEFT", PAD, -TOP)
+        self.pageHost:SetPoint("BOTTOMRIGHT", -(w + PAD), PAD)
+    else
+        self.side:SetPoint("TOPLEFT", 5, -5); self.side:SetPoint("BOTTOMLEFT", 5, 5)
+        self.header:SetPoint("TOPLEFT", w + 5, -5); self.header:SetPoint("TOPRIGHT", -5, -5)
+        self.pageHost:SetPoint("TOPLEFT", w + PAD, -TOP)
+        self.pageHost:SetPoint("BOTTOMRIGHT", -PAD, PAD)
+    end
+    if self.sideSep then
+        self.sideSep:ClearAllPoints()
+        local e = right and "LEFT" or "RIGHT"
+        self.sideSep:SetPoint("TOP" .. e); self.sideSep:SetPoint("BOTTOM" .. e)
+    end
     computePageSize(self.frame:GetWidth(), self.frame:GetHeight())
     for _, item in pairs(self.nav) do item:Refresh() end
 end

@@ -205,8 +205,22 @@ function UI:Progress(parent, height)
             self.fillFrame:Show()
             self.fillFrame:SetWidth(math.max(height, w * math.min(self.value, 1)))
         end
-        if self.color then self.fill:SetColor(unpack(self.color))
-        else local r, g, b = UI:Accent(); self.fill:SetColor(r, g, b, 1) end
+        -- dégradé d'accent (Options > Apparence) : 2e couleur sur les jauges à la couleur de l'accent
+        local r2, g2, b2 = (not self.color) and UI:Accent2()
+        if r2 then
+            if not self.grad then
+                self.grad = self.fillFrame:CreateTexture(nil, "ARTWORK", nil, 2)
+                self.grad:SetAllPoints(self.fillFrame)
+            end
+            local r, g, b = UI:Accent()
+            UI:SetGradient(self.grad, "HORIZONTAL", { r, g, b, 1 }, { r2, g2, b2, 1 })
+            self.grad:Show(); self.fill:Hide()
+        else
+            if self.grad then self.grad:Hide() end
+            self.fill:Show()
+            if self.color then self.fill:SetColor(unpack(self.color))
+            else local r, g, b = UI:Accent(); self.fill:SetColor(r, g, b, 1) end
+        end
     end
     function p:SetValue(v) self.value = v or 0; self:Apply() end
     p:SetScript("OnSizeChanged", function(self) self:Apply() end)
@@ -465,6 +479,7 @@ function UI:Card(parent, title, subtitle, highlight)
     if highlight or UI.cardStyle == "halo" then UI:TopHighlight(f) end
     if title then
         f.title = UI:Text(f, 13, C.text)
+        if UI.CARD_TITLE_FONT then f.title:SetFont(UI.CARD_TITLE_FONT, math.floor(14 * (UI.textScale or 1) + 0.5), "") end
         f.title:SetPoint("TOPLEFT", 16, -14)
         f.title:SetText(title)
         if subtitle then
@@ -932,7 +947,7 @@ function UI:SkinTooltip(tt)
     end
     -- Mêmes couleurs que les cadres (cartes) du thème choisi : fond et bordure.
     sk.border:SetColor(unpack(C.border))
-    sk.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
+    sk.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98 * (WK.DB.global.settings.ui.tipOpacity or 1))
     sk.border:Show(); sk.bg:Show(); sk.accent:Hide()
     hideGameFrame(tt)
     sk.active = true

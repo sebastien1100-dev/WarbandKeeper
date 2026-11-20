@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.92.0", date = "20/11/2026",
+        added = {
+            "Options > Apparence en onglets (Styles, Couleurs, Texte, Formes, Fenêtre) qui tiennent dans la fenêtre sans défiler, l'aperçu en direct toujours à droite.",
+            "Styles prêts : Graphite rose, Nuit bleue, Forêt, Or ancien, Améthyste, Braise (couleur, teinte, arrondi, cartes et police des titres en un clic).",
+            "Couleurs : accent par perso (chaque perso garde sa couleur), dégradé d'accent sur les jauges, intensité du halo de la fenêtre.",
+            "Texte : police des titres à part, contraste des textes secondaires (doux, normal, fort).",
+            "Formes : fond de fenêtre texturé (grain, pierre, parchemin), fondu à l'ouverture (ou aucune animation).",
+            "Fenêtre : barre latérale à gauche, à droite ou en icônes seules ; opacité des infobulles.",
+            "Partager mon style / Coller un style (code WKS1:…) et « Apparence d'origine » (Maj + clic) en bas de la carte.",
+        },
+    },
+    {
         version = "1.91.1", date = "20/11/2026",
         fixed = {
             "Fiche du perso, roue des réglages ouverte : les onglets Fiche / Talents / BiS de la fiche apparaissaient en double au-dessus de ceux des réglages. Ils sont masqués tant que la roue est ouverte ; seuls les onglets des réglages restent, à leur place.",

@@ -58,8 +58,23 @@ function UI:SetGradient(tex, orient, c1, c2)
 end
 
 -- Accent : "theme" (celui du thème), "class" (couleur de classe) ou un index de UI.accents.
+-- Choix d'accent en place : celui de ce perso (accent par perso, Options > Apparence), sinon le général
+function UI:AccentChoice()
+    local cfg = WK.DB.global.settings.ui
+    if cfg.accentPerChar and type(cfg.charAccent) == "table" then
+        local c = cfg.charAccent[WK:CharKey()]
+        if c ~= nil then return c end
+    end
+    return cfg.accent
+end
+-- 2e couleur du dégradé d'accent (jauges), ou nil
+function UI:Accent2()
+    local i = WK.DB.global.settings.ui.accent2
+    local a = type(i) == "number" and self.accents[i]
+    if a then return a[1], a[2], a[3] end
+end
 function UI:Accent()
-    local choice = WK.DB.global.settings.ui.accent
+    local choice = self:AccentChoice()
     local a
     if choice == "class" then
         local _, class = UnitClass("player")
@@ -108,7 +123,13 @@ function UI:DropAccentHooks(owner)
 end
 
 function UI:SetAccent(index)
-    WK.DB.global.settings.ui.accent = index
+    local cfg = WK.DB.global.settings.ui
+    if cfg.accentPerChar then
+        cfg.charAccent = cfg.charAccent or {}
+        cfg.charAccent[WK:CharKey()] = index
+    else
+        cfg.accent = index
+    end
     for _, fn in ipairs(self.accentHooks) do fn() end
 end
 

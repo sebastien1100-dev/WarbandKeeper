@@ -24,7 +24,7 @@ local function AccentDot(parent, key, color, tooltip)
         local r, g, bl = color()
         self.dot:SetVertexColor(r, g, bl, 1)
         self.ring:SetVertexColor(r, g, bl, 1)
-        local sel = WK.DB.global.settings.ui.accent == key
+        local sel = UI:AccentChoice() == key
         self.ring:SetShown(sel)
         self.gapRing:SetShown(sel)
     end
@@ -160,103 +160,302 @@ UI:RegisterPage({
         -- (thèmes : Graphite seulement, plus de choix ni de thème personnalisé)
         function self:RefreshThemes() end
 
-        -- Couleurs, texte, formes, fenêtre : réglages à gauche (groupés), aperçu en direct à droite (la fenêtre
-        -- se reconstruit à chaque changement : l'aperçu montre tout de suite le résultat)
-        local look = card("Couleurs, police et taille", 40 + 600)
+        -- Apparence : onglets Styles / Couleurs / Texte / Formes / Fenêtre à gauche (tient dans la fenêtre sans
+        -- défiler), aperçu en direct à droite, partage du style et retour d'origine en bas. La fenêtre se
+        -- reconstruit à chaque changement : l'aperçu montre tout de suite le résultat.
+        local look = card("Couleurs, police et taille", 470)
         local lc = CreateFrame("Frame", nil, look)
         lc:SetPoint("TOPLEFT", 0, 0); lc:SetPoint("BOTTOMLEFT", 0, 0)
         local rc = CreateFrame("Frame", nil, look)
         rc:SetPoint("TOPLEFT", lc, "TOPRIGHT", 8, 0); rc:SetPoint("BOTTOMRIGHT", -16, 16)
         look:SetScript("OnSizeChanged", function(c, w) lc:SetWidth(math.max(470, math.floor((w or c:GetWidth()) * 0.62))) end)
         lc:SetWidth(520)
-        local function cap(yy, txt)
-            local t = UI:Text(lc, 10, C.muted); t:SetPoint("TOPLEFT", 16, yy); t:SetText(WK.T(txt))
+        local LOOK_TABS = { { "styles", "Styles" }, { "colors", "Couleurs" }, { "text", "Texte" }, { "shapes", "Formes" }, { "window", "Fenêtre" } }
+        local panes = {}
+        for _, t in ipairs(LOOK_TABS) do
+            local pf = CreateFrame("Frame", nil, lc)
+            pf:SetPoint("TOPLEFT", 0, -78); pf:SetPoint("TOPRIGHT", 0, -78); pf:SetHeight(300)
+            pf:Hide()
+            panes[t[1]] = pf
         end
-        cap(-44, "COULEURS")
-        local dots = CreateFrame("Frame", nil, lc)
-        local choices = {
-            { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
-            { "class", function()
-                local _, class = UnitClass("player")
-                local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
-                if c then return c.r, c.g, c.b end
-                return 0.8, 0.8, 0.8
-            end, "Couleur de classe" },
+        local tabSeg
+        local function showTab(k)
+            if not panes[k] then k = "colors" end
+            cfg.lookTab = k
+            for key, pf in pairs(panes) do pf:SetShown(key == k) end
+            if tabSeg then tabSeg:Select(k) end
+        end
+        tabSeg = UI:Segmented(lc, LOOK_TABS, showTab, 28)
+        tabSeg:SetPoint("TOPLEFT", 16, -40)
+        -- un réglage trouvé par la recherche ouvre son onglet
+        self.lookTabOf = function(row)
+            for key, pf in pairs(panes) do
+                local f = row
+                while f do if f == pf then return key end; f = f:GetParent() end
+            end
+        end
+        self.lookShowTab = showTab
+
+        ---------------------------------------------------------------- Styles prêts
+        local STYLES = {
+            { "Graphite rose", { accent = 7, bgTint = nil, rounding = 1, cardStyle = nil, titleFont = nil } },
+            { "Nuit bleue", { accent = 5, bgTint = "cold", rounding = 0.8, cardStyle = "halo", titleFont = nil } },
+            { "Forêt", { accent = 3, bgTint = nil, rounding = 1.2, cardStyle = nil, titleFont = nil } },
+            { "Or ancien", { accent = 1, bgTint = "warm", rounding = 0.6, cardStyle = "halo", titleFont = "morpheus" } },
+            { "Améthyste", { accent = 6, bgTint = "cold", rounding = 1, cardStyle = "flat", titleFont = nil } },
+            { "Braise", { accent = 8, bgTint = "warm", rounding = 0.4, cardStyle = nil, titleFont = nil } },
         }
-        for i, a in ipairs(UI.accents) do
-            table.insert(choices, { i, function() return a[1], a[2], a[3] end, "Couleur fixe" })
+        do
+            local pf = panes.styles
+            local note = UI:Text(pf, 11, C.muted); note:SetPoint("TOPLEFT", 16, -2); note:SetPoint("RIGHT", -16, 0)
+            note:SetJustifyH("LEFT"); if note.SetWordWrap then note:SetWordWrap(true) end
+            note:SetText(WK.T("Un clic applique couleur, teinte du fond, arrondi, style des cartes et police des titres ; règle ensuite le reste dans les autres onglets."))
+            for n, st in ipairs(STYLES) do
+                local a = UI.accents[st[2].accent]
+                local b = CreateFrame("Button", nil, pf)
+                b:SetSize(150, 76)
+                local col, row = (n - 1) % 3, math.floor((n - 1) / 3)
+                b:SetPoint("TOPLEFT", 16 + col * 158, -40 - row * 86)
+                b.edge = UI:Rounded(b, 10, 0, "BACKGROUND", 0); b.edge:SetColor(unpack(C.border))
+                b.bg = UI:Rounded(b, 9, 1, "BACKGROUND", 1); b.bg:SetColor(unpack(C.surface2))
+                local bar = b:CreateTexture(nil, "ARTWORK"); bar:SetColorTexture(a[1], a[2], a[3], 1)
+                bar:SetPoint("TOPLEFT", 12, -12); bar:SetSize(84, 5)
+                local bar2 = b:CreateTexture(nil, "ARTWORK"); bar2:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+                bar2:SetPoint("TOPLEFT", 12, -24); bar2:SetSize(110, 3)
+                local pill = b:CreateTexture(nil, "ARTWORK"); pill:SetColorTexture(a[1], a[2], a[3], 1)
+                pill:SetPoint("TOPLEFT", 12, -34); pill:SetSize(34, 10)
+                local name = UI:Text(b, 11); name:SetPoint("BOTTOMLEFT", 12, 10); name:SetText(WK.T(st[1]))
+                b:SetScript("OnEnter", function(x) x.edge:SetColor(a[1], a[2], a[3], 1) end)
+                b:SetScript("OnLeave", function(x) x.edge:SetColor(unpack(C.border)) end)
+                b:SetScript("OnClick", function()
+                    for k, v in pairs(st[2]) do if k ~= "accent" then cfg[k] = v end end
+                    -- champs absents du style : remis à leur valeur d'origine
+                    for _, k in ipairs({ "bgTint", "cardStyle", "titleFont" }) do if st[2][k] == nil then cfg[k] = nil end end
+                    UI:SetAccent(st[2].accent)
+                    apply()
+                end)
+            end
         end
-        table.insert(choices, { "custom", function()
-            local c = cfg.accentRGB
-            if type(c) == "table" and c[1] then return c[1], c[2], c[3] end
-            return 0.9, 0.9, 0.9
-        end, "Ta couleur (code ci-dessous)" })
-        dots:SetSize(#choices * 26, 26)
-        for i, ch in ipairs(choices) do
-            local d = AccentDot(dots, ch[1], ch[2], ch[3])
-            d:SetScale(0.9)
-            d:SetPoint("LEFT", (i - 1) * 29, 0)
-        end
-        UI:SettingRow(lc, -60, "Couleur d'accent", "T : thème · C : classe · le dernier : ta couleur.", dots, 360)
-        -- ta couleur : code #RRGGBB
-        local hex = UI:Input(lc, 110, 28, "#F58CBA")
-        local function hexOf()
-            local c = cfg.accentRGB
-            if type(c) ~= "table" or not c[1] then return "" end
-            return string.format("#%02X%02X%02X", math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5))
-        end
-        hex:SetText(hexOf())
-        local function setHex(v)
-            local h = (v or ""):gsub("[^%x]", "")
-            if #h == 3 then h = h:sub(1, 1):rep(2) .. h:sub(2, 2):rep(2) .. h:sub(3, 3):rep(2) end
-            if #h ~= 6 then hex:SetText(hexOf()) return end
-            cfg.accentRGB = { tonumber(h:sub(1, 2), 16) / 255, tonumber(h:sub(3, 4), 16) / 255, tonumber(h:sub(5, 6), 16) / 255 }
-            UI:SetAccent("custom")
+
+        ---------------------------------------------------------------- Couleurs
+        do
+            local pf = panes.colors
+            local dots = CreateFrame("Frame", nil, pf)
+            local choices = {
+                { "theme", function() local a = UI.themeAccent or UI.accents[1]; return a[1], a[2], a[3] end, "Accent du thème" },
+                { "class", function()
+                    local _, class = UnitClass("player")
+                    local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+                    if c then return c.r, c.g, c.b end
+                    return 0.8, 0.8, 0.8
+                end, "Couleur de classe" },
+            }
+            for i, a in ipairs(UI.accents) do
+                table.insert(choices, { i, function() return a[1], a[2], a[3] end, "Couleur fixe" })
+            end
+            table.insert(choices, { "custom", function()
+                local c = cfg.accentRGB
+                if type(c) == "table" and c[1] then return c[1], c[2], c[3] end
+                return 0.9, 0.9, 0.9
+            end, "Ta couleur (code ci-dessous)" })
+            dots:SetSize(#choices * 26, 26)
+            for i, ch in ipairs(choices) do
+                local d = AccentDot(dots, ch[1], ch[2], ch[3])
+                d:SetScale(0.9)
+                d:SetPoint("LEFT", (i - 1) * 29, 0)
+            end
+            UI:SettingRow(pf, 0, "Couleur d'accent", "T : thème · C : classe · le dernier : ta couleur.", dots, 360)
+            local hex = UI:Input(pf, 110, 28, "#F58CBA")
+            local function hexOf()
+                local c = cfg.accentRGB
+                if type(c) ~= "table" or not c[1] then return "" end
+                return string.format("#%02X%02X%02X", math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5))
+            end
             hex:SetText(hexOf())
+            hex.onEnter = function(v)
+                local h = (v or ""):gsub("[^%x]", "")
+                if #h == 3 then h = h:sub(1, 1):rep(2) .. h:sub(2, 2):rep(2) .. h:sub(3, 3):rep(2) end
+                if #h ~= 6 then hex:SetText(hexOf()) return end
+                cfg.accentRGB = { tonumber(h:sub(1, 2), 16) / 255, tonumber(h:sub(3, 4), 16) / 255, tonumber(h:sub(5, 6), 16) / 255 }
+                UI:SetAccent("custom")
+                hex:SetText(hexOf())
+            end
+            UI:SettingRow(pf, -46, "Ta couleur", "Code hexadécimal (#RRGGBB), puis Entrée.", hex, 120)
+            -- dégradé : 2e couleur des jauges (aucune, ou une des couleurs fixes)
+            local g2 = CreateFrame("Frame", nil, pf); g2:SetSize(10 * 24, 22)
+            local g2dots = {}
+            for n = 0, #UI.accents do
+                local b = CreateFrame("Button", nil, g2); b:SetSize(20, 20); b:SetPoint("LEFT", n * 24, 0)
+                b.ring = UI:Icon(b, "circle", 20, nil, "BACKGROUND"); b.ring:SetPoint("CENTER")
+                b.dot = UI:Icon(b, n == 0 and "close" or "circle", n == 0 and 12 or 14, nil, "ARTWORK"); b.dot:SetPoint("CENTER")
+                local a = UI.accents[n]
+                if a then b.dot:SetVertexColor(a[1], a[2], a[3], 1) else b.dot:SetVertexColor(unpack(C.muted)) end
+                b:SetScript("OnClick", function() cfg.accent2 = (n > 0) and n or nil; apply() end)
+                g2dots[n] = b
+            end
+            UI:OnAccent(function()
+                for n, b in pairs(g2dots) do
+                    local on = (cfg.accent2 or 0) == n
+                    local r, g, bl = UI:Accent()
+                    b.ring:SetVertexColor(r, g, bl, on and 1 or 0)
+                end
+            end)
+            UI:SettingRow(pf, -92, "Dégradé d'accent", "2e couleur des jauges (barre d'XP, progression…) ; la croix : aucune.", g2, 260)
+            local tintSeg = UI:Segmented(pf, { { "cold", "Froid" }, { "neutral", "Neutre" }, { "warm", "Chaud" } },
+                function(v) cfg.bgTint = (v ~= "neutral") and v or nil; apply() end, 28)
+            tintSeg:Select(cfg.bgTint or "neutral")
+            UI:SettingRow(pf, -138, "Teinte du fond", "Graphite plus bleuté ou plus chaud.", tintSeg, 230)
+            local perChar = UI:Toggle(pf, function() return cfg.accentPerChar end, function(v)
+                cfg.accentPerChar = v or nil
+                if v then cfg.charAccent = cfg.charAccent or {}; cfg.charAccent[WK:CharKey()] = cfg.charAccent[WK:CharKey()] or cfg.accent end
+                UI:SetAccent(UI:AccentChoice())
+            end)
+            UI:SettingRow(pf, -184, "Accent par perso", "Chaque perso garde sa couleur : choisis-la ci-dessus quand il est connecté.", perChar, 80)
+            local glow = UI:Slider(pf, 180, 0, 2, 0.1, function() return cfg.glow or 1 end,
+                function(v) cfg.glow = (math.abs(v - 1) < 0.01) and nil or v; apply() end, "%.1f")
+            UI:SettingRow(pf, -230, "Halo du cadre", "Lueur en haut de la fenêtre (0 : aucune).", glow, 260)
         end
-        hex.onEnter = setHex
-        UI:SettingRow(lc, -110, "Ta couleur", "Code hexadécimal (#RRGGBB), puis Entrée.", hex, 120)
-        local tintSeg = UI:Segmented(lc, { { "cold", "Froid" }, { "neutral", "Neutre" }, { "warm", "Chaud" } },
-            function(v) cfg.bgTint = (v ~= "neutral") and v or nil; apply() end, 28)
-        tintSeg:Select(cfg.bgTint or "neutral")
-        UI:SettingRow(lc, -156, "Teinte du fond", "Graphite plus bleuté ou plus chaud.", tintSeg, 230)
 
-        cap(-210, "TEXTE")
-        local fontOpts = {}
-        for _, f in ipairs(UI.fonts) do table.insert(fontOpts, { f.key, f.label }) end
-        local fontSeg = UI:Segmented(lc, fontOpts, function(v) cfg.font = v; apply(); UI:ApplyGameTooltipFonts() end, 28)
-        fontSeg:Select(cfg.font or "friz")
-        UI:SettingRow(lc, -226, "Police", "Texte de l'interface.", fontSeg, 340)
-        local tsize = UI:Slider(lc, 180, 85, 125, 5,
-            function() return math.floor((cfg.textScale or 1) * 100 + 0.5) end,
-            function(v) cfg.textScale = (v ~= 100) and v / 100 or nil; apply() end, "%d %%")
-        UI:SettingRow(lc, -272, "Taille du texte", "Fenêtre tout de suite ; éléments à l'écran au prochain /reload.", tsize, 260)
+        ---------------------------------------------------------------- Texte
+        do
+            local pf = panes.text
+            local SHORT = { friz = "Friz", arialn = "Arial N.", morpheus = "Morpheus", skurri = "Skurri" }
+            local fontOpts = {}
+            for _, f in ipairs(UI.fonts) do table.insert(fontOpts, { f.key, SHORT[f.key] or f.label }) end
+            local fontSeg = UI:Segmented(pf, fontOpts, function(v) cfg.font = v; apply(); UI:ApplyGameTooltipFonts() end, 28)
+            fontSeg:Select(cfg.font or "friz")
+            UI:SettingRow(pf, 0, "Police", "Texte de l'interface.", fontSeg, 290)
+            local tOpts = { { "same", "Texte" } }
+            for _, f in ipairs(UI.fonts) do table.insert(tOpts, { f.key, SHORT[f.key] or f.label }) end
+            local titleSeg = UI:Segmented(pf, tOpts, function(v) cfg.titleFont = (v ~= "same") and v or nil; apply() end, 28)
+            titleSeg:Select(cfg.titleFont or "same")
+            UI:SettingRow(pf, -46, "Police des titres", "Titres des cartes (Texte : la même que le texte).", titleSeg, 330)
+            local tsize = UI:Slider(pf, 180, 85, 125, 5,
+                function() return math.floor((cfg.textScale or 1) * 100 + 0.5) end,
+                function(v) cfg.textScale = (v ~= 100) and v / 100 or nil; apply() end, "%d %%")
+            UI:SettingRow(pf, -92, "Taille du texte", "Fenêtre tout de suite ; éléments à l'écran au prochain /reload.", tsize, 260)
+            local conSeg = UI:Segmented(pf, { { "soft", "Doux" }, { "normal", "Normal" }, { "strong", "Fort" } },
+                function(v) cfg.contrast = (v ~= "normal") and v or nil; apply() end, 28)
+            conSeg:Select(cfg.contrast or "normal")
+            UI:SettingRow(pf, -138, "Contraste", "Textes secondaires : plus discrets ou plus lisibles.", conSeg, 230)
+        end
 
-        cap(-326, "FORMES")
-        local round = UI:Slider(lc, 180, 0, 1.4, 0.1,
-            function() return cfg.rounding or 1 end,
-            function(v) cfg.rounding = v; apply() end, "%.1f")
-        UI:SettingRow(lc, -342, "Arrondi", "Fenêtres, cartes et boutons (0 : carré).", round, 260)
-        local cardSeg = UI:Segmented(lc, { { "flat", "Plat" }, { "line", "Liseré" }, { "halo", "Halo" } },
-            function(v) cfg.cardStyle = (v ~= "line") and v or nil; apply() end, 28)
-        cardSeg:Select(cfg.cardStyle or "line")
-        UI:SettingRow(lc, -388, "Style des cartes", "Plat : sans bordure · Liseré : fine bordure · Halo : lueur en haut.", cardSeg, 230)
+        ---------------------------------------------------------------- Formes et effets
+        do
+            local pf = panes.shapes
+            local round = UI:Slider(pf, 180, 0, 1.4, 0.1, function() return cfg.rounding or 1 end,
+                function(v) cfg.rounding = v; apply() end, "%.1f")
+            UI:SettingRow(pf, 0, "Arrondi", "Fenêtres, cartes et boutons (0 : carré).", round, 260)
+            local cardSeg = UI:Segmented(pf, { { "flat", "Plat" }, { "line", "Liseré" }, { "halo", "Halo" } },
+                function(v) cfg.cardStyle = (v ~= "line") and v or nil; apply() end, 28)
+            cardSeg:Select(cfg.cardStyle or "line")
+            UI:SettingRow(pf, -46, "Style des cartes", "Plat : sans bordure · Liseré : fine bordure · Halo : lueur en haut.", cardSeg, 230)
+            local bgSeg = UI:Segmented(pf, { { "none", "Uni" }, { "grain", "Grain" }, { "stone", "Pierre" }, { "parchment", "Parchemin" } },
+                function(v) cfg.bgTexture = (v ~= "none") and v or nil; apply() end, 28)
+            bgSeg:Select(cfg.bgTexture or "none")
+            UI:SettingRow(pf, -92, "Fond de fenêtre", "Texture du jeu, très discrète.", bgSeg, 330)
+            local animSeg = UI:Segmented(pf, { { "none", "Aucune" }, { "soft", "Fondu" } },
+                function(v) cfg.anim = (v == "none") and "none" or nil end, 28)
+            animSeg:Select(cfg.anim == "none" and "none" or "soft")
+            UI:SettingRow(pf, -138, "Animation", "Fondu à l'ouverture de la fenêtre.", animSeg, 180)
+        end
 
-        cap(-442, "FENÊTRE")
-        local opacity = UI:Slider(lc, 180, 0.6, 1, 0.05,
-            function() return cfg.opacity or 1 end,
-            function(v) cfg.opacity = v; apply() end, "%.2f")
-        UI:SettingRow(lc, -458, "Opacité du fond", "Appliquée au relâchement.", opacity, 260)
-        local slider = UI:Slider(lc, 180, 0.7, 1.3, 0.05,
-            function() return cfg.scale or 1 end,
-            function(v) UI:ApplyScale(v) end, "%.2fx")
-        UI:SettingRow(lc, -504, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
-        self.portraitToggle = UI:Toggle(lc,
-            function() return cfg.portraits ~= false end,
-            function(v) cfg.portraits = v; WK:NotifyChanged() end)
-        UI:SettingRow(lc, -550, "Portraits des persos",
-            "Vrai portrait pour le perso connecté, race et sexe pour les autres. Coupé : icône de classe.",
-            self.portraitToggle, 80)
+        ---------------------------------------------------------------- Fenêtre
+        do
+            local pf = panes.window
+            local sideSeg = UI:Segmented(pf, { { "left", "À gauche" }, { "right", "À droite" }, { "icons", "Icônes seules" } },
+                function(v)
+                    cfg.sideRight = (v == "right") or nil
+                    cfg.collapsed = (v == "icons") or nil
+                    UI:Relayout()
+                end, 28)
+            sideSeg:Select(cfg.collapsed and "icons" or (cfg.sideRight and "right" or "left"))
+            UI:SettingRow(pf, 0, "Barre latérale", "Côté du menu, ou menu réduit en icônes.", sideSeg, 330)
+            local opacity = UI:Slider(pf, 180, 0.6, 1, 0.05, function() return cfg.opacity or 1 end,
+                function(v) cfg.opacity = v; apply() end, "%.2f")
+            UI:SettingRow(pf, -46, "Opacité du fond", "Appliquée au relâchement.", opacity, 260)
+            local slider = UI:Slider(pf, 180, 0.7, 1.3, 0.05, function() return cfg.scale or 1 end,
+                function(v) UI:ApplyScale(v) end, "%.2fx")
+            UI:SettingRow(pf, -92, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
+            local tip = UI:Slider(pf, 180, 0.6, 1, 0.05, function() return cfg.tipOpacity or 1 end,
+                function(v) cfg.tipOpacity = (v < 0.999) and v or nil end, "%.2f")
+            UI:SettingRow(pf, -138, "Infobulles", "Opacité de leur fond (à la prochaine infobulle).", tip, 260)
+            self.portraitToggle = UI:Toggle(pf, function() return cfg.portraits ~= false end,
+                function(v) cfg.portraits = v; WK:NotifyChanged() end)
+            UI:SettingRow(pf, -184, "Portraits des persos", "Vrai portrait pour le perso connecté, sinon icône de classe.", self.portraitToggle, 80)
+        end
+        showTab(cfg.lookTab or "styles")
+        -- recherche de la barre latérale : un réglage trouvé ouvre son onglet
+        current.tabOf = self.lookTabOf
+        current.showTab = showTab
+
+        ---------------------------------------------------------------- Partage et retour d'origine
+        local STYLE_KEYS = { "accent", "accentRGB", "accent2", "bgTint", "font", "titleFont", "textScale", "rounding", "cardStyle",
+            "opacity", "contrast", "bgTexture", "glow", "anim", "tipOpacity", "sideRight", "collapsed" }
+        local P = WK.modules.Profiles
+        local dlg = CreateFrame("Frame", "WarbandKeeperStyleCode", UIParent)
+        dlg:SetSize(480, 160); dlg:SetPoint("CENTER", 0, 80)
+        dlg:SetFrameStrata("FULLSCREEN_DIALOG"); dlg:EnableMouse(true)
+        UI:Panel(dlg, 12, C.surface, C.border)
+        dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 18, -16)
+        dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 18, -40); dlg.text:SetPoint("RIGHT", -18, 0)
+        dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
+        dlg.input = UI:Input(dlg, 444, 30, ""); dlg.input:SetPoint("TOPLEFT", 18, -76)
+        if dlg.input.edit.SetMaxLetters then dlg.input.edit:SetMaxLetters(0) end
+        dlg.ok = UI:Button(dlg, "Appliquer", nil, 28, "primary"); dlg.ok:SetPoint("BOTTOMRIGHT", -18, 14)
+        dlg.close = UI:Button(dlg, "Fermer", nil, 28, "ghost"); dlg.close:SetPoint("RIGHT", dlg.ok, "LEFT", -8, 0)
+        dlg.close:SetScript("OnClick", function() dlg:Hide() end)
+        dlg:Hide()
+        if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperStyleCode") end
+        local function applyStyle(t)
+            local uc = WK.DB.global.settings.ui -- la table en place (un profil peut l'avoir remplacée)
+            for _, k in ipairs(STYLE_KEYS) do
+                local v = t[k]
+                local ok = v == nil or type(v) == "number" or type(v) == "string" or type(v) == "boolean"
+                    or (k == "accentRGB" and type(v) == "table" and type(v[1]) == "number" and type(v[2]) == "number" and type(v[3]) == "number")
+                if ok then uc[k] = v end
+            end
+            if uc.accentPerChar and uc.charAccent then uc.charAccent[WK:CharKey()] = nil end
+            apply()
+        end
+        UI.ApplyStyleTable = applyStyle
+        local shareBtn = UI:Button(lc, "Partager mon style", nil, 26, "secondary")
+        shareBtn:SetPoint("BOTTOMLEFT", 16, 16)
+        shareBtn:SetScript("OnClick", function()
+            local t = {}
+            for _, k in ipairs(STYLE_KEYS) do t[k] = cfg[k] end
+            if cfg.accentPerChar then t.accent = UI:AccentChoice() end
+            local code = P:EncodeTable(t, "WKS1:")
+            dlg.title:SetText(WK.T("Mon style"))
+            dlg.text:SetText(WK.T("Ctrl+C pour copier, puis « Coller un style » chez un autre perso, un autre compte ou un ami."))
+            dlg.input:SetText(code); dlg.ok:Hide()
+            dlg:Show(); dlg.input.edit:SetFocus(); dlg.input.edit:HighlightText()
+        end)
+        local pasteBtn = UI:Button(lc, "Coller un style", nil, 26, "secondary")
+        pasteBtn:SetPoint("LEFT", shareBtn, "RIGHT", 8, 0)
+        local function doPaste()
+            local t, err = P:DecodeTable(dlg.input:GetText(), "WKS1:")
+            if not t then dlg.text:SetText(err); dlg.text:SetTextColor(unpack(C.warning)) return end
+            dlg:Hide()
+            applyStyle(t)
+        end
+        pasteBtn:SetScript("OnClick", function()
+            dlg.title:SetText(WK.T("Coller un style"))
+            dlg.text:SetText(WK.T("Colle un code de style (WKS1:…) avec Ctrl+V : couleurs, police, formes et fenêtre changent d'un coup."))
+            dlg.text:SetTextColor(unpack(C.muted))
+            dlg.input:SetText(""); dlg.ok:Show()
+            dlg:Show(); dlg.input.edit:SetFocus()
+        end)
+        dlg.ok:SetScript("OnClick", doPaste)
+        dlg.input.onEnter = function() if dlg.ok:IsShown() then doPaste() end end
+        local resetBtn = UI:Button(lc, "Apparence d'origine", nil, 26, "ghost", "refresh")
+        resetBtn:SetPoint("BOTTOMRIGHT", -16, 16)
+        resetBtn.tooltip = "Maj + clic : remet couleurs, police, formes et fenêtre comme au départ."
+        resetBtn:SetScript("OnClick", function()
+            if not IsShiftKeyDown() then return end
+            local t = { accent = "theme" }
+            applyStyle(t)
+        end)
 
         -- aperçu en direct : titre, pastille, carte avec jauge, boutons et interrupteur, aux réglages en place
         local pv = UI:Text(rc, 10, C.muted); pv:SetPoint("TOPLEFT", 6, -44); pv:SetText(WK.T("APERÇU EN DIRECT"))
