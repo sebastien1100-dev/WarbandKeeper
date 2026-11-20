@@ -3758,4 +3758,6 @@ WK.Locales.enUS.text = {
     ["Nom (facultatif)"] = "Name (optional)",
     ["tes réglages, par perso, et leur partage"] = "your settings, per character, and sharing them",
     ["Boutons de rechargement :"] = "Reload buttons:",
+    ["Profil supprimé : ce perso repasse sur « Défaut ». Recharge l'interface pour l'appliquer."] = "Profile deleted: this character goes back to “Default”. Reload the UI to apply it.",
+    ["utilisé par %s"] = "used by %s",
 }

@@ -78,6 +78,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.90.4 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Profils : bouton « Supprimer » (Maj + clic) sur chaque profil sauf « Défaut », y compris celui de ce perso, qui repasse alors sur « Défaut » (rechargement proposé).
+
+### Modifications
+- Options > Profils plus aéré : marges plus larges, chaque profil sur deux lignes (nom, puis « utilisé par… »), et dans Partager le code sur deux lignes, une case plus haute pour coller un code et un trait entre Exporter et Importer.
+
 ## v1.90.3 — 20/11/2026
 
 _Un /reload suffit._

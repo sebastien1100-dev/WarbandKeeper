@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.90.4", date = "20/11/2026",
+        changed = {
+            "Options > Profils plus aéré : marges plus larges, chaque profil sur deux lignes (nom, puis « utilisé par… »), et dans Partager le code sur deux lignes, une case plus haute pour coller un code et un trait entre Exporter et Importer.",
+        },
+        added = {
+            "Profils : bouton « Supprimer » (Maj + clic) sur chaque profil sauf « Défaut », y compris celui de ce perso, qui repasse alors sur « Défaut » (rechargement proposé).",
+        },
+    },
+    {
         version = "1.90.3", date = "20/11/2026",
         fixed = {
             "Icône « Recharger l'interface » de l'en-tête : toujours sans effet. Le bouton qui lance /reload est maintenant posé une strate au-dessus de la fenêtre de l'addon, pour que rien de la fenêtre ne le recouvre.",

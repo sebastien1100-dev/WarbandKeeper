@@ -308,9 +308,15 @@ function M:Import(code, wanted)
 end
 
 -- Supprime un profil (ni « Défaut », ni celui en place). Ses persos reviennent sur « Défaut ».
+-- Celui en place aussi : ce perso repasse sur « Défaut » (ses réglages appliqués, rechargement proposé).
 function M:Delete(name)
     local p = store()
-    if name == DEFAULT or name == p.loaded then return false end
+    if name == DEFAULT or not (p.list[name] or name == p.loaded) then return false end
+    if name == p.loaded then
+        if p.list[DEFAULT] then apply(p.list[DEFAULT]) else apply({}, true) end
+        p.loaded = DEFAULT
+        WK.UI:AskReload(T("Profil supprimé : ce perso repasse sur « Défaut ». Recharge l'interface pour l'appliquer."))
+    end
     p.list[name] = nil
     for key, n in pairs(p.byChar) do if n == name then p.byChar[key] = nil end end
     return true
