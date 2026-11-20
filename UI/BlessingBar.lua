@@ -181,17 +181,25 @@ local function build()
     return f
 end
 
-local function wanted()
+-- barre voulue (réglage) ; wanted() : et affichée maintenant (seul : cachée sauf réglage)
+local function enabled()
     local M = B()
     return M and M:On() and M:Config().bar ~= false
 end
+local function wanted()
+    local M = B()
+    if not enabled() then return false end
+    -- seul (pas de groupe) : barre cachée, sauf réglage « Aussi quand je suis seul »
+    if not M:Config().barSolo and not (IsInGroup and IsInGroup()) then return false end
+    return true
+end
 function UI:RefreshBlessBar()
     if not bar then
-        if inCombat() or not wanted() then return end
+        if inCombat() or not enabled() then return end
         bar = build()
         UI:RegisterHUD("blessBar", bar, {
             label = T("Bénédictions"), default = { -300, 60 }, protected = true,
-            enabled = function() return wanted() end,
+            enabled = function() return enabled() end,
             sample = function(on)
                 bar.sample = on or nil
                 if inCombat() then return end
@@ -236,6 +244,8 @@ ticker:SetScript("OnUpdate", function(s, el)
     if bar and bar:IsShown() and not bar.sample then pcall(UI.RefreshBlessBar, UI) end
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(0.3, function() UI:RefreshBlessBar() end) end)
+-- groupe rejoint ou quitté : la barre apparaît ou se cache (seul : cachée sauf réglage)
+WK:On("GROUP_ROSTER_UPDATE", function() C_Timer.After(0.5, function() if not (InCombatLockdown and InCombatLockdown()) then UI:RefreshBlessBar() end end) end)
 WK:On("PLAYER_LOGIN", function() C_Timer.After(5, function() UI:RefreshBlessBar() end) end)
 
 ---------------------------------------------------------------------------
@@ -245,14 +255,16 @@ local MAXP = 6
 function UI:BuildBlessingCards(card, toggle, dyn)
     local M = B()
     -- réglages
-    local sc = card("Bénédictions", 40 + 4 * 46 + 8, "barre à l'écran et répartition entre paladins")
+    local sc = card("Bénédictions", 40 + 5 * 46 + 8, "barre à l'écran et répartition entre paladins")
     UI:SettingRow(sc, -40, "Barre des bénédictions", "Se place en mode édition. Une ligne par classe du groupe : ta bénédiction, le temps restant, qui n'en a pas ; clic = bénir le suivant.",
         toggle(sc, function() return M:Config().bar ~= false end, function(v) M:Config().bar = v; UI:RefreshBlessBar() end), 80)
+    UI:SettingRow(sc, -86, "Aussi quand je suis seul", "Sinon, la barre n'apparaît qu'en groupe, en raid ou en donjon.",
+        toggle(sc, function() return M:Config().barSolo end, function(v) M:Config().barSolo = v; UI:RefreshBlessBar() end), 80)
     local mode = UI:Segmented(sc, { { "auto", "Automatique" }, { "hand", "À la main" } }, function(v) M:SetMode(v) end, 26)
-    UI:SettingRow(sc, -86, "Répartition", "Automatique : Puissance puis Rois pour guerriers, voleurs et chasseurs ; Rois puis Sagesse pour mages et démonistes ; Sagesse puis Rois pour les soigneurs et le mana ; Rois pour les tanks. Chaque paladin prend ce que les autres n'ont pas. Compatible avec PallyPower.", mode, 230)
-    UI:SettingRow(sc, -132, "Les autres peuvent changer ma ligne", "Sinon, seul le chef du groupe (ou ses assistants) le peut.",
+    UI:SettingRow(sc, -132, "Répartition", "Automatique : Puissance puis Rois pour guerriers, voleurs et chasseurs ; Rois puis Sagesse pour mages et démonistes ; Sagesse puis Rois pour les soigneurs et le mana ; Rois pour les tanks. Chaque paladin prend ce que les autres n'ont pas. Compatible avec PallyPower.", mode, 230)
+    UI:SettingRow(sc, -178, "Les autres peuvent changer ma ligne", "Sinon, seul le chef du groupe (ou ses assistants) le peut.",
         toggle(sc, function() return M:Me().free end, function(v) M:SetFree(v) end), 80)
-    UI:SettingRow(sc, -178, "Salut collectif", "Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks.",
+    UI:SettingRow(sc, -224, "Salut collectif", "Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks.",
         toggle(sc, function() return M:Config().salut ~= false end, function(v) M:Config().salut = v; UI:RefreshBlessBar() end), 80)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 

@@ -4224,4 +4224,6 @@ WK.Locales.enUS.text = {
     ["Liste"] = "List",
     ["Messages éclair"] = "Flash messages",
     ["reste %s XP"] = "%s XP left",
+    ["Aussi quand je suis seul"] = "Also when I am alone",
+    ["Sinon, la barre n'apparaît qu'en groupe, en raid ou en donjon."] = "Otherwise the bar only shows in a group, raid or dungeon.",
 }

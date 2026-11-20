@@ -72,6 +72,7 @@ function M:Config()
     local d = g.blessings
     if d.bar == nil then d.bar = true end
     if d.salut == nil then d.salut = true end
+    if d.barSolo == nil then d.barSolo = false end -- barre affichée quand on est seul
     d.chars = d.chars or {}
     return d
 end

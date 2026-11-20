@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.107.3", date = "20/11/2026",
+        changed = {
+            "Paladin : la barre des bénédictions ne s'affiche plus quand tu es seul, seulement en groupe, en raid ou en donjon. Réglage « Aussi quand je suis seul » (QoL > Classes > Paladin > Bénédictions) pour la garder tout le temps.",
+        },
+    },
+    {
         version = "1.107.2", date = "20/11/2026", restart = true,
         changed = {
             "Rappels : icônes au style de l'addon (« trait clair ») : pictogramme blanc sur disque graphite, liseré de l'état (rouge qui bat, orange, gris). Les buffs à lancer gardent l'icône de leur sort.",
