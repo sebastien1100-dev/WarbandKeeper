@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.86.0", date = "20/11/2026",
+        added = {
+            "Micro menu : raccourci « Recharger l'interface » (comme /reload), à droite par défaut ; tu peux le déplacer ou le masquer comme les autres raccourcis.",
+        },
+    },
+    {
         version = "1.85.1", date = "20/11/2026",
         fixed = {
             "Bandeau des bateaux : l'eau ondule maintenant de façon fluide (dessinée à chaque image, sans arrondi au pixel, vagues plus fines et un peu plus lentes) au lieu d'être saccadée.",

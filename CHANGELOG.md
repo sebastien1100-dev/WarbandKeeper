@@ -78,6 +78,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.86.0 — 20/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Micro menu : raccourci « Recharger l'interface » (comme /reload), à droite par défaut ; tu peux le déplacer ou le masquer comme les autres raccourcis.
+
 ## v1.85.1 — 20/11/2026
 
 _Un /reload suffit._

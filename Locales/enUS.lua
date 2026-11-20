@@ -3661,4 +3661,5 @@ WK.Locales.enUS.text = {
     ["traversée %d %%"] = "crossing %d %%",
     ["Dans les airs"] = "In the air",
     ["En mer"] = "At sea",
+    ["Recharger l'interface"] = "Reload UI",
 }

@@ -266,6 +266,9 @@ local SHORTCUTS = {
           local l = B:StopNear(p.cont, p.wx, p.wy, 200)
           return l and B:Mine(l) and C.positive or nil
       end },
+    -- /reload : recharge l'interface (ReloadUI n'est pas protégée, permise même en combat)
+    { key = "reload", label = "Recharger l'interface", icon = function() return UI.MEDIA .. "refresh" end, tint = true,
+      run = function() if ReloadUI then ReloadUI() end end },
     { key = "menu", label = "Menu du jeu", micro = { "MainMenuMicroButton", "GameMenuMicroButton" },
       icon = function() return UI.MEDIA .. "gear" end, tint = true,
       -- vérifié après le clic : si le bouton du jeu n'a rien ouvert, on ouvre le menu directement
@@ -306,6 +309,10 @@ local function cfg()
     if not q.clock.boatsAdded then
         q.clock.boatsAdded = true
         if q.clock.side.boats == nil then q.clock.side.boats = "R" end
+    end
+    if not q.clock.reloadAdded then
+        q.clock.reloadAdded = true
+        if q.clock.side.reload == nil then q.clock.side.reload = "R" end
     end
     if not q.clock.fishAdded then
         q.clock.fishAdded = true
