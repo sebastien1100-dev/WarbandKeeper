@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.84.3", date = "20/11/2026",
+        changed = {
+            "Bandeau au quai : ton ponton est marqué en bleu sur la frise (au lieu de la couleur d'accent), la prochaine escale reste en vert.",
+        },
+    },
+    {
         version = "1.84.2", date = "20/11/2026",
         fixed = {
             "Bandeau au quai : la frise des escales part toujours de ton ponton (à gauche) vers la prochaine escale (à droite). Avant, elle suivait l'ordre de la ligne et pouvait laisser croire que tu arrivais au lieu de partir ; le sous-titre dit maintenant « Ce ponton · vers Auberdine ».",

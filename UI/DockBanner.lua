@@ -113,12 +113,11 @@ local function build()
         f.rows[i] = r
     end
 
-    -- frise : noms des escales, quai courant (accent) et prochaine escale (vert) ; renvoie le bas de la frise
+    -- frise : noms des escales, quai courant (bleu) et prochaine escale (vert) ; renvoie le bas de la frise
     function f:Route(names, cur, nx, y)
         local n = math.min(#names, MAXN)
         local x0, x1 = 30, W - 30
         local step = n > 1 and (x1 - x0) / (n - 1) or 0
-        local ar, ag, ab = UI:Accent()
         for i = 1, MAXN do
             local shown = i <= n
             self.dots[i]:SetShown(shown); self.names[i]:SetShown(shown)
@@ -131,7 +130,7 @@ local function build()
                 nm:ClearAllPoints(); nm:SetPoint("TOP", self, "TOPLEFT", x, -(y + 16))
                 nm:SetText(names[i])
                 if i == cur then
-                    dot:SetVertexColor(ar, ag, ab, 1); nm:SetTextColor(C.text[1], C.text[2], C.text[3])
+                    dot:SetVertexColor(C.info[1], C.info[2], C.info[3], 1); nm:SetTextColor(C.info[1], C.info[2], C.info[3])
                 elseif i == nx then
                     dot:SetVertexColor(C.positive[1], C.positive[2], C.positive[3], 1); nm:SetTextColor(C.positive[1], C.positive[2], C.positive[3])
                 else
