@@ -110,7 +110,8 @@ local function build()
             self.title:SetText(corpse and T("Retour au corps : cours-y") or T("Corps loin : l'ange gardien est plus rapide"))
             local col = corpse and C.positive or C.gold
             self.time:SetText(T("env.") .. " " .. Clock(st.secs)); self.time:SetTextColor(col[1], col[2], col[3])
-            self.sub:SetText(string.format(T("Corps à %d m, environ %s en courant."), math.floor(st.d + 0.5), Clock(st.secs)))
+            -- le temps est déjà à droite du titre : ici la distance seule
+            self.sub:SetText(string.format(T("Corps à %d m."), math.floor(st.d + 0.5)))
         end
         self.cost:SetText(healerCost())
         self:SetHeight(32 + (self.sub:GetStringHeight() or 12) + 4 + (self.cost:GetStringHeight() or 12) + 12)

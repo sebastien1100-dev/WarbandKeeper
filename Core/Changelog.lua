@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.106.1", date = "20/11/2026",
+        changed = {
+            "Retour au corps : le temps de course n'est plus répété sous le titre ; la ligne dit seulement la distance du corps.",
+        },
+    },
+    {
         version = "1.106.0", date = "20/11/2026",
         added = {
             "Quêtes de groupe annoncées : « groupe » dans « Quêtes de ma zone », « (groupe) » après leur nom dans la tournée et la carte de tournée (265 quêtes repérées : un monstre élite à tuer, ou un objet qui ne tombe que sur des élites).",

@@ -4212,4 +4212,5 @@ WK.Locales.enUS.text = {
     ["groupe"] = "group",
     ["Éviter les quêtes de groupe"] = "Avoid group quests",
     ["Quêtes avec un monstre élite à tuer : décochées dans « Quêtes de ma zone », sans suite prévue dans la tournée. Tu peux toujours les cocher à la main."] = "Quests with an elite monster to kill: unticked in \"Quests in my zone\", no planned follow-up in the tour. You can still tick them by hand.",
+    ["Corps à %d m."] = "Corpse %d m away.",
 }
