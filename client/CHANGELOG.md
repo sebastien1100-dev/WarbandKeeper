@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.9 — 21/11/2026
+
+### Corrections
+- Restauration d'une sauvegarde de réglages : si un fichier est bloqué (jeu ou autre programme) pendant le remplacement, ceux déjà remplacés sont remis comme avant. Tes réglages ne restent plus à moitié restaurés, et le message « rien n'a été changé » dit vrai.
+- « Sauvegarder maintenant » : une erreur (disque plein, fichier bloqué) affiche maintenant un message au lieu de ne rien faire.
+
 ## 1.9.8 — 21/11/2026
 
 ### Corrections

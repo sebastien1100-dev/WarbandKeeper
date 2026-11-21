@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.8"
+CLIENT_VERSION = "1.9.9"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -982,8 +982,39 @@ def restore_backup(addons, path):
             except OSError:
                 pass
         raise
-    for tmp, dest in staged:
-        os.replace(tmp, dest)
+    # Remplacement : chaque fichier actuel est d'abord mis de côté (« .wkold »). Si un remplacement échoue
+    # (fichier bloqué par un autre programme…), ceux déjà remplacés sont remis tels qu'avant : jamais à moitié.
+    done = []  # (dest, old ou None si le fichier n'existait pas)
+    try:
+        for tmp, dest in staged:
+            old = None
+            if os.path.exists(dest):
+                old = dest + ".wkold"
+                shutil.copy2(dest, old)
+            done.append((dest, old))
+            os.replace(tmp, dest)
+    except Exception:
+        for dest, old in reversed(done):
+            try:
+                if old:
+                    os.replace(old, dest)
+                elif os.path.exists(dest):
+                    os.remove(dest)
+            except OSError:
+                pass
+        for tmp, _ in staged:
+            try:
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+            except OSError:
+                pass
+        raise
+    for _, old in done:
+        if old:
+            try:
+                os.remove(old)
+            except OSError:
+                pass
 
 
 def safe_extract(zpath, dest_parent):
@@ -2066,7 +2097,10 @@ class BackupsPage(Page):
         a = self.app
         if not a.addons:
             return a.toast("Choisis d'abord le dossier AddOns dans Réglages.", "warning")
-        p = backup_saved_variables(a.addons, a.installed, a.cfg["keepBackups"], "manuelle")
+        try:
+            p = backup_saved_variables(a.addons, a.installed, a.cfg["keepBackups"], "manuelle")
+        except Exception as e:  # disque plein, fichier bloqué… : toujours un message
+            return a.toast("Sauvegarde impossible : %s" % e, "negative")
         a.toast("Réglages sauvegardés." if p else "Aucun fichier de réglages trouvé (lance le jeu une fois avec l'addon).",
                 "positive" if p else "warning")
         a.state_changed()
