@@ -901,9 +901,22 @@ function M:Pause(v)
     self:Changed()
 end
 
-function M:Skip()
+-- step : étape choisie dans une liste (menu d'une ligne de la tournée) ; sans step, l'étape en cours. Une étape
+-- plus loin est retirée de la tournée ; une étape déjà passée ne change rien. (Avant, le menu de n'importe quelle
+-- ligne passait l'étape en cours.)
+function M:Skip(step)
     local t = self:Tour()
     if not t then return end
+    if type(step) == "table" then
+        local at
+        for i, s in ipairs(t.steps) do if s == step then at = i break end end
+        if not at or at < t.idx then return end
+        if at > t.idx then
+            table.remove(t.steps, at)
+            self:Changed()
+            return
+        end
+    end
     t.idx = t.idx + 1
     self.lastKey = nil
     self:Advance()

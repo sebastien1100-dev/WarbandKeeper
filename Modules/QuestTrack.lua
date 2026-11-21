@@ -211,6 +211,19 @@ function M.NpcName(_, id)
     if not en then return raw end
     return (WK.Lang and WK.Lang() == "frFR" and fr ~= "" and fr) or en
 end
+-- Nom à donner à /targetexact : celui du jeu, donc dans la langue du client (pas celle choisie pour l'addon) ;
+-- nil pour un client ni français ni anglais (nom inconnu : pas de bouton Cibler)
+function M.NpcTargetName(_, id)
+    if not WK:NeedData("quêtes") then return nil end
+    local raw = WK.QuestNpcNames and WK.QuestNpcNames[id]
+    if not raw then return nil end
+    local en, fr = raw:match("^(.-)|(.*)$")
+    if not en then en, fr = raw, nil end
+    local loc = _G.GetLocale and _G.GetLocale() or "enUS"
+    if loc == "frFR" then return (fr and fr ~= "" and fr) or nil end
+    if loc == "enUS" or loc == "enGB" then return en end
+    return nil
+end
 
 function M:InLog(qid)
     return qid and C_QuestLog and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(qid) ~= nil

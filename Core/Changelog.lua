@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.9", date = "21/11/2026",
+        fixed = {
+            "Barre Quête, bouton Cibler : le nom du monstre est pris dans la langue du jeu (pas celle choisie pour l'addon) ; avant, le bouton ne ciblait rien si les deux langues différaient. Sur un client ni français ni anglais, le bouton Cibler n'est plus proposé (nom inconnu).",
+            "Menu d'une ligne de la tournée : « Passer cette étape » retire l'étape cliquée, et non plus l'étape en cours.",
+            "Chaînes de quêtes apprises en jeu : une quête que le PNJ proposait déjà avant le rendu n'est plus prise pour sa suite, et une suite « vue juste après un rendu » ne bloque une quête qu'après deux confirmations.",
+            "Une quête apprise en jeu puis supprimée (répétable, nettoyage) ne reste plus affichée dans sa zone jusqu'au /reload.",
+        },
+    },
+    {
         version = "1.128.8", date = "21/11/2026",
         fixed = {
             "HV : une enchère « appât » (un exemplaire à 1 pc, une erreur de frappe) n'est plus prise pour le cours. Le prix proposé dans notre fenêtre de vente l'ignore, et le prix du scan aussi (garde-fous de vente, objets chers, règle « valeur ») ; les alertes de prix voient toujours le plus bas réel.",

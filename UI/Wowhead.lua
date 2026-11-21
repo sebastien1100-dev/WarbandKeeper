@@ -223,7 +223,10 @@ function UI:QuestMenu(qids, opts)
         add(T("Lien wowhead") .. suffix, function() UI:ShowWowhead("quest", id, nm) end, multi and "" or T("Maj + clic"))
         add(T("Chercher un groupe (chat)") .. suffix, function() UI:QuestGroupMessage(id) end)
     end
-    if opts.step and P and P:Tour() then add(T("Passer cette étape"), function() P:Skip() end) end
+    if opts.step and P and P:Tour() then
+        local st = type(opts.step) == "table" and opts.step or nil -- l'étape de la ligne cliquée
+        add(T("Passer cette étape"), function() P:Skip(st) end)
+    end
     local w = 250
     for i, e in ipairs(entries) do
         local b = item(i)

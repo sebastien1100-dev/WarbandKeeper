@@ -2041,7 +2041,7 @@ UI:RegisterPage({
         self.tsteps = UI:Pool(function()
             local r = CreateFrame("Button", nil, self.tscroll.child)
             r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-            r:SetScript("OnClick", function(s, btn) if s.step and s.step.qids then UI:QuestClick(btn, s.step.qids, { step = true }) end end)
+            r:SetScript("OnClick", function(s, btn) if s.step and s.step.qids then UI:QuestClick(btn, s.step.qids, { step = s.step }) end end)
             r:SetHeight(48)
             r.bg = r:CreateTexture(nil, "BACKGROUND"); r.bg:SetAllPoints()
             r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT"); r.bar:SetPoint("BOTTOMLEFT"); r.bar:SetWidth(3)

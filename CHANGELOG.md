@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.9 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre Quête, bouton Cibler : le nom du monstre est pris dans la langue du jeu (pas celle choisie pour l'addon) ; avant, le bouton ne ciblait rien si les deux langues différaient. Sur un client ni français ni anglais, le bouton Cibler n'est plus proposé (nom inconnu).
+- Menu d'une ligne de la tournée : « Passer cette étape » retire l'étape cliquée, et non plus l'étape en cours.
+- Chaînes de quêtes apprises en jeu : une quête que le PNJ proposait déjà avant le rendu n'est plus prise pour sa suite, et une suite « vue juste après un rendu » ne bloque une quête qu'après deux confirmations.
+- Une quête apprise en jeu puis supprimée (répétable, nettoyage) ne reste plus affichée dans sa zone jusqu'au /reload.
+
 ## v1.128.8 — 21/11/2026
 
 _Un /reload suffit._

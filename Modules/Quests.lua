@@ -227,7 +227,10 @@ function M:State(q, c)
     -- quête d'avant apprise en jeu (WK.DB.global.questChains) quand la base n'en donne aucune
     if not (q.pre or q.preAll or q.prev) then
         local ch = WK.DB.global.questChains and WK.DB.global.questChains[q.id]
-        if ch and ch.pre and not done[ch.pre] and self:Get(ch.pre) then return "locked", ch.pre, "learned" end
+        -- « follow » (quête proposée juste après un rendu) : seulement après 2 confirmations, une seule pouvant venir
+        -- d'un PNJ qui donne plusieurs quêtes sans lien entre elles
+        local sure = ch and (ch.how ~= "follow" or (ch.n or 1) >= 2)
+        if sure and ch.pre and not done[ch.pre] and self:Get(ch.pre) then return "locked", ch.pre, "learned" end
     end
     if q.prev then
         local any, first = false, nil
@@ -436,6 +439,15 @@ function M.AddLearned(byID_, byStarter_, mapOf_, meta)
     for id in pairs(learned) do
         if M:IsRepeatable(id) then learned[id] = nil end
     end
+    -- quête apprise supprimée depuis (répétable, purge) : sa ligne sort aussi de la liste de sa zone (avant, elle
+    -- restait affichée jusqu'au /reload)
+    for id, row in pairs(learnedRows) do
+        if not learned[id] then
+            local list = row.inList and WK.QuestsDB and WK.QuestsDB[row.inList]
+            for k = #(list or {}), 1, -1 do if list[k] == row then table.remove(list, k) end end
+            learnedRows[id] = nil
+        end
+    end
     for id, e in pairs(learned) do
         local base = byID_[id]
         if e.n and (not base or base.learned) then
@@ -601,9 +613,13 @@ local function npcOf(guid)
     return tonumber(id)
 end
 -- offered = { [n°] = true }, titles = { [titre en minuscules] = true } : ce que le PNJ montre
+local offeredBy = {} -- [PNJ] = { at, ids = { [n°] = true } } : dernière liste vue chez ce PNJ (chaînes « follow »)
 function M:NoteOffered(npc, offered, titles)
     if not npc or not WK:FeatureOn("quests") then return {} end
     memo.at = -10
+    local seen = {}
+    for id in pairs(offered or {}) do seen[id] = true end
+    offeredBy[npc] = { at = _G.GetTime and _G.GetTime() or 0, ids = seen }
     local c = WK.DB:Me()
     if not c then return {} end
     c.quests = c.quests or {}
@@ -717,11 +733,15 @@ local function npcNow()
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
     return kind == "Creature" and tonumber(id) or nil
 end
--- PNJ du rendu noté à la fenêtre de récompense (le PNJ est encore là), quête rendue à QUEST_TURNED_IN
+-- PNJ du rendu noté à la fenêtre de récompense (le PNJ est encore là), quête rendue à QUEST_TURNED_IN ; avec la
+-- liste des quêtes que ce PNJ proposait déjà avant le rendu (une quête déjà proposée n'en est pas la suite)
 local rewardNpc
 WK:On("QUEST_COMPLETE", function() rewardNpc = npcNow() end)
 WK:On("QUEST_TURNED_IN", function(qid)
-    M.lastTurnIn = { id = qid, at = _G.time(), t = _G.GetTime and _G.GetTime() or 0, npc = rewardNpc }
+    local before = rewardNpc and offeredBy[rewardNpc]
+    local fresh = before and (_G.GetTime and _G.GetTime() or 0) - before.at < 300
+    M.lastTurnIn = { id = qid, at = _G.time(), t = _G.GetTime and _G.GetTime() or 0, npc = rewardNpc,
+        before = fresh and before.ids or nil }
 end)
 WK:On("QUEST_DETAIL", function()
     local last = M.lastTurnIn
@@ -730,5 +750,6 @@ WK:On("QUEST_DETAIL", function()
     if now - (last.t or 0) > 30 then return end
     local qid = _G.GetQuestID and _G.GetQuestID()
     if not qid or qid == last.id or npcNow() ~= last.npc then return end
+    if last.before and last.before[qid] then return end -- déjà proposée avant le rendu : pas une suite
     M:LearnChain(qid, last.id, "follow")
 end)

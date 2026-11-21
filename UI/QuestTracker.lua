@@ -941,7 +941,7 @@ function UI.QuestActionData(_, s, objs)
     for i, o in ipairs(objs or {}) do
         if not o.done then
             for _, id in ipairs(q:ObjectiveNpcs(o)) do
-                local n = q:NpcName(id)
+                local n = q:NpcTargetName(id) -- nom du jeu (langue du client) pour /targetexact
                 if n then
                     names[#names + 1] = n
                     first = first or { idx = i, have = o.have, need = o.need }
