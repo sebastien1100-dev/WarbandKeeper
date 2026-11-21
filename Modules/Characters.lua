@@ -64,9 +64,17 @@ end
 -- Même perso rangé sous deux clés (nom ou royaume lus autrement par le jeu d'une connexion à l'autre) : la vieille
 -- fiche est fondue dans la fiche courante (ce qui manque y est recopié, ce qui est rangé à son nom ailleurs dans les
 -- données passe au nouveau nom), puis effacée. Reconnu par le GUID du perso, sinon nom complet, classe, race, faction.
+-- Sans GUID des deux côtés, le royaume doit aussi être le même (comparé sans espaces, tirets, apostrophes ni
+-- majuscules : c'est la lecture du nom qui change, pas le royaume) ; sinon deux persos homonymes de deux
+-- royaumes seraient fondus et l'un effacé.
+local function realmKey(r)
+    return type(r) == "string" and r:lower():gsub("[%s%-']", "") or nil
+end
 local function sameChar(a, b)
     if not (a and b) then return false end
     if a.guid and b.guid then return a.guid == b.guid end
+    local ra, rb = realmKey(a.realm), realmKey(b.realm)
+    if not (ra and rb and ra == rb) then return false end
     local na, nb = a.fullName or a.name, b.fullName or b.name
     return na ~= nil and na == nb and a.class ~= nil and a.class == b.class and a.race == b.race and a.faction == b.faction
         and math.abs((a.level or 0) - (b.level or 0)) <= 2

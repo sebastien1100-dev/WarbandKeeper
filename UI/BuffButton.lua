@@ -382,6 +382,9 @@ function UI:RefreshBuffButton()
             mark:Show()
         else mark:Hide() end
     else
+        -- rien à buffer : macro vidée, sinon le raccourci clavier (qui clique aussi un bouton caché) rejouerait
+        -- la dernière (cible changée ou effacée)
+        btn:SetAttribute("macrotext", nil)
         btn:Hide(); mark:Hide()
     end
 end
@@ -416,7 +419,14 @@ function UI:SyncBuffPlates()
 end
 
 -- juste avant le combat (encore permis) : bouton et liseré cachés
-WK:On("PLAYER_REGEN_DISABLED", function() if btn and not btn.sample then btn:Hide(); mark:Hide() end end)
+WK:On("PLAYER_REGEN_DISABLED", function()
+    if btn and not btn.sample then
+        -- dernier moment permis : macro vidée, sinon le raccourci clavier changerait ou effacerait la cible en
+        -- plein combat (/targetexact puis /cleartarget ou /targetlasttarget)
+        btn:SetAttribute("macrotext", nil)
+        btn:Hide(); mark:Hide()
+    end
+end)
 -- la macro dépend de la cible (cible d'avant rendue ou effacée) : remise à jour quand elle change
 WK:On("PLAYER_TARGET_CHANGED", function() if btn and btn:IsShown() and not inCombat() then UI:RefreshBuffButton() end end)
 WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(0.5, function() UI:SyncBuffPlates(); UI:RefreshBuffButton() end) end)

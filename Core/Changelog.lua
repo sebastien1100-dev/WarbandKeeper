@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.1", date = "21/11/2026",
+        fixed = {
+            "Courrier : si la fenêtre d'envoi contient déjà des objets ou de l'or mis à la main, l'envoi automatique (Rangement, règles) est annulé avec un message, au lieu de les envoyer avec la lettre.",
+            "« Désenchanter le suivant » revérifie l'objet juste avant le clic : si la case a changé (tri des sacs, objet déplacé), rien n'est désenchanté et la liste se remet à jour.",
+            "Liens /way du chat : l'addon ne remplace plus la fonction du jeu qui gère les clics sur les liens (cela pouvait faire bloquer des actions en combat tapées dans le chat).",
+            "Bouton « Buffer autour » : la macro est vidée en entrant en combat et quand il n'y a personne à buffer ; le raccourci clavier ne change ou n'efface plus ta cible en combat.",
+            "Fiches en double : deux persos homonymes de deux royaumes différents ne sont plus fusionnés (le royaume doit être le même quand le jeu ne donne pas l'identifiant du perso).",
+            "Rachat automatique : seuls les objets verrouillés à la main sont rachetés ; un objet de quête ou un épique vendu exprès n'est plus racheté avec ton or.",
+            "Maître de classe : « Tout apprendre » et le panneau ne s'activent plus chez un maître d'armes, de familiers ou de monte, et n'achètent que les sorts de ta classe.",
+        },
+    },
+    {
         version = "1.127.0", date = "21/11/2026",
         changed = {
             "Cibler et Objet passent de la carte de tournée à une petite barre « Quête » à placer où tu veux (mode édition) : bouton Cibler (liseré à ta couleur), bouton Objet (avec son nombre et sa recharge), la touche de chaque bouton dans son coin, puis le nom du monstre et l'objectif (« objectif 1/2 · 3/8 · clic droit : suivant »).",

@@ -218,10 +218,27 @@ end
 ---------------------------------------------------------------------------
 -- Chez le maître de classe
 ---------------------------------------------------------------------------
-local function isClassTrainer()
-    if IsTradeskillTrainer and IsTradeskillTrainer() then return false end
-    return GetNumTrainerServices ~= nil
+-- Noms des sorts de la classe (catalogue) : un maître d'armes, de familiers ou de monte n'en enseigne aucun
+local function classNames()
+    local set = {}
+    for _, e in ipairs(M:Catalog(classOf())) do
+        if e.name and not e.name:find("^#") then set[e.name] = true end
+    end
+    return set
 end
+local function isClassTrainer()
+    if _G.IsTradeskillTrainer and _G.IsTradeskillTrainer() then return false end
+    if not (_G.GetNumTrainerServices and _G.GetTrainerServiceInfo) then return false end
+    local set = classNames()
+    -- noms des sorts pas encore chargés par le jeu : on ne peut pas trier, on garde l'ancien comportement
+    if not next(set) then return true end
+    for i = 1, _G.GetNumTrainerServices() do
+        local name, _, category = _G.GetTrainerServiceInfo(i)
+        if name and category ~= "header" and set[name] then return true end
+    end
+    return false
+end
+function M.IsClassTrainer() return isClassTrainer() end
 
 -- Relève les prix et niveaux de toute la liste du maître (sorts disponibles et futurs)
 function M:ReadTrainer()
@@ -244,10 +261,11 @@ end
 function M:TrainerAvailable()
     local out = {}
     if not isClassTrainer() then return out end
-    for i = 1, GetNumTrainerServices() do
-        local name, rank, category = GetTrainerServiceInfo(i)
-        if name and category == "available" then
-            table.insert(out, { index = i, name = name, rank = rank or "", cost = GetTrainerServiceCost and (GetTrainerServiceCost(i)) or 0,
+    local set = classNames()
+    for i = 1, _G.GetNumTrainerServices() do
+        local name, rank, category = _G.GetTrainerServiceInfo(i)
+        if name and category == "available" and (set[name] or not next(set)) then
+            table.insert(out, { index = i, name = name, rank = rank or "", cost = _G.GetTrainerServiceCost and (_G.GetTrainerServiceCost(i)) or 0,
                 skipped = self:Skipped(nil, name) })
         end
     end

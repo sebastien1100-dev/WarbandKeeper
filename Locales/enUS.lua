@@ -2543,7 +2543,7 @@ WK.Locales.enUS.text = {
     ["Touche pour verrouiller"] = "Lock key",
     ["Sur un objet dans les sacs du jeu."] = "On an item in the game's bags.",
     ["Racheter un objet verrouillé vendu par erreur"] = "Buy back a locked item sold by mistake",
-    ["Aussitôt, chez le marchand (onglet de rachat)."] = "Right away, at the vendor (buyback tab).",
+    ["Aussitôt ; seulement les objets verrouillés à la main."] = "Right away; only items locked by hand.",
     ["Confirmer une vente chère"] = "Confirm an expensive sale",
     ["Objet non verrouillé qui vaut bien plus à l'HV qu'au marchand."] = "Unlocked item worth much more at the AH than at the vendor.",
     ["Écart HV / marchand"] = "AH / vendor gap",
@@ -4566,4 +4566,5 @@ WK.Locales.enUS.text = {
     ["Objet de quête"] = "Quest item",
     ["Barre de quête (Cibler, Objet)"] = "Quest bar (Target, Item)",
     ["Monstre de la quête"] = "Quest monster",
+    ["Envoi annulé : la fenêtre d'envoi contient déjà des objets ou de l'or. Vide-la puis recommence."] = "Sending cancelled: the send window already holds items or gold. Empty it and try again.",
 }

@@ -58,8 +58,9 @@ end
 function UI:RefreshClassTrainer()
     local cs = CS()
     local tf = ClassTrainerFrame
-    local isTrade = IsTradeskillTrainer and IsTradeskillTrainer()
-    if not (tf and tf:IsShown()) or isTrade or not WK:FeatureOn("classes") or not cs:Config().panel then
+    -- maître de classe seulement (pas un maître de métier, d'armes, de familiers ou de monte)
+    local isClass = cs.IsClassTrainer and cs.IsClassTrainer()
+    if not (tf and tf:IsShown()) or not isClass or not WK:FeatureOn("classes") or not cs:Config().panel then
         if panel then panel:Hide() end
         return
     end

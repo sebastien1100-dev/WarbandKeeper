@@ -110,7 +110,19 @@ local function buildDE()
     end)
     f.go = secureButton(f, T("Désenchanter le suivant"), 200)
     f.go:SetPoint("BOTTOMLEFT", 14, 40)
-    f.go:SetScript("PreClick", function(s) PH():ExpectDE(s.itemID) end)
+    -- la case visée a pu changer depuis le dernier rafraîchissement (tri, objet déplacé) : on revérifie
+    -- l'objet juste avant le clic, sinon la macro est vidée et rien n'est désenchanté
+    f.go:SetScript("PreClick", function(s)
+        local id = s.bag and WK.Container.Info(s.bag, s.slot)
+        local IL = WK.modules.ItemLock
+        local ok = id and id == s.itemID and not (IL and IL.Reason and IL:Reason(id, s.bag, s.slot))
+        if not ok then
+            if not inCombat() then s:SetAttribute("macrotext", nil) end
+            if f.Refresh then _G.C_Timer.After(0.1, function() f:Refresh() end) end
+            return
+        end
+        PH():ExpectDE(s.itemID)
+    end)
     f.total = UI:Text(f, 11); f.total:SetPoint("LEFT", f.go, "RIGHT", 10, 0)
     f.note:SetText(T("Un clic par objet (le jeu l'exige). Les objets verrouillés sont laissés de côté."))
 
@@ -149,7 +161,7 @@ local function buildDE()
             if nextOne and spell then
                 f.go:SetAttribute("type", "macro")
                 f.go:SetAttribute("macrotext", "/cast " .. spell .. "\n/use " .. nextOne.bag .. " " .. nextOne.slot)
-                f.go.itemID = nextOne.id
+                f.go.itemID, f.go.bag, f.go.slot = nextOne.id, nextOne.bag, nextOne.slot
                 f.go:Show()
             else
                 f.go:SetAttribute("type", nil)

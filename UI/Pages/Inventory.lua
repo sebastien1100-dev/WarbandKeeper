@@ -518,7 +518,7 @@ UI:RegisterPage({
         keyDd:Select(cfg.key or "altmid")
         self.lockKeyDd = keyDd
         UI:SettingRow(sets, -40, "Touche pour verrouiller", "Sur un objet dans les sacs du jeu.", keyDd, 200)
-        UI:SettingRow(sets, -86, "Racheter un objet verrouillé vendu par erreur", "Aussitôt, chez le marchand (onglet de rachat).",
+        UI:SettingRow(sets, -86, "Racheter un objet verrouillé vendu par erreur", "Aussitôt ; seulement les objets verrouillés à la main.",
             UI:Toggle(sets, function() return cfg.rebuy end, function(v) cfg.rebuy = v end), 80)
         UI:SettingRow(sets, -132, "Confirmer une vente chère", "Objet non verrouillé qui vaut bien plus à l'HV qu'au marchand.",
             UI:Toggle(sets, function() return cfg.confirm end, function(v) cfg.confirm = v end), 80)

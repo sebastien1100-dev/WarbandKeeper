@@ -216,6 +216,22 @@ function M:SendNext()
         end
         return
     end
+    -- fenêtre d'envoi déjà remplie à la main (objets, or, contre-remboursement) : ce serait envoyé avec la
+    -- lettre au destinataire de la règle. On n'envoie rien et on prévient.
+    local busySlot = false
+    local getItem = _G.GetSendMailItem
+    for i = 1, (_G.ATTACHMENTS_MAX_SEND or 12) do
+        if getItem and getItem(i) then busySlot = true break end
+    end
+    local money = (_G.GetSendMailMoney and _G.GetSendMailMoney()) or 0
+    local cod = (_G.GetSendMailCOD and _G.GetSendMailCOD()) or 0
+    if busySlot or money > 0 or cod > 0 then
+        for i = #queue, 1, -1 do queue[i] = nil end
+        sending = false
+        WK:Print(T("Envoi annulé : la fenêtre d'envoi contient déjà des objets ou de l'or. Vide-la puis recommence."))
+        refreshWindow()
+        return
+    end
     sending = true
     lastError = nil
     -- les sacs ont pu bouger depuis le plan : seule une case qui contient encore l'objet prévu (non

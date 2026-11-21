@@ -523,14 +523,34 @@ function M:OpenLink(data, button)
     local shift = IsShiftKeyDown and IsShiftKeyDown()
     self:Add(map, x, y, title, { src = "chat", now = not shift })
 end
+-- Clic sur nos liens « addon:wkway:… ». SetItemRef n'est JAMAIS remplacé (le jeu entier passerait par du code
+-- de l'addon et des actions en combat tapées dans le chat seraient bloquées) : on écoute l'évènement « SetItemRef »
+-- que le jeu envoie pour les liens « addon: », et, s'il ne l'envoie pas sur ce client, un hooksecurefunc qui
+-- referme la bulle d'objet ouverte pour ce lien inconnu. Un même clic n'est traité qu'une fois.
+local lastLink, lastAt = nil, 0
+local function onLink(link, button)
+    local data = type(link) == "string" and link:match("^addon:wkway:(.*)$")
+    if not data then return false end
+    local now = GetTime and GetTime() or 0
+    if link == lastLink and now - lastAt < 0.3 then return true end
+    lastLink, lastAt = link, now
+    M:OpenLink(data, button)
+    return true
+end
 local function hookLinks()
-    if M.linksHooked or not SetItemRef then return end
+    if M.linksHooked then return end
     M.linksHooked = true
-    local orig = SetItemRef
-    SetItemRef = function(link, text, button, frame)
-        local data = type(link) == "string" and (link:match("^addon:wkway:(.*)$") or link:match("^wkway:(.*)$"))
-        if data then M:OpenLink(data, button) return end
-        return orig(link, text, button, frame)
+    local reg = _G.EventRegistry
+    if reg and reg.RegisterCallback then
+        pcall(reg.RegisterCallback, reg, "SetItemRef", function(_, link, _, button) onLink(link, button) end, M)
+    end
+    if _G.hooksecurefunc and _G.SetItemRef then
+        _G.hooksecurefunc("SetItemRef", function(link, _, button)
+            if onLink(link, button) or (type(link) == "string" and link:find("^addon:wkway:")) then
+                local tip = _G.ItemRefTooltip
+                if tip and tip.IsShown and tip:IsShown() and tip.Hide then tip:Hide() end
+            end
+        end)
     end
 end
 

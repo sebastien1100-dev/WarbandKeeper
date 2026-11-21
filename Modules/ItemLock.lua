@@ -304,7 +304,9 @@ local function checkBuyback()
     for i = GetNumBuybackItems(), 1, -1 do
         local link = GetBuybackItemLink(i)
         local id = link and WK:ParseItemID(link)
-        if id and M:IsLocked(id) then
+        -- seulement les objets verrouillés à la main : un objet verrouillé par règle (quête, épique, envie…)
+        -- vendu exprès serait sinon racheté à chaque fois, avec ton or et sans clic
+        if id and db().items[id] then
             local price = (GetBuybackItemInfo and select(3, GetBuybackItemInfo(i))) or 0
             if price > GetMoney() then return end
             lastBuy = GetTime()
