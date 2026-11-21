@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.123.2 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes : l'addon proposait de prendre des quêtes que le PNJ ne donne pas encore (souvent le nouveau contenu de WoW Forever, dont la base ne connaît pas les prérequis, comme « Death to the Dragonmaw » chez Howin Kindfeather). En parlant au PNJ, les quêtes qu'il ne montre pas sont maintenant notées « pas encore proposée par le PNJ » et retirées de la tournée. Elles reviennent d'elles-mêmes au niveau suivant ou dès qu'une autre quête est rendue.
+
 ## v1.123.1 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

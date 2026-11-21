@@ -2391,7 +2391,7 @@ UI:RegisterPage({
         for _, q in ipairs(all) do
             if Q:ForChar(q, c) then
                 total = total + 1
-                local st, need = Q:State(q, c)
+                local st, need, why = Q:State(q, c)
                 local keep = (cfg.filter == "all" or (cfg.filter == "done" and st == "done")
                     or (cfg.filter == "todo" and st ~= "done" and st ~= "closed"))
                 if st == "high" and not cfg.high then keep = false end
@@ -2410,6 +2410,9 @@ UI:RegisterPage({
                     local parts = {}
                     if q.skill then table.insert(parts, UI:Hex(C.positive) .. T(q.skill) .. "|r")
                     elseif KIND[q.kind] then table.insert(parts, T(KIND[q.kind])) end
+                    if st == "locked" and why == "notoffered" then
+                        table.insert(parts, T("pas encore proposée par le PNJ"))
+                    end
                     if st == "locked" and need and Q:Get(need) then table.insert(parts, string.format(T("après « %s »"), Q:Name(Q:Get(need))))
                     elseif st == "high" then table.insert(parts, string.format(T("niveau %d requis"), q.req)) end
                     if (q.xp or 0) > 0 then table.insert(parts, q.xp .. " XP") end

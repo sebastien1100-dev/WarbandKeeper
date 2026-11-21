@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.2", date = "21/11/2026",
+        fixed = {
+            "Quêtes : l'addon proposait de prendre des quêtes que le PNJ ne donne pas encore (souvent le nouveau contenu de WoW Forever, dont la base ne connaît pas les prérequis, comme « Death to the Dragonmaw » chez Howin Kindfeather). En parlant au PNJ, les quêtes qu'il ne montre pas sont maintenant notées « pas encore proposée par le PNJ » et retirées de la tournée. Elles reviennent d'elles-mêmes au niveau suivant ou dès qu'une autre quête est rendue.",
+        },
+    },
+    {
         version = "1.123.1", date = "21/11/2026", restart = true,
         changed = {
             "Fenêtre du lien wowhead : bouton « Copier » (icône) à côté du lien, qui le sélectionne et dit quoi faire (le jeu ne laisse pas un addon écrire dans le presse-papiers : il reste Ctrl+C). Les boutons « Version anglaise / française » et « Mettre dans le chat » ont maintenant leur icône (globe, bulle).",

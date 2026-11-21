@@ -109,7 +109,12 @@ local function store()
             ok = true
         end
     end
-    if ok then c.quests.done = done end
+    if ok then
+        c.quests.done = done
+        local n = 0
+        for _ in pairs(done) do n = n + 1 end
+        c.quests.doneN = n -- quêtes faites : une de plus = les quêtes « pas proposées » sont retentées
+    end
     local log = {}
     local n = (C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries())
               or (GetNumQuestLogEntries and GetNumQuestLogEntries()) or 0
@@ -202,6 +207,10 @@ function M:State(q, c)
         if v and v < (q.rep[2] or 0) then return "closed", "rep" end
     end
     if (q.req or 0) > (c.level or 1) then return "high" end
+    -- le donneur ne l'a pas proposée (appris en jeu) : prérequis inconnu de la base, retentée au niveau suivant
+    -- ou dès qu'une autre quête est rendue
+    local no = qs.notOffered and qs.notOffered[q.id]
+    if no and no.lvl == (c.level or 1) and no.n == (qs.doneN or 0) then return "locked", nil, "notoffered" end
     if q.preAll then
         for _, p in ipairs(q.preAll) do if not done[p] and self:Get(p) then return "locked", p end end
     end
@@ -510,3 +519,77 @@ function M:LearnedCount()
     for _, e in pairs(learnStore()) do if e.n then n = n + 1 end end
     return n
 end
+
+---------------------------------------------------------------------------
+-- Quêtes que le donneur ne propose pas (prérequis absents de la base, fréquent pour le nouveau contenu de
+-- WoW Forever) : à l'ouverture du dialogue d'un PNJ (GOSSIP_SHOW, QUEST_GREETING), ses quêtes que la base dit
+-- disponibles mais qu'il ne montre pas sont notées dans characters[perso].quests.notOffered[n°] = { lvl, n, at }
+-- (niveau et nombre de quêtes faites du moment) ; State les dit « locked » tant que ni le niveau ni le nombre
+-- de quêtes faites n'ont changé. La tournée les retire (elles reviennent d'elles-mêmes quand elles sont proposées).
+---------------------------------------------------------------------------
+local function npcOf(guid)
+    if type(guid) ~= "string" then return nil end
+    local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
+    if kind ~= "Creature" then return nil end
+    return tonumber(id)
+end
+-- offered = { [n°] = true }, titles = { [titre en minuscules] = true } : ce que le PNJ montre
+function M:NoteOffered(npc, offered, titles)
+    if not npc or not WK:FeatureOn("quests") then return {} end
+    local c = WK.DB:Me()
+    if not c then return {} end
+    c.quests = c.quests or {}
+    local qs = c.quests
+    qs.notOffered = qs.notOffered or {}
+    local lvl = (_G.UnitLevel and _G.UnitLevel("player")) or c.level or 1
+    local newly = {}
+    for _, q in ipairs(self:ByStarter(npc)) do
+        local shown = offered[q.id] or (q.name and titles[q.name:lower()]) or (q.nameFR and titles[q.nameFR:lower()])
+        if shown then
+            qs.notOffered[q.id] = nil
+        elseif self:ForChar(q, c) then
+            local was = qs.notOffered[q.id]
+            qs.notOffered[q.id] = nil
+            if self:State(q, c) == "avail" then
+                qs.notOffered[q.id] = { lvl = lvl, n = qs.doneN or 0, at = _G.time() }
+                if not was or was.lvl ~= lvl or was.n ~= (qs.doneN or 0) then table.insert(newly, q) end
+            end
+        end
+    end
+    if #newly > 0 then
+        local P = WK.modules.QuestPlan
+        if P then
+            P:Invalidate()
+            if P:Tour() and P.Reorder then pcall(P.Reorder, P) end
+        end
+        local names = {}
+        for _, q in ipairs(newly) do names[#names + 1] = self:Name(q) end
+        WK:Print(string.format(
+            T("Pas encore proposée par ce PNJ : %s (une quête d'avant doit manquer) ; retirée de la tournée."),
+            table.concat(names, ", ")))
+        WK:NotifyChanged()
+    end
+    return newly
+end
+WK:On("GOSSIP_SHOW", function()
+    local G = _G.C_GossipInfo
+    if not (G and G.GetAvailableQuests) then return end
+    local ok, avail = pcall(G.GetAvailableQuests)
+    if not ok or type(avail) ~= "table" then return end
+    local offered, titles = {}, {}
+    for _, q in ipairs(avail) do
+        if q.questID then offered[q.questID] = true end
+        if q.title then titles[q.title:lower()] = true end
+    end
+    M:NoteOffered(npcOf(_G.UnitGUID and _G.UnitGUID("npc")), offered, titles)
+end)
+WK:On("QUEST_GREETING", function()
+    local offered, titles = {}, {}
+    for i = 1, (_G.GetNumAvailableQuests and _G.GetNumAvailableQuests() or 0) do
+        local qid = _G.GetAvailableQuestInfo and select(5, _G.GetAvailableQuestInfo(i))
+        if qid then offered[qid] = true end
+        local t = _G.GetAvailableTitle and _G.GetAvailableTitle(i)
+        if t then titles[t:lower()] = true end
+    end
+    M:NoteOffered(npcOf(_G.UnitGUID and _G.UnitGUID("npc")), offered, titles)
+end)

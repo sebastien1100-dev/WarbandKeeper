@@ -4521,4 +4521,6 @@ WK.Locales.enUS.text = {
     ["Copier le lien"] = "Copy the link",
     ["Lien copié : colle-le dans ton navigateur"] = "Link copied: paste it in your browser",
     ["Lien sélectionné : Ctrl+C, puis colle-le dans ton navigateur"] = "Link selected: Ctrl+C, then paste it in your browser",
+    ["Pas encore proposée par ce PNJ : %s (une quête d'avant doit manquer) ; retirée de la tournée."] = "Not offered yet by this NPC: %s (a previous quest must be missing); removed from the route.",
+    ["pas encore proposée par le PNJ"] = "not offered by the NPC yet",
 }
