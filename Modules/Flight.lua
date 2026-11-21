@@ -623,3 +623,114 @@ WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(3, function() pcall(chec
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(6, function() pcall(checkZone) end) end)
 -- appris à l'instant (carte des vols ouverte chez ce maître) : plus de rappel pour la zone
 WK:On("TAXIMAP_CLOSED", function() if WK.UI.RefreshFlightPoints then WK.UI:RefreshFlightPoints() end end)
+
+---------------------------------------------------------------------------
+-- Tableau des voyages, onglet Vols (UI/BoatBoard.lua) : relais du jeu (WK.FlightGame) de la faction du perso
+-- (maître de vol de PlacesDB à moins de 200 m, ou relais connu), connus ou non d'après characters[perso].taxi ;
+-- trajets du jeu entre eux ; destinations depuis un relais connu par les trajets connus (Dijkstra).
+---------------------------------------------------------------------------
+local fmCache = {}
+local function flightMasters(fac)
+    local key = fac or "-"
+    if fmCache[key] then return fmCache[key] end
+    local G = WK.modules.Guide
+    local out = {}
+    for map, list in pairs(WK.PlacesDB or {}) do
+        for _, e in ipairs(list) do
+            if G.band(e[3], FM_BIT) ~= 0 and (not e[5] or not fac or e[5] == fac) then
+                local c, wx, wy = G.ToWorld(map, e[1] / 100, e[2] / 100)
+                if c then table.insert(out, { map = map, e = e, cont = c, wx = wx, wy = wy, x = e[1] / 100, y = e[2] / 100 }) end
+            end
+        end
+    end
+    fmCache[key] = out
+    return out
+end
+local function mapName(map)
+    local info = map and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(map)
+    return info and info.name or nil
+end
+-- { nodes = { [n°] = node }, list = { node }, edges = { { a, b, pts, len, known } } } ;
+-- node = { id, key, c, x, y, known, name, zone, full (nom du jeu), fm (maître de vol, cible de guidage) }
+function M:BoardData(charKey)
+    local FG = WK.FlightGame
+    if not FG then return nil end
+    local c = (charKey and WK.DB.global.characters[charKey]) or WK.DB:Me() or {}
+    local taxi = c.taxi or {}
+    local fac = c.faction == "Alliance" and "A" or c.faction == "Horde" and "H" or factionLetter()
+    local fms = flightMasters(fac)
+    local nodes, list = {}, {}
+    for id, n in pairs(FG.nodes) do
+        local fm, fd
+        for _, m in ipairs(fms) do
+            if m.cont == n[1] then
+                local d = (m.wx - n[2]) ^ 2 + (m.wy - n[3]) ^ 2
+                if d < 200 * 200 and (not fd or d < fd) then fm, fd = m, d end
+            end
+        end
+        local kname, kd
+        for name, t in pairs(taxi) do
+            if t[1] == n[1] then
+                local d = (t[2] - n[2]) ^ 2 + (t[3] - n[3]) ^ 2
+                if d < 150 * 150 and (not kd or d < kd) then kname, kd = name, d end
+            end
+        end
+        if fm or kname then
+            local short, zone
+            if kname then short, zone = kname:match("^([^,]+),%s*(.+)$") end
+            local node = { id = id, key = "n" .. id, c = n[1], x = n[2], y = n[3], known = kname ~= nil, full = kname, fm = fm,
+                zone = zone or (fm and mapName(fm.map)) or "?" }
+            node.name = short or kname or (fm and WK.modules.Guide:PlaceName(fm)) or ("#" .. id)
+            nodes[id] = node
+            table.insert(list, node)
+        end
+    end
+    local edges, seen = {}, {}
+    for key, pts in pairs(FG.paths) do
+        local a, b = key:match("^(%d+)%-(%d+)$")
+        a, b = tonumber(a), tonumber(b)
+        local k2 = math.min(a, b) .. "-" .. math.max(a, b)
+        if nodes[a] and nodes[b] and not seen[k2] then
+            seen[k2] = true
+            table.insert(edges, { a = nodes[a], b = nodes[b], pts = pts, len = pathLen(pts), known = nodes[a].known and nodes[b].known })
+        end
+    end
+    return { nodes = nodes, list = list, edges = edges, faction = fac }
+end
+-- destinations depuis un relais connu, par les trajets connus : { { node, len, chain = { nodes }, secs, learned } }
+function M:Destinations(data, from)
+    if not (data and from and from.known) then return {} end
+    local adj = {}
+    for _, e in ipairs(data.edges) do
+        if e.known then
+            adj[e.a] = adj[e.a] or {}; adj[e.b] = adj[e.b] or {}
+            table.insert(adj[e.a], { n = e.b, len = e.len }); table.insert(adj[e.b], { n = e.a, len = e.len })
+        end
+    end
+    local dist, prev, done = { [from] = 0 }, {}, {}
+    while true do
+        local u, du
+        for n, dn in pairs(dist) do if not done[n] and (not du or dn < du) then u, du = n, dn end end
+        if not u then break end
+        done[u] = true
+        for _, e in ipairs(adj[u] or {}) do
+            local nd = du + e.len
+            if not dist[e.n] or nd < dist[e.n] then dist[e.n], prev[e.n] = nd, u end
+        end
+    end
+    local out = {}
+    local routes = db().routes or {}
+    for n, d in pairs(dist) do
+        if n ~= from then
+            local chain, x = {}, n
+            while x and x ~= from do table.insert(chain, 1, x); x = prev[x] end
+            table.insert(chain, 1, from)
+            local secs = from.full and n.full and routes[from.full .. "|" .. n.full]
+            local learned = secs ~= nil
+            secs = secs or self:Estimate(d)
+            table.insert(out, { node = n, len = d, chain = chain, secs = secs, learned = learned })
+        end
+    end
+    table.sort(out, function(a, b) return a.len < b.len end)
+    return out
+end

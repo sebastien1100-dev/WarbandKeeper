@@ -3,6 +3,16 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.0 — 21/11/2026
+
+### Ajouts
+- Réglages > Données : nouvelle carte « Ajouts récents », les dernières mises à jour de la base de quêtes (QuestieDB et ses corrections WoW Forever) avec leurs étiquettes +N quêtes, N corrigées, N retirées. Un clic sur une ligne montre ses quêtes (niveau, nom).
+- Tableau de bord : ligne « Nouvelles données » dans « À surveiller » quand la base a été mise à jour depuis la version installée (avec le total des quêtes ajoutées et corrigées).
+- Notification Windows « données mises à jour » quand une nouvelle mise à jour de la base est publiée (Réglages > Notifications, case « Nouvelles données » ; heures calmes respectées).
+
+### Modifications
+- « Dernière vérification » des données à l'heure de ton PC (au lieu de l'heure UTC).
+
 ## 1.8.8 — 20/11/2026
 
 ### Modifications

@@ -85,8 +85,20 @@ def diff(old, new):
             chg.append([i, " ".join(codes)])
     if not (add or rem or chg):
         return None
-    return {"src": "QuestieDB", "total": len(new), "add": add,
-            "rem": [[i, old[i][1].get(3) or old[i][1].get(2) or ""] for i in rem], "chg": chg}
+    e = {"src": "QuestieDB", "total": len(new), "add": add,
+         "rem": [[i, old[i][1].get(3) or old[i][1].get(2) or ""] for i in rem], "chg": chg}
+    fill_names(e, new)
+    return e
+
+
+def fill_names(e, rows):
+    """noms et niveaux des quêtes ajoutées ou corrigées (pour le client PC, ligne « -- DATA » seulement)"""
+    q = e.get("q") or {}
+    for i in list(e.get("add", [])) + [c[0] for c in e.get("chg", [])]:
+        r = rows.get(i)
+        if r and str(i) not in q:
+            q[str(i)] = [r[1].get(3) or r[1].get(2) or "", r[1].get(4) or 0]
+    e["q"] = q
 
 
 def read_history(path=OUT):
@@ -129,10 +141,14 @@ def write(history, path=OUT):
 def record(old_text, new_text, when=None, src=None, path=OUT):
     """ajoute l'entrée de cette génération ; rend l'entrée (ou None)"""
     history = read_history(path)
-    e = diff(parse_rows(old_text), parse_rows(new_text))
+    new_rows = parse_rows(new_text)
+    # anciennes entrées sans noms : complétées avec la base d'aujourd'hui
+    for h in history:
+        if "q" not in h:
+            fill_names(h, new_rows)
+    e = diff(parse_rows(old_text), new_rows)
     if e is None:
-        if not os.path.exists(path):
-            write(history, path)
+        write(history, path)
         return None
     e["t"] = int(when or time.time())
     if src:

@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.8.8"
+CLIENT_VERSION = "1.9.0"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 API = "https://api.github.com/repos/" + REPO
@@ -63,10 +63,12 @@ def data_dir():
 CONFIG_PATH = os.path.join(data_dir(), "config.json")
 DEFAULTS = {"addons": "", "token": "", "checkEvery": "1h", "autoInstall": False, "backupBefore": True, "keepBackups": 15,
             "startup": False,
-            "notify": {"auctions": True, "cds": True, "rest": False, "mail": True, "quiet": True}, "notified": {}}
+            "notify": {"auctions": True, "cds": True, "rest": False, "mail": True, "data": True, "quiet": True}, "notified": {},
+            "dataNotified": 0}
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 RUN_NAME = "WarbandKeeperClient"
 SCHEDULE_PATH = "tools/update_schedule.json"
+DATALOG_PATH = "Modules/DataLogDB.lua"  # journal des données (ligne « -- DATA » en JSON, tools/datalog.py)
 DATA_WORKFLOW = "update-data.yml"
 
 
@@ -586,6 +588,34 @@ def due_notifications(dash, opts, now=None):
     return out
 
 
+def gh_time(s):
+    """date GitHub (« 2026-11-21T04:57:24Z ») » secondes, ou 0"""
+    from datetime import timezone
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
+    except (TypeError, ValueError):
+        return 0
+
+
+def data_sum(entries):
+    """total des quêtes ajoutées, corrigées, retirées d'une liste d'entrées du journal des données"""
+    a = sum(len(e.get("add") or []) for e in entries)
+    c = sum(len(e.get("chg") or []) for e in entries)
+    r = sum(len(e.get("rem") or []) for e in entries)
+    return a, c, r
+
+
+def data_text(a, c, r):
+    parts = []
+    if a:
+        parts.append("+%d quête%s" % (a, "s" if a > 1 else ""))
+    if c:
+        parts.append("%d corrigée%s" % (c, "s" if c > 1 else ""))
+    if r:
+        parts.append("%d retirée%s" % (r, "s" if r > 1 else ""))
+    return ", ".join(parts) or "rien"
+
+
 def quiet_now(now=None):
     h = datetime.fromtimestamp(now or time.time()).hour
     return h >= 23 or h < 8
@@ -734,6 +764,16 @@ class GitHub:
 
     def run_data_update(self):
         self.api("POST", "/actions/workflows/%s/dispatches" % DATA_WORKFLOW, {"ref": "main"})
+
+    def data_log(self):
+        """Journal des données (Modules/DataLogDB.lua sur main) : [{ t, src, total, add, chg, rem, q }], le plus récent en tête."""
+        import base64
+        r = self.api("GET", "/contents/" + DATALOG_PATH + "?ref=main")
+        txt = base64.b64decode(r["content"]).decode("utf-8")
+        for line in txt.splitlines():
+            if line.startswith("-- DATA "):
+                return json.loads(line[8:])
+        return []
 
     def last_data_run(self):
         r = self.api("GET", "/actions/workflows/%s/runs?per_page=1" % DATA_WORKFLOW)
@@ -1388,7 +1428,7 @@ class DashPage(Page):
 
     def fill(self, force=False):
         dash = read_dash(self.app.addons)
-        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30))
+        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30), id(self.app.dataLog), self.app.installed)
         if key == self.key and not force:
             return
         self.key = key
@@ -1499,6 +1539,9 @@ class DashPage(Page):
         rows = []  # (rang, couleur du point, texte, droite, couleur de droite)
         for a in soon:
             rows.append((1, C["warning"], "Enchère : %s x%d (%s)" % (a.get("name"), a.get("qty") or 1, a.get("char")), until_text(a.get("exp")), "warning"))
+        pend = self.app.pending_data()
+        if pend:
+            rows.append((1, C["accent"], "Nouvelles données : %s" % data_text(*data_sum(pend)), "à installer", "accent"))
         for m in mail:
             left = (m.get("exp") or 0) - now
             urgent = 0 < left < 3 * 86400
@@ -1552,6 +1595,7 @@ class NotifyPanel:
              ("cds", "Recharges de métier prêtes", "transmutation, étoffe lunaire, sel raffiné…"),
              ("rest", "Repos plein", "un perso arrive à 150 % d'XP de repos"),
              ("mail", "Courrier qui va être renvoyé", "moins de 3 jours avant expiration"),
+             ("data", "Nouvelles données", "la base de quêtes a été mise à jour (QuestieDB) : ce qui arrive"),
              ("quiet", "Heures calmes", "rien entre 23 h et 8 h (les notifications attendent le matin)")]
 
     def __init__(self, app, parent):
@@ -1946,6 +1990,79 @@ class SettingsPage(Page):
         self.dataInfo = label(d.body, "", fg="muted", font="small", wraplength=560)
         self.dataInfo.pack(anchor="w", pady=(8, 0))
         self.loaded = False
+        # journal des données (Modules/DataLogDB.lua) : les dernières mises à jour, clic = leurs quêtes
+        lc = Card(tab["data"], "Ajouts récents", "journal des données de la base de quêtes")
+        lc.pack(fill="x", pady=(10, 0))
+        self.logRows = tk.Frame(lc.body, bg=C["surface"])
+        self.logRows.pack(fill="x")
+        self.logOpen, self.logKey = None, None
+
+    @staticmethod
+    def tint(col, a=0.18):
+        """couleur mêlée au fond des cartes (étiquettes)"""
+        bg = C["surface2"]
+        c = [int(col[i:i + 2], 16) for i in (1, 3, 5)]
+        b = [int(bg[i:i + 2], 16) for i in (1, 3, 5)]
+        return "#%02x%02x%02x" % tuple(int(b[i] + (c[i] - b[i]) * a) for i in range(3))
+
+    def fill_log(self, force=False):
+        log = self.app.dataLog or []
+        key = (id(log), self.logOpen)
+        if key == self.logKey and not force:
+            return
+        self.logKey = key
+        for w in self.logRows.winfo_children():
+            w.destroy()
+        if not log:
+            label(self.logRows, "Rien à montrer pour l'instant (jeton nécessaire, lu avec la vérification des versions).",
+                  fg="muted", font="small").pack(anchor="w")
+            return
+        for e in log[:3]:
+            row = tk.Frame(self.logRows, bg=C["surface2"], cursor="hand2")
+            row.pack(fill="x", pady=2)
+            when = datetime.fromtimestamp(e.get("t") or 0).strftime("%d/%m %H:%M")
+            items = [label(row, when, fg="muted", font="small", width=12)]
+            items[0].pack(side="left", padx=(10, 6), pady=6)
+            for n, txt, col in ((len(e.get("add") or []), "+%d quêtes", C["positive"]),
+                                (len(e.get("chg") or []), "%d corrigées", C["warning"]),
+                                (len(e.get("rem") or []), "%d retirées", C["negative"])):
+                if n:
+                    t = tk.Label(row, text=txt % n, bg=self.tint(col), fg=col, font=App.fonts["smallb"], padx=7)
+                    t.pack(side="left", padx=(0, 6), pady=6)
+                    items.append(t)
+            src = label(row, e.get("src") or "", fg="dim", font="small")
+            src.pack(side="left", padx=(4, 0))
+            opened = self.logOpen == e.get("t")
+            arrow = label(row, "▾" if opened else "▸", fg="accent" if opened else "muted", font="small")
+            arrow.pack(side="right", padx=10)
+            items += [row, src, arrow]
+
+            def toggle(_ev=None, t=e.get("t")):
+                self.logOpen = None if self.logOpen == t else t
+                self.fill_log()
+            for w in items:
+                w.bind("<Button-1>", toggle)
+            if opened:
+                q = e.get("q") or {}
+                ids = [i for i in (e.get("add") or [])] + [c[0] for c in (e.get("chg") or [])]
+                shown = 0
+                for i in ids:
+                    info = q.get(str(i))
+                    if not info:
+                        continue
+                    if shown >= 5:
+                        break
+                    shown += 1
+                    ql = tk.Frame(self.logRows, bg=C["surface"])
+                    ql.pack(fill="x", padx=(96, 0))
+                    label(ql, str(info[1] or ""), fg="warning", font="smallb", width=3).pack(side="left")
+                    label(ql, info[0], font="small").pack(side="left", padx=(6, 0))
+                    if i not in (e.get("add") or []):
+                        label(ql, "corrigée", fg="warning", font="small").pack(side="left", padx=(8, 0))
+                rest = len(ids) - shown
+                if rest > 0:
+                    label(self.logRows, "+ %d autres (détail dans l'onglet Journal de la page Quêtes, en jeu)" % rest,
+                          fg="dim", font="small").pack(anchor="w", padx=(96, 0), pady=(0, 4))
 
     def set_tab(self, key):
         if key not in self.tabFrames:
@@ -1958,8 +2075,10 @@ class SettingsPage(Page):
             else:
                 f.pack_forget()
         self.tabBar.refresh()
-        if key == "data" and not self.loaded:
-            self.load_schedule()
+        if key == "data":
+            self.fill_log()
+            if not self.loaded:
+                self.load_schedule()
 
     def on_show(self):
         self.set_tab(self.app.cfg.get("settingsTab", "folder"))
@@ -1995,10 +2114,8 @@ class SettingsPage(Page):
     def run_text(run):
         if not run:
             return "Pas encore de vérification enregistrée."
-        when = (run.get("run_started_at") or run.get("created_at") or "")[:16].replace("T", " à ")
-        if when:
-            dt = when.split(" à ")
-            when = "/".join(reversed(dt[0].split("-"))) + " à " + dt[1] + " (UTC)"
+        t = gh_time(run.get("run_started_at") or run.get("created_at"))
+        when = datetime.fromtimestamp(t).strftime("%d/%m à %H:%M") if t else "?"
         state = {"success": "réussie", "failure": "échouée", "cancelled": "annulée"}.get(run.get("conclusion"), "en cours")
         return "Dernière vérification : %s, %s." % (when, state)
 
@@ -2088,6 +2205,8 @@ class SettingsPage(Page):
 
     def on_state(self):
         a = self.app
+        if a.cfg.get("settingsTab") == "data":
+            self.fill_log()
         if a.addons:
             v = installed_version(a.addons)
             self.pathInfo.configure(text=("Warband Keeper %s installé ici." % v) if v else "Addon pas encore installé ici.", fg=C["muted"])
@@ -2116,6 +2235,7 @@ class App:
         self.cfg = load_config()
         self.releases, self.error, self.busy = [], None, False
         self.clientNotes, self.lastCheck, self.notified = None, 0, None
+        self.dataLog = []  # journal des données (GitHub.data_log), lu avec les versions
         self.q = queue.Queue()
         self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
@@ -2147,6 +2267,46 @@ class App:
         except Exception as e:
             print("notifications", e)
         self.root.after(60000, self.tick)
+
+    def pending_data(self):
+        """Mises à jour de la base arrivées après la version installée : liste d'entrées du journal."""
+        inst = self.installed
+        if not (inst and self.dataLog):
+            return []
+        t0 = 0
+        for r in self.releases:
+            if r.get("tag_name", "").lstrip("v") == inst:
+                t0 = gh_time(r.get("published_at") or r.get("created_at"))
+                break
+        if not t0:
+            return []
+        return [e for e in self.dataLog if (e.get("t") or 0) > t0 + 60]
+
+    def check_data_notify(self, now=None):
+        """Notification Windows quand une nouvelle mise à jour des données est publiée (une fois par mise à jour)."""
+        opts = self.cfg.get("notify") or {}
+        if not self.dataLog:
+            return None
+        newest = max((e.get("t") or 0) for e in self.dataLog)
+        last = self.cfg.get("dataNotified") or 0
+        if newest <= last:
+            return None
+        now = now or time.time()
+        if not last or not opts.get("data") or now - newest > 3 * 86400:
+            # première lecture, notifications coupées ou mise à jour ancienne : notée sans prévenir
+            self.cfg["dataNotified"] = newest
+            save_config(self.cfg)
+            return None
+        if opts.get("quiet") and quiet_now(now):
+            return None  # attend le matin (prochaine vérification)
+        fresh = [e for e in self.dataLog if (e.get("t") or 0) > last]
+        title = "Warband Keeper · données mises à jour"
+        text = data_text(*data_sum(fresh)) + ". Installe la nouvelle version depuis le client."
+        self.cfg["dataNotified"] = newest
+        save_config(self.cfg)
+        if not notify_windows(title, text):
+            self.toast("%s · %s" % (title, text), "accent")
+        return title, text
 
     def check_notifications(self, now=None):
         """Notifications Windows dues d'après le résumé de l'addon (une seule fois chacune)."""
@@ -2588,7 +2748,11 @@ class App:
                         break
             except (NetError, OSError):
                 pass
-            return rels, notes
+            try:
+                log = g.data_log()
+            except (NetError, OSError, ValueError, KeyError):
+                log = None
+            return rels, notes, log
 
         def done(res, err):
             self.lastCheck = time.time()
@@ -2596,8 +2760,11 @@ class App:
                 self.error = str(err) if isinstance(err, NetError) else "Erreur : %s" % err
                 home.set_busy(self.error)
             else:
-                self.releases, notes = res
+                self.releases, notes, log = res
                 self.clientNotes = notes or self.clientNotes
+                if log is not None:
+                    self.dataLog = log
+                    self.check_data_notify()
                 home.set_busy("Vérifié à %s." % datetime.now().strftime("%H:%M"))
             self.state_changed()
             inst = self.installed

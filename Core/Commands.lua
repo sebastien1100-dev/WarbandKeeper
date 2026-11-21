@@ -111,7 +111,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         for name, err in pairs(WK.UI.mapErrors or {}) do any = true; WK:Print("  " .. name .. " : " .. plainBars(err)) end
         if not any then WK:Print("  " .. WK.T("aucune erreur de calque")) end
     elseif cmd == "bateaux" or cmd == "boats" then
-        WK.UI:ToggleBoatBoard()
+        WK.UI:ToggleBoatBoard(nil, "boat")
+    elseif cmd == "vols" or cmd == "flights" then
+        WK.UI:ToggleBoatBoard(nil, "flight")
     elseif cmd == "de" or cmd == "desenchanter" or cmd == "disenchant" then
         WK.UI:ToggleDEPanel()
     elseif cmd == "bateau" or cmd == "boat" then

@@ -138,6 +138,24 @@ local function build()
     f.all = UI:Button(f, "Toutes les lignes", nil, 22, "ghost")
     f.all:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
     f.all:SetScript("OnClick", function() f.showAll = not f.showAll; f:Refresh() end)
+    -- onglets Bateaux / Vols (onglet retenu dans settings.ui.boardTab)
+    f.mode = WK.DB.global.settings.ui.boardTab == "flight" and "flight" or "boat"
+    f.tabs = UI:Segmented(f, { { "boat", "Bateaux" }, { "flight", "Vols" } }, function(v)
+        f.mode = v; WK.DB.global.settings.ui.boardTab = v; f.hoverRoute = nil; f:Refresh()
+    end, 24)
+    f.tabs:SetPoint("LEFT", f.title, "RIGHT", 18, 0)
+    f.tabs:Select(f.mode)
+    -- Vols : carte de quel perso
+    local function charOpts()
+        local opts = {}
+        for key, c in pairs(WK.DB.global.characters) do table.insert(opts, { key, WK:CharName(c, key), { UI:ClassColor(c.class) } }) end
+        table.sort(opts, function(a, b) return a[2] < b[2] end)
+        return opts
+    end
+    f.charKey = WK:CharKey()
+    f.charDd = UI:Dropdown(f, 170, 24, charOpts(), function(v) f.charKey = v; f.selNode = nil; f:Refresh() end)
+    f.charDd:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
+    f.charOpts = charOpts
 
     -----------------------------------------------------------------------
     -- carte à gauche
@@ -200,9 +218,21 @@ local function build()
         d.label = UI:Text(dotF, 10)
         -- contour : lisible sur les couleurs de la carte du jeu
         d.label:SetFont(UI.FONT, 10, "OUTLINE")
-        d:SetScript("OnClick", function(s) f.selected = s.port.name; f:Refresh() end)
+        d:SetScript("OnClick", function(s)
+            if s.node then f.selNode = s.node.id; f:Refresh() return end
+            f.selected = s.port.name; f:Refresh()
+        end)
         d:SetScript("OnEnter", function(s)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
+            if s.node then
+                local n = s.node
+                GameTooltip:SetText(n.name, 1, 1, 1)
+                GameTooltip:AddLine(n.zone or "", 0.7, 0.7, 0.7)
+                if n.known then GameTooltip:AddLine(T("Clic : destinations depuis ce point"), 0.6, 0.6, 0.6)
+                else GameTooltip:AddLine(T("Point de vol pas encore appris par ce perso"), 0.6, 0.6, 0.6) end
+                GameTooltip:Show()
+                return
+            end
             GameTooltip:SetText(s.port.name, 1, 1, 1)
             for _, dd in ipairs(s.port.dests) do GameTooltip:AddDoubleLine(dd.text, dd.vessel, 0.85, 0.85, 0.85, 0.6, 0.6, 0.6) end
             GameTooltip:AddLine(T("Clic : voir ce port dans la liste"), 0.6, 0.6, 0.6)
@@ -251,6 +281,15 @@ local function build()
                 end
             end
             if placed >= 2 then
+                self.proj = function(c, x, y)
+                    if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
+                    local ok, _, mp = pcall(C_Map.GetMapPosFromWorldPos, c, CreateVector2D(x, y), AZEROTH)
+                    if not (ok and mp) then return nil end
+                    local u, v = mp.x, mp.y
+                    if mp.GetXY then u, v = mp:GetXY() end
+                    if not (u and u > 0 and u < 1 and v > 0 and v < 1) then return nil end
+                    return ox + u * wa.lw * sc, oy + v * wa.lh * sc
+                end
                 -- île hors des cartes du jeu (Zephras…) : au milieu de la mer, en haut
                 local k = 0
                 for _, p in ipairs(list) do
@@ -315,6 +354,12 @@ local function build()
             pos[p.name] = { x, y }
         end
         self.pos = pos
+        self.proj = function(c, x, y)
+            local b = self.boxes[c]
+            if not b then return nil end
+            local u, v = unitPos(c, x, y, b.art)
+            return b.x + b.ox + u * b.sc, b.y + b.oy + v * b.sc
+        end
     end
 
     -- courbes des lignes et quais
@@ -382,7 +427,7 @@ local function build()
             if xy then
                 k = k + 1
                 local d = dot(k)
-                d.port = p
+                d.port, d.node = p, nil
                 d:ClearAllPoints(); d:SetPoint("CENTER", dotF, "TOPLEFT", xy[1], -xy[2])
                 local near = p.d and p.d < 300
                 local isSel = p.name == sel
@@ -426,6 +471,14 @@ local function build()
         if r.vessel.SetWordWrap then r.vessel:SetWordWrap(false) end
         r:SetScript("OnEnter", function(s)
             s.bg:SetColor(unpack(C.hover)); s.bg:Show()
+            if s.fl then
+                if s.fl.chain then f.hoverRoute = s.fl.chain; f:DrawFlights() end
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:SetText(s.fl.title or "", 1, 1, 1)
+                for _, l in ipairs(s.fl.tip or {}) do GameTooltip:AddLine(l, 0.75, 0.75, 0.75, true) end
+                GameTooltip:Show()
+                return
+            end
             if not s.dd then return end
             f.hoverLine = s.dd.l; f:DrawMap(f.list)
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
@@ -436,9 +489,16 @@ local function build()
         end)
         r:SetScript("OnLeave", function(s)
             s.bg:Hide(); GameTooltip:Hide()
+            if s.fl then
+                if f.hoverRoute then f.hoverRoute = nil; f:DrawFlights() end
+                return
+            end
             if f.hoverLine then f.hoverLine = nil; f:DrawMap(f.list) end
         end)
-        r:SetScript("OnClick", function(s) if s.dd then guideTo(s.dd) end end)
+        r:SetScript("OnClick", function(s)
+            if s.fl then if s.fl.onClick then s.fl.onClick() end return end
+            if s.dd then guideTo(s.dd) end
+        end)
         card.rows[k] = r
         return r
     end
@@ -453,12 +513,20 @@ local function build()
         c.meta = UI:Text(c, 10, C.muted); c.meta:SetPoint("TOPRIGHT", -12, -11); c.meta:SetJustifyH("RIGHT")
         c.rows = {}
         -- clic sur l'encart : ce port devient le port choisi (ses lignes brillent sur la carte)
-        c:SetScript("OnClick", function(s) if s.port then f.selected = s.port.name; f:Refresh() end end)
+        c:SetScript("OnClick", function(s)
+            if s.onClick then s.onClick() return end
+            if s.port then f.selected = s.port.name; f:Refresh() end
+        end)
         f.cards[idx] = c
         return c
     end
 
     function f:Refresh()
+        if self.mode == "flight" then return self:RefreshFlights() end
+        self.title:SetText(T("Ports et destinations"))
+        self.logo:SetTexture(UI.MEDIA .. "boat")
+        self.sub:SetText(T("Clic sur un quai de la carte ou une destination de la liste"))
+        self.all:Show(); self.charDd:Hide()
         local list = ports(self.showAll, self.selected)
         if not self.selected and list[1] then self.selected = list[1].name; list = ports(self.showAll, self.selected) end
         self.list = list
@@ -467,7 +535,8 @@ local function build()
         local ar, ag, ab = UI:Accent()
         for idx, p in ipairs(list) do
             local c = card(idx)
-            c.port = p
+            c.port, c.onClick = p, nil
+            if c.barBg then c.barBg:Hide(); c.barFill:Hide() end
             c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y); c:SetPoint("RIGHT", root, "RIGHT", 0, 0)
             local isSel = p.name == self.selected
             c.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
@@ -478,7 +547,7 @@ local function build()
             local ry = 32
             for k, dd in ipairs(p.dests) do
                 local r = destRow(c, k)
-                r.dd = dd
+                r.dd, r.fl = dd, nil
                 r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -ry); r:SetPoint("RIGHT", c, "RIGHT", -6, 0)
                 local col = dd.kind == "zeppelin" and zepCol() or C.positive
                 r.ring:SetVertexColor(col[1], col[2], col[3], 1)
@@ -502,12 +571,255 @@ local function build()
         self:Layout(list)
         self:DrawMap(list)
     end
+    -----------------------------------------------------------------------
+    -- Onglet Vols : relais du jeu (connus en clair, à apprendre grisés), trajets du jeu (connus en bleu,
+    -- pas encore possibles en pointillés gris), destinations depuis le relais choisi (le plus proche d'office)
+    -----------------------------------------------------------------------
+    local function durText(d)
+        local parts = {}
+        if d.secs then table.insert(parts, string.format(T("env. %d min"), math.max(1, math.floor(d.secs / 60 + 0.5)))) end
+        local relays = #d.chain - 2
+        if relays == 1 then table.insert(parts, string.format(T("via %s"), d.chain[2].name))
+        elseif relays > 1 then table.insert(parts, string.format(T("%d relais"), relays)) end
+        return table.concat(parts, " · ")
+    end
+    local function guideNode(n)
+        if n and n.fm then WK.modules.Guide:Start(n.fm, "Maître de vol", "flight") end
+    end
+    local function nodeDist(n, p0)
+        if not (p0 and p0.cont == n.c) then return nil end
+        return dist(n.x, n.y, p0.wx, p0.wy)
+    end
+
+    function f:DrawFlights()
+        local data = self.fdata
+        for k = 1, self.nLines do self.lines[k]:Hide() end
+        self.nLines = 0
+        if not (data and self.proj) then return end
+        -- trajet survolé (ou départ choisi) : relais à relais en accent
+        local hot = {}
+        if self.hoverRoute then
+            for hi = 1, #self.hoverRoute - 1 do
+                local a, b = self.hoverRoute[hi], self.hoverRoute[hi + 1]
+                hot[math.min(a.id, b.id) .. "-" .. math.max(a.id, b.id)] = true
+            end
+        end
+        local info = C.info
+        local blue = { info[1] + (1 - info[1]) * 0.3, info[2] + (1 - info[2]) * 0.3, info[3] + (1 - info[3]) * 0.3 }
+        local ar, ag, ab = UI:Accent()
+        for pass = 1, 3 do -- inconnus dessous, connus au-dessus, trajet survolé tout en haut
+            for _, e in ipairs(data.edges) do
+                local key = math.min(e.a.id, e.b.id) .. "-" .. math.max(e.a.id, e.b.id)
+                local isHot = hot[key]
+                if (pass == 1 and not e.known) or (pass == 2 and e.known and not isHot) or (pass == 3 and isHot) then
+                    local pts = e.pts
+                    local step = math.max(2, math.floor(#pts / 24) * 2) -- 12 morceaux au plus
+                    local px, py = self.proj(e.a.c, pts[1], pts[2])
+                    local n = 0
+                    for pi = 1 + step, #pts + step - 1, step do
+                        local j = math.min(pi, #pts - 1)
+                        local qx, qy = self.proj(e.a.c, pts[j], pts[j + 1])
+                        if px and qx then
+                            n = n + 1
+                            if isHot then
+                                seg(px, py, qx, qy, 9, ar, ag, ab, 0.25)
+                                seg(px, py, qx, qy, 5, 0, 0, 0, 0.6)
+                                seg(px, py, qx, qy, 3, ar, ag, ab, 1)
+                            elseif e.known then
+                                seg(px, py, qx, qy, 4, 0, 0, 0, 0.55)
+                                seg(px, py, qx, qy, 2, blue[1], blue[2], blue[3], (self.hoverRoute and 0.45) or 0.9)
+                            elseif n % 2 == 1 then
+                                seg(px, py, qx, qy, 2, 0.32, 0.33, 0.37, 0.8)
+                            end
+                        end
+                        px, py = qx, qy
+                    end
+                end
+            end
+        end
+        -- relais : départ en accent (halo), connus blancs avec nom, à apprendre gris sans nom
+        local k = 0
+        for _, nd in ipairs(data.list) do
+            local x, y = self.proj(nd.c, nd.x, nd.y)
+            if x then
+                k = k + 1
+                local d = dot(k)
+                d.port, d.node = nil, nd
+                d:ClearAllPoints(); d:SetPoint("CENTER", dotF, "TOPLEFT", x, -y)
+                local isFrom = self.fromNode == nd
+                local col = isFrom and { ar, ag, ab } or (nd.known and C.text or { 0.42, 0.43, 0.47 })
+                d.dot:SetVertexColor(col[1], col[2], col[3], 1)
+                d.dot:SetSize(nd.known and 8 or 6, nd.known and 8 or 6)
+                d.halo:SetVertexColor(col[1], col[2], col[3], 0.3); d.halo:SetShown(isFrom)
+                d.label:ClearAllPoints()
+                local right = x < MAP_W - 110
+                if right then d.label:SetPoint("LEFT", d, "RIGHT", 1, 5) else d.label:SetPoint("RIGHT", d, "LEFT", -1, 5) end
+                d.label:SetJustifyH(right and "LEFT" or "RIGHT")
+                d.label:SetText(nd.name)
+                d.label:SetTextColor(col[1], col[2], col[3], 1)
+                d:Show(); d.label:SetShown(nd.known or isFrom)
+            end
+        end
+        for n = k + 1, #self.dots do self.dots[n]:Hide(); self.dots[n].label:Hide() end
+    end
+
+    function f:RefreshFlights()
+        local F = WK.modules.Flight
+        self.title:SetText(T("Points de vol"))
+        self.logo:SetTexture(UI.MEDIA .. "griffon")
+        self.sub:SetText(T("Clic sur un point : destinations depuis ce point · grisé : pas encore appris"))
+        self.all:Hide()
+        self.charDd:SetOptions(self.charOpts()); self.charDd:Select(self.charKey); self.charDd:Show()
+        local data = F and F.BoardData and F:BoardData(self.charKey)
+        self.fdata = data
+        local p0 = self.charKey == WK:CharKey() and WK.modules.Guide:PlayerPos() or nil
+        -- départ : relais choisi, sinon le relais connu le plus proche
+        local from = data and self.selNode and data.nodes[self.selNode]
+        if data and not from then
+            local bd
+            for _, n in ipairs(data.list) do
+                if n.known then
+                    local d = nodeDist(n, p0) or 1e9
+                    if not bd or d < bd then from, bd = n, d end
+                end
+            end
+        end
+        self.fromNode = from
+        local dests = data and F:Destinations(data, from) or {}
+        -- carte
+        local items = {}
+        for _, n in ipairs(data and data.list or {}) do items[#items + 1] = { name = n.key, c = n.c, x = n.x, y = n.y } end
+        self:Layout(items)
+        self:DrawFlights()
+        -- liste
+        local ar, ag, ab = UI:Accent()
+        local y, idx = 0, 0
+        local function newCard(name, meta, sel)
+            idx = idx + 1
+            local c = card(idx)
+            c.port, c.onClick = nil, nil
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y); c:SetPoint("RIGHT", root, "RIGHT", 0, 0)
+            c.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+            if sel then c.edge:SetColor(ar, ag, ab, 1) else c.edge:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1) end
+            c.name:SetText(name); c.meta:SetText(meta or "")
+            if c.barBg then c.barBg:Hide(); c.barFill:Hide() end
+            for _, r in ipairs(c.rows) do r:Hide() end
+            c:Show()
+            return c
+        end
+        local function row(c, k, ry, fl, ringCol, text, right, dim)
+            local r = destRow(c, k)
+            r.dd, r.fl = nil, fl
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -ry); r:SetPoint("RIGHT", c, "RIGHT", -6, 0)
+            r.ring:SetVertexColor(ringCol[1], ringCol[2], ringCol[3], dim and 0.45 or 1)
+            r.icon:SetTexture(UI.MEDIA .. "griffon"); r.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+            r.text:SetText(text); r.text:SetTextColor(unpack(dim and C.muted or C.text))
+            r.vessel:SetText(right or "")
+            r:Show()
+        end
+        local function finish(c, ry) local h = ry + 8; c:SetHeight(h); y = y + h + PORT_GAP end
+        if not data or not next(data.nodes) then
+            local c = newCard(T("Points de vol"), "")
+            c.meta:SetText(""); finish(c, 30)
+        else
+            -- 1. départ et destinations (survol : trajet sur la carte)
+            if from then
+                local c = newCard(string.format(T("Depuis %s"), from.name), from.zone, true)
+                local ry = 32
+                if #dests == 0 then
+                    row(c, 1, ry, { title = from.name }, C.muted, T("Aucune destination connue d'ici"), "", true); ry = ry + DEST_H
+                end
+                for k, d in ipairs(dests) do
+                    if k > 14 then break end
+                    row(c, k, ry, { chain = d.chain, title = d.node.name,
+                        tip = { d.node.zone, durText(d), T("Clic : guidage vers le maître de vol de départ") },
+                        onClick = function() guideNode(from) end }, C.info, d.node.name, durText(d))
+                    ry = ry + DEST_H
+                end
+                finish(c, ry)
+            else
+                local c = newCard(T("Aucun point de vol connu"), "")
+                row(c, 1, 32, { title = "" }, C.muted, T("Ouvre la carte d'un maître de vol pour noter tes points"), "", true)
+                finish(c, 32 + DEST_H)
+            end
+            -- 2. par continent puis par zone (la plus proche en haut) : connus en vert, à apprendre grisés
+            local conts = {}
+            for _, n in ipairs(data.list) do
+                local ct = conts[n.c]
+                if not ct then ct = { c = n.c, zones = {}, total = 0, known = 0 }; conts[n.c] = ct end
+                ct.total = ct.total + 1
+                if n.known then ct.known = ct.known + 1 end
+                local z = ct.zones[n.zone]
+                if not z then z = { name = n.zone, nodes = {} }; ct.zones[n.zone] = z end
+                table.insert(z.nodes, n)
+                local d = nodeDist(n, p0)
+                if d and (not z.d or d < z.d) then z.d = d end
+            end
+            local clist = {}
+            for _, ct in pairs(conts) do table.insert(clist, ct) end
+            table.sort(clist, function(a, b)
+                local am, bm = p0 and a.c == p0.cont, p0 and b.c == p0.cont
+                if am ~= bm then return am and true or false end
+                return a.c > b.c
+            end)
+            for _, ct in ipairs(clist) do
+                local cname = ct.c == 1 and T("Kalimdor") or ct.c == 0 and T("Royaumes de l'Est") or T("Autres terres")
+                local c = newCard(cname, string.format(T("%d / %d points connus"), ct.known, ct.total))
+                if not c.barBg then
+                    c.barBg = c:CreateTexture(nil, "ARTWORK"); c.barFill = c:CreateTexture(nil, "OVERLAY")
+                end
+                c.barBg:ClearAllPoints(); c.barBg:SetPoint("TOPLEFT", 12, -32); c.barBg:SetPoint("TOPRIGHT", -12, -32); c.barBg:SetHeight(5)
+                c.barBg:SetColorTexture(C.surface[1], C.surface[2], C.surface[3], 1); c.barBg:Show()
+                c.barFill:ClearAllPoints(); c.barFill:SetPoint("TOPLEFT", c.barBg, "TOPLEFT"); c.barFill:SetHeight(5)
+                c.barFill:SetWidth(math.max(1, (LIST_W - 36) * ct.known / math.max(1, ct.total)))
+                c.barFill:SetColorTexture(C.info[1], C.info[2], C.info[3], 1); c.barFill:Show()
+                finish(c, 36)
+                local zl = {}
+                for _, z in pairs(ct.zones) do table.insert(zl, z) end
+                table.sort(zl, function(a, b)
+                    if (a.d ~= nil) ~= (b.d ~= nil) then return a.d ~= nil end
+                    if a.d and b.d then return a.d < b.d end
+                    return a.name < b.name
+                end)
+                for _, z in ipairs(zl) do
+                    local here = z.d and z.d < 1500
+                    local zc = newCard(z.name, z.d and distText(z.d) or "", false)
+                    if here then zc.meta:SetText(T("tu es ici")) end
+                    table.sort(z.nodes, function(a, b) if a.known ~= b.known then return a.known end return a.name < b.name end)
+                    local ry = 32
+                    for k, n in ipairs(z.nodes) do
+                        if n.known then
+                            row(zc, k, ry, { title = n.name, tip = { n.zone, T("Clic : destinations depuis ce point") },
+                                onClick = function() self.selNode = n.id; self:Refresh() end },
+                                (n == from) and { ar, ag, ab } or C.positive, n.name, (n == from) and T("départ") or T("connu"))
+                        else
+                            local d = nodeDist(n, p0)
+                            row(zc, k, ry, { title = n.name, tip = { n.zone, T("Point de vol pas encore appris par ce perso"), T("Clic : guidage vers ce maître de vol") },
+                                onClick = function() guideNode(n) end },
+                                C.muted, n.name, T("à apprendre") .. (d and (" · " .. distText(d)) or ""), true)
+                        end
+                        ry = ry + DEST_H
+                    end
+                    finish(zc, ry)
+                end
+            end
+        end
+        for k = idx + 1, #self.cards do self.cards[k]:Hide() end
+        root:SetHeight(math.max(1, y))
+        if self.scroll.UpdateBar then self.scroll:UpdateBar() end
+    end
     f:Hide()
     if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperBoatBoard") end
     return f
 end
 
-function UI:ToggleBoatBoard(show)
+-- mode : « boat » ou « flight » (onglet ouvert), sinon le dernier
+function UI:ToggleBoatBoard(show, mode)
     if not board then board = build() end
-    if show == true or not board:IsShown() then board.selected = nil; board:Refresh(); board:Show(); board:Raise() else board:Hide() end
+    if mode then board.mode = mode; board.tabs:Select(mode); WK.DB.global.settings.ui.boardTab = mode end
+    if show == true or not board:IsShown() then
+        board.selected, board.selNode = nil, nil
+        board.charKey = WK:CharKey()
+        board:Refresh(); board:Show(); board:Raise()
+    else board:Hide() end
 end

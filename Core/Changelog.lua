@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.116.0", date = "21/11/2026",
+        added = {
+            "Tableau des voyages : onglets Bateaux et Vols (raccourci « Bateaux » du micro menu, /wk bateaux, /wk vols). Vols : points de vol de ta faction sur la carte d'Azeroth, connus en blanc avec leur nom, à apprendre en gris ; trajets du jeu (connus en bleu, pas encore possibles en pointillés gris).",
+            "Vols : le point de vol connu le plus proche (ou celui que tu cliques sur la carte) est le départ. En haut de la liste, toutes les destinations possibles depuis lui, avec la durée (apprise, ou estimée) et les relais ; le survol d'une destination trace le trajet sur la carte, le clic guide vers le maître de vol de départ.",
+            "Vols : en dessous, les points rangés par continent (jauge des points connus) puis par zone, la plus proche en haut : connus en vert (clic = départ), à apprendre grisés avec la distance (clic = guidage vers le maître de vol). Menu en haut à droite pour voir la carte d'un autre perso.",
+        },
+    },
+    {
         version = "1.115.4", date = "21/11/2026",
         changed = {
             "Tournée et fenêtre des quêtes du donjon : le mot « NOUVELLE » qui allongeait les titres est remplacé par un petit pictogramme coloré après le nom (étincelle turquoise = nouvelle, livre violet = apprise en jeu, flèches orange = corrigée). Les listes de quêtes gardent l'étiquette en toutes lettres.",
