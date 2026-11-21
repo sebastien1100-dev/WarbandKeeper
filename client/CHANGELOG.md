@@ -3,6 +3,12 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.4 — 21/11/2026
+
+### Corrections
+- Les anciennes versions gardées (2 au plus) sont aussi élaguées quand le dossier WarbandKeeper_Data manquait ; avant, elles s'accumulaient.
+- Un changement du fichier .toc du dossier de données (fichier retiré ou renommé) demande bien de redémarrer le jeu, au lieu de dire qu'un /reload suffit.
+
 ## 1.9.3 — 21/11/2026
 
 ### Corrections

@@ -23,10 +23,33 @@ end
 local function plain(s) return (tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
 
 -- Toutes les pages construites (une seule fois), cachées, pour indexer leurs réglages
+-- Lignes de réglage d'un cadre jeté (page qui a planté à la construction) : retirées de l'index, sinon
+-- elles restaient orphelines, et en double à chaque nouvel essai
+local function inside(f, root)
+    for _ = 1, 40 do
+        if not f then return false end
+        if f == root then return true end
+        f = f.GetParent and f:GetParent()
+    end
+    return false
+end
+function UI.PurgeSettingRows(root)
+    if not root then return end
+    local keep = {}
+    for _, e in ipairs(UI.settingIndex) do
+        if not inside(e.row, root) then keep[#keep + 1] = e end
+    end
+    for i = #UI.settingIndex, 1, -1 do UI.settingIndex[i] = nil end
+    for i, e in ipairs(keep) do UI.settingIndex[i] = e end
+end
+
 local built = false
+-- rend vrai si une page a planté (l'index n'est alors pas enregistré : ses réglages restaient introuvables
+-- jusqu'à la version suivante)
 local function buildAll()
-    if built then return end
+    if built then return false end
     built = true
+    local failed = false
     for key, def in pairs(UI.pages) do
         if not def.frame and UI.pageHost then
             local ok = pcall(function()
@@ -36,11 +59,13 @@ local function buildAll()
             end)
             if def.frame then def.frame:SetShown(key == UI.current) end
             if not ok then
-                if def.frame then def.frame:Hide() end
+                failed = true
+                if def.frame then def.frame:Hide(); UI.PurgeSettingRows(def.frame) end
                 def.frame = nil
             end
         end
     end
+    return failed
 end
 
 -- Après UI:Rebuild : les pages sont refaites et seront de nouveau indexées ; les lignes de
@@ -297,7 +322,7 @@ function UI:BuildSideSearch(side)
     local function show(text)
         if not text or #text < 2 then list:Hide() return end
         -- toutes les pages ne sont construites que s'il n'y a pas encore d'index pour cette version
-        if not stored() then buildAll(); pcall(snapshot) end
+        if not stored() and not buildAll() then pcall(snapshot) end
         results = search(text)
         for _, r in ipairs(rows) do r:Hide() end
         local y = -6

@@ -8,6 +8,19 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.16", date = "21/11/2026",
+        fixed = {
+            "Mise à jour disponible : une version annoncée par un autre joueur avec un numéro absurde (« 1.128.99999 ») est ignorée ; une version annoncée de nouveau n'est plus oubliée au bout de 30 jours puis réannoncée.",
+            "Options > Fiabilité, carte Données : un dossier WarbandKeeper_Data seulement désactivé dans la liste des AddOns est dit « désactivé », au lieu de « absent : réinstalle ».",
+            "Recherche : une page qui plante à sa construction ne rend plus ses réglages introuvables jusqu'à la version suivante, et ne laisse plus de lignes en double.",
+            "Maître de classe : reconnu même quand le filtre de sa fenêtre cache tout ; un double clic rapide dans le panneau n'achète plus un autre sort que celui cliqué.",
+            "Halo : quand plusieurs plantes ou filons sont proches, il ne se pose plus sur le premier venu.",
+            "Recherche de groupe : une nouvelle recherche lancée juste après une autre n'est plus coupée par la minuterie de la précédente.",
+            "Fiche, onglet Armes : un emplacement d'arme vide n'affiche plus l'ancienne arme comme « en main ».",
+            "Points /way : un point déjà en tête de file est bien guidé quand on le redemande ; un addon qui ajoute deux fois le même point (API TomTom) reçoit le même identifiant.",
+        },
+    },
+    {
         version = "1.128.15", date = "21/11/2026",
         fixed = {
             "Objets verrouillés : un marchand fermé pendant un combat ne laisse plus son cache sur les cases ; une potion ou un objet de quête verrouillé redevient utilisable tout de suite, sans attendre la fin du combat. Glisser un objet seulement cher dit « Vente chère » au lieu de « Verrouillé ».",

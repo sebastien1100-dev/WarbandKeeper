@@ -173,7 +173,12 @@ function M:Search(categoryID, activityIDs)
     -- autre catégorie : les groupes de l'ancienne ne sont plus montrés
     if self.category ~= categoryID then self.results = {} end
     self.category = categoryID
-    C_Timer.After(10, function() if M.searching then M.searching = false; WK:NotifyChanged() end end)
+    -- jeton propre à cette recherche : la minuterie d'une recherche précédente ne coupe plus la nouvelle
+    local tok = {}
+    self.searchTok = tok
+    C_Timer.After(10, function()
+        if M.searching and M.searchTok == tok then M.searching = false; WK:NotifyChanged() end
+    end)
     WK:NotifyChanged()
     return true
 end

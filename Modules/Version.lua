@@ -28,8 +28,13 @@ end
 -- (une annonce « 999 », erreur ou blague, ne doit pas laisser le bouton « mise à jour » pour toujours)
 function M.Plausible(v)
     local x, y = parts(v), parts(WK.version)
-    if #x < 2 or #y < 2 then return false end
-    return x[1] == y[1] and x[2] <= y[2] + 3
+    if #x < 2 or #y < 2 or #x > 3 then return false end
+    if x[1] ~= y[1] or x[2] > y[2] + 3 then return false end
+    -- 3e chiffre borné aussi (« 1.128.99999 » restait 30 jours) : 50 corrections d'avance au plus sur la même
+    -- version mineure, 200 sur une mineure plus récente
+    local p, q = x[3] or 0, y[3] or 0
+    if x[2] == y[2] then return p <= q + 50 end
+    return p <= 200
 end
 local SEEN_DAYS = 30 -- une annonce plus vieille est oubliée
 
@@ -92,6 +97,9 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, channel, sender)
     if not v or not M.Newer(v, WK.version) or not M.Plausible(v) then return end
     local g = WK.DB.global
     local s = g.latestSeen
+    -- même version annoncée de nouveau : date rafraîchie (sinon oubliée au bout de 30 jours, puis annoncée
+    -- encore une fois comme nouvelle)
+    if s and s.version == v then s.at = _G.time() return end
     if s and not M.Newer(v, s.version) then return end
     g.latestSeen = { version = v, source = channel == "GUILD" and "guild" or "group", at = time() }
     WK:Print(string.format(T("Une version plus récente de Warband Keeper existe : %s (tu as la %s)."), v, WK.version))

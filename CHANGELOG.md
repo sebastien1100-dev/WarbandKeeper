@@ -71,6 +71,20 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.16 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Mise à jour disponible : une version annoncée par un autre joueur avec un numéro absurde (« 1.128.99999 ») est ignorée ; une version annoncée de nouveau n'est plus oubliée au bout de 30 jours puis réannoncée.
+- Options > Fiabilité, carte Données : un dossier WarbandKeeper_Data seulement désactivé dans la liste des AddOns est dit « désactivé », au lieu de « absent : réinstalle ».
+- Recherche : une page qui plante à sa construction ne rend plus ses réglages introuvables jusqu'à la version suivante, et ne laisse plus de lignes en double.
+- Maître de classe : reconnu même quand le filtre de sa fenêtre cache tout ; un double clic rapide dans le panneau n'achète plus un autre sort que celui cliqué.
+- Halo : quand plusieurs plantes ou filons sont proches, il ne se pose plus sur le premier venu.
+- Recherche de groupe : une nouvelle recherche lancée juste après une autre n'est plus coupée par la minuterie de la précédente.
+- Fiche, onglet Armes : un emplacement d'arme vide n'affiche plus l'ancienne arme comme « en main ».
+- Points /way : un point déjà en tête de file est bien guidé quand on le redemande ; un addon qui ajoute deux fois le même point (API TomTom) reçoit le même identifiant.
+
 ## v1.128.15 — 21/11/2026
 
 _Un /reload suffit._

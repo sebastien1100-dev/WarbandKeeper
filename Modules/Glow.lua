@@ -560,18 +560,21 @@ local function findPlate()
     if C_NamePlate.GetNamePlates and UnitIsUnit then
         local ok, plates = pcall(C_NamePlate.GetNamePlates)
         if ok and type(plates) == "table" then
+            local objPlate, objCount = nil, 0
             for _, plate in ipairs(plates) do
                 local token = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
                 if token then
                     local ok2, same = pcall(UnitIsUnit, token, UNIT)
                     if ok2 and plain(same) == true then return plate end
-                    -- une plaque d'objet du décor : c'est celle de l'objet désigné
                     if UnitIsGameObject then
                         local ok3, obj = pcall(UnitIsGameObject, token)
-                        if ok3 and plain(obj) == true then return plate end
+                        if ok3 and plain(obj) == true then objPlate, objCount = plate, objCount + 1 end
                     end
                 end
             end
+            -- une plaque d'objet du décor n'est celle de l'objet désigné que si elle est la seule (plusieurs
+            -- plantes ou filons proches : le halo se posait sur le premier venu)
+            if objCount == 1 then return objPlate end
         end
     end
     return nil
@@ -681,8 +684,11 @@ local function softGUID()
 end
 local lastGUID, lastAt, queued = nil, 0, false
 local function refresh()
-    M.retry = 0
-    lastGUID, lastAt = softGUID(), GetTime()
+    -- relances remises à zéro seulement pour un nouvel objet (sinon chaque évènement relançait une chaîne
+    -- de 8 relances)
+    local guid = softGUID()
+    if guid ~= lastGUID then M.retry = 0 end
+    lastGUID, lastAt = guid, GetTime()
     if not pcall(M.Update, M) then M:Hide() end
 end
 -- Évènements fréquents (plaques, journal de quêtes) : une relecture toutes les 0,25 s au plus

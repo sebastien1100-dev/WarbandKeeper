@@ -40,7 +40,11 @@ local function build()
         b:SetScript("OnClick", function(s, btn)
             if not s.e then return end
             if btn == "RightButton" then CS():Skip(nil, s.e.name, not s.e.skipped)
-            elseif not s.e.skipped then CS():LearnOne(s.e.index) end
+            elseif not s.e.skipped then
+                -- un seul achat par ligne jusqu'au rafraîchissement (TRAINER_UPDATE refait les lignes)
+                if s.bought == s.e then return end
+                if CS():LearnOne(s.e.index, s.e.name, s.e.rank) then s.bought = s.e end
+            end
         end)
         b:Hide()
         f.rows[i] = b

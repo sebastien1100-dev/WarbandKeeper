@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.3"
+CLIENT_VERSION = "1.9.4"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -965,10 +965,10 @@ def _files(folder):
     return out
 
 
-def _toc_body(folder):
-    """Le .toc sans sa ligne ## Version (le reste change la liste des fichiers chargés)."""
+def _toc_body(folder, name=None):
+    """Le .toc (de l'addon, ou de name) sans sa ligne ## Version (le reste change la liste des fichiers chargés)."""
     try:
-        with open(os.path.join(folder, ADDON + ".toc"), encoding="utf-8", errors="replace") as f:
+        with open(os.path.join(folder, (name or ADDON) + ".toc"), encoding="utf-8", errors="replace") as f:
             return "\n".join(l.rstrip() for l in f if not l.startswith("## Version"))
     except OSError:
         return None
@@ -983,6 +983,7 @@ def install_zip(addons, zpath, old_version):
     oldFiles = _files(target) if os.path.isdir(target) else None
     oldToc = _toc_body(target) if os.path.isdir(target) else None
     oldData = _files(data) if os.path.isdir(data) else None
+    oldDataToc = _toc_body(data, DATA_ADDON) if os.path.isdir(data) else None
     if os.path.isdir(target):
         moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
         if os.path.exists(moved):
@@ -994,10 +995,11 @@ def install_zip(addons, zpath, old_version):
             shutil.move(data, os.path.join(moved, DATA_KEEP))
         else:
             shutil.rmtree(data, ignore_errors=True)
-        # on ne garde que les 2 dernières versions
-        olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())), key=os.path.getmtime, reverse=True)
-        for d in olds[2:]:
-            shutil.rmtree(d, ignore_errors=True)
+    # on ne garde que les 2 dernières versions (aussi sans dossier de données : avant, l'élagage était sauté
+    # et les vieilles versions s'accumulaient)
+    olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())), key=os.path.getmtime, reverse=True)
+    for d in olds[2:]:
+        shutil.rmtree(d, ignore_errors=True)
     try:
         safe_extract(zpath, addons)
     except Exception:
@@ -1018,6 +1020,8 @@ def install_zip(addons, zpath, old_version):
     newData = _files(data) if os.path.isdir(data) else None
     if newData is not None and (oldData is None or newData - oldData):
         return True  # dossier des données nouveau, ou nouveaux fichiers dedans
+    if newData is not None and _toc_body(data, DATA_ADDON) != oldDataToc:
+        return True  # .toc des données changé (fichier retiré ou renommé) : lu seulement au lancement
     return bool(_files(target) - oldFiles) or _toc_body(target) != oldToc
 
 

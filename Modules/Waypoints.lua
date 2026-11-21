@@ -218,8 +218,12 @@ function M:Add(map, x, y, title, opts)
     for k, v in ipairs(list) do
         if v.map == map and math.abs(v.x - x) < 0.0015 and math.abs(v.y - y) < 0.0015 then
             if title and title ~= "" and not v.title then v.title = title end
-            if opts.now and k > 1 then
-                table.remove(list, k); table.insert(list, 1, v)
+            -- « maintenant » : remis en tête et guidé, aussi s'il était déjà en tête mais pas guidé (autre
+            -- guidage en cours entre-temps)
+            local g = G()
+            local guided = g.target and g.target.kind == "way" and g.target.way == v
+            if opts.now and (k > 1 or not guided) then
+                if k > 1 then table.remove(list, k); table.insert(list, 1, v) end
                 self:Go()
             else
                 changed()
@@ -403,6 +407,9 @@ function M.MakeShim(_)
         opts = type(opts) == "table" and opts or {}
         local w = M:Add(map, x, y, opts.title or opts.desc, { src = "tomtom", silent = opts.silent })
         if not w then return nil end
+        -- point déjà dans la file : même identifiant (sinon l'addon qui gardait l'ancien ne pouvait plus le
+        -- retirer ni le suivre)
+        if w.uid then return w.uid end
         uidN = uidN + 1
         w.uid = { uidN, map, x, y, title = opts.title }
         return w.uid

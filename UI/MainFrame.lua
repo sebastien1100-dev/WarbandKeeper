@@ -803,6 +803,7 @@ function UI:EnsurePage(key)
             -- page qui plante à la construction : cadre à moitié fait caché et oublié, refait à la prochaine
             -- ouverture (avant : la page restait à moitié construite jusqu'au /reload)
             def.frame:Hide()
+            if UI.PurgeSettingRows then UI.PurgeSettingRows(def.frame) end
             def.frame = nil
             if WK.HandlerError then WK.HandlerError("page " .. tostring(key), err) end
         end

@@ -232,11 +232,17 @@ local function isClassTrainer()
     local set = classNames()
     -- noms des sorts pas encore chargés par le jeu : on ne peut pas trier, on garde l'ancien comportement
     if not next(set) then return true end
+    local visible = 0
     for i = 1, _G.GetNumTrainerServices() do
         local name, _, category = _G.GetTrainerServiceInfo(i)
-        if name and category ~= "header" and set[name] then return true end
+        if name and category ~= "header" then
+            visible = visible + 1
+            if set[name] then return true end
+        end
     end
-    return false
+    -- aucun service visible (filtre de la fenêtre : « indisponible » décoché et rien à apprendre) : on ne
+    -- peut pas trier, ancien comportement (pas un maître de métier = maître de classe)
+    return visible == 0
 end
 function M.IsClassTrainer() return isClassTrainer() end
 
@@ -288,9 +294,16 @@ function M:LearnAll()
     return #pick, spent
 end
 
-function M:LearnOne(index)
-    if InCombatLockdown and InCombatLockdown() then return end
-    if BuyTrainerService then BuyTrainerService(index) end
+-- name (facultatif) : nom attendu à ce n° ; relu avant l'achat (un double clic rapide, la liste décalée par
+-- le sort qui vient d'être appris, achetait sinon un autre sort)
+function M:LearnOne(index, name, rank)
+    if InCombatLockdown and InCombatLockdown() then return false end
+    if name and _G.GetTrainerServiceInfo then
+        local cur, curRank = _G.GetTrainerServiceInfo(index)
+        if cur ~= name or (rank and (curRank or "") ~= rank) then return false end
+    end
+    if BuyTrainerService then BuyTrainerService(index) return true end
+    return false
 end
 
 ---------------------------------------------------------------------------

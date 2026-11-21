@@ -122,7 +122,10 @@ function UI:BuildMaintenanceCards(page, card)
             dc.go:Hide()
         elseif WK.dataMissing then
             col = C.negative
-            txt = T("dossier WarbandKeeper_Data absent : réinstalle avec le client PC")
+            -- désactivé dans la liste des AddOns (pas absent) : le dire, réinstaller n'y changerait rien
+            txt = (WK.dataMissing == "DISABLED")
+                and T("WarbandKeeper_Data désactivé : coche-le dans les AddOns")
+                or T("dossier WarbandKeeper_Data absent : réinstalle avec le client PC")
             dc.go:Hide()
         else
             col = C.dim

@@ -73,7 +73,10 @@ local function equipped(key)
     local mine = key == WK:CharKey()
     local c = WK.DB.global.characters[key] or {}
     for _, slot in ipairs({ 16, 17, 18 }) do
-        local item = mine and GetInventoryItemID and GetInventoryItemID("player", slot) or (c.gear and c.gear[slot])
+        -- perso connecté : lu en jeu (emplacement vide = rien, pas l'ancien relevé de c.gear)
+        local item
+        if mine and GetInventoryItemID then item = GetInventoryItemID("player", slot)
+        else item = c.gear and c.gear[slot] end
         if item and C_Item and C_Item.GetItemInfoInstant then
             local ok, _, _, _, _, _, classID, subID = pcall(C_Item.GetItemInfoInstant, item)
             if ok and classID == 2 and SUBCLASS[subID] then set[SUBCLASS[subID]] = true end
