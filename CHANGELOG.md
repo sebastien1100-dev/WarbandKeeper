@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.12 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton Buffer : un joueur n'est plus écarté 2 minutes quand l'échec vient de toi (sort pas encore prêt, temps de recharge, mana, en mouvement, autre sort en cours) ; le clic suivant le retente. Hors de portée, hors de vue ou buff plus puissant : il est toujours passé.
+- Chasseur : le bouton d'aspect et la carte du familier coupés dans leurs réglages ne réagissent plus à leurs raccourcis clavier.
+- Bouton Buffer : pendant l'aperçu et le test du mode édition, un clic ou le raccourci ne lance plus de sort ni ne change de cible (macro vidée, aussi à l'entrée en combat).
+
 ## v1.128.11 — 21/11/2026
 
 _Un /reload suffit._

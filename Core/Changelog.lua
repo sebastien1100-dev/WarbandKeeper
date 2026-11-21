@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.12", date = "21/11/2026",
+        fixed = {
+            "Bouton Buffer : un joueur n'est plus écarté 2 minutes quand l'échec vient de toi (sort pas encore prêt, temps de recharge, mana, en mouvement, autre sort en cours) ; le clic suivant le retente. Hors de portée, hors de vue ou buff plus puissant : il est toujours passé.",
+            "Chasseur : le bouton d'aspect et la carte du familier coupés dans leurs réglages ne réagissent plus à leurs raccourcis clavier.",
+            "Bouton Buffer : pendant l'aperçu et le test du mode édition, un clic ou le raccourci ne lance plus de sort ni ne change de cible (macro vidée, aussi à l'entrée en combat).",
+        },
+    },
+    {
         version = "1.128.11", date = "21/11/2026",
         fixed = {
             "Courrier : « Prendre » sur une lettre ne prend plus aussi les lettres suivantes (une fois la lettre vidée, le jeu la supprime et la suivante prenait sa place).",

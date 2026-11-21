@@ -12,6 +12,7 @@ local T = function(s) return WK.T(s) end
 -- centre de l'écran, en unités de l'interface : elle ne dépend pas de la taille de l'élément.
 
 local registry, order = {}, {}
+UI.hudRegistry = registry -- (lecture seule : tests, diagnostic)
 local stopTest -- mode test (plus bas)
 
 -- « Disposition : ce perso » est un choix du perso (WK.DB.char.hudPerChar), pas du compte : avant, le drapeau

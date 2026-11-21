@@ -90,6 +90,13 @@ end
 -- (UNIT_SPELLCAST_SUCCEEDED) : la petite icône montre ce que le prochain clic lancera.
 function UI:AspectButtonSetup()
     if not btn or inCombat() then return end
+    -- bouton coupé : sorts vidés, sinon les raccourcis (qui cliquent le bouton caché) lançaient encore un aspect
+    if not wanted() then
+        btn:SetAttribute("type1", nil); btn:SetAttribute("macrotext1", nil)
+        btn:SetAttribute("type2", nil); btn:SetAttribute("spell2", nil)
+        btn.sequence, btn.seqKeys, btn.setupFor = nil, nil, nil
+        return
+    end
     local o = cfg()
     local cur = H().aspect
     local keys, names, mainName = {}, {}, nil
@@ -161,6 +168,7 @@ function UI:SyncAspectButton()
     elseif btn then
         if UnregisterStateDriver then UnregisterStateDriver(btn, "visibility") end
         btn:Hide()
+        self:AspectButtonSetup()
     end
 end
 

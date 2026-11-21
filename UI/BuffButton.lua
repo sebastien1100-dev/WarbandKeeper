@@ -307,6 +307,8 @@ local function build()
         enabled = function() local c = cfg(); return WK.BUFF_CLASSES[myClass() or ""] and c and c.buffAround ~= false and WK:FeatureOn("classes") end,
         sample = function(on)
             btn.sample = on
+            -- aperçu : macro vidée, un clic ou le raccourci ne lance rien (remise par RefreshBuffButton à la fin)
+            if on and not inCombat() then btn:SetAttribute("macrotext", nil) end
             if on then
                 local id = buffFor("player") or (BUFFS[myClass() or ""] or {}).cast or 1126
                 paint(spellIcon(id), 3)
@@ -316,6 +318,7 @@ local function build()
         -- « Tester » : un buff part toutes les 2 s, le nombre de joueurs à buffer descend
         test = function()
             btn.sample = true
+            if not inCombat() then btn:SetAttribute("macrotext", nil) end
             local id = buffFor("player") or (BUFFS[myClass() or ""] or {}).cast or 1126
             local n = 4
             paint(spellIcon(id), n)
@@ -420,12 +423,11 @@ end
 
 -- juste avant le combat (encore permis) : bouton et liseré cachés
 WK:On("PLAYER_REGEN_DISABLED", function()
-    if btn and not btn.sample then
-        -- dernier moment permis : macro vidée, sinon le raccourci clavier changerait ou effacerait la cible en
-        -- plein combat (/targetexact puis /cleartarget ou /targetlasttarget)
-        btn:SetAttribute("macrotext", nil)
-        btn:Hide(); mark:Hide()
-    end
+    if not btn then return end
+    -- dernier moment permis : macro vidée (aussi pendant l'aperçu), sinon le raccourci clavier changerait ou
+    -- effacerait la cible en plein combat (/targetexact puis /cleartarget ou /targetlasttarget)
+    btn:SetAttribute("macrotext", nil)
+    if not btn.sample then btn:Hide(); mark:Hide() end
 end)
 -- la macro dépend de la cible (cible d'avant rendue ou effacée) : remise à jour quand elle change
 WK:On("PLAYER_TARGET_CHANGED", function() if btn and btn:IsShown() and not inCombat() then UI:RefreshBuffButton() end end)
@@ -448,17 +450,48 @@ end
 local function spellName(id) return tostring(id and WK.SpellInfo(id) or id or "?") end
 WK:OnUnit("UNIT_SPELLCAST_SENT", "player", function(_, target, _, spellID) noteClickEvent("sort envoyé " .. spellName(spellID) .. " » " .. tostring(target)) end)
 WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, spellID) noteClickEvent("réussi " .. spellName(spellID)) end)
--- refus du jeu juste après notre clic : ce joueur est passé 2 min, le bouton va au suivant
-local function refuse()
+-- Erreurs qui viennent de nous, pas du joueur visé (sort pas prêt, temps de recharge global, mana, en
+-- mouvement, autre action en cours…) : on réessaie le même joueur au clic suivant au lieu de l'écarter
+local SELF_ERRORS = {
+    "SPELL_FAILED_NOT_READY", "ERR_SPELL_COOLDOWN", "ERR_ABILITY_COOLDOWN", "ERR_ITEM_COOLDOWN",
+    "SPELL_FAILED_SPELL_IN_PROGRESS", "ERR_SPELL_IN_PROGRESS", "SPELL_FAILED_NO_POWER", "ERR_OUT_OF_MANA",
+    "SPELL_FAILED_MOVING", "SPELL_FAILED_INTERRUPTED", "SPELL_FAILED_STUNNED", "SPELL_FAILED_SILENCED",
+    "SPELL_FAILED_PACIFIED", "SPELL_FAILED_NOT_MOUNTED", "SPELL_FAILED_NOT_SHAPESHIFT", "SPELL_FAILED_REAGENTS",
+    "ERR_NOT_WHILE_MOVING", "SPELL_FAILED_AFFECTING_COMBAT", "SPELL_FAILED_CASTER_DEAD", "ERR_USE_LOCKED",
+}
+local function isSelfError(msg)
+    if msg == nil then return false end
+    for _, k in ipairs(SELF_ERRORS) do
+        if _G[k] == msg then return true end
+    end
+    return false
+end
+UI.BuffSelfError = isSelfError
+
+-- refus du jeu juste après notre clic : ce joueur est passé 2 min, le bouton va au suivant. La décision
+-- attend 0,15 s : le message d'erreur et l'échec du sort arrivent ensemble, dans un ordre quelconque, et une
+-- erreur qui vient de nous annule l'exclusion
+local function refuse(selfErr)
     local lc = UI.buffLastClick
-    if lc and lc.guid and GetTime() - lc.at < 1.5 and not lc.refused then
+    if not (lc and lc.guid and GetTime() - lc.at < 1.5 and not lc.refused) then return end
+    if selfErr then lc.selfErr = true end
+    if lc.pending then return end
+    lc.pending = true
+    C_Timer.After(0.15, function()
+        lc.pending = nil
+        if lc.selfErr or lc.refused then return end
         lc.refused = true
         refused[lc.guid] = GetTime()
-        C_Timer.After(0.1, function() if not inCombat() then UI:RefreshBuffButton() end end)
-    end
+        if not inCombat() then UI:RefreshBuffButton() end
+    end)
 end
+UI.BuffRefuse = refuse
 WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID) noteClickEvent("raté " .. spellName(spellID)); refuse() end)
-WK:On("UI_ERROR_MESSAGE", function(_, msg) noteClickEvent("erreur : " .. tostring(msg)); refuse() end)
+WK:On("UI_ERROR_MESSAGE", function(a, b)
+    -- (type, message) sur les clients récents, message seul sur les anciens
+    local msg = type(b) == "string" and b or (type(a) == "string" and a) or nil
+    noteClickEvent("erreur : " .. tostring(msg)); refuse(isSelfError(msg))
+end)
 WK:On("ADDON_ACTION_BLOCKED", function(addon, fn) noteClickEvent("action bloquée : " .. tostring(addon) .. " " .. tostring(fn)) end)
 WK:On("ADDON_ACTION_FORBIDDEN", function(addon, fn) noteClickEvent("action interdite : " .. tostring(addon) .. " " .. tostring(fn)) end)
 

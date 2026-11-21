@@ -151,6 +151,14 @@ end
 -- Attributs protégés : macro de nourriture et sort de soin (hors combat).
 local function setActions()
     if not card or inCombat() then return end
+    -- carte coupée : actions vidées, sinon les raccourcis (qui cliquent le bouton caché) marchaient encore
+    if not wanted() then
+        for _, b in ipairs({ card.click, card.feedSec, card.mendSec }) do
+            b:SetAttribute("type1", nil); b:SetAttribute("macrotext1", nil)
+            b:SetAttribute("type2", nil); b:SetAttribute("macrotext2", nil)
+        end
+        return
+    end
     local feed, mend = spellName(SPELL_FEED) or "Nourrir le familier", spellName(SPELL_MEND) or "Guérison du familier"
     local food = WK.modules.QoL:FoodInBags()[1]
     local foodName = food and WK.GetItemInfo(food.id)
@@ -325,6 +333,7 @@ function UI:SyncPetCard()
     elseif card then
         if UnregisterStateDriver then UnregisterStateDriver(card, "visibility") end
         card:Hide()
+        setActions()
     end
 end
 
