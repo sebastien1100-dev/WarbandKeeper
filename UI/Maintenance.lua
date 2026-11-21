@@ -95,7 +95,8 @@ function UI:BuildMaintenanceCards(page, card)
     eb.bg2 = UI:Rounded(eb, 12, 1, "BACKGROUND", 3)
 
     -- données à la demande (dossier WarbandKeeper_Data, Core/Utils.lua : WK:NeedData)
-    local dc = card("Données", 42 + 52 + 2 * 36 + 16, "grosses bases chargées seulement quand il le faut")
+    local MEM_H = 118 -- bloc « mémoire » : chiffre, barre, deux lignes
+    local dc = card("Données", 42 + 52 + MEM_H + 2 * 36 + 16, "grosses bases chargées seulement quand il le faut")
     dc.dot = dc:CreateTexture(nil, "ARTWORK"); dc.dot:SetTexture(UI.MEDIA .. "circle"); dc.dot:SetSize(10, 10)
     dc.dot:SetPoint("TOPLEFT", 18, -58)
     dc.label = UI:Text(dc, 12, C.text); dc.label:SetPoint("TOPLEFT", 38, -50)
@@ -108,11 +109,84 @@ function UI:BuildMaintenanceCards(page, card)
         elseif not WK.dataMissing then WK:Print(T("En combat : les données seront chargées à la sortie du combat.")) end
         UI:RefreshMaintenance(true)
     end)
+    -- mémoire réellement utilisée, lue dans le jeu (GetAddOnMemoryUsage) : l'addon (fenêtre, modules, bases
+    -- chargées au démarrage) et le dossier des données à la demande (seulement une fois chargé)
+    local my = -96
+    dc.memBig = UI:Text(dc, 20, C.text); dc.memBig:SetPoint("TOPLEFT", 16, my)
+    dc.memSub = UI:Text(dc, 11, C.muted); dc.memSub:SetPoint("BOTTOMLEFT", dc.memBig, "BOTTOMRIGHT", 8, 2)
+    dc.memSub:SetText(T("de mémoire utilisée par l'addon"))
+    dc.memBtn = UI:Button(dc, "Mesurer", 90, 24, "ghost")
+    dc.memBtn:SetPoint("TOPRIGHT", -16, my + 2)
+    dc.memBtn:SetScript("OnClick", function() dc.memAt = nil; dc.PaintMem() end)
+    dc.track = _G.CreateFrame("Frame", nil, dc)
+    dc.track:SetPoint("TOPLEFT", 16, my - 32); dc.track:SetPoint("TOPRIGHT", -16, my - 32); dc.track:SetHeight(8)
+    dc.trackBg = dc.track:CreateTexture(nil, "BACKGROUND"); dc.trackBg:SetAllPoints()
+    dc.segA = dc.track:CreateTexture(nil, "ARTWORK"); dc.segA:SetPoint("TOPLEFT"); dc.segA:SetPoint("BOTTOMLEFT")
+    dc.segB = dc.track:CreateTexture(nil, "ARTWORK")
+    dc.segB:SetPoint("TOPLEFT", dc.segA, "TOPRIGHT"); dc.segB:SetPoint("BOTTOMLEFT", dc.segA, "BOTTOMRIGHT")
+    local function memLine(i, label)
+        local l = { dot = dc:CreateTexture(nil, "ARTWORK"), t = UI:Text(dc, 12, C.text),
+            v = UI:Text(dc, 12, C.text), tag = UI:Badge(dc, "") }
+        l.dot:SetTexture(UI.MEDIA .. "circle"); l.dot:SetSize(8, 8)
+        l.dot:SetPoint("TOPLEFT", 18, my - 50 - (i - 1) * 24)
+        l.t:SetPoint("LEFT", l.dot, "RIGHT", 8, 0); l.t:SetText(T(label))
+        l.tag:SetPoint("LEFT", l.t, "RIGHT", 8, 0)
+        l.v:SetPoint("TOPRIGHT", -16, my - 47 - (i - 1) * 24); l.v:SetJustifyH("RIGHT")
+        return l
+    end
+    dc.lineA = memLine(1, "Addon : fenêtre, modules, bases de démarrage")
+    dc.lineB = memLine(2, "Données : objectifs de quête, listes BiS, recettes")
+    local function memOf(name)
+        local get = _G.GetAddOnMemoryUsage
+        if not get then return nil end
+        local ok, kb = pcall(get, name)
+        return ok and type(kb) == "number" and kb or nil
+    end
+    local function fmt(kb)
+        if not kb then return "?" end
+        if kb >= 1024 then return (string.format(T("%.1f Mo"), kb / 1024):gsub("%.", ",")) end
+        return string.format(T("%d Ko"), math.floor(kb + 0.5))
+    end
+    function dc.PaintMem()
+        local now = _G.GetTime and _G.GetTime() or 0
+        -- mesure du jeu : hors combat, au plus toutes les 3 s (elle parcourt la mémoire de tous les addons)
+        if not (dc.memAt and now - dc.memAt < 3) and not (_G.InCombatLockdown and _G.InCombatLockdown()) then
+            if _G.UpdateAddOnMemoryUsage then pcall(_G.UpdateAddOnMemoryUsage) end
+            dc.memAt = now
+        end
+        local a = memOf("WarbandKeeper")
+        local b = WK.dataLoaded and memOf("WarbandKeeper_Data") or 0
+        local r, g, bl = UI:Accent()
+        dc.trackBg:SetColorTexture(unpack(C.surface2))
+        dc.segA:SetColorTexture(r, g, bl, 1)
+        dc.segB:SetColorTexture(r, g, bl, 0.5)
+        dc.lineA.dot:SetVertexColor(r, g, bl, 1)
+        dc.lineB.dot:SetVertexColor(r, g, bl, 0.5)
+        if not a then
+            dc.memBig:SetText("?"); dc.segA:Hide(); dc.segB:Hide()
+            dc.lineA.v:SetText("?"); dc.lineB.v:SetText("?")
+            dc.lineA.tag:Set(T("au démarrage"), C.muted); dc.lineB.tag:Set(T("à la demande"), { r, g, bl })
+            return
+        end
+        local total = a + b
+        dc.memBig:SetText(fmt(total))
+        local w = dc.track:GetWidth() or 0
+        if w <= 0 then w = 400 end
+        dc.segA:Show(); dc.segA:SetWidth(math.max(1, w * a / math.max(total, 1)))
+        dc.segB:SetShown(b > 0); dc.segB:SetWidth(math.max(1, w * b / math.max(total, 1)))
+        dc.lineA.v:SetText(fmt(a))
+        dc.lineB.v:SetText(WK.dataLoaded and fmt(b) or T("pas chargées"))
+        dc.lineA.tag:Set(T("au démarrage"), C.muted)
+        dc.lineB.tag:Set(WK.dataLoaded and T("chargées") or T("à la demande"),
+            WK.dataLoaded and C.positive or { r, g, bl })
+    end
+    UI.maintDataCard = dc
     local dcfg = WK.DataConfig
-    UI:SettingRow(dc, -94, "Précharger après la connexion",
-        "20 s après la connexion, hors combat, si une quête est suivie.",
+    UI:SettingRow(dc, -94 - MEM_H, "Précharger après la connexion",
+        "20 s après la connexion, hors combat, si ton journal a des quêtes (repères des plaques actifs).",
         UI:Toggle(dc, function() return dcfg().preload end, function(v) dcfg().preload = v end), 50)
-    UI:SettingRow(dc, -130, "Message quand les données sont chargées", "Une ligne dans le chat, une fois par séance.",
+    UI:SettingRow(dc, -130 - MEM_H, "Message quand les données sont chargées",
+        "Une ligne dans le chat, une fois par séance.",
         UI:Toggle(dc, function() return dcfg().msg end, function(v) dcfg().msg = v or nil end), 50)
     function dc.Paint()
         local col, txt
@@ -134,6 +208,7 @@ function UI:BuildMaintenanceCards(page, card)
         end
         dc.dot:SetVertexColor(col[1], col[2], col[3], 1)
         dc.sub:SetText(txt)
+        dc.PaintMem()
     end
 
     -- nettoyage

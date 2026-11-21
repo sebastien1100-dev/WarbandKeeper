@@ -4202,7 +4202,6 @@ WK.Locales.enUS.text = {
     ["grosses bases chargées seulement quand il le faut"] = "large databases loaded only when needed",
     ["Charger maintenant"] = "Load now",
     ["Précharger après la connexion"] = "Preload after login",
-    ["20 s après la connexion, hors combat, si une quête est suivie."] = "20 s after login, if a quest is tracked.",
     ["Message quand les données sont chargées"] = "Message when data is loaded",
     ["Une ligne dans le chat, une fois par séance."] = "One line in chat, once per session.",
     ["quêtes"] = "quests",
@@ -4266,4 +4265,26 @@ WK.Locales.enUS.text = {
     ["sous la souris"] = "under the mouse",
     ["quête"] = "quest",
     ["non trouvée"] = "not found",
+    ["de mémoire utilisée par l'addon"] =
+        "of memory used by the addon",
+    ["%.1f Mo"] =
+        "%.1f MB",
+    ["%d Ko"] =
+        "%d KB",
+    ["au démarrage"] =
+        "at startup",
+    ["à la demande"] =
+        "on demand",
+    ["pas chargées"] =
+        "not loaded",
+    ["chargées"] =
+        "loaded",
+    ["Mesurer"] =
+        "Measure",
+    ["Addon : fenêtre, modules, bases de démarrage"] =
+        "Addon: window, modules, startup databases",
+    ["Données : objectifs de quête, listes BiS, recettes"] =
+        "Data: quest objectives, BiS lists, recipes",
+    ["20 s après la connexion, hors combat, si ton journal a des quêtes (repères des plaques actifs)."] =
+        "20 s after login, out of combat, if your log has quests and nameplate markers are on.",
 }

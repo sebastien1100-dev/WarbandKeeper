@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.35 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Options > Fiabilité > Données : la mémoire réellement utilisée, lue dans le jeu (l'addon, et les données à la demande une fois chargées), avec une barre et un bouton « Mesurer ».
+
+### Corrections
+- Options > Fiabilité > Données : le préchargement disait encore « si une quête est suivie » ; il se fait si ton journal a des quêtes et que les repères des plaques de nom sont actifs.
+
 ## v1.128.34 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
