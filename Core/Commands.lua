@@ -78,6 +78,10 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Gear:Scan({ talents = true })
         WK:Print(WK.T("Talents : diagnostic"))
         for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
+    elseif cmd == "suivi" or cmd == "tracker" then
+        -- menu des quêtes sur le suivi (UI/QuestTracker.lua) : suivis et lignes trouvés
+        if WK.UI.ScanQuestTrackers then WK.UI.ScanQuestTrackers() end
+        WK:Print("  " .. (WK.UI.QuestTrackerMenuDiag and WK.UI.QuestTrackerMenuDiag() or "-"))
     elseif cmd == "chaines" or cmd == "chains" then
         -- chaînes de quêtes apprises en jeu (Modules/Quests.lua)
         local Q = WK.modules.Quests

@@ -300,8 +300,9 @@ WK:On("PLAYER_LOGIN", function()
     if not (_G.C_Timer and _G.C_Timer.After) then return end
     _G.C_Timer.After(20, function()
         if WK.dataLoaded or not dataCfg().preload then return end
+        -- quêtes dans le journal et repères des plaques de nom : leurs monstres viennent de la base
         local Q = WK.modules.QuestTrack
-        local busy = Q and Q.Tracked and Q:Tracked()
+        local busy = Q and Q:Config().plateMarks ~= false and #Q:LogQuests() > 0
         if busy and not (_G.InCombatLockdown and _G.InCombatLockdown()) then WK:NeedData("préchargement") end
     end)
 end)

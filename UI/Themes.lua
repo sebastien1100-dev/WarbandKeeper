@@ -212,6 +212,13 @@ function UI:ApplyTheme()
     if cfg.accent == 1 and (cfg.theme or "vault") == "vault" then cfg.accent = "theme" end
     -- un seul thème proposé : Graphite (les autres et le thème personnalisé ne sont plus dans les Options)
     cfg.theme = "graphite"
+    -- réglages d'Apparence retirés (accent par perso, contraste, style des cartes, animation, teinte, halo) : remis
+    -- d'origine une fois ; dégradé, police des titres, arrondi et fond restent ceux du style choisi
+    if not cfg.lookTrim then
+        cfg.lookTrim = true
+        cfg.accentPerChar, cfg.charAccent, cfg.contrast, cfg.cardStyle, cfg.anim = nil, nil, nil, nil, nil
+        cfg.bgTint, cfg.glow, cfg.glowTint = nil, nil, nil
+    end
     local t = self.themeByKey[cfg.theme] or self.themes[1]
     local b = t.base()
     local tint = TINTS[cfg.bgTint or ""]

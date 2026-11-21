@@ -8,6 +8,20 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.32", date = "21/11/2026",
+        added = {
+            "Suivi des quêtes d'EllesmereUI (ou celui du jeu) : Alt + clic sur une quête ouvre le menu de la quête (guider, lien wowhead, chercher un groupe, jamais d'automatique). Les autres clics restent ceux du suivi. Réglage dans la roue des Quêtes, /wk suivi pour vérifier.",
+        },
+        changed = {
+            "Plus de « quête suivie » dans l'addon (le journal du jeu le fait) : « Guider vers la quête » mène au camp le plus proche ou au rendu ; les repères des plaques de nom valent pour toutes les quêtes du journal.",
+            "Menu des quêtes (clic droit) : « Jamais d'automatique » / « Réautoriser l'automatique » remplacent le bouton « Exclure la quête suivie ».",
+            "Quêtes : la légende des couleurs est sous la liste des quêtes d'une zone (la carte « Légende » des réglages est retirée).",
+            "Apparence allégée : restent Styles, Couleur d'accent, Police, Taille du texte et l'onglet Fenêtre ; les réglages fins (dégradé, teinte, accent par perso, halo, police des titres, contraste, arrondi, style des cartes, fond, animation) sont retirés, les styles s'en chargent.",
+            "Infobulles : deux cartes au lieu de cinq (« Objets », « PNJ et apparence »).",
+            "Rappels à la connexion : réglés seulement dans QoL > Général > Alertes.",
+        },
+    },
+    {
         version = "1.128.31", date = "21/11/2026", restart = true,
         changed = {
             "Quêtes : l'onglet « Carte des zones » s'appelle « Zones de quêtes ».",

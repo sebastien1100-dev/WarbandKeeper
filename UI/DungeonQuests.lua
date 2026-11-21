@@ -396,7 +396,7 @@ function UI:DungeonQuestsData(d, cfg)
             e.color, e.current = A, true
             e.sub = cfg.questWinObjs ~= false and objectivesText(q.id) or nil
         end
-        e.onClick = function() if QT and QT.Track then QT:Track(q.id) end end
+        e.onClick = function() if QT and QT.GuideQuest then QT:GuideQuest(q.id) end end
         table.insert(out.log, e)
         out.xp = out.xp + (q.xp or 0)
     end

@@ -1,10 +1,9 @@
 local ADDON_NAME, WK = ...
 local T = function(s) return WK.T(s) end
 
--- Quêtes du journal et quête suivie : camps des objectifs (Data/QuestObjDB.lua, généré par
--- tools/gen_objectives.py), dessinés sur la carte (UI/QuestCamps.lua). La quête cochée dans le journal du jeu
--- (QUEST_WATCH_LIST_CHANGED) ou choisie dans l'addon devient la quête suivie. Plus de flèche automatique :
--- un clic « guider » (camp, rendu, donneur) lance un guidage ordinaire (genre « qtrack »).
+-- Quêtes du journal : objectifs et camps (Data/QuestObjDB.lua, généré par tools/gen_objectives.py), rendu,
+-- noms des monstres. Plus de quête suivie ni de flèche automatique : GuideQuest lance un guidage ordinaire
+-- (genre « qtrack ») vers le camp le plus proche ou le rendu.
 local M = {}
 WK.modules.QuestTrack = M
 
@@ -12,13 +11,14 @@ function M:Config()
     local g = WK.DB.global
     g.questTrack = g.questTrack or {}
     local c = g.questTrack
-    c.tracked = c.tracked or {}       -- [perso] = n° de quête (donnée, hors profils)
     -- réglages de la carte de quête, de la flèche, de la barre « Quête » et des pastilles du suivi (retirés)
     c.hud, c.hudSolo, c.guide, c.actButtons, c.targetSkull, c.trackPins, c.tourBg = nil, nil, nil, nil, nil, nil, nil
-    if c.followWatch == nil then c.followWatch = true end -- quête cochée dans le journal du jeu = suivie
+    -- quête suivie retirée (le journal du jeu le fait) : plus de suivi ni de réglage
+    c.tracked, c.followWatch = nil, nil
     -- zones de quête sur la carte et la minicarte, volet des quêtes (retirés)
     c.map, c.zoneStyle, c.miniStyle, c.heat, c.hideGame, c.panel, c.panelFold = nil, nil, nil, nil, nil, nil, nil
-    if c.plateMarks == nil then c.plateMarks = true end   -- repères des monstres de la quête sur les plaques de nom
+    if c.plateMarks == nil then c.plateMarks = true end
+    if c.trackerMenu == nil then c.trackerMenu = true end -- Alt + clic sur une quête du suivi : notre menu   -- repères des monstres de la quête sur les plaques de nom
     return c
 end
 
@@ -321,24 +321,25 @@ function M:LogQuests()
 end
 
 ---------------------------------------------------------------------------
--- Quête suivie
+-- Guider vers une quête du journal (une fois, comme un lieu) : le rendu si elle est prête, sinon le camp le plus
+-- proche d'un objectif pas fini, sinon le point donné par le jeu
 ---------------------------------------------------------------------------
-function M:Tracked()
-    local qid = self:Config().tracked[WK:CharKey()]
-    if qid and not self:InLog(qid) then qid = nil end
-    return qid
-end
-
-function M:Track(qid)
-    local c = self:Config()
-    c.tracked[WK:CharKey()] = qid
-    self:Changed()
-end
-
-function M:Untrack()
-    local c = self:Config()
-    c.tracked[WK:CharKey()] = nil
-    self:Changed()
+function M:GuideQuest(qid)
+    local g = G()
+    if not (g and qid) then return nil end
+    local title = self:Title(qid) or ("#" .. qid)
+    local p, name
+    if not self:IsComplete(qid) then
+        local c = self:CampList(qid)[1]
+        if c then p, name = c.camp, (c.obj.name ~= "" and c.obj.name or c.obj.text) end
+    end
+    if not p then p, name = self:TurnIn(qid), T("Rendre la quête") end
+    if not (p and p.map) then WK:Print(T("Pas de lieu connu pour cette quête.")) return nil end
+    local t = { map = p.map, x = p.x, y = p.y, e = { p.x * 100, p.y * 100, 0, nil, nil, name, name, title } }
+    t.cont, t.wx, t.wy = g.ToWorld(p.map, p.x, p.y)
+    t.qid = qid
+    g:Start(t, title, "qtrack")
+    return t
 end
 
 function M:Changed()
@@ -423,27 +424,13 @@ local function soon(force)
         pendingForce = false
         if not on() then return end
         local sig = logSignature()
-        local track = M:Config().tracked[WK:CharKey()]
-        if not forced and sig and sig == M.lastSig and track == M.lastSigTrack then return end
-        M.lastSig, M.lastSigTrack = sig, track
-        local qid = M:Tracked()
-        if not qid and M:Config().tracked[WK:CharKey()] then M:Config().tracked[WK:CharKey()] = nil end
+        if not forced and sig and sig == M.lastSig then return end
+        M.lastSig = sig
         M:Changed()
     end)
 end
 
--- quête cochée dans le journal du jeu : elle devient la quête suivie
-WK:On("QUEST_WATCH_LIST_CHANGED", function(qid, added)
-    if not on() or not M:Config().followWatch then return end
-    if qid and added then M:Track(qid) end
-end)
 WK:On("QUEST_LOG_UPDATE", soon)
-WK:On("QUEST_TURNED_IN", function(qid)
-    if qid and qid == M:Config().tracked[WK:CharKey()] then M:Untrack() end
-end)
-WK:On("QUEST_REMOVED", function(qid)
-    if qid and qid == M:Config().tracked[WK:CharKey()] then M:Untrack() end
-end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() soon(true) end) end)
 WK:On("ZONE_CHANGED_NEW_AREA", function() soon(true) end)
 

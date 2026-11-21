@@ -610,11 +610,6 @@ UI:RegisterPage({
             oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
             y = y + oc:GetHeight() + GAP
         end
-        for _, oc in ipairs(UI:SectionCards("options", "general", { ["Rappels à la connexion"] = true })) do
-            oc:SetParent(root); oc:ClearAllPoints()
-            oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
-            y = y + oc:GetHeight() + GAP
-        end
 
         -- Halo : l'objet visé (plante, filon, coffre, flotteur…) brille (Modules/Glow.lua)
         -----------------------------------------------------------------------

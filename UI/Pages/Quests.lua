@@ -102,7 +102,21 @@ UI:RegisterPage({
         self.lSub:SetPoint("TOPRIGHT", -14, -14)
         self.lscroll = UI:Scroll(list)
         self.lscroll:SetPoint("TOPLEFT", 4, -40)
-        self.lscroll:SetPoint("BOTTOMRIGHT", -4, 6)
+        self.lscroll:SetPoint("BOTTOMRIGHT", -4, 28)
+        -- légende des couleurs d'état, sous la liste
+        self.lLegend = UI:Text(list, 10, C.muted)
+        self.lLegend:SetPoint("BOTTOMLEFT", 14, 9); self.lLegend:SetPoint("BOTTOMRIGHT", -14, 9)
+        self.lLegend:SetJustifyH("LEFT")
+        if self.lLegend.SetWordWrap then self.lLegend:SetWordWrap(false) end
+        local function paintLegend()
+            local parts = {}
+            for _, st in ipairs({ "avail", "log", "done", "high", "locked", "closed" }) do
+                local col, label = stateInfo(st)
+                parts[#parts + 1] = UI:Hex(col) .. "•|r " .. label
+            end
+            self.lLegend:SetText(table.concat(parts, "   "))
+        end
+        paintLegend()
         self.qrows = UI:Pool(function()
             local r = CreateFrame("Button", nil, self.lscroll.child)
             r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -184,26 +198,27 @@ UI:RegisterPage({
             return t
         end
 
-        -- quête suivie (Modules/QuestTrack.lua) : celle cochée dans le journal du jeu ; repères des plaques
+        -- repères des plaques de nom (UI/QuestTracker.lua) : monstres des quêtes du journal
         if QT() then
-            local tcard = card("Quête suivie", 40 + 2 * 36 + 16, "journal du jeu et plaques de nom")
-            local function qtoggle(field, after)
-                local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
-                    function(v)
-                        QT():Config()[field] = v
-                        if after then after(v) end
-                        QT():Changed()
-                    end)
-                table.insert(self.toggles, t)
-                return t
-            end
-            UI:SettingRow(tcard, -40, "Suivre la quête cochée dans le journal", nil, qtoggle("followWatch"), 50)
-            UI:SettingRow(tcard, -76, "Repère sur les plaques de nom",
-                "Pastille de la couleur de l'objectif au-dessus des monstres des quêtes du journal "
-                    .. "(plaques de nom affichées).",
-                qtoggle("plateMarks", function()
+            local tcard = card("Plaques de nom", 40 + 36 + 16, "monstres des quêtes du journal")
+            local t = UI:Toggle(tcard, function() return QT():Config().plateMarks end,
+                function(v)
+                    QT():Config().plateMarks = v
                     if UI.UpdateQuestPlateMarks then UI.UpdateQuestPlateMarks() end
-                end), 50)
+                end)
+            table.insert(self.toggles, t)
+            UI:SettingRow(tcard, -40, "Repère sur les plaques de nom",
+                "Pastille au-dessus des monstres des quêtes du journal (plaques de nom affichées).", t, 50)
+            local mcard = card("Suivi des quêtes", 40 + 36 + 16, "EllesmereUI ou le suivi du jeu")
+            local mt = UI:Toggle(mcard, function() return QT():Config().trackerMenu end,
+                function(v)
+                    QT():Config().trackerMenu = v
+                    if v and UI.ScanQuestTrackers then UI.ScanQuestTrackers() end
+                end)
+            table.insert(self.toggles, mt)
+            UI:SettingRow(mcard, -40, "Alt + clic : menu de la quête",
+                "Dans le suivi des quêtes (EllesmereUI ou celui du jeu) : guider, lien wowhead, chercher un groupe, "
+                    .. "jamais d'automatique. Les autres clics restent ceux du suivi.", mt, 50)
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
@@ -244,20 +259,6 @@ UI:RegisterPage({
             eb:SetText(UI.QUEST_LFG_DEFAULT)
         end)
 
-        local states = { "avail", "log", "done", "high", "locked", "closed" }
-        local gcard = card("Légende", 40 + #states * 24 + 8)
-        for i, st in ipairs(states) do
-            local col, label = stateInfo(st)
-            local d = UI:Icon(gcard, "circle", 8, nil, "ARTWORK")
-            d:SetPoint("TOPLEFT", 18, -44 - (i - 1) * 24)
-            d:SetVertexColor(unpack(col))
-            local l = UI:Text(gcard, 12)
-            l:SetPoint("LEFT", d, "RIGHT", 10, 0)
-            local txt = { avail = "Disponible", log = "Dans le journal", done = "Faite",
-                          high = "Trop haute pour le perso", locked = "Après une autre quête",
-                          closed = "Plus proposée (autre choix ou suite déjà prise)" }
-            l:SetText(T(txt[st]))
-        end
 
         -- Quêtes automatiques (Modules/AutoQuest.lua) : trois modes d'un clic, ce qui s'est passé, puis les
         -- détails (prendre, rendre, exceptions) repliés dans leur propre carte
@@ -379,15 +380,9 @@ UI:RegisterPage({
                         or T("Aucune exception."))
                 end
                 paintList()
-                dcard.bq = UI:Button(dcard, "Exclure la quête suivie", nil, 24, "secondary")
-                dcard.bq:SetPoint("TOPLEFT", 14, dy - 40)
-                dcard.bq:SetScript("OnClick", function()
-                    local qid = QT() and QT():Tracked()
-                    if qid then AQ:BlockQuest(qid, true) else WK:Print(T("Aucune quête suivie.")) end
-                    paintList()
-                end)
+                -- une quête : clic droit sur elle (menu des quêtes) » « Jamais d'automatique »
                 dcard.bn = UI:Button(dcard, "Exclure le PNJ ciblé", nil, 24, "secondary")
-                dcard.bn:SetPoint("LEFT", dcard.bq, "RIGHT", 8, 0)
+                dcard.bn:SetPoint("TOPLEFT", 14, dy - 40)
                 dcard.bn:SetScript("OnClick", function()
                     local id, name = AQ:TargetNpc()
                     if id then AQ:BlockNpc(id, name, true) else WK:Print(T("Cible un PNJ d'abord.")) end
@@ -429,10 +424,8 @@ UI:RegisterPage({
         for _, e in ipairs(self.sideCards or {}) do table.insert(all, e.c) end
         if not self.qct then
             self.qct = UI:CardTabs(self.side.child, "quests", {
-                { "track", T("Suivi et légende"),
-                  titles = { "Quête suivie", "Légende" } },
                 { "list", T("Quêtes montrées"),
-                  titles = { "Quêtes montrées", "Journal des données", "Liens wowhead", "Message de groupe" } },
+                  titles = { "Quêtes montrées", "Plaques de nom", "Suivi des quêtes", "Journal des données", "Liens wowhead", "Message de groupe" } },
                 { "auto", T("Quêtes automatiques"),
                   titles = { "Quêtes automatiques", "Quêtes automatiques : détails" } },
             }, function() self:Layout() end)
@@ -717,7 +710,7 @@ UI:RegisterPage({
                     row.sub:SetText(l.complete and T("à rendre") or T("absente de la base · position donnée par le jeu"))
                     row.state:Set(label, col)
                     row.guide:SetShown(true)
-                    row.guide:SetScript("OnClick", function() QT():Track(l.id) end)
+                    row.guide:SetScript("OnClick", function() QT():GuideQuest(l.id) end)
                     ly = ly + ROW_H
                 end
             end

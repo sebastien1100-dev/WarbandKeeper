@@ -420,7 +420,7 @@ local function updateMiniPin()
     local kind
     if t.kind == "qtrack" then
         local QT = WK.modules.QuestTrack
-        local q = t.qid or (QT and QT:Tracked())
+        local q = t.qid
         kind = (q and QT and QT:IsComplete(q)) and "turn" or nil
     end
     local e = PIN_KIND[kind or ""]

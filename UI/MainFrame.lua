@@ -1132,7 +1132,7 @@ UI.CHIPS = {
                 string.format(T("%s XP de quêtes disponibles à ton niveau"), tostring(xp)) })
         end
         table.insert(out, { T("Disponibles"), tostring(avail) })
-        -- journal du perso connecté (Modules/QuestTrack.lua) : places prises, quêtes à rendre, quête suivie
+        -- journal du perso connecté (Modules/QuestTrack.lua) : places prises, quêtes à rendre
         local QT = WK.modules.QuestTrack
         if QT and QT.LogQuests and key == WK:CharKey() then
             local log = QT:LogQuests()
@@ -1145,17 +1145,6 @@ UI.CHIPS = {
             for _, q in ipairs(log) do if q.complete then ready = ready + 1 end end
             table.insert(out, { T("Journal"), #log .. " / " .. maxQ, #log >= maxQ and C.warning or nil })
             if ready > 0 then table.insert(out, { T("À rendre"), tostring(ready), C.positive }) end
-            local tid = QT:Tracked()
-            if tid then
-                local title = QT:Title(tid) or ""
-                if #title > 28 then
-                    -- coupé sans casser une lettre accentuée (UTF-8)
-                    local cut = 26
-                    while cut > 1 and (title:byte(cut + 1) or 0) >= 128 and (title:byte(cut + 1) or 0) < 192 do cut = cut - 1 end
-                    title = title:sub(1, cut) .. "..."
-                end
-                table.insert(out, { T("Suivie"), title, { UI:Accent() } })
-            end
         end
         return out
     end,

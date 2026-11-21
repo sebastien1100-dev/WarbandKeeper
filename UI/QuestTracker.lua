@@ -6,14 +6,9 @@ local CreateFrame, UIParent = _G.CreateFrame, _G.UIParent
 -- Repères sur les plaques de nom (la carte de quête, la barre « Quête » et les pastilles du suivi du jeu
 -- ont été retirées avec la tournée et le guide de montée). Réglage QuestTrack:Config().plateMarks.
 local function Q() return WK.modules.QuestTrack end
--- couleur du n-ième objectif de la quête suivie
-local function objColor(i)
-    local cols = { { UI:Accent() }, C.warning, C.plan, C.info, C.mint, C.rule, C.positive }
-    return cols[((i or 1) - 1) % #cols + 1]
-end
 
--- Repères sur les plaques de nom : monstres des objectifs pas finis des quêtes du journal (couleur de
--- l'objectif pour la quête suivie, accent pour les autres) ; plus gros sur la cible.
+-- Repères sur les plaques de nom : monstres des objectifs pas finis des quêtes du journal, à la couleur de
+-- l'apparence ; plus gros sur la cible.
 local marks = {}
 local function plateNpc(unit)
     local guid = _G.UnitGUID and _G.UnitGUID(unit)
@@ -28,16 +23,12 @@ local function wantedNpcs()
     wantedAt = now
     _G.wipe(wanted)
     local q = Q()
-    local tracked = q:Tracked()
-    -- quête suivie d'abord (ses couleurs passent devant), puis les autres quêtes du journal
-    local ids = {}
-    if tracked then ids[1] = tracked end
-    for _, l in ipairs(q:LogQuests()) do if l.id ~= tracked and not l.complete then ids[#ids + 1] = l.id end end
-    for _, qid in ipairs(ids) do
-        if not q:IsComplete(qid) then
-            for i, o in ipairs(q:Objectives(qid)) do
+    local col = { UI:Accent() }
+    for _, l in ipairs(q:LogQuests()) do
+        local qid = l.id
+        if not l.complete and not q:IsComplete(qid) then
+            for _, o in ipairs(q:Objectives(qid)) do
                 if not o.done then
-                    local col = qid == tracked and objColor(i) or { UI:Accent() }
                     for _, id in ipairs(q:ObjectiveNpcs(o)) do if not wanted[id] then wanted[id] = col end end
                 end
             end
@@ -96,3 +87,102 @@ do
         updateMarks()
     end)
 end
+
+---------------------------------------------------------------------------
+-- Menu des quêtes sur le suivi des quêtes (EllesmereUI ou celui du jeu) : Alt + clic sur une quête ouvre notre
+-- menu (guider, lien wowhead, groupe, jamais d'automatique). Alt seulement : les clics gauche, droit et Maj
+-- restent ceux du suivi. Lignes reconnues par leur forme, sans rien changer au suivi (HookScript seulement) :
+-- suivi d'EllesmereUI sur WoW Forever (boutons sans nom, champs `kind` et `id` = n° de quête, ou
+-- n° de quête × 100 + objectif) ; suivi du jeu (champ `questID`, `id` d'un bloc). Réglage
+-- QuestTrack:Config().trackerMenu (vrai par défaut). /wk suivi : ce qui a été trouvé.
+---------------------------------------------------------------------------
+local hooked = setmetatable({}, { __mode = "k" })
+local roots = {}
+local found = { rows = 0, roots = {} }
+local function inLog(id)
+    local ql = _G.C_QuestLog
+    return id and ql and ql.GetLogIndexForQuestID and ql.GetLogIndexForQuestID(id) ~= nil
+end
+-- n° de quête d'une ligne du suivi
+local function rowQuest(f)
+    local id = rawget(f, "questID") or rawget(f, "id")
+    if type(id) ~= "number" or id <= 0 then return nil end
+    if inLog(id) then return id end
+    -- ligne d'objectif d'EllesmereUI : n° de quête × 100 + n° d'objectif
+    local q = math.floor(id / 100)
+    if q > 0 and inLog(q) then return q end
+    return nil
+end
+local function onRowClick(self)
+    if not (_G.IsAltKeyDown and _G.IsAltKeyDown()) then return end
+    if Q():Config().trackerMenu == false or not WK:FeatureOn("quests") then return end
+    local qid = rowQuest(self)
+    if qid and UI.QuestMenu then UI:QuestMenu({ qid }) end
+end
+local function hookRow(f)
+    if hooked[f] or not f.HookScript then return end
+    local kind = rawget(f, "kind")
+    -- lignes de quête d'EllesmereUI (pas les boutons d'objet protégés) ou blocs du suivi du jeu
+    if kind ~= nil and kind ~= "quest" and kind ~= "obj" and kind ~= "objective" then return end
+    if f.IsProtected and f:IsProtected() then return end
+    if not rowQuest(f) then return end
+    hooked[f] = true
+    found.rows = found.rows + 1
+    local hasClick = f.GetScript and f:GetScript("OnClick")
+    if hasClick then f:HookScript("OnClick", onRowClick)
+    else f:HookScript("OnMouseUp", onRowClick) end
+end
+local function walk(f, depth)
+    if depth > 8 or not f or not f.GetChildren then return end
+    for _, ch in ipairs({ f:GetChildren() }) do
+        hookRow(ch)
+        walk(ch, depth + 1)
+    end
+end
+-- racine d'un cadre : son ancêtre juste sous UIParent
+local function topOf(f)
+    local guard = 0
+    while f and f.GetParent and f:GetParent() and f:GetParent() ~= UIParent and guard < 20 do
+        f = f:GetParent(); guard = guard + 1
+    end
+    return f
+end
+local lastDiscover = -10
+local function discover()
+    for _, n in ipairs({ "EUI_CustomQuestTracker", "ObjectiveTrackerFrame", "QuestWatchFrame", "WatchFrame" }) do
+        local f = _G[n]
+        if f and not roots[f] then roots[f] = n end
+    end
+    -- parcours de tous les cadres : au plus toutes les 10 s
+    local now = _G.GetTime and _G.GetTime() or 0
+    if now - lastDiscover < 10 and now >= lastDiscover then return end
+    lastDiscover = now
+    -- suivi d'EllesmereUI sans nom : une ligne « quest » qui porte un n° du journal donne sa racine
+    if _G.EnumerateFrames then
+        local f, guard = _G.EnumerateFrames(), 0
+        while f and guard < 20000 do
+            if rawget(f, "kind") == "quest" and rowQuest(f) then
+                local top = topOf(f)
+                if top and not roots[top] then roots[top] = (top.GetName and top:GetName()) or "EllesmereUI" end
+                break
+            end
+            f = _G.EnumerateFrames(f); guard = guard + 1
+        end
+    end
+end
+local function scan()
+    if Q():Config().trackerMenu == false or not WK:FeatureOn("quests") then return end
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+    discover()
+    for f in pairs(roots) do walk(f, 0) end
+end
+UI.ScanQuestTrackers = scan
+function UI.QuestTrackerMenuDiag()
+    local names = {}
+    for _, n in pairs(roots) do names[#names + 1] = n end
+    return string.format("%s : %s · %s : %d", WK.T("suivis trouvés"), #names > 0 and table.concat(names, ", ") or "-",
+        WK.T("lignes de quête"), found.rows)
+end
+WK:On("PLAYER_ENTERING_WORLD", function() _G.C_Timer.After(4, scan) end)
+WK:On("QUEST_LOG_UPDATE", function() _G.C_Timer.After(0.5, scan) end)
+WK:On("QUEST_WATCH_LIST_CHANGED", function() _G.C_Timer.After(0.5, scan) end)

@@ -201,7 +201,7 @@ UI:RegisterPage({
                 lookSec.scroll:SetContentHeight(h + GAP)
             end
         end)
-        local LOOK_TABS = { { "styles", "Styles" }, { "colors", "Couleurs" }, { "text", "Texte" }, { "shapes", "Formes" }, { "window", "Fenêtre" } }
+        local LOOK_TABS = { { "styles", "Styles" }, { "colors", "Couleurs" }, { "text", "Texte" }, { "window", "Fenêtre" } }
         local panes = {}
         for _, t in ipairs(LOOK_TABS) do
             local pf = CreateFrame("Frame", nil, lc)
@@ -383,39 +383,7 @@ UI:RegisterPage({
                 hex:SetText(hexOf())
             end
             UI:SettingRow(pf, -46, "Ta couleur", "Code hexadécimal (#RRGGBB), puis Entrée.", hex, 120)
-            -- dégradé : 2e couleur des jauges (aucune, ou une des couleurs fixes)
-            local g2 = CreateFrame("Frame", nil, pf); g2:SetSize(10 * 24, 22)
-            local g2dots = {}
-            for n = 0, #UI.accents do
-                local b = CreateFrame("Button", nil, g2); b:SetSize(20, 20); b:SetPoint("LEFT", n * 24, 0)
-                b.ring = UI:Icon(b, "circle", 20, nil, "BACKGROUND"); b.ring:SetPoint("CENTER")
-                b.dot = UI:Icon(b, n == 0 and "close" or "circle", n == 0 and 12 or 14, nil, "ARTWORK"); b.dot:SetPoint("CENTER")
-                local a = UI.accents[n]
-                if a then b.dot:SetVertexColor(a[1], a[2], a[3], 1) else b.dot:SetVertexColor(unpack(C.muted)) end
-                b:SetScript("OnClick", function() cfg.accent2 = (n > 0) and n or nil; apply() end)
-                g2dots[n] = b
-            end
-            UI:OnAccent(function()
-                for n, b in pairs(g2dots) do
-                    local on = (cfg.accent2 or 0) == n
-                    local r, g, bl = UI:Accent()
-                    b.ring:SetVertexColor(r, g, bl, on and 1 or 0)
-                end
-            end)
-            UI:SettingRow(pf, -92, "Dégradé d'accent", "2e couleur des jauges (barre d'XP, progression…) ; la croix : aucune.", g2, 260)
-            local tintSeg = UI:Segmented(pf, { { "cold", "Froid" }, { "neutral", "Neutre" }, { "warm", "Chaud" } },
-                function(v) cfg.bgTint = (v ~= "neutral") and v or nil; apply() end, 28)
-            tintSeg:Select(cfg.bgTint or "neutral")
-            UI:SettingRow(pf, -138, "Teinte du fond", "Graphite plus bleuté ou plus chaud.", tintSeg, 230)
-            local perChar = UI:Toggle(pf, function() return cfg.accentPerChar end, function(v)
-                cfg.accentPerChar = v or nil
-                if v then cfg.charAccent = cfg.charAccent or {}; cfg.charAccent[WK:CharKey()] = cfg.charAccent[WK:CharKey()] or cfg.accent end
-                UI:SetAccent(UI:AccentChoice())
-            end)
-            UI:SettingRow(pf, -184, "Accent par perso", "Chaque perso garde sa couleur : choisis-la ci-dessus quand il est connecté.", perChar, 80)
-            local glow = UI:Slider(pf, 180, 0, 2, 0.1, function() return cfg.glow or 1 end,
-                function(v) cfg.glow = (math.abs(v - 1) < 0.01) and nil or v; apply() end, "%.1f")
-            UI:SettingRow(pf, -230, "Halo du cadre", "Lueur en haut de la fenêtre (0 : aucune).", glow, 260)
+            -- (dégradé, teinte du fond, accent par perso et halo : retirés ; les styles les règlent)
         end
 
         ---------------------------------------------------------------- Texte
@@ -427,39 +395,10 @@ UI:RegisterPage({
             local fontSeg = UI:Segmented(pf, fontOpts, function(v) cfg.font = v; apply(); UI:ApplyGameTooltipFonts() end, 28)
             fontSeg:Select(cfg.font or "friz")
             UI:SettingRow(pf, 0, "Police", "Texte de l'interface.", fontSeg, 290)
-            local tOpts = { { "same", "Texte" } }
-            for _, f in ipairs(UI.fonts) do table.insert(tOpts, { f.key, SHORT[f.key] or f.label }) end
-            local titleSeg = UI:Segmented(pf, tOpts, function(v) cfg.titleFont = (v ~= "same") and v or nil; apply() end, 28)
-            titleSeg:Select(cfg.titleFont or "same")
-            UI:SettingRow(pf, -46, "Police des titres", "Titres des cartes (Texte : la même que le texte).", titleSeg, 330)
             local tsize = UI:Slider(pf, 180, 85, 125, 5,
                 function() return math.floor((cfg.textScale or 1) * 100 + 0.5) end,
                 function(v) cfg.textScale = (v ~= 100) and v / 100 or nil; apply() end, "%d %%")
-            UI:SettingRow(pf, -92, "Taille du texte", "Fenêtre tout de suite ; éléments à l'écran au prochain /reload.", tsize, 260)
-            local conSeg = UI:Segmented(pf, { { "soft", "Doux" }, { "normal", "Normal" }, { "strong", "Fort" } },
-                function(v) cfg.contrast = (v ~= "normal") and v or nil; apply() end, 28)
-            conSeg:Select(cfg.contrast or "normal")
-            UI:SettingRow(pf, -138, "Contraste", "Textes secondaires : plus discrets ou plus lisibles.", conSeg, 230)
-        end
-
-        ---------------------------------------------------------------- Formes et effets
-        do
-            local pf = panes.shapes
-            local round = UI:Slider(pf, 180, 0, 1.4, 0.1, function() return cfg.rounding or 1 end,
-                function(v) cfg.rounding = v; apply() end, "%.1f")
-            UI:SettingRow(pf, 0, "Arrondi", "Fenêtres, cartes et boutons (0 : carré).", round, 260)
-            local cardSeg = UI:Segmented(pf, { { "flat", "Plat" }, { "line", "Liseré" }, { "halo", "Halo" } },
-                function(v) cfg.cardStyle = (v ~= "line") and v or nil; apply() end, 28)
-            cardSeg:Select(cfg.cardStyle or "line")
-            UI:SettingRow(pf, -46, "Style des cartes", "Plat : sans bordure · Liseré : fine bordure · Halo : lueur en haut.", cardSeg, 230)
-            local bgSeg = UI:Segmented(pf, { { "none", "Uni" }, { "grain", "Grain" }, { "stone", "Pierre" }, { "parchment", "Parchemin" } },
-                function(v) cfg.bgTexture = (v ~= "none") and v or nil; apply() end, 28)
-            bgSeg:Select(cfg.bgTexture or "none")
-            UI:SettingRow(pf, -92, "Fond de fenêtre", "Texture du jeu, très discrète.", bgSeg, 330)
-            local animSeg = UI:Segmented(pf, { { "none", "Aucune" }, { "soft", "Fondu" } },
-                function(v) cfg.anim = (v == "none") and "none" or nil end, 28)
-            animSeg:Select(cfg.anim == "none" and "none" or "soft")
-            UI:SettingRow(pf, -138, "Animation", "Fondu à l'ouverture de la fenêtre.", animSeg, 180)
+            UI:SettingRow(pf, -46, "Taille du texte", "Fenêtre tout de suite ; éléments à l'écran au prochain /reload.", tsize, 260)
         end
 
         ---------------------------------------------------------------- Fenêtre
@@ -632,33 +571,27 @@ UI:RegisterPage({
             end
             local PHc = function() return WK.modules.ProfHelp:Config() end
             local AHc = function() return WK.modules.AHScan:Config() end
-            ttCard("Apparence des infobulles", "fond, bordure et police", {
-                { "Infobulles du jeu au style de l'addon", "Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu.",
-                    function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end },
-            })
-            ttCard("Objets : prix", "ce que vaut un objet", {
+            ttCard("Objets", "prix, métiers et butin", {
                 { "Prix de l'hôtel des ventes", "Prix le plus bas à l'unité, moyenne sur 14 jours, quantité en vente et date du relevé.",
                     function() return AHc().tooltip end, function(v) AHc().tooltip = v end },
                 { "Prix de la pile", "Ajoute le prix d'une pile entière pour les objets qui s'empilent.",
                     function() return AHc().stack end, function(v) AHc().stack = v end },
                 { "Valeur de désenchantement", "Enchanteur sur le compte : ce que le désenchantement d'un objet rapporte en moyenne.",
                     function() return PHc().deTip end, function(v) PHc().deTip = v end },
-            })
-            ttCard("Objets : métiers", "à quoi sert un composant", {
                 { "Montée des métiers", "Dans l'infobulle d'un objet : les métiers qui s'en servent pour monter, et combien il en faut encore à chacun de tes persos.",
                     function() return cfg.tooltipProf ~= false end, function(v) cfg.tooltipProf = v end },
                 { "Fabriquer ou vendre", "Composant qu'une recette d'un de tes persos valorise mieux que la vente brute : la recette et ce qu'elle en tire à l'unité.",
                     function() return PHc().craftTip end, function(v) PHc().craftTip = v end },
-            })
-            ttCard("Objets : butin", "d'où vient un objet", {
                 { "Butin observé", "Dans l'infobulle d'un objet : les monstres qui le lâchent et à quelle fréquence, d'après les butins relevés par les joueurs (Everloot).",
                     function() return cfg.tooltipDrops ~= false end, function(v) cfg.tooltipDrops = v end },
             })
-            ttCard("PNJ", "au survol d'un personnage", {
+            ttCard("PNJ et apparence", "au survol d'un personnage, style des infobulles", {
                 { "Quêtes du donneur", "Au survol d'un PNJ : ses quêtes que ce perso n'a pas encore faites.",
                     function() return WK.modules.Quests:Config().tooltip end, function(v) WK.modules.Quests:Config().tooltip = v; WK:NotifyChanged() end },
                 { "Rares", "Au survol d'un rare : son butin notable, et lesquels de tes persos l'ont déjà tué.",
                     function() return WK.modules.Rares:Config().tooltip end, function(v) WK.modules.Rares:Config().tooltip = v end },
+                { "Infobulles du jeu au style de l'addon", "Objets, PNJ, sorts, liens du chat, comparaisons : fond, bordure et police de l'addon. Coupé : le style du jeu.",
+                    function() return cfg.gameTooltipFont ~= false end, function(v) cfg.gameTooltipFont = v; UI:ApplyGameTooltipFonts() end },
             })
         end
         local generalY = y -- la section Général reprend plus bas (après Prix des objets) à cette hauteur
@@ -702,20 +635,6 @@ UI:RegisterPage({
             function(v) cfg.closeInCombat = v end)
         UI:SettingRow(winCard, -40, "Fermer la fenêtre en combat",
             "Au début d'un combat. La mini-fenêtre de la session de farm reste affichée.", self.combatToggle, 80)
-        -- (affichée dans QoL > Général > Alertes, qui la reprend : dernière de la section)
-        local loginCard = card("Rappels à la connexion", 146)
-        self.loginToggle = UI:Toggle(loginCard,
-            function() return cfg.loginPopup ~= false end,
-            function(v) cfg.loginPopup = v end)
-        local loginRow = UI:SettingRow(loginCard, -40, "Fenêtre de rappels",
-            "À la connexion d'un perso : courrier à prendre, recharges prêtes, métier au plafond…", self.loginToggle, 190)
-        local preview = UI:Button(loginCard, "Aperçu", nil, 26, "ghost")
-        preview:SetPoint("RIGHT", self.loginToggle, "LEFT", -12, 0)
-        preview:SetScript("OnClick", function() UI:ShowLoginPopup(true) end)
-        UI:SettingRow(loginCard, -92, "Durée d'affichage", "La fenêtre se ferme seule au bout de ce temps (pas tant que la souris est dessus). 0 : elle reste jusqu'à ce que tu la fermes.",
-            UI:Slider(loginCard, 200, 0, 60, 1,
-                function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
-                function(v) cfg.loginPopupTime = v end, "%d s"), 220)
 
         -- Courrier : envoi, réception, dépôt en banque ---------------------------
         section("mail")
@@ -821,6 +740,20 @@ UI:RegisterPage({
             function(v) alerts.mailDays = v; WK:NotifyChanged() end, "%d j")
         UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
 
+        -- (section cachée « alerts » : affichée seulement dans QoL > Général > Alertes, qui la reprend)
+        local loginCard = card("Rappels à la connexion", 146)
+        self.loginToggle = UI:Toggle(loginCard,
+            function() return cfg.loginPopup ~= false end,
+            function(v) cfg.loginPopup = v end)
+        local loginRow = UI:SettingRow(loginCard, -40, "Fenêtre de rappels",
+            "À la connexion d'un perso : courrier à prendre, recharges prêtes, métier au plafond…", self.loginToggle, 190)
+        local preview = UI:Button(loginCard, "Aperçu", nil, 26, "ghost")
+        preview:SetPoint("RIGHT", self.loginToggle, "LEFT", -12, 0)
+        preview:SetScript("OnClick", function() UI:ShowLoginPopup(true) end)
+        UI:SettingRow(loginCard, -92, "Durée d'affichage", "La fenêtre se ferme seule au bout de ce temps (pas tant que la souris est dessus). 0 : elle reste jusqu'à ce que tu la fermes.",
+            UI:Slider(loginCard, 200, 0, 60, 1,
+                function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
+                function(v) cfg.loginPopupTime = v end, "%d s"), 220)
         -- Profils (UI/Pages/Profiles.lua) -------------------------------------------
         section("profiles")
         UI:BuildProfileCards(self, card)
@@ -976,8 +909,7 @@ UI:RegisterPage({
         do
             local gsec = self.sections.general
             local child = gsec.scroll.child
-            local TABS = { { "lang", "Langue", { ["Langue"] = true } }, { "tips", "Infobulles", { ["Apparence des infobulles"] = true, ["Objets : prix"] = true,
-                ["Objets : métiers"] = true, ["Objets : butin"] = true, ["PNJ"] = true } },
+            local TABS = { { "lang", "Langue", { ["Langue"] = true } }, { "tips", "Infobulles", { ["Objets"] = true, ["PNJ et apparence"] = true } },
                 { "win", "Fenêtre", { ["Bouton minimap"] = true, ["Combat"] = true } } }
             local function tabOf(c)
                 for _, t in ipairs(TABS) do if t[3][c.cardKey or ""] then return t[1] end end

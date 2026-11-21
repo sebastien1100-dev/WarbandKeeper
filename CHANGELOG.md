@@ -71,6 +71,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.32 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Suivi des quêtes d'EllesmereUI (ou celui du jeu) : Alt + clic sur une quête ouvre le menu de la quête (guider, lien wowhead, chercher un groupe, jamais d'automatique). Les autres clics restent ceux du suivi. Réglage dans la roue des Quêtes, /wk suivi pour vérifier.
+
+### Modifications
+- Plus de « quête suivie » dans l'addon (le journal du jeu le fait) : « Guider vers la quête » mène au camp le plus proche ou au rendu ; les repères des plaques de nom valent pour toutes les quêtes du journal.
+- Menu des quêtes (clic droit) : « Jamais d'automatique » / « Réautoriser l'automatique » remplacent le bouton « Exclure la quête suivie ».
+- Quêtes : la légende des couleurs est sous la liste des quêtes d'une zone (la carte « Légende » des réglages est retirée).
+- Apparence allégée : restent Styles, Couleur d'accent, Police, Taille du texte et l'onglet Fenêtre ; les réglages fins (dégradé, teinte, accent par perso, halo, police des titres, contraste, arrondi, style des cartes, fond, animation) sont retirés, les styles s'en chargent.
+- Infobulles : deux cartes au lieu de cinq (« Objets », « PNJ et apparence »).
+- Rappels à la connexion : réglés seulement dans QoL > Général > Alertes.
+
 ## v1.128.31 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
