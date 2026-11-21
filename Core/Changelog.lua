@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.115.3", date = "21/11/2026",
+        changed = {
+            "Journal des données plus lisible : étiquettes pleines NOUVELLE (turquoise) et CORRIGÉE (orange) avec le détail de la correction à côté, chiffres de chaque mise à jour en étiquettes, lignes plus hautes et alternées, quêtes de ta zone en tête puis rangées par zone et par niveau, « Afficher 50 de plus » au bout de la liste.",
+            "Pastilles des listes de quêtes (zone, tournée, fenêtre du donjon) : un point plein de la couleur devant le mot, bien plus visible.",
+        },
+        fixed = {
+            "Base de quêtes : 14 quêtes « <NYI> » (jamais ouvertes dans le jeu) apparaissaient dans les listes et le journal ; elles sont retirées.",
+        },
+    },
+    {
         version = "1.115.2", date = "21/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et prix et trajets et zones et opendata : 274 quêtes de plus, 1 objet de butin désormais découverts, guides de métiers revus par wowtbc.gg.",

@@ -4374,4 +4374,6 @@ WK.Locales.enUS.text = {
     ["Tous les donneurs (quêtes du donjon et prérequis) deviennent les étapes de ta tournée de quêtes, du plus proche au plus loin. Les quêtes qui attendent un prérequis sont cochées pour plus tard."] = "All givers (dungeon quests and prerequisites) become the steps of your quest tour, nearest first. Quests waiting for a prerequisite are ticked for later.",
     ["tous les donneurs dans ta tournée"] = "all givers in your tour",
     ["Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)"] = "Dungeon quest window (on screen, with the pick-up tour)",
+    ["Afficher %d de plus"] = "Show %d more",
+    ["(%d restantes ; « Ma zone » ou « Mon niveau » pour trier)"] = "(%d left; \"My zone\" or \"My level\" to sort)",
 }

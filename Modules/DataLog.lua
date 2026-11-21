@@ -67,7 +67,11 @@ function M:Badge(qid)
     local st = self:State(qid)
     if not st then return "" end
     local UI = WK.UI
-    return "  " .. UI:Hex(UI.colors[COLOR[st]] or UI.colors.muted) .. T(LABEL[st]) .. "|r"
+    local col = UI.colors[COLOR[st]] or UI.colors.muted
+    -- point plein de la couleur puis le mot (les listes sont du texte : pas de cadre possible)
+    local dot = string.format("|T%scircle:9:9:0:0:128:128:0:128:0:128:%d:%d:%d|t", UI.MEDIA,
+        math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255))
+    return "  " .. dot .. " " .. UI:Hex(col) .. T(LABEL[st]) .. "|r"
 end
 
 -- codes d'une correction en clair (« niveau 30 » 31 · donneur déplacé »)

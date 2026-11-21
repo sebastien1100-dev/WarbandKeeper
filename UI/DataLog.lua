@@ -29,6 +29,26 @@ local function dayLabel(t)
     return d
 end
 
+-- étiquette pleine (fond de couleur, texte sombre) : NOUVELLE, CORRIGÉE, +12 quêtes…
+local function newPill(parent)
+    local p = CreateFrame("Frame", nil, parent)
+    p:SetHeight(16)
+    p.bg = UI:Rounded(p, 8, 0, "ARTWORK", 1)
+    p.t = UI:Text(p, 9, nil, "OVERLAY"); p.t:SetPoint("CENTER", 0, 0)
+    function p:Set(text, col, soft)
+        self.t:SetText(text)
+        if soft then
+            self.bg:SetColor(col[1], col[2], col[3], 0.18); self.t:SetTextColor(col[1], col[2], col[3])
+        else
+            self.bg:SetColor(col[1], col[2], col[3], 0.95); self.t:SetTextColor(C.bg[1] * 0.6, C.bg[2] * 0.6, C.bg[3] * 0.6)
+        end
+        self:SetWidth(math.floor((self.t:GetStringWidth() or 40) + 14))
+        self:Show()
+    end
+    return p
+end
+UI.DataPill = newPill
+
 ---------------------------------------------------------------------------
 -- Onglet « Journal »
 ---------------------------------------------------------------------------
@@ -38,7 +58,7 @@ local MAX_LINES = 12
 function UI.BuildDataJournal(_, parent)
     local f = CreateFrame("Frame", nil, parent)
     f.filter = "all"
-    f.open = {}
+    f.open, f.more = {}, {}
     -- chiffres clés
     f.kpis = {}
     for i = 1, 4 do
@@ -71,6 +91,10 @@ function UI.BuildDataJournal(_, parent)
             e.title = UI:Text(e, 13); e.title:SetPoint("TOPLEFT", 48, -9); e.title:SetPoint("RIGHT", -80, 0)
             e.right = UI:Text(e, 10, C.muted); e.right:SetPoint("TOPRIGHT", -12, -10); e.right:SetJustifyH("RIGHT")
             e.sub = UI:Text(e, 11, C.muted); e.sub:SetPoint("TOPLEFT", 48, -28); e.sub:SetPoint("RIGHT", -12, 0)
+            e.pills = { newPill(e), newPill(e), newPill(e), newPill(e) }
+            e.pills[1]:SetPoint("TOPLEFT", 48, -28)
+            for k = 2, 4 do e.pills[k]:SetPoint("LEFT", e.pills[k - 1], "RIGHT", 6, 0) end
+            e.link = UI:Text(e, 11); e.link:SetPoint("LEFT", e.pills[1], "RIGHT", 10, 0)
             if e.sub.SetWordWrap then e.sub:SetWordWrap(true) end
             e:SetScript("OnClick", function(s) if s.onClick then s.onClick() end end)
             f.evs[i] = e
@@ -80,12 +104,18 @@ function UI.BuildDataJournal(_, parent)
     local function qline(i)
         local l = f.lines[i]
         if not l then
-            l = CreateFrame("Button", nil, child); l:SetHeight(18)
-            l.lv = UI:Text(l, 11); l.lv:SetPoint("LEFT", 0, 0); l.lv:SetWidth(24); l.lv:SetJustifyH("RIGHT")
-            l.name = UI:Text(l, 11); l.name:SetPoint("LEFT", 32, 0); l.name:SetPoint("RIGHT", -170, 0)
-            l.zone = UI:Text(l, 10, C.muted); l.zone:SetPoint("RIGHT", 0, 0); l.zone:SetWidth(160); l.zone:SetJustifyH("RIGHT")
+            l = CreateFrame("Button", nil, child); l:SetHeight(22)
+            l.stripe = l:CreateTexture(nil, "BACKGROUND"); l.stripe:SetAllPoints()
+            l.lv = UI:Text(l, 12); l.lv:SetPoint("LEFT", 0, 0); l.lv:SetWidth(24); l.lv:SetJustifyH("RIGHT")
+            l.name = UI:Text(l, 12); l.name:SetPoint("LEFT", 34, 0)
+            l.badge = newPill(l); l.badge:SetPoint("LEFT", l.name, "RIGHT", 8, 0)
+            l.desc = UI:Text(l, 11, C.warning); l.desc:SetPoint("LEFT", l.badge, "RIGHT", 8, 0)
+            l.zone = UI:Text(l, 11, C.muted); l.zone:SetPoint("RIGHT", -6, 0); l.zone:SetWidth(170); l.zone:SetJustifyH("RIGHT")
             l.hl = l:CreateTexture(nil, "HIGHLIGHT"); l.hl:SetAllPoints(); l.hl:SetColorTexture(1, 1, 1, 0.04)
-            l:SetScript("OnClick", function(s) if s.q then Q():GuideTo(s.q) end end)
+            l:SetScript("OnClick", function(s)
+                if s.q then Q():GuideTo(s.q)
+                elseif s.more then f.more[s.more] = (f.more[s.more] or MAX_LINES) + 50; f:Refresh() end
+            end)
             l:SetScript("OnEnter", function(s)
                 if not s.q then return end
                 UI:TooltipOwner(s, "ANCHOR_TOP")
@@ -181,41 +211,72 @@ function UI.BuildDataJournal(_, parent)
                     e.srcBg:SetColor(C.rule[1], C.rule[2], C.rule[3], 0.16); e.srcTx:SetText("Q"); e.srcTx:SetTextColor(unpack(C.rule))
                     e.title:SetText(string.format(T("Mise à jour de la base · %s"), x.src or "QuestieDB"))
                     e.right:SetText(date("%H:%M", it.t))
-                    local parts = {}
-                    if #(x.add or {}) > 0 then table.insert(parts, UI:Hex(C.positive) .. string.format(T("+%d quêtes"), #x.add) .. "|r") end
-                    if #(x.chg or {}) > 0 then table.insert(parts, UI:Hex(C.warning) .. string.format(T("%d corrigées"), #x.chg) .. "|r") end
-                    if #(x.rem or {}) > 0 then table.insert(parts, UI:Hex(C.negative) .. string.format(T("%d retirées"), #x.rem) .. "|r") end
-                    if (self.filter == "zone" or self.filter == "level") then table.insert(parts, string.format(T("%d pour toi"), #quests)) end
+                    e.sub:SetText("")
+                    local np = 0
+                    local function pl(text, col)
+                        np = np + 1
+                        e.pills[np]:Set(text, col, true)
+                    end
+                    if #(x.add or {}) > 0 then pl(string.format(T("+%d quêtes"), #x.add), C.positive) end
+                    if #(x.chg or {}) > 0 then pl(string.format(T("%d corrigées"), #x.chg), C.warning) end
+                    if #(x.rem or {}) > 0 then pl(string.format(T("%d retirées"), #x.rem), C.negative) end
+                    if (self.filter == "zone" or self.filter == "level") then pl(string.format(T("%d pour toi"), #quests), A) end
+                    for k = np + 1, 4 do e.pills[k]:Hide() end
                     local opened = self.open[it.t]
-                    table.insert(parts, UI:Hex(A) .. (opened and T("replier") or T("voir les quêtes")) .. "|r")
-                    e.sub:SetText(table.concat(parts, "   "))
-                    e.onClick = function() self.open[it.t] = not self.open[it.t]; self:Refresh() end
+                    e.link:ClearAllPoints()
+                    if np > 0 then e.link:SetPoint("LEFT", e.pills[np], "RIGHT", 10, 0) else e.link:SetPoint("TOPLEFT", 48, -28) end
+                    e.link:SetText(UI:Hex(A) .. (opened and T("replier") or (T("voir les quêtes") .. " »")) .. "|r")
+                    e.link:Show()
+                    e.onClick = function() self.open[it.t] = not self.open[it.t]; self.more[it.t] = nil; self:Refresh() end
                     if opened then
+                        -- ta zone d'abord, puis par zone et par niveau
+                        local here = Qm:PlayerZone()
+                        local zn = {}
+                        local function zkey(qq) local m = qq.q and qq.q.map; if not m then return "~" end; zn[m] = zn[m] or zoneName(m); return zn[m] end
+                        table.sort(quests, function(a, b)
+                            local ah, bh = a.q and a.q.map == here, b.q and b.q.map == here
+                            if ah ~= bh then return ah and true or false end
+                            local za, zb = zkey(a), zkey(b)
+                            if za ~= zb then return za < zb end
+                            return ((a.q and a.q.lvl) or 0) < ((b.q and b.q.lvl) or 0)
+                        end)
+                        local maxN = self.more[it.t] or MAX_LINES
                         local ly = 50
+                        local W2 = W - 48 - 12
                         for k, qq in ipairs(quests) do
-                            if k > MAX_LINES then break end
+                            if k > maxN then break end
                             nl = nl + 1
                             local l = qline(nl)
-                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 48, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            l.stripe:SetColorTexture(1, 1, 1, (k % 2 == 0) and 0.025 or 0)
                             local q = qq.q
-                            l.q = q
+                            l.q, l.more = q, nil
                             l.lv:SetText(q and tostring(q.lvl or "") or ""); l.lv:SetTextColor(levelColor(q and q.lvl))
-                            local nm = q and Qm:Name(q) or ("#" .. qq.id)
-                            if qq.kind == "new" then nm = nm .. "  " .. UI:Hex(C.rule) .. T("NOUVELLE") .. "|r"
-                            else nm = nm .. "  " .. UI:Hex(C.warning) .. dl:Describe(qq.codes) .. "|r" end
-                            l.name:SetText(nm)
+                            l.name:SetText(q and Qm:Name(q) or ("#" .. qq.id))
+                            if qq.kind == "new" then
+                                l.badge:Set(T("NOUVELLE"), C.rule); l.desc:SetText("")
+                            else
+                                l.badge:Set(T("CORRIGÉE"), C.warning); l.desc:SetText(dl:Describe(qq.codes))
+                            end
+                            -- le nom laisse la place à l'étiquette, au détail et à la zone
+                            local room = W2 - 34 - 180 - (l.badge:GetWidth() or 60) - 16 - ((l.desc:GetStringWidth() or 0) + 8)
+                            l.name:SetWidth(math.max(80, math.min((l.name:GetStringWidth() or 100) + 2, room)))
                             l.zone:SetText(q and zoneName(q.map) or "")
                             l:Show()
-                            ly = ly + 18
+                            ly = ly + 22
                         end
-                        if #quests > MAX_LINES then
+                        if #quests > maxN then
                             nl = nl + 1
                             local l = qline(nl)
-                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 48, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
-                            l.q = nil; l.lv:SetText(""); l.zone:SetText("")
-                            l.name:SetText(UI:Hex(C.muted) .. string.format(T("+ %d autres (filtre « Ma zone » ou « Mon niveau » pour trier)"), #quests - MAX_LINES) .. "|r")
+                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            l.stripe:SetColorTexture(0, 0, 0, 0)
+                            l.q = nil; l.lv:SetText(""); l.zone:SetText(""); l.badge:Hide(); l.desc:SetText("")
+                            l.name:SetWidth(W2 - 60)
+                            l.name:SetText(UI:Hex(A) .. string.format(T("Afficher %d de plus"), math.min(50, #quests - maxN)) .. "|r  " .. UI:Hex(C.muted)
+                                .. string.format(T("(%d restantes ; « Ma zone » ou « Mon niveau » pour trier)"), #quests - maxN) .. "|r")
+                            l.more = it.t
                             l:Show()
-                            ly = ly + 18
+                            ly = ly + 22
                         end
                         h = ly + 8
                     end
@@ -223,6 +284,8 @@ function UI.BuildDataJournal(_, parent)
                     local x = it.e
                     local q = Qm:Get(it.id)
                     e.srcBg:SetColor(C.plan[1], C.plan[2], C.plan[3], 0.16); e.srcTx:SetText("J"); e.srcTx:SetTextColor(unpack(C.plan))
+                    for k = 1, 4 do e.pills[k]:Hide() end
+                    e.link:Hide()
                     e.title:SetText(string.format(T("Quête apprise : %s"), x.n or ("#" .. it.id)))
                     e.right:SetText(date("%H:%M", it.t))
                     local parts = {}

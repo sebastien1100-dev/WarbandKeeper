@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.115.3 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Journal des données plus lisible : étiquettes pleines NOUVELLE (turquoise) et CORRIGÉE (orange) avec le détail de la correction à côté, chiffres de chaque mise à jour en étiquettes, lignes plus hautes et alternées, quêtes de ta zone en tête puis rangées par zone et par niveau, « Afficher 50 de plus » au bout de la liste.
+- Pastilles des listes de quêtes (zone, tournée, fenêtre du donjon) : un point plein de la couleur devant le mot, bien plus visible.
+
+### Corrections
+- Base de quêtes : 14 quêtes « <NYI> » (jamais ouvertes dans le jeu) apparaissaient dans les listes et le journal ; elles sont retirées.
+
 ## v1.115.2 — 21/11/2026
 
 _Un /reload suffit._

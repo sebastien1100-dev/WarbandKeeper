@@ -36,6 +36,10 @@ FIXES = {
 }
 
 
+# noms des quêtes que le jeu ne propose pas (pas encore faites, retirées, tests)
+JUNK = re.compile(r"^\s*(<NYI>|<TXT>|<UNUSED>|<TEST>|\[DEPRECATED\]|\[UNUSED\]|\[PH\]|ZZOLD|zzOLD)|DEPRECATED", re.I)
+
+
 def main(root):
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
     L.execute('QDB={}; ZDB={private={}}; QXP={}; L10N={questLookup={}}\n'
@@ -132,7 +136,8 @@ def main(root):
     per_map = {}
     skipped = 0
     for qid, q in quests.items():
-        if not q[1] or (q[24] or 0) & 1:
+        # répétables, et quêtes jamais ouvertes dans le jeu (« <NYI> », « [DEPRECATED] »…)
+        if not q[1] or (q[24] or 0) & 1 or JUNK.search(q[1]):
             skipped += 1
             continue
         sid, pos = starter(q)
