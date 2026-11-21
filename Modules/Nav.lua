@@ -110,12 +110,28 @@ local function lineLen(pts)
     return len
 end
 
+-- Construction étalée : dans une coroutine (calcul de trajet, construction de fond), la main est rendue au jeu
+-- dès qu'on a travaillé env. 6 ms ; hors coroutine, d'une traite. Avant, le graphe d'un continent (env. 8800
+-- points de chemins + les chemins appris) était construit d'un bloc : saccade à la connexion et à chaque
+-- changement de continent.
+local yieldAt
+local function maybeYield()
+    if not coroutine.running() then return end
+    local t = _G.debugprofilestop and _G.debugprofilestop()
+    if not t then return end
+    if not yieldAt then yieldAt = t return end
+    if t - yieldAt > 6 then coroutine.yield(); yieldAt = _G.debugprofilestop() end
+end
+local graphGen = 0 -- monte à chaque oubli des graphes (un graphe construit pendant ce temps est jeté)
 local function build(cont)
+    local gen = graphGen
     local g = newGraph()
     local G = Gd()
+    yieldAt = nil
     for map, lines in pairs(WK.RoadsDB or {}) do
         if mapCont(map) == cont then
             for _, line in ipairs(lines) do
+                maybeYield()
                 local pts = {}
                 for k = 1, #line - 1, 2 do
                     local c, wx, wy = G.ToWorld(map, line[k] / 100, line[k + 1] / 100)
@@ -126,6 +142,7 @@ local function build(cont)
         end
     end
     for _, pts in ipairs(data().trails[cont] or {}) do
+        maybeYield()
         g.learnedLen = g.learnedLen + addLine(g, pts, LEARNED)
     end
     -- bateaux appris sur ce continent : un saut d'un quai à l'autre (temps d'attente compté)
@@ -138,13 +155,37 @@ local function build(cont)
     end
     -- jonctions : les chemins qui se touchent se rejoignent
     for i = 1, g.n do
+        if i % 200 == 0 then maybeYield() end
         near(g, g.X[i], g.Y[i], JOIN, function(j, d) if j > i then link(g, i, j, d * 1.1) end end)
     end
-    graphs[cont] = g
+    if gen == graphGen then graphs[cont] = g end
     return g
 end
+-- construction de fond (apprentissage des chemins : jamais d'un bloc hors coroutine)
+local building = {}
+local bgFrame
+local function buildInBackground(cont)
+    if graphs[cont] or building[cont] then return end
+    building[cont] = coroutine.create(function() build(cont) end)
+    if not bgFrame then
+        bgFrame = _G.CreateFrame("Frame")
+        bgFrame:SetScript("OnUpdate", function(s)
+            local c, co = next(building) -- un continent à la fois
+            if not c then s:Hide() return end
+            local ok = coroutine.status(co) ~= "dead" and coroutine.resume(co)
+            if not ok or coroutine.status(co) == "dead" then building[c] = nil end
+        end)
+    end
+    bgFrame:Show()
+end
 local function graph(cont)
-    return graphs[cont] or build(cont)
+    if graphs[cont] then return graphs[cont] end
+    -- déjà en construction de fond et on est dans une coroutine : on attend qu'elle finisse
+    if building[cont] and coroutine.running() then
+        while building[cont] and not graphs[cont] do coroutine.yield() end
+        if graphs[cont] then return graphs[cont] end
+    end
+    return build(cont)
 end
 
 ---------------------------------------------------------------------------
@@ -532,8 +573,19 @@ end
 ---------------------------------------------------------------------------
 local AHEAD = 25
 local offSince, lastReplan = nil, 0
--- Point visé maintenant (monde) et texte de l'étape : x, y, texte, distance restante (m)
+-- Point visé maintenant (monde) et texte de l'étape : x, y, texte, distance restante (m).
+-- Gardé 0,1 s : l'épingle (env. 33 fois par seconde) et la flèche (20 fois) le demandaient chacune, avec à chaque
+-- fois la somme de toute la longueur restante du trajet.
+local wpCache = { at = -10 }
 function M:Waypoint()
+    local now = _G.GetTime and _G.GetTime() or 0
+    local c = wpCache
+    if c.route == self.route and now - c.at < 0.1 and now >= c.at then return c[1], c[2], c[3], c[4] end
+    local a, b, t, d = self:WaypointNow()
+    c.route, c.at, c[1], c[2], c[3], c[4] = self.route, now, a, b, t, d
+    return a, b, t, d
+end
+function M:WaypointNow()
     local r = self.route
     if not r or not r.legs[r.leg] then return nil end
     local cont, px, py = playerWorld()
@@ -573,7 +625,7 @@ function M:Waypoint()
         -- fin de l'étape à pied
         if k >= n and rest < 20 and r.legs[r.leg + 1] then
             r.leg, r.idx = r.leg + 1, 1
-            return self:Waypoint()
+            return self:WaypointNow()
         end
         local nextLeg = r.legs[r.leg + 1]
         local text
@@ -591,14 +643,14 @@ function M:Waypoint()
         -- changement de continent relance le calcul)
         if cont == leg.pc and dist(px, py, leg.px, leg.py) < 250 then
             r.leg, r.idx = r.leg + 1, 1
-            return self:Waypoint()
+            return self:WaypointNow()
         end
         return nil, nil, leg.label .. "  ·  " .. T("prête"), nil
     elseif leg.kind == "fly" then
         -- arrivé près du point d'atterrissage : étape suivante
         if dist(px, py, leg.bx, leg.by) < 80 and not (UnitOnTaxi and UnitOnTaxi("player")) then
             r.leg, r.idx = r.leg + 1, 1
-            return self:Waypoint()
+            return self:WaypointNow()
         end
         return leg.ax, leg.ay, string.format(T("Vol : %s » %s"), leg.from, leg.to), nil
     else
@@ -633,7 +685,11 @@ end)
 local cur -- tronçon en cours : { cont, pts, lastX, lastY }
 local function novel(cont, x, y)
     local g = graphs[cont]
-    if not g then g = graph(cont) end
+    if not g then
+        -- graphe pas encore prêt : construit en fond, ce point n'est pas appris (le suivant le sera)
+        buildInBackground(cont)
+        return false
+    end
     local found = false
     near(g, x, y, NOVEL, function() found = true end)
     return not found
@@ -878,7 +934,7 @@ learnRide = function(r, endP, learn)
         end
     end
     table.insert(boats, { kind = "boat", a = a, b = b, path = path })
-    graphs = {}
+    graphs = {}; graphGen = graphGen + 1; building = {}
     learn()
     WK:Print(string.format(T("Nouveau trajet en bateau appris : %s » %s."), a.name, b.name))
     if WK.UI.RefreshMapLayers then WK.UI:RefreshMapLayers() end
@@ -1068,7 +1124,7 @@ function M:Forget()
     cur = nil
     data().trails = {}
     data().boats = {}
-    graphs = {}
+    graphs = {}; graphGen = graphGen + 1; building = {}
     nLearned = 0
     if Gd().target then self:Plan(Gd().target) end
 end

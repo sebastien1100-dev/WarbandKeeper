@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.6", date = "21/11/2026",
+        changed = {
+            "Connexion et changement de continent plus fluides : le réseau des chemins du continent (des milliers de points) se construit petit à petit au lieu d'un bloc qui faisait sauter l'image.",
+            "Tournée de récolte : elle part des coins regroupés (un point par coin, les 150 plus récoltés) au lieu de tous les relevés ; plus de gel au clic, ni de doublons sautés un par un.",
+            "Guidage : le point suivant du trajet n'est plus recalculé environ 50 fois par seconde par l'épingle et la flèche, mais au plus 10 fois.",
+            "Sacs ouverts : les cadenas ne sont plus repeints toutes les 0,3 s, seulement quand le contenu change (et toutes les 2 s en secours).",
+            "Bandeau des quais : l'animation de la houle tourne à 20 images par seconde au lieu de chaque image.",
+        },
+    },
+    {
         version = "1.128.5", date = "21/11/2026",
         fixed = {
             "Voleur : « Alerte avant la fin des poisons » prévient de nouveau, dans le chat (une fois par poison qui s'achève). Sorts de classe : « Rappel au passage de niveau » écrit les sorts à apprendre dans le chat, une fois par niveau. (Ces deux réglages n'avaient plus d'effet depuis le retrait des rappels à l'écran.)",

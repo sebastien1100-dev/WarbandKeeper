@@ -312,8 +312,8 @@ local function build()
     f:SetScript("OnUpdate", function(s, el)
         s.clock = (s.clock or 0) + el
         s.anim = (s.anim or 0) + el
-        -- houle à chaque image (au plus 60 par seconde) pour une eau fluide
-        if s.anim >= 0.016 then s.anim = 0; s:Animate(s.clock) end
+        -- houle 20 fois par seconde (avant : à chaque image, plus de 130 textures à chaque fois)
+        if s.anim >= 0.05 then s.anim = 0; s:Animate(s.clock) end
         s.acc = (s.acc or 0) + el
         if s.acc < 1 then return end
         s.acc = 0

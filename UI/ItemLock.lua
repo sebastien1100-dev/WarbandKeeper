@@ -342,15 +342,34 @@ function UI:RefreshItemLocks()
     eachButton(paint)
 end
 
--- Sacs ouverts : on repeint (contenu qui bouge, objets qui arrivent en cache)
+-- Sacs ouverts : repeints quand quelque chose change (contenu, verrou du jeu, objet arrivé en cache, sac
+-- ouvert), et toutes les 2 s en secours ; avant, toutes les cases étaient repeintes toutes les 0,3 s
 local driver = CreateFrame("Frame")
 driver.acc = 0
+local repaintSoon = false
+local function soonRepaint()
+    if repaintSoon then return end
+    repaintSoon = true
+    _G.C_Timer.After(0.1, function()
+        repaintSoon = false
+        if anyBagOpen() then UI:RefreshItemLocks() end
+    end)
+end
 driver:SetScript("OnUpdate", function(s, el)
     s.acc = s.acc + el
-    if s.acc < 0.3 then return end
+    if s.acc < 2 then return end
     s.acc = 0
     if anyBagOpen() then UI:RefreshItemLocks() end
 end)
+for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "ITEM_LOCK_CHANGED", "GET_ITEM_INFO_RECEIVED", "BAG_OPEN",
+    "BAG_CONTAINER_UPDATE", "MERCHANT_SHOW", "MERCHANT_CLOSED", "INVENTORY_SEARCH_UPDATE" }) do
+    WK:On(ev, soonRepaint)
+end
+if _G.hooksecurefunc then
+    for _, fn in ipairs({ "ToggleBackpack", "ToggleBag", "OpenAllBags", "ToggleAllBags", "OpenBackpack" }) do
+        if _G[fn] then _G.hooksecurefunc(fn, soonRepaint) end
+    end
+end
 WK:On("PLAYER_REGEN_ENABLED", function() UI:RefreshItemLocks() end)
 -- Clic n'importe où : Alt + clic gauche sur une case de sac connue
 pcall(driver.RegisterEvent, driver, "GLOBAL_MOUSE_DOWN")

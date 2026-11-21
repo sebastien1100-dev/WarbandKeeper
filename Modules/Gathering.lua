@@ -383,8 +383,29 @@ function M:ZoneSpots(kind, zone, items)
 end
 
 M.tour = nil -- { map, pts = { { x, y } }, i, label }
+-- Relevés bruts (jusqu'à 3000, souvent au même endroit) regroupés par case de 1,25 % de la carte : un point par
+-- coin, au centre de ses récoltes ; les 150 coins les plus récoltés gardés. Avant, la tournée était calculée sur
+-- tous les relevés (gel de l'écran au clic, doublons sautés un par seconde).
+local CELL, MAX_TOUR = 80, 150
+local function tourCoins(spots)
+    local cells, list = {}, {}
+    for _, s in ipairs(spots) do
+        local k = math.floor(s.x * CELL) * 1000 + math.floor(s.y * CELL)
+        local c = cells[k]
+        if not c then c = { sx = 0, sy = 0, n = 0 }; cells[k] = c; list[#list + 1] = c end
+        c.sx, c.sy, c.n = c.sx + s.x, c.sy + s.y, c.n + 1
+    end
+    for _, c in ipairs(list) do c.x, c.y = c.sx / c.n, c.sy / c.n end
+    if #list > MAX_TOUR then
+        table.sort(list, function(a, b) return a.n > b.n end)
+        for i = #list, MAX_TOUR + 1, -1 do list[i] = nil end
+    end
+    return list
+end
+M.TourCoins = tourCoins
 function M:StartTour(kind, zone, items)
-    local pts, map = self:ZoneSpots(kind, zone, items)
+    local raw, map = self:ZoneSpots(kind, zone, items)
+    local pts = tourCoins(raw)
     if #pts < 2 then
         WK:Print(T("Pas assez de coins récoltés dans cette zone pour une tournée : récolte un peu, ils seront notés."))
         return false
