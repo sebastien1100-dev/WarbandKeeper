@@ -84,6 +84,22 @@ local function build()
     tv.markIcon:SetVertexColor(unpack(C.bg))
     tv.title = shade(UI:Text(tv, 13, C.text)); tv.title:SetPoint("TOPLEFT", 34, -34); tv.title:SetPoint("RIGHT", -10, 0)
     tv.title:SetJustifyH("LEFT"); if tv.title.SetWordWrap then tv.title:SetWordWrap(false) end
+    -- titre cliquable (UI/Wowhead.lua) : Maj + clic = lien wowhead, clic droit = menu
+    local function hitOn(parent, region)
+        local h = CreateFrame("Button", nil, parent)
+        h:SetAllPoints(region)
+        h:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        h:SetScript("OnClick", function(s, btn) if s.qids then UI:QuestClick(btn, s.qids, { step = s.step }) end end)
+        h:SetScript("OnEnter", function(s)
+            if not s.qids then return end
+            UI:TooltipOwner(s, "ANCHOR_LEFT")
+            GameTooltip:SetText(UI:QuestClickHint(), 0.8, 0.8, 0.8)
+            GameTooltip:Show()
+        end)
+        h:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return h
+    end
+    tv.titleHit = hitOn(tv, tv.title)
     tv.sub = shade(UI:Text(tv, 11, C.muted)); tv.sub:SetPoint("TOPLEFT", 34, -52); tv.sub:SetPoint("RIGHT", -10, 0)
     tv.sub:SetJustifyH("LEFT"); if tv.sub.SetWordWrap then tv.sub:SetWordWrap(false) end
     tv.objs = {}
@@ -98,6 +114,7 @@ local function build()
         r.num = UI:Text(r, 8, C.bg); r.num:SetPoint("CENTER", r.dot, "CENTER", 0, 0)
         r.txt = shade(UI:Text(r, 11, C.muted)); r.txt:SetPoint("LEFT", 22, 0); r.txt:SetPoint("RIGHT", 0, 0); r.txt:SetJustifyH("LEFT")
         if r.txt.SetWordWrap then r.txt:SetWordWrap(false) end
+        r.hit = hitOn(r, r.txt)
         tv.nexts[i] = r
     end
     -- « Sur ton chemin » (Modules/QuestPlan.lua, OnTheWay) : une ligne discrète sous les étapes suivantes ;
@@ -220,6 +237,8 @@ local function build()
         v.mark:SetText(letter or ""); v.mark:SetShown(letter ~= nil)
         v.markIcon:SetShown(letter == nil)
         v.title:SetText((d.title or "") .. (d.lvl and ("  " .. UI:Hex(C.dim) .. "[" .. d.lvl .. "]|r") or ""))
+        v.titleHit.qids = (d.qids and #d.qids > 0) and d.qids or nil
+        v.titleHit.step = not d.guide
         v.title:SetTextColor(unpack(d.paused and C.muted or C.text))
         -- titre sur deux lignes au besoin (il était coupé), puis la ligne d'infos dessous
         if v.title.SetWordWrap then v.title:SetWordWrap(true) end
@@ -258,6 +277,8 @@ local function build()
                 local c = kindColor(nx.kind)
                 row.dot:SetVertexColor(c[1], c[2], c[3], 1)
                 row.num:SetText(tostring(nx.n))
+                row.hit.qids = (nx.qids and #nx.qids > 0) and nx.qids or nil
+                row.hit.step = false
                 row.txt:SetText(nx.title .. (nx.dist and ("  " .. UI:Hex(C.dim) .. "· " .. string.format(T("%d m"), math.floor(nx.dist + 0.5)) .. "|r") or ""))
                 row:Show()
                 y = y - 18
@@ -438,7 +459,7 @@ function UI:RefreshQuestTracker()
                     t.cont, t.wx, t.wy = G.ToWorld(ns.map, ns.x, ns.y)
                     nd = G:Vector(me, t)
                 end
-                table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd })
+                table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd, qids = ns.qids })
             end
         end
         -- quête sur le chemin (pas dans la tournée)
@@ -449,7 +470,7 @@ function UI:RefreshQuestTracker()
                 sub = string.format(T("détour env. %d min"), ow.mins or 1) .. ((ow.e.xp or 0) > 0 and (" · " .. UI:Hex(C.gold) .. "+" .. ow.e.xp .. " XP|r") or "")
                     .. " · " .. T("clic : ajouter") }
         end
-        card:PaintTour({ kind = s.kind, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
+        card:PaintTour({ kind = s.kind, qids = s.qids, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
             objs = objs, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts, way = way })
         card:Show()
         return

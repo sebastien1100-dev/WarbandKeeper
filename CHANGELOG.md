@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.117.0 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Maj + clic sur une quête (tournée à l'écran, liste des étapes, Quêtes de ma zone, liste d'une zone, fenêtre des quêtes du donjon, journal des données) : une petite fenêtre donne son lien wowhead (WoW Forever), déjà sélectionné : Ctrl+C puis colle-le dans ton navigateur. Boutons « Version anglaise / française » et « Mettre dans le chat ».
+- Clic droit sur une quête aux mêmes endroits : petit menu « Guider vers le donneur », « Suivre cette quête », « Ignorer cette quête » (retirée de la tournée), « Lien wowhead », et « Passer cette étape » dans la tournée. Une étape à plusieurs quêtes propose chaque quête.
+- Langue du site wowhead (français ou anglais) dans la roue de la page Quêtes, carte « Liens wowhead ».
+
+### Modifications
+- Micro menu : le raccourci « Bateaux » devient « Destinations » (bateaux, zeppelins et vols) avec une icône de boussole.
+
 ## v1.116.1 — 21/11/2026
 
 _Un /reload suffit._

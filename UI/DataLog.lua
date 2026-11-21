@@ -112,7 +112,10 @@ function UI.BuildDataJournal(_, parent)
             l.desc = UI:Text(l, 11, C.warning); l.desc:SetPoint("LEFT", l.badge, "RIGHT", 8, 0)
             l.zone = UI:Text(l, 11, C.muted); l.zone:SetPoint("RIGHT", -6, 0); l.zone:SetWidth(170); l.zone:SetJustifyH("RIGHT")
             l.hl = l:CreateTexture(nil, "HIGHLIGHT"); l.hl:SetAllPoints(); l.hl:SetColorTexture(1, 1, 1, 0.04)
-            l:SetScript("OnClick", function(s)
+            l:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            l:SetScript("OnClick", function(s, btn)
+                if s.q and UI:QuestClick(btn, s.q.id) then return end
+                if btn ~= "LeftButton" then return end
                 if s.q then Q():GuideTo(s.q)
                 elseif s.more then f.more[s.more] = (f.more[s.more] or MAX_LINES) + 50; f:Refresh() end
             end)
@@ -121,6 +124,7 @@ function UI.BuildDataJournal(_, parent)
                 UI:TooltipOwner(s, "ANCHOR_TOP")
                 GameTooltip:SetText(Q():Name(s.q), 1, 1, 1)
                 if s.q.x then GameTooltip:AddLine(T("Clic : guider vers le donneur"), 0.6, 0.6, 0.6) end
+                GameTooltip:AddLine(UI:QuestClickHint(), 0.6, 0.6, 0.6)
                 GameTooltip:Show()
             end)
             l:SetScript("OnLeave", function() GameTooltip:Hide() end)

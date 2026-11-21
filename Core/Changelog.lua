@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.117.0", date = "21/11/2026", restart = true,
+        added = {
+            "Maj + clic sur une quête (tournée à l'écran, liste des étapes, Quêtes de ma zone, liste d'une zone, fenêtre des quêtes du donjon, journal des données) : une petite fenêtre donne son lien wowhead (WoW Forever), déjà sélectionné : Ctrl+C puis colle-le dans ton navigateur. Boutons « Version anglaise / française » et « Mettre dans le chat ».",
+            "Clic droit sur une quête aux mêmes endroits : petit menu « Guider vers le donneur », « Suivre cette quête », « Ignorer cette quête » (retirée de la tournée), « Lien wowhead », et « Passer cette étape » dans la tournée. Une étape à plusieurs quêtes propose chaque quête.",
+            "Langue du site wowhead (français ou anglais) dans la roue de la page Quêtes, carte « Liens wowhead ».",
+        },
+        changed = {
+            "Micro menu : le raccourci « Bateaux » devient « Destinations » (bateaux, zeppelins et vols) avec une icône de boussole.",
+        },
+    },
+    {
         version = "1.116.1", date = "21/11/2026",
         fixed = {
             "Persos et Résumé : un même perso pouvait apparaître deux fois (le jeu donnait son nom ou son royaume autrement d'une connexion à l'autre). À la connexion, la vieille fiche est fondue dans la fiche du perso connecté (or, quêtes faites, builds, listes, historique…) puis retirée ; un message le signale. Le perso est maintenant aussi reconnu par son identifiant du jeu.",

@@ -439,7 +439,9 @@ UI:RegisterPage({
             if QP():PlanZone(self.zone, ids) then self:ShowTab("tour") end
         end)
         self.qrows = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, self.lscroll.child)
+            local r = CreateFrame("Button", nil, self.lscroll.child)
+            r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            r:SetScript("OnClick", function(s, btn) if s.q then UI:QuestClick(btn, s.q.id) end end)
             r:SetHeight(ROW_H)
             r.line = r:CreateTexture(nil, "BACKGROUND")
             r.line:SetPoint("BOTTOMLEFT", 8, 0); r.line:SetPoint("BOTTOMRIGHT", -8, 0); r.line:SetHeight(1)
@@ -490,6 +492,7 @@ UI:RegisterPage({
                 end
                 if #who > 0 then GameTooltip:AddLine(T("Faite par") .. " " .. table.concat(who, ", "), 0.56, 0.82, 0.54, true) end
                 if q.nxt and Q:Get(q.nxt) then GameTooltip:AddLine(T("Suite :") .. " " .. Q:Name(Q:Get(q.nxt)), 0.6, 0.6, 0.6, true) end
+                GameTooltip:AddLine(UI:QuestClickHint(), 0.6, 0.6, 0.6, true)
                 GameTooltip:Show()
             end)
             r:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -613,6 +616,12 @@ UI:RegisterPage({
         -- journal des données (UI/DataLog.lua) : pastilles, durée, message après une mise à jour
         local jcard = card("Journal des données", 40 + 3 * 48 + 48, "ce qui arrive dans la base")
         self.dataLogSync = UI:BuildDataLogCard(jcard, self.toggles)
+        -- liens wowhead (UI/Wowhead.lua) : langue du site
+        local wcard = card("Liens wowhead", 40 + 48 + 8, "Maj + clic sur une quête")
+        local wseg = UI:Segmented(wcard, { { "fr", "Français" }, { "en", "Anglais" } },
+            function(v) WK.DB.global.settings.ui.wowheadLang = v end, 24)
+        wseg:Select(UI:WowheadLang())
+        UI:SettingRow(wcard, -40, "Langue du site", "Maj + clic sur une quête (tournée, listes, fenêtre du donjon, journal) : son lien wowhead (WoW Forever) à copier ; clic droit : petit menu.", wseg, 200)
 
         local states = { "avail", "log", "done", "high", "locked" }
         local gcard = card("Légende", 40 + #states * 24 + 8)
@@ -1658,8 +1667,10 @@ UI:RegisterPage({
             r.name:SetPoint("LEFT", 80, 0); r.name:SetPoint("RIGHT", -200, 0)
             r.info = UI:Text(r, 11, C.muted)
             r.info:SetPoint("RIGHT", -16, 0); r.info:SetWidth(180); r.info:SetJustifyH("RIGHT")
-            r:SetScript("OnClick", function(s)
-                if not (s.e and QP()) then return end
+            r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            r:SetScript("OnClick", function(s, btn)
+                if s.e and UI:QuestClick(btn, s.e.id) then return end
+                if btn ~= "LeftButton" or not (s.e and QP()) then return end
                 QP():SetPicked(s.e.id, not s.e.picked)
                 self:RefreshPick()
             end)
@@ -1671,6 +1682,7 @@ UI:RegisterPage({
                 GameTooltip:AddDoubleLine(T("Niveau"), tostring(s.e.lvl or "?"), 0.6, 0.6, 0.6, 1, 1, 1)
                 if (s.e.xp or 0) > 0 then GameTooltip:AddDoubleLine(T("Expérience"), tostring(s.e.xp), 0.6, 0.6, 0.6, 1, 1, 1) end
                 GameTooltip:AddLine(T("Clic : cocher ou décocher pour la tournée"), 0.6, 0.6, 0.6, true)
+                GameTooltip:AddLine(UI:QuestClickHint(), 0.6, 0.6, 0.6, true)
                 GameTooltip:Show()
             end)
             r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
@@ -1908,7 +1920,9 @@ UI:RegisterPage({
         self.tClear = UI:IconButton(tc, "trash", 26, "Vider la liste (décocher toutes les quêtes)", true)
         self.tClear:SetScript("OnClick", act(function(P) P:ClearPicks() end))
         self.tsteps = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, self.tscroll.child)
+            local r = CreateFrame("Button", nil, self.tscroll.child)
+            r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            r:SetScript("OnClick", function(s, btn) if s.step and s.step.qids then UI:QuestClick(btn, s.step.qids, { step = true }) end end)
             r:SetHeight(48)
             r.bg = r:CreateTexture(nil, "BACKGROUND"); r.bg:SetAllPoints()
             r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT"); r.bar:SetPoint("BOTTOMLEFT"); r.bar:SetWidth(3)
@@ -2061,6 +2075,7 @@ UI:RegisterPage({
             r.dot:SetVertexColor(col[1], col[2], col[3], 1)
             r.num:SetText(tostring(i))
             r.num:SetTextColor(unpack(past and C.text or C.onAccent))
+            r.step = s
             r.title:SetText(P:StepTitle(s, not past))
             r.title:SetTextColor(unpack(past and C.muted or C.text))
             r.sub:SetText(self:StepSub(P, s))

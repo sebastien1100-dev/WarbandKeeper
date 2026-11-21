@@ -256,7 +256,8 @@ local SHORTCUTS = {
     { key = "fishing", label = "Mode pêche", icon = function() return UI.MEDIA .. "fish" end, tint = true,
       run = function() WK.modules.Fishing:Toggle() end,
       dot = function() return WK.modules.Fishing.active and C.positive or nil end },
-    { key = "boats", label = "Bateaux et zeppelins", icon = function() return UI.MEDIA .. "boat" end, tint = true,
+    { key = "boats", label = "Destinations", icon = function() return UI.MEDIA .. "compass" end, tint = true,
+      tip = function() return T("bateaux, zeppelins et vols") end,
       run = function() if UI.ToggleBoatBoard then UI:ToggleBoatBoard() end end,
       -- pastille verte : un quai d'une ligne de ta faction est près de toi
       dot = function()
