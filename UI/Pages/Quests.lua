@@ -213,7 +213,6 @@ UI:RegisterPage({
             local mt = UI:Toggle(mcard, function() return QT():Config().trackerMenu end,
                 function(v)
                     QT():Config().trackerMenu = v
-                    if v and UI.ScanQuestTrackers then UI.ScanQuestTrackers() end
                 end)
             table.insert(self.toggles, mt)
             UI:SettingRow(mcard, -40, "Alt + clic : menu de la quête",

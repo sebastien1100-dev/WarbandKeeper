@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.33", date = "21/11/2026",
+        fixed = {
+            "Alt + clic sur une quête du suivi (EllesmereUI ou celui du jeu) : le menu de la quête ne s'ouvrait pas. La quête est maintenant reconnue sous la souris, par son n° ou par son titre ; /wk suivi dit ce qui a été vu au dernier Alt + clic.",
+        },
+    },
+    {
         version = "1.128.32", date = "21/11/2026",
         added = {
             "Suivi des quêtes d'EllesmereUI (ou celui du jeu) : Alt + clic sur une quête ouvre le menu de la quête (guider, lien wowhead, chercher un groupe, jamais d'automatique). Les autres clics restent ceux du suivi. Réglage dans la roue des Quêtes, /wk suivi pour vérifier.",

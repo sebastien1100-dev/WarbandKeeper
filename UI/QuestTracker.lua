@@ -90,99 +90,134 @@ end
 
 ---------------------------------------------------------------------------
 -- Menu des quêtes sur le suivi des quêtes (EllesmereUI ou celui du jeu) : Alt + clic sur une quête ouvre notre
--- menu (guider, lien wowhead, groupe, jamais d'automatique). Alt seulement : les clics gauche, droit et Maj
--- restent ceux du suivi. Lignes reconnues par leur forme, sans rien changer au suivi (HookScript seulement) :
--- suivi d'EllesmereUI sur WoW Forever (boutons sans nom, champs `kind` et `id` = n° de quête, ou
--- n° de quête × 100 + objectif) ; suivi du jeu (champ `questID`, `id` d'un bloc). Réglage
--- QuestTrack:Config().trackerMenu (vrai par défaut). /wk suivi : ce qui a été trouvé.
+-- menu (guider, lien wowhead, groupe, jamais d'automatique). Rien n'est accroché aux cadres du suivi (leur forme
+-- change d'un addon à l'autre) : au relâchement d'un clic gauche avec Alt, le cadre sous la souris et ses parents
+-- sont lus ; la quête est reconnue par un n° du journal porté par le cadre (questID, id, n° × 100 + objectif…)
+-- ou par le titre affiché (texte d'une quête du journal). Les autres clics restent ceux du suivi.
+-- Réglage QuestTrack:Config().trackerMenu (vrai par défaut). /wk suivi : ce qui a été vu au dernier Alt + clic.
 ---------------------------------------------------------------------------
-local hooked = setmetatable({}, { __mode = "k" })
-local roots = {}
-local found = { rows = 0, roots = {} }
+local last = { at = nil, frames = {}, quest = nil, how = nil }
 local function inLog(id)
     local ql = _G.C_QuestLog
-    return id and ql and ql.GetLogIndexForQuestID and ql.GetLogIndexForQuestID(id) ~= nil
+    return type(id) == "number" and id > 0 and ql and ql.GetLogIndexForQuestID and ql.GetLogIndexForQuestID(id) ~= nil
 end
--- n° de quête d'une ligne du suivi
-local function rowQuest(f)
-    local id = rawget(f, "questID") or rawget(f, "id")
-    if type(id) ~= "number" or id <= 0 then return nil end
-    if inLog(id) then return id end
-    -- ligne d'objectif d'EllesmereUI : n° de quête × 100 + n° d'objectif
-    local q = math.floor(id / 100)
+local function numQuest(v)
+    if type(v) ~= "number" or v <= 0 or v ~= math.floor(v) then return nil end
+    if inLog(v) then return v end
+    local q = math.floor(v / 100) -- ligne d'objectif : n° de quête × 100 + objectif
     if q > 0 and inLog(q) then return q end
     return nil
 end
-local function onRowClick(self)
-    if not (_G.IsAltKeyDown and _G.IsAltKeyDown()) then return end
+-- titres du journal (en minuscules, sans codes de couleur) » n° de quête
+local function logTitles()
+    local out = {}
+    for _, l in ipairs(Q():LogQuests()) do
+        if l.title then out[l.title:lower()] = l.id end
+    end
+    return out
+end
+local function clean(t)
+    if type(t) ~= "string" then return nil end
+    t = t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("^%s*%[[^%]]*%]%s*", ""):gsub("^%s+", ""):gsub("%s+$", "")
+    return t:lower()
+end
+local function textsOf(f)
+    local out = {}
+    if f.GetText then
+        local ok, t = pcall(f.GetText, f)
+        if ok then out[#out + 1] = t end
+    end
+    for _, k in ipairs({ "text", "Text", "title", "Title", "label", "HeaderText", "name" }) do
+        local fs = rawget(f, k)
+        if type(fs) == "table" and fs.GetText then
+            local ok, t = pcall(fs.GetText, fs)
+            if ok then out[#out + 1] = t end
+        end
+    end
+    if f.GetRegions then
+        for _, r in ipairs({ f:GetRegions() }) do
+            if r.GetText then local ok, t = pcall(r.GetText, r); if ok then out[#out + 1] = t end end
+        end
+    end
+    return out
+end
+-- quête d'un cadre : champs connus, puis tout champ numérique, puis titre affiché
+local KEYS = { "questID", "questId", "questid", "id", "quest", "key", "logIndex" }
+local function questOf(f, titles)
+    for _, k in ipairs(KEYS) do
+        local q = numQuest(rawget(f, k))
+        if q then return q, "champ " .. k end
+    end
+    if f.GetQuestID then
+        local ok, v = pcall(f.GetQuestID, f)
+        local q = ok and numQuest(v)
+        if q then return q, "GetQuestID" end
+    end
+    local n = 0
+    for k, v in pairs(f) do
+        n = n + 1
+        if n > 60 then break end
+        if type(k) == "string" then local q = numQuest(v); if q then return q, "champ " .. k end end
+    end
+    for _, t in ipairs(textsOf(f)) do
+        local c = clean(t)
+        if c and titles[c] then return titles[c], "titre" end
+    end
+    return nil
+end
+local function underMouse()
+    local list = {}
+    if _G.GetMouseFoci then
+        local ok, foci = pcall(_G.GetMouseFoci)
+        if ok and type(foci) == "table" then for _, f in ipairs(foci) do list[#list + 1] = f end end
+    end
+    if #list == 0 and _G.GetMouseFocus then
+        local ok, f = pcall(_G.GetMouseFocus)
+        if ok and f then list[1] = f end
+    end
+    return list
+end
+local function frameName(f)
+    local n = f.GetName and f:GetName()
+    return n or ((f.GetObjectType and f:GetObjectType() or "?") .. " sans nom")
+end
+local function onAltClick()
     if Q():Config().trackerMenu == false or not WK:FeatureOn("quests") then return end
-    local qid = rowQuest(self)
-    if qid and UI.QuestMenu then UI:QuestMenu({ qid }) end
-end
-local function hookRow(f)
-    if hooked[f] or not f.HookScript then return end
-    local kind = rawget(f, "kind")
-    -- lignes de quête d'EllesmereUI (pas les boutons d'objet protégés) ou blocs du suivi du jeu
-    if kind ~= nil and kind ~= "quest" and kind ~= "obj" and kind ~= "objective" then return end
-    if f.IsProtected and f:IsProtected() then return end
-    if not rowQuest(f) then return end
-    hooked[f] = true
-    found.rows = found.rows + 1
-    local hasClick = f.GetScript and f:GetScript("OnClick")
-    if hasClick then f:HookScript("OnClick", onRowClick)
-    else f:HookScript("OnMouseUp", onRowClick) end
-end
-local function walk(f, depth)
-    if depth > 8 or not f or not f.GetChildren then return end
-    for _, ch in ipairs({ f:GetChildren() }) do
-        hookRow(ch)
-        walk(ch, depth + 1)
-    end
-end
--- racine d'un cadre : son ancêtre juste sous UIParent
-local function topOf(f)
-    local guard = 0
-    while f and f.GetParent and f:GetParent() and f:GetParent() ~= UIParent and guard < 20 do
-        f = f:GetParent(); guard = guard + 1
-    end
-    return f
-end
-local lastDiscover = -10
-local function discover()
-    for _, n in ipairs({ "EUI_CustomQuestTracker", "ObjectiveTrackerFrame", "QuestWatchFrame", "WatchFrame" }) do
-        local f = _G[n]
-        if f and not roots[f] then roots[f] = n end
-    end
-    -- parcours de tous les cadres : au plus toutes les 10 s
-    local now = _G.GetTime and _G.GetTime() or 0
-    if now - lastDiscover < 10 and now >= lastDiscover then return end
-    lastDiscover = now
-    -- suivi d'EllesmereUI sans nom : une ligne « quest » qui porte un n° du journal donne sa racine
-    if _G.EnumerateFrames then
-        local f, guard = _G.EnumerateFrames(), 0
-        while f and guard < 20000 do
-            if rawget(f, "kind") == "quest" and rowQuest(f) then
-                local top = topOf(f)
-                if top and not roots[top] then roots[top] = (top.GetName and top:GetName()) or "EllesmereUI" end
-                break
+    local titles = logTitles()
+    last.at, last.frames, last.quest, last.how = _G.time and _G.time() or 0, {}, nil, nil
+    for _, f in ipairs(underMouse()) do
+        local g, depth = f, 0
+        while g and g ~= UIParent and depth < 8 do
+            local nm = frameName(g)
+            if #last.frames < 6 then last.frames[#last.frames + 1] = nm end
+            if nm:find("^WarbandKeeper") then return end -- nos propres fenêtres : leur clic suffit
+            local q, how = questOf(g, titles)
+            if q then
+                last.quest, last.how = q, how
+                if UI.QuestMenu then UI:QuestMenu({ q }) end
+                return
             end
-            f = _G.EnumerateFrames(f); guard = guard + 1
+            g = g.GetParent and g:GetParent() or nil
+            depth = depth + 1
         end
     end
 end
-local function scan()
-    if Q():Config().trackerMenu == false or not WK:FeatureOn("quests") then return end
-    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
-    discover()
-    for f in pairs(roots) do walk(f, 0) end
+UI.QuestTrackerAltClick = onAltClick
+-- relâchement d'un clic gauche avec Alt (surveillé seulement quand Alt est enfoncé)
+do
+    local watch = CreateFrame("Frame")
+    local wasDown = false
+    watch:SetScript("OnUpdate", function()
+        if not (_G.IsAltKeyDown and _G.IsAltKeyDown()) then wasDown = false return end
+        local down = _G.IsMouseButtonDown and _G.IsMouseButtonDown("LeftButton") or false
+        if wasDown and not down then pcall(onAltClick) end
+        wasDown = down
+    end)
 end
-UI.ScanQuestTrackers = scan
 function UI.QuestTrackerMenuDiag()
-    local names = {}
-    for _, n in pairs(roots) do names[#names + 1] = n end
-    return string.format("%s : %s · %s : %d", WK.T("suivis trouvés"), #names > 0 and table.concat(names, ", ") or "-",
-        WK.T("lignes de quête"), found.rows)
+    if not last.at then
+        return WK.T("Aucun Alt + clic vu pour l'instant : Alt + clic sur une quête du suivi, puis /wk suivi.")
+    end
+    return string.format("%s : %s · %s : %s", WK.T("sous la souris"), table.concat(last.frames, " > "),
+        WK.T("quête"), last.quest and (last.quest .. " (" .. (last.how or "?") .. ")") or WK.T("non trouvée"))
 end
-WK:On("PLAYER_ENTERING_WORLD", function() _G.C_Timer.After(4, scan) end)
-WK:On("QUEST_LOG_UPDATE", function() _G.C_Timer.After(0.5, scan) end)
-WK:On("QUEST_WATCH_LIST_CHANGED", function() _G.C_Timer.After(0.5, scan) end)

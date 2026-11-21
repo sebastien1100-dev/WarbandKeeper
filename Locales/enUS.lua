@@ -4318,8 +4318,9 @@ WK.Locales.enUS.text = {
         "Alt + click: quest menu",
     ["Dans le suivi des quêtes (EllesmereUI ou celui du jeu) : guider, lien wowhead, chercher un groupe, jamais d'automatique. Les autres clics restent ceux du suivi."] =
         "In the quest tracker (EllesmereUI or the game's): guide, wowhead link, look for a group, never automatic. Other clicks stay the tracker's.",
-    ["suivis trouvés"] =
-        "trackers found",
-    ["lignes de quête"] =
-        "quest rows",
+    ["Aucun Alt + clic vu pour l'instant : Alt + clic sur une quête du suivi, puis /wk suivi."] =
+        "No Alt + click seen yet: Alt + click a quest in the tracker, then /wk suivi.",
+    ["sous la souris"] = "under the mouse",
+    ["quête"] = "quest",
+    ["non trouvée"] = "not found",
 }
