@@ -347,7 +347,7 @@ UI:RegisterPage({
 
     -- Vues d'aide au rangement : objets dispersés (à regrouper) et objets oubliés en banque.
     RefreshHelp = function(self, sel)
-        local Inv, V = WK.modules.Inventory, WK.modules.Value
+        local Inv = WK.modules.Inventory
         local chars = WK.DB.global.characters
         local function who(key)
             if key == "warband" then return T("Bataillon") end

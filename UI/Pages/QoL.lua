@@ -1142,7 +1142,6 @@ UI:RegisterPage({
             return b
         end
         local ly = -40
-        local famHeads = {}
         for _, fam in ipairs(ML.FAMILIES) do
             local list = {}
             for _, l in ipairs(ML.LAYERS) do if l.family == fam.key then table.insert(list, l) end end
@@ -2100,21 +2099,6 @@ UI:RegisterPage({
             UI:SettingRow(xb, -408, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
                 toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
 
-            local function hbar(parent, color)
-                local tr = parent:CreateTexture(nil, "ARTWORK")
-                tr:SetTexture("Interface\\Buttons\\WHITE8X8")
-                tr:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.6)
-                tr:SetHeight(6)
-                local fi = parent:CreateTexture(nil, "OVERLAY")
-                fi:SetTexture("Interface\\Buttons\\WHITE8X8")
-                fi:SetHeight(6)
-                fi:SetPoint("LEFT", tr, "LEFT")
-                local function set(v, r, g, b)
-                    fi:SetVertexColor(r, g, b, 1)
-                    fi:SetWidth(math.max(0.01, (tr:GetWidth() or 0) * math.max(0, math.min(1, v))))
-                end
-                return tr, set
-            end
 
             -- rythme de la session
             local xs = card("Rythme de la session", 40 + 5 * 20 + 44, "depuis la connexion")
@@ -2624,7 +2608,6 @@ UI:RegisterPage({
                 t:SetSpacing(8)
             end
             if class == "HUNTER" then
-                local H = WK.modules.Hunter
                 -- Cadre du familier (UI/PetCard.lua)
                 local pc = UI.PetCardConfig()
                 subtab("Familier", 3)

@@ -35,7 +35,6 @@ local function todoItems()
     end
     local now = time()
     local mailDays = WK.DB.global.settings.alerts.mailDays or 3
-    local me = select(2, WK.DB:Me())
     for _, e in ipairs(UI:SortedCharacters()) do
         local c, name = e.c, WK:CharName(e.c, e.key)
         -- Courrier en attente

@@ -202,7 +202,6 @@ function M:PendingCount()
     pendingMemo = { bags = bags, at = now, n = n }
     return n
 end
-function M.ForgetPending() pendingMemo = nil end
 
 -- Envoie le prochain courrier de la file. La suite est déclenchée par MAIL_SEND_SUCCESS.
 function M:SendNext()
@@ -358,7 +357,6 @@ end
 if _G.hooksecurefunc and _G.SendMail then
     _G.hooksecurefunc("SendMail", function(to) M.OnSendMail(to) end)
 end
-M.ManualPending = function() return manualPending end
 
 WK:On("MAIL_SEND_SUCCESS", function()
     if not sending and manualPending then

@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
-local T = function(s) return WK.T(s) end
 
 -- HUD de récolte : la minicarte du jeu est déplacée au centre de l'écran, agrandie et transparente,
 -- dézoomée au maximum et tournée avec le perso. Les points jaunes du pistage (filons, plantes),
@@ -22,7 +21,6 @@ function UI.GatherHUDConfig()
     return c
 end
 
-function UI:GatherHUDShown() return saved ~= nil end
 
 function UI:ApplyGatherHUD()
     if not saved or not Minimap then return end

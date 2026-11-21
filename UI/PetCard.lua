@@ -234,7 +234,6 @@ local function setClickable(f, on)
     f.clickable = on
     for _, b in ipairs({ f.click, f.feedSec, f.mendSec }) do b:EnableMouse(on) end
 end
-function UI:PetCardPaint() if card then card:Paint() end end
 
 local function paint(self, demo)
     local o = cfg()

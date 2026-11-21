@@ -117,7 +117,6 @@ local function knownByAnyone(id)
     local name = rec.s and WK.SpellInfo and WK.SpellInfo(rec.s)
     return name ~= nil and learned.names[name] == true
 end
-M.KnownByAnyone = function(_, id) return knownByAnyone(id) end
 
 -- Objets demandés par les quêtes du journal (objectifs de type objet, faits ou pas : il faut encore les
 -- rendre) : { [nom de l'objet en minuscules] = titre de la quête } ; relu après chaque QUEST_LOG_UPDATE
@@ -255,7 +254,6 @@ WK:On("BAG_UPDATE_DELAYED", function() prunesoon(3) end)
 WK:On("MERCHANT_CLOSED", function() prunesoon(5) end)
 function M:UnlockAll() wipe(db().items); changed() end
 function M:Never(id) db().never[id] = true end
-function M:IsNever(id) return db().never[id] == true end
 function M:RuleChanged() changed() end
 
 -- Objets verrouillés présents sur le compte (sacs, banque, courrier, bataillon) ou posés à la main :

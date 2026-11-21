@@ -162,7 +162,6 @@ function M:Class(class) return self:Config().classes[class] end
 -- Comptages
 ---------------------------------------------------------------------------
 function M:ReagentName(r)
-    local id = r.id or (r.ids and r.ids[1])
     if r.id then
         local n = WK.GetItemInfo(r.id)
         if n then return n end
@@ -880,11 +879,6 @@ function M:UpdateFeedMacro(create)
     return true
 end
 
-function M:PickupFeedMacro()
-    if not self:UpdateFeedMacro(true) then return end
-    local idx = self:MacroIndex()
-    if idx > 0 and PickupMacro then PickupMacro(idx) end
-end
 
 ---------------------------------------------------------------------------
 -- Classes : voleur (poisons sur les armes, vol à la tire)
@@ -897,20 +891,6 @@ function M:PoisonTimes()
 end
 
 local warnedPoison = {}
--- Bouton « Poser » : le poison le plus fort des sacs sur l'arme (16 = principale, 17 = main gauche).
-function M:PoisonAction(slot)
-    local count = (C_Item and C_Item.GetItemCount) or GetItemCount
-    if not count then return nil end
-    local ids = {}
-    for _, r in ipairs(M.REAGENTS.ROGUE or {}) do if r.key == "poisons" then ids = r.ids end end
-    for i = #ids, 1, -1 do
-        if (count(ids[i]) or 0) > 0 then
-            return { label = T("Poser"), tip = (WK.GetItemInfo(ids[i])) or nil,
-                     attrs = { type = "macro", macrotext = "/use item:" .. ids[i] .. "\n/use " .. (slot == "main" and 16 or 17) } }
-        end
-    end
-    return nil
-end
 local function checkPoisons()
     if select(2, _G.UnitClass("player")) ~= "ROGUE" or not WK:FeatureOn("classes") then return end
     local cc = M:Class("ROGUE")

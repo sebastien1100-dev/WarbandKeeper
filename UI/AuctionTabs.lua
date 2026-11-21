@@ -1136,7 +1136,6 @@ local function build(host)
         self.chart:Draw(id)
         -- enchères en cours : la plus basse des autres en vert, les tiennes à la couleur d'accent ; ton prix
         local r = results[id]
-        local unit = priceValue()
         local b = S.buy
         if not r then
             local row = self.lrows[1]
@@ -2888,7 +2887,7 @@ local function build(host)
         local sc = S.scan
         local r, g, b = UI:Accent()
         self.scanBar.fill:SetColor(r, g, b, 1)
-        local frac = 1
+        local frac
         if sc then
             frac = (sc.total and sc.total > 0) and math.min(1, (sc.done or 0) / sc.total) or 0.05
             self.scanInfo:SetText(T("scan en cours…"))

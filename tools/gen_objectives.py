@@ -16,11 +16,10 @@ Format (une chaîne par quête, décodée par Modules/QuestTrack.lua à la deman
     « xN: » = objectif caché de Questie (objet à utiliser à tel endroit…) rattaché au N-ième objectif du
     jeu (« x: » sans objectif du jeu) ;
   - après « @ » : où rendre la quête (premier PNJ ou objet qui la termine).
-  WK.QuestItemStart[objet] = quête : objets qui démarrent une quête.
   WK.QuestBuy[quête] = "objet,objet" : objets demandés par la quête qui se vendent chez un marchand
     (leur bloc « i: » reste vide : on les achète au lieu de les chercher sur un monstre).
-  WK.QuestVendors[objet] = "carte,x,y,faction,nom;…" : marchands qui vendent cet objet (première apparition,
-    faction « A », « H » ou « AH », nom anglais ; le nom français vient de Modules/PlacesDB.lua).
+  (Objets qui démarrent une quête, marchands des objets et noms des monstres : plus écrits, rien ne les lisait
+  depuis le retrait de la tournée et du guide de montée.)
 """
 DATA_HDR = "local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)"
 import math
@@ -295,13 +294,8 @@ def main(root, out):
                 "-- licence de Questie (GPLv3 selon son équipe). Format décrit dans tools/gen_objectives.py.\n"
                 "%s\nWK.QuestObjRaw = {\n" % DATA_HDR)
         f.write("\n".join(lines))
-        f.write("\n}\n-- objets qui démarrent une quête : [objet] = quête\nWK.QuestItemStart = {\n")
-        f.write("".join("[%d]=%d," % (k, starts[k]) for k in sorted(starts)))
         f.write("\n}\n-- objets de quête vendus chez un marchand : [quête] = \"objet,objet\"\nWK.QuestBuy = {\n")
         f.write("\n".join('[%d]="%s",' % (q, ",".join(str(i) for i in buy[q])) for q in sorted(buy)))
-        used = sorted({i for q in buy for i in buy[q]})
-        f.write("\n}\n-- marchands de ces objets : [objet] = \"carte,x,y,faction,nom;…\"\nWK.QuestVendors = {\n")
-        f.write("\n".join('[%d]="%s",' % (i, ";".join(vend[i]).replace('"', "'")) for i in used))
         f.write("\n}\n-- points exacts (zones de chaleur) : [quête] = clés par objectif, dans l'ordre des blocs de\n"
                 "-- WK.QuestObjRaw (« n12,o5 » = PNJ / objets de WK.SpawnPts, « *carte:… » = points de l'objectif)\n"
                 "WK.QuestPtsRaw = {\n")
@@ -309,19 +303,6 @@ def main(root, out):
         f.write("\n}\n-- [« n » PNJ / « o » objet .. n°] = « carte:ccc…;… » : grille de 0,5 %% de la carte, 3 caractères\n"
                 "-- base64 par point (x * 201 + y, x et y de 0 à 200)\nWK.SpawnPts = {\n")
         f.write("\n".join('%s="%s",' % (k, v) for k, v in sorted(spawn.items()) if v))
-        # noms des monstres des objectifs (bouton « Cibler » de la tournée) : « anglais|français »
-        f.write("\n}\n-- [n° de PNJ] = « nom anglais|nom français » (monstres des objectifs : bouton Cibler)\nWK.QuestNpcNames = {\n")
-        names = []
-        for k in sorted((k for k, v in spawn.items() if v and k[0] == "n"), key=lambda k: int(k[1:])):
-            nid = int(k[1:])
-            e = npcs[nid]
-            en = e and e[1]
-            if not en:
-                continue
-            fe = frn[nid] if frn else None
-            frname = fe[1] if fe and fe[1] else en
-            names.append('[%d]="%s|%s",' % (nid, str(en).replace('"', "'").replace("|", " "), str(frname).replace('"', "'").replace("|", " ")))
-        f.write("\n".join(names))
         f.write("\n}\n")
     print("%d PNJ ou objets avec points (%d Ko)" % (sum(1 for v in spawn.values() if v), sum(len(v) for v in spawn.values()) // 1024))
     print("%d quêtes, %d objectifs, %d camps, %d zones à explorer, %d objectifs cachés, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, n_explore, n_extra, len(starts), len(buy)))

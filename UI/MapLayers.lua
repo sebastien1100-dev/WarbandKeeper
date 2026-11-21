@@ -143,7 +143,6 @@ end
 function UI:DrawMapLayers(cv, mapID, w, h)
     lastDrawn = 0 -- module coupé : rien à « réparer » (sinon la carte est redessinée chaque seconde)
     if not on() then return end
-    local cfg = L:Config()
     local scale = (w / 1000) * UI.MapIconScale()
     local size = math.max(10 * UI.MapIconScale(), 18 * scale * 0.9) * UI.MapIconSize()
     local lvl = (UI.mapBase or cv:GetFrameLevel() or 1) + 10 -- au-dessus des calques de la carte du jeu (UI/MapPins.lua)
@@ -264,7 +263,6 @@ local function openMenu(btn, fam)
     end
     menu.title:SetText(UI:Upper(T(L.FAMILY[fam].label)))
     menu:SetSize(200, -y + 8)
-    local a1, a2, a3 = UI:Accent()
     menu.edge:SetColor(unpack(C.border))
     menu.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.98)
     menu:ClearAllPoints()

@@ -245,7 +245,7 @@ local function walk(cont, sx, sy, tx, ty, budget)
     if failedAt and (_G.GetTime and _G.GetTime() or 0) - failedAt < 60 then return { sx, sy, tx, ty } end
     local g = graph(cont)
     if not g then return { sx, sy, tx, ty } end
-    local GOAL, START = -1, 0
+    local START = 0
     local best = { [START] = 0 }
     local from = {}
     local closed = {}

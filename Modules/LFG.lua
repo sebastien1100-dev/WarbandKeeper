@@ -465,8 +465,6 @@ function M:SetRating(name, stars)
     g.ratings[name] = (stars and stars > 0) and stars or nil
     WK:NotifyChanged()
 end
--- Note la plus basse d'une annonce (chef seulement : les membres ne sont pas tous lisibles)
-function M:ListingRating(r) return self:Rating(r.leader) end
 
 local inGroup = {}
 local rosterSeeded = false -- après un /reload, le groupe déjà là n'est pas « nouveau »

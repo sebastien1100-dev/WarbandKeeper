@@ -18,13 +18,6 @@ function M:Learn(from, to)
     return BL and BL:Learn(from, to) or nil
 end
 
--- Côté d'un quai donné ({ carte, x, y }) sur la ligne
-function M.SideOf(l, here)
-    if here == l.a then return "a" end
-    if here == l.b then return "b" end
-    if here and here[1] == l.a[1] and math.abs(here[2] - l.a[2]) < 0.01 and math.abs(here[3] - l.a[3]) < 0.01 then return "a" end
-    return "b"
-end
 
 -- Lignes de l'infobulle d'un quai : le navire et où il va depuis ce quai
 function M:TooltipLines(l, side)

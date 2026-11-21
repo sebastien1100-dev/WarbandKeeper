@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Blessings")
-local T = function(s) return WK.T(s) end
 
 -- Bénédictions du paladin : qui donne quoi à quelle classe dans le groupe, ce qui manque, et la répartition
 -- entre paladins. Compatible avec PallyPower : mêmes messages d'addon (préfixe PLPWR, format public de ses

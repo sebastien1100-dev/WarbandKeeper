@@ -398,7 +398,6 @@ UI:RegisterPage({
 
         self.entries:Reset()
         local y = 0
-        local r, g, b = UI:Accent()
         for _, key in ipairs(keys) do
             local e = self.entries:Get()
             e.key, e.del.key = key, key
@@ -502,7 +501,7 @@ UI:RegisterPage({
         -- Objectif : progression, échelle étendue pour voir la cible, ligne pointillée.
         local G = WK.modules.Goals
         local goal = G:Get(key)
-        local cur, target, ratio, gdays = G:Progress(key)
+        local _, target, ratio, gdays = G:Progress(key)
         self.goalDel:SetShown(goal ~= nil)
         self.goalBtn:SetLabel(goal and WK.T("Modifier") or WK.T("Définir"))
         if goal then

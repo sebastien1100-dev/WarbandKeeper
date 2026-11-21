@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
-local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Page « Hôtel des ventes » (groupe Trésorerie) : tous les réglages de l'HV au même endroit, en cartes

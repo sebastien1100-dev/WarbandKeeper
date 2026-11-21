@@ -381,18 +381,6 @@ end
 ---------------------------------------------------------------------------
 local holder, miniDots = nil, {}
 local viewRadius = UI.MiniViewRadius -- aide commune de la minicarte (UI/MapPins.lua)
-local function miniDot(i)
-    local d = miniDots[i]
-    if not d then
-        d = holder:CreateTexture(nil, "OVERLAY", nil, 2)
-        d:SetTexture(UI.MEDIA .. "circle")
-        d.o = holder:CreateTexture(nil, "OVERLAY", nil, 1)
-        d.o:SetTexture(UI.MEDIA .. "circle")
-        d.o:SetPoint("CENTER", d, "CENTER")
-        miniDots[i] = d
-    end
-    return d
-end
 local miniLines
 -- Notre repère sur la minicarte : le lieu guidé (étape de la tournée, quête suivie…), pastille de la couleur de
 -- l'étape avec sa lettre (! prendre, ? rendre, $ acheter), posée au bord quand il est plus loin que la minicarte

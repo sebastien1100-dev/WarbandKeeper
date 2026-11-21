@@ -7,7 +7,7 @@ local T = function(s) return WK.T(s) end
 -- anneau de progression (ta zone en premier), les quêtes de la zone choisie en dessous, et à droite
 -- les réglages et la légende. Collection par perso (« Quêtes de »).
 local Q = WK.modules.Quests
-local GAP, SIDE_W, ROW_H = 12, 300, 44
+local GAP, ROW_H = 12, 44
 
 local function levelColor(lvl, me)
     local d = (lvl or 0) - (me or 1)

@@ -402,8 +402,6 @@ WK.Locales.enUS.text = {
     ["Effacer"] = "Clear",
     ["Maj + clic : efface tous les coins enregistrés."] = "Shift + click: clears all recorded spots.",
     ["%d récoltes enregistrées"] = "%d gatherings recorded",
-    ["Coin de récolte"] = "Gathering spot",
-    ["%d récolte(s) ici · dernière %s"] = "%d gathering(s) here · last %s",
 
     -- Lueur de récolte
     ["Lueur"] = "Glow",
@@ -3014,7 +3012,6 @@ WK.Locales.enUS.text = {
     ["Aucun objet de tes scans ne porte ce nom : fais un scan, ou cherche-le dans la fenêtre du jeu."] = "No item from your scans has this name: run a scan, or search it in the game window.",
     ["Expérience de tes persos"] = "Your characters' experience",
     ["Fenêtre"] = "Window",
-    ["Poser"] = "Apply",
     ["Poison de l'arme principale"] = "Main-hand poison",
     ["Poison de la main gauche"] = "Off-hand poison",
     ["Rappels Warband Keeper"] = "Warband Keeper reminders",

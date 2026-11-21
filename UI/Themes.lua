@@ -154,21 +154,10 @@ table.insert(UI.themes, {
     end,
 })
 
--- Couleurs de base d'un thème (pour copier un thème dans le thème personnalisé).
-function UI:ThemeBase(key)
-    local t = self.themeByKey[key] or self.themes[1]
-    return t.base()
-end
 
 UI.themeByKey = {}
 for _, t in ipairs(UI.themes) do UI.themeByKey[t.key] = t end
 
--- Palette d'un thème (pour les aperçus des options).
-function UI:ThemePalette(key)
-    local t = self.themeByKey[key] or self.themes[1]
-    local b = t.base()
-    return palette(b), b.accent
-end
 
 -- Polices proposées pour le texte de l'interface.
 UI.fonts = {

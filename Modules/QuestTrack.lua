@@ -196,27 +196,6 @@ function M.ObjectiveNpcs(_, o)
     end
     return out
 end
-function M.NpcName(_, id)
-    if not WK:NeedData("quêtes") then return nil end
-    local raw = WK.QuestNpcNames and WK.QuestNpcNames[id]
-    if not raw then return nil end
-    local en, fr = raw:match("^(.-)|(.*)$")
-    if not en then return raw end
-    return (WK.Lang and WK.Lang() == "frFR" and fr ~= "" and fr) or en
-end
--- Nom à donner à /targetexact : celui du jeu, donc dans la langue du client (pas celle choisie pour l'addon) ;
--- nil pour un client ni français ni anglais (nom inconnu : pas de bouton Cibler)
-function M.NpcTargetName(_, id)
-    if not WK:NeedData("quêtes") then return nil end
-    local raw = WK.QuestNpcNames and WK.QuestNpcNames[id]
-    if not raw then return nil end
-    local en, fr = raw:match("^(.-)|(.*)$")
-    if not en then en, fr = raw, nil end
-    local loc = _G.GetLocale and _G.GetLocale() or "enUS"
-    if loc == "frFR" then return (fr and fr ~= "" and fr) or nil end
-    if loc == "enUS" or loc == "enGB" then return en end
-    return nil
-end
 
 function M:InLog(qid)
     return qid and C_QuestLog and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(qid) ~= nil
@@ -238,23 +217,7 @@ end
 ---------------------------------------------------------------------------
 -- Objets de quête à acheter (Modules/QuestObjDB.lua : WK.QuestBuy, WK.QuestVendors, tirés de QuestieDB)
 ---------------------------------------------------------------------------
-local buyCache, vendCache = {}, {}
--- marchands d'un objet : { { map, x, y (0-1), fac = "A"|"H"|"AH", name } }
-function M:Vendors(item)
-    if vendCache[item] then return vendCache[item] end
-    -- base dans le dossier chargé à la demande : pas encore là = liste vide, sans la retenir
-    if not WK:NeedData("objets de quête") then return {} end
-    local out = {}
-    local raw = WK.QuestVendors and WK.QuestVendors[item]
-    for e in (raw or ""):gmatch("[^;]+") do
-        local map, x, y, fac, name = e:match("^(%d+),([%d%.]+),([%d%.]+),(%a+),(.*)$")
-        if map then
-            table.insert(out, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100, fac = fac, name = name })
-        end
-    end
-    vendCache[item] = out
-    return out
-end
+local buyCache = {}
 -- objets à acheter pour une quête : { n° d'objet, … }
 function M:BuyItems(qid)
     if buyCache[qid] then return buyCache[qid] end
@@ -264,16 +227,6 @@ function M:BuyItems(qid)
     for id in (raw or ""):gmatch("%d+") do table.insert(out, tonumber(id)) end
     buyCache[qid] = out
     return out
-end
--- nom d'un marchand (français quand Modules/PlacesDB.lua le connaît) et son rôle
-function M:VendorName(v)
-    local fr = WK.Lang and WK.Lang() == "frFR"
-    for _, p in ipairs(WK.PlacesDB and WK.PlacesDB[v.map] or {}) do
-        if p[6] == v.name and math.abs(p[1] / 100 - v.x) < 0.006 and math.abs(p[2] / 100 - v.y) < 0.006 then
-            return (fr and p[7]) or p[6], p[8]
-        end
-    end
-    return v.name, nil
 end
 -- quantité demandée d'un objet (objectif du journal quand la quête y est, sinon 1)
 function M:BuyNeed(qid, item)
@@ -440,7 +393,6 @@ WK:On("ZONE_CHANGED_NEW_AREA", function() soon(true) end)
 -- refait (camps, objets à acheter)
 WK:OnDataLoaded(function()
     for k in pairs(buyCache) do buyCache[k] = nil end
-    for k in pairs(vendCache) do vendCache[k] = nil end
     M.lastSig = nil
     if _G.C_Timer then _G.C_Timer.After(0, function() soon(true) end) end
 end)

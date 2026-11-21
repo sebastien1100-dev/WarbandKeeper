@@ -403,7 +403,7 @@ function M:Start(mode)
         startModern() notify() return
     end
     if not legacy() then WK:Print(T("Ce client ne donne pas accès à l'hôtel des ventes.")) return end
-    local q, all = self:CanQuery()
+    local _, all = self:CanQuery()
     if mode ~= "pages" and all then startFull()
     elseif mode == "full" and not all then
         WK:Print(T("Scan complet pas encore possible : le jeu ne l'autorise qu'environ toutes les 15 minutes."))

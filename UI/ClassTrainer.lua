@@ -81,7 +81,7 @@ function UI:RefreshClassTrainer()
         local e = list[i]
         if e then
             b.e = e
-            local _, icon
+            local icon
             if GetTrainerServiceIcon then icon = GetTrainerServiceIcon(e.index) end
             b.icon:SetTexture(icon or 134400)
             b.icon:SetDesaturated(e.skipped and true or false)

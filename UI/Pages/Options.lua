@@ -745,7 +745,7 @@ UI:RegisterPage({
         self.loginToggle = UI:Toggle(loginCard,
             function() return cfg.loginPopup ~= false end,
             function(v) cfg.loginPopup = v end)
-        local loginRow = UI:SettingRow(loginCard, -40, "Fenêtre de rappels",
+        UI:SettingRow(loginCard, -40, "Fenêtre de rappels",
             "À la connexion d'un perso : courrier à prendre, recharges prêtes, métier au plafond…", self.loginToggle, 190)
         local preview = UI:Button(loginCard, "Aperçu", nil, 26, "ghost")
         preview:SetPoint("RIGHT", self.loginToggle, "LEFT", -12, 0)

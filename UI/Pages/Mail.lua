@@ -27,7 +27,6 @@ local function RuleEditor(page, parent, mode, top)
     local ed = {}
     local isMail = mode == "mail"
 
-    local cfg = isMail and WK.DB.global.mail or WK.DB.global.bank
     -- Les réglages (envoi / dépôt automatique, fermeture, tri) sont derrière la roue dentée de la page.
     -- Nouvelle règle
     local ADD_H = 132

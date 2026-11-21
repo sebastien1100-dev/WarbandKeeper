@@ -8,7 +8,7 @@ local T = function(s) return WK.T(s) end
 --                           les rares de la zone choisie en dessous ;
 --   roue dentée : les réglages (carte, alerte avec aperçu en direct ; infobulle : Options > Infobulles).
 local R = WK.modules.Rares
-local GAP, SIDE_W, ROW_H = 12, 300, 44
+local GAP, ROW_H = 12, 44
 
 -- Couleur du niveau d'un rare pour un perso (comme la difficulté des quêtes)
 -- Durée courte : « 5 min », « 3 h », « 2 j »

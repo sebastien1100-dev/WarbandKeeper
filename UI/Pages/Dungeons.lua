@@ -389,7 +389,6 @@ UI:RegisterPage({
             if curKey then self.sel, self.dtab, self.focus = curKey, "route", nil end
             self.lastCur = curKey
         end
-        local r1, g1, b1 = UI:Accent()
         -- « Mes envies » : sur toute la largeur, sans la colonne des donjons
         local wish = self.tab == "wish"
         self.listCard:SetShown(not wish)
@@ -892,7 +891,7 @@ UI:RegisterPage({
         f:SetHeight(FH)
         -- frise
         local fy = top + FH + 6
-        local lastWing, wingHead = false, nil
+        local lastWing = false
         local wingCount = {}
         for _, b in ipairs(bosses) do
             local w = b.wing or ""

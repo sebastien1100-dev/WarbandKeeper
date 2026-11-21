@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
-local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Page « Pêche » (groupe Artisanat) : onglets Collection (UI/FishingCollection.lua : album des espèces

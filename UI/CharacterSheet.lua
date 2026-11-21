@@ -1281,7 +1281,6 @@ function UI:ShowCharSheet(key, tab)
 end
 
 -- Onglet Talents
-local CELL, CGAP = 34, 10
 local paintTrees
 local function refreshTalents(f, c)
     -- perso connecté sans détail : on relève tout de suite (talents pas prêts à la connexion)

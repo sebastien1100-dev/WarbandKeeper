@@ -310,7 +310,7 @@ local function annotate(tt)
             local req, kind = herbReq(plain), "herb"
             if not req then req, kind = oreReq(plain), "mining" end
             if req then
-                local rank, prof = M:SkillFor(kind)
+                local rank = M:SkillFor(kind)
                 local label = kind == "herb" and T("Herboristerie") or T("Minage")
                 local col = rank and COLORS[M:Color(req, rank)] or { 0.7, 0.7, 0.7 }
                 table.insert(add, { string.format("%s %d%s", label, req, rank and string.format(T(" · toi %d"), rank) or ""), col })

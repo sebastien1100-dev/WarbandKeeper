@@ -1,7 +1,6 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
-local T = function(s) return WK.T(s) end
 
 -- Curseur : anneau autour de la souris (retrouver le curseur d'un coup d'œil, temps global et
 -- incantation en balayage, rouge quand la cible est hors de portée) et curseur gardé dans la

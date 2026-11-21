@@ -1880,39 +1880,3 @@ WK:On("PLAYER_REGEN_ENABLED", function()
     if reloadAsk and reloadAsk:IsShown() then UI:SecureReload(reloadAsk.go) end
 end)
 
--- Repère de rendu de quête : médaillon doré bombé, liseré clair, « ? » sombre au centre, lueur dorée.
--- Pose les textures sur le cadre f (sa taille fait celle du repère, les proportions suivent).
-function UI:TurnInMarker(f)
-    f.glow = f:CreateTexture(nil, "BACKGROUND")
-    f.glow:SetTexture(UI.MEDIA .. "fxhalo"); f.glow:SetBlendMode("ADD")
-    f.glow:SetPoint("CENTER"); f.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 0.8)
-    f.ring = f:CreateTexture(nil, "BORDER")
-    f.ring:SetTexture(UI.MEDIA .. "circle"); f.ring:SetAllPoints(); f.ring:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
-    f.edge = f:CreateTexture(nil, "ARTWORK", nil, 1)
-    f.edge:SetTexture(UI.MEDIA .. "circle"); f.edge:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
-    f.disc = f:CreateTexture(nil, "ARTWORK", nil, 2)
-    f.disc:SetTexture(UI.MEDIA .. "circle"); f.disc:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
-    -- reflet clair en haut du médaillon (effet bombé ; un dégradé remplacerait la texture ronde par un carré)
-    f.shine = f:CreateTexture(nil, "ARTWORK", nil, 3)
-    f.shine:SetTexture(UI.MEDIA .. "circle"); f.shine:SetVertexColor(1, 1, 1, 0.35)
-    f.q = f:CreateFontString(nil, "OVERLAY")
-    f.q:SetPoint("CENTER", 0.5, 0)
-    -- police posée avant le texte (sinon « Font not set ») ; celle de l'addon si l'autre ne se charge pas
-    local function setFont(sz)
-        if not (UI.FONT and f.q:SetFont(UI.FONT, sz, "")) then f.q:SetFont("Fonts\\FRIZQT__.TTF", sz, "") end
-    end
-    setFont(11)
-    f.q:SetText("?")
-    local function size()
-        local w = math.max(8, f:GetWidth() or 18)
-        f.glow:SetSize(w * 1.7, w * 1.7)
-        f.edge:ClearAllPoints(); f.edge:SetPoint("TOPLEFT", w * 0.09, -w * 0.09); f.edge:SetPoint("BOTTOMRIGHT", -w * 0.09, w * 0.09)
-        f.disc:ClearAllPoints(); f.disc:SetPoint("TOPLEFT", w * 0.14, -w * 0.14); f.disc:SetPoint("BOTTOMRIGHT", -w * 0.14, w * 0.14)
-        f.shine:ClearAllPoints(); f.shine:SetSize(w * 0.42, w * 0.26); f.shine:SetPoint("TOP", 0, -w * 0.2)
-        setFont(math.max(7, math.floor(w * 0.62 + 0.5)))
-        f.q:SetTextColor(C.bg[1], C.bg[2], C.bg[3], 1)
-    end
-    f:HookScript("OnSizeChanged", size)
-    size()
-    return f
-end

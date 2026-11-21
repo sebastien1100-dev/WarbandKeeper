@@ -213,15 +213,6 @@ function M:ForChar(key)
     return r
 end
 
--- Coût par niveau jusqu'au 60 : { [niveau] = coût } (sorts pas écartés)
-function M:CostByLevel(key)
-    local r = self:ForChar(key)
-    local out = {}
-    for _, list in ipairs({ r.now, r.next, r.later }) do
-        for _, e in ipairs(list) do out[e.level] = (out[e.level] or 0) + (e.cost or 0) end
-    end
-    return out
-end
 
 function M:Skip(key, name, v)
     local cfg = self:Config()

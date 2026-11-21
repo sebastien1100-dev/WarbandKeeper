@@ -135,14 +135,6 @@ local function instanceNow()
 end
 M.InstanceNow = instanceNow
 M.Norm = norm
-function M:BossByName(name)
-    if not byKey then index() end
-    return name and byName[norm(name)] or nil
-end
-function M:BossOf(id)
-    if not byKey then index() end
-    return bossOf[id]
-end
 -- Le PNJ n° id est le boss e (boss sans n° connu) : retenu pour la suite
 function M:LearnBoss(e, id)
     if type(e.id) == "number" or type(id) ~= "number" then return end

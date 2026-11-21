@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("GatherMap")
-local T = function(s) return WK.T(s) end
 
 -- Coins de récolte : à chaque butin qui contient une plante, un minerai ou un cuir connu
 -- (Modules/Gathering.lua), on note la position du joueur sur la carte. Les points voisins

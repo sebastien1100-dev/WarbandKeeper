@@ -399,7 +399,6 @@ local function build()
         self.empty:SetShown(#names == 0)
         self.rows:Reset()
         local list = S:GetList(cfg.curList)
-        local Inv = WK.modules.Inventory
         local y, cost, unknown = 0, 0, 0
         local LW = self.lscroll:GetWidth() or (W - 12)
         if LW < 100 then LW = W - 12 end
@@ -473,21 +472,6 @@ end
 
 local function host() return AuctionHouseFrame or AuctionFrame end
 
--- Onglet « Scan » des onglets de l'HV (UI/AuctionTabs.lua) : le panneau y est posé, à gauche
-function UI:AHPanelEmbed(parent)
-    panel = panel or build()
-    panel:SetParent(parent)
-    panel:ClearAllPoints()
-    panel:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
-    panel:SetFrameLevel(parent:GetFrameLevel() + 2)
-    panel.embedded = true
-    -- dans l'onglet Scan : seulement le scan et les alertes (Achat et Annulation sont des onglets à part)
-    panel.tab = "scan"
-    panel.seg:Hide(); panel.close:Hide()
-    panel:Show()
-    panel:Layout()
-    panel:Refresh()
-end
 local function show()
     if not S:Config().panel or not WK:FeatureOn("ah") then return end
     -- onglets de l'HV actifs (UI/AuctionTabs.lua) : le panneau vit dans l'onglet Scan, plus sur le côté

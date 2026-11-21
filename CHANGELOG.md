@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.55 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Ménage dans le code : une vingtaine de fonctions que plus rien n'appelait (restes de la tournée, du guide de montée, des quêtes automatiques et d'anciennes versions des pages) et une quarantaine de variables jamais lues sont retirées. Rien ne change en jeu.
+- Données à la demande plus légères (env. 150 Ko de moins) : noms des monstres des objectifs, marchands des objets de quête et objets qui démarrent une quête ne sont plus chargés (plus rien ne les lisait).
+
 ## v1.128.54 — 21/11/2026
 
 _Un /reload suffit._

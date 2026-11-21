@@ -4,8 +4,6 @@ local T = function(s) return WK.T(s) end
 
 -- Coins de récolte sur la carte du monde : une pastille par coin (Modules/GatherMap.lua),
 -- de la couleur de ce qui s'y récolte le plus, plus grosse quand on y a souvent récolté.
-local MAX_PINS = 80
-local pins = {}
 
 ---------------------------------------------------------------------------
 -- Aides communes aux pastilles de la minicarte (UI/NodePins.lua, UI/MapLayers.lua, UI/MapNotes.lua,
@@ -70,38 +68,6 @@ local function canvas()
     return wm and wm.ScrollContainer and wm.ScrollContainer.Child
 end
 
-local function getPin(i, parent)
-    local p = pins[i]
-    if not p then
-        p = CreateFrame("Button", nil, parent)
-        p.wk = true
-        p.glow = p:CreateTexture(nil, "ARTWORK")
-        p.glow:SetAllPoints()
-        p.glow:SetTexture(UI.MEDIA .. "fxhalo")
-        p.glow:SetBlendMode("ADD")
-        p.dot = p:CreateTexture(nil, "OVERLAY")
-        p.dot:SetPoint("CENTER")
-        p.dot:SetTexture(UI.MEDIA .. "circle")
-        p:SetScript("OnEnter", function(s)
-            local c = s.cluster
-            if not c then return end
-            WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            GameTooltip:SetText(T("Coin de récolte"), 1, 1, 1)
-            local items = {}
-            for id, n in pairs(c.items) do table.insert(items, { id = id, n = n }) end
-            table.sort(items, function(a, b) return a.n > b.n end)
-            for _, it in ipairs(items) do
-                GameTooltip:AddDoubleLine((UI:ItemInfo(it.id)) or "?", "x" .. it.n, 0.9, 0.9, 0.9, 1, 1, 1)
-            end
-            GameTooltip:AddLine(string.format(T("%d récolte(s) ici · dernière %s"), c.count, UI:Ago(c.last)), UI.RGB(UI.colors.muted))
-            GameTooltip:Show()
-        end)
-        p:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        pins[i] = p
-    end
-    p:SetParent(parent)
-    return p
-end
 
 local GAME_PIN_TEMPLATES = { "WaypointLocationPinTemplate", "SuperTrackedWaypointPinTemplate" }
 local function gamePinAlpha(a)
@@ -149,7 +115,6 @@ end
 UI.MapNote = note
 local targetPin
 local function hideAll()
-    for _, p in ipairs(pins) do p:Hide() end
     if targetPin then targetPin:Hide() end
     gamePinAlpha(1)
     if UI.HideNodePins then UI:HideNodePins() end
@@ -260,7 +225,6 @@ end
 local function redraw(src)
     note("redessin" .. (type(src) == "string" and (" · " .. src) or ""))
     hideAll()
-    local cfg = WK.DB.global.gatherMap
     local wm, cv = WorldMapFrame, canvas()
     if not wm or not cv or not wm:IsShown() then return end
     local mapID = wm.GetMapID and wm:GetMapID()

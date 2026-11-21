@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.55", date = "21/11/2026",
+        changed = {
+            "Ménage dans le code : une vingtaine de fonctions que plus rien n'appelait (restes de la tournée, du guide de montée, des quêtes automatiques et d'anciennes versions des pages) et une quarantaine de variables jamais lues sont retirées. Rien ne change en jeu.",
+            "Données à la demande plus légères (env. 150 Ko de moins) : noms des monstres des objectifs, marchands des objets de quête et objets qui démarrent une quête ne sont plus chargés (plus rien ne les lisait).",
+        },
+    },
+    {
         version = "1.128.54", date = "21/11/2026",
         fixed = {
             "Plans de talents : « Importer un code » refusait des codes valables (« code non reconnu ») quand ils étaient collés avec des espaces, un retour à la ligne, des couleurs ou des crochets du chat, ou exportés avant que la classe soit connue. Un code de build (WK1:…) y est aussi accepté et devient un plan.",

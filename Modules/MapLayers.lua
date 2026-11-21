@@ -1,6 +1,5 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("MapLayers")
-local T = function(s) return WK.T(s) end
 
 -- Lieux utiles sur la carte du monde et la minicarte (QoL > Carte) : services, marchands, maîtres,
 -- voyage. Les lieux viennent de Modules/PlacesDB.lua (QuestieDB) ; les bateaux et zeppelins de la

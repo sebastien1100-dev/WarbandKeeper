@@ -396,7 +396,6 @@ end
 local function Shopping(page, parent)
     local tab = {}
     local leftW = math.floor(UI.PAGE_W * 0.38)
-    local h = UI.PAGE_H + TOP
 
     local planned = UI:Card(parent, "File de fabrication")
     planned:SetWidth(leftW)
@@ -1978,7 +1977,6 @@ local function Settings(page, parent)
     end
     function tab:RefreshSettings()
         adoptGather()
-        local c = WK.DB.global.characters[self.key]
         local gk = WK.modules.Gathering:Kind(self.prof)
         local noLink = gk == "herb" or gk == "skin" or self.prof == "Pêche" or self.prof == "Fishing"
         local hasGuide = WK.modules.Recipes:Guide(self.prof) ~= nil

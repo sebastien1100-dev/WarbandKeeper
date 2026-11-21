@@ -240,7 +240,7 @@ WK:On("ITEM_SEARCH_RESULTS_UPDATED", function(key) onResults(type(key) == "table
 function M:Cancel(auctionID)
     local A = AH()
     if not (A and A.CancelAuction) then return false end
-    local ok, err = pcall(A.CancelAuction, auctionID)
+    local ok = pcall(A.CancelAuction, auctionID)
     if not ok then WK:Print(T("Annulation refusée par le jeu.")) end
     return ok
 end
