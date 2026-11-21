@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.116.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Persos et Résumé : un même perso pouvait apparaître deux fois (le jeu donnait son nom ou son royaume autrement d'une connexion à l'autre). À la connexion, la vieille fiche est fondue dans la fiche du perso connecté (or, quêtes faites, builds, listes, historique…) puis retirée ; un message le signale. Le perso est maintenant aussi reconnu par son identifiant du jeu.
+- Journal des données : « Afficher 50 de plus » repliait la liste au lieu de l'allonger.
+
 ## v1.116.0 — 21/11/2026
 
 _Un /reload suffit._

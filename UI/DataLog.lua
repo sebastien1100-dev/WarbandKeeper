@@ -248,6 +248,8 @@ function UI.BuildDataJournal(_, parent)
                             nl = nl + 1
                             local l = qline(nl)
                             l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            -- au-dessus de l'encart (sinon le clic tombait sur lui et repliait la liste)
+                            l:SetFrameLevel(e:GetFrameLevel() + 3)
                             l.stripe:SetColorTexture(1, 1, 1, (k % 2 == 0) and 0.025 or 0)
                             local q = qq.q
                             l.q, l.more = q, nil
@@ -269,6 +271,8 @@ function UI.BuildDataJournal(_, parent)
                             nl = nl + 1
                             local l = qline(nl)
                             l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            -- au-dessus de l'encart (sinon le clic tombait sur lui et repliait la liste)
+                            l:SetFrameLevel(e:GetFrameLevel() + 3)
                             l.stripe:SetColorTexture(0, 0, 0, 0)
                             l.q = nil; l.lv:SetText(""); l.zone:SetText(""); l.badge:Hide(); l.desc:SetText("")
                             l.name:SetWidth(W2 - 60)

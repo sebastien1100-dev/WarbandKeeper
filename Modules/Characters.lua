@@ -1,5 +1,6 @@
 local ADDON_NAME, WK = ...
 local M = WK:NewModule("Characters")
+local T = function(s) return WK.T(s) end
 
 -- Nom complet (« Prénom Nom ») si une fonction du jeu le donne avec l'espace.
 function M:DetectFullName()
@@ -60,8 +61,59 @@ local function mutePlayed()
     if C_Timer and C_Timer.After then C_Timer.After(10, unmutePlayed) end
 end
 
+-- Même perso rangé sous deux clés (nom ou royaume lus autrement par le jeu d'une connexion à l'autre) : la vieille
+-- fiche est fondue dans la fiche courante (ce qui manque y est recopié, ce qui est rangé à son nom ailleurs dans les
+-- données passe au nouveau nom), puis effacée. Reconnu par le GUID du perso, sinon nom complet, classe, race, faction.
+local function sameChar(a, b)
+    if not (a and b) then return false end
+    if a.guid and b.guid then return a.guid == b.guid end
+    local na, nb = a.fullName or a.name, b.fullName or b.name
+    return na ~= nil and na == nb and a.class ~= nil and a.class == b.class and a.race == b.race and a.faction == b.faction
+        and math.abs((a.level or 0) - (b.level or 0)) <= 2
+end
+local function fill(dst, src, depth)
+    for k, v in pairs(src) do
+        if dst[k] == nil then dst[k] = v
+        elseif depth > 0 and type(v) == "table" and type(dst[k]) == "table" then fill(dst[k], v, depth - 1) end
+    end
+end
+local function moveKey(t, old, new, depth, seen)
+    if type(t) ~= "table" or seen[t] then return end
+    seen[t] = true
+    if t[old] ~= nil then
+        if t[new] == nil then t[new] = t[old]
+        elseif type(t[new]) == "table" and type(t[old]) == "table" then fill(t[new], t[old], 2) end
+        t[old] = nil
+    end
+    if depth <= 0 then return end
+    for _, v in pairs(t) do if type(v) == "table" then moveKey(v, old, new, depth - 1, seen) end end
+end
+function M:MergeDuplicates()
+    local g = WK.DB.global
+    local me, key = WK.DB:Me()
+    if UnitGUID then me.guid = UnitGUID("player") or me.guid end
+    local merged = 0
+    for k, c in pairs(g.characters) do
+        if k ~= key and sameChar(c, me) then
+            fill(me, c, 3)
+            local seen = { [g.characters] = true }
+            for name, t in pairs(g) do
+                if name ~= "characters" and type(t) == "table" then moveKey(t, k, key, 3, seen) end
+            end
+            g.characters[k] = nil
+            merged = merged + 1
+        end
+    end
+    if merged > 0 then
+        WK:Print(string.format(T("Fiche en double de %s fusionnée (même perso rangé sous deux noms)."), WK:CharName(me, key)))
+        WK:NotifyChanged()
+    end
+    return merged
+end
+
 function M:OnLogin()
     self:UpdateBasics()
+    pcall(self.MergeDuplicates, self)
     self:UpdateMoney()
     mutePlayed()
     RequestTimePlayed()

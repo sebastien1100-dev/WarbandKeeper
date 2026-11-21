@@ -4393,4 +4393,5 @@ WK.Locales.enUS.text = {
     ["connu"] = "known",
     ["Clic : guidage vers ce maître de vol"] = "Click: guide to this flight master",
     ["à apprendre"] = "to learn",
+    ["Fiche en double de %s fusionnée (même perso rangé sous deux noms)."] = "Duplicate entry of %s merged (same character stored under two names).",
 }

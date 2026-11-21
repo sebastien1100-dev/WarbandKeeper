@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.116.1", date = "21/11/2026",
+        fixed = {
+            "Persos et Résumé : un même perso pouvait apparaître deux fois (le jeu donnait son nom ou son royaume autrement d'une connexion à l'autre). À la connexion, la vieille fiche est fondue dans la fiche du perso connecté (or, quêtes faites, builds, listes, historique…) puis retirée ; un message le signale. Le perso est maintenant aussi reconnu par son identifiant du jeu.",
+            "Journal des données : « Afficher 50 de plus » repliait la liste au lieu de l'allonger.",
+        },
+    },
+    {
         version = "1.116.0", date = "21/11/2026",
         added = {
             "Tableau des voyages : onglets Bateaux et Vols (raccourci « Bateaux » du micro menu, /wk bateaux, /wk vols). Vols : points de vol de ta faction sur la carte d'Azeroth, connus en blanc avec leur nom, à apprendre en gris ; trajets du jeu (connus en bleu, pas encore possibles en pointillés gris).",
