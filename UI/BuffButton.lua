@@ -120,6 +120,9 @@ local function auraLeft(unit, ids)
     return math.max(0, r[1] - now), r[2]
 end
 WK:On("UNIT_AURA", function(unit)
+    -- avant, chaque changement d'effet de chaque unité était traité pour toutes les classes : seules les
+    -- classes qui ont le bouton (WK.BUFF_CLASSES) remplissent ce cache
+    if not WK.BUFF_CLASSES[myClass() or ""] then return end
     local guid = type(unit) == "string" and _G.UnitGUID and _G.UnitGUID(unit)
     local c = guid and auraCache[guid]
     if c then c.dirty = true end

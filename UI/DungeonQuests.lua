@@ -336,7 +336,7 @@ local function build()
         acc = acc + el
         if acc < 2 then return end
         acc = 0
-        if not f.sample then UI:RefreshDungeonQuests() end
+        if not f.sample then UI:RefreshDungeonQuests(true) end
     end)
     UI:RegisterHUD("dungeonQuests", f, {
         label = T("Quêtes du donjon"), default = { -330, 120 },
@@ -404,7 +404,7 @@ function UI:DungeonQuestsData(d, cfg)
         local zone = R and R.ZoneName and R:ZoneName(q.smap or q.map) or ""
         local dt = distText(distOf(q))
         table.insert(out.avail, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
-            lvl = q.lvl, color = C.gold,
+            lvl = q.lvl, color = C.gold, q = q, zone = zone, -- q et zone : distance refaite seule (lightDistances)
             sub = zone .. (dt and (" · " .. dt) or ""),
             tip = { Qm:Name(q), T("Clic : guider vers le donneur") },
             onClick = function() Qm:GuideTo(q) end })
@@ -426,7 +426,23 @@ function UI:DungeonQuestsData(d, cfg)
     return out
 end
 
-function UI:RefreshDungeonQuests()
+-- Distances seules, sur les données déjà faites : vrai si un texte a changé
+local function lightDistances(data)
+    local changed = false
+    for _, e in ipairs(data.avail or {}) do
+        if e.q then
+            local dt = distText(distOf(e.q))
+            local sub = (e.zone or "") .. (dt and (" · " .. dt) or "")
+            if sub ~= e.sub then e.sub = sub; changed = true end
+        end
+    end
+    return changed
+end
+
+-- light (minuterie des 2 s) : les données ne sont refaites qu'après un évènement (refreshSoon, autres appels)
+-- ou toutes les 30 s hors combat ; sinon seules les distances. Avant, tout (journal, résumé des quêtes du
+-- donjon) était refait toutes les 2 s, même en combat.
+function UI:RefreshDungeonQuests(light)
     local Dg = D()
     if not Dg then return end
     win = win or build()
@@ -438,9 +454,22 @@ function UI:RefreshDungeonQuests()
     if not d then win:Hide() return end
     if closedFor and closedFor ~= d.key then closedFor = nil end
     if closedFor == d.key and Dg.questWinForce ~= d.key then win:Hide() return end
+    local lock, clock = _G.InCombatLockdown, _G.GetTime
+    local fight = lock and lock()
+    if light and win.dataKey == d.key and win.dataFor and (fight or clock() - (win.dataAt or 0) < 30) then
+        if win.autoHidden then return end
+        local changed = lightDistances(win.dataFor)
+        if changed or not win:IsShown() then win:Paint(win.dataFor, cfg) end
+        win:Show()
+        return
+    end
     local data = UI:DungeonQuestsData(d, cfg)
+    win.dataKey, win.dataAt, win.dataFor = d.key, clock(), data
     -- rien à faire ni à prendre : cachée si demandé
-    if cfg.questWinAuto and not Dg.questWinForce and #data.log + #data.avail + #data.waiting == 0 then win:Hide() return end
+    win.autoHidden = nil
+    if cfg.questWinAuto and not Dg.questWinForce and #data.log + #data.avail + #data.waiting == 0 then
+        win.autoHidden = true; win:Hide() return
+    end
     win.key, win.dungeon = d.key, d
     win:Paint(data, cfg)
     win:Show()
@@ -456,6 +485,6 @@ local function refreshSoon()
     C_Timer.After(0.3, function() refreshQueued = false; UI:RefreshDungeonQuests() end)
 end
 for _, ev in ipairs({ "QUEST_LOG_UPDATE", "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_DISABLED",
-    "PLAYER_REGEN_ENABLED" }) do
+    "PLAYER_REGEN_ENABLED", "PLAYER_LEVEL_UP" }) do
     WK:On(ev, refreshSoon)
 end

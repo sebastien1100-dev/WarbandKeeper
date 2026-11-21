@@ -155,7 +155,10 @@ local function build()
         self.seg:Select(cfg.filter)
         self.title:SetText(D:Name(d))
         local killed, n = 0, 0
-        for _, b in ipairs(D:Bosses(d)) do n = n + 1; if D:Killed(d, b.id) then killed = killed + 1 end end
+        -- boss facultatifs (D:Optional) hors du compte : avant, le donjon restait à 5/6 une fois fini
+        for _, b in ipairs(D:Bosses(d)) do
+            if not D:Optional(d, b) then n = n + 1; if D:Killed(d, b.id) then killed = killed + 1 end end
+        end
         self.sub:SetText(string.format(T("niv. %d-%d · %d/%d boss"), d.min, d.max, killed, n))
         self.heads:Reset(); self.items:Reset()
         local y, LW = 0, W - 22

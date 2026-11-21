@@ -166,6 +166,7 @@ end
 
 -- les paladins qui ne sont plus dans le groupe sont oubliés
 local scannedAt, auraDirty, scannedGen, auraGen = {}, {}, {}, 0 -- relevés des effets par membre (M:Left)
+local seen = {} -- [nom..":"..n°] = expiration (GetTime), 0 = sans fin (déclaré ici pour que prune() le vide)
 local function prune()
     local present = {}
     for _, u in ipairs(groupUnits()) do
@@ -176,6 +177,12 @@ local function prune()
     for key in pairs(scannedAt) do
         local n = key:match("^(.*):%d+$")
         if n and not present[n] then scannedAt[key] = nil; scannedGen[key] = nil; auraDirty[n] = nil end
+    end
+    -- temps restants gardés : avant, ceux des joueurs partis n'étaient jamais retirés (la table grossissait
+    -- sur toute la séance)
+    for key in pairs(seen) do
+        local n = key:match("^(.*):%d+$")
+        if n and not present[n] then seen[key] = nil end
     end
     myEntry()
     return present
@@ -291,7 +298,7 @@ end
 -- Temps restant de ma bénédiction sur un joueur (lu hors combat ; en combat, la dernière valeur lue continue
 -- de décompter : le jeu y cache les auras)
 ---------------------------------------------------------------------------
-local seen = {} -- [nom..":"..n°] = expiration (GetTime), 0 = sans fin
+-- (seen est déclaré plus haut, avec scannedAt)
 local blessNames = {}
 local function scanLeft(unit, b)
     local ids = M.BLESS[b]
@@ -417,13 +424,39 @@ function M:StatusNow()
     return rows
 end
 
--- Prochain joueur à bénir dans une ligne (ou dans toutes) : sans ma bénédiction, puis le plus court
+-- Membre à portée de la bénédiction ? Vrai si le jeu ne sait pas répondre (repli : comme avant)
+local function inReach(unit, b)
+    local isUnit, visible = _G.UnitIsUnit, _G.UnitIsVisible
+    if isUnit and isUnit(unit, "player") then return true end
+    if visible and not visible(unit) then return false end
+    local spell = M:Name(b)
+    local cs, old, near = _G.C_Spell, _G.IsSpellInRange, _G.UnitInRange
+    local r
+    if spell and cs and cs.IsSpellInRange then
+        local ok, v = pcall(cs.IsSpellInRange, spell, unit)
+        if ok then r = readable(v) end
+    elseif spell and old then
+        r = old(spell, unit)
+    end
+    if r == true or r == 1 then return true end
+    if r == false or r == 0 then return false end
+    if near then
+        local inR, checked = near(unit)
+        if readable(checked) then return readable(inR) and true or false end
+    end
+    return true
+end
+
+-- Prochain joueur à bénir dans une ligne (ou dans toutes) : sans ma bénédiction, puis le plus court.
+-- Avant, un membre hors de portée (jamais relu, donc « sans bénédiction ») passait toujours en tête et la
+-- ligne de la barre restait bloquée sur lui : les membres hors de portée sont maintenant écartés.
 function M:NextTarget(row, refresh)
     refresh = refresh or 300
     local best, bestLeft
     for _, r in ipairs(row and { row } or self:Status()) do
         for _, m in ipairs(r.members) do
-            if not m.dead and not (UnitAffectingCombat(m.unit) and not UnitIsUnit(m.unit, "player")) then
+            if not m.dead and not (UnitAffectingCombat(m.unit) and not UnitIsUnit(m.unit, "player"))
+                and inReach(m.unit, r.b) then
                 local l = m.left or -1
                 if l < refresh and (not bestLeft or l < bestLeft) then best, bestLeft = { unit = m.unit, b = r.b, name = m.name }, l end
             end

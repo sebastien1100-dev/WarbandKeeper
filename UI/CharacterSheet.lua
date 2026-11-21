@@ -1444,7 +1444,10 @@ local function refreshTalents(f, c)
         row.ren:SetScript("OnClick", function() f:Ask(T("Renommer le plan"), nil, pl.name or "", function(v) P:Rename(f.key, i, v) end, T("Renommer")) end)
         row.del:SetScript("OnClick", function()
             f:Ask(T("Supprimer le plan ?"), string.format(T("« %s » sera supprimé."), pl.name or ""), nil, function()
-                if f.planEdit == i then f.planEdit = nil end
+                -- les plans d'après remontent d'un cran : avant, le mode plan restait sur le n° et
+                -- modifiait le plan suivant
+                if f.planEdit == i then f.planEdit = nil
+                elseif f.planEdit and f.planEdit > i then f.planEdit = f.planEdit - 1 end
                 P:Delete(f.key, i)
             end, T("Supprimer"))
         end)

@@ -314,11 +314,14 @@ end
 function M:Skipped(d, b)
     return self:InRun(d) and self.run.skipped[b.id] or false
 end
+-- avant, les boss facultatifs (rare, boss caché) étaient comptés : un donjon restait à 5/6 sans fin
 function M:Progress(d, key)
     local n, done = 0, 0
     for _, b in ipairs(self:Bosses(d)) do
-        n = n + 1
-        if self:KilledEver(d, b.id, key) then done = done + 1 end
+        if not self:Optional(d, b) then
+            n = n + 1
+            if self:KilledEver(d, b.id, key) then done = done + 1 end
+        end
     end
     return done, n
 end
@@ -853,7 +856,11 @@ function M:Share(d)
     if not (ch and self:InRun(d) and C_ChatInfo and C_ChatInfo.SendAddonMessage) or self.run.wait then return false end
     local parts = {}
     for b, t in pairs(self.run.killed) do table.insert(parts, tostring(b) .. "=" .. (t - self.run.start)) end
-    local msg = "R:" .. d.key .. ":" .. self:Elapsed() .. ":" .. table.concat(parts, ";")
+    -- vrai temps depuis le début (avant : Elapsed(), figé au dernier boss une fois le donjon fini, et chez
+    -- les autres « start = maintenant - écoulé » tombait trop tard) ; même format de message qu'avant
+    local now = _G.time()
+    local since = math.max(0, now - (self.run.start or now))
+    local msg = "R:" .. d.key .. ":" .. since .. ":" .. table.concat(parts, ";")
     if #msg > 250 then msg = msg:sub(1, 250) end
     local ok = pcall(C_ChatInfo.SendAddonMessage, SHARE, msg, ch)
     return ok
