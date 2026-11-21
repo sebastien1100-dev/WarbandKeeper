@@ -200,9 +200,13 @@ def main(root):
         lvl = q[5] or 0
         w = wh.get(qid)
         if w and w.get("missing"):
+            # absente de wowhead (quête de test, d'événement retiré…) : pas dans le jeu
             wh_stats["missing"] += 1
-        elif w:
-            if not frname and w.get("fr") and w["fr"] != q[1]:
+            skipped += 1
+            continue
+        if w:
+            # nom du jeu actuel (les noms français de Questie sont parfois anciens : « Stormwind » pour Hurlevent)
+            if w.get("fr") and w["fr"] != q[1] and w["fr"] != frname:
                 frname = w["fr"]
                 wh_stats["fr"] += 1
             if w.get("lvl") and w["lvl"] != lvl:
@@ -329,7 +333,7 @@ def main(root):
     if entry:
         print("journal : +%d quêtes, %d corrigées, %d retirées" % (len(entry["add"]), len(entry["chg"]), len(entry["rem"])))
     if wh:
-        print("  wowhead : %d noms français ajoutés, %d niveaux corrigés, %d quêtes absentes du site" % (
+        print("  wowhead : %d noms français ajoutés ou mis à jour, %d niveaux corrigés, %d quêtes absentes retirées" % (
             wh_stats["fr"], wh_stats["lvl"], wh_stats["missing"]), file=sys.stderr)
     print("%d quêtes sur %d cartes, %d sans zone (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), len(other), skipped, out, os.path.getsize(out) // 1024))
 

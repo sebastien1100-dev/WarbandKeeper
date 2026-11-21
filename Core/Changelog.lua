@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.125.0", date = "21/11/2026",
+        changed = {
+            "Quêtes vérifiées une à une sur wowhead (WoW Forever) : 1 669 quêtes, surtout le nouveau contenu, ont enfin leur nom français (« Death to the Dragonmaw » devient « Mort aux Gueules-de-Dragon »), et 111 noms français anciens prennent celui du jeu actuel (« Un message pour Hurlevent » au lieu de « Stormwind », « Foudrepique » au lieu de « Stormpike »…).",
+        },
+        fixed = {
+            "Quêtes : 10 niveaux corrigés d'après le jeu, et 12 quêtes qui n'existent pas dans le jeu (quêtes de test, d'événements retirés) ne sont plus proposées.",
+        },
+    },
+    {
         version = "1.124.2", date = "21/11/2026",
         added = {
             "Clic droit sur une quête : « Chercher un groupe (chat) » ouvre la discussion avec un message et le lien de la quête (« LFG [quête] (zone), anyone want to group up? ») ; choisis le canal puis Entrée.",

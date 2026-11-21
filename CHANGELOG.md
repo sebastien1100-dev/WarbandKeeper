@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.125.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Quêtes vérifiées une à une sur wowhead (WoW Forever) : 1 669 quêtes, surtout le nouveau contenu, ont enfin leur nom français (« Death to the Dragonmaw » devient « Mort aux Gueules-de-Dragon »), et 111 noms français anciens prennent celui du jeu actuel (« Un message pour Hurlevent » au lieu de « Stormwind », « Foudrepique » au lieu de « Stormpike »…).
+
+### Corrections
+- Quêtes : 10 niveaux corrigés d'après le jeu, et 12 quêtes qui n'existent pas dans le jeu (quêtes de test, d'événements retirés) ne sont plus proposées.
+
 ## v1.124.2 — 21/11/2026
 
 _Un /reload suffit._
