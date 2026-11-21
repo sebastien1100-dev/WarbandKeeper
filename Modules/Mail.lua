@@ -505,6 +505,13 @@ function M:TakeAll(filter)
     takeFilter = filter
     if filter and filter.index then
         local _, _, sender, subject = _G.GetInboxHeaderInfo(filter.index)
+        if (filter.expectSender and (sender or "?") ~= filter.expectSender)
+            or (filter.expectSubject and (subject or "") ~= filter.expectSubject) then
+            taking = false; takeFilter = nil
+            WK:Print(T("La liste du courrier a changé : reclique sur la lettre."))
+            refreshWindow()
+            return
+        end
         filter.sender, filter.subject, filter.count = sender, subject, _G.GetInboxNumItems() or 0
     end
     takeStats = { money = 0, items = 0 }

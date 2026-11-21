@@ -782,7 +782,11 @@ local function Detail(page, parent)
     local open = UI:Button(head, "Ouvrir le métier", 170, 32, "primary", "play")
     open:SetPoint("TOPRIGHT", linkBtn, "TOPLEFT", -8, 0)
     open:SetScript("OnClick", function() WK.modules.Professions:OpenDirect(tab.prof) end)
-    local secure
+    -- bouton protégé et gestionnaires de combat créés une seule fois pour la séance (UI:Rebuild refait la page à
+    -- chaque changement de thème, de police ou de langue : avant, un bouton et deux gestionnaires de plus à
+    -- chaque fois) ; ils suivent l'onglet de la dernière page construite (UI.profSecureTab)
+    local secure = _G.WarbandKeeperOpenProfession
+    UI.profSecureTab = tab
     local function needSecure()
         return not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill)
     end
@@ -810,8 +814,14 @@ local function Detail(page, parent)
     end
     open:HookScript("OnShow", function() tab:SyncSecure() end)
     open:HookScript("OnHide", function() tab:SyncSecure() end)
-    WK:On("PLAYER_REGEN_DISABLED", function() if secure then secure:Hide() end end)
-    WK:On("PLAYER_REGEN_ENABLED", function() tab:SyncSecure() end)
+    if not UI.profSecureHooked then
+        UI.profSecureHooked = true
+        WK:On("PLAYER_REGEN_DISABLED", function()
+            local b = _G.WarbandKeeperOpenProfession
+            if b then b:Hide() end
+        end)
+        WK:On("PLAYER_REGEN_ENABLED", function() if UI.profSecureTab then UI.profSecureTab:SyncSecure() end end)
+    end
     local note = UI:Text(head, 10, C.dim)
     note:SetPoint("TOPRIGHT", -16, -58)
     note:SetJustifyH("RIGHT")

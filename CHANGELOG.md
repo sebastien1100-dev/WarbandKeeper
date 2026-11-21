@@ -71,6 +71,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.22 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Courrier : « Prendre » sur une lettre est refusé si la liste a changé entre-temps (lettre supprimée, liste pas encore repeinte) ; avant, la lettre voisine était prise.
+- Farm : un sac remplacé pendant la séance ne compte plus comme butin.
+- Banque : une case remplie par le dépôt précédent est libérée dès l'arrivée de l'objet (moins de piles partielles, banque plus dite pleine trop tôt).
+- /wk perf : à la fin de la mesure, seules nos propres enveloppes sont retirées ; un script changé pendant la mesure n'est plus écrasé.
+- Options > Fiabilité, Nettoyer : cocher une autre case après le premier clic désarme le bouton (nouvelle confirmation avec le bon montant).
+- « Recharger maintenant » demandé pendant un combat fonctionne dès la sortie du combat.
+- Page Métiers : le bouton « Ouvrir le métier » n'est plus recréé à chaque changement de thème, de police ou de langue.
+
 ## v1.128.21 — 21/11/2026
 
 _Un /reload suffit._

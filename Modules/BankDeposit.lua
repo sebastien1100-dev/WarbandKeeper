@@ -33,7 +33,12 @@ local function destination(target, itemID, amount)
     for _, bag in ipairs(targetBags(target)) do
         for slot = 1, (WK.Container.NumSlots(bag) or 0) do
             local id, count, locked = WK.Container.Info(bag, slot)
-            local r = reserved[bag .. ":" .. slot]
+            local key = bag .. ":" .. slot
+            local r = reserved[key]
+            -- objet arrivé (case remplie, plus verrouillée par le jeu) : sa quantité est déjà dans le compte de la
+            -- case, la réservation est libérée (avant, elle était comptée deux fois : piles en trop, banque dite
+            -- pleine trop tôt)
+            if r and id and not locked then reserved[key] = nil; r = nil end
             if r and not id then
                 -- case vide visée par un dépôt en route : pleine pour nous (même objet : pile à compléter)
                 id, count = r.id, 0

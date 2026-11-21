@@ -1868,6 +1868,10 @@ function UI:AskReload(text)
     reloadAsk.text:SetText(text or WK.T("Recharger l'interface pour appliquer le changement."))
     reloadAsk:Show()
 end
+-- demande faite en combat : le bouton protégé n'a pas pu être posé ; il l'est à la sortie du combat
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if reloadAsk and reloadAsk:IsShown() then UI:SecureReload(reloadAsk.go) end
+end)
 
 -- Repère de rendu de quête : médaillon doré bombé, liseré clair, « ? » sombre au centre, lueur dorée.
 -- Pose les textures sur le cadre f (sa taille fait celle du repère, les proportions suivent).

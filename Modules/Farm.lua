@@ -38,18 +38,37 @@ end
 -- Équipement : l'objet retiré d'un emplacement revient dans les sacs sans être du butin. On retient l'objet
 -- de chaque emplacement ; à un changement, l'ancien est ignoré une fois pendant 3 s.
 local worn, unworn = {}, {}
+-- emplacements suivis : équipement (1-19) et sacs équipés (un sac remplacé revient dans les sacs)
+local function wornSlots()
+    local out = {}
+    for slot = 1, 19 do out[#out + 1] = slot end
+    local C = _G.C_Container
+    local conv = (C and C.ContainerIDToInventoryID) or _G.ContainerIDToInventoryID
+    for bag = 1, (_G.NUM_BAG_SLOTS or 4) do
+        local ok, inv = false, nil
+        if conv then ok, inv = pcall(conv, bag) end
+        out[#out + 1] = (ok and inv) or (19 + bag)
+    end
+    return out
+end
 local function readWorn()
     if not _G.GetInventoryItemID then return end
-    for slot = 1, 19 do worn[slot] = _G.GetInventoryItemID("player", slot) end
+    for _, slot in ipairs(wornSlots()) do worn[slot] = _G.GetInventoryItemID("player", slot) end
 end
 M.unworn = unworn
-WK:On("PLAYER_EQUIPMENT_CHANGED", function(slot)
+local function checkSlot(slot)
     if not _G.GetInventoryItemID or type(slot) ~= "number" then return end
     local before = worn[slot]
     worn[slot] = _G.GetInventoryItemID("player", slot)
     if before and before ~= worn[slot] then
         table.insert(unworn, { id = before, at = _G.GetTime and _G.GetTime() or 0 })
     end
+end
+WK:On("PLAYER_EQUIPMENT_CHANGED", checkSlot)
+-- sac changé : tous les emplacements de sac relus (l'évènement d'équipement ne vient pas toujours pour eux)
+WK:On("BAG_CONTAINER_UPDATE", function()
+    local slots = wornSlots()
+    for k = 20, #slots do checkSlot(slots[k]) end
 end)
 
 -- Sécurité : si un événement de fermeture a été manqué, on repart de zéro à chaque chargement.

@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.6 — 21/11/2026
+
+### Corrections
+- Sauvegardes des réglages : les réglages de chaque perso (positions des éléments à l'écran, recherche de groupe, tenue de pêche…) sont aussi sauvegardés et restaurés, plus seulement ceux du compte.
+- « Réparer » ne s'affiche plus quand la version installée est plus récente que la dernière publiée (il aurait installé une version plus ancienne).
+- Réglages du client écrits sans risque : un arrêt brutal pendant l'écriture ne fait plus perdre le jeton et le dossier ; un fichier de réglages abîmé ne bloque plus le démarrage.
+
 ## 1.9.5 — 21/11/2026
 
 ### Corrections

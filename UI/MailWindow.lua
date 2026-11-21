@@ -294,7 +294,9 @@ local function build(host)
                     WK:Print(T("Contre-remboursement : ouvre la lettre dans la fenêtre du jeu pour payer."))
                     return
                 end
-                Ml():TakeAll({ index = e.i })
+                -- expéditeur et objet de la ligne cliquée : refusé si la lettre à ce rang a changé (liste pas encore
+                -- repeinte après une suppression : la lettre voisine était prise)
+                Ml():TakeAll({ index = e.i, expectSender = e.sender, expectSubject = e.subject })
             end)
             r:SetScript("OnEnter", function(s)
                 local e = s.e

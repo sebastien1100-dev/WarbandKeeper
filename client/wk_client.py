@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.5"
+CLIENT_VERSION = "1.9.6"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -78,7 +78,9 @@ def load_config():
     cfg = dict(DEFAULTS)
     try:
         with open(CONFIG_PATH, encoding="utf-8") as f:
-            cfg.update(json.load(f))
+            data = json.load(f)
+        if isinstance(data, dict):  # un fichier abîmé (liste, texte) ne fait plus planter le démarrage
+            cfg.update(data)
     except (OSError, ValueError):
         pass
     # copies (les réglages par défaut ne doivent pas être modifiés), nouvelles clés ajoutées
@@ -132,8 +134,12 @@ def flash_taskbar(root):
 
 
 def save_config(cfg):
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+    """Écrit dans un fichier temporaire puis le renomme : un arrêt brutal pendant l'écriture ne laisse plus un
+    fichier tronqué (le jeton et le dossier étaient alors perdus)."""
+    tmp = CONFIG_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=1)
+    os.replace(tmp, CONFIG_PATH)
 
 
 def vtuple(v):
@@ -344,17 +350,38 @@ def game_dir(addons):
     return os.path.dirname(os.path.dirname(addons))
 
 
-def saved_variables(addons):
-    """Fichiers de réglages de l'addon : WTF/Account/*/SavedVariables/WarbandKeeper.lua (+ .bak)."""
+def saved_variables(addons, chars=False):
+    """Fichiers de réglages de l'addon : WTF/Account/*/SavedVariables/WarbandKeeper.lua (+ .bak) ; avec chars,
+    aussi ceux de chaque perso (WTF/Account/<compte>/<royaume>/<perso>/SavedVariables/WarbandKeeper.lua :
+    positions des éléments à l'écran, LFG, tenue de pêche…), pour les sauvegardes."""
     out = []
     wtf = os.path.join(game_dir(addons), "WTF", "Account")
+    names = (ADDON + ".lua", ADDON + ".lua.bak")
     if os.path.isdir(wtf):
         for acc in os.listdir(wtf):
             sv = os.path.join(wtf, acc, "SavedVariables")
-            for n in (ADDON + ".lua", ADDON + ".lua.bak"):
+            for n in names:
                 p = os.path.join(sv, n)
                 if os.path.isfile(p):
                     out.append(p)
+            if not chars:
+                continue
+            accDir = os.path.join(wtf, acc)
+            try:
+                realms = [r for r in os.listdir(accDir) if os.path.isdir(os.path.join(accDir, r)) and r != "SavedVariables"]
+            except OSError:
+                realms = []
+            for realm in realms:
+                rDir = os.path.join(accDir, realm)
+                try:
+                    persos = os.listdir(rDir)
+                except OSError:
+                    continue
+                for perso in persos:
+                    for n in names:
+                        p = os.path.join(rDir, perso, "SavedVariables", n)
+                        if os.path.isfile(p):
+                            out.append(p)
     return out
 
 
@@ -893,7 +920,7 @@ def previous_dir():
 
 
 def backup_saved_variables(addons, version, keep=15, why="avant mise à jour"):
-    files = saved_variables(addons)
+    files = saved_variables(addons, chars=True)
     if not files:
         return None
     root = game_dir(addons)
@@ -1877,7 +1904,9 @@ class HomePage(Page):
             self.chip.set("Prêt à installer", C["accent"])
             self.action.set("Installer", not a.busy, "primary")
             self.action.command = a.update_addon
-        elif data_missing(a.addons, inst) and vtuple(inst) >= vtuple(latest):
+        # même version que la dernière Release seulement : sur une version plus récente (de développement),
+        # « Réparer » aurait installé une version plus ancienne
+        elif data_missing(a.addons, inst) and vtuple(inst) == vtuple(latest):
             # même version, mais le dossier des données à la demande manque : réinstaller la répare
             self.versions.configure(text="Installée : %s (dossier WarbandKeeper_Data manquant)" % inst)
             self.chip.set("À réparer : dossier des données manquant", C["warning"])

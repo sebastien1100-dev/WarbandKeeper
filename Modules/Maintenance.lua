@@ -338,8 +338,7 @@ end
 local function wrap(tbl, key, label)
     local fn = tbl and tbl[key]
     if type(fn) ~= "function" then return end
-    table.insert(wrapped, { tbl, key, fn })
-    tbl[key] = function(...)
+    local env = function(...)
         local p = WK.perf
         if not p then return fn(...) end
         local t0 = debugprofilestop()
@@ -347,14 +346,29 @@ local function wrap(tbl, key, label)
         p.add(label, debugprofilestop() - t0)
         return unpack(r)
     end
+    table.insert(wrapped, { tbl, key, fn, env })
+    tbl[key] = env
 end
 function M:PerfStop()
     local p = WK.perf
     if not p then return end
     WK.perf = nil
-    for i = #wrapped, 1, -1 do local w = wrapped[i]; w[1][w[2]] = w[3] end
+    -- remis seulement si notre enveloppe est encore en place (une fonction ou un OnUpdate changé pendant la
+    -- mesure, par un /reload de la fenêtre ou le code lui-même, n'est plus écrasé par l'ancien)
+    for i = #wrapped, 1, -1 do
+        local w = wrapped[i]
+        if w[1][w[2]] == w[4] then w[1][w[2]] = w[3] end
+    end
     wipe(wrapped)
-    for _, f in ipairs(p.frames) do f[1]:SetScript("OnUpdate", f[2]) end
+    local combat = _G.InCombatLockdown and _G.InCombatLockdown()
+    for _, f in ipairs(p.frames) do
+        local fr = f[1]
+        local prot = fr.IsProtected and fr:IsProtected()
+        if not (combat and prot) then
+            local okS, cur = pcall(fr.GetScript, fr, "OnUpdate")
+            if okS and cur == f[3] then fr:SetScript("OnUpdate", f[2]) end
+        end
+    end
     local list = {}
     for name, e in pairs(p.data) do table.insert(list, { name = name, n = e.n, ms = e.ms, max = e.max }) end
     table.sort(list, function(a, b) return a.ms > b.ms end)
@@ -395,14 +409,16 @@ function M:PerfStart(secs)
             local okU, up = false, nil
             if name and name:find("^WarbandKeeper") then okU, up = pcall(f.GetScript, f, "OnUpdate") end
             if not okU then up = nil end
-            if up then
-                table.insert(p.frames, { f, up })
+            local prot = f.IsProtected and f:IsProtected()
+            if up and not (prot and _G.InCombatLockdown and _G.InCombatLockdown()) then
                 local label = "OnUpdate " .. name:gsub("^WarbandKeeper", "")
-                f:SetScript("OnUpdate", function(...)
+                local env = function(...)
                     local t0 = debugprofilestop()
                     up(...)
                     if WK.perf then WK.perf.add(label, debugprofilestop() - t0) end
-                end)
+                end
+                table.insert(p.frames, { f, up, env })
+                f:SetScript("OnUpdate", env)
             end
             f = EnumerateFrames(f)
         end
