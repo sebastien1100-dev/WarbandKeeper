@@ -346,20 +346,12 @@ local function buildToast()
     f.close:SetScript("OnClick", function() f:Hide() end)
     f.see = UI:Button(f, T("Voir"), 70, 22, "secondary"); f.see:SetPoint("BOTTOMLEFT", 52, 10)
     f.see:SetScript("OnClick", function() f:Hide(); openJournal() end)
-    f.add = UI:Button(f, T("Ajouter à la tournée"), 150, 22, "secondary"); f.add:SetPoint("LEFT", f.see, "RIGHT", 8, 0)
-    f.add:SetScript("OnClick", function()
-        local P = WK.modules.QuestPlan
-        for _, q in ipairs(f.here or {}) do if P then P:SetPicked(q.id, true) end end
-        WK:Print(string.format(T("%d nouvelle(s) quête(s) de ta zone cochée(s) pour la tournée."), #(f.here or {})))
-        f:Hide()
-    end)
     function f:Paint(added, chg, here, zone)
         self.here = here
         local parts = { string.format(T("+%d quêtes"), added) }
         if #here > 0 then table.insert(parts, string.format(T("dont %s à ton niveau"), UI:Hex(C.text) .. string.format(T("%d dans %s"), #here, zoneName(zone)) .. "|r")) end
         if chg > 0 then table.insert(parts, string.format(T("%d corrigées"), chg)) end
         self.sub:SetText(table.concat(parts, " · "))
-        self.add:SetShown(#here > 0)
     end
     f:SetScript("OnUpdate", function(s, el)
         if s.sample then return end
@@ -407,12 +399,12 @@ function UI:BuildDataLogCard(card, toggles)
         table.insert(toggles, t)
         return t
     end
-    UI:SettingRow(card, -40, "Pastilles « Nouvelle »", "Dans « Quêtes de ma zone » et la liste des zones : NOUVELLE (base mise à jour), APPRISE (notée en jeu), CORRIGÉE. Dans la tournée et la fenêtre du donjon, un simple pictogramme : étincelle turquoise, livre violet, flèches orange.", tg("badges"), 80)
+    UI:SettingRow(card, -40, "Pastilles « Nouvelle »", "Dans la liste des zones et les quêtes d'une zone : NOUVELLE (base mise à jour), APPRISE (notée en jeu), CORRIGÉE. Dans la fenêtre du donjon, un simple pictogramme : étincelle turquoise, livre violet, flèches orange.", tg("badges"), 80)
     local seg = UI:Segmented(card, { { 3, "3 j" }, { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
         function(v) cfg.days = v; DL():Invalidate(); WK:NotifyChanged() end, 24)
     seg:Select(cfg.days or 7)
     UI:SettingRow(card, -88, "Durée des pastilles", "Après ce temps, la quête redevient normale (elle reste dans le journal).", seg, 220)
-    UI:SettingRow(card, -136, "Message après une mise à jour", "À la connexion, une fois par nouvelle base : ce qui change pour toi (quêtes de ta zone à ton niveau), avec « Voir » et « Ajouter à la tournée ».", tg("toast"), 80)
+    UI:SettingRow(card, -136, "Message après une mise à jour", "À la connexion, une fois par nouvelle base : ce qui change pour toi (quêtes de ta zone à ton niveau), avec « Voir ».", tg("toast"), 80)
     local b = UI:Button(card, T("Ouvrir le journal"), 160, 26, "secondary", "notes")
     b:SetPoint("TOPLEFT", 16, -188)
     b:SetScript("OnClick", openJournal)

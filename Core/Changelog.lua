@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.30", date = "21/11/2026", restart = true,
+        changed = {
+            "Quêtes allégées : la page garde seulement « Carte des zones » et « Journal ». « Ma progression » est retirée (montée en niveaux, mon journal, quêtes de ma zone, tournée de quêtes), avec les cases et le bouton « Envoyer dans Ma progression » de la carte des zones.",
+            "Retirés aussi : la carte de quête à l'écran, la barre « Quête » (Cibler / Objet) et ses raccourcis, la flèche automatique vers les zones de quête, et les pastilles posées dans le suivi des quêtes du jeu.",
+            "Suivre une quête ne lance plus de flèche : ses zones restent sur la carte ; un clic sur une zone, un donneur ou « guider » guide une fois, comme un lieu.",
+            "Quêtes automatiques en mode assisté : elles prennent les quêtes de ton niveau (réglage « Niveaux au-dessus du tien » dans les détails).",
+            "Repères sur les plaques de nom : pour les monstres de toutes les quêtes du journal (la quête suivie à ses couleurs).",
+            "Quêtes d'un donjon : « Tournée » guide de donneur en donneur, sans passer par une tournée de quêtes.",
+        },
+    },
+    {
         version = "1.128.29", date = "21/11/2026",
         fixed = {
             "Points /way : un point posé là où tu es (/way seul, Ctrl + clic à tes pieds) ne disparaît plus tout de suite comme « arrivé » ; il compte une fois que tu t'en es éloigné de 25 m.",

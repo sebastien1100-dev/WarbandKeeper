@@ -104,19 +104,19 @@ end
 -- fantôme et guidage rendu ailleurs (fin d'un /way posé en fantôme) : le retour au corps est relancé
 function UI.CorpseRestart(kept)
     -- le guidage que la fin du /way voulait rendre est gardé pour la résurrection
-    if kept and not kept.resume then prevTarget = kept end
+    if kept then prevTarget = kept end
     started = nil
     UI:RefreshCorpse()
 end
 local function stopGuide()
     local g = G()
     if not (prevTarget or started or (g.target and g.target.kind == "corpse")) then return end
-    -- en vie : guidage du corps arrêté s'il tourne encore, puis le guidage d'avant revient (ou la tournée /
-    -- la quête suivie reprend) ; aucune reprise tant qu'on est fantôme (arrivé au corps : rien ne vole la main)
+    -- en vie : guidage du corps arrêté s'il tourne encore, puis le guidage d'avant revient (ou une file /way
+    -- reprend) ; aucune reprise tant qu'on est fantôme (arrivé au corps : rien ne vole la main)
     if g.target and g.target.kind == "corpse" then g:Stop() end
     local p = prevTarget
     prevTarget = nil
-    if not g.target or g.target.kind == "qtour" or g.target.kind == "qtrack" then g:Restore(p) end
+    if not g.target then g:Restore(p) end
 end
 
 local function build()

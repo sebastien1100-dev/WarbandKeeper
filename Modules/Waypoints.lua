@@ -7,7 +7,7 @@ local T = function(s) return WK.T(s) end
 --   /way (seul) = ta position · /way list · /way reset · /way undo ; virgules acceptées (« 32,35 48,55 »).
 -- Les points forment une file (WK.DB.global.waypoints[perso].list, hors profils) : on guide vers le 1er,
 -- arrivé (moins de 12 m) on passe au suivant. Guidage : Modules/Guide.lua, genre « way » (flèche, épingle,
--- repère et trajet existants). Le guidage d'avant (tournée, quête suivie…) revient quand la file est vide.
+-- repère et trajet existants). Le guidage d'avant revient quand la file est vide.
 -- TomTom installé : il garde /way (la nôtre devient /wkway) ; option « suivre ses points ». TomTom absent :
 -- un petit TomTom (AddWaypoint, RemoveWaypoint…) reçoit les points que les autres addons lui envoient.
 -- Liens du chat (« /way … » et « 32.35, 48.55 » écrits par les joueurs) et partage au groupe (texte /way et
@@ -332,7 +332,7 @@ function M:Ended()
     -- guidage d'avant rendu tout de suite (Guide ne relance plus rien de lui-même après un /way)
     local p = prevTarget
     prevTarget = nil
-    if not g.target or g.target.kind == "qtour" or g.target.kind == "qtrack" then g:Restore(p) end
+    if not g.target then g:Restore(p) end
 end
 function M:PrintList()
     local list = self:List()

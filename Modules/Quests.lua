@@ -661,15 +661,10 @@ function M:NoteOffered(npc, offered, titles)
         end
     end
     if #newly > 0 then
-        local P = WK.modules.QuestPlan
-        if P then
-            P:Invalidate()
-            if P:Tour() and P.Reorder then pcall(P.Reorder, P) end
-        end
         local names = {}
         for _, q in ipairs(newly) do names[#names + 1] = self:Name(q) end
         WK:Print(string.format(
-            T("Pas encore proposée par ce PNJ : %s (une quête d'avant doit manquer) ; retirée de la tournée."),
+            T("Pas encore proposée par ce PNJ : %s (une quête d'avant doit manquer)."),
             table.concat(names, ", ")))
         WK:NotifyChanged()
     end
@@ -733,8 +728,6 @@ function M:LearnChain(qid, pre, how, tok)
         for k, v in pairs(g.questChains) do if not oldT or (v.at or 0) < oldT then oldK, oldT = k, v.at or 0 end end
         if oldK then g.questChains[oldK] = nil end
     end
-    local P = WK.modules.QuestPlan
-    if P then P:Invalidate() end
 end
 function M.ChainList(_)
     local out = {}

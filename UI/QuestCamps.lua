@@ -10,7 +10,7 @@ local CreateFrame, Minimap = CreateFrame, Minimap
 -- celles du journal (QuestTrack:Config().map). Petit volet « Quêtes » en haut à gauche de la carte : clic sur
 -- une quête = la suivre, « Toutes » / « Suivie » = ce que la carte dessine.
 local function Q() return WK.modules.QuestTrack end
-local camps, labels, turns, nums, lines = {}, {}, {}, {}, {}
+local camps, labels, turns = {}, {}, {}
 
 local function mapPos(p, mapID)
     if p.map == mapID then return p.x, p.y, true end
@@ -78,7 +78,7 @@ local function campFrame(i, cv)
             local G = WK.modules.Guide
             local t = { map = c.map, x = c.x, y = c.y, e = { c.x * 100, c.y * 100, 0, nil, nil, s.info.text, s.info.text, s.info.title } }
             t.cont, t.wx, t.wy = G.ToWorld(c.map, c.x, c.y)
-            G:Start(t, "Quête suivie", "qtrack")
+            G:Start(t, "Quête", "qtrack")
         end)
         camps[i] = f
     end
@@ -178,100 +178,6 @@ local function hideAll()
     for _, f in ipairs(camps) do f:Hide() end
     for _, f in ipairs(labels) do f:Hide() end
     for _, f in ipairs(turns) do f:Hide() end
-    for _, f in ipairs(nums) do f:Hide() end
-    for _, l in ipairs(lines) do l:Hide() end
-end
-
--- Tournée de quêtes (Modules/QuestPlan.lua) : étapes numérotées (or : prendre, accent : faire, vert : rendre)
--- reliées par un trait, l'étape en cours plus grande
-local function numPin(i, cv)
-    local p = nums[i]
-    if not p then
-        p = CreateFrame("Frame", nil, cv)
-        p.wk = true
-        p.ring = p:CreateTexture(nil, "ARTWORK"); p.ring:SetAllPoints(); p.ring:SetTexture(UI.MEDIA .. "circle")
-        p.dot = p:CreateTexture(nil, "ARTWORK", nil, 1); p.dot:SetPoint("TOPLEFT", 2, -2); p.dot:SetPoint("BOTTOMRIGHT", -2, 2)
-        p.dot:SetTexture(UI.MEDIA .. "circle")
-        p.n = UI:Text(p, 11, C.bg); p.n:SetPoint("CENTER", 0, 0)
-        p:EnableMouse(true)
-        p:SetScript("OnEnter", function(s)
-            UI:TooltipOwner(s, "ANCHOR_RIGHT")
-            GameTooltip:SetText(s.tip or "", 1, 1, 1, 1, true)
-            GameTooltip:Show()
-        end)
-        p:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        nums[i] = p
-    end
-    if p:GetParent() ~= cv then p:SetParent(cv) end
-    return p
-end
-local function line(i, cv)
-    -- traits sur le calque des tracés (au-dessus des calques du jeu de la carte de WoW Forever)
-    if UI.MapLineLayer then cv = UI.MapLineLayer(cv) end
-    local l = lines[i]
-    if not l then
-        l = cv:CreateLine(nil, "ARTWORK")
-        lines[i] = l
-    end
-    if l:GetParent() ~= cv then l:SetParent(cv) end
-    return l
-end
-local function drawTour(cv, mapID, w, h, lvl)
-    local P = WK.modules.QuestPlan
-    local t = P and P:Tour()
-    if not t then return end
-    local r, g, b = UI:Accent()
-    local prev, nl = nil, 0
-    -- pastilles à la taille des autres repères de la carte (rares, marchands) ; deux étapes au même endroit :
-    -- une seule pastille « 2·30 », plus large
-    local k = UI.MapIconScale and UI.MapIconScale() or 1
-    local placed = {}
-    local np = 0
-    for i, s in ipairs(t.steps) do
-        -- étapes passées, ou dont les quêtes sont déjà rendues : retirées de la carte
-        local x, y
-        if i >= t.idx and not (i > t.idx and P.StepSpent and P:StepSpent(s)) then x, y = mapPos(s, mapID) end
-        if x then
-            local cur = i == t.idx
-            local px, py = x * w, y * h
-            local same
-            for _, q in ipairs(placed) do
-                if math.abs(q.px - px) < 9 * k and math.abs(q.py - py) < 9 * k then same = q break end
-            end
-            if same then
-                same.nums = same.nums .. "·" .. i
-                same.p.n:SetText(same.nums)
-                same.p:SetWidth(math.max(same.p:GetHeight(), (same.p.n:GetStringWidth() or 10) + 8))
-                same.p.tip = same.p.tip .. "|n" .. i .. ". " .. P:StepTitle(s)
-                if cur then same.p:SetHeight(17 * k) end
-            else
-            np = np + 1
-            local p = numPin(np, cv)
-            local sz = (cur and 17 or 14) * k
-            p:SetSize(sz, sz)
-            local col = (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { r, g, b }
-            p.ring:SetVertexColor(1, 1, 1, cur and 1 or 0.8)
-            p.dot:SetVertexColor(col[1], col[2], col[3], 1)
-            if p.n.SetFont and UI.FONT then p.n:SetFont(UI.FONT, math.max(7, math.floor((cur and 9 or 8) * k + 0.5)), "") end
-            p.n:SetText(i)
-            p.tip = i .. ". " .. P:StepTitle(s)
-            p:SetFrameLevel(lvl + 8)
-            p:ClearAllPoints(); p:SetPoint("CENTER", cv, "TOPLEFT", px, -py)
-            p:Show()
-            table.insert(placed, { px = px, py = py, p = p, nums = tostring(i) })
-            end
-            if prev then
-                nl = nl + 1
-                local l = line(nl, cv)
-                l:SetThickness(2)
-                l:SetColorTexture(r, g, b, 0.75)
-                l:SetStartPoint("TOPLEFT", cv, prev[1] * w, -prev[2] * h)
-                l:SetEndPoint("TOPLEFT", cv, x * w, -y * h)
-                l:Show()
-            end
-            prev = { x, y }
-        end
-    end
 end
 
 function UI:DrawQuestCamps(cv, mapID, w, h)
@@ -279,10 +185,7 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
     if not WK:FeatureOn("quests") then return end
     local q = Q()
     local mode = q:Config().map
-    if mode == "off" then
-        drawTour(cv, mapID, w, h, (UI.mapBase or cv:GetFrameLevel() or 1) + 20)
-        return
-    end
+    if mode == "off" then return end
     local tracked = q:Tracked()
     local list = {}
     if mode == "all" then
@@ -368,7 +271,6 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
         end
     end
     UI.questZoneDiag = { map = mapID, style = style, heat = heatUsed, camps = nc, quests = #list, w = w }
-    drawTour(cv, mapID, w, h, lvl)
     UI:RefreshQuestMapPanel()
 end
 
@@ -527,13 +429,8 @@ local function updateMini()
     local cfg = q:Config()
     local style = cfg.miniStyle or "heat"
     if style == "off" or cfg.map == "off" then return end
-    -- tournée en cours : la quête de l'étape « faire » ; sinon la quête suivie
-    local qid
-    local P = WK.modules.QuestPlan
-    local tour = P and P:Active() and P:Tour()
-    local st = tour and tour.steps[tour.idx]
-    if st and st.kind == "do" and st.qids and st.qids[1] then qid = st.qids[1] end
-    qid = qid or q:Tracked()
+    -- la quête suivie
+    local qid = q:Tracked()
     if not qid then return end
     local inInst = IsInInstance
     local kind = inInst and select(2, inInst())

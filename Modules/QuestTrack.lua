@@ -1,12 +1,10 @@
 local ADDON_NAME, WK = ...
 local T = function(s) return WK.T(s) end
 
--- Quête suivie : camps de ses objectifs (Modules/QuestObjDB.lua, généré par tools/gen_objectives.py) et
--- guidage. La quête cochée dans le journal du jeu (QUEST_WATCH_LIST_CHANGED) ou choisie dans l'addon devient
--- la quête suivie ; la flèche vise le camp le plus proche d'un objectif pas fini, puis le point de rendu.
--- Le guidage n'en remplace jamais un autre (boîte aux lettres, corps…) : seulement s'il n'y en a pas, ou si
--- c'est déjà le nôtre (genre « qtrack »). Arrivé au camp, le guidage s'arrête (Guide) et ne revient que si la
--- cible change (objectif fini, quête prête à rendre, « Camp suivant »).
+-- Quêtes du journal et quête suivie : camps des objectifs (Data/QuestObjDB.lua, généré par
+-- tools/gen_objectives.py), dessinés sur la carte (UI/QuestCamps.lua). La quête cochée dans le journal du jeu
+-- (QUEST_WATCH_LIST_CHANGED) ou choisie dans l'addon devient la quête suivie. Plus de flèche automatique :
+-- un clic « guider » (camp, rendu, donneur) lance un guidage ordinaire (genre « qtrack »).
 local M = {}
 WK.modules.QuestTrack = M
 
@@ -15,11 +13,9 @@ function M:Config()
     g.questTrack = g.questTrack or {}
     local c = g.questTrack
     c.tracked = c.tracked or {}       -- [perso] = n° de quête (donnée, hors profils)
+    -- réglages de la carte de quête, de la flèche, de la barre « Quête » et des pastilles du suivi (retirés)
+    c.hud, c.hudSolo, c.guide, c.actButtons, c.targetSkull, c.trackPins, c.tourBg = nil, nil, nil, nil, nil, nil, nil
     if c.followWatch == nil then c.followWatch = true end -- quête cochée dans le journal du jeu = suivie
-    if c.hud == nil then c.hud = true end                 -- carte de quête à l'écran
-    -- carte d'une quête suivie hors tournée et hors guide (le journal du jeu le fait déjà) : non par défaut
-    if c.hudSolo == nil then c.hudSolo = false end
-    if c.guide == nil then c.guide = true end             -- flèche vers le camp puis le rendu
     if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
     if c.zoneStyle == nil then c.zoneStyle = "heat" end   -- zones sur la carte du monde : heat / points / circles
     if c.miniStyle == nil then c.miniStyle = "heat" end   -- quête suivie sur la minicarte : heat / points / off
@@ -27,9 +23,7 @@ function M:Config()
     if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
     -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
     if c.panel == nil then c.panel = true end
-    if c.actButtons == nil then c.actButtons = true end   -- boutons Cibler / Objet sur la carte de tournée
     if c.plateMarks == nil then c.plateMarks = true end   -- repères des monstres de la quête sur les plaques de nom
-    if c.targetSkull == nil then c.targetSkull = true end -- tête de mort posée par le bouton Cibler
     return c
 end
 
@@ -343,22 +337,16 @@ end
 function M:Track(qid)
     local c = self:Config()
     c.tracked[WK:CharKey()] = qid
-    self.skip, self.lastKey = 0, nil
-    self:Retarget(true)
     self:Changed()
 end
 
 function M:Untrack()
     local c = self:Config()
     c.tracked[WK:CharKey()] = nil
-    local g = G()
-    if g.target and g.target.kind == "qtrack" then g:Stop() end
-    self.lastKey = nil
     self:Changed()
 end
 
 function M:Changed()
-    if WK.UI.RefreshQuestTracker then WK.UI:RefreshQuestTracker() end
     if WK.UI.RefreshQuestCamps then WK.UI:RefreshQuestCamps() end
     if WK.UI.RefreshQuestMini then WK.UI:RefreshQuestMini() end
     WK:NotifyChanged()
@@ -404,67 +392,6 @@ function M:TurnIn(qid)
     return d and d.turnIn and { map = d.turnIn.map, x = d.turnIn.x, y = d.turnIn.y } or nil
 end
 
--- { map, x, y, name, sub, key, camp?, obj?, turnIn? } : ce que la flèche vise
-function M:Goal(qid)
-    qid = qid or self:Tracked()
-    if not qid then return nil end
-    local title = self:Title(qid)
-    if not self:IsComplete(qid) and not self.forceTurnIn then
-        local list = self:CampList(qid)
-        if #list > 0 then
-            local pick = list[((self.skip or 0) % #list) + 1]
-            local c = pick.camp
-            return { map = c.map, x = c.x, y = c.y, name = pick.obj.name, sub = title, camp = c, obj = pick.obj, d = pick.d,
-                key = qid .. ":" .. c.map .. ":" .. c.x .. ":" .. c.y, count = #list }
-        end
-    end
-    local p = self:TurnIn(qid)
-    if p then
-        return { map = p.map, x = p.x, y = p.y, name = T("Rendre la quête"), sub = title, turnIn = true,
-            key = qid .. ":rendu:" .. p.map }
-    end
-    return nil
-end
-
--- Lance (ou change) le guidage vers la cible, sans prendre la place d'un autre guidage.
-function M:Retarget(force)
-    local cfg = self:Config()
-    if not on() or not cfg.guide then return end
-    -- une tournée de quêtes en cours (Modules/QuestPlan.lua) a la main sur le guidage
-    if WK.modules.QuestPlan and WK.modules.QuestPlan:Active() then return end
-    local g = G()
-    local mine = g.target and g.target.kind == "qtrack"
-    if g.target and not mine then return end
-    local goal = self:Goal()
-    if not goal then
-        if mine then g:Stop() end
-        self.lastKey = nil
-        return
-    end
-    -- arrivé au camp (guidage arrêté par le Guide) : pas relancé tant que la cible ne change pas
-    if not force and goal.key == self.lastKey then return end
-    self.lastKey = goal.key
-    local t = { map = goal.map, x = goal.x, y = goal.y,
-        e = { goal.x * 100, goal.y * 100, 0, nil, nil, goal.name, goal.name, goal.sub } }
-    t.cont, t.wx, t.wy = g.ToWorld(goal.map, goal.x, goal.y)
-    t.qid = self:Tracked()
-    g:Start(t, goal.turnIn and "Quête à rendre" or "Quête suivie", "qtrack")
-end
-
-function M:NextCamp()
-    self.forceTurnIn = nil
-    self.skip = (self.skip or 0) + 1
-    self:Retarget(true)
-    self:Changed()
-end
-
-function M:GoTurnIn()
-    self.forceTurnIn = true
-    self:Retarget(true)
-    self.forceTurnIn = nil
-    self:Changed()
-end
-
 ---------------------------------------------------------------------------
 -- Évènements
 ---------------------------------------------------------------------------
@@ -508,11 +435,6 @@ local function soon(force)
         M.lastSig, M.lastSigTrack = sig, track
         local qid = M:Tracked()
         if not qid and M:Config().tracked[WK:CharKey()] then M:Config().tracked[WK:CharKey()] = nil end
-        -- objectif fini ou quête prête : nouvelle cible (le camp suivant repart du plus proche)
-        local state = qid and (M:IsComplete(qid) and "c" or "") or ""
-        if qid then for _, o in ipairs(M:Objectives(qid)) do state = state .. (o.done and "1" or "0") end end
-        if state ~= M.lastState then M.lastState = state; M.skip = 0 end
-        M:Retarget()
         M:Changed()
     end)
 end
@@ -530,16 +452,13 @@ WK:On("QUEST_REMOVED", function(qid)
     if qid and qid == M:Config().tracked[WK:CharKey()] then M:Untrack() end
 end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() soon(true) end) end)
-WK:On("ZONE_CHANGED_NEW_AREA", function() M.skip = 0; soon(true) end)
+WK:On("ZONE_CHANGED_NEW_AREA", function() soon(true) end)
 
 -- données à la demande arrivées (après un combat, ou au premier besoin) : ce qui a été calculé sans elles est
--- refait (camps, cible du guidage, objets à acheter, tournée, guide de montée)
+-- refait (camps, objets à acheter)
 WK:OnDataLoaded(function()
     for k in pairs(buyCache) do buyCache[k] = nil end
     for k in pairs(vendCache) do vendCache[k] = nil end
-    M.lastSig, M.lastKey = nil, nil
-    local P, LG = WK.modules.QuestPlan, WK.modules.LevelGuide
-    if P and P.Invalidate then P:Invalidate(); P.lastKey = nil end
-    if LG and LG.Invalidate then LG:Invalidate() end
+    M.lastSig = nil
     if _G.C_Timer then _G.C_Timer.After(0, function() soon(true) end) end
 end)

@@ -194,10 +194,9 @@ local function item(i)
     return b
 end
 
--- qids : une ou plusieurs quêtes (étape de la tournée) ; opts.step = ligne d'une étape de la tournée
-function UI:QuestMenu(qids, opts)
-    opts = opts or {}
-    local Qm, QT, P = WK.modules.Quests, WK.modules.QuestTrack, WK.modules.QuestPlan
+-- qids : une ou plusieurs quêtes
+function UI:QuestMenu(qids)
+    local Qm, QT = WK.modules.Quests, WK.modules.QuestTrack
     if not (Qm and qids and #qids > 0) then return end
     menu = menu or buildMenu()
     local entries = {}
@@ -213,19 +212,8 @@ function UI:QuestMenu(qids, opts)
         local suffix = multi and (" : " .. nm) or ""
         if q and q.x and not (QT and QT.InLog and QT:InLog(id)) then add(T("Guider vers le donneur") .. suffix, function() Qm:GuideTo(q) end) end
         if QT and QT.InLog and QT:InLog(id) and QT.Track then add(T("Suivre cette quête") .. suffix, function() QT:Track(id) end) end
-        if P and P.SetPicked then
-            add(T("Ignorer cette quête") .. suffix, function()
-                P:SetPicked(id, false)
-                if P:Tour() then P:Reorder() end
-                WK:Print(string.format(T("Quête ignorée pour la tournée : %s"), nm))
-            end)
-        end
         add(T("Lien wowhead") .. suffix, function() UI:ShowWowhead("quest", id, nm) end, multi and "" or T("Maj + clic"))
         add(T("Chercher un groupe (chat)") .. suffix, function() UI:QuestGroupMessage(id) end)
-    end
-    if opts.step and P and P:Tour() then
-        local st = type(opts.step) == "table" and opts.step or nil -- l'étape de la ligne cliquée
-        add(T("Passer cette étape"), function() P:Skip(st) end)
     end
     local w = 250
     for i, e in ipairs(entries) do
@@ -244,10 +232,10 @@ function UI:QuestMenu(qids, opts)
 end
 
 -- à appeler au début d'un OnClick de ligne de quête : rend vrai si le clic est pris (Maj + clic, clic droit)
-function UI:QuestClick(btn, qids, opts)
+function UI:QuestClick(btn, qids)
     if type(qids) ~= "table" then qids = { qids } end
     if #qids == 0 then return false end
-    if btn == "RightButton" then UI:QuestMenu(qids, opts) return true end
+    if btn == "RightButton" then UI:QuestMenu(qids) return true end
     if btn == "LeftButton" and IsShiftKeyDown and IsShiftKeyDown() then
         local id = qids[1]
         local Qm, QT = WK.modules.Quests, WK.modules.QuestTrack

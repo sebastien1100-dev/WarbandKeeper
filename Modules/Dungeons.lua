@@ -1007,8 +1007,7 @@ function M:QuestSummary(d)
     return s
 end
 
--- Prendre les quêtes d'un donjon : cochées dans le plan de quêtes (les quêtes automatiques en mode
--- assisté les acceptent), puis la flèche mène de donneur en donneur, du plus proche au suivant
+-- Prendre les quêtes d'un donjon : la flèche mène de donneur en donneur, du plus proche au suivant
 M.questPick = nil -- { key, name, ids = { [n°] = vrai } }
 local function giverDist(q)
     local G = WK.modules.Guide
@@ -1042,7 +1041,7 @@ function M:NextQuestGiver()
             if q and Q:State(q, c) == "locked" then wait = wait + 1 end
         end
         if wait > 0 then
-            WK:Print(string.format(T("Quêtes de %s : tout ce qui peut l'être est pris ; %d attendent un prérequis (cochées, à prendre ensuite)."), qp.name, wait))
+            WK:Print(string.format(T("Quêtes de %s : tout ce qui peut l'être est pris ; %d attendent un prérequis (à prendre ensuite)."), qp.name, wait))
         else
             WK:Print(string.format(T("Quêtes de %s : tout est pris."), qp.name))
         end
@@ -1054,19 +1053,10 @@ function M:NextQuestGiver()
 end
 -- quêtes à prendre maintenant (celles du donjon et les prérequis de celles qui attendent)
 function M:PickCount(s) return #s.avail + #s.pre end
--- tournée de ramassage : tous les donneurs (quêtes du donjon et prérequis) dans la tournée de quêtes
+-- tournée de ramassage (fenêtre des quêtes du donjon) : la flèche de donneur en donneur
 function M:PickTour(d)
-    local s = self:QuestSummary(d)
-    local list = {}
-    for _, q in ipairs(s.avail) do table.insert(list, q) end
-    for _, e in ipairs(s.pre) do table.insert(list, e.q) end
-    if #list == 0 then WK:Print(T("Rien à prendre pour ce donjon.")) return nil end
-    -- celles qui attendent un prérequis : cochées, prises ensuite (mode Assisté)
-    local P = WK.modules.QuestPlan
-    if not P then return nil end
-    for _, q in ipairs(s.waiting) do P:SetPicked(q.id, true) end
-    self.questPick = nil
-    return P:StartPickTour(list, self:Name(d))
+    if self:PickQuests(d) == 0 then WK:Print(T("Rien à prendre pour ce donjon.")) return nil end
+    return true
 end
 -- fenêtre des quêtes pour un donjon choisi (page Donjons, onglet LFG) : affichée jusqu'à la croix
 function M:ShowQuestWindow(d)
@@ -1079,21 +1069,20 @@ function M:PickQuests(d)
     local s = self:QuestSummary(d)
     local n = self:PickCount(s)
     if n == 0 then return 0 end
-    local P = WK.modules.QuestPlan
     local ids = {}
-    local function pick(q) ids[q.id] = true; if P then P:SetPicked(q.id, true) end end
+    local function pick(q) ids[q.id] = true end
     for _, q in ipairs(s.avail) do pick(q) end
     for _, e in ipairs(s.pre) do pick(e.q) end
-    -- quêtes du donjon qui attendent leurs prérequis : cochées aussi, la flèche y mène dès qu'elles s'ouvrent
+    -- quêtes du donjon qui attendent leurs prérequis : gardées aussi, la flèche y mène dès qu'elles s'ouvrent
     for _, q in ipairs(s.waiting) do pick(q) end
     self.questPick = { key = d.key, name = self:Name(d), ids = ids, waiting = #s.waiting }
-    local msg = string.format(T("%d quête(s) de %s cochées : la flèche mène au donneur le plus proche, puis au suivant."), n, self:Name(d))
+    local msg = string.format(T("%d quête(s) de %s à prendre : la flèche mène au donneur le plus proche, puis au suivant."), n, self:Name(d))
     if #s.pre > 0 then msg = msg .. " " .. string.format(T("Dont %d prérequis, à faire avant les quêtes du donjon."), #s.pre) end
     WK:Print(msg)
     self:NextQuestGiver()
     return n
 end
--- prérequis rendu : une quête du donjon s'ouvre peut-être (cochée : reprise par le plan de quêtes)
+-- prérequis rendu : une quête du donjon s'ouvre peut-être
 WK:On("QUEST_TURNED_IN", function()
     if M.OnChange then C_Timer.After(1.5, function() pcall(M.OnChange, M) end) end
 end)

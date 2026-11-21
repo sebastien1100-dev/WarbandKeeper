@@ -300,8 +300,8 @@ WK:On("PLAYER_LOGIN", function()
     if not (_G.C_Timer and _G.C_Timer.After) then return end
     _G.C_Timer.After(20, function()
         if WK.dataLoaded or not dataCfg().preload then return end
-        local Q, P = WK.modules.QuestTrack, WK.modules.QuestPlan
-        local busy = (Q and Q.Tracked and Q:Tracked()) or (P and P.Active and P:Active())
+        local Q = WK.modules.QuestTrack
+        local busy = Q and Q.Tracked and Q:Tracked()
         if busy and not (_G.InCombatLockdown and _G.InCombatLockdown()) then WK:NeedData("préchargement") end
     end)
 end)

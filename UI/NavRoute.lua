@@ -416,15 +416,12 @@ local function updateMiniPin()
         miniPin.d:SetPoint("CENTER"); miniPin.d:SetSize(12, 12)
         miniPin.t = UI:Text(miniPin, 9, C.bg); miniPin.t:SetPoint("CENTER", 0, 0)
     end
-    -- genre : étape de la tournée en cours, sinon quête suivie (rendu si finie)
+    -- genre : guidage vers une quête (rendu si la quête guidée est finie)
     local kind
-    local P = WK.modules.QuestPlan
-    local tour = P and P:Tour()
-    if t.kind == "qtour" and tour and tour.steps[tour.idx] then kind = tour.steps[tour.idx].kind
-    elseif t.kind == "qtrack" then
+    if t.kind == "qtrack" then
         local QT = WK.modules.QuestTrack
-        local q = QT and QT:Tracked()
-        kind = (q and QT:IsComplete(q)) and "turn" or nil
+        local q = t.qid or (QT and QT:Tracked())
+        kind = (q and QT and QT:IsComplete(q)) and "turn" or nil
     end
     local e = PIN_KIND[kind or ""]
     local col = e and C[e[1]] or { UI:Accent() }

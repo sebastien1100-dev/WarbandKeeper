@@ -4,7 +4,7 @@ local T = function(s) return WK.T(s) end
 -- Quêtes automatiques : prendre et rendre les quêtes en parlant au PNJ, choisir la récompense.
 -- Trois modes (réglage WK.DB.global.autoQuest.mode) :
 --   « manual » : rien d'automatique ;
---   « assist » : prend les quêtes cochées (Quêtes de ma zone, tournée), rend les quêtes finies ; la
+--   « assist » : prend les quêtes de ton niveau (maxAbove), rend les quêtes finies ; la
 --                récompense est laissée au joueur quand il y a un choix ;
 --   « auto »   : prend et rend tout (avec les exceptions), choisit la récompense (reward = me / price).
 -- Détails : pickChecked (assisté : toujours), noHigh, noGroup, skipGossip, share, noGold, fallbackPrice,
@@ -24,6 +24,13 @@ function M:Config()
         if c[k] == nil then c[k] = v end
     end
     c.buyCap = c.buyCap or 10000 -- achat d'objets de quête sans confirmer jusqu'à 1 po
+    -- niveaux au-dessus du tien encore pris (repris une fois de l'ancien réglage de la tournée)
+    if c.maxAbove == nil then
+        local old = g.questPlan and g.questPlan.maxAbove
+        c.maxAbove = type(old) == "number" and old or 2
+    end
+    -- anciennes données de la tournée de quêtes et du guide de montée (retirés) : effacées une fois
+    g.questPlan, g.levelGuide = nil, nil
     c.quests = c.quests or {}
     c.npcs = c.npcs or {}
     c.log = c.log or {}
@@ -62,32 +69,21 @@ end
 ---------------------------------------------------------------------------
 -- Prendre
 ---------------------------------------------------------------------------
--- quête cochée dans « Quêtes de ma zone » (ou d'office), ou dans une étape « prendre » de la tournée
-local function checked(qid)
-    local P = WK.modules.QuestPlan
-    if not P then return false end
-    local picked = P:Config().picked[WK:CharKey()] or {}
-    if picked[qid] ~= nil then return picked[qid] end
-    local t = P:Tour()
-    for _, s in ipairs(t and t.steps or {}) do
-        if s.kind == "pick" then for _, q in ipairs(s.qids) do if q == qid then return true end end end
-    end
-    -- pas de choix noté : cochée d'office si son niveau va (même règle que la liste)
-    local q = WK.modules.Quests and WK.modules.Quests:Get(qid)
-    local lvl = UnitLevel and UnitLevel("player") or 1
-    return q ~= nil and (q.lvl or 0) <= lvl + (P:Config().maxAbove or 2)
-end
 local function tooHigh(qid, level)
     local lvl = UnitLevel and UnitLevel("player") or 1
     local q = WK.modules.Quests and WK.modules.Quests:Get(qid)
     local ql = level or (q and q.lvl)
-    local P = WK.modules.QuestPlan
-    return ql ~= nil and ql > lvl + ((P and P:Config().maxAbove) or 2)
+    return ql ~= nil and ql > lvl + (M:Config().maxAbove or 2)
+end
+-- mode assisté : quête connue de la base et de ton niveau (au plus maxAbove au-dessus)
+local function checked(qid, level)
+    local q = WK.modules.Quests and WK.modules.Quests:Get(qid)
+    return q ~= nil and not tooHigh(qid, level)
 end
 function M:WantPick(qid, level)
     local c = self:Config()
     if suspended() or not qid or c.quests[qid] then return false end
-    if c.mode == "assist" then return checked(qid) end
+    if c.mode == "assist" then return checked(qid, level) end
     if c.noHigh and tooHigh(qid, level) then return false end
     if c.noGroup and WK.QuestIsGroup(qid) then return false end
     return true

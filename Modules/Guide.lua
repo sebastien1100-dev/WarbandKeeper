@@ -208,51 +208,35 @@ function M:Stop()
     -- (Nav:Clear redessine déjà la carte via RefreshNavRoute : pas un second redessin complet)
     if self.Redraw and not (WK.modules.Nav and WK.UI.RefreshNavRoute) then self:Redraw() end
     WK:NotifyChanged()
-    -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main.
-    -- Points /way et retour au corps : jamais ici, ils rendent eux-mêmes le guidage d'avant (M:Restore) ; un seul
-    -- mécanisme de reprise, sans course entre minuteries (avant, la quête suivie passait parfois devant)
-    local own = was and (was.kind == "qtour" or was.kind == "qtrack" or was.kind == "way" or was.kind == "corpse")
+    -- détour fini (marchand, boîte aux lettres, maître…) : une file /way pas finie reprend la main.
+    -- Points /way et retour au corps : jamais ici, ils rendent eux-mêmes le guidage d'avant (M:Restore)
+    local own = was and (was.kind == "way" or was.kind == "corpse")
     if was and not own and C_Timer then
         C_Timer.After(0.5, function() M:Resume() end)
     end
 end
--- Guidage à garder pour plus tard (avant un /way ou le retour au corps) : un retour au corps n'est jamais gardé,
--- une étape de tournée ou la quête suivie l'est sous forme de « reprise » (recalculée au retour, pas une
--- étape peut-être déjà faite)
+-- Guidage à garder pour plus tard (avant un /way ou le retour au corps) : un retour au corps ou un /way n'est
+-- jamais gardé
 function M.Keep(_, t)
     if not t or t.kind == "corpse" or t.kind == "way" then return nil end
-    if t.kind == "qtour" or t.kind == "qtrack" then return { resume = true } end
     return t
 end
--- Rend un guidage gardé par Keep (ou, sans rien de gardé, laisse la tournée ou la quête suivie reprendre)
+-- Rend un guidage gardé par Keep (ou, sans rien de gardé, laisse une file /way reprendre)
 local function ghost() return _G.UnitIsGhost and _G.UnitIsGhost("player") end
 function M:Restore(kept)
-    if self.target and self.target.kind ~= "qtour" and self.target.kind ~= "qtrack" then return end
+    if self.target then return end
     -- fantôme : rien ne reprend, le retour au corps revient (UI/CorpseBanner) ; stopGuide rendra le reste
     if ghost() then
         if WK.UI.CorpseRestart then WK.UI.CorpseRestart(kept) end
         return
     end
-    if kept and not kept.resume then
-        if self.target then self.target = nil end
-        self:Start(kept, kept.reason, kept.kind)
-    elseif not self.target then
-        self:Resume()
-    end
+    if kept then self:Start(kept, kept.reason, kept.kind) else self:Resume() end
 end
 function M:Resume()
     if self.target or ghost() then return end
     -- file /way pas finie (interrompue par un détour ou un retour au corps) : elle repasse en premier
     local W = WK.modules.Waypoints
-    if W and W.List and W:List()[1] and W.Go and not (W.IsPaused and W:IsPaused()) then W:Go() return end
-    local P = WK.modules.QuestPlan
-    if P and P.Active and P:Active() then
-        P.lastKey = nil
-        P:Retarget()
-        return
-    end
-    local QT = WK.modules.QuestTrack
-    if QT and QT.Retarget then pcall(QT.Retarget, QT, true) end
+    if W and W.List and W:List()[1] and W.Go and not (W.IsPaused and W:IsPaused()) then W:Go() end
 end
 
 -- Aller au plus proche d'un genre : "mail", "bank", "repair", "vendor", "ammo", "trainer", "bags", ou

@@ -1132,9 +1132,9 @@ UI.CHIPS = {
                 string.format(T("%s XP de quêtes disponibles à ton niveau"), tostring(xp)) })
         end
         table.insert(out, { T("Disponibles"), tostring(avail) })
-        -- journal du perso connecté (Modules/QuestTrack.lua) : en tête sur l'onglet « Mon journal »
+        -- journal du perso connecté (Modules/QuestTrack.lua) : places prises, quêtes à rendre, quête suivie
         local QT = WK.modules.QuestTrack
-        if QT and QT.LogQuests then
+        if QT and QT.LogQuests and key == WK:CharKey() then
             local log = QT:LogQuests()
             local maxQ = 25
             if C_QuestLog and C_QuestLog.GetMaxNumQuestsCanAccept then
@@ -1143,9 +1143,8 @@ UI.CHIPS = {
             end
             local ready = 0
             for _, q in ipairs(log) do if q.complete then ready = ready + 1 end end
-            local function toLog() if pg and pg.ShowTab then pg:ShowTab("log") end end
-            local jr = { { T("Journal"), #log .. " / " .. maxQ, #log >= maxQ and C.warning or nil, "quests", nil, toLog } }
-            if ready > 0 then table.insert(jr, { T("À rendre"), tostring(ready), C.positive, "quests", nil, toLog }) end
+            table.insert(out, { T("Journal"), #log .. " / " .. maxQ, #log >= maxQ and C.warning or nil })
+            if ready > 0 then table.insert(out, { T("À rendre"), tostring(ready), C.positive }) end
             local tid = QT:Tracked()
             if tid then
                 local title = QT:Title(tid) or ""
@@ -1155,41 +1154,7 @@ UI.CHIPS = {
                     while cut > 1 and (title:byte(cut + 1) or 0) >= 128 and (title:byte(cut + 1) or 0) < 192 do cut = cut - 1 end
                     title = title:sub(1, cut) .. "..."
                 end
-                table.insert(jr, { T("Suivie"), title, { UI:Accent() }, "quests", T("Clic : voir la quête dans Mon journal"),
-                    function() if pg then pg.sel = tid end; toLog() end })
-            end
-            -- tournée en cours (Modules/QuestPlan.lua) : étape, cliquable vers l'onglet Tournée
-            local QP = WK.modules.QuestPlan
-            local tour = QP and QP.Tour and QP:Tour()
-            if tour and tour.steps and tour.steps[tour.idx] then
-                table.insert(jr, 1, { T("Tournée"), string.format(T("étape %d / %d"), tour.idx, #tour.steps),
-                    tour.paused and C.warning or { UI:Accent() }, "quests", nil, function() if pg and pg.ShowTab then pg:ShowTab("tour") end end })
-            end
-            -- onglet « À prendre » : chiffres du plan (calculés par la page)
-            local ps = pg and pg.view == "pick" and pg.pickStats
-            if pg and pg.view == "montee" then
-                -- onglet « Montée » (Modules/LevelGuide.lua) : zones gardées par la page, pas recalculées ici
-                local LG = WK.modules.LevelGuide
-                local lvl = UnitLevel and UnitLevel("player") or 1
-                out = { { T("Niveau"), tostring(lvl), { UI:Accent() } } }
-                local z = pg.lgZones and pg.lgZones[1]
-                if z then table.insert(out, { T("Zone conseillée"), z.name or "?", C.positive }) end
-                if LG then
-                    local f = LG:Following()
-                    table.insert(out, { T("Guide"), f and T("suivi") or T("pas suivi"), f and C.positive or C.muted })
-                end
-                if tour and tour.steps and tour.steps[tour.idx] then table.insert(out, jr[1]) end
-            elseif ps then
-                out = {
-                    { T("À prendre ici"), tostring(ps.here) },
-                    { T("Dans ton journal"), tostring(ps.inLog) },
-                    { T("XP du plan"), tostring(ps.xp), C.positive },
-                    { T("Durée estimée"), string.format(T("env. %d min"), math.max(1, math.floor((ps.secs or 0) / 60 + 0.5))) },
-                }
-            elseif pg and (pg.view == "log" or pg.view == "tour") then
-                for i = #jr, 1, -1 do table.insert(out, 1, jr[i]) end
-            else
-                for _, e in ipairs(jr) do table.insert(out, e) end
+                table.insert(out, { T("Suivie"), title, { UI:Accent() } })
             end
         end
         return out
