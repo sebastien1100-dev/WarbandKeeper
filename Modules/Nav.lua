@@ -196,6 +196,9 @@ local function graph(cont)
         buildInBackground(cont)
         while building[cont] and not graphs[cont] do coroutine.yield() end
         if graphs[cont] then return graphs[cont] end
+        -- la construction de fond vient d'échouer : pas de seconde construction tout de suite (avant, le
+        -- calcul en relançait une aussitôt, vouée au même échec)
+        if buildFailed[cont] then return nil end
     end
     return build(cont)
 end
@@ -241,6 +244,7 @@ local function walk(cont, sx, sy, tx, ty, budget)
     local failedAt = buildFailed[cont]
     if failedAt and (_G.GetTime and _G.GetTime() or 0) - failedAt < 60 then return { sx, sy, tx, ty } end
     local g = graph(cont)
+    if not g then return { sx, sy, tx, ty } end
     local GOAL, START = -1, 0
     local best = { [START] = 0 }
     local from = {}

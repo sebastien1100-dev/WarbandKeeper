@@ -447,6 +447,15 @@ function UI:RefreshDungeonQuests()
 end
 
 WK:On("PLAYER_LOGIN", function() C_Timer.After(3, function() UI:RefreshDungeonQuests() end) end)
-for _, ev in ipairs({ "QUEST_LOG_UPDATE", "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
-    WK:On(ev, function() if win and not win.sample then C_Timer.After(0.3, function() UI:RefreshDungeonQuests() end) end end)
+-- une seule relecture pour une rafale (QUEST_TURNED_IN puis QUEST_LOG_UPDATE arrivaient ensemble : le journal
+-- était relu deux fois de suite)
+local refreshQueued = false
+local function refreshSoon()
+    if not win or win.sample or refreshQueued then return end
+    refreshQueued = true
+    C_Timer.After(0.3, function() refreshQueued = false; UI:RefreshDungeonQuests() end)
+end
+for _, ev in ipairs({ "QUEST_LOG_UPDATE", "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_DISABLED",
+    "PLAYER_REGEN_ENABLED" }) do
+    WK:On(ev, refreshSoon)
 end

@@ -13,6 +13,9 @@ local function mix(a, b, t)
 end
 local function scale(a, k) return { a[1] * k, a[2] * k, a[3] * k } end
 local function rgba(c, a) return { c[1], c[2], c[3], a or 1 } end
+-- rouge, vert, bleu d'une couleur du thème, sans sa transparence : pour AddLine (son 5e argument est « passer à la
+-- ligne » ; unpack(C.x) y mettait la transparence 1, et les infobulles passaient à la ligne sans raison)
+function UI.RGB(c) return c[1], c[2], c[3] end
 
 local function classColor()
     local _, class = UnitClass("player")

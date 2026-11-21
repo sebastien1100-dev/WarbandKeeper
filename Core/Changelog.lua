@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.43", date = "21/11/2026",
+        fixed = {
+            "Vols : un /reload en plein vol faisait perdre le vol en cours (barre, temps restant, statistiques) jusqu'à l'atterrissage ; il est maintenant repris.",
+            "Déplacements : quand le calcul du réseau de chemins échouait, il était relancé une deuxième fois tout de suite ; l'itinéraire passe directement en ligne droite.",
+            "Infobulles (bénédictions, points sur la carte, flèche) : certaines lignes passaient à la ligne sans raison.",
+            "Banque : le nombre d'objets d'une case était lu juste après le dépôt au lieu d'avant, ce qui pouvait fausser la vérification.",
+            "Courrier : le bouton « Tout prendre » pouvait rester sur « Récupération... » après la fermeture de la boîte.",
+            "Quêtes de donjon : le journal était relu deux fois de suite quand une quête était rendue.",
+        },
+    },
+    {
         version = "1.128.42", date = "21/11/2026",
         fixed = {
             "Mode édition : un élément coupé pendant l'édition (par exemple l'encart du feu de camp) gardait son aperçu et restait bloqué jusqu'au /reload.",

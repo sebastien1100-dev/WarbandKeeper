@@ -93,7 +93,7 @@ local function getPin(i, parent)
             for _, it in ipairs(items) do
                 GameTooltip:AddDoubleLine((UI:ItemInfo(it.id)) or "?", "x" .. it.n, 0.9, 0.9, 0.9, 1, 1, 1)
             end
-            GameTooltip:AddLine(string.format(T("%d récolte(s) ici · dernière %s"), c.count, UI:Ago(c.last)), unpack(UI.colors.muted))
+            GameTooltip:AddLine(string.format(T("%d récolte(s) ici · dernière %s"), c.count, UI:Ago(c.last)), UI.RGB(UI.colors.muted))
             GameTooltip:Show()
         end)
         p:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -222,10 +222,10 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnEnter", function(s)
             WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(G:PlaceName(G.target), 1, 1, 1)
-            if G.target and G.target.reason then GameTooltip:AddLine(T(G.target.reason), unpack(UI.colors.muted)) end
+            if G.target and G.target.reason then GameTooltip:AddLine(T(G.target.reason), UI.RGB(UI.colors.muted)) end
             local d = G.target and UI.GuideDistance and UI:GuideDistance(G.target)
             if d then GameTooltip:AddLine(string.format(T("%d m"), math.floor(d)), UI:Accent()) end
-            GameTooltip:AddLine(T("Guidage Warband Keeper · clic droit pour arrêter"), unpack(UI.colors.dim))
+            GameTooltip:AddLine(T("Guidage Warband Keeper · clic droit pour arrêter"), UI.RGB(UI.colors.dim))
             GameTooltip:Show()
         end)
         targetPin:SetScript("OnLeave", function() GameTooltip:Hide() end)

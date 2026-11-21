@@ -358,6 +358,19 @@ function M:Start()
                est = db().routes[key] or self:Estimate(dist), learned = db().routes[key] ~= nil,
                traveled = 0 }
     pending = nil
+    -- gardé dans la sauvegarde : un /reload en vol le retrouve (avant, le vol et ses statistiques étaient perdus
+    -- jusqu'à l'atterrissage)
+    db().current = { from = flight.from, to = flight.to, at = _G.time(), dist = flight.dist, est = flight.est,
+        learned = flight.learned, dest = flight.dest, stops = flight.stops }
+    if self.OnStart then self:OnStart(flight) end
+end
+-- /reload en vol : le vol en cours est repris (départ recalculé d'après l'heure), sans chemin noté avant
+function M:Resume()
+    local c = db().current
+    if flight or not c then return end
+    if not onTaxi() or _G.time() - (c.at or 0) > 1800 then db().current = nil return end
+    flight = { from = c.from, to = c.to, start = _G.GetTime() - (_G.time() - c.at), dist = c.dist, stops = c.stops,
+        dest = c.dest, est = c.est, learned = c.learned, traveled = 0, resumed = true }
     if self.OnStart then self:OnStart(flight) end
 end
 
@@ -366,6 +379,7 @@ function M:Finish()
     if not flight then return end
     local f = flight
     flight = nil
+    db().current = nil
     local secs = GetTime() - f.start
     -- carnet des vols (statistiques en vol : vols du mois, temps en l'air, trajet le plus pris), 400 au plus
     do
@@ -382,8 +396,9 @@ function M:Finish()
             f.early = true
         end
     end
-    -- Durée apprise seulement pour un vol complet et plausible
-    if not f.early and secs > 5 then
+    -- Durée apprise seulement pour un vol complet et plausible (pas un vol repris après un /reload : son chemin
+    -- n'a été noté qu'en partie)
+    if not f.early and secs > 5 and not f.resumed then
         local d = db()
         -- chemin du vol, simplifié, gardé pour le tracé (WK.DB.global.flights.paths["Départ|Arrivée"])
         if f.pts and #f.pts >= 6 and f.cont then
@@ -621,6 +636,7 @@ local function checkZone()
 end
 WK:On("ZONE_CHANGED_NEW_AREA", function() C_Timer.After(3, function() pcall(checkZone) end) end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(6, function() pcall(checkZone) end) end)
+WK:On("PLAYER_ENTERING_WORLD", function() _G.C_Timer.After(1, function() pcall(M.Resume, M) end) end)
 -- appris à l'instant (carte des vols ouverte chez ce maître) : plus de rappel pour la zone
 WK:On("TAXIMAP_CLOSED", function() if WK.UI.RefreshFlightPoints then WK.UI:RefreshFlightPoints() end end)
 

@@ -106,13 +106,15 @@ step = function(g)
         full[job.target] = true
         return step(g)
     end
-    WK.modules.Rules:PickUp(job.op)
-    WK.Container.Pickup(bag, slot)
-    ClearCursor()
+    -- nombre dans la case visée lu AVANT d'y poser la pile (avant : lu juste après, il comptait déjà le dépôt et
+    -- la case était libérée trop tôt)
     local key = bag .. ":" .. slot
     local r = reserved[key]
     local same = r and r.id == job.itemID
     local base = same and r.base or select(2, WK.Container.Info(bag, slot)) or 0
+    WK.modules.Rules:PickUp(job.op)
+    WK.Container.Pickup(bag, slot)
+    ClearCursor()
     reserved[key] = { id = job.itemID, n = (same and r.n or 0) + job.op.count, base = base,
         at = _G.GetTime and _G.GetTime() or 0 }
     done[job.target] = done[job.target] or {}

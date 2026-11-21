@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.43 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Vols : un /reload en plein vol faisait perdre le vol en cours (barre, temps restant, statistiques) jusqu'à l'atterrissage ; il est maintenant repris.
+- Déplacements : quand le calcul du réseau de chemins échouait, il était relancé une deuxième fois tout de suite ; l'itinéraire passe directement en ligne droite.
+- Infobulles (bénédictions, points sur la carte, flèche) : certaines lignes passaient à la ligne sans raison.
+- Banque : le nombre d'objets d'une case était lu juste après le dépôt au lieu d'avant, ce qui pouvait fausser la vérification.
+- Courrier : le bouton « Tout prendre » pouvait rester sur « Récupération... » après la fermeture de la boîte.
+- Quêtes de donjon : le journal était relu deux fois de suite quand une quête était rendue.
+
 ## v1.128.42 — 21/11/2026
 
 _Un /reload suffit._

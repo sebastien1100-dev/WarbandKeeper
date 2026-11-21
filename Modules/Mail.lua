@@ -572,7 +572,9 @@ local function mailClosed()
     else
         manualPending = nil
     end
-    if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
+    -- libellé toujours remis, même si la récupération s'est arrêtée sans passer par finishTake
+    taking = false; takeFilter = nil
+    if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end
 end
 WK:On("MAIL_CLOSED", mailClosed)
 -- MAIL_CLOSED n'arrive pas toujours sur ce client : la fin d'interaction remet aussi tout à zéro (avant, un
