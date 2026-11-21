@@ -205,7 +205,7 @@ end
 -- le butin ne compte que si le désenchantement a vraiment abouti (sinon un cadavre fouillé juste après
 -- serait noté comme résultat) ; un sort raté ou interrompu oublie l'objet visé
 local DE_SPELL = 13262
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit == "player" and spellID == DE_SPELL and pendingDE then pendingDE.ok = true end
 end)
 for _, ev in ipairs({ "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED" }) do
@@ -308,7 +308,7 @@ local function recipeForSpell(spellID)
 end
 M.RecipeForSpell = recipeForSpell
 
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit ~= "player" or not spellID then return end
     if spellID == M.DE_SPELL then return end
     local list = WK.DB.global.shopping

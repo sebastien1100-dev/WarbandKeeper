@@ -1275,7 +1275,7 @@ local function build(host)
             if not s.id then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s.id) end
-            if s.vendor then GameTooltip:AddLine(string.format(T("Vu chez %s à %s"), s.vendor.npc or "?", money(s.vendor.p or 0)), 0.31, 0.79, 0.75) end
+            if s.vendor then GameTooltip:AddLine(string.format(T("Vu chez %s à %s"), s.vendor.npc or "?", money(s.vendor.p or 0)), C.rule[1], C.rule[2], C.rule[3]) end
             if s.watch then GameTooltip:AddLine(T("Clic droit : ne plus surveiller"), 0.6, 0.6, 0.6) end
             GameTooltip:Show()
         end)

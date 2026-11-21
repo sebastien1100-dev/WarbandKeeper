@@ -55,6 +55,7 @@ end
 -- Points restants du trajet (monde), depuis la position du perso : { { x, y, fly } }
 -- En vol (taxi) : le chemin du griffon depuis la position actuelle (connu après un premier vol,
 -- sinon le chemin parcouru jusqu'ici), puis la suite du trajet guidé.
+local remainingCache
 local function remaining()
     local r = N.route
     local G = WK.modules.Guide
@@ -86,16 +87,28 @@ local function remaining()
         return out, p.cont
     end
     if not r then return nil end
-    if p and p.cont == r.cont then out[1] = { p.wx, p.wy } end
-    for li = r.leg or 1, #r.legs do
-        local l = r.legs[li]
-        if l.kind == "walk" then
-            local start = (li == r.leg) and (r.idx or 1) or 1
-            for k = start, #l.pts / 2 do out[#out + 1] = { l.pts[k * 2 - 1], l.pts[k * 2] } end
-        elseif l.kind == "fly" then
-            flyPoints(out, l.from, l.to, l.ax, l.ay, l.bx, l.by)
+    -- points du trajet gardés tant que le trajet et l'étape ne changent pas (avant : une table par point, 7 fois
+    -- par seconde pour la minicarte) ; seule la position du perso, en tête, est refaite
+    local tc = remainingCache
+    if not (tc and tc.route == r and tc.leg == r.leg and tc.idx == r.idx) then
+        local tail = {}
+        for li = r.leg or 1, #r.legs do
+            local l = r.legs[li]
+            if l.kind == "walk" then
+                local start = (li == r.leg) and (r.idx or 1) or 1
+                for k = start, #l.pts / 2 do tail[#tail + 1] = { l.pts[k * 2 - 1], l.pts[k * 2] } end
+            elseif l.kind == "fly" then
+                flyPoints(tail, l.from, l.to, l.ax, l.ay, l.bx, l.by)
+            end
         end
+        tc = { route = r, leg = r.leg, idx = r.idx, tail = tail, head = { 0, 0 } }
+        remainingCache = tc
     end
+    if p and p.cont == r.cont then
+        tc.head[1], tc.head[2] = p.wx, p.wy
+        out[1] = tc.head
+    end
+    for _, pt in ipairs(tc.tail) do out[#out + 1] = pt end
     return out, r.cont
 end
 

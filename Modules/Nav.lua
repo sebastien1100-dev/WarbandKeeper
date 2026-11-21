@@ -427,7 +427,7 @@ WK:On("HEARTHSTONE_BOUND", function()
     c.hearth = { cont = cont, wx = x, wy = y, name = GetBindLocation and GetBindLocation() or nil }
 end)
 local pendingPort
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit ~= "player" then return end
     if spellID == HEARTH_SPELL or spellID == RECALL or PORTS[spellID] then
         local cont, x, y = playerWorld()

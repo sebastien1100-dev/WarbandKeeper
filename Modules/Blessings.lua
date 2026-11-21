@@ -287,11 +287,18 @@ end
 -- de décompter : le jeu y cache les auras)
 ---------------------------------------------------------------------------
 local seen = {} -- [nom..":"..n°] = expiration (GetTime), 0 = sans fin
+local blessNames = {}
 local function scanLeft(unit, b)
     local ids = M.BLESS[b]
     if not ids then return nil end
-    local names = {}
-    for _, id in ipairs(ids) do local n = WK.SpellInfo(id); if n then names[n] = true end end
+    -- noms gardés par bénédiction (avant : refaits pour chaque membre, chaque seconde)
+    local names = blessNames[b]
+    if not names then
+        names = {}
+        local all = true
+        for _, id in ipairs(ids) do local n = WK.SpellInfo(id); if n then names[n] = true else all = false end end
+        if all then blessNames[b] = names end
+    end
     for i = 1, 40 do
         local name, exp, src
         if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
@@ -309,13 +316,26 @@ local function scanLeft(unit, b)
     end
     return false
 end
+-- membre relu seulement si ses effets ont changé (UNIT_AURA) ou au plus toutes les 10 s : avant, jusqu'à
+-- 40 membres × 2 bénédictions × 40 effets relus chaque seconde hors combat
+local scannedAt, auraDirty = {}, {}
+WK:On("UNIT_AURA", function(unit)
+    local n = type(unit) == "string" and fullName(unit)
+    if n then auraDirty[n] = now() end
+end)
 function M:Left(unit, b)
     local name = fullName(unit)
     if not name then return nil end
     local key = name .. ":" .. b
     if not inCombat() and UnitIsVisible and UnitIsVisible(unit) then
-        local exp = scanLeft(unit, b)
-        if exp ~= nil then seen[key] = exp or nil end
+        local t = now()
+        local last = scannedAt[key]
+        -- relu si ses effets ont changé depuis la dernière lecture de cette bénédiction, ou toutes les 10 s
+        if not last or (auraDirty[name] or 0) >= last or t - last > 10 then
+            local exp = scanLeft(unit, b)
+            if exp ~= nil then seen[key] = exp or nil end
+            scannedAt[key] = t + 0.001
+        end
     end
     local exp = seen[key]
     if exp == nil then return nil end

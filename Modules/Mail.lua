@@ -187,13 +187,22 @@ function M:IsSending() return sending end
 function M:IsTaking() return taking end
 
 -- Nombre d'objets des sacs qui partiraient au prochain passage à la boîte aux lettres.
+-- (affichage : pastilles, Résumé) gardé tant que les sacs relevés sont les mêmes et au plus 5 s ; avant, refait
+-- à chaque rafraîchissement de la fenêtre, guides de métier compris
+local pendingMemo
 function M:PendingCount()
+    local bags = WK.DB:Me().bags
+    local now = _G.GetTime and _G.GetTime() or 0
+    local pm = pendingMemo
+    if pm and pm.bags == bags and now - pm.at < 5 then return pm.n end
     local n = 0
     for _, e in ipairs(plan()) do
         for _, op in ipairs(e.ops) do n = n + op.count end
     end
+    pendingMemo = { bags = bags, at = now, n = n }
     return n
 end
+function M.ForgetPending() pendingMemo = nil end
 
 -- Envoie le prochain courrier de la file. La suite est déclenchée par MAIL_SEND_SUCCESS.
 function M:SendNext()

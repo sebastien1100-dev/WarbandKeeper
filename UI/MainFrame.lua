@@ -920,9 +920,9 @@ UI.CHIPS = {
             -- Survol : le détail des alertes (banque pas vue, courrier qui expire).
             local lines = { T("Alertes") }
             for _, e in ipairs(alerts) do
-                table.insert(lines, "|cffffffff" .. WK:CharName(e.c, e.key) .. "|r : " .. e.alert.text)
+                table.insert(lines, UI:Hex(C.text) .. WK:CharName(e.c, e.key) .. "|r : " .. e.alert.text)
             end
-            table.insert(lines, "|cff999999" .. T("Réglages : QoL > Général > Alertes") .. "|r")
+            table.insert(lines, UI:Hex(C.muted) .. T("Réglages : QoL > Général > Alertes") .. "|r")
             table.insert(l, { T("Alertes"), tostring(#alerts), C.warning, "qol", table.concat(lines, "\n"),
                 function() UI:OpenQoLAlerts() end })
         end

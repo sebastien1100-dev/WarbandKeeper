@@ -415,8 +415,8 @@ WK:On("LOOT_READY", fastLoot)
 WK:On("LOOT_OPENED", fastLoot)
 WK:On("PLAYER_SOFT_INTERACT_CHANGED", function() if M.active then M:UpdateBinding() end end)
 local function castChanged(unit) if unit == "player" and M.active then M:UpdateBinding() end end
-WK:On("UNIT_SPELLCAST_CHANNEL_START", castChanged)
-WK:On("UNIT_SPELLCAST_CHANNEL_STOP", castChanged)
+WK:OnUnit("UNIT_SPELLCAST_CHANNEL_START", "player", castChanged) -- (joueur seul : plus tout le raid)
+WK:OnUnit("UNIT_SPELLCAST_CHANNEL_STOP", "player", castChanged)
 -- En combat, la touche retrouve son rôle normal ; elle revient après.
 WK:On("PLAYER_REGEN_DISABLED", function()
     local btn = _G[M.BUTTON]

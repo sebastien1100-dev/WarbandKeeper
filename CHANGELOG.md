@@ -71,6 +71,20 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.23 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Plus léger en farm : une carte de récoltes pleine est élaguée par lots, plus à chaque butin ; les tracés des navires ne sont plus reprojetés à chaque redessin de la carte, et la carte n'est plus redessinée deux fois à l'arrêt d'un guidage.
+- Minicarte : le trajet guidé et les camps de quête coûtent moins (points gardés, textures posées une fois, camps 5 fois par seconde au lieu de 10).
+- Tournée de quêtes : l'aperçu n'est plus recalculé tous les quelques pas (position à 20 % de la carte près).
+- Sorts de classe : seuls les sorts dont le nom manque sont relus, au lieu de tout le catalogue à chaque appel.
+- Bouton Buffer et barre des bénédictions : noms des sorts gardés, effets d'un membre relus seulement quand ils changent (ou toutes les 10 s), macro posée seulement si elle change, rien quand le bouton est coupé.
+- Prêtre, paladin, druide : la vérification des buffs de groupe toutes les 15 s, qui ne servait plus depuis le retrait des rappels à l'écran, est arrêtée ; plusieurs évènements n'écoutent plus que ton perso (pêche, fiche, sorts).
+- Objets verrouillés : le nettoyage des verrous lit seulement la présence des objets ; courrier et banque : le nombre d'objets à envoyer ou déposer est gardé tant que les sacs ne changent pas.
+- Couleurs : plusieurs textes et pastilles suivent maintenant l'apparence (infobulle des donneurs de quêtes, alertes, fiche du perso, bénédictions, rachat).
+
 ## v1.128.22 — 21/11/2026
 
 _Un /reload suffit._

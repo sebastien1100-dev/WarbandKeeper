@@ -351,9 +351,9 @@ end
 
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() later() end) end)
 WK:On("PLAYER_EQUIPMENT_CHANGED", function() later({ gear = true, stats = true }) end)
-WK:On("UNIT_INVENTORY_CHANGED", function(unit) if unit == "player" then later({ gear = true }) end end)
-WK:On("UNIT_STATS", function(unit) if unit == "player" then later({ stats = true }) end end)
-WK:On("UNIT_RESISTANCES", function(unit) if unit == "player" then later({ stats = true }) end end)
+WK:OnUnit("UNIT_INVENTORY_CHANGED", "player", function(unit) if unit == "player" then later({ gear = true }) end end)
+WK:OnUnit("UNIT_STATS", "player", function(unit) if unit == "player" then later({ stats = true }) end end)
+WK:OnUnit("UNIT_RESISTANCES", "player", function(unit) if unit == "player" then later({ stats = true }) end end)
 WK:On("CHARACTER_POINTS_CHANGED", function() later({ talents = true }) end)
 -- les talents ne sont pas toujours prêts à l'entrée dans le monde : relevés aussi quand le jeu les annonce
 WK:On("PLAYER_TALENT_UPDATE", function() later({ talents = true }) end)

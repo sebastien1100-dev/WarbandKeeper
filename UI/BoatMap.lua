@@ -12,7 +12,7 @@ local function on()
     local L = WK.modules.MapLayers
     return WK:FeatureOn("maplayers") and L and L:Config().map.transport and WK.modules.Guide:Config().shipsMap ~= false
 end
-local function toMap(c, x, y, mapID)
+local function toMapRaw(c, x, y, mapID)
     -- conversion commune (UI/NavRoute.lua) : elle sait passer par le continent sur la carte d'Azeroth
     if UI.WorldToMap then return UI.WorldToMap(c, x, y, mapID) end
     if not (C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
@@ -21,6 +21,27 @@ local function toMap(c, x, y, mapID)
     local mx, my = pos.x, pos.y
     if pos.GetXY then mx, my = pos:GetXY() end
     return mx, my
+end
+-- Projections gardées par carte : les tracés des navires sont fixes, seuls les reports sur la carte coûtent
+-- (jusqu'à 3 appels au jeu par point) ; avant, tout était reprojeté à chaque redessin de la carte
+local proj, projMaps = {}, 0
+local function toMap(c, x, y, mapID)
+    local pm = proj[mapID]
+    if not pm then
+        if projMaps >= 12 then proj, projMaps = {}, 0 end
+        pm = {}
+        proj[mapID] = pm
+        projMaps = projMaps + 1
+    end
+    local key = c .. ":" .. x .. ":" .. y
+    local v = pm[key]
+    if v == nil then
+        local mx, my = toMapRaw(c, x, y, mapID)
+        v = mx and { mx, my } or false
+        pm[key] = v
+    end
+    if v then return v[1], v[2] end
+    return nil
 end
 local function colorOf(l)
     if l.kind == "zeppelin" then return C.warning end

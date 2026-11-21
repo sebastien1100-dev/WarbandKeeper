@@ -180,7 +180,7 @@ end
 local function durColor(d)
     if not d then return nil end
     local p = math.max(0, math.min(1, d / 100))
-    local g, n, y = C.positive, C.negative, { 0.96, 0.84, 0.43 }
+    local g, n, y = C.positive, C.negative, C.gold
     local a, b, t
     if p >= 0.5 then a, b, t = y, g, (p - 0.5) * 2 else a, b, t = n, y, p * 2 end
     return { a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t }
@@ -508,7 +508,7 @@ local function build(parent)
         b.rkBox:SetFrameLevel(b:GetFrameLevel() + 4)
         b.rkBox:SetSize(26, 14)
         b.rkBox:SetPoint("CENTER", b, "BOTTOMRIGHT", -2, 2)
-        UI:Panel(b.rkBox, 7, { 0.05, 0.05, 0.06, 0.95 }, C.border)
+        UI:Panel(b.rkBox, 7, { C.bg[1], C.bg[2], C.bg[3], 0.95 }, C.border)
         b.rk = b.rkBox:CreateFontString(nil, "OVERLAY")
         b.rk:SetFont(UI.FONT, 10, "")
         b.rk:SetPoint("CENTER", 0, 0)
@@ -1116,7 +1116,7 @@ local function refreshGear(f, c)
     if dur then
         local p = math.max(0, math.min(1, dur / 100))
         local g, n = C.positive, C.negative
-        local y = { 0.96, 0.84, 0.43 }
+        local y = C.gold
         local a, b, t
         if p >= 0.5 then a, b, t = y, g, (p - 0.5) * 2 else a, b, t = n, y, p * 2 end
         f.kpis[2].v:SetTextColor(a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t)
@@ -1607,7 +1607,7 @@ local function refreshBis(f, c)
             t.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)) or "Interface\\Icons\\INV_Misc_QuestionMark")
             t.icon:Show(); t.plus:Hide()
             t.edge:SetVertexColor(qc[1], qc[2], qc[3], 1)
-            local dc = wornSet[id] and C.positive or inBags and { 0.96, 0.84, 0.43 } or C.dim
+            local dc = wornSet[id] and C.positive or inBags and C.gold or C.dim
             t.dot:SetVertexColor(dc[1], dc[2], dc[3], 1); t.dot:Show()
         else
             t.icon:Hide(); t.plus:Show(); t.plus:SetTextColor(r1, g1, b1, 0.8)

@@ -253,7 +253,9 @@ local function buildKey(coins)
     end
     local me = G():PlayerPos()
     if me then
-        parts[#parts + 1] = string.format("me%s,%d,%d", tostring(me.map), math.floor(me.x * 20), math.floor(me.y * 20))
+        -- position à 20 % de la carte près (avant 5 % : l'aperçu refaisait tout le calcul toutes les 20 à 30 s de
+        -- marche) ; « Réordonner », un changement de zone ou une coche relancent toujours le calcul
+        parts[#parts + 1] = string.format("me%s,%d,%d", tostring(me.map), math.floor(me.x * 5), math.floor(me.y * 5))
     end
     return table.concat(parts, "|")
 end

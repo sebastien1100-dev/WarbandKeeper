@@ -52,9 +52,28 @@ function M:Catalog(class)
     if not class then return {} end
     local cat = catalog[class]
     if cat and cat.complete then return cat end
+    -- catalogue incomplet (sort au nom pas encore chargé, ou absent de ce client) : seuls les sorts sans nom
+    -- sont relus (avant, les ~300 sorts étaient relus à chaque appel, plusieurs fois par seconde)
+    if cat then
+        local missing = false
+        for _, e in ipairs(cat) do
+            if e.noName then
+                local name, icon = WK.SpellInfo(e.id)
+                if name then
+                    e.name, e.icon, e.noName = name, icon, nil
+                    e.rank = subtext(e.id)
+                else
+                    missing = true
+                end
+            end
+        end
+        cat.complete = not missing
+        return cat
+    end
+    local now = _G.GetTime and _G.GetTime() or 0
     local raw = WK.ClassSpellsRaw and WK.ClassSpellsRaw[class]
     if not raw then return {} end
-    cat = { complete = true }
+    cat = { complete = true, at = now }
     for lvl, id, t in raw:gmatch("(%d+),(%d+),(%d)") do
         id = tonumber(id)
         local name, icon = WK.SpellInfo(id)
@@ -64,7 +83,8 @@ function M:Catalog(class)
             local ok, l = pcall(GetSpellLevelLearned, id)
             if ok and type(l) == "number" and l > 0 then level = l end
         end
-        table.insert(cat, { id = id, name = name or ("#" .. id), rank = name and subtext(id) or "", level = level, talent = t == "1", icon = icon })
+        table.insert(cat, { id = id, name = name or ("#" .. id), rank = name and subtext(id) or "", level = level, talent = t == "1", icon = icon,
+            noName = not name or nil })
     end
     table.sort(cat, function(a, b) if a.level ~= b.level then return a.level < b.level end return a.id < b.id end)
     catalog[class] = cat

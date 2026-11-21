@@ -53,9 +53,22 @@ end
 
 -- Temps restant (secondes, 0 = sans fin) du premier de ces sorts sur l'unité, nil s'il n'y est pas ;
 -- 2e valeur : vrai si c'est toi qui l'as lancé (sinon un autre joueur, ou inconnu)
+-- noms des sorts gardés par liste (avant : refaits pour chaque unité, chaque seconde)
+local namesOf = setmetatable({}, { __mode = "k" })
+local function namesFor(ids)
+    local names = namesOf[ids]
+    if names then return names end
+    names = {}
+    local all = true
+    for _, id in ipairs(ids) do
+        local n = WK.SpellInfo(id)
+        if n then names[n] = true else all = false end
+    end
+    if all then namesOf[ids] = names end -- un nom pas encore chargé : redemandé la fois suivante
+    return names
+end
 local function auraLeft(unit, ids)
-    local names = {}
-    for _, id in ipairs(ids) do local n = WK.SpellInfo(id); if n then names[n] = true end end
+    local names = namesFor(ids)
     for i = 1, 40 do
         local name, exp, src
         if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
@@ -358,7 +371,8 @@ function UI:RefreshBuffButton()
     list = shouldShow() and candidates() or {}
     local e = list[1]
     if e then
-        btn:SetAttribute("macrotext", UI.BuffMacro(e))
+        local macro = UI.BuffMacro(e)
+        if btn:GetAttribute("macrotext") ~= macro then btn:SetAttribute("macrotext", macro) end -- seulement si elle change
         btn.paint(spellIcon(e.id), #list)
         btn:Show()
         -- plaque de nom : le jeu refuse ici les unités de groupe (party1, raid3…) ; on prend l'unité de plaque
@@ -438,7 +452,15 @@ WK:On("PLAYER_LOGIN", function()
     C_Timer.After(3, function()
         UI:SyncBuffPlates()
         UI:RefreshBuffButton()
-        if C_Timer.NewTicker then C_Timer.NewTicker(1, function() if not inCombat() then UI:RefreshBuffButton() end end) end
+        -- (rien à faire tant que le bouton est coupé dans ses réglages ou le module éteint)
+        if C_Timer.NewTicker then C_Timer.NewTicker(1, function()
+            local c = cfg()
+            if inCombat() or not (c and c.buffAround ~= false and WK:FeatureOn("classes")) then
+                if btn and btn:IsShown() and not inCombat() then UI:RefreshBuffButton() end
+                return
+            end
+            UI:RefreshBuffButton()
+        end) end
     end)
 end)
 

@@ -116,7 +116,7 @@ local function todoItems()
     end
     if WK.DB.global.bank.enabled then
         local n = 0
-        for _, e in ipairs(WK.modules.BankDeposit:Plan()) do for _, op in ipairs(e.ops) do n = n + op.count end end
+        n = n + WK.modules.BankDeposit:PendingCount()
         if n > 0 then
             add(4, "bag", string.format(WK.T("%d objets à déposer à la prochaine banque"), n),
                 open("mail", "SetTab", "bank"), nil, { g = "bag", group = "deposit", n = n })

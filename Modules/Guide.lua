@@ -199,7 +199,8 @@ function M:Stop()
     if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
     self.placedWaypoint = nil
     if self.OnTarget then self:OnTarget() end
-    if self.Redraw then self:Redraw() end
+    -- (Nav:Clear redessine déjà la carte via RefreshNavRoute : pas un second redessin complet)
+    if self.Redraw and not (WK.modules.Nav and WK.UI.RefreshNavRoute) then self:Redraw() end
     WK:NotifyChanged()
     -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main.
     -- Points /way et retour au corps : jamais ici, ils rendent eux-mêmes le guidage d'avant (M:Restore) ; un seul

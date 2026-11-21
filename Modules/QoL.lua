@@ -809,7 +809,7 @@ if hooksecurefunc then
     end
 end
 
-WK:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(unit, _, spellID)
     if unit ~= "player" or spellID ~= SPELL_FEED_PET then return end
     local c = WK.DB:Me()
     if pendingFood then
@@ -1128,8 +1128,10 @@ function M:OnLogin()
     self:ScanPet()
     self:ScanLockpicking()
     self:ScanReincarnation()
-    if C_Timer and C_Timer.NewTicker then
-        C_Timer.NewTicker(15, function() checkPoisons(); checkBuffs() end)
+    -- poisons du voleur seulement (rappel dans le chat) ; checkBuffs ne servait plus qu'aux rappels à l'écran,
+    -- retirés : il relisait les effets de tout le groupe pour rien toutes les 15 s
+    if C_Timer and C_Timer.NewTicker and WK.DB:Me().class == "ROGUE" then
+        C_Timer.NewTicker(15, function() checkPoisons() end)
     end
 end
 
@@ -1144,10 +1146,11 @@ WK:On("BAG_UPDATE", function()
     end)
 end)
 WK:On("UPDATE_INVENTORY_DURABILITY", function() M:ScanDurability() end)
-WK:On("UNIT_INVENTORY_CHANGED", function(unit) if unit == "player" then M:ScanAmmo() end end)
+WK:OnUnit("UNIT_INVENTORY_CHANGED", "player", function(unit) if unit == "player" then M:ScanAmmo() end end)
 WK:On("UNIT_HAPPINESS", function() M:ScanPet() end)
 WK:On("UNIT_PET", function(unit) if unit == "player" then M:ScanPet() end end)
 WK:On("PET_UI_UPDATE", function() M:ScanPet() end)
 WK:On("SKILL_LINES_CHANGED", function() M:ScanLockpicking() end)
 WK:On("SPELL_UPDATE_COOLDOWN", function() M:ScanReincarnation() end)
-WK:On("PLAYER_REGEN_ENABLED", function() C_Timer.After(2, checkBuffs) end)
+-- (checkBuffs n'est plus appelé : il ne servait qu'aux rappels à l'écran, retirés ; gardé pour un retour éventuel)
+M.CheckBuffs = checkBuffs

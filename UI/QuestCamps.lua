@@ -490,7 +490,7 @@ end)
 
 ---------------------------------------------------------------------------
 -- Minicarte : zones de la quête suivie (objectifs pas finis) autour du perso, en chaleur ou en points
--- (QuestTrack:Config().miniStyle). Liste refaite toutes les 2 s, positions à chaque 0,1 s.
+-- (QuestTrack:Config().miniStyle). Liste refaite toutes les 2 s, positions toutes les 0,2 s.
 ---------------------------------------------------------------------------
 local MAX_MINI = 260
 local miniHolder, miniTex, miniUsed = nil, {}, 0
@@ -579,12 +579,18 @@ local function updateMini()
                 if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
                 miniUsed = miniUsed + 1
                 local t = miniTex[miniUsed]
-                if not t then t = miniHolder:CreateTexture(nil, "ARTWORK"); miniTex[miniUsed] = t end
+                if not t then
+                    t = miniHolder:CreateTexture(nil, "ARTWORK"); t:SetBlendMode("BLEND"); miniTex[miniUsed] = t
+                end
+                -- texture et taille posées seulement si elles changent (avant : à chaque passage, pour chaque point)
                 if style == "points" then
-                    t:SetTexture(UI.MEDIA .. "circle"); t:SetBlendMode("BLEND"); t:SetSize(6, 6)
+                    if t.wkStyle ~= "points" then
+                        t:SetTexture(UI.MEDIA .. "circle"); t:SetSize(6, 6); t.wkStyle, t.wkSize = "points", 6
+                    end
                     t:SetVertexColor(col[1], col[2], col[3], 0.95)
                 else
-                    t:SetTexture(UI.MEDIA .. "fxhalo"); t:SetBlendMode("BLEND"); t:SetSize(hs, hs)
+                    if t.wkStyle ~= "heat" then t:SetTexture(UI.MEDIA .. "fxhalo"); t.wkStyle = "heat" end
+                    if t.wkSize ~= hs then t:SetSize(hs, hs); t.wkSize = hs end
                     t:SetVertexColor(col[1], col[2], col[3], alpha)
                 end
                 t:ClearAllPoints(); t:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
@@ -592,6 +598,7 @@ local function updateMini()
                 if miniUsed >= MAX_MINI then break end
             end
         end
+        if miniUsed >= MAX_MINI then break end -- plafond pour toute la minicarte, pas seulement par objectif
     end
     UI.questMiniDiag.drawn = miniUsed
 end
@@ -606,7 +613,7 @@ WK:On("PLAYER_LOGIN", function()
         miniHolder.acc = 0
         miniHolder:SetScript("OnUpdate", function(s, el)
             s.acc = s.acc + el
-            if s.acc < 0.1 then return end
+            if s.acc < 0.2 then return end -- 5 fois par seconde suffisent (avant 10)
             s.acc = 0
             updateMini()
         end)

@@ -121,6 +121,20 @@ function M:Plan()
     end)
 end
 
+-- Nombre d'objets à déposer, pour l'affichage (Résumé) : gardé tant que les sacs relevés sont les mêmes et au
+-- plus 5 s (le dépôt lui-même refait toujours son plan)
+local pendingMemo
+function M:PendingCount()
+    local bags = WK.DB:Me().bags
+    local now = _G.GetTime and _G.GetTime() or 0
+    local pm = pendingMemo
+    if pm and pm.bags == bags and now - pm.at < 5 then return pm.n end
+    local n = 0
+    for _, e in ipairs(self:Plan()) do for _, op in ipairs(e.ops) do n = n + op.count end end
+    pendingMemo = { bags = bags, at = now, n = n }
+    return n
+end
+
 function M:Run()
     if running or not WK.DB.global.bank.enabled then return end
     local plan = self:Plan()

@@ -68,8 +68,13 @@ local function onLoot()
     for _, f in ipairs(found) do
         table.insert(list, { x = x, y = y, k = f.k, i = f.id, n = f.n, t = time() })
     end
+    -- élagage par lots : redescendu à 90 % du plafond, pour qu'un regroupement complet (Nodes:All) reste rare
+    -- (avant, chaque butin d'une carte pleine retirait un point et forçait tout le regroupement)
     if #list > MAX_PER_MAP then
-        while #list > MAX_PER_MAP do table.remove(list, 1) end
+        local keep = math.floor(MAX_PER_MAP * 0.9)
+        local drop = #list - keep
+        for i = 1, keep do list[i] = list[i + drop] end
+        for i = #list, keep + 1, -1 do list[i] = nil end
         M.rebuild = M.rebuild + 1
     end
     M.version = M.version + 1

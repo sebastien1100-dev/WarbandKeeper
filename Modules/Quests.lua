@@ -362,7 +362,8 @@ end
 ---------------------------------------------------------------------------
 -- Infobulle d'un donneur de quêtes : ses quêtes pas encore faites par ce perso
 ---------------------------------------------------------------------------
-local STATE_COL = { avail = "ffd200", log = "9ed17a", high = "e06666", locked = "7aa6db" }
+-- couleurs de sens du thème (UI/Themes.lua) : à prendre, dans le journal, trop haut, plus tard
+local STATE_COL = { avail = "gold", log = "positive", high = "negative", locked = "info" }
 local function onUnitTooltip(tooltip)
     if tooltip ~= GameTooltip or not M:Config().tooltip or not WK:FeatureOn("quests") then return end
     local R = WK.modules.Rares
@@ -382,7 +383,8 @@ local function onUnitTooltip(tooltip)
             if st ~= "done" and st ~= "closed" and STATE_COL[st] then
                 local tag = st == "log" and (" · " .. T("dans le journal")) or st == "high" and (" · " .. string.format(T("niveau %d"), q.req))
                             or st == "locked" and (" · " .. T("plus tard")) or ""
-                table.insert(lines, "|cff" .. STATE_COL[st] .. "[" .. q.lvl .. "] " .. M:Name(q) .. tag .. "|r")
+                local col = WK.UI.colors[STATE_COL[st]] or WK.UI.colors.text
+                table.insert(lines, WK.UI:Hex(col) .. "[" .. q.lvl .. "] " .. M:Name(q) .. tag .. "|r")
             end
         end
     end
@@ -390,7 +392,7 @@ local function onUnitTooltip(tooltip)
     tooltip:AddLine(" ")
     tooltip:AddLine(WK:Tag() .. "  " .. string.format(T("%d quêtes"), #lines))
     for i, l in ipairs(lines) do
-        if i > 5 then tooltip:AddLine("|cff999999+" .. (#lines - 5) .. "|r") break end
+        if i > 5 then tooltip:AddLine(WK.UI:Hex(WK.UI.colors.muted) .. "+" .. (#lines - 5) .. "|r") break end
         tooltip:AddLine(l)
     end
     tooltip:Show()

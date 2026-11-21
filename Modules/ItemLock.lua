@@ -213,8 +213,17 @@ local function inBuyback(id)
 end
 function M:Prune()
     if M:MerchantOpen() or not next(db().items) then return 0 end
+    -- présence lue directement dans les relevés (avant : List() complet, avec la raison de chaque objet de
+    -- chaque perso et un tri, après chaque relevé des sacs, alors que seuls les verrous à la main comptent)
     local present = {}
-    for _, e in ipairs(self:List()) do if #e.who > 0 then present[e.id] = true end end
+    local want = db().items
+    local function mark(tbl)
+        for id, n in pairs(tbl or {}) do if want[id] and (n or 0) > 0 then present[id] = true end end
+    end
+    for _, c in pairs(WK.DB.global.characters) do
+        mark(c.bags); mark(c.bank); mark(c.mailbox and c.mailbox.items)
+    end
+    mark(WK.DB.global.warbank and WK.DB.global.warbank.items)
     -- objets portés (équipement relevé de chaque perso, et celui du perso connecté lu tout de suite) :
     -- un objet verrouillé puis équipé n'est plus dans les sacs, mais il garde son verrou
     for _, c in pairs(WK.DB.global.characters) do
@@ -343,7 +352,9 @@ local function checkBuyback()
             soldAt[link] = nil
             local msg = string.format(T("Racheté : %s (objet verrouillé vendu par erreur)"), link)
             WK:Print(msg)
-            if UIErrorsFrame then UIErrorsFrame:AddMessage(msg, 0.31, 0.82, 0.77) end
+            local rc = WK.UI.colors.rule
+            local ef = _G.UIErrorsFrame
+            if ef then ef:AddMessage(msg, rc[1], rc[2], rc[3]) end
             return
         end
     end
