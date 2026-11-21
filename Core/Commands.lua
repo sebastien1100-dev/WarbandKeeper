@@ -81,7 +81,7 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "suivi" or cmd == "tracker" then
         -- pastilles de la tournée dans le suivi des quêtes du jeu (UI/QuestTracker.lua)
         WK:Print(WK.T("Suivi des quêtes : diagnostic"))
-        WK:Print("  " .. WK.UI:TrackerPinsDiag())
+        for l in (WK.UI:TrackerPinsDiag() .. "\n"):gmatch("(.-)\n") do WK:Print("  " .. l) end
     elseif cmd == "zones" then
         -- diagnostic des zones de quête (UI/QuestCamps.lua) : dernier dessin de la carte et de la minicarte
         local QT = WK.modules.QuestTrack

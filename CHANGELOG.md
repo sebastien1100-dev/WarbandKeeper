@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.123.4 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Suivi des quêtes : les pastilles de la tournée ne s'affichaient pas, le suivi de WoW Forever ne portant pas les noms de cadre attendus. L'addon le cherche maintenant parmi tous les cadres du jeu (un petit bouton qui porte un n° de quête) ; /wk suivi en dit plus si ça ne marche toujours pas.
+- Mode édition : le bandeau « Retour au corps » s'appelle maintenant « Retour au corps (secours) » et montre le seul cas où il sert encore (corps sur un autre continent) ; d'habitude, c'est l'épingle tête de mort qui guide.
+
 ## v1.123.3 — 21/11/2026
 
 _Un /reload suffit._

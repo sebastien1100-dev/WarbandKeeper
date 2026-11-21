@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.4", date = "21/11/2026",
+        fixed = {
+            "Suivi des quêtes : les pastilles de la tournée ne s'affichaient pas, le suivi de WoW Forever ne portant pas les noms de cadre attendus. L'addon le cherche maintenant parmi tous les cadres du jeu (un petit bouton qui porte un n° de quête) ; /wk suivi en dit plus si ça ne marche toujours pas.",
+            "Mode édition : le bandeau « Retour au corps » s'appelle maintenant « Retour au corps (secours) » et montre le seul cas où il sert encore (corps sur un autre continent) ; d'habitude, c'est l'épingle tête de mort qui guide.",
+        },
+    },
+    {
         version = "1.123.3", date = "21/11/2026",
         changed = {
             "Fenêtre des quêtes du donjon : elle se déplace en glissant son titre, sans passer par le mode édition. Le coin en bas à droite règle sa hauteur (double-clic : automatique) et la molette fait défiler ce qui ne tient pas (« 3 plus bas · molette »).",

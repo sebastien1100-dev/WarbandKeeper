@@ -145,11 +145,13 @@ local function build()
     end)
     f:Hide()
     UI:RegisterHUD("corpseBanner", f, {
-        label = T("Retour au corps"), default = { 0, 160 },
+        -- seulement quand l'épingle ne peut pas guider (corps sur un autre continent, position inconnue,
+        -- épingle coupée) : l'aperçu du mode édition montre ce cas-là
+        label = T("Retour au corps (secours)"), default = { 0, 160 },
         enabled = function() return cfgOn() end,
         sample = function(on)
             f.sample = on or nil
-            if on then f:Paint({ d = 420, secs = 48, advice = "corpse" }); f:Show() else UI:RefreshCorpse() end
+            if on then f:Paint({ far = true, advice = "healer" }); f:Show() else UI:RefreshCorpse() end
         end,
     })
     return f

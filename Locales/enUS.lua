@@ -4529,4 +4529,6 @@ WK.Locales.enUS.text = {
     ["molette"] = "wheel",
     ["Dans le donjon et à moins de 400 m de son entrée, ou toujours. Glisser son titre la déplace, son coin règle la hauteur."] = "In the dungeon and within 400 m of its entrance, or always. Drag its title to move it, its corner sets the height.",
     ["Une ligne par quête (objectifs et lieu dans l'infobulle)."] = "One line per quest (objectives and place in the tooltip).",
+    ["cadres avec un n° de quête : %d (petits et visibles : %d) · %s"] = "frames with a quest ID: %d (small and visible: %d) · %s",
+    ["Retour au corps (secours)"] = "Corpse run (fallback)",
 }

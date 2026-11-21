@@ -754,14 +754,70 @@ local function restoreAll()
     for _, o in pairs(overlays) do o:Hide() end
 end
 
+-- Découverte : le suivi de WoW Forever n'a pas forcément les noms de cadre du jeu d'origine. Quand les cadres
+-- connus ne donnent rien, tous les cadres sont parcourus (EnumerateFrames, au plus toutes les 5 s) : un petit
+-- bouton qui porte un n° de quête, visible, donne son cadre de plus haut niveau (sous UIParent), ajouté aux racines.
+local extraRoots = {}
+local lastDiscover, failedScans = 0, 0
+local scanStats = { any = 0, small = 0, sample = {} }
+local function topOf(f)
+    local guard = 0
+    while f and f.GetParent and f:GetParent() and f:GetParent() ~= UIParent and guard < 12 do
+        f = f:GetParent(); guard = guard + 1
+    end
+    return f
+end
+local function discover()
+    local now = _G.GetTime and _G.GetTime() or 0
+    -- toutes les 5 s au début, puis toutes les minutes si rien n'est trouvé (journal vide, autre suivi)
+    if now - lastDiscover < ((failedScans or 0) >= 6 and 60 or 5) or not _G.EnumerateFrames then return end
+    lastDiscover = now
+    scanStats.any, scanStats.small = 0, 0
+    _G.wipe(scanStats.sample)
+    local cur = _G.EnumerateFrames()
+    local guard = 0
+    local function check(fr)
+        if fr.IsForbidden and fr:IsForbidden() then return end
+        if not fr.wkPin and not fr.wk then
+            local f = fr
+            local id = questOf(f)
+            if id then
+                scanStats.any = scanStats.any + 1
+                local w = f.GetWidth and f:GetWidth() or 0
+                if w > 0 and w <= 40 and f:IsVisible() then
+                    scanStats.small = scanStats.small + 1
+                    local top = topOf(f)
+                    if top and not extraRoots[top] then extraRoots[top] = true end
+                end
+                if #scanStats.sample < 4 then
+                    local p = f.GetParent and f:GetParent()
+                    table.insert(scanStats.sample, string.format("%s (%d px, %s)", (f.GetName and f:GetName()) or "?",
+                        math.floor(w), p and p.GetName and p:GetName() or "?"))
+                end
+            end
+        end
+    end
+    while cur and guard < 20000 do
+        guard = guard + 1
+        pcall(check, cur) -- cadre interdit ou méthode qui proteste : ignoré
+        cur = _G.EnumerateFrames(cur)
+    end
+    failedScans = scanStats.small > 0 and 0 or (failedScans or 0) + 1
+end
+
 function UI.RefreshTrackerPins()
     local mode = pinMode()
     if mode == "off" or not WK:FeatureOn("quests") then restoreAll() return end
     local btns = {}
-    wipe(found.roots)
+    _G.wipe(found.roots)
     for _, name in ipairs(ROOTS) do
         local f = _G[name]
         if f and f.GetChildren then table.insert(found.roots, name); collect(f, btns, 0) end
+    end
+    if not next(btns) then discover() end
+    for root in pairs(extraRoots) do
+        table.insert(found.roots, (root.GetName and root:GetName()) or "?")
+        collect(root, btns, 0)
     end
     local n = 0
     local seen = {}
@@ -793,8 +849,12 @@ function UI.RefreshTrackerPins()
 end
 function UI.TrackerPinsDiag()
     UI:RefreshTrackerPins()
+    lastDiscover = 0
+    if found.buttons == 0 then discover() end
     return string.format(T("cadres de suivi : %s · icônes remplacées : %d · mode : %s"),
         #found.roots > 0 and table.concat(found.roots, ", ") or T("aucun"), found.buttons, pinMode())
+        .. "\n  " .. string.format(T("cadres avec un n° de quête : %d (petits et visibles : %d) · %s"),
+        scanStats.any, scanStats.small, #scanStats.sample > 0 and table.concat(scanStats.sample, " ; ") or "-")
 end
 
 -- mises à jour : après celles du suivi du jeu (fonctions connues) et toutes les 0,5 s quand il est visible
