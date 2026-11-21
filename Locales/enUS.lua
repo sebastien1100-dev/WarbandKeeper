@@ -4538,4 +4538,13 @@ WK.Locales.enUS.text = {
     ["clic droit sur une quête » Chercher un groupe"] = "right-click a quest » Look for a group",
     ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; choisis le canal puis Entrée."] = "{quest} link, {name} name, {level} level, {zone} zone; pick the channel then press Enter.",
     ["Par défaut"] = "Default",
+    ["Tout près"] = "Right here",
+    ["Tout près :"] = "Right here:",
+    ["Une étape prévue plus loin dans la tournée est juste à côté : fais-la maintenant."] = "A step planned later in the route is right next to you: do it now.",
+    ["Clic gauche : la faire maintenant · clic droit : plus tard"] = "Left-click: do it now · right-click: later",
+    ["%d m · clic : la faire maintenant"] = "%d m · click: do it now",
+    ["Tout près, faite maintenant : %s"] = "Right here, done now: %s",
+    ["Étapes toutes proches"] = "Nearby steps",
+    ["Proposer"] = "Ask",
+    ["Étape de la tournée prévue plus loin, à côté de toi : proposée, ou faite tout de suite (Auto)."] = "Route step planned later, next to you: offered, or done right away (Auto).",
 }

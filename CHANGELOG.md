@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.125.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée : quand tu passes à côté d'une étape prévue plus loin (donneur ou rendu à moins de 45 m, coin d'objectifs à moins de 70 m) et qu'elle est faisable maintenant, la carte de tournée la propose : « Tout près : … · 20 m · clic : la faire maintenant ». Clic : elle devient l'étape en cours, celle d'avant reprend juste après ; clic droit : plus tard.
+- Réglage « Étapes toutes proches » (roue des Quêtes, carte Quête suivie) : Proposer, Auto (remontée toute seule, avec un message) ou Non.
+
 ## v1.125.0 — 21/11/2026
 
 _Un /reload suffit._

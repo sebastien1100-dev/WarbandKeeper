@@ -24,6 +24,7 @@ function M:Config()
     if c.nearAlert == nil then c.nearAlert = true end
     c.maxAbove = c.maxAbove or 2
     if c.noGroup == nil then c.noGroup = false end -- quêtes de groupe décochées d'office
+    if c.nearSteps == nil then c.nearSteps = "ask" end -- étape plus loin toute proche : ask / auto / off
     return c
 end
 local function Q() return WK.modules.QuestTrack end
@@ -693,6 +694,77 @@ function M:OnTheWay()
     self.way.mins = math.max(1, math.floor((best.det / SPEED + objTime(best.e.id, best.e.inLog)) / 60 + 0.5))
     return self.way
 end
+-- Étape prévue plus loin dans la tournée et toute proche (donneur ou rendu à moins de 45 m, camp à moins de
+-- 70 m), faisable maintenant (prendre : quête disponible ; faire : dans le journal ; rendre : prête) :
+-- { j = n° de l'étape, step, d = distance } ou nil. Réglage nearSteps : ask (proposée sur la carte de tournée),
+-- auto (remontée toute seule), off. Gardée 1 s ; une étape écartée (clic droit) n'est plus proposée.
+local nearIgnored = setmetatable({}, { __mode = "k" })
+function M:NearStep()
+    local mode = self:Config().nearSteps or "ask"
+    if mode == "off" then return nil end
+    local t = self:Tour()
+    if not t or t.paused or not t.steps[t.idx] then return nil end
+    local now = _G.GetTime and _G.GetTime() or _G.time()
+    if self.near and self.near.at and now - self.near.at < 1 and self.near.idx == t.idx then return self.near.hit end
+    local me = G():PlayerPos()
+    local hit
+    if me then
+        local Qs = WK.modules.Quests
+        local c = WK.DB:Me() or {}
+        for j = t.idx + 2, #t.steps do
+            local s = t.steps[j]
+            if s.map and not nearIgnored[s] and (s.kind == "pick" or s.kind == "do" or s.kind == "turn") then
+                local d = dist(me, point(s.map, s.x, s.y))
+                if d < (s.kind == "do" and 70 or 45) then
+                    local ok = true
+                    for _, q in ipairs(s.qids or {}) do
+                        if s.kind == "pick" then
+                            local qq = Qs and Qs:Get(q)
+                            if inLog(q) or (qq and Qs:State(qq, c) ~= "avail") then ok = false end
+                        elseif s.kind == "do" then
+                            if not inLog(q) or Q():IsComplete(q) then ok = false end
+                        elseif not (inLog(q) and Q():IsComplete(q)) then
+                            ok = false
+                        end
+                    end
+                    if ok and (not hit or d < hit.d) then hit = { j = j, step = s, d = d } end
+                end
+            end
+        end
+    end
+    self.near = { at = now, idx = t.idx, hit = hit }
+    return hit
+end
+-- l'étape devient l'étape en cours (celle d'avant reprend juste après)
+function M:DoNearNow(step)
+    local t = self:Tour()
+    if not (t and step) then return end
+    for j = t.idx + 1, #t.steps do
+        if t.steps[j] == step then
+            table.remove(t.steps, j)
+            table.insert(t.steps, t.idx, step)
+            self.near, self.lastKey = nil, nil
+            self:Retarget()
+            if self.Changed then self:Changed() end
+            return true
+        end
+    end
+end
+function M:SkipNear(step)
+    if step then nearIgnored[step] = true end
+    self.near = nil
+    if self.Changed then self:Changed() end
+end
+-- mode auto : appelé avec la vérification de la tournée
+function M:CheckNear()
+    if (self:Config().nearSteps or "ask") ~= "auto" then return end
+    local hit = self:NearStep()
+    if hit then
+        local title = self:StepTitle(hit.step)
+        if self:DoNearNow(hit.step) then WK:Print(string.format(T("Tout près, faite maintenant : %s"), title)) end
+    end
+end
+
 function M:AddOnTheWay(qid)
     if not qid then return end
     self.way = nil
@@ -1093,6 +1165,7 @@ end
 function M:Advance()
     local t = self:Tour()
     if not t then return end
+    self:CheckNear()
     while t.steps[t.idx] and self:StepDone(t.steps[t.idx]) do t.idx = t.idx + 1; self.lastKey = nil end
     if not t.steps[t.idx] then self:Finish() return end
     self:Retarget()

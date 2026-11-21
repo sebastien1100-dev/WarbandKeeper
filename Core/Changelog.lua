@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.125.1", date = "21/11/2026",
+        added = {
+            "Tournée : quand tu passes à côté d'une étape prévue plus loin (donneur ou rendu à moins de 45 m, coin d'objectifs à moins de 70 m) et qu'elle est faisable maintenant, la carte de tournée la propose : « Tout près : … · 20 m · clic : la faire maintenant ». Clic : elle devient l'étape en cours, celle d'avant reprend juste après ; clic droit : plus tard.",
+            "Réglage « Étapes toutes proches » (roue des Quêtes, carte Quête suivie) : Proposer, Auto (remontée toute seule, avec un message) ou Non.",
+        },
+    },
+    {
         version = "1.125.0", date = "21/11/2026",
         changed = {
             "Quêtes vérifiées une à une sur wowhead (WoW Forever) : 1 669 quêtes, surtout le nouveau contenu, ont enfin leur nom français (« Death to the Dragonmaw » devient « Mort aux Gueules-de-Dragon »), et 111 noms français anciens prennent celui du jeu actuel (« Un message pour Hurlevent » au lieu de « Stormwind », « Foudrepique » au lieu de « Stormpike »…).",

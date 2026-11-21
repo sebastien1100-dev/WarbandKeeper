@@ -163,16 +163,29 @@ local function build()
     tv.way.dot = tv.way:CreateTexture(nil, "ARTWORK"); tv.way.dot:SetSize(14, 14); tv.way.dot:SetPoint("TOPLEFT", 0, 0)
     tv.way.dot:SetTexture(UI.MEDIA .. "circle")
     tv.way.num = UI:Text(tv.way, 8, C.bg); tv.way.num:SetPoint("CENTER", tv.way.dot, "CENTER", 0, 0); tv.way.num:SetText("+")
+    -- même ligne pour « Tout près » (étape prévue plus loin, juste à côté : clic = la faire maintenant)
     tv.way:SetScript("OnClick", function(b, btn)
         local P = WK.modules.QuestPlan
-        if not (P and b.qid) then return end
+        if not P then return end
+        if b.nearStep then
+            if btn == "RightButton" then P:SkipNear(b.nearStep) else P:DoNearNow(b.nearStep) end
+            return
+        end
+        if not b.qid then return end
         if btn == "RightButton" then P:IgnoreOnTheWay(b.qid) else P:AddOnTheWay(b.qid) end
     end)
     tv.way:SetScript("OnEnter", function(b)
         UI:TooltipOwner(b, "ANCHOR_LEFT")
-        GameTooltip:SetText(T("Sur ton chemin"), 1, 1, 1)
-        GameTooltip:AddLine(T("Une quête toute proche du trajet vers l'étape en cours, pas encore dans la tournée."), 0.8, 0.8, 0.8, true)
-        GameTooltip:AddLine(T("Clic gauche : l'ajouter à la tournée · clic droit : ignorer"), 0.6, 0.6, 0.6, true)
+        if b.nearStep then
+            GameTooltip:SetText(T("Tout près"), 1, 1, 1)
+            GameTooltip:AddLine(T("Une étape prévue plus loin dans la tournée est juste à côté : fais-la maintenant."),
+                0.8, 0.8, 0.8, true)
+            GameTooltip:AddLine(T("Clic gauche : la faire maintenant · clic droit : plus tard"), 0.6, 0.6, 0.6, true)
+        else
+            GameTooltip:SetText(T("Sur ton chemin"), 1, 1, 1)
+            GameTooltip:AddLine(T("Une quête toute proche du trajet vers l'étape en cours, pas encore dans la tournée."), 0.8, 0.8, 0.8, true)
+            GameTooltip:AddLine(T("Clic gauche : l'ajouter à la tournée · clic droit : ignorer"), 0.6, 0.6, 0.6, true)
+        end
         GameTooltip:Show()
     end)
     tv.way:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -356,19 +369,32 @@ local function build()
             end
         end
         -- sur ton chemin
-        local wy = d.way
-        if wy then
+        local wy, nr = d.way, d.near
+        if nr then
+            -- tout près : étape plus loin dans la tournée, faisable ici
+            y = y - 4
+            v.way:ClearAllPoints(); v.way:SetPoint("TOPLEFT", 12, y - 2); v.way:SetPoint("RIGHT", -10, 0)
+            local kc = kindColor(nr.kind)
+            v.way.dot:SetVertexColor(kc[1], kc[2], kc[3], 1)
+            v.way.num:SetText(tostring(nr.j))
+            v.way.qid, v.way.nearStep = nil, nr.step
+            v.way.txt:SetText(UI:Hex({ UI:Accent() }) .. T("Tout près :") .. "|r " .. (nr.title or ""))
+            v.way.sub:SetText(string.format(T("%d m · clic : la faire maintenant"), math.floor((nr.d or 0) + 0.5)))
+            v.way:Show()
+            y = y - 30
+        elseif wy then
             y = y - 4
             v.way:ClearAllPoints(); v.way:SetPoint("TOPLEFT", 12, y - 2); v.way:SetPoint("RIGHT", -10, 0)
             local gc = C.gold
             v.way.dot:SetVertexColor(gc[1], gc[2], gc[3], 1)
-            v.way.qid = wy.qid
+            v.way.num:SetText("+")
+            v.way.qid, v.way.nearStep = wy.qid, nil
             v.way.txt:SetText(UI:Hex(C.gold) .. T("Sur ton chemin :") .. "|r " .. (wy.title or "") .. (wy.lvl and ("  " .. UI:Hex(C.dim) .. "[" .. wy.lvl .. "]|r") or ""))
             v.way.sub:SetText(wy.sub or "")
             v.way:Show()
             y = y - 30
         else
-            v.way:Hide(); v.way.qid = nil
+            v.way:Hide(); v.way.qid, v.way.nearStep = nil, nil
         end
         self:SetHeight(-y + 8)
     end
@@ -531,7 +557,11 @@ function UI:RefreshQuestTracker()
                 table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd, qids = ns.qids })
             end
         end
-        -- quête sur le chemin (pas dans la tournée)
+        -- étape plus loin toute proche (mode auto : remontée tout de suite), puis quête sur le chemin
+        if P.CheckNear then P:CheckNear() end
+        local near
+        local nh = P.NearStep and P:NearStep()
+        if nh then near = { step = nh.step, j = nh.j, kind = nh.step.kind, d = nh.d, title = P:StepTitle(nh.step, true) } end
         local way
         local ow = P.OnTheWay and P:OnTheWay()
         if ow and ow.e then
@@ -548,7 +578,8 @@ function UI:RefreshQuestTracker()
             end
         end
         card:PaintTour({ kind = s.kind, qids = s.qids, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
-            objs = objs, legend = legend, idx = tour.idx, count = #tour.steps, mins = mins, xp = left, zone = zone and zone.name, nexts = nexts, way = way })
+            objs = objs, legend = legend, idx = tour.idx, count = #tour.steps, mins = mins, xp = left,
+            zone = zone and zone.name, nexts = nexts, way = way, near = near })
         card:Show()
         return
     end

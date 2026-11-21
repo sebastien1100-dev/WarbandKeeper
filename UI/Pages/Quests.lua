@@ -538,7 +538,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 12 or 7) * 36 + 16, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 13 or 7) * 36 + 16, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -605,6 +605,13 @@ UI:RegisterPage({
                         if v then lgc().trainerTour = nil else lgc().trainerTour = false end
                         if QP() then QP():Invalidate(); if QP():Tour() then QP():Reorder() end end
                     end), 50)
+                -- étape prévue plus loin et toute proche (Modules/QuestPlan.lua, NearStep)
+                self.nearSeg = UI:Segmented(tcard, { { "ask", "Proposer" }, { "auto", "Auto" }, { "off", "Non" } },
+                    function(v) QP():Config().nearSteps = v; WK:NotifyChanged() end, 26)
+                UI:SettingRow(tcard, -478, "Étapes toutes proches",
+                    "Étape de la tournée prévue plus loin, à côté de toi : proposée, ou faite tout de suite (Auto).",
+                    self.nearSeg, self.nearSeg:GetWidth())
+                self.nearSeg:Select(QP():Config().nearSteps or "ask")
             end
         end
 
