@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.2 — 21/11/2026
+
+### Corrections
+- Addon installé par un ancien client (1.9.0 ou avant) sans le dossier WarbandKeeper_Data : le client le voit et propose « Réparer » (réinstalle la même version avec ses deux dossiers), au lieu d'afficher « À jour ».
+
 ## 1.9.1 — 21/11/2026
 
 ### Modifications

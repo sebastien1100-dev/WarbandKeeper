@@ -4597,4 +4597,6 @@ WK.Locales.enUS.text = {
     ["Dans le chat, une fois par niveau : les sorts à apprendre."] = "In chat, once per level: spells to learn.",
     ["(/wk guide maitre)"] = "(/wk guide trainer)",
     ["%s : encore %d min."] = "%s: %d min left.",
+    ["Attention : %s coûte %d fois son cours (%s)."] = "Warning: %s costs %d times its price (%s).",
+    ["Reclique pour acheter quand même."] = "Click again to buy anyway.",
 }

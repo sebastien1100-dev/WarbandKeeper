@@ -75,7 +75,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH: ${{ steps.plan.outputs.publish }}
         run: |
-          if [ -z "$(git status --porcelain -- Modules tools/guides tools/dungeons)" ]; then
+          if [ -z "$(git status --porcelain -- Modules Data tools/guides tools/dungeons)" ]; then
             echo "Rien de nouveau."
             exit 0
           fi

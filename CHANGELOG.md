@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.8 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- HV : une enchère « appât » (un exemplaire à 1 pc, une erreur de frappe) n'est plus prise pour le cours. Le prix proposé dans notre fenêtre de vente l'ignore, et le prix du scan aussi (garde-fous de vente, objets chers, règle « valeur ») ; les alertes de prix voient toujours le plus bas réel.
+- HV, vente : un prix bien sous le cours du scan est signalé même s'il est égal au prix proposé (avant, il pouvait partir avec la touche Espace).
+- HV, achat de marchandises (« Tout acheter », Acheter) : si le prix à l'unité dépasse 3 fois le cours connu, un clic de plus est demandé, avec un message.
+- « Désenchanter le suivant » : le sort est lancé directement sur l'objet ; si le sort échoue (recharge, déplacement), l'objet n'est plus utilisé (un équipement aurait été équipé, donc lié). Une case encore verrouillée par le jeu est refusée.
+- Mise à jour automatique des données : une mise à jour qui ne touche que le dossier des données à la demande (objectifs, objets BiS, recettes) est maintenant publiée.
+
 ## v1.128.7 — 21/11/2026
 
 _Un /reload suffit._

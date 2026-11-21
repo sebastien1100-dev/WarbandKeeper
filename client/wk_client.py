@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.1"
+CLIENT_VERSION = "1.9.2"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -321,6 +321,14 @@ def normalize_addons(path):
             if s.startswith("_") and os.path.isdir(a):
                 return a
     return None
+
+
+def data_missing(addons, version):
+    """Vrai si la version installée attend le dossier WarbandKeeper_Data (1.128.0 et plus) et qu'il manque (zip
+    installé par un client 1.9.0 ou plus ancien, dossier supprimé) : il faut réinstaller la même version."""
+    if not (addons and version) or vtuple(version) < vtuple("1.128.0"):
+        return False
+    return not os.path.isfile(os.path.join(addons, DATA_ADDON, DATA_ADDON + ".toc"))
 
 
 def installed_version(addons):
@@ -1794,6 +1802,12 @@ class HomePage(Page):
             self.versions.configure(text="Pas encore installé dans %s · dernière version %s" % (flavor_label(a.addons), latest))
             self.chip.set("Prêt à installer", C["accent"])
             self.action.set("Installer", not a.busy, "primary")
+            self.action.command = a.update_addon
+        elif data_missing(a.addons, inst) and vtuple(inst) >= vtuple(latest):
+            # même version, mais le dossier des données à la demande manque : réinstaller la répare
+            self.versions.configure(text="Installée : %s (dossier WarbandKeeper_Data manquant)" % inst)
+            self.chip.set("À réparer : dossier des données manquant", C["warning"])
+            self.action.set("Réparer", not a.busy, "alert")
             self.action.command = a.update_addon
         elif vtuple(inst) < vtuple(latest):
             self.versions.configure(text="Installée : %s   »   disponible : %s" % (inst, latest))

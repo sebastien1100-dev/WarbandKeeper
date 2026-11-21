@@ -349,7 +349,7 @@ function M:Alerts()
     local out = {}
     for id, max in pairs(cfg().alerts) do
         local e = S:Entry(id)
-        table.insert(out, { id = id, max = max, price = e and e.p, qty = e and e.q, hit = e and e.p and (e.q or 0) > 0 and e.p <= max })
+        table.insert(out, { id = id, max = max, price = e and e.p, qty = e and e.q, hit = e and e.p and (e.q or 0) > 0 and (e.pmin or e.p) <= max })
     end
     table.sort(out, function(a, b)
         if (a.hit and 1 or 0) ~= (b.hit and 1 or 0) then return a.hit end

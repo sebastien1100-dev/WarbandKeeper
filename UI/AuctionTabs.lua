@@ -122,10 +122,24 @@ local function onResults(id)
 end
 WK:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(id) onResults(id) end)
 WK:On("ITEM_SEARCH_RESULTS_UPDATED", function(key) onResults(type(key) == "table" and key.itemID or key) end)
+-- plus bas des autres vendeurs, sans un appât : un lot isolé (au plus 10 % de ce qui est en vente) à moins de la
+-- moitié du prix suivant (1 exemplaire à 1 pc) est sauté ; avant, le prix proposé suivait l'appât
 local function lowestOther(id)
     local r = results[id]
     if not r then return nil end
-    for _, row in ipairs(r.rows) do if not row.mine then return row.unit end end
+    local first, firstQty, total = nil, 0, 0
+    for _, row in ipairs(r.rows) do if not row.mine then total = total + (row.qty or 1) end end
+    for _, row in ipairs(r.rows) do
+        if not row.mine then
+            if not first then first, firstQty = row.unit, row.qty or 1
+            elseif row.unit == first then firstQty = firstQty + (row.qty or 1)
+            else
+                if first < row.unit * 0.5 and firstQty <= math.max(1, total * 0.1) then return row.unit end
+                return first
+            end
+        end
+    end
+    if first then return first end
     return nil, r.rows[1] and r.rows[1].mine
 end
 -- achat d'une enchère unique (PlaceBid, au prix d'achat immédiat) : le 1er clic arme le bouton (« Confirmer »),
@@ -651,6 +665,7 @@ local function build(host)
             elseif a and a.StartCommoditiesPurchase then
                 local b = S.buy
                 if b and b.id == id and b.phase == "confirm" then
+                    if not S:DearCheck(b) then return end
                     b.phase = "wait"
                     if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
                 else
@@ -873,8 +888,10 @@ local function build(host)
         if vendor > 0 and unit * 0.95 <= vendor then
             return string.format(T("Ce prix (%s) rapporte moins que le marchand (%s)."), money(unit), money(vendor))
         end
-        local going = lowestOther(id) or S:Price(id)
-        if going and unit < (sv.suggested or going) then
+        -- cours de référence : le prix du scan (sans appât) en premier, sinon le plus bas des autres ; un prix bien
+        -- sous ce cours est signalé même s'il est égal au prix proposé (appât qui serait passé au travers)
+        local going = S:Price(id) or lowestOther(id)
+        if going and (unit < (sv.suggested or going) or unit < going * 0.5) then
             local share = going < 10000 and 0.7 or going <= 500000 and 0.5 or 0.3
             if unit < going * share or unit <= going * 0.1 then
                 return string.format(T("Prix bien sous le cours (%s) : %s. Un zéro oublié ?"), money(going), money(unit))
@@ -1238,6 +1255,7 @@ local function build(host)
             local b = S.buy
             local a = AH()
             if b and b.id == id and b.phase == "confirm" then
+                if not S:DearCheck(b) then return end
                 b.phase = "wait"
                 if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
             elseif not (b and (b.phase == "quote" or b.phase == "wait")) then
@@ -2275,6 +2293,7 @@ local function build(host)
         if not (id and a and a.StartCommoditiesPurchase) then return end
         local b = S.buy
         if b and b.id == id and b.phase == "confirm" then
+            if not S:DearCheck(b) then return end
             b.phase = "wait"
             if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
         elseif not (b and (b.phase == "quote" or b.phase == "wait")) then

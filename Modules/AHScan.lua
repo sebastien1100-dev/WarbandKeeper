@@ -127,7 +127,7 @@ function M:SeenToday(itemID, low, qty)
     local e = d.items[itemID] or {}
     d.items[itemID] = e
     local day = math.floor(time() / 86400)
-    hput(e, day, low, qty)
+    hput(e, day, low, qty, self:Config().keepDays or HISTORY_DAYS) -- élagué comme l'historique du scan
     if not e.p then e.p, e.t = low, time() end
 end
 -- Courbe : { { day, price, qty } } des 14 derniers jours, du plus ancien au plus récent
@@ -198,16 +198,32 @@ end
 local driver = CreateFrame("Frame")
 local function notify() if M.OnProgress then M:OnProgress() end end
 
+-- seen[id] = { plus bas, quantité totale, quantité au plus bas, 2e prix distinct }
 local function record(seen, itemID, count, buyout)
     if not itemID or not buyout or buyout <= 0 or not count or count <= 0 then return end
     local unit = math.floor(buyout / count)
     local s = seen[itemID]
-    if not s then seen[itemID] = { unit, count }
+    if not s then seen[itemID] = { unit, count, count, nil }
     else
-        if unit < s[1] then s[1] = unit end
+        if unit < s[1] then
+            s[4] = s[1]; s[1] = unit; s[3] = count
+        elseif unit == s[1] then
+            s[3] = (s[3] or 0) + count
+        elseif not s[4] or unit < s[4] then
+            s[4] = unit
+        end
         s[2] = s[2] + count
     end
 end
+-- Prix retenu pour les garde-fous et les conseils : le plus bas, sauf un lot isolé (au plus 10 % de ce qui est en
+-- vente) à moins de la moitié du prix suivant (appât à 1 pc, erreur de frappe) : alors le prix suivant. Le plus
+-- bas brut reste dans e.pmin (alertes de prix).
+local function robust(s)
+    local p1, total, c1, p2 = s[1], s[2] or 0, s[3] or 0, s[4]
+    if p2 and p1 < p2 * 0.5 and c1 <= math.max(1, total * 0.1) then return p2 end
+    return p1
+end
+M.RobustPrice = robust
 
 -- Fin du scan : on remplace les prix des objets vus ; un scan complet remet à zéro la quantité des autres
 local function finish(ok, why)
@@ -226,9 +242,10 @@ local function finish(ok, why)
         for id, s in pairs(sc.seen) do
             n = n + 1
             local e = d.items[id] or {}
-            e.p, e.q, e.t = s[1], s[2], now
-            -- plus bas du jour et quantité en vente (la plus grande vue), pour la courbe des prix
-            hput(e, day, s[1], s[2] or 0, keep)
+            local rp = robust(s)
+            e.p, e.pmin, e.q, e.t = rp, (s[1] < rp) and s[1] or nil, s[2], now
+            -- prix du jour (sans appât) et quantité en vente (la plus grande vue), pour la courbe des prix
+            hput(e, day, rp, s[2] or 0, keep)
             d.items[id] = e
         end
         if sc.full then
@@ -568,6 +585,7 @@ function M:BuyStep()
     local A = AH()
     local b = self.buy
     if b and b.phase == "confirm" then
+        if not self:DearCheck(b) then return end
         b.phase = "wait"
         local ok = pcall(A.ConfirmCommoditiesPurchase, b.id, b.qty)
         if not ok then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
@@ -626,8 +644,21 @@ WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
         WK:Print(string.format(T("Le prix a changé : %s pour %d %s. Reclique pour confirmer."), WK:FormatMoney(total), b.qty or 0, WK.GetItemInfo(b.id) or "?"))
     end
     b.unit, b.total, b.phase = unit, total, "confirm"
+    -- prix à l'unité bien au-dessus du cours connu (plus de 3 fois le scan) : un clic de plus est demandé
+    local ref = M:Price(b.id)
+    b.dear = (ref and unit and ref > 0 and unit > ref * 3) and math.floor(unit / ref + 0.5) or nil
+    b.dearOk = nil
     if M.OnProgress then M:OnProgress() end
 end)
+-- Vrai si la confirmation peut partir. Prix très au-dessus du cours : le 1er clic prévient, le suivant achète
+-- (avant, « Tout acheter » demandait seul le prix suivant et le clic d'après confirmait n'importe quel prix).
+function M.DearCheck(_, b)
+    if not (b and b.dear) or b.dearOk then return true end
+    b.dearOk = true
+    WK:Print(string.format(T("Attention : %s coûte %d fois son cours (%s)."), WK.GetItemInfo(b.id) or "?", b.dear,
+        WK:FormatMoney(b.total or 0)) .. " " .. T("Reclique pour acheter quand même."))
+    return false
+end
 WK:On("COMMODITY_PRICE_UNAVAILABLE", function()
     local b = M.buy
     if not b then return end

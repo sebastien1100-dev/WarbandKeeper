@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.8", date = "21/11/2026",
+        fixed = {
+            "HV : une enchère « appât » (un exemplaire à 1 pc, une erreur de frappe) n'est plus prise pour le cours. Le prix proposé dans notre fenêtre de vente l'ignore, et le prix du scan aussi (garde-fous de vente, objets chers, règle « valeur ») ; les alertes de prix voient toujours le plus bas réel.",
+            "HV, vente : un prix bien sous le cours du scan est signalé même s'il est égal au prix proposé (avant, il pouvait partir avec la touche Espace).",
+            "HV, achat de marchandises (« Tout acheter », Acheter) : si le prix à l'unité dépasse 3 fois le cours connu, un clic de plus est demandé, avec un message.",
+            "« Désenchanter le suivant » : le sort est lancé directement sur l'objet ; si le sort échoue (recharge, déplacement), l'objet n'est plus utilisé (un équipement aurait été équipé, donc lié). Une case encore verrouillée par le jeu est refusée.",
+            "Mise à jour automatique des données : une mise à jour qui ne touche que le dossier des données à la demande (objectifs, objets BiS, recettes) est maintenant publiée.",
+        },
+    },
+    {
         version = "1.128.7", date = "21/11/2026",
         fixed = {
             "Tournée : en changeant de zone, une quête retirée (« Ignorer cette quête »), écartée ou plus proposée par son donneur n'est plus remise à la fin de la tournée.",

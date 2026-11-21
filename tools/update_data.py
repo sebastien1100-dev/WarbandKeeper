@@ -378,7 +378,7 @@ def main():
     shutil.rmtree(backup, ignore_errors=True)
 
     # résumé
-    changed = git("status", "--porcelain", "--", "Modules", "tools/guides", "tools/dungeons", cwd=ROOT)
+    changed = git("status", "--porcelain", "--", "Modules", "Data", "tools/guides", "tools/dungeons", cwd=ROOT)
     lines = ["## Mise à jour des données (%s)" % time.strftime("%d/%m/%Y"), "",
              "Sources : " + ", ".join(sources), "",
              "| | Avant | Après | Écart |", "|---|---:|---:|---:|"]

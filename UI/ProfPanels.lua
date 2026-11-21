@@ -113,11 +113,13 @@ local function buildDE()
     -- la case visée a pu changer depuis le dernier rafraîchissement (tri, objet déplacé) : on revérifie
     -- l'objet juste avant le clic, sinon la macro est vidée et rien n'est désenchanté
     f.go:SetScript("PreClick", function(s)
-        local id = s.bag and WK.Container.Info(s.bag, s.slot)
+        local id, _, locked = nil, nil, nil
+        if s.bag then id, _, locked = WK.Container.Info(s.bag, s.slot) end
         local IL = WK.modules.ItemLock
-        local ok = id and id == s.itemID and not (IL and IL.Reason and IL:Reason(id, s.bag, s.slot))
+        -- case verrouillée par le jeu (objet en cours d'utilisation, double clic) : refusée aussi
+        local ok = id and id == s.itemID and not locked and not (IL and IL.Reason and IL:Reason(id, s.bag, s.slot))
         if not ok then
-            if not inCombat() then s:SetAttribute("macrotext", nil) end
+            if not inCombat() then s:SetAttribute("type", nil) end
             if f.Refresh then _G.C_Timer.After(0.1, function() f:Refresh() end) end
             return
         end
@@ -159,12 +161,19 @@ local function buildDE()
         if not inCombat() then
             local spell = WK.SpellInfo(PH().DE_SPELL)
             if nextOne and spell then
-                f.go:SetAttribute("type", "macro")
-                f.go:SetAttribute("macrotext", "/cast " .. spell .. "\n/use " .. nextOne.bag .. " " .. nextOne.slot)
+                -- sort lancé sur la case par le bouton protégé du jeu (target-bag / target-slot) : l'objet n'est
+                -- visé que si le sort attend une cible ; avant, la macro « /cast » puis « /use » utilisait l'objet
+                -- quand le sort échouait (recharge, déplacement) : un équipement aurait été équipé, donc lié
+                f.go:SetAttribute("macrotext", nil)
+                f.go:SetAttribute("type", "spell")
+                f.go:SetAttribute("spell", spell)
+                f.go:SetAttribute("target-bag", nextOne.bag)
+                f.go:SetAttribute("target-slot", nextOne.slot)
                 f.go.itemID, f.go.bag, f.go.slot = nextOne.id, nextOne.bag, nextOne.slot
                 f.go:Show()
             else
                 f.go:SetAttribute("type", nil)
+                f.go:SetAttribute("spell", nil)
                 f.go.itemID = nil
                 f.go:Hide()
             end
