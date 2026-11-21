@@ -147,7 +147,7 @@
     215
    ],
    "recipe": 18401,
-   "crafts": 671,
+   "crafts": 650,
    "craftAll": true
   },
   {
@@ -161,18 +161,26 @@
   {
    "skill": [
     236,
-    260
+    250
    ],
    "recipe": 18417,
-   "crafts": 32
+   "crafts": 15
   },
   {
    "skill": [
-    260,
+    250,
+    273
+   ],
+   "recipe": 1257487,
+   "crafts": 25
+  },
+  {
+   "skill": [
+    273,
     300
    ],
    "recipe": 18450,
-   "crafts": 78
+   "crafts": 65
   }
  ],
  "sections": [
@@ -4581,7 +4589,7 @@
      "id": 3383,
      "name": "Elixir of Wisdom",
      "count": 1,
-     "price": 119
+     "price": 118
     }
    ],
    "source": "trainer",
@@ -4612,6 +4620,45 @@
    "tools": [],
    "taught_by": []
   },
+  "1257487": {
+   "name": "Runecloth Cuffs",
+   "item": {
+    "id": 254123,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 14048,
+     "name": "Bolt of Runecloth",
+     "count": 5,
+     "price": null
+    },
+    {
+     "id": 14227,
+     "name": "Ironweb Spider Silk",
+     "count": 1,
+     "price": 7499
+    },
+    {
+     "id": 14341,
+     "name": "Rune Thread",
+     "count": 1,
+     "price": 5000
+    }
+   ],
+   "source": "recipe",
+   "tools": [],
+   "taught_by": [
+    {
+     "id": 254124,
+     "name": "Pattern: Runecloth Cuffs",
+     "vendors": [
+      "Pexmit"
+     ],
+     "price": 100000
+    }
+   ]
+  },
   "18450": {
    "name": "Wizardweave Turban",
    "item": {
@@ -4629,13 +4676,13 @@
      "id": 11176,
      "name": "Dream Dust",
      "count": 4,
-     "price": 2338
+     "price": 2500
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 1,
-     "price": 6137
+     "price": 7098
     },
     {
      "id": 14341,
@@ -4684,7 +4731,7 @@
      "id": 2592,
      "name": "Wool Cloth",
      "count": 3,
-     "price": 130
+     "price": 148
     }
    ],
    "source": "trainer",
@@ -4726,7 +4773,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 5,
-     "price": 555
+     "price": 569
     }
    ],
    "source": "trainer",
@@ -4972,7 +5019,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 5,
-     "price": 571
+     "price": 773
     }
    ],
    "source": "trainer",
@@ -5044,7 +5091,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 4,
-     "price": 1700
+     "price": 1800
     },
     {
      "id": 14341,
@@ -5077,7 +5124,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 4,
-     "price": 200
+     "price": 206
     }
    ],
    "source": "trainer",

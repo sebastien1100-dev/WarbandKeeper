@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.115.2", date = "21/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et prix et trajets et zones et opendata : 274 quêtes de plus, 1 objet de butin désormais découverts, guides de métiers revus par wowtbc.gg.",
+        },
+    },
+    {
         version = "1.115.1", date = "21/11/2026",
         added = {
             "Fenêtre des quêtes du donjon pour n'importe quel donjon : bouton dans la page Donjons (bas du détail du donjon choisi) et dans le bandeau des quêtes de l'onglet LFG. Elle reste affichée, même loin du donjon, jusqu'à la croix.",

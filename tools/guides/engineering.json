@@ -72,8 +72,7 @@
     90
    ],
    "recipe": 3929,
-   "crafts": 5,
-   "craftAll": true
+   "crafts": 5
   },
   {
    "skill": [
@@ -127,18 +126,18 @@
   {
    "skill": [
     150,
-    156
+    154
    ],
    "recipe": 9271,
-   "crafts": 8
+   "crafts": 5
   },
   {
    "skill": [
-    156,
+    154,
     160
    ],
    "recipe": 3953,
-   "crafts": 6
+   "crafts": 9
   },
   {
    "skill": [
@@ -2777,7 +2776,7 @@
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 479
+     "price": 553
     }
    ],
    "source": "trainer",
@@ -2795,7 +2794,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 6,
-     "price": 108
+     "price": 117
     }
    ],
    "source": "trainer",
@@ -2821,7 +2820,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 3,
-     "price": 571
+     "price": 773
     }
    ],
    "source": "trainer",
@@ -2839,7 +2838,7 @@
      "id": 3577,
      "name": "Gold Bar",
      "count": 1,
-     "price": 999
+     "price": 1000
     }
    ],
    "source": "trainer",
@@ -2860,7 +2859,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 2,
-     "price": 169
+     "price": 171
     }
    ],
    "source": "trainer",
@@ -2884,7 +2883,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 1,
-     "price": 200
+     "price": 206
     }
    ],
    "source": "trainer",
@@ -2902,13 +2901,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 1,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 1,
-     "price": 555
+     "price": 569
     },
     {
      "id": 10505,
@@ -2935,7 +2934,7 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 1,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 10505,
@@ -2961,13 +2960,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 2,
-     "price": 169
+     "price": 187
     },
     {
      "id": 6530,
      "name": "Nightcrawlers",
      "count": 1,
-     "price": 44
+     "price": 116
     },
     {
      "id": 4364,
@@ -2991,7 +2990,7 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 3,
-     "price": 1167
+     "price": 1100
     }
    ],
    "source": "trainer",
@@ -3012,7 +3011,7 @@
      "id": 12365,
      "name": "Dense Stone",
      "count": 2,
-     "price": 313
+     "price": 275
     }
    ],
    "source": "trainer",
@@ -3030,7 +3029,7 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 2,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 10505,
@@ -3056,7 +3055,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 1,
-     "price": 6
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -3098,13 +3097,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 3,
-     "price": 2400
+     "price": 2450
     },
     {
      "id": 14047,
      "name": "Runecloth",
      "count": 1,
-     "price": 571
+     "price": 773
     }
    ],
    "source": "recipe",
@@ -3134,7 +3133,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 1,
-     "price": 108
+     "price": 117
     }
    ],
    "source": "trainer",
@@ -3154,7 +3153,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 1,
-     "price": 108
+     "price": 117
     },
     {
      "id": 4359,
@@ -3192,7 +3191,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 2,
-     "price": 108
+     "price": 117
     },
     {
      "id": 2880,
@@ -3224,7 +3223,7 @@
      "id": 9061,
      "name": "Goblin Rocket Fuel",
      "count": 1,
-     "price": 900
+     "price": 1388
     },
     {
      "id": 10507,
@@ -3263,7 +3262,7 @@
      "id": 2840,
      "name": "Copper Bar",
      "count": 1,
-     "price": 108
+     "price": 117
     },
     {
      "id": 2589,
@@ -3290,7 +3289,7 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 6,
-     "price": 2400
+     "price": 2450
     }
    ],
    "source": "recipe",
@@ -3321,7 +3320,7 @@
      "id": 2836,
      "name": "Coarse Stone",
      "count": 1,
-     "price": 111
+     "price": 123
     }
    ],
    "source": "trainer",
@@ -3363,13 +3362,13 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 6,
-     "price": 32
+     "price": 34
     },
     {
      "id": 818,
      "name": "Tigerseye",
      "count": 2,
-     "price": 100
+     "price": 108
     }
    ],
    "source": "trainer",
@@ -3413,7 +3412,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 1,
-     "price": 386
+     "price": 381
     }
    ],
    "source": "trainer",
@@ -3431,19 +3430,19 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 2,
-     "price": 169
+     "price": 187
     },
     {
      "id": 2319,
      "name": "Medium Leather",
      "count": 1,
-     "price": 100
+     "price": 96
     },
     {
      "id": 2592,
      "name": "Wool Cloth",
      "count": 1,
-     "price": 130
+     "price": 148
     }
    ],
    "source": "trainer",
@@ -3461,7 +3460,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 2,
-     "price": 272
+     "price": 270
     }
    ],
    "source": "trainer",
@@ -3481,7 +3480,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 272
+     "price": 270
     },
     {
      "id": 10558,
@@ -3508,7 +3507,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 272
+     "price": 270
     },
     {
      "id": 4377,
@@ -3520,7 +3519,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 1,
-     "price": 200
+     "price": 206
     }
    ],
    "source": "trainer",
@@ -3540,7 +3539,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 3,
-     "price": 272
+     "price": 270
     },
     {
      "id": 4377,

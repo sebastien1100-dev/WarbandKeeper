@@ -12,51 +12,35 @@
   {
    "skill": [
     13,
-    15
+    68
    ],
    "recipe": 7183,
-   "crafts": 2
+   "crafts": 59
   },
   {
    "skill": [
-    15,
-    75
-   ],
-   "recipe": 2329,
-   "crafts": 70
-  },
-  {
-   "skill": [
-    75,
+    68,
     80
    ],
-   "recipe": 2334,
-   "crafts": 5
+   "recipe": 2331,
+   "crafts": 17
   },
   {
    "skill": [
     80,
-    93
+    95
    ],
    "recipe": 7836,
-   "crafts": 40,
+   "crafts": 50,
    "craftAll": true
   },
   {
    "skill": [
-    93,
-    100
-   ],
-   "recipe": 2334,
-   "crafts": 13
-  },
-  {
-   "skill": [
-    100,
+    95,
     120
    ],
    "recipe": 7179,
-   "crafts": 20
+   "crafts": 25
   },
   {
    "skill": [
@@ -77,18 +61,18 @@
   {
    "skill": [
     160,
-    178
+    174
    ],
    "recipe": 7845,
-   "crafts": 22
+   "crafts": 16
   },
   {
    "skill": [
-    178,
+    174,
     197
    ],
    "recipe": 3452,
-   "crafts": 26
+   "crafts": 30
   },
   {
    "skill": [
@@ -134,18 +118,10 @@
   {
    "skill": [
     259,
-    263
-   ],
-   "recipe": 11465,
-   "crafts": 6
-  },
-  {
-   "skill": [
-    263,
     265
    ],
    "recipe": 11467,
-   "crafts": 3
+   "crafts": 8
   },
   {
    "skill": [
@@ -161,14 +137,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    75
+    68
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    75,
+    68,
     130
    ],
    "trainers": {
@@ -2055,43 +2031,13 @@
      "id": 765,
      "name": "Silverleaf",
      "count": 1,
-     "price": 17
+     "price": 15
     },
     {
      "id": 3371,
      "name": "Empty Vial",
      "count": 1,
      "price": 4
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "11448": {
-   "name": "Greater Mana Potion",
-   "item": {
-    "id": 6149,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 3358,
-     "name": "Khadgar's Whisker",
-     "count": 1,
-     "price": 370
-    },
-    {
-     "id": 3821,
-     "name": "Goldthorn",
-     "count": 1,
-     "price": 442
-    },
-    {
-     "id": 3372,
-     "name": "Leaded Vial",
-     "count": 1,
-     "price": 40
     }
    ],
    "source": "trainer",
@@ -2109,13 +2055,13 @@
      "id": 785,
      "name": "Mageroyal",
      "count": 1,
-     "price": 43
+     "price": 40
     },
     {
      "id": 3820,
      "name": "Stranglekelp",
      "count": 1,
-     "price": 162
+     "price": 139
     },
     {
      "id": 3371,
@@ -2145,7 +2091,7 @@
      "id": 3356,
      "name": "Kingsblood",
      "count": 1,
-     "price": 105
+     "price": 119
     },
     {
      "id": 3372,
@@ -2169,13 +2115,13 @@
      "id": 8839,
      "name": "Blindweed",
      "count": 1,
-     "price": 948
+     "price": 1200
     },
     {
      "id": 3358,
      "name": "Khadgar's Whisker",
      "count": 1,
-     "price": 370
+     "price": 346
     },
     {
      "id": 8925,
@@ -2199,7 +2145,7 @@
      "id": 3820,
      "name": "Stranglekelp",
      "count": 1,
-     "price": 162
+     "price": 139
     },
     {
      "id": 6370,
@@ -2229,13 +2175,13 @@
      "id": 8838,
      "name": "Sungrass",
      "count": 1,
-     "price": 1414
+     "price": 1290
     },
     {
      "id": 3821,
      "name": "Goldthorn",
      "count": 1,
-     "price": 442
+     "price": 400
     },
     {
      "id": 8925,
@@ -2259,13 +2205,13 @@
      "id": 765,
      "name": "Silverleaf",
      "count": 1,
-     "price": 17
+     "price": 15
     },
     {
      "id": 2447,
      "name": "Peacebloom",
      "count": 1,
-     "price": 65
+     "price": 49
     },
     {
      "id": 3371,
@@ -2289,7 +2235,7 @@
      "id": 13422,
      "name": "Stonescale Eel",
      "count": 1,
-     "price": 125
+     "price": 173
     },
     {
      "id": 3372,
@@ -2319,7 +2265,7 @@
      "id": 8838,
      "name": "Sungrass",
      "count": 1,
-     "price": 1414
+     "price": 1290
     },
     {
      "id": 8925,
@@ -2353,49 +2299,19 @@
      "id": 3820,
      "name": "Stranglekelp",
      "count": 1,
-     "price": 162
+     "price": 139
     },
     {
      "id": 3356,
      "name": "Kingsblood",
      "count": 1,
-     "price": 105
+     "price": 119
     },
     {
      "id": 3372,
      "name": "Leaded Vial",
      "count": 1,
      "price": 40
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "2329": {
-   "name": "Elixir of Minor Strength",
-   "item": {
-    "id": 2454,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 2449,
-     "name": "Earthroot",
-     "count": 1,
-     "price": 44
-    },
-    {
-     "id": 765,
-     "name": "Silverleaf",
-     "count": 1,
-     "price": 17
-    },
-    {
-     "id": 3371,
-     "name": "Empty Vial",
-     "count": 1,
-     "price": 4
     }
    ],
    "source": "trainer",
@@ -2413,19 +2329,49 @@
      "id": 3355,
      "name": "Wild Steelbloom",
      "count": 1,
-     "price": 119
+     "price": 110
     },
     {
      "id": 3821,
      "name": "Goldthorn",
      "count": 1,
-     "price": 442
+     "price": 400
     },
     {
      "id": 3372,
      "name": "Leaded Vial",
      "count": 1,
      "price": 40
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "2331": {
+   "name": "Minor Mana Potion",
+   "item": {
+    "id": 2455,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 785,
+     "name": "Mageroyal",
+     "count": 1,
+     "price": 40
+    },
+    {
+     "id": 2447,
+     "name": "Peacebloom",
+     "count": 1,
+     "price": 49
+    },
+    {
+     "id": 3371,
+     "name": "Empty Vial",
+     "count": 1,
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -2443,7 +2389,7 @@
      "id": 6358,
      "name": "Oily Blackmouth",
      "count": 2,
-     "price": 36
+     "price": 48
     },
     {
      "id": 3371,
@@ -2467,7 +2413,7 @@
      "id": 6359,
      "name": "Firefin Snapper",
      "count": 2,
-     "price": 15
+     "price": 12
     },
     {
      "id": 3371,
@@ -2480,42 +2426,35 @@
    "tools": [],
    "taught_by": []
   },
-  "2334": {
-   "name": "Elixir of Minor Fortitude",
+  "11448": {
+   "name": "Greater Mana Potion",
    "item": {
-    "id": 2458,
+    "id": 6149,
     "count": 1
    },
    "reagents": [
     {
-     "id": 2449,
-     "name": "Earthroot",
-     "count": 2,
-     "price": 44
+     "id": 3358,
+     "name": "Khadgar's Whisker",
+     "count": 1,
+     "price": 346
     },
     {
-     "id": 2447,
-     "name": "Peacebloom",
+     "id": 3821,
+     "name": "Goldthorn",
      "count": 1,
-     "price": 65
+     "price": 400
     },
     {
-     "id": 3371,
-     "name": "Empty Vial",
+     "id": 3372,
+     "name": "Leaded Vial",
      "count": 1,
-     "price": 4
+     "price": 40
     }
    ],
    "source": "trainer",
    "tools": [],
-   "taught_by": [
-    {
-     "id": 2554,
-     "name": "Deprecated Recipe: Elixir of Fortitude",
-     "vendors": [],
-     "price": null
-    }
-   ]
+   "taught_by": []
   }
  }
 }

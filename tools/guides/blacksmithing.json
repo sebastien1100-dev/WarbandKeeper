@@ -4612,7 +4612,7 @@
      "id": 12365,
      "name": "Dense Stone",
      "count": 1,
-     "price": 313
+     "price": 275
     }
    ],
    "source": "trainer",
@@ -4630,13 +4630,13 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 8,
-     "price": 169
+     "price": 187
     },
     {
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 479
+     "price": 553
     },
     {
      "id": 3478,
@@ -4662,7 +4662,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 3,
-     "price": 386
+     "price": 381
     }
    ],
    "source": "trainer",
@@ -4680,7 +4680,7 @@
      "id": 2842,
      "name": "Silver Bar",
      "count": 1,
-     "price": 479
+     "price": 553
     },
     {
      "id": 3470,
@@ -4706,13 +4706,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 20,
-     "price": 2400
+     "price": 2450
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 1,
-     "price": 6137
+     "price": 7098
     }
    ],
    "source": "recipe",
@@ -4739,19 +4739,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 16,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 7971,
      "name": "Black Pearl",
      "count": 1,
-     "price": 1186
+     "price": 1393
     },
     {
      "id": 1210,
      "name": "Shadowgem",
      "count": 4,
-     "price": 249
+     "price": 260
     },
     {
      "id": 7966,
@@ -4763,7 +4763,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 2,
-     "price": 550
+     "price": 609
     }
    ],
    "source": "trainer",
@@ -4783,19 +4783,19 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 34,
-     "price": 2400
+     "price": 2450
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 1,
-     "price": 6137
+     "price": 7098
     },
     {
      "id": 7909,
      "name": "Aquamarine",
      "count": 1,
-     "price": 1688
+     "price": 1719
     }
    ],
    "source": "recipe",
@@ -4822,19 +4822,19 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 28,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 7972,
      "name": "Ichor of Undeath",
      "count": 10,
-     "price": 400
+     "price": 425
     },
     {
      "id": 6037,
      "name": "Truesilver Bar",
      "count": 10,
-     "price": 1500
+     "price": 1420
     },
     {
      "id": 7966,
@@ -4846,7 +4846,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 6,
-     "price": 550
+     "price": 609
     }
    ],
    "source": "trainer",
@@ -4866,7 +4866,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 6,
-     "price": 272
+     "price": 270
     },
     {
      "id": 2605,
@@ -4892,7 +4892,7 @@
      "id": 3859,
      "name": "Steel Bar",
      "count": 5,
-     "price": 780
+     "price": 815
     },
     {
      "id": 3486,
@@ -4918,7 +4918,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 1,
-     "price": 169
+     "price": 171
     }
    ],
    "source": "trainer",
@@ -4936,7 +4936,7 @@
      "id": 3575,
      "name": "Iron Bar",
      "count": 1,
-     "price": 272
+     "price": 270
     }
    ],
    "source": "trainer",
@@ -4956,7 +4956,7 @@
      "id": 7912,
      "name": "Solid Stone",
      "count": 4,
-     "price": 169
+     "price": 171
     }
    ],
    "source": "trainer",
@@ -4974,13 +4974,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 6,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 4,
-     "price": 555
+     "price": 569
     }
    ],
    "source": "trainer",
@@ -5000,7 +5000,7 @@
      "id": 3859,
      "name": "Steel Bar",
      "count": 14,
-     "price": 780
+     "price": 815
     },
     {
      "id": 7966,
@@ -5026,7 +5026,7 @@
      "id": 6037,
      "name": "Truesilver Bar",
      "count": 1,
-     "price": 1500
+     "price": 1420
     },
     {
      "id": 7966,
@@ -5052,13 +5052,13 @@
      "id": 12359,
      "name": "Thorium Bar",
      "count": 44,
-     "price": 2400
+     "price": 2450
     },
     {
      "id": 7910,
      "name": "Star Ruby",
      "count": 2,
-     "price": 6137
+     "price": 7098
     }
    ],
    "source": "recipe",
@@ -5085,7 +5085,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 1,
-     "price": 6
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -5103,13 +5103,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 10,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 6,
-     "price": 555
+     "price": 569
     }
    ],
    "source": "trainer",
@@ -5129,7 +5129,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 6,
-     "price": 169
+     "price": 187
     }
    ],
    "source": "trainer",
@@ -5149,7 +5149,7 @@
      "id": 2841,
      "name": "Bronze Bar",
      "count": 5,
-     "price": 169
+     "price": 187
     },
     {
      "id": 3478,
@@ -5175,13 +5175,13 @@
      "id": 3860,
      "name": "Mithril Bar",
      "count": 14,
-     "price": 1167
+     "price": 1100
     },
     {
      "id": 4304,
      "name": "Thick Leather",
      "count": 4,
-     "price": 550
+     "price": 609
     }
    ],
    "source": "trainer",
@@ -5201,7 +5201,7 @@
      "id": 2838,
      "name": "Heavy Stone",
      "count": 1,
-     "price": 386
+     "price": 381
     }
    ],
    "source": "trainer",
@@ -5219,7 +5219,7 @@
      "id": 2835,
      "name": "Rough Stone",
      "count": 2,
-     "price": 6
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -5237,7 +5237,7 @@
      "id": 2836,
      "name": "Coarse Stone",
      "count": 2,
-     "price": 111
+     "price": 123
     }
    ],
    "source": "trainer",

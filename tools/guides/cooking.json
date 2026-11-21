@@ -6,7 +6,7 @@
     1,
     51
    ],
-   "recipe": 2540,
+   "recipe": 8604,
    "crafts": 51
   },
   {
@@ -44,18 +44,18 @@
   {
    "skill": [
     175,
-    200
+    210
    ],
-   "recipe": 20916,
-   "crafts": 25
+   "recipe": 7828,
+   "crafts": 45
   },
   {
    "skill": [
-    200,
+    210,
     235
    ],
    "recipe": 20916,
-   "crafts": 45
+   "crafts": 35
   },
   {
    "skill": [
@@ -130,7 +130,7 @@
    "rank": "Expert",
    "skill": [
     125,
-    200
+    210
    ],
    "trainers": {
     "alliance": [
@@ -153,7 +153,7 @@
   {
    "rank": "Artisan",
    "skill": [
-    200,
+    210,
     300
    ],
    "trainers": {
@@ -1590,7 +1590,7 @@
      "id": 5503,
      "name": "Clam Meat",
      "count": 1,
-     "price": 25
+     "price": 34
     },
     {
      "id": 159,
@@ -1614,7 +1614,7 @@
      "id": 5504,
      "name": "Tangy Clam Meat",
      "count": 1,
-     "price": 60
+     "price": 55
     },
     {
      "id": 2692,
@@ -1638,7 +1638,7 @@
      "id": 13760,
      "name": "Raw Sunscale Salmon",
      "count": 1,
-     "price": 100
+     "price": 192
     }
    ],
    "source": "recipe",
@@ -1665,7 +1665,7 @@
      "id": 6308,
      "name": "Raw Bristle Whisker Catfish",
      "count": 1,
-     "price": 6
+     "price": 8
     }
    ],
    "source": "recipe",
@@ -1688,23 +1688,40 @@
     }
    ]
   },
-  "2540": {
-   "name": "Roasted Boar Meat",
+  "7828": {
+   "name": "Rockscale Cod",
    "item": {
-    "id": 2681,
+    "id": 4594,
     "count": 1
    },
    "reagents": [
     {
-     "id": 769,
-     "name": "Chunk of Boar Meat",
+     "id": 6362,
+     "name": "Raw Rockscale Cod",
      "count": 1,
-     "price": 25
+     "price": 5
     }
    ],
-   "source": "trainer",
+   "source": "recipe",
    "tools": [],
-   "taught_by": []
+   "taught_by": [
+    {
+     "id": 6369,
+     "name": "Recipe: Rockscale Cod",
+     "vendors": [
+      "Lindea Rabonne",
+      "Kelsey Yance",
+      "Stuart Fleming",
+      "Shankys",
+      "Heldan Galesong",
+      "Lizbeth Cromwell",
+      "Tansy Puddlefizz",
+      "Wulan",
+      "Wik'Tar"
+     ],
+     "price": 2200
+    }
+   ]
   },
   "20916": {
    "name": "Mithril Headed Trout",
@@ -1717,7 +1734,7 @@
      "id": 8365,
      "name": "Raw Mithril Head Trout",
      "count": 1,
-     "price": 49
+     "price": 75
     }
    ],
    "source": "recipe",
@@ -1752,7 +1769,31 @@
      "id": 12205,
      "name": "White Spider Meat",
      "count": 2,
-     "price": 255
+     "price": 189
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "8604": {
+   "name": "Herb Baked Egg",
+   "item": {
+    "id": 6888,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 6889,
+     "name": "Small Egg",
+     "count": 1,
+     "price": 25
+    },
+    {
+     "id": 2678,
+     "name": "Mild Spices",
+     "count": 1,
+     "price": 2
     }
    ],
    "source": "trainer",

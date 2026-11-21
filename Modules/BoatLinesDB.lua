@@ -1,6 +1,6 @@
 local ADDON_NAME, WK = ...
 -- GÉNÉRÉ par tools/gen_boats.py : ne pas modifier à la main.
--- Lignes de bateaux et de zeppelins de WoW Forever (version du jeu 1.60.1.70959).
+-- Lignes de bateaux et de zeppelins de WoW Forever (version du jeu 1.60.1.71037).
 -- Trajets : table TaxiPathNode des fichiers du jeu (wago.tools).
 -- stops = { name, c (continent), x, y (monde) } ; legs[i] = du quai i au suivant :
 -- len (m, hors sauts), pts = { c, x, y, ... }.
