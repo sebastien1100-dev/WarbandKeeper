@@ -238,8 +238,19 @@ function M:SendNext()
     -- verrouillé par le jeu) est jointe ; sinon on enverrait autre chose, ou une lettre vide
     local ops = {}
     for _, op in ipairs(mail.items) do
-        local id, _, locked = WK.Container.Info(op.bag, op.slot)
-        if id and not locked and (not op.id or id == op.id) then table.insert(ops, op) end
+        local id, n, locked = WK.Container.Info(op.bag, op.slot)
+        if id and not locked and (not op.id or id == op.id) then
+            -- la pile a pu changer depuis le plan (butin, piles fusionnées) : on n'envoie jamais plus que
+            -- prévu (pile séparée, le reste gardé), et le décompte suit ce qui part vraiment
+            n = n or 1
+            local want = op.split or op.count
+            if want and n > want then
+                op.split, op.count = want, want
+            elseif want and n < want then
+                op.split, op.count = nil, n
+            end
+            table.insert(ops, op)
+        end
     end
     if #ops == 0 then return M:SendNext() end
     mail.items = ops

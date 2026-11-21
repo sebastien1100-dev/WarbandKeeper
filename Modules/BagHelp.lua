@@ -189,6 +189,10 @@ function M:OpenBusy()
     if InCombatLockdown and InCombatLockdown() then return "combat" end
     if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return "mort" end
     if (UnitCastingInfo and UnitCastingInfo("player")) or (UnitChannelInfo and UnitChannelInfo("player")) then return "sort" end
+    -- sort qui attend sa cible (enchantement, pierre à aiguiser…) ou objet sur le curseur : ouvrir une
+    -- palourde appliquerait le sort à cet objet, ou le poserait dessus
+    if _G.SpellIsTargeting and _G.SpellIsTargeting() then return "ciblage" end
+    if _G.CursorHasItem and _G.CursorHasItem() then return "curseur" end
     for _, n in ipairs(BUSY_FRAMES) do
         local f = _G[n]
         if f and f.IsShown and f:IsShown() == true then return n end

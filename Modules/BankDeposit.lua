@@ -21,21 +21,34 @@ local function maxStack(itemID)
     return n or 1
 end
 
+-- Cases visées pendant la passe : un dépôt met un moment à arriver ; sans ça, la case vide choisie juste
+-- avant était reprise (le jeu échangeait les deux objets) et le décompte était faux.
+-- reserved["sac:case"] = { id, n } (objet et quantité en route)
+local reserved = {}
+M.reserved = reserved -- (tests)
+
 -- Emplacement d'arrivée : pile du même objet avec assez de place, sinon emplacement vide.
 local function destination(target, itemID, amount)
     local empty
     for _, bag in ipairs(targetBags(target)) do
         for slot = 1, (WK.Container.NumSlots(bag) or 0) do
             local id, count, locked = WK.Container.Info(bag, slot)
+            local r = reserved[bag .. ":" .. slot]
+            if r and not id then
+                -- case vide visée par un dépôt en route : pleine pour nous (même objet : pile à compléter)
+                id, count = r.id, 0
+            end
+            local pending = (r and r.id == itemID) and r.n or 0
             if not id then
                 empty = empty or { bag, slot }
-            elseif id == itemID and not locked and (count or 0) + amount <= maxStack(itemID) then
+            elseif id == itemID and not locked and (count or 0) + pending + amount <= maxStack(itemID) then
                 return bag, slot
             end
         end
     end
     if empty then return empty[1], empty[2] end
 end
+M.Destination = destination
 
 local running = false
 local queue, done, full
@@ -69,8 +82,13 @@ local function step()
     if not job then return finish() end
     if full[job.target] then return step() end
     -- la case doit encore contenir l'objet prévu (sacs bougés depuis le plan) : sinon on la passe
-    local cur, _, locked = WK.Container.Info(job.op.bag, job.op.slot)
+    local cur, n, locked = WK.Container.Info(job.op.bag, job.op.slot)
     if cur ~= job.itemID or locked then return step() end
+    -- pile changée depuis le plan : jamais plus que prévu, et le décompte suit ce qui part vraiment
+    n = n or 1
+    local want = job.op.split or job.op.count
+    if want and n > want then job.op.split, job.op.count = want, want
+    elseif want and n < want then job.op.split, job.op.count = nil, n end
     local bag, slot = destination(job.target, job.itemID, job.op.count)
     if not bag then
         full[job.target] = true
@@ -79,6 +97,9 @@ local function step()
     WK.modules.Rules:PickUp(job.op)
     WK.Container.Pickup(bag, slot)
     ClearCursor()
+    local key = bag .. ":" .. slot
+    local r = reserved[key]
+    reserved[key] = { id = job.itemID, n = ((r and r.id == job.itemID) and r.n or 0) + job.op.count }
     done[job.target] = done[job.target] or {}
     done[job.target][job.itemID] = (done[job.target][job.itemID] or 0) + job.op.count
     C_Timer.After(STEP_DELAY, step)
@@ -100,6 +121,7 @@ function M:Run()
     local plan = self:Plan()
     if #plan == 0 then return end
     queue, done, full = {}, {}, {}
+    for k in pairs(reserved) do reserved[k] = nil end
     -- Pas de banque de bataillon sur ce client : on dépose dans la banque du perso.
     local hasWarband = false
     for _, bag in ipairs(WK.modules.Inventory:WarbandList()) do

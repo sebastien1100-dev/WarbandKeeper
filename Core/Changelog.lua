@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.13", date = "21/11/2026",
+        fixed = {
+            "Vente rapide : un prix tapé à la main n'est plus écrasé par le second essai, et le prix n'est plus posé si tu as changé d'objet entre-temps.",
+            "Rachat automatique : seul un objet verrouillé vendu pendant cette visite chez le marchand est racheté ; avant, un objet vendu à une visite précédente, ou avant d'être verrouillé, était racheté avec ton or sans clic.",
+            "Courrier : une pile qui a grossi depuis le plan (butin, piles fusionnées) n'envoie plus que la quantité prévue ; le reste est gardé, et la boîte du destinataire compte ce qui est vraiment parti.",
+            "Banque : le dépôt ne reprend plus une case qu'un dépôt précédent était encore en train de remplir (les deux objets étaient échangés), et le compte des objets déposés est juste.",
+            "Sacs : l'ouverture automatique attend qu'aucun sort n'attende sa cible (enchantement, pierre à aiguiser) et que le curseur soit vide.",
+            "Téléchargement plus léger : les outils de développement ne sont plus dans le zip.",
+        },
+    },
+    {
         version = "1.128.12", date = "21/11/2026",
         fixed = {
             "Bouton Buffer : un joueur n'est plus écarté 2 minutes quand l'échec vient de toi (sort pas encore prêt, temps de recharge, mana, en mouvement, autre sort en cours) ; le clic suivant le retente. Hors de portée, hors de vue ou buff plus puissant : il est toujours passé.",

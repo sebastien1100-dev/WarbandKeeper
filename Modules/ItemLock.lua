@@ -300,20 +300,46 @@ end
 ---------------------------------------------------------------------------
 local merchantOpen = false
 local lastBuy = -10
+-- Seulement ce qui a été vendu pendant cette visite : le rachat est partagé entre marchands pendant la
+-- séance, et un objet vendu avant d'être verrouillé ne doit pas être racheté. À l'ouverture, on compte ce
+-- qui est déjà dans le rachat (par lien) ; une ligne en plus est une vente de cette visite, datée à sa
+-- première vue, et rachetée seulement si le verrou est plus ancien que la vente.
+local before, soldAt = {}, {}
+local function buybackCounts()
+    local out = {}
+    local num, getLink = _G.GetNumBuybackItems, _G.GetBuybackItemLink
+    for i = 1, (num and num() or 0) do
+        local link = getLink(i)
+        if link then out[link] = (out[link] or 0) + 1 end
+    end
+    return out
+end
+local function snapshotBuyback()
+    for k in pairs(soldAt) do soldAt[k] = nil end
+    before = (_G.GetBuybackItemLink and buybackCounts()) or {}
+end
+M.SnapshotBuyback = snapshotBuyback
 local function checkBuyback()
     if not merchantOpen or not db().cfg.rebuy then return end
     if not (GetNumBuybackItems and GetBuybackItemLink and BuybackItem) then return end
     if GetTime() - lastBuy < 0.5 then return end
+    local cur = buybackCounts()
+    for link, n in pairs(cur) do
+        if n > (before[link] or 0) then soldAt[link] = soldAt[link] or _G.time() end
+    end
     for i = GetNumBuybackItems(), 1, -1 do
         local link = GetBuybackItemLink(i)
         local id = link and WK:ParseItemID(link)
         -- seulement les objets verrouillés à la main : un objet verrouillé par règle (quête, épique, envie…)
         -- vendu exprès serait sinon racheté à chaque fois, avec ton or et sans clic
-        if id and db().items[id] then
+        local lock = id and db().items[id]
+        local sold = link and (cur[link] or 0) > (before[link] or 0) and soldAt[link]
+        if lock and sold and (type(lock) ~= "table" or (lock.at or 0) <= sold) then
             local price = (GetBuybackItemInfo and select(3, GetBuybackItemInfo(i))) or 0
             if price > GetMoney() then return end
             lastBuy = GetTime()
             BuybackItem(i)
+            soldAt[link] = nil
             local msg = string.format(T("Racheté : %s (objet verrouillé vendu par erreur)"), link)
             WK:Print(msg)
             if UIErrorsFrame then UIErrorsFrame:AddMessage(msg, 0.31, 0.82, 0.77) end
@@ -321,7 +347,10 @@ local function checkBuyback()
         end
     end
 end
-WK:On("MERCHANT_SHOW", function() merchantOpen = true; if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end end)
+WK:On("MERCHANT_SHOW", function()
+    merchantOpen = true; snapshotBuyback()
+    if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end
+end)
 WK:On("MERCHANT_CLOSED", function() merchantOpen = false; if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end end)
 WK:On("MERCHANT_UPDATE", function() C_Timer.After(0.1, checkBuyback) end)
 WK:On("BAG_UPDATE_DELAYED", function() if merchantOpen then C_Timer.After(0.2, checkBuyback) end end)

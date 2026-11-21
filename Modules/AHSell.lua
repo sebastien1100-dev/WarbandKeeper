@@ -249,9 +249,32 @@ end
 local function priceInput(sf)
     return sf and (sf.PriceInput or (sf.GetPriceInput and sf:GetPriceInput()))
 end
+-- Prix tapé à la main : on n'y touche plus (le second essai à 2 s l'écrasait). Les cases de saisie de l'or
+-- sont surveillées une fois ; « userInput » vrai = frappe du joueur, pas notre SetAmount ni celui du jeu.
+local watched = setmetatable({}, { __mode = "k" })
+local function watchTyping(pi)
+    if not pi then return end
+    for _, box in ipairs({ pi.GoldBox, pi.SilverBox, pi.CopperBox, pi.MoneyInputFrame }) do
+        if type(box) == "table" and box.HookScript and not watched[box] then
+            watched[box] = true
+            pcall(box.HookScript, box, "OnTextChanged", function(_, userInput)
+                if userInput and M.sellShown then M.sellShown.typed = true end
+            end)
+        end
+    end
+end
+M.WatchTyping = watchTyping
+-- même objet toujours affiché dans la même fenêtre, prix pas tapé à la main
+local function stillOurs(p)
+    local cur = M.sellShown
+    return cur ~= nil and cur.id == p.id and cur.frame == p.frame and not cur.typed
+end
+M.QuickStillOurs = stillOurs
+
 function M:ApplyQuickSell()
     local p = self.sellPending
     if not p then return end
+    if not stillOurs(p) then self.sellPending = nil return end
     local low, mine = lowestOther(p.id)
     local c = cfg()
     local price, why
@@ -281,6 +304,8 @@ function M:ApplyQuickSell()
     if not (pi and pi.SetAmount) then return end
     -- après le jeu, qui remplit aussi son prix à l'arrivée des résultats
     C_Timer.After(0.15, function()
+        -- entre-temps : autre objet posé, fenêtre changée ou prix tapé à la main -> rien
+        if not stillOurs(p) then return end
         pcall(pi.SetAmount, pi, price)
         for _, fn in ipairs({ "OnPriceChanged", "UpdateTotalPrice", "UpdatePostState", "MarkDirty" }) do
             if p.frame[fn] then pcall(p.frame[fn], p.frame) end
@@ -303,6 +328,8 @@ local function hookSell()
                     if ok then id = v end
                 end
                 if not id then return end
+                M.sellShown = { id = id, frame = frame }
+                watchTyping(priceInput(frame))
                 M.sellPending = { id = id, frame = frame }
                 -- résultats déjà là (objet déjà cherché) : tout de suite ; sinon à leur arrivée
                 if lowestOther(id) then M:ApplyQuickSell() end
