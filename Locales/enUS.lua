@@ -4427,4 +4427,8 @@ WK.Locales.enUS.text = {
     ["%d quête(s) écartée(s) :"] = "%d quest(s) left out:",
     ["plus proposée"] = "no longer offered",
     ["Plus proposée (autre choix ou suite déjà prise)"] = "No longer offered (other choice or follow-up already taken)",
+    ["Ange gardien : sans mal de résurrection"] = "Spirit healer: no resurrection sickness",
+    ["Ange gardien : mal de résurrection %d min"] = "Spirit healer: %d min resurrection sickness",
+    ["Cours-y"] = "Run there",
+    ["Loin : l'ange gardien est plus rapide"] = "Far: the spirit healer is faster",
 }

@@ -3,7 +3,10 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Retour au corps : mort (fantôme), un bandeau dit à quelle distance est le corps et combien de temps il faut
+-- Retour au corps : mort (fantôme), l'épingle à l'écran (UI/NavPin.lua, tête de mort rouge) guide vers le corps
+-- avec le conseil, le temps du trajet et le coût de l'ange gardien (UI:CorpsePinInfo). Le bandeau ne sert plus
+-- que quand l'épingle ne peut pas guider (corps sur un autre continent, position inconnue) ou que l'épingle est
+-- coupée. Autrefois, un bandeau disait à quelle distance est le corps et combien de temps il faut
 -- pour y courir, ce que coûte l'ange gardien (mal de résurrection, usure de l'équipement), conseille l'un ou
 -- l'autre et guide vers le corps (flèche, épingle, trajet du Guide). Le guidage d'avant revient une fois en
 -- vie. Corps : C_DeathInfo.GetCorpseMapPosition, sinon l'endroit de la mort (noté à PLAYER_DEAD).
@@ -61,6 +64,21 @@ function UI:CorpseState()
     local speed = math.max(7, (GetUnitSpeed and GetUnitSpeed("player")) or 0)
     local secs = d / speed
     return { d = d, secs = secs, advice = secs > FAR and "healer" or "corpse", corpse = c }
+end
+
+-- coût court de l'ange gardien (ligne de l'épingle)
+local function healerShort()
+    local lvl = UnitLevel and UnitLevel("player") or 60
+    if lvl <= 10 then return T("Ange gardien : sans mal de résurrection") end
+    return string.format(T("Ange gardien : mal de résurrection %d min"), lvl >= 20 and 10 or (lvl - 10))
+end
+-- lignes de l'épingle du corps : conseil, temps du trajet (sur la distance du trajet d), coût de l'ange
+function UI:CorpsePinInfo(d)
+    local speed = math.max(7, (GetUnitSpeed and GetUnitSpeed("player")) or 0)
+    local secs = d / speed
+    local corpse = secs <= FAR
+    return { secs = secs, time = WK.modules.BoatTimes.Clock(secs),
+             advice = corpse and T("Cours-y") or T("Loin : l'ange gardien est plus rapide"), cost = healerShort() }
 end
 
 local started -- guidage vers le corps déjà lancé pour cette mort (pas relancé s'il a été arrêté)
@@ -144,9 +162,13 @@ function UI:RefreshCorpse()
         return
     end
     local st = UI:CorpseState()
+    -- corps joignable : guidage, l'épingle à l'écran dit tout (pas de bandeau en double)
+    if st and st.corpse and not st.far then startGuide(st.corpse) end
+    local g = G()
+    local pinShows = g:Config().screenPin and g.target and g.target.kind == "corpse"
+    if pinShows then banner:Hide() return end
     banner:Paint(st)
     banner:Show()
-    if st and st.corpse and not st.far and st.advice == "corpse" then startGuide(st.corpse) end
 end
 
 WK:On("PLAYER_DEAD", function()

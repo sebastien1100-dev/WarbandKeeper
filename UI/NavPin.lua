@@ -120,6 +120,7 @@ local function build()
     f.role = UI:Text(f.pill, 10, C.muted)
     f.role:SetPoint("TOP", f.name, "BOTTOM", 0, -2)
     f.dist = UI:Text(f.pill, 12)
+    f.extra = UI:Text(f.pill, 10, C.dim)   -- retour au corps : ce que coûte l'ange gardien
     -- au bord de l'écran : petite flèche tournée vers le lieu
     f.edge = f:CreateTexture(nil, "OVERLAY")
     f.edge:SetTexture(UI.MEDIA .. "guide")
@@ -177,6 +178,16 @@ local function update()
         return
     end
     local r, g, b = UI:Accent()
+    -- retour au corps : tête de mort rouge à la place de l'épingle, conseil, temps du trajet et coût de l'ange
+    local corpse = t.kind == "corpse"
+    if f.corpse ~= corpse then
+        f.corpse = corpse
+        f.body:SetTexture(UI.MEDIA .. (corpse and "skull" or "pin"))
+        f.shadow:SetTexture(UI.MEDIA .. (corpse and "skull" or "pin"))
+        f.icon:SetShown(not corpse)
+        f.key = nil
+    end
+    if corpse then r, g, b = C.negative[1], C.negative[2], C.negative[3] end
     f.body:SetVertexColor(r, g, b, 1)
     f.edge:SetVertexColor(r, g, b, 1)
     f.edge:SetShown(atEdge)
@@ -184,13 +195,25 @@ local function update()
     f.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
     local name, role = G:PlaceParts(t)
     local dist = d and string.format(T("%d m"), math.floor(d)) or ""
-    local key = (atEdge and "e" or "n") .. name .. (role or "") .. dist
+    local extra = ""
+    if corpse and d then
+        local info = UI.CorpsePinInfo and UI:CorpsePinInfo(d)
+        if info then
+            role = info.advice
+            dist = dist .. "  ·  " .. T("env.") .. " " .. info.time
+            extra = info.cost or ""
+        end
+    end
+    local key = (atEdge and "e" or "n") .. name .. (role or "") .. dist .. extra
     if f.key ~= key then
         f.key = key
         f.name:SetText(name)
         f.role:SetText(role or "")
         f.dist:SetText(dist)
         f.dist:SetTextColor(r, g, b, 1)
+        f.extra:SetText(extra)
+        f.extra:ClearAllPoints(); f.extra:SetPoint("TOP", f.dist, "BOTTOM", 0, -2)
+        f.extra:SetShown(not atEdge and extra ~= "")
         f.name:SetShown(not atEdge)
         f.role:SetShown(not atEdge and (role or "") ~= "")
         f.dist:ClearAllPoints()
@@ -202,8 +225,10 @@ local function update()
             local above = (role or "") ~= "" and f.role or f.name
             f.dist:SetPoint("TOP", above, "BOTTOM", 0, -2)
             h = 10 + (f.name:GetStringHeight() or 12) + ((role or "") ~= "" and (f.role:GetStringHeight() or 10) + 2 or 0) + (f.dist:GetStringHeight() or 12) + 2
+                + (extra ~= "" and (f.extra:GetStringHeight() or 10) + 2 or 0)
         end
-        local w = math.max(atEdge and 0 or (f.name:GetStringWidth() or 0), atEdge and 0 or (f.role:GetStringWidth() or 0), f.dist:GetStringWidth() or 0) + 16
+        local w = math.max(atEdge and 0 or (f.name:GetStringWidth() or 0), atEdge and 0 or (f.role:GetStringWidth() or 0),
+            atEdge and 0 or (extra ~= "" and f.extra:GetStringWidth() or 0), f.dist:GetStringWidth() or 0) + 16
         f.pill:SetSize(w, h)
     end
     f.pill.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.82)

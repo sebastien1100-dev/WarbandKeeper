@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.118.2 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Retour au corps : un seul repère au lieu de deux. L'épingle à l'écran devient une tête de mort rouge et donne le conseil (« Cours-y » ou « Loin : l'ange gardien est plus rapide »), la distance par le trajet avec le temps de course (« 767 m · env. 1:04 ») et le mal de résurrection de l'ange gardien. Le bandeau du bas n'apparaît plus que si l'épingle ne peut pas guider (corps sur un autre continent, position inconnue, épingle coupée).
+
 ## v1.118.1 — 21/11/2026
 
 _Un /reload suffit._
