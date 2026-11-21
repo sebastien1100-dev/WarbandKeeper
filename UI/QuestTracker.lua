@@ -398,7 +398,7 @@ local function build()
             v.act:Hide()
         end
         self.actData = a
-        if UI.PlaceQuestActions then UI:PlaceQuestActions() end
+        if UI.PlaceQuestActions then UI:PlaceQuestActions() end -- en combat : remis à PLAYER_REGEN_ENABLED
         -- 2 étapes suivantes
         for i, row in ipairs(v.nexts) do
             local nx = d.nexts[i]
@@ -1065,6 +1065,27 @@ end
 _G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton"] = T("Cibler le monstre de la quête")
 _G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton"] = T("Cibler le monstre de l'objectif suivant")
 _G["BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton"] = T("Utiliser l'objet de la quête")
+-- Les boutons protégés ne sont JAMAIS ancrés à la carte : un cadre protégé ancré à un cadre de l'addon rend
+-- celui-ci protégé en combat (Show / Hide de la carte bloqués, ADDON_ACTION_BLOCKED). Ils sont posés sur
+-- UIParent aux coordonnées écran des cases, hors combat, et recalés par la minuterie des plaques de nom.
+local function overSlot(b, sl)
+    local l, bt = sl:GetLeft(), sl:GetBottom()
+    if not (l and bt) then return false end
+    local k = (sl:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+    local x, y, w, h = l * k, bt * k, (sl:GetWidth() or 28) * k, (sl:GetHeight() or 28) * k
+    if b.px ~= x or b.py ~= y or b.pw ~= w then
+        b.px, b.py, b.pw = x, y, w
+        b:ClearAllPoints(); b:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y); b:SetSize(w, h)
+    end
+    return true
+end
+-- recale les boutons si la carte a bougé (hors combat seulement)
+local function realignActions()
+    if not (card and actT) or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
+    local v = card.tv
+    if actT:IsShown() and v and not overSlot(actT, v.actT) then actT:Hide() end
+    if actI:IsShown() and v and not overSlot(actI, v.actI) then actI:Hide() end
+end
 -- pose les boutons protégés sur les cases de la carte (hors combat)
 function UI.PlaceQuestActions()
     if _G.InCombatLockdown and _G.InCombatLockdown() then actPending = true return end
@@ -1085,8 +1106,9 @@ function UI.PlaceQuestActions()
         actT:SetAttribute("macrotext", "/targetexact " .. a.target.name)
         actT:SetAttribute("type2", "macro")
         actT:SetAttribute("macrotext2", "/targetexact " .. (a.target.name2 or a.target.name))
-        actT:ClearAllPoints(); actT:SetAllPoints(v.actT)
+        actT:SetFrameStrata(card:GetFrameStrata() or "MEDIUM")
         actT:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
+        actT.px = nil
         actT:Show()
     else
         -- plus d'étape à faire : le raccourci clavier ne vise plus l'ancien monstre
@@ -1098,14 +1120,17 @@ function UI.PlaceQuestActions()
         actI.itemID = a.item.id
         actI:SetAttribute("type", "item")
         actI:SetAttribute("item", "item:" .. a.item.id)
-        actI:ClearAllPoints(); actI:SetAllPoints(v.actI)
+        actI:SetFrameStrata(card:GetFrameStrata() or "MEDIUM")
         actI:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
+        actI.px = nil
         actI:Show()
     else
         actI.itemID = nil
         actI:SetAttribute("item", nil)
         actI:Hide()
     end
+    realignActions()
+    if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(0, realignActions) end
 end
 WK:On("PLAYER_REGEN_ENABLED", function() if actPending then UI:PlaceQuestActions() end end)
 
@@ -1192,6 +1217,7 @@ do
         s.acc = s.acc + el
         if s.acc < 0.25 then return end
         s.acc = 0
+        realignActions()
         updateMarks()
     end)
 end

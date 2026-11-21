@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.126.3", date = "21/11/2026",
+        fixed = {
+            "Carte de tournée : plus de message « action bloquée » (Frame:Show) en combat. Les boutons Cibler / Objet ne sont plus accrochés à la carte : ils sont posés par-dessus et suivent la carte quand tu la déplaces (hors combat).",
+        },
+    },
+    {
         version = "1.126.2", date = "21/11/2026",
         fixed = {
             "Carte de tournée : erreur Lua (QuestTracker.lua:382) à l'affichage des boutons Cibler / Objet ; ils s'affichent maintenant.",

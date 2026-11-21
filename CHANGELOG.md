@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.126.3 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte de tournée : plus de message « action bloquée » (Frame:Show) en combat. Les boutons Cibler / Objet ne sont plus accrochés à la carte : ils sont posés par-dessus et suivent la carte quand tu la déplaces (hors combat).
+
 ## v1.126.2 — 21/11/2026
 
 _Un /reload suffit._
