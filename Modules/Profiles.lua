@@ -41,7 +41,9 @@ local KEYS = {
     levelGuide = { follow = true, times = true, acc = true, trainer = true, told = true }, -- préférences seulement -- alerte et niveau ; choix et tournée restent au perso -- réglages du suivi (la quête suivie de chaque perso reste à lui)
     blessings = { chars = true }, -- barre et Salut (la répartition de chaque paladin reste à son perso)
 }
-local SKIP_DEEP = { savedSound = true, savedSoft = true, fishAdded = true, lfgAdded = true } -- état interne, à tout niveau
+-- état interne, à tout niveau (les drapeaux « raccourci déjà ajouté » du micro menu, lfgAdded / fishAdded, sont
+-- gardés dans les profils : sans eux, chaque profil appliqué remettait les raccourcis LFG et Pêche masqués)
+local SKIP_DEEP = { savedSound = true, savedSoft = true }
 
 local function copy(src, skip)
     if type(src) ~= "table" then return src end
@@ -80,6 +82,13 @@ end
 -- Copie -> réglages en place (les sous-clés de données restent celles du compte)
 local function apply(snap, reset)
     local g = WK.DB.global
+    -- profil enregistré avant que les drapeaux du micro menu y soient gardés : les raccourcis ont été ajoutés
+    -- depuis longtemps, ne pas refaire leur ajout (il remettrait LFG et Pêche masqués)
+    local clock = snap and snap.qol and snap.qol.clock
+    if type(clock) == "table" then
+        if clock.lfgAdded == nil then clock.lfgAdded = true end
+        if clock.fishAdded == nil then clock.fishAdded = true end
+    end
     for key, skip in pairs(KEYS) do
         local live = g[key] or {}
         if skip.__only then

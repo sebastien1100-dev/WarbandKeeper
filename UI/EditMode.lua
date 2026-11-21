@@ -14,9 +14,21 @@ local T = function(s) return WK.T(s) end
 local registry, order = {}, {}
 local stopTest -- mode test (plus bas)
 
+-- « Disposition : ce perso » est un choix du perso (WK.DB.char.hudPerChar), pas du compte : avant, le drapeau
+-- était au compte et l'activer sur un perso remettait les HUD des autres à leur place par défaut. Ancien
+-- drapeau du compte : repris pour un perso seulement s'il a déjà sa disposition à lui.
+local function perChar()
+    local ch = WK.DB.char
+    if ch.hudPerChar == nil then
+        local ui = WK.DB.global.settings.ui
+        ch.hudPerChar = (ui.hudPerChar and ch.hud and next(ch.hud) ~= nil) and true or false
+    end
+    return ch.hudPerChar
+end
+UI.HUDPerChar = perChar
 local function store()
     local ui = WK.DB.global.settings.ui
-    if ui.hudPerChar then
+    if perChar() then
         WK.DB.char.hud = WK.DB.char.hud or {}
         return WK.DB.char.hud
     end
@@ -414,10 +426,21 @@ local function buildOverlay()
         magBtn.label:SetText(magnet and T("Aimant : oui") or T("Aimant : non"))
     end, "Les éléments s'alignent sur la grille. Maj enfoncée : placement libre.")
     local perBtn
-    local function perLabel() return WK.DB.global.settings.ui.hudPerChar and T("Disposition : ce perso") or T("Disposition : compte") end
+    local function perLabel() return perChar() and T("Disposition : ce perso") or T("Disposition : compte") end
     perBtn = tb(perLabel(), "secondary", function()
-        local ui = WK.DB.global.settings.ui
-        ui.hudPerChar = not ui.hudPerChar
+        local ch = WK.DB.char
+        local on = not perChar()
+        -- passage à une disposition propre au perso : elle part de celle du compte (rien ne saute)
+        if on and not (ch.hud and next(ch.hud)) then
+            local function deep(t)
+                if type(t) ~= "table" then return t end
+                local o = {}
+                for a, b in pairs(t) do o[a] = deep(b) end
+                return o
+            end
+            ch.hud = deep(WK.DB.global.settings.ui.hud or {})
+        end
+        ch.hudPerChar = on
         perBtn.label:SetText(perLabel())
         UI:HUDReapplyAll()
         if popup then popup.built = nil; popup:Hide() end

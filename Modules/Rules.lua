@@ -121,9 +121,23 @@ function M:Plan(store, accept)
             end
         end
     end
+    -- règle créée par un guide de métier : l'expéditeur garde ce que son propre guide demande (sinon un autre
+    -- artisan qui monte avec le même composant enverrait tout son stock)
+    local myNeeds
+    local function ownGuideNeed(id)
+        if myNeeds == nil then
+            local S = WK.modules.Stash
+            local all = S and S.Needs and S:Needs()
+            myNeeds = all and all[WK:CharKey()] or false
+        end
+        local e = myNeeds and myNeeds[id]
+        return (e and e.prio == 1 and e.n) or 0
+    end
     local plan = {}
     for id, e in pairs(byItem) do
-        local toMove = e.total - (e.rule.keep or 0)
+        local keep = e.rule.keep or 0
+        if e.rule.guide then keep = math.max(keep, ownGuideNeed(id)) end
+        local toMove = e.total - keep
         if toMove > 0 then
             table.sort(e.slots, function(a, b) return a.count > b.count end)
             local ops = {}

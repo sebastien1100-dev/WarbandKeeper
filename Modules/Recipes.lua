@@ -737,7 +737,7 @@ function M:GuideMailRules(prof, key)
     for _, m in ipairs(mats) do
         if m.recipe then -- les recettes s'achètent chez un vendeur : pas de règle d'envoi
         elseif rules[m.itemID] then skipped = skipped + 1
-        else rules[m.itemID] = { to = to, keep = 0 }; added = added + 1 end
+        else rules[m.itemID] = { to = to, keep = 0, guide = true }; added = added + 1 end
     end
     WK.modules.Statistics:UpdateItems()
     WK:NotifyChanged()

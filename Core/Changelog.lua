@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.5", date = "21/11/2026",
+        fixed = {
+            "Règles d'envoi créées par un guide de métier : le perso qui envoie garde ce que son propre guide demande, au lieu d'envoyer tout son stock (vaut pour les règles créées à partir de cette version).",
+            "Profils : changer de profil ne fait plus réapparaître les raccourcis LFG et Mode pêche que tu avais retirés du micro menu.",
+            "Mode édition : « Disposition : ce perso » ne vaut plus que pour le perso où tu l'actives ; les autres gardent leurs éléments où ils étaient. En l'activant, la disposition du perso part de celle du compte (rien ne bouge).",
+        },
+    },
+    {
         version = "1.127.4", date = "21/11/2026",
         fixed = {
             "Marchand : un double clic sur « Acheter », « Tout acheter » ou « Réassort » n'achète plus deux fois ce qui manque (l'achat pas encore arrivé dans les sacs est décompté).",

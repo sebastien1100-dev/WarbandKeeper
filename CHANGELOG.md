@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.127.5 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Règles d'envoi créées par un guide de métier : le perso qui envoie garde ce que son propre guide demande, au lieu d'envoyer tout son stock (vaut pour les règles créées à partir de cette version).
+- Profils : changer de profil ne fait plus réapparaître les raccourcis LFG et Mode pêche que tu avais retirés du micro menu.
+- Mode édition : « Disposition : ce perso » ne vaut plus que pour le perso où tu l'actives ; les autres gardent leurs éléments où ils étaient. En l'activant, la disposition du perso part de celle du compte (rien ne bouge).
+
 ## v1.127.4 — 21/11/2026
 
 _Un /reload suffit._

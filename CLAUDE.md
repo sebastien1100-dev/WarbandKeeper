@@ -218,7 +218,7 @@ Une fenêtre de l'addon collée à une fenêtre du jeu (talents, marchand, HV, c
 
 ## Mode édition
 
-`UI/EditMode.lua` : `UI:RegisterHUD(key, frame, opts)` (position, taille, opacité ; `opts.sample(on)` = aperçu en mode édition, `opts.test()` / `opts.testStop()` = comportement réel pour le bouton « Tester »). `UI:TestHUD()` efface les cadres et joue chaque élément 10 s ; `UI:RegisterHUDTest(start, stop)` pour un élément qui n'est pas placé (bandeau de connexion). Un nouvel élément à l'écran doit avoir son `sample`, et son `test` s'il a une minuterie, un son ou une animation.
+`UI/EditMode.lua` : disposition par perso = `WK.DB.char.hudPerChar` (choix du perso, positions dans `WK.DB.char.hud`, partant de celles du compte à l'activation ; `UI.HUDPerChar`). `UI:RegisterHUD(key, frame, opts)` (position, taille, opacité ; `opts.sample(on)` = aperçu en mode édition, `opts.test()` / `opts.testStop()` = comportement réel pour le bouton « Tester »). `UI:TestHUD()` efface les cadres et joue chaque élément 10 s ; `UI:RegisterHUDTest(start, stop)` pour un élément qui n'est pas placé (bandeau de connexion). Un nouvel élément à l'écran doit avoir son `sample`, et son `test` s'il a une minuterie, un son ou une animation.
 
 ## Fiabilité
 
