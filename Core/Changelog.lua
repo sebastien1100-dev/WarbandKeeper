@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.124.0", date = "21/11/2026",
+        added = {
+            "Quêtes : l'addon apprend les chaînes que la base ne connaît pas (fréquent pour le nouveau contenu de WoW Forever). Une quête proposée par un PNJ juste après lui en avoir rendu une, ou une quête « pas encore proposée » qui le devient après un rendu, est notée comme sa suite. Tes autres persos attendent alors la quête d'avant (« après … »), et un message le signale.",
+            "/wk chaines : la liste des chaînes apprises (à partager pour les ajouter aux corrections de la base).",
+        },
+    },
+    {
         version = "1.123.5", date = "21/11/2026",
         changed = {
             "Fenêtre des quêtes du donjon : une fois sa hauteur réglée avec la poignée, elle garde cette taille. Seul le contenu défile à la molette, la ligne « plus haut / plus bas » et le bouton Tournée restent en bas.",

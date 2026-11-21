@@ -222,6 +222,11 @@ function M:State(q, c)
         end
         if not any then return "locked", first end
     end
+    -- quête d'avant apprise en jeu (WK.DB.global.questChains) quand la base n'en donne aucune
+    if not (q.pre or q.preAll or q.prev) then
+        local ch = WK.DB.global.questChains and WK.DB.global.questChains[q.id]
+        if ch and ch.pre and not done[ch.pre] and self:Get(ch.pre) then return "locked", ch.pre, "learned" end
+    end
     if q.prev then
         local any, first = false, nil
         for _, p in ipairs(q.prev) do
@@ -546,6 +551,12 @@ function M:NoteOffered(npc, offered, titles)
     for _, q in ipairs(self:ByStarter(npc)) do
         local shown = offered[q.id] or (q.name and titles[q.name:lower()]) or (q.nameFR and titles[q.nameFR:lower()])
         if shown then
+            -- pas proposée avant, proposée maintenant, au même niveau, après un rendu : ce rendu la débloquait
+            local was = qs.notOffered[q.id]
+            local last = M.lastTurnIn
+            if was and was.lvl == lvl and last and last.at >= (was.at or 0) and last.id ~= q.id then
+                self:LearnChain(q.id, last.id, "unlock")
+            end
             qs.notOffered[q.id] = nil
         elseif self:ForChar(q, c) then
             local was = qs.notOffered[q.id]
@@ -592,4 +603,68 @@ WK:On("QUEST_GREETING", function()
         if t then titles[t:lower()] = true end
     end
     M:NoteOffered(npcOf(_G.UnitGUID and _G.UnitGUID("npc")), offered, titles)
+end)
+
+---------------------------------------------------------------------------
+-- Chaînes apprises en jeu (point 3) : quand la base ne connaît pas la quête d'avant, l'addon la déduit de ce
+-- que tu fais. WK.DB.global.questChains[n°] = { pre = n°, n = confirmations, at, how } (hors profils, tout le
+-- compte : un perso apprend pour les autres). Deux indices :
+--   « follow » : juste après avoir rendu une quête à un PNJ (moins de 30 s), ce même PNJ propose une quête ;
+--   « unlock » : une quête notée « pas proposée » devient proposée au même niveau après un rendu.
+-- State la dit « locked » (3e valeur « learned ») tant que la quête d'avant n'est pas faite. /wk chaines liste
+-- ce qui a été appris (à envoyer pour l'ajouter aux corrections de la base).
+---------------------------------------------------------------------------
+local MAXCH = 1500
+function M:LearnChain(qid, pre, how)
+    local q = self:Get(qid)
+    if not q or q.pre or q.preAll or q.prev or not pre or pre == qid then return end
+    local g = WK.DB.global
+    g.questChains = g.questChains or {}
+    local ch = g.questChains[qid]
+    if ch and ch.pre == pre then
+        ch.n = (ch.n or 1) + 1; ch.at = _G.time()
+    elseif not ch or (ch.n or 1) <= 1 then
+        g.questChains[qid] = { pre = pre, n = 1, at = _G.time(), how = how }
+        local pq = self:Get(pre)
+        WK:Print(string.format(T("Chaîne apprise : « %s » vient après « %s »."), self:Name(q),
+            pq and self:Name(pq) or ("#" .. pre)))
+    end
+    local n = 0
+    for _ in pairs(g.questChains) do n = n + 1 end
+    if n > MAXCH then
+        local oldK, oldT
+        for k, v in pairs(g.questChains) do if not oldT or (v.at or 0) < oldT then oldK, oldT = k, v.at or 0 end end
+        if oldK then g.questChains[oldK] = nil end
+    end
+    local P = WK.modules.QuestPlan
+    if P then P:Invalidate() end
+end
+function M.ChainList(_)
+    local out = {}
+    for qid, ch in pairs(WK.DB.global.questChains or {}) do
+        table.insert(out, { id = qid, pre = ch.pre, n = ch.n or 1, how = ch.how })
+    end
+    table.sort(out, function(a, b) return a.id < b.id end)
+    return out
+end
+local function npcNow()
+    local guid = _G.UnitGUID and _G.UnitGUID("npc")
+    if type(guid) ~= "string" then return nil end
+    local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
+    return kind == "Creature" and tonumber(id) or nil
+end
+-- PNJ du rendu noté à la fenêtre de récompense (le PNJ est encore là), quête rendue à QUEST_TURNED_IN
+local rewardNpc
+WK:On("QUEST_COMPLETE", function() rewardNpc = npcNow() end)
+WK:On("QUEST_TURNED_IN", function(qid)
+    M.lastTurnIn = { id = qid, at = _G.time(), t = _G.GetTime and _G.GetTime() or 0, npc = rewardNpc }
+end)
+WK:On("QUEST_DETAIL", function()
+    local last = M.lastTurnIn
+    if not last or not last.npc then return end
+    local now = _G.GetTime and _G.GetTime() or 0
+    if now - (last.t or 0) > 30 then return end
+    local qid = _G.GetQuestID and _G.GetQuestID()
+    if not qid or qid == last.id or npcNow() ~= last.npc then return end
+    M:LearnChain(qid, last.id, "follow")
 end)

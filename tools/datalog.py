@@ -77,7 +77,8 @@ def diff(old, new):
             codes.append("z")
         if _lst(o.get(14)) != _lst(n.get(14)) or _lst(o.get(15)) != _lst(n.get(15)):
             codes.append("p")
-        if o.get(2) != n.get(2) or o.get(3) != n.get(3):
+        # nom : anglais changé, ou nom français remplacé (un nom français ajouté là où il manquait ne compte pas)
+        if o.get(2) != n.get(2) or (o.get(3) and o.get(3) != n.get(3)):
             codes.append("n")
         if o.get(6) != n.get(6):
             codes.append("f")

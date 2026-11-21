@@ -78,6 +78,16 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Gear:Scan({ talents = true })
         WK:Print(WK.T("Talents : diagnostic"))
         for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
+    elseif cmd == "chaines" or cmd == "chains" then
+        -- chaînes de quêtes apprises en jeu (Modules/Quests.lua)
+        local Q = WK.modules.Quests
+        local list = Q:ChainList()
+        WK:Print(string.format(WK.T("Chaînes de quêtes apprises : %d"), #list))
+        for _, c in ipairs(list) do
+            local q, p = Q:Get(c.id), Q:Get(c.pre)
+            WK:Print(string.format("  %d <- %d · %s <- %s (x%d)", c.id, c.pre,
+                q and Q:Name(q) or "?", p and Q:Name(p) or "?", c.n))
+        end
     elseif cmd == "suivi" or cmd == "tracker" then
         -- pastilles de la tournée dans le suivi des quêtes du jeu (UI/QuestTracker.lua)
         WK:Print(WK.T("Suivi des quêtes : diagnostic"))

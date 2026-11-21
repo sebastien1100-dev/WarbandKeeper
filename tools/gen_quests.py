@@ -11,6 +11,7 @@ rangées dans la zone de l'entrée du donjon. Les quêtes répétables sont igno
 Données Questie (GPLv3 selon son équipe) : garder la mention en tête du fichier généré et dans
 Options > À propos.
 """
+import json
 import os
 import re
 import sys
@@ -133,6 +134,13 @@ def main(root):
                     return True
         return False
 
+    # relevé wowhead (tools/wowhead_quests.py) : nom français et niveau du jeu, quêtes absentes du site
+    wh = {}
+    whp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "quests", "wowhead.json")
+    if os.path.exists(whp):
+        with open(whp, encoding="utf-8") as f:
+            wh = {int(k): v for k, v in json.load(f).items()}
+    wh_stats = {"fr": 0, "lvl": 0, "missing": 0}
     per_map = {}
     skipped = 0
     for qid, q in quests.items():
@@ -188,6 +196,18 @@ def main(root):
         pre = fx.get("pre", pre)
         preAll = fx.get("preAll", preAll)
         f = fr[qid] if fr else None
+        frname = f[1] if f else None
+        lvl = q[5] or 0
+        w = wh.get(qid)
+        if w and w.get("missing"):
+            wh_stats["missing"] += 1
+        elif w:
+            if not frname and w.get("fr") and w["fr"] != q[1]:
+                frname = w["fr"]
+                wh_stats["fr"] += 1
+            if w.get("lvl") and w["lvl"] != lvl:
+                lvl = w["lvl"]
+                wh_stats["lvl"] += 1
         xpe = xp[qid]
         # fermée quand une de ces quêtes est prise ou faite : exclusives, quête annoncée (introduction),
         # suite de la chaîne (nextQuestInChain), désactivée par, disponible jusqu'à
@@ -200,7 +220,7 @@ def main(root):
         per_map.setdefault(mp, []).append(dict(
             excl=sorted(excl), maxLvl=q[32] or 0, rep=rep if rep and len(rep) == 2 else None,
             bread=q[27] or 0, races=races,
-            id=qid, name=q[1], fr=f[1] if f else None, lvl=q[5] or 0, req=q[4] or 0, side=side,
+            id=qid, name=q[1], fr=frname, lvl=lvl, req=q[4] or 0, side=side,
             cls=q[7] or 0, kind=kind, skill=skill, x=x, y=y, smap=smap, sid=sid,
             xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=fx.get("nxt", q[22] or 0),
             grp=1 if (kind != "d" and fx.get("group", group_quest(q))) else 0))
@@ -308,6 +328,9 @@ def main(root):
     entry = datalog.record(before, text)
     if entry:
         print("journal : +%d quêtes, %d corrigées, %d retirées" % (len(entry["add"]), len(entry["chg"]), len(entry["rem"])))
+    if wh:
+        print("  wowhead : %d noms français ajoutés, %d niveaux corrigés, %d quêtes absentes du site" % (
+            wh_stats["fr"], wh_stats["lvl"], wh_stats["missing"]), file=sys.stderr)
     print("%d quêtes sur %d cartes, %d sans zone (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), len(other), skipped, out, os.path.getsize(out) // 1024))
 
 

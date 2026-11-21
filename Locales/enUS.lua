@@ -4531,4 +4531,6 @@ WK.Locales.enUS.text = {
     ["Une ligne par quête (objectifs et lieu dans l'infobulle)."] = "One line per quest (objectives and place in the tooltip).",
     ["cadres avec un n° de quête : %d (petits et visibles : %d) · %s"] = "frames with a quest ID: %d (small and visible: %d) · %s",
     ["Retour au corps (secours)"] = "Corpse run (fallback)",
+    ["Chaîne apprise : « %s » vient après « %s »."] = "Chain learned: \"%s\" comes after \"%s\".",
+    ["Chaînes de quêtes apprises : %d"] = "Learned quest chains: %d",
 }

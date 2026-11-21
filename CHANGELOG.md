@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.124.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Quêtes : l'addon apprend les chaînes que la base ne connaît pas (fréquent pour le nouveau contenu de WoW Forever). Une quête proposée par un PNJ juste après lui en avoir rendu une, ou une quête « pas encore proposée » qui le devient après un rendu, est notée comme sa suite. Tes autres persos attendent alors la quête d'avant (« après … »), et un message le signale.
+- /wk chaines : la liste des chaînes apprises (à partager pour les ajouter aux corrections de la base).
+
 ## v1.123.5 — 21/11/2026
 
 _Un /reload suffit._
