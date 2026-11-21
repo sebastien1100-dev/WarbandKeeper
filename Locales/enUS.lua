@@ -4270,6 +4270,6 @@ WK.Locales.enUS.text = {
     ["EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête."] =
         "EllesmereUI: at the bottom of its right-click menu. Game tracker: Alt + click a quest.",
     ["Clic droit : menu de la quête"] = "Right click: quest menu",
-    ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; envoyé dans le canal /1."] =
-        "{quest} link, {name} name, {level} level, {zone} zone; sent to channel /1.",
+    ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; prêt dans le canal /1, Entrée pour envoyer."] =
+        "{quest} link, {name} name, {level} level, {zone} zone; ready in channel /1, Enter to send.",
 }

@@ -15,7 +15,7 @@ end
 
 
 ---------------------------------------------------------------------------
--- Chercher un groupe : message envoyé dans le canal 1 (Général) avec le lien de la quête. Modèle modifiable
+-- Chercher un groupe : message prêt dans le canal 1 (Général) avec le lien de la quête. Modèle modifiable
 -- (settings.ui.questLfgText, carte « Message de groupe » de la roue des Quêtes), en anglais par défaut ;
 -- {quest} = lien, {name} = nom, {level} = niveau, {zone} = zone.
 ---------------------------------------------------------------------------
@@ -54,21 +54,17 @@ function UI.QuestGroupMessage(_, qid)
         :gsub("{level}", function() return tostring(lvl or "") end):gsub("{zone}", function() return zone end)
     -- zone inconnue : « () » vide retiré, pas d'espace avant une virgule
     text = text:gsub("%s*%(%s*%)", ""):gsub("%s+([,%.!%?])", "%1"):gsub("%s%s+", " ")
-    -- envoyé dans le canal 1 (Général) ; le clic du menu est un vrai clic, le jeu l'accepte. Refusé (ancien
-    -- client, pas de canal 1) : la boîte de discussion s'ouvre déjà réglée sur /1, Entrée pour envoyer
-    local send = _G.SendChatMessage or (_G.C_ChatInfo and _G.C_ChatInfo.SendChatMessage)
-    local sent = send and pcall(send, text, "CHANNEL", nil, 1)
-    if not sent then
-        if _G.ChatFrame_OpenChat then
-            _G.ChatFrame_OpenChat(text)
-            local eb = _G.ChatEdit_GetActiveWindow and _G.ChatEdit_GetActiveWindow()
-            if eb and eb.SetAttribute then
-                eb:SetAttribute("chatType", "CHANNEL"); eb:SetAttribute("channelTarget", 1)
-                if _G.ChatEdit_UpdateHeader then pcall(_G.ChatEdit_UpdateHeader, eb) end
-            end
-        elseif _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(text) end
-    end
-    return text, sent
+    -- boîte de discussion ouverte, réglée sur le canal 1 (Général), message prêt : Entrée pour envoyer. (Envoyer
+    -- soi-même dans un canal public est une action protégée pour les addons : ADDON_ACTION_BLOCKED, même sur un clic)
+    if _G.ChatFrame_OpenChat then
+        _G.ChatFrame_OpenChat(text)
+        local eb = _G.ChatEdit_GetActiveWindow and _G.ChatEdit_GetActiveWindow()
+        if eb and eb.SetAttribute then
+            eb:SetAttribute("chatType", "CHANNEL"); eb:SetAttribute("channelTarget", 1)
+            if _G.ChatEdit_UpdateHeader then pcall(_G.ChatEdit_UpdateHeader, eb) end
+        end
+    elseif _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(text) end
+    return text
 end
 
 ---------------------------------------------------------------------------

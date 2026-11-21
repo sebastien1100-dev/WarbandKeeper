@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.39", date = "21/11/2026",
+        fixed = {
+            "« Chercher un groupe (chat) » déclenchait une erreur « action bloquée » (le jeu interdit aux addons d'écrire dans un canal public). Le message s'ouvre maintenant prêt dans le canal /1 : Entrée pour l'envoyer.",
+        },
+    },
+    {
         version = "1.128.38", date = "21/11/2026",
         changed = {
             "« Chercher un groupe (chat) » envoie le message tout de suite dans le canal /1 (si le jeu le refuse, la boîte de discussion s'ouvre réglée sur /1).",
