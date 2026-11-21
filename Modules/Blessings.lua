@@ -327,7 +327,9 @@ end
 -- paladin seulement, et membres du groupe seulement (pas les plaques de nom ni la cible) : avant, chaque
 -- effet de chaque unité vue passait ici, pour toutes les classes
 WK:On("UNIT_AURA", function(unit)
+    -- (familiers exclus : « partypet1 », « raidpet3 » commencent aussi par party / raid et remplissaient les tables)
     if type(unit) ~= "string" or not (unit == "player" or unit:find("^party") or unit:find("^raid")) then return end
+    if unit:find("pet", 1, true) then return end
     if not M:On() then return end
     local n = fullName(unit)
     -- compteur (pas l'heure) : un changement reçu dans la même image que la lecture n'est plus ignoré
@@ -468,6 +470,9 @@ local function send(msg, target, prefix)
     -- un même message au groupe n'est pas renvoyé avant 15 s (avant, seul le dernier envoyé était comparé : un
     -- « SELF » identique repartait à chaque changement du groupe, en plus du « HI »). Un changement de répartition
     -- donne un autre message et part tout de suite ; une réponse chuchotée part toujours
+    -- file pleine : le message n'est pas noté comme envoyé (avant, il l'était et le même message, relancé,
+    -- était sauté pendant 15 s : PallyPower ne le recevait jamais)
+    if #queue > 40 then return end
     if not target then
         -- par genre de message (commande + nom visé, + classe pour ASSIGN) : seul un message identique au DERNIER de
         -- son genre est sauté (avant : identique à n'importe quel message des 15 s, un retour A, B, A perdait le
@@ -480,7 +485,6 @@ local function send(msg, target, prefix)
             lastMsg[kind] = { msg = msg, at = t }
         end
     end
-    if #queue > 40 then return end
     table.insert(queue, { msg = msg, target = target, prefix = prefix or PREFIX })
     if not sending then pump() end
 end
@@ -707,12 +711,16 @@ WK:On("PLAYER_REGEN_ENABLED", function()
     if reassignAfterCombat then reassignAfterCombat = false; M.Reassign() end
 end)
 local rosterPending
+-- changement du groupe pendant un combat : répartition et messages faits à la sortie du combat (avant, tout
+-- était refait en plein combat, à chaque arrivée ou départ)
+local rosterAfterCombat = false
 local function onRoster()
     if rosterPending then return end
     rosterPending = true
     C_Timer.After(1.5, function()
         rosterPending = false
         if not M:On() then return end
+        if _G.InCombatLockdown and _G.InCombatLockdown() then rosterAfterCombat = true return end
         local present = prune()
         M:AutoAssign()
         if channel() then
@@ -728,6 +736,9 @@ local function onRoster()
         changed()
     end)
 end
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if rosterAfterCombat then rosterAfterCombat = false; onRoster() end
+end)
 WK:On("PLAYER_LOGIN", function()
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
         pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIX)

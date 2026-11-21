@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.42", date = "21/11/2026",
+        fixed = {
+            "Mode édition : un élément coupé pendant l'édition (par exemple l'encart du feu de camp) gardait son aperçu et restait bloqué jusqu'au /reload.",
+            "Bénédictions : les familiers du groupe passaient dans le suivi des effets et faisaient grossir ses tables ; un message pour PallyPower jeté (file pleine) était cru envoyé et n'était pas renvoyé pendant 15 s.",
+            "Bénédictions : un changement du groupe en plein combat refaisait la répartition et les messages tout de suite ; c'est fait à la sortie du combat.",
+            "Bouton « Buffer le suivant » : en raid, ce qu'il avait lu des effets était effacé toutes les minutes environ ; seules les lectures de plus de 30 s sont maintenant retirées.",
+            "Donjons : l'état du donjon était lu deux fois à chaque changement de vie suivi (cible, boss, plaques).",
+        },
+    },
+    {
         version = "1.128.41", date = "21/11/2026",
         fixed = {
             "Hôtel des ventes : un achat resté sans réponse du jeu bloquait tous les suivants jusqu'à la fermeture. Il est abandonné au bout de 10 s (20 s pour une confirmation) avec un message ; la liste d'achat garde son avancée.",

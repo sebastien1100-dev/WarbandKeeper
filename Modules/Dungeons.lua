@@ -415,8 +415,9 @@ end
 local readable = function(v) return WK.modules.QoL.Readable(v) end
 -- module coupé : ni détection ni apprentissage des boss
 local function active() return WK:FeatureOn("dungeons") and (M.run ~= nil or instanceNow() ~= nil) end
-local function checkUnit(unit)
-    if not unit or not active() then return end
+-- checked : l'état du donjon vient d'être vérifié par l'appelant (UNIT_HEALTH : pas lu une seconde fois)
+local function checkUnit(unit, checked)
+    if not unit or not (checked or active()) then return end
     local okE, ex = pcall(UnitExists, unit)
     if not (okE and readable(ex)) then return end
     local okD, dead = pcall(UnitIsDead, unit)
@@ -436,7 +437,7 @@ healthFrame:SetScript("OnEvent", function(_, _, unit)
     if (WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d")) and active() then
         local perf = WK.perf
         local t0 = perf and debugprofilestop and debugprofilestop()
-        local ok, err = pcall(checkUnit, unit)
+        local ok, err = pcall(checkUnit, unit, true)
         if not ok and WK.RecordError then pcall(WK.RecordError, err, "", "UNIT_HEALTH") end
         if t0 then perf.add("évènement UNIT_HEALTH (donjon)", debugprofilestop() - t0) end
     end

@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.42 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Mode édition : un élément coupé pendant l'édition (par exemple l'encart du feu de camp) gardait son aperçu et restait bloqué jusqu'au /reload.
+- Bénédictions : les familiers du groupe passaient dans le suivi des effets et faisaient grossir ses tables ; un message pour PallyPower jeté (file pleine) était cru envoyé et n'était pas renvoyé pendant 15 s.
+- Bénédictions : un changement du groupe en plein combat refaisait la répartition et les messages tout de suite ; c'est fait à la sortie du combat.
+- Bouton « Buffer le suivant » : en raid, ce qu'il avait lu des effets était effacé toutes les minutes environ ; seules les lectures de plus de 30 s sont maintenant retirées.
+- Donjons : l'état du donjon était lu deux fois à chaque changement de vie suivi (cible, boss, plaques).
+
 ## v1.128.41 — 21/11/2026
 
 _Un /reload suffit._

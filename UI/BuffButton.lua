@@ -96,10 +96,18 @@ local function auraLeft(unit, ids)
     local c = guid and auraCache[guid]
     if c and (c.dirty or now - c.at > 10) then c = nil end
     if guid and not c then
-        if auraCount > 300 then auraCache, auraCount = {}, 0 end
+        -- compté seulement pour un nouveau joueur (avant : à chaque relecture, le cache plein était vidé
+        -- toutes les minutes en raid) ; plein : seules les lectures de plus de 30 s sont retirées
+        if auraCache[guid] == nil then
+            if auraCount >= 300 then
+                for g, e in pairs(auraCache) do
+                    if now - (e.at or 0) > 30 then auraCache[g] = nil; auraCount = auraCount - 1 end
+                end
+            end
+            auraCount = auraCount + 1
+        end
         c = { at = now, res = {} }
         auraCache[guid] = c
-        auraCount = auraCount + 1
     end
     local r = c and c.res[ids]
     if r == nil then

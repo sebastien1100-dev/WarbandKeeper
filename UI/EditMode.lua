@@ -461,6 +461,17 @@ local function buildOverlay()
     popup = buildPopup()
 end
 
+-- aperçus ouverts : refermés à la sortie même si l'élément a été coupé entre-temps (avant, un élément coupé
+-- pendant le mode édition gardait son aperçu, par exemple l'encart du feu de camp, bloqué jusqu'au /reload)
+local sampled = {}
+local function sampleOn(key, r)
+    if r.sample then r.sample(true); sampled[key] = true end
+end
+local function sampleOff(key, r)
+    if sampled[key] and r.sample then sampled[key] = nil; r.sample(false) end
+end
+UI.EditSampled = sampled
+
 function UI:EnterEditMode()
     if InCombatLockdown and InCombatLockdown() then WK:Print(T("Pas en combat.")) return end
     if self.editing then return end
@@ -476,7 +487,7 @@ function UI:EnterEditMode()
         local r = registry[key]
         -- élément coupé dans ses réglages (opts.enabled) : absent du mode édition
         if not r.enabled or r.enabled() then
-            if r.sample then r.sample(true) end
+            sampleOn(key, r)
             boxes[key] = boxes[key] or buildBox(key)
             boxes[key]:SetAllPoints(r.frame)
             boxes[key]:Show()
@@ -489,6 +500,7 @@ function UI:EnterEditMode()
     popup:Hide()
 end
 
+
 function UI:EditRefresh()
     if not self.editing then return end
     for _, key in ipairs(order) do
@@ -497,8 +509,10 @@ function UI:EditRefresh()
             boxes[key] = boxes[key] or buildBox(key)
             boxes[key]:SetAllPoints(r.frame)
             boxes[key]:Show()
-        elseif boxes[key] then
-            boxes[key]:Hide()
+        else
+            -- coupé pendant le mode édition : son aperçu est refermé tout de suite
+            sampleOff(key, r)
+            if boxes[key] then boxes[key]:Hide() end
         end
     end
 end
@@ -509,7 +523,7 @@ function UI:ExitEditMode()
     self.editing = false
     for _, key in ipairs(order) do
         local r = registry[key]
-        if r.sample and (not r.enabled or r.enabled()) then r.sample(false) end
+        sampleOff(key, r)
     end
     if popup then popup:Hide() end
     overlay:Hide()
@@ -531,17 +545,15 @@ stopTest = function()
     if testBar then testBar:Hide() end
     for _, key in ipairs(order) do
         local r = registry[key]
-        if (not r.enabled or r.enabled()) then
-            if r.testStop then pcall(r.testStop) end
-            if r.sample then r.sample(false) end
-        end
+        if (not r.enabled or r.enabled()) and r.testStop then pcall(r.testStop) end
+        sampleOff(key, r)
     end
     for _, t in ipairs(extraTests) do if t.stop then pcall(t.stop) end end
     if UI.editing and overlay then
         overlay:Show()
         for _, key in ipairs(order) do
             local r = registry[key]
-            if (not r.enabled or r.enabled()) and r.sample then r.sample(true) end
+            if not r.enabled or r.enabled() then sampleOn(key, r) end
         end
         UI:EditRefresh()
     end
@@ -554,8 +566,8 @@ function UI:TestHUD()
     for _, key in ipairs(order) do
         local r = registry[key]
         if not r.enabled or r.enabled() then
-            if r.sample then r.sample(false) end
-            if r.test then pcall(r.test) elseif r.sample then r.sample(true) end
+            sampleOff(key, r)
+            if r.test then pcall(r.test) else sampleOn(key, r) end
         end
     end
     for _, t in ipairs(extraTests) do if t.start then pcall(t.start) end end
