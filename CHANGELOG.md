@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.29 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Points /way : un point posé là où tu es (/way seul, Ctrl + clic à tes pieds) ne disparaît plus tout de suite comme « arrivé » ; il compte une fois que tu t'en es éloigné de 25 m.
+
 ## v1.128.28 — 21/11/2026
 
 _Un /reload suffit._

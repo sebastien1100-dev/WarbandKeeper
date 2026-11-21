@@ -241,6 +241,10 @@ function M:Add(map, x, y, title, opts)
         end
     end
     local w = { map = map, x = x, y = y, title = (title and title ~= "") and title or nil, src = opts.src, at = time() }
+    -- point posé là où tu es (/way seul, Ctrl + clic à tes pieds) : pas « arrivé » tout de suite ; il compte
+    -- une fois que tu t'en es éloigné de 25 m (avant, il disparaissait dès la pose)
+    local d0 = self:Distance(w)
+    if d0 and d0 < 20 then w.here = true end
     if not cfg.queue then wipe(list) end
     if opts.now then table.insert(list, 1, w) else table.insert(list, w) end
     while #list > MAX do table.remove(list) end
@@ -257,7 +261,8 @@ function M:Add(map, x, y, title, opts)
         local idx
         for k, v in ipairs(list) do if v == w then idx = k end end
         WK:Print(string.format(T("Point %d : %s (%s %s)"), idx or 1, label(w), self:ZoneName(map), coordsText(w))
-            .. (d and (" · " .. string.format(T("%d m"), math.floor(d + 0.5))) or ""))
+            .. (d and (" · " .. string.format(T("%d m"), math.floor(d + 0.5))) or "")
+            .. (w.here and (" · " .. T("ta position : il comptera une fois que tu t'en seras éloigné")) or ""))
     end
     return w
 end
@@ -358,6 +363,11 @@ ticker:SetScript("OnUpdate", function(s, el)
         return
     end
     local d = M:Distance(list[1])
+    if list[1].here then
+        -- point posé à tes pieds : armé une fois éloigné de 25 m
+        if d and d > 25 then list[1].here = nil end
+        return
+    end
     if d and d < 12 then
         local done = table.remove(list, 1)
         if list[1] then

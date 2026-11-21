@@ -86,6 +86,8 @@ local function arrive(t)
     -- point /way avec d'autres points derrière : la file passe seule au suivant (ni bandeau ni son ni arrêt)
     local W = WK.modules.Waypoints
     if t.kind == "way" and W and W.List and #W:List() > 1 then return end
+    -- point posé à tes pieds, pas encore quitté : pas d'arrivée
+    if t.kind == "way" and t.way and t.way.here then return end
     arrivedFor = t
     local cfg = G:Config()
     showBanner(G:PlaceName(t))

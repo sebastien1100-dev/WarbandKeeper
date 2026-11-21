@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.29", date = "21/11/2026",
+        fixed = {
+            "Points /way : un point posé là où tu es (/way seul, Ctrl + clic à tes pieds) ne disparaît plus tout de suite comme « arrivé » ; il compte une fois que tu t'en es éloigné de 25 m.",
+        },
+    },
+    {
         version = "1.128.28", date = "21/11/2026",
         changed = {
             "Carte de quête à l'écran : trois choix (Tournée, Toujours, Jamais). Par défaut « Tournée » : la carte n'apparaît que pendant une tournée ou le guide de montée, plus pour une quête suivie seule (le journal du jeu le fait déjà).",
