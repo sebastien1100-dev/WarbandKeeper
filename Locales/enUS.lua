@@ -4282,4 +4282,5 @@ WK.Locales.enUS.text = {
     ["Connues par le grimoire (rang inconnu) : "] = "Known from the spellbook (rank unknown): ",
     ["apprise"] = "learned",
     ["Bien nourri\nabsent"] = "No\nWell Fed",
+    ["Champs : "] = "Fields: ",
 }

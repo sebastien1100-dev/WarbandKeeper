@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.49", date = "21/11/2026",
+        fixed = {
+            "Fiche, onglet Armes : toujours « apprise » sans le niveau. Sur WoW Forever, la fenêtre des compétences passe par une autre interface du jeu (C_SkillInfo) que celle que l'addon lisait ; le vrai niveau de chaque arme (65 / 150, 148 / 150…) est maintenant lu. « /wk armes » montre aussi les champs lus.",
+        },
+    },
+    {
         version = "1.128.48", date = "21/11/2026",
         fixed = {
             "Fiche, onglet Armes : le vrai niveau de chaque arme (1 / 150, 65 / 150…) s'affiche au lieu de « apprise » : le jeu écrit « Epées » sans accent et « Masse » au singulier, et ces lignes n'étaient pas reconnues.",

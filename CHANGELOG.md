@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.49 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche, onglet Armes : toujours « apprise » sans le niveau. Sur WoW Forever, la fenêtre des compétences passe par une autre interface du jeu (C_SkillInfo) que celle que l'addon lisait ; le vrai niveau de chaque arme (65 / 150, 148 / 150…) est maintenant lu. « /wk armes » montre aussi les champs lus.
+
 ## v1.128.48 — 21/11/2026
 
 _Un /reload suffit._

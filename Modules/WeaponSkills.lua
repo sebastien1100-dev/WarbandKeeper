@@ -90,13 +90,84 @@ local function knownSpell(id)
     return ok and v or false
 end
 
+-- N° de ligne de compétence du jeu par sort de compétence d'arme (C_SkillInfo de WoW Forever)
+local SKILL_LINE = { [196] = 44, [197] = 172, [198] = 54, [199] = 160, [200] = 229, [201] = 43, [202] = 55,
+    [227] = 136, [264] = 45, [266] = 46, [1180] = 173, [2567] = 176, [5009] = 228, [5011] = 226, [15590] = 473 }
+-- rang et max d'une entrée de C_SkillInfo (noms de champs lus avec prudence : ce client n'en documente aucun)
+local function skillRank(d)
+    if type(d) ~= "table" then return nil end
+    local r = d.rank or d.skillRank or d.currentRank or d.skillLineRank or d.currentLevel or d.skillLevel
+    local mx = d.maxRank or d.skillMaxRank or d.maxLevel or d.skillLineMaxRank or 0
+    if r == nil then
+        -- autre nom de champ : un nombre dont le nom parle de rang ou de niveau (pas le max ni un n°)
+        for k, v in pairs(d) do
+            local lk = type(k) == "string" and k:lower() or ""
+            if type(v) == "number" and not lk:find("max") and not lk:find("id")
+                and (lk:find("rank") or lk:find("level") or lk:find("current") or lk:find("value")) then
+                r = v
+                break
+            end
+        end
+    end
+    return tonumber(r), tonumber(mx) or 0
+end
+
+-- WoW Forever : la fenêtre « Comp. » passe par C_SkillInfo (pas par l'ancien GetSkillLineInfo, absent) ;
+-- avant, l'onglet Armes ne trouvait donc jamais le niveau et disait seulement « apprise »
+local function readSkillInfo(out)
+    local SI = _G.C_SkillInfo
+    if not (SI and (SI.GetSkillLineInfoByID or SI.GetSkillLineInfo)) then return false end
+    local any = false
+    local byName = {}
+    for _, id in ipairs(ORDER) do
+        local line = SKILL_LINE[id]
+        local ok, d = false, nil
+        if line and SI.GetSkillLineInfoByID then ok, d = pcall(SI.GetSkillLineInfoByID, line) end
+        local r, mx = skillRank(ok and d or nil)
+        if r and (r > 0 or mx > 0) and not out[id] then
+            out[id] = { r, mx }; any = true
+            M.lastRead.matched[#M.lastRead.matched + 1] = id
+        end
+        local n = WK.SpellInfo(id)
+        if n then byName[nameKey(n)] = id end
+        for _, alt in ipairs(SKILL_NAMES[id] or {}) do byName[nameKey(alt)] = id end
+    end
+    -- par la liste, au cas où les n° différeraient : rapproché par le nom
+    if SI.GetNumSkillLines and SI.GetSkillLineInfo then
+        local okN, n = pcall(SI.GetNumSkillLines)
+        for i = 1, (okN and tonumber(n) or 0) do
+            local ok, d = pcall(SI.GetSkillLineInfo, i)
+            if ok and type(d) == "table" and d.name then
+                if i == 1 or not M.lastRead.fields then
+                    local keys = {}
+                    for k in pairs(d) do keys[#keys + 1] = tostring(k) end
+                    table.sort(keys)
+                    M.lastRead.fields = table.concat(keys, ",")
+                end
+                local r, mx = skillRank(d)
+                M.lastRead.seen[#M.lastRead.seen + 1] = d.name .. " " .. tostring(r)
+                local id = not d.isHeader and byName[nameKey(d.name)]
+                if id and not out[id] and r then
+                    out[id] = { r, mx }; any = true
+                    M.lastRead.matched[#M.lastRead.matched + 1] = id
+                end
+            end
+        end
+    end
+    return any
+end
+
 function M:Record()
     local skillApi = _G.GetNumSkillLines and _G.GetSkillLineInfo
     M.lastRead = { api = skillApi and true or false, seen = {}, matched = {}, spells = {} }
     if not skillApi then
-        local out, any = {}, false
+        local out = {}
+        local any = readSkillInfo(out)
+        if any then M.lastRead.api = "C_SkillInfo" end
         for _, id in ipairs(ORDER) do
-            if knownSpell(id) then out[id] = { -1, 0 }; any = true; M.lastRead.spells[#M.lastRead.spells + 1] = id end
+            if not out[id] and knownSpell(id) then
+                out[id] = { -1, 0 }; any = true; M.lastRead.spells[#M.lastRead.spells + 1] = id
+            end
         end
         if not any then return end
         local c = WK.DB:Me()
@@ -128,6 +199,8 @@ function M:Record()
         if name and not isHeader then M.lastRead.seen[#M.lastRead.seen + 1] = name .. " " .. tostring(rank) end
         if id then out[id] = { rank or 0, maxRank or 0 }; any = true; M.lastRead.matched[#M.lastRead.matched + 1] = id end
     end
+    -- armes absentes de l'ancienne liste : C_SkillInfo de ce client
+    if readSkillInfo(out) then any = true end
     -- armes absentes de la fenêtre mais connues comme sort : apprises, rang inconnu
     for _, id in ipairs(ORDER) do
         if not out[id] and knownSpell(id) then
@@ -251,7 +324,9 @@ end
 function M:Diag()
     self:Record()
     local d = self.lastRead or {}
-    WK:Print(string.format(T("Armes : fenêtre des compétences %s."), d.api and T("lisible") or T("absente")))
+    WK:Print(string.format(T("Armes : fenêtre des compétences %s."), d.api == "C_SkillInfo" and "C_SkillInfo"
+        or d.api and T("lisible") or T("absente")))
+    if d.fields then WK:Print(T("Champs : ") .. d.fields) end
     if d.seen and #d.seen > 0 then WK:Print(T("Lignes vues : ") .. table.concat(d.seen, ", ")) end
     local found = {}
     for _, id in ipairs(d.matched or {}) do found[#found + 1] = self:Name(id) end
