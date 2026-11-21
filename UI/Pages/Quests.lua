@@ -1867,6 +1867,19 @@ UI:RegisterPage({
         self.tscroll:SetPoint("BOTTOMRIGHT", -4, 90)
         self.tEmpty = UI:Text(self.tscroll.child, 12, C.muted)
         self.tEmpty:SetPoint("TOPLEFT", 12, -8)
+        -- quêtes écartées par la tournée (Modules/QuestPlan.lua) : bandeau sous les étapes, « Les remettre »
+        local ex = CreateFrame("Frame", nil, self.tscroll.child)
+        ex.bg = UI:Rounded(ex, 8, 0, "BACKGROUND", 1)
+        ex.text = UI:Text(ex, 11); ex.text:SetPoint("TOPLEFT", 10, -8); ex.text:SetPoint("RIGHT", -120, 0)
+        if ex.text.SetWordWrap then ex.text:SetWordWrap(true) end
+        ex.btn = UI:Button(ex, T("Les remettre"), 100, 22, "secondary"); ex.btn:SetPoint("TOPRIGHT", -8, -6)
+        ex.btn:SetScript("OnClick", function()
+            local P = QP()
+            if P and ex.ids then P:Keep(ex.ids) end
+            self:RefreshTour()
+        end)
+        ex:Hide()
+        self.tExcl = ex
         local function act(fn)
             return function()
                 local P = QP()
@@ -2009,6 +2022,19 @@ UI:RegisterPage({
         if s.kind == "pick" then txt = T("parler au donneur")
         elseif s.kind == "turn" then
             txt = T("rendre au PNJ")
+            -- suite prise au rendu (suite prévue d'une quête de l'étape)
+            local Qs = WK.modules.Quests
+            local tourNow = P:Tour() or {}
+            local predSet = {}
+            for _, st in ipairs(tourNow.steps or {}) do for _, q in ipairs(st.preds or {}) do predSet[q] = true end end
+            for _, q in ipairs(s.qids or {}) do
+                local qq = Qs and Qs:Get(q)
+                local nq = qq and qq.nxt and Qs:Get(qq.nxt)
+                if nq and predSet[qq.nxt] then
+                    txt = txt .. "  ·  " .. UI:Hex(C.rule) .. string.format(T("+ suite « %s » prise au rendu"), Qs:Name(nq)) .. "|r"
+                    break
+                end
+            end
             -- B : objet à acheter sans marchand connu sur ton continent
             if s.buyMissing and #s.buyMissing > 0 then
                 local parts = {}
@@ -2017,6 +2043,8 @@ UI:RegisterPage({
             end
         elseif s.kind == "buy" then txt = (s.vendor or T("marchand")) .. (s.vendorRole and (" · " .. s.vendorRole) or "")
         elseif s.kind == "trainer" then txt = (s.title and (s.title .. " · ") or "") .. T("apprendre tes sorts")
+        elseif s.kind == "hearth" then txt = T("utilise ta pierre de foyer") .. ((s.gain or 0) > 0 and (" · " .. string.format(T("gagne %d min"), math.max(1, math.floor(s.gain / 60 + 0.5)))) or "")
+        elseif s.kind == "flight" then txt = T("va au maître de vol") .. ((s.gain or 0) > 0 and (" · " .. string.format(T("gagne %d min"), math.max(1, math.floor(s.gain / 60 + 0.5)))) or "")
         else
             local objs = P:StepObjectives(s)
             local left = {}
@@ -2071,7 +2099,8 @@ UI:RegisterPage({
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(W - 14)
             local past = tour and i < idx
             local cur = tour and i == idx
-            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { ar, ag, ab }
+            local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive)
+                or ((s.kind == "trainer" or s.kind == "buy" or s.kind == "hearth" or s.kind == "flight") and C.info) or { ar, ag, ab }
             r.dot:SetVertexColor(col[1], col[2], col[3], 1)
             r.num:SetText(tostring(i))
             r.num:SetTextColor(unpack(past and C.text or C.onAccent))
@@ -2087,6 +2116,28 @@ UI:RegisterPage({
         end
         self.tEmpty:SetShown(#steps == 0)
         self.tEmpty:SetText(T("Aucune étape : coche des quêtes dans « Quêtes de ma zone »."))
+        -- quêtes écartées
+        local exl = data.excluded or {}
+        local ex = self.tExcl
+        if #exl > 0 then
+            local parts, ids = {}, {}
+            for _, e in ipairs(exl) do
+                table.insert(parts, UI:Hex(C.text) .. (e.title or ("#" .. e.id)) .. "|r (" .. e.reason .. ")")
+                table.insert(ids, e.id)
+            end
+            ex.ids = ids
+            ex.text:SetText(string.format(T("%d quête(s) écartée(s) :"), #exl) .. " " .. table.concat(parts, ", "))
+            ex.bg:SetColor(C.warning[1], C.warning[2], C.warning[3], 0.12)
+            ex.text:SetTextColor(C.warning[1] * 0.6 + 0.4, C.warning[2] * 0.6 + 0.4, C.warning[3] * 0.6 + 0.4)
+            ex:ClearAllPoints(); ex:SetPoint("TOPLEFT", 6, -(y + 4)); ex:SetWidth(W - 26)
+            ex.text:SetWidth(W - 26 - 130)
+            local h = math.max(34, (ex.text:GetStringHeight() or 14) + 16)
+            ex:SetHeight(h)
+            ex:Show()
+            y = y + h + 10
+        else
+            ex:Hide()
+        end
         self.tscroll.child:SetSize(W - 14, math.max(y, 30))
         if self.tscroll.UpdateBar then self.tscroll:UpdateBar() end
         -- boutons
@@ -2148,7 +2199,8 @@ UI:RegisterPage({
                 local b = stepPin(mc, n)
                 b.step, b.idx = s, i
                 b:SetSize(size, size); b.edge:SetSize(size + 4, size + 4)
-                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive) or ((s.kind == "trainer" or s.kind == "buy") and C.info) or { ar, ag, ab }
+                local col = (past and C.dim) or (s.kind == "pick" and C.gold) or (s.kind == "turn" and C.positive)
+                or ((s.kind == "trainer" or s.kind == "buy" or s.kind == "hearth" or s.kind == "flight") and C.info) or { ar, ag, ab }
                 b:ClearAllPoints(); b:SetPoint("CENTER", mc.area, "TOPLEFT", x, -y)
                 b.dot:SetVertexColor(col[1], col[2], col[3], 1)
                 b.num:SetText(tostring(i)); b.num:SetTextColor(unpack(past and C.text or C.onAccent))

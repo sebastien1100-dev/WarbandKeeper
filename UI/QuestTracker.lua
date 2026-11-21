@@ -260,8 +260,9 @@ local function build()
                 local cnt = need > 0 and string.format("  %d/%d", o.have or 0, need) or ""
                 -- texte du jeu « Murloc : 0/12 personnages tués » : le nom seul, le compte à part
                 local name = tostring(o.name or ""):gsub("%s*:%s*%d+%s*/%s*%d+.*$", "")
-                if o.done then fs:SetText(UI:Hex(C.positive) .. name .. cnt .. "|r")
-                else fs:SetText(name .. UI:Hex(C.muted) .. cnt .. "|r") end
+                local qn = o.quest and ("  " .. UI:Hex(C.dim) .. "· " .. o.quest .. "|r") or ""
+                if o.done then fs:SetText(UI:Hex(C.positive) .. name .. cnt .. "|r" .. qn)
+                else fs:SetText(name .. UI:Hex(C.muted) .. cnt .. "|r" .. qn) end
                 fs:Show()
                 y = y - math.max(15, (fs:GetStringHeight() or 13) + 2)
             else

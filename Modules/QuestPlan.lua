@@ -223,17 +223,29 @@ local function objTime(qid, logged)
     return s
 end
 
+local excluded -- plus bas
 function M:Build()
     local coins = self:Coins()
     if memo.build and memo.coins == coins then return self:CopyTour(memo.build) end
     local t = self:BuildNow(coins)
+    -- quêtes trop chères en temps pour leur XP (ou sur un autre continent) : retirées, la tournée est refaite
+    local me = G():PlayerPos()
+    local ex = excluded(t, me)
+    if #ex > 0 then
+        local skip = {}
+        for _, e in ipairs(ex) do skip[e.id] = true end
+        t = self:BuildNow(coins, skip)
+        t.excluded = ex
+    end
     memo.build = t
     return self:CopyTour(t)
 end
 function M:CopyTour(t)
     local steps = {}
     for i, s in ipairs(t.steps) do steps[i] = s end
-    return { steps = steps, idx = 1, start = time(), secs = t.secs, meters = t.meters,
+    local ex
+    if t.excluded then ex = {}; for i, e in ipairs(t.excluded) do ex[i] = { id = e.id, title = e.title, reason = e.reason } end end
+    return { steps = steps, idx = 1, start = time(), secs = t.secs, meters = t.meters, excluded = ex,
         gained0 = WK.modules.XP and WK.modules.XP.session and WK.modules.XP.session.gained or 0, turned = 0 }
 end
 -- Suites prévues (B) : la quête qui suit une quête cochée (q.nxt), si elle se fait dans la zone et que son
@@ -296,8 +308,9 @@ local function nearestVendor(item, from, alt)
 end
 M.NearestVendor = nearestVendor
 
-local DO_JOIN = 140 -- camps à moins de 140 m : une seule étape « faire »
-function M:BuildNow(coins)
+local DO_JOIN = 220 -- camps à moins de 220 m : une seule étape « faire » (objectifs de plusieurs quêtes ensemble)
+function M:BuildNow(coins, skip)
+    skip = skip or {}
     local nodes = {}
     -- les nœuds ne se regroupent qu'entre quêtes de même profondeur (quête cochée, suite, suite de suite) :
     -- sinon une suite prise au rendu formerait une boucle d'ordre (rendre avant de prendre avant de rendre)
@@ -318,7 +331,7 @@ function M:BuildNow(coins)
     local here = G():PlayerPos()
     local list, zone = {}, nil
     for _, k in ipairs(coins) do
-        for _, e in ipairs(k.quests) do if e.picked then table.insert(list, e); zone = zone or k.map end end
+        for _, e in ipairs(k.quests) do if e.picked and not skip[e.id] then table.insert(list, e); zone = zone or k.map end end
     end
     zone = WK.modules.Quests:PlayerZone() or zone
     for _, n in ipairs(zone and predicted(list, zone) or {}) do table.insert(list, n) end
@@ -477,8 +490,164 @@ function M:BuildNow(coins)
             vendorRole = n.vendor and select(2, Q():VendorName(n.vendor)) or nil, buyMissing = n.buyMissing })
         prev = n
     end
+    steps = M.AddTravel(steps, me)
+    total = 0
+    for _, s in ipairs(steps) do total = total + (s.secs or 0) end
     return { steps = steps, idx = 1, start = time(), secs = math.floor(total), meters = math.floor(travel), returns = returns,
-        gained0 = WK.modules.XP and WK.modules.XP.session and WK.modules.XP.session.gained or 0, turned = 0 }
+        gained0 = WK.modules.XP and WK.modules.XP.session and WK.modules.XP.session.gained or 0, turned = 0, list = list }
+end
+
+---------------------------------------------------------------------------
+-- Foyer et vols : sur un long trajet entre deux étapes (plus de 1,5 km), une étape « Foyer » quand la pierre
+-- est liée près de l'arrivée, ou « Vol » entre deux maîtres de vol connus, si elle fait gagner au moins 1 min
+-- et un quart du temps à pied. Une seule pierre de foyer par tournée (recharge d'une heure).
+---------------------------------------------------------------------------
+local FLY_SPEED = 30   -- m/s en vol (estimation, sans durée apprise)
+local function toPoint(c, wx, wy)
+    local B = WK.modules.BoatLines
+    if not (B and B.ToMap) then return nil end
+    local ok, map, x, y = pcall(B.ToMap, B, c, wx, wy)
+    if not (ok and map and type(x) == "number" and type(y) == "number") then return nil end
+    local p = { map = map, x = x / 100, y = y / 100, cont = c, wx = wx, wy = wy }
+    return p
+end
+local function hearthReady()
+    local cd = C_Container and C_Container.GetItemCooldown or GetItemCooldown
+    if not cd then return true end
+    local ok, start, dur = pcall(cd, 6948)
+    if not ok or not start or start == 0 then return true end
+    return (start + (dur or 0)) - (GetTime and GetTime() or 0) < 60
+end
+function M.AddTravel(steps, me)
+    if #steps == 0 then return steps end
+    local c = WK.DB:Me() or {}
+    local F = WK.modules.Flight
+    local data = F and F.BoardData and F:BoardData()
+    local hearthUsed = false
+    local out, prev = {}, me
+    for _, s in ipairs(steps) do
+        local p = point(s.map, s.x, s.y)
+        local d = prev and dist(prev, p) or 0
+        if prev and d > 1500 and d < 100000 then
+            local walk = d / SPEED
+            local best
+            -- foyer
+            local h = c.hearth
+            if not hearthUsed and h and h.cont == p.cont and h.wx and hearthReady() then
+                local hp = { cont = h.cont, wx = h.wx, wy = h.wy }
+                local after = math.sqrt((h.wx - p.wx) ^ 2 + (h.wy - p.wy) ^ 2)
+                local secs = 12 + after / SPEED
+                if after < 600 and walk - secs > 60 and secs < walk * 0.75 then
+                    local hpt = toPoint(hp.cont, hp.wx, hp.wy)
+                    if hpt then best = { kind = "hearth", p = hpt, secs = secs, gain = walk - secs, title = h.name } end
+                end
+            end
+            -- vol entre deux relais connus
+            if data and prev.cont == p.cont then
+                local function nearestKnown(q, maxd)
+                    local bn, bd
+                    for _, n in ipairs(data.list) do
+                        if n.known and n.fm and n.c == q.cont then
+                            local dd = math.sqrt((n.x - q.wx) ^ 2 + (n.y - q.wy) ^ 2)
+                            if dd < maxd and (not bd or dd < bd) then bn, bd = n, dd end
+                        end
+                    end
+                    return bn, bd
+                end
+                local a, da = nearestKnown(prev, 700)
+                local b, db = nearestKnown(p, 900)
+                if a and b and a ~= b then
+                    for _, dd in ipairs(F:Destinations(data, a)) do
+                        if dd.node == b then
+                            local fly = dd.secs or (dd.len / FLY_SPEED)
+                            local secs = da / SPEED + 10 + fly + db / SPEED
+                            if walk - secs > 60 and secs < walk * 0.75 and (not best or walk - secs > best.gain) then
+                                local fa = b.fm
+                                best = { kind = "flight", p = point(a.fm.map, a.fm.x, a.fm.y), secs = secs, gain = walk - secs,
+                                    title = b.name, dest = point(fa.map, fa.x, fa.y), from = a.name }
+                            end
+                            break
+                        end
+                    end
+                end
+            end
+            if best then
+                if best.kind == "hearth" then hearthUsed = true end
+                table.insert(out, { kind = best.kind, qids = {}, map = best.p.map, x = best.p.x, y = best.p.y,
+                    secs = math.floor(best.secs), gain = math.floor(best.gain), title = best.title,
+                    dest = best.dest and { map = best.dest.map, x = best.dest.x, y = best.dest.y } or nil, next = { map = s.map, x = s.x, y = s.y } })
+                -- l'étape suivante part de l'arrivée : son temps de marche devient celui depuis l'arrivée
+                s.secs = math.max(10, (s.secs or 0) - math.floor(walk))
+            end
+        end
+        table.insert(out, s)
+        prev = p
+    end
+    return out
+end
+
+---------------------------------------------------------------------------
+-- Quêtes écartées : une quête cochée qui coûte beaucoup de temps (détour + objectifs) pour peu d'XP, comparée
+-- à la moyenne de la tournée, ou dont une étape est sur un autre continent, est retirée de la tournée et dite
+-- (bandeau « quêtes écartées », « Les remettre » = keep[perso][quête]). Jamais une quête du journal.
+---------------------------------------------------------------------------
+excluded = function(t, me)
+    local keep = (M:Config().keep or {})[WK:CharKey()] or {}
+    local steps = t.steps
+    local function len(skipQ)
+        local s, prev = 0, me
+        for _, st in ipairs(steps) do
+            local only = #st.qids == 1 and st.qids[1] == skipQ
+            if not only then
+                local p = point(st.map, st.x, st.y)
+                if prev then local d = dist(prev, p); s = s + (d < 100000 and d or 0) end
+                prev = p
+            end
+        end
+        return s
+    end
+    local base = len(nil)
+    local xpAll = 0
+    for _, e in ipairs(t.list or {}) do xpAll = xpAll + (e.xp or 0) end
+    local rate = (t.secs or 0) > 0 and xpAll / t.secs or 0
+    -- continent de la tournée : celui de la plupart de ses étapes (pas celui du perso, qui peut préparer
+    -- la tournée d'une autre zone)
+    local count, main, best = {}, nil, 0
+    for _, st in ipairs(steps) do
+        local p = point(st.map, st.x, st.y)
+        if p.cont then count[p.cont] = (count[p.cont] or 0) + 1; if count[p.cont] > best then main, best = p.cont, count[p.cont] end end
+    end
+    local out = {}
+    for _, e in ipairs(t.list or {}) do
+        if not e.inLog and not e.predicted and not keep[e.id] then
+            local far = false
+            for _, st in ipairs(steps) do
+                for _, q in ipairs(st.qids) do
+                    if q == e.id and main then
+                        local p = point(st.map, st.x, st.y)
+                        if p.cont and p.cont ~= main then far = true end
+                    end
+                end
+            end
+            local cost = (base - len(e.id)) / SPEED + objTime(e.id, false)
+            if far then
+                table.insert(out, { id = e.id, title = e.title, reason = T("autre continent") })
+            elseif rate > 0 and cost > 360 and (e.xp or 0) / cost < rate * 0.35 then
+                table.insert(out, { id = e.id, title = e.title, reason = string.format(T("+%d min pour %d XP"), math.floor(cost / 60 + 0.5), e.xp or 0) })
+            end
+        end
+    end
+    return out
+end
+function M:Keep(ids)
+    local c = self:Config()
+    local k = WK:CharKey()
+    c.keep = c.keep or {}
+    c.keep[k] = c.keep[k] or {}
+    for _, id in ipairs(ids or {}) do c.keep[k][id] = true end
+    self:Invalidate()
+    if self:Tour() then self:Reorder() end
+    WK:NotifyChanged()
 end
 
 -- D · Sur ton chemin : quête de la zone pas dans la tournée (nouvelle depuis le calcul, ou un peu haute) dont le
@@ -709,6 +878,7 @@ function M:Reorder()
     self:Invalidate()
     local n = self:Build()
     n.start, n.gained0, n.turned = keep.start, keep.gained0, keep.turned
+    n.list = nil
     n.zone = self:Config().planZone or WK.modules.Quests:PlayerZone()
     self:Config().tour[WK:CharKey()] = n
     self.lastKey = nil
@@ -748,6 +918,14 @@ function M:StepDone(s)
         if not open then return true end
         for _, it in ipairs(s.items or {}) do if Q():ItemCount(it.id) < (it.need or 1) then return false end end
         return true
+    elseif s.kind == "hearth" or s.kind == "flight" then
+        -- arrivé (près du foyer ou du relais d'arrivée), ou déjà près de l'étape suivante (fait autrement)
+        local me = G():PlayerPos()
+        if not me then return false end
+        local goal = s.kind == "flight" and s.dest or s
+        if goal and dist(me, point(goal.map, goal.x, goal.y)) < 400 then return true end
+        if s.next and dist(me, point(s.next.map, s.next.x, s.next.y)) < 400 then return true end
+        return false
     elseif s.kind == "pick" then
         -- prise, ou déjà rendue (sinon la tournée restait bloquée sur une quête finie ailleurs)
         for _, q in ipairs(s.qids) do if not inLog(q) and not turned(q) then return false end end
@@ -793,6 +971,8 @@ end
 
 -- Titre d'une étape ; colored = nom de chaque quête à la couleur de son avancement
 function M:StepTitle(s, colored)
+    if s.kind == "hearth" then return string.format(T("Foyer » %s"), s.title or T("ton auberge")) end
+    if s.kind == "flight" then return string.format(T("Vol » %s"), s.title or "?") end
     if s.kind == "trainer" then
         return string.format(T("Maître de classe : %d sort(s) à apprendre"), s.spells or 0)
     end
@@ -833,10 +1013,12 @@ end
 function M:StepObjectives(s)
     local out = {}
     if s.kind ~= "do" then return out end
+    local multi = #s.qids > 1
     for _, q in ipairs(s.qids) do
         if inLog(q) then
+            local qn = multi and Q():Title(q) or nil
             for _, o in ipairs(Q():Objectives(q)) do
-                table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done })
+                table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done, quest = qn })
             end
         end
     end

@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.118.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Tournée de quêtes plus maline : les objectifs de plusieurs quêtes proches (jusqu'à env. 200 m) sont faits dans la même étape ; sur la carte à l'écran, chaque objectif dit à quelle quête il sert.
+- Tournée : sur un long trajet entre deux étapes, une étape « Foyer » est ajoutée quand ta pierre est liée près de l'arrivée (et prête), ou « Vol » entre deux maîtres de vol connus, si elle fait gagner au moins 1 min et un quart du temps à pied (« gagne N min »). Elle se coche à l'arrivée, ou si tu es déjà près de l'étape suivante.
+- Tournée : les quêtes cochées qui coûtent trop de temps pour leur XP (comparé au reste de la tournée), ou sur un autre continent, sont écartées ; un bandeau sous les étapes les nomme avec la raison (« +14 min pour 450 XP »), et « Les remettre » les réintègre.
+- Tournée : une étape de rendu annonce la suite prise au même moment (« + suite … prise au rendu »).
+
 ## v1.117.0 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
