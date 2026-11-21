@@ -62,6 +62,9 @@ M.Destination = destination
 
 local running = false
 local queue, done, full
+-- n° du passage en cours : une étape d'un ancien passage (banque fermée puis rouverte très vite, son minuteur
+-- encore en route) s'arrête net au lieu de déposer en même temps que le nouveau
+local gen = 0
 
 local function finish()
     running = false
@@ -86,20 +89,22 @@ local function finish()
     end
 end
 
-local function step()
-    if not running then return end
+local step
+local function stepOf(g) return function() step(g) end end
+step = function(g)
+    if not running or g ~= gen then return end
     local job = table.remove(queue, 1)
     if not job then return finish() end
-    if full[job.target] then return step() end
+    if full[job.target] then return step(g) end
     -- la case doit encore contenir l'objet prévu (sacs bougés depuis le plan) : sinon on la passe
     local cur, n, locked = WK.Container.Info(job.op.bag, job.op.slot)
-    if cur ~= job.itemID or locked then return step() end
+    if cur ~= job.itemID or locked then return step(g) end
     -- pile changée depuis le plan : jamais plus que prévu, et le décompte suit ce qui part vraiment
-    if not WK.modules.Rules:AdjustOp(job.op, n) then return step() end
+    if not WK.modules.Rules:AdjustOp(job.op, n) then return step(g) end
     local bag, slot = destination(job.target, job.itemID, job.op.count)
     if not bag then
         full[job.target] = true
-        return step()
+        return step(g)
     end
     WK.modules.Rules:PickUp(job.op)
     WK.Container.Pickup(bag, slot)
@@ -112,7 +117,7 @@ local function step()
         at = _G.GetTime and _G.GetTime() or 0 }
     done[job.target] = done[job.target] or {}
     done[job.target][job.itemID] = (done[job.target][job.itemID] or 0) + job.op.count
-    C_Timer.After(STEP_DELAY, step)
+    C_Timer.After(STEP_DELAY, stepOf(g))
 end
 
 -- Nombre d'objets des sacs qui seraient déposés.
@@ -158,11 +163,12 @@ function M:Run()
         end
     end
     running = true
-    step()
+    gen = gen + 1
+    step(gen)
 end
 
 WK:On("BANKFRAME_OPENED", function() C_Timer.After(0.6, function() M:Run() end) end)
-WK:On("BANKFRAME_CLOSED", function() running = false end)
+WK:On("BANKFRAME_CLOSED", function() running = false; gen = gen + 1 end)
 
 -- Gestion des règles
 -- from : clé du perso qui dépose (nil = tous les persos).

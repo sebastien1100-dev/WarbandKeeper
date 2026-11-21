@@ -611,6 +611,33 @@ function M:PruneList(name)
     if self.OnProgress then self:OnProgress() end
     return n
 end
+-- Demande de prix (« quote ») ou confirmation (« wait ») sans réponse du jeu : abandonnée au bout de 10 s
+-- (20 s pour une confirmation), sinon tous les achats suivants restaient bloqués jusqu'à la fermeture de l'HV
+local STUCK = { quote = 10, wait = 20 }
+function M.Stamp(_, b, phase)
+    b.phase, b.at = phase, _G.GetTime and _G.GetTime() or 0
+    local my, at = b, b.at
+    if _G.C_Timer and STUCK[phase] then
+        _G.C_Timer.After(STUCK[phase] + 0.2, function()
+            if M.buy == my and my.phase == phase and my.at == at then M:Unstick() end
+        end)
+    end
+end
+function M:Stuck(b)
+    b = b or self.buy
+    local lim = b and STUCK[b.phase or ""]
+    return lim ~= nil and (_G.GetTime and _G.GetTime() or 0) - (b.at or 0) >= lim
+end
+function M:Unstick()
+    local b = self.buy
+    if not b then return end
+    local A = AH()
+    if A and A.CancelCommoditiesPurchase then pcall(A.CancelCommoditiesPurchase) end
+    WK:Print(T("Pas de réponse de l'hôtel des ventes : demande abandonnée, reclique pour recommencer."))
+    -- liste d'achat en cours : son avancée est gardée
+    self.buy = b.list and { list = b.list, skip = b.skip, spent = b.spent, count = b.count } or nil
+    if self.OnProgress then self:OnProgress() end
+end
 function M:CancelBuy()
     local A = AH()
     if self.buy and self.buy.phase == "confirm" and A and A.CancelCommoditiesPurchase then pcall(A.CancelCommoditiesPurchase) end
@@ -626,13 +653,17 @@ function M:BuyStep()
     local b = self.buy
     if b and b.phase == "confirm" then
         if not self:DearCheck(b) then return end
-        b.phase = "wait"
+        self:Stamp(b, "wait")
         local ok = pcall(A.ConfirmCommoditiesPurchase, b.id, b.qty)
         if not ok then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
         if self.OnProgress then self:OnProgress() end
         return
     end
-    if b and (b.phase == "quote" or b.phase == "wait") then return end -- réponse du serveur attendue
+    -- réponse du serveur attendue (abandonnée si elle tarde trop)
+    if b and (b.phase == "quote" or b.phase == "wait") then
+        if not self:Stuck(b) then return end
+        self:Unstick()
+    end
     self:QuoteNext(name, true)
 end
 
@@ -667,7 +698,8 @@ function M:QuoteNext(name, fromClick)
         if self.OnProgress then self:OnProgress() end
         return
     end
-    self.buy.id, self.buy.qty, self.buy.phase = id, qty, "quote"
+    self.buy.id, self.buy.qty = id, qty
+    self:Stamp(self.buy, "quote")
     local ok = pcall(A.StartCommoditiesPurchase, id, qty)
     if not ok then
         self.buy.phase = nil

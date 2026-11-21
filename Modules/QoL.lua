@@ -413,6 +413,7 @@ end
 ---------------------------------------------------------------------------
 local merchantOpen = false
 local merchantAt = 0
+local merchantSeen = false -- fenêtre du marchand déjà vue affichée pendant cette visite
 -- Marchand encore là : nos évènements, et la fenêtre du jeu affichée (passé le premier instant de l'ouverture)
 -- en secours si la fermeture n'a pas été signalée. Sans ça, la vente des gris pouvait continuer hors
 -- marchand : UseContainerItem aurait équipé une arme ou une armure grise.
@@ -420,7 +421,12 @@ local function atMerchant()
     if not merchantOpen then return false end
     local mf = _G.MerchantFrame
     local now = _G.GetTime and _G.GetTime() or 0
-    if mf and mf.IsShown and not mf:IsShown() and now - merchantAt > 1.5 then merchantOpen = false return false end
+    if mf and mf.IsShown then
+        -- fenêtre déjà vue affichée puis cachée : fermée tout de suite ; sinon (juste après l'ouverture, elle
+        -- n'est pas toujours encore là) on attend 1,5 s avant de conclure
+        if mf:IsShown() then merchantSeen = true
+        elseif merchantSeen or now - merchantAt > 1.5 then merchantOpen = false return false end
+    end
     return true
 end
 M.AtMerchant = atMerchant
@@ -646,6 +652,7 @@ end
 WK:On("MERCHANT_SHOW", function()
     merchantOpen = true
     merchantAt = _G.GetTime and _G.GetTime() or 0
+    merchantSeen = false
     local keepOpen = IsShiftKeyDown and IsShiftKeyDown()
     C_Timer.After(0.2, function()
         if not merchantOpen then return end

@@ -333,12 +333,26 @@ WK:On("MAIL_SEND_INFO_UPDATE", function()
     -- toujours remplacé, vide compris : un objet joint puis retiré ne doit plus être crédité au destinataire
     manualSnap = any and snap or {}
 end)
+local function bagCount(id)
+    local f = (_G.C_Item and _G.C_Item.GetItemCount) or _G.GetItemCount
+    local ok, n = pcall(f or function() return 0 end, id)
+    return ok and tonumber(n) or 0
+end
+local function creditManual(p)
+    M:Credit(p.to, p.content)
+    if WK.modules.Journal then WK.modules.Journal:MailSent(p.to, p.content) end
+end
 function M.OnSendMail(to)
     if sending then return end
     local content, any = readAttached()
     if not any then content = manualSnap end
     if type(to) == "string" and to ~= "" and next(content) then
-        manualPending = { to = M:Recipient(to), content = content }
+        -- nombre dans les sacs au moment de l'envoi : sert à vérifier le départ si la boîte est fermée avant
+        -- la confirmation du jeu (pièces jointes encore comptées dans les sacs à cet instant)
+        local before = {}
+        for id in pairs(content) do before[id] = bagCount(id) end
+        manualPending = { to = M:Recipient(to), content = content, before = before,
+            at = _G.GetTime and _G.GetTime() or 0 }
     end
 end
 if _G.hooksecurefunc and _G.SendMail then
@@ -348,8 +362,7 @@ M.ManualPending = function() return manualPending end
 
 WK:On("MAIL_SEND_SUCCESS", function()
     if not sending and manualPending then
-        M:Credit(manualPending.to, manualPending.content)
-        if WK.modules.Journal then WK.modules.Journal:MailSent(manualPending.to, manualPending.content) end
+        creditManual(manualPending)
         manualPending, manualSnap = nil, {}
     end
     if sending then
@@ -541,7 +554,24 @@ end
 
 local function mailClosed()
     wipe(queue); sending = false; afterTake = nil
-    manualPending, manualSnap = nil, {}
+    manualSnap = {}
+    -- envoi à la main pas encore confirmé (boîte fermée tout de suite après « Envoyer ») : gardé ; si la
+    -- confirmation n'arrive pas dans les 3 s, le départ est vérifié dans les sacs (avant, il n'était pas crédité)
+    local p = manualPending
+    if p and _G.C_Timer then
+        _G.C_Timer.After(3, function()
+            if manualPending ~= p then return end
+            manualPending = nil
+            local now = _G.GetTime and _G.GetTime() or 0
+            if now - (p.at or 0) > 60 then return end
+            for id, n in pairs(p.content) do
+                if (p.before[id] or 0) - bagCount(id) < n then return end -- objets encore là : pas parti
+            end
+            creditManual(p)
+        end)
+    else
+        manualPending = nil
+    end
     if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
 end
 WK:On("MAIL_CLOSED", mailClosed)

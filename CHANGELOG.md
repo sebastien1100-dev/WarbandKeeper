@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.41 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes : un achat resté sans réponse du jeu bloquait tous les suivants jusqu'à la fermeture. Il est abandonné au bout de 10 s (20 s pour une confirmation) avec un message ; la liste d'achat garde son avancée.
+- Banque : fermée puis rouverte très vite, deux dépôts partaient en même temps ; l'ancien s'arrête maintenant net.
+- Courrier : un envoi fait à la main n'était pas compté au destinataire si tu fermais la boîte avant la confirmation du jeu. Il l'est, une fois vérifié que les objets ont bien quitté tes sacs.
+- Marchand : sa fenêtre fermée juste après l'ouverture n'était vue fermée qu'au bout de 1,5 s (vente des gris, rachat, caches) ; c'est maintenant immédiat une fois la fenêtre affichée.
+
 ## v1.128.40 — 21/11/2026
 
 _Un /reload suffit._

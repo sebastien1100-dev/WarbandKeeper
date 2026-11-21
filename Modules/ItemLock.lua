@@ -365,6 +365,7 @@ end
 WK:On("MERCHANT_SHOW", function()
     merchantOpen = true; snapped = false
     M.merchantAt = _G.GetTime and _G.GetTime() or 0
+    M.merchantSeen = false
     snapshotBuyback()
     if next(before) then snapped = true
     else
@@ -397,10 +398,12 @@ WK:On("BAG_UPDATE_DELAYED", function() if merchantOpen then C_Timer.After(0.2, c
 function M.MerchantOpen(_)
     -- (passé 1,5 s après l'ouverture seulement : juste après MERCHANT_SHOW, la fenêtre du jeu n'est pas toujours
     -- encore affichée, ce qui coupait rachat et caches pour toute la visite)
+    -- (une fois la fenêtre vue affichée pendant la visite, sa disparition ferme tout de suite, sans attendre 1,5 s)
     local mf = _G.MerchantFrame
     local now = _G.GetTime and _G.GetTime() or 0
-    if merchantOpen and mf and mf.IsShown and not mf:IsShown() and now - (M.merchantAt or 0) > 1.5 then
-        closeMerchant()
+    if merchantOpen and mf and mf.IsShown then
+        if mf:IsShown() then M.merchantSeen = true
+        elseif M.merchantSeen or now - (M.merchantAt or 0) > 1.5 then closeMerchant() end
     end
     return merchantOpen
 end

@@ -182,7 +182,7 @@ local function commodityClick(id, want, extra)
     if b and b.id == id and b.phase == "confirm" then
         if b.qty == want then
             if not S:DearCheck(b) then return false end
-            b.phase = "wait"
+            S:Stamp(b, "wait")
             if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
             return true
         end
@@ -193,10 +193,15 @@ local function commodityClick(id, want, extra)
         if a.CancelCommoditiesPurchase then pcall(a.CancelCommoditiesPurchase) end
         S.buy, b = nil, nil
     end
-    if b and (b.phase == "quote" or b.phase == "wait") then return false end
-    local nb = { id = id, qty = want, phase = "quote", skip = {}, spent = 0, count = 0 }
+    -- réponse du jeu attendue ; restée sans réponse trop longtemps : abandonnée (avant, tout restait bloqué)
+    if b and (b.phase == "quote" or b.phase == "wait") then
+        if not S:Stuck(b) then return false end
+        S:Unstick()
+    end
+    local nb = { id = id, qty = want, skip = {}, spent = 0, count = 0 }
     for k, v in pairs(extra or {}) do nb[k] = v end
     S.buy = nb
+    S:Stamp(nb, "quote")
     if not pcall(a.StartCommoditiesPurchase, id, want) then S.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) return false end
     return true
 end

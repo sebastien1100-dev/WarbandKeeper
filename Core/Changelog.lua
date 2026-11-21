@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.41", date = "21/11/2026",
+        fixed = {
+            "Hôtel des ventes : un achat resté sans réponse du jeu bloquait tous les suivants jusqu'à la fermeture. Il est abandonné au bout de 10 s (20 s pour une confirmation) avec un message ; la liste d'achat garde son avancée.",
+            "Banque : fermée puis rouverte très vite, deux dépôts partaient en même temps ; l'ancien s'arrête maintenant net.",
+            "Courrier : un envoi fait à la main n'était pas compté au destinataire si tu fermais la boîte avant la confirmation du jeu. Il l'est, une fois vérifié que les objets ont bien quitté tes sacs.",
+            "Marchand : sa fenêtre fermée juste après l'ouverture n'était vue fermée qu'au bout de 1,5 s (vente des gris, rachat, caches) ; c'est maintenant immédiat une fois la fenêtre affichée.",
+        },
+    },
+    {
         version = "1.128.40", date = "21/11/2026",
         changed = {
             "Bandeau des bateaux au quai : plus d'eau ni de vagues, fond graphite plus clair, frise en pointillés fins (ton quai en bleu, la prochaine escale en vert).",

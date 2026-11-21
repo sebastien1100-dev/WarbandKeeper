@@ -4273,4 +4273,6 @@ WK.Locales.enUS.text = {
         "{quest} link, {name} name, {level} level, {zone} zone; ready in channel /1, Enter to send.",
     ["Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (55 m : dès que tu avances sur le ponton ; 30 m : au bout). « /wk bateau » donne ta distance aux quais proches."] =
         "Shows within this distance of the ship stop (55 m: on the pier, 30 m: at its end). /wk bateau: distances.",
+    ["Pas de réponse de l'hôtel des ventes : demande abandonnée, reclique pour recommencer."] =
+        "No answer from the auction house: request dropped, click again to retry.",
 }
