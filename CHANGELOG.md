@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.57 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage : un vol n'était envisagé que depuis le maître de vol connu le plus proche (par exemple Thelsamar depuis l'est des Paluns), et seulement si les deux relais étaient très près du départ et de l'arrivée ; sinon tu marchais jusqu'à Forgefer. Les 3 relais connus les plus proches du départ et de l'arrivée sont maintenant comparés, et le vol le plus rapide est proposé s'il bat la marche (durée réelle du vol quand tu l'as déjà fait).
+
 ## v1.128.56 — 21/11/2026
 
 _Un /reload suffit._

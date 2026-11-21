@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.57", date = "21/11/2026",
+        fixed = {
+            "Guidage : un vol n'était envisagé que depuis le maître de vol connu le plus proche (par exemple Thelsamar depuis l'est des Paluns), et seulement si les deux relais étaient très près du départ et de l'arrivée ; sinon tu marchais jusqu'à Forgefer. Les 3 relais connus les plus proches du départ et de l'arrivée sont maintenant comparés, et le vol le plus rapide est proposé s'il bat la marche (durée réelle du vol quand tu l'as déjà fait).",
+        },
+    },
+    {
         version = "1.128.56", date = "21/11/2026",
         fixed = {
             "Micro menu : le raccourci « Héritages » ouvrait les Apparences ; il ouvre bien l'onglet des héritages du journal des collections.",

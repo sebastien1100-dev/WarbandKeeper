@@ -353,16 +353,17 @@ WK:On("TAXIMAP_OPENED", function()
         end
     end
 end)
-local function nearestTaxi(cont, x, y)
-    local best, bd, bn
+-- les n relais connus les plus proches d'un point : { { n = relais, d = distance, name } }
+local function nearestTaxis(cont, x, y, count)
+    local list = {}
     for name, n in pairs(myTaxi()) do
-        if n[1] == cont then
-            local d = dist(x, y, n[2], n[3])
-            if not bd or d < bd then best, bd, bn = n, d, name end
-        end
+        if n[1] == cont then list[#list + 1] = { n = n, d = dist(x, y, n[2], n[3]), name = name } end
     end
-    return best, bd, bn
+    table.sort(list, function(a, b) return a.d < b.d end)
+    for i = #list, (count or 3) + 1, -1 do list[i] = nil end
+    return list
 end
+M.NearestTaxis = nearestTaxis
 local function speed()
     local lvl = UnitLevel and UnitLevel("player") or 1
     return (lvl >= 40) and MOUNT_SPEED or WALK_SPEED
@@ -525,21 +526,34 @@ computeFrom = function(cont, sx, sy, target)
     local v = speed()
     local walkTime = walkLen / v
     -- un vol connu fait-il gagner du temps ?
+    -- (avant : vol proposé seulement si les deux relais étaient à moins de 60 % de la distance en tout ; depuis le
+    -- milieu des Paluns, Menethil était trop loin et le guidage faisait marcher jusqu'à Forgefer). Maintenant :
+    -- les 3 relais connus les plus proches du départ et de l'arrivée, la paire la plus rapide, si elle bat la marche
     if D > 1500 then
-        local A, da, an = nearestTaxi(cont, sx, sy)
-        local B, db, bn = nearestTaxi(cont, tx, ty)
-        if A and B and an ~= bn and da + db < D * 0.6 then
-            local fs = (WK.DB.global.flights and WK.DB.global.flights.worldSpeed) or FLY_SPEED
-            local flyLen = dist(A[2], A[3], B[2], B[3])
-            local estimate = (da + db) * 1.3 / v + flyLen * 1.15 / fs + 25
-            if estimate < walkTime * 0.8 then
-                local p1 = walk(cont, sx, sy, A[2], A[3], 4)
-                local p2 = walk(cont, B[2], B[3], tx, ty, 4)
-                legs[1] = { kind = "walk", pts = p1, len = lineLen(p1) }
-                legs[2] = { kind = "fly", from = an, to = bn, ax = A[2], ay = A[3], bx = B[2], by = B[3], len = flyLen }
-                legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
-                return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + flyLen * 1.15 / fs + 25 }
+        local fs = (WK.DB.global.flights and WK.DB.global.flights.worldSpeed) or FLY_SPEED
+        local A, B, an, bn, flyLen, estimate
+        local starts, ends = nearestTaxis(cont, sx, sy, 3), nearestTaxis(cont, tx, ty, 3)
+        local learned = WK.DB.global.flights and WK.DB.global.flights.routes or {}
+        for _, a in ipairs(starts) do
+            for _, b in ipairs(ends) do
+                if a.name ~= b.name then
+                    local fl = dist(a.n[2], a.n[3], b.n[2], b.n[3])
+                    -- durée du vol déjà faite si on la connaît (le vrai trajet passe par des relais), sinon estimée
+                    local ft = tonumber(learned[a.name .. "|" .. b.name]) or (fl * 1.15 / fs)
+                    local e = (a.d + b.d) * 1.3 / v + ft + 25
+                    if not estimate or e < estimate then
+                        A, B, an, bn, flyLen, estimate = a.n, b.n, a.name, b.name, fl, e
+                    end
+                end
             end
+        end
+        if A and B and estimate < walkTime * 0.8 then
+            local p1 = walk(cont, sx, sy, A[2], A[3], 4)
+            local p2 = walk(cont, B[2], B[3], tx, ty, 4)
+            legs[1] = { kind = "walk", pts = p1, len = lineLen(p1) }
+            legs[2] = { kind = "fly", from = an, to = bn, ax = A[2], ay = A[3], bx = B[2], by = B[3], len = flyLen }
+            legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
+            return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + flyLen * 1.15 / fs + 25 }
         end
     end
     legs[1] = { kind = "walk", pts = pts, len = walkLen }
@@ -1212,4 +1226,5 @@ end
 
 -- accès pour les tests
 M._compute, M._learnTick = compute, function() learnTick() end
+M._computeFrom = function(...) return computeFrom(...) end -- tests
 M._rideTick = function() rideTick() end
