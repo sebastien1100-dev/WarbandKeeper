@@ -4278,6 +4278,6 @@ WK.Locales.enUS.text = {
         "this is a plan code: paste it in the Leveling plans card",
     ["Colle un code de plan (WKP1:…) ou de build (WK1:…) d'un joueur de la même classe."] =
         "Paste a plan code (WKP1:…) or a build code (WK1:…) from a player of the same class.",
-    ["En bas du menu du clic droit sur une quête du suivi d'EllesmereUI : guider vers la quête, chercher un groupe."] =
-        "At the bottom of the right-click menu on an EllesmereUI tracker quest: guide to the quest, find a group.",
+    ["En bas du menu du clic droit d'une quête du suivi d'EllesmereUI : guider, chercher un groupe."] =
+        "At the bottom of the right-click menu of an EllesmereUI tracker quest: guide, find a group.",
 }

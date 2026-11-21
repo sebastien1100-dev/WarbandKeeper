@@ -216,8 +216,7 @@ UI:RegisterPage({
                 end)
             table.insert(self.toggles, mt)
             UI:SettingRow(mcard, -40, "Nos lignes dans le menu des quêtes",
-                "En bas du menu du clic droit sur une quête du suivi d'EllesmereUI : guider vers la quête, chercher un groupe.",
-                mt, 50)
+                "En bas du menu du clic droit d'une quête du suivi d'EllesmereUI : guider, chercher un groupe.", mt, 50)
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
