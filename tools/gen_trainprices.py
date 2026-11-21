@@ -93,30 +93,36 @@ def main(folder=None):
         sys.exit("trop peu de prix lus (%d) : source changée ?" % len(prices))
     body = ",".join("%d:%d" % (k, prices[k]) for k in sorted(prices))
     lines = [body[i:i + 160] for i in range(0, len(body), 160)]
-    with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        f.write("local ADDON_NAME, WK = ...\n\n")
-        f.write("-- Généré par tools/gen_trainprices.py, ne pas modifier à la main.\n")
-        f.write("-- Prix de base des sorts de classe chez le maître (cuivre, sans remise de réputation).\n")
-        f.write("-- Source : What's Training, https://github.com/fusionpit/WhatsTraining (licence MIT).\n")
-        f.write("-- Licence de What's Training, reprise telle quelle :\n")
-        for ln in license_text(folder).strip().splitlines():
-            f.write(("-- " + ln).rstrip() + "\n")
-        f.write("WK.ClassBasePrice = table.concat({\n")
-        for ln in lines:
-            f.write('    "%s",\n' % ln)
-        f.write("})\n")
-        skills, masters = weapons(folder)
-        f.write("\n-- Compétences d'armes : classes qui les apprennent, niveau requis, prix de base (cuivre)\n")
-        f.write("WK.WeaponSkillsDB = {\n")
-        for sid in sorted(skills):
-            cls, lvl, cost = skills[sid]
-            f.write('    [%d] = { classes = "%s", level = %d, cost = %d },\n' % (sid, ",".join(cls), lvl, cost))
-        f.write("}\n")
-        f.write("-- Maîtres d'armes : { n° de PNJ, faction, carte, x, y, sorts enseignés, nom anglais, nom français }\n")
-        f.write("WK.WeaponMasters = {\n")
-        for m in masters:
-            f.write('    { %d, "%s", %d, %.3f, %.3f, "%s", %s, %s },\n' % (m[0], m[1], m[2], m[3], m[4], m[5], lua_str(m[6]), lua_str(m[7])))
-        f.write("}\n")
+    # tout est lu AVANT d'écrire (licence par le réseau, armes qui peuvent arrêter le script) ; écriture dans un
+    # fichier temporaire renommé à la fin : un échec laisse l'ancien fichier intact (avant, il restait tronqué)
+    lic = license_text(folder).strip().splitlines()
+    skills, masters = weapons(folder)
+    out = ["local ADDON_NAME, WK = ...\n\n",
+           "-- Généré par tools/gen_trainprices.py, ne pas modifier à la main.\n",
+           "-- Prix de base des sorts de classe chez le maître (cuivre, sans remise de réputation).\n",
+           "-- Source : What's Training, https://github.com/fusionpit/WhatsTraining (licence MIT).\n",
+           "-- Licence de What's Training, reprise telle quelle :\n"]
+    for ln in lic:
+        out.append(("-- " + ln).rstrip() + "\n")
+    out.append("WK.ClassBasePrice = table.concat({\n")
+    for ln in lines:
+        out.append('    "%s",\n' % ln)
+    out.append("})\n")
+    out.append("\n-- Compétences d'armes : classes qui les apprennent, niveau requis, prix de base (cuivre)\n")
+    out.append("WK.WeaponSkillsDB = {\n")
+    for sid in sorted(skills):
+        cls, lvl, cost = skills[sid]
+        out.append('    [%d] = { classes = "%s", level = %d, cost = %d },\n' % (sid, ",".join(cls), lvl, cost))
+    out.append("}\n")
+    out.append("-- Maîtres d'armes : { n° de PNJ, faction, carte, x, y, sorts enseignés, nom anglais, nom français }\n")
+    out.append("WK.WeaponMasters = {\n")
+    for m in masters:
+        out.append('    { %d, "%s", %d, %.3f, %.3f, "%s", %s, %s },\n' % (m[0], m[1], m[2], m[3], m[4], m[5], lua_str(m[6]), lua_str(m[7])))
+    out.append("}\n")
+    tmp = OUT + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write("".join(out))
+    os.replace(tmp, OUT)
     print("ClassPricesDB.lua : %d prix, %d armes, %d maîtres d'armes" % (len(prices), len(skills), len(masters)))
 
 

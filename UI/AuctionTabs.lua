@@ -127,21 +127,53 @@ WK:On("ITEM_SEARCH_RESULTS_UPDATED", function(key) onResults(type(key) == "table
 local function lowestOther(id)
     local r = results[id]
     if not r then return nil end
-    local first, firstQty, total = nil, 0, 0
-    for _, row in ipairs(r.rows) do if not row.mine then total = total + (row.qty or 1) end end
+    -- paliers des autres vendeurs (lignes triées du moins cher), même règle que le prix du scan
+    local tiers, total = {}, 0
     for _, row in ipairs(r.rows) do
-        if not row.mine then
-            if not first then first, firstQty = row.unit, row.qty or 1
-            elseif row.unit == first then firstQty = firstQty + (row.qty or 1)
-            else
-                if first < row.unit * 0.5 and firstQty <= math.max(1, total * 0.1) then return row.unit end
-                return first
-            end
+        if not row.mine and row.unit then
+            local q = row.qty or 1
+            total = total + q
+            local last = tiers[#tiers]
+            if last and last[1] == row.unit then last[2] = last[2] + q
+            else tiers[#tiers + 1] = { row.unit, q } end
         end
     end
-    if first then return first end
+    if tiers[1] then
+        table.sort(tiers, function(a, b) return a[1] < b[1] end)
+        return S.RobustTiers(tiers, total)
+    end
     return nil, r.rows[1] and r.rows[1].mine
 end
+-- Achat de marchandise en deux clics (prix demandé au jeu, puis confirmation). La confirmation ne vaut que pour
+-- la quantité dont le prix a été demandé : quantité changée entre-temps (200 demandés puis 2 voulus), ou autre
+-- ligne cliquée, = ancienne demande annulée et nouveau prix demandé (avant, la confirmation achetait l'ancienne
+-- quantité). extra : champs en plus pour S.buy (liste d'achat…). Rend vrai si quelque chose a été envoyé.
+local function commodityClick(id, want, extra)
+    local a = AH()
+    if not (id and want and want > 0 and a and a.StartCommoditiesPurchase) then return false end
+    local b = S.buy
+    if b and b.id == id and b.phase == "confirm" then
+        if b.qty == want then
+            if not S:DearCheck(b) then return false end
+            b.phase = "wait"
+            if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
+            return true
+        end
+        if a.CancelCommoditiesPurchase then pcall(a.CancelCommoditiesPurchase) end
+        S.buy, b = nil, nil
+    elseif b and b.phase == "confirm" then
+        -- prix en attente pour un autre objet : abandonné
+        if a.CancelCommoditiesPurchase then pcall(a.CancelCommoditiesPurchase) end
+        S.buy, b = nil, nil
+    end
+    if b and (b.phase == "quote" or b.phase == "wait") then return false end
+    local nb = { id = id, qty = want, phase = "quote", skip = {}, spent = 0, count = 0 }
+    for k, v in pairs(extra or {}) do nb[k] = v end
+    S.buy = nb
+    if not pcall(a.StartCommoditiesPurchase, id, want) then S.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) return false end
+    return true
+end
+UI.AHCommodityClick = commodityClick
 -- achat d'une enchère unique (PlaceBid, au prix d'achat immédiat) : le 1er clic arme le bouton (« Confirmer »),
 -- un 2e clic sur la même enchère dans les 5 s achète ; un clic égaré n'achète rien
 local bidArm
@@ -663,15 +695,7 @@ local function build(host)
             elseif not isCommodity(id) and x.auctionID and a and a.PlaceBid then
                 if armBid(x) and not pcall(a.PlaceBid, x.auctionID, x.buyout or x.unit * x.qty) then WK:Print(T("Achat refusé par le jeu.")) end
             elseif a and a.StartCommoditiesPurchase then
-                local b = S.buy
-                if b and b.id == id and b.phase == "confirm" then
-                    if not S:DearCheck(b) then return end
-                    b.phase = "wait"
-                    if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
-                else
-                    S.buy = { id = id, qty = x.qty, phase = "quote", skip = {}, spent = 0, count = 0 }
-                    if not pcall(a.StartCommoditiesPurchase, id, x.qty) then S.buy = nil end
-                end
+                commodityClick(id, x.qty)
             end
             sv:Refresh()
         end)
@@ -868,8 +892,14 @@ local function build(host)
         self.keys:SetShown(cfg().postKeys and not self.warn:IsShown())
         self.keys:SetText(T("Touches : Espace = mettre en vente · S = passer · Haut / Bas = palier de prix"))
     end
+    -- objet suivant : jamais un objet verrouillé par une règle (épique, envie, BiS, recette…), qu'on enchaînait
+    -- sinon avec Espace ; il reste dans la liste pour une mise en vente voulue (clic, puis confirmation)
     local function nextItem()
-        local list = bagItems()
+        local IL = WK.modules.ItemLock
+        local list = {}
+        for _, x in ipairs(bagItems()) do
+            if x.id == sv.id or not (IL and IL:Reason(x.id)) then list[#list + 1] = x end
+        end
         for i, x in ipairs(list) do
             if x.id == sv.id then
                 local n = list[i + 1] or list[1]
@@ -879,6 +909,7 @@ local function build(host)
         end
         if list[1] then sv:Select(list[1].id) else sv.id, sv.e = nil, nil; sv:Refresh() end
     end
+    sv.NextItem = nextItem
     sv.skip:SetScript("OnClick", nextItem)
     -- garde-fou : prix pour un, après la commission (5 %), pas plus que ce que paie le marchand ; ou, sous le
     -- prix proposé, sous une part du cours (plus bas des autres, sinon le scan) : 70 % sous 1 po, 50 % jusqu'à
@@ -891,6 +922,9 @@ local function build(host)
         -- cours de référence : le prix du scan (sans appât) en premier, sinon le plus bas des autres ; un prix bien
         -- sous ce cours est signalé même s'il est égal au prix proposé (appât qui serait passé au travers)
         local going = S:Price(id) or lowestOther(id)
+        -- la moyenne des 7 derniers jours sert de garde-fou en plus : un scan du jour faussé ne suffit plus
+        local avg = S.Average and S:Average(id, 7)
+        if avg and (not going or avg > going) then going = avg end
         if going and (unit < (sv.suggested or going) or unit < going * 0.5) then
             local share = going < 10000 and 0.7 or going <= 500000 and 0.5 or 0.3
             if unit < going * share or unit <= going * 0.1 then
@@ -945,6 +979,14 @@ local function build(host)
         end
         qty = math.min(qty, e.count)
         local why = cfg().askBad ~= false and badPost(id, unit)
+        -- objet verrouillé par une règle : toujours une confirmation (même garde-fou coupé)
+        local IL = WK.modules.ItemLock
+        local lock = IL and IL:Reason(id)
+        if lock then
+            local what = lock == "manual" and T("à la main") or tostring(lock)
+            why = string.format(T("Objet verrouillé (%s) : le mettre en vente quand même ?"), what)
+                .. (why and ("\n" .. why) or "")
+        end
         if why then
             self.warn.t:SetText(why)
             self.warn.pending = { id = id, e = e, unit = unit, qty = qty }
@@ -1083,7 +1125,7 @@ local function build(host)
                     else row.hl:SetColorTexture(0, 0, 0, 0) end
                     row.act:Show()
                     if x.mine then row.act:SetLabel(T("Annuler"))
-                    elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) then row.act:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+                    elseif b and b.id == id and b.phase == "confirm" and isCommodity(id) and b.qty == x.qty then row.act:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
                     elseif bidArmed(x) then row.act:SetLabel(string.format(T("Confirmer %s"), money(x.buyout or x.unit * x.qty)))
                     else row.act:SetLabel(T("Acheter")) end
                     row:Show()
@@ -1252,16 +1294,7 @@ local function build(host)
                 if not UI:AHWindowSearch(id, WK.GetItemInfo(id)) then S:SearchItem(id) end
                 return
             end
-            local b = S.buy
-            local a = AH()
-            if b and b.id == id and b.phase == "confirm" then
-                if not S:DearCheck(b) then return end
-                b.phase = "wait"
-                if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
-            elseif not (b and (b.phase == "quote" or b.phase == "wait")) then
-                S.buy = { list = cfg().curList, id = id, qty = need, phase = "quote", skip = {}, spent = 0, count = 0 }
-                if not pcall(a.StartCommoditiesPurchase, id, need) then S.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) end
-            end
+            commodityClick(id, need, { list = cfg().curList })
             bv:Refresh()
         end)
         r:Hide()
@@ -2289,18 +2322,9 @@ local function build(host)
     end
     -- marchandise : 1er clic = prix demandé au jeu, 2e clic = confirmation (le jeu l'exige)
     function bw:BuyQty()
-        local id, a = self.id, AH()
-        if not (id and a and a.StartCommoditiesPurchase) then return end
-        local b = S.buy
-        if b and b.id == id and b.phase == "confirm" then
-            if not S:DearCheck(b) then return end
-            b.phase = "wait"
-            if not pcall(a.ConfirmCommoditiesPurchase, id, b.qty) then b.phase = nil; WK:Print(T("Achat refusé par le jeu.")) end
-        elseif not (b and (b.phase == "quote" or b.phase == "wait")) then
-            local n = math.max(1, self.qty:GetNumber())
-            S.buy = { id = id, qty = n, phase = "quote", skip = {}, spent = 0, count = 0 }
-            if not pcall(a.StartCommoditiesPurchase, id, n) then S.buy = nil; WK:Print(T("Le jeu a refusé la demande de prix.")) end
-        end
+        local id = self.id
+        if not id then return end
+        commodityClick(id, math.max(1, self.qty:GetNumber()))
         self:RefreshDetail()
     end
     function bw:RefreshDetail()
@@ -2394,7 +2418,7 @@ local function build(host)
             if got < want and last then cost = cost + (want - got) * last.unit; got = want end
             self.sum:SetText(got > 0 and string.format(T("Environ %s l'unité · total %s"), money(math.floor(cost / math.max(1, got))), money(cost)) or "")
             local busy = b and b.id == id and (b.phase == "quote" or b.phase == "wait")
-            if b and b.id == id and b.phase == "confirm" then self.buy:SetLabel(string.format(T("Confirmer %s"), money(b.total)))
+            if b and b.id == id and b.phase == "confirm" then self.buy:SetLabel(string.format(T("Confirmer %d pour %s"), b.qty or 0, money(b.total)))
             elseif busy then self.buy:SetLabel("…")
             else self.buy:SetLabel(string.format(T("Acheter %d"), want)) end
             self.buy:SetEnabled(not busy and #r.rows > 0)

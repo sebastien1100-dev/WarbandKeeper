@@ -452,12 +452,20 @@ function M:GreyItems()
             if id and not locked and not (WK.modules.ItemLock and WK.modules.ItemLock:IsLocked(id)) then
                 local _, _, quality, _, _, _, _, _, _, _, price = WK.GetItemInfo(id)
                 if quality == 0 and (price or 0) > 0 then
-                    table.insert(list, { bag = bag, slot = slot, price = price * (count or 1) })
+                    table.insert(list, { bag = bag, slot = slot, id = id, price = price * (count or 1) })
                 end
             end
         end
     end
     return list
+end
+
+-- La case contient toujours cet objet, gris, pas verrouillé (relu juste avant chaque vente)
+function M.StillGrey(it)
+    local IL = WK.modules.ItemLock
+    local id, _, locked = WK.Container.Info(it.bag, it.slot)
+    if id ~= it.id or locked or (IL and IL:IsLocked(id)) then return false end
+    return select(3, WK.GetItemInfo(id)) == 0
 end
 
 -- onDone() est appelé quand la vente est finie (tout de suite s'il n'y a rien à vendre).
@@ -467,8 +475,10 @@ function M:SellGrey(onDone)
     local list = self:GreyItems()
     if #list == 0 then return onDone() end
     local total = 0
-    for _, it in ipairs(list) do total = total + it.price end
-    -- Par paquets : le serveur n'aime pas cent ventes dans la même image.
+    -- Par paquets : le serveur n'aime pas cent ventes dans la même image. Chaque case est revérifiée juste
+    -- avant la vente (même objet, toujours gris, pas verrouillé) : un tri ou un objet déplacé pendant la vente
+    -- aurait fait vendre ce qui occupe la case maintenant
+    local stillGrey = M.StillGrey
     local i = 0
     local function step()
         if not merchantOpen then return end
@@ -479,7 +489,10 @@ function M:SellGrey(onDone)
                 shopNote(string.format(T("gris vendus %s"), WK:FormatMoney(total)))
                 return onDone()
             end
-            useContainerItem(it.bag, it.slot)
+            if stillGrey(it) then
+                total = total + it.price
+                useContainerItem(it.bag, it.slot)
+            end
         end
         C_Timer.After(0.2, step)
     end

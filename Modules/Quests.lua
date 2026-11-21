@@ -634,7 +634,8 @@ function M:NoteOffered(npc, offered, titles)
             local was = qs.notOffered[q.id]
             local last = M.lastTurnIn
             if was and was.lvl == lvl and last and last.at >= (was.at or 0) and last.id ~= q.id then
-                self:LearnChain(q.id, last.id, "unlock")
+                local tok = WK:CharKey() .. ":" .. tostring(last.at) .. ":" .. tostring(last.id)
+                self:LearnChain(q.id, last.id, "unlock", tok)
             end
             qs.notOffered[q.id] = nil
         elseif self:ForChar(q, c) then
@@ -694,7 +695,9 @@ end)
 -- ce qui a été appris (à envoyer pour l'ajouter aux corrections de la base).
 ---------------------------------------------------------------------------
 local MAXCH = 1500
-function M:LearnChain(qid, pre, how)
+-- tok (facultatif) : identifiant du rendu qui a donné l'indice ; un même rendu ne compte qu'une fois (rouvrir
+-- deux fois le détail de la quête donnait sinon les 2 confirmations à lui seul)
+function M:LearnChain(qid, pre, how, tok)
     memo.at = -10
     local q = self:Get(qid)
     if not q or q.pre or q.preAll or q.prev or not pre or pre == qid then return end
@@ -702,9 +705,10 @@ function M:LearnChain(qid, pre, how)
     g.questChains = g.questChains or {}
     local ch = g.questChains[qid]
     if ch and ch.pre == pre then
-        ch.n = (ch.n or 1) + 1; ch.at = _G.time()
+        if tok and ch.tok == tok then return end
+        ch.n = (ch.n or 1) + 1; ch.at = _G.time(); ch.tok = tok
     elseif not ch or (ch.n or 1) <= 1 then
-        g.questChains[qid] = { pre = pre, n = 1, at = _G.time(), how = how }
+        g.questChains[qid] = { pre = pre, n = 1, at = _G.time(), how = how, tok = tok }
         local pq = self:Get(pre)
         WK:Print(string.format(T("Chaîne apprise : « %s » vient après « %s »."), self:Name(q),
             pq and self:Name(pq) or ("#" .. pre)))
@@ -751,5 +755,5 @@ WK:On("QUEST_DETAIL", function()
     local qid = _G.GetQuestID and _G.GetQuestID()
     if not qid or qid == last.id or npcNow() ~= last.npc then return end
     if last.before and last.before[qid] then return end -- déjà proposée avant le rendu : pas une suite
-    M:LearnChain(qid, last.id, "follow")
+    M:LearnChain(qid, last.id, "follow", WK:CharKey() .. ":" .. tostring(last.at) .. ":" .. tostring(last.id))
 end)

@@ -198,27 +198,61 @@ end
 local driver = CreateFrame("Frame")
 local function notify() if M.OnProgress then M:OnProgress() end end
 
--- seen[id] = { plus bas, quantité totale, quantité au plus bas, 2e prix distinct }
+-- seen[id] = { plus bas, quantité totale, quantité au plus bas, 2e prix distinct, paliers }
+-- paliers = les DEPTH prix distincts les plus bas avec leur quantité : { { prix, qté }, … } du moins cher
+local DEPTH = 12
 local function record(seen, itemID, count, buyout)
     if not itemID or not buyout or buyout <= 0 or not count or count <= 0 then return end
     local unit = math.floor(buyout / count)
     local s = seen[itemID]
-    if not s then seen[itemID] = { unit, count, count, nil }
-    else
-        if unit < s[1] then
-            s[4] = s[1]; s[1] = unit; s[3] = count
-        elseif unit == s[1] then
-            s[3] = (s[3] or 0) + count
-        elseif not s[4] or unit < s[4] then
-            s[4] = unit
+    if not s then
+        seen[itemID] = { unit, count, count, nil, { { unit, count } } }
+        return
+    end
+    if unit < s[1] then
+        s[4] = s[1]; s[1] = unit; s[3] = count
+    elseif unit == s[1] then
+        s[3] = (s[3] or 0) + count
+    elseif not s[4] or unit < s[4] then
+        s[4] = unit
+    end
+    s[2] = s[2] + count
+    local tiers = s[5]
+    if tiers then
+        local placed = false
+        for k, t in ipairs(tiers) do
+            if t[1] == unit then t[2] = t[2] + count; placed = true break end
+            if unit < t[1] then table.insert(tiers, k, { unit, count }); placed = true break end
         end
-        s[2] = s[2] + count
+        if not placed and #tiers < DEPTH then tiers[#tiers + 1] = { unit, count } end
+        if #tiers > DEPTH then tiers[#tiers] = nil end
     end
 end
--- Prix retenu pour les garde-fous et les conseils : le plus bas, sauf un lot isolé (au plus 10 % de ce qui est en
--- vente) à moins de la moitié du prix suivant (appât à 1 pc, erreur de frappe) : alors le prix suivant. Le plus
--- bas brut reste dans e.pmin (alertes de prix).
+-- Prix sans appâts, sur des paliers { { prix, qté }, … } triés : prix « de fond » = celui où la quantité cumulée
+-- dépasse 10 % de ce qui est en vente (au moins 1) ; tout lot à moins de la moitié de ce prix est un appât (1 pc,
+-- erreur de frappe), écarté. Avant, un seul appât était reconnu : deux petits lots à deux prix différents
+-- passaient (1 à 2 pa, 1 à 3 pa, 200 à 50 po donnait un cours de 2 pa).
+local function robustTiers(tiers, total)
+    if not tiers or not tiers[1] then return nil end
+    total = total or 0
+    if total <= 0 then for _, t in ipairs(tiers) do total = total + t[2] end end
+    local limit = math.max(1, total * 0.1)
+    local cum, ref = 0, nil
+    for _, t in ipairs(tiers) do
+        cum = cum + t[2]
+        if cum > limit then ref = t[1] break end
+    end
+    ref = ref or tiers[#tiers][1]
+    for _, t in ipairs(tiers) do
+        if t[1] >= ref * 0.5 then return t[1] end
+    end
+    return ref
+end
+M.RobustTiers = robustTiers
+-- Prix retenu pour les garde-fous et les conseils (voir robustTiers) ; le plus bas brut reste dans e.pmin (alertes
+-- de prix). Ancien relevé sans paliers : un seul lot isolé à moins de la moitié du prix suivant est sauté.
 local function robust(s)
+    if s[5] then return robustTiers(s[5], s[2]) or s[1] end
     local p1, total, c1, p2 = s[1], s[2] or 0, s[3] or 0, s[4]
     if p2 and p1 < p2 * 0.5 and c1 <= math.max(1, total * 0.1) then return p2 end
     return p1

@@ -71,6 +71,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.17 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes : plusieurs petits lots-appâts à des prix différents ne faussent plus le cours (avant, un seul appât était reconnu) ; le garde-fou de mise en vente regarde aussi la moyenne des 7 derniers jours.
+- Hôtel des ventes, Vendre : un objet verrouillé (épique, envie, BiS, recette…) demande toujours une confirmation avant la mise en vente, et « suivant » ne passe plus dessus.
+- Hôtel des ventes, achat de marchandise : changer la quantité (ou cliquer une autre ligne) entre la demande de prix et la confirmation annule l'ancienne demande ; avant, la confirmation achetait l'ancienne quantité. Le bouton indique « Confirmer N pour X ».
+- Désenchanter le suivant : le bouton est désarmé à l'entrée en combat et réarmé après ; un objet arrivé dans la case pendant le combat ne peut plus être désenchanté, même depuis un panneau fermé.
+- Vente des gris : chaque case est revérifiée juste avant la vente ; un objet rangé ou trié dans une case pendant la vente n'est plus vendu.
+- Maître de métier : un double clic rapide n'achète plus une autre recette que celle cliquée (nom vérifié avant l'achat, aussi pour « Apprendre les favoris »).
+- Tournée de quêtes : une étape passée à la main ne revient plus au recalcul suivant (rendu, changement de zone…), jusqu'à la prochaine tournée.
+- Guide de montée : l'étape « Maître de classe » disparaît après la visite du maître à ce niveau, même si tous les sorts n'ont pas été achetés ; le guide passe bien à la suite.
+- Chaînes de quêtes apprises : ouvrir deux fois le détail d'une même quête ne compte plus comme deux confirmations.
+
 ## v1.128.16 — 21/11/2026
 
 _Un /reload suffit._

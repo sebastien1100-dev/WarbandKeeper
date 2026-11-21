@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB", "WayZonesDB", "ClassPricesDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -211,6 +211,9 @@ def metrics():
             out["Lignes de bateaux et zeppelins"] = size(WK.BoatLines)
         elif name == "DataLogDB":
             out["Mises à jour de la base notées (journal)"] = size(WK.DataLog)
+        elif name == "ClassPricesDB":
+            out["Prix des sorts de classe"] = L.eval("function(s) local n = 0 for _ in tostring(s or ''):gmatch(':') do n = n + 1 end return n end")(WK.ClassBasePrice)
+            out["Maîtres d'armes"] = L.eval("function(t) return #(t or {}) end")(WK.WeaponMasters)
         elif name == "WayZonesDB":
             out["Zones pour /way"] = size(WK.WayZones)
         elif name == "MapRevealDB":

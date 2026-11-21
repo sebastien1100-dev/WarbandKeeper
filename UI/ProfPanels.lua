@@ -49,8 +49,25 @@ local function panel(name, title, icon, w, h)
 end
 
 -- Bouton protégé (sort, macro) avec l'apparence d'un bouton du thème : l'habit ne prend pas la souris.
+-- Boutons protégés des panneaux : désarmés juste avant le combat (dernier moment permis). En combat, on ne
+-- peut plus reposer la case visée : un objet arrivé dans la case libérée (un épique ramassé) aurait été
+-- désenchanté, y compris depuis un panneau fermé devenu seulement invisible. Réarmés par Refresh après.
+local secureButtons = {}
+WK:On("PLAYER_REGEN_DISABLED", function()
+    for _, b in ipairs(secureButtons) do b:SetAttribute("type", nil); b.itemID = nil end
+end)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    _G.C_Timer.After(0.2, function()
+        if inCombat() then return end
+        for _, b in ipairs(secureButtons) do
+            local f = b:GetParent()
+            if f and f:IsShown() and f.Refresh then pcall(f.Refresh, f) end
+        end
+    end)
+end)
 local function secureButton(parent, label, w, style)
     local s = CreateFrame("Button", nil, parent, "SecureActionButtonTemplate")
+    secureButtons[#secureButtons + 1] = s
     s:SetSize(w, 28)
     if s.RegisterForClicks then s:RegisterForClicks("AnyUp", "AnyDown") end
     s.look = UI:Button(s, label, w, 28, style or "primary")
@@ -337,7 +354,9 @@ local function buildTrainer()
         end)
         r:SetScript("OnClick", function(s, btn)
             if btn == "RightButton" then PH():ToggleFav(s.e.name); f:Refresh() return end
-            if BuyTrainerService and (GetMoney and GetMoney() or 0) >= s.e.cost then BuyTrainerService(s.e.index) end
+            -- un seul achat par ligne jusqu'au rafraîchissement (TRAINER_UPDATE refait les lignes)
+            if s.bought == s.e or (GetMoney and GetMoney() or 0) < s.e.cost then return end
+            if PH():BuyService(s.e.index, s.e.name) then s.bought = s.e end
         end)
         return r
     end)

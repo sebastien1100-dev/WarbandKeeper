@@ -212,8 +212,11 @@ function M:StepsNow()
     -- option « Maître de classe » coupée (trainerTour = false) : pas d'étape de maître
     local trainerOn = cfg.trainerTour ~= false
     local cr = CS and trainerOn and CS:ForChar() or nil
-    if trainerOn and cr and #cr.now > 0 then
-        add({ key = "trainer:" .. lvl .. ":" .. #cr.now, kind = "trainer",
+    -- maître déjà vu à ce niveau (sorts pas tous pris : or, sort donné par une quête) : plus d'étape ; avant,
+    -- elle restait en tête et le guide suivi ne passait plus jamais à la tournée ni au changement de zone
+    local visited = (cfg.trainer[key] or 0) >= lvl
+    if trainerOn and cr and #cr.now > 0 and not visited then
+        add({ key = "trainer:" .. lvl, kind = "trainer",
             title = string.format(T("Maître de classe : %d sort(s) à apprendre"), #cr.now),
             sub = cr.costNow > 0 and CS:Money(cr.costNow) or T("le maître le plus proche"), auto = true,
             act = function() G():GoTo("trainer") end })

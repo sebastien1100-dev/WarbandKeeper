@@ -145,6 +145,12 @@ end
 local memo = {}
 local built -- tournée calculée gardée (M:Build), effacée ici aussi
 function M:Invalidate() memo = {}; if built then built.key, built.tour = nil, nil end end
+-- Étapes passées à la main pendant la séance (« genre:quête ») : jamais remises par un recalcul (avant, la
+-- tournée refaite après un rendu, un changement de zone… remettait l'étape passée en cours). Vidé au début
+-- d'une nouvelle tournée.
+local skipped = {}
+M.skipped = skipped
+local function isSkipped(kind, qid) return skipped[kind .. ":" .. tostring(qid)] == true end
 function M:Coins()
     local now = GetTime and GetTime() or time()
     if memo.coins and now - memo.at < 2 then return memo.coins, memo.zone, memo.list end
@@ -364,7 +370,12 @@ function M:BuildNow(coins, skip)
     local here = G():PlayerPos()
     local list, zone = {}, nil
     for _, k in ipairs(coins) do
-        for _, e in ipairs(k.quests) do if e.picked and not skip[e.id] then table.insert(list, e); zone = zone or k.map end end
+        for _, e in ipairs(k.quests) do
+            -- « prendre » passé : la quête entière est laissée (sans elle, ni faire ni rendre)
+            if e.picked and not skip[e.id] and not (not e.inLog and isSkipped("pick", e.id)) then
+                table.insert(list, e); zone = zone or k.map
+            end
+        end
     end
     zone = WK.modules.Quests:PlayerZone() or zone
     for _, n in ipairs(zone and predicted(list, zone) or {}) do table.insert(list, n) end
@@ -376,7 +387,7 @@ function M:BuildNow(coins, skip)
         if pick and e.predicted then pick.preds[e.id] = true end
         -- A : une étape « faire » par camp (plus au milieu de camps éloignés), regroupée avec les camps voisins
         local dos = {}
-        if not e.complete and e.camps and #e.camps > 0 then
+        if not e.complete and e.camps and #e.camps > 0 and not isSkipped("do", e.id) then
             local per = objTime(e.id, e.inLog) / #e.camps
             for _, c in ipairs(e.camps) do
                 local p = point(c.camp.map or zone, c.camp.x, c.camp.y)
@@ -393,7 +404,7 @@ function M:BuildNow(coins, skip)
         end
         -- objets à acheter : une étape chez le marchand le plus proche (A), sinon une note sur le rendu (B)
         local buys, noVendor = {}, {}
-        for _, it in ipairs(Q():BuyMissing(e.id)) do
+        for _, it in ipairs(isSkipped("buy", e.id) and {} or Q():BuyMissing(e.id)) do
             local bv = nearestVendor(it.id, here, e.turnIn)
             if bv then
                 local bn = node("buy", bv.p, e.id, depth)
@@ -410,7 +421,7 @@ function M:BuildNow(coins, skip)
                 table.insert(noVendor, it)
             end
         end
-        if e.turnIn then
+        if e.turnIn and not isSkipped("turn", e.id) then
             local tn = node("turn", e.turnIn, e.id, depth, e.title)
             for _, dn in ipairs(dos) do tn.after[dn] = true end
             for _, bn in ipairs(buys) do tn.after[bn] = true end
@@ -426,7 +437,10 @@ function M:BuildNow(coins, skip)
     local CS = WK.modules.ClassSpells
     if LGc and LGc.trainerTour ~= false and CS and #nodes > 0 then
         local cr = CS:ForChar()
-        if cr and #cr.now > 0 then
+        -- maître déjà vu à ce niveau, ou étape passée : pas de nœud (il faussait l'ordre et la durée)
+        local lvl = _G.UnitLevel and _G.UnitLevel("player") or 0
+        local seenAt = ((WK.modules.LevelGuide:Config().trainer or {})[WK:CharKey()] or 0)
+        if cr and #cr.now > 0 and seenAt < lvl and not skipped["trainer:" .. tostring(lvl)] then
             local g = G()
             local tg = g:Nearest(g:KindsFor("trainer"), select(2, UnitClass("player")))
             if tg then
@@ -811,6 +825,7 @@ function M:Tour() return self:Config().tour[WK:CharKey()] end
 function M:Active() local t = self:Tour(); return t and not t.paused and t.steps[t.idx] ~= nil end
 
 function M:Start()
+    for k in pairs(skipped) do skipped[k] = nil end
     self:Invalidate()
     local t = self:Build()
     if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « Quêtes de ma zone ».")) return nil end
@@ -904,9 +919,17 @@ end
 -- step : étape choisie dans une liste (menu d'une ligne de la tournée) ; sans step, l'étape en cours. Une étape
 -- plus loin est retirée de la tournée ; une étape déjà passée ne change rien. (Avant, le menu de n'importe quelle
 -- ligne passait l'étape en cours.)
+local function noteSkipped(s)
+    if type(s) ~= "table" or not s.kind then return end
+    for _, q in ipairs(s.qids or {}) do skipped[s.kind .. ":" .. tostring(q)] = true end
+    if s.kind == "trainer" then skipped["trainer:" .. tostring(_G.UnitLevel and _G.UnitLevel("player") or 0)] = true end
+end
+M.NoteSkipped = noteSkipped
 function M:Skip(step)
     local t = self:Tour()
     if not t then return end
+    noteSkipped(type(step) == "table" and step or t.steps[t.idx])
+    self:Invalidate()
     if type(step) == "table" then
         local at
         for i, s in ipairs(t.steps) do if s == step then at = i break end end

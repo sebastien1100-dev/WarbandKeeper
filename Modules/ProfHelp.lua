@@ -466,13 +466,21 @@ function M:TrainerList()
 end
 
 -- Apprend les favoris disponibles (du dernier au premier : les numéros ne bougent pas). Renvoie le nombre appris.
+-- Achat d'une recette du maître, seulement si la ligne porte toujours ce nom (un double clic rapide, la liste
+-- décalée par l'achat précédent, achetait sinon une autre recette) ; jamais en combat
+function M.BuyService(_, index, name)
+    if (_G.InCombatLockdown and _G.InCombatLockdown()) or not BuyTrainerService then return false end
+    if name and _G.GetTrainerServiceInfo and _G.GetTrainerServiceInfo(index) ~= name then return false end
+    BuyTrainerService(index)
+    return true
+end
 function M:LearnFavs()
     local list = self:TrainerList()
     table.sort(list, function(a, b) return a.index > b.index end)
     local n, money = 0, GetMoney and GetMoney() or 0
     for _, e in ipairs(list) do
-        if e.fav and e.cost <= money and BuyTrainerService then
-            BuyTrainerService(e.index); money = money - e.cost; n = n + 1
+        if e.fav and e.cost <= money and self:BuyService(e.index, e.name) then
+            money = money - e.cost; n = n + 1
         end
     end
     return n

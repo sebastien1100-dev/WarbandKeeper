@@ -4601,4 +4601,6 @@ WK.Locales.enUS.text = {
     ["Reclique pour acheter quand même."] = "Click again to buy anyway.",
     ["Vente chère : clic droit sur %s pour confirmer la vente."] = "Valuable sale: right-click %s to confirm the sale.",
     ["WarbandKeeper_Data désactivé : coche-le dans les AddOns"] = "WarbandKeeper_Data disabled: tick it in AddOns",
+    ["Objet verrouillé (%s) : le mettre en vente quand même ?"] = "Locked item (%s): list it anyway?",
+    ["Confirmer %d pour %s"] = "Confirm %d for %s",
 }
