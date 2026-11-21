@@ -190,13 +190,24 @@ local function chip(parent)
     c.t = UI:Text(c, 10, C.text)
     c.t:SetPoint("LEFT", 18, 0)
     c.t:SetJustifyH("LEFT")
-    -- texte sur une ou deux lignes (« Bien nourri » / « absent ») : hauteur et largeur suivent
+    -- 2e ligne (« Bien nourri » / « absent ») : un texte à part, les textes de l'addon ne passent jamais à la
+    -- ligne (le « \n » était ignoré)
+    c.t2 = UI:Text(c, 10, C.text)
+    c.t2:SetPoint("TOPLEFT", c.t, "BOTTOMLEFT", 0, -1)
+    c.t2:SetJustifyH("LEFT")
     function c:Set(text, col)
-        self.t:SetText(text)
+        text = WK.T(text)
+        local a, b = text:match("^(.-)\n(.*)$")
+        self.t:SetText(a or text)
+        self.t2:SetText(b or "")
+        self.t2:SetShown(b ~= nil)
         self.dot:SetVertexColor(col[1], col[2], col[3], 1)
-        local two = text:find("\n", 1, true) ~= nil
-        self:SetHeight(two and 30 or 18)
-        self:SetWidth(self.t:GetStringWidth() + 26)
+        self.t:ClearAllPoints()
+        if b then self.t:SetPoint("TOPLEFT", 18, -4) else self.t:SetPoint("LEFT", 18, 0) end
+        self:SetHeight(b and 30 or 18)
+        local w = self.t:GetStringWidth()
+        if b then w = math.max(w, self.t2:GetStringWidth()) end
+        self:SetWidth(w + 26)
     end
     return c
 end

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.47", date = "21/11/2026",
+        fixed = {
+            "Pastilles sous la flamme du feu de camp : « Bien nourri absent » restait sur une seule ligne ; il passe bien sur deux lignes.",
+        },
+    },
+    {
         version = "1.128.46", date = "21/11/2026",
         fixed = {
             "Icône du feu de camp : le compte à rebours de la minute assise était caché sous le voile qui tourne ; il est maintenant au-dessus, plus gros et cerné de noir.",
