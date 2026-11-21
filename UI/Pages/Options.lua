@@ -607,7 +607,13 @@ UI:RegisterPage({
         section("general")
         local langCard = card("Langue", 96)
         local lang = UI:Segmented(langCard, { { "auto", "Auto" }, { "frFR", "Français" }, { "enUS", "English" } },
-            function(v) cfg.lang = v; apply() end, 30)
+            function(v)
+                cfg.lang = v
+                WK.RefreshBindingNames()
+                apply()
+                -- la fenêtre suit tout de suite ; les HUD et les textes posés une seule fois, au /reload
+                UI:AskReload(WK.T("Langue changée : recharge l'interface pour l'appliquer partout."))
+            end, 30)
         lang:Select(cfg.lang or "auto")
         UI:SettingRow(langCard, -40, "Langue", "Auto : celle du jeu.", lang, 280)
 

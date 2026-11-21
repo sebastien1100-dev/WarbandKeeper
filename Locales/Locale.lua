@@ -29,3 +29,14 @@ WK.L = setmetatable({}, {
         return WK.Locales[lang].keys[k] or WK.Locales.frFR.keys[k] or k
     end,
 })
+
+-- Noms des raccourcis clavier (Échap > Options > Raccourcis > AddOns) : posés tout de suite, puis reposés à la
+-- connexion (la sauvegarde est lue : langue choisie dans les Options) et à chaque changement de langue.
+WK.bindingNames = {}
+function WK.BindingName(global, fr)
+    WK.bindingNames[global] = fr
+    _G[global] = WK.T(fr)
+end
+function WK.RefreshBindingNames()
+    for g, fr in pairs(WK.bindingNames) do _G[g] = WK.T(fr) end
+end

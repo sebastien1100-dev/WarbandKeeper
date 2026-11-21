@@ -4592,4 +4592,5 @@ WK.Locales.enUS.text = {
     ["recettes"] = "recipes",
     ["rangement"] = "sorting",
     ["préchargement"] = "preload",
+    ["Langue changée : recharge l'interface pour l'appliquer partout."] = "Language changed: reload the UI.",
 }

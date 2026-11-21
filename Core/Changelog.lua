@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.1", date = "21/11/2026",
+        fixed = {
+            "Langue : les noms des raccourcis clavier (Options du jeu > Raccourcis > AddOns) suivent la langue choisie dans les Options, et changer de langue propose de recharger l'interface pour que les éléments à l'écran suivent aussi.",
+            "Mise à jour disponible : une version annoncée par un autre joueur n'est retenue que si elle est crédible (au plus quelques versions d'avance) et pendant 30 jours ; une fausse annonce « 999 » ne laisse plus le bouton « mise à jour » affiché pour toujours (une ancienne est effacée).",
+            "Page Persos : banque pas vue depuis longtemps et courrier qui va expirer s'affichent bien en orange (ils étaient en gris).",
+            "Démarrage : un module qui plante à la connexion n'empêche plus les autres de démarrer ; et une même erreur n'est écrite qu'une fois par séance dans le chat (toujours notée au journal de Fiabilité).",
+        },
+    },
+    {
         version = "1.128.0", date = "21/11/2026", restart = true,
         changed = {
             "Connexion plus légère : les grosses bases (coins des objectifs de quête, objets des listes BiS, recettes ; env. 1,45 Mo) sont maintenant dans un second dossier, WarbandKeeper_Data, chargé seulement quand une fonction en a besoin (quête suivie, zones de quête, tournée, barre Quête, choix BiS, recettes manquantes, Rangement).",

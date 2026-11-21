@@ -24,6 +24,15 @@ function M.Newer(a, b)
     return false
 end
 
+-- Version annoncée par un autre joueur crédible : même version majeure, au plus 3 versions mineures d'avance
+-- (une annonce « 999 », erreur ou blague, ne doit pas laisser le bouton « mise à jour » pour toujours)
+function M.Plausible(v)
+    local x, y = parts(v), parts(WK.version)
+    if #x < 2 or #y < 2 then return false end
+    return x[1] == y[1] and x[2] <= y[2] + 3
+end
+local SEEN_DAYS = 30 -- une annonce plus vieille est oubliée
+
 -- Version plus récente que celle chargée, et d'où on la tient ; nil si à jour
 function M:Available()
     local best, src, at
@@ -34,7 +43,8 @@ function M:Available()
     local g = WK.DB and WK.DB.global
     local s = g and g.latestSeen
     if s then
-        if not M.Newer(s.version, WK.version) then
+        local old = (s.at or 0) < _G.time() - SEEN_DAYS * 86400
+        if not M.Newer(s.version, WK.version) or not M.Plausible(s.version) or old then
             g.latestSeen = nil
         elseif not best or M.Newer(s.version, best) then
             best, src, at = s.version, s.source, s.at
@@ -79,7 +89,7 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, channel, sender)
     prefix, msg, channel = readable(prefix), readable(msg), readable(channel)
     if prefix == nil or msg == nil or prefix ~= PREFIX or type(msg) ~= "string" then return end
     local v = msg:match("^V:([%d%.]+)$")
-    if not v or not M.Newer(v, WK.version) then return end
+    if not v or not M.Newer(v, WK.version) or not M.Plausible(v) then return end
     local g = WK.DB.global
     local s = g.latestSeen
     if s and not M.Newer(v, s.version) then return end

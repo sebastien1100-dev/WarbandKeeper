@@ -532,4 +532,4 @@ end
 
 
 BINDING_HEADER_WARBANDKEEPER = "Warband Keeper"
-_G["BINDING_NAME_CLICK WarbandKeeperBuffButton:LeftButton"] = T("Buffer le suivant")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperBuffButton:LeftButton", "Buffer le suivant")

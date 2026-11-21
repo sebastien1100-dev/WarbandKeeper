@@ -305,3 +305,6 @@ WK:On("PLAYER_LOGIN", function()
         if busy and not (_G.InCombatLockdown and _G.InCombatLockdown()) then WK:NeedData("préchargement") end
     end)
 end)
+
+-- noms des raccourcis clavier dans la langue choisie (la sauvegarde est lue à la connexion)
+WK:On("PLAYER_LOGIN", function() WK.RefreshBindingNames() end)

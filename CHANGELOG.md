@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Langue : les noms des raccourcis clavier (Options du jeu > Raccourcis > AddOns) suivent la langue choisie dans les Options, et changer de langue propose de recharger l'interface pour que les éléments à l'écran suivent aussi.
+- Mise à jour disponible : une version annoncée par un autre joueur n'est retenue que si elle est crédible (au plus quelques versions d'avance) et pendant 30 jours ; une fausse annonce « 999 » ne laisse plus le bouton « mise à jour » affiché pour toujours (une ancienne est effacée).
+- Page Persos : banque pas vue depuis longtemps et courrier qui va expirer s'affichent bien en orange (ils étaient en gris).
+- Démarrage : un module qui plante à la connexion n'empêche plus les autres de démarrer ; et une même erreur n'est écrite qu'une fois par séance dans le chat (toujours notée au journal de Fiabilité).
+
 ## v1.128.0 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

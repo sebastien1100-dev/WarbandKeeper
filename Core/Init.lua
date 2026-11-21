@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.128.0"
+WK.version = "1.128.1"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -19,6 +19,18 @@ function WK:On(event, fn)
     table.insert(handlers[event], fn)
 end
 
+-- Erreur d'un gestionnaire : notée au journal à chaque fois, écrite dans le chat une seule fois par séance et
+-- par message (un évènement fréquent qui plante n'inonde plus le chat)
+local errorsShown = {}
+function WK.HandlerError(event, err)
+    local key = event .. "|" .. tostring(err)
+    if not errorsShown[key] then
+        errorsShown[key] = true
+        WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err))
+    end
+    if WK.RecordError then pcall(WK.RecordError, err, "", event) end
+end
+
 frame:SetScript("OnEvent", function(_, event, ...)
     local list = handlers[event]
     if not list then return end
@@ -27,10 +39,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
     local t0 = perf and debugprofilestop and debugprofilestop()
     for i = 1, #list do
         local ok, err = pcall(list[i], ...)
-        if not ok then
-            WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err))
-            if WK.RecordError then pcall(WK.RecordError, err, "", event) end
-        end
+        if not ok then WK.HandlerError(event, err) end
     end
     if t0 then perf.add("évènement " .. event, debugprofilestop() - t0) end
 end)
@@ -82,8 +91,12 @@ WK:On("ADDON_LOADED", function(name)
     -- profil de réglages de ce perso, avant que quoi que ce soit ne lise les réglages
     if WK.modules.Profiles then WK.modules.Profiles:Apply() end
     if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
-    for _, m in pairs(WK.modules) do
-        if m.OnInit then m:OnInit() end
+    -- un module qui plante n'empêche plus les suivants de démarrer
+    for key, m in pairs(WK.modules) do
+        if m.OnInit then
+            local ok, err = pcall(m.OnInit, m)
+            if not ok then WK.HandlerError("OnInit " .. key, err) end
+        end
     end
 end)
 
@@ -92,8 +105,11 @@ WK:On("PLAYER_LOGIN", function()
     if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
     -- compactage de l'historique : une fois par session, après l'arrivée en jeu (connexion plus fluide)
     C_Timer.After(6, function() pcall(WK.DB.CompactHistory, WK.DB) end)
-    for _, m in pairs(WK.modules) do
-        if m.OnLogin then m:OnLogin() end
+    for name, m in pairs(WK.modules) do
+        if m.OnLogin then
+            local ok, err = pcall(m.OnLogin, m)
+            if not ok then WK.HandlerError("OnLogin " .. name, err) end
+        end
     end
     -- Message « chargé » seulement à la première installation (les mises à jour ont le leur).
     if not WK.DB.global.settings.lastSeenVersion then WK:Print(WK.L.LOADED) end

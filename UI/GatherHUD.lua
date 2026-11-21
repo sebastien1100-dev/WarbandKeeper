@@ -85,7 +85,7 @@ function UI:ToggleGatherHUD(on)
 end
 -- pour le raccourci du jeu (Bindings.xml)
 function WarbandKeeper_ToggleGatherHUD() UI:ToggleGatherHUD() end
-BINDING_NAME_WARBANDKEEPER_HUD = T("HUD de récolte (afficher / masquer)")
+WK.BindingName("BINDING_NAME_WARBANDKEEPER_HUD", "HUD de récolte (afficher / masquer)")
 
 WK:On("PLAYER_REGEN_DISABLED", function()
     if saved and UI.GatherHUDConfig().combatHide then hide(); closedByCombat = true end

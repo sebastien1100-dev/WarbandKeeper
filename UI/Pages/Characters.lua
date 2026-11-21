@@ -2,7 +2,6 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
-local WARN = C.warning
 
 -- Colonnes : { libellé, x, alignement }
 -- Positions prévues pour 924 px de large, mises à l'échelle à la construction.
@@ -172,7 +171,7 @@ UI:RegisterPage({
                 if a.kind == "bank" then warnBank = true else warnMail = true end
             end
             r.bank:SetText(c.bankScanned and UI:Ago(c.bankScanned) or T("jamais"))
-            r.bank:SetTextColor(unpack(warnBank and WARN or C.muted))
+            r.bank:SetTextColor(unpack(warnBank and C.warning or C.muted))
             local box = c.mailbox
             if box and (box.count or 0) > 0 then
                 local txt = string.format((box.count > 1) and T("%d lettres") or T("%d lettre"), box.count)
@@ -184,7 +183,7 @@ UI:RegisterPage({
             else
                 r.mail:SetText(box and T("vide") or "-")
             end
-            r.mail:SetTextColor(unpack(warnMail and WARN or C.muted))
+            r.mail:SetTextColor(unpack(warnMail and C.warning or C.muted))
 
             r.seen:SetText(e.key == me and T("maintenant") or UI:Ago(c.lastSeen))
             r.del.key = e.key

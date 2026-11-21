@@ -166,10 +166,10 @@ end
 
 -- Noms des raccourcis dans les options du jeu (Bindings.xml)
 BINDING_HEADER_WARBANDKEEPER = "Warband Keeper"
-_G["BINDING_NAME_CLICK WarbandKeeperAspectButton:LeftButton"] = T("Aspect suivant")
-_G["BINDING_NAME_CLICK WarbandKeeperAspectButton:RightButton"] = T("Aspect principal")
-_G["BINDING_NAME_CLICK WarbandKeeperPetCardClick:LeftButton"] = T("Nourrir le familier")
-_G["BINDING_NAME_CLICK WarbandKeeperPetCardClick:RightButton"] = T("Soigner (ou ressusciter) le familier")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperAspectButton:LeftButton", "Aspect suivant")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperAspectButton:RightButton", "Aspect principal")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperPetCardClick:LeftButton", "Nourrir le familier")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperPetCardClick:RightButton", "Soigner (ou ressusciter) le familier")
 
 WK:On("PLAYER_LOGIN", function() C_Timer.After(1, function() UI:SyncAspectButton() end) end)
 WK:On("PLAYER_REGEN_ENABLED", function() if btn then UI:AspectButtonSetup() end end)

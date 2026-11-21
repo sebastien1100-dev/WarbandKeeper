@@ -70,6 +70,7 @@ Chaque push sur main qui change `## Version` lance `.github/workflows/release.ym
 ## Guides de montée des métiers
 
 `Modules/Guides.lua` est **généré** par `python3 tools/gen_guides.py` depuis `tools/guides/*.json` (extraits des guides WoW Forever de wowtbc.gg). Pour ajouter ou mettre à jour un métier : télécharger `https://wowtbc.gg/page-data/warcraftforever/professions/<métier>/page-data.json` puis `python3 tools/gen_guides.py --import <fichier>`. Une remarque de maître nouvelle doit être traduite dans `NOTES` du générateur (et en anglais dans `Locales/enUS.lua`).
+- Raccourcis clavier : nom posé par `WK.BindingName(global, texte français)` (`Locales/Locale.lua`, reposé dans la langue choisie à la connexion et au changement de langue par `WK.RefreshBindingNames`), jamais `_G["BINDING_NAME_…"] = T(…)` au chargement.
 - Infobulles : toujours `WK.UI:TooltipOwner(owner, anchor)` au lieu de `GameTooltip:SetOwner` ; elle habille l'infobulle aux couleurs de l'addon (le cadre du jeu revient à la fermeture). Les infobulles du jeu (`GAME_TOOLTIPS` de `UI/Widgets.lua` : GameTooltip, ItemRefTooltip, comparaisons…) sont aussi habillées à chaque affichage quand `settings.ui.gameTooltipFont` est actif (un habillage par infobulle, `skins[tt]`).
 
 ## Rangement des réglages (un seul endroit par réglage)

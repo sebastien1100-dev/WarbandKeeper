@@ -977,9 +977,9 @@ function UI.QuestActionData(_, s, objs)
     return out
 end
 -- raccourcis clavier (Bindings.xml) : Échap > Options > Raccourcis > AddOns > Warband Keeper
-_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton"] = T("Cibler le monstre de la quête")
-_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton"] = T("Cibler le monstre de l'objectif suivant")
-_G["BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton"] = T("Utiliser l'objet de la quête")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton", "Cibler le monstre de la quête")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton", "Cibler le monstre de l'objectif suivant")
+WK.BindingName("BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton", "Utiliser l'objet de la quête")
 
 -- Barre « Quête » (HUD questBar) : cadre à elle, posé où le joueur veut en mode édition. Les boutons
 -- protégés en sont les enfants : la barre n'est montrée / cachée et les attributs changés que hors combat
