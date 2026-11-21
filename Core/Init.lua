@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.128.25"
+WK.version = "1.128.26"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -26,7 +26,10 @@ function WK.HandlerError(event, err)
     local key = event .. "|" .. tostring(err)
     if not errorsShown[key] then
         errorsShown[key] = true
-        WK:Print("|cffff4040Erreur (" .. event .. ")|r " .. tostring(err))
+        -- couleur du thème si l'interface est prête (repli : rouge)
+        local neg = WK.UI and WK.UI.colors and WK.UI.colors.negative
+        local hex = (neg and WK.UI.Hex) and WK.UI:Hex(neg) or "|cffff4040"
+        WK:Print(hex .. "Erreur (" .. event .. ")|r " .. tostring(err))
     end
     if WK.RecordError then pcall(WK.RecordError, err, "", event) end
 end

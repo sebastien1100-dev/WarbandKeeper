@@ -349,6 +349,15 @@ local function wrap(tbl, key, label)
     table.insert(wrapped, { tbl, key, fn, env })
     tbl[key] = env
 end
+local perfLater = {}
+WK:On("PLAYER_REGEN_ENABLED", function()
+    for i = #perfLater, 1, -1 do
+        local f = perfLater[i]
+        local okS, cur = pcall(f[1].GetScript, f[1], "OnUpdate")
+        if okS and cur == f[3] then f[1]:SetScript("OnUpdate", f[2]) end
+        perfLater[i] = nil
+    end
+end)
 function M:PerfStop()
     local p = WK.perf
     if not p then return end
@@ -364,7 +373,9 @@ function M:PerfStop()
     for _, f in ipairs(p.frames) do
         local fr = f[1]
         local prot = fr.IsProtected and fr:IsProtected()
-        if not (combat and prot) then
+        if combat and prot then
+            perfLater[#perfLater + 1] = f -- remis à la sortie du combat (avant : enveloppe laissée jusqu'au /reload)
+        else
             local okS, cur = pcall(fr.GetScript, fr, "OnUpdate")
             if okS and cur == f[3] then fr:SetScript("OnUpdate", f[2]) end
         end

@@ -320,8 +320,12 @@ function M:ScanAmmo()
     if id then
         -- Vitesse de tir (secondes entre deux tirs) : pour estimer les minutes de tir restantes.
         local speed = UnitRangedDamage and readable((UnitRangedDamage("player")))
-        c.ammo = { id = id, n = GetInventoryItemCount and GetInventoryItemCount("player", 0) or 0,
-                   speed = (speed and speed > 0) and speed or (c.ammo and c.ammo.speed) }
+        local n = GetInventoryItemCount and GetInventoryItemCount("player", 0) or 0
+        speed = (speed and speed > 0) and speed or (c.ammo and c.ammo.speed)
+        -- même munition : mise à jour sur place (avant, une table neuve à chaque tir)
+        local a = c.ammo
+        if a and a.id == id then a.n, a.speed = n, speed
+        else c.ammo = { id = id, n = n, speed = speed } end
     else
         c.ammo = nil
     end
@@ -901,8 +905,7 @@ function M:PoisonAction(slot)
     return nil
 end
 local function checkPoisons()
-    local c = WK.DB:Me()
-    if c.class ~= "ROGUE" then return end
+    if select(2, _G.UnitClass("player")) ~= "ROGUE" or not WK:FeatureOn("classes") then return end
     local cc = M:Class("ROGUE")
     if not cc.poisonAlert then return end
     local main, off = M:PoisonTimes()
@@ -1147,7 +1150,8 @@ function M:OnLogin()
     self:ScanReincarnation()
     -- poisons du voleur seulement (rappel dans le chat) ; checkBuffs ne servait plus qu'aux rappels à l'écran,
     -- retirés : il relisait les effets de tout le groupe pour rien toutes les 15 s
-    if C_Timer and C_Timer.NewTicker and WK.DB:Me().class == "ROGUE" then
+    -- classe lue en jeu (à la 1re connexion d'un nouveau perso, la fiche n'est pas encore remplie à ce moment)
+    if C_Timer and C_Timer.NewTicker and select(2, _G.UnitClass("player")) == "ROGUE" then
         C_Timer.NewTicker(15, function() checkPoisons() end)
     end
 end

@@ -174,7 +174,12 @@ end
 local skipped = {}   -- étapes passées pendant la session : [clé] = true
 local smemo = {}
 function M:Invalidate() smemo = {}; zmemo = {} end
-function M:Skip(key) skipped[key] = true; smemo = {}; WK:NotifyChanged(); self:Changed() end
+function M:Skip(key)
+    -- « Tournée en cours » : c'est l'étape de la tournée qui est passée (avant, la ligne du guide était cachée pour
+    -- toute la séance, et les tournées suivantes avec elle, pendant que la tournée continuait)
+    if key == "tour" and P() and P():Tour() then P():Skip() self:Changed() return end
+    skipped[key] = true; smemo = {}; WK:NotifyChanged(); self:Changed()
+end
 
 -- { { key, kind, title, sub, act = fonction, auto (lancée seule quand on suit le guide) } }
 function M:Steps()
@@ -366,7 +371,7 @@ local function soon(delay)
 end
 WK:On("QUEST_ACCEPTED", function(a, b)
     -- (index du journal, n°) sur certains clients, (n°) sur d'autres : même lecture que Modules/Quests.lua
-    local qid = (type(b) == "number" and b) or (type(a) == "number" and a > 100 and a) or nil
+    local qid = (type(b) == "number" and b) or (type(a) == "number" and (b == nil or a > 100) and a) or nil
     if not qid then return end
     local c = M:Config()
     local k = WK:CharKey()

@@ -351,7 +351,16 @@ end
 
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() later() end) end)
 WK:On("PLAYER_EQUIPMENT_CHANGED", function() later({ gear = true, stats = true }) end)
-WK:OnUnit("UNIT_INVENTORY_CHANGED", "player", function(unit) if unit == "player" then later({ gear = true }) end end)
+-- (à chaque munition tirée aussi : en combat, l'équipement est seulement noté à relever, à la sortie du combat)
+local gearAfterCombat = false
+WK:OnUnit("UNIT_INVENTORY_CHANGED", "player", function(unit)
+    if unit ~= "player" then return end
+    if _G.InCombatLockdown and _G.InCombatLockdown() then gearAfterCombat = true return end
+    later({ gear = true })
+end)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if gearAfterCombat then gearAfterCombat = false; later({ gear = true }) end
+end)
 WK:OnUnit("UNIT_STATS", "player", function(unit) if unit == "player" then later({ stats = true }) end end)
 WK:OnUnit("UNIT_RESISTANCES", "player", function(unit) if unit == "player" then later({ stats = true }) end end)
 WK:On("CHARACTER_POINTS_CHANGED", function() later({ talents = true }) end)

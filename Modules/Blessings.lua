@@ -166,7 +166,7 @@ local function myEntry()
 end
 
 -- les paladins qui ne sont plus dans le groupe sont oubliés
-local scannedAt, auraDirty = {}, {} -- relevés des effets par membre (M:Left plus bas)
+local scannedAt, auraDirty, scannedGen, auraGen = {}, {}, {}, 0 -- relevés des effets par membre (M:Left)
 local function prune()
     local present = {}
     for _, u in ipairs(groupUnits()) do
@@ -176,7 +176,7 @@ local function prune()
     -- relevés des effets : seulement les membres présents (les tables ne grossissent plus sur toute la séance)
     for key in pairs(scannedAt) do
         local n = key:match("^(.*):%d+$")
-        if n and not present[n] then scannedAt[key] = nil; auraDirty[n] = nil end
+        if n and not present[n] then scannedAt[key] = nil; scannedGen[key] = nil; auraDirty[n] = nil end
     end
     myEntry()
     return present
@@ -330,7 +330,8 @@ WK:On("UNIT_AURA", function(unit)
     if type(unit) ~= "string" or not (unit == "player" or unit:find("^party") or unit:find("^raid")) then return end
     if not M:On() then return end
     local n = fullName(unit)
-    if n then auraDirty[n] = now() end
+    -- compteur (pas l'heure) : un changement reçu dans la même image que la lecture n'est plus ignoré
+    if n then auraGen = auraGen + 1; auraDirty[n] = auraGen end
 end)
 function M:Left(unit, b)
     local name = fullName(unit)
@@ -340,10 +341,11 @@ function M:Left(unit, b)
         local t = now()
         local last = scannedAt[key]
         -- relu si ses effets ont changé depuis la dernière lecture de cette bénédiction, ou toutes les 10 s
-        if not last or (auraDirty[name] or 0) >= last or t - last > 10 then
+        if not last or (auraDirty[name] or 0) > (scannedGen[key] or -1) or t - last > 10 then
+            scannedGen[key] = auraGen
             local exp = scanLeft(unit, b)
             if exp ~= nil then seen[key] = exp or nil end
-            scannedAt[key] = t + 0.001
+            scannedAt[key] = t
         end
     end
     local exp = seen[key]

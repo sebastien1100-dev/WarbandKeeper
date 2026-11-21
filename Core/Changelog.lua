@@ -8,6 +8,23 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.26", date = "21/11/2026",
+        fixed = {
+            "Statistiques de vol : fermées pendant un vol, elles ne réapparaissent plus à chaque ouverture de la carte jusqu'à l'atterrissage.",
+            "Trajet : un réseau des chemins en échec donne une ligne droite pendant 60 s au lieu d'être reconstruit à chaque calcul ; le tracé d'un vol est refait à l'ouverture de la carte des vols et à l'atterrissage.",
+            "Guide de montée : « Passer » sur « Tournée en cours » passe l'étape de la tournée (au lieu de cacher la ligne pour la séance) ; les quêtes de n° 100 ou moins sont aussi chronométrées.",
+            "Sorts de classe et dialogues : le catalogue n'est plus relu à chaque changement de forme ; le premier dialogue avec un PNJ ne charge plus le dossier de données.",
+            "Hôtel des ventes : un équipement est cherché avec la clé de l'exemplaire de tes sacs ; une confirmation d'achat déjà partie n'est plus redemandée au même prix (double achat possible).",
+            "Marchand : un achat (réassort, métiers, quêtes) vérifie que la ligne est toujours le bon objet avant d'acheter.",
+            "Banque : une case visée n'est libérée qu'une fois le dépôt arrivé.",
+            "Bénédictions : un changement d'effet reçu dans la même image que la lecture n'est plus ignoré ; voleur : le rappel de poison marche dès la première connexion.",
+            "Invitations et duels : la liste de guilde est demandée à la connexion et toutes les 5 minutes même micro menu coupé (un nouveau membre est reconnu).",
+            "Donjons : moins d'appels au jeu sur la vie des membres du raid ; chasseur : plus de relevé de l'équipement à chaque tir en combat.",
+            "Feu de camp : un changement pendant le mode édition est rejoué à la sortie, et l'encart a son « Tester » ; module Rares coupé : plus rien n'est noté ; barre de pêche : macro posée seulement si elle change.",
+            "/wk perf terminé en combat : les mesures sont retirées à la sortie du combat ; Nettoyer : un ancien minuteur ne désarme plus un armement récent ; quelques textes gris et le message d'erreur suivent l'apparence.",
+        },
+    },
+    {
         version = "1.128.25", date = "21/11/2026",
         fixed = {
             "Vente rapide (fenêtre du jeu) et Mes enchères : un appât isolé n'est plus pris pour le prix le plus bas ; une recherche sans réponse affiche « à vérifier » au lieu de « la plus basse ».",

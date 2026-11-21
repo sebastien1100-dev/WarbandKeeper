@@ -29,7 +29,10 @@ local function flightPath(from, to)
     pathCache[key] = { paths = paths, fw = fw, bw = bw, c = c, pts = pts }
     return c, pts
 end
-WK:On("TAXIMAP_OPENED", function() pathCache = {} end)
+local remainingCache -- points du trajet restant (remaining plus bas)
+-- carte des vols ouverte : chemins des vols relus, et le trajet restant (qui en contient) refait
+WK:On("TAXIMAP_OPENED", function() pathCache = {}; remainingCache = nil end)
+WK:On("PLAYER_CONTROL_GAINED", function() remainingCache = nil end) -- fin d'un vol : chemin appris
 
 -- Points d'un vol : chemin réel déjà parcouru une fois (Modules/Flight.lua), sinon ligne droite
 local function flyPoints(out, from, to, ax, ay, bx, by, fromIdx)
@@ -55,7 +58,6 @@ end
 -- Points restants du trajet (monde), depuis la position du perso : { { x, y, fly } }
 -- En vol (taxi) : le chemin du griffon depuis la position actuelle (connu après un premier vol,
 -- sinon le chemin parcouru jusqu'ici), puis la suite du trajet guidé.
-local remainingCache
 local function remaining()
     local r = N.route
     local G = WK.modules.Guide

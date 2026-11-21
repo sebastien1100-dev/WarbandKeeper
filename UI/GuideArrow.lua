@@ -61,8 +61,8 @@ local function build()
         WK.UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         local t = WK.modules.Guide.target
         GameTooltip:SetText(T("Guidage Warband Keeper"), 1, 1, 1)
-        if t and t.reason then GameTooltip:AddLine(T(t.reason), 0.8, 0.8, 0.8) end
-        GameTooltip:AddLine(T("Glisser pour déplacer · clic droit pour arrêter"), 0.6, 0.6, 0.6)
+        if t and t.reason then GameTooltip:AddLine(T(t.reason), unpack(C.muted)) end
+        GameTooltip:AddLine(T("Glisser pour déplacer · clic droit pour arrêter"), unpack(C.dim))
         GameTooltip:Show()
     end)
     f:SetScript("OnLeave", function() GameTooltip:Hide() end)

@@ -213,6 +213,7 @@ end
 
 -- Butin ouvert sur un cadavre : si c'est un rare, il est tué (par ce perso)
 WK:On("LOOT_OPENED", function()
+    if not WK:FeatureOn("rares") then return end -- module coupé : rien n'est noté
     if not (GetNumLootItems and GetLootSourceInfo) then return end
     for i = 1, GetNumLootItems() do
         local guid = readable(GetLootSourceInfo(i))
@@ -224,7 +225,7 @@ WK:On("LOOT_OPENED", function()
 end)
 -- Rare ciblé qui meurt (pas toujours de butin : déjà ramassé par un autre, etc.)
 WK:OnUnit("UNIT_HEALTH", "target", function(unit)
-    if unit ~= "target" then return end
+    if unit ~= "target" or not WK:FeatureOn("rares") then return end
     local ok, dead = pcall(UnitIsDead, "target")
     if not (ok and readable(dead) == true) then return end
     local id = M.NpcID("target")

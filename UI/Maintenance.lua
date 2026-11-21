@@ -168,10 +168,11 @@ function UI:BuildMaintenanceCards(page, card)
         local gain = cc.gain or 0
         if gain <= 0 then return end
         if not cc.armed then
-            cc.armed = true
+            cc.armed = _G.GetTime() -- jeton : le minuteur ne désarme que cet armement-ci
             cc.go.label:SetText(string.format(T("Confirmer (-%s)"), M.Bytes(gain)))
             cc.note:SetText(UI:Hex(C.warning) .. T("Clique encore pour effacer ce qui est coché.") .. "|r")
-            C_Timer.After(5, function() if cc.armed then cc.armed = nil; UI:RefreshMaintenance(true) end end)
+            local tok = cc.armed
+            C_Timer.After(5, function() if cc.armed == tok then cc.armed = nil; UI:RefreshMaintenance(true) end end)
             return
         end
         cc.armed = nil

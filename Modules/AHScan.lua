@@ -672,6 +672,9 @@ end
 WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
     local b = M.buy
     if not b or not (b.phase == "quote" or b.phase == "confirm" or b.phase == "wait") then return end
+    -- confirmation déjà partie et même prix : on attend le résultat (avant, la phase repassait à « confirm » et un
+    -- second clic renvoyait la confirmation, d'où un double achat possible)
+    if b.phase == "wait" and b.total and total == b.total then return end
     -- prix changé après la demande (ou pendant la confirmation : le serveur attend alors une nouvelle
     -- confirmation) : nouveau prix affiché, et il faut recliquer pour l'accepter
     if b.phase ~= "quote" and b.total and total and total ~= b.total then

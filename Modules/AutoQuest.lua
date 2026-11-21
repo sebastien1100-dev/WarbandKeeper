@@ -135,7 +135,9 @@ local G = C_GossipInfo
 local function sellsNeeded()
     local QT = WK.modules.QuestTrack
     local name = UnitName and UnitName("npc")
-    if not (QT and QT.BuyMissing and name) then return false end
+    -- données pas chargées : rien à vérifier (avant, le premier dialogue avec un banquier ou un maître de vol
+    -- chargeait tout le dossier WarbandKeeper_Data pour ce test)
+    if not (QT and QT.BuyMissing and name and WK.dataLoaded) then return false end
     for _, l in ipairs(QT:LogQuests()) do
         for _, it in ipairs(QT:BuyMissing(l.id)) do
             for _, v in ipairs(QT:Vendors(it.id)) do

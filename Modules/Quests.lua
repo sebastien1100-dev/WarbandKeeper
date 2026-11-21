@@ -559,7 +559,7 @@ end
 WK:On("QUEST_DETAIL", function() pcall(learnGiver) end)
 -- quête prise : niveau et nom lus dans le journal
 WK:On("QUEST_ACCEPTED", function(a, b)
-    local id = (type(b) == "number" and b) or (type(a) == "number" and a > 100 and a) or nil
+    local id = (type(b) == "number" and b) or (type(a) == "number" and (b == nil or a > 100) and a) or nil
     if not id or inBase(id) or M:IsRepeatable(id) then return end
     C_Timer.After(0.5, function()
         local idx = C_QuestLog and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(id)

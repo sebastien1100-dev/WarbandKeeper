@@ -183,8 +183,10 @@ function UI:RefreshFishingBar()
         bar.lure.badge:SetText(pick and tostring(F:Count(pick)) or "0")
         bar.lure.badge:SetTextColor(unpack(pick and C.text or C.negative))
     end
-    if not inCombat() then
-        bar.lure:SetAttribute("macrotext", pick and F:MacroFor("lure", pick) or "")
+    -- (posée seulement si elle change : cette fonction tourne chaque seconde)
+    local macro = pick and F:MacroFor("lure", pick) or ""
+    if not inCombat() and bar.lure:GetAttribute("macrotext") ~= macro then
+        bar.lure:SetAttribute("macrotext", macro)
     end
 end
 

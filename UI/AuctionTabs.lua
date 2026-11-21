@@ -49,8 +49,25 @@ local function isCommodity(id)
     end
     return true
 end
+-- Équipement : la clé exacte (niveau d'objet, suffixe) est lue sur l'exemplaire des sacs ; une clé refaite à
+-- partir du seul numéro ne le trouve pas et la recherche restait sur « recherche… »
+local function bagItemKey(id)
+    local a = AH()
+    if not (a and a.GetItemKeyFromItem and _G.ItemLocation and _G.ItemLocation.CreateFromBagAndSlot) then return nil end
+    if isCommodity(id) then return nil end
+    for bag = 0, 4 do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            if WK.Container.Info(bag, slot) == id then
+                local ok, k = pcall(a.GetItemKeyFromItem, _G.ItemLocation:CreateFromBagAndSlot(bag, slot))
+                if ok and k then return k end
+            end
+        end
+    end
+end
 local function itemKeyOf(id)
     local a = AH()
+    local bk = bagItemKey(id)
+    if bk then return bk end
     if a and a.MakeItemKey then
         local ok, k = pcall(a.MakeItemKey, id)
         if ok then return k end

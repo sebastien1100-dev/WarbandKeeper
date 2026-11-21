@@ -381,6 +381,8 @@ local function build()
     f.close = UI:IconButton(right, "close", 24, "Fermer (Échap)")
     f.close:SetPoint("TOPRIGHT", -12, -12)
     f.close:SetScript("OnClick", function() f:Hide() end)
+    -- fermées pendant un vol (croix ou Échap) : plus reposées sur la carte jusqu'à l'atterrissage
+    f:HookScript("OnHide", function(s) if onTaxi and onTaxi() then s.allowMap = true end end)
     -- histoire suivante / précédente : boutons ronds avec un chevron (les « ‹ › » de la police étaient minuscules)
     f.next = UI:IconButton(right, "chevron", 24, "Histoire suivante (molette)")
     f.next:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
@@ -719,7 +721,7 @@ local function hookMap()
             if view and view.SetFrameStrata and WorldMapFrame:IsShown() then UI:MatchHost(view, WorldMapFrame, 50) end
         end)
     end)
-    WorldMapFrame:HookScript("OnHide", function() if view then view.allowMap = nil end end)
+    -- (allowMap n'est plus remis à zéro à la fermeture de la carte : seulement à l'atterrissage, OnFinish)
 end
 WK:On("PLAYER_LOGIN", hookMap)
 WK:On("ADDON_LOADED", function() hookMap() end)

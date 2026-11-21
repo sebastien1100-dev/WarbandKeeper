@@ -431,8 +431,9 @@ local WATCH = { target = true, focus = true, mouseover = true }
 -- UNIT_HEALTH (très fréquent en groupe) : écouté seulement en instance, sur un cadre à part
 local healthFrame = CreateFrame("Frame")
 healthFrame:SetScript("OnEvent", function(_, _, unit)
-    if type(unit) ~= "string" or not active() then return end
-    if WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d") then
+    if type(unit) ~= "string" then return end
+    -- l'unité d'abord (raid1-40 écartés tout de suite), puis seulement l'état du donjon : active() appelle le jeu
+    if (WATCH[unit] or unit:find("^boss%d") or unit:find("^nameplate%d")) and active() then
         local perf = WK.perf
         local t0 = perf and debugprofilestop and debugprofilestop()
         local ok, err = pcall(checkUnit, unit)

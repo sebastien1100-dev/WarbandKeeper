@@ -180,11 +180,14 @@ local function build()
             GameTooltip:SetText(T("Tout près"), 1, 1, 1)
             GameTooltip:AddLine(T("Une étape prévue plus loin dans la tournée est juste à côté : fais-la maintenant."),
                 0.8, 0.8, 0.8, true)
-            GameTooltip:AddLine(T("Clic gauche : la faire maintenant · clic droit : plus tard"), 0.6, 0.6, 0.6, true)
+            GameTooltip:AddLine(T("Clic gauche : la faire maintenant · clic droit : plus tard"),
+                C.dim[1], C.dim[2], C.dim[3], true)
         else
             GameTooltip:SetText(T("Sur ton chemin"), 1, 1, 1)
-            GameTooltip:AddLine(T("Une quête toute proche du trajet vers l'étape en cours, pas encore dans la tournée."), 0.8, 0.8, 0.8, true)
-            GameTooltip:AddLine(T("Clic gauche : l'ajouter à la tournée · clic droit : ignorer"), 0.6, 0.6, 0.6, true)
+            GameTooltip:AddLine(T("Une quête toute proche du trajet vers l'étape en cours, pas encore dans la tournée."),
+                C.muted[1], C.muted[2], C.muted[3], true)
+            GameTooltip:AddLine(T("Clic gauche : l'ajouter à la tournée · clic droit : ignorer"),
+                C.dim[1], C.dim[2], C.dim[3], true)
         end
         GameTooltip:Show()
     end)

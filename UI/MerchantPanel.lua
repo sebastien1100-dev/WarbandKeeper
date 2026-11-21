@@ -71,6 +71,13 @@ WK:On("MERCHANT_CLOSED", function() _G.wipe(pendingBuys) end)
 -- Achète `need` unités (par lots si le marchand vend par paquets). Renvoie la quantité achetée.
 local function buy(s, need)
     if (s.available or -1) == 0 then return 0 end
+    -- la ligne du marchand doit toujours être cet objet (filtre changé, stock épuisé : les numéros se décalent et un
+    -- autre objet aurait été acheté)
+    if s.id and s.index then
+        local gid = _G.GetMerchantItemID and _G.GetMerchantItemID(s.index)
+        if not gid and _G.GetMerchantItemLink then gid = WK:ParseItemID(_G.GetMerchantItemLink(s.index)) end
+        if gid and gid ~= s.id then return 0 end
+    end
     need = need - stillPending(s.id)
     if need <= 0 then return 0 end
     local have0 = s.id and bagCount(s.id) or 0

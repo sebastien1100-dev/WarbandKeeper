@@ -236,6 +236,10 @@ end
 local clock = debugprofilestop or function() return GetTime() * 1000 end
 -- Chemin à pied de (sx, sy) à (tx, ty) sur le continent : { x, y, x, y, ... } ; yield() entre les tranches
 local function walk(cont, sx, sy, tx, ty, budget)
+    -- réseau de ce continent en échec depuis moins de 60 s : ligne droite (avant, chaque calcul refaisait une
+    -- construction complète vouée à échouer)
+    local failedAt = buildFailed[cont]
+    if failedAt and (_G.GetTime and _G.GetTime() or 0) - failedAt < 60 then return { sx, sy, tx, ty } end
     local g = graph(cont)
     local GOAL, START = -1, 0
     local best = { [START] = 0 }

@@ -96,7 +96,17 @@ local function build()
         -- fin de l'aperçu : l'état réel revient (pas seulement caché)
         -- fin de l'aperçu : état rafraîchi sans le jouer comme un changement (son et encart « avantages »
         -- rejoués deux fois avant, une fois par élément)
-        sample = function(on) f.sample = on or nil; if on then f:Paint(true); f:Show() else f:Hide(); M:OnChange(false) end end,
+        sample = function(on)
+            f.sample = on or nil
+            if on then f:Paint(true); f:Show() else f:Hide(); UI.CampReplay() end
+        end,
+        -- « Tester » : l'encart tel qu'au camp, avec son son d'alerte
+        test = function()
+            f.sample = true; f:Paint(true); f:Show()
+            local ps, sk = _G.PlaySound, _G.SOUNDKIT
+            if M:Config().sound and ps then pcall(ps, (sk and sk.UI_GARRISON_TOAST_INVASION_ALERT) or 8959, "Master") end
+        end,
+        testStop = function() f.sample = nil; f:Hide(); UI.CampReplay() end,
     })
     return f
 end
@@ -183,7 +193,7 @@ local function buildIcon()
     UI:RegisterHUD("campIcon", b, {
         label = T("Icône du feu de camp"), default = { -220, -120 },
         enabled = function() return M:Config().icon and WK:FeatureOn("campfire") end,
-        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide(); M:OnChange(false) end end,
+        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide(); UI.CampReplay() end end,
     })
     return b
 end
@@ -199,10 +209,21 @@ local function updateIcon(changed)
     icon:Show()
 end
 
+-- Changement d'état reçu pendant l'aperçu du mode édition : retenu et rejoué une fois à la sortie (son, encart
+-- « avantages ») ; avant, il était perdu, ou rejoué deux fois (une fois par élément)
+local campPending = false
+function UI.CampReplay()
+    local ch = campPending
+    campPending = false
+    M:OnChange(ch)
+end
 M.OnChange = function(_, changed)
-    updateIcon(changed)
     if not card then card = build() end
-    if card.sample then return end
+    if card.sample or (icon and icon.sample) then
+        if changed then campPending = true end
+        return
+    end
+    updateIcon(changed)
     local st = M.state
     if not M:Config().enabled then card:Hide() return end
     if st == "none" then card.dismissed = nil; card:Hide() return end

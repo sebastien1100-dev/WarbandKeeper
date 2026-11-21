@@ -36,6 +36,15 @@ PHRASES = {
     "Guides de métiers": ("{n} guide(s) de métier de plus", ""),
     "Objets avec taux de drop observé": ("{n} objet(s) de plus avec un taux de drop observé", ""),
     "Trajets de vol (fichiers du jeu)": ("{n} trajet(s) de vol de plus", ""),
+    "Sorts de classe": ("{n} sort(s) de classe de plus", "{n} sort(s) de classe en moins"),
+    "Prix des sorts de classe": ("{n} prix de sort(s) de plus chez les maîtres", "{n} prix de sort(s) en moins"),
+    "Maîtres d'armes": ("{n} maître(s) d'armes de plus", "{n} maître(s) d'armes en moins"),
+    "Quêtes avec camps d'objectifs": ("{n} quête(s) de plus avec leurs camps d'objectifs", "{n} quête(s) sans camps d'objectifs"),
+    "Objets portables (liste BiS)": ("{n} objet(s) de plus pour les listes BiS", "{n} objet(s) retiré(s) des listes BiS"),
+    "Lignes de bateaux et zeppelins": ("{n} ligne(s) de bateau ou de zeppelin de plus", "{n} ligne(s) en moins"),
+    "Zones pour /way": ("{n} zone(s) de plus pour /way", "{n} zone(s) en moins pour /way"),
+    "Cartes sans brouillard": ("{n} carte(s) de plus sans brouillard", "{n} carte(s) sans brouillard en moins"),
+    "Mises à jour de la base notées (journal)": ("", ""),
 }
 
 

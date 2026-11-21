@@ -929,14 +929,18 @@ for _, ev in ipairs({ "GUILD_ROSTER_UPDATE", "FRIENDLIST_UPDATE", "BN_FRIEND_ACC
     WK:On(ev, countsSoon)
 end
 -- la liste de la guilde n'arrive que sur demande : une fois par minute
-local function askRoster()
-    -- micro menu coupé (cadre caché) : rien à compter, la liste de guilde n'est pas redemandée
-    if bar and bar:IsShown() and IsInGuild and IsInGuild() then
+-- micro menu affiché : chaque minute (compteurs) ; sinon toutes les 5 min seulement, car la liste sert aussi à
+-- reconnaître un membre de la guilde (acceptation des invitations, refus des duels : Modules/QoL.lua)
+local rosterTicks = 0
+local function askRoster(force)
+    rosterTicks = rosterTicks + 1
+    local shown = bar and bar:IsShown()
+    if (force or shown or rosterTicks % 5 == 0) and IsInGuild and IsInGuild() then
         if C_GuildInfo and C_GuildInfo.GuildRoster then pcall(C_GuildInfo.GuildRoster) elseif GuildRoster then pcall(GuildRoster) end
     end
 end
-if C_Timer.NewTicker then C_Timer.NewTicker(60, askRoster) end
-WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(5, function() askRoster(); UI:ClockCounts() end) end)
+if C_Timer.NewTicker then C_Timer.NewTicker(60, function() askRoster() end) end
+WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(5, function() askRoster(true); UI:ClockCounts() end) end)
 
 ---------------------------------------------------------------------------
 -- Ordre et côté des raccourcis (réglages : barre en direct de QoL > Micro menu)

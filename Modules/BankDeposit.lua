@@ -38,7 +38,12 @@ local function destination(target, itemID, amount)
             -- objet arrivé (case remplie, plus verrouillée par le jeu) : sa quantité est déjà dans le compte de la
             -- case, la réservation est libérée (avant, elle était comptée deux fois : piles en trop, banque dite
             -- pleine trop tôt)
-            if r and id and not locked then reserved[key] = nil; r = nil end
+            -- (arrivé = le compte de la case a monté de ce qui est en route, ou 2 s passées : une pile partielle visée
+            -- n'est plus libérée avant même l'arrivée du dépôt)
+            local now = _G.GetTime and _G.GetTime() or 0
+            if r and id and not locked and ((count or 0) >= (r.base or 0) + r.n or now - (r.at or 0) > 2) then
+                reserved[key] = nil; r = nil
+            end
             if r and not id then
                 -- case vide visée par un dépôt en route : pleine pour nous (même objet : pile à compléter)
                 id, count = r.id, 0
@@ -101,7 +106,10 @@ local function step()
     ClearCursor()
     local key = bag .. ":" .. slot
     local r = reserved[key]
-    reserved[key] = { id = job.itemID, n = ((r and r.id == job.itemID) and r.n or 0) + job.op.count }
+    local same = r and r.id == job.itemID
+    local base = same and r.base or select(2, WK.Container.Info(bag, slot)) or 0
+    reserved[key] = { id = job.itemID, n = (same and r.n or 0) + job.op.count, base = base,
+        at = _G.GetTime and _G.GetTime() or 0 }
     done[job.target] = done[job.target] or {}
     done[job.target][job.itemID] = (done[job.target][job.itemID] or 0) + job.op.count
     C_Timer.After(STEP_DELAY, step)

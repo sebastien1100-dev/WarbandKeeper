@@ -363,8 +363,8 @@ local function soon(d)
     pending = true
     C_Timer.After(d or 1.5, function()
         pending = nil
-        local cl = classOf()
-        if catalog[cl] and not catalog[cl].complete then catalog[cl] = nil end
+        -- (catalogue incomplet gardé : Catalog relit lui-même les seuls sorts sans nom ; le vider ici refaisait les
+        -- ~300 sorts à chaque changement de forme ou de monture)
         M:Record(); M:CheckAlert(); M:Changed()
     end)
 end
