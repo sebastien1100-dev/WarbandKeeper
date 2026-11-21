@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.5", date = "21/11/2026",
+        changed = {
+            "Fenêtre des quêtes du donjon : une fois sa hauteur réglée avec la poignée, elle garde cette taille. Seul le contenu défile à la molette, la ligne « plus haut / plus bas » et le bouton Tournée restent en bas.",
+        },
+    },
+    {
         version = "1.123.4", date = "21/11/2026",
         fixed = {
             "Suivi des quêtes : les pastilles de la tournée ne s'affichaient pas, le suivi de WoW Forever ne portant pas les noms de cadre attendus. L'addon le cherche maintenant parmi tous les cadres du jeu (un petit bouton qui porte un n° de quête) ; /wk suivi en dit plus si ça ne marche toujours pas.",

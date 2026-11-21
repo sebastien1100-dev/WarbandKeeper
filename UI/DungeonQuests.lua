@@ -295,11 +295,19 @@ local function build()
         local hidden = 0
         for i = self.off + 1, #items do
             local it = items[i]
-            local need = it.sec and 18 or (compact and 24 or 40)
-            if y + need > limit then hidden = #items - i + 1 break end
+            local y0 = y
             if it.sec then drawSection(it.label, it.n, it.onClick) else drawLine(it.e) end
+            if y > limit then
+                -- ne tient plus : retiré, la suite passe à la molette
+                if it.sec then self.secs[ns]:Hide(); ns = ns - 1 else self.rows[nr]:Hide(); nr = nr - 1 end
+                y = y0
+                hidden = #items - i + 1
+                break
+            end
         end
         if self.off > 0 or hidden > 0 then
+            -- hauteur fixe : la ligne « plus haut / plus bas » est posée en bas, juste au-dessus du pied
+            if maxH then y = maxH - footH - 22 end
             drawSection("", nil, nil)
             self.secs[ns].l:SetText((self.off > 0 and string.format(T("%d plus haut"), self.off) or "")
                 .. ((self.off > 0 and hidden > 0) and "  ·  " or "") .. (hidden > 0 and string.format(T("%d plus bas"), hidden) or ""))
@@ -308,6 +316,7 @@ local function build()
         for i = ns + 1, #self.secs do self.secs[i]:Hide() end
         for i = nr + 1, #self.rows do self.rows[i]:Hide() end
         y = y + 4
+        if maxH then y = maxH - footH - 2 end -- hauteur fixe (poignée) : le pied reste en bas
         if (data.pick or 0) > 0 then
             self.foot:ClearAllPoints(); self.foot:SetPoint("TOPLEFT", 0, -y); self.foot:SetPoint("TOPRIGHT", 0, -y)
             self.pick:SetLabel(string.format(T("Tournée (%d)"), data.pick))
@@ -317,7 +326,7 @@ local function build()
         else
             self.foot:Hide()
         end
-        self:SetHeight(y + 2)
+        self:SetHeight(maxH or (y + 2))
     end
     f:Hide()
     -- distance et entrée surveillées toutes les 2 s (rien à faire tant que la fenêtre est coupée)
