@@ -4533,4 +4533,9 @@ WK.Locales.enUS.text = {
     ["Retour au corps (secours)"] = "Corpse run (fallback)",
     ["Chaîne apprise : « %s » vient après « %s »."] = "Chain learned: \"%s\" comes after \"%s\".",
     ["Chaînes de quêtes apprises : %d"] = "Learned quest chains: %d",
+    ["Chercher un groupe (chat)"] = "Look for a group (chat)",
+    ["Message de groupe"] = "Group message",
+    ["clic droit sur une quête » Chercher un groupe"] = "right-click a quest » Look for a group",
+    ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; choisis le canal puis Entrée."] = "{quest} link, {name} name, {level} level, {zone} zone; pick the channel then press Enter.",
+    ["Par défaut"] = "Default",
 }

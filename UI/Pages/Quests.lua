@@ -663,6 +663,28 @@ UI:RegisterPage({
             function(v) WK.DB.global.settings.ui.wowheadLang = v end, 24)
         wseg:Select(UI:WowheadLang())
         UI:SettingRow(wcard, -40, "Langue du site", "Maj + clic sur une quête (tournée, listes, fenêtre du donjon, journal) : son lien wowhead (WoW Forever) à copier ; clic droit : petit menu.", wseg, 200)
+        -- message « Chercher un groupe » du menu des quêtes (UI/Wowhead.lua)
+        local gcard2 = card("Message de groupe", 40 + 30 + 46 + 30, "clic droit sur une quête » Chercher un groupe")
+        local inp = UI:Input(gcard2, 300, 28, UI.QUEST_LFG_DEFAULT)
+        inp:SetPoint("TOPLEFT", 16, -42); inp:SetPoint("TOPRIGHT", -16, -42)
+        local eb = inp.edit
+        eb:SetText(UI:QuestLfgTemplate())
+        local function saveLfg()
+            local v = eb:GetText()
+            WK.DB.global.settings.ui.questLfgText = (v ~= "" and v ~= UI.QUEST_LFG_DEFAULT) and v or nil
+        end
+        inp.onEnter = saveLfg
+        eb:HookScript("OnEditFocusLost", saveLfg)
+        local hint = UI:Text(gcard2, 10, C.muted)
+        hint:SetPoint("TOPLEFT", 16, -78); hint:SetPoint("RIGHT", -150, 0); hint:SetJustifyH("LEFT")
+        hint:SetText(T("{quest} lien, {name} nom, {level} niveau, {zone} zone ; choisis le canal puis Entrée."))
+        if hint.SetWordWrap then hint:SetWordWrap(true) end
+        local reset = UI:Button(gcard2, T("Par défaut"), 120, 24, "ghost")
+        reset:SetPoint("TOPRIGHT", -16, -78)
+        reset:SetScript("OnClick", function()
+            WK.DB.global.settings.ui.questLfgText = nil
+            eb:SetText(UI.QUEST_LFG_DEFAULT)
+        end)
 
         local states = { "avail", "log", "done", "high", "locked", "closed" }
         local gcard = card("Légende", 40 + #states * 24 + 8)
@@ -847,7 +869,7 @@ UI:RegisterPage({
                 { "track", T("Suivi et carte"),
                   titles = { "Quête suivie", "Zones des objectifs", "Suivi des quêtes du jeu", "Légende" } },
                 { "list", T("Quêtes montrées"),
-                  titles = { "Quêtes montrées", "Journal des données", "Liens wowhead" } },
+                  titles = { "Quêtes montrées", "Journal des données", "Liens wowhead", "Message de groupe" } },
                 { "auto", T("Quêtes automatiques"),
                   titles = { "Quêtes automatiques", "Quêtes automatiques : détails" } },
             }, function() self:Layout() end)

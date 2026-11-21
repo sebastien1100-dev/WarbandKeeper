@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.124.2", date = "21/11/2026",
+        added = {
+            "Clic droit sur une quête : « Chercher un groupe (chat) » ouvre la discussion avec un message et le lien de la quête (« LFG [quête] (zone), anyone want to group up? ») ; choisis le canal puis Entrée.",
+            "Message modifiable dans la roue des Quêtes, onglet Quêtes montrées, carte « Message de groupe » ({quest} lien, {name} nom, {level} niveau, {zone} zone) ; bouton « Par défaut » pour revenir au message anglais.",
+        },
+    },
+    {
         version = "1.124.1", date = "21/11/2026",
         fixed = {
             "Tournée : une quête dont les objectifs sont à plusieurs endroits (« Entrevoir notre avenir ») apparaissait deux fois sous le même nom, et chaque étape montrait tous ses objectifs. Chaque étape dit maintenant ce qu'on y fait (« Entrevoir notre avenir · Cœur d'Adoss, Cœur de Modr »), ne montre que ses objectifs, et passe à la suivante dès qu'ils sont faits.",

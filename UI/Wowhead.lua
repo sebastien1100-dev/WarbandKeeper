@@ -106,6 +106,51 @@ function UI:ShowWowhead(kind, id, name)
 end
 
 ---------------------------------------------------------------------------
+-- Chercher un groupe : message dans la boîte de discussion avec le lien de la quête (le joueur choisit le
+-- canal et envoie). Modèle modifiable (settings.ui.questLfgText, carte « Message de groupe » de la roue des
+-- Quêtes), en anglais par défaut ; {quest} = lien, {name} = nom, {level} = niveau, {zone} = zone.
+---------------------------------------------------------------------------
+UI.QUEST_LFG_DEFAULT = "LFG {quest} ({zone}), anyone want to group up?"
+function UI.QuestLfgTemplate(_)
+    local t = WK.DB.global.settings.ui.questLfgText
+    return (t and t ~= "") and t or UI.QUEST_LFG_DEFAULT
+end
+-- lien de quête du jeu (journal) sinon fabriqué
+function UI.QuestLink(_, qid)
+    local Qm, QT = WK.modules.Quests, WK.modules.QuestTrack
+    local link
+    if _G.C_QuestLog and _G.C_QuestLog.GetQuestLink then
+        local ok, l = pcall(_G.C_QuestLog.GetQuestLink, qid)
+        if ok and type(l) == "string" and l ~= "" then link = l end
+    end
+    if not link and _G.GetQuestLink and _G.C_QuestLog and _G.C_QuestLog.GetLogIndexForQuestID then
+        local idx = _G.C_QuestLog.GetLogIndexForQuestID(qid)
+        if idx then local ok, l = pcall(_G.GetQuestLink, idx); if ok and type(l) == "string" then link = l end end
+    end
+    local q = Qm and Qm:Get(qid)
+    local name = (QT and QT.InLog and QT:InLog(qid) and QT:Title(qid)) or (q and Qm:Name(q)) or ("#" .. qid)
+    local lvl = (QT and QT.Level and QT:Level(qid)) or (q and q.lvl) or 0
+    link = link or string.format("|cffffff00|Hquest:%d:%d|h[%s]|h|r", qid, lvl, name)
+    return link, name, lvl, q
+end
+function UI.QuestGroupMessage(_, qid)
+    local link, name, lvl, q = UI:QuestLink(qid)
+    local zone = ""
+    if q and q.map and _G.C_Map and _G.C_Map.GetMapInfo then
+        local info = _G.C_Map.GetMapInfo(q.map)
+        zone = info and info.name or ""
+    end
+    local text = UI:QuestLfgTemplate()
+    text = text:gsub("{quest}", function() return link end):gsub("{name}", function() return name end)
+        :gsub("{level}", function() return tostring(lvl or "") end):gsub("{zone}", function() return zone end)
+    -- zone inconnue : « () » vide retiré, pas d'espace avant une virgule
+    text = text:gsub("%s*%(%s*%)", ""):gsub("%s+([,%.!%?])", "%1"):gsub("%s%s+", " ")
+    if _G.ChatFrame_OpenChat then _G.ChatFrame_OpenChat(text)
+    elseif _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(text) end
+    return text
+end
+
+---------------------------------------------------------------------------
 -- Menu du clic droit sur une quête
 ---------------------------------------------------------------------------
 local menu, blocker
@@ -170,6 +215,7 @@ function UI:QuestMenu(qids, opts)
             end)
         end
         add(T("Lien wowhead") .. suffix, function() UI:ShowWowhead("quest", id, nm) end, multi and "" or T("Maj + clic"))
+        add(T("Chercher un groupe (chat)") .. suffix, function() UI:QuestGroupMessage(id) end)
     end
     if opts.step and P and P:Tour() then add(T("Passer cette étape"), function() P:Skip() end) end
     local w = 250
