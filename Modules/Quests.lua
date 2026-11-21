@@ -58,7 +58,10 @@ local function index()
         setmetatable(q, QMETA)
         if not byID[q[1]] then byID[q[1]] = q end
     end
+    if M.AddLearned then M.AddLearned(byID, byStarter, mapOf, QMETA) end
 end
+-- l'index sera refait au prochain accès (quête apprise en jeu)
+function M:Reindex() byID = nil end
 function M:Get(id)
     if not byID then index() end
     return byID[id]
@@ -308,4 +311,161 @@ if TooltipDataProcessor and Enum and Enum.TooltipDataType and Enum.TooltipDataTy
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tt) pcall(onUnitTooltip, tt) end)
 elseif GameTooltip then
     GameTooltip:HookScript("OnTooltipSetUnit", function(tt) pcall(onUnitTooltip, tt) end)
+end
+
+---------------------------------------------------------------------------
+-- Quêtes apprises en jeu : celles que la base ne connaît pas (nouvelles quêtes de WoW Forever) sont notées
+-- quand tu les vois chez un PNJ ou les prends : nom, niveau, donneur et sa position, donneur de rendu,
+-- donjon. Elles entrent dans l'index comme les autres (cartes, totaux, tournée, quêtes du donjon).
+--   WK.DB.global.questLearn[n°] = { n = nom, l = niveau, s = camp (1 Alliance, 2 Horde), k = "d" (donjon),
+--     z = carte de la zone, g = { npc, map, x, y } (donneur ; npc < 0 = objet), t = { npc, map, x, y } (rendu), at }
+-- (hors profils ; quelques milliers au plus : une par quête du jeu)
+---------------------------------------------------------------------------
+local function learnStore()
+    local g = WK.DB.global
+    g.questLearn = g.questLearn or {}
+    return g.questLearn
+end
+M.LearnStore = learnStore
+local learnedRows = {}
+function M.AddLearned(byID_, byStarter_, mapOf_, meta)
+    for id, e in pairs(learnStore()) do
+        local base = byID_[id]
+        if e.n and (not base or base.learned) then
+            local g = e.g or {}
+            local row = learnedRows[id]
+            if not row then
+                row = setmetatable({ learned = true }, meta)
+                learnedRows[id] = row
+            end
+            row[1], row[2], row[4], row[6], row[8] = id, e.n, e.l or 0, e.s, e.k
+            -- position du donneur : seulement si elle est sur la carte de la zone
+            if g.x and g.map == e.z then row[10], row[11] = g.x * 100, g.y * 100 else row[10], row[11] = nil, nil end
+            row[12], row[13] = g.npc, 0
+            byID_[id] = row
+            local map = e.z
+            if map and WK.QuestsDB then
+                local list = WK.QuestsDB[map]
+                if not list then list = {}; WK.QuestsDB[map] = list end
+                if not row.inList then table.insert(list, row); row.inList = map end
+                mapOf_[id] = map
+            end
+            if g.npc then
+                byStarter_[g.npc] = byStarter_[g.npc] or {}
+                local found = false
+                for _, q in ipairs(byStarter_[g.npc]) do if q == row then found = true end end
+                if not found then table.insert(byStarter_[g.npc], row) end
+            end
+        end
+    end
+end
+-- vrai si la quête est dans la base générée (pas seulement apprise)
+local function inBase(id)
+    local q = M:Get(id)
+    return q ~= nil and not q.learned
+end
+-- carte de la zone (on remonte des sous-zones, grottes, quartiers) et position du joueur dessus
+local function zonePos()
+    if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
+    local map = C_Map.GetBestMapForUnit("player")
+    local info = map and C_Map.GetMapInfo and C_Map.GetMapInfo(map)
+    local guard = 0
+    while info and (info.mapType or 3) > 3 and info.mapType ~= 4 and (info.parentMapID or 0) > 0 and guard < 4 do
+        map = info.parentMapID
+        info = C_Map.GetMapInfo(map)
+        guard = guard + 1
+    end
+    local pos = map and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(map, "player")
+    local x, y
+    if pos and pos.GetXY then x, y = pos:GetXY() end
+    if type(x) ~= "number" or type(y) ~= "number" or (x == 0 and y == 0) then x, y = nil, nil end
+    return map, x, y
+end
+local function unitNpc(unit)
+    local guid = UnitGUID and UnitGUID(unit)
+    if type(guid) ~= "string" then return nil end
+    local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
+    id = tonumber(id)
+    if not id then return nil end
+    if kind == "GameObject" then return -id end
+    if kind == "Creature" then return id end
+    return nil
+end
+local function where()
+    local npc = unitNpc("questnpc") or unitNpc("npc")
+    local Dg = WK.modules.Dungeons
+    local d = Dg and Dg.Current and Dg:Current()
+    if d then return { npc = npc }, d end
+    local map, x, y = zonePos()
+    return { npc = npc, map = map, x = x and math.floor(x * 10000 + 0.5) / 10000, y = y and math.floor(y * 10000 + 0.5) / 10000 }, nil
+end
+local function side()
+    local f = UnitFactionGroup and UnitFactionGroup("player")
+    return f == "Alliance" and 1 or f == "Horde" and 2 or nil
+end
+local function entry(id, create)
+    local st = learnStore()
+    local e = st[id]
+    if not e and create then
+        local n = 0
+        for _ in pairs(st) do n = n + 1 end
+        if n >= 4000 then return nil end
+        e = { at = time(), s = side() }
+        st[id] = e
+    end
+    return e
+end
+local function changed() M:Reindex(); WK:NotifyChanged() end
+-- quête montrée par un PNJ (ou un objet) : nom, donneur, position
+local function learnGiver()
+    local id = GetQuestID and GetQuestID()
+    if type(id) ~= "number" or id <= 0 or inBase(id) then return end
+    local e = entry(id, true)
+    if not e then return end
+    local title = GetTitleText and GetTitleText()
+    if type(title) == "string" and title ~= "" then e.n = title end
+    local g, d = where()
+    if g.npc or g.map then e.g = g end
+    if d then e.k, e.z = "d", d.entry and d.entry[1] or nil
+    elseif g.map then e.z = e.z or g.map end
+    changed()
+end
+WK:On("QUEST_DETAIL", function() pcall(learnGiver) end)
+-- quête prise : niveau et nom lus dans le journal
+WK:On("QUEST_ACCEPTED", function(a, b)
+    local id = (type(b) == "number" and b) or (type(a) == "number" and a > 100 and a) or nil
+    if not id or inBase(id) then return end
+    C_Timer.After(0.5, function()
+        local e = entry(id, true)
+        if not e then return end
+        local idx = C_QuestLog and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(id)
+        local info = idx and C_QuestLog.GetInfo and C_QuestLog.GetInfo(idx)
+        if type(info) == "table" then
+            if type(info.level) == "number" and info.level > 0 then e.l = info.level end
+            if type(info.title) == "string" and info.title ~= "" then e.n = e.n or info.title end
+        end
+        if not e.n and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+            local t = C_QuestLog.GetTitleForQuestID(id)
+            if type(t) == "string" and t ~= "" then e.n = t end
+        end
+        local fresh = not e.told
+        e.told = true
+        changed()
+        if fresh and e.n then WK:Print(string.format(T("Quête notée : %s (nouvelle, absente de la base de quêtes)."), e.n)) end
+    end)
+end)
+-- quête rendue : PNJ et position du rendu
+local function learnTurnIn()
+    local id = GetQuestID and GetQuestID()
+    if type(id) ~= "number" or id <= 0 or inBase(id) then return end
+    local e = entry(id, false)
+    if not e then return end
+    local t = where()
+    if t.npc or t.map then e.t = t; changed() end
+end
+WK:On("QUEST_COMPLETE", function() pcall(learnTurnIn) end)
+function M:LearnedCount()
+    local n = 0
+    for _, e in pairs(learnStore()) do if e.n then n = n + 1 end end
+    return n
 end

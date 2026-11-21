@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.114.0 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Quêtes du donjon : petite fenêtre volante (déplaçable en mode édition), dans le donjon et près de son entrée. Quêtes rangées par état : dans ton journal (objectifs, « prête à rendre »), à prendre (zone et distance du donneur), après prérequis (le prérequis à faire d'abord), faites (ligne repliée). Niveau à la couleur du jeu, XP à gagner en haut, bouton « Prendre (n) ».
+- Clic sur une quête à prendre (ou un prérequis) : la flèche mène à son donneur ; clic sur une quête du journal : elle devient la quête suivie. La croix cache la fenêtre jusqu'au prochain donjon.
+- Réglages (roue de la page Donjons, carte « Quêtes du donjon ») : affichage près du donjon / toujours / jamais, opacité du fond, objectifs des quêtes en cours, ligne « Faites », cachée en combat, cachée quand il ne reste rien.
+- Quêtes apprises en jeu : une quête que la base ne connaît pas (nouvelles quêtes de WoW Forever) est notée quand un PNJ te la montre ou que tu la prends : nom, niveau, donneur et sa position, PNJ du rendu, donjon. Elle apparaît ensuite sur la carte des zones, dans les totaux, la tournée et les quêtes du donjon, pour tous tes persos. Un message dans le chat le signale.
+
 ## v1.113.1 — 20/11/2026
 
 _Un /reload suffit._

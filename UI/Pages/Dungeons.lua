@@ -132,8 +132,29 @@ UI:RegisterPage({
             for _, t in ipairs(ttog) do t:Refresh() end
         end
         tsync()
+        -- fenêtre volante des quêtes du donjon (UI/DungeonQuests.lua)
+        local qcard = UI:Card(scard:GetParent(), T("Quêtes du donjon"))
+        local qtog = {}
+        local function qref() if UI.RefreshDungeonQuests then UI:RefreshDungeonQuests() end end
+        local winSeg = UI:Segmented(qcard, { { "auto", "Près du donjon" }, { "always", "Toujours" }, { "off", "Jamais" } },
+            function(v) dc.questWin = v; qref() end, 24)
+        UI:SettingRow(qcard, -40, "Fenêtre des quêtes", "Quêtes du donjon dans une petite fenêtre (déplaçable en mode édition) : dans le donjon et à moins de 400 m de son entrée, ou toujours (dernier donjon vu).", winSeg, 300)
+        UI:SettingRow(qcard, -90, "Opacité du fond", "0 % : texte seul sur le jeu ; 100 % : fond plein.",
+            UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 86 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
+        local function qrow(y, label, desc, field)
+            local t = UI:Toggle(qcard, function() return dc[field] and true or false end, function(v) dc[field] = v; qref() end)
+            table.insert(qtog, t)
+            UI:SettingRow(qcard, y, label, desc, t, 80)
+        end
+        qrow(-136, "Objectifs des quêtes en cours", "Sous chaque quête de ton journal : ce qu'il reste à faire (Tueur défias 6/10…).", "questWinObjs")
+        qrow(-182, "Ligne « Faites »", "Les quêtes déjà faites sur une ligne repliée (clic pour la déplier).", "questWinDone")
+        qrow(-228, "Cachée en combat", "Elle revient à la fin du combat.", "questWinCombat")
+        qrow(-274, "Cachée quand il ne reste rien", "Plus rien à faire ni à prendre dans ce donjon : la fenêtre disparaît.", "questWinAuto")
+        qcard:SetHeight(40 + 6 * 46 + 8)
+        local function qsync() winSeg:Select(dc.questWin or "auto"); for _, t in ipairs(qtog) do t:Refresh() end end
+        qsync()
         self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1,
-            cards = function() for _, t in ipairs(dtog) do t:Refresh() end; tsync(); return { scard, tcard } end,
+            cards = function() for _, t in ipairs(dtog) do t:Refresh() end; tsync(); qsync(); return { scard, qcard, tcard } end,
             onToggle = function(open)
                 self.tabSeg:SetShown(not open); self.charDd:SetShown(not open); if self.ofLabel then self.ofLabel:SetShown(not open) end
             end }, self)

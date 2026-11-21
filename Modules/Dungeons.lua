@@ -11,7 +11,9 @@ local T = function(s) return WK.T(s) end
 -- Affichage : UI/DungeonPanel.lua (à côté de la carte en donjon), UI/Pages/Dungeons.lua (page).
 
 local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false,
-    capAlert = true, summary = "me", real = true }
+    capAlert = true, summary = "me", real = true,
+    -- fenêtre des quêtes du donjon (UI/DungeonQuests.lua)
+    questWin = "auto", questWinAlpha = 86, questWinObjs = true, questWinDone = true, questWinCombat = false, questWinAuto = false }
 local function db()
     local g = WK.DB.global
     g.dungeons = g.dungeons or {}
@@ -965,7 +967,7 @@ end
 function M:QuestSummary(d)
     local Q = WK.modules.Quests
     local c = WK.DB:Me() or {}
-    local s = { avail = {}, pre = {}, waiting = {}, log = 0, later = 0, done = 0, preLog = 0 }
+    local s = { avail = {}, pre = {}, waiting = {}, log = 0, later = 0, done = 0, preLog = 0, logList = {}, doneList = {}, laterList = {} }
     if not (Q and d) then return s end
     local done = (c.quests and c.quests.done) or {}
     local seenPre = {}
@@ -994,10 +996,10 @@ function M:QuestSummary(d)
     for _, q in ipairs(self:Quests(d, c, true)) do
         local st = Q:State(q, c)
         if st == "avail" then table.insert(s.avail, q)
-        elseif st == "log" then s.log = s.log + 1
-        elseif st == "done" then s.done = s.done + 1
+        elseif st == "log" then s.log = s.log + 1; table.insert(s.logList, q)
+        elseif st == "done" then s.done = s.done + 1; table.insert(s.doneList, q)
         elseif st == "locked" and climb(q, q, 1, {}) then table.insert(s.waiting, q)
-        else s.later = s.later + 1 end
+        else s.later = s.later + 1; table.insert(s.laterList, q) end
     end
     return s
 end

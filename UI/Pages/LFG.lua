@@ -863,6 +863,7 @@ UI:RegisterPage({
             if d then
                 local s = Dg:QuestSummary(d)
                 qs.dungeon, qs.summary = d, s
+                Dg.questWinLast = d.key -- fenêtre des quêtes en « Toujours » : ce donjon
                 local n = Dg:PickCount(s)
                 local parts = {}
                 table.insert(parts, UI:Hex(#s.avail > 0 and C.gold or C.muted) .. string.format(T("%d à prendre"), #s.avail) .. "|r")
