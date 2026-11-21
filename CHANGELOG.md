@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.46 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Pastilles sous la flamme : « Bien nourri absent » sur deux lignes, plus compact.
+
+### Corrections
+- Icône du feu de camp : le compte à rebours de la minute assise était caché sous le voile qui tourne ; il est maintenant au-dessus, plus gros et cerné de noir.
+
 ## v1.128.45 — 21/11/2026
 
 _Un /reload suffit._

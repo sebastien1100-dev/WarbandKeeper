@@ -189,9 +189,13 @@ local function chip(parent)
     c.dot:SetPoint("LEFT", 7, 0)
     c.t = UI:Text(c, 10, C.text)
     c.t:SetPoint("LEFT", 18, 0)
+    c.t:SetJustifyH("LEFT")
+    -- texte sur une ou deux lignes (« Bien nourri » / « absent ») : hauteur et largeur suivent
     function c:Set(text, col)
         self.t:SetText(text)
         self.dot:SetVertexColor(col[1], col[2], col[3], 1)
+        local two = text:find("\n", 1, true) ~= nil
+        self:SetHeight(two and 30 or 18)
         self:SetWidth(self.t:GetStringWidth() + 26)
     end
     return c
@@ -205,7 +209,9 @@ local function buildChips()
     f.items = {}
     for i = 1, 3 do
         f.items[i] = chip(f)
-        f.items[i]:SetPoint("TOP", f, "TOP", 0, -(i - 1) * 21)
+        -- chaque pastille sous la précédente (hauteur variable)
+        if i == 1 then f.items[i]:SetPoint("TOP", f, "TOP", 0, 0)
+        else f.items[i]:SetPoint("TOP", f.items[i - 1], "BOTTOM", 0, -3) end
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el
@@ -231,7 +237,7 @@ function UI:RefreshCampChips()
     if a.fed then
         table.insert(rows, { fed and fed > 0 and string.format(T("Bien nourri · %s"), UI:AgoShort(fed, true)) or T("Bien nourri"), C.positive })
     elseif a.flame then
-        table.insert(rows, { T("Bien nourri absent"), C.negative })
+        table.insert(rows, { T("Bien nourri\nabsent"), C.negative })
     end
     for i, c in ipairs(chips.items) do
         local r = rows[i]

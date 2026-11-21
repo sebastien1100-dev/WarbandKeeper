@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.46", date = "21/11/2026",
+        fixed = {
+            "Icône du feu de camp : le compte à rebours de la minute assise était caché sous le voile qui tourne ; il est maintenant au-dessus, plus gros et cerné de noir.",
+        },
+        changed = {
+            "Pastilles sous la flamme : « Bien nourri absent » sur deux lignes, plus compact.",
+        },
+    },
+    {
         version = "1.128.45", date = "21/11/2026",
         changed = {
             "Feu de camp : l'encart « Feu de camp à proximité » faisait doublon avec l'icône de flamme ; il est coupé, seule la flamme reste (clic pour s'asseoir). Il se remet dans QoL > Feu de camp, « Encart près d'un feu de camp ».",

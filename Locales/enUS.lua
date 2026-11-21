@@ -1780,7 +1780,6 @@ WK.Locales.enUS.text = {
     ["Objet de camp · prêt dans %s"] = "Camp item · ready in %s",
     ["Bien nourri · %s"] = "Well Fed · %s",
     ["Bien nourri"] = "Well Fed",
-    ["Bien nourri absent"] = "No Well Fed",
     ["Camp : %s pour toi (niveau %d)"] = "Camp: %s for you (level %d)",
     ["Camp : %s"] = "Camp: %s",
     ["Tu as %s : sans effet pour toi (les autres en profitent)"] = "You have %s: no effect for you (others benefit)",
@@ -4282,4 +4281,5 @@ WK.Locales.enUS.text = {
     ["Armes reconnues : "] = "Weapons recognized: ",
     ["Connues par le grimoire (rang inconnu) : "] = "Known from the spellbook (rank unknown): ",
     ["apprise"] = "learned",
+    ["Bien nourri\nabsent"] = "No\nWell Fed",
 }

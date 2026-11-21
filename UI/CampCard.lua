@@ -137,9 +137,14 @@ local function buildIcon()
     b.cd:SetPoint("TOPLEFT", 4, -4); b.cd:SetPoint("BOTTOMRIGHT", -4, 4)
     if b.cd.SetHideCountdownNumbers then b.cd:SetHideCountdownNumbers(true) end
     if b.cd.SetDrawEdge then b.cd:SetDrawEdge(false) end
-    b.num = UI:Text(b, 15, nil, "OVERLAY")
+    if b.cd.SetSwipeColor then b.cd:SetSwipeColor(0, 0, 0, 0.45) end
+    -- chiffre posé sur un cadre au-dessus du voile qui tourne (avant, le voile le recouvrait : peu lisible)
+    b.over = _G.CreateFrame("Frame", nil, b)
+    b.over:SetAllPoints(); b.over:SetFrameLevel(b.cd:GetFrameLevel() + 2)
+    b.num = b.over:CreateFontString(nil, "OVERLAY")
+    b.num:SetFont(UI.FONT, 20, "THICKOUTLINE")
     b.num:SetPoint("CENTER", 0, 0)
-    b.num:SetShadowOffset(1, -1)
+    b.num:SetTextColor(1, 1, 1, 1)
     b.label = UI:Text(b, 10, C.text)
     b.label:SetPoint("TOP", b, "BOTTOM", 0, -3)
     b:SetScript("OnClick", function() M:Sit() end)
@@ -178,7 +183,7 @@ local function buildIcon()
         local col = (st == "done") and C.positive or (st == "early") and C.warning or { r1, g1, b1, 1 }
         self.ring:SetVertexColor(col[1], col[2], col[3], 1)
         self.fire:SetVertexColor(col[1], col[2], col[3], 1)
-        self.fire:SetAlpha(st == "sitting" and 0.35 or 1)
+        self.fire:SetAlpha(st == "sitting" and 0.15 or 1)
         self.label:SetText(st == "sitting" and T("assis") or st == "done" and T("avantages") or st == "early" and T("rassieds-toi") or T("s'asseoir"))
         local a = M.auras or {}
         if st == "sitting" and a.sit and type(a.sit.expires) == "number" and not sample then
