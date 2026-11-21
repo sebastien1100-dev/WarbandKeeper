@@ -513,7 +513,7 @@ UI:RegisterPage({
             local okSide = not q.side or (c.faction == "Alliance" and q.side == 1) or (c.faction == "Horde" and q.side == 2) or not c.faction
             if okSide then table.insert(quests, q) end
         end
-        local ORDER = { avail = 1, log = 2, locked = 3, high = 4, done = 5 }
+        local ORDER = { avail = 1, log = 2, locked = 3, high = 4, done = 5, closed = 6 }
         local states = {}
         local todo = 0
         for _, q in ipairs(quests) do
@@ -1045,6 +1045,7 @@ UI:RegisterPage({
         local STATE = {
             done = { "faite", C.dim }, log = { "dans le journal", C.positive }, avail = { "disponible", C.gold },
             high = { "niveau %d requis", C.negative }, locked = { "après : %s", C.tank },
+            closed = { "plus proposée", C.dim },
         }
         local qy, shown = 82, 0
         for _, q in ipairs(quests) do

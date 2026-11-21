@@ -24,6 +24,7 @@ local function stateInfo(st)
     if st == "log" then return C.positive, T("dans le journal") end
     if st == "avail" then return C.gold, T("disponible") end
     if st == "high" then return C.negative, T("trop haute") end
+    if st == "closed" then return C.dim, T("plus proposée") end
     return C.tank, T("plus tard")
 end
 local KIND = { d = "Donjon", c = "Classe" }
@@ -623,7 +624,7 @@ UI:RegisterPage({
         wseg:Select(UI:WowheadLang())
         UI:SettingRow(wcard, -40, "Langue du site", "Maj + clic sur une quête (tournée, listes, fenêtre du donjon, journal) : son lien wowhead (WoW Forever) à copier ; clic droit : petit menu.", wseg, 200)
 
-        local states = { "avail", "log", "done", "high", "locked" }
+        local states = { "avail", "log", "done", "high", "locked", "closed" }
         local gcard = card("Légende", 40 + #states * 24 + 8)
         for i, st in ipairs(states) do
             local col, label = stateInfo(st)
@@ -633,7 +634,8 @@ UI:RegisterPage({
             local l = UI:Text(gcard, 12)
             l:SetPoint("LEFT", d, "RIGHT", 10, 0)
             local txt = { avail = "Disponible", log = "Dans le journal", done = "Faite",
-                          high = "Trop haute pour le perso", locked = "Après une autre quête" }
+                          high = "Trop haute pour le perso", locked = "Après une autre quête",
+                          closed = "Plus proposée (autre choix ou suite déjà prise)" }
             l:SetText(T(txt[st]))
         end
 
@@ -2333,7 +2335,7 @@ UI:RegisterPage({
             if Q:ForChar(q, c) then
                 total = total + 1
                 local st, need = Q:State(q, c)
-                local keep = (cfg.filter == "all" or (cfg.filter == "done" and st == "done") or (cfg.filter == "todo" and st ~= "done"))
+                local keep = (cfg.filter == "all" or (cfg.filter == "done" and st == "done") or (cfg.filter == "todo" and st ~= "done" and st ~= "closed"))
                 if st == "high" and not cfg.high then keep = false end
                 if keep then
                     shown = shown + 1

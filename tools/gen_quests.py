@@ -189,11 +189,54 @@ def main(root):
         preAll = fx.get("preAll", preAll)
         f = fr[qid] if fr else None
         xpe = xp[qid]
+        # fermée quand une de ces quêtes est prise ou faite : exclusives, quête annoncée (introduction),
+        # suite de la chaîne (nextQuestInChain), désactivée par, disponible jusqu'à
+        excl = set(lst(q[16]))
+        for k in (22, 27, 33, 36):
+            if isinstance(q[k], int) and q[k] > 0:
+                excl.add(q[k])
+        excl.discard(qid)
+        rep = lst(q[19]) if q[19] else None
         per_map.setdefault(mp, []).append(dict(
+            excl=sorted(excl), maxLvl=q[32] or 0, rep=rep if rep and len(rep) == 2 else None,
+            bread=q[27] or 0, races=races,
             id=qid, name=q[1], fr=f[1] if f else None, lvl=q[5] or 0, req=q[4] or 0, side=side,
             cls=q[7] or 0, kind=kind, skill=skill, x=x, y=y, smap=smap, sid=sid,
             xp=xpe[2] if xpe else 0, pre=pre, preAll=preAll, nxt=fx.get("nxt", q[22] or 0),
             grp=1 if (kind != "d" and fx.get("group", group_quest(q))) else 0))
+
+    # quête qui en suit une autre (nextQuestInChain) sans prérequis noté : au moins une de celles d'avant
+    # (même faction et même niveau, sans restriction de classe propre, pas une simple quête d'introduction)
+    allq = {e["id"]: e for lst_ in per_map.values() for e in lst_}
+    before = {}
+    for e in allq.values():
+        if e["nxt"] and e["nxt"] != e["id"]:
+            before.setdefault(e["nxt"], []).append(e)
+    nprev = 0
+    for e in allq.values():
+        e["prev"] = []
+        if e["pre"] or e["preAll"] or e["id"] not in before:
+            continue
+        ps = []
+        for b in before[e["id"]]:
+            if b["bread"] == e["id"]:
+                ps = []
+                break  # une quête d'introduction y mène : la quête se prend aussi sans elle
+            if b["side"] and e["side"] and b["side"] != e["side"]:
+                continue
+            if b["side"] and not e["side"]:
+                continue
+            if b["cls"] and b["cls"] != e["cls"]:
+                continue
+            if b["races"] and e["races"] and (b["races"] & e["races"]) != e["races"]:
+                continue
+            if (b["lvl"] or 0) < (e["lvl"] or 0):
+                continue  # plus bas niveau : une introduction le plus souvent, la quête se prend sans elle
+            ps.append(b["id"])
+        if ps and len(ps) == len(before[e["id"]]):
+            e["prev"] = sorted(ps)
+            nprev += 1
+    print("  %d quêtes avec une quête d'avant tirée de la chaîne" % nprev, file=sys.stderr)
 
     def s(x):
         return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"' if x else "nil"
@@ -209,30 +252,40 @@ def main(root):
         "-- WK.QuestsDB[uiMapID] = { { id, nom, nom fr, niveau, niveau requis, faction (1 Alliance, 2 Horde),",
         "--   classes (masque), genre (\"d\" donjon, \"p\" métier, \"c\" classe), métier, x, y (donneur, 0-100),",
         "--   donneur (PNJ > 0, objet < 0), XP, { une de ces quêtes avant }, { toutes ces quêtes avant }, suivante,",
-        "--   carte du donneur s'il est dans une autre zone, 1 si quête de groupe (monstre élite à tuer) }, ... }",
+        "--   carte du donneur s'il est dans une autre zone, 1 si quête de groupe (monstre élite à tuer),",
+        "--   { quêtes qui la ferment (exclusives, annoncée, désactivée par) }, niveau max, { faction, réputation min },",
+        "--   { une de ces quêtes avant (tiré de la chaîne) }, races (masque, seulement s'il ne couvre pas toute la faction) },",
+        "--   ... }",
         "local ADDON_NAME, WK = ...",
         "WK.QuestsDB = {",
     ]
     total = 0
     other = per_map.pop(0, [])
 
+    def race_mask(r):
+        """races des 8 races d'origine, seulement si elles ne couvrent pas toute une faction (sinon 0)"""
+        m = (r or 0) & 255
+        if m == 0 or (m & ALLIANCE) == ALLIANCE or (m & HORDE) == HORDE:
+            return 0
+        return m
+
+    def tl(v):
+        return ("{" + ",".join(map(str, v)) + "}") if v else "nil"
+
     def row(e):
-        return "{%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%s}," % (
-            e["id"], s(e["name"]), s(e["fr"]), e["lvl"], e["req"], n(e["side"]), n(e["cls"]),
-            s(e["kind"]), s(e["skill"]), n(e["x"]), n(e["y"]), n(e["sid"]), n(e["xp"]),
-            ("{" + ",".join(map(str, e["pre"])) + "}") if e["pre"] else "nil",
-            ("{" + ",".join(map(str, e["preAll"])) + "}") if e["preAll"] else "nil",
-            n(e["nxt"]), n(e["smap"]), ",1" if e["grp"] else "")
+        f = [str(e["id"]), s(e["name"]), s(e["fr"]), str(e["lvl"]), str(e["req"]), n(e["side"]), n(e["cls"]),
+             s(e["kind"]), s(e["skill"]), n(e["x"]), n(e["y"]), n(e["sid"]), n(e["xp"]), tl(e["pre"]), tl(e["preAll"]),
+             n(e["nxt"]), n(e["smap"]), "1" if e["grp"] else "nil",
+             tl(e["excl"]), n(e["maxLvl"]), tl(e["rep"]), tl(e["prev"]),
+             n(race_mask(e["races"]))]
+        while f[-1] == "nil":
+            f.pop()
+        return "{" + ",".join(f) + "},"
     for mp in sorted(per_map):
         lines.append("[%d] = {" % mp)
         for e in sorted(per_map[mp], key=lambda e: (e["lvl"], e["id"])):
             total += 1
-            lines.append("{%d,%s,%s,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%s}," % (
-                e["id"], s(e["name"]), s(e["fr"]), e["lvl"], e["req"], n(e["side"]), n(e["cls"]),
-                s(e["kind"]), s(e["skill"]), n(e["x"]), n(e["y"]), n(e["sid"]), n(e["xp"]),
-                ("{" + ",".join(map(str, e["pre"])) + "}") if e["pre"] else "nil",
-                ("{" + ",".join(map(str, e["preAll"])) + "}") if e["preAll"] else "nil",
-                n(e["nxt"]), n(e["smap"]), ",1" if e["grp"] else ""))
+            lines.append(row(e))
         lines.append("},")
     lines.append("}")
     # quêtes sans zone connue : même format, comptées dans les totaux (Modules/Quests.lua), sur aucune carte

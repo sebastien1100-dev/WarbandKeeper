@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.118.1", date = "21/11/2026",
+        fixed = {
+            "Quêtes : l'addon proposait de prendre la variante d'une quête réservée à une autre race (L'appel de la terre, Dompter la bête…) alors que tu avais déjà la tienne dans ton journal. Ces variantes ne sont plus proposées.",
+            "Quêtes : une quête qui ne se prend plus est écartée, avec l'état « plus proposée » : un autre choix exclusif est déjà pris, la suite de la chaîne est déjà prise ou faite, la quête d'introduction mène à une quête déjà prise, niveau maximum dépassé, ou réputation trop basse (perso connecté). Elle ne compte plus dans les totaux des zones.",
+            "Quêtes : des suites de chaîne (Dompter la bête après La voie du chasseur, Triage…) étaient proposées sans la quête d'avant ; elles attendent maintenant « après … » comme les autres prérequis, y compris dans la tournée et les quêtes de donjon.",
+        },
+    },
+    {
         version = "1.118.0", date = "21/11/2026",
         added = {
             "Tournée de quêtes plus maline : les objectifs de plusieurs quêtes proches (jusqu'à env. 200 m) sont faits dans la même étape ; sur la carte à l'écran, chaque objectif dit à quelle quête il sert.",

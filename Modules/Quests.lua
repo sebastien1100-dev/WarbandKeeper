@@ -17,6 +17,7 @@ function M:Config()
     return g.quests
 end
 
+local RACE_BIT = { Human = 1, Orc = 2, Dwarf = 4, NightElf = 8, Scourge = 16, Tauren = 32, Gnome = 64, Troll = 128 }
 local CLASS_BIT = { WARRIOR = 1, PALADIN = 2, HUNTER = 4, ROGUE = 8, PRIEST = 16, SHAMAN = 64, MAGE = 128,
                     WARLOCK = 256, DRUID = 1024 }
 
@@ -24,7 +25,10 @@ local CLASS_BIT = { WARRIOR = 1, PALADIN = 2, HUNTER = 4, ROGUE = 8, PRIEST = 16
 -- métatable qui lit ses champs par nom (q.name = ligne[2]…), la carte venant d'une petite table à part.
 local byID, byStarter
 local FIELD = { id = 1, name = 2, nameFR = 3, lvl = 4, req = 5, side = 6, cls = 7, kind = 8, skill = 9, x = 10, y = 11,
-    sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17, grp = 18 }
+    sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17, grp = 18,
+    -- excl = fermée si une de ces quêtes est prise ou faite (exclusives, suite, quête annoncée), maxLvl, rep =
+    -- { faction, réputation min }, prev = une de ces quêtes avant (tirée de la chaîne), races = masque (sinon toute la faction)
+    excl = 19, maxLvl = 20, rep = 21, prev = 22, races = 23 }
 local mapOf = {}
 -- quête de groupe (monstre élite à tuer, d'après le rang des monstres de QuestieDB ; tools/gen_quests.py)
 function WK.QuestIsGroup(qid)
@@ -154,6 +158,11 @@ function M:ForChar(q, c, anyKind)
         if f == "Alliance" and q.side ~= 1 then return false end
         if f == "Horde" and q.side ~= 2 then return false end
     end
+    -- variante réservée à d'autres races (Appel de la Terre, Dompter la bête…)
+    if q.races and c.race then
+        local bit = RACE_BIT[c.race]
+        if bit and (math.floor(q.races / bit) % 2) == 0 then return false end
+    end
     local cfg = self:Config()
     if q.cls and cfg.classOnly then
         local bit = CLASS_BIT[c.class or ""]
@@ -164,19 +173,47 @@ function M:ForChar(q, c, anyKind)
     return true
 end
 
--- "done", "log", "avail", "high" (niveau trop bas), "locked" (quête d'avant pas faite)
+-- réputation du perso connecté avec une faction (valeur absolue du jeu, nil si inconnue)
+local function repValue(faction)
+    if not GetFactionInfoByID then return nil end
+    local ok, name, _, _, _, _, value = pcall(GetFactionInfoByID, faction)
+    if ok and name and type(value) == "number" then return value end
+    return nil
+end
+-- "done", "log", "avail", "high" (niveau trop bas), "locked" (quête d'avant pas faite),
+-- "closed" (plus proposée : autre variante ou suite prise, niveau max dépassé, réputation trop basse ;
+-- 2e valeur : "excl" + quête, "maxlvl", "rep")
 function M:State(q, c)
     local qs = c.quests or {}
     if qs.done and qs.done[q.id] then return "done" end
     if qs.log and qs.log[q.id] then return "log" end
-    if (q.req or 0) > (c.level or 1) then return "high" end
     local done = qs.done or {}
+    if q.excl then
+        local log = qs.log or {}
+        for _, x in ipairs(q.excl) do
+            if done[x] or log[x] then return "closed", "excl", x end
+        end
+    end
+    if q.maxLvl and (c.level or 1) > q.maxLvl then return "closed", "maxlvl" end
+    if q.rep and c == WK.DB:Me() then
+        local v = repValue(q.rep[1])
+        if v and v < (q.rep[2] or 0) then return "closed", "rep" end
+    end
+    if (q.req or 0) > (c.level or 1) then return "high" end
     if q.preAll then
         for _, p in ipairs(q.preAll) do if not done[p] and self:Get(p) then return "locked", p end end
     end
     if q.pre then
         local any, first = false, nil
         for _, p in ipairs(q.pre) do
+            if done[p] or not self:Get(p) then any = true break end
+            first = first or p
+        end
+        if not any then return "locked", first end
+    end
+    if q.prev then
+        local any, first = false, nil
+        for _, p in ipairs(q.prev) do
             if done[p] or not self:Get(p) then any = true break end
             first = first or p
         end
@@ -198,8 +235,8 @@ function M:Zones(key)
         local z = { map = mapID, name = R:ZoneName(mapID), total = 0, done = 0, avail = 0, xp = 0, min = 99, max = 0 }
         for _, q in ipairs(self:OnMap(mapID)) do
             if self:ForChar(q, c) then
-                z.total = z.total + 1
                 local st = self:State(q, c)
+                if st ~= "closed" then z.total = z.total + 1 end
                 if st == "done" then z.done = z.done + 1
                 elseif st == "avail" or st == "log" then z.avail = z.avail + 1; z.xp = z.xp + (q.xp or 0) end
                 if q.kind ~= "d" and (q.lvl or 0) > 0 then z.min, z.max = math.min(z.min, q.lvl), math.max(z.max, q.lvl) end
@@ -217,8 +254,8 @@ function M:Totals(key)
     local total, done, avail = 0, 0, 0
     for _, q in pairs(byID) do
         if self:ForChar(q, c) then
-            total = total + 1
             local st = self:State(q, c)
+            if st ~= "closed" then total = total + 1 end
             if st == "done" then done = done + 1 elseif st == "avail" then avail = avail + 1 end
         end
     end

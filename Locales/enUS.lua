@@ -4425,4 +4425,6 @@ WK.Locales.enUS.text = {
     ["gagne %d min"] = "saves %d min",
     ["va au maître de vol"] = "go to the flight master",
     ["%d quête(s) écartée(s) :"] = "%d quest(s) left out:",
+    ["plus proposée"] = "no longer offered",
+    ["Plus proposée (autre choix ou suite déjà prise)"] = "No longer offered (other choice or follow-up already taken)",
 }

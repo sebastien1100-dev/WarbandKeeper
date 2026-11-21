@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.118.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes : l'addon proposait de prendre la variante d'une quête réservée à une autre race (L'appel de la terre, Dompter la bête…) alors que tu avais déjà la tienne dans ton journal. Ces variantes ne sont plus proposées.
+- Quêtes : une quête qui ne se prend plus est écartée, avec l'état « plus proposée » : un autre choix exclusif est déjà pris, la suite de la chaîne est déjà prise ou faite, la quête d'introduction mène à une quête déjà prise, niveau maximum dépassé, ou réputation trop basse (perso connecté). Elle ne compte plus dans les totaux des zones.
+- Quêtes : des suites de chaîne (Dompter la bête après La voie du chasseur, Triage…) étaient proposées sans la quête d'avant ; elles attendent maintenant « après … » comme les autres prérequis, y compris dans la tournée et les quêtes de donjon.
+
 ## v1.118.0 — 21/11/2026
 
 _Un /reload suffit._

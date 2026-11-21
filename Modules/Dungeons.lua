@@ -951,13 +951,15 @@ end
 local function missingPre(Q, q, done)
     local out = {}
     for _, p in ipairs(q.preAll or {}) do if not done[p] and Q:Get(p) then table.insert(out, p) end end
-    if q.pre and #q.pre > 0 then
-        local any, first = false, nil
-        for _, p in ipairs(q.pre) do
-            if done[p] or not Q:Get(p) then any = true break end
-            first = first or p
+    for _, list in ipairs({ q.pre or {}, q.prev or {} }) do
+        if #list > 0 then
+            local any, first = false, nil
+            for _, p in ipairs(list) do
+                if done[p] or not Q:Get(p) then any = true break end
+                first = first or p
+            end
+            if not any and first then table.insert(out, first) end
         end
-        if not any and first then table.insert(out, first) end
     end
     return out
 end
