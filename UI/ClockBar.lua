@@ -217,32 +217,43 @@ local SHORTCUTS = {
       run = function() if ToggleCollectionsJournal then ToggleCollectionsJournal() end end },
     { key = "heirloom", label = "Héritages", icon = function() return UI.MEDIA .. "crown" end, tint = true,
       -- onglet des héritages du journal des collections (pas de bouton du jeu pour un onglet précis)
-      -- le n° d'onglet change selon le client : on ouvre le journal puis on clique l'onglet « Héritages »
       run = function()
           if CollectionsJournal_LoadUI and not CollectionsJournal then pcall(CollectionsJournal_LoadUI) end
-          -- n° d'onglet donné par le jeu : ouverture directe (avant, la recherche par le nom échouait sur « Objets
-          -- en héritage » et le repli ouvrait les Apparences)
-          local idx = _G.COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS
-          if idx and _G.SetCollectionsJournalShown then
-              if pcall(_G.SetCollectionsJournalShown, true, idx) then return end
-          end
+          -- (pas de COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS : sur WoW Forever ce n° n'est pas un onglet et la
+          -- fenêtre du jeu plantait ; l'ancienne recherche par le nom ratait « Objets en héritage » et ouvrait les
+          -- Apparences). Journal ouvert, puis l'onglet reconnu par son texte, dans sa barre d'onglets.
           if not (CollectionsJournal and CollectionsJournal:IsShown()) and ToggleCollectionsJournal then ToggleCollectionsJournal() end
           C_Timer.After(0, function()
-              -- nom de l'onglet : « Héritages », « Objets en héritage », « Heirlooms »… (singulier ou pluriel)
+              local cj = CollectionsJournal
+              if not cj then return end
               local function isHeirloom(txt)
                   if type(txt) ~= "string" then return false end
                   local l = txt:lower()
-                  local h = HEIRLOOMS and HEIRLOOMS:lower()
+                  local h = _G.HEIRLOOMS and _G.HEIRLOOMS:lower()
                   return (h and l == h) or l:find("ritage", 1, true) or l:find("heirloom", 1, true)
               end
-              for i = 1, 10 do
-                  local tab = _G["CollectionsJournalTab" .. i]
-                  local txt = tab and ((tab.GetText and tab:GetText()) or (tab.Text and tab.Text:GetText()))
-                  if isHeirloom(txt) then
-                      if tab.Click then tab:Click() end
+              local function textOf(b)
+                  local t = b.GetText and b:GetText()
+                  if not t and b.Text and b.Text.GetText then t = b.Text:GetText() end
+                  if not t and b.GetRegions then
+                      for _, r in ipairs({ b:GetRegions() }) do
+                          if r.GetText and r:GetText() then t = r:GetText() break end
+                      end
+                  end
+                  return t
+              end
+              local tabs = {}
+              for i = 1, 10 do local t = _G["CollectionsJournalTab" .. i]; if t then tabs[#tabs + 1] = t end end
+              if cj.TabContainer and cj.TabContainer.GetChildren then
+                  for _, t in ipairs({ cj.TabContainer:GetChildren() }) do tabs[#tabs + 1] = t end
+              end
+              for _, t in ipairs(tabs) do
+                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) and t.Click then
+                      pcall(t.Click, t)
                       return
                   end
               end
+              WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections."))
           end)
       end },
     { key = "prof", label = "Métier principal", icon = function() return UI.MEDIA .. "hammer" end, tint = true,

@@ -4277,4 +4277,5 @@ WK.Locales.enUS.text = {
         "Paste a plan code (WKP1:…) or a build code (WK1:…) from a player of the same class.",
     ["En bas du menu du clic droit d'une quête du suivi d'EllesmereUI : guider, chercher un groupe."] =
         "At the bottom of the right-click menu of an EllesmereUI tracker quest: guide, find a group.",
+    ["Onglet des héritages introuvable dans le journal des collections."] = "Heirlooms tab not found in the collections journal.",
 }
