@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.120.1", date = "21/11/2026",
+        fixed = {
+            "Zones de chaleur : rien ne s'affichait. Les halos étaient dessinés en mode additif, invisible sur le parchemin clair de la carte et sur la minicarte : ils sont maintenant opaques, plus grands et bien visibles.",
+            "Minicarte : dans une sous-zone (village, grotte), les zones de la quête n'apparaissaient pas ; elles sont prises sur la carte de la zone.",
+        },
+        added = {
+            "/wk zones : diagnostic des zones de quête (quête suivie, style, points trouvés sur ta carte, halos dessinés sur la carte et la minicarte).",
+        },
+    },
+    {
         version = "1.120.0", date = "21/11/2026",
         added = {
             "Quêtes : zones de chaleur sur la carte du monde. Chaque apparition des monstres et objets d'un objectif est dessinée en halo doux : plus c'est vif, plus il y en a. Une couleur par objectif de la quête suivie. L'infobulle et le clic sur la zone restent.",

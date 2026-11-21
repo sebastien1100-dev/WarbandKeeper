@@ -47,9 +47,12 @@ local function corpsePos()
     return deathAt
 end
 
+-- niveau du perso et vitesse (au moins la course), lus en un seul endroit
+local function playerLevel() local f = UnitLevel; return f and f("player") or 60 end
+local function runSpeed() local f = GetUnitSpeed; return math.max(7, (f and f("player")) or 0) end
 -- ce que coûte l'ange gardien selon le niveau (mal de résurrection à partir du niveau 11)
 local function healerCost()
-    local lvl = UnitLevel and UnitLevel("player") or 60
+    local lvl = playerLevel()
     if lvl <= 10 then return T("Ange gardien : pas de mal de résurrection à ton niveau, -25 % d'usure de l'équipement.") end
     local mins = lvl >= 20 and 10 or (lvl - 10)
     return string.format(T("Ange gardien : mal de résurrection %d min (caractéristiques -75 %%) et -25 %% d'usure de l'équipement."), mins)
@@ -61,20 +64,20 @@ function UI:CorpseState()
     if not (p and c) then return nil end
     if p.cont ~= c.cont then return { far = true, advice = "healer", corpse = c } end
     local d = dist(p.wx, p.wy, c.wx, c.wy)
-    local speed = math.max(7, (GetUnitSpeed and GetUnitSpeed("player")) or 0)
+    local speed = runSpeed()
     local secs = d / speed
     return { d = d, secs = secs, advice = secs > FAR and "healer" or "corpse", corpse = c }
 end
 
 -- coût court de l'ange gardien (ligne de l'épingle)
 local function healerShort()
-    local lvl = UnitLevel and UnitLevel("player") or 60
+    local lvl = playerLevel()
     if lvl <= 10 then return T("Ange gardien : sans mal de résurrection") end
     return string.format(T("Ange gardien : mal de résurrection %d min"), lvl >= 20 and 10 or (lvl - 10))
 end
 -- lignes de l'épingle du corps : conseil, temps du trajet (sur la distance du trajet d), coût de l'ange
-function UI:CorpsePinInfo(d)
-    local speed = math.max(7, (GetUnitSpeed and GetUnitSpeed("player")) or 0)
+function UI.CorpsePinInfo(_, d)
+    local speed = runSpeed()
     local secs = d / speed
     local corpse = secs <= FAR
     return { secs = secs, time = WK.modules.BoatTimes.Clock(secs),

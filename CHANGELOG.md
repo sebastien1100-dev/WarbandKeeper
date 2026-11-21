@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.120.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk zones : diagnostic des zones de quête (quête suivie, style, points trouvés sur ta carte, halos dessinés sur la carte et la minicarte).
+
+### Corrections
+- Zones de chaleur : rien ne s'affichait. Les halos étaient dessinés en mode additif, invisible sur le parchemin clair de la carte et sur la minicarte : ils sont maintenant opaques, plus grands et bien visibles.
+- Minicarte : dans une sous-zone (village, grotte), les zones de la quête n'apparaissaient pas ; elles sont prises sur la carte de la zone.
+
 ## v1.120.0 — 21/11/2026
 
 _Un /reload suffit._

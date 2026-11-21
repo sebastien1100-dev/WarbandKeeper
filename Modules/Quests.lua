@@ -27,7 +27,8 @@ local byID, byStarter
 local FIELD = { id = 1, name = 2, nameFR = 3, lvl = 4, req = 5, side = 6, cls = 7, kind = 8, skill = 9, x = 10, y = 11,
     sid = 12, xp = 13, pre = 14, preAll = 15, nxt = 16, smap = 17, grp = 18,
     -- excl = fermée si une de ces quêtes est prise ou faite (exclusives, suite, quête annoncée), maxLvl, rep =
-    -- { faction, réputation min }, prev = une de ces quêtes avant (tirée de la chaîne), races = masque (sinon toute la faction)
+    -- { faction, réputation min }, prev = une de ces quêtes avant (tirée de la chaîne),
+    -- races = masque (sinon toute la faction)
     excl = 19, maxLvl = 20, rep = 21, prev = 22, races = 23 }
 local mapOf = {}
 -- quête de groupe (monstre élite à tuer, d'après le rang des monstres de QuestieDB ; tools/gen_quests.py)
@@ -175,8 +176,9 @@ end
 
 -- réputation du perso connecté avec une faction (valeur absolue du jeu, nil si inconnue)
 local function repValue(faction)
-    if not GetFactionInfoByID then return nil end
-    local ok, name, _, _, _, _, value = pcall(GetFactionInfoByID, faction)
+    local fn = GetFactionInfoByID
+    if not fn then return nil end
+    local ok, name, _, _, _, _, value = pcall(fn, faction)
     if ok and name and type(value) == "number" then return value end
     return nil
 end
@@ -239,7 +241,9 @@ function M:Zones(key)
                 if st ~= "closed" then z.total = z.total + 1 end
                 if st == "done" then z.done = z.done + 1
                 elseif st == "avail" or st == "log" then z.avail = z.avail + 1; z.xp = z.xp + (q.xp or 0) end
-                if q.kind ~= "d" and (q.lvl or 0) > 0 then z.min, z.max = math.min(z.min, q.lvl), math.max(z.max, q.lvl) end
+                if q.kind ~= "d" and (q.lvl or 0) > 0 then
+                    z.min, z.max = math.min(z.min, q.lvl), math.max(z.max, q.lvl)
+                end
             end
         end
         if z.min > z.max then z.min, z.max = z.max, z.max end

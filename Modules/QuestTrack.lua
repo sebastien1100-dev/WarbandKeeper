@@ -23,7 +23,8 @@ function M:Config()
     if c.miniStyle == nil then c.miniStyle = "heat" end   -- quête suivie sur la minicarte : heat / points / off
     if c.heat == nil then c.heat = 100 end                -- intensité des zones de chaleur (%)
     if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
-    if c.panel == nil then c.panel = true end             -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
+    -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
+    if c.panel == nil then c.panel = true end
     return c
 end
 
@@ -34,7 +35,8 @@ local function G() return WK.modules.Guide end
 -- Données : camps par objectif
 ---------------------------------------------------------------------------
 local cache = {}
--- { objs = { { kind = "m"|"i"|"o"|"e"|"x", idx?, camps = { { map, x, y, r, n }, ... } } }, turnIn = { map, x, y } } ou nil
+-- { objs = { { kind = "m"|"i"|"o"|"e"|"x", idx?, camps = { { map, x, y, r, n }, ... }, refs? } },
+--   turnIn = { map, x, y } } ou nil
 -- e = zone à explorer, x = objectif caché de Questie (idx = n° de l'objectif du jeu auquel il se rattache)
 function M:Data(qid)
     if cache[qid] ~= nil then return cache[qid] or nil end
@@ -47,7 +49,8 @@ function M:Data(qid)
         if kind then
             local camps = {}
             for map, x, y, r, n in (list or ""):gmatch("(%d+),([%d%.]+),([%d%.]+),([%d%.]+),(%d+)") do
-                table.insert(camps, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100, r = tonumber(r) / 100, n = tonumber(n) })
+                table.insert(camps, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100,
+                    r = tonumber(r) / 100, n = tonumber(n) })
             end
             table.insert(d.objs, { kind = kind, idx = tonumber(idx), camps = camps })
         end
@@ -117,7 +120,8 @@ function M:Objectives(qid)
                 o.refs = r
             end
         elseif #x.camps > 0 then
-            table.insert(out, { text = T("Lieu de l'objectif caché"), name = T("Lieu de l'objectif caché"), type = "extra",
+            local label = T("Lieu de l'objectif caché")
+            table.insert(out, { text = label, name = label, type = "extra",
                 done = complete, have = 0, need = 0, camps = x.camps, refs = x.refs })
         end
     end

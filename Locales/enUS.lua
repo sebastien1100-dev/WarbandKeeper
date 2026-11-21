@@ -4445,4 +4445,11 @@ WK.Locales.enUS.text = {
     ["Intensité de la chaleur"] = "Heat intensity",
     ["XP au total"] = "XP in total",
     ["étape %d sur %d"] = "step %d of %d",
+    ["Zones de quête : diagnostic"] = "Quest areas: diagnostic",
+    ["quête suivie"] = "tracked quest",
+    ["style"] = "style",
+    ["objectifs"] = "objectives",
+    ["points sur ta carte"] = "points on your map",
+    ["carte du monde"] = "world map",
+    ["minicarte"] = "minimap",
 }

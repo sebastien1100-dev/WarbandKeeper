@@ -2,6 +2,7 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
+local CreateFrame = CreateFrame
 
 -- Carte de la quête suivie (HUD « questTrack ») : titre, zone et niveau, objectifs avec coche, jauge et
 -- compte, « Camp suivant » et « Rendu » ; la croix arrête le suivi. Données : Modules/QuestTrack.lua.
@@ -311,29 +312,29 @@ local function build()
         if d.legend and #d.legend > 1 then y = y - 18 end
         -- objectifs : barre qui se remplit, nom à gauche, compte à droite ; fini = vert
         local barW = W2 - 24
-        for i, r in ipairs(v.objs) do
+        for i, row in ipairs(v.objs) do
             local o = d.objs[i]
             if o then
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 12, y); r:SetPoint("RIGHT", -12, 0)
+                row:ClearAllPoints(); row:SetPoint("TOPLEFT", 12, y); row:SetPoint("RIGHT", -12, 0)
                 local need = o.need or 0
                 -- texte du jeu « Murloc : 0/12 personnages tués » : le nom seul, le compte à part
                 local name = tostring(o.name or ""):gsub("%s*:%s*%d+%s*/%s*%d+.*$", "")
                 local c = (o.qi and UI.QuestObjColor and UI.QuestObjColor(o.qi)) or { UI:Accent() }
                 if o.done then c = C.positive end
-                local frac = o.done and 1 or (need > 0 and math.min(1, (o.have or 0) / need) or 0)
-                r.bg:SetColor(1, 1, 1, 0.06)
-                r.fillF:SetWidth(math.max(1, barW * frac)); r.fillF:SetShown(frac > 0)
-                r.fill:SetColor(c[1], c[2], c[3], o.done and 0.32 or 0.36)
-                r.edge:SetColorTexture(c[1], c[2], c[3], 1); r.edge:SetShown(frac > 0 and frac < 1)
-                r.dot:SetVertexColor(c[1], c[2], c[3], 1)
-                r.name:SetText(name)
-                r.name:SetTextColor(unpack(o.done and C.positive or C.text))
-                r.count:SetText(need > 0 and string.format("%d/%d", o.have or 0, need) or (o.done and T("fait") or ""))
-                r.count:SetTextColor(unpack(o.done and C.positive or C.text))
-                r:Show()
+                local part = o.done and 1 or (need > 0 and math.min(1, (o.have or 0) / need) or 0)
+                row.bg:SetColor(1, 1, 1, 0.06)
+                row.fillF:SetWidth(math.max(1, barW * part)); row.fillF:SetShown(part > 0)
+                row.fill:SetColor(c[1], c[2], c[3], o.done and 0.32 or 0.36)
+                row.edge:SetColorTexture(c[1], c[2], c[3], 1); row.edge:SetShown(part > 0 and part < 1)
+                row.dot:SetVertexColor(c[1], c[2], c[3], 1)
+                row.name:SetText(name)
+                row.name:SetTextColor(unpack(o.done and C.positive or C.text))
+                row.count:SetText(need > 0 and string.format("%d/%d", o.have or 0, need) or (o.done and T("fait") or ""))
+                row.count:SetTextColor(unpack(o.done and C.positive or C.text))
+                row:Show()
                 y = y - 23
             else
-                r:Hide()
+                row:Hide()
             end
         end
         if #d.objs > 0 then y = y - 4 end

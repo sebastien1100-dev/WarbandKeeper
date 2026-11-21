@@ -2,6 +2,7 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
+local CreateFrame, Minimap = CreateFrame, Minimap
 
 -- Camps des objectifs de quête sur la carte du monde (calque « Quêtes » de UI/MapPins.lua) : zone colorée en
 -- pointillés par camp d'un objectif pas fini (accent : monstre ou objet au sol, orange : objet à ramasser),
@@ -161,7 +162,7 @@ local function paintPoints(holder, list, used, maxUsed, pts, w, h, col, style, s
                 t:SetTexture(UI.MEDIA .. "circle"); t:SetBlendMode("BLEND")
                 t:SetSize(size, size); t:SetVertexColor(col[1], col[2], col[3], math.min(1, alpha * 3))
             else
-                t:SetTexture(UI.MEDIA .. "fxhalo"); t:SetBlendMode("ADD")
+                t:SetTexture(UI.MEDIA .. "fxhalo"); t:SetBlendMode("BLEND")
                 t:SetSize(size, size); t:SetVertexColor(col[1], col[2], col[3], alpha)
             end
             t:ClearAllPoints(); t:SetPoint("CENTER", holder, "TOPLEFT", x * w, -y * h)
@@ -323,8 +324,8 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
                     local exact = #pts > 0
                     if exact then
                         local ocol = main and UI.QuestObjColor(oi) or { UI:Accent() }
-                        local size = style == "points" and (main and 6 or 4) or math.max(18, w * 0.034)
-                        local alpha = (main and 0.30 or 0.14) * heatK
+                        local size = style == "points" and (main and 7 or 5) or math.max(22, w * 0.042)
+                        local alpha = math.min(1, (main and 0.55 or 0.28) * heatK)
                         heatUsed = paintPoints(heatHolder, heatTex, heatUsed, MAX_HEAT, pts, w, h, ocol, style, size, alpha)
                     end
                     for k, c in ipairs(o.camps) do
@@ -366,6 +367,7 @@ function UI:DrawQuestCamps(cv, mapID, w, h)
             end
         end
     end
+    UI.questZoneDiag = { map = mapID, style = style, heat = heatUsed, camps = nc, quests = #list, w = w }
     drawTour(cv, mapID, w, h, lvl)
     UI:RefreshQuestMapPanel()
 end
@@ -492,15 +494,17 @@ end)
 ---------------------------------------------------------------------------
 local MAX_MINI = 260
 local miniHolder, miniTex, miniUsed = nil, {}, 0
-local miniList, miniAt, miniKey
+local miniList, miniAt
 local function miniReset()
     for i = 1, miniUsed do miniTex[i]:Hide() end
     miniUsed = 0
 end
+local miniCache = {}
 local function miniPoints(q, qid, map)
     local now = GetTime()
     local key = qid .. ":" .. map
-    if miniList and miniKey == key and now - (miniAt or 0) < 2 then return miniList end
+    local hit = miniCache[key]
+    if miniList and hit and now - hit.at < 2 then return hit.list end
     local list = {}
     if not q:IsComplete(qid) then
         for oi, o in ipairs(q:Objectives(qid)) do
@@ -510,7 +514,9 @@ local function miniPoints(q, qid, map)
             end
         end
     end
-    miniList, miniAt, miniKey = list, now, key
+    if now - (miniAt or 0) > 10 then miniCache = {} end
+    miniCache[key] = { at = now, list = list }
+    miniList, miniAt = list, now
     return list
 end
 local function updateMini()
@@ -524,32 +530,51 @@ local function updateMini()
     -- tournée en cours : la quête de l'étape « faire » ; sinon la quête suivie
     local qid
     local P = WK.modules.QuestPlan
-    local t = P and P:Active() and P:Tour()
-    local st = t and t.steps[t.idx]
+    local tour = P and P:Active() and P:Tour()
+    local st = tour and tour.steps[tour.idx]
     if st and st.kind == "do" and st.qids and st.qids[1] then qid = st.qids[1] end
     qid = qid or q:Tracked()
     if not qid then return end
-    if IsInInstance and select(2, IsInInstance()) ~= "none" and select(2, IsInInstance()) ~= nil then return end
+    local inInst = IsInInstance
+    local kind = inInst and select(2, inInst())
+    if kind and kind ~= "none" then return end
     local p = WK.modules.Guide:PlayerPos()
     if not (p and p.map and UI.MapSize and UI.MiniViewRadius) then return end
-    local size = UI.MapSize(p.map)
-    if not size then return end
-    local list = miniPoints(q, qid, p.map)
-    if #list == 0 then return end
+    -- sous-zone (village, grotte) : les points sont sur la carte de la zone parente
+    local map, px, py = p.map, p.x, p.y
+    local list = miniPoints(q, qid, map)
+    local CM = C_Map
+    if #list == 0 and CM and CM.GetMapInfo and CM.GetPlayerMapPosition then
+        local info = CM.GetMapInfo(map)
+        local parent = info and info.parentMapID
+        if parent and parent > 0 then
+            local pos = CM.GetPlayerMapPosition(parent, "player")
+            local x, y
+            if pos then x, y = pos.x, pos.y; if pos.GetXY then x, y = pos:GetXY() end end
+            if x and (x ~= 0 or y ~= 0) then
+                local l2 = miniPoints(q, qid, parent)
+                if #l2 > 0 then list, map, px, py = l2, parent, x, y end
+            end
+        end
+    end
+    local size = UI.MapSize(map)
+    UI.questMiniDiag = { qid = qid, map = map, objs = #list, style = style }
+    if not size or #list == 0 then return end
     local radius = UI.MiniViewRadius()
     local limit = radius * 0.95
     local half = Minimap:GetWidth() / 2
     local rotate = WK.GetCVar("rotateMinimap") == "1"
-    local facing = rotate and GetPlayerFacing and GetPlayerFacing() or nil
+    local gf = GetPlayerFacing
+    local facing = rotate and gf and gf() or nil
     local cs, sn = facing and math.cos(facing) or 1, facing and math.sin(facing) or 0
     local w, h = size[1], size[2]
     -- un halo couvre env. 3 % de la carte (comme sur la carte du monde), borné à la minicarte
-    local hs = math.max(10, math.min(46, (w * 0.034) / radius * half))
-    local alpha = 0.32 * ((cfg.heat or 100) / 100)
+    local hs = math.max(14, math.min(50, (w * 0.042) / radius * half))
+    local alpha = math.min(1, 0.6 * ((cfg.heat or 100) / 100))
     for _, e in ipairs(list) do
         local pts, col = e.pts, e.col
         for i = 1, #pts, 2 do
-            local dx, dy = (pts[i] - p.x) * w, (p.y - pts[i + 1]) * h
+            local dx, dy = (pts[i] - px) * w, (py - pts[i + 1]) * h
             if dx < limit and dx > -limit and dy < limit and dy > -limit and dx * dx + dy * dy < limit * limit then
                 if facing then dx, dy = dx * cs + dy * sn, -dx * sn + dy * cs end
                 miniUsed = miniUsed + 1
@@ -559,18 +584,19 @@ local function updateMini()
                     t:SetTexture(UI.MEDIA .. "circle"); t:SetBlendMode("BLEND"); t:SetSize(6, 6)
                     t:SetVertexColor(col[1], col[2], col[3], 0.95)
                 else
-                    t:SetTexture(UI.MEDIA .. "fxhalo"); t:SetBlendMode("ADD"); t:SetSize(hs, hs)
+                    t:SetTexture(UI.MEDIA .. "fxhalo"); t:SetBlendMode("BLEND"); t:SetSize(hs, hs)
                     t:SetVertexColor(col[1], col[2], col[3], alpha)
                 end
                 t:ClearAllPoints(); t:SetPoint("CENTER", Minimap, "CENTER", dx / radius * half, dy / radius * half)
                 t:Show()
-                if miniUsed >= MAX_MINI then return end
+                if miniUsed >= MAX_MINI then break end
             end
         end
     end
+    UI.questMiniDiag.drawn = miniUsed
 end
 UI.QuestMiniUpdate = updateMini
-function UI:RefreshQuestMini() miniList = nil; if miniHolder then updateMini() end end
+function UI.RefreshQuestMini() miniList = nil; if miniHolder then updateMini() end end
 WK:On("PLAYER_LOGIN", function()
     C_Timer.After(2.5, function()
         if not Minimap or miniHolder then return end

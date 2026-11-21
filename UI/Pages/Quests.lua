@@ -615,13 +615,18 @@ UI:RegisterPage({
                 if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
                 QT():Changed()
             end
-            self.zoneSeg = UI:Segmented(zcard, { { "heat", "Chaleur" }, { "points", "Points" }, { "circles", "Cercles" } },
+            self.zoneSeg = UI:Segmented(zcard,
+                { { "heat", "Chaleur" }, { "points", "Points" }, { "circles", "Cercles" } },
                 function(v) QT():Config().zoneStyle = v; redraw() end, 26)
-            UI:SettingRow(zcard, -40, "Dessin sur la carte", "Chaleur : plus vif là où les monstres et objets de l'objectif sont nombreux. Points : chaque apparition. Cercles : les camps, comme avant.", self.zoneSeg, self.zoneSeg:GetWidth())
+            UI:SettingRow(zcard, -40, "Dessin sur la carte",
+                "Chaleur : plus vif là où les monstres et objets de l'objectif sont nombreux. Points : chaque apparition. Cercles : les camps, comme avant.",
+                self.zoneSeg, self.zoneSeg:GetWidth())
             self.zoneSeg:Select(QT():Config().zoneStyle)
             self.miniSeg = UI:Segmented(zcard, { { "heat", "Chaleur" }, { "points", "Points" }, { "off", "Aucune" } },
                 function(v) QT():Config().miniStyle = v; redraw() end, 26)
-            UI:SettingRow(zcard, -76, "Sur la minicarte", "Objectifs pas finis de la quête suivie (ou de l'étape en cours de la tournée), autour de toi.", self.miniSeg, self.miniSeg:GetWidth())
+            UI:SettingRow(zcard, -76, "Sur la minicarte",
+                "Objectifs pas finis de la quête suivie (ou de l'étape en cours de la tournée), autour de toi.",
+                self.miniSeg, self.miniSeg:GetWidth())
             self.miniSeg:Select(QT():Config().miniStyle)
             UI:SettingRow(zcard, -112, "Intensité de la chaleur", nil,
                 UI:Slider(zcard, 200, 30, 200, 10, function() return QT():Config().heat or 100 end,
@@ -728,7 +733,8 @@ UI:RegisterPage({
                 -- détails : Prendre, Rendre, Exceptions
                 local dcard = card("Quêtes automatiques : détails", 40 + 12 * 36 + 40 + 60 + 50 + 94, "prendre, rendre, acheter, exceptions", 2)
                 local function at(field, after)
-                    local t = UI:Toggle(dcard, function() return ac[field] end, function(v) ac[field] = v; if after then after(v) end WK:NotifyChanged() end)
+                    local t = UI:Toggle(dcard, function() return ac[field] end,
+                        function(v) ac[field] = v; if after then after(v) end WK:NotifyChanged() end)
                     table.insert(self.toggles, t)
                     return t
                 end
@@ -2355,7 +2361,8 @@ UI:RegisterPage({
             if Q:ForChar(q, c) then
                 total = total + 1
                 local st, need = Q:State(q, c)
-                local keep = (cfg.filter == "all" or (cfg.filter == "done" and st == "done") or (cfg.filter == "todo" and st ~= "done" and st ~= "closed"))
+                local keep = (cfg.filter == "all" or (cfg.filter == "done" and st == "done")
+                    or (cfg.filter == "todo" and st ~= "done" and st ~= "closed"))
                 if st == "high" and not cfg.high then keep = false end
                 if keep then
                     shown = shown + 1
