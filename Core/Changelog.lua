@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.126.0", date = "21/11/2026",
+        added = {
+            "Carte de tournée : pour une étape à faire, bouton « Cibler » avec le nom du monstre de l'objectif (clic gauche : le premier pas fini, clic droit : le suivant) et bouton « Objet » qui utilise l'objet de la quête, avec son nombre. Ils marchent aussi en combat (en combat, ils gardent le dernier monstre et le dernier objet).",
+            "Le bouton Cibler pose la tête de mort sur le monstre ciblé (seul, ou chef et assistants en groupe).",
+            "Plaques de nom : petite pastille à la couleur de l'objectif au-dessus des monstres de la quête, plus grosse sur ta cible.",
+            "Trois réglages dans la roue des Quêtes, carte Quête suivie : « Boutons Cibler et Objet », « Tête de mort sur le monstre ciblé », « Repère sur les plaques de nom ».",
+        },
+        changed = {
+            "Quêtes de groupe : « GROUPE » en orange devant le nom (tournée, carte de tournée, Quêtes de ma zone, quêtes de donjon) au lieu de « (groupe) » après.",
+        },
+    },
+    {
         version = "1.125.1", date = "21/11/2026",
         added = {
             "Tournée : quand tu passes à côté d'une étape prévue plus loin (donneur ou rendu à moins de 45 m, coin d'objectifs à moins de 70 m) et qu'elle est faisable maintenant, la carte de tournée la propose : « Tout près : … · 20 m · clic : la faire maintenant ». Clic : elle devient l'étape en cours, celle d'avant reprend juste après ; clic droit : plus tard.",

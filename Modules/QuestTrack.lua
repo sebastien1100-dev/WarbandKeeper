@@ -25,6 +25,9 @@ function M:Config()
     if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
     -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
     if c.panel == nil then c.panel = true end
+    if c.actButtons == nil then c.actButtons = true end   -- boutons Cibler / Objet sur la carte de tournée
+    if c.plateMarks == nil then c.plateMarks = true end   -- repères des monstres de la quête sur les plaques de nom
+    if c.targetSkull == nil then c.targetSkull = true end -- tête de mort posée par le bouton Cibler
     return c
 end
 
@@ -178,6 +181,28 @@ function M:Points(o, mapID)
         end
     end
     return out
+end
+
+-- Monstres d'un objectif (n° de PNJ tirés des clés « n… » de WK.QuestPtsRaw) et leur nom (WK.QuestNpcNames,
+-- « anglais|français ») : bouton Cibler et repères des plaques de nom
+function M.ObjectiveNpcs(_, o)
+    local out, seen = {}, {}
+    for _, part in ipairs(o and o.refs or {}) do
+        if part:sub(1, 1) ~= "*" then
+            for id in part:gmatch("n(%d+)") do
+                id = tonumber(id)
+                if id and not seen[id] then seen[id] = true; out[#out + 1] = id end
+            end
+        end
+    end
+    return out
+end
+function M.NpcName(_, id)
+    local raw = WK.QuestNpcNames and WK.QuestNpcNames[id]
+    if not raw then return nil end
+    local en, fr = raw:match("^(.-)|(.*)$")
+    if not en then return raw end
+    return (WK.Lang and WK.Lang() == "frFR" and fr ~= "" and fr) or en
 end
 
 function M:InLog(qid)

@@ -538,7 +538,7 @@ UI:RegisterPage({
 
         -- quête suivie (Modules/QuestTrack.lua) : journal du jeu, carte à l'écran, flèche, camps sur la carte
         if QT() then
-            local tcard = card("Quête suivie", 40 + (QP() and 13 or 7) * 36 + 16, "journal, flèche et carte")
+            local tcard = card("Quête suivie", 40 + (QP() and 16 or 7) * 36 + 16, "journal, flèche et carte")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -612,6 +612,23 @@ UI:RegisterPage({
                     "Étape de la tournée prévue plus loin, à côté de toi : proposée, ou faite tout de suite (Auto).",
                     self.nearSeg, self.nearSeg:GetWidth())
                 self.nearSeg:Select(QP():Config().nearSteps or "ask")
+                -- boutons Cibler / Objet de la carte de tournée, tête de mort, repères des plaques
+                -- (UI/QuestTracker.lua)
+                UI:SettingRow(tcard, -514, "Boutons Cibler et Objet",
+                    "Sur la carte de tournée, pour une étape à faire : cibler le monstre de l'objectif "
+                        .. "(clic droit : le suivant) et utiliser l'objet de la quête.",
+                    qtoggle("actButtons", function()
+                        if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
+                    end), 50)
+                UI:SettingRow(tcard, -550, "Tête de mort sur le monstre ciblé",
+                    "Le bouton Cibler pose la tête de mort sur le monstre (seul, ou chef et assistants en groupe).",
+                    qtoggle("targetSkull"), 50)
+                UI:SettingRow(tcard, -586, "Repère sur les plaques de nom",
+                    "Pastille de la couleur de l'objectif au-dessus des monstres de la quête "
+                        .. "(plaques de nom affichées).",
+                    qtoggle("plateMarks", function()
+                        if UI.UpdateQuestPlateMarks then UI.UpdateQuestPlateMarks() end
+                    end), 50)
             end
         end
 
@@ -2434,7 +2451,8 @@ UI:RegisterPage({
                     row.lv:SetTextColor(unpack(st == "done" and C.dim or levelColor(q.lvl, myLevel)))
                     local col, label = stateInfo(st)
                     row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
-                    row.name:SetText(Q:Name(q) .. (WK.modules.DataLog and WK.modules.DataLog:Badge(q.id) or ""))
+                    row.name:SetText(UI.GroupTag(q.id) .. Q:Name(q)
+                        .. (WK.modules.DataLog and WK.modules.DataLog:Badge(q.id) or ""))
                     row.name:SetTextColor(unpack(st == "done" and C.dim or C.text))
                     local parts = {}
                     if q.skill then table.insert(parts, UI:Hex(C.positive) .. T(q.skill) .. "|r")

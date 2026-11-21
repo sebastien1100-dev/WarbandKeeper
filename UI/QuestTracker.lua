@@ -128,6 +128,23 @@ local function build()
         r:Hide()
         tv.objs[i] = r
     end
+    -- boutons Cibler / Objet de l'étape (visuels ; les boutons protégés sont posés dessus, voir plus bas)
+    tv.act = CreateFrame("Frame", nil, tv); tv.act:SetHeight(32)
+    local function slot(parent)
+        local sl = CreateFrame("Frame", nil, parent); sl:SetSize(28, 28)
+        sl.bg = UI:Rounded(sl, 7, 0, "BACKGROUND", 1)
+        sl.edge = UI:Rounded(sl, 7, 0, "BACKGROUND", 0)
+        sl.icon = sl:CreateTexture(nil, "ARTWORK")
+        sl.icon:SetPoint("TOPLEFT", 4, -4); sl.icon:SetPoint("BOTTOMRIGHT", -4, 4)
+        sl.count = shade(UI:Text(sl, 9, C.text)); sl.count:SetPoint("BOTTOMRIGHT", 0, 1)
+        sl.lbl = shade(UI:Text(parent, 11, C.text)); sl.lbl:SetPoint("TOPLEFT", sl, "TOPRIGHT", 6, -1)
+        sl.sub = shade(UI:Text(parent, 10, C.muted)); sl.sub:SetPoint("TOPLEFT", sl.lbl, "BOTTOMLEFT", 0, -1)
+        if sl.sub.SetWordWrap then sl.sub:SetWordWrap(false) end
+        return sl
+    end
+    tv.actT = slot(tv.act); tv.actT:SetPoint("LEFT", 0, 0)
+    tv.actI = slot(tv.act); tv.actI:SetPoint("LEFT", tv.act, "CENTER", 4, 0)
+    tv.act:Hide()
     -- légende des quêtes de l'étape (une couleur chacune)
     tv.legend = {}
     for i = 1, 3 do
@@ -351,6 +368,38 @@ local function build()
             end
         end
         if #d.objs > 0 then y = y - 4 end
+        -- boutons Cibler / Objet (d.act) : visuels ici, boutons protégés posés dessus hors combat
+        local a = d.act
+        if a and (a.target or a.item) then
+            v.act:ClearAllPoints(); v.act:SetPoint("TOPLEFT", 12, y - 2); v.act:SetPoint("RIGHT", -10, 0)
+            local ar, ag, ab = UI:Accent()
+            local function paintSlot(sl, on, icon, label, sub, count, isItem)
+                sl:SetShown(on); sl.lbl:SetShown(on); sl.sub:SetShown(on)
+                if not on then return end
+                local ec = isItem and C.gold or { ar, ag, ab }
+                sl.edge:SetColor(ec[1], ec[2], ec[3], 1)
+                sl.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+                sl.bg:ClearAllPoints()
+                sl.icon:SetTexture(icon)
+                if isItem then sl.icon:SetVertexColor(1, 1, 1, 1) else sl.icon:SetVertexColor(ar, ag, ab, 1) end
+                sl.lbl:SetText(label); sl.sub:SetText(sub or "")
+                sl.count:SetText(count or "")
+            end
+            paintSlot(v.actT, a.target ~= nil, UI.MEDIA .. "crosshair", T("Cibler"),
+                a.target and a.target.name, nil, false)
+            paintSlot(v.actI, a.item ~= nil, a.item and a.item.icon, T("Objet"),
+                a.item and a.item.name, a.item and a.item.count, true)
+            v.actI:ClearAllPoints()
+            if a.target then v.actI:SetPoint("LEFT", v.act, "CENTER", 4, 0) else v.actI:SetPoint("LEFT", 0, 0) end
+            local wT = math.floor((W2 - 24) / 2) - 40
+            v.actT.sub:SetWidth(wT); v.actI.sub:SetWidth(wT)
+            v.act:Show()
+            y = y - 36
+        else
+            v.act:Hide()
+        end
+        self.actData = a
+        if UI.PlaceQuestActions then UI:PlaceQuestActions() end
         -- 2 étapes suivantes
         for i, row in ipairs(v.nexts) do
             local nx = d.nexts[i]
@@ -400,6 +449,8 @@ local function build()
     end
 
     function f:Paint(data)
+        self.actData = nil
+        if UI.PlaceQuestActions then UI:PlaceQuestActions() end
         if self.tv then
             self.tv:Hide()
             bgAlpha(0.92, true)
@@ -557,6 +608,8 @@ function UI:RefreshQuestTracker()
                 table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd, qids = ns.qids })
             end
         end
+        -- boutons Cibler / Objet de l'étape « faire »
+        local act = UI.QuestActionData and UI:QuestActionData(s, objs) or nil
         -- étape plus loin toute proche (mode auto : remontée tout de suite), puis quête sur le chemin
         if P.CheckNear then P:CheckNear() end
         local near
@@ -579,7 +632,7 @@ function UI:RefreshQuestTracker()
         end
         card:PaintTour({ kind = s.kind, qids = s.qids, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
             objs = objs, legend = legend, idx = tour.idx, count = #tour.steps, mins = mins, xp = left,
-            zone = zone and zone.name, nexts = nexts, way = way, near = near })
+            zone = zone and zone.name, nexts = nexts, way = way, near = near, act = act })
         card:Show()
         return
     end
@@ -921,4 +974,214 @@ do
     WK:On("PLAYER_LOGIN", function() hookAll(); C_Timer.After(2, soon) end)
     WK:On("ADDON_LOADED", function() hookAll() end)
     WK:On("QUEST_LOG_UPDATE", soon)
+end
+
+---------------------------------------------------------------------------
+-- Boutons Cibler / Objet de l'étape en cours (carte de tournée) et repères sur les plaques de nom.
+-- Cibler : bouton protégé « macro » (/targetexact <monstre>) ; clic gauche = 1er objectif pas fini, clic droit =
+-- objectif suivant. Objet : bouton protégé « item » (objet de quête utilisable du journal, s'il est dans
+-- les sacs).
+-- Les boutons sont enfants d'UIParent, posés sur les cases de la carte et préparés hors combat seulement (en
+-- combat ils gardent le dernier monstre et le dernier objet ; mis à jour à PLAYER_REGEN_ENABLED).
+-- Réglages QuestTrack:Config().actButtons (boutons) et plateMarks (repères des plaques de nom).
+---------------------------------------------------------------------------
+local actT, actI, actPending
+local function actOn() local c = Q():Config(); return c.actButtons ~= false end
+-- { target = { name, name2 }, item = { id, icon, count, name } } pour une étape « faire »
+function UI.QuestActionData(_, s, objs)
+    if not (s and s.kind == "do" and actOn()) then return nil end
+    local q = Q()
+    local names = {}
+    for _, o in ipairs(objs or {}) do
+        if not o.done then
+            for _, id in ipairs(q:ObjectiveNpcs(o)) do
+                local n = q:NpcName(id)
+                if n then names[#names + 1] = n; break end
+            end
+        end
+    end
+    local out = {}
+    if #names > 0 then out.target = { name = names[1], name2 = names[2] or names[1] } end
+    local special = _G.GetQuestLogSpecialItemInfo
+    if special and _G.C_QuestLog and _G.C_QuestLog.GetLogIndexForQuestID then
+        for _, qid in ipairs(s.qids or {}) do
+            local idx = _G.C_QuestLog.GetLogIndexForQuestID(qid)
+            if idx then
+                local ok, link, icon, charges = pcall(special, idx)
+                local id = ok and type(link) == "string" and tonumber(link:match("item:(%d+)"))
+                if id then
+                    local count = (_G.GetItemCount and _G.GetItemCount(id)) or 0
+                    local nm = link:match("%[(.-)%]")
+                    local cnt = (count and count > 1) and tostring(count)
+                        or ((charges or 0) > 1 and tostring(charges) or nil)
+                    out.item = { id = id, icon = icon, name = nm, count = cnt }
+                    break
+                end
+            end
+        end
+    end
+    if not (out.target or out.item) then return nil end
+    return out
+end
+local function makeAct(name, kind)
+    local b = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
+    b:SetSize(28, 28)
+    if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
+    b:SetAttribute("type", kind)
+    b:SetFrameStrata("MEDIUM")
+    b:Hide()
+    b:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        if kind == "macro" then
+            GameTooltip:SetText(T("Cibler le monstre de la quête"), 1, 1, 1)
+            if s.n1 then GameTooltip:AddLine(T("Clic gauche :") .. " " .. s.n1, 0.9, 0.9, 0.9) end
+            if s.n2 and s.n2 ~= s.n1 then GameTooltip:AddLine(T("Clic droit :") .. " " .. s.n2, 0.9, 0.9, 0.9) end
+            if Q():Config().targetSkull ~= false then
+                GameTooltip:AddLine(T("Pose la tête de mort sur le monstre."), 0.6, 0.6, 0.6)
+            end
+        elseif s.itemID and GameTooltip.SetItemByID then
+            GameTooltip:SetItemByID(s.itemID)
+        end
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    if kind == "macro" then
+        -- tête de mort sur le monstre ciblé (SetRaidTarget n'est pas protégé ; en groupe il faut être chef
+        -- ou assistant)
+        b:SetScript("PostClick", function(_, _, down)
+            if down == false or Q():Config().targetSkull == false then return end
+            local set, get = _G.SetRaidTarget, _G.GetRaidTargetIndex
+            if set and _G.UnitExists and _G.UnitExists("target") and not (_G.UnitIsDead and _G.UnitIsDead("target"))
+                and not (_G.UnitIsFriend and _G.UnitIsFriend("player", "target"))
+                and (not get or get("target") ~= 8) then
+                pcall(set, "target", 8)
+            end
+        end)
+    end
+    return b
+end
+-- pose les boutons protégés sur les cases de la carte (hors combat)
+function UI.PlaceQuestActions()
+    if _G.InCombatLockdown and _G.InCombatLockdown() then actPending = true return end
+    actPending = nil
+    if not card then return end
+    if not card.actHooked and card.HookScript then
+        card.actHooked = true
+        card:HookScript("OnHide", function() UI:PlaceQuestActions() end)
+    end
+    actT = actT or makeAct("WarbandKeeperQuestTarget", "macro")
+    actI = actI or makeAct("WarbandKeeperQuestItem", "item")
+    local v = card.tv
+    local a = card.actData
+    local show = card:IsShown() and v and v:IsShown() and v.act:IsShown() and a
+    if show and a.target then
+        actT.n1, actT.n2 = a.target.name, a.target.name2
+        actT:SetAttribute("type", "macro")
+        actT:SetAttribute("macrotext", "/targetexact " .. a.target.name)
+        actT:SetAttribute("type2", "macro")
+        actT:SetAttribute("macrotext2", "/targetexact " .. (a.target.name2 or a.target.name))
+        actT:ClearAllPoints(); actT:SetAllPoints(v.actT)
+        actT:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
+        actT:Show()
+    else
+        actT:Hide()
+    end
+    if show and a.item then
+        actI.itemID = a.item.id
+        actI:SetAttribute("type", "item")
+        actI:SetAttribute("item", "item:" .. a.item.id)
+        actI:ClearAllPoints(); actI:SetAllPoints(v.actI)
+        actI:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
+        actI:Show()
+    else
+        actI:Hide()
+    end
+end
+WK:On("PLAYER_REGEN_ENABLED", function() if actPending then UI:PlaceQuestActions() end end)
+
+
+-- Repères sur les plaques de nom : monstres des objectifs pas finis de l'étape (ou de la quête suivie), à la
+-- couleur de l'objectif ; plus gros sur la cible.
+local marks = {}
+local function plateNpc(unit)
+    local guid = _G.UnitGUID and _G.UnitGUID(unit)
+    if type(guid) ~= "string" then return nil end
+    local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
+    return kind == "Creature" and tonumber(id) or nil
+end
+local wanted, wantedAt = {}, 0
+local function wantedNpcs()
+    local now = _G.GetTime and _G.GetTime() or 0
+    if now - wantedAt < 1 then return wanted end
+    wantedAt = now
+    _G.wipe(wanted)
+    local q = Q()
+    local P = WK.modules.QuestPlan
+    local t = P and P:Active() and P:Tour()
+    local s = t and t.steps[t.idx]
+    local list = {}
+    if s and s.kind == "do" then
+        for _, o in ipairs(P:StepObjectives(s)) do list[#list + 1] = o end
+    else
+        local qid = q:Tracked()
+        if qid and not q:IsComplete(qid) then for _, o in ipairs(q:Objectives(qid)) do list[#list + 1] = o end end
+    end
+    for i, o in ipairs(list) do
+        if not o.done then
+            local col = UI.QuestObjColor and UI.QuestObjColor(o.qi or i) or { UI:Accent() }
+            for _, id in ipairs(q:ObjectiveNpcs(o)) do if not wanted[id] then wanted[id] = col end end
+        end
+    end
+    return wanted
+end
+local function updateMarks()
+    for _, m in ipairs(marks) do m:Hide() end
+    local c = Q():Config()
+    if c.plateMarks == false or not WK:FeatureOn("quests") then return end
+    if not (_G.C_NamePlate and _G.C_NamePlate.GetNamePlates) then return end
+    local w = wantedNpcs()
+    if not next(w) then return end
+    local n = 0
+    local ok, plates = pcall(_G.C_NamePlate.GetNamePlates)
+    if not ok then return end
+    for _, p in ipairs(plates or {}) do
+        local unit = p.namePlateUnitToken or (p.UnitFrame and p.UnitFrame.unit)
+        local id = unit and plateNpc(unit)
+        local col = id and w[id]
+        if col and not (_G.UnitIsDead and _G.UnitIsDead(unit)) then
+            n = n + 1
+            local m = marks[n]
+            if not m then
+                m = CreateFrame("Frame", nil, UIParent)
+                m:SetSize(14, 14); m:SetFrameStrata("LOW")
+                m.edge = m:CreateTexture(nil, "ARTWORK", nil, 0)
+                m.edge:SetTexture(UI.MEDIA .. "circle"); m.edge:SetAllPoints()
+                m.dot = m:CreateTexture(nil, "ARTWORK", nil, 1); m.dot:SetTexture(UI.MEDIA .. "circle")
+                m.dot:SetPoint("TOPLEFT", 2, -2); m.dot:SetPoint("BOTTOMRIGHT", -2, 2)
+                m.glyph = m:CreateTexture(nil, "OVERLAY"); m.glyph:SetTexture(UI.MEDIA .. "bang")
+                m.glyph:SetSize(8, 8); m.glyph:SetPoint("CENTER")
+                marks[n] = m
+            end
+            local target = _G.UnitIsUnit and _G.UnitIsUnit(unit, "target")
+            local sz = target and 18 or 14
+            m:SetSize(sz, sz)
+            m.edge:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+            m.dot:SetVertexColor(col[1], col[2], col[3], 1)
+            m.glyph:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+            m:ClearAllPoints()
+            local okp = pcall(m.SetPoint, m, "BOTTOM", p, "TOP", 0, 2)
+            if okp then m:Show() else m:Hide() end
+        end
+    end
+end
+UI.UpdateQuestPlateMarks = updateMarks
+do
+    local tick = CreateFrame("Frame")
+    tick.acc = 0
+    tick:SetScript("OnUpdate", function(s, el)
+        s.acc = s.acc + el
+        if s.acc < 0.25 then return end
+        s.acc = 0
+        updateMarks()
+    end)
 end

@@ -39,15 +39,20 @@ R_PCT = 0.85         # rayon d'un camp : 85 % de ses points dedans (un point iso
 
 def main(root, out):
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
-    L.execute('QDB={}; ZDB={private={}}\nloadstring=load\n'
-              'QuestieLoader={ImportModule=function(_,n) if n=="ZoneDB" then return ZDB end return QDB end}')
+    L.execute('QDB={}; ZDB={private={}}; L10N={npcNameLookup={}}\nloadstring=load\n'
+              'GetLocale=function() return "frFR" end\n'
+              'QuestieLoader={ImportModule=function(_,n) if n=="ZoneDB" then return ZDB elseif n=="l10n" then return L10N end return QDB end}')
 
     def run(rel):
         with open(os.path.join(root, rel), encoding="utf-8") as f:
             L.execute(f.read())
     for rel in ("data/Forever/foreverQuestDB.lua", "data/Forever/foreverNpcDB.lua", "data/Forever/foreverObjectDB.lua",
-                "data/Forever/foreverItemDB.lua", "support/Forever/Zones/areaIdToUiMapId.lua"):
+                "data/Forever/foreverItemDB.lua", "support/Forever/Zones/areaIdToUiMapId.lua",
+                "l10n/Forever/lookupNpcs/frFR.lua"):
         run(rel)
+    frn = L.globals().L10N.npcNameLookup["frFR"]
+    if lupa.lua_type(frn) == "function":
+        frn = frn()
     quests = L.execute("return load(QDB.questData)()")
     npcs = L.execute("return load(QDB.npcData)()")
     objs = L.execute("return load(QDB.objectData)()")
@@ -303,6 +308,19 @@ def main(root, out):
         f.write("\n}\n-- [« n » PNJ / « o » objet .. n°] = « carte:ccc…;… » : grille de 0,5 %% de la carte, 3 caractères\n"
                 "-- base64 par point (x * 201 + y, x et y de 0 à 200)\nWK.SpawnPts = {\n")
         f.write("\n".join('%s="%s",' % (k, v) for k, v in sorted(spawn.items()) if v))
+        # noms des monstres des objectifs (bouton « Cibler » de la tournée) : « anglais|français »
+        f.write("\n}\n-- [n° de PNJ] = « nom anglais|nom français » (monstres des objectifs : bouton Cibler)\nWK.QuestNpcNames = {\n")
+        names = []
+        for k in sorted((k for k, v in spawn.items() if v and k[0] == "n"), key=lambda k: int(k[1:])):
+            nid = int(k[1:])
+            e = npcs[nid]
+            en = e and e[1]
+            if not en:
+                continue
+            fe = frn[nid] if frn else None
+            frname = fe[1] if fe and fe[1] else en
+            names.append('[%d]="%s|%s",' % (nid, str(en).replace('"', "'").replace("|", " "), str(frname).replace('"', "'").replace("|", " ")))
+        f.write("\n".join(names))
         f.write("\n}\n")
     print("%d PNJ ou objets avec points (%d Ko)" % (sum(1 for v in spawn.values() if v), sum(len(v) for v in spawn.values()) // 1024))
     print("%d quêtes, %d objectifs, %d camps, %d zones à explorer, %d objectifs cachés, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, n_explore, n_extra, len(starts), len(buy)))

@@ -9,6 +9,12 @@ local T = function(s) return WK.T(s) end
 -- des quêtes du donjon, journal des données) l'ouvre ; clic droit : petit menu (guider, suivre, passer l'étape,
 -- ignorer, lien wowhead). Langue du site : settings.ui.wowheadLang (« fr » / « en »), roue de la page Quêtes.
 ---------------------------------------------------------------------------
+-- étiquette « GROUPE » (orange) devant le nom d'une quête de groupe (monstre élite, WK.QuestIsGroup) ; vide sinon
+function UI.GroupTag(qid)
+    if not (qid and WK.QuestIsGroup and WK.QuestIsGroup(qid)) then return "" end
+    return UI:Hex(C.warning) .. T("GROUPE") .. "|r  "
+end
+
 local KIND_LABEL = { quest = "Quête", npc = "PNJ", item = "Objet", object = "Objet du décor" }
 
 function UI:WowheadLang()

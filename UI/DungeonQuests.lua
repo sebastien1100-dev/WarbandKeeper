@@ -389,7 +389,7 @@ function UI:DungeonQuestsData(d, cfg)
     local out = { name = Dg:Name(d), log = {}, avail = {}, waiting = {}, done = s.done, doneList = {}, pick = Dg:PickCount(s), preN = #s.pre, xp = 0 }
     for _, q in ipairs(s.logList or {}) do
         local ready = QT and QT:IsComplete(q.id)
-        local e = { name = Qm:Name(q) .. badge(q.id), lvl = q.lvl, solid = true, qid = q.id }
+        local e = { name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id), lvl = q.lvl, solid = true, qid = q.id }
         if ready then
             e.color, e.glyph, e.sub, e.subColor = C.positive, "star", T("prête à rendre"), C.positive
         else
@@ -403,7 +403,8 @@ function UI:DungeonQuestsData(d, cfg)
     for _, q in ipairs(s.avail) do
         local zone = R and R.ZoneName and R:ZoneName(q.smap or q.map) or ""
         local dt = distText(distOf(q))
-        table.insert(out.avail, { qid = q.id, name = Qm:Name(q) .. badge(q.id), lvl = q.lvl, color = C.gold,
+        table.insert(out.avail, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
+            lvl = q.lvl, color = C.gold,
             sub = zone .. (dt and (" · " .. dt) or ""),
             tip = { Qm:Name(q), T("Clic : guider vers le donneur") },
             onClick = function() Qm:GuideTo(q) end })
@@ -413,7 +414,8 @@ function UI:DungeonQuestsData(d, cfg)
         local pre
         for _, e in ipairs(s.pre) do if e.unlock == q then pre = e.q break end end
         local sub = pre and string.format(T("après : %s"), Qm:Name(pre)) or T("après une autre quête (en cours)")
-        table.insert(out.waiting, { qid = q.id, name = Qm:Name(q) .. badge(q.id), lvl = q.lvl, color = C.warning, glyph = "lock", sub = sub, subColor = C.warning,
+        table.insert(out.waiting, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
+            lvl = q.lvl, color = C.warning, glyph = "lock", sub = sub, subColor = C.warning,
             tip = pre and { Qm:Name(pre), T("Prérequis de :") .. " " .. Qm:Name(q), T("Clic : guider vers son donneur") } or nil,
             onClick = pre and function() Qm:GuideTo(pre) end or nil })
         out.xp = out.xp + (q.xp or 0)

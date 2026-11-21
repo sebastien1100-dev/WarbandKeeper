@@ -1072,11 +1072,12 @@ function M:StepTitle(s, colored)
         local n = (inLog(q) and Q():Title(q)) or (qq and WK.modules.Quests:Name(qq)) or ("#" .. q)
         -- suite prévue pas encore prise
         if pred[q] and not inLog(q) then n = n .. " " .. T("(suite)") end
-        if WK.QuestIsGroup(q) then n = n .. " " .. T("(groupe)") end
         if colored then
             n = WK.UI:Hex(self:ProgressColor(q)) .. n .. "|r"
             if WK.modules.DataLog then n = n .. WK.modules.DataLog:Badge(q, true) end
         end
+        -- quête de groupe (monstre élite) : étiquette « GROUPE » devant le nom
+        n = WK.UI.GroupTag(q) .. n
         table.insert(names, n)
     end
     local list = table.concat(names, ", ")
@@ -1145,6 +1146,7 @@ function M:StepObjectives(s)
             local qn = multi and Q():Title(q) or nil
             for _, o in ipairs((M:StepQuestObjectives(s, q))) do
                 table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done, quest = qn,
+                    refs = o.refs, type = o.type, qid = q,
                     qi = multi and qi or nil })
             end
         end

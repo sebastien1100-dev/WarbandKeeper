@@ -71,6 +71,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.126.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte de tournée : pour une étape à faire, bouton « Cibler » avec le nom du monstre de l'objectif (clic gauche : le premier pas fini, clic droit : le suivant) et bouton « Objet » qui utilise l'objet de la quête, avec son nombre. Ils marchent aussi en combat (en combat, ils gardent le dernier monstre et le dernier objet).
+- Le bouton Cibler pose la tête de mort sur le monstre ciblé (seul, ou chef et assistants en groupe).
+- Plaques de nom : petite pastille à la couleur de l'objectif au-dessus des monstres de la quête, plus grosse sur ta cible.
+- Trois réglages dans la roue des Quêtes, carte Quête suivie : « Boutons Cibler et Objet », « Tête de mort sur le monstre ciblé », « Repère sur les plaques de nom ».
+
+### Modifications
+- Quêtes de groupe : « GROUPE » en orange devant le nom (tournée, carte de tournée, Quêtes de ma zone, quêtes de donjon) au lieu de « (groupe) » après.
+
 ## v1.125.1 — 21/11/2026
 
 _Un /reload suffit._
