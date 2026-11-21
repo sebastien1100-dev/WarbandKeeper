@@ -597,6 +597,27 @@ local function build()
             segs[#segs + 1] = d; total = total + d
         end
         local done = (frac or 0) * total
+        -- position du perso lisible : ramenée sur le trajet (point le plus proche) ; l'avancée suit alors la vraie
+        -- position et non le temps écoulé (le décollage et les virages ne vont pas à vitesse constante : le trait
+        -- et la flèche se décalaient)
+        local me = WK.modules.Guide:PlayerPos()
+        local onPath, snapX, snapY = false, nil, nil
+        if me and me.cont == cont and me.wx then
+            local best, bestAt, run, bx0, by0 = math.huge, nil, 0, nil, nil
+            for i = 1, #pts - 2, 2 do
+                local ax, ay, bx, by = pts[i], pts[i + 1], pts[i + 2], pts[i + 3]
+                local dx, dy = bx - ax, by - ay
+                local len2 = dx * dx + dy * dy
+                local t = len2 > 0 and math.max(0, math.min(1, ((me.wx - ax) * dx + (me.wy - ay) * dy) / len2)) or 0
+                local qx, qy = ax + dx * t, ay + dy * t
+                local d2 = (me.wx - qx) ^ 2 + (me.wy - qy) ^ 2
+                local seg = segs[(i + 1) / 2]
+                if d2 < best then best, bestAt, bx0, by0 = d2, run + seg * t, qx, qy end
+                run = run + seg
+            end
+            -- à moins de 200 m du tracé : c'est bien ce trajet
+            if bestAt and best < 200 * 200 then done, onPath, snapX, snapY = bestAt, true, bx0, by0 end
+        end
         local acc, px, py, hx, hy = 0, nil, nil, nil, nil
         local dirx, diry -- sens du vol à l'écran (segment en cours)
         local cv = self.route2
@@ -630,8 +651,9 @@ local function build()
         self.fromT:ClearAllPoints(); self.fromT:SetPoint("TOP", cv, "TOPLEFT", px, -py - 8); self.fromT:SetText(short(fl.from))
         self.toT:ClearAllPoints(); self.toT:SetPoint("BOTTOM", cv, "TOPLEFT", ex, -ey + 8); self.toT:SetText(short(fl.to))
         -- le griffon : position du perso si elle est lisible, sinon l'avancée estimée sur le trajet
-        local p = WK.modules.Guide:PlayerPos()
-        if p and p.cont == cont then
+        if onPath then hx, hy = at(snapX, snapY) end
+        local p = me
+        if p and p.cont == cont and not onPath then
             local x, y = at(p.wx, p.wy)
             if x > 0 and y > 0 and x < cv:GetWidth() and y < cv:GetHeight() then hx, hy = x, y end
         end

@@ -88,28 +88,6 @@ SlashCmdList.WARBANDKEEPER = function(msg)
             WK:Print(string.format("  %d <- %d · %s <- %s (x%d)", c.id, c.pre,
                 q and Q:Name(q) or "?", p and Q:Name(p) or "?", c.n))
         end
-    elseif cmd == "zones" then
-        -- diagnostic des zones de quête (UI/QuestCamps.lua) : dernier dessin de la carte et de la minicarte
-        local QT = WK.modules.QuestTrack
-        local qid = QT and QT:Tracked()
-        WK:Print(WK.T("Zones de quête : diagnostic"))
-        local qc = QT and QT:Config() or {}
-        WK:Print("  " .. WK.T("quête suivie") .. " : " .. tostring(qid) .. " · " .. WK.T("style") .. " : "
-            .. tostring(qc.zoneStyle) .. " / " .. tostring(qc.miniStyle) .. " · " .. tostring(qc.map))
-        if qid then
-            local d = QT:Data(qid)
-            local p = WK.modules.Guide:PlayerPos()
-            local pts = 0
-            for _, o in ipairs(QT:Objectives(qid)) do pts = pts + #QT:Points(o, p and p.map) / 2 end
-            WK:Print("  " .. WK.T("objectifs") .. " : " .. tostring(d and #d.objs) .. " · "
-                .. WK.T("points sur ta carte") .. " : " .. pts .. " (" .. tostring(p and p.map) .. ")")
-        end
-        local m, n = WK.UI.questZoneDiag, WK.UI.questMiniDiag
-        WK:Print("  " .. WK.T("carte du monde") .. " : "
-            .. (m and string.format("%s · %s · %d halos · %d camps · %d quêtes",
-            tostring(m.map), m.style, m.heat, m.camps, m.quests) or "-"))
-        WK:Print("  " .. WK.T("minicarte") .. " : " .. (n and string.format("%s · %s · %d objectifs · %d halos",
-            tostring(n.map), n.style, n.objs, n.drawn or 0) or "-"))
     elseif cmd == "carte" or cmd == "map" then
         -- diagnostic de la carte du monde : rares de la carte affichée, erreurs des calques
         local wm = WorldMapFrame

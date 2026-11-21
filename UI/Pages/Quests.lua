@@ -50,11 +50,11 @@ UI:RegisterPage({
         self.zone = Q:PlayerZone()
         cfg.filter = cfg.filter or "all"
 
-        -- Deux grands onglets : « Carte des zones » et « Journal ». Onglet retenu dans settings.ui.questTab
+        -- Deux grands onglets : « Zones de quêtes » et « Journal ». Onglet retenu dans settings.ui.questTab
         -- (zones par défaut ; l'ancien « Ma progression » revient aux zones)
         local ui = WK.DB.global.settings.ui
         self.view = ui.questTab == "journal" and "journal" or "zones"
-        self.bigZones = self:BigTab(p, "map", "Carte des zones", function() self:ShowTab("zones") end)
+        self.bigZones = self:BigTab(p, "map", "Zones de quêtes", function() self:ShowTab("zones") end)
         self.bigZones:SetPoint("TOPLEFT", 0, 0)
         -- journal des données (UI/DataLog.lua) : ce qui arrive dans la base (QuestieDB, appris en jeu)
         self.bigJournal = self:BigTab(p, "notes", "Journal", function() self:ShowTab("journal") end, "journal")
@@ -184,9 +184,9 @@ UI:RegisterPage({
             return t
         end
 
-        -- quête suivie (Modules/QuestTrack.lua) : celle cochée dans le journal du jeu, ses zones sur la carte
+        -- quête suivie (Modules/QuestTrack.lua) : celle cochée dans le journal du jeu ; repères des plaques
         if QT() then
-            local tcard = card("Quête suivie", 40 + 5 * 36 + 16, "journal du jeu et carte")
+            local tcard = card("Quête suivie", 40 + 2 * 36 + 16, "journal du jeu et plaques de nom")
             local function qtoggle(field, after)
                 local t = UI:Toggle(tcard, function() return QT():Config()[field] end,
                     function(v)
@@ -198,50 +198,12 @@ UI:RegisterPage({
                 return t
             end
             UI:SettingRow(tcard, -40, "Suivre la quête cochée dans le journal", nil, qtoggle("followWatch"), 50)
-            self.campSeg = UI:Segmented(tcard, { { "tracked", "Suivie" }, { "all", "Toutes" }, { "off", "Aucune" } },
-                function(v)
-                    QT():Config().map = v
-                    if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
-                    if UI.SyncGameQuestMinimap then UI:SyncGameQuestMinimap() end
-                    QT():Changed()
-                end, 26)
-            UI:SettingRow(tcard, -76, "Zones de quête sur la carte", nil, self.campSeg, self.campSeg:GetWidth())
-            self.campSeg:Select(QT():Config().map)
-            UI:SettingRow(tcard, -112, "Masquer les repères de quête du jeu", "Sur la carte du monde et la minicarte, tant que nos zones de quête sont affichées ; notre repère prend leur place sur la minicarte.",
-                qtoggle("hideGame", function() if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end; if UI.SyncGameQuestMinimap then UI:SyncGameQuestMinimap() end end), 50)
-            UI:SettingRow(tcard, -148, "Volet des quêtes sur la carte", "Petite liste des quêtes du journal en bas à gauche de la carte du monde (clic : suivre une quête).",
-                qtoggle("panel", function() if UI.RefreshQuestMapPanel then UI:RefreshQuestMapPanel() end end), 50)
-            UI:SettingRow(tcard, -184, "Repère sur les plaques de nom",
+            UI:SettingRow(tcard, -76, "Repère sur les plaques de nom",
                 "Pastille de la couleur de l'objectif au-dessus des monstres des quêtes du journal "
                     .. "(plaques de nom affichées).",
                 qtoggle("plateMarks", function()
                     if UI.UpdateQuestPlateMarks then UI.UpdateQuestPlateMarks() end
                 end), 50)
-        end
-
-        -- zones des objectifs (UI/QuestCamps.lua) : chaleur, points ou cercles ; minicarte ; intensité
-        if QT() then
-            local zcard = card("Zones des objectifs", 40 + 3 * 36 + 16, "carte et minicarte")
-            local function redraw()
-                if UI.RedrawWorldMap then UI.RedrawWorldMap("quêtes") end
-                QT():Changed()
-            end
-            self.zoneSeg = UI:Segmented(zcard,
-                { { "heat", "Chaleur" }, { "points", "Points" }, { "circles", "Cercles" } },
-                function(v) QT():Config().zoneStyle = v; redraw() end, 26)
-            UI:SettingRow(zcard, -40, "Dessin sur la carte",
-                "Chaleur : plus vif là où les monstres et objets de l'objectif sont nombreux. Points : chaque apparition. Cercles : les camps, comme avant.",
-                self.zoneSeg, self.zoneSeg:GetWidth())
-            self.zoneSeg:Select(QT():Config().zoneStyle)
-            self.miniSeg = UI:Segmented(zcard, { { "heat", "Chaleur" }, { "points", "Points" }, { "off", "Aucune" } },
-                function(v) QT():Config().miniStyle = v; redraw() end, 26)
-            UI:SettingRow(zcard, -76, "Sur la minicarte",
-                "Objectifs pas finis de la quête suivie, autour de toi.",
-                self.miniSeg, self.miniSeg:GetWidth())
-            self.miniSeg:Select(QT():Config().miniStyle)
-            UI:SettingRow(zcard, -112, "Intensité de la chaleur", nil,
-                UI:Slider(zcard, 200, 30, 200, 10, function() return QT():Config().heat or 100 end,
-                    function(v) QT():Config().heat = v; redraw() end, "%d %%"), 220)
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
@@ -467,8 +429,8 @@ UI:RegisterPage({
         for _, e in ipairs(self.sideCards or {}) do table.insert(all, e.c) end
         if not self.qct then
             self.qct = UI:CardTabs(self.side.child, "quests", {
-                { "track", T("Suivi et carte"),
-                  titles = { "Quête suivie", "Zones des objectifs", "Légende" } },
+                { "track", T("Suivi et légende"),
+                  titles = { "Quête suivie", "Légende" } },
                 { "list", T("Quêtes montrées"),
                   titles = { "Quêtes montrées", "Journal des données", "Liens wowhead", "Message de groupe" } },
                 { "auto", T("Quêtes automatiques"),
@@ -581,7 +543,7 @@ UI:RegisterPage({
         return b
     end,
 
-    -- sous-titre de « Carte des zones » : zones et quêtes disponibles du perso choisi
+    -- sous-titre de « Zones de quêtes » : zones et quêtes disponibles du perso choisi
     ZoneSummary = function(self, zones)
         if not zones then
             local ok, z = pcall(Q.Zones, Q, self.viewKey or WK:CharKey())
@@ -612,7 +574,6 @@ UI:RegisterPage({
             if WK.DB.global.characters[self.viewKey] then self.charDd:Select(self.viewKey) else self.viewKey = self.charDd.selected end
         end
         for _, t in ipairs(self.toggles) do t:Refresh() end
-        if self.campSeg and QT() then self.campSeg:Select(QT():Config().map) end
         if not self.zoneSum then self:ZoneSummary() end
         if self.view == "journal" then self.journal:Refresh() return end
         local key = self.viewKey or WK:CharKey()

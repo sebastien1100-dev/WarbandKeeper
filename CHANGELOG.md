@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.31 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Quêtes : l'onglet « Carte des zones » s'appelle « Zones de quêtes ».
+- Carte du monde et minicarte : les zones de quête (taches de couleur), les repères de rendu et le volet « Quêtes du journal » sont retirés ; les repères de quête du jeu reviennent (ceux que l'addon masquait sont rendus).
+- Réglages des quêtes : la carte « Zones des objectifs » et les réglages de carte de « Quête suivie » sont retirés.
+
+### Corrections
+- Statistiques de vol : la flèche et la partie faite du trajet ne se décalent plus ; elles suivent ta vraie position sur le tracé (avant, la partie faite avançait selon le temps, plus vite que l'appareil au décollage).
+
 ## v1.128.30 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

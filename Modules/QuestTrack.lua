@@ -16,13 +16,8 @@ function M:Config()
     -- réglages de la carte de quête, de la flèche, de la barre « Quête » et des pastilles du suivi (retirés)
     c.hud, c.hudSolo, c.guide, c.actButtons, c.targetSkull, c.trackPins, c.tourBg = nil, nil, nil, nil, nil, nil, nil
     if c.followWatch == nil then c.followWatch = true end -- quête cochée dans le journal du jeu = suivie
-    if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
-    if c.zoneStyle == nil then c.zoneStyle = "heat" end   -- zones sur la carte du monde : heat / points / circles
-    if c.miniStyle == nil then c.miniStyle = "heat" end   -- quête suivie sur la minicarte : heat / points / off
-    if c.heat == nil then c.heat = 100 end                -- intensité des zones de chaleur (%)
-    if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
-    -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
-    if c.panel == nil then c.panel = true end
+    -- zones de quête sur la carte et la minicarte, volet des quêtes (retirés)
+    c.map, c.zoneStyle, c.miniStyle, c.heat, c.hideGame, c.panel, c.panelFold = nil, nil, nil, nil, nil, nil, nil
     if c.plateMarks == nil then c.plateMarks = true end   -- repères des monstres de la quête sur les plaques de nom
     return c
 end
@@ -347,8 +342,6 @@ function M:Untrack()
 end
 
 function M:Changed()
-    if WK.UI.RefreshQuestCamps then WK.UI:RefreshQuestCamps() end
-    if WK.UI.RefreshQuestMini then WK.UI:RefreshQuestMini() end
     WK:NotifyChanged()
 end
 

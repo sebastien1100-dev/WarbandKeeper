@@ -6,6 +6,11 @@ local CreateFrame, UIParent = _G.CreateFrame, _G.UIParent
 -- Repères sur les plaques de nom (la carte de quête, la barre « Quête » et les pastilles du suivi du jeu
 -- ont été retirées avec la tournée et le guide de montée). Réglage QuestTrack:Config().plateMarks.
 local function Q() return WK.modules.QuestTrack end
+-- couleur du n-ième objectif de la quête suivie
+local function objColor(i)
+    local cols = { { UI:Accent() }, C.warning, C.plan, C.info, C.mint, C.rule, C.positive }
+    return cols[((i or 1) - 1) % #cols + 1]
+end
 
 -- Repères sur les plaques de nom : monstres des objectifs pas finis des quêtes du journal (couleur de
 -- l'objectif pour la quête suivie, accent pour les autres) ; plus gros sur la cible.
@@ -32,7 +37,7 @@ local function wantedNpcs()
         if not q:IsComplete(qid) then
             for i, o in ipairs(q:Objectives(qid)) do
                 if not o.done then
-                    local col = (qid == tracked and UI.QuestObjColor) and UI.QuestObjColor(i) or { UI:Accent() }
+                    local col = qid == tracked and objColor(i) or { UI:Accent() }
                     for _, id in ipairs(q:ObjectiveNpcs(o)) do if not wanted[id] then wanted[id] = col end end
                 end
             end

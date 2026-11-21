@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.31", date = "21/11/2026", restart = true,
+        changed = {
+            "Quêtes : l'onglet « Carte des zones » s'appelle « Zones de quêtes ».",
+            "Carte du monde et minicarte : les zones de quête (taches de couleur), les repères de rendu et le volet « Quêtes du journal » sont retirés ; les repères de quête du jeu reviennent (ceux que l'addon masquait sont rendus).",
+            "Réglages des quêtes : la carte « Zones des objectifs » et les réglages de carte de « Quête suivie » sont retirés.",
+        },
+        fixed = {
+            "Statistiques de vol : la flèche et la partie faite du trajet ne se décalent plus ; elles suivent ta vraie position sur le tracé (avant, la partie faite avançait selon le temps, plus vite que l'appareil au décollage).",
+        },
+    },
+    {
         version = "1.128.30", date = "21/11/2026", restart = true,
         changed = {
             "Quêtes allégées : la page garde seulement « Carte des zones » et « Journal ». « Ma progression » est retirée (montée en niveaux, mon journal, quêtes de ma zone, tournée de quêtes), avec les cases et le bouton « Envoyer dans Ma progression » de la carte des zones.",

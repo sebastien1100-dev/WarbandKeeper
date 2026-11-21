@@ -124,78 +124,20 @@ local function gamePinAlpha(a)
         end
     end
 end
--- Repères de quête du jeu (point d'exclamation, rendu, zone d'objectif) masqués sur la carte du monde
--- tant que notre calque « Quêtes » est affiché (QuestTrack:Config().hideGame) ; rendus sinon
-local QUEST_PIN_TEMPLATES = { "QuestPinTemplate", "QuestBlobPinTemplate", "QuestOfferPinTemplate", "QuestHubPinTemplate",
-    "StorylineQuestPinTemplate", "BonusObjectivePinTemplate", "ThreatObjectivePinTemplate" }
-local QUEST_TPL = {}
-for _, t in ipairs(QUEST_PIN_TEMPLATES) do QUEST_TPL[t] = true end
-local function hideGameQuests()
-    if not WK:FeatureOn("quests") then return false end
+-- Repères de quête du jeu : nos zones de quête (ancien calque « Quêtes ») ont été retirées ; les réglages du jeu
+-- que l'addon avait mis à « 0 » pour la minicarte (QuestTrack:Config().gameCVars) sont rendus une fois
+WK:On("PLAYER_LOGIN", function()
     local QT = WK.modules.QuestTrack
     local c = QT and QT:Config()
-    return c and c.hideGame and c.map ~= "off" or false
-end
-local questPinsHidden, acquireHooked = false, false
-local function gameQuestPins()
-    local wm = WorldMapFrame
-    if not (wm and wm.EnumeratePinsByTemplate) then return end
-    -- une pastille de quête reprise par le jeu (journal mis à jour) : masquée à l'image suivante
-    if not acquireHooked and wm.AcquirePin then
-        acquireHooked = true
-        hooksecurefunc(wm, "AcquirePin", function(_, tpl)
-            if QUEST_TPL[tpl] and hideGameQuests() then C_Timer.After(0, gameQuestPins) end
-        end)
-    end
-    local hide = hideGameQuests()
-    if not hide and not questPinsHidden then return end
-    questPinsHidden = hide
-    for _, tpl in ipairs(QUEST_PIN_TEMPLATES) do
-        local ok, f, st, k0 = pcall(wm.EnumeratePinsByTemplate, wm, tpl)
-        if ok and type(f) == "function" then
-            pcall(function()
-                for k, v in f, st, k0 do
-                    local pin = (type(k) == "table" and k.SetAlpha and k) or (type(v) == "table" and v.SetAlpha and v)
-                    if pin then
-                        pin:SetAlpha(hide and 0 or 1)
-                        if pin.EnableMouse then pcall(pin.EnableMouse, pin, not hide) end
-                    end
-                end
-            end)
-        end
-    end
-end
-UI.GameQuestPins = gameQuestPins
-
--- Minicarte : repères de quête du jeu (point d'interrogation du rendu, zones d'objectifs) masqués eux aussi,
--- par les réglages du jeu qui les affichent (selon le client : un seul existe) ; valeurs d'origine gardées
--- dans QuestTrack:Config().gameCVars et remises quand le masquage est coupé
-local QUEST_CVARS = { "questPOI", "questHelper", "showQuestObjectivesOnMap", "questPOIShowOnMinimap" }
-UI.QUEST_CVARS = QUEST_CVARS
-function UI:SyncGameQuestMinimap()
-    local QT = WK.modules.QuestTrack
-    local c = QT and QT:Config()
-    if not c then return end
-    c.gameCVars = c.gameCVars or {}
-    local hide = hideGameQuests()
-    for _, name in ipairs(QUEST_CVARS) do
-        local v = WK.GetCVar(name)
-        if v ~= nil then
-            if hide then
-                if v ~= "0" then c.gameCVars[name] = v; WK.SetCVar(name, "0") end
-            elseif c.gameCVars[name] then
-                WK.SetCVar(name, c.gameCVars[name]); c.gameCVars[name] = nil
-            end
-        end
-    end
-    -- zones d'objectifs dessinées par la minicarte elle-même
+    if not (c and c.gameCVars) then return end
+    for name, v in pairs(c.gameCVars) do WK.SetCVar(name, v) end
+    c.gameCVars = nil
     if Minimap then
         for _, fn in ipairs({ "SetQuestBlobInsideAlpha", "SetQuestBlobOutsideAlpha", "SetQuestBlobRingAlpha" }) do
-            if Minimap[fn] then pcall(Minimap[fn], Minimap, hide and 0 or 1) end
+            if Minimap[fn] then pcall(Minimap[fn], Minimap, 1) end
         end
     end
-end
-WK:On("PLAYER_LOGIN", function() C_Timer.After(3, function() UI:SyncGameQuestMinimap() end) end)
+end)
 
 -- Journal (/wk carte) : redessins et masquages de la carte, pour comprendre une pastille disparue
 UI.mapLog = UI.mapLog or {}
@@ -318,7 +260,6 @@ end
 local function redraw(src)
     note("redessin" .. (type(src) == "string" and (" · " .. src) or ""))
     hideAll()
-    gameQuestPins()
     local cfg = WK.DB.global.gatherMap
     local wm, cv = WorldMapFrame, canvas()
     if not wm or not cv or not wm:IsShown() then return end
@@ -358,7 +299,6 @@ local function redraw(src)
         layer("Lieux", UI.DrawMapLayers)        -- lieux utiles (UI/MapLayers.lua)
         layer("Filons et plantes", UI.DrawNodePins) -- nœuds récoltés (UI/NodePins.lua)
         layer("Rares", UI.DrawRarePins)         -- rares (UI/RarePins.lua)
-        layer("Quêtes", UI.DrawQuestCamps)      -- camps des objectifs de quête (UI/QuestCamps.lua)
         layer("Bateaux", UI.DrawBoatPaths)      -- bateaux appris (UI/NavRoute.lua)
         layer("Navires", UI.DrawShips)          -- lignes du jeu et navires en route (UI/BoatMap.lua)
         layer("Trajet", UI.DrawNavRoute)        -- trajet du guidage (UI/NavRoute.lua)
