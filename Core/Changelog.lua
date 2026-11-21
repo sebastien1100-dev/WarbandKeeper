@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.37", date = "21/11/2026",
+        changed = {
+            "Liens wowhead retirés : plus de fenêtre du lien, de Maj + clic sur une quête, de ligne « Lien wowhead » dans le menu des quêtes ni de carte « Liens wowhead » dans la roue des Quêtes.",
+        },
+    },
+    {
         version = "1.128.36", date = "21/11/2026",
         added = {
             "Suivi des quêtes d'EllesmereUI : « Guider vers la quête » et « Chercher un groupe (chat) » en bas de son menu du clic droit (son « Lien Wowhead » reste le sien). Alt + clic reste pour le suivi du jeu.",

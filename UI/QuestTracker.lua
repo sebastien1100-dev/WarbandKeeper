@@ -91,7 +91,7 @@ end
 
 ---------------------------------------------------------------------------
 -- Menu des quêtes sur le suivi des quêtes (EllesmereUI ou celui du jeu) : Alt + clic sur une quête ouvre notre
--- menu (guider, lien wowhead, groupe, jamais d'automatique). Rien n'est accroché aux cadres du suivi (leur forme
+-- menu (guider, chercher un groupe). Rien n'est accroché aux cadres du suivi (leur forme
 -- change d'un addon à l'autre) : au relâchement d'un clic gauche avec Alt, le cadre sous la souris et ses parents
 -- sont lus ; la quête est reconnue par un n° du journal porté par le cadre (questID, id, n° × 100 + objectif…)
 -- ou par le titre affiché (texte d'une quête du journal). Les autres clics restent ceux du suivi.
@@ -224,8 +224,8 @@ function UI.QuestTrackerMenuDiag()
 end
 
 ---------------------------------------------------------------------------
--- Menu du clic droit du suivi d'EllesmereUI : nos lignes ajoutées à la fin (guider, chercher un groupe, lien
--- wowhead s'il n'a pas le sien). Son menu est fait par la fonction publique EllesmereUI.ShowContextMenu(owner,
+-- Menu du clic droit du suivi d'EllesmereUI : nos lignes ajoutées à la fin (guider, chercher un groupe). Son
+-- menu est fait par la fonction publique EllesmereUI.ShowContextMenu(owner,
 -- items, opts) (items = { { text, noLoc, onClick, isDisabled }, "---" }) : elle est enrobée une fois, le menu
 -- d'une quête reconnu par sa ligne (owner.kind = "quest", owner.id = n° du journal) ou par son titre en tête.
 -- Rien d'autre ne change (ses lignes et leur ordre restent). Réglage QuestTrack:Config().trackerMenu.
@@ -240,22 +240,12 @@ local function menuQuest(owner, items)
     if title then return logTitles()[title] end
     return nil
 end
-local function ourItems(qid, items)
+local function ourItems(qid)
     local QT = Q()
     local out = { "---" }
     out[#out + 1] = { text = T("Guider vers la quête"), noLoc = true, onClick = function() QT:GuideQuest(qid) end }
     out[#out + 1] = { text = T("Chercher un groupe (chat)"), noLoc = true,
         onClick = function() if UI.QuestGroupMessage then UI:QuestGroupMessage(qid) end end }
-    -- lien wowhead : seulement si son menu n'a pas déjà le sien
-    local hasWh = false
-    for _, e in ipairs(items) do
-        local tx = type(e) == "table" and e.text
-        if type(tx) == "string" and tx:lower():find("wowhead", 1, true) then hasWh = true end
-    end
-    if not hasWh and UI.ShowWowhead then
-        out[#out + 1] = { text = T("Lien wowhead"), noLoc = true,
-            onClick = function() UI:ShowWowhead("quest", qid, QT:Title(qid)) end }
-    end
     return out
 end
 local function wrapEllesmere()
@@ -266,7 +256,7 @@ local function wrapEllesmere()
     E.ShowContextMenu = function(owner, items, opts, ...)
         local ok, qid = pcall(menuQuest, owner, items)
         if ok and qid and type(items) == "table" and Q():Config().trackerMenu ~= false and WK:FeatureOn("quests") then
-            local add = ourItems(qid, items)
+            local add = ourItems(qid)
             local copy = {}
             for i, e in ipairs(items) do copy[i] = e end
             for _, e in ipairs(add) do copy[#copy + 1] = e end

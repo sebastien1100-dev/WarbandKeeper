@@ -228,12 +228,6 @@ UI:RegisterPage({
         -- journal des données (UI/DataLog.lua) : pastilles, durée, message après une mise à jour
         local jcard = card("Journal des données", 40 + 3 * 48 + 48, "ce qui arrive dans la base")
         self.dataLogSync = UI:BuildDataLogCard(jcard, self.toggles)
-        -- liens wowhead (UI/Wowhead.lua) : langue du site
-        local wcard = card("Liens wowhead", 40 + 48 + 8, "Maj + clic sur une quête")
-        local wseg = UI:Segmented(wcard, { { "fr", "Français" }, { "en", "Anglais" } },
-            function(v) WK.DB.global.settings.ui.wowheadLang = v end, 24)
-        wseg:Select(UI:WowheadLang())
-        UI:SettingRow(wcard, -40, "Langue du site", "Maj + clic sur une quête (listes, fenêtre du donjon, journal) : son lien wowhead (WoW Forever) à copier ; clic droit : petit menu.", wseg, 200)
         -- message « Chercher un groupe » du menu des quêtes (UI/Wowhead.lua)
         local gcard2 = card("Message de groupe", 40 + 30 + 46 + 30, "clic droit sur une quête » Chercher un groupe")
         local inp = UI:Input(gcard2, 300, 28, UI.QUEST_LFG_DEFAULT)
@@ -276,7 +270,7 @@ UI:RegisterPage({
         if not self.qct then
             self.qct = UI:CardTabs(self.side.child, "quests", {
                 { "list", T("Quêtes montrées"),
-                  titles = { "Quêtes montrées", "Plaques de nom", "Suivi des quêtes", "Journal des données", "Liens wowhead", "Message de groupe" } },
+                  titles = { "Quêtes montrées", "Plaques de nom", "Suivi des quêtes", "Journal des données", "Message de groupe" } },
             }, function() self:Layout() end)
         end
         local cards = self.qct:Filter(all)
