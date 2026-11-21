@@ -335,6 +335,8 @@ WK:OnUnit("UNIT_MAXHEALTH", "pet", function() refresh() end)
 WK:On("UNIT_HAPPINESS", refresh)
 WK:On("UNIT_PET", function(u) if u == "player" then refresh(); if not inCombat() then setActions() end end end)
 WK:On("BAG_UPDATE_DELAYED", function() refresh(); if not inCombat() then setActions() end end)
+-- sacs relus : nourriture à jour (la dernière unité mangée ne reste plus dans le bouton et le raccourci)
+WK:On("WK_BAGS_SCANNED", function() refresh(); if not inCombat() then setActions() end end)
 WK:On("PLAYER_REGEN_DISABLED", function()
     combatStarting = true
     if card then setClickable(card, true) end

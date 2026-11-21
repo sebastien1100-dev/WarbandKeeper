@@ -746,6 +746,12 @@ end
 local foodCache, foodKey, foodAt = nil, nil, -10
 local function foodDirty() foodCache = nil end
 WK:On("BAG_UPDATE_DELAYED", foodDirty)
+-- relevé des sacs fini (c.bags à jour, env. 0,5 s après BAG_UPDATE_DELAYED) : liste refaite, macro « WK Nourrir »
+-- reposée (avant, la liste refaite avec les anciens sacs gardait une nourriture épuisée)
+WK:On("WK_BAGS_SCANNED", function()
+    foodCache = nil
+    if M.UpdateFeedMacro then pcall(M.UpdateFeedMacro, M) end
+end)
 WK:On("UNIT_PET", function(unit) if unit == "player" then foodCache = nil end end)
 WK:On("PET_BAR_UPDATE", foodDirty)
 function M:FoodInBags(c)

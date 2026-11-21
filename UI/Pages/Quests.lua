@@ -577,7 +577,7 @@ UI:RegisterPage({
             -- plan de quêtes (Modules/QuestPlan.lua) : alerte près d'un donneur, niveau des quêtes proposées
             if QP() then
                 self.maxSeg = UI:Segmented(tcard, { { 0, "0" }, { 1, "1" }, { 2, "2" }, { 3, "3" } },
-                    function(v) QP():Config().maxAbove = v; WK:NotifyChanged() end, 26)
+                    function(v) QP():Config().maxAbove = v; QP():Invalidate(); WK:NotifyChanged() end, 26)
                 UI:SettingRow(tcard, -292, "Quêtes au-dessus de ton niveau", nil, self.maxSeg, self.maxSeg:GetWidth())
                 self.maxSeg:Select(QP():Config().maxAbove)
                 local gt = UI:Toggle(tcard, function() return QP():Config().noGroup end,

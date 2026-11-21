@@ -71,6 +71,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.7 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tournée : en changeant de zone, une quête retirée (« Ignorer cette quête »), écartée ou plus proposée par son donneur n'est plus remise à la fin de la tournée.
+- Tournée : les étapes de vol, de pierre de foyer, de téléport, d'achat et de maître de classe passent de nouveau seules à la suivante (depuis la 1.128.3, la flèche restait par exemple sur le maître de vol après l'atterrissage).
+- Marchand : un double clic n'achète plus deux fois, même si le premier achat est déjà arrivé dans les sacs avant que la liste se mette à jour.
+- Objets de quête à acheter : la liste ne reste plus vide jusqu'au /reload quand elle est lue avant le chargement des données à la demande (bouton d'achat, étapes « acheter »).
+- Données à la demande : la fenêtre des quêtes du donjon et les pastilles du suivi ne les chargent plus pour rien à la connexion ; et quand elles arrivent (après un combat par exemple), cible du guidage, tournée et objets à acheter sont refaits.
+- Chasseur : la macro et le bouton « Nourrir » ne gardent plus une nourriture que le familier vient de finir (liste refaite une fois les sacs relus).
+- Bénédictions : la barre suit tout de suite un changement de répartition, une bénédiction posée et un changement de groupe (elle pouvait montrer l'ancien état jusqu'à une seconde, et le garder tout un combat).
+- Tournée gardée en mémoire : refaite quand les quêtes cochées changent (niveau, « Quêtes au-dessus de ton niveau »), après un passage de niveau ou un sort appris.
+- Page Quêtes : les chiffres des zones et du bandeau suivent tout de suite une quête rendue (ils pouvaient garder un rafraîchissement de retard).
+
 ## v1.128.6 — 21/11/2026
 
 _Un /reload suffit._

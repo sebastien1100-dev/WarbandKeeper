@@ -367,7 +367,7 @@ function UI:AccentTable() local r, g, b = UI:Accent(); return { r, g, b } end
 local function objectivesText(qid)
     local QT = WK.modules.QuestTrack
     local parts = {}
-    for _, o in ipairs(QT and QT:Objectives(qid) or {}) do
+    for _, o in ipairs(QT and QT:Objectives(qid, true) or {}) do -- texte seul : ne charge pas la base des camps
         local need = o.need or 0
         local name = tostring(o.name or o.text or ""):gsub("%s*:%s*%d+%s*/%s*%d+.*$", "")
         if need > 0 then

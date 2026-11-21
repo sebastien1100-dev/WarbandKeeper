@@ -81,11 +81,14 @@ end
 local KIND_OF = { monster = "m", item = "i", object = "o" }
 
 -- Objectifs du journal du jeu, avec leurs camps : { text, type, done, have, need, camps }
-function M:Objectives(qid)
+-- textOnly : l'appelant ne veut que le texte et l'avancée du jeu (fenêtre des quêtes du donjon, pastilles du
+-- suivi) : la base des camps n'est lue que si elle est déjà chargée, jamais chargée pour ça
+function M:Objectives(qid, textOnly)
     local out = {}
     local list = C_QuestLog and C_QuestLog.GetQuestObjectives and C_QuestLog.GetQuestObjectives(qid)
     if type(list) ~= "table" then return out end
-    local d = self:Data(qid)
+    local d
+    if not textOnly or WK.dataLoaded then d = self:Data(qid) end
     -- objectifs de la base rangés par genre, dans l'ordre : le n-ième « monstre » du jeu = le n-ième de la base
     local byKind, used = { m = {}, i = {}, o = {}, e = {}, x = {} }, { m = 0, i = 0, o = 0, e = 0, x = 0 }
     if d then for _, o in ipairs(d.objs) do if byKind[o.kind] then table.insert(byKind[o.kind], o) end end end
@@ -233,6 +236,8 @@ local buyCache, vendCache = {}, {}
 -- marchands d'un objet : { { map, x, y (0-1), fac = "A"|"H"|"AH", name } }
 function M:Vendors(item)
     if vendCache[item] then return vendCache[item] end
+    -- base dans le dossier chargé à la demande : pas encore là = liste vide, sans la retenir
+    if not WK:NeedData("objets de quête") then return {} end
     local out = {}
     local raw = WK.QuestVendors and WK.QuestVendors[item]
     for e in (raw or ""):gmatch("[^;]+") do
@@ -247,6 +252,7 @@ end
 -- objets à acheter pour une quête : { n° d'objet, … }
 function M:BuyItems(qid)
     if buyCache[qid] then return buyCache[qid] end
+    if not WK:NeedData("objets de quête") then return {} end
     local out = {}
     local raw = WK.QuestBuy and WK.QuestBuy[qid]
     for id in (raw or ""):gmatch("%d+") do table.insert(out, tonumber(id)) end
@@ -504,3 +510,15 @@ WK:On("QUEST_REMOVED", function(qid)
 end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() soon(true) end) end)
 WK:On("ZONE_CHANGED_NEW_AREA", function() M.skip = 0; soon(true) end)
+
+-- données à la demande arrivées (après un combat, ou au premier besoin) : ce qui a été calculé sans elles est
+-- refait (camps, cible du guidage, objets à acheter, tournée, guide de montée)
+WK:OnDataLoaded(function()
+    for k in pairs(buyCache) do buyCache[k] = nil end
+    for k in pairs(vendCache) do vendCache[k] = nil end
+    M.lastSig, M.lastKey = nil, nil
+    local P, LG = WK.modules.QuestPlan, WK.modules.LevelGuide
+    if P and P.Invalidate then P:Invalidate(); P.lastKey = nil end
+    if LG and LG.Invalidate then LG:Invalidate() end
+    if _G.C_Timer then _G.C_Timer.After(0, function() soon(true) end) end
+end)

@@ -8,6 +8,20 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.7", date = "21/11/2026",
+        fixed = {
+            "Tournée : en changeant de zone, une quête retirée (« Ignorer cette quête »), écartée ou plus proposée par son donneur n'est plus remise à la fin de la tournée.",
+            "Tournée : les étapes de vol, de pierre de foyer, de téléport, d'achat et de maître de classe passent de nouveau seules à la suivante (depuis la 1.128.3, la flèche restait par exemple sur le maître de vol après l'atterrissage).",
+            "Marchand : un double clic n'achète plus deux fois, même si le premier achat est déjà arrivé dans les sacs avant que la liste se mette à jour.",
+            "Objets de quête à acheter : la liste ne reste plus vide jusqu'au /reload quand elle est lue avant le chargement des données à la demande (bouton d'achat, étapes « acheter »).",
+            "Données à la demande : la fenêtre des quêtes du donjon et les pastilles du suivi ne les chargent plus pour rien à la connexion ; et quand elles arrivent (après un combat par exemple), cible du guidage, tournée et objets à acheter sont refaits.",
+            "Chasseur : la macro et le bouton « Nourrir » ne gardent plus une nourriture que le familier vient de finir (liste refaite une fois les sacs relus).",
+            "Bénédictions : la barre suit tout de suite un changement de répartition, une bénédiction posée et un changement de groupe (elle pouvait montrer l'ancien état jusqu'à une seconde, et le garder tout un combat).",
+            "Tournée gardée en mémoire : refaite quand les quêtes cochées changent (niveau, « Quêtes au-dessus de ton niveau »), après un passage de niveau ou un sort appris.",
+            "Page Quêtes : les chiffres des zones et du bandeau suivent tout de suite une quête rendue (ils pouvaient garder un rafraîchissement de retard).",
+        },
+    },
+    {
         version = "1.128.6", date = "21/11/2026",
         changed = {
             "Connexion et changement de continent plus fluides : le réseau des chemins du continent (des milliers de points) se construit petit à petit au lieu d'un bloc qui faisait sauter l'image.",

@@ -268,7 +268,7 @@ function UI:BuildBlessingCards(card, toggle, dyn)
     UI:SettingRow(sc, -178, "Les autres peuvent changer ma ligne", "Sinon, seul le chef du groupe (ou ses assistants) le peut.",
         toggle(sc, function() return M:Me().free end, function(v) M:SetFree(v) end), 80)
     UI:SettingRow(sc, -224, "Salut collectif", "Le Salut se cumule avec la bénédiction de classe : une ligne à part dans la barre pour les guerriers, voleurs, chasseurs, mages et démonistes, jamais les tanks.",
-        toggle(sc, function() return M:Config().salut ~= false end, function(v) M:Config().salut = v; UI:RefreshBlessBar() end), 80)
+        toggle(sc, function() return M:Config().salut ~= false end, function(v) M:Config().salut = v; M.StatusDirty(); UI:RefreshBlessBar() end), 80)
     table.insert(dyn, function() mode:Select(M:Me().mode) end)
 
     -- tableau couché : une ligne par paladin du groupe (toi d'abord, bande à gauche : accent = Warband Keeper,

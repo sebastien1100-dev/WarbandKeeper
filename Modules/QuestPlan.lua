@@ -230,6 +230,9 @@ local excluded -- plus bas
 -- env. 5 % de la carte près) : le calcul (plus proche voisin, 2-opt, trajets) est lourd, et il était refait dès
 -- que la liste des coins (gardée 2 s) était relue, par exemple chaque seconde par le guide de montée.
 built = { key = nil, tour = nil }
+-- niveau gagné ou sort appris (étape maître de classe), monnaie (achats) : tournée recalculée
+WK:On("PLAYER_LEVEL_UP", function() M:Invalidate() end)
+WK:On("LEARNED_SPELL_IN_TAB", function() M:Invalidate() end)
 local function buildKey(coins)
     local q = Q()
     local parts = {}
@@ -237,7 +240,7 @@ local function buildKey(coins)
         local ids = {}
         for _, e in ipairs(k.quests) do
             local st = (q:InLog(e.id) and (q:IsComplete(e.id) and "c" or "l")) or "a"
-            ids[#ids + 1] = e.id .. st
+            ids[#ids + 1] = e.id .. st .. (e.picked and "p" or "") -- cochée ou non (niveau, réglages)
         end
         parts[#parts + 1] = string.format("%s@%d,%d:%s", tostring(k.map), math.floor(k.x * 200), math.floor(k.y * 200),
             table.concat(ids, "."))
@@ -999,21 +1002,36 @@ end
 
 -- Ajoute à la tournée n les étapes « prendre / faire / rendre » de old qu'elle n'a pas, encore utiles ;
 -- rend leur nombre
-function M.KeepMissing(_, n, old)
+function M:KeepMissing(n, old)
     local have = {}
     for _, s in ipairs(n.steps or {}) do
         for _, q in ipairs(s.qids or {}) do have[s.kind .. q] = true end
     end
     local Qt = Q()
+    local Qs = WK.modules.Quests
     local kept = 0
+    -- jamais gardées : quêtes décochées (« Ignorer cette quête »), écartées par la nouvelle tournée (autre continent,
+    -- trop chères), ou plus proposées (le donneur ne la propose pas, prérequis…)
+    local picked = self:Config().picked[WK:CharKey()] or {}
+    local out = {}
+    for _, e in ipairs(n.excluded or {}) do out[e.id] = true end
+    local function wanted(q)
+        if picked[q] == false or out[q] then return false end
+        return true
+    end
     for _, s in ipairs(old or {}) do
         if (s.kind == "pick" or s.kind == "do" or s.kind == "turn") and s.qids and #s.qids > 0 then
             local missing = false
             for _, q in ipairs(s.qids) do if not have[s.kind .. q] then missing = true end end
             local useful = false
             for _, q in ipairs(s.qids) do
-                if s.kind == "pick" then
-                    if not inLog(q) and not M.Turned(q) then useful = true end
+                local skip = not wanted(q) -- décochée ou écartée : jamais gardée
+                if skip then
+                    useful = useful and true
+                elseif s.kind == "pick" then
+                    local qq = Qs and Qs.Get and Qs:Get(q)
+                    local st = qq and Qs:State(qq, WK.DB:Me() or {})
+                    if not inLog(q) and not M.Turned(q) and (not qq or st == "avail") then useful = true end
                 elseif s.kind == "do" then
                     if inLog(q) and not (Qt.IsComplete and Qt:IsComplete(q)) then useful = true end
                 elseif inLog(q) then
@@ -1099,7 +1117,7 @@ function M:QuestProgress(qid)
     if not inLog(qid) then return "new", 0 end
     if Q():IsComplete(qid) then return "ready", 1 end
     local have, need = 0, 0
-    for _, o in ipairs(Q():Objectives(qid)) do
+    for _, o in ipairs(Q():Objectives(qid, true)) do -- avancée seule : ne charge pas la base des camps
         local n = math.max(1, o.need or 0)
         need = need + n
         have = have + (o.done and n or math.min(n, o.have or 0))
@@ -1376,6 +1394,20 @@ WK:On("PLAYER_LOGIN", function()
     if C_Timer and C_Timer.NewTicker then
         C_Timer.NewTicker(5, nearCheck)
         C_Timer.NewTicker(4, wayCheck)
+        -- étapes qui ne changent rien dans le journal (vol, foyer, téléport, achat, maître) : vérifiées toutes les
+        -- 1,5 s ; le journal seul ne les fait plus avancer depuis qu'il n'est relu qu'à un vrai changement
+        local OFFLOG = { flight = true, hearth = true, port = true, buy = true, trainer = true }
+        _G.C_Timer.NewTicker(1.5, function()
+            if not on() then return end
+            local t = M:Tour()
+            local s = t and not t.paused and t.steps[t.idx]
+            if s and OFFLOG[s.kind] then
+                local idx = t.idx
+                M:Advance()
+                local t2 = M:Tour()
+                if t2 and t2.idx ~= idx then M:Changed() end
+            end
+        end)
     end
 end)
 -- arrivée dans une autre zone de quêtes : une tournée faite ailleurs est refaite avec les quêtes d'ici

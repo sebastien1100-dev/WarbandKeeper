@@ -55,11 +55,15 @@ local function bagCount(id)
     local f = (_G.C_Item and _G.C_Item.GetItemCount) or _G.GetItemCount
     return f and f(id) or 0
 end
+-- Un achat compte en entier pendant 3 s, arrivé ou non : la liste affichée (ce qui manque) n'est refaite qu'env.
+-- 1 s après l'arrivée dans les sacs ; avant, un achat déjà arrivé n'était plus décompté alors que la liste
+-- n'avait pas encore bougé, et un double clic rachetait tout.
+local HOLD = 3
 local function stillPending(id)
     local p = id and pendingBuys[id]
     if not p then return 0 end
-    if _G.GetTime() - p.at > 10 then pendingBuys[id] = nil return 0 end
-    return math.max(0, p.n - math.max(0, bagCount(id) - p.have))
+    if _G.GetTime() - p.at > HOLD then pendingBuys[id] = nil return 0 end
+    return p.n
 end
 WK:On("MERCHANT_SHOW", function() _G.wipe(pendingBuys) end)
 WK:On("MERCHANT_CLOSED", function() _G.wipe(pendingBuys) end)

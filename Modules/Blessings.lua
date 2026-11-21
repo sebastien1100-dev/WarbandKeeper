@@ -330,6 +330,9 @@ end
 -- (jusqu'à 40 auras lues par membre en raid) ; effacées à chaque changement (groupe, répartition)
 local statusCache, statusAt = nil, -10
 function M.StatusDirty() statusCache = nil end
+-- groupe changé, ou sort lancé par toi (bénédiction posée) : lignes refaites au prochain appel
+WK:On("GROUP_ROSTER_UPDATE", function() statusCache = nil end)
+if WK.OnUnit then WK:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function() statusCache = nil end) end
 function M:Status()
     local t = _G.GetTime and _G.GetTime() or 0
     if statusCache and t - statusAt < 0.9 and t >= statusAt then return statusCache end
@@ -471,6 +474,7 @@ function M:SetAssign(name, ci, b)
         if e then e.assign = e.assign or {}; e.assign[ci] = b; e.auto = false end
         if not (e and e.demo) then send(string.format("ASSIGN %s %d %d", wire(name), ci, b)) end
     end
+    statusCache = nil -- répartition changée : lignes de la barre à refaire tout de suite
     if self.OnChange then self:OnChange() end
     return true
 end
@@ -487,6 +491,7 @@ function M:SetAura(name, a)
         if e then e.aura = a; e.auto = false end
         if not (e and e.demo) then send(string.format("AASSIGN %s %d", wire(name), a)) end
     end
+    statusCache = nil -- répartition changée : lignes de la barre à refaire tout de suite
     if self.OnChange then self:OnChange() end
     return true
 end
@@ -495,6 +500,7 @@ function M:SetMode(mode)
     c.mode = mode
     if mode == "auto" then self:AutoAssign() end
     self:SendSelf()
+    statusCache = nil -- répartition changée : lignes de la barre à refaire tout de suite
     if self.OnChange then self:OnChange() end
 end
 function M:SetFree(on)
@@ -510,6 +516,7 @@ function M:SetException(name, class, b)
     if not c.except[name] then send(string.format("NASSIGN %s %d %s 0", wire(me()), ci, wire(name))) end
     myEntry()
     self:SendSelf()
+    statusCache = nil -- répartition changée : lignes de la barre à refaire tout de suite
     if self.OnChange then self:OnChange() end
 end
 
@@ -664,6 +671,7 @@ function M:Demo(on)
             assign = kings, aura = 3, normal = {} }
     end
     self:AutoAssign()
+    statusCache = nil -- répartition changée : lignes de la barre à refaire tout de suite
     if self.OnChange then self:OnChange() end
     return true
 end

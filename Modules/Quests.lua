@@ -93,6 +93,7 @@ end
 local function store()
     local c = WK.DB:Me()
     if not c then return end
+    memo.at = -10 -- quêtes faites ou journal relus : zones et totaux recalculés
     c.quests = c.quests or {}
     local done = {}
     local ok = false
@@ -602,6 +603,7 @@ end
 -- offered = { [n°] = true }, titles = { [titre en minuscules] = true } : ce que le PNJ montre
 function M:NoteOffered(npc, offered, titles)
     if not npc or not WK:FeatureOn("quests") then return {} end
+    memo.at = -10
     local c = WK.DB:Me()
     if not c then return {} end
     c.quests = c.quests or {}
@@ -677,6 +679,7 @@ end)
 ---------------------------------------------------------------------------
 local MAXCH = 1500
 function M:LearnChain(qid, pre, how)
+    memo.at = -10
     local q = self:Get(qid)
     if not q or q.pre or q.preAll or q.prev or not pre or pre == qid then return end
     local g = WK.DB.global

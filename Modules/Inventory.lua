@@ -70,6 +70,8 @@ function M:ScanBags()
     end
     c.freeSlots, c.totalSlots = free, total
     WK.modules.Statistics:UpdateItems()
+    -- sacs relus (c.bags à jour) : ce qui dépend du contenu des sacs se refait (nourriture du familier…)
+    if WK.Fire then WK:Fire("WK_BAGS_SCANNED") end
     WK:NotifyChanged()
 end
 
