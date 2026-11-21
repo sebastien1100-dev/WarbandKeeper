@@ -4163,7 +4163,6 @@ WK.Locales.enUS.text = {
     ["Chercher un groupe (chat)"] = "Look for a group (chat)",
     ["Message de groupe"] = "Group message",
     ["clic droit sur une quête » Chercher un groupe"] = "right-click a quest » Look for a group",
-    ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; choisis le canal puis Entrée."] = "{quest} link, {name} name, {level} level, {zone} zone; pick the channel then press Enter.",
     ["Par défaut"] = "Default",
     ["GROUPE"] = "GROUP",
     ["Petite barre à placer en mode édition, pour l'étape à faire ou la quête suivie : cibler le monstre de l'objectif (clic droit : le suivant) et utiliser l'objet de la quête. Raccourcis clavier : Options du jeu > Raccourcis > AddOns > Warband Keeper."] = "Small bar to place in edit mode, for the step to do or the tracked quest: target the objective's monster (right-click: the next one) and use the quest item. Key bindings: Game options > Keybindings > AddOns > Warband Keeper.",
@@ -4271,4 +4270,6 @@ WK.Locales.enUS.text = {
     ["EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête."] =
         "EllesmereUI: at the bottom of its right-click menu. Game tracker: Alt + click a quest.",
     ["Clic droit : menu de la quête"] = "Right click: quest menu",
+    ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; envoyé dans le canal /1."] =
+        "{quest} link, {name} name, {level} level, {zone} zone; sent to channel /1.",
 }

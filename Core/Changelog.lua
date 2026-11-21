@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.38", date = "21/11/2026",
+        changed = {
+            "« Chercher un groupe (chat) » envoie le message tout de suite dans le canal /1 (si le jeu le refuse, la boîte de discussion s'ouvre réglée sur /1).",
+        },
+    },
+    {
         version = "1.128.37", date = "21/11/2026",
         changed = {
             "Liens wowhead retirés : plus de fenêtre du lien, de Maj + clic sur une quête, de ligne « Lien wowhead » dans le menu des quêtes ni de carte « Liens wowhead » dans la roue des Quêtes.",

@@ -15,9 +15,9 @@ end
 
 
 ---------------------------------------------------------------------------
--- Chercher un groupe : message dans la boîte de discussion avec le lien de la quête (le joueur choisit le
--- canal et envoie). Modèle modifiable (settings.ui.questLfgText, carte « Message de groupe » de la roue des
--- Quêtes), en anglais par défaut ; {quest} = lien, {name} = nom, {level} = niveau, {zone} = zone.
+-- Chercher un groupe : message envoyé dans le canal 1 (Général) avec le lien de la quête. Modèle modifiable
+-- (settings.ui.questLfgText, carte « Message de groupe » de la roue des Quêtes), en anglais par défaut ;
+-- {quest} = lien, {name} = nom, {level} = niveau, {zone} = zone.
 ---------------------------------------------------------------------------
 UI.QUEST_LFG_DEFAULT = "LFG {quest} ({zone}), anyone want to group up?"
 function UI.QuestLfgTemplate(_)
@@ -54,9 +54,21 @@ function UI.QuestGroupMessage(_, qid)
         :gsub("{level}", function() return tostring(lvl or "") end):gsub("{zone}", function() return zone end)
     -- zone inconnue : « () » vide retiré, pas d'espace avant une virgule
     text = text:gsub("%s*%(%s*%)", ""):gsub("%s+([,%.!%?])", "%1"):gsub("%s%s+", " ")
-    if _G.ChatFrame_OpenChat then _G.ChatFrame_OpenChat(text)
-    elseif _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(text) end
-    return text
+    -- envoyé dans le canal 1 (Général) ; le clic du menu est un vrai clic, le jeu l'accepte. Refusé (ancien
+    -- client, pas de canal 1) : la boîte de discussion s'ouvre déjà réglée sur /1, Entrée pour envoyer
+    local send = _G.SendChatMessage or (_G.C_ChatInfo and _G.C_ChatInfo.SendChatMessage)
+    local sent = send and pcall(send, text, "CHANNEL", nil, 1)
+    if not sent then
+        if _G.ChatFrame_OpenChat then
+            _G.ChatFrame_OpenChat(text)
+            local eb = _G.ChatEdit_GetActiveWindow and _G.ChatEdit_GetActiveWindow()
+            if eb and eb.SetAttribute then
+                eb:SetAttribute("chatType", "CHANNEL"); eb:SetAttribute("channelTarget", 1)
+                if _G.ChatEdit_UpdateHeader then pcall(_G.ChatEdit_UpdateHeader, eb) end
+            end
+        elseif _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(text) end
+    end
+    return text, sent
 end
 
 ---------------------------------------------------------------------------

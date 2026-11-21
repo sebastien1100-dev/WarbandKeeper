@@ -242,7 +242,7 @@ UI:RegisterPage({
         eb:HookScript("OnEditFocusLost", saveLfg)
         local hint = UI:Text(gcard2, 10, C.muted)
         hint:SetPoint("TOPLEFT", 16, -78); hint:SetPoint("RIGHT", -150, 0); hint:SetJustifyH("LEFT")
-        hint:SetText(T("{quest} lien, {name} nom, {level} niveau, {zone} zone ; choisis le canal puis Entrée."))
+        hint:SetText(T("{quest} lien, {name} nom, {level} niveau, {zone} zone ; envoyé dans le canal /1."))
         if hint.SetWordWrap then hint:SetWordWrap(true) end
         local reset = UI:Button(gcard2, T("Par défaut"), 120, 24, "ghost")
         reset:SetPoint("TOPRIGHT", -16, -78)
