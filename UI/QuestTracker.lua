@@ -128,23 +128,6 @@ local function build()
         r:Hide()
         tv.objs[i] = r
     end
-    -- boutons Cibler / Objet de l'étape (visuels ; les boutons protégés sont posés dessus, voir plus bas)
-    tv.act = CreateFrame("Frame", nil, tv); tv.act:SetHeight(32)
-    local function slot(parent)
-        local sl = CreateFrame("Frame", nil, parent); sl:SetSize(28, 28)
-        sl.bg = UI:Rounded(sl, 6, 1, "BACKGROUND", 1)
-        sl.edge = UI:Rounded(sl, 7, 0, "BACKGROUND", 0)
-        sl.icon = sl:CreateTexture(nil, "ARTWORK")
-        sl.icon:SetPoint("TOPLEFT", 4, -4); sl.icon:SetPoint("BOTTOMRIGHT", -4, 4)
-        sl.count = shade(UI:Text(sl, 9, C.text)); sl.count:SetPoint("BOTTOMRIGHT", 0, 1)
-        sl.lbl = shade(UI:Text(parent, 11, C.text)); sl.lbl:SetPoint("TOPLEFT", sl, "TOPRIGHT", 6, -1)
-        sl.sub = shade(UI:Text(parent, 10, C.muted)); sl.sub:SetPoint("TOPLEFT", sl.lbl, "BOTTOMLEFT", 0, -1)
-        if sl.sub.SetWordWrap then sl.sub:SetWordWrap(false) end
-        return sl
-    end
-    tv.actT = slot(tv.act); tv.actT:SetPoint("LEFT", 0, 0)
-    tv.actI = slot(tv.act); tv.actI:SetPoint("LEFT", tv.act, "CENTER", 4, 0)
-    tv.act:Hide()
     -- légende des quêtes de l'étape (une couleur chacune)
     tv.legend = {}
     for i = 1, 3 do
@@ -368,37 +351,6 @@ local function build()
             end
         end
         if #d.objs > 0 then y = y - 4 end
-        -- boutons Cibler / Objet (d.act) : visuels ici, boutons protégés posés dessus hors combat
-        local a = d.act
-        if a and (a.target or a.item) then
-            v.act:ClearAllPoints(); v.act:SetPoint("TOPLEFT", 12, y - 2); v.act:SetPoint("RIGHT", -10, 0)
-            local ar, ag, ab = UI:Accent()
-            local function paintSlot(sl, on, icon, label, sub, count, isItem)
-                sl:SetShown(on); sl.lbl:SetShown(on); sl.sub:SetShown(on)
-                if not on then return end
-                local ec = isItem and C.gold or { ar, ag, ab }
-                sl.edge:SetColor(ec[1], ec[2], ec[3], 1)
-                sl.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
-                sl.icon:SetTexture(icon)
-                if isItem then sl.icon:SetVertexColor(1, 1, 1, 1) else sl.icon:SetVertexColor(ar, ag, ab, 1) end
-                sl.lbl:SetText(label); sl.sub:SetText(sub or "")
-                sl.count:SetText(count or "")
-            end
-            paintSlot(v.actT, a.target ~= nil, UI.MEDIA .. "crosshair", T("Cibler"),
-                a.target and a.target.name, nil, false)
-            paintSlot(v.actI, a.item ~= nil, a.item and a.item.icon, T("Objet"),
-                a.item and a.item.name, a.item and a.item.count, true)
-            v.actI:ClearAllPoints()
-            if a.target then v.actI:SetPoint("LEFT", v.act, "CENTER", 4, 0) else v.actI:SetPoint("LEFT", 0, 0) end
-            local wT = math.floor((W2 - 24) / 2) - 40
-            v.actT.sub:SetWidth(wT); v.actI.sub:SetWidth(wT)
-            v.act:Show()
-            y = y - 36
-        else
-            v.act:Hide()
-        end
-        self.actData = a
-        if UI.PlaceQuestActions then UI:PlaceQuestActions() end -- en combat : remis à PLAYER_REGEN_ENABLED
         -- 2 étapes suivantes
         for i, row in ipairs(v.nexts) do
             local nx = d.nexts[i]
@@ -448,8 +400,6 @@ local function build()
     end
 
     function f:Paint(data)
-        self.actData = nil
-        if UI.PlaceQuestActions then UI:PlaceQuestActions() end
         if self.tv then
             self.tv:Hide()
             bgAlpha(0.92, true)
@@ -530,6 +480,7 @@ local function build()
 end
 
 function UI:RefreshQuestTracker()
+    if UI.RefreshQuestBar then UI.RefreshQuestBar() end
     if not card then
         if not shown() then return end
         card = build()
@@ -607,8 +558,6 @@ function UI:RefreshQuestTracker()
                 table.insert(nexts, { n = tour.idx + i, kind = ns.kind, title = P:StepTitle(ns, true), dist = nd, qids = ns.qids })
             end
         end
-        -- boutons Cibler / Objet de l'étape « faire »
-        local act = UI.QuestActionData and UI:QuestActionData(s, objs) or nil
         -- étape plus loin toute proche (mode auto : remontée tout de suite), puis quête sur le chemin
         if P.CheckNear then P:CheckNear() end
         local near
@@ -631,7 +580,7 @@ function UI:RefreshQuestTracker()
         end
         card:PaintTour({ kind = s.kind, qids = s.qids, title = P:StepTitle(s, not tour.paused), lvl = lvl, sub = table.concat(sub, " · "), paused = tour.paused,
             objs = objs, legend = legend, idx = tour.idx, count = #tour.steps, mins = mins, xp = left,
-            zone = zone and zone.name, nexts = nexts, way = way, near = near, act = act })
+            zone = zone and zone.name, nexts = nexts, way = way, near = near })
         card:Show()
         return
     end
@@ -976,31 +925,36 @@ do
 end
 
 ---------------------------------------------------------------------------
--- Boutons Cibler / Objet de l'étape en cours (carte de tournée) et repères sur les plaques de nom.
+-- Barre « Quête » (boutons Cibler / Objet de l'étape en cours ou de la quête suivie) et repères sur les
+-- plaques de nom.
 -- Cibler : bouton protégé « macro » (/targetexact <monstre>) ; clic gauche = 1er objectif pas fini, clic droit =
 -- objectif suivant. Objet : bouton protégé « item » (objet de quête utilisable du journal, s'il est dans
 -- les sacs).
--- Les boutons sont enfants d'UIParent, posés sur les cases de la carte et préparés hors combat seulement (en
--- combat ils gardent le dernier monstre et le dernier objet ; mis à jour à PLAYER_REGEN_ENABLED).
 -- Réglages QuestTrack:Config().actButtons (boutons) et plateMarks (repères des plaques de nom).
 ---------------------------------------------------------------------------
-local actT, actI, actPending
 local function actOn() local c = Q():Config(); return c.actButtons ~= false end
 -- { target = { name, name2 }, item = { id, icon, count, name } } pour une étape « faire »
 function UI.QuestActionData(_, s, objs)
     if not (s and s.kind == "do" and actOn()) then return nil end
     local q = Q()
-    local names = {}
-    for _, o in ipairs(objs or {}) do
+    local names, first = {}, nil
+    for i, o in ipairs(objs or {}) do
         if not o.done then
             for _, id in ipairs(q:ObjectiveNpcs(o)) do
                 local n = q:NpcName(id)
-                if n then names[#names + 1] = n; break end
+                if n then
+                    names[#names + 1] = n
+                    first = first or { idx = i, have = o.have, need = o.need }
+                    break
+                end
             end
         end
     end
     local out = {}
-    if #names > 0 then out.target = { name = names[1], name2 = names[2] or names[1] } end
+    if #names > 0 then
+        out.target = { name = names[1], name2 = names[2] or names[1], idx = first.idx, total = #(objs or {}),
+            have = first.have, need = first.need }
+    end
     local special = _G.GetQuestLogSpecialItemInfo
     if special and _G.C_QuestLog and _G.C_QuestLog.GetLogIndexForQuestID then
         for _, qid in ipairs(s.qids or {}) do
@@ -1022,13 +976,40 @@ function UI.QuestActionData(_, s, objs)
     if not (out.target or out.item) then return nil end
     return out
 end
-local function makeAct(name, kind)
-    local b = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
-    b:SetSize(28, 28)
+-- raccourcis clavier (Bindings.xml) : Échap > Options > Raccourcis > AddOns > Warband Keeper
+_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton"] = T("Cibler le monstre de la quête")
+_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton"] = T("Cibler le monstre de l'objectif suivant")
+_G["BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton"] = T("Utiliser l'objet de la quête")
+
+-- Barre « Quête » (HUD questBar) : cadre à elle, posé où le joueur veut en mode édition. Les boutons
+-- protégés en sont les enfants : la barre n'est montrée / cachée et les attributs changés que hors combat
+-- (en combat elle garde le dernier monstre et le dernier objet ; remise à jour à PLAYER_REGEN_ENABLED).
+-- Ne jamais ancrer ces boutons à un autre cadre de l'addon (celui-ci deviendrait protégé en combat).
+local bar
+local function keyText(cmd)
+    local k = _G.GetBindingKey and _G.GetBindingKey(cmd)
+    if not k then return "" end
+    if _G.GetBindingText then k = _G.GetBindingText(k, true) or k end
+    return (k:gsub("SHIFT%-", "S-"):gsub("CTRL%-", "C-"):gsub("ALT%-", "A-"))
+end
+local function makeAct(parent, name, kind)
+    local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
+    b:SetSize(38, 38)
     if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
     b:SetAttribute("type", kind)
-    b:SetFrameStrata("MEDIUM")
-    b:Hide()
+    b.edge = UI:Rounded(b, 8, 0, "BACKGROUND", 0)
+    b.bg = UI:Rounded(b, 7, 2, "BACKGROUND", 1)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("TOPLEFT", 4, -4); b.icon:SetPoint("BOTTOMRIGHT", -4, 4)
+    b.key = UI:Text(b, 9, C.text); b.key:SetPoint("TOPRIGHT", -3, -2)
+    b.count = UI:Text(b, 10, C.text); b.count:SetPoint("BOTTOMRIGHT", -3, 2)
+    for _, fs in ipairs({ b.key, b.count }) do
+        if fs.SetShadowOffset then fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1) end
+    end
+    if kind == "item" then
+        b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
+        b.cd:SetPoint("TOPLEFT", 3, -3); b.cd:SetPoint("BOTTOMRIGHT", -3, 3)
+    end
     b:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_TOP")
         if kind == "macro" then
@@ -1061,78 +1042,144 @@ local function makeAct(name, kind)
     end
     return b
 end
--- raccourcis clavier (Bindings.xml) : Échap > Options > Raccourcis > AddOns > Warband Keeper
-_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton"] = T("Cibler le monstre de la quête")
-_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton"] = T("Cibler le monstre de l'objectif suivant")
-_G["BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton"] = T("Utiliser l'objet de la quête")
--- Les boutons protégés ne sont JAMAIS ancrés à la carte : un cadre protégé ancré à un cadre de l'addon rend
--- celui-ci protégé en combat (Show / Hide de la carte bloqués, ADDON_ACTION_BLOCKED). Ils sont posés sur
--- UIParent aux coordonnées écran des cases, hors combat, et recalés par la minuterie des plaques de nom.
-local function overSlot(b, sl)
-    local l, bt = sl:GetLeft(), sl:GetBottom()
-    if not (l and bt) then return false end
-    local k = (sl:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
-    local x, y, w, h = l * k, bt * k, (sl:GetWidth() or 28) * k, (sl:GetHeight() or 28) * k
-    if b.px ~= x or b.py ~= y or b.pw ~= w then
-        b.px, b.py, b.pw = x, y, w
-        b:ClearAllPoints(); b:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y); b:SetSize(w, h)
+local function buildBar()
+    local f = CreateFrame("Frame", "WarbandKeeperQuestBar", UIParent)
+    f:SetSize(150, 54); f:SetFrameStrata("MEDIUM")
+    f.bg = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
+    f.lbl = UI:Text(f, 11, C.muted); f.lbl:SetPoint("LEFT", 12, 0); f.lbl:SetText(T("Quête"))
+    f.t = makeAct(f, "WarbandKeeperQuestTarget", "macro")
+    f.i = makeAct(f, "WarbandKeeperQuestItem", "item")
+    f.name = UI:Text(f, 12, C.text)
+    f.sub = UI:Text(f, 10, C.muted)
+    for _, fs in ipairs({ f.name, f.sub }) do if fs.SetWordWrap then fs:SetWordWrap(false) end end
+    f:Hide()
+    -- disposition (hors combat) : étiquette, Cibler, Objet, puis le nom du monstre et l'objectif
+    function f:Layout(hasT, hasI)
+        local x = 14 + (self.lbl:GetStringWidth() or 34) + 10
+        self.t:ClearAllPoints(); self.i:ClearAllPoints()
+        if hasT then self.t:SetPoint("LEFT", x, 0); self.t:Show(); x = x + 44 else self.t:Hide() end
+        if hasI then self.i:SetPoint("LEFT", x, 0); self.i:Show(); x = x + 44 else self.i:Hide() end
+        self.name:ClearAllPoints(); self.name:SetPoint("TOPLEFT", self, "TOPLEFT", x + 4, -12)
+        self.sub:ClearAllPoints(); self.sub:SetPoint("TOPLEFT", self.name, "BOTTOMLEFT", 0, -3)
+        self.name:SetWidth(170); self.sub:SetWidth(170)
+        self:SetWidth(x + 4 + 170 + 10)
     end
-    return true
-end
--- recale les boutons si la carte a bougé (hors combat seulement)
-local function realignActions()
-    if not (card and actT) or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
-    local v = card.tv
-    if actT:IsShown() and v and not overSlot(actT, v.actT) then actT:Hide() end
-    if actI:IsShown() and v and not overSlot(actI, v.actI) then actI:Hide() end
-end
--- pose les boutons protégés sur les cases de la carte (hors combat)
-function UI.PlaceQuestActions()
-    if _G.InCombatLockdown and _G.InCombatLockdown() then actPending = true return end
-    actPending = nil
-    if not card then return end
-    if not card.actHooked and card.HookScript then
-        card.actHooked = true
-        card:HookScript("OnHide", function() UI:PlaceQuestActions() end)
+    -- textes et couleurs (aussi en combat : rien de protégé)
+    function f:Paint(a)
+        local ar, ag, ab = UI:Accent()
+        local bgc = C.bg
+        local alpha = (Q():Config().barBg or 85) / 100
+        self.bg:SetColor(bgc[1], bgc[2], bgc[3], alpha)
+        self.t.edge:SetColor(ar, ag, ab, 1); self.t.bg:SetColor(bgc[1], bgc[2], bgc[3], 1)
+        self.t.icon:SetTexture(UI.MEDIA .. "crosshair"); self.t.icon:SetVertexColor(ar, ag, ab, 1)
+        self.i.edge:SetColor(C.gold[1], C.gold[2], C.gold[3], 1); self.i.bg:SetColor(bgc[1], bgc[2], bgc[3], 1)
+        self.t.key:SetText(keyText("CLICK WarbandKeeperQuestTarget:LeftButton"))
+        self.i.key:SetText(keyText("CLICK WarbandKeeperQuestItem:LeftButton"))
+        local tg, it = a and a.target, a and a.item
+        if it then self.i.icon:SetTexture(it.icon); self.i.count:SetText(it.count or "") end
+        if tg then
+            self.name:SetText(T("Cibler :") .. " " .. tg.name)
+            local parts = {}
+            if tg.total and tg.total > 1 then
+                parts[#parts + 1] = string.format(T("objectif %d/%d"), tg.idx, tg.total)
+            end
+            if tg.need and tg.need > 1 then parts[#parts + 1] = (tg.have or 0) .. "/" .. tg.need end
+            if tg.name2 and tg.name2 ~= tg.name then parts[#parts + 1] = T("clic droit : suivant") end
+            self.sub:SetText(table.concat(parts, " · "))
+        elseif it then
+            self.name:SetText(it.name or T("Objet de quête")); self.sub:SetText("")
+        end
+        self:Cooldown()
     end
-    actT = actT or makeAct("WarbandKeeperQuestTarget", "macro")
-    actI = actI or makeAct("WarbandKeeperQuestItem", "item")
-    local v = card.tv
-    local a = card.actData
-    local show = card:IsShown() and v and v:IsShown() and v.act:IsShown() and a
-    if show and a.target then
-        actT.n1, actT.n2 = a.target.name, a.target.name2
-        actT:SetAttribute("type", "macro")
-        actT:SetAttribute("macrotext", "/targetexact " .. a.target.name)
-        actT:SetAttribute("type2", "macro")
-        actT:SetAttribute("macrotext2", "/targetexact " .. (a.target.name2 or a.target.name))
-        actT:SetFrameStrata(card:GetFrameStrata() or "MEDIUM")
-        actT:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
-        actT.px = nil
-        actT:Show()
+    function f:Cooldown()
+        local id = self.i.itemID
+        local get = _G.GetItemCooldown or (_G.C_Container and _G.C_Container.GetItemCooldown)
+        if id and get and self.i.cd then
+            local st, du = get(id)
+            if st and du and du > 1.5 then self.i.cd:SetCooldown(st, du) else self.i.cd:Clear() end
+        end
+    end
+    return f
+end
+-- données : étape « faire » de la tournée, sinon quête suivie
+local function barData()
+    local q = Q()
+    local P = WK.modules.QuestPlan
+    local t = P and P:Active() and P:Tour()
+    local s = t and t.steps[t.idx]
+    if s then
+        if s.kind ~= "do" then return nil end
+        return UI:QuestActionData(s, P:StepObjectives(s))
+    end
+    local qid = q:Tracked()
+    if qid and not q:IsComplete(qid) then
+        return UI:QuestActionData({ kind = "do", qids = { qid } }, q:Objectives(qid))
+    end
+end
+local barPending
+function UI.RefreshQuestBar()
+    if not bar then
+        if not actOn() then return end
+        if _G.InCombatLockdown and _G.InCombatLockdown() then barPending = true return end -- boutons protégés
+        bar = buildBar()
+        UI:RegisterHUD("questBar", bar, {
+            label = T("Barre de quête (Cibler, Objet)"), protected = true, default = { 0, -180 },
+            enabled = function() return actOn() and WK:FeatureOn("quests") end,
+            sample = function(on)
+                bar.sample = on or nil
+                if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+                if on then
+                    local demo = { target = { name = T("Monstre de la quête"), name2 = "?", idx = 1, total = 2,
+                        have = 3, need = 8 }, item = { id = 0, icon = 134400, count = "3" } }
+                    bar.t:SetAttribute("type", nil); bar.i:SetAttribute("type", nil) -- aperçu : un clic ne fait rien
+                    bar:Layout(true, true); bar:Paint(demo); bar:Show()
+                else
+                    bar.t:SetAttribute("type", "macro"); bar.i:SetAttribute("type", "item")
+                    UI.RefreshQuestBar()
+                end
+            end,
+        })
+    end
+    if bar.sample then return end
+    local a = barData()
+    if _G.InCombatLockdown and _G.InCombatLockdown() then
+        barPending = true
+        bar:Paint(bar.last) -- en combat : textes seulement, les boutons gardent leur cible
+        return
+    end
+    barPending = nil
+    local tb, ib = bar.t, bar.i
+    local tg, it = a and a.target, a and a.item
+    if tg then
+        tb.n1, tb.n2 = tg.name, tg.name2
+        tb:SetAttribute("macrotext", "/targetexact " .. tg.name)
+        tb:SetAttribute("type2", "macro")
+        tb:SetAttribute("macrotext2", "/targetexact " .. (tg.name2 or tg.name))
     else
-        -- plus d'étape à faire : le raccourci clavier ne vise plus l'ancien monstre
-        actT.n1, actT.n2 = nil, nil
-        actT:SetAttribute("macrotext", nil); actT:SetAttribute("macrotext2", nil)
-        actT:Hide()
+        -- plus rien à cibler : le raccourci clavier ne vise plus l'ancien monstre
+        tb.n1, tb.n2 = nil, nil
+        tb:SetAttribute("macrotext", nil); tb:SetAttribute("macrotext2", nil)
     end
-    if show and a.item then
-        actI.itemID = a.item.id
-        actI:SetAttribute("type", "item")
-        actI:SetAttribute("item", "item:" .. a.item.id)
-        actI:SetFrameStrata(card:GetFrameStrata() or "MEDIUM")
-        actI:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
-        actI.px = nil
-        actI:Show()
+    if it then
+        ib.itemID = it.id
+        ib:SetAttribute("item", "item:" .. it.id)
     else
-        actI.itemID = nil
-        actI:SetAttribute("item", nil)
-        actI:Hide()
+        ib.itemID = nil
+        ib:SetAttribute("item", nil)
     end
-    realignActions()
-    if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(0, realignActions) end
+    bar.last = a
+    if a and actOn() and WK:FeatureOn("quests") then
+        bar:Layout(tg ~= nil, it ~= nil)
+        bar:Paint(a)
+        bar:Show()
+    else
+        bar:Hide()
+    end
 end
-WK:On("PLAYER_REGEN_ENABLED", function() if actPending then UI:PlaceQuestActions() end end)
+WK:On("PLAYER_REGEN_ENABLED", function() if barPending then UI.RefreshQuestBar() end end)
+WK:On("UPDATE_BINDINGS", function() if bar and bar:IsShown() then bar:Paint(bar.last) end end)
+WK:On("BAG_UPDATE_COOLDOWN", function() if bar and bar:IsShown() then bar:Cooldown() end end)
+WK:On("BAG_UPDATE_DELAYED", function() if bar then UI.RefreshQuestBar() end end)
 
 
 -- Repères sur les plaques de nom : monstres des objectifs pas finis de l'étape (ou de la quête suivie), à la
@@ -1217,7 +1264,6 @@ do
         s.acc = s.acc + el
         if s.acc < 0.25 then return end
         s.acc = 0
-        realignActions()
         updateMarks()
     end)
 end

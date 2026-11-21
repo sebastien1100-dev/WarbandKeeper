@@ -614,12 +614,12 @@ UI:RegisterPage({
                 self.nearSeg:Select(QP():Config().nearSteps or "ask")
                 -- boutons Cibler / Objet de la carte de tournée, tête de mort, repères des plaques
                 -- (UI/QuestTracker.lua)
-                UI:SettingRow(tcard, -514, "Boutons Cibler et Objet",
-                    "Sur la carte de tournée, pour une étape à faire : cibler le monstre de l'objectif "
-                        .. "(clic droit : le suivant) et utiliser l'objet de la quête. Raccourcis clavier : "
-                        .. "Options du jeu > Raccourcis > AddOns > Warband Keeper.",
+                UI:SettingRow(tcard, -514, "Barre de quête (Cibler, Objet)",
+                    "Petite barre à placer en mode édition, pour l'étape à faire ou la quête suivie : cibler le "
+                        .. "monstre de l'objectif (clic droit : le suivant) et utiliser l'objet de la quête. "
+                        .. "Raccourcis clavier : Options du jeu > Raccourcis > AddOns > Warband Keeper.",
                     qtoggle("actButtons", function()
-                        if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
+                        if UI.RefreshQuestBar then UI.RefreshQuestBar() end
                     end), 50)
                 UI:SettingRow(tcard, -550, "Tête de mort sur le monstre ciblé",
                     "Le bouton Cibler pose la tête de mort sur le monstre (seul, ou chef et assistants en groupe).",

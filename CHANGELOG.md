@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.127.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Cibler et Objet passent de la carte de tournée à une petite barre « Quête » à placer où tu veux (mode édition) : bouton Cibler (liseré à ta couleur), bouton Objet (avec son nombre et sa recharge), la touche de chaque bouton dans son coin, puis le nom du monstre et l'objectif (« objectif 1/2 · 3/8 · clic droit : suivant »).
+- La barre sert aussi hors tournée, pour la quête suivie. Elle se cache quand il n'y a rien à cibler ni à utiliser (hors combat).
+- Réglage renommé « Barre de quête (Cibler, Objet) » (roue des Quêtes, carte Quête suivie). Les raccourcis clavier déjà réglés restent valables.
+
 ## v1.126.3 — 21/11/2026
 
 _Un /reload suffit._

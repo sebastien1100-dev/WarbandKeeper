@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.0", date = "21/11/2026",
+        changed = {
+            "Cibler et Objet passent de la carte de tournée à une petite barre « Quête » à placer où tu veux (mode édition) : bouton Cibler (liseré à ta couleur), bouton Objet (avec son nombre et sa recharge), la touche de chaque bouton dans son coin, puis le nom du monstre et l'objectif (« objectif 1/2 · 3/8 · clic droit : suivant »).",
+            "La barre sert aussi hors tournée, pour la quête suivie. Elle se cache quand il n'y a rien à cibler ni à utiliser (hors combat).",
+            "Réglage renommé « Barre de quête (Cibler, Objet) » (roue des Quêtes, carte Quête suivie). Les raccourcis clavier déjà réglés restent valables.",
+        },
+    },
+    {
         version = "1.126.3", date = "21/11/2026",
         fixed = {
             "Carte de tournée : plus de message « action bloquée » (Frame:Show) en combat. Les boutons Cibler / Objet ne sont plus accrochés à la carte : ils sont posés par-dessus et suivent la carte quand tu la déplaces (hors combat).",
