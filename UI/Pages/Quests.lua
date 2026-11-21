@@ -39,7 +39,7 @@ local SUBS = { { "montee", "Montée en niveaux" }, { "log", "Mon journal" }, { "
 local function QT() return WK.modules.QuestTrack end
 local function QP() return WK.modules.QuestPlan end
 local function LG() return WK.modules.LevelGuide end
-local VIEWS = { montee = true, log = true, pick = true, tour = true, zones = true }
+local VIEWS = { montee = true, log = true, pick = true, tour = true, zones = true, journal = true }
 local function G() return WK.modules.Guide end
 
 local MZONE_H = 214
@@ -305,13 +305,19 @@ UI:RegisterPage({
         -- settings.ui.questTab (zones par défaut) ---------------------------------------------------
         local ui = WK.DB.global.settings.ui
         -- plus de sous-onglets : « Ma progression » = la tournée (avec la montée et le choix des quêtes)
-        self.view = (ui.questTab == "zones" or not ui.questTab) and "zones" or "tour"
+        self.view = (ui.questTab == "zones" or not ui.questTab) and "zones" or (ui.questTab == "journal" and "journal" or "tour")
         self.lastSub = "tour"
         self.bigZones = self:BigTab(p, "map", "Carte des zones", function() self:ShowTab("zones") end)
         self.bigZones:SetPoint("TOPLEFT", 0, 0)
         self.bigProg = self:BigTab(p, "chart", "Ma progression", function() self:ShowTab("tour") end)
         self.bigProg:SetPoint("TOPLEFT", self.bigZones, "TOPRIGHT", 12, 0)
         self.bigProg.sub:SetText(T("montée et tournée de quêtes"))
+        -- journal des données (UI/DataLog.lua) : ce qui arrive dans la base (QuestieDB, appris en jeu)
+        self.bigJournal = self:BigTab(p, "notes", "Journal", function() self:ShowTab("journal") end, "journal")
+        self.bigJournal:SetPoint("TOPLEFT", self.bigProg, "TOPRIGHT", 12, 0)
+        self.bigJournal.sub:SetText(T("ce qui arrive dans la base"))
+        self.journal = UI:BuildDataJournal(p)
+        self.journal:Hide()
         self.subTabs = {}
         local prev
         for _, t in ipairs(SUBS) do
@@ -604,6 +610,10 @@ UI:RegisterPage({
         UI:SettingRow(lcard, -112, "Métier : si le perso l'a", nil, toggle(lcard, "profOnly"), 50)
         UI:SettingRow(lcard, -148, "Classe : celles du perso", nil, toggle(lcard, "classOnly"), 50)
 
+        -- journal des données (UI/DataLog.lua) : pastilles, durée, message après une mise à jour
+        local jcard = card("Journal des données", 40 + 3 * 48 + 48, "ce qui arrive dans la base")
+        self.dataLogSync = UI:BuildDataLogCard(jcard, self.toggles)
+
         local states = { "avail", "log", "done", "high", "locked" }
         local gcard = card("Légende", 40 + #states * 24 + 8)
         for i, st in ipairs(states) do
@@ -803,11 +813,11 @@ UI:RegisterPage({
         if w < 100 then w = 800 end
         -- « Quêtes de » et le filtre (onglet zones) : à côté des grands onglets, ou dessous si la place manque
         local zonesView = self.view == "zones"
-        local barW = 2 * BIG_W + 12 + 14 + 70 + 8 + 190 + 8 + (self.filterSeg:GetWidth() or 230) + 44
+        local barW = 3 * BIG_W + 24 + 14 + 70 + 8 + 190 + 8 + (self.filterSeg:GetWidth() or 230) + 44
         local second = zonesView and w < barW
         self.ofLabel:ClearAllPoints()
         if second then self.ofLabel:SetPoint("TOPLEFT", 0, -(BIG_H + GAP + 9))
-        else self.ofLabel:SetPoint("TOPLEFT", self.bigProg, "TOPRIGHT", 14, -17) end
+        else self.ofLabel:SetPoint("TOPLEFT", self.bigJournal, "TOPRIGHT", 14, -17) end
         local open = self.settingsOpen == true
         local top
         -- réglages ouverts : pas de sous-onglets ni de barre « Quêtes de » (ils ne servent pas aux réglages)
@@ -815,7 +825,15 @@ UI:RegisterPage({
         elseif zonesView then top = BIG_H + GAP + (second and (30 + GAP) or 0)
         else top = BIG_H + GAP end
         -- grands onglets et sous-onglets
-        self.bigZones:Paint(); self.bigProg:Paint()
+        self.bigZones:Paint(); self.bigProg:Paint(); self.bigJournal:Paint()
+        -- journal des données : toute la place sous les grands onglets
+        local journalView = not open and self.view == "journal"
+        self.journal:SetShown(journalView)
+        if journalView then
+            self.journal:ClearAllPoints()
+            self.journal:SetPoint("TOPLEFT", 0, -top); self.journal:SetPoint("BOTTOMRIGHT")
+            self.journal:Layout(w, h - top)
+        end
         for _, b in pairs(self.subTabs) do b:Hide() end
         self.subLine:Hide()
         self.side:ClearAllPoints()
@@ -846,7 +864,7 @@ UI:RegisterPage({
 
     -- Grand onglet : icône dans un carré arrondi, titre et sous-titre ; plein à la couleur d'accent quand il
     -- est actif, sinon fond C.surface et liseré C.border
-    BigTab = function(self, p, icon, title, onClick)
+    BigTab = function(self, p, icon, title, onClick, key)
         local b = CreateFrame("Button", nil, p)
         b:SetSize(BIG_W, BIG_H)
         b.edge = UI:Rounded(b, 12, 0, "BACKGROUND", 0)
@@ -861,10 +879,12 @@ UI:RegisterPage({
         b.title:SetText(title)
         b.sub = UI:Text(b, 10, C.muted)
         b.sub:SetPoint("TOPLEFT", 50, -27); b.sub:SetPoint("TOPRIGHT", -10, -27)
-        b.key = icon == "map" and "zones" or "prog"
+        b.key = key or (icon == "map" and "zones" or "prog")
         function b.Paint(s2)
             local r, g, bl = UI:Accent()
-            local on = (s2.key == "zones") == (self.view == "zones")
+            local v = self.view
+            local on = (s2.key == "zones" and v == "zones") or (s2.key == "journal" and v == "journal")
+                or (s2.key == "prog" and v ~= "zones" and v ~= "journal")
             if on then
                 s2.edge:SetColor(r, g, bl, 1); s2.bg:SetColor(r, g, bl, 1)
                 s2.boxBg:SetColor(C.onAccent[1], C.onAccent[2], C.onAccent[3], 0.16)
@@ -1771,7 +1791,7 @@ UI:RegisterPage({
                     r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -ry); r:SetPoint("TOPRIGHT", 0, -ry)
                     r:PaintBox()
                     r.lv:Set(e.lvl and tostring(e.lvl) or "?", e.lvl and levelColor(e.lvl, myLevel) or C.muted)
-                    r.name:SetText(e.title or ("#" .. e.id))
+                    r.name:SetText((e.title or ("#" .. e.id)) .. (WK.modules.DataLog and WK.modules.DataLog:Badge(e.id) or ""))
                     r.name:SetTextColor(unpack((e.hard and not e.inLog) and C.muted or C.text))
                     local parts = {}
                     if e.group then parts[#parts + 1] = UI:Hex(C.warning) .. T("groupe") .. "|r" end
@@ -2151,6 +2171,7 @@ UI:RegisterPage({
             if self.choosing then self:RefreshPick() end
             return
         end
+        if self.view == "journal" then self.journal:Refresh() return end
         local key = self.viewKey or WK:CharKey()
         local c = WK.DB.global.characters[key] or {}
         local myLevel = c.level or 1
@@ -2257,7 +2278,7 @@ UI:RegisterPage({
                     row.lv:SetTextColor(unpack(st == "done" and C.dim or levelColor(q.lvl, myLevel)))
                     local col, label = stateInfo(st)
                     row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
-                    row.name:SetText(Q:Name(q))
+                    row.name:SetText(Q:Name(q) .. (WK.modules.DataLog and WK.modules.DataLog:Badge(q.id) or ""))
                     row.name:SetTextColor(unpack(st == "done" and C.dim or C.text))
                     local parts = {}
                     if q.skill then table.insert(parts, UI:Hex(C.positive) .. T(q.skill) .. "|r")

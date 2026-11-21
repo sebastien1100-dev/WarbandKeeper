@@ -32,7 +32,7 @@ CACHE = os.path.join(HERE, ".cache")
 QUESTIE_URL = "https://github.com/Questie/QuestieDB"
 WOWTBC = "https://wowtbc.gg/page-data/warcraftforever"
 UA = "WarbandKeeper-data-update"
-TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB"]
+TARGETS = ["PlacesDB", "RoadsDB", "RaresDB", "QuestsDB", "QuestObjDB", "DungeonsDB", "Guides", "RecipeDB", "EverlootDB", "ItemsDB", "BoatLinesDB", "MapRevealDB", "ClassSpellsDB", "DataLogDB"]
 KEEP = [os.path.join(HERE, "guides"), os.path.join(HERE, "dungeons")]  # données importées, versionnées
 DROP_LIMIT = 0.20
 
@@ -207,6 +207,8 @@ def metrics():
             out["Objets portables (liste BiS)"] = size(WK.LoadItemsDB() if WK.LoadItemsDB else WK.ItemsDB)
         elif name == "BoatLinesDB":
             out["Lignes de bateaux et zeppelins"] = size(WK.BoatLines)
+        elif name == "DataLogDB":
+            out["Mises à jour de la base notées (journal)"] = size(WK.DataLog)
         elif name == "MapRevealDB":
             out["Cartes sans brouillard"] = size(WK.MapRevealDB)
         elif name == "DungeonsDB":

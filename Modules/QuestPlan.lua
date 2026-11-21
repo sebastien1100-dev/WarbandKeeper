@@ -746,7 +746,10 @@ function M:StepTitle(s, colored)
         -- suite prévue pas encore prise
         if pred[q] and not inLog(q) then n = n .. " " .. T("(suite)") end
         if WK.QuestIsGroup(q) then n = n .. " " .. T("(groupe)") end
-        if colored then n = WK.UI:Hex(self:ProgressColor(q)) .. n .. "|r" end
+        if colored then
+            n = WK.UI:Hex(self:ProgressColor(q)) .. n .. "|r"
+            if WK.modules.DataLog then n = n .. WK.modules.DataLog:Badge(q) end
+        end
         table.insert(names, n)
     end
     local list = table.concat(names, ", ")

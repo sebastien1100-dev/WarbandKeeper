@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.115.0 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Quêtes : nouvel onglet « Journal » (ce qui arrive dans la base). Chaque mise à jour de la base (QuestieDB et ses corrections WoW Forever) y est datée, avec ses quêtes ajoutées, corrigées (niveau, donneur déplacé, prérequis…) et retirées ; chaque quête apprise en jeu aussi. Chiffres clés en haut, filtres Tout / QuestieDB / Appris en jeu / Ma zone / Mon niveau, clic sur une quête = guidage vers son donneur.
+- Pastilles NOUVELLE (base mise à jour), APPRISE (notée en jeu) et CORRIGÉE pendant quelques jours après le nom des quêtes : « Quêtes de ma zone », liste des quêtes d'une zone, tournée et fenêtre des quêtes du donjon.
+- Message à la connexion après une nouvelle base (option) : ce qui change pour toi (quêtes de ta zone à ton niveau), « Voir » ouvre le journal, « Ajouter à la tournée » les coche. Se place en mode édition.
+- Réglages dans la roue de la page Quêtes, carte « Journal des données » : pastilles, durée (3 à 30 jours), message après une mise à jour.
+- Le journal commence avec l'arrivée des quêtes WoW Forever du 20/11 (+1 407 quêtes, 44 corrigées).
+
 ## v1.114.0 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

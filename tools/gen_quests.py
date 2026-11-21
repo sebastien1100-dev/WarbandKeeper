@@ -236,8 +236,20 @@ def main(root):
         lines.append(row(e))
     lines.append("}")
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Modules", "QuestsDB.lua")
+    try:
+        with open(out, encoding="utf-8") as f:
+            before = f.read()
+    except OSError:
+        before = ""
+    text = "\n".join(lines) + "\n"
     with open(out, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+        f.write(text)
+    # journal des données : ce qui a changé depuis la génération précédente (Modules/DataLogDB.lua)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import datalog
+    entry = datalog.record(before, text)
+    if entry:
+        print("journal : +%d quêtes, %d corrigées, %d retirées" % (len(entry["add"]), len(entry["chg"]), len(entry["rem"])))
     print("%d quêtes sur %d cartes, %d sans zone (%d ignorées) -> %s (%d Ko)" % (total, len(per_map), len(other), skipped, out, os.path.getsize(out) // 1024))
 
 
