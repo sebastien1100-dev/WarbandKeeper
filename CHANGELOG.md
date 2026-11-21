@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.126.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Raccourcis clavier pour les boutons de la carte de tournée (Options du jeu > Raccourcis > AddOns > Warband Keeper) : « Cibler le monstre de la quête » (avec la tête de mort), « Cibler le monstre de l'objectif suivant » et « Utiliser l'objet de la quête ». Ils marchent aussi en combat ; la touche choisie s'affiche dans l'infobulle du bouton Cibler.
+
 ## v1.126.0 — 21/11/2026
 
 _Un /reload suffit._

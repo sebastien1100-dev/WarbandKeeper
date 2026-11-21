@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.126.1", date = "21/11/2026",
+        added = {
+            "Raccourcis clavier pour les boutons de la carte de tournée (Options du jeu > Raccourcis > AddOns > Warband Keeper) : « Cibler le monstre de la quête » (avec la tête de mort), « Cibler le monstre de l'objectif suivant » et « Utiliser l'objet de la quête ». Ils marchent aussi en combat ; la touche choisie s'affiche dans l'infobulle du bouton Cibler.",
+        },
+    },
+    {
         version = "1.126.0", date = "21/11/2026",
         added = {
             "Carte de tournée : pour une étape à faire, bouton « Cibler » avec le nom du monstre de l'objectif (clic gauche : le premier pas fini, clic droit : le suivant) et bouton « Objet » qui utilise l'objet de la quête, avec son nombre. Ils marchent aussi en combat (en combat, ils gardent le dernier monstre et le dernier objet).",

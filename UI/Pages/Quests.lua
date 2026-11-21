@@ -616,7 +616,8 @@ UI:RegisterPage({
                 -- (UI/QuestTracker.lua)
                 UI:SettingRow(tcard, -514, "Boutons Cibler et Objet",
                     "Sur la carte de tournée, pour une étape à faire : cibler le monstre de l'objectif "
-                        .. "(clic droit : le suivant) et utiliser l'objet de la quête.",
+                        .. "(clic droit : le suivant) et utiliser l'objet de la quête. Raccourcis clavier : "
+                        .. "Options du jeu > Raccourcis > AddOns > Warband Keeper.",
                     qtoggle("actButtons", function()
                         if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
                     end), 50)

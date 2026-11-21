@@ -1034,6 +1034,8 @@ local function makeAct(name, kind)
         UI:TooltipOwner(s, "ANCHOR_TOP")
         if kind == "macro" then
             GameTooltip:SetText(T("Cibler le monstre de la quête"), 1, 1, 1)
+            local key = _G.GetBindingKey and _G.GetBindingKey("CLICK WarbandKeeperQuestTarget:LeftButton")
+            if key then GameTooltip:AddLine(T("Raccourci :") .. " " .. key, 0.6, 0.8, 1) end
             if s.n1 then GameTooltip:AddLine(T("Clic gauche :") .. " " .. s.n1, 0.9, 0.9, 0.9) end
             if s.n2 and s.n2 ~= s.n1 then GameTooltip:AddLine(T("Clic droit :") .. " " .. s.n2, 0.9, 0.9, 0.9) end
             if Q():Config().targetSkull ~= false then
@@ -1060,6 +1062,10 @@ local function makeAct(name, kind)
     end
     return b
 end
+-- raccourcis clavier (Bindings.xml) : Échap > Options > Raccourcis > AddOns > Warband Keeper
+_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:LeftButton"] = T("Cibler le monstre de la quête")
+_G["BINDING_NAME_CLICK WarbandKeeperQuestTarget:RightButton"] = T("Cibler le monstre de l'objectif suivant")
+_G["BINDING_NAME_CLICK WarbandKeeperQuestItem:LeftButton"] = T("Utiliser l'objet de la quête")
 -- pose les boutons protégés sur les cases de la carte (hors combat)
 function UI.PlaceQuestActions()
     if _G.InCombatLockdown and _G.InCombatLockdown() then actPending = true return end
@@ -1084,6 +1090,9 @@ function UI.PlaceQuestActions()
         actT:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
         actT:Show()
     else
+        -- plus d'étape à faire : le raccourci clavier ne vise plus l'ancien monstre
+        actT.n1, actT.n2 = nil, nil
+        actT:SetAttribute("macrotext", nil); actT:SetAttribute("macrotext2", nil)
         actT:Hide()
     end
     if show and a.item then
@@ -1094,6 +1103,8 @@ function UI.PlaceQuestActions()
         actI:SetFrameLevel((card:GetFrameLevel() or 1) + 20)
         actI:Show()
     else
+        actI.itemID = nil
+        actI:SetAttribute("item", nil)
         actI:Hide()
     end
 end
