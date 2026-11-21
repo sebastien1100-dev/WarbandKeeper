@@ -39,6 +39,26 @@ PHRASES = {
 }
 
 
+def sources_text(sources):
+    """Noms courts des sources, sans doublon, « A, B et C ». Une source dont la parenthèse nomme le site
+    (wago.tools, What's Training) prend ce nom ; sinon le texte avant la parenthèse ou le numéro de version.
+    Avant, le premier mot de chaque source donnait « QuestieDB et Everloot et tables et … et prix »."""
+    names = []
+    for s in sources:
+        m = re.search(r"\(([^)]*)\)", s)
+        inner = m.group(1) if m else ""
+        if inner and ("." in inner or "What's" in inner) and not inner[0].isdigit():
+            name = inner
+        else:
+            name = re.split(r" \(| `", s)[0]
+        name = name.strip()
+        if name and name not in names:
+            names.append(name)
+    if len(names) <= 1:
+        return "".join(names)
+    return ", ".join(names[:-1]) + " et " + names[-1]
+
+
 def plural(text, n):
     # « (s) », « (x) » : pluriel si n > 1
     return re.sub(r"\((s|x)\)", lambda m: m.group(1) if n > 1 else "", text)
@@ -57,7 +77,7 @@ def main(path):
     changed = data.get("changed", [])
     if any("Guides" in c or "guides/" in c for c in changed) and not any("guide" in b for b in bits):
         bits.append("guides de métiers revus par wowtbc.gg")
-    src = " et ".join(s.split(" ")[0] for s in data.get("sources", [])) or "les sources"
+    src = sources_text(data.get("sources", [])) or "les sources"
     line = "Données mises à jour depuis %s%s." % (src, (" : " + ", ".join(bits)) if bits else " (corrections dans les données existantes)")
 
     toc = os.path.join(ROOT, "WarbandKeeper.toc")

@@ -21,7 +21,7 @@ WK.Changelog = {
     {
         version = "1.128.18", date = "21/11/2026",
         changed = {
-            "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et prix et trajets et zones et opendata : 1 quête de plus.",
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 1 quête de plus.",
         },
     },
     {
