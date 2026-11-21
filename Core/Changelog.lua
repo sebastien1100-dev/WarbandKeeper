@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.53", date = "21/11/2026",
+        fixed = {
+            "Style Héraldique : les titres des cartes étaient invisibles, recouverts par le bandeau de couleur ; ils sont de nouveau écrits en blanc par-dessus.",
+        },
+    },
+    {
         version = "1.128.52", date = "21/11/2026",
         fixed = {
             "Options > Apparence : choisir un style qui met les jauges en dégradé (Héraldique…) déclenchait une erreur Lua (« SetColorTexture ») ; la 2e couleur du dégradé était incomplète.",

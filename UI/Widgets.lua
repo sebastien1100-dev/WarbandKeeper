@@ -514,7 +514,11 @@ function UI:Card(parent, title, subtitle, highlight)
             holder:SetPoint("TOPLEFT"); holder:SetPoint("TOPRIGHT"); holder:SetHeight(60)
             local fill = UI:Rounded(holder, 11, 0, "BACKGROUND", 1)
             UI:OnAccent(function() local r, g, b = UI:Accent(); fill:SetColor(r * 0.55, g * 0.55, b * 0.55, 1) end)
-            host = f.band
+            -- le titre sur un cadre au-dessus du fond (le fond, dans un cadre enfant, recouvrait le titre posé
+            -- sur le bandeau : titres illisibles en Héraldique)
+            host = _G.CreateFrame("Frame", nil, f.band)
+            host:SetAllPoints(f.band)
+            host:SetFrameLevel(holder:GetFrameLevel() + 2)
         end
         f.title = UI:Text(host, skin == "ink" and 17 or 13, C.text)
         if UI.CARD_TITLE_FONT then f.title:SetFont(UI.CARD_TITLE_FONT, math.floor((skin == "ink" and 17 or 14) * (UI.textScale or 1) + 0.5), "") end
@@ -539,7 +543,8 @@ function UI:Card(parent, title, subtitle, highlight)
         end
         f.title:SetText(title)
         if subtitle then
-            f.subtitle = UI:Text(f, 11, C.muted)
+            f.subtitle = UI:Text(host, 11, C.muted)
+            if skin == "heraldic" then f.subtitle:SetTextColor(1, 1, 1, 0.7) end
             f.subtitle:SetPoint("LEFT", f.title, "RIGHT", 8, 0)
             f.subtitle:SetText(subtitle)
         end

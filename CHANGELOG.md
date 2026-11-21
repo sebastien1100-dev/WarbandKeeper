@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.53 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Style Héraldique : les titres des cartes étaient invisibles, recouverts par le bandeau de couleur ; ils sont de nouveau écrits en blanc par-dessus.
+
 ## v1.128.52 — 21/11/2026
 
 _Un /reload suffit._
