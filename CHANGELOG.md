@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.123.3 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fenêtre des quêtes du donjon : elle se déplace en glissant son titre, sans passer par le mode édition. Le coin en bas à droite règle sa hauteur (double-clic : automatique) et la molette fait défiler ce qui ne tient pas (« 3 plus bas · molette »).
+- Fenêtre des quêtes du donjon : nouvelle option « Compacte », une ligne par quête (objectifs et lieu dans l'infobulle), dans la roue des Donjons, onglet Quêtes du donjon.
+
+### Corrections
+- Fenêtre des quêtes du donjon : le nom du donjon était coupé (« Excavations : les p… »). Il s'affiche en entier, sur deux lignes au besoin, avec « Quêtes · env. 3650 XP » dessous.
+
 ## v1.123.2 — 21/11/2026
 
 _Un /reload suffit._

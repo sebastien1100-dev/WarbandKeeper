@@ -2,6 +2,7 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
+local CreateFrame, GameTooltip, GetCursorPosition = CreateFrame, GameTooltip, GetCursorPosition
 
 ---------------------------------------------------------------------------
 -- Quêtes du donjon : fenêtre volante discrète (HUD « dungeonQuests »), groupée par état :
@@ -96,8 +97,62 @@ local function build()
     f:SetSize(W, 120)
     f:SetFrameStrata("MEDIUM")
     UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.86 }, C.border)
-    f.head = UI:Text(f, 10, C.muted); f.head:SetPoint("TOPLEFT", 11, -10); f.head:SetPoint("RIGHT", -96, 0)
-    f.headR = UI:Text(f, 10, C.muted); f.headR:SetPoint("TOPRIGHT", -28, -10); f.headR:SetJustifyH("RIGHT")
+    -- en-tête : nom du donjon en entier (deux lignes au besoin), puis « QUÊTES · env. N XP » ; glisser le titre
+    -- déplace la fenêtre (sans passer par le mode édition)
+    f.title = UI:Text(f, 12, C.text); f.title:SetPoint("TOPLEFT", 11, -9); f.title:SetPoint("RIGHT", -28, 0)
+    f.title:SetJustifyH("LEFT")
+    if f.title.SetWordWrap then f.title:SetWordWrap(true) end
+    if f.title.SetMaxLines then f.title:SetMaxLines(2) end
+    f.head = UI:Text(f, 10, C.muted)
+    f.head:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -2); f.head:SetPoint("RIGHT", -28, 0)
+    f.head:SetJustifyH("LEFT")
+    f:SetMovable(true); f:SetClampedToScreen(true)
+    f.drag = CreateFrame("Button", nil, f)
+    f.drag:SetPoint("TOPLEFT", 0, 0); f.drag:SetPoint("TOPRIGHT", -26, 0); f.drag:SetHeight(30)
+    f.drag:RegisterForDrag("LeftButton")
+    f.drag:SetScript("OnDragStart", function() f:StartMoving() end)
+    f.drag:SetScript("OnDragStop", function()
+        f:StopMovingOrSizing()
+        if UI.HUDCapture then UI:HUDCapture("dungeonQuests") end
+    end)
+    f.drag:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Glisser pour déplacer"), 1, 1, 1)
+        GameTooltip:AddLine(T("Molette : faire défiler · coin en bas à droite : hauteur (double-clic : automatique)"),
+            0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    f.drag:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    -- molette : défiler quand tout ne tient pas
+    f.off = 0
+    f:EnableMouseWheel(true)
+    f:SetScript("OnMouseWheel", function(s, delta)
+        if not s.lastData then return end
+        local n = s.items or 0
+        s.off = math.max(0, math.min(math.max(0, n - 1), (s.off or 0) - delta))
+        s:Paint(s.lastData, s.lastCfg)
+    end)
+    -- poignée de hauteur (coin bas droit) : hauteur maximale retenue dans questWinMaxH
+    f.grip = CreateFrame("Button", nil, f)
+    f.grip:SetSize(16, 16); f.grip:SetPoint("BOTTOMRIGHT", -2, 2)
+    f.grip.t = UI:Icon(f.grip, "grip", 12, nil, "OVERLAY"); f.grip.t:SetPoint("CENTER")
+    f.grip.t:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
+    f.grip:SetScript("OnMouseDown", function(g)
+        local _, cy = GetCursorPosition()
+        g.startY, g.startH = cy / (f:GetEffectiveScale() or 1), f:GetHeight()
+        g:SetScript("OnUpdate", function()
+            local _, y = GetCursorPosition()
+            y = y / (f:GetEffectiveScale() or 1)
+            local cfg = f.lastCfg
+            if not cfg then return end
+            local h = math.max(110, math.floor(g.startH + (g.startY - y)))
+            if cfg.questWinMaxH ~= h then cfg.questWinMaxH = h; f:Paint(f.lastData, cfg) end
+        end)
+    end)
+    f.grip:SetScript("OnMouseUp", function(g) g:SetScript("OnUpdate", nil) end)
+    f.grip:SetScript("OnDoubleClick", function()
+        if f.lastCfg then f.lastCfg.questWinMaxH = nil; f.off = 0; f:Paint(f.lastData, f.lastCfg) end
+    end)
     f.close = UI:IconButton(f, "close", 16, "Cacher jusqu'au prochain donjon")
     f.close:SetPoint("TOPRIGHT", -6, -6)
     f.close:SetScript("OnClick", function()
@@ -166,10 +221,41 @@ local function build()
         local ar, ag, ab = UI:Accent()
         self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], (cfg.questWinAlpha or 86) / 100)
         self.border:SetColor(C.border[1], C.border[2], C.border[3], math.min(1, (cfg.questWinAlpha or 86) / 100 + 0.1))
-        self.head:SetText(UI:Upper(T("Quêtes")) .. " · " .. UI:Hex(C.text) .. UI:Upper(data.name or "") .. "|r")
-        self.headR:SetText((data.xp or 0) > 0 and string.format(T("env. %d XP"), data.xp) or "")
-        local y, ns, nr = 28, 0, 0
+        self.lastData, self.lastCfg = data, cfg
+        if self.dungeonKey ~= data.name then self.dungeonKey = data.name; self.off = 0 end
+        self.title:SetText(data.name or "")
+        local xpText = (data.xp or 0) > 0 and ("  ·  " .. string.format(T("env. %d XP"), data.xp)) or ""
+        self.head:SetText(UI:Upper(T("Quêtes")) .. xpText)
+        local th = math.max(14, math.min(30, self.title:GetStringHeight() or 14))
+        local top = 9 + th + 2 + 12 + 6
+        self.drag:SetHeight(top)
+        local compact = cfg.questWinCompact
+        local maxH = cfg.questWinMaxH
+        local footH = (data.pick or 0) > 0 and 34 or 0
+        -- éléments (titres de section et lignes) ; défilement : les « off » premiers sont sautés
+        local items = {}
         local function section(label, n, onClick)
+            items[#items + 1] = { sec = true, label = label, n = n, onClick = onClick }
+        end
+        local function line(e) items[#items + 1] = { e = e } end
+        if #data.log > 0 then section("Dans ton journal", #data.log); for _, e in ipairs(data.log) do line(e) end end
+        if #data.avail > 0 then section("À prendre", #data.avail); for _, e in ipairs(data.avail) do line(e) end end
+        if #data.waiting > 0 then
+            section("Après prérequis", #data.waiting)
+            for _, e in ipairs(data.waiting) do line(e) end
+        end
+        if cfg.questWinDone ~= false and (data.done or 0) > 0 then
+            section(string.format(T("Faites · %d  %s"), data.done, doneOpen and "-" or "+"), nil,
+                function() doneOpen = not doneOpen; UI:RefreshDungeonQuests() end)
+            if doneOpen then for _, e in ipairs(data.doneList or {}) do line(e) end end
+        end
+        if #data.log + #data.avail + #data.waiting == 0 and (data.done or 0) == 0 then
+            section("Aucune quête connue pour ce donjon.")
+        end
+        self.items = #items
+        self.off = math.max(0, math.min(self.off or 0, math.max(0, #items - 1)))
+        local y, ns, nr = top, 0, 0
+        local function drawSection(label, n, onClick)
             ns = ns + 1
             local s = sec(ns)
             s:ClearAllPoints(); s:SetPoint("TOPLEFT", 0, -y); s:SetPoint("TOPRIGHT", 0, -y)
@@ -178,7 +264,7 @@ local function build()
             s:Show()
             y = y + 18
         end
-        local function line(e)
+        local function drawLine(e)
             nr = nr + 1
             local r = row(nr)
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
@@ -190,26 +276,34 @@ local function build()
             r.dot:SetVertexColor(col[1], col[2], col[3], e.solid and 1 or 0.22)
             r.glyph:SetTexture(UI.MEDIA .. (e.glyph or "bang"))
             if e.solid then r.glyph:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1) else r.glyph:SetVertexColor(col[1], col[2], col[3], 1) end
-            r.sub:SetText(e.sub or ""); r.sub:SetShown(e.sub ~= nil and e.sub ~= "")
+            local showSub = e.sub ~= nil and e.sub ~= "" and not compact
+            r.sub:SetText(e.sub or ""); r.sub:SetShown(showSub)
             if e.subColor then r.sub:SetTextColor(unpack(e.subColor)) else r.sub:SetTextColor(unpack(C.muted)) end
             local cur = e.current
             r.bar:SetColorTexture(ar, ag, ab, 1); r.bar:SetShown(cur and true or false)
             r.hl:SetColorTexture(ar, ag, ab, cur and 0.10 or 0)
-            r.onClick, r.tip, r.qid = e.onClick, e.tip, e.qid
-            local h = 26 + ((e.sub and e.sub ~= "") and math.max(13, (r.sub:GetStringHeight() or 12)) + 3 or 0)
+            r.onClick, r.qid = e.onClick, e.qid
+            -- compacte : la 2e ligne passe dans l'infobulle
+            r.tip = e.tip or ((compact and e.sub and e.sub ~= "") and { e.name or "?", e.sub } or nil)
+            local h = (compact and 24 or 26) + (showSub and math.max(13, (r.sub:GetStringHeight() or 12)) + 3 or 0)
             r:SetHeight(h)
             r:Show()
             y = y + h
         end
-        if #data.log > 0 then section("Dans ton journal", #data.log); for _, e in ipairs(data.log) do line(e) end end
-        if #data.avail > 0 then section("À prendre", #data.avail); for _, e in ipairs(data.avail) do line(e) end end
-        if #data.waiting > 0 then section("Après prérequis", #data.waiting); for _, e in ipairs(data.waiting) do line(e) end end
-        if cfg.questWinDone ~= false and (data.done or 0) > 0 then
-            section(string.format(T("Faites · %d  %s"), data.done, doneOpen and "-" or "+"), nil, function() doneOpen = not doneOpen; UI:RefreshDungeonQuests() end)
-            if doneOpen then for _, e in ipairs(data.doneList or {}) do line(e) end end
+        -- rendu jusqu'à la hauteur maximale (poignée), le reste au-delà via la molette
+        local limit = maxH and (maxH - footH - 22) or math.huge
+        local hidden = 0
+        for i = self.off + 1, #items do
+            local it = items[i]
+            local need = it.sec and 18 or (compact and 24 or 40)
+            if y + need > limit then hidden = #items - i + 1 break end
+            if it.sec then drawSection(it.label, it.n, it.onClick) else drawLine(it.e) end
         end
-        if #data.log + #data.avail + #data.waiting == 0 and (data.done or 0) == 0 then
-            section("Aucune quête connue pour ce donjon.")
+        if self.off > 0 or hidden > 0 then
+            drawSection("", nil, nil)
+            self.secs[ns].l:SetText((self.off > 0 and string.format(T("%d plus haut"), self.off) or "")
+                .. ((self.off > 0 and hidden > 0) and "  ·  " or "") .. (hidden > 0 and string.format(T("%d plus bas"), hidden) or ""))
+            self.secs[ns].r:SetText(T("molette"))
         end
         for i = ns + 1, #self.secs do self.secs[i]:Hide() end
         for i = nr + 1, #self.rows do self.rows[i]:Hide() end

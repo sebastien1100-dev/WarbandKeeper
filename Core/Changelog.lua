@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.3", date = "21/11/2026",
+        changed = {
+            "Fenêtre des quêtes du donjon : elle se déplace en glissant son titre, sans passer par le mode édition. Le coin en bas à droite règle sa hauteur (double-clic : automatique) et la molette fait défiler ce qui ne tient pas (« 3 plus bas · molette »).",
+            "Fenêtre des quêtes du donjon : nouvelle option « Compacte », une ligne par quête (objectifs et lieu dans l'infobulle), dans la roue des Donjons, onglet Quêtes du donjon.",
+        },
+        fixed = {
+            "Fenêtre des quêtes du donjon : le nom du donjon était coupé (« Excavations : les p… »). Il s'affiche en entier, sur deux lignes au besoin, avec « Quêtes · env. 3650 XP » dessous.",
+        },
+    },
+    {
         version = "1.123.2", date = "21/11/2026",
         fixed = {
             "Quêtes : l'addon proposait de prendre des quêtes que le PNJ ne donne pas encore (souvent le nouveau contenu de WoW Forever, dont la base ne connaît pas les prérequis, comme « Death to the Dragonmaw » chez Howin Kindfeather). En parlant au PNJ, les quêtes qu'il ne montre pas sont maintenant notées « pas encore proposée par le PNJ » et retirées de la tournée. Elles reviennent d'elles-mêmes au niveau suivant ou dès qu'une autre quête est rendue.",

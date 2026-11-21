@@ -138,7 +138,9 @@ UI:RegisterPage({
         local function qref() if UI.RefreshDungeonQuests then UI:RefreshDungeonQuests() end end
         local winSeg = UI:Segmented(qcard, { { "auto", "Près du donjon" }, { "always", "Toujours" }, { "off", "Jamais" } },
             function(v) dc.questWin = v; qref() end, 24)
-        UI:SettingRow(qcard, -40, "Fenêtre des quêtes", "Quêtes du donjon dans une petite fenêtre (déplaçable en mode édition) : dans le donjon et à moins de 400 m de son entrée, ou toujours (dernier donjon vu).", winSeg, 300)
+        UI:SettingRow(qcard, -40, "Fenêtre des quêtes",
+            "Dans le donjon et à moins de 400 m de son entrée, ou toujours. Glisser son titre la déplace, son coin règle la hauteur.",
+            winSeg, 300)
         UI:SettingRow(qcard, -90, "Opacité du fond", "0 % : texte seul sur le jeu ; 100 % : fond plein.",
             UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 86 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
         local function qrow(y, label, desc, field)
@@ -150,7 +152,8 @@ UI:RegisterPage({
         qrow(-182, "Ligne « Faites »", "Les quêtes déjà faites sur une ligne repliée (clic pour la déplier).", "questWinDone")
         qrow(-228, "Cachée en combat", "Elle revient à la fin du combat.", "questWinCombat")
         qrow(-274, "Cachée quand il ne reste rien", "Plus rien à faire ni à prendre dans ce donjon : la fenêtre disparaît.", "questWinAuto")
-        qcard:SetHeight(40 + 6 * 46 + 8)
+        qrow(-320, "Compacte", "Une ligne par quête (objectifs et lieu dans l'infobulle).", "questWinCompact")
+        qcard:SetHeight(40 + 7 * 46 + 8)
         local function qsync() winSeg:Select(dc.questWin or "auto"); for _, t in ipairs(qtog) do t:Refresh() end end
         qsync()
         scard.gearTab, tcard.gearTab, qcard.gearTab = "main", "timer", "quests"
