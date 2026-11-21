@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.18", date = "21/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB et Everloot et tables et wowtbc.gg et Everloot et prix et trajets et zones et opendata : 1 quête de plus.",
+        },
+    },
+    {
         version = "1.128.17", date = "21/11/2026",
         fixed = {
             "Hôtel des ventes : plusieurs petits lots-appâts à des prix différents ne faussent plus le cours (avant, un seul appât était reconnu) ; le garde-fou de mise en vente regarde aussi la moyenne des 7 derniers jours.",
