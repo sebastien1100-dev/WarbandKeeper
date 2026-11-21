@@ -212,15 +212,6 @@ function UI:QuestMenu(qids)
         local suffix = multi and (" : " .. nm) or ""
         if q and q.x and not (QT and QT.InLog and QT:InLog(id)) then add(T("Guider vers le donneur") .. suffix, function() Qm:GuideTo(q) end) end
         if QT and QT.InLog and QT:InLog(id) and QT.GuideQuest then add(T("Guider vers la quête") .. suffix, function() QT:GuideQuest(id) end) end
-        local AQ = WK.modules.AutoQuest
-        if AQ and AQ.BlockQuest then
-            local blocked = AQ:Config().quests[id]
-            add((blocked and T("Réautoriser l'automatique") or T("Jamais d'automatique")) .. suffix, function()
-                AQ:BlockQuest(id, not blocked)
-                local msg = blocked and T("Quête de nouveau automatique : %s") or T("Plus d'automatique pour : %s")
-                WK:Print(string.format(msg, nm))
-            end)
-        end
         add(T("Lien wowhead") .. suffix, function() UI:ShowWowhead("quest", id, nm) end, multi and "" or T("Maj + clic"))
         add(T("Chercher un groupe (chat)") .. suffix, function() UI:QuestGroupMessage(id) end)
     end

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.34", date = "21/11/2026", restart = true,
+        changed = {
+            "Quêtes automatiques retirées (prendre et rendre en parlant au PNJ, choix de la récompense, achat sans clic, exceptions) : Polestar s'en charge. Le bouton « Pour tes quêtes » sous la fenêtre du marchand reste, sur clic.",
+            "Réglages des quêtes : un seul onglet ; le menu d'une quête n'a plus « Jamais d'automatique ».",
+        },
+    },
+    {
         version = "1.128.33", date = "21/11/2026",
         fixed = {
             "Alt + clic sur une quête du suivi (EllesmereUI ou celui du jeu) : le menu de la quête ne s'ouvrait pas. La quête est maintenant reconnue sous la souris, par son n° ou par son titre ; /wk suivi dit ce qui a été vu au dernier Alt + clic.",

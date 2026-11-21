@@ -273,8 +273,8 @@ function UI:RefreshRestock()
 end
 
 ---------------------------------------------------------------------------
--- Objets de quête vendus ici (Modules/QuestTrack.lua : BuyMissing) : bouton sous la fenêtre du marchand,
--- ou achat sans clic (réglage autoQuest.buy) jusqu'à autoQuest.buyCap ; jamais plus que ce qui manque
+-- Objets de quête vendus ici (Modules/QuestTrack.lua : BuyMissing) : bouton sous la fenêtre du marchand ;
+-- jamais plus que ce qui manque
 ---------------------------------------------------------------------------
 local function questPlan()
     local QT = WK.modules.QuestTrack
@@ -320,7 +320,6 @@ local function buildQuestBuy()
                 WK:FormatMoney(math.ceil(e.stock.price / math.max(1, e.stock.batch) * e.need)), 1, 1, 1, 1, 1, 1)
             GameTooltip:AddLine("   " .. table.concat(e.quests, ", "), 0.6, 0.6, 0.6)
         end
-        GameTooltip:AddLine(T("Achat sans clic : Quêtes > roue > Quêtes automatiques > Détails."), 0.6, 0.6, 0.6, true)
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -336,23 +335,13 @@ local function planCost(p)
     for _, e in ipairs(p) do total = total + math.ceil(e.stock.price / math.max(1, e.stock.batch) * e.need) end
     return total
 end
-function UI:RefreshQuestBuy(auto)
+function UI:RefreshQuestBuy()
     qbBtn = qbBtn or buildQuestBuy()
     if not (MerchantFrame and MerchantFrame:IsShown() and WK:FeatureOn("quests")) then qbBtn:Hide() return end
     local p = questPlan()
     qbBtn.plan = p
     if #p == 0 then qbBtn:Hide() return end
     local cost = planCost(p)
-    local AQ = WK.modules.AutoQuest
-    local ac = AQ and AQ:Config()
-    -- achat sans clic : réglage, mode des quêtes automatiques pas « manuel », Maj pas enfoncée, sous le plafond
-    if auto and ac and ac.buy and ac.mode ~= "manual" and not (ac.shift and IsShiftKeyDown and IsShiftKeyDown())
-        and cost <= (ac.buyCap or 10000) and cost <= ((GetMoney and GetMoney()) or 0) then
-        buyAll(p)
-        qbBtn:Hide()
-        C_Timer.After(1, function() UI:RefreshQuestBuy() end)
-        return
-    end
     qbBtn:SetLabel(string.format(T("Pour tes quêtes : %d objet(s), %s"), #p, UI:PlainMoney(cost)))
     qbBtn:SetWidth(qbBtn.label:GetStringWidth() + 32)
     qbBtn:ClearAllPoints()
@@ -365,7 +354,7 @@ end
 WK:On("MERCHANT_SHOW", function()
     C_Timer.After(0.3, function()
         UI:RefreshRestock()
-        UI:RefreshQuestBuy(true)
+        UI:RefreshQuestBuy()
     end)
 end)
 WK:On("MERCHANT_CLOSED", function() if qbBtn then qbBtn:Hide() end end)

@@ -35,7 +35,6 @@ local KEYS = {
     profHelp = { deLog = true },
     bagHelp = { dismissed = true },
     questTrack = { tracked = true },
-    autoQuest = { log = true }, -- mode, détails et exceptions ; le journal des dernières reste au compte
     classSpells = { prices = true, known = true, skip = true, told = true }, -- rappel, panneau, tout apprendre
     blessings = { chars = true }, -- barre et Salut (la répartition de chaque paladin reste à son perso)
     dataLoad = {}, -- données à la demande : préchargement, message

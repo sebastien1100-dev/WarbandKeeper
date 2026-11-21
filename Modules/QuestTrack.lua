@@ -13,7 +13,9 @@ function M:Config()
     local c = g.questTrack
     -- réglages de la carte de quête, de la flèche, de la barre « Quête » et des pastilles du suivi (retirés)
     c.hud, c.hudSolo, c.guide, c.actButtons, c.targetSkull, c.trackPins, c.tourBg = nil, nil, nil, nil, nil, nil, nil
-    -- quête suivie retirée (le journal du jeu le fait) : plus de suivi ni de réglage
+    -- quête suivie retirée (le journal du jeu le fait) : plus de suivi ni de réglage ; données des modules retirés
+    -- (tournée, guide de montée, quêtes automatiques : Polestar s'en charge) effacées
+    g.questPlan, g.levelGuide, g.autoQuest = nil, nil, nil
     c.tracked, c.followWatch = nil, nil
     -- zones de quête sur la carte et la minicarte, volet des quêtes (retirés)
     c.map, c.zoneStyle, c.miniStyle, c.heat, c.hideGame, c.panel, c.panelFold = nil, nil, nil, nil, nil, nil, nil
