@@ -408,6 +408,18 @@ end
 -- Marchand : réparation, vente des objets gris, achat des composants
 ---------------------------------------------------------------------------
 local merchantOpen = false
+local merchantAt = 0
+-- Marchand encore là : nos évènements, et la fenêtre du jeu affichée (passé le premier instant de l'ouverture)
+-- en secours si la fermeture n'a pas été signalée. Sans ça, la vente des gris pouvait continuer hors
+-- marchand : UseContainerItem aurait équipé une arme ou une armure grise.
+local function atMerchant()
+    if not merchantOpen then return false end
+    local mf = _G.MerchantFrame
+    local now = _G.GetTime and _G.GetTime() or 0
+    if mf and mf.IsShown and not mf:IsShown() and now - merchantAt > 1.5 then merchantOpen = false return false end
+    return true
+end
+M.AtMerchant = atMerchant
 -- Bilan du passage chez le marchand, écrit en une seule ligne.
 local shopLog = {}
 local function shopNote(text) table.insert(shopLog, text) end
@@ -481,7 +493,7 @@ function M:SellGrey(onDone)
     local stillGrey = M.StillGrey
     local i = 0
     local function step()
-        if not merchantOpen then return end
+        if not atMerchant() then return end
         for _ = 1, 10 do
             i = i + 1
             local it = list[i]
@@ -489,7 +501,7 @@ function M:SellGrey(onDone)
                 shopNote(string.format(T("gris vendus %s"), WK:FormatMoney(total)))
                 return onDone()
             end
-            if stillGrey(it) then
+            if atMerchant() and stillGrey(it) then
                 total = total + it.price
                 useContainerItem(it.bag, it.slot)
             end
@@ -629,6 +641,7 @@ end
 -- Fermer la fenêtre après une réparation (réglage) ; Maj enfoncée à l'ouverture : elle reste ouverte.
 WK:On("MERCHANT_SHOW", function()
     merchantOpen = true
+    merchantAt = _G.GetTime and _G.GetTime() or 0
     local keepOpen = IsShiftKeyDown and IsShiftKeyDown()
     C_Timer.After(0.2, function()
         if not merchantOpen then return end
@@ -647,6 +660,10 @@ WK:On("MERCHANT_SHOW", function()
     end)
 end)
 WK:On("MERCHANT_CLOSED", function() merchantOpen = false end)
+WK:On("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(kind)
+    local merchant = _G.Enum and _G.Enum.PlayerInteractionType and _G.Enum.PlayerInteractionType.Merchant or 5
+    if kind == merchant then merchantOpen = false end
+end)
 
 ---------------------------------------------------------------------------
 -- Groupe, duels, confort

@@ -324,6 +324,7 @@ end
 function M:Follow(v)
     self:Invalidate()
     self:Config().follow[WK:CharKey()] = v and true or nil
+    self.lastAuto = nil
     if v then self:Run(1) end
     self:Changed()
 end
@@ -336,8 +337,13 @@ function M:Tick()
     if G().target and G().target.kind ~= "qtrack" then return end
     -- seule la 1re étape compte ; objet, pierre de foyer et donjon se font soi-même
     local s = self:Steps()[1]
-    if s and s.auto and s.act and s.key ~= self.lastAuto then
-        self.lastAuto = s.key
+    -- même étape qu'au dernier lancement, mais plus rien n'est en cours (tournée finie, guidage arrivé) : elle
+    -- est relancée, au plus une fois par 30 s (avant, une clé stable « tour:zone » bloquait le guide après la
+    -- première tournée de la zone)
+    local now = _G.GetTime and _G.GetTime() or 0
+    local again = s and s.key == self.lastAuto and now - (self.lastAutoAt or 0) > 30
+    if s and s.auto and s.act and (s.key ~= self.lastAuto or again) then
+        self.lastAuto, self.lastAutoAt = s.key, now
         s.act()
         self:Changed()
     end
@@ -382,12 +388,30 @@ WK:On("QUEST_TURNED_IN", function(qid)
 end)
 WK:On("TRAINER_SHOW", function()
     if IsTradeskillTrainer and IsTradeskillTrainer() then return end
-    M:Config().trainer[WK:CharKey()] = level()
-    M:Changed()
+    -- maître de classe seulement (un maître d'armes, de familiers ou de monte cachait sinon l'étape « Maître de
+    -- classe » et le nœud de la tournée) ; un peu plus tard : la liste du maître arrive après l'ouverture
+    _G.C_Timer.After(0.5, function()
+        local CS = WK.modules.ClassSpells
+        if CS and CS.IsClassTrainer and not CS.IsClassTrainer() then return end
+        M:Config().trainer[WK:CharKey()] = level()
+        if P() and P().Invalidate then P():Invalidate() end
+        M:Invalidate()
+        M:Changed()
+    end)
 end)
 WK:On("PLAYER_LEVEL_UP", function() soon(4) end)
 WK:On("ZONE_CHANGED_NEW_AREA", function() soon(3) end)
-WK:On("QUEST_LOG_UPDATE", function() if M:Following() then soon(3) end end)
+-- journal changé pour de vrai (quêtes, prêtes, avancée) seulement : cet évènement arrive sans arrêt en combat
+-- et au butin, et refaisait le guide (toutes les zones + la tournée) environ chaque seconde
+local lastLogSig
+WK:On("QUEST_LOG_UPDATE", function()
+    if not M:Following() then return end
+    local QT = WK.modules.QuestTrack
+    local sig = QT and QT.LogSignature and QT.LogSignature()
+    if sig and sig == lastLogSig then return end
+    lastLogSig = sig
+    soon(3)
+end)
 -- objet qui démarre une quête, ramassé : rappel une fois par objet
 WK:On("BAG_UPDATE_DELAYED", function()
     -- base des objets qui démarrent une quête : dans le dossier chargé à la demande, pas chargé pour ce rappel
@@ -411,6 +435,7 @@ WK:On("PLAYER_LOGIN", function()
         oldFinish = QP.Finish
         QP.Finish = function(self, ...)
             oldFinish(self, ...)
+            M.lastAuto = nil -- la suite peut relancer la même étape (tournée de la zone)
             soon(4)
         end
     end

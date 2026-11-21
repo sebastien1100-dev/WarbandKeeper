@@ -128,7 +128,7 @@ function M:SeenToday(itemID, low, qty)
     d.items[itemID] = e
     local day = math.floor(time() / 86400)
     hput(e, day, low, qty, self:Config().keepDays or HISTORY_DAYS) -- élagué comme l'historique du scan
-    if not e.p then e.p, e.t = low, time() end
+    -- (jamais le cours e.p : il ne vient que d'un scan, sans appâts ; une recherche ne compte que pour la courbe)
 end
 -- Courbe : { { day, price, qty } } des 14 derniers jours, du plus ancien au plus récent
 function M:History(itemID)

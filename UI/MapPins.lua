@@ -226,7 +226,8 @@ end
 function UI:RefreshGuidePinLabel()
     local G = WK.modules.Guide
     local t = G.target
-    if not (t and targetPin) then return end
+    -- épingle pas posée sur cette carte (continent, zone parente) : le losange du jeu reste visible
+    if not (t and targetPin and targetPin:IsShown()) then return end
     if G:Config().mapPin then gamePinAlpha(0) end -- le jeu peut réafficher son losange en rafraîchissant la carte
     local d = UI.GuideDistance and UI:GuideDistance(t)
     -- trois lignes : nom, ce que c'est (« Maître des gryphons »), distance

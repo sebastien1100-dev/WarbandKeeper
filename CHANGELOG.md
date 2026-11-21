@@ -71,6 +71,22 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.24 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Points /way : une file interrompue (retour au corps, détour chez un marchand…) reprend d'elle-même ensuite ; avant, plus rien ne la guidait.
+- Guidage : rien ne reprend tant que tu es fantôme (le retour au corps revient) ; le guidage gardé avant un /way n'est plus écrasé par le retour au corps ; sur la carte du continent, le repère du jeu ne disparaît plus au bout d'une seconde.
+- Guide de montée : il ne reste plus bloqué après la fin d'une tournée de zone ; seule la visite d'un maître de classe compte pour l'étape « Maître de classe » (plus un maître d'armes ou de familiers) ; il n'est plus recalculé à chaque mise à jour du journal en combat.
+- Tournée : passer une étape « faire » ne retire plus que ses camps (avant, tous ceux de la quête, et son rendu bloquait) ; les étapes passées sont oubliées à la fin de la tournée.
+- Chaînes apprises : la chaîne « débloquée par un rendu » est bien apprise chez le PNJ qui reçoit le rendu.
+- Quêtes automatiques : les journalières et hebdomadaires ne sont plus prises au dialogue non plus, avec un test de fréquence fiable sur tous les clients.
+- Hôtel des ventes : une recherche ne fait plus d'un appât à 1 pc le cours de l'objet ; seul un scan donne le cours, et la courbe du jour ne garde que le prix sans appâts.
+- Vente des gris : arrêtée dès que le marchand n'est plus là, même si sa fermeture n'a pas été signalée (un objet gris aurait pu être équipé).
+- Objets verrouillés : le marchand n'est plus cru fermé à l'instant de son ouverture (rachat et caches restaient coupés).
+- Paladins : un réglage remis à sa valeur d'avant part bien aux autres ; l'écoute des effets ne concerne plus que le paladin et son groupe.
+
 ## v1.128.23 — 21/11/2026
 
 _Un /reload suffit._

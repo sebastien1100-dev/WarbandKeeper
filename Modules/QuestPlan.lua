@@ -151,6 +151,10 @@ function M:Invalidate() memo = {}; if built then built.key, built.tour = nil, ni
 local skipped = {}
 M.skipped = skipped
 local function isSkipped(kind, qid) return skipped[kind .. ":" .. tostring(qid)] == true end
+local function campKey(qid, map, x, y)
+    return string.format("camp:%s:%s:%d:%d", tostring(qid), tostring(map),
+        math.floor((x or 0) * 200), math.floor((y or 0) * 200))
+end
 function M:Coins()
     local now = GetTime and GetTime() or time()
     if memo.coins and now - memo.at < 2 then return memo.coins, memo.zone, memo.list end
@@ -389,9 +393,14 @@ function M:BuildNow(coins, skip)
         if pick and e.predicted then pick.preds[e.id] = true end
         -- A : une étape « faire » par camp (plus au milieu de camps éloignés), regroupée avec les camps voisins
         local dos = {}
+        local allCampsSkipped = false
         if not e.complete and e.camps and #e.camps > 0 and not isSkipped("do", e.id) then
             local per = objTime(e.id, e.inLog) / #e.camps
+            local kept = 0
             for _, c in ipairs(e.camps) do
+              -- camp passé à la main : seul ce camp est laissé (avant, toute la quête), les autres restent
+              if not skipped[campKey(e.id, c.camp.map or zone, c.camp.x, c.camp.y)] then
+                kept = kept + 1
                 local p = point(c.camp.map or zone, c.camp.x, c.camp.y)
                 local dn = node("do", p, e.id, depth)
                 dn.secs = (dn.secs or 0) + per
@@ -402,7 +411,10 @@ function M:BuildNow(coins, skip)
                 if pick then dn.after[pick] = true end
                 if e.predicted then dn.preds[e.id] = true end
                 table.insert(dos, dn)
+              end
             end
+            -- tous ses camps passés et quête pas finie : son rendu attendrait pour rien, il est laissé aussi
+            allCampsSkipped = kept == 0
         end
         -- objets à acheter : une étape chez le marchand le plus proche (A), sinon une note sur le rendu (B)
         local buys, noVendor = {}, {}
@@ -423,7 +435,7 @@ function M:BuildNow(coins, skip)
                 table.insert(noVendor, it)
             end
         end
-        if e.turnIn and not isSkipped("turn", e.id) then
+        if e.turnIn and not isSkipped("turn", e.id) and not allCampsSkipped then
             local tn = node("turn", e.turnIn, e.id, depth, e.title)
             for _, dn in ipairs(dos) do tn.after[dn] = true end
             for _, bn in ipairs(buys) do tn.after[bn] = true end
@@ -894,6 +906,7 @@ function M:ClearPicks()
 end
 
 function M:Stop()
+    for k in pairs(skipped) do skipped[k] = nil end -- étapes passées oubliées avec la tournée
     self:Config().tour[WK:CharKey()] = nil
     self:Config().allZone = nil
     self:Config().planZone = nil
@@ -923,6 +936,13 @@ end
 -- ligne passait l'étape en cours.)
 local function noteSkipped(s)
     if type(s) ~= "table" or not s.kind then return end
+    if s.kind == "do" and s.camps then
+        -- étape « faire » : seulement ses camps (une quête a souvent d'autres camps, ailleurs dans la tournée)
+        for q, list in pairs(s.camps) do
+            for _, c in ipairs(list) do skipped[campKey(q, c.map, c.x, c.y)] = true end
+        end
+        return
+    end
     for _, q in ipairs(s.qids or {}) do skipped[s.kind .. ":" .. tostring(q)] = true end
     if s.kind == "trainer" then skipped["trainer:" .. tostring(_G.UnitLevel and _G.UnitLevel("player") or 0)] = true end
 end
@@ -1314,6 +1334,7 @@ function M:Retarget()
 end
 
 function M:Finish()
+    for k in pairs(skipped) do skipped[k] = nil end
     local t = self:Tour()
     if not t then return end
     self:Config().allZone = nil

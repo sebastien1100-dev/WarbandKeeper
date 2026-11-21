@@ -98,6 +98,11 @@ local function startGuide(c)
                 e = { (c.x or 0) * 100, (c.y or 0) * 100, 0, nil, nil, T("Ton corps"), T("Ton corps"), T("Retour au corps") } }
     g:Start(t, "Retour au corps", "corpse")
 end
+-- fantôme et guidage rendu ailleurs (fin d'un /way posé en fantôme) : le retour au corps est relancé
+function UI.CorpseRestart()
+    started = nil
+    UI:RefreshCorpse()
+end
 local function stopGuide()
     local g = G()
     if not (prevTarget or started or (g.target and g.target.kind == "corpse")) then return end

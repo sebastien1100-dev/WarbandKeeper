@@ -198,7 +198,12 @@ function M:Go()
     local w = self:List()[1]
     if not w then return end
     local g = G()
-    if g.target and g.target.kind ~= "way" then prevTarget = g:Keep(g.target) end
+    -- guidage d'avant gardé seulement si on a mieux (un retour au corps ou rien de gardable n'écrase plus celui
+    -- gardé avant le premier /way)
+    if g.target and g.target.kind ~= "way" then
+        local kept = g:Keep(g.target)
+        if kept or not prevTarget then prevTarget = kept or prevTarget end
+    end
     local t = { map = w.map, x = w.x, y = w.y,
         e = { w.x * 100, w.y * 100, 0, nil, nil, label(w), label(w), self:Role(w) } }
     t.cont, t.wx, t.wy = g.ToWorld(w.map, w.x, w.y)

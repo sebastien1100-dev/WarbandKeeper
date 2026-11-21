@@ -636,7 +636,11 @@ function M:NoteOffered(npc, offered, titles)
             local was = qs.notOffered[q.id]
             local last = M.lastTurnIn
             -- un seul rendu depuis la note (sinon la quête d'avant retenue, le dernier rendu, pouvait être autre)
-            local oneTurnIn = was and ((qs.doneN or 0) - (was.n or 0)) == 1
+            -- compteur de rendus de la séance, monté tout de suite au rendu (doneN n'est relu qu'une seconde après :
+            -- au PNJ qui reçoit le rendu, la chaîne n'était jamais apprise) ; ancienne note : doneN
+            local oneTurnIn
+            if was and was.tn and was.ts == M.SESSION then oneTurnIn = (M.turnIns or 0) - was.tn == 1
+            else oneTurnIn = was and ((qs.doneN or 0) - (was.n or 0)) == 1 end
             if was and was.lvl == lvl and oneTurnIn and last and last.at >= (was.at or 0) and last.id ~= q.id then
                 local tok = WK:CharKey() .. ":" .. tostring(last.at) .. ":" .. tostring(last.id)
                 self:LearnChain(q.id, last.id, "unlock", tok)
@@ -650,7 +654,8 @@ function M:NoteOffered(npc, offered, titles)
             local green = (_G.GetQuestGreenRange and _G.GetQuestGreenRange()) or 8
             local grey = (q.lvl or 0) > 0 and (q.lvl or 0) < lvl - green
             if not grey and self:State(q, c) == "avail" then
-                qs.notOffered[q.id] = { lvl = lvl, n = qs.doneN or 0, at = _G.time() }
+                qs.notOffered[q.id] = { lvl = lvl, n = qs.doneN or 0, at = _G.time(),
+                    tn = M.turnIns or 0, ts = M.SESSION }
                 if not was or was.lvl ~= lvl or was.n ~= (qs.doneN or 0) then table.insert(newly, q) end
             end
         end
@@ -749,7 +754,10 @@ end
 -- liste des quêtes que ce PNJ proposait déjà avant le rendu (une quête déjà proposée n'en est pas la suite)
 local rewardNpc
 WK:On("QUEST_COMPLETE", function() rewardNpc = npcNow() end)
+-- (séance en cours : le compteur de rendus ne vaut que pour elle)
+M.SESSION = (_G.time and _G.time() or 0) .. ":" .. math.random(1, 1000000)
 WK:On("QUEST_TURNED_IN", function(qid)
+    M.turnIns = (M.turnIns or 0) + 1
     local before = rewardNpc and offeredBy[rewardNpc]
     local fresh = before and (_G.GetTime and _G.GetTime() or 0) - before.at < 300
     M.lastTurnIn = { id = qid, at = _G.time(), t = _G.GetTime and _G.GetTime() or 0, npc = rewardNpc,

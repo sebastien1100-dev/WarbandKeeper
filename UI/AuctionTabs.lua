@@ -111,10 +111,19 @@ local function onResults(id)
     if not id then return end
     pcall(readResults, id)
     -- le plus bas vu compte aussi pour la courbe des prix du jour
+    -- prix « sans appâts » des autres vendeurs (mêmes paliers que le scan, tes enchères à part) : avant, le plus
+    -- bas brut, appât à 1 pc compris, devenait le cours du jour et faussait garde-fous et moyenne 7 j
     local r = results[id]
     if r then
-        local low, qty = nil, 0
-        for _, row in ipairs(r.rows) do low = low and math.min(low, row.unit) or row.unit; qty = qty + row.qty end
+        local tiers, qty = {}, 0
+        for _, row in ipairs(r.rows) do
+            if not row.mine and row.unit then
+                qty = qty + (row.qty or 1)
+                tiers[#tiers + 1] = { row.unit, row.qty or 1 }
+            end
+        end
+        table.sort(tiers, function(a, b) return a[1] < b[1] end)
+        local low = S.RobustTiers and S.RobustTiers(tiers, qty)
         if low then pcall(S.SeenToday, S, id, low, qty) end
     end
     if pending == id then pending = nil end

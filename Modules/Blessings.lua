@@ -166,12 +166,18 @@ local function myEntry()
 end
 
 -- les paladins qui ne sont plus dans le groupe sont oubliés
+local scannedAt, auraDirty = {}, {} -- relevés des effets par membre (M:Left plus bas)
 local function prune()
     local present = {}
     for _, u in ipairs(groupUnits()) do
         if UnitExists(u) then local n = fullName(u); if n then present[n] = select(2, UnitClass(u)) end end
     end
     for name, e in pairs(pallys) do if not present[name] and not e.demo then pallys[name] = nil end end
+    -- relevés des effets : seulement les membres présents (les tables ne grossissent plus sur toute la séance)
+    for key in pairs(scannedAt) do
+        local n = key:match("^(.*):%d+$")
+        if n and not present[n] then scannedAt[key] = nil; auraDirty[n] = nil end
+    end
     myEntry()
     return present
 end
@@ -318,9 +324,12 @@ local function scanLeft(unit, b)
 end
 -- membre relu seulement si ses effets ont changé (UNIT_AURA) ou au plus toutes les 10 s : avant, jusqu'à
 -- 40 membres × 2 bénédictions × 40 effets relus chaque seconde hors combat
-local scannedAt, auraDirty = {}, {}
+-- paladin seulement, et membres du groupe seulement (pas les plaques de nom ni la cible) : avant, chaque
+-- effet de chaque unité vue passait ici, pour toutes les classes
 WK:On("UNIT_AURA", function(unit)
-    local n = type(unit) == "string" and fullName(unit)
+    if type(unit) ~= "string" or not (unit == "player" or unit:find("^party") or unit:find("^raid")) then return end
+    if not M:On() then return end
+    local n = fullName(unit)
     if n then auraDirty[n] = now() end
 end)
 function M:Left(unit, b)
@@ -441,15 +450,33 @@ local function pump()
     end
     C_Timer.After(0.25, pump)
 end
+local function msgKind(msg)
+    local cmd = msg:match("^(%S+)")
+    if not cmd or cmd == "NASSIGN" or cmd == "CLEAR" then return nil end -- jamais sautés
+    if cmd == "ASSIGN" then
+        local n, ci = msg:match("^ASSIGN (.+) (%d+) %d+$")
+        return "ASSIGN:" .. tostring(n) .. ":" .. tostring(ci)
+    end
+    if cmd == "PASSIGN" then return "PASSIGN:" .. tostring(msg:match("^PASSIGN (.+)@")) end
+    if cmd == "MASSIGN" or cmd == "AASSIGN" then return cmd .. ":" .. tostring(msg:match("^%S+ (.+) %d+$")) end
+    return cmd -- SELF, ASELF, FREEASSIGN, REQ, HI…
+end
 local function send(msg, target, prefix)
     if not channel() then return end
     -- un même message au groupe n'est pas renvoyé avant 15 s (avant, seul le dernier envoyé était comparé : un
     -- « SELF » identique repartait à chaque changement du groupe, en plus du « HI »). Un changement de répartition
     -- donne un autre message et part tout de suite ; une réponse chuchotée part toujours
     if not target then
-        local t = _G.GetTime and _G.GetTime() or 0
-        if lastMsg[msg] and t - lastMsg[msg] < 15 then return end
-        lastMsg[msg] = t
+        -- par genre de message (commande + nom visé, + classe pour ASSIGN) : seul un message identique au DERNIER de
+        -- son genre est sauté (avant : identique à n'importe quel message des 15 s, un retour A, B, A perdait le
+        -- dernier A et PallyPower gardait B)
+        local kind = msgKind(msg)
+        if kind then
+            local t = _G.GetTime and _G.GetTime() or 0
+            local last = lastMsg[kind]
+            if last and last.msg == msg and t - last.at < 15 then return end
+            lastMsg[kind] = { msg = msg, at = t }
+        end
     end
     if #queue > 40 then return end
     table.insert(queue, { msg = msg, target = target, prefix = prefix or PREFIX })

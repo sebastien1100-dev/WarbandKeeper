@@ -219,8 +219,14 @@ function M.Keep(_, t)
     return t
 end
 -- Rend un guidage gardé par Keep (ou, sans rien de gardé, laisse la tournée ou la quête suivie reprendre)
+local function ghost() return _G.UnitIsGhost and _G.UnitIsGhost("player") end
 function M:Restore(kept)
     if self.target and self.target.kind ~= "qtour" and self.target.kind ~= "qtrack" then return end
+    -- fantôme : rien ne reprend, le retour au corps revient (UI/CorpseBanner) ; stopGuide rendra le reste
+    if ghost() then
+        if WK.UI.CorpseRestart then WK.UI.CorpseRestart() end
+        return
+    end
     if kept and not kept.resume then
         if self.target then self.target = nil end
         self:Start(kept, kept.reason, kept.kind)
@@ -229,7 +235,10 @@ function M:Restore(kept)
     end
 end
 function M:Resume()
-    if self.target then return end
+    if self.target or ghost() then return end
+    -- file /way pas finie (interrompue par un détour ou un retour au corps) : elle repasse en premier
+    local W = WK.modules.Waypoints
+    if W and W.List and W:List()[1] and W.Go then W:Go() return end
     local P = WK.modules.QuestPlan
     if P and P.Active and P:Active() then
         P.lastKey = nil

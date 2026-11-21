@@ -188,10 +188,26 @@ WK:On("GOSSIP_SHOW", function()
     end
     local okB, avail = pcall(G.GetAvailableQuests)
     for _, q in ipairs(okB and avail or {}) do
-        if not q.repeatable and M:WantPick(q.questID, q.questLevel) then return G.SelectAvailableQuest(q.questID) end
+        if not M.IsRepeatableOffer(q.questID, q.frequency, q.repeatable) and M:WantPick(q.questID, q.questLevel) then
+            return G.SelectAvailableQuest(q.questID)
+        end
     end
     if sellsNeeded() then openShop() end
 end)
+-- Quête répétable proposée (journalière, hebdomadaire, répétable) : valeurs du jeu comparées à ses propres
+-- constantes (Enum.QuestFrequency ou LE_QUEST_FREQUENCY_*, dont la valeur « normale » change selon les clients),
+-- puis la liste de la base ; jamais prise en mode auto, ni au dialogue ni à l'accueil
+function M.IsRepeatableOffer(qid, freq, rep)
+    if rep == true then return true end
+    if type(freq) == "number" then
+        local E = _G.Enum and _G.Enum.QuestFrequency
+        local daily = (E and E.Daily) or _G.LE_QUEST_FREQUENCY_DAILY
+        local weekly = (E and E.Weekly) or _G.LE_QUEST_FREQUENCY_WEEKLY
+        if (daily and freq == daily) or (weekly and freq == weekly) then return true end
+    end
+    local Qs = WK.modules.Quests
+    return qid and Qs and Qs.IsRepeatable and Qs:IsRepeatable(qid) and true or false
+end
 WK:On("QUEST_GREETING", function()
     if suspended() then return end
     for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
@@ -207,10 +223,7 @@ WK:On("QUEST_GREETING", function()
             local _, f, r, _, id = GetAvailableQuestInfo(i)
             qid, freq, rep = id, f, r
         end
-        local Qs = WK.modules.Quests
-        local repeatable = rep == true or (type(freq) == "number" and freq > 0) -- 1 journalière, 2 hebdo
-            or (qid and Qs and Qs.IsRepeatable and Qs:IsRepeatable(qid))
-        if not repeatable and M:WantPick(qid) then return SelectAvailableQuest(i) end
+        if not M.IsRepeatableOffer(qid, freq, rep) and M:WantPick(qid) then return SelectAvailableQuest(i) end
     end
 end)
 WK:On("QUEST_DETAIL", function()

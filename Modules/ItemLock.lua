@@ -364,6 +364,7 @@ end
 -- vente de cette visite).
 WK:On("MERCHANT_SHOW", function()
     merchantOpen = true; snapped = false
+    M.merchantAt = _G.GetTime and _G.GetTime() or 0
     snapshotBuyback()
     if next(before) then snapped = true
     else
@@ -394,7 +395,11 @@ WK:On("BAG_UPDATE_DELAYED", function() if merchantOpen then C_Timer.After(0.2, c
 -- ouvert d'après nos évènements, et la fenêtre du marchand du jeu encore affichée (secours si la fermeture a
 -- été manquée : caches, rachat et nettoyage des verrous ne restent plus bloqués)
 function M.MerchantOpen(_)
-    if merchantOpen and _G.MerchantFrame and _G.MerchantFrame.IsShown and not _G.MerchantFrame:IsShown() then
+    -- (passé 1,5 s après l'ouverture seulement : juste après MERCHANT_SHOW, la fenêtre du jeu n'est pas toujours
+    -- encore affichée, ce qui coupait rachat et caches pour toute la visite)
+    local mf = _G.MerchantFrame
+    local now = _G.GetTime and _G.GetTime() or 0
+    if merchantOpen and mf and mf.IsShown and not mf:IsShown() and now - (M.merchantAt or 0) > 1.5 then
         closeMerchant()
     end
     return merchantOpen
