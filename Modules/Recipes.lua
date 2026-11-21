@@ -58,6 +58,10 @@ end
 -- Ancien client (GetTradeSkillInfo).
 local function scanClassic()
     if not GetNumTradeSkills then return nil end
+    -- métier d'un autre joueur ouvert par un lien : ses recettes ne sont pas les tiennes (comme scanModern)
+    if (_G.IsTradeSkillLinked and _G.IsTradeSkillLinked()) or (_G.IsTradeSkillGuild and _G.IsTradeSkillGuild()) then
+        return nil
+    end
     local prof = GetTradeSkillLine and GetTradeSkillLine() or nil
     local out = {}
     -- en-tête replié ou filtre actif (« J'ai les composants », sous-classe, emplacement) : liste incomplète

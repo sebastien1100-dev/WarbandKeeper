@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.15", date = "21/11/2026",
+        fixed = {
+            "Objets verrouillés : un marchand fermé pendant un combat ne laisse plus son cache sur les cases ; une potion ou un objet de quête verrouillé redevient utilisable tout de suite, sans attendre la fin du combat. Glisser un objet seulement cher dit « Vente chère » au lieu de « Verrouillé ».",
+            "Métiers : ouvrir le métier d'un autre joueur (lien dans le chat) n'enregistre plus ses recettes comme les tiennes, aussi sur l'ancienne fenêtre des métiers.",
+        },
+    },
+    {
         version = "1.128.14", date = "21/11/2026",
         changed = {
             "Plus léger en raid avec des paladins : les messages de PallyPower sont regroupés (une seule nouvelle répartition toutes les 0,3 s), et un message inconnu ne relance plus rien.",

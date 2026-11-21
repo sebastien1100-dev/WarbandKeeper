@@ -120,6 +120,17 @@ local function blockMsg(id)
     if UIErrorsFrame then local r, g, b = UI:Accent(); UIErrorsFrame:AddMessage(msg, r, g, b) end
 end
 
+-- Caches du marchand : tous retenus, pour être retirés à la fermeture du marchand même en combat ou sacs
+-- fermés. Ce sont des boutons ordinaires (pas protégés) : les cacher est permis en combat ; on ne les montre
+-- jamais en combat. Avant, un marchand fermé en combat laissait le cache sur la case (potion, objet de
+-- quête utilisable bloqués jusqu'à la fin du combat).
+local blocks = setmetatable({}, { __mode = "k" })
+local function hideBlocks()
+    for b in pairs(blocks) do if b:IsShown() then b:Hide() end end
+end
+UI.ItemLockHideBlocks = hideBlocks
+WK:On("MERCHANT_CLOSED", hideBlocks)
+
 local function decorate(btn)
     if btn.wkLock then return btn.wkLock end
     if inCombat() then return nil end
@@ -172,7 +183,15 @@ local function decorate(btn)
     end)
     o.block:SetScript("OnDragStart", function()
         local id = itemAt(bagSlot(btn))
-        if id then blockMsg(id) end
+        if not id then return end
+        if L:IsLocked(id) then blockMsg(id) return end
+        -- vente seulement chère (pas verrouillée) : le dire, pas « Verrouillé »
+        local ef = _G.UIErrorsFrame
+        if ef then
+            local r, g, b = UI:Accent()
+            ef:AddMessage(string.format(T("Vente chère : clic droit sur %s pour confirmer la vente."),
+                WK.GetItemInfo(id) or ("#" .. id)), r, g, b)
+        end
     end)
     o.block:SetScript("OnEnter", function(s)
         local bag, slot = bagSlot(btn)
@@ -182,6 +201,7 @@ local function decorate(btn)
     end)
     o.block:SetScript("OnLeave", function() GameTooltip:Hide() end)
     o.block:Hide()
+    blocks[o.block] = true
     -- Alt + clic sur la case (hors marchand) : verrouiller / déverrouiller
     -- (les sacs de WoW Forever ne passent pas toujours par OnClick : GLOBAL_MOUSE_DOWN plus bas fait le même travail ;
     -- OnClick ne sert que de secours, pour un appui que GLOBAL_MOUSE_DOWN n'a pas déjà traité)
@@ -229,9 +249,11 @@ function paint(btn)
     o.bisRing:SetShown(mark and true or false); o.bisBadge:SetShown(mark and true or false); o.bisStar:SetShown(mark and true or false)
     if mark == "mine" then o.bisBadge:SetVertexColor(C.gold[1], C.gold[2], C.gold[3], 1)
     elseif mark then o.bisBadge:SetVertexColor(C.silver[1], C.silver[2], C.silver[3], 1) end
+    local guard = L:MerchantOpen() and id ~= nil and (why ~= nil or L:Expensive(id))
     if not inCombat() then
-        local guard = L:MerchantOpen() and id ~= nil and (why ~= nil or L:Expensive(id))
         o.block:SetShown(guard and true or false)
+    elseif not guard and o.block:IsShown() then
+        o.block:Hide() -- en combat : jamais montré, mais retiré s'il n'a plus lieu d'être
     end
 end
 
