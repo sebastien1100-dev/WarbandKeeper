@@ -240,6 +240,37 @@ def icon_notes():
     save(img, "notes", 64)
 
 
+def icon_copy():
+    """Copier : deux feuilles décalées."""
+    img, d, s = canvas(64)
+    rrect(d, s, 0.34, 0.12, 0.86, 0.68, 0.08, SW)
+    rrect(d, s, 0.14, 0.32, 0.66, 0.88, 0.08)
+    rrect(d, s, 0.14 + SW, 0.32 + SW, 0.66 - SW, 0.88 - SW, 0.04)
+    save(img, "copy", 64)
+
+
+def icon_chat():
+    """Mettre dans le chat : bulle de discussion."""
+    img, d, s = canvas(64)
+    rrect(d, s, 0.1, 0.16, 0.9, 0.7, 0.16, SW)
+    d.polygon([(P(0.26, s), P(0.66, s)), (P(0.42, s), P(0.66, s)), (P(0.22, s), P(0.88, s))], fill=W)
+    for x in (0.32, 0.5, 0.68):
+        circle(d, s, x, 0.43, 0.055)
+    save(img, "chat", 64)
+
+
+def icon_globe():
+    """Langue : globe (méridiens et parallèles)."""
+    img, d, s = canvas(64)
+    circle(d, s, 0.5, 0.5, 0.38, SW)
+    d.ellipse([P(0.33, s), P(0.12, s), P(0.67, s), P(0.88, s)], outline=W, width=int(SW * 0.8 * s))
+    line(d, s, [(0.14, 0.5), (0.86, 0.5)], SW * 0.8)
+    line(d, s, [(0.5, 0.12), (0.5, 0.88)], SW * 0.8)
+    line(d, s, [(0.2, 0.32), (0.8, 0.32)], SW * 0.7)
+    line(d, s, [(0.2, 0.68), (0.8, 0.68)], SW * 0.7)
+    save(img, "globe", 64)
+
+
 def icon_chevron():
     img, d, s = canvas(64)
     line(d, s, [(0.26, 0.38), (0.5, 0.62), (0.74, 0.38)], SW * 1.1)
@@ -853,6 +884,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_compass, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw, icon_shop]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_compass, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw, icon_shop, icon_copy, icon_chat, icon_globe]:
         fn()
     print("OK")

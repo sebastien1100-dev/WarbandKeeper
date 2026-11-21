@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.123.1 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Fenêtre du lien wowhead : bouton « Copier » (icône) à côté du lien, qui le sélectionne et dit quoi faire (le jeu ne laisse pas un addon écrire dans le presse-papiers : il reste Ctrl+C). Les boutons « Version anglaise / française » et « Mettre dans le chat » ont maintenant leur icône (globe, bulle).
+
 ## v1.123.0 — 21/11/2026
 
 _Un /reload suffit._

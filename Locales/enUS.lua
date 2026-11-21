@@ -4518,4 +4518,7 @@ WK.Locales.enUS.text = {
     ["Icônes du jeu"] = "Game icons",
     ["Pastilles"] = "Badges",
     ["Étape : n° et couleur de l'étape de la tournée. Avancement : anneau rouge, orange ou vert."] = "Step: number and colour of the route step. Progress: red, orange or green ring.",
+    ["Copier le lien"] = "Copy the link",
+    ["Lien copié : colle-le dans ton navigateur"] = "Link copied: paste it in your browser",
+    ["Lien sélectionné : Ctrl+C, puis colle-le dans ton navigateur"] = "Link selected: Ctrl+C, then paste it in your browser",
 }

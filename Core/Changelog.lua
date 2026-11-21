@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.1", date = "21/11/2026", restart = true,
+        changed = {
+            "Fenêtre du lien wowhead : bouton « Copier » (icône) à côté du lien, qui le sélectionne et dit quoi faire (le jeu ne laisse pas un addon écrire dans le presse-papiers : il reste Ctrl+C). Les boutons « Version anglaise / française » et « Mettre dans le chat » ont maintenant leur icône (globe, bulle).",
+        },
+    },
+    {
         version = "1.123.0", date = "21/11/2026",
         added = {
             "Suivi des quêtes du jeu : les icônes rondes à gauche de chaque quête sont remplacées par les pastilles de la tournée, à la couleur de la prochaine étape qui la concerne (accent à faire, vert à rendre) avec son numéro ; gris hors tournée, « ? » vert si prête à rendre.",
