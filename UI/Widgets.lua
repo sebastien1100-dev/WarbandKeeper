@@ -212,7 +212,9 @@ function UI:Progress(parent, height)
             self.fillFrame:SetWidth(math.max(height, w * math.min(self.value, 1)))
         end
         -- dégradé d'accent (Options > Apparence) : 2e couleur sur les jauges à la couleur de l'accent
-        local r2, g2, b2 = (not self.color) and UI:Accent2()
+        -- (pas de « x and UI:Accent2() » : « and » ne garde que la 1re valeur, g2 et b2 restaient vides)
+        local r2, g2, b2
+        if not self.color then r2, g2, b2 = UI:Accent2() end
         -- Cuir et or : jauges en dégradé doré (accent vers accent assombri)
         if not r2 and not self.color and UI.skin == "leather" then
             local r, g, b = UI:Accent(); r2, g2, b2 = r * 0.62, g * 0.62, b * 0.62

@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.52 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Options > Apparence : choisir un style qui met les jauges en dégradé (Héraldique…) déclenchait une erreur Lua (« SetColorTexture ») ; la 2e couleur du dégradé était incomplète.
+
 ## v1.128.51 — 21/11/2026
 
 _Un /reload suffit._

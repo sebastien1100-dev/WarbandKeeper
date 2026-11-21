@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.52", date = "21/11/2026",
+        fixed = {
+            "Options > Apparence : choisir un style qui met les jauges en dégradé (Héraldique…) déclenchait une erreur Lua (« SetColorTexture ») ; la 2e couleur du dégradé était incomplète.",
+        },
+    },
+    {
         version = "1.128.51", date = "21/11/2026",
         fixed = {
             "Quêtes, liste d'une zone : une quête de groupe affichait « GROUPE » devant le titre et encore « groupe » sur la 2e ligne ; il n'apparaît plus qu'une fois, devant le titre.",
