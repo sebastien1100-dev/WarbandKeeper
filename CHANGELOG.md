@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.45 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Feu de camp : l'encart « Feu de camp à proximité » faisait doublon avec l'icône de flamme ; il est coupé, seule la flamme reste (clic pour s'asseoir). Il se remet dans QoL > Feu de camp, « Encart près d'un feu de camp ».
+
 ## v1.128.44 — 21/11/2026
 
 _Un /reload suffit._

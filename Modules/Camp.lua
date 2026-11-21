@@ -303,7 +303,7 @@ function M:GuideToBag()
     G:Start(t, "Sac de couchage douillet", "camp")
 end
 
-local DEFAULTS = { enabled = true, icon = true, renewAt = 10, sound = false, doneSecs = 8,
+local DEFAULTS = { enabled = false, icon = true, renewAt = 10, sound = false, doneSecs = 8,
     kit = true, kitAlways = false, chips = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }
@@ -314,6 +314,9 @@ function M:Config()
     local q = WK.modules.QoL:Config()
     q.camp = q.camp or {}
     for k, v in pairs(DEFAULTS) do if q.camp[k] == nil then q.camp[k] = v end end
+    -- l'encart « Feu de camp à proximité » faisait doublon avec l'icône de flamme : coupé une fois pour tous
+    -- (réactivable dans QoL > Feu de camp)
+    if not q.camp.cardOff then q.camp.cardOff = true; q.camp.enabled = false end
     return q.camp
 end
 local function seen()

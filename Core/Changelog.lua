@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.45", date = "21/11/2026",
+        changed = {
+            "Feu de camp : l'encart « Feu de camp à proximité » faisait doublon avec l'icône de flamme ; il est coupé, seule la flamme reste (clic pour s'asseoir). Il se remet dans QoL > Feu de camp, « Encart près d'un feu de camp ».",
+        },
+    },
+    {
         version = "1.128.44", date = "21/11/2026",
         fixed = {
             "Fiche, onglet Armes : les armes apprises n'étaient pas reconnues (« comme si rien n'était appris ») : le jeu nomme « Haches », « Épées », « Masses »… les armes à une main, et une rubrique repliée dans la fenêtre des compétences cachait ses lignes. Une arme connue seulement par le grimoire est marquée « apprise ». « /wk armes » dit ce qui a été lu.",
