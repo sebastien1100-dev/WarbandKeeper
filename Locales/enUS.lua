@@ -4275,4 +4275,11 @@ WK.Locales.enUS.text = {
         "Shows within this distance of the ship stop (55 m: on the pier, 30 m: at its end). /wk bateau: distances.",
     ["Pas de réponse de l'hôtel des ventes : demande abandonnée, reclique pour recommencer."] =
         "No answer from the auction house: request dropped, click again to retry.",
+    ["Armes : fenêtre des compétences %s."] = "Weapons: skills window %s.",
+    ["lisible"] = "readable",
+    ["absente"] = "missing",
+    ["Lignes vues : "] = "Lines seen: ",
+    ["Armes reconnues : "] = "Weapons recognized: ",
+    ["Connues par le grimoire (rang inconnu) : "] = "Known from the spellbook (rank unknown): ",
+    ["apprise"] = "learned",
 }

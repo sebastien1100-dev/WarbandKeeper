@@ -44,23 +44,95 @@ end
 ---------------------------------------------------------------------------
 -- Relevé sur le perso connecté
 ---------------------------------------------------------------------------
+-- Nom de la ligne de compétence quand il diffère du nom du sort (anglais et français) : sur ce client, la
+-- fenêtre des compétences dit « Haches », « Épées », « Masses » pour les armes à une main, alors que le sort
+-- s'appelle « Haches à une main »… Avant, ces armes n'étaient jamais reconnues : l'onglet Armes disait tout à
+-- apprendre.
+local SKILL_NAMES = {
+    [196] = { "Axes", "One-Handed Axes", "Haches", "Haches à une main" },
+    [197] = { "Two-Handed Axes", "Haches à deux mains" },
+    [198] = { "Maces", "One-Handed Maces", "Masses", "Masses à une main" },
+    [199] = { "Two-Handed Maces", "Masses à deux mains" },
+    [200] = { "Polearms", "Armes d'hast" },
+    [201] = { "Swords", "One-Handed Swords", "Épées", "Épées à une main" },
+    [202] = { "Two-Handed Swords", "Épées à deux mains" },
+    [227] = { "Staves", "Bâtons" },
+    [264] = { "Bows", "Arcs" },
+    [266] = { "Guns", "Armes à feu" },
+    [1180] = { "Daggers", "Dagues" },
+    [2567] = { "Thrown", "Armes de jet" },
+    [5009] = { "Wands", "Baguettes" },
+    [5011] = { "Crossbows", "Arbalètes" },
+    [15590] = { "Fist Weapons", "Armes de pugilat" },
+}
+M.SKILL_NAMES = SKILL_NAMES
+
+local function nameKey(n) return n and n:lower():gsub("’", "'") or nil end
+
+-- Arme connue comme sort (onglet Général du grimoire) : repli quand la fenêtre des compétences n'est pas
+-- lisible (API absente sur ce client) ; le rang n'est alors pas connu (-1)
+local function knownSpell(id)
+    local ok, v = pcall(function()
+        if _G.IsPlayerSpell then return _G.IsPlayerSpell(id) end
+        if _G.IsSpellKnown then return _G.IsSpellKnown(id) end
+    end)
+    return ok and v or false
+end
+
 function M:Record()
-    if not (GetNumSkillLines and GetSkillLineInfo) then return end
+    local skillApi = _G.GetNumSkillLines and _G.GetSkillLineInfo
+    M.lastRead = { api = skillApi and true or false, seen = {}, matched = {}, spells = {} }
+    if not skillApi then
+        local out, any = {}, false
+        for _, id in ipairs(ORDER) do
+            if knownSpell(id) then out[id] = { -1, 0 }; any = true; M.lastRead.spells[#M.lastRead.spells + 1] = id end
+        end
+        if not any then return end
+        local c = WK.DB:Me()
+        c.weapons = out
+        c.weaponsAt = _G.time()
+        WK:NotifyChanged()
+        return
+    end
     local byName = {}
     for _, id in ipairs(ORDER) do
         local n = WK.SpellInfo(id)
-        if n then byName[n] = id end
+        if n then byName[nameKey(n)] = id end
+        for _, alt in ipairs(SKILL_NAMES[id] or {}) do byName[nameKey(alt)] = id end
     end
+    -- rubriques repliées dans la fenêtre des compétences : leurs lignes ne sont pas listées. Elles sont
+    -- dépliées le temps de la lecture, puis repliées comme avant (de la fin vers le début : les index restent bons)
+    local folded = {}
+    if _G.ExpandSkillHeader then
+        for i = _G.GetNumSkillLines(), 1, -1 do
+            local name, isHeader, isExpanded = _G.GetSkillLineInfo(i)
+            if isHeader and isExpanded == false and pcall(_G.ExpandSkillHeader, i) then folded[name] = true end
+        end
+    end
+    if next(folded) then M.readAt = _G.GetTime() end
     local out, any = {}, false
-    for i = 1, GetNumSkillLines() do
-        local name, isHeader, _, rank, _, _, maxRank = GetSkillLineInfo(i)
-        local id = not isHeader and name and byName[name]
-        if id then out[id] = { rank or 0, maxRank or 0 }; any = true end
+    for i = 1, _G.GetNumSkillLines() do
+        local name, isHeader, _, rank, _, _, maxRank = _G.GetSkillLineInfo(i)
+        local id = not isHeader and name and byName[nameKey(name)]
+        if name and not isHeader then M.lastRead.seen[#M.lastRead.seen + 1] = name .. " " .. tostring(rank) end
+        if id then out[id] = { rank or 0, maxRank or 0 }; any = true; M.lastRead.matched[#M.lastRead.matched + 1] = id end
+    end
+    -- armes absentes de la fenêtre mais connues comme sort : apprises, rang inconnu
+    for _, id in ipairs(ORDER) do
+        if not out[id] and knownSpell(id) then
+            out[id] = { -1, 0 }; any = true; M.lastRead.spells[#M.lastRead.spells + 1] = id
+        end
+    end
+    if next(folded) and _G.CollapseSkillHeader then
+        for i = _G.GetNumSkillLines(), 1, -1 do
+            local name, isHeader = _G.GetSkillLineInfo(i)
+            if isHeader and folded[name] then pcall(_G.CollapseSkillHeader, i) end
+        end
     end
     if not any then return end
     local c = WK.DB:Me()
     c.weapons = out
-    c.weaponsAt = time()
+    c.weaponsAt = _G.time()
     WK:NotifyChanged()
 end
 
@@ -98,8 +170,9 @@ function M:ForChar(key)
     for _, id in ipairs(ORDER) do
         local h = have[id]
         if h then
-            table.insert(r.learned, { id = id, name = self:Name(id), icon = self:Icon(id), rank = h[1], max = h[2] > 0 and h[2] or r.max,
-                equipped = eq[id] or false })
+            local unknown = (h[1] or 0) < 0
+            table.insert(r.learned, { id = id, name = self:Name(id), icon = self:Icon(id), rank = unknown and 0 or h[1],
+                max = h[2] > 0 and h[2] or r.max, equipped = eq[id] or false, unknown = unknown })
         end
     end
     for _, id in ipairs(self:ClassWeapons(class)) do
@@ -114,6 +187,7 @@ end
 
 -- Retard d'une arme : rang de couleur (ok / warn / bad)
 function M:Lag(e)
+    if e.unknown then return "ok" end
     local gap = (e.max or 0) - (e.rank or 0)
     if gap <= 0 then return "ok" end
     if gap <= 25 then return "warn" end
@@ -162,11 +236,27 @@ function M:GuideTo(master)
     WK.modules.Guide:Start(master.target, "Maître d'armes", "weapon")
 end
 
+-- /wk armes : ce qui a été lu au dernier relevé
+function M:Diag()
+    self:Record()
+    local d = self.lastRead or {}
+    WK:Print(string.format(T("Armes : fenêtre des compétences %s."), d.api and T("lisible") or T("absente")))
+    if d.seen and #d.seen > 0 then WK:Print(T("Lignes vues : ") .. table.concat(d.seen, ", ")) end
+    local found = {}
+    for _, id in ipairs(d.matched or {}) do found[#found + 1] = self:Name(id) end
+    WK:Print(T("Armes reconnues : ") .. (#found > 0 and table.concat(found, ", ") or T("aucune")))
+    found = {}
+    for _, id in ipairs(d.spells or {}) do found[#found + 1] = self:Name(id) end
+    if #found > 0 then WK:Print(T("Connues par le grimoire (rang inconnu) : ") .. table.concat(found, ", ")) end
+end
+
 ---------------------------------------------------------------------------
 -- Évènements
 ---------------------------------------------------------------------------
 local pending
 local function soon()
+    -- le dépliage des rubriques par Record relance SKILL_LINES_CHANGED : ignoré juste après une lecture
+    if M.readAt and _G.GetTime() - M.readAt < 2 then return end
     if pending then return end
     pending = true
     C_Timer.After(1, function() pending = false; M:Record() end)

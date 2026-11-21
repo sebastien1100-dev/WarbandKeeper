@@ -81,6 +81,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "suivi" or cmd == "tracker" then
         -- menu des quêtes sur le suivi (UI/QuestTracker.lua) : suivis et lignes trouvés
         WK:Print("  " .. (WK.UI.QuestTrackerMenuDiag and WK.UI.QuestTrackerMenuDiag() or "-"))
+    elseif cmd == "armes" or cmd == "weapons" then
+        -- compétences d'armes lues en jeu (Modules/WeaponSkills.lua)
+        WK.modules.WeaponSkills:Diag()
     elseif cmd == "chaines" or cmd == "chains" then
         -- chaînes de quêtes apprises en jeu (Modules/Quests.lua)
         local Q = WK.modules.Quests

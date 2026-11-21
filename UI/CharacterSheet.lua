@@ -1990,8 +1990,8 @@ refreshWeapons = function(f, c)
         row.name:SetText(e.name .. (e.equipped and ("  " .. UI:Hex({ UI:Accent() }) .. T("équipée") .. "|r") or ""))
         local col = C[LAG_COL[M:Lag(e)]]
         row.bar.color = col
-        row.bar:SetValue(e.max > 0 and e.rank / e.max or 0)
-        row.val:SetText(string.format("%d / %d", e.rank, e.max))
+        row.bar:SetValue(e.unknown and 1 or (e.max > 0 and e.rank / e.max or 0))
+        row.val:SetText(e.unknown and T("apprise") or string.format("%d / %d", e.rank, e.max))
         row.val:SetTextColor(unpack(col))
         row:Show()
         y = y + WEAP_ROW

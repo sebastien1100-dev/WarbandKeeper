@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.44 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche, onglet Armes : les armes apprises n'étaient pas reconnues (« comme si rien n'était appris ») : le jeu nomme « Haches », « Épées », « Masses »… les armes à une main, et une rubrique repliée dans la fenêtre des compétences cachait ses lignes. Une arme connue seulement par le grimoire est marquée « apprise ». « /wk armes » dit ce qui a été lu.
+- Menu Échap avec EllesmereUI : le bouton « Warband Keeper » avait un fond plus foncé que ses voisins ; il prend maintenant la couleur de fond, le liseré et la couleur du texte réglés dans EllesmereUI.
+
 ## v1.128.43 — 21/11/2026
 
 _Un /reload suffit._

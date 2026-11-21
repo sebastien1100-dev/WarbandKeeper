@@ -101,30 +101,58 @@ end
 -- Habillage : quand les boutons voisins sont habillés (EllesmereUI : textures du bouton masquées, fond
 -- sombre et fin liseré), le nôtre prend le même style ; sinon il garde celui du jeu. Le bouton vient de la
 -- réserve du menu (recyclé pour d'autres entrées) : nos textures sont cachées sur les autres boutons.
+-- Couleurs d'EllesmereUI (son code public : réglage du fond des boutons du menu, gris 0,1 à 80 % par défaut,
+-- posé dans un cadre en retrait de 2 px, surbrillance blanche à 10 %). Avant, notre fond était un gris plus
+-- sombre et presque opaque posé SOUS le fond qu'EllesmereUI ajoute déjà au bouton recyclé : le bouton sortait
+-- plus foncé que ses voisins.
+local function euiButtonColor()
+    local db = _G.EllesmereUIDB
+    local c = db and type(db.popupMenuButtonBackgroundColor) == "table" and db.popupMenuButtonBackgroundColor
+    if c and c.r then return c.r, c.g, c.b, c.a == nil and 0.8 or c.a end
+    return 0.1, 0.1, 0.1, 0.8
+end
+-- fond déjà posé par EllesmereUI sur ce bouton (cadre enfant en retrait qui n'est pas à nous)
+local function foreignInset(b)
+    for _, ch in ipairs({ b:GetChildren() }) do
+        if not ch.wkOwn and ch.GetRegions then
+            for _, r in ipairs({ ch:GetRegions() }) do
+                if r.IsObjectType and r:IsObjectType("Texture") and r:GetDrawLayer() == "BACKGROUND" then return ch end
+            end
+        end
+    end
+end
 local function skinPieces(b)
     if b.wkSkin then return b.wkSkin end
     local k = {}
-    k.bg = b:CreateTexture(nil, "BACKGROUND", nil, -6); k.bg:SetPoint("TOPLEFT", 2, -2); k.bg:SetPoint("BOTTOMRIGHT", -2, 2)
-    k.bg:SetColorTexture(0.065, 0.065, 0.065, 0.96) -- fond des voisins (plus sombre, presque opaque)
+    k.inset = _G.CreateFrame("Frame", nil, b)
+    k.inset.wkOwn = true
+    k.inset:SetPoint("TOPLEFT", 2, -2); k.inset:SetPoint("BOTTOMRIGHT", -2, 2)
+    k.inset:SetFrameLevel(b:GetFrameLevel())
+    k.bg = k.inset:CreateTexture(nil, "BACKGROUND", nil, -6); k.bg:SetAllPoints()
     k.edges = {}
     for i, pt in ipairs({ { "TOPLEFT", "TOPRIGHT", true }, { "BOTTOMLEFT", "BOTTOMRIGHT", true }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
-        local e = b:CreateTexture(nil, "BORDER", nil, 7)
-        e:SetColorTexture(1, 1, 1, 0.06) -- liseré à peine visible, comme les voisins
-        e:SetPoint(pt[1], k.bg, pt[1]); e:SetPoint(pt[2], k.bg, pt[2])
+        local e = k.inset:CreateTexture(nil, "BORDER", nil, 7)
+        e:SetColorTexture(1, 1, 1, 0.06)
+        e:SetPoint(pt[1], k.inset, pt[1]); e:SetPoint(pt[2], k.inset, pt[2])
         if pt[3] then e:SetHeight(1) else e:SetWidth(1) end
         k.edges[i] = e
     end
-    k.hl = b:CreateTexture(nil, "HIGHLIGHT"); k.hl:SetAllPoints(k.bg); k.hl:SetColorTexture(1, 1, 1, 0.08)
-    k.own = { [k.bg] = true, [k.hl] = true }
-    for _, e in ipairs(k.edges) do k.own[e] = true end
+    -- liseré : celui d'EllesmereUI s'il le donne (même réglage que ses boutons), sinon le nôtre
+    local border = _G.EllesmereUI and _G.EllesmereUI._applyBlizzardConfiguredBorder
+    if border and pcall(border, k.inset, "popupMenuButton", 1) then
+        for _, e in ipairs(k.edges) do e:Hide() end
+        k.edges = {}
+    end
+    k.hl = b:CreateTexture(nil, "HIGHLIGHT"); k.hl:SetAllPoints(k.inset); k.hl:SetColorTexture(1, 1, 1, 0.1)
+    k.own = { [k.hl] = true }
     b.wkSkin = k
     return k
 end
 local function showSkin(b, on)
     local k = b.wkSkin
     if not k then return end
-    k.bg:SetShown(on); k.hl:SetShown(on)
-    for _, e in ipairs(k.edges) do e:SetShown(on) end
+    k.inset:SetShown(on); k.hl:SetShown(on)
+    if on then k.bg:SetColorTexture(euiButtonColor()) end
 end
 local function skinned(b)
     local l = b and rawget(b, "Left")
@@ -141,8 +169,10 @@ local function skinGameMenuButton(menu, btn)
         end
     end
     if not ref then showSkin(btn, false); btn:SetText("Warband Keeper") return end
+    -- bouton recyclé déjà habillé par EllesmereUI : son fond suffit, le nôtre en plus l'assombrissait
+    local theirs = foreignInset(btn)
     local k = skinPieces(btn)
-    showSkin(btn, true)
+    showSkin(btn, not theirs)
     for _, r in ipairs({ btn:GetRegions() }) do
         if r.IsObjectType and r:IsObjectType("Texture") and not k.own[r] then r:SetAlpha(0) end
     end
@@ -154,7 +184,11 @@ local function skinGameMenuButton(menu, btn)
     if fs and rfs and rfs.GetFont then
         local font, size, flags = rfs:GetFont()
         if font then fs:SetFont(font, size, flags or "") end
-        fs:SetTextColor(1, 1, 1, 1)
+        -- couleur du texte des voisins (réglage d'EllesmereUI s'il le donne)
+        local tc = _G.EllesmereUI and _G.EllesmereUI._getPopupMenuButtonTextColor
+        local ok, r, g, bl = false
+        if tc then ok, r, g, bl = pcall(tc) end
+        if ok and r then fs:SetTextColor(r, g, bl, 1) else fs:SetTextColor(1, 1, 1, 1) end
         -- nom de marque en deux tons, comme « Naowh Forever » et « EllesmereUI » : « Keeper » à l'accent
         btn:SetText("Warband " .. UI:Hex({ UI:Accent() }) .. "Keeper|r")
     end
