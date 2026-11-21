@@ -129,9 +129,21 @@ end
 function M:Import(key, code, name)
     local c = WK.DB.global.characters[key]
     if not (c and c.talents and c.talents[1] and c.talents[1].list) then return nil, T("talents de ce perso pas encore relevés") end
-    local cls, body = (code or ""):match("^%s*WKP1:(%u+):([%d%.,]*)%s*$")
-    if not cls then return nil, T("code non reconnu") end
-    if cls ~= c.class then return nil, T("ce code est pour une autre classe") end
+    -- code collé depuis le chat ou un autre endroit : couleurs, crochets, espaces et retours à la ligne retirés
+    code = tostring(code or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[%s%[%]\"']", "")
+    -- un code de build (« WK1: », onglet Talents > Mes builds) devient un plan, rangée par rangée
+    if code:match("^WK1:") then
+        local G = WK.modules.Gear
+        local b, why = G:ImportBuild(key, code, name)
+        if not b then return nil, why end
+        local list = WK.DB.global.talentBuilds and WK.DB.global.talentBuilds[key]
+        if list and list[#list] == b then table.remove(list) end -- le build n'était qu'un passage
+        return self:FromBuild(key, b)
+    end
+    local cls, body = code:match("^WKP1:([%u%?]+):([%d%.,]*)$")
+    if not cls then return nil, T("code non reconnu (attendu : WKP1:… ou WK1:…)") end
+    -- « ? » : plan exporté avant que la classe soit relevée, accepté
+    if cls ~= "?" and cls ~= c.class then return nil, T("ce code est pour une autre classe") end
     local i = self:New(key, name or T("Plan importé"))
     for ti, j in body:gmatch("(%d+)%.(%d+)") do
         if not self:AddStep(key, i, tonumber(ti), tonumber(j), true) then

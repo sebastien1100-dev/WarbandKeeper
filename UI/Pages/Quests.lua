@@ -209,14 +209,15 @@ UI:RegisterPage({
             table.insert(self.toggles, t)
             UI:SettingRow(tcard, -40, "Repère sur les plaques de nom",
                 "Pastille au-dessus des monstres des quêtes du journal (plaques de nom affichées).", t, 50)
-            local mcard = card("Suivi des quêtes", 40 + 36 + 16, "EllesmereUI ou le suivi du jeu")
+            local mcard = card("Suivi des quêtes", 40 + 36 + 16, "EllesmereUI")
             local mt = UI:Toggle(mcard, function() return QT():Config().trackerMenu end,
                 function(v)
                     QT():Config().trackerMenu = v
                 end)
             table.insert(self.toggles, mt)
             UI:SettingRow(mcard, -40, "Nos lignes dans le menu des quêtes",
-                "EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête.", mt, 50)
+                "En bas du menu du clic droit sur une quête du suivi d'EllesmereUI : guider vers la quête, chercher un groupe.",
+                mt, 50)
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")

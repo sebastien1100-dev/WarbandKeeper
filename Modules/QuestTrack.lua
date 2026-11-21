@@ -20,7 +20,7 @@ function M:Config()
     -- zones de quête sur la carte et la minicarte, volet des quêtes (retirés)
     c.map, c.zoneStyle, c.miniStyle, c.heat, c.hideGame, c.panel, c.panelFold = nil, nil, nil, nil, nil, nil, nil
     if c.plateMarks == nil then c.plateMarks = true end
-    if c.trackerMenu == nil then c.trackerMenu = true end -- Alt + clic sur une quête du suivi : notre menu   -- repères des monstres de la quête sur les plaques de nom
+    if c.trackerMenu == nil then c.trackerMenu = true end -- nos lignes dans le menu du clic droit d'EllesmereUI   -- repères des monstres de la quête sur les plaques de nom
     return c
 end
 

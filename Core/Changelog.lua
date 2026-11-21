@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.54", date = "21/11/2026",
+        fixed = {
+            "Plans de talents : « Importer un code » refusait des codes valables (« code non reconnu ») quand ils étaient collés avec des espaces, un retour à la ligne, des couleurs ou des crochets du chat, ou exportés avant que la classe soit connue. Un code de build (WK1:…) y est aussi accepté et devient un plan.",
+        },
+        changed = {
+            "Alt + clic sur une quête du suivi retiré (et /wk suivi) : les lignes « Guider vers la quête » et « Chercher un groupe » sont dans le menu du clic droit d'EllesmereUI.",
+        },
+    },
+    {
         version = "1.128.53", date = "21/11/2026",
         fixed = {
             "Style Héraldique : les titres des cartes étaient invisibles, recouverts par le bandeau de couleur ; ils sont de nouveau écrits en blanc par-dessus.",

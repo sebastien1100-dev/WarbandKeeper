@@ -507,9 +507,15 @@ end
 function M:ImportBuild(key, code, name)
     local c = WK.DB.global.characters[key]
     if not (c and c.talents and c.talents[1] and c.talents[1].list) then return nil, T("talents de ce perso pas encore relevés") end
-    local cls, body = (code or ""):match("^%s*WK1:(%u+):([%d%-]+)%s*$")
-    if not cls then return nil, T("code non reconnu") end
-    if cls ~= c.class then return nil, T("ce code est pour une autre classe") end
+    code = tostring(code or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[%s%[%]\"']", "")
+    local cls, body = code:match("^WK1:([%u%?]+):([%d%-]+)$")
+    if not cls then
+        if code:match("^WKP1:") then
+            return nil, T("c'est un code de plan : colle-le dans la carte « Plans de montée »")
+        end
+        return nil, T("code non reconnu (attendu : WK1:…)")
+    end
+    if cls ~= "?" and cls ~= c.class then return nil, T("ce code est pour une autre classe") end
     local trees = copyTrees(c.talents)
     local ti = 0
     for part in body:gmatch("[^%-]+") do

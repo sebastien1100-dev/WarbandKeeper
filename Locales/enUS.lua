@@ -1814,7 +1814,6 @@ WK.Locales.enUS.text = {
     ["Donne-lui un nom ; tu cliqueras ensuite les talents dans l'ordre (clic droit : retirer le dernier)."] = "Give it a name; you will then click the talents in order (right-click: remove the last one).",
     ["Montée de niveau"] = "Leveling",
     ["Importer un plan"] = "Import a plan",
-    ["Colle un code de plan (WKP1:…) d'un joueur de la même classe."] = "Paste a plan code (WKP1:...) from a player of the same class.",
     ["Ma liste BiS"] = "My BiS list",
     ["Partager (liens dans le chat)"] = "Share (links in chat)",
     ["Copier la liste d'un autre perso"] = "Copy another character's list",
@@ -4231,15 +4230,8 @@ WK.Locales.enUS.text = {
     ["au survol d'un personnage, style des infobulles"] = "on hovering a character, tooltip style",
     ["Suivi des quêtes"] =
         "Quest tracker",
-    ["EllesmereUI ou le suivi du jeu"] =
-        "EllesmereUI or the game tracker",
     ["Dans le suivi des quêtes (EllesmereUI ou celui du jeu) : guider, lien wowhead, chercher un groupe, jamais d'automatique. Les autres clics restent ceux du suivi."] =
         "In the quest tracker (EllesmereUI or the game's): guide, wowhead link, look for a group, never automatic. Other clicks stay the tracker's.",
-    ["Aucun Alt + clic vu pour l'instant : Alt + clic sur une quête du suivi, puis /wk suivi."] =
-        "No Alt + click seen yet: Alt + click a quest in the tracker, then /wk suivi.",
-    ["sous la souris"] = "under the mouse",
-    ["quête"] = "quest",
-    ["non trouvée"] = "not found",
     ["de mémoire utilisée par l'addon"] =
         "of memory used by the addon",
     ["%.1f Mo"] =
@@ -4264,8 +4256,6 @@ WK.Locales.enUS.text = {
         "20 s after login, out of combat, if your log has quests and nameplate markers are on.",
     ["Nos lignes dans le menu des quêtes"] =
         "Our lines in the quest menu",
-    ["EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête."] =
-        "EllesmereUI: at the bottom of its right-click menu. Game tracker: Alt + click a quest.",
     ["Clic droit : menu de la quête"] = "Right click: quest menu",
     ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; prêt dans le canal /1, Entrée pour envoyer."] =
         "{quest} link, {name} name, {level} level, {zone} zone; ready in channel /1, Enter to send.",
@@ -4282,4 +4272,12 @@ WK.Locales.enUS.text = {
     ["apprise"] = "learned",
     ["Bien nourri\nabsent"] = "No\nWell Fed",
     ["Champs : "] = "Fields: ",
+    ["code non reconnu (attendu : WKP1:… ou WK1:…)"] = "code not recognized (expected: WKP1:… or WK1:…)",
+    ["code non reconnu (attendu : WK1:…)"] = "code not recognized (expected: WK1:…)",
+    ["c'est un code de plan : colle-le dans la carte « Plans de montée »"] =
+        "this is a plan code: paste it in the Leveling plans card",
+    ["Colle un code de plan (WKP1:…) ou de build (WK1:…) d'un joueur de la même classe."] =
+        "Paste a plan code (WKP1:…) or a build code (WK1:…) from a player of the same class.",
+    ["En bas du menu du clic droit sur une quête du suivi d'EllesmereUI : guider vers la quête, chercher un groupe."] =
+        "At the bottom of the right-click menu on an EllesmereUI tracker quest: guide to the quest, find a group.",
 }

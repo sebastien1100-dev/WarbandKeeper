@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.54 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Alt + clic sur une quête du suivi retiré (et /wk suivi) : les lignes « Guider vers la quête » et « Chercher un groupe » sont dans le menu du clic droit d'EllesmereUI.
+
+### Corrections
+- Plans de talents : « Importer un code » refusait des codes valables (« code non reconnu ») quand ils étaient collés avec des espaces, un retour à la ligne, des couleurs ou des crochets du chat, ou exportés avant que la classe soit connue. Un code de build (WK1:…) y est aussi accepté et devient un plan.
+
 ## v1.128.53 — 21/11/2026
 
 _Un /reload suffit._

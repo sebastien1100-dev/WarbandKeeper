@@ -665,7 +665,8 @@ local function build(parent)
             end, T("Créer"))
     end)
     f.pimport:SetScript("OnClick", function()
-        f:Ask(T("Importer un plan"), T("Colle un code de plan (WKP1:…) d'un joueur de la même classe."), "", function(v)
+        f:Ask(T("Importer un plan"),
+            T("Colle un code de plan (WKP1:…) ou de build (WK1:…) d'un joueur de la même classe."), "", function(v)
             local i, why = P:Import(f.key, v)
             if not i then WK:Print(T("Import impossible : ") .. (why or "")) end
         end, T("Importer"))
