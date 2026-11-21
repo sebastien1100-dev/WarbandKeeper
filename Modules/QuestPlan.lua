@@ -838,8 +838,8 @@ end
 function M:Tour() return self:Config().tour[WK:CharKey()] end
 function M:Active() local t = self:Tour(); return t and not t.paused and t.steps[t.idx] ~= nil end
 
-function M:Start()
-    for k in pairs(skipped) do skipped[k] = nil end
+function M:Start(opts)
+    if not (opts and opts.keepSkipped) then for k in pairs(skipped) do skipped[k] = nil end end
     self:Invalidate()
     local t = self:Build()
     if #t.steps == 0 then WK:Print(T("Rien à faire : coche des quêtes dans « Quêtes de ma zone ».")) return nil end
@@ -1334,7 +1334,8 @@ function M:Retarget()
 end
 
 function M:Finish()
-    for k in pairs(skipped) do skipped[k] = nil end
+    -- (étapes passées gardées : si le guide de montée relance la tournée de la zone, elles restent passées ;
+    -- un Start à la main ou un Stop les oublie)
     local t = self:Tour()
     if not t then return end
     self:Config().allZone = nil

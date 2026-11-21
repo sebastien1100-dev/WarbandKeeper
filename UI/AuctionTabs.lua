@@ -64,10 +64,11 @@ local function bagItemKey(id)
         end
     end
 end
+-- (la clé lue sur un exemplaire des sacs n'est plus prise d'office : le premier exemplaire trouvé pouvait être une
+-- autre variante du même objet, « … de l'Ours » au lieu de « … du Singe », et un achat aurait visé la mauvaise)
+UI.AHBagItemKey = bagItemKey
 local function itemKeyOf(id)
     local a = AH()
-    local bk = bagItemKey(id)
-    if bk then return bk end
     if a and a.MakeItemKey then
         local ok, k = pcall(a.MakeItemKey, id)
         if ok then return k end
@@ -2237,7 +2238,8 @@ local function build(host)
             local id = key and key.itemID
             if id then
                 table.insert(rows, { id = id, key = key, qty = r.totalQuantity or 0, low = r.minPrice, mine = r.containsOwnerItem })
-                if r.minPrice and r.minPrice > 0 then pcall(S.SeenToday, S, id, r.minPrice, r.totalQuantity or 0) end
+                -- (Parcourir ne donne qu'un plus bas brut, appâts, tes enchères et variantes compris : il ne compte
+                -- plus pour la courbe du jour ; seule la recherche d'un objet, sans appâts, y entre)
             end
         end
         browse.rows, browse.busy = rows, false

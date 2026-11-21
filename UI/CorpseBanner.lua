@@ -93,13 +93,18 @@ local function startGuide(c)
     local g = G()
     if started or (g.target and g.target.kind == "corpse") then return end
     started = true
-    prevTarget = g:Keep(g.target)
+    -- guidage gardé : jamais remplacé par rien (un retour au corps relancé en fantôme, après un /way, gardait
+    -- sinon « rien » à la place du marchand gardé à la mort)
+    local kept = g:Keep(g.target)
+    if kept or not prevTarget then prevTarget = kept or prevTarget end
     local t = { map = c.map, x = c.x, y = c.y, cont = c.cont, wx = c.wx, wy = c.wy,
                 e = { (c.x or 0) * 100, (c.y or 0) * 100, 0, nil, nil, T("Ton corps"), T("Ton corps"), T("Retour au corps") } }
     g:Start(t, "Retour au corps", "corpse")
 end
 -- fantôme et guidage rendu ailleurs (fin d'un /way posé en fantôme) : le retour au corps est relancé
-function UI.CorpseRestart()
+function UI.CorpseRestart(kept)
+    -- le guidage que la fin du /way voulait rendre est gardé pour la résurrection
+    if kept and not kept.resume then prevTarget = kept end
     started = nil
     UI:RefreshCorpse()
 end
@@ -208,7 +213,7 @@ end
 
 WK:On("PLAYER_DEAD", function()
     local p = G():PlayerPos()
-    started = nil
+    started, prevTarget = nil, nil -- nouvelle mort : rien d'une mort précédente n'est rendu
     if p then deathAt = { map = p.map, x = p.x, y = p.y, cont = p.cont, wx = p.wx, wy = p.wy } end
 end)
 -- libéré (fantôme au cimetière) : bandeau ; ressuscité : guidage d'avant rendu

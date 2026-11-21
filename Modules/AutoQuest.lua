@@ -231,6 +231,10 @@ end)
 WK:On("QUEST_DETAIL", function()
     local qid = GetQuestID and GetQuestID()
     if not M:WantPick(qid) then return end
+    -- quête répétable ouverte directement en détail (PNJ à une seule quête, clic dans le dialogue) : laissée
+    -- aussi (avant, seuls le dialogue et l'accueil l'écartaient)
+    local daily = (_G.QuestIsDaily and _G.QuestIsDaily()) or (_G.QuestIsWeekly and _G.QuestIsWeekly())
+    if daily or M.IsRepeatableOffer(qid) then return end
     local c = M:Config()
     if c.noGroup and GetSuggestedGroupNum and (GetSuggestedGroupNum() or 0) > 1 then return end
     local title = GetTitleText and GetTitleText() or ("#" .. tostring(qid))

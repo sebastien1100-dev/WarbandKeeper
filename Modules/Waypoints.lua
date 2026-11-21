@@ -197,6 +197,7 @@ end
 function M:Go()
     local w = self:List()[1]
     if not w then return end
+    db().paused = nil -- un point relancé reprend la file
     local g = G()
     -- guidage d'avant gardé seulement si on a mieux (un retour au corps ou rien de gardable n'écrase plus celui
     -- gardé avant le premier /way)
@@ -267,7 +268,8 @@ function M:Remove(w)
         if v == w then
             table.remove(list, k)
             if k == 1 then
-                if list[1] then self:Go() else self:Ended() end
+                -- (file en pause : le point suivant n'est pas relancé tout seul)
+                if list[1] then if not self:IsPaused() then self:Go() end else self:Ended() end
             end
             changed()
             return true
@@ -301,10 +303,27 @@ function M:Undo()
     end
     WK:Print(T("Rien à annuler."))
 end
+-- File en pause : arrêtée à la main ; plus relancée par une reprise (fin d'un détour, résurrection) tant que le
+-- joueur n'en relance pas un point (Add, Focus, clic sur la carte…)
+function M.IsPaused(_) return db().paused == true end
+function M.Paused(_)
+    db().paused = true
+    local g = G()
+    local p = prevTarget
+    prevTarget = nil
+    if not g.target then g:Restore(p) end
+end
+-- arrêt de notre propre guidage (pas une pause)
+local function quietStop(g)
+    g.quietStop = true
+    g:Stop()
+    g.quietStop = nil
+end
 -- file vide : on arrête notre guidage et le guidage d'avant revient
 function M:Ended()
     local g = G()
-    if g.target and g.target.kind == "way" then g:Stop() end
+    db().paused = nil
+    if g.target and g.target.kind == "way" then quietStop(g) end
     -- guidage d'avant rendu tout de suite (Guide ne relance plus rien de lui-même après un /way)
     local p = prevTarget
     prevTarget = nil

@@ -243,8 +243,14 @@ local function robustTiers(tiers, total)
         if cum > limit then ref = t[1] break end
     end
     ref = ref or tiers[#tiers][1]
+    -- lots au prix de fond ou plus : avec un seul lot au-dessus (équipement vendu à l'unité), un prix sous la
+    -- moitié n'est un appât que s'il est vraiment absurde (moins d'un dixième) ; sinon c'est le vrai moins cher
+    -- (avant : 10 po et 25 po donnaient 25 po)
+    local above = 0
+    for _, t in ipairs(tiers) do if t[1] >= ref then above = above + t[2] end end
     for _, t in ipairs(tiers) do
-        if t[1] >= ref * 0.5 then return t[1] end
+        local bait = (t[1] < ref * 0.5 and above >= 2) or t[1] < ref * 0.1
+        if not bait then return t[1] end
     end
     return ref
 end

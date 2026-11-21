@@ -93,6 +93,8 @@ local function arrive(t)
         local kit = SOUNDKIT and (SOUNDKIT.UI_MAP_WAYPOINT_SUPER_TRACK_ON or SOUNDKIT.MAP_PING)
         pcall(PlaySound, kit or 3175)
     end
+    -- point /way : la file s'arrête elle-même (Waypoints), ce n'est pas un arrêt à la main
+    if t.kind == "way" then return end
     C_Timer.After(0.8, function() if G.target == t then G:Stop() end end)
 end
 

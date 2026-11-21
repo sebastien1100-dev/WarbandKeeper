@@ -195,6 +195,12 @@ end
 function M:Stop()
     local was = self.target
     self.target = nil
+    -- point /way arrêté à la main (croix, clic droit, /wk) : la file est mise en pause (pas relancée par une
+    -- reprise) et le guidage d'avant revient ; Waypoints arrête lui-même son guidage avec quietStop
+    if was and was.kind == "way" and not self.quietStop then
+        local W = WK.modules.Waypoints
+        if W and W.Paused then _G.C_Timer.After(0, function() W:Paused() end) end
+    end
     if WK.modules.Nav then WK.modules.Nav:Clear() end
     if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
     self.placedWaypoint = nil
@@ -224,7 +230,7 @@ function M:Restore(kept)
     if self.target and self.target.kind ~= "qtour" and self.target.kind ~= "qtrack" then return end
     -- fantôme : rien ne reprend, le retour au corps revient (UI/CorpseBanner) ; stopGuide rendra le reste
     if ghost() then
-        if WK.UI.CorpseRestart then WK.UI.CorpseRestart() end
+        if WK.UI.CorpseRestart then WK.UI.CorpseRestart(kept) end
         return
     end
     if kept and not kept.resume then
@@ -238,7 +244,7 @@ function M:Resume()
     if self.target or ghost() then return end
     -- file /way pas finie (interrompue par un détour ou un retour au corps) : elle repasse en premier
     local W = WK.modules.Waypoints
-    if W and W.List and W:List()[1] and W.Go then W:Go() return end
+    if W and W.List and W:List()[1] and W.Go and not (W.IsPaused and W:IsPaused()) then W:Go() return end
     local P = WK.modules.QuestPlan
     if P and P.Active and P:Active() then
         P.lastKey = nil

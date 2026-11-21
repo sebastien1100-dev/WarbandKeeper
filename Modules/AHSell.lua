@@ -52,7 +52,8 @@ end
 
 -- Plus bas prix à l'unité chez les autres vendeurs, d'après les résultats de recherche affichés par le jeu.
 -- Renvoie prix, ou nil si aucun résultat lisible ; mine = le plus bas est à toi.
-local function lowestOther(id)
+-- key (facultatif) : clé exacte de l'objet visé (vente rapide : celle de l'objet posé dans la fenêtre du jeu)
+local function lowestOther(id, key)
     local A = AH()
     if not A then return nil end
     -- paliers des autres vendeurs, passés par la même règle que le scan (S.RobustTiers) : les appâts sont
@@ -76,7 +77,7 @@ local function lowestOther(id)
         end
     else
         if not (A.GetNumItemSearchResults and A.GetItemSearchResultInfo) then return nil end
-        local key = itemKeyOf(id)
+        key = key or itemKeyOf(id)
         local okn, n = pcall(A.GetNumItemSearchResults, key)
         if not okn or not n or n == 0 then return nil end
         for i = 1, math.min(n, 40) do
@@ -286,7 +287,7 @@ function M:ApplyQuickSell()
     local p = self.sellPending
     if not p then return end
     if not stillOurs(p) then self.sellPending = nil return end
-    local low, mine = lowestOther(p.id)
+    local low, mine = lowestOther(p.id, p.key)
     local c = cfg()
     local price, why
     if low then
@@ -339,11 +340,17 @@ local function hookSell()
                     if ok then id = v end
                 end
                 if not id then return end
+                -- clé de l'objet posé (pas celle d'une de tes enchères en cours, qui peut être une autre variante)
+                local key
+                if itemLocation and AH() and AH().GetItemKeyFromItem then
+                    local okK, k = pcall(AH().GetItemKeyFromItem, itemLocation)
+                    if okK then key = k end
+                end
                 M.sellShown = { id = id, frame = frame }
                 watchTyping(priceInput(frame))
-                M.sellPending = { id = id, frame = frame }
+                M.sellPending = { id = id, frame = frame, key = key }
                 -- résultats déjà là (objet déjà cherché) : tout de suite ; sinon à leur arrivée
-                if lowestOther(id) then M:ApplyQuickSell() end
+                if lowestOther(id, key) then M:ApplyQuickSell() end
                 C_Timer.After(2, function() if M.sellPending and M.sellPending.id == id then M:ApplyQuickSell() end end)
             end)
         end

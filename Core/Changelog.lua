@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.27", date = "21/11/2026",
+        fixed = {
+            "Mort pendant un point /way : le guidage d'avant le /way n'est plus perdu ; il revient une fois en vie.",
+            "Guide de montée : une étape que tu as arrêtée n'est plus relancée toute seule tant qu'elle ne change pas.",
+            "Tournée de quêtes : les étapes passées restent passées quand le guide relance la tournée ou après le bilan.",
+            "Points /way : un guidage arrêté à la main met la file en pause au lieu d'être relancé ; l'arrivée sur un point n'arrête plus le guidage avant le point suivant.",
+            "Quêtes automatiques : une quête journalière, hebdomadaire ou répétable n'est plus acceptée seule.",
+            "Hôtel des ventes : un équipement est cherché avec la bonne clé d'objet ; la vente rapide prend le prix de l'objet posé (et non d'une autre variante).",
+            "Hôtel des ventes : le prix d'un équipement n'est plus faussé par un lot très bas ou très haut ; la page Parcourir ne fausse plus la courbe du jour.",
+        },
+    },
+    {
         version = "1.128.26", date = "21/11/2026",
         fixed = {
             "Statistiques de vol : fermées pendant un vol, elles ne réapparaissent plus à chaque ouverture de la carte jusqu'à l'atterrissage.",

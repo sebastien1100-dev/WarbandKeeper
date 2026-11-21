@@ -271,7 +271,8 @@ function M:StepsNow()
             add({ key = "tour:" .. (here or 0), kind = "tour", auto = true, -- clé stable : passée, elle ne revient pas pour une quête cochée de plus
                 title = string.format(T("Tournée de la zone : %d étapes"), #plan.steps),
                 sub = string.format(T("env. %d min · +%d XP · niveau %.1f à la fin"), math.max(1, math.floor(plan.secs / 60 + 0.5)), xp, self:LevelAfter(xp)),
-                act = function() P():Start() end })
+                -- lancée par le guide : les étapes passées à la main pendant la tournée d'avant restent passées
+                act = function() P():Start({ keepSkipped = true }) end })
         end
     end
     -- donjon à ton niveau
@@ -342,12 +343,10 @@ function M:Tick()
     if G().target and G().target.kind ~= "qtrack" then return end
     -- seule la 1re étape compte ; objet, pierre de foyer et donjon se font soi-même
     local s = self:Steps()[1]
-    -- même étape qu'au dernier lancement, mais plus rien n'est en cours (tournée finie, guidage arrivé) : elle
-    -- est relancée, au plus une fois par 30 s (avant, une clé stable « tour:zone » bloquait le guide après la
-    -- première tournée de la zone)
+    -- une étape n'est relancée que si elle a changé, ou si sa tournée est allée au bout (Finish vide lastAuto) :
+    -- une étape arrêtée par le joueur (tournée arrêtée, flèche fermée) ne repart plus d'elle-même
     local now = _G.GetTime and _G.GetTime() or 0
-    local again = s and s.key == self.lastAuto and now - (self.lastAutoAt or 0) > 30
-    if s and s.auto and s.act and (s.key ~= self.lastAuto or again) then
+    if s and s.auto and s.act and s.key ~= self.lastAuto then
         self.lastAuto, self.lastAutoAt = s.key, now
         s.act()
         self:Changed()
