@@ -679,8 +679,15 @@ WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
     end
     b.unit, b.total, b.phase = unit, total, "confirm"
     -- prix à l'unité bien au-dessus du cours connu (plus de 3 fois le scan) : un clic de plus est demandé
-    local ref = M:Price(b.id)
+    -- cours : le scan, sinon la moyenne des 30 derniers jours ; sans aucune référence, un achat d'au moins 100 po
+    -- ou d'un dixième de ton or demande aussi un clic de plus (avant, aucun garde-fou sans prix de scan)
+    local ref = M:Price(b.id) or (M.Average and M:Average(b.id, 30))
+    b.noRef = nil
     b.dear = (ref and unit and ref > 0 and unit > ref * 3) and math.floor(unit / ref + 0.5) or nil
+    if not ref and total then
+        local money = _G.GetMoney and _G.GetMoney() or 0
+        if total >= 1000000 or total >= money * 0.1 then b.dear, b.noRef = 0, true end
+    end
     b.dearOk = nil
     if M.OnProgress then M:OnProgress() end
 end)
@@ -689,6 +696,11 @@ end)
 function M.DearCheck(_, b)
     if not (b and b.dear) or b.dearOk then return true end
     b.dearOk = true
+    if b.noRef then
+        WK:Print(string.format(T("Attention : aucun cours connu pour %s (%s)."), WK.GetItemInfo(b.id) or "?",
+            WK:FormatMoney(b.total or 0)) .. " " .. T("Reclique pour acheter quand même."))
+        return false
+    end
     WK:Print(string.format(T("Attention : %s coûte %d fois son cours (%s)."), WK.GetItemInfo(b.id) or "?", b.dear,
         WK:FormatMoney(b.total or 0)) .. " " .. T("Reclique pour acheter quand même."))
     return false

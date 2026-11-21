@@ -43,11 +43,11 @@ function UI.PurgeSettingRows(root)
     for i, e in ipairs(keep) do UI.settingIndex[i] = e end
 end
 
-local built = false
+local built, buildFailed = false, false
 -- rend vrai si une page a planté (l'index n'est alors pas enregistré : ses réglages restaient introuvables
--- jusqu'à la version suivante)
+-- jusqu'à la version suivante) ; retenu pour la séance : les frappes suivantes ne l'enregistrent pas non plus
 local function buildAll()
-    if built then return false end
+    if built then return buildFailed end
     built = true
     local failed = false
     for key, def in pairs(UI.pages) do
@@ -65,6 +65,7 @@ local function buildAll()
             end
         end
     end
+    buildFailed = failed
     return failed
 end
 

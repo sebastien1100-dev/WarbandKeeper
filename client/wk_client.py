@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.4"
+CLIENT_VERSION = "1.9.5"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -984,37 +984,73 @@ def install_zip(addons, zpath, old_version):
     oldToc = _toc_body(target) if os.path.isdir(target) else None
     oldData = _files(data) if os.path.isdir(data) else None
     oldDataToc = _toc_body(data, DATA_ADDON) if os.path.isdir(data) else None
-    if os.path.isdir(target):
-        moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
-        if os.path.exists(moved):
-            shutil.rmtree(moved, ignore_errors=True)
-        shutil.move(target, moved)
-    # dossier des données (chargé à la demande) : rangé avec la sauvegarde de la version, sinon retiré
-    if os.path.isdir(data):
-        if moved:
-            shutil.move(data, os.path.join(moved, DATA_KEEP))
-        else:
-            shutil.rmtree(data, ignore_errors=True)
-    # on ne garde que les 2 dernières versions (aussi sans dossier de données : avant, l'élagage était sauté
-    # et les vieilles versions s'accumulaient)
-    olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())), key=os.path.getmtime, reverse=True)
-    for d in olds[2:]:
-        shutil.rmtree(d, ignore_errors=True)
+    # Transactionnel (comme rollback) : chaque déplacement est noté ; si un déplacement ou l'extraction échoue
+    # (fichier verrouillé, disque plein : %APPDATA% est souvent sur un autre disque, le déplacement y est une
+    # copie), tout est défait dans l'ordre inverse et l'addon reste tel qu'avant. Rien n'est effacé avant la
+    # réussite : une ancienne sauvegarde du même nom et le dossier de données sans addon sont mis de côté.
+    done = []
+
+    def move(src, dst):
+        shutil.move(src, dst)
+        done.append((src, dst))
+
+    trash = []
     try:
+        if os.path.isdir(target):
+            moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
+            if os.path.exists(moved):
+                aside = moved + "-ancienne"
+                if os.path.exists(aside):
+                    shutil.rmtree(aside, ignore_errors=True)
+                move(moved, aside)
+                trash.append(aside)
+            move(target, moved)
+        # dossier des données (chargé à la demande) : rangé avec la sauvegarde de la version, sinon mis de côté
+        if os.path.isdir(data):
+            if moved:
+                move(data, os.path.join(moved, DATA_KEEP))
+            else:
+                aside = os.path.join(previous_dir(), DATA_ADDON + "-retire")
+                if os.path.exists(aside):
+                    shutil.rmtree(aside, ignore_errors=True)
+                move(data, aside)
+                trash.append(aside)
         safe_extract(zpath, addons)
     except Exception:
-        # extraction ratée en cours de route (disque plein, fichier verrouillé) : on retire le morceau
-        # installé et on remet l'ancienne version, pour que « rien n'a été changé » soit vrai
-        if os.path.isdir(target):
-            shutil.rmtree(target, ignore_errors=True)
-        if os.path.isdir(data):
-            shutil.rmtree(data, ignore_errors=True)
-        if moved and os.path.isdir(moved) and not os.path.isdir(target):
-            shutil.move(moved, target)
-            kept = os.path.join(target, DATA_KEEP)
-            if os.path.isdir(kept):
-                shutil.move(kept, data)
+        # morceau éventuellement extrait retiré, puis déplacements défaits
+        # un dossier qui n'existait pas avant, ou qui a été rangé, ne contient que le morceau extrait
+        for path, before in ((target, oldFiles), (data, oldData)):
+            if os.path.isdir(path) and (before is None or any(src == path for src, _ in done)):
+                shutil.rmtree(path, ignore_errors=True)
+        for src, dst in reversed(done):
+            try:
+                if os.path.exists(src):
+                    shutil.rmtree(src, ignore_errors=True)
+                shutil.move(dst, src)
+            except OSError:
+                pass
         raise
+    # réussi : mises de côté effacées ; la version remplacée devient la plus récente gardée
+    for t in trash:
+        shutil.rmtree(t, ignore_errors=True)
+    if moved and os.path.isdir(moved):
+        try:
+            os.utime(moved, None)
+        except OSError:
+            pass
+    # on ne garde que les 2 dernières versions, jamais celle qu'on vient de ranger (élagage après la réussite :
+    # avant, il se faisait avant l'extraction et pouvait effacer la version de secours)
+    olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())
+                   if not d.endswith("-ancienne") and not d.endswith("-retire")), key=os.path.getmtime, reverse=True)
+    keep = [moved] if moved else []
+    for d in olds:
+        if len(keep) >= 2:
+            break
+        if d not in keep:
+            keep.append(d)
+    for d in olds:
+        if d not in keep:
+            shutil.rmtree(d, ignore_errors=True)
     if oldFiles is None:
         return True  # première installation : le jeu doit être lancé (ou relancé) pour la voir
     newData = _files(data) if os.path.isdir(data) else None

@@ -4603,4 +4603,5 @@ WK.Locales.enUS.text = {
     ["WarbandKeeper_Data désactivé : coche-le dans les AddOns"] = "WarbandKeeper_Data disabled: tick it in AddOns",
     ["Objet verrouillé (%s) : le mettre en vente quand même ?"] = "Locked item (%s): list it anyway?",
     ["Confirmer %d pour %s"] = "Confirm %d for %s",
+    ["Attention : aucun cours connu pour %s (%s)."] = "Warning: no known price for %s (%s).",
 }

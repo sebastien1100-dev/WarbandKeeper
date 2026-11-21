@@ -33,7 +33,11 @@ local function isCommodity(id)
     end
     return true
 end
+-- clé exacte de l'objet relevée sur tes enchères (niveau d'objet, suffixe) : une clé refaite à partir du seul
+-- numéro ne trouve pas les équipements, et la recherche revenait vide
+local ownedKeys = {}
 local function itemKeyOf(id)
+    if ownedKeys[id] then return ownedKeys[id] end
     local A = AH()
     if A and A.MakeItemKey then
         local ok, k = pcall(A.MakeItemKey, id)
@@ -109,6 +113,7 @@ local function readOwned()
         local ok, info = pcall(A.GetOwnedAuctionInfo, i)
         if ok and info and info.status ~= SOLD and info.itemKey then
             local id = info.itemKey.itemID
+            if id and not isCommodity(id) then ownedKeys[id] = info.itemKey end
             local qty = info.quantity or 1
             local unit = info.buyoutAmount
             -- marchandises : prix déjà à l'unité ; objets : prix de l'enchère
@@ -143,7 +148,8 @@ local function setState(id, lowest, mine)
     for _, o in ipairs(M.owned) do
         if o.id == id then
             o.lowest, o.mine = lowest, mine
-            if not lowest then o.state = mine and "alone" or "ok"
+            -- rien de lisible (pas de résultat, recherche ratée) : inconnu, pas « au plus bas »
+            if not lowest then o.state = mine and "alone" or "?"
             elseif o.unit and lowest < o.unit then o.state = "under"
             else o.state = "ok" end
         end

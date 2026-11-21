@@ -319,8 +319,9 @@ local function snapshotBuyback()
     before = (_G.GetBuybackItemLink and buybackCounts()) or {}
 end
 M.SnapshotBuyback = snapshotBuyback
+local snapped = false
 local function checkBuyback()
-    if not merchantOpen or not db().cfg.rebuy then return end
+    if not merchantOpen or not snapped or not db().cfg.rebuy then return end
     if not (GetNumBuybackItems and GetBuybackItemLink and BuybackItem) then return end
     if GetTime() - lastBuy < 0.5 then return end
     local cur = buybackCounts()
@@ -347,12 +348,44 @@ local function checkBuyback()
         end
     end
 end
+-- Relevé du rachat : à l'ouverture ; s'il est vide (liste pas encore remplie par le jeu), refait 0,3 s plus tard.
+-- Pas de rachat automatique tant qu'il n'est pas pris (sinon tout ce qui avait été vendu avant passait pour une
+-- vente de cette visite).
 WK:On("MERCHANT_SHOW", function()
-    merchantOpen = true; snapshotBuyback()
+    merchantOpen = true; snapped = false
+    snapshotBuyback()
+    if next(before) then snapped = true
+    else
+        C_Timer.After(0.3, function()
+            if not merchantOpen or snapped then return end
+            snapshotBuyback(); snapped = true
+            checkBuyback()
+        end)
+    end
     if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end
 end)
-WK:On("MERCHANT_CLOSED", function() merchantOpen = false; if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end end)
+-- Fermeture : MERCHANT_CLOSED, ou la fermeture de l'interaction (cet évènement peut manquer sur ce client, comme
+-- MAIL_CLOSED) ; caches des cases retirés
+local function closeMerchant()
+    if not merchantOpen then return end
+    merchantOpen, snapped = false, false
+    if WK.UI.ItemLockHideBlocks then WK.UI.ItemLockHideBlocks() end
+    if WK.UI.RefreshItemLocks then WK.UI:RefreshItemLocks() end
+end
+M.CloseMerchant = closeMerchant
+WK:On("MERCHANT_CLOSED", closeMerchant)
+WK:On("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(kind)
+    local merchant = _G.Enum and _G.Enum.PlayerInteractionType and _G.Enum.PlayerInteractionType.Merchant or 5
+    if kind == merchant then closeMerchant() end
+end)
 WK:On("MERCHANT_UPDATE", function() C_Timer.After(0.1, checkBuyback) end)
 WK:On("BAG_UPDATE_DELAYED", function() if merchantOpen then C_Timer.After(0.2, checkBuyback) end end)
-function M:MerchantOpen() return merchantOpen end
+-- ouvert d'après nos évènements, et la fenêtre du marchand du jeu encore affichée (secours si la fermeture a
+-- été manquée : caches, rachat et nettoyage des verrous ne restent plus bloqués)
+function M.MerchantOpen(_)
+    if merchantOpen and _G.MerchantFrame and _G.MerchantFrame.IsShown and not _G.MerchantFrame:IsShown() then
+        closeMerchant()
+    end
+    return merchantOpen
+end
 M.CheckBuyback = checkBuyback

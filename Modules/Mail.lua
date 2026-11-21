@@ -301,7 +301,49 @@ function M:Credit(recipient, content)
     if not c.mailbox.expiresAt or exp < c.mailbox.expiresAt then c.mailbox.expiresAt = exp end
 end
 
+-- Envoi fait à la main (notre fenêtre ou celle du jeu) : le contenu est crédité au destinataire comme pour nos
+-- envois automatiques. Sans ça, un objet verrouillé envoyé à un reroll n'existait plus nulle part dans les
+-- données et son verrou était effacé (ItemLock:Prune). Pièces jointes relevées à chaque changement de la
+-- fenêtre d'envoi et à l'appel de SendMail (accroché sans le remplacer).
+local manualSnap, manualPending = {}, nil
+local function readAttached()
+    local out, any = {}, false
+    local get, getLink = _G.GetSendMailItem, _G.GetSendMailItemLink
+    for i = 1, (_G.ATTACHMENTS_MAX_SEND or 12) do
+        local name, itemID, _, count = nil, nil, nil, nil
+        if get then name, itemID, _, count = get(i) end
+        if name then
+            local id = (type(itemID) == "number" and itemID) or (getLink and WK:ParseItemID(getLink(i)))
+            if id then out[id] = (out[id] or 0) + (count or 1); any = true end
+        end
+    end
+    return out, any
+end
+M.ReadAttached = readAttached
+WK:On("MAIL_SEND_INFO_UPDATE", function()
+    if sending then return end
+    local snap, any = readAttached()
+    if any then manualSnap = snap end
+end)
+function M.OnSendMail(to)
+    if sending then return end
+    local content, any = readAttached()
+    if not any then content = manualSnap end
+    if type(to) == "string" and to ~= "" and next(content) then
+        manualPending = { to = M:Recipient(to), content = content }
+    end
+end
+if _G.hooksecurefunc and _G.SendMail then
+    _G.hooksecurefunc("SendMail", function(to) M.OnSendMail(to) end)
+end
+M.ManualPending = function() return manualPending end
+
 WK:On("MAIL_SEND_SUCCESS", function()
+    if not sending and manualPending then
+        M:Credit(manualPending.to, manualPending.content)
+        if WK.modules.Journal then WK.modules.Journal:MailSent(manualPending.to, manualPending.content) end
+        manualPending, manualSnap = nil, {}
+    end
     if sending then
         if current then
             M:Credit(current.recipient, current.content or {})
@@ -316,6 +358,7 @@ end)
 WK:On("UI_ERROR_MESSAGE", function(_, msg) if sending then lastError = msg end end)
 
 WK:On("MAIL_FAILED", function()
+    manualPending = nil
     if sending then
         wipe(queue); sending = false
         WK:Print(WK.L.MAIL_ERROR)

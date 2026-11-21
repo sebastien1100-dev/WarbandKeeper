@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.19 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Courrier : un envoi fait à la main (notre fenêtre ou celle du jeu) compte maintenant dans la boîte du destinataire et le journal ; un objet verrouillé envoyé à un reroll ne perd plus son verrou.
+- Hôtel des ventes, « Tout acheter » : un objet sans cours connu (jamais scanné) demande un clic de plus pour un achat d'au moins 100 po ou d'un dixième de ton or.
+- Objets verrouillés : si la fermeture du marchand n'est pas signalée par le jeu, elle est rattrapée (caches retirés des cases, rachat et nettoyage débloqués).
+- Rachat automatique : le relevé du rachat est refait un instant après l'ouverture s'il était vide, et rien n'est racheté avant ; un objet vendu à une visite précédente n'est plus pris pour une vente de cette visite.
+- Mes enchères : un équipement est cherché avec sa clé exacte (niveau d'objet) ; une recherche sans résultat lisible affiche « à vérifier » au lieu de « la plus basse ».
+- Recherche : après une page en échec, l'index incomplet n'est plus enregistré aux frappes suivantes.
+
 ## v1.128.18 — 21/11/2026
 
 _Un /reload suffit._
