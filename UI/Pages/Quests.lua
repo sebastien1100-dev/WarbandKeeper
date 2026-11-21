@@ -511,8 +511,23 @@ UI:RegisterPage({
                     row.lv:SetTextColor(unpack(st == "done" and C.dim or levelColor(q.lvl, myLevel)))
                     local col, label = stateInfo(st)
                     row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
-                    row.name:SetText(UI.GroupTag(q.id) .. Q:Name(q)
-                        .. (WK.modules.DataLog and WK.modules.DataLog:Badge(q.id) or ""))
+                    row.name:SetText(UI.GroupTag(q.id) .. Q:Name(q))
+                    -- NOUVELLE / APPRISE / CORRIGÉE : petite pastille arrondie après le titre (avant, un mot
+                    -- en couleur plus gros que le titre)
+                    local bl, bc
+                    if WK.modules.DataLog then bl, bc = WK.modules.DataLog:BadgeInfo(q.id) end
+                    if bl and UI.DataPill then
+                        row.pill = row.pill or UI.DataPill(row)
+                        row.pill:Set(bl, bc)
+                        -- le titre s'arrête avant la pastille (un titre long est coupé, jamais recouvert)
+                        local pw = row.pill:GetWidth() or 60
+                        row.name:SetPoint("RIGHT", -190 - pw - 10, 0)
+                        local nw = math.min(row.name:GetStringWidth() or 0, (row.name:GetWidth() or 300))
+                        row.pill:ClearAllPoints(); row.pill:SetPoint("LEFT", row.name, "LEFT", nw + 8, 0)
+                    else
+                        row.name:SetPoint("RIGHT", -190, 0)
+                        if row.pill then row.pill:Hide() end
+                    end
                     row.name:SetTextColor(unpack(st == "done" and C.dim or C.text))
                     local parts = {}
                     if q.skill then table.insert(parts, UI:Hex(C.positive) .. T(q.skill) .. "|r")

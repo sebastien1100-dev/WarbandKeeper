@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.50", date = "21/11/2026",
+        changed = {
+            "Quêtes, liste d'une zone : NOUVELLE / APPRISE / CORRIGÉE devient une petite pastille arrondie après le titre (avant, un mot en couleur plus gros que le titre de la quête) ; un titre long est coupé avant la pastille.",
+        },
+    },
+    {
         version = "1.128.49", date = "21/11/2026",
         fixed = {
             "Fiche, onglet Armes : toujours « apprise » sans le niveau. Sur WoW Forever, la fenêtre des compétences passe par une autre interface du jeu (C_SkillInfo) que celle que l'addon lisait ; le vrai niveau de chaque arme (65 / 150, 148 / 150…) est maintenant lu. « /wk armes » montre aussi les champs lus.",

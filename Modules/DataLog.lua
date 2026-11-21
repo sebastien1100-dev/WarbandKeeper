@@ -80,6 +80,14 @@ function M:Badge(qid, compact)
     return "  " .. dot .. " " .. UI:Hex(col) .. T(LABEL[st]) .. "|r"
 end
 
+-- libellé et couleur de la pastille d'une quête (nil si rien à montrer) : pour une vraie pastille arrondie
+function M:BadgeInfo(qid)
+    if not self:Config().badges then return nil end
+    local st = self:State(qid)
+    if not st then return nil end
+    return T(LABEL[st]), WK.UI.colors[COLOR[st]] or WK.UI.colors.muted
+end
+
 -- codes d'une correction en clair (« niveau 30 » 31 · donneur déplacé »)
 function M:Describe(codes)
     local parts = {}
