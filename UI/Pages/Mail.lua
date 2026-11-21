@@ -349,7 +349,10 @@ UI:RegisterPage({
         end
         -- Roue dentée : réglages du courrier (envoi, réception, dépôt en banque ; cartes reprises d'Options),
         -- et état de l'automatisme de l'onglet.
-        self.gp = UI:PageGear(p, { title = "Réglages du courrier", top = 46,
+        self.gp = UI:PageGear(p, { title = "Réglages du courrier", top = 46, id = "mail",
+            tabs = { { "send", T("Envoi"), titles = { "Envoi", "Dépôt en banque" } },
+                     { "recv", T("Réception"), titles = { "Réception" } },
+                     { "win", T("Fenêtre"), titles = { "Fenêtre" } } },
             cards = function() return UI:SectionCards("options", "mail") end,
             onToggle = function(open) seg:Select(not open and self.tab or nil); self.status:SetShown(not open) end }, self)
         local settings = self.gp.gear

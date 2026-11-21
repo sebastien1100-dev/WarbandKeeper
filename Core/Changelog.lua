@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.121.0", date = "21/11/2026",
+        changed = {
+            "Réglages rangés en sous-onglets de catégories dans toutes les roues qui n'en avaient pas : Quêtes (Suivi et carte, Quêtes montrées, Quêtes automatiques), Donjons (Panneau et alertes, Quêtes du donjon, Chrono), Courrier (Envoi, Réception, Fenêtre), Hôtel des ventes (Scan et prix, Vente, Alertes de prix), Pêche (Mode pêche, Tenue et confort, Récapitulatif) et Rares (Carte, Alerte). L'onglet choisi est retenu ; la recherche ouvre le bon onglet.",
+        },
+    },
+    {
         version = "1.120.1", date = "21/11/2026",
         fixed = {
             "Zones de chaleur : rien ne s'affichait. Les halos étaient dessinés en mode additif, invisible sur le parchemin clair de la carte et sur la minicarte : ils sont maintenant opaques, plus grands et bien visibles.",

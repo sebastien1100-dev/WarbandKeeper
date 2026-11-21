@@ -1154,6 +1154,10 @@ function UI:PageGear(p, opts, def)
     local sc = UI:Scroll(ov)
     sc:SetAllPoints()
     gp.overlay, gp.scroll = ov, sc
+    -- opts.tabs : sous-onglets de catégories (UI:CardTabs), barre posée en haut du volet
+    if opts.tabs then
+        gp.ct = UI:CardTabs(ov, opts.id or opts.title or "gear", opts.tabs, function() gp:Refresh() end)
+    end
     local GAPV = 12
     function gp:Layout()
         local list = self.list or {}
@@ -1189,6 +1193,13 @@ function UI:PageGear(p, opts, def)
         for _, c in ipairs(list) do
             if c:GetParent() ~= sc.child then c:SetParent(sc.child) end
             c:Show()
+        end
+        self.all = list
+        if self.ct then
+            list = self.ct:Filter(list)
+            local bh = self.ct:Height()
+            if self.ct.bar then self.ct.bar:ClearAllPoints(); self.ct.bar:SetPoint("TOPLEFT", ov, "TOPLEFT", 0, 0) end
+            sc:ClearAllPoints(); sc:SetPoint("TOPLEFT", 0, -bh); sc:SetPoint("BOTTOMRIGHT")
         end
         self.list = list
     end
@@ -1236,15 +1247,88 @@ function UI:PageGear(p, opts, def)
     if def then
         local prev = def.RevealSetting
         def.RevealSetting = function(d, row)
-            local f = row
+            local f, card = row, nil
             while f do
-                if f == sc.child then gp:Open(true) return end
+                if f:GetParent() == sc.child then card = f end
+                if f == sc.child then
+                    if gp.ct and card then gp.ct:Reveal(card) end
+                    gp:Open(true); gp:Refresh() return
+                end
                 f = f:GetParent()
             end
             if prev then prev(d, row) end
         end
     end
     return gp
+end
+
+---------------------------------------------------------------------------
+-- Sous-onglets de catégories pour des cartes de réglages (roues des pages) : une barre (UI:Segmented)
+-- qui ne montre que les cartes de la catégorie choisie. tabs = { { key, label, titles = { "Titre", … } }, … } ;
+-- une carte va dans l'onglet qui cite son titre (ou sa clé c.cardKey, ou c.gearTab = clé), sinon dans le
+-- dernier. Onglet retenu dans settings.ui.gearTabs[id] ; onglets vides retirés, un seul = pas de barre.
+--   ct = UI:CardTabs(parent, id, tabs, onChange) ; ct:Filter(cartes) » cartes de l'onglet (les autres cachées) ;
+--   ct.bar (à placer, nil tant qu'il n'y a pas deux onglets) ; ct:Height() ; ct:Reveal(carte) ; ct:TabOf(carte)
+---------------------------------------------------------------------------
+function UI.CardTabs(_, parent, id, tabs, onChange)
+    for _, tab in ipairs(tabs) do tab.key = tab.key or tab[1]; tab.label = tab.label or tab[2] end
+    local ct = { tabs = tabs, id = id }
+    local function store()
+        local ui = WK.DB.global.settings.ui
+        ui.gearTabs = ui.gearTabs or {}
+        return ui.gearTabs
+    end
+    function ct.TabOf(_, c)
+        if c.gearTab then return c.gearTab end
+        local t = c.title and c.title.GetText and c.title:GetText()
+        for _, tab in ipairs(tabs) do
+            for _, want in ipairs(tab.titles or {}) do
+                if want == t or WK.T(want) == t or want == c.cardKey then return tab.key end
+            end
+        end
+        return tabs[#tabs].key
+    end
+    local sig
+    function ct:Filter(list)
+        local used = {}
+        for _, c in ipairs(list or {}) do used[self:TabOf(c)] = true end
+        local items, keys = {}, {}
+        for _, tab in ipairs(tabs) do
+            if used[tab.key] then table.insert(items, { tab.key, tab.label }); table.insert(keys, tab.key) end
+        end
+        local s2 = table.concat(keys, ",")
+        if s2 ~= sig then
+            sig = s2
+            if self.bar then self.bar:Hide() end
+            self.bar = nil
+            if #items > 1 then
+                self.bar = UI:Segmented(parent, items, function(k)
+                    store()[id] = k
+                    if onChange then onChange(k) end
+                end, 30)
+            end
+        end
+        local cur = store()[id]
+        if not used[cur] then cur = keys[1] end
+        self.current = cur
+        if self.bar then self.bar:Select(cur); self.bar:Show() end
+        local out = {}
+        for _, c in ipairs(list or {}) do
+            if self:TabOf(c) == cur then
+                table.insert(out, c)
+                -- carte repliée par sa page (c.keepHidden) : reste cachée, gardée dans la liste
+                if not (c.keepHidden and c.keepHidden()) then c:Show() end
+            else c:Hide() end
+        end
+        return out
+    end
+    function ct:Height() return self.bar and (30 + 12) or 0 end
+    function ct:Reveal(c)
+        local k = self:TabOf(c)
+        if k and k ~= store()[id] then store()[id] = k; return true end
+        return false
+    end
+    return ct
 end
 
 -- Cartes d'une section de la page QoL ou Options (construite au besoin), filtrées par titre.

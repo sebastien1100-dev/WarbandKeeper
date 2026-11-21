@@ -201,10 +201,41 @@ UI:RegisterPage({
         local tb = UI:Button(acard, "Montrer à l'écran", 150, 26, "ghost")
         tb:SetPoint("BOTTOMRIGHT", -14, 10)
         tb:SetScript("OnClick", function() UI:TestRareAlert(prevState) end)
-        self.sideH = y
+        -- sous-onglets de catégories (UI:CardTabs) : barre en haut, cartes de l'onglet dessous
+        self.rcards = { mcard, acard }
+        self.ct = UI:CardTabs(root, "rares", {
+            { "map", T("Carte"), titles = { "Sur la carte" } },
+            { "alert", T("Alerte"), titles = { "Alerte « Rare en vue »" } },
+        }, function() self:PlaceCards() end)
+        self:PlaceCards()
         -- pour la recherche de la barre latérale (UI/Search.lua) : un réglage trouvé ouvre cet onglet
         self.sections = { settings = { scroll = sc } }
         UI:OnResize(sc, function(w) root:SetSize(math.max(w - 10, 100), self.sideH) end)
+        local prevReveal = self.RevealSetting
+        self.RevealSetting = function(d, row)
+            local f = row
+            while f do
+                if f:GetParent() == root and d.ct:Reveal(f) then d:PlaceCards() break end
+                f = f:GetParent()
+            end
+            if prevReveal then prevReveal(d, row) end
+        end
+    end,
+
+    PlaceCards = function(self)
+        local list = self.ct:Filter(self.rcards)
+        local y = 0
+        if self.ct.bar then
+            self.ct.bar:ClearAllPoints(); self.ct.bar:SetPoint("TOPLEFT", 0, 0); y = self.ct:Height()
+        end
+        for _, c in ipairs(list) do
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -y); c:SetPoint("TOPRIGHT", 0, -y)
+            y = y + c:GetHeight() + GAP
+        end
+        self.sideH = y
+        local root = self.side.child
+        root:SetSize(root:GetWidth(), y)
+        if self.side.SetContentHeight then self.side:SetContentHeight(y) end
     end,
 
     ShowSection = function(self, key)

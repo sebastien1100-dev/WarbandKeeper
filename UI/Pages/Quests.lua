@@ -798,6 +798,7 @@ UI:RegisterPage({
                 dcard.clear:SetScript("OnClick", function() wipe(ac.quests); wipe(ac.npcs); paintList(); WK:NotifyChanged() end)
                 -- repli des détails (fermés au départ)
                 dcard.wkFoldable = true
+                dcard.keepHidden = function() return not self.autoOpen end
                 local function fold(open)
                     dcard:SetShown(open)
                     mcard.more:SetLabel(open and T("Masquer les détails") or T("Détails"))
@@ -815,27 +816,41 @@ UI:RegisterPage({
     RevealSetting = function(self, row)
         local f = row
         while f do
+            if self.qct and f:GetParent() == self.side.child then self.qct:Reveal(f) end
             if f == self.side then self.settingsOpen = true; self:Layout(); self:Refresh() return end
             f = f:GetParent()
         end
     end,
 
-    -- cartes des réglages : deux colonnes (largeur ≥ 1000) ou une seule ; cartes cachées sautées
+    -- cartes des réglages, en sous-onglets de catégories (UI:CardTabs) : deux colonnes (largeur ≥ 1000,
+    -- chaque carte sous la plus courte) ou une seule ; cartes repliées sautées
     PlaceSide = function(self, w)
-        local cards = self.sideCards or {}
+        local all = {}
+        for _, e in ipairs(self.sideCards or {}) do table.insert(all, e.c) end
+        if not self.qct then
+            self.qct = UI:CardTabs(self.side.child, "quests", {
+                { "track", T("Suivi et carte"), titles = { "Quête suivie", "Zones des objectifs", "Légende" } },
+                { "list", T("Quêtes montrées"),
+                  titles = { "Quêtes montrées", "Journal des données", "Liens wowhead" } },
+                { "auto", T("Quêtes automatiques"),
+                  titles = { "Quêtes automatiques", "Quêtes automatiques : détails" } },
+            }, function() self:Layout() end)
+        end
+        local cards = self.qct:Filter(all)
+        local top = 0
+        if self.qct.bar then
+            self.qct.bar:ClearAllPoints(); self.qct.bar:SetPoint("TOPLEFT", 0, 0); top = self.qct:Height()
+        end
         local two = w >= 1000
         local colW = two and math.min(560, math.floor((w - 10 - GAP) / 2)) or math.min(w - 10, 560)
-        local ys = { 0, 0 }
-        for _, e in ipairs(cards) do
-            if e.c:IsShown() or not e.c.wkFoldable then
-                local col = two and e.col or 1
-                local yy = ys[col]
-                if not two then yy = ys[1] end
-                e.c:ClearAllPoints()
-                e.c:SetPoint("TOPLEFT", (col - 1) * (colW + GAP), -yy)
-                e.c:SetWidth(colW)
-                local hh = e.c:IsShown() and (e.c:GetHeight() + GAP) or 0
-                if two then ys[col] = yy + hh else ys[1] = yy + hh end
+        local ys = { top, top }
+        for _, c in ipairs(cards) do
+            if c:IsShown() then
+                local col = (two and ys[2] < ys[1]) and 2 or 1
+                c:ClearAllPoints()
+                c:SetPoint("TOPLEFT", (col - 1) * (colW + GAP), -ys[col])
+                c:SetWidth(colW)
+                ys[col] = ys[col] + c:GetHeight() + GAP
             end
         end
         local total = math.max(ys[1], ys[2])

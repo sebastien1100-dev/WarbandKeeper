@@ -60,6 +60,12 @@ UI:RegisterPage({
             return s
         end
         self.jsc, self.ssc = pane(), pane()
+        -- réglages en sous-onglets de catégories (UI:CardTabs), barre sous les onglets de la page
+        self.ct = UI:CardTabs(p, "fishing", {
+            { "mode", T("Mode pêche"), titles = { "Mode pêche", "Une seule touche pour tout" } },
+            { "gear", T("Tenue et confort"), titles = { "Tenue et appâts", "Confort" } },
+            { "recap", T("Récapitulatif"), titles = { "Récapitulatif de session" } },
+        }, function() self:Layout() end)
         UI:OnResize(self.jsc, function() if self.jsc:IsShown() then self:Layout() end end)
         UI:OnResize(self.ssc, function() if self.ssc:IsShown() then self:Layout() end end)
         self:Adopt()
@@ -95,11 +101,18 @@ UI:RegisterPage({
             y = y + c:GetHeight() + GAP
         end
         self.jsc:SetContentHeight(y)
+        local list = self.ct:Filter(self.scards)
+        local bh = self.ct:Height()
+        if self.ct.bar then
+            self.ct.bar:ClearAllPoints(); self.ct.bar:SetPoint("TOPLEFT", self.ssc:GetParent(), "TOPLEFT", 0, -42)
+            self.ct.bar:SetShown(self.ssc:IsShown())
+        end
+        self.ssc:ClearAllPoints(); self.ssc:SetPoint("TOPLEFT", 0, -42 - bh); self.ssc:SetPoint("BOTTOMRIGHT")
         local sw = math.max(400, (self.ssc:GetWidth() or 800) - 12)
         self.ssc.child:SetWidth(sw)
         local cw = math.floor((sw - GAP) / 2)
         local colY = { 0, 0 }
-        for _, c in ipairs(self.scards) do
+        for _, c in ipairs(list) do
             local col = colY[1] <= colY[2] and 1 or 2
             c:ClearAllPoints()
             c:SetPoint("TOPLEFT", (col - 1) * (cw + GAP), -colY[col])
@@ -113,6 +126,7 @@ UI:RegisterPage({
     RevealSetting = function(self, row)
         local f = row
         while f do
+            if f:GetParent() == self.ssc.child and self.ct then self.ct:Reveal(f) end
             if f == self.ssc.child then self.view = "settings"; self.seg:Select(nil); break end
             if f == self.jsc.child then self.view = "journal"; self.seg:Select("journal"); break end
             f = f:GetParent()
@@ -126,6 +140,7 @@ UI:RegisterPage({
         self.sc:SetShown(v == "coll")
         self.jsc:SetShown(v == "journal")
         self.ssc:SetShown(v == "settings")
+        if self.ct and self.ct.bar then self.ct.bar:SetShown(v == "settings") end
         self.gear:SetActive(v == "settings")
         if v == "coll" then
             if self.coll then self.coll:Refresh() end

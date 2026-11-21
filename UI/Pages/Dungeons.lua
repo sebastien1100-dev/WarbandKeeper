@@ -153,7 +153,10 @@ UI:RegisterPage({
         qcard:SetHeight(40 + 6 * 46 + 8)
         local function qsync() winSeg:Select(dc.questWin or "auto"); for _, t in ipairs(qtog) do t:Refresh() end end
         qsync()
-        self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1,
+        scard.gearTab, tcard.gearTab, qcard.gearTab = "main", "timer", "quests"
+        self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1, id = "dungeons",
+            tabs = { { "main", T("Panneau et alertes") }, { "quests", T("Quêtes du donjon") },
+                     { "timer", T("Chrono") } },
             cards = function() for _, t in ipairs(dtog) do t:Refresh() end; tsync(); qsync(); return { scard, qcard, tcard } end,
             onToggle = function(open)
                 self.tabSeg:SetShown(not open); self.charDd:SetShown(not open); if self.ofLabel then self.ofLabel:SetShown(not open) end

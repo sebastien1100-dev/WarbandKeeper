@@ -80,7 +80,7 @@ Chaque réglage a une seule place, à côté de sa fonction : roue dentée en ha
 - Quêtes, Rares, Donjons : roue (Donjons : `Dungeons:Config()` panel, alertEnter, alertDrop, timer) ; Persos : bouton Expérience (cartes `xpData` de QoL > Expérience) ;
 - QoL > Carte et guidage (onglet Guidage : carte de `Guide:Config()` et navigation) ; QoL > Général > Alertes (état des persos + sections `alerts` et « Rappels à la connexion » d'Options, `UI:OpenQoLAlerts()`) ;
 - Options : Général (langue, Infobulles = toutes les lignes d'infobulle, bouton minimap, combat), Apparence, À propos ; les sections `prices`, `mail`, `glow`, `alerts` sont cachées (cartes reprises).
-Un nouveau réglage va dans la roue de sa page ; une nouvelle ligne d'infobulle dans Options > Infobulles.
+Un nouveau réglage va dans la roue de sa page ; une nouvelle ligne d'infobulle dans Options > Infobulles. Toute roue range ses cartes en **sous-onglets de catégories** : `UI:CardTabs(parent, id, tabs, onChange)` (`UI/Widgets.lua` : `tabs` = { { clé, libellé, titles = { titres de cartes } } }, ou `carte.gearTab` ; `ct:Filter(cartes)`, `ct.bar`, `ct:Height()`, `ct:Reveal(carte)` pour la recherche, onglet retenu dans `settings.ui.gearTabs[id]`, `carte.keepHidden()` pour une carte repliée) ; `UI:PageGear` le fait seul avec `opts.tabs` / `opts.id`. Une nouvelle carte de réglages doit être citée dans les `titles` de son onglet (sinon elle tombe dans le dernier).
 
 ## Qualité de vie (QoL)
 

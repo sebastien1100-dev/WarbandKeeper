@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.121.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Réglages rangés en sous-onglets de catégories dans toutes les roues qui n'en avaient pas : Quêtes (Suivi et carte, Quêtes montrées, Quêtes automatiques), Donjons (Panneau et alertes, Quêtes du donjon, Chrono), Courrier (Envoi, Réception, Fenêtre), Hôtel des ventes (Scan et prix, Vente, Alertes de prix), Pêche (Mode pêche, Tenue et confort, Récapitulatif) et Rares (Carte, Alerte). L'onglet choisi est retenu ; la recherche ouvre le bon onglet.
+
 ## v1.120.1 — 21/11/2026
 
 _Un /reload suffit._

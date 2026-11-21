@@ -4452,4 +4452,9 @@ WK.Locales.enUS.text = {
     ["points sur ta carte"] = "points on your map",
     ["carte du monde"] = "world map",
     ["minicarte"] = "minimap",
+    ["Panneau et alertes"] = "Panel and alerts",
+    ["Chrono"] = "Timer",
+    ["Tenue et confort"] = "Gear and comfort",
+    ["Récapitulatif"] = "Summary",
+    ["Suivi et carte"] = "Tracking and map",
 }
