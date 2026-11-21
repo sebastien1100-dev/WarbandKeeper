@@ -31,9 +31,11 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.0"
+CLIENT_VERSION = "1.9.1"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
+DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
+DATA_KEEP = "__" + DATA_ADDON  # copie du dossier de données rangée dans la sauvegarde d'une version
 API = "https://api.github.com/repos/" + REPO
 UA = "WarbandKeeper-Client/" + CLIENT_VERSION
 TOKEN_URL = "https://github.com/settings/personal-access-tokens/new"
@@ -939,13 +941,12 @@ def safe_extract(zpath, dest_parent):
         if not any(n == ADDON + "/" + ADDON + ".toc" for n in names):
             raise RuntimeError("Le fichier téléchargé n'est pas l'addon Warband Keeper.")
         base = os.path.normpath(dest_parent)
-        for n in names:
-            if not n.startswith(ADDON + "/"):
-                continue
+        keep = [n for n in names if n.startswith(ADDON + "/") or n.startswith(DATA_ADDON + "/")]
+        for n in keep:
             target = os.path.normpath(os.path.join(base, n))
             if not target.startswith(base + os.sep):
                 raise RuntimeError("Archive invalide.")
-        z.extractall(base, [n for n in names if n.startswith(ADDON + "/")])
+        z.extractall(base, keep)
 
 
 def _files(folder):
@@ -969,14 +970,22 @@ def install_zip(addons, zpath, old_version):
     """Installe le zip ; rend True s'il faut redémarrer complètement le jeu (nouveaux fichiers ou .toc
     modifié : le jeu ne les charge qu'au lancement), False si un /reload suffit."""
     target = os.path.join(addons, ADDON)
+    data = os.path.join(addons, DATA_ADDON)
     moved = None
     oldFiles = _files(target) if os.path.isdir(target) else None
     oldToc = _toc_body(target) if os.path.isdir(target) else None
+    oldData = _files(data) if os.path.isdir(data) else None
     if os.path.isdir(target):
         moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
         if os.path.exists(moved):
             shutil.rmtree(moved, ignore_errors=True)
         shutil.move(target, moved)
+    # dossier des données (chargé à la demande) : rangé avec la sauvegarde de la version, sinon retiré
+    if os.path.isdir(data):
+        if moved:
+            shutil.move(data, os.path.join(moved, DATA_KEEP))
+        else:
+            shutil.rmtree(data, ignore_errors=True)
         # on ne garde que les 2 dernières versions
         olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())), key=os.path.getmtime, reverse=True)
         for d in olds[2:]:
@@ -988,11 +997,19 @@ def install_zip(addons, zpath, old_version):
         # installé et on remet l'ancienne version, pour que « rien n'a été changé » soit vrai
         if os.path.isdir(target):
             shutil.rmtree(target, ignore_errors=True)
+        if os.path.isdir(data):
+            shutil.rmtree(data, ignore_errors=True)
         if moved and os.path.isdir(moved) and not os.path.isdir(target):
             shutil.move(moved, target)
+            kept = os.path.join(target, DATA_KEEP)
+            if os.path.isdir(kept):
+                shutil.move(kept, data)
         raise
     if oldFiles is None:
         return True  # première installation : le jeu doit être lancé (ou relancé) pour la voir
+    newData = _files(data) if os.path.isdir(data) else None
+    if newData is not None and (oldData is None or newData - oldData):
+        return True  # dossier des données nouveau, ou nouveaux fichiers dedans
     return bool(_files(target) - oldFiles) or _toc_body(target) != oldToc
 
 
@@ -1036,7 +1053,17 @@ def rollback(addons, prev):
         if os.path.normpath(tmp) == os.path.normpath(prev["path"]):
             tmp = tmp + "-courante"
         shutil.move(target, tmp)
+    data = os.path.join(addons, DATA_ADDON)
+    if os.path.isdir(data):
+        # données de la version actuelle : rangées avec elle (ou retirées s'il n'y avait pas d'addon)
+        if tmp:
+            shutil.move(data, os.path.join(tmp, DATA_KEEP))
+        else:
+            shutil.rmtree(data, ignore_errors=True)
     shutil.move(prev["path"], target)
+    kept = os.path.join(target, DATA_KEEP)
+    if os.path.isdir(kept):
+        shutil.move(kept, data)
 
 
 def clean_env():

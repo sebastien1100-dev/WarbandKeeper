@@ -83,7 +83,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ "$PUBLISH" = "true" ]; then
             V=$(python3 tools/publish_data.py "$RUNNER_TEMP/summary.json")
-            git add -- Modules tools/guides tools/dungeons WarbandKeeper.toc Core/Init.lua Core/Changelog.lua CHANGELOG.md
+            git add -- Modules Data tools/guides tools/dungeons WarbandKeeper.toc Data/WarbandKeeper_Data.toc Core/Init.lua Core/Changelog.lua CHANGELOG.md
             git commit -q -m "$V : données mises à jour (QuestieDB, wowtbc.gg)"
             # main a bougé pendant la mise à jour (version publiée entre-temps) : on ne force rien, la mise à
             # jour est relancée sur la version à jour (sinon elle échouait et attendait le lendemain)
@@ -99,7 +99,7 @@ jobs:
           fi
           branch="data-update/$(date +%Y-%m-%d)"
           git checkout -b "$branch"
-          git add -- Modules tools/guides tools/dungeons
+          git add -- Modules Data tools/guides tools/dungeons
           git commit -q -m "Données : mise à jour QuestieDB et wowtbc.gg ($(date +%d/%m/%Y))"
           git push -q -f origin "$branch"
           for n in $(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("data-update/")) | select(.headRefName != "'"$branch"'") | .number'); do

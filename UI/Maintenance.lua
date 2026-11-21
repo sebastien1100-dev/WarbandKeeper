@@ -94,6 +94,45 @@ function UI:BuildMaintenanceCards(page, card)
     eb.see:SetScript("OnClick", function() UI:ShowErrorReport(false); UI:RefreshMaintenance() end)
     eb.bg2 = UI:Rounded(eb, 12, 1, "BACKGROUND", 3)
 
+    -- données à la demande (dossier WarbandKeeper_Data, Core/Utils.lua : WK:NeedData)
+    local dc = card("Données", 42 + 52 + 2 * 36 + 16, "grosses bases chargées seulement quand il le faut")
+    dc.dot = dc:CreateTexture(nil, "ARTWORK"); dc.dot:SetTexture(UI.MEDIA .. "circle"); dc.dot:SetSize(10, 10)
+    dc.dot:SetPoint("TOPLEFT", 18, -58)
+    dc.label = UI:Text(dc, 12, C.text); dc.label:SetPoint("TOPLEFT", 38, -50)
+    dc.label:SetText(T("Objectifs de quête, objets des listes BiS, recettes"))
+    dc.sub = UI:Text(dc, 10, C.muted); dc.sub:SetPoint("TOPLEFT", dc.label, "BOTTOMLEFT", 0, -3)
+    dc.go = UI:Button(dc, "Charger maintenant", 170, 28, "secondary")
+    dc.go:SetPoint("TOPRIGHT", -16, -48)
+    dc.go:SetScript("OnClick", function()
+        if WK:NeedData("à la main") then UI:RefreshMaintenance(true)
+        elseif not WK.dataMissing then WK:Print(T("En combat : les données seront chargées à la sortie du combat.")) end
+        UI:RefreshMaintenance(true)
+    end)
+    local dcfg = WK.DataConfig
+    UI:SettingRow(dc, -94, "Précharger après la connexion",
+        "20 s après la connexion, hors combat, si une quête est suivie.",
+        UI:Toggle(dc, function() return dcfg().preload end, function(v) dcfg().preload = v end), 50)
+    UI:SettingRow(dc, -130, "Message quand les données sont chargées", "Une ligne dans le chat, une fois par séance.",
+        UI:Toggle(dc, function() return dcfg().msg end, function(v) dcfg().msg = v or nil end), 50)
+    function dc.Paint()
+        local col, txt
+        if WK.dataLoaded then
+            col = C.positive
+            txt = string.format(T("chargées à %s · %s"), _G.date("%H:%M", WK.dataAt or _G.time()), T(WK.dataWhy or "?"))
+            dc.go:Hide()
+        elseif WK.dataMissing then
+            col = C.negative
+            txt = T("dossier WarbandKeeper_Data absent : réinstalle avec le client PC")
+            dc.go:Hide()
+        else
+            col = C.dim
+            txt = T("en attente : chargées au premier besoin")
+            dc.go:Show()
+        end
+        dc.dot:SetVertexColor(col[1], col[2], col[3], 1)
+        dc.sub:SetText(txt)
+    end
+
     -- nettoyage
     local ROWH = 48
     local cc = card("Nettoyage", 46 + #M.PURGES * ROWH + 56, "une sauvegarde plus légère = connexion et /reload plus rapides")
@@ -139,6 +178,7 @@ function UI:BuildMaintenanceCards(page, card)
     -- rafraîchi à l'ouverture de la section ; « keep » garde la mesure déjà faite
     UI.RefreshMaintenance = function(_, keep)
         if not eb:IsVisible() then return end
+        dc.Paint()
         local n = #M:List()
         local r1, g1, b1 = UI:Accent()
         if n > 0 then

@@ -40,6 +40,7 @@ local KEYS = {
     classSpells = { prices = true, known = true, skip = true }, -- rappel, panneau, tout apprendre
     levelGuide = { follow = true, times = true, acc = true, trainer = true, told = true }, -- préférences seulement -- alerte et niveau ; choix et tournée restent au perso -- réglages du suivi (la quête suivie de chaque perso reste à lui)
     blessings = { chars = true }, -- barre et Salut (la répartition de chaque paladin reste à son perso)
+    dataLoad = {}, -- données à la demande : préchargement, message
 }
 -- état interne, à tout niveau (les drapeaux « raccourci déjà ajouté » du micro menu, lfgAdded / fishAdded, sont
 -- gardés dans les profils : sans eux, chaque profil appliqué remettait les raccourcis LFG et Pêche masqués)

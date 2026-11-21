@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.0 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Connexion plus légère : les grosses bases (coins des objectifs de quête, objets des listes BiS, recettes ; env. 1,45 Mo) sont maintenant dans un second dossier, WarbandKeeper_Data, chargé seulement quand une fonction en a besoin (quête suivie, zones de quête, tournée, barre Quête, choix BiS, recettes manquantes, Rangement).
+- Préchargement en douceur : si une quête est suivie ou une tournée en cours, ces données se chargent toutes seules 20 s après la connexion, hors combat ; rien ne fige en ouvrant la carte. Jamais de chargement en plein combat (attendu jusqu'à la fin du combat).
+- Options > Fiabilité : carte « Données » (état, heure et raison du chargement, bouton « Charger maintenant », préchargement, message dans le chat).
+- Installation : le zip contient deux dossiers à copier dans Interface\AddOns ; le client PC les installe ensemble. « Warband Keeper Data » apparaît dans la liste des addons du jeu et doit rester coché. Redémarrage complet du jeu nécessaire pour cette version.
+
 ## v1.127.5 — 21/11/2026
 
 _Un /reload suffit._

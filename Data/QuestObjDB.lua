@@ -2,7 +2,7 @@
 -- Camps des objectifs de quête et point de rendu. Données tirées de QuestieDB
 -- (https://github.com/Questie/QuestieDB), base de données de l'addon Questie : sous la
 -- licence de Questie (GPLv3 selon son équipe). Format décrit dans tools/gen_objectives.py.
-local ADDON_NAME, WK = ...
+local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)
 WK.QuestObjRaw = {
 [2]="@1440,73.8,61.5",
 [5]="@1431,73.8,43.5",

@@ -33,6 +33,7 @@ end
 local recipeIndex
 local function recipeOf(id)
     if not recipeIndex then
+        if not WK:NeedData("rangement") then return nil end
         recipeIndex = {}
         for prof, list in pairs(WK.RecipeDB or {}) do
             for _, r in ipairs(list) do if r.r then recipeIndex[r.r] = { prof = prof, l = r.l or 1, o = r.o, s = r.s } end end

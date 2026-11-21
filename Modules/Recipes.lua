@@ -701,6 +701,7 @@ end
 -- Recettes que ce perso ne connaît pas, triées par niveau requis.
 -- Renvoie la liste et le nombre de recettes du métier dans la base.
 function M:Missing(c, prof)
+    if not WK:NeedData("recettes") then return nil end
     local db = WK.RecipeDB and WK.RecipeDB[prof]
     if not db then return nil end
     local known = self:KnownOutputs(c)

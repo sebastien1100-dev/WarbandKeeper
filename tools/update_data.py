@@ -175,11 +175,13 @@ def metrics():
     for name in TARGETS:
         path = os.path.join(ROOT, "Modules", name + ".lua")
         if not os.path.exists(path):
+            path = os.path.join(ROOT, "Data", name + ".lua")  # dossier WarbandKeeper_Data (chargé à la demande)
+        if not os.path.exists(path):
             continue
         L = lupa.LuaRuntime(unpack_returned_tuples=True)
         with open(path, encoding="utf-8") as f:
             src = f.read()
-        fn = L.eval("function(src) local f, e = load(src) if not f then error(e) end local WK = {} f('WarbandKeeper', WK) return WK end")
+        fn = L.eval("function(src) local f, e = load(src) if not f then error(e) end local WK = {} WarbandKeeper = WK f('WarbandKeeper', WK) return WK end")
         WK = fn(src)
         g = L.globals()
         count = L.eval("function(t) local n = 0 for _, v in pairs(t or {}) do n = n + #v end return n end")
@@ -249,8 +251,12 @@ def main():
     do_questie, do_wowtbc = "--sans-questie" not in args, "--sans-wowtbc" not in args
 
     backup = tempfile.mkdtemp(prefix="wk-backup-")
+    # fichier généré : dans Modules, ou dans Data (dossier WarbandKeeper_Data chargé à la demande)
+    def home(name):
+        return "Data" if os.path.exists(os.path.join(ROOT, "Data", name + ".lua")) else "Modules"
+    homes = {name: home(name) for name in TARGETS}
     for name in TARGETS:
-        src = os.path.join(ROOT, "Modules", name + ".lua")
+        src = os.path.join(ROOT, homes[name], name + ".lua")
         if os.path.exists(src):
             shutil.copy2(src, backup)
     for d in KEEP:
@@ -261,7 +267,7 @@ def main():
         for name in TARGETS:
             src = os.path.join(backup, name + ".lua")
             if os.path.exists(src):
-                shutil.copy2(src, os.path.join(ROOT, "Modules"))
+                shutil.copy2(src, os.path.join(ROOT, homes[name]))
         for d in KEEP:
             b = os.path.join(backup, os.path.basename(d))
             if os.path.isdir(b):

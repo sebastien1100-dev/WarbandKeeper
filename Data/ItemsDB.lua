@@ -5,7 +5,7 @@
 -- WK.LoadItemsDB() rend WK.ItemsDB = { { n°, groupe d'emplacement, classe, sous-classe, qualité, niveau d'objet, niveau requis,
 --   nom, caractéristiques, source ("q<quête>", "c<métier>:<compétence>" ou "") }, ... }
 -- Chargé à la demande (WK.LoadItemsDB) : une seule chaîne tant que la liste BiS n'est pas ouverte.
-local ADDON_NAME, WK = ...
+local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)
 WK.ItemsDBRaw = [==[
 744	trinket	4	0	2	44	0	Flacon de botte de Thunderbrew	Esp +8	
 810	main	2	4	4	54	49	Marteau du vent nordique		

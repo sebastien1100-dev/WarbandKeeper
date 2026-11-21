@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Génère Modules/QuestObjDB.lua : où faire chaque objectif de quête (camps) et où la rendre.
+"""Génère Data/QuestObjDB.lua (dossier WarbandKeeper_Data, chargé à la demande) : où faire chaque objectif de quête (camps) et où la rendre.
 
 Usage : python3 tools/gen_objectives.py <clone de QuestieDB>
 
@@ -22,6 +22,7 @@ Format (une chaîne par quête, décodée par Modules/QuestTrack.lua à la deman
   WK.QuestVendors[objet] = "carte,x,y,faction,nom;…" : marchands qui vendent cet objet (première apparition,
     faction « A », « H » ou « AH », nom anglais ; le nom français vient de Modules/PlacesDB.lua).
 """
+DATA_HDR = "local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)"
 import math
 import os
 import sys
@@ -292,7 +293,7 @@ def main(root, out):
                 "-- Camps des objectifs de quête et point de rendu. Données tirées de QuestieDB\n"
                 "-- (https://github.com/Questie/QuestieDB), base de données de l'addon Questie : sous la\n"
                 "-- licence de Questie (GPLv3 selon son équipe). Format décrit dans tools/gen_objectives.py.\n"
-                "local ADDON_NAME, WK = ...\nWK.QuestObjRaw = {\n")
+                "%s\nWK.QuestObjRaw = {\n" % DATA_HDR)
         f.write("\n".join(lines))
         f.write("\n}\n-- objets qui démarrent une quête : [objet] = quête\nWK.QuestItemStart = {\n")
         f.write("".join("[%d]=%d," % (k, starts[k]) for k in sorted(starts)))
@@ -328,4 +329,4 @@ def main(root, out):
 
 if __name__ == "__main__":
     root = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), ".cache", "QuestieDB")
-    main(root, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Modules", "QuestObjDB.lua"))
+    main(root, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Data", "QuestObjDB.lua"))

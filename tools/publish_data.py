@@ -69,6 +69,13 @@ def main(path):
     new = ".".join(str(x) for x in parts)
     with open(toc, "w", encoding="utf-8") as f:
         f.write(re.sub(r"^## Version:.*$", "## Version: " + new, t, count=1, flags=re.M))
+    # dossier WarbandKeeper_Data (chargé à la demande) : même version
+    dtoc = os.path.join(ROOT, "Data", "WarbandKeeper_Data.toc")
+    if os.path.exists(dtoc):
+        with open(dtoc, encoding="utf-8") as f:
+            d = f.read()
+        with open(dtoc, "w", encoding="utf-8") as f:
+            f.write(re.sub(r"^## Version:.*$", "## Version: " + new, d, count=1, flags=re.M))
     init = os.path.join(ROOT, "Core", "Init.lua")
     with open(init, encoding="utf-8") as f:
         s = f.read()

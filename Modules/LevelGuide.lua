@@ -156,7 +156,7 @@ end
 -- Objets en sac qui démarrent une quête pas encore faite
 function M:QuestItems()
     local out = {}
-    if not WK.QuestItemStart then return out end
+    if not WK:NeedData("guide de montée") or not WK.QuestItemStart then return out end
     local me = WK.DB:Me() or {}
     local done = (me.quests and me.quests.done) or {}
     for bag = 0, 4 do

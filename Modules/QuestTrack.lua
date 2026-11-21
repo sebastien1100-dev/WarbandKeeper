@@ -43,6 +43,9 @@ local cache = {}
 -- e = zone à explorer, x = objectif caché de Questie (idx = n° de l'objectif du jeu auquel il se rattache)
 function M:Data(qid)
     if cache[qid] ~= nil then return cache[qid] or nil end
+    -- base des objectifs dans le dossier chargé à la demande : pas encore là (combat, dossier absent) = rien,
+    -- sans le retenir
+    if not WK:NeedData("quêtes") then return nil end
     local raw = WK.QuestObjRaw and WK.QuestObjRaw[qid]
     if not raw then cache[qid] = false return nil end
     local body, fin = raw:match("^([^@]*)@?(.*)$")
@@ -198,6 +201,7 @@ function M.ObjectiveNpcs(_, o)
     return out
 end
 function M.NpcName(_, id)
+    if not WK:NeedData("quêtes") then return nil end
     local raw = WK.QuestNpcNames and WK.QuestNpcNames[id]
     if not raw then return nil end
     local en, fr = raw:match("^(.-)|(.*)$")

@@ -181,9 +181,12 @@ local DUAL = { WARRIOR = true, ROGUE = true, HUNTER = true, SHAMAN = true }
 local PROF = { [164] = "Forge", [165] = "Travail du cuir", [171] = "Alchimie", [197] = "Couture", [202] = "Ingénierie",
     [333] = "Enchantement", [185] = "Cuisine", [129] = "Secourisme", [755] = "Joaillerie" }
 M.ARMOR = { [1] = "Tissu", [2] = "Cuir", [3] = "Mailles", [4] = "Plaques" }
-local byGroup, byId
+local byGroup, byId, idxEmpty
 local function index()
+    -- base des objets dans le dossier chargé à la demande : pas encore là = listes vides, réessayé plus tard
     byGroup, byId = {}, {}
+    idxEmpty = not WK:NeedData("listes BiS")
+    if idxEmpty then return end
     -- base décodée à la première utilisation (Modules/ItemsDB.lua)
     local db = (WK.LoadItemsDB and WK.LoadItemsDB()) or WK.ItemsDB or {}
     for _, e in ipairs(db) do
@@ -193,7 +196,7 @@ local function index()
     end
 end
 function M:Info(id)
-    if not byId then index() end
+    if not byId or idxEmpty then index() end
     return byId[id]
 end
 -- Source d'un objet : genre ("dungeon", "raid", "craft", "quest", "other") et texte
@@ -220,7 +223,7 @@ function M:SourceOf(id)
 end
 -- Objets pour un emplacement : f = { query, source, armor, quality, level }, c = perso (classe)
 function M:Candidates(slot, c, f)
-    if not byGroup then index() end
+    if not byGroup or idxEmpty then index() end
     f = f or {}
     local D = WK.modules.Dungeons
     local view = setmetatable({ level = 60 }, { __index = c })
@@ -251,7 +254,7 @@ function M:ArmorTypes(c)
     local view = setmetatable({ level = 60 }, { __index = c })
     for sub = 1, 4 do
         -- un objet d'armure de ce type, pour demander à Dungeons:Usable
-        if not byGroup then index() end
+        if not byGroup or idxEmpty then index() end
         for _, e in ipairs(byGroup.chest or {}) do
             if e[3] == 4 and e[4] == sub then
                 if D:Usable(e[1], view) then out[#out + 1] = sub end

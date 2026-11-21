@@ -236,3 +236,72 @@ function WK.SetCVar(name, value)
     end
     return false
 end
+
+---------------------------------------------------------------------------
+-- Données à la demande : les grosses bases (objectifs de quête, objets des listes BiS, recettes) sont dans le
+-- dossier WarbandKeeper_Data (LoadOnDemand), chargé au premier besoin par WK:NeedData(raison), jamais en
+-- combat (attendu jusqu'à PLAYER_REGEN_ENABLED), et préchargé 20 s après la connexion si une quête est suivie ou
+-- une tournée en cours. Data/Loaded.lua, dernier fichier du dossier, pose WK.dataLoaded. Réglages
+-- WK.DB.global.dataLoad (preload, msg) ; carte « Données » d'Options > Fiabilité.
+---------------------------------------------------------------------------
+WK.DATA_ADDON = "WarbandKeeper_Data"
+WK.dataHooks = {}
+local function dataCfg()
+    local g = WK.DB and WK.DB.global
+    if not g then return {} end
+    g.dataLoad = g.dataLoad or {}
+    local c = g.dataLoad
+    if c.preload == nil then c.preload = true end
+    return c
+end
+WK.DataConfig = dataCfg
+-- fonction appelée une fois le dossier chargé (caches à vider, cartes à redessiner)
+function WK.OnDataLoaded(_, fn) table.insert(WK.dataHooks, fn) end
+local function afterLoad(why)
+    WK.dataWhy, WK.dataAt = why, _G.time()
+    for _, fn in ipairs(WK.dataHooks) do pcall(fn) end
+    if dataCfg().msg then WK:Print(string.format(WK.T("Données chargées (%s)."), WK.T(why or "?"))) end
+    if WK.NotifyChanged then WK:NotifyChanged() end
+end
+-- vrai si les données sont là (les charge si possible) ; faux en combat ou si le dossier manque
+function WK.NeedData(_, why)
+    if WK.dataLoaded then return true end
+    if WK.dataMissing then return false end
+    if _G.InCombatLockdown and _G.InCombatLockdown() then
+        WK.dataWanted = WK.dataWanted or why or "?"
+        return false
+    end
+    local A = _G.C_AddOns
+    local load = (A and A.LoadAddOn) or _G.LoadAddOn
+    if not load then WK.dataMissing = "API" return false end
+    local ok, loaded, reason = pcall(load, WK.DATA_ADDON)
+    if not WK.dataLoaded then
+        WK.dataMissing = (ok and (reason or (loaded == false and "DISABLED"))) or "MISSING"
+        if not WK.dataTold then
+            WK.dataTold = true
+            WK:Print(WK.T("Dossier WarbandKeeper_Data introuvable ou désactivé.") .. " "
+                .. WK.T("Zones de quête, barre Quête et BiS coupées.") .. " "
+                .. WK.T("Réinstalle avec le client PC et coche ce dossier."))
+        end
+        return false
+    end
+    WK.dataWanted = nil
+    afterLoad(why)
+    return true
+end
+WK:On("PLAYER_REGEN_ENABLED", function()
+    local why = WK.dataWanted
+    if why and not WK.dataLoaded then
+        WK.dataWanted = nil
+        if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(0.5, function() WK:NeedData(why) end) end
+    end
+end)
+WK:On("PLAYER_LOGIN", function()
+    if not (_G.C_Timer and _G.C_Timer.After) then return end
+    _G.C_Timer.After(20, function()
+        if WK.dataLoaded or not dataCfg().preload then return end
+        local Q, P = WK.modules.QuestTrack, WK.modules.QuestPlan
+        local busy = (Q and Q.Tracked and Q:Tracked()) or (P and P.Active and P:Active())
+        if busy and not (_G.InCombatLockdown and _G.InCombatLockdown()) then WK:NeedData("préchargement") end
+    end)
+end)

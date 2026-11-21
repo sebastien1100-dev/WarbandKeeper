@@ -17,7 +17,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "guides")
 OUT = os.path.join(ROOT, "Modules", "Guides.lua")
-OUT_DB = os.path.join(ROOT, "Modules", "RecipeDB.lua")
+OUT_DB = os.path.join(ROOT, "Data", "RecipeDB.lua")
 
 # Nom du métier en jeu (français) pour chaque guide.
 PROFS = {
@@ -197,8 +197,8 @@ def gen():
 
 
 def gen_db(guides):
-    """Modules/RecipeDB.lua : toutes les recettes de chaque métier (recettes manquantes)."""
-    out = ["local ADDON_NAME, WK = ...", "",
+    """Data/RecipeDB.lua (dossier chargé à la demande) : toutes les recettes de chaque métier."""
+    out = ["local WK = WarbandKeeper -- table de l\'addon principal (dossier chargé à la demande)", "",
            "-- Toutes les recettes des métiers de WoW Forever (d'après wowtbc.gg), pour les recettes manquantes.",
            "-- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.",
            "-- s = recette (sort), o = objet fabriqué, l = niveau pour l'apprendre, t = 1 si elle s'apprend chez le maître,",

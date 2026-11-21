@@ -1,4 +1,4 @@
-local ADDON_NAME, WK = ...
+local WK = WarbandKeeper -- table de l'addon principal (dossier chargé à la demande)
 
 -- Toutes les recettes des métiers de WoW Forever (d'après wowtbc.gg), pour les recettes manquantes.
 -- FICHIER GÉNÉRÉ par tools/gen_guides.py : ne pas modifier à la main.

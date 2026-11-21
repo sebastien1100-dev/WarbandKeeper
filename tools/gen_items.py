@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Génère Modules/ItemsDB.lua : objets portables de WoW Forever (qualité verte et plus) pour la liste BiS.
+"""Génère Data/ItemsDB.lua (dossier WarbandKeeper_Data, chargé à la demande) : objets portables de WoW Forever (qualité verte et plus) pour la liste BiS.
 
 Sources :
   - opendata de wowlayerup-forever (https://github.com/wowlayerup-forever/opendata), données sous licence
@@ -15,7 +15,7 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "Modules", "ItemsDB.lua")
+OUT = os.path.join(ROOT, "Data", "ItemsDB.lua")
 LOADER = r'''function WK.LoadItemsDB()
     if WK.ItemsDB then return WK.ItemsDB end
     local out, raw = {}, WK.ItemsDBRaw or ""
@@ -100,7 +100,7 @@ def main():
         # une ligne par objet, champs séparés par des tabulations, dans une seule chaîne : décodée à la
         # première ouverture de la liste BiS (bien plus léger en mémoire qu'une table par objet)
         o.write("-- Chargé à la demande (WK.LoadItemsDB) : une seule chaîne tant que la liste BiS n'est pas ouverte.\n")
-        o.write("local ADDON_NAME, WK = ...\nWK.ItemsDBRaw = [==[\n")
+        o.write("%s\nWK.ItemsDBRaw = [==[\n" % "local WK = WarbandKeeper -- table de l\'addon principal (dossier chargé à la demande)")
         for it in items:
             for v in it:
                 if isinstance(v, str):
