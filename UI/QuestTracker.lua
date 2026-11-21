@@ -2,7 +2,7 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
-local CreateFrame = CreateFrame
+local CreateFrame, GameTooltip, UIParent, C_Timer = CreateFrame, GameTooltip, UIParent, C_Timer
 
 -- Carte de la quête suivie (HUD « questTrack ») : titre, zone et niveau, objectifs avec coche, jauge et
 -- compte, « Camp suivant » et « Rendu » ; la croix arrête le suivi. Données : Modules/QuestTrack.lua.
@@ -622,3 +622,212 @@ function UI:RefreshQuestTracker()
 end
 
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3.5, function() UI:RefreshQuestTracker() end) end)
+
+---------------------------------------------------------------------------
+-- Pastilles de la tournée dans le suivi des quêtes du jeu : l'icône ronde du jeu (bouton POI à gauche de
+-- chaque quête) est rendue invisible et notre pastille est posée à sa place, à chaque mise à jour du suivi.
+-- QuestTrack:Config().trackPins : "step" (n° et couleur de la prochaine étape de la tournée : accent faire,
+-- vert rendre ; gris hors tournée, « ? » vert si prête), "progress" (anneau de la couleur d'avancement :
+-- rouge pas commencée, orange en cours, vert prête, n° d'étape dedans), "off" (icônes du jeu).
+-- Les icônes sont reconnues par leur forme (bouton d'au plus 40 px qui porte un n° de quête : questID,
+-- GetQuestID, ou poiButton d'un bloc) dans les cadres de suivi connus ; /wk suivi dit ce qui a été trouvé.
+---------------------------------------------------------------------------
+local ROOTS = { "ObjectiveTrackerFrame", "QuestWatchFrame", "WatchFrame", "QuestObjectiveTracker",
+    "ObjectiveTrackerBlocksFrame" }
+local overlays = setmetatable({}, { __mode = "k" })
+local hiddenBtn = setmetatable({}, { __mode = "k" })
+local found = { roots = {}, buttons = 0 }
+local function pinMode() return Q():Config().trackPins or "step" end
+
+local function questOf(btn)
+    local id = rawget(btn, "questID") or rawget(btn, "questId")
+    if not id and btn.GetQuestID then local ok, v = pcall(btn.GetQuestID, btn); if ok then id = v end end
+    if type(id) == "number" and id > 0 then return id end
+    return nil
+end
+-- boutons POI des cadres de suivi (parcours limité en profondeur)
+local function collect(f, out, depth)
+    if depth > 7 or not f or not f.GetChildren then return end
+    local pb = rawget(f, "poiButton")
+    if type(pb) == "table" and pb.IsShown then
+        local fid = rawget(f, "id")
+        local id = questOf(pb) or (type(fid) == "number" and fid) or nil
+        if id then out[pb] = id end
+    end
+    for _, ch in ipairs({ f:GetChildren() }) do
+        if not ch.wkPin then
+            local id = questOf(ch)
+            local w = ch.GetWidth and ch:GetWidth() or 0
+            if id and w > 0 and w <= 40 then out[ch] = out[ch] or id end
+            collect(ch, out, depth + 1)
+        end
+    end
+end
+
+-- étape de la tournée qui concerne la quête : n°, genre (do / turn / pick)
+local function stepOf(qid)
+    local P = WK.modules.QuestPlan
+    local t = P and P:Tour()
+    if not t then return nil end
+    for i = t.idx or 1, #t.steps do
+        local s = t.steps[i]
+        for _, q in ipairs(s.qids or {}) do
+            if q == qid and (s.kind == "do" or s.kind == "turn" or s.kind == "pick") then return i, s.kind end
+        end
+    end
+    return nil
+end
+
+local function overlayFor(btn)
+    local o = overlays[btn]
+    if o then return o end
+    local parent = btn:GetParent() or UIParent
+    o = CreateFrame("Button", nil, parent)
+    o.wkPin = true
+    o:SetSize(20, 20)
+    o:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    o.edge = o:CreateTexture(nil, "ARTWORK", nil, 0); o.edge:SetTexture(UI.MEDIA .. "circle"); o.edge:SetAllPoints()
+    o.fill = o:CreateTexture(nil, "ARTWORK", nil, 1); o.fill:SetTexture(UI.MEDIA .. "circle")
+    o.fill:SetPoint("TOPLEFT", 2, -2); o.fill:SetPoint("BOTTOMRIGHT", -2, 2)
+    o.ring = o:CreateTexture(nil, "ARTWORK", nil, 2); o.ring:SetTexture(UI.MEDIA .. "ring")
+    o.ring:SetPoint("TOPLEFT", 1, -1); o.ring:SetPoint("BOTTOMRIGHT", -1, 1)
+    o.num = o:CreateFontString(nil, "OVERLAY")
+    if not (UI.FONT and o.num:SetFont(UI.FONT, 10, "")) then o.num:SetFont("Fonts\\FRIZQT__.TTF", 10, "") end
+    o.num:SetPoint("CENTER", 0, 0)
+    o:SetScript("OnClick", function(s, b)
+        if not s.qid then return end
+        if UI:QuestClick(b, { s.qid }) then return end
+        Q():Track(s.qid)
+    end)
+    o:SetScript("OnEnter", function(s)
+        if not s.qid then return end
+        UI:TooltipOwner(s, "ANCHOR_LEFT")
+        GameTooltip:SetText(Q():Title(s.qid), 1, 1, 1)
+        local i, kind = stepOf(s.qid)
+        if i then
+            local what = kind == "turn" and T("rendre") or (kind == "pick" and T("prendre") or T("faire"))
+            local tc = C.text
+            GameTooltip:AddLine(string.format(T("Étape %d de la tournée · %s"), i, what), tc[1], tc[2], tc[3])
+        else
+            GameTooltip:AddLine(T("Pas dans la tournée"), C.muted[1], C.muted[2], C.muted[3])
+        end
+        local qq = WK.modules.Quests and WK.modules.Quests:Get(s.qid)
+        local gc = C.gold
+        if qq and (qq.xp or 0) > 0 then GameTooltip:AddLine(string.format("+%d XP", qq.xp), gc[1], gc[2], gc[3]) end
+        GameTooltip:AddLine(T("Clic : suivre et guider · ") .. UI:QuestClickHint(), C.dim[1], C.dim[2], C.dim[3], true)
+        GameTooltip:Show()
+    end)
+    o:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    overlays[btn] = o
+    return o
+end
+
+local function paintOverlay(o, qid, mode)
+    o.qid = qid
+    local i, kind = stepOf(qid)
+    local complete = Q():IsComplete(qid)
+    local bg = C.bg
+    o.edge:SetVertexColor(bg[1], bg[2], bg[3], 1)
+    local label = i and tostring(i) or (complete and "?" or "-")
+    if mode == "progress" then
+        local P = WK.modules.QuestPlan
+        local st = P and P:QuestProgress(qid) or "started"
+        local col = (st == "ready" and C.positive) or (st == "partial" and C.warning) or C.negative
+        if not i and not complete then col = C.dim end
+        o.fill:SetVertexColor(bg[1], bg[2], bg[3], 0.9)
+        o.ring:SetVertexColor(col[1], col[2], col[3], 1); o.ring:Show()
+        o.num:SetTextColor(col[1], col[2], col[3], 1)
+    else
+        local col
+        if i then col = (kind == "turn" and C.positive) or (kind == "pick" and C.gold) or { UI:Accent() }
+        elseif complete then col = C.positive
+        else col = C.dim end
+        o.fill:SetVertexColor(col[1], col[2], col[3], 1)
+        o.ring:Hide()
+        o.num:SetTextColor(bg[1], bg[2], bg[3], 1)
+    end
+    o.num:SetText(label)
+end
+
+local function restoreAll()
+    for btn, a in pairs(hiddenBtn) do btn:SetAlpha(a or 1); hiddenBtn[btn] = nil end
+    for _, o in pairs(overlays) do o:Hide() end
+end
+
+function UI.RefreshTrackerPins()
+    local mode = pinMode()
+    if mode == "off" or not WK:FeatureOn("quests") then restoreAll() return end
+    local btns = {}
+    wipe(found.roots)
+    for _, name in ipairs(ROOTS) do
+        local f = _G[name]
+        if f and f.GetChildren then table.insert(found.roots, name); collect(f, btns, 0) end
+    end
+    local n = 0
+    local seen = {}
+    for btn, qid in pairs(btns) do
+        if btn:IsShown() then
+            n = n + 1
+            local o = overlayFor(btn)
+            if o:GetParent() ~= btn:GetParent() then o:SetParent(btn:GetParent()) end
+            local size = math.max(16, math.min(24, btn:GetWidth() or 20))
+            o:SetSize(size, size)
+            o:ClearAllPoints(); o:SetPoint("CENTER", btn, "CENTER", 0, 0)
+            o:SetFrameLevel((btn:GetFrameLevel() or 1) + 3)
+            paintOverlay(o, qid, mode)
+            o:Show()
+            if hiddenBtn[btn] == nil then hiddenBtn[btn] = btn:GetAlpha() end
+            btn:SetAlpha(0)
+            seen[o] = true
+        end
+    end
+    for btn, o in pairs(overlays) do
+        if not seen[o] then
+            o:Hide()
+            if hiddenBtn[btn] ~= nil and not btn:IsShown() then
+                btn:SetAlpha(hiddenBtn[btn] or 1); hiddenBtn[btn] = nil
+            end
+        end
+    end
+    found.buttons = n
+end
+function UI.TrackerPinsDiag()
+    UI:RefreshTrackerPins()
+    return string.format(T("cadres de suivi : %s · icônes remplacées : %d · mode : %s"),
+        #found.roots > 0 and table.concat(found.roots, ", ") or T("aucun"), found.buttons, pinMode())
+end
+
+-- mises à jour : après celles du suivi du jeu (fonctions connues) et toutes les 0,5 s quand il est visible
+do
+    local pending
+    local function soon()
+        if pending then return end
+        pending = true
+        C_Timer.After(0, function() pending = nil; pcall(UI.RefreshTrackerPins, UI) end)
+    end
+    UI.TrackerPinsSoon = soon
+    local hookedFns = {}
+    local function hookAll()
+        for _, fn in ipairs({ "ObjectiveTracker_Update", "QuestWatch_Update", "WatchFrame_Update",
+                              "QuestObjectiveTracker_Update" }) do
+            if not hookedFns[fn] and type(_G[fn]) == "function" then
+                hookedFns[fn] = true; hooksecurefunc(fn, soon)
+            end
+        end
+    end
+    local ticker = CreateFrame("Frame")
+    ticker.acc = 0
+    ticker:SetScript("OnUpdate", function(s, el)
+        s.acc = s.acc + el
+        if s.acc < 0.5 then return end
+        s.acc = 0
+        if pinMode() == "off" then return end
+        for _, name in ipairs(ROOTS) do
+            local f = _G[name]
+            if f and f.IsVisible and f:IsVisible() then pcall(UI.RefreshTrackerPins, UI) return end
+        end
+    end)
+    WK:On("PLAYER_LOGIN", function() hookAll(); C_Timer.After(2, soon) end)
+    WK:On("ADDON_LOADED", function() hookAll() end)
+    WK:On("QUEST_LOG_UPDATE", soon)
+end

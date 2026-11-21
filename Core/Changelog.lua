@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.123.0", date = "21/11/2026",
+        added = {
+            "Suivi des quêtes du jeu : les icônes rondes à gauche de chaque quête sont remplacées par les pastilles de la tournée, à la couleur de la prochaine étape qui la concerne (accent à faire, vert à rendre) avec son numéro ; gris hors tournée, « ? » vert si prête à rendre.",
+            "Option « Avancement » : un anneau rouge (pas commencée), orange (en cours) ou vert (prête) avec le numéro d'étape. « Icônes du jeu » rend l'affichage d'origine. Roue des Quêtes, onglet Suivi et carte, carte « Suivi des quêtes du jeu ».",
+            "Sur la pastille : clic = suivre et guider, Maj + clic = lien wowhead, clic droit = menu de la quête ; au survol, l'étape de la tournée et l'XP. /wk suivi dit ce qui a été trouvé.",
+        },
+    },
+    {
         version = "1.122.0", date = "21/11/2026", restart = true,
         added = {
             "Points /way, comme TomTom : « /way 32.35 48.55 Nom » pose un point et le guide (flèche, épingle, repère et trajet). Zone en anglais ou en français, début du nom accepté (« /way Elwynn 32 48 »), « /way #1429 x y », virgules acceptées ; « /way » seul = ta position ; « /way list », « /way reset », « /way undo ».",

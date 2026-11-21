@@ -633,6 +633,21 @@ UI:RegisterPage({
                     function(v) QT():Config().heat = v; redraw() end, "%d %%"), 220)
         end
 
+        -- pastilles de la tournée dans le suivi des quêtes du jeu (UI/QuestTracker.lua)
+        if QT() then
+            local pcard = card("Suivi des quêtes du jeu", 40 + 36 + 16, "icônes à gauche de chaque quête")
+            self.pinSeg = UI:Segmented(pcard,
+                { { "step", "Étape" }, { "progress", "Avancement" }, { "off", "Icônes du jeu" } },
+                function(v)
+                    QT():Config().trackPins = v
+                    if UI.RefreshTrackerPins then UI:RefreshTrackerPins() end
+                end, 26)
+            UI:SettingRow(pcard, -40, "Pastilles",
+                "Étape : n° et couleur de l'étape de la tournée. Avancement : anneau rouge, orange ou vert.",
+                self.pinSeg, self.pinSeg:GetWidth())
+            self.pinSeg:Select(QT():Config().trackPins or "step")
+        end
+
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
         UI:SettingRow(lcard, -40, "Quêtes de donjon", nil, toggle(lcard, "dungeons"), 50)
         UI:SettingRow(lcard, -76, "Quêtes trop hautes", nil, toggle(lcard, "high"), 50)
@@ -829,7 +844,8 @@ UI:RegisterPage({
         for _, e in ipairs(self.sideCards or {}) do table.insert(all, e.c) end
         if not self.qct then
             self.qct = UI:CardTabs(self.side.child, "quests", {
-                { "track", T("Suivi et carte"), titles = { "Quête suivie", "Zones des objectifs", "Légende" } },
+                { "track", T("Suivi et carte"),
+                  titles = { "Quête suivie", "Zones des objectifs", "Suivi des quêtes du jeu", "Légende" } },
                 { "list", T("Quêtes montrées"),
                   titles = { "Quêtes montrées", "Journal des données", "Liens wowhead" } },
                 { "auto", T("Quêtes automatiques"),

@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.123.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Suivi des quêtes du jeu : les icônes rondes à gauche de chaque quête sont remplacées par les pastilles de la tournée, à la couleur de la prochaine étape qui la concerne (accent à faire, vert à rendre) avec son numéro ; gris hors tournée, « ? » vert si prête à rendre.
+- Option « Avancement » : un anneau rouge (pas commencée), orange (en cours) ou vert (prête) avec le numéro d'étape. « Icônes du jeu » rend l'affichage d'origine. Roue des Quêtes, onglet Suivi et carte, carte « Suivi des quêtes du jeu ».
+- Sur la pastille : clic = suivre et guider, Maj + clic = lien wowhead, clic droit = menu de la quête ; au survol, l'étape de la tournée et l'XP. /wk suivi dit ce qui a été trouvé.
+
 ## v1.122.0 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

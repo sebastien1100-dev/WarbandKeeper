@@ -78,6 +78,10 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Gear:Scan({ talents = true })
         WK:Print(WK.T("Talents : diagnostic"))
         for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
+    elseif cmd == "suivi" or cmd == "tracker" then
+        -- pastilles de la tournée dans le suivi des quêtes du jeu (UI/QuestTracker.lua)
+        WK:Print(WK.T("Suivi des quêtes : diagnostic"))
+        WK:Print("  " .. WK.UI:TrackerPinsDiag())
     elseif cmd == "zones" then
         -- diagnostic des zones de quête (UI/QuestCamps.lua) : dernier dessin de la carte et de la minicarte
         local QT = WK.modules.QuestTrack
