@@ -403,7 +403,7 @@ end
 ---------------------------------------------------------------------------
 -- Messages (format PallyPower)
 ---------------------------------------------------------------------------
-local queue, sending, lastMsg = {}, false, nil
+local queue, sending, lastMsg = {}, false, {}
 local function channel()
     if IsInGroup and LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance and select(1, IsInInstance()) then
         return "INSTANCE_CHAT"
@@ -423,8 +423,14 @@ local function pump()
 end
 local function send(msg, target, prefix)
     if not channel() then return end
-    if not target and msg == lastMsg then return end
-    lastMsg = not target and msg or lastMsg
+    -- un même message au groupe n'est pas renvoyé avant 15 s (avant, seul le dernier envoyé était comparé : un
+    -- « SELF » identique repartait à chaque changement du groupe, en plus du « HI »). Un changement de répartition
+    -- donne un autre message et part tout de suite ; une réponse chuchotée part toujours
+    if not target then
+        local t = _G.GetTime and _G.GetTime() or 0
+        if lastMsg[msg] and t - lastMsg[msg] < 15 then return end
+        lastMsg[msg] = t
+    end
     if #queue > 40 then return end
     table.insert(queue, { msg = msg, target = target, prefix = prefix or PREFIX })
     if not sending then pump() end
@@ -652,9 +658,18 @@ local function onRoster()
     C_Timer.After(1.5, function()
         rosterPending = false
         if not M:On() then return end
-        prune()
+        local present = prune()
         M:AutoAssign()
-        if channel() then M:SendSelf(); M:Request() end
+        if channel() then
+            M:SendSelf()
+            -- demande d'état seulement quand un paladin du groupe nous est encore inconnu (avant : à chaque
+            -- changement du groupe, et chaque paladin répondait par plusieurs chuchotements)
+            local unknown = false
+            for name, cls in pairs(present or {}) do
+                if cls == "PALADIN" and name ~= me() and not pallys[name] then unknown = true break end
+            end
+            if unknown then M:Request() end
+        end
         changed()
     end)
 end
@@ -710,4 +725,8 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, ch, sender)
 end)
 
 -- Pour les tests
-M._reset = function() for k in pairs(pallys) do pallys[k] = nil end; myName = nil; wipe(seen); M.demo = nil end
+M._reset = function()
+    for k in pairs(pallys) do pallys[k] = nil end
+    myName = nil; wipe(seen); M.demo = nil
+    for k in pairs(lastMsg) do lastMsg[k] = nil end
+end

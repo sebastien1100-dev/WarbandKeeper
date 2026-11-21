@@ -930,7 +930,8 @@ for _, ev in ipairs({ "GUILD_ROSTER_UPDATE", "FRIENDLIST_UPDATE", "BN_FRIEND_ACC
 end
 -- la liste de la guilde n'arrive que sur demande : une fois par minute
 local function askRoster()
-    if bar and IsInGuild and IsInGuild() then
+    -- micro menu coupé (cadre caché) : rien à compter, la liste de guilde n'est pas redemandée
+    if bar and bar:IsShown() and IsInGuild and IsInGuild() then
         if C_GuildInfo and C_GuildInfo.GuildRoster then pcall(C_GuildInfo.GuildRoster) elseif GuildRoster then pcall(GuildRoster) end
     end
 end

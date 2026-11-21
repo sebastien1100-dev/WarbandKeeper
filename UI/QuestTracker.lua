@@ -1127,7 +1127,9 @@ function UI.RefreshQuestBar()
             enabled = function() return actOn() and WK:FeatureOn("quests") end,
             sample = function(on)
                 bar.sample = on or nil
-                if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+                -- en combat : rien de protégé ne peut changer ; la fin de l'aperçu est rejouée à la sortie du
+                -- combat (barPending), où RefreshQuestBar remet aussi les types des boutons
+                if _G.InCombatLockdown and _G.InCombatLockdown() then barPending = true return end
                 if on then
                     local demo = { target = { name = T("Monstre de la quête"), name2 = "?", idx = 1, total = 2,
                         have = 3, need = 8 }, item = { id = 0, icon = 134400, count = "3" } }
@@ -1140,15 +1142,20 @@ function UI.RefreshQuestBar()
             end,
         })
     end
+    -- aperçu resté posé hors du mode édition (élément coupé pendant l'édition : sa fin d'aperçu était sautée)
+    if bar.sample and not UI.editing and not UI.testing then bar.sample = nil end
     if bar.sample then return end
-    local a = barData()
     if _G.InCombatLockdown and _G.InCombatLockdown() then
         barPending = true
-        bar:Paint(bar.last) -- en combat : textes seulement, les boutons gardent leur cible
+        bar:Paint(bar.last) -- en combat : textes seulement, les boutons gardent leur cible (rien de recalculé)
         return
     end
+    local a = barData()
     barPending = nil
     local tb, ib = bar.t, bar.i
+    -- types des boutons remis s'ils ont été retirés (aperçu du mode édition fini en combat)
+    if tb:GetAttribute("type") ~= "macro" then tb:SetAttribute("type", "macro") end
+    if ib:GetAttribute("type") ~= "item" then ib:SetAttribute("type", "item") end
     local tg, it = a and a.target, a and a.item
     if tg then
         tb.n1, tb.n2 = tg.name, tg.name2

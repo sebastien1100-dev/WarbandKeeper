@@ -154,16 +154,27 @@ local function arm(f, key, label)
         if s.until_ and GetTime() > s.until_ then s.until_ = nil; safeHide(s) end
     end)
     f:Hide()
+    -- exemple : nom dans la langue de l'addon (avant, toujours en anglais)
+    local function demo()
+        local r = R:Get(100)
+        return { name = (r and R:Name(r)) or "Gruff Swiftbite", level = 12, id = 100, rare = r }
+    end
+    local style = key == "rareCompact" and "compact" or "banner"
     UI:RegisterHUD(key, f, {
         label = label, default = { 0, UIParent:GetHeight() / 2 - 110 },
+        -- montré en mode édition seulement si l'alerte est active et que ce style est choisi
+        enabled = function()
+            local cfg = R:Config()
+            return cfg.alert ~= false and (cfg.alertStyle or "banner") == style and WK:FeatureOn("rares")
+        end,
         sample = function(on)
             f.sample = on or nil
-            if on then f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) }); f:Show() else safeHide(f) end
+            if on then f:Fill(demo()); f:Show() else safeHide(f) end
         end,
         -- test : comme une vraie apparition (minuterie et son)
         test = function()
             f.sample = nil
-            f:Fill({ name = "Gruff Swiftbite", level = 12, id = 100, rare = R:Get(100) })
+            f:Fill(demo())
             f.until_ = GetTime() + 25
             f:Show()
             if R:Config().sound and PlaySound then pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master") end

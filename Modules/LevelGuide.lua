@@ -263,7 +263,7 @@ function M:StepsNow()
                 for _, e in ipairs(k.quests) do if e.picked then xp = xp + (e.xp or 0) end end
                 if #labels < 2 then table.insert(labels, k.label) end
             end
-            add({ key = "tour:" .. (here or 0) .. ":" .. #plan.steps, kind = "tour", auto = true,
+            add({ key = "tour:" .. (here or 0), kind = "tour", auto = true, -- clé stable : passée, elle ne revient pas pour une quête cochée de plus
                 title = string.format(T("Tournée de la zone : %d étapes"), #plan.steps),
                 sub = string.format(T("env. %d min · +%d XP · niveau %.1f à la fin"), math.max(1, math.floor(plan.secs / 60 + 0.5)), xp, self:LevelAfter(xp)),
                 act = function() P():Start() end })
@@ -358,8 +358,10 @@ local function soon(delay)
     pending = true
     C_Timer.After(delay or 2, function() pending = nil; M:Tick() end)
 end
-WK:On("QUEST_ACCEPTED", function(qid)
-    if type(qid) ~= "number" then return end
+WK:On("QUEST_ACCEPTED", function(a, b)
+    -- (index du journal, n°) sur certains clients, (n°) sur d'autres : même lecture que Modules/Quests.lua
+    local qid = (type(b) == "number" and b) or (type(a) == "number" and a > 100 and a) or nil
+    if not qid then return end
     local c = M:Config()
     local k = WK:CharKey()
     c.acc[k] = c.acc[k] or {}
@@ -374,9 +376,8 @@ WK:On("QUEST_TURNED_IN", function(qid)
         if d > 20 and d < 2 * 3600 then c.times[qid] = d end
         c.acc[k][qid] = nil
     end
-    -- suite de quête dans le coin : la tournée en cours la prend (recalcul depuis là où tu es)
-    local q = Qs():Get(qid)
-    if q and q.nxt and P() and P():Tour() then C_Timer.After(2, function() if P():Tour() then P():Reorder() end end) end
+    -- (suite de quête dans le coin : QuestPlan refait déjà la tournée après un rendu ; le second recalcul d'ici,
+    -- qui ne regardait ni la pause ni les coches, est retiré)
     soon(3)
 end)
 WK:On("TRAINER_SHOW", function()

@@ -71,6 +71,21 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.21 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Chaînes de quêtes apprises : une quête débloquée n'est plus liée au dernier rendu quand plusieurs quêtes ont été rendues entre-temps.
+- Quêtes grises (bien sous ton niveau) : plus notées « pas encore proposée » quand le jeu les cache ; elles ne disparaissent plus de la tournée « Compléter la zone ».
+- Quête suivie : en changeant de zone, la flèche va bien au camp le plus proche au lieu de garder l'ancien.
+- Barre Quête : après un test du mode édition fini en combat, Cibler et Objet remarchent dès la sortie du combat.
+- Tournée : un seul recalcul après le rendu d'une quête à suite (il y en avait deux, dont un même en pause) ; guide de montée : une étape « tournée de la zone » passée ne revient plus pour une quête cochée de plus ; temps réels des quêtes notés quel que soit le client.
+- Quêtes automatiques : chez un PNJ sans dialogue, les journalières et répétables ne sont plus prises.
+- Feu de camp : l'encart, l'icône et le kit ne disparaissent plus pendant un combat près du feu ; à la sortie du mode édition, le son n'est plus joué deux fois.
+- Paladins : un même message n'est plus renvoyé au groupe avant 15 s, et l'état des autres n'est demandé qu'à l'arrivée d'un paladin inconnu (moins de messages perdus en raid).
+- Mode édition : les bandeaux de rare ne s'affichent que si l'alerte est active et pour le style choisi, avec le nom en français ; micro menu coupé : la liste de guilde n'est plus redemandée chaque minute.
+
 ## v1.128.20 — 21/11/2026
 
 _Un /reload suffit._

@@ -408,6 +408,9 @@ M.Remaining = remaining
 
 local wasSitting = false
 function M:Update()
+    -- en combat, le jeu peut masquer les effets : on garde l'état d'avant (relu à la sortie du combat) ; avant,
+    -- un monstre près du feu faisait disparaître l'encart, l'icône et le kit jusqu'au prochain changement d'effet
+    if _G.InCombatLockdown and _G.InCombatLockdown() and self.auras then return end
     local cfg = self:Config()
     local a = scan()
     self.auras = a
@@ -483,3 +486,4 @@ WK:OnUnit("UNIT_AURA", "player", function(unit)
     C_Timer.After(0.2, function() pending = false; M:Update() end)
 end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(2, function() M:Update() end) end)
+WK:On("PLAYER_REGEN_ENABLED", function() _G.C_Timer.After(0.3, function() M:Update() end) end)

@@ -633,7 +633,9 @@ function M:NoteOffered(npc, offered, titles)
             -- pas proposée avant, proposée maintenant, au même niveau, après un rendu : ce rendu la débloquait
             local was = qs.notOffered[q.id]
             local last = M.lastTurnIn
-            if was and was.lvl == lvl and last and last.at >= (was.at or 0) and last.id ~= q.id then
+            -- un seul rendu depuis la note (sinon la quête d'avant retenue, le dernier rendu, pouvait être autre)
+            local oneTurnIn = was and ((qs.doneN or 0) - (was.n or 0)) == 1
+            if was and was.lvl == lvl and oneTurnIn and last and last.at >= (was.at or 0) and last.id ~= q.id then
                 local tok = WK:CharKey() .. ":" .. tostring(last.at) .. ":" .. tostring(last.id)
                 self:LearnChain(q.id, last.id, "unlock", tok)
             end
@@ -641,7 +643,11 @@ function M:NoteOffered(npc, offered, titles)
         elseif self:ForChar(q, c) then
             local was = qs.notOffered[q.id]
             qs.notOffered[q.id] = nil
-            if self:State(q, c) == "avail" then
+            -- quête grise (bien sous ton niveau) : le jeu la cache si le suivi des quêtes de bas niveau est coupé ;
+            -- pas notée « pas proposée » (elle disparaissait de la tournée « Compléter la zone »)
+            local green = (_G.GetQuestGreenRange and _G.GetQuestGreenRange()) or 8
+            local grey = (q.lvl or 0) > 0 and (q.lvl or 0) < lvl - green
+            if not grey and self:State(q, c) == "avail" then
                 qs.notOffered[q.id] = { lvl = lvl, n = qs.doneN or 0, at = _G.time() }
                 if not was or was.lvl ~= lvl or was.n ~= (qs.doneN or 0) then table.insert(newly, q) end
             end

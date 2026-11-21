@@ -94,7 +94,9 @@ local function build()
         label = T("Feu de camp"), default = { 0, -180 },
         enabled = function() return M:Config().enabled and WK:FeatureOn("campfire") end,
         -- fin de l'aperçu : l'état réel revient (pas seulement caché)
-        sample = function(on) f.sample = on or nil; if on then f:Paint(true); f:Show() else f:Hide(); M:OnChange(true) end end,
+        -- fin de l'aperçu : état rafraîchi sans le jouer comme un changement (son et encart « avantages »
+        -- rejoués deux fois avant, une fois par élément)
+        sample = function(on) f.sample = on or nil; if on then f:Paint(true); f:Show() else f:Hide(); M:OnChange(false) end end,
     })
     return f
 end
@@ -181,7 +183,7 @@ local function buildIcon()
     UI:RegisterHUD("campIcon", b, {
         label = T("Icône du feu de camp"), default = { -220, -120 },
         enabled = function() return M:Config().icon and WK:FeatureOn("campfire") end,
-        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide(); M:OnChange(true) end end,
+        sample = function(on) b.sample = on or nil; if on then b:Paint(true); b:Show() else b:Hide(); M:OnChange(false) end end,
     })
     return b
 end

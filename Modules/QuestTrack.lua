@@ -488,15 +488,21 @@ local function logSignature()
 end
 M.LogSignature = logSignature
 local pending
+-- une demande forcée qui arrive pendant l'attente d'une demande ordinaire n'est plus perdue (QUEST_LOG_UPDATE
+-- arrive souvent avec ZONE_CHANGED_NEW_AREA : la flèche gardait l'ancien camp en changeant de zone)
+local pendingForce = false
 local function soon(force)
+    if force == true then pendingForce = true end
     if pending then return end
     pending = true
     _G.C_Timer.After(0.4, function()
         pending = nil
+        local forced = pendingForce
+        pendingForce = false
         if not on() then return end
         local sig = logSignature()
         local track = M:Config().tracked[WK:CharKey()]
-        if force ~= true and sig and sig == M.lastSig and track == M.lastSigTrack then return end
+        if not forced and sig and sig == M.lastSig and track == M.lastSigTrack then return end
         M.lastSig, M.lastSigTrack = sig, track
         local qid = M:Tracked()
         if not qid and M:Config().tracked[WK:CharKey()] then M:Config().tracked[WK:CharKey()] = nil end

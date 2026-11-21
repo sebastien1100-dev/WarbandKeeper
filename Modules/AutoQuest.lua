@@ -200,8 +200,17 @@ WK:On("QUEST_GREETING", function()
         if complete and M:WantTurn(qid) then return SelectActiveQuest(i) end
     end
     for i = 1, (GetNumAvailableQuests and GetNumAvailableQuests() or 0) do
-        local qid = GetAvailableQuestInfo and select(5, GetAvailableQuestInfo(i))
-        if M:WantPick(qid) then return SelectAvailableQuest(i) end
+        -- (trivial, fréquence, répétable, légendaire, n°) : les répétables et journalières sont laissées, comme
+        -- au dialogue (GOSSIP_SHOW) ; avant, un PNJ sans dialogue en donnait une sans le vouloir
+        local qid, freq, rep
+        if GetAvailableQuestInfo then
+            local _, f, r, _, id = GetAvailableQuestInfo(i)
+            qid, freq, rep = id, f, r
+        end
+        local Qs = WK.modules.Quests
+        local repeatable = rep == true or (type(freq) == "number" and freq > 0) -- 1 journalière, 2 hebdo
+            or (qid and Qs and Qs.IsRepeatable and Qs:IsRepeatable(qid))
+        if not repeatable and M:WantPick(qid) then return SelectAvailableQuest(i) end
     end
 end)
 WK:On("QUEST_DETAIL", function()
