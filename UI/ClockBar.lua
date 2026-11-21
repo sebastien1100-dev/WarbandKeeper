@@ -220,20 +220,28 @@ local SHORTCUTS = {
       -- le n° d'onglet change selon le client : on ouvre le journal puis on clique l'onglet « Héritages »
       run = function()
           if CollectionsJournal_LoadUI and not CollectionsJournal then pcall(CollectionsJournal_LoadUI) end
+          -- n° d'onglet donné par le jeu : ouverture directe (avant, la recherche par le nom échouait sur « Objets
+          -- en héritage » et le repli ouvrait les Apparences)
+          local idx = _G.COLLECTIONS_JOURNAL_TAB_INDEX_HEIRLOOMS
+          if idx and _G.SetCollectionsJournalShown then
+              if pcall(_G.SetCollectionsJournalShown, true, idx) then return end
+          end
           if not (CollectionsJournal and CollectionsJournal:IsShown()) and ToggleCollectionsJournal then ToggleCollectionsJournal() end
           C_Timer.After(0, function()
-              local want = (HEIRLOOMS or "Héritages"):lower()
+              -- nom de l'onglet : « Héritages », « Objets en héritage », « Heirlooms »… (singulier ou pluriel)
+              local function isHeirloom(txt)
+                  if type(txt) ~= "string" then return false end
+                  local l = txt:lower()
+                  local h = HEIRLOOMS and HEIRLOOMS:lower()
+                  return (h and l == h) or l:find("ritage", 1, true) or l:find("heirloom", 1, true)
+              end
               for i = 1, 10 do
                   local tab = _G["CollectionsJournalTab" .. i]
-                  local txt = tab and tab.GetText and tab:GetText()
-                  if type(txt) == "string" and txt:lower():find(want, 1, true) then
+                  local txt = tab and ((tab.GetText and tab:GetText()) or (tab.Text and tab.Text:GetText()))
+                  if isHeirloom(txt) then
                       if tab.Click then tab:Click() end
                       return
                   end
-              end
-              -- pas trouvé par le nom : l'onglet dont le panneau est celui des héritages
-              if HeirloomsJournal and CollectionsJournal_SetTab and CollectionsJournal and HeirloomsJournal.GetID then
-                  pcall(CollectionsJournal_SetTab, CollectionsJournal, HeirloomsJournal:GetID())
               end
           end)
       end },

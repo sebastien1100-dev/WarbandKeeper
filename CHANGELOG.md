@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.56 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Micro menu : le raccourci « Héritages » ouvrait les Apparences ; il ouvre bien l'onglet des héritages du journal des collections.
+- Carte du monde, vue du continent ou d'une zone parente : le losange de destination du jeu restait affiché pendant un guidage. Notre épingle y est maintenant posée (à la place du losange), comme sur la carte de la zone.
+
 ## v1.128.55 — 21/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.56", date = "21/11/2026",
+        fixed = {
+            "Micro menu : le raccourci « Héritages » ouvrait les Apparences ; il ouvre bien l'onglet des héritages du journal des collections.",
+            "Carte du monde, vue du continent ou d'une zone parente : le losange de destination du jeu restait affiché pendant un guidage. Notre épingle y est maintenant posée (à la place du losange), comme sur la carte de la zone.",
+        },
+    },
+    {
         version = "1.128.55", date = "21/11/2026",
         changed = {
             "Ménage dans le code : une vingtaine de fonctions que plus rien n'appelait (restes de la tournée, du guide de montée, des quêtes automatiques et d'anciennes versions des pages) et une quarantaine de variables jamais lues sont retirées. Rien ne change en jeu.",

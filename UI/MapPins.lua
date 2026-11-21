@@ -165,9 +165,19 @@ local function drawTarget(cv, mapID, w, h)
     local t = G and G.target
     -- repère du jeu masqué seulement là où notre épingle est posée : sur une autre carte (continent, zone
     -- parente), il reste visible (avant, la destination n'apparaissait plus du tout)
-    local ours = t and G:Config().mapPin and t.map == mapID
-    gamePinAlpha(ours and 0 or 1)
-    if not ours then if targetPin then targetPin:Hide() end return end
+    -- sur une autre carte (continent, zone parente) : notre épingle y est posée aussi (position du monde
+    -- projetée sur la carte affichée) et le losange du jeu est masqué ; avant, il restait visible à côté
+    if not (t and G:Config().mapPin) then gamePinAlpha(1); if targetPin then targetPin:Hide() end return end
+    local px, py = t.x, t.y
+    if t.map ~= mapID then
+        px, py = nil, nil
+        local cont, wx, wy = G.ToWorld(t.map, t.x, t.y)
+        if cont and UI.WorldToMap then px, py = UI.WorldToMap(cont, wx, wy, mapID) end
+        if not (px and py and px >= 0 and px <= 1 and py >= 0 and py <= 1) then
+            gamePinAlpha(1); if targetPin then targetPin:Hide() end return
+        end
+    end
+    gamePinAlpha(0)
     if not targetPin then
         targetPin = CreateFrame("Button", nil, cv)
         targetPin.wk = true
@@ -218,7 +228,7 @@ local function drawTarget(cv, mapID, w, h)
     targetPin.pill:Hide()
     targetPin:SetFrameLevel((UI.mapBase or cv:GetFrameLevel() or 1) + 40)
     targetPin:ClearAllPoints()
-    targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", t.x * w, -t.y * h) -- la pointe de l'épingle sur le lieu
+    targetPin:SetPoint("BOTTOM", cv, "TOPLEFT", px * w, -py * h) -- la pointe de l'épingle sur le lieu
     targetPin:Show()
 end
 
