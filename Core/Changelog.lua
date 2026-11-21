@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.2", date = "21/11/2026",
+        fixed = {
+            "Infobulle des PNJ : le bloc des quêtes ne disparaît plus quand le PNJ a une quête fermée pour toi (quête exclusive, niveau max dépassé, réputation) ; cette quête n'y est simplement pas listée.",
+            "Guidage : en passant au point /way suivant ou à l'étape suivante de la tournée, il n'y a plus de faux « Arrivé » qui arrêtait le guidage (l'ancien trajet n'est plus utilisé pendant le calcul du nouveau).",
+        },
+    },
+    {
         version = "1.127.1", date = "21/11/2026",
         fixed = {
             "Courrier : si la fenêtre d'envoi contient déjà des objets ou de l'or mis à la main, l'envoi automatique (Rangement, règles) est annulé avec un message, au lieu de les envoyer avec la lettre.",

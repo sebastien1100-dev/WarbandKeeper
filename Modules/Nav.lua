@@ -514,6 +514,10 @@ function M:Plan(target)
         runner = CreateFrame("Frame")
         runner:SetScript("OnUpdate", pump)
     end
+    -- nouvelle cible : l'ancien trajet est oublié tout de suite (sinon, pendant le calcul, sa distance restante,
+    -- presque nulle juste après une arrivée, servait pour la nouvelle cible : faux « Arrivé » et guidage arrêté) ;
+    -- un recalcul vers la même cible (écart) garde l'ancien trajet en attendant
+    if M.route and M.route.target ~= target then M.route = nil end
     job = { target = target, co = coroutine.create(function() return compute(target) end) }
     runner:Show()
 end

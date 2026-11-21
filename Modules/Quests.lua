@@ -346,7 +346,9 @@ local function onUnitTooltip(tooltip)
     for _, q in ipairs(list) do
         if M:ForChar(q, c) then
             local st = M:State(q, c)
-            if st ~= "done" then
+            -- « closed » (quête exclusive, niveau max, réputation) : pas proposée, et pas de couleur (sans ce test,
+            -- l'erreur faisait disparaître tout le bloc des quêtes de l'infobulle)
+            if st ~= "done" and st ~= "closed" and STATE_COL[st] then
                 local tag = st == "log" and (" · " .. T("dans le journal")) or st == "high" and (" · " .. string.format(T("niveau %d"), q.req))
                             or st == "locked" and (" · " .. T("plus tard")) or ""
                 table.insert(lines, "|cff" .. STATE_COL[st] .. "[" .. q.lvl .. "] " .. M:Name(q) .. tag .. "|r")

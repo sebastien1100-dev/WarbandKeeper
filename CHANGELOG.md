@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.127.2 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Infobulle des PNJ : le bloc des quêtes ne disparaît plus quand le PNJ a une quête fermée pour toi (quête exclusive, niveau max dépassé, réputation) ; cette quête n'y est simplement pas listée.
+- Guidage : en passant au point /way suivant ou à l'étape suivante de la tournée, il n'y a plus de faux « Arrivé » qui arrêtait le guidage (l'ancien trajet n'est plus utilisé pendant le calcul du nouveau).
+
 ## v1.127.1 — 21/11/2026
 
 _Un /reload suffit._
