@@ -713,8 +713,10 @@ local function hookMap()
         if not (cfg().stats and onTaxi()) or (view and view.allowMap) then return end
         C_Timer.After(0, function()
             if InCombatLockdown and InCombatLockdown() then return end
-            if WorldMapFrame:IsShown() and HideUIPanel then HideUIPanel(WorldMapFrame) end
+            -- par-dessus la carte, sans la fermer (fermer une fenêtre du jeu depuis l'addon pouvait teinter le
+            -- gestionnaire des fenêtres et bloquer plus tard une fenêtre protégée en combat)
             UI:ShowFlightStats()
+            if view and view.SetFrameStrata and WorldMapFrame:IsShown() then UI:MatchHost(view, WorldMapFrame, 50) end
         end)
     end)
     WorldMapFrame:HookScript("OnHide", function() if view then view.allowMap = nil end end)

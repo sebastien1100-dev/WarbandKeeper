@@ -255,8 +255,11 @@ end
 local function drawTarget(cv, mapID, w, h)
     local G = WK.modules.Guide
     local t = G and G.target
-    gamePinAlpha(t and G:Config().mapPin and 0 or 1)
-    if not t or not G:Config().mapPin or t.map ~= mapID then return end
+    -- repère du jeu masqué seulement là où notre épingle est posée : sur une autre carte (continent, zone
+    -- parente), il reste visible (avant, la destination n'apparaissait plus du tout)
+    local ours = t and G:Config().mapPin and t.map == mapID
+    gamePinAlpha(ours and 0 or 1)
+    if not ours then if targetPin then targetPin:Hide() end return end
     if not targetPin then
         targetPin = CreateFrame("Button", nil, cv)
         targetPin.wk = true

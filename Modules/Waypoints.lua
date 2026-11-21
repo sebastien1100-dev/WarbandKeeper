@@ -198,7 +198,7 @@ function M:Go()
     local w = self:List()[1]
     if not w then return end
     local g = G()
-    if g.target and g.target.kind ~= "way" then prevTarget = g.target end
+    if g.target and g.target.kind ~= "way" then prevTarget = g:Keep(g.target) end
     local t = { map = w.map, x = w.x, y = w.y,
         e = { w.x * 100, w.y * 100, 0, nil, nil, label(w), label(w), self:Role(w) } }
     t.cont, t.wx, t.wy = g.ToWorld(w.map, w.x, w.y)
@@ -300,11 +300,10 @@ end
 function M:Ended()
     local g = G()
     if g.target and g.target.kind == "way" then g:Stop() end
-    if prevTarget and not g.target then
-        local p = prevTarget
-        prevTarget = nil
-        C_Timer.After(1, function() if not G().target then G():Start(p, p.reason, p.kind) end end)
-    end
+    -- guidage d'avant rendu tout de suite (Guide ne relance plus rien de lui-même après un /way)
+    local p = prevTarget
+    prevTarget = nil
+    if not g.target or g.target.kind == "qtour" or g.target.kind == "qtrack" then g:Restore(p) end
 end
 function M:PrintList()
     local list = self:List()

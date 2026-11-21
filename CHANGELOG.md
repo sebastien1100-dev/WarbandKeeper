@@ -71,6 +71,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.20 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage : à la fin d'une file /way ou d'un retour au corps, le guidage d'avant (marchand, boîte aux lettres…) revient toujours, tout de suite ; avant, la quête suivie passait parfois devant, et après la mort le guidage d'avant était perdu. Rien ne reprend tant que tu es fantôme.
+- Guidage : un /way posé en fantôme ne te renvoie plus à ton corps une fois la file finie ; une étape de tournée gardée est recalculée au retour au lieu de revenir telle quelle.
+- Points /way : plus de bandeau « Arrivé » ni de son à chaque point intermédiaire d'une file.
+- Carte du monde : sur le continent ou une zone parente, le repère de la destination reste visible (avant, ni le nôtre ni celui du jeu).
+- Trajet : un recalcul raté (écart du chemin, position illisible un instant en ville) garde le bon trajet au lieu de l'effacer ; une cible rendue repart avec tous ses nouveaux essais.
+- Retour au corps : le bandeau de secours se met à jour même caché ; réseau des chemins : une erreur de construction est notée au journal et n'est plus relancée en boucle.
+- Statistiques de vol : elles s'affichent par-dessus la carte au lieu de la fermer (fermer une fenêtre du jeu depuis l'addon pouvait causer une action bloquée plus tard).
+
 ## v1.128.19 — 21/11/2026
 
 _Un /reload suffit._

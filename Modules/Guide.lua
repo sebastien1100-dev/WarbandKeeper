@@ -182,7 +182,9 @@ function M:Start(target, reason, kind)
         if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then pcall(C_SuperTrack.SetSuperTrackedUserWaypoint, true) end
         self.placedWaypoint = true
     end
-    -- trajet qui suit les chemins connus (Modules/Nav.lua), calculé en arrière-plan
+    -- trajet qui suit les chemins connus (Modules/Nav.lua), calculé en arrière-plan ; nouveaux essais remis à
+    -- zéro (une cible rendue après un /way ou le retour au corps gardait ses essais déjà comptés)
+    target.navTries = nil
     if WK.modules.Nav then WK.modules.Nav:Plan(target) end
     if self.OnTarget then self:OnTarget() end
     if self.Redraw then self:Redraw() end
@@ -199,12 +201,30 @@ function M:Stop()
     if self.OnTarget then self:OnTarget() end
     if self.Redraw then self:Redraw() end
     WK:NotifyChanged()
-    -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main
-    -- points /way et retour au corps rendent eux-mêmes le guidage d'avant (1 s après) : la reprise attend 1,5 s
-    -- pour ne pas le voler (avant, la quête suivie reprenait la main et le guidage d'avant était perdu)
-    if was and was.kind ~= "qtour" and was.kind ~= "qtrack" and C_Timer then
-        local wait = (was.kind == "way" or was.kind == "corpse") and 1.5 or 0.5
-        C_Timer.After(wait, function() M:Resume() end)
+    -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main.
+    -- Points /way et retour au corps : jamais ici, ils rendent eux-mêmes le guidage d'avant (M:Restore) ; un seul
+    -- mécanisme de reprise, sans course entre minuteries (avant, la quête suivie passait parfois devant)
+    local own = was and (was.kind == "qtour" or was.kind == "qtrack" or was.kind == "way" or was.kind == "corpse")
+    if was and not own and C_Timer then
+        C_Timer.After(0.5, function() M:Resume() end)
+    end
+end
+-- Guidage à garder pour plus tard (avant un /way ou le retour au corps) : un retour au corps n'est jamais gardé,
+-- une étape de tournée ou la quête suivie l'est sous forme de « reprise » (recalculée au retour, pas une
+-- étape peut-être déjà faite)
+function M.Keep(_, t)
+    if not t or t.kind == "corpse" or t.kind == "way" then return nil end
+    if t.kind == "qtour" or t.kind == "qtrack" then return { resume = true } end
+    return t
+end
+-- Rend un guidage gardé par Keep (ou, sans rien de gardé, laisse la tournée ou la quête suivie reprendre)
+function M:Restore(kept)
+    if self.target and self.target.kind ~= "qtour" and self.target.kind ~= "qtrack" then return end
+    if kept and not kept.resume then
+        if self.target then self.target = nil end
+        self:Start(kept, kept.reason, kept.kind)
+    elseif not self.target then
+        self:Resume()
     end
 end
 function M:Resume()

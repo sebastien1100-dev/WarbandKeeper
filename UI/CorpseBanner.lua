@@ -93,18 +93,20 @@ local function startGuide(c)
     local g = G()
     if started or (g.target and g.target.kind == "corpse") then return end
     started = true
-    prevTarget = g.target
+    prevTarget = g:Keep(g.target)
     local t = { map = c.map, x = c.x, y = c.y, cont = c.cont, wx = c.wx, wy = c.wy,
                 e = { (c.x or 0) * 100, (c.y or 0) * 100, 0, nil, nil, T("Ton corps"), T("Ton corps"), T("Retour au corps") } }
     g:Start(t, "Retour au corps", "corpse")
 end
 local function stopGuide()
     local g = G()
-    if not (prevTarget or (g.target and g.target.kind == "corpse")) then return end
-    -- guidage du corps encore en cours (ou arrivé et arrêté) : le guidage d'avant revient
+    if not (prevTarget or started or (g.target and g.target.kind == "corpse")) then return end
+    -- en vie : guidage du corps arrêté s'il tourne encore, puis le guidage d'avant revient (ou la tournée /
+    -- la quête suivie reprend) ; aucune reprise tant qu'on est fantôme (arrivé au corps : rien ne vole la main)
     if g.target and g.target.kind == "corpse" then g:Stop() end
-    if prevTarget and not g.target then g:Start(prevTarget, prevTarget.reason, prevTarget.kind) end
+    local p = prevTarget
     prevTarget = nil
+    if not g.target or g.target.kind == "qtour" or g.target.kind == "qtrack" then g:Restore(p) end
 end
 
 local function build()
@@ -160,6 +162,25 @@ local function build()
     })
     return f
 end
+
+-- Rafraîchissement indépendant du bandeau (son OnUpdate ne tourne pas quand il est caché, donc presque tout le
+-- retour au corps) : une fois par seconde tant que le perso est fantôme
+local ghostTick = _G.CreateFrame("Frame")
+ghostTick.acc = 0
+ghostTick:SetScript("OnUpdate", function(s, el)
+    s.acc = s.acc + el
+    if s.acc < 1 then return end
+    s.acc = 0
+    if not (_G.UnitIsGhost and _G.UnitIsGhost("player")) then s:Hide() end
+    if banner and banner:IsShown() then return end -- le bandeau se rafraîchit lui-même
+    UI:RefreshCorpse()
+end)
+ghostTick:Hide()
+UI.CorpseGhostTick = ghostTick
+WK:On("PLAYER_DEAD", function() ghostTick:Show() end)
+WK:On("PLAYER_UNGHOST", function() ghostTick:Show() end)
+WK:On("PLAYER_ENTERING_WORLD", function() if _G.UnitIsGhost and _G.UnitIsGhost("player") then ghostTick:Show() end end)
+WK:On("PLAYER_ALIVE", function() ghostTick:Show() end)
 
 function UI:RefreshCorpse()
     if not banner then banner = build() end

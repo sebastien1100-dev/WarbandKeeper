@@ -163,16 +163,26 @@ local function build(cont)
 end
 -- construction de fond (apprentissage des chemins : jamais d'un bloc hors coroutine)
 local building = {}
+local buildFailed = {} -- continent -> heure de l'échec : pas de nouvel essai avant 60 s
 local bgFrame
 local function buildInBackground(cont)
     if graphs[cont] or building[cont] then return end
+    local now = _G.GetTime and _G.GetTime() or 0
+    if buildFailed[cont] and now - buildFailed[cont] < 60 then return end
     building[cont] = coroutine.create(function() build(cont) end)
     if not bgFrame then
         bgFrame = _G.CreateFrame("Frame")
         bgFrame:SetScript("OnUpdate", function(s)
             local c, co = next(building) -- un continent à la fois
             if not c then s:Hide() return end
-            local ok = coroutine.status(co) ~= "dead" and coroutine.resume(co)
+            local ok, err = false, nil
+            if coroutine.status(co) ~= "dead" then ok, err = coroutine.resume(co) end
+            if not ok and err then
+                -- erreur dans la construction (donnée de chemin abîmée) : notée au journal, et pas relancée en
+                -- boucle (avant : avalée sans trace et relancée toutes les 0,5 s)
+                if WK.RecordError then pcall(WK.RecordError, err, "", "Nav:build") end
+                buildFailed[c] = _G.GetTime and _G.GetTime() or 0
+            end
             if not ok or coroutine.status(co) == "dead" then building[c] = nil end
         end)
     end
@@ -562,6 +572,8 @@ local function pump()
             if cont and res.cont and cont ~= res.cont then M.route = nil; M:Plan(target) return end
         else
             retryLater(target, 5)
+            -- recalcul raté vers la même cible (écart, position illisible un instant) : le bon trajet est gardé
+            if M.route and M.route.target == target then return end
         end
         M.route = res
         -- un seul redessin (RefreshNavRoute redessine la carte via Guide:Redraw)
