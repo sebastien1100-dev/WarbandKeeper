@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.119.0 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Quêtes d'exploration (« trouve la grotte… ») : le lieu exact est sur la carte et la flèche y mène, au lieu d'aller directement au rendu.
+- Objectifs cachés (objet à utiliser à un endroit précis…) : leur lieu passe en tête de l'objectif concerné, ou s'ajoute en « Lieu de l'objectif caché ».
+
+### Modifications
+- Quêtes : les zones des objectifs sont plus précises. Les monstres et objets d'une quête sont regroupés en camps plus serrés (jusqu'à 10 par objectif au lieu de 6, cercles plus petits qui ne grossissent plus pour un monstre isolé) : la flèche, la carte et la tournée visent le vrai coin au lieu du milieu d'une grande zone.
+
 ## v1.118.2 — 21/11/2026
 
 _Un /reload suffit._

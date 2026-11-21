@@ -32,7 +32,8 @@ local function G() return WK.modules.Guide end
 -- Données : camps par objectif
 ---------------------------------------------------------------------------
 local cache = {}
--- { objs = { { kind = "m"|"i"|"o", camps = { { map, x, y, r, n }, ... } } }, turnIn = { map, x, y } } ou nil
+-- { objs = { { kind = "m"|"i"|"o"|"e"|"x", idx?, camps = { { map, x, y, r, n }, ... } } }, turnIn = { map, x, y } } ou nil
+-- e = zone à explorer, x = objectif caché de Questie (idx = n° de l'objectif du jeu auquel il se rattache)
 function M:Data(qid)
     if cache[qid] ~= nil then return cache[qid] or nil end
     local raw = WK.QuestObjRaw and WK.QuestObjRaw[qid]
@@ -40,13 +41,13 @@ function M:Data(qid)
     local body, fin = raw:match("^([^@]*)@?(.*)$")
     local d = { objs = {} }
     for block in (body or ""):gmatch("[^|]+") do
-        local kind, list = block:match("^(%a):(.*)$")
+        local kind, idx, list = block:match("^(%a)(%d*):(.*)$")
         if kind then
             local camps = {}
             for map, x, y, r, n in (list or ""):gmatch("(%d+),([%d%.]+),([%d%.]+),([%d%.]+),(%d+)") do
                 table.insert(camps, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100, r = tonumber(r) / 100, n = tonumber(n) })
             end
-            table.insert(d.objs, { kind = kind, camps = camps })
+            table.insert(d.objs, { kind = kind, idx = tonumber(idx), camps = camps })
         end
     end
     if fin and fin ~= "" then
@@ -66,8 +67,8 @@ function M:Objectives(qid)
     if type(list) ~= "table" then return out end
     local d = self:Data(qid)
     -- objectifs de la base rangés par genre, dans l'ordre : le n-ième « monstre » du jeu = le n-ième de la base
-    local byKind, used = { m = {}, i = {}, o = {} }, { m = 0, i = 0, o = 0 }
-    if d then for _, o in ipairs(d.objs) do table.insert(byKind[o.kind], o) end end
+    local byKind, used = { m = {}, i = {}, o = {}, e = {}, x = {} }, { m = 0, i = 0, o = 0, e = 0, x = 0 }
+    if d then for _, o in ipairs(d.objs) do if byKind[o.kind] then table.insert(byKind[o.kind], o) end end end
     for _, o in ipairs(list) do
         local k = KIND_OF[o.type or ""]
         local src
@@ -75,8 +76,9 @@ function M:Objectives(qid)
             used[k] = used[k] + 1
             src = byKind[k][used[k]]
         elseif o.type == "event" then
-            -- évènement (crédit de mort, objet à utiliser…) : un objectif de la base pas encore pris
-            for _, kk in ipairs({ "m", "o", "i" }) do
+            -- évènement : la zone à explorer d'abord, sinon un objectif de la base pas encore pris
+            -- (crédit de mort, objet à utiliser…)
+            for _, kk in ipairs({ "e", "m", "o", "i" }) do
                 if byKind[kk][used[kk] + 1] then used[kk] = used[kk] + 1; src = byKind[kk][used[kk]]; break end
             end
         end
@@ -86,6 +88,25 @@ function M:Objectives(qid)
             type = o.type, done = o.finished and true or false,
             have = o.numFulfilled or 0, need = o.numRequired or 0, camps = src and src.camps or {},
         })
+    end
+    -- objectifs cachés de Questie : rattachés à leur objectif du jeu (lieu plus précis en tête), sinon en plus
+    local complete = #out > 0 and self:IsComplete(qid)
+    for _, x in ipairs(byKind.x) do
+        local o = x.idx and x.idx >= 1 and out[x.idx]
+        if o then
+            local merged = {}
+            for _, c in ipairs(x.camps) do table.insert(merged, c) end
+            for _, c in ipairs(o.camps) do table.insert(merged, c) end
+            o.camps = merged
+        elseif #x.camps > 0 then
+            table.insert(out, { text = T("Lieu de l'objectif caché"), name = T("Lieu de l'objectif caché"), type = "extra",
+                done = complete, have = 0, need = 0, camps = x.camps })
+        end
+    end
+    -- zone à explorer que le jeu ne range pas en « évènement » : ajoutée tant que la quête n'est pas finie
+    if byKind.e[1] and used.e == 0 and #byKind.e[1].camps > 0 and #out > 0 then
+        table.insert(out, { text = T("Lieu à explorer"), name = T("Lieu à explorer"), type = "explore",
+            done = complete, have = 0, need = 0, camps = byKind.e[1].camps })
     end
     return out
 end

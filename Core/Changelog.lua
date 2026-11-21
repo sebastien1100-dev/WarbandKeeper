@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.119.0", date = "21/11/2026",
+        changed = {
+            "Quêtes : les zones des objectifs sont plus précises. Les monstres et objets d'une quête sont regroupés en camps plus serrés (jusqu'à 10 par objectif au lieu de 6, cercles plus petits qui ne grossissent plus pour un monstre isolé) : la flèche, la carte et la tournée visent le vrai coin au lieu du milieu d'une grande zone.",
+        },
+        added = {
+            "Quêtes d'exploration (« trouve la grotte… ») : le lieu exact est sur la carte et la flèche y mène, au lieu d'aller directement au rendu.",
+            "Objectifs cachés (objet à utiliser à un endroit précis…) : leur lieu passe en tête de l'objectif concerné, ou s'ajoute en « Lieu de l'objectif caché ».",
+        },
+    },
+    {
         version = "1.118.2", date = "21/11/2026",
         changed = {
             "Retour au corps : un seul repère au lieu de deux. L'épingle à l'écran devient une tête de mort rouge et donne le conseil (« Cours-y » ou « Loin : l'ange gardien est plus rapide »), la distance par le trajet avec le temps de course (« 767 m · env. 1:04 ») et le mal de résurrection de l'ange gardien. Le bandeau du bas n'apparaît plus que si l'épingle ne peut pas guider (corps sur un autre continent, position inconnue, épingle coupée).",

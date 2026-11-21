@@ -4431,4 +4431,6 @@ WK.Locales.enUS.text = {
     ["Ange gardien : mal de résurrection %d min"] = "Spirit healer: %d min resurrection sickness",
     ["Cours-y"] = "Run there",
     ["Loin : l'ange gardien est plus rapide"] = "Far: the spirit healer is faster",
+    ["Lieu de l'objectif caché"] = "Hidden objective location",
+    ["Lieu à explorer"] = "Place to explore",
 }

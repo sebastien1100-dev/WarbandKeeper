@@ -13,7 +13,7 @@ WK.modules.QuestPlan = M
 
 local JOIN = 0.10          -- quêtes dont les camps sont à moins de 10 % de la carte : même coin
 local SPEED = 7            -- m/s à pied
-local SECS = { m = 22, i = 26, o = 12 } -- temps moyen par unité d'objectif
+local SECS = { m = 22, i = 26, o = 12, e = 15, x = 20 } -- temps moyen par unité d'objectif
 
 function M:Config()
     local g = WK.DB.global

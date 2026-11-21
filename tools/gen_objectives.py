@@ -12,7 +12,9 @@ généré et dans Options > À propos.
 Format (une chaîne par quête, décodée par Modules/QuestTrack.lua à la demande) :
   WK.QuestObjRaw[quête] = "m:carte,x,y,r,n;carte,x,y,r,n|i:...|o:...@carte,x,y"
   - un bloc par objectif, dans l'ordre du jeu par genre (m = monstre, i = objet à ramasser,
-    o = objet au sol) ; bloc vide (« m: ») si aucun camp connu ;
+    o = objet au sol) ; bloc vide (« m: ») si aucun camp connu ; puis « e: » = zone à explorer, et
+    « xN: » = objectif caché de Questie (objet à utiliser à tel endroit…) rattaché au N-ième objectif du
+    jeu (« x: » sans objectif du jeu) ;
   - après « @ » : où rendre la quête (premier PNJ ou objet qui la termine).
   WK.QuestItemStart[objet] = quête : objets qui démarrent une quête.
   WK.QuestBuy[quête] = "objet,objet" : objets demandés par la quête qui se vendent chez un marchand
@@ -27,8 +29,9 @@ import sys
 import lupa
 
 MAX_POINTS = 400     # apparitions prises en compte par objectif
-JOIN = 5.0           # deux apparitions à moins de 5 % de la carte : même camp
-MAX_CAMPS = 6
+JOIN = 2.5           # deux apparitions à moins de 2,5 % de la carte : même camp
+MAX_CAMPS = 10
+R_PCT = 0.85         # rayon d'un camp : 85 % de ses points dedans (un point isolé ne l'agrandit pas)
 
 
 def main(root, out):
@@ -112,9 +115,39 @@ def main(root, out):
         res = []
         for m, sx, sy, n, ps in cl[:MAX_CAMPS]:
             cx, cy = sx / n, sy / n
-            r = max(math.hypot(px - cx, py - cy) for px, py in ps)
-            res.append("%d,%.1f,%.1f,%.1f,%d" % (m, cx, cy, min(12, max(1.2, r)), n))
+            ds = sorted(math.hypot(px - cx, py - cy) for px, py in ps)
+            r = ds[min(len(ds) - 1, int(len(ds) * R_PCT))]
+            res.append("%d,%.1f,%.1f,%.1f,%d" % (m, cx, cy, min(8, max(1.0, r)), n))
         return res
+
+    def area_pts(sp):
+        """[(carte, x, y)] d'une liste {[zone] = {{x, y}, ...}} (zone d'exploration, objectif caché)"""
+        out = []
+        if not sp:
+            return out
+        for area, coords in sp.items():
+            m = amap[area] if isinstance(area, int) else None
+            if not m:
+                continue
+            for c in lst(coords):
+                if c and c[1] is not None and c[1] >= 0 and c[2] is not None and c[2] >= 0:
+                    out.append((m, c[1], c[2]))
+        return out
+
+    def ref_pts(refs):
+        """apparitions des PNJ ou objets cités par un objectif caché ({{"monster"|"object"|"item", n°}, ...})"""
+        pts = []
+        for r in lst(refs):
+            if not r or not r[2]:
+                continue
+            kind = str(r[1]).lower()
+            if kind.startswith("mon") or kind == "npc":
+                pts += npc_pts(r[2])
+            elif kind.startswith("obj"):
+                pts += obj_pts(r[2])
+            elif kind.startswith("item"):
+                pts += item_pts(r[2])
+        return pts
 
     def finisher(q):
         fb = q[3]
@@ -144,7 +177,7 @@ def main(root, out):
         return vend[iid]
 
     buy = {}  # quête -> [objets à acheter]
-    lines, n_obj, n_camp = [], 0, 0
+    lines, n_obj, n_camp, n_explore, n_extra = [], 0, 0, 0, 0
     starts = {}  # objet qui démarre une quête (clic droit dessus) : objet -> quête
     for qid in sorted(quests.keys()):
         q = quests[qid]
@@ -181,6 +214,24 @@ def main(root, out):
                 n_obj += 1
                 n_camp += len(c)
                 blocks.append(kind + ":" + ";".join(c))
+        # zone à explorer (« trouve tel endroit ») : bloc « e: »
+        te = q[9]
+        if te and te[2]:
+            c = camps(area_pts(te[2]))
+            if c:
+                n_explore += 1
+                blocks.append("e:" + ";".join(c))
+        # objectifs cachés de Questie (utiliser un objet à tel endroit…) : « xN: » rattaché au N-ième objectif
+        # du jeu, « x: » sinon
+        for ex in lst(q[29]):
+            if not ex:
+                continue
+            pts = area_pts(ex[1]) or ref_pts(ex[5])
+            c = camps(pts)
+            if c:
+                n_extra += 1
+                idx = ex[4] if isinstance(ex[4], int) else ""
+                blocks.append("x%s:" % idx + ";".join(c))
         fin = finisher(q)
         if not blocks and not fin:
             continue
@@ -200,7 +251,7 @@ def main(root, out):
         f.write("\n}\n-- marchands de ces objets : [objet] = \"carte,x,y,faction,nom;…\"\nWK.QuestVendors = {\n")
         f.write("\n".join('[%d]="%s",' % (i, ";".join(vend[i]).replace('"', "'")) for i in used))
         f.write("\n}\n")
-    print("%d quêtes, %d objectifs, %d camps, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, len(starts), len(buy)))
+    print("%d quêtes, %d objectifs, %d camps, %d zones à explorer, %d objectifs cachés, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, n_explore, n_extra, len(starts), len(buy)))
 
 
 if __name__ == "__main__":
