@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.127.3 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes répétables (journalières, hebdomadaires…) : elles ne sont plus notées comme « nouvelles quêtes absentes de la base », ne restent plus proposées pour toujours et ne sont plus prises par l'acceptation automatique. Celles notées par erreur sont retirées.
+- Tournée : en changeant de zone, les étapes qui restaient ailleurs (donneur, coin d'objectifs ou rendu dans l'autre zone) sont gardées à la fin de la tournée au lieu d'être perdues ; le message le dit.
+- Métiers : une recette cachée par un en-tête replié ou un filtre de la fenêtre du métier n'est plus effacée de la fiche du perso, et Cuisine, Pêche ou Secourisme ne disparaissent plus quand l'en-tête « Compétences secondaires » est replié.
+
 ## v1.127.2 — 21/11/2026
 
 _Un /reload suffit._

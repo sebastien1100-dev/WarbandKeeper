@@ -384,9 +384,31 @@ local function learnStore()
     return g.questLearn
 end
 M.LearnStore = learnStore
+-- Quêtes répétables : absentes de la base générée, elles ne doivent jamais être « apprises » comme nouvelles
+-- (sinon proposées pour toujours et prises par l'acceptation auto). Liste de la base (WK.QuestRepeatable,
+-- générée par gen_quests.py), sinon ce que dit le jeu.
+local repSet
+function M.IsRepeatable(_, id)
+    if not repSet then
+        repSet = {}
+        for n in (WK.QuestRepeatable or ""):gmatch("%d+") do repSet[tonumber(n)] = true end
+    end
+    if repSet[id] then return true end
+    local ql = _G.C_QuestLog
+    if ql and ql.IsRepeatableQuest then
+        local ok, r = pcall(ql.IsRepeatableQuest, id)
+        if ok and r then return true end
+    end
+    return false
+end
 local learnedRows = {}
 function M.AddLearned(byID_, byStarter_, mapOf_, meta)
-    for id, e in pairs(learnStore()) do
+    local learned = learnStore()
+    -- répétables notées par erreur avant cette correction : retirées
+    for id in pairs(learned) do
+        if M:IsRepeatable(id) then learned[id] = nil end
+    end
+    for id, e in pairs(learned) do
         local base = byID_[id]
         if e.n and (not base or base.learned) then
             local g = e.g or {}
@@ -477,6 +499,11 @@ local function changed() M:Reindex(); WK:NotifyChanged() end
 local function learnGiver()
     local id = GetQuestID and GetQuestID()
     if type(id) ~= "number" or id <= 0 or inBase(id) then return end
+    local daily = (_G.QuestIsDaily and _G.QuestIsDaily()) or (_G.QuestIsWeekly and _G.QuestIsWeekly())
+    if daily or M:IsRepeatable(id) then
+        if learnStore()[id] then learnStore()[id] = nil; changed() end
+        return
+    end
     local e = entry(id, true)
     if not e then return end
     local title = GetTitleText and GetTitleText()
@@ -491,12 +518,17 @@ WK:On("QUEST_DETAIL", function() pcall(learnGiver) end)
 -- quête prise : niveau et nom lus dans le journal
 WK:On("QUEST_ACCEPTED", function(a, b)
     local id = (type(b) == "number" and b) or (type(a) == "number" and a > 100 and a) or nil
-    if not id or inBase(id) then return end
+    if not id or inBase(id) or M:IsRepeatable(id) then return end
     C_Timer.After(0.5, function()
-        local e = entry(id, true)
-        if not e then return end
         local idx = C_QuestLog and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(id)
         local info = idx and C_QuestLog.GetInfo and C_QuestLog.GetInfo(idx)
+        -- quête journalière ou hebdomadaire d'après le journal : pas notée
+        if type(info) == "table" and ((tonumber(info.frequency) or 0) > 0 or info.isRepeatable) then
+            if learnStore()[id] then learnStore()[id] = nil; changed() end
+            return
+        end
+        local e = entry(id, true)
+        if not e then return end
         if type(info) == "table" then
             if type(info.level) == "number" and info.level > 0 then e.l = info.level end
             if type(info.title) == "string" and info.title ~= "" then e.n = e.n or info.title end

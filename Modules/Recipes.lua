@@ -60,8 +60,18 @@ local function scanClassic()
     if not GetNumTradeSkills then return nil end
     local prof = GetTradeSkillLine and GetTradeSkillLine() or nil
     local out = {}
+    -- en-tête replié ou filtre actif (« J'ai les composants », sous-classe, emplacement) : liste incomplète
+    local function off(fn) -- filtre « Tout » décoché (appel protégé : la forme varie selon les clients)
+        if not fn then return false end
+        local ok, v = pcall(fn, 0)
+        return ok and v == false
+    end
+    local avail = _G.TradeSkillFrameAvailableFilterCheckButton
+    local partial = off(_G.GetTradeSkillSubClassFilter) or off(_G.GetTradeSkillInvSlotFilter)
+        or (avail and avail.GetChecked and avail:GetChecked()) and true or false
     for i = 1, GetNumTradeSkills() do
-        local name, kind = GetTradeSkillInfo(i)
+        local name, kind, _, expanded = GetTradeSkillInfo(i)
+        if (kind == "header" or kind == "subheader") and expanded == false then partial = true end
         if name and kind ~= "header" and kind ~= "subheader" then
             local link = GetTradeSkillItemLink and GetTradeSkillItemLink(i)
             local cd = GetTradeSkillCooldown and GetTradeSkillCooldown(i)
@@ -79,24 +89,30 @@ local function scanClassic()
             out[keyOf(name)] = rec
         end
     end
-    return out, prof
+    return out, prof, partial
 end
 
 function M:Scan()
-    local recipes, prof
+    local recipes, prof, partial
     if C_TradeSkillUI and C_TradeSkillUI.GetAllRecipeIDs then
         recipes, prof = scanModern()
     else
-        recipes, prof = scanClassic()
+        recipes, prof, partial = scanClassic()
     end
     -- Lien de la fenêtre du métier (cliquable par les autres joueurs), gardé pour le coller plus tard.
     if prof then M:CaptureLink(prof) end
     if not recipes or not next(recipes) then return end
     local c = WK.DB:Me()
     c.recipes = c.recipes or {}
-    -- On remplace les recettes de ce métier seulement.
-    for k, r in pairs(c.recipes) do
-        if prof and r.prof == prof then c.recipes[k] = nil end
+    -- On remplace les recettes de ce métier seulement, et seulement si la liste lue est complète : une recette
+    -- ne s'oublie pas, donc une liste plus courte (en-tête replié, filtre) ne doit rien effacer
+    local before, now = 0, 0
+    for _, r in pairs(c.recipes) do if prof and r.prof == prof then before = before + 1 end end
+    for _ in pairs(recipes) do now = now + 1 end
+    if not partial and now >= before then
+        for k, r in pairs(c.recipes) do
+            if prof and r.prof == prof then c.recipes[k] = nil end
+        end
     end
     -- Temps de recharge : on retient l'heure où la recette sera prête (gardée tant qu'on ne la refait pas).
     c.cooldowns = c.cooldowns or {}

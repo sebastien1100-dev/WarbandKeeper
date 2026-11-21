@@ -143,9 +143,12 @@ def main(root):
     wh_stats = {"fr": 0, "lvl": 0, "missing": 0}
     per_map = {}
     skipped = 0
+    repeatable = []
     for qid, q in quests.items():
         # répétables, et quêtes jamais ouvertes dans le jeu (« <NYI> », « [DEPRECATED] »…)
         if not q[1] or (q[24] or 0) & 1 or JUNK.search(q[1]):
+            if q[1] and (q[24] or 0) & 1:
+                repeatable.append(qid)
             skipped += 1
             continue
         sid, pos = starter(q)
@@ -317,6 +320,8 @@ def main(root):
     for e in sorted(other, key=lambda e: (e["lvl"], e["id"])):
         lines.append(row(e))
     lines.append("}")
+    # quêtes répétables (absentes de la base) : jamais « apprises » en jeu comme nouvelles (Modules/Quests.lua)
+    lines.append('WK.QuestRepeatable = "%s"' % ",".join(str(q) for q in sorted(repeatable)))
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Modules", "QuestsDB.lua")
     try:
         with open(out, encoding="utf-8") as f:

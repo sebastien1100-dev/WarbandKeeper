@@ -952,15 +952,53 @@ function M:Reorder()
         return
     end
     local keep = { start = t.start, gained0 = t.gained0, turned = t.turned }
+    local old = {}
+    for i = t.idx, #t.steps do old[#old + 1] = t.steps[i] end
     self:Invalidate()
     local n = self:Build()
     n.start, n.gained0, n.turned = keep.start, keep.gained0, keep.turned
     n.list = nil
     n.zone = self:Config().planZone or WK.modules.Quests:PlayerZone()
+    -- étapes qui restaient et que la nouvelle tournée n'a pas (autre zone : donneur, coin ou rendu ailleurs) :
+    -- gardées à la fin, dans leur ordre, au lieu d'être perdues sans le dire
+    self.keptSteps = self:KeepMissing(n, old)
     self:Config().tour[WK:CharKey()] = n
     self.lastKey = nil
     self:Advance()
     self:Changed()
+end
+
+-- Ajoute à la tournée n les étapes « prendre / faire / rendre » de old qu'elle n'a pas, encore utiles ;
+-- rend leur nombre
+function M.KeepMissing(_, n, old)
+    local have = {}
+    for _, s in ipairs(n.steps or {}) do
+        for _, q in ipairs(s.qids or {}) do have[s.kind .. q] = true end
+    end
+    local Qt = Q()
+    local kept = 0
+    for _, s in ipairs(old or {}) do
+        if (s.kind == "pick" or s.kind == "do" or s.kind == "turn") and s.qids and #s.qids > 0 then
+            local missing = false
+            for _, q in ipairs(s.qids) do if not have[s.kind .. q] then missing = true end end
+            local useful = false
+            for _, q in ipairs(s.qids) do
+                if s.kind == "pick" then
+                    if not inLog(q) and not M.Turned(q) then useful = true end
+                elseif s.kind == "do" then
+                    if inLog(q) and not (Qt.IsComplete and Qt:IsComplete(q)) then useful = true end
+                elseif inLog(q) then
+                    useful = true
+                end
+            end
+            if missing and useful then
+                table.insert(n.steps, s)
+                for _, q in ipairs(s.qids) do have[s.kind .. q] = true end
+                kept = kept + 1
+            end
+        end
+    end
+    return kept
 end
 
 -- quête déjà rendue (journal du jeu, ou quêtes faites relevées pour le perso)
@@ -1297,7 +1335,7 @@ WK:On("PLAYER_LOGIN", function()
     end
 end)
 -- arrivée dans une autre zone de quêtes : une tournée faite ailleurs est refaite avec les quêtes d'ici
--- (étapes qui restent + quêtes cochées de la zone), au plus une fois par zone
+-- (quêtes cochées de la zone et journal) ; les étapes d'ailleurs qui restaient sont gardées à la fin
 WK:On("ZONE_CHANGED_NEW_AREA", function()
     C_Timer.After(2, function()
         local t = M:Tour()
@@ -1306,6 +1344,12 @@ WK:On("ZONE_CHANGED_NEW_AREA", function()
         if not zone or zone == t.zone or M:Config().planZone or t.custom then return end
         M:Reorder()
         local n = M:Tour()
-        if n then WK:Print(string.format(T("Tournée refaite pour cette zone : %d étapes."), #n.steps)) end
+        if n then
+            local msg = string.format(T("Tournée refaite pour cette zone : %d étapes."), #n.steps)
+            if (M.keptSteps or 0) > 0 then
+                msg = msg .. " " .. string.format(T("%d étape(s) d'une autre zone gardée(s) à la fin."), M.keptSteps)
+            end
+            WK:Print(msg)
+        end
     end)
 end)

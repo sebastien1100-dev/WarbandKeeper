@@ -4567,4 +4567,5 @@ WK.Locales.enUS.text = {
     ["Barre de quête (Cibler, Objet)"] = "Quest bar (Target, Item)",
     ["Monstre de la quête"] = "Quest monster",
     ["Envoi annulé : la fenêtre d'envoi contient déjà des objets ou de l'or. Vide-la puis recommence."] = "Sending cancelled: the send window already holds items or gold. Empty it and try again.",
+    ["%d étape(s) d'une autre zone gardée(s) à la fin."] = "%d step(s) from another zone kept at the end.",
 }

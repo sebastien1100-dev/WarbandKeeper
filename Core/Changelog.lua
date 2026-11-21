@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.3", date = "21/11/2026",
+        fixed = {
+            "Quêtes répétables (journalières, hebdomadaires…) : elles ne sont plus notées comme « nouvelles quêtes absentes de la base », ne restent plus proposées pour toujours et ne sont plus prises par l'acceptation automatique. Celles notées par erreur sont retirées.",
+            "Tournée : en changeant de zone, les étapes qui restaient ailleurs (donneur, coin d'objectifs ou rendu dans l'autre zone) sont gardées à la fin de la tournée au lieu d'être perdues ; le message le dit.",
+            "Métiers : une recette cachée par un en-tête replié ou un filtre de la fenêtre du métier n'est plus effacée de la fiche du perso, et Cuisine, Pêche ou Secourisme ne disparaissent plus quand l'en-tête « Compétences secondaires » est replié.",
+        },
+    },
+    {
         version = "1.127.2", date = "21/11/2026",
         fixed = {
             "Infobulle des PNJ : le bloc des quêtes ne disparaît plus quand le PNJ a une quête fermée pour toi (quête exclusive, niveau max dépassé, réputation) ; cette quête n'y est simplement pas listée.",

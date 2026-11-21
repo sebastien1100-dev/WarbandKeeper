@@ -2,10 +2,15 @@ local ADDON_NAME, WK = ...
 local M = WK:NewModule("Professions")
 
 -- Enregistre les métiers et note les progrès dans le journal.
-function M:Store(c, profs)
+function M:Store(c, profs, partial)
     local old = c.professions or {}
     -- lecture vide (le jeu n'a pas encore ses données, liste repliée…) : on garde ce qu'on sait
     if next(profs) == nil and next(old) ~= nil then return end
+    -- lecture partielle (en-tête des métiers replié dans la fenêtre des compétences) : les métiers pas lus
+    -- sont gardés, au lieu de disparaître de la fiche
+    if partial then
+        for name, o in pairs(old) do if profs[name] == nil then profs[name] = o end end
+    end
     for name, p in pairs(profs) do
         local o = old[name]
         if o and (p.rank or 0) > (o.rank or 0) and WK.modules.Journal then
@@ -22,18 +27,19 @@ function M:Scan()
     if not GetNumSkillLines then return end
     local c = WK.DB:Me()
     local profs = {}
-    local inProfSection = false
+    local inProfSection, partial = false, false
     for i = 1, GetNumSkillLines() do
-        local name, isHeader, _, rank, _, _, maxRank = GetSkillLineInfo(i)
+        local name, isHeader, isExpanded, rank, _, _, maxRank = GetSkillLineInfo(i)
         if isHeader then
             inProfSection = (name == TRADE_SKILLS or name == SECONDARY_SKILLS
                 or name == "Métiers" or name == "Compétences secondaires"
                 or name == "Professions" or name == "Secondary Skills")
+            if inProfSection and isExpanded == false then partial = true end
         elseif inProfSection and name then
             profs[name] = { rank = rank, max = maxRank }
         end
     end
-    M:Store(c, profs)
+    M:Store(c, profs, partial)
 end
 
 -- Client moderne : GetProfessions() renvoie jusqu'à 5 index (peuvent être nil).
@@ -65,8 +71,15 @@ function M:OpenDirect(prof)
 end
 
 function M:OnLogin() self:Scan() end
-WK:On("SKILL_LINES_CHANGED", function() M:Scan() end)
-WK:On("TRADE_SKILL_LIST_UPDATE", function() M:Scan() end)
+-- regroupé : TRADE_SKILL_LIST_UPDATE arrive en rafales quand la fenêtre d'un métier est ouverte
+local scanSoon = false
+local function soonScan()
+    if scanSoon then return end
+    scanSoon = true
+    _G.C_Timer.After(0.5, function() scanSoon = false; M:Scan() end)
+end
+WK:On("SKILL_LINES_CHANGED", soonScan)
+WK:On("TRADE_SKILL_LIST_UPDATE", soonScan)
 
 function M:Print()
     for key, c in pairs(WK.DB.global.characters) do
