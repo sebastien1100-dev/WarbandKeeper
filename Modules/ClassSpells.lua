@@ -306,11 +306,14 @@ function M:CheckAlert()
     local cfg = self:Config()
     local r = self:ForChar()
     local n = #r.now
-    if not cfg.alert or n == 0 then WK.modules.QoL:ClearRemind("cspells") return end
-    local text = string.format(T("Niveau %d : %d sort(s) à apprendre (%s)"), r.level, n,
-        r.costNow > 0 and self:Money(r.costNow) or T("prix connus chez le maître"))
-    WK.modules.QoL:Remind("cspells", text, 0.30, 0.58, 1.0, nil, {
-        action = { label = T("Guider"), ghost = true, onClick = function() WK.modules.Guide:GoTo("trainer") end } })
+    if not cfg.alert or n == 0 then return end
+    -- dans le chat (les rappels à l'écran ont été retirés) : une fois par niveau et par perso
+    cfg.told = cfg.told or {}
+    local key = WK:CharKey()
+    if cfg.told[key] == r.level then return end
+    cfg.told[key] = r.level
+    WK:Print(string.format(T("Niveau %d : %d sort(s) à apprendre (%s)"), r.level, n,
+        r.costNow > 0 and self:Money(r.costNow) or T("prix connus chez le maître")) .. " " .. T("(/wk guide maitre)"))
 end
 
 function M:Changed()

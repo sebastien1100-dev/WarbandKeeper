@@ -37,7 +37,7 @@ local KEYS = {
     questTrack = { tracked = true },
     questPlan = { picked = true, tour = true },
     autoQuest = { log = true }, -- mode, détails et exceptions ; le journal des dernières reste au compte
-    classSpells = { prices = true, known = true, skip = true }, -- rappel, panneau, tout apprendre
+    classSpells = { prices = true, known = true, skip = true, told = true }, -- rappel, panneau, tout apprendre
     levelGuide = { follow = true, times = true, acc = true, trainer = true, told = true }, -- préférences seulement -- alerte et niveau ; choix et tournée restent au perso -- réglages du suivi (la quête suivie de chaque perso reste à lui)
     blessings = { chars = true }, -- barre et Salut (la répartition de chaque paladin reste à son perso)
     dataLoad = {}, -- données à la demande : préchargement, message

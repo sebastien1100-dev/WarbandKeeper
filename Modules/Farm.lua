@@ -12,11 +12,18 @@ local function farm() return WK.DB.global.farm end
 function M:Current() return farm().current end
 function M:Active() return farm().current ~= nil end
 
+-- fenêtre fermée depuis moins de 3 s : encore « occupé » (le relevé des sacs arrive 0,5 s après BAG_UPDATE ; un
+-- courrier relevé puis fermé tout de suite était sinon compté comme butin de farm)
+local closedAt = -10
 local function interacting()
-    for _ in pairs(busy) do return true end
-    return false
+    if next(busy) ~= nil then return true end
+    local now = _G.GetTime and _G.GetTime() or 0
+    return now - closedAt < 3 and now >= closedAt
 end
-local function setBusy(key, on) busy[key] = on or nil end
+local function setBusy(key, on)
+    if not on and busy[key] then closedAt = _G.GetTime and _G.GetTime() or 0 end
+    busy[key] = on or nil
+end
 for _, pair in ipairs({
     { "MAIL_SHOW", "MAIL_CLOSED", "mail" }, { "BANKFRAME_OPENED", "BANKFRAME_CLOSED", "bank" },
     { "MERCHANT_SHOW", "MERCHANT_CLOSED", "merchant" }, { "TRADE_SHOW", "TRADE_CLOSED", "trade" },

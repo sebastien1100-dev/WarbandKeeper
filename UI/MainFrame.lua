@@ -798,7 +798,14 @@ function UI:EnsurePage(key)
         def.frame = CreateFrame("Frame", nil, self.pageHost)
         def.frame:SetAllPoints()
         def.frame:SetShown(self.current == key)
-        self:InAccentScope("window", def.Build, def, def.frame)
+        local ok, err = pcall(self.InAccentScope, self, "window", def.Build, def, def.frame)
+        if not ok then
+            -- page qui plante à la construction : cadre à moitié fait caché et oublié, refait à la prochaine
+            -- ouverture (avant : la page restait à moitié construite jusqu'au /reload)
+            def.frame:Hide()
+            def.frame = nil
+            if WK.HandlerError then WK.HandlerError("page " .. tostring(key), err) end
+        end
     end
     return def
 end

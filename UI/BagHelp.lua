@@ -222,6 +222,7 @@ end
 -- Réassort chez le marchand
 ---------------------------------------------------------------------------
 local rsBtn
+local qbBtn -- bouton des objets de quête (plus bas)
 local function plan()
     local stock = UI.MerchantStock and UI.MerchantStock() or {}
     return BH():RestockPlan(stock)
@@ -250,6 +251,12 @@ local function buildRestock()
     b:Hide()
     return b
 end
+-- quelque chose à acheter chez ce marchand (réassort, objets de quête, panneau des métiers) : la fenêtre ne se
+-- ferme pas toute seule après une réparation (Modules/QoL.lua)
+function UI.MerchantHasOffers()
+    return (rsBtn and rsBtn:IsShown()) or (qbBtn and qbBtn:IsShown())
+        or (UI.MerchantPanelShown and UI.MerchantPanelShown()) or false
+end
 function UI:RefreshRestock()
     rsBtn = rsBtn or buildRestock()
     local cfg = BH():Config()
@@ -269,7 +276,6 @@ end
 -- Objets de quête vendus ici (Modules/QuestTrack.lua : BuyMissing) : bouton sous la fenêtre du marchand,
 -- ou achat sans clic (réglage autoQuest.buy) jusqu'à autoQuest.buyCap ; jamais plus que ce qui manque
 ---------------------------------------------------------------------------
-local qbBtn
 local function questPlan()
     local QT = WK.modules.QuestTrack
     local stock = UI.MerchantStock and UI.MerchantStock() or {}

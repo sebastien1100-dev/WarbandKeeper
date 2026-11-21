@@ -2279,7 +2279,7 @@ UI:RegisterPage({
             local CSc = function() local M = WK.modules.ClassSpells; return M and M:Config() or {} end
             local sp = card("Sorts de classe", 3 * 48 + 56)
             local rows = {
-                { "Rappel au passage de niveau", "Dans la pile de rappels : les sorts à apprendre et leur coût.",
+                { "Rappel au passage de niveau", "Dans le chat, une fois par niveau : les sorts à apprendre.",
                     function() return CSc().alert end,
                     function(v) CSc().alert = v; local M = WK.modules.ClassSpells; if M then M:CheckAlert() end end },
                 { "Panneau chez le maître de classe", "À côté de la fenêtre du maître : ce qui est à apprendre, écartés compris.",

@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.5", date = "21/11/2026",
+        fixed = {
+            "Voleur : « Alerte avant la fin des poisons » prévient de nouveau, dans le chat (une fois par poison qui s'achève). Sorts de classe : « Rappel au passage de niveau » écrit les sorts à apprendre dans le chat, une fois par niveau. (Ces deux réglages n'avaient plus d'effet depuis le retrait des rappels à l'écran.)",
+            "Rangement : les réglages « Prix proposé » et « Durée des enchères » sont retirés (ils n'étaient jamais utilisés : la vente suit les réglages de la page Vendre de l'HV).",
+            "Marchand : après une réparation automatique, la fenêtre ne se ferme plus quand il y a quelque chose à acheter (Réassort, objets de quête, panneau des métiers).",
+            "Nettoyage des persos pas connectés depuis 180 jours : la suppression est maintenant complète (or dans les courbes du compte, objets, profil, builds, listes), comme le bouton de la page Persos.",
+            "Carte du monde : les pastilles /way gardent une taille raisonnable quand on zoome (même échelle que les autres repères).",
+            "Farm : un courrier relevé puis fermé tout de suite (ou une banque, un échange…) n'est plus compté comme butin de farm.",
+            "Une page de la fenêtre qui plante à sa construction n'est plus laissée à moitié faite : elle est refaite à la prochaine ouverture (l'erreur est notée au journal de Fiabilité).",
+        },
+    },
+    {
         version = "1.128.4", date = "21/11/2026",
         changed = {
             "Raid plus fluide (paladin) : l'état des bénédictions du groupe n'est plus lu deux fois par seconde (barre des bénédictions et bouton Buffer chacun de leur côté) mais une fois, et les boutons de la barre ne sont plus réécrits chaque seconde quand rien ne change.",

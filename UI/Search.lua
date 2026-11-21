@@ -35,7 +35,10 @@ local function buildAll()
                 UI:InAccentScope("window", def.Build, def, def.frame)
             end)
             if def.frame then def.frame:SetShown(key == UI.current) end
-            if not ok then def.frame = nil end
+            if not ok then
+                if def.frame then def.frame:Hide() end
+                def.frame = nil
+            end
         end
     end
 end

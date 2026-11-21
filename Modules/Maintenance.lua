@@ -269,8 +269,15 @@ M.PURGES = {
         run = function()
             local lim, me = time() - 180 * DAY, WK:CharKey()
             local chars = WK.DB.global.characters or {}
+            local old = {}
             for key, c in pairs(chars) do
-                if key ~= me and type(c) == "table" and (c.lastSeen or 0) > 0 and c.lastSeen < lim then chars[key] = nil end
+                if key ~= me and type(c) == "table" and (c.lastSeen or 0) > 0 and c.lastSeen < lim then old[#old + 1] = key end
+            end
+            -- suppression complète (or dans les courbes, objets, profil, builds, listes…), comme le bouton de la
+            -- page Persos ; avant, seule la fiche partait et l'or du perso restait dans les courbes du compte
+            local Ch = WK.modules.Characters
+            for _, key in ipairs(old) do
+                if Ch and Ch.Delete then Ch:Delete(key) else chars[key] = nil end
             end
         end,
     },

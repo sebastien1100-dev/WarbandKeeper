@@ -162,11 +162,16 @@ function UI:DrawWaypoints(cv, mapID, w, h)
         if x then
             n = n + 1
             local p = pin(n, cv)
-            local size = i == 1 and 22 or 18
+            -- même échelle que les autres calques (taille de la toile, échelle des icônes de la carte) : avant, une
+            -- taille fixe devenait énorme quand on zoomait
+            local base = i == 1 and 22 or 18
+            local sc = UI.MapIconScale and UI.MapIconScale() or 1
+            local size = math.max(base * 0.6 * sc, base * (w / 1000) * sc) * (UI.MapIconSize and UI.MapIconSize() or 1)
             p:SetSize(size, size)
             p.edge:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
             p.dot:SetVertexColor(r, g, b, i == 1 and 1 or 0.85)
             p.num:SetText(tostring(i))
+            if p.num.SetScale then pcall(p.num.SetScale, p.num, math.max(0.5, math.min(1.6, size / 20))) end
             p.w = wp
             p:SetFrameLevel(lvl)
             p:ClearAllPoints(); p:SetPoint("CENTER", cv, "TOPLEFT", x * w, -y * h)

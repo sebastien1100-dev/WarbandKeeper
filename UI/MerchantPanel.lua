@@ -283,6 +283,7 @@ local function show()
     panel:Show()
 end
 
+function UI.MerchantPanelShown() return panel ~= nil and panel:IsShown() end
 WK:On("MERCHANT_SHOW", function() C_Timer.After(0.2, show) end)
 WK:On("MERCHANT_CLOSED", function() if panel then panel:Hide() end end)
 local pending

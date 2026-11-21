@@ -624,18 +624,13 @@ UI:RegisterPage({
         UI:SettingRow(sets, -86, "Vendre à l'HV à partir de", "Valeur du lot au prix du scan de l'HV ; en dessous, il est proposé au marchand.",
             UI:Slider(sets, 220, 0, 500, 10, function() return math.floor((cfg.minAH or 5000) / 100) end,
                 function(v) cfg.minAH = v * 100; S:Invalidate(); WK:NotifyChanged() end, "%d pa"), 240)
-        local priceDd = UI:Dropdown(sets, 220, 30, { { "lowest", T("Plus bas moins 1 pc") }, { "avg", T("Moyenne sur 14 jours") } },
-            function(v) cfg.price = v end)
-        priceDd:Select(cfg.price or "lowest")
-        UI:SettingRow(sets, -132, "Prix proposé", "Pour la mise en vente à l'HV (prix du dernier scan).", priceDd, 220)
-        local durDd = UI:Dropdown(sets, 220, 30, { { 12, T("12 h") }, { 24, T("24 h") }, { 48, T("48 h") } }, function(v) cfg.duration = v end)
-        durDd:Select(cfg.duration or 24)
-        UI:SettingRow(sets, -178, "Durée des enchères", nil, durDd, 220)
-        UI:SettingRow(sets, -224, "Garder une réserve", "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
+        -- (« Prix proposé » et « Durée des enchères » retirés : jamais lus ; la vente à l'HV suit les réglages de la
+        -- fenêtre de l'HV, page Vendre)
+        UI:SettingRow(sets, -132, "Garder une réserve", "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
             UI:Slider(sets, 220, 0, 100, 5, function() return cfg.reserve or 0 end, function(v) cfg.reserve = v; S:Invalidate(); WK:NotifyChanged() end, "%d"), 240)
-        UI:SettingRow(sets, -270, "Proposer les envois à la boîte aux lettres", "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
+        UI:SettingRow(sets, -178, "Proposer les envois à la boîte aux lettres", "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
             UI:Toggle(sets, function() return cfg.mailPanel end, function(v) cfg.mailPanel = v end), 80)
-        sets:SetHeight(40 + 6 * 46 + 8)
+        sets:SetHeight(40 + 4 * 46 + 8)
         UI:OnResize(pane, function() if self.char == "stash" then self:RefreshStash() end end)
     end,
 

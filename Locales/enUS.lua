@@ -4594,4 +4594,7 @@ WK.Locales.enUS.text = {
     ["préchargement"] = "preload",
     ["Langue changée : recharge l'interface pour l'appliquer partout."] = "Language changed: reload the UI.",
     ["Point déjà dans la file (n° %d) : %s"] = "Point already in the queue (#%d): %s",
+    ["Dans le chat, une fois par niveau : les sorts à apprendre."] = "In chat, once per level: spells to learn.",
+    ["(/wk guide maitre)"] = "(/wk guide trainer)",
+    ["%s : encore %d min."] = "%s: %d min left.",
 }

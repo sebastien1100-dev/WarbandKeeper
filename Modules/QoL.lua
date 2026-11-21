@@ -624,7 +624,11 @@ WK:On("MERCHANT_SHOW", function()
         M:SellGrey(function()
             shopFlush()
             if repaired and M:General().closeAfterRepair and not keepOpen then
-                C_Timer.After(0.5, function() if merchantOpen and CloseMerchant then CloseMerchant() end end)
+                C_Timer.After(0.5, function()
+                    -- rien ne se ferme s'il y a quelque chose à acheter ici (réassort, objets de quête, métiers)
+                    local offers = WK.UI.MerchantHasOffers and WK.UI.MerchantHasOffers()
+                    if merchantOpen and CloseMerchant and not offers then CloseMerchant() end
+                end)
             end
         end)
     end)
@@ -869,14 +873,14 @@ local function checkPoisons()
     local limit = (cc.poisonMin or 5) * 60
     for slot, left in pairs({ main = main or false, off = off or false }) do
         if left and left > 0 and left <= limit then
-            -- la pile suit le temps restant ; le texte rouge une seule fois
-            M:Remind("poison" .. slot, slot == "main" and T("Poison de l'arme principale") or T("Poison de la main gauche"), nil, nil, nil, nil,
-                { right = string.format(T("%d min"), math.ceil(left / 60)), rightColor = WK.UI.colors.warning,
-                  noText = warnedPoison[slot], action = M:PoisonAction(slot) })
+            -- dans le chat, une fois par poison qui s'achève (les rappels à l'écran ont été retirés)
+            if not warnedPoison[slot] then
+                WK:Print(string.format(T("%s : encore %d min."), slot == "main" and T("Poison de l'arme principale")
+                    or T("Poison de la main gauche"), math.ceil(left / 60)))
+            end
             warnedPoison[slot] = true
         elseif not left or left > limit then
             warnedPoison[slot] = nil
-            M:ClearRemind("poison" .. slot)
         end
     end
 end
