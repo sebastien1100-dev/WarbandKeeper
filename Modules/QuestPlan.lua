@@ -67,6 +67,19 @@ local function zoneCamps(qid, zone)
     return out
 end
 
+-- carte dans la zone : la zone elle-même ou une de ses sous-cartes (ville, grotte, quartier : le point de rendu
+-- donné par le jeu est souvent sur la carte du hameau, et la quête finie était écartée de la tournée)
+local function inZone(map, zone)
+    local guard = 0
+    while map and guard < 5 do
+        if map == zone then return true end
+        local ok, i = pcall(_G.C_Map.GetMapInfo, map)
+        map, guard = ok and i and i.parentMapID, guard + 1
+    end
+    return false
+end
+M.InZone = inZone
+
 -- { { id, title, lvl, xp, inLog, complete, giver = point?, camps = {…}, center = point?, turnIn = point?, coin } }
 function M:Candidates()
     -- zone de la tournée : celle choisie dans « Carte des zones » (PlanZone), sinon celle où tu es
@@ -94,7 +107,7 @@ function M:Candidates()
         if ti then e.turnIn = point(ti.map, ti.x, ti.y) end
         -- quête du journal absente de la base (quêtes propres à WoW Forever) : le point donné par le jeu
         -- (C_QuestLog.GetNextWaypoint) sert de zone d'objectifs tant qu'elle n'est pas finie
-        if e.inLog and not e.complete and #camps == 0 and not (d and #(d.objs or {}) > 0) and ti and ti.map == zone then
+        if e.inLog and not e.complete and #camps == 0 and not (d and #(d.objs or {}) > 0) and ti and inZone(ti.map, zone) then
             e.camps = { { i = 1, kind = "m", camp = { map = ti.map, x = ti.x, y = ti.y } } }
             e.center = point(ti.map, ti.x, ti.y)
             e.gameOnly = true
@@ -102,8 +115,9 @@ function M:Candidates()
         -- quête finie : seulement si on la rend dans cette zone (sinon, depuis une capitale, la tournée
         -- se réduisait à un rendu à l'autre bout du continent)
         -- quête à porter ou à livrer (pas de zone d'objectifs connue) : prise puis rendue dans la zone
-        local carry = not e.inLog and e.giver and e.turnIn and e.turnIn.map == zone
-        if e.center or carry or (e.complete and e.turnIn and e.turnIn.map == zone) then table.insert(out, e); seen[e.id] = true
+        local carry = not e.inLog and e.giver and e.turnIn and inZone(e.turnIn.map, zone)
+        if e.center or carry or (e.complete and e.turnIn and inZone(e.turnIn.map, zone)) then
+            table.insert(out, e); seen[e.id] = true
         else stats.noArea = stats.noArea + 1 end
     end
     for _, l in ipairs(Q():LogQuests()) do
@@ -867,7 +881,8 @@ function M:CompleteZone()
     for _, e in ipairs(list) do c.picked[k][e.id] = true end
     c.tour[k] = nil
     local t = self:Start()
-    if t then WK:Print(string.format(T("Zone à compléter : %d quêtes, %d étapes."), #list, #t.steps)) end
+    if t then WK:Print(string.format(T("Zone à compléter : %d quêtes, %d étapes."), #list, #t.steps))
+    else c.allZone = nil end -- rien à faire : la zone n'est pas gardée (elle visait encore les tournées suivantes)
     return t
 end
 
@@ -876,18 +891,22 @@ end
 function M:PlanZone(zone, ids)
     local c = self:Config()
     local k = WK:CharKey()
-    if self:Tour() then self:Stop() end
+    if self:Tour() then self:Stop({ keepTrack = true }) end
     c.planZone = (zone ~= WK.modules.Quests:PlayerZone()) and zone or nil
     c.allZone = zone .. ":" .. k
     self:Invalidate()
     c.picked[k] = c.picked[k] or {}
     local want = {}
     for _, id in ipairs(ids) do want[id] = true end
-    for _, e in ipairs(self:Candidates()) do c.picked[k][e.id] = want[e.id] or false end
+    -- quêtes de ton journal jamais décochées ici (elles restaient hors de toutes les tournées suivantes)
+    for _, e in ipairs(self:Candidates()) do
+        if want[e.id] then c.picked[k][e.id] = true elseif not e.inLog then c.picked[k][e.id] = false end
+    end
     for id in pairs(want) do c.picked[k][id] = true end
     self:Invalidate()
     local t = self:Start()
-    if t then WK:Print(string.format(T("Tournée prête : %d quêtes, %d étapes (Ma progression)."), #ids, #t.steps)) end
+    if t then WK:Print(string.format(T("Tournée prête : %d quêtes, %d étapes (Ma progression)."), #ids, #t.steps))
+    else c.planZone, c.allZone = nil, nil end -- rien à faire : la tournée suivante revient à ta zone
     return t
 end
 
@@ -905,7 +924,43 @@ function M:ClearPicks()
     WK:Print(T("Liste vidée : coche des quêtes (Choisir les quêtes) pour une nouvelle tournée."))
 end
 
-function M:Stop()
+-- /wk tournee : pour chaque quête du journal, si elle est dans la tournée et sinon pourquoi
+function M:Diag()
+    local out = {}
+    local c = self:Config()
+    local zone = c.planZone or WK.modules.Quests:PlayerZone()
+    local function mapName(id)
+        local ok, i = pcall(_G.C_Map.GetMapInfo, id or 0)
+        return (ok and i and i.name or "?") .. " (" .. tostring(id) .. ")"
+    end
+    local t = self:Tour()
+    table.insert(out, string.format("zone : %s%s · tournée : %s", mapName(zone), c.planZone and " (choisie)" or "",
+        t and string.format("étape %d / %d", t.idx or 0, #t.steps) or "aucune"))
+    self:Invalidate()
+    local cand = {}
+    for _, e in ipairs((self:Candidates())) do cand[e.id] = e end
+    local inTour = {}
+    for _, s in ipairs(t and t.steps or {}) do for _, q in ipairs(s.qids or {}) do inTour[q] = true end end
+    local picked = c.picked[WK:CharKey()] or {}
+    for _, l in ipairs(Q():LogQuests()) do
+        local e = cand[l.id]
+        local why
+        if inTour[l.id] then why = "dans la tournée"
+        elseif not e then
+            local ti = Q():TurnIn(l.id)
+            why = l.complete and ("rendu hors zone : " .. (ti and mapName(ti.map) or "inconnu"))
+                or "pas d'objectif connu dans la zone"
+        elseif picked[l.id] == false then why = "décochée"
+        elseif isSkipped("turn", l.id) or isSkipped("do", l.id) then why = "étape passée"
+        else why = "pas dans la tournée en cours" end
+        table.insert(out, string.format("%s [%d]%s : %s", l.title or "?", l.id, l.complete and " (prête)" or "", why))
+    end
+    return out
+end
+
+-- opts.keepTrack : la quête suivie reste (tournée remplacée par une autre) ; sinon, arrêter la tournée lâche
+-- aussi la quête suivie (avant, sa carte et ses zones restaient affichées après « Arrêter » ou « Vider »)
+function M:Stop(opts)
     for k in pairs(skipped) do skipped[k] = nil end -- étapes passées oubliées avec la tournée
     self:Config().tour[WK:CharKey()] = nil
     self:Config().allZone = nil
@@ -913,8 +968,13 @@ function M:Stop()
     local g = G()
     if g.target and g.target.kind == "qtour" then g:Stop() end
     self.lastKey = nil
-    self:Changed()
-    if Q().Retarget then Q():Retarget(true) end
+    if opts and opts.keepTrack then
+        self:Changed()
+        if Q().Retarget then Q():Retarget(true) end
+    else
+        if Q().Tracked and Q():Tracked() then Q():Untrack() end
+        self:Changed()
+    end
 end
 
 function M:Pause(v)

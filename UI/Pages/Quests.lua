@@ -550,9 +550,21 @@ UI:RegisterPage({
                 return t
             end
             UI:SettingRow(tcard, -40, "Suivre la quête cochée dans le journal", nil, qtoggle("followWatch"), 50)
-            UI:SettingRow(tcard, -76, "Carte de quête à l'écran", nil, qtoggle("hud", function()
-                if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
-            end), 50)
+            -- Tournée : carte pour la tournée et le guide seulement ; Toujours : aussi pour une quête suivie seule
+            self.hudSeg = UI:Segmented(tcard, { { "tour", "Tournée" }, { "all", "Toujours" }, { "off", "Jamais" } },
+                function(v)
+                    local c = QT():Config()
+                    c.hud, c.hudSolo = v ~= "off", v == "all"
+                    if UI.RefreshQuestTracker then UI:RefreshQuestTracker() end
+                end, 26)
+            UI:SettingRow(tcard, -76, "Carte de quête à l'écran",
+                "Tournée : pendant une tournée ou le guide de montée seulement. "
+                    .. "Toujours : aussi pour une quête suivie seule.",
+                self.hudSeg, self.hudSeg:GetWidth())
+            do
+                local c = QT():Config()
+                self.hudSeg:Select(not c.hud and "off" or (c.hudSolo and "all" or "tour"))
+            end
             UI:SettingRow(tcard, -112, "Flèche vers les zones de quête", nil, qtoggle("guide", function(v)
                 local g = G()
                 if v then QT():Retarget(true)
@@ -2334,6 +2346,10 @@ UI:RegisterPage({
         end
         for _, t in ipairs(self.toggles) do t:Refresh() end
         if self.campSeg and QT() then self.campSeg:Select(QT():Config().map) end
+        if self.hudSeg and QT() then
+            local c = QT():Config()
+            self.hudSeg:Select(not c.hud and "off" or (c.hudSolo and "all" or "tour"))
+        end
         if self.maxSeg and QP() then self.maxSeg:Select(QP():Config().maxAbove) end
         if not self.zoneSum then self:ZoneSummary() end
         if self.view == "montee" then self:RefreshMontee() return end

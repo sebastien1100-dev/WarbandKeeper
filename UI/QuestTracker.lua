@@ -619,7 +619,8 @@ function UI:RefreshQuestTracker()
         card:Show()
         return
     end
-    local qid = shown() and q:Tracked()
+    -- quête suivie seule (ni tournée ni guide) : carte seulement si « Toujours » (hudSolo)
+    local qid = shown() and q:Config().hudSolo and q:Tracked()
     if not qid then card:Hide() return end
     local objs = {}
     for _, o in ipairs(q:Objectives(qid)) do

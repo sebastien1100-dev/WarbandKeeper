@@ -4605,4 +4605,6 @@ WK.Locales.enUS.text = {
     ["Confirmer %d pour %s"] = "Confirm %d for %s",
     ["Attention : aucun cours connu pour %s (%s)."] = "Warning: no known price for %s (%s).",
     ["La liste du courrier a changé : reclique sur la lettre."] = "The mail list changed: click the letter again.",
+    ["Tournée : pendant une tournée ou le guide de montée seulement. Toujours : aussi pour une quête suivie seule."] =
+        "Tour: only during a quest tour or the leveling guide. Always: also for a single tracked quest.",
 }

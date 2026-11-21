@@ -17,6 +17,8 @@ function M:Config()
     c.tracked = c.tracked or {}       -- [perso] = n° de quête (donnée, hors profils)
     if c.followWatch == nil then c.followWatch = true end -- quête cochée dans le journal du jeu = suivie
     if c.hud == nil then c.hud = true end                 -- carte de quête à l'écran
+    -- carte d'une quête suivie hors tournée et hors guide (le journal du jeu le fait déjà) : non par défaut
+    if c.hudSolo == nil then c.hudSolo = false end
     if c.guide == nil then c.guide = true end             -- flèche vers le camp puis le rendu
     if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
     if c.zoneStyle == nil then c.zoneStyle = "heat" end   -- zones sur la carte du monde : heat / points / circles

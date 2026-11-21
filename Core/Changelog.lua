@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.28", date = "21/11/2026",
+        changed = {
+            "Carte de quête à l'écran : trois choix (Tournée, Toujours, Jamais). Par défaut « Tournée » : la carte n'apparaît que pendant une tournée ou le guide de montée, plus pour une quête suivie seule (le journal du jeu le fait déjà).",
+            "Arrêter ou vider la tournée lâche aussi la quête suivie : sa carte, ses zones sur la carte du monde et sa flèche disparaissent.",
+            "/wk tournee : dit pour chaque quête du journal si elle est dans la tournée, et sinon pourquoi.",
+        },
+        fixed = {
+            "Tournée : une quête prête dont le rendu est dans un hameau ou une grotte de la zone n'était pas comptée dans la tournée.",
+            "Tournée d'une autre zone sans rien à faire : la zone choisie restait retenue et les tournées suivantes la visaient encore ; les quêtes de ton journal ne sont plus décochées par ce choix.",
+        },
+    },
+    {
         version = "1.128.27", date = "21/11/2026",
         fixed = {
             "Mort pendant un point /way : le guidage d'avant le /way n'est plus perdu ; il revient une fois en vie.",

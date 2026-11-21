@@ -71,6 +71,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.28 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte de quête à l'écran : trois choix (Tournée, Toujours, Jamais). Par défaut « Tournée » : la carte n'apparaît que pendant une tournée ou le guide de montée, plus pour une quête suivie seule (le journal du jeu le fait déjà).
+- Arrêter ou vider la tournée lâche aussi la quête suivie : sa carte, ses zones sur la carte du monde et sa flèche disparaissent.
+- /wk tournee : dit pour chaque quête du journal si elle est dans la tournée, et sinon pourquoi.
+
+### Corrections
+- Tournée : une quête prête dont le rendu est dans un hameau ou une grotte de la zone n'était pas comptée dans la tournée.
+- Tournée d'une autre zone sans rien à faire : la zone choisie restait retenue et les tournées suivantes la visaient encore ; les quêtes de ton journal ne sont plus décochées par ce choix.
+
 ## v1.128.27 — 21/11/2026
 
 _Un /reload suffit._
