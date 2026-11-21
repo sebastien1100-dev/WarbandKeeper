@@ -55,34 +55,41 @@ end
 local function lowestOther(id)
     local A = AH()
     if not A then return nil end
+    -- paliers des autres vendeurs, passés par la même règle que le scan (S.RobustTiers) : les appâts sont
+    -- écartés (avant, la première ligne d'un autre vendeur : 1 exemplaire à 1 pc devenait le prix proposé)
+    local tiers, total, firstMine = {}, 0, nil
+    local function add(unit, qty, mine)
+        if firstMine == nil then firstMine = mine and true or false end
+        if mine or not unit then return end
+        qty = qty or 1
+        total = total + qty
+        local last = tiers[#tiers]
+        if last and last[1] == unit then last[2] = last[2] + qty else tiers[#tiers + 1] = { unit, qty } end
+    end
     if isCommodity(id) then
         if not (A.GetNumCommoditySearchResults and A.GetCommoditySearchResultInfo) then return nil end
         local okn, n = pcall(A.GetNumCommoditySearchResults, id)
         if not okn or not n or n == 0 then return nil end
-        local first
-        for i = 1, math.min(n, 20) do
+        for i = 1, math.min(n, 40) do
             local ok, r = pcall(A.GetCommoditySearchResultInfo, id, i)
-            if ok and r and r.unitPrice then
-                first = first or r
-                if not r.containsOwnerItem then return r.unitPrice, first.containsOwnerItem end
-            end
+            if ok and r and r.unitPrice then add(r.unitPrice, r.quantity, r.containsOwnerItem) end
         end
-        return nil, first and first.containsOwnerItem
     else
         if not (A.GetNumItemSearchResults and A.GetItemSearchResultInfo) then return nil end
         local key = itemKeyOf(id)
         local okn, n = pcall(A.GetNumItemSearchResults, key)
         if not okn or not n or n == 0 then return nil end
-        local first
-        for i = 1, math.min(n, 20) do
+        for i = 1, math.min(n, 40) do
             local ok, r = pcall(A.GetItemSearchResultInfo, key, i)
             if ok and r and r.buyoutAmount then
-                first = first or r
-                if not r.containsOwnerItem then return math.floor(r.buyoutAmount / math.max(1, r.quantity or 1)), first.containsOwnerItem end
+                local q = math.max(1, r.quantity or 1)
+                add(math.floor(r.buyoutAmount / q), q, r.containsOwnerItem)
             end
         end
-        return nil, first and first.containsOwnerItem
     end
+    if not tiers[1] then return nil, firstMine end
+    table.sort(tiers, function(a, b) return a[1] < b[1] end)
+    return S.RobustTiers(tiers, total), firstMine
 end
 M.LowestOther = lowestOther
 
@@ -177,9 +184,8 @@ local function nextCheck()
     local A = AH()
     local ok = pcall(A.SendSearchQuery, itemKeyOf(id), sorts(), true)
     if not ok then
-        -- pas de recherche possible : on compare au prix du scan
-        local p = S:Price(id)
-        setState(id, p, false)
+        -- pas de recherche possible : rien de sûr, « à vérifier » (avant : comparé au scan, qui disait « ok »)
+        for _, o in ipairs(M.owned) do if o.id == id then o.state = "?" end end
         pendingCheck = nil
     end
     notify()
@@ -205,9 +211,8 @@ function M:Check()
         ticker = C_Timer.NewTicker(THROTTLE, function()
             if pendingCheck and GetTime() - (pendingAt or 0) < RESULT_TIMEOUT then return end
             if pendingCheck then
-                -- pas de réponse : comparaison au prix du scan
-                local p = S:Price(pendingCheck)
-                if p then setState(pendingCheck, p, false) end
+                -- pas de réponse à temps : « à vérifier »
+                for _, o in ipairs(M.owned) do if o.id == pendingCheck then o.state = "?" end end
                 pendingCheck = nil
             end
             nextCheck()

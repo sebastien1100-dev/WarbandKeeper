@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.25", date = "21/11/2026",
+        fixed = {
+            "Vente rapide (fenêtre du jeu) et Mes enchères : un appât isolé n'est plus pris pour le prix le plus bas ; une recherche sans réponse affiche « à vérifier » au lieu de « la plus basse ».",
+            "Courrier et banque : une pile qui a fondu depuis le plan garde la quantité prévue (avant, elle partait entière malgré « garder »).",
+            "Courrier : une fermeture de la boîte non signalée ne bloque plus les envois suivants ; un objet joint puis retiré n'est plus compté dans la boîte du destinataire.",
+            "Page Métiers : le bouton « Ouvrir le métier » est aussi désancré à l'entrée en combat (déplacer ou fermer la fenêtre en combat ne bloque plus) ; son infobulle suit la page affichée.",
+            "Bouton Buffer (druide, prêtre, mage) : les effets d'un joueur ne sont relus que quand ils changent, ou toutes les 10 s (avant : tous les effets de tout le raid chaque seconde).",
+            "Bénédictions : une nouvelle répartition reçue en combat est appliquée à la sortie du combat (avant, des lignes de la barre restaient figées sur l'ancien sort).",
+        },
+    },
+    {
         version = "1.128.24", date = "21/11/2026",
         fixed = {
             "Points /way : une file interrompue (retour au corps, détour chez un marchand…) reprend d'elle-même ensuite ; avant, plus rien ne la guidait.",

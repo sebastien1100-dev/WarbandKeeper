@@ -787,6 +787,7 @@ local function Detail(page, parent)
     -- chaque fois) ; ils suivent l'onglet de la dernière page construite (UI.profSecureTab)
     local secure = _G.WarbandKeeperOpenProfession
     UI.profSecureTab = tab
+    UI.profSecureOpen = open
     local function needSecure()
         return not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill)
     end
@@ -797,8 +798,15 @@ local function Detail(page, parent)
             secure = CreateFrame("Button", "WarbandKeeperOpenProfession", UIParent, "SecureActionButtonTemplate")
             if secure.RegisterForClicks then secure:RegisterForClicks("AnyUp", "AnyDown") end
             secure:SetAttribute("type", "spell")
-            secure:SetScript("OnEnter", function() open:GetScript("OnEnter")(open) end)
-            secure:SetScript("OnLeave", function() open:GetScript("OnLeave")(open) end)
+            -- infobulle du bouton de la page affichée (après UI:Rebuild, celui de la première construction est caché)
+            secure:SetScript("OnEnter", function()
+                local o = UI.profSecureOpen
+                if o and o:GetScript("OnEnter") then o:GetScript("OnEnter")(o) end
+            end)
+            secure:SetScript("OnLeave", function()
+                local o = UI.profSecureOpen
+                if o and o:GetScript("OnLeave") then o:GetScript("OnLeave")(o) end
+            end)
         end
         if not secure then return end
         if want then
@@ -817,8 +825,10 @@ local function Detail(page, parent)
     if not UI.profSecureHooked then
         UI.profSecureHooked = true
         WK:On("PLAYER_REGEN_DISABLED", function()
+            -- caché ET désancré (dernier moment permis) : ancré à un cadre de l'addon, il rendait toute la chaîne
+            -- d'ancrage de la fenêtre protégée en combat (déplacer, fermer : action bloquée)
             local b = _G.WarbandKeeperOpenProfession
-            if b then b:Hide() end
+            if b then b:Hide(); b:ClearAllPoints() end
         end)
         WK:On("PLAYER_REGEN_ENABLED", function() if UI.profSecureTab then UI.profSecureTab:SyncSecure() end end)
     end

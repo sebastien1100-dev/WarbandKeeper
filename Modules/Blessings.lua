@@ -688,8 +688,11 @@ local function changed()
 end
 -- Messages des paladins regroupés : en raid, plusieurs addons en envoient plusieurs par seconde ; une seule
 -- nouvelle répartition (et un seul rafraîchissement de la barre) toutes les 0,3 s au plus
-local reassignPending
+local reassignPending, reassignAfterCombat
 function M.Reassign()
+    -- en combat : la barre ne peut pas changer ses boutons protégés ; une nouvelle répartition la laissait avec
+    -- des lignes figées (ancien texte, ancien sort au clic). Elle est appliquée à la sortie du combat.
+    if _G.InCombatLockdown and _G.InCombatLockdown() then reassignAfterCombat = true return end
     if reassignPending then return end
     reassignPending = true
     _G.C_Timer.After(0.3, function()
@@ -698,6 +701,9 @@ function M.Reassign()
         changed()
     end)
 end
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if reassignAfterCombat then reassignAfterCombat = false; M.Reassign() end
+end)
 local rosterPending
 local function onRoster()
     if rosterPending then return end

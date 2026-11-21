@@ -90,10 +90,7 @@ local function step()
     local cur, n, locked = WK.Container.Info(job.op.bag, job.op.slot)
     if cur ~= job.itemID or locked then return step() end
     -- pile changée depuis le plan : jamais plus que prévu, et le décompte suit ce qui part vraiment
-    n = n or 1
-    local want = job.op.split or job.op.count
-    if want and n > want then job.op.split, job.op.count = want, want
-    elseif want and n < want then job.op.split, job.op.count = nil, n end
+    if not WK.modules.Rules:AdjustOp(job.op, n) then return step() end
     local bag, slot = destination(job.target, job.itemID, job.op.count)
     if not bag then
         full[job.target] = true

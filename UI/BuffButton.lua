@@ -67,7 +67,10 @@ local function namesFor(ids)
     if all then namesOf[ids] = names end -- un nom pas encore chargé : redemandé la fois suivante
     return names
 end
-local function auraLeft(unit, ids)
+-- Lectures gardées par joueur (GUID) jusqu'à un changement de ses effets (UNIT_AURA) ou 10 s : avant, jusqu'à
+-- 40 effets de chaque membre du raid et de chaque plaque étaient relus chaque seconde (druide, prêtre, mage)
+local auraCache, auraCount = {}, 0
+local function scanAura(unit, ids)
     local names = namesFor(ids)
     for i = 1, 40 do
         local name, exp, src
@@ -82,12 +85,38 @@ local function auraLeft(unit, ids)
         else break end
         if name and names[name] then
             local mine = src ~= nil and UnitIsUnit and UnitIsUnit(src, "player") or false
-            if not exp or exp == 0 then return 0, mine end
-            return math.max(0, exp - GetTime()), mine
+            return (not exp or exp == 0) and 0 or exp, mine -- expiration absolue (0 = sans fin)
         end
     end
-    return nil
+    return false
 end
+local function auraLeft(unit, ids)
+    local guid = _G.UnitGUID and _G.UnitGUID(unit)
+    local now = GetTime()
+    local c = guid and auraCache[guid]
+    if c and (c.dirty or now - c.at > 10) then c = nil end
+    if guid and not c then
+        if auraCount > 300 then auraCache, auraCount = {}, 0 end
+        c = { at = now, res = {} }
+        auraCache[guid] = c
+        auraCount = auraCount + 1
+    end
+    local r = c and c.res[ids]
+    if r == nil then
+        local exp, mine = scanAura(unit, ids)
+        r = exp and { exp, mine } or false
+        if c then c.res[ids] = r end
+    end
+    if not r then return nil end
+    if r[1] == 0 then return 0, r[2] end
+    return math.max(0, r[1] - now), r[2]
+end
+WK:On("UNIT_AURA", function(unit)
+    local guid = type(unit) == "string" and _G.UnitGUID and _G.UnitGUID(unit)
+    local c = guid and auraCache[guid]
+    if c then c.dirty = true end
+end)
+UI.BuffAuraCache = auraCache
 
 -- Joueurs que le jeu a refusé de buffer juste après un clic (« un sort plus puissant est déjà actif »,
 -- hors de vue…) : passés pendant 2 min, le bouton va au suivant

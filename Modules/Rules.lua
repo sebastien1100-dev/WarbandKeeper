@@ -154,7 +154,9 @@ function M:Plan(store, accept)
             if toMove > 0 then
                 for _, s in ipairs(e.slots) do
                     if not s.used and s.count > toMove then
-                        table.insert(ops, { bag = s.bag, slot = s.slot, count = toMove, split = toMove, id = id })
+                        -- orig : taille de la pile au plan (pour garder la même part si elle fond d'ici l'envoi)
+                        table.insert(ops, { bag = s.bag, slot = s.slot, count = toMove, split = toMove, id = id,
+                            orig = s.count })
                         break
                     end
                 end
@@ -163,6 +165,25 @@ function M:Plan(store, accept)
         end
     end
     return plan
+end
+
+-- Pile changée depuis le plan : jamais plus que prévu, et la part à garder reste gardée. Rend faux si rien ne
+-- doit partir de cette case. (Avant, une pile qui avait fondu partait entière, malgré « garder ».)
+function M.AdjustOp(_, op, n)
+    n = n or 1
+    local want = op.split or op.count
+    if not want then return true end
+    if op.split and op.orig and n < op.orig then
+        local keep = op.orig - op.split
+        local send = n - keep
+        if send <= 0 then return false end
+        op.split, op.count = send, send
+    elseif n > want then
+        op.split, op.count = want, want
+    elseif n < want then
+        op.split, op.count = nil, n
+    end
+    return true
 end
 
 -- Prend l'objet (ou une partie de la pile) sur le curseur.

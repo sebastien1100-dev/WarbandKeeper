@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.6"
+CLIENT_VERSION = "1.9.7"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -341,7 +341,7 @@ def installed_version(addons):
     try:
         with open(os.path.join(addons, ADDON, ADDON + ".toc"), encoding="utf-8", errors="replace") as f:
             m = re.search(r"^## Version:\s*(\S+)", f.read(), re.M)
-            return m.group(1) if m else "?"
+            return m.group(1) if m else "inconnue"  # (« ? » donnait un nom de dossier interdit sous Windows)
     except OSError:
         return None
 
@@ -957,17 +957,33 @@ def list_backups():
 
 
 def restore_backup(addons, path):
-    root = game_dir(addons)
-    with zipfile.ZipFile(path) as z:
-        for n in z.namelist():
-            if n.startswith("_") or not n.endswith((".lua", ".bak")):
-                continue
-            dest = os.path.normpath(os.path.join(root, n))
-            if not dest.startswith(os.path.normpath(root)):
-                continue
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
-            with z.open(n) as src, open(dest, "wb") as out:
-                shutil.copyfileobj(src, out)
+    """Tout est d'abord extrait à côté de chaque fichier (« .wknew ») ; les fichiers ne sont remplacés
+    (os.replace) qu'une fois toute la sauvegarde lue sans erreur : une sauvegarde abîmée ou un disque plein ne
+    laisse plus des réglages à moitié restaurés."""
+    root = os.path.normpath(game_dir(addons))
+    staged = []
+    try:
+        with zipfile.ZipFile(path) as z:
+            for n in z.namelist():
+                if n.startswith("_") or not n.endswith((".lua", ".bak")):
+                    continue
+                dest = os.path.normpath(os.path.join(root, n))
+                if not dest.startswith(root + os.sep):
+                    continue
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                tmp = dest + ".wknew"
+                with z.open(n) as src, open(tmp, "wb") as out:
+                    shutil.copyfileobj(src, out)
+                staged.append((tmp, dest))
+    except Exception:
+        for tmp, _ in staged:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        raise
+    for tmp, dest in staged:
+        os.replace(tmp, dest)
 
 
 def safe_extract(zpath, dest_parent):
@@ -1011,71 +1027,70 @@ def install_zip(addons, zpath, old_version):
     oldToc = _toc_body(target) if os.path.isdir(target) else None
     oldData = _files(data) if os.path.isdir(data) else None
     oldDataToc = _toc_body(data, DATA_ADDON) if os.path.isdir(data) else None
-    # Transactionnel (comme rollback) : chaque déplacement est noté ; si un déplacement ou l'extraction échoue
-    # (fichier verrouillé, disque plein : %APPDATA% est souvent sur un autre disque, le déplacement y est une
-    # copie), tout est défait dans l'ordre inverse et l'addon reste tel qu'avant. Rien n'est effacé avant la
-    # réussite : une ancienne sauvegarde du même nom et le dossier de données sans addon sont mis de côté.
-    done = []
-
-    def move(src, dst):
-        shutil.move(src, dst)
-        done.append((src, dst))
-
-    trash = []
+    # Transactionnel : les dossiers en place sont d'abord renommés à côté, dans AddOns (même disque : un
+    # renommage est immédiat et ne peut pas s'arrêter au milieu) ; si l'extraction échoue, le morceau extrait est
+    # retiré et les dossiers reprennent leur nom. La copie de secours vers « precedente » (souvent sur un autre
+    # disque) n'est faite qu'après la réussite, et son échec ne casse rien.
+    aside = []
+    extracted = False
     try:
-        if os.path.isdir(target):
-            moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, old_version or "inconnue"))
-            if os.path.exists(moved):
-                aside = moved + "-ancienne"
-                if os.path.exists(aside):
-                    shutil.rmtree(aside, ignore_errors=True)
-                move(moved, aside)
-                trash.append(aside)
-            move(target, moved)
-        # dossier des données (chargé à la demande) : rangé avec la sauvegarde de la version, sinon mis de côté
-        if os.path.isdir(data):
-            if moved:
-                move(data, os.path.join(moved, DATA_KEEP))
-            else:
-                aside = os.path.join(previous_dir(), DATA_ADDON + "-retire")
-                if os.path.exists(aside):
-                    shutil.rmtree(aside, ignore_errors=True)
-                move(data, aside)
-                trash.append(aside)
+        for path in (target, data):
+            if os.path.isdir(path):
+                old = path + ".__wkold"
+                if os.path.exists(old):
+                    shutil.rmtree(old, ignore_errors=True)
+                os.rename(path, old)
+                aside.append((path, old))
+        extracted = True
         safe_extract(zpath, addons)
     except Exception:
-        # morceau éventuellement extrait retiré, puis déplacements défaits
-        # un dossier qui n'existait pas avant, ou qui a été rangé, ne contient que le morceau extrait
-        for path, before in ((target, oldFiles), (data, oldData)):
-            if os.path.isdir(path) and (before is None or any(src == path for src, _ in done)):
-                shutil.rmtree(path, ignore_errors=True)
-        for src, dst in reversed(done):
+        # morceau extrait retiré (seulement s'il y a eu extraction : un dossier pas encore renommé est l'original)
+        if extracted:
+            for path in (target, data):
+                if os.path.isdir(path):
+                    shutil.rmtree(path, ignore_errors=True)
+        for path, old in reversed(aside):
             try:
-                if os.path.exists(src):
-                    shutil.rmtree(src, ignore_errors=True)
-                shutil.move(dst, src)
+                if not os.path.exists(path):
+                    os.rename(old, path)
             except OSError:
                 pass
         raise
-    # réussi : mises de côté effacées ; la version remplacée devient la plus récente gardée
-    for t in trash:
-        shutil.rmtree(t, ignore_errors=True)
-    if moved and os.path.isdir(moved):
+    olds = dict(aside)
+    newVersion = None
+    try:
+        with open(os.path.join(target, ADDON + ".toc"), encoding="utf-8", errors="replace") as f:
+            m = re.search(r"^## Version:\s*(\S+)", f.read(), re.M)
+            newVersion = m.group(1) if m else None
+    except OSError:
+        pass
+    # version gardée pour « Revenir » : celle qu'on vient de remplacer, sauf si c'est la même (« Réparer » :
+    # l'ancienne copie était abîmée, elle n'est pas gardée et ne chasse pas une vraie version précédente)
+    keepOld = olds.get(target) and old_version and old_version != newVersion
+    if keepOld:
+        moved = os.path.join(previous_dir(), "%s-%s" % (ADDON, safe_name(old_version)))
         try:
+            if os.path.exists(moved):
+                shutil.rmtree(moved, ignore_errors=True)
+            shutil.move(olds[target], moved)
+            if olds.get(data):
+                shutil.move(olds[data], os.path.join(moved, DATA_KEEP))
             os.utime(moved, None)
         except OSError:
-            pass
-    # on ne garde que les 2 dernières versions, jamais celle qu'on vient de ranger (élagage après la réussite :
-    # avant, il se faisait avant l'extraction et pouvait effacer la version de secours)
-    olds = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())
-                   if not d.endswith("-ancienne") and not d.endswith("-retire")), key=os.path.getmtime, reverse=True)
+            moved = None  # pas de copie de secours, l'installation reste bonne
+    for old in olds.values():
+        if os.path.exists(old):
+            shutil.rmtree(old, ignore_errors=True)
+    # on ne garde que les 2 dernières versions, jamais celle qu'on vient de ranger
+    olds2 = sorted((os.path.join(previous_dir(), d) for d in os.listdir(previous_dir())
+                    if not d.endswith("-ancienne") and not d.endswith("-retire")), key=os.path.getmtime, reverse=True)
     keep = [moved] if moved else []
-    for d in olds:
+    for d in olds2:
         if len(keep) >= 2:
             break
         if d not in keep:
             keep.append(d)
-    for d in olds:
+    for d in olds2:
         if d not in keep:
             shutil.rmtree(d, ignore_errors=True)
     if oldFiles is None:
@@ -1119,60 +1134,62 @@ def previous_versions():
 
 
 def rollback(addons, prev):
-    """Remet la version gardée prev. Transactionnel : chaque déplacement est noté ; si l'un échoue (fichier
-    verrouillé par le jeu, disque plein…), ceux déjà faits sont défaits dans l'ordre inverse, et l'addon reste
-    tel qu'avant (avant, une erreur au milieu laissait un addon à moitié remis, ou pas d'addon du tout)."""
+    """Remet la version gardée prev. Transactionnel : la version en place est renommée à côté (même disque),
+    la version gardée est COPIÉE dans AddOns ; si quelque chose échoue, la copie est retirée et la version en
+    place reprend son nom. Après la réussite seulement, la version quittée est rangée dans « precedente »."""
     target = os.path.join(addons, ADDON)
     data = os.path.join(addons, DATA_ADDON)
     cur = installed_version(addons)
-    done = []  # (source, destination) des déplacements faits
-
-    def move(src, dst):
-        shutil.move(src, dst)
-        done.append((src, dst))
-
-    trash = None
+    aside = []
+    copied = False
     try:
-        tmp = None
-        if os.path.isdir(target):
-            tmp = os.path.join(previous_dir(), "%s-%s" % (ADDON, cur or "inconnue"))
-            if os.path.normpath(tmp) == os.path.normpath(prev["path"]):
-                tmp = tmp + "-courante"
-            if os.path.exists(tmp):
-                # ancienne sauvegarde du même nom : mise de côté, effacée seulement si tout réussit
-                trash = tmp + "-ancienne"
-                if os.path.exists(trash):
-                    shutil.rmtree(trash, ignore_errors=True)
-                move(tmp, trash)
-            move(target, tmp)
-        if os.path.isdir(data):
-            # données de la version actuelle : rangées avec elle (ou mises de côté s'il n'y avait pas d'addon)
-            if tmp:
-                move(data, os.path.join(tmp, DATA_KEEP))
-            else:
-                trash2 = os.path.join(previous_dir(), DATA_ADDON + "-retire")
-                if os.path.exists(trash2):
-                    shutil.rmtree(trash2, ignore_errors=True)
-                move(data, trash2)
-        move(prev["path"], target)
+        for path in (target, data):
+            if os.path.isdir(path):
+                old = path + ".__wkold"
+                if os.path.exists(old):
+                    shutil.rmtree(old, ignore_errors=True)
+                os.rename(path, old)
+                aside.append((path, old))
+        copied = True
+        shutil.copytree(prev["path"], target)
         kept = os.path.join(target, DATA_KEEP)
         if os.path.isdir(kept):
-            move(kept, data)
+            os.rename(kept, data)
     except Exception:
-        for src, dst in reversed(done):
+        if copied:
+            for path in (target, data):
+                if os.path.isdir(path):
+                    shutil.rmtree(path, ignore_errors=True)
+        for path, old in reversed(aside):
             try:
-                if os.path.exists(src):
-                    shutil.rmtree(src, ignore_errors=True)
-                shutil.move(dst, src)
+                if not os.path.exists(path):
+                    os.rename(old, path)
             except OSError:
                 pass
         raise
-    # tout a réussi : les mises de côté sont effacées
-    if trash:
-        shutil.rmtree(trash, ignore_errors=True)
-    trash2 = os.path.join(previous_dir(), DATA_ADDON + "-retire")
-    if os.path.exists(trash2):
-        shutil.rmtree(trash2, ignore_errors=True)
+    olds = dict(aside)
+    # version gardée remise : retirée de « precedente » ; la version quittée y est rangée à sa place
+    shutil.rmtree(prev["path"], ignore_errors=True)
+    if olds.get(target):
+        dest = os.path.join(previous_dir(), "%s-%s" % (ADDON, safe_name(cur)))
+        try:
+            if os.path.exists(dest):
+                shutil.rmtree(dest, ignore_errors=True)
+            shutil.move(olds[target], dest)
+            if olds.get(data):
+                shutil.move(olds[data], os.path.join(dest, DATA_KEEP))
+            os.utime(dest, None)
+        except OSError:
+            pass
+    for old in olds.values():
+        if os.path.exists(old):
+            shutil.rmtree(old, ignore_errors=True)
+    return cur
+
+
+def safe_name(v):
+    """Morceau de nom de dossier sûr sous Windows (chiffres, lettres, points)."""
+    return re.sub(r"[^0-9A-Za-z.]", "_", v or "inconnue") or "inconnue"
 
 
 def clean_env():
@@ -2005,8 +2022,12 @@ class BackupsPage(Page):
         if not a.confirm("Restaurer la sauvegarde du %s ?\nTes réglages actuels sont d'abord sauvegardés." %
                          datetime.fromtimestamp(b["time"]).strftime("%d/%m/%Y %H:%M")):
             return
-        backup_saved_variables(a.addons, a.installed, a.cfg["keepBackups"] + 1, "avant restauration")
-        restore_backup(a.addons, b["path"])
+        try:
+            backup_saved_variables(a.addons, a.installed, a.cfg["keepBackups"] + 1, "avant restauration")
+            restore_backup(a.addons, b["path"])
+        except (OSError, zipfile.BadZipFile) as e:
+            a.toast("Restauration impossible : %s (rien n'a été changé)." % e, "negative")
+            return
         a.toast("Sauvegarde restaurée.", "positive")
         a.state_changed()
 
@@ -2018,7 +2039,10 @@ class BackupsPage(Page):
         if not a.confirm("Remettre Warband Keeper %s ?" % prev[0]["version"]):
             return
         try:
-            rollback(a.addons, prev[0])
+            left = rollback(a.addons, prev[0])
+            if left:
+                a.cfg["skipVersion"] = left
+                save_config(a.cfg)
             a.toast("Version %s remise. Redémarre le jeu." % prev[0]["version"], "positive")
         except OSError as e:
             a.toast("Impossible : %s" % e, "negative")
@@ -2924,16 +2948,23 @@ class App:
                     self.toast("Nouvelle version %s de Warband Keeper : « Mettre à jour » dans la page Mises à jour." % latest, "warning")
                 flash_taskbar(self.root)
             # installation automatique (Réglages > Mises à jour), seulement sur un addon déjà installé
+            # après un retour en arrière, la version quittée n'est plus réinstallée d'office (seulement une plus
+            # récente qu'elle) ; « skipVersion » est oublié à la prochaine installation faite à la main
+            skip = self.cfg.get("skipVersion")
             if not err and self.cfg["autoInstall"] and inst and self.latest_version and not self.busy \
-                    and vtuple(self.latest_version) > vtuple(inst):
+                    and vtuple(self.latest_version) > vtuple(inst) \
+                    and not (skip and vtuple(self.latest_version) <= vtuple(skip)):
                 self.toast("Nouvelle version %s : installation automatique…" % self.latest_version)
-                self.update_addon()
+                self.update_addon(manual=False)
         self.run(job, done)
 
-    def update_addon(self):
+    def update_addon(self, manual=True):
         rel, addons = self.latest, self.addons
         if not (rel and addons) or self.busy:
             return
+        if manual and self.cfg.get("skipVersion"):
+            self.cfg.pop("skipVersion", None)  # installation demandée : l'installation automatique reprend
+            save_config(self.cfg)
         home = self.pages["home"]
         old = self.installed
         self.busy = True

@@ -3,6 +3,15 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.7 — 21/11/2026
+
+### Corrections
+- Installation et retour à la version précédente : la version en place est d'abord renommée à côté, sur le même disque (immédiat, sans risque d'arrêt au milieu) ; si quelque chose échoue, tout reprend sa place. La copie de secours vers le dossier du client n'est faite qu'après la réussite.
+- « Réparer » ne garde plus la copie abîmée comme version précédente (elle chassait une vraie ancienne version).
+- Après « Revenir à la version précédente », l'installation automatique ne remet plus la version que tu viens de quitter ; elle reprend avec une version plus récente, ou à ta prochaine installation à la main.
+- Restauration des réglages : tout est lu avant de remplacer quoi que ce soit ; une sauvegarde abîmée ou un fichier bloqué affiche un message et ne laisse plus des réglages mélangés.
+- Un .toc sans numéro de version ne fait plus échouer la mise à jour (nom de dossier « ? » interdit sous Windows).
+
 ## 1.9.6 — 21/11/2026
 
 ### Corrections

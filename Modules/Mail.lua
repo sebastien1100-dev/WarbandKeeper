@@ -251,14 +251,7 @@ function M:SendNext()
         if id and not locked and (not op.id or id == op.id) then
             -- la pile a pu changer depuis le plan (butin, piles fusionnées) : on n'envoie jamais plus que
             -- prévu (pile séparée, le reste gardé), et le décompte suit ce qui part vraiment
-            n = n or 1
-            local want = op.split or op.count
-            if want and n > want then
-                op.split, op.count = want, want
-            elseif want and n < want then
-                op.split, op.count = nil, n
-            end
-            table.insert(ops, op)
+            if WK.modules.Rules:AdjustOp(op, n) then table.insert(ops, op) end
         end
     end
     if #ops == 0 then return M:SendNext() end
@@ -291,6 +284,11 @@ function M:Run()
 end
 
 WK:On("MAIL_SHOW", function()
+    -- nouvelle visite : un envoi ou une prise resté bloqué d'une visite d'avant (fermeture manquée) est oublié
+    if sending or taking then
+        for i = #queue, 1, -1 do queue[i] = nil end
+        sending, taking, afterTake = false, false, nil
+    end
     -- Petit délai : l'interface du courrier doit être prête.
     M:EnsureTakeButton()
     C_Timer.After(0.5, function() M:Run() end)
@@ -332,7 +330,8 @@ M.ReadAttached = readAttached
 WK:On("MAIL_SEND_INFO_UPDATE", function()
     if sending then return end
     local snap, any = readAttached()
-    if any then manualSnap = snap end
+    -- toujours remplacé, vide compris : un objet joint puis retiré ne doit plus être crédité au destinataire
+    manualSnap = any and snap or {}
 end)
 function M.OnSendMail(to)
     if sending then return end
@@ -367,7 +366,7 @@ end)
 WK:On("UI_ERROR_MESSAGE", function(_, msg) if sending then lastError = msg end end)
 
 WK:On("MAIL_FAILED", function()
-    manualPending = nil
+    manualPending, manualSnap = nil, {}
     if sending then
         wipe(queue); sending = false
         WK:Print(WK.L.MAIL_ERROR)
@@ -540,9 +539,17 @@ function M:EnsureTakeButton()
     self.takeButton = b
 end
 
-WK:On("MAIL_CLOSED", function()
+local function mailClosed()
     wipe(queue); sending = false; afterTake = nil
+    manualPending, manualSnap = nil, {}
     if taking then taking = false; if M.takeButton then M.takeButton:SetLabel(T("Tout prendre")) end end
+end
+WK:On("MAIL_CLOSED", mailClosed)
+-- MAIL_CLOSED n'arrive pas toujours sur ce client : la fin d'interaction remet aussi tout à zéro (avant, un
+-- envoi bloqué refusait ensuite tout, et les envois à la main n'étaient plus crédités)
+WK:On("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(kind)
+    local mailKind = _G.Enum and _G.Enum.PlayerInteractionType and _G.Enum.PlayerInteractionType.MailInfo or 17
+    if kind == mailKind then mailClosed() end
 end)
 
 ---------------------------------------------------------------------------
