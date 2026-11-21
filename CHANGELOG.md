@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.51 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes, liste d'une zone : une quête de groupe affichait « GROUPE » devant le titre et encore « groupe » sur la 2e ligne ; il n'apparaît plus qu'une fois, devant le titre.
+
 ## v1.128.50 — 21/11/2026
 
 _Un /reload suffit._

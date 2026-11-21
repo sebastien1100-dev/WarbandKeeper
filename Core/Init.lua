@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.128.50"
+WK.version = "1.128.51"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).

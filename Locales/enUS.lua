@@ -3932,7 +3932,6 @@ WK.Locales.enUS.text = {
     ["tronçon en cours : %d points"] = "current segment: %d points",
     ["hors des chemins connus : env. %d m sur %d m de marche (en ligne droite, faute de chemin appris)"] = "off known paths: approx. %d m of %d m walking (straight line, no learned path)",
     ["(groupe)"] = "(group)",
-    ["groupe"] = "group",
     ["Corps à %d m."] = "Corpse %d m away.",
     ["%d %% du niveau"] = "%d %% of the level",
     ["reste %d XP"] = "%d XP left",

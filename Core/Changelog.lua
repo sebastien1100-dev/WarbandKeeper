@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.51", date = "21/11/2026",
+        fixed = {
+            "Quêtes, liste d'une zone : une quête de groupe affichait « GROUPE » devant le titre et encore « groupe » sur la 2e ligne ; il n'apparaît plus qu'une fois, devant le titre.",
+        },
+    },
+    {
         version = "1.128.50", date = "21/11/2026",
         changed = {
             "Quêtes, liste d'une zone : NOUVELLE / APPRISE / CORRIGÉE devient une petite pastille arrondie après le titre (avant, un mot en couleur plus gros que le titre de la quête) ; un titre long est coupé avant la pastille.",

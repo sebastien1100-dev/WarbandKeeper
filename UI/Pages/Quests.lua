@@ -511,7 +511,10 @@ UI:RegisterPage({
                     row.lv:SetTextColor(unpack(st == "done" and C.dim or levelColor(q.lvl, myLevel)))
                     local col, label = stateInfo(st)
                     row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
-                    row.name:SetText(UI.GroupTag(q.id) .. Q:Name(q))
+                    -- « GROUPE » une seule fois, devant le titre (avant, aussi « groupe » sur la 2e ligne)
+                    local gtag = UI.GroupTag(q.id)
+                    if gtag == "" and q.grp == 1 then gtag = UI:Hex(C.warning) .. T("GROUPE") .. "|r  " end
+                    row.name:SetText(gtag .. Q:Name(q))
                     -- NOUVELLE / APPRISE / CORRIGÉE : petite pastille arrondie après le titre (avant, un mot
                     -- en couleur plus gros que le titre)
                     local bl, bc
@@ -541,7 +544,6 @@ UI:RegisterPage({
                     row.sub:SetText(table.concat(parts, "  ·  "))
                     row.state:Set(label, col)
                     row.guide:SetShown(q.x ~= nil and st ~= "done")
-                    if q.grp == 1 then table.insert(parts, 1, UI:Hex(C.warning) .. T("groupe") .. "|r"); row.sub:SetText(table.concat(parts, "  ·  ")) end
                     row.guide:SetScript("OnClick", function() Q:GuideTo(q) end)
                     ly = ly + ROW_H
                 end
