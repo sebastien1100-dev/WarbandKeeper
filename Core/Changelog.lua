@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.126.2", date = "21/11/2026",
+        fixed = {
+            "Carte de tournée : erreur Lua (QuestTracker.lua:382) à l'affichage des boutons Cibler / Objet ; ils s'affichent maintenant.",
+        },
+    },
+    {
         version = "1.126.1", date = "21/11/2026",
         added = {
             "Raccourcis clavier pour les boutons de la carte de tournée (Options du jeu > Raccourcis > AddOns > Warband Keeper) : « Cibler le monstre de la quête » (avec la tête de mort), « Cibler le monstre de l'objectif suivant » et « Utiliser l'objet de la quête ». Ils marchent aussi en combat ; la touche choisie s'affiche dans l'infobulle du bouton Cibler.",
