@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.36 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Suivi des quêtes d'EllesmereUI : « Guider vers la quête » et « Chercher un groupe (chat) » en bas de son menu du clic droit (son « Lien Wowhead » reste le sien). Alt + clic reste pour le suivi du jeu.
+
 ## v1.128.35 — 21/11/2026
 
 _Un /reload suffit._

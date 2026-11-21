@@ -215,9 +215,8 @@ UI:RegisterPage({
                     QT():Config().trackerMenu = v
                 end)
             table.insert(self.toggles, mt)
-            UI:SettingRow(mcard, -40, "Alt + clic : menu de la quête",
-                "Dans le suivi des quêtes (EllesmereUI ou celui du jeu) : guider, lien wowhead, chercher un groupe, "
-                    .. "jamais d'automatique. Les autres clics restent ceux du suivi.", mt, 50)
+            UI:SettingRow(mcard, -40, "Nos lignes dans le menu des quêtes",
+                "EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête.", mt, 50)
         end
 
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")

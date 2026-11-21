@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.36", date = "21/11/2026",
+        added = {
+            "Suivi des quêtes d'EllesmereUI : « Guider vers la quête » et « Chercher un groupe (chat) » en bas de son menu du clic droit (son « Lien Wowhead » reste le sien). Alt + clic reste pour le suivi du jeu.",
+        },
+    },
+    {
         version = "1.128.35", date = "21/11/2026",
         added = {
             "Options > Fiabilité > Données : la mémoire réellement utilisée, lue dans le jeu (l'addon, et les données à la demande une fois chargées), avec une barre et un bouton « Mesurer ».",

@@ -4256,8 +4256,6 @@ WK.Locales.enUS.text = {
         "Quest tracker",
     ["EllesmereUI ou le suivi du jeu"] =
         "EllesmereUI or the game tracker",
-    ["Alt + clic : menu de la quête"] =
-        "Alt + click: quest menu",
     ["Dans le suivi des quêtes (EllesmereUI ou celui du jeu) : guider, lien wowhead, chercher un groupe, jamais d'automatique. Les autres clics restent ceux du suivi."] =
         "In the quest tracker (EllesmereUI or the game's): guide, wowhead link, look for a group, never automatic. Other clicks stay the tracker's.",
     ["Aucun Alt + clic vu pour l'instant : Alt + clic sur une quête du suivi, puis /wk suivi."] =
@@ -4287,4 +4285,8 @@ WK.Locales.enUS.text = {
         "Data: quest objectives, BiS lists, recipes",
     ["20 s après la connexion, hors combat, si ton journal a des quêtes (repères des plaques actifs)."] =
         "20 s after login, out of combat, if your log has quests and nameplate markers are on.",
+    ["Nos lignes dans le menu des quêtes"] =
+        "Our lines in the quest menu",
+    ["EllesmereUI : en bas de son menu du clic droit. Suivi du jeu : Alt + clic sur une quête."] =
+        "EllesmereUI: at the bottom of its right-click menu. Game tracker: Alt + click a quest.",
 }

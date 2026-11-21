@@ -1,6 +1,7 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local T = function(s) return WK.T(s) end
 local CreateFrame, UIParent = _G.CreateFrame, _G.UIParent
 
 -- Repères sur les plaques de nom (la carte de quête, la barre « Quête » et les pastilles du suivi du jeu
@@ -221,3 +222,61 @@ function UI.QuestTrackerMenuDiag()
     return string.format("%s : %s · %s : %s", WK.T("sous la souris"), table.concat(last.frames, " > "),
         WK.T("quête"), last.quest and (last.quest .. " (" .. (last.how or "?") .. ")") or WK.T("non trouvée"))
 end
+
+---------------------------------------------------------------------------
+-- Menu du clic droit du suivi d'EllesmereUI : nos lignes ajoutées à la fin (guider, chercher un groupe, lien
+-- wowhead s'il n'a pas le sien). Son menu est fait par la fonction publique EllesmereUI.ShowContextMenu(owner,
+-- items, opts) (items = { { text, noLoc, onClick, isDisabled }, "---" }) : elle est enrobée une fois, le menu
+-- d'une quête reconnu par sa ligne (owner.kind = "quest", owner.id = n° du journal) ou par son titre en tête.
+-- Rien d'autre ne change (ses lignes et leur ordre restent). Réglage QuestTrack:Config().trackerMenu.
+---------------------------------------------------------------------------
+local function menuQuest(owner, items)
+    if type(owner) == "table" then
+        local id = rawget(owner, "id")
+        if rawget(owner, "kind") == "quest" and inLog(id) then return id end
+    end
+    local first = type(items) == "table" and items[1]
+    local title = type(first) == "table" and clean(first.text)
+    if title then return logTitles()[title] end
+    return nil
+end
+local function ourItems(qid, items)
+    local QT = Q()
+    local out = { "---" }
+    out[#out + 1] = { text = T("Guider vers la quête"), noLoc = true, onClick = function() QT:GuideQuest(qid) end }
+    out[#out + 1] = { text = T("Chercher un groupe (chat)"), noLoc = true,
+        onClick = function() if UI.QuestGroupMessage then UI:QuestGroupMessage(qid) end end }
+    -- lien wowhead : seulement si son menu n'a pas déjà le sien
+    local hasWh = false
+    for _, e in ipairs(items) do
+        local tx = type(e) == "table" and e.text
+        if type(tx) == "string" and tx:lower():find("wowhead", 1, true) then hasWh = true end
+    end
+    if not hasWh and UI.ShowWowhead then
+        out[#out + 1] = { text = T("Lien wowhead"), noLoc = true,
+            onClick = function() UI:ShowWowhead("quest", qid, QT:Title(qid)) end }
+    end
+    return out
+end
+local function wrapEllesmere()
+    local E = _G.EllesmereUI
+    if type(E) ~= "table" or type(E.ShowContextMenu) ~= "function" or E.wkMenuWrapped then return end
+    local orig = E.ShowContextMenu
+    E.wkMenuWrapped = true
+    E.ShowContextMenu = function(owner, items, opts, ...)
+        local ok, qid = pcall(menuQuest, owner, items)
+        if ok and qid and type(items) == "table" and Q():Config().trackerMenu ~= false and WK:FeatureOn("quests") then
+            local add = ourItems(qid, items)
+            local copy = {}
+            for i, e in ipairs(items) do copy[i] = e end
+            for _, e in ipairs(add) do copy[#copy + 1] = e end
+            items = copy
+        end
+        return orig(owner, items, opts, ...)
+    end
+end
+UI.WrapEllesmereMenu = wrapEllesmere
+WK:On("PLAYER_LOGIN", wrapEllesmere)
+WK:On("ADDON_LOADED", function(name)
+    if type(name) == "string" and name:find("^EllesmereUI") then wrapEllesmere() end
+end)
