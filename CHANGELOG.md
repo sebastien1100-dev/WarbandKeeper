@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.127.4 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Marchand : un double clic sur « Acheter », « Tout acheter » ou « Réassort » n'achète plus deux fois ce qui manque (l'achat pas encore arrivé dans les sacs est décompté).
+- Vente rapide dans la fenêtre HV du jeu : le prix n'est plus rempli s'il tombe sous le prix marchand (commission comprise) ou bien sous le cours du scan ; le prix du jeu est gardé et un message le dit.
+- Objets verrouillés : la règle « liste d'envies » protège aussi les objets de tes listes BiS (tous les persos) : plus vendus, désenchantés ni mis en vente par erreur.
+
 ## v1.127.3 — 21/11/2026
 
 _Un /reload suffit._

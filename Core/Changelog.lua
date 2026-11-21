@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.127.4", date = "21/11/2026",
+        fixed = {
+            "Marchand : un double clic sur « Acheter », « Tout acheter » ou « Réassort » n'achète plus deux fois ce qui manque (l'achat pas encore arrivé dans les sacs est décompté).",
+            "Vente rapide dans la fenêtre HV du jeu : le prix n'est plus rempli s'il tombe sous le prix marchand (commission comprise) ou bien sous le cours du scan ; le prix du jeu est gardé et un message le dit.",
+            "Objets verrouillés : la règle « liste d'envies » protège aussi les objets de tes listes BiS (tous les persos) : plus vendus, désenchantés ni mis en vente par erreur.",
+        },
+    },
+    {
         version = "1.127.3", date = "21/11/2026",
         fixed = {
             "Quêtes répétables (journalières, hebdomadaires…) : elles ne sont plus notées comme « nouvelles quêtes absentes de la base », ne restent plus proposées pour toujours et ne sont plus prises par l'acceptation automatique. Celles notées par erreur sont retirées.",

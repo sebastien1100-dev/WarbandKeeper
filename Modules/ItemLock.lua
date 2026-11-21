@@ -74,9 +74,12 @@ local function quality(id)
     end
     return select(3, WK.GetItemInfo(id))
 end
+-- liste d'envies des donjons, ou liste BiS d'un perso du compte (fiche de perso > BiS)
 local function wished(id)
     local w = WK.DB.global.dungeons and WK.DB.global.dungeons.wish
-    for _, list in pairs(w or {}) do if list[id] then return true end end
+    for _, list in pairs(w or {}) do if list[id] then return T("liste d'envies") end end
+    local B = WK.modules.BiS
+    if B and B.Mark and B:Mark(id) then return T("liste BiS") end
     return false
 end
 -- Un perso du compte a-t-il le métier de cette sous-classe de recette ?
@@ -168,7 +171,7 @@ function M:Reason(id)
         local q = M:QuestFor(id)
         why = q and string.format(T("quête : %s"), q) or T("objet de quête")
     elseif r.wish and wished(id) then
-        why = T("liste d'envies")
+        why = wished(id)
     else
         local q = quality(id)
         if r.epic and q and q >= 4 then

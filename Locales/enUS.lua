@@ -2535,7 +2535,7 @@ WK.Locales.enUS.text = {
     ["Tout déverrouiller"] = "Unlock all",
     ["Objets épiques et plus"] = "Epic items and better",
     ["Objets de ma liste d'envies"] = "Items on my wish list",
-    ["Donjons > Mes envies, tous les persos."] = "Dungeons > My wishes, all characters.",
+    ["Donjons > Mes envies et listes BiS, tous les persos."] = "Dungeons > My wishes and BiS lists, all characters.",
     ["Celles d'un métier qu'un de tes persos a appris, et qu'aucun de tes persos n'a encore apprises."] = "Those of a profession one of your characters has, that none of your characters has learned yet.",
     ["Valeur HV au-dessus d'un seuil"] = "AH value above a threshold",
     ["Prix relevé par le scan de l'hôtel des ventes."] = "Price from the Auction House scan.",
@@ -4568,4 +4568,7 @@ WK.Locales.enUS.text = {
     ["Monstre de la quête"] = "Quest monster",
     ["Envoi annulé : la fenêtre d'envoi contient déjà des objets ou de l'or. Vide-la puis recommence."] = "Sending cancelled: the send window already holds items or gold. Empty it and try again.",
     ["%d étape(s) d'une autre zone gardée(s) à la fin."] = "%d step(s) from another zone kept at the end.",
+    ["Vente rapide : prix du jeu gardé pour %s."] = "Quick sell: game price kept for %s.",
+    ["Plus bas (%s) : sous le marchand ou bien sous le cours."] = "Lowest (%s): below vendor or well below market.",
+    ["liste BiS"] = "BiS list",
 }

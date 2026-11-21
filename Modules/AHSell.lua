@@ -265,6 +265,18 @@ function M:ApplyQuickSell()
     end
     self.sellPending = nil
     if not price then return end
+    -- garde-fou (comme notre fenêtre de vente) : jamais sous ce que paie le marchand après la commission
+    -- de 5 %, ni bien sous le prix du scan quand le plus bas des autres est une enchère à 1 pc ou une erreur
+    local vendor = select(11, WK.GetItemInfo(p.id)) or 0
+    local floor = vendor > 0 and (math.floor(vendor / 0.95) + 1) or 1
+    local scan = S:Price(p.id)
+    local share = scan and (scan < 10000 and 0.7 or scan <= 500000 and 0.5 or 0.3)
+    if price < floor or (low and scan and price < scan * share) then
+        local _, link = WK.GetItemInfo(p.id)
+        WK:Print(string.format(T("Vente rapide : prix du jeu gardé pour %s."), link or ("#" .. p.id)) .. " "
+            .. string.format(T("Plus bas (%s) : sous le marchand ou bien sous le cours."), WK:FormatMoney(price)))
+        return
+    end
     local pi = priceInput(p.frame)
     if not (pi and pi.SetAmount) then return end
     -- après le jeu, qui remplit aussi son prix à l'arrivée des résultats

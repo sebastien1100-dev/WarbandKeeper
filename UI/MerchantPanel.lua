@@ -38,15 +38,38 @@ local function merchantStock()
             local _, _, price, batch, available = WK.MerchantItemInfo(i)
             -- payé en monnaie ou en objets (jetons, insignes…) : jamais acheté par nos boutons
             local ext = GetMerchantItemCostInfo and (GetMerchantItemCostInfo(i) or 0) > 0 or false
-            if not ext then out[id] = { index = i, price = price or 0, batch = math.max(1, batch or 1), available = available } end
+            if not ext then
+                out[id] = { id = id, index = i, price = price or 0, batch = math.max(1, batch or 1),
+                    available = available }
+            end
         end
     end
     return out
 end
 
+-- Achats pas encore arrivés dans les sacs : { [objet] = { n = acheté, have = nombre en sac à l'achat, at } }.
+-- Un double clic (ou « Tout acheter » juste après « Acheter ») avant le rafraîchissement de la liste
+-- achèterait sinon deux fois ce qui manque.
+local pendingBuys = {}
+local function bagCount(id)
+    local f = (_G.C_Item and _G.C_Item.GetItemCount) or _G.GetItemCount
+    return f and f(id) or 0
+end
+local function stillPending(id)
+    local p = id and pendingBuys[id]
+    if not p then return 0 end
+    if _G.GetTime() - p.at > 10 then pendingBuys[id] = nil return 0 end
+    return math.max(0, p.n - math.max(0, bagCount(id) - p.have))
+end
+WK:On("MERCHANT_SHOW", function() _G.wipe(pendingBuys) end)
+WK:On("MERCHANT_CLOSED", function() _G.wipe(pendingBuys) end)
+
 -- Achète `need` unités (par lots si le marchand vend par paquets). Renvoie la quantité achetée.
 local function buy(s, need)
     if (s.available or -1) == 0 then return 0 end
+    need = need - stillPending(s.id)
+    if need <= 0 then return 0 end
+    local have0 = s.id and bagCount(s.id) or 0
     local bought = 0
     -- l'achat passe par le serveur : l'argent et le stock sont décomptés ici, sinon une rafale d'achats
     -- dépasserait ce qu'on a ou ce que le marchand propose (messages d'erreur en série)
@@ -69,6 +92,14 @@ local function buy(s, need)
             BuyMerchantItem(s.index, n)
             money = money - s.price * n
             bought, left = bought + n, left - n
+        end
+    end
+    if s.id and bought > 0 then
+        local p = pendingBuys[s.id]
+        if p and _G.GetTime() - p.at <= 10 then
+            p.n, p.at = p.n + bought, _G.GetTime()
+        else
+            pendingBuys[s.id] = { n = bought, have = have0, at = _G.GetTime() }
         end
     end
     return bought
