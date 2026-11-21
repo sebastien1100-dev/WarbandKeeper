@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.4 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Raid plus fluide (paladin) : l'état des bénédictions du groupe n'est plus lu deux fois par seconde (barre des bénédictions et bouton Buffer chacun de leur côté) mais une fois, et les boutons de la barre ne sont plus réécrits chaque seconde quand rien ne change.
+- Chasseur : la carte du familier ne refait plus la liste de nourriture à chaque changement de la vie du familier (plusieurs fois par seconde en combat) ; la liste est gardée jusqu'au prochain changement de sacs ou de familier.
+
 ## v1.128.3 — 21/11/2026
 
 _Un /reload suffit._

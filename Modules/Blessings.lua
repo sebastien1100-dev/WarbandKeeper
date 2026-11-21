@@ -326,7 +326,17 @@ function M:Left(unit, b)
 end
 
 -- État pour la barre : une ligne par classe présente (et une par exception), membres, manquants, plus court
+-- Lignes gardées 0,9 s : la barre des bénédictions et le bouton Buffer les demandaient chacun chaque seconde
+-- (jusqu'à 40 auras lues par membre en raid) ; effacées à chaque changement (groupe, répartition)
+local statusCache, statusAt = nil, -10
+function M.StatusDirty() statusCache = nil end
 function M:Status()
+    local t = _G.GetTime and _G.GetTime() or 0
+    if statusCache and t - statusAt < 0.9 and t >= statusAt then return statusCache end
+    statusCache, statusAt = self:StatusNow(), t
+    return statusCache
+end
+function M:StatusNow()
     local rows, byClass = {}, {}
     local c = self:Me()
     -- le Salut n'est pas affecté par classe : une ligne à part, pour qui le connaît
@@ -612,6 +622,7 @@ end
 -- Évènements
 ---------------------------------------------------------------------------
 local function changed()
+    statusCache = nil
     if M.OnChange then M:OnChange() end
 end
 local rosterPending

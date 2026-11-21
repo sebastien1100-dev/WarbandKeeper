@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.4", date = "21/11/2026",
+        changed = {
+            "Raid plus fluide (paladin) : l'état des bénédictions du groupe n'est plus lu deux fois par seconde (barre des bénédictions et bouton Buffer chacun de leur côté) mais une fois, et les boutons de la barre ne sont plus réécrits chaque seconde quand rien ne change.",
+            "Chasseur : la carte du familier ne refait plus la liste de nourriture à chaque changement de la vie du familier (plusieurs fois par seconde en combat) ; la liste est gardée jusqu'au prochain changement de sacs ou de familier.",
+        },
+    },
+    {
         version = "1.128.3", date = "21/11/2026",
         changed = {
             "Quêtes plus fluides : le journal du jeu se met à jour très souvent sans que rien change ; la carte de tournée, les zones sur la carte du monde et la page Quêtes ne se redessinent plus que quand une quête ou un objectif a vraiment bougé.",

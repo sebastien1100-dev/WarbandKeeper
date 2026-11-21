@@ -159,7 +159,8 @@ local function build()
         local M = B()
         local c = M:Me()
         local an = M:AuraName(c.aura or 0)
-        self.aura:SetAttribute("macrotext", an and ("/cast " .. an) or nil)
+        local amt = an and ("/cast " .. an) or nil
+        if self.aura.armMacro ~= amt then self.aura.armMacro = amt; self.aura:SetAttribute("macrotext", amt) end
         local n = math.min(#rows, MAXROWS)
         for i, r in ipairs(self.rows) do
             local d = rows[i]
@@ -167,11 +168,13 @@ local function build()
                 -- le joueur de la ligne qui en a besoin, sinon celui dont la bénédiction finit le plus tôt
                 local tgt = M:NextTarget(d, 300) or M:NextTarget(d, math.huge)
                 local spell = M:Name(d.b)
-                r:SetAttribute("macrotext1", (tgt and spell) and UI.BuffMacro({ unit = tgt.unit, spell = spell }) or nil)
+                local mt = (tgt and spell) and UI.BuffMacro({ unit = tgt.unit, spell = spell }) or nil
+                -- attribut posé seulement s'il change (avant : 13 boutons réécrits chaque seconde)
+                if r.armMacro ~= mt then r.armMacro = mt; r:SetAttribute("macrotext1", mt) end
                 r.armKey = rowKey(d)
                 r:Show()
             else
-                r:SetAttribute("macrotext1", nil)
+                if r.armMacro ~= nil then r.armMacro = nil; r:SetAttribute("macrotext1", nil) end
                 r.armKey = nil
                 r:Hide()
             end
@@ -212,11 +215,11 @@ function UI:RefreshBlessBar()
                         { class = "SHAMAN", b = 1, missing = 0, min = 2460, members = {} },
                         { b = 4, salut = true, missing = 1, members = {} },
                     }
-                    for i, r in ipairs(bar.rows) do r:SetShown(i <= #demo); r:SetAttribute("macrotext1", nil) end
+                    for i, r in ipairs(bar.rows) do r:SetShown(i <= #demo); r:SetAttribute("macrotext1", nil); r.armMacro = nil end
                     bar:SetHeight(44 + #demo * (ROWH + 2) + 4)
                     bar:Paint(demo)
                     bar:Show()
-                    if M then bar.aura:SetAttribute("macrotext", nil) end
+                    if M then bar.aura:SetAttribute("macrotext", nil); bar.aura.armMacro = nil end
                 else
                     UI:RefreshBlessBar()
                 end

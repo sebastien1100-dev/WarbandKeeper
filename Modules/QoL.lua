@@ -737,8 +737,27 @@ function M:PetFoods(family)
 end
 
 -- Nourriture connue pour le familier actuel, présente dans les sacs, la plus abondante d'abord.
+-- Liste du perso connecté gardée jusqu'au prochain changement de sacs ou de familier : la carte du familier la
+-- demandait à chaque changement de sa vie (plusieurs fois par seconde en combat), avec un appel au jeu par objet
+local foodCache, foodKey, foodAt = nil, nil, -10
+local function foodDirty() foodCache = nil end
+WK:On("BAG_UPDATE_DELAYED", foodDirty)
+WK:On("UNIT_PET", function(unit) if unit == "player" then foodCache = nil end end)
+WK:On("PET_BAR_UPDATE", foodDirty)
 function M:FoodInBags(c)
-    c = c or WK.DB:Me()
+    local me = WK.DB:Me()
+    c = c or me
+    if c == me then
+        local key = tostring(c.pet and c.pet.family) .. (_G.UnitExists and _G.UnitExists("pet") and "1" or "0")
+        -- 5 s au plus : le relevé des sacs (c.bags) arrive un peu après BAG_UPDATE_DELAYED
+        local now = _G.GetTime and _G.GetTime() or 0
+        if foodCache and foodKey == key and now - foodAt < 5 and now >= foodAt then return foodCache end
+        foodCache, foodKey, foodAt = self:FoodInBagsNow(c), key, now
+        return foodCache
+    end
+    return self:FoodInBagsNow(c)
+end
+function M:FoodInBagsNow(c)
     local family = c.pet and c.pet.family
     local list, seen = {}, {}
     local isMe = c == WK.DB:Me() and UnitExists and UnitExists("pet")
