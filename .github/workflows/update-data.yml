@@ -85,7 +85,13 @@ jobs:
             V=$(python3 tools/publish_data.py "$RUNNER_TEMP/summary.json")
             git add -- Modules tools/guides tools/dungeons WarbandKeeper.toc Core/Init.lua Core/Changelog.lua CHANGELOG.md
             git commit -q -m "$V : données mises à jour (QuestieDB, wowtbc.gg)"
-            git push -q origin HEAD:main
+            # main a bougé pendant la mise à jour (version publiée entre-temps) : on ne force rien, la mise à
+            # jour est relancée sur la version à jour (sinon elle échouait et attendait le lendemain)
+            if ! git push -q origin HEAD:main; then
+              echo "main a changé pendant la mise à jour : nouvel essai lancé sur la version à jour." >> "$GITHUB_STEP_SUMMARY"
+              gh workflow run update-data.yml --ref main
+              exit 0
+            fi
             # un push fait avec ce jeton ne lance pas les autres workflows : la publication est demandée ici
             gh workflow run release.yml --ref main
             echo "Version $V publiée." >> "$GITHUB_STEP_SUMMARY"
