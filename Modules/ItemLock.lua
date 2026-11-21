@@ -221,6 +221,11 @@ function M:Prune()
     end
     for _, c in pairs(WK.DB.global.characters) do
         mark(c.bags); mark(c.bank); mark(c.mailbox and c.mailbox.items)
+        -- enchères en cours à l'HV (relevé de Modules/AHSell.lua) : l'objet est toujours à toi (avant, un verrou
+        -- à la main d'un objet mis en vente était effacé)
+        for _, a in ipairs(c.auctionsSeen and c.auctionsSeen.list or {}) do
+            if a.id and want[a.id] then present[a.id] = true end
+        end
     end
     mark(WK.DB.global.warbank and WK.DB.global.warbank.items)
     -- objets portés (équipement relevé de chaque perso, et celui du perso connecté lu tout de suite) :

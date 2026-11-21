@@ -1342,6 +1342,14 @@ local function build(host)
     end)
     bv.buyAll:SetScript("OnClick", function()
         local b = S.buy
+        -- achat isolé (Parcourir, recherche) en cours : réponse du jeu attendue, sinon demande de prix annulée
+        -- (avant, il était remplacé sans être annulé : sa confirmation pouvait encore partir avec la liste)
+        if b and not b.list and b.id then
+            if (b.phase == "quote" or b.phase == "wait") and not S:Stuck(b) then return end
+            local a = AH()
+            if a and a.CancelCommoditiesPurchase then pcall(a.CancelCommoditiesPurchase) end
+            S.buy, b = nil, nil
+        end
         -- premier clic : ce qui va au marchand, chez un perso ou qui est introuvable est passé
         if not (b and b.list) then S.buy = { list = cfg().curList, skip = bv.skipSet or {}, spent = 0, count = 0 } end
         S:BuyStep(); bv:Refresh()
@@ -1406,9 +1414,15 @@ local function build(host)
                 end
             end
         end
-        if #order == 0 then lists[QNAME] = nil return end
+        -- ce qui a été acheté pendant cette visite de l'HV est retiré du besoin : l'achat part au courrier et
+        -- n'arrive pas dans les sacs de l'artisan (avant, la ligne revenait après l'achat et l'objet était racheté)
+        local got = S.visitBought or {}
         local items = {}
-        for _, id in ipairs(order) do table.insert(items, { id, need[id] + S:Have(id) }) end
+        for _, id in ipairs(order) do
+            local left = need[id] - (got[id] or 0)
+            if left > 0 then table.insert(items, { id, left + S:Have(id) }) end
+        end
+        if #items == 0 then lists[QNAME] = nil return end
         lists[QNAME] = { items = items, at = 2000000000, v = 2, auto = true }
     end
     -- un autre perso en a assez : son nom et combien

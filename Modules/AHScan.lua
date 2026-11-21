@@ -709,7 +709,9 @@ function M:QuoteNext(name, fromClick)
 end
 WK:On("COMMODITY_PRICE_UPDATED", function(unit, total)
     local b = M.buy
-    if not b or not (b.phase == "quote" or b.phase == "confirm" or b.phase == "wait") then return end
+    -- prix reçu seulement pour notre demande (« quote ») ou notre confirmation (« wait ») ; avant, un prix
+    -- demandé par les boutons du jeu (ou un M.buy sans objet) était pris pour celui de l'achat en cours
+    if not (b and b.id and b.qty and (b.phase == "quote" or b.phase == "wait")) then return end
     -- confirmation déjà partie et même prix : on attend le résultat (avant, la phase repassait à « confirm » et un
     -- second clic renvoyait la confirmation, d'où un double achat possible)
     if b.phase == "wait" and b.total and total == b.total then return end
@@ -748,15 +750,78 @@ function M.DearCheck(_, b)
 end
 WK:On("COMMODITY_PRICE_UNAVAILABLE", function()
     local b = M.buy
-    if not b then return end
+    -- avant, sans vérifier la phase ni l'objet : M.buy sans objet plantait (b.skip[nil])
+    if not (b and b.id and (b.phase == "quote" or b.phase == "wait")) then return end
     WK:Print(string.format(T("Pas assez de %s en vente pour cette quantité : objet passé."), WK.GetItemInfo(b.id) or "?"))
+    b.skip = b.skip or {}
     b.skip[b.id] = true
     b.phase = nil
+    -- achat isolé : rien d'autre à demander
+    if not b.list then
+        M.buy = nil
+        if M.OnProgress then M:OnProgress() end
+        return
+    end
     M:QuoteNext(b.list, false)
 end)
+-- Objets achetés pendant la visite de l'HV (toutes façons d'acheter) : { [id] = quantité }, remis à zéro à la
+-- fermeture. Lu par la liste « File de fabrication » (l'achat part au courrier, pas dans les sacs de l'artisan).
+M.visitBought = {}
+local function bought(id, qty)
+    if not (id and qty and qty > 0) then return end
+    M.visitBought[id] = (M.visitBought[id] or 0) + qty
+end
+-- Achat lancé par les boutons du jeu (fenêtre de l'HV) : { id, qty } de la dernière demande qui n'est pas la nôtre
+local ext
+-- notre demande en cours (même objet, même quantité) : l'appel vient de l'addon (ou revient au même)
+local function ours(id, qty)
+    local b = M.buy
+    return b and b.phase and b.id == id and b.qty == qty
+end
+-- Demande de prix envoyée par le jeu pour un autre objet ou une autre quantité que M.buy : notre achat est
+-- abandonné proprement (avant, le succès de l'achat du jeu était compté pour l'objet de la liste)
+local function onGameStart(id, qty)
+    if ours(id, qty) then ext = nil return end
+    ext = { id = id, qty = qty }
+    local b = M.buy
+    if b and b.id then
+        M.buy = b.list and { list = b.list, skip = b.skip, spent = b.spent, count = b.count } or nil
+        WK:Print(T("Achat lancé depuis la fenêtre du jeu : l'achat de l'addon est abandonné."))
+        if M.OnProgress then M:OnProgress() end
+    end
+end
+local function onGameConfirm(id, qty)
+    if ours(id, qty) then ext = nil return end
+    ext = { id = id, qty = qty }
+end
+local hooked
+local function hookGameBuy()
+    local A = AH()
+    if hooked or not (_G.hooksecurefunc and A and A.StartCommoditiesPurchase) then return end
+    hooked = true
+    pcall(_G.hooksecurefunc, A, "StartCommoditiesPurchase", onGameStart)
+    if A.ConfirmCommoditiesPurchase then pcall(_G.hooksecurefunc, A, "ConfirmCommoditiesPurchase", onGameConfirm) end
+end
+hookGameBuy()
+WK:On("AUCTION_HOUSE_SHOW", hookGameBuy)
 WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
     local b = M.buy
-    if not b then return end
+    -- succès accepté seulement pour notre confirmation (« wait », objet connu) ; avant, un achat fait par les
+    -- boutons du jeu était compté pour l'objet attendu, et M.buy sans objet plantait (string.format("%d", nil))
+    if not (b and b.phase == "wait" and b.id and b.qty) then
+        local e = ext
+        ext = nil
+        -- achat du jeu : compté comme possédé et comme acheté pendant la visite, sans toucher à nos listes
+        if e and e.id and e.qty then
+            consume(nil, e.id, e.qty)
+            bought(e.id, e.qty)
+            WK:NotifyChanged()
+            if M.OnProgress then M:OnProgress() end
+        end
+        return
+    end
+    ext = nil
+    bought(b.id, b.qty)
     WK:Print(string.format(T("Acheté : %d %s pour %s."), b.qty, WK.GetItemInfo(b.id) or "?", WK:FormatMoney(b.total or 0)))
     -- achat isolé (Parcourir, Vendre) : pas de liste, donc ni décompte ni objet suivant
     if not b.list then
@@ -774,9 +839,10 @@ WK:On("COMMODITY_PURCHASE_SUCCEEDED", function()
 end)
 WK:On("COMMODITY_PURCHASE_FAILED", function()
     local b = M.buy
-    if not b then return end
+    -- échec accepté seulement pour notre confirmation (avant : aussi l'échec d'un achat fait par le jeu)
+    if not (b and b.phase == "wait" and b.id) then ext = nil return end
     WK:Print(T("Achat échoué (prix changé ou plus assez en vente) : reclique pour redemander le prix."))
     M.buy = { list = b.list, skip = b.skip, spent = b.spent, count = b.count }
     if M.OnProgress then M:OnProgress() end
 end)
-WK:On("AUCTION_HOUSE_CLOSED", function() M.buy = nil end)
+WK:On("AUCTION_HOUSE_CLOSED", function() M.buy = nil; ext = nil; M.visitBought = {} end)

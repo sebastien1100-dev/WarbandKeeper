@@ -11,6 +11,12 @@ local T = function(s) return WK.T(s) end
 --     celui porté (poids des caractéristiques de la classe, UI.StatWeights) est proposé, jamais équipé d'office.
 -- Réglages WK.DB.global.bagHelp (dans les profils, sauf dismissed) : space, low (seuil de cases libres),
 -- restock, rs[perso] = { drink, food, items = { [objet] = quantité } }, wear, dismissed[perso][objet].
+-- Nombre d'un objet dans les sacs : C_Item.GetItemCount sur ce client (avant, le GetItemCount global, absent ici,
+-- valait toujours 0 : le Réassort rachetait tout à chaque clic et « Amélioration à porter » ne s'affichait jamais)
+local function itemCount(id)
+    local f = (_G.C_Item and _G.C_Item.GetItemCount) or _G.GetItemCount
+    return (f and id and f(id)) or 0
+end
 local DEFAULTS = { space = true, low = 3, restock = true, wear = true, autoOpen = false, openMode = "list" }
 
 function M:Config()
@@ -135,7 +141,7 @@ function M:RestockPlan(stock)
     -- objets choisis
     for id, want in pairs(rs.items) do
         local s = stock and stock[id]
-        local need = want - ((GetItemCount and GetItemCount(id)) or 0)
+        local need = want - itemCount(id)
         if s and need > 0 then table.insert(plan, { id = id, need = need, stock = s }) end
     end
     return plan
@@ -360,7 +366,7 @@ end
 function M:Offer()
     while #self.queue > 0 do
         local q = self.queue[1]
-        local have = (GetItemCount and GetItemCount(q.id)) or 0
+        local have = itemCount(q.id)
         local slot, gain, old
         if have > 0 and not self:Dismissed(q.id) then slot, gain, old = self:Upgrade(q.link) end
         if slot then q.slot, q.gain, q.old = slot, gain, old return q end
