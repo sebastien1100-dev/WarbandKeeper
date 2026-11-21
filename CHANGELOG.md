@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.40 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Bandeau des bateaux au quai : plus d'eau ni de vagues, fond graphite plus clair, frise en pointillés fins (ton quai en bleu, la prochaine escale en vert).
+- Bandeau des bateaux : il apparaît dès que tu avances sur le ponton (55 m du point d'arrêt du navire, au lieu de 30 m tout au bout), avant l'arrivée du bateau. Réglable dans QoL > Carte et guidage.
+
 ## v1.128.39 — 21/11/2026
 
 _Un /reload suffit._

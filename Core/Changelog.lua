@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.40", date = "21/11/2026",
+        changed = {
+            "Bandeau des bateaux au quai : plus d'eau ni de vagues, fond graphite plus clair, frise en pointillés fins (ton quai en bleu, la prochaine escale en vert).",
+            "Bandeau des bateaux : il apparaît dès que tu avances sur le ponton (55 m du point d'arrêt du navire, au lieu de 30 m tout au bout), avant l'arrivée du bateau. Réglable dans QoL > Carte et guidage.",
+        },
+    },
+    {
         version = "1.128.39", date = "21/11/2026",
         fixed = {
             "« Chercher un groupe (chat) » déclenchait une erreur « action bloquée » (le jeu interdit aux addons d'écrire dans un canal public). Le message s'ouvre maintenant prêt dans le canal /1 : Entrée pour l'envoyer.",

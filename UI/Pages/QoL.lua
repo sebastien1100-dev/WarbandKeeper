@@ -1335,8 +1335,8 @@ UI:RegisterPage({
                 toggle(bcard, function() return gdc.dockBanner end, function(v) gdc.dockBanner = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end), 80)
             UI:SettingRow(bcard, -86, "Tracés des lignes sur la carte", "Le trajet de chaque ligne sur la carte du monde, plus marqué pour celles déjà prises.",
                 toggle(bcard, function() return gdc.shipsMap ~= false end, function(v) gdc.shipsMap = v; if UI.RedrawWorldMap then UI.RedrawWorldMap("navires") end end), 80)
-            UI:SettingRow(bcard, -132, "Distance d'apparition du bandeau", "Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (au bout du ponton). « /wk bateau » donne ta distance aux quais proches.",
-                UI:Slider(bcard, 240, 10, 100, 5, function() return gdc.dockRange or 30 end, function(v) gdc.dockRange = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end, "%d m"), 260)
+            UI:SettingRow(bcard, -132, "Distance d'apparition du bandeau", "Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (55 m : dès que tu avances sur le ponton ; 30 m : au bout). « /wk bateau » donne ta distance aux quais proches.",
+                UI:Slider(bcard, 240, 10, 100, 5, function() return gdc.dockRange or 55 end, function(v) gdc.dockRange = v; if UI.RefreshDockBanner then UI:RefreshDockBanner() end end, "%d m"), 260)
             local open = UI:Button(bcard, "Ouvrir les destinations", nil, 28, "primary")
             open:SetPoint("TOPLEFT", 16, -182)
             open:SetScript("OnClick", function() UI:ToggleBoatBoard(true) end)

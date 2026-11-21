@@ -3,24 +3,31 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Bandeau des bateaux et zeppelins, sans aucun horaire : où va le navire. En haut (graphite) « Bateau pour »
--- et la destination, le navire et « Ce ponton · vers … » ; en bas une bande de mer animée (ciel pour les
--- zeppelins) avec la frise des escales, ton ponton à gauche en bleu, la prochaine escale en vert.
---   * au quai (60 m pour apparaître : sur le ponton ; 85 m pour disparaître, puis encore 5 s) : le navire de ton ponton
---     tangue au départ de la frise ; les pontons voisins entre les deux ;
+-- Bandeau des bateaux et zeppelins, sans aucun horaire : où va le navire. Fond graphite clair, sans eau
+-- (version « épurée ») : « Bateau pour » et la destination, le navire et « Ce ponton · vers … » ; en bas la frise
+-- des escales en pointillés fins, ton ponton à gauche en bleu, la prochaine escale en vert, le navire au départ.
+--   * au quai (dockRange, 55 m par défaut : dès qu'on avance sur le ponton ; 15 m de plus pour disparaître, puis
+--     encore 8 s) : le navire de ton ponton au départ de la frise ; les pontons voisins entre les deux ;
 --   * à bord (Nav.IsRiding) : le navire avance sur la frise selon BoatLines:RideProgress (ligne reconnue par
 --     BoatLines:RideFit, sinon celle du ponton quitté, navire au départ) ;
 --   * dans le tram des profondeurs : ses deux stations.
 -- Lignes du jeu : Modules/BoatLines.lua ; bateaux appris en jeu : Nav:Boats(). Réglage Guide:Config().dockBanner.
 local LINGER, W = 8, 400
--- distance d'apparition (réglage Guide:Config().dockRange, 30 m par défaut : sur le ponton) ; le bandeau
--- reste affiché jusqu'à 15 m de plus
+-- distance d'apparition (réglage Guide:Config().dockRange, 55 m par défaut : dès qu'on avance sur le ponton,
+-- avant d'en atteindre le bout ; avant 30 m, tout au bout) ; le bandeau reste affiché jusqu'à 15 m de plus
+local RANGE = 55
 local function rangeIn()
-    local r = tonumber(WK.modules.Guide:Config().dockRange) or 30
+    local gc = WK.modules.Guide:Config()
+    -- ancienne valeur par défaut (30 m, au bout du ponton) passée une fois à 55 m
+    if not gc.dockRange2 then
+        gc.dockRange2 = true
+        if gc.dockRange == nil or gc.dockRange == 30 then gc.dockRange = RANGE end
+    end
+    local r = tonumber(gc.dockRange) or RANGE
     UI.DockRange = r
     return r
 end
-UI.DockRange = 30
+UI.DockRange = RANGE
 local banner
 
 local function BL() return WK.modules.BoatLines end
@@ -92,23 +99,20 @@ local SAMPLE = {
 }
 
 local MAXN = 4 -- escales dessinées au plus
-local TOP_H, SEA_H, COLW = 54, 70, 3 -- haut graphite, bande de mer, largeur d'une colonne de vague
-local LINE_Y = 42                    -- frise : distance depuis le haut de la bande de mer
+local TOP_H, SEA_H, COLW = 54, 50, 3 -- haut, bande de la frise, largeur d'une colonne (vagues retirées)
+local LINE_Y = 20                    -- frise : distance depuis le haut de sa bande
 
--- teintes de la bande, tirées du bleu du thème : mer (bateau), ciel (zeppelin), rail (tram, graphite)
-local function bandColors(kind)
-    local i = C.info
-    if kind == "tram" then return C.surface2, C.border, 0 end
-    local foam = { i[1] + (1 - i[1]) * 0.45, i[2] + (1 - i[2]) * 0.45, i[3] + (1 - i[3]) * 0.45 }
-    if kind == "zeppelin" then return { i[1] * 0.55, i[2] * 0.70, i[3] * 0.75 }, foam, 1.2 end
-    return { i[1] * 0.40, i[2] * 0.55, i[3] * 0.50 }, foam, 3
+-- plus d'eau : bande transparente sur le fond du bandeau, pointillés gris clair, pas de houle
+local function bandColors()
+    return C.surface, { C.muted[1], C.muted[2], C.muted[3] }, 0
 end
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDockBanner", UIParent)
     f:SetSize(W, TOP_H + SEA_H)
     f:SetFrameStrata("MEDIUM")
-    UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.94 }, C.border)
+    -- graphite plus clair que le fond des fenêtres (lisible sur le décor), liseré fin
+    UI:Panel(f, 12, { C.surface[1], C.surface[2], C.surface[3], 0.96 }, C.border)
     -- haut graphite : « Bateau pour » et la destination à gauche, le navire et le ponton à droite
     f.kicker = UI:Text(f, 11, C.muted); f.kicker:SetPoint("TOPLEFT", 16, -11)
     f.title = UI:Text(f, 16); f.title:SetPoint("TOPLEFT", 16, -27); f.title:SetPoint("RIGHT", f, "CENTER", 40, 0)
@@ -181,12 +185,13 @@ local function build()
     function f:Route(kind, names, p)
         local body, foam, amp = bandColors(kind)
         self.amp = amp
-        self.body:SetColor(body[1], body[2], body[3], 1)
+        -- plus de mer : fond, crête et vaguelettes invisibles
+        self.body:SetColor(body[1], body[2], body[3], 0)
         for k, c in ipairs(self.cols) do
-            c:SetColorTexture(body[1], body[2], body[3], 1)
-            self.foam[k]:SetColorTexture(foam[1], foam[2], foam[3], amp > 0 and 0.55 or 0)
+            c:SetColorTexture(0, 0, 0, 0)
+            self.foam[k]:SetColorTexture(0, 0, 0, 0)
         end
-        for _, t in ipairs(self.ripples) do t:SetColorTexture(foam[1], foam[2], foam[3], kind == "tram" and 0 or 0.14) end
+        for _, t in ipairs(self.ripples) do t:SetColorTexture(0, 0, 0, 0) end
         local n = math.min(#names, MAXN)
         local x0, x1 = X(1, n), X(n, n)
         for k, t in ipairs(self.dashes) do
@@ -207,7 +212,7 @@ local function build()
                 elseif i == n then nm:SetPoint("TOPRIGHT", self.sea, "TOPLEFT", x + 8, -(LINE_Y + 9)); nm:SetJustifyH("RIGHT")
                 else nm:SetPoint("TOP", self.sea, "TOPLEFT", x, -(LINE_Y + 9)); nm:SetJustifyH("CENTER") end
                 nm:SetText(names[i])
-                local col = (i == 1 and kind ~= "tram") and foam or (i == 2 and kind ~= "tram") and C.positive or foam
+                local col = (i == 1 and kind ~= "tram") and C.info or (i == 2 and kind ~= "tram") and C.positive or foam
                 dot:SetVertexColor(col[1], col[2], col[3], 1)
                 nm:SetTextColor(col[1], col[2], col[3], (i <= 2 or kind == "tram") and 1 or 0.65)
             end
@@ -225,14 +230,17 @@ local function build()
         self.done:SetShown(p ~= nil and sx > x0 + 2)
         self.done:ClearAllPoints()
         self.done:SetPoint("LEFT", self.sea, "TOPLEFT", x0, -LINE_Y); self.done:SetWidth(math.max(1, sx - x0))
-        self.done:SetColorTexture(foam[1], foam[2], foam[3], 0.95)
+        self.done:SetColorTexture(C.info[1], C.info[2], C.info[3], 0.95)
         self:Animate(0)
     end
     -- houle : la crête ondule, le navire tangue (à chaque image tant que le bandeau est visible)
     function f:Animate(t)
         local amp = self.amp or 0
-        for k, c in ipairs(self.cols) do
-            c:SetHeight(12 + 4 + amp * math.sin(k * 0.25 - t * 1.3) + amp * 0.4 * math.sin(k * 0.10 + t * 0.7))
+        -- (plus d'eau : la crête n'est plus animée, rien à refaire à chaque image)
+        if amp > 0 then
+            for k, c in ipairs(self.cols) do
+                c:SetHeight(12 + 4 + amp * math.sin(k * 0.25 - t * 1.3) + amp * 0.4 * math.sin(k * 0.10 + t * 0.7))
+            end
         end
         if self.ship:IsShown() then
             local bob = amp > 0 and math.sin(t * 2.2) * 1.5 or 0

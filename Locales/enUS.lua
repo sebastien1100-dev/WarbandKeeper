@@ -3913,7 +3913,6 @@ WK.Locales.enUS.text = {
     ["Maître de classe dans la tournée"] = "Class trainer in the tour",
     ["Quand des sorts sont à apprendre, la tournée de quêtes passe par le maître de classe le plus proche."] = "When spells are to be learned, the quest tour goes by the nearest class trainer.",
     ["Distance d'apparition du bandeau"] = "Banner appearance distance",
-    ["Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (au bout du ponton). « /wk bateau » donne ta distance aux quais proches."] = "The banner shows when you are closer than this to the ship's stopping point (at the end of the pier). \"/wk bateau\" gives your distance to nearby docks.",
     ["En groupe, le bouton « Buffer le suivant » bénit tout le monde selon cette répartition."] = "In a group, the \"Buff next\" button blesses everyone following this assignment.",
     ["Objets de quête achetés : %s"] = "Quest items bought: %s",
     ["Pour tes quêtes"] = "For your quests",
@@ -4272,4 +4271,6 @@ WK.Locales.enUS.text = {
     ["Clic droit : menu de la quête"] = "Right click: quest menu",
     ["{quest} lien, {name} nom, {level} niveau, {zone} zone ; prêt dans le canal /1, Entrée pour envoyer."] =
         "{quest} link, {name} name, {level} level, {zone} zone; ready in channel /1, Enter to send.",
+    ["Le bandeau s'affiche quand tu es à moins de cette distance du point d'arrêt du navire (55 m : dès que tu avances sur le ponton ; 30 m : au bout). « /wk bateau » donne ta distance aux quais proches."] =
+        "Shows within this distance of the ship stop (55 m: on the pier, 30 m: at its end). /wk bateau: distances.",
 }
