@@ -447,13 +447,38 @@ end
 ---------------------------------------------------------------------------
 -- Évènements
 ---------------------------------------------------------------------------
+-- Empreinte du journal : quêtes, prêtes ou non, avancée de chaque objectif. QUEST_LOG_UPDATE arrive très souvent
+-- sans que rien change (ciblage, entrée en zone, autre joueur) : sans changement, rien n'est redessiné.
+local function logSignature()
+    local ql = _G.C_QuestLog
+    if not (ql and ql.GetNumQuestLogEntries and ql.GetInfo) then return nil end
+    local parts = {}
+    for i = 1, (ql.GetNumQuestLogEntries() or 0) do
+        local info = ql.GetInfo(i)
+        local id = type(info) == "table" and not info.isHeader and info.questID
+        if id then
+            local s = id .. (ql.IsComplete and ql.IsComplete(id) and "c" or "")
+            local objs = ql.GetQuestObjectives and ql.GetQuestObjectives(id)
+            for _, o in ipairs(type(objs) == "table" and objs or {}) do
+                s = s .. ":" .. tostring(o.numFulfilled or (o.finished and 1 or 0))
+            end
+            parts[#parts + 1] = s
+        end
+    end
+    return table.concat(parts, ",")
+end
+M.LogSignature = logSignature
 local pending
-local function soon()
+local function soon(force)
     if pending then return end
     pending = true
-    C_Timer.After(0.4, function()
+    _G.C_Timer.After(0.4, function()
         pending = nil
         if not on() then return end
+        local sig = logSignature()
+        local track = M:Config().tracked[WK:CharKey()]
+        if force ~= true and sig and sig == M.lastSig and track == M.lastSigTrack then return end
+        M.lastSig, M.lastSigTrack = sig, track
         local qid = M:Tracked()
         if not qid and M:Config().tracked[WK:CharKey()] then M:Config().tracked[WK:CharKey()] = nil end
         -- objectif fini ou quête prête : nouvelle cible (le camp suivant repart du plus proche)
@@ -477,5 +502,5 @@ end)
 WK:On("QUEST_REMOVED", function(qid)
     if qid and qid == M:Config().tracked[WK:CharKey()] then M:Untrack() end
 end)
-WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, soon) end)
-WK:On("ZONE_CHANGED_NEW_AREA", function() M.skip = 0; soon() end)
+WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(3, function() soon(true) end) end)
+WK:On("ZONE_CHANGED_NEW_AREA", function() M.skip = 0; soon(true) end)

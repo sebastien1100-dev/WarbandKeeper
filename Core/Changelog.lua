@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.3", date = "21/11/2026",
+        changed = {
+            "Quêtes plus fluides : le journal du jeu se met à jour très souvent sans que rien change ; la carte de tournée, les zones sur la carte du monde et la page Quêtes ne se redessinent plus que quand une quête ou un objectif a vraiment bougé.",
+            "Tournée : le calcul de l'ordre des étapes (le plus lourd de l'addon) n'est plus refait toutes les 2 secondes, seulement quand les quêtes, leur avancée ou ta position (à quelques centaines de mètres près) changent.",
+            "Page Quêtes : la liste des zones, la zone conseillée et les chiffres du bandeau sont calculés en un seul passage au lieu de quatre.",
+        },
+    },
+    {
         version = "1.128.2", date = "21/11/2026",
         fixed = {
             "Quêtes à prendre tout près et objet qui démarre une quête : ces alertes s'écrivent de nouveau dans le chat (depuis le retrait des rappels à l'écran, elles ne s'affichaient plus mais étaient quand même marquées comme dites).",

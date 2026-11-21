@@ -2370,10 +2370,7 @@ UI:RegisterPage({
             onClick = #pend > 0 and function() X:GuideNearest() end or nil })
         local near, nearZones = 0, 0
         for _, z in ipairs(zones) do
-            local zn = 0
-            for _, q in ipairs(Q:OnMap(z.map)) do
-                if (q.lvl or 0) >= myLevel - 3 and (q.lvl or 0) <= myLevel + 3 and Q:ForChar(q, c) and Q:State(q, c) == "avail" then zn = zn + 1 end
-            end
+            local zn = z.near or 0 -- compté avec la liste des zones (Quests:Zones)
             near = near + zn
             if zn > 0 then nearZones = nearZones + 1 end
         end

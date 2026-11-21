@@ -66,7 +66,8 @@ local function index()
     if M.AddLearned then M.AddLearned(byID, byStarter, mapOf, QMETA) end
 end
 -- l'index sera refait au prochain accès (quête apprise en jeu)
-function M:Reindex() byID = nil end
+local memo = { zones = {}, totals = {}, at = -10 } -- zones et totaux gardés 1 s (M:Zones, M:Totals)
+function M:Reindex() byID = nil; memo.at = -10 end
 function M:Get(id)
     if not byID then index() end
     return byID[id]
@@ -243,18 +244,40 @@ function M:Known(key) return charOf(key).quests and charOf(key).quests.done ~= n
 -- Zones (page Quêtes)
 ---------------------------------------------------------------------------
 -- { { map, name, total, done, avail, xp (dispo), min, max } } pour un perso
+-- Zones et totaux gardés 1 s par perso : un rafraîchissement de page les demande plusieurs fois (liste des zones,
+-- meilleure zone, chiffres du bandeau) ; vidés à chaque changement d'index (M:Reindex)
+local function memoFresh()
+    local now = _G.GetTime and _G.GetTime() or 0
+    if now - memo.at > 1 or now < memo.at then
+        memo.zones, memo.totals, memo.at = {}, {}, now
+    end
+end
 function M:Zones(key)
+    memoFresh()
+    local mk = key or WK:CharKey()
+    if memo.zones[mk] then return memo.zones[mk] end
+    local out = self:ZonesNow(key)
+    memo.zones[mk] = out
+    return out
+end
+function M:ZonesNow(key)
     local c = charOf(key)
     local R = WK.modules.Rares
+    local lvl = c.level or 1
     local out = {}
     for mapID in pairs(WK.QuestsDB or {}) do
-        local z = { map = mapID, name = R:ZoneName(mapID), total = 0, done = 0, avail = 0, xp = 0, min = 99, max = 0 }
+        -- near / nearXP : quêtes à prendre à ton niveau (± 3), pour la meilleure zone et le bandeau de la page
+        local z = { map = mapID, name = R:ZoneName(mapID), total = 0, done = 0, avail = 0, xp = 0, min = 99, max = 0,
+            near = 0, nearXP = 0 }
         for _, q in ipairs(self:OnMap(mapID)) do
             if self:ForChar(q, c) then
                 local st = self:State(q, c)
                 if st ~= "closed" then z.total = z.total + 1 end
                 if st == "done" then z.done = z.done + 1
                 elseif st == "avail" or st == "log" then z.avail = z.avail + 1; z.xp = z.xp + (q.xp or 0) end
+                if st == "avail" and (q.lvl or 0) >= lvl - 3 and (q.lvl or 0) <= lvl + 3 then
+                    z.near, z.nearXP = z.near + 1, z.nearXP + (q.xp or 0)
+                end
                 if q.kind ~= "d" and (q.lvl or 0) > 0 then
                     z.min, z.max = math.min(z.min, q.lvl), math.max(z.max, q.lvl)
                 end
@@ -267,6 +290,15 @@ function M:Zones(key)
     return out
 end
 function M:Totals(key)
+    memoFresh()
+    local mk = key or WK:CharKey()
+    local m = memo.totals[mk]
+    if m then return m[1], m[2], m[3], m[4], m[5] end
+    local r = { self:TotalsNow(key) }
+    memo.totals[mk] = r
+    return r[1], r[2], r[3], r[4], r[5]
+end
+function M:TotalsNow(key)
     local c = charOf(key)
     if not byID then index() end
     local total, done, avail = 0, 0, 0
@@ -300,14 +332,9 @@ function M:PlayerZone()
 end
 -- Meilleure zone pour monter : celle qui a le plus d'XP disponible à son niveau
 function M:BestZone(key)
-    local c = charOf(key)
-    local lvl = c.level or 1
     local best, bestXP
     for _, z in ipairs(self:Zones(key)) do
-        local xp = 0
-        for _, q in ipairs(self:OnMap(z.map)) do
-            if self:ForChar(q, c) and q.lvl >= lvl - 3 and q.lvl <= lvl + 3 and self:State(q, c) == "avail" then xp = xp + (q.xp or 0) end
-        end
+        local xp = z.nearXP or 0 -- calculé avec la liste des zones (au lieu d'un second parcours de la base)
         if xp > 0 and (not bestXP or xp > bestXP) then best, bestXP = z, xp end
     end
     return best, bestXP

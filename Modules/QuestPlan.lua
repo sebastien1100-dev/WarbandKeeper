@@ -143,7 +143,8 @@ end
 -- Coins : quêtes regroupées par camps proches. { { quests = {…}, center = point, xp, label } }, triés par XP
 -- (gardés 2 s : la page les relit à chaque rafraîchissement ; une coche les recalcule)
 local memo = {}
-function M:Invalidate() memo = {} end
+local built -- tournée calculée gardée (M:Build), effacée ici aussi
+function M:Invalidate() memo = {}; if built then built.key, built.tour = nil, nil end end
 function M:Coins()
     local now = GetTime and GetTime() or time()
     if memo.coins and now - memo.at < 2 then return memo.coins, memo.zone, memo.list end
@@ -225,9 +226,36 @@ local function objTime(qid, logged)
 end
 
 local excluded -- plus bas
+-- Tournée calculée gardée tant que son contenu ne change pas (quêtes, état dans le journal, coins, position à
+-- env. 5 % de la carte près) : le calcul (plus proche voisin, 2-opt, trajets) est lourd, et il était refait dès
+-- que la liste des coins (gardée 2 s) était relue, par exemple chaque seconde par le guide de montée.
+built = { key = nil, tour = nil }
+local function buildKey(coins)
+    local q = Q()
+    local parts = {}
+    for _, k in ipairs(coins) do
+        local ids = {}
+        for _, e in ipairs(k.quests) do
+            local st = (q:InLog(e.id) and (q:IsComplete(e.id) and "c" or "l")) or "a"
+            ids[#ids + 1] = e.id .. st
+        end
+        parts[#parts + 1] = string.format("%s@%d,%d:%s", tostring(k.map), math.floor(k.x * 200), math.floor(k.y * 200),
+            table.concat(ids, "."))
+    end
+    local me = G():PlayerPos()
+    if me then
+        parts[#parts + 1] = string.format("me%s,%d,%d", tostring(me.map), math.floor(me.x * 20), math.floor(me.y * 20))
+    end
+    return table.concat(parts, "|")
+end
 function M:Build()
     local coins = self:Coins()
     if memo.build and memo.coins == coins then return self:CopyTour(memo.build) end
+    local key = buildKey(coins)
+    if built.tour and built.key == key then
+        memo.build = built.tour
+        return self:CopyTour(built.tour)
+    end
     local t = self:BuildNow(coins)
     -- quêtes trop chères en temps pour leur XP (ou sur un autre continent) : retirées, la tournée est refaite
     local me = G():PlayerPos()
@@ -239,6 +267,7 @@ function M:Build()
         t.excluded = ex
     end
     memo.build = t
+    built.key, built.tour = key, t
     return self:CopyTour(t)
 end
 function M:CopyTour(t)
@@ -1290,7 +1319,21 @@ local function soon()
     pending = true
     C_Timer.After(0.5, function() pending = nil; if on() and M:Tour() then M:Advance(); M:Changed() end end)
 end
-WK:On("QUEST_LOG_UPDATE", soon)
+-- QUEST_LOG_UPDATE arrive très souvent sans changement : rien n'est recalculé ni redessiné si l'empreinte du
+-- journal (QuestTrack.LogSignature : quêtes, prêtes, avancée des objectifs) est la même
+local logPending
+WK:On("QUEST_LOG_UPDATE", function()
+    if logPending then return end
+    logPending = true
+    _G.C_Timer.After(0.5, function()
+        logPending = nil
+        local QT = WK.modules.QuestTrack
+        local sig = QT and QT.LogSignature and QT.LogSignature()
+        if sig and sig == M.lastLogSig then return end
+        M.lastLogSig = sig
+        soon()
+    end)
+end)
 WK:On("QUEST_ACCEPTED", soon)
 WK:On("QUEST_TURNED_IN", function(qid)
     local t = M:Tour()
