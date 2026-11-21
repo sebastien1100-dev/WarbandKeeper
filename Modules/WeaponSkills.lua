@@ -67,7 +67,18 @@ local SKILL_NAMES = {
 }
 M.SKILL_NAMES = SKILL_NAMES
 
-local function nameKey(n) return n and n:lower():gsub("’", "'") or nil end
+-- Clé de comparaison : minuscules, sans accents ni apostrophe courbe, sans « s » final de chaque mot (le jeu
+-- écrit « Epées » sans accent et « Masse » au singulier : avant, ces armes n'étaient pas reconnues)
+local ACCENTS = { ["é"] = "e", ["è"] = "e", ["ê"] = "e", ["ë"] = "e", ["É"] = "e", ["È"] = "e", ["Ê"] = "e",
+    ["à"] = "a", ["â"] = "a", ["À"] = "a", ["î"] = "i", ["ï"] = "i", ["ô"] = "o", ["û"] = "u", ["ù"] = "u",
+    ["ç"] = "c", ["’"] = "'" }
+local function nameKey(n)
+    if not n then return nil end
+    n = n:gsub("[\195\226][\128-\191]+", function(c) return ACCENTS[c] or c end):lower()
+    n = n:gsub("(%a)s%f[%A]", "%1")
+    return n
+end
+M.NameKey = nameKey
 
 -- Arme connue comme sort (onglet Général du grimoire) : repli quand la fenêtre des compétences n'est pas
 -- lisible (API absente sur ce client) ; le rang n'est alors pas connu (-1)

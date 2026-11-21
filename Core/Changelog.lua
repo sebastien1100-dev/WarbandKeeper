@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.48", date = "21/11/2026",
+        fixed = {
+            "Fiche, onglet Armes : le vrai niveau de chaque arme (1 / 150, 65 / 150…) s'affiche au lieu de « apprise » : le jeu écrit « Epées » sans accent et « Masse » au singulier, et ces lignes n'étaient pas reconnues.",
+        },
+    },
+    {
         version = "1.128.47", date = "21/11/2026",
         fixed = {
             "Pastilles sous la flamme du feu de camp : « Bien nourri absent » restait sur une seule ligne ; il passe bien sur deux lignes.",
