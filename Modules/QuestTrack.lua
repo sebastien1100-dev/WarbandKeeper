@@ -19,7 +19,9 @@ function M:Config()
     if c.hud == nil then c.hud = true end                 -- carte de quête à l'écran
     if c.guide == nil then c.guide = true end             -- flèche vers le camp puis le rendu
     if c.map == nil then c.map = "tracked" end            -- camps sur la carte : tracked / all / off
-    if c.mini == nil then c.mini = true end               -- camp visé sur la minicarte
+    if c.zoneStyle == nil then c.zoneStyle = "heat" end   -- zones sur la carte du monde : heat / points / circles
+    if c.miniStyle == nil then c.miniStyle = "heat" end   -- quête suivie sur la minicarte : heat / points / off
+    if c.heat == nil then c.heat = 100 end                -- intensité des zones de chaleur (%)
     if c.hideGame == nil then c.hideGame = true end       -- repères de quête du jeu masqués sur la carte du monde
     if c.panel == nil then c.panel = true end             -- volet « Quêtes du journal » sur la carte du monde (panelFold : replié)
     return c
@@ -48,6 +50,15 @@ function M:Data(qid)
                 table.insert(camps, { map = tonumber(map), x = tonumber(x) / 100, y = tonumber(y) / 100, r = tonumber(r) / 100, n = tonumber(n) })
             end
             table.insert(d.objs, { kind = kind, idx = tonumber(idx), camps = camps })
+        end
+    end
+    -- points exacts (WK.QuestPtsRaw, même ordre que les blocs) : clés de WK.SpawnPts ou points de l'objectif
+    local praw = WK.QuestPtsRaw and WK.QuestPtsRaw[qid]
+    if praw then
+        local i = 0
+        for part in (praw .. "|"):gmatch("([^|]*)|") do
+            i = i + 1
+            if d.objs[i] and part ~= "" then d.objs[i].refs = { part } end
         end
     end
     if fin and fin ~= "" then
@@ -87,6 +98,7 @@ function M:Objectives(qid)
             text = text, name = (text:gsub("%s*:%s*%d+%s*/%s*%d+%s*$", ""):gsub("^%d+%s*/%s*%d+%s*", "")),
             type = o.type, done = o.finished and true or false,
             have = o.numFulfilled or 0, need = o.numRequired or 0, camps = src and src.camps or {},
+            refs = src and src.refs,
         })
     end
     -- objectifs cachés de Questie : rattachés à leur objectif du jeu (lieu plus précis en tête), sinon en plus
@@ -98,15 +110,68 @@ function M:Objectives(qid)
             for _, c in ipairs(x.camps) do table.insert(merged, c) end
             for _, c in ipairs(o.camps) do table.insert(merged, c) end
             o.camps = merged
+            if x.refs then
+                local r = {}
+                for _, v in ipairs(x.refs) do table.insert(r, v) end
+                for _, v in ipairs(o.refs or {}) do table.insert(r, v) end
+                o.refs = r
+            end
         elseif #x.camps > 0 then
             table.insert(out, { text = T("Lieu de l'objectif caché"), name = T("Lieu de l'objectif caché"), type = "extra",
-                done = complete, have = 0, need = 0, camps = x.camps })
+                done = complete, have = 0, need = 0, camps = x.camps, refs = x.refs })
         end
     end
     -- zone à explorer que le jeu ne range pas en « évènement » : ajoutée tant que la quête n'est pas finie
     if byKind.e[1] and used.e == 0 and #byKind.e[1].camps > 0 and #out > 0 then
         table.insert(out, { text = T("Lieu à explorer"), name = T("Lieu à explorer"), type = "explore",
-            done = complete, have = 0, need = 0, camps = byKind.e[1].camps })
+            done = complete, have = 0, need = 0, camps = byKind.e[1].camps, refs = byKind.e[1].refs })
+    end
+    return out
+end
+
+-- Points exacts d'un objectif (rendu par Objectives ou un objectif de Data) sur une carte :
+-- { x1, y1, x2, y2, … } (0-1), décodés à la demande et gardés par chaîne et par carte
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+local B64I = {}
+for i = 1, #B64 do B64I[B64:byte(i)] = i - 1 end
+local ptCache = {}
+local function decode(str, mapID)
+    local key = mapID .. "#" .. str
+    local hit = ptCache[key]
+    if hit then return hit end
+    local out = {}
+    for m, codes in str:gmatch("(%d+):([^;]+)") do
+        if tonumber(m) == mapID then
+            for i = 1, #codes - 2, 3 do
+                local a, b, c = B64I[codes:byte(i)], B64I[codes:byte(i + 1)], B64I[codes:byte(i + 2)]
+                if a and b and c then
+                    local v = a * 4096 + b * 64 + c
+                    out[#out + 1] = math.floor(v / 201) / 200
+                    out[#out + 1] = (v % 201) / 200
+                end
+            end
+        end
+    end
+    ptCache[key] = out
+    return out
+end
+function M:Points(o, mapID)
+    local out = {}
+    if not (o and o.refs and mapID) then return out end
+    local seen = {}
+    for _, part in ipairs(o.refs) do
+        local list
+        if part:sub(1, 1) == "*" then list = { part:sub(2) }
+        else
+            list = {}
+            for k in part:gmatch("[^,]+") do
+                if not seen[k] then seen[k] = true; list[#list + 1] = WK.SpawnPts and WK.SpawnPts[k] end
+            end
+        end
+        for _, str in ipairs(list) do
+            local pts = decode(str, mapID)
+            for i = 1, #pts do out[#out + 1] = pts[i] end
+        end
     end
     return out
 end
@@ -241,6 +306,7 @@ end
 function M:Changed()
     if WK.UI.RefreshQuestTracker then WK.UI:RefreshQuestTracker() end
     if WK.UI.RefreshQuestCamps then WK.UI:RefreshQuestCamps() end
+    if WK.UI.RefreshQuestMini then WK.UI:RefreshQuestMini() end
     WK:NotifyChanged()
 end
 

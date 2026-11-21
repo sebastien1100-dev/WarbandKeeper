@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.120.0", date = "21/11/2026",
+        added = {
+            "Quêtes : zones de chaleur sur la carte du monde. Chaque apparition des monstres et objets d'un objectif est dessinée en halo doux : plus c'est vif, plus il y en a. Une couleur par objectif de la quête suivie. L'infobulle et le clic sur la zone restent.",
+            "Minicarte : les zones de la quête suivie (ou de l'étape en cours de la tournée) autour de toi, en chaleur ou en points. Un objectif fini disparaît.",
+            "Roue de la page Quêtes, carte « Zones des objectifs » : dessin sur la carte (Chaleur, Points ou Cercles comme avant), sur la minicarte (Chaleur, Points ou Aucune) et intensité de la chaleur.",
+        },
+        changed = {
+            "Carte de tournée à l'écran refaite : chaque objectif est une barre qui se remplit, à la couleur de sa quête (légende quand l'étape en regroupe plusieurs), fini en vert. En-tête sur deux lignes (zone, puis « étape 1 sur 33 · env. 57 min ») avec le total d'XP en gros à droite, barre d'avancée plus visible, titre plus grand.",
+        },
+    },
+    {
         version = "1.119.0", date = "21/11/2026",
         changed = {
             "Quêtes : les zones des objectifs sont plus précises. Les monstres et objets d'une quête sont regroupés en camps plus serrés (jusqu'à 10 par objectif au lieu de 6, cercles plus petits qui ne grossissent plus pour un monstre isolé) : la flèche, la carte et la tournée visent le vrai coin au lieu du milieu d'une grande zone.",

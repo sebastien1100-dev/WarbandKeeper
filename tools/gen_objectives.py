@@ -31,6 +31,9 @@ import lupa
 MAX_POINTS = 400     # apparitions prises en compte par objectif
 JOIN = 2.5           # deux apparitions à moins de 2,5 % de la carte : même camp
 MAX_CAMPS = 10
+MAX_KEYS = 16        # PNJ ou objets gardés par objectif pour les points
+MAX_SPAWN = 300      # points gardés par PNJ ou objet et par carte (zones de chaleur)
+B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 R_PCT = 0.85         # rayon d'un camp : 85 % de ses points dedans (un point isolé ne l'agrandit pas)
 
 
@@ -178,6 +181,34 @@ def main(root, out):
 
     buy = {}  # quête -> [objets à acheter]
     lines, n_obj, n_camp, n_explore, n_extra = [], 0, 0, 0, 0
+    plines = []
+    spawn = {}  # « n123 » / « o45 » -> points codés (une seule fois par PNJ ou objet)
+
+    def enc(pts):
+        """points sur une grille de 0,5 % de la carte : « carte:ccc…;carte:… » (3 caractères par point)"""
+        per = {}
+        for m, x, y in pts:
+            gx, gy = min(200, max(0, int(round(x * 2)))), min(200, max(0, int(round(y * 2))))
+            per.setdefault(m, set()).add(gx * 201 + gy)
+        out = []
+        for m in sorted(per):
+            codes = sorted(per[m])
+            if len(codes) > MAX_SPAWN:
+                step = len(codes) / MAX_SPAWN
+                codes = [codes[int(i * step)] for i in range(MAX_SPAWN)]
+            out.append("%d:%s" % (m, "".join(B64[c >> 12] + B64[(c >> 6) & 63] + B64[c & 63] for c in codes)))
+        return ";".join(out)
+
+    def pool(keys):
+        """clés des PNJ / objets qui ont des points ; leurs points vont une fois dans WK.SpawnPts"""
+        out = []
+        for k in keys:
+            if k not in spawn:
+                pts = npc_pts(int(k[1:])) if k[0] == "n" else obj_pts(int(k[1:]))
+                spawn[k] = enc(pts) if pts else ""
+            if spawn[k] and k not in out:
+                out.append(k)
+        return ",".join(out)
     starts = {}  # objet qui démarre une quête (clic droit dessus) : objet -> quête
     for qid in sorted(quests.keys()):
         q = quests[qid]
@@ -188,17 +219,17 @@ def main(root, out):
                 if iid and iid not in starts:
                     starts[iid] = qid
         ob = q[10]
-        blocks = []
+        blocks, prefs = [], []
         if ob:
-            mons = [("m", npc_pts(o[1])) for o in lst(ob[1]) if o and o[1]]
+            mons = [("m", npc_pts(o[1]), ["n%d" % o[1]]) for o in lst(ob[1]) if o and o[1]]
             # crédit de mort (plusieurs monstres comptent pour un objectif)
             for kc in lst(ob[5]):
                 if kc and kc[1]:
                     pts = []
                     for nid in lst(kc[1]):
                         pts += npc_pts(nid)
-                    mons.append(("m", pts))
-            obs = [("o", obj_pts(o[1])) for o in lst(ob[2]) if o and o[1]]
+                    mons.append(("m", pts, ["n%d" % nid for nid in lst(kc[1])]))
+            obs = [("o", obj_pts(o[1]), ["o%d" % o[1]]) for o in lst(ob[2]) if o and o[1]]
             its = []
             for o in lst(ob[3]):
                 if not (o and o[1]):
@@ -206,21 +237,33 @@ def main(root, out):
                 v = vendors_of(o[1])
                 if v:
                     buy.setdefault(qid, []).append(o[1])
-                    its.append(("i", []))
+                    its.append(("i", [], []))
                 else:
-                    its.append(("i", item_pts(o[1])))
-            for kind, pts in mons + its + obs:
+                    it = items[o[1]]
+                    keys = (["n%d" % n for n in lst(it[2])] + ["o%d" % n for n in lst(it[3])]) if it else []
+                    its.append(("i", item_pts(o[1]), keys))
+            for kind, pts, keys in mons + its + obs:
                 c = camps(pts)
                 n_obj += 1
                 n_camp += len(c)
                 blocks.append(kind + ":" + ";".join(c))
+                if len(keys) > MAX_KEYS:
+                    # objet donné par des dizaines de monstres : ceux des cartes des principaux camps, les plus présents
+                    maps = {cc.split(",")[0] for cc in c[:3]}
+                    def here(k):
+                        pts = npc_pts(int(k[1:])) if k[0] == "n" else obj_pts(int(k[1:]))
+                        return sum(1 for m, _, _ in pts if str(m) in maps)
+                    keys = [k for k in sorted(keys, key=here, reverse=True)[:MAX_KEYS] if here(k) > 0]
+                prefs.append(pool(keys))
         # zone à explorer (« trouve tel endroit ») : bloc « e: »
         te = q[9]
         if te and te[2]:
-            c = camps(area_pts(te[2]))
+            ap = area_pts(te[2])
+            c = camps(ap)
             if c:
                 n_explore += 1
                 blocks.append("e:" + ";".join(c))
+                prefs.append("*" + enc(ap))
         # objectifs cachés de Questie (utiliser un objet à tel endroit…) : « xN: » rattaché au N-ième objectif
         # du jeu, « x: » sinon
         for ex in lst(q[29]):
@@ -232,10 +275,13 @@ def main(root, out):
                 n_extra += 1
                 idx = ex[4] if isinstance(ex[4], int) else ""
                 blocks.append("x%s:" % idx + ";".join(c))
+                prefs.append("*" + enc(pts))
         fin = finisher(q)
         if not blocks and not fin:
             continue
         lines.append('[%d]="%s%s",' % (qid, "|".join(blocks), ("@" + fin) if fin else ""))
+        if any(prefs):
+            plines.append('[%d]="%s",' % (qid, "|".join(prefs)))
     with open(out, "w", encoding="utf-8") as f:
         f.write("-- FICHIER GÉNÉRÉ par tools/gen_objectives.py : ne pas modifier à la main.\n"
                 "-- Camps des objectifs de quête et point de rendu. Données tirées de QuestieDB\n"
@@ -250,7 +296,15 @@ def main(root, out):
         used = sorted({i for q in buy for i in buy[q]})
         f.write("\n}\n-- marchands de ces objets : [objet] = \"carte,x,y,faction,nom;…\"\nWK.QuestVendors = {\n")
         f.write("\n".join('[%d]="%s",' % (i, ";".join(vend[i]).replace('"', "'")) for i in used))
+        f.write("\n}\n-- points exacts (zones de chaleur) : [quête] = clés par objectif, dans l'ordre des blocs de\n"
+                "-- WK.QuestObjRaw (« n12,o5 » = PNJ / objets de WK.SpawnPts, « *carte:… » = points de l'objectif)\n"
+                "WK.QuestPtsRaw = {\n")
+        f.write("\n".join(plines))
+        f.write("\n}\n-- [« n » PNJ / « o » objet .. n°] = « carte:ccc…;… » : grille de 0,5 %% de la carte, 3 caractères\n"
+                "-- base64 par point (x * 201 + y, x et y de 0 à 200)\nWK.SpawnPts = {\n")
+        f.write("\n".join('%s="%s",' % (k, v) for k, v in sorted(spawn.items()) if v))
         f.write("\n}\n")
+    print("%d PNJ ou objets avec points (%d Ko)" % (sum(1 for v in spawn.values() if v), sum(len(v) for v in spawn.values()) // 1024))
     print("%d quêtes, %d objectifs, %d camps, %d zones à explorer, %d objectifs cachés, %d objets qui démarrent une quête, %d quêtes avec achat" % (len(lines), n_obj, n_camp, n_explore, n_extra, len(starts), len(buy)))
 
 

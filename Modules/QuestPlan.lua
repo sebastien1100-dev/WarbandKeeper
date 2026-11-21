@@ -1014,11 +1014,12 @@ function M:StepObjectives(s)
     local out = {}
     if s.kind ~= "do" then return out end
     local multi = #s.qids > 1
-    for _, q in ipairs(s.qids) do
+    for qi, q in ipairs(s.qids) do
         if inLog(q) then
             local qn = multi and Q():Title(q) or nil
             for _, o in ipairs(Q():Objectives(q)) do
-                table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done, quest = qn })
+                table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done, quest = qn,
+                    qi = multi and qi or nil })
             end
         end
     end
