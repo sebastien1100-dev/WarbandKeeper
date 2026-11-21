@@ -349,6 +349,10 @@ function M:BuildNow(coins, skip)
                 local p = point(c.camp.map or zone, c.camp.x, c.camp.y)
                 local dn = node("do", p, e.id, depth)
                 dn.secs = (dn.secs or 0) + per
+                -- camps de cette quête dans l'étape : seuls leurs objectifs y sont montrés et comptés
+                dn.camps = dn.camps or {}
+                dn.camps[e.id] = dn.camps[e.id] or {}
+                table.insert(dn.camps[e.id], { map = p.map, x = c.camp.x, y = c.camp.y })
                 if pick then dn.after[pick] = true end
                 if e.predicted then dn.preds[e.id] = true end
                 table.insert(dos, dn)
@@ -487,7 +491,8 @@ function M:BuildNow(coins, skip)
         table.insert(steps, { kind = n.kind, qids = n.qids, map = n.map, x = n.x, y = n.y, secs = math.floor(secs), label = n.kind == "do" and M:Direction(me, n) or nil,
             title = n.kind == "trainer" and n.title or nil, spells = n.spells, level = n.kind == "trainer" and (UnitLevel and UnitLevel("player")) or nil,
             preds = #pr > 0 and pr or nil, items = n.items, vendor = n.vendor and Q():VendorName(n.vendor) or nil,
-            vendorRole = n.vendor and select(2, Q():VendorName(n.vendor)) or nil, buyMissing = n.buyMissing })
+            vendorRole = n.vendor and select(2, Q():VendorName(n.vendor)) or nil,
+            buyMissing = n.buyMissing, camps = n.kind == "do" and n.camps or nil })
         prev = n
     end
     steps = M.AddTravel(steps, me)
@@ -934,8 +939,9 @@ function M:StepDone(s)
         for _, q in ipairs(s.qids) do
             if inLog(q) and not Q():IsComplete(q) then
                 -- objectifs pas encore donnés par le jeu (juste après la prise) : pas fini (avant, la liste
-                -- vide passait pour « tout est fait » et la tournée sautait au rendu)
-                local objs = Q():Objectives(q)
+                -- vide passait pour « tout est fait » et la tournée sautait au rendu) ; quête répartie sur
+                -- plusieurs étapes : seuls les objectifs des camps de cette étape comptent
+                local objs = M:StepQuestObjectives(s, q)
                 if #objs == 0 then return false end
                 for _, o in ipairs(objs) do if not o.done then return false end end
             end
@@ -1005,8 +1011,56 @@ function M:StepTitle(s, colored)
     if s.kind == "pick" then return string.format(T("Prendre : %s"), list)
     elseif s.kind == "turn" then return string.format(T("Rendre : %s"), list)
     end
-    -- étape « faire » : le nom des quêtes seul (plus de « Coin nord : … »)
+    -- étape « faire » : le nom des quêtes seul (plus de « Coin nord : … ») ; une quête répartie sur plusieurs
+    -- étapes (objectifs à plusieurs endroits) : les objectifs de celle-ci, pour ne pas lire deux fois le même titre
+    if #s.qids == 1 and self:SplitQuest(s, s.qids[1]) then
+        local objs, own = self:StepQuestObjectives(s, s.qids[1])
+        if own then
+            local left = {}
+            for _, o in ipairs(objs) do
+                if not o.done then
+                    left[#left + 1] = tostring(o.name ~= "" and o.name or o.text):gsub("%s*:%s*%d+%s*/%s*%d+.*$", "")
+                end
+            end
+            if #left > 2 then left = { left[1], left[2], "+" .. (#left - 2) } end
+            if #left > 0 then list = list .. " · " .. table.concat(left, ", ") end
+        end
+    end
     return list
+end
+
+-- La quête a-t-elle d'autres étapes « faire » dans la tournée ?
+function M:SplitQuest(s, q)
+    local t = self:Tour()
+    if not t then return false end
+    for _, o in ipairs(t.steps) do
+        if o ~= s and o.kind == "do" then
+            for _, x in ipairs(o.qids or {}) do if x == q then return true end end
+        end
+    end
+    return false
+end
+-- Objectifs d'une quête pour une étape « faire » : ceux dont un camp est dans l'étape (2e valeur vraie), sinon tous
+function M.StepQuestObjectives(_, s, q)
+    local objs = Q():Objectives(q)
+    local mine = s.camps and s.camps[q]
+    if not mine then return objs, false end
+    local out = {}
+    for _, o in ipairs(objs) do
+        local hit = false
+        for _, oc in ipairs(o.camps or {}) do
+            for _, sc in ipairs(mine) do
+                local near = math.abs((oc.x or 0) - (sc.x or 0)) < 0.002 and math.abs((oc.y or 0) - (sc.y or 0)) < 0.002
+                if oc.map == sc.map and near then
+                    hit = true break
+                end
+            end
+            if hit then break end
+        end
+        if hit then out[#out + 1] = o end
+    end
+    if #out == 0 then return objs, false end
+    return out, true
 end
 
 -- Objectifs pas finis d'une étape « faire » : { name, have, need, done }
@@ -1017,7 +1071,7 @@ function M:StepObjectives(s)
     for qi, q in ipairs(s.qids) do
         if inLog(q) then
             local qn = multi and Q():Title(q) or nil
-            for _, o in ipairs(Q():Objectives(q)) do
+            for _, o in ipairs((M:StepQuestObjectives(s, q))) do
                 table.insert(out, { name = o.name ~= "" and o.name or o.text, have = o.have, need = o.need, done = o.done, quest = qn,
                     qi = multi and qi or nil })
             end

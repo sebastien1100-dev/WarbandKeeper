@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.124.1", date = "21/11/2026",
+        fixed = {
+            "Tournée : une quête dont les objectifs sont à plusieurs endroits (« Entrevoir notre avenir ») apparaissait deux fois sous le même nom, et chaque étape montrait tous ses objectifs. Chaque étape dit maintenant ce qu'on y fait (« Entrevoir notre avenir · Cœur d'Adoss, Cœur de Modr »), ne montre que ses objectifs, et passe à la suivante dès qu'ils sont faits.",
+        },
+    },
+    {
         version = "1.124.0", date = "21/11/2026",
         added = {
             "Quêtes : l'addon apprend les chaînes que la base ne connaît pas (fréquent pour le nouveau contenu de WoW Forever). Une quête proposée par un PNJ juste après lui en avoir rendu une, ou une quête « pas encore proposée » qui le devient après un rendu, est notée comme sa suite. Tes autres persos attendent alors la quête d'avant (« après … »), et un message le signale.",

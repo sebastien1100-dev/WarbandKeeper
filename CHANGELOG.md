@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.124.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tournée : une quête dont les objectifs sont à plusieurs endroits (« Entrevoir notre avenir ») apparaissait deux fois sous le même nom, et chaque étape montrait tous ses objectifs. Chaque étape dit maintenant ce qu'on y fait (« Entrevoir notre avenir · Cœur d'Adoss, Cœur de Modr »), ne montre que ses objectifs, et passe à la suivante dès qu'ils sont faits.
+
 ## v1.124.0 — 21/11/2026
 
 _Un /reload suffit._
