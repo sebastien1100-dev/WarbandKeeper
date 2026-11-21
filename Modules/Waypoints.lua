@@ -165,12 +165,20 @@ local function changed()
     if WK.UI.RefreshWaypointList then WK.UI:RefreshWaypointList() end
     WK:NotifyChanged()
 end
+-- avant, le point guidé était trié avec les autres : il pouvait quitter la tête de la file et l'arrivée n'avait
+-- plus d'effet (le suivi exige que le point guidé soit le 1er). Il reste maintenant en tête, hors du tri.
 local function sortNear(list)
     local p = G():PlayerPos()
     if not p then return end
     local cur = p
     local rest, out = {}, {}
-    for _, w in ipairs(list) do rest[#rest + 1] = w end
+    local t = G().target
+    local head = t and t.kind == "way" and t.way == list[1] and list[1] or nil
+    if head then
+        out[1] = head
+        cur = worldOf(head) or cur
+    end
+    for _, w in ipairs(list) do if w ~= head then rest[#rest + 1] = w end end
     while #rest > 0 do
         local best, bd = 1, math.huge
         for k, w in ipairs(rest) do
@@ -247,7 +255,17 @@ function M:Add(map, x, y, title, opts)
     if d0 and d0 < 20 then w.here = true end
     if not cfg.queue then wipe(list) end
     if opts.now then table.insert(list, 1, w) else table.insert(list, w) end
-    while #list > MAX do table.remove(list) end
+    -- avant, au-delà de 50 points, le dernier de la file était retiré : souvent le point qu'on venait d'ajouter.
+    -- Maintenant, c'est le plus ancien point qui n'est ni guidé ni celui qu'on ajoute.
+    while #list > MAX do
+        local gt = G().target
+        local guided = gt and gt.kind == "way" and gt.way or nil
+        local old
+        for k, v in ipairs(list) do
+            if v ~= w and v ~= guided and (not old or (v.at or 0) < (list[old].at or 0)) then old = k end
+        end
+        table.remove(list, old or #list)
+    end
     db().last = w
     if cfg.order == "near" and #list > 1 and not opts.now then sortNear(list) end
     local first = list[1] == w
@@ -271,8 +289,12 @@ function M:Remove(w)
     local list = self:List()
     for k, v in ipairs(list) do
         if v == w then
+            local g = G()
+            local guided = g.target and g.target.kind == "way" and g.target.way == v
             table.remove(list, k)
-            if k == 1 then
+            -- avant, seul le retrait du 1er point passait au suivant : un point guidé rangé plus loin dans la file
+            -- restait guidé après son retrait
+            if k == 1 or guided then
                 -- (file en pause : le point suivant n'est pas relancé tout seul)
                 if list[1] then if not self:IsPaused() then self:Go() end else self:Ended() end
             end
@@ -360,6 +382,9 @@ ticker:SetScript("OnUpdate", function(s, el)
     local g = G()
     if not (list and list[1] and g.target and g.target.kind == "way" and g.target.way == list[1]) then
         if list and #list == 0 and prevTarget and not g.target then M:Ended() end
+        -- avant, un point guidé qui n'était plus en tête (file retriée) ne comptait jamais comme atteint :
+        -- le guidage reprend sur le 1er point de la file
+        if list and list[1] and g.target and g.target.kind == "way" and not M:IsPaused() then M:Go() end
         return
     end
     local d = M:Distance(list[1])
@@ -509,9 +534,17 @@ local function groupChannel()
     if IsInGroup and IsInGroup() then return "PARTY" end
     return nil
 end
+-- titre sans codes de couleur, de texture ni « | » (avant, un titre venu d'un lien ou d'un autre addon partait
+-- tel quel au groupe : codes mal formés refusés par le jeu ou affichés en clair)
+local function plainTitle(s)
+    s = tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|", "")
+    s = s:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+    return s
+end
 function M:WayText(w)
     local zone = englishName(w.map) or self:ZoneName(w.map)
-    return string.format("/way %s %.2f %.2f%s", zone, w.x * 100, w.y * 100, w.title and (" " .. w.title) or "")
+    local title = w.title and plainTitle(w.title) or ""
+    return string.format("/way %s %.2f %.2f%s", zone, w.x * 100, w.y * 100, title ~= "" and (" " .. title) or "")
 end
 function M:Share(w)
     local ch = groupChannel()
@@ -627,7 +660,8 @@ WK:On("PLAYER_LOGIN", function()
     if not M:Config().keep then wipe(M:List()) end
     C_Timer.After(4, function()
         local g = G()
-        if #M:List() > 0 and not g.target then M:Go() end
+        -- avant, une file mise en pause repartait toute seule après un /reload
+        if #M:List() > 0 and not g.target and not M:IsPaused() then M:Go() end
     end)
 end)
 WK:On("ADDON_LOADED", function(name) if name == "TomTom" then M:HookTomTom() end end)

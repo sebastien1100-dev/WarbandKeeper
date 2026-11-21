@@ -266,6 +266,8 @@ local function onTooltip(tt, data)
     if not id and tt.GetItem then local _, link = tt:GetItem(); id = link and WK:ParseItemID(link) end
     if not id then return end
     local r1, g1, b1 = UI:Accent()
+    -- avant, gris en dur (0.62, 0.64, 0.67) : couleur atténuée du thème
+    local mr, mg, mb = UI.RGB(C.muted)
     local level = (UnitLevel and UnitLevel("player")) or 1
     local hit = M.byItem[id]
     if hit then
@@ -274,7 +276,7 @@ local function onTooltip(tt, data)
         if o.steps or o.enchant then
             tt:AddLine(string.format(T("Camp : %s pour toi (niveau %d)"), eff, level), r1, g1, b1, true)
             local nxt = M:NextSteps(o, level)
-            if nxt then tt:AddLine(nxt, 0.62, 0.64, 0.67, true) end
+            if nxt then tt:AddLine(nxt, mr, mg, mb, true) end
         elseif eff then
             tt:AddLine(string.format(T("Camp : %s"), eff), r1, g1, b1, true)
         end
@@ -284,9 +286,9 @@ local function onTooltip(tt, data)
             else tt:AddLine(string.format(T("Ne se cumule pas avec %s"), T(o.exclLabel)), C.negative[1], C.negative[2], C.negative[3], true) end
         end
         if tier == 1 and o.ids[2] then
-            tt:AddLine(string.format(T("Remplacé par %s (140) et %s (300), avec le même effet"), M:Name(o, 2), M:Name(o, 3)), 0.62, 0.64, 0.67, true)
+            tt:AddLine(string.format(T("Remplacé par %s (140) et %s (300), avec le même effet"), M:Name(o, 2), M:Name(o, 3)), mr, mg, mb, true)
         elseif tier > 1 and o.ids[1] then
-            tt:AddLine(string.format(T("Remplace %s et garde son effet"), M:Name(o, 1)), 0.62, 0.64, 0.67, true)
+            tt:AddLine(string.format(T("Remplace %s et garde son effet"), M:Name(o, 1)), mr, mg, mb, true)
         end
     elseif M.fireByItem[id] then
         local fr = M.FIRES[M.fireByItem[id]]
@@ -297,7 +299,7 @@ local function onTooltip(tt, data)
     end
     local rem = M:Cooldown()
     if rem and rem > 0 then tt:AddLine(string.format(T("Prêt dans %s (recharge commune des objets de camp)"), UI:AgoShort(rem, true)), C.gold[1], C.gold[2], C.gold[3])
-    else tt:AddLine(T("Recharge commune des objets de camp : 1 h"), 0.62, 0.64, 0.67) end
+    else tt:AddLine(T("Recharge commune des objets de camp : 1 h"), mr, mg, mb) end
     tt:Show()
 end
 if TooltipDataProcessor and Enum and Enum.TooltipDataType then

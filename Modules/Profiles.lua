@@ -109,7 +109,15 @@ local function apply(snap, reset)
         if key == "qol" and live.fishing and fresh.fishing then
             fresh.fishing.savedSound, fresh.fishing.savedSoft = live.fishing.savedSound, live.fishing.savedSoft
         end
-        g[key] = fresh
+        -- avant, la table était remplacée (g[key] = fresh) : l'interface déjà construite gardait
+        -- l'ancienne et les réglages changés ensuite (sans recharger) étaient perdus ; on la remplit
+        -- maintenant en place (vider puis copier)
+        if g[key] then
+            for k in pairs(live) do live[k] = nil end
+            for k, v in pairs(fresh) do live[k] = v end
+        else
+            g[key] = fresh
+        end
         end
     end
     -- un profil capturé avant l'ajout d'un réglage n'en a pas la valeur par défaut

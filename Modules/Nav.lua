@@ -698,12 +698,37 @@ function M:WaypointNow()
             r.leg, r.idx = r.leg + 1, 1
             return self:WaypointNow()
         end
+        -- avant, cette étape n'était jamais recalculée : sans pierre prise, le guidage restait sur « prête ».
+        -- Éloigné de plus de 300 m du début de l'étape sans être en vol : nouveau calcul, une fois par écart
+        if not leg.sx then leg.sx, leg.sy = px, py end
+        if not leg.replanned and not (_G.UnitOnTaxi and _G.UnitOnTaxi("player")) and r.target
+            and dist(px, py, leg.sx, leg.sy) > 300 then
+            leg.replanned = true; lastReplan = _G.GetTime()
+            M:Plan(r.target)
+        end
         return nil, nil, leg.label .. "  ·  " .. T("prête"), nil
     elseif leg.kind == "fly" then
+        local onTaxi = _G.UnitOnTaxi and _G.UnitOnTaxi("player")
+        if onTaxi then leg.flew = true end
         -- arrivé près du point d'atterrissage : étape suivante
-        if dist(px, py, leg.bx, leg.by) < 80 and not (UnitOnTaxi and UnitOnTaxi("player")) then
+        if dist(px, py, leg.bx, leg.by) < 80 and not onTaxi then
             r.leg, r.idx = r.leg + 1, 1
             return self:WaypointNow()
+        end
+        -- avant, cette étape n'était jamais recalculée : posé ailleurs qu'au relais prévu (ou vol pas pris, parti
+        -- à plus de 300 m du maître de vol), le guidage restait sur le vol. Maintenant : posé à moins de 300 m du
+        -- relais = étape suivante ; plus loin, ou vol pas pris, nouveau calcul (une fois par écart)
+        if not onTaxi and not leg.replanned and r.target then
+            if not leg.sx then leg.sx, leg.sy = px, py end
+            local fromB = dist(px, py, leg.bx, leg.by)
+            if leg.flew and fromB <= 300 then
+                r.leg, r.idx = r.leg + 1, 1
+                return self:WaypointNow()
+            end
+            if (leg.flew and fromB > 300) or (not leg.flew and dist(px, py, leg.sx, leg.sy) > 300) then
+                leg.replanned = true; lastReplan = _G.GetTime()
+                M:Plan(r.target)
+            end
         end
         return leg.ax, leg.ay, string.format(T("Vol : %s » %s"), leg.from, leg.to), nil
     else

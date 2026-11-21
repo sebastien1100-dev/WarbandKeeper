@@ -3,6 +3,13 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.10 — 21/11/2026
+
+### Corrections
+- Une connexion coupée pendant un téléchargement ne peut plus abîmer le client ni l'addon : le fichier incomplet est refusé et effacé, un message propose de réessayer.
+- Le client ne se fige plus quelques secondes à l'ouverture ou après une déconnexion du jeu : la sauvegarde de l'addon est lue en arrière-plan.
+- Une sauvegarde de tes réglages interrompue (disque plein, fichier bloqué) ne laisse plus de fichier incomplet dans la liste et ne fait plus effacer une bonne sauvegarde.
+
 ## 1.9.9 — 21/11/2026
 
 ### Corrections

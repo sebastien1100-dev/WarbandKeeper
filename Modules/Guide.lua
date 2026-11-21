@@ -171,6 +171,44 @@ end
 -- Cible courante
 ---------------------------------------------------------------------------
 -- M.target = { map, x, y, cont, wx, wy, e, reason, kind }
+-- Le point du jeu (C_Map.GetUserWaypoint) est-il encore celui qu'on a posé ? Le joueur a pu poser le sien
+-- ou suivre une quête entre-temps. tracked = vrai : il faut aussi qu'il soit le point suivi (C_SuperTrack),
+-- condition pour que le repère du jeu (C_Navigation.GetFrame) soit le nôtre. Gardé 0,25 s.
+local function samePoint(pt, map, x, y)
+    if not (pt and pt.uiMapID and pt.position) then return false end
+    local px, py = pt.position.x, pt.position.y
+    if not (px and py) then return false end
+    if pt.uiMapID == map then return math.abs(px - x) < 0.002 and math.abs(py - y) < 0.002 end
+    -- carte différente (le jeu a pu poser le point sur la carte de la zone) : comparé en coordonnées monde
+    local c1, x1, y1 = M.ToWorld(pt.uiMapID, px, py)
+    local c2, x2, y2 = M.ToWorld(map, x, y)
+    return c1 and c1 == c2 and x1 and x2 and math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2) < 10 or false
+end
+local function userPointIs(map, x, y)
+    local CM = _G.C_Map
+    if not (CM and CM.GetUserWaypoint) then return false end
+    local ok, pt = pcall(CM.GetUserWaypoint)
+    return ok and samePoint(pt, map, x, y) or false
+end
+local ownCache = { at = -10 }
+function M:OwnsWaypoint(tracked)
+    local pos = self.placedWaypoint and self.placedPos
+    if not pos then return false end
+    local now = _G.GetTime and _G.GetTime() or 0
+    local c = ownCache
+    if now - c.at > 0.25 or now < c.at then
+        c.at = now
+        c.own = userPointIs(pos.map, pos.x, pos.y)
+        c.tracked = true
+        local ST = _G.C_SuperTrack
+        if c.own and ST and ST.IsSuperTrackingUserWaypoint then
+            local ok, v = pcall(ST.IsSuperTrackingUserWaypoint)
+            c.tracked = not ok or v ~= false
+        end
+    end
+    return c.own and (not tracked or c.tracked) or false
+end
+
 function M:Start(target, reason, kind)
     if not target then return false end
     target.reason, target.kind = reason, kind
@@ -181,6 +219,11 @@ function M:Start(target, reason, kind)
         pcall(C_Map.SetUserWaypoint, UiMapPoint.CreateFromCoordinates(target.map, target.x, target.y))
         if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then pcall(C_SuperTrack.SetSuperTrackedUserWaypoint, true) end
         self.placedWaypoint = true
+        -- position posée, retenue aussi dans la sauvegarde : après un /reload en plein guidage, le point du jeu
+        -- resté là est retiré à la connexion s'il n'a pas bougé (avant, il restait sur la carte)
+        self.placedPos = { map = target.map, x = target.x, y = target.y }
+        if WK.DB and WK.DB.global then WK.DB.global.guideWp = { target.map, target.x, target.y } end
+        ownCache.at = -10
     end
     -- trajet qui suit les chemins connus (Modules/Nav.lua), calculé en arrière-plan ; nouveaux essais remis à
     -- zéro (une cible rendue après un /way ou le retour au corps gardait ses essais déjà comptés)
@@ -202,8 +245,14 @@ function M:Stop()
         if W and W.Paused then _G.C_Timer.After(0, function() W:Paused() end) end
     end
     if WK.modules.Nav then WK.modules.Nav:Clear() end
-    if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint then pcall(C_Map.ClearUserWaypoint) end
-    self.placedWaypoint = nil
+    -- avant, le point du jeu était toujours effacé, même quand le joueur en avait posé un autre (ou suivait une
+    -- quête) entre-temps : il n'est effacé que s'il est encore le nôtre
+    ownCache.at = -10
+    if self.placedWaypoint and C_Map and C_Map.ClearUserWaypoint and self:OwnsWaypoint() then
+        pcall(C_Map.ClearUserWaypoint)
+    end
+    self.placedWaypoint, self.placedPos = nil, nil
+    if WK.DB and WK.DB.global then WK.DB.global.guideWp = nil end
     if self.OnTarget then self:OnTarget() end
     -- (Nav:Clear redessine déjà la carte via RefreshNavRoute : pas un second redessin complet)
     if self.Redraw and not (WK.modules.Nav and WK.UI.RefreshNavRoute) then self:Redraw() end
@@ -365,6 +414,21 @@ end)
 function M:OnLogin()
     self:Config()
     if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(10, function() M:Check() end) end
+    -- /reload en plein guidage : le point posé par l'addon restait sur la carte du jeu. Quelques secondes après
+    -- la connexion (après la reprise d'une file /way), il est effacé s'il est encore à la même place et
+    -- qu'aucun guidage n'a repris
+    if _G.C_Timer and _G.C_Timer.After then
+        _G.C_Timer.After(6, function()
+            local g = WK.DB and WK.DB.global
+            local w = g and g.guideWp
+            if not w or M.target then return end
+            g.guideWp = nil
+            if type(w) == "table" and w[1] and w[2] and w[3] and userPointIs(w[1], w[2], w[3])
+                and _G.C_Map and _G.C_Map.ClearUserWaypoint then
+                pcall(_G.C_Map.ClearUserWaypoint)
+            end
+        end)
+    end
 end
 
 ---------------------------------------------------------------------------

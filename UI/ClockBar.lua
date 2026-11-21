@@ -35,7 +35,8 @@ local function classColor(token, localized)
     end
     local c = token and RAID_CLASS_COLORS and RAID_CLASS_COLORS[token]
     if c then return string.format("|cff%02x%02x%02x", c.r * 255, c.g * 255, c.b * 255) end
-    return "|cffd0d0d0"
+    -- avant, couleurs de ce fichier en dur (gris, rouge, jaune, bleu, vert) : celles du thème maintenant
+    return UI:Hex(C.muted)
 end
 -- point de faction (bleu Alliance, rouge Horde, gris inconnu) : texture en ligne
 local function dot(faction)
@@ -44,14 +45,16 @@ local function dot(faction)
     return string.format("|T%scircle:8:8:0:0:64:64:0:64:0:64:%d:%d:%d|t", UI.MEDIA, r, g, b)
 end
 local function tag(afk, dnd)
-    if dnd then return "  |cffe26060" .. T("occupé") .. "|r" end
-    if afk then return "  |cfff5d76e" .. T("absent") .. "|r" end
+    if dnd then return "  " .. UI:Hex(C.negative) .. T("occupé") .. "|r" end
+    if afk then return "  " .. UI:Hex(C.warning) .. T("absent") .. "|r" end
     return ""
 end
+-- avant, les noms en cyrillique des infobulles Amis / Guilde s'affichaient en carrés : transcrits par WK.Latin
 local function short(n)
-    if Ambiguate then return Ambiguate(n, "short") end
-    return (n:gsub("%-.*$", ""))
+    if Ambiguate then n = Ambiguate(n, "short") else n = (n:gsub("%-.*$", "")) end
+    return WK.Latin and WK.Latin(n) or n
 end
+local function latin(n) return WK.Latin and WK.Latin(n) or n end
 local MAX_LINES = 15
 local function friendsTooltip(tt)
     local myFac = UnitFactionGroup and UnitFactionGroup("player")
@@ -83,44 +86,44 @@ local function friendsTooltip(tt)
                 local acct = a.accountName or ""
                 if g.clientProgram == "WoW" and g.characterName then
                     -- en jeu sur WoW : en haut, avec les amis du jeu
-                    table.insert(lines, { level = g.characterLevel, left = dot(g.factionName) .. " " .. classColor(nil, g.className) .. g.characterName .. "|r  |cff5cc8ff" .. acct .. "|r" .. tag(a.isAFK, a.isDND),
+                    table.insert(lines, { level = g.characterLevel, left = dot(g.factionName) .. " " .. classColor(nil, g.className) .. latin(g.characterName) .. "|r  " .. UI:Hex(C.info) .. latin(acct) .. "|r" .. tag(a.isAFK, a.isDND),
                                        right = g.areaName or g.richPresence or "" })
                 else
-                    table.insert(bn, { left = dot(nil) .. " |cffd0d0d0" .. acct .. "|r" .. tag(a.isAFK, a.isDND), right = T("Battle.net") })
+                    table.insert(bn, { left = dot(nil) .. " " .. UI:Hex(C.muted) .. latin(acct) .. "|r" .. tag(a.isAFK, a.isDND), right = T("Battle.net") })
                 end
             end
         end
     end
     local total = #lines + #bn
     tt:SetText(T("Amis"), 1, 1, 1)
-    tt:AddLine(string.format(total > 1 and T("%d en ligne") or T("%d en ligne"), total), 0.49, 0.85, 0.34)
+    tt:AddLine(string.format(total > 1 and T("%d en ligne") or T("%d en ligne"), total), UI.RGB(C.positive))
     local shown = 0
     local function put(e)
         if shown >= MAX_LINES then return end
         shown = shown + 1
-        tt:AddDoubleLine((e.level and e.level > 0 and ("|cffc9ccd2" .. e.level .. "|r  ") or "      ") .. e.left, e.right, 1, 1, 1, 0.55, 0.57, 0.6)
+        tt:AddDoubleLine((e.level and e.level > 0 and (UI:Hex(C.muted) .. e.level .. "|r  ") or "      ") .. e.left, e.right, 1, 1, 1, UI.RGB(C.muted))
     end
     for _, e in ipairs(lines) do put(e) end
     if #bn > 0 and shown < MAX_LINES then
         tt:AddLine(" ")
-        tt:AddLine(T("BATTLE.NET · HORS DE WOW"), 0.55, 0.57, 0.6)
+        tt:AddLine(T("BATTLE.NET · HORS DE WOW"), UI.RGB(C.muted))
         for _, e in ipairs(bn) do put(e) end
     end
-    if total > shown then tt:AddLine(string.format(T("+ %d autre(s)"), total - shown), 0.55, 0.57, 0.6) end
-    if total == 0 then tt:AddLine(T("Personne en ligne."), 0.55, 0.57, 0.6) end
+    if total > shown then tt:AddLine(string.format(T("+ %d autre(s)"), total - shown), UI.RGB(C.muted)) end
+    if total == 0 then tt:AddLine(T("Personne en ligne."), UI.RGB(C.muted)) end
     tt:AddLine(" ")
-    tt:AddLine(T("Clic : liste d'amis"), 0.42, 0.44, 0.47)
+    tt:AddLine(T("Clic : liste d'amis"), UI.RGB(C.dim))
 end
 local function guildTooltip(tt)
     if not (IsInGuild and IsInGuild() and GetNumGuildMembers and GetGuildRosterInfo) then
         tt:SetText(T("Guilde"), 1, 1, 1)
-        tt:AddLine(T("Pas de guilde"), 0.55, 0.57, 0.6)
+        tt:AddLine(T("Pas de guilde"), UI.RGB(C.muted))
         return
     end
     local gname = GetGuildInfo and GetGuildInfo("player") or T("Guilde")
     local total, online = GetNumGuildMembers()
     tt:SetText(gname, 1, 1, 1)
-    tt:AddLine(string.format(T("%d / %d en ligne"), online or 0, total or 0), 0.49, 0.85, 0.34)
+    tt:AddLine(string.format(T("%d / %d en ligne"), online or 0, total or 0), UI.RGB(C.positive))
     local ranks, order = {}, {}
     for i = 1, total or 0 do
         local name, rankName, rankIndex, level, class, zone, _, _, isOnline, status, classFile = GetGuildRosterInfo(i)
@@ -137,22 +140,22 @@ local function guildTooltip(tt)
     for _, idx in ipairs(order) do
         local r = ranks[idx]
         if shown >= MAXG then break end
-        tt:AddDoubleLine(UI:Upper(r.name), tostring(#r.list), 0.55, 0.57, 0.6, 0.55, 0.57, 0.6)
+        tt:AddDoubleLine(UI:Upper(r.name), tostring(#r.list), C.muted[1], C.muted[2], C.muted[3], UI.RGB(C.muted))
         table.sort(r.list, function(a, b) return (a.level or 0) > (b.level or 0) end)
         for _, e in ipairs(r.list) do
             if shown >= MAXG then break end
             shown = shown + 1
-            tt:AddDoubleLine("|cffc9ccd2" .. (e.level or "") .. "|r  " .. e.left, e.right, 1, 1, 1, 0.55, 0.57, 0.6)
+            tt:AddDoubleLine(UI:Hex(C.muted) .. (e.level or "") .. "|r  " .. e.left, e.right, 1, 1, 1, UI.RGB(C.muted))
         end
     end
-    if (online or 0) > shown then tt:AddLine(string.format(T("+ %d autre(s)"), online - shown), 0.55, 0.57, 0.6) end
+    if (online or 0) > shown then tt:AddLine(string.format(T("+ %d autre(s)"), online - shown), UI.RGB(C.muted)) end
     local motd = GetGuildRosterMOTD and GetGuildRosterMOTD()
     if motd and motd ~= "" then
         tt:AddLine(" ")
-        tt:AddLine("« " .. motd .. " »", 0.62, 0.64, 0.68, true)
+        tt:AddLine("« " .. motd .. " »", C.muted[1], C.muted[2], C.muted[3], true)
     end
     tt:AddLine(" ")
-    tt:AddLine(T("Clic : fenêtre de guilde"), 0.42, 0.44, 0.47)
+    tt:AddLine(T("Clic : fenêtre de guilde"), UI.RGB(C.dim))
 end
 
 local SHORTCUTS = {

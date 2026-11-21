@@ -148,16 +148,13 @@ function UI:DrawWaypoints(cv, mapID, w, h)
     for i, wp in ipairs(W():List()) do
         local x, y
         if wp.map == mapID then x, y = wp.x, wp.y
-        elseif C_Map and C_Map.GetMapPosFromWorldPos and CreateVector2D then
+        elseif UI.WorldToMap then
+            -- avant, GetMapPosFromWorldPos était appelé directement : faux sur la carte d'Azeroth (points mal
+            -- placés). UI.WorldToMap (UI/NavRoute.lua) gère cette carte, comme le repère du guidage
             local cont, wx, wy = WK.modules.Guide.ToWorld(wp.map, wp.x, wp.y)
-            if cont then
-                local ok, _, pos = pcall(C_Map.GetMapPosFromWorldPos, cont, CreateVector2D(wx, wy), mapID)
-                if ok and pos then
-                    x, y = pos.x, pos.y
-                    if pos.GetXY then x, y = pos:GetXY() end
-                    if x and (x < 0 or x > 1 or y < 0 or y > 1) then x = nil end
-                end
-            end
+            if cont then x, y = UI.WorldToMap(cont, wx, wy, mapID) end
+            if x and y and (x < 0 or x > 1 or y < 0 or y > 1) then x = nil end
+            if not y then x = nil end
         end
         if x then
             n = n + 1

@@ -272,16 +272,16 @@ local ORE_WORDS = { -- du plus précis au plus général (« vrai-argent » avan
     { "thorium", 245 }, { "mithril", 175 }, { "cuivre", 1 }, { "copper", 1 }, { "étain", 65 }, { "tin ", 65 },
     { "argent", 75 }, { "silver", 75 }, { "fer", 125 }, { "iron", 125 }, { "or", 155 }, { "gold", 155 },
 }
-local herbNames
+-- avant, la liste était figée dès qu'un seul nom était connu (les herbes pas encore chargées restaient sans
+-- compétence) ; elle est refaite tant qu'il manque des noms
+local herbNames, herbMissing
 local function herbReq(name)
-    if not herbNames then
-        herbNames = {}
+    if not herbNames or herbMissing then
+        herbNames, herbMissing = {}, false
         for _, d in ipairs(M.DATA.herb or {}) do
             local n = WK.GetItemInfo(d.id)
-            if n then herbNames[n:lower()] = d.req end
+            if n then herbNames[n:lower()] = d.req else herbMissing = true end
         end
-        -- noms pas encore chargés : on réessaiera
-        if not next(herbNames) then herbNames = nil; return nil end
     end
     return herbNames[name]
 end

@@ -17,20 +17,29 @@ local function plateNpc(unit)
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
     return kind == "Creature" and tonumber(id) or nil
 end
-local wanted, wantedAt = {}, 0
+-- avant, la liste était refaite chaque seconde (tout le journal relu) et forçait le chargement des données à
+-- la demande dès la connexion ; elle n'est maintenant refaite qu'après un QUEST_LOG_UPDATE qui change
+-- l'empreinte du journal (QuestTrack.LogSignature) ou l'arrivée des données
+local wanted, wantedSig, wantedDirty = {}, nil, true
+WK:On("QUEST_LOG_UPDATE", function() wantedDirty = true end)
+WK:OnDataLoaded(function() wantedDirty = true; wantedSig = nil end)
 local function wantedNpcs()
-    local now = _G.GetTime and _G.GetTime() or 0
-    if now - wantedAt < 1 then return wanted end
-    wantedAt = now
-    _G.wipe(wanted)
+    if not wantedDirty then return wanted end
+    wantedDirty = false
     local q = Q()
-    local col = { UI:Accent() }
+    local sig = q.LogSignature and q.LogSignature()
+    if sig and sig == wantedSig then return wanted end
+    wantedSig = sig
+    _G.wipe(wanted)
+    -- préchargement coupé et données pas là : seulement ce qui est déjà chargé (rien n'est chargé pour ça)
+    local cfg = WK.DataConfig and WK.DataConfig() or {}
+    local textOnly = not WK.dataLoaded and cfg.preload == false
     for _, l in ipairs(q:LogQuests()) do
         local qid = l.id
         if not l.complete and not q:IsComplete(qid) then
-            for _, o in ipairs(q:Objectives(qid)) do
+            for _, o in ipairs(q:Objectives(qid, textOnly)) do
                 if not o.done then
-                    for _, id in ipairs(q:ObjectiveNpcs(o)) do if not wanted[id] then wanted[id] = col end end
+                    for _, id in ipairs(q:ObjectiveNpcs(o)) do wanted[id] = true end
                 end
             end
         end
@@ -42,16 +51,17 @@ local function updateMarks()
     local c = Q():Config()
     if c.plateMarks == false or not WK:FeatureOn("quests") then return end
     if not (_G.C_NamePlate and _G.C_NamePlate.GetNamePlates) then return end
+    -- aucune plaque de nom : rien à faire (ni journal relu, ni données chargées)
+    local ok, plates = pcall(_G.C_NamePlate.GetNamePlates)
+    if not ok or type(plates) ~= "table" or not next(plates) then return end
     local w = wantedNpcs()
     if not next(w) then return end
+    local col = { UI:Accent() }
     local n = 0
-    local ok, plates = pcall(_G.C_NamePlate.GetNamePlates)
-    if not ok then return end
-    for _, p in ipairs(plates or {}) do
+    for _, p in ipairs(plates) do
         local unit = p.namePlateUnitToken or (p.UnitFrame and p.UnitFrame.unit)
         local id = unit and plateNpc(unit)
-        local col = id and w[id]
-        if col and not (_G.UnitIsDead and _G.UnitIsDead(unit)) then
+        if id and w[id] and not (_G.UnitIsDead and _G.UnitIsDead(unit)) then
             n = n + 1
             local m = marks[n]
             if not m then

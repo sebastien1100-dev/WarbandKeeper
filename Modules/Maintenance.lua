@@ -147,8 +147,10 @@ function M:Since()
     return v
 end
 function M:Report()
+    -- avant, « select(4, GetBuildInfo and GetBuildInfo() or nil) » ne gardait que la 1re valeur : toujours nil
+    local build = _G.GetBuildInfo and select(4, _G.GetBuildInfo())
     local out = { string.format("Warband Keeper %s · WoW %s · %s", tostring(WK.version),
-        tostring(select(4, GetBuildInfo and GetBuildInfo() or nil) or "?"), tostring(GetLocale and GetLocale() or "?")) }
+        tostring(build or "?"), tostring(GetLocale and GetLocale() or "?")) }
     for _, e in ipairs(self:List()) do
         table.insert(out, string.format("[x%d] %s (%s, %s)", e.n or 1, e.m, e.v or "?", date and date("%d/%m %H:%M", e.last or 0) or ""))
         if e.s and e.s ~= "" then

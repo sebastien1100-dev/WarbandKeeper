@@ -13,13 +13,39 @@ local function inCombat() return InCombatLockdown and InCombatLockdown() end
 -- Panneaux qui contiennent un bouton protégé : on ne peut pas les cacher en combat ; ils deviennent
 -- invisibles et sont cachés pour de bon à la sortie du combat
 local hideLater = {}
+-- avant, le panneau seulement rendu invisible (SetAlpha(0)) avalait encore les clics : la souris du panneau
+-- et de ses enfants non protégés est coupée en combat, et rendue à la réouverture (ou à la sortie du combat)
+local mouseOff = {} -- [panneau] = { cadres dont la souris a été coupée }
+local function explicitProtected(fr)
+    if not fr.IsProtected then return false end
+    local _, explicit = fr:IsProtected()
+    return explicit and true or false
+end
+local function muteMouse(f)
+    local list = mouseOff[f] or {}
+    mouseOff[f] = list
+    local function walk(fr)
+        if explicitProtected(fr) then return end
+        local on = fr.IsMouseEnabled and fr:IsMouseEnabled()
+        if on and pcall(fr.EnableMouse, fr, false) then table.insert(list, fr) end
+        if fr.GetChildren then for _, c in ipairs({ fr:GetChildren() }) do walk(c) end end
+    end
+    walk(f)
+end
+local function restoreMouse(f)
+    local list = mouseOff[f]
+    if not list then return end
+    mouseOff[f] = nil
+    for _, fr in ipairs(list) do pcall(fr.EnableMouse, fr, true) end
+end
 local function safeHide(f)
     if not inCombat() then f:Hide() return end
     f:SetAlpha(0)
+    muteMouse(f)
     hideLater[f] = true
 end
 WK:On("PLAYER_REGEN_ENABLED", function()
-    for f in pairs(hideLater) do f:Hide(); f:SetAlpha(1) end
+    for f in pairs(hideLater) do f:Hide(); f:SetAlpha(1); restoreMouse(f) end
     wipe(hideLater)
 end)
 local ROW = 30
@@ -212,7 +238,7 @@ function UI:ToggleDEPanel(show, anchor)
     de:ClearAllPoints()
     if anchor then de:SetPoint("TOPRIGHT", anchor, "TOPLEFT", -8, 0); UI:MatchHost(de, anchor)
     else de:SetPoint("CENTER", -200, 60); de:SetFrameStrata("HIGH") end
-    hideLater[de] = nil; de:SetAlpha(1)
+    hideLater[de] = nil; de:SetAlpha(1); restoreMouse(de)
     de:Refresh(); de:Show()
 end
 
@@ -331,7 +357,7 @@ WK:On("TRADE_SHOW", function()
     trade.pick = nil
     trade:ClearAllPoints(); trade:SetPoint("TOPLEFT", TradeFrame, "TOPRIGHT", 6, 0)
     UI:MatchHost(trade, TradeFrame)
-    hideLater[trade] = nil; trade:SetAlpha(1)
+    hideLater[trade] = nil; trade:SetAlpha(1); restoreMouse(trade)
     trade:Refresh(); trade:Show()
 end)
 WK:On("TRADE_TARGET_ITEM_CHANGED", function() if trade and trade:IsShown() and not inCombat() then trade:Refresh() end end)

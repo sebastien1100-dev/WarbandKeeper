@@ -1798,9 +1798,19 @@ local function placeReload(s)
         s:Hide()
     end
 end
+-- boutons demandés en combat : avant, SecureReload rendait nil et rien ne réessayait (bouton Recharger
+-- sans effet jusqu'au prochain /reload) ; ils sont maintenant mis en file et équipés à la sortie du combat
+local pendingReload = {}
 function UI:SecureReload(b)
     if b.reloadSec then return b.reloadSec end
-    if InCombatLockdown and InCombatLockdown() then return nil end
+    if InCombatLockdown and InCombatLockdown() then
+        if not pendingReload[b] then pendingReload[b] = true; table.insert(pendingReload, b) end
+        return nil
+    end
+    if pendingReload[b] then
+        pendingReload[b] = nil
+        for i = #pendingReload, 1, -1 do if pendingReload[i] == b then table.remove(pendingReload, i) end end
+    end
     local s = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
     s.owner = b
     -- clic de souris : au relâchement (avec « touche enfoncée » du jeu, un clic ne partait pas)
@@ -1847,7 +1857,13 @@ end
 
 -- en combat : retirés (un bouton protégé ne se déplace ni ne se cache plus ensuite) ; remis après
 WK:On("PLAYER_REGEN_DISABLED", function() for _, s in ipairs(reloads) do s:Hide(); s:ClearAllPoints() end end)
-WK:On("PLAYER_REGEN_ENABLED", function() for _, s in ipairs(reloads) do placeReload(s) end end)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    for _, s in ipairs(reloads) do placeReload(s) end
+    -- boutons demandés pendant le combat : le bouton protégé est posé maintenant
+    local list = {}
+    for i = 1, #pendingReload do list[i] = pendingReload[i] end
+    for _, b in ipairs(list) do UI:SecureReload(b) end
+end)
 
 -- Petite fenêtre « recharger maintenant ? » (changement de profil…) : le bouton recharge par /reload protégé.
 local reloadAsk

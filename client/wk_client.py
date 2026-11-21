@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.9"
+CLIENT_VERSION = "1.9.10"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -489,62 +489,87 @@ def _top_key(text, key):
 
 
 _chars_cache = {}
+_dash_cache = {}
+_save_lock = threading.Lock()
+
+
+def _save_file(addons):
+    """(chemin, mtime) du WarbandKeeper.lua le plus récent, ou (None, None)."""
+    files = [p for p in saved_variables(addons) if p.endswith(".lua")] if addons else []
+    if not files:
+        return None, None
+    try:
+        path = max(files, key=os.path.getmtime)
+        return path, os.path.getmtime(path)
+    except OSError:  # fichier remplacé par le jeu à cet instant
+        return None, None
+
+
+def save_state(addons):
+    """Ce que le cache sait déjà, sans lire le fichier (sûr sur le thread Tk) : (résumé, persos, à jour).
+    « à jour » est faux quand WarbandKeeper.lua a changé ou n'a pas encore été lu : App.load_save le relit
+    en arrière-plan ; en attendant, la lecture précédente du même fichier est rendue (ou rien)."""
+    path, mt = _save_file(addons)
+    if path is None:
+        return None, [], True
+    d, c = _dash_cache, _chars_cache
+    fresh = d.get("path") == path and d.get("mt") == mt and c.get("path") == path and c.get("mt") == mt
+    return (d.get("dash") if d.get("path") == path else None), (c.get("list") if c.get("path") == path else []) or [], fresh
+
+
+def read_save(addons):
+    """Lit et analyse WarbandKeeper.lua (plusieurs Mo : jamais sur le thread Tk, voir App.load_save), une
+    seule fois par version du fichier (cache par mtime) : (résumé WarbandKeeperDB.clientDash ou None,
+    persos du compte [{ name, cls, level, money, seen }])."""
+    with _save_lock:
+        path, mt = _save_file(addons)
+        if path is None:
+            return None, []
+        if _dash_cache.get("path") == path and _dash_cache.get("mt") == mt \
+                and _chars_cache.get("path") == path and _chars_cache.get("mt") == mt:
+            return _dash_cache["dash"], _chars_cache["list"]
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                text = f.read()
+        except OSError:
+            text = ""
+        dash = None
+        try:
+            i = _top_key(text, "clientDash")
+            if i is not None:
+                it = _lua_tokens(text, i)
+                dash = _lua_value(it, next(it))
+        except Exception:
+            dash = None
+        out = []
+        try:
+            i = _top_key(text, "characters")
+            if i is not None:
+                it = _lua_tokens(text, i)
+                chars = _lua_value(it, next(it))
+                for key, c in (chars or {}).items():
+                    # un perso : clé « Nom-Royaume » et une fiche (sinon ce n'est pas un perso)
+                    if isinstance(c, dict) and isinstance(key, str) and "-" in key:
+                        name = c.get("mailName") or c.get("fullName") or c.get("name") or str(key).split("-")[0].strip()
+                        out.append({"name": name, "cls": c.get("class") or "", "level": c.get("level") or 0,
+                                    "money": c.get("money") or 0, "seen": c.get("lastSeen") or 0})
+        except Exception:
+            out = []
+        out.sort(key=lambda e: -(e["seen"] or 0))
+        _dash_cache.update(path=path, mt=mt, dash=dash)
+        _chars_cache.update(path=path, mt=mt, list=out)
+        return dash, out
 
 
 def read_characters(addons):
-    """Persos du compte lus dans WarbandKeeper.lua (le plus récent) : [{ name, cls, level, money, seen }]."""
-    files = [p for p in saved_variables(addons) if p.endswith(".lua")]
-    if not files:
-        return []
-    path = max(files, key=os.path.getmtime)
-    mt = os.path.getmtime(path)
-    if _chars_cache.get("path") == path and _chars_cache.get("mt") == mt:
-        return _chars_cache["list"]
-    out = []
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            text = f.read()
-        i = _top_key(text, "characters")
-        if i is not None:
-            it = _lua_tokens(text, i)
-            chars = _lua_value(it, next(it))
-            for key, c in (chars or {}).items():
-                # un perso : clé « Nom-Royaume » et une fiche (sinon ce n'est pas un perso)
-                if isinstance(c, dict) and isinstance(key, str) and "-" in key:
-                    name = c.get("mailName") or c.get("fullName") or c.get("name") or str(key).split("-")[0].strip()
-                    out.append({"name": name, "cls": c.get("class") or "", "level": c.get("level") or 0,
-                                "money": c.get("money") or 0, "seen": c.get("lastSeen") or 0})
-    except Exception:
-        out = []
-    out.sort(key=lambda e: -(e["seen"] or 0))
-    _chars_cache.update(path=path, mt=mt, list=out)
-    return out
-
-
-_dash_cache = {}
+    """Persos du compte lus dans WarbandKeeper.lua (le plus récent). Lecture bloquante : voir save_state."""
+    return read_save(addons)[1]
 
 
 def read_dash(addons):
-    """Résumé écrit par l'addon à la déconnexion (WarbandKeeperDB.clientDash, Modules/ClientDash.lua), ou None."""
-    files = [p for p in saved_variables(addons) if p.endswith(".lua")] if addons else []
-    if not files:
-        return None
-    path = max(files, key=os.path.getmtime)
-    mt = os.path.getmtime(path)
-    if _dash_cache.get("path") == path and _dash_cache.get("mt") == mt:
-        return _dash_cache["dash"]
-    dash = None
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            text = f.read()
-        i = _top_key(text, "clientDash")
-        if i is not None:
-            it = _lua_tokens(text, i)
-            dash = _lua_value(it, next(it))
-    except Exception:
-        dash = None
-    _dash_cache.update(path=path, mt=mt, dash=dash)
-    return dash
+    """Résumé écrit par l'addon à la déconnexion (WarbandKeeperDB.clientDash, Modules/ClientDash.lua), ou None.
+    Lecture bloquante : sur le thread Tk, passer par save_state / App.load_save."""
+    return read_save(addons)[0]
 
 
 def lua_list(t):
@@ -842,18 +867,43 @@ class GitHub:
                 r = self._open(loc, accept="application/octet-stream", auth=False)
         else:
             r = self._open(asset["browser_download_url"], accept="application/octet-stream", auth=False)
-        total = int(r.headers.get("Content-Length") or asset.get("size") or 0)
+        # taille attendue : Content-Length (s'il est donné) et taille de l'asset annoncée par GitHub ; une
+        # connexion coupée rend une réponse plus courte sans erreur : le fichier partiel est refusé et effacé
+        try:
+            sent = int(r.headers.get("Content-Length") or 0)
+        except (TypeError, ValueError):
+            sent = 0
+        try:
+            size = int(asset.get("size") or 0)
+        except (TypeError, ValueError):
+            size = 0
+        total = sent or size
         done = 0
-        with open(dest, "wb") as f:
-            while True:
-                chunk = r.read(65536)
-                if not chunk:
-                    break
-                f.write(chunk)
-                done += len(chunk)
-                if progress and total:
-                    progress(done / total)
-        r.close()
+        try:
+            try:
+                with open(dest, "wb") as f:
+                    while True:
+                        chunk = r.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        done += len(chunk)
+                        if progress and total:
+                            progress(min(1.0, done / total))
+            finally:
+                r.close()
+            want = [n for n in (sent, size) if n]
+            if not done or any(done != n for n in want):
+                raise NetError("Téléchargement incomplet de %s (%d octets reçus sur %d) : connexion coupée ? Réessaie."
+                               % (asset.get("name") or "fichier", done, max(want or [0])))
+        except BaseException as e:
+            try:
+                os.remove(dest)
+            except OSError:
+                pass
+            if isinstance(e, (urllib.error.URLError, OSError)) and not isinstance(e, NetError):
+                raise NetError("Téléchargement interrompu (%s). Réessaie." % getattr(e, "reason", e))
+            raise
 
 
 def parse_client_notes(text):
@@ -926,10 +976,30 @@ def backup_saved_variables(addons, version, keep=15, why="avant mise à jour"):
     root = game_dir(addons)
     name = "Reglages-%s-v%s.zip" % (datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), safe_name(version))
     path = os.path.join(backups_dir(), name)
-    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("_info.txt", "Warband Keeper %s · %s · %s\n" % (version, why, datetime.now().strftime("%d/%m/%Y %H:%M")))
-        for f in files:
-            z.write(f, os.path.relpath(f, root))
+    # écrite à côté (« .tmp ») puis renommée : une sauvegarde interrompue (disque plein, fichier verrouillé)
+    # ne laisse jamais un zip incomplet compté parmi les sauvegardes
+    tmp = path + ".tmp"
+    try:
+        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+            z.writestr("_info.txt", "Warband Keeper %s · %s · %s\n" % (version, why, datetime.now().strftime("%d/%m/%Y %H:%M")))
+            for f in files:
+                z.write(f, os.path.relpath(f, root))
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
+    # seules les sauvegardes complètes comptent ; un « .tmp » laissé par un client fermé en pleine sauvegarde
+    # (plus d'une heure) est effacé
+    for n in os.listdir(backups_dir()):
+        q = os.path.join(backups_dir(), n)
+        try:
+            if n.endswith(".zip.tmp") and time.time() - os.path.getmtime(q) > 3600:
+                os.remove(q)
+        except OSError:
+            pass
     olds = sorted(list_backups(), key=lambda b: b["time"], reverse=True)
     for b in olds[keep:]:
         try:
@@ -950,7 +1020,7 @@ def list_backups():
                     info = z.read("_info.txt").decode("utf-8", "replace").strip()
                     count = len([x for x in z.namelist() if x.endswith(".lua")])
             except (OSError, KeyError, zipfile.BadZipFile):
-                count = 0
+                continue  # zip incomplet ou abîmé : ce n'est pas une sauvegarde (ni montrée, ni comptée)
             out.append({"path": p, "name": n, "time": os.path.getmtime(p), "info": info, "count": count})
     out.sort(key=lambda b: b["time"], reverse=True)
     return out
@@ -1667,13 +1737,22 @@ class DashPage(Page):
         self.fill()
 
     def fill(self, force=False):
-        dash = read_dash(self.app.addons)
-        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30), id(self.app.dataLog), self.app.installed)
+        # rien n'est lu ici : la sauvegarde (plusieurs Mo) est relue en arrière-plan quand elle a changé
+        # (App.load_save), puis la page est remplie au retour ; en attendant, la lecture précédente reste
+        dash, chars, fresh = save_state(self.app.addons)
+        if not fresh:
+            self.app.load_save()
+        waiting = dash is None and not fresh
+        key = (id(dash), self.app.addons, self.app.cfg.get("dashRange", 30), id(self.app.dataLog), self.app.installed, waiting)
         if key == self.key and not force:
             return
         self.key = key
         for w in self.body.winfo_children():
             w.destroy()
+        if waiting:
+            self.when.configure(text="")
+            label(self.body, "Lecture de la sauvegarde de l'addon…", fg="muted").pack(anchor="w")
+            return
         if not isinstance(dash, dict):
             self.when.configure(text="")
             label(self.body, "Rien à montrer pour l'instant : joue un perso avec l'addon 1.69 ou plus récent, puis déconnecte-toi "
@@ -1685,7 +1764,6 @@ class DashPage(Page):
         sess = dash.get("session") or {}
         auc = [a for a in lua_list(dash.get("auctions")) if isinstance(a, dict) and (a.get("exp") or 0) > now]
         mail = [m for m in lua_list(dash.get("mail")) if isinstance(m, dict)]
-        chars = read_characters(self.app.addons)
 
         # -- quatre chiffres clés
         kp = tk.Frame(self.body, bg=C["bg"])
@@ -2510,6 +2588,7 @@ class App:
         self.clientNotes, self.lastCheck, self.notified = None, 0, None
         self.dataLog = []  # journal des données (GitHub.data_log), lu avec les versions
         self.q = queue.Queue()
+        self.saveLoading, self.autoDash = False, False
         self.installs = []
         if not self.cfg["addons"] or not os.path.isdir(self.cfg["addons"]):
             self.installs = find_forever()
@@ -2521,7 +2600,11 @@ class App:
         if "--minimized" in sys.argv:
             # lancé avec Windows : réduit, il vérifie en arrière-plan
             self.root.after(150, self.minimize)
-        self.show("dash" if read_dash(self.cfg["addons"]) else "home")
+        # sauvegarde de l'addon lue en arrière-plan : le tableau de bord attend sa lecture ; s'il n'y a rien
+        # à montrer, on revient sur l'accueil (sauf si le joueur a déjà changé de page)
+        dash, _, fresh = save_state(self.addons)
+        self.show("dash" if (isinstance(dash, dict) or not fresh) else "home")
+        self.autoDash = not fresh
         self.state_changed()
         self.root.after(80, self.poll)
         if self.cfg["checkEvery"] != "manual":
@@ -2586,7 +2669,9 @@ class App:
         opts = self.cfg.get("notify") or {}
         if not self.addons:
             return []
-        dash = read_dash(self.addons)
+        dash, _, fresh = save_state(self.addons)  # jamais de lecture du fichier ici (thread Tk)
+        if not fresh:
+            self.load_save()
         sent = self.cfg.setdefault("notified", {})
         now = now or time.time()
         if opts.get("quiet") and quiet_now(now):
@@ -2778,6 +2863,7 @@ class App:
 
     def show(self, key):
         self.current = key
+        self.autoDash = False
         for k, p in self.pages.items():
             if k == key:
                 p.pack(fill="both", expand=True)
@@ -2979,6 +3065,30 @@ class App:
                 self.q.put(("done", done, None, e))
         threading.Thread(target=worker, daemon=True).start()
 
+    def load_save(self):
+        """Relit WarbandKeeper.lua en arrière-plan s'il a changé (une lecture à la fois) ; le tableau de bord
+        est rempli au retour, sur le thread Tk."""
+        addons = self.addons
+        if not addons or self.saveLoading or save_state(addons)[2]:
+            return
+        self.saveLoading = True
+
+        def done(res, err):
+            self.saveLoading = False
+            if err:
+                print("sauvegarde de l'addon illisible :", err)
+                return
+            if addons != self.addons:  # dossier changé pendant la lecture : relire le nouveau
+                return self.load_save()
+            dash = res[0] if res else None
+            if self.autoDash:
+                self.autoDash = False
+                if self.current == "dash" and not isinstance(dash, dict):
+                    return self.show("home")
+            if self.current == "dash":
+                self.pages["dash"].fill()
+        self.run(lambda: read_save(addons), done)
+
     def ui(self, fn, *a):
         self.q.put(("call", fn, a, None))
 
@@ -3140,9 +3250,16 @@ class App:
         self.toast("Téléchargement du client…")
 
         def done(_, err):
+            size = int(asset.get("size") or 0)
+            if not err and (not os.path.isfile(dest) or (size and os.path.getsize(dest) != size)):
+                err = NetError("le fichier reçu est incomplet")
             if err:
-                return self.toast("Échec du téléchargement du client.", "negative")
-            self_update(dest)
+                try:
+                    os.remove(dest)
+                except OSError:
+                    pass
+                return self.toast("Échec du téléchargement du client : %s" % err, "negative")
+            self_update(dest)  # seulement un exe complet : rien n'est remplacé sinon
             self.root.destroy()
         self.run(lambda: GitHub(self.cfg["token"]).download(asset, dest), done)
 

@@ -565,6 +565,9 @@ UI:RegisterPage({
                     row.lv:SetTextColor(unpack(l.level and levelColor(l.level, myLevel) or C.muted))
                     local col, label = stateInfo("log")
                     row.med:SetVertexColor(unpack(col)); row.mark:SetVertexColor(unpack(col))
+                    -- avant, une ligne reprise d'une quête de la base gardait sa pastille et son nom raccourci
+                    row.name:SetPoint("RIGHT", -190, 0)
+                    if row.pill then row.pill:Hide() end
                     row.name:SetText(l.title or ("#" .. l.id))
                     row.name:SetTextColor(unpack(C.text))
                     row.sub:SetText(l.complete and T("à rendre") or T("absente de la base · position donnée par le jeu"))

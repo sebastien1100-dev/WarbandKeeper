@@ -60,8 +60,15 @@ local function checkSlot(slot)
     if not _G.GetInventoryItemID or type(slot) ~= "number" then return end
     local before = worn[slot]
     worn[slot] = _G.GetInventoryItemID("player", slot)
-    if before and before ~= worn[slot] then
-        table.insert(unworn, { id = before, at = _G.GetTime and _G.GetTime() or 0 })
+    -- avant, la liste grossissait aussi hors session de farm (seul OnBags, en session, la vidait) : rien n'est
+    -- noté sans session, et les entrées de plus de 3 s sont purgées ici aussi
+    if before and before ~= worn[slot] and M:Active() then
+        local now = _G.GetTime and _G.GetTime() or 0
+        for i = #unworn, 1, -1 do
+            local at = unworn[i].at
+            if now - at > 3 or now < at then table.remove(unworn, i) end
+        end
+        table.insert(unworn, { id = before, at = now })
     end
 end
 WK:On("PLAYER_EQUIPMENT_CHANGED", checkSlot)

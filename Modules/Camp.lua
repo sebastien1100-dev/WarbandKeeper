@@ -3,7 +3,10 @@ local M = WK:NewModule("Camp")
 local T = function(s) return WK.T(s) end
 function M.Readable(v)
     local Q = WK.modules.QoL
-    return Q and Q.Readable and Q.Readable(v) or v
+    -- avant, « Q.Readable(v) or v » rendait la valeur masquée quand Readable répondait nil (comparaison
+    -- qui plantait) ; nil est maintenant rendu tel quel
+    if Q and Q.Readable then return Q.Readable(v) end
+    return v
 end
 
 -- Feux de camp de WoW Forever, en trois temps :
@@ -328,7 +331,10 @@ end
 
 local function readable(v)
     local Q = WK.modules.QoL
-    return Q and Q.Readable and Q.Readable(v) or v
+    -- avant, « Q.Readable(v) or v » rendait la valeur masquée quand Readable répondait nil (comparaison
+    -- qui plantait) ; nil est maintenant rendu tel quel
+    if Q and Q.Readable then return Q.Readable(v) end
+    return v
 end
 local function has(list, s)
     for _, n in ipairs(list) do if s:find(n, 1, true) then return true end end

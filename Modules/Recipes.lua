@@ -568,6 +568,11 @@ local function captureFromChat(text)
     if type(text) ~= "string" or not string.find(text, "|Htrade:", 1, true) then return end
     local link = string.match(text, "(|c%x+|Htrade:.-|h.-|h|r)") or string.match(text, "(|Htrade:.-|h.-|h)")
     if not link then return end
+    -- avant, le lien de métier d'un autre joueur reposté dans le chat était gardé comme le tien : seul un
+    -- lien qui porte notre GUID est maintenant retenu
+    local payload = string.match(link, "|Htrade:(.-)|h")
+    local guid = _G.UnitGUID and _G.UnitGUID("player")
+    if not payload or type(guid) ~= "string" or guid == "" or not string.find(payload, guid, 1, true) then return end
     local label = string.match(link, "|h%[?(.-)%]?|h") or ""
     for prof in pairs(WK.DB:Me().professions or {}) do
         if string.find(string.lower(label), string.lower(prof), 1, true) then

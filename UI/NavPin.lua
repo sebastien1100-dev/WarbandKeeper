@@ -172,8 +172,14 @@ local function update()
     end
     pin = pin or build()
     local f = pin
-    local nf, clamped = navFrame()
-    showGameMarker(false)
+    -- avant, l'épingle s'accrochait au repère du jeu même quand le point suivi n'était plus le nôtre (point posé
+    -- par le joueur, quête suivie) : elle montrait un autre lieu et ce repère restait invisible. Le repère du jeu
+    -- ne sert (et n'est caché) que si le point posé par l'addon est encore le point suivi ; sinon il est rendu
+    -- visible et l'épingle se place au bord de l'écran, dans la direction du lieu
+    local own = G.OwnsWaypoint and G:OwnsWaypoint(true)
+    local nf, clamped
+    if own then nf, clamped = navFrame() end
+    showGameMarker(not own)
     local atEdge = false
     if nf and not clamped then
         f:ClearAllPoints()

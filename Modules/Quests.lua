@@ -447,6 +447,10 @@ function M.AddLearned(byID_, byStarter_, mapOf_, meta)
         if not learned[id] then
             local list = row.inList and WK.QuestsDB and WK.QuestsDB[row.inList]
             for k = #(list or {}), 1, -1 do if list[k] == row then table.remove(list, k) end end
+            -- avant, elle restait dans les index (n°, donneur, zone) : retirée aussi
+            if byID_[id] == row then byID_[id] = nil; mapOf_[id] = nil end
+            local starters = row[12] and byStarter_[row[12]]
+            for k = #(starters or {}), 1, -1 do if starters[k] == row then table.remove(starters, k) end end
             learnedRows[id] = nil
         end
     end

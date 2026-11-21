@@ -8,6 +8,26 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.60", date = "21/11/2026",
+        fixed = {
+            "Hôtel des ventes : la liste « File de fabrication » ne redemande plus un objet que tu viens d'acheter (avant, la ligne revenait tant que le courrier n'était pas pris et l'objet pouvait être racheté).",
+            "Hôtel des ventes : un achat fait avec les boutons de la fenêtre du jeu n'est plus compté pour l'objet que l'addon attendait ; « Tout acheter » ne double plus un achat isolé en cours ; quelques erreurs Lua à l'achat corrigées.",
+            "Marchand : le « Réassort » ne rachète plus toute la quantité à chaque clic (le nombre déjà en sac n'était pas lu), et la proposition « Amélioration à porter » s'affiche de nouveau.",
+            "Objets verrouillés : un objet verrouillé à la main garde son verrou pendant qu'il est en vente à l'hôtel des ventes.",
+            "Guidage : le trajet est recalculé si tu ne prends pas ta pierre de foyer ou le vol prévu, ou si tu te poses loin du relais prévu (avant, il restait bloqué sur cette étape).",
+            "Points /way : avec l'ordre « au plus près », arriver à un point passe bien au suivant ; une file mise en pause ne repart plus après un /reload ; au-delà de 50 points, c'est le plus ancien qui part ; un point partagé au groupe n'envoie plus de codes de couleur ; les points sont au bon endroit sur la carte d'Azeroth.",
+            "Guidage : tes propres repères et les quêtes suivies ne sont plus effacés à la fin d'un guidage, l'épingle ne se colle plus à un autre point que celui de l'addon, et un repère laissé par un /reload en plein guidage est retiré.",
+            "Bénédictions : une ligne de la barre ne reste plus bloquée sur un joueur hors de portée ; les joueurs partis du groupe ne sont plus gardés en mémoire.",
+            "Donjons : le parcours partagé donne le bon chrono même une fois le donjon fini ; les boss facultatifs ne comptent plus dans « x/y boss » (un donjon fini n'affiche plus 5/6) ; la fenêtre des quêtes du donjon ne relit plus tout le journal toutes les 2 s.",
+            "Plans de talents : supprimer un plan pendant qu'on en modifie un autre ne fait plus modifier le mauvais plan.",
+            "Profils : changer de profil sans recharger ne fait plus perdre les réglages modifiés juste après.",
+            "Les boutons « Recharger » de la fenêtre ouverte pendant un combat fonctionnent une fois le combat fini.",
+            "Métiers : un lien de métier d'un autre joueur reposté dans le chat n'est plus enregistré comme le tien ; le panneau de désenchantement fermé en combat n'avale plus les clics.",
+            "Quêtes : les repères des plaques de nom ne relisent plus le journal chaque seconde et ne chargent plus les données à la connexion quand le préchargement est coupé ; une quête apprise puis supprimée disparaît partout ; plus de pastille fantôme sur les quêtes absentes de la base.",
+            "Divers : feu de camp sans erreur quand le jeu masque une valeur ; noms d'herbes complets dans l'infobulle de la minicarte ; version de WoW de nouveau dans le rapport d'erreurs ; noms en cyrillique lisibles et couleurs du thème dans les infobulles Amis / Guilde ; moins de mémoire gardée par le bouton Buffer et la session de farm.",
+        },
+    },
+    {
         version = "1.128.59", date = "21/11/2026",
         changed = {
             "Fiche, onglet Armes, « À apprendre » : chaque arme a son maître d'armes le plus proche qui l'enseigne (nom, zone, distance) et une pastille « Guider » vers lui. Avant, un seul maître pour toutes les armes, alors que chacun n'enseigne que certaines armes.",
