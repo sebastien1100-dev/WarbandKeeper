@@ -22,7 +22,7 @@ local doneOpen = false
 
 local function D() return WK.modules.Dungeons end
 -- pastille « NOUVELLE / APPRISE / CORRIGÉE » (Modules/DataLog.lua)
-local function badge(id) local DL = WK.modules.DataLog; return DL and DL:Badge(id) or "" end
+local function badge(id) local DL = WK.modules.DataLog; return DL and DL:Badge(id, true) or "" end
 local function Q() return WK.modules.Quests end
 
 -- couleur du niveau d'une quête pour le perso (comme le jeu)

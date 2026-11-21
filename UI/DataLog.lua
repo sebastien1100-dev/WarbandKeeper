@@ -399,7 +399,7 @@ function UI:BuildDataLogCard(card, toggles)
         table.insert(toggles, t)
         return t
     end
-    UI:SettingRow(card, -40, "Pastilles « Nouvelle »", "Dans « Quêtes de ma zone », la liste des zones, la tournée et la fenêtre du donjon : NOUVELLE (base mise à jour), APPRISE (notée en jeu), CORRIGÉE.", tg("badges"), 80)
+    UI:SettingRow(card, -40, "Pastilles « Nouvelle »", "Dans « Quêtes de ma zone » et la liste des zones : NOUVELLE (base mise à jour), APPRISE (notée en jeu), CORRIGÉE. Dans la tournée et la fenêtre du donjon, un simple pictogramme : étincelle turquoise, livre violet, flèches orange.", tg("badges"), 80)
     local seg = UI:Segmented(card, { { 3, "3 j" }, { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
         function(v) cfg.days = v; DL():Invalidate(); WK:NotifyChanged() end, 24)
     seg:Select(cfg.days or 7)

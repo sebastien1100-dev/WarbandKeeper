@@ -817,7 +817,7 @@ function M:StepTitle(s, colored)
         if WK.QuestIsGroup(q) then n = n .. " " .. T("(groupe)") end
         if colored then
             n = WK.UI:Hex(self:ProgressColor(q)) .. n .. "|r"
-            if WK.modules.DataLog then n = n .. WK.modules.DataLog:Badge(q) end
+            if WK.modules.DataLog then n = n .. WK.modules.DataLog:Badge(q, true) end
         end
         table.insert(names, n)
     end

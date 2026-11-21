@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.115.4 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Tournée et fenêtre des quêtes du donjon : le mot « NOUVELLE » qui allongeait les titres est remplacé par un petit pictogramme coloré après le nom (étincelle turquoise = nouvelle, livre violet = apprise en jeu, flèches orange = corrigée). Les listes de quêtes gardent l'étiquette en toutes lettres.
+
 ## v1.115.3 — 21/11/2026
 
 _Un /reload suffit._

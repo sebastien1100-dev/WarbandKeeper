@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.115.4", date = "21/11/2026",
+        changed = {
+            "Tournée et fenêtre des quêtes du donjon : le mot « NOUVELLE » qui allongeait les titres est remplacé par un petit pictogramme coloré après le nom (étincelle turquoise = nouvelle, livre violet = apprise en jeu, flèches orange = corrigée). Les listes de quêtes gardent l'étiquette en toutes lettres.",
+        },
+    },
+    {
         version = "1.115.3", date = "21/11/2026",
         changed = {
             "Journal des données plus lisible : étiquettes pleines NOUVELLE (turquoise) et CORRIGÉE (orange) avec le détail de la correction à côté, chiffres de chaque mise à jour en étiquettes, lignes plus hautes et alternées, quêtes de ta zone en tête puis rangées par zone et par niveau, « Afficher 50 de plus » au bout de la liste.",

@@ -62,12 +62,18 @@ local LABEL = { new = "NOUVELLE", learned = "APPRISE", changed = "CORRIGÉE" }
 local COLOR = { new = "rule", learned = "plan", changed = "warning" }
 M.LABEL, M.COLOR = LABEL, COLOR
 -- pastille à mettre après un nom de quête (texte coloré), ou ""
-function M:Badge(qid)
+-- compact : seulement le pictogramme coloré (titres de la tournée, fenêtre du donjon : pas de place pour le mot)
+local GLYPH = { new = "spark", learned = "book", changed = "refresh" }
+function M:Badge(qid, compact)
     if not self:Config().badges then return "" end
     local st = self:State(qid)
     if not st then return "" end
     local UI = WK.UI
     local col = UI.colors[COLOR[st]] or UI.colors.muted
+    if compact then
+        return string.format(" |T%s%s:13:13:0:0:64:64:0:64:0:64:%d:%d:%d|t", UI.MEDIA, GLYPH[st],
+            math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255))
+    end
     -- point plein de la couleur puis le mot (les listes sont du texte : pas de cadre possible)
     local dot = string.format("|T%scircle:9:9:0:0:128:128:0:128:0:128:%d:%d:%d|t", UI.MEDIA,
         math.floor(col[1] * 255), math.floor(col[2] * 255), math.floor(col[3] * 255))
