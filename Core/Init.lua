@@ -1,7 +1,7 @@
 local ADDON_NAME, WK = ...
 _G.WarbandKeeper = WK
 
-WK.version = "1.128.10"
+WK.version = "1.128.11"
 WK.modules = {}
 
 -- Gestion centralisée des événements : chaque module s'abonne via WK:On(event, fn).
@@ -87,10 +87,17 @@ end
 
 WK:On("ADDON_LOADED", function(name)
     if name ~= ADDON_NAME then return end
-    WK.DB:Init()
+    -- chaque étape protégée : une erreur est notée et le démarrage continue (avant, une erreur ici, par
+    -- exemple un profil abîmé, empêchait tous les modules de démarrer)
+    local function step(label, fn, obj)
+        local ok, err = pcall(fn, obj)
+        if not ok then WK.HandlerError(label, err) end
+    end
+    step("DB:Init", WK.DB.Init, WK.DB)
     -- profil de réglages de ce perso, avant que quoi que ce soit ne lise les réglages
-    if WK.modules.Profiles then WK.modules.Profiles:Apply() end
-    if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
+    local P = WK.modules.Profiles
+    if P then step("Profiles:Apply", P.Apply, P) end
+    if WK.UI and WK.UI.ApplyTheme then step("ApplyTheme", WK.UI.ApplyTheme, WK.UI) end
     -- un module qui plante n'empêche plus les suivants de démarrer
     for key, m in pairs(WK.modules) do
         if m.OnInit then
@@ -102,7 +109,10 @@ end)
 
 WK:On("PLAYER_LOGIN", function()
     -- Classe et faction sont sûres ici : on réapplique pour les thèmes dynamiques.
-    if WK.UI and WK.UI.ApplyTheme then WK.UI:ApplyTheme() end
+    if WK.UI and WK.UI.ApplyTheme then
+        local ok, err = pcall(WK.UI.ApplyTheme, WK.UI)
+        if not ok then WK.HandlerError("ApplyTheme", err) end
+    end
     -- compactage de l'historique : une fois par session, après l'arrivée en jeu (connexion plus fluide)
     C_Timer.After(6, function() pcall(WK.DB.CompactHistory, WK.DB) end)
     for name, m in pairs(WK.modules) do

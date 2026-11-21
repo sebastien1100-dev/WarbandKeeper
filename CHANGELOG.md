@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.11 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Courrier : « Prendre » sur une lettre ne prend plus aussi les lettres suivantes (une fois la lettre vidée, le jeu la supprime et la suivante prenait sa place).
+- Farm : un objet retiré de l'équipement et les objets fabriqués ne comptent plus comme butin de la session.
+- Profils : un profil enregistré avant l'arrivée d'une catégorie de réglages ne remet plus cette catégorie aux valeurs d'origine ; les réglages en place sont gardés.
+- Démarrage : une erreur dans la base, le profil ou le thème est notée au journal sans empêcher les modules de démarrer.
+
 ## v1.128.10 — 21/11/2026
 
 _Un /reload suffit._

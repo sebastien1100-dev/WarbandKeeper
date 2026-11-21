@@ -395,6 +395,13 @@ end
 local function takeStep()
     if not taking then return end
     local n = GetInboxNumItems() or 0
+    local one = takeFilter and takeFilter.index and takeFilter
+    if one then
+        -- une seule lettre : vidée, le jeu la supprime et les suivantes remontent d'un rang ; on s'arrête
+        -- dès que la boîte a rétréci ou que la lettre à ce rang n'est plus la même
+        local _, _, sender, subject = _G.GetInboxHeaderInfo(one.index)
+        if n < one.count or sender ~= one.sender or subject ~= one.subject then return finishTake() end
+    end
     for i = n, 1, -1 do
         local f = takeFilter or {}
         local wanted = (not f.index or f.index == i) and (not f.ah or isAH(i))
@@ -442,6 +449,10 @@ function M:TakeAll(filter)
     if taking or sending or not GetInboxNumItems then return end
     taking = true
     takeFilter = filter
+    if filter and filter.index then
+        local _, _, sender, subject = _G.GetInboxHeaderInfo(filter.index)
+        filter.sender, filter.subject, filter.count = sender, subject, _G.GetInboxNumItems() or 0
+    end
     takeStats = { money = 0, items = 0 }
     lastKey, sameCount, skip = nil, 0, {}
     if self.takeButton then self.takeButton:SetLabel(T("Récupération...")) end

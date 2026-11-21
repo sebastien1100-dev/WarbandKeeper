@@ -28,13 +28,32 @@ for _, pair in ipairs({
     { "MAIL_SHOW", "MAIL_CLOSED", "mail" }, { "BANKFRAME_OPENED", "BANKFRAME_CLOSED", "bank" },
     { "MERCHANT_SHOW", "MERCHANT_CLOSED", "merchant" }, { "TRADE_SHOW", "TRADE_CLOSED", "trade" },
     { "AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "ah" },
+    -- fabrication : les objets créés ne sont pas du butin
+    { "TRADE_SKILL_SHOW", "TRADE_SKILL_CLOSE", "craft" }, { "CRAFT_SHOW", "CRAFT_CLOSE", "craft2" },
 }) do
     WK:On(pair[1], function() setBusy(pair[3], true) end)
     WK:On(pair[2], function() setBusy(pair[3], false) end)
 end
 
+-- Équipement : l'objet retiré d'un emplacement revient dans les sacs sans être du butin. On retient l'objet
+-- de chaque emplacement ; à un changement, l'ancien est ignoré une fois pendant 3 s.
+local worn, unworn = {}, {}
+local function readWorn()
+    if not _G.GetInventoryItemID then return end
+    for slot = 1, 19 do worn[slot] = _G.GetInventoryItemID("player", slot) end
+end
+M.unworn = unworn
+WK:On("PLAYER_EQUIPMENT_CHANGED", function(slot)
+    if not _G.GetInventoryItemID or type(slot) ~= "number" then return end
+    local before = worn[slot]
+    worn[slot] = _G.GetInventoryItemID("player", slot)
+    if before and before ~= worn[slot] then
+        table.insert(unworn, { id = before, at = _G.GetTime and _G.GetTime() or 0 })
+    end
+end)
+
 -- Sécurité : si un événement de fermeture a été manqué, on repart de zéro à chaque chargement.
-WK:On("PLAYER_ENTERING_WORLD", function() wipe(busy) end)
+WK:On("PLAYER_ENTERING_WORLD", function() wipe(busy); readWorn() end)
 
 -- Durée écoulée (pauses exclues), en secondes.
 function M:Elapsed(s)
@@ -168,8 +187,20 @@ end
 function M:OnBags(old, new)
     local s = self:Current()
     if not s or s.paused or s.char ~= WK:CharKey() or interacting() or not old or not WK:FeatureOn("farm") then return end
+    local now = _G.GetTime and _G.GetTime() or 0
+    -- objets retirés de l'équipement : consommés quand ils réapparaissent dans les sacs, oubliés après 3 s
+    local skipId = {}
+    for i = #unworn, 1, -1 do
+        local u = unworn[i]
+        if now - u.at > 3 or now < u.at then
+            table.remove(unworn, i)
+        elseif (new[u.id] or 0) - (old[u.id] or 0) - (skipId[u.id] or 0) > 0 then
+            skipId[u.id] = (skipId[u.id] or 0) + 1
+            table.remove(unworn, i)
+        end
+    end
     for id, n in pairs(new) do
-        local diff = n - (old[id] or 0)
+        local diff = n - (old[id] or 0) - (skipId[id] or 0)
         if diff > 0 then s.items[id] = (s.items[id] or 0) + diff end
     end
     s.tick = time()

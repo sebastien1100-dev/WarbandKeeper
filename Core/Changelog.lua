@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.11", date = "21/11/2026",
+        fixed = {
+            "Courrier : « Prendre » sur une lettre ne prend plus aussi les lettres suivantes (une fois la lettre vidée, le jeu la supprime et la suivante prenait sa place).",
+            "Farm : un objet retiré de l'équipement et les objets fabriqués ne comptent plus comme butin de la session.",
+            "Profils : un profil enregistré avant l'arrivée d'une catégorie de réglages ne remet plus cette catégorie aux valeurs d'origine ; les réglages en place sont gardés.",
+            "Démarrage : une erreur dans la base, le profil ou le thème est notée au journal sans empêcher les modules de démarrer.",
+        },
+    },
+    {
         version = "1.128.10", date = "21/11/2026",
         fixed = {
             "Guidage : un trajet qui n'a pas pu être calculé (pendant un chargement, en ville, en instance) est retenté quelques secondes plus tard, et à l'arrivée dans une nouvelle zone ; avant, la flèche restait à vol d'oiseau jusqu'au prochain changement de cible.",

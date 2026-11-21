@@ -99,6 +99,10 @@ local function apply(snap, reset)
             if part then for k in pairs(skip.__only) do if part[k] ~= nil then live[k] = copy(part[k]) end end end
             if reset then for k in pairs(skip.__only) do live[k] = nil end end
             g[key] = live
+        elseif not reset and not (snap and snap[key] ~= nil) then
+            -- catégorie absente du profil (capturé avant son ajout) : les réglages en place restent, au lieu
+            -- de revenir aux valeurs d'origine
+            g[key] = live
         else
         local kept = {}
         for k in pairs(skip) do kept[k] = live[k] end
@@ -178,7 +182,7 @@ end
 function M:CopyFrom(name)
     local p = store()
     if name == p.loaded then return end
-    if name == DEFAULT and not p.list[DEFAULT] then apply({}) else apply(p.list[name]) end
+    if name == DEFAULT and not p.list[DEFAULT] then apply({}, true) else apply(p.list[name]) end
     WK.UI:AskReload(WK.T("Réglages copiés : recharge l'interface pour les appliquer."))
 end
 
