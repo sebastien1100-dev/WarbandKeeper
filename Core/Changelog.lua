@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.2", date = "21/11/2026",
+        fixed = {
+            "Quêtes à prendre tout près et objet qui démarre une quête : ces alertes s'écrivent de nouveau dans le chat (depuis le retrait des rappels à l'écran, elles ne s'affichaient plus mais étaient quand même marquées comme dites).",
+            "Carte du monde : Ctrl + clic droit (point /way) et Alt + clic (note de carte) posent le point là où tu as cliqué, même quand le clic fait changer de carte (remonter à la carte parente, ouvrir une zone d'un continent).",
+            "Points /way : le même point n'est plus ajouté deux fois (lien cliqué deux fois, point partagé reçu aussi en texte, points rechargés par TomTom) ; un message le dit, et « guider maintenant » le remet en tête.",
+        },
+    },
+    {
         version = "1.128.1", date = "21/11/2026",
         fixed = {
             "Langue : les noms des raccourcis clavier (Options du jeu > Raccourcis > AddOns) suivent la langue choisie dans les Options, et changer de langue propose de recharger l'interface pour que les éléments à l'écran suivent aussi.",

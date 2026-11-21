@@ -97,12 +97,26 @@ local hooked
 local function hookMap()
     if hooked or not (WorldMapFrame and WorldMapFrame.ScrollContainer) then return end
     hooked = true
-    WorldMapFrame.ScrollContainer:HookScript("OnMouseUp", function(sc, button)
-        if button ~= "LeftButton" or not placeKeyDown() or not WK:FeatureOn("maplayers") then return end
-        local mapID = WorldMapFrame.GetMapID and WorldMapFrame:GetMapID()
-        if not mapID or not sc.GetNormalizedCursorPosition then return end
+    -- carte et curseur relevés à l'appui : au relâchement, un clic gauche sur un continent a déjà ouvert la zone
+    local down
+    _G.WorldMapFrame.ScrollContainer:HookScript("OnMouseDown", function(sc, button)
+        down = nil
+        if button ~= "LeftButton" or not sc.GetNormalizedCursorPosition then return end
         local x, y = sc:GetNormalizedCursorPosition()
-        if not x or x < 0 or x > 1 or y < 0 or y > 1 then return end
+        down = { map = _G.WorldMapFrame.GetMapID and _G.WorldMapFrame:GetMapID(), x = x, y = y, at = _G.GetTime() }
+    end)
+    _G.WorldMapFrame.ScrollContainer:HookScript("OnMouseUp", function(sc, button)
+        local d = down
+        down = nil
+        if button ~= "LeftButton" or not placeKeyDown() or not WK:FeatureOn("maplayers") then return end
+        local mapID, x, y
+        if d and _G.GetTime() - d.at < 1 then
+            mapID, x, y = d.map, d.x, d.y
+        else
+            mapID = _G.WorldMapFrame.GetMapID and _G.WorldMapFrame:GetMapID()
+            if sc.GetNormalizedCursorPosition then x, y = sc:GetNormalizedCursorPosition() end
+        end
+        if not mapID or not x or x < 0 or x > 1 or y < 0 or y > 1 then return end
         UI:EditMapNote({ map = mapID, x = x, y = y, icon = "star", color = "blue", mini = true })
     end)
 end

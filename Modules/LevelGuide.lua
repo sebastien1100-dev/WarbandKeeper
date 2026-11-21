@@ -386,14 +386,16 @@ WK:On("ZONE_CHANGED_NEW_AREA", function() soon(3) end)
 WK:On("QUEST_LOG_UPDATE", function() if M:Following() then soon(3) end end)
 -- objet qui démarre une quête, ramassé : rappel une fois par objet
 WK:On("BAG_UPDATE_DELAYED", function()
-    if not on() then return end
+    -- base des objets qui démarrent une quête : dans le dossier chargé à la demande, pas chargé pour ce rappel
+    if not on() or not WK.dataLoaded then return end
     local c = M:Config()
     for _, it in ipairs(M:QuestItems()) do
         if not c.told[it.item] then
             c.told[it.item] = true
-            local name = (WK.GetItemInfo and WK.GetItemInfo(it.item)) or ("#" .. it.item)
-            WK.modules.QoL:Remind("lguide.item", string.format(T("%s démarre une quête : clic droit dessus dans tes sacs."), name),
-                1, 0.82, 0.2, nil, { ttl = 60 })
+            local _, link = WK.GetItemInfo(it.item)
+            local name = link or (WK.GetItemInfo(it.item)) or ("#" .. it.item)
+            -- dans le chat (les rappels à l'écran ont été retirés : avant, rien ne s'affichait)
+            WK:Print(string.format(T("%s démarre une quête : clic droit dessus dans tes sacs."), name))
         end
     end
 end)

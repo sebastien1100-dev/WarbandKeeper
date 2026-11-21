@@ -1274,8 +1274,9 @@ local function nearCheck()
         end
     end
     if n > 0 then
-        WK.modules.QoL:Remind("qplan.near", string.format(T("%d quête(s) à prendre tout près : %s"), n, table.concat(names, ", ")),
-            1, 0.82, 0.2, nil, { ttl = 30 })
+        -- les rappels à l'écran ont été retirés : la ligne passe par le chat (avant, rien ne s'affichait mais
+        -- les quêtes étaient marquées « déjà dites »)
+        WK:Print(string.format(T("%d quête(s) à prendre tout près : %s"), n, table.concat(names, ", ")))
     end
 end
 

@@ -4593,4 +4593,5 @@ WK.Locales.enUS.text = {
     ["rangement"] = "sorting",
     ["préchargement"] = "preload",
     ["Langue changée : recharge l'interface pour l'appliquer partout."] = "Language changed: reload the UI.",
+    ["Point déjà dans la file (n° %d) : %s"] = "Point already in the queue (#%d): %s",
 }

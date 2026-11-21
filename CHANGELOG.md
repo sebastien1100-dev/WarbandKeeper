@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.2 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Quêtes à prendre tout près et objet qui démarre une quête : ces alertes s'écrivent de nouveau dans le chat (depuis le retrait des rappels à l'écran, elles ne s'affichaient plus mais étaient quand même marquées comme dites).
+- Carte du monde : Ctrl + clic droit (point /way) et Alt + clic (note de carte) posent le point là où tu as cliqué, même quand le clic fait changer de carte (remonter à la carte parente, ouvrir une zone d'un continent).
+- Points /way : le même point n'est plus ajouté deux fois (lien cliqué deux fois, point partagé reçu aussi en texte, points rechargés par TomTom) ; un message le dit, et « guider maintenant » le remet en tête.
+
 ## v1.128.1 — 21/11/2026
 
 _Un /reload suffit._

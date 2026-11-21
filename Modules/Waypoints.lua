@@ -213,6 +213,23 @@ function M:Add(map, x, y, title, opts)
     if not (map and x and y) then return nil end
     local cfg = self:Config()
     local list = self:List()
+    -- même point déjà dans la file (lien cliqué deux fois, point partagé reçu aussi en texte, TomTom qui
+    -- recharge ses points) : pas de doublon ; « maintenant » le remet en tête
+    for k, v in ipairs(list) do
+        if v.map == map and math.abs(v.x - x) < 0.0015 and math.abs(v.y - y) < 0.0015 then
+            if title and title ~= "" and not v.title then v.title = title end
+            if opts.now and k > 1 then
+                table.remove(list, k); table.insert(list, 1, v)
+                self:Go()
+            else
+                changed()
+            end
+            if not opts.silent then
+                WK:Print(string.format(T("Point déjà dans la file (n° %d) : %s"), opts.now and 1 or k, label(v)))
+            end
+            return v
+        end
+    end
     local w = { map = map, x = x, y = y, title = (title and title ~= "") and title or nil, src = opts.src, at = time() }
     if not cfg.queue then wipe(list) end
     if opts.now then table.insert(list, 1, w) else table.insert(list, w) end
