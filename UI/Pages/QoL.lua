@@ -1258,6 +1258,57 @@ UI:RegisterPage({
             dynText(guide, 10, C.dim, function()
                 return string.format(T("%d lieux de WoW Forever (données QuestieDB)"), G:Count())
             end):SetPoint("TOPRIGHT", -16, -16)
+            -- points /way à la manière de TomTom (Modules/Waypoints.lua, UI/Waypoints.lua)
+            local WP = WK.modules.Waypoints
+            if WP then
+                local wc = WP:Config()
+                local way = card("Points /way", 40 + 8 * 46 + 34, "commande, file, compatibilité TomTom")
+                local cmdSeg = UI:Segmented(way, { { "auto", "Auto" }, { "way", "/way" }, { "wkway", "/wkway" } },
+                    function(v)
+                        wc.cmd = v
+                        UI:AskReload(T("La commande /way change au prochain rechargement."))
+                    end, 26)
+                cmdSeg:Select(wc.cmd)
+                UI:SettingRow(way, -40, "Commande /way",
+                    "Auto : la nôtre, sauf si TomTom est là (elle devient /wkway). /wkway marche toujours.",
+                    cmdSeg, cmdSeg:GetWidth())
+                UI:SettingRow(way, -86, "Plusieurs /way : file de points",
+                    "Arrivé à un point, on passe au suivant. Coupé : un nouveau point remplace l'ancien.",
+                    toggle(way, function() return wc.queue end, function(v) wc.queue = v end), 80)
+                local ordSeg = UI:Segmented(way, { { "typed", "Ordre tapé" }, { "near", "Plus proche" } },
+                    function(v) wc.order = v end, 26)
+                ordSeg:Select(wc.order)
+                UI:SettingRow(way, -132, "Ordre de la file",
+                    "Plus proche : file réordonnée à chaque ajout pour le trajet le plus court.",
+                    ordSeg, ordSeg:GetWidth())
+                UI:SettingRow(way, -178, "Répondre aux addons qui parlent à TomTom",
+                    "Sans TomTom : les guides qui « envoient vers TomTom » posent leurs points ici.",
+                    toggle(way, function() return wc.tomtomApi end, function(v) wc.tomtomApi = v end), 80)
+                UI:SettingRow(way, -224, "Suivre les points de TomTom",
+                    "TomTom installé : ses points sont aussi guidés par notre épingle et notre trajet.",
+                    toggle(way, function() return wc.followTomTom end, function(v) wc.followTomTom = v end), 80)
+                UI:SettingRow(way, -270, "Coordonnées cliquables dans le chat",
+                    "Clic = guider, Maj + clic = ajouter à la file, clic droit = note de carte.",
+                    toggle(way, function() return wc.chatLinks end, function(v) wc.chatLinks = v end), 80)
+                UI:SettingRow(way, -316, "Points partagés par le groupe",
+                    "Un membre qui a Warband Keeper partage un point : lien cliquable dans le chat.",
+                    toggle(way, function() return wc.share end, function(v) wc.share = v end), 80)
+                UI:SettingRow(way, -362, "Liste des points sur la carte",
+                    "File affichée sur le côté de la carte ; Ctrl + clic droit y pose un point.",
+                    toggle(way, function() return wc.sideList end, function(v)
+                        wc.sideList = v
+                        if UI.RefreshWaypointList then UI:RefreshWaypointList() end
+                    end), 80)
+                UI:SettingRow(way, -408, "Garder les points après un rechargement", "Par perso.",
+                    toggle(way, function() return wc.keep end, function(v) wc.keep = v end), 80)
+                dynText(way, 10, C.dim, function()
+                    local n = #WP:List()
+                    local tt = T("TomTom absent")
+                    if WP.TomTomPresent() then tt = T("TomTom installé")
+                    elseif WP.shim then tt = T("TomTom absent : ses appels arrivent ici") end
+                    return string.format(T("%d point(s) dans la file · %s"), n, tt)
+                end):SetPoint("BOTTOMLEFT", 16, 12)
+            end
         end
         local rcard = card("Navigation", 40 + 4 * 46 + 44, "trajet du guidage, appris en jouant")
         UI:SettingRow(rcard, -40, "Trajet sur la carte du monde", "Pointillés de ta couleur, de toi jusqu'au lieu guidé, en suivant les chemins connus (vols compris).",

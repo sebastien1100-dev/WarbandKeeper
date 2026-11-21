@@ -71,6 +71,19 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.122.0 — 21/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Points /way, comme TomTom : « /way 32.35 48.55 Nom » pose un point et le guide (flèche, épingle, repère et trajet). Zone en anglais ou en français, début du nom accepté (« /way Elwynn 32 48 »), « /way #1429 x y », virgules acceptées ; « /way » seul = ta position ; « /way list », « /way reset », « /way undo ».
+- File de points : plusieurs /way à la suite se suivent ; arrivé à un point, le suivant est guidé tout seul (« encore 2 » sur l'épingle). Option « Plus proche » qui réordonne la file. Le guidage d'avant (tournée, quête suivie) revient quand la file est finie.
+- Compatible TomTom : s'il est installé, il garde /way et la nôtre devient /wkway (option pour suivre aussi ses points avec notre épingle et notre trajet). S'il ne l'est pas, les addons qui « envoient vers TomTom » posent leurs points ici.
+- Chat : « /way … » et « 32.35, 48.55 » écrits par les joueurs deviennent cliquables (clic : guider, Maj + clic : ajouter à la file, clic droit : note de carte).
+- Carte du monde : points numérotés de la file, petite liste sur le côté, Ctrl + clic droit pour poser un point, clic droit sur un point : guider, renommer, garder en note de carte, partager au groupe, supprimer.
+- Partage : le point part au groupe en texte /way (lisible par tous) et, pour ceux qui ont Warband Keeper, en lien à cliquer.
+- Réglages : carte « Points /way » de QoL > Carte et guidage, onglet Guidage.
+
 ## v1.121.0 — 21/11/2026
 
 _Un /reload suffit._

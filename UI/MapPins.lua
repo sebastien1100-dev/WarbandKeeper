@@ -359,6 +359,7 @@ local function redraw(src)
         layer("Navires", UI.DrawShips)          -- lignes du jeu et navires en route (UI/BoatMap.lua)
         layer("Trajet", UI.DrawNavRoute)        -- trajet du guidage (UI/NavRoute.lua)
         layer("Notes", UI.DrawMapNotes)         -- notes de carte perso (UI/MapNotes.lua)
+        layer("Points /way", UI.DrawWaypoints)  -- file des points /way (UI/Waypoints.lua)
         layer("Repère", function(_, ...) drawTarget(...) end)
     end
     -- Les récoltes ne sont plus dessinées ici : un seul affichage, le calque « Filons et plantes »

@@ -8,6 +8,18 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.122.0", date = "21/11/2026", restart = true,
+        added = {
+            "Points /way, comme TomTom : « /way 32.35 48.55 Nom » pose un point et le guide (flèche, épingle, repère et trajet). Zone en anglais ou en français, début du nom accepté (« /way Elwynn 32 48 »), « /way #1429 x y », virgules acceptées ; « /way » seul = ta position ; « /way list », « /way reset », « /way undo ».",
+            "File de points : plusieurs /way à la suite se suivent ; arrivé à un point, le suivant est guidé tout seul (« encore 2 » sur l'épingle). Option « Plus proche » qui réordonne la file. Le guidage d'avant (tournée, quête suivie) revient quand la file est finie.",
+            "Compatible TomTom : s'il est installé, il garde /way et la nôtre devient /wkway (option pour suivre aussi ses points avec notre épingle et notre trajet). S'il ne l'est pas, les addons qui « envoient vers TomTom » posent leurs points ici.",
+            "Chat : « /way … » et « 32.35, 48.55 » écrits par les joueurs deviennent cliquables (clic : guider, Maj + clic : ajouter à la file, clic droit : note de carte).",
+            "Carte du monde : points numérotés de la file, petite liste sur le côté, Ctrl + clic droit pour poser un point, clic droit sur un point : guider, renommer, garder en note de carte, partager au groupe, supprimer.",
+            "Partage : le point part au groupe en texte /way (lisible par tous) et, pour ceux qui ont Warband Keeper, en lien à cliquer.",
+            "Réglages : carte « Points /way » de QoL > Carte et guidage, onglet Guidage.",
+        },
+    },
+    {
         version = "1.121.0", date = "21/11/2026",
         changed = {
             "Réglages rangés en sous-onglets de catégories dans toutes les roues qui n'en avaient pas : Quêtes (Suivi et carte, Quêtes montrées, Quêtes automatiques), Donjons (Panneau et alertes, Quêtes du donjon, Chrono), Courrier (Envoi, Réception, Fenêtre), Hôtel des ventes (Scan et prix, Vente, Alertes de prix), Pêche (Mode pêche, Tenue et confort, Récapitulatif) et Rares (Carte, Alerte). L'onglet choisi est retenu ; la recherche ouvre le bon onglet.",
