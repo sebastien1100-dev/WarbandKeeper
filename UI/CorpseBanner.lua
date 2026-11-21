@@ -62,7 +62,11 @@ end
 function UI:CorpseState()
     local p, c = G():PlayerPos(), corpsePos()
     if not (p and c) then return nil end
-    if p.cont ~= c.cont then return { far = true, advice = "healer", corpse = c } end
+    -- position monde inconnue d'un côté ou de l'autre (carte sans conversion : instance, champ de bataille) : pas
+    -- de distance calculable (avant : erreur Lua chaque seconde quand les deux continents valaient nil)
+    if not (p.cont and c.cont and p.wx and c.wx) or p.cont ~= c.cont then
+        return { far = true, advice = "healer", corpse = c }
+    end
     local d = dist(p.wx, p.wy, c.wx, c.wy)
     local speed = runSpeed()
     local secs = d / speed

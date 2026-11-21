@@ -180,8 +180,10 @@ local function buildInBackground(cont)
 end
 local function graph(cont)
     if graphs[cont] then return graphs[cont] end
-    -- déjà en construction de fond et on est dans une coroutine : on attend qu'elle finisse
-    if building[cont] and coroutine.running() then
+    -- dans une coroutine (calcul de trajet) : une seule construction, celle de fond, qu'on attend (avant, le calcul
+    -- et l'apprentissage des chemins pouvaient construire le même continent en même temps)
+    if coroutine.running() then
+        buildInBackground(cont)
         while building[cont] and not graphs[cont] do coroutine.yield() end
         if graphs[cont] then return graphs[cont] end
     end
@@ -528,11 +530,24 @@ end
 
 -- Calcul en arrière-plan (quelques ms par image) ; le trajet précédent reste affiché en attendant
 local runner
+-- Trajet raté (erreur, position illisible au départ : chargement, ville, instance) ou calculé pour un continent
+-- qu'on a quitté pendant le calcul : nouvel essai quelques secondes plus tard, 5 fois au plus par cible (avant, le
+-- guidage restait à vol d'oiseau jusqu'au prochain changement de cible)
+local function retryLater(target, secs)
+    target.navTries = (target.navTries or 0) + 1
+    if target.navTries > 5 or not _G.C_Timer then return end
+    _G.C_Timer.After(secs, function()
+        if Gd().target == target and not job and not (M.route and M.route.target == target) then M:Plan(target) end
+    end)
+end
 local function pump()
     if not job then runner:Hide() return end
     local ok, res = coroutine.resume(job.co)
     if not ok then
+        local target = job.target
         job = nil; runner:Hide()
+        if WK.RecordError then pcall(WK.RecordError, res, "", "Nav:Plan") end
+        if target and Gd().target == target then retryLater(target, 5) end
         return
     end
     if coroutine.status(job.co) == "dead" then
@@ -543,10 +558,14 @@ local function pump()
             res.target = target
             res.leg, res.idx = 1, 1
             res.at = GetTime()
+            local cont = playerWorld()
+            if cont and res.cont and cont ~= res.cont then M.route = nil; M:Plan(target) return end
+        else
+            retryLater(target, 5)
         end
         M.route = res
-        if Gd().Redraw then Gd():Redraw() end
-        if WK.UI.RefreshNavRoute then WK.UI:RefreshNavRoute() end
+        -- un seul redessin (RefreshNavRoute redessine la carte via Guide:Redraw)
+        if WK.UI.RefreshNavRoute then WK.UI:RefreshNavRoute() elseif Gd().Redraw then Gd():Redraw() end
     end
 end
 function M:Plan(target)
@@ -676,6 +695,9 @@ WK:On("ZONE_CHANGED_NEW_AREA", function()
     if r and r.target then
         local cont = playerWorld()
         if cont and cont ~= r.cont then M:Plan(r.target) end
+    elseif Gd().target and not job then
+        -- pas de trajet (calcul raté au départ) : nouvel essai à l'arrivée dans la zone
+        M:Plan(Gd().target)
     end
 end)
 
@@ -1134,9 +1156,10 @@ function M:Stats()
     for _, list in pairs(data().trails) do for _, t in ipairs(list) do learned = learned + lineLen(t) end end
     local cont = playerWorld()
     local roads = 0
+    -- graphe pas encore prêt : pas construit d'un bloc ici (gel de l'écran), lancé en fond
     if cont then
-        local ok, g = pcall(graph, cont)
-        if ok and g then roads = g.roadLen end
+        local g = graphs[cont]
+        if g then roads = g.roadLen else buildInBackground(cont) end
     end
     return learned, roads
 end

@@ -200,8 +200,11 @@ function M:Stop()
     if self.Redraw then self:Redraw() end
     WK:NotifyChanged()
     -- détour fini (marchand, boîte aux lettres, maître…) : la tournée de quêtes ou la quête suivie reprend la main
+    -- points /way et retour au corps rendent eux-mêmes le guidage d'avant (1 s après) : la reprise attend 1,5 s
+    -- pour ne pas le voler (avant, la quête suivie reprenait la main et le guidage d'avant était perdu)
     if was and was.kind ~= "qtour" and was.kind ~= "qtrack" and C_Timer then
-        C_Timer.After(0.5, function() M:Resume() end)
+        local wait = (was.kind == "way" or was.kind == "corpse") and 1.5 or 0.5
+        C_Timer.After(wait, function() M:Resume() end)
     end
 end
 function M:Resume()

@@ -470,7 +470,9 @@ local function tourTick()
     if near then M:NextTourPoint() return end
     if G.target ~= tg then
         -- arrivée annoncée par l'épingle (le guidage s'arrête tout près) : on continue ; sinon, fin
-        if G.target == nil and t.lastNear then M:NextTourPoint() else M:StopTour() end
+        -- (la quête suivie a pu reprendre la main entre-temps : ce n'est pas un arrêt voulu par le joueur)
+        local resumed = G.target == nil or G.target.kind == "qtrack" or G.target.kind == "qtour"
+        if resumed and t.lastNear then M:NextTourPoint() else M:StopTour() end
         return
     end
     if p and tg and tg.cont and p.cont == tg.cont then

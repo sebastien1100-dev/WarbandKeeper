@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.10", date = "21/11/2026",
+        fixed = {
+            "Guidage : un trajet qui n'a pas pu être calculé (pendant un chargement, en ville, en instance) est retenté quelques secondes plus tard, et à l'arrivée dans une nouvelle zone ; avant, la flèche restait à vol d'oiseau jusqu'au prochain changement de cible.",
+            "Guidage : un trajet calculé pour un continent quitté pendant le calcul (portail, téléport) est refait pour le bon continent.",
+            "Réseau des chemins : un continent n'est plus construit deux fois en même temps (calcul du trajet et apprentissage des chemins) ; « /wk nav » ne fige plus l'écran.",
+            "Carte du monde : redessinée une fois de moins à chaque nouveau trajet.",
+            "Fin d'un point /way ou du retour au corps : le guidage d'avant (marchand, boîte aux lettres…) revient bien, au lieu d'être remplacé par la quête suivie. Tournée de récolte : elle continue après une arrivée même si la quête suivie a repris la main entre-temps.",
+            "Retour au corps : plus d'erreur Lua chaque seconde sur les cartes où le jeu ne donne pas de position (instances, champs de bataille).",
+        },
+    },
+    {
         version = "1.128.9", date = "21/11/2026",
         fixed = {
             "Barre Quête, bouton Cibler : le nom du monstre est pris dans la langue du jeu (pas celle choisie pour l'addon) ; avant, le bouton ne ciblait rien si les deux langues différaient. Sur un client ni français ni anglais, le bouton Cibler n'est plus proposé (nom inconnu).",

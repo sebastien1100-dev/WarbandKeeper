@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.10 — 21/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage : un trajet qui n'a pas pu être calculé (pendant un chargement, en ville, en instance) est retenté quelques secondes plus tard, et à l'arrivée dans une nouvelle zone ; avant, la flèche restait à vol d'oiseau jusqu'au prochain changement de cible.
+- Guidage : un trajet calculé pour un continent quitté pendant le calcul (portail, téléport) est refait pour le bon continent.
+- Réseau des chemins : un continent n'est plus construit deux fois en même temps (calcul du trajet et apprentissage des chemins) ; « /wk nav » ne fige plus l'écran.
+- Carte du monde : redessinée une fois de moins à chaque nouveau trajet.
+- Fin d'un point /way ou du retour au corps : le guidage d'avant (marchand, boîte aux lettres…) revient bien, au lieu d'être remplacé par la quête suivie. Tournée de récolte : elle continue après une arrivée même si la quête suivie a repris la main entre-temps.
+- Retour au corps : plus d'erreur Lua chaque seconde sur les cartes où le jeu ne donne pas de position (instances, champs de bataille).
+
 ## v1.128.9 — 21/11/2026
 
 _Un /reload suffit._
