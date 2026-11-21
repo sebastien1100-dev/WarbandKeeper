@@ -828,9 +828,12 @@ UI:RegisterPage({
                 qs:SetHeight(46)
                 qs.icon = UI:Icon(qs, "book", 18, nil, "ARTWORK"); qs.icon:SetPoint("LEFT", 14, 0)
                 qs.text = UI:Text(qs, 12); qs.text:SetPoint("LEFT", qs.icon, "RIGHT", 10, 0)
-                qs.text:SetPoint("RIGHT", qs, "RIGHT", -210, 0); qs.text:SetJustifyH("LEFT"); qs.text:SetWordWrap(false)
+                qs.text:SetPoint("RIGHT", qs, "RIGHT", -244, 0); qs.text:SetJustifyH("LEFT"); qs.text:SetWordWrap(false)
                 qs.btn = UI:Button(qs, T("Prendre les quêtes"), 190, 28, "primary", "guide")
                 qs.btn:SetPoint("RIGHT", -10, 0)
+                qs.win = UI:IconButton(qs, "notes", 26, "Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)")
+                qs.win:SetPoint("RIGHT", qs.btn, "LEFT", -8, 0)
+                qs.win:SetScript("OnClick", function() local Dg = WK.modules.Dungeons; if qs.dungeon and Dg then Dg:ShowQuestWindow(qs.dungeon) end end)
                 qs.btn:SetScript("OnClick", function()
                     local Dg = WK.modules.Dungeons
                     if qs.dungeon and Dg then Dg:PickQuests(qs.dungeon) end

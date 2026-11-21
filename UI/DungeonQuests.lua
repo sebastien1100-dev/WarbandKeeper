@@ -76,6 +76,12 @@ end
 local function target(cfg)
     local Dg = D()
     if not Dg then return nil end
+    -- donjon choisi à la main (bouton « Fenêtre des quêtes ») : prioritaire jusqu'à la croix
+    if Dg.questWinForce then
+        local fd = Dg:Get(Dg.questWinForce)
+        if fd then return fd end
+        Dg.questWinForce = nil
+    end
     local d = Dg:Current() or nearDungeon()
     if d then Dg.questWinLast = d.key end
     if not d and cfg.questWin == "always" and Dg.questWinLast then d = Dg:Get(Dg.questWinLast) end
@@ -94,7 +100,12 @@ local function build()
     f.headR = UI:Text(f, 10, C.muted); f.headR:SetPoint("TOPRIGHT", -28, -10); f.headR:SetJustifyH("RIGHT")
     f.close = UI:IconButton(f, "close", 16, "Cacher jusqu'au prochain donjon")
     f.close:SetPoint("TOPRIGHT", -6, -6)
-    f.close:SetScript("OnClick", function() closedFor = f.key; f:Hide() end)
+    f.close:SetScript("OnClick", function()
+        local Dg = D()
+        if Dg and Dg.questWinForce then Dg.questWinForce = nil else closedFor = f.key end
+        f:Hide()
+        UI:RefreshDungeonQuests()
+    end)
     f.secs, f.rows = {}, {}
     local function sec(i)
         local s = f.secs[i]
@@ -134,9 +145,16 @@ local function build()
     f.foot = CreateFrame("Frame", nil, f); f.foot:SetHeight(34)
     f.footLine = f.foot:CreateTexture(nil, "ARTWORK"); f.footLine:SetPoint("TOPLEFT", 1, 0); f.footLine:SetPoint("TOPRIGHT", -1, 0); f.footLine:SetHeight(1)
     f.footLine:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-    f.pick = UI:Button(f.foot, T("Prendre"), 100, 22, "secondary")
+    f.pick = UI:Button(f.foot, T("Tournée"), 120, 22, "primary", "guide")
     f.pick:SetPoint("LEFT", 10, -1)
-    f.pick:SetScript("OnClick", function() if f.dungeon then D():PickQuests(f.dungeon); UI:RefreshDungeonQuests() end end)
+    f.pick:SetScript("OnClick", function() if f.dungeon then D():PickTour(f.dungeon); UI:RefreshDungeonQuests() end end)
+    f.pick:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        GameTooltip:SetText(T("Tournée de ramassage"), 1, 1, 1)
+        GameTooltip:AddLine(T("Tous les donneurs (quêtes du donjon et prérequis) deviennent les étapes de ta tournée de quêtes, du plus proche au plus loin. Les quêtes qui attendent un prérequis sont cochées pour plus tard."), 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    f.pick:SetScript("OnLeave", function() GameTooltip:Hide() end)
     f.footTxt = UI:Text(f.foot, 10, C.muted); f.footTxt:SetPoint("LEFT", f.pick, "RIGHT", 8, 0); f.footTxt:SetPoint("RIGHT", -10, 0)
 
     -- remplit la fenêtre ; data = { name, xp, log = {…}, avail = {…}, waiting = {…}, done = n, doneList, pick, preN }
@@ -194,8 +212,8 @@ local function build()
         y = y + 4
         if (data.pick or 0) > 0 then
             self.foot:ClearAllPoints(); self.foot:SetPoint("TOPLEFT", 0, -y); self.foot:SetPoint("TOPRIGHT", 0, -y)
-            self.pick:SetLabel(string.format(T("Prendre (%d)"), data.pick))
-            self.footTxt:SetText((data.preN or 0) > 0 and string.format(T("dont %d prérequis"), data.preN) or T("flèche vers le donneur le plus proche"))
+            self.pick:SetLabel(string.format(T("Tournée (%d)"), data.pick))
+            self.footTxt:SetText((data.preN or 0) > 0 and string.format(T("dont %d prérequis"), data.preN) or T("tous les donneurs dans ta tournée"))
             self.foot:Show()
             y = y + 34
         else
@@ -305,15 +323,15 @@ function UI:RefreshDungeonQuests()
     win = win or build()
     if win.sample then return end
     local cfg = Dg:Config()
-    if cfg.questWin == "off" or not WK:FeatureOn("dungeons") then win:Hide() return end
+    if (cfg.questWin == "off" and not Dg.questWinForce) or not WK:FeatureOn("dungeons") then win:Hide() return end
     if cfg.questWinCombat and InCombatLockdown and InCombatLockdown() then win:Hide() return end
     local d = target(cfg)
     if not d then win:Hide() return end
     if closedFor and closedFor ~= d.key then closedFor = nil end
-    if closedFor == d.key then win:Hide() return end
+    if closedFor == d.key and Dg.questWinForce ~= d.key then win:Hide() return end
     local data = UI:DungeonQuestsData(d, cfg)
     -- rien à faire ni à prendre : cachée si demandé
-    if cfg.questWinAuto and #data.log + #data.avail + #data.waiting == 0 then win:Hide() return end
+    if cfg.questWinAuto and not Dg.questWinForce and #data.log + #data.avail + #data.waiting == 0 then win:Hide() return end
     win.key, win.dungeon = d.key, d
     win:Paint(data, cfg)
     win:Show()

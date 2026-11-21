@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.115.1", date = "21/11/2026",
+        added = {
+            "Fenêtre des quêtes du donjon pour n'importe quel donjon : bouton dans la page Donjons (bas du détail du donjon choisi) et dans le bandeau des quêtes de l'onglet LFG. Elle reste affichée, même loin du donjon, jusqu'à la croix.",
+            "Tournée de ramassage : le bouton « Tournée (n) » de la fenêtre met tous les donneurs (quêtes du donjon et leurs prérequis, dans toutes les zones) dans ta tournée de quêtes, une étape par donneur, du plus proche au plus loin. Changer de zone ne la refait pas ; « Réordonner » refait seulement l'ordre depuis là où tu es. Les quêtes qui attendent un prérequis sont cochées pour plus tard.",
+        },
+    },
+    {
         version = "1.115.0", date = "21/11/2026", restart = true,
         added = {
             "Quêtes : nouvel onglet « Journal » (ce qui arrive dans la base). Chaque mise à jour de la base (QuestieDB et ses corrections WoW Forever) y est datée, avec ses quêtes ajoutées, corrigées (niveau, donneur déplacé, prérequis…) et retirées ; chaque quête apprise en jeu aussi. Chiffres clés en haut, filtres Tout / QuestieDB / Appris en jeu / Ma zone / Mon niveau, clic sur une quête = guidage vers son donneur.",

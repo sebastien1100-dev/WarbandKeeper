@@ -632,10 +632,79 @@ function M:Skip()
     self:Changed()
 end
 
+-- Tournée de ramassage (quêtes d'un donjon et leurs prérequis, donneurs dans plusieurs zones) : une étape
+-- « prendre » par donneur, dans l'ordre du plus proche au suivant (même continent d'abord) ; gardée telle
+-- quelle quand on change de zone (t.custom), « Réordonner » refait seulement l'ordre.
+local function orderSteps(steps)
+    local p = G() and G():PlayerPos()
+    local left, out = {}, {}
+    for _, s in ipairs(steps) do
+        local c, wx, wy = world(s.map, s.x, s.y)
+        s.cont, s.wx, s.wy = c, wx, wy
+        table.insert(left, s)
+    end
+    local cur = p and { cont = p.cont, wx = p.wx, wy = p.wy } or nil
+    while #left > 0 do
+        local bi, bd = 1, nil
+        for i, s in ipairs(left) do
+            local d
+            if cur and s.cont and s.cont == cur.cont and s.wx and cur.wx then
+                d = math.sqrt((s.wx - cur.wx) ^ 2 + (s.wy - cur.wy) ^ 2)
+            else
+                d = 1e9 + i -- autre continent (ou position inconnue) : à la fin, dans l'ordre
+            end
+            if not bd or d < bd then bi, bd = i, d end
+        end
+        local s = table.remove(left, bi)
+        table.insert(out, s)
+        if s.cont then cur = { cont = s.cont, wx = s.wx, wy = s.wy } end
+    end
+    return out
+end
+function M:StartPickTour(quests, label)
+    local groups, steps = {}, {}
+    for _, q in ipairs(quests or {}) do
+        local map = q.smap or q.map
+        if q.x and map then
+            local key = (q.sid and ("n" .. q.sid)) or string.format("%d:%d:%d", map, math.floor(q.x), math.floor(q.y))
+            local s = groups[key]
+            if not s then
+                s = { kind = "pick", qids = {}, map = map, x = q.x / 100, y = q.y / 100, secs = 45 }
+                groups[key] = s
+                table.insert(steps, s)
+            end
+            table.insert(s.qids, q.id)
+            self:SetPicked(q.id, true)
+        end
+    end
+    if #steps == 0 then WK:Print(T("Aucun donneur connu pour ces quêtes.")) return nil end
+    local XP = WK.modules.XP
+    local t = { steps = orderSteps(steps), idx = 1, start = time(), gained0 = XP and XP.session and XP.session.gained or 0,
+        turned = 0, zone = WK.modules.Quests:PlayerZone(), custom = true, label = label }
+    self:Config().tour[WK:CharKey()] = t
+    self.lastKey = nil
+    self:Advance()
+    self:Changed()
+    WK:Print(string.format(T("Tournée de ramassage%s : %d quête(s), %d donneur(s)."), label and (" · " .. label) or "", #quests, #steps))
+    return t
+end
+
 -- Recalcule l'ordre des étapes qui restent (depuis l'endroit où tu es)
 function M:Reorder()
     local t = self:Tour()
     if not t then return self:Start() end
+    if t.custom then
+        local rest = {}
+        for i = t.idx, #t.steps do table.insert(rest, t.steps[i]) end
+        local done = {}
+        for i = 1, t.idx - 1 do table.insert(done, t.steps[i]) end
+        for _, s in ipairs(orderSteps(rest)) do table.insert(done, s) end
+        t.steps = done
+        self.lastKey = nil
+        self:Advance()
+        self:Changed()
+        return
+    end
     local keep = { start = t.start, gained0 = t.gained0, turned = t.turned }
     self:Invalidate()
     local n = self:Build()
@@ -922,7 +991,7 @@ WK:On("ZONE_CHANGED_NEW_AREA", function()
         local t = M:Tour()
         if not (on() and t and not t.paused) then return end
         local zone = WK.modules.Quests:PlayerZone()
-        if not zone or zone == t.zone or M:Config().planZone then return end
+        if not zone or zone == t.zone or M:Config().planZone or t.custom then return end
         M:Reorder()
         local n = M:Tour()
         if n then WK:Print(string.format(T("Tournée refaite pour cette zone : %d étapes."), #n.steps)) end

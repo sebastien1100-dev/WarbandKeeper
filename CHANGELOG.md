@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.115.1 — 21/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Fenêtre des quêtes du donjon pour n'importe quel donjon : bouton dans la page Donjons (bas du détail du donjon choisi) et dans le bandeau des quêtes de l'onglet LFG. Elle reste affichée, même loin du donjon, jusqu'à la croix.
+- Tournée de ramassage : le bouton « Tournée (n) » de la fenêtre met tous les donneurs (quêtes du donjon et leurs prérequis, dans toutes les zones) dans ta tournée de quêtes, une étape par donneur, du plus proche au plus loin. Changer de zone ne la refait pas ; « Réordonner » refait seulement l'ordre depuis là où tu es. Les quêtes qui attendent un prérequis sont cochées pour plus tard.
+
 ## v1.115.0 — 21/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

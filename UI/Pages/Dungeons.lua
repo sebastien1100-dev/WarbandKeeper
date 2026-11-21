@@ -300,6 +300,9 @@ UI:RegisterPage({
         det.go:SetScript("OnClick", function() local d = D:Get(self.sel); if d then D:GuideTo(d) end end)
         det.pnl = UI:Button(det, "Panneau en jeu", nil, 26, "ghost")
         det.pnl:SetScript("OnClick", function() local d = D:Get(self.sel); if d then UI:ToggleDungeonPanel(d) end end)
+        -- fenêtre des quêtes du donjon choisi (UI/DungeonQuests.lua), avec la tournée de ramassage
+        det.qwin = UI:IconButton(det, "notes", 26, "Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)")
+        det.qwin:SetScript("OnClick", function() local d = D:Get(self.sel); if d then D:ShowQuestWindow(d) end end)
         self.bheads = UI:Pool(function()
             local h = CreateFrame("Frame", nil, det)
             h:SetHeight(26)
@@ -1027,6 +1030,7 @@ UI:RegisterPage({
         det.go:ClearAllPoints(); det.go:SetPoint("RIGHT", det.lfg, "LEFT", -8, 0)
         det.go:SetShown(d.entry ~= nil)
         det.pnl:ClearAllPoints(); det.pnl:SetPoint("RIGHT", det.go, "LEFT", -8, 0)
+        det.qwin:ClearAllPoints(); det.qwin:SetPoint("RIGHT", det.pnl, "LEFT", -8, 0)
     end,
 
     -- onglet Quêtes du détail : état de chaque quête pour le perso, guidage vers le donneur

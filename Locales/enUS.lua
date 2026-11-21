@@ -4367,4 +4367,11 @@ WK.Locales.enUS.text = {
     ["Message après une mise à jour"] = "Message after an update",
     ["À la connexion, une fois par nouvelle base : ce qui change pour toi (quêtes de ta zone à ton niveau), avec « Voir » et « Ajouter à la tournée »."] = "At login, once per new database: what changes for you (quests of your zone at your level), with \"See\" and \"Add to the tour\".",
     ["Mises à jour de la base notées (journal)"] = "Database updates logged",
+    ["Rien à prendre pour ce donjon."] = "Nothing to pick up for this dungeon.",
+    ["Aucun donneur connu pour ces quêtes."] = "No known giver for these quests.",
+    ["Tournée de ramassage%s : %d quête(s), %d donneur(s)."] = "Pick-up tour%s: %d quest(s), %d giver(s).",
+    ["Tournée de ramassage"] = "Pick-up tour",
+    ["Tous les donneurs (quêtes du donjon et prérequis) deviennent les étapes de ta tournée de quêtes, du plus proche au plus loin. Les quêtes qui attendent un prérequis sont cochées pour plus tard."] = "All givers (dungeon quests and prerequisites) become the steps of your quest tour, nearest first. Quests waiting for a prerequisite are ticked for later.",
+    ["tous les donneurs dans ta tournée"] = "all givers in your tour",
+    ["Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)"] = "Dungeon quest window (on screen, with the pick-up tour)",
 }

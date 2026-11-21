@@ -1051,6 +1051,27 @@ function M:NextQuestGiver()
 end
 -- quêtes à prendre maintenant (celles du donjon et les prérequis de celles qui attendent)
 function M:PickCount(s) return #s.avail + #s.pre end
+-- tournée de ramassage : tous les donneurs (quêtes du donjon et prérequis) dans la tournée de quêtes
+function M:PickTour(d)
+    local s = self:QuestSummary(d)
+    local list = {}
+    for _, q in ipairs(s.avail) do table.insert(list, q) end
+    for _, e in ipairs(s.pre) do table.insert(list, e.q) end
+    if #list == 0 then WK:Print(T("Rien à prendre pour ce donjon.")) return nil end
+    -- celles qui attendent un prérequis : cochées, prises ensuite (mode Assisté)
+    local P = WK.modules.QuestPlan
+    if not P then return nil end
+    for _, q in ipairs(s.waiting) do P:SetPicked(q.id, true) end
+    self.questPick = nil
+    return P:StartPickTour(list, self:Name(d))
+end
+-- fenêtre des quêtes pour un donjon choisi (page Donjons, onglet LFG) : affichée jusqu'à la croix
+function M:ShowQuestWindow(d)
+    if not d then return end
+    self.questWinForce = d.key
+    self.questWinLast = d.key
+    if WK.UI.RefreshDungeonQuests then WK.UI:RefreshDungeonQuests() end
+end
 function M:PickQuests(d)
     local s = self:QuestSummary(d)
     local n = self:PickCount(s)
