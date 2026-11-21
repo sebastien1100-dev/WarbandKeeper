@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.59", date = "21/11/2026",
+        changed = {
+            "Fiche, onglet Armes, « À apprendre » : chaque arme a son maître d'armes le plus proche qui l'enseigne (nom, zone, distance) et une pastille « Guider » vers lui. Avant, un seul maître pour toutes les armes, alors que chacun n'enseigne que certaines armes.",
+        },
+    },
+    {
         version = "1.128.58", date = "21/11/2026",
         fixed = {
             "Micro menu, raccourci « Héritages » : une erreur Lua du journal des collections (« GetPageTitleText ») ; le n° d'onglet donné par le jeu n'existe pas sur WoW Forever. L'onglet est maintenant cherché par son nom dans la barre d'onglets du journal.",

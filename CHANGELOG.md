@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.59 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fiche, onglet Armes, « À apprendre » : chaque arme a son maître d'armes le plus proche qui l'enseigne (nom, zone, distance) et une pastille « Guider » vers lui. Avant, un seul maître pour toutes les armes, alors que chacun n'enseigne que certaines armes.
+
 ## v1.128.58 — 21/11/2026
 
 _Un /reload suffit._

@@ -28,6 +28,7 @@ local SQ = 34
 local sheet
 local buildSpells, refreshSpells, spellChips -- onglet Sorts (plus bas)
 local buildWeapons, refreshWeapons -- onglet Armes (plus bas)
+local WEAP_LEARN_H = 40 -- ligne d'une arme à apprendre (nom, maître dessous)
 
 local QUALITY = { [0] = { 0.62, 0.62, 0.62 }, { 1, 1, 1 }, { 0.12, 1, 0 }, { 0, 0.44, 0.87 }, { 0.64, 0.21, 0.93 }, { 1, 0.5, 0 }, { 0.9, 0.8, 0.5 } }
 -- emplacements : n° du jeu, nom, texture vide
@@ -1932,40 +1933,46 @@ buildWeapons = function(f)
     -- à apprendre + maître d'armes
     local rc = UI:Card(root, T("À apprendre"))
     f.wpLearn = rc
+    -- une ligne par arme : nom et prix, dessous le maître d'armes le plus proche qui l'enseigne, et une pastille
+    -- « Guider » vers lui (chaque maître n'enseigne que certaines armes : avant, un seul maître pour toutes)
     f.wpLearnRows = UI:Pool(function()
-        local r = CreateFrame("Button", nil, rc)
-        r:SetHeight(28)
+        local r = CreateFrame("Frame", nil, rc)
+        r:SetHeight(WEAP_LEARN_H)
         r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
         r.hl:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 0.5); r.hl:Hide()
         r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 16, 0)
         r.icon:SetDesaturated(true)
-        r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 44, 0); r.name:SetPoint("RIGHT", -90, 0); r.name:SetJustifyH("LEFT")
-        r.cost = UI:Text(r, 12, C.gold); r.cost:SetPoint("RIGHT", -16, 0); r.cost:SetJustifyH("RIGHT")
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 44, -5); r.name:SetPoint("RIGHT", -90, 0); r.name:SetJustifyH("LEFT")
+        r.sub = UI:Text(r, 10, C.muted); r.sub:SetPoint("TOPLEFT", 44, -21); r.sub:SetPoint("RIGHT", -90, 0)
+        r.sub:SetJustifyH("LEFT")
+        r.cost = UI:Text(r, 12, C.gold); r.cost:SetPoint("TOPRIGHT", -16, -5); r.cost:SetJustifyH("RIGHT")
+        -- pastille « Guider » (perso connecté seulement)
+        r.go = CreateFrame("Button", nil, r)
+        r.go:SetSize(58, 16); r.go:SetPoint("TOPRIGHT", -14, -20)
+        r.go.bg = UI:Rounded(r.go, 8, 0, "BACKGROUND", 1)
+        r.go.t = UI:Text(r.go, 10); r.go.t:SetPoint("CENTER", 0, 0); r.go.t:SetText(T("Guider"))
+        function r.go:Paint(hover)
+            local ar, ag, ab = UI:Accent()
+            self.bg:SetColor(ar, ag, ab, hover and 0.32 or 0.18); self.t:SetTextColor(ar, ag, ab)
+        end
+        r.go:SetScript("OnEnter", function(s) s:Paint(true); s:GetParent().hl:Show() end)
+        r.go:SetScript("OnLeave", function(s) s:Paint(false); s:GetParent().hl:Hide() end)
+        r.go:SetScript("OnClick", function(s) local row = s:GetParent(); if row.master then WS():GuideTo(row.master) end end)
+        r:EnableMouse(true)
         r:SetScript("OnEnter", function(s)
             s.hl:Show()
             if not s.e then return end
             UI:TooltipOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.e.name, 1, 1, 1)
-            local m = WS():Masters(s.e.id)[1]
-            if m then GameTooltip:AddLine(string.format(T("Enseignée par %s (%s)"), m.name, WS():Zone(m)), C.muted[1], C.muted[2], C.muted[3], true) end
+            if s.master then GameTooltip:AddLine(string.format(T("Enseignée par %s (%s)"), s.master.name, WS():Zone(s.master)), C.muted[1], C.muted[2], C.muted[3], true) end
             if s.e.soon then GameTooltip:AddLine(string.format(T("À partir du niveau %d"), s.e.level), C.warning[1], C.warning[2], C.warning[3]) end
-            if f.key == WK:CharKey() and m then GameTooltip:AddLine(T("Clic : guider vers ce maître d'armes"), C.muted[1], C.muted[2], C.muted[3]) end
             GameTooltip:Show()
         end)
         r:SetScript("OnLeave", function(s) s.hl:Hide(); GameTooltip:Hide() end)
-        r:SetScript("OnClick", function(s)
-            if not s.e or f.key ~= WK:CharKey() then return end
-            WS():GuideTo(WS():Masters(s.e.id)[1])
-        end)
         return r
     end)
-    rc.line = rc:CreateTexture(nil, "ARTWORK"); rc.line:SetHeight(1)
-    rc.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-    rc.mt = UI:Text(rc, 11, C.muted); rc.mt:SetText(T("Maître d'armes le plus proche"))
-    rc.mname = UI:Text(rc, 12); rc.mname:SetJustifyH("LEFT")
-    if rc.mname.SetWordWrap then rc.mname:SetWordWrap(true) end
-    rc.go = UI:Button(rc, "Guider", 110, 28, "secondary", "guide")
-    rc.go:SetScript("OnClick", function() WS():GuideTo(rc.master) end)
+    rc.note = UI:Text(rc, 12); rc.note:SetJustifyH("LEFT")
+    if rc.note.SetWordWrap then rc.note:SetWordWrap(true) end
 end
 
 refreshWeapons = function(f, c)
@@ -2018,47 +2025,33 @@ refreshWeapons = function(f, c)
     for _, e in ipairs(r.toLearn) do
         local row = f.wpLearnRows:Get()
         row.e = e
+        row.master = M:Masters(e.id)[1]
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -ry); row:SetPoint("TOPRIGHT", 0, -ry)
         row.icon:SetTexture(e.icon)
         row.name:SetText(e.name)
         row.name:SetTextColor(unpack(e.soon and C.muted or C.text))
         row.cost:SetText(e.soon and string.format(T("niv. %d"), e.level) or WK:FormatMoney(e.cost))
         row.cost:SetTextColor(unpack(e.soon and C.muted or C.gold))
+        local m = row.master
+        if m then
+            local d = (mine and m.distance) and ("  ·  " .. string.format(T("%d m"), math.floor(m.distance))) or ""
+            row.sub:SetText(m.name .. "  ·  " .. M:Zone(m) .. d)
+        else
+            row.sub:SetText(T("Aucun maître d'armes connu pour ta faction."))
+        end
+        row.go:Paint(false)
+        row.go:SetShown(mine and m ~= nil)
         row:Show()
-        ry = ry + 28
+        ry = ry + WEAP_LEARN_H
     end
-    rc.mt:ClearAllPoints(); rc.mname:ClearAllPoints(); rc.line:ClearAllPoints()
+    rc.note:ClearAllPoints()
     if #r.toLearn == 0 then
-        rc.mname:SetPoint("TOPLEFT", 16, -ry); rc.mname:SetPoint("RIGHT", -16, 0)
-        rc.mname:SetText(UI:Hex(C.positive) .. T("Toutes les armes de ta classe sont apprises.") .. "|r")
-        rc.mt:Hide(); rc.line:Hide(); rc.go:Hide()
+        rc.note:SetPoint("TOPLEFT", 16, -ry); rc.note:SetPoint("RIGHT", -16, 0)
+        rc.note:SetText(UI:Hex(C.positive) .. T("Toutes les armes de ta classe sont apprises.") .. "|r")
+        rc.note:Show()
         rc:SetHeight(ry + 30)
     else
-        ry = ry + 8
-        rc.line:SetPoint("TOPLEFT", 16, -ry); rc.line:SetPoint("TOPRIGHT", -16, -ry); rc.line:Show()
-        ry = ry + 10
-        rc.mt:SetPoint("TOPLEFT", 16, -ry); rc.mt:Show()
-        ry = ry + 18
-        -- le plus proche qui enseigne au moins une des armes à apprendre
-        local want = {}
-        for _, e in ipairs(r.toLearn) do want[e.id] = true end
-        local master
-        for _, m in ipairs(M:Masters()) do
-            for id in pairs(m.teaches) do if want[id] then master = m break end end
-            if master then break end
-        end
-        rc.master = master
-        rc.mname:SetPoint("TOPLEFT", 16, -ry); rc.mname:SetPoint("RIGHT", -16, 0)
-        if master then
-            local d = master.distance and mine and ("  " .. UI:Hex(C.muted) .. "· " .. string.format(T("%d m"), math.floor(master.distance)) .. "|r") or ""
-            rc.mname:SetText(master.name .. "  " .. UI:Hex(C.muted) .. "· " .. M:Zone(master) .. "|r" .. d)
-        else
-            rc.mname:SetText(UI:Hex(C.muted) .. T("Aucun maître d'armes connu pour ta faction.") .. "|r")
-        end
-        ry = ry + math.max(16, rc.mname:GetStringHeight() or 16) + 8
-        rc.go:ClearAllPoints(); rc.go:SetPoint("TOPLEFT", 16, -ry)
-        rc.go:SetShown(mine and master ~= nil)
-        if mine and master then ry = ry + 28 + 6 end
+        rc.note:Hide()
         rc:SetHeight(ry + 12)
     end
     local bottom = wide and math.max(y + 10, rc:GetHeight()) or (sy + rc:GetHeight())
