@@ -31,7 +31,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
-CLIENT_VERSION = "1.9.2"
+CLIENT_VERSION = "1.9.3"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1044,34 +1044,68 @@ def previous_versions():
     out = []
     for d in os.listdir(previous_dir()):
         p = os.path.join(previous_dir(), d)
-        if os.path.isdir(p):
+        # (mises de côté d'un retour en arrière interrompu : pas des versions à remettre)
+        if os.path.isdir(p) and not d.endswith("-ancienne") and not d.endswith("-retire"):
             out.append({"path": p, "version": d.split("-", 1)[-1], "time": os.path.getmtime(p)})
     out.sort(key=lambda x: x["time"], reverse=True)
     return out
 
 
 def rollback(addons, prev):
+    """Remet la version gardée prev. Transactionnel : chaque déplacement est noté ; si l'un échoue (fichier
+    verrouillé par le jeu, disque plein…), ceux déjà faits sont défaits dans l'ordre inverse, et l'addon reste
+    tel qu'avant (avant, une erreur au milieu laissait un addon à moitié remis, ou pas d'addon du tout)."""
     target = os.path.join(addons, ADDON)
-    cur = installed_version(addons)
-    tmp = None
-    if os.path.isdir(target):
-        tmp = os.path.join(previous_dir(), "%s-%s" % (ADDON, cur or "inconnue"))
-        if os.path.exists(tmp) and os.path.normpath(tmp) != os.path.normpath(prev["path"]):
-            shutil.rmtree(tmp, ignore_errors=True)
-        if os.path.normpath(tmp) == os.path.normpath(prev["path"]):
-            tmp = tmp + "-courante"
-        shutil.move(target, tmp)
     data = os.path.join(addons, DATA_ADDON)
-    if os.path.isdir(data):
-        # données de la version actuelle : rangées avec elle (ou retirées s'il n'y avait pas d'addon)
-        if tmp:
-            shutil.move(data, os.path.join(tmp, DATA_KEEP))
-        else:
-            shutil.rmtree(data, ignore_errors=True)
-    shutil.move(prev["path"], target)
-    kept = os.path.join(target, DATA_KEEP)
-    if os.path.isdir(kept):
-        shutil.move(kept, data)
+    cur = installed_version(addons)
+    done = []  # (source, destination) des déplacements faits
+
+    def move(src, dst):
+        shutil.move(src, dst)
+        done.append((src, dst))
+
+    trash = None
+    try:
+        tmp = None
+        if os.path.isdir(target):
+            tmp = os.path.join(previous_dir(), "%s-%s" % (ADDON, cur or "inconnue"))
+            if os.path.normpath(tmp) == os.path.normpath(prev["path"]):
+                tmp = tmp + "-courante"
+            if os.path.exists(tmp):
+                # ancienne sauvegarde du même nom : mise de côté, effacée seulement si tout réussit
+                trash = tmp + "-ancienne"
+                if os.path.exists(trash):
+                    shutil.rmtree(trash, ignore_errors=True)
+                move(tmp, trash)
+            move(target, tmp)
+        if os.path.isdir(data):
+            # données de la version actuelle : rangées avec elle (ou mises de côté s'il n'y avait pas d'addon)
+            if tmp:
+                move(data, os.path.join(tmp, DATA_KEEP))
+            else:
+                trash2 = os.path.join(previous_dir(), DATA_ADDON + "-retire")
+                if os.path.exists(trash2):
+                    shutil.rmtree(trash2, ignore_errors=True)
+                move(data, trash2)
+        move(prev["path"], target)
+        kept = os.path.join(target, DATA_KEEP)
+        if os.path.isdir(kept):
+            move(kept, data)
+    except Exception:
+        for src, dst in reversed(done):
+            try:
+                if os.path.exists(src):
+                    shutil.rmtree(src, ignore_errors=True)
+                shutil.move(dst, src)
+            except OSError:
+                pass
+        raise
+    # tout a réussi : les mises de côté sont effacées
+    if trash:
+        shutil.rmtree(trash, ignore_errors=True)
+    trash2 = os.path.join(previous_dir(), DATA_ADDON + "-retire")
+    if os.path.exists(trash2):
+        shutil.rmtree(trash2, ignore_errors=True)
 
 
 def clean_env():

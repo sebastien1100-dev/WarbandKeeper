@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.3 — 21/11/2026
+
+### Corrections
+- « Remettre la version précédente » : si le retour en arrière échoue au milieu (fichier bloqué par le jeu, disque plein…), tout est remis comme avant, au lieu de laisser l'addon à moitié restauré ou absent. Une ancienne sauvegarde du même nom n'est plus effacée avant d'être sûr que le retour a marché.
+
 ## 1.9.2 — 21/11/2026
 
 ### Corrections
