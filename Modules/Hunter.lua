@@ -266,9 +266,7 @@ function M:OnLogin()
     self:ReadAspect()
     self:SyncPetButton()
     self:UpdateAlerts()
-    if C_Timer and C_Timer.NewTicker then
-        C_Timer.NewTicker(2, function() if isHunter() then M:UpdateAlerts() end end)
-    end
+    -- (plus de minuterie de 2 s : les rappels à l'écran sont retirés, UpdateAlerts sortait aussitôt)
 end
 
 local function refresh()

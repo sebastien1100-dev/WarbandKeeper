@@ -613,16 +613,17 @@ function M:Receive(sender, msg)
         if aun == me() then self:Me().aura = aua; applyMine() else entryOf(aun).aura = aua end
         return true
     end
-    if msg:find("FREEASSIGN YES") then e.free = true end
-    if msg:find("FREEASSIGN NO") then e.free = false end
+    -- seulement un message reconnu demande une nouvelle répartition (un message inconnu ne coûte plus rien)
+    if msg:find("FREEASSIGN YES") then e.free = true return true end
+    if msg:find("FREEASSIGN NO") then e.free = false return true end
     if msg:find("^CLEAR") and isLeader(sender) then
         for _, pe in pairs(pallys) do pe.assign = {} end
         local c = self:Me()
         c.mine = {}
         if not msg:find("SKIP") then c.aura = 0 end
         applyMine()
+        return true
     end
-    return true
 end
 
 ---------------------------------------------------------------------------
@@ -631,6 +632,18 @@ end
 local function changed()
     statusCache = nil
     if M.OnChange then M:OnChange() end
+end
+-- Messages des paladins regroupés : en raid, plusieurs addons en envoient plusieurs par seconde ; une seule
+-- nouvelle répartition (et un seul rafraîchissement de la barre) toutes les 0,3 s au plus
+local reassignPending
+function M.Reassign()
+    if reassignPending then return end
+    reassignPending = true
+    _G.C_Timer.After(0.3, function()
+        reassignPending = false
+        M:AutoAssign()
+        changed()
+    end)
 end
 local rosterPending
 local function onRoster()
@@ -690,13 +703,10 @@ WK:On("CHAT_MSG_ADDON", function(prefix, msg, ch, sender)
     if #msg > 250 then return end
     if prefix == WKPREFIX then
         local mode = msg:match("^HI (%a+)")
-        if mode then local e = entryOf(sender); e.wk = true; e.auto = mode == "auto" end
-        M:AutoAssign()
-        changed()
+        if mode then local e = entryOf(sender); e.wk = true; e.auto = mode == "auto"; M:Reassign() end
         return
     end
-    local ok = M:Receive(sender, msg)
-    if ok then M:AutoAssign(); changed() end
+    if M:Receive(sender, msg) then M:Reassign() end
 end)
 
 -- Pour les tests

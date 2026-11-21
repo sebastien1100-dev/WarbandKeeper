@@ -467,9 +467,7 @@ function M:CheckAlerts()
     UI:SetAlert("camp.food", food and true or false, { text = food and string.format(T("Pas de « Bien nourri » au camp : mange %s"), (WK.GetItemInfo(food.id)) or "") or "",
         color = UI.colors.negative, prio = 2, icon = food and ((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(food.id)) or icon) or icon })
 end
-WK:On("PLAYER_LOGIN", function()
-    if C_Timer.NewTicker then C_Timer.NewTicker(5, function() pcall(M.CheckAlerts, M) end) end
-end)
+-- (plus de minuterie de 5 s : les rappels à l'écran sont retirés, CheckAlerts sortait aussitôt)
 
 -- S'asseoir (hors combat)
 function M:Sit()
@@ -478,7 +476,8 @@ function M:Sit()
 end
 
 local pending = false
-WK:On("UNIT_AURA", function(unit)
+-- auras du joueur seulement (RegisterUnitEvent) : plus celles de tout le raid et des plaques de nom
+WK:OnUnit("UNIT_AURA", "player", function(unit)
     if unit ~= "player" or pending then return end
     pending = true
     C_Timer.After(0.2, function() pending = false; M:Update() end)

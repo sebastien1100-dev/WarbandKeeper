@@ -50,12 +50,15 @@ local function guideEnd(g)
 end
 
 -- Besoins de chaque perso : needs[perso][objet] = { n (nil = sans limite), why, prio (1 guide, 2 recette, 3 composant) }
-function M:Needs()
+-- onlyKey (facultatif) : seulement ce perso (le plan du courrier et de la banque n'a besoin que du perso
+-- connecté ; avant, les guides de tous les persos et de tous leurs métiers étaient recalculés à chaque plan)
+function M:Needs(onlyKey)
     local R = WK.modules.Recipes
     local ui = WK.DB.global.settings.ui
     local targets = ui and ui.guideTarget or {}
     local needs = {}
     for key, c in pairs(WK.DB.global.characters) do
+      if not onlyKey or key == onlyKey then
         local n = {}
         needs[key] = n
         local known = R:KnownOutputs(c)
@@ -85,6 +88,7 @@ function M:Needs()
         for id, k in pairs(uses) do
             if not n[id] then n[id] = { prio = 3, why = string.format(k > 1 and T("composant de %d recettes") or T("composant de %d recette"), k) } end
         end
+      end
     end
     -- objets de recette : au perso du métier qui ne la connaît pas encore (le plus avancé)
     self.recipeNeeds = function(id)

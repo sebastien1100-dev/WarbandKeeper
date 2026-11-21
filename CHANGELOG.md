@@ -71,6 +71,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.14 — 21/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Plus léger en raid avec des paladins : les messages de PallyPower sont regroupés (une seule nouvelle répartition toutes les 0,3 s), et un message inconnu ne relance plus rien.
+- Feu de camp : n'écoute plus que tes propres effets (plus ceux de tout le raid et des plaques de nom), et les boutons du kit ne sont plus reposés à chaque effet.
+- Carte des récoltes : une nouvelle récolte s'ajoute aux emplacements déjà regroupés, au lieu de tout regrouper de nouveau (jusqu'à 3000 points).
+- Courrier et banque : le plan ne recalcule plus les guides de métier de tous tes persos, seulement ceux du perso connecté.
+- Options > Fiabilité : la taille de la sauvegarde est mesurée une fois toutes les 5 minutes au plus, au lieu de chaque affichage.
+- Deux minuteries qui ne servaient plus (rappels du chasseur et du feu de camp) sont retirées ; la fenêtre des talents arrête de chercher un bouton introuvable après quelques essais.
+
 ## v1.128.13 — 21/11/2026
 
 _Un /reload suffit._

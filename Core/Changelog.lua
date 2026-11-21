@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.14", date = "21/11/2026",
+        changed = {
+            "Plus léger en raid avec des paladins : les messages de PallyPower sont regroupés (une seule nouvelle répartition toutes les 0,3 s), et un message inconnu ne relance plus rien.",
+            "Feu de camp : n'écoute plus que tes propres effets (plus ceux de tout le raid et des plaques de nom), et les boutons du kit ne sont plus reposés à chaque effet.",
+            "Carte des récoltes : une nouvelle récolte s'ajoute aux emplacements déjà regroupés, au lieu de tout regrouper de nouveau (jusqu'à 3000 points).",
+            "Courrier et banque : le plan ne recalcule plus les guides de métier de tous tes persos, seulement ceux du perso connecté.",
+            "Options > Fiabilité : la taille de la sauvegarde est mesurée une fois toutes les 5 minutes au plus, au lieu de chaque affichage.",
+            "Deux minuteries qui ne servaient plus (rappels du chasseur et du feu de camp) sont retirées ; la fenêtre des talents arrête de chercher un bouton introuvable après quelques essais.",
+        },
+    },
+    {
         version = "1.128.13", date = "21/11/2026",
         fixed = {
             "Vente rapide : un prix tapé à la main n'est plus écrasé par le second essai, et le prix n'est plus posé si tu as changé d'objet entre-temps.",

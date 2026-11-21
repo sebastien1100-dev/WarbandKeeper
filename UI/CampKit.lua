@@ -135,8 +135,10 @@ local function build()
             local e = list[i]
             if e and i <= n then
                 b.id, b.kind = e.id, e.kind
-                b:SetAttribute("type", "item") -- rendu après un aperçu (qui l'avait retiré)
-                b:SetAttribute("item", "item:" .. e.id)
+                -- attributs posés seulement s'ils changent (chaque aura du joueur repasse ici)
+                if b:GetAttribute("type") ~= "item" then b:SetAttribute("type", "item") end -- rendu après un aperçu
+                local item = "item:" .. e.id
+                if b:GetAttribute("item") ~= item then b:SetAttribute("item", item) end
                 b.icon:SetTexture(itemIcon(e.id))
                 b.n:SetText((e.count or 0) > 1 and e.count or "")
                 local glow = e.kind == "fed" and fedMissing

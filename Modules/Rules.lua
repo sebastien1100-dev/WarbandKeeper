@@ -127,7 +127,7 @@ function M:Plan(store, accept)
     local function ownGuideNeed(id)
         if myNeeds == nil then
             local S = WK.modules.Stash
-            local all = S and S.Needs and S:Needs()
+            local all = S and S.Needs and S:Needs(WK:CharKey())
             myNeeds = all and all[WK:CharKey()] or false
         end
         local e = myNeeds and myNeeds[id]

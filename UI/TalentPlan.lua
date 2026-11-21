@@ -377,9 +377,15 @@ watcher:SetScript("OnUpdate", function(w, el)
     sync()
     -- cercle perdu (fenêtre redessinée, panneau rouvert…) : reposé, au plus une fois par seconde
     w.g = (w.g or 0) + 1
+    -- bouton introuvable 5 fois de suite : on arrête de reparcourir la fenêtre jusqu'au prochain changement
+    -- d'onglet (avant, tout l'arbre de la fenêtre était refouillé chaque seconde)
+    if w.visSeen ~= lastVis then w.visSeen, w.miss = lastVis, 0 end
     if lastVis and w.g >= 4 then
         w.g = 0
-        if not (glow and glow:IsShown()) then UI:TalentPlanGlow() end
+        if not (glow and glow:IsShown()) and (w.miss or 0) < 5 then
+            UI:TalentPlanGlow()
+            if glowWhy == "bouton du talent introuvable" then w.miss = (w.miss or 0) + 1 else w.miss = 0 end
+        end
     end
 end)
 UI.TalentPlanSync = sync

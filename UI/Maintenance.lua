@@ -195,9 +195,13 @@ function UI:BuildMaintenanceCards(page, card)
         end
         eb.see:SetShown(n > 0); eb.copy:SetShown(n > 0); eb.clear:SetShown(n > 0)
         -- mesure (une fois à l'ouverture, puis après chaque nettoyage)
-        if not (keep and cc.scan) then
+        -- (gardée 5 min : la mesure parcourt toute la sauvegarde, prix de l'HV compris ; refaite après un
+        -- nettoyage, qui remet cc.scanAt à nil)
+        local now = _G.GetTime and _G.GetTime() or 0
+        if not (cc.scan and (keep or (cc.scanAt and now - cc.scanAt < 300))) then
             cc.scan = M:Scan()
             cc.size = M:Total()
+            cc.scanAt = now
         end
         cc.total:SetText(string.format(T("sauvegarde env. %s"), M.Bytes(cc.size)))
         local gain = 0

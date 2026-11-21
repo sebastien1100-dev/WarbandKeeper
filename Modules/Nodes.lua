@@ -61,29 +61,34 @@ end
 -- Gardé en mémoire tant qu'aucune récolte n'est notée ni effacée (version de Modules/GatherMap.lua).
 local MERGE = 0.006
 local cache = {}
+local function merge(self, list, p)
+    local i = (p.k == "herb" or p.k == "ore") and self:Info(p.i)
+    if not i then return end
+    for _, e in ipairs(list) do
+        if e.kind == i.kind and math.abs(e.x - p.x) < MERGE and math.abs(e.y - p.y) < MERGE then
+            e.n = e.n + 1
+            if i.req > e.req then e.req, e.id = i.req, p.i end
+            return
+        end
+    end
+    list[#list + 1] = { x = p.x, y = p.y, id = p.i, kind = i.kind, req = i.req, n = 1 }
+end
 function M:All(mapID)
     local spots = (WK.DB.global.gatherSpots or {})[mapID] or {}
     local GM = WK.modules.GatherMap
-    local ver = GM and GM.version or 0
+    local ver, reb = GM and GM.version or 0, GM and GM.rebuild or 0
     local c = cache[mapID]
     if c and c.ver == ver and c.spots == spots and c.n == #spots then return c.list end
-    local list = {}
-    for _, p in ipairs(spots) do
-        local i = (p.k == "herb" or p.k == "ore") and self:Info(p.i)
-        if i then
-            local found
-            for _, e in ipairs(list) do
-                if e.kind == i.kind and math.abs(e.x - p.x) < MERGE and math.abs(e.y - p.y) < MERGE then found = e break end
-            end
-            if found then
-                found.n = found.n + 1
-                if i.req > found.req then found.req, found.id = i.req, p.i end
-            else
-                list[#list + 1] = { x = p.x, y = p.y, id = p.i, kind = i.kind, req = i.req, n = 1 }
-            end
-        end
+    -- nouvelle récolte : seuls les nouveaux points sont ajoutés (avant, tout était regroupé de nouveau,
+    -- jusqu'à 3000 points comparés deux à deux, à chaque butin)
+    if c and c.spots == spots and c.reb == reb and #spots >= c.n then
+        for k = c.n + 1, #spots do merge(self, c.list, spots[k]) end
+        c.ver, c.n = ver, #spots
+        return c.list
     end
-    cache[mapID] = { ver = ver, spots = spots, n = #spots, list = list }
+    local list = {}
+    for _, p in ipairs(spots) do merge(self, list, p) end
+    cache[mapID] = { ver = ver, reb = reb, spots = spots, n = #spots, list = list }
     return list
 end
 
