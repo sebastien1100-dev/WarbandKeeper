@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.102 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreur « Attempt to access forbidden object » (ProfPanels.lua) en cherchant les sacs des autres addons : les cadres protégés du jeu sont maintenant ignorés.
+
 ## v1.128.101 — 22/11/2026
 
 _Un /reload suffit._

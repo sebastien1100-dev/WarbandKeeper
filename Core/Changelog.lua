@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.102", date = "22/11/2026",
+        fixed = {
+            "Erreur « Attempt to access forbidden object » (ProfPanels.lua) en cherchant les sacs des autres addons : les cadres protégés du jeu sont maintenant ignorés.",
+        },
+    },
+    {
         version = "1.128.101", date = "22/11/2026",
         fixed = {
             "Métiers : le bouton « Ouvrir le métier » disparaissait parfois (Enchantement fenêtre fermée) quand aucune recette n'était lue ; il est toujours là pour un métier qui a une fenêtre.",

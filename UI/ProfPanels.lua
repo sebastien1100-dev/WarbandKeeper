@@ -231,11 +231,21 @@ local BAG_NAMES = { "ellesmere.*bag", "bag.*ellesmere", "^eui.*bag", "^elvui_con
     "^adibagscontainer1$", "^baganator.*backpack", "^arkinventorywindowmain$" }
 local extraBags, extraSeen = {}, {}
 local soonDE
+-- nom d'un enfant d'UIParent : les cadres interdits du jeu (boutique, minuteurs protégés…) refusent tout appel
+-- venant d'un addon, IsForbidden compris parfois : lu dans un pcall, ignoré au moindre refus
+local function safeName(ch)
+    local ok, n = pcall(function()
+        if ch.IsForbidden and ch:IsForbidden() then return nil end
+        return ch:GetName()
+    end)
+    if not ok or type(n) ~= "string" or (_G.issecretvalue and _G.issecretvalue(n)) then return nil end
+    return n
+end
 local function discoverBags()
     if not (_G.UIParent and _G.UIParent.GetChildren) then return end
     for _, ch in ipairs({ _G.UIParent:GetChildren() }) do
-        local n = ch.GetName and ch:GetName()
-        if n and not extraSeen[ch] and not (_G.issecretvalue and _G.issecretvalue(n)) then
+        local n = not extraSeen[ch] and safeName(ch)
+        if n then
             local low = n:lower()
             for _, pat in ipairs(BAG_NAMES) do
                 if low:find(pat) then
@@ -255,8 +265,8 @@ function UI.OtherBagsDiag()
     discoverBags()
     local n = 0
     for _, ch in ipairs({ _G.UIParent:GetChildren() }) do
-        local nm = ch.GetName and ch:GetName()
-        if nm and not (_G.issecretvalue and _G.issecretvalue(nm)) and ch:IsShown() and nm:lower():find("bag") then
+        local nm = safeName(ch)
+        if nm and nm:lower():find("bag") and ch:IsShown() then
             n = n + 1
             WK:Print(string.format("%s%s", nm, extraSeen[ch] and "  (reconnu)" or ""))
         end
