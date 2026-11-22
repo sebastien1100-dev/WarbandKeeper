@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.115", date = "22/11/2026",
+        changed = {
+            "Enchanteur : la fenêtre « Désenchanter ou vendre ? » s'ouvre maintenant à chaque ouverture des sacs (ceux du jeu ou d'EllesmereUI), même sans objet conseillé au désenchantement ; fermée à la main, elle revient à la prochaine ouverture. Le bouton sur les sacs est retiré.",
+        },
+    },
+    {
         version = "1.128.114", date = "22/11/2026",
         fixed = {
             "Hôtel des ventes > Parcourir : la colonne « vs 7 j » ne changeait qu'au clic sur un objet, avec des pourcentages énormes (+795 %) pour les sacs. Elle compare maintenant le prix du jour à la moyenne des 7 jours d'avant (« - » tant qu'il n'y a pas d'historique), et le prix d'un objet qui ne s'empile pas n'est plus divisé par le nombre d'enchères.",

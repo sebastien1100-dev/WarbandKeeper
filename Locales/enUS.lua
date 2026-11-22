@@ -4556,5 +4556,4 @@ WK.Locales.enUS.text = {
     ["%s : sera toujours proposé au désenchantement."] = "%s: will always be offered for disenchanting.",
     ["%s : plus forcé au désenchantement."] = "%s: no longer forced to disenchant.",
     ["Marqué"] = "Marked",
-    ["Désenchanter ou vendre ? (clic droit sur un objet de la liste : toujours le désenchanter)"] = "Disenchant or sell? (right-click an item in the list: always disenchant it)",
 }
