@@ -135,7 +135,12 @@ function UI.ToggleSelfBuffs()
     if inCombat() then WK:Print(T("Buffs : liste à ouvrir hors combat.")) return end
     if not list then list = build() end
     list.open = not list.open
+    -- une seule liste ouverte à la fois sur la barre : le kit de camp se replie
+    if list.open and UI.CloseCampKit then UI.CloseCampKit() end
     UI:RefreshSelfBuffs()
+end
+function UI.CloseSelfBuffs()
+    if list and list.open and not inCombat() then list.open = false; list:Hide() end
 end
 function UI.SelfBuffsOpen() return list and list.open and list:IsShown() or false end
 

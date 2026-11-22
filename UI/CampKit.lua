@@ -246,7 +246,12 @@ function UI.ToggleCampKit()
     if inCombat() then WK:Print(T("Kit de camp : à ouvrir hors combat.")) return end
     if not kit then kit = build() end
     kit.open = not kit.open
+    -- une seule liste ouverte à la fois sur la barre : la liste des buffs se replie
+    if kit.open and UI.CloseSelfBuffs then UI.CloseSelfBuffs() end
     UI:RefreshCampKit()
+end
+function UI.CloseCampKit()
+    if kit and kit.open and not inCombat() then kit.open = false; kit:Hide() end
 end
 function UI.CampKitOpen() return kit and kit.open and kit:IsShown() or false end
 

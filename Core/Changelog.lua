@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.68", date = "22/11/2026",
+        added = {
+            "Pierre de rencontre : un clic droit dessus ouvre la page LFG de l'addon.",
+        },
+        fixed = {
+            "Barre des sacs : le kit de camp et la liste des buffs ne s'ouvrent plus en même temps l'un sur l'autre ; ouvrir l'un replie l'autre.",
+        },
+    },
+    {
         version = "1.128.67", date = "22/11/2026",
         added = {
             "Barre des sacs : la case des buffs se met en avant quand un buff manque (fond rouge et liseré qui respire), hors combat et hors des villes. Réglage « Mettre en avant un buff absent » dans la carte de la barre.",

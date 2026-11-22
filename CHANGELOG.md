@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.68 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Pierre de rencontre : un clic droit dessus ouvre la page LFG de l'addon.
+
+### Corrections
+- Barre des sacs : le kit de camp et la liste des buffs ne s'ouvrent plus en même temps l'un sur l'autre ; ouvrir l'un replie l'autre.
+
 ## v1.128.67 — 22/11/2026
 
 _Un /reload suffit._

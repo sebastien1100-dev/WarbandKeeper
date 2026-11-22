@@ -1018,3 +1018,23 @@ WK:On("MODIFIER_STATE_CHANGED", function(key)
         if f then f(c) end
     end
 end)
+
+-- Pierre de rencontre : un clic droit dessus ouvre notre page LFG (pierre reconnue par la 1re ligne de
+-- l'infobulle du jeu au moment du clic)
+local function onStone()
+    local tt = _G.GameTooltip
+    if not (tt and tt:IsShown()) then return false end
+    local l = _G.GameTooltipTextLeft1
+    local t = l and l:GetText()
+    if type(t) ~= "string" then return false end
+    t = t:lower()
+    return t:find("pierre de rencontre", 1, true) or t:find("meeting stone", 1, true) or false
+end
+UI.OnMeetingStone = onStone
+WK:On("GLOBAL_MOUSE_DOWN", function(btn)
+    if btn ~= "RightButton" or not WK:PageOn("lfg") or not onStone() then return end
+    _G.C_Timer.After(0.2, function()
+        if UI.frame and UI.frame:IsShown() and UI.current == "lfg" then return end
+        UI:ToggleWindow("lfg")
+    end)
+end)
