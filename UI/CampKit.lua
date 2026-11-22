@@ -182,6 +182,8 @@ local function build()
                 local glow = e.kind == "fed" and fedMissing
                 local col = glow and C.gold or { r1, g1, b1 }
                 b.edge:SetVertexColor(col[1], col[2], col[3], glow and 1 or 0.8)
+                -- liste de la barre des sacs : pas de cadre coloré autour des icônes (l'état est écrit à droite)
+                b.edge:SetShown(not listMode)
                 b.cd:Clear(); b.cdText:SetText("")
                 b:Show()
             else

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.65", date = "22/11/2026",
+        changed = {
+            "Listes déroulées de la barre des sacs (kit de camp, buffs) : plus de cadre coloré autour des icônes ni autour de la liste des buffs, plus sobre.",
+        },
+    },
+    {
         version = "1.128.64", date = "22/11/2026",
         added = {
             "Barre « Sacs, marchand et maître » : taille, opacité, fond (sans fond, chiffres cernés de noir) et traits entre les cases réglables.",
