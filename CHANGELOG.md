@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.88 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Recherche de groupe : le nombre total de groupes trouvés en tête de la liste des donjons ; « Mes demandes » a un vrai bouton « Vider » (avant, une petite corbeille peu visible avec le texte qui passait dessous).
+
 ## v1.128.87 — 22/11/2026
 
 _Un /reload suffit._

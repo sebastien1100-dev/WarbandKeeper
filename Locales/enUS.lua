@@ -4472,14 +4472,20 @@ WK.Locales.enUS.text = {
         "CAMPS",
     ["Joueurs croisés"] =
         "Players met",
-    ["Vider mes demandes"] =
-        "Clear my requests",
     ["Joueurs de tes groupes. Note-les : 3 étoiles = à refaire ; 1 étoile = en bas des listes, et tu es prévenu s'ils rejoignent ton groupe."] =
         "Players from your groups. Rate them: 3 stars = play again; 1 star = bottom of the lists, and you are warned if they join your group.",
-    ["%d demande(s) · vidées en rejoignant un groupe"] =
-        "%d request(s) · cleared when you join a group",
     ["POUR TOI"] =
         "FOR YOU",
     ["TROP FACILES"] =
         "TOO EASY",
+    ["Vider mes demandes (elles se vident aussi en rejoignant un groupe)"] =
+        "Clear my requests (they are also cleared when you join a group)",
+    ["%d demandes"] =
+        "%d requests",
+    ["%d demande"] =
+        "%d request",
+    ["groupes en tout"] =
+        "groups in total",
+    ["groupe en tout"] =
+        "group in total",
 }

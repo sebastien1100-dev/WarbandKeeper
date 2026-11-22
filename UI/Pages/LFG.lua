@@ -209,6 +209,8 @@ UI:RegisterPage({
             end)
             return h
         end)
+        -- nombre total de groupes trouvés, en tête de la liste des donjons
+        self.ladderTotal = UI:Text(self.ladder.child, 11)
         self.meLine = self.ladder.child:CreateTexture(nil, "ARTWORK")
         self.meLine:SetHeight(1)
         self.meLv = UI:Text(self.ladder.child, 10)
@@ -266,10 +268,15 @@ UI:RegisterPage({
         -- en tête de « Mes demandes » : nombre et petite corbeille pour tout vider
         self.reqHead = _G.CreateFrame("Frame", nil, rlist.child)
         self.reqHead:SetSize(RIGHT_W - 28, 20)
+        -- bouton « Vider » lisible (avant : petite corbeille peu visible, le texte passait dessous)
+        self.reqHead.clear = UI:Button(self.reqHead, T("Vider"), nil, 20, "secondary", "trash")
+        self.reqHead.clear:SetPoint("RIGHT", 0, 0)
+        self.reqHead.clear.tooltip = T("Vider mes demandes (elles se vident aussi en rejoignant un groupe)")
         self.reqHead.t = UI:Text(self.reqHead, 10, C.dim)
         self.reqHead.t:SetPoint("LEFT", 0, 0)
-        self.reqHead.clear = UI:IconButton(self.reqHead, "trash", 18, T("Vider mes demandes"))
-        self.reqHead.clear:SetPoint("RIGHT", 0, 0)
+        self.reqHead.t:SetPoint("RIGHT", self.reqHead.clear, "LEFT", -6, 0)
+        self.reqHead.t:SetJustifyH("LEFT")
+        if self.reqHead.t.SetWordWrap then self.reqHead.t:SetWordWrap(false) end
         self.reqHead.clear:SetScript("OnClick", function() LFG:ClearRequests(); self:Refresh() end)
         -- en tête de « Joueurs croisés » : à quoi servent les étoiles
         self.recentHead = UI:Text(rlist.child, 10, C.dim)
@@ -796,6 +803,13 @@ UI:RegisterPage({
         local y = 4
         local lw = LEFT_W - 24
         local closed = cfg.ladderClosed or { easy = true, later = true }
+        local allGroups = 0
+        for _, n in pairs(counts) do allGroups = allGroups + n end
+        self.ladderTotal:ClearAllPoints(); self.ladderTotal:SetPoint("TOPLEFT", 4, -y)
+        local ar0, ag0, ab0 = UI:Accent()
+        self.ladderTotal:SetText(UI:Hex({ ar0, ag0, ab0 }) .. tostring(allGroups) .. "|r  " .. UI:Hex(C.muted)
+            .. (allGroups > 1 and T("groupes en tout") or T("groupe en tout")) .. "|r")
+        y = y + 22
         local function diffOf(a)
             if a.min <= 0 then return "mid", C.text end
             if (a.max > 0 and a.max < level - 3) or a.min < level - 9 then return "easy", C.dim end
@@ -1104,7 +1118,7 @@ UI:RegisterPage({
         self.reqHead:SetShown(showReq and #list > 0)
         if showReq and #list > 0 then
             self.reqHead:ClearAllPoints(); self.reqHead:SetPoint("TOPLEFT", 14, -ry)
-            self.reqHead.t:SetText(string.format(T("%d demande(s) · vidées en rejoignant un groupe"), #list))
+            self.reqHead.t:SetText(string.format(#list > 1 and T("%d demandes") or T("%d demande"), #list))
             ry = ry + 26
         end
         for i, e in ipairs(list) do
