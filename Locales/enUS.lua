@@ -4400,4 +4400,6 @@ WK.Locales.enUS.text = {
         "DPS",
     ["Frise des boss"] =
         "Boss timeline",
+    ["%d / %d boss"] =
+        "%d / %d bosses",
 }

@@ -100,11 +100,12 @@ local function build()
     if f.rec.SetWordWrap then f.rec:SetWordWrap(false) end
     f.left = UI:Text(f, 12); f.left:SetJustifyH("RIGHT")
     f.cap = f.rec -- compteur dans la même ligne que le record
-    -- frise des boss (maquette B) : un segment par boss compté, gris = tué, accent = prochain, sombre = à venir ;
-    -- noms en petit dessous (estompés une fois tués), cachés si les segments sont trop étroits
+    -- frise des boss (maquette A) : une pastille par boss compté, grise et pleine = tué, cerclée d'accent =
+    -- prochain, cerclée sombre = à venir ; « 2 / 3 boss » à la suite. Plus petites quand il y a beaucoup de boss
     f.bar = CreateFrame("Frame", nil, f)
-    f.bar:SetHeight(6)
+    f.bar:SetHeight(14)
     f.segs = {}
+    f.count = UI:Text(f.bar, 11, C.muted); f.count:SetJustifyH("LEFT")
     -- en-têtes des colonnes
     f.hdr = CreateFrame("Frame", nil, f); f.hdr:SetHeight(14)
     f.hdr.n = UI:Text(f.hdr, 9, C.dim); f.hdr.n:SetPoint("LEFT", 18, 0); f.hdr.n:SetText(T("BOSS"))
@@ -154,45 +155,49 @@ local function build()
             self.left:ClearAllPoints(); self.left:SetPoint("TOPRIGHT", -10, -(y - 1))
             y = y + 16
         end
-        -- frise des boss
+        -- frise des boss : pastilles
         local nb = #data.rows
         self.bar:SetShown(sh.bar and nb > 0)
         if sh.bar and nb > 0 then
             y = y + 2
             self.bar:ClearAllPoints(); self.bar:SetPoint("TOPLEFT", 10, -y); self.bar:SetPoint("TOPRIGHT", -10, -y)
-            local GAPS = 4
-            local segW = math.floor(((W2 - 20) - (nb - 1) * GAPS) / nb)
-            local names = segW >= 44
+            local killed = 0
+            for _, rw in ipairs(data.rows) do if rw[2] ~= nil then killed = killed + 1 end end
+            self.count:SetText(string.format(T("%d / %d boss"), killed, nb))
+            local room = (W2 - 20) - (self.count:GetStringWidth() or 60) - 8
+            local DOT, GAPD = 14, 6
+            if nb * (DOT + GAPD) > room then DOT, GAPD = 10, 4 end
+            if nb * (DOT + GAPD) > room then DOT, GAPD = 8, 3 end
+            self.bar:SetHeight(DOT)
             for i, rw in ipairs(data.rows) do
                 local sg = self.segs[i]
                 if not sg then
                     sg = CreateFrame("Frame", nil, self.bar)
-                    sg:SetHeight(6)
-                    sg.fill = UI:Rounded(sg, 3, 0, "ARTWORK", 1)
-                    sg.n = UI:Text(self.bar, 9, C.muted); sg.n:SetJustifyH("LEFT")
-                    if sg.n.SetWordWrap then sg.n:SetWordWrap(false) end
+                    sg.fill = sg:CreateTexture(nil, "ARTWORK")
+                    sg.fill:SetTexture(UI.MEDIA .. "circle"); sg.fill:SetAllPoints()
+                    sg.ring = sg:CreateTexture(nil, "ARTWORK", nil, 1)
+                    sg.ring:SetTexture(UI.MEDIA .. "ring"); sg.ring:SetAllPoints()
                     self.segs[i] = sg
                 end
                 local isDone, cur = rw[2] ~= nil, rw[5]
-                sg:ClearAllPoints(); sg:SetPoint("TOPLEFT", self.bar, "TOPLEFT", (i - 1) * (segW + GAPS), 0)
-                sg:SetWidth(segW)
-                if isDone then sg.fill:SetColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
-                elseif cur then
-                    local cc = over and C.negative or { r1, g1, b1 }
-                    sg.fill:SetColor(cc[1], cc[2], cc[3], 0.9)
-                else sg.fill:SetColor(1, 1, 1, 0.1) end
-                sg:Show()
-                sg.n:SetShown(names)
-                if names then
-                    sg.n:ClearAllPoints(); sg.n:SetPoint("TOPLEFT", sg, "BOTTOMLEFT", 0, -3); sg.n:SetWidth(segW)
-                    sg.n:SetText(rw[1] or "")
-                    sg.n:SetTextColor(unpack(isDone and C.dim or cur and C.text or C.muted))
+                sg:SetSize(DOT, DOT)
+                sg:ClearAllPoints(); sg:SetPoint("LEFT", self.bar, "LEFT", (i - 1) * (DOT + GAPD), 0)
+                if isDone then
+                    sg.fill:Show(); sg.fill:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 1); sg.ring:Hide()
+                else
+                    sg.fill:Hide(); sg.ring:Show()
+                    if cur then
+                        local cc = over and C.negative or { r1, g1, b1 }
+                        sg.ring:SetVertexColor(cc[1], cc[2], cc[3], 1)
+                    else sg.ring:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.8) end
                 end
+                sg:Show()
             end
-            for i = nb + 1, #self.segs do self.segs[i]:Hide(); self.segs[i].n:Hide() end
-            y = y + (names and 24 or 12)
+            for i = nb + 1, #self.segs do self.segs[i]:Hide() end
+            self.count:ClearAllPoints(); self.count:SetPoint("LEFT", self.bar, "LEFT", nb * (DOT + GAPD) + 4, 0)
+            y = y + DOT + 8
         else
-            for _, sg in ipairs(self.segs) do sg:Hide(); sg.n:Hide() end
+            for _, sg in ipairs(self.segs) do sg:Hide() end
         end
         -- boss : les tués plus tôt se replient (les 2 derniers restent), « Masquer les boss tués » les cache tous
         local list, done = {}, {}

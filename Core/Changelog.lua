@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.77", date = "22/11/2026",
+        changed = {
+            "Chrono du donjon : la frise des boss devient une rangée de petites pastilles, une par boss (grise et pleine = tué, cerclée de la couleur de l'apparence = prochain, cerclée sombre = à venir), suivie de « 2 / 3 boss ». Plus lisible quand il y a beaucoup de boss : les pastilles rapetissent pour tenir sur la ligne.",
+        },
+    },
+    {
         version = "1.128.76", date = "22/11/2026",
         changed = {
             "Chrono du donjon : même fond graphite et même liseré que les autres fenêtres à l'écran (avant, presque noir). La barre vide sous le titre devient une frise des boss : un segment par boss, gris quand il est tué, à la couleur de l'apparence pour le prochain (rouge si le record est dépassé), noms en petit dessous quand il y a la place. Option « Frise des boss » dans les réglages du chrono.",

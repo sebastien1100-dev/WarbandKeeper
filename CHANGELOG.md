@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.77 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Chrono du donjon : la frise des boss devient une rangée de petites pastilles, une par boss (grise et pleine = tué, cerclée de la couleur de l'apparence = prochain, cerclée sombre = à venir), suivie de « 2 / 3 boss ». Plus lisible quand il y a beaucoup de boss : les pastilles rapetissent pour tenir sur la ligne.
+
 ## v1.128.76 — 22/11/2026
 
 _Un /reload suffit._
