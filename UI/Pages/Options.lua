@@ -756,7 +756,7 @@ UI:RegisterPage({
         UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
 
         -- (section cachée « alerts » : affichée seulement dans QoL > Général > Alertes, qui la reprend)
-        local loginCard = card("Rappels à la connexion", 198)
+        local loginCard = card("Rappels à la connexion", 146)
         self.loginToggle = UI:Toggle(loginCard,
             function() return cfg.loginPopup ~= false end,
             function(v) cfg.loginPopup = v end)
@@ -769,11 +769,81 @@ UI:RegisterPage({
             UI:Slider(loginCard, 200, 0, 60, 1,
                 function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
                 function(v) cfg.loginPopupTime = v end, "%d s"), 220)
-        UI:SettingRow(loginCard, -144, "Mini-fenêtre « À faire »",
-            "Une barre de pastilles à l'écran (une par genre de tâche, plus ton objectif le plus proche), "
-                .. "placée en mode édition.",
-            UI:Toggle(loginCard, function() return cfg.todoBar ~= false end,
-                function(v) cfg.todoBar = v; if UI.RefreshTodoBar then UI:RefreshTodoBar() end end), 80)
+        -- Mini-fenêtre « À faire » (UI/TodoBar.lua) : tous ses réglages ici
+        do
+            local tc = UI.TodoConfig()
+            local function redraw() if UI.RefreshTodoBar then UI:RefreshTodoBar() end end
+            local kinds = UI.TODO_KINDS
+            local half = math.ceil(#kinds / 2)
+            local tcard = card("Mini-fenêtre « À faire »", 40 + 15 * 46 + 34 + half * 30 + 12,
+                "barre de pastilles à l'écran, placée en mode édition")
+            local ty = -40
+            local function trow(label, desc, ctl, w) UI:SettingRow(tcard, ty, label, desc, ctl, w); ty = ty - 46 end
+            local function tog(get, set) return UI:Toggle(tcard, get, function(v) set(v); redraw() end) end
+            trow("Afficher la mini-fenêtre",
+                "Une pastille par genre de tâche, avec son nombre ; survol = le détail, clic = la page.",
+                tog(function() return cfg.todoBar ~= false end, function(v) cfg.todoBar = v end), 80)
+            local scope = UI:Segmented(tcard, { { "all", "Tout le compte" }, { "me", "Ce perso" } },
+                function(v) tc.scope = v; redraw() end, 26)
+            scope:Select(tc.scope)
+            trow("Tâches de", "Tout le compte, ou seulement celles du perso connecté.", scope, 230)
+            trow("Titre « À faire »", "Le mot « À faire » au début de la barre.",
+                tog(function() return tc.title end, function(v) tc.title = v end), 80)
+            trow("Libellés", "Un mot à côté du nombre (« 2 plafond », « 1 repos »…) quand la tâche en a un.",
+                tog(function() return tc.labels end, function(v) tc.labels = v end), 80)
+            trow("Cacher quand il n'y a rien", "Sinon la barre affiche « rien à faire ».",
+                tog(function() return tc.hideEmpty end, function(v) tc.hideEmpty = v end), 80)
+            local size = UI:Segmented(tcard, { { "s", "Petite" }, { "m", "Moyenne" }, { "l", "Grande" } },
+                function(v) tc.size = v; redraw() end, 26)
+            size:Select(tc.size)
+            trow("Taille des pastilles", "La taille d'ensemble se règle aussi en mode édition.", size, 260)
+            local lay = UI:Segmented(tcard, { { "row", "En ligne" }, { "col", "En colonne" } },
+                function(v) tc.vertical = v == "col"; redraw() end, 26)
+            lay:Select(tc.vertical and "col" or "row")
+            trow("Disposition", "Pastilles côte à côte, ou les unes sous les autres.", lay, 220)
+            trow("Fond", "Fond graphite derrière les pastilles ; sans fond, seules les pastilles restent.",
+                tog(function() return tc.bg end, function(v) tc.bg = v end), 80)
+            trow("Pastilles au plus", "Les plus urgentes d'abord ; 0 : toutes.",
+                UI:Slider(tcard, 220, 0, 15, 1, function() return tc.max or 0 end,
+                    function(v) tc.max = v; redraw() end, "%d"), 240)
+            -- taille et opacité : les mêmes que les curseurs du mode édition (la place, elle, se règle là-bas)
+            local thud = function() return UI:HUDEntry("todoBar") end
+            local function happly() if UI.HUDApply then UI:HUDApply("todoBar") end; redraw() end
+            trow("Taille de la barre",
+                "Toute la barre (la même que le curseur du mode édition ; la place se règle en mode édition).",
+                UI:Slider(tcard, 220, 0.5, 2, 0.05, function() return thud().scale or 1 end,
+                    function(v) thud().scale = v; happly() end, "%.2fx"), 240)
+            trow("Opacité", "Transparence de toute la barre.",
+                UI:Slider(tcard, 220, 0.1, 1, 0.05, function() return thud().alpha or 1 end,
+                    function(v) thud().alpha = v; happly() end, "%.2f"), 240)
+            trow("Pleine au survol", "La barre redevient opaque quand la souris passe dessus.",
+                tog(function() return tc.hoverFull end, function(v) tc.hoverFull = v end), 80)
+            trow("Infobulle au survol", "Le détail des tâches d'une pastille quand la souris passe dessus.",
+                tog(function() return tc.tips end, function(v) tc.tips = v end), 80)
+            trow("Clic sur une pastille", "Ouvre la page de la tâche (Courrier, Métiers…).",
+                tog(function() return tc.click end, function(v) tc.click = v end), 80)
+            trow("Cacher en combat", "La barre disparaît pendant les combats.",
+                tog(function() return tc.hideCombat end, function(v) tc.hideCombat = v end), 80)
+            -- pastilles affichées, genre par genre (deux colonnes)
+            local head = UI:Text(tcard, 12, C.text)
+            head:SetPoint("TOPLEFT", 16, ty - 6)
+            head:SetText(WK.T("Pastilles affichées"))
+            local gy = ty - 34
+            for i, k in ipairs(kinds) do
+                local col = i <= half and 0 or 1
+                local row = (i - 1) % half
+                local holder = _G.CreateFrame("Frame", nil, tcard)
+                holder:SetSize(300, 26)
+                holder:SetPoint("TOPLEFT", tcard, "TOPLEFT", 16 + col * 320, gy - row * 30)
+                local key = k[1]
+                local t = UI:Toggle(holder, function() return not tc.off[key] end,
+                    function(v) tc.off[key] = (not v) or nil; redraw() end)
+                t:SetPoint("LEFT", 0, 0)
+                local l = UI:Text(holder, 12, C.text)
+                l:SetPoint("LEFT", t, "RIGHT", 10, 0)
+                l:SetText(WK.T(k[2]))
+            end
+        end
         -- Profils (UI/Pages/Profiles.lua) -------------------------------------------
         section("profiles")
         UI:BuildProfileCards(self, card)

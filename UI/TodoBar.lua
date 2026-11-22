@@ -7,19 +7,54 @@ local T = function(s) return WK.T(s) end
 -- Mêmes tâches que « À faire » du Résumé et du bandeau de connexion (UI.TodoItems), une pastille par groupe
 -- (icône de l'addon + nombre), plus l'objectif le plus proche du perso connecté (Modules/CharGoals.lua).
 -- Survol d'une pastille : le détail en dessous ; clic : l'action de la 1re tâche (sa page). Placée en mode
--- édition (HUD « todoBar ») ; réglage settings.ui.todoBar (Options > Rappels à la connexion), vrai par défaut.
-local ICON, PILL_H, PAD = 20, 26, 8
+-- édition (HUD « todoBar ») ; réglages : carte « Mini-fenêtre « À faire » » (QoL > Général > Alertes) :
+-- settings.ui.todoBar (affichée, vrai par défaut) et settings.ui.todo (Cfg ci-dessous : genres, perso, titre,
+-- libellés, taille, disposition, fond, nombre de pastilles, cachée quand vide).
+local PAD = 8
 local bar
 
+-- Genres de pastilles (champ « kind » des tâches de UI.TodoItems ; « goal » = objectif le plus proche)
+UI.TODO_KINDS = {
+    { "goal", "Objectif le plus proche" }, { "letters", "Courrier à récupérer" }, { "cap", "Métier au plafond" },
+    { "cd", "Recharges de métier prêtes" }, { "spells", "Sorts à apprendre" }, { "levelup", "Quêtes à rendre" },
+    { "rest", "Repos plein" }, { "send", "Objets à envoyer" }, { "deposit", "Objets à déposer" },
+    { "bankold", "Banque pas vue" }, { "bankfull", "Banque pleine" }, { "bags", "Sacs pleins" },
+    { "durability", "Réparation" }, { "reagent", "Composants de classe" }, { "ammo", "Munitions" },
+    { "pet", "Familier" }, { "poison", "Poisons" }, { "autoloot", "Butin automatique du jeu" },
+    { "ahscan", "Scan de l'HV" }, { "shop", "Liste de courses" }, { "farm", "Farm en pause" }, { "other", "Autres" },
+}
+local KNOWN = {}
+for _, k in ipairs(UI.TODO_KINDS) do KNOWN[k[1]] = true end
+local SIZES = { s = 20, m = 26, l = 32 }
+
+local DEFAULTS = { scope = "all", title = true, labels = false, hideEmpty = false, size = "m", vertical = false,
+    bg = true, max = 0, hoverFull = true, tips = true, click = true, hideCombat = false }
+function UI.TodoConfig()
+    local s = WK.DB.global.settings.ui
+    s.todo = s.todo or {}
+    local c = s.todo
+    for k, v in pairs(DEFAULTS) do if c[k] == nil then c[k] = v end end
+    c.off = c.off or {}
+    return c
+end
 local function cfgOn()
     local s = WK.DB.global.settings.ui
     return s.todoBar ~= false and WK:PageOn("overview")
 end
+local function kindOf(it)
+    local k = it.kind
+    return (k and KNOWN[k]) and k or "other"
+end
 
 -- Pastilles : une par groupe de tâches ({ gicon, color, n, lines, go }), dans l'ordre d'urgence
-local function pills(items)
+local function pills(items, cfg)
     local out, by = {}, {}
+    local me = WK:CharKey()
     for _, it in ipairs(items) do
+        local kind = kindOf(it)
+        local skip = cfg and (cfg.off[kind] or (cfg.scope == "me" and it.who and it.who ~= me))
+        if skip then it = nil end
+        if it then
         local key = it.group or it.gicon or it.icon or it.text
         local p = by[key]
         if not p then
@@ -32,6 +67,7 @@ local function pills(items)
         if it.color == C.negative or (it.color and not p.color) then p.color = it.color end
         local who = it.who and WK.DB.global.characters[it.who]
         p.lines[#p.lines + 1] = { it.text, who and WK:CharName(who, it.who), who and who.class }
+        end
     end
     return out
 end
@@ -39,12 +75,12 @@ UI.TodoPills = pills -- (tests)
 
 local function build()
     local f = CreateFrame("Frame", "WarbandKeeperTodoBar", UIParent)
-    f:SetHeight(PILL_H + 2 * 5)
+    f:SetHeight(36)
     f:SetPoint("TOPRIGHT", -260, -200)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    UI:HudBackground(f, "hud", (PILL_H + 10) / 2)
+    UI:HudBackground(f, "hud", 12)
     f.title = UI:Text(f, 12)
     f.title:SetPoint("LEFT", 12, 0)
     f.title:SetText(T("À faire"))
@@ -53,19 +89,20 @@ local function build()
     f.empty:SetText(T("rien à faire"))
     f.pool = UI:Pool(function()
         local b = CreateFrame("Button", nil, f)
-        b:SetHeight(PILL_H)
-        b.bg = UI:Rounded(b, PILL_H / 2, 0, "BACKGROUND", 2)
+        b:SetHeight(26)
+        b.bg = UI:Rounded(b, 10, 0, "BACKGROUND", 2)
         b.icon = b:CreateTexture(nil, "ARTWORK")
-        b.icon:SetSize(ICON - 4, ICON - 4)
+        b.icon:SetSize(16, 16)
         b.icon:SetPoint("LEFT", 8, 0)
         b.n = UI:Text(b, 12)
         b.n:SetPoint("LEFT", b.icon, "RIGHT", 5, 0)
         b:SetScript("OnClick", function(s)
-            if s.go then UI:Create():Show(); UI:ShowPage("overview"); s.go() end
+            if s.go and UI.TodoConfig().click then UI:Create():Show(); UI:ShowPage("overview"); s.go() end
         end)
         b:SetScript("OnEnter", function(s)
             local col = s.color or { UI:Accent() }
             s.bg:SetColor(col[1], col[2], col[3], 0.32)
+            if not UI.TodoConfig().tips then return end
             UI:TooltipOwner(s, "ANCHOR_BOTTOM")
             local tip = GameTooltip
             for i, l in ipairs(s.lines or {}) do
@@ -76,7 +113,9 @@ local function build()
                     tip:AddLine("   " .. l[2], r, g, bl)
                 end
             end
-            if s.go then tip:AddLine(" "); tip:AddLine(T("Clic : ouvrir la page"), 0.6, 0.6, 0.6) end
+            if s.go and UI.TodoConfig().click then
+                tip:AddLine(" "); tip:AddLine(T("Clic : ouvrir la page"), 0.6, 0.6, 0.6)
+            end
             tip:Show()
         end)
         b:SetScript("OnLeave", function(s)
@@ -90,36 +129,73 @@ local function build()
     f:SetScript("OnMouseUp", function(s, button)
         if button == "LeftButton" and s.title:IsMouseOver() then UI:Create():Show(); UI:ShowPage("overview") end
     end)
-    f.acc = 0
-    f:SetScript("OnUpdate", function(s, el)
-        s.acc = s.acc + el
-        if s.acc < 5 then return end
-        s.acc = 0
-        if not s.sample then UI:RefreshTodoBar() end
-    end)
+    -- rafraîchie toutes les 5 s par une minuterie à part (la barre cachée quand vide doit pouvoir revenir)
     f:Hide()
     return f
 end
 
 local function barPaint(f, list)
+    local cfg = UI.TodoConfig()
+    local h = SIZES[cfg.size] or 26
+    local fs = h >= 32 and 14 or (h <= 20 and 10 or 12)
     f.pool:Reset()
-    local x = 12 + f.title:GetStringWidth() + 10
+    f.title:SetShown(cfg.title and true or false)
+    f.title:ClearAllPoints()
+    f.empty:ClearAllPoints()
+    -- fond : graphite (réglage) ou rien
+    if f.bg then f.bg:SetShown(cfg.bg and true or false) end
+    if f.border then f.border:SetShown(cfg.bg and true or false) end
+    if f.edge then f.edge:SetShown(cfg.bg and true or false) end
+    local max = (cfg.max or 0) > 0 and cfg.max or #list
+    local x, y, w = PAD + 4, PAD, 0
+    if cfg.title then
+        if cfg.vertical then
+            f.title:SetPoint("TOPLEFT", PAD + 4, -PAD - 2); y = PAD + 22
+        else
+            f.title:SetPoint("LEFT", PAD + 4, 0); x = PAD + 4 + f.title:GetStringWidth() + 10
+        end
+    end
+    local shown = 0
     for _, p in ipairs(list) do
+        if shown >= max then break end
+        shown = shown + 1
         local b = f.pool:Get()
+        b:SetHeight(h)
+        b.icon:SetSize(h - 10, h - 10)
         b.icon:SetTexture(p.gicon)
         local col = p.color or { UI:Accent() }
         b.icon:SetVertexColor(col[1], col[2], col[3], 1)
         b.bg:SetColor(col[1], col[2], col[3], 0.18)
-        b.n:SetText(p.label or tostring(p.n))
+        local txt = p.label or tostring(p.n)
+        if cfg.labels and p.short and not p.label then txt = p.n .. " " .. p.short end
+        b.n:SetFont(UI.FONT, fs, "")
+        b.n:SetText(txt)
         b.n:SetTextColor(unpack(C.text))
         b.color, b.lines, b.go = p.color, p.lines, p.go
-        b:SetWidth(8 + ICON - 4 + 5 + b.n:GetStringWidth() + 10)
-        b:ClearAllPoints(); b:SetPoint("LEFT", f, "LEFT", x, 0)
-        x = x + b:GetWidth() + 6
+        b:SetWidth(8 + (h - 10) + 5 + b.n:GetStringWidth() + 10)
+        b:ClearAllPoints()
+        if cfg.vertical then
+            b:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -y)
+            y = y + h + 4
+            w = math.max(w, b:GetWidth())
+        else
+            b:SetPoint("LEFT", f, "LEFT", x, 0)
+            x = x + b:GetWidth() + 6
+        end
     end
-    f.empty:SetShown(#list == 0)
-    if #list == 0 then x = x + f.empty:GetStringWidth() + 4 end
-    f:SetWidth(x + PAD)
+    f.empty:SetShown(shown == 0)
+    if cfg.vertical then
+        if shown == 0 then
+            f.empty:SetPoint("TOPLEFT", PAD + 4, -y); y = y + 18
+            w = math.max(w, f.empty:GetStringWidth() + 8)
+        end
+        if cfg.title then w = math.max(w, f.title:GetStringWidth() + 8) end
+        f:SetSize(w + 2 * PAD, y + PAD - 4)
+    else
+        if shown == 0 then f.empty:SetPoint("LEFT", x, 0); x = x + f.empty:GetStringWidth() + 4 end
+        f:SetSize(x + PAD - 6 + 6, h + 2 * PAD - 2)
+    end
+    return shown
 end
 
 -- objectif le plus proche du perso connecté, en pastille (Modules/CharGoals.lua)
@@ -129,7 +205,7 @@ local function goalPill()
     local ok, g = pcall(G.Nearest, G, WK:CharKey())
     if not ok or not g then return nil end
     local pct = math.floor((g.pct or 0) * 100 + 0.5)
-    return { gicon = UI.MEDIA .. "star", color = C.positive, n = 1, label = pct .. " %",
+    return { gicon = UI.MEDIA .. "star", color = C.positive, n = 1, label = pct .. " %", short = T("objectif"),
         lines = { { g.title .. "  ·  " .. pct .. " %" }, { g.eta or "" } },
         go = function() if WK:PageOn("characters") then UI:ShowPage("characters") end end }
 end
@@ -138,12 +214,16 @@ function UI.RefreshTodoBar(_)
     if not bar then bar = build() end
     if bar.sample then return end
     if not cfgOn() then bar:Hide() return end
+    local cfg = UI.TodoConfig()
     local items = UI.TodoItems and UI.TodoItems() or {}
-    local list = pills(items)
-    local gp = goalPill()
+    local list = pills(items, cfg)
+    local gp = not cfg.off.goal and goalPill()
     if gp then table.insert(list, 1, gp) end
-    barPaint(bar, list)
-    bar:Show()
+    local shown = barPaint(bar, list)
+    -- pleine au survol (registre commun du mode édition) : réglage de la barre
+    bar.hudNoHoverFull = not cfg.hoverFull or nil
+    local fight = cfg.hideCombat and InCombatLockdown and InCombatLockdown()
+    bar:SetShown(not (cfg.hideEmpty and shown == 0) and not fight)
 end
 
 local SAMPLE = function()
@@ -167,5 +247,18 @@ WK:On("PLAYER_LOGIN", function()
         end,
     })
     C_Timer.After(6, function() UI:RefreshTodoBar() end)
+    if C_Timer.NewTicker then
+        C_Timer.NewTicker(5, function() if bar and not bar.sample and not bar.soon then UI:RefreshTodoBar() end end)
+    end
 end)
-WK:On("BAG_UPDATE_DELAYED", function() if bar and bar:IsShown() then bar.acc = 4 end end)
+WK:On("BAG_UPDATE_DELAYED", function()
+    if bar and not bar.soon then
+        bar.soon = true
+        C_Timer.After(1, function() bar.soon = nil; UI:RefreshTodoBar() end)
+    end
+end)
+-- cacher en combat (réglage) : à l'entrée et à la sortie du combat
+WK:On("PLAYER_REGEN_DISABLED", function()
+    if bar and not bar.sample and UI.TodoConfig().hideCombat then bar:Hide() end
+end)
+WK:On("PLAYER_REGEN_ENABLED", function() if bar then UI:RefreshTodoBar() end end)

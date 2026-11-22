@@ -61,6 +61,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.175 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Mini-fenêtre « À faire » entièrement réglable (QoL > Général > Alertes, carte du même nom) : pastilles affichées genre par genre, tout le compte ou ce perso, titre, libellés, cacher quand vide, taille des pastilles et de la barre, en ligne ou en colonne, fond, opacité, pleine au survol, infobulle, clic, nombre de pastilles, cacher en combat.
+
 ## v1.128.174 — 22/11/2026
 
 _Un /reload suffit._

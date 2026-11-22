@@ -291,7 +291,10 @@ do
             if f:IsVisible() and not UI.editing and not (f.hudProtected and fight) then
                 local e = UI:HUDEntry(f.hudEditKey)
                 local base = e and e.alpha or 1
-                if base < 1 then
+                if base < 1 and f.hudNoHoverFull then
+                    -- cadre qui ne veut pas redevenir opaque au survol (réglage de la mini-fenêtre « À faire »)
+                    if f.hudAlphaOver then f.hudAlphaOver = false; f:SetAlpha(base) end
+                elseif base < 1 then
                     local over = f:IsMouseOver() and true or false
                     if over ~= (f.hudAlphaOver or false) then
                         f.hudAlphaOver = over

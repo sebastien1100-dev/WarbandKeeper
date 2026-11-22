@@ -32,7 +32,8 @@ local function todoItems()
         if go and pageOf[go] and not WK:PageOn(pageOf[go]) then return end
         x = x or {}
         table.insert(items, { prio = prio, icon = icon, text = text, go = go, color = color,
-            gicon = x.g and (GI .. x.g) or nil, short = x.short, group = x.group, n = x.n, who = x.who or who })
+            gicon = x.g and (GI .. x.g) or nil, short = x.short, group = x.group, n = x.n, who = x.who or who,
+            kind = x.kind or x.group }) -- genre stable (filtres de la mini-fenêtre « À faire »)
     end
     local now = time()
     local mailDays = WK.DB.global.settings.alerts.mailDays or 3
@@ -55,7 +56,7 @@ local function todoItems()
                 and not WK.modules.Gathering:Kind(prof) and prof ~= "Pêche" and prof ~= "Fishing" then
                 add(3, "hammer", string.format(WK.T("%s : %s au plafond %d, va voir le maître"), name, prof, pr.max),
                     open("professions", "ShowDetail", e.key, prof), C.warning,
-                    { g = "book", short = WK.T("plafond") })
+                    { g = "book", short = WK.T("plafond"), kind = "cap" })
             end
         end
         -- Fabrications à recharge de nouveau prêtes (transmutation, étoffe lunaire…)
@@ -84,7 +85,7 @@ local function todoItems()
         for _, a in ipairs(WK.modules.Alerts:For(c, e.key)) do
             if a.kind == "bank" then
                 add(5, "home", name .. " : " .. a.text, open("characters"), nil,
-                    { g = "safe", short = WK.T("banque") })
+                    { g = "safe", short = WK.T("banque"), kind = "bankold" })
             end
         end
     end
@@ -100,13 +101,14 @@ local function todoItems()
         if a.kind == "bags" and a.bank then gm = { "safe", "pleine" } end
         add(a.urgent and 2 or 5, (a.kind == "bags" and a.bank) and "home" or ICON[a.kind] or "spark", a.text, function()
             UI:ShowPage("qol"); UI.pages.qol:ShowSection(section)
-        end, a.urgent and C.negative or C.warning, { g = gm[1], short = gm[2] and WK.T(gm[2]) })
+        end, a.urgent and C.negative or C.warning, { g = gm[1], short = gm[2] and WK.T(gm[2]),
+            kind = (a.kind == "bags" and a.bank) and "bankfull" or a.kind })
     end
     -- Butin automatique du jeu actif : le filtre de loot ne peut pas choisir
     local L = WK.modules.Loot
     if WK.DB.global.loot.enabled and L:GameAutoLoot() then
         add(2, "filter", WK.T("Butin automatique du jeu activé : le filtre de loot ne peut pas choisir"),
-            open("loot"), C.negative, { g = "filter", short = WK.T("butin auto") })
+            open("loot"), C.negative, { g = "filter", short = WK.T("butin auto"), kind = "autoloot" })
     end
     -- Objets à envoyer / à déposer depuis les sacs du perso connecté
     if WK.DB.global.mail.enabled then
@@ -137,7 +139,8 @@ local function todoItems()
             local p = X:PendingXP()
             if p > 0 and x.cur + p >= x.max then
                 add(3, "star", WK.T("Rends tes quêtes terminées : elles te font passer un niveau"),
-                    open("qol", "ShowSection", "xp"), C.positive, { g = "star", short = WK.T("niveau") })
+                    open("qol", "ShowSection", "xp"), C.positive,
+                    { g = "star", short = WK.T("niveau"), kind = "levelup" })
             end
         end
     end
@@ -147,13 +150,14 @@ local function todoItems()
         local last = AS:Data().last
         if not last or math.floor(last / 86400) < math.floor(now / 86400) then
             add(6, "coin", WK.T("HV pas encore scanné aujourd'hui : un scan garde l'historique des prix à jour"),
-                open("qol", "ShowSection", "ah"), C.warning, { g = "coin", short = WK.T("scan HV") })
+                open("qol", "ShowSection", "ah"), C.warning, { g = "coin", short = WK.T("scan HV"), kind = "ahscan" })
         end
     end
     -- Session de farm en pause
     local F = WK.modules.Farm
     if F:Active() and F:Current().paused then
-        add(4, "pause", WK.T("Session de farm en pause"), open("farm"), C.warning, { g = "pause", short = WK.T("pause") })
+        add(4, "pause", WK.T("Session de farm en pause"), open("farm"), C.warning,
+            { g = "pause", short = WK.T("pause"), kind = "farm" })
     end
     -- Liste de courses : composants manquants
     if next(WK.DB.global.shopping) then

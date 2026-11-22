@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.175", date = "22/11/2026",
+        added = {
+            "Mini-fenêtre « À faire » entièrement réglable (QoL > Général > Alertes, carte du même nom) : pastilles affichées genre par genre, tout le compte ou ce perso, titre, libellés, cacher quand vide, taille des pastilles et de la barre, en ligne ou en colonne, fond, opacité, pleine au survol, infobulle, clic, nombre de pastilles, cacher en combat.",
+        },
+    },
+    {
         version = "1.128.174", date = "22/11/2026",
         changed = {
             "Micro menu, raccourci « Couche » plus proche de la maquette : rangé en premier à droite de l'heure, pastille des changements restants à la couleur de l'apparence en haut à droite, points de l'heure dans l'infobulle, étape dans une petite pastille sous l'heure (sous les barres FPS et latence, qu'elle chevauchait).",
