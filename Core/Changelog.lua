@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.153", date = "22/11/2026",
+        fixed = {
+            "Fiche de l'objet (sacs et banque) : boutons alignés en colonne, tous de la même largeur ; la ligne « dans tes sacs · sur le compte » passe sur deux lignes au lieu d'être coupée.",
+        },
+    },
+    {
         version = "1.128.152", date = "22/11/2026",
         fixed = {
             "Barre d'expérience : l'option « sans fond » ne tenait pas, le fond revenait au survol ou quand l'opacité des cadres changeait. Avec fond, la barre suit maintenant l'opacité commune des cadres.",

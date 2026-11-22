@@ -570,6 +570,7 @@ local function build()
     fi.name:SetJustifyH("LEFT")
     fi.sub = UI:Text(fi, 10, C.muted); fi.sub:SetPoint("TOPLEFT", 56, -32); fi.sub:SetPoint("TOPRIGHT", -10, -32)
     fi.sub:SetJustifyH("LEFT")
+    if fi.sub.SetWordWrap then fi.sub:SetWordWrap(true) end -- « 121 dans ta banque · 121 sur le compte » sur 2 lignes
     fi.body = UI:Text(fi, 11); fi.body:SetPoint("TOPLEFT", 12, -60); fi.body:SetPoint("TOPRIGHT", -12, -60)
     fi.body:SetJustifyH("LEFT"); fi.body:SetJustifyV("TOP")
     if fi.body.SetWordWrap then fi.body:SetWordWrap(true) end
@@ -1036,15 +1037,21 @@ function V.RefreshFiche()
     fi.ah:SetShown(ahOpen and true or false)
     -- boutons juste sous le texte ; la fiche s'arrête là (pas de grand vide jusqu'en bas)
     local bodyH = math.ceil(fi.body:GetStringHeight() or 40)
-    fi.lock:ClearAllPoints(); fi.lock:SetPoint("TOPLEFT", 10, -(60 + bodyH + 14))
     -- camelote à la main (pas pour un gris, qui l'est toujours, ni pour un objet verrouillé)
     local Q = WK.modules.QoL
     local jm = Q and Q.JunkMarks()[e.id]
     fi.junk:SetShown(Q ~= nil and (e.quality or 0) > 0 and (why == nil or jm) and true or false)
     fi.junk:SetLabel(jm and T("Plus de la camelote") or T("Camelote"))
-    fi.junk:ClearAllPoints()
-    fi.junk:SetPoint("TOPLEFT", fi.de:IsShown() and fi.de or fi.lock, "BOTTOMLEFT", 0, -6)
-    local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + (fi.junk:IsShown() and 30 or 0) + 12
+    -- boutons alignés : une colonne, tous de la largeur de la fiche
+    local y = 60 + bodyH + 14
+    local bw = FICHE_W - 20
+    for _, b in ipairs({ fi.lock, fi.de, fi.junk, fi.ah }) do
+        if b:IsShown() then
+            b:ClearAllPoints(); b:SetPoint("TOPLEFT", 10, -y); b:SetWidth(bw)
+            y = y + 30
+        end
+    end
+    local h = y - 6 + 12
     -- fiche plus haute que la fenêtre : la fenêtre s'allonge (elle reprend sa taille au rafraîchissement)
     local th = 110 + topOff()
     if h > win:GetHeight() - th and not inCombat() then win:SetHeight(h + th) end

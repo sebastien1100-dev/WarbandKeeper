@@ -69,6 +69,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.153 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fiche de l'objet (sacs et banque) : boutons alignés en colonne, tous de la même largeur ; la ligne « dans tes sacs · sur le compte » passe sur deux lignes au lieu d'être coupée.
+
 ## v1.128.152 — 22/11/2026
 
 _Un /reload suffit._
