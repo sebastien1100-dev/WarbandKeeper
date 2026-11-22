@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.97", date = "22/11/2026",
+        changed = {
+            "Métiers > Guide : « Fabriquer xN » ouvre la fenêtre du métier si elle est fermée ; un 2e clic lance la série.",
+        },
+    },
+    {
         version = "1.128.96", date = "22/11/2026",
         fixed = {
             "Bandeau des quais : il pouvait s'afficher en pleine ville (« Bateau pour Forêt d'Elwynn » devant la banque de Hurlevent) à cause d'un faux trajet en bateau appris en jeu. Un bateau appris doit maintenant changer de continent (les vraies lignes viennent des fichiers du jeu) ; les faux trajets déjà notés sont oubliés.",

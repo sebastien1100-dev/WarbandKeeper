@@ -4505,4 +4505,5 @@ WK.Locales.enUS.text = {
     ["Fenêtre du métier ouverte ; s'arrête quand les composants manquent."] = "Profession window open; stops when reagents run out.",
     ["Fabriquer x%d"] = "Craft x%d",
     ["Fermer le métier"] = "Close profession",
+    ["%s ouvert : clique encore sur « Fabriquer x%d » pour lancer."] = "%s opened: click « Craft x%d » again to start.",
 }

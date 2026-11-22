@@ -1251,6 +1251,16 @@ local function Detail(page, parent)
         r.make:SetPoint("BOTTOMRIGHT", -10, 6)
         r.make:SetScript("OnClick", function(b)
             if not b.key then return end
+            -- fenêtre du métier fermée : on l'ouvre d'abord ; la série se lance au clic suivant (action du joueur)
+            if not UI.tradeWinOpen then
+                if WK.modules.Professions:OpenDirect(b.prof) then
+                    WK:Print(string.format(T("%s ouvert : clique encore sur « Fabriquer x%d » pour lancer."),
+                        b.prof or "", b.n or 0))
+                else
+                    WK:Print(string.format(T("Fabrication : ouvre d'abord la fenêtre du métier (%s)."), b.prof or ""))
+                end
+                return
+            end
             if not WK.modules.ProfHelp:Craft(b.key, b.n) then
                 WK:Print(string.format(T("Fabrication : ouvre d'abord la fenêtre du métier (%s)."), b.prof or ""))
             end

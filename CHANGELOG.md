@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.97 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers > Guide : « Fabriquer xN » ouvre la fenêtre du métier si elle est fermée ; un 2e clic lance la série.
+
 ## v1.128.96 — 22/11/2026
 
 _Un /reload suffit._
