@@ -1525,7 +1525,7 @@ UI:RegisterPage({
         local function atoggle(parent, field)
             return toggle(parent, function() return ac[field] end, function(v) ac[field] = v end)
         end
-        local hcard = card("Hôtel des ventes", 40 + 5 * 46 + 8, "scan et listes d'achat ; prix dans l'infobulle : Options > Infobulles")
+        local hcard = card("Hôtel des ventes", 40 + 6 * 46 + 8, "scan et listes d'achat ; prix dans l'infobulle : Options > Infobulles")
         UI:SettingRow(hcard, -40, "Fenêtre Warband Keeper", "À l'encanteur, notre fenêtre remplace celle du jeu (Parcourir, Vendre, Mes enchères, À acheter, Prix). Sinon : la fenêtre du jeu et le panneau ci-dessous.",
             toggle(hcard, function() return ac.tabs ~= false end, function(v) ac.tabs = v end), 80)
         UI:SettingRow(hcard, -86, "Panneau à côté de l'HV", "Avec la fenêtre du jeu : nombre de prix connus, dernier scan et bouton « Scanner l'HV ».", atoggle(hcard, "panel"), 80)
@@ -1533,6 +1533,10 @@ UI:RegisterPage({
         UI:SettingRow(hcard, -178, "Valeur des sacs à l'HV", "Sous les sacs du jeu : ce que valent tes sacs à l'HV (et chez le marchand) ; au survol, les objets qui valent le plus.",
             toggle(hcard, function() return ac.bagValue end, function(v) ac.bagValue = v; if UI.RefreshBagValue then UI:RefreshBagValue() end end), 80)
         UI:SettingRow(hcard, -224, "Valeur des courriers", "Au survol d'un courrier de la boîte aux lettres : la valeur à l'HV de ses pièces jointes.", atoggle(hcard, "mailValue"), 80)
+        UI:SettingRow(hcard, -270, "Rappel de scan",
+            "Au bandeau de connexion et dans le Résumé : rappel quand l'HV de ce royaume"
+                .. " n'a pas encore été scanné aujourd'hui.",
+            toggle(hcard, function() return ac.scanReminder ~= false end, function(v) ac.scanReminder = v end), 80)
         local scard = card("Prix relevés", 40 + 2 * 46 + 8, "pour ce royaume et cette faction")
         local stat = dynText(scard, 12, C.text, function()
             local d = AS:Data()

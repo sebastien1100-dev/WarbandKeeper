@@ -27,16 +27,18 @@ local function open(page, method, ...)
 end
 local function todoItems()
     local items = {}
+    local who -- perso concerné (bandeau de connexion : une ligne par perso) ; sinon le perso connecté
     local function add(prio, icon, text, go, color, x)
         if go and pageOf[go] and not WK:PageOn(pageOf[go]) then return end
         x = x or {}
         table.insert(items, { prio = prio, icon = icon, text = text, go = go, color = color,
-            gicon = x.g and (GI .. x.g) or nil, short = x.short, group = x.group, n = x.n })
+            gicon = x.g and (GI .. x.g) or nil, short = x.short, group = x.group, n = x.n, who = x.who or who })
     end
     local now = time()
     local mailDays = WK.DB.global.settings.alerts.mailDays or 3
     for _, e in ipairs(UI:SortedCharacters()) do
         local c, name = e.c, WK:CharName(e.c, e.key)
+        who = e.key
         -- Courrier en attente
         local box = c.mailbox
         if box and (box.count or 0) > 0 then
@@ -86,6 +88,7 @@ local function todoItems()
             end
         end
     end
+    who = nil
     -- Qualité de vie : durabilité, sacs presque pleins, composants et munitions, familier
     local ICON = { durability = "hammer", bags = "bag", reagent = "spark", ammo = "spark", pet = "spark" }
     local GAME = { durability = { "hammer", "réparer" }, bags = { "bag", "pleins" },
@@ -126,7 +129,8 @@ local function todoItems()
     if X and WK:FeatureOn("xp") and X:Config().restAlert then
         for _, r in ipairs(X:RestFull()) do
             add(6, "clock", string.format(WK.T("%s : repos plein (150 %%), joue-le pour en profiter"), WK:CharName(r.c, r.key)),
-                open("qol", "ShowSection", "xp"), nil, { g = "chart", group = "rest", n = 1, short = WK.T("repos") })
+                open("qol", "ShowSection", "xp"), nil,
+                { g = "chart", group = "rest", n = 1, short = WK.T("repos"), who = r.key })
         end
         if X:Config().levelAlert and not X:Me().maxed then
             local x = X:Me()
@@ -135,6 +139,15 @@ local function todoItems()
                 add(3, "star", WK.T("Rends tes quêtes terminées : elles te font passer un niveau"),
                     open("qol", "ShowSection", "xp"), C.positive, { g = "star", short = WK.T("niveau") })
             end
+        end
+    end
+    -- Hôtel des ventes pas encore scanné aujourd'hui (prix du jour pour les % « vs 7 j » de demain)
+    local AS = WK.modules.AHScan
+    if AS and WK:FeatureOn("ah") and AS:Config().scanReminder ~= false and AS:HasData() then
+        local last = AS:Data().last
+        if not last or math.floor(last / 86400) < math.floor(now / 86400) then
+            add(6, "coin", WK.T("HV pas encore scanné aujourd'hui : un scan garde l'historique des prix à jour"),
+                open("qol", "ShowSection", "ah"), C.warning, { g = "coin", short = WK.T("scan HV") })
         end
     end
     -- Session de farm en pause

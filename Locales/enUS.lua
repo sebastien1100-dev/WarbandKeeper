@@ -4586,4 +4586,9 @@ WK.Locales.enUS.text = {
     ["Fiche de l'objet survolé"] = "Hovered item sheet",
     ["Sacs rangés par catégories (nouveaux, équipement, tes composants, pour d'autres persos, quête, camelote…) à la place des sacs du jeu. Coupe celui d'un autre addon de sacs."] = "Bags sorted by category (new, equipment, your reagents, for other characters, quest, junk…) instead of the game bags. Turn off any other bag addon.",
     ["À droite des sacs : prix, qui en a besoin sur le compte, verrouiller, désenchanter, chercher à l'HV."] = "Right of the bags: price, who needs it on the account, lock, disenchant, search the AH.",
+    ["HV pas encore scanné aujourd'hui : un scan garde l'historique des prix à jour"] = "AH not scanned yet today: a scan keeps the price history up to date",
+    ["scan HV"] = "AH scan",
+    ["Rappel de scan"] = "Scan reminder",
+    ["Au bandeau de connexion et dans le Résumé : rappel quand l'HV de ce royaume n'a pas encore été scanné aujourd'hui."] = "On the login banner and in the Summary: a reminder when this realm's AH has not been scanned yet today.",
+    ["À faire sur le compte"] = "To do on the account",
 }

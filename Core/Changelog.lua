@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.123", date = "22/11/2026",
+        added = {
+            "Rappel au bandeau de connexion (et dans le Résumé) quand l'HV de ton royaume n'a pas encore été scanné aujourd'hui ; à couper dans Qualité de vie > Hôtel des ventes (« Rappel de scan »).",
+        },
+        changed = {
+            "Bandeau de connexion refait (maquette B) : une ligne par perso, son nom à la couleur de sa classe, puis ses pastilles (qui passent à la ligne si besoin). Survol d'une pastille : le détail ; clic : la page.",
+        },
+    },
+    {
         version = "1.128.122", date = "22/11/2026",
         fixed = {
             "Hôtel des ventes : après un achat, le bouton « Acheter » restait trop large et débordait ; il reprend sa taille.",

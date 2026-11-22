@@ -74,6 +74,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.123 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Rappel au bandeau de connexion (et dans le Résumé) quand l'HV de ton royaume n'a pas encore été scanné aujourd'hui ; à couper dans Qualité de vie > Hôtel des ventes (« Rappel de scan »).
+
+### Modifications
+- Bandeau de connexion refait (maquette B) : une ligne par perso, son nom à la couleur de sa classe, puis ses pastilles (qui passent à la ligne si besoin). Survol d'une pastille : le détail ; clic : la page.
+
 ## v1.128.122 — 22/11/2026
 
 _Un /reload suffit._
