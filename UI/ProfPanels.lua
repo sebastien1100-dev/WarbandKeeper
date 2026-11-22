@@ -594,7 +594,7 @@ function UI:BuildPrepPane(parent)
     local seg = UI:Segmented(card, { { "dungeon", "Donjon" }, { "raid", "Raid" }, { "pvp", "JcJ" } }, function(k)
         cfg().prepMode = k; pane:Refresh()
     end, 26)
-    seg:SetPoint("TOPRIGHT", -14, -10)
+    seg:SetPoint("TOPRIGHT", -56, -10) -- à gauche de la roue dentée de la page
     local cols = { { "BUT", 16 }, { "CONSOMMABLE", 110 }, { "SACS", -380 }, { "AILLEURS", -300 }, { "OÙ L'AVOIR", -150 }, { "SEUIL", -16 } }
     for _, cdef in ipairs(cols) do
         local h = UI:Text(card, 9, C.dim); h:SetText(T(cdef[1]))

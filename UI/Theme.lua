@@ -397,6 +397,10 @@ end
 -- Or entier avec séparateur de milliers : "12 345 po".
 function UI:GoldText(copper)
     copper = copper or 0
+    -- moins d'une pièce d'argent : en cuivre (sinon « 0 pa »)
+    if copper ~= 0 and math.abs(copper) < 100 then
+        return "|cffeda55f" .. (copper < 0 and "-" or "") .. math.floor(math.abs(copper)) .. "|r " .. WK.T("pc")
+    end
     if copper ~= 0 and math.abs(copper) < 10000 then
         local sv = math.floor(math.abs(copper) / 100)
         return "|cffc7c7cf" .. (copper < 0 and "-" or "") .. sv .. "|r " .. WK.T("pa")

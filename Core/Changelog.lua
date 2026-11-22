@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.140", date = "22/11/2026",
+        fixed = {
+            "Prix en résumé (Avant de partir, Métiers, HV…) : moins d'une pièce d'argent s'affichait « 0 pa » ; c'est maintenant en cuivre (« 45 pc »).",
+            "Inventaire > Avant de partir : le choix Donjon / Raid / JcJ touchait la roue dentée ; il est décalé à sa gauche.",
+        },
+    },
+    {
         version = "1.128.139", date = "22/11/2026",
         fixed = {
             "Notre banque : la barre des sacs n'avait pas tous les emplacements de sac (6 au lieu de ceux de la banque du jeu) ; elle en prend autant que la fenêtre de banque du jeu.",
