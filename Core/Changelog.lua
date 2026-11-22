@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.159", date = "22/11/2026",
+        fixed = {
+            "Inventaire > À regrouper : le bouton « Regrouper » passait sur le nombre et le « vers … » de droite ; il se place maintenant à leur gauche, selon leur largeur.",
+        },
+    },
+    {
         version = "1.128.158", date = "22/11/2026",
         changed = {
             "Performances : la barre des sacs ne recherche plus le marchand et le maître les plus proches toutes les 10 s, seulement après un vrai déplacement (plus de 150 m, autre carte) ou toutes les 2 min (fini les pics de 6 ms).",

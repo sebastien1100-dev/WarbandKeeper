@@ -324,7 +324,7 @@ UI:RegisterPage({
             r.value:SetJustifyH("RIGHT")
             -- « Regrouper » (vue des objets dispersés)
             r.action = UI:Button(r, "Regrouper", nil, 26, "secondary", "mail")
-            r.action:SetPoint("RIGHT", -96, 0)
+            r.action:SetPoint("TOPRIGHT", -96, -10)
             r.action:Hide()
             r.action:SetScript("OnClick", function(b)
                 local e = b.entry
@@ -386,6 +386,7 @@ UI:RegisterPage({
                 r.icon:SetTexture(icon)
                 r.name:SetText(name)
                 r.name:SetTextColor(qr, qg, qb)
+                r.name:SetPoint("TOPRIGHT", -210, -9) -- largeur d'origine (élargie à côté de « Regrouper »)
                 if sel == "spread" then
                     local parts = {}
                     for _, h in ipairs(e.holders) do table.insert(parts, who(h.key) .. " " .. h.n) end
@@ -398,6 +399,10 @@ UI:RegisterPage({
                         r.value:SetText(string.format(T("vers %s"), who(e.target)))
                         r.action.entry = e
                         r.action.tooltip = string.format(T("Crée une règle d'envoi : tes autres persos posteront cet objet à %s."), WK:CharName(chars[e.target], e.target))
+                        -- bouton à gauche de la colonne de droite (nombre et « vers … »), jamais dessus
+                        local wR = math.max(r.total:GetStringWidth() or 0, r.value:GetStringWidth() or 0)
+                        r.action:ClearAllPoints(); r.action:SetPoint("TOPRIGHT", -(16 + wR + 14), -10)
+                        r.name:SetPoint("TOPRIGHT", -(16 + wR + 14 + r.action:GetWidth() + 10), -9)
                         r.action:Show()
                     end
                 else

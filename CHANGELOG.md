@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.159 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Inventaire > À regrouper : le bouton « Regrouper » passait sur le nombre et le « vers … » de droite ; il se place maintenant à leur gauche, selon leur largeur.
+
 ## v1.128.158 — 22/11/2026
 
 _Un /reload suffit._
