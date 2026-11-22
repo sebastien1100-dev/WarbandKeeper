@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.113", date = "22/11/2026",
+        changed = {
+            "Hôtel des ventes : tous les textes de notre fenêtre (barre latérale, Parcourir, Vendre, Mes enchères, À acheter, Prix, réglages) sont un cran plus gros.",
+        },
+    },
+    {
         version = "1.128.112", date = "22/11/2026",
         fixed = {
             "Hôtel des ventes > Parcourir : pour un objet unique (sac, arme, armure), le détail affichait « marchandise » et « personne n'en vend », avec « Acheter » grisé, alors qu'il y en avait en vente. Les enchères de l'objet sont maintenant cherchées avec sa clé exacte et lues du bon côté ; chaque ligne a son bouton d'achat.",

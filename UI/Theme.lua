@@ -315,9 +315,22 @@ function UI:MatchHost(f, host, add)
     if host.GetFrameLevel and f.SetFrameLevel then f:SetFrameLevel(math.min(9000, (host:GetFrameLevel() or 1) + (add or 5))) end
 end
 
+-- cadres dont les textes sont agrandis (fenêtre de l'HV : UI.textBoost[cadre] = 1.15), cherchés parmi les parents
+UI.textBoost = setmetatable({}, { __mode = "k" })
+local function boostOf(parent)
+    if not next(UI.textBoost) then return 1 end
+    local p, n = parent, 0
+    while p and n < 14 do
+        local b = UI.textBoost[p]
+        if b then return b end
+        p = p.GetParent and p:GetParent() or nil
+        n = n + 1
+    end
+    return 1
+end
 function UI:Text(parent, size, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY")
-    fs:SetFont(UI.FONT, math.floor((size or 12) * (UI.textScale or 1) + 0.5), "")
+    fs:SetFont(UI.FONT, math.floor((size or 12) * (UI.textScale or 1) * boostOf(parent) + 0.5), "")
     fs:SetTextColor(unpack(color or UI.colors.text))
     fs:SetJustifyH("LEFT")
     if fs.SetWordWrap then fs:SetWordWrap(false) end

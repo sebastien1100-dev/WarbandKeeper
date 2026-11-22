@@ -332,6 +332,8 @@ end
 local function build(host)
     -- notre fenêtre, posée sur celle du jeu (rendue invisible tant que la nôtre est ouverte)
     local f = CreateFrame("Frame", "WarbandKeeperAH", UIParent)
+    -- textes de toute la fenêtre un cran plus gros (UI:Text, aussi pour les lignes créées plus tard)
+    UI.textBoost[f] = 1.15
     f:SetSize(WIN_W, WIN_H)
     f:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
     local strata = host:GetFrameStrata()
@@ -2076,7 +2078,7 @@ local function build(host)
         -- un cran plus gros que les autres listes
         for _, fs in ipairs({ r.a, r.b, r.c, r.d }) do
             local font, _, flags = fs:GetFont()
-            if font then fs:SetFont(font, 13, flags) end
+            if font then fs:SetFont(font, 14, flags) end
         end
         r.icon:SetSize(22, 22); r.a:SetPoint("LEFT", 32, 0)
         r.d:SetPoint("RIGHT", -8, 0); r.d:SetWidth(52)
