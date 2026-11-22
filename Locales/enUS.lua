@@ -4639,4 +4639,6 @@ WK.Locales.enUS.text = {
     ["Aucune vente notée sur cette période : les ventes sont lues sur les factures quand tu prends l'or à la boîte aux lettres."] = "No sale recorded for this period: sales are read from the invoices when you take the gold at the mailbox.",
     ["Tape le nom d'une recette ou d'un objet : tu verras quels persos savent le fabriquer et si les composants sont sur le compte."] = "Type a recipe or item name: you will see which characters can craft it and whether the reagents are on the account.",
     ["Aucune recette connue de tes persos ne correspond. Ouvre le métier d'un perso pour relever ses recettes."] = "No recipe known by your characters matches. Open a character's profession to record its recipes.",
+    ["Infobulle allégée dans nos sacs"] = "Lighter tooltip in our bags",
+    ["Les infos de l'addon (persos, prix, métiers, ventes) ne sont que dans la fiche ; l'infobulle du jeu reste courte."] = "The addon's info (characters, prices, professions, sales) is only in the item card; the game tooltip stays short.",
 }

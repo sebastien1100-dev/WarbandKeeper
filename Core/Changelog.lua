@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.131", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : l'infobulle d'une case reste celle du jeu ; les infos de l'addon (persos qui l'ont, prix, en vente, montée des métiers, mieux fabriqué, désenchantement, ventes, qui peut le fabriquer) sont dans la fiche à droite. Réglage « Infobulle allégée dans nos sacs » (Inventaire > roue). Ailleurs, l'infobulle ne change pas.",
+        },
+        fixed = {
+            "Inventaire > Rangement : les métiers d'un perso étaient coupés par la pastille « perso HV » ; ils passent sur une 2e ligne sous son nom.",
+        },
+    },
+    {
         version = "1.128.130", date = "22/11/2026",
         added = {
             "HV > Mes ventes : prix moyen réellement obtenu par objet (d'après tes factures), comparé au prix du scan, nombre vendu et part vendue (ventes contre enchères revenues), sur 7 j, 30 j ou tout ; totaux vendu, reçu et invendus. Clic : l'historique de l'objet.",

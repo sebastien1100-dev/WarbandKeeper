@@ -592,6 +592,10 @@ function UI:BuildBagHelpCard(root)
                 bc.fiche = v
                 if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
             end), 80)
+        row("Infobulle allégée dans nos sacs",
+            "Les infos de l'addon (persos, prix, métiers, ventes) ne sont que dans la fiche ;"
+                .. " l'infobulle du jeu reste courte.",
+            UI:Toggle(card, function() return bc.lightTip ~= false end, function(v) bc.lightTip = v end), 80)
     end
     -- barre à l'écran (sacs, marchand, maître) : réglages dans QoL > Général > Marchand
     row("Amélioration à porter", "Un objet qui arrive dans les sacs et vaut mieux que celui porté est proposé (jamais équipé tout seul).",

@@ -574,11 +574,14 @@ UI:RegisterPage({
             c.bar:SetSize(3, 20); c.bar:SetPoint("TOPLEFT", 10, -9)
             c.name = UI:Text(c, 13); c.name:SetPoint("TOPLEFT", 20, -12)
             c.badge = UI:Badge(c, T("perso HV"), C.gold); c.badge:SetPoint("LEFT", c.name, "RIGHT", 8, 0)
-            c.right = UI:Text(c, 11, C.muted); c.right:SetPoint("TOPRIGHT", -12, -12); c.right:SetJustifyH("RIGHT")
+            -- métiers du perso sur une 2e ligne, toute la largeur (plus de texte coupé par la pastille « perso HV »)
+            c.right = UI:Text(c, 10, C.muted)
+            c.right:SetPoint("TOPLEFT", 20, -31); c.right:SetPoint("TOPRIGHT", -12, -31)
+            c.right:SetJustifyH("LEFT")
             if c.right.SetWordWrap then c.right:SetWordWrap(false) end
             c.line = c:CreateTexture(nil, "ARTWORK"); c.line:SetTexture("Interface\\Buttons\\WHITE8X8")
             c.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); c.line:SetHeight(1)
-            c.line:SetPoint("TOPLEFT", 0, -37); c.line:SetPoint("TOPRIGHT", 0, -37)
+            c.line:SetPoint("TOPLEFT", 0, -49); c.line:SetPoint("TOPRIGHT", 0, -49)
             c.more = CreateFrame("Button", nil, c); c.more:SetHeight(22)
             c.more.t = UI:Text(c.more, 11); c.more.t:SetPoint("LEFT", 12, 0)
             c.more:SetScript("OnClick", function(b) self.stashOpen[b.key] = not self.stashOpen[b.key]; self:RefreshStash() end)
@@ -732,7 +735,7 @@ UI:RegisterPage({
             ch:SetShown(total > 0)
         end
         -- colonnes en grille (3 par ligne, 2 en fenêtre étroite) ; au plus MAXR objets, « + N autres » déplie
-        local MAXR, RH, HEAD = 6, 34, 38
+        local MAXR, RH, HEAD = 6, 34, 50
         local ncol = W >= 900 and 3 or 2
         local cw = (W - 28 - (ncol - 1) * GAP) / ncol
         local y = 14 + 48 + GAP
@@ -747,7 +750,6 @@ UI:RegisterPage({
             c.name:SetText(col.name); c.name:SetTextColor(col.color[1], col.color[2], col.color[3])
             c.badge:SetShown(col.hv and true or false)
             c.right:SetText(col.right or "")
-            c.right:SetWidth(math.max(60, cw - (c.name:GetStringWidth() or 80) - (col.hv and 90 or 40)))
             local open = self.stashOpen[col.key]
             local shown = open and #col.rows or math.min(#col.rows, MAXR)
             local ry = HEAD

@@ -209,6 +209,9 @@ local DIM, NEED = "|cff8a8f98", "|cfff5a742"
 -- Info-bulle : quantité par personnage (pas sur les infobulles de comparaison).
 local function onTooltip(tooltip, data)
     if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip then return end
+    -- case de notre inventaire avec la fiche : ces infos y sont déjà (UI/Bags.lua, réglage lightTip)
+    local owner = tooltip.GetOwner and tooltip:GetOwner()
+    if owner and owner.wkOurs and WK.UI.Bags and WK.UI.Bags.LightTip() then return end
     local itemID = tooltipItemID(tooltip, data)
     if not itemID or NO_TOOLTIP[itemID] then return end
     local any = false

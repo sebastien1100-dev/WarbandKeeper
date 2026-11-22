@@ -36,6 +36,28 @@ function B.Config()
     return c
 end
 local function enabled() return B.Config().enabled and WK:FeatureOn("inventory") end
+-- infobulle des cases allégée : les infos de l'addon sont dans la fiche (si elle est affichée)
+function B.LightTip()
+    local c = B.Config()
+    return c.lightTip ~= false and c.fiche and enabled()
+end
+
+-- recueille les lignes qu'un module ajoute à une infobulle, en texte coloré pour la fiche
+local function collector()
+    local out = {}
+    local function hex(r, g, b)
+        return string.format("|cff%02x%02x%02x", (r or 1) * 255, (g or 1) * 255, (b or 1) * 255)
+    end
+    local t = { Show = function() end }
+    function t.AddLine(_, txt, r, g, b)
+        if txt and txt ~= " " then out[#out + 1] = hex(r or 0.85, g or 0.85, b or 0.85) .. txt .. "|r" end
+    end
+    function t.AddDoubleLine(_, a, b2, r, g, bb, r2, g2, b3)
+        out[#out + 1] = hex(r or 0.65, g or 0.65, bb or 0.65) .. (a or "") .. "|r  "
+            .. hex(r2 or 1, g2 or 1, b3 or 1) .. (b2 or "") .. "|r"
+    end
+    return t, out
+end
 
 ---------------------------------------------------------------------------
 -- Classement d'un objet
@@ -152,6 +174,7 @@ local function newButton(bag, slot)
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
     b:SetSize(SLOT, SLOT)
+    b.wkOurs = true -- infobulle allégée (Modules/Inventory.lua)
     -- case à notre style : carré plat au fond des encadrés, fin liseré (le cadre brillant du jeu est masqué)
     b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
     b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
@@ -643,6 +666,39 @@ function B.RefreshFiche()
         table.insert(need, string.format(T("Amélioration à porter (+%d)"), math.floor(info.upgrade + 0.5)))
     end
     if info.de then table.insert(need, T("Conseillé au désenchantement")) end
+    -- ce que l'infobulle de l'addon montrait : persos, en vente, métiers, fabrication, désenchantement
+    local S = WK.modules.AHScan
+    local se = S and S:Entry(e.id)
+    if se and se.q then
+        local age = S:Age(e.id) or 0
+        table.insert(lines, UI:Hex(C.muted) .. T("En vente") .. "|r  " .. se.q .. "  " .. UI:Hex(C.muted) .. "· "
+            .. (age == 0 and T("aujourd'hui") or string.format(T("il y a %d j"), age)) .. "|r")
+    end
+    local per = {}
+    for key, c in pairs(WK.DB.global.characters) do
+        local n = WK.modules.Inventory:CharCount(c, e.id)
+        if n > 0 then per[#per + 1] = { key = key, c = c, n = n } end
+    end
+    table.sort(per, function(a, b) return a.n > b.n end)
+    if #per > 0 then
+        local parts = {}
+        for i, pp in ipairs(per) do
+            if i > 4 then parts[#parts + 1] = "…" break end
+            parts[#parts + 1] = UI:Hex({ UI:ClassColor(pp.c.class) }) .. WK:CharName(pp.c, pp.key) .. "|r " .. pp.n
+        end
+        table.insert(lines, " ")
+        table.insert(lines, table.concat(parts, "  ·  "))
+    end
+    local col, got = collector()
+    local nop = function() end
+    local R, PHm = WK.modules.Recipes, WK.modules.ProfHelp
+    if R and R.AddTooltip then pcall(R.AddTooltip, R, col, e.id, nop, true) end
+    if R and R.AddCraftTooltip then pcall(R.AddCraftTooltip, R, col, e.id, nop) end
+    if PHm and PHm.AddTooltip then pcall(PHm.AddTooltip, PHm, col, e.id, nop) end
+    if #got > 0 then
+        table.insert(lines, " ")
+        for _, l in ipairs(got) do table.insert(lines, l) end
+    end
     if #need > 0 then
         table.insert(lines, " ")
         table.insert(lines, UI:Hex(C.muted) .. UI:Upper(T("Qui en a besoin")) .. "|r")
@@ -662,7 +718,9 @@ function B.RefreshFiche()
     local bodyH = math.ceil(fi.body:GetStringHeight() or 40)
     fi.lock:ClearAllPoints(); fi.lock:SetPoint("TOPLEFT", 10, -(60 + bodyH + 14))
     local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + 12
-    fi:SetHeight(math.min(h, math.max(120, win:GetHeight() - 110)))
+    -- fiche plus haute que la fenêtre : la fenêtre s'allonge (elle reprend sa taille au rafraîchissement)
+    if h > win:GetHeight() - 110 and not inCombat() then win:SetHeight(h + 110) end
+    fi:SetHeight(h)
 end
 
 -- Vendre la camelote (marchand ouvert) : objets gris non verrouillés, revérifiés juste avant chaque vente
