@@ -11,6 +11,8 @@ local T = function(s) return WK.T(s) end
 --   4. le groupe est quitté LEAVE_AFTER s après ; SHARD_TRANSFER dit si la couche a changé (sinon : même couche,
 --      cet hôte est mis de côté SAME_FOR s).
 -- Idées de LayerSwap (aucune licence fournie) : aucun code repris, protocole à nous (pas compatible LayerSwap).
+-- Passerelle : LayerSwap installé et layer.bridge (vrai par défaut) = le clic appelle sa fonction publique de raccourci
+-- clavier LayerSwap_SwapKey (étape « bridge ») ; le compteur et la réussite restent lus sur SHARD_TRANSFER.
 -- Réglages et données : WK.DB.global.layer = { help, line, moves[perso] = { dates }, hostSent = { dates } }
 -- (hors profils). Limite du jeu : CAP changements par heure glissante.
 local PREFIX = "WKlayer"
@@ -30,6 +32,7 @@ function M.Config(_)
     local c = g.layer
     if c.help == nil then c.help = false end
     if c.line == nil then c.line = true end
+    if c.bridge == nil then c.bridge = true end -- passer par LayerSwap s'il est installé
     c.moves = c.moves or {}
     c.hostSent = c.hostSent or {}
     return c
@@ -95,7 +98,8 @@ function M.Current(_)
 end
 function M.Busy(_)
     local s = M.state
-    return s and (s.kind == "search" or s.kind == "invited") and now() - s.at < M.WAIT_FOR + 10 or false
+    local k = s and s.kind
+    return s and (k == "search" or k == "invited" or k == "bridge") and now() - s.at < M.WAIT_FOR + 10 or false
 end
 
 ---------------------------------------------------------------------------
@@ -135,16 +139,30 @@ function M.Blocked(_)
 end
 
 -- Clic sur le raccourci : lance une demande (doit être appelé dans le clic : la recherche /who l'exige)
+-- Passerelle : LayerSwap installé (sa fonction publique de raccourci clavier) et réglage layer.bridge
+function M.HasLayerSwap(_) return type(_G.LayerSwap_SwapKey) == "function" end
+function M.UsesBridge(_) return M:Config().bridge and M:HasLayerSwap() end
+
 function M:Swap()
     if self:Busy() then return false end
-    local why = self:Blocked()
-    if why then setState("blocked", T("Impossible pour l'instant"), why); return false end
     if self:Left() == 0 then
         local at = self:FreeAt()
         setState("cap", T("Limite de l'heure atteinte"), string.format(T("%d changements : de nouveau possible à %s"),
             M.CAP, at and date("%H:%M", at) or "?"))
         return false
     end
+    -- LayerSwap installé : sa demande à lui (son réseau de joueurs) ; on garde le compteur et les étapes
+    if self:UsesBridge() then
+        local ok = pcall(_G.LayerSwap_SwapKey)
+        if not ok then
+            setState("blocked", T("Impossible pour l'instant"), T("LayerSwap n'a pas répondu"))
+            return false
+        end
+        setState("bridge", T("Demande via LayerSwap..."), T("LayerSwap cherche un hôte (sa fenêtre en dit plus)"))
+        return true
+    end
+    local why = self:Blocked()
+    if why then setState("blocked", T("Impossible pour l'instant"), why); return false end
     local zone, zname = zoneHere()
     if not zone or not zname then
         setState("blocked", T("Impossible pour l'instant"), T("zone inconnue"))
@@ -166,8 +184,8 @@ function M:Swap()
     _G.C_Timer.After(M.WAIT_FOR, function()
         if ask == mine and not mine.accepted then
             ask = nil
-            local whyNone = T("personne avec Warband Keeper et « Aider les autres » sur une autre couche dans la zone ; "
-                .. "réessaie plus tard")
+            local whyNone = T("personne avec Warband Keeper et « Aider les autres » sur une autre couche "
+                .. "dans la zone ; réessaie plus tard")
             setState("none", T("Aucun hôte trouvé"), whyNone)
         end
     end)
@@ -299,7 +317,8 @@ WK:On("PARTY_INVITE_REQUEST", function(name) onInvite(name) end)
 WK:On("SHARD_TRANSFER", function()
     noteMove()
     if ask and ask.accepted then ask.moved = true
-    elseif M.state and M.state.kind == "same" and now() - M.state.at < 15 then
+    elseif M.state and (M.state.kind == "bridge" and now() - M.state.at < 90
+        or M.state.kind == "same" and now() - M.state.at < 15) then
         setState("moved", T("Couche changée"), string.format(T("%d changement(s) restant(s) cette heure"), M:Left()))
     end
     if WK.UI and WK.UI.ClockLayerChanged then WK.UI:ClockLayerChanged() end

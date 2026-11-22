@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.173", date = "22/11/2026",
+        added = {
+            "Changer de couche : si LayerSwap est installé, le raccourci « Couche » lance sa demande (tu profites de tous ses joueurs) ; le compteur de l'heure et l'étape sous l'heure restent. Réglage « Passer par LayerSwap s'il est installé » dans QoL > Micro menu (actif par défaut).",
+        },
+    },
+    {
         version = "1.128.172", date = "22/11/2026", restart = true,
         added = {
             "Micro menu : raccourci « Couche » pour changer de couche. Clic : ton perso cherche un joueur de Warband Keeper de ta zone sur une autre couche, accepte son invitation tout seul et quitte le groupe 4 s après ; la pastille dit combien de changements il te reste cette heure (le jeu en permet 10) et l'étape s'affiche sous l'heure.",

@@ -310,6 +310,9 @@ local SHORTCUTS = {
           local L = WK.modules.Layer
           tt:SetText(T("Changer de couche"), 1, 1, 1)
           tt:AddDoubleLine(T("Cette heure"), string.format("%d / %d", L:Used(), L.CAP), 0.7, 0.7, 0.7, 1, 1, 1)
+          if L:UsesBridge() then
+              tt:AddLine(T("Passe par LayerSwap (installé)"), UI.RGB(C.info))
+          end
           local at = L:FreeAt()
           if at then
               local fmt = T("Limite atteinte : de nouveau possible à %s")
@@ -990,7 +993,8 @@ local function build()
 end
 
 -- Ligne sous l'heure : étape du changement de couche (Modules/Layer.lua), réglage layer.line
-local LINE_COL = { search = "info", invited = "accent", moved = "positive", same = "muted", cap = "warning",
+local LINE_COL = { search = "info", bridge = "info", invited = "accent", moved = "positive", same = "muted",
+    cap = "warning",
     none = "warning", blocked = "warning" }
 function UI.ClockLayerLine(_)
     if not bar or not bar.layerLine then return end

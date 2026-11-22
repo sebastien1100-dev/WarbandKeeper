@@ -61,6 +61,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.173 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Changer de couche : si LayerSwap est installé, le raccourci « Couche » lance sa demande (tu profites de tous ses joueurs) ; le compteur de l'heure et l'étape sous l'heure restent. Réglage « Passer par LayerSwap s'il est installé » dans QoL > Micro menu (actif par défaut).
+
 ## v1.128.172 — 22/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
