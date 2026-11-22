@@ -1,21 +1,71 @@
-MIT License
+Warband Keeper
+Copyright (c) 2026 sebastien1100-dev. Tous droits réservés.
 
-Copyright (c) 2026 sebastien1100-dev
+Licence d'utilisation (français, version de référence)
+======================================================
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Objet. Le présent texte s'applique au code source, à l'interface, aux textes, aux
+   textures et aux outils de Warband Keeper (addon World of Warcraft, client PC et outils du
+   dépôt), à l'exception des fichiers et des données de tiers listés dans
+   THIRD_PARTY_NOTICES.md, qui restent soumis à leur propre licence.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Ce qui est permis, gratuitement :
+   a) télécharger, installer et utiliser Warband Keeper pour ton usage personnel, sur autant
+      de comptes et d'ordinateurs que tu veux ;
+   b) lire le code source et le modifier pour ton seul usage personnel, sans le diffuser ;
+   c) proposer des corrections ou des améliorations à l'auteur, par exemple par une
+      « pull request » sur le dépôt d'origine ; ce qui est proposé ainsi peut être repris
+      dans Warband Keeper sous la présente licence ;
+   d) les actions que les conditions d'utilisation de GitHub permettent sur un dépôt public
+      (voir le code, le dupliquer dans GitHub), dans la seule limite de ces conditions.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. Ce qui est interdit sans l'accord écrit de l'auteur :
+   a) publier, diffuser, vendre, louer ou mettre à disposition Warband Keeper ou une partie
+      de son code, de son interface ou de ses textures, sur quelque site ou service que ce
+      soit (CurseForge, Wago, WoWInterface, forums, dépôts publics, etc.) ;
+   b) publier une version modifiée, une copie ou une adaptation, même gratuite, même partielle,
+      même sous un autre nom ;
+   c) utiliser le nom « Warband Keeper », son logo ou une présentation qui laisse croire à un
+      lien avec ce projet, pour un autre addon ou un autre logiciel ;
+   d) retirer ou modifier les mentions de droits d'auteur et de licence.
+
+4. Données et bibliothèques de tiers. Les fichiers et données listés dans
+   THIRD_PARTY_NOTICES.md (données de QuestieDB, d'Everloot, d'opendata, de What's Training,
+   bibliothèques du dossier Libs, etc.) ne sont pas couverts par les interdictions ci-dessus :
+   chacun reste sous sa licence d'origine, dont les droits priment pour ces fichiers.
+
+5. Garantie. Warband Keeper est fourni « tel quel », sans garantie d'aucune sorte. L'auteur
+   ne peut être tenu responsable d'un dommage lié à son utilisation.
+
+6. Demandes. Pour toute autorisation (republication, traduction, reprise d'une partie du
+   code), contacter l'auteur par le dépôt GitHub du projet.
+
+------------------------------------------------------------------------------------------
+
+License (English translation, for convenience; the French text above prevails)
+==============================================================================
+
+1. Scope. This text covers the source code, interface, texts, textures and tools of Warband
+   Keeper (World of Warcraft addon, PC client and repository tools), except the third-party
+   files and data listed in THIRD_PARTY_NOTICES.md, which keep their own licenses.
+
+2. Allowed, free of charge: (a) downloading, installing and using Warband Keeper for your
+   personal use; (b) reading the source code and modifying it for your own personal use,
+   without distributing it; (c) proposing fixes or improvements to the author (for instance
+   with a pull request on the original repository), which may then be included in Warband
+   Keeper under this license; (d) what GitHub's terms of service allow on a public repository
+   (viewing, forking within GitHub), within those terms only.
+
+3. Not allowed without the author's written permission: (a) publishing, distributing,
+   selling, renting or making available Warband Keeper or any part of its code, interface or
+   textures on any site or service; (b) publishing a modified version, copy or adaptation,
+   even free, partial or under another name; (c) using the name "Warband Keeper", its logo or
+   a presentation suggesting a link with this project for another addon or software;
+   (d) removing or altering copyright and license notices.
+
+4. Third-party data and libraries listed in THIRD_PARTY_NOTICES.md are not covered by the
+   restrictions above and stay under their original licenses, which prevail for those files.
+
+5. Warband Keeper is provided "as is", without warranty of any kind.
+
+6. For any permission, contact the author through the project's GitHub repository.

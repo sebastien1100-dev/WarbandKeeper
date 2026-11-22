@@ -95,4 +95,8 @@ Voir la section « À venir » de [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 
-MIT
+© 2026 sebastien1100-dev, **tous droits réservés**. Usage personnel libre ; republication, version
+modifiée publiée ou reprise du nom « Warband Keeper » interdites sans accord écrit (voir
+[LICENSE](LICENSE)). Les données et bibliothèques de tiers (QuestieDB, Everloot, opendata,
+What's Training, Libs…) restent sous leur propre licence : voir
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
