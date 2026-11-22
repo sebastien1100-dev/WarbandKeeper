@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.94", date = "22/11/2026",
+        fixed = {
+            "Couleur de l'apparence (couleur de classe, accent par perso) : certains boutons et éléments gardaient une autre couleur (blancs ou gris) jusqu'à ce qu'on les survole ; tout est repeint à l'entrée en jeu et à l'ouverture de la fenêtre.",
+        },
+    },
+    {
         version = "1.128.93", date = "22/11/2026",
         added = {
             "Métiers > Guide : bouton « Fabriquer xN » sur chaque étape dont tu connais la recette, avec le nombre de fabrications donné par le guide (ce qu'il reste pour l'étape en cours). Il faut la fenêtre du métier ouverte ; la série s'arrête d'elle-même quand les composants manquent.",

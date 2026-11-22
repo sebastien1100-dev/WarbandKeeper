@@ -122,6 +122,18 @@ function UI:DropAccentHooks(owner)
     for i, fn in ipairs(keep) do self.accentHooks[i] = fn end
 end
 
+-- Tous les éléments repeints à la couleur d'accent du moment : un élément construit avant que le perso soit
+-- connu (accent par perso, couleur de classe) gardait l'accent général jusqu'à son survol. Appelé à l'entrée
+-- en jeu et à chaque ouverture de la fenêtre, seulement si l'accent a changé depuis le dernier passage.
+function UI.RefreshAccentAll(force)
+    local r, g, b = UI:Accent()
+    local sig = string.format("%.3f:%.3f:%.3f:%s", r, g, b, tostring(UI.skin))
+    if not force and sig == UI.accentSig then return end
+    UI.accentSig = sig
+    for _, fn in ipairs(UI.accentHooks) do pcall(fn) end
+end
+WK:On("PLAYER_ENTERING_WORLD", function() UI.accentSig = nil; UI.RefreshAccentAll() end)
+
 function UI:SetAccent(index)
     local cfg = WK.DB.global.settings.ui
     if cfg.accentPerChar then
@@ -131,6 +143,7 @@ function UI:SetAccent(index)
         cfg.accent = index
     end
     for _, fn in ipairs(self.accentHooks) do fn() end
+    UI.accentSig = nil
     -- halo teinté par l'accent (styles prêts, UI:ApplyTheme) : il n'est recalculé qu'en reconstruisant
     if cfg.glowTint and self.Rebuild then self:Rebuild() end
 end

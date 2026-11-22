@@ -699,6 +699,7 @@ createWindow = function(self)
     end)
 
     f:SetScript("OnShow", function(s)
+        UI.RefreshAccentAll()
         UI:Refresh()
         -- animation (Options > Apparence) : fondu à l'ouverture, 0,15 s
         if WK.DB.global.settings.ui.anim ~= "none" then

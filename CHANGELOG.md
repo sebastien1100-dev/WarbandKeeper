@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.94 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Couleur de l'apparence (couleur de classe, accent par perso) : certains boutons et éléments gardaient une autre couleur (blancs ou gris) jusqu'à ce qu'on les survole ; tout est repeint à l'entrée en jeu et à l'ouverture de la fenêtre.
+
 ## v1.128.93 — 22/11/2026
 
 _Un /reload suffit._
