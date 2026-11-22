@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.141", date = "22/11/2026",
+        changed = {
+            "Inventaire > Avant de partir (Donjon, Raid, JcJ) : tout en plus grand (lignes, icônes, textes, seuils) ; infobulle de l'objet au survol de son icône ou de son nom, Maj + clic pour le lier.",
+        },
+    },
+    {
         version = "1.128.140", date = "22/11/2026",
         fixed = {
             "Prix en résumé (Avant de partir, Métiers, HV…) : moins d'une pièce d'argent s'affichait « 0 pa » ; c'est maintenant en cuivre (« 45 pc »).",

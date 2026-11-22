@@ -595,35 +595,54 @@ function UI:BuildPrepPane(parent)
         cfg().prepMode = k; pane:Refresh()
     end, 26)
     seg:SetPoint("TOPRIGHT", -56, -10) -- à gauche de la roue dentée de la page
-    local cols = { { "BUT", 16 }, { "CONSOMMABLE", 110 }, { "SACS", -380 }, { "AILLEURS", -300 }, { "OÙ L'AVOIR", -150 }, { "SEUIL", -16 } }
+    local cols = { { "BUT", 16 }, { "CONSOMMABLE", 130 }, { "SACS", -420 }, { "AILLEURS", -320 }, { "OÙ L'AVOIR", -160 },
+        { "SEUIL", -16 } }
     for _, cdef in ipairs(cols) do
-        local h = UI:Text(card, 9, C.dim); h:SetText(T(cdef[1]))
-        if cdef[2] > 0 then h:SetPoint("TOPLEFT", cdef[2], -46) else h:SetPoint("TOPRIGHT", cdef[2], -46); h:SetJustifyH("RIGHT") end
+        local h = UI:Text(card, 11, C.dim); h:SetText(T(cdef[1]))
+        if cdef[2] > 0 then h:SetPoint("TOPLEFT", cdef[2], -50) else h:SetPoint("TOPRIGHT", cdef[2], -50); h:SetJustifyH("RIGHT") end
     end
     local rows = {}
     local function row(i)
         if rows[i] then return rows[i] end
-        local r = CreateFrame("Frame", nil, card)
-        r:SetHeight(30)
-        r.label = UI:Text(r, 11, C.muted); r.label:SetPoint("LEFT", 16, 0)
-        r.icon = UI:RoundIcon(r, 18); r.icon:SetPoint("LEFT", 110, 0)
-        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 134, 0); r.name:SetPoint("RIGHT", -400, 0)
-        r.bags = UI:Text(r, 12); r.bags:SetPoint("RIGHT", -380, 0); r.bags:SetJustifyH("RIGHT")
-        r.else_ = UI:Text(r, 10, C.muted); r.else_:SetPoint("RIGHT", -300, 0); r.else_:SetJustifyH("RIGHT")
-        r.how = UI:Text(r, 10, C.muted); r.how:SetPoint("RIGHT", -150, 0); r.how:SetJustifyH("RIGHT")
-        r.min = UI:NumberInput(r, 56, 24, "0"); r.min:SetPoint("RIGHT", -16, 0)
+        local r = _G.CreateFrame("Frame", nil, card)
+        r:SetHeight(42)
+        r.label = UI:Text(r, 13, C.muted); r.label:SetPoint("LEFT", 16, 0)
+        r.icon = UI:RoundIcon(r, 26); r.icon:SetPoint("LEFT", 130, 0)
+        r.name = UI:Text(r, 14); r.name:SetPoint("LEFT", 164, 0); r.name:SetPoint("RIGHT", -440, 0)
+        r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
+        r.bags = UI:Text(r, 15); r.bags:SetPoint("RIGHT", -420, 0); r.bags:SetJustifyH("RIGHT")
+        r.else_ = UI:Text(r, 12, C.muted); r.else_:SetPoint("RIGHT", -320, 0); r.else_:SetJustifyH("RIGHT")
+        r.how = UI:Text(r, 12, C.muted); r.how:SetPoint("RIGHT", -160, 0); r.how:SetJustifyH("RIGHT")
+        r.min = UI:NumberInput(r, 60, 28, "0"); r.min:SetPoint("RIGHT", -16, 0)
         r.min.edit:SetScript("OnEnterPressed", function(e) e:ClearFocus() end)
         r.min.edit:SetScript("OnEditFocusLost", function()
             if r.cat then cfg().prepMin[r.cat] = math.max(0, math.min(999, r.min:GetNumber())); pane:Refresh() end
         end)
-        r.line = r:CreateTexture(nil, "BACKGROUND"); r.line:SetHeight(1); r.line:SetPoint("TOPLEFT", 12, 0); r.line:SetPoint("TOPRIGHT", -12, 0)
+        r.line = r:CreateTexture(nil, "BACKGROUND"); r.line:SetHeight(1); r.line:SetPoint("TOPLEFT", 12, 0)
+        r.line:SetPoint("TOPRIGHT", -12, 0)
         r.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.6)
+        -- infobulle de l'objet au survol de son icône et de son nom
+        r.hit = _G.CreateFrame("Button", nil, r)
+        r.hit:SetPoint("TOPLEFT", 126, 0); r.hit:SetPoint("BOTTOMRIGHT", r, "BOTTOMRIGHT", -440, 0)
+        r.hit:SetScript("OnEnter", function(h)
+            if not r.id then return end
+            UI:TooltipOwner(h, "ANCHOR_RIGHT")
+            if _G.GameTooltip.SetItemByID then _G.GameTooltip:SetItemByID(r.id) end
+            _G.GameTooltip:Show()
+        end)
+        r.hit:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        r.hit:SetScript("OnClick", function()
+            if r.id and _G.IsModifiedClick and _G.IsModifiedClick("CHATLINK") then
+                local _, link = WK.GetItemInfo(r.id)
+                if link and _G.ChatEdit_InsertLink then _G.ChatEdit_InsertLink(link) end
+            end
+        end)
         rows[i] = r
         return r
     end
-    local alert = UI:SettingRow(card, 0, "Rappel dans « À faire »", "Une ligne quand un consommable du perso connecté passe sous son seuil.",
+local alert = UI:SettingRow(card, 0, "Rappel dans « À faire »", "Une ligne quand un consommable du perso connecté passe sous son seuil.",
         UI:Toggle(card, function() return cfg().prepAlert end, function(v) cfg().prepAlert = v; WK:NotifyChanged() end), 80)
-    local note = UI:Text(card, 10, C.muted); note:SetJustifyH("LEFT")
+    local note = UI:Text(card, 12, C.muted); note:SetJustifyH("LEFT")
     if note.SetWordWrap then note:SetWordWrap(true) end
     note:SetText(T("Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."))
 
@@ -635,10 +654,10 @@ function UI:BuildPrepPane(parent)
         seg:Select(cfg().prepMode)
         card.subtitle:SetText(string.format(T("pour %s, niveau %d"), WK:CharName(c, ck), c.level or 0))
         local list = PH():Prep(ck)
-        local y = 62
+        local y = 70
         for i, e in ipairs(list) do
             local r = row(i)
-            r.cat = e.cat
+            r.cat, r.id = e.cat, e.best
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
             r.label:SetText(T(e.label))
             local name, icon = UI:ItemInfo(e.best)
@@ -659,13 +678,13 @@ function UI:BuildPrepPane(parent)
             else r.how:SetText("") end
             if not r.min.edit:HasFocus() then r.min.edit:SetText(tostring(e.min)) end
             r:Show()
-            y = y + 32
+            y = y + 42
         end
         for i = #list + 1, #rows do rows[i]:Hide() end
         alert:ClearAllPoints(); alert:SetPoint("TOPLEFT", 16, -(y + 8)); alert:SetPoint("TOPRIGHT", -16, -(y + 8))
         y = y + 8 + 46
         note:ClearAllPoints(); note:SetPoint("TOPLEFT", 16, -y); note:SetWidth(W - 32)
-        y = y + 34
+        y = y + math.ceil(note:GetStringHeight() or 16) + 22
         card:SetHeight(y)
         pane:SetContentHeight(y + 10)
     end
