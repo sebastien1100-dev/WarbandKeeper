@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.81", date = "22/11/2026",
+        added = {
+            "/wk statsjeu : liste les statistiques de la fenêtre Statistiques du jeu que WoW Forever remplit vraiment pour ton perso (nom, valeur, catégorie), pour choisir celles à montrer dans les statistiques de vol.",
+        },
+    },
+    {
         version = "1.128.80", date = "22/11/2026",
         fixed = {
             "Fenêtre des quêtes du donjon : la petite saccade en rendant une quête est corrigée (la fenêtre était refaite plusieurs fois de suite pendant la seconde qui suit un rendu ; elle ne l'est plus qu'une fois, et un journal qui n'a pas changé ne la refait plus).",

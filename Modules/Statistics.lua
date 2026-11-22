@@ -115,3 +115,42 @@ function M:PrintGold(days)
     end
     WK:Print(string.format(WK.T("Évolution sur %d jours : %s"), days, WK:FormatMoney(current - start)))
 end
+
+-- /wk statsjeu : statistiques de la fenêtre Statistiques du jeu que WoW Forever remplit vraiment pour le perso
+-- connecté (les lignes à « -- » ou à 0 sont comptées mais pas listées). Sert à choisir celles à montrer en vol.
+local function plainValue(v)
+    if v == nil then return nil end
+    if _G.issecretvalue and _G.issecretvalue(v) then return nil end
+    v = tostring(v):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", "")
+    v = v:gsub("^%s+", ""):gsub("%s+$", "")
+    if v == "" or v == "--" or v == "0" then return nil end
+    return v
+end
+function M.GameStats()
+    local out, total = {}, 0
+    local list = _G.GetStatisticsCategoryList and _G.GetStatisticsCategoryList()
+    if type(list) ~= "table" then return nil, 0 end
+    for _, cat in ipairs(list) do
+        local okc, catName = pcall(_G.GetCategoryInfo, cat)
+        local okn, n = pcall(_G.GetCategoryNumAchievements, cat)
+        for i = 1, (okn and n or 0) do
+            local oka, id, name = pcall(_G.GetAchievementInfo, cat, i)
+            if oka and id then
+                total = total + 1
+                local okv, val = pcall(_G.GetStatistic, id)
+                local v = okv and plainValue(val)
+                if v then out[#out + 1] = { id = id, name = name, value = v, cat = okc and catName or "?" } end
+            end
+        end
+    end
+    return out, total
+end
+function M.GameStatsDiag()
+    local list, total = M.GameStats()
+    if not list then WK:Print(WK.T("Statistiques du jeu : non lisibles sur ce client.")) return end
+    WK:Print(string.format(WK.T("Statistiques du jeu : %d remplies sur %d pour ce perso."), #list, total))
+    for i, e in ipairs(list) do
+        if i > 120 then WK:Print("  …") break end
+        WK:Print(string.format("  [%s] %s : %s (n° %d)", e.cat, e.name or "?", e.value, e.id))
+    end
+end

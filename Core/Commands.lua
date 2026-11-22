@@ -28,6 +28,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Inventory:Find(rest)
     elseif cmd == "metiers" or cmd == "prof" then
         WK.modules.Professions:Print()
+    elseif cmd == "statsjeu" or cmd == "gamestats" then
+        WK.modules.Statistics.GameStatsDiag()
     elseif cmd == "stats" then
         WK.modules.Statistics:PrintGold(rest)
     elseif cmd == "envoi" or cmd == "mail" then

@@ -4422,4 +4422,8 @@ WK.Locales.enUS.text = {
         "On-screen summary",
     ["En sortant du donjon, un bandeau en haut de l'écran pendant 5 s : temps et record, boss, morts, XP et or (position en mode édition ; clic = fermer)."] =
         "When leaving the dungeon, a banner at the top of the screen for 5 s: time and record, bosses, deaths, XP and gold (position in edit mode; click = close).",
+    ["Statistiques du jeu : non lisibles sur ce client."] =
+        "Game statistics: not readable on this client.",
+    ["Statistiques du jeu : %d remplies sur %d pour ce perso."] =
+        "Game statistics: %d filled out of %d for this character.",
 }
