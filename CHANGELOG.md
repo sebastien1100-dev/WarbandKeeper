@@ -29,6 +29,8 @@ _Prévu, pas encore commencé._
 
 ### Inventaire et économie
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
+- **Inventaire, suite : banque** (haute) — Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement.
+- **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
 - **Monnaies du jeu** (moyenne) — Un panneau des monnaies (insignes, jetons, marques…) par perso et pour tout le compte, avec ce qu'elles permettent d'acheter.
 - **Prix moyen de vente** (moyenne) — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
@@ -71,6 +73,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.121 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Notre inventaire : à la place des sacs du jeu, une fenêtre rangée par catégories qui suivent l'addon : Nouveaux, Équipement, Composants de tes métiers, Pour d'autres persos (Rangement), Consommables, Quête, Divers, Camelote, puis les places libres.
+- Pastilles sur les objets : NEUF, +N (amélioration à porter), BiS, DE (à désenchanter), le perso à qui l'envoyer, Q (quête) ; cadenas, étoile BiS et protection chez le marchand comme avant.
+- Filtres (Nouveaux, À ranger, À vendre, Désenchanter, Améliorations) qui estompent le reste, recherche par nom, « Vendre la camelote » chez le marchand.
+- Fiche de l'objet survolé à droite : prix HV et marchand, valeur du lot, combien sur le compte, qui en a besoin, et les boutons Verrouiller, Toujours désenchanter et Chercher à l'HV.
+- Réglages dans Inventaire > roue (Sacs, marchand et équipement) : notre inventaire et la fiche, à couper si besoin. Coupe l'inventaire d'EllesmereUI pour éviter deux sacs.
 
 ## v1.128.120 — 22/11/2026
 

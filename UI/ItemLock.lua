@@ -359,6 +359,9 @@ local function learnButton(owner, id)
 end
 UI.ItemLockLearn = learnButton
 
+-- cases de notre inventaire (UI/Bags.lua) : même cadenas, même étoile BiS, même cache chez le marchand
+function UI.ItemLockPaint(btn) if WK:FeatureOn("inventory") then paint(btn) end end
+
 function UI:RefreshItemLocks()
     if not WK:FeatureOn("inventory") then return end
     eachButton(paint)

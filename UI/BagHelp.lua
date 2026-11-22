@@ -576,6 +576,23 @@ function UI:BuildBagHelpCard(root)
     local card = UI:Card(root, T("Sacs, marchand et équipement"))
     local y = -40
     local function row(label, desc, ctrl, w) UI:SettingRow(card, y, label, desc, ctrl, w); y = y - 46 end
+    -- notre inventaire (UI/Bags.lua) : remplace les sacs du jeu ; changement pris en compte au /reload
+    local bc = UI.Bags and UI.Bags.Config()
+    if bc then
+        row("Notre inventaire",
+            "Sacs rangés par catégories (nouveaux, équipement, tes composants, pour d'autres persos, quête, camelote…) "
+            .. "à la place des sacs du jeu. Coupe celui d'un autre addon de sacs.",
+            UI:Toggle(card, function() return bc.enabled end, function(v)
+                bc.enabled = v
+                if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
+            end), 80)
+        row("Fiche de l'objet survolé",
+            "À droite des sacs : prix, qui en a besoin sur le compte, verrouiller, désenchanter, chercher à l'HV.",
+            UI:Toggle(card, function() return bc.fiche end, function(v)
+                bc.fiche = v
+                if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
+            end), 80)
+    end
     -- barre à l'écran (sacs, marchand, maître) : réglages dans QoL > Général > Marchand
     row("Amélioration à porter", "Un objet qui arrive dans les sacs et vaut mieux que celui porté est proposé (jamais équipé tout seul).",
         UI:Toggle(card, function() return cfg.wear end, function(v) cfg.wear = v; UI:RefreshWearOffer() end), 80)

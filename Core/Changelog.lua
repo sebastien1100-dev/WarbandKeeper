@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.121", date = "22/11/2026", restart = true,
+        added = {
+            "Notre inventaire : à la place des sacs du jeu, une fenêtre rangée par catégories qui suivent l'addon : Nouveaux, Équipement, Composants de tes métiers, Pour d'autres persos (Rangement), Consommables, Quête, Divers, Camelote, puis les places libres.",
+            "Pastilles sur les objets : NEUF, +N (amélioration à porter), BiS, DE (à désenchanter), le perso à qui l'envoyer, Q (quête) ; cadenas, étoile BiS et protection chez le marchand comme avant.",
+            "Filtres (Nouveaux, À ranger, À vendre, Désenchanter, Améliorations) qui estompent le reste, recherche par nom, « Vendre la camelote » chez le marchand.",
+            "Fiche de l'objet survolé à droite : prix HV et marchand, valeur du lot, combien sur le compte, qui en a besoin, et les boutons Verrouiller, Toujours désenchanter et Chercher à l'HV.",
+            "Réglages dans Inventaire > roue (Sacs, marchand et équipement) : notre inventaire et la fiche, à couper si besoin. Coupe l'inventaire d'EllesmereUI pour éviter deux sacs.",
+        },
+    },
+    {
         version = "1.128.120", date = "22/11/2026",
         changed = {
             "Ports et destinations (bateaux et vols) : fenêtre deux fois plus grande, bornée à 90 % de l'écran ; la carte prend toute la hauteur, les quais et leurs noms sont plus gros, la liste reste à droite (un peu plus large).",
@@ -6426,6 +6436,8 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
+    { prio = 1, theme = "eco", title = "Inventaire, suite : banque", text = "Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement." },
+    { prio = 2, theme = "eco", title = "Inventaire, suite : tout le compte", text = "Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
     { prio = 2, theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },
