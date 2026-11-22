@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.162", date = "22/11/2026",
+        added = {
+            "Remercier quand on te buffe : émote « merci » au joueur qui te donne un buff, seulement seul en monde ouvert (jamais en groupe, donjon, raid ni champ de bataille), une fois par joueur toutes les 2 min. Réglage dans QoL > Général > Groupe et confort.",
+        },
+    },
+    {
         version = "1.128.161", date = "22/11/2026",
         fixed = {
             "Carte du monde, quêtes de la zone : le clic sur les étiquettes n'ouvrait pas la page Quêtes ; la carte se ferme et la fenêtre de l'addon s'ouvre sur l'onglet Zones de quêtes, zone choisie.",

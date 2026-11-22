@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.162 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Remercier quand on te buffe : émote « merci » au joueur qui te donne un buff, seulement seul en monde ouvert (jamais en groupe, donjon, raid ni champ de bataille), une fois par joueur toutes les 2 min. Réglage dans QoL > Général > Groupe et confort.
+
 ## v1.128.161 — 22/11/2026
 
 _Un /reload suffit._

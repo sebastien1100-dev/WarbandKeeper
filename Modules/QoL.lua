@@ -104,7 +104,7 @@ local FEED_MACRO = "WK Nourrir"
 local GENERAL_DEFAULTS = {
     repair = true, repairCap = 0, repairGuild = false, sellGrey = true, closeAfterRepair = true,
     durability = 30, freeSlots = 4,
-    acceptInvites = false, declineDuels = false, duelFriends = true,
+    acceptInvites = false, declineDuels = false, duelFriends = true, thankBuffs = true,
     releaseBG = false, confirmBoP = false, dismount = true, skipCinematics = false,
 }
 local CLASS_DEFAULTS = {
@@ -1196,3 +1196,38 @@ WK:On("SKILL_LINES_CHANGED", function() M:ScanLockpicking() end)
 WK:On("SPELL_UPDATE_COOLDOWN", function() M:ScanReincarnation() end)
 -- (checkBuffs n'est plus appelé : il ne servait qu'aux rappels à l'écran, retirés ; gardé pour un retour éventuel)
 M.CheckBuffs = checkBuffs
+
+---------------------------------------------------------------------------
+-- Merci pour un buff : émote « merci » au joueur qui te donne un effet bénéfique, seulement seul en monde ouvert
+-- (jamais en groupe, en donjon, en raid ni en champ de bataille) ; une fois par joueur toutes les 2 min.
+---------------------------------------------------------------------------
+local thanked = {}
+local function secret(v) return _G.issecretvalue and _G.issecretvalue(v) end
+local function thankFrom(unit)
+    if not unit or secret(unit) or unit == "player" or unit == "pet" or unit == "vehicle" then return end
+    if not (_G.UnitExists and _G.UnitExists(unit)) or not (_G.UnitIsPlayer and _G.UnitIsPlayer(unit)) then return end
+    if _G.UnitIsUnit and _G.UnitIsUnit(unit, "player") then return end
+    local name = _G.UnitName and _G.UnitName(unit)
+    if not name or secret(name) then return end
+    local now = _G.GetTime and _G.GetTime() or 0
+    if thanked[name] and now - thanked[name] < 120 then return end
+    thanked[name] = now
+    if _G.DoEmote then pcall(_G.DoEmote, "THANK", unit) end
+end
+local function onAuraThanks(_, info)
+    if not M:General().thankBuffs then return end
+    if _G.IsInGroup and _G.IsInGroup() then return end
+    local inInst, kind = false, nil
+    if _G.IsInInstance then inInst, kind = _G.IsInInstance() end
+    if inInst or (kind and kind ~= "none") then return end
+    if type(info) ~= "table" or type(info.addedAuras) ~= "table" then return end
+    for _, a in ipairs(info.addedAuras) do
+        local ok = pcall(function()
+            if secret(a.isHelpful) or secret(a.sourceUnit) then return end
+            if a.isHelpful and a.sourceUnit then thankFrom(a.sourceUnit) end
+        end)
+        if not ok then return end
+    end
+end
+WK:OnUnit("UNIT_AURA", "player", onAuraThanks)
+M.OnAuraThanks = onAuraThanks -- (tests)

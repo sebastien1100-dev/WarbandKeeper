@@ -647,13 +647,17 @@ UI:RegisterPage({
         end
 
         subtab("Groupe et confort")
-        local grp = card("Groupe et duels", 184)
+        local grp = card("Groupe et duels", 232)
         UI:SettingRow(grp, -40, "Accepter les invitations", "De tes amis et des membres de ta guilde.",
             toggle(grp, function() return g.acceptInvites end, function(v) g.acceptInvites = v end), 80)
         UI:SettingRow(grp, -88, "Refuser les duels", nil,
             toggle(grp, function() return g.declineDuels end, function(v) g.declineDuels = v end), 80)
         UI:SettingRow(grp, -130, "Sauf ceux des amis et de la guilde", nil,
             toggle(grp, function() return g.duelFriends end, function(v) g.duelFriends = v end), 80)
+        UI:SettingRow(grp, -178, "Remercier quand on te buffe",
+            "Émote « merci » au joueur qui te donne un buff, seulement seul en monde ouvert"
+                .. " (jamais en groupe, donjon, raid ni champ de bataille).",
+            toggle(grp, function() return g.thankBuffs end, function(v) g.thankBuffs = v end), 80)
 
         local comfort = card("Confort", 232)
         UI:SettingRow(comfort, -40, "Libérer l'esprit en champ de bataille", "Automatiquement à la mort (pas avec une pierre d'âme).",

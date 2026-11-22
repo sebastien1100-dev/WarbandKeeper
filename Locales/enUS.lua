@@ -4679,4 +4679,6 @@ WK.Locales.enUS.text = {
     ["dans ses sacs"] = "in their bags",
     ["Dans les sacs"] = "In the bags",
     ["En banque"] = "In the bank",
+    ["Remercier quand on te buffe"] = "Thank players who buff you",
+    ["Émote « merci » au joueur qui te donne un buff, seulement seul en monde ouvert (jamais en groupe, donjon, raid ni champ de bataille)."] = "'Thank' emote to the player who buffs you, only when solo in the open world (never in a group, dungeon, raid or battleground).",
 }
