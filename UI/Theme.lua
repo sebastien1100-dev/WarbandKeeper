@@ -205,6 +205,23 @@ function UI:Panel(frame, radius, bg, border)
     return frame
 end
 
+-- Fond commun des fenêtres et cadres à l'écran (un seul fond pour tout l'addon) : graphite du thème (C.bg) et
+-- liseré gris fin (C.border), coins de 10 px. kind = "window" (grandes fenêtres : opaque à 96 %) ou "hud" (cadres
+-- posés sur le jeu : 92 %). frame.bg / frame.border comme UI:Panel ; UI:HudPaint(frame, kind, alpha?) les
+-- recolore (après un changement de thème, ou un fond plus discret).
+UI.HUD_ALPHA, UI.WINDOW_ALPHA = 0.92, 0.96
+function UI.HudPaint(_, frame, kind, alpha)
+    local C = UI.colors
+    local a = alpha or (kind == "window" and UI.WINDOW_ALPHA or UI.HUD_ALPHA)
+    if frame.bg then frame.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], a) end
+    if frame.border then frame.border:SetColor(C.border[1], C.border[2], C.border[3], 1) end
+end
+function UI.HudBackground(_, frame, kind, radius)
+    UI:Panel(frame, radius or 10, { 0, 0, 0, 1 }, UI.colors.border)
+    UI:HudPaint(frame, kind)
+    return frame
+end
+
 -- Fenêtre collée à une fenêtre du jeu (talents, marchand, HV, courrier, sacs, métiers, carte…) : même strate
 -- que celle-ci et juste au-dessus de son niveau, pour passer devant ou derrière les autres fenêtres avec elle
 -- (la fenêtre de l'addon, au-dessus, la couvre comme elle couvre la fenêtre du jeu).

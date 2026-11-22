@@ -43,7 +43,7 @@ local function build()
     f:SetFrameStrata("LOW")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.92 }, C.border) -- fond sombre du thème
+    UI:HudBackground(f, "hud") -- fond commun des cadres à l'écran
     f.trackF = CreateFrame("Frame", nil, f)
     UI:Panel(f.trackF, 5, { (C.bg[1] + C.surface[1]) / 2, (C.bg[2] + C.surface[2]) / 2, (C.bg[3] + C.surface[3]) / 2, 1 }, C.border)
     local function seg(layer, sub)

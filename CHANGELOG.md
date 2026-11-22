@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.87 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Un seul fond pour toutes les fenêtres et cadres à l'écran : le graphite du thème avec un liseré gris fin. Grandes fenêtres (statistiques de vol) opaques à 96 %, cadres posés sur le jeu (barre de vol, chrono et bilan du donjon, quêtes du donjon, barre des sacs, listes du kit et des buffs, barre d'XP, bandeau des quais) à 92 %. La barre de vol perd son fond gris clair et son contour rose ; la barre des sacs gagne le liseré ; la fenêtre des quêtes du donjon passe de 86 % à 92 % (si tu n'avais pas changé l'opacité).
+
 ## v1.128.86 — 22/11/2026
 
 _Un /reload suffit._

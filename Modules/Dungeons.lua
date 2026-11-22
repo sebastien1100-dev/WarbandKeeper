@@ -13,7 +13,7 @@ local T = function(s) return WK.T(s) end
 local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false,
     capAlert = true, summary = "me", summaryBanner = true, real = true,
     -- fenêtre des quêtes du donjon (UI/DungeonQuests.lua)
-    questWin = "auto", questWinAlpha = 86, questWinObjs = true, questWinDone = true, questWinCombat = false, questWinAuto = false }
+    questWin = "auto", questWinAlpha = 92, questWinObjs = true, questWinDone = true, questWinCombat = false, questWinAuto = false }
 local function db()
     local g = WK.DB.global
     g.dungeons = g.dungeons or {}
@@ -21,6 +21,11 @@ local function db()
     d.wish, d.kills = d.wish or {}, d.kills or {}
     d.cfg = d.cfg or {}
     for k, v in pairs(DEFAULTS) do if d.cfg[k] == nil then d.cfg[k] = v end end
+    -- fond commun des cadres à l'écran (92 %) : l'ancienne valeur d'origine (86 %) suit, une fois
+    if not d.cfg.alpha92 then
+        d.cfg.alpha92 = true
+        if d.cfg.questWinAlpha == 86 then d.cfg.questWinAlpha = 92 end
+    end
     return d
 end
 function M:Config() return db().cfg end

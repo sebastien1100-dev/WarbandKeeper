@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.87", date = "22/11/2026",
+        changed = {
+            "Un seul fond pour toutes les fenêtres et cadres à l'écran : le graphite du thème avec un liseré gris fin. Grandes fenêtres (statistiques de vol) opaques à 96 %, cadres posés sur le jeu (barre de vol, chrono et bilan du donjon, quêtes du donjon, barre des sacs, listes du kit et des buffs, barre d'XP, bandeau des quais) à 92 %. La barre de vol perd son fond gris clair et son contour rose ; la barre des sacs gagne le liseré ; la fenêtre des quêtes du donjon passe de 86 % à 92 % (si tu n'avais pas changé l'opacité).",
+        },
+    },
+    {
         version = "1.128.86", date = "22/11/2026",
         changed = {
             "Recherche de groupe, liste des donjons : rangée en groupes repliables (Pour toi, Bientôt, Trop faciles, Plus tard ; les deux derniers repliés au départ, un clic sur le titre les ouvre). Chaque ligne a un trait et un niveau à la couleur de difficulté du jeu (gris, vert, jaune, orange, rouge), le nombre de groupes dans une pastille à droite ; le donjon choisi est surligné à la couleur de l'apparence.",

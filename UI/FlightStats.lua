@@ -376,7 +376,7 @@ local function build()
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
-    UI:Panel(f, 14, { C.bg[1], C.bg[2], C.bg[3], 0.97 }, C.border)
+    UI:HudBackground(f, "window", 14)
     if UISpecialFrames then table.insert(UISpecialFrames, "WarbandKeeperFlightStats") end
     f:Hide()
 

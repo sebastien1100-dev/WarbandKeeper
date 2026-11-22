@@ -112,7 +112,7 @@ local function build()
     f:SetSize(W, TOP_H + SEA_H)
     f:SetFrameStrata("MEDIUM")
     -- graphite plus clair que le fond des fenêtres (lisible sur le décor), liseré fin
-    UI:Panel(f, 12, { C.surface[1], C.surface[2], C.surface[3], 0.96 }, C.border)
+    UI:HudBackground(f, "hud", 12)
     -- haut graphite : « Bateau pour » et la destination à gauche, le navire et le ponton à droite
     f.kicker = UI:Text(f, 11, C.muted); f.kicker:SetPoint("TOPLEFT", 16, -11)
     f.title = UI:Text(f, 16); f.title:SetPoint("TOPLEFT", 16, -27); f.title:SetPoint("RIGHT", f, "CENTER", 40, 0)

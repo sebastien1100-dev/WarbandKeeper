@@ -70,7 +70,7 @@ local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDungeonQuests", UIParent)
     f:SetSize(W, 120)
     f:SetFrameStrata("MEDIUM")
-    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.86 }, C.border)
+    UI:HudBackground(f, "hud")
     -- en-tête : nom du donjon en entier (deux lignes au besoin), puis « QUÊTES · env. N XP » ; glisser le titre
     -- déplace la fenêtre (sans passer par le mode édition)
     f.title = UI:Text(f, 12, C.text); f.title:SetPoint("TOPLEFT", 11, -9); f.title:SetPoint("RIGHT", -28, 0)
@@ -166,8 +166,8 @@ local function build()
     -- remplit la fenêtre ; data = { name, xp, log = {…}, avail = {…}, waiting = {…}, done = n, doneList, pick, preN }
     function f:Paint(data, cfg)
         local ar, ag, ab = UI:Accent()
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], (cfg.questWinAlpha or 86) / 100)
-        self.border:SetColor(C.border[1], C.border[2], C.border[3], math.min(1, (cfg.questWinAlpha or 86) / 100 + 0.1))
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], (cfg.questWinAlpha or 92) / 100)
+        self.border:SetColor(C.border[1], C.border[2], C.border[3], math.min(1, (cfg.questWinAlpha or 92) / 100 + 0.1))
         self.lastData, self.lastCfg = data, cfg
         if self.dungeonKey ~= data.name then self.dungeonKey = data.name; self.off = 0 end
         self.title:SetText(data.name or "")

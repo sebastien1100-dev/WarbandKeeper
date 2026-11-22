@@ -145,7 +145,7 @@ UI:RegisterPage({
             "Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace.",
             winSeg, 300)
         UI:SettingRow(qcard, -90, "Opacité du fond", "0 % : texte seul sur le jeu ; 100 % : fond plein.",
-            UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 86 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
+            UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 92 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
         local function qrow(y, label, desc, field)
             local t = UI:Toggle(qcard, function() return dc[field] and true or false end, function(v) dc[field] = v; qref() end)
             table.insert(qtog, t)

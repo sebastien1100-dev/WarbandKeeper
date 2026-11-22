@@ -92,7 +92,8 @@ local function buildSpace()
     local f = CreateFrame("Frame", "WarbandKeeperBagSpace", UIParent)
     f:SetSize(TILE, TILE)
     f:SetFrameStrata("MEDIUM")
-    f.bg = UI:Rounded(f, 11, 0, "BACKGROUND", 1)
+    f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
+    f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 1)
     f.seps = {}
     for i = 1, 4 do
         local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
@@ -237,7 +238,8 @@ local function buildSpace()
         end
         self:SetWidth(#tiles * TILE + (#tiles - 1))
         -- sans fond (réglage barBg) : chiffres cernés de noir pour rester lisibles sur le jeu
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bg and 0.92 or 0)
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bg and UI.HUD_ALPHA or 0)
+        self.edge:SetColor(C.border[1], C.border[2], C.border[3], bg and 1 or 0)
         if self.outlined ~= nil and self.outlined ~= not bg or (self.outlined == nil and not bg) then
             self.outlined = not bg
             for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do
@@ -483,7 +485,7 @@ local function buildWear()
     local f = CreateFrame("Frame", "WarbandKeeperWearOffer", UIParent)
     f:SetSize(320, 78)
     f:SetFrameStrata("MEDIUM")
-    UI:Panel(f, 12, { C.bg[1], C.bg[2], C.bg[3], 0.94 }, C.border)
+    UI:HudBackground(f, "hud", 12)
     f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetSize(34, 34); f.icon:SetPoint("TOPLEFT", 12, -12)
     f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     f.title = UI:Text(f, 10, C.muted); f.title:SetPoint("TOPLEFT", 56, -12); f.title:SetText(UI:Upper(T("Mieux que ce que tu portes")))

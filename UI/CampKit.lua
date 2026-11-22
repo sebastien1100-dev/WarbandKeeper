@@ -39,7 +39,7 @@ local function build()
     f:SetSize(BS + 12, BS + 12)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
-    UI:Panel(f, 10, { C.bg[1], C.bg[2], C.bg[3], 0.9 }, C.border)
+    UI:HudBackground(f, "hud")
     f.buttons = {}
     for i = 1, MAXB do
         local b = CreateFrame("Button", "WarbandKeeperCampKit" .. i, f, "SecureActionButtonTemplate")

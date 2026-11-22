@@ -32,7 +32,7 @@ local function build()
     f:SetSize(LW, LS + 12)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
-    UI:Panel(f, 8, { C.bg[1], C.bg[2], C.bg[3], 0.95 }, C.border)
+    UI:HudBackground(f, "hud")
     f.rows = {}
     for i = 1, MAXR do
         local b = _G.CreateFrame("Button", "WarbandKeeperSelfBuff" .. i, f, "SecureActionButtonTemplate")
