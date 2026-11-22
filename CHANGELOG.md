@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.111 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bouton de désenchantement sur les sacs d'EllesmereUI : bien placé à gauche des boutons ronds mais recouvert par l'en-tête ; il passe au-dessus de tout le contenu des sacs.
+
 ## v1.128.110 — 22/11/2026
 
 _Un /reload suffit._

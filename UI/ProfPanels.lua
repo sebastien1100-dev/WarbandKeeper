@@ -370,10 +370,26 @@ local function syncBagBtn()
     local slot = headerSlot(bf)
     if slot then bagBtn:SetPoint("RIGHT", slot, "LEFT", -6, 0)
     else bagBtn:SetPoint("BOTTOMLEFT", bf, "TOPLEFT", 0, 4) end
-    -- au-dessus de l'en-tête des sacs (ses cadres ont des niveaux bien plus hauts que le cadre principal)
-    local ref = slot or bf
-    bagBtn:SetFrameStrata(ref:GetFrameStrata() or "MEDIUM")
-    bagBtn:SetFrameLevel(math.min(9000, math.max(ref:GetFrameLevel() or 1, bf:GetFrameLevel() or 1) + 10))
+    -- au-dessus de tout le contenu des sacs : strate et niveau les plus hauts de leurs cadres (l'en-tête d'EllesmereUI
+    -- recouvrait le bouton, posé pourtant au bon endroit)
+    local top, strata = bf:GetFrameLevel() or 1, bf:GetFrameStrata() or "MEDIUM"
+    local ORDER = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4, DIALOG = 5, FULLSCREEN = 6,
+        FULLSCREEN_DIALOG = 7, TOOLTIP = 8 }
+    pcall(function()
+        local function scan(fr, depth)
+            for _, ch in ipairs({ fr:GetChildren() }) do
+                if ch ~= bagBtn and not (ch.IsForbidden and ch:IsForbidden()) then
+                    local st = ch:GetFrameStrata()
+                    if (ORDER[st] or 0) > (ORDER[strata] or 0) then strata, top = st, ch:GetFrameLevel() or 1
+                    elseif st == strata then top = math.max(top, ch:GetFrameLevel() or 1) end
+                    if depth < 3 then scan(ch, depth + 1) end
+                end
+            end
+        end
+        scan(bf, 0)
+    end)
+    bagBtn:SetFrameStrata(strata)
+    bagBtn:SetFrameLevel(math.min(9000, top + 5))
     bagBtn:Show()
 end
 UI.SyncDEBagButton = syncBagBtn
