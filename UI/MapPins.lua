@@ -293,19 +293,26 @@ UI.RedrawWorldMap = redraw
 -- connecté, mêmes comptes que la page Quêtes (Quests:Zones). Opacité réglée dans la roue de la page Quêtes
 -- (questTrack.mapCountAlpha), pleine au survol ; survol = quêtes à prendre, clic = page Quêtes sur la zone.
 local qcount
+-- étiquette compacte : une icône et le nombre (le détail est dans l'infobulle)
 local function qtag(parent)
     local t = _G.CreateFrame("Frame", nil, parent)
-    t:SetHeight(22)
+    t:SetHeight(20)
     UI:Panel(t, 6, { 0, 0, 0, 1 }, UI.colors.border)
+    t.icon = UI:Icon(t, "bang", 12)
+    t.icon:SetPoint("LEFT", 6, 0)
     t.text = UI:Text(t, 11)
-    t.text:SetPoint("CENTER", 0, 0)
+    t.text:SetPoint("LEFT", t.icon, "RIGHT", 4, 0)
     return t
 end
-local function paintTag(t, txt, col, fill)
+local function paintTag(t, txt, col, fill, icon)
     local C = UI.colors
     t.text:SetText(txt)
     t.text:SetTextColor(col[1], col[2], col[3])
-    t:SetWidth(math.floor((t.text:GetStringWidth() or 40) + 18))
+    t.icon:SetShown(icon ~= nil)
+    if icon then t.icon:SetTexture(UI.MEDIA .. icon); t.icon:SetVertexColor(col[1], col[2], col[3]) end
+    t.text:ClearAllPoints()
+    if icon then t.text:SetPoint("LEFT", t.icon, "RIGHT", 4, 0) else t.text:SetPoint("LEFT", 8, 0) end
+    t:SetWidth(math.floor((t.text:GetStringWidth() or 20) + (icon and 30 or 16)))
     if fill then
         local function mix(k) return col[k] * 0.25 + C.bg[k] * 0.75 end
         t.bg:SetColor(mix(1), mix(2), mix(3), 0.95)
@@ -336,6 +343,14 @@ local function buildQCount(host)
         local z = s.zone
         _G.GameTooltip:AddLine(string.format(T("%d / %d quêtes faites"), z.done, z.total),
             C.text[1], C.text[2], C.text[3])
+        if (z.log or 0) > 0 then
+            _G.GameTooltip:AddLine(string.format(T("%d en cours"), z.log), C.gold[1], C.gold[2], C.gold[3])
+        end
+        local nAvail = (z.avail or 0) - (z.log or 0)
+        if nAvail > 0 then
+            local ar, ag, ab = UI:Accent()
+            _G.GameTooltip:AddLine(string.format(T("%d à prendre"), nAvail), ar, ag, ab)
+        end
         local avail = {}
         local c = WK.DB:Me()
         for _, q in ipairs(Q:OnMap(z.map)) do
@@ -384,18 +399,18 @@ function UI.DrawMapQuestCount(_, _, mapID)
     for _, t in ipairs(tags) do t:Hide(); t:ClearAllPoints() end
     local shown = {}
     if z.done >= z.total then
-        paintTag(tags[1], string.format(T("%s : tout fait (%d)"), z.name or "", z.total), C.positive, true)
+        paintTag(tags[1], tostring(z.total), C.positive, true, "star")
         shown[1] = tags[1]
     else
-        paintTag(tags[1], string.format(T("%d / %d faites"), z.done, z.total), C.text, false)
+        paintTag(tags[1], z.done .. "/" .. z.total, C.text, false, "notes")
         shown[1] = tags[1]
         if (z.log or 0) > 0 then
-            paintTag(tags[2], string.format(T("%d en cours"), z.log), C.gold, true); shown[#shown + 1] = tags[2]
+            paintTag(tags[2], tostring(z.log), C.gold, true, "clock"); shown[#shown + 1] = tags[2]
         end
         local avail = (z.avail or 0) - (z.log or 0)
         if avail > 0 then
             local ar, ag, ab = UI:Accent()
-            paintTag(tags[3], string.format(T("%d à prendre"), avail), { ar, ag, ab }, true)
+            paintTag(tags[3], tostring(avail), { ar, ag, ab }, true, "bang")
             shown[#shown + 1] = tags[3]
         end
     end

@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.160 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte du monde, quêtes de la zone : étiquettes plus petites, une icône et le nombre seulement (liste = faites / total, montre = en cours, point d'exclamation = à prendre, étoile = tout fait) ; le détail est dans l'infobulle au survol.
+
 ## v1.128.159 — 22/11/2026
 
 _Un /reload suffit._

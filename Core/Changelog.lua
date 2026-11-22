@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.160", date = "22/11/2026",
+        changed = {
+            "Carte du monde, quêtes de la zone : étiquettes plus petites, une icône et le nombre seulement (liste = faites / total, montre = en cours, point d'exclamation = à prendre, étoile = tout fait) ; le détail est dans l'infobulle au survol.",
+        },
+    },
+    {
         version = "1.128.159", date = "22/11/2026",
         fixed = {
             "Inventaire > À regrouper : le bouton « Regrouper » passait sur le nombre et le « vers … » de droite ; il se place maintenant à leur gauche, selon leur largeur.",
