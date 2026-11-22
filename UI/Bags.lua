@@ -699,7 +699,8 @@ end
 -- Barre des sacs : sacs 1 à 4 (sacs) ou sacs de banque ; glisser un sac pour le mettre ou le changer,
 -- clic pour le prendre ; emplacement de banque pas encore acheté : deux clics pour l'acheter
 local function bagSlotList()
-    local t, nb = {}, _G.NUM_BAG_SLOTS or 4
+    -- sacs du perso : 1 à 4, plus le sac de composants quand le client en a un
+    local t, nb = {}, _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4
     if isBank then
         for _, b in ipairs(WK.modules.Inventory:BankBagIDs()) do t[#t + 1] = b end
     else
@@ -976,7 +977,7 @@ for i = 1, 13 do GAME_BAGS[#GAME_BAGS + 1] = "ContainerFrame" .. i end
 local function isPlayerBag(fr, n)
     if n == "ContainerFrameCombinedBags" then return true end
     local id = fr.GetID and fr:GetID() or 0
-    return id >= 0 and id <= 4
+    return id >= 0 and id <= (_G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4)
 end
 gameOpen = function()
     for _, n in ipairs(GAME_BAGS) do
