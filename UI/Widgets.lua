@@ -20,7 +20,16 @@ function UI:Button(parent, text, width, height, style, icon)
     else
         b.label:SetPoint("CENTER")
     end
-    b:SetSize(width or (b.label:GetStringWidth() + 32 + (icon and 20 or 0)), height)
+    -- largeur demandée, mais jamais moins que le libellé (avant : « Acheter », « Réinitialiser »… coupés dans les
+    -- boutons à largeur fixe, surtout dans l'HV aux textes agrandis)
+    local function needed() return math.ceil(b.label:GetStringWidth() + 24 + (b.icon and 20 or 0)) end
+    b:SetSize(math.max(width or (needed() + 8), needed()), height)
+    -- libellé changé plus tard (SetLabel ou label:SetText direct) : le bouton s'élargit au besoin
+    local setLabel = b.label.SetText
+    b.label.SetText = function(fs, t)
+        setLabel(fs, t)
+        if b:GetWidth() < needed() then b:SetWidth(needed()) end
+    end
 
     function b:Refresh()
         local s, h = self.style, self.hover

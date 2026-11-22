@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.117", date = "22/11/2026",
+        fixed = {
+            "Boutons : un bouton n'est plus jamais plus étroit que son libellé (avant, « Acheter », « Chercher », « Annuler », « Réinitialiser », « Tout sélectionner »… pouvaient être coupés ou déborder, surtout dans l'HV aux textes agrandis) ; il s'élargit aussi quand son texte change (« Envoyer maintenant (12) », « Confirmer… »).",
+        },
+    },
+    {
         version = "1.128.116", date = "22/11/2026",
         fixed = {
             "Interface : une centaine de textes et de lignes descendaient vers le milieu de leur cadre au lieu de rester en haut (noms et sous-titres qui se chevauchent, textes mal alignés avec leur icône) : HV, Métiers, QoL, fiche de personnage, LFG, Profils, Options, Résumé, marchand, recherche et autres fenêtres. Ils sont maintenant calés en haut, à la bonne hauteur.",
