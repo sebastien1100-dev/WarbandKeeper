@@ -105,6 +105,10 @@ UI:RegisterPage({
                 end
             end
             if key == "profiles" and self.RefreshProfiles then self:RefreshProfiles() end
+            if key == "diag" and not self.sections.diag.built then
+                self.sections.diag.built = true
+                UI:InAccentScope("window", UI.BuildDiagPanel, UI, self.sections.diag.scroll)
+            end
             if key == "general" and self.sections.general.showTab then self.sections.general.showTab(cfg.optGenTab or "lang") end
             for k, b in pairs(self.sectionButtons) do b.selected = (k == key); b:Paint() end
         end
@@ -116,6 +120,7 @@ UI:RegisterPage({
             { "profiles", "Profils", "users", "Un jeu de réglages par perso" },
             { "notes", "Patch notes", "notes", "Nouveautés et à venir" },
             { "maint", "Fiabilité", "warn", "Erreurs et place des données" },
+            { "diag", "Diagnostics", "search", "Commandes de vérification" },
             { "about", "À propos", "notes", "Version et commandes" },
         }
         for i, sec in ipairs(SECTIONS) do
@@ -773,6 +778,11 @@ UI:RegisterPage({
         local notesHost = CreateFrame("Frame", nil, host)
         notesHost:SetAllPoints(); notesHost:Hide()
         self.sections.notes = { scroll = notesHost }
+
+        -- Diagnostics (UI/Maintenance.lua) : liste et résultat, page entière construite à la première ouverture
+        local diagHost = _G.CreateFrame("Frame", nil, host)
+        diagHost:SetAllPoints(); diagHost:Hide()
+        self.sections.diag = { scroll = diagHost }
 
         -- À propos ----------------------------------------------------------------
         section("about")

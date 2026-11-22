@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.104 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Options : nouvel onglet « Diagnostics » (au-dessus d'À propos) qui liste les 18 commandes de vérification par thème, avec une recherche. Pour chacune : à quoi elle sert, quand la lancer, un bouton « Lancer » et le résultat affiché dans la fenêtre ; « Copier » le sélectionne pour me l'envoyer.
+
 ## v1.128.103 — 22/11/2026
 
 _Un /reload suffit._

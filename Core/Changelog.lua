@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.104", date = "22/11/2026",
+        added = {
+            "Options : nouvel onglet « Diagnostics » (au-dessus d'À propos) qui liste les 18 commandes de vérification par thème, avec une recherche. Pour chacune : à quoi elle sert, quand la lancer, un bouton « Lancer » et le résultat affiché dans la fenêtre ; « Copier » le sélectionne pour me l'envoyer.",
+        },
+    },
+    {
         version = "1.128.103", date = "22/11/2026",
         fixed = {
             "Désenchantement avec les sacs d'EllesmereUI : la fenêtre se collait aux sacs du jeu, laissés ouverts mais invisibles derrière ceux d'EllesmereUI ; elle se colle maintenant à EUI_MainBagFrame. La barre de sacs des barres d'action n'est plus prise pour une fenêtre de sacs.",

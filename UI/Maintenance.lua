@@ -308,3 +308,200 @@ function UI:BuildMaintenanceCards(page, card)
     eb:HookScript("OnShow", function() C_Timer.After(0, function() UI:RefreshMaintenance() end) end)
     M.OnChange = function() if UI.RefreshUpdate then UI:RefreshUpdate() end; pcall(UI.RefreshMaintenance, UI, true) end
 end
+
+---------------------------------------------------------------------------
+-- Section « Diagnostics » des Options (maquette B) : liste des diagnostics à gauche (recherche, groupes), détail à
+-- droite (à quoi ça sert, quand le lancer), « Lancer » = la commande /wk, dont les lignes écrites dans le chat sont
+-- aussi reprises dans la fenêtre ; « Copier » sélectionne le résultat (Ctrl+C).
+---------------------------------------------------------------------------
+UI.DIAGS = {
+    { "Interface", {
+        { "sacs", "Sacs",
+            "Sacs ouverts (du jeu ou d'un autre addon), cases trouvées, cadenas, sacs " ..
+                "reconnus pour la fenêtre de désenchantement.",
+            "Ouvre tes sacs avant de lancer." },
+        { "halo", "Halo des métiers",
+            "Halo des fenêtres de métier : ce qui est allumé et pourquoi.",
+            "Ouvre la fenêtre d'un métier avant de lancer." },
+        { "micro", "Micro menu",
+            "Boutons du micro menu et horloge : ce qui est posé, ce qui manque." },
+        { "rechargement", "Rechargement",
+            "Boutons « /reload » posés par l'addon (le jeu bloque le rechargement direct)." },
+        { "perf 30", "Performances",
+            "Chronomètre pendant 30 s les évènements et cadres de l'addon, puis classe les " ..
+                "plus lourds.",
+            "Le classement arrive dans le chat au bout de 30 s." },
+    } },
+    { "Carte et voyage", {
+        { "carte", "Carte du monde",
+            "Calques dessinés, erreurs, pastilles placées, trajet du guidage.",
+            "Ouvre la carte du monde avant de lancer." },
+        { "nav", "Guidage",
+            "Trajet calculé : étapes, chemins, vols et bateaux utilisés.",
+            "Lance-le pendant un guidage." },
+        { "bateau", "Bateaux",
+            "Dernières traversées notées, lignes reconnues, raisons d'un refus." },
+        { "vol diag", "Vols",
+            "Relais de vol connus du perso, relais manquants, durées apprises." },
+    } },
+    { "Personnage", {
+        { "talents", "Talents",
+            "Relit les talents et montre ce que le jeu donne (arbres, rangs, points libres)." },
+        { "plan diag", "Plan de montée",
+            "Panneau du plan sur la fenêtre des talents : cadre trouvé, boutons repérés.",
+            "Ouvre la fenêtre des talents avant de lancer." },
+        { "armes", "Compétences d'armes",
+            "Compétences d'armes lues (rang / max) et lignes non reconnues." },
+        { "pistage", "Pistages",
+            "Pistages de la minicarte lus, pour les buffs à ne pas oublier." },
+        { "buff", "Buffer le suivant",
+            "Candidats du bouton, sort choisi, joueurs refusés." },
+        { "statsjeu", "Statistiques du jeu",
+            "Statistiques du jeu relevées pour les cartes des stats en vol." },
+    } },
+    { "Économie et quêtes", {
+        { "hv", "Hôtel des ventes",
+            "État du dernier scan, prix enregistrés, enchères suivies." },
+        { "lien", "Lien de métier",
+            "Liens de métier gardés pour « Link tchat »." },
+        { "chaines", "Chaînes de quêtes",
+            "Chaînes de quêtes apprises en jeu (quête et quête d'avant)." },
+    } },
+}
+
+-- lance /wk <cmd> et rend les lignes écrites dans le chat (couleurs et icônes retirées)
+function UI.RunDiag(cmd)
+    local lines = {}
+    local old = WK.Print
+    WK.Print = function(s, msg, ...)
+        local txt = tostring(msg or "")
+        txt = txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|H.-|h(.-)|h", "%1")
+        lines[#lines + 1] = txt
+        return old(s, msg, ...)
+    end
+    local ok, err = pcall(_G.SlashCmdList.WARBANDKEEPER, cmd)
+    WK.Print = old
+    if not ok then lines[#lines + 1] = "Erreur : " .. tostring(err) end
+    return lines
+end
+
+function UI.BuildDiagPanel(_, host)
+    local LIST_W = 300
+    local left = UI:Card(host)
+    left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(LIST_W)
+    local right = UI:Card(host)
+    right:SetPoint("TOPLEFT", LIST_W + 12, 0); right:SetPoint("BOTTOMRIGHT")
+    local search = UI:Input(left, LIST_W - 28, 30, "Rechercher...", "search")
+    search:SetPoint("TOPLEFT", 14, -14)
+    local sc = UI:Scroll(left)
+    sc:SetPoint("TOPLEFT", 8, -54); sc:SetPoint("BOTTOMRIGHT", -8, 10)
+    local rows, heads = {}, {}
+    local selected, query
+    -- détail
+    local title = UI:Text(right, 15); title:SetPoint("TOPLEFT", 18, -16)
+    local cmdT = UI:Text(right, 11); cmdT:SetPoint("LEFT", title, "RIGHT", 10, 0)
+    local desc = UI:Text(right, 12, C.muted); desc:SetPoint("TOPLEFT", 18, -44); desc:SetPoint("RIGHT", -18, 0)
+    desc:SetJustifyH("LEFT"); if desc.SetWordWrap then desc:SetWordWrap(true) end
+    local hint = UI:Text(right, 11, C.gold)
+    hint:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -6); hint:SetPoint("RIGHT", -18, 0)
+    hint:SetJustifyH("LEFT")
+    local copy = UI:Button(right, "Copier", 90, 28, "secondary")
+    copy:SetPoint("TOPRIGHT", -18, -12)
+    local run = UI:Button(right, "Lancer", 100, 28, "primary", "play")
+    run:SetPoint("RIGHT", copy, "LEFT", -8, 0)
+    local box = _G.CreateFrame("Frame", nil, right)
+    box:SetPoint("TOPLEFT", 18, -104); box:SetPoint("BOTTOMRIGHT", -18, 34)
+    UI:Panel(box, 10, C.surface, C.border)
+    local osc = UI:Scroll(box)
+    osc:SetPoint("TOPLEFT", 10, -8); osc:SetPoint("BOTTOMRIGHT", -10, 8)
+    local te = _G.CreateFrame("EditBox", nil, osc.child)
+    te:SetMultiLine(true); te:SetAutoFocus(false)
+    te:SetFont(UI.MONO or UI.FONT, 11, ""); te:SetTextColor(unpack(C.text))
+    te:SetWidth(400); te:SetPoint("TOPLEFT")
+    te:SetScript("OnEscapePressed", function(s) s:ClearFocus() end)
+    te:SetScript("OnTextChanged", function(s, user)
+        if user and s.text then s:SetText(s.text); s:HighlightText() end
+    end)
+    local foot = UI:Text(right, 10, C.dim); foot:SetPoint("BOTTOMLEFT", 18, 12)
+    foot:SetText(T("Le résultat s'écrit aussi dans le chat. Copier : texte sélectionné, Ctrl+C pour le copier."))
+    local function setOut(txt)
+        te.text = txt
+        te:SetText(txt)
+        _G.C_Timer.After(0, function()
+            osc.child:SetSize(te:GetWidth() + 4, (te:GetHeight() or 100) + 8)
+            if osc.UpdateBar then osc:UpdateBar() end
+        end)
+    end
+    UI:OnResize(right, function(w) te:SetWidth(math.max(200, w - 72)) end)
+
+    local function show(d)
+        selected = d
+        title:SetText(T(d[2]))
+        cmdT:SetText(UI:Hex({ UI:Accent() }) .. "/wk " .. d[1] .. "|r")
+        desc:SetText(T(d[3]))
+        hint:SetText(d[4] and T(d[4]) or "")
+        setOut(d.out or T("Pas encore lancé : clique sur « Lancer »."))
+        for _, r in ipairs(rows) do r:Paint() end
+    end
+    run:SetScript("OnClick", function()
+        if not selected then return end
+        local lines = UI.RunDiag(selected[1])
+        selected.out = #lines > 0 and table.concat(lines, "\n") or T("(rien n'a été écrit)")
+        setOut(selected.out)
+    end)
+    copy:SetScript("OnClick", function() te:SetFocus(); te:HighlightText() end)
+
+    local function layout()
+        local y = 0
+        local hi, ri = 0, 0
+        for _, grp in ipairs(UI.DIAGS) do
+            local shown = {}
+            for _, d in ipairs(grp[2]) do
+                local hay = (T(d[2]) .. " " .. d[1] .. " " .. T(d[3])):lower()
+                if not query or query == "" or hay:find(query, 1, true) then shown[#shown + 1] = d end
+            end
+            if #shown > 0 then
+                hi = hi + 1
+                local h = heads[hi]
+                if not h then h = UI:Text(sc.child, 10, C.dim); heads[hi] = h end
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 8, -y - 8); h:SetText(UI:Upper(T(grp[1]))); h:Show()
+                y = y + 26
+                for _, d in ipairs(shown) do
+                    ri = ri + 1
+                    local r = rows[ri]
+                    if not r then
+                        r = _G.CreateFrame("Button", nil, sc.child)
+                        r:SetHeight(28)
+                        r.bg = UI:Rounded(r, 7, 0, "BACKGROUND", 1)
+                        r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 10, 0)
+                        r.c = UI:Text(r, 10, C.dim); r.c:SetPoint("RIGHT", -10, 0)
+                        function r:Paint()
+                            local sel = selected == self.d
+                            local ar, ag, ab = UI:Accent()
+                            self.bg:SetColor(ar, ag, ab, sel and 0.16 or 0.08)
+                            self.bg:SetShown(sel or self.hover)
+                            if sel then self.c:SetTextColor(ar, ag, ab) else self.c:SetTextColor(unpack(C.dim)) end
+                        end
+                        r:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
+                        r:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
+                        r:SetScript("OnClick", function(s) show(s.d) end)
+                        UI:OnAccent(function() r:Paint() end)
+                        rows[ri] = r
+                    end
+                    r.d = d
+                    r.n:SetText(T(d[2])); r.c:SetText("/wk " .. d[1])
+                    r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("RIGHT", sc.child, "RIGHT", 0, 0)
+                    r:Show(); r:Paint()
+                    y = y + 30
+                end
+            end
+        end
+        for i = hi + 1, #heads do heads[i]:Hide() end
+        for i = ri + 1, #rows do rows[i]:Hide() end
+        sc.child:SetWidth(LIST_W - 28)
+        sc:SetContentHeight(y + 8)
+    end
+    search.onChange = function(t) query = (t or ""):lower(); layout() end
+    layout()
+    show(UI.DIAGS[1][2][1])
+end
