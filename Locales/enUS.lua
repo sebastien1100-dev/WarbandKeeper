@@ -4478,4 +4478,8 @@ WK.Locales.enUS.text = {
         "Players from your groups. Rate them: 3 stars = play again; 1 star = bottom of the lists, and you are warned if they join your group.",
     ["%d demande(s) · vidées en rejoignant un groupe"] =
         "%d request(s) · cleared when you join a group",
+    ["POUR TOI"] =
+        "FOR YOU",
+    ["TROP FACILES"] =
+        "TOO EASY",
 }

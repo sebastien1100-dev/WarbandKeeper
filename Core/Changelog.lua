@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.86", date = "22/11/2026",
+        changed = {
+            "Recherche de groupe, liste des donjons : rangée en groupes repliables (Pour toi, Bientôt, Trop faciles, Plus tard ; les deux derniers repliés au départ, un clic sur le titre les ouvre). Chaque ligne a un trait et un niveau à la couleur de difficulté du jeu (gris, vert, jaune, orange, rouge), le nombre de groupes dans une pastille à droite ; le donjon choisi est surligné à la couleur de l'apparence.",
+        },
+    },
+    {
         version = "1.128.85", date = "22/11/2026",
         changed = {
             "Kit de camp : la liste ne montre plus la nourriture « Bien nourri » ni la boisson ; seulement le feu, les objets de camp de tes métiers et le sac de couchage. La case « kit » ne signale plus « Bien nourri absent ».",

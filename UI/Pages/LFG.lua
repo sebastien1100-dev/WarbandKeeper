@@ -185,13 +185,29 @@ UI:RegisterPage({
             b.edge = b:CreateTexture(nil, "ARTWORK", nil, 2)
             b.edge:SetPoint("TOPLEFT", 0, -4); b.edge:SetPoint("BOTTOMLEFT", 0, 4); b.edge:SetWidth(3)
             b.edge:Hide()
-            b:SetScript("OnEnter", function(s) if not s.sel then s.bg:SetColor(unpack(C.hover)); s.bg:Show() end end)
-            b:SetScript("OnLeave", function(s) if not s.sel then s.bg:Hide() end end)
+            b:SetScript("OnEnter", function(s) if not s.sel then s.bg:SetColor(unpack(C.hover)) end end)
+            b:SetScript("OnLeave", function(s)
+                if not s.sel then s.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 0.6) end
+            end)
             b:SetScript("OnClick", function(s)
                 self.sel = (self.sel == s.act) and nil or s.act
                 self:Refresh()
             end)
             return b
+        end)
+        -- en-têtes des groupes de difficulté (Pour toi, Bientôt, Trop faciles, Plus tard), repliables
+        self.ladderHeads = UI:Pool(function()
+            local h = _G.CreateFrame("Button", nil, self.ladder.child)
+            h:SetHeight(20)
+            h.t = UI:Text(h, 10)
+            h.t:SetPoint("LEFT", 4, 0)
+            h:SetScript("OnClick", function(s)
+                local c = LFG:Config()
+                c.ladderClosed = c.ladderClosed or { easy = true, later = true }
+                c.ladderClosed[s.key] = not c.ladderClosed[s.key]
+                self:Refresh()
+            end)
+            return h
         end)
         self.meLine = self.ladder.child:CreateTexture(nil, "ARTWORK")
         self.meLine:SetHeight(1)
@@ -770,59 +786,84 @@ UI:RegisterPage({
             self.status:SetText(T("clique Actualiser pour chercher"))
         end
 
-        -- échelle des donjons
-        self.rungs:Reset()
+        -- échelle des donjons (maquette B) : rangée en groupes de difficulté repliables ; chaque ligne a un trait et
+        -- un niveau à la couleur de difficulté du jeu, le nombre de groupes dans une pastille à droite ; le donjon
+        -- choisi est surligné à la couleur de l'apparence
+        self.rungs:Reset(); self.ladderHeads:Reset()
+        self.meLine:Hide(); self.meLv:Hide(); self.meTxt:Hide()
         local level = UnitLevel("player") or 1
         local counts = LFG:ActivityCounts()
-        local maxN = 1
-        for _, n in pairs(counts) do maxN = math.max(maxN, n) end
-        local y, meDrawn = 4, false
+        local y = 4
         local lw = LEFT_W - 24
-        local function drawMe()
-            meDrawn = true
-            local r, g, b = UI:Accent()
-            self.meLv:ClearAllPoints(); self.meLv:SetPoint("TOPLEFT", 4, -(y))
-            self.meLv:SetText(tostring(level)); self.meLv:SetTextColor(r, g, b)
-            self.meLine:ClearAllPoints()
-            self.meLine:SetPoint("TOPLEFT", 28, -(y + 6)); self.meLine:SetWidth(lw - 56)
-            self.meLine:SetColorTexture(r, g, b, 1)
-            self.meTxt:ClearAllPoints(); self.meTxt:SetPoint("TOPLEFT", lw - 22, -(y))
-            self.meTxt:SetTextColor(r, g, b)
-            y = y + 18
+        local closed = cfg.ladderClosed or { easy = true, later = true }
+        local function diffOf(a)
+            if a.min <= 0 then return "mid", C.text end
+            if (a.max > 0 and a.max < level - 3) or a.min < level - 9 then return "easy", C.dim end
+            local d = a.min - level
+            if d >= 5 then return "later", C.negative end
+            if d >= 3 then return "soon", C.warning end
+            if d >= -2 then return "mid", C.gold end
+            return "mid", C.positive
         end
+        local SECTIONS = {
+            { key = "mid", label = T("POUR TOI"), col = C.positive },
+            { key = "soon", label = T("BIENTÔT"), col = C.warning },
+            { key = "easy", label = T("TROP FACILES"), col = C.muted },
+            { key = "later", label = T("PLUS TARD"), col = C.muted },
+        }
+        local bySec = { mid = {}, soon = {}, easy = {}, later = {} }
         for _, a in ipairs(self.category and LFG:Activities(self.category) or {}) do
-            if not meDrawn and a.min > level then drawMe() end
-            local b = self.rungs:Get()
-            b.act = a.id
-            b:ClearAllPoints()
-            b:SetPoint("TOPLEFT", 0, -y); b:SetWidth(lw)
-            local n = counts[a.id] or 0
-            b.lv:SetText(a.min > 0 and tostring(a.min) or "")
-            b.name:SetText(a.name)
-            b.cnt:SetShown(n > 0)
-            if n > 0 then
-                local ar, ag, ab = UI:Accent()
-                b.cnt.bg:SetColor(ar, ag, ab, 1)
-                b.cnt.t:SetText(tostring(n))
-                b.cnt:SetWidth(math.max(22, (b.cnt.t:GetStringWidth() or 8) + 12))
-            end
-            b.name:SetPoint("RIGHT", n > 0 and b.cnt or b, n > 0 and "LEFT" or "RIGHT", -6, 0)
-            local far = a.min > 0 and (a.min > level + 5 or (a.max > 0 and a.max < level - 3))
-            local sel = self.sel == a.id
-            b.sel = sel
-            b:SetAlpha((far and not sel) and 0.45 or 1)
-            local r, g, bl = UI:Accent()
-            -- mis en valeur : fond teinté d'accent, liseré, nom et niveau à la couleur d'accent
-            if sel then b.bg:SetColor(r, g, bl, 0.18) else b.bg:SetColor(unpack(C.hover)) end
-            b.bg:SetShown(sel)
-            b.edge:SetColorTexture(r, g, bl, 1); b.edge:SetShown(sel)
-            if sel then b.name:SetTextColor(r, g, bl); b.lv:SetTextColor(r, g, bl)
-            else b.name:SetTextColor(unpack(C.text)); b.lv:SetTextColor(unpack(C.dim)) end
-            b.bar:SetColorTexture(r, g, bl, 1)
-            b.bar:SetWidth(math.max(1, (lw - 40) * n / maxN)); b.bar:SetShown(n > 0)
-            y = y + 36
+            local k, col = diffOf(a)
+            -- « plus tard » : à partir de 7 niveaux au-dessus ; entre 5 et 6, encore « bientôt » (en rouge)
+            if k == "later" and a.min - level < 7 then k = "soon" end
+            table.insert(bySec[k], { a = a, col = col })
         end
-        if not meDrawn then drawMe() end
+        for _, sec in ipairs(SECTIONS) do
+            local list = bySec[sec.key]
+            if #list > 0 then
+                local isClosed = closed[sec.key] and true or false
+                local h = self.ladderHeads:Get()
+                h.key = sec.key
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetWidth(lw)
+                h.t:SetText(sec.label .. "  ·  " .. #list .. (isClosed and "  ›" or ""))
+                h.t:SetTextColor(sec.col[1], sec.col[2], sec.col[3])
+                y = y + 22
+                if not isClosed then
+                    for _, it in ipairs(list) do
+                        local a, col = it.a, it.col
+                        local b = self.rungs:Get()
+                        b.act = a.id
+                        b:ClearAllPoints()
+                        b:SetPoint("TOPLEFT", 0, -y); b:SetWidth(lw)
+                        local n = counts[a.id] or 0
+                        b.lv:SetText(a.min > 0 and tostring(a.min) or "")
+                        b.name:SetText(a.name)
+                        b.cnt:SetShown(n > 0)
+                        if n > 0 then
+                            local ar, ag, ab = UI:Accent()
+                            b.cnt.bg:SetColor(ar, ag, ab, 1)
+                            b.cnt.t:SetText(tostring(n))
+                            b.cnt:SetWidth(math.max(22, (b.cnt.t:GetStringWidth() or 8) + 12))
+                        end
+                        b.name:SetPoint("RIGHT", n > 0 and b.cnt or b, n > 0 and "LEFT" or "RIGHT", -6, 0)
+                        local sel = self.sel == a.id
+                        b.sel = sel
+                        b:SetAlpha(1)
+                        local r, g, bl = UI:Accent()
+                        local s2 = C.surface2
+                        if sel then b.bg:SetColor(r, g, bl, 0.18) else b.bg:SetColor(s2[1], s2[2], s2[3], 0.6) end
+                        b.bg:Show()
+                        b.edge:SetColorTexture(col[1], col[2], col[3], 1); b.edge:Show()
+                        b.lv:SetTextColor(col[1], col[2], col[3])
+                        local nc = sel and { r, g, bl } or (sec.key == "easy" and C.muted or C.text)
+                        b.name:SetTextColor(nc[1], nc[2], nc[3])
+                        b.bar:Hide()
+                        y = y + 36
+                    end
+                end
+                y = y + 4
+            end
+        end
         self.ladder.child:SetSize(lw, y)
         if self.ladder.UpdateBar then self.ladder:UpdateBar() end
 
