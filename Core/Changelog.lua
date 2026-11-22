@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.167", date = "22/11/2026",
+        fixed = {
+            "Merci pour un buff : erreur en boucle quand le jeu cachait la liste des effets reçus (en combat notamment) ; ces effets sont maintenant ignorés.",
+        },
+    },
+    {
         version = "1.128.166", date = "22/11/2026",
         fixed = {
             "Sacs et banque : le bord des cases restait gris au lieu de prendre la couleur de la qualité de l'objet (vert, bleu, violet).",
@@ -6756,7 +6762,7 @@ WK.Roadmap = {
     { prio = 3, theme = "dung", title = "Quêtes, petits plus", text = "Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
     { prio = 3, theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },
-    { prio = 3, theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe." },
+    { prio = 3, theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, XP des membres du groupe." },
     { prio = 3, theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
     { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },

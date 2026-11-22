@@ -4689,4 +4689,5 @@ WK.Locales.enUS.text = {
     ["Taille des objets au choix (Petit, Moyen, Grand) dans le menu d'affichage des sacs et de la banque, à côté de « sans catégories »."] = "Choose the item size (Small, Medium, Large) in the bags and bank display menu, next to \"no categories\".",
     ["La pastille verte d'un objet neuf disparaît dès qu'on le survole."] = "The green dot on a new item disappears as soon as you hover it.",
     ["Sacs et banque : le bord des cases restait gris au lieu de prendre la couleur de la qualité de l'objet (vert, bleu, violet)."] = "Bags and bank: slot borders stayed grey instead of taking the item's quality colour (green, blue, purple).",
+    ["Merci pour un buff : erreur en boucle quand le jeu cachait la liste des effets reçus (en combat notamment) ; ces effets sont maintenant ignorés."] = "Thanks for a buff: looping error when the game hid the list of received effects (in combat especially); those effects are now ignored.",
 }

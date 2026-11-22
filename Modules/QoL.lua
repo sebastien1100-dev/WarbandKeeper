@@ -1220,14 +1220,19 @@ local function onAuraThanks(_, info)
     local inInst, kind = false, nil
     if _G.IsInInstance then inInst, kind = _G.IsInInstance() end
     if inInst or (kind and kind ~= "none") then return end
-    if type(info) ~= "table" or type(info.addedAuras) ~= "table" then return end
-    for _, a in ipairs(info.addedAuras) do
-        local ok = pcall(function()
-            if secret(a.isHelpful) or secret(a.sourceUnit) then return end
-            if a.isHelpful and a.sourceUnit then thankFrom(a.sourceUnit) end
-        end)
-        if not ok then return end
-    end
+    -- en combat, le jeu cache les effets (valeurs secrètes) : rien à lire
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+    if secret(info) or type(info) ~= "table" then return end
+    local added = info.addedAuras
+    if secret(added) or type(added) ~= "table" then return end
+    pcall(function()
+        for _, a in ipairs(added) do
+            if not secret(a) and type(a) == "table" and not secret(a.isHelpful) and not secret(a.sourceUnit)
+                and a.isHelpful and a.sourceUnit then
+                thankFrom(a.sourceUnit)
+            end
+        end
+    end)
 end
 WK:OnUnit("UNIT_AURA", "player", onAuraThanks)
 M.OnAuraThanks = onAuraThanks -- (tests)

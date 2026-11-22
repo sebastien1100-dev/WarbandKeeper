@@ -41,7 +41,7 @@ _Prévu, pas encore commencé._
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
 - **Feu de camp, plus tard** (basse) — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
 - **Feu de camp, suite** (basse) — Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage).
-- **Groupe** (basse) — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe.
+- **Groupe** (basse) — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, XP des membres du groupe.
 
 ### Classes et combat
 - **Aides de combat** (basse) — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
@@ -67,6 +67,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.167 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Merci pour un buff : erreur en boucle quand le jeu cachait la liste des effets reçus (en combat notamment) ; ces effets sont maintenant ignorés.
 
 ## v1.128.166 — 22/11/2026
 
