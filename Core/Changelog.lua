@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.171", date = "22/11/2026", restart = true,
+        added = {
+            "Mini-fenêtre « À faire » : une barre de pastilles à l'écran (une par genre de tâche, avec leur nombre), sans ouvrir la fenêtre ; survol = le détail, clic = la page. À placer en mode édition, à couper dans Options > Rappels à la connexion.",
+            "Objectifs de la Warband (page Persos) : niveau, or, palier de métier ou liste BiS complète, par perso, avec une jauge et le temps restant estimé sur ton rythme réel (XP/h, or gagné sur 7 jours). L'objectif le plus proche du perso connecté apparaît aussi dans la mini-fenêtre « À faire ».",
+        },
+    },
+    {
         version = "1.128.170", date = "22/11/2026", restart = true,
         added = {
             "Bandeau des bateaux : le Tram des profondeurs a maintenant sa petite voiture sur le rail, entre Hurlevent et Forgefer (le zeppelin a déjà la sienne).",
@@ -6762,7 +6769,6 @@ WK.RoadmapPrio = {
 WK.Roadmap = {
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
-    { prio = 2, theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },
     { prio = 3, theme = "ui", title = "Idées d'Utilities en attente", text = "Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe." },
     { prio = 3, theme = "map", title = "Notes de carte partagées", text = "Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note." },
     { prio = 3, theme = "map", title = "Ping de groupe", text = "Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon." },
@@ -6789,7 +6795,6 @@ WK.Roadmap = {
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
-    { prio = 2, theme = "char", title = "Objectifs par perso", text = "Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »)." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },
     { prio = 3, theme = "char", title = "Carte de la Warband", text = "Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord." },
     { prio = 2, theme = "guild", title = "Prix HV partagés en guilde", text = "Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même." },

@@ -8,7 +8,6 @@ Ce fichier est généré à partir de `Core/Changelog.lua` (les mêmes notes son
 _Prévu, pas encore commencé._
 
 ### Interface
-- **Mini-fenêtre « À faire »** (moyenne) — Déplaçable, sans ouvrir la fenêtre principale.
 - **Recherche globale** (moyenne) — Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte.
 - **Chat et confort** (basse) — Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis.
 - **Idées d'Utilities en attente** (basse) — Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
@@ -31,7 +30,6 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
-- **Objectifs par perso** (moyenne) — Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »).
 - **Carte de la Warband** (basse) — Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord.
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
@@ -62,6 +60,14 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.171 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Mini-fenêtre « À faire » : une barre de pastilles à l'écran (une par genre de tâche, avec leur nombre), sans ouvrir la fenêtre ; survol = le détail, clic = la page. À placer en mode édition, à couper dans Options > Rappels à la connexion.
+- Objectifs de la Warband (page Persos) : niveau, or, palier de métier ou liste BiS complète, par perso, avec une jauge et le temps restant estimé sur ton rythme réel (XP/h, or gagné sur 7 jours). L'objectif le plus proche du perso connecté apparaît aussi dans la mini-fenêtre « À faire ».
 
 ## v1.128.170 — 22/11/2026
 

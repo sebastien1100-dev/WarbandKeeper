@@ -756,7 +756,7 @@ UI:RegisterPage({
         UI:SettingRow(al, -144, "Courrier qui expire", "Alerte quand un courrier expire dans moins de ce nombre de jours.", mailSlider, 260)
 
         -- (section cachée « alerts » : affichée seulement dans QoL > Général > Alertes, qui la reprend)
-        local loginCard = card("Rappels à la connexion", 146)
+        local loginCard = card("Rappels à la connexion", 198)
         self.loginToggle = UI:Toggle(loginCard,
             function() return cfg.loginPopup ~= false end,
             function(v) cfg.loginPopup = v end)
@@ -769,6 +769,11 @@ UI:RegisterPage({
             UI:Slider(loginCard, 200, 0, 60, 1,
                 function() local v = cfg.loginPopupTime; if v == nil then v = 5 end; return v end,
                 function(v) cfg.loginPopupTime = v end, "%d s"), 220)
+        UI:SettingRow(loginCard, -144, "Mini-fenêtre « À faire »",
+            "Une barre de pastilles à l'écran (une par genre de tâche, plus ton objectif le plus proche), "
+                .. "placée en mode édition.",
+            UI:Toggle(loginCard, function() return cfg.todoBar ~= false end,
+                function(v) cfg.todoBar = v; if UI.RefreshTodoBar then UI:RefreshTodoBar() end end), 80)
         -- Profils (UI/Pages/Profiles.lua) -------------------------------------------
         section("profiles")
         UI:BuildProfileCards(self, card)

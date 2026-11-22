@@ -110,6 +110,135 @@ UI:RegisterPage({
             return r
         end)
         UI:OnResize(p, function(w) self:PlaceColumns(w) end)
+        self:BuildGoals(child)
+    end,
+
+    -- Objectifs de la Warband (maquette D, Modules/CharGoals.lua) : un objectif par ligne, jauge et temps
+    -- restant, du plus proche au plus lointain ; « + Objectif » ouvre la ligne d'ajout
+    BuildGoals = function(self, child)
+        local CG = WK.modules.CharGoals
+        local head = _G.CreateFrame("Frame", nil, child)
+        head:SetHeight(30)
+        head.t = UI:Text(head, 14); head.t:SetPoint("LEFT", 4, 0); head.t:SetText(T("Objectifs de la Warband"))
+        head.n = UI:Text(head, 11, C.muted); head.n:SetPoint("LEFT", head.t, "RIGHT", 10, 0)
+        head.add = UI:Button(head, "+ Objectif", nil, 26, "secondary")
+        head.add:SetPoint("RIGHT", 0, 0)
+        self.goalHead = head
+        -- ligne d'ajout : perso, genre, métier (si métier), cible, Ajouter
+        local form = _G.CreateFrame("Frame", nil, child)
+        form:SetHeight(46)
+        UI:Panel(form, 10, C.surface2, C.border)
+        form:Hide()
+        self.goalForm = form
+        local st = { kind = "level" }
+        form.who = UI:Dropdown(form, 160, 28, {}, function(v) st.key = v; self:FillGoalProfs(st) end)
+        form.who:SetPoint("LEFT", 10, 0)
+        local kinds = {}
+        for _, k in ipairs(CG.KINDS) do kinds[#kinds + 1] = { k, T(CG.LABELS[k]) } end
+        form.kind = UI:Dropdown(form, 120, 28, kinds, function(v)
+            st.kind = v
+            form.prof:SetShown(v == "prof")
+            form.target:SetShown(v ~= "bis")
+        end)
+        form.kind:SetPoint("LEFT", form.who, "RIGHT", 8, 0)
+        form.prof = UI:Dropdown(form, 140, 28, {}, function(v) st.prof = v end)
+        form.prof:SetPoint("LEFT", form.kind, "RIGHT", 8, 0)
+        form.prof:Hide()
+        form.target = UI:Input(form, 110, 28, T("cible"))
+        form.target:SetPoint("LEFT", form.kind, "RIGHT", 156, 0)
+        form.ok = UI:Button(form, "Ajouter", nil, 28, "primary")
+        form.ok:SetPoint("RIGHT", -10, 0)
+        form.msg = UI:Text(form, 10, C.negative)
+        form.msg:SetPoint("RIGHT", form.ok, "LEFT", -10, 0)
+        form.ok:SetScript("OnClick", function()
+            local g, err = CG:Add(st.key, st.kind, form.target.edit:GetText(), st.kind == "prof" and st.prof or nil)
+            if not g then form.msg:SetText(err or ""); return end
+            form.msg:SetText("")
+            form.target.edit:SetText("")
+            form:Hide()
+            self:Refresh()
+        end)
+        self.goalState = st
+        head.add:SetScript("OnClick", function()
+            form:SetShown(not form:IsShown())
+            if form:IsShown() then
+                local opts = {}
+                for _, e in ipairs(UI:SortedCharacters()) do opts[#opts + 1] = { e.key, WK:CharName(e.c, e.key) } end
+                form.who:SetOptions(opts)
+                st.key = st.key or WK:CharKey()
+                form.who:Select(st.key)
+                form.kind:Select(st.kind)
+                self:FillGoalProfs(st)
+                form.msg:SetText("")
+            end
+            self:Refresh()
+        end)
+        self.goalRows = UI:Pool(function()
+            local r = _G.CreateFrame("Button", nil, child)
+            r:SetHeight(40)
+            UI:Panel(r, 10, C.surface, C.border)
+            r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 14, 0); r.name:SetWidth(130); r.name:SetJustifyH("LEFT")
+            r.title = UI:Text(r, 12); r.title:SetPoint("LEFT", 150, 7); r.title:SetJustifyH("LEFT")
+            r.eta = UI:Text(r, 10, C.muted); r.eta:SetPoint("LEFT", 150, -8); r.eta:SetJustifyH("LEFT")
+            r.del = UI:IconButton(r, "trash", 22, "Retirer cet objectif", true)
+            r.del:SetPoint("RIGHT", -10, 0)
+            r.del:SetScript("OnClick", function(b) if b.key then CG:Remove(b.key, b.i); self:Refresh() end end)
+            r.val = UI:Text(r, 11, C.muted); r.val:SetPoint("RIGHT", r.del, "LEFT", -12, 0); r.val:SetJustifyH("RIGHT")
+            r.bar = UI:Progress(r, 6)
+            r.bar:SetPoint("RIGHT", r.val, "LEFT", -12, 0); r.bar:SetWidth(160)
+            return r
+        end)
+        self.goalEmpty = UI:Text(child, 11, C.muted)
+        self.goalEmpty:SetText(T("Aucun objectif : « + Objectif » pour viser un niveau, une somme d'or, "
+            .. "un palier de métier ou ta liste BiS."))
+    end,
+
+    FillGoalProfs = function(self, st)
+        local c = WK.DB.global.characters[st.key or ""]
+        local opts = {}
+        for prof, pp in pairs(c and c.professions or {}) do
+            if type(pp) == "table" then opts[#opts + 1] = { prof, T(prof) .. " (" .. (pp.rank or 0) .. ")" } end
+        end
+        table.sort(opts, function(a, b) return a[1] < b[1] end)
+        self.goalForm.prof:SetOptions(opts)
+        st.prof = opts[1] and opts[1][1] or nil
+        if st.prof then self.goalForm.prof:Select(st.prof) end
+    end,
+
+    RefreshGoals = function(self, y)
+        local CG = WK.modules.CharGoals
+        local all = CG:All()
+        local head, form = self.goalHead, self.goalForm
+        y = y + 14
+        head:ClearAllPoints(); head:SetPoint("TOPLEFT", 0, -y); head:SetPoint("TOPRIGHT", 0, -y)
+        local open = 0
+        for _, e in ipairs(all) do if not e.p.done then open = open + 1 end end
+        head.n:SetText(string.format(T("%d en cours"), open))
+        y = y + 36
+        if form:IsShown() then
+            form:ClearAllPoints(); form:SetPoint("TOPLEFT", 0, -y); form:SetPoint("TOPRIGHT", 0, -y)
+            y = y + 52
+        end
+        self.goalRows:Reset()
+        for _, e in ipairs(all) do
+            local r = self.goalRows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+            local c = WK.DB.global.characters[e.key]
+            r.name:SetText(WK:CharName(c, e.key)); r.name:SetTextColor(UI:ClassColor(c.class))
+            r.title:SetText(e.p.title)
+            r.eta:SetText(e.p.eta or "")
+            r.eta:SetTextColor(unpack(e.p.done and C.positive or C.muted))
+            r.val:SetText(e.p.value or "")
+            r.bar.color = e.p.done and { C.positive[1], C.positive[2], C.positive[3], 1 } or nil
+            r.bar:SetValue(e.p.pct or 0)
+            r.del.key, r.del.i = e.key, e.i
+            r:Show()
+            y = y + 46
+        end
+        self.goalEmpty:ClearAllPoints(); self.goalEmpty:SetPoint("TOPLEFT", 4, -y)
+        self.goalEmpty:SetShown(#all == 0)
+        if #all == 0 then y = y + 24 end
+        return y
     end,
 
     -- Colonnes proportionnelles à la largeur (prévues pour 924 px).
@@ -191,6 +320,7 @@ UI:RegisterPage({
             r.del:SetShown(e.key ~= me)
             y = y + 56
         end
+        y = self:RefreshGoals(y)
         self.scroll:SetContentHeight(y)
     end,
 })
