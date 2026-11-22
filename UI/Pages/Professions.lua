@@ -1216,6 +1216,24 @@ local function Detail(page, parent)
         r.sub = UI:Text(r, 10, C.muted)
         r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -5)
         r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -12, -28)
+        -- lancer les fabrications de l'étape (nombre du guide ; fenêtre du métier ouverte, recette connue)
+        r.make = UI:Button(r, "", nil, 20, "primary")
+        r.make:SetPoint("BOTTOMRIGHT", -10, 6)
+        r.make:SetScript("OnClick", function(b)
+            if not b.key then return end
+            if not WK.modules.ProfHelp:Craft(b.key, b.n) then
+                WK:Print(string.format(T("Fabrication : ouvre d'abord la fenêtre du métier (%s)."), b.prof or ""))
+            end
+        end)
+        r.make:SetScript("OnEnter", function(b)
+            WK.UI:TooltipOwner(b, "ANCHOR_TOP")
+            local tt = _G.GameTooltip
+            tt:SetText(string.format(T("Fabriquer %d fois"), b.n or 0), 1, 1, 1)
+            tt:AddLine(T("Fenêtre du métier ouverte ; s'arrête quand les composants manquent."), 0.7, 0.7, 0.7, true)
+            tt:Show()
+        end)
+        r.make:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        r.make:Hide()
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
             local st = s.e.step
@@ -1254,6 +1272,13 @@ local function Detail(page, parent)
         return r
     end)
 
+    -- recette du perso qui fait l'étape : même objet fabriqué, sinon même nom de sort
+    function tab.StepRecipeKey(_, c, st)
+        local spell = st.spell and WK.SpellInfo(st.spell)
+        for k, rc in pairs(c.recipes or {}) do
+            if (st.out and rc.out == st.out) or (spell and (rc.name or k) == spell) then return k end
+        end
+    end
     function tab:RefreshGuide(c, pr)
         local R = WK.modules.Recipes
         self.currentY = nil
@@ -1330,6 +1355,19 @@ local function Detail(page, parent)
                 src = T("Maître")
             end
             r.sub:SetText(src .. "  ·  " .. table.concat(reag, ", "))
+            -- bouton « Fabriquer xN » : perso connecté, étape pas finie, recette connue
+            local key
+            if e.status ~= "done" and c == WK.DB:Me() then key = self:StepRecipeKey(c, st) end
+            r.make.key, r.make.n, r.make.prof = key, n, self.prof
+            if key and n > 0 then
+                r.make.label:SetText(string.format(T("Fabriquer x%d"), n))
+                r.make:SetWidth(math.max(90, r.make.label:GetStringWidth() + 24))
+                r.make:Show()
+                r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -(r.make:GetWidth() + 18), -28)
+            else
+                r.make:Hide()
+                r.sub:SetPoint("TOPRIGHT", r, "TOPRIGHT", -12, -28)
+            end
             -- coût de l'étape (composants au prix choisi, sinon prix du guide)
             local stepCost = 0
             if e.status ~= "done" then

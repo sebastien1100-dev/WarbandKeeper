@@ -4500,4 +4500,8 @@ WK.Locales.enUS.text = {
     ["quêtes de la zone en haut à droite"] = "zone quests in the top right corner",
     ["Faites sur le total, en cours et à prendre ; vert quand tout est fait."] = "Done out of total, in progress and available; green when everything is done.",
     ["Pleine au survol de la souris."] = "Full on mouseover.",
+    ["Fabrication : ouvre d'abord la fenêtre du métier (%s)."] = "Crafting: open the profession window first (%s).",
+    ["Fabriquer %d fois"] = "Craft %d times",
+    ["Fenêtre du métier ouverte ; s'arrête quand les composants manquent."] = "Profession window open; stops when reagents run out.",
+    ["Fabriquer x%d"] = "Craft x%d",
 }
