@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.120", date = "22/11/2026",
+        changed = {
+            "Ports et destinations (bateaux et vols) : fenêtre deux fois plus grande, bornée à 90 % de l'écran ; la carte prend toute la hauteur, les quais et leurs noms sont plus gros, la liste reste à droite (un peu plus large).",
+        },
+    },
+    {
         version = "1.128.119", date = "22/11/2026",
         fixed = {
             "Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…).",

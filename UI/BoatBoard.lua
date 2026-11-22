@@ -116,6 +116,13 @@ local function qbez(t, x1, y1, cx, cy, x2, y2)
 end
 
 local function build()
+    -- maquette A : fenêtre deux fois plus grande (carte plus lisible), bornée à 90 % de l'écran ; la carte garde les
+    -- proportions de celle du jeu (3 sur 2), la liste reste à droite
+    local sw, sh = _G.UIParent:GetWidth() or 1920, _G.UIParent:GetHeight() or 1080
+    LIST_W = 380
+    H = math.floor(math.min(1000, sh * 0.9))
+    W = math.floor(math.min(LIST_W + 36 + (H - 68) * 1.5, sw * 0.9))
+    MAP_W = W - LIST_W - 36
     local f = CreateFrame("Frame", "WarbandKeeperBoatBoard", UIParent)
     f:SetSize(W, H)
     f:SetPoint("CENTER", 0, 40)
@@ -182,7 +189,7 @@ local function build()
         b.land = UI:Rounded(b.frame, 14, 0, "BACKGROUND", 1)
         b.land:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 0.9)
         b.tiles = {}
-        b.label = UI:Text(mf, 9, C.dim); b.label:SetText(string.upper(b.name))
+        b.label = UI:Text(mf, 12, C.dim); b.label:SetText(string.upper(b.name))
         b.label:SetPoint("TOP", mf, "TOPLEFT", b.x + b.w / 2, -9)
         b.cont = c
     end
@@ -210,12 +217,13 @@ local function build()
         local d = f.dots[k]
         if d then return d end
         d = CreateFrame("Button", nil, dotF)
-        d:SetSize(16, 16)
-        d.halo = d:CreateTexture(nil, "BACKGROUND"); d.halo:SetTexture(UI.MEDIA .. "circle"); d.halo:SetPoint("CENTER"); d.halo:SetSize(24, 24)
-        d.edge = d:CreateTexture(nil, "ARTWORK"); d.edge:SetTexture(UI.MEDIA .. "circle"); d.edge:SetPoint("CENTER"); d.edge:SetSize(11, 11)
+        d:SetSize(20, 20)
+        d.halo = d:CreateTexture(nil, "BACKGROUND"); d.halo:SetTexture(UI.MEDIA .. "circle")
+        d.halo:SetPoint("CENTER"); d.halo:SetSize(30, 30)
+        d.edge = d:CreateTexture(nil, "ARTWORK"); d.edge:SetTexture(UI.MEDIA .. "circle"); d.edge:SetPoint("CENTER"); d.edge:SetSize(14, 14)
         d.edge:SetVertexColor(0, 0, 0, 0.9)
-        d.dot = d:CreateTexture(nil, "OVERLAY"); d.dot:SetTexture(UI.MEDIA .. "circle"); d.dot:SetPoint("CENTER"); d.dot:SetSize(8, 8)
-        d.label = UI:Text(dotF, 10)
+        d.dot = d:CreateTexture(nil, "OVERLAY"); d.dot:SetTexture(UI.MEDIA .. "circle"); d.dot:SetPoint("CENTER"); d.dot:SetSize(10, 10)
+        d.label = UI:Text(dotF, 13)
         -- contour : lisible sur les couleurs de la carte du jeu
         d.label:SetFont(UI.FONT, 10, "OUTLINE")
         d:SetScript("OnClick", function(s)
@@ -650,7 +658,7 @@ local function build()
                 local isFrom = self.fromNode == nd
                 local col = isFrom and { ar, ag, ab } or (nd.known and C.text or { 0.42, 0.43, 0.47 })
                 d.dot:SetVertexColor(col[1], col[2], col[3], 1)
-                d.dot:SetSize(nd.known and 8 or 6, nd.known and 8 or 6)
+                d.dot:SetSize(nd.known and 10 or 7, nd.known and 10 or 7)
                 d.halo:SetVertexColor(col[1], col[2], col[3], 0.3); d.halo:SetShown(isFrom)
                 d.label:ClearAllPoints()
                 local right = x < MAP_W - 110
