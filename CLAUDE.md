@@ -134,7 +134,7 @@ Tous les réglages des métiers sont dans l'onglet « settings » de la page Mé
 
 ## Carte de la Warband
 
-`Modules/Characters.lua` : `CardConfig()` (`settings.ui.wbCard` = { fmt discord / guild, show = { level, prof, gold, ilvl, rest }, who all / max }), `CardChars`, `CardText(cfg, ilvlOf)` (Discord : texte en gras et puces ; guilde : liste de messages de 255 caractères au plus). Fenêtre `UI.ShowWarbandCard()` en bas de `UI/Pages/Characters.lua` (maquette A, bouton `send` à gauche de la roue Expérience) : le jeu n'écrit pas dans le presse-papiers (« Tout sélectionner » puis Ctrl+C) ; guilde = message posé dans la boîte de discussion réglée sur GUILD, jamais envoyé par l'addon. `UI.AverageIlvl(c)` vient de `UI/CharacterSheet.lua`.
+`Modules/Characters.lua` : `CardConfig()` (`settings.ui.wbCard` = { fmt discord / guild, show = { level, prof, gold, ilvl, rest }, who all / max }), `CardChars`, `CardText(cfg, ilvlOf)` (Discord, maquette A : titre « ## <perso> et ses rerolls », une fiche « ### » par perso avec icône de classe `CLASS_EMOJI` en code « :nom: », métiers en puce, petit texte « -# » ; guilde : liste de messages de 255 caractères au plus). Fenêtre `UI.ShowWarbandCard()` en bas de `UI/Pages/Characters.lua` (maquette A, bouton `send` à gauche de la roue Expérience) : le jeu n'écrit pas dans le presse-papiers (« Tout sélectionner » puis Ctrl+C) ; guilde = message posé dans la boîte de discussion réglée sur GUILD, jamais envoyé par l'addon. `UI.AverageIlvl(c)` vient de `UI/CharacterSheet.lua`.
 
 ## Bibliothèques
 

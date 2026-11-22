@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.182", date = "22/11/2026",
+        changed = {
+            "Carte de la Warband : vraie mise en forme pour Discord (grand titre, une fiche par perso avec l'icône de sa classe, métiers en puce, niveau d'objet, or et repos en petit) ; « Warband de » remplacé par « <perso> et ses rerolls » dans les deux formats.",
+        },
+    },
+    {
         version = "1.128.181", date = "22/11/2026", restart = true,
         changed = {
             "Changer de couche retiré : plus de raccourci « Couche » dans le micro menu, d'étape sous l'heure ni de carte de réglages (ni d'aide aux autres joueurs).",

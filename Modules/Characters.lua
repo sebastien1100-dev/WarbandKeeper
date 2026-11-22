@@ -268,54 +268,66 @@ end
 
 -- Texte de la carte. Discord : une ligne par perso, titre en gras. Guilde : parties de 255 caractères au plus
 -- (une par message), renvoyées en liste.
+-- Icône de classe pour Discord : code « :nom: » (caractères simples, affichables dans le jeu), changé en emoji
+-- par Discord à l'envoi
+local CLASS_EMOJI = {
+    WARRIOR = ":crossed_swords:", PALADIN = ":shield:", HUNTER = ":bow_and_arrow:", ROGUE = ":dagger:",
+    PRIEST = ":sparkles:", SHAMAN = ":zap:", MAGE = ":snowflake:", WARLOCK = ":skull:", DRUID = ":herb:",
+}
+M.CLASS_EMOJI = CLASS_EMOJI
+
+-- Texte de la carte (maquette A de « Carte de la Warband pour Discord »). Discord : titre « ## », une fiche par
+-- perso (« ### » icône, nom, classe et niveau ; métiers en puce ; niveau d'objet, or et repos en petit « -# »).
+-- Guilde : parties de 255 caractères au plus (une par message), renvoyées en liste.
 function M:CardText(cfg, ilvlOf)
     cfg = cfg or M.CardConfig()
     local sh = cfg.show
+    local guild = cfg.fmt == "guild"
     local list = self:CardChars(cfg)
     local me = WK.DB.global.characters[WK:CharKey()]
-    local total = 0
-    for _, e in ipairs(list) do total = total + (e.c.money or 0) end
     local XP = WK.modules.XP
-    local lines = {}
+    local names = _G.LOCALIZED_CLASS_NAMES_MALE
+    local blocks = {}
     for _, e in ipairs(list) do
         local c = e.c
-        local names = _G.LOCALIZED_CLASS_NAMES_MALE
         local cls = c.class and names and names[c.class] or c.class or ""
-        local parts = {}
         local head = cls
-        if sh.level and c.level then head = head .. " " .. c.level end
-        if head ~= "" then table.insert(parts, head) end
-        if sh.prof then
-            local p = profText(c, cfg.fmt == "guild")
-            if p ~= "" then table.insert(parts, p) end
-        end
+        if sh.level and c.level then head = (head ~= "" and (head .. " ") or "") .. c.level end
+        local prof = sh.prof and profText(c, guild) or ""
+        local small = {}
         if sh.ilvl and ilvlOf then
-            local a = ilvlOf(c)
-            if a then table.insert(parts, string.format(T("niv. objet %d"), math.floor(a + 0.5))) end
+            local av = ilvlOf(c)
+            if av then table.insert(small, string.format(T("Niv. objet %d"), math.floor(av + 0.5))) end
         end
+        if sh.gold and c.money then table.insert(small, groupDigits(c.money / 10000) .. " " .. T("po")) end
         if sh.rest and XP and XP.RestOf then
             local ok, frac = pcall(XP.RestOf, XP, e.key)
             if ok and frac and frac > 0 then
-                table.insert(parts, string.format(T("repos %d %%"), math.floor(frac * 100 + 0.5)))
+                table.insert(small, string.format(T("repos %d %%"), math.floor(frac * 100 + 0.5)))
             end
         end
-        if sh.gold and c.money then table.insert(parts, groupDigits(c.money / 10000) .. " " .. T("po")) end
         local name = WK:CharName(c, e.key)
-        if cfg.fmt == "guild" then
-            table.insert(lines, name .. " (" .. table.concat(parts, ", ") .. ")")
+        if guild then
+            local parts = {}
+            if head ~= "" then table.insert(parts, head) end
+            if prof ~= "" then table.insert(parts, prof) end
+            for _, x in ipairs(small) do table.insert(parts, x) end
+            table.insert(blocks, name .. (#parts > 0 and (" (" .. table.concat(parts, ", ") .. ")") or ""))
         else
-            table.insert(lines, "• " .. name .. (#parts > 0 and (" — " .. table.concat(parts, " — ")) or ""))
+            local icon = CLASS_EMOJI[c.class or ""]
+            local b = { "### " .. (icon and (icon .. " ") or "") .. name .. (head ~= "" and (" · " .. head) or "") }
+            if prof ~= "" then table.insert(b, "- **" .. T("Métiers") .. "** : " .. prof:gsub(", ", " · ")) end
+            if #small > 0 then table.insert(b, "-# " .. table.concat(small, " · ")) end
+            table.insert(blocks, table.concat(b, "\n"))
         end
     end
     local owner = me and WK:CharName(me, WK:CharKey()) or WK:CharName(nil, WK:CharKey())
-    local title = string.format(T("Warband de %s"), owner) .. " · "
-        .. string.format(T("%d persos"), #list)
-        .. (sh.gold and (" · " .. groupDigits(total / 10000) .. " " .. T("po")) or "")
-    if cfg.fmt ~= "guild" then
-        return "**" .. title .. "**\n" .. table.concat(lines, "\n")
+    local title = string.format(T("%s et ses rerolls"), owner) .. " · " .. string.format(T("%d persos"), #list)
+    if not guild then
+        return "## " .. title .. "\n" .. table.concat(blocks, "\n")
     end
     local msgs, cur = {}, title .. " :"
-    for _, l in ipairs(lines) do
+    for _, l in ipairs(blocks) do
         if #cur + 3 + #l > 255 then table.insert(msgs, cur); cur = l
         else cur = cur .. (cur:sub(-1) == ":" and " " or " | ") .. l end
     end

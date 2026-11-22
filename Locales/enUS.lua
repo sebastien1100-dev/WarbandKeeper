@@ -4810,8 +4810,6 @@ WK.Locales.enUS.text = {
     ["Halo : erreur « fonction protégée » (ADDON_ACTION_BLOCKED) quand une zone se chargeait en combat ; ses réglages du jeu attendent maintenant la fin du combat."] = "Halo: 'protected function' error (ADDON_ACTION_BLOCKED) when a zone loaded during combat; its game settings now wait for the end of combat.",
     ["Carte des vols : la durée du vol apparaissait deux fois dans l'infobulle quand le jeu la donne déjà ; la nôtre ne s'ajoute plus qu'en son absence."] = "Flight map: the flight time showed twice in the tooltip when the game already gives it; ours is now only added when it is missing.",
     ["Prochainement : l'idée « Quêtes, suite » est retirée."] = "Coming soon: the Quests, continued idea is removed.",
-    ["niv. objet %d"] = "ilvl %d",
-    ["Warband de %s"] = "%s's Warband",
     ["Carte de la Warband : partager tes persos"] = "Warband card: share your characters",
     ["Carte de la Warband"] = "Warband card",
     ["Mettre dans le chat de guilde"] = "Put in guild chat",
@@ -4825,4 +4823,7 @@ WK.Locales.enUS.text = {
     ["Prochainement : idées retirées (Groupe, Prix HV partagés en guilde, Chemins appris partagés, Réticule au centre, Quêtes, petits plus)."] = "Coming soon: ideas removed (Group, Guild-shared AH prices, Shared learned paths, Centre reticle, Quests, small extras).",
     ["Changer de couche retiré : plus de raccourci « Couche » dans le micro menu, d'étape sous l'heure ni de carte de réglages (ni d'aide aux autres joueurs)."] = "Layer swap removed: no more Layer shortcut in the micro menu, step under the clock or settings card (nor helping other players).",
     ["Prochainement : idées retirées (Couches, suite ; Mini-jeux en vol ; Mode daltonien ; Raccourcis vers les pages ; Taille du texte)."] = "Coming soon: ideas removed (Layers, continued; Flight mini-games; Colour-blind mode; Page shortcuts; Text size).",
+    ["Carte de la Warband : vraie mise en forme pour Discord (grand titre, une fiche par perso avec l'icône de sa classe, métiers en puce, niveau d'objet, or et repos en petit) ; « Warband de » remplacé par « <perso> et ses rerolls » dans les deux formats."] = "Warband card: real Discord formatting (big title, one card per character with its class icon, professions as a bullet, item level, gold and rested in small text); 'Warband de' replaced by '<character> and their alts' in both formats.",
+    ["%s et ses rerolls"] = "%s and their alts",
+    ["Niv. objet %d"] = "Item level %d",
 }
