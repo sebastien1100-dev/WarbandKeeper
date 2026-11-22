@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.70", date = "22/11/2026",
+        fixed = {
+            "Bouton « Buffer le suivant » du paladin en groupe : il juge la portée comme les lignes du panneau des bénédictions ; avant, quand le jeu ne donnait pas la portée du sort, il se limitait à 28 m et pouvait ne jamais proposer un joueur (le tank et ses Rois, par exemple) que la ligne du panneau bénissait.",
+        },
+    },
+    {
         version = "1.128.69", date = "22/11/2026",
         changed = {
             "Recherche de groupe : les joueurs seuls sont rangés par rôle, en trois colonnes Tank / Soin / DPS avec un en-tête de couleur et leur nombre ; chaque ligne a un trait à la couleur du rôle, le nom à la couleur de classe, le niveau à droite et les autres rôles du joueur en petit (plus haut niveau d'abord). Fenêtre étroite : les rôles passent l'un sous l'autre.",

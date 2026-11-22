@@ -446,6 +446,7 @@ local function inReach(unit, b)
     end
     return true
 end
+M.InReach = inReach
 
 -- Prochain joueur à bénir dans une ligne (ou dans toutes) : sans ma bénédiction, puis le plus court.
 -- Avant, un membre hors de portée (jamais relu, donc « sans bénédiction ») passait toujours en tête et la

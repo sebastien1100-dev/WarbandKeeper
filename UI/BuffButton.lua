@@ -165,6 +165,10 @@ end
 -- Salut), les joueurs sans ta bénédiction d'abord, puis ceux dont elle finit le plus tôt
 local function groupBlessings(seenGuid)
     local BL = WK.modules.Blessings
+    local function reach(u, b, spell)
+        if BL.InReach then return BL.InReach(u, b) end
+        return inRange(spell, u)
+    end
     if not (myClass() == "PALADIN" and BL and BL:On() and IsInGroup and IsInGroup()) then return nil end
     local c = cfg() or {}
     local refresh = (c.buffRefresh or 3) * 60
@@ -180,7 +184,9 @@ local function groupBlessings(seenGuid)
             if guid and spell and not m.dead and (UnitIsUnit(u, "player") or not UnitAffectingCombat(u))
                 and (mePvp or not (UnitIsPVP and UnitIsPVP(u)))
                 and not (refused[guid] and GetTime() - refused[guid] < 120)
-                and (not m.left or m.left < refresh) and inRange(spell, u) then
+                -- même portée que les lignes du panneau (avant : une portée inconnue du jeu se rabattait sur 28 m,
+                -- et un tank entre 28 et 30 m n'était jamais proposé par le bouton alors que sa ligne le bénissait)
+                and (not m.left or m.left < refresh) and reach(u, r.b, spell) then
                 table.insert(out, { unit = u, id = id, spell = spell, who = UnitName(u), class = select(2, UnitClass(u)),
                     left = m.left or -1, b = r.b })
             end
