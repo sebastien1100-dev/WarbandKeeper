@@ -18,7 +18,6 @@ _Prévu, pas encore commencé._
 - **Taille du texte** (basse) — Taille de police globale de la fenêtre, en plus de l'échelle.
 
 ### Carte et voyage
-- **Chemins appris partagés** (moyenne) — Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde.
 - **« Prends le bateau »** (moyenne) — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
 - **Carte, suite** (basse) — Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
 - **Couches, suite** (basse) — La couche où tu es et les rares tués par couche, si le jeu la rend de nouveau lisible (depuis le 20/11, chaque créature a son propre numéro).
@@ -30,23 +29,19 @@ _Prévu, pas encore commencé._
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
-- **Carte de la Warband** (basse) — Résumé de tes persos (niveaux, métiers, or) prêt à coller dans le chat de guilde ou sur Discord.
 - **Comparer deux persos** (basse) — Équipement, stats et métiers côte à côte.
 - **Expérience, suite** (basse) — Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu.
 - **Feu de camp, plus tard** (basse) — Camps des autres joueurs lus dans Happy Camper s'il est installé, annonce de ton camp, endroits où tu as campé.
 - **Feu de camp, suite** (basse) — Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage).
-- **Groupe** (basse) — Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, XP des membres du groupe.
 
 ### Classes et combat
 - **Aides de combat** (basse) — Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts.
 - **Curseur retrouvé** (basse) — Secouer la souris ou un raccourci : un grand anneau se resserre sur lui.
 - **Gain d'un rang** (basse) — Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…).
 - **Grimoires de démons** (basse) — Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard).
-- **Réticule au centre** (basse) — Pour le combat à la souris, d'une autre couleur hors de portée.
 - **Salut choisi par classe** (basse) — Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu.
 
 ### Donjons et quêtes
-- **Quêtes, petits plus** (basse) — Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe.
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 
 ### Fiabilité
@@ -56,9 +51,18 @@ _Prévu, pas encore commencé._
 - **Sauvegardes synchronisées** (basse) — Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière.
 
 ### Guilde et partage
-- **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.180 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte de la Warband : nouvelle fenêtre (bouton d'envoi en haut de la page Persos) qui résume tes persos (niveaux, métiers, or, niveau d'objet, repos) en texte prêt à copier pour Discord, ou posé dans le chat de guilde (Entrée pour envoyer).
+
+### Modifications
+- Prochainement : idées retirées (Groupe, Prix HV partagés en guilde, Chemins appris partagés, Réticule au centre, Quêtes, petits plus).
 
 ## v1.128.179 — 22/11/2026
 

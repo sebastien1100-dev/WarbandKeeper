@@ -85,6 +85,7 @@ local function averageIlvl(gear)
     -- 17 emplacements comptés (1-3, 5-18, distance comprise), cases vides à 0, comme le jeu
     return total / 17
 end
+UI.AverageIlvl = function(c) return c and averageIlvl(c.gear) end
 
 local function fmt(v, pct)
     if v == nil then return "-" end

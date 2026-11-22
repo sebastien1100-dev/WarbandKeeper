@@ -52,10 +52,16 @@ UI:RegisterPage({
             onToggle = function(open)
                 for _, h in ipairs(self.colHeaders or {}) do h:SetShown(not open) end
                 self.xpTitle:SetShown(open)
+                if self.share then self.share:SetShown(not open) end
             end }, self)
         self.xp.gear:SetPoint("TOPRIGHT", 0, 2)
         -- au-dessus du volet (qui commence juste sous la ligne des titres de colonnes)
         self.xp.gear:SetFrameLevel(self.xp.overlay:GetFrameLevel() + 5)
+        -- Carte de la Warband (maquette A) : résumé de tes persos à copier pour Discord ou la guilde
+        self.share = UI:IconButton(p, "send", 26, T("Carte de la Warband : partager tes persos"))
+        self.share:SetPoint("RIGHT", self.xp.gear, "LEFT", -6, 0)
+        self.share:SetFrameLevel(self.xp.overlay:GetFrameLevel() + 5)
+        self.share:SetScript("OnClick", function() UI:ShowWarbandCard() end)
         self.xpTitle = UI:Text(p, 12)
         self.xpTitle:SetPoint("TOPLEFT", 4, -4)
         self.xpTitle:SetText(T("Expérience de tes persos"))
@@ -324,3 +330,142 @@ UI:RegisterPage({
         self.scroll:SetContentHeight(y)
     end,
 })
+
+---------------------------------------------------------------------------
+-- Fenêtre « Carte de la Warband » (maquette A) : options à gauche, texte prêt à copier à droite.
+-- Le jeu n'écrit pas dans le presse-papiers : « Tout sélectionner » puis Ctrl+C. Guilde : le message est posé
+-- dans la boîte de discussion du chat de guilde, le joueur appuie sur Entrée (jamais envoyé tout seul).
+---------------------------------------------------------------------------
+local card
+local function buildCard()
+    local Ch = WK.modules.Characters
+    local f = _G.CreateFrame("Frame", "WarbandKeeperWarbandCard", _G.UIParent)
+    f:SetSize(640, 330); f:SetPoint("CENTER", 0, 80)
+    f:SetFrameStrata("DIALOG"); f:EnableMouse(true); f:SetMovable(true); f:SetClampedToScreen(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+    UI:HudBackground(f, "window")
+    f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", 16, -14); f.title:SetText(T("Carte de la Warband"))
+    f.close = UI:IconButton(f, "close", 22, T("Fermer"))
+    f.close:SetPoint("TOPRIGHT", -10, -10)
+    f.close:SetScript("OnClick", function() f:Hide() end)
+    if _G.UISpecialFrames then table.insert(_G.UISpecialFrames, "WarbandKeeperWarbandCard") end
+
+    local y = -48
+    local function label(text)
+        local t = UI:Text(f, 11, C.muted); t:SetPoint("TOPLEFT", 16, y); t:SetText(T(text))
+        y = y - 20
+    end
+    local function chips(items, isOn, onClick)
+        local x, row = 16, {}
+        for _, it in ipairs(items) do
+            local b = UI:Button(f, T(it[2]), nil, 24, "ghost")
+            if x + b:GetWidth() > 216 then x = 16; y = y - 28 end
+            b:SetPoint("TOPLEFT", x, y)
+            x = x + b:GetWidth() + 5
+            b:SetScript("OnClick", function() onClick(it[1]); f:Refresh() end)
+            row[it[1]] = b
+        end
+        y = y - 36
+        table.insert(f.chipRows, function()
+            for k, b in pairs(row) do b:SetStyle(isOn(k) and "primary" or "ghost") end
+        end)
+    end
+    f.chipRows = {}
+    local cfg = Ch.CardConfig
+    label("Format")
+    chips({ { "discord", "Discord" }, { "guild", "Guilde" } }, function(k) return cfg().fmt == k end,
+        function(k) cfg().fmt = k end)
+    label("Montrer")
+    chips({ { "level", "Niveaux" }, { "prof", "Métiers" }, { "gold", "Or" }, { "ilvl", "Niv. objet" },
+        { "rest", "Repos" } },
+        function(k) return cfg().show[k] end, function(k) local sh = cfg().show; sh[k] = not sh[k] end)
+    label("Persos")
+    chips({ { "all", "Tous" }, { "max", "Niveau max" } }, function(k) return cfg().who == k end,
+        function(k) cfg().who = k end)
+
+    -- texte : zone qui défile, éditable (on peut retoucher avant de copier)
+    local box = _G.CreateFrame("Frame", nil, f)
+    box:SetPoint("TOPLEFT", 236, -48); box:SetPoint("BOTTOMRIGHT", -16, 52)
+    UI:Panel(box, 8, C.bg, C.border)
+    local sc = _G.CreateFrame("ScrollFrame", nil, box)
+    sc:SetPoint("TOPLEFT", 8, -8); sc:SetPoint("BOTTOMRIGHT", -8, 8)
+    local eb = _G.CreateFrame("EditBox", nil, sc)
+    eb:SetMultiLine(true); eb:SetAutoFocus(false); eb:SetWidth(370)
+    eb:SetFontObject(_G.ChatFontNormal or _G.GameFontHighlight)
+    eb:SetScript("OnEscapePressed", function(s) s:ClearFocus() end)
+    eb:SetScript("OnCursorChanged", function(_, _, cy, _, h)
+        local off = sc:GetVerticalScroll()
+        if -cy < off then sc:SetVerticalScroll(-cy)
+        elseif -cy + h > off + sc:GetHeight() then sc:SetVerticalScroll(math.max(0, -cy + h - sc:GetHeight())) end
+    end)
+    sc:SetScrollChild(eb)
+    sc:EnableMouseWheel(true)
+    sc:SetScript("OnMouseWheel", function(s, d)
+        local maxS = math.max(0, eb:GetHeight() - s:GetHeight())
+        s:SetVerticalScroll(math.min(maxS, math.max(0, s:GetVerticalScroll() - d * 30)))
+    end)
+    box:EnableMouse(true)
+    box:SetScript("OnMouseDown", function() eb:SetFocus() end)
+    f.eb = eb
+
+    f.select = UI:Button(f, T("Tout sélectionner"), nil, 28, "primary")
+    f.select:SetPoint("BOTTOMLEFT", 236, 14)
+    f.select:SetScript("OnClick", function() eb:SetFocus(); eb:HighlightText() end)
+    f.hint = UI:Text(f, 11, C.muted)
+    f.hint:SetPoint("LEFT", f.select, "RIGHT", 10, 0)
+    f.toChat = UI:Button(f, T("Mettre dans le chat de guilde"), nil, 28, "primary")
+    f.toChat:SetPoint("BOTTOMLEFT", 236, 14)
+    f.toChat:SetScript("OnClick", function()
+        local msgs = f.msgs or {}
+        local i = f.part or 1
+        local text = msgs[i]
+        if not text then return end
+        if _G.IsInGuild and not _G.IsInGuild() then WK:Print(T("Tu n'es pas dans une guilde.")) return end
+        if _G.ChatFrame_OpenChat then
+            _G.ChatFrame_OpenChat(text)
+            local ceb = _G.ChatEdit_GetActiveWindow and _G.ChatEdit_GetActiveWindow()
+            if ceb and ceb.SetAttribute then
+                ceb:SetAttribute("chatType", "GUILD")
+                if _G.ChatEdit_UpdateHeader then pcall(_G.ChatEdit_UpdateHeader, ceb) end
+            end
+        end
+        f.part = (i % #msgs) + 1
+        f:PaintChat()
+    end)
+
+    function f:PaintChat()
+        local n = #(self.msgs or {})
+        local lbl = T("Mettre dans le chat de guilde")
+        if n > 1 then lbl = lbl .. string.format(" (%d/%d)", self.part or 1, n) end
+        self.toChat.label:SetText(lbl)
+        if self.toChat.Fit then self.toChat:Fit() end
+    end
+    function f:Refresh()
+        for _, fn in ipairs(self.chipRows) do fn() end
+        local c = cfg()
+        local out = Ch:CardText(c, UI.AverageIlvl)
+        if type(out) == "table" then
+            self.msgs, self.part = out, 1
+            self.eb:SetText(table.concat(out, "\n\n"))
+            self.select:Hide(); self.toChat:Show()
+            self.hint:ClearAllPoints(); self.hint:SetPoint("LEFT", self.toChat, "RIGHT", 10, 0)
+            self.hint:SetText(T("puis Entrée pour l'envoyer"))
+            self:PaintChat()
+        else
+            self.msgs = nil
+            self.eb:SetText(out)
+            self.toChat:Hide(); self.select:Show()
+            self.hint:ClearAllPoints(); self.hint:SetPoint("LEFT", self.select, "RIGHT", 10, 0)
+            self.hint:SetText(T("puis Ctrl+C · colle dans Discord"))
+        end
+        self.eb:SetCursorPosition(0)
+    end
+    f:SetScript("OnShow", function(s) s:Refresh() end)
+    return f
+end
+function UI.ShowWarbandCard()
+    card = card or buildCard()
+    if card:IsShown() then card:Refresh() else card:Show() end
+    return card
+end

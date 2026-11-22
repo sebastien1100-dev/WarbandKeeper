@@ -215,3 +215,110 @@ function M:PrintCharacters()
     end
     WK:Print(WK.L.TOTAL .. " : " .. WK:FormatTime(totalPlayed))
 end
+
+---------------------------------------------------------------------------
+-- Carte de la Warband (maquette A) : résumé de tes persos prêt à coller dans Discord ou le chat de guilde.
+-- Réglages settings.ui.wbCard = { fmt = "discord"|"guild", show = { level, prof, gold, ilvl, rest },
+-- who = "all"|"max" }
+---------------------------------------------------------------------------
+function M.CardConfig()
+    local s = WK.DB.global.settings.ui
+    s.wbCard = s.wbCard or {}
+    local c = s.wbCard
+    if c.fmt ~= "guild" then c.fmt = "discord" end
+    if c.who ~= "max" then c.who = "all" end
+    if type(c.show) ~= "table" then c.show = { level = true, prof = true, gold = true } end
+    return c
+end
+
+local function groupDigits(n)
+    local s = tostring(math.floor(n))
+    local out = s:reverse():gsub("(%d%d%d)", "%1 "):reverse()
+    return (out:gsub("^ ", ""))
+end
+
+-- Persos retenus, du plus haut niveau au plus bas
+function M.CardChars(_, cfg)
+    cfg = cfg or M.CardConfig()
+    local maxL = WK.modules.XP and WK.modules.XP:MaxLevel() or 60
+    local list = {}
+    for key, c in pairs(WK.DB.global.characters) do
+        if cfg.who ~= "max" or (c.level or 0) >= maxL then table.insert(list, { key = key, c = c }) end
+    end
+    table.sort(list, function(a, b)
+        if (a.c.level or 0) ~= (b.c.level or 0) then return (a.c.level or 0) > (b.c.level or 0) end
+        return a.key < b.key
+    end)
+    return list
+end
+
+local function profText(c, short)
+    local t = {}
+    for name, p in pairs(c.professions or {}) do
+        if (p.rank or 0) > 0 then table.insert(t, { name, p.rank }) end
+    end
+    table.sort(t, function(a, b) if a[2] ~= b[2] then return a[2] > b[2] end return a[1] < b[1] end)
+    local out = {}
+    for i, p in ipairs(t) do
+        if short and i > 2 then break end
+        table.insert(out, p[1] .. " " .. p[2])
+    end
+    return table.concat(out, ", ")
+end
+
+-- Texte de la carte. Discord : une ligne par perso, titre en gras. Guilde : parties de 255 caractères au plus
+-- (une par message), renvoyées en liste.
+function M:CardText(cfg, ilvlOf)
+    cfg = cfg or M.CardConfig()
+    local sh = cfg.show
+    local list = self:CardChars(cfg)
+    local me = WK.DB.global.characters[WK:CharKey()]
+    local total = 0
+    for _, e in ipairs(list) do total = total + (e.c.money or 0) end
+    local XP = WK.modules.XP
+    local lines = {}
+    for _, e in ipairs(list) do
+        local c = e.c
+        local names = _G.LOCALIZED_CLASS_NAMES_MALE
+        local cls = c.class and names and names[c.class] or c.class or ""
+        local parts = {}
+        local head = cls
+        if sh.level and c.level then head = head .. " " .. c.level end
+        if head ~= "" then table.insert(parts, head) end
+        if sh.prof then
+            local p = profText(c, cfg.fmt == "guild")
+            if p ~= "" then table.insert(parts, p) end
+        end
+        if sh.ilvl and ilvlOf then
+            local a = ilvlOf(c)
+            if a then table.insert(parts, string.format(T("niv. objet %d"), math.floor(a + 0.5))) end
+        end
+        if sh.rest and XP and XP.RestOf then
+            local ok, frac = pcall(XP.RestOf, XP, e.key)
+            if ok and frac and frac > 0 then
+                table.insert(parts, string.format(T("repos %d %%"), math.floor(frac * 100 + 0.5)))
+            end
+        end
+        if sh.gold and c.money then table.insert(parts, groupDigits(c.money / 10000) .. " " .. T("po")) end
+        local name = WK:CharName(c, e.key)
+        if cfg.fmt == "guild" then
+            table.insert(lines, name .. " (" .. table.concat(parts, ", ") .. ")")
+        else
+            table.insert(lines, "• " .. name .. (#parts > 0 and (" — " .. table.concat(parts, " — ")) or ""))
+        end
+    end
+    local owner = me and WK:CharName(me, WK:CharKey()) or WK:CharName(nil, WK:CharKey())
+    local title = string.format(T("Warband de %s"), owner) .. " · "
+        .. string.format(T("%d persos"), #list)
+        .. (sh.gold and (" · " .. groupDigits(total / 10000) .. " " .. T("po")) or "")
+    if cfg.fmt ~= "guild" then
+        return "**" .. title .. "**\n" .. table.concat(lines, "\n")
+    end
+    local msgs, cur = {}, title .. " :"
+    for _, l in ipairs(lines) do
+        if #cur + 3 + #l > 255 then table.insert(msgs, cur); cur = l
+        else cur = cur .. (cur:sub(-1) == ":" and " " or " | ") .. l end
+    end
+    table.insert(msgs, cur)
+    return msgs
+end
