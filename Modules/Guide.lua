@@ -211,6 +211,21 @@ function M:OwnsWaypoint(tracked)
     return c.own and (not tracked or c.tracked) or false
 end
 
+-- Repère du jeu déplacé sur une étape du trajet (station, maître de vol) puis rendu à la cible finale : seulement
+-- s'il est encore le nôtre ; la position retenue suit, pour que l'addon le reconnaisse toujours comme le sien
+function M:AimWaypoint(pt)
+    if not (pt and pt.map and self.placedWaypoint) then return end
+    local p = self.placedPos
+    if p and p.map == pt.map and math.abs(p.x - pt.x) < 0.0005 and math.abs(p.y - pt.y) < 0.0005 then return end
+    local CM, UMP, ST = _G.C_Map, _G.UiMapPoint, _G.C_SuperTrack
+    if not (CM and CM.SetUserWaypoint and UMP and UMP.CreateFromCoordinates) then return end
+    pcall(CM.SetUserWaypoint, UMP.CreateFromCoordinates(pt.map, pt.x, pt.y))
+    if ST and ST.SetSuperTrackedUserWaypoint then pcall(ST.SetSuperTrackedUserWaypoint, true) end
+    self.placedPos = { map = pt.map, x = pt.x, y = pt.y }
+    if WK.DB and WK.DB.global then WK.DB.global.guideWp = { pt.map, pt.x, pt.y } end
+    ownCache.at = -10
+end
+
 function M:Start(target, reason, kind)
     if not target then return false end
     target.reason, target.kind = reason, kind

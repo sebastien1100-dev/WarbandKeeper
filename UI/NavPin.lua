@@ -177,6 +177,10 @@ local function update()
     -- ne sert (et n'est caché) que si le point posé par l'addon est encore le point suivi ; sinon il est rendu
     -- visible et l'épingle se place au bord de l'écran, dans la direction du lieu
     local own = G.OwnsWaypoint and G:OwnsWaypoint(true)
+    -- trajet en plusieurs étapes : le repère du jeu (et donc l'épingle) vise l'étape en cours (station du tram,
+    -- maître de vol) ; à la dernière étape, il revient sur la cible
+    local stepT = WK.modules.Nav.StepTarget and WK.modules.Nav:StepTarget()
+    if own and G.AimWaypoint then G:AimWaypoint(stepT or t) end
     local nf, clamped
     if own then nf, clamped = navFrame() end
     showGameMarker(not own)
@@ -184,7 +188,7 @@ local function update()
     if nf and not clamped then
         f:ClearAllPoints()
         f:SetPoint("BOTTOM", nf, "CENTER", 0, 0)
-    elseif p and placeAtEdge(f, t, p) then
+    elseif p and placeAtEdge(f, stepT or t, p) then
         atEdge = true
     else
         f:Hide()

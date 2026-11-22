@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.187 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Guidage en plusieurs étapes : l'épingle à l'écran restait sur la cible finale, souvent hors de l'écran ou au bord sans texte (vers Hurlevent depuis Forgefer, par exemple) ; elle se pose maintenant sur l'étape en cours (entrée du tram, maître de vol) avec son texte, puis revient sur la cible à la dernière étape.
+
 ## v1.128.186 — 22/11/2026
 
 _Un /reload suffit._

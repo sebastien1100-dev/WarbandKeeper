@@ -851,6 +851,36 @@ function M:WaypointNow()
     end
 end
 
+-- Étape intermédiaire en cours (station du tram, maître de vol, quai) : point de carte { map, x, y } (0-1) où poser
+-- le repère du jeu à la place de la cible finale, pour que l'épingle à l'écran y mène ; nil à la dernière étape
+function M:StepTarget()
+    local r = self.route
+    local leg = r and r.legs and r.legs[r.leg]
+    if not leg then return nil end
+    local wx, wy
+    if leg.kind == "walk" then
+        local nxt = r.legs[r.leg + 1]
+        if not nxt or nxt.kind == "port" then return nil end
+        local n = #leg.pts / 2
+        if n < 1 then return nil end
+        wx, wy = leg.pts[n * 2 - 1], leg.pts[n * 2]
+    elseif leg.kind == "tram" or leg.kind == "fly" then
+        wx, wy = leg.ax, leg.ay
+    else
+        return nil
+    end
+    r.stepT = r.stepT or {}
+    local st = r.stepT[r.leg]
+    if st == nil then
+        local BL = WK.modules.BoatLines
+        local map, x, y
+        if BL and BL.ToMap and wx then map, x, y = BL:ToMap(r.cont, wx, wy) end
+        st = map and { map = map, x = x / 100, y = y / 100, cont = r.cont, wx = wx, wy = wy, step = true } or false
+        r.stepT[r.leg] = st
+    end
+    return st or nil
+end
+
 -- Vol prévu par le trajet en cours (étape de vol en cours ou juste après la marche vers le maître de vol) :
 -- { from, to } (noms des relais de la carte des vols), sinon nil
 function M:PlannedFlight()

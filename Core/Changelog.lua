@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.187", date = "22/11/2026",
+        fixed = {
+            "Guidage en plusieurs étapes : l'épingle à l'écran restait sur la cible finale, souvent hors de l'écran ou au bord sans texte (vers Hurlevent depuis Forgefer, par exemple) ; elle se pose maintenant sur l'étape en cours (entrée du tram, maître de vol) avec son texte, puis revient sur la cible à la dernière étape.",
+        },
+    },
+    {
         version = "1.128.186", date = "22/11/2026",
         fixed = {
             "Tram des profondeurs : ses stations s'apprennent même quand le jeu ne présente pas le tram comme une zone à part : passer de Hurlevent à Forgefer (ou l'inverse) en moins de 3 min 30, sans vol ni téléport, suffit.",
