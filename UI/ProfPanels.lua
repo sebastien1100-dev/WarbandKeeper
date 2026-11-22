@@ -990,6 +990,6 @@ end)
 WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID)
     local b = batch
     -- un clic de trop pendant une incantation échoue aussi (« déjà en train ») : la série, elle, continue
-    if UnitCastingInfo and UnitCastingInfo("player") then return end
+    if _G.UnitCastingInfo and _G.UnitCastingInfo("player") then return end
     if b and not b.test and (not b.locked or spellID == b.spell) then UI:EndCraftBar(true) end
 end)
