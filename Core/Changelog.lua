@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.83", date = "22/11/2026",
+        changed = {
+            "Barre de vol : un seul cadre, affiché pendant tout le vol (avant : une petite pilule et un volet qui ne s'ouvrait qu'au survol). Trajet avec les relais, temps restant en gros, barre de progression, heures de départ et d'arrivée sur leur ligne (elles ne passent plus sous les boutons), « Atterrir » et « Statistiques ».",
+        },
+    },
+    {
         version = "1.128.82", date = "22/11/2026",
         added = {
             "Statistiques de vol : six cartes de plus tirées des statistiques du jeu, additionnées sur tes persos : Créatures (tuées, la plus chassée, bestioles), Morts (dont en donjon, noyades, chutes), Richesse (argent gagné, plus grosse fortune, dépensé en voyages), Voyages (trajets aériens, pierre de foyer), Consommables (boissons, denrées, potions) et Campements (le plus campeur). Chaque perso est relu à sa connexion et au décollage : un perso pas encore reconnecté n'est pas compté.",

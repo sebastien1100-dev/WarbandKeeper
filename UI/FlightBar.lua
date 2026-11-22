@@ -3,14 +3,14 @@ local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
 
--- Barre de vol « ruban » (Modules/Flight.lua) : une pilule fine avec la destination, une barre de
--- progression (un trait par relais) et le temps restant. Au survol, un volet s'ouvre dessous : le
--- trajet complet (départ › relais › arrivée), heures de départ et d'arrivée, « Atterrir à … » et Statistiques.
+-- Barre de vol (Modules/Flight.lua) : un seul cadre, affiché pendant tout le vol (à la demande du joueur : plus
+-- de petite pilule avec un volet au survol) : trajet complet (départ › relais › arrivée), temps restant, barre de
+-- progression (un trait par relais), heures de départ et d'arrivée, « Atterrir à … » et Statistiques.
 -- Placée en mode édition.
 local F = WK.modules.Flight
 local bar
 
-local W, H = 380, 42
+local W, H = 420, 118
 
 local function fmt(sec)
     sec = math.max(0, math.floor(sec + 0.5))
@@ -64,25 +64,9 @@ local function build()
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
-    UI:Panel(f, H / 2, { C.surface[1], C.surface[2], C.surface[3], 0.96 }, C.border)
-    f.icon = UI:Icon(f, "arrow", 14, nil, "ARTWORK")
-    f.icon:SetPoint("LEFT", 16, 0)
-    f.to = UI:Text(f, 12)
-    f.to:SetPoint("TOPLEFT", 40, -8)
-    f.to:SetPoint("RIGHT", -70, 0)
-    f.to:SetJustifyH("LEFT")
-    f.bar = progress(f, 4)
-    f.bar:SetPoint("BOTTOMLEFT", 40, 9)
-    f.bar:SetPoint("BOTTOMRIGHT", -70, 9)
-    f.time = UI:Text(f, 17)
-    f.time:SetPoint("RIGHT", -16, 0)
-    f.time:SetJustifyH("RIGHT")
-
-    -- Volet du survol
+    -- le cadre du vol (toujours affiché pendant le vol)
     local m = CreateFrame("Frame", nil, f)
-    m:SetPoint("TOPLEFT", f, "BOTTOMLEFT", -20, -6)
-    m:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT", 20, -6)
-    m:SetHeight(104)
+    m:SetAllPoints(f)
     m:EnableMouse(true)
     m.edge = UI:Rounded(m, 14, 0, "BACKGROUND", 0)
     m.bg = UI:Rounded(m, 13, 1, "BACKGROUND", 1)
@@ -90,16 +74,23 @@ local function build()
     m.kick:SetPoint("TOPLEFT", 16, -12)
     m.close = UI:IconButton(m, "close", 18)
     m.close:SetPoint("TOPRIGHT", -8, -6)
-    m.close:SetScript("OnClick", function() f.dismissed = true; m:Hide(); f:Hide() end)
+    m.close:SetScript("OnClick", function() f.dismissed = true; f:Hide() end)
+    -- temps restant en gros, à gauche de la croix
+    m.left = UI:Text(m, 17)
+    m.left:SetPoint("TOPRIGHT", -34, -9)
+    m.left:SetJustifyH("RIGHT")
     m.route = UI:Text(m, 12)
     m.route:SetPoint("TOPLEFT", 16, -28)
-    m.route:SetPoint("RIGHT", -16, 0)
+    m.route:SetPoint("RIGHT", -80, 0)
     m.route:SetJustifyH("LEFT")
     m.bar = progress(m, 4)
     m.bar:SetPoint("TOPLEFT", 16, -50)
     m.bar:SetPoint("TOPRIGHT", -16, -50)
+    -- heures sur leur propre ligne (avant : sous les boutons, coupées)
     m.times = UI:Text(m, 10, C.muted)
-    m.times:SetPoint("BOTTOMLEFT", 16, 16)
+    m.times:SetPoint("TOPLEFT", 16, -62)
+    m.times:SetPoint("RIGHT", -16, 0)
+    m.times:SetJustifyH("LEFT")
     -- statistiques du compte en vol (UI/FlightStats.lua), même quand la carte (M) reste la carte
     m.map = UI:Button(m, "Statistiques", nil, 24, "secondary")
     m.map:SetPoint("BOTTOMRIGHT", -14, 10)
@@ -111,19 +102,10 @@ local function build()
     m.land = UI:Button(m, "Atterrir", nil, 24, "primary")
     m.land:SetPoint("RIGHT", m.map, "LEFT", -6, 0)
     m.land:SetScript("OnClick", function() F:LandEarly() end)
-    m:Hide()
     f.more = m
 
-    -- ouverture au survol, fermeture un instant après que la souris est partie
-    f:SetScript("OnEnter", function() if not f.sample then m:Show() end end)
-    f.elapsed, f.away = 0, 0
+    f.elapsed = 0
     f:SetScript("OnUpdate", function(s, el)
-        if m:IsShown() then
-            if s:IsMouseOver() or m:IsMouseOver() then s.away = 0 else
-                s.away = s.away + el
-                if s.away > 0.4 then m:Hide() end
-            end
-        end
         s.elapsed = s.elapsed + el
         if s.elapsed < 0.1 then return end
         s.elapsed = 0
@@ -142,15 +124,11 @@ local function build()
             left = math.max(0, fl.est - elapsed)
             p = math.max(0, math.min(1, elapsed / fl.est))
         end
-        local toName, toZone = split(fl.to)
-        self.icon:SetVertexColor(r, g, b)
-        self.to:SetText(toName .. (toZone and ("  " .. mutedHex .. "· " .. toZone .. "|r") or ""))
-        self.time:SetTextColor(r, g, b)
-        self.time:SetText(left and fmt(left) or ("+" .. fmt(elapsed)))
+        local toName = split(fl.to)
         local stops = fl.stops or {}
-        self.bar:Set(p or 0, stops)
-        -- volet
         local m = self.more
+        m.left:SetTextColor(r, g, b)
+        m.left:SetText(left and fmt(left) or ("+" .. fmt(elapsed)))
         m.edge:SetColor(r, g, b, 1)
         m.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 0.97)
         local parts, nextStop = { (split(fl.from)) }, nil
@@ -203,6 +181,6 @@ F.OnStart = function(_, fl)
     bar:Paint(fl)
     bar:Show()
 end
-F.OnFinish = function() if bar and not bar.sample then bar.more:Hide(); bar:Hide() end end
+F.OnFinish = function() if bar and not bar.sample then bar:Hide() end end
 
 WK:On("PLAYER_LOGIN", function() bar = bar or build() end)

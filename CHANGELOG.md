@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.83 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Barre de vol : un seul cadre, affiché pendant tout le vol (avant : une petite pilule et un volet qui ne s'ouvrait qu'au survol). Trajet avec les relais, temps restant en gros, barre de progression, heures de départ et d'arrivée sur leur ligne (elles ne passent plus sous les boutons), « Atterrir » et « Statistiques ».
+
 ## v1.128.82 — 22/11/2026
 
 _Un /reload suffit._
