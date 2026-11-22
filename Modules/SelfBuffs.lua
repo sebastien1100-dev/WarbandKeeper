@@ -144,8 +144,10 @@ local function auraLeft(e)
     for i = 1, 40 do
         local name, exp, src
         if _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByIndex then
-            local d = _G.C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
-            if not d then break end
+            -- effets cachés par le jeu (combat, valeurs secrètes) : erreur attrapée, lecture arrêtée
+            local ok, d = pcall(_G.C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
+            if not ok then M.readFailed = true end
+            if not ok or not d then break end
             name, exp, src = d.name, d.expirationTime, d.sourceUnit
         elseif _G.UnitBuff then
             local n, _, _, _, _, x, s = _G.UnitBuff("player", i)
@@ -235,7 +237,18 @@ end
 -- Lignes à montrer ici : { e, rk, id, name, icon, state = "missing" | "soon" | "ok", left }
 -- (seulement les entrées cochées pour ce lieu et connues du perso) ; plusieurs pistages demandés : un seul
 -- peut être actif, n'importe lequel de la liste compte
+local lastStatus, lastCtx
 function M:Status()
+    -- en combat, le jeu cache les effets : la dernière lecture faite hors combat sert telle quelle
+    if _G.InCombatLockdown and _G.InCombatLockdown() and lastStatus then return lastStatus, lastCtx end
+    M.readFailed = false
+    local rows, ctx = self:StatusNow()
+    -- effets illisibles (le jeu les cache) : on garde la dernière lecture plutôt que de tout croire absent
+    if M.readFailed and lastStatus then return lastStatus, lastCtx end
+    lastStatus, lastCtx = rows, ctx
+    return lastStatus, lastCtx
+end
+function M:StatusNow()
     local out = {}
     local ctx = M.Context()
     if not ctx then return out, ctx end

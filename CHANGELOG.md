@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.74 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreur en boucle « Auras cannot be accessed when secret » (buffs à ne pas oublier, bouton « Buffer le suivant ») : quand le jeu cache les effets (en combat surtout), l'addon ne les lit plus et garde la dernière lecture.
+
 ## v1.128.73 — 22/11/2026
 
 _Un /reload suffit._

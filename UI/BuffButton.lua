@@ -81,8 +81,8 @@ local function scanAura(unit, ids)
     for i = 1, 40 do
         local name, exp, src
         if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
-            local d = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
-            if not d then break end
+            local ok, d = pcall(C_UnitAuras.GetAuraDataByIndex, unit, i, "HELPFUL")
+            if not ok or not d then break end
             name, exp, src = d.name, d.expirationTime, d.sourceUnit
         elseif UnitBuff then
             local n, _, _, _, _, e, s = UnitBuff(unit, i)

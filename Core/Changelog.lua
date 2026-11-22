@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.74", date = "22/11/2026",
+        fixed = {
+            "Erreur en boucle « Auras cannot be accessed when secret » (buffs à ne pas oublier, bouton « Buffer le suivant ») : quand le jeu cache les effets (en combat surtout), l'addon ne les lit plus et garde la dernière lecture.",
+        },
+    },
+    {
         version = "1.128.73", date = "22/11/2026",
         fixed = {
             "Erreurs Lua en boucle corrigées : « secret keys » du bouton « Buffer le suivant » (à chaque changement d'effet) et « secret string » du clic droit sur une pierre de rencontre. Le jeu cache certaines valeurs (identifiants, noms d'effets, infobulles) ; l'addon les ignore maintenant au lieu de s'en servir.",
