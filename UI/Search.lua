@@ -255,6 +255,8 @@ function UI:GoToSetting(row, pk, sk)
         local i = sec.tabOf(row)
         if i then sec.showTab(i) end
     end
+    -- sous-onglets dans un onglet (QoL > Général > Alertes)
+    if sec and sec.innerReveal then sec.innerReveal(row) end
     C_Timer.After(0.05, function()
         if sec and sec.scroll and row:GetTop() and sec.scroll.child:GetTop() then
             local off = sec.scroll.child:GetTop() - row:GetTop() - 20

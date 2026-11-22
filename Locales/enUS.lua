@@ -4843,4 +4843,6 @@ WK.Locales.enUS.text = {
     ["Scan de l'HV"] = "AH scan",
     ["Farm en pause"] = "Farming paused",
     ["Mini-fenêtre « À faire » entièrement réglable (QoL > Général > Alertes, carte du même nom) : pastilles affichées genre par genre, tout le compte ou ce perso, titre, libellés, cacher quand vide, taille des pastilles et de la barre, en ligne ou en colonne, fond, opacité, pleine au survol, infobulle, clic, nombre de pastilles, cacher en combat."] = "'To do' mini window fully configurable (QoL > General > Alerts, card of the same name): pills shown kind by kind, whole account or this character, title, labels, hide when empty, pill and bar size, row or column, background, opacity, opaque on hover, tooltip, click, number of pills, hide in combat.",
+    ["Connexion"] = "Login",
+    ["QoL > Général > Alertes rangé en sous-onglets : État des persos, Alertes, Connexion et À faire (la mini-fenêtre)."] = "QoL > General > Alerts sorted into sub-tabs: Characters' state, Alerts, Login and To do (the mini window).",
 }

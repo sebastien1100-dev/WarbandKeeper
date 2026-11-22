@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.176", date = "22/11/2026",
+        changed = {
+            "QoL > Général > Alertes rangé en sous-onglets : État des persos, Alertes, Connexion et À faire (la mini-fenêtre).",
+        },
+    },
+    {
         version = "1.128.175", date = "22/11/2026",
         added = {
             "Mini-fenêtre « À faire » entièrement réglable (QoL > Général > Alertes, carte du même nom) : pastilles affichées genre par genre, tout le compte ou ce perso, titre, libellés, cacher quand vide, taille des pastilles et de la barre, en ligne ou en colonne, fond, opacité, pleine au survol, infobulle, clic, nombre de pastilles, cacher en combat.",

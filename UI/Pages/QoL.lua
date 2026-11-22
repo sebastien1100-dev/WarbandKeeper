@@ -672,11 +672,49 @@ UI:RegisterPage({
         -----------------------------------------------------------------------
         -- Alertes : les seuils et rappels d'Options (banque, courrier, rappels à la connexion) rejoignent
         -- l'onglet Alertes, sous l'état des persos (un seul endroit pour toutes les alertes).
+        -- rangées en sous-onglets (UI:CardTabs) : État des persos, Alertes, Connexion, À faire
         subtab("Alertes")
-        for _, oc in ipairs(UI:SectionCards("options", "alerts")) do
-            oc:SetParent(root); oc:ClearAllPoints()
-            oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
-            y = y + oc:GetHeight() + GAP
+        do
+            local alertCards = { state }
+            for _, oc in ipairs(UI:SectionCards("options", "alerts")) do
+                oc:SetParent(root)
+                alertCards[#alertCards + 1] = oc
+            end
+            local aroot, asec, atab = root, current, current.cur
+            local placeAlerts
+            local act = UI:CardTabs(aroot, "qolAlerts", {
+                { "state", T("État des persos"), titles = { "État des persos" } },
+                { "alerts", T("Alertes"), titles = { "Alertes" } },
+                { "login", T("Connexion"), titles = { "Rappels à la connexion" } },
+                { "todo", T("À faire"), titles = { "Mini-fenêtre « À faire »" } },
+            }, function() placeAlerts() end)
+            placeAlerts = function()
+                local list = act:Filter(alertCards)
+                local yy = 0
+                if act.bar then act.bar:ClearAllPoints(); act.bar:SetPoint("TOPLEFT", 0, 0); yy = act:Height() end
+                for _, c in ipairs(list) do
+                    c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -yy); c:SetPoint("TOPRIGHT", 0, -yy)
+                    yy = yy + c:GetHeight() + GAP
+                end
+                atab.h = yy
+                if atab.pane:IsShown() and asec.scroll then asec.scroll:SetContentHeight(asec.base + TABS_H + yy) end
+                return yy
+            end
+            -- recherche : un réglage trouvé dans une carte cachée ouvre son sous-onglet
+            asec.innerReveal = function(row)
+                local f = row
+                while f do
+                    for _, c in ipairs(alertCards) do
+                        if f == c then
+                            if act:Reveal(c) then placeAlerts() end
+                            return
+                        end
+                    end
+                    f = f:GetParent()
+                end
+            end
+            asec.alertTabs, asec.placeAlerts = act, placeAlerts -- (tests)
+            y = placeAlerts()
         end
 
         -- Halo : l'objet visé (plante, filon, coffre, flotteur…) brille (Modules/Glow.lua)
