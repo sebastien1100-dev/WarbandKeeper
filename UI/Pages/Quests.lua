@@ -219,6 +219,26 @@ UI:RegisterPage({
                 "En bas du menu du clic droit d'une quête du suivi d'EllesmereUI : guider, chercher un groupe.", mt, 50)
         end
 
+        -- étiquettes des quêtes de la zone sur la carte du monde (UI/MapPins.lua)
+        if QT() then
+            local ccard = card("Carte du monde", 40 + 36 + 46 + 16, "quêtes de la zone en haut à droite")
+            local ct = UI:Toggle(ccard, function() return QT():Config().mapCount end,
+                function(v)
+                    QT():Config().mapCount = v
+                    if UI.RedrawWorldMap then UI.RedrawWorldMap("réglage") end
+                end)
+            table.insert(self.toggles, ct)
+            UI:SettingRow(ccard, -40, "Quêtes de la zone",
+                "Faites sur le total, en cours et à prendre ; vert quand tout est fait.", ct, 50)
+            local cs = UI:Slider(ccard, 180, 0.3, 1, 0.05, function() return QT():Config().mapCountAlpha or 0.92 end,
+                function(v)
+                    QT():Config().mapCountAlpha = v
+                    local f = _G.WarbandKeeperMapQuests
+                    if f and f.OnHudPaint then f:OnHudPaint() end
+                end, "%.2f")
+            UI:SettingRow(ccard, -76, "Opacité", "Pleine au survol de la souris.", cs, 260)
+        end
+
         local lcard = card("Quêtes montrées", 40 + 4 * 36 + 6, "d'après QuestieDB")
         UI:SettingRow(lcard, -40, "Quêtes de donjon", nil, toggle(lcard, "dungeons"), 50)
         UI:SettingRow(lcard, -76, "Quêtes trop hautes", nil, toggle(lcard, "high"), 50)
@@ -271,7 +291,7 @@ UI:RegisterPage({
         if not self.qct then
             self.qct = UI:CardTabs(self.side.child, "quests", {
                 { "list", T("Quêtes montrées"),
-                  titles = { "Quêtes montrées", "Plaques de nom", "Suivi des quêtes", "Journal des données", "Message de groupe" } },
+                  titles = { "Quêtes montrées", "Carte du monde", "Plaques de nom", "Suivi des quêtes", "Journal des données", "Message de groupe" } },
             }, function() self:Layout() end)
         end
         local cards = self.qct:Filter(all)

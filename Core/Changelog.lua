@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.92", date = "22/11/2026",
+        added = {
+            "Carte du monde : en haut à droite, les quêtes de la zone affichée pour ton perso, en étiquettes « 18 / 42 faites », « 5 en cours », « 7 à prendre » ; une seule étiquette verte « tout fait » quand la zone est finie.",
+            "Survol des étiquettes : les quêtes à prendre de la zone (jusqu'à 10, par niveau) ; clic : page Quêtes sur cette zone.",
+            "Roue de la page Quêtes, carte « Carte du monde » : afficher ou non ces étiquettes et leur opacité (pleine au survol de la souris).",
+        },
+    },
+    {
         version = "1.128.91", date = "22/11/2026",
         fixed = {
             "Statistiques de vol : le texte des petites cartes (par exemple « dont 73 % sur … » dans PERSOS) était coupé par « … » ; il passe à la ligne et la carte s'agrandit.",

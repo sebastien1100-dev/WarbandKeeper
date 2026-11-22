@@ -279,6 +279,7 @@ local function redraw(src)
         layer("Notes", UI.DrawMapNotes)         -- notes de carte perso (UI/MapNotes.lua)
         layer("Points /way", UI.DrawWaypoints)  -- file des points /way (UI/Waypoints.lua)
         layer("Repère", function(_, ...) drawTarget(...) end)
+        layer("Quêtes de la zone", UI.DrawMapQuestCount) -- étiquettes faites / en cours / à prendre
     end
     -- Les récoltes ne sont plus dessinées ici : un seul affichage, le calque « Filons et plantes »
     -- (UI/NodePins.lua, filtré par métier et compétence), qui lit les mêmes coins notés par GatherMap.
@@ -286,6 +287,136 @@ end
 WK.modules.GatherMap.Redraw = function() redraw("récolte") end
 WK.modules.Guide.Redraw = function() redraw("guidage") end
 UI.RedrawWorldMap = redraw
+
+-- Quêtes de la zone affichée (maquette C) : étiquettes en haut à droite de la carte, « 18 / 42 faites »,
+-- « 5 en cours », « 7 à prendre » ; une seule étiquette verte « tout fait » quand la zone est finie. Perso
+-- connecté, mêmes comptes que la page Quêtes (Quests:Zones). Opacité réglée dans la roue de la page Quêtes
+-- (questTrack.mapCountAlpha), pleine au survol ; survol = quêtes à prendre, clic = page Quêtes sur la zone.
+local qcount
+local function qtag(parent)
+    local t = _G.CreateFrame("Frame", nil, parent)
+    t:SetHeight(22)
+    UI:Panel(t, 6, { 0, 0, 0, 1 }, UI.colors.border)
+    t.text = UI:Text(t, 11)
+    t.text:SetPoint("CENTER", 0, 0)
+    return t
+end
+local function paintTag(t, txt, col, fill)
+    local C = UI.colors
+    t.text:SetText(txt)
+    t.text:SetTextColor(col[1], col[2], col[3])
+    t:SetWidth(math.floor((t.text:GetStringWidth() or 40) + 18))
+    if fill then
+        local function mix(k) return col[k] * 0.25 + C.bg[k] * 0.75 end
+        t.bg:SetColor(mix(1), mix(2), mix(3), 0.95)
+        t.border:SetColor(col[1], col[2], col[3], 0.75)
+    else
+        t.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
+        t.border:SetColor(C.border[1], C.border[2], C.border[3], 1)
+    end
+    t:Show()
+end
+local function buildQCount(host)
+    local f = _G.CreateFrame("Button", "WarbandKeeperMapQuests", host)
+    f.wk = true
+    f:SetSize(10, 22)
+    f.tags = { qtag(f), qtag(f), qtag(f) }
+    -- opacité réglée, pleine au survol (registre commun de UI/Theme.lua)
+    UI:HudRegister(f).hudCustom = true
+    f.OnHudPaint = function(s)
+        local QT = WK.modules.QuestTrack
+        s:SetAlpha(s.hudHover and 1 or (QT and QT:Config().mapCountAlpha or 0.92))
+    end
+    f:SetScript("OnEnter", function(s)
+        local Q = WK.modules.Quests
+        if not (s.zone and Q) then return end
+        UI:TooltipOwner(s, "ANCHOR_BOTTOMLEFT")
+        _G.GameTooltip:SetText(s.zone.name or "?", 1, 1, 1)
+        local C = UI.colors
+        local z = s.zone
+        _G.GameTooltip:AddLine(string.format(T("%d / %d quêtes faites"), z.done, z.total),
+            C.text[1], C.text[2], C.text[3])
+        local avail = {}
+        local c = WK.DB:Me()
+        for _, q in ipairs(Q:OnMap(z.map)) do
+            if Q:ForChar(q, c) and Q:State(q, c) == "avail" then avail[#avail + 1] = q end
+        end
+        table.sort(avail, function(a, b) return (a.lvl or 0) < (b.lvl or 0) end)
+        if #avail > 0 then
+            _G.GameTooltip:AddLine(" ")
+            _G.GameTooltip:AddLine(T("À prendre :"), C.muted[1], C.muted[2], C.muted[3])
+            for i = 1, math.min(10, #avail) do
+                local q = avail[i]
+                _G.GameTooltip:AddLine(string.format("[%d] %s", q.lvl or 0, Q:Name(q) or "?"), 0.9, 0.9, 0.9)
+            end
+            if #avail > 10 then
+                _G.GameTooltip:AddLine(string.format(T("et %d de plus"), #avail - 10), C.dim[1], C.dim[2], C.dim[3])
+            end
+        end
+        _G.GameTooltip:AddLine(" ")
+        _G.GameTooltip:AddLine(T("Clic : page Quêtes sur cette zone"), 0.6, 0.6, 0.6)
+        _G.GameTooltip:Show()
+    end)
+    f:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+    f:SetScript("OnClick", function(s)
+        if not s.zone then return end
+        local def = UI:EnsurePage("quests")
+        if def then def.zone = s.zone.map end
+        UI:ShowPage("quests")
+        if def and def.Refresh then pcall(def.Refresh, def) end
+    end)
+    return f
+end
+function UI.DrawMapQuestCount(_, _, mapID)
+    local QT, Q = WK.modules.QuestTrack, WK.modules.Quests
+    local host = _G.WorldMapFrame and (_G.WorldMapFrame.ScrollContainer or _G.WorldMapFrame)
+    if not (QT and Q and host) then return end
+    local z
+    if QT:Config().mapCount and WK:PageOn("quests") then
+        for _, e in ipairs(Q:Zones()) do if e.map == mapID then z = e break end end
+    end
+    if not z then if qcount then qcount:Hide() end return end
+    qcount = qcount or buildQCount(host)
+    qcount.zone = z
+    qcount:SetFrameLevel(((host.GetFrameLevel and host:GetFrameLevel()) or 1) + 620)
+    local C = UI.colors
+    local tags = qcount.tags
+    for _, t in ipairs(tags) do t:Hide(); t:ClearAllPoints() end
+    local shown = {}
+    if z.done >= z.total then
+        paintTag(tags[1], string.format(T("%s : tout fait (%d)"), z.name or "", z.total), C.positive, true)
+        shown[1] = tags[1]
+    else
+        paintTag(tags[1], string.format(T("%d / %d faites"), z.done, z.total), C.text, false)
+        shown[1] = tags[1]
+        if (z.log or 0) > 0 then
+            paintTag(tags[2], string.format(T("%d en cours"), z.log), C.gold, true); shown[#shown + 1] = tags[2]
+        end
+        local avail = (z.avail or 0) - (z.log or 0)
+        if avail > 0 then
+            local ar, ag, ab = UI:Accent()
+            paintTag(tags[3], string.format(T("%d à prendre"), avail), { ar, ag, ab }, true)
+            shown[#shown + 1] = tags[3]
+        end
+    end
+    local w = 0
+    for i, t in ipairs(shown) do
+        if i == 1 then t:SetPoint("LEFT", qcount, "LEFT", 0, 0)
+        else t:SetPoint("LEFT", shown[i - 1], "RIGHT", 4, 0) end
+        w = w + t:GetWidth() + (i > 1 and 4 or 0)
+    end
+    qcount:SetWidth(math.max(10, w))
+    -- en haut à droite ; à gauche de la liste des rares quand elle y est
+    qcount:ClearAllPoints()
+    local rare = _G.WarbandKeeperRareList
+    if rare and rare:IsShown() and rare:GetParent() == host then
+        qcount:SetPoint("TOPRIGHT", rare, "TOPLEFT", -6, 0)
+    else
+        qcount:SetPoint("TOPRIGHT", host, "TOPRIGHT", -10, -10)
+    end
+    qcount:OnHudPaint()
+    qcount:Show()
+end
 
 -- La carte du monde se charge parfois après l'addon : on s'y accroche dès qu'elle existe.
 local hooked = false

@@ -20,6 +20,9 @@ function M:Config()
     -- zones de quête sur la carte et la minicarte, volet des quêtes (retirés)
     c.map, c.zoneStyle, c.miniStyle, c.heat, c.hideGame, c.panel, c.panelFold = nil, nil, nil, nil, nil, nil, nil
     if c.plateMarks == nil then c.plateMarks = true end
+    -- étiquettes des quêtes de la zone en haut à droite de la carte du monde (UI/MapPins.lua) et leur opacité
+    if c.mapCount == nil then c.mapCount = true end
+    c.mapCountAlpha = c.mapCountAlpha or 0.92
     if c.trackerMenu == nil then c.trackerMenu = true end -- nos lignes dans le menu du clic droit d'EllesmereUI   -- repères des monstres de la quête sur les plaques de nom
     return c
 end

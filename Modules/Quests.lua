@@ -272,13 +272,14 @@ function M:ZonesNow(key)
     for mapID in pairs(WK.QuestsDB or {}) do
         -- near / nearXP : quêtes à prendre à ton niveau (± 3), pour la meilleure zone et le bandeau de la page
         local z = { map = mapID, name = R:ZoneName(mapID), total = 0, done = 0, avail = 0, xp = 0, min = 99, max = 0,
-            near = 0, nearXP = 0 }
+            near = 0, nearXP = 0, log = 0 }
         for _, q in ipairs(self:OnMap(mapID)) do
             if self:ForChar(q, c) then
                 local st = self:State(q, c)
                 if st ~= "closed" then z.total = z.total + 1 end
                 if st == "done" then z.done = z.done + 1
                 elseif st == "avail" or st == "log" then z.avail = z.avail + 1; z.xp = z.xp + (q.xp or 0) end
+                if st == "log" then z.log = z.log + 1 end
                 if st == "avail" and (q.lvl or 0) >= lvl - 3 and (q.lvl or 0) <= lvl + 3 then
                     z.near, z.nearXP = z.near + 1, z.nearXP + (q.xp or 0)
                 end

@@ -72,6 +72,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.92 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Carte du monde : en haut à droite, les quêtes de la zone affichée pour ton perso, en étiquettes « 18 / 42 faites », « 5 en cours », « 7 à prendre » ; une seule étiquette verte « tout fait » quand la zone est finie.
+- Survol des étiquettes : les quêtes à prendre de la zone (jusqu'à 10, par niveau) ; clic : page Quêtes sur cette zone.
+- Roue de la page Quêtes, carte « Carte du monde » : afficher ou non ces étiquettes et leur opacité (pleine au survol de la souris).
+
 ## v1.128.91 — 22/11/2026
 
 _Un /reload suffit._
