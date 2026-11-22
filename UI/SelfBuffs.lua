@@ -62,6 +62,10 @@ local function build()
             _G.GameTooltip:Show()
         end)
         b:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        -- sort lancé : la liste se replie (le clic protégé est déjà parti)
+        b:HookScript("PostClick", function()
+            _G.C_Timer.After(0.05, function() if UI.CloseSelfBuffs then UI.CloseSelfBuffs() end end)
+        end)
         b:Hide(); b.label:Hide(); b.state:Hide()
         f.rows[i] = b
     end
@@ -79,7 +83,6 @@ local function build()
                 b.r = r
                 local txt, col = stateText(r)
                 b.state:SetText(txt); b.state:SetTextColor(col[1], col[2], col[3])
-                b.icon:SetDesaturated(r.state == "ok")
             end
         end
     end)
@@ -94,7 +97,6 @@ local function build()
                 b.r = r
                 if b:GetAttribute("spell") ~= r.name then b:SetAttribute("spell", r.name) end
                 b.icon:SetTexture(r.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
-                b.icon:SetDesaturated(r.state == "ok")
                 b.label:SetText(r.name or T(r.e.label))
                 local txt, col = stateText(r)
                 b.state:SetText(txt); b.state:SetTextColor(col[1], col[2], col[3])

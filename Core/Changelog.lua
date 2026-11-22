@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.78", date = "22/11/2026",
+        changed = {
+            "Buffs à ne pas oublier : la liste se replie dès que tu cliques sur un sort, et les icônes des sorts déjà en place ne sont plus grisées.",
+        },
+    },
+    {
         version = "1.128.77", date = "22/11/2026",
         changed = {
             "Chrono du donjon : la frise des boss devient une rangée de petites pastilles, une par boss (grise et pleine = tué, cerclée de la couleur de l'apparence = prochain, cerclée sombre = à venir), suivie de « 2 / 3 boss ». Plus lisible quand il y a beaucoup de boss : les pastilles rapetissent pour tenir sur la ligne.",

@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.78 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Buffs à ne pas oublier : la liste se replie dès que tu cliques sur un sort, et les icônes des sorts déjà en place ne sont plus grisées.
+
 ## v1.128.77 — 22/11/2026
 
 _Un /reload suffit._
