@@ -21,6 +21,8 @@ local T = function(s) return WK.T(s) end
 local B = {}
 UI.Bags = B
 local COLS, SLOT, GAP, PAD = 10, 38, 5, 14
+local MIN_COLS, MAX_COLS = 5, 24
+local cols, slotSize = COLS, SLOT -- disposition en cours (colonnes choisies : B.Config().cols)
 local FICHE_W = 260
 local inCombat = function() return _G.InCombatLockdown and _G.InCombatLockdown() end
 
@@ -199,6 +201,15 @@ local function paintButton(b, e)
         tag:SetWidth(math.max(14, (tag.t:GetStringWidth() or 10) + 8))
         tag:Show()
     else tag:Hide() end
+    -- reflets du jeu (objet neuf, boutique, emplacement étendu) : notre pastille NEUF les remplace
+    for _, k in ipairs({ "NewItemTexture", "BattlepayItemTexture", "ExtendedSlot", "ItemContextOverlay" }) do
+        local r = region(b, k)
+        if r and r.Hide then r:Hide() end
+    end
+    for _, k in ipairs({ "newitemglowAnim", "flashAnim" }) do
+        local a = b[k]
+        if type(a) == "table" and a.Stop then pcall(a.Stop, a) end
+    end
     b.wkEntry = e
     if UI.ItemLockPaint then pcall(UI.ItemLockPaint, b) end
 end
@@ -289,10 +300,56 @@ local function build()
         f.chips[#f.chips + 1] = b
         prev = b
     end
-    -- contenu (défilant si les sacs sont grands)
-    f.scroll = UI:Scroll(f)
-    f.scroll:SetPoint("TOPLEFT", PAD, -70)
-    f.content = f.scroll.child
+    -- contenu : toutes les cases visibles, sans défilement
+    f.content = _G.CreateFrame("Frame", nil, f)
+    f.content:SetPoint("TOPLEFT", PAD, -70)
+    f.content:SetSize(1, 1)
+    -- coin de redimensionnement : la largeur fixe le nombre de colonnes, la hauteur suit (tout reste visible)
+    f:SetResizable(true)
+    local minW = PAD * 2 + MIN_COLS * (SLOT + GAP) + 14 + (B.Config().fiche and (FICHE_W + 10) or 0)
+    if f.SetResizeBounds then f:SetResizeBounds(minW, 320)
+    elseif f.SetMinResize then f:SetMinResize(minW, 320) end
+    local grip = _G.CreateFrame("Button", nil, f)
+    grip:SetSize(18, 18)
+    grip:SetPoint("BOTTOMRIGHT", -4, 4)
+    grip:SetFrameLevel(f:GetFrameLevel() + 20)
+    local gt = UI:Icon(grip, "grip", 14, C.dim)
+    gt:SetPoint("CENTER")
+    grip:SetScript("OnEnter", function()
+        gt:SetVertexColor(UI:Accent())
+        UI:TooltipOwner(grip, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Redimensionner : plus ou moins de colonnes, toutes les cases restent visibles"),
+            1, 1, 1, 1, true)
+        _G.GameTooltip:Show()
+    end)
+    grip:SetScript("OnLeave", function() gt:SetVertexColor(unpack(C.dim)); _G.GameTooltip:Hide() end)
+    grip:SetScript("OnMouseDown", function()
+        if inCombat() then return end
+        f.sizing = true
+        f:StartSizing("BOTTOMRIGHT")
+    end)
+    grip:SetScript("OnMouseUp", function()
+        if not f.sizing then return end
+        f:StopMovingOrSizing()
+        f.sizing = nil
+        local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
+        local n = math.floor((f:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
+        B.Config().cols = math.max(MIN_COLS, math.min(MAX_COLS, n))
+        -- la position reste celle du coin haut gauche
+        local l, t = f:GetLeft(), f:GetTop()
+        if l and t then
+            f:ClearAllPoints(); f:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", l, t)
+            B.Config().pos = { "TOPLEFT", "BOTTOMLEFT", l, t }
+        end
+        B.Refresh()
+    end)
+    f:SetScript("OnSizeChanged", function(s)
+        if s.sizing and not s.reflow then
+            s.reflow = true
+            _G.C_Timer.After(0.05, function() s.reflow = nil; if s.sizing then B.Refresh(false, true) end end)
+        end
+    end)
+    f.grip = grip
     f.heads = {}
     -- pied
     f.foot = UI:Text(f, 11, C.muted); f.foot:SetPoint("BOTTOMLEFT", PAD, 12)
@@ -339,7 +396,7 @@ local function build()
 end
 
 -- Repeint (et place les cases hors combat). light = seulement filtres / recherche
-function B.Refresh(light)
+function B.Refresh(light, live)
     if not win or not win:IsShown() then return end
     local list, free, total = readBags()
     win.list = list
@@ -375,6 +432,15 @@ function B.Refresh(light)
             return (a.count or 0) > (b.count or 0)
         end)
     end
+    -- colonnes : suivent la largeur de la fenêtre (cases de taille fixe) ; la hauteur montre toutes les cases
+    local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
+    if live then
+        cols = math.floor((win:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
+    else
+        cols = B.Config().cols or COLS
+    end
+    cols = math.max(MIN_COLS, math.min(MAX_COLS, cols))
+    slotSize = SLOT
     local used = {}
     local y, hi = 0, 0
     local function head(label, meta, col)
@@ -389,7 +455,7 @@ function B.Refresh(light)
             h.line:SetPoint("LEFT", h.m, "RIGHT", 8, 0); h.line:SetPoint("RIGHT", 0, 0)
             win.heads[hi] = h
         end
-        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetWidth(COLS * (SLOT + GAP) - GAP)
+        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetWidth(cols * (slotSize + GAP) - GAP)
         h.t:SetText(UI:Upper(T(label)))
         local cc = col == "accent" and { UI:Accent() } or C[col or "muted"] or C.muted
         h.t:SetTextColor(cc[1], cc[2], cc[3])
@@ -401,15 +467,15 @@ function B.Refresh(light)
     local function place(items)
         for i, e in ipairs(items) do
             local b = (buttons[e.bag] and buttons[e.bag][e.slot]) or newButton(e.bag, e.slot)
-            local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
+            local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
             b:ClearAllPoints()
-            b:SetPoint("TOPLEFT", win.content, "TOPLEFT", col * (SLOT + GAP), -(y + row * (SLOT + GAP)))
+            b:SetPoint("TOPLEFT", win.content, "TOPLEFT", col * (slotSize + GAP), -(y + row * (slotSize + GAP)))
             paintButton(b, not e.empty and e or nil)
             b:SetAlpha((e.empty or matches(e)) and 1 or 0.25)
             b:Show()
             used[b] = true
         end
-        if #items > 0 then y = y + math.ceil(#items / COLS) * (SLOT + GAP) + 8 end
+        if #items > 0 then y = y + math.ceil(#items / cols) * (slotSize + GAP) + 8 end
     end
     for _, c in ipairs(CATS) do
         local g = groups[c.key]
@@ -428,17 +494,16 @@ function B.Refresh(light)
     for i = hi + 1, #win.heads do win.heads[i]:Hide() end
     -- cases d'un sac retiré : cachées
     for _, byBag in pairs(buttons) do for _, b in pairs(byBag) do if not used[b] then b:Hide() end end end
-    -- tailles : la grille fixe la largeur ; la hauteur suit, bornée à 75 % de l'écran (puis défilement)
-    local gridW = COLS * (SLOT + GAP) - GAP
-    win.content:SetWidth(gridW)
-    win.scroll:SetContentHeight(y)
-    local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
-    local maxH = math.floor((_G.UIParent:GetHeight() or 900) * 0.75)
-    local h = math.min(maxH, y + 70 + 40)
-    win:SetSize(PAD * 2 + gridW + 14 + ficheW, math.max(320, h))
-    win.scroll:SetPoint("BOTTOMRIGHT", win, "BOTTOMRIGHT", -(PAD + ficheW), 40)
+    -- tailles : pendant le redimensionnement, la fenêtre suit la souris ; sinon elle prend la place choisie
+    -- (ou juste ce qu'il faut sans réglage), jamais moins que les cases
+    win.content:SetSize(math.max(1, cols * (slotSize + GAP) - GAP), math.max(1, y))
+    if not live then
+        win:SetSize(PAD * 2 + cols * (slotSize + GAP) - GAP + 14 + ficheW, math.max(320, y + 110))
+    end
     if not light then B.RefreshFiche() end
 end
+
+function B.Layout() return cols, slotSize end -- pour les tests
 
 function B.RefreshFiche()
     local fi = win and win.fiche

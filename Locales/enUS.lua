@@ -4591,4 +4591,5 @@ WK.Locales.enUS.text = {
     ["Rappel de scan"] = "Scan reminder",
     ["Au bandeau de connexion et dans le Résumé : rappel quand l'HV de ce royaume n'a pas encore été scanné aujourd'hui."] = "On the login banner and in the Summary: a reminder when this realm's AH has not been scanned yet today.",
     ["À faire sur le compte"] = "To do on the account",
+    ["Redimensionner : plus ou moins de colonnes, toutes les cases restent visibles"] = "Resize: more or fewer columns, every slot stays visible",
 }

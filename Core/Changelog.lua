@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.124", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : coin en bas à droite pour redimensionner ; la largeur choisit le nombre de colonnes (5 à 24) et la hauteur suit, toutes les cases restent visibles, sans défilement. Retenu d'une session à l'autre.",
+        },
+        fixed = {
+            "Notre inventaire : les reflets bleus du jeu (objet neuf, boutique) ne recouvrent plus les cases après un /reload ; la pastille NEUF de l'addon les remplace.",
+        },
+    },
+    {
         version = "1.128.123", date = "22/11/2026",
         added = {
             "Rappel au bandeau de connexion (et dans le Résumé) quand l'HV de ton royaume n'a pas encore été scanné aujourd'hui ; à couper dans Qualité de vie > Hôtel des ventes (« Rappel de scan »).",
