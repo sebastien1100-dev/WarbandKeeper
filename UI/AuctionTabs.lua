@@ -2036,13 +2036,15 @@ local function build(host)
     -- milieu : résultats
     bw.res = panelBox(bw, "Résultats")
     bw.res:SetPoint("TOPLEFT", bw.cats, "TOPRIGHT", 8, 0); bw.res:SetPoint("BOTTOM"); bw.res:SetPoint("RIGHT", -318, 0)
-    local RCOLS = { { "name", "Objet", 30, "LEFT" }, { "qty", "En vente", -248, "RIGHT" }, { "low", "Plus bas", -174, "RIGHT" }, { "delta", "vs 7 j", -126, "RIGHT" } }
+    -- colonnes collées au bord droit (avant : 130 px vides à droite quand la courbe et l'étiquette manquaient)
+    local RCOLS = { { "name", "Objet", 34, "LEFT" }, { "qty", "En vente", -172, "RIGHT" }, { "low", "Plus bas", -76, "RIGHT" },
+        { "delta", "vs 7 j", -14, "RIGHT" } }
     bw.heads = {}
     for _, cdef in ipairs(RCOLS) do
         local h = CreateFrame("Button", nil, bw.res)
         h:SetSize(80, 16)
         if cdef[4] == "LEFT" then h:SetPoint("TOPLEFT", cdef[3], -28) else h:SetPoint("TOPRIGHT", cdef[3], -28) end
-        h.t = UI:Text(h, 9, C.dim); h.t:SetPoint(cdef[4]); h.t:SetText(UI:Upper(T(cdef[2])))
+        h.t = UI:Text(h, 10, C.dim); h.t:SetPoint(cdef[4]); h.t:SetText(UI:Upper(T(cdef[2])))
         h:SetScript("OnClick", function()
             if bw.sortKey == cdef[1] then bw.sortRev = not bw.sortRev else bw.sortKey, bw.sortRev = cdef[1], false end
             bw.offset = 0
@@ -2051,18 +2053,24 @@ local function build(host)
         bw.heads[cdef[1]] = h
     end
     bw.rrows = {}
-    local RROW = 24
+    local RROW = 28
     for i = 1, 22 do
         local r = textRow(bw.res, RROW)
         r:SetPoint("TOPLEFT", 6, -46 - (i - 1) * RROW); r:SetPoint("TOPRIGHT", -6, -46 - (i - 1) * RROW)
-        r.a:SetPoint("RIGHT", -300, 0)
-        r.b:SetPoint("RIGHT", -248, 0); r.b:SetWidth(48)
-        r.c:SetPoint("RIGHT", -174, 0); r.c:SetWidth(72); r.c:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
-        r.d:SetPoint("RIGHT", -126, 0); r.d:SetWidth(46)
-        -- petite courbe des 7 derniers jours, puis l'étiquette (affaire, à toi, liste)
+        -- un cran plus gros que les autres listes
+        for _, fs in ipairs({ r.a, r.b, r.c, r.d }) do
+            local font, _, flags = fs:GetFont()
+            if font then fs:SetFont(font, 13, flags) end
+        end
+        r.icon:SetSize(22, 22); r.a:SetPoint("LEFT", 32, 0)
+        r.d:SetPoint("RIGHT", -8, 0); r.d:SetWidth(52)
+        r.c:SetPoint("RIGHT", -70, 0); r.c:SetWidth(90); r.c:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+        r.b:SetPoint("RIGHT", -166, 0); r.b:SetWidth(60)
+        -- petite courbe des 7 derniers jours, puis l'étiquette (affaire, à toi, liste) ; le nom prend le reste
         r.spark = CreateFrame("Frame", nil, r)
-        r.spark:SetSize(46, 14); r.spark:SetPoint("RIGHT", -74, 0)
-        r.tag = UI:Badge(r, "", C.muted); r.tag:SetPoint("RIGHT", -2, 0)
+        r.spark:SetSize(46, 14); r.spark:SetPoint("RIGHT", -234, 0)
+        r.tag = UI:Badge(r, "", C.muted); r.tag:SetPoint("RIGHT", r.spark, "LEFT", -6, 0)
+        r.a:SetPoint("RIGHT", r.spark, "LEFT", -6, 0)
         r:SetScript("OnClick", function(s) if s.e then bw:Pick(s.e.id, s.e.key) end end)
         r:SetScript("OnEnter", function(s)
             if not s.e then return end
@@ -2329,6 +2337,7 @@ local function build(host)
                 elseif listed[e.id] then r.tag:Set(T("liste"), { ar, ag, ab }); r.tag:Show()
                 elseif have > 0 then r.tag:Set(string.format(T("à toi : %d"), have), C.rule); r.tag:Show()
                 else r.tag:Hide() end
+                r.a:SetPoint("RIGHT", r.tag:IsShown() and r.tag or r.spark, "LEFT", -6, 0)
                 drawSpark(r.spark, e.id)
                 r.hl:SetColorTexture(ar, ag, ab, e.id == self.id and 0.14 or 0)
                 r:Show()

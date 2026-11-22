@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.110", date = "22/11/2026",
+        changed = {
+            "Hôtel des ventes > Parcourir : la liste des résultats occupe toute la largeur de son encadré (colonnes « En vente », « Plus bas » et « vs 7 j » collées à droite, le nom prend le reste) et s'écrit plus gros, avec des lignes plus hautes.",
+        },
+    },
+    {
         version = "1.128.109", date = "22/11/2026",
         fixed = {
             "Bouton de désenchantement sur les sacs d'EllesmereUI : il se calait sur un élément invisible de l'en-tête au lieu des boutons ronds ; seuls les vrais boutons visibles et carrés comptent maintenant. /wk sacs donne sa position exacte.",
