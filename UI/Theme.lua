@@ -328,9 +328,12 @@ local function boostOf(parent)
     end
     return 1
 end
+UI.MIN_TEXT = 10
 function UI:Text(parent, size, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY")
-    fs:SetFont(UI.FONT, math.floor((size or 12) * (UI.textScale or 1) * boostOf(parent) + 0.5), "")
+    -- taille 10 au moins : en-têtes de colonnes et légendes en 8-9 étaient trop petits (audit du design)
+    size = math.max(size or 12, UI.MIN_TEXT)
+    fs:SetFont(UI.FONT, math.floor(size * (UI.textScale or 1) * boostOf(parent) + 0.5), "")
     fs:SetTextColor(unpack(color or UI.colors.text))
     fs:SetJustifyH("LEFT")
     if fs.SetWordWrap then fs:SetWordWrap(false) end

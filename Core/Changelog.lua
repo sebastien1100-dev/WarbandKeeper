@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.118", date = "22/11/2026",
+        changed = {
+            "Interface : plus aucun texte sous la taille 10 ; les en-têtes de colonnes, légendes et petites mentions (HV, chrono et quêtes du donjon, collection de pêche, rares sur la carte, Options…) sont un peu plus lisibles.",
+        },
+    },
+    {
         version = "1.128.117", date = "22/11/2026",
         fixed = {
             "Boutons : un bouton n'est plus jamais plus étroit que son libellé (avant, « Acheter », « Chercher », « Annuler », « Réinitialiser », « Tout sélectionner »… pouvaient être coupés ou déborder, surtout dans l'HV aux textes agrandis) ; il s'élargit aussi quand son texte change (« Envoyer maintenant (12) », « Confirmer… »).",
