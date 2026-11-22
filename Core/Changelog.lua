@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.91", date = "22/11/2026",
+        fixed = {
+            "Statistiques de vol : le texte des petites cartes (par exemple « dont 73 % sur … » dans PERSOS) était coupé par « … » ; il passe à la ligne et la carte s'agrandit.",
+        },
+    },
+    {
         version = "1.128.90", date = "22/11/2026",
         added = {
             "Options > Apparence > Fenêtre : « Opacité des cadres à l'écran », un seul réglage pour toutes les fenêtres et cadres posés sur le jeu (quêtes du donjon, chrono, bilan, barre des sacs, listes du kit et des buffs, vol, statistiques de vol, quais…).",
@@ -6253,6 +6259,7 @@ WK.Roadmap = {
     { prio = 2, theme = "map", title = "Chemins appris partagés", text = "Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde." },
     { prio = 2, theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
     { prio = 2, theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
+    { prio = 2, theme = "eco", title = "Monnaies du jeu", text = "Un panneau des monnaies (insignes, jetons, marques…) par perso et pour tout le compte, avec ce qu'elles permettent d'acheter." },
     { prio = 2, theme = "eco", title = "Prix moyen de vente", text = "Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan." },
     { prio = 2, theme = "prof", title = "Qui peut fabriquer… ?", text = "Recherche d'une recette sur tous les persos." },
     { prio = 3, theme = "prof", title = "Annonce de métier", text = "Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes." },

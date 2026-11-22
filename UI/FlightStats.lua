@@ -300,7 +300,7 @@ local function card(parent, big)
     c.text = UI:Text(c, big and 13 or 11, C.text)
     if big then c.text:SetPoint("TOPLEFT", c.chip, "BOTTOMLEFT", 0, -10)
     else c.text:SetPoint("TOPLEFT", c.chip, "BOTTOMLEFT", 0, -8) end
-    c.text:SetPoint("RIGHT", -14, 0); c.text:SetJustifyH("LEFT")
+    c.text:SetWidth(200); c.text:SetJustifyH("LEFT") -- largeur posée à la disposition (mesure de la hauteur)
     if c.text.SetWordWrap then c.text:SetWordWrap(true) end
     if big then
         c.bars = {}
@@ -545,12 +545,16 @@ local function build()
                 nb = nb + 1
                 local c = bigCard(nb)
                 c:ClearAllPoints(); c:SetPoint("TOPLEFT", 16, -y); c:SetWidth(w); c:SetHeight(180)
+                c.text:SetWidth(w - 28)
                 c:Set(e)
                 y = y + 190
             else
                 ns = ns + 1
                 local c = smallCard(ns)
                 c:ClearAllPoints(); c:SetPoint("TOPLEFT", 16 + col * (hw + 10), -y); c:SetWidth(hw)
+                -- largeur du texte posée avant de le mesurer : sinon une seule ligne, coupée par « … »
+                c.text:SetWidth(hw - 28)
+                if c.text.SetMaxLines then c.text:SetMaxLines(0) end
                 c:Set(e)
                 local hh = 12 + 24 + 8 + (c.text:GetStringHeight() or 14) + 12
                 c:SetHeight(math.max(76, hh))

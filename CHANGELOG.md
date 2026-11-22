@@ -29,6 +29,7 @@ _Prévu, pas encore commencé._
 
 ### Inventaire et économie
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
+- **Monnaies du jeu** (moyenne) — Un panneau des monnaies (insignes, jetons, marques…) par perso et pour tout le compte, avec ce qu'elles permettent d'acheter.
 - **Prix moyen de vente** (moyenne) — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -70,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.91 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Statistiques de vol : le texte des petites cartes (par exemple « dont 73 % sur … » dans PERSOS) était coupé par « … » ; il passe à la ligne et la carte s'agrandit.
 
 ## v1.128.90 — 22/11/2026
 
