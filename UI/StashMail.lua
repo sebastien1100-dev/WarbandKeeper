@@ -39,8 +39,10 @@ local function build()
         r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 50, 0); r.name:SetPoint("RIGHT", -60, 0); r.name:SetJustifyH("LEFT")
         if r.name.SetWordWrap then r.name:SetWordWrap(false) end
         r.tag = UI:Text(r, 10, C.gold); r.tag:SetPoint("RIGHT", -8, 0)
-        r:SetScript("OnClick", function(s)
+        r:RegisterForClicks("AnyUp")
+        r:SetScript("OnClick", function(s, btn)
             if not s.e then return end
+            if btn == "RightButton" then if UI.StashItemMenu then UI:StashItemMenu(s.e.id, s) end return end
             unchecked[s.e.id] = not unchecked[s.e.id] or nil
             f:Refresh()
         end)
@@ -51,6 +53,7 @@ local function build()
             GameTooltip:AddLine(" ")
             GameTooltip:AddLine(s.e.why or "", 0.8, 0.8, 0.8, true)
             GameTooltip:AddLine(T("Clic : cocher ou décocher"), 0.6, 0.6, 0.6)
+            _G.GameTooltip:AddLine(T("Clic droit : exception pour cet objet"), 0.6, 0.6, 0.6)
             GameTooltip:Show()
         end)
         r:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -63,7 +66,8 @@ local function build()
     f.info:SetPoint("BOTTOMLEFT", 14, 18)
     f.send = UI:Button(f, "Envoyer", 110, 28, "primary")
     f.send:SetPoint("BOTTOMRIGHT", -10, 10)
-    f.send:SetScript("OnClick", function()
+    -- envoi des objets cochés, vers un seul perso (dest) ou vers tous
+    function f.SendTo(_, dest)
         local Ml = WK.modules.Mail
         if Ml:IsSending() then return end
         -- règles d'envoi générées : chaque objet coché vers son perso, le reste de la pile gardé
@@ -73,7 +77,7 @@ local function build()
         local store = { items = {}, cats = {} }
         local n = 0
         for _, e in ipairs(f.list or {}) do
-            if not unchecked[e.id] and chars[e.to] and not store.items[e.id] then
+            if not unchecked[e.id] and chars[e.to] and not store.items[e.id] and (not dest or e.to == dest) then
                 store.items[e.id] = { to = Ml:MailName(chars[e.to]), keep = math.max(0, (bags[e.id] or 0) - e.count) }
                 n = n + 1
             end
@@ -81,10 +85,21 @@ local function build()
         if n == 0 then return end
         if not Ml:SendWith(store) then WK:Print(T("Rien à envoyer : objets liés, verrouillés ou plus dans les sacs.")) end
         C_Timer.After(1, function() S():Invalidate(); if f:IsShown() then f:Refresh() end end)
+    end
+    f.send:SetScript("OnClick", function() f:SendTo(nil) end)
+    -- en-têtes par destinataire : nom, nombre, « Envoyer à … » (maquette D)
+    f.heads = UI:Pool(function()
+        local h = _G.CreateFrame("Frame", nil, f.scroll.child)
+        h:SetHeight(30)
+        h.n = UI:Text(h, 12); h.n:SetPoint("LEFT", 8, 0)
+        h.go = UI:Button(h, "Envoyer", nil, 22, "secondary")
+        h.go:SetPoint("RIGHT", -6, 0)
+        h.go:SetScript("OnClick", function(b) f:SendTo(b.dest) end)
+        return h
     end)
 
     function f:Refresh()
-        self.rows:Reset()
+        self.rows:Reset(); self.heads:Reset()
         local list = S():MyShipments()
         self.list = list
         local chars = WK.DB.global.characters
@@ -94,7 +109,23 @@ local function build()
         end)
         local y, checked, dests = 0, 0, {}
         local r1, g1, b1 = UI:Accent()
+        local perDest = {}
+        for _, e in ipairs(list) do perDest[e.to] = (perDest[e.to] or 0) + (unchecked[e.id] and 0 or 1) end
+        local lastTo
         for _, e in ipairs(list) do
+            if e.to ~= lastTo then
+                lastTo = e.to
+                local h = self.heads:Get()
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y); h:SetPoint("TOPRIGHT", 0, -y)
+                local hc = chars[e.to]
+                h.n:SetText("» " .. (hc and WK:CharName(hc, e.to) or "?"))
+                if hc then h.n:SetTextColor(UI:ClassColor(hc.class)) end
+                h.go.dest = e.to
+                h.go:SetLabel(string.format(T("Envoyer (%d)"), perDest[e.to] or 0))
+                h.go:SetEnabled((perDest[e.to] or 0) > 0)
+                h:Show()
+                y = y + 30
+            end
             local r = self.rows:Get()
             r.e = e
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
@@ -102,11 +133,15 @@ local function build()
             r.box:SetVertexColor(r1, g1, b1, on and 1 or 0.25)
             local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
             r.icon:SetTexture(icon); r.icon:SetDesaturated(not on)
-            local c = chars[e.to]
-            r.name:SetText(string.format("%s x%d » %s", name or "?", e.count, c and WK:CharName(c, e.to) or "?"))
+            r.name:SetText(string.format("%s x%d", name or "?", e.count))
             r.name:SetTextColor(on and qr or C.dim[1], on and qg or C.dim[2], on and qb or C.dim[3])
-            r.tag:SetText(e.ah and T("HV") or T("métier"))
-            r.tag:SetTextColor(unpack(e.ah and C.gold or C.positive))
+            local ex = e.exc and UI.STASH_EXC_TAG and UI.STASH_EXC_TAG[e.exc]
+            if e.ah then r.tag:SetText(T("HV")); r.tag:SetTextColor(unpack(C.gold))
+            elseif ex then
+                r.tag:SetText(T(ex[1]))
+                local col = ex[2] == "accent" and { UI:Accent() } or C[ex[2]]
+                r.tag:SetTextColor(col[1], col[2], col[3])
+            else r.tag:SetText(T("métier")); r.tag:SetTextColor(unpack(C.positive)) end
             if on then checked = checked + 1; dests[e.to] = true end
             y = y + ROW_H
         end
@@ -115,7 +150,7 @@ local function build()
         local nd = 0
         for _ in pairs(dests) do nd = nd + 1 end
         self.info:SetText(#list > 0 and string.format(T("%d objet(s) vers %d perso(s)"), checked, nd) or "")
-        self.send:SetLabel(string.format(T("Envoyer (%d)"), checked))
+        self.send:SetLabel(string.format(T("Tout envoyer (%d)"), checked))
         self.send:SetEnabled(checked > 0)
         self:SetHeight(math.min(420, 36 + math.max(y, 40) + 56))
     end

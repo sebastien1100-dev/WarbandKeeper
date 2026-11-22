@@ -830,6 +830,11 @@ local function build()
     fi.junk:SetScript("OnClick", function()
         if hovered and hovered.id and WK.modules.QoL then WK.modules.QoL:ToggleJunk(hovered.id); V.Refresh() end
     end)
+    -- exception de répartition (Rangement) : automatique, toujours à un perso, jamais, toujours à l'HV
+    fi.dest = UI:Button(fi, "Destination", nil, 24, "secondary")
+    fi.dest:SetScript("OnClick", function(b)
+        if hovered and hovered.id and UI.StashItemMenu then UI:StashItemMenu(hovered.id, b) end
+    end)
     fi.ah = UI:Button(fi, "Chercher à l'HV", nil, 24, "secondary")
     fi.ah:SetPoint("TOPLEFT", fi.lock, "TOPRIGHT", 6, 0)
     fi.ah:SetScript("OnClick", function()
@@ -1415,7 +1420,19 @@ function V.RefreshFiche()
     -- boutons alignés : une colonne, tous de la largeur de la fiche
     local y = 60 + bodyH + 14
     local bw = FICHE_W - 20
-    for _, b in ipairs({ fi.lock, fi.de, fi.junk, fi.ah }) do
+    local St = WK.modules.Stash
+    local rule = St and St.ItemRule and St:ItemRule(e.id)
+    local chars = WK.DB.global.characters
+    local dl = T("Destination : automatique")
+    if rule and rule.never then dl = T("Destination : ne bouge jamais")
+    elseif rule and rule.ah then dl = T("Destination : toujours à l'HV")
+    elseif rule and rule.to then
+        local c = chars[rule.to]
+        dl = string.format(T("Destination : toujours » %s"), c and WK:CharName(c, rule.to) or rule.to)
+    end
+    fi.dest:SetLabel(dl)
+    fi.dest:SetShown(St ~= nil and why ~= "manual")
+    for _, b in ipairs({ fi.lock, fi.de, fi.junk, fi.dest, fi.ah }) do
         if b:IsShown() then
             b:ClearAllPoints(); b:SetPoint("TOPLEFT", 10, -y); b:SetWidth(bw)
             y = y + 30

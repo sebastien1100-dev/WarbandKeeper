@@ -118,6 +118,21 @@ local function todoItems()
                 open("mail", "SetTab", "send"), nil, { g = "send", group = "send", n = n })
         end
     end
+    -- envois du Rangement (répartition entre persos) qui attendent dans les sacs du perso connecté
+    local St = WK.modules.Stash
+    if St and WK:FeatureOn("inventory") then
+        local okS, ships = pcall(St.MyShipments, St)
+        local n = okS and ships and #ships or 0
+        if n > 0 then
+            add(4, "send", string.format(WK.T("%d objets du Rangement attendent d'être envoyés"), n),
+                function()
+                    UI:ShowPage("inventory")
+                    local pg = UI.pages.inventory
+                    if pg then pg.char = "stash"; pg.stashTab = "send"; UI:Refresh() end
+                end,
+                nil, { g = "send", group = "send", n = n })
+        end
+    end
     if WK.DB.global.bank.enabled then
         local n = 0
         n = n + WK.modules.BankDeposit:PendingCount()

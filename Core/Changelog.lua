@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.190", date = "22/11/2026",
+        added = {
+            "Rangement > Répartition : un tableau des familles d'objets (tissus, minerais, peaux, herbes, enchantement, viande, nourriture, bandages et potions, équipement à lier) par perso, rempli tout seul d'après les métiers : le couturier reçoit les tissus, le mineur ou le forgeron le minerai, l'alchimiste les herbes, le secouriste ce que demande son guide…",
+            "Perso principal (en haut de la Répartition) : tant qu'il n'est pas au niveau max, il reçoit des autres persos nourriture et boisson de son niveau, bandages et potions, jusqu'aux stocks voulus (40 repas, 40 boissons, 20 bandages, 10 potions, réglables dans sa case) ; d'autres persos peuvent avoir leurs propres stocks.",
+            "Exceptions : clic sur une case = reçoit, prioritaire, pause, stock de la famille, plafond en piles ; par perso : garde ses récoltes, ne reçoit rien ; par objet (clic droit sur un envoi, bouton « Destination » dans la fiche des sacs) : toujours à un perso, ne bouge jamais, toujours à l'HV. La règle la plus précise gagne, les objets verrouillés ne bougent jamais.",
+            "Équipement à lier quand équipé : une pièce qu'un perso ne peut pas porter part au reroll qui peut, du niveau le plus proche.",
+            "Boîte aux lettres : les envois du Rangement sont regroupés par destinataire avec un bouton « Envoyer » chacun, et « Tout envoyer » ; chaque ligne dit pourquoi (prioritaire, perso principal, stock voulu…). Ligne « À faire » quand des envois attendent dans les sacs du perso.",
+        },
+    },
+    {
         version = "1.128.189", date = "22/11/2026",
         fixed = {
             "Guidage en plusieurs étapes : notre épingle de la carte du monde et le repère de la minicarte se posent aussi sur l'étape en cours (entrée du tram, maître de vol) ; avant, la carte ne montrait que le losange du jeu et la minicarte rien du tout.",

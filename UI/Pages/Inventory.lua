@@ -50,6 +50,124 @@ local function catOf(id)
 end
 local SLOT, SGAP = 40, 4
 
+---------------------------------------------------------------------------
+-- Répartition (maquette B) : menu flottant d'une case (famille × perso) ou d'un objet. Choix radio (titre +
+-- explication), lignes de pastilles (plafond, stocks voulus), séparateurs ; un clic ailleurs le ferme.
+---------------------------------------------------------------------------
+-- exception qui a décidé d'un envoi (Stash:Compute, champ exc) : libellé et couleur de la pastille
+local EXC_TAG = { prio = { "prioritaire", "rule" }, always = { "toujours", "rule" }, cap = { "plafond", "info" },
+    stock = { "stock", "gold" }, main = { "perso principal", "accent" }, cons = { "stock voulu", "info" },
+    gear = { "équipement", "muted" } }
+UI.STASH_EXC_TAG = EXC_TAG
+local stashPop
+local function popMenu()
+    if stashPop then return stashPop end
+    local blocker = _G.CreateFrame("Button", nil, _G.UIParent)
+    blocker:SetAllPoints(_G.UIParent); blocker:SetFrameStrata("DIALOG"); blocker:SetFrameLevel(1)
+    blocker:RegisterForClicks("AnyUp")
+    blocker:Hide()
+    local f = _G.CreateFrame("Frame", "WarbandKeeperStashMenu", _G.UIParent)
+    f:SetFrameStrata("DIALOG"); f:SetFrameLevel(20); f:SetWidth(360); f:EnableMouse(true)
+    f:SetClampedToScreen(true)
+    UI:HudBackground(f, "window")
+    f.title = UI:Text(f, 13); f.title:SetPoint("TOPLEFT", 14, -12); f.title:SetPoint("TOPRIGHT", -14, -12)
+    f.title:SetJustifyH("LEFT")
+    f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 14, -30); f.sub:SetPoint("TOPRIGHT", -14, -30)
+    f.sub:SetJustifyH("LEFT")
+    f.items = {}
+    blocker:SetScript("OnClick", function() f:Hide() end)
+    f:SetScript("OnHide", function() blocker:Hide() end)
+    f:SetScript("OnShow", function() blocker:Show() end)
+    if _G.UISpecialFrames then table.insert(_G.UISpecialFrames, "WarbandKeeperStashMenu") end
+    local function choice(i)
+        local b = f.items[i]
+        if b and b.kind == "choice" then return b end
+        if b then b:Hide() end
+        b = _G.CreateFrame("Button", nil, f)
+        b.kind = "choice"
+        b.dot = UI:Icon(b, "circle", 12, nil, "ARTWORK"); b.dot:SetPoint("TOPLEFT", 10, -10)
+        b.t = UI:Text(b, 12); b.t:SetPoint("TOPLEFT", 30, -7); b.t:SetPoint("TOPRIGHT", -8, -7); b.t:SetJustifyH("LEFT")
+        b.d = UI:Text(b, 10, C.muted); b.d:SetPoint("TOPLEFT", 30, -23); b.d:SetPoint("TOPRIGHT", -8, -23)
+        b.d:SetJustifyH("LEFT")
+        b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
+        b:SetScript("OnClick", function(s) if s.fn then s.fn() end f:Hide() end)
+        f.items[i] = b
+        return b
+    end
+    -- liste : { { label, desc, on, col, fn } | { sep = true }
+    --          | { seg = { label, opts = { { clé, libellé } }, sel, fn } } }
+    function f:Open(anchor, title, sub, list)
+        self.title:SetText(title or ""); self.sub:SetText(sub or "")
+        for _, it in ipairs(self.items) do it:Hide() end
+        local y = (sub and sub ~= "") and 50 or 36
+        local W = self:GetWidth()
+        for i, it in ipairs(list) do
+            if it.sep then
+                local b = self.items[i]
+                if not (b and b.kind == "sep") then
+                    if b then b:Hide() end
+                    b = _G.CreateFrame("Frame", nil, self); b.kind = "sep"
+                    b.l = b:CreateTexture(nil, "ARTWORK"); b.l:SetTexture("Interface\\Buttons\\WHITE8X8")
+                    b.l:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); b.l:SetAllPoints()
+                    self.items[i] = b
+                end
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 12, -(y + 4)); b:SetSize(W - 24, 1); b:Show()
+                y = y + 10
+            elseif it.seg then
+                local b = self.items[i]
+                if b then b:Hide() end
+                b = _G.CreateFrame("Frame", nil, self); b.kind = "seg"
+                b.t = UI:Text(b, 11, C.muted); b.t:SetPoint("LEFT", 2, 0); b.t:SetText(it.seg.label)
+                b.s = UI:Segmented(b, it.seg.opts, function(v) it.seg.fn(v) end, 24)
+                b.s:SetPoint("RIGHT", 0, 0); b.s:Select(it.seg.sel)
+                self.items[i] = b
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 14, -y); b:SetSize(W - 28, 28); b:Show()
+                y = y + 32
+            else
+                local b = choice(i)
+                local col = it.col or { UI:Accent() }
+                b.t:SetText(it.label); b.d:SetText(it.desc or "")
+                b.dot:SetVertexColor(col[1], col[2], col[3], it.on and 1 or 0.25)
+                b.bg:SetColor(col[1], col[2], col[3], it.on and 0.14 or 0)
+                b.fn = it.fn
+                local h = (it.desc and it.desc ~= "") and 40 or 28
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", 6, -y); b:SetSize(W - 12, h); b:Show()
+                y = y + h + 2
+            end
+        end
+        self:SetHeight(y + 10)
+        self:ClearAllPoints()
+        if anchor then self:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -4) else self:SetPoint("CENTER") end
+        self:Show()
+    end
+    stashPop = f
+    return f
+end
+UI.StashPopMenu = popMenu
+
+-- menu « où va cet objet » (envois, fiche des sacs) : automatique, toujours à un perso, jamais, toujours à l'HV
+function UI.StashItemMenu(_, id, anchor)
+    local St = WK.modules.Stash
+    if not (St and id) then return end
+    local rule = St:ItemRule(id)
+    local name = UI:ItemInfo(id)
+    local list = {
+        { label = T("Automatique"), desc = T("Suit la répartition par famille et les besoins des métiers."),
+          on = rule == nil, fn = function() St:SetItemRule(id, nil) end },
+        { label = T("Ne bouge jamais"), desc = T("Reste chez le perso qui l'a."), on = rule and rule.never,
+          col = C.negative, fn = function() St:SetItemRule(id, { never = true }) end },
+        { label = T("Toujours à l'HV"), desc = T("Part au perso HV pour être vendu."), on = rule and rule.ah,
+          col = C.gold, fn = function() St:SetItemRule(id, { ah = true }) end },
+        { sep = true },
+    }
+    for _, e in ipairs(UI:SortedCharacters()) do
+        list[#list + 1] = { label = string.format(T("Toujours à %s"), WK:CharName(e.c, e.key)),
+            on = rule and rule.to == e.key, col = C.rule, fn = function() St:SetItemRule(id, { to = e.key }) end }
+    end
+    popMenu():Open(anchor, name or ("#" .. id), T("Exception pour cet objet"), list)
+end
+
+
 UI:RegisterPage({
     key = "inventory", order = 3, nav = "Inventaire",
     title = "Inventaire",
@@ -550,13 +668,24 @@ UI:RegisterPage({
         pane:Hide()
         self.stashPane = pane
         local root = pane.child
+        -- sous-onglets : Envois (la liste par perso, la place, le perso HV) / Répartition (maquettes A + B)
+        self.stashTab = self.stashTab or "send"
+        self.stashSeg = UI:Segmented(root, { { "send", T("Envois") }, { "dist", T("Répartition") } }, function(v)
+            self.stashTab = v; self:RefreshStash()
+        end, 26)
+        self.stashSeg:SetPoint("TOPLEFT", 4, -4)
+        self.stashSeg:Select(self.stashTab)
+        self:BuildDist(root)
         -- titre au-dessus du cadre (la roue dentée de la page reste à droite, sans rien chevaucher)
-        local head = UI:Text(root, 13, C.text); head:SetPoint("TOPLEFT", 4, -8); head:SetText(T("Rangement par perso"))
+        local head = UI:Text(root, 13, C.text); head:SetPoint("LEFT", self.stashSeg, "RIGHT", 14, 0)
+        head:SetText(T("Rangement par perso"))
+        self.stashHead = head
         local headSub = UI:Text(root, 11, C.muted); headSub:SetPoint("LEFT", head, "RIGHT", 8, 0)
         local list = UI:Card(root)
         list.subtitle = headSub
         self.stashList = list
         local note = UI:Text(root, 11, C.muted)
+        self.stashNote = note
         note:SetPoint("LEFT", headSub, "RIGHT", 16, 0)
         note:SetJustifyH("RIGHT")
         note:SetText(T("les envois se font à la boîte aux lettres de chaque perso"))
@@ -579,6 +708,8 @@ UI:RegisterPage({
             c.bar:SetSize(3, 20); c.bar:SetPoint("TOPLEFT", 10, -9)
             c.name = UI:Text(c, 13); c.name:SetPoint("TOPLEFT", 20, -12)
             c.badge = UI:Badge(c, T("perso HV"), C.gold); c.badge:SetPoint("LEFT", c.name, "RIGHT", 8, 0)
+            c.badge2 = UI:Badge(c, T("perso principal"), { UI:Accent() })
+            c.badge2:SetPoint("LEFT", c.name, "RIGHT", 8, 0)
             -- métiers du perso sur une 2e ligne, toute la largeur (plus de texte coupé par la pastille « perso HV »)
             c.right = UI:Text(c, 10, C.muted)
             c.right:SetPoint("TOPLEFT", 20, -31); c.right:SetPoint("TOPRIGHT", -12, -31)
@@ -605,12 +736,17 @@ UI:RegisterPage({
             r.sep = r:CreateTexture(nil, "ARTWORK"); r.sep:SetTexture("Interface\\Buttons\\WHITE8X8")
             r.sep:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.6); r.sep:SetHeight(1)
             r.sep:SetPoint("TOPLEFT", 0, 0); r.sep:SetPoint("TOPRIGHT", 0, 0)
+            r:RegisterForClicks("AnyUp")
+            r:SetScript("OnClick", function(sb, btn)
+                if btn == "RightButton" and sb.e then UI:StashItemMenu(sb.e.id, sb) end
+            end)
             r:SetScript("OnEnter", function(sb)
                 if not sb.e then return end
                 WK.UI:TooltipOwner(sb, "ANCHOR_RIGHT")
                 if GameTooltip.SetItemByID then GameTooltip:SetItemByID(sb.e.id) end
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine(sb.e.why or "", 0.8, 0.8, 0.8, true)
+                _G.GameTooltip:AddLine(T("Clic droit : exception pour cet objet"), 0.5, 0.5, 0.5)
                 if sb.e.unit then GameTooltip:AddDoubleLine(T("Valeur"), WK:FormatMoney(sb.e.unit * sb.e.count), 0.6, 0.6, 0.6, 1, 1, 1) end
                 local chars = WK.DB.global.characters
                 for key, n in pairs(sb.e.from or {}) do
@@ -707,12 +843,283 @@ UI:RegisterPage({
         UI:OnResize(pane, function() if self.char == "stash" then self:RefreshStash() end end)
     end,
 
+    -- Répartition (maquette A) : perso principal, tableau familles × persos (clic = menu de la case), exceptions
+    -- des persos et des objets
+    BuildDist = function(self, root)
+        local S = WK.modules.Stash
+        local f = _G.CreateFrame("Frame", nil, root)
+        f:SetPoint("TOPLEFT", 0, -38)
+        f:Hide()
+        self.distFrame = f
+        f.mainLbl = UI:Text(f, 12); f.mainLbl:SetPoint("TOPLEFT", 4, -8); f.mainLbl:SetText(T("Perso principal"))
+        f.mainDd = UI:Dropdown(f, 200, 28, {}, function(v)
+            S:Config().main = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged(); self:RefreshStash()
+        end)
+        f.mainDd:SetPoint("LEFT", f.mainLbl, "RIGHT", 10, 0)
+        f.mainTip = UI:Text(f, 10, C.muted); f.mainTip:SetPoint("LEFT", f.mainDd, "RIGHT", 10, 0)
+        f.mainTip:SetText(T("reçoit nourriture, boisson, bandages et potions de son niveau tant qu'il monte"))
+        f.legend = UI:Text(f, 10, C.muted); f.legend:SetPoint("TOPLEFT", 4, -44)
+        f.table = UI:Card(f)
+        f.heads = UI:Pool(function()
+            local h = _G.CreateFrame("Frame", nil, f.table)
+            h.n = UI:Text(h, 12)
+            h.n:SetPoint("TOPLEFT", 8, -8)
+            h.n:SetPoint("TOPRIGHT", -4, -8)
+            h.n:SetJustifyH("LEFT")
+            if h.n.SetWordWrap then h.n:SetWordWrap(false) end
+            h.p = UI:Text(h, 10, C.muted); h.p:SetPoint("TOPLEFT", 8, -24); h.p:SetPoint("TOPRIGHT", -4, -24)
+            h.p:SetJustifyH("LEFT")
+            if h.p.SetWordWrap then h.p:SetWordWrap(false) end
+            return h
+        end)
+        f.fams = UI:Pool(function()
+            local r = _G.CreateFrame("Frame", nil, f.table)
+            r.l = r:CreateTexture(nil, "ARTWORK"); r.l:SetTexture("Interface\\Buttons\\WHITE8X8")
+            r.l:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); r.l:SetHeight(1)
+            r.l:SetPoint("TOPLEFT"); r.l:SetPoint("TOPRIGHT")
+            r.n = UI:Text(r, 12); r.n:SetPoint("TOPLEFT", 12, -8)
+            r.s = UI:Text(r, 10, C.dim); r.s:SetPoint("TOPLEFT", 12, -24); r.s:SetWidth(200); r.s:SetJustifyH("LEFT")
+            if r.s.SetWordWrap then r.s:SetWordWrap(false) end
+            return r
+        end)
+        f.cells = UI:Pool(function()
+            local b = _G.CreateFrame("Button", nil, f.table)
+            b.bg = UI:Rounded(b, 9, 0, "BACKGROUND", 1)
+            b.t = UI:Text(b, 10); b.t:SetPoint("LEFT", 8, 0); b.t:SetPoint("RIGHT", -6, 0); b.t:SetJustifyH("LEFT")
+            if b.t.SetWordWrap then b.t:SetWordWrap(false) end
+            b:SetScript("OnClick", function(s) self:DistCellMenu(s.fam, s.key, s) end)
+            b:SetScript("OnEnter", function(s)
+                UI:TooltipOwner(s, "ANCHOR_RIGHT")
+                _G.GameTooltip:SetText(s.full or "", 1, 1, 1, 1, true)
+                _G.GameTooltip:AddLine(T("Clic : changer la règle de cette case"), 0.6, 0.6, 0.6)
+                _G.GameTooltip:Show()
+            end)
+            b:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+            return b
+        end)
+        -- exceptions des persos et des objets
+        f.chars = UI:Card(f, T("Exceptions des persos"), T("prioritaires sur le tableau"))
+        f.charRows = UI:Pool(function()
+            local r = _G.CreateFrame("Frame", nil, f.chars)
+            r:SetHeight(30)
+            r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 4, 0)
+            r.keep = UI:Toggle(r, function() return S:CharFlags(r.key).keep end,
+                function(v) S:SetCharFlag(r.key, "keep", v); self:RefreshStash() end)
+            r.keepT = UI:Text(r, 11, C.muted); r.keepT:SetText(T("Garde ses récoltes"))
+            r.none = UI:Toggle(r, function() return S:CharFlags(r.key).none end,
+                function(v) S:SetCharFlag(r.key, "none", v); self:RefreshStash() end)
+            r.noneT = UI:Text(r, 11, C.muted); r.noneT:SetText(T("Ne reçoit rien"))
+            r.none:SetPoint("RIGHT", -4, 0); r.noneT:SetPoint("RIGHT", r.none, "LEFT", -8, 0)
+            r.keep:SetPoint("RIGHT", r.noneT, "LEFT", -24, 0); r.keepT:SetPoint("RIGHT", r.keep, "LEFT", -8, 0)
+            return r
+        end)
+        f.items = UI:Card(f, T("Exceptions par objet"),
+            T("clic droit sur un envoi, ou « Destination » dans la fiche des sacs"))
+        f.itemRows = UI:Pool(function()
+            local r = _G.CreateFrame("Button", nil, f.items)
+            r:SetHeight(28)
+            r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 4, 0)
+            r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            r.n = UI:Text(r, 12); r.n:SetPoint("LEFT", 30, 0)
+            r.del = UI:IconButton(r, "close", 18, T("Retirer l'exception"), true); r.del:SetPoint("RIGHT", -4, 0)
+            r.del:SetScript("OnClick", function(b) S:SetItemRule(b:GetParent().id, nil); self:RefreshStash() end)
+            r.rule = UI:Text(r, 11); r.rule:SetPoint("RIGHT", r.del, "LEFT", -10, 0)
+            r:SetScript("OnClick", function(b) UI:StashItemMenu(b.id, b) end)
+            return r
+        end)
+        f.itemsEmpty = UI:Text(f.items, 11, C.muted); f.itemsEmpty:SetPoint("TOPLEFT", 16, -44)
+        f.itemsEmpty:SetText(T("Aucune exception pour l'instant."))
+    end,
+
+    DistCellMenu = function(self, fam, key, anchor)
+        local S = WK.modules.Stash
+        local fdef
+        for _, d in ipairs(S.FAMILIES) do if d.key == fam then fdef = d end end
+        local c = WK.DB.global.characters[key]
+        if not (fdef and c) then return end
+        local title = T(fdef.label) .. " » " .. WK:CharName(c, key)
+        local r = S:FamRule(fam, key) or {}
+        local list = {}
+        local function set(mode) return function() S:SetFamRule(fam, key, mode, r.cap); self:RefreshStash() end end
+        if fdef.cons then
+            local t = S:ConsTargets(key) or {}
+            local OPTS = { food = { 0, 20, 40, 60, 80 }, drink = { 0, 20, 40, 60, 80 },
+                bandage = { 0, 10, 20, 40 }, potion = { 0, 5, 10, 20 } }
+            for _, k in ipairs(fdef.cons) do
+                local opts = {}
+                for _, v in ipairs(OPTS[k]) do opts[#opts + 1] = { v, tostring(v) } end
+                list[#list + 1] = { seg = { label = T(S.CONS_LABEL[k]), opts = opts, sel = t[k] or 0,
+                    fn = function(v) S:SetCons(key, k, v); self:RefreshStash() end } }
+            end
+            list[#list + 1] = { sep = true }
+            list[#list + 1] = { label = T("Pause"), desc = T("Ne reçoit plus rien de cette famille."),
+                on = r.mode == "pause",
+                col = C.negative, fn = set(r.mode == "pause" and nil or "pause") }
+            local sub = key == S:Config().main and T("perso principal : stocks voulus de son niveau")
+                or T("stocks voulus : les autres persos lui envoient ce qui lui manque")
+            return UI.StashPopMenu():Open(anchor, title, sub, list)
+        end
+        local cell = S:Cell(fam, key)
+        local auto = cell.mode == "auto" or cell.mode == "guide"
+        list[#list + 1] = { label = auto and T("Reçoit (d'office)") or T("Rien (d'office)"),
+            desc = auto and T("D'après ses métiers et le palier visé de son guide.")
+                or T("Aucun de ses métiers ne s'en sert."),
+            on = r.mode == nil, fn = set(nil) }
+        if not auto then
+            list[#list + 1] = { label = T("Reçoit"), desc = T("Comme s'il avait le métier."), on = r.mode == "recv",
+                col = C.positive, fn = set("recv") }
+        end
+        if fam ~= "gear" then
+            list[#list + 1] = { label = T("Prioritaire"), desc = T("Passe avant les autres persos pour cette famille."),
+                on = r.mode == "prio", col = C.rule, fn = set("prio") }
+            list[#list + 1] = { label = T("Stock de la famille"), desc = T("Reçoit aussi le surplus des autres."),
+                on = r.mode == "stock", col = C.gold, fn = set("stock") }
+        end
+        list[#list + 1] = { label = T("Pause"), desc = T("Ne reçoit plus rien : la famille va au suivant ou au stock."),
+            on = r.mode == "pause", col = C.negative, fn = set("pause") }
+        if fam ~= "gear" then
+            list[#list + 1] = { sep = true }
+            local capOpts = { { 0, T("aucun") }, { 1, "1" }, { 2, "2" }, { 5, "5" }, { 10, "10" } }
+            list[#list + 1] = { seg = { label = T("Plafond (piles)"), opts = capOpts,
+                sel = r.cap or 0, fn = function(v)
+                    S:SetFamRule(fam, key, r.mode, v > 0 and v or nil)
+                    r = S:FamRule(fam, key) or {}
+                    self:RefreshStash()
+                end } }
+        end
+        UI.StashPopMenu():Open(anchor, title, cell.text, list)
+    end,
+
+    RefreshDist = function(self, W)
+        local S = WK.modules.Stash
+        local cfg = S:Config()
+        local f = self.distFrame
+        f:SetWidth(W)
+        local opts = { { "none", T("Aucun") } }
+        local list = UI:SortedCharacters()
+        for _, e in ipairs(list) do opts[#opts + 1] = { e.key, WK:CharName(e.c, e.key) } end
+        f.mainDd:SetOptions(opts); f.mainDd:Select(cfg.main or "none")
+        local function hx(col) return UI:Hex(col) end
+        local ar, ag, ab = UI:Accent()
+        f.legend:SetText(hx(C.positive) .. T("Reçoit") .. "|r " .. T("d'office, d'après ses métiers") .. "   "
+            .. hx(C.rule) .. T("Prioritaire") .. "|r   " .. hx(C.negative) .. T("Pause") .. "|r   "
+            .. hx(C.gold) .. T("Stock") .. "|r " .. T("surplus") .. "   "
+            .. hx({ ar, ag, ab }) .. T("Perso principal") .. "|r "
+            .. T("consommables") .. "   ·   " .. T("clic sur une case = menu"))
+        -- tableau
+        f.heads:Reset(); f.fams:Reset(); f.cells:Reset()
+        local FAMW, HEADH, ROWH = 220, 44, 42
+        local n = #list
+        local cw = n > 0 and math.max(110, (W - 8 - FAMW) / n) or 120
+        for i, e in ipairs(list) do
+            local h = f.heads:Get()
+            h:ClearAllPoints(); h:SetPoint("TOPLEFT", f.table, "TOPLEFT", FAMW + (i - 1) * cw, 0); h:SetSize(cw, HEADH)
+            local nm = WK:CharName(e.c, e.key)
+            if e.key == cfg.main then nm = nm .. "  " .. hx({ ar, ag, ab }) .. T("principal") .. "|r" end
+            h.n:SetText(nm); h.n:SetTextColor(UI:ClassColor(e.c.class))
+            local parts = {}
+            for prof, pp in pairs(e.c.professions or {}) do
+                if type(pp) == "table" and pp.rank then parts[#parts + 1] = { T(prof), pp.rank } end
+            end
+            table.sort(parts, function(x, z) return x[2] > z[2] end)
+            local txt = {}
+            for k = 1, math.min(3, #parts) do txt[k] = parts[k][1] .. " " .. parts[k][2] end
+            local lvTxt = string.format(T("niv. %d"), e.c.level or 1)
+            h.p:SetText(lvTxt .. (#txt > 0 and (" · " .. table.concat(txt, ", ")) or ""))
+            h:Show()
+        end
+        local y = HEADH
+        for _, fd in ipairs(S.FAMILIES) do
+            local r = f.fams:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", f.table, "TOPLEFT", 0, -y); r:SetSize(W, ROWH)
+            r.n:SetText(T(fd.label)); r.s:SetText(fd.sub and T(fd.sub) or "")
+            r:Show()
+            for i, e in ipairs(list) do
+                local cell = S:Cell(fd.key, e.key)
+                local b = f.cells:Get()
+                b.fam, b.key = fd.key, e.key
+                b:ClearAllPoints(); b:SetPoint("TOPLEFT", f.table, "TOPLEFT", FAMW + (i - 1) * cw + 4, -(y + 9))
+                b:SetSize(cw - 10, ROWH - 18)
+                local col = cell.col == "accent" and { ar, ag, ab } or C[cell.col] or C.dim
+                b.t:SetText(cell.text); b.full = cell.text
+                if cell.col == "dim" then
+                    b.t:SetTextColor(C.dim[1], C.dim[2], C.dim[3]); b.bg:SetColor(0, 0, 0, 0)
+                elseif cell.fill then
+                    b.t:SetTextColor(C.bg[1], C.bg[2], C.bg[3]); b.bg:SetColor(col[1], col[2], col[3], 1)
+                else
+                    b.t:SetTextColor(col[1], col[2], col[3]); b.bg:SetColor(col[1], col[2], col[3], 0.16)
+                end
+                b:Show()
+            end
+            y = y + ROWH
+        end
+        f.table:ClearAllPoints(); f.table:SetPoint("TOPLEFT", 0, -64); f.table:SetSize(W, y + 6)
+        local ty = 64 + y + 6 + 12
+        -- exceptions des persos
+        f.charRows:Reset()
+        local cy = 44
+        for _, e in ipairs(list) do
+            local r = f.charRows:Get()
+            r.key = e.key
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", f.chars, "TOPLEFT", 14, -cy)
+            r:SetPoint("RIGHT", f.chars, "RIGHT", -14, 0)
+            r.n:SetText(WK:CharName(e.c, e.key)); r.n:SetTextColor(UI:ClassColor(e.c.class))
+            r.keep:Refresh(); r.none:Refresh()
+            r:Show()
+            cy = cy + 32
+        end
+        local half = (W - 12) / 2
+        f.chars:ClearAllPoints(); f.chars:SetPoint("TOPLEFT", 0, -ty); f.chars:SetSize(half, cy + 8)
+        -- exceptions par objet
+        f.itemRows:Reset()
+        local ids = {}
+        for id in pairs(cfg.items) do ids[#ids + 1] = id end
+        table.sort(ids, function(x, z) return (WK.GetItemInfo(x) or "") < (WK.GetItemInfo(z) or "") end)
+        local iy = 44
+        local chars = WK.DB.global.characters
+        for _, id in ipairs(ids) do
+            local rule = cfg.items[id]
+            local r = f.itemRows:Get()
+            r.id = id; r.del.id = id
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", f.items, "TOPLEFT", 14, -iy)
+            r:SetPoint("RIGHT", f.items, "RIGHT", -14, 0)
+            local name, icon, qr, qg, qb = UI:ItemInfo(id)
+            r.icon:SetTexture(icon); r.n:SetText(name or ("#" .. id)); r.n:SetTextColor(qr or 1, qg or 1, qb or 1)
+            local txt, col
+            if rule.never then txt, col = T("Ne bouge jamais"), C.negative
+            elseif rule.ah then txt, col = T("Toujours à l'HV"), C.gold
+            elseif rule.to then
+                local c = chars[rule.to]
+                txt, col = string.format(T("Toujours » %s"), c and WK:CharName(c, rule.to) or rule.to), C.rule
+            end
+            r.rule:SetText(txt or ""); r.rule:SetTextColor(unpack(col or C.muted))
+            r:Show()
+            iy = iy + 30
+        end
+        f.itemsEmpty:SetShown(#ids == 0)
+        if #ids == 0 then iy = iy + 24 end
+        f.items:ClearAllPoints(); f.items:SetPoint("TOPLEFT", half + 12, -ty); f.items:SetSize(half, iy + 8)
+        local hBottom = ty + math.max(cy, iy) + 8
+        f:SetHeight(hBottom)
+        self.stashPane:SetContentHeight(38 + hBottom + 20)
+    end,
+
     RefreshStash = function(self)
         local S = WK.modules.Stash
         local cfg = S:Config()
         local chars = WK.DB.global.characters
         local W = math.max(400, (self.stashPane:GetWidth() or 600) - 14)
         self.stashPane.child:SetWidth(W)
+        local dist = self.stashTab == "dist"
+        self.stashSeg:Select(self.stashTab)
+        for _, w in ipairs({ self.stashList, self.spaceCard, self.stashSets, self.stashHead, self.stashNote,
+            self.stashList and self.stashList.subtitle }) do
+            if w then w:SetShown(not dist) end
+        end
+        self.distFrame:SetShown(dist)
+        if dist then return self:RefreshDist(W) end
         -- menu du perso HV
         self.FillAhChar()
         local r = S:Route()
@@ -745,7 +1152,10 @@ UI:RegisterPage({
                 local rows = {}
                 for _, e in ipairs(d.list) do
                     local f = fromText(e)
-                    table.insert(rows, { e = e, sub = (e.why or "") .. (f and (" · " .. f) or "") })
+                    local ex = e.exc and EXC_TAG[e.exc]
+                    local tcol = ex and (ex[2] == "accent" and { UI:Accent() } or C[ex[2]])
+                    local tag = ex and (UI:Hex(tcol) .. T(ex[1]) .. "|r  ") or ""
+                    table.insert(rows, { e = e, sub = tag .. (e.why or "") .. (f and (" · " .. f) or "") })
                 end
                 nDest = nDest + #rows
                 table.insert(cols, { key = ce.key, name = WK:CharName(ce.c, ce.key), color = { UI:ClassColor(ce.c.class) },
@@ -804,6 +1214,7 @@ UI:RegisterPage({
             c.bar:SetVertexColor(bc[1], bc[2], bc[3], 1)
             c.name:SetText(col.name); c.name:SetTextColor(col.color[1], col.color[2], col.color[3])
             c.badge:SetShown(col.hv and true or false)
+            c.badge2:SetShown(col.key == cfg.main and not col.hv)
             c.right:SetText(col.right or "")
             local open = self.stashOpen[col.key]
             local shown = open and #col.rows or math.min(#col.rows, MAXR)
