@@ -17,7 +17,8 @@ local function itemCount(id)
     local f = (_G.C_Item and _G.C_Item.GetItemCount) or _G.GetItemCount
     return (f and id and f(id)) or 0
 end
-local DEFAULTS = { space = true, low = 3, restock = true, wear = true, autoOpen = false, openMode = "list" }
+local DEFAULTS = { space = true, low = 3, restock = true, wear = true, autoOpen = false, openMode = "list",
+    barBg = true, barSeps = true }
 
 function M:Config()
     local g = WK.DB.global
@@ -26,6 +27,11 @@ function M:Config()
     for k, v in pairs(DEFAULTS) do if c[k] == nil then c[k] = v end end
     c.rs = c.rs or {}
     c.dismissed = c.dismissed or {}
+    -- sens des listes déroulées de la barre (kit, buffs) : un seul réglage, repris de l'ancien réglage du kit
+    if c.dir == nil then
+        local camp = g.qol and g.qol.camp
+        c.dir = (type(camp) == "table" and camp.kitDir == "up") and "up" or "down"
+    end
     return c
 end
 -- quantités de réassort du perso connecté

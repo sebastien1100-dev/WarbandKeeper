@@ -2,7 +2,7 @@ local _, WK = ...
 
 -- Buffs à ne pas oublier (maquette B) : buffs de classe, de race et pistages de métier que le perso connecté
 -- devrait avoir selon le lieu (monde ouvert, donjon, raid). Liste toute prête par classe (`LIST`), cases par lieu
--- modifiables (réglages `QoL:Config().general.selfBuffs` = { bar, dir, rules = { ["CLASSE:clé"] = "wdr" } }).
+-- modifiables (réglages `QoL:Config().general.selfBuffs` = { bar, rules = { ["CLASSE:clé"] = "wdr" } }).
 -- Seulement les sorts connus du perso. Affichage : case « buffs » de la barre « Sacs, marchand et maître »
 -- (UI/BagHelp.lua) et liste déroulée de UI/SelfBuffs.lua (boutons protégés, hors combat).
 -- Entrée : { key, label, ids (le 1er connu est lancé, n'importe lequel compte), def = lieux par défaut,
@@ -62,7 +62,6 @@ function M.Config()
     local c = g.selfBuffs
     if type(c) ~= "table" then c = {}; g.selfBuffs = c end
     if c.bar == nil then c.bar = true end
-    if c.dir == nil then c.dir = "down" end
     if type(c.rules) ~= "table" then c.rules = {} end
     return c
 end

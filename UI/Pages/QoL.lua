@@ -161,6 +161,16 @@ function UI:OpenQoLAlerts()
         for _, t in ipairs(sec.tabs) do if t.label == "Alertes" and t.index then sec.showTab(t.index) end end
     end
 end
+-- Réglages de la barre « Sacs, marchand et maître » : QoL > Général > onglet Marchand
+function UI:OpenBagBarSettings()
+    UI:ShowPage("qol")
+    local d = UI.pages.qol
+    if d and d.ShowSection then d:ShowSection("general") end
+    local sec = d and d.sections and d.sections.general
+    if sec and sec.tabs and sec.showTab then
+        for _, t in ipairs(sec.tabs) do if t.label == "Marchand" and t.index then sec.showTab(t.index) end end
+    end
+end
 -- Section affichée (« classes » pour une classe), pour la barre latérale.
 function UI:QoLCurrentSection()
     local s = WK.DB.global.settings.ui.qolSection or "general"
@@ -512,15 +522,65 @@ UI:RegisterPage({
         do
             local bcfg = WK.modules.BagHelp:Config()
             local function bref() if UI.RefreshBagSpace then UI:RefreshBagSpace() end end
-            local bar = card("Barre sacs, marchand et maître", 40 + 4 * 46 + 8, "à l'écran, se place en mode édition")
-            UI:SettingRow(bar, -40, "Afficher la barre", "Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé.",
+            local bar = card("Barre sacs, marchand et maître", 40 + 11 * 46 + 3 * 22 + 8,
+                "tous ses réglages ici ; position en mode édition")
+            local hud = function() return UI:HUDEntry("bagSpace") end
+            local function happly() if UI.HUDApply then UI:HUDApply("bagSpace") end; bref() end
+            local campCfg0 = WK.modules.Camp:Config()
+            local SB = WK.modules.SelfBuffs
+            local function lists()
+                bref()
+                if UI.RefreshCampKit then UI:RefreshCampKit() end
+                if UI.RefreshSelfBuffs then UI:RefreshSelfBuffs() end
+            end
+            local yy = -40
+            local function head(txt)
+                local h = UI:Text(bar, 10, C.dim)
+                h:SetPoint("TOPLEFT", 16, yy - 4)
+                h:SetText(string.upper(T(txt)))
+                yy = yy - 22
+            end
+            local function row(name, desc, ctrl, w)
+                UI:SettingRow(bar, yy, name, desc, ctrl, w)
+                yy = yy - 46
+            end
+            head("Apparence")
+            row("Taille", "Taille de toute la barre (la même que le curseur du mode édition).",
+                UI:Slider(bar, 220, 0.5, 2, 0.05, function() return hud().scale or 1 end,
+                    function(v) hud().scale = v; happly() end, "%.2fx"), 240)
+            row("Opacité", "Transparence de toute la barre.",
+                UI:Slider(bar, 220, 0.3, 1, 0.05, function() return hud().alpha or 1 end,
+                    function(v) hud().alpha = v; happly() end, "%.2f"), 240)
+            row("Fond", "Sans fond : seulement les icônes et les chiffres, cernés de noir pour rester lisibles.",
+                toggle(bar, function() return bcfg.barBg ~= false end, function(v) bcfg.barBg = v; bref() end), 80)
+            row("Traits entre les cases", "Un trait fin sépare deux cases.",
+                toggle(bar, function() return bcfg.barSeps ~= false end, function(v) bcfg.barSeps = v; bref() end), 80)
+            head("Cases")
+            row("Afficher la barre", "Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe"
+                    .. " les plus proches (clic : guider). Rouge quand c'est pressé.",
                 toggle(bar, function() return bcfg.space end, function(v) bcfg.space = v; bref() end), 80)
-            UI:SettingRow(bar, -86, "Seuil de cases libres", "En dessous, le sac passe en orange et le marchand en rouge.",
+            row("Seuil de cases libres", "En dessous, le sac passe en orange et le marchand en rouge.",
                 UI:Slider(bar, 220, 0, 12, 1, function() return bcfg.low or 3 end, function(v) bcfg.low = v; bref() end, "%d"), 240)
-            UI:SettingRow(bar, -132, "Case du marchand", "Clic droit : le forgeron le plus proche, pour réparer.",
+            row("Case du marchand", "Clic droit : le forgeron le plus proche, pour réparer.",
                 toggle(bar, function() return bcfg.vendorTile ~= false end, function(v) bcfg.vendorTile = v; bref() end), 80)
-            UI:SettingRow(bar, -178, "Case du maître de classe", "Le nombre de sorts à apprendre, sinon la distance.",
+            row("Case du maître de classe", "Le nombre de sorts à apprendre, sinon la distance.",
                 toggle(bar, function() return bcfg.trainerTile ~= false end, function(v) bcfg.trainerTile = v; bref() end), 80)
+            row("Case du kit de camp", "Temps restant des avantages du camp ; un clic déroule le kit (hors combat)."
+                    .. " Coupée : colonne près de la flamme. Contenu du kit : QoL > Feu de camp.",
+                toggle(bar, function() return campCfg0.kitInBar ~= false end, function(v)
+                    campCfg0.kitInBar = v
+                    if WK.modules.Camp.Update then pcall(WK.modules.Camp.Update, WK.modules.Camp) end
+                    if UI.RefreshCampChips then UI:RefreshCampChips() end
+                    lists()
+                end), 80)
+            row("Case des buffs", "Buffs absents selon le lieu ; un clic déroule la liste, un clic sur une ligne lance"
+                    .. " le sort (hors combat). Buffs et lieux : QoL > Classes > Général.",
+                toggle(bar, function() return SB:Config().bar end, function(v) SB:Config().bar = v; lists() end), 80)
+            head("Listes déroulées")
+            local dseg = UI:Segmented(bar, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
+                function(v) bcfg.dir = v; lists() end, 24)
+            row("Sens des listes", "Le kit de camp et les buffs s'ouvrent sous la barre ou au-dessus.", dseg, 200)
+            dseg:Select(bcfg.dir == "up" and "up" or "down")
         end
 
         -- État des persos : seuils puis une ligne par perso
@@ -1853,7 +1913,7 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp", 40 + 5 * 46 + 8, "dans la barre des sacs, ou colonne près de la flamme")
+            local kc = card("Kit de camp", 40 + 4 * 46 + 8, "dans la barre des sacs, ou colonne près de la flamme")
             UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
@@ -1862,23 +1922,14 @@ UI:RegisterPage({
                 "Avantages restants, recharge des objets de camp, « Bien nourri »"
                     .. " (seulement hors de la barre des sacs).",
                 toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
-            -- kit dans la barre « Sacs, marchand et maître » : une case « kit » qui déroule la liste
-            local function kupdate()
-                cupdate(); UI:RefreshCampKit()
-                if UI.RefreshBagSpace then UI:RefreshBagSpace() end
-            end
+            -- case « kit » de la barre des sacs et sens du déroulé : carte de la barre (QoL > Général > Marchand)
+            local kgo = UI:Button(kc, T("Réglages de la barre"), nil, 24, "secondary")
+            kgo:SetWidth(kgo.label:GetStringWidth() + 28)
+            kgo:SetScript("OnClick", function() UI:OpenBagBarSettings() end)
             UI:SettingRow(kc, -178, "Dans la barre des sacs",
-                "Une case « kit » dans la barre « Sacs, marchand et maître » (temps restant des avantages du camp) ;"
-                    .. " un clic déroule le kit avec le nom et l'état de chaque objet (hors combat)."
-                    .. " Il faut que la barre soit affichée.",
-                toggle(kc, function() return campCfg.kitInBar ~= false end,
-                    function(v) campCfg.kitInBar = v; kupdate() end), 80)
-            local dirSeg = UI:Segmented(kc, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
-                function(v) campCfg.kitDir = v; kupdate() end, 24)
-            UI:SettingRow(kc, -224, "Déroulé du kit",
-                "Sens dans lequel la liste du kit s'ouvre depuis la barre des sacs.",
-                dirSeg, 200)
-            dirSeg:Select(campCfg.kitDir == "up" and "up" or "down")
+                "La case « kit » et le sens du déroulé se règlent avec la barre"
+                    .. " « Sacs, marchand et maître ».",
+                kgo, 200)
 
             -- comment ça marche, et effets rencontrés
             -- 4 étapes en tuiles (gros numéro à la couleur d'accent, titre, texte), puis les effets rencontrés
@@ -2293,26 +2344,23 @@ UI:RegisterPage({
             -- buffs à ne pas oublier (Modules/SelfBuffs.lua) : case de la barre des sacs, sens, et lieux par buff
             -- (entrées du perso connecté : classe, race, pistages de métier)
             local SB = WK.modules.SelfBuffs
-            local sbc = SB:Config()
             local ents = SB:Entries()
             local RH = 32
-            local bc = card("Buffs à ne pas oublier", 44 + 2 * 48 + 26 + #ents * RH + 10,
+            local bc = card("Buffs à ne pas oublier", 44 + 48 + 26 + #ents * RH + 10,
                 "case « buffs » de la barre des sacs : ce qui manque selon le lieu")
             local function bupdate()
                 if UI.RefreshBagSpace then UI:RefreshBagSpace() end
                 if UI.RefreshSelfBuffs then UI:RefreshSelfBuffs() end
             end
+            local bgo = UI:Button(bc, T("Réglages de la barre"), nil, 24, "secondary")
+            bgo:SetWidth(bgo.label:GetStringWidth() + 28)
+            bgo:SetScript("OnClick", function() UI:OpenBagBarSettings() end)
             UI:SettingRow(bc, -44, "Case dans la barre des sacs",
-                "Case « buffs » dans la barre « Sacs, marchand et maître » : nombre de buffs absents ;"
-                    .. " un clic déroule la liste, un clic sur une ligne lance le sort (hors combat).",
-                toggle(bc, function() return sbc.bar end, function(v) sbc.bar = v; bupdate() end), 80)
-            local bseg = UI:Segmented(bc, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
-                function(v) sbc.dir = v; bupdate() end, 24)
-            UI:SettingRow(bc, -92, "Déroulé de la liste",
-                "Sens dans lequel la liste des buffs s'ouvre depuis la barre des sacs.", bseg, 200)
-            bseg:Select(sbc.dir == "up" and "up" or "down")
+                "La case « buffs » et le sens du déroulé se règlent avec la barre"
+                    .. " « Sacs, marchand et maître ».",
+                bgo, 200)
             local PL = { { "w", "Monde" }, { "d", "Donjon" }, { "r", "Raid" } }
-            local hy = -44 - 2 * 48 - 6
+            local hy = -44 - 48 - 6
             for j, pl in ipairs(PL) do
                 local h = UI:Text(bc, 10, C.muted)
                 h:SetPoint("TOPRIGHT", bc, "TOPRIGHT", -16 - (3 - j) * 56, hy)

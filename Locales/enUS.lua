@@ -3953,8 +3953,6 @@ WK.Locales.enUS.text = {
     ["Case du maître de classe"] = "Class trainer slot",
     ["Le nombre de sorts à apprendre, sinon la distance."] = "The number of spells to learn, otherwise the distance.",
     ["absente de la base · position donnée par le jeu"] = "not in the database · position given by the game",
-    ["à l'écran, se place en mode édition"] = "on screen, placed in edit mode",
-    ["Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé."] = "Free slots (click: throw away the cheapest grey item), nearest vendor and class trainer (click: guide). Red when urgent.",
     ["Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau."] = "In \"To do\": turning in your finished quests would get you a level.",
     ["Bilan du donjon :"] = "Dungeon summary:",
     ["Quêtes de %s : tout est pris."] = "%s quests: all picked up.",
@@ -4290,14 +4288,10 @@ WK.Locales.enUS.text = {
         "Click: guide to the prerequisite's giver",
     ["Dans la barre des sacs"] =
         "In the bags bar",
-    ["Déroulé du kit"] =
-        "Kit unfolds",
     ["Vers le bas"] =
         "Downward",
     ["Vers le haut"] =
         "Upward",
-    ["Sens dans lequel la liste du kit s'ouvre depuis la barre des sacs."] =
-        "Direction in which the kit list opens from the bags bar.",
     ["Une case « kit » dans la barre « Sacs, marchand et maître » (temps restant des avantages du camp) ; un clic déroule le kit avec le nom et l'état de chaque objet (hors combat). Il faut que la barre soit affichée."] =
         "A kit tile in the bags, vendor and trainer bar (camp benefits time left); a click unfolds the kit with each item's name and state (out of combat). The bar must be shown.",
     ["Avantages restants, recharge des objets de camp, « Bien nourri » (seulement hors de la barre des sacs)."] =
@@ -4330,10 +4324,6 @@ WK.Locales.enUS.text = {
         "Tile in the bags bar",
     ["Case « buffs » dans la barre « Sacs, marchand et maître » : nombre de buffs absents ; un clic déroule la liste, un clic sur une ligne lance le sort (hors combat)."] =
         "Buffs tile in the bags, vendor and trainer bar: number of missing buffs; a click unfolds the list, a click on a line casts the spell (out of combat).",
-    ["Déroulé de la liste"] =
-        "List unfolds",
-    ["Sens dans lequel la liste des buffs s'ouvre depuis la barre des sacs."] =
-        "Direction in which the buffs list opens from the bags bar.",
     ["case « buffs » de la barre des sacs : ce qui manque selon le lieu"] =
         "buffs tile of the bags bar: what is missing for the place",
     ["Donjon"] =
@@ -4368,4 +4358,38 @@ WK.Locales.enUS.text = {
         "Find Minerals",
     ["Découverte d'herbes"] =
         "Find Herbs",
+    ["Réglages de la barre"] =
+        "Bar settings",
+    ["Cases"] =
+        "Tiles",
+    ["Listes déroulées"] =
+        "Drop-down lists",
+    ["Taille de toute la barre (la même que le curseur du mode édition)."] =
+        "Size of the whole bar (same as the edit mode slider).",
+    ["Transparence de toute la barre."] =
+        "Transparency of the whole bar.",
+    ["Sans fond : seulement les icônes et les chiffres, cernés de noir pour rester lisibles."] =
+        "Without background: only icons and numbers, outlined in black to stay readable.",
+    ["Traits entre les cases"] =
+        "Lines between tiles",
+    ["Un trait fin sépare deux cases."] =
+        "A thin line separates two tiles.",
+    ["Case du kit de camp"] =
+        "Camp kit tile",
+    ["Temps restant des avantages du camp ; un clic déroule le kit (hors combat). Coupée : colonne près de la flamme. Contenu du kit : QoL > Feu de camp."] =
+        "Camp benefits time left; a click unfolds the kit (out of combat). Off: column by the flame. Kit contents: QoL > Campfire.",
+    ["Case des buffs"] =
+        "Buffs tile",
+    ["Buffs absents selon le lieu ; un clic déroule la liste, un clic sur une ligne lance le sort (hors combat). Buffs et lieux : QoL > Classes > Général."] =
+        "Missing buffs for the place; a click unfolds the list, a click on a line casts the spell (out of combat). Buffs and places: QoL > Classes > General.",
+    ["Sens des listes"] =
+        "Lists direction",
+    ["Le kit de camp et les buffs s'ouvrent sous la barre ou au-dessus."] =
+        "The camp kit and buffs open below or above the bar.",
+    ["tous ses réglages ici ; position en mode édition"] =
+        "all its settings here; position in edit mode",
+    ["La case « kit » et le sens du déroulé se règlent avec la barre « Sacs, marchand et maître »."] =
+        "The kit tile and the unfold direction are set with the bags, vendor and trainer bar.",
+    ["La case « buffs » et le sens du déroulé se règlent avec la barre « Sacs, marchand et maître »."] =
+        "The buffs tile and the unfold direction are set with the bags, vendor and trainer bar.",
 }

@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.64 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre « Sacs, marchand et maître » : taille, opacité, fond (sans fond, chiffres cernés de noir) et traits entre les cases réglables.
+
+### Modifications
+- Tous les réglages de la barre « Sacs, marchand et maître » sont réunis dans une seule carte (QoL > Général > Marchand) : apparence, cases (sac, marchand, maître, kit de camp, buffs) et un seul sens pour les listes déroulées du kit et des buffs. Les cartes du kit de camp et des buffs y renvoient par un bouton.
+
 ## v1.128.63 — 22/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

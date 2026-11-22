@@ -4,7 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 -- Buffs à ne pas oublier (Modules/SelfBuffs.lua), maquette B : liste déroulée sous ou au-dessus de la case
--- « buffs » de la barre « Sacs, marchand et maître » (réglage dir) ; une ligne par buff demandé ici : bouton
+-- « buffs » de la barre « Sacs, marchand et maître » (réglage BagHelp dir) ; une ligne par buff demandé ici : bouton
 -- protégé (type=spell, clic = lancer le sort), nom, état (absent, temps restant, ok). Boutons jamais changés en
 -- combat (pending rendu à PLAYER_REGEN_ENABLED), liste fermée à l'entrée en combat ; placée sur _G.UIParent d'après
 -- le rectangle de la case, jamais ancrée à la barre.
@@ -124,7 +124,8 @@ function UI.RefreshSelfBuffs()
     if l then
         local x = (l + w / 2) * sc - LW / 2
         list:ClearAllPoints()
-        if cfg.dir ~= "up" then list:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", x, b * sc - 4)
+        local down = WK.modules.BagHelp:Config().dir ~= "up"
+        if down then list:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", x, b * sc - 4)
         else list:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", x, (b + h) * sc + 4) end
     end
     list:Show()

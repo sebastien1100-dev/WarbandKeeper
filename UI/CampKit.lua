@@ -226,7 +226,7 @@ function UI:RefreshCampKit()
         local sc = tile:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
         local l, b, w, h = tile:GetRect()
         if l then
-            local down = cfg.kitDir ~= "up"
+            local down = WK.modules.BagHelp:Config().dir ~= "up"
             local x = (l + w / 2) * sc - LW / 2
             kit:ClearAllPoints()
             if down then kit:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", x, b * sc - 4)

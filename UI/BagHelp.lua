@@ -204,15 +204,26 @@ local function buildSpace()
         for i, t in ipairs(tiles) do
             t:ClearAllPoints(); t:SetPoint("LEFT", (i - 1) * (TILE + 1), 0)
         end
+        local cfg = BH():Config()
+        local bg, seps = cfg.barBg ~= false, cfg.barSeps ~= false
         for i, s in ipairs(self.seps) do
             s:ClearAllPoints()
-            if tiles[i + 1] then
+            if tiles[i + 1] and seps then
                 s:SetPoint("TOPLEFT", tiles[i], "TOPRIGHT", 0, -9); s:SetPoint("BOTTOMLEFT", tiles[i], "BOTTOMRIGHT", 0, 9)
                 s:Show()
             else s:Hide() end
         end
         self:SetWidth(#tiles * TILE + (#tiles - 1))
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
+        -- sans fond (réglage barBg) : chiffres cernés de noir pour rester lisibles sur le jeu
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bg and 0.92 or 0)
+        if self.outlined ~= nil and self.outlined ~= not bg or (self.outlined == nil and not bg) then
+            self.outlined = not bg
+            for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do
+                t.n:SetFont(UI.FONT, math.floor(11 * (UI.textScale or 1) + 0.5), bg and "" or "OUTLINE")
+                t.n:SetShadowOffset(bg and 0 or 1, bg and 0 or -1)
+                t.n:SetShadowColor(0, 0, 0, bg and 0 or 1)
+            end
+        end
     end
     -- exemple du mode édition
     function f:Paint(free)

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.64", date = "22/11/2026",
+        added = {
+            "Barre « Sacs, marchand et maître » : taille, opacité, fond (sans fond, chiffres cernés de noir) et traits entre les cases réglables.",
+        },
+        changed = {
+            "Tous les réglages de la barre « Sacs, marchand et maître » sont réunis dans une seule carte (QoL > Général > Marchand) : apparence, cases (sac, marchand, maître, kit de camp, buffs) et un seul sens pour les listes déroulées du kit et des buffs. Les cartes du kit de camp et des buffs y renvoient par un bouton.",
+        },
+    },
+    {
         version = "1.128.63", date = "22/11/2026", restart = true,
         added = {
             "Buffs à ne pas oublier : une case « buffs » dans la barre « Sacs, marchand et maître » compte les buffs de ta classe, de ta race et les pistages de métier qui manquent là où tu es (monde, donjon, raid) ; un clic déroule la liste (absent, temps restant, ok) et un clic sur une ligne lance le sort, hors combat. Par exemple : une aura et Détection des morts-vivants en donjon pour le paladin, Découverte de gisements en monde ouvert.",
