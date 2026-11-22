@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.189", date = "22/11/2026",
+        fixed = {
+            "Guidage en plusieurs étapes : notre épingle de la carte du monde et le repère de la minicarte se posent aussi sur l'étape en cours (entrée du tram, maître de vol) ; avant, la carte ne montrait que le losange du jeu et la minicarte rien du tout.",
+            "Devant la station du tram, l'épingle à l'écran visait déjà la station d'arrivée (à plusieurs kilomètres) ; elle reste sur l'entrée jusqu'à ce que tu montes.",
+        },
+    },
+    {
         version = "1.128.188", date = "22/11/2026",
         fixed = {
             "Guidage par le tram : en passant le portail, le trajet restait sur la marche et plus rien n'était indiqué ; il passe à l'étape « Tram des profondeurs » Hurlevent » (flèche et épingle), et l'épingle attend à la station d'arrivée.",

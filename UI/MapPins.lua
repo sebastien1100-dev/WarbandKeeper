@@ -135,6 +135,10 @@ function UI:RefreshGuidePinLabel()
     local t = G.target
     -- épingle pas posée sur cette carte (continent, zone parente) : le losange du jeu reste visible
     if not (t and targetPin and targetPin:IsShown()) then return end
+    -- l'étape du trajet a changé (station atteinte, vol pris) : l'épingle est replacée
+    local N = WK.modules.Nav
+    local st = N and N.StepTarget and N:StepTarget() or false
+    if st ~= targetPin.aim and G.Redraw then targetPin.aim = st; G:Redraw() return end
     if G:Config().mapPin then gamePinAlpha(0) end -- le jeu peut réafficher son losange en rafraîchissant la carte
     local d = UI.GuideDistance and UI:GuideDistance(t)
     -- trois lignes : nom, ce que c'est (« Maître des gryphons »), distance
@@ -168,10 +172,16 @@ local function drawTarget(cv, mapID, w, h)
     -- sur une autre carte (continent, zone parente) : notre épingle y est posée aussi (position du monde
     -- projetée sur la carte affichée) et le losange du jeu est masqué ; avant, il restait visible à côté
     if not (t and G:Config().mapPin) then gamePinAlpha(1); if targetPin then targetPin:Hide() end return end
-    local px, py = t.x, t.y
-    if t.map ~= mapID then
+    -- trajet en plusieurs étapes : l'épingle sur l'étape en cours (station du tram, maître de vol), comme le
+    -- repère du jeu et l'épingle à l'écran ; à la dernière étape, sur le lieu guidé
+    local N = WK.modules.Nav
+    local st = N and N.StepTarget and N:StepTarget()
+    local aim = st or t
+    local px, py = aim.x, aim.y
+    if aim.map ~= mapID then
         px, py = nil, nil
-        local cont, wx, wy = G.ToWorld(t.map, t.x, t.y)
+        local cont, wx, wy = aim.cont, aim.wx, aim.wy
+        if not cont then cont, wx, wy = G.ToWorld(aim.map, aim.x, aim.y) end
         if cont and UI.WorldToMap then px, py = UI.WorldToMap(cont, wx, wy, mapID) end
         if not (px and py and px >= 0 and px <= 1 and py >= 0 and py <= 1) then
             gamePinAlpha(1); if targetPin then targetPin:Hide() end return
@@ -207,6 +217,7 @@ local function drawTarget(cv, mapID, w, h)
         targetPin:SetScript("OnMouseUp", function(_, b) if b == "RightButton" then G:Stop() end end)
     end
     targetPin:SetParent(cv)
+    targetPin.aim = st or false
     local size = 24 * ((w / 1000) * UI.MapIconScale()) * UI.MapIconSize()
     targetPin:SetSize(size, size)
     targetPin.shadow:SetSize(size * 1.06, size * 1.06)

@@ -876,7 +876,12 @@ function M:StepTarget()
         if n < 1 then return nil end
         wx, wy = leg.pts[n * 2 - 1], leg.pts[n * 2]
     elseif leg.kind == "tram" then
-        wx, wy = leg.bx, leg.by -- étape tram en cours = on est monté : la station d'arrivée
+        -- devant l'entrée (pas encore monté) : l'entrée ; dans le tram ou sorti ailleurs : la station d'arrivée
+        local BL = WK.modules.BoatLines
+        local c, px, py = playerWorld()
+        local inTram = BL and BL.InTram and BL:InTram()
+        if not inTram and c == r.cont and dist(px, py, leg.ax, leg.ay) < 200 then wx, wy = leg.ax, leg.ay
+        else wx, wy = leg.bx, leg.by end
     elseif leg.kind == "fly" then
         -- au maître de vol : lui ; en vol : le relais d'arrivée
         if _G.UnitOnTaxi and _G.UnitOnTaxi("player") then wx, wy = leg.bx, leg.by else wx, wy = leg.ax, leg.ay end

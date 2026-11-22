@@ -386,14 +386,34 @@ local miniLines
 -- l'étape avec sa lettre (! prendre, ? rendre, $ acheter), posée au bord quand il est plus loin que la minicarte
 local miniPin
 local PIN_KIND = { pick = { "gold", "!" }, turn = { "positive", "?" }, buy = { "info", "$" }, trainer = { "info", "" } }
+-- point visé : l'étape en cours du trajet (station du tram, maître de vol) sinon le lieu guidé ; position du monde
+-- tirée de la carte quand la cible n'en a pas (avant, le repère n'apparaissait que pour quelques genres de cibles)
+local aimCache = {}
+local function aimPoint(G)
+    local t = G and G.target
+    if not t then return nil end
+    local Nv = WK.modules.Nav
+    local st = Nv and Nv.StepTarget and Nv:StepTarget()
+    if st then return st, t end
+    if t.cont and t.wx then return t, t end
+    if aimCache.t ~= t then
+        aimCache.t = t
+        local c, wx, wy = G.ToWorld(t.map, t.x, t.y)
+        aimCache.p = c and { cont = c, wx = wx, wy = wy } or false
+    end
+    return aimCache.p or nil, t
+end
+local miniT = {}
 local function updateMiniPin()
     local G = WK.modules.Guide
-    local t = G and G.target
+    local pt, tg = aimPoint(G)
     local p = G and G:PlayerPos()
-    if not (t and t.cont and t.wx and p and p.cont == t.cont and Minimap:IsVisible()) then
+    if not (pt and pt.cont and pt.wx and p and p.cont == pt.cont and Minimap:IsVisible()) then
         if miniPin then miniPin:Hide() end
         return
     end
+    local t = miniT
+    t.kind, t.qid, t.wx, t.wy = tg.kind, tg.qid, pt.wx, pt.wy
     if not miniPin then
         miniPin = CreateFrame("Frame", nil, holder)
         miniPin:SetSize(16, 16)
