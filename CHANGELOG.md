@@ -73,6 +73,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.128 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre inventaire : clic sur l'or en bas pour ouvrir Inventaire > Monnaies.
+
+### Modifications
+- Notre inventaire : filtres en icônes (maquette B) avec le nombre d'objets concernés ; le filtre choisi montre son nom, un filtre vide est grisé, nom au survol.
+- Notre inventaire : les cases vides prennent le fond des encadrés (comme la fiche).
+
 ## v1.128.127 — 22/11/2026
 
 _Un /reload suffit._

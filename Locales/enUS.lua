@@ -4611,4 +4611,5 @@ WK.Locales.enUS.text = {
     ["À rendre contre de la réputation et des récompenses de raid."] = "Turn in for reputation and raid rewards.",
     ["Foire de Sombrelune : à échanger contre des prix quand elle est ouverte."] = "Darkmoon Faire: trade for prizes while it is open.",
     ["Onglet Monnaies du jeu."] = "The game's Currency tab.",
+    ["Voir les monnaies du compte"] = "See the account's currencies",
 }

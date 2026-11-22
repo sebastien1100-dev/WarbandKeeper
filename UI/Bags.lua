@@ -152,7 +152,7 @@ local function newButton(bag, slot)
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
     b:SetSize(SLOT, SLOT)
-    -- case à notre style : carré sombre plat à fin liseré (le cadre brillant du jeu est masqué)
+    -- case à notre style : carré plat au fond des encadrés, fin liseré (le cadre brillant du jeu est masqué)
     b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
     b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
     -- pastille de l'addon (en haut à gauche : le cadenas est en haut à droite, l'étoile BiS en bas à gauche)
@@ -211,7 +211,7 @@ local function paintButton(b, e)
     if sb and sb.SetAlpha then sb:SetAlpha(0) end
     if b.wkEdge then
         b.wkEdge:SetColor(C.border[1], C.border[2], C.border[3], e and 0.9 or 0.7)
-        b.wkFill:SetColor(C.bg[1] * 0.7, C.bg[2] * 0.7, C.bg[3] * 0.7, 0.95)
+        b.wkFill:SetColor(C.surface[1], C.surface[2], C.surface[3], 1) -- fond des encadrés (comme la fiche)
     end
     -- reflets du jeu (objet neuf, boutique, emplacement étendu) : notre pastille NEUF les remplace
     for _, k in ipairs({ "NewItemTexture", "BattlepayItemTexture", "ExtendedSlot", "ItemContextOverlay" }) do
@@ -268,10 +268,19 @@ local function readBags()
     return list, free, total
 end
 
-local function chip(parent, key, label)
-    local b = UI:Button(parent, label, nil, 22, "ghost")
-    b.key = key
+-- filtre (maquette B) : icône + nombre d'objets concernés ; le filtre choisi montre aussi son nom
+local function chip(parent, key, label, icon)
+    local b = UI:Button(parent, "", nil, 24, "ghost", icon)
+    b.key, b.name = key, label
+    if key == "up" and b.icon then b.icon:SetRotation(math.pi / 2) end
     b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; B.Refresh() end)
+    b:HookScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T(s.name), 1, 1, 1)
+        _G.GameTooltip:AddLine(string.format(T("%d objet(s)"), s.count or 0), 0.8, 0.8, 0.8)
+        _G.GameTooltip:Show()
+    end)
+    b:HookScript("OnLeave", function() _G.GameTooltip:Hide() end)
     return b
 end
 
@@ -305,9 +314,9 @@ local function build()
     -- filtres
     f.chips = {}
     local prev
-    for _, c in ipairs({ { "all", "Tout" }, { "new", "Nouveaux" }, { "ship", "À ranger" }, { "sell", "À vendre" },
-        { "de", "Désenchanter" }, { "up", "Améliorations" } }) do
-        local b = chip(f, c[1], c[2])
+    for _, c in ipairs({ { "all", "Tout", "bag" }, { "new", "Nouveaux", "star" }, { "ship", "À ranger", "send" },
+        { "sell", "À vendre", "coin" }, { "de", "Désenchanter", "spark" }, { "up", "Améliorations", "arrow" } }) do
+        local b = chip(f, c[1], c[2], c[3])
         if prev then b:SetPoint("LEFT", prev, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", PAD - 4, -38) end
         f.chips[#f.chips + 1] = b
         prev = b
@@ -369,6 +378,17 @@ local function build()
     f.coin = UI:Icon(f, "coin", 16, C.gold)
     f.coin:SetPoint("LEFT", f.foot, "RIGHT", 18, 0)
     f.money = UI:Text(f, 15); f.money:SetPoint("LEFT", f.coin, "RIGHT", 6, 0)
+    -- clic sur l'or : Inventaire > Monnaies
+    f.moneyBtn = _G.CreateFrame("Button", nil, f)
+    f.moneyBtn:SetPoint("TOPLEFT", f.coin, "TOPLEFT", -4, 6)
+    f.moneyBtn:SetPoint("BOTTOMRIGHT", f.money, "BOTTOMRIGHT", 4, -6)
+    f.moneyBtn:SetScript("OnClick", function() B.OpenMoney() end)
+    f.moneyBtn:SetScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Voir les monnaies du compte"), 1, 1, 1)
+        _G.GameTooltip:Show()
+    end)
+    f.moneyBtn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
     f.sell = UI:Button(f, "Vendre la camelote", nil, 22, "secondary")
     f.sell:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9)
     f.sell:SetScript("OnClick", function() B.SellJunk() end)
@@ -417,7 +437,25 @@ function B.Refresh(light, live)
     local list, free, total = readBags()
     win.list = list
     win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
-    for _, b in ipairs(win.chips) do b:SetStyle(b.key == filter and "primary" or "ghost") end
+    local counts = { all = 0, new = 0, ship = 0, sell = 0, de = 0, up = 0 }
+    for _, e in ipairs(list) do
+        if not e.empty then
+            local i = e.info
+            counts.all = counts.all + 1
+            if i.cat == "new" then counts.new = counts.new + 1 end
+            if i.ship then counts.ship = counts.ship + 1 end
+            if i.cat == "junk" then counts.sell = counts.sell + 1 end
+            if i.de then counts.de = counts.de + 1 end
+            if i.upgrade then counts.up = counts.up + 1 end
+        end
+    end
+    for _, b in ipairs(win.chips) do
+        local on, n = b.key == filter, counts[b.key] or 0
+        b.count = n
+        b:SetLabel(on and (T(b.name) .. "  ·  " .. n) or tostring(n))
+        b:SetStyle(on and "primary" or "ghost")
+        b:SetAlpha((on or n > 0) and 1 or 0.45)
+    end
     -- money / pied
     local money = _G.GetMoney and _G.GetMoney() or 0
     local ac = { UI:Accent() }
@@ -522,6 +560,15 @@ function B.Refresh(light, live)
 end
 
 function B.Layout() return cols, slotSize end -- pour les tests
+
+-- Inventaire > Monnaies dans la fenêtre principale
+function B.OpenMoney()
+    if not WK:PageOn("inventory") then return end
+    UI:Create():Show()
+    UI:ShowPage("inventory")
+    local ip = UI.pages.inventory
+    if ip then ip.char = "money"; WK.DB.global.settings.ui.invChar = "money"; ip:Refresh() end
+end
 
 function B.RefreshFiche()
     local fi = win and win.fiche

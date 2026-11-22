@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.128", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : filtres en icônes (maquette B) avec le nombre d'objets concernés ; le filtre choisi montre son nom, un filtre vide est grisé, nom au survol.",
+            "Notre inventaire : les cases vides prennent le fond des encadrés (comme la fiche).",
+        },
+        added = {
+            "Notre inventaire : clic sur l'or en bas pour ouvrir Inventaire > Monnaies.",
+        },
+    },
+    {
         version = "1.128.127", date = "22/11/2026",
         fixed = {
             "Inventaire > roue > Rangement : la liste « Perso qui vend à l'HV » était vide tant qu'on n'avait pas ouvert la vue Rangement.",
