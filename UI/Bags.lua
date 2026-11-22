@@ -270,8 +270,30 @@ end
 
 -- filtre (maquette B) : icône + nombre d'objets concernés ; le filtre choisi montre aussi son nom
 local function chip(parent, key, label, icon)
-    local b = UI:Button(parent, "", nil, 24, "ghost", icon)
+    local b = UI:Button(parent, "", nil, 26, "ghost", icon)
     b.key, b.name = key, label
+    -- pastille de la maquette : fond teinté de l'apparence + liseré ; pleine si choisie, grise si vide
+    b.edge = UI:Rounded(b, 13, 0, "BACKGROUND", 2)
+    b.fill = UI:Rounded(b, 12, 1, "BACKGROUND", 3)
+    local refresh = b.Refresh
+    b.Refresh = function(s)
+        refresh(s)
+        local r, g, bl = UI:Accent()
+        local on, empty = s.style == "primary", (s.count or 0) == 0 and s.style ~= "primary"
+        local bg = C.bg
+        local k = s.hover and 0.26 or 0.16
+        if on then
+            s.edge:SetColor(r, g, bl, 1); s.fill:SetColor(r, g, bl, 1)
+        elseif empty then
+            s.edge:SetColor(C.border[1], C.border[2], C.border[3], 1); s.fill:SetColor(bg[1], bg[2], bg[3], 1)
+        else
+            s.edge:SetColor(r, g, bl, 0.45)
+            s.fill:SetColor(r * k + bg[1] * (1 - k), g * k + bg[2] * (1 - k), bl * k + bg[3] * (1 - k), 1)
+        end
+        local fg = on and C.onAccent or empty and C.dim or { r, g, bl, 1 }
+        s.label:SetTextColor(fg[1], fg[2], fg[3], 1)
+        if s.icon then s.icon:SetVertexColor(fg[1], fg[2], fg[3], 1) end
+    end
     if key == "up" and b.icon then b.icon:SetRotation(math.pi / 2) end
     b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; B.Refresh() end)
     b:HookScript("OnEnter", function(s)
@@ -317,7 +339,7 @@ local function build()
     for _, c in ipairs({ { "all", "Tout", "bag" }, { "new", "Nouveaux", "star" }, { "ship", "À ranger", "send" },
         { "sell", "À vendre", "coin" }, { "de", "Désenchanter", "spark" }, { "up", "Améliorations", "arrow" } }) do
         local b = chip(f, c[1], c[2], c[3])
-        if prev then b:SetPoint("LEFT", prev, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", PAD - 4, -38) end
+        if prev then b:SetPoint("LEFT", prev, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", PAD - 4, -38) end
         f.chips[#f.chips + 1] = b
         prev = b
     end
@@ -454,7 +476,6 @@ function B.Refresh(light, live)
         b.count = n
         b:SetLabel(on and (T(b.name) .. "  ·  " .. n) or tostring(n))
         b:SetStyle(on and "primary" or "ghost")
-        b:SetAlpha((on or n > 0) and 1 or 0.45)
     end
     -- money / pied
     local money = _G.GetMoney and _G.GetMoney() or 0

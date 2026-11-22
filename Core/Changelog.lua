@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.129", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : les filtres ont le rendu de la maquette (pastilles teintées de l'apparence avec liseré, pleine pour le filtre choisi, grise quand il n'y a rien).",
+        },
+    },
+    {
         version = "1.128.128", date = "22/11/2026",
         changed = {
             "Notre inventaire : filtres en icônes (maquette B) avec le nombre d'objets concernés ; le filtre choisi montre son nom, un filtre vide est grisé, nom au survol.",
