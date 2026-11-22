@@ -12,15 +12,10 @@ _Prévu, pas encore commencé._
 - **Chat et confort** (basse) — Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis.
 - **Idées d'Utilities en attente** (basse) — Macros intelligentes, jeux de barres d'action, pistages de classe et de race, inspection du groupe.
 - **Infobulles, suite** (basse) — Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur.
-- **Mini-jeux en vol** (basse) — Quiz, mot du jour et jeu de visée pendant les vols.
-- **Mode daltonien** (basse) — Couleurs de sens (vert, rouge, ambre) remplacées par des teintes distinctes, avec des formes en plus.
-- **Raccourcis vers les pages** (basse) — Une touche pour ouvrir directement l'HV, le Rangement, les Donjons…
-- **Taille du texte** (basse) — Taille de police globale de la fenêtre, en plus de l'échelle.
 
 ### Carte et voyage
 - **« Prends le bateau »** (moyenne) — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
 - **Carte, suite** (basse) — Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
-- **Couches, suite** (basse) — La couche où tu es et les rares tués par couche, si le jeu la rend de nouveau lisible (depuis le 20/11, chaque créature a son propre numéro).
 - **Notes de carte partagées** (basse) — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - **Ping de groupe** (basse) — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
@@ -53,6 +48,14 @@ _Prévu, pas encore commencé._
 ### Guilde et partage
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.181 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Changer de couche retiré : plus de raccourci « Couche » dans le micro menu, d'étape sous l'heure ni de carte de réglages (ni d'aide aux autres joueurs).
+- Prochainement : idées retirées (Couches, suite ; Mini-jeux en vol ; Mode daltonien ; Raccourcis vers les pages ; Taille du texte).
 
 ## v1.128.180 — 22/11/2026
 

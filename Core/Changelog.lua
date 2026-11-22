@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.181", date = "22/11/2026", restart = true,
+        changed = {
+            "Changer de couche retiré : plus de raccourci « Couche » dans le micro menu, d'étape sous l'heure ni de carte de réglages (ni d'aide aux autres joueurs).",
+            "Prochainement : idées retirées (Couches, suite ; Mini-jeux en vol ; Mode daltonien ; Raccourcis vers les pages ; Taille du texte).",
+        },
+    },
+    {
         version = "1.128.180", date = "22/11/2026",
         added = {
             "Carte de la Warband : nouvelle fenêtre (bouton d'envoi en haut de la page Persos) qui résume tes persos (niveaux, métiers, or, niveau d'objet, repos) en texte prêt à copier pour Discord, ou posé dans le chat de guilde (Entrée pour envoyer).",
@@ -6844,20 +6851,15 @@ WK.Roadmap = {
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
-    { prio = 3, theme = "map", title = "Couches, suite", text = "La couche où tu es et les rares tués par couche, si le jeu la rend de nouveau lisible (depuis le 20/11, chaque créature a son propre numéro)." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
     { prio = 3, theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },
     { prio = 3, theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
-    { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },
     { prio = 3, theme = "guild", title = "Rares signalés à la guilde", text = "Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon." },
     { prio = 3, theme = "guild", title = "« Qui peut fabriquer… ? » en guilde", text = "La recherche de recette étendue aux membres de la guilde qui ont l'addon." },
-    { prio = 3, theme = "ui", title = "Taille du texte", text = "Taille de police globale de la fenêtre, en plus de l'échelle." },
-    { prio = 3, theme = "ui", title = "Mode daltonien", text = "Couleurs de sens (vert, rouge, ambre) remplacées par des teintes distinctes, avec des formes en plus." },
-    { prio = 3, theme = "ui", title = "Raccourcis vers les pages", text = "Une touche pour ouvrir directement l'HV, le Rangement, les Donjons…" },
 }
 
 
