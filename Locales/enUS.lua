@@ -4398,4 +4398,6 @@ WK.Locales.enUS.text = {
         "Red background and breathing outline on the buffs tile while one is missing (out of combat and outside cities).",
     ["DPS"] =
         "DPS",
+    ["Frise des boss"] =
+        "Boss timeline",
 }
