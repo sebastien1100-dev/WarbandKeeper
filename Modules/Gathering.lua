@@ -241,8 +241,8 @@ local function trackingActive()
     if C_Minimap and C_Minimap.GetNumTrackingTypes and C_Minimap.GetTrackingInfo then
         local okn, n = pcall(C_Minimap.GetNumTrackingTypes)
         for i = 1, (okn and n or 0) do
-            local ok, info = pcall(C_Minimap.GetTrackingInfo, i)
-            if ok and type(info) == "table" and info.active and (info.spellID == 2383 or info.spellID == 2580) then return true end
+            local sid, on = WK.modules.SelfBuffs.TrackingInfo(i)
+            if on and (sid == 2383 or sid == 2580) then return true end
         end
         return false
     end

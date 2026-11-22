@@ -159,15 +159,26 @@ local function auraLeft(e)
     end
     return nil
 end
+-- Une ligne du pistage de la minicarte : n° du sort, actif. Client moderne : une table { spellID, active } ;
+-- WoW Forever / Classic : plusieurs valeurs (nom, texture, actif, genre, sous-genre, n° du sort). Avant, seule
+-- la table était lue : le pistage restait « éteint » même allumé
+function M.TrackingInfo(i)
+    local ok, a, _, c, _, _, f = pcall(_G.C_Minimap.GetTrackingInfo, i)
+    if not ok then return nil end
+    if type(a) == "table" then return a.spellID, a.active and true or false end
+    return type(f) == "number" and f or nil, c and true or false
+end
 -- Pistage actif : n° du sort, false si aucun, nil si le jeu ne le dit pas (alors pas de rappel)
 local function activeTracking()
     if not (_G.C_Minimap and _G.C_Minimap.GetNumTrackingTypes and _G.C_Minimap.GetTrackingInfo) then return nil end
     local okn, n = pcall(_G.C_Minimap.GetNumTrackingTypes)
     if not okn or not n then return nil end
     for i = 1, n do
-        local ok, info = pcall(_G.C_Minimap.GetTrackingInfo, i)
-        if ok and type(info) == "table" and info.active and info.spellID then return info.spellID end
+        local sid, on = M.TrackingInfo(i)
+        if on and sid then return sid end
     end
+    -- ancien client : seulement la texture du pistage actif
+    if _G.GetTrackingTexture and _G.GetTrackingTexture() then return nil end
     return false
 end
 -- Forme du jeu (aura de paladin) : vrai si une est active, nil si le jeu n'en a pas

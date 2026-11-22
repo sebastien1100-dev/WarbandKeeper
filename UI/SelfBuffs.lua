@@ -149,3 +149,15 @@ WK:On("PLAYER_REGEN_DISABLED", function()
     if list and list:IsShown() and not inCombat() then list.open = false; list:Hide() end
 end)
 WK:On("PLAYER_REGEN_ENABLED", function() if pending then UI:RefreshSelfBuffs() end end)
+-- pistage changé ou effet posé : la case et la liste suivent tout de suite (sinon jusqu'à 2 s)
+local queued = false
+local function soon()
+    if queued then return end
+    queued = true
+    _G.C_Timer.After(0.3, function()
+        queued = false
+        if UI.RefreshBagSpace then UI:RefreshBagSpace() end
+    end)
+end
+WK:On("MINIMAP_UPDATE_TRACKING", soon)
+WK:OnUnit("UNIT_AURA", "player", soon)

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.71", date = "22/11/2026",
+        fixed = {
+            "Buffs à ne pas oublier : un pistage allumé (Découverte de gisements, d'herbes, Détection des morts-vivants…) restait marqué « éteint » et la case restait rouge : l'addon lisait mal la liste des pistages de WoW Forever. La case et la liste se mettent aussi à jour tout de suite après un sort ou un changement de pistage.",
+        },
+    },
+    {
         version = "1.128.70", date = "22/11/2026",
         fixed = {
             "Bouton « Buffer le suivant » du paladin en groupe : il juge la portée comme les lignes du panneau des bénédictions ; avant, quand le jeu ne donnait pas la portée du sort, il se limitait à 28 m et pouvait ne jamais proposer un joueur (le tank et ses Rois, par exemple) que la ligne du panneau bénissait.",

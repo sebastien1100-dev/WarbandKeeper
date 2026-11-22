@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.71 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Buffs à ne pas oublier : un pistage allumé (Découverte de gisements, d'herbes, Détection des morts-vivants…) restait marqué « éteint » et la case restait rouge : l'addon lisait mal la liste des pistages de WoW Forever. La case et la liste se mettent aussi à jour tout de suite après un sort ou un changement de pistage.
+
 ## v1.128.70 — 22/11/2026
 
 _Un /reload suffit._
