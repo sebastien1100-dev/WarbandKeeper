@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.114 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Hôtel des ventes > Parcourir : la colonne « vs 7 j » ne changeait qu'au clic sur un objet, avec des pourcentages énormes (+795 %) pour les sacs. Elle compare maintenant le prix du jour à la moyenne des 7 jours d'avant (« - » tant qu'il n'y a pas d'historique), et le prix d'un objet qui ne s'empile pas n'est plus divisé par le nombre d'enchères.
+
 ## v1.128.113 — 22/11/2026
 
 _Un /reload suffit._

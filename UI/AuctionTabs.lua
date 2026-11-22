@@ -110,12 +110,17 @@ local function readResults(id)
         end
     else
         local key = itemKeyOf(id)
+        local stack = select(8, WK.GetItemInfo(id)) or 1
         local okn, n = pcall(a.GetNumItemSearchResults, key)
         for i = 1, math.min(okn and n or 0, 40) do
             local ok, r = pcall(a.GetItemSearchResultInfo, key, i)
             if ok and r and r.buyoutAmount then
                 local q = r.quantity or 1
-                table.insert(rows, { unit = math.floor(r.buyoutAmount / math.max(1, q)), qty = q, buyout = r.buyoutAmount, mine = r.containsOwnerItem and true or false, auctionID = r.auctionID })
+                -- objet qui ne s'empile pas (sac, arme) : le prix est celui d'un exemplaire, la « quantité » compte des
+                -- enchères regroupées ; divisé, il donnait un prix bien trop bas (pourcentages faussés)
+                local unit = (stack <= 1) and r.buyoutAmount or math.floor(r.buyoutAmount / math.max(1, q))
+                table.insert(rows, { unit = unit, qty = q, buyout = r.buyoutAmount, mine = r.containsOwnerItem and true or false,
+                    auctionID = r.auctionID })
             end
         end
     end
@@ -2303,7 +2308,9 @@ local function build(host)
     function bw:RefreshResults()
         local list = {}
         for _, e in ipairs(browse.rows) do
-            local avg = S:Average(e.id, 7)
+            -- « vs 7 j » : prix du jour contre la moyenne des 7 jours d'avant (sans aujourd'hui : avant, une recherche
+            -- au clic changeait le relevé du jour et le pourcentage ne bougeait qu'au clic)
+            local avg = S:Average(e.id, 7, true)
             e.delta = (avg and avg > 0 and e.low) and (e.low - avg) / avg or nil
             e.name = e.name or WK.GetItemInfo(e.id)
             local q = self.minQ and select(3, WK.GetItemInfo(e.id))

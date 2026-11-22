@@ -109,13 +109,15 @@ function M:Age(itemID)
 end
 -- Moyenne des plus bas de chaque jour et nombre de jours relevés ; days = seulement les derniers jours
 -- (« moyenne 7 j »), sinon tout l'historique gardé (keepDays)
-function M:Average(itemID, days)
+-- beforeToday : jours d'avant seulement (comparaison « vs 7 j » : le relevé du jour ne se compare pas à lui-même)
+function M:Average(itemID, days, beforeToday)
     local e = self:Entry(itemID)
     if not e or not (e.c or e.h) then return nil, 0 end
     local sum, n = 0, 0
-    local from = days and (math.floor(time() / 86400) - days) or nil
+    local today = math.floor(time() / 86400)
+    local from = days and (today - days - (beforeToday and 1 or 0)) or nil
     for _, x in ipairs(hread(e)) do
-        if not from or x[1] > from then sum, n = sum + x[2], n + 1 end
+        if (not from or x[1] > from) and not (beforeToday and x[1] >= today) then sum, n = sum + x[2], n + 1 end
     end
     if n == 0 then return nil, 0 end
     return math.floor(sum / n + 0.5), n
