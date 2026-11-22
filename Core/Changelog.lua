@@ -10,7 +10,7 @@ WK.Changelog = {
     {
         version = "1.128.119", date = "22/11/2026",
         fixed = {
-            "Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…) ; ceux qui restent sont centrés exprès ou n'en ont pas besoin.",
+            "Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…).",
         },
     },
     {

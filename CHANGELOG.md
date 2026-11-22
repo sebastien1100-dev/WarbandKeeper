@@ -77,7 +77,7 @@ _Prévu, pas encore commencé._
 _Un /reload suffit._
 
 ### Corrections
-- Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…) ; ceux qui restent sont centrés exprès ou n'en ont pas besoin.
+- Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…).
 
 ## v1.128.118 — 22/11/2026
 
