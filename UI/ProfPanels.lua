@@ -328,8 +328,12 @@ local function headerSlot(bf)
                 if ch ~= bagBtn and ch:IsShown() and not (ch.IsForbidden and ch:IsForbidden()) then
                     local w, h, l, t = ch:GetWidth(), ch:GetHeight(), ch:GetLeft(), ch:GetTop()
                     local isBtn = ch.GetObjectType and ch:GetObjectType() == "Button"
-                    if isBtn and l and t and w >= 14 and w <= 40 and h >= 14 and h <= 40
-                        and top - t <= 45 and l > cx and (not found or l < found:GetLeft()) then
+                    -- un vrai bouton rond de l'en-tête : carré, visible (pas une zone transparente), cliquable
+                    local seen = (not ch.GetEffectiveAlpha or ch:GetEffectiveAlpha() > 0.5)
+                        and (not ch.IsMouseEnabled or ch:IsMouseEnabled())
+                    local square = w >= 16 and w <= 36 and h >= 16 and h <= 36 and math.abs(w - h) <= 4
+                    if isBtn and seen and l and t and square
+                        and top - t <= 45 and t <= top + 2 and l > cx and (not found or l < found:GetLeft()) then
                         found = ch
                     end
                     if depth < 2 then scan(ch, depth + 1) end
@@ -380,9 +384,16 @@ function UI.DEBagButtonInfo()
     local bf = bagFrame()
     local slot = bf and headerSlot(bf)
     local sn = slot and (pcall(slot.GetName, slot) and slot:GetName() or "sans nom") or "aucun"
-    return string.format("bouton désenchantement : %s · voisin %s · strate %s niveau %d (sacs %d)",
-        bagBtn:IsVisible() and "affiché" or "caché", tostring(sn), tostring(bagBtn:GetFrameStrata()),
-        bagBtn:GetFrameLevel() or 0, bf and bf:GetFrameLevel() or 0)
+    -- positions relatives au coin haut gauche des sacs, pour voir où il est tombé
+    local function rel(fr)
+        if not (fr and bf and fr.GetLeft and fr:GetLeft() and bf:GetLeft()) then return "?" end
+        return string.format("x %d y %d (%dx%d)", fr:GetLeft() - bf:GetLeft(), bf:GetTop() - fr:GetTop(),
+            fr:GetWidth() or 0, fr:GetHeight() or 0)
+    end
+    return string.format("bouton désenchantement : %s · %s · voisin %s %s · strate %s niveau %d (sacs %d, %s)",
+        bagBtn:IsVisible() and "affiché" or "caché", rel(bagBtn), tostring(sn), rel(slot),
+        tostring(bagBtn:GetFrameStrata()),
+        bagBtn:GetFrameLevel() or 0, bf and bf:GetFrameLevel() or 0, rel(bf))
 end
 
 -- Collée aux sacs : enchanteur avec au moins un objet à désenchanter.
