@@ -188,9 +188,22 @@ function M:RideEnd() onboard = nil end
 -- Tram des profondeurs : son bandeau s'affiche dans l'instance du tram (n° 369), sans horaire
 ---------------------------------------------------------------------------
 local TRAM_MAP = 369
+-- reconnu par le n° d'instance, sinon par le nom de la zone (WoW Forever peut donner un autre n°)
+local TRAM_NAMES = { ["tram des profondeurs"] = true, ["deeprun tram"] = true }
+local function plain(v)
+    if v == nil or (_G.issecretvalue and _G.issecretvalue(v)) then return nil end
+    return v
+end
+function M.TramInfo(_)
+    local name, _, _, _, _, _, _, id = nil, nil, nil, nil, nil, nil, nil, nil
+    if GetInstanceInfo then name, _, _, _, _, _, _, id = GetInstanceInfo() end
+    local zone = plain(_G.GetRealZoneText and _G.GetRealZoneText()) or ""
+    return plain(id), plain(name) or "", zone
+end
 function M:InTram()
-    if not GetInstanceInfo then return false end
-    return select(8, GetInstanceInfo()) == TRAM_MAP
+    local id, name, zone = self:TramInfo()
+    if id == TRAM_MAP then return true end
+    return TRAM_NAMES[string.lower(name)] or TRAM_NAMES[string.lower(zone)] or false
 end
 
 ---------------------------------------------------------------------------

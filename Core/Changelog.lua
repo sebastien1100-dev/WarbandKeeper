@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.185", date = "22/11/2026",
+        fixed = {
+            "Tram des profondeurs : un trajet en tram n'apprenait pas ses stations (l'intérieur du tram n'était reconnu que par un n° d'instance) ; il est aussi reconnu par le nom de la zone, et /wk nav dit ce que le jeu répond.",
+        },
+    },
+    {
         version = "1.128.184", date = "22/11/2026",
         changed = {
             "Guidage : l'épingle à l'écran affiche maintenant l'étape en cours (« Vers le maître de vol », « Vol : … », « Tram des profondeurs » … », pierre de foyer) au lieu de seulement le nom de la cible.",

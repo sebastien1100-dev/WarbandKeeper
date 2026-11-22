@@ -499,6 +499,7 @@ do
             lastOut = { c, x, y }
         end
     end
+    M._tramTick = tick -- (pour les tests)
     if _G.C_Timer and _G.C_Timer.NewTicker then
         WK:On("PLAYER_LOGIN", function() _G.C_Timer.NewTicker(1, tick) end)
     end
@@ -1353,6 +1354,12 @@ function M:Report()
             .. (fl.from and (" · " .. string.format(T("meilleur %s » %s en %s contre %s à pied"), fl.from, fl.to or "?",
                 mmss(fl.est), mmss(fl.walk)))
                 or (" · " .. T("aucune paire de relais (ouvre la carte des vols chez un maître)"))))
+    end
+    local BL = WK.modules.BoatLines
+    if BL and BL.TramInfo then
+        local id, iname, zone = BL:TramInfo()
+        WK:Print("  " .. T("Tram") .. " : " .. string.format(T("dans le tram : %s (instance %s « %s », zone « %s »)"),
+            BL:InTram() and T("oui") or T("non"), tostring(id), iname, zone))
     end
     local tr = M.lastTram
     if tr and tr.stations then

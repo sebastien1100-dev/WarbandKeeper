@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.185 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tram des profondeurs : un trajet en tram n'apprenait pas ses stations (l'intérieur du tram n'était reconnu que par un n° d'instance) ; il est aussi reconnu par le nom de la zone, et /wk nav dit ce que le jeu répond.
+
 ## v1.128.184 — 22/11/2026
 
 _Un /reload suffit._
