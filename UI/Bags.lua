@@ -141,7 +141,7 @@ local function classify(e, ctx)
     -- catégorie
     if e.new then info.cat = "new"
     elseif questItem then info.cat = "quest"
-    elseif q == 0 then info.cat = "junk"
+    elseif q == 0 or (WK.modules.QoL and WK.modules.QoL:IsJunk(id)) then info.cat = "junk"
     elseif ship then info.cat = "ship"
     elseif classID == 2 or classID == 4 then info.cat = "equip"
     elseif classID and REAGENT_CLASS[classID] then info.cat = "mine"
@@ -584,6 +584,12 @@ local function build()
     fi.de:SetScript("OnClick", function()
         if hovered and hovered.id then WK.modules.ProfHelp:ToggleDEMark(hovered.id); V.Refresh() end
     end)
+    -- camelote à la main : part avec « Vendre la camelote » (et la vente automatique des gris)
+    fi.junk = UI:Button(fi, "Camelote", nil, 24, "secondary")
+    fi.junk:SetPoint("TOPLEFT", fi.de, "BOTTOMLEFT", 0, -6)
+    fi.junk:SetScript("OnClick", function()
+        if hovered and hovered.id and WK.modules.QoL then WK.modules.QoL:ToggleJunk(hovered.id); V.Refresh() end
+    end)
     fi.ah = UI:Button(fi, "Chercher à l'HV", nil, 24, "secondary")
     fi.ah:SetPoint("TOPLEFT", fi.lock, "TOPRIGHT", 6, 0)
     fi.ah:SetScript("OnClick", function()
@@ -938,7 +944,7 @@ function V.RefreshFiche()
         e = still
     end
     local has = e ~= nil
-    for _, w in ipairs({ fi.icon, fi.name, fi.sub, fi.body, fi.lock, fi.ah }) do w:SetShown(has) end
+    for _, w in ipairs({ fi.icon, fi.name, fi.sub, fi.body, fi.lock, fi.ah, fi.junk }) do w:SetShown(has) end
     fi.empty:SetShown(not has)
     local PH = WK.modules.ProfHelp
     fi.de:SetShown(has and PH and PH:EnchantRank() ~= nil and e.info and (e.info.de or e.quality and e.quality >= 2)
@@ -1031,7 +1037,14 @@ function V.RefreshFiche()
     -- boutons juste sous le texte ; la fiche s'arrête là (pas de grand vide jusqu'en bas)
     local bodyH = math.ceil(fi.body:GetStringHeight() or 40)
     fi.lock:ClearAllPoints(); fi.lock:SetPoint("TOPLEFT", 10, -(60 + bodyH + 14))
-    local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + 12
+    -- camelote à la main (pas pour un gris, qui l'est toujours, ni pour un objet verrouillé)
+    local Q = WK.modules.QoL
+    local jm = Q and Q.JunkMarks()[e.id]
+    fi.junk:SetShown(Q ~= nil and (e.quality or 0) > 0 and (why == nil or jm) and true or false)
+    fi.junk:SetLabel(jm and T("Plus de la camelote") or T("Camelote"))
+    fi.junk:ClearAllPoints()
+    fi.junk:SetPoint("TOPLEFT", fi.de:IsShown() and fi.de or fi.lock, "BOTTOMLEFT", 0, -6)
+    local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + (fi.junk:IsShown() and 30 or 0) + 12
     -- fiche plus haute que la fenêtre : la fenêtre s'allonge (elle reprend sa taille au rafraîchissement)
     local th = 110 + topOff()
     if h > win:GetHeight() - th and not inCombat() then win:SetHeight(h + th) end

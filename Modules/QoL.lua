@@ -465,14 +465,48 @@ local function useContainerItem(bag, slot)
 end
 
 -- Objets gris vendables des sacs : { {bag, slot, price} }.
+-- Camelote : objets gris, objets marqués à la main (WK.DB.global.junkMarks[objet], hors profils) et règles
+-- (QoL:General() : junkUnusable = équipement vert que le perso ne peut pas porter, junkWhite = équipement blanc).
+-- Jamais un objet verrouillé (ItemLock : à la main ou par règle : épique, envies, BiS, quête…).
+function M.JunkMarks()
+    WK.DB.global.junkMarks = WK.DB.global.junkMarks or {}
+    return WK.DB.global.junkMarks
+end
+function M.ToggleJunk(_, id)
+    local m = M.JunkMarks()
+    m[id] = (not m[id]) or nil
+    WK:NotifyChanged()
+    return m[id] == true
+end
+function M:IsJunk(id)
+    if not id then return false end
+    local IL = WK.modules.ItemLock
+    if IL and IL:IsLocked(id) then return false end
+    local _, _, quality, _, _, _, _, _, _, _, price = WK.GetItemInfo(id)
+    if (price or 0) <= 0 then return false end
+    if quality == 0 or M.JunkMarks()[id] then return true end
+    local g = self:General()
+    if not (g.junkUnusable or g.junkWhite) then return false end
+    local f = (_G.C_Item and _G.C_Item.GetItemInfoInstant) or _G.GetItemInfoInstant
+    local classID = f and select(6, f(id))
+    if classID ~= 2 and classID ~= 4 then return false end
+    if g.junkWhite and quality == 1 then return true end
+    if g.junkUnusable and quality == 2 then
+        local D = WK.modules.Dungeons
+        local ok, usable = pcall(D.Usable, D, id, WK.DB:Me())
+        if ok and usable == false then return true end
+    end
+    return false
+end
+
 function M:GreyItems()
     local list = {}
     for _, bag in ipairs(WK.modules.Inventory:BagList()) do
         for slot = 1, (WK.Container.NumSlots(bag) or 0) do
             local id, count, locked = WK.Container.Info(bag, slot)
             if id and not locked and not (WK.modules.ItemLock and WK.modules.ItemLock:IsLocked(id)) then
-                local _, _, quality, _, _, _, _, _, _, _, price = WK.GetItemInfo(id)
-                if quality == 0 and (price or 0) > 0 then
+                local _, _, _, _, _, _, _, _, _, _, price = WK.GetItemInfo(id)
+                if self:IsJunk(id) then
                     table.insert(list, { bag = bag, slot = slot, id = id, price = price * (count or 1) })
                 end
             end
@@ -486,7 +520,7 @@ function M.StillGrey(it)
     local IL = WK.modules.ItemLock
     local id, _, locked = WK.Container.Info(it.bag, it.slot)
     if id ~= it.id or locked or (IL and IL:IsLocked(id)) then return false end
-    return select(3, WK.GetItemInfo(id)) == 0
+    return M:IsJunk(id)
 end
 
 -- onDone() est appelé quand la vente est finie (tout de suite s'il n'y a rien à vendre).

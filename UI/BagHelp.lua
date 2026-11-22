@@ -598,6 +598,18 @@ function UI:BuildBagHelpCard(root)
                 bc.bankWin = v
                 if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
             end), 80)
+        -- camelote (Modules/QoL.lua : IsJunk) : vendue avec les gris
+        local qg = WK.modules.QoL:General()
+        row("Camelote : vert impossible à porter",
+            "L'équipement vert que ce perso ne peut pas porter part avec « Vendre la camelote »"
+                .. " (jamais un objet verrouillé).",
+            UI:Toggle(card, function() return qg.junkUnusable end,
+                function(v) qg.junkUnusable = v; WK:NotifyChanged() end), 80)
+        row("Camelote : équipement blanc",
+            "L'équipement de qualité commune (blanc) part avec « Vendre la camelote »."
+                .. " Marquer un objet à la main : bouton de la fiche.",
+            UI:Toggle(card, function() return qg.junkWhite end,
+                function(v) qg.junkWhite = v; WK:NotifyChanged() end), 80)
         row("Infobulle allégée dans nos sacs",
             "Les infos de l'addon (persos, prix, métiers, ventes) ne sont que dans la fiche ;"
                 .. " l'infobulle du jeu reste courte.",
