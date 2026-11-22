@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.96 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Bandeau des quais : il pouvait s'afficher en pleine ville (« Bateau pour Forêt d'Elwynn » devant la banque de Hurlevent) à cause d'un faux trajet en bateau appris en jeu. Un bateau appris doit maintenant changer de continent (les vraies lignes viennent des fichiers du jeu) ; les faux trajets déjà notés sont oubliés.
+
 ## v1.128.95 — 22/11/2026
 
 _Un /reload suffit._

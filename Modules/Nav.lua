@@ -883,12 +883,12 @@ end
 ---------------------------------------------------------------------------
 -- Un vrai trajet en bateau : autre continent, ou sur le même continent au moins 500 m entre les quais
 -- et une autre région à l'arrivée (un autre déplacement sans bouger, pris pour un bateau, restait dans la même zone)
-local MIN_BOAT = 500
+-- Depuis 1.128.96 : un bateau appris doit changer de continent. Les vraies lignes du même continent sont dans
+-- les fichiers du jeu (Modules/BoatLines.lua) ; ce qui restait (Hurlevent » Forêt d'Elwynn…) était un autre
+-- déplacement sans bouger (monture d'escorte, véhicule de quête, téléport lent) pris pour un bateau.
 local function validBoat(a, b)
     if not (a and b) then return false end
-    if a.c ~= b.c then return true end
-    if a.name and b.name and a.name == b.name then return false end
-    return a.wx and b.wx and dist(a.wx, a.wy, b.wx, b.wy) >= MIN_BOAT or false
+    return a.c ~= nil and b.c ~= nil and a.c ~= b.c
 end
 -- Trajet déjà dans les données (MapLayers.TRANSPORTS : bateaux et zeppelins connus), dans un sens ou dans l'autre
 local function knownRoute(a, b)
@@ -936,6 +936,11 @@ function M:Boats()
     if not d.boatsChecked5 and WK.BoatLines and #WK.BoatLines > 0 then
         d.boatsChecked5 = true
         for i = #d.boats, 1, -1 do if knownRoute(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
+    end
+    -- une fois (1.128.96) : bateaux appris sur un même continent oubliés (faux trajets, voir validBoat)
+    if not d.boatsChecked6 then
+        d.boatsChecked6 = true
+        for i = #d.boats, 1, -1 do if not validBoat(d.boats[i].a, d.boats[i].b) then table.remove(d.boats, i) end end
     end
     -- une fois encore (1.31.8) : quai noté sur la carte du continent quand on est à bord
     if not d.boatsChecked4 and C_Map and C_Map.GetMapInfo then
@@ -998,7 +1003,7 @@ learnRide = function(r, endP, learn)
     local len = lineLen(r.pts)
     if not r.crossed and len < 150 then blog(string.format("fin : trop court (%d m)", len)) return end
     local a, b = dock(r.start), dock(endP)
-    if not validBoat(a, b) then blog(string.format("fin : refusé (%s » %s, %s)", tostring(a.name), tostring(b.name), a.c ~= b.c and "autre continent" or "même zone ou moins de 500 m")) return end
+    if not validBoat(a, b) then blog(string.format("fin : refusé (%s » %s, %s)", tostring(a.name), tostring(b.name), "même continent")) return end
     if knownRoute(a, b) then blog(string.format("fin : trajet connu %s » %s", tostring(a.name), tostring(b.name))); learn() return end
     blog(string.format("fin : %s » %s (%d m)", tostring(a.name), tostring(b.name), len))
     local boats = M:Boats()
