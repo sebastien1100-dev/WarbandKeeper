@@ -78,6 +78,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         WK.modules.Gear:Scan({ talents = true })
         WK:Print(WK.T("Talents : diagnostic"))
         for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
+    elseif cmd == "pistage" or cmd == "tracking" then
+        for _, l in ipairs(WK.modules.SelfBuffs.TrackDiag()) do WK:Print(l) end
     elseif cmd == "armes" or cmd == "weapons" then
         -- compétences d'armes lues en jeu (Modules/WeaponSkills.lua)
         WK.modules.WeaponSkills:Diag()

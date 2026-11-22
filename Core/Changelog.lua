@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.72", date = "22/11/2026",
+        fixed = {
+            "Buffs à ne pas oublier : un pistage allumé restait encore « éteint » (case rouge) ; il est maintenant reconnu par son nom ou son icône, pas seulement par le n° du sort que WoW Forever ne donne pas toujours.",
+        },
+        added = {
+            "/wk pistage : ce que le jeu dit du pistage de la minicarte (pour comprendre un pistage mal reconnu).",
+        },
+    },
+    {
         version = "1.128.71", date = "22/11/2026",
         fixed = {
             "Buffs à ne pas oublier : un pistage allumé (Découverte de gisements, d'herbes, Détection des morts-vivants…) restait marqué « éteint » et la case restait rouge : l'addon lisait mal la liste des pistages de WoW Forever. La case et la liste se mettent aussi à jour tout de suite après un sort ou un changement de pistage.",

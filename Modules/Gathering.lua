@@ -238,19 +238,16 @@ WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(6, function() pcall(onSk
 -- Pistage : Découverte d'herbes (2383) / de gisements (2580)
 local FIND = { herb = 2383, mining = 2580 }
 local function trackingActive()
-    if C_Minimap and C_Minimap.GetNumTrackingTypes and C_Minimap.GetTrackingInfo then
-        local okn, n = pcall(C_Minimap.GetNumTrackingTypes)
-        for i = 1, (okn and n or 0) do
-            local sid, on = WK.modules.SelfBuffs.TrackingInfo(i)
-            if on and (sid == 2383 or sid == 2580) then return true end
-        end
-        return false
+    -- lecture commune avec les buffs à ne pas oublier (Modules/SelfBuffs.lua : n°, nom ou icône du pistage)
+    local SB = WK.modules.SelfBuffs
+    if not (SB and SB.TrackOn) then return true end
+    local any
+    for _, id in pairs(FIND) do
+        local on = SB.TrackOn({ ids = { id } })
+        if on then return true end
+        if on == false then any = false end
     end
-    if GetTrackingTexture then
-        local tex = GetTrackingTexture()
-        return tex ~= nil
-    end
-    return true
+    return any == nil
 end
 local function checkTracking()
     local c = M:HelpConfig()

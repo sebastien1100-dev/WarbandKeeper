@@ -159,28 +159,52 @@ local function auraLeft(e)
     end
     return nil
 end
--- Une ligne du pistage de la minicarte : n° du sort, actif. Client moderne : une table { spellID, active } ;
--- WoW Forever / Classic : plusieurs valeurs (nom, texture, actif, genre, sous-genre, n° du sort). Avant, seule
--- la table était lue : le pistage restait « éteint » même allumé
+-- Une ligne du pistage de la minicarte : { name, tex, on, sid }. Client moderne : une table ; WoW Forever /
+-- Classic : plusieurs valeurs (nom, texture, actif, genre, sous-genre, n° du sort, ce dernier pas toujours là)
 function M.TrackingInfo(i)
-    local ok, a, _, c, _, _, f = pcall(_G.C_Minimap.GetTrackingInfo, i)
-    if not ok then return nil end
-    if type(a) == "table" then return a.spellID, a.active and true or false end
-    return type(f) == "number" and f or nil, c and true or false
-end
--- Pistage actif : n° du sort, false si aucun, nil si le jeu ne le dit pas (alors pas de rappel)
-local function activeTracking()
-    if not (_G.C_Minimap and _G.C_Minimap.GetNumTrackingTypes and _G.C_Minimap.GetTrackingInfo) then return nil end
-    local okn, n = pcall(_G.C_Minimap.GetNumTrackingTypes)
-    if not okn or not n then return nil end
-    for i = 1, n do
-        local sid, on = M.TrackingInfo(i)
-        if on and sid then return sid end
+    local ok, a, b, c, _, _, f = pcall(_G.C_Minimap.GetTrackingInfo, i)
+    if not ok or a == nil then return nil end
+    if type(a) == "table" then
+        return a.spellID, a.active and true or false, a.name, a.texture
     end
-    -- ancien client : seulement la texture du pistage actif
-    if _G.GetTrackingTexture and _G.GetTrackingTexture() then return nil end
-    return false
+    return type(f) == "number" and f or nil, c and true or false, a, b
 end
+local function spellTex(id)
+    local cs = _G.C_Spell
+    return (cs and cs.GetSpellTexture and cs.GetSpellTexture(id)) or (_G.GetSpellTexture and _G.GetSpellTexture(id))
+end
+-- Ce pistage est-il allumé ? vrai / faux, nil si le jeu ne le dit pas (alors pas de rappel). Reconnu par le n°
+-- du sort, sinon par son nom ou son icône (WoW Forever ne donne pas toujours le n°), ou par l'effet du même nom
+local function trackOn(e)
+    local names, texs = {}, {}
+    for _, id in ipairs(e.ids) do
+        local n = WK.SpellInfo(id); if n then names[n] = true end
+        local t = spellTex(id); if t then texs[t] = true end
+    end
+    local said = false
+    local mm = _G.C_Minimap
+    if mm and mm.GetNumTrackingTypes and mm.GetTrackingInfo then
+        local okn, n = pcall(mm.GetNumTrackingTypes)
+        for i = 1, (okn and n or 0) do
+            local sid, on, name, tex = M.TrackingInfo(i)
+            local mine = (name and names[name]) or (tex and texs[tex])
+            if not mine and sid then for _, id in ipairs(e.ids) do if id == sid then mine = true end end end
+            if mine then
+                said = true
+                if on then return true end
+            end
+        end
+    end
+    if _G.GetTrackingTexture then
+        local t = _G.GetTrackingTexture()
+        said = true
+        if t and texs[t] then return true end
+    end
+    if auraLeft(e) then return true end
+    if said then return false end
+    return nil
+end
+M.TrackOn = trackOn
 -- Forme du jeu (aura de paladin) : vrai si une est active, nil si le jeu n'en a pas
 local function stanceOn()
     if not (_G.GetNumShapeshiftForms and _G.GetShapeshiftForm) then return nil end
@@ -209,7 +233,7 @@ function M:Status()
     local ctx = M.Context()
     if not ctx then return out, ctx end
     if _G.UnitIsDeadOrGhost and _G.UnitIsDeadOrGhost("player") then return out, ctx end
-    local tracks, trackOk, active
+    local tracks, trackOk
     for _, it in ipairs(M.Entries()) do
         local e = it.e
         if self:Places(it.rk, e):find(ctx, 1, true) then
@@ -218,11 +242,11 @@ function M:Status()
                 local name, icon = WK.SpellInfo(id)
                 local row = { e = e, rk = it.rk, id = id, name = name, icon = icon }
                 if e.track then
-                    if active == nil then active = activeTracking() end
-                    if active ~= nil then
+                    local on = trackOn(e)
+                    if on ~= nil then
                         tracks = tracks or {}
                         tracks[#tracks + 1] = row
-                        for _, x in ipairs(e.ids) do if x == active then trackOk = row end end
+                        if on and not trackOk then trackOk = row end
                     end
                 else
                     local left
@@ -268,4 +292,33 @@ function M:Counts()
         if r.state == "missing" then miss = miss + 1 elseif r.state == "soon" then soon = soon + 1 end
     end
     return miss, soon, total
+end
+
+-- /wk pistage : ce que le jeu dit du pistage (pour comprendre un pistage mal reconnu)
+function M.TrackDiag()
+    local mm = _G.C_Minimap
+    local out = {}
+    if mm and mm.GetNumTrackingTypes and mm.GetTrackingInfo then
+        local okn, n = pcall(mm.GetNumTrackingTypes)
+        out[#out + 1] = "C_Minimap : " .. tostring(okn and n)
+        for i = 1, (okn and n or 0) do
+            local vals = { pcall(mm.GetTrackingInfo, i) }
+            local parts = {}
+            for k = 2, #vals do
+                local v = vals[k]
+                if type(v) == "table" then
+                    parts[#parts + 1] = "{name=" .. tostring(v.name) .. " active=" .. tostring(v.active)
+                        .. " spellID=" .. tostring(v.spellID) .. " texture=" .. tostring(v.texture) .. "}"
+                else parts[#parts + 1] = tostring(v) end
+            end
+            out[#out + 1] = i .. ". " .. table.concat(parts, ", ")
+        end
+    else
+        out[#out + 1] = "C_Minimap absent"
+    end
+    if _G.GetTrackingTexture then out[#out + 1] = "GetTrackingTexture : " .. tostring(_G.GetTrackingTexture()) end
+    for _, e in ipairs(PROF) do
+        out[#out + 1] = e.label .. " : " .. tostring(trackOn(e)) .. " (icône " .. tostring(spellTex(e.ids[1])) .. ")"
+    end
+    return out
 end
