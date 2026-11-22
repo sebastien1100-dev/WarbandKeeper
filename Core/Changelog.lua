@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.138", date = "22/11/2026",
+        fixed = {
+            "Notre banque : la barre des sacs n'avait pas tous les emplacements de sac (6 au lieu de ceux de la banque du jeu) ; elle en prend autant que la fenêtre de banque du jeu.",
+        },
+    },
+    {
         version = "1.128.137", date = "22/11/2026",
         fixed = {
             "Notre banque : la barre des sacs montrait deux sacs qui n'étaient pas ceux de la banque, et les vrais décalés ; les sacs de banque sont retrouvés comme le fait la banque du jeu (par leur emplacement), aussi pour lire leur contenu.",

@@ -56,13 +56,21 @@ function M.BankBagIDs()
             local ok, inv = pcall(toInv, b)
             if ok and inv then byInv[inv] = b end
         end
+        -- autant d'emplacements que la banque du jeu en affiche (la constante du client peut être plus petite)
+        local shown = 0
+        local slots = _G.BankSlotsFrame
+        for i = 1, 12 do
+            if _G["BankFrameBag" .. i] or (slots and slots["Bag" .. i]) then shown = i else break end
+        end
+        if shown > 0 then n = shown end
         out = {}
         for i = 1, n do
             local ok, inv = pcall(toSlot, i, 1)
             local b = ok and inv and byInv[inv]
-            if not b then out = nil break end
+            if not b then break end
             out[#out + 1] = b
         end
+        if #out == 0 then out = nil end
     end
     if out then bankBagIDs = out return out end -- gardé seulement si la correspondance a marché
     out = {}
