@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.135", date = "22/11/2026",
+        fixed = {
+            "Notre banque, barre des sacs : les sacs déjà posés dans la banque apparaissaient grisés avec un cadenas (comme à acheter) ; un emplacement qui contient un sac est toujours compté comme acheté.",
+        },
+    },
+    {
         version = "1.128.134", date = "22/11/2026",
         fixed = {
             "Notre inventaire et notre banque : l'infobulle d'un objet ne recouvre plus la fiche de droite ; elle s'affiche à gauche de l'objet survolé, ou au-dessus s'il n'y a pas la place.",

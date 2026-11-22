@@ -766,12 +766,27 @@ local function slotButton(i)
 end
 function V.RefreshSlots()
     if not (win and win.slotBar and win.slotBar:IsShown()) then return end
-    local owned = isBank and (_G.GetNumBankSlots and _G.GetNumBankSlots() or 0) or 99
     local CC = _G.C_Container
-    for i, bag in ipairs(bagSlotList()) do
+    local list = bagSlotList()
+    -- emplacements de banque achetés : d'après le jeu, et au moins jusqu'au dernier qui contient déjà un sac
+    -- (sur ce client, le nombre rendu par le jeu peut manquer ou être faux)
+    local owned = 99
+    if isBank then
+        owned = 0
+        local okN, n = pcall(function() return _G.GetNumBankSlots and _G.GetNumBankSlots() end)
+        if okN and type(n) == "number" then owned = n end
+        for i, bag in ipairs(list) do
+            local inv = invOf(bag)
+            local has = inv and _G.GetInventoryItemTexture and _G.GetInventoryItemTexture("player", inv)
+            if has then owned = math.max(owned, i) end
+        end
+    end
+    for i, bag in ipairs(list) do
         local b = win.bagSlots[i] or slotButton(i)
         win.bagSlots[i] = b
-        b.bag, b.inv, b.locked, b.owned = bag, invOf(bag), i > owned, owned
+        local tex0 = invOf(bag)
+        tex0 = tex0 and _G.GetInventoryItemTexture and _G.GetInventoryItemTexture("player", tex0)
+        b.bag, b.inv, b.locked, b.owned = bag, invOf(bag), i > owned and not tex0, owned
         local tex = b.inv and _G.GetInventoryItemTexture and _G.GetInventoryItemTexture("player", b.inv)
         b.icon:SetTexture(tex or "Interface\\PaperDoll\\UI-PaperDoll-Slot-Bag")
         b.icon:SetDesaturated(b.locked)
