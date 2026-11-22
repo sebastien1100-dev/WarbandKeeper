@@ -1692,8 +1692,9 @@ local function Detail(page, parent)
         open:ClearAllPoints()
         if noLink then open:SetPoint("TOPRIGHT", -16, -18) else open:SetPoint("TOPRIGHT", linkBtn, "TOPLEFT", -8, 0) end
 
-        -- Ouverture : seulement pour le perso connecté et un métier qui a une fenêtre.
-        local canOpen = isMe and #all > 0
+        -- Ouverture : seulement pour le perso connecté et un métier qui a une fenêtre (avant : aussi au moins une
+        -- recette lue, d'où un bouton absent pour l'Enchantement tant que sa fenêtre n'avait pas été relue)
+        local canOpen = isMe and not noLink
         open:SetShown(canOpen)
         -- « Recettes lues le… » : sur la ligne des boutons (place libre quand « Ouvrir » est caché),
         -- pour ne pas tomber sur les libellés des rangs.

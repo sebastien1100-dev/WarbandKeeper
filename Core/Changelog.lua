@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.101", date = "22/11/2026",
+        fixed = {
+            "Métiers : le bouton « Ouvrir le métier » disparaissait parfois (Enchantement fenêtre fermée) quand aucune recette n'était lue ; il est toujours là pour un métier qui a une fenêtre.",
+        },
+    },
+    {
         version = "1.128.100", date = "22/11/2026",
         fixed = {
             "Enchanteur : la fenêtre de désenchantement ne s'ouvrait qu'à côté des sacs du jeu ; elle s'ouvre aussi à côté des sacs d'EllesmereUI (et d'ElvUI, Bagnon, AdiBags, Baganator, ArkInventory). /wk sacs liste les cadres de sacs reconnus ; /wk de l'ouvre à la main.",
