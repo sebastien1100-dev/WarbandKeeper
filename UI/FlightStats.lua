@@ -16,6 +16,11 @@ local view
 local function onTaxi() return UnitOnTaxi and UnitOnTaxi("player") end
 local function cfg() return F():Config() end
 local function gold(c) return UI:ShortGold(c or 0) end
+-- nom d'un perso à la couleur de sa classe (dans les textes des cartes)
+local function who(c, key)
+    local r, g, b = UI:ClassColor(c and c.class)
+    return UI:Hex({ r, g, b }) .. WK:CharName(c, key) .. "|r"
+end
 local function num(n)
     n = math.floor(n or 0)
     return BreakUpLargeNumbers and BreakUpLargeNumbers(n) or tostring(n)
@@ -112,7 +117,7 @@ local function stories()
         end
         if rest > 0 then table.insert(split, { name = T("autres"), secs = rest, tone = "silver" }) end
         return { cat = T("PERSOS"), big = string.format(T("%d h"), math.floor(total / 3600)), split = split, total = total,
-            text = string.format(T("de jeu sur %d persos, dont %d %% sur %s."), n, math.floor(top / total * 100 + 0.5), WK:CharName(c, topKey)) }
+            text = string.format(T("de jeu sur %d persos, dont %d %% sur %s."), n, math.floor(top / total * 100 + 0.5), who(c, topKey)) }
     end)
     -- meilleur record de donjon et nombre de passages
     add(function()
@@ -231,7 +236,7 @@ local function stories()
             local txt = T("gagnés en tout") .. persos(cnt)
             if best and bestKey then
                 txt = txt .. string.format(T(" ; plus grosse fortune : %s (%s)"), gold(best.v),
-                    WK:CharName(WK.DB.global.characters[bestKey], bestKey))
+                    who(WK.DB.global.characters[bestKey], bestKey))
             end
             if travel > 0 then txt = txt .. string.format(T(" ; %s dépensés en voyages"), gold(travel)) end
             return { cat = T("RICHESSE"), big = gold(n), color = C.gold, text = txt .. "." }
@@ -257,8 +262,8 @@ local function stories()
             if n <= 0 then return nil end
             local txt = T("campements montés") .. persos(cnt)
             if cnt > 1 and best and bestKey then
-                local who = WK:CharName(WK.DB.global.characters[bestKey], bestKey)
-                txt = txt .. string.format(T(" ; le plus campeur : %s (%s)"), who, num(best.v))
+                local name = who(WK.DB.global.characters[bestKey], bestKey)
+                txt = txt .. string.format(T(" ; le plus campeur : %s (%s)"), name, num(best.v))
             end
             return { cat = T("CAMPEMENTS"), big = num(n), text = txt .. "." }
         end)
@@ -426,7 +431,13 @@ local function build()
     f.halo2:SetTexture(UI.MEDIA .. "circle"); f.halo2:SetSize(20, 20)
     f.plane = f.route2:CreateTexture(nil, "OVERLAY", nil, 7)
     f.plane:SetTexture(UI.MEDIA .. "navarrow"); f.plane:SetSize(20, 20)
-    f.fromT = UI:Text(f.route2, 10, C.muted); f.toT = UI:Text(f.route2, 10, C.text)
+    -- noms du départ et de l'arrivée sur la carte : clairs et cernés de noir (lisibles sur toutes les couleurs
+    -- de la carte), gardés dans le cadre (avant : gris sur fond clair, coupés au bord)
+    f.fromT = UI:Text(f.route2, 11, C.text); f.toT = UI:Text(f.route2, 11, C.text)
+    for _, t in ipairs({ f.fromT, f.toT }) do
+        t:SetFont(UI.FONT, math.floor(11 * (UI.textScale or 1) + 0.5), "OUTLINE")
+        t:SetShadowOffset(1, -1); t:SetShadowColor(0, 0, 0, 1)
+    end
     f.mapEmpty = UI:Text(f.route2, 11, C.dim); f.mapEmpty:SetPoint("CENTER"); f.mapEmpty:SetText(T("trajet pas encore connu"))
     f.stat = {}
     local STAT_STYLE = { { "griffon", "info" }, { "clock", "rule" }, { "star", "gold" } }
@@ -721,8 +732,18 @@ local function build()
         end
         dot(1, px, py, 10, C.muted)
         dot(2, ex, ey, 12, { r1, g1, b1 })
-        self.fromT:ClearAllPoints(); self.fromT:SetPoint("TOP", cv, "TOPLEFT", px, -py - 8); self.fromT:SetText(short(fl.from))
-        self.toT:ClearAllPoints(); self.toT:SetPoint("BOTTOM", cv, "TOPLEFT", ex, -ey + 8); self.toT:SetText(short(fl.to))
+        self.fromT:SetText(short(fl.from)); self.toT:SetText(short(fl.to))
+        local cw, ch = cv:GetWidth() or 0, cv:GetHeight() or 0
+        local function inside(t, x, y, below)
+            local half = (t:GetStringWidth() or 0) / 2 + 4
+            x = math.max(half, math.min(cw - half, x))
+            -- au-dessus ou en dessous du point selon la place
+            if below and y + 22 > ch then below = false elseif not below and y - 22 < 0 then below = true end
+            t:ClearAllPoints()
+            if below then t:SetPoint("TOP", cv, "TOPLEFT", x, -y - 8) else t:SetPoint("BOTTOM", cv, "TOPLEFT", x, -y + 8) end
+        end
+        inside(self.fromT, px, py, true)
+        inside(self.toT, ex, ey, false)
         -- le griffon : position du perso si elle est lisible, sinon l'avancée estimée sur le trajet
         if onPath then hx, hy = at(snapX, snapY) end
         local p = me
