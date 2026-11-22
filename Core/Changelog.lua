@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.133", date = "22/11/2026",
+        fixed = {
+            "Enchanteurs : la fenêtre de désenchantement ne s'ouvrait plus avec notre inventaire (elle cherchait les sacs du jeu) ; elle se colle de nouveau à gauche de nos sacs à chaque ouverture.",
+        },
+    },
+    {
         version = "1.128.132", date = "22/11/2026",
         added = {
             "Notre banque : à la banque, la même fenêtre que nos sacs (catégories, filtres en icônes, recherche, fiche de l'objet, redimensionnement par colonnes) à la place de celle du jeu. Réglage « Notre banque » (Inventaire > roue).",

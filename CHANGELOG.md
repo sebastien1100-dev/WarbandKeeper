@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.133 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Enchanteurs : la fenêtre de désenchantement ne s'ouvrait plus avec notre inventaire (elle cherchait les sacs du jeu) ; elle se colle de nouveau à gauche de nos sacs à chaque ouverture.
+
 ## v1.128.132 — 22/11/2026
 
 _Un /reload suffit._

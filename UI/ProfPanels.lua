@@ -292,6 +292,8 @@ local function visible(f)
     return f and f:IsVisible() and (f.GetEffectiveAlpha == nil or f:GetEffectiveAlpha() > 0.05)
 end
 local function bagFrame()
+    -- notre inventaire (UI/Bags.lua) : la fenêtre de désenchantement se colle à sa gauche
+    if visible(_G.WarbandKeeperBags) then return _G.WarbandKeeperBags end
     for _, f in ipairs(extraBags) do
         if visible(f) and f:GetWidth() > 50 then return f end
     end
@@ -348,6 +350,17 @@ WK:On("PLAYER_LOGIN", function()
         end
     end
 end)
+-- notre inventaire ouvert / fermé (UI/Bags.lua) : mêmes réactions que les sacs du jeu
+function UI.OurBagsShown(shown)
+    if shown then
+        if de then de.closed = nil end
+        soonDE()
+    else
+        _G.C_Timer.After(0, function()
+            if de and de.auto and not bagFrame() and not inCombat() then de:Hide(); de.auto = nil end
+        end)
+    end
+end
 
 ---------------------------------------------------------------------------
 -- Enchantements à l'échange

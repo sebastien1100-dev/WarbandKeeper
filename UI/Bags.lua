@@ -375,6 +375,11 @@ local function build()
         vcfg().pos = { p, rp, x, y }
     end)
     UI:HudBackground(f, "window", 12)
+    if not isBank then
+        -- fenêtre de désenchantement des enchanteurs collée à nos sacs (UI/ProfPanels.lua)
+        f:HookScript("OnShow", function() if UI.OurBagsShown then UI.OurBagsShown(true) end end)
+        f:HookScript("OnHide", function() if UI.OurBagsShown then UI.OurBagsShown(false) end end)
+    end
     local pos = vcfg().pos
     if pos then f:SetPoint(pos[1], _G.UIParent, pos[2], pos[3], pos[4])
     elseif isBank then f:SetPoint("TOPLEFT", 60, -120)
