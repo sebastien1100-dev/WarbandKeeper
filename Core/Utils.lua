@@ -143,10 +143,10 @@ end
 function WK.Container.Info(bag, slot)
     if C and C.GetContainerItemInfo then
         local info = C.GetContainerItemInfo(bag, slot)
-        if info then return info.itemID, info.stackCount, info.isLocked, info.isBound end
+        if info then return info.itemID, info.stackCount, info.isLocked, info.isBound, info.quality end
         return nil
     end
-    local _, count, locked, _, _, _, link, _, _, itemID = GetContainerItemInfo(bag, slot)
+    local _, count, locked, quality, _, _, link, _, _, itemID = GetContainerItemInfo(bag, slot)
     if not itemID and link then itemID = WK:ParseItemID(link) end
     -- « Lié » : important pour les objets LQE déjà équipés (on ne peut plus les envoyer).
     local bound
@@ -154,7 +154,7 @@ function WK.Container.Info(bag, slot)
         local ok, b = pcall(C_Item.IsBound, ItemLocation:CreateFromBagAndSlot(bag, slot))
         if ok then bound = b end
     end
-    return itemID, count, locked, bound
+    return itemID, count, locked, bound, quality
 end
 
 function WK.Container.NumFree(bag)

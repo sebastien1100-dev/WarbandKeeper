@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.166", date = "22/11/2026",
+        fixed = {
+            "Sacs et banque : le bord des cases restait gris au lieu de prendre la couleur de la qualité de l'objet (vert, bleu, violet).",
+        },
+    },
+    {
         version = "1.128.165", date = "22/11/2026",
         added = {
             "Taille des objets au choix (Petit, Moyen, Grand) dans le menu d'affichage des sacs et de la banque, à côté de « sans catégories ».",

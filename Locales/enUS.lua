@@ -4688,4 +4688,5 @@ WK.Locales.enUS.text = {
     ["Cases des sacs et de la banque carrées, avec un bord à la couleur de la qualité de l'objet ; cases vides en creux."] = "Square bag and bank slots, with a border in the item's quality colour; empty slots look recessed.",
     ["Taille des objets au choix (Petit, Moyen, Grand) dans le menu d'affichage des sacs et de la banque, à côté de « sans catégories »."] = "Choose the item size (Small, Medium, Large) in the bags and bank display menu, next to \"no categories\".",
     ["La pastille verte d'un objet neuf disparaît dès qu'on le survole."] = "The green dot on a new item disappears as soon as you hover it.",
+    ["Sacs et banque : le bord des cases restait gris au lieu de prendre la couleur de la qualité de l'objet (vert, bleu, violet)."] = "Bags and bank: slot borders stayed grey instead of taking the item's quality colour (green, blue, purple).",
 }

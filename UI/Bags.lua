@@ -164,6 +164,25 @@ end
 ---------------------------------------------------------------------------
 -- Une fenêtre (sacs du perso ou banque) : même structure, même design ; makeView("bags") / makeView("bank")
 local gameOpen -- plus bas (sacs du jeu)
+-- couleur d'une qualité d'objet (fonctions du jeu, sinon table du jeu, sinon couleurs habituelles)
+local QCOL = { [2] = { 0.12, 1, 0 }, [3] = { 0, 0.44, 0.87 }, [4] = { 0.64, 0.21, 0.93 }, [5] = { 1, 0.5, 0 },
+    [6] = { 0.9, 0.8, 0.5 }, [7] = { 0, 0.8, 1 } }
+function B.QualityColor(q)
+    if not q then return nil end
+    local CI = _G.C_Item
+    if CI and CI.GetItemQualityColor then
+        local ok, r, g, b = pcall(CI.GetItemQualityColor, q)
+        if ok and type(r) == "number" then return r, g, b end
+    end
+    if _G.GetItemQualityColor then
+        local ok, r, g, b = pcall(_G.GetItemQualityColor, q)
+        if ok and type(r) == "number" then return r, g, b end
+    end
+    local t = _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[q]
+    if t and t.r then return t.r, t.g, t.b end
+    local c = QCOL[q]
+    if c then return c[1], c[2], c[3] end
+end
 -- région du bouton du jeu (le nom du champ change selon les versions du client)
 local function region(b, ...)
     for _, k in ipairs({ ... }) do
@@ -185,9 +204,9 @@ local function square(b, inset, sub)
 end
 local EDGE = 2
 local function edgeColor(e)
-    if e and (e.quality or 1) >= 2 and _G.GetItemQualityColor then
-        local r, g, b = _G.GetItemQualityColor(e.quality)
-        return r, g, b, 1
+    if e and (e.quality or 1) >= 2 then
+        local r, g, b = B.QualityColor(e.quality)
+        if r then return r, g, b, 1 end
     end
     return C.border[1], C.border[2], C.border[3], e and 1 or 0.6
 end
@@ -399,9 +418,15 @@ local function readBags()
         local n = WK.Container.NumSlots(bag) or 0
         total = total + n
         for slot = 1, n do
-            local id, count, locked = WK.Container.Info(bag, slot)
+            local id, count, locked, _, cq = WK.Container.Info(bag, slot)
             if id then
                 local name, link, quality, _, _, _, _, _, _, icon = WK.GetItemInfo(id)
+                -- qualité lue sur la case (l'objet n'est pas toujours en cache au premier passage)
+                if type(cq) == "number" and cq >= 0 then quality = cq end
+                if not quality and _G.C_Item and _G.C_Item.GetItemQualityByID then
+                    local okq, q2 = pcall(_G.C_Item.GetItemQualityByID, id)
+                    if okq then quality = q2 end
+                end
                 local cl = _G.C_Container and _G.C_Container.GetContainerItemLink
                 local slink = cl and cl(bag, slot) or link
                 local e = { bag = bag, slot = slot, id = id, count = count, locked = locked, name = name,
@@ -428,6 +453,10 @@ local function readOffline(key)
     local list = {}
     local function add(id, n, where, who)
         local name, link, quality, _, _, _, _, _, _, icon = WK.GetItemInfo(id)
+        if not quality and _G.C_Item and _G.C_Item.GetItemQualityByID then
+            local okq, q2 = pcall(_G.C_Item.GetItemQualityByID, id)
+            if okq then quality = q2 end
+        end
         local e = { id = id, count = n, name = name, link = link, quality = quality, offline = true,
             where = where, who = who,
             icon = icon or (_G.C_Item and _G.C_Item.GetItemIconByID and _G.C_Item.GetItemIconByID(id)) }
@@ -1191,7 +1220,7 @@ function V.RefreshFiche()
     local name, _, quality, _, _, _, _, _, _, icon, vendor = WK.GetItemInfo(e.id)
     fi.icon:SetTexture(icon or e.icon)
     fi.name:SetText(name or e.name or ("#" .. e.id))
-    if quality and _G.GetItemQualityColor then fi.name:SetTextColor(_G.GetItemQualityColor(quality)) end
+    if quality and B.QualityColor(quality) then fi.name:SetTextColor(B.QualityColor(quality)) end
     local inBags = 0
     for _, x in ipairs(win.list or {}) do if not x.empty and x.id == e.id then inBags = inBags + (x.count or 1) end end
     local acc = WK.modules.Inventory:AccountCount(e.id) or inBags
