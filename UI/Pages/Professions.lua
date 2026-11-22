@@ -780,7 +780,16 @@ local function Detail(page, parent)
 
     local open = UI:Button(head, "Ouvrir le métier", 170, 32, "primary", "play")
     open:SetPoint("TOPRIGHT", linkBtn, "TOPLEFT", -8, 0)
-    open:SetScript("OnClick", function() WK.modules.Professions:OpenDirect(tab.prof) end)
+    -- ouvre la fenêtre du métier, ou la ferme quand elle est déjà ouverte (fermer n'est pas protégé)
+    open:SetScript("OnClick", function()
+        if UI.tradeWinOpen then UI.CloseTradeWindow() else WK.modules.Professions:OpenDirect(tab.prof) end
+    end)
+    function open:SyncLabel()
+        local on = UI.tradeWinOpen
+        self.label:SetText(on and T("Fermer le métier") or T("Ouvrir le métier"))
+        if self.icon then self.icon:SetTexture(UI.MEDIA .. (on and "close" or "play")) end
+    end
+    open:HookScript("OnShow", function(s) s:SyncLabel() end)
     -- bouton protégé et gestionnaires de combat créés une seule fois pour la séance (UI:Rebuild refait la page à
     -- chaque changement de thème, de police ou de langue : avant, un bouton et deux gestionnaires de plus à
     -- chaque fois) ; ils suivent l'onglet de la dernière page construite (UI.profSecureTab)
@@ -792,7 +801,7 @@ local function Detail(page, parent)
     end
     function tab:SyncSecure()
         if InCombatLockdown and InCombatLockdown() then return end
-        local want = needSecure() and open:IsVisible() and self.prof ~= nil
+        local want = needSecure() and open:IsVisible() and self.prof ~= nil and not UI.tradeWinOpen
         if want and not secure then
             secure = CreateFrame("Button", "WarbandKeeperOpenProfession", UIParent, "SecureActionButtonTemplate")
             if secure.RegisterForClicks then secure:RegisterForClicks("AnyUp", "AnyDown") end
@@ -830,6 +839,27 @@ local function Detail(page, parent)
             if b then b:Hide(); b:ClearAllPoints() end
         end)
         WK:On("PLAYER_REGEN_ENABLED", function() if UI.profSecureTab then UI.profSecureTab:SyncSecure() end end)
+        -- fenêtre du métier ouverte ou fermée : libellé du bouton et bouton protégé (ouvrir seulement)
+        local function tradeState(on)
+            UI.tradeWinOpen = on
+            local o = UI.profSecureOpen
+            if o and o.SyncLabel then o:SyncLabel() end
+            if UI.profSecureTab then UI.profSecureTab:SyncSecure() end
+        end
+        WK:On("TRADE_SKILL_SHOW", function() tradeState(true) end)
+        WK:On("TRADE_SKILL_CLOSE", function() tradeState(false) end)
+        WK:On("CRAFT_SHOW", function() tradeState(true) end)
+        WK:On("CRAFT_CLOSE", function() tradeState(false) end)
+        function UI.CloseTradeWindow()
+            if _G.C_TradeSkillUI and _G.C_TradeSkillUI.CloseTradeSkill then pcall(_G.C_TradeSkillUI.CloseTradeSkill)
+            elseif _G.CloseTradeSkill then pcall(_G.CloseTradeSkill) end
+            if _G.CloseCraft then pcall(_G.CloseCraft) end
+            for _, n in ipairs({ "ProfessionsFrame", "TradeSkillFrame", "CraftFrame" }) do
+                local fr = _G[n]
+                if fr and fr:IsShown() and _G.HideUIPanel then pcall(_G.HideUIPanel, fr) end
+            end
+            tradeState(false)
+        end
     end
     local note = UI:Text(head, 10, C.dim)
     note:SetPoint("TOPRIGHT", -16, -58)

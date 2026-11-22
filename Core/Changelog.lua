@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.95", date = "22/11/2026",
+        changed = {
+            "Métiers : le bouton « Ouvrir le métier » ferme aussi la fenêtre du métier quand elle est ouverte (il devient « Fermer le métier »).",
+        },
+    },
+    {
         version = "1.128.94", date = "22/11/2026",
         fixed = {
             "Couleur de l'apparence (couleur de classe, accent par perso) : certains boutons et éléments gardaient une autre couleur (blancs ou gris) jusqu'à ce qu'on les survole ; tout est repeint à l'entrée en jeu et à l'ouverture de la fenêtre.",
