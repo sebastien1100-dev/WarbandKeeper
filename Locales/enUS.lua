@@ -2694,11 +2694,9 @@ WK.Locales.enUS.text = {
     ["Avantages affichés pendant"] = "Benefits shown for",
     ["Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes)."] = "Once obtained, the card shows them then fades (0: it stays until you close it).",
     ["Kit de camp et rappels"] = "Camp kit and reminders",
-    ["colonne de boutons près de la flamme"] = "column of buttons near the flame",
     ["Toujours visible"] = "Always visible",
     ["Sinon, le kit n'apparaît que près d'un feu de camp."] = "Otherwise, the kit only appears near a campfire.",
     ["Pastilles sous la flamme"] = "Badges under the flame",
-    ["Avantages restants, recharge des objets de camp, « Bien nourri »."] = "Benefits left, camp item cooldown, \"Well Fed\".",
     ["Objet de camp de nouveau prêt"] = "Camp item ready again",
     ["Une alerte quand la recharge commune d'1 h est finie."] = "An alert when the shared 1 h cooldown is over.",
     ["Avantages bientôt finis"] = "Benefits ending soon",
@@ -3799,7 +3797,6 @@ WK.Locales.enUS.text = {
     ["À rendre"] = "To turn in",
     ["est"] = "east",
     ["Coin %s : %s"] = "Spot %s: %s",
-    ["Dans ton journal"] = "In your quest log",
     ["env. %d min"] = "approx. %d min",
     ["Coin %s"] = "Spot %s",
     ["%d quêtes au même endroit"] = "%d quests in the same place",
@@ -3955,7 +3952,6 @@ WK.Locales.enUS.text = {
     ["Clic droit : le forgeron le plus proche, pour réparer."] = "Right-click: the nearest blacksmith, to repair.",
     ["Case du maître de classe"] = "Class trainer slot",
     ["Le nombre de sorts à apprendre, sinon la distance."] = "The number of spells to learn, otherwise the distance.",
-    ["À prendre"] = "To pick up",
     ["absente de la base · position donnée par le jeu"] = "not in the database · position given by the game",
     ["à l'écran, se place en mode édition"] = "on screen, placed in edit mode",
     ["Cases libres (clic : jeter le gris le moins cher), marchand et maître de classe les plus proches (clic : guider). Rouge quand c'est pressé."] = "Free slots (click: throw away the cheapest grey item), nearest vendor and class trainer (click: guide). Red when urgent.",
@@ -3985,16 +3981,11 @@ WK.Locales.enUS.text = {
     ["Quêtes du donjon"] = "Dungeon quests",
     ["Les Mortemines"] = "The Deadmines",
     ["Les rouges de la Confrérie"] = "The Brotherhood's reds",
-    ["Tueur défias 6/10 · Bandeau rouge 3/7"] = "Defias Cutpurse 6/10 · Red Bandana 3/7",
     ["La fin de Van Cleef"] = "The end of Van Cleef",
     ["Le collier d'Old Murk"] = "Old Murk's necklace",
-    ["Marche de l'Ouest · 1,2 km"] = "Westfall · 1.2 km",
     ["Le dernier Défias"] = "The last Defias",
-    ["après : La Confrérie défias"] = "after: The Defias Brotherhood",
     ["Clic : guider vers le donneur"] = "Click: guide to the giver",
     ["après une autre quête (en cours)"] = "after another quest (in progress)",
-    ["Prérequis de :"] = "Prerequisite of:",
-    ["Clic : guider vers son donneur"] = "Click: guide to its giver",
     ["Fenêtre des quêtes"] = "Quest window",
     ["Jamais"] = "Never",
     ["0 % : texte seul sur le jeu ; 100 % : fond plein."] = "0 %: text only over the game; 100 %: solid background.",
@@ -4136,7 +4127,6 @@ WK.Locales.enUS.text = {
     ["prendre"] = "pick up",
     ["pas encore proposée par le PNJ"] = "not offered by the NPC yet",
     ["Glisser pour déplacer"] = "Drag to move",
-    ["Molette : faire défiler · coin en bas à droite : hauteur (double-clic : automatique)"] = "Wheel: scroll · bottom-right corner: height (double-click: automatic)",
     ["%d plus haut"] = "%d above",
     ["%d plus bas"] = "%d below",
     ["molette"] = "wheel",
@@ -4272,4 +4262,46 @@ WK.Locales.enUS.text = {
     ["Dans le donjon"] = "In the dungeon",
     ["Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace."] =
         "Only inside the dungeon, with its quests. Drag its title to move it.",
+    ["Bien nourri absent"] =
+        "No Well Fed",
+    ["Clic : replier le kit"] =
+        "Click: fold the kit",
+    ["Clic : dérouler le kit"] =
+        "Click: unfold the kit",
+    ["kit"] =
+        "kit",
+    ["prêt"] =
+        "ready",
+    ["Kit de camp : à ouvrir hors combat."] =
+        "Camp kit: open it out of combat.",
+    ["Molette : faire défiler"] =
+        "Mouse wheel: scroll",
+    ["Prête à rendre"] =
+        "Ready to turn in",
+    ["Clic : guider vers le rendu · clic droit : menu"] =
+        "Click: guide to turn-in · right-click: menu",
+    ["Clic : guider · clic droit : menu"] =
+        "Click: guide · right-click: menu",
+    ["à prendre"] =
+        "to pick up",
+    ["À prendre · clic : guider vers le donneur"] =
+        "To pick up · click: guide to the giver",
+    ["Clic : guider vers le donneur du prérequis"] =
+        "Click: guide to the prerequisite's giver",
+    ["Dans la barre des sacs"] =
+        "In the bags bar",
+    ["Déroulé du kit"] =
+        "Kit unfolds",
+    ["Vers le bas"] =
+        "Downward",
+    ["Vers le haut"] =
+        "Upward",
+    ["Sens dans lequel la liste du kit s'ouvre depuis la barre des sacs."] =
+        "Direction in which the kit list opens from the bags bar.",
+    ["Une case « kit » dans la barre « Sacs, marchand et maître » (temps restant des avantages du camp) ; un clic déroule le kit avec le nom et l'état de chaque objet (hors combat). Il faut que la barre soit affichée."] =
+        "A kit tile in the bags, vendor and trainer bar (camp benefits time left); a click unfolds the kit with each item's name and state (out of combat). The bar must be shown.",
+    ["Avantages restants, recharge des objets de camp, « Bien nourri » (seulement hors de la barre des sacs)."] =
+        "Benefits left, camp item cooldown, Well Fed (only outside the bags bar).",
+    ["dans la barre des sacs, ou colonne près de la flamme"] =
+        "in the bags bar, or a column by the flame",
 }

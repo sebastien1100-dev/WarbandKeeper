@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.62", date = "22/11/2026",
+        changed = {
+            "Fenêtre des quêtes du donjon refaite, plus lisible et plus compacte : pastilles « en cours » et « à prendre » en haut, niveau de chaque quête devant son nom, fine barre d'avancée sous chaque quête du journal, quêtes à prendre en doré sous un trait (l'XP est dans l'infobulle du titre).",
+            "Kit de camp dans la barre « Sacs, marchand et maître » : une case « kit » (temps restant des avantages du camp, en orange si « Bien nourri » manque) ; un clic déroule la liste du kit avec le nom et l'état de chaque objet (recharge, Bien nourri, prêt), hors combat. Remplace la colonne et les pastilles sous la flamme.",
+        },
+        added = {
+            "QoL > Feu de camp > Kit de camp : « Dans la barre des sacs » (sinon l'ancienne colonne près de la flamme) et « Déroulé du kit » vers le bas ou vers le haut.",
+        },
+    },
+    {
         version = "1.128.61", date = "22/11/2026",
         changed = {
             "Fenêtre des quêtes du donjon : elle ne s'affiche plus que dans le donjon, avec ses quêtes (avant aussi près de l'entrée, en « Toujours » ou ouverte depuis la page Donjons, avec les quêtes d'une autre zone). Réglage : « Dans le donjon » ou « Jamais ».",

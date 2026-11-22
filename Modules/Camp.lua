@@ -307,7 +307,7 @@ function M:GuideToBag()
 end
 
 local DEFAULTS = { enabled = false, icon = true, renewAt = 10, sound = false, doneSecs = 8,
-    kit = true, kitAlways = false, chips = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
+    kit = true, kitAlways = false, chips = true, kitInBar = true, kitDir = "down", alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }
 local SIT = { "feu de camp accueillant", "cozy campfire", "welcoming campfire" }

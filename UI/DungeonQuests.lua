@@ -79,7 +79,15 @@ local function build()
     if f.title.SetMaxLines then f.title:SetMaxLines(2) end
     f.head = UI:Text(f, 10, C.muted)
     f.head:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -2); f.head:SetPoint("RIGHT", -28, 0)
-    f.head:SetJustifyH("LEFT")
+    f.head:SetJustifyH("LEFT"); f.head:Hide()
+    -- pastilles de compte de l'en-tête (maquette B) : « N en cours », « N à prendre »
+    f.pills = {}
+    for i = 1, 2 do
+        local p = CreateFrame("Frame", nil, f); p:SetHeight(15)
+        p.bg = UI:Rounded(p, 7, 0, "BACKGROUND", 1)
+        p.t = UI:Text(p, 9); p.t:SetPoint("CENTER", 0, 0)
+        f.pills[i] = p
+    end
     f:SetMovable(true); f:SetClampedToScreen(true)
     f.drag = CreateFrame("Button", nil, f)
     f.drag:SetPoint("TOPLEFT", 0, 0); f.drag:SetPoint("TOPRIGHT", -26, 0); f.drag:SetHeight(30)
@@ -92,8 +100,8 @@ local function build()
     f.drag:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_TOP")
         GameTooltip:SetText(T("Glisser pour déplacer"), 1, 1, 1)
-        GameTooltip:AddLine(T("Molette : faire défiler · coin en bas à droite : hauteur (double-clic : automatique)"),
-            0.8, 0.8, 0.8, true)
+        if f.xpText then GameTooltip:AddLine(f.xpText, 0.8, 0.8, 0.8, true) end
+        GameTooltip:AddLine(T("Molette : faire défiler"), 0.8, 0.8, 0.8, true)
         GameTooltip:Show()
     end)
     f.drag:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -128,14 +136,16 @@ local function build()
         local r = f.rows[i]
         if not r then
             r = CreateFrame("Button", nil, f)
+            -- maquette B : niveau (couleur de difficulté) · nom · avancée à droite, fine barre dessous
             r.hl = r:CreateTexture(nil, "BACKGROUND"); r.hl:SetAllPoints()
-            r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetPoint("TOPLEFT", 0, -4); r.bar:SetPoint("BOTTOMLEFT", 0, 4); r.bar:SetWidth(3)
-            r.dot = UI:Icon(r, "circle", 16, nil, "ARTWORK"); r.dot:SetPoint("TOPLEFT", 10, -5)
-            r.glyph = UI:Icon(r, "bang", 10, nil, "OVERLAY"); r.glyph:SetPoint("CENTER", r.dot, "CENTER")
-            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 32, -5); r.name:SetPoint("RIGHT", -34, 0)
-            r.lvl = UI:Text(r, 11); r.lvl:SetPoint("TOPRIGHT", -11, -6); r.lvl:SetJustifyH("RIGHT")
-            r.sub = UI:Text(r, 10, C.muted); r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3); r.sub:SetPoint("RIGHT", -11, 0)
-            if r.sub.SetWordWrap then r.sub:SetWordWrap(true) end
+            r.lvl = UI:Text(r, 10); r.lvl:SetPoint("TOPLEFT", 8, -5); r.lvl:SetWidth(18); r.lvl:SetJustifyH("RIGHT")
+            r.right = UI:Text(r, 10, C.muted); r.right:SetPoint("TOPRIGHT", -11, -5); r.right:SetJustifyH("RIGHT")
+            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 31, -4); r.name:SetPoint("RIGHT", r.right, "LEFT", -6, 0)
+            r.name:SetJustifyH("LEFT")
+            r.track = r:CreateTexture(nil, "ARTWORK"); r.track:SetHeight(3)
+            r.track:SetPoint("TOPLEFT", 31, -20); r.track:SetPoint("TOPRIGHT", -11, -20)
+            r.fill = r:CreateTexture(nil, "OVERLAY"); r.fill:SetHeight(3)
+            r.fill:SetPoint("TOPLEFT", r.track, "TOPLEFT", 0, 0)
             r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             r:SetScript("OnClick", function(s, btn)
                 if s.qid and UI:QuestClick(btn, s.qid) then return end
@@ -145,7 +155,7 @@ local function build()
                 if not s.tip then return end
                 UI:TooltipOwner(s, "ANCHOR_LEFT")
                 GameTooltip:SetText(s.tip[1], 1, 1, 1)
-                for k = 2, #s.tip do GameTooltip:AddLine(s.tip[k], 0.8, 0.8, 0.8, true) end
+                for k = 2, 6 do if s.tip[k] then GameTooltip:AddLine(s.tip[k], 0.8, 0.8, 0.8, true) end end
                 GameTooltip:Show()
             end)
             r:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -161,10 +171,26 @@ local function build()
         self.lastData, self.lastCfg = data, cfg
         if self.dungeonKey ~= data.name then self.dungeonKey = data.name; self.off = 0 end
         self.title:SetText(data.name or "")
-        local xpText = (data.xp or 0) > 0 and ("  ·  " .. string.format(T("env. %d XP"), data.xp)) or ""
-        self.head:SetText(UI:Upper(T("Quêtes")) .. xpText)
+        self.xpText = (data.xp or 0) > 0 and string.format(T("env. %d XP"), data.xp) or nil
+        -- pastilles : quêtes du journal, quêtes à prendre (cachées à zéro), alignées à droite du titre
+        local pdef = { { #data.log, T("%d en cours"), { ar, ag, ab } }, { #data.avail, T("%d à prendre"), C.gold } }
+        local px = -28
+        for i = 2, 1, -1 do
+            local p, d = self.pills[i], pdef[i]
+            if d[1] > 0 then
+                p.t:SetText(string.format(d[2], d[1])); p.t:SetTextColor(d[3][1], d[3][2], d[3][3])
+                p.bg:SetColor(d[3][1], d[3][2], d[3][3], 0.18)
+                local pw = math.floor((p.t:GetStringWidth() or 40) + 12)
+                p:SetWidth(pw); p:ClearAllPoints(); p:SetPoint("TOPRIGHT", px, -8)
+                px = px - pw - 4
+                p:Show()
+            else
+                p:Hide()
+            end
+        end
+        self.title:SetPoint("RIGHT", px - 2, 0)
         local th = math.max(14, math.min(30, self.title:GetStringHeight() or 14))
-        local top = 9 + th + 2 + 12 + 6
+        local top = 9 + th + 8
         self.drag:SetHeight(top)
         local compact = cfg.questWinCompact
         -- hauteur bornée (plus de poignée) : au-delà, la molette fait défiler
@@ -176,8 +202,12 @@ local function build()
             items[#items + 1] = { sec = true, label = label, n = n, onClick = onClick }
         end
         local function line(e) items[#items + 1] = { e = e } end
-        if #data.log > 0 then section("Dans ton journal", #data.log); for _, e in ipairs(data.log) do line(e) end end
-        if #data.avail > 0 then section("À prendre", #data.avail); for _, e in ipairs(data.avail) do line(e) end end
+        -- journal sans titre de section (les pastilles comptent), puis les quêtes à prendre derrière un trait
+        for _, e in ipairs(data.log) do line(e) end
+        if #data.avail > 0 then
+            if #data.log > 0 then items[#items + 1] = { sep = true } end
+            for _, e in ipairs(data.avail) do line(e) end
+        end
         if #data.waiting > 0 then
             section("Après prérequis", #data.waiting)
             for _, e in ipairs(data.waiting) do line(e) end
@@ -207,26 +237,40 @@ local function build()
             local r = row(nr)
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
             r.name:SetText(e.name or "?")
-            r.name:SetTextColor(unpack(e.dim and C.muted or C.text))
-            r.lvl:SetText(e.lvl and tostring(e.lvl) or "")
-            local lc = levelColor(e.lvl); r.lvl:SetTextColor(lc[1], lc[2], lc[3])
-            local col = e.color
-            r.dot:SetVertexColor(col[1], col[2], col[3], e.solid and 1 or 0.22)
-            r.glyph:SetTexture(UI.MEDIA .. (e.glyph or "bang"))
-            if e.solid then r.glyph:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1) else r.glyph:SetVertexColor(col[1], col[2], col[3], 1) end
-            local showSub = e.sub ~= nil and e.sub ~= "" and not compact
-            r.sub:SetText(e.sub or ""); r.sub:SetShown(showSub)
-            if e.subColor then r.sub:SetTextColor(unpack(e.subColor)) else r.sub:SetTextColor(unpack(C.muted)) end
-            local cur = e.current
-            r.bar:SetColorTexture(ar, ag, ab, 1); r.bar:SetShown(cur and true or false)
-            r.hl:SetColorTexture(ar, ag, ab, cur and 0.10 or 0)
+            local nc = e.nameColor or (e.dim and C.muted) or C.text
+            r.name:SetTextColor(nc[1], nc[2], nc[3])
+            r.lvl:SetText(e.lvl and e.lvl > 0 and tostring(e.lvl) or "")
+            local lc = e.dim and C.dim or levelColor(e.lvl); r.lvl:SetTextColor(lc[1], lc[2], lc[3])
+            r.right:SetText(e.right or "")
+            local rc = e.rightColor or C.muted; r.right:SetTextColor(rc[1], rc[2], rc[3])
+            -- barre d'avancée : quêtes du journal (sauf en mode compact)
+            local bar = e.frac ~= nil and not compact
+            r.track:SetShown(bar); r.fill:SetShown(bar and e.frac > 0)
+            if bar then
+                local bc = e.barColor or { ar, ag, ab }
+                r.track:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.9)
+                r.fill:SetColorTexture(bc[1], bc[2], bc[3], 1)
+                r.fill:SetWidth(math.max(1, math.floor((W - 42) * math.min(1, e.frac))))
+            end
+            r.hl:SetColorTexture(ar, ag, ab, 0)
             r.onClick, r.qid = e.onClick, e.qid
-            -- compacte : la 2e ligne passe dans l'infobulle
-            r.tip = e.tip or ((compact and e.sub and e.sub ~= "") and { e.name or "?", e.sub } or nil)
-            local h = (compact and 24 or 26) + (showSub and math.max(13, (r.sub:GetStringHeight() or 12)) + 3 or 0)
+            r.tip = e.tip
+            local h = bar and 27 or 21
             r:SetHeight(h)
             r:Show()
             y = y + h
+        end
+        local seps = self.seps or {}
+        self.seps = seps
+        local nsep = 0
+        local function drawSep()
+            nsep = nsep + 1
+            local t = seps[nsep]
+            if not t then t = self:CreateTexture(nil, "ARTWORK"); t:SetHeight(1); seps[nsep] = t end
+            t:SetColorTexture(C.border[1], C.border[2], C.border[3], 0.9)
+            t:ClearAllPoints(); t:SetPoint("TOPLEFT", 11, -(y + 3)); t:SetPoint("TOPRIGHT", -11, -(y + 3))
+            t:Show()
+            y = y + 7
         end
         -- rendu jusqu'à la hauteur maximale (poignée), le reste au-delà via la molette
         local limit = maxH - footH - 22
@@ -234,10 +278,11 @@ local function build()
         for i = self.off + 1, #items do
             local it = items[i]
             local y0 = y
-            if it.sec then drawSection(it.label, it.n, it.onClick) else drawLine(it.e) end
+            if it.sep then drawSep() elseif it.sec then drawSection(it.label, it.n, it.onClick) else drawLine(it.e) end
             if y > limit then
                 -- ne tient plus : retiré, la suite passe à la molette
-                if it.sec then self.secs[ns]:Hide(); ns = ns - 1 else self.rows[nr]:Hide(); nr = nr - 1 end
+                if it.sep then seps[nsep]:Hide(); nsep = nsep - 1
+                elseif it.sec then self.secs[ns]:Hide(); ns = ns - 1 else self.rows[nr]:Hide(); nr = nr - 1 end
                 y = y0
                 hidden = #items - i + 1
                 break
@@ -252,6 +297,7 @@ local function build()
         end
         for i = ns + 1, #self.secs do self.secs[i]:Hide() end
         for i = nr + 1, #self.rows do self.rows[i]:Hide() end
+        for i = nsep + 1, #seps do seps[i]:Hide() end
         y = y + 4
         self:SetHeight(math.min(maxH, y + 2))
     end
@@ -271,12 +317,12 @@ local function build()
         sample = function(on)
             f.sample = on or nil
             if on then
-                local A, G, P, Ok = UI:AccentTable(), C.gold, C.warning, C.positive
+                local G, P, Ok = C.gold, C.warning, C.positive
                 f:Paint({ name = T("Les Mortemines"), xp = 2600,
-                    log = { { name = T("Les rouges de la Confrérie"), lvl = 20, color = A, solid = true, current = true, sub = T("Tueur défias 6/10 · Bandeau rouge 3/7") },
-                            { name = T("La fin de Van Cleef"), lvl = 22, color = Ok, solid = true, glyph = "star", sub = T("prête à rendre"), subColor = Ok } },
-                    avail = { { name = T("Le collier d'Old Murk"), lvl = 18, color = G, sub = T("Marche de l'Ouest · 1,2 km") } },
-                    waiting = { { name = T("Le dernier Défias"), lvl = 22, color = P, glyph = "lock", sub = T("après : La Confrérie défias"), subColor = P } },
+                    log = { { name = T("Les rouges de la Confrérie"), lvl = 20, right = "7/10", frac = 0.7 },
+                            { name = T("La fin de Van Cleef"), lvl = 22, right = T("prête à rendre"), rightColor = Ok, frac = 1, barColor = Ok } },
+                    avail = { { name = T("Le collier d'Old Murk"), lvl = 18, nameColor = G, right = "1,2 km" } },
+                    waiting = { { name = T("Le dernier Défias"), lvl = 22, nameColor = P, right = T("prérequis"), rightColor = P } },
                     done = 3, pick = 2, preN = 1 }, D():Config())
                 f:Show()
             else UI:RefreshDungeonQuests() end
@@ -291,6 +337,24 @@ function UI:AccentTable() local r, g, b = UI:Accent(); return { r, g, b } end
 ---------------------------------------------------------------------------
 -- Données de la fenêtre
 ---------------------------------------------------------------------------
+-- avancée d'une quête du journal : part faite (0-1) et texte court (« 7/10 », « 2/3 objectifs »), nil sans chiffres
+local function progressOf(qid)
+    local QT = WK.modules.QuestTrack
+    local objs = QT and QT:Objectives(qid, true) or {}
+    local have, need, done = 0, 0, 0
+    for _, o in ipairs(objs) do
+        local n = o.need or 0
+        if n > 0 then have = have + math.min(o.have or 0, n); need = need + n end
+        if o.done then done = done + 1 end
+    end
+    if need > 0 then
+        if #objs == 1 then return have / need, string.format("%d/%d", have, need) end
+        return have / need, string.format("%d/%d", have, need)
+    end
+    if #objs > 0 then return done / #objs, string.format("%d/%d", done, #objs) end
+    return nil
+end
+
 local function objectivesText(qid)
     local QT = WK.modules.QuestTrack
     local parts = {}
@@ -312,16 +376,19 @@ function UI:DungeonQuestsData(d, cfg)
     local QT = WK.modules.QuestTrack
     local s = Dg:QuestSummary(d)
     local R = WK.modules.Rares
-    local A = UI:AccentTable()
     local out = { name = Dg:Name(d), log = {}, avail = {}, waiting = {}, done = s.done, doneList = {}, pick = Dg:PickCount(s), preN = #s.pre, xp = 0 }
     for _, q in ipairs(s.logList or {}) do
         local ready = QT and QT:IsComplete(q.id)
-        local e = { name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id), lvl = q.lvl, solid = true, qid = q.id }
+        local e = { name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id), lvl = q.lvl, qid = q.id }
         if ready then
-            e.color, e.glyph, e.sub, e.subColor = C.positive, "star", T("prête à rendre"), C.positive
+            e.right, e.rightColor, e.frac, e.barColor = T("prête à rendre"), C.positive, 1, C.positive
+            e.tip = { Qm:Name(q), T("Prête à rendre"), T("Clic : guider vers le rendu · clic droit : menu") }
         else
-            e.color, e.current = A, true
-            e.sub = cfg.questWinObjs ~= false and objectivesText(q.id) or nil
+            local frac, txt = progressOf(q.id)
+            e.right = txt or T("en cours")
+            e.frac = cfg.questWinObjs ~= false and (frac or 0) or nil
+            local obj = objectivesText(q.id)
+            e.tip = { Qm:Name(q), obj ~= "" and obj or nil, T("Clic : guider · clic droit : menu") }
         end
         e.onClick = function() if QT and QT.GuideQuest then QT:GuideQuest(q.id) end end
         table.insert(out.log, e)
@@ -331,9 +398,9 @@ function UI:DungeonQuestsData(d, cfg)
         local zone = R and R.ZoneName and R:ZoneName(q.smap or q.map) or ""
         local dt = distText(distOf(q))
         table.insert(out.avail, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
-            lvl = q.lvl, color = C.gold, q = q, zone = zone, -- q et zone : distance refaite seule (lightDistances)
-            sub = zone .. (dt and (" · " .. dt) or ""),
-            tip = { Qm:Name(q), T("Clic : guider vers le donneur") },
+            lvl = q.lvl, nameColor = C.gold, q = q, zone = zone, -- q et zone : distance refaite seule (lightDistances)
+            right = dt or T("à prendre"), sub = zone .. (dt and (" · " .. dt) or ""),
+            tip = { Qm:Name(q), zone ~= "" and zone or nil, T("À prendre · clic : guider vers le donneur") },
             onClick = function() Qm:GuideTo(q) end })
         out.xp = out.xp + (q.xp or 0)
     end
@@ -342,13 +409,13 @@ function UI:DungeonQuestsData(d, cfg)
         for _, e in ipairs(s.pre) do if e.unlock == q then pre = e.q break end end
         local sub = pre and string.format(T("après : %s"), Qm:Name(pre)) or T("après une autre quête (en cours)")
         table.insert(out.waiting, { qid = q.id, name = UI.GroupTag(q.id) .. Qm:Name(q) .. badge(q.id),
-            lvl = q.lvl, color = C.warning, glyph = "lock", sub = sub, subColor = C.warning,
-            tip = pre and { Qm:Name(pre), T("Prérequis de :") .. " " .. Qm:Name(q), T("Clic : guider vers son donneur") } or nil,
+            lvl = q.lvl, nameColor = C.warning, right = T("prérequis"), rightColor = C.warning, sub = sub,
+            tip = pre and { Qm:Name(q), sub, T("Clic : guider vers le donneur du prérequis") } or { Qm:Name(q), sub },
             onClick = pre and function() Qm:GuideTo(pre) end or nil })
         out.xp = out.xp + (q.xp or 0)
     end
     for _, q in ipairs(s.doneList or {}) do
-        table.insert(out.doneList, { qid = q.id, name = Qm:Name(q), lvl = q.lvl, color = C.positive, glyph = "star", dim = true })
+        table.insert(out.doneList, { qid = q.id, name = Qm:Name(q), lvl = q.lvl, dim = true, right = T("faite"), rightColor = C.dim })
     end
     return out
 end
@@ -360,7 +427,7 @@ local function lightDistances(data)
         if e.q then
             local dt = distText(distOf(e.q))
             local sub = (e.zone or "") .. (dt and (" · " .. dt) or "")
-            if sub ~= e.sub then e.sub = sub; changed = true end
+            if sub ~= e.sub then e.sub = sub; e.right = dt or T("à prendre"); changed = true end
         end
     end
     return changed

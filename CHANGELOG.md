@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.62 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- QoL > Feu de camp > Kit de camp : « Dans la barre des sacs » (sinon l'ancienne colonne près de la flamme) et « Déroulé du kit » vers le bas ou vers le haut.
+
+### Modifications
+- Fenêtre des quêtes du donjon refaite, plus lisible et plus compacte : pastilles « en cours » et « à prendre » en haut, niveau de chaque quête devant son nom, fine barre d'avancée sous chaque quête du journal, quêtes à prendre en doré sous un trait (l'XP est dans l'infobulle du titre).
+- Kit de camp dans la barre « Sacs, marchand et maître » : une case « kit » (temps restant des avantages du camp, en orange si « Bien nourri » manque) ; un clic déroule la liste du kit avec le nom et l'état de chaque objet (recharge, Bien nourri, prêt), hors combat. Remplace la colonne et les pastilles sous la flamme.
+
 ## v1.128.61 — 22/11/2026
 
 _Un /reload suffit._

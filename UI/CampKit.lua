@@ -11,6 +11,11 @@ local T = function(s) return WK.T(s) end
 --   infobulle des objets de camp : effet à ton niveau, paliers, buff qui l'annule, recharge.
 local M = WK.modules.Camp
 local MAXB, BS, GAP = 14, 36, 5
+-- dans la barre « Sacs, marchand et maître » (réglage kitInBar, maquette B) : liste déroulée sous ou au-dessus de
+-- sa case « kit » (kitDir), une ligne par objet : bouton protégé, nom, état (recharge, Bien nourri, quantité)
+local LS, LGAP, LW = 26, 4, 220
+local function inBar() local c = M:Config(); return c.kitInBar ~= false end
+UI.CampKitInBar = inBar
 local kit, chips
 local pending = false
 
@@ -74,6 +79,8 @@ local function build()
         end)
         b:SetScript("OnLeave", function() GameTooltip:Hide() end)
         b:Hide()
+        b.label = UI:Text(f, 11); b.label:SetJustifyH("LEFT"); b.label:Hide()
+        b.state = UI:Text(f, 10, C.muted); b.state:SetJustifyH("RIGHT"); b.state:Hide()
         f.buttons[i] = b
     end
     f:SetScript("OnUpdate", function(s, el)
@@ -95,6 +102,14 @@ local function build()
                     local total = (type(fed.duration) == "number" and fed.duration > 0) and fed.duration or fedLeft
                     left, st, du, col = fedLeft, GetTime() + fedLeft - total, total, C.positive
                 end
+                if s.list then
+                    local txt, col2
+                    if left then txt, col2 = short(left), col or C.gold
+                    elseif b.kind == "fed" then txt, col2 = T("absent"), C.negative
+                    elseif (b.count or 0) > 1 then txt, col2 = "x" .. b.count, C.muted
+                    else txt, col2 = T("prêt"), C.positive end
+                    b.state:SetText(txt); b.state:SetTextColor(col2[1], col2[2], col2[3])
+                end
                 if left and st and du then
                     b.cd:SetCooldown(st, du)
                     if b.cd.SetReverse then b.cd:SetReverse(col ~= nil) end
@@ -110,10 +125,11 @@ local function build()
     f:Hide()
     UI:RegisterHUD("campKit", f, {
         label = T("Kit de camp"), protected = true, default = { -170, -120 },
-        enabled = function() return M:Config().kit and WK:FeatureOn("campfire") end,
+        enabled = function() return M:Config().kit and not inBar() and WK:FeatureOn("campfire") end,
         sample = function(on)
             f.sample = on or nil
             if inCombat() then return end
+            if inBar() then return end
             if on then
                 local demo = { { id = M.FIRES[1][1], kind = "fire", count = 2 }, { id = 279944, kind = "object", count = 1 },
                     { id = 279967, kind = "object", count = 1 }, { id = M.SLEEPING_BAG, kind = "bag", count = 1 } }
@@ -131,10 +147,32 @@ local function build()
         local r1, g1, b1 = UI:Accent()
         local fedMissing = not (M.auras and M.auras.fed)
         local n = math.min(#list, MAXB)
+        local listMode = self.list
+        local size = listMode and LS or BS
         for i, b in ipairs(self.buttons) do
             local e = list[i]
+            b:SetSize(size, size)
+            b:ClearAllPoints()
+            if listMode then
+                b:SetPoint("TOPLEFT", self, "TOPLEFT", 6, -6 - (i - 1) * (LS + LGAP))
+            else
+                b:SetPoint("TOP", self, "TOP", 0, -6 - (i - 1) * (BS + GAP))
+            end
             if e and i <= n then
-                b.id, b.kind = e.id, e.kind
+                b.id, b.kind, b.count = e.id, e.kind, e.count
+                if listMode then
+                    b.label:ClearAllPoints(); b.label:SetPoint("LEFT", b, "RIGHT", 8, 0)
+                    b.label:SetPoint("RIGHT", self, "RIGHT", -64, 0)
+                    local nm = (WK.GetItemInfo(e.id))
+                    if not nm and e.kind == "object" and e.o then nm = M:Name(e.o, e.tier) end
+                    if not nm and e.kind == "fire" and e.fire then nm = M:FireName(e.fire) end
+                    b.label:SetText(nm or "…")
+                    b.state:ClearAllPoints(); b.state:SetPoint("RIGHT", self, "RIGHT", -8, 0)
+                    b.state:SetPoint("TOP", b, "TOP", 0, -7)
+                    b.label:Show(); b.state:Show()
+                else
+                    b.label:Hide(); b.state:Hide()
+                end
                 -- attributs posés seulement s'ils changent (chaque aura du joueur repasse ici)
                 if b:GetAttribute("type") ~= "item" then b:SetAttribute("type", "item") end -- rendu après un aperçu
                 local item = "item:" .. e.id
@@ -148,10 +186,18 @@ local function build()
                 b:Show()
             else
                 b.id = nil
-                b:Hide()
+                b:Hide(); b.label:Hide(); b.state:Hide()
             end
         end
-        self:SetHeight(12 + n * BS + math.max(0, n - 1) * GAP)
+        if listMode then
+            self:SetWidth(LW)
+            self:SetHeight(12 + n * LS + math.max(0, n - 1) * LGAP)
+            for _, b in ipairs(self.buttons) do b.n:SetShown(false) end
+        else
+            self:SetWidth(BS + 12)
+            self:SetHeight(12 + n * BS + math.max(0, n - 1) * GAP)
+            for _, b in ipairs(self.buttons) do b.n:SetShown(true) end
+        end
     end
     return f
 end
@@ -168,10 +214,39 @@ function UI:RefreshCampKit()
     -- les auras, elles, sont toujours relevées (flamme du camp ou assis près du feu)
     local a = M.auras
     local near = (M.state and M.state ~= "none") or (a and (a.flame or a.sit)) and true or false
-    if #list == 0 or not (cfg.kitAlways or near) then kit:Hide() return end
+    UI.campKitAvail = #list > 0 and (cfg.kitAlways or near) or false
+    if not UI.campKitAvail then kit:Hide(); kit.open = false; return end
+    kit.list = inBar()
+    if kit.list then
+        -- dans la barre : déroulé seulement à la demande (clic sur la case « kit »), placé par rapport à l'écran
+        -- d'après la case (jamais ancré à la barre : elle bouge en combat, le kit est protégé)
+        local tile = UI.CampKitTile and UI.CampKitTile()
+        if not (kit.open and tile and tile:IsVisible()) then kit:Hide() return end
+        kit:Fill(list)
+        local sc = tile:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+        local l, b, w, h = tile:GetRect()
+        if l then
+            local down = cfg.kitDir ~= "up"
+            local x = (l + w / 2) * sc - LW / 2
+            kit:ClearAllPoints()
+            if down then kit:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", x, b * sc - 4)
+            else kit:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", x, (b + h) * sc + 4) end
+        end
+        kit:Show()
+        return
+    end
     kit:Fill(list)
+    if UI.HUDApply then pcall(UI.HUDApply, UI, "campKit") end
     kit:Show()
 end
+-- case « kit » de la barre : déroule ou replie la liste (hors combat seulement : boutons protégés)
+function UI.ToggleCampKit()
+    if inCombat() then WK:Print(T("Kit de camp : à ouvrir hors combat.")) return end
+    if not kit then kit = build() end
+    kit.open = not kit.open
+    UI:RefreshCampKit()
+end
+function UI.CampKitOpen() return kit and kit.open and kit:IsShown() or false end
 
 WK:On("PLAYER_REGEN_ENABLED", function() if pending then UI:RefreshCampKit() end end)
 WK:On("BAG_UPDATE_DELAYED", function() C_Timer.After(0.3, function() UI:RefreshCampKit(); if UI.RefreshCampChips then UI:RefreshCampChips() end end) end)
@@ -236,7 +311,7 @@ function UI:RefreshCampChips()
     if not chips then chips = buildChips() end
     if not chips then return end
     local cfg = M:Config()
-    if not cfg.chips then chips:Hide() return end
+    if not cfg.chips or inBar() then chips:Hide() return end
     chips:Show()
     local a = M.auras or {}
     local rows = {}

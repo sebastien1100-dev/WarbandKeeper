@@ -94,7 +94,7 @@ local function buildSpace()
     f:SetFrameStrata("MEDIUM")
     f.bg = UI:Rounded(f, 11, 0, "BACKGROUND", 1)
     f.seps = {}
-    for i = 1, 2 do
+    for i = 1, 3 do
         local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
         s:SetColorTexture(1, 1, 1, 0.08)
         f.seps[i] = s
@@ -104,7 +104,7 @@ local function buildSpace()
     f.bag:SetScript("OnEnter", function(s)
         local free, total = BH():FreeSlots()
         UI:TooltipOwner(s, "ANCHOR_TOP")
-        GameTooltip:SetText(string.format(T("%d case(s) libre(s) sur %d"), free, total), 1, 1, 1)
+        _G.GameTooltip:SetText(string.format(T("%d case(s) libre(s) sur %d"), free, total), 1, 1, 1)
         local g = BH():CheapestGrey()
         if g then
             local _, link = WK.GetItemInfo(g.id)
@@ -112,7 +112,7 @@ local function buildSpace()
         else
             GameTooltip:AddLine(T("Aucun objet gris à jeter."), 0.6, 0.6, 0.6)
         end
-        GameTooltip:Show()
+        _G.GameTooltip:Show()
     end)
     f.bag:SetScript("OnClick", function(s, btn)
         if btn ~= "LeftButton" then return end
@@ -148,13 +148,35 @@ local function buildSpace()
         GameTooltip:Show()
     end)
     f.trainer:SetScript("OnClick", function() WK.modules.Guide:GoTo("trainer") end)
+    -- kit de camp (réglage kitInBar du feu de camp) : clic = dérouler la liste du kit sous ou au-dessus (kitDir)
+    f.kit = newTile(f, "fire")
+    f.kit:SetScript("OnEnter", function(s)
+        local Cp = WK.modules.Camp
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Kit de camp"), 1, 1, 1)
+        local perk = Cp.auras and Cp.Remaining(Cp.auras.perk)
+        if perk and perk > 0 then
+            _G.GameTooltip:AddLine(string.format(T("Avantages du camp · %s"), UI:AgoShort(perk, true)),
+                UI.RGB(C.positive))
+        end
+        if not (Cp.auras and Cp.auras.fed) then _G.GameTooltip:AddLine(T("Bien nourri absent"), UI.RGB(C.negative)) end
+        local open = UI.CampKitOpen and UI:CampKitOpen()
+        _G.GameTooltip:AddLine(open and T("Clic : replier le kit") or T("Clic : dérouler le kit"), 0.6, 0.6, 0.6)
+        _G.GameTooltip:Show()
+    end)
+    f.kit:SetScript("OnClick", function(s)
+        if UI.ToggleCampKit then UI:ToggleCampKit() end
+        if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
+    end)
     -- mise en page : cases visibles côte à côte, trait entre deux cases
-    function f:Arrange(showV, showT)
+    function f:Arrange(showV, showT, showK)
         local tiles = { self.bag }
         if showV then tiles[#tiles + 1] = self.vendor end
         if showT then tiles[#tiles + 1] = self.trainer end
+        if showK then tiles[#tiles + 1] = self.kit end
         self.vendor:SetShown(showV and true or false)
         self.trainer:SetShown(showT and true or false)
+        self.kit:SetShown(showK and true or false)
         for i, t in ipairs(tiles) do
             t:ClearAllPoints(); t:SetPoint("LEFT", (i - 1) * (TILE + 1), 0)
         end
@@ -170,10 +192,11 @@ local function buildSpace()
     end
     -- exemple du mode édition
     function f:Paint(free)
-        self:Arrange(true, true)
+        self:Arrange(true, true, true)
         self.bag:Paint(free <= 0 and C.negative or C.warning, tostring(free))
         self.vendor:Paint(C.negative, "85 m")
         self.trainer:Paint(C.info, "3")
+        self.kit:Paint(C.positive, "1h 52")
     end
     f:Hide()
     f:SetScript("OnUpdate", function(s, el)
@@ -189,6 +212,7 @@ local function buildSpace()
     })
     return f
 end
+UI.CampKitTile = function() return space and space.kit end
 function UI:RefreshBagSpace()
     space = space or buildSpace()
     if space.sample then return end
@@ -197,7 +221,23 @@ function UI:RefreshBagSpace()
     local free = BH():FreeSlots()
     local low = cfg.low or 3
     local showV, showT = cfg.vendorTile ~= false, cfg.trainerTile ~= false
-    space:Arrange(showV, showT)
+    local showK = UI.CampKitInBar and UI.CampKitInBar() and UI.campKitAvail and WK:FeatureOn("campfire") or false
+    local w0 = space:GetWidth()
+    space:Arrange(showV, showT, showK)
+    if showK then
+        -- temps restant des avantages du camp (vert), sinon « kit » ; rouge si « Bien nourri » manque
+        local Cp = WK.modules.Camp
+        local perk = Cp.auras and Cp.Remaining(Cp.auras.perk)
+        local fedMissing = not (Cp.auras and Cp.auras.fed)
+        local txt = (perk and perk > 0) and UI:AgoShort(perk, true) or T("kit")
+        local col = (perk and perk > 0) and C.positive or (fedMissing and C.warning) or { UI:Accent() }
+        space.kit:Paint(col, txt)
+    end
+    -- liste du kit ouverte : replacée si la barre a changé de largeur (hors combat)
+    local fight = _G.InCombatLockdown and _G.InCombatLockdown()
+    if UI.CampKitOpen and UI:CampKitOpen() and space:GetWidth() ~= w0 and not fight then
+        UI:RefreshCampKit()
+    end
     -- sac : rouge plein, orange sous le seuil, sinon discret
     space.bag:Paint(free <= 0 and C.negative or (free <= low and C.warning) or C.muted, tostring(free))
     if showV then

@@ -1853,13 +1853,32 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp", 40 + 3 * 46 + 8, "colonne de boutons près de la flamme")
+            local kc = card("Kit de camp", 40 + 5 * 46 + 8, "dans la barre des sacs, ou colonne près de la flamme")
             UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
                 toggle(kc, function() return campCfg.kitAlways end, function(v) campCfg.kitAlways = v; cupdate() end), 80)
-            UI:SettingRow(kc, -132, "Pastilles sous la flamme", "Avantages restants, recharge des objets de camp, « Bien nourri ».",
+            UI:SettingRow(kc, -132, "Pastilles sous la flamme",
+                "Avantages restants, recharge des objets de camp, « Bien nourri »"
+                    .. " (seulement hors de la barre des sacs).",
                 toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
+            -- kit dans la barre « Sacs, marchand et maître » : une case « kit » qui déroule la liste
+            local function kupdate()
+                cupdate(); UI:RefreshCampKit()
+                if UI.RefreshBagSpace then UI:RefreshBagSpace() end
+            end
+            UI:SettingRow(kc, -178, "Dans la barre des sacs",
+                "Une case « kit » dans la barre « Sacs, marchand et maître » (temps restant des avantages du camp) ;"
+                    .. " un clic déroule le kit avec le nom et l'état de chaque objet (hors combat)."
+                    .. " Il faut que la barre soit affichée.",
+                toggle(kc, function() return campCfg.kitInBar ~= false end,
+                    function(v) campCfg.kitInBar = v; kupdate() end), 80)
+            local dirSeg = UI:Segmented(kc, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
+                function(v) campCfg.kitDir = v; kupdate() end, 24)
+            UI:SettingRow(kc, -224, "Déroulé du kit",
+                "Sens dans lequel la liste du kit s'ouvre depuis la barre des sacs.",
+                dirSeg, 200)
+            dirSeg:Select(campCfg.kitDir == "up" and "up" or "down")
 
             -- comment ça marche, et effets rencontrés
             -- 4 étapes en tuiles (gros numéro à la couleur d'accent, titre, texte), puis les effets rencontrés
