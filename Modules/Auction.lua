@@ -100,3 +100,93 @@ function M:Summary(days)
     table.sort(top, function(a, b) return a.net > b.net end)
     return { sales = sales, buys = buys, balance = sales - buys, nSales = nSales, nBuys = nBuys, top = top }
 end
+
+-- Nom d'objet (les factures n'ont que le nom) -> n° d'objet : cache du jeu, sinon objets scannés à l'HV
+local idByName = {}
+local function idOf(name)
+    if idByName[name] ~= nil then return idByName[name] or nil end
+    local f = (_G.C_Item and _G.C_Item.GetItemInfoInstant) or _G.GetItemInfoInstant
+    local id
+    if f then
+        local ok, v = pcall(f, name)
+        if ok and type(v) == "number" then id = v end
+    end
+    if not id then
+        local S = WK.modules.AHScan
+        for i in pairs(S and S:Data().items or {}) do
+            if WK.GetItemInfo(i) == name then id = i break end
+        end
+    end
+    idByName[name] = id or false
+    return id
+end
+M.IdOf = function(_, name) return idOf(name) end
+
+-- Ventes par objet sur les N derniers jours (nil : tout le journal) : vendus (unités), prix brut et net,
+-- prix moyen par unité, enchères revenues (expirées), part vendue (ventes / (ventes + expirées)).
+-- Rend rows (triées par montant), byName, totaux. Gardé en cache tant que le journal ne change pas.
+local cache = {}
+function M.ItemStats(_, days)
+    local l = log()
+    local key = (days or 0) .. ":" .. #l .. ":" .. tostring(l[1] and l[1].t)
+    local c = cache[days or 0]
+    if c and c.key == key then return c.rows, c.byName, c.tot end
+    local since = days and (_G.time() - days * 86400) or 0
+    local rows, byName = {}, {}
+    local tot = { gross = 0, net = 0, sales = 0, expired = 0, sold = 0 }
+    for _, e in ipairs(l) do
+        if (e.t or 0) < since then break end
+        if e.item and (e.kind == "sale" or e.kind == "expired") then
+            local r = byName[e.item]
+            if not r then
+                r = { name = e.item, sold = 0, gross = 0, net = 0, sales = 0, expired = 0 }
+                byName[e.item] = r
+                rows[#rows + 1] = r
+            end
+            if e.kind == "sale" then
+                r.sold, r.sales = r.sold + (e.count or 1), r.sales + 1
+                r.gross, r.net = r.gross + (e.gross or 0), r.net + (e.net or 0)
+                tot.sales, tot.sold = tot.sales + 1, tot.sold + (e.count or 1)
+                tot.gross, tot.net = tot.gross + (e.gross or 0), tot.net + (e.net or 0)
+            else
+                r.expired, tot.expired = r.expired + 1, tot.expired + 1
+            end
+        end
+    end
+    for _, r in ipairs(rows) do
+        r.avg = r.sold > 0 and math.floor(r.gross / r.sold + 0.5) or nil
+        r.rate = (r.sales + r.expired) > 0 and (r.sales / (r.sales + r.expired)) or nil
+        r.id = idOf(r.name)
+    end
+    table.sort(rows, function(a, b)
+        if a.gross ~= b.gross then return a.gross > b.gross end
+        return a.name < b.name
+    end)
+    cache[days or 0] = { key = key, rows = rows, byName = byName, tot = tot }
+    return rows, byName, tot
+end
+
+-- Ventes d'un objet (tout le journal) : la ligne de ItemStats, ou nil s'il n'a jamais été vendu
+function M.SoldInfo(_, itemID)
+    local name = itemID and WK.GetItemInfo(itemID)
+    if not name then return nil end
+    local _, byName = M:ItemStats(nil)
+    local r = byName[name]
+    return (r and r.sales > 0) and r or nil
+end
+
+-- Infobulle : prix réellement obtenu à l'HV (si l'objet a déjà été vendu), sous le prix du scan
+function M.AddSoldTooltip(_, tooltip, itemID, header)
+    local S = WK.modules.AHScan
+    if not (S and S:Config().tooltip and WK:FeatureOn("ah")) then return false end
+    local r = M:SoldInfo(itemID)
+    if not (r and r.avg) then return false end
+    header()
+    tooltip:AddDoubleLine(WK.T("Tu le vends"),
+        WK:FormatMoney(r.avg) .. "  ·  " .. string.format(WK.T("%d vendu(s)"), r.sold),
+        0.8, 0.8, 0.8, 1, 1, 1)
+    if r.rate then
+        tooltip:AddDoubleLine(WK.T("Part vendue"), math.floor(r.rate * 100 + 0.5) .. " %", 0.6, 0.6, 0.6, 0.8, 0.8, 0.8)
+    end
+    return true
+end

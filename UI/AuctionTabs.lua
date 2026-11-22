@@ -308,7 +308,8 @@ end
 ---------------------------------------------------------------------------
 local NAV = {
     { "browse", "Parcourir", "search" }, { "sell", "Vendre", "coin" }, { "cancel", "Mes enchères", "clock" },
-    { "buy", "À acheter", "bag" }, { "prices", "Prix", "chart" }, { "scan", "Scan et réglages", "gear" },
+    { "buy", "À acheter", "bag" }, { "prices", "Prix", "chart" }, { "sales", "Mes ventes", "notes" },
+    { "scan", "Scan et réglages", "gear" },
 }
 local WIN_W, WIN_H, SIDE_W, HEAD_H = 1180, 660, 196, 46
 
@@ -2737,6 +2738,100 @@ local function build(host)
             self.sellBtn:SetEnabled(b > 0)
         end
         for _, w in ipairs({ self.have, self.find, self.watchBtn, self.watch, self.sellBtn, self.note }) do w:SetShown(has) end
+    end
+
+    -----------------------------------------------------------------------
+    -- Mes ventes (maquette 3A) : prix réellement obtenus d'après les factures de l'HV (Modules/Auction.lua),
+    -- comparés au prix du scan ; part vendue = ventes / (ventes + enchères revenues). Clic : page Prix.
+    -----------------------------------------------------------------------
+    local SALES_NOTE = "Part vendue : ventes / (ventes + enchères revenues) · orange : sous le prix du scan"
+        .. " · clic : l'historique"
+    local SALES_EMPTY = "Aucune vente notée sur cette période : les ventes sont lues sur les factures"
+        .. " quand tu prends l'or à la boîte aux lettres."
+    local slv = _G.CreateFrame("Frame", nil, f.content)
+    slv:SetAllPoints(f.content)
+    f.views.sales = slv
+    slv.days = cfg().salesDays or 30
+    slv.box = panelBox(slv, "Mes ventes")
+    slv.box:SetAllPoints()
+    slv.box.sub:SetText(T("prix réellement obtenus, d'après tes factures de l'HV"))
+    slv.seg = UI:Segmented(slv.box, { { 7, "7 j" }, { 30, "30 j" }, { 0, "Tout" } }, function(v)
+        slv.days = v; cfg().salesDays = v; slv:Refresh()
+    end, 24)
+    slv.seg:SetPoint("TOPRIGHT", -10, -6)
+    local SCOLS = { { "VENDUS", -470 }, { "PRIX MOYEN", -360 }, { "PRIX DU SCAN", -240 }, { "ÉCART", -150 },
+        { "PART VENDUE", -14 } }
+    local sh = UI:Text(slv.box, 10, C.dim); sh:SetPoint("TOPLEFT", 12, -40); sh:SetText(T("OBJET"))
+    for _, cd in ipairs(SCOLS) do
+        local h = UI:Text(slv.box, 10, C.dim); h:SetPoint("TOPRIGHT", cd[2], -40); h:SetJustifyH("RIGHT")
+        h:SetText(T(cd[1]))
+    end
+    slv.sc = UI:Scroll(slv.box)
+    slv.sc:SetPoint("TOPLEFT", 6, -58); slv.sc:SetPoint("BOTTOMRIGHT", -6, 64)
+    slv.tot = UI:Text(slv.box, 12); slv.tot:SetPoint("BOTTOMLEFT", 12, 36); slv.tot:SetJustifyH("LEFT")
+    slv.note = UI:Text(slv.box, 10, C.muted); slv.note:SetPoint("BOTTOMLEFT", 12, 14)
+    slv.note:SetText(T(SALES_NOTE))
+    slv.empty = UI:Text(slv.box, 12, C.muted)
+    slv.empty:SetPoint("TOPLEFT", 12, -70); slv.empty:SetPoint("TOPRIGHT", -12, -70)
+    slv.empty:SetJustifyH("LEFT"); if slv.empty.SetWordWrap then slv.empty:SetWordWrap(true) end
+    slv.empty:SetText(T(SALES_EMPTY))
+    slv.rows = UI:Pool(function()
+        local r = _G.CreateFrame("Button", nil, slv.sc.child)
+        r:SetHeight(28)
+        r.hl = UI:Rounded(r, 6, 0, "BACKGROUND", 1); r.hl:SetColor(unpack(C.hover)); r.hl:Hide()
+        r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("TOPLEFT", 6, -4)
+        r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 34, -7); r.name:SetPoint("TOPRIGHT", -540, -7)
+        r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
+        r.cells = {}
+        for k, cd in ipairs(SCOLS) do
+            local t = UI:Text(r, 12); t:SetPoint("TOPRIGHT", cd[2] + 6, -7); t:SetJustifyH("RIGHT")
+            r.cells[k] = t
+        end
+        r:SetScript("OnEnter", function(s2) s2.hl:Show() end)
+        r:SetScript("OnLeave", function(s2) s2.hl:Hide() end)
+        r:SetScript("OnClick", function(s2)
+            if s2.id then f:Open("prices"); f.views.prices.id = s2.id; f.views.prices:Refresh() end
+        end)
+        return r
+    end)
+    function slv:Refresh()
+        self.seg:Select(self.days)
+        local rows, _, tot = WK.modules.Auction:ItemStats(self.days > 0 and self.days or nil)
+        self.rows:Reset()
+        local y = 0
+        for _, e in ipairs(rows) do
+            if e.sales > 0 or e.expired > 0 then
+                local r = self.rows:Get()
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+                r.id = e.id
+                local icon = e.id and select(10, WK.GetItemInfo(e.id))
+                r.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+                r.name:SetText(e.name)
+                local scan = e.id and S:Entry(e.id)
+                local sp = scan and scan.p
+                r.cells[1]:SetText(tostring(e.sold))
+                r.cells[2]:SetText(e.avg and WK:FormatMoney(e.avg) or "-")
+                r.cells[3]:SetText(sp and WK:FormatMoney(sp) or "-"); r.cells[3]:SetTextColor(unpack(C.muted))
+                if e.avg and sp and sp > 0 then
+                    local d = math.floor((e.avg - sp) / sp * 100 + 0.5)
+                    r.cells[4]:SetText((d > 0 and "+" or "") .. d .. " %")
+                    r.cells[4]:SetTextColor(unpack(d < 0 and C.warning or C.positive))
+                else r.cells[4]:SetText("-"); r.cells[4]:SetTextColor(unpack(C.dim)) end
+                if e.rate then
+                    local pct = math.floor(e.rate * 100 + 0.5)
+                    r.cells[5]:SetText(pct .. " %")
+                    r.cells[5]:SetTextColor(unpack(pct >= 75 and C.positive or C.warning))
+                else r.cells[5]:SetText("-"); r.cells[5]:SetTextColor(unpack(C.dim)) end
+                y = y + 30
+            end
+        end
+        self.sc:SetContentHeight(y)
+        self.empty:SetShown(y == 0)
+        local mu = UI:Hex(C.muted)
+        self.tot:SetText(mu .. T("Vendu") .. "|r  " .. WK:FormatMoney(tot.gross) .. "     "
+            .. mu .. T("Reçu (après commission)") .. "|r  " .. WK:FormatMoney(tot.net) .. "     "
+            .. mu .. T("Enchères revenues") .. "|r  " .. tot.expired)
     end
 
     -----------------------------------------------------------------------

@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.130", date = "22/11/2026",
+        added = {
+            "HV > Mes ventes : prix moyen réellement obtenu par objet (d'après tes factures), comparé au prix du scan, nombre vendu et part vendue (ventes contre enchères revenues), sur 7 j, 30 j ou tout ; totaux vendu, reçu et invendus. Clic : l'historique de l'objet.",
+            "Infobulle et fiche de nos sacs : « Tu le vends » (prix moyen, nombre vendu, part vendue) quand l'objet a déjà été vendu.",
+            "Métiers > Qui peut fabriquer ? : recherche d'une recette ou d'un objet dans les recettes de tous tes persos, qui la connaît, de quoi en faire avec les composants du compte ou ce qui manque ; bouton pour l'ajouter à la file de fabrication.",
+            "Infobulle : « Fabricable par » (persos qui connaissent la recette) et « Sert à N recette(s) de tes persos » sur un composant.",
+        },
+    },
+    {
         version = "1.128.129", date = "22/11/2026",
         changed = {
             "Notre inventaire : les filtres ont le rendu de la maquette (pastilles teintées de l'apparence avec liseré, pleine pour le filtre choisi, grise quand il n'y a rien).",
@@ -6511,8 +6520,6 @@ WK.Roadmap = {
     { prio = 2, theme = "map", title = "Chemins appris partagés", text = "Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde." },
     { prio = 2, theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
     { prio = 2, theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
-    { prio = 2, theme = "eco", title = "Prix moyen de vente", text = "Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan." },
-    { prio = 2, theme = "prof", title = "Qui peut fabriquer… ?", text = "Recherche d'une recette sur tous les persos." },
     { prio = 3, theme = "prof", title = "Annonce de métier", text = "Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes." },
     { prio = 3, theme = "char", title = "Expérience, suite", text = "Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu." },
     { prio = 3, theme = "char", title = "Feu de camp, suite", text = "Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage)." },

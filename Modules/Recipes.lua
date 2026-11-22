@@ -766,3 +766,109 @@ function M:ExportToList(entries, listName)
     WK:Print(string.format(T("Liste d'achat « %s » prête (%d objet(s)) : à l'hôtel des ventes, page « À acheter » de la fenêtre Warband Keeper."), listName, n))
     return true
 end
+
+---------------------------------------------------------------------------
+-- Qui peut fabriquer… ? (page Métiers > onglet, infobulles) : recettes connues de tous les persos
+---------------------------------------------------------------------------
+local craftIdx, craftAt = nil, 0
+local function craftIndex()
+    if craftIdx and _G.time() - craftAt < 10 then return craftIdx end
+    local byName, byOut, byReagent, list = {}, {}, {}, {}
+    for key, c in pairs(WK.DB.global.characters) do
+        for rk, r in pairs(c.recipes or {}) do
+            local e = byName[rk]
+            if not e then
+                e = { key = rk, name = r.name or rk, prof = r.prof, icon = r.icon, out = r.out, qty = r.qty,
+                    reagents = r.reagents or {}, who = {} }
+                byName[rk] = e
+                list[#list + 1] = e
+                if r.out then byOut[r.out] = byOut[r.out] or {}; table.insert(byOut[r.out], e) end
+                for _, rg in ipairs(r.reagents or {}) do
+                    local id = rg[1]
+                    if id then byReagent[id] = byReagent[id] or {}; table.insert(byReagent[id], e) end
+                end
+            end
+            table.insert(e.who, key)
+        end
+    end
+    for _, e in ipairs(list) do table.sort(e.who) end
+    table.sort(list, function(a, b) return a.name < b.name end)
+    craftIdx, craftAt = { list = list, byOut = byOut, byReagent = byReagent }, _G.time()
+    return craftIdx
+end
+M.CraftIndex = function() return craftIndex() end
+function M.InvalidateCraft() craftIdx = nil end
+
+-- Fabrications possibles avec les composants de tout le compte, et le premier composant qui manque
+function M.CraftStock(_, e)
+    local Inv = WK.modules.Inventory
+    local can, miss
+    for _, rg in ipairs(e.reagents or {}) do
+        local id, n = rg[1], rg[2] or 1
+        if id and n > 0 then
+            local have = Inv:AccountCount(id)
+            local k = math.floor(have / n)
+            if not can or k < can then can = k end
+            if have < n and not miss then miss = { id = id, n = n - have } end
+        end
+    end
+    return can or 0, miss
+end
+
+-- Recherche par nom de recette ou d'objet produit (sans tenir compte des majuscules)
+function M.WhoCanCraft(_, query)
+    query = (query or ""):lower()
+    local out = {}
+    if query == "" then return out end
+    for _, e in ipairs(craftIndex().list) do
+        local n = (e.name or ""):lower()
+        local prod = e.out and WK.GetItemInfo(e.out)
+        if n:find(query, 1, true) or (prod and prod:lower():find(query, 1, true)) then out[#out + 1] = e end
+    end
+    return out
+end
+
+-- Infobulle : qui peut fabriquer l'objet, et à combien de recettes de tes persos il sert
+function M:AddCraftTooltip(tooltip, itemID, header)
+    if not (self.TooltipEnabled and self:TooltipEnabled()) or not WK:FeatureOn("professions") then return false end
+    local idx = craftIndex()
+    local chars = WK.DB.global.characters
+    local function names(keys, max)
+        local t = {}
+        for i, k in ipairs(keys) do
+            if i > max then t[#t + 1] = "…" break end
+            local c = chars[k] or {}
+            local cc = c.class and _G.RAID_CLASS_COLORS and _G.RAID_CLASS_COLORS[c.class]
+            local hex = cc and string.format("|cff%02x%02x%02x", cc.r * 255, cc.g * 255, cc.b * 255) or "|cffffffff"
+            t[#t + 1] = hex .. WK:CharName(c, k) .. "|r"
+        end
+        return table.concat(t, ", ")
+    end
+    local any = false
+    local made = idx.byOut[itemID]
+    if made then
+        local who, seen = {}, {}
+        for _, e in ipairs(made) do
+            for _, k in ipairs(e.who) do if not seen[k] then seen[k] = true; who[#who + 1] = k end end
+        end
+        header(); any = true
+        tooltip:AddDoubleLine(WK.T("Fabricable par"), names(who, 3), 0.8, 0.8, 0.8, 1, 1, 1)
+        local can = self:CraftStock(made[1])
+        if #(made[1].reagents or {}) > 0 then
+            tooltip:AddDoubleLine(WK.T("Composants sur le compte"), string.format(WK.T("de quoi en faire %d"), can),
+                0.6, 0.6, 0.6, can > 0 and 0.5 or 0.9, can > 0 and 0.85 or 0.6, can > 0 and 0.4 or 0.3)
+        end
+    end
+    local useList = idx.byReagent[itemID]
+    if useList then
+        if not any then header(); any = true end
+        local parts = {}
+        for i, e in ipairs(useList) do
+            if i > 2 then parts[#parts + 1] = "…" break end
+            parts[#parts + 1] = e.name .. " (" .. names(e.who, 1) .. ")"
+        end
+        tooltip:AddLine(string.format(WK.T("Sert à %d recette(s) de tes persos :"), #useList), 0.8, 0.8, 0.8)
+        tooltip:AddLine("  " .. table.concat(parts, ", "), 0.7, 0.7, 0.7, true)
+    end
+    return any
+end

@@ -2159,6 +2159,99 @@ local function Settings(page, parent)
 end
 
 
+-- Qui peut fabriquer… ? (maquette 4A) : recherche dans les recettes de tous les persos
+local WHO_HELP = "Tape le nom d'une recette ou d'un objet : tu verras quels persos savent le fabriquer"
+    .. " et si les composants sont sur le compte."
+local WHO_NONE = "Aucune recette connue de tes persos ne correspond."
+    .. " Ouvre le métier d'un perso pour relever ses recettes."
+local function WhoCraft(_, parent)
+    local tab = {}
+    local R = WK.modules.Recipes
+    local card = UI:Card(parent, "Qui peut fabriquer… ?",
+        "les recettes de tous tes persos (lues à l'ouverture de chaque métier)")
+    card:SetPoint("TOPLEFT", 0, TOP)
+    card:SetPoint("BOTTOMRIGHT")
+    local search = UI:Input(card, 320, 30, "Recette ou objet...", "search")
+    search:SetPoint("TOPLEFT", 14, -40)
+    search.onChange = function(t) tab.query = t or ""; tab:Refresh() end
+    local hR = UI:Text(card, 10, C.dim); hR:SetPoint("TOPLEFT", 16, -82); hR:SetText(T("RECETTE"))
+    local hW = UI:Text(card, 10, C.dim); hW:SetPoint("TOPRIGHT", -330, -82); hW:SetText(T("QUI LA CONNAÎT"))
+    local hS = UI:Text(card, 10, C.dim); hS:SetPoint("TOPRIGHT", -110, -82); hS:SetText(T("COMPOSANTS SUR LE COMPTE"))
+    local sc = UI:Scroll(card)
+    sc:SetPoint("TOPLEFT", 10, -100)
+    sc:SetPoint("BOTTOMRIGHT", -8, 10)
+    local empty = UI:Text(card, 12, C.muted)
+    empty:SetPoint("TOPLEFT", 16, -110); empty:SetPoint("TOPRIGHT", -16, -110); empty:SetJustifyH("LEFT")
+    if empty.SetWordWrap then empty:SetWordWrap(true) end
+    local rows = UI:Pool(function()
+        local r = _G.CreateFrame("Frame", nil, sc.child)
+        r:SetHeight(36)
+        r.bg = UI:Rounded(r, 8, 0, "BACKGROUND", 1); r.bg:SetColor(unpack(C.surface2))
+        r.icon = UI:RoundIcon(r, 22); r.icon:SetPoint("TOPLEFT", 8, -7)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 38, -5); r.name:SetPoint("TOPRIGHT", -470, -5)
+        r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
+        r.prof = UI:Text(r, 10, C.muted); r.prof:SetPoint("TOPLEFT", 38, -20)
+        r.who = UI:Text(r, 12); r.who:SetPoint("TOPRIGHT", -322, -11); r.who:SetWidth(140); r.who:SetJustifyH("LEFT")
+        r.who:SetWordWrap(false)
+        r.stock = UI:Text(r, 11); r.stock:SetPoint("TOPRIGHT", -96, -12); r.stock:SetWidth(210)
+        r.stock:SetJustifyH("LEFT")
+        r.stock:SetWordWrap(false)
+        r.add = UI:Button(r, "File", nil, 24, "secondary", "plus")
+        r.add:SetPoint("TOPRIGHT", -8, -6)
+        r.add:SetScript("OnClick", function(b)
+            if b.key then
+                R:AddToList(b.key, 1)
+                WK:Print(string.format(T("%d x %s ajouté(s) à la file de fabrication."), 1, b.recName or "?"))
+            end
+        end)
+        return r
+    end)
+    function tab:Refresh()
+        rows:Reset()
+        local q = self.query or ""
+        local list = R:WhoCanCraft(q)
+        local chars = WK.DB.global.characters
+        local y = 0
+        for i, e in ipairs(list) do
+            if i > 60 then break end
+            local r = rows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+            local icon = e.icon or (e.out and select(10, WK.GetItemInfo(e.out)))
+            r.icon:SetTexture(icon or (UI.MEDIA .. "hammer"))
+            r.name:SetText(e.name)
+            r.prof:SetText(T(e.prof or ""))
+            local names = {}
+            for k = 1, math.min(3, #e.who) do
+                local key = e.who[k]
+                local c = chars[key] or {}
+                names[#names + 1] = UI:Hex({ UI:ClassColor(c.class) }) .. WK:CharName(c, key) .. "|r"
+            end
+            if #e.who > 3 then names[#names + 1] = "…" end
+            r.who:SetText(table.concat(names, ", "))
+            local can, miss = R:CraftStock(e)
+            if #(e.reagents or {}) == 0 then
+                r.stock:SetText(T("composants inconnus")); r.stock:SetTextColor(unpack(C.muted))
+            elseif can > 0 then
+                r.stock:SetText(string.format(T("de quoi en faire %d"), can)); r.stock:SetTextColor(unpack(C.positive))
+            else
+                local mn = miss and WK.GetItemInfo(miss.id) or "?"
+                r.stock:SetText(string.format(T("manque %d %s"), miss and miss.n or 0, mn))
+                r.stock:SetTextColor(unpack(C.warning))
+            end
+            r.add.key, r.add.recName = e.key, e.name
+            y = y + 40
+        end
+        sc:SetContentHeight(y)
+        empty:SetShown(#list == 0)
+        if q == "" then
+            empty:SetText(T(WHO_HELP))
+        else
+            empty:SetText(T(WHO_NONE))
+        end
+    end
+    return tab
+end
+
 UI:RegisterPage({
     key = "professions", order = 4, nav = "Métiers",
     title = "Métiers",
@@ -2167,7 +2260,7 @@ UI:RegisterPage({
     Build = function(self, p)
         self.tab = "levels"
         local frames, tabs = {}, {}
-        for _, k in ipairs({ "levels", "recipes", "shopping", "craftsell", "detail", "settings" }) do
+        for _, k in ipairs({ "levels", "recipes", "shopping", "craftsell", "who", "detail", "settings" }) do
             local f = CreateFrame("Frame", nil, p)
             f:SetAllPoints()
             f:SetShown(k == "levels")
@@ -2183,6 +2276,7 @@ UI:RegisterPage({
         tabs.shopping = Shopping(self, frames.shopping)
         tabs.settings = Settings(self, frames.settings)
         tabs.craftsell = CraftSell(self, frames.craftsell)
+        tabs.who = WhoCraft(self, frames.who)
         UI:OnResize(p, function() UI:RefreshSoon() end) -- cartes des niveaux
         self.tabs = tabs
         local seg
@@ -2195,7 +2289,8 @@ UI:RegisterPage({
             for key, f in pairs(frames) do f:SetShown(key == k) end
             self:Refresh()
         end
-        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" }, { "craftsell", "Fabriquer ou vendre" } }, setTab, 32)
+        seg = UI:Segmented(p, { { "levels", "Niveaux" }, { "recipes", "Recettes" }, { "shopping", "File de fabrication" }, { "craftsell", "Fabriquer ou vendre" },
+            { "who", "Qui peut fabriquer ?" } }, setTab, 32)
         seg:SetPoint("TOPLEFT")
         seg:Select("levels")
         -- Roue dentée : tous les réglages des métiers ; un second clic revient à l'onglet d'avant

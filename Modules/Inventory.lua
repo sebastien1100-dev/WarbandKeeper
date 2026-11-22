@@ -292,6 +292,15 @@ local function onTooltip(tooltip, data)
             if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
         end)
     end
+    -- prix réellement obtenu à l'HV (Modules/Auction.lua, d'après les factures)
+    local Au = WK.modules.Auction
+    if Au and Au.AddSoldTooltip and Au:AddSoldTooltip(tooltip, itemID, function()
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+    end) then any = true end
+    -- recettes de tes persos : qui peut le fabriquer, à quoi il sert (Modules/Recipes.lua)
+    if R and R.AddCraftTooltip and R:AddCraftTooltip(tooltip, itemID, function()
+        if not any then tooltip:AddLine(" "); tooltip:AddLine(WK:Tag()); any = true end
+    end) then any = true end
     local V = WK.modules.Value
     if V and V:ShowBoth() then
         local ah, vendor = V:Prices(itemID)

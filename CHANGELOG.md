@@ -31,12 +31,10 @@ _Prévu, pas encore commencé._
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
 - **Inventaire, suite : banque** (haute) — Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement.
 - **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
-- **Prix moyen de vente** (moyenne) — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
 ### Métiers
 - **Mise en valeur à l'approche** (moyenne) — Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse.
-- **Qui peut fabriquer… ?** (moyenne) — Recherche d'une recette sur tous les persos.
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
@@ -72,6 +70,16 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.130 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- HV > Mes ventes : prix moyen réellement obtenu par objet (d'après tes factures), comparé au prix du scan, nombre vendu et part vendue (ventes contre enchères revenues), sur 7 j, 30 j ou tout ; totaux vendu, reçu et invendus. Clic : l'historique de l'objet.
+- Infobulle et fiche de nos sacs : « Tu le vends » (prix moyen, nombre vendu, part vendue) quand l'objet a déjà été vendu.
+- Métiers > Qui peut fabriquer ? : recherche d'une recette ou d'un objet dans les recettes de tous tes persos, qui la connaît, de quoi en faire avec les composants du compte ou ce qui manque ; bouton pour l'ajouter à la file de fabrication.
+- Infobulle : « Fabricable par » (persos qui connaissent la recette) et « Sert à N recette(s) de tes persos » sur un composant.
 
 ## v1.128.129 — 22/11/2026
 

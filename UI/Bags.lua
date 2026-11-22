@@ -621,6 +621,13 @@ function B.RefreshFiche()
     local ah = V and V.Prices and select(1, V:Prices(e.id))
     table.insert(lines, UI:Hex(C.muted) .. T("Prix HV") .. "|r  " .. (ah and WK:FormatMoney(ah) or "-"))
     table.insert(lines, UI:Hex(C.muted) .. T("Marchand") .. "|r  " .. WK:FormatMoney(vendor or 0))
+    local Au = WK.modules.Auction
+    local sold = Au and Au.SoldInfo and Au:SoldInfo(e.id)
+    if sold and sold.avg then
+        table.insert(lines, UI:Hex(C.muted) .. T("Tu le vends") .. "|r  " .. WK:FormatMoney(sold.avg) .. "  "
+            .. UI:Hex(C.muted) .. "(" .. string.format(T("%d vendu(s)"), sold.sold)
+            .. (sold.rate and (", " .. math.floor(sold.rate * 100 + 0.5) .. " %") or "") .. ")|r")
+    end
     if ah and inBags > 1 then
         table.insert(lines, UI:Hex(C.muted) .. T("Valeur du lot") .. "|r  " .. WK:FormatMoney(ah * inBags))
     end
