@@ -94,7 +94,7 @@ local function buildSpace()
     f:SetFrameStrata("MEDIUM")
     f.bg = UI:Rounded(f, 11, 0, "BACKGROUND", 1)
     f.seps = {}
-    for i = 1, 3 do
+    for i = 1, 4 do
         local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
         s:SetColorTexture(1, 1, 1, 0.08)
         f.seps[i] = s
@@ -168,12 +168,36 @@ local function buildSpace()
         if UI.ToggleCampKit then UI:ToggleCampKit() end
         if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
     end)
+    -- buffs à ne pas oublier (Modules/SelfBuffs.lua) : nombre de buffs absents ; clic = dérouler la liste (dir)
+    f.buffs = newTile(f, "spark")
+    f.buffs:SetScript("OnEnter", function(s)
+        local SB = WK.modules.SelfBuffs
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Buffs à ne pas oublier"), 1, 1, 1)
+        for _, r in ipairs((SB:Status())) do
+            if r.state ~= "ok" then
+                local col = r.state == "missing" and C.negative or C.gold
+                _G.GameTooltip:AddLine(r.name or "?", UI.RGB(col))
+            end
+        end
+        local miss, soon = SB:Counts()
+        if miss + soon == 0 then _G.GameTooltip:AddLine(T("Tout est en place."), UI.RGB(C.positive)) end
+        local open = UI.SelfBuffsOpen and UI.SelfBuffsOpen()
+        _G.GameTooltip:AddLine(open and T("Clic : replier la liste") or T("Clic : dérouler la liste"), 0.6, 0.6, 0.6)
+        _G.GameTooltip:Show()
+    end)
+    f.buffs:SetScript("OnClick", function(s)
+        if UI.ToggleSelfBuffs then UI.ToggleSelfBuffs() end
+        if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
+    end)
     -- mise en page : cases visibles côte à côte, trait entre deux cases
-    function f:Arrange(showV, showT, showK)
+    function f:Arrange(showV, showT, showK, showB)
         local tiles = { self.bag }
         if showV then tiles[#tiles + 1] = self.vendor end
         if showT then tiles[#tiles + 1] = self.trainer end
         if showK then tiles[#tiles + 1] = self.kit end
+        if showB then tiles[#tiles + 1] = self.buffs end
+        self.buffs:SetShown(showB and true or false)
         self.vendor:SetShown(showV and true or false)
         self.trainer:SetShown(showT and true or false)
         self.kit:SetShown(showK and true or false)
@@ -192,11 +216,12 @@ local function buildSpace()
     end
     -- exemple du mode édition
     function f:Paint(free)
-        self:Arrange(true, true, true)
+        self:Arrange(true, true, true, true)
         self.bag:Paint(free <= 0 and C.negative or C.warning, tostring(free))
         self.vendor:Paint(C.negative, "85 m")
         self.trainer:Paint(C.info, "3")
         self.kit:Paint(C.positive, "1h 52")
+        self.buffs:Paint(C.negative, "2")
     end
     f:Hide()
     f:SetScript("OnUpdate", function(s, el)
@@ -213,6 +238,7 @@ local function buildSpace()
     return f
 end
 UI.CampKitTile = function() return space and space.kit end
+UI.SelfBuffTile = function() return space and space.buffs end
 function UI:RefreshBagSpace()
     space = space or buildSpace()
     if space.sample then return end
@@ -222,8 +248,17 @@ function UI:RefreshBagSpace()
     local low = cfg.low or 3
     local showV, showT = cfg.vendorTile ~= false, cfg.trainerTile ~= false
     local showK = UI.CampKitInBar and UI.CampKitInBar() and UI.campKitAvail and WK:FeatureOn("campfire") or false
+    local SB = WK.modules.SelfBuffs
+    local miss, soon, total = 0, 0, 0
+    if SB and SB:Config().bar and WK:FeatureOn("classes") then miss, soon, total = SB:Counts() end
+    local showB = total > 0
     local w0 = space:GetWidth()
-    space:Arrange(showV, showT, showK)
+    space:Arrange(showV, showT, showK, showB)
+    if showB then
+        if miss > 0 then space.buffs:Paint(C.negative, tostring(miss))
+        elseif soon > 0 then space.buffs:Paint(C.gold, tostring(soon))
+        else space.buffs:Paint(C.positive, T("ok")) end
+    end
     if showK then
         -- temps restant des avantages du camp (vert), sinon « kit » ; rouge si « Bien nourri » manque
         local Cp = WK.modules.Camp
@@ -238,6 +273,8 @@ function UI:RefreshBagSpace()
     if UI.CampKitOpen and UI:CampKitOpen() and space:GetWidth() ~= w0 and not fight then
         UI:RefreshCampKit()
     end
+    -- liste des buffs ouverte : remplie de nouveau (un lieu ou un sort a pu changer) ou repliée sans case
+    if UI.SelfBuffsOpen and UI.SelfBuffsOpen() and not fight then UI:RefreshSelfBuffs() end
     -- sac : rouge plein, orange sous le seuil, sinon discret
     space.bag:Paint(free <= 0 and C.negative or (free <= low and C.warning) or C.muted, tostring(free))
     if showV then

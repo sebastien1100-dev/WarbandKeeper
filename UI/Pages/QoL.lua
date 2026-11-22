@@ -2289,6 +2289,52 @@ UI:RegisterPage({
             for i, r in ipairs(rows) do
                 UI:SettingRow(sp, -44 - (i - 1) * 48, r[1], r[2], toggle(sp, r[3], r[4]), 80)
             end
+
+            -- buffs à ne pas oublier (Modules/SelfBuffs.lua) : case de la barre des sacs, sens, et lieux par buff
+            -- (entrées du perso connecté : classe, race, pistages de métier)
+            local SB = WK.modules.SelfBuffs
+            local sbc = SB:Config()
+            local ents = SB:Entries()
+            local RH = 32
+            local bc = card("Buffs à ne pas oublier", 44 + 2 * 48 + 26 + #ents * RH + 10,
+                "case « buffs » de la barre des sacs : ce qui manque selon le lieu")
+            local function bupdate()
+                if UI.RefreshBagSpace then UI:RefreshBagSpace() end
+                if UI.RefreshSelfBuffs then UI:RefreshSelfBuffs() end
+            end
+            UI:SettingRow(bc, -44, "Case dans la barre des sacs",
+                "Case « buffs » dans la barre « Sacs, marchand et maître » : nombre de buffs absents ;"
+                    .. " un clic déroule la liste, un clic sur une ligne lance le sort (hors combat).",
+                toggle(bc, function() return sbc.bar end, function(v) sbc.bar = v; bupdate() end), 80)
+            local bseg = UI:Segmented(bc, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
+                function(v) sbc.dir = v; bupdate() end, 24)
+            UI:SettingRow(bc, -92, "Déroulé de la liste",
+                "Sens dans lequel la liste des buffs s'ouvre depuis la barre des sacs.", bseg, 200)
+            bseg:Select(sbc.dir == "up" and "up" or "down")
+            local PL = { { "w", "Monde" }, { "d", "Donjon" }, { "r", "Raid" } }
+            local hy = -44 - 2 * 48 - 6
+            for j, pl in ipairs(PL) do
+                local h = UI:Text(bc, 10, C.muted)
+                h:SetPoint("TOPRIGHT", bc, "TOPRIGHT", -16 - (3 - j) * 56, hy)
+                h:SetWidth(48); h:SetJustifyH("CENTER")
+                h:SetText(T(pl[2]))
+            end
+            for i, it in ipairs(ents) do
+                local ry = hy - 18 - (i - 1) * RH
+                local nm = UI:Text(bc, 12)
+                nm:SetPoint("TOPLEFT", bc, "TOPLEFT", 16, ry - 5)
+                local knownId
+                for _, id in ipairs(it.e.ids) do
+                    if _G.IsPlayerSpell and _G.IsPlayerSpell(id) then knownId = id break end
+                end
+                local miss = knownId and "" or ("  " .. UI:Hex(C.muted) .. T("(pas encore appris)") .. "|r")
+                nm:SetText(T(it.e.label) .. miss)
+                for j, pl in ipairs(PL) do
+                    local tg = toggle(bc, function() return SB:Places(it.rk, it.e):find(pl[1], 1, true) ~= nil end,
+                        function(v) SB:SetPlace(it.rk, it.e, pl[1], v); bupdate() end)
+                    tg:SetPoint("TOPRIGHT", bc, "TOPRIGHT", -20 - (3 - j) * 56, ry)
+                end
+            end
         end
 
         -----------------------------------------------------------------------

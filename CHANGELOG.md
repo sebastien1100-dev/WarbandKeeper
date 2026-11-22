@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.63 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Buffs à ne pas oublier : une case « buffs » dans la barre « Sacs, marchand et maître » compte les buffs de ta classe, de ta race et les pistages de métier qui manquent là où tu es (monde, donjon, raid) ; un clic déroule la liste (absent, temps restant, ok) et un clic sur une ligne lance le sort, hors combat. Par exemple : une aura et Détection des morts-vivants en donjon pour le paladin, Découverte de gisements en monde ouvert.
+- QoL > Classes > Général : carte « Buffs à ne pas oublier » (case dans la barre, déroulé vers le bas ou le haut, et pour chaque buff les lieux où il est demandé).
+
 ## v1.128.62 — 22/11/2026
 
 _Un /reload suffit._

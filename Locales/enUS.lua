@@ -4304,4 +4304,68 @@ WK.Locales.enUS.text = {
         "Benefits left, camp item cooldown, Well Fed (only outside the bags bar).",
     ["dans la barre des sacs, ou colonne près de la flamme"] =
         "in the bags bar, or a column by the flame",
+    ["Buffs à ne pas oublier"] =
+        "Buffs not to forget",
+    ["Tout est en place."] =
+        "All set.",
+    ["Clic : replier la liste"] =
+        "Click: fold the list",
+    ["Clic : dérouler la liste"] =
+        "Click: unfold the list",
+    ["(pas encore appris)"] =
+        "(not learned yet)",
+    ["éteint"] =
+        "off",
+    ["monde"] =
+        "world",
+    ["Demandé : %s"] =
+        "Wanted: %s",
+    ["Buffs : liste à ouvrir hors combat."] =
+        "Buffs: open the list out of combat.",
+    ["donjon"] =
+        "dungeon",
+    ["raid"] =
+        "raid",
+    ["Case dans la barre des sacs"] =
+        "Tile in the bags bar",
+    ["Case « buffs » dans la barre « Sacs, marchand et maître » : nombre de buffs absents ; un clic déroule la liste, un clic sur une ligne lance le sort (hors combat)."] =
+        "Buffs tile in the bags, vendor and trainer bar: number of missing buffs; a click unfolds the list, a click on a line casts the spell (out of combat).",
+    ["Déroulé de la liste"] =
+        "List unfolds",
+    ["Sens dans lequel la liste des buffs s'ouvre depuis la barre des sacs."] =
+        "Direction in which the buffs list opens from the bags bar.",
+    ["case « buffs » de la barre des sacs : ce qui manque selon le lieu"] =
+        "buffs tile of the bags bar: what is missing for the place",
+    ["Donjon"] =
+        "Dungeon",
+    ["Une aura (au choix)"] =
+        "Any aura",
+    ["Détection des morts-vivants"] =
+        "Sense Undead",
+    ["Fureur vertueuse (tank)"] =
+        "Righteous Fury (tank)",
+    ["Feu intérieur"] =
+        "Inner Fire",
+    ["Forme d'ombre"] =
+        "Shadowform",
+    ["Une armure (au choix)"] =
+        "Any armor",
+    ["Épines"] =
+        "Thorns",
+    ["Pistage des humanoïdes"] =
+        "Track Humanoids",
+    ["Peau ou armure de démon"] =
+        "Demon Skin or Armor",
+    ["Bouclier de foudre ou d'eau"] =
+        "Lightning or Water Shield",
+    ["Un aspect (au choix)"] =
+        "Any aspect",
+    ["Pistage des bêtes"] =
+        "Track Beasts",
+    ["Découverte de trésors (nain)"] =
+        "Find Treasure (dwarf)",
+    ["Découverte de gisements"] =
+        "Find Minerals",
+    ["Découverte d'herbes"] =
+        "Find Herbs",
 }
