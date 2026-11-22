@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.165", date = "22/11/2026",
+        added = {
+            "Taille des objets au choix (Petit, Moyen, Grand) dans le menu d'affichage des sacs et de la banque, à côté de « sans catégories ».",
+        },
+        changed = {
+            "Cases des sacs et de la banque carrées, avec un bord à la couleur de la qualité de l'objet ; cases vides en creux.",
+            "La pastille verte d'un objet neuf disparaît dès qu'on le survole.",
+        },
+    },
+    {
         version = "1.128.164", date = "22/11/2026",
         changed = {
             "Carte du monde, quêtes de la zone (maquette A) : couleurs des quêtes du jeu sur fond graphite uni, coche verte pour les faites, « ? » gris pour celles en cours, « ! » jaune pour celles à prendre (plus de teinte rose).",

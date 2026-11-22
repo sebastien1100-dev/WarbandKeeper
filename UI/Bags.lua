@@ -20,9 +20,9 @@ local T = function(s) return WK.T(s) end
 
 local B = {}
 UI.Bags = B
-local COLS, SLOT, GAP, PAD = 10, 38, 5, 14
+local COLS, SLOT, GAP, PAD = 10, 38, 4, 14
+local SIZES = { s = 30, m = 38, l = 46 } -- taille des cases au choix (Petit, Moyen, Grand)
 local MIN_COLS, MAX_COLS = 5, 24
-local cols, slotSize = COLS, SLOT -- disposition en cours (colonnes choisies : B.Config().cols)
 local FICHE_W = 260
 local inCombat = function() return _G.InCombatLockdown and _G.InCombatLockdown() end
 
@@ -164,9 +164,37 @@ end
 ---------------------------------------------------------------------------
 -- Une fenêtre (sacs du perso ou banque) : même structure, même design ; makeView("bags") / makeView("bank")
 local gameOpen -- plus bas (sacs du jeu)
+-- région du bouton du jeu (le nom du champ change selon les versions du client)
+local function region(b, ...)
+    for _, k in ipairs({ ... }) do
+        local r = b[k]
+        if type(r) == "table" and r.SetTexture or type(r) == "table" and r.SetText then return r end
+        local n = b.GetName and b:GetName()
+        r = n and _G[n .. k]
+        if type(r) == "table" then return r end
+    end
+end
+-- case carrée : bord de 2 px (couleur de la qualité) et fond plein, à la manière des barres d'action
+local Sq = {}
+Sq.__index = Sq
+function Sq:SetColor(r, g, b, a) self.t:SetColorTexture(r, g, b, a or 1) end
+local function square(b, inset, sub)
+    local t = b:CreateTexture(nil, "BACKGROUND", nil, sub)
+    t:SetPoint("TOPLEFT", inset, -inset); t:SetPoint("BOTTOMRIGHT", -inset, inset)
+    return setmetatable({ t = t }, Sq)
+end
+local EDGE = 2
+local function edgeColor(e)
+    if e and (e.quality or 1) >= 2 and _G.GetItemQualityColor then
+        local r, g, b = _G.GetItemQualityColor(e.quality)
+        return r, g, b, 1
+    end
+    return C.border[1], C.border[2], C.border[3], e and 1 or 0.6
+end
 local function makeView(kind)
 local V = {}
 local isBank = kind == "bank"
+local cols, slotSize = COLS, SLOT -- disposition en cours (colonnes : vcfg().cols, taille : vcfg().size)
 local hiBag -- sac survolé dans la barre des sacs : ses objets ressortent
 local SLOTS_H = 44 -- hauteur de la barre des sacs quand elle est ouverte
 -- position et colonnes propres à chaque fenêtre (la banque dans WK.DB.global.bags.bank)
@@ -176,6 +204,7 @@ local function vcfg()
     c.bank = c.bank or {}
     return c.bank
 end
+local function SZ() return SIZES[vcfg().size or "m"] or SLOT end
 local win
 local holders, buttons = {}, {}   -- holders[bag] ; buttons[bag][slot]
 local pending = false
@@ -207,11 +236,16 @@ local function newButton(bag, slot)
     local ok, b = pcall(_G.CreateFrame, "ItemButton", name, h, "ContainerFrameItemButtonTemplate")
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
-    b:SetSize(SLOT, SLOT)
+    b:SetSize(SZ(), SZ())
     b.wkOurs = true -- infobulle allégée (Modules/Inventory.lua)
-    -- case à notre style : carré plat au fond des encadrés, fin liseré (le cadre brillant du jeu est masqué)
-    b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
-    b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
+    -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
+    b.wkEdge = square(b, 0, -8)
+    b.wkFill = square(b, EDGE, -7)
+    local ic = region(b, "icon", "Icon", "IconTexture")
+    if ic and ic.SetPoint then
+        ic:ClearAllPoints(); ic:SetPoint("TOPLEFT", EDGE, -EDGE); ic:SetPoint("BOTTOMRIGHT", -EDGE, EDGE)
+        if ic.SetTexCoord then ic:SetTexCoord(0.08, 0.92, 0.08, 0.92) end
+    end
     -- pastille de l'addon (en haut à gauche : le cadenas est en haut à droite, l'étoile BiS en bas à gauche)
     b.wkTag = _G.CreateFrame("Frame", nil, b)
     b.wkTag:SetFrameLevel(b:GetFrameLevel() + 6)
@@ -234,6 +268,14 @@ local function newButton(bag, slot)
             end
         end
         if s.wkEntry then hovered = s.wkEntry; V.RefreshFiche() end
+        -- objet neuf survolé : la pastille verte part pour de bon
+        local e = s.wkEntry
+        if e and e.new and not e.offline then
+            e.new = false
+            local NI = _G.C_NewItems
+            if NI and NI.RemoveNewItem then pcall(NI.RemoveNewItem, e.bag, e.slot) end
+            if e.info and e.info.dot then e.info.dot, e.info.badge = nil, nil; s.wkTag:Hide() end
+        end
         V.PlaceTip(s)
     end)
     -- le jeu replace l'infobulle à chaque mise à jour : on la remet hors de la fiche
@@ -248,11 +290,11 @@ local offButtons = {}
 local function offButton(i)
     if offButtons[i] then return offButtons[i] end
     local b = _G.CreateFrame("Button", nil, win.content)
-    b:SetSize(SLOT, SLOT)
-    b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
-    b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
+    b:SetSize(SZ(), SZ())
+    b.wkEdge = square(b, 0, -8)
+    b.wkFill = square(b, EDGE, -7)
     b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+    b.icon:SetPoint("TOPLEFT", EDGE, -EDGE); b.icon:SetPoint("BOTTOMRIGHT", -EDGE, EDGE)
     b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     b.count = UI:Text(b, 12); b.count:SetPoint("BOTTOMRIGHT", -3, 3)
     b:SetScript("OnEnter", function(s)
@@ -275,22 +317,10 @@ local function paintOff(b, e)
     b.e = e
     b.icon:SetTexture(e.icon)
     b.count:SetText((e.count or 1) > 1 and tostring(e.count) or "")
-    local r, g, bl = 0.5, 0.5, 0.5
-    if (e.quality or 1) >= 2 and _G.GetItemQualityColor then r, g, bl = _G.GetItemQualityColor(e.quality) end
-    b.wkEdge:SetColor(r, g, bl, (e.quality or 1) >= 2 and 1 or 0.6)
+    b.wkEdge:SetColor(edgeColor(e))
     b.wkFill:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
 end
 
--- région du bouton du jeu (le nom du champ change selon les versions du client)
-local function region(b, ...)
-    for _, k in ipairs({ ... }) do
-        local r = b[k]
-        if type(r) == "table" and r.SetTexture or type(r) == "table" and r.SetText then return r end
-        local n = b.GetName and b:GetName()
-        r = n and _G[n .. k]
-        if type(r) == "table" then return r end
-    end
-end
 local function paintButton(b, e)
     local icon = region(b, "icon", "Icon", "IconTexture")
     if icon and icon.SetTexture then icon:SetTexture(e and e.icon or nil) end
@@ -299,6 +329,8 @@ local function paintButton(b, e)
         if e and (e.count or 1) > 1 then cnt:SetText(e.count); cnt:Show() else cnt:SetText(""); cnt:Hide() end
     end
     if _G.SetItemButtonQuality then pcall(_G.SetItemButtonQuality, b, e and e.quality, e and e.link) end
+    local ib = region(b, "IconBorder")
+    if ib and ib.Hide then ib:Hide() end -- la qualité est sur notre bord
     if _G.SetItemButtonDesaturated then pcall(_G.SetItemButtonDesaturated, b, e and e.locked or false) end
     local cd = region(b, "Cooldown")
     if cd and e and _G.C_Container and _G.C_Container.GetContainerItemCooldown and _G.CooldownFrame_Set then
@@ -321,8 +353,9 @@ local function paintButton(b, e)
     local sb = region(b, "SlotBackground", "ItemSlotBackground")
     if sb and sb.SetAlpha then sb:SetAlpha(0) end
     if b.wkEdge then
-        b.wkEdge:SetColor(C.border[1], C.border[2], C.border[3], e and 0.9 or 0.7)
-        b.wkFill:SetColor(C.surface[1], C.surface[2], C.surface[3], 1) -- fond des encadrés (comme la fiche)
+        b.wkEdge:SetColor(edgeColor(e))
+        local fc = e and C.surface or C.bg -- case vide : fond creusé
+        b.wkFill:SetColor(fc[1], fc[2], fc[3], 1)
     end
     -- reflets du jeu (objet neuf, boutique, emplacement étendu) : notre pastille NEUF les remplace
     for _, k in ipairs({ "NewItemTexture", "BattlepayItemTexture", "ExtendedSlot", "ItemContextOverlay" }) do
@@ -515,14 +548,39 @@ local function build()
     f.sortBtn:SetPoint("RIGHT", f.gameBtn, "LEFT", -6, 0)
     f.sortBtn:SetScript("OnClick", function() V.Sort() end)
     -- avec ou sans catégories
-    f.flatBtn = UI:IconButton(f, "menu", 22, "Avec ou sans catégories")
+    -- affichage : avec ou sans catégories, taille des cases
+    f.flatBtn = UI:IconButton(f, "menu", 22, "Affichage : catégories et taille des objets")
     f.flatBtn:SetPoint("RIGHT", f.sortBtn, "LEFT", -6, 0)
-    f.flatBtn:SetActive(vcfg().flat and true or false)
-    f.flatBtn:SetScript("OnClick", function()
-        vcfg().flat = not vcfg().flat
-        f.flatBtn:SetActive(vcfg().flat and true or false)
+    local lm = _G.CreateFrame("Frame", nil, f)
+    lm:SetFrameLevel(f:GetFrameLevel() + 30)
+    lm:EnableMouse(true)
+    UI:HudBackground(lm, "hud", 8)
+    lm:SetPoint("TOPRIGHT", f.flatBtn, "BOTTOMRIGHT", 0, -6)
+    lm:Hide()
+    local l1 = UI:Text(lm, 11, C.muted); l1:SetPoint("TOPLEFT", 12, -12); l1:SetText(T("Catégories"))
+    lm.flat = UI:Segmented(lm, { { "cats", T("Avec") }, { "flat", T("Sans") } }, function(k)
+        vcfg().flat = k == "flat" or nil
         V.Refresh()
+    end, 26)
+    lm.flat:SetPoint("TOPLEFT", 12, -30)
+    local l2 = UI:Text(lm, 11, C.muted); l2:SetPoint("TOPLEFT", 12, -66); l2:SetText(T("Taille des objets"))
+    lm.size = UI:Segmented(lm, { { "s", T("Petit") }, { "m", T("Moyen") }, { "l", T("Grand") } }, function(k)
+        if inCombat() then lm.size:Select(vcfg().size or "m"); return end
+        vcfg().size = k ~= "m" and k or nil
+        f.applyBounds()
+        V.Refresh()
+    end, 26)
+    lm.size:SetPoint("TOPLEFT", 12, -84)
+    lm:SetSize(math.max(lm.flat:GetWidth(), lm.size:GetWidth(), 150) + 24, 122)
+    lm:SetScript("OnShow", function()
+        lm.flat:Select(vcfg().flat and "flat" or "cats")
+        lm.size:Select(vcfg().size or "m")
+        f.flatBtn:SetActive(true)
     end)
+    lm:SetScript("OnHide", function() f.flatBtn:SetActive(false) end)
+    f.layMenu = lm
+    f.flatBtn:SetScript("OnClick", function() lm:SetShown(not lm:IsShown()) end)
+    f:HookScript("OnHide", function() lm:Hide() end)
     f.slotBar = _G.CreateFrame("Frame", nil, f)
     f.slotBar:SetPoint("TOPLEFT", PAD, -38); f.slotBar:SetPoint("TOPRIGHT", -PAD, -38); f.slotBar:SetHeight(SLOTS_H - 6)
     f.slotBar:SetShown(vcfg().slots and true or false)
@@ -552,9 +610,12 @@ local function build()
     f.content:SetSize(1, 1)
     -- coin de redimensionnement : la largeur fixe le nombre de colonnes, la hauteur suit (tout reste visible)
     f:SetResizable(true)
-    local minW = PAD * 2 + MIN_COLS * (SLOT + GAP) + 14 + (B.Config().fiche and (FICHE_W + 10) or 0)
-    if f.SetResizeBounds then f:SetResizeBounds(minW, 320)
-    elseif f.SetMinResize then f:SetMinResize(minW, 320) end
+    function f.applyBounds()
+        local minW = PAD * 2 + MIN_COLS * (SZ() + GAP) + 14 + (B.Config().fiche and (FICHE_W + 10) or 0)
+        if f.SetResizeBounds then f:SetResizeBounds(minW, 320)
+        elseif f.SetMinResize then f:SetMinResize(minW, 320) end
+    end
+    f.applyBounds()
     local grip = _G.CreateFrame("Button", nil, f)
     grip:SetSize(18, 18)
     grip:SetPoint("BOTTOMRIGHT", -4, 4)
@@ -579,7 +640,7 @@ local function build()
         f:StopMovingOrSizing()
         f.sizing = nil
         local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
-        local n = math.floor((f:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
+        local n = math.floor((f:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SZ() + GAP))
         vcfg().cols = math.max(MIN_COLS, math.min(MAX_COLS, n))
         -- la position reste celle du coin haut gauche
         local l, t = f:GetLeft(), f:GetTop()
@@ -836,12 +897,12 @@ function V.Refresh(light, live)
     -- colonnes : suivent la largeur de la fenêtre (cases de taille fixe) ; la hauteur montre toutes les cases
     local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
     if live then
-        cols = math.floor((win:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
+        cols = math.floor((win:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SZ() + GAP))
     else
         cols = vcfg().cols or COLS
     end
     cols = math.max(MIN_COLS, math.min(MAX_COLS, cols))
-    slotSize = SLOT
+    slotSize = SZ()
     local used = {}
     local y, hi = 0, 0
     local function head(label, meta, col)
@@ -878,6 +939,7 @@ function V.Refresh(light, live)
             end
             local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
             b:ClearAllPoints()
+            b:SetSize(slotSize, slotSize)
             b:SetPoint("TOPLEFT", win.content, "TOPLEFT", col * (slotSize + GAP), -(y + row * (slotSize + GAP)))
             if not e.offline then paintButton(b, not e.empty and e or nil) end
             b:SetAlpha(dimmed(e) and 0.25 or 1)

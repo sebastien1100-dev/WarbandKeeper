@@ -68,6 +68,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.165 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Taille des objets au choix (Petit, Moyen, Grand) dans le menu d'affichage des sacs et de la banque, à côté de « sans catégories ».
+
+### Modifications
+- Cases des sacs et de la banque carrées, avec un bord à la couleur de la qualité de l'objet ; cases vides en creux.
+- La pastille verte d'un objet neuf disparaît dès qu'on le survole.
+
 ## v1.128.164 — 22/11/2026
 
 _Un /reload suffit._
