@@ -507,7 +507,7 @@ local function zonePos()
     return map, x, y
 end
 local function unitNpc(unit)
-    local guid = UnitGUID and UnitGUID(unit)
+    local guid = WK.GUID(unit)
     if type(guid) ~= "string" then return nil end
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
     id = tonumber(id)
@@ -684,7 +684,7 @@ WK:On("GOSSIP_SHOW", function()
         if q.questID then offered[q.questID] = true end
         if q.title then titles[q.title:lower()] = true end
     end
-    M:NoteOffered(npcOf(_G.UnitGUID and _G.UnitGUID("npc")), offered, titles)
+    M:NoteOffered(npcOf(WK.GUID("npc")), offered, titles)
 end)
 WK:On("QUEST_GREETING", function()
     local offered, titles = {}, {}
@@ -694,7 +694,7 @@ WK:On("QUEST_GREETING", function()
         local t = _G.GetAvailableTitle and _G.GetAvailableTitle(i)
         if t then titles[t:lower()] = true end
     end
-    M:NoteOffered(npcOf(_G.UnitGUID and _G.UnitGUID("npc")), offered, titles)
+    M:NoteOffered(npcOf(WK.GUID("npc")), offered, titles)
 end)
 
 ---------------------------------------------------------------------------
@@ -742,7 +742,7 @@ function M.ChainList(_)
     return out
 end
 local function npcNow()
-    local guid = _G.UnitGUID and _G.UnitGUID("npc")
+    local guid = WK.GUID("npc")
     if type(guid) ~= "string" then return nil end
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
     return kind == "Creature" and tonumber(id) or nil

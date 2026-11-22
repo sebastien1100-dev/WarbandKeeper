@@ -7,7 +7,7 @@ local function plain(v)
     if _G.issecretvalue and _G.issecretvalue(v) then return nil end
     return v
 end
-local function guidOf(u) return _G.UnitGUID and plain(_G.UnitGUID(u)) end
+local function guidOf(u) return WK.GUID(u) end
 
 -- Bouton « Buffer le suivant » (QoL > Classes, onglet « Buffer autour ») : en monde ouvert, le joueur ami le plus
 -- proche qui n'a pas ton buff (toi et ton groupe d'abord, puis les plaques de nom des joueurs amis), et le buff qui

@@ -12,7 +12,7 @@ local function Q() return WK.modules.QuestTrack end
 -- l'apparence ; plus gros sur la cible.
 local marks = {}
 local function plateNpc(unit)
-    local guid = _G.UnitGUID and _G.UnitGUID(unit)
+    local guid = WK.GUID(unit)
     if type(guid) ~= "string" then return nil end
     local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)")
     return kind == "Creature" and tonumber(id) or nil

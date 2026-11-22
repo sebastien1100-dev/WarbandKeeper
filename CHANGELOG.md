@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.75 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreur en boucle « secret string » des repères de quête sur les plaques de nom (QuestTracker.lua:17) : le jeu cache l'identifiant de certains monstres ; l'addon l'ignore maintenant. Même protection partout où l'addon lit l'identifiant d'une unité (PNJ de quête, recettes, persos).
+
 ## v1.128.74 — 22/11/2026
 
 _Un /reload suffit._

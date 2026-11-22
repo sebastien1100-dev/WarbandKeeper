@@ -102,6 +102,17 @@ function WK.ChatInsert(text)
 end
 
 -- Nom et icône d'un sort (recette de métier), dans la langue du jeu.
+-- GUID d'une unité, nil si le jeu le cache (valeur « secrète » : plaques de nom, PNJ en instance…).
+-- Toujours passer par ici : un GUID secret fait planter :match, les clés de table et les comparaisons.
+function WK.GUID(unit)
+    local f = _G.UnitGUID
+    if not f then return nil end
+    local ok, g = pcall(f, unit)
+    if not ok then return nil end
+    if _G.issecretvalue and _G.issecretvalue(g) then return nil end
+    return g
+end
+
 function WK.SpellInfo(spellID)
     if not spellID then return nil end
     if C_Spell and C_Spell.GetSpellInfo then

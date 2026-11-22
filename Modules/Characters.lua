@@ -99,7 +99,7 @@ end
 function M:MergeDuplicates()
     local g = WK.DB.global
     local me, key = WK.DB:Me()
-    if UnitGUID then me.guid = UnitGUID("player") or me.guid end
+    me.guid = WK.GUID("player") or me.guid
     local merged = 0
     for k, c in pairs(g.characters) do
         if k ~= key and sameChar(c, me) then
