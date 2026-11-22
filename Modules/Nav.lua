@@ -741,6 +741,17 @@ end
 function M:WaypointNow()
     local r = self.route
     if not r or not r.legs[r.leg] then return nil end
+    -- dans le tram (pas de position lisible) : le trajet passe à l'étape « tram » et le dit
+    local BL = WK.modules.BoatLines
+    if BL and BL.InTram and BL:InTram() then
+        for k = r.leg, math.min(#r.legs, r.leg + 1) do
+            local l = r.legs[k]
+            if l.kind == "tram" then
+                if r.leg ~= k then r.leg, r.idx = k, 1 end
+                return nil, nil, string.format(T("Tram des profondeurs » %s"), l.to or "?"), nil
+            end
+        end
+    end
     local cont, px, py = playerWorld()
     if not cont or cont ~= r.cont then return nil end
     local leg = r.legs[r.leg]
@@ -864,19 +875,23 @@ function M:StepTarget()
         local n = #leg.pts / 2
         if n < 1 then return nil end
         wx, wy = leg.pts[n * 2 - 1], leg.pts[n * 2]
-    elseif leg.kind == "tram" or leg.kind == "fly" then
-        wx, wy = leg.ax, leg.ay
+    elseif leg.kind == "tram" then
+        wx, wy = leg.bx, leg.by -- étape tram en cours = on est monté : la station d'arrivée
+    elseif leg.kind == "fly" then
+        -- au maître de vol : lui ; en vol : le relais d'arrivée
+        if _G.UnitOnTaxi and _G.UnitOnTaxi("player") then wx, wy = leg.bx, leg.by else wx, wy = leg.ax, leg.ay end
     else
         return nil
     end
     r.stepT = r.stepT or {}
-    local st = r.stepT[r.leg]
+    local key = r.leg .. ":" .. floor(wx) .. ":" .. floor(wy)
+    local st = r.stepT[key]
     if st == nil then
         local BL = WK.modules.BoatLines
         local map, x, y
         if BL and BL.ToMap and wx then map, x, y = BL:ToMap(r.cont, wx, wy) end
         st = map and { map = map, x = x / 100, y = y / 100, cont = r.cont, wx = wx, wy = wy, step = true } or false
-        r.stepT[r.leg] = st
+        r.stepT[key] = st
     end
     return st or nil
 end

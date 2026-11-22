@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.188", date = "22/11/2026",
+        fixed = {
+            "Guidage par le tram : en passant le portail, le trajet restait sur la marche et plus rien n'était indiqué ; il passe à l'étape « Tram des profondeurs » Hurlevent » (flèche et épingle), et l'épingle attend à la station d'arrivée.",
+        },
+    },
+    {
         version = "1.128.187", date = "22/11/2026",
         fixed = {
             "Guidage en plusieurs étapes : l'épingle à l'écran restait sur la cible finale, souvent hors de l'écran ou au bord sans texte (vers Hurlevent depuis Forgefer, par exemple) ; elle se pose maintenant sur l'étape en cours (entrée du tram, maître de vol) avec son texte, puis revient sur la cible à la dernière étape.",
