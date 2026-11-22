@@ -285,6 +285,8 @@ function UI.OtherBagsDiag()
         end
     end
     if n == 0 then WK:Print(T("Sacs : aucun cadre de sac affiché (ouvre tes sacs puis relance /wk sacs).")) end
+    -- bouton du désenchantement : affiché ? où ? (cadre voisin dans l'en-tête, niveaux)
+    if UI.DEBagButtonInfo then WK:Print(UI.DEBagButtonInfo()) end
     return n, #extraBags
 end
 -- sacs d'un autre addon d'abord : EllesmereUI laisse les sacs du jeu « ouverts » mais invisibles derrière les siens
@@ -364,11 +366,24 @@ local function syncBagBtn()
     local slot = headerSlot(bf)
     if slot then bagBtn:SetPoint("RIGHT", slot, "LEFT", -6, 0)
     else bagBtn:SetPoint("BOTTOMLEFT", bf, "TOPLEFT", 0, 4) end
-    bagBtn:SetFrameStrata(bf:GetFrameStrata() or "MEDIUM")
-    bagBtn:SetFrameLevel((bf:GetFrameLevel() or 1) + 10)
+    -- au-dessus de l'en-tête des sacs (ses cadres ont des niveaux bien plus hauts que le cadre principal)
+    local ref = slot or bf
+    bagBtn:SetFrameStrata(ref:GetFrameStrata() or "MEDIUM")
+    bagBtn:SetFrameLevel(math.min(9000, math.max(ref:GetFrameLevel() or 1, bf:GetFrameLevel() or 1) + 10))
     bagBtn:Show()
 end
 UI.SyncDEBagButton = syncBagBtn
+function UI.DEBagButtonInfo()
+    if not PH():EnchantRank() then return "bouton désenchantement : pas d'Enchantement sur ce perso" end
+    syncBagBtn()
+    if not bagBtn then return "bouton désenchantement : pas encore créé (sacs non trouvés)" end
+    local bf = bagFrame()
+    local slot = bf and headerSlot(bf)
+    local sn = slot and (pcall(slot.GetName, slot) and slot:GetName() or "sans nom") or "aucun"
+    return string.format("bouton désenchantement : %s · voisin %s · strate %s niveau %d (sacs %d)",
+        bagBtn:IsVisible() and "affiché" or "caché", tostring(sn), tostring(bagBtn:GetFrameStrata()),
+        bagBtn:GetFrameLevel() or 0, bf and bf:GetFrameLevel() or 0)
+end
 
 -- Collée aux sacs : enchanteur avec au moins un objet à désenchanter.
 local function autoDE()

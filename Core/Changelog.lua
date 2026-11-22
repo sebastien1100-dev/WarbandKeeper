@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.107", date = "22/11/2026",
+        fixed = {
+            "Bouton de désenchantement dans l'en-tête des sacs d'EllesmereUI : il restait caché derrière l'en-tête ; il passe au-dessus. /wk sacs dit s'il est affiché et à côté de quoi.",
+        },
+    },
+    {
         version = "1.128.106", date = "22/11/2026",
         changed = {
             "Bouton de désenchantement sur les sacs d'EllesmereUI : posé dans l'en-tête de l'inventaire, à gauche de ses boutons ronds (au-dessus du coin des sacs pour ceux du jeu).",
