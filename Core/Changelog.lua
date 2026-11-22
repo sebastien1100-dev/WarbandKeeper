@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.108", date = "22/11/2026",
+        fixed = {
+            "Barre de fabrication : elle s'affichait même sans les composants, et restait à l'écran quand ils manquaient pour la quantité demandée. Elle compte maintenant ce que tes composants permettent vraiment (rien = pas de barre) et se ferme dès que la fabrication échoue ou s'arrête.",
+        },
+    },
+    {
         version = "1.128.107", date = "22/11/2026",
         fixed = {
             "Bouton de désenchantement dans l'en-tête des sacs d'EllesmereUI : il restait caché derrière l'en-tête ; il passe au-dessus. /wk sacs dit s'il est affiché et à côté de quoi.",

@@ -849,6 +849,10 @@ function UI:RefreshCraftBar()
     -- plus rien depuis longtemps (série coupée sans évènement d'interruption) : fin
     local left, per = remaining(b)
     if not b.casting and now - (b.last or b.t0) > per * 2 + 4 then UI:EndCraftBar(true) return end
+    -- incantation annoncée mais jamais finie (composants épuisés, échec sans évènement) : fin
+    if b.casting and b.castEnd and now > b.castEnd + 2 then UI:EndCraftBar(true) return end
+    -- rien de lancé 3 s après le clic (aucun composant) : pas de barre
+    if not b.locked and now - b.t0 > 3 then UI:EndCraftBar(true) return end
     local elapsed = now - b.t0
     local frac = (elapsed + left) > 0 and elapsed / (elapsed + left) or 0
     if b.done >= b.n then frac = 1 end
@@ -914,8 +918,14 @@ end
 -- créée dès la connexion : elle doit exister pour le mode édition (placer, Tester) avant toute série
 WK:On("PLAYER_LOGIN", function() if not cbar then cbar = buildBar() end end)
 
-local function startBatch(name, icon, n, spell)
+local function startBatch(name, icon, n, spell, avail)
     n = tonumber(n) or 1
+    -- le jeu ne fera que ce que les composants permettent : rien du tout ou moins que demandé
+    avail = tonumber(avail)
+    if avail then
+        if avail <= 0 then return end
+        if avail < n then n = avail end
+    end
     if not cfg().craftBar or n < (cfg().craftBarMin or 3) then return end
     local prof = PH():OpenProfession()
     batch = { name = name, icon = icon, n = n, done = 0, spell = spell, t0 = GetTime(), prof = prof, rank0 = profRank(prof) }
@@ -927,16 +937,21 @@ if hooksecurefunc then
         hooksecurefunc(C_TradeSkillUI, "CraftRecipe", function(recipeID, num)
             local name, icon
             local ok, info = pcall(C_TradeSkillUI.GetRecipeInfo, recipeID)
-            if ok and type(info) == "table" then name, icon = info.name, info.icon end
+            local avail
+            if ok and type(info) == "table" then name, icon, avail = info.name, info.icon, info.numAvailable end
             if not name then name, icon = WK.SpellInfo(recipeID) end
-            startBatch(name, icon, num, recipeID)
+            startBatch(name, icon, num, recipeID, avail)
         end)
     end
     if DoTradeSkill then
         hooksecurefunc("DoTradeSkill", function(index, num)
-            local name = GetTradeSkillInfo and GetTradeSkillInfo(index)
+            local name, avail
+            if GetTradeSkillInfo then
+                local r = { GetTradeSkillInfo(index) }
+                name, avail = r[1], r[3]
+            end
             local icon = GetTradeSkillIcon and GetTradeSkillIcon(index)
-            startBatch(name, icon, num)
+            startBatch(name, icon, num, nil, avail)
         end)
     end
 end
@@ -970,4 +985,11 @@ WK:OnUnit("UNIT_SPELLCAST_STOP", "player", function(_, _, spellID)
 end)
 WK:OnUnit("UNIT_SPELLCAST_INTERRUPTED", "player", function(_, _, spellID)
     if batch and batch.locked and spellID == batch.spell then UI:EndCraftBar(true) end
+end)
+-- échec (composants manquants, outil absent…) : la série s'arrête, la barre aussi
+WK:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, spellID)
+    local b = batch
+    -- un clic de trop pendant une incantation échoue aussi (« déjà en train ») : la série, elle, continue
+    if UnitCastingInfo and UnitCastingInfo("player") then return end
+    if b and not b.test and (not b.locked or spellID == b.spell) then UI:EndCraftBar(true) end
 end)
