@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.145", date = "22/11/2026",
+        fixed = {
+            "Notre banque (d'après /wk banque) : la caisse de 48 cases fait partie de la banque de base ; elle est lue avec elle et ne prend plus la place d'un sac dans la barre, qui montre tes sacs de banque puis les emplacements à acheter (8 en tout, comme le jeu).",
+        },
+    },
+    {
         version = "1.128.144", date = "22/11/2026",
         changed = {
             "Notre inventaire : le sac de composants a sa propre catégorie et ses propres places libres (on ne peut y mettre que des composants d'artisanat) ; en bas, ses places libres sont comptées à part.",

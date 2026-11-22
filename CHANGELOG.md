@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.145 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Notre banque (d'après /wk banque) : la caisse de 48 cases fait partie de la banque de base ; elle est lue avec elle et ne prend plus la place d'un sac dans la barre, qui montre tes sacs de banque puis les emplacements à acheter (8 en tout, comme le jeu).
+
 ## v1.128.144 — 22/11/2026
 
 _Un /reload suffit._

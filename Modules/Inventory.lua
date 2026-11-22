@@ -36,6 +36,7 @@ function M:BankList()
     end
     table.insert(t, M.BankMain())
     if BI and BI.Reagentbank then table.insert(t, BI.Reagentbank) end
+    for _, b in ipairs(M.BankExtra()) do table.insert(t, b) end
     for _, b in ipairs(M:BankBagIDs()) do table.insert(t, b) end
     return t
 end
@@ -73,6 +74,14 @@ function M.BankDiag()
     return out
 end
 
+-- Rangement fixe de la banque, sans emplacement de sac (WoW Forever : la « caisse » de 48 cases juste après les
+-- sacs du perso, quand le client a le sac de composants et pas BankButtonIDToInvSlotID) : lu avec la banque,
+-- jamais montré dans la barre des sacs
+function M.BankExtra()
+    if not _G.BankButtonIDToInvSlotID and NUM_BAGS >= 5 then return { NUM_BAGS + 1 } end
+    return {}
+end
+
 local bankBagIDs
 function M.BankBagIDs()
     if bankBagIDs then return bankBagIDs end
@@ -107,11 +116,15 @@ function M.BankBagIDs()
         if #out == 0 then out = nil end
     end
     if out then bankBagIDs = out return out end -- gardé seulement si la correspondance a marché
+    -- sans correspondance : à la suite des sacs du perso et du rangement fixe ; 8 emplacements comme la banque
+    -- du jeu sur WoW Forever quand le client ne donne pas le nombre
+    if not _G.NUM_BANKBAGSLOTS and not _G.BankButtonIDToInvSlotID then n = math.max(n, 8) end
     out = {}
-    local main = M.BankMain()
+    local main, extra = M.BankMain(), {}
+    for _, e in ipairs(M.BankExtra()) do extra[e] = true end
     local b = NUM_BAGS + 1
     while #out < n and b <= 20 do
-        if b ~= main then out[#out + 1] = b end
+        if b ~= main and not extra[b] then out[#out + 1] = b end
         b = b + 1
     end
     return out
