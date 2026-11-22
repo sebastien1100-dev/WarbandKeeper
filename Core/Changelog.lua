@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.142", date = "22/11/2026",
+        fixed = {
+            "Notre banque, barre des sacs : un sac du perso (la caisse) s'affichait en premier comme sac de banque ; seuls les vrais sacs de banque y sont, dans l'ordre de la banque du jeu.",
+        },
+    },
+    {
         version = "1.128.141", date = "22/11/2026",
         changed = {
             "Inventaire > Avant de partir (Donjon, Raid, JcJ) : tout en plus grand (lignes, icônes, textes, seuils) ; infobulle de l'objet au survol de son icône ou de son nom, Maj + clic pour le lier.",

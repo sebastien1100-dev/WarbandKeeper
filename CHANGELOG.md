@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.142 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Notre banque, barre des sacs : un sac du perso (la caisse) s'affichait en premier comme sac de banque ; seuls les vrais sacs de banque y sont, dans l'ordre de la banque du jeu.
+
 ## v1.128.141 — 22/11/2026
 
 _Un /reload suffit._

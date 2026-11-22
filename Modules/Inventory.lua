@@ -51,8 +51,10 @@ function M.BankBagIDs()
     local toSlot = _G.BankButtonIDToInvSlotID
     local out
     if toSlot and toInv then
+        -- seulement après les sacs du perso (sac de composants compris) : sur ce client, l'emplacement d'un sac du
+        -- perso peut répondre pour le 1er sac de banque
         local byInv = {}
-        for b = 1, 20 do
+        for b = NUM_BAGS + 1, 20 do
             local ok, inv = pcall(toInv, b)
             if ok and inv then byInv[inv] = b end
         end
