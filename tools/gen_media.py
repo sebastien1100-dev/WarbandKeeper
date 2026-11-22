@@ -810,6 +810,25 @@ def icon_zeppelin():
     img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "zeppelin.tga"))
 
 
+def icon_tram():
+    """Tram des profondeurs : voiture vue de côté, trois fenêtres, roues sur le rail."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    W, O = (255, 255, 255, 255), (0, 0, 0, 0)
+    d.line([(30 * s, 6 * s), (34 * s, 14 * s)], fill=W, width=3 * s)          # perche du toit
+    d.rounded_rectangle([20 * s, 12 * s, 44 * s, 17 * s], radius=2 * s, fill=W)  # toit
+    d.rounded_rectangle([6 * s, 16 * s, 58 * s, 46 * s], radius=6 * s, fill=W)  # caisse
+    for x0 in (11, 27, 43):
+        d.rounded_rectangle([x0 * s, 21 * s, (x0 + 10) * s, 31 * s], radius=2 * s, fill=O)  # fenêtres
+    d.line([(8 * s, 37 * s), (56 * s, 37 * s)], fill=O, width=2 * s)          # filet de caisse
+    for cx in (17, 47):
+        d.ellipse([(cx - 6) * s, 42 * s, (cx + 6) * s, 54 * s], fill=W)        # roues
+        d.ellipse([(cx - 2) * s, 46 * s, (cx + 2) * s, 50 * s], fill=O)
+    d.line([(2 * s, 56 * s), (62 * s, 56 * s)], fill=W, width=3 * s)          # rail
+    img.resize((64, 64), Image.LANCZOS).save(os.path.join(OUT, "tram.tga"))
+
+
 def icon_griffon():
     """Griffon en vol, de profil : grande aile relevée, tête d'aigle, pattes repliées (maîtres de vol)."""
     s = 4
@@ -884,6 +903,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for fn in [icon_circle, icon_logo, icon_home, icon_users, icon_bag, icon_hammer,
                icon_chart, icon_mail, icon_gear, icon_coin, icon_clock, icon_close,
-               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_compass, icon_zeppelin, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw, icon_shop, icon_copy, icon_chat, icon_globe]:
+               icon_search, icon_trash, icon_plus, icon_arrow, icon_refresh, icon_power, icon_notes, icon_chevron, icon_play, icon_pause, icon_stop, icon_minus, icon_filter, icon_grip, icon_back, icon_spark, icon_guide, icon_ring, icon_person, icon_book, icon_tree, icon_map, icon_bang, icon_lfg, icon_star, icon_crown, icon_fish, fx_halo, fx_beam, fx_ring, fx_spark, icon_pin, icon_skull, icon_move, icon_menu, icon_safe, icon_guild, icon_collect, icon_send, icon_lock, icon_fire, icon_boat, icon_compass, icon_zeppelin, icon_tram, icon_griffon, icon_warn, icon_navarrow, icon_flask, icon_paw, icon_shop, icon_copy, icon_chat, icon_globe]:
         fn()
     print("OK")

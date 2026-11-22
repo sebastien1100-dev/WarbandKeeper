@@ -4714,4 +4714,5 @@ WK.Locales.enUS.text = {
     ["Sacs et banque : bouton « Réunir les piles » quand des piles incomplètes d'un même objet peuvent être regroupées."] = "Bags and bank: 'Merge stacks' button when partial stacks of the same item can be combined.",
     ["Chez le marchand : bouton « Vendre les inutiles » pour les objets dont aucun de tes persos n'a besoin (liste et total dans l'infobulle, jamais un objet verrouillé)."] = "At the vendor: 'Sell unneeded' button for items none of your characters need (list and total in the tooltip, never a locked item).",
     ["Banque : « Ranger » réunit aussi les piles dans la banque puis dans les sacs, après les dépôts et les sorties."] = "Bank: 'Tidy' also merges stacks in the bank then in the bags, after deposits and withdrawals.",
+    ["Bandeau des bateaux : le Tram des profondeurs a maintenant sa petite voiture sur le rail, entre Hurlevent et Forgefer (le zeppelin a déjà la sienne)."] = "Boat banner: the Deeprun Tram now has its little car on the rail, between Stormwind and Ironforge (the zeppelin already has its own).",
 }

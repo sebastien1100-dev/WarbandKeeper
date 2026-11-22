@@ -63,6 +63,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.170 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Bandeau des bateaux : le Tram des profondeurs a maintenant sa petite voiture sur le rail, entre Hurlevent et Forgefer (le zeppelin a déjà la sienne).
+
 ## v1.128.169 — 22/11/2026
 
 _Un /reload suffit._

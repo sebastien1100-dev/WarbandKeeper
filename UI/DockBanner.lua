@@ -217,12 +217,13 @@ local function build()
                 nm:SetTextColor(col[1], col[2], col[3], (i <= 2 or kind == "tram") and 1 or 0.65)
             end
         end
-        -- bateau (ou zeppelin) : au ponton, ou là où il en est de la traversée ; pas de navire pour le tram
+        -- bateau, zeppelin ou tram : au ponton, ou là où il en est de la traversée ; le tram (sans position
+        -- connue dans son tunnel) roule entre ses deux stations
         local seg = n > 1 and (X(2, n) - x0) or 0
-        local sx = p and (x0 + seg * p) or (x0 + 16)
-        self.shipX = sx
-        self.ship:SetShown(kind ~= "tram")
-        self.ship:SetTexture(UI.MEDIA .. (kind == "zeppelin" and "zeppelin" or "boat"))
+        local sx = p and (x0 + seg * p) or (kind == "tram" and (x0 + seg * 0.5)) or (x0 + 16)
+        self.shipX, self.kind = sx, kind
+        self.ship:SetShown(true)
+        self.ship:SetTexture(UI.MEDIA .. (kind == "zeppelin" and "zeppelin" or kind == "tram" and "tram" or "boat"))
         self.ship:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
         self.wake:SetShown(kind == "boat" and p ~= nil)
         self.wake:ClearAllPoints(); self.wake:SetPoint("RIGHT", self.sea, "TOPLEFT", sx - 12, -(LINE_Y - 4))
@@ -244,7 +245,10 @@ local function build()
         end
         if self.ship:IsShown() then
             local bob = amp > 0 and math.sin(t * 2.2) * 1.5 or 0
-            self.ship:ClearAllPoints(); self.ship:SetPoint("BOTTOM", self.sea, "TOPLEFT", (self.shipX or 36), -(LINE_Y - 4) + bob)
+            -- tram : léger va-et-vient sur le rail (il roule, on ne sait pas où dans le tunnel)
+            local sway = self.kind == "tram" and math.sin(t * 0.9) * 6 or 0
+            self.ship:ClearAllPoints()
+            self.ship:SetPoint("BOTTOM", self.sea, "TOPLEFT", (self.shipX or 36) + sway, -(LINE_Y - 4) + bob)
             if self.ship.SetSnapToPixelGrid then self.ship:SetSnapToPixelGrid(false); self.ship:SetTexelSnappingBias(0) end
             if self.ship.SetRotation then self.ship:SetRotation(amp > 0 and math.sin(t * 1.7) * 0.08 or 0) end
         end

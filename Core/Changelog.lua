@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.170", date = "22/11/2026", restart = true,
+        added = {
+            "Bandeau des bateaux : le Tram des profondeurs a maintenant sa petite voiture sur le rail, entre Hurlevent et Forgefer (le zeppelin a déjà la sienne).",
+        },
+    },
+    {
         version = "1.128.169", date = "22/11/2026",
         added = {
             "Rangement : place libre de chaque perso dans Inventaire > Rangement (carte « Place dans les sacs »), avec ce qui en libèrerait le plus : camelote, envois à tes persos, ventes au marchand, piles à réunir.",
