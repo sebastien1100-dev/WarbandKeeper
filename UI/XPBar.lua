@@ -104,8 +104,15 @@ local function build()
         self.left:SetShown(showText); self.right:SetShown(showText)
         -- sans fond (réglage) : cadre et liseré transparents, textes ombrés pour rester lisibles ; la piste reste
         local bare = cfg.noBg and true or false
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bare and 0 or 0.92)
-        self.border:SetColor(C.border[1], C.border[2], C.border[3], bare and 0 or (C.border[4] or 1))
+        -- sans fond : le fond commun des cadres (UI.hudFrames) ne doit plus le repeindre au survol ni quand
+        -- l'opacité change (avant, il revenait tout de suite) ; avec fond : opacité commune
+        self.hudCustom = bare
+        if bare then
+            self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0)
+            self.border:SetColor(C.border[1], C.border[2], C.border[3], 0)
+        else
+            UI:HudPaint(self, "hud")
+        end
         -- sans fond : police contourée un peu plus grande, ombre portée et gris éclaircis (lisible sur un décor clair)
         for _, t in ipairs({ self.left, self.right }) do
             t:SetFont(UI.FONT, bare and 12 or 11, bare and "OUTLINE" or "")

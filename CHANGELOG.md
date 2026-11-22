@@ -69,6 +69,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.152 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre d'expérience : l'option « sans fond » ne tenait pas, le fond revenait au survol ou quand l'opacité des cadres changeait. Avec fond, la barre suit maintenant l'opacité commune des cadres.
+
 ## v1.128.151 — 22/11/2026
 
 _Un /reload suffit._

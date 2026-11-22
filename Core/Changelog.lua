@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.152", date = "22/11/2026",
+        fixed = {
+            "Barre d'expérience : l'option « sans fond » ne tenait pas, le fond revenait au survol ou quand l'opacité des cadres changeait. Avec fond, la barre suit maintenant l'opacité commune des cadres.",
+        },
+    },
+    {
         version = "1.128.151", date = "22/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 1 quête retirée, 1 objet de butin de plus.",
