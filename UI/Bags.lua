@@ -152,12 +152,28 @@ end
 ---------------------------------------------------------------------------
 -- Fenêtre
 ---------------------------------------------------------------------------
+-- Une fenêtre (sacs du perso ou banque) : même structure, même design ; makeView("bags") / makeView("bank")
+local gameOpen -- plus bas (sacs du jeu)
+local function makeView(kind)
+local V = {}
+local isBank = kind == "bank"
+local hiBag -- sac survolé dans la barre des sacs : ses objets ressortent
+local SLOTS_H = 44 -- hauteur de la barre des sacs quand elle est ouverte
+-- position et colonnes propres à chaque fenêtre (la banque dans WK.DB.global.bags.bank)
+local function vcfg()
+    local c = B.Config()
+    if not isBank then return c end
+    c.bank = c.bank or {}
+    return c.bank
+end
 local win
 local holders, buttons = {}, {}   -- holders[bag] ; buttons[bag][slot]
 local pending = false
 local filter, query = "all", ""
 local hovered
-local gameOpen -- plus bas (sacs du jeu)
+
+-- décalage vertical du contenu quand la barre des sacs est ouverte
+local function topOff() return (win and win.slotBar and win.slotBar:IsShown()) and SLOTS_H or 0 end
 
 local function holderOf(bag)
     if holders[bag] then return holders[bag] end
@@ -169,7 +185,7 @@ local function holderOf(bag)
 end
 local function newButton(bag, slot)
     local h = holderOf(bag)
-    local name = string.format("WarbandKeeperBagItem%d_%d", bag + 1, slot)
+    local name = string.format("WarbandKeeper%sItem%d_%d", isBank and "Bank" or "Bag", bag + 2, slot)
     local ok, b = pcall(_G.CreateFrame, "ItemButton", name, h, "ContainerFrameItemButtonTemplate")
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
@@ -188,7 +204,19 @@ local function newButton(bag, slot)
     b.wkTag.t:SetPoint("CENTER", 0, 0)
     b.wkTag:Hide()
     -- survol : la fiche suit l'objet
-    b:HookScript("OnEnter", function(s) if s.wkEntry then hovered = s.wkEntry; B.RefreshFiche() end end)
+    b:HookScript("OnEnter", function(s)
+        -- cases de la banque principale : infobulle par l'emplacement d'inventaire (le jeu ne la trouve pas par le sac)
+        local bc = _G.BANK_CONTAINER or -1
+        if bag == bc and _G.BankButtonIDToInvSlotID then
+            local okI, inv = pcall(_G.BankButtonIDToInvSlotID, slot)
+            if okI and inv then
+                _G.GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+                _G.GameTooltip:SetInventoryItem("player", inv)
+                _G.GameTooltip:Show()
+            end
+        end
+        if s.wkEntry then hovered = s.wkEntry; V.RefreshFiche() end
+    end)
     buttons[bag] = buttons[bag] or {}
     buttons[bag][slot] = b
     return b
@@ -264,10 +292,15 @@ local function matches(e)
     return true
 end
 
+local function dimmed(e)
+    if hiBag ~= nil then return e.bag ~= hiBag end
+    return not (e.empty or matches(e))
+end
+
 local function readBags()
     local list, free, total = {}, 0, 0
     local ctx = context()
-    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
+    for _, bag in ipairs((isBank and WK.modules.Inventory:BankList() or WK.modules.Inventory:BagList())) do
         local n = WK.Container.NumSlots(bag) or 0
         total = total + n
         for slot = 1, n do
@@ -318,7 +351,7 @@ local function chip(parent, key, label, icon)
         if s.icon then s.icon:SetVertexColor(fg[1], fg[2], fg[3], 1) end
     end
     if key == "up" and b.icon then b.icon:SetRotation(math.pi / 2) end
-    b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; B.Refresh() end)
+    b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; V.Refresh() end)
     b:HookScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_TOP")
         _G.GameTooltip:SetText(T(s.name), 1, 1, 1)
@@ -330,7 +363,7 @@ local function chip(parent, key, label, icon)
 end
 
 local function build()
-    local f = _G.CreateFrame("Frame", "WarbandKeeperBags", _G.UIParent)
+    local f = _G.CreateFrame("Frame", isBank and "WarbandKeeperBank" or "WarbandKeeperBags", _G.UIParent)
     f:SetFrameStrata("MEDIUM")
     f:SetToplevel(true)
     f:SetClampedToScreen(true)
@@ -339,30 +372,52 @@ local function build()
     f:SetScript("OnDragStop", function(s)
         s:StopMovingOrSizing()
         local p, _, rp, x, y = s:GetPoint()
-        B.Config().pos = { p, rp, x, y }
+        vcfg().pos = { p, rp, x, y }
     end)
     UI:HudBackground(f, "window", 12)
-    local pos = B.Config().pos
-    if pos then f:SetPoint(pos[1], _G.UIParent, pos[2], pos[3], pos[4]) else f:SetPoint("BOTTOMRIGHT", -80, 120) end
+    local pos = vcfg().pos
+    if pos then f:SetPoint(pos[1], _G.UIParent, pos[2], pos[3], pos[4])
+    elseif isBank then f:SetPoint("TOPLEFT", 60, -120)
+    else f:SetPoint("BOTTOMRIGHT", -80, 120) end
     -- en-tête
-    f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", PAD, -12); f.title:SetText(T("Sacs"))
+    f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", PAD, -12); f.title:SetText(T(isBank and "Banque" or "Sacs"))
     f.sub = UI:Text(f, 11, C.muted); f.sub:SetPoint("LEFT", f.title, "RIGHT", 10, 0)
     f.close = UI:IconButton(f, "close", 18); f.close:SetPoint("TOPRIGHT", -10, -10)
     -- fermer = fermer les sacs du jeu (notre fenêtre suit) ; Échap passe aussi par eux
     f.close:SetScript("OnClick", function()
+        if isBank then
+            if _G.CloseBankFrame then _G.CloseBankFrame() end
+            f:Hide()
+            return
+        end
         if _G.CloseAllBags then _G.CloseAllBags() end
         _G.C_Timer.After(0.05, function() if f:IsShown() and not gameOpen() then f:Hide() end end)
     end)
     f.search = UI:Input(f, 170, 24, "Rechercher...", "search")
     f.search:SetPoint("RIGHT", f.close, "LEFT", -8, 0)
-    f.search.onChange = function(t) query = (t or ""):lower(); B.Refresh(true) end
+    -- barre des sacs équipés (changer de sac, acheter un emplacement de banque)
+    f.bagsBtn = UI:IconButton(f, "bag", 22, isBank and "Sacs de banque" or "Sacs équipés")
+    f.bagsBtn:SetPoint("RIGHT", f.search, "LEFT", -8, 0)
+    f.slotBar = _G.CreateFrame("Frame", nil, f)
+    f.slotBar:SetPoint("TOPLEFT", PAD, -38); f.slotBar:SetPoint("TOPRIGHT", -PAD, -38); f.slotBar:SetHeight(SLOTS_H - 6)
+    f.slotBar:SetShown(vcfg().slots and true or false)
+    f.bagsBtn:SetActive(f.slotBar:IsShown())
+    f.bagsBtn:SetScript("OnClick", function()
+        if inCombat() then return end
+        f.slotBar:SetShown(not f.slotBar:IsShown())
+        vcfg().slots = f.slotBar:IsShown()
+        f.bagsBtn:SetActive(f.slotBar:IsShown())
+        V.ApplyTop(); V.Refresh()
+    end)
+    f.bagSlots = {}
+    f.search.onChange = function(t) query = (t or ""):lower(); V.Refresh(true) end
     -- filtres
     f.chips = {}
     local prev
     for _, c in ipairs({ { "all", "Tout", "bag" }, { "new", "Nouveaux", "star" }, { "ship", "À ranger", "send" },
         { "sell", "À vendre", "coin" }, { "de", "Désenchanter", "spark" }, { "up", "Améliorations", "arrow" } }) do
         local b = chip(f, c[1], c[2], c[3])
-        if prev then b:SetPoint("LEFT", prev, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", PAD - 4, -38) end
+        if prev then b:SetPoint("LEFT", prev, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", PAD - 4, -38); f.chip1 = b end
         f.chips[#f.chips + 1] = b
         prev = b
     end
@@ -400,19 +455,19 @@ local function build()
         f.sizing = nil
         local ficheW = B.Config().fiche and (FICHE_W + 10) or 0
         local n = math.floor((f:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
-        B.Config().cols = math.max(MIN_COLS, math.min(MAX_COLS, n))
+        vcfg().cols = math.max(MIN_COLS, math.min(MAX_COLS, n))
         -- la position reste celle du coin haut gauche
         local l, t = f:GetLeft(), f:GetTop()
         if l and t then
             f:ClearAllPoints(); f:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", l, t)
-            B.Config().pos = { "TOPLEFT", "BOTTOMLEFT", l, t }
+            vcfg().pos = { "TOPLEFT", "BOTTOMLEFT", l, t }
         end
-        B.Refresh()
+        V.Refresh()
     end)
     f:SetScript("OnSizeChanged", function(s)
         if s.sizing and not s.reflow then
             s.reflow = true
-            _G.C_Timer.After(0.05, function() s.reflow = nil; if s.sizing then B.Refresh(false, true) end end)
+            _G.C_Timer.After(0.05, function() s.reflow = nil; if s.sizing then V.Refresh(false, true) end end)
         end
     end)
     f.grip = grip
@@ -436,7 +491,7 @@ local function build()
     f.moneyBtn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
     f.sell = UI:Button(f, "Vendre la camelote", nil, 22, "secondary")
     f.sell:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9)
-    f.sell:SetScript("OnClick", function() B.SellJunk() end)
+    f.sell:SetScript("OnClick", function() V.SellJunk() end)
     -- fiche de l'objet survolé (maquette B)
     local fi = _G.CreateFrame("Frame", nil, f)
     fi:SetPoint("TOPRIGHT", -PAD, -70); fi:SetWidth(FICHE_W); fi:SetHeight(60) -- hauteur : suit le contenu
@@ -454,12 +509,12 @@ local function build()
     fi.lock = UI:Button(fi, "Verrouiller", nil, 24, "secondary")
     fi.lock:SetPoint("TOPLEFT", 10, -60)
     fi.lock:SetScript("OnClick", function()
-        if hovered and hovered.id then WK.modules.ItemLock:Toggle(hovered.id); B.Refresh() end
+        if hovered and hovered.id then WK.modules.ItemLock:Toggle(hovered.id); V.Refresh() end
     end)
     fi.de = UI:Button(fi, "Toujours désenchanter", nil, 24, "secondary")
     fi.de:SetPoint("TOPLEFT", fi.lock, "BOTTOMLEFT", 0, -6)
     fi.de:SetScript("OnClick", function()
-        if hovered and hovered.id then WK.modules.ProfHelp:ToggleDEMark(hovered.id); B.Refresh() end
+        if hovered and hovered.id then WK.modules.ProfHelp:ToggleDEMark(hovered.id); V.Refresh() end
     end)
     fi.ah = UI:Button(fi, "Chercher à l'HV", nil, 24, "secondary")
     fi.ah:SetPoint("TOPLEFT", fi.lock, "TOPRIGHT", 6, 0)
@@ -477,8 +532,10 @@ local function build()
 end
 
 -- Repeint (et place les cases hors combat). light = seulement filtres / recherche
-function B.Refresh(light, live)
+function V.Refresh(light, live)
     if not win or not win:IsShown() then return end
+    V.ApplyTop()
+    V.RefreshSlots()
     local list, free, total = readBags()
     win.list = list
     win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
@@ -508,13 +565,13 @@ function B.Refresh(light, live)
     local junk = 0
     for _, e in ipairs(list) do if not e.empty and e.info.cat == "junk" then junk = junk + 1 end end
     local merchant = _G.MerchantFrame and _G.MerchantFrame:IsShown()
-    win.sell:SetShown(merchant and junk > 0)
+    win.sell:SetShown(not isBank and merchant and junk > 0)
     -- disposition : par catégorie, cases vides à la fin
     if inCombat() then
         pending = true
         for _, e in ipairs(list) do
             local b = buttons[e.bag] and buttons[e.bag][e.slot]
-            if b then paintButton(b, not e.empty and e or nil); b:SetAlpha((e.empty or matches(e)) and 1 or 0.25) end
+            if b then paintButton(b, not e.empty and e or nil); b:SetAlpha(dimmed(e) and 0.25 or 1) end
         end
         return
     end
@@ -537,7 +594,7 @@ function B.Refresh(light, live)
     if live then
         cols = math.floor((win:GetWidth() - PAD * 2 - 14 - ficheW + GAP) / (SLOT + GAP))
     else
-        cols = B.Config().cols or COLS
+        cols = vcfg().cols or COLS
     end
     cols = math.max(MIN_COLS, math.min(MAX_COLS, cols))
     slotSize = SLOT
@@ -571,7 +628,7 @@ function B.Refresh(light, live)
             b:ClearAllPoints()
             b:SetPoint("TOPLEFT", win.content, "TOPLEFT", col * (slotSize + GAP), -(y + row * (slotSize + GAP)))
             paintButton(b, not e.empty and e or nil)
-            b:SetAlpha((e.empty or matches(e)) and 1 or 0.25)
+            b:SetAlpha(dimmed(e) and 0.25 or 1)
             b:Show()
             used[b] = true
         end
@@ -598,23 +655,118 @@ function B.Refresh(light, live)
     -- (ou juste ce qu'il faut sans réglage), jamais moins que les cases
     win.content:SetSize(math.max(1, cols * (slotSize + GAP) - GAP), math.max(1, y))
     if not live then
-        win:SetSize(PAD * 2 + cols * (slotSize + GAP) - GAP + 14 + ficheW, math.max(320, y + 110))
+        win:SetSize(PAD * 2 + cols * (slotSize + GAP) - GAP + 14 + ficheW, math.max(320, y + 110 + topOff()))
     end
-    if not light then B.RefreshFiche() end
+    if not light then V.RefreshFiche() end
 end
 
-function B.Layout() return cols, slotSize end -- pour les tests
+function V.Layout() return cols, slotSize end -- pour les tests
 
--- Inventaire > Monnaies dans la fenêtre principale
-function B.OpenMoney()
-    if not WK:PageOn("inventory") then return end
-    UI:Create():Show()
-    UI:ShowPage("inventory")
-    local ip = UI.pages.inventory
-    if ip then ip.char = "money"; WK.DB.global.settings.ui.invChar = "money"; ip:Refresh() end
+-- place les filtres, les cases et la fiche sous la barre des sacs (ouverte ou non)
+function V.ApplyTop()
+    if not win or inCombat() then return end
+    local off = topOff()
+    if win.chip1 then win.chip1:ClearAllPoints(); win.chip1:SetPoint("TOPLEFT", PAD - 4, -38 - off) end
+    win.content:ClearAllPoints(); win.content:SetPoint("TOPLEFT", PAD, -70 - off)
+    win.fiche:ClearAllPoints(); win.fiche:SetPoint("TOPRIGHT", -PAD, -70 - off)
 end
 
-function B.RefreshFiche()
+-- Barre des sacs : sacs 1 à 4 (sacs) ou sacs de banque ; glisser un sac pour le mettre ou le changer,
+-- clic pour le prendre ; emplacement de banque pas encore acheté : deux clics pour l'acheter
+local function bagSlotList()
+    local t, nb = {}, _G.NUM_BAG_SLOTS or 4
+    if isBank then
+        for i = 1, (_G.NUM_BANKBAGSLOTS or 6) do t[#t + 1] = nb + i end
+    else
+        for i = 1, nb do t[#t + 1] = i end
+    end
+    return t
+end
+local function invOf(bag)
+    local CC = _G.C_Container
+    local f = (CC and CC.ContainerIDToInventoryID) or _G.ContainerIDToInventoryID
+    if not f then return nil end
+    local ok, v = pcall(f, bag)
+    return ok and v or nil
+end
+local function slotButton(i)
+    local b = _G.CreateFrame("Button", nil, win.slotBar)
+    b:SetSize(34, 34)
+    b:SetPoint("TOPLEFT", (i - 1) * 40, 0)
+    b.edge = UI:Rounded(b, 6, 0, "BACKGROUND", 1)
+    b.fill = UI:Rounded(b, 5, 1, "BACKGROUND", 2)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("TOPLEFT", 3, -3); b.icon:SetPoint("BOTTOMRIGHT", -3, 3)
+    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.n = UI:Text(b, 10); b.n:SetPoint("BOTTOMRIGHT", -2, 2)
+    b.lock = UI:Icon(b, "lock", 14, C.muted); b.lock:SetPoint("CENTER")
+    b:RegisterForDrag("LeftButton")
+    local function pick()
+        if b.locked or not b.inv or inCombat() or not _G.PickupInventoryItem then return end
+        _G.PickupInventoryItem(b.inv)
+    end
+    b:SetScript("OnClick", function()
+        if not b.locked then return pick() end
+        if b.armed and _G.PurchaseSlot then
+            b.armed = nil
+            _G.PurchaseSlot()
+            return
+        end
+        b.armed = true
+        _G.C_Timer.After(3, function() b.armed = nil end)
+        b:GetScript("OnEnter")(b)
+    end)
+    b:SetScript("OnDragStart", pick)
+    b:SetScript("OnReceiveDrag", pick)
+    b:SetScript("OnEnter", function(s)
+        hiBag = s.bag
+        V.Refresh(true)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        local tip = _G.GameTooltip
+        if s.locked then
+            local cost = _G.GetBankSlotCost and _G.GetBankSlotCost(s.owned or 0)
+            tip:SetText(T("Emplacement de sac de banque"), 1, 1, 1)
+            if cost then tip:AddLine(T("Prix") .. " : " .. WK:FormatMoney(cost), 1, 1, 1) end
+            tip:AddLine(s.armed and T("Clique encore pour l'acheter") or T("Deux clics pour l'acheter"), 0.8, 0.8, 0.8)
+        elseif s.inv and _G.GetInventoryItemTexture("player", s.inv) then
+            tip:SetInventoryItem("player", s.inv)
+        else
+            tip:SetText(T("Emplacement de sac vide"), 1, 1, 1)
+            tip:AddLine(T("Glisse un sac ici"), 0.8, 0.8, 0.8)
+        end
+        tip:Show()
+    end)
+    b:SetScript("OnLeave", function()
+        hiBag = nil
+        V.Refresh(true)
+        _G.GameTooltip:Hide()
+    end)
+    return b
+end
+function V.RefreshSlots()
+    if not (win and win.slotBar and win.slotBar:IsShown()) then return end
+    local owned = isBank and (_G.GetNumBankSlots and _G.GetNumBankSlots() or 0) or 99
+    local CC = _G.C_Container
+    for i, bag in ipairs(bagSlotList()) do
+        local b = win.bagSlots[i] or slotButton(i)
+        win.bagSlots[i] = b
+        b.bag, b.inv, b.locked, b.owned = bag, invOf(bag), i > owned, owned
+        local tex = b.inv and _G.GetInventoryItemTexture and _G.GetInventoryItemTexture("player", b.inv)
+        b.icon:SetTexture(tex or "Interface\\PaperDoll\\UI-PaperDoll-Slot-Bag")
+        b.icon:SetDesaturated(b.locked)
+        b.icon:SetAlpha(b.locked and 0.35 or 1)
+        local n = tex and CC and CC.GetContainerNumSlots and CC.GetContainerNumSlots(bag) or 0
+        b.n:SetText(n > 0 and tostring(n) or "")
+        b.lock:SetShown(b.locked)
+        local r, g, bl = UI:Accent()
+        if hiBag == bag then b.edge:SetColor(r, g, bl, 1)
+        else b.edge:SetColor(C.border[1], C.border[2], C.border[3], 1) end
+        b.fill:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
+        b:Show()
+    end
+end
+
+function V.RefreshFiche()
     local fi = win and win.fiche
     if not (fi and fi:IsShown()) then return end
     local e = hovered
@@ -638,10 +790,11 @@ function B.RefreshFiche()
     local inBags = 0
     for _, x in ipairs(win.list or {}) do if not x.empty and x.id == e.id then inBags = inBags + (x.count or 1) end end
     local acc = WK.modules.Inventory:AccountCount(e.id) or inBags
-    fi.sub:SetText(string.format(T("%d dans tes sacs  ·  %d sur le compte"), inBags, acc))
+    fi.sub:SetText(string.format(T(isBank and "%d dans ta banque  ·  %d sur le compte"
+        or "%d dans tes sacs  ·  %d sur le compte"), inBags, acc))
     local lines = {}
-    local V = WK.modules.Value
-    local ah = V and V.Prices and select(1, V:Prices(e.id))
+    local Val = WK.modules.Value
+    local ah = Val and Val.Prices and select(1, Val:Prices(e.id))
     table.insert(lines, UI:Hex(C.muted) .. T("Prix HV") .. "|r  " .. (ah and WK:FormatMoney(ah) or "-"))
     table.insert(lines, UI:Hex(C.muted) .. T("Marchand") .. "|r  " .. WK:FormatMoney(vendor or 0))
     local Au = WK.modules.Auction
@@ -719,12 +872,13 @@ function B.RefreshFiche()
     fi.lock:ClearAllPoints(); fi.lock:SetPoint("TOPLEFT", 10, -(60 + bodyH + 14))
     local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + 12
     -- fiche plus haute que la fenêtre : la fenêtre s'allonge (elle reprend sa taille au rafraîchissement)
-    if h > win:GetHeight() - 110 and not inCombat() then win:SetHeight(h + 110) end
+    local th = 110 + topOff()
+    if h > win:GetHeight() - th and not inCombat() then win:SetHeight(h + th) end
     fi:SetHeight(h)
 end
 
 -- Vendre la camelote (marchand ouvert) : objets gris non verrouillés, revérifiés juste avant chaque vente
-function B.SellJunk()
+function V.SellJunk()
     local Q = WK.modules.QoL
     if not (Q and _G.MerchantFrame and _G.MerchantFrame:IsShown()) or inCombat() then return end
     local list = Q:GreyItems()
@@ -733,7 +887,7 @@ function B.SellJunk()
         for _ = 1, 8 do
             i = i + 1
             local it = list[i]
-            if not it then B.Refresh() return end
+            if not it then V.Refresh() return end
             if Q.StillGrey(it) then
                 local CC = _G.C_Container
                 if CC and CC.UseContainerItem then CC.UseContainerItem(it.bag, it.slot)
@@ -744,6 +898,31 @@ function B.SellJunk()
     end
     step()
 end
+
+function V.Win() return win end
+function V.Pending() return pending end
+function V.Ensure() win = win or build(); return win end
+return V
+end
+
+-- Inventaire > Monnaies dans la fenêtre principale
+function B.OpenMoney()
+    if not WK:PageOn("inventory") then return end
+    UI:Create():Show()
+    UI:ShowPage("inventory")
+    local ip = UI.pages.inventory
+    if ip then ip.char = "money"; WK.DB.global.settings.ui.invChar = "money"; ip:Refresh() end
+end
+
+---------------------------------------------------------------------------
+-- Les deux fenêtres : sacs du perso (Bags) et banque (UI.Bank)
+---------------------------------------------------------------------------
+local BV = makeView("bags")
+local KV = makeView("bank")
+B.Refresh, B.RefreshFiche, B.SellJunk, B.Layout = BV.Refresh, BV.RefreshFiche, BV.SellJunk, BV.Layout
+UI.Bank = KV
+local function bankOn() return enabled() and B.Config().bankWin ~= false end
+B.BankOn = bankOn
 
 ---------------------------------------------------------------------------
 -- Sacs du jeu : posés dans un cadre caché, notre fenêtre suit leur état
@@ -767,11 +946,12 @@ end
 local syncQueued = false
 local function sync()
     syncQueued = false
-    if not win then return end
+    local w = BV.Win()
+    if not w then return end
     if gameOpen() then
-        if not win:IsShown() then win:Show(); B.Refresh() end
-    elseif win:IsShown() then
-        win:Hide()
+        if not w:IsShown() then w:Show(); BV.Refresh() end
+    elseif w:IsShown() then
+        w:Hide()
     end
 end
 local function soonSync()
@@ -782,19 +962,34 @@ end
 -- un cadre posé dans le cadre caché ne déclenche plus OnShow : on suit ses Show / Hide directement
 local function watch(fr, n)
     local function placed()
-        -- sacs de banque (même cadres réutilisés) : rendus au jeu pour qu'ils restent visibles
-        local want = isPlayerBag(fr, n) and hider or _G.UIParent
+        -- sacs de banque (mêmes cadres réutilisés) : cachés aussi quand notre banque les montre, sinon rendus au jeu
+        local ours = isPlayerBag(fr, n) or bankOn()
+        local want = ours and hider or _G.UIParent
         if fr:GetParent() ~= want then fr:SetParent(want) end
     end
     _G.hooksecurefunc(fr, "Show", function() placed(); soonSync() end)
     _G.hooksecurefunc(fr, "Hide", function() soonSync() end)
     if fr.SetShown then _G.hooksecurefunc(fr, "SetShown", function() placed(); soonSync() end) end
 end
+
+-- Banque du jeu : sa fenêtre doit rester ouverte (la fermer ferme la banque) ; rendue invisible et minuscule
+-- tant que la nôtre est là, rétablie si notre banque est coupée
+local function hideGameBank(on)
+    local bf = _G.BankFrame
+    if not bf then return end
+    if on then
+        bf.wkScale = bf.wkScale or bf:GetScale()
+        bf:SetAlpha(0); bf:SetScale(0.001)
+    elseif bf.wkScale then
+        bf:SetAlpha(1); bf:SetScale(bf.wkScale); bf.wkScale = nil
+    end
+end
+
 local function takeOver()
     if not enabled() or hider then return end
     hider = _G.CreateFrame("Frame", nil, _G.UIParent)
     hider:Hide()
-    win = win or build()
+    BV.Ensure()
     for _, n in ipairs(GAME_BAGS) do
         local fr = _G[n]
         if fr then
@@ -807,26 +1002,50 @@ end
 B.TakeOver = takeOver
 -- ouverture directe (tests, /wk sacs)
 function B.Open()
-    win = win or build()
-    win:Show()
-    B.Refresh()
-    return win
+    local w = BV.Ensure()
+    w:Show()
+    BV.Refresh()
+    return w
+end
+-- notre banque (tests ; sinon ouverte avec la banque du jeu)
+function B.OpenBank()
+    local w = KV.Ensure()
+    w:Show()
+    KV.Refresh()
+    return w
 end
 
 WK:On("PLAYER_LOGIN", function() if not inCombat() then takeOver() end end)
 WK:On("PLAYER_REGEN_ENABLED", function()
     if not hider then takeOver() end
-    if pending then B.Refresh() end
+    if BV.Pending() then BV.Refresh() end
+    if KV.Pending() then KV.Refresh() end
 end)
--- contenu changé : un seul rafraîchissement regroupé
+WK:On("BANKFRAME_OPENED", function()
+    if not bankOn() or inCombat() then return end
+    hideGameBank(true)
+    B.OpenBank()
+end)
+WK:On("BANKFRAME_CLOSED", function()
+    local w = KV.Win()
+    if w and w:IsShown() then w:Hide() end
+end)
+-- contenu changé : un seul rafraîchissement regroupé par fenêtre ouverte
 local queued = false
 local function soon()
-    if queued or not (win and win:IsShown()) then return end
+    if queued then return end
+    local bw, kw = BV.Win(), KV.Win()
+    if not ((bw and bw:IsShown()) or (kw and kw:IsShown())) then return end
     queued = true
-    _G.C_Timer.After(0.15, function() queued = false; B.Refresh() end)
+    _G.C_Timer.After(0.15, function()
+        queued = false
+        local b2, k2 = BV.Win(), KV.Win()
+        if b2 and b2:IsShown() then BV.Refresh() end
+        if k2 and k2:IsShown() then KV.Refresh() end
+    end)
 end
 for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "ITEM_LOCK_CHANGED", "BAG_UPDATE_COOLDOWN", "GET_ITEM_INFO_RECEIVED",
     "MERCHANT_SHOW", "MERCHANT_CLOSED", "PLAYER_MONEY", "BAG_NEW_ITEMS_UPDATED", "AUCTION_HOUSE_SHOW",
-    "AUCTION_HOUSE_CLOSED" }) do
+    "AUCTION_HOUSE_CLOSED", "PLAYERBANKSLOTS_CHANGED", "PLAYERBANKBAGSLOTS_CHANGED", "BAG_CONTAINER_UPDATE" }) do
     WK:On(ev, soon)
 end

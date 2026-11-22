@@ -29,7 +29,7 @@ _Prévu, pas encore commencé._
 
 ### Inventaire et économie
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
-- **Inventaire, suite : banque** (haute) — Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement.
+- **Inventaire, suite : banque** (haute) — Un bouton « Ranger » dans notre banque qui dépose et sort ce qu'il faut d'après le Rangement.
 - **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -70,6 +70,14 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.132 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre banque : à la banque, la même fenêtre que nos sacs (catégories, filtres en icônes, recherche, fiche de l'objet, redimensionnement par colonnes) à la place de celle du jeu. Réglage « Notre banque » (Inventaire > roue).
+- Icône sac dans l'en-tête des sacs et de la banque : la barre des sacs équipés. Glisser un sac pour le mettre ou le changer, clic pour le prendre, survol pour faire ressortir ses objets ; emplacement de banque pas encore acheté : son prix, deux clics pour l'acheter.
 
 ## v1.128.131 — 22/11/2026
 

@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.132", date = "22/11/2026",
+        added = {
+            "Notre banque : à la banque, la même fenêtre que nos sacs (catégories, filtres en icônes, recherche, fiche de l'objet, redimensionnement par colonnes) à la place de celle du jeu. Réglage « Notre banque » (Inventaire > roue).",
+            "Icône sac dans l'en-tête des sacs et de la banque : la barre des sacs équipés. Glisser un sac pour le mettre ou le changer, clic pour le prendre, survol pour faire ressortir ses objets ; emplacement de banque pas encore acheté : son prix, deux clics pour l'acheter.",
+        },
+    },
+    {
         version = "1.128.131", date = "22/11/2026",
         changed = {
             "Notre inventaire : l'infobulle d'une case reste celle du jeu ; les infos de l'addon (persos qui l'ont, prix, en vente, montée des métiers, mieux fabriqué, désenchantement, ventes, qui peut le fabriquer) sont dans la fiche à droite. Réglage « Infobulle allégée dans nos sacs » (Inventaire > roue). Ailleurs, l'infobulle ne change pas.",
@@ -6517,7 +6524,7 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
-    { prio = 1, theme = "eco", title = "Inventaire, suite : banque", text = "Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement." },
+    { prio = 1, theme = "eco", title = "Inventaire, suite : banque", text = "Un bouton « Ranger » dans notre banque qui dépose et sort ce qu'il faut d'après le Rangement." },
     { prio = 2, theme = "eco", title = "Inventaire, suite : tout le compte", text = "Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },

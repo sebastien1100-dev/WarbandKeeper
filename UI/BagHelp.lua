@@ -592,6 +592,12 @@ function UI:BuildBagHelpCard(root)
                 bc.fiche = v
                 if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
             end), 80)
+        row("Notre banque",
+            "À la banque, la même fenêtre que nos sacs (catégories, filtres, fiche) à la place de celle du jeu.",
+            UI:Toggle(card, function() return bc.bankWin ~= false end, function(v)
+                bc.bankWin = v
+                if UI.AskReload then UI:AskReload(T("Inventaire changé : recharger l'interface pour l'appliquer.")) end
+            end), 80)
         row("Infobulle allégée dans nos sacs",
             "Les infos de l'addon (persos, prix, métiers, ventes) ne sont que dans la fiche ;"
                 .. " l'infobulle du jeu reste courte.",
