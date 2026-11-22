@@ -1378,8 +1378,16 @@ local function Detail(page, parent)
             for _, f in ipairs(st.first or {}) do
                 table.insert(reag, UI:Hex(C.muted) .. T("d'abord") .. " " .. f.crafts .. " " .. (stepInfo(f)) .. "|r")
             end
+            -- composants : vert si le compte en a assez pour l'étape, rouge s'il en manque (étape faite : neutre)
+            local Inv = WK.modules.Inventory
             for _, rg in ipairs(st.reagents or {}) do
-                table.insert(reag, (rg[2] * n) .. " " .. ((UI:ItemInfo(rg[1])) or "?"))
+                local need = rg[2] * n
+                local txt = need .. " " .. ((UI:ItemInfo(rg[1])) or "?")
+                if e.status ~= "done" and Inv and Inv.AccountCount then
+                    local have = Inv:AccountCount(rg[1]) or 0
+                    txt = UI:Hex(have >= need and C.positive or C.negative) .. txt .. "|r"
+                end
+                table.insert(reag, txt)
             end
             local src
             if st.src == "recipe" then

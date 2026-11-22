@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.98", date = "22/11/2026",
+        changed = {
+            "Métiers > Guide : les composants de chaque étape sont en vert quand ton compte en a assez, en rouge quand il en manque (survol de l'étape : quantités exactes).",
+        },
+    },
+    {
         version = "1.128.97", date = "22/11/2026",
         changed = {
             "Métiers > Guide : « Fabriquer xN » ouvre la fenêtre du métier si elle est fermée ; un 2e clic lance la série.",

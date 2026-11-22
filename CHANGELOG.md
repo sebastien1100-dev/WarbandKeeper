@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.98 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Métiers > Guide : les composants de chaque étape sont en vert quand ton compte en a assez, en rouge quand il en manque (survol de l'étape : quantités exactes).
+
 ## v1.128.97 — 22/11/2026
 
 _Un /reload suffit._
