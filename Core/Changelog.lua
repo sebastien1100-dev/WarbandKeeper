@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.150", date = "22/11/2026",
+        added = {
+            "Camelote : bouton « Camelote » dans la fiche d'un objet de nos sacs pour le marquer à la main ; il passe en catégorie Camelote et part avec « Vendre la camelote » et la vente automatique des gris.",
+            "Camelote par règles (Inventaire > roue) : équipement vert que le perso ne peut pas porter, équipement blanc. Jamais un objet verrouillé (à la main ou par règle : épique, envies, BiS, quête…).",
+        },
+        fixed = {
+            "La version 1.128.149 était partie sans ses notes ni ses traductions anglaises.",
+        },
+    },
+    {
         version = "1.128.148", date = "22/11/2026",
         added = {
             "Notre banque : bouton « Ranger » en bas. Il dépose ce que tes règles de banque envoient à la banque (même si le dépôt automatique est coupé), puis sort de la banque ce dont le perso connecté a besoin : composants de ses guides de métier jusqu'au palier visé et consommables sous le seuil d'« Avant de partir ». Au survol : combien d'objets partent et sortent.",
@@ -6645,7 +6655,6 @@ WK.Roadmap = {
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 3, theme = "dung", title = "Quêtes, petits plus", text = "Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
-    { prio = 1, theme = "eco", title = "Camelote", text = "Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },
     { prio = 3, theme = "class", title = "Aides de combat", text = "Chrono et alerte de combat, barre d'incantation du focus (interruption prête), mana des soigneurs, familier absent ou passif, rappel du camouflage, recharge au curseur, réglage de la file des sorts." },
     { prio = 3, theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, merci pour un buff, XP des membres du groupe." },

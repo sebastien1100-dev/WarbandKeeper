@@ -4668,4 +4668,9 @@ WK.Locales.enUS.text = {
     ["Ranger"] = "Tidy",
     ["Déposer : %d objet(s) d'après tes règles de banque"] = "Deposit: %d item(s) per your bank rules",
     ["Sortir : %d objet(s) pour tes métiers et Avant de partir"] = "Take out: %d item(s) for your professions and Before you go",
+    ["Plus de la camelote"] = "Not junk anymore",
+    ["Camelote : vert impossible à porter"] = "Junk: green you cannot wear",
+    ["Camelote : équipement blanc"] = "Junk: white gear",
+    ["L'équipement vert que ce perso ne peut pas porter part avec « Vendre la camelote » (jamais un objet verrouillé)."] = "Green gear this character cannot wear goes with 'Sell junk' (never a locked item).",
+    ["L'équipement de qualité commune (blanc) part avec « Vendre la camelote ». Marquer un objet à la main : bouton de la fiche."] = "Common (white) gear goes with 'Sell junk'. Mark an item by hand: button in the item card.",
 }

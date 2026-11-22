@@ -28,7 +28,6 @@ _Prévu, pas encore commencé._
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
 
 ### Inventaire et économie
-- **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
 - **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -69,6 +68,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.150 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Camelote : bouton « Camelote » dans la fiche d'un objet de nos sacs pour le marquer à la main ; il passe en catégorie Camelote et part avec « Vendre la camelote » et la vente automatique des gris.
+- Camelote par règles (Inventaire > roue) : équipement vert que le perso ne peut pas porter, équipement blanc. Jamais un objet verrouillé (à la main ou par règle : épique, envies, BiS, quête…).
+
+### Corrections
+- La version 1.128.149 était partie sans ses notes ni ses traductions anglaises.
 
 ## v1.128.148 — 22/11/2026
 
