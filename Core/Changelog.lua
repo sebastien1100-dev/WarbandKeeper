@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.164", date = "22/11/2026",
+        changed = {
+            "Carte du monde, quêtes de la zone (maquette A) : couleurs des quêtes du jeu sur fond graphite uni, coche verte pour les faites, « ? » gris pour celles en cours, « ! » jaune pour celles à prendre (plus de teinte rose).",
+        },
+    },
+    {
         version = "1.128.163", date = "22/11/2026",
         changed = {
             "Notre inventaire : un nouvel objet est marqué d'une petite pastille verte au lieu de l'étiquette « NEUF ».",
