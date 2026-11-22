@@ -24,12 +24,19 @@ function UI:Button(parent, text, width, height, style, icon)
     -- boutons à largeur fixe, surtout dans l'HV aux textes agrandis)
     local function needed() return math.ceil(b.label:GetStringWidth() + 24 + (b.icon and 20 or 0)) end
     b:SetSize(math.max(width or (needed() + 8), needed()), height)
-    -- libellé changé plus tard (SetLabel ou label:SetText direct) : le bouton s'élargit au besoin
+    -- libellé changé plus tard (SetLabel ou label:SetText direct) : le bouton s'élargit au besoin, puis revient à
+    -- sa largeur prévue quand le texte raccourcit (avant : « Confirmer 6 po… » laissait un bouton trop large)
+    b.baseW = width
     local setLabel = b.label.SetText
     b.label.SetText = function(fs, t)
         setLabel(fs, t)
-        if b:GetWidth() < needed() then b:SetWidth(needed()) end
+        local want = b.baseW and math.max(b.baseW, needed()) or nil
+        if want and math.abs(b:GetWidth() - want) > 0.5 then b:SetWidth(want)
+        elseif not want and b:GetWidth() < needed() then b:SetWidth(needed()) end
     end
+    local setWidth = b.SetWidth
+    -- largeur posée par la page : devient la largeur prévue
+    b.SetWidth = function(btn, w) btn.baseW = w; setWidth(btn, math.max(w, needed())) end
 
     function b:Refresh()
         local s, h = self.style, self.hover

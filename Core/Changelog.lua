@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.122", date = "22/11/2026",
+        fixed = {
+            "Hôtel des ventes : après un achat, le bouton « Acheter » restait trop large et débordait ; il reprend sa taille.",
+        },
+    },
+    {
         version = "1.128.121", date = "22/11/2026", restart = true,
         added = {
             "Notre inventaire : à la place des sacs du jeu, une fenêtre rangée par catégories qui suivent l'addon : Nouveaux, Équipement, Composants de tes métiers, Pour d'autres persos (Rangement), Consommables, Quête, Divers, Camelote, puis les places libres.",
