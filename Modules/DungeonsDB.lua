@@ -83,7 +83,7 @@ WK.DungeonsDB = {
 {4829,"Aku'mai","Aku'mai",28,{6909,6911,6910},nil,2910},
 {6243,"Gelihast","Gelihast",26,{273840,6906,6905},nil,2704},
 }},
-{key=16732,inst=2998,name="Excavations : les Paluns",en="Excavation Site: Wetlands",min=26,max=32,raid=false,zones={16732},entry={1437,47.79,56.16},trash={},bosses={
+{key=16732,inst=2998,name="Excavations : les Paluns",en="Excavation Site: Wetlands",min=26,max=32,raid=false,zones={16732},entry={1437,47.79,56.16},trash={2084},bosses={
 {0,"Saltspine","Seléchine",0,{273022,273023,273024},nil,3480},
 {0,"Shadetooth","Dent-Sombre",0,{273025,273026,273027},nil,3481},
 {0,"Relic Guardian","Gardien des reliques",0,{273028,273029,273030},nil,3482},
@@ -304,7 +304,7 @@ WK.DungeonsDB = {
 {10503,"Jandice Barov","Jandice Barov",61,{14545,14548,18689,18690,22394,14541,16701,14543},nil,2804},
 {11622,"Rattlegore","Cliquettripes",61,{14528,14537,14538,14539,18686,14531,16711},nil,2811},
 {10433,"Marduk Blackpool","Marduk Noirétang",58,{14576,18692,276069,276071},nil,2809},
-{10432,"Vectus","Vectus",60,{14577,18691,276072},nil,2813},
+{10432,"Vectus","Vectus",60,{14577,18691,276072,276073},nil,2813},
 {10508,"Ras Frostwhisper","Ras Murmegivre",62,{13314,13952,14340,14487,14502,14503,14522,14525,18693,18694,18695,18696,16689,13521},nil,0},
 {16118,"Kormok","Kormok",60,{22326,22303,22331,22332,22333},nil,3055},
 {14695,"Lord Blackwood","Seigneur Alexei Barov",60,{23132,23139,23156},nil,2807},
@@ -409,6 +409,7 @@ WK.DungeonItems = {
 [2034]={3,25,20,0.0183},
 [2039]={3,29,24,nil},
 [2040]={3,48,43,nil},
+[2084]={2,30,25,nil},
 [2169]={3,21,16,nil},
 [2205]={3,25,20,nil},
 [2262]={3,36,31,nil},
@@ -1743,6 +1744,7 @@ WK.DungeonItems = {
 [276069]={3,59,54,nil},
 [276071]={3,59,54,nil},
 [276072]={3,61,56,nil},
+[276073]={3,61,56,nil},
 [276394]={3,59,54,nil},
 [276395]={3,59,54,nil},
 [276396]={3,59,54,nil},

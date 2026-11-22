@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.151", date = "22/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 1 quête retirée, 1 objet de butin de plus.",
+        },
+    },
+    {
         version = "1.128.150", date = "22/11/2026",
         added = {
             "Camelote : bouton « Camelote » dans la fiche d'un objet de nos sacs pour le marquer à la main ; il passe en catégorie Camelote et part avec « Vendre la camelote » et la vente automatique des gris.",

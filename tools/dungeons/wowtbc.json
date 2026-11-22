@@ -5258,6 +5258,13 @@
 }
 ],
 "items": {
+"2084": {
+"drop": null,
+"found": true,
+"ilvl": 30,
+"q": 2,
+"req": 25
+},
 "273022": {
 "drop": null,
 "found": true,
@@ -5327,7 +5334,9 @@
 32
 ],
 "name": "Excavation Site: Wetlands",
-"trash": []
+"trash": [
+2084
+]
 },
 "gnomeregan": {
 "bosses": [
@@ -8964,7 +8973,8 @@
 "items": [
 14577,
 18691,
-276072
+276072,
+276073
 ],
 "name": "Vectus"
 },
@@ -9809,6 +9819,13 @@
 "req": 54
 },
 "276072": {
+"drop": null,
+"found": true,
+"ilvl": 61,
+"q": 3,
+"req": 56
+},
+"276073": {
 "drop": null,
 "found": true,
 "ilvl": 61,
