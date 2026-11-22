@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.177", date = "22/11/2026",
+        fixed = {
+            "Sacs : le filtre « Nouveaux » comptait encore un objet déjà survolé (sans pastille verte) ; un objet vu ou des sacs refermés ne sont plus « nouveaux ».",
+        },
+    },
+    {
         version = "1.128.176", date = "22/11/2026",
         changed = {
             "QoL > Général > Alertes rangé en sous-onglets : État des persos, Alertes, Connexion et À faire (la mini-fenêtre).",

@@ -88,7 +88,12 @@ local function instant(id)
     local ok, _, _, _, _, _, classID = pcall(f, id)
     return ok and classID or nil
 end
-local function isNew(bag, slot)
+-- objets neufs déjà vus (survolés, ou sacs refermés) : plus jamais « nouveaux » pendant la séance, même si le jeu
+-- garde son repère (il ne l'efface qu'à la fermeture de ses propres sacs, que les nôtres remplacent)
+local seenNew = {}
+local function newKey(bag, slot, id) return bag .. ":" .. slot .. ":" .. tostring(id) end
+local function isNew(bag, slot, id)
+    if id and seenNew[newKey(bag, slot, id)] then return false end
     local NI = _G.C_NewItems
     if NI and NI.IsNewItem then
         local ok, v = pcall(NI.IsNewItem, bag, slot)
@@ -291,11 +296,18 @@ local function newButton(bag, slot)
         local e = s.wkEntry
         if e and e.new and not e.offline then
             e.new = false
+            seenNew[newKey(e.bag, e.slot, e.id)] = true
             local NI = _G.C_NewItems
             if NI and NI.RemoveNewItem then pcall(NI.RemoveNewItem, e.bag, e.slot) end
             if e.info and e.info.dot then e.info.dot, e.info.badge = nil, nil; s.wkTag:Hide() end
+            -- plus compté dans « Nouveaux » : rangé dans sa vraie catégorie au prochain rafraîchissement
+            if e.info and e.info.cat == "new" then e.info.cat = "other"; V.newDirty = true end
         end
         V.PlaceTip(s)
+    end)
+    -- objet neuf vu : rangé dans sa vraie catégorie une fois la souris partie (rien ne bouge sous le curseur)
+    b:HookScript("OnLeave", function()
+        if V.newDirty then V.newDirty = nil; _G.C_Timer.After(0.2, function() V.Refresh() end) end
     end)
     -- le jeu replace l'infobulle à chaque mise à jour : on la remet hors de la fiche
     if type(b.UpdateTooltip) == "function" then _G.hooksecurefunc(b, "UpdateTooltip", function(s) V.PlaceTip(s) end) end
@@ -432,7 +444,7 @@ local function readBags()
                 local e = { bag = bag, slot = slot, id = id, count = count, locked = locked, name = name,
                     link = slink, quality = quality, icon = icon or (_G.C_Item and _G.C_Item.GetItemIconByID and
                     _G.C_Item.GetItemIconByID(id)) }
-                e.new = isNew(bag, slot)
+                e.new = isNew(bag, slot, id)
                 e.info = classify(e, ctx)
                 if rb and bag == rb then e.info.cat = "rbag" end
                 list[#list + 1] = e
@@ -540,6 +552,15 @@ local function build()
             V.Refresh()
         end)
         f:HookScript("OnHide", function() V.viewKey = nil end)
+        -- sacs refermés : les objets neufs ne le sont plus (comme les sacs du jeu)
+        f:HookScript("OnHide", function()
+            local lr = win and win.lastRead
+            for _, e in ipairs(lr and lr.list or {}) do
+                if e.new and e.bag and e.slot then seenNew[newKey(e.bag, e.slot, e.id)] = true end
+            end
+            local NI = _G.C_NewItems
+            if NI and NI.ClearAll then pcall(NI.ClearAll) end
+        end)
         -- fenêtre de désenchantement des enchanteurs collée à nos sacs (UI/ProfPanels.lua)
         f:HookScript("OnShow", function() if UI.OurBagsShown then UI.OurBagsShown(true) end end)
         f:HookScript("OnHide", function() if UI.OurBagsShown then UI.OurBagsShown(false) end end)
