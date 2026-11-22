@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.186 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Tram des profondeurs : ses stations s'apprennent même quand le jeu ne présente pas le tram comme une zone à part : passer de Hurlevent à Forgefer (ou l'inverse) en moins de 3 min 30, sans vol ni téléport, suffit.
+
 ## v1.128.185 — 22/11/2026
 
 _Un /reload suffit._

@@ -481,7 +481,8 @@ local function noteStation(c, x, y)
 end
 M.NoteTramStation = noteStation
 do
-    local inside, lastOut, exitAt
+    local inside, lastOut, exitAt, lastCity
+    local TRAM_CITY, TRAM_JUMP = { [1453] = "sw", [1455] = "if" }, 210
     local function tick()
         local BL = WK.modules.BoatLines
         local now = BL and BL.InTram and BL:InTram()
@@ -491,12 +492,27 @@ do
             return
         end
         local c, x, y = playerWorld()
+        local t = _G.GetTime()
         if inside then
-            inside = false; exitAt = _G.GetTime()
+            inside = false; exitAt = t
         end
         if c then
-            if exitAt and _G.GetTime() - exitAt < 20 then noteStation(c, x, y); exitAt = nil end
+            if exitAt and t - exitAt < 20 then noteStation(c, x, y); exitAt = nil end
             lastOut = { c, x, y }
+            -- WoW Forever peut faire du tram un simple tunnel (ni instance ni zone à son nom) : passer de
+            -- Hurlevent à Forgefer (ou l'inverse) en moins de TRAM_JUMP s, sans vol ni téléport, c'est le tram.
+            -- Les stations = dernier point lisible dans la 1re ville, premier dans l'autre.
+            local map = _G.C_Map and _G.C_Map.GetBestMapForUnit and _G.C_Map.GetBestMapForUnit("player")
+            local city = TRAM_CITY[map or 0]
+            local taxi = _G.UnitOnTaxi and _G.UnitOnTaxi("player")
+            if taxi or pendingPort then lastCity = nil
+            elseif city then
+                if lastCity and lastCity.city ~= city and t - lastCity.t < TRAM_JUMP then
+                    noteStation(lastCity.c, lastCity.x, lastCity.y)
+                    noteStation(c, x, y)
+                end
+                lastCity = { city = city, c = c, x = x, y = y, t = t }
+            end
         end
     end
     M._tramTick = tick -- (pour les tests)
@@ -1357,9 +1373,11 @@ function M:Report()
     end
     local BL = WK.modules.BoatLines
     if BL and BL.TramInfo then
-        local id, iname, zone = BL:TramInfo()
+        local id, iname, zone, sub = BL:TramInfo()
+        local map = _G.C_Map and _G.C_Map.GetBestMapForUnit and _G.C_Map.GetBestMapForUnit("player")
         WK:Print("  " .. T("Tram") .. " : " .. string.format(T("dans le tram : %s (instance %s « %s », zone « %s »)"),
-            BL:InTram() and T("oui") or T("non"), tostring(id), iname, zone))
+            BL:InTram() and T("oui") or T("non"), tostring(id), iname, zone .. (sub ~= "" and (" / " .. sub) or ""))
+            .. " · " .. T("carte") .. " " .. tostring(map))
     end
     local tr = M.lastTram
     if tr and tr.stations then

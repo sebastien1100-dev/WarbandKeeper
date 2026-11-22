@@ -198,12 +198,13 @@ function M.TramInfo(_)
     local name, _, _, _, _, _, _, id = nil, nil, nil, nil, nil, nil, nil, nil
     if GetInstanceInfo then name, _, _, _, _, _, _, id = GetInstanceInfo() end
     local zone = plain(_G.GetRealZoneText and _G.GetRealZoneText()) or ""
-    return plain(id), plain(name) or "", zone
+    local sub = plain(_G.GetSubZoneText and _G.GetSubZoneText()) or ""
+    return plain(id), plain(name) or "", zone, sub
 end
 function M:InTram()
-    local id, name, zone = self:TramInfo()
+    local id, name, zone, sub = self:TramInfo()
     if id == TRAM_MAP then return true end
-    return TRAM_NAMES[string.lower(name)] or TRAM_NAMES[string.lower(zone)] or false
+    return TRAM_NAMES[string.lower(name)] or TRAM_NAMES[string.lower(zone)] or TRAM_NAMES[string.lower(sub)] or false
 end
 
 ---------------------------------------------------------------------------

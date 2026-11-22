@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.186", date = "22/11/2026",
+        fixed = {
+            "Tram des profondeurs : ses stations s'apprennent même quand le jeu ne présente pas le tram comme une zone à part : passer de Hurlevent à Forgefer (ou l'inverse) en moins de 3 min 30, sans vol ni téléport, suffit.",
+        },
+    },
+    {
         version = "1.128.185", date = "22/11/2026",
         fixed = {
             "Tram des profondeurs : un trajet en tram n'apprenait pas ses stations (l'intérieur du tram n'était reconnu que par un n° d'instance) ; il est aussi reconnu par le nom de la zone, et /wk nav dit ce que le jeu répond.",
