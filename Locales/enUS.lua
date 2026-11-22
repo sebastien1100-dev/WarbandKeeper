@@ -4659,4 +4659,8 @@ WK.Locales.enUS.text = {
     ["Sac de composants"] = "Reagent bag",
     ["Places libres du sac de composants"] = "Free reagent bag slots",
     ["%d pour les composants"] = "%d for reagents",
+    ["Trier la banque (tri du jeu)"] = "Sort the bank (game sort)",
+    ["Trier les sacs (tri du jeu)"] = "Sort the bags (game sort)",
+    ["Avec ou sans catégories"] = "With or without categories",
+    ["Le tri de la banque n'existe pas sur ce client."] = "Bank sorting does not exist on this client.",
 }

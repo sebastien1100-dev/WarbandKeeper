@@ -183,6 +183,14 @@ local hovered
 -- décalage vertical du contenu quand la barre des sacs est ouverte
 local function topOff() return (win and win.slotBar and win.slotBar:IsShown()) and SLOTS_H or 0 end
 
+-- métier qui se sert d'un composant (recettes connues de tes persos, Modules/Recipes.lua)
+local function profOf(id)
+    local R = WK.modules.Recipes
+    local idx = R and R.CraftIndex and R.CraftIndex()
+    local list = idx and idx.byReagent[id]
+    return list and list[1] and list[1].prof or nil
+end
+
 local function holderOf(bag)
     if holders[bag] then return holders[bag] end
     local h = _G.CreateFrame("Frame", nil, win.content)
@@ -421,6 +429,20 @@ local function build()
     f.gameBtn = UI:IconButton(f, "refresh", 22, isBank and "Banque du jeu" or "Sacs du jeu")
     f.gameBtn:SetPoint("RIGHT", f.bagsBtn, "LEFT", -6, 0)
     f.gameBtn:SetScript("OnClick", function() if B.UseGame then B.UseGame(kind, true) end end)
+    -- tri du jeu (range les objets dans les vrais sacs / la banque)
+    f.sortBtn = UI:IconButton(f, "filter", 22,
+        isBank and "Trier la banque (tri du jeu)" or "Trier les sacs (tri du jeu)")
+    f.sortBtn:SetPoint("RIGHT", f.gameBtn, "LEFT", -6, 0)
+    f.sortBtn:SetScript("OnClick", function() V.Sort() end)
+    -- avec ou sans catégories
+    f.flatBtn = UI:IconButton(f, "menu", 22, "Avec ou sans catégories")
+    f.flatBtn:SetPoint("RIGHT", f.sortBtn, "LEFT", -6, 0)
+    f.flatBtn:SetActive(vcfg().flat and true or false)
+    f.flatBtn:SetScript("OnClick", function()
+        vcfg().flat = not vcfg().flat
+        f.flatBtn:SetActive(vcfg().flat and true or false)
+        V.Refresh()
+    end)
     f.slotBar = _G.CreateFrame("Frame", nil, f)
     f.slotBar:SetPoint("TOPLEFT", PAD, -38); f.slotBar:SetPoint("TOPRIGHT", -PAD, -38); f.slotBar:SetHeight(SLOTS_H - 6)
     f.slotBar:SetShown(vcfg().slots and true or false)
@@ -602,15 +624,57 @@ function V.Refresh(light, live)
         return
     end
     pending = false
-    local groups = {}
-    for _, c in ipairs(CATS) do groups[c.key] = {} end
+    -- catégories : celles des sacs ; la banque range ses composants par métier ; option « sans catégories »
+    local flat = vcfg().flat
+    -- tri du jeu utile seulement sans catégories (avec, l'ordre affiché ne dépend pas de la place dans les sacs)
+    win.sortBtn.wkOff = not flat
+    win.sortBtn:SetEnabled(flat and true or false)
+    win.sortBtn:SetAlpha(flat and 1 or 0.35)
+    local groups, cats = {}, {}
+    if flat then
+        cats = { { key = "all", label = "Objets" } }
+    else
+        for _, c in ipairs(CATS) do
+            if isBank and c.key == "mine" then cats[#cats + 1] = { key = "__prof" }
+            elseif not (isBank and c.key == "rbag") then cats[#cats + 1] = c end
+        end
+    end
+    for _, c in ipairs(cats) do groups[c.key] = {} end
+    local profKeys = {}
+    local function keyOf(e)
+        if flat then return "all" end
+        local k = e.info.cat
+        if isBank and (k == "mine" or (k == "other" and REAGENT_CLASS[instant(e.id) or -1])) then
+            local p = profOf(e.id)
+            k = p and ("p:" .. p) or "reag"
+            if not groups[k] then
+                groups[k] = {}
+                profKeys[#profKeys + 1] = { key = k, label = p or "Autres composants", prof = p }
+            end
+        end
+        return k
+    end
     local empties, rEmpties = {}, {}
     for _, e in ipairs(list) do
         if e.empty then
             if not isBank and e.bag == reagentBag() then rEmpties[#rEmpties + 1] = e else empties[#empties + 1] = e end
-        else table.insert(groups[e.info.cat], e) end
+        else table.insert(groups[keyOf(e)], e) end
     end
-    for _, g in pairs(groups) do
+    if isBank and not flat then
+        -- composants par métier (ordre alphabétique), « Autres composants » à la fin, à la place de « Composants »
+        table.sort(profKeys, function(a, b)
+            if (a.prof == nil) ~= (b.prof == nil) then return a.prof ~= nil end
+            return T(a.label) < T(b.label)
+        end)
+        local out = {}
+        for _, c in ipairs(cats) do
+            if c.key == "__prof" then for _, pk in ipairs(profKeys) do out[#out + 1] = pk end
+            else out[#out + 1] = c end
+        end
+        cats = out
+    end
+    -- sans catégories : l'ordre réel des sacs (le tri du jeu se voit) ; avec : qualité, nom, quantité
+    for _, g in pairs(flat and {} or groups) do
         table.sort(g, function(a, b)
             if (a.quality or 0) ~= (b.quality or 0) then return (a.quality or 0) > (b.quality or 0) end
             if (a.name or "") ~= (b.name or "") then return (a.name or "") < (b.name or "") end
@@ -662,8 +726,8 @@ function V.Refresh(light, live)
         end
         if #items > 0 then y = y + math.ceil(#items / cols) * (slotSize + GAP) + 8 end
     end
-    for _, c in ipairs(CATS) do
-        local g = groups[c.key]
+    for _, c in ipairs(cats) do
+        local g = groups[c.key] or {}
         if #g > 0 then
             local meta = tostring(#g)
             if c.key == "junk" then
@@ -690,6 +754,18 @@ function V.Refresh(light, live)
 end
 
 function V.Layout() return cols, slotSize end -- pour les tests
+
+-- Tri du jeu : sacs (C_Container.SortBags) ou banque (SortBankBags) ; jamais en combat
+function V.Sort()
+    if inCombat() then return end
+    local CC = _G.C_Container
+    if isBank then
+        local f = (CC and CC.SortBankBags) or _G.SortBankBags
+        if f then pcall(f) else WK:Print(T("Le tri de la banque n'existe pas sur ce client.")) end
+    else
+        WK.modules.Inventory:SortBags()
+    end
+end
 
 -- infobulle d'une case : à gauche de l'objet (au-dessus s'il n'y a pas la place), jamais sur la fiche de droite
 function V.PlaceTip(btn)

@@ -71,6 +71,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.146 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre inventaire et notre banque : icône « Avec ou sans catégories » (retenue par fenêtre) ; sans catégories, les objets suivent l'ordre réel des sacs.
+- Bouton de tri (tri du jeu) pour les sacs et la banque, actif seulement sans catégories (avec, l'ordre affiché ne dépend pas de la place dans les sacs).
+- Notre banque : ses composants sont rangés par métier (Couture, Forge…, d'après les recettes de tes persos), puis « Autres composants ».
+
 ## v1.128.145 — 22/11/2026
 
 _Un /reload suffit._

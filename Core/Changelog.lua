@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.146", date = "22/11/2026",
+        added = {
+            "Notre inventaire et notre banque : icône « Avec ou sans catégories » (retenue par fenêtre) ; sans catégories, les objets suivent l'ordre réel des sacs.",
+            "Bouton de tri (tri du jeu) pour les sacs et la banque, actif seulement sans catégories (avec, l'ordre affiché ne dépend pas de la place dans les sacs).",
+            "Notre banque : ses composants sont rangés par métier (Couture, Forge…, d'après les recettes de tes persos), puis « Autres composants ».",
+        },
+    },
+    {
         version = "1.128.145", date = "22/11/2026",
         fixed = {
             "Notre banque (d'après /wk banque) : la caisse de 48 cases fait partie de la banque de base ; elle est lue avec elle et ne prend plus la place d'un sac dans la barre, qui montre tes sacs de banque puis les emplacements à acheter (8 en tout, comme le jeu).",
