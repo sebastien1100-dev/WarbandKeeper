@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.157", date = "22/11/2026",
+        changed = {
+            "Performances (d'après /wk perf) : l'horloge du micro menu ne relit plus son état à chaque image (20 fois par seconde au plus) ; la position du perso est partagée 50 ms entre la carte, la minicarte, la flèche et le tracé (moins de tables jetées) ; les buffs à ne pas oublier ne sont relus que si tes effets, tes sorts ou le lieu changent (fini les pics de 3,8 ms de la barre des sacs).",
+        },
+    },
+    {
         version = "1.128.156", date = "22/11/2026",
         changed = {
             "Performances de nos sacs et de notre banque : prendre un objet en main ou une recharge (en combat) ne relit et ne reclasse plus tous les sacs, seules les cases sont repeintes ; filtres, recherche, survol de la barre des sacs et redimensionnement reprennent la dernière lecture au lieu de tout recalculer.",

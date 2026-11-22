@@ -767,6 +767,10 @@ local function build()
     end
 
     function bar:Tick(el)
+        -- 20 fois par seconde au plus (avant : survol et état relus à chaque image)
+        self.tAcc = (self.tAcc or 0) + el
+        if self.tAcc < 0.05 then return end
+        el, self.tAcc = self.tAcc, 0
         local o = cfg()
         -- heure et points (2 fois par seconde)
         self.acc = self.acc + el

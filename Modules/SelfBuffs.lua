@@ -241,6 +241,11 @@ local lastStatus, lastCtx
 function M:Status()
     -- en combat, le jeu cache les effets : la dernière lecture faite hors combat sert telle quelle
     if _G.InCombatLockdown and _G.InCombatLockdown() and lastStatus then return lastStatus, lastCtx end
+    -- lecture gardée 1 s tant que les effets du perso n'ont pas changé (la barre des sacs la demandait toutes les
+    -- 2 s, la liste et la case aussi : jusqu'à 3,8 ms par lecture)
+    local now = _G.GetTime and _G.GetTime() or 0
+    if lastStatus and not M.dirty and M.statusAt and now - M.statusAt < 1 then return lastStatus, lastCtx end
+    M.dirty, M.statusAt = false, now
     M.readFailed = false
     local rows, ctx = self:StatusNow()
     -- effets illisibles (le jeu les cache) : on garde la dernière lecture plutôt que de tout croire absent
@@ -341,4 +346,11 @@ function M.TrackDiag()
         out[#out + 1] = e.label .. " : " .. tostring(trackOn(e)) .. " (icône " .. tostring(spellTex(e.ids[1])) .. ")"
     end
     return out
+end
+
+-- effets du perso, sorts appris, lieu changés : la prochaine lecture est refaite
+WK:OnUnit("UNIT_AURA", "player", function() M.dirty = true end)
+for _, ev in ipairs({ "SPELLS_CHANGED", "ZONE_CHANGED_NEW_AREA", "PLAYER_ENTERING_WORLD", "MINIMAP_UPDATE_TRACKING",
+    "UPDATE_SHAPESHIFT_FORM", "PLAYER_REGEN_ENABLED" }) do
+    WK:On(ev, function() M.dirty = true end)
 end

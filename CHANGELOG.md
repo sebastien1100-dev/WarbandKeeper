@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.157 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Performances (d'après /wk perf) : l'horloge du micro menu ne relit plus son état à chaque image (20 fois par seconde au plus) ; la position du perso est partagée 50 ms entre la carte, la minicarte, la flèche et le tracé (moins de tables jetées) ; les buffs à ne pas oublier ne sont relus que si tes effets, tes sorts ou le lieu changent (fini les pics de 3,8 ms de la barre des sacs).
+
 ## v1.128.156 — 22/11/2026
 
 _Un /reload suffit._

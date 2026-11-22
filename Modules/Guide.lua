@@ -75,7 +75,9 @@ local posAt, posVal, posSrc
 local readPos
 function M:PlayerPos()
     local now = GetTime and GetTime()
-    if posVal and now and now == posAt and posSrc == C_Map then return posVal end
+    -- même position pendant 50 ms (avant : une table neuve à chaque image pour chaque appelant : carte,
+    -- minicarte, flèche, tracé…)
+    if posVal and now and posAt and now - posAt < 0.05 and posSrc == C_Map then return posVal end
     posVal, posAt, posSrc = readPos(), now, C_Map
     return posVal
 end
