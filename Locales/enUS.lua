@@ -4506,4 +4506,9 @@ WK.Locales.enUS.text = {
     ["Fabriquer x%d"] = "Craft x%d",
     ["Fermer le métier"] = "Close profession",
     ["%s ouvert : clique encore sur « Fabriquer x%d » pour lancer."] = "%s opened: click « Craft x%d » again to start.",
+    ["Guide vers le maître de ce métier le plus proche de toi (de ta faction)."] = "Guides you to the nearest trainer of this profession (your faction).",
+    ["Aucun maître de %s connu à proximité (ou position inconnue)."] = "No known %s trainer nearby (or position unknown).",
+    ["Maître de %s"] = "%s trainer",
+    ["Guidage vers %s, %s."] = "Guiding to %s, %s.",
+    ["Maître le plus proche"] = "Nearest trainer",
 }

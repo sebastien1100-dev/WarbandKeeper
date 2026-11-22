@@ -881,6 +881,19 @@ local function Detail(page, parent)
         function(k) tab.mode = k; tab.scrollToCurrent = (k == "guide"); tab:Refresh() end, 34)
     modeSeg:SetPoint("TOPLEFT", 0, fTop)
     modeSeg:Select("recipes")
+    -- guidage vers le maître de ce métier le plus proche (PlacesDB : bit « prof », métier dans le champ classe)
+    local trainerBtn = UI:Button(parent, "Maître le plus proche", nil, 34, "secondary", "guide")
+    trainerBtn.tooltip = "Guide vers le maître de ce métier le plus proche de toi (de ta faction)."
+    trainerBtn:SetScript("OnClick", function()
+        local G = WK.modules.Guide
+        local t = G and tab.prof and G:Nearest({ 16384 }, tab.prof)
+        if not t then
+            WK:Print(string.format(T("Aucun maître de %s connu à proximité (ou position inconnue)."), tab.prof or "?"))
+            return
+        end
+        G:Start(t, string.format(T("Maître de %s"), tab.prof), "proftrainer")
+        WK:Print(string.format(T("Guidage vers %s, %s."), G:PlaceName(t), G:DistText(t)))
+    end)
 
     local scroll = UI:Scroll(parent)
     scroll:SetPoint("TOPLEFT", 0, fTop - 46)
@@ -1702,7 +1715,7 @@ local function Detail(page, parent)
         gather:SetShown(gkind ~= nil)
         filter:SetShown(not gkind); search:SetShown(not gkind); info:SetShown(not gkind); scroll:SetShown(not gkind)
         if gkind then
-            modeSeg:Hide(); guide:Hide(); missing:Hide()
+            modeSeg:Hide(); guide:Hide(); missing:Hide(); trainerBtn:Hide()
             empty:Hide()
             local maxL = self:RefreshGather(pr)
             local p2 = { string.format("%d / %d", pr.rank or 0, pr.max or 0) }
@@ -1723,6 +1736,11 @@ local function Detail(page, parent)
         missing:SetShown(showMissing)
         local recipesMode = not showGuide and not showMissing
         filter:SetShown(recipesMode); search:SetShown(recipesMode); scroll:SetShown(recipesMode)
+        -- bouton du maître : à droite, à gauche de la recherche quand elle est là
+        trainerBtn:ClearAllPoints()
+        if recipesMode then trainerBtn:SetPoint("TOPRIGHT", search, "TOPLEFT", -8, 0)
+        else trainerBtn:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, fTop) end
+        trainerBtn:Show()
         if showGuide then
             empty:Hide()
             self:RefreshGuide(c, pr)

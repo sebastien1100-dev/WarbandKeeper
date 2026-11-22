@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.99", date = "22/11/2026",
+        added = {
+            "Métiers : bouton « Maître le plus proche » à droite des onglets Recettes / Guide / Manquantes ; il lance le guidage vers le maître de ce métier le plus proche de ta faction.",
+        },
+    },
+    {
         version = "1.128.98", date = "22/11/2026",
         changed = {
             "Métiers > Guide : les composants de chaque étape sont en vert quand ton compte en a assez, en rouge quand il en manque (survol de l'étape : quantités exactes).",
