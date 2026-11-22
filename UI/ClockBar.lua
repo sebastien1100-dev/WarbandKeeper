@@ -289,6 +289,43 @@ local SHORTCUTS = {
           local l = B:StopNear(p.cont, p.wx, p.wy, 200)
           return l and B:Mine(l) and C.positive or nil
       end },
+    -- changer de couche (Modules/Layer.lua) : clic = demande, clic droit = aider les autres ; pastille = changements
+    -- restants cette heure ; l'icône tourne pendant une demande, une ligne sous l'heure dit où on en est
+    { key = "layer", label = "Changer de couche", icon = function() return UI.MEDIA .. "layers" end, tint = true,
+      run = function(button)
+          local L = WK.modules.Layer
+          if button == "RightButton" then
+              local c = L:Config()
+              c.help = not c.help
+              local on = T("Aider les autres : actif (tu invites les joueurs de Warband Keeper qui demandent).")
+              WK:Print(c.help and on or T("Aider les autres : coupé."))
+          else
+              L:Swap()
+          end
+          UI:ClockLayerChanged()
+      end,
+      count = function() return WK.modules.Layer:Left() end,
+      dot = function() return WK.modules.Layer:Config().help and C.positive or nil end,
+      tooltip = function(tt)
+          local L = WK.modules.Layer
+          tt:SetText(T("Changer de couche"), 1, 1, 1)
+          tt:AddDoubleLine(T("Cette heure"), string.format("%d / %d", L:Used(), L.CAP), 0.7, 0.7, 0.7, 1, 1, 1)
+          local at = L:FreeAt()
+          if at then
+              local fmt = T("Limite atteinte : de nouveau possible à %s")
+              tt:AddLine(string.format(fmt, _G.date("%H:%M", at)), UI.RGB(C.warning))
+          end
+          local s = L.state
+          if s then
+              tt:AddLine(" ")
+              tt:AddLine(s.text .. "  ·  " .. UI:AgoShort(math.floor(_G.GetTime() - s.at)), 1, 1, 1)
+              if s.sub then tt:AddLine(s.sub, 0.7, 0.7, 0.7, true) end
+          end
+          tt:AddLine(" ")
+          tt:AddLine(T("Clic : changer de couche"), UI.RGB(C.dim))
+          local st = L:Config().help and T("actif") or T("coupé")
+          tt:AddLine(string.format(T("Clic droit : aider les autres (%s)"), st), UI.RGB(C.dim))
+      end },
     -- /reload : bouton protégé qui lance la commande (ReloadUI() est bloqué pour les addons sur ce client)
     { key = "reload", label = "Recharger l'interface", icon = function() return UI.MEDIA .. "refresh" end, tint = true,
       secure = { type = "macro", macrotext = "/reload" } },
@@ -332,6 +369,10 @@ local function cfg()
     if not q.clock.boatsAdded then
         q.clock.boatsAdded = true
         if q.clock.side.boats == nil then q.clock.side.boats = "R" end
+    end
+    if not q.clock.layerAdded then
+        q.clock.layerAdded = true
+        if q.clock.side.layer == nil then q.clock.side.layer = "R" end
     end
     if not q.clock.reloadAdded then
         q.clock.reloadAdded = true
@@ -632,10 +673,11 @@ local function makeIcon(def)
         for k, v in pairs(def.secure) do b:SetAttribute(k, v) end
     else
         b = CreateFrame("Button", nil, bar)
-        b:SetScript("OnClick", function()
+        b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        b:SetScript("OnClick", function(_, button)
             -- fenêtre du jeu sans bouton protégé trouvé : jamais en combat, pour limiter la casse
             if def.micro and inCombat() then return end
-            def.run()
+            def.run(button)
         end)
     end
     b:SetFrameLevel(bar.bg:GetFrameLevel() + 4)
@@ -708,6 +750,10 @@ local function build()
     bar.timeBold:SetPoint("CENTER", bar.time, "CENTER", 1, 0)
     bar.timeBold:SetJustifyH("CENTER")
     bar.timeBold:Hide()
+    -- changement de couche en cours : une ligne sous l'heure (maquette B), une minute après chaque étape
+    bar.layerLine = UI:Text(bar, 10)
+    bar.layerLine:SetPoint("TOP", bar.bg, "BOTTOM", 0, -3)
+    bar.layerLine:Hide()
     bar.clockBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     bar.clockBtn:SetScript("OnClick", function(_, button)
         -- clic droit (réglage) : libérer la mémoire inutilisée des addons, hors combat
@@ -783,6 +829,15 @@ local function build()
             self.time:SetTextColor(UI:Accent())
             self.timeBold:SetTextColor(UI:Accent())
             self.timeBold:SetShown(o.bold and true or false)
+            UI:ClockLayerLine()
+        end
+        -- raccourci « Couche » : l'icône tourne pendant une demande
+        local lic = self.icons and self.icons.layer
+        if lic and lic:IsShown() then
+            local L = WK.modules.Layer
+            local busy = L and L:Busy()
+            if busy then lic.tex:SetRotation(_G.GetTime() * 2.5); lic.spun = true
+            elseif lic.spun then lic.tex:SetRotation(0); lic.spun = nil end
         end
         -- dépliage au survol (hors combat), repli 0,4 s après le départ de la souris
         local over = self:Over()
@@ -932,6 +987,25 @@ local function build()
         -- aperçu : la barre telle qu'en jeu (hors combat seulement : cadre protégé)
         sample = function() if not inCombat() then UI:SyncClock() end end })
     return bar
+end
+
+-- Ligne sous l'heure : étape du changement de couche (Modules/Layer.lua), réglage layer.line
+local LINE_COL = { search = "info", invited = "accent", moved = "positive", same = "muted", cap = "warning",
+    none = "warning", blocked = "warning" }
+function UI.ClockLayerLine(_)
+    if not bar or not bar.layerLine then return end
+    local L = WK.modules.Layer
+    local s = L and L:Config().line and L:Current()
+    if not s then bar.layerLine:Hide() return end
+    local col = LINE_COL[s.kind] == "accent" and { UI:Accent() } or C[LINE_COL[s.kind] or "muted"]
+    bar.layerLine:SetText(s.text)
+    bar.layerLine:SetTextColor(col[1], col[2], col[3])
+    bar.layerLine:Show()
+end
+function UI.ClockLayerChanged(_)
+    UI:ClockLayerLine()
+    UI:ClockCounts()
+    if bar and bar.icons and bar.icons.layer and bar.Decor then bar:Decor() end
 end
 
 -- Nombres en ligne sur les icônes (texte seulement : possible en combat)

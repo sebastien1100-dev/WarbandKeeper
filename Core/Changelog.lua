@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.172", date = "22/11/2026", restart = true,
+        added = {
+            "Micro menu : raccourci « Couche » pour changer de couche. Clic : ton perso cherche un joueur de Warband Keeper de ta zone sur une autre couche, accepte son invitation tout seul et quitte le groupe 4 s après ; la pastille dit combien de changements il te reste cette heure (le jeu en permet 10) et l'étape s'affiche sous l'heure.",
+            "« Aider les autres » (clic droit sur le raccourci, ou QoL > Micro menu, coupé par défaut) : ton perso invite les joueurs de Warband Keeper qui demandent, avec retenue (6 invitations en 10 min, jamais en combat, en instance ni en groupe). Plus il y a de joueurs qui l'activent, plus le changement de couche marche.",
+        },
+    },
+    {
         version = "1.128.171", date = "22/11/2026", restart = true,
         added = {
             "Mini-fenêtre « À faire » : une barre de pastilles à l'écran (une par genre de tâche, avec leur nombre), sans ouvrir la fenêtre ; survol = le détail, clic = la page. À placer en mode édition, à couper dans Options > Rappels à la connexion.",
@@ -6784,7 +6791,7 @@ WK.Roadmap = {
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
-    { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
+    { prio = 3, theme = "map", title = "Couches, suite", text = "La couche où tu es et les rares tués par couche, si le jeu la rend de nouveau lisible (depuis le 20/11, chaque créature a son propre numéro)." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 3, theme = "dung", title = "Quêtes, petits plus", text = "Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },

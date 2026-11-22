@@ -19,9 +19,9 @@ _Prévu, pas encore commencé._
 
 ### Carte et voyage
 - **Chemins appris partagés** (moyenne) — Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde.
-- **Couches de serveur** (moyenne) — La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule.
 - **« Prends le bateau »** (moyenne) — Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée.
 - **Carte, suite** (basse) — Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable.
+- **Couches, suite** (basse) — La couche où tu es et les rares tués par couche, si le jeu la rend de nouveau lisible (depuis le 20/11, chaque créature a son propre numéro).
 - **Notes de carte partagées** (basse) — Avec le groupe ou la guilde (ceux qui ont Warband Keeper), au choix note par note.
 - **Ping de groupe** (basse) — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
@@ -60,6 +60,14 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.172 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Micro menu : raccourci « Couche » pour changer de couche. Clic : ton perso cherche un joueur de Warband Keeper de ta zone sur une autre couche, accepte son invitation tout seul et quitte le groupe 4 s après ; la pastille dit combien de changements il te reste cette heure (le jeu en permet 10) et l'étape s'affiche sous l'heure.
+- « Aider les autres » (clic droit sur le raccourci, ou QoL > Micro menu, coupé par défaut) : ton perso invite les joueurs de Warband Keeper qui demandent, avec retenue (6 invitations en 10 min, jamais en combat, en instance ni en groupe). Plus il y a de joueurs qui l'activent, plus le changement de couche marche.
 
 ## v1.128.171 — 22/11/2026
 

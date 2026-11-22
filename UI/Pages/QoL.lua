@@ -902,6 +902,21 @@ UI:RegisterPage({
             prow("Clic droit sur l'heure : libérer la mémoire", "Nettoie la mémoire inutilisée des addons (hors combat).",
                 toggle(pc, function() return ck.perfGC end, function(v) ck.perfGC = v end), 80)
         end
+        -- changer de couche (Modules/Layer.lua, raccourci « Couche » du micro menu)
+        do
+            local Ly = WK.modules.Layer
+            local lc = card("Changer de couche", 40 + 2 * 46 + 8, "raccourci « Couche » du micro menu")
+            UI:SettingRow(lc, -40, "Aider les autres",
+                "Ton perso invite les joueurs de Warband Keeper de ta zone qui demandent à changer de couche "
+                    .. "(6 invitations au plus en 10 min ; jamais en combat, en instance ni en groupe). "
+                    .. "Aussi au clic droit sur le raccourci.",
+                toggle(lc, function() return Ly:Config().help end,
+                    function(v) Ly:Config().help = v; UI:ClockLayerChanged() end), 80)
+            UI:SettingRow(lc, -86, "Étape sous l'heure",
+                "Pendant une demande : recherche, invitation, couche changée… sous l'heure, une minute.",
+                toggle(lc, function() return Ly:Config().line end,
+                    function(v) Ly:Config().line = v; UI:ClockLayerLine() end), 80)
+        end
         -- en haut : les raccourcis (barre telle qu'à l'écran) ; les réglages en dessous
         local TOPBOX = 40 + 26 + 56 + 8 + 34 + 26
         local cy = -TOPBOX
