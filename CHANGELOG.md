@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.103 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Désenchantement avec les sacs d'EllesmereUI : la fenêtre se collait aux sacs du jeu, laissés ouverts mais invisibles derrière ceux d'EllesmereUI ; elle se colle maintenant à EUI_MainBagFrame. La barre de sacs des barres d'action n'est plus prise pour une fenêtre de sacs.
+
 ## v1.128.102 — 22/11/2026
 
 _Un /reload suffit._

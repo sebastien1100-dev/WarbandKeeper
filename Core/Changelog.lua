@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.103", date = "22/11/2026",
+        fixed = {
+            "Désenchantement avec les sacs d'EllesmereUI : la fenêtre se collait aux sacs du jeu, laissés ouverts mais invisibles derrière ceux d'EllesmereUI ; elle se colle maintenant à EUI_MainBagFrame. La barre de sacs des barres d'action n'est plus prise pour une fenêtre de sacs.",
+        },
+    },
+    {
         version = "1.128.102", date = "22/11/2026",
         fixed = {
             "Erreur « Attempt to access forbidden object » (ProfPanels.lua) en cherchant les sacs des autres addons : les cadres protégés du jeu sont maintenant ignorés.",

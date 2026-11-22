@@ -247,6 +247,8 @@ local function discoverBags()
         local n = not extraSeen[ch] and safeName(ch)
         if n then
             local low = n:lower()
+            -- barres de sacs des barres d'action (EllesmereEAB_BagBar…) : pas une fenêtre de sacs
+            if low:find("bagbar", 1, true) then low = "" end
             for _, pat in ipairs(BAG_NAMES) do
                 if low:find(pat) then
                     extraSeen[ch] = true
@@ -274,12 +276,16 @@ function UI.OtherBagsDiag()
     if n == 0 then WK:Print(T("Sacs : aucun cadre de sac affiché (ouvre tes sacs puis relance /wk sacs).")) end
     return n, #extraBags
 end
+-- sacs d'un autre addon d'abord : EllesmereUI laisse les sacs du jeu « ouverts » mais invisibles derrière les siens
+local function visible(f)
+    return f and f:IsVisible() and (f.GetEffectiveAlpha == nil or f:GetEffectiveAlpha() > 0.05)
+end
 local function bagFrame()
-    if ContainerFrameCombinedBags and ContainerFrameCombinedBags:IsShown() then return ContainerFrameCombinedBags end
-    if ContainerFrame1 and ContainerFrame1:IsShown() then return ContainerFrame1 end
     for _, f in ipairs(extraBags) do
-        if f:IsShown() and f:GetWidth() > 50 then return f end
+        if visible(f) and f:GetWidth() > 50 then return f end
     end
+    if visible(ContainerFrameCombinedBags) then return ContainerFrameCombinedBags end
+    if visible(ContainerFrame1) then return ContainerFrame1 end
 end
 
 function UI:ToggleDEPanel(show, anchor)
