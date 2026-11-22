@@ -294,6 +294,10 @@ local SHORTCUTS = {
     { key = "layer", label = "Changer de couche", icon = function() return UI.MEDIA .. "layers" end, tint = true,
       run = function(button)
           local L = WK.modules.Layer
+          if not L then
+              WK:Print(T("Changer de couche : redémarre complètement le jeu (nouveau fichier de l'addon)."))
+              return
+          end
           if button == "RightButton" then
               local c = L:Config()
               c.help = not c.help
@@ -304,12 +308,23 @@ local SHORTCUTS = {
           end
           UI:ClockLayerChanged()
       end,
-      count = function() return WK.modules.Layer:Left() end,
-      dot = function() return WK.modules.Layer:Config().help and C.positive or nil end,
+      badgeAccent = true, -- pastille à la couleur de l'apparence, en haut à droite (maquette A)
+      count = function() local L = WK.modules.Layer; return L and L:Left() or nil end,
+      dot = function() local L = WK.modules.Layer; return L and L:Config().help and C.positive or nil end,
       tooltip = function(tt)
           local L = WK.modules.Layer
           tt:SetText(T("Changer de couche"), 1, 1, 1)
-          tt:AddDoubleLine(T("Cette heure"), string.format("%d / %d", L:Used(), L.CAP), 0.7, 0.7, 0.7, 1, 1, 1)
+          if not L then
+              tt:AddLine(T("Redémarre complètement le jeu pour l'activer."), UI.RGB(C.warning))
+              return
+          end
+          -- points de l'heure : un par changement permis, pleins = déjà utilisés (maquette A)
+          local used, ar, ag, ab = L:Used(), UI:Accent()
+          local pips = UI:Hex({ ar, ag, ab }) .. string.rep("•", used) .. "|r" .. UI:Hex(C.dim)
+              .. string.rep("•", math.max(0, L.CAP - used)) .. "|r"
+          local cnt = pips .. "  " .. string.format("%d / %d", used, L.CAP)
+          tt:AddDoubleLine(T("Cette heure"), cnt, 0.7, 0.7, 0.7, 1, 1, 1)
+          tt:AddLine(string.format(T("%d changement(s) restant(s)"), L:Left()), 0.7, 0.7, 0.7)
           if L:UsesBridge() then
               tt:AddLine(T("Passe par LayerSwap (installé)"), UI.RGB(C.info))
           end
@@ -376,6 +391,23 @@ local function cfg()
     if not q.clock.layerAdded then
         q.clock.layerAdded = true
         if q.clock.side.layer == nil then q.clock.side.layer = "R" end
+    end
+    -- « Couche » en premier à droite de l'heure (maquette A), une fois ; ensuite il reste où tu le mets
+    if not q.clock.layerFirst then
+        q.clock.layerFirst = true
+        if q.clock.side.layer == "R" then
+            local order = {}
+            for _, k in ipairs(q.clock.order or {}) do if k ~= "layer" then order[#order + 1] = k end end
+            local seen = {}
+            for _, k in ipairs(order) do seen[k] = true end
+            for _, def in ipairs(SHORTCUTS) do
+                if not seen[def.key] and def.key ~= "layer" then order[#order + 1] = def.key end
+            end
+            local at = #order + 1
+            for i, k in ipairs(order) do if q.clock.side[k] == "R" then at = i break end end
+            table.insert(order, at, "layer")
+            q.clock.order = order
+        end
     end
     if not q.clock.reloadAdded then
         q.clock.reloadAdded = true
@@ -754,9 +786,14 @@ local function build()
     bar.timeBold:SetJustifyH("CENTER")
     bar.timeBold:Hide()
     -- changement de couche en cours : une ligne sous l'heure (maquette B), une minute après chaque étape
-    bar.layerLine = UI:Text(bar, 10)
-    bar.layerLine:SetPoint("TOP", bar.bg, "BOTTOM", 0, -3)
-    bar.layerLine:Hide()
+    -- (sous les barres FPS / latence, dans sa petite pastille au fond de l'heure)
+    bar.layerBox = _G.CreateFrame("Frame", nil, bar)
+    bar.layerBox:SetPoint("TOP", bar.bg, "BOTTOM", 0, -10)
+    bar.layerBox:SetSize(120, 20)
+    UI:Panel(bar.layerBox, 8, { C.bg[1], C.bg[2], C.bg[3], 0.88 }, C.border)
+    bar.layerLine = UI:Text(bar.layerBox, 11)
+    bar.layerLine:SetPoint("CENTER", 0, 0)
+    bar.layerBox:Hide()
     bar.clockBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     bar.clockBtn:SetScript("OnClick", function(_, button)
         -- clic droit (réglage) : libérer la mémoire inutilisée des addons, hors combat
@@ -1000,11 +1037,15 @@ function UI.ClockLayerLine(_)
     if not bar or not bar.layerLine then return end
     local L = WK.modules.Layer
     local s = L and L:Config().line and L:Current()
-    if not s then bar.layerLine:Hide() return end
+    if not s then bar.layerBox:Hide() return end
     local col = LINE_COL[s.kind] == "accent" and { UI:Accent() } or C[LINE_COL[s.kind] or "muted"]
-    bar.layerLine:SetText(s.text)
+    local txt = s.text
+    if s.kind == "moved" and L.Left then txt = txt .. "  ·  " .. string.format(T("%d restants"), L:Left()) end
+    bar.layerLine:SetText(txt)
     bar.layerLine:SetTextColor(col[1], col[2], col[3])
-    bar.layerLine:Show()
+    bar.layerBox.border:SetColor(col[1], col[2], col[3], 0.6)
+    bar.layerBox:SetWidth(math.ceil(bar.layerLine:GetStringWidth() or 80) + 20)
+    bar.layerBox:Show()
 end
 function UI.ClockLayerChanged(_)
     UI:ClockLayerLine()
@@ -1021,6 +1062,16 @@ function UI:ClockCounts()
         local show = ic and n ~= nil and n > 0
         if ic then
             ic.badge:SetShown(show)
+            if show and def.badgeAccent and not ic.badgeAcc then
+                -- pastille d'accent en haut à droite (raccourci « Couche »)
+                ic.badgeAcc = true
+                ic.badge:ClearAllPoints(); ic.badge:SetPoint("CENTER", ic, "TOPRIGHT", -2, -2)
+            end
+            if show and def.badgeAccent then
+                local r, g, b = UI:Accent()
+                ic.badge.bg:SetColor(r, g, b, 1)
+                ic.num:SetTextColor(C.bg[1], C.bg[2], C.bg[3])
+            end
             if show then
                 ic.num:SetText(n > 99 and "99+" or tostring(n))
                 ic.badge:SetWidth(math.max(18, math.ceil(ic.num:GetStringWidth() or 0) + 10))

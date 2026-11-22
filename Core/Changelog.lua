@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.174", date = "22/11/2026",
+        changed = {
+            "Micro menu, raccourci « Couche » plus proche de la maquette : rangé en premier à droite de l'heure, pastille des changements restants à la couleur de l'apparence en haut à droite, points de l'heure dans l'infobulle, étape dans une petite pastille sous l'heure (sous les barres FPS et latence, qu'elle chevauchait).",
+        },
+        fixed = {
+            "Sans redémarrage complet après la mise à jour, le raccourci « Couche » ne cassait plus le micro menu : il demande de redémarrer le jeu.",
+        },
+    },
+    {
         version = "1.128.173", date = "22/11/2026",
         added = {
             "Changer de couche : si LayerSwap est installé, le raccourci « Couche » lance sa demande (tu profites de tous ses joueurs) ; le compteur de l'heure et l'étape sous l'heure restent. Réglage « Passer par LayerSwap s'il est installé » dans QoL > Micro menu (actif par défaut).",

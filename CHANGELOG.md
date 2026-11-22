@@ -61,6 +61,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.174 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Micro menu, raccourci « Couche » plus proche de la maquette : rangé en premier à droite de l'heure, pastille des changements restants à la couleur de l'apparence en haut à droite, points de l'heure dans l'infobulle, étape dans une petite pastille sous l'heure (sous les barres FPS et latence, qu'elle chevauchait).
+
+### Corrections
+- Sans redémarrage complet après la mise à jour, le raccourci « Couche » ne cassait plus le micro menu : il demande de redémarrer le jeu.
+
 ## v1.128.173 — 22/11/2026
 
 _Un /reload suffit._
