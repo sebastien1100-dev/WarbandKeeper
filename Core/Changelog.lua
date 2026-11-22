@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.66", date = "22/11/2026",
+        fixed = {
+            "Recherche de groupe : le message automatique écrivait le nom de la zone en français pour une activité de zone (« Excavations : les Paluns ») ; il est maintenant en anglais (« Excavations: Wetlands »), comme les donjons.",
+        },
+    },
+    {
         version = "1.128.65", date = "22/11/2026",
         changed = {
             "Listes déroulées de la barre des sacs (kit de camp, buffs) : plus de cadre coloré autour des icônes ni autour de la liste des buffs, plus sobre.",

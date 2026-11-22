@@ -413,7 +413,38 @@ function M.EnglishName(name)
             return e[2]
         end
     end
-    return name
+    return M.EnglishZones(name)
+end
+
+-- Pas un donjon (activité de zone, par exemple « Excavations : les Paluns ») : noms français des zones remplacés
+-- par leur nom anglais (Modules/WayZonesDB.lua, du plus long au plus court), quelques mots courants traduits,
+-- et l'espace française avant « : » retirée
+local zonesFR
+local WORDS = { { "Quêtes", "Quests" }, { "Quête", "Quest" }, { "Élite", "Elite" } }
+function M.EnglishZones(name)
+    if not zonesFR then
+        zonesFR = {}
+        local seen = {}
+        for _, z in ipairs(WK.WayZones or {}) do
+            local en, fr = z[2], z[3]
+            if en and fr and fr ~= en and not seen[fr] then
+                seen[fr] = true
+                zonesFR[#zonesFR + 1] = { string.lower(fr), en }
+            end
+        end
+        table.sort(zonesFR, function(x, y) return #x[1] > #y[1] end)
+    end
+    local out = name
+    for _, z in ipairs(zonesFR) do
+        local i, j = string.find(string.lower(out), z[1], 1, true)
+        if i then out = out:sub(1, i - 1) .. z[2] .. out:sub(j + 1) end
+    end
+    for _, w in ipairs(WORDS) do
+        local i, j = string.find(out, w[1], 1, true)
+        if i then out = out:sub(1, i - 1) .. w[2] .. out:sub(j + 1) end
+    end
+    out = out:gsub(" : ", ": ")
+    return out
 end
 
 function M:Message(activityName, role)
