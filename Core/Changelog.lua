@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.178", date = "22/11/2026",
+        fixed = {
+            "Halo : erreur « fonction protégée » (ADDON_ACTION_BLOCKED) quand une zone se chargeait en combat ; ses réglages du jeu attendent maintenant la fin du combat.",
+            "Carte des vols : la durée du vol apparaissait deux fois dans l'infobulle quand le jeu la donne déjà ; la nôtre ne s'ajoute plus qu'en son absence.",
+        },
+    },
+    {
         version = "1.128.177", date = "22/11/2026",
         fixed = {
             "Sacs : le filtre « Nouveaux » comptait encore un objet déjà survolé (sans pastille verte) ; un objet vu ou des sacs refermés ne sont plus « nouveaux ».",

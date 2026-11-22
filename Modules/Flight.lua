@@ -152,19 +152,38 @@ local function clock(sec)
     return string.format("%d min %02d", math.floor(sec / 60), sec % 60)
 end
 -- Infobulle d'une destination sur la carte des vols : durée apprise, ou estimée (« ~ »)
-local function addTime(index)
+-- Le jeu (ou un autre addon) peut déjà donner la durée (« Durée du vol : 1:55 ») : pas de doublon.
+local function hasFlightLine(tt)
+    local prefix = T("Durée du vol : %s"):match("^(.-)%s*:") or ""
+    for i = 1, tt:NumLines() or 0 do
+        local fs = _G["GameTooltipTextLeft" .. i]
+        local txt = fs and fs:GetText()
+        if txt and not (_G.issecretvalue and _G.issecretvalue(txt)) and txt:find("%d+:%d%d")
+            and ((prefix ~= "" and txt:find(prefix, 1, true)) or txt:lower():find("flight")) then
+            return true
+        end
+    end
+end
+M.HasFlightLine = hasFlightLine -- (pour les tests)
+local function addTime(index, owner)
     if not cfg().enabled or not index then return end
     local sec, learned = M:RouteTime(index)
     if not sec then return end
-    local r, g, b = WK.UI:Accent()
-    GameTooltip:AddLine(learned and string.format(T("Durée du vol : %s"), clock(sec))
-        or string.format(T("Durée du vol : environ %s (estimée)"), clock(sec)), r, g, b)
-    GameTooltip:Show()
+    -- une image plus tard : la ligne du jeu, ajoutée après notre crochet, est alors visible
+    _G.C_Timer.After(0, function()
+        local GameTooltip = _G.GameTooltip
+        if not GameTooltip:IsShown() or (owner and GameTooltip:GetOwner() ~= owner) then return end
+        if hasFlightLine(GameTooltip) then return end
+        local r, g, b = WK.UI:Accent()
+        GameTooltip:AddLine(learned and string.format(T("Durée du vol : %s"), clock(sec))
+            or string.format(T("Durée du vol : environ %s (estimée)"), clock(sec)), r, g, b)
+        GameTooltip:Show()
+    end)
 end
 if hooksecurefunc then
     -- ancienne carte des vols (boutons de relais)
     if TaxiNodeOnButtonEnter then
-        hooksecurefunc("TaxiNodeOnButtonEnter", function(button) pcall(addTime, button and button:GetID()) end)
+        hooksecurefunc("TaxiNodeOnButtonEnter", function(button) pcall(addTime, button and button:GetID(), button) end)
     end
     -- carte des vols récente (épingles) : accrochée quand elle se charge
     local function hookPins()
@@ -173,7 +192,7 @@ if hooksecurefunc then
             M.pinsHooked = true
             hooksecurefunc(mix, "OnMouseEnter", function(pin)
                 local d = pin and pin.taxiNodeData
-                if d and d.slotIndex then pcall(addTime, d.slotIndex) end
+                if d and d.slotIndex then pcall(addTime, d.slotIndex, pin) end
             end)
         end
     end

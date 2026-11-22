@@ -70,13 +70,21 @@ local function getCVar(name)
     if C_CVar and C_CVar.GetCVar then return C_CVar.GetCVar(name) end
     if GetCVar then return GetCVar(name) end
 end
+-- En combat, le jeu refuse ces réglages (ADDON_ACTION_BLOCKED) : rien n'est changé, tout est repris à la sortie
+-- du combat (pendingCVars). Une valeur déjà en place n'est pas réécrite.
+local pendingCVars
+local function inCombat() return _G.InCombatLockdown and _G.InCombatLockdown() end
 local function setCVar(name, value)
-    if getCVar(name) == nil then return end -- réglage absent de ce client
+    local cur = getCVar(name)
+    if cur == nil then return end -- réglage absent de ce client
+    if tostring(cur) == tostring(value) then return end
+    if inCombat() then return end
     if C_CVar and C_CVar.SetCVar then pcall(C_CVar.SetCVar, name, value)
     elseif SetCVar then pcall(SetCVar, name, value) end
 end
 
 function M:ApplyCVars()
+    if inCombat() then pendingCVars = "apply" return end
     local g = self:Config()
     g.saved = g.saved or {}
     for name, value in pairs(CVARS) do
@@ -95,6 +103,7 @@ function M:ApplyCVars()
 end
 
 function M:RestoreCVars()
+    if inCombat() then pendingCVars = "restore" return end
     local g = self:Config()
     for name, value in pairs(g.saved or {}) do
         if value ~= nil then setCVar(name, value) end
@@ -709,7 +718,12 @@ end)
 WK:On("NAME_PLATE_UNIT_REMOVED", function() if M.current then refresh() end end)
 WK:On("QUEST_LOG_UPDATE", function() if M.current or M.SoftExists() then refreshSoon() end end)
 WK:On("PLAYER_REGEN_DISABLED", refresh)
-WK:On("PLAYER_REGEN_ENABLED", refresh)
+WK:On("PLAYER_REGEN_ENABLED", function()
+    local p = pendingCVars
+    pendingCVars = nil
+    if p == "apply" then M:ApplyCVars() elseif p == "restore" then M:RestoreCVars() end
+    refresh()
+end)
 WK:On("PLAYER_ENTERING_WORLD", function() C_Timer.After(1, function()
     local g = M:Config()
     -- certains clients remettent ces réglages à zéro au chargement d'une zone

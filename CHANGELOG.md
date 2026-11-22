@@ -61,6 +61,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.178 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Halo : erreur « fonction protégée » (ADDON_ACTION_BLOCKED) quand une zone se chargeait en combat ; ses réglages du jeu attendent maintenant la fin du combat.
+- Carte des vols : la durée du vol apparaissait deux fois dans l'infobulle quand le jeu la donne déjà ; la nôtre ne s'ajoute plus qu'en son absence.
+
 ## v1.128.177 — 22/11/2026
 
 _Un /reload suffit._

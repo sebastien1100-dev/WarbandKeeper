@@ -4846,4 +4846,6 @@ WK.Locales.enUS.text = {
     ["Connexion"] = "Login",
     ["QoL > Général > Alertes rangé en sous-onglets : État des persos, Alertes, Connexion et À faire (la mini-fenêtre)."] = "QoL > General > Alerts sorted into sub-tabs: Characters' state, Alerts, Login and To do (the mini window).",
     ["Sacs : le filtre « Nouveaux » comptait encore un objet déjà survolé (sans pastille verte) ; un objet vu ou des sacs refermés ne sont plus « nouveaux »."] = "Bags: the 'New' filter still counted an item already hovered (without its green dot); a seen item or closed bags are no longer 'new'.",
+    ["Halo : erreur « fonction protégée » (ADDON_ACTION_BLOCKED) quand une zone se chargeait en combat ; ses réglages du jeu attendent maintenant la fin du combat."] = "Halo: 'protected function' error (ADDON_ACTION_BLOCKED) when a zone loaded during combat; its game settings now wait for the end of combat.",
+    ["Carte des vols : la durée du vol apparaissait deux fois dans l'infobulle quand le jeu la donne déjà ; la nôtre ne s'ajoute plus qu'en son absence."] = "Flight map: the flight time showed twice in the tooltip when the game already gives it; ours is now only added when it is missing.",
 }
