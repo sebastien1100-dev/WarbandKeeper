@@ -1053,18 +1053,6 @@ function M:NextQuestGiver()
 end
 -- quêtes à prendre maintenant (celles du donjon et les prérequis de celles qui attendent)
 function M:PickCount(s) return #s.avail + #s.pre end
--- tournée de ramassage (fenêtre des quêtes du donjon) : la flèche de donneur en donneur
-function M:PickTour(d)
-    if self:PickQuests(d) == 0 then WK:Print(T("Rien à prendre pour ce donjon.")) return nil end
-    return true
-end
--- fenêtre des quêtes pour un donjon choisi (page Donjons, onglet LFG) : affichée jusqu'à la croix
-function M:ShowQuestWindow(d)
-    if not d then return end
-    self.questWinForce = d.key
-    self.questWinLast = d.key
-    if WK.UI.RefreshDungeonQuests then WK.UI:RefreshDungeonQuests() end
-end
 function M:PickQuests(d)
     local s = self:QuestSummary(d)
     local n = self:PickCount(s)

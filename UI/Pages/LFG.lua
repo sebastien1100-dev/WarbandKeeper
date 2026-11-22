@@ -831,9 +831,6 @@ UI:RegisterPage({
                 qs.text:SetPoint("RIGHT", qs, "RIGHT", -244, 0); qs.text:SetJustifyH("LEFT"); qs.text:SetWordWrap(false)
                 qs.btn = UI:Button(qs, T("Prendre les quêtes"), 190, 28, "primary", "guide")
                 qs.btn:SetPoint("RIGHT", -10, 0)
-                qs.win = UI:IconButton(qs, "notes", 26, "Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)")
-                qs.win:SetPoint("RIGHT", qs.btn, "LEFT", -8, 0)
-                qs.win:SetScript("OnClick", function() local Dg = WK.modules.Dungeons; if qs.dungeon and Dg then Dg:ShowQuestWindow(qs.dungeon) end end)
                 qs.btn:SetScript("OnClick", function()
                     local Dg = WK.modules.Dungeons
                     if qs.dungeon and Dg then Dg:PickQuests(qs.dungeon) end
@@ -866,7 +863,6 @@ UI:RegisterPage({
             if d then
                 local s = Dg:QuestSummary(d)
                 qs.dungeon, qs.summary = d, s
-                Dg.questWinLast = d.key -- fenêtre des quêtes en « Toujours » : ce donjon
                 local n = Dg:PickCount(s)
                 local parts = {}
                 table.insert(parts, UI:Hex(#s.avail > 0 and C.gold or C.muted) .. string.format(T("%d à prendre"), #s.avail) .. "|r")

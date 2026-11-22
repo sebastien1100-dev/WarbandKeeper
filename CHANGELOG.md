@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.61 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fenêtre des quêtes du donjon : elle ne s'affiche plus que dans le donjon, avec ses quêtes (avant aussi près de l'entrée, en « Toujours » ou ouverte depuis la page Donjons, avec les quêtes d'une autre zone). Réglage : « Dans le donjon » ou « Jamais ».
+- Fenêtre des quêtes du donjon : plus de bandeau « Tournée » en bas ni de poignée pour la redimensionner ; elle prend la hauteur de son contenu (la molette fait défiler au-delà).
+
 ## v1.128.60 — 21/11/2026
 
 _Un /reload suffit._

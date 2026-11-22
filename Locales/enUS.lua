@@ -3981,7 +3981,6 @@ WK.Locales.enUS.text = {
     ["env. %d XP"] = "approx. %d XP",
     ["Faites · %d  %s"] = "Done · %d  %s",
     ["Prendre (%d)"] = "Pick up (%d)",
-    ["dont %d prérequis"] = "including %d prerequisite(s)",
     ["flèche vers le donneur le plus proche"] = "arrow to the nearest giver",
     ["Quêtes du donjon"] = "Dungeon quests",
     ["Les Mortemines"] = "The Deadmines",
@@ -3997,7 +3996,6 @@ WK.Locales.enUS.text = {
     ["Prérequis de :"] = "Prerequisite of:",
     ["Clic : guider vers son donneur"] = "Click: guide to its giver",
     ["Fenêtre des quêtes"] = "Quest window",
-    ["Près du donjon"] = "Near the dungeon",
     ["Jamais"] = "Never",
     ["0 % : texte seul sur le jeu ; 100 % : fond plein."] = "0 %: text only over the game; 100 %: solid background.",
     ["Objectifs des quêtes en cours"] = "Objectives of quests in progress",
@@ -4052,10 +4050,6 @@ WK.Locales.enUS.text = {
     ["Après ce temps, la quête redevient normale (elle reste dans le journal)."] = "After this time the quest is shown normally again (it stays in the log).",
     ["Message après une mise à jour"] = "Message after an update",
     ["Mises à jour de la base notées (journal)"] = "Database updates logged",
-    ["Rien à prendre pour ce donjon."] = "Nothing to pick up for this dungeon.",
-    ["Tournée de ramassage"] = "Pick-up tour",
-    ["tous les donneurs dans ta tournée"] = "all givers in your tour",
-    ["Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)"] = "Dungeon quest window (on screen, with the pick-up tour)",
     ["Afficher %d de plus"] = "Show %d more",
     ["(%d restantes ; « Ma zone » ou « Mon niveau » pour trier)"] = "(%d left; \"My zone\" or \"My level\" to sort)",
     ["Clic : destinations depuis ce point"] = "Click: destinations from this point",
@@ -4146,7 +4140,6 @@ WK.Locales.enUS.text = {
     ["%d plus haut"] = "%d above",
     ["%d plus bas"] = "%d below",
     ["molette"] = "wheel",
-    ["Dans le donjon et à moins de 400 m de son entrée, ou toujours. Glisser son titre la déplace, son coin règle la hauteur."] = "In the dungeon and within 400 m of its entrance, or always. Drag its title to move it, its corner sets the height.",
     ["Une ligne par quête (objectifs et lieu dans l'infobulle)."] = "One line per quest (objectives and place in the tooltip).",
     ["Retour au corps (secours)"] = "Corpse run (fallback)",
     ["Chaîne apprise : « %s » vient après « %s »."] = "Chain learned: \"%s\" comes after \"%s\".",
@@ -4203,8 +4196,6 @@ WK.Locales.enUS.text = {
         "In the zone list and a zone's quests: NEW (database updated), LEARNED (noted in game), CORRECTED. In the dungeon window, just an icon: teal spark, purple book, orange arrows.",
     ["À la connexion, une fois par nouvelle base : ce qui change pour toi (quêtes de ta zone à ton niveau), avec « Voir »."] =
         "At login, once per new database: what changes for you (quests of your zone at your level), with \"See\".",
-    ["La flèche mène de donneur en donneur (quêtes du donjon et prérequis), du plus proche au plus loin. Les quêtes qui attendent un prérequis sont gardées pour plus tard."] =
-        "The arrow leads from giver to giver (dungeon quests and prerequisites), nearest first. Quests waiting for a prerequisite are kept for later.",
     ["Quêtes de %s : tout ce qui peut l'être est pris ; %d attendent un prérequis (à prendre ensuite)."] =
         "%s quests: everything possible is picked up; %d wait for a prerequisite (to pick up later).",
     ["%d quête(s) de %s à prendre : la flèche mène au donneur le plus proche, puis au suivant."] =

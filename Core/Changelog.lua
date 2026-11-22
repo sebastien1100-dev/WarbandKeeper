@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.61", date = "22/11/2026",
+        changed = {
+            "Fenêtre des quêtes du donjon : elle ne s'affiche plus que dans le donjon, avec ses quêtes (avant aussi près de l'entrée, en « Toujours » ou ouverte depuis la page Donjons, avec les quêtes d'une autre zone). Réglage : « Dans le donjon » ou « Jamais ».",
+            "Fenêtre des quêtes du donjon : plus de bandeau « Tournée » en bas ni de poignée pour la redimensionner ; elle prend la hauteur de son contenu (la molette fait défiler au-delà).",
+        },
+    },
+    {
         version = "1.128.60", date = "21/11/2026",
         fixed = {
             "Hôtel des ventes : la liste « File de fabrication » ne redemande plus un objet que tu viens d'acheter (avant, la ligne revenait tant que le courrier n'était pas pris et l'objet pouvait être racheté).",

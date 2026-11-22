@@ -136,10 +136,10 @@ UI:RegisterPage({
         local qcard = UI:Card(scard:GetParent(), T("Quêtes du donjon"))
         local qtog = {}
         local function qref() if UI.RefreshDungeonQuests then UI:RefreshDungeonQuests() end end
-        local winSeg = UI:Segmented(qcard, { { "auto", "Près du donjon" }, { "always", "Toujours" }, { "off", "Jamais" } },
+        local winSeg = UI:Segmented(qcard, { { "auto", "Dans le donjon" }, { "off", "Jamais" } },
             function(v) dc.questWin = v; qref() end, 24)
         UI:SettingRow(qcard, -40, "Fenêtre des quêtes",
-            "Dans le donjon et à moins de 400 m de son entrée, ou toujours. Glisser son titre la déplace, son coin règle la hauteur.",
+            "Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace.",
             winSeg, 300)
         UI:SettingRow(qcard, -90, "Opacité du fond", "0 % : texte seul sur le jeu ; 100 % : fond plein.",
             UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 86 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
@@ -154,7 +154,7 @@ UI:RegisterPage({
         qrow(-274, "Cachée quand il ne reste rien", "Plus rien à faire ni à prendre dans ce donjon : la fenêtre disparaît.", "questWinAuto")
         qrow(-320, "Compacte", "Une ligne par quête (objectifs et lieu dans l'infobulle).", "questWinCompact")
         qcard:SetHeight(40 + 7 * 46 + 8)
-        local function qsync() winSeg:Select(dc.questWin or "auto"); for _, t in ipairs(qtog) do t:Refresh() end end
+        local function qsync() winSeg:Select(dc.questWin == "off" and "off" or "auto"); for _, t in ipairs(qtog) do t:Refresh() end end
         qsync()
         scard.gearTab, tcard.gearTab, qcard.gearTab = "main", "timer", "quests"
         self.gp = UI:PageGear(p, { title = "Réglages des donjons", top = 42, columns = 1, id = "dungeons",
@@ -307,8 +307,6 @@ UI:RegisterPage({
         det.pnl = UI:Button(det, "Panneau en jeu", nil, 26, "ghost")
         det.pnl:SetScript("OnClick", function() local d = D:Get(self.sel); if d then UI:ToggleDungeonPanel(d) end end)
         -- fenêtre des quêtes du donjon choisi (UI/DungeonQuests.lua), avec la tournée de ramassage
-        det.qwin = UI:IconButton(det, "notes", 26, "Fenêtre des quêtes du donjon (à l'écran, avec la tournée de ramassage)")
-        det.qwin:SetScript("OnClick", function() local d = D:Get(self.sel); if d then D:ShowQuestWindow(d) end end)
         self.bheads = UI:Pool(function()
             local h = CreateFrame("Frame", nil, det)
             h:SetHeight(26)
@@ -1035,7 +1033,6 @@ UI:RegisterPage({
         det.go:ClearAllPoints(); det.go:SetPoint("RIGHT", det.lfg, "LEFT", -8, 0)
         det.go:SetShown(d.entry ~= nil)
         det.pnl:ClearAllPoints(); det.pnl:SetPoint("RIGHT", det.go, "LEFT", -8, 0)
-        det.qwin:ClearAllPoints(); det.qwin:SetPoint("RIGHT", det.pnl, "LEFT", -8, 0)
     end,
 
     -- onglet Quêtes du détail : état de chaque quête pour le perso, guidage vers le donneur

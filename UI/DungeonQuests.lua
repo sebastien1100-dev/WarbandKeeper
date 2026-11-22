@@ -16,7 +16,7 @@ local CreateFrame, GameTooltip, GetCursorPosition = CreateFrame, GameTooltip, Ge
 -- questWinDone, questWinCombat, questWinAuto (cachée quand il ne reste rien) ; roue de la page Donjons.
 ---------------------------------------------------------------------------
 local W = 280
-local NEAR = 400
+local MAX_H = 440 -- hauteur maximale de la fenêtre (au-delà : molette)
 local win
 local closedFor -- donjon fermé par la croix (jusqu'au donjon suivant)
 local doneOpen = false
@@ -56,37 +56,11 @@ local function distText(d)
     return string.format(T("%d m"), math.floor(d + 0.5))
 end
 
--- donjon dont l'entrée est la plus proche (à moins de NEAR m)
-local function nearDungeon()
-    local G = WK.modules.Guide
-    local p = G and G:PlayerPos()
-    if not p then return nil end
-    local best, bd
-    for _, d in ipairs(WK.DungeonsDB or {}) do
-        if d.entry and not d.raid then
-            local t = { map = d.entry[1], x = d.entry[2] / 100, y = d.entry[3] / 100 }
-            t.cont, t.wx, t.wy = G.ToWorld(t.map, t.x, t.y)
-            local ok, dd = pcall(G.Vector, G, p, t)
-            if ok and dd and dd < NEAR and (not bd or dd < bd) then best, bd = d, dd end
-        end
-    end
-    return best
-end
-
--- donjon à montrer selon le réglage
-local function target(cfg)
+-- donjon à montrer : seulement celui où l'on est (avant aussi près de l'entrée, en « Toujours » ou choisi depuis
+-- la page Donjons : la fenêtre restait à l'écran dehors, avec les quêtes d'une autre zone)
+local function target()
     local Dg = D()
-    if not Dg then return nil end
-    -- donjon choisi à la main (bouton « Fenêtre des quêtes ») : prioritaire jusqu'à la croix
-    if Dg.questWinForce then
-        local fd = Dg:Get(Dg.questWinForce)
-        if fd then return fd end
-        Dg.questWinForce = nil
-    end
-    local d = Dg:Current() or nearDungeon()
-    if d then Dg.questWinLast = d.key end
-    if not d and cfg.questWin == "always" and Dg.questWinLast then d = Dg:Get(Dg.questWinLast) end
-    return d
+    return Dg and Dg:Current() or nil
 end
 
 ---------------------------------------------------------------------------
@@ -132,32 +106,10 @@ local function build()
         s.off = math.max(0, math.min(math.max(0, n - 1), (s.off or 0) - delta))
         s:Paint(s.lastData, s.lastCfg)
     end)
-    -- poignée de hauteur (coin bas droit) : hauteur maximale retenue dans questWinMaxH
-    f.grip = CreateFrame("Button", nil, f)
-    f.grip:SetSize(16, 16); f.grip:SetPoint("BOTTOMRIGHT", -2, 2)
-    f.grip.t = UI:Icon(f.grip, "grip", 12, nil, "OVERLAY"); f.grip.t:SetPoint("CENTER")
-    f.grip.t:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
-    f.grip:SetScript("OnMouseDown", function(g)
-        local _, cy = GetCursorPosition()
-        g.startY, g.startH = cy / (f:GetEffectiveScale() or 1), f:GetHeight()
-        g:SetScript("OnUpdate", function()
-            local _, y = GetCursorPosition()
-            y = y / (f:GetEffectiveScale() or 1)
-            local cfg = f.lastCfg
-            if not cfg then return end
-            local h = math.max(110, math.floor(g.startH + (g.startY - y)))
-            if cfg.questWinMaxH ~= h then cfg.questWinMaxH = h; f:Paint(f.lastData, cfg) end
-        end)
-    end)
-    f.grip:SetScript("OnMouseUp", function(g) g:SetScript("OnUpdate", nil) end)
-    f.grip:SetScript("OnDoubleClick", function()
-        if f.lastCfg then f.lastCfg.questWinMaxH = nil; f.off = 0; f:Paint(f.lastData, f.lastCfg) end
-    end)
     f.close = UI:IconButton(f, "close", 16, "Cacher jusqu'au prochain donjon")
     f.close:SetPoint("TOPRIGHT", -6, -6)
     f.close:SetScript("OnClick", function()
-        local Dg = D()
-        if Dg and Dg.questWinForce then Dg.questWinForce = nil else closedFor = f.key end
+        closedFor = f.key
         f:Hide()
         UI:RefreshDungeonQuests()
     end)
@@ -201,21 +153,6 @@ local function build()
         end
         return r
     end
-    f.foot = CreateFrame("Frame", nil, f); f.foot:SetHeight(34)
-    f.footLine = f.foot:CreateTexture(nil, "ARTWORK"); f.footLine:SetPoint("TOPLEFT", 1, 0); f.footLine:SetPoint("TOPRIGHT", -1, 0); f.footLine:SetHeight(1)
-    f.footLine:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
-    f.pick = UI:Button(f.foot, T("Tournée"), 120, 22, "primary", "guide")
-    f.pick:SetPoint("LEFT", 10, -1)
-    f.pick:SetScript("OnClick", function() if f.dungeon then D():PickTour(f.dungeon); UI:RefreshDungeonQuests() end end)
-    f.pick:SetScript("OnEnter", function(s)
-        UI:TooltipOwner(s, "ANCHOR_TOP")
-        GameTooltip:SetText(T("Tournée de ramassage"), 1, 1, 1)
-        GameTooltip:AddLine(T("La flèche mène de donneur en donneur (quêtes du donjon et prérequis), du plus proche au plus loin. Les quêtes qui attendent un prérequis sont gardées pour plus tard."), 0.8, 0.8, 0.8, true)
-        GameTooltip:Show()
-    end)
-    f.pick:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    f.footTxt = UI:Text(f.foot, 10, C.muted); f.footTxt:SetPoint("LEFT", f.pick, "RIGHT", 8, 0); f.footTxt:SetPoint("RIGHT", -10, 0)
-
     -- remplit la fenêtre ; data = { name, xp, log = {…}, avail = {…}, waiting = {…}, done = n, doneList, pick, preN }
     function f:Paint(data, cfg)
         local ar, ag, ab = UI:Accent()
@@ -230,8 +167,9 @@ local function build()
         local top = 9 + th + 2 + 12 + 6
         self.drag:SetHeight(top)
         local compact = cfg.questWinCompact
-        local maxH = cfg.questWinMaxH
-        local footH = (data.pick or 0) > 0 and 34 or 0
+        -- hauteur bornée (plus de poignée) : au-delà, la molette fait défiler
+        local maxH = MAX_H
+        local footH = 0
         -- éléments (titres de section et lignes) ; défilement : les « off » premiers sont sautés
         local items = {}
         local function section(label, n, onClick)
@@ -291,7 +229,7 @@ local function build()
             y = y + h
         end
         -- rendu jusqu'à la hauteur maximale (poignée), le reste au-delà via la molette
-        local limit = maxH and (maxH - footH - 22) or math.huge
+        local limit = maxH - footH - 22
         local hidden = 0
         for i = self.off + 1, #items do
             local it = items[i]
@@ -307,7 +245,6 @@ local function build()
         end
         if self.off > 0 or hidden > 0 then
             -- hauteur fixe : la ligne « plus haut / plus bas » est posée en bas, juste au-dessus du pied
-            if maxH then y = maxH - footH - 22 end
             drawSection("", nil, nil)
             self.secs[ns].l:SetText((self.off > 0 and string.format(T("%d plus haut"), self.off) or "")
                 .. ((self.off > 0 and hidden > 0) and "  ·  " or "") .. (hidden > 0 and string.format(T("%d plus bas"), hidden) or ""))
@@ -316,17 +253,7 @@ local function build()
         for i = ns + 1, #self.secs do self.secs[i]:Hide() end
         for i = nr + 1, #self.rows do self.rows[i]:Hide() end
         y = y + 4
-        if maxH then y = maxH - footH - 2 end -- hauteur fixe (poignée) : le pied reste en bas
-        if (data.pick or 0) > 0 then
-            self.foot:ClearAllPoints(); self.foot:SetPoint("TOPLEFT", 0, -y); self.foot:SetPoint("TOPRIGHT", 0, -y)
-            self.pick:SetLabel(string.format(T("Tournée (%d)"), data.pick))
-            self.footTxt:SetText((data.preN or 0) > 0 and string.format(T("dont %d prérequis"), data.preN) or T("tous les donneurs dans ta tournée"))
-            self.foot:Show()
-            y = y + 34
-        else
-            self.foot:Hide()
-        end
-        self:SetHeight(maxH or (y + 2))
+        self:SetHeight(math.min(maxH, y + 2))
     end
     f:Hide()
     -- distance et entrée surveillées toutes les 2 s (rien à faire tant que la fenêtre est coupée)
@@ -448,12 +375,12 @@ function UI:RefreshDungeonQuests(light)
     win = win or build()
     if win.sample then return end
     local cfg = Dg:Config()
-    if (cfg.questWin == "off" and not Dg.questWinForce) or not WK:FeatureOn("dungeons") then win:Hide() return end
+    if cfg.questWin == "off" or not WK:FeatureOn("dungeons") then win:Hide() return end
     if cfg.questWinCombat and InCombatLockdown and InCombatLockdown() then win:Hide() return end
-    local d = target(cfg)
+    local d = target()
     if not d then win:Hide() return end
     if closedFor and closedFor ~= d.key then closedFor = nil end
-    if closedFor == d.key and Dg.questWinForce ~= d.key then win:Hide() return end
+    if closedFor == d.key then win:Hide() return end
     local lock, clock = _G.InCombatLockdown, _G.GetTime
     local fight = lock and lock()
     if light and win.dataKey == d.key and win.dataFor and (fight or clock() - (win.dataAt or 0) < 30) then
@@ -467,7 +394,7 @@ function UI:RefreshDungeonQuests(light)
     win.dataKey, win.dataAt, win.dataFor = d.key, clock(), data
     -- rien à faire ni à prendre : cachée si demandé
     win.autoHidden = nil
-    if cfg.questWinAuto and not Dg.questWinForce and #data.log + #data.avail + #data.waiting == 0 then
+    if cfg.questWinAuto and #data.log + #data.avail + #data.waiting == 0 then
         win.autoHidden = true; win:Hide() return
     end
     win.key, win.dungeon = d.key, d
