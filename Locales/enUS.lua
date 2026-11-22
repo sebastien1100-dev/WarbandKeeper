@@ -4656,4 +4656,7 @@ WK.Locales.enUS.text = {
     ["Banque : diagnostic (à lancer banque ouverte)"] = "Bank: diagnostic (run with the bank open)",
     ["N° des conteneurs de la banque donnés par le jeu : banque de base, sacs de banque, emplacements."] = "Bank container numbers given by the game: base bank, bank bags, slots.",
     ["Ouvre la banque avant de lancer."] = "Open the bank before running.",
+    ["Sac de composants"] = "Reagent bag",
+    ["Places libres du sac de composants"] = "Free reagent bag slots",
+    ["%d pour les composants"] = "%d for reagents",
 }

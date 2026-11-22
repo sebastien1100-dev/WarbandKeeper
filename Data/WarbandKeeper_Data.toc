@@ -2,7 +2,7 @@
 ## Title: Warband Keeper Data
 ## Notes: Grosses bases de Warband Keeper (objectifs de quête, objets des listes BiS, recettes), chargées à la demande.
 ## Author: sebastien1100-dev
-## Version: 1.128.143
+## Version: 1.128.144
 ## LoadOnDemand: 1
 ## Dependencies: WarbandKeeper
 ## IconTexture: Interface\Icons\INV_Misc_Bag_10

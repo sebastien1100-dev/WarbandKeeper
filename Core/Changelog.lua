@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.144", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : le sac de composants a sa propre catégorie et ses propres places libres (on ne peut y mettre que des composants d'artisanat) ; en bas, ses places libres sont comptées à part.",
+        },
+    },
+    {
         version = "1.128.143", date = "22/11/2026",
         fixed = {
             "Notre banque : la banque de base (sans sac, la caisse) était prise pour un premier sac de banque, ce qui décalait la barre des sacs et comptait ses cases à part ; elle est reconnue par le n° que donne le jeu.",

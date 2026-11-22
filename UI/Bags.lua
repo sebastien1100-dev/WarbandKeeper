@@ -66,6 +66,7 @@ local CATS = {
     { key = "new", label = "Nouveaux", color = "positive" },
     { key = "equip", label = "Équipement" },
     { key = "mine", label = "Composants de tes métiers" },
+    { key = "rbag", label = "Sac de composants", color = "rule" },
     { key = "ship", label = "Pour d'autres persos", color = "accent" },
     { key = "cons", label = "Consommables" },
     { key = "quest", label = "Quête", color = "gold" },
@@ -73,6 +74,13 @@ local CATS = {
     { key = "junk", label = "Camelote", color = "muted" },
 }
 local REAGENT_CLASS = { [3] = true, [5] = true, [7] = true, [9] = true }
+-- sac de composants du perso (seuls les composants d'artisanat y vont) : sa propre catégorie et ses places libres
+local function reagentBag()
+    local BI = _G.Enum and _G.Enum.BagIndex
+    if BI and BI.ReagentBag then return BI.ReagentBag end
+    local total, nb = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS, _G.NUM_BAG_SLOTS or 4
+    return (total and total > nb) and total or nil
+end
 
 local function instant(id)
     local f = _G.C_Item and _G.C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
@@ -303,6 +311,8 @@ end
 local function readBags()
     local list, free, total = {}, 0, 0
     local ctx = context()
+    local rb = not isBank and reagentBag() or nil
+    local rfree = 0
     for _, bag in ipairs((isBank and WK.modules.Inventory:BankList() or WK.modules.Inventory:BagList())) do
         local n = WK.Container.NumSlots(bag) or 0
         total = total + n
@@ -317,14 +327,15 @@ local function readBags()
                     _G.C_Item.GetItemIconByID(id)) }
                 e.new = isNew(bag, slot)
                 e.info = classify(e, ctx)
+                if rb and bag == rb then e.info.cat = "rbag" end
                 list[#list + 1] = e
             else
-                free = free + 1
+                if rb and bag == rb then rfree = rfree + 1 else free = free + 1 end
                 list[#list + 1] = { bag = bag, slot = slot, empty = true }
             end
         end
     end
-    return list, free, total
+    return list, free + rfree, total, rfree
 end
 
 -- filtre (maquette B) : icône + nombre d'objets concernés ; le filtre choisi montre aussi son nom
@@ -548,7 +559,7 @@ function V.Refresh(light, live)
     if not win or not win:IsShown() then return end
     V.ApplyTop()
     V.RefreshSlots()
-    local list, free, total = readBags()
+    local list, free, total, rfree = readBags()
     win.list = list
     win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
     local counts = { all = 0, new = 0, ship = 0, sell = 0, de = 0, up = 0 }
@@ -572,7 +583,10 @@ function V.Refresh(light, live)
     -- money / pied
     local money = _G.GetMoney and _G.GetMoney() or 0
     local ac = { UI:Accent() }
-    win.foot:SetText(string.format(T("%s places libres"), UI:Hex(free == 0 and C.negative or ac) .. free .. "|r"))
+    local normal = free - (rfree or 0)
+    win.foot:SetText(string.format(T("%s places libres"), UI:Hex(normal == 0 and C.negative or ac) .. normal .. "|r")
+        .. ((rfree or 0) > 0 and ("  " .. UI:Hex(C.muted) .. "+ " .. string.format(T("%d pour les composants"), rfree)
+            .. "|r") or ""))
     win.money:SetText(WK:FormatMoney(money))
     local junk = 0
     for _, e in ipairs(list) do if not e.empty and e.info.cat == "junk" then junk = junk + 1 end end
@@ -590,9 +604,11 @@ function V.Refresh(light, live)
     pending = false
     local groups = {}
     for _, c in ipairs(CATS) do groups[c.key] = {} end
-    local empties = {}
+    local empties, rEmpties = {}, {}
     for _, e in ipairs(list) do
-        if e.empty then empties[#empties + 1] = e else table.insert(groups[e.info.cat], e) end
+        if e.empty then
+            if not isBank and e.bag == reagentBag() then rEmpties[#rEmpties + 1] = e else empties[#empties + 1] = e end
+        else table.insert(groups[e.info.cat], e) end
     end
     for _, g in pairs(groups) do
         table.sort(g, function(a, b)
@@ -660,6 +676,7 @@ function V.Refresh(light, live)
         end
     end
     if #empties > 0 then head("Places libres", tostring(#empties)); place(empties) end
+    if #rEmpties > 0 then head("Places libres du sac de composants", tostring(#rEmpties), "rule"); place(rEmpties) end
     for i = hi + 1, #win.heads do win.heads[i]:Hide() end
     -- cases d'un sac retiré : cachées
     for _, byBag in pairs(buttons) do for _, b in pairs(byBag) do if not used[b] then b:Hide() end end end

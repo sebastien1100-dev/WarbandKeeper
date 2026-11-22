@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.144 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Notre inventaire : le sac de composants a sa propre catégorie et ses propres places libres (on ne peut y mettre que des composants d'artisanat) ; en bas, ses places libres sont comptées à part.
+
 ## v1.128.143 — 22/11/2026
 
 _Un /reload suffit._
