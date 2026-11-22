@@ -470,15 +470,31 @@ function UI:RefreshDungeonQuests(light)
 end
 
 WK:On("PLAYER_LOGIN", function() C_Timer.After(3, function() UI:RefreshDungeonQuests() end) end)
--- une seule relecture pour une rafale (QUEST_TURNED_IN puis QUEST_LOG_UPDATE arrivaient ensemble : le journal
--- était relu deux fois de suite)
-local refreshQueued = false
+-- une seule relecture pour une rafale : après un rendu, QUEST_TURNED_IN puis plusieurs QUEST_LOG_UPDATE arrivent sur
+-- environ une seconde ; chaque évènement repousse la relecture de 0,5 s (avant : une relecture à 0,3 s puis une autre
+-- pour les évènements suivants, d'où une petite saccade). QUEST_LOG_UPDATE sans changement du journal (même
+-- empreinte de QuestTrack.LogSignature) est ignoré.
+local due, lastSig
+local debounce = CreateFrame("Frame")
+debounce:Hide()
+debounce:SetScript("OnUpdate", function(s)
+    if _G.GetTime() < due then return end
+    s:Hide()
+    UI:RefreshDungeonQuests()
+end)
 local function refreshSoon()
-    if not win or win.sample or refreshQueued then return end
-    refreshQueued = true
-    C_Timer.After(0.3, function() refreshQueued = false; UI:RefreshDungeonQuests() end)
+    if not win or win.sample or not win:IsShown() and not D():Current() then return end
+    due = _G.GetTime() + 0.5
+    debounce:Show()
 end
-for _, ev in ipairs({ "QUEST_LOG_UPDATE", "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_DISABLED",
+WK:On("QUEST_LOG_UPDATE", function()
+    local QT = WK.modules.QuestTrack
+    local sig = QT and QT.LogSignature and QT.LogSignature()
+    if sig and sig == lastSig then return end
+    lastSig = sig
+    refreshSoon()
+end)
+for _, ev in ipairs({ "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "PLAYER_REGEN_DISABLED",
     "PLAYER_REGEN_ENABLED", "PLAYER_LEVEL_UP" }) do
     WK:On(ev, refreshSoon)
 end

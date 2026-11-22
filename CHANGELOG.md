@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.80 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Fenêtre des quêtes du donjon : la petite saccade en rendant une quête est corrigée (la fenêtre était refaite plusieurs fois de suite pendant la seconde qui suit un rendu ; elle ne l'est plus qu'une fois, et un journal qui n'a pas changé ne la refait plus).
+
 ## v1.128.79 — 22/11/2026
 
 _Un /reload suffit._
