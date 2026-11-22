@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.158", date = "22/11/2026",
+        changed = {
+            "Performances : la barre des sacs ne recherche plus le marchand et le maître les plus proches toutes les 10 s, seulement après un vrai déplacement (plus de 150 m, autre carte) ou toutes les 2 min (fini les pics de 6 ms).",
+        },
+    },
+    {
         version = "1.128.157", date = "22/11/2026",
         changed = {
             "Performances (d'après /wk perf) : l'horloge du micro menu ne relit plus son état à chaque image (20 fois par seconde au plus) ; la position du perso est partagée 50 ms entre la carte, la minicarte, la flèche et le tracé (moins de tables jetées) ; les buffs à ne pas oublier ne sont relus que si tes effets, tes sorts ou le lieu changent (fini les pics de 3,8 ms de la barre des sacs).",

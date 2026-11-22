@@ -43,10 +43,16 @@ local function nearest(what)
     local G = WK.modules.Guide
     local now = GetTime()
     local n = near[what]
-    if not n or now - n.at > 10 then
+    -- recherche refaite seulement après un vrai déplacement (plus de 150 m ou autre carte), 10 s au plus tôt :
+    -- elle parcourt tous les lieux du jeu (jusqu'à 6 ms) ; immobile ou en ville, le résultat ne change pas
+    local p0 = G:PlayerPos()
+    local moved = not n or not n.pos or not p0 or p0.map ~= n.pos.map
+        or (G:Vector(p0, n.pos) or 1e9) > 150
+    if not n or (now - n.at > 10 and moved) or now - n.at > 120 then
         local class = what == "trainer" and select(2, UnitClass("player")) or nil
         local ok, t = pcall(G.Nearest, G, G:KindsFor(what), class)
-        n = { at = now, t = ok and t or nil }
+        n = { at = now, t = ok and t or nil, pos = p0 and { map = p0.map, x = p0.x, y = p0.y, cont = p0.cont,
+            wx = p0.wx, wy = p0.wy } or nil }
         near[what] = n
     end
     local t = n.t

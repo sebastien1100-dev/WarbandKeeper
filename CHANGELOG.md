@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.158 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Performances : la barre des sacs ne recherche plus le marchand et le maître les plus proches toutes les 10 s, seulement après un vrai déplacement (plus de 150 m, autre carte) ou toutes les 2 min (fini les pics de 6 ms).
+
 ## v1.128.157 — 22/11/2026
 
 _Un /reload suffit._
