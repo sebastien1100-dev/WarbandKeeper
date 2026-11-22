@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.161 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Carte du monde, quêtes de la zone : le clic sur les étiquettes n'ouvrait pas la page Quêtes ; la carte se ferme et la fenêtre de l'addon s'ouvre sur l'onglet Zones de quêtes, zone choisie.
+
 ## v1.128.160 — 22/11/2026
 
 _Un /reload suffit._

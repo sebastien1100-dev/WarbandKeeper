@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.161", date = "22/11/2026",
+        fixed = {
+            "Carte du monde, quêtes de la zone : le clic sur les étiquettes n'ouvrait pas la page Quêtes ; la carte se ferme et la fenêtre de l'addon s'ouvre sur l'onglet Zones de quêtes, zone choisie.",
+        },
+    },
+    {
         version = "1.128.160", date = "22/11/2026",
         changed = {
             "Carte du monde, quêtes de la zone : étiquettes plus petites, une icône et le nombre seulement (liste = faites / total, montre = en cours, point d'exclamation = à prendre, étoile = tout fait) ; le détail est dans l'infobulle au survol.",

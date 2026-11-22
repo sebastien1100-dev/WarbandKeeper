@@ -375,9 +375,19 @@ local function buildQCount(host)
     f:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
     f:SetScript("OnClick", function(s)
         if not s.zone then return end
+        -- la carte (plein écran) se ferme, la fenêtre de l'addon s'ouvre sur la page Quêtes, zone choisie
+        -- (avant : la page changeait dans une fenêtre fermée ou cachée sous la carte)
+        local map = s.zone.map
+        local wm = _G.WorldMapFrame
+        if wm and wm:IsShown() and not (_G.InCombatLockdown and _G.InCombatLockdown()) then
+            if _G.HideUIPanel then _G.HideUIPanel(wm) else wm:Hide() end
+        end
         local def = UI:EnsurePage("quests")
-        if def then def.zone = s.zone.map end
+        if def then def.zone = map end
+        UI:Create():Show()
         UI:ShowPage("quests")
+        if def and def.ShowTab then pcall(def.ShowTab, def, "zones") end
+        if def then def.zone = map end
         if def and def.Refresh then pcall(def.Refresh, def) end
     end)
     return f
