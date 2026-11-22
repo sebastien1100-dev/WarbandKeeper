@@ -4663,4 +4663,9 @@ WK.Locales.enUS.text = {
     ["Trier les sacs (tri du jeu)"] = "Sort the bags (game sort)",
     ["Avec ou sans catégories"] = "With or without categories",
     ["Le tri de la banque n'existe pas sur ce client."] = "Bank sorting does not exist on this client.",
+    ["Sorti de la banque : "] = "Taken from the bank: ",
+    ["Sacs pleins : sortie de la banque incomplète."] = "Bags full: bank withdrawal incomplete.",
+    ["Ranger"] = "Tidy",
+    ["Déposer : %d objet(s) d'après tes règles de banque"] = "Deposit: %d item(s) per your bank rules",
+    ["Sortir : %d objet(s) pour tes métiers et Avant de partir"] = "Take out: %d item(s) for your professions and Before you go",
 }

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.148", date = "22/11/2026",
+        added = {
+            "Notre banque : bouton « Ranger » en bas. Il dépose ce que tes règles de banque envoient à la banque (même si le dépôt automatique est coupé), puis sort de la banque ce dont le perso connecté a besoin : composants de ses guides de métier jusqu'au palier visé et consommables sous le seuil d'« Avant de partir ». Au survol : combien d'objets partent et sortent.",
+        },
+    },
+    {
         version = "1.128.147", date = "22/11/2026",
         changed = {
             "Notre inventaire sans catégories : le sac de composants garde sa propre catégorie (et ses places libres à part), quel que soit le choix d'affichage.",
@@ -6615,7 +6621,6 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
-    { prio = 1, theme = "eco", title = "Inventaire, suite : banque", text = "Un bouton « Ranger » dans notre banque qui dépose et sort ce qu'il faut d'après le Rangement." },
     { prio = 2, theme = "eco", title = "Inventaire, suite : tout le compte", text = "Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },

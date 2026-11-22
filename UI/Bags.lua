@@ -537,6 +537,29 @@ local function build()
     f.sell = UI:Button(f, "Vendre la camelote", nil, 22, "secondary")
     f.sell:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9)
     f.sell:SetScript("OnClick", function() V.SellJunk() end)
+    -- banque : « Ranger » = dépôt d'après les règles de banque, puis sortie de ce dont le perso a besoin
+    if isBank then
+        f.tidy = UI:Button(f, "Ranger", nil, 24, "primary", "bag")
+        f.tidy:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 8)
+        f.tidy:SetScript("OnClick", function()
+            if WK.modules.BankDeposit then WK.modules.BankDeposit:Tidy() end
+        end)
+        f.tidy:HookScript("OnEnter", function(s)
+            local BD = WK.modules.BankDeposit
+            if not BD then return end
+            local okD, dep = pcall(BD.PendingCount, BD)
+            local okW, out = pcall(BD.WithdrawCount, BD)
+            UI:TooltipOwner(s, "ANCHOR_TOP")
+            local tip = _G.GameTooltip
+            tip:SetText(T("Ranger"), 1, 1, 1)
+            tip:AddLine(string.format(T("Déposer : %d objet(s) d'après tes règles de banque"), okD and dep or 0),
+                0.85, 0.85, 0.85)
+            tip:AddLine(string.format(T("Sortir : %d objet(s) pour tes métiers et Avant de partir"), okW and out or 0),
+                0.85, 0.85, 0.85)
+            tip:Show()
+        end)
+        f.tidy:HookScript("OnLeave", function() _G.GameTooltip:Hide() end)
+    end
     -- fiche de l'objet survolé (maquette B)
     local fi = _G.CreateFrame("Frame", nil, f)
     fi:SetPoint("TOPRIGHT", -PAD, -70); fi:SetWidth(FICHE_W); fi:SetHeight(60) -- hauteur : suit le contenu

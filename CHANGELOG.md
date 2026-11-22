@@ -29,7 +29,6 @@ _Prévu, pas encore commencé._
 
 ### Inventaire et économie
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
-- **Inventaire, suite : banque** (haute) — Un bouton « Ranger » dans notre banque qui dépose et sort ce qu'il faut d'après le Rangement.
 - **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -70,6 +69,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.148 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre banque : bouton « Ranger » en bas. Il dépose ce que tes règles de banque envoient à la banque (même si le dépôt automatique est coupé), puis sort de la banque ce dont le perso connecté a besoin : composants de ses guides de métier jusqu'au palier visé et consommables sous le seuil d'« Avant de partir ». Au survol : combien d'objets partent et sortent.
 
 ## v1.128.147 — 22/11/2026
 

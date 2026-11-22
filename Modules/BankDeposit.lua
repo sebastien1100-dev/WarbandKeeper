@@ -87,6 +87,11 @@ local function finish()
     for target in pairs(full) do
         WK:Print(target == "warband" and T("Banque de bataillon pleine : dépôt incomplet.") or T("Banque pleine : dépôt incomplet."))
     end
+    -- « Ranger » : après le dépôt, sortir ce dont le perso a besoin
+    if M.thenWithdraw then
+        M.thenWithdraw = nil
+        _G.C_Timer.After(0.5, function() M:Withdraw() end)
+    end
 end
 
 local step
@@ -147,10 +152,13 @@ function M:PendingCount()
     return n
 end
 
-function M:Run()
-    if running or not WK.DB.global.bank.enabled then return end
+function M:Run(force)
+    if running or not (force or WK.DB.global.bank.enabled) then return end
     local plan = self:Plan()
-    if #plan == 0 then return end
+    if #plan == 0 then
+        if M.thenWithdraw then M.thenWithdraw = nil; M:Withdraw() end
+        return
+    end
     queue, done, full = {}, {}, {}
     for k in pairs(reserved) do reserved[k] = nil end
     -- Pas de banque de bataillon sur ce client : on dépose dans la banque du perso.
@@ -170,7 +178,132 @@ function M:Run()
 end
 
 WK:On("BANKFRAME_OPENED", function() C_Timer.After(0.6, function() M:Run() end) end)
-WK:On("BANKFRAME_CLOSED", function() running = false; gen = gen + 1 end)
+WK:On("BANKFRAME_CLOSED", function() running = false; gen = gen + 1; M.thenWithdraw = nil end)
+
+---------------------------------------------------------------------------
+-- Sortir de la banque ce dont le perso connecté a besoin (bouton « Ranger » de notre banque) :
+-- composants de ses guides de métier (Stash:Needs, jusqu'au palier visé) et consommables sous le seuil
+-- d'« Avant de partir » (ProfHelp:Prep). Jamais plus que le manque dans les sacs.
+---------------------------------------------------------------------------
+local function bagCounts()
+    local t = {}
+    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, n = WK.Container.Info(bag, slot)
+            if id then t[id] = (t[id] or 0) + (n or 1) end
+        end
+    end
+    return t
+end
+
+function M.WithdrawPlan(_)
+    local ck = WK:CharKey()
+    local want = {}
+    local S = WK.modules.Stash
+    local ok, needs = pcall(S.Needs, S, ck)
+    for id, e in pairs(ok and type(needs) == "table" and needs[ck] or {}) do
+        if (e.n or 0) > 0 then want[id] = { n = e.n, why = e.why } end
+    end
+    local PH = WK.modules.ProfHelp
+    local ok2, rows = pcall(PH.Prep, PH, ck)
+    for _, r in ipairs(ok2 and type(rows) == "table" and rows or {}) do
+        if r.low and r.best and (r.min or 0) > 0 then
+            local w = want[r.best]
+            if not w or w.n < r.min then want[r.best] = { n = r.min, why = T(r.label or "") } end
+        end
+    end
+    local have = bagCounts()
+    local plan = {}
+    for id, w in pairs(want) do
+        local need = w.n - (have[id] or 0)
+        if need > 0 then
+            local ops = {}
+            for _, bag in ipairs(WK.modules.Inventory:BankList()) do
+                for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+                    if need <= 0 then break end
+                    local sid, count, locked = WK.Container.Info(bag, slot)
+                    if sid == id and not locked then
+                        local take = math.min(count or 1, need)
+                        ops[#ops + 1] = { bag = bag, slot = slot, count = take,
+                            split = take < (count or 1) and take or nil }
+                        need = need - take
+                    end
+                end
+            end
+            if #ops > 0 then plan[#plan + 1] = { itemID = id, ops = ops, why = w.why } end
+        end
+    end
+    return plan
+end
+
+function M:WithdrawCount()
+    local n = 0
+    for _, e in ipairs(self:WithdrawPlan()) do for _, op in ipairs(e.ops) do n = n + op.count end end
+    return n
+end
+
+-- case des sacs du perso pour un objet sorti : pile du même objet avec de la place, sinon case vide
+local takenTo = {}
+local function bagDest(itemID, amount)
+    local empty
+    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local key = bag .. ":" .. slot
+            local id, count, locked = WK.Container.Info(bag, slot)
+            if not id and not takenTo[key] then empty = empty or { bag, slot }
+            elseif id == itemID and not locked and not takenTo[key] and (count or 0) + amount <= maxStack(itemID) then
+                return bag, slot
+            end
+        end
+    end
+    if empty then return empty[1], empty[2] end
+end
+
+local wQueue, wDone, wGen = nil, nil, 0
+local function wStep(g)
+    if g ~= wGen then return end
+    local job = table.remove(wQueue, 1)
+    if not job then
+        local list = {}
+        for id, n in pairs(wDone) do list[#list + 1] = n .. " " .. (WK.UI and WK.UI:ItemInfo(id) or WK:ItemName(id)) end
+        if #list > 0 then WK:Print(T("Sorti de la banque : ") .. table.concat(list, ", ")) end
+        return
+    end
+    local cur, n, locked = WK.Container.Info(job.op.bag, job.op.slot)
+    if cur ~= job.itemID or locked or (n or 0) < job.op.count then return wStep(g) end
+    local bag, slot = bagDest(job.itemID, job.op.count)
+    if not bag then
+        WK:Print(T("Sacs pleins : sortie de la banque incomplète."))
+        return
+    end
+    WK.modules.Rules:PickUp(job.op)
+    WK.Container.Pickup(bag, slot)
+    _G.ClearCursor()
+    takenTo[bag .. ":" .. slot] = true
+    wDone[job.itemID] = (wDone[job.itemID] or 0) + job.op.count
+    _G.C_Timer.After(STEP_DELAY, function() wStep(g) end)
+end
+
+function M:Withdraw()
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+    local plan = self:WithdrawPlan()
+    wQueue, wDone = {}, {}
+    for k in pairs(takenTo) do takenTo[k] = nil end
+    for _, e in ipairs(plan) do
+        for _, op in ipairs(e.ops) do wQueue[#wQueue + 1] = { itemID = e.itemID, op = op } end
+    end
+    if #wQueue == 0 then return end
+    wGen = wGen + 1
+    wStep(wGen)
+end
+
+-- Bouton « Ranger » : dépôt d'après les règles (même si le dépôt automatique est coupé), puis sortie
+function M:Tidy()
+    if running or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
+    M.thenWithdraw = true
+    self:Run(true)
+end
+WK:On("BANKFRAME_CLOSED", function() wGen = wGen + 1 end)
 
 -- Gestion des règles
 -- from : clé du perso qui dépose (nil = tous les persos).
