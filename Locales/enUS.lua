@@ -4402,4 +4402,24 @@ WK.Locales.enUS.text = {
         "Boss timeline",
     ["%d / %d boss"] =
         "%d / %d bosses",
+    ["bilan"] =
+        "summary",
+    ["1 mort"] =
+        "1 death",
+    ["%d morts"] =
+        "%d deaths",
+    ["record -%s"] =
+        "record -%s",
+    ["record +%s"] =
+        "record +%s",
+    ["1er temps"] =
+        "first time",
+    ["inachevé"] =
+        "unfinished",
+    ["Bilan du donjon"] =
+        "Dungeon summary",
+    ["Bilan à l'écran"] =
+        "On-screen summary",
+    ["En sortant du donjon, un bandeau en haut de l'écran pendant 5 s : temps et record, boss, morts, XP et or (position en mode édition ; clic = fermer)."] =
+        "When leaving the dungeon, a banner at the top of the screen for 5 s: time and record, bosses, deaths, XP and gold (position in edit mode; click = close).",
 }

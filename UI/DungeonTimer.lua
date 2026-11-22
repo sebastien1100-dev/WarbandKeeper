@@ -411,3 +411,114 @@ function UI:RefreshRealReminder()
 end
 D().OnReal = function() UI:RefreshRealReminder() end
 WK:On("PLAYER_LOGIN", function() C_Timer.After(2, function() UI:RefreshRealReminder() end) end)
+
+---------------------------------------------------------------------------
+-- Bandeau de bilan (maquette B) : en sortant du donjon, une ligne en haut de l'écran pendant 5 s : nom, boss et
+-- morts, temps et écart au record, XP, or. Clic = fermer. HUD « dungeonSummary », réglage summaryBanner.
+---------------------------------------------------------------------------
+local banner
+local SHOW_SECS = 5
+local function bannerCol(parent, big, bigCol, small)
+    local c = _G.CreateFrame("Frame", nil, parent)
+    c.big = UI:Text(c, big, bigCol); c.big:SetPoint("TOPRIGHT", 0, 0); c.big:SetJustifyH("RIGHT")
+    c.small = UI:Text(c, 9, small or C.muted); c.small:SetPoint("TOPRIGHT", c.big, "BOTTOMRIGHT", 0, -1)
+    c.small:SetJustifyH("RIGHT")
+    function c:Set(a, b, colB)
+        self.big:SetText(a or ""); self.small:SetText(b or "")
+        if colB then self.small:SetTextColor(colB[1], colB[2], colB[3]) end
+        self:SetSize(math.max(self.big:GetStringWidth() or 0, self.small:GetStringWidth() or 0), 30)
+    end
+    return c
+end
+local function buildBanner()
+    local f = _G.CreateFrame("Button", "WarbandKeeperDungeonSummary", _G.UIParent)
+    f:SetSize(420, 46)
+    f:SetFrameStrata("HIGH")
+    f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
+    f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 1)
+    f.name = UI:Text(f, 13, C.gold); f.name:SetPoint("TOPLEFT", 12, -8); f.name:SetJustifyH("LEFT")
+    if f.name.SetWordWrap then f.name:SetWordWrap(false) end
+    f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", f.name, "BOTTOMLEFT", 0, -2); f.sub:SetJustifyH("LEFT")
+    f.sep = f:CreateTexture(nil, "ARTWORK"); f.sep:SetWidth(1); f.sep:SetColorTexture(1, 1, 1, 0.1)
+    f.gold = bannerCol(f, 14, C.gold)
+    f.xp = bannerCol(f, 14, C.plan or C.info)
+    f.time = bannerCol(f, 16, C.text)
+    f:SetScript("OnClick", function(s) s.left = 0 end)
+    f:SetScript("OnUpdate", function(s, el)
+        if s.sample then s:SetAlpha(1) return end
+        s.left = (s.left or 0) - el
+        local a = math.min(1, (SHOW_SECS - s.left) / 0.25, s.left / 0.4)
+        if s.left <= 0 then s:Hide() return end
+        s:SetAlpha(math.max(0, a))
+    end)
+    function f:Fill(data)
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.94)
+        self.edge:SetColor(C.border[1], C.border[2], C.border[3], 1)
+        self.name:SetText(data.name or "")
+        local sub = { T("bilan") }
+        if (data.total or 0) > 0 then sub[#sub + 1] = string.format(T("%d / %d boss"), data.killed or 0, data.total) end
+        sub[#sub + 1] = (data.deaths or 0) == 1 and T("1 mort") or string.format(T("%d morts"), data.deaths or 0)
+        if data.rep then sub[#sub + 1] = string.format("+%d %s", data.rep[2], data.rep[1]) end
+        self.sub:SetText(table.concat(sub, " · "))
+        -- temps et écart au record (complet seulement : un passage inachevé ne se compare pas)
+        local recTxt, recCol
+        if data.complete and data.record then
+            local dlt = data.dur - data.record
+            recTxt = dlt <= 0 and string.format(T("record -%s"), D().Clock(-dlt))
+                or string.format(T("record +%s"), D().Clock(dlt))
+            recCol = dlt <= 0 and C.positive or C.negative
+        elseif data.complete then recTxt, recCol = T("1er temps"), C.muted
+        else recTxt, recCol = T("inachevé"), C.muted end
+        self.time:Set(D().Clock(data.dur or 0), recTxt, recCol)
+        self.xp:SetShown((data.xp or 0) > 0)
+        if (data.xp or 0) > 0 then
+            self.xp:Set("+" .. (UI.FormatXP and UI.FormatXP(data.xp) or tostring(data.xp)), T("XP"))
+        end
+        local m = data.money or 0
+        self.gold:SetShown(m ~= 0)
+        if m ~= 0 then self.gold:Set(UI:PlainMoney(math.abs(m)), m < 0 and T("dépensés") or T("or")) end
+        -- de droite à gauche : or, XP, temps, trait, nom
+        local x = -12
+        for _, c in ipairs({ self.gold, self.xp, self.time }) do
+            if c:IsShown() then
+                c:ClearAllPoints(); c:SetPoint("TOPRIGHT", x, -8)
+                x = x - c:GetWidth() - 14
+            end
+        end
+        self.sep:ClearAllPoints(); self.sep:SetPoint("TOPRIGHT", x + 6, -8); self.sep:SetPoint("BOTTOMRIGHT", x + 6, 8)
+        local textW = math.max(self.name:GetStringWidth() or 0, self.sub:GetStringWidth() or 0)
+        local nameW = math.max(140, math.min(240, textW))
+        self.name:SetWidth(nameW); self.sub:SetWidth(nameW)
+        self:SetWidth(12 + nameW + 14 - x)
+    end
+    UI:RegisterHUD("dungeonSummary", f, {
+        label = T("Bilan du donjon"), default = { 0, 300 },
+        enabled = function() return D():Config().summaryBanner ~= false and WK:FeatureOn("dungeons") end,
+        sample = function(on)
+            f.sample = on or nil
+            if on then
+                f:Fill({ name = "Excavations : les Paluns", dur = 2528, record = 2600, complete = true, xp = 16934,
+                    money = 297, deaths = 0, killed = 3, total = 3 })
+                f:SetAlpha(1); f:Show()
+            else f:Hide() end
+        end,
+        test = function()
+            f.sample = nil
+            f:Fill({ name = "Excavations : les Paluns", dur = 2528, record = 2600, complete = true, xp = 16934,
+                money = 297, deaths = 0, killed = 3, total = 3 })
+            f.left = SHOW_SECS; f:SetAlpha(0); f:Show()
+        end,
+        testStop = function() f:Hide() end })
+    f:Hide()
+    return f
+end
+function UI.ShowDungeonSummary(_, data)
+    if not data then return end
+    if not banner then banner = buildBanner() end
+    if banner.sample then return end
+    banner:Fill(data)
+    if UI.HUDApply then pcall(UI.HUDApply, UI, "dungeonSummary") end
+    banner.left = SHOW_SECS; banner:SetAlpha(0); banner:Show()
+end
+D().OnSummary = function(data) UI:ShowDungeonSummary(data) end
+WK:On("PLAYER_LOGIN", function() if not banner then banner = buildBanner() end end)

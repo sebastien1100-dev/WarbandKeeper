@@ -64,7 +64,7 @@ UI:RegisterPage({
         -- roue dentée : réglages des donjons (panneau, alertes, chrono)
         local dc = D:Config()
         local scard = UI:Card(p, T("Réglages des donjons"))
-        scard:SetHeight(40 + 8 * 46 + 8)
+        scard:SetHeight(40 + 9 * 46 + 8)
         local dtog = {}
         local function drow(i, label, desc, field, after)
             local t = UI:Toggle(scard, function() return dc[field] end, function(v) dc[field] = v; if after then after() end; WK:NotifyChanged() end)
@@ -85,6 +85,9 @@ UI:RegisterPage({
         local startSeg = UI:Segmented(scard, { { "pull", "Au premier pack" }, { "enter", "En entrant" } }, function(v) dc.timerStart = v end, 24)
         startSeg:Select(dc.timerStart or "pull")
         UI:SettingRow(scard, -40 - 7 * 46, "Départ du chrono", "Au premier pack : le chrono attend ton premier combat dans le donjon (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie.", startSeg, 250)
+        drow(9, "Bilan à l'écran",
+            "En sortant du donjon, un bandeau en haut de l'écran pendant 5 s : temps et record, boss,"
+                .. " morts, XP et or (position en mode édition ; clic = fermer).", "summaryBanner")
         -- chrono à l'écran : préréglage, largeur, parties visibles (aperçu de quelques secondes à chaque changement)
         local to = UI:DungeonTimerOpts()
         local tcard = UI:Card(scard:GetParent(), T("Chrono à l'écran"))

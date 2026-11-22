@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.79", date = "22/11/2026",
+        added = {
+            "Bilan du donjon à l'écran : en sortant, un bandeau en haut de l'écran pendant 5 s avec le nom du donjon, les boss tués, les morts, le temps et l'écart au record, l'XP et l'or gagnés. Un clic le ferme, il se place en mode édition. Réglage « Bilan à l'écran » dans la roue de la page Donjons (le résumé dans le chat reste réglable à part).",
+        },
+    },
+    {
         version = "1.128.78", date = "22/11/2026",
         changed = {
             "Buffs à ne pas oublier : la liste se replie dès que tu cliques sur un sort, et les icônes des sorts déjà en place ne sont plus grisées.",

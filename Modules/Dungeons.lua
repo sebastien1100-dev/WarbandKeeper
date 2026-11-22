@@ -11,7 +11,7 @@ local T = function(s) return WK.T(s) end
 -- Affichage : UI/DungeonPanel.lua (à côté de la carte en donjon), UI/Pages/Dungeons.lua (page).
 
 local DEFAULTS = { panel = true, alertEnter = true, alertDrop = true, filter = "me", timer = false,
-    capAlert = true, summary = "me", real = true,
+    capAlert = true, summary = "me", summaryBanner = true, real = true,
     -- fenêtre des quêtes du donjon (UI/DungeonQuests.lua)
     questWin = "auto", questWinAlpha = 86, questWinObjs = true, questWinDone = true, questWinCombat = false, questWinAuto = false }
 local function db()
@@ -598,9 +598,43 @@ function M:SummaryText(run)
     if bestF then table.insert(parts, string.format("+%d %s", bestN, bestF)) end
     return table.concat(parts, " · ")
 end
+-- Bilan chiffré pour le bandeau à l'écran : { name, dur, record (meilleur temps d'avant), xp, money, deaths,
+-- killed, total, rep = { faction, n } }
+function M:SummaryData(run)
+    local st = run and run.st
+    if not st then return nil end
+    local d = self:Get(run.key)
+    local lvl = (_G.UnitLevel and _G.UnitLevel("player")) or st.lvl
+    local xp = (_G.UnitXP and _G.UnitXP("player")) or 0
+    local gained = lvl == st.lvl and (xp - st.xp) or ((st.xpMax - st.xp) + xp)
+    if lvl >= ((_G.GetMaxPlayerLevel and _G.GetMaxPlayerLevel()) or 60) then gained = 0 end
+    local killed, total, last = 0, 0, nil
+    if d then
+        for _, b in ipairs(self:Bosses(d)) do
+            if not self:Optional(d, b) then
+                total = total + 1
+                local k = run.killed and run.killed[b.id]
+                if k then killed = killed + 1; last = math.max(last or 0, k) end
+            end
+        end
+    end
+    -- passage complet : temps jusqu'au dernier boss (comme le chrono), sinon jusqu'à la sortie
+    local dur = (total > 0 and killed == total and last) and (last - run.start) or (_G.time() - run.start)
+    local rec = d and self:Record(d, true)
+    local bestF, bestN
+    for f, n in pairs(st.rep or {}) do if not bestN or n > bestN then bestF, bestN = f, n end end
+    return { name = d and self:Name(d) or "?", dur = dur, record = rec and rec.dur or nil,
+        complete = total > 0 and killed == total,
+        xp = math.max(0, gained), money = ((_G.GetMoney and _G.GetMoney()) or 0) - st.money, deaths = st.deaths or 0,
+        killed = killed, total = total, rep = bestF and { bestF, bestN } or nil }
+end
 function M:LeaveSummary(run)
-    local mode = self:Config().summary
-    if mode == "off" or not run or not run.st or time() - run.start < 120 then return end
+    local cfg = self:Config()
+    if not run or not run.st or time() - run.start < 120 then return end
+    -- bandeau à l'écran (réglage summaryBanner), indépendant du résumé dans le chat
+    if cfg.summaryBanner ~= false and self.OnSummary then pcall(self.OnSummary, self:SummaryData(run)) end
+    local mode = cfg.summary
+    if mode == "off" then return end
     local txt = self:SummaryText(run)
     if not txt then return end
     WK:Print(T("Bilan du donjon :") .. " " .. txt)
