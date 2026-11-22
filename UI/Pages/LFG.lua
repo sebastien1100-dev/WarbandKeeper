@@ -1083,6 +1083,7 @@ local function onStone()
     if not (tt and tt:IsShown()) then return false end
     local l = _G.GameTooltipTextLeft1
     local t = l and l:GetText()
+    if _G.issecretvalue and _G.issecretvalue(t) then return false end -- texte caché par le jeu (combat…)
     if type(t) ~= "string" then return false end
     t = t:lower()
     return t:find("pierre de rencontre", 1, true) or t:find("meeting stone", 1, true) or false

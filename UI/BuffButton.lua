@@ -2,6 +2,12 @@ local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
 local T = function(s) return WK.T(s) end
+-- valeur « secrète » du jeu (GUID, nom d'effet en combat…) : inutilisable comme clé, rendue nil
+local function plain(v)
+    if _G.issecretvalue and _G.issecretvalue(v) then return nil end
+    return v
+end
+local function guidOf(u) return _G.UnitGUID and plain(_G.UnitGUID(u)) end
 
 -- Bouton « Buffer le suivant » (QoL > Classes, onglet « Buffer autour ») : en monde ouvert, le joueur ami le plus
 -- proche qui n'a pas ton buff (toi et ton groupe d'abord, puis les plaques de nom des joueurs amis), et le buff qui
@@ -83,7 +89,9 @@ local function scanAura(unit, ids)
             if not n then break end
             name, exp, src = n, e, s
         else break end
+        name = plain(name)
         if name and names[name] then
+            exp, src = plain(exp), plain(src)
             local mine = src ~= nil and UnitIsUnit and UnitIsUnit(src, "player") or false
             return (not exp or exp == 0) and 0 or exp, mine -- expiration absolue (0 = sans fin)
         end
@@ -91,7 +99,7 @@ local function scanAura(unit, ids)
     return false
 end
 local function auraLeft(unit, ids)
-    local guid = _G.UnitGUID and _G.UnitGUID(unit)
+    local guid = guidOf(unit)
     local now = GetTime()
     local c = guid and auraCache[guid]
     if c and (c.dirty or now - c.at > 10) then c = nil end
@@ -123,7 +131,7 @@ WK:On("UNIT_AURA", function(unit)
     -- avant, chaque changement d'effet de chaque unité était traité pour toutes les classes : seules les
     -- classes qui ont le bouton (WK.BUFF_CLASSES) remplissent ce cache
     if not WK.BUFF_CLASSES[myClass() or ""] then return end
-    local guid = type(unit) == "string" and _G.UnitGUID and _G.UnitGUID(unit)
+    local guid = type(unit) == "string" and plain(unit) and guidOf(unit)
     local c = guid and auraCache[guid]
     if c then c.dirty = true end
 end)
@@ -179,7 +187,7 @@ local function groupBlessings(seenGuid)
         local id = BL.BLESS[r.b] and BL.BLESS[r.b][1]
         for _, m in ipairs(r.members) do
             local u = m.unit
-            local guid = UnitExists(u) and UnitGUID(u)
+            local guid = UnitExists(u) and guidOf(u)
             if guid then seenGuid[guid] = true end
             if guid and spell and not m.dead and (UnitIsUnit(u, "player") or not UnitAffectingCombat(u))
                 and (mePvp or not (UnitIsPVP and UnitIsPVP(u)))
@@ -219,7 +227,7 @@ local function candidates()
     local refresh = (c.buffRefresh or 3) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     for _, u in ipairs(units) do
-        local guid = UnitExists(u) and UnitGUID(u)
+        local guid = UnitExists(u) and guidOf(u)
         if guid and not seen[guid] and UnitIsPlayer(u) and UnitCanAssist("player", u) and not UnitIsDeadOrGhost(u)
             and UnitIsConnected(u) and (u == "player" or not UnitAffectingCombat(u))
             and (mePvp or not (UnitIsPVP and UnitIsPVP(u))) then
@@ -304,7 +312,7 @@ local function build()
     btn:HookScript("PostClick", function(s, button, down)
         local e = list and list[1]
         UI.buffLastClick = { at = GetTime(), button = button, down = down, macro = s:GetAttribute("macrotext"),
-            guid = e and e.unit and UnitGUID(e.unit),
+            guid = e and e.unit and guidOf(e.unit),
             unit = e and e.unit, who = e and e.unit and UnitName(e.unit), exists = e and e.unit and UnitExists(e.unit),
             type = s:GetAttribute("type"), keyDown = WK.GetCVar("ActionButtonUseKeyDown"), useOnKeyDown = s:GetAttribute("useOnKeyDown"),
             events = {} }
@@ -601,7 +609,7 @@ function UI:BuffDiag()
     local shown, seen = 0, {}
     for _, u in ipairs(units) do
         if UnitExists(u) and shown < 10 then
-            local guid = UnitGUID(u)
+            local guid = guidOf(u)
             if guid and not seen[guid] then
                 seen[guid] = true
                 local why

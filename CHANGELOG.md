@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.73 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreurs Lua en boucle corrigées : « secret keys » du bouton « Buffer le suivant » (à chaque changement d'effet) et « secret string » du clic droit sur une pierre de rencontre. Le jeu cache certaines valeurs (identifiants, noms d'effets, infobulles) ; l'addon les ignore maintenant au lieu de s'en servir.
+
 ## v1.128.72 — 22/11/2026
 
 _Un /reload suffit._

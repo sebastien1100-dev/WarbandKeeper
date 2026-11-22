@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.73", date = "22/11/2026",
+        fixed = {
+            "Erreurs Lua en boucle corrigées : « secret keys » du bouton « Buffer le suivant » (à chaque changement d'effet) et « secret string » du clic droit sur une pierre de rencontre. Le jeu cache certaines valeurs (identifiants, noms d'effets, infobulles) ; l'addon les ignore maintenant au lieu de s'en servir.",
+        },
+    },
+    {
         version = "1.128.72", date = "22/11/2026",
         fixed = {
             "Buffs à ne pas oublier : un pistage allumé restait encore « éteint » (case rouge) ; il est maintenant reconnu par son nom ou son icône, pas seulement par le n° du sort que WoW Forever ne donne pas toujours.",

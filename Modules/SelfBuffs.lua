@@ -152,7 +152,9 @@ local function auraLeft(e)
             if not n then break end
             name, exp, src = n, x, s
         else break end
+        if _G.issecretvalue and _G.issecretvalue(name) then name = nil end
         if name and names[name] and (not e.mine or (src and _G.UnitIsUnit and _G.UnitIsUnit(src, "player"))) then
+            if _G.issecretvalue and _G.issecretvalue(exp) then return 0 end -- durée cachée (combat) : présent
             if not exp or exp == 0 then return 0 end
             return math.max(0, exp - _G.GetTime())
         end
@@ -187,6 +189,10 @@ local function trackOn(e)
         local okn, n = pcall(mm.GetNumTrackingTypes)
         for i = 1, (okn and n or 0) do
             local sid, on, name, tex = M.TrackingInfo(i)
+            if _G.issecretvalue then
+                if _G.issecretvalue(name) then name = nil end
+                if _G.issecretvalue(tex) then tex = nil end
+            end
             local mine = (name and names[name]) or (tex and texs[tex])
             if not mine and sid then for _, id in ipairs(e.ids) do if id == sid then mine = true end end end
             if mine then
@@ -197,6 +203,7 @@ local function trackOn(e)
     end
     if _G.GetTrackingTexture then
         local t = _G.GetTrackingTexture()
+        if _G.issecretvalue and _G.issecretvalue(t) then t = nil end
         said = true
         if t and texs[t] then return true end
     end
