@@ -670,20 +670,16 @@ end
 
 function V.Layout() return cols, slotSize end -- pour les tests
 
--- infobulle d'une case : à gauche de la fenêtre (au-dessus s'il n'y a pas la place), jamais sur la fiche
+-- infobulle d'une case : à gauche de l'objet (au-dessus s'il n'y a pas la place), jamais sur la fiche de droite
 function V.PlaceTip(btn)
     local tip = _G.GameTooltip
     if not (win and tip and tip:IsShown() and tip:GetOwner() == btn) then return end
     tip:ClearAllPoints()
-    -- la fenêtre de désenchantement collée à gauche des sacs reste visible aussi : l'infobulle passe à sa gauche
-    local host = win
-    local de = _G.WarbandKeeperDEPanel
-    if not isBank and de and de:IsVisible() and (de:GetRight() or 0) <= (win:GetLeft() or 0) + 12 then host = de end
-    local left = host:GetLeft() or 0
-    if left > (tip:GetWidth() or 280) + 12 then
-        tip:SetPoint("TOPRIGHT", host, "TOPLEFT", -6, 0)
+    local left = btn:GetLeft() or 0
+    if left * (btn:GetEffectiveScale() / (tip:GetEffectiveScale() or 1)) > (tip:GetWidth() or 280) + 8 then
+        tip:SetPoint("TOPRIGHT", btn, "TOPLEFT", -4, 0)
     else
-        tip:SetPoint("BOTTOMLEFT", win, "TOPLEFT", 0, 6)
+        tip:SetPoint("BOTTOMLEFT", btn, "TOPLEFT", 0, 4)
     end
 end
 

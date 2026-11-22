@@ -76,7 +76,7 @@ _Prévu, pas encore commencé._
 _Un /reload suffit._
 
 ### Corrections
-- Notre inventaire et notre banque : l'infobulle d'un objet ne recouvre plus la fiche de droite ; elle s'affiche à gauche de la fenêtre (ou de la fenêtre de désenchantement), ou au-dessus s'il n'y a pas la place.
+- Notre inventaire et notre banque : l'infobulle d'un objet ne recouvre plus la fiche de droite ; elle s'affiche à gauche de l'objet survolé, ou au-dessus s'il n'y a pas la place.
 
 ## v1.128.133 — 22/11/2026
 
