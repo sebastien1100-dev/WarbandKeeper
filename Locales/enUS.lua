@@ -4561,7 +4561,6 @@ WK.Locales.enUS.text = {
     ["DE"] = "DE",
     ["Survole un objet : son prix, qui en a besoin sur le compte et ce que tu peux en faire."] = "Hover an item: its price, who needs it on the account and what you can do with it.",
     ["%d / %d places"] = "%d / %d slots",
-    ["%d places libres  ·  %s"] = "%d free slots  ·  %s",
     ["%d dans tes sacs  ·  %d sur le compte"] = "%d in your bags  ·  %d on the account",
     ["Prix HV"] = "AH price",
     ["Valeur du lot"] = "Stack value",
@@ -4592,4 +4591,5 @@ WK.Locales.enUS.text = {
     ["Au bandeau de connexion et dans le Résumé : rappel quand l'HV de ce royaume n'a pas encore été scanné aujourd'hui."] = "On the login banner and in the Summary: a reminder when this realm's AH has not been scanned yet today.",
     ["À faire sur le compte"] = "To do on the account",
     ["Redimensionner : plus ou moins de colonnes, toutes les cases restent visibles"] = "Resize: more or fewer columns, every slot stays visible",
+    ["%s places libres"] = "%s free slots",
 }

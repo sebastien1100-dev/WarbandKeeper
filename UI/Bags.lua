@@ -352,13 +352,17 @@ local function build()
     f.grip = grip
     f.heads = {}
     -- pied
-    f.foot = UI:Text(f, 11, C.muted); f.foot:SetPoint("BOTTOMLEFT", PAD, 12)
+    -- places libres (nombre à la couleur de l'apparence) et or du perso, bien lisibles
+    f.foot = UI:Text(f, 14, C.muted); f.foot:SetPoint("BOTTOMLEFT", PAD, 12)
+    f.coin = UI:Icon(f, "coin", 16, C.gold)
+    f.coin:SetPoint("LEFT", f.foot, "RIGHT", 18, 0)
+    f.money = UI:Text(f, 15); f.money:SetPoint("LEFT", f.coin, "RIGHT", 6, 0)
     f.sell = UI:Button(f, "Vendre la camelote", nil, 22, "secondary")
     f.sell:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9)
     f.sell:SetScript("OnClick", function() B.SellJunk() end)
     -- fiche de l'objet survolé (maquette B)
     local fi = _G.CreateFrame("Frame", nil, f)
-    fi:SetPoint("TOPRIGHT", -PAD, -70); fi:SetPoint("BOTTOMRIGHT", -PAD, 40); fi:SetWidth(FICHE_W)
+    fi:SetPoint("TOPRIGHT", -PAD, -70); fi:SetWidth(FICHE_W); fi:SetHeight(60) -- hauteur : suit le contenu
     UI:Panel(fi, 10, C.surface, C.border)
     fi.icon = fi:CreateTexture(nil, "ARTWORK"); fi.icon:SetSize(36, 36); fi.icon:SetPoint("TOPLEFT", 12, -12)
     fi.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -371,17 +375,17 @@ local function build()
     if fi.body.SetWordWrap then fi.body:SetWordWrap(true) end
     if fi.body.SetSpacing then fi.body:SetSpacing(4) end
     fi.lock = UI:Button(fi, "Verrouiller", nil, 24, "secondary")
-    fi.lock:SetPoint("BOTTOMLEFT", 10, 10)
+    fi.lock:SetPoint("TOPLEFT", 10, -60)
     fi.lock:SetScript("OnClick", function()
         if hovered and hovered.id then WK.modules.ItemLock:Toggle(hovered.id); B.Refresh() end
     end)
     fi.de = UI:Button(fi, "Toujours désenchanter", nil, 24, "secondary")
-    fi.de:SetPoint("BOTTOMLEFT", fi.lock, "TOPLEFT", 0, 6)
+    fi.de:SetPoint("TOPLEFT", fi.lock, "BOTTOMLEFT", 0, -6)
     fi.de:SetScript("OnClick", function()
         if hovered and hovered.id then WK.modules.ProfHelp:ToggleDEMark(hovered.id); B.Refresh() end
     end)
     fi.ah = UI:Button(fi, "Chercher à l'HV", nil, 24, "secondary")
-    fi.ah:SetPoint("LEFT", fi.lock, "RIGHT", 6, 0)
+    fi.ah:SetPoint("TOPLEFT", fi.lock, "TOPRIGHT", 6, 0)
     fi.ah:SetScript("OnClick", function()
         if hovered and hovered.id and WK.modules.AHScan then WK.modules.AHScan:SearchItem(hovered.id) end
     end)
@@ -404,7 +408,9 @@ function B.Refresh(light, live)
     for _, b in ipairs(win.chips) do b:SetStyle(b.key == filter and "primary" or "ghost") end
     -- money / pied
     local money = _G.GetMoney and _G.GetMoney() or 0
-    win.foot:SetText(string.format(T("%d places libres  ·  %s"), free, WK:FormatMoney(money)))
+    local ac = { UI:Accent() }
+    win.foot:SetText(string.format(T("%s places libres"), UI:Hex(free == 0 and C.negative or ac) .. free .. "|r"))
+    win.money:SetText(WK:FormatMoney(money))
     local junk = 0
     for _, e in ipairs(list) do if not e.empty and e.info.cat == "junk" then junk = junk + 1 end end
     local merchant = _G.MerchantFrame and _G.MerchantFrame:IsShown()
@@ -521,7 +527,7 @@ function B.RefreshFiche()
     local PH = WK.modules.ProfHelp
     fi.de:SetShown(has and PH and PH:EnchantRank() ~= nil and e.info and (e.info.de or e.quality and e.quality >= 2)
         and (instant(e.id) == 2 or instant(e.id) == 4) or false)
-    if not has then return end
+    if not has then fi:SetHeight(math.ceil(fi.empty:GetStringHeight() or 30) + 28) return end
     local name, _, quality, _, _, _, _, _, _, icon, vendor = WK.GetItemInfo(e.id)
     fi.icon:SetTexture(icon or e.icon)
     fi.name:SetText(name or e.name or ("#" .. e.id))
@@ -565,6 +571,11 @@ function B.RefreshFiche()
     local ahOpen = (_G.AuctionHouseFrame and _G.AuctionHouseFrame:IsShown())
         or (_G.AuctionFrame and _G.AuctionFrame:IsShown())
     fi.ah:SetShown(ahOpen and true or false)
+    -- boutons juste sous le texte ; la fiche s'arrête là (pas de grand vide jusqu'en bas)
+    local bodyH = math.ceil(fi.body:GetStringHeight() or 40)
+    fi.lock:ClearAllPoints(); fi.lock:SetPoint("TOPLEFT", 10, -(60 + bodyH + 14))
+    local h = 60 + bodyH + 14 + 24 + (fi.de:IsShown() and 30 or 0) + 12
+    fi:SetHeight(math.min(h, math.max(120, win:GetHeight() - 110)))
 end
 
 -- Vendre la camelote (marchand ouvert) : objets gris non verrouillés, revérifiés juste avant chaque vente

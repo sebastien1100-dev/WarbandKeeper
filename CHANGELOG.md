@@ -74,6 +74,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.125 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Notre inventaire : places libres et or du perso en plus gros en bas (nombre de places à la couleur de l'apparence, en rouge quand les sacs sont pleins, pièce dorée devant l'or).
+- Notre inventaire : la fiche de l'objet survolé prend juste la place de son contenu, ses boutons juste en dessous (plus de grand vide jusqu'en bas).
+
 ## v1.128.124 — 22/11/2026
 
 _Un /reload suffit._

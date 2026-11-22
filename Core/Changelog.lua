@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.125", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : places libres et or du perso en plus gros en bas (nombre de places à la couleur de l'apparence, en rouge quand les sacs sont pleins, pièce dorée devant l'or).",
+            "Notre inventaire : la fiche de l'objet survolé prend juste la place de son contenu, ses boutons juste en dessous (plus de grand vide jusqu'en bas).",
+        },
+    },
+    {
         version = "1.128.124", date = "22/11/2026",
         changed = {
             "Notre inventaire : coin en bas à droite pour redimensionner ; la largeur choisit le nombre de colonnes (5 à 24) et la hauteur suit, toutes les cases restent visibles, sans défilement. Retenu d'une session à l'autre.",
