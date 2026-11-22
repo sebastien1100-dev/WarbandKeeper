@@ -4653,4 +4653,7 @@ WK.Locales.enUS.text = {
     ["%d dans ta banque  ·  %d sur le compte"] = "%d in your bank  ·  %d on the account",
     ["Banque du jeu"] = "Game bank",
     ["Sacs du jeu"] = "Game bags",
+    ["Banque : diagnostic (à lancer banque ouverte)"] = "Bank: diagnostic (run with the bank open)",
+    ["N° des conteneurs de la banque donnés par le jeu : banque de base, sacs de banque, emplacements."] = "Bank container numbers given by the game: base bank, bank bags, slots.",
+    ["Ouvre la banque avant de lancer."] = "Open the bank before running.",
 }

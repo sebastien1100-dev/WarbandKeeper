@@ -68,6 +68,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         else WK:Print("  " .. plainBars(L.HELP_GUIDE)) end
     elseif cmd == "peche" or cmd == "pêche" or cmd == "fish" then
         WK.modules.Fishing:Toggle()
+    elseif cmd == "banque" or cmd == "bank" then
+        WK:Print(WK.T("Banque : diagnostic (à lancer banque ouverte)"))
+        for _, l in ipairs(WK.modules.Inventory:BankDiag()) do WK:Print("  " .. l) end
     elseif cmd == "sacs" or cmd == "bags" then
         WK:Print(WK.T("Sacs : diagnostic"))
         for _, l in ipairs(WK.UI.BagDiag and WK.UI:BagDiag() or {}) do WK:Print("  " .. l) end

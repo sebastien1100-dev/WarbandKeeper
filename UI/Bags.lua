@@ -206,7 +206,7 @@ local function newButton(bag, slot)
     -- survol : la fiche suit l'objet
     b:HookScript("OnEnter", function(s)
         -- cases de la banque principale : infobulle par l'emplacement d'inventaire (le jeu ne la trouve pas par le sac)
-        local bc = _G.BANK_CONTAINER or -1
+        local bc = WK.modules.Inventory:BankMain()
         if bag == bc and _G.BankButtonIDToInvSlotID then
             local okI, inv = pcall(_G.BankButtonIDToInvSlotID, slot)
             if okI and inv then

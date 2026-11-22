@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.143 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk banque (et Options > Diagnostics) : n° des conteneurs de la banque donnés par le jeu, à lancer banque ouverte.
+
+### Corrections
+- Notre banque : la banque de base (sans sac, la caisse) était prise pour un premier sac de banque, ce qui décalait la barre des sacs et comptait ses cases à part ; elle est reconnue par le n° que donne le jeu.
+
 ## v1.128.142 — 22/11/2026
 
 _Un /reload suffit._

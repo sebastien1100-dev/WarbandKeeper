@@ -320,6 +320,9 @@ UI.DIAGS = {
             "Sacs ouverts (du jeu ou d'un autre addon), cases trouvées, cadenas, sacs " ..
                 "reconnus pour la fenêtre de désenchantement.",
             "Ouvre tes sacs avant de lancer." },
+        { "banque", "Banque",
+            "N° des conteneurs de la banque donnés par le jeu : banque de base, sacs de banque, emplacements.",
+            "Ouvre la banque avant de lancer." },
         { "halo", "Halo des métiers",
             "Halo des fenêtres de métier : ce qui est allumé et pourquoi.",
             "Ouvre la fenêtre d'un métier avant de lancer." },

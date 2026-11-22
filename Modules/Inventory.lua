@@ -34,7 +34,7 @@ function M:BankList()
         end
         return t
     end
-    table.insert(t, BANK_CONTAINER or (BI and BI.Bank) or -1)
+    table.insert(t, M.BankMain())
     if BI and BI.Reagentbank then table.insert(t, BI.Reagentbank) end
     for _, b in ipairs(M:BankBagIDs()) do table.insert(t, b) end
     return t
@@ -42,6 +42,37 @@ end
 
 -- N° de conteneur des sacs de banque, dans l'ordre des emplacements de la banque. Retrouvés par l'emplacement
 -- d'inventaire de chaque sac de banque (comme la banque du jeu) : le nombre de sacs du perso varie selon le client.
+-- N° de la banque de base (sans sac) : celui du jeu (Enum.BagIndex.Bank) d'abord, il n'est pas toujours -1
+function M.BankMain()
+    return (BI and BI.Bank) or BANK_CONTAINER or -1
+end
+
+-- /wk banque : n° des conteneurs de la banque tels que le jeu les donne (à lancer banque ouverte)
+function M.BankDiag()
+    local CC = _G.C_Container
+    local toInv = (CC and CC.ContainerIDToInventoryID) or _G.ContainerIDToInventoryID
+    local nslots = (CC and CC.GetContainerNumSlots) or _G.GetContainerNumSlots
+    local out = {}
+    out[#out + 1] = string.format("base = %s  ·  sacs du perso = %s  ·  emplacements = %s  ·  achetés = %s",
+        tostring(M.BankMain()), tostring(NUM_BAGS), tostring(_G.NUM_BANKBAGSLOTS),
+        tostring(_G.GetNumBankSlots and select(1, pcall(_G.GetNumBankSlots)) and _G.GetNumBankSlots()))
+    out[#out + 1] = "sacs de banque : " .. table.concat(M.BankBagIDs(), ", ")
+    for b = -1, 14 do
+        local okN, n = pcall(function() return nslots and nslots(b) end)
+        local okI, inv = pcall(function() return toInv and toInv(b) end)
+        local tex = okI and inv and _G.GetInventoryItemTexture and _G.GetInventoryItemTexture("player", inv)
+        if (okN and n and n > 0) or tex then
+            out[#out + 1] = string.format("  %d : %s cases  ·  emplacement %s%s", b, tostring(okN and n or "?"),
+                tostring(okI and inv or "-"), tex and "  ·  sac posé" or "")
+        end
+    end
+    for i = 1, 8 do
+        local ok, inv = pcall(function() return _G.BankButtonIDToInvSlotID and _G.BankButtonIDToInvSlotID(i, 1) end)
+        out[#out + 1] = string.format("  emplacement de banque %d : %s", i, tostring(ok and inv or "?"))
+    end
+    return out
+end
+
 local bankBagIDs
 function M.BankBagIDs()
     if bankBagIDs then return bankBagIDs end
@@ -54,9 +85,10 @@ function M.BankBagIDs()
         -- seulement après les sacs du perso (sac de composants compris) : sur ce client, l'emplacement d'un sac du
         -- perso peut répondre pour le 1er sac de banque
         local byInv = {}
+        local main = M.BankMain()
         for b = NUM_BAGS + 1, 20 do
             local ok, inv = pcall(toInv, b)
-            if ok and inv then byInv[inv] = b end
+            if ok and inv and b ~= main then byInv[inv] = b end
         end
         -- autant d'emplacements que la banque du jeu en affiche (la constante du client peut être plus petite)
         local shown = 0
@@ -76,7 +108,12 @@ function M.BankBagIDs()
     end
     if out then bankBagIDs = out return out end -- gardé seulement si la correspondance a marché
     out = {}
-    for b = NUM_BAGS + 1, NUM_BAGS + n do out[#out + 1] = b end
+    local main = M.BankMain()
+    local b = NUM_BAGS + 1
+    while #out < n and b <= 20 do
+        if b ~= main then out[#out + 1] = b end
+        b = b + 1
+    end
     return out
 end
 
