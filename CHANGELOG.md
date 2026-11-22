@@ -68,6 +68,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.156 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Performances de nos sacs et de notre banque : prendre un objet en main ou une recharge (en combat) ne relit et ne reclasse plus tous les sacs, seules les cases sont repeintes ; filtres, recherche, survol de la barre des sacs et redimensionnement reprennent la dernière lecture au lieu de tout recalculer.
+
 ## v1.128.155 — 22/11/2026
 
 _Un /reload suffit._

@@ -443,7 +443,7 @@ local function chip(parent, key, label, icon)
         if s.icon then s.icon:SetVertexColor(fg[1], fg[2], fg[3], 1) end
     end
     if key == "up" and b.icon then b.icon:SetRotation(math.pi / 2) end
-    b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; V.Refresh() end)
+    b:SetScript("OnClick", function() filter = (filter == key and key ~= "all") and "all" or key; V.Refresh(true) end)
     b:HookScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_TOP")
         _G.GameTooltip:SetText(T(s.name), 1, 1, 1)
@@ -589,7 +589,7 @@ local function build()
     f:SetScript("OnSizeChanged", function(s)
         if s.sizing and not s.reflow then
             s.reflow = true
-            _G.C_Timer.After(0.05, function() s.reflow = nil; if s.sizing then V.Refresh(false, true) end end)
+            _G.C_Timer.After(0.05, function() s.reflow = nil; if s.sizing then V.Refresh(true, true) end end)
         end
     end)
     f.grip = grip
@@ -691,13 +691,19 @@ function V.Refresh(light, live)
     local offKey = not isBank and V.viewKey or nil
     local list, free, total, rfree
     local chars = WK.DB.global.characters
-    if offKey then
+    -- rafraîchissement léger (filtre, recherche, survol d'un sac) : la dernière lecture est reprise telle quelle
+    -- (avant : sacs relus et chaque objet reclassé à chaque frappe dans la recherche)
+    local lr = win.lastRead
+    if light and lr and lr.key == (offKey or "me") then
+        list, free, total, rfree = lr.list, lr.free, lr.total, lr.rfree
+    elseif offKey then
         list = readOffline(offKey)
         local c = offKey ~= "all" and chars[offKey] or nil
         free, total, rfree = c and (c.freeSlots or 0) or 0, c and (c.totalSlots or 0) or 0, 0
     else
         list, free, total, rfree = readBags()
     end
+    win.lastRead = { key = offKey or "me", list = list, free = free, total = total, rfree = rfree }
     win.list = list
     if win.who then V.RefreshWho() end
     if offKey == "all" then
@@ -906,6 +912,23 @@ function V.Refresh(light, live)
 end
 
 function V.Layout() return cols, slotSize end -- pour les tests
+
+-- Objet pris en main ou recharge d'un objet : seules les cases sont repeintes (cadenas du jeu, nombre, recharge),
+-- sans relire ni reclasser tous les sacs (avant : tout était refait à chaque clic et à chaque recharge en combat).
+-- Rend faux si une case a changé d'objet : il faut alors tout refaire.
+function V.Repaint()
+    if not (win and win:IsShown() and win.list) or V.viewKey then return true end
+    for _, e in ipairs(win.list) do
+        if not e.empty and e.bag then
+            local b = buttons[e.bag] and buttons[e.bag][e.slot]
+            local id, count, locked = WK.Container.Info(e.bag, e.slot)
+            if id ~= e.id then return false end
+            e.count, e.locked = count, locked
+            if b then paintButton(b, e) end
+        end
+    end
+    return true
+end
 
 -- Tri du jeu : sacs (C_Container.SortBags) ou banque (SortBankBags) ; jamais en combat
 function V.Sort()
@@ -1452,7 +1475,22 @@ local function soon()
         if k2 and k2:IsShown() then KV.Refresh() end
     end)
 end
-for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "ITEM_LOCK_CHANGED", "BAG_UPDATE_COOLDOWN", "GET_ITEM_INFO_RECEIVED",
+-- prise en main et recharges : repeindre les cases seulement (tout refaire seulement si un objet a bougé)
+local repaintQueued = false
+local function repaintSoon()
+    if repaintQueued then return end
+    repaintQueued = true
+    _G.C_Timer.After(0.05, function()
+        repaintQueued = false
+        for _, v in ipairs({ BV, KV }) do
+            local w = v.Win()
+            if w and w:IsShown() and not v.Repaint() then soon() end
+        end
+    end)
+end
+WK:On("ITEM_LOCK_CHANGED", repaintSoon)
+WK:On("BAG_UPDATE_COOLDOWN", repaintSoon)
+for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "GET_ITEM_INFO_RECEIVED",
     "MERCHANT_SHOW", "MERCHANT_CLOSED", "PLAYER_MONEY", "BAG_NEW_ITEMS_UPDATED", "AUCTION_HOUSE_SHOW",
     "AUCTION_HOUSE_CLOSED", "PLAYERBANKSLOTS_CHANGED", "PLAYERBANKBAGSLOTS_CHANGED", "BAG_CONTAINER_UPDATE" }) do
     WK:On(ev, soon)

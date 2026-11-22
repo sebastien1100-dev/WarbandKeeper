@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.156", date = "22/11/2026",
+        changed = {
+            "Performances de nos sacs et de notre banque : prendre un objet en main ou une recharge (en combat) ne relit et ne reclasse plus tous les sacs, seules les cases sont repeintes ; filtres, recherche, survol de la barre des sacs et redimensionnement reprennent la dernière lecture au lieu de tout recalculer.",
+        },
+    },
+    {
         version = "1.128.155", date = "22/11/2026",
         added = {
             "Notre inventaire, tout le compte : menu au-dessus de la fiche pour regarder les sacs et la banque d'un autre perso (derniers relevés, places libres dans le menu) ou tout le compte réuni. Objets rangés « Dans les sacs » / « En banque », filtres, recherche, fiche et infobulle ; Maj + clic pour lier. Revient à tes sacs à la fermeture.",
