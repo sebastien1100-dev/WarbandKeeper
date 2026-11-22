@@ -578,6 +578,7 @@ computeFrom = function(cont, sx, sy, target)
     -- (avant : vol proposé seulement si les deux relais étaient à moins de 60 % de la distance en tout ; depuis le
     -- milieu des Paluns, Menethil était trop loin et le guidage faisait marcher jusqu'à Forgefer). Maintenant :
     -- les 3 relais connus les plus proches du départ et de l'arrivée, la paire la plus rapide, si elle bat la marche
+    local flyPick
     if D > 1500 then
         local fs = (WK.DB.global.flights and WK.DB.global.flights.worldSpeed) or FLY_SPEED
         local A, B, an, bn, flyLen, estimate
@@ -599,12 +600,7 @@ computeFrom = function(cont, sx, sy, target)
         M.lastFly = { known = 0, starts = #starts, ends = #ends, est = estimate, walk = walkTime, from = an, to = bn }
         for _, n in pairs(myTaxi()) do if n[1] == cont then M.lastFly.known = M.lastFly.known + 1 end end
         if A and B and estimate < walkTime * 0.8 then
-            local p1 = walk(cont, sx, sy, A[2], A[3], 4)
-            local p2 = walk(cont, B[2], B[3], tx, ty, 4)
-            legs[1] = { kind = "walk", pts = p1, len = lineLen(p1) }
-            legs[2] = { kind = "fly", from = an, to = bn, ax = A[2], ay = A[3], bx = B[2], by = B[3], len = flyLen }
-            legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
-            return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + flyLen * 1.15 / fs + 25 }
+            flyPick = { A = A, B = B, an = an, bn = bn, len = flyLen, est = estimate, fs = fs }
         end
     end
     if D <= 1500 then M.lastFly = { short = true, walk = walkTime } end
@@ -617,8 +613,9 @@ computeFrom = function(cont, sx, sy, target)
             A, B = B, A
         end
         local guess = (dist(sx, sy, A[2], A[3]) + dist(B[2], B[3], tx, ty)) * 1.3 / v + TRAM_RIDE
-        M.lastTram = { guess = guess, walk = walkTime }
-        if guess < walkTime * 0.8 and walkTime - guess > 60 then
+        M.lastTram = { guess = guess, walk = walkTime, fly = flyPick and flyPick.est }
+        -- le tram gagne aussi contre un vol plus lent (Hurlevent <-> Forgefer : le tram est bien plus court)
+        if guess < walkTime * 0.8 and walkTime - guess > 60 and not (flyPick and flyPick.est <= guess) then
             local p1 = walk(cont, sx, sy, A[2], A[3], 4)
             local p2 = walk(cont, B[2], B[3], tx, ty, 4)
             -- Forgefer est au nord de Hurlevent (x monde = nord)
@@ -631,6 +628,16 @@ computeFrom = function(cont, sx, sy, target)
         end
     else
         M.lastTram = { stations = #st }
+    end
+    if flyPick then
+        local f = flyPick
+        local p1 = walk(cont, sx, sy, f.A[2], f.A[3], 4)
+        local p2 = walk(cont, f.B[2], f.B[3], tx, ty, 4)
+        legs[1] = { kind = "walk", pts = p1, len = lineLen(p1) }
+        legs[2] = { kind = "fly", from = f.an, to = f.bn, ax = f.A[2], ay = f.A[3], bx = f.B[2], by = f.B[3],
+                    len = f.len }
+        legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
+        return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + f.len * 1.15 / f.fs + 25 }
     end
     legs[1] = { kind = "walk", pts = pts, len = walkLen }
     return { legs = legs, cont = cont, seconds = walkTime }

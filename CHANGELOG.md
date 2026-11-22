@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.184 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Guidage : l'épingle à l'écran affiche maintenant l'étape en cours (« Vers le maître de vol », « Vol : … », « Tram des profondeurs » … », pierre de foyer) au lieu de seulement le nom de la cible.
+
+### Corrections
+- Guidage : un vol pouvait être choisi avant même de regarder le tram ; les deux sont comparés et le plus rapide est proposé (le tram entre Hurlevent et Forgefer, une fois ses stations apprises).
+
 ## v1.128.183 — 22/11/2026
 
 _Un /reload suffit._

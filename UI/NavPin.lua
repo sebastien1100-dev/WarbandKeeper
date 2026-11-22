@@ -207,6 +207,9 @@ local function update()
     f.icon:SetTexture(UI.MEDIA .. iconFor(t))
     f.icon:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
     local name, role = G:PlaceParts(t)
+    -- trajet en plusieurs étapes (vol, tram, pierre de foyer, bateau) : l'étape en cours à la place du rôle
+    local _, _, step = WK.modules.Nav:Waypoint()
+    if step and not corpse then role = step end
     local dist = d and string.format(T("%d m"), math.floor(d)) or ""
     local extra = ""
     if corpse and d then

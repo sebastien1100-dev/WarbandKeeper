@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.184", date = "22/11/2026",
+        changed = {
+            "Guidage : l'épingle à l'écran affiche maintenant l'étape en cours (« Vers le maître de vol », « Vol : … », « Tram des profondeurs » … », pierre de foyer) au lieu de seulement le nom de la cible.",
+        },
+        fixed = {
+            "Guidage : un vol pouvait être choisi avant même de regarder le tram ; les deux sont comparés et le plus rapide est proposé (le tram entre Hurlevent et Forgefer, une fois ses stations apprises).",
+        },
+    },
+    {
         version = "1.128.183", date = "22/11/2026",
         added = {
             "Guidage : le tram des profondeurs est proposé entre Hurlevent et Forgefer quand il est plus rapide que la marche ; ses deux stations sont apprises la première fois que tu le prends.",
