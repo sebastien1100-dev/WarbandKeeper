@@ -60,6 +60,12 @@ UI.notesDef = {
         local prevSeen = WK.DB.global.settings.notesSeenVersion
         local newCount = 0
         for i, e in ipairs(WK.Changelog) do if e.version == prevSeen then newCount = i - 1 break end end
+        -- version vue plus ancienne que les notes chargées : tout ce qui est chargé est nouveau
+        if newCount == 0 and prevSeen and prevSeen ~= WK.version and WK.ChangelogTrim then
+            local found = false
+            for _, e in ipairs(WK.Changelog) do if e.version == prevSeen then found = true break end end
+            if not found then newCount = #WK.Changelog end
+        end
         local chips = {}
         local render
         local function chip(key, label, icon)
@@ -153,6 +159,8 @@ UI.notesDef = {
             return l
         end)
         local empty = UI:Text(scroll.child, 12, C.muted)
+        local older = UI:Text(scroll.child, 11, C.muted)
+        older:SetJustifyH("LEFT"); older:SetWordWrap(true)
 
         local function matches(line, key, idx)
             if st.filter == "new" and idx > newCount then return false end
@@ -235,6 +243,18 @@ UI.notesDef = {
             empty:SetShown(shownDays == 0)
             empty:ClearAllPoints(); empty:SetPoint("TOPLEFT", 4, -4)
             empty:SetText(T("Aucune note ne correspond."))
+            -- notes allégées dans le zip (tools/build_zip.py) : seules les dernières versions sont chargées en jeu
+            local trim = WK.ChangelogTrim
+            if trim and trim.total and trim.kept and trim.total > trim.kept then
+                older:ClearAllPoints(); older:SetPoint("TOPLEFT", 4, -(y + 4)); older:SetWidth(W - 8)
+                older:SetText(string.format(T("%d versions plus anciennes ne sont pas chargées en jeu (mémoire) : "
+                    .. "elles sont dans le client PC (notes de chaque version) et dans CHANGELOG.md sur GitHub."),
+                    trim.total - trim.kept))
+                older:Show()
+                y = y + (older:GetStringHeight() or 14) + 16
+            else
+                older:Hide()
+            end
             scroll:SetContentHeight(y)
             self.feedHeight, self.feedDays = y, shownDays
         end

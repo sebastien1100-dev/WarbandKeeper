@@ -31,7 +31,6 @@ _Prévu, pas encore commencé._
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
 ### Métiers
-- **Mise en valeur à l'approche** (moyenne) — Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse.
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
 ### Personnages
@@ -58,7 +57,6 @@ _Prévu, pas encore commencé._
 
 ### Fiabilité
 - **Diagnostic /wk diag** (moyenne) — Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes.
-- **Notes de version allégées en jeu** (moyenne) — Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG.
 
 ### Client PC
 - **Sauvegardes synchronisées** (basse) — Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière.
@@ -67,6 +65,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.168 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Notes de version allégées : seules celles des 3 derniers jours sont chargées en jeu (moins de mémoire) ; les plus anciennes restent dans le client PC et sur GitHub, une ligne le rappelle en bas des notes.
 
 ## v1.128.167 — 22/11/2026
 

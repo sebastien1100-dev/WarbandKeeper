@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.168", date = "22/11/2026",
+        changed = {
+            "Notes de version allégées : seules celles des 3 derniers jours sont chargées en jeu (moins de mémoire) ; les plus anciennes restent dans le client PC et sur GitHub, une ligne le rappelle en bas des notes.",
+        },
+    },
+    {
         version = "1.128.167", date = "22/11/2026",
         fixed = {
             "Merci pour un buff : erreur en boucle quand le jeu cachait la liste des effets reçus (en combat notamment) ; ces effets sont maintenant ignorés.",
@@ -6756,7 +6762,6 @@ WK.Roadmap = {
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
-    { prio = 2, theme = "prof", title = "Mise en valeur à l'approche", text = "Herbes, filons, objets de quête, coffres, bouchon et corps à piller s'allument quand tu approches ; couleur selon ta chance de monter, grisé si compétence trop basse." },
     { prio = 2, theme = "map", title = "Couches de serveur", text = "La couche où tu es (lue sur les PNJ), les couches vues dans la zone, demande de changement sur le canal « layer » et invitation acceptée toute seule." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 3, theme = "dung", title = "Quêtes, petits plus", text = "Récompenses signalées même en manuel (amélioration, prix de vente), « Tout prendre » sur un PNJ, quêtes d'un objet dans son infobulle, niveau dans les liens du chat, progression annoncée au groupe." },
@@ -6767,7 +6772,6 @@ WK.Roadmap = {
     { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
     { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
-    { prio = 2, theme = "rel", title = "Notes de version allégées en jeu", text = "Seuls les derniers jours chargés en jeu ; tout l'historique reste dans le client et le CHANGELOG." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
     { prio = 2, theme = "char", title = "Objectifs par perso", text = "Or, niveau, palier de métier, liste BiS complète : progression et estimation (« niveau 40 dans env. 6 h au rythme actuel »)." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },
