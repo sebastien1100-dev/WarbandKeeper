@@ -178,7 +178,7 @@ function M:Run(force)
 end
 
 WK:On("BANKFRAME_OPENED", function() C_Timer.After(0.6, function() M:Run() end) end)
-WK:On("BANKFRAME_CLOSED", function() running = false; gen = gen + 1; M.thenWithdraw = nil end)
+WK:On("BANKFRAME_CLOSED", function() running = false; gen = gen + 1; M.thenWithdraw = nil; M.tidyMerge = nil end)
 
 ---------------------------------------------------------------------------
 -- Sortir de la banque ce dont le perso connecté a besoin (bouton « Ranger » de notre banque) :
@@ -260,6 +260,13 @@ local function bagDest(itemID, amount)
 end
 
 local wQueue, wDone, wGen = nil, nil, 0
+-- fin de « Ranger » : piles réunies dans la banque puis dans les sacs (Modules/Stash.lua)
+local function tidyEnd()
+    if not M.tidyMerge then return end
+    M.tidyMerge = nil
+    local St = WK.modules.Stash
+    if St and St.MergeStacks then _G.C_Timer.After(0.4, function() St:MergeStacks({ "bank", "bags" }) end) end
+end
 local function wStep(g)
     if g ~= wGen then return end
     local job = table.remove(wQueue, 1)
@@ -267,6 +274,7 @@ local function wStep(g)
         local list = {}
         for id, n in pairs(wDone) do list[#list + 1] = n .. " " .. (WK.UI and WK.UI:ItemInfo(id) or WK:ItemName(id)) end
         if #list > 0 then WK:Print(T("Sorti de la banque : ") .. table.concat(list, ", ")) end
+        tidyEnd()
         return
     end
     local cur, n, locked = WK.Container.Info(job.op.bag, job.op.slot)
@@ -274,6 +282,7 @@ local function wStep(g)
     local bag, slot = bagDest(job.itemID, job.op.count)
     if not bag then
         WK:Print(T("Sacs pleins : sortie de la banque incomplète."))
+        tidyEnd()
         return
     end
     WK.modules.Rules:PickUp(job.op)
@@ -292,7 +301,7 @@ function M:Withdraw()
     for _, e in ipairs(plan) do
         for _, op in ipairs(e.ops) do wQueue[#wQueue + 1] = { itemID = e.itemID, op = op } end
     end
-    if #wQueue == 0 then return end
+    if #wQueue == 0 then tidyEnd() return end
     wGen = wGen + 1
     wStep(wGen)
 end
@@ -301,6 +310,7 @@ end
 function M:Tidy()
     if running or (_G.InCombatLockdown and _G.InCombatLockdown()) then return end
     M.thenWithdraw = true
+    M.tidyMerge = true
     self:Run(true)
 end
 WK:On("BANKFRAME_CLOSED", function() wGen = wGen + 1 end)

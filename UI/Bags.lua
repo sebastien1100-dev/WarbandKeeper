@@ -707,6 +707,46 @@ local function build()
     f.sell = UI:Button(f, "Vendre la camelote", nil, 22, "secondary")
     f.sell:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9)
     f.sell:SetScript("OnClick", function() V.SellJunk() end)
+    -- marchand : objets dont personne n'a besoin (Rangement, « au marchand »)
+    f.sellMore = UI:Button(f, "Vendre les inutiles", nil, 22, "secondary")
+    f.sellMore:SetScript("OnClick", function() V.SellUnneeded() end)
+    f.sellMore:HookScript("OnEnter", function(s)
+        local St = WK.modules.Stash
+        local ok, list = pcall(St.MyVendorItems, St)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        local tip = _G.GameTooltip
+        tip:SetText(T("Vendre les inutiles"), 1, 1, 1)
+        tip:AddLine(T("Objets dont aucun de tes persos n'a besoin (Inventaire > Rangement, colonne « Au marchand »). "
+            .. "Jamais un objet verrouillé."),
+            0.85, 0.85, 0.85, true)
+        local total = 0
+        for i, e in ipairs(ok and list or {}) do
+            if i <= 12 then
+                local name, _, r, g, b = UI:ItemInfo(e.id)
+                tip:AddDoubleLine(name .. " x" .. e.count, WK:FormatMoney((e.unit or 0) * e.count), r, g, b, 1, 1, 1)
+            end
+            total = total + (e.unit or 0) * e.count
+        end
+        tip:AddDoubleLine(T("Total"), WK:FormatMoney(total), 0.6, 0.6, 0.6, 1, 1, 1)
+        tip:Show()
+    end)
+    f.sellMore:HookScript("OnLeave", function() _G.GameTooltip:Hide() end)
+    -- piles incomplètes d'un même objet : réunies (place gagnée)
+    f.merge = UI:Button(f, "Réunir les piles", nil, 22, "secondary")
+    f.merge:SetScript("OnClick", function()
+        local St = WK.modules.Stash
+        if St and St:MergeStacks(isBank and { "bank" } or { "bags" }, function() V.Refresh() end) then
+            f.merge:Hide()
+        end
+    end)
+    f.merge:HookScript("OnEnter", function(s)
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Réunir les piles"), 1, 1, 1)
+        local txt = T("Regroupe les piles incomplètes d'un même objet : %d case(s) libérée(s).")
+        _G.GameTooltip:AddLine(string.format(txt, s.freed or 0), 0.85, 0.85, 0.85, true)
+        _G.GameTooltip:Show()
+    end)
+    f.merge:HookScript("OnLeave", function() _G.GameTooltip:Hide() end)
     -- banque : « Ranger » = dépôt d'après les règles de banque, puis sortie de ce dont le perso a besoin
     if isBank then
         f.tidy = UI:Button(f, "Ranger", nil, 24, "primary", "bag")
@@ -726,6 +766,14 @@ local function build()
                 0.85, 0.85, 0.85)
             tip:AddLine(string.format(T("Sortir : %d objet(s) pour tes métiers et Avant de partir"), okW and out or 0),
                 0.85, 0.85, 0.85)
+            local St = WK.modules.Stash
+            if St and St.MergePlan then
+                local Inv = WK.modules.Inventory
+                local _, fb = St:MergePlan(Inv:BankList())
+                local _, fs = St:MergePlan(Inv:BagList())
+                local fmt = T("Réunir les piles : %d case(s) libérée(s) dans la banque, %d dans les sacs")
+                tip:AddLine(string.format(fmt, fb, fs), 0.85, 0.85, 0.85)
+            end
             tip:Show()
         end)
         f.tidy:HookScript("OnLeave", function() _G.GameTooltip:Hide() end)
@@ -844,6 +892,33 @@ function V.Refresh(light, live)
     for _, e in ipairs(list) do if not e.empty and e.info.cat == "junk" then junk = junk + 1 end end
     local merchant = _G.MerchantFrame and _G.MerchantFrame:IsShown()
     win.sell:SetShown(not isBank and not offKey and merchant and junk > 0)
+    -- boutons du pied, de droite à gauche : Ranger (banque) / Vendre la camelote, Vendre les inutiles, Réunir les piles
+    local St = WK.modules.Stash
+    local unneeded = 0
+    if not isBank and not offKey and merchant and St then
+        local okV, vl = pcall(St.MyVendorItems, St)
+        unneeded = okV and #vl or 0
+    end
+    win.sellMore:SetShown(unneeded > 0)
+    if unneeded > 0 then win.sellMore:SetLabel(string.format(T("Vendre les inutiles (%d)"), unneeded)) end
+    if not offKey and St and not light and not (St.Merging and St:Merging()) then
+        local Inv = WK.modules.Inventory
+        local okM, _, fr = pcall(St.MergePlan, St, isBank and Inv:BankList() or Inv:BagList())
+        local mFreed = okM and fr or 0
+        win.merge.freed = mFreed
+        win.merge:SetShown(mFreed > 0)
+    elseif offKey then
+        win.merge:Hide()
+    end
+    local anchor = isBank and win.tidy or (win.sell:IsShown() and win.sell) or nil
+    for _, b in ipairs({ win.sellMore, win.merge }) do
+        if b:IsShown() then
+            b:ClearAllPoints()
+            if anchor then b:SetPoint("RIGHT", anchor, "LEFT", -8, 0)
+            else b:SetPoint("BOTTOMRIGHT", -(PAD + (B.Config().fiche and FICHE_W + 10 or 0)), 9) end
+            anchor = b
+        end
+    end
     -- disposition : par catégorie, cases vides à la fin
     if inCombat() and not offKey then
         pending = true
@@ -1347,6 +1422,42 @@ function V.SellJunk()
                 local CC = _G.C_Container
                 if CC and CC.UseContainerItem then CC.UseContainerItem(it.bag, it.slot)
                 elseif _G.UseContainerItem then _G.UseContainerItem(it.bag, it.slot) end
+            end
+        end
+        _G.C_Timer.After(0.25, step)
+    end
+    step()
+end
+
+-- Vendre les inutiles (marchand ouvert) : objets « au marchand » du Rangement, jamais un verrouillé ni plus que prévu
+function V.SellUnneeded()
+    local St, IL = WK.modules.Stash, WK.modules.ItemLock
+    if not (St and _G.MerchantFrame and _G.MerchantFrame:IsShown()) or inCombat() then return end
+    local want = {}
+    for _, e in ipairs(St:MyVendorItems()) do
+        if not (IL and IL.Reason and IL:Reason(e.id)) then want[e.id] = e.count end
+    end
+    local jobs = {}
+    for _, bag in ipairs(WK.modules.Inventory:BagList()) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, n, locked = WK.Container.Info(bag, slot)
+            if id and not locked and want[id] and want[id] >= (n or 1) then
+                want[id] = want[id] - (n or 1)
+                jobs[#jobs + 1] = { bag = bag, slot = slot, id = id }
+            end
+        end
+    end
+    local i = 0
+    local function step()
+        if not (_G.MerchantFrame and _G.MerchantFrame:IsShown()) or inCombat() then return end
+        for _ = 1, 6 do
+            i = i + 1
+            local j = jobs[i]
+            if not j then St:Invalidate(); V.Refresh() return end
+            if WK.Container.Info(j.bag, j.slot) == j.id then
+                local CC = _G.C_Container
+                if CC and CC.UseContainerItem then CC.UseContainerItem(j.bag, j.slot)
+                elseif _G.UseContainerItem then _G.UseContainerItem(j.bag, j.slot) end
             end
         end
         _G.C_Timer.After(0.25, step)

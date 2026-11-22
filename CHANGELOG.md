@@ -27,9 +27,6 @@ _Prévu, pas encore commencé._
 - **Ping de groupe** (basse) — Repère éphémère avec annotation, point de rendez-vous du groupe, marqueurs de raid annoncés en donjon.
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
 
-### Inventaire et économie
-- **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
-
 ### Métiers
 - **Annonce de métier** (basse) — Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes.
 
@@ -65,6 +62,18 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.169 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Rangement : place libre de chaque perso dans Inventaire > Rangement (carte « Place dans les sacs »), avec ce qui en libèrerait le plus : camelote, envois à tes persos, ventes au marchand, piles à réunir.
+- Sacs et banque : bouton « Réunir les piles » quand des piles incomplètes d'un même objet peuvent être regroupées.
+- Chez le marchand : bouton « Vendre les inutiles » pour les objets dont aucun de tes persos n'a besoin (liste et total dans l'infobulle, jamais un objet verrouillé).
+
+### Modifications
+- Banque : « Ranger » réunit aussi les piles dans la banque puis dans les sacs, après les dépôts et les sorties.
 
 ## v1.128.168 — 22/11/2026
 

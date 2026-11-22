@@ -628,6 +628,56 @@ UI:RegisterPage({
         self.stashEmpty = UI:Text(list, 11, C.muted)
         self.stashEmpty:SetPoint("TOPLEFT", 16, -16)
         self.stashEmpty:SetText(T("Rien à ranger : chaque composant est déjà chez le perso qui s'en sert."))
+        -- place libre par perso et ce qui en libèrerait le plus (Stash:Space)
+        local space = UI:Card(root, T("Place dans les sacs"), T("du perso le plus plein au plus libre"))
+        self.spaceCard = space
+        self.spaceRows = UI:Pool(function()
+            local r = _G.CreateFrame("Button", nil, space)
+            r:SetHeight(46)
+            UI:Panel(r, 8, C.surface2, C.border)
+            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 12, -8)
+            r.free = UI:Text(r, 11); r.free:SetPoint("TOPRIGHT", -12, -8); r.free:SetJustifyH("RIGHT")
+            r.bar = UI:Progress(r, 5); r.bar:SetPoint("TOPLEFT", 12, -26); r.bar:SetPoint("TOPRIGHT", -12, -26)
+            r.gain = UI:Text(r, 10, C.muted); r.gain:SetPoint("TOPLEFT", 12, -34); r.gain:SetPoint("TOPRIGHT", -12, -34)
+            r.gain:SetJustifyH("LEFT")
+            if r.gain.SetWordWrap then r.gain:SetWordWrap(false) end
+            r:SetScript("OnEnter", function(b)
+                local e = b.e
+                if not e then return end
+                UI:TooltipOwner(b, "ANCHOR_RIGHT")
+                _G.GameTooltip:SetText(WK:CharName(e.c, e.key), 1, 1, 1)
+                _G.GameTooltip:AddDoubleLine(T("Sacs"), string.format(T("%d libres sur %d"), e.free, e.total),
+                    0.7, 0.7, 0.7, 1, 1, 1)
+                if e.bankSlots and e.bankSlots > 0 then
+                    local bt = string.format(T("%d libres sur %d"), e.bankFree or 0, e.bankSlots)
+                    _G.GameTooltip:AddDoubleLine(T("Banque"), bt,
+                        0.7, 0.7, 0.7, 1, 1, 1)
+                end
+                _G.GameTooltip:AddLine(" ")
+                _G.GameTooltip:AddLine(T("Ce qui libèrerait de la place (env.) :"), 0.85, 0.85, 0.85)
+                local function line(label, n, extra)
+                    if n and n > 0 then
+                        _G.GameTooltip:AddDoubleLine(label, string.format(T("%d case(s)"), n) .. (extra or ""),
+                            0.7, 0.7, 0.7, 1, 1, 1)
+                    end
+                end
+                line(T("Vendre la camelote"), e.junk,
+                    e.junkValue > 0 and ("  · " .. WK:FormatMoney(e.junkValue)) or nil)
+                line(T("Envoyer à tes persos et au perso HV"), e.send)
+                line(T("Vendre les inutiles au marchand"), e.sell)
+                line(T("Réunir les piles"), e.merge)
+                if e.merge == nil then
+                    local mt = T("Piles à réunir : connecte ce perso pour les voir.")
+                    _G.GameTooltip:AddLine(mt, 0.5, 0.5, 0.5, true)
+                end
+                if (e.gain or 0) == 0 then
+                    _G.GameTooltip:AddLine(T("Rien à libérer pour l'instant."), 0.5, 0.5, 0.5)
+                end
+                _G.GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+            return r
+        end)
         -- réglages du perso HV
         local sets = UI:Card(root, T("Perso HV"), T("reçoit ce dont personne n'a besoin et le met en vente"))
         self.stashSets = sets
@@ -797,6 +847,42 @@ UI:RegisterPage({
         if total == 0 then y = y + 24 end
         self.stashList:ClearAllPoints(); self.stashList:SetPoint("TOPLEFT", 0, -34); self.stashList:SetSize(W, y + 10)
         local ly = 34 + y + 10 + 12
+        -- place libre par perso (2 colonnes, 3 en fenêtre large)
+        self.spaceRows:Reset()
+        local okS, spaceList = pcall(S.Space, S)
+        local space = okS and spaceList or {}
+        local sc = self.spaceCard
+        if #space > 0 then
+            local ncs = W >= 900 and 3 or 2
+            local sw = (W - 28 - (ncs - 1) * 10) / ncs
+            for i, e in ipairs(space) do
+                local rr = self.spaceRows:Get()
+                rr.e = e
+                local ci, ri = (i - 1) % ncs, math.floor((i - 1) / ncs)
+                rr:ClearAllPoints(); rr:SetPoint("TOPLEFT", sc, "TOPLEFT", 14 + ci * (sw + 10), -(44 + ri * 54))
+                rr:SetWidth(sw)
+                rr.name:SetText(WK:CharName(e.c, e.key)); rr.name:SetTextColor(UI:ClassColor(e.c.class))
+                local full = 1 - e.free / math.max(1, e.total)
+                local col = e.free == 0 and C.negative or (e.free <= 4 and C.warning) or nil
+                rr.free:SetText(string.format(T("%d libres / %d"), e.free, e.total))
+                rr.free:SetTextColor(unpack(col or C.text))
+                rr.bar.color = col and { col[1], col[2], col[3], 1 } or nil
+                rr.bar:SetValue(full)
+                local parts = {}
+                if (e.gain or 0) > 0 then parts[1] = string.format(T("libérable : env. %d case(s)"), e.gain) end
+                if e.bankSlots and e.bankSlots > 0 then
+                    parts[#parts + 1] = string.format(T("banque : %d libres"), e.bankFree or 0)
+                end
+                rr.gain:SetText(table.concat(parts, "  ·  "))
+                rr:Show()
+            end
+            local rows = math.ceil(#space / ncs)
+            sc:ClearAllPoints(); sc:SetPoint("TOPLEFT", 0, -ly); sc:SetSize(W, 44 + rows * 54 + 6)
+            sc:Show()
+            ly = ly + 44 + rows * 54 + 6 + 12
+        else
+            sc:Hide()
+        end
         -- (réglages « Perso HV » : roue dentée de la page)
         self.stashPane:SetContentHeight(ly)
     end,

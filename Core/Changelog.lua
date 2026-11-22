@@ -8,6 +8,17 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.169", date = "22/11/2026",
+        added = {
+            "Rangement : place libre de chaque perso dans Inventaire > Rangement (carte « Place dans les sacs »), avec ce qui en libèrerait le plus : camelote, envois à tes persos, ventes au marchand, piles à réunir.",
+            "Sacs et banque : bouton « Réunir les piles » quand des piles incomplètes d'un même objet peuvent être regroupées.",
+            "Chez le marchand : bouton « Vendre les inutiles » pour les objets dont aucun de tes persos n'a besoin (liste et total dans l'infobulle, jamais un objet verrouillé).",
+        },
+        changed = {
+            "Banque : « Ranger » réunit aussi les piles dans la banque puis dans les sacs, après les dépôts et les sorties.",
+        },
+    },
+    {
         version = "1.128.168", date = "22/11/2026",
         changed = {
             "Notes de version allégées : seules celles des 3 derniers jours sont chargées en jeu (moins de mémoire) ; les plus anciennes restent dans le client PC et sur GitHub, une ligne le rappelle en bas des notes.",
@@ -6752,7 +6763,6 @@ WK.Roadmap = {
     { prio = 3, theme = "map", title = "Trajets qui suivent le terrain", text = "Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit." },
     { prio = 2, theme = "map", title = "Chemins appris partagés", text = "Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde." },
     { prio = 2, theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
-    { prio = 2, theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
     { prio = 3, theme = "prof", title = "Annonce de métier", text = "Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes." },
     { prio = 3, theme = "char", title = "Expérience, suite", text = "Temps passé à chaque niveau par perso, barre de réputation au même endroit, barre fine sous le micro menu." },
     { prio = 3, theme = "char", title = "Feu de camp, suite", text = "Ce qu'il manque pour un camp complet, et le lien avec le repos (tente, sac de couchage)." },

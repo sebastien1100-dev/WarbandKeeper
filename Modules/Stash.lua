@@ -266,3 +266,182 @@ function M:MyShipments()
     if cfg.ahChar then take(r.ah.list, cfg.ahChar, true) end
     return out
 end
+
+---------------------------------------------------------------------------
+-- Place : cases libres de chaque perso et ce qui en libèrerait le plus (camelote, envois, ventes, piles à
+-- réunir) ; piles à réunir dans les sacs ou la banque ; objets « au marchand » du perso connecté.
+---------------------------------------------------------------------------
+local function stackOf(id)
+    local n = select(8, WK.GetItemInfo(id))
+    return (type(n) == "number" and n > 0) and n or 1
+end
+local function slotsFor(id, n) return math.ceil((n or 0) / stackOf(id)) end
+M.slotsFor = slotsFor
+
+-- Déplacements qui réunissent les piles incomplètes d'un même objet dans ces sacs :
+-- { { id, from = { sac, case }, to = { sac, case }, n } }, cases libérées
+function M.MergePlan(_, bagList)
+    local by = {}
+    for _, bag in ipairs(bagList or {}) do
+        for slot = 1, (WK.Container.NumSlots(bag) or 0) do
+            local id, n, locked = WK.Container.Info(bag, slot)
+            if id and not locked then
+                local mx = stackOf(id)
+                if mx > 1 and (n or 1) < mx then
+                    by[id] = by[id] or {}
+                    table.insert(by[id], { bag = bag, slot = slot, n = n or 1, mx = mx })
+                end
+            end
+        end
+    end
+    local moves, freed = {}, 0
+    for id, list in pairs(by) do
+        if #list > 1 then
+            table.sort(list, function(a, b)
+                if a.n ~= b.n then return a.n > b.n end
+                if a.bag ~= b.bag then return a.bag < b.bag end
+                return a.slot < b.slot
+            end)
+            local i, j = 1, #list
+            while i < j do
+                local dst, src = list[i], list[j]
+                local room = dst.mx - dst.n
+                if room <= 0 then
+                    i = i + 1
+                else
+                    local mv = math.min(room, src.n)
+                    moves[#moves + 1] = { id = id, from = { src.bag, src.slot }, to = { dst.bag, dst.slot }, n = mv }
+                    dst.n, src.n = dst.n + mv, src.n - mv
+                    if src.n == 0 then freed = freed + 1; j = j - 1 end
+                end
+            end
+        end
+    end
+    table.sort(moves, function(a, b) return a.id < b.id end)
+    return moves, freed
+end
+
+local bankOpen = false
+WK:On("BANKFRAME_OPENED", function() bankOpen = true end)
+WK:On("BANKFRAME_CLOSED", function() bankOpen = false end)
+function M.BankOpen() return bankOpen end
+
+-- Réunit les piles, une par une (0,35 s entre deux), hors combat ; scopes = { "bags" } / { "bank", "bags" }
+local merging
+function M.Merging(_) return merging ~= nil end
+function M:MergeStacks(scopes, onDone)
+    if merging or (_G.InCombatLockdown and _G.InCombatLockdown()) then return false end
+    if _G.CursorHasItem and _G.CursorHasItem() then return false end
+    local Inv = WK.modules.Inventory
+    local lists = {}
+    for _, s in ipairs(scopes or { "bags" }) do
+        if s == "bank" then
+            if bankOpen then lists[#lists + 1] = Inv:BankList() end
+        else
+            lists[#lists + 1] = Inv:BagList()
+        end
+    end
+    local function freeNow()
+        local f = 0
+        for _, l in ipairs(lists) do for _, b in ipairs(l) do f = f + (WK.Container.NumFree(b) or 0) end end
+        return f
+    end
+    merging = { moved = 0, freed = 0, free0 = freeNow() }
+    local li, steps = 1, 0
+    local CC = _G.C_Container
+    local function finish()
+        local m = merging
+        merging = nil
+        if m then m.freed = math.max(0, freeNow() - m.free0) end
+        if m and m.moved > 0 then
+            WK:Print(string.format(T("Piles réunies : %d case(s) libérée(s)."), m.freed))
+        end
+        WK:NotifyChanged()
+        if onDone then onDone(m) end
+    end
+    local step
+    step = function()
+        if not merging then return end
+        if (_G.InCombatLockdown and _G.InCombatLockdown()) or steps >= 150 then return finish() end
+        local list = lists[li]
+        if not list then return finish() end
+        local moves = self:MergePlan(list)
+        local mv = moves[1]
+        if not mv then li = li + 1; return step() end
+        steps = steps + 1
+        local _, n = WK.Container.Info(mv.from[1], mv.from[2])
+        if (n or 0) > mv.n and CC and CC.SplitContainerItem then
+            CC.SplitContainerItem(mv.from[1], mv.from[2], mv.n)
+        else
+            WK.Container.Pickup(mv.from[1], mv.from[2])
+        end
+        WK.Container.Pickup(mv.to[1], mv.to[2])
+        if _G.CursorHasItem and _G.CursorHasItem() then _G.ClearCursor() end
+        merging.moved = merging.moved + 1
+        _G.C_Timer.After(0.35, step)
+    end
+    step()
+    return true
+end
+
+-- Place de chaque perso, de la moins libre à la plus libre :
+-- { key, c, free, total, bankFree, bankSlots, junk, junkValue, send, sell, merge (perso connecté seulement), gain }
+function M:Space()
+    local chars = WK.DB.global.characters
+    local r = self:Route()
+    local me = WK:CharKey()
+    local send, sell = {}, {}
+    local function add(t, e)
+        for key, n in pairs(e.from or {}) do
+            local inBags = chars[key] and chars[key].bags and chars[key].bags[e.id] or 0
+            local k = math.min(n, inBags)
+            if k > 0 then t[key] = (t[key] or 0) + slotsFor(e.id, k) end
+        end
+    end
+    for _, d in pairs(r.dest) do for _, e in ipairs(d.list) do add(send, e) end end
+    for _, e in ipairs(r.ah.list) do add(send, e) end
+    for _, e in ipairs(r.vendor.list) do add(sell, e) end
+    local Q, IL = WK.modules.QoL, WK.modules.ItemLock
+    local out = {}
+    for key, c in pairs(chars) do
+        if type(c) == "table" and c.totalSlots and c.totalSlots > 0 then
+            local junk, junkValue = 0, 0
+            for id, n in pairs(c.bags or {}) do
+                if type(n) == "number" and n > 0 and Q and Q.IsJunk and Q:IsJunk(id)
+                    and not (IL and IL.Reason and IL:Reason(id)) then
+                    junk = junk + slotsFor(id, n)
+                    junkValue = junkValue + (select(11, WK.GetItemInfo(id)) or 0) * n
+                end
+            end
+            local merge
+            if key == me then
+                local _, f = self:MergePlan(WK.modules.Inventory:BagList())
+                merge = f
+            end
+            local e = { key = key, c = c, free = c.freeSlots or 0, total = c.totalSlots, bankFree = c.bankFree,
+                bankSlots = c.bankSlots, junk = junk, junkValue = junkValue, send = send[key] or 0,
+                sell = sell[key] or 0, merge = merge }
+            e.gain = e.junk + e.send + e.sell + (merge or 0)
+            out[#out + 1] = e
+        end
+    end
+    table.sort(out, function(a, b)
+        local fa, fb = a.free / math.max(1, a.total), b.free / math.max(1, b.total)
+        if fa ~= fb then return fa < fb end
+        return a.key < b.key
+    end)
+    return out
+end
+
+-- Objets du perso connecté dont personne n'a besoin et que le rangement envoie au marchand : { { id, count, unit } }
+function M:MyVendorItems()
+    local me = WK:CharKey()
+    local c = WK.DB.global.characters[me]
+    local inBags = c and c.bags or {}
+    local out = {}
+    for _, e in ipairs(self:Route().vendor.list) do
+        local n = math.min(e.from and e.from[me] or 0, inBags[e.id] or 0)
+        if n > 0 then out[#out + 1] = { id = e.id, count = n, unit = e.unit } end
+    end
+    return out
+end
