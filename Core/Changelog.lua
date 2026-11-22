@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.134", date = "22/11/2026",
+        fixed = {
+            "Notre inventaire et notre banque : l'infobulle d'un objet ne recouvre plus la fiche de droite ; elle s'affiche à gauche de la fenêtre (ou de la fenêtre de désenchantement), ou au-dessus s'il n'y a pas la place.",
+        },
+    },
+    {
         version = "1.128.133", date = "22/11/2026",
         fixed = {
             "Enchanteurs : la fenêtre de désenchantement ne s'ouvrait plus avec notre inventaire (elle cherchait les sacs du jeu) ; elle se colle de nouveau à gauche de nos sacs à chaque ouverture.",

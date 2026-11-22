@@ -216,7 +216,10 @@ local function newButton(bag, slot)
             end
         end
         if s.wkEntry then hovered = s.wkEntry; V.RefreshFiche() end
+        V.PlaceTip(s)
     end)
+    -- le jeu replace l'infobulle à chaque mise à jour : on la remet hors de la fiche
+    if type(b.UpdateTooltip) == "function" then _G.hooksecurefunc(b, "UpdateTooltip", function(s) V.PlaceTip(s) end) end
     buttons[bag] = buttons[bag] or {}
     buttons[bag][slot] = b
     return b
@@ -666,6 +669,23 @@ function V.Refresh(light, live)
 end
 
 function V.Layout() return cols, slotSize end -- pour les tests
+
+-- infobulle d'une case : à gauche de la fenêtre (au-dessus s'il n'y a pas la place), jamais sur la fiche
+function V.PlaceTip(btn)
+    local tip = _G.GameTooltip
+    if not (win and tip and tip:IsShown() and tip:GetOwner() == btn) then return end
+    tip:ClearAllPoints()
+    -- la fenêtre de désenchantement collée à gauche des sacs reste visible aussi : l'infobulle passe à sa gauche
+    local host = win
+    local de = _G.WarbandKeeperDEPanel
+    if not isBank and de and de:IsVisible() and (de:GetRight() or 0) <= (win:GetLeft() or 0) + 12 then host = de end
+    local left = host:GetLeft() or 0
+    if left > (tip:GetWidth() or 280) + 12 then
+        tip:SetPoint("TOPRIGHT", host, "TOPLEFT", -6, 0)
+    else
+        tip:SetPoint("BOTTOMLEFT", win, "TOPLEFT", 0, 6)
+    end
+end
 
 -- place les filtres, les cases et la fiche sous la barre des sacs (ouverte ou non)
 function V.ApplyTop()
