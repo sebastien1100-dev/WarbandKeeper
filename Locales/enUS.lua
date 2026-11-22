@@ -4511,4 +4511,5 @@ WK.Locales.enUS.text = {
     ["Maître de %s"] = "%s trainer",
     ["Guidage vers %s, %s."] = "Guiding to %s, %s.",
     ["Maître le plus proche"] = "Nearest trainer",
+    ["Sacs : aucun cadre de sac affiché (ouvre tes sacs puis relance /wk sacs)."] = "Bags: no bag frame shown (open your bags then run /wk sacs again).",
 }

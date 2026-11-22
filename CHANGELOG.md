@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.100 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Enchanteur : la fenêtre de désenchantement ne s'ouvrait qu'à côté des sacs du jeu ; elle s'ouvre aussi à côté des sacs d'EllesmereUI (et d'ElvUI, Bagnon, AdiBags, Baganator, ArkInventory). /wk sacs liste les cadres de sacs reconnus ; /wk de l'ouvre à la main.
+
 ## v1.128.99 — 22/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.100", date = "22/11/2026",
+        fixed = {
+            "Enchanteur : la fenêtre de désenchantement ne s'ouvrait qu'à côté des sacs du jeu ; elle s'ouvre aussi à côté des sacs d'EllesmereUI (et d'ElvUI, Bagnon, AdiBags, Baganator, ArkInventory). /wk sacs liste les cadres de sacs reconnus ; /wk de l'ouvre à la main.",
+        },
+    },
+    {
         version = "1.128.99", date = "22/11/2026",
         added = {
             "Métiers : bouton « Maître le plus proche » à droite des onglets Recettes / Guide / Manquantes ; il lance le guidage vers le maître de ce métier le plus proche de ta faction.",

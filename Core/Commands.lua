@@ -71,6 +71,8 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "sacs" or cmd == "bags" then
         WK:Print(WK.T("Sacs : diagnostic"))
         for _, l in ipairs(WK.UI.BagDiag and WK.UI:BagDiag() or {}) do WK:Print("  " .. l) end
+        -- sacs d'un autre addon (EllesmereUI…) reconnus pour la fenêtre de désenchantement
+        if WK.UI.OtherBagsDiag then WK.UI.OtherBagsDiag() end
     elseif cmd == "plan" and (rest or ""):lower():find("diag") then
         WK:Print(WK.T("Plan de montée : diagnostic"))
         for _, l in ipairs(WK.UI.TalentPlanDiag and WK.UI:TalentPlanDiag() or {}) do WK:Print("  " .. l) end

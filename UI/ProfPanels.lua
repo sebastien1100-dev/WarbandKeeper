@@ -225,9 +225,51 @@ local function buildDE()
     return f
 end
 
+-- Sacs d'un autre addon (EllesmereUI, ElvUI, Bagnon, AdiBags, Baganator, ArkInventory) : cadres repérés par leur
+-- nom parmi les enfants d'UIParent, à la connexion et à chaque ouverture des sacs (ils sont souvent créés tard)
+local BAG_NAMES = { "ellesmere.*bag", "bag.*ellesmere", "^eui.*bag", "^elvui_containerframe$", "^bagnon.*inventory",
+    "^adibagscontainer1$", "^baganator.*backpack", "^arkinventorywindowmain$" }
+local extraBags, extraSeen = {}, {}
+local soonDE
+local function discoverBags()
+    if not (_G.UIParent and _G.UIParent.GetChildren) then return end
+    for _, ch in ipairs({ _G.UIParent:GetChildren() }) do
+        local n = ch.GetName and ch:GetName()
+        if n and not extraSeen[ch] and not (_G.issecretvalue and _G.issecretvalue(n)) then
+            local low = n:lower()
+            for _, pat in ipairs(BAG_NAMES) do
+                if low:find(pat) then
+                    extraSeen[ch] = true
+                    table.insert(extraBags, ch)
+                    ch:HookScript("OnShow", function() if de then de.closed = nil end; if soonDE then soonDE() end end)
+                    ch:HookScript("OnHide", function() if soonDE then soonDE() end end)
+                    break
+                end
+            end
+        end
+    end
+end
+UI.DiscoverBags = discoverBags
+-- /wk sacs : cadres affichés dont le nom parle de sac (pour reconnaître un addon de sacs inconnu)
+function UI.OtherBagsDiag()
+    discoverBags()
+    local n = 0
+    for _, ch in ipairs({ _G.UIParent:GetChildren() }) do
+        local nm = ch.GetName and ch:GetName()
+        if nm and not (_G.issecretvalue and _G.issecretvalue(nm)) and ch:IsShown() and nm:lower():find("bag") then
+            n = n + 1
+            WK:Print(string.format("%s%s", nm, extraSeen[ch] and "  (reconnu)" or ""))
+        end
+    end
+    if n == 0 then WK:Print(T("Sacs : aucun cadre de sac affiché (ouvre tes sacs puis relance /wk sacs).")) end
+    return n, #extraBags
+end
 local function bagFrame()
     if ContainerFrameCombinedBags and ContainerFrameCombinedBags:IsShown() then return ContainerFrameCombinedBags end
     if ContainerFrame1 and ContainerFrame1:IsShown() then return ContainerFrame1 end
+    for _, f in ipairs(extraBags) do
+        if f:IsShown() and f:GetWidth() > 50 then return f end
+    end
 end
 
 function UI:ToggleDEPanel(show, anchor)
@@ -256,7 +298,7 @@ local function autoDE()
     end
 end
 local deTimer
-local function soonDE()
+soonDE = function()
     if deTimer then return end
     deTimer = true
     C_Timer.After(0.3, function()
@@ -268,6 +310,13 @@ end
 WK:On("BAG_UPDATE_DELAYED", soonDE)
 WK:On("PLAYER_REGEN_ENABLED", soonDE)
 WK:On("PLAYER_LOGIN", function()
+    -- sacs d'un autre addon : cherchés à la connexion, puis à chaque ouverture des sacs
+    _G.C_Timer.After(5, discoverBags)
+    for _, fn in ipairs({ "ToggleAllBags", "OpenAllBags", "ToggleBackpack", "OpenBackpack", "ToggleBag" }) do
+        if type(_G[fn]) == "function" then
+            _G.hooksecurefunc(fn, function() _G.C_Timer.After(0.2, function() discoverBags(); soonDE() end) end)
+        end
+    end
     for _, n in ipairs({ "ContainerFrameCombinedBags", "ContainerFrame1" }) do
         local bf = _G[n]
         if bf and bf.HookScript then
