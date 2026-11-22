@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.76 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Chrono du donjon : même fond graphite et même liseré que les autres fenêtres à l'écran (avant, presque noir). La barre vide sous le titre devient une frise des boss : un segment par boss, gris quand il est tué, à la couleur de l'apparence pour le prochain (rouge si le record est dépassé), noms en petit dessous quand il y a la place. Option « Frise des boss » dans les réglages du chrono.
+
 ## v1.128.75 — 22/11/2026
 
 _Un /reload suffit._

@@ -108,7 +108,7 @@ UI:RegisterPage({
         local PL = {
             { "name", "Nom du donjon" }, { "cap", "Compteur de l'heure" },
             { "rec", "Record à côté du chrono" }, { "left", "Temps restant / dépassement" },
-            { "bar", "Barre de progression" }, { "boss", "Liste des boss" },
+            { "bar", "Frise des boss" }, { "boss", "Liste des boss" },
             { "bt", "Temps de chaque boss" }, { "dl", "Écart avec le record" },
             { "remain", "Masquer les boss tués" }, { "soft", "Fond plus discret" },
         }

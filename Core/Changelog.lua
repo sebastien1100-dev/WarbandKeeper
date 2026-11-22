@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.76", date = "22/11/2026",
+        changed = {
+            "Chrono du donjon : même fond graphite et même liseré que les autres fenêtres à l'écran (avant, presque noir). La barre vide sous le titre devient une frise des boss : un segment par boss, gris quand il est tué, à la couleur de l'apparence pour le prochain (rouge si le record est dépassé), noms en petit dessous quand il y a la place. Option « Frise des boss » dans les réglages du chrono.",
+        },
+    },
+    {
         version = "1.128.75", date = "22/11/2026",
         fixed = {
             "Erreur en boucle « secret string » des repères de quête sur les plaques de nom (QuestTracker.lua:17) : le jeu cache l'identifiant de certains monstres ; l'addon l'ignore maintenant. Même protection partout où l'addon lit l'identifiant d'une unité (PNJ de quête, recettes, persos).",

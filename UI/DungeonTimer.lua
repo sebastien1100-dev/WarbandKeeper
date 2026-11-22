@@ -87,8 +87,9 @@ local function build()
     local f = CreateFrame("Frame", "WarbandKeeperDungeonTimer", UIParent)
     f:SetSize(W, 60)
     f:SetFrameStrata("MEDIUM")
-    -- fond sombre plein, coins arrondis (lisible sur tous les décors)
-    f.bg = UI:Rounded(f, 8, 0, "BACKGROUND", 1)
+    -- fond graphite et liseré fin, comme la fenêtre des quêtes du donjon et les autres fenêtres à l'écran
+    f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
+    f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 1)
     -- 1re ligne : nom du donjon à gauche, gros chrono à droite
     f.name = UI:Text(f, 13, C.gold)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
@@ -99,12 +100,11 @@ local function build()
     if f.rec.SetWordWrap then f.rec:SetWordWrap(false) end
     f.left = UI:Text(f, 12); f.left:SetJustifyH("RIGHT")
     f.cap = f.rec -- compteur dans la même ligne que le record
-    -- barre : temps écoulé face au record
+    -- frise des boss (maquette B) : un segment par boss compté, gris = tué, accent = prochain, sombre = à venir ;
+    -- noms en petit dessous (estompés une fois tués), cachés si les segments sont trop étroits
     f.bar = CreateFrame("Frame", nil, f)
     f.bar:SetHeight(6)
-    f.bar.bg = UI:Rounded(f.bar, 3, 0, "BACKGROUND", 2); f.bar.bg:SetColor(1, 1, 1, 0.12)
-    f.bar.fillF = CreateFrame("Frame", nil, f.bar); f.bar.fillF:SetPoint("TOPLEFT"); f.bar.fillF:SetPoint("BOTTOMLEFT")
-    f.bar.fill = UI:Rounded(f.bar.fillF, 3, 0, "ARTWORK", 1)
+    f.segs = {}
     -- en-têtes des colonnes
     f.hdr = CreateFrame("Frame", nil, f); f.hdr:SetHeight(14)
     f.hdr.n = UI:Text(f.hdr, 9, C.dim); f.hdr.n:SetPoint("LEFT", 18, 0); f.hdr.n:SetText(T("BOSS"))
@@ -120,7 +120,8 @@ local function build()
         local sh = o.timerShow
         local W2 = o.timerWidth == "fixed" and o.timerFixed or trackerWidth()
         self:SetWidth(W2)
-        self.bg:SetColor(C.bg[1] * 0.7, C.bg[2] * 0.7, C.bg[3] * 0.7, sh.soft and 0.6 or 0.9)
+        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], sh.soft and 0.6 or 0.92)
+        self.edge:SetColor(C.border[1], C.border[2], C.border[3], sh.soft and 0.5 or 1)
         local over = data.record and data.elapsed > data.record
         local y = 8
         -- nom et chrono
@@ -153,17 +154,45 @@ local function build()
             self.left:ClearAllPoints(); self.left:SetPoint("TOPRIGHT", -10, -(y - 1))
             y = y + 16
         end
-        -- barre
-        self.bar:SetShown(sh.bar)
-        if sh.bar then
+        -- frise des boss
+        local nb = #data.rows
+        self.bar:SetShown(sh.bar and nb > 0)
+        if sh.bar and nb > 0 then
             y = y + 2
             self.bar:ClearAllPoints(); self.bar:SetPoint("TOPLEFT", 10, -y); self.bar:SetPoint("TOPRIGHT", -10, -y)
-            local frac = data.record and data.record > 0 and math.min(1, data.elapsed / data.record) or 0
-            self.bar.fillF:SetWidth(math.max(6, (W2 - 20) * frac))
-            if over then self.bar.fill:SetColor(C.negative[1], C.negative[2], C.negative[3], 1)
-            else self.bar.fill:SetColor(r1, g1, b1, 1) end
-            self.bar.fillF:SetShown(frac > 0)
-            y = y + 12
+            local GAPS = 4
+            local segW = math.floor(((W2 - 20) - (nb - 1) * GAPS) / nb)
+            local names = segW >= 44
+            for i, rw in ipairs(data.rows) do
+                local sg = self.segs[i]
+                if not sg then
+                    sg = CreateFrame("Frame", nil, self.bar)
+                    sg:SetHeight(6)
+                    sg.fill = UI:Rounded(sg, 3, 0, "ARTWORK", 1)
+                    sg.n = UI:Text(self.bar, 9, C.muted); sg.n:SetJustifyH("LEFT")
+                    if sg.n.SetWordWrap then sg.n:SetWordWrap(false) end
+                    self.segs[i] = sg
+                end
+                local isDone, cur = rw[2] ~= nil, rw[5]
+                sg:ClearAllPoints(); sg:SetPoint("TOPLEFT", self.bar, "TOPLEFT", (i - 1) * (segW + GAPS), 0)
+                sg:SetWidth(segW)
+                if isDone then sg.fill:SetColor(C.dim[1], C.dim[2], C.dim[3], 0.9)
+                elseif cur then
+                    local cc = over and C.negative or { r1, g1, b1 }
+                    sg.fill:SetColor(cc[1], cc[2], cc[3], 0.9)
+                else sg.fill:SetColor(1, 1, 1, 0.1) end
+                sg:Show()
+                sg.n:SetShown(names)
+                if names then
+                    sg.n:ClearAllPoints(); sg.n:SetPoint("TOPLEFT", sg, "BOTTOMLEFT", 0, -3); sg.n:SetWidth(segW)
+                    sg.n:SetText(rw[1] or "")
+                    sg.n:SetTextColor(unpack(isDone and C.dim or cur and C.text or C.muted))
+                end
+            end
+            for i = nb + 1, #self.segs do self.segs[i]:Hide(); self.segs[i].n:Hide() end
+            y = y + (names and 24 or 12)
+        else
+            for _, sg in ipairs(self.segs) do sg:Hide(); sg.n:Hide() end
         end
         -- boss : les tués plus tôt se replient (les 2 derniers restent), « Masquer les boss tués » les cache tous
         local list, done = {}, {}
