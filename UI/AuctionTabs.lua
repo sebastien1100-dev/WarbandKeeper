@@ -41,11 +41,22 @@ local function itemIcon(id)
     local f = (C_Item and C_Item.GetItemIconByID) or GetItemIcon
     return (f and f(id)) or "Interface\\Icons\\INV_Misc_QuestionMark"
 end
+-- marchandise (vendue au détail) ou objet unique : appris des résultats du jeu, sinon statut du jeu, sinon la classe
+-- d'objet (sacs, armes, armures = objets uniques). Avant : statut « inconnu » (objet pas encore chargé) = marchandise,
+-- d'où une recherche lue du mauvais côté (« personne n'en vend ») et « Acheter » grisé pour un sac.
+local kinds, browseKeys = {}, {}
 local function isCommodity(id)
+    if kinds[id] then return kinds[id] == "commodity" end
     local a = AH()
     if a and a.GetItemCommodityStatus and Enum and Enum.ItemCommodityStatus then
         local ok, st = pcall(a.GetItemCommodityStatus, id)
         if ok and st == Enum.ItemCommodityStatus.Item then return false end
+        if ok and st == _G.Enum.ItemCommodityStatus.Commodity then return true end
+    end
+    local gii = _G.C_Item and _G.C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
+    if gii then
+        local ok, _, _, _, _, _, classID = pcall(gii, id)
+        if ok and (classID == 1 or classID == 2 or classID == 4) then return false end
     end
     return true
 end
@@ -68,6 +79,7 @@ end
 -- autre variante du même objet, « … de l'Ours » au lieu de « … du Singe », et un achat aurait visé la mauvaise)
 UI.AHBagItemKey = bagItemKey
 local function itemKeyOf(id)
+    if browseKeys[id] then return browseKeys[id] end
     local a = AH()
     if a and a.MakeItemKey then
         local ok, k = pcall(a.MakeItemKey, id)
@@ -147,8 +159,12 @@ local function onResults(id)
     if pending == id then pending = nil end
     if view and view:IsShown() then view:Refresh() end
 end
-WK:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(id) onResults(id) end)
-WK:On("ITEM_SEARCH_RESULTS_UPDATED", function(key) onResults(type(key) == "table" and key.itemID or key) end)
+WK:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(id) if id then kinds[id] = "commodity" end; onResults(id) end)
+WK:On("ITEM_SEARCH_RESULTS_UPDATED", function(key)
+    local id = type(key) == "table" and key.itemID or key
+    if id then kinds[id] = "item" end
+    onResults(id)
+end)
 -- plus bas des autres vendeurs, sans un appât : un lot isolé (au plus 10 % de ce qui est en vente) à moins de la
 -- moitié du prix suivant (1 exemplaire à 1 pc) est sauté ; avant, le prix proposé suivait l'appât
 local function lowestOther(id)
@@ -2355,7 +2371,9 @@ local function build(host)
         end
     end
 
-    function bw:Pick(id)
+    function bw:Pick(id, key)
+        -- clé exacte du résultat de Parcourir (niveau d'objet compris) : la recherche trouve ses enchères
+        if key and type(key) == "table" then browseKeys[id] = key end
         self.id = id
         self.qty:SetText("")
         search(id, true); pump()

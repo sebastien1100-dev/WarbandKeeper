@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.112", date = "22/11/2026",
+        fixed = {
+            "Hôtel des ventes > Parcourir : pour un objet unique (sac, arme, armure), le détail affichait « marchandise » et « personne n'en vend », avec « Acheter » grisé, alors qu'il y en avait en vente. Les enchères de l'objet sont maintenant cherchées avec sa clé exacte et lues du bon côté ; chaque ligne a son bouton d'achat.",
+        },
+    },
+    {
         version = "1.128.111", date = "22/11/2026",
         fixed = {
             "Bouton de désenchantement sur les sacs d'EllesmereUI : bien placé à gauche des boutons ronds mais recouvert par l'en-tête ; il passe au-dessus de tout le contenu des sacs.",
