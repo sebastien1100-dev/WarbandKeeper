@@ -4396,4 +4396,6 @@ WK.Locales.enUS.text = {
         "Highlight a missing buff",
     ["Fond rouge et liseré qui respire sur la case des buffs tant qu'il en manque un (hors combat et hors des villes)."] =
         "Red background and breathing outline on the buffs tile while one is missing (out of combat and outside cities).",
+    ["DPS"] =
+        "DPS",
 }

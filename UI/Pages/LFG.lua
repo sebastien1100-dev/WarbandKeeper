@@ -477,15 +477,34 @@ UI:RegisterPage({
             b:SetHeight(30)
             b.edge = UI:Rounded(b, 15, 0, "BACKGROUND", 0)
             b.bg = UI:Rounded(b, 14, 1, "BACKGROUND", 1)
+            -- trait à la couleur du rôle, nom à la couleur de classe, niveau à droite, autres rôles en petit
+            b.stripe = b:CreateTexture(nil, "ARTWORK")
+            b.stripe:SetPoint("TOPLEFT", 4, -7); b.stripe:SetPoint("BOTTOMLEFT", 4, 7)
+            b.stripe:SetWidth(3)
             b.dot = UI:Icon(b, "circle", 9, nil, "ARTWORK")
-            b.dot:SetPoint("LEFT", 12, 0)
+            b.dot:SetPoint("LEFT", 14, 0)
             b.name = UI:Text(b, 12)
-            b.name:SetPoint("LEFT", 28, 0)
-            b.sub = UI:Text(b, 11, C.muted)
-            b.sub:SetPoint("LEFT", b.name, "RIGHT", 6, 0)
+            b.name:SetPoint("LEFT", 30, 0)
+            b.name:SetJustifyH("LEFT")
             b.btn = UI:Button(b, "Inviter", 64, 22, "primary")
             b.btn:SetPoint("RIGHT", -4, 0)
+            b.lvl = UI:Text(b, 11, C.muted)
+            b.lvl:SetPoint("RIGHT", b.btn, "LEFT", -8, 0)
+            b.sub = UI:Text(b, 10, C.muted)
+            b.sub:SetPoint("RIGHT", b.lvl, "LEFT", -6, 0)
+            b.name:SetPoint("RIGHT", b.sub, "LEFT", -6, 0)
             return b
+        end)
+        -- en-têtes des colonnes de rôle des joueurs seuls (pastille de couleur, rôle, nombre)
+        self.roleHeads = UI:Pool(function()
+            local h = CreateFrame("Frame", nil, root)
+            h:SetHeight(22)
+            h.pill = UI:Rounded(h, 11, 0, "BACKGROUND", 0)
+            h.t = UI:Text(h, 11)
+            h.t:SetPoint("LEFT", 10, 0)
+            h.n = UI:Text(h, 11, C.muted)
+            h.n:SetPoint("LEFT", h.t, "RIGHT", 6, 0)
+            return h
         end)
         self.empty = UI:Text(root, 12, C.muted)
         self.empty:SetJustifyH("LEFT")
@@ -793,7 +812,7 @@ UI:RegisterPage({
         if self.ladder.UpdateBar then self.ladder:UpdateBar() end
 
         -- groupes
-        self.heads:Reset(); self.cards:Reset(); self.solos:Reset(); self.empty:Hide()
+        self.heads:Reset(); self.cards:Reset(); self.solos:Reset(); self.roleHeads:Reset(); self.empty:Hide()
         local W = self.center:GetWidth() or 600
         if W < 100 then W = 600 end
         local cols = math.max(1, math.floor((W - 14 + GAP) / (CARD_W + GAP)))
@@ -902,27 +921,65 @@ UI:RegisterPage({
             end
             if #list > 0 then cy = cy + math.ceil(#list / cols) * (CARD_H + GAP) + 6 end
         end
+        -- joueurs seuls rangés par rôle : trois colonnes (tank, soin, DPS), chacune avec son en-tête de couleur ;
+        -- un joueur va dans la colonne de son 1er rôle (tank, puis soin, puis DPS), ses autres rôles en petit ;
+        -- plus haut niveau d'abord. Fenêtre étroite : les colonnes passent l'une sous l'autre
+        local ROLE_COL = { tank = C.tank, heal = C.heal, dps = C.dps }
+        local ROLE_NAME = { tank = "Tank", heal = "Soin", dps = "DPS" }
         local function soloRow()
-            local x = 0
+            local byRole = { tank = {}, heal = {}, dps = {} }
             for _, r in ipairs(solos) do
-                local b = self.solos:Get()
-                local cr, cg, cb = classColor(r.class)
-                b.dot:SetVertexColor(cr, cg, cb)
-                b.name:SetText(WK.Latin(r.leader) or "?")
-                local rl = {}
-                for _, k in ipairs(ROLES) do if r.roles and r.roles[k] then table.insert(rl, T(LFG.ROLE_WORD[k])) end end
-                b.sub:SetText((r.level and (r.level .. " · ") or "") .. table.concat(rl, ", "))
-                local w = 28 + (b.name:GetStringWidth() or 60) + 6 + (b.sub:GetStringWidth() or 60) + 76
-                if x > 0 and x + w > W - 14 then x = 0; cy = cy + 36 end
-                b:SetWidth(w)
-                b.edge:SetColor(unpack(C.border)); b.bg:SetColor(unpack(C.surface))
-                b:ClearAllPoints(); b:SetPoint("TOPLEFT", x, -cy)
-                local q = r.leader and LFG.requests[r.leader]
-                b.btn.label:SetText(q and T("Invité") or T("Inviter"))
-                b.btn:SetScript("OnClick", function() LFG:Invite(r); self:Refresh() end)
-                x = x + w + 6
+                local firstRole
+                for _, k in ipairs(ROLES) do if r.roles and r.roles[k] then firstRole = k break end end
+                table.insert(byRole[firstRole or "dps"], r)
             end
-            if #solos > 0 then cy = cy + 40 end
+            for _, k in ipairs(ROLES) do
+                table.sort(byRole[k], function(a, b2) return (a.level or 0) > (b2.level or 0) end)
+            end
+            local ncol = (W - 14) >= 660 and 3 or 1
+            local colW = ncol == 3 and math.floor((W - 14 - 2 * GAP) / 3) or (W - 14)
+            -- une seule colonne : les joueurs d'un même rôle côte à côte (cases d'au moins 290 px)
+            local per = ncol == 3 and 1 or math.max(1, math.floor((colW + 6) / 296))
+            local rowW = per == 1 and colW or math.floor((colW - (per - 1) * 6) / per)
+            local top, maxH = cy, 0
+            for ci, k in ipairs(ROLES) do
+                local list = byRole[k]
+                local x = ncol == 3 and (ci - 1) * (colW + GAP) or 0
+                local yy = ncol == 3 and top or cy
+                local h = self.roleHeads:Get()
+                local col = ROLE_COL[k]
+                h.pill:SetColor(col[1], col[2], col[3], 0.18)
+                h.t:SetText(T(ROLE_NAME[k])); h.t:SetTextColor(col[1], col[2], col[3])
+                h.n:SetText(tostring(#list))
+                h:SetWidth(colW)
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", x, -yy)
+                yy = yy + 28
+                for ri, r in ipairs(list) do
+                    local b = self.solos:Get()
+                    local cr, cg, cb = classColor(r.class)
+                    b.dot:SetVertexColor(cr, cg, cb)
+                    b.name:SetText(WK.Latin(r.leader) or "?")
+                    b.name:SetTextColor(cr, cg, cb)
+                    b.stripe:SetColorTexture(col[1], col[2], col[3], 1)
+                    b.lvl:SetText(r.level and tostring(r.level) or "")
+                    local other = {}
+                    for _, k2 in ipairs(ROLES) do
+                        if k2 ~= k and r.roles and r.roles[k2] then other[#other + 1] = T(ROLE_NAME[k2]) end
+                    end
+                    b.sub:SetText(#other > 0 and ("+ " .. table.concat(other, ", ")) or "")
+                    b:SetWidth(rowW)
+                    b.edge:SetColor(unpack(C.border)); b.bg:SetColor(unpack(C.surface))
+                    local pc = (ri - 1) % per
+                    b:ClearAllPoints(); b:SetPoint("TOPLEFT", x + pc * (rowW + 6), -yy)
+                    local q = r.leader and LFG.requests[r.leader]
+                    b.btn.label:SetText(q and T("Invité") or T("Inviter"))
+                    b.btn:SetScript("OnClick", function() LFG:Invite(r); self:Refresh() end)
+                    if pc == per - 1 or ri == #list then yy = yy + 34 end
+                end
+                if #list == 0 then yy = yy + 4 end
+                if ncol == 3 then maxH = math.max(maxH, yy - top) else cy = yy + 8 end
+            end
+            if ncol == 3 then cy = top + maxH + 8 end
         end
         local act = self.sel and LFG:Activity(self.sel)
         local where = act or T("tous les donjons")

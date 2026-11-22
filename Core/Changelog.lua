@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.69", date = "22/11/2026",
+        changed = {
+            "Recherche de groupe : les joueurs seuls sont rangés par rôle, en trois colonnes Tank / Soin / DPS avec un en-tête de couleur et leur nombre ; chaque ligne a un trait à la couleur du rôle, le nom à la couleur de classe, le niveau à droite et les autres rôles du joueur en petit (plus haut niveau d'abord). Fenêtre étroite : les rôles passent l'un sous l'autre.",
+        },
+    },
+    {
         version = "1.128.68", date = "22/11/2026",
         added = {
             "Pierre de rencontre : un clic droit dessus ouvre la page LFG de l'addon.",

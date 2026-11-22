@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.69 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Recherche de groupe : les joueurs seuls sont rangés par rôle, en trois colonnes Tank / Soin / DPS avec un en-tête de couleur et leur nombre ; chaque ligne a un trait à la couleur du rôle, le nom à la couleur de classe, le niveau à droite et les autres rôles du joueur en petit (plus haut niveau d'abord). Fenêtre étroite : les rôles passent l'un sous l'autre.
+
 ## v1.128.68 — 22/11/2026
 
 _Un /reload suffit._
