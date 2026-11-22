@@ -36,8 +36,38 @@ function M:BankList()
     end
     table.insert(t, BANK_CONTAINER or (BI and BI.Bank) or -1)
     if BI and BI.Reagentbank then table.insert(t, BI.Reagentbank) end
-    for b = NUM_BAGS + 1, NUM_BAGS + (NUM_BANKBAGSLOTS or 7) do table.insert(t, b) end
+    for _, b in ipairs(M:BankBagIDs()) do table.insert(t, b) end
     return t
+end
+
+-- N° de conteneur des sacs de banque, dans l'ordre des emplacements de la banque. Retrouvés par l'emplacement
+-- d'inventaire de chaque sac de banque (comme la banque du jeu) : le nombre de sacs du perso varie selon le client.
+local bankBagIDs
+function M.BankBagIDs()
+    if bankBagIDs then return bankBagIDs end
+    local n = NUM_BANKBAGSLOTS or 7
+    local CC = _G.C_Container
+    local toInv = (CC and CC.ContainerIDToInventoryID) or _G.ContainerIDToInventoryID
+    local toSlot = _G.BankButtonIDToInvSlotID
+    local out
+    if toSlot and toInv then
+        local byInv = {}
+        for b = 1, 20 do
+            local ok, inv = pcall(toInv, b)
+            if ok and inv then byInv[inv] = b end
+        end
+        out = {}
+        for i = 1, n do
+            local ok, inv = pcall(toSlot, i, 1)
+            local b = ok and inv and byInv[inv]
+            if not b then out = nil break end
+            out[#out + 1] = b
+        end
+    end
+    if out then bankBagIDs = out return out end -- gardé seulement si la correspondance a marché
+    out = {}
+    for b = NUM_BAGS + 1, NUM_BAGS + n do out[#out + 1] = b end
+    return out
 end
 
 -- Banque de bataillon (commune au compte), si le client la propose.

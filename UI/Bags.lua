@@ -701,7 +701,7 @@ end
 local function bagSlotList()
     local t, nb = {}, _G.NUM_BAG_SLOTS or 4
     if isBank then
-        for i = 1, (_G.NUM_BANKBAGSLOTS or 6) do t[#t + 1] = nb + i end
+        for _, b in ipairs(WK.modules.Inventory:BankBagIDs()) do t[#t + 1] = b end
     else
         for i = 1, nb do t[#t + 1] = i end
     end

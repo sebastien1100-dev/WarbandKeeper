@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.137", date = "22/11/2026",
+        fixed = {
+            "Notre banque : la barre des sacs montrait deux sacs qui n'étaient pas ceux de la banque, et les vrais décalés ; les sacs de banque sont retrouvés comme le fait la banque du jeu (par leur emplacement), aussi pour lire leur contenu.",
+        },
+    },
+    {
         version = "1.128.136", date = "22/11/2026",
         added = {
             "Notre inventaire et notre banque : icône dans l'en-tête pour passer à la fenêtre du jeu ; un bouton « Warband Keeper » au-dessus de celle-ci ramène la nôtre. Le choix tient jusqu'au retour ou au /reload.",
