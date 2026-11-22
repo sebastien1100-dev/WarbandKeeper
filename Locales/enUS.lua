@@ -4269,4 +4269,7 @@ WK.Locales.enUS.text = {
     ["Onglet des héritages introuvable dans le journal des collections."] = "Heirlooms tab not found in the collections journal.",
     ["Achat lancé depuis la fenêtre du jeu : l'achat de l'addon est abandonné."] =
         "Purchase started from the game window: the addon's purchase was cancelled.",
+    ["Dans le donjon"] = "In the dungeon",
+    ["Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace."] =
+        "Only inside the dungeon, with its quests. Drag its title to move it.",
 }
