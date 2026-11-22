@@ -632,7 +632,11 @@ function V.Refresh(light, live)
     win.sortBtn:SetAlpha(flat and 1 or 0.35)
     local groups, cats = {}, {}
     if flat then
+        -- sans catégories : une seule grille, mais le sac de composants garde la sienne (seuls des composants y vont)
         cats = { { key = "all", label = "Objets" } }
+        if not isBank then
+            for _, c in ipairs(CATS) do if c.key == "rbag" then cats[#cats + 1] = c end end
+        end
     else
         for _, c in ipairs(CATS) do
             if isBank and c.key == "mine" then cats[#cats + 1] = { key = "__prof" }
@@ -642,7 +646,7 @@ function V.Refresh(light, live)
     for _, c in ipairs(cats) do groups[c.key] = {} end
     local profKeys = {}
     local function keyOf(e)
-        if flat then return "all" end
+        if flat then return (not isBank and e.info.cat == "rbag") and "rbag" or "all" end
         local k = e.info.cat
         if isBank and (k == "mine" or (k == "other" and REAGENT_CLASS[instant(e.id) or -1])) then
             local p = profOf(e.id)

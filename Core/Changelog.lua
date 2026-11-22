@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.147", date = "22/11/2026",
+        changed = {
+            "Notre inventaire sans catégories : le sac de composants garde sa propre catégorie (et ses places libres à part), quel que soit le choix d'affichage.",
+        },
+    },
+    {
         version = "1.128.146", date = "22/11/2026",
         added = {
             "Notre inventaire et notre banque : icône « Avec ou sans catégories » (retenue par fenêtre) ; sans catégories, les objets suivent l'ordre réel des sacs.",
