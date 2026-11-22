@@ -27,14 +27,16 @@ function UI:Button(parent, text, width, height, style, icon)
     -- libellé changé plus tard (SetLabel ou label:SetText direct) : le bouton s'élargit au besoin, puis revient à
     -- sa largeur prévue quand le texte raccourcit (avant : « Confirmer 6 po… » laissait un bouton trop large)
     b.baseW = width
+    local setWidth = b.SetWidth
     local setLabel = b.label.SetText
     b.label.SetText = function(fs, t)
         setLabel(fs, t)
-        local want = b.baseW and math.max(b.baseW, needed()) or nil
-        if want and math.abs(b:GetWidth() - want) > 0.5 then b:SetWidth(want)
-        elseif not want and b:GetWidth() < needed() then b:SetWidth(needed()) end
+        -- largeur prévue (posée par la page) gardée au moins ; sans largeur prévue, le bouton suit son texte dans
+        -- les deux sens (avant : il s'élargissait pour « Nouveaux · 0 » puis ne revenait plus à « 0 ») ; jamais
+        -- par b:SetWidth, qui retiendrait la largeur du moment comme largeur prévue
+        local want = b.baseW and math.max(b.baseW, needed()) or (needed() + 8)
+        if math.abs(b:GetWidth() - want) > 0.5 then setWidth(b, want) end
     end
-    local setWidth = b.SetWidth
     -- largeur posée par la page : devient la largeur prévue
     b.SetWidth = function(btn, w) btn.baseW = w; setWidth(btn, math.max(w, needed())) end
 

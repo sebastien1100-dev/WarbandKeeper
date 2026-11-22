@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.154", date = "22/11/2026",
+        fixed = {
+            "Filtres des sacs (et tous les boutons sans largeur fixe) : après avoir affiché un texte plus long (« Nouveaux · 0 »), le bouton ne revenait pas à sa taille ; il suit maintenant son texte dans les deux sens.",
+        },
+    },
+    {
         version = "1.128.153", date = "22/11/2026",
         fixed = {
             "Fiche de l'objet (sacs et banque) : boutons alignés en colonne, tous de la même largeur ; la ligne « dans tes sacs · sur le compte » passe sur deux lignes au lieu d'être coupée.",
