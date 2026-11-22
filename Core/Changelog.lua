@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.179", date = "22/11/2026",
+        changed = {
+            "Prochainement : l'idée « Quêtes, suite » est retirée.",
+        },
+    },
+    {
         version = "1.128.178", date = "22/11/2026",
         fixed = {
             "Halo : erreur « fonction protégée » (ADDON_ACTION_BLOCKED) quand une zone se chargeait en combat ; ses réglages du jeu attendent maintenant la fin du combat.",
@@ -6839,7 +6845,6 @@ WK.Roadmap = {
     { prio = 3, theme = "char", title = "Groupe", text = "Historique des joueurs croisés avec tes notes, boutons d'invitation, butin libre quand tu mènes, XP des membres du groupe." },
     { prio = 3, theme = "ui", title = "Chat et confort", text = "Filtre du spam en Commerce, zone et niveau de qui parle, /copy et numéros dans les infobulles, fenêtre des réglages cachés du jeu, masquer le fouillis." },
     { prio = 3, theme = "ui", title = "Mini-jeux en vol", text = "Quiz, mot du jour et jeu de visée pendant les vols." },
-    { prio = 2, theme = "dung", title = "Quêtes, suite", text = "« À faire maintenant » autour de toi, chaînes de quêtes, quêtes qui donnent une recette, liens avec LFG et Métiers." },
     { prio = 2, theme = "rel", title = "Diagnostic /wk diag", text = "Vérifie que les fonctions du jeu utilisées existent sur WoW Forever, ce qui est actif ou coupé, et la taille des sauvegardes." },
     { prio = 3, theme = "client", title = "Sauvegardes synchronisées", text = "Réglages et données partagés entre deux PC par un dossier cloud (OneDrive, Dropbox), avec un historique pour revenir en arrière." },
     { prio = 3, theme = "char", title = "Comparer deux persos", text = "Équipement, stats et métiers côte à côte." },
