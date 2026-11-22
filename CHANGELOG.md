@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.136 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre inventaire et notre banque : icône dans l'en-tête pour passer à la fenêtre du jeu ; un bouton « Warband Keeper » au-dessus de celle-ci ramène la nôtre. Le choix tient jusqu'au retour ou au /reload.
+
 ## v1.128.135 — 22/11/2026
 
 _Un /reload suffit._

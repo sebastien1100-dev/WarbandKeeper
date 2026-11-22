@@ -406,6 +406,10 @@ local function build()
     -- barre des sacs équipés (changer de sac, acheter un emplacement de banque)
     f.bagsBtn = UI:IconButton(f, "bag", 22, isBank and "Sacs de banque" or "Sacs équipés")
     f.bagsBtn:SetPoint("RIGHT", f.search, "LEFT", -8, 0)
+    -- passer à la fenêtre du jeu (un bouton « Warband Keeper » sur celle-ci ramène la nôtre)
+    f.gameBtn = UI:IconButton(f, "refresh", 22, isBank and "Banque du jeu" or "Sacs du jeu")
+    f.gameBtn:SetPoint("RIGHT", f.bagsBtn, "LEFT", -6, 0)
+    f.gameBtn:SetScript("OnClick", function() if B.UseGame then B.UseGame(kind, true) end end)
     f.slotBar = _G.CreateFrame("Frame", nil, f)
     f.slotBar:SetPoint("TOPLEFT", PAD, -38); f.slotBar:SetPoint("TOPRIGHT", -PAD, -38); f.slotBar:SetHeight(SLOTS_H - 6)
     f.slotBar:SetShown(vcfg().slots and true or false)
@@ -964,6 +968,8 @@ B.BankOn = bankOn
 -- Sacs du jeu : posés dans un cadre caché, notre fenêtre suit leur état
 ---------------------------------------------------------------------------
 local hider
+-- fenêtre du jeu choisie à la place de la nôtre (jusqu'au retour par le bouton « Warband Keeper » ou au /reload)
+local gameMode = { bags = false, bank = false }
 local GAME_BAGS = { "ContainerFrameCombinedBags" }
 for i = 1, 13 do GAME_BAGS[#GAME_BAGS + 1] = "ContainerFrame" .. i end
 -- sac du joueur (sac à dos et sacs 1 à 4, ou la vue combinée) ; les cadres des sacs de banque ont un autre ID
@@ -984,11 +990,12 @@ local function sync()
     syncQueued = false
     local w = BV.Win()
     if not w then return end
-    if gameOpen() then
+    if gameOpen() and not gameMode.bags then
         if not w:IsShown() then w:Show(); BV.Refresh() end
     elseif w:IsShown() then
         w:Hide()
     end
+    if B.PlaceBack then B.PlaceBack() end
 end
 local function soonSync()
     if syncQueued then return end
@@ -999,7 +1006,8 @@ end
 local function watch(fr, n)
     local function placed()
         -- sacs de banque (mêmes cadres réutilisés) : cachés aussi quand notre banque les montre, sinon rendus au jeu
-        local ours = isPlayerBag(fr, n) or bankOn()
+        local ours
+        if isPlayerBag(fr, n) then ours = not gameMode.bags else ours = bankOn() and not gameMode.bank end
         local want = ours and hider or _G.UIParent
         if fr:GetParent() ~= want then fr:SetParent(want) end
     end
@@ -1051,6 +1059,69 @@ function B.OpenBank()
     return w
 end
 
+-- Bouton « Warband Keeper » posé au-dessus de la fenêtre du jeu (sacs ou banque) pour revenir à la nôtre
+local backBtns = {}
+local function backBtn(which)
+    if backBtns[which] then return backBtns[which] end
+    local b = UI:Button(_G.UIParent, "Warband Keeper", nil, 24, "primary", which == "bank" and "safe" or "bag")
+    b:SetFrameStrata("HIGH")
+    b:SetScript("OnClick", function() B.UseGame(which, false) end)
+    b:Hide()
+    backBtns[which] = b
+    return b
+end
+function B.PlaceBack()
+    local b = backBtns.bags
+    if gameMode.bags then
+        b = backBtn("bags")
+        local host
+        for _, n in ipairs(GAME_BAGS) do
+            local fr = _G[n]
+            if fr and fr:IsVisible() and isPlayerBag(fr, n) then host = fr break end
+        end
+        b:ClearAllPoints()
+        if host then b:SetPoint("BOTTOMRIGHT", host, "TOPRIGHT", 0, 4) end
+        b:SetShown(host ~= nil)
+    elseif b then b:Hide() end
+    local k = backBtns.bank
+    local bf = _G.BankFrame
+    if gameMode.bank and bf and bf:IsShown() then
+        k = backBtn("bank")
+        k:ClearAllPoints(); k:SetPoint("BOTTOMRIGHT", bf, "TOPRIGHT", 0, 4)
+        k:Show()
+    elseif k then k:Hide() end
+end
+-- which = "bags" ou "bank" ; on = true : fenêtre du jeu, false : la nôtre
+function B.UseGame(which, on)
+    if inCombat() then return end
+    gameMode[which] = on and true or false
+    if which == "bags" then
+        for _, n in ipairs(GAME_BAGS) do
+            local fr = _G[n]
+            if fr and isPlayerBag(fr, n) and hider then fr:SetParent(on and _G.UIParent or hider) end
+        end
+        soonSync()
+    else
+        for _, n in ipairs(GAME_BAGS) do
+            local fr = _G[n]
+            if fr and not isPlayerBag(fr, n) and fr:IsShown() then
+                fr:SetParent(on and _G.UIParent or hider or _G.UIParent)
+            end
+        end
+        local bankOpen = _G.BankFrame and _G.BankFrame:IsShown()
+        if on then
+            hideGameBank(false)
+            local w = KV.Win()
+            if w then w:Hide() end
+        elseif bankOpen then
+            hideGameBank(true)
+            B.OpenBank()
+        end
+    end
+    B.PlaceBack()
+end
+WK:On("BANKFRAME_CLOSED", function() if B.PlaceBack then B.PlaceBack() end end)
+
 WK:On("PLAYER_LOGIN", function() if not inCombat() then takeOver() end end)
 WK:On("PLAYER_REGEN_ENABLED", function()
     if not hider then takeOver() end
@@ -1058,6 +1129,7 @@ WK:On("PLAYER_REGEN_ENABLED", function()
     if KV.Pending() then KV.Refresh() end
 end)
 WK:On("BANKFRAME_OPENED", function()
+    if gameMode.bank then _G.C_Timer.After(0, B.PlaceBack) return end
     if not bankOn() or inCombat() then return end
     hideGameBank(true)
     B.OpenBank()

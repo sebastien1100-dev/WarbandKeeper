@@ -4651,4 +4651,6 @@ WK.Locales.enUS.text = {
     ["Notre banque"] = "Our bank",
     ["À la banque, la même fenêtre que nos sacs (catégories, filtres, fiche) à la place de celle du jeu."] = "At the bank, the same window as our bags (categories, filters, item card) instead of the game's.",
     ["%d dans ta banque  ·  %d sur le compte"] = "%d in your bank  ·  %d on the account",
+    ["Banque du jeu"] = "Game bank",
+    ["Sacs du jeu"] = "Game bags",
 }
