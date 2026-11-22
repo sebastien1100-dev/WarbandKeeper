@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.105", date = "22/11/2026",
+        added = {
+            "Enchanteur : petit bouton (étincelle) au-dessus des sacs ouverts, ceux du jeu ou d'EllesmereUI : il ouvre ou ferme la fenêtre « Désenchanter ou vendre ? », collée aux sacs, même quand rien n'est conseillé au désenchantement.",
+            "Fenêtre de désenchantement : clic droit sur un objet = « toujours désenchanter » (pastille « Marqué »), quel que soit son prix à l'HV ; un 2e clic droit retire la marque.",
+        },
+    },
+    {
         version = "1.128.104", date = "22/11/2026",
         added = {
             "Options : nouvel onglet « Diagnostics » (au-dessus d'À propos) qui liste les 18 commandes de vérification par thème, avec une recherche. Pour chacune : à quoi elle sert, quand la lancer, un bouton « Lancer » et le résultat affiché dans la fenêtre ; « Copier » le sélectionne pour me l'envoyer.",

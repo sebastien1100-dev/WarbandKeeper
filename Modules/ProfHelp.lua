@@ -21,6 +21,7 @@ function M:Config()
     for k, v in pairs(DEFAULTS) do if c[k] == nil then c[k] = v end end
     c.fav = c.fav or {}          -- recettes favorites (nom) : maître, échange
     c.deLog = c.deLog or {}      -- désenchantements faits : [palier] = { n = fois, items = { [id] = total } }
+    c.deMark = c.deMark or {}    -- objets marqués « toujours désenchanter » (clic droit dans la fenêtre) : [id] = true
     c.prepMin = c.prepMin or {}
     for k, v in pairs(PREP_MIN) do if c.prepMin[k] == nil then c.prepMin[k] = v end end
     return c
@@ -129,9 +130,19 @@ function M:DEAdvice(itemID)
     if v >= (ah or 0) * 0.9 and v > vendor then advice = "de"
     elseif ah and ah > vendor then advice = "ah"
     else advice = "vendor" end
-    return { value = v, list = list, skill = skill, src = src, n = n, ah = ah, vendor = vendor, advice = advice }
+    -- marqué à la main : toujours désenchanté, quel que soit le prix
+    local marked = self:Config().deMark[itemID] and true or nil
+    if marked then advice = "de" end
+    return { value = v, list = list, skill = skill, src = src, n = n, ah = ah, vendor = vendor, advice = advice,
+        marked = marked }
 end
 
+-- Marque (ou démarque) un objet « toujours désenchanter »
+function M:ToggleDEMark(itemID)
+    local m = self:Config().deMark
+    m[itemID] = not m[itemID] or nil
+    return m[itemID] == true
+end
 -- Objets des sacs du perso qui se désenchantent : { { bag, slot, id, link, a = conseil, high = compétence trop basse } }
 function M:DEBagItems()
     local out = {}

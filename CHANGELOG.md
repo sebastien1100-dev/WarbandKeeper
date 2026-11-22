@@ -72,6 +72,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.105 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Enchanteur : petit bouton (étincelle) au-dessus des sacs ouverts, ceux du jeu ou d'EllesmereUI : il ouvre ou ferme la fenêtre « Désenchanter ou vendre ? », collée aux sacs, même quand rien n'est conseillé au désenchantement.
+- Fenêtre de désenchantement : clic droit sur un objet = « toujours désenchanter » (pastille « Marqué »), quel que soit son prix à l'HV ; un 2e clic droit retire la marque.
+
 ## v1.128.104 — 22/11/2026
 
 _Un /reload suffit._

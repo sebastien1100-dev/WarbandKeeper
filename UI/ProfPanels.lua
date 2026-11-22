@@ -147,7 +147,18 @@ local function buildDE()
             if not s.e then return end
             UI:TooltipOwner(s, "ANCHOR_LEFT")
             if s.e.link then GameTooltip:SetHyperlink(s.e.link) else GameTooltip:SetItemByID(s.e.id) end
-            GameTooltip:Show()
+            _G.GameTooltip:AddLine(" ")
+            _G.GameTooltip:AddLine(s.e.a.marked and T("Clic droit : ne plus forcer le désenchantement")
+                or T("Clic droit : toujours désenchanter cet objet"), 0.6, 0.6, 0.6)
+            _G.GameTooltip:Show()
+        end)
+        -- clic droit : marquer « toujours désenchanter » (ou retirer la marque)
+        r:SetScript("OnClick", function(s, btn)
+            if btn ~= "RightButton" or not s.e then return end
+            local on = PH():ToggleDEMark(s.e.id)
+            WK:Print(string.format(on and T("%s : sera toujours proposé au désenchantement.")
+                or T("%s : plus forcé au désenchantement."), (UI:ItemInfo(s.e.id)) or "?"))
+            if not inCombat() then f:Refresh() end
         end)
         return r
     end)
@@ -190,7 +201,7 @@ local function buildDE()
             else
                 r.sub:SetText(gives .. "  ·  " .. string.format(T("HV %s · marchand %s"), e.a.ah and WK:FormatMoney(e.a.ah) or "-", WK:FormatMoney(e.a.vendor)))
                 local adv = ADVICE[e.a.advice]
-                r.pill:Set(T(adv[1]), adv[2] == "accent" and nil or C[adv[2]])
+                r.pill:Set(e.a.marked and T("Marqué") or T(adv[1]), adv[2] == "accent" and nil or C[adv[2]])
                 if e.a.advice == "de" then
                     total = total + e.a.value
                     nextOne = nextOne or e
@@ -300,6 +311,37 @@ function UI:ToggleDEPanel(show, anchor)
     de:Refresh(); de:Show()
 end
 
+-- Petit bouton « Désenchanter » accroché en haut à gauche des sacs ouverts (jeu ou autre addon) : ouvre ou ferme
+-- la fenêtre, collée aux sacs. Bouton ordinaire (rien de protégé), placé sur UIParent d'après le cadre des sacs.
+local bagBtn
+local function syncBagBtn()
+    local bf = PH():EnchantRank() and cfg().dePanel ~= false and bagFrame() or nil
+    if not bf then
+        if bagBtn and bagBtn:IsShown() then
+            bagBtn:Hide()
+            -- sacs fermés : la fenêtre ouverte par ce bouton se ferme avec eux
+            if de and de:IsShown() and de.fromBag then de:Hide(); de.fromBag = nil end
+        end
+        return
+    end
+    if not bagBtn then
+        bagBtn = UI:IconButton(_G.UIParent, "spark", 26,
+            "Désenchanter ou vendre ? (clic droit sur un objet de la liste : toujours le désenchanter)")
+        bagBtn:SetScript("OnClick", function()
+            if inCombat() then return end
+            local host = bagFrame()
+            if de and de:IsShown() then de:Hide(); de.closed = true
+            else UI:ToggleDEPanel(true, host); if de then de.auto = nil; de.fromBag = true end end
+        end)
+    end
+    bagBtn:ClearAllPoints()
+    bagBtn:SetPoint("BOTTOMLEFT", bf, "TOPLEFT", 0, 4)
+    bagBtn:SetFrameStrata(bf:GetFrameStrata() or "MEDIUM")
+    bagBtn:SetFrameLevel((bf:GetFrameLevel() or 1) + 10)
+    bagBtn:Show()
+end
+UI.SyncDEBagButton = syncBagBtn
+
 -- Collée aux sacs : enchanteur avec au moins un objet à désenchanter.
 local function autoDE()
     if inCombat() or not cfg().dePanel or not PH():EnchantRank() then return end
@@ -321,6 +363,7 @@ soonDE = function()
         deTimer = nil
         if de and de:IsShown() and not inCombat() then de:Refresh() end
         autoDE()
+        if not inCombat() then syncBagBtn() end
     end)
 end
 WK:On("BAG_UPDATE_DELAYED", soonDE)
