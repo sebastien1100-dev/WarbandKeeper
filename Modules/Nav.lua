@@ -460,6 +460,50 @@ function M:NotePort()
 end
 WK:On("PLAYER_ENTERING_WORLD", function() if pendingPort then C_Timer.After(2, function() M:NotePort() end) end end)
 
+-- Tram des profondeurs (Hurlevent <-> Forgefer, même continent) : ses deux stations sont apprises en le prenant
+-- (dernière position dehors avant l'instance du tram, première position dehors après) : nav.tramSt = { {c,x,y}, ... }
+-- (« nav.tram » était l'ancien horaire, effacé à la connexion par BoatLines). Proposé quand il bat la marche.
+local TRAM_RIDE = 75 -- trajet dans le tunnel, montée et descente comprises
+local function tramStations()
+    local n = WK.DB.global.nav
+    n.tramSt = n.tramSt or {}
+    return n.tramSt
+end
+M.TramStations = tramStations
+local function noteStation(c, x, y)
+    if not c then return end
+    local st = tramStations()
+    for _, p in ipairs(st) do
+        if p[1] == c and dist(p[2], p[3], x, y) < 250 then p[2], p[3] = floor(x), floor(y) return end
+    end
+    if #st >= 2 then table.remove(st, 1) end
+    st[#st + 1] = { c, floor(x), floor(y) }
+end
+M.NoteTramStation = noteStation
+do
+    local inside, lastOut, exitAt
+    local function tick()
+        local BL = WK.modules.BoatLines
+        local now = BL and BL.InTram and BL:InTram()
+        if now then
+            if not inside and lastOut then noteStation(lastOut[1], lastOut[2], lastOut[3]) end
+            inside, exitAt = true, nil
+            return
+        end
+        local c, x, y = playerWorld()
+        if inside then
+            inside = false; exitAt = _G.GetTime()
+        end
+        if c then
+            if exitAt and _G.GetTime() - exitAt < 20 then noteStation(c, x, y); exitAt = nil end
+            lastOut = { c, x, y }
+        end
+    end
+    if _G.C_Timer and _G.C_Timer.NewTicker then
+        WK:On("PLAYER_LOGIN", function() _G.C_Timer.NewTicker(1, tick) end)
+    end
+end
+
 local PORT_COST = 30 -- incantation (10 s) et écran de chargement
 local function compute(target)
     local cont, sx, sy = playerWorld()
@@ -471,12 +515,17 @@ local function compute(target)
     -- un moyen de voyage prêt fait-il gagner beaucoup de temps ?
     local base = direct.seconds or (direct.partial and 3600) or 3600
     local best, bestCost
-    for _, o in ipairs(portOptions()) do
+    local opts = portOptions()
+    local why = { n = #opts, base = base }
+    for _, o in ipairs(opts) do
         if o.pc == tc then
             local cost = PORT_COST + dist(o.px, o.py, tx, ty) * 1.25 / speed()
+            why.cost = math.min(why.cost or cost, cost)
             if cost < base * 0.75 and base - cost > 60 and (not bestCost or cost < bestCost) then best, bestCost = o, cost end
         end
     end
+    why.used = best and best.label or nil
+    M.lastPort = why
     if not best then return direct end
     local sub = computeFrom(best.pc, best.px, best.py, target)
     if not sub then return direct end
@@ -547,6 +596,8 @@ computeFrom = function(cont, sx, sy, target)
                 end
             end
         end
+        M.lastFly = { known = 0, starts = #starts, ends = #ends, est = estimate, walk = walkTime, from = an, to = bn }
+        for _, n in pairs(myTaxi()) do if n[1] == cont then M.lastFly.known = M.lastFly.known + 1 end end
         if A and B and estimate < walkTime * 0.8 then
             local p1 = walk(cont, sx, sy, A[2], A[3], 4)
             local p2 = walk(cont, B[2], B[3], tx, ty, 4)
@@ -555,6 +606,31 @@ computeFrom = function(cont, sx, sy, target)
             legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
             return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + flyLen * 1.15 / fs + 25 }
         end
+    end
+    if D <= 1500 then M.lastFly = { short = true, walk = walkTime } end
+    -- tram des profondeurs : stations apprises, même continent ; gardé s'il bat la marche de 20 % et d'une minute
+    local st = tramStations()
+    if #st == 2 and st[1][1] == cont and st[2][1] == cont then
+        local A, B = st[1], st[2]
+        local ab = dist(sx, sy, A[2], A[3]) + dist(tx, ty, B[2], B[3])
+        if ab > dist(sx, sy, B[2], B[3]) + dist(tx, ty, A[2], A[3]) then
+            A, B = B, A
+        end
+        local guess = (dist(sx, sy, A[2], A[3]) + dist(B[2], B[3], tx, ty)) * 1.3 / v + TRAM_RIDE
+        M.lastTram = { guess = guess, walk = walkTime }
+        if guess < walkTime * 0.8 and walkTime - guess > 60 then
+            local p1 = walk(cont, sx, sy, A[2], A[3], 4)
+            local p2 = walk(cont, B[2], B[3], tx, ty, 4)
+            -- Forgefer est au nord de Hurlevent (x monde = nord)
+            local nameA = A[2] > B[2] and T("Forgefer") or T("Hurlevent")
+            local nameB = A[2] > B[2] and T("Hurlevent") or T("Forgefer")
+            legs[1] = { kind = "walk", pts = p1, len = lineLen(p1) }
+            legs[2] = { kind = "tram", from = nameA, to = nameB, ax = A[2], ay = A[3], bx = B[2], by = B[3] }
+            legs[3] = { kind = "walk", pts = p2, len = lineLen(p2) }
+            return { legs = legs, cont = cont, seconds = (legs[1].len + legs[3].len) / v + TRAM_RIDE }
+        end
+    else
+        M.lastTram = { stations = #st }
     end
     legs[1] = { kind = "walk", pts = pts, len = walkLen }
     return { legs = legs, cont = cont, seconds = walkTime }
@@ -683,6 +759,7 @@ function M:WaypointNow()
         local nextLeg = r.legs[r.leg + 1]
         local text
         if nextLeg and nextLeg.kind == "fly" then text = string.format(T("Vers le maître de vol (%s)"), nextLeg.from)
+        elseif nextLeg and nextLeg.kind == "tram" then text = T("Vers le tram des profondeurs")
         elseif nextLeg then
             text = string.format(T("Vers le quai : %s"), nextLeg.from or "?")
         end
@@ -707,6 +784,19 @@ function M:WaypointNow()
             M:Plan(r.target)
         end
         return nil, nil, leg.label .. "  ·  " .. T("prête"), nil
+    elseif leg.kind == "tram" then
+        -- sorti du tram près de la station d'arrivée : étape suivante ; parti ailleurs : nouveau calcul
+        if dist(px, py, leg.bx, leg.by) < 150 then
+            r.leg, r.idx = r.leg + 1, 1
+            return self:WaypointNow()
+        end
+        if not leg.sx then leg.sx, leg.sy = px, py end
+        if not leg.replanned and r.target and dist(px, py, leg.sx, leg.sy) > 300
+            and dist(px, py, leg.ax, leg.ay) > 300 then
+            leg.replanned = true; lastReplan = _G.GetTime()
+            M:Plan(r.target)
+        end
+        return leg.ax, leg.ay, string.format(T("Tram des profondeurs » %s"), leg.to or "?"), nil
     elseif leg.kind == "fly" then
         local onTaxi = _G.UnitOnTaxi and _G.UnitOnTaxi("player")
         if onTaxi then leg.flew = true end
@@ -1246,6 +1336,33 @@ function M:Report()
         .. (M.lastTrailAt and (" · " .. string.format(T("dernier il y a %d s"), floor(GetTime() - M.lastTrailAt))) or "")
         .. (cur and (" · " .. string.format(T("tronçon en cours : %d points"), #cur.pts / 2)) or "")
         .. string.format(" · %d / %d", floor(learnedPoints()), MAX_LEARN))
+    -- moyens de transport : pourquoi le vol, le tram ou la pierre de foyer ont été écartés au dernier calcul
+    local function mmss(s) return s and string.format("%d:%02d", floor(s / 60), floor(s % 60)) or "-" end
+    local fl = M.lastFly
+    if fl and fl.short then
+        WK:Print("  " .. T("Vol") .. " : " .. T("cible trop proche pour un vol"))
+    elseif fl then
+        WK:Print("  " .. T("Vol") .. " : " .. string.format(T("%d relais connus sur ce continent"), fl.known)
+            .. (fl.from and (" · " .. string.format(T("meilleur %s » %s en %s contre %s à pied"), fl.from, fl.to or "?",
+                mmss(fl.est), mmss(fl.walk)))
+                or (" · " .. T("aucune paire de relais (ouvre la carte des vols chez un maître)"))))
+    end
+    local tr = M.lastTram
+    if tr and tr.stations then
+        WK:Print("  " .. T("Tram") .. " : "
+            .. string.format(T("%d / 2 stations connues (prends le tram une fois)"), tr.stations))
+    elseif tr then
+        WK:Print("  " .. T("Tram") .. " : "
+            .. string.format(T("%s par le tram contre %s à pied"), mmss(tr.guess), mmss(tr.walk)))
+    end
+    local c = hearthData()
+    local pt = M.lastPort
+    local unknown = T("lieu inconnu (utilise-la ou lie-la chez un aubergiste)")
+    WK:Print("  " .. T("Pierre de foyer") .. " : " .. (c.hearth and (c.hearth.name or "?") or unknown)
+        .. " · " .. (hearthReady() and T("prête") or T("en recharge ou absente"))
+        .. (pt and (" · " .. string.format(T("%d moyen(s) prêt(s)"), pt.n)
+            .. (pt.cost and (" · " .. string.format(T("%s par là contre %s"), mmss(pt.cost), mmss(pt.base))) or ""))
+            or ""))
     local total = 0
     for _, l in ipairs(r and r.legs or {}) do if l.kind == "walk" then total = total + (l.len or 0) end end
     if r and M.lastOff then

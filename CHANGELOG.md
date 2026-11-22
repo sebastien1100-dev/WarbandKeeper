@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.183 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Guidage : le tram des profondeurs est proposé entre Hurlevent et Forgefer quand il est plus rapide que la marche ; ses deux stations sont apprises la première fois que tu le prends.
+- /wk nav dit pourquoi le vol, le tram ou la pierre de foyer n'ont pas été proposés (relais connus, temps comparés, lieu de la pierre).
+
 ## v1.128.182 — 22/11/2026
 
 _Un /reload suffit._

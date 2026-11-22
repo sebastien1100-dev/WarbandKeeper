@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.183", date = "22/11/2026",
+        added = {
+            "Guidage : le tram des profondeurs est proposé entre Hurlevent et Forgefer quand il est plus rapide que la marche ; ses deux stations sont apprises la première fois que tu le prends.",
+            "/wk nav dit pourquoi le vol, le tram ou la pierre de foyer n'ont pas été proposés (relais connus, temps comparés, lieu de la pierre).",
+        },
+    },
+    {
         version = "1.128.182", date = "22/11/2026",
         changed = {
             "Carte de la Warband : vraie mise en forme pour Discord (grand titre, une fiche par perso avec l'icône de sa classe, métiers en puce, niveau d'objet, or et repos en petit) ; « Warband de » remplacé par « <perso> et ses rerolls » dans les deux formats.",
