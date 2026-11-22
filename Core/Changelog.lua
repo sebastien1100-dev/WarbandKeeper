@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.126", date = "22/11/2026", restart = true,
+        added = {
+            "Inventaire > Monnaies : tableau des monnaies du compte, une colonne par perso et le total (marques des champs de bataille, insignes et pierres de l'Aube d'argent, pièces de Zul'Gurub, scarabées d'Ahn'Qiraj, tickets de Sombrelune, et l'onglet Monnaies du jeu s'il existe). Filtres JcJ, Réputations, Raids, Évènements.",
+            "Clic sur une monnaie : le détail à droite, avec la répartition par perso (sacs, banque, courrier) et où s'en servir.",
+        },
+        changed = {
+            "Notre inventaire : cases au style de l'addon, carré sombre plat à fin liseré, à la place du cadre brillant du jeu.",
+        },
+    },
+    {
         version = "1.128.125", date = "22/11/2026",
         changed = {
             "Notre inventaire : places libres et or du perso en plus gros en bas (nombre de places à la couleur de l'apparence, en rouge quand les sacs sont pleins, pièce dorée devant l'or).",
@@ -6479,7 +6489,6 @@ WK.Roadmap = {
     { prio = 2, theme = "map", title = "Chemins appris partagés", text = "Les tronçons appris en jouant, mis en commun entre les persos du compte, puis avec la guilde." },
     { prio = 2, theme = "map", title = "« Prends le bateau »", text = "Sur un trajet qui passe par un bateau, la flèche et l'épingle le disent au lieu de viser le quai d'arrivée." },
     { prio = 2, theme = "eco", title = "Rangement, suite", text = "Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand." },
-    { prio = 2, theme = "eco", title = "Monnaies du jeu", text = "Un panneau des monnaies (insignes, jetons, marques…) par perso et pour tout le compte, avec ce qu'elles permettent d'acheter." },
     { prio = 2, theme = "eco", title = "Prix moyen de vente", text = "Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan." },
     { prio = 2, theme = "prof", title = "Qui peut fabriquer… ?", text = "Recherche d'une recette sur tous les persos." },
     { prio = 3, theme = "prof", title = "Annonce de métier", text = "Une phrase prête pour la guilde ou le commerce, avec le lien du métier et tes meilleures recettes." },

@@ -152,6 +152,9 @@ local function newButton(bag, slot)
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
     b:SetSize(SLOT, SLOT)
+    -- case à notre style : carré sombre plat à fin liseré (le cadre brillant du jeu est masqué)
+    b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
+    b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
     -- pastille de l'addon (en haut à gauche : le cadenas est en haut à droite, l'étoile BiS en bas à gauche)
     b.wkTag = _G.CreateFrame("Frame", nil, b)
     b.wkTag:SetFrameLevel(b:GetFrameLevel() + 6)
@@ -201,6 +204,15 @@ local function paintButton(b, e)
         tag:SetWidth(math.max(14, (tag.t:GetStringWidth() or 10) + 8))
         tag:Show()
     else tag:Hide() end
+    -- fond de case : le nôtre (cadre brillant du jeu masqué, repeint ici car le jeu peut le remettre)
+    local nt = b.GetNormalTexture and b:GetNormalTexture()
+    if nt then nt:SetAlpha(0) end
+    local sb = region(b, "SlotBackground", "ItemSlotBackground")
+    if sb and sb.SetAlpha then sb:SetAlpha(0) end
+    if b.wkEdge then
+        b.wkEdge:SetColor(C.border[1], C.border[2], C.border[3], e and 0.9 or 0.7)
+        b.wkFill:SetColor(C.bg[1] * 0.7, C.bg[2] * 0.7, C.bg[3] * 0.7, 0.95)
+    end
     -- reflets du jeu (objet neuf, boutique, emplacement étendu) : notre pastille NEUF les remplace
     for _, k in ipairs({ "NewItemTexture", "BattlepayItemTexture", "ExtendedSlot", "ItemContextOverlay" }) do
         local r = region(b, k)

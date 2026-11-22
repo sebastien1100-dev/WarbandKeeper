@@ -31,7 +31,6 @@ _Prévu, pas encore commencé._
 - **Camelote** (haute) — Camelote marquée à la main ou par règles, vendue au marchand avec les objets gris.
 - **Inventaire, suite : banque** (haute) — Notre banque à côté des sacs, mêmes catégories, et un bouton « Ranger » qui dépose et sort ce qu'il faut d'après le Rangement.
 - **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
-- **Monnaies du jeu** (moyenne) — Un panneau des monnaies (insignes, jetons, marques…) par perso et pour tout le compte, avec ce qu'elles permettent d'acheter.
 - **Prix moyen de vente** (moyenne) — Ce que tu vends vraiment chaque objet (d'après tes ventes HV), comparé au prix relevé par le scan.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
@@ -73,6 +72,17 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.126 — 22/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Inventaire > Monnaies : tableau des monnaies du compte, une colonne par perso et le total (marques des champs de bataille, insignes et pierres de l'Aube d'argent, pièces de Zul'Gurub, scarabées d'Ahn'Qiraj, tickets de Sombrelune, et l'onglet Monnaies du jeu s'il existe). Filtres JcJ, Réputations, Raids, Évènements.
+- Clic sur une monnaie : le détail à droite, avec la répartition par perso (sacs, banque, courrier) et où s'en servir.
+
+### Modifications
+- Notre inventaire : cases au style de l'addon, carré sombre plat à fin liseré, à la place du cadre brillant du jeu.
 
 ## v1.128.125 — 22/11/2026
 
