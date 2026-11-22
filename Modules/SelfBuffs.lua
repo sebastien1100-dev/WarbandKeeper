@@ -66,9 +66,40 @@ function M.Config()
     return c
 end
 
+-- Noms des sorts du grimoire (le jeu ne dit plus « connu » pour un rang remplacé par un rang plus haut :
+-- Dévotion rang 1 n'est plus « connue » au rang 4) ; relus à SPELLS_CHANGED
+local book
+local function bookNames()
+    if book then return book end
+    book = {}
+    local SB = _G.C_SpellBook
+    if SB and SB.GetNumSpellBookSkillLines and SB.GetSpellBookSkillLineInfo and SB.GetSpellBookItemName then
+        local bank = _G.Enum and _G.Enum.SpellBookSpellBank and _G.Enum.SpellBookSpellBank.Player or 0
+        for i = 1, SB.GetNumSpellBookSkillLines() or 0 do
+            local info = SB.GetSpellBookSkillLineInfo(i)
+            local off, num = info and info.itemIndexOffset or 0, info and info.numSpellBookItems or 0
+            for j = off + 1, off + num do
+                local ok, n = pcall(SB.GetSpellBookItemName, j, bank)
+                if ok and n then book[n] = true end
+            end
+        end
+    elseif _G.GetNumSpellTabs and _G.GetSpellTabInfo and _G.GetSpellBookItemName then
+        for t = 1, _G.GetNumSpellTabs() or 0 do
+            local _, _, off, num = _G.GetSpellTabInfo(t)
+            for j = (off or 0) + 1, (off or 0) + (num or 0) do
+                local ok, n = pcall(_G.GetSpellBookItemName, j, "spell")
+                if ok and n then book[n] = true end
+            end
+        end
+    end
+    return book
+end
+WK:On("SPELLS_CHANGED", function() book = nil end)
 local function known(id)
+    local name = WK.SpellInfo(id)
+    if not name then return false end
     local k = (_G.IsPlayerSpell and _G.IsPlayerSpell(id)) or (_G.IsSpellKnown and _G.IsSpellKnown(id))
-    return k and WK.SpellInfo(id) ~= nil or false
+    return k and true or bookNames()[name] or false
 end
 local function firstKnown(e)
     for _, id in ipairs(e.ids) do if known(id) then return id end end
@@ -145,6 +176,19 @@ local function stanceOn()
     if (_G.GetNumShapeshiftForms() or 0) == 0 then return nil end
     return _G.GetShapeshiftForm() ~= 0
 end
+-- Sort de la forme active (aura de paladin en cours) parmi ceux de l'entrée : n°, sinon nil
+local function activeStance(e)
+    local i = _G.GetShapeshiftForm and _G.GetShapeshiftForm() or 0
+    if i == 0 or not _G.GetShapeshiftFormInfo then return nil end
+    local a, b, c, d = _G.GetShapeshiftFormInfo(i)
+    -- client moderne : icône, actif, lançable, n° du sort ; ancien : icône, nom, actif, lançable
+    local sid = type(d) == "number" and d or nil
+    local sname = type(b) == "string" and b or (sid and WK.SpellInfo(sid))
+    for _, id in ipairs(e.ids) do
+        if id == sid or (sname and WK.SpellInfo(id) == sname) then return id end
+    end
+    return nil, a, c
+end
 
 -- Lignes à montrer ici : { e, rk, id, name, icon, state = "missing" | "soon" | "ok", left }
 -- (seulement les entrées cochées pour ce lieu et connues du perso) ; plusieurs pistages demandés : un seul
@@ -172,7 +216,15 @@ function M:Status()
                 else
                     local left
                     local st = e.stance and stanceOn()
-                    if st ~= nil then left = st and 0 or nil else left = auraLeft(e) end
+                    if st ~= nil then
+                        left = st and 0 or nil
+                        -- aura en cours : la sienne s'affiche (Vindicte, pas la 1re connue)
+                        local act = st and activeStance(e)
+                        if act then
+                            row.id = act
+                            row.name, row.icon = WK.SpellInfo(act)
+                        end
+                    else left = auraLeft(e) end
                     row.left = left
                     row.state = not left and "missing" or ((left > 0 and left < M.SOON) and "soon" or "ok")
                     out[#out + 1] = row

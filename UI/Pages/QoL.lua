@@ -522,7 +522,7 @@ UI:RegisterPage({
         do
             local bcfg = WK.modules.BagHelp:Config()
             local function bref() if UI.RefreshBagSpace then UI:RefreshBagSpace() end end
-            local bar = card("Barre sacs, marchand et maître", 40 + 11 * 46 + 3 * 22 + 8,
+            local bar = card("Barre sacs, marchand et maître", 40 + 12 * 46 + 3 * 22 + 8,
                 "tous ses réglages ici ; position en mode édition")
             local hud = function() return UI:HUDEntry("bagSpace") end
             local function happly() if UI.HUDApply then UI:HUDApply("bagSpace") end; bref() end
@@ -576,6 +576,10 @@ UI:RegisterPage({
             row("Case des buffs", "Buffs absents selon le lieu ; un clic déroule la liste, un clic sur une ligne lance"
                     .. " le sort (hors combat). Buffs et lieux : QoL > Classes > Général.",
                 toggle(bar, function() return SB:Config().bar end, function(v) SB:Config().bar = v; lists() end), 80)
+            row("Mettre en avant un buff absent", "Fond rouge et liseré qui respire sur la case des buffs tant qu'il en"
+                    .. " manque un (hors combat et hors des villes).",
+                toggle(bar, function() return bcfg.buffAlert ~= false end,
+                    function(v) bcfg.buffAlert = v; bref() end), 80)
             head("Listes déroulées")
             local dseg = UI:Segmented(bar, { { "down", "Vers le bas" }, { "up", "Vers le haut" } },
                 function(v) bcfg.dir = v; lists() end, 24)

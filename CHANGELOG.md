@@ -71,6 +71,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.67 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre des sacs : la case des buffs se met en avant quand un buff manque (fond rouge et liseré qui respire), hors combat et hors des villes. Réglage « Mettre en avant un buff absent » dans la carte de la barre.
+
+### Corrections
+- Buffs à ne pas oublier : la liste montre l'aura que tu as vraiment (Vindicte, par exemple) au lieu de la première connue ; sans aura, c'est Dévotion qui est proposée. Les sorts appris à un rang plus haut (Dévotion, Robustesse…) sont bien reconnus.
+
 ## v1.128.66 — 22/11/2026
 
 _Un /reload suffit._

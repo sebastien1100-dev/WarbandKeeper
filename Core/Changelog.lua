@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.67", date = "22/11/2026",
+        added = {
+            "Barre des sacs : la case des buffs se met en avant quand un buff manque (fond rouge et liseré qui respire), hors combat et hors des villes. Réglage « Mettre en avant un buff absent » dans la carte de la barre.",
+        },
+        fixed = {
+            "Buffs à ne pas oublier : la liste montre l'aura que tu as vraiment (Vindicte, par exemple) au lieu de la première connue ; sans aura, c'est Dévotion qui est proposée. Les sorts appris à un rang plus haut (Dévotion, Robustesse…) sont bien reconnus.",
+        },
+    },
+    {
         version = "1.128.66", date = "22/11/2026",
         fixed = {
             "Recherche de groupe : le message automatique écrivait le nom de la zone en français pour une activité de zone (« Excavations : les Paluns ») ; il est maintenant en anglais (« Excavations: Wetlands »), comme les donjons.",

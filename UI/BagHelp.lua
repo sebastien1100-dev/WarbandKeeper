@@ -170,6 +170,29 @@ local function buildSpace()
     end)
     -- buffs à ne pas oublier (Modules/SelfBuffs.lua) : nombre de buffs absents ; clic = dérouler la liste (dir)
     f.buffs = newTile(f, "spark")
+    -- alerte A (réglage buffAlert) : fond rouge léger + liseré qui respire tant qu'un buff manque (hors combat,
+    -- hors ville) ; rien ne bouge quand tout est en place
+    do
+        local t = f.buffs
+        t.glow = UI:Rounded(t, 10, 0, "BACKGROUND", 2)
+        t.fill = UI:Rounded(t, 8, 2, "BACKGROUND", 3)
+        t.glow:Hide(); t.fill:Hide()
+        t.pulse = _G.CreateFrame("Frame", nil, t)
+        t.pulse:Hide()
+        t.pulse:SetScript("OnUpdate", function(_, el)
+            t.ph = ((t.ph or 0) + el) % 1.6
+            local a = 0.15 + 0.4 * (0.5 - 0.5 * math.cos(t.ph / 1.6 * 2 * math.pi))
+            local c = C.negative
+            t.glow:SetColor(c[1], c[2], c[3], a)
+        end)
+        function t:Alert(on)
+            if (self.alertOn or false) == on then return end
+            self.alertOn = on
+            local c = C.negative
+            self.fill:SetColor(c[1], c[2], c[3], 0.16)
+            self.glow:SetShown(on); self.fill:SetShown(on); self.pulse:SetShown(on)
+        end
+    end
     f.buffs:SetScript("OnEnter", function(s)
         local SB = WK.modules.SelfBuffs
         UI:TooltipOwner(s, "ANCHOR_TOP")
@@ -233,6 +256,7 @@ local function buildSpace()
         self.trainer:Paint(C.info, "3")
         self.kit:Paint(C.positive, "1h 52")
         self.buffs:Paint(C.negative, "2")
+        self.buffs:Alert(true)
     end
     f:Hide()
     f:SetScript("OnUpdate", function(s, el)
@@ -266,6 +290,9 @@ function UI:RefreshBagSpace()
     local w0 = space:GetWidth()
     space:Arrange(showV, showT, showK, showB)
     if showB then
+        local fight0 = _G.InCombatLockdown and _G.InCombatLockdown()
+        local resting = _G.IsResting and _G.IsResting()
+        space.buffs:Alert(miss > 0 and cfg.buffAlert ~= false and not fight0 and not resting or false)
         if miss > 0 then space.buffs:Paint(C.negative, tostring(miss))
         elseif soon > 0 then space.buffs:Paint(C.gold, tostring(soon))
         else space.buffs:Paint(C.positive, T("ok")) end
