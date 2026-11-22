@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.116 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Interface : une centaine de textes et de lignes descendaient vers le milieu de leur cadre au lieu de rester en haut (noms et sous-titres qui se chevauchent, textes mal alignés avec leur icône) : HV, Métiers, QoL, fiche de personnage, LFG, Profils, Options, Résumé, marchand, recherche et autres fenêtres. Ils sont maintenant calés en haut, à la bonne hauteur.
+
 ## v1.128.115 — 22/11/2026
 
 _Un /reload suffit._

@@ -244,7 +244,7 @@ UI:RegisterPage({
         }
         do
             local pf = panes.styles
-            local note = UI:Text(pf, 11, C.muted); note:SetPoint("TOPLEFT", 16, -2); note:SetPoint("RIGHT", -16, 0)
+            local note = UI:Text(pf, 11, C.muted); note:SetPoint("TOPLEFT", 16, -2); note:SetPoint("TOPRIGHT", -16, -2)
             note:SetJustifyH("LEFT"); if note.SetWordWrap then note:SetWordWrap(true) end
             note:SetText(WK.T("Chaque style habille toute la fenêtre : barre latérale, cartes, pastilles, jauges et boutons. Règle ensuite le détail dans les autres onglets."))
             local fontPath = {}
@@ -458,7 +458,8 @@ UI:RegisterPage({
                 f:SetFrameStrata("FULLSCREEN_DIALOG"); f:EnableMouse(true)
                 UI:Panel(f, 12, C.surface, C.border)
                 f.title = UI:Text(f, 14); f.title:SetPoint("TOPLEFT", 18, -16)
-                f.text = UI:Text(f, 11, C.muted); f.text:SetPoint("TOPLEFT", 18, -40); f.text:SetPoint("RIGHT", -18, 0)
+                f.text = UI:Text(f, 11, C.muted); f.text:SetPoint("TOPLEFT", 18, -40)
+                f.text:SetPoint("TOPRIGHT", -18, -40)
                 f.text:SetJustifyH("LEFT"); if f.text.SetWordWrap then f.text:SetWordWrap(true) end
                 f.input = UI:Input(f, 444, 30, ""); f.input:SetPoint("TOPLEFT", 18, -76)
                 if f.input.edit.SetMaxLetters then f.input.edit:SetMaxLetters(0) end
@@ -531,7 +532,7 @@ UI:RegisterPage({
         -- aperçu en direct : titre, pastille, carte avec jauge, boutons et interrupteur, aux réglages en place
         local pv = UI:Text(rc, 10, C.muted); pv:SetPoint("TOPLEFT", 6, -44); pv:SetText(WK.T("APERÇU EN DIRECT"))
         local box = CreateFrame("Frame", nil, rc)
-        box:SetPoint("TOPLEFT", 0, -62); box:SetPoint("RIGHT", 0, 0); box:SetHeight(212)
+        box:SetPoint("TOPLEFT", 0, -62); box:SetPoint("TOPRIGHT", 0, -62); box:SetHeight(212)
         UI:Panel(box, 12, C.bg, C.border)
         local ttl = UI:Text(box, 13); ttl:SetPoint("TOPLEFT", 14, -14); ttl:SetText("Warband Keeper")
         UI:OnAccent(function() ttl:SetTextColor(UI:Accent()) end)
@@ -546,7 +547,8 @@ UI:RegisterPage({
         local sample = UI:Card(box, WK.T("Carte d'exemple"))
         sample:SetPoint("TOPLEFT", 12, -46); sample:SetPoint("TOPRIGHT", -12, -46); sample:SetHeight(96)
         local st = UI:Text(sample, 11, C.muted); st:SetPoint("TOPLEFT", 16, -40); st:SetText(WK.T("Texte secondaire de l'interface"))
-        local bar = UI:Progress(sample, 6); bar:SetPoint("TOPLEFT", 16, -68); bar:SetPoint("RIGHT", -16, 0); bar:SetValue(0.62)
+        local bar = UI:Progress(sample, 6); bar:SetPoint("TOPLEFT", 16, -68)
+        bar:SetPoint("TOPRIGHT", -16, -68); bar:SetValue(0.62)
         local b1 = UI:Button(box, "Principal", nil, 28, "primary"); b1:SetPoint("BOTTOMLEFT", 12, 14)
         local b2 = UI:Button(box, "Secondaire", nil, 28, "secondary"); b2:SetPoint("LEFT", b1, "RIGHT", 8, 0)
         local tg = UI:Toggle(box, function() return true end, function() end); tg:SetPoint("BOTTOMRIGHT", -14, 18)
@@ -847,7 +849,7 @@ UI:RegisterPage({
             local f = CreateFrame("Frame", nil, about)
             UI:Panel(f, 10, C.surface2, C.border)
             f.k = UI:Text(f, 10, C.dim); f.k:SetPoint("TOPLEFT", 12, -10); f.k:SetText(T(tl[1]))
-            f.t = UI:Text(f, 12, C.muted); f.t:SetPoint("TOPLEFT", 12, -28); f.t:SetPoint("RIGHT", -12, 0)
+            f.t = UI:Text(f, 12, C.muted); f.t:SetPoint("TOPLEFT", 12, -28); f.t:SetPoint("TOPRIGHT", -12, -28)
             f.t:SetJustifyH("LEFT"); if f.t.SetWordWrap then f.t:SetWordWrap(true) end
             f.t:SetText(T(tl[2]))
             tiles[i] = f

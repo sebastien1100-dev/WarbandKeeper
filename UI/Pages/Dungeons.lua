@@ -1018,7 +1018,8 @@ UI:RegisterPage({
                     string.format("|cff%02x%02x%02x", (qr or 1) * 255, (qg or 1) * 255, (qb or 1) * 255), name or ("#" .. l.id),
                     UI:Hex(C.dim), where, ((time() - (l.at or time())) >= 86400 and string.format(T("il y a %d j"), math.floor((time() - l.at) / 86400)) or UI:AgoShort(time() - (l.at or time()))), who))
             end
-            det.lootHist:ClearAllPoints(); det.lootHist:SetPoint("TOPLEFT", 16, -fy); det.lootHist:SetPoint("RIGHT", -16, 0)
+            det.lootHist:ClearAllPoints(); det.lootHist:SetPoint("TOPLEFT", 16, -fy)
+            det.lootHist:SetPoint("TOPRIGHT", -16, -fy)
             det.lootHist:SetText(table.concat(lines, "\n"))
             fy = fy + math.min(#hist, 6) * 21 + 4
         end

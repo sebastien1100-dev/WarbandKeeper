@@ -400,7 +400,7 @@ function UI.BuildDiagPanel(_, host)
     -- détail
     local title = UI:Text(right, 15); title:SetPoint("TOPLEFT", 18, -16)
     local cmdT = UI:Text(right, 11); cmdT:SetPoint("LEFT", title, "RIGHT", 10, 0)
-    local desc = UI:Text(right, 12, C.muted); desc:SetPoint("TOPLEFT", 18, -44); desc:SetPoint("RIGHT", -18, 0)
+    local desc = UI:Text(right, 12, C.muted); desc:SetPoint("TOPLEFT", 18, -44); desc:SetPoint("TOPRIGHT", -18, -44)
     desc:SetJustifyH("LEFT"); if desc.SetWordWrap then desc:SetWordWrap(true) end
     local hint = UI:Text(right, 11, C.gold)
     hint:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -6); hint:SetPoint("RIGHT", -18, 0)

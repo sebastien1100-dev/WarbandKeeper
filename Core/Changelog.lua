@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.116", date = "22/11/2026",
+        fixed = {
+            "Interface : une centaine de textes et de lignes descendaient vers le milieu de leur cadre au lieu de rester en haut (noms et sous-titres qui se chevauchent, textes mal alignés avec leur icône) : HV, Métiers, QoL, fiche de personnage, LFG, Profils, Options, Résumé, marchand, recherche et autres fenêtres. Ils sont maintenant calés en haut, à la bonne hauteur.",
+        },
+    },
+    {
         version = "1.128.115", date = "22/11/2026",
         changed = {
             "Enchanteur : la fenêtre « Désenchanter ou vendre ? » s'ouvre maintenant à chaque ouverture des sacs (ceux du jeu ou d'EllesmereUI), même sans objet conseillé au désenchantement ; fermée à la main, elle revient à la prochaine ouverture. Le bouton sur les sacs est retiré.",

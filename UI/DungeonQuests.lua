@@ -73,7 +73,7 @@ local function build()
     UI:HudBackground(f, "hud")
     -- en-tête : nom du donjon en entier (deux lignes au besoin), puis « QUÊTES · env. N XP » ; glisser le titre
     -- déplace la fenêtre (sans passer par le mode édition)
-    f.title = UI:Text(f, 12, C.text); f.title:SetPoint("TOPLEFT", 11, -9); f.title:SetPoint("RIGHT", -28, 0)
+    f.title = UI:Text(f, 12, C.text); f.title:SetPoint("TOPLEFT", 11, -9); f.title:SetPoint("TOPRIGHT", -28, -9)
     f.title:SetJustifyH("LEFT")
     if f.title.SetWordWrap then f.title:SetWordWrap(true) end
     if f.title.SetMaxLines then f.title:SetMaxLines(2) end

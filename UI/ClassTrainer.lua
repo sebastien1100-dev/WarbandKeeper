@@ -89,7 +89,7 @@ function UI:RefreshClassTrainer()
             b.name:SetTextColor(unpack(e.skipped and C.dim or C.text))
             b.cost:SetText(e.skipped and T("écarté") or cs:Money(e.cost))
             b.cost:SetTextColor(unpack(e.skipped and C.dim or C.gold))
-            b:ClearAllPoints(); b:SetPoint("TOPLEFT", 10, y); b:SetPoint("RIGHT", -10, 0)
+            b:ClearAllPoints(); b:SetPoint("TOPLEFT", 10, y); b:SetPoint("TOPRIGHT", -10, y)
             b:Show()
             y = y - ROW
         else
@@ -103,7 +103,8 @@ function UI:RefreshClassTrainer()
     panel.all:SetWidth(panel.all.label:GetStringWidth() + 32)
     panel.all:SetEnabled(n > 0)
     panel.all:ClearAllPoints(); panel.all:SetPoint("TOPLEFT", 14, y - 8)
-    panel.note:ClearAllPoints(); panel.note:SetPoint("TOPLEFT", 14, y - 42); panel.note:SetPoint("RIGHT", -14, 0)
+    panel.note:ClearAllPoints(); panel.note:SetPoint("TOPLEFT", 14, y - 42)
+    panel.note:SetPoint("TOPRIGHT", -14, y - 42)
     panel:SetHeight(-y + 42 + (panel.note:GetStringHeight() or 12) + 14)
     panel:Show()
 end

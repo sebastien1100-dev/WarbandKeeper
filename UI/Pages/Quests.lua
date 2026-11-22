@@ -134,7 +134,7 @@ UI:RegisterPage({
             r.mark:SetPoint("CENTER", r.med, "CENTER")
             r.name = UI:Text(r, 13)
             r.name:SetPoint("TOPLEFT", 76, -6)
-            r.name:SetPoint("RIGHT", -190, 0)
+            r.name:SetPoint("TOPRIGHT", -190, -6)
             r.name:SetJustifyH("LEFT")
             r.sub = UI:Text(r, 11, C.muted)
             r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
@@ -261,7 +261,7 @@ UI:RegisterPage({
         inp.onEnter = saveLfg
         eb:HookScript("OnEditFocusLost", saveLfg)
         local hint = UI:Text(gcard2, 10, C.muted)
-        hint:SetPoint("TOPLEFT", 16, -78); hint:SetPoint("RIGHT", -150, 0); hint:SetJustifyH("LEFT")
+        hint:SetPoint("TOPLEFT", 16, -78); hint:SetPoint("TOPRIGHT", -150, -78); hint:SetJustifyH("LEFT")
         hint:SetText(T(
             "{quest} lien, {name} nom, {level} niveau, {zone} zone ; prêt dans le canal /1, Entrée pour envoyer."))
         if hint.SetWordWrap then hint:SetWordWrap(true) end

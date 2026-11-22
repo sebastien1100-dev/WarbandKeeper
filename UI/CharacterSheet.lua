@@ -590,7 +590,7 @@ local function build(parent)
     UI:Panel(dlg, 12, C.bg, { UI:Accent() })
     UI:OnAccent(function() dlg.border:SetColor(UI:Accent()) end)
     dlg.title = UI:Text(dlg, 14); dlg.title:SetPoint("TOPLEFT", 16, -14)
-    dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 16, -38); dlg.text:SetPoint("RIGHT", -16, 0)
+    dlg.text = UI:Text(dlg, 11, C.muted); dlg.text:SetPoint("TOPLEFT", 16, -38); dlg.text:SetPoint("TOPRIGHT", -16, -38)
     dlg.text:SetJustifyH("LEFT"); if dlg.text.SetWordWrap then dlg.text:SetWordWrap(true) end
     dlg.input = UI:Input(dlg, 408, 30, "")
     dlg.input:SetPoint("TOPLEFT", 16, -64)
@@ -634,7 +634,7 @@ local function build(parent)
     f.ppanel:SetScript("OnClick", function() if UI.ToggleTalentPlan then UI:ToggleTalentPlan() end end)
     f.pempty = UI:Text(f.pcard, 11, C.muted); f.pempty:SetPoint("TOPLEFT", 16, -48)
     f.pempty:SetText(T("Aucun plan. « Nouveau plan » puis clique les talents dans l'ordre, un plan « Montée enregistrée » se remplit aussi tout seul quand tu prends tes talents."))
-    f.pempty:SetPoint("RIGHT", -16, 0); f.pempty:SetJustifyH("LEFT"); if f.pempty.SetWordWrap then f.pempty:SetWordWrap(true) end
+    f.pempty:SetPoint("TOPRIGHT", -16, -48); f.pempty:SetJustifyH("LEFT"); if f.pempty.SetWordWrap then f.pempty:SetWordWrap(true) end
     f.prows = UI:Pool(function()
         local r = CreateFrame("Frame", nil, f.pcard)
         r:SetHeight(32)
@@ -826,11 +826,11 @@ local function build(parent)
             b.edge:SetPoint("RIGHT", -6, 0)
             b.name:SetPoint("TOPRIGHT", -50, -7); b.sub:SetPoint("TOPRIGHT", -50, -24)
             b.name:SetJustifyH("RIGHT"); b.sub:SetJustifyH("RIGHT")
-            b.name:SetPoint("LEFT", 8, 0); b.sub:SetPoint("LEFT", 8, 0)
+            b.name:SetPoint("TOPLEFT", 8, -7); b.sub:SetPoint("TOPLEFT", 8, -24)
         elseif side == "left" then
             b.edge:SetPoint("LEFT", 6, 0)
             b.name:SetPoint("TOPLEFT", 50, -7); b.sub:SetPoint("TOPLEFT", 50, -24)
-            b.name:SetPoint("RIGHT", -8, 0); b.sub:SetPoint("RIGHT", -8, 0)
+            b.name:SetPoint("TOPRIGHT", -8, -7); b.sub:SetPoint("TOPRIGHT", -8, -24)
         else
             b:SetSize(44, 44)
             b.edge:SetPoint("CENTER")
@@ -1675,7 +1675,8 @@ local function refreshBis(f, c)
         end
     end
     local bottom = top + h + 64
-    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(bottom + 8)); f.bisNote:SetPoint("RIGHT", -4, 0)
+    f.bisNote:ClearAllPoints(); f.bisNote:SetPoint("TOPLEFT", 4, -(bottom + 8))
+    f.bisNote:SetPoint("TOPRIGHT", -4, -(bottom + 8))
     f.bisNote:SetJustifyH("LEFT")
     f.bisNote:SetText(T("Pastilles : vert porté, jaune dans les sacs ou la banque, gris à obtenir. Clic sur un emplacement : choisir · clic droit : retirer · glisser-déposer un objet. Objets du jeu : wowlayerup-forever/opendata (CC BY 4.0)."))
     f.bsc:SetContentHeight(bottom + 34)
@@ -1734,7 +1735,7 @@ buildSpells = function(f)
     lc.go:SetPoint("TOPRIGHT", -14, -10)
     lc.go:SetScript("OnClick", function() local G = WK.modules.Guide; if G then G:GoTo("trainer") end end)
     lc.sum = UI:Text(lc, 12, C.muted); lc.sum:SetJustifyH("RIGHT")
-    lc.gold = UI:Text(lc, 11, C.muted); lc.gold:SetPoint("TOPLEFT", 16, -38); lc.gold:SetPoint("RIGHT", -16, 0)
+    lc.gold = UI:Text(lc, 11, C.muted); lc.gold:SetPoint("TOPLEFT", 16, -38); lc.gold:SetPoint("TOPRIGHT", -16, -38)
     lc.gold:SetJustifyH("LEFT")
     -- lignes de niveau
     f.spGroups = UI:Pool(function()
@@ -1945,8 +1946,9 @@ buildWeapons = function(f)
         r.hl:SetColorTexture(C.surface2[1], C.surface2[2], C.surface2[3], 0.5); r.hl:Hide()
         r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 16, 0)
         r.icon:SetDesaturated(true)
-        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 44, -5); r.name:SetPoint("RIGHT", -90, 0); r.name:SetJustifyH("LEFT")
-        r.sub = UI:Text(r, 10, C.muted); r.sub:SetPoint("TOPLEFT", 44, -21); r.sub:SetPoint("RIGHT", -90, 0)
+        r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 44, -5)
+        r.name:SetPoint("TOPRIGHT", -90, -5); r.name:SetJustifyH("LEFT")
+        r.sub = UI:Text(r, 10, C.muted); r.sub:SetPoint("TOPLEFT", 44, -21); r.sub:SetPoint("TOPRIGHT", -90, -21)
         r.sub:SetJustifyH("LEFT")
         r.cost = UI:Text(r, 12, C.gold); r.cost:SetPoint("TOPRIGHT", -16, -5); r.cost:SetJustifyH("RIGHT")
         -- pastille « Guider » (perso connecté seulement)
@@ -2007,12 +2009,12 @@ refreshWeapons = function(f, c)
         y = y + WEAP_ROW
     end
     if #r.learned == 0 then
-        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("RIGHT", -16, 0)
+        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("TOPRIGHT", -16, -y)
         lc.note:SetText(r.recorded and T("Aucune compétence d'arme relevée.") or T("Compétences d'armes relevées à la prochaine connexion de ce perso."))
         y = y + 24
     else
         y = y + 6
-        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("RIGHT", -16, 0)
+        lc.note:ClearAllPoints(); lc.note:SetPoint("TOPLEFT", 16, -y); lc.note:SetPoint("TOPRIGHT", -16, -y)
         lc.note:SetText(T("Vert : au maximum · orange : un peu en retard · rouge : très en retard (tu rates plus souvent). Survol : le détail."))
         y = y + math.max(14, lc.note:GetStringHeight() or 14) + 6
     end
@@ -2049,7 +2051,7 @@ refreshWeapons = function(f, c)
     end
     rc.note:ClearAllPoints()
     if #r.toLearn == 0 then
-        rc.note:SetPoint("TOPLEFT", 16, -ry); rc.note:SetPoint("RIGHT", -16, 0)
+        rc.note:SetPoint("TOPLEFT", 16, -ry); rc.note:SetPoint("TOPRIGHT", -16, -ry)
         rc.note:SetText(UI:Hex(C.positive) .. T("Toutes les armes de ta classe sont apprises.") .. "|r")
         rc.note:Show()
         rc:SetHeight(ry + 30)
@@ -2158,7 +2160,8 @@ UI:RegisterPage({
         local ui = function() return WK.DB.global.settings.ui end
         -- pastilles d'en-tête : un bouton par chiffre possible, allumé s'il est affiché (dans l'ordre des clics)
         local chipCard = UI:Card(sheet, T("En-tête : pastilles"))
-        chipCard.note = UI:Text(chipCard, 10, C.muted); chipCard.note:SetPoint("TOPLEFT", 16, -38); chipCard.note:SetPoint("RIGHT", -16, 0)
+        chipCard.note = UI:Text(chipCard, 10, C.muted); chipCard.note:SetPoint("TOPLEFT", 16, -38)
+        chipCard.note:SetPoint("TOPRIGHT", -16, -38)
         chipCard.note:SetJustifyH("LEFT")
         chipCard.note:SetText(string.format(T("Choisis jusqu'à %d chiffres affichés en haut à droite de la fiche ; la 1re pastille est mise en avant."), HEAD_MAX))
         chipCard.btns = {}

@@ -293,7 +293,8 @@ UI:RegisterPage({
         now.s1 = idea(now, false); now.s2 = idea(now, false)
         now.s1:SetPoint("TOPLEFT", now.big, "BOTTOMLEFT", 0, -6)
         now.s2:SetPoint("TOPRIGHT", now.big, "BOTTOMRIGHT", 0, -6)
-        now.more = UI:Text(now, 11, C.dim); now.more:SetPoint("BOTTOMLEFT", 16, 10); now.more:SetPoint("RIGHT", -16, 0)
+        now.more = UI:Text(now, 11, C.dim); now.more:SetPoint("BOTTOMLEFT", 16, 10)
+        now.more:SetPoint("BOTTOMRIGHT", -16, 10)
         now.more:SetJustifyH("LEFT"); if now.more.SetWordWrap then now.more:SetWordWrap(false) end
         now.empty = UI:Text(now, 12, C.muted); now.empty:SetPoint("LEFT", now.head, "RIGHT", 16, 0)
         now.empty:SetText(WK.T("Rien de pressé : tout est à jour."))
@@ -343,7 +344,7 @@ UI:RegisterPage({
             r.icon:SetPoint("CENTER")
             r.text = UI:Text(r, 13)
             r.text:SetPoint("TOPLEFT", 48, -7)
-            r.text:SetPoint("RIGHT", -80, 0)
+            r.text:SetPoint("TOPRIGHT", -80, -7)
             r.text:SetJustifyH("LEFT")
             if r.text.SetWordWrap then r.text:SetWordWrap(true) end
             if r.text.SetMaxLines then r.text:SetMaxLines(2) end
@@ -552,7 +553,7 @@ UI:RegisterPage({
             t.icon:SetPoint("LEFT", 12, 0)
             t.name = UI:Text(t, 12)
             t.name:SetPoint("TOPLEFT", 38, -6)
-            t.name:SetPoint("RIGHT", -50, 0)
+            t.name:SetPoint("TOPRIGHT", -50, -6)
             t.name:SetJustifyH("LEFT")
             t.name:SetText(T(f.label))
             t.sub = UI:Text(t, 10, C.muted)

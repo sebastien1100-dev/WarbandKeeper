@@ -103,7 +103,7 @@ UI:RegisterPage({
             r.star:SetPoint("CENTER", r.med, "CENTER")
             r.name = UI:Text(r, 13)
             r.name:SetPoint("TOPLEFT", 74, -6)
-            r.name:SetPoint("RIGHT", -190, 0)
+            r.name:SetPoint("TOPRIGHT", -190, -6)
             r.name:SetJustifyH("LEFT")
             r.sub = UI:Text(r, 11, C.muted)
             r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)

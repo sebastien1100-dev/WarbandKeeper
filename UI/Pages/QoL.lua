@@ -1112,7 +1112,7 @@ UI:RegisterPage({
                 r.icon:SetPoint("LEFT", 8, 0)
                 r.name = UI:Text(r, 12)
                 r.name:SetPoint("TOPLEFT", 32, -4)
-                r.name:SetPoint("RIGHT", -150, 0)
+                r.name:SetPoint("TOPRIGHT", -150, -4)
                 r.name:SetJustifyH("LEFT")
                 r.sub = UI:Text(r, 10, C.dim)
                 r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
@@ -1423,7 +1423,7 @@ UI:RegisterPage({
                 toggle(fpcard, function() return flc.fpRemind end, function(v) flc.fpRemind = v end), 80)
             local fpInfo = UI:Text(fpcard, 11, C.muted)
             fpInfo:SetPoint("TOPLEFT", 16, -92)
-            fpInfo:SetPoint("RIGHT", -16, 0)
+            fpInfo:SetPoint("TOPRIGHT", -16, -92)
             fpInfo:SetJustifyH("LEFT")
             local fpRows = {}
             for i = 1, FPR do
@@ -1564,7 +1564,7 @@ UI:RegisterPage({
         local alcard = card("Alertes de prix", 40 + 22 + ALR * 30 + 30, "signalées après chaque scan de l'HV")
         local alHelp = UI:Text(alcard, 11, C.muted)
         alHelp:SetPoint("TOPLEFT", 16, -40)
-        alHelp:SetPoint("RIGHT", -16, 0)
+        alHelp:SetPoint("TOPRIGHT", -16, -40)
         alHelp:SetJustifyH("LEFT")
         alHelp:SetText(T("Ajouter : /wk alerte puis Maj+clic sur l'objet et le prix max à l'unité (ex. /wk alerte [Étoffe de soie] 75pa). Sans prix : retire l'alerte."))
         local alRows = {}
@@ -1641,7 +1641,7 @@ UI:RegisterPage({
                 .. (rate and ("  ·  " .. rate .. "/h") or "") .. "  ·  " .. UI:GoldText(FL:Value()) .. "  ·  " .. string.format(T("%d espèces"), FL:Species())
         end)
         fsum:SetPoint("TOPLEFT", 16, -42)
-        fsum:SetPoint("RIGHT", -16, 0)
+        fsum:SetPoint("TOPRIGHT", -16, -42)
         fsum:SetJustifyH("LEFT")
         local zh = UI:Text(fbook, 10, C.dim)
         zh:SetPoint("TOPLEFT", 16, -72)
@@ -2024,7 +2024,7 @@ UI:RegisterPage({
                 end
                 return table.concat(lines, "\n")
             end)
-            ctext:SetPoint("TOPLEFT", 16, -42); ctext:SetPoint("RIGHT", -16, 0)
+            ctext:SetPoint("TOPLEFT", 16, -42); ctext:SetPoint("TOPRIGHT", -16, -42)
             ctext:SetJustifyH("LEFT")
             if ctext.SetWordWrap then ctext:SetWordWrap(false) end
 
@@ -2119,7 +2119,7 @@ UI:RegisterPage({
             subtab("Repos", 3)
             local bag = card("Repos et Sac de couchage douillet", 40 + 4 * 18 + 46 + 8)
             local bt = UI:Text(bag, 11, C.muted)
-            bt:SetPoint("TOPLEFT", 16, -42); bt:SetPoint("RIGHT", -16, 0)
+            bt:SetPoint("TOPLEFT", 16, -42); bt:SetPoint("TOPRIGHT", -16, -42)
             bt:SetJustifyH("LEFT")
             if bt.SetWordWrap then bt:SetWordWrap(true) end
             bt:SetText(T("Tente de campement (Travail du cuir 20) : ton repos est porté à 5 % d'un niveau s'il est plus bas (une fois par heure).") .. "\n"
@@ -2188,7 +2188,7 @@ UI:RegisterPage({
                 table.insert(lines, UI:Hex(C.muted) .. string.format(T("Monstres %s  ·  quêtes %s  ·  découverte %s"), fmt(s.mobs), fmt(s.quests), fmt(s.explore)) .. "|r")
                 return table.concat(lines, "\n")
             end)
-            xsText:SetPoint("TOPLEFT", 16, -42); xsText:SetPoint("RIGHT", -16, 0)
+            xsText:SetPoint("TOPLEFT", 16, -42); xsText:SetPoint("TOPRIGHT", -16, -42)
             xsText:SetJustifyH("LEFT")
             local xreset = UI:Button(xs, "Remettre à zéro", nil, 28, "secondary")
             xreset:SetPoint("BOTTOMLEFT", 16, 12)

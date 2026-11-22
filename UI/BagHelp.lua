@@ -496,9 +496,9 @@ local function buildWear()
     f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetSize(34, 34); f.icon:SetPoint("TOPLEFT", 12, -12)
     f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     f.title = UI:Text(f, 10, C.muted); f.title:SetPoint("TOPLEFT", 56, -12); f.title:SetText(UI:Upper(T("Mieux que ce que tu portes")))
-    f.name = UI:Text(f, 12); f.name:SetPoint("TOPLEFT", 56, -26); f.name:SetPoint("RIGHT", -12, 0)
+    f.name = UI:Text(f, 12); f.name:SetPoint("TOPLEFT", 56, -26); f.name:SetPoint("TOPRIGHT", -12, -26)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
-    f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 56, -42); f.sub:SetPoint("RIGHT", -12, 0)
+    f.sub = UI:Text(f, 10, C.muted); f.sub:SetPoint("TOPLEFT", 56, -42); f.sub:SetPoint("TOPRIGHT", -12, -42)
     if f.sub.SetWordWrap then f.sub:SetWordWrap(false) end
     f.yes = UI:Button(f, T("L'équiper"), nil, 22, "primary")
     f.yes:SetPoint("BOTTOMRIGHT", -12, 10)

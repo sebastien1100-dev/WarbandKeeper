@@ -75,7 +75,7 @@ local function build()
     end
     f.foot = UI:Text(f, 11)
     f.foot:SetPoint("BOTTOMLEFT", 16, 14)
-    f.foot:SetPoint("RIGHT", -16, 0)
+    f.foot:SetPoint("BOTTOMRIGHT", -16, 14)
     f.foot:SetJustifyH("LEFT")
     -- barre de temps en bas : se vide jusqu'à la fermeture, en pause sous la souris (grise)
     f.track = f:CreateTexture(nil, "ARTWORK")

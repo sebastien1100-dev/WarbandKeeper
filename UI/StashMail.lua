@@ -57,7 +57,7 @@ local function build()
         return r
     end)
     f.empty = UI:Text(f, 11, C.muted)
-    f.empty:SetPoint("TOPLEFT", 16, -44); f.empty:SetPoint("RIGHT", -16, 0); f.empty:SetJustifyH("LEFT")
+    f.empty:SetPoint("TOPLEFT", 16, -44); f.empty:SetPoint("TOPRIGHT", -16, -44); f.empty:SetJustifyH("LEFT")
     f.empty:SetText(T("Rien à envoyer depuis ce perso."))
     f.info = UI:Text(f, 10, C.muted)
     f.info:SetPoint("BOTTOMLEFT", 14, 18)
