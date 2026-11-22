@@ -241,6 +241,44 @@ local function newButton(bag, slot)
     return b
 end
 
+-- case d'affichage (autre perso / tout le compte) : icône, nombre, liseré de qualité, infobulle et fiche
+local offButtons = {}
+local function offButton(i)
+    if offButtons[i] then return offButtons[i] end
+    local b = _G.CreateFrame("Button", nil, win.content)
+    b:SetSize(SLOT, SLOT)
+    b.wkEdge = UI:Rounded(b, 5, 0, "BACKGROUND", -8)
+    b.wkFill = UI:Rounded(b, 4, 1, "BACKGROUND", -7)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("TOPLEFT", 2, -2); b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.count = UI:Text(b, 12); b.count:SetPoint("BOTTOMRIGHT", -3, 3)
+    b:SetScript("OnEnter", function(s)
+        if not s.e then return end
+        UI:TooltipOwner(s, "ANCHOR_LEFT")
+        if _G.GameTooltip.SetItemByID then _G.GameTooltip:SetItemByID(s.e.id) end
+        _G.GameTooltip:Show()
+        hovered = s.e; V.RefreshFiche()
+    end)
+    b:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+    b:SetScript("OnClick", function(s)
+        if s.e and _G.IsModifiedClick and _G.IsModifiedClick("CHATLINK") and s.e.link and _G.ChatEdit_InsertLink then
+            _G.ChatEdit_InsertLink(s.e.link)
+        end
+    end)
+    offButtons[i] = b
+    return b
+end
+local function paintOff(b, e)
+    b.e = e
+    b.icon:SetTexture(e.icon)
+    b.count:SetText((e.count or 1) > 1 and tostring(e.count) or "")
+    local r, g, bl = 0.5, 0.5, 0.5
+    if (e.quality or 1) >= 2 and _G.GetItemQualityColor then r, g, bl = _G.GetItemQualityColor(e.quality) end
+    b.wkEdge:SetColor(r, g, bl, (e.quality or 1) >= 2 and 1 or 0.6)
+    b.wkFill:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
+end
+
 -- région du bouton du jeu (le nom du champ change selon les versions du client)
 local function region(b, ...)
     for _, k in ipairs({ ... }) do
@@ -346,6 +384,38 @@ local function readBags()
     return list, free + rfree, total, rfree
 end
 
+-- Sacs et banque d'un autre perso (ou de tout le compte), d'après les derniers relevés (quantités par objet) :
+-- cases d'affichage seulement, sans place dans un sac
+local function readOffline(key)
+    local chars = WK.DB.global.characters
+    local ctx = { ship = {}, enchanter = false }
+    local list = {}
+    local function add(id, n, where, who)
+        local name, link, quality, _, _, _, _, _, _, icon = WK.GetItemInfo(id)
+        local e = { id = id, count = n, name = name, link = link, quality = quality, offline = true,
+            where = where, who = who,
+            icon = icon or (_G.C_Item and _G.C_Item.GetItemIconByID and _G.C_Item.GetItemIconByID(id)) }
+        e.info = classify(e, ctx)
+        list[#list + 1] = e
+    end
+    if key == "all" then
+        local tot = {}
+        for _, c in pairs(chars) do
+            for _, src in ipairs({ c.bags or {}, c.bank or {} }) do
+                for id, n in pairs(src) do tot[id] = (tot[id] or 0) + n end
+            end
+        end
+        local wb = WK.DB.global.warbank
+        for id, n in pairs(wb and wb.items or {}) do tot[id] = (tot[id] or 0) + n end
+        for id, n in pairs(tot) do add(id, n, "all") end
+    else
+        local c = chars[key] or {}
+        for id, n in pairs(c.bags or {}) do add(id, n, "bags", key) end
+        for id, n in pairs(c.bank or {}) do add(id, n, "bank", key) end
+    end
+    return list
+end
+
 -- filtre (maquette B) : icône + nombre d'objets concernés ; le filtre choisi montre aussi son nom
 local function chip(parent, key, label, icon)
     local b = UI:Button(parent, "", nil, 26, "ghost", icon)
@@ -398,6 +468,13 @@ local function build()
     end)
     UI:HudBackground(f, "window", 12)
     if not isBank then
+        -- tout le compte : choix du perso dont on regarde les sacs et la banque (derniers relevés)
+        f.who = UI:Dropdown(f, FICHE_W, 26, {}, function(v)
+            V.viewKey = (v ~= "me") and v or nil
+            hovered = nil
+            V.Refresh()
+        end)
+        f:HookScript("OnHide", function() V.viewKey = nil end)
         -- fenêtre de désenchantement des enchanteurs collée à nos sacs (UI/ProfPanels.lua)
         f:HookScript("OnShow", function() if UI.OurBagsShown then UI.OurBagsShown(true) end end)
         f:HookScript("OnHide", function() if UI.OurBagsShown then UI.OurBagsShown(false) end end)
@@ -611,9 +688,29 @@ function V.Refresh(light, live)
     if not win or not win:IsShown() then return end
     V.ApplyTop()
     V.RefreshSlots()
-    local list, free, total, rfree = readBags()
+    local offKey = not isBank and V.viewKey or nil
+    local list, free, total, rfree
+    local chars = WK.DB.global.characters
+    if offKey then
+        list = readOffline(offKey)
+        local c = offKey ~= "all" and chars[offKey] or nil
+        free, total, rfree = c and (c.freeSlots or 0) or 0, c and (c.totalSlots or 0) or 0, 0
+    else
+        list, free, total, rfree = readBags()
+    end
     win.list = list
-    win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
+    if win.who then V.RefreshWho() end
+    if offKey == "all" then
+        win.sub:SetText(T("tout le compte (derniers relevés)"))
+    elseif offKey then
+        local c = chars[offKey] or {}
+        local bank = c.bankSlots
+            and string.format(T("banque %d / %d"), (c.bankSlots or 0) - (c.bankFree or 0), c.bankSlots)
+            or T("banque pas encore vue")
+        win.sub:SetText(string.format(T("%d / %d places"), total - free, total) .. "  ·  " .. bank)
+    else
+        win.sub:SetText(string.format(T("%d / %d places"), total - free, total))
+    end
     local counts = { all = 0, new = 0, ship = 0, sell = 0, de = 0, up = 0 }
     for _, e in ipairs(list) do
         if not e.empty then
@@ -639,13 +736,17 @@ function V.Refresh(light, live)
     win.foot:SetText(string.format(T("%s places libres"), UI:Hex(normal == 0 and C.negative or ac) .. normal .. "|r")
         .. ((rfree or 0) > 0 and ("  " .. UI:Hex(C.muted) .. "+ " .. string.format(T("%d pour les composants"), rfree)
             .. "|r") or ""))
+    if offKey then
+        money = 0
+        for k, c in pairs(chars) do if offKey == "all" or k == offKey then money = money + (c.money or 0) end end
+    end
     win.money:SetText(WK:FormatMoney(money))
     local junk = 0
     for _, e in ipairs(list) do if not e.empty and e.info.cat == "junk" then junk = junk + 1 end end
     local merchant = _G.MerchantFrame and _G.MerchantFrame:IsShown()
-    win.sell:SetShown(not isBank and merchant and junk > 0)
+    win.sell:SetShown(not isBank and not offKey and merchant and junk > 0)
     -- disposition : par catégorie, cases vides à la fin
-    if inCombat() then
+    if inCombat() and not offKey then
         pending = true
         for _, e in ipairs(list) do
             local b = buttons[e.bag] and buttons[e.bag][e.slot]
@@ -661,7 +762,9 @@ function V.Refresh(light, live)
     win.sortBtn:SetEnabled(flat and true or false)
     win.sortBtn:SetAlpha(flat and 1 or 0.35)
     local groups, cats = {}, {}
-    if flat then
+    if offKey and offKey ~= "all" then
+        cats = { { key = "o:bags", label = "Dans les sacs" }, { key = "o:bank", label = "En banque" } }
+    elseif flat then
         -- sans catégories : une seule grille, mais le sac de composants garde la sienne (seuls des composants y vont)
         cats = { { key = "all", label = "Objets" } }
         if not isBank then
@@ -676,6 +779,7 @@ function V.Refresh(light, live)
     for _, c in ipairs(cats) do groups[c.key] = {} end
     local profKeys = {}
     local function keyOf(e)
+        if e.offline and e.where ~= "all" then return "o:" .. e.where end
         if flat then return (not isBank and e.info.cat == "rbag") and "rbag" or "all" end
         local k = e.info.cat
         if isBank and (k == "mine" or (k == "other" and REAGENT_CLASS[instant(e.id) or -1])) then
@@ -708,8 +812,13 @@ function V.Refresh(light, live)
         cats = out
     end
     -- sans catégories : l'ordre réel des sacs (le tri du jeu se voit) ; avec : qualité, nom, quantité
-    for _, g in pairs(flat and {} or groups) do
+    local catIdx = {}
+    for i, c in ipairs(CATS) do catIdx[c.key] = i end
+    for _, g in pairs(flat and not offKey and {} or groups) do
         table.sort(g, function(a, b)
+            if a.offline and (catIdx[a.info.cat] or 0) ~= (catIdx[b.info.cat] or 0) then
+                return (catIdx[a.info.cat] or 0) < (catIdx[b.info.cat] or 0)
+            end
             if (a.quality or 0) ~= (b.quality or 0) then return (a.quality or 0) > (b.quality or 0) end
             if (a.name or "") ~= (b.name or "") then return (a.name or "") < (b.name or "") end
             return (a.count or 0) > (b.count or 0)
@@ -747,13 +856,21 @@ function V.Refresh(light, live)
         h:Show()
         y = y + 22
     end
+    local offN = 0
     local function place(items)
         for i, e in ipairs(items) do
-            local b = (buttons[e.bag] and buttons[e.bag][e.slot]) or newButton(e.bag, e.slot)
+            local b
+            if e.offline then
+                offN = offN + 1
+                b = offButton(offN)
+                paintOff(b, e)
+            else
+                b = (buttons[e.bag] and buttons[e.bag][e.slot]) or newButton(e.bag, e.slot)
+            end
             local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
             b:ClearAllPoints()
             b:SetPoint("TOPLEFT", win.content, "TOPLEFT", col * (slotSize + GAP), -(y + row * (slotSize + GAP)))
-            paintButton(b, not e.empty and e or nil)
+            if not e.offline then paintButton(b, not e.empty and e or nil) end
             b:SetAlpha(dimmed(e) and 0.25 or 1)
             b:Show()
             used[b] = true
@@ -778,6 +895,7 @@ function V.Refresh(light, live)
     for i = hi + 1, #win.heads do win.heads[i]:Hide() end
     -- cases d'un sac retiré : cachées
     for _, byBag in pairs(buttons) do for _, b in pairs(byBag) do if not used[b] then b:Hide() end end end
+    for i = offN + 1, #offButtons do offButtons[i]:Hide() end
     -- tailles : pendant le redimensionnement, la fenêtre suit la souris ; sinon elle prend la place choisie
     -- (ou juste ce qu'il faut sans réglage), jamais moins que les cases
     win.content:SetSize(math.max(1, cols * (slotSize + GAP) - GAP), math.max(1, y))
@@ -814,13 +932,44 @@ function V.PlaceTip(btn)
     end
 end
 
+-- menu du perso regardé : moi, les autres persos (places libres), tout le compte
+function V.RefreshWho()
+    if not win or not win.who then return end
+    local me = WK:CharKey()
+    local opts = { { "me", T("Mes sacs") } }
+    for _, e in ipairs(UI:SortedCharacters()) do
+        if e.key ~= me then
+            local c = e.c
+            local lbl = WK:CharName(c, e.key)
+            if c.totalSlots then lbl = lbl .. "  ·  " .. string.format(T("%d libres"), c.freeSlots or 0) end
+            opts[#opts + 1] = { e.key, lbl }
+        end
+    end
+    opts[#opts + 1] = { "all", T("Tout le compte") }
+    win.who:SetOptions(opts)
+    win.who:Select(V.viewKey or "me")
+end
+
 -- place les filtres, les cases et la fiche sous la barre des sacs (ouverte ou non)
 function V.ApplyTop()
     if not win or inCombat() then return end
     local off = topOff()
     if win.chip1 then win.chip1:ClearAllPoints(); win.chip1:SetPoint("TOPLEFT", PAD - 4, -38 - off) end
     win.content:ClearAllPoints(); win.content:SetPoint("TOPLEFT", PAD, -70 - off)
-    win.fiche:ClearAllPoints(); win.fiche:SetPoint("TOPRIGHT", -PAD, -70 - off)
+    win.fiche:ClearAllPoints()
+    if win.who then
+        -- choix du perso au-dessus de la fiche (ou sur la ligne des filtres sans fiche)
+        win.who:ClearAllPoints()
+        if win.fiche:IsShown() then
+            win.who:SetPoint("TOPRIGHT", -PAD, -70 - off)
+            win.fiche:SetPoint("TOPRIGHT", -PAD, -104 - off)
+        else
+            win.who:SetPoint("TOPRIGHT", -PAD, -38 - off)
+            win.fiche:SetPoint("TOPRIGHT", -PAD, -70 - off)
+        end
+    else
+        win.fiche:SetPoint("TOPRIGHT", -PAD, -70 - off)
+    end
 end
 
 -- Barre des sacs : sacs 1 à 4 (sacs) ou sacs de banque ; glisser un sac pour le mettre ou le changer,
@@ -958,8 +1107,16 @@ function V.RefreshFiche()
     local inBags = 0
     for _, x in ipairs(win.list or {}) do if not x.empty and x.id == e.id then inBags = inBags + (x.count or 1) end end
     local acc = WK.modules.Inventory:AccountCount(e.id) or inBags
-    fi.sub:SetText(string.format(T(isBank and "%d dans ta banque  ·  %d sur le compte"
-        or "%d dans tes sacs  ·  %d sur le compte"), inBags, acc))
+    if e.offline then
+        -- autre perso / tout le compte : où il est et combien sur le compte
+        local where = e.where == "bank" and T("en banque") or e.where == "bags" and T("dans ses sacs")
+            or T("sur le compte")
+        fi.sub:SetText(string.format("%d %s", e.count or 1, where) .. "  ·  "
+            .. string.format(T("%d sur le compte"), acc))
+    else
+        fi.sub:SetText(string.format(T(isBank and "%d dans ta banque  ·  %d sur le compte"
+            or "%d dans tes sacs  ·  %d sur le compte"), inBags, acc))
+    end
     local lines = {}
     local Val = WK.modules.Value
     local ah = Val and Val.Prices and select(1, Val:Prices(e.id))
@@ -1053,7 +1210,7 @@ function V.RefreshFiche()
     end
     local h = y - 6 + 12
     -- fiche plus haute que la fenêtre : la fenêtre s'allonge (elle reprend sa taille au rafraîchissement)
-    local th = 110 + topOff()
+    local th = 110 + topOff() + ((win.who and fi:IsShown()) and 34 or 0)
     if h > win:GetHeight() - th and not inCombat() then win:SetHeight(h + th) end
     fi:SetHeight(h)
 end
@@ -1101,6 +1258,8 @@ end
 local BV = makeView("bags")
 local KV = makeView("bank")
 B.Refresh, B.RefreshFiche, B.SellJunk, B.Layout = BV.Refresh, BV.RefreshFiche, BV.SellJunk, BV.Layout
+-- perso regardé dans nos sacs (nil = moi, clé d'un perso, « all » = tout le compte) ; pour les tests et les liens
+function B.SetView(key) BV.viewKey = key; BV.Refresh() end
 UI.Bank = KV
 local function bankOn() return enabled() and B.Config().bankWin ~= false end
 B.BankOn = bankOn

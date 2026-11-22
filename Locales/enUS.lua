@@ -4673,4 +4673,12 @@ WK.Locales.enUS.text = {
     ["Camelote : équipement blanc"] = "Junk: white gear",
     ["L'équipement vert que ce perso ne peut pas porter part avec « Vendre la camelote » (jamais un objet verrouillé)."] = "Green gear this character cannot wear goes with 'Sell junk' (never a locked item).",
     ["L'équipement de qualité commune (blanc) part avec « Vendre la camelote ». Marquer un objet à la main : bouton de la fiche."] = "Common (white) gear goes with 'Sell junk'. Mark an item by hand: button in the item card.",
+    ["tout le compte (derniers relevés)"] = "whole account (last readings)",
+    ["banque %d / %d"] = "bank %d / %d",
+    ["banque pas encore vue"] = "bank not seen yet",
+    ["%d libres"] = "%d free",
+    ["en banque"] = "in the bank",
+    ["dans ses sacs"] = "in their bags",
+    ["Dans les sacs"] = "In the bags",
+    ["En banque"] = "In the bank",
 }

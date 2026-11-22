@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.155", date = "22/11/2026",
+        added = {
+            "Notre inventaire, tout le compte : menu au-dessus de la fiche pour regarder les sacs et la banque d'un autre perso (derniers relevés, places libres dans le menu) ou tout le compte réuni. Objets rangés « Dans les sacs » / « En banque », filtres, recherche, fiche et infobulle ; Maj + clic pour lier. Revient à tes sacs à la fermeture.",
+        },
+    },
+    {
         version = "1.128.154", date = "22/11/2026",
         fixed = {
             "Filtres des sacs (et tous les boutons sans largeur fixe) : après avoir affiché un texte plus long (« Nouveaux · 0 »), le bouton ne revenait pas à sa taille ; il suit maintenant son texte dans les deux sens.",
@@ -6655,7 +6661,6 @@ WK.RoadmapPrio = {
     { label = "Basse", color = "muted" },
 }
 WK.Roadmap = {
-    { prio = 2, theme = "eco", title = "Inventaire, suite : tout le compte", text = "Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso." },
     { prio = 3, theme = "class", title = "Salut choisi par classe", text = "Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu." },
     { prio = 2, theme = "ui", title = "Recherche globale", text = "Dans tout l'addon : persos, objets, recettes, quêtes et notes de carte." },
     { prio = 2, theme = "ui", title = "Mini-fenêtre « À faire »", text = "Déplaçable, sans ouvrir la fenêtre principale." },

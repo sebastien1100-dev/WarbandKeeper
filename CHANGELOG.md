@@ -28,7 +28,6 @@ _Prévu, pas encore commencé._
 - **Trajets qui suivent le terrain** (basse) — Grille de marche tirée des fichiers du jeu (chargée seulement au guidage) pour contourner falaises et lacs au lieu de couper tout droit.
 
 ### Inventaire et économie
-- **Inventaire, suite : tout le compte** (moyenne) — Un onglet par perso (sacs et banque lus hors ligne) et la place restante par perso.
 - **Rangement, suite** (moyenne) — Place libre par perso et ce qui en libèrerait le plus, assistant à la banque (dépôts, piles à réunir) et chez le marchand.
 
 ### Métiers
@@ -68,6 +67,13 @@ _Prévu, pas encore commencé._
 - **Prix HV partagés en guilde** (moyenne) — Les prix relevés par les membres qui ont l'addon : des prix à jour sans scanner soi-même.
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
+
+## v1.128.155 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Notre inventaire, tout le compte : menu au-dessus de la fiche pour regarder les sacs et la banque d'un autre perso (derniers relevés, places libres dans le menu) ou tout le compte réuni. Objets rangés « Dans les sacs » / « En banque », filtres, recherche, fiche et infobulle ; Maj + clic pour lier. Revient à tes sacs à la fermeture.
 
 ## v1.128.154 — 22/11/2026
 
