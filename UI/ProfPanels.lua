@@ -314,6 +314,31 @@ end
 -- Petit bouton « Désenchanter » accroché en haut à gauche des sacs ouverts (jeu ou autre addon) : ouvre ou ferme
 -- la fenêtre, collée aux sacs. Bouton ordinaire (rien de protégé), placé sur UIParent d'après le cadre des sacs.
 local bagBtn
+-- sacs d'un autre addon : boutons ronds de l'en-tête (à droite, près du haut) ; on se pose à gauche du premier
+local function headerSlot(bf)
+    if bf == _G.ContainerFrameCombinedBags or bf == _G.ContainerFrame1 then return nil end
+    local ok, best = pcall(function()
+        local top, cx = bf:GetTop(), (bf:GetLeft() or 0) + (bf:GetWidth() or 0) / 2
+        if not top then return nil end
+        local found
+        local function scan(fr, depth)
+            for _, ch in ipairs({ fr:GetChildren() }) do
+                if ch ~= bagBtn and ch:IsShown() and not (ch.IsForbidden and ch:IsForbidden()) then
+                    local w, h, l, t = ch:GetWidth(), ch:GetHeight(), ch:GetLeft(), ch:GetTop()
+                    local isBtn = ch.GetObjectType and ch:GetObjectType() == "Button"
+                    if isBtn and l and t and w >= 14 and w <= 40 and h >= 14 and h <= 40
+                        and top - t <= 45 and l > cx and (not found or l < found:GetLeft()) then
+                        found = ch
+                    end
+                    if depth < 2 then scan(ch, depth + 1) end
+                end
+            end
+        end
+        scan(bf, 0)
+        return found
+    end)
+    return ok and best or nil
+end
 local function syncBagBtn()
     local bf = PH():EnchantRank() and cfg().dePanel ~= false and bagFrame() or nil
     if not bf then
@@ -325,7 +350,7 @@ local function syncBagBtn()
         return
     end
     if not bagBtn then
-        bagBtn = UI:IconButton(_G.UIParent, "spark", 26,
+        bagBtn = UI:IconButton(_G.UIParent, "spark", 24,
             "Désenchanter ou vendre ? (clic droit sur un objet de la liste : toujours le désenchanter)")
         bagBtn:SetScript("OnClick", function()
             if inCombat() then return end
@@ -335,7 +360,10 @@ local function syncBagBtn()
         end)
     end
     bagBtn:ClearAllPoints()
-    bagBtn:SetPoint("BOTTOMLEFT", bf, "TOPLEFT", 0, 4)
+    -- dans l'en-tête des sacs d'un autre addon, à gauche de ses boutons ronds ; sinon au-dessus du coin des sacs
+    local slot = headerSlot(bf)
+    if slot then bagBtn:SetPoint("RIGHT", slot, "LEFT", -6, 0)
+    else bagBtn:SetPoint("BOTTOMLEFT", bf, "TOPLEFT", 0, 4) end
     bagBtn:SetFrameStrata(bf:GetFrameStrata() or "MEDIUM")
     bagBtn:SetFrameLevel((bf:GetFrameLevel() or 1) + 10)
     bagBtn:Show()

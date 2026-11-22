@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.106", date = "22/11/2026",
+        changed = {
+            "Bouton de désenchantement sur les sacs d'EllesmereUI : posé dans l'en-tête de l'inventaire, à gauche de ses boutons ronds (au-dessus du coin des sacs pour ceux du jeu).",
+        },
+    },
+    {
         version = "1.128.105", date = "22/11/2026",
         added = {
             "Enchanteur : petit bouton (étincelle) au-dessus des sacs ouverts, ceux du jeu ou d'EllesmereUI : il ouvre ou ferme la fenêtre « Désenchanter ou vendre ? », collée aux sacs, même quand rien n'est conseillé au désenchantement.",
