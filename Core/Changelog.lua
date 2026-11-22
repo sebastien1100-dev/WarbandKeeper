@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.163", date = "22/11/2026",
+        changed = {
+            "Notre inventaire : un nouvel objet est marqué d'une petite pastille verte au lieu de l'étiquette « NEUF ».",
+        },
+    },
+    {
         version = "1.128.162", date = "22/11/2026",
         added = {
             "Remercier quand on te buffe : émote « merci » au joueur qui te donne un buff, seulement seul en monde ouvert (jamais en groupe, donjon, raid ni champ de bataille), une fois par joueur toutes les 2 min. Réglage dans QoL > Général > Groupe et confort.",

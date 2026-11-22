@@ -4555,7 +4555,6 @@ WK.Locales.enUS.text = {
     ["%s : plus forcé au désenchantement."] = "%s: no longer forced to disenchant.",
     ["Marqué"] = "Marked",
     ["Inventaire changé : recharger l'interface pour l'appliquer."] = "Inventory changed: reload the interface to apply it.",
-    ["NEUF"] = "NEW",
     ["DE"] = "DE",
     ["Survole un objet : son prix, qui en a besoin sur le compte et ce que tu peux en faire."] = "Hover an item: its price, who needs it on the account and what you can do with it.",
     ["%d / %d places"] = "%d / %d slots",

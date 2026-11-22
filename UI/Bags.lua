@@ -148,7 +148,9 @@ local function classify(e, ctx)
     elseif classID == 0 then info.cat = "cons"
     else info.cat = "other" end
     -- pastille (une seule, la plus utile)
-    if info.cat == "new" then info.badge, info.badgeCol = T("NEUF"), C.positive end
+    -- nouvel objet : une simple pastille verte (pas de texte) ; les autres pastilles passent devant
+    if info.cat == "new" then info.badge, info.badgeCol, info.dot = "", C.positive, true end
+    if info.upgrade or info.bis == "mine" or info.de or ship or questItem then info.dot = nil end
     if info.upgrade then info.badge, info.badgeCol = "+" .. math.floor(info.upgrade + 0.5), C.positive
     elseif info.bis == "mine" then info.badge, info.badgeCol = T("BiS"), C.gold
     elseif info.de then info.badge, info.badgeCol = T("DE"), C.plan
@@ -309,7 +311,8 @@ local function paintButton(b, e)
         local col = info.badgeCol or { UI:Accent() }
         tag.bg:SetColor(col[1], col[2], col[3], 1)
         tag.t:SetText(info.badge)
-        tag:SetWidth(math.max(14, (tag.t:GetStringWidth() or 10) + 8))
+        if info.dot then tag:SetSize(10, 10)
+        else tag:SetSize(math.max(14, (tag.t:GetStringWidth() or 10) + 8), 13) end
         tag:Show()
     else tag:Hide() end
     -- fond de case : le nôtre (cadre brillant du jeu masqué, repeint ici car le jeu peut le remettre)
