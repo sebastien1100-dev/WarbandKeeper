@@ -71,6 +71,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.84 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Recherche de groupe, « Mes demandes » : vidées toutes seules quand tu rejoins un groupe, et une petite corbeille en tête de liste pour tout vider à la main (avant, elles restaient 3 heures).
+- Recherche de groupe : l'onglet « Récents » s'appelle « Joueurs croisés », avec une ligne qui explique les étoiles (3 = à refaire, 1 = en bas des listes et prévenu s'ils rejoignent ton groupe).
+
 ## v1.128.83 — 22/11/2026
 
 _Un /reload suffit._

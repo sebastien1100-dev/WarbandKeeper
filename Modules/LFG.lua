@@ -538,9 +538,22 @@ end
 WK:On("PLAYER_ENTERING_WORLD", function()
     if not rosterSeeded then scanRoster(false) end
 end)
+-- Vide « Mes demandes » (bouton de la page, et en rejoignant un groupe : elles ne servent plus)
+function M:ClearRequests()
+    for k in pairs(self.requests) do self.requests[k] = nil end
+    local cfg = self:Config()
+    if cfg.requests then for k in pairs(cfg.requests) do cfg.requests[k] = nil end end
+end
+local wasGrouped
 WK:On("GROUP_ROSTER_UPDATE", function()
     scanRoster(rosterSeeded)
+    local grouped = (_G.IsInGroup and _G.IsInGroup()) and true or false
+    if wasGrouped == false and grouped and next(M.requests) then M:ClearRequests() end
+    wasGrouped = grouped
     WK:NotifyChanged()
+end)
+WK:On("PLAYER_ENTERING_WORLD", function()
+    if wasGrouped == nil then wasGrouped = (_G.IsInGroup and _G.IsInGroup()) and true or false end
 end)
 
 local function whisper(name, msg)

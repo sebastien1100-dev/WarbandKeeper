@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.84", date = "22/11/2026",
+        changed = {
+            "Recherche de groupe, « Mes demandes » : vidées toutes seules quand tu rejoins un groupe, et une petite corbeille en tête de liste pour tout vider à la main (avant, elles restaient 3 heures).",
+            "Recherche de groupe : l'onglet « Récents » s'appelle « Joueurs croisés », avec une ligne qui explique les étoiles (3 = à refaire, 1 = en bas des listes et prévenu s'ils rejoignent ton groupe).",
+        },
+    },
+    {
         version = "1.128.83", date = "22/11/2026",
         changed = {
             "Barre de vol : un seul cadre, affiché pendant tout le vol (avant : une petite pilule et un volet qui ne s'ouvrait qu'au survol). Trajet avec les relais, temps restant en gros, barre de progression, heures de départ et d'arrivée sur leur ligne (elles ne passent plus sous les boutons), « Atterrir » et « Statistiques ».",

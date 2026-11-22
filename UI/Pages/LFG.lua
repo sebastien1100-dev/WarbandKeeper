@@ -207,7 +207,7 @@ UI:RegisterPage({
         right:SetPoint("BOTTOMRIGHT")
         right:SetWidth(RIGHT_W)
         self.rightTab = "requests"
-        self.rightSeg = UI:Segmented(right, { { "requests", "Mes demandes" }, { "recent", "Récents" } },
+        self.rightSeg = UI:Segmented(right, { { "requests", "Mes demandes" }, { "recent", "Joueurs croisés" } },
             function(v) self.rightTab = v; self:Refresh() end, 24)
         self.rightSeg:SetPoint("TOPLEFT", 12, -10)
         self.rightSeg:Select("requests")
@@ -247,6 +247,21 @@ UI:RegisterPage({
             end
             return r
         end)
+        -- en tête de « Mes demandes » : nombre et petite corbeille pour tout vider
+        self.reqHead = _G.CreateFrame("Frame", nil, rlist.child)
+        self.reqHead:SetSize(RIGHT_W - 28, 20)
+        self.reqHead.t = UI:Text(self.reqHead, 10, C.dim)
+        self.reqHead.t:SetPoint("LEFT", 0, 0)
+        self.reqHead.clear = UI:IconButton(self.reqHead, "trash", 18, T("Vider mes demandes"))
+        self.reqHead.clear:SetPoint("RIGHT", 0, 0)
+        self.reqHead.clear:SetScript("OnClick", function() LFG:ClearRequests(); self:Refresh() end)
+        -- en tête de « Joueurs croisés » : à quoi servent les étoiles
+        self.recentHead = UI:Text(rlist.child, 10, C.dim)
+        self.recentHead:SetWidth(RIGHT_W - 28)
+        self.recentHead:SetJustifyH("LEFT")
+        if self.recentHead.SetWordWrap then self.recentHead:SetWordWrap(true) end
+        self.recentHead:SetText(T("Joueurs de tes groupes. Note-les : 3 étoiles = à refaire ;"
+            .. " 1 étoile = en bas des listes, et tu es prévenu s'ils rejoignent ton groupe."))
         self.noRecent = UI:Text(right, 11, C.dim)
         self.noRecent:SetPoint("TOPLEFT", 14, -46)
         self.noRecent:SetPoint("RIGHT", -14, 0)
@@ -1015,8 +1030,13 @@ UI:RegisterPage({
         local showReq = self.rightTab == "requests"
         local _, g = LFG:Config()
         self.noRecent:SetShown(not showReq and #g.recent == 0)
+        self.recentHead:SetShown(not showReq and #g.recent > 0)
         if not showReq then
             local ry2 = 4
+            if #g.recent > 0 then
+                self.recentHead:ClearAllPoints(); self.recentHead:SetPoint("TOPLEFT", 14, -ry2)
+                ry2 = ry2 + (self.recentHead:GetStringHeight() or 24) + 10
+            end
             for i, e in ipairs(g.recent) do
                 if i > 30 then break end
                 local row = self.recents:Get()
@@ -1040,6 +1060,12 @@ UI:RegisterPage({
         for name, q in pairs(LFG.requests) do table.insert(list, { name = name, q = q }) end
         table.sort(list, function(a, b) return a.q.t > b.q.t end)
         local ry = 4
+        self.reqHead:SetShown(showReq and #list > 0)
+        if showReq and #list > 0 then
+            self.reqHead:ClearAllPoints(); self.reqHead:SetPoint("TOPLEFT", 14, -ry)
+            self.reqHead.t:SetText(string.format(T("%d demande(s) · vidées en rejoignant un groupe"), #list))
+            ry = ry + 26
+        end
         for i, e in ipairs(list) do
             if i > 30 or not showReq then break end
             local row = self.reqs:Get()
