@@ -328,7 +328,7 @@ UI:RegisterPage({
                 r.fill = r:CreateTexture(nil, "ARTWORK"); r.fill:SetHeight(6); r.fill:SetPoint("TOPLEFT", r.track, "TOPLEFT")
                 col.rows[k0] = r
             end
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("RIGHT", col, "RIGHT", 0, 0)
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", col, "TOPRIGHT", 0, -y)
             local c = it[3] or C.muted
             r.dot:SetVertexColor(c[1], c[2], c[3], 1)
             r.name:SetText(it[1])

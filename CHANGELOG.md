@@ -72,6 +72,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.119 — 22/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…) ; ceux qui restent sont centrés exprès ou n'en ont pas besoin.
+
 ## v1.128.118 — 22/11/2026
 
 _Un /reload suffit._

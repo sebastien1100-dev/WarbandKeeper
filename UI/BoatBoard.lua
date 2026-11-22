@@ -537,7 +537,8 @@ local function build()
             local c = card(idx)
             c.port, c.onClick = p, nil
             if c.barBg then c.barBg:Hide(); c.barFill:Hide() end
-            c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y); c:SetPoint("RIGHT", root, "RIGHT", 0, 0)
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y)
+            c:SetPoint("TOPRIGHT", root, "TOPRIGHT", 0, -y)
             local isSel = p.name == self.selected
             c.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
             if isSel then c.edge:SetColor(ar, ag, ab, 1) else c.edge:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1) end
@@ -698,7 +699,8 @@ local function build()
             idx = idx + 1
             local c = card(idx)
             c.port, c.onClick = nil, nil
-            c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y); c:SetPoint("RIGHT", root, "RIGHT", 0, 0)
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", root, "TOPLEFT", 0, -y)
+            c:SetPoint("TOPRIGHT", root, "TOPRIGHT", 0, -y)
             c.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
             if sel then c.edge:SetColor(ar, ag, ab, 1) else c.edge:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1) end
             c.name:SetText(name); c.meta:SetText(meta or "")

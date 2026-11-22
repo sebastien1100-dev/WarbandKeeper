@@ -552,7 +552,8 @@ UI:RegisterPage({
         local b1 = UI:Button(box, "Principal", nil, 28, "primary"); b1:SetPoint("BOTTOMLEFT", 12, 14)
         local b2 = UI:Button(box, "Secondaire", nil, 28, "secondary"); b2:SetPoint("LEFT", b1, "RIGHT", 8, 0)
         local tg = UI:Toggle(box, function() return true end, function() end); tg:SetPoint("BOTTOMRIGHT", -14, 18)
-        local note = UI:Text(rc, 11, C.muted); note:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 4, -12); note:SetPoint("RIGHT", 0, 0)
+        local note = UI:Text(rc, 11, C.muted); note:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 4, -12)
+        note:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -12)
         note:SetJustifyH("LEFT"); if note.SetWordWrap then note:SetWordWrap(true) end
         note:SetText(WK.T("Chaque réglage change l'aperçu et la fenêtre tout de suite ; les curseurs, au relâchement."))
 

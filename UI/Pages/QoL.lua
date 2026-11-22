@@ -1116,7 +1116,7 @@ UI:RegisterPage({
                 r.name:SetJustifyH("LEFT")
                 r.sub = UI:Text(r, 10, C.dim)
                 r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -2)
-                r.sub:SetPoint("RIGHT", -150, 0)
+                r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -2)
                 r.sub:SetJustifyH("LEFT")
                 r.del = UI:IconButton(r, "trash", 24, "Maj + clic : supprimer la note", true)
                 r.del:SetPoint("RIGHT", -4, 0)

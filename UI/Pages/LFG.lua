@@ -246,7 +246,7 @@ UI:RegisterPage({
             r.name:SetWordWrap(false)
             r.sub = UI:Text(r, 10, C.dim)
             r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
-            r.sub:SetPoint("RIGHT", -62, 0)
+            r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -3)
             r.sub:SetJustifyH("LEFT")
             r.sub:SetWordWrap(false)
             r.stars = {}

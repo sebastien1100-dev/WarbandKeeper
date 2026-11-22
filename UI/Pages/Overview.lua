@@ -350,7 +350,7 @@ UI:RegisterPage({
             if r.text.SetMaxLines then r.text:SetMaxLines(2) end
             r.sub = UI:Text(r, 11, C.muted)
             r.sub:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -3)
-            r.sub:SetPoint("RIGHT", -80, 0)
+            r.sub:SetPoint("TOPRIGHT", r.text, "BOTTOMRIGHT", 0, -3)
             r.sub:SetJustifyH("LEFT")
             r.go2 = UI:Button(r, "Ouvrir", 66, 24, "secondary")
             r.go2:SetPoint("RIGHT", -8, 0)
@@ -558,7 +558,7 @@ UI:RegisterPage({
             t.name:SetText(T(f.label))
             t.sub = UI:Text(t, 10, C.muted)
             t.sub:SetPoint("TOPLEFT", t.name, "BOTTOMLEFT", 0, -2)
-            t.sub:SetPoint("RIGHT", -50, 0)
+            t.sub:SetPoint("TOPRIGHT", t.name, "BOTTOMRIGHT", 0, -2)
             t.sub:SetJustifyH("LEFT")
             t.toggle = UI:Toggle(t, function() return WK:FeatureOn(f.key) end, function(v)
                 WK:SetFeature(f.key, v)

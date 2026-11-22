@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.119", date = "22/11/2026",
+        fixed = {
+            "Interface : 25 autres textes et lignes calés à la bonne hauteur (sous-titres sous un nom, listes de la carte des bateaux, cartes de la barre des sacs, journal des données, onglet Diagnostics, retour au corps, recherche…) ; ceux qui restent sont centrés exprès ou n'en ont pas besoin.",
+        },
+    },
+    {
         version = "1.128.118", date = "22/11/2026",
         changed = {
             "Interface : plus aucun texte sous la taille 10 ; les en-têtes de colonnes, légendes et petites mentions (HV, chrono et quêtes du donjon, collection de pêche, rares sur la carte, Options…) sont un peu plus lisibles.",

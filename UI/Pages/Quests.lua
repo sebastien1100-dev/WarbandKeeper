@@ -138,7 +138,7 @@ UI:RegisterPage({
             r.name:SetJustifyH("LEFT")
             r.sub = UI:Text(r, 11, C.muted)
             r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
-            r.sub:SetPoint("RIGHT", -190, 0)
+            r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -3)
             r.sub:SetJustifyH("LEFT")
             r.guide = UI:GuideButton(r, 28, "Guider jusqu'au donneur de la quête")
             r.guide:SetPoint("RIGHT", -10, 0)

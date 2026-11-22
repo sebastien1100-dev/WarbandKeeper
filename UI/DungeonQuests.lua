@@ -78,7 +78,7 @@ local function build()
     if f.title.SetWordWrap then f.title:SetWordWrap(true) end
     if f.title.SetMaxLines then f.title:SetMaxLines(2) end
     f.head = UI:Text(f, 10, C.muted)
-    f.head:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -2); f.head:SetPoint("RIGHT", -28, 0)
+    f.head:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -2); f.head:SetPoint("TOPRIGHT", f.title, "BOTTOMRIGHT", 0, -2)
     f.head:SetJustifyH("LEFT"); f.head:Hide()
     -- pastilles de compte de l'en-tête (maquette B) : « N en cours », « N à prendre »
     f.pills = {}

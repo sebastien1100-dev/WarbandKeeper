@@ -403,7 +403,7 @@ function UI.BuildDiagPanel(_, host)
     local desc = UI:Text(right, 12, C.muted); desc:SetPoint("TOPLEFT", 18, -44); desc:SetPoint("TOPRIGHT", -18, -44)
     desc:SetJustifyH("LEFT"); if desc.SetWordWrap then desc:SetWordWrap(true) end
     local hint = UI:Text(right, 11, C.gold)
-    hint:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -6); hint:SetPoint("RIGHT", -18, 0)
+    hint:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -6); hint:SetPoint("TOPRIGHT", desc, "BOTTOMRIGHT", 0, -6)
     hint:SetJustifyH("LEFT")
     local copy = UI:Button(right, "Copier", 90, 28, "secondary")
     copy:SetPoint("TOPRIGHT", -18, -12)
@@ -490,7 +490,8 @@ function UI.BuildDiagPanel(_, host)
                     end
                     r.d = d
                     r.n:SetText(T(d[2])); r.c:SetText("/wk " .. d[1])
-                    r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("RIGHT", sc.child, "RIGHT", 0, 0)
+                    r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y)
+                    r:SetPoint("TOPRIGHT", sc.child, "TOPRIGHT", 0, -y)
                     r:Show(); r:Paint()
                     y = y + 30
                 end

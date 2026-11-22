@@ -251,7 +251,8 @@ function UI.BuildDataJournal(_, parent)
                             if k > maxN then break end
                             nl = nl + 1
                             local l = qline(nl)
-                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly)
+                            l:SetPoint("TOPRIGHT", e, "TOPRIGHT", -12, -ly)
                             -- au-dessus de l'encart (sinon le clic tombait sur lui et repliait la liste)
                             l:SetFrameLevel(e:GetFrameLevel() + 3)
                             l.stripe:SetColorTexture(1, 1, 1, (k % 2 == 0) and 0.025 or 0)
@@ -274,7 +275,8 @@ function UI.BuildDataJournal(_, parent)
                         if #quests > maxN then
                             nl = nl + 1
                             local l = qline(nl)
-                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly); l:SetPoint("RIGHT", e, "RIGHT", -12, 0)
+                            l:ClearAllPoints(); l:SetPoint("TOPLEFT", e, "TOPLEFT", 40, -ly)
+                            l:SetPoint("TOPRIGHT", e, "TOPRIGHT", -12, -ly)
                             -- au-dessus de l'encart (sinon le clic tombait sur lui et repliait la liste)
                             l:SetFrameLevel(e:GetFrameLevel() + 3)
                             l.stripe:SetColorTexture(0, 0, 0, 0)
