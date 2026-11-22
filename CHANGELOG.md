@@ -71,6 +71,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.90 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Options > Apparence > Fenêtre : « Opacité des cadres à l'écran », un seul réglage pour toutes les fenêtres et cadres posés sur le jeu (quêtes du donjon, chrono, bilan, barre des sacs, listes du kit et des buffs, vol, statistiques de vol, quais…).
+- Toutes les fenêtres de l'addon, la fenêtre principale comprise, passent à l'opacité pleine quand la souris est dessus ; les éléments rendus plus transparents en mode édition aussi.
+
+### Modifications
+- Quêtes du donjon : l'opacité du fond suit le réglage commun (le curseur de la carte « Quêtes du donjon » est remplacé par un renvoi vers l'Apparence).
+
 ## v1.128.89 — 22/11/2026
 
 _Un /reload suffit._

@@ -12,7 +12,7 @@ local CreateFrame, GameTooltip, GetCursorPosition = CreateFrame, GameTooltip, Ge
 -- prendre : guidage vers son donneur ; « Prendre (n) » = Dungeons:PickQuests.
 -- Donjon montré : celui où l'on est, sinon celui dont l'entrée est à moins de 400 m (affichage
 -- « Près du donjon ») ; « Toujours » garde le dernier donjon vu ou choisi (page Donjons, LFG).
--- Réglages : Dungeons:Config() questWin (auto / always / off), questWinAlpha, questWinObjs,
+-- Réglages : Dungeons:Config() questWin (auto / always / off), questWinObjs (opacité : UI:HudAlpha, commune),
 -- questWinDone, questWinCombat, questWinAuto (cachée quand il ne reste rien) ; roue de la page Donjons.
 ---------------------------------------------------------------------------
 local W = 280
@@ -166,8 +166,7 @@ local function build()
     -- remplit la fenêtre ; data = { name, xp, log = {…}, avail = {…}, waiting = {…}, done = n, doneList, pick, preN }
     function f:Paint(data, cfg)
         local ar, ag, ab = UI:Accent()
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], (cfg.questWinAlpha or 92) / 100)
-        self.border:SetColor(C.border[1], C.border[2], C.border[3], math.min(1, (cfg.questWinAlpha or 92) / 100 + 0.1))
+        UI:HudPaint(self)
         self.lastData, self.lastCfg = data, cfg
         if self.dungeonKey ~= data.name then self.dungeonKey = data.name; self.off = 0 end
         self.title:SetText(data.name or "")

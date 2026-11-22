@@ -130,8 +130,8 @@ local function build()
         m.left:SetTextColor(r, g, b)
         m.left:SetText(left and fmt(left) or ("+" .. fmt(elapsed)))
         -- fond commun des cadres à l'écran (UI:HudBackground) : graphite et liseré gris
-        m.edge:SetColor(C.border[1], C.border[2], C.border[3], 1)
-        m.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], UI.HUD_ALPHA)
+        UI:HudRegister(m)
+        UI:HudPaint(m)
         local parts, nextStop = { (split(fl.from)) }, nil
         for _, st in ipairs(stops) do
             local passed = p and p >= st.frac

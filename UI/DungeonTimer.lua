@@ -90,6 +90,14 @@ local function build()
     -- fond graphite et liseré fin, comme la fenêtre des quêtes du donjon et les autres fenêtres à l'écran
     f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
     f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 1)
+    -- fond commun (opacité des Options, pleine au survol) ; « léger » : plus transparent hors survol
+    UI:HudRegister(f).hudCustom = true
+    function f:OnHudPaint()
+        if self.soft and not self.hudHover then
+            self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], math.min(0.6, UI:HudAlpha(self)))
+            self.edge:SetColor(C.border[1], C.border[2], C.border[3], 0.5)
+        else UI:HudPaint(self) end
+    end
     -- 1re ligne : nom du donjon à gauche, gros chrono à droite
     f.name = UI:Text(f, 13, C.gold)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
@@ -121,8 +129,8 @@ local function build()
         local sh = o.timerShow
         local W2 = o.timerWidth == "fixed" and o.timerFixed or trackerWidth()
         self:SetWidth(W2)
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], sh.soft and 0.6 or UI.HUD_ALPHA)
-        self.edge:SetColor(C.border[1], C.border[2], C.border[3], sh.soft and 0.5 or 1)
+        self.soft = sh.soft
+        self:OnHudPaint()
         local over = data.record and data.elapsed > data.record
         local y = 8
         -- nom et chrono
@@ -452,8 +460,8 @@ local function buildBanner()
         s:SetAlpha(math.max(0, a))
     end)
     function f:Fill(data)
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], UI.HUD_ALPHA)
-        self.edge:SetColor(C.border[1], C.border[2], C.border[3], 1)
+        UI:HudRegister(self)
+        UI:HudPaint(self)
         self.name:SetText(data.name or "")
         local sub = { T("bilan") }
         if (data.total or 0) > 0 then sub[#sub + 1] = string.format(T("%d / %d boss"), data.killed or 0, data.total) end

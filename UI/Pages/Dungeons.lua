@@ -144,8 +144,10 @@ UI:RegisterPage({
         UI:SettingRow(qcard, -40, "Fenêtre des quêtes",
             "Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace.",
             winSeg, 300)
-        UI:SettingRow(qcard, -90, "Opacité du fond", "0 % : texte seul sur le jeu ; 100 % : fond plein.",
-            UI:Slider(qcard, 200, 0, 100, 5, function() return dc.questWinAlpha or 92 end, function(v) dc.questWinAlpha = v; qref() end, "%d %%"), 220)
+        -- opacité : réglage commun à tous les cadres (Options > Apparence > Fenêtre)
+        local lookBtn = UI:Button(qcard, T("Apparence"), 110, 24, "secondary")
+        lookBtn:SetScript("OnClick", function() UI.OpenLookWindow() end)
+        UI:SettingRow(qcard, -90, "Opacité du fond", "Commune à tous les cadres à l'écran, pleine au survol.", lookBtn, 120)
         local function qrow(y, label, desc, field)
             local t = UI:Toggle(qcard, function() return dc[field] and true or false end, function(v) dc[field] = v; qref() end)
             table.insert(qtog, t)

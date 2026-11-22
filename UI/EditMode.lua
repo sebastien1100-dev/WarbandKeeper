@@ -102,6 +102,11 @@ function UI:RegisterHUD(key, frame, opts)
     opts.default = opts.default or { 0, 0 }
     if not registry[key] then table.insert(order, key) end
     registry[key] = opts
+    -- opacité du mode édition : pleine au survol de la souris (UI/Theme.lua, hors combat pour un cadre protégé)
+    if frame and not frame.hudEditKey then
+        frame.hudEditKey, frame.hudProtected = key, opts.protected
+        table.insert(UI.hudAlphaFrames, frame)
+    end
     self:HUDApply(key)
     if self.editing then self:EditRefresh() end
 end

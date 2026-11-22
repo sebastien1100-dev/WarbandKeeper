@@ -94,6 +94,13 @@ local function buildSpace()
     f:SetFrameStrata("MEDIUM")
     f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 0)
     f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 1)
+    -- fond commun (opacité des Options, pleine au survol) ; réglage « sans fond » : rien du tout
+    UI:HudRegister(f).hudCustom = true
+    function f:OnHudPaint()
+        if self.noBg then
+            self.bg:SetColor(0, 0, 0, 0); self.edge:SetColor(0, 0, 0, 0)
+        else UI:HudPaint(self) end
+    end
     f.seps = {}
     for i = 1, 4 do
         local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
@@ -238,8 +245,8 @@ local function buildSpace()
         end
         self:SetWidth(#tiles * TILE + (#tiles - 1))
         -- sans fond (réglage barBg) : chiffres cernés de noir pour rester lisibles sur le jeu
-        self.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], bg and UI.HUD_ALPHA or 0)
-        self.edge:SetColor(C.border[1], C.border[2], C.border[3], bg and 1 or 0)
+        self.noBg = not bg
+        self:OnHudPaint()
         if self.outlined ~= nil and self.outlined ~= not bg or (self.outlined == nil and not bg) then
             self.outlined = not bg
             for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do

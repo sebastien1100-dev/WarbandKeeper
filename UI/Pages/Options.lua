@@ -415,7 +415,8 @@ UI:RegisterPage({
             UI:SettingRow(pf, 0, "Barre latérale", "Côté du menu, ou menu réduit en icônes.", sideSeg, 330)
             local opacity = UI:Slider(pf, 180, 0.6, 1, 0.05, function() return cfg.opacity or 1 end,
                 function(v) cfg.opacity = v; apply() end, "%.2f")
-            UI:SettingRow(pf, -46, "Opacité du fond", "Appliquée au relâchement.", opacity, 260)
+            UI:SettingRow(pf, -46, "Opacité du fond",
+                "Fenêtre principale, appliquée au relâchement ; pleine au survol.", opacity, 260)
             local slider = UI:Slider(pf, 180, 0.7, 1.3, 0.05, function() return cfg.scale or 1 end,
                 function(v) UI:ApplyScale(v) end, "%.2fx")
             UI:SettingRow(pf, -92, "Échelle de la fenêtre", "Appliquée au relâchement du curseur.", slider, 260)
@@ -425,17 +426,23 @@ UI:RegisterPage({
             self.portraitToggle = UI:Toggle(pf, function() return cfg.portraits ~= false end,
                 function(v) cfg.portraits = v; WK:NotifyChanged() end)
             UI:SettingRow(pf, -184, "Portraits des persos", "Vrai portrait pour le perso connecté, sinon icône de classe.", self.portraitToggle, 80)
+            local hud = UI:Slider(pf, 180, 0.3, 1, 0.05, function() return cfg.hudOpacity or UI.HUD_ALPHA end,
+                function(v) cfg.hudOpacity = v; UI.HudRefreshAll() end, "%.2f")
+            UI:SettingRow(pf, -230, "Opacité des cadres à l'écran",
+                "Toutes les fenêtres et cadres posés sur le jeu ; opacité pleine au survol de la souris.", hud, 260)
         end
         showTab(cfg.lookTab or "styles")
+        UI.lookShow = function(k) self:ShowSection("look"); showTab(k) end
         -- recherche de la barre latérale : un réglage trouvé ouvre son onglet
         current.tabOf = self.lookTabOf
         current.showTab = showTab
 
         ---------------------------------------------------------------- Partage et retour d'origine
         local STYLE_KEYS = { "accent", "accentRGB", "accent2", "bgTint", "font", "titleFont", "textScale", "rounding", "cardStyle",
-            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed", "skin" }
+            "opacity", "contrast", "bgTexture", "glow", "glowTint", "anim", "tipOpacity", "sideRight", "collapsed", "skin",
+            "hudOpacity" }
         -- bornes des curseurs : un code collé ne peut pas sortir de ce que l'Apparence propose
-        local STYLE_RANGE = { rounding = { 0, 1.4 }, textScale = { 0.85, 1.25 }, opacity = { 0.6, 1 }, glow = { 0, 2 }, tipOpacity = { 0.6, 1 } }
+        local STYLE_RANGE = { rounding = { 0, 1.4 }, textScale = { 0.85, 1.25 }, opacity = { 0.6, 1 }, glow = { 0, 2 }, tipOpacity = { 0.6, 1 }, hudOpacity = { 0.3, 1 } }
         local P = WK.modules.Profiles
         -- fenêtre du code de style : créée une seule fois (la page est refaite à chaque UI:Rebuild)
         local dlg = UI.styleCodeDlg

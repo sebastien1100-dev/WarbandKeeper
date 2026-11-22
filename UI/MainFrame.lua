@@ -305,7 +305,13 @@ createWindow = function(self)
     UI:Rounded(f, 16, 0, "BACKGROUND", -8):SetColor(unpack(C.frame))
     UI:Rounded(f, 15, 1, "BACKGROUND", -7):SetColor(unpack(C.inset))
     UI:Rounded(f, 12, 4, "BACKGROUND", -6):SetColor(unpack(C.trim))
-    UI:Rounded(f, 11, 5, "BACKGROUND", -5):SetColor(unpack(C.bg))
+    f.mainBg = UI:Rounded(f, 11, 5, "BACKGROUND", -5)
+    f.mainBg:SetColor(unpack(C.bg))
+    -- opacité du fond réglée (Options > Apparence > Fenêtre), pleine au survol de la souris (UI/Theme.lua)
+    UI:HudRegister(f, "window").hudCustom = true
+    f.OnHudPaint = function(s)
+        s.mainBg:SetColor(C.bg[1], C.bg[2], C.bg[3], s.hudHover and 0.98 or C.bg[4])
+    end
     -- Halo en haut, qui suit les coins arrondis.
     -- halo : intensité réglable (Options > Apparence, settings.ui.glow, 0 à 2 ; 1 = d'origine)
     local GH, GA, R = 220, 0.65 * math.max(0, math.min(2, cfg.glow or 1)), 11

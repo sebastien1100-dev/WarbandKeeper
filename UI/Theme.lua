@@ -206,20 +206,90 @@ function UI:Panel(frame, radius, bg, border)
 end
 
 -- Fond commun des fenêtres et cadres à l'écran (un seul fond pour tout l'addon) : graphite du thème (C.bg) et
--- liseré gris fin (C.border), coins de 10 px. kind = "window" (grandes fenêtres : opaque à 96 %) ou "hud" (cadres
--- posés sur le jeu : 92 %). frame.bg / frame.border comme UI:Panel ; UI:HudPaint(frame, kind, alpha?) les
--- recolore (après un changement de thème, ou un fond plus discret).
+-- liseré gris fin (C.border), coins de 10 px. kind = "window" (grandes fenêtres) ou "hud" (cadres posés sur le
+-- jeu). Opacité réglable pour tous (settings.ui.hudOpacity, Options > Apparence > Fenêtre ; les grandes fenêtres
+-- un peu plus opaques), pleine au survol de la souris. Fond et contour : frame.bg et frame.border (ou frame.edge).
 UI.HUD_ALPHA, UI.WINDOW_ALPHA = 0.92, 0.96
+UI.hudFrames, UI.hudAlphaFrames = {}, {}
+function UI.HudAlpha(_, frame, kind)
+    if frame and frame.hudHover then return 1 end
+    local ui = WK.DB and WK.DB.global and WK.DB.global.settings and WK.DB.global.settings.ui
+    local a = ui and ui.hudOpacity or UI.HUD_ALPHA
+    kind = kind or (frame and frame.hudKind)
+    if kind == "window" then a = math.min(1, a + 0.04) end
+    return a
+end
 function UI.HudPaint(_, frame, kind, alpha)
     local C = UI.colors
-    local a = alpha or (kind == "window" and UI.WINDOW_ALPHA or UI.HUD_ALPHA)
+    local a = alpha or UI:HudAlpha(frame, kind)
     if frame.bg then frame.bg:SetColor(C.bg[1], C.bg[2], C.bg[3], a) end
-    if frame.border then frame.border:SetColor(C.border[1], C.border[2], C.border[3], 1) end
+    local edge = frame.border or frame.edge
+    if edge then edge:SetColor(C.border[1], C.border[2], C.border[3], math.min(1, a + 0.15)) end
+end
+-- cadre qui a déjà son fond (frame.bg + frame.border / frame.edge) : suivi du survol et de l'opacité réglée
+function UI.HudRegister(_, frame, kind)
+    if frame.hudKind then return frame end
+    frame.hudKind = kind or "hud"
+    table.insert(UI.hudFrames, frame)
+    return frame
+end
+-- Options > Apparence > Fenêtre (réglage d'opacité des cadres), depuis un renvoi d'une autre page
+function UI.OpenLookWindow()
+    local ui = WK.DB.global.settings.ui
+    ui.optSection, ui.lookTab = "look", "window"
+    UI:ShowPage("options")
+    if UI.lookShow then UI.lookShow("window") end
 end
 function UI.HudBackground(_, frame, kind, radius)
     UI:Panel(frame, radius or 10, { 0, 0, 0, 1 }, UI.colors.border)
+    UI:HudRegister(frame, kind)
     UI:HudPaint(frame, kind)
     return frame
+end
+-- tous les cadres : réglage changé (Options) ou survol de la souris (10 fois par seconde, cadres affichés seulement)
+function UI.HudRefreshAll()
+    for _, f in ipairs(UI.hudFrames) do
+        if not f.hudCustom then UI:HudPaint(f) end
+        if f.OnHudPaint then pcall(f.OnHudPaint, f) end
+    end
+end
+do
+    local watcher = _G.CreateFrame("Frame")
+    local acc = 0
+    watcher:SetScript("OnUpdate", function(_, el)
+        acc = acc + el
+        if acc < 0.1 then return end
+        acc = 0
+        for _, f in ipairs(UI.hudFrames) do
+            if f:IsVisible() then
+                local over = f:IsMouseOver() and true or false
+                if over ~= (f.hudHover or false) then
+                    f.hudHover = over
+                    if not f.hudCustom then UI:HudPaint(f) end
+                    if f.OnHudPaint then pcall(f.OnHudPaint, f) end
+                end
+            elseif f.hudHover then
+                f.hudHover = false
+            end
+        end
+        -- cadres du mode édition dont l'opacité est baissée : pleine au survol
+        local fight = _G.InCombatLockdown and _G.InCombatLockdown()
+        for _, f in ipairs(UI.hudAlphaFrames) do
+            if f:IsVisible() and not UI.editing and not (f.hudProtected and fight) then
+                local e = UI:HUDEntry(f.hudEditKey)
+                local base = e and e.alpha or 1
+                if base < 1 then
+                    local over = f:IsMouseOver() and true or false
+                    if over ~= (f.hudAlphaOver or false) then
+                        f.hudAlphaOver = over
+                        f:SetAlpha(over and 1 or base)
+                    end
+                elseif f.hudAlphaOver then
+                    f.hudAlphaOver = nil
+                end
+            end
+        end
+    end)
 end
 
 -- Fenêtre collée à une fenêtre du jeu (talents, marchand, HV, courrier, sacs, métiers, carte…) : même strate

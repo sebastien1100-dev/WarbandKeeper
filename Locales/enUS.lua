@@ -3754,7 +3754,6 @@ WK.Locales.enUS.text = {
     ["Texte de l'interface."] = "Interface text.",
     ["Taille du texte"] = "Text size",
     ["Fenêtre tout de suite ; éléments à l'écran au prochain /reload."] = "Window right away; on-screen elements at the next /reload.",
-    ["Appliquée au relâchement."] = "Applied on release.",
     ["Vrai portrait pour le perso connecté, race et sexe pour les autres. Coupé : icône de classe."] = "Real portrait for the logged-in character, race and gender for others. Off: class icon.",
     ["Principal"] = "Primary",
     ["Secondaire"] = "Secondary",
@@ -3986,7 +3985,6 @@ WK.Locales.enUS.text = {
     ["après une autre quête (en cours)"] = "after another quest (in progress)",
     ["Fenêtre des quêtes"] = "Quest window",
     ["Jamais"] = "Never",
-    ["0 % : texte seul sur le jeu ; 100 % : fond plein."] = "0 %: text only over the game; 100 %: solid background.",
     ["Objectifs des quêtes en cours"] = "Objectives of quests in progress",
     ["Sous chaque quête de ton journal : ce qu'il reste à faire (Tueur défias 6/10…)."] = "Under each quest of your log: what is left to do (Defias Cutpurse 6/10…).",
     ["Ligne « Faites »"] = "\"Done\" line",
@@ -4488,4 +4486,8 @@ WK.Locales.enUS.text = {
         "groups in total",
     ["groupe en tout"] =
         "group in total",
+    ["Opacité des cadres à l'écran"] = "On-screen frame opacity",
+    ["Toutes les fenêtres et cadres posés sur le jeu ; opacité pleine au survol de la souris."] = "Every window and frame placed over the game; full opacity on mouseover.",
+    ["Fenêtre principale, appliquée au relâchement ; pleine au survol."] = "Main window, applied on release; full on mouseover.",
+    ["Commune à tous les cadres à l'écran, pleine au survol."] = "Shared by all on-screen frames, full on mouseover.",
 }

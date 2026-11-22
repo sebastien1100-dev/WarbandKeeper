@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.90", date = "22/11/2026",
+        added = {
+            "Options > Apparence > Fenêtre : « Opacité des cadres à l'écran », un seul réglage pour toutes les fenêtres et cadres posés sur le jeu (quêtes du donjon, chrono, bilan, barre des sacs, listes du kit et des buffs, vol, statistiques de vol, quais…).",
+            "Toutes les fenêtres de l'addon, la fenêtre principale comprise, passent à l'opacité pleine quand la souris est dessus ; les éléments rendus plus transparents en mode édition aussi.",
+        },
+        changed = {
+            "Quêtes du donjon : l'opacité du fond suit le réglage commun (le curseur de la carte « Quêtes du donjon » est remplacé par un renvoi vers l'Apparence).",
+        },
+    },
+    {
         version = "1.128.89", date = "22/11/2026",
         fixed = {
             "Statistiques de vol : les noms du départ et de l'arrivée sur la carte étaient peu lisibles (gris sur la carte claire) et coupés au bord ; ils sont clairs, cernés de noir et restent dans le cadre.",
