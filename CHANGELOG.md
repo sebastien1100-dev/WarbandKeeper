@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.85 — 22/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Kit de camp : la liste ne montre plus la nourriture « Bien nourri » ni la boisson ; seulement le feu, les objets de camp de tes métiers et le sac de couchage. La case « kit » ne signale plus « Bien nourri absent ».
+
 ## v1.128.84 — 22/11/2026
 
 _Un /reload suffit._

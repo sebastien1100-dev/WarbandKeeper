@@ -229,8 +229,9 @@ local function kindOf(id)
 end
 
 -- Kit de camp : ce que le perso a dans ses sacs, dans l'ordre d'affichage
--- { { id, kind = "fire"|"object"|"bag"|"fed"|"drink", count, o?, tier? } }
-function M:Kit()
+-- { { id, kind = "fire"|"object"|"bag"|"fed"|"drink", count, o?, tier? } } ; la nourriture « Bien nourri » et la
+-- boisson seulement avec withFood (le kit affiché n'en montre plus : feu, objets de métier, sac de couchage)
+function M:Kit(withFood)
     local c = bagCounts()
     local out = {}
     local fire
@@ -246,6 +247,7 @@ function M:Kit()
         if best then table.insert(out, { id = best.id, kind = "object", count = c[best.id], o = o, tier = best.tier }) end
     end
     if (c[M.SLEEPING_BAG] or 0) > 0 then table.insert(out, { id = M.SLEEPING_BAG, kind = "bag", count = 1 }) end
+    if not withFood then return out end
     local level = (UnitLevel and UnitLevel("player")) or 1
     local best = {}
     for id, n in pairs(c) do
@@ -262,7 +264,7 @@ function M:Kit()
     return out
 end
 function M:HasFedFood()
-    for _, e in ipairs(self:Kit()) do if e.kind == "fed" then return e end end
+    for _, e in ipairs(self:Kit(true)) do if e.kind == "fed" then return e end end
 end
 
 -- Ce que chaque perso peut apporter : { { key, c, prof, rank, item, effect, tier } }

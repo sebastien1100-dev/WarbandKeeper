@@ -4260,8 +4260,6 @@ WK.Locales.enUS.text = {
     ["Dans le donjon"] = "In the dungeon",
     ["Seulement dans le donjon, avec ses quêtes. Glisser son titre la déplace."] =
         "Only inside the dungeon, with its quests. Drag its title to move it.",
-    ["Bien nourri absent"] =
-        "No Well Fed",
     ["Clic : replier le kit"] =
         "Click: fold the kit",
     ["Clic : dérouler le kit"] =

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.85", date = "22/11/2026",
+        changed = {
+            "Kit de camp : la liste ne montre plus la nourriture « Bien nourri » ni la boisson ; seulement le feu, les objets de camp de tes métiers et le sac de couchage. La case « kit » ne signale plus « Bien nourri absent ».",
+        },
+    },
+    {
         version = "1.128.84", date = "22/11/2026",
         changed = {
             "Recherche de groupe, « Mes demandes » : vidées toutes seules quand tu rejoins un groupe, et une petite corbeille en tête de liste pour tout vider à la main (avant, elles restaient 3 heures).",

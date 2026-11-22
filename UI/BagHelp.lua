@@ -159,7 +159,6 @@ local function buildSpace()
             _G.GameTooltip:AddLine(string.format(T("Avantages du camp · %s"), UI:AgoShort(perk, true)),
                 UI.RGB(C.positive))
         end
-        if not (Cp.auras and Cp.auras.fed) then _G.GameTooltip:AddLine(T("Bien nourri absent"), UI.RGB(C.negative)) end
         local open = UI.CampKitOpen and UI:CampKitOpen()
         _G.GameTooltip:AddLine(open and T("Clic : replier le kit") or T("Clic : dérouler le kit"), 0.6, 0.6, 0.6)
         _G.GameTooltip:Show()
@@ -301,9 +300,8 @@ function UI:RefreshBagSpace()
         -- temps restant des avantages du camp (vert), sinon « kit » ; rouge si « Bien nourri » manque
         local Cp = WK.modules.Camp
         local perk = Cp.auras and Cp.Remaining(Cp.auras.perk)
-        local fedMissing = not (Cp.auras and Cp.auras.fed)
         local txt = (perk and perk > 0) and UI:AgoShort(perk, true) or T("kit")
-        local col = (perk and perk > 0) and C.positive or (fedMissing and C.warning) or { UI:Accent() }
+        local col = (perk and perk > 0) and C.positive or { UI:Accent() }
         space.kit:Paint(col, txt)
     end
     -- liste du kit ouverte : replacée si la barre a changé de largeur (hors combat)
