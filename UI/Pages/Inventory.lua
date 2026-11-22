@@ -625,6 +625,16 @@ UI:RegisterPage({
         self.stashSets = sets
         local charDd = UI:Dropdown(sets, 220, 30, {}, function(v) cfg.ahChar = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged() end)
         self.stashCharDd = charDd
+        -- liste des persos remplie dès que la carte se montre (elle vit aussi dans la roue, hors vue Rangement)
+        local function fillAhChar()
+            local opts = { { "none", T("Aucun") } }
+            for _, e in ipairs(UI:SortedCharacters()) do table.insert(opts, { e.key, WK:CharName(e.c, e.key) }) end
+            charDd:SetOptions(opts)
+            charDd:Select(cfg.ahChar or "none")
+        end
+        self.FillAhChar = fillAhChar
+        sets:HookScript("OnShow", fillAhChar)
+        fillAhChar()
         UI:SettingRow(sets, -40, "Perso qui vend à l'HV", "Il reçoit par courrier les composants dont aucun de tes persos n'a besoin. « Aucun » : tout est proposé au marchand.", charDd, 220)
         UI:SettingRow(sets, -86, "Vendre à l'HV à partir de", "Valeur du lot au prix du scan de l'HV ; en dessous, il est proposé au marchand.",
             UI:Slider(sets, 220, 0, 500, 10, function() return math.floor((cfg.minAH or 5000) / 100) end,
@@ -646,10 +656,7 @@ UI:RegisterPage({
         local W = math.max(400, (self.stashPane:GetWidth() or 600) - 14)
         self.stashPane.child:SetWidth(W)
         -- menu du perso HV
-        local opts = { { "none", T("Aucun") } }
-        for _, e in ipairs(UI:SortedCharacters()) do table.insert(opts, { e.key, WK:CharName(e.c, e.key) }) end
-        self.stashCharDd:SetOptions(opts)
-        self.stashCharDd:Select(cfg.ahChar or "none")
+        self.FillAhChar()
         local r = S:Route()
         self.stashCols:Reset(); self.stashRows:Reset()
         local total = 0

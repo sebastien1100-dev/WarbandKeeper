@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.127", date = "22/11/2026",
+        fixed = {
+            "Inventaire > roue > Rangement : la liste « Perso qui vend à l'HV » était vide tant qu'on n'avait pas ouvert la vue Rangement.",
+        },
+    },
+    {
         version = "1.128.126", date = "22/11/2026", restart = true,
         added = {
             "Inventaire > Monnaies : tableau des monnaies du compte, une colonne par perso et le total (marques des champs de bataille, insignes et pierres de l'Aube d'argent, pièces de Zul'Gurub, scarabées d'Ahn'Qiraj, tickets de Sombrelune, et l'onglet Monnaies du jeu s'il existe). Filtres JcJ, Réputations, Raids, Évènements.",
