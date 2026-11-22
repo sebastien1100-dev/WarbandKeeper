@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.82", date = "22/11/2026",
+        added = {
+            "Statistiques de vol : six cartes de plus tirées des statistiques du jeu, additionnées sur tes persos : Créatures (tuées, la plus chassée, bestioles), Morts (dont en donjon, noyades, chutes), Richesse (argent gagné, plus grosse fortune, dépensé en voyages), Voyages (trajets aériens, pierre de foyer), Consommables (boissons, denrées, potions) et Campements (le plus campeur). Chaque perso est relu à sa connexion et au décollage : un perso pas encore reconnecté n'est pas compté.",
+        },
+    },
+    {
         version = "1.128.81", date = "22/11/2026",
         added = {
             "/wk statsjeu : liste les statistiques de la fenêtre Statistiques du jeu que WoW Forever remplit vraiment pour ton perso (nom, valeur, catégorie), pour choisir celles à montrer dans les statistiques de vol.",

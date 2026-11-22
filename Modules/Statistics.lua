@@ -154,3 +154,70 @@ function M.GameStatsDiag()
         WK:Print(string.format("  [%s] %s : %s (n° %d)", e.cat, e.name or "?", e.value, e.id))
     end
 end
+
+---------------------------------------------------------------------------
+-- Statistiques du jeu relevées par perso (characters[perso].gstats = { [n°] = { v = nombre, l = libellé } },
+-- gstatsAt) : seulement celles que montre la fenêtre de vol (UI/FlightStats.lua). Relues à la connexion et au
+-- décollage (le perso connecté seulement : le jeu ne donne pas celles des autres).
+---------------------------------------------------------------------------
+M.GAME_STATS = {
+    camps = 64222, kills = 107, critterKills = 108, topCreature = 1336,
+    moneyTotal = 328, moneyMax = 334, moneyTravel = 1146, moneyVendors = 921,
+    deaths = 60, deathsDungeon = 321, drowned = 112, fell = 114,
+    flights = 349, hearth = 353,
+    healPots = 345, manaPots = 922, drinks = 346, food = 347,
+    questsDone = 98, questsAbandoned = 94,
+}
+-- « 31|T…GoldIcon…|t 46|T…SilverIcon…|t 4|T…CopperIcon…|t » » cuivre ; « 1819 (Humanoïdes) » » 1819, « Humanoïdes »
+local function parseStat(raw)
+    if raw == nil or (_G.issecretvalue and _G.issecretvalue(raw)) then return nil end
+    raw = tostring(raw)
+    -- somme d'argent : chiffres suivis d'icônes de pièces (|T…|t ou |A…|a selon le client) ; lus de droite à
+    -- gauche = cuivre, argent, or (« 31 46 4 » = 31 po 46 pa 4 pc ; « 79 » seul = 79 pc)
+    if raw:find("|T", 1, true) or raw:find("|A", 1, true) then
+        local nums = {}
+        for d in raw:gsub("|T.-|t", " "):gsub("|A.-|a", " "):gmatch("%d+") do nums[#nums + 1] = tonumber(d) end
+        if #nums > 0 then
+            local c, mult = 0, 1
+            for k = #nums, math.max(1, #nums - 2), -1 do c = c + nums[k] * mult; mult = mult * 100 end
+            return c, nil, true
+        end
+    end
+    local plain = raw:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", "")
+    local n = tonumber((plain:match("^%s*([%d%s%.,]+)") or ""):gsub("[%s%.,]", ""), 10)
+    if not n then return nil end
+    local label = plain:match("%((.-)%)")
+    return n, label
+end
+M.ParseStat = parseStat
+function M.RecordGameStats()
+    if not _G.GetStatistic then return end
+    local c = WK.DB:Me()
+    if not c then return end
+    local t = c.gstats or {}
+    local any = false
+    for _, id in pairs(M.GAME_STATS) do
+        local ok, raw = pcall(_G.GetStatistic, id)
+        local v, l = parseStat(ok and raw)
+        if v then t[id] = { v = v, l = l }; any = true end
+    end
+    if any then c.gstats, c.gstatsAt = t, _G.time() end
+end
+-- total du compte, et le perso qui a le plus gros chiffre : total, meilleur, clé du meilleur, nombre de persos
+function M.GameStatSum(id)
+    local total, best, bestKey, n = 0, nil, nil, 0
+    for key, c in pairs(WK.DB.global.characters or {}) do
+        local e = c.gstats and c.gstats[id]
+        if e and e.v then
+            n = n + 1
+            total = total + e.v
+            if not best or e.v > best.v then best, bestKey = e, key end
+        end
+    end
+    return total, best, bestKey, n
+end
+WK:On("PLAYER_LOGIN", function() _G.C_Timer.After(8, function() pcall(M.RecordGameStats) end) end)
+WK:On("PLAYER_CONTROL_LOST", function()
+    if _G.UnitOnTaxi and _G.UnitOnTaxi("player") then pcall(M.RecordGameStats) end
+end)
+WK:On("PLAYER_LEVEL_UP", function() _G.C_Timer.After(2, function() pcall(M.RecordGameStats) end) end)

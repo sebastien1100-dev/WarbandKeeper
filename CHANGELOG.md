@@ -71,6 +71,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.82 — 22/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Statistiques de vol : six cartes de plus tirées des statistiques du jeu, additionnées sur tes persos : Créatures (tuées, la plus chassée, bestioles), Morts (dont en donjon, noyades, chutes), Richesse (argent gagné, plus grosse fortune, dépensé en voyages), Voyages (trajets aériens, pierre de foyer), Consommables (boissons, denrées, potions) et Campements (le plus campeur). Chaque perso est relu à sa connexion et au décollage : un perso pas encore reconnecté n'est pas compté.
+
 ## v1.128.81 — 22/11/2026
 
 _Un /reload suffit._

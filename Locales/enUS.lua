@@ -4426,4 +4426,50 @@ WK.Locales.enUS.text = {
         "Game statistics: not readable on this client.",
     ["Statistiques du jeu : %d remplies sur %d pour ce perso."] =
         "Game statistics: %d filled out of %d for this character.",
+    [" (%d persos)"] =
+        " (%d characters)",
+    ["créatures tuées"] =
+        "creatures killed",
+    [" ; la plus chassée : %s (%s)"] =
+        "; most hunted: %s (%s)",
+    [" ; %s bestioles en passant"] =
+        "; %s critters along the way",
+    ["CRÉATURES"] =
+        "CREATURES",
+    ["%s en donjon"] =
+        "%s in dungeons",
+    ["%s noyade(s)"] =
+        "%s drowning(s)",
+    ["%s chute(s)"] =
+        "%s fall(s)",
+    ["morts sur le compte"] =
+        "deaths on the account",
+    [", dont "] =
+        ", including ",
+    ["MORTS"] =
+        "DEATHS",
+    ["gagnés en tout"] =
+        "earned in total",
+    [" ; plus grosse fortune : %s (%s)"] =
+        "; biggest fortune: %s (%s)",
+    [" ; %s dépensés en voyages"] =
+        "; %s spent on travel",
+    ["RICHESSE"] =
+        "WEALTH",
+    ["trajets aériens au total"] =
+        "flights in total",
+    [" ; pierre de foyer utilisée %s fois"] =
+        "; hearthstone used %s times",
+    ["VOYAGES"] =
+        "TRAVEL",
+    ["CONSOMMABLES"] =
+        "CONSUMABLES",
+    ["consommés : %s boissons, %s denrées, %s potions."] =
+        "consumed: %s drinks, %s food, %s potions.",
+    ["campements montés"] =
+        "camps set up",
+    [" ; le plus campeur : %s (%s)"] =
+        "; top camper: %s (%s)",
+    ["CAMPEMENTS"] =
+        "CAMPS",
 }

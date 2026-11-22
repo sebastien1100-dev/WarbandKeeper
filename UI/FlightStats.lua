@@ -37,6 +37,10 @@ local STYLE = {
     ["DONJONS"] = { "skull", "negative" }, ["PÊCHE"] = { "fish", "info" }, ["QUÊTES"] = { "bang", "warning" },
     ["RARES"] = { "crosshair", "rare" }, ["HÔTEL DES VENTES"] = { "chart", "gold" }, ["VOLS"] = { "griffon", "info" },
     ["COMPTE"] = { "users", "mint" }, ["RÉCOLTE"] = { "collect", "positive" },
+    -- statistiques du jeu (Modules/Statistics.lua : GameStatSum)
+    ["CRÉATURES"] = { "paw", "warning" }, ["MORTS"] = { "skull", "negative" }, ["RICHESSE"] = { "coin", "gold" },
+    ["VOYAGES"] = { "compass", "info" }, ["CONSOMMABLES"] = { "flask", "positive" },
+    ["CAMPEMENTS"] = { "fire", "warning" },
 }
 local function tone(key)
     if key == "accent" then local r, g, b = UI:Accent(); return { r, g, b } end
@@ -191,8 +195,77 @@ local function stories()
         if n == 0 then return nil end
         return { cat = T("RÉCOLTE"), big = num(n), text = T("récoltes notées sur la carte (filons et plantes).") }
     end)
+    -- statistiques du jeu, additionnées sur les persos relus (Modules/Statistics.lua)
+    local S = WK.modules.Statistics
+    local GS = S and S.GAME_STATS
+    local function sum(k) return S.GameStatSum(GS[k]) end
+    local function persos(n) return n > 1 and string.format(T(" (%d persos)"), n) or "" end
+    if GS then
+        add(function()
+            local n, _, _, cnt = sum("kills")
+            if n <= 0 then return nil end
+            local _, top = sum("topCreature")
+            local crit = sum("critterKills")
+            local txt = T("créatures tuées") .. persos(cnt)
+            if top and top.l then txt = txt .. string.format(T(" ; la plus chassée : %s (%s)"), top.l, num(top.v)) end
+            if crit > 0 then txt = txt .. string.format(T(" ; %s bestioles en passant"), num(crit)) end
+            return { cat = T("CRÉATURES"), big = num(n), text = txt .. "." }
+        end)
+        add(function()
+            local n, _, _, cnt = sum("deaths")
+            if n <= 0 then return nil end
+            local parts = {}
+            local dj, dr, fe = sum("deathsDungeon"), sum("drowned"), sum("fell")
+            if dj > 0 then parts[#parts + 1] = string.format(T("%s en donjon"), num(dj)) end
+            if dr > 0 then parts[#parts + 1] = string.format(T("%s noyade(s)"), num(dr)) end
+            if fe > 0 then parts[#parts + 1] = string.format(T("%s chute(s)"), num(fe)) end
+            local txt = T("morts sur le compte") .. persos(cnt)
+            if #parts > 0 then txt = txt .. T(", dont ") .. table.concat(parts, ", ") end
+            return { cat = T("MORTS"), big = num(n), text = txt .. "." }
+        end)
+        add(function()
+            local n, _, _, cnt = sum("moneyTotal")
+            if n <= 0 then return nil end
+            local _, best, bestKey = sum("moneyMax")
+            local travel = sum("moneyTravel")
+            local txt = T("gagnés en tout") .. persos(cnt)
+            if best and bestKey then
+                txt = txt .. string.format(T(" ; plus grosse fortune : %s (%s)"), gold(best.v),
+                    WK:CharName(WK.DB.global.characters[bestKey], bestKey))
+            end
+            if travel > 0 then txt = txt .. string.format(T(" ; %s dépensés en voyages"), gold(travel)) end
+            return { cat = T("RICHESSE"), big = gold(n), color = C.gold, text = txt .. "." }
+        end)
+        add(function()
+            local n, _, _, cnt = sum("flights")
+            if n <= 0 then return nil end
+            local h = sum("hearth")
+            local txt = T("trajets aériens au total") .. persos(cnt)
+            if h > 0 then txt = txt .. string.format(T(" ; pierre de foyer utilisée %s fois"), num(h)) end
+            return { cat = T("VOYAGES"), big = num(n), text = txt .. "." }
+        end)
+        add(function()
+            local dr, fo, hp, mp = sum("drinks"), sum("food"), sum("healPots"), sum("manaPots")
+            local n = dr + fo + hp + mp
+            if n <= 0 then return nil end
+            local txt = string.format(T("consommés : %s boissons, %s denrées, %s potions."),
+                num(dr), num(fo), num(hp + mp))
+            return { cat = T("CONSOMMABLES"), big = num(n), text = txt }
+        end)
+        add(function()
+            local n, best, bestKey, cnt = sum("camps")
+            if n <= 0 then return nil end
+            local txt = T("campements montés") .. persos(cnt)
+            if cnt > 1 and best and bestKey then
+                local who = WK:CharName(WK.DB.global.characters[bestKey], bestKey)
+                txt = txt .. string.format(T(" ; le plus campeur : %s (%s)"), who, num(best.v))
+            end
+            return { cat = T("CAMPEMENTS"), big = num(n), text = txt .. "." }
+        end)
+    end
     return out
 end
+UI.FlightStories = stories -- tests
 
 ---------------------------------------------------------------------------
 -- Fenêtre
