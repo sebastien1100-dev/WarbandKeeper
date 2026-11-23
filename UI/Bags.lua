@@ -307,7 +307,8 @@ local function newButton(bag, slot)
     -- Objet à ouvrir (paquet, coffre à butin) : le jeu refuse de l'ouvrir depuis le clic d'une case créée par un
     -- addon (ADDON_ACTION_FORBIDDEN « UNKNOWN() » dans UseContainerItem). Une couche invisible, posée seulement sur
     -- ces objets, prend le clic droit (l'addon l'ouvre à l'image suivante) et laisse passer le clic gauche vers la
-    -- case. Le clic du jeu n'est jamais remplacé : le remplacer rendait tous les clics « non sûrs » (potions comprises).
+    -- case. Le clic du jeu n'est jamais remplacé : le remplacer rendait tous les clics « non sûrs »
+    -- (potions comprises).
     local op = _G.CreateFrame("Button", nil, b)
     op:SetAllPoints()
     op:SetFrameLevel(b:GetFrameLevel() + 5)
@@ -462,7 +463,9 @@ local function paintButton(b, e)
     end
     b.wkEntry = e
     -- couche du clic droit : seulement sur un objet à ouvrir, hors marchand, banque, courrier, échange, HV
-    if b.wkOpen then b.wkOpen:SetShown(e ~= nil and e.bag ~= nil and not busyWindow() and lootable(e.bag, e.slot) ~= nil) end
+    if b.wkOpen then
+        b.wkOpen:SetShown(e ~= nil and e.bag ~= nil and not busyWindow() and lootable(e.bag, e.slot) ~= nil)
+    end
     if UI.ItemLockPaint then pcall(UI.ItemLockPaint, b) end
 end
 
