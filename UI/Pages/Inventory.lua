@@ -204,7 +204,8 @@ UI:RegisterPage({
         -- titres des deux groupes et trait entre eux
         bar.heads = {}
         for i, lab in ipairs({ "Objets", "Courrier" }) do
-            local h = UI:Text(bar, 11, C.text); h:SetText(UI:Upper(T(lab))) -- lisible : texte clair, comme les titres de carte
+            -- lisible : texte clair, comme les titres de carte
+            local h = UI:Text(bar, 11, C.text); h:SetText(UI:Upper(T(lab)))
             bar.heads[i] = h
         end
         bar.sep = bar:CreateTexture(nil, "ARTWORK"); bar.sep:SetSize(1, 20)
