@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.240 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Barre « Sacs, marchand et maître » : un bouton en tête de barre la replie ou la déplie d'un clic gauche. Repliée, une pastille rouge clignote dans son coin quand une case est en alerte (par exemple un buff qui manque). Réglage « Bouton pour replier » dans la carte de la barre.
+- Barre « Sacs, marchand et maître » : réglage « Taille des icônes » (petites, moyennes, grandes).
+
 ## v1.128.239 — 23/11/2026
 
 _Un /reload suffit._

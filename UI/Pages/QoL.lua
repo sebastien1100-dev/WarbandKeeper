@@ -542,7 +542,7 @@ UI:RegisterPage({
         do
             local bcfg = WK.modules.BagHelp:Config()
             local function bref() if UI.RefreshBagSpace then UI:RefreshBagSpace() end end
-            local bar = card("Barre sacs, marchand et maître", 40 + 12 * 46 + 3 * 22 + 8,
+            local bar = card("Barre sacs, marchand et maître", 40 + 14 * 46 + 3 * 22 + 8,
                 "tous ses réglages ici ; position en mode édition")
             local hud = function() return UI:HUDEntry("bagSpace") end
             local function happly() if UI.HUDApply then UI:HUDApply("bagSpace") end; bref() end
@@ -571,6 +571,18 @@ UI:RegisterPage({
             row("Opacité", "Transparence de toute la barre.",
                 UI:Slider(bar, 220, 0.3, 1, 0.05, function() return hud().alpha or 1 end,
                     function(v) hud().alpha = v; happly() end, "%.2f"), 240)
+            local zseg = UI:Segmented(bar, { { "s", "Petites" }, { "m", "Moyennes" }, { "l", "Grandes" } },
+                function(v) bcfg.barSize = v; bref(); lists() end, 24)
+            row("Taille des icônes", "Taille des cases et de leurs icônes (la barre entière : réglage Taille).",
+                zseg, 260)
+            zseg:Select(bcfg.barSize or "m")
+            row("Bouton pour replier", "En tête de barre : un clic replie ou déplie les cases. Repliée, une pastille"
+                    .. " rouge clignote sur le bouton quand une case est en alerte.",
+                toggle(bar, function() return bcfg.barFold ~= false end, function(v)
+                    bcfg.barFold = v
+                    if not v then bcfg.barFolded = nil end
+                    bref(); lists()
+                end), 80)
             row("Fond", "Sans fond : seulement les icônes et les chiffres, cernés de noir pour rester lisibles.",
                 toggle(bar, function() return bcfg.barBg ~= false end, function(v) bcfg.barBg = v; bref() end), 80)
             row("Traits entre les cases", "Un trait fin sépare deux cases.",

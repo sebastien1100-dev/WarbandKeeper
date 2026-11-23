@@ -24,6 +24,8 @@ local function inCombat() return InCombatLockdown and InCombatLockdown() or fals
 ---------------------------------------------------------------------------
 local space
 local TILE = 46
+-- taille des icônes (réglage barSize) : côté de la case, icône, texte
+local TILE_SIZES = { s = { 38, 18, 10 }, m = { 46, 22, 11 }, l = { 56, 28, 12 } }
 -- usure la plus basse de l'équipement porté (en %), ou nil
 local function minDurability()
     if not GetInventoryItemDurability then return nil end
@@ -86,6 +88,11 @@ local function newTile(parent, glyph)
     b.n = UI:Text(b, 11); b.n:SetPoint("BOTTOM", 0, 4)
     b.hl = b:CreateTexture(nil, "HIGHLIGHT"); b.hl:SetPoint("TOPLEFT", 3, -3); b.hl:SetPoint("BOTTOMRIGHT", -3, 3)
     b.hl:SetColorTexture(1, 1, 1, 0.06)
+    function b:Resize(side, ic)
+        self:SetSize(side, side)
+        self.icon:SetSize(ic, ic)
+        self.icon:ClearAllPoints(); self.icon:SetPoint("CENTER", 0, math.floor(side / 11 + 0.5))
+    end
     function b:Paint(col, txt)
         self.icon:SetVertexColor(col[1], col[2], col[3], 1)
         self.n:SetText(txt or ""); self.n:SetTextColor(col[1], col[2], col[3])
@@ -108,7 +115,7 @@ local function buildSpace()
         else UI:HudPaint(self) end
     end
     f.seps = {}
-    for i = 1, 4 do
+    for i = 1, 6 do
         local s = f:CreateTexture(nil, "ARTWORK"); s:SetWidth(1)
         s:SetColorTexture(1, 1, 1, 0.08)
         f.seps[i] = s
@@ -226,9 +233,81 @@ local function buildSpace()
         if UI.ToggleSelfBuffs then UI.ToggleSelfBuffs() end
         if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
     end)
+    -- bouton « replier » en tête de barre (maquette B) : clic gauche = replier ou déplier (réglage barFold) ;
+    -- replié, une pastille rouge respire dans son coin tant qu'une case est en alerte
+    f.fold = newTile(f, "menu")
+    f.fold:RegisterForClicks("LeftButtonUp")
+    f.fold.n:Hide()
+    f.fold.dot = f.fold:CreateTexture(nil, "OVERLAY")
+    f.fold.dot:SetTexture(UI.MEDIA .. "circle")
+    f.fold.dot:SetSize(9, 9); f.fold.dot:SetPoint("TOPRIGHT", -4, -7)
+    f.fold.dot:Hide()
+    f.fold.pulse = _G.CreateFrame("Frame", nil, f.fold)
+    f.fold.pulse:Hide()
+    f.fold.pulse:SetScript("OnUpdate", function(_, el)
+        local d = f.fold
+        d.ph = ((d.ph or 0) + el) % 1.6
+        local k = 0.5 - 0.5 * math.cos(d.ph / 1.6 * 2 * math.pi)
+        local c = C.negative
+        d.dot:SetVertexColor(c[1], c[2], c[3], 0.35 + 0.65 * k)
+        local z = 8 + 3 * k
+        d.dot:SetSize(z, z)
+    end)
+    -- cases en alerte (qui clignotent) : aujourd'hui la case des buffs
+    function f:Alerts()
+        local n = 0
+        for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do
+            if t.alertOn and t.wkWanted then n = n + 1 end
+        end
+        return n
+    end
+    function f:PaintFold()
+        local b = self.fold
+        local folded = BH():Config().barFolded and true or false
+        local r, g, bl = UI:Accent()
+        b.icon:SetVertexColor(r, g, bl, 1)
+        local alert = folded and self:Alerts() > 0
+        b.dot:SetShown(alert); b.pulse:SetShown(alert)
+    end
+    f.fold:SetScript("OnEnter", function(s)
+        local folded = BH():Config().barFolded
+        UI:TooltipOwner(s, "ANCHOR_TOP")
+        _G.GameTooltip:SetText(T("Sacs, marchand et maître"), 1, 1, 1)
+        local n = f:Alerts()
+        if folded and n > 0 then
+            _G.GameTooltip:AddLine(string.format(T("%d case(s) en alerte"), n), UI.RGB(C.negative))
+        end
+        _G.GameTooltip:AddLine(folded and T("Clic : déplier la barre") or T("Clic : replier la barre"), 0.6, 0.6, 0.6)
+        _G.GameTooltip:Show()
+    end)
+    f.fold:SetScript("OnClick", function(s)
+        local cfg = BH():Config()
+        cfg.barFolded = not cfg.barFolded or nil
+        UI:RefreshBagSpace()
+        if UI.RefreshCampKit and not inCombat() then pcall(UI.RefreshCampKit, UI) end
+        if UI.RefreshSelfBuffs and not inCombat() then pcall(UI.RefreshSelfBuffs) end
+        if s:IsMouseOver() then s:GetScript("OnEnter")(s) end
+    end)
     -- mise en page : cases visibles côte à côte, trait entre deux cases
     function f:Arrange(showV, showT, showK, showB)
-        local tiles = { self.bag }
+        local cfg = BH():Config()
+        local sz = TILE_SIZES[cfg.barSize or "m"] or TILE_SIZES.m
+        TILE = sz[1]
+        self:SetHeight(TILE)
+        local FW = math.floor(TILE * 0.62 + 0.5)
+        self.fold:Resize(TILE, sz[2] - 4); self.fold:SetWidth(FW)
+        for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do t:Resize(TILE, sz[2]) end
+        self.bag.wkWanted = true
+        self.vendor.wkWanted, self.trainer.wkWanted = showV and true, showT and true
+        self.kit.wkWanted, self.buffs.wkWanted = showK and true, showB and true
+        local useFold = cfg.barFold ~= false
+        local folded = useFold and cfg.barFolded
+        local tiles = {}
+        if useFold then tiles[1] = self.fold end
+        self.fold:SetShown(useFold)
+        self.bag:SetShown(not folded)
+        if folded then showV, showT, showK, showB = false, false, false, false
+        else tiles[#tiles + 1] = self.bag end
         if showV then tiles[#tiles + 1] = self.vendor end
         if showT then tiles[#tiles + 1] = self.trainer end
         if showK then tiles[#tiles + 1] = self.kit end
@@ -237,10 +316,11 @@ local function buildSpace()
         self.vendor:SetShown(showV and true or false)
         self.trainer:SetShown(showT and true or false)
         self.kit:SetShown(showK and true or false)
-        for i, t in ipairs(tiles) do
-            t:ClearAllPoints(); t:SetPoint("LEFT", (i - 1) * (TILE + 1), 0)
+        local x = 0
+        for _, t in ipairs(tiles) do
+            t:ClearAllPoints(); t:SetPoint("LEFT", x, 0)
+            x = x + t:GetWidth() + 1
         end
-        local cfg = BH():Config()
         local bg, seps = cfg.barBg ~= false, cfg.barSeps ~= false
         for i, s in ipairs(self.seps) do
             s:ClearAllPoints()
@@ -249,14 +329,15 @@ local function buildSpace()
                 s:Show()
             else s:Hide() end
         end
-        self:SetWidth(#tiles * TILE + (#tiles - 1))
+        self:SetWidth(math.max(1, x - 1))
         -- sans fond (réglage barBg) : chiffres cernés de noir pour rester lisibles sur le jeu
         self.noBg = not bg
         self:OnHudPaint()
-        if self.outlined ~= nil and self.outlined ~= not bg or (self.outlined == nil and not bg) then
-            self.outlined = not bg
+        local fkey = (bg and "b" or "o") .. sz[3]
+        if self.fontKey ~= fkey then
+            self.fontKey = fkey
             for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do
-                t.n:SetFont(UI.FONT, math.floor(11 * (UI.textScale or 1) + 0.5), bg and "" or "OUTLINE")
+                t.n:SetFont(UI.FONT, math.floor(sz[3] * (UI.textScale or 1) + 0.5), bg and "" or "OUTLINE")
                 t.n:SetShadowOffset(bg and 0 or 1, bg and 0 or -1)
                 t.n:SetShadowColor(0, 0, 0, bg and 0 or 1)
             end
@@ -271,6 +352,7 @@ local function buildSpace()
         self.kit:Paint(C.positive, "1h 52")
         self.buffs:Paint(C.negative, "2")
         self.buffs:Alert(true)
+        self:PaintFold()
     end
     f:Hide()
     f:SetScript("OnUpdate", function(s, el)
@@ -343,6 +425,7 @@ function UI:RefreshBagSpace()
             space.trainer:Paint(C.muted, distText(d))
         end
     end
+    space:PaintFold()
     space:Show()
 end
 

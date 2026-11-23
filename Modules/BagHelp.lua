@@ -18,7 +18,7 @@ local function itemCount(id)
     return (f and id and f(id)) or 0
 end
 local DEFAULTS = { space = true, low = 3, restock = true, wear = true, autoOpen = false, openMode = "list",
-    barBg = true, barSeps = true, buffAlert = true }
+    barBg = true, barSeps = true, buffAlert = true, barSize = "m", barFold = true }
 
 function M:Config()
     local g = WK.DB.global

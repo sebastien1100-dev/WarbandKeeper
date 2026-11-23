@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.240", date = "23/11/2026",
+        added = {
+            "Barre « Sacs, marchand et maître » : un bouton en tête de barre la replie ou la déplie d'un clic gauche. Repliée, une pastille rouge clignote dans son coin quand une case est en alerte (par exemple un buff qui manque). Réglage « Bouton pour replier » dans la carte de la barre.",
+            "Barre « Sacs, marchand et maître » : réglage « Taille des icônes » (petites, moyennes, grandes).",
+        },
+    },
+    {
         version = "1.128.239", date = "23/11/2026",
         changed = {
             "Bouton d'aspect du chasseur : l'icône de l'aspect fait maintenant 50 px (au lieu de 38), dans un anneau plus grand ; la petite icône de l'aspect suivant grandit aussi.",
