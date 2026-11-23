@@ -2097,7 +2097,7 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp", 40 + 4 * 46 + 8, "dans la barre des sacs, ou colonne près de la flamme")
+            local kc = card("Kit de camp", 40 + 5 * 46 + 8, "dans la barre des sacs, ou colonne près de la flamme")
             UI:SettingRow(kc, -40, "Kit de camp", "Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
@@ -2106,6 +2106,15 @@ UI:RegisterPage({
                 "Avantages restants, recharge des objets de camp, « Bien nourri »"
                     .. " (seulement hors de la barre des sacs).",
                 toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
+            local fdir = UI:Segmented(kc, { { "right", "À droite" }, { "left", "À gauche" }, { "up", "Au-dessus" },
+                { "down", "En dessous" } }, function(v)
+                campCfg.kitFlameDir = v
+                if UI.CampKitFlameOpen and UI.CampKitFlameOpen() then UI:RefreshCampKit() end
+            end, 24)
+            UI:SettingRow(kc, -224, "Kit au clic droit sur la flamme",
+                "Un clic droit sur l'icône de flamme ouvre le kit en barre (avantages du camp en tête) de ce côté.",
+                fdir, 340)
+            fdir:Select(campCfg.kitFlameDir or "right")
             -- case « kit » de la barre des sacs et sens du déroulé : carte de la barre (QoL > Général > Marchand)
             local kgo = UI:Button(kc, T("Réglages de la barre"), nil, 24, "secondary")
             kgo:SetWidth(kgo.label:GetStringWidth() + 28)

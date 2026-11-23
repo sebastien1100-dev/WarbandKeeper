@@ -14,6 +14,9 @@ local MAXB, BS, GAP = 14, 36, 5
 -- dans la barre « Sacs, marchand et maître » (réglage kitInBar, maquette B) : liste déroulée sous ou au-dessus de
 -- sa case « kit » (kitDir), une ligne par objet : bouton protégé, nom, état (recharge, Bien nourri, quantité)
 local LS, LGAP, LW = 26, 4, 220
+-- barre ouverte par un clic droit sur la flamme (maquette C) : icônes côte à côte, état dessous, avantages en tête ;
+-- côté choisi par le réglage kitFlameDir (right / left / up / down)
+local FGAP, FHEAD = 8, 22
 local function inBar() local c = M:Config(); return c.kitInBar ~= false end
 UI.CampKitInBar = inBar
 local kit, chips
@@ -41,6 +44,7 @@ local function build()
     f:SetClampedToScreen(true)
     UI:HudBackground(f, "hud")
     f.buttons = {}
+    f.head = UI:Text(f, 11, C.positive); f.head:SetPoint("TOPLEFT", 10, -7); f.head:SetJustifyH("LEFT"); f.head:Hide()
     for i = 1, MAXB do
         local b = CreateFrame("Button", "WarbandKeeperCampKit" .. i, f, "SecureActionButtonTemplate")
         b:SetSize(BS, BS)
@@ -87,6 +91,7 @@ local function build()
         s.acc = (s.acc or 0) + el
         if s.acc < 0.5 then return end
         s.acc = 0
+        if s.bar then s:PaintHead() end
         -- timers sur les icônes (voile qui tourne + temps au centre) : jaune = recharge, vert = « Bien nourri » actif
         local rem, start, dur = M:Cooldown()
         local fed = M.auras and M.auras.fed
@@ -102,7 +107,7 @@ local function build()
                     local total = (type(fed.duration) == "number" and fed.duration > 0) and fed.duration or fedLeft
                     left, st, du, col = fedLeft, GetTime() + fedLeft - total, total, C.positive
                 end
-                if s.list then
+                if s.list or s.bar then
                     local txt, col2
                     if left then txt, col2 = short(left), col or C.gold
                     elseif b.kind == "fed" then txt, col2 = T("absent"), C.negative
@@ -142,18 +147,40 @@ local function build()
         end,
     })
 
+    -- en-tête de la barre de la flamme : avantages du camp et « Bien nourri », temps restant
+    function f:PaintHead()
+        local a = M.auras or {}
+        local bits = {}
+        local left = M.Remaining(a.perk)
+        if left and left > 0 then
+            bits[#bits + 1] = UI:Hex(C.positive) .. string.format(T("Avantages · %s"), UI:AgoShort(left, true)) .. "|r"
+        else
+            bits[#bits + 1] = UI:Hex(C.muted) .. T("Pas d'avantages du camp") .. "|r"
+        end
+        local fed = M.Remaining(a.fed)
+        if a.fed then
+            bits[#bits + 1] = UI:Hex(C.positive) .. (fed and fed > 0
+                and string.format(T("Bien nourri · %s"), UI:AgoShort(fed, true)) or T("Bien nourri")) .. "|r"
+        else
+            bits[#bits + 1] = UI:Hex(C.negative) .. T("Bien nourri absent") .. "|r"
+        end
+        self.head:SetText(table.concat(bits, "   "))
+    end
     -- Remplit la colonne (hors combat : attributs protégés)
     function f:Fill(list)
         local r1, g1, b1 = UI:Accent()
         local fedMissing = not (M.auras and M.auras.fed)
         local n = math.min(#list, MAXB)
         local listMode = self.list
+        local barMode = self.bar
         local size = listMode and LS or BS
         for i, b in ipairs(self.buttons) do
             local e = list[i]
             b:SetSize(size, size)
             b:ClearAllPoints()
-            if listMode then
+            if barMode then
+                b:SetPoint("TOPLEFT", self, "TOPLEFT", 10 + (i - 1) * (BS + FGAP), -FHEAD - 6)
+            elseif listMode then
                 b:SetPoint("TOPLEFT", self, "TOPLEFT", 6, -6 - (i - 1) * (LS + LGAP))
             else
                 b:SetPoint("TOP", self, "TOP", 0, -6 - (i - 1) * (BS + GAP))
@@ -170,9 +197,15 @@ local function build()
                     b.state:ClearAllPoints(); b.state:SetPoint("RIGHT", self, "RIGHT", -8, 0)
                     b.state:SetPoint("TOP", b, "TOP", 0, -7)
                     b.label:Show(); b.state:Show()
+                elseif barMode then
+                    b.label:Hide()
+                    b.state:ClearAllPoints(); b.state:SetPoint("TOP", b, "BOTTOM", 0, -3)
+                    b.state:SetJustifyH("CENTER")
+                    b.state:Show()
                 else
                     b.label:Hide(); b.state:Hide()
                 end
+                if not barMode then b.state:SetJustifyH("RIGHT") end
                 -- attributs posés seulement s'ils changent (chaque aura du joueur repasse ici)
                 if b:GetAttribute("type") ~= "item" then b:SetAttribute("type", "item") end -- rendu après un aperçu
                 local item = "item:" .. e.id
@@ -191,7 +224,14 @@ local function build()
                 b:Hide(); b.label:Hide(); b.state:Hide()
             end
         end
-        if listMode then
+        self.head:SetShown(barMode and true or false)
+        if barMode then
+            self:PaintHead()
+            local w = 20 + n * BS + math.max(0, n - 1) * FGAP
+            self:SetWidth(math.max(w, (self.head:GetStringWidth() or 0) + 20))
+            self:SetHeight(FHEAD + 6 + BS + 18)
+            for _, b in ipairs(self.buttons) do b.n:SetShown(true) end
+        elseif listMode then
             self:SetWidth(LW)
             self:SetHeight(12 + n * LS + math.max(0, n - 1) * LGAP)
             for _, b in ipairs(self.buttons) do b.n:SetShown(false) end
@@ -217,6 +257,31 @@ function UI:RefreshCampKit()
     local a = M.auras
     local near = (M.state and M.state ~= "none") or (a and (a.flame or a.sit)) and true or false
     UI.campKitAvail = #list > 0 and (cfg.kitAlways or near) or false
+    -- ouvert par un clic droit sur la flamme : barre à côté de l'icône, de quoi qu'il en soit du reste
+    local icon = _G.WarbandKeeperCampIcon
+    if kit.flameOpen and not (#list > 0 and icon and icon:IsShown()) then kit.flameOpen = false end
+    if kit.flameOpen then
+        kit.list, kit.bar = false, true
+        kit:Fill(list)
+        local sc = icon:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+        local l, b, w, h = icon:GetRect()
+        if l then
+            l, b, w, h = l * sc, b * sc, w * sc, h * sc
+            local kw, kh = kit:GetWidth(), kit:GetHeight()
+            local dir = cfg.kitFlameDir or "right"
+            local x, y
+            if dir == "left" then x, y = l - 8 - kw, b + h / 2 - kh / 2
+            elseif dir == "up" then x, y = l + w / 2 - kw / 2, b + h + 8
+            elseif dir == "down" then x, y = l + w / 2 - kw / 2, b - 30 - kh -- sous le libellé de l'icône
+            else x, y = l + w + 8, b + h / 2 - kh / 2 end
+            kit:SetScale(1)
+            kit:ClearAllPoints()
+            kit:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", x, y)
+        end
+        kit:Show()
+        return
+    end
+    kit.bar = false
     if not UI.campKitAvail then kit:Hide(); kit.open = false; return end
     kit.list = inBar()
     if kit.list then
@@ -241,11 +306,24 @@ function UI:RefreshCampKit()
     if UI.HUDApply then pcall(UI.HUDApply, UI, "campKit") end
     kit:Show()
 end
+-- clic droit sur la flamme : ouvre ou referme la barre du kit à côté d'elle (hors combat : boutons protégés)
+function UI.ToggleCampKitFlame()
+    if inCombat() then WK:Print(T("Kit de camp : à ouvrir hors combat.")) return end
+    if not kit then kit = build() end
+    kit.flameOpen = not kit.flameOpen
+    if kit.flameOpen then
+        kit.open = false
+        if UI.CloseSelfBuffs then UI.CloseSelfBuffs() end
+    end
+    UI:RefreshCampKit()
+end
+function UI.CampKitFlameOpen() return kit and kit.flameOpen and kit:IsShown() or false end
 -- case « kit » de la barre : déroule ou replie la liste (hors combat seulement : boutons protégés)
 function UI.ToggleCampKit()
     if inCombat() then WK:Print(T("Kit de camp : à ouvrir hors combat.")) return end
     if not kit then kit = build() end
     kit.open = not kit.open
+    if kit.open then kit.flameOpen = false end
     -- une seule liste ouverte à la fois sur la barre : la liste des buffs se replie
     if kit.open and UI.CloseSelfBuffs then UI.CloseSelfBuffs() end
     UI:RefreshCampKit()
@@ -256,6 +334,10 @@ end
 function UI.CampKitOpen() return kit and kit.open and kit:IsShown() or false end
 
 WK:On("PLAYER_REGEN_ENABLED", function() if pending then UI:RefreshCampKit() end end)
+-- la barre de la flamme se referme à l'entrée en combat (encore permis à cet instant)
+WK:On("PLAYER_REGEN_DISABLED", function()
+    if kit and kit.flameOpen then kit.flameOpen = false; kit.bar = false; kit:Hide() end
+end)
 WK:On("BAG_UPDATE_DELAYED", function() C_Timer.After(0.3, function() UI:RefreshCampKit(); if UI.RefreshCampChips then UI:RefreshCampChips() end end) end)
 
 ---------------------------------------------------------------------------

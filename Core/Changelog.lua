@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.245", date = "23/11/2026",
+        added = {
+            "Feu de camp : clic droit sur l'icône de flamme = le kit de camp s'ouvre en barre à côté d'elle. En tête, les avantages du camp et « Bien nourri » avec leur temps restant ; puis une icône par objet (clic = l'utiliser) et son état dessous (prêt, recharge, absent, quantité). Nouveau clic droit pour la replier ; elle se replie aussi en entrant en combat.",
+            "Feu de camp : réglage du côté où s'ouvre ce kit (à droite, à gauche, au-dessus, en dessous), carte « Kit de camp » de QoL > Feu de camp.",
+        },
+    },
+    {
         version = "1.128.244", date = "23/11/2026",
         changed = {
             "Feu de camp : quand il faut s'asseoir, l'icône n'a plus de halo rose. Son anneau et sa flamme passent au rouge, et une onde rouge part de son bord une fois par seconde (flamme orange pour « rassieds-toi »).",

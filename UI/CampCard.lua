@@ -120,7 +120,6 @@ local function buildIcon()
     b:SetSize(52, 52)
     b:SetFrameStrata("MEDIUM")
     b:SetClampedToScreen(true)
-    b:RegisterForClicks("LeftButtonUp")
     -- onde rouge (maquette B) : anneau qui part du bord de l'icône, grandit et s'efface, une fois par seconde
     b.glow = b:CreateTexture(nil, "BACKGROUND", nil, -1)
     b.glow:SetTexture(UI.MEDIA .. "ring")
@@ -150,7 +149,15 @@ local function buildIcon()
     b.label = UI:Text(b, 10, C.text)
     b.label:SetPoint("TOP", b, "BOTTOM", 0, -3)
     -- loin d'un feu (icône affichée en permanence) : pas de clic, on ne s'assoit pas n'importe où
-    b:SetScript("OnClick", function() if M.state ~= "none" then M:Sit() end end)
+    b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    -- clic droit : le kit de camp en barre à côté de la flamme (maquette C)
+    b:SetScript("OnClick", function(_, btn)
+        if btn == "RightButton" then
+            if UI.ToggleCampKitFlame then UI.ToggleCampKitFlame() end
+            return
+        end
+        if M.state ~= "none" then M:Sit() end
+    end)
     b:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         local st = M.state
@@ -164,6 +171,9 @@ local function buildIcon()
             end
             _G.GameTooltip:AddLine(T("Aucun feu de camp à proximité."), 0.6, 0.6, 0.6, true)
         else GameTooltip:AddLine(T("Clic : s'asseoir 1 min près du feu pour obtenir les avantages du camp."), 0.8, 0.8, 0.8, true) end
+        local open = UI.CampKitFlameOpen and UI.CampKitFlameOpen()
+        _G.GameTooltip:AddLine(open and T("Clic droit : replier le kit de camp") or T("Clic droit : kit de camp"),
+            0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -238,6 +248,10 @@ end
 
 local function updateIcon(changed)
     if not icon then icon = buildIcon() end
+    -- barre du kit ouverte par la flamme : refermée si la flamme disparaît
+    if UI.CampKitFlameOpen and UI.CampKitFlameOpen() and not icon:IsShown() then
+        _G.C_Timer.After(0, function() if UI.RefreshCampKit then UI:RefreshCampKit() end end)
+    end
     if icon.sample then return end
     local st = M.state
     local always = M:Config().iconAlways and WK:FeatureOn("campfire")

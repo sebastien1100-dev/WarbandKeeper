@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.245 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Feu de camp : clic droit sur l'icône de flamme = le kit de camp s'ouvre en barre à côté d'elle. En tête, les avantages du camp et « Bien nourri » avec leur temps restant ; puis une icône par objet (clic = l'utiliser) et son état dessous (prêt, recharge, absent, quantité). Nouveau clic droit pour la replier ; elle se replie aussi en entrant en combat.
+- Feu de camp : réglage du côté où s'ouvre ce kit (à droite, à gauche, au-dessus, en dessous), carte « Kit de camp » de QoL > Feu de camp.
+
 ## v1.128.244 — 23/11/2026
 
 _Un /reload suffit._
