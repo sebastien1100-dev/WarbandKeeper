@@ -350,7 +350,8 @@ UI:RegisterPage({
         det.filter:ClearAllPoints(); det.filter:SetPoint("TOPRIGHT", 0, -2)
         det.qfilter:ClearAllPoints(); det.qfilter:SetPoint("TOPRIGHT", 0, -2)
         self.map = UI:DungeonMapView(top)
-        self.map.onBoss = function(b) self.dtab = "loot"; self.focus = b.id; self:Refresh() end
+        -- clic sur un boss (carte, liste, encart) : il passe dans l'encart, l'onglet ouvert ne change pas
+        self.map.onBoss = function(b) self.focus = b.id; self:Refresh() end
         self.map.onHover = function(b)
             for _, pool in ipairs({ self.brows, self.grows }) do
                 for _, r in ipairs(pool.items) do if r:IsShown() then r.hl = b and r.boss.id == b.id; r:Paint() end end
@@ -410,9 +411,8 @@ UI:RegisterPage({
                 self.bg:SetColor(unpack(self.hl and C.hover or C.surface2)); self.bg:SetShown(on)
             end
             r:SetScript("OnEnter", function(s2) s2.hl = true; s2:Paint(); self.map:Highlight(s2.boss.id) end)
-            r:SetScript("OnLeave", function(s2) s2.hl = false; s2:Paint(); self.map:Highlight(nil) end)
+            r:SetScript("OnLeave", function(s2) s2.hl = false; s2:Paint(); self.map:Highlight(self.focus) end)
             r:SetScript("OnClick", function(s2)
-                self.dtab = "loot"
                 self.focus = (self.focus ~= s2.boss.id) and s2.boss.id or nil
                 self:Refresh()
             end)
@@ -482,7 +482,7 @@ UI:RegisterPage({
                 nc.tiles[k] = t
             end
             nc:SetScript("OnClick", function(s2)
-                if s2.boss then self.dtab = "loot"; self.focus = s2.boss.id; self:Refresh() end
+                if s2.boss then self.focus = s2.boss.id; self:Refresh() end
             end)
         end
         -- butin d'un seul boss : bouton pour revenir à tous

@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.220 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : un clic sur un boss (pastille de la carte, ligne de la liste ou encart) le choisit sans quitter l'onglet ouvert ; il s'affiche dans l'encart et reste allumé sur la carte. L'onglet Butin, ouvert à la main, ne montre que son butin (« Tous les boss » pour revenir).
+
 ## v1.128.219 — 23/11/2026
 
 _Un /reload suffit._

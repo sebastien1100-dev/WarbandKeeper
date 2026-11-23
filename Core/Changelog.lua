@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.220", date = "23/11/2026",
+        changed = {
+            "Donjons : un clic sur un boss (pastille de la carte, ligne de la liste ou encart) le choisit sans quitter l'onglet ouvert ; il s'affiche dans l'encart et reste allumé sur la carte. L'onglet Butin, ouvert à la main, ne montre que son butin (« Tous les boss » pour revenir).",
+        },
+    },
+    {
         version = "1.128.219", date = "23/11/2026",
         fixed = {
             "Message de groupe (LFG) : le nom du donjon est toujours en anglais. Prison d'Alcaz devenait « The Stockade », et Pic Rochenoire, la salle des Thanes, les Ruines de Lordaeron, Dalaran, la cité Submergée, le Bastion Krol'dok, le Repaire des Noiregueules, la terrasse du Façonneur et les Excavations n'étaient pas traduits. Le nom anglais vient maintenant de la base des donjons (31 donjons vérifiés), avec les ailes en plus (Monastère, Hache-Tripes, bas et haut du Pic).",

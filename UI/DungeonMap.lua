@@ -224,7 +224,7 @@ function UI.DungeonMapView(_, parent)
                 GameTooltip:AddLine(name or ("#" .. loot[i]), q[1], q[2], q[3])
             end
             if #loot > 4 then GameTooltip:AddLine(string.format(T("et %d autre(s)"), #loot - 4), 0.6, 0.6, 0.6) end
-            if v.onBoss then GameTooltip:AddLine(T("Clic : son butin"), 0.5, 0.5, 0.5) end
+            if v.onBoss then GameTooltip:AddLine(T("Clic : le choisir"), 0.5, 0.5, 0.5) end
             GameTooltip:Show()
         end)
         p:SetScript("OnLeave", function() if v.onHover then v.onHover(nil) end GameTooltip:Hide() end)
