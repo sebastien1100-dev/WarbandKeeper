@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.202 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire : les chiffres de l'interrupteur Objets / Courrier sont plus gros et sur une pastille pleine (foncée sur le bouton choisi, dorée quand du courrier attend).
+
 ## v1.128.201 — 23/11/2026
 
 _Un /reload suffit._

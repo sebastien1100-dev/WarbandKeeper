@@ -207,14 +207,14 @@ UI:RegisterPage({
             b.bg = UI:Rounded(b, (SWITCH_H - 6) / 2, 0, "BACKGROUND", 1)
             b.icon = UI:Icon(b, g[3], 15); b.icon:SetPoint("LEFT", 16, 0)
             b.name = UI:Text(b, 13); b.name:SetPoint("LEFT", b.icon, "RIGHT", 8, 0); b.name:SetText(T(g[2]))
-            b.pill = _G.CreateFrame("Frame", nil, b); b.pill:SetSize(22, 16)
+            b.pill = _G.CreateFrame("Frame", nil, b); b.pill:SetSize(26, 20)
             b.pill:SetPoint("LEFT", b.name, "RIGHT", 8, 0)
-            b.pillBg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 2)
-            b.pillT = UI:Text(b.pill, 10, C.muted); b.pillT:SetPoint("CENTER", 0, 0)
+            b.pillBg = UI:Rounded(b.pill, 10, 0, "BACKGROUND", 2)
+            b.pillT = UI:Text(b.pill, 12, C.text); b.pillT:SetPoint("CENTER", 0, 0)
             function b:SetCount(n, warn)
                 self.warn = warn
                 self.pillT:SetText(tostring(n or 0))
-                self.pill:SetWidth(math.max(22, (self.pillT:GetStringWidth() or 10) + 12))
+                self.pill:SetWidth(math.max(26, (self.pillT:GetStringWidth() or 10) + 14))
                 self:SetWidth(16 + 15 + 8 + (self.name:GetStringWidth() or 60) + 8 + self.pill:GetWidth() + 16)
             end
             function b:Paint()
@@ -223,15 +223,16 @@ UI:RegisterPage({
                 self.bg:SetColor(r, g2, bb, 1); self.bg:SetShown(sel)
                 local tc = sel and C.onAccent or { r, g2, bb }
                 self.name:SetTextColor(tc[1], tc[2], tc[3]); self.icon:SetVertexColor(tc[1], tc[2], tc[3])
+                -- chiffres bien lisibles : pastille pleine et contrastée
                 if sel then
-                    self.pillBg:SetColor(C.onAccent[1], C.onAccent[2], C.onAccent[3], 0.18)
-                    self.pillT:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+                    self.pillBg:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+                    self.pillT:SetTextColor(C.text[1], C.text[2], C.text[3])
                 elseif self.warn then
-                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2)
-                    self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 1)
+                    self.pillT:SetTextColor(C.bg[1], C.bg[2], C.bg[3])
                 else
-                    self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
-                    self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                    self.pillBg:SetColor(r, g2, bb, 0.3)
+                    self.pillT:SetTextColor(C.text[1], C.text[2], C.text[3])
                 end
             end
             b:SetScript("OnClick", function(s2)

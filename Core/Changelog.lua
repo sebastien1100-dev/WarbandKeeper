@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.202", date = "23/11/2026",
+        changed = {
+            "Inventaire : les chiffres de l'interrupteur Objets / Courrier sont plus gros et sur une pastille pleine (foncée sur le bouton choisi, dorée quand du courrier attend).",
+        },
+    },
+    {
         version = "1.128.201", date = "23/11/2026",
         fixed = {
             "Persos > Expérience : les autres persos affichaient « 0 % · 1 restants » et un repos faux. Le relevé fait à la déconnexion, quand le jeu ne donne plus l'XP, écrasait le bon relevé : il est maintenant ignoré. Un perso déjà touché affiche « à relever (connecte-le) » jusqu'à sa prochaine connexion, et son repos est estimé avec l'XP de son niveau.",
