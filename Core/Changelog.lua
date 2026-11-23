@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.198", date = "23/11/2026",
+        changed = {
+            "Inventaire : les titres OBJETS et COURRIER de la barre d'onglets sont plus grands et en texte clair, pour être lisibles.",
+        },
+    },
+    {
         version = "1.128.197", date = "23/11/2026",
         changed = {
             "Inventaire et Courrier réunis (maquette B) : une seule barre d'onglets en deux groupes, OBJETS (Tout le compte, Rangement, À regrouper, Oubliés en banque, Verrouillés) puis COURRIER (Envoi, Dépôt banque, Réception), chacun avec son nombre. Courrier quitte la barre latérale ; la pastille passe sur Inventaire. Sur une fenêtre étroite, chaque groupe a sa ligne.",

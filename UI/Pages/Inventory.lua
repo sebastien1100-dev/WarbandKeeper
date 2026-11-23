@@ -204,7 +204,7 @@ UI:RegisterPage({
         -- titres des deux groupes et trait entre eux
         bar.heads = {}
         for i, lab in ipairs({ "Objets", "Courrier" }) do
-            local h = UI:Text(bar, 9, C.dim); h:SetText(UI:Upper(T(lab)))
+            local h = UI:Text(bar, 11, C.text); h:SetText(UI:Upper(T(lab))) -- lisible : texte clair, comme les titres de carte
             bar.heads[i] = h
         end
         bar.sep = bar:CreateTexture(nil, "ARTWORK"); bar.sep:SetSize(1, 20)
@@ -1486,7 +1486,7 @@ UI:RegisterPage({
         local bar = self.tabBar
         local avail = math.max(400, (self.band:GetWidth() or 0) > 0 and self.band:GetWidth() - 44 or 1000)
         -- deux groupes : OBJETS puis, après un trait, COURRIER ; sur deux lignes si la place manque
-        local function headW(i) return (bar.heads[i]:GetStringWidth() or 40) + 12 end
+        local function headW(i) return (bar.heads[i]:GetStringWidth() or 40) + 16 end
         local widths = { headW(1), headW(2) + 13 }
         for _, b in ipairs(self.tabBtns) do
             local g = b.mail and 2 or 1
