@@ -24,8 +24,12 @@ local login = { at = 0, money = 0 }
 
 ---------------------------------------------------------------------------
 -- Journal de l'or : chaque mouvement avec sa cause (fenêtre ouverte à ce moment), pour dire d'où vient une
--- perte ou un gain. WK.DB.global.moneyLog = { { t, c = perso, d = écart, s = cause } }, 35 jours, 1500 au plus.
+-- perte ou un gain. WK.DB.global.moneyLog = { { t, c = perso, d = écart, s = cause, x = détail?, n = nombre? } },
+-- 35 jours, 1500 au plus. Détail noté quand on le sait (quête rendue, trajet de vol, sort appris, expéditeur,
+-- objet acheté) ; n = mouvements regroupés (même cause, même perso, même sens, moins d'une minute).
+-- Sans fenêtre ouverte, l'or vient des monstres : cause « Butin » (l'ancien « Autre », converti une fois).
 ---------------------------------------------------------------------------
+local GetTime, hooksecurefunc = _G.GetTime, _G.hooksecurefunc
 local open, lastMoney, repairAt, questAt, taxiAt = {}, nil, 0, 0, 0
 local function flag(on, off, key)
     WK:On(on, function() open[key] = true end)
@@ -38,10 +42,38 @@ flag("TRAINER_SHOW", "TRAINER_CLOSED", "trainer")
 flag("LOOT_OPENED", "LOOT_CLOSED", "loot")
 flag("TRADE_SHOW", "TRADE_CLOSED", "trade")
 flag("TAXIMAP_OPENED", "TAXIMAP_CLOSED", "taxi")
-WK:On("QUEST_TURNED_IN", function() questAt = GetTime() end)
+-- détail du prochain mouvement (gardé 3 s) : { s = cause attendue, x = texte, at }
+local detail
+local function note(s, x) if x and x ~= "" then detail = { s = s, x = x, at = GetTime() } end end
+WK:On("QUEST_TURNED_IN", function(qid)
+    questAt = GetTime()
+    local Q = WK.modules.Quests
+    local q = Q and Q.Get and Q:Get(tonumber(qid))
+    local name = (q and Q.Name and Q:Name(q))
+    if not name and _G.C_QuestLog and _G.C_QuestLog.GetTitleForQuestID then
+        local ok, t = pcall(_G.C_QuestLog.GetTitleForQuestID, qid); if ok then name = t end
+    end
+    note("Quêtes", name)
+end)
 if hooksecurefunc then
     if RepairAllItems then hooksecurefunc("RepairAllItems", function() repairAt = GetTime() end) end
-    if TakeTaxiNode then hooksecurefunc("TakeTaxiNode", function() taxiAt = GetTime() end) end
+    if _G.TakeTaxiNode then hooksecurefunc("_G.TakeTaxiNode", function(i)
+        taxiAt = GetTime()
+        local ok, n = pcall(_G.TaxiNodeName, i)
+        if ok and type(n) == "string" then note("Vols", (n:match("^([^,]+)") or n)) end
+    end) end
+    if _G.BuyTrainerService then hooksecurefunc("_G.BuyTrainerService", function(i)
+        local ok, n, sub = pcall(_G.GetTrainerServiceInfo, i)
+        if ok and n then note("Maître (apprentissage)", (sub and sub ~= "") and (n .. " (" .. sub .. ")") or n) end
+    end) end
+    if _G.TakeInboxMoney then hooksecurefunc("_G.TakeInboxMoney", function(i)
+        local ok, _, _, from = pcall(_G.GetInboxHeaderInfo, i)
+        if ok and type(from) == "string" then note("Courrier", string.format(WK.T("de %s"), from)) end
+    end) end
+    if _G.BuyMerchantItem then hooksecurefunc("_G.BuyMerchantItem", function(i)
+        local n = WK.MerchantItemInfo and WK.MerchantItemInfo(i)
+        if n then note("Achats chez le marchand", n) end
+    end) end
 end
 local function cause(d)
     local now = GetTime()
@@ -53,8 +85,8 @@ local function cause(d)
     if open.mail then return "Courrier" end
     if open.merchant then return d < 0 and "Achats chez le marchand" or "Ventes au marchand" end
     if open.trade then return "Échange" end
-    if open.loot then return "Butin" end
-    return "Autre"
+    -- sans fenêtre : or ramassé sur les monstres (« Butin »)
+    return "Butin"
 end
 local function moneyLog()
     local g = WK.DB.global
@@ -69,12 +101,14 @@ WK:On("PLAYER_MONEY", function()
     if d == 0 then return end
     local log = moneyLog()
     local t, c, s = time(), WK:CharKey(), cause(d)
+    local x = detail and detail.s == s and GetTime() - detail.at < 3 and detail.x or nil
+    if x then detail = nil end
     local last = log[#log]
-    -- même cause, même perso, même sens, moins d'une minute : une seule ligne (achats en série, butin)
-    if last and last.c == c and last.s == s and t - last.t < 60 and (last.d < 0) == (d < 0) then
-        last.d, last.t = last.d + d, t
+    -- même cause, même perso, même sens, même détail, moins d'une minute : une seule ligne (achats en série, butin)
+    if last and last.c == c and last.s == s and t - last.t < 60 and (last.d < 0) == (d < 0) and last.x == x then
+        last.d, last.t, last.n = last.d + d, t, (last.n or 1) + 1
     else
-        table.insert(log, { t = t, c = c, d = d, s = s })
+        table.insert(log, { t = t, c = c, d = d, s = s, x = x })
     end
     local cut = t - 35 * DAY
     while #log > 0 and (#log > 1500 or log[1].t < cut) do table.remove(log, 1) end
@@ -82,6 +116,12 @@ end)
 M.MoneyCause = cause
 
 WK:On("PLAYER_LOGIN", function()
+    -- l'ancien « Autre » (aucune fenêtre ouverte) était de l'or ramassé : « Butin », une fois
+    local g = WK.DB.global
+    if not g.moneyAutreButin then
+        for _, e in ipairs(g.moneyLog or {}) do if e.s == "Autre" then e.s = "Butin" end end
+        g.moneyAutreButin = true
+    end
     login.at = time()
     login.money = GetMoney and GetMoney() or 0
     lastMoney = login.money
