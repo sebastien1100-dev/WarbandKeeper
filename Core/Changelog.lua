@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.239", date = "23/11/2026",
+        changed = {
+            "Bouton d'aspect du chasseur : l'icône de l'aspect fait maintenant 50 px (au lieu de 38), dans un anneau plus grand ; la petite icône de l'aspect suivant grandit aussi.",
+        },
+    },
+    {
         version = "1.128.238", date = "23/11/2026",
         changed = {
             "Sacs : dans « Sac à munitions » et « Sac de composants », les places vides suivent les objets sur les mêmes lignes (plus de section « Places libres » à part pour ces sacs), et l'en-tête dit « occupées / total » (par exemple 5 / 8).",

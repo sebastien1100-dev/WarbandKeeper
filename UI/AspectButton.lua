@@ -53,17 +53,17 @@ end
 
 local function build()
     local b = CreateFrame("Button", "WarbandKeeperAspectButton", UIParent, "SecureActionButtonTemplate")
-    b:SetSize(44, 44)
+    b:SetSize(56, 56) -- icône de 50 px dans son anneau
     b:SetFrameStrata("MEDIUM")
     b:SetClampedToScreen(true)
     if b.RegisterForClicks then b:RegisterForClicks("AnyUp", "AnyDown") end
-    b.ring = UI:Icon(b, "circle", 44, nil, "BACKGROUND")
+    b.ring = UI:Icon(b, "circle", 56, nil, "BACKGROUND")
     b.ring:SetPoint("CENTER")
-    b.icon = UI:RoundIcon(b, 38)
+    b.icon = UI:RoundIcon(b, 50)
     b.icon:SetPoint("CENTER")
-    b.next = UI:RoundIcon(b, 18)
+    b.next = UI:RoundIcon(b, 22)
     b.next:SetPoint("BOTTOMRIGHT", 6, -6)
-    b.nextRing = UI:Icon(b, "circle", 21, nil, "BORDER")
+    b.nextRing = UI:Icon(b, "circle", 25, nil, "BORDER")
     b.nextRing:SetPoint("CENTER", b.next, "CENTER")
     b.nextRing:SetDrawLayer("OVERLAY", -1)
     b.next:SetDrawLayer("OVERLAY", 1)
