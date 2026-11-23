@@ -4392,7 +4392,6 @@ WK.Locales.enUS.text = {
     ["Armes reconnues : "] = "Weapons recognized: ",
     ["Connues par le grimoire (rang inconnu) : "] = "Known from the spellbook (rank unknown): ",
     ["apprise"] = "learned",
-    ["Bien nourri\nabsent"] = "No\nWell Fed",
     ["Champs : "] = "Fields: ",
     ["code non reconnu (attendu : WKP1:… ou WK1:…)"] = "code not recognized (expected: WKP1:… or WK1:…)",
     ["code non reconnu (attendu : WK1:…)"] = "code not recognized (expected: WK1:…)",

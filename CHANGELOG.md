@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.255 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Feu de camp, pastilles sous la flamme : les avantages du camp n'affichent plus que leur durée restante (« 59 min »), et la pastille « Bien nourri » n'est plus montrée.
+
 ## v1.128.254 — 23/11/2026
 
 _Un /reload suffit._

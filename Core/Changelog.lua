@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.255", date = "23/11/2026",
+        changed = {
+            "Feu de camp, pastilles sous la flamme : les avantages du camp n'affichent plus que leur durée restante (« 59 min »), et la pastille « Bien nourri » n'est plus montrée.",
+        },
+    },
+    {
         version = "1.128.254", date = "23/11/2026",
         fixed = {
             "Feu de camp : à côté d'un feu, l'icône restait grise « pas de feu ». L'effet du jeu s'appelle maintenant « Feu de camp proche » (n° 1283391) au lieu de « Flammes pourpres » : il est reconnu, par son nom ou son n°.",

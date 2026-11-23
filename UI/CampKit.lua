@@ -405,15 +405,11 @@ function UI:RefreshCampChips()
     local a = M.auras or {}
     local rows = {}
     local left = M.Remaining(a.perk)
-    if left and left > 0 then table.insert(rows, { string.format(T("Avantages du camp · %s"), UI:AgoShort(left, true)), C.positive }) end
+    -- avantages du camp : seulement la durée restante (à la demande du joueur)
+    if left and left > 0 then table.insert(rows, { UI:AgoShort(left, true), C.positive }) end
     local rem = M:Cooldown()
     if rem and rem > 0 then table.insert(rows, { string.format(T("Objet de camp · prêt dans %s"), UI:AgoShort(rem, true)), C.warning }) end
-    local fed = M.Remaining(a.fed)
-    if a.fed then
-        table.insert(rows, { fed and fed > 0 and string.format(T("Bien nourri · %s"), UI:AgoShort(fed, true)) or T("Bien nourri"), C.positive })
-    elseif a.flame then
-        table.insert(rows, { T("Bien nourri\nabsent"), C.negative })
-    end
+    -- « Bien nourri » n'est plus montré sous la flamme (à la demande du joueur)
     for i, c in ipairs(chips.items) do
         local r = rows[i]
         if r then c:Set(r[1], r[2]); c:Show() else c:Hide() end
