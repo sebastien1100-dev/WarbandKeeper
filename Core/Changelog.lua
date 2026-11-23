@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.214", date = "23/11/2026",
+        changed = {
+            "Donjons à beaucoup de boss (Profondeurs de Rochenoire, Pic Rochenoire, Stratholme, Hache-Tripes…) : quand la liste ne tient pas, les boss se rangent sur deux colonnes côte à côte, avec des lignes plus serrées, pour tout voir d'un coup.",
+        },
+    },
+    {
         version = "1.128.213", date = "23/11/2026",
         changed = {
             "Donjons, Mes envies : les objets sont rangés par donjon, dans des cases sur toute la largeur de la fenêtre (une à trois colonnes). Chaque case montre le niveau du donjon, les boss déjà tués, les objets regroupés sous leur boss, et des boutons Voir (ouvre le donjon) et Guider (vers l'entrée).",

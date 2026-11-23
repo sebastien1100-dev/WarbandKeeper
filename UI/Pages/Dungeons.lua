@@ -833,19 +833,33 @@ UI:RegisterPage({
         local listH = RH * #bosses
         -- la liste peut descendre sous la carte (carte en largeur, peu haute) jusqu'à la place réservée
         local viewH = m and math.max(MH, math.min(listH, avail)) or math.min(listH, math.max(120, math.min(320, avail)))
+        -- beaucoup de boss : deux colonnes côte à côte (lignes de 24 px au moins) pour que tout tienne
+        local ncol, perCol = 1, #bosses
+        if listH > viewH + 1 and (W - x0 - 10) / 2 >= 250 then
+            ncol, perCol = 2, math.ceil(#bosses / 2)
+            RH = math.floor(math.max(24, math.min(46, viewH / perCol)))
+            listH = RH * perCol
+            if not m then viewH = math.min(listH, math.max(120, avail)) end
+        end
         local bs = self.bscroll
         local over = listH > viewH + 1
         bs:ClearAllPoints(); bs:SetPoint("TOPLEFT", x0, -y0)
         bs:SetSize(math.max(100, W - x0), math.max(1, viewH))
-        bs.child:SetWidth(math.max(100, W - x0 - (over and 14 or 0)))
+        local innerW = math.max(100, W - x0 - (over and 14 or 0))
+        bs.child:SetWidth(innerW)
+        local CGAP = 10
+        local colW = ncol == 2 and (innerW - CGAP) / 2 or innerW
         local c = WK.DB.global.characters[key] or WK.DB:Me()
         local ac = { UI:Accent() }
-        for _, b in ipairs(bosses) do
+        for i, b in ipairs(bosses) do
             local opt = D:Optional(d, b)
             if not opt then n = n + 1 end
             local r = self.brows:Get()
             r.boss = b
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+            -- 2e colonne : on repart du haut
+            if ncol == 2 and i == perCol + 1 then y = 0 end
+            local cx = (ncol == 2 and i > perCol) and (colW + CGAP) or 0
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", cx, -y); r:SetWidth(colW)
             r.state = UI.DungeonBossState(d, b, key, nextB)
             r.focused = self.focus == b.id
             r:SetHeight(RH - 3)
@@ -892,7 +906,7 @@ UI:RegisterPage({
             if RH >= 36 then r.name:SetPoint("TOPLEFT", nx, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", nx, 0) end
             -- butin pour ce perso (5 au plus ; moins quand la liste est étroite : le nom garde 150 px)
             local loot = UI:DungeonLoot(b, "me", c, key)
-            local rowW = bs.child:GetWidth() or 400
+            local rowW = colW
             local maxIc = math.max(0, math.min(5, math.floor((rowW - nx - 150 - 8) / 27)))
             local nIc = math.min(#loot, maxIc)
             local nameR = nIc > 0 and -(8 + nIc * 27 + 6) or -8
@@ -919,6 +933,7 @@ UI:RegisterPage({
             self.bsKey = d.key
             local idx = 0
             for i, b in ipairs(bosses) do if nextB and b.id == nextB.id then idx = i end end
+            if idx > perCol then idx = idx - perCol end
             bs:SetVerticalScroll(math.max(0, math.min(listH - viewH, (idx - 2) * RH)))
         elseif bs:GetVerticalScroll() > math.max(0, listH - viewH) then
             bs:SetVerticalScroll(math.max(0, listH - viewH))
