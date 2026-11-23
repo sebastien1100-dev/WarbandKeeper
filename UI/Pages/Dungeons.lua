@@ -813,6 +813,12 @@ UI:RegisterPage({
         -- largeur de la carte ; sa hauteur suit (carte 3:2 plus basse : un peu plus large pour la même place)
         local ratio = m and UI.DungeonMapHeight(m, nil, 1000) / 1000 or 1
         local S = m and math.floor(math.max(200, math.min(360 / ratio, avail / ratio, W * 0.45))) or 0
+        -- beaucoup de boss (la liste ne tiendrait pas en une colonne) : carte un peu plus étroite,
+        -- pour laisser deux colonnes de boss à côté
+        local nB = #D:Bosses(d)
+        if m and nB * 30 > math.max(S * ratio, avail) then
+            S = math.floor(math.max(200, math.min(S, W * 0.38)))
+        end
         local MH = m and math.floor(S * ratio) or 0
         local y0 = 32
         self.map:ClearAllPoints()
@@ -835,7 +841,7 @@ UI:RegisterPage({
         local viewH = m and math.max(MH, math.min(listH, avail)) or math.min(listH, math.max(120, math.min(320, avail)))
         -- beaucoup de boss : deux colonnes côte à côte (lignes de 24 px au moins) pour que tout tienne
         local ncol, perCol = 1, #bosses
-        if listH > viewH + 1 and (W - x0 - 10) / 2 >= 250 then
+        if listH > viewH + 1 and (W - x0 - 10) / 2 >= 215 then
             ncol, perCol = 2, math.ceil(#bosses / 2)
             RH = math.floor(math.max(24, math.min(46, viewH / perCol)))
             listH = RH * perCol
