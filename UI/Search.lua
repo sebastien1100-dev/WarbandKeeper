@@ -51,6 +51,8 @@ local function buildAll()
     built = true
     local failed = false
     for key, def in pairs(UI.pages) do
+        -- page construite par étapes et pas finie : terminée d'abord (ses réglages doivent être indexés)
+        if def.wkCo then UI:EnsurePage(key) end
         if not def.frame and UI.pageHost then
             local ok = pcall(function()
                 def.frame = CreateFrame("Frame", nil, UI.pageHost)

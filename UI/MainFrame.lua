@@ -811,17 +811,76 @@ function UI:ShowPage(key)
     for k, d in pairs(self.pages) do
         if d.frame then d.frame:SetShown(k == def.key) end
     end
-    self:EnsurePage(def.key)
+    self:EnsurePage(def.key, true)
     if sub and def.ShowSection then def:ShowSection(sub) end
     self:Refresh()
 end
 
 -- Construit une page sans l'afficher (une page qui en emprunte une autre : Pêche prend les cartes
 -- de réglages de QoL). Renvoie la définition de la page.
-function UI:EnsurePage(key)
+-- Construction par étapes (page `progressive`, ouverte d'un clic) : la page QoL crée des milliers d'éléments ;
+-- d'un seul tenant, le jeu arrêtait le clic (« script ran too long »), la page était jetée et le clic suivant
+-- recommençait tout. Elle est maintenant construite dans une coroutine qui rend la main entre deux sections
+-- (UI.BuildYield, au-delà de BUILD_MS) et reprend à l'image suivante ; un autre appel qui a besoin de la page
+-- entière (cartes reprises, recherche) la termine d'un coup.
+local BUILD_MS = 25
+local function failPage(def, key, err)
+    def.frame:Hide()
+    local root = def.frame
+    def.frame, def.wkCo, def.wkBuilding = nil, nil, nil
+    -- index de recherche nettoyé à l'image suivante : dans le même clic, le jeu pouvait encore l'arrêter
+    if UI.PurgeSettingRows then
+        local CT = _G.C_Timer
+        if CT and CT.After then CT.After(0, function() UI.PurgeSettingRows(root) end)
+        else UI.PurgeSettingRows(root) end
+    end
+    if WK.HandlerError then WK.HandlerError("page " .. tostring(key), err) end
+end
+function UI.BuildYield()
+    local co = UI.buildCo
+    local clock = _G.debugprofilestop
+    if co and coroutine.running() == co and UI.buildDeadline and clock and clock() > UI.buildDeadline then
+        coroutine.yield()
+    end
+end
+-- une étape de la coroutine ; sync = jusqu'au bout
+local function stepPage(self, def, key, sync)
+    local co = def.wkCo
+    if not co then return end
+    local prevScope, prevCo, prevDl = self.accentScope, UI.buildCo, UI.buildDeadline
+    self.accentScope, UI.buildCo = "window", co
+    local clock = _G.debugprofilestop
+    UI.buildDeadline = (not sync and clock) and (clock() + BUILD_MS) or nil
+    local ok, err = coroutine.resume(co)
+    self.accentScope, UI.buildCo, UI.buildDeadline = prevScope, prevCo, prevDl
+    if not ok then return failPage(def, key, err) end
+    if coroutine.status(co) == "dead" then
+        def.wkCo, def.wkBuilding = nil, nil
+        if def.OnBuilt then pcall(def.OnBuilt, def) end
+        if self.current == key then self:Refresh() end
+    elseif sync then
+        return stepPage(self, def, key, true)
+    elseif _G.C_Timer and _G.C_Timer.After then
+        _G.C_Timer.After(0, function() if def.wkCo == co then stepPage(self, def, key) end end)
+    else
+        return stepPage(self, def, key, true)
+    end
+end
+function UI:EnsurePage(key, progressive)
     local def = self.pages[key]
     if not def then return nil end
     if not self.frame then self:Create() end
+    -- construction par étapes en cours : terminée tout de suite si l'appelant a besoin de la page entière
+    if def.wkCo and not progressive then stepPage(self, def, key, true) end
+    if not def.frame and progressive and def.progressive then
+        def.frame = _G.CreateFrame("Frame", nil, self.pageHost)
+        def.frame:SetAllPoints()
+        def.frame:SetShown(self.current == key)
+        def.wkBuilding = true
+        def.wkCo = coroutine.create(function() def.Build(def, def.frame) end)
+        stepPage(self, def, key)
+        return def
+    end
     if not def.frame then
         def.frame = CreateFrame("Frame", nil, self.pageHost)
         def.frame:SetAllPoints()
@@ -830,10 +889,7 @@ function UI:EnsurePage(key)
         if not ok then
             -- page qui plante à la construction : cadre à moitié fait caché et oublié, refait à la prochaine
             -- ouverture (avant : la page restait à moitié construite jusqu'au /reload)
-            def.frame:Hide()
-            if UI.PurgeSettingRows then UI.PurgeSettingRows(def.frame) end
-            def.frame = nil
-            if WK.HandlerError then WK.HandlerError("page " .. tostring(key), err) end
+            failPage(def, key, err)
         end
     end
     return def
@@ -885,7 +941,7 @@ function UI:Refresh()
     end
     self:RefreshNavSubs()
     local def = self.pages[self.current]
-    if def and def.frame and def.Refresh then def:Refresh() end
+    if def and def.frame and def.Refresh and not def.wkBuilding then def:Refresh() end
     self:RefreshChips()
 end
 

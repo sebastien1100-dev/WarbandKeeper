@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.227 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreur « script ran too long » en ouvrant une section de QoL (Général, Halo, Curseur…) : la page, très chargée, était construite d'un seul coup et le jeu coupait le clic. La page était alors jetée, et le clic suivant recommençait tout. Elle se construit maintenant en quelques images, et la section demandée s'ouvre à la fin.
+
 ## v1.128.226 — 23/11/2026
 
 _Un /reload suffit._

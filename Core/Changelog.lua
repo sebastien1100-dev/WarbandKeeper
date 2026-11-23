@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.227", date = "23/11/2026",
+        fixed = {
+            "Erreur « script ran too long » en ouvrant une section de QoL (Général, Halo, Curseur…) : la page, très chargée, était construite d'un seul coup et le jeu coupait le clic. La page était alors jetée, et le clic suivant recommençait tout. Elle se construit maintenant en quelques images, et la section demandée s'ouvre à la fin.",
+        },
+    },
+    {
         version = "1.128.226", date = "23/11/2026",
         fixed = {
             "Barre des bénédictions : un joueur béni apparaissait « sans » quand sa bénédiction n'était pas exactement celle prévue pour sa classe posée par toi. Il compte maintenant comme béni s'il a la bénédiction prévue (même posée par un autre paladin : la reposer écraserait la sienne) ou une autre de tes bénédictions. Le Salut reste à part.",

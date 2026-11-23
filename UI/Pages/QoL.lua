@@ -179,6 +179,8 @@ end
 
 UI:RegisterPage({
     key = "qol", order = 8, nav = "QoL",
+    -- construite par étapes quand on l'ouvre d'un clic (UI:EnsurePage) : trop longue d'un seul tenant
+    progressive = true,
 
     Build = function(self, p)
         local QoL = Q()
@@ -275,6 +277,8 @@ UI:RegisterPage({
         end
         local function section(key, top)
             closeSection()
+            -- construction par étapes : la main est rendue au jeu entre deux sections (UI.BuildYield)
+            if UI.BuildYield then UI.BuildYield() end
             local sc = UI:Scroll(host)
             sc:SetPoint("TOPLEFT", 0, -(top or 0))
             sc:SetPoint("BOTTOMRIGHT")
@@ -311,6 +315,13 @@ UI:RegisterPage({
         isClass.CLASSGEN = true -- onglet « Général » des classes (réglages communs : sorts de classe)
         -- « classes » ouvre la dernière classe vue (sinon celle du perso joué)
         function self:ShowSection(key)
+            -- page en cours de construction : la section demandée sera ouverte à la fin (OnBuilt)
+            if self.wkBuilding then
+                -- appel de la fin de la construction : la section par défaut, sauf si un clic en a demandé une
+                local fromBuild = UI.buildCo and coroutine.running() == UI.buildCo
+                if not fromBuild or not self.pendingSection then self.pendingSection = key or self.pendingSection end
+                return
+            end
             if key == "classes" then
                 key = ui.qolClass
                 if not isClass[key or ""] then key = WK.DB:Me().class end
@@ -2969,7 +2980,15 @@ UI:RegisterPage({
         self:ShowSection(ui.qolSection or "general")
     end,
 
+    -- fin de la construction par étapes : la section demandée pendant ce temps
+    OnBuilt = function(self)
+        local key = self.pendingSection
+        self.pendingSection = nil
+        if key and self.ShowSection then self:ShowSection(key) end
+    end,
+
     Refresh = function(self)
+        if self.wkBuilding then return end
         if self.LayoutNav then self:LayoutNav() end
         local QoL = Q()
         local played = QoL:PlayedClasses()
