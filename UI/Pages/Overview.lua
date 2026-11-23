@@ -47,7 +47,7 @@ local function todoItems()
             local soon = d and d <= mailDays
             local txt = string.format(box.count > 1 and WK.T("%d lettres à récupérer sur %s") or WK.T("%d lettre à récupérer sur %s"), box.count, name)
             if d then txt = txt .. "  ·  " .. string.format(WK.T("expire dans %d j"), d) end
-            add(soon and 1 or 6, "mail", txt, open("mail", "SetTab", "receive"), soon and C.negative or nil,
+            add(soon and 1 or 6, "mail", txt, open("inventory", "OpenMail", "receive"), soon and C.negative or nil,
                 { g = "mail", group = "letters", n = box.count })
         end
         -- Métier bloqué au plafond de son rang (75, 150, 225…)
@@ -115,7 +115,7 @@ local function todoItems()
         local n = WK.modules.Mail:PendingCount()
         if n > 0 then
             add(4, "mail", string.format(WK.T("%d objets à envoyer à la prochaine boîte aux lettres"), n),
-                open("mail", "SetTab", "send"), nil, { g = "send", group = "send", n = n })
+                open("inventory", "OpenMail", "send"), nil, { g = "send", group = "send", n = n })
         end
     end
     -- envois du Rangement (répartition entre persos) qui attendent dans les sacs du perso connecté
@@ -138,7 +138,7 @@ local function todoItems()
         n = n + WK.modules.BankDeposit:PendingCount()
         if n > 0 then
             add(4, "bag", string.format(WK.T("%d objets à déposer à la prochaine banque"), n),
-                open("mail", "SetTab", "bank"), nil, { g = "bag", group = "deposit", n = n })
+                open("inventory", "OpenMail", "bank"), nil, { g = "bag", group = "deposit", n = n })
         end
     end
     -- Expérience : repos plein sur un perso (il gaspille son temps d'auberge)
@@ -146,7 +146,7 @@ local function todoItems()
     if X and WK:FeatureOn("xp") and X:Config().restAlert then
         for _, r in ipairs(X:RestFull()) do
             add(6, "clock", string.format(WK.T("%s : repos plein (150 %%), joue-le pour en profiter"), WK:CharName(r.c, r.key)),
-                open("qol", "ShowSection", "xp"), nil,
+                open("characters", "OpenXP"), nil,
                 { g = "chart", group = "rest", n = 1, short = WK.T("repos"), who = r.key })
         end
         if X:Config().levelAlert and not X:Me().maxed then
@@ -154,7 +154,7 @@ local function todoItems()
             local p = X:PendingXP()
             if p > 0 and x.cur + p >= x.max then
                 add(3, "star", WK.T("Rends tes quêtes terminées : elles te font passer un niveau"),
-                    open("qol", "ShowSection", "xp"), C.positive,
+                    open("characters", "OpenXP"), C.positive,
                     { g = "star", short = WK.T("niveau"), kind = "levelup" })
             end
         end

@@ -188,6 +188,11 @@ UI:RegisterPage({
         end)
     end,
 
+    -- Expérience : rythme et repos de tes persos (volet du bouton Expérience ; barre d'XP, clic, Résumé)
+    OpenXP = function(self)
+        if self.xp and not self.xp:IsOpen() then self.xp:Open(true) end
+    end,
+
     -- clic sur l'or des sacs : la page descend jusqu'aux monnaies
     ScrollToMoney = function(self)
         if self.Refresh then self:Refresh() end

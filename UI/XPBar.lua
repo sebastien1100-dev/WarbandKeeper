@@ -201,8 +201,9 @@ local function build()
     end)
     f:SetScript("OnMouseUp", function()
         -- ouvrir (jamais refermer : la fenêtre ouverte sur une autre section de QoL se fermait)
-        UI:Create():Show(); UI:ShowPage("qol")
-        if UI.pages.qol and UI.pages.qol.ShowSection then UI.pages.qol:ShowSection("xp") end
+        UI:Create():Show(); UI:ShowPage("characters")
+        local cp = UI.pages.characters
+        if cp and cp.OpenXP and UI.current == "characters" then cp:OpenXP() end
     end)
 
     UI:RegisterHUD("xpbar", f, {

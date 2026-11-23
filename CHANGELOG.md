@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.197 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire et Courrier réunis (maquette B) : une seule barre d'onglets en deux groupes, OBJETS (Tout le compte, Rangement, À regrouper, Oubliés en banque, Verrouillés) puis COURRIER (Envoi, Dépôt banque, Réception), chacun avec son nombre. Courrier quitte la barre latérale ; la pastille passe sur Inventaire. Sur une fenêtre étroite, chaque groupe a sa ligne.
+- Expérience quitte la barre latérale : la section était vide une fois ses cartes reprises par la page Persos. Le rythme et le repos de tes persos sont dans Persos (bouton Expérience) ; le clic sur la barre d'XP et les rappels du Résumé y mènent. Les réglages de la barre restent dans Général > Barre d'XP.
+
 ## v1.128.196 — 23/11/2026
 
 _Un /reload suffit._

@@ -16,8 +16,8 @@ local MIN_H = 600
 local HOME_PAGE = "overview"
 local GROUPS = {
     -- « qol:<section> » : une section de la page QoL, rangée avec le thème qui va avec
-    { "MES PERSOS", { "characters", "inventory", "qol:classes", "qol:xp" }, "logo" },
-    { "ARGENT", { "stats", "mail", "journal" }, "coin" },
+    { "MES PERSOS", { "characters", "inventory", "qol:classes" }, "logo" },
+    { "ARGENT", { "stats", "journal" }, "coin" },
     { "ARTISANAT", { "professions", "fishing", "qol:campfire" }, "hammer" },
     { "FARM", { "farm", "loot" }, "bag" },
     { "AVENTURE", { "quests", "rares", "dungeons", "lfg" }, "map" },
@@ -780,6 +780,18 @@ function UI:ShowPage(key)
     -- les patch notes sont une section des Options
     local sub
     if key == "notes" then key, sub = "options", "notes"; WK.DB.global.settings.ui.optSection = "notes" end
+    -- Courrier : onglets du groupe COURRIER de la page Inventaire
+    if key == "mail" then
+        if not WK:PageOn("mail") or not WK:PageOn("inventory") then key = "overview" else
+            key = "inventory"
+            local ip = self.pages.inventory
+            local cur = ip and ip.MailTab and ip.frame and ip:MailTab()
+            if not cur then
+                WK.DB.global.settings.ui.invChar = "m:send"
+                if ip and ip.frame then ip.char = "m:send" end
+            end
+        end
+    end
     -- Hôtel des ventes : onglet de QoL > Général (ancienne page « auction »)
     if key == "auction" then
         if not WK:FeatureOn("ah") then key = "overview" else
@@ -945,6 +957,9 @@ UI.CHIPS = {
         return l
     end,
     inventory = function()
+        -- onglets du courrier : les pastilles du courrier
+        local ip = UI.pages.inventory
+        if ip and ip.MailTab and ip:MailTab() and UI.CHIPS.mail then return UI.CHIPS.mail() end
         local total = 0
         for _, c in pairs(WK.DB.global.characters) do
             for _, list in ipairs({ c.bags, c.bank, c.mailbox and c.mailbox.items }) do

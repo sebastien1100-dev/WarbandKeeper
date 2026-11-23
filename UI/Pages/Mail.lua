@@ -337,7 +337,14 @@ UI:RegisterPage({
             self:Refresh()
         end
         seg = UI:Segmented(p, { { "send", "Envoi" }, { "bank", "Dépôt banque" }, { "receive", "Réception" } }, setTab, 32)
-        function self:SetTab(k) seg:Select(k); setTab(k) end
+        self.seg = seg
+        function self:SetTab(k)
+            -- posée dans Inventaire (onglets du groupe COURRIER) : l'onglet d'Inventaire suit
+            local ip = self.hosted and UI.pages.inventory
+            if ip then ip.char = "m:" .. k; WK.DB.global.settings.ui.invChar = ip.char end
+            seg:Select(k); setTab(k)
+            if ip and ip.RefreshTabs then ip:RefreshTabs() end
+        end
         seg:SetPoint("TOPLEFT")
         seg:Select("send")
         for _, key in ipairs({ "send", "bank", "receive" }) do

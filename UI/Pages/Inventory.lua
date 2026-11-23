@@ -6,7 +6,12 @@ local T = function(s) return WK.T(s) end
 local MAX_ROWS = 150
 local TOP_TABS = { { "all", "Tout le compte" }, { "stash", "Rangement" }, { "spread", "À regrouper" },
     { "old", "Oubliés en banque" }, { "locks", "Verrouillés" } }
-local TOP_H = 46 -- barre d'onglets en haut (34) et son écart
+local TOP_H = 46 -- barre d'onglets en haut (34) et son écart ; 80 sur deux lignes (fenêtre étroite)
+-- onglets du groupe COURRIER : page Courrier (UI/Pages/Mail.lua) posée dans Inventaire
+local MAIL_TABS = { { "m:send", "Envoi", "send" }, { "m:bank", "Dépôt banque", "bank" },
+    { "m:receive", "Réception", "receive" } }
+local MAIL_OF = {}
+for _, t in ipairs(MAIL_TABS) do MAIL_OF[t[1]] = t[3] end
 local GAP = 12
 local WHERE = { "bags", "bank", "mailbox" }
 local WHERE_LABEL = { bags = "Sacs", bank = "Banque", mailbox = "Courrier" }
@@ -172,6 +177,11 @@ end
 
 UI:RegisterPage({
     key = "inventory", order = 3, nav = "Inventaire",
+    -- pastille de la barre latérale : celle du courrier (ses onglets sont ici)
+    count = function()
+        local md = UI.pages.mail
+        return md and md.count and WK:PageOn("mail") and md.count() or ""
+    end,
     title = "Inventaire",
     subtitle = "Sacs, banques et courrier, par personnage ou pour tout le compte. Maj + clic sur une ligne pour lier l'objet.",
 
@@ -188,11 +198,26 @@ UI:RegisterPage({
         bar:SetPoint("TOPLEFT", 0, 0)
         UI:Panel(bar, 17, C.surface, C.border)
         self.tabBar = bar
+        local band = _G.CreateFrame("Frame", nil, p)
+        band:SetPoint("TOPLEFT"); band:SetPoint("TOPRIGHT"); band:SetHeight(TOP_H)
+        self.band = band
+        -- titres des deux groupes et trait entre eux
+        bar.heads = {}
+        for i, lab in ipairs({ "Objets", "Courrier" }) do
+            local h = UI:Text(bar, 9, C.dim); h:SetText(UI:Upper(T(lab)))
+            bar.heads[i] = h
+        end
+        bar.sep = bar:CreateTexture(nil, "ARTWORK"); bar.sep:SetSize(1, 20)
+        bar.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
         self.tabBtns = {}
-        for _, tk in ipairs(TOP_TABS) do
+        local allTabs = {}
+        for _, tk in ipairs(TOP_TABS) do allTabs[#allTabs + 1] = tk end
+        for _, tk in ipairs(MAIL_TABS) do allTabs[#allTabs + 1] = { tk[1], tk[2], mail = true } end
+        for _, tk in ipairs(allTabs) do
             local b = _G.CreateFrame("Button", nil, bar)
             b:SetHeight(28)
             b.key = tk[1]
+            b.mail = tk.mail
             b.bg = UI:Rounded(b, 14, 0, "BACKGROUND", 1)
             b.name = UI:Text(b, 12)
             b.name:SetPoint("LEFT", 12, 0)
@@ -255,7 +280,7 @@ UI:RegisterPage({
         -- Liste PERSO (onglet « Tout le compte ») ------------------------------------
         local who = _G.CreateFrame("Button", nil, p)
         who:SetSize(230, 34)
-        who:SetPoint("TOPLEFT", 0, -TOP_H)
+        who:SetPoint("TOPLEFT", band, "BOTTOMLEFT", 0, 0)
         UI:Panel(who, 17, C.surface, C.border)
         who.cap = UI:Text(who, 10, C.dim); who.cap:SetPoint("LEFT", 14, 0); who.cap:SetText(UI:Upper(T("Perso")))
         who.label = UI:Text(who, 12)
@@ -312,26 +337,26 @@ UI:RegisterPage({
 
         self.whereSeg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
-        self.whereSeg:SetPoint("TOPRIGHT", 0, -TOP_H)
+        self.whereSeg:SetPoint("TOPRIGHT", band, "BOTTOMRIGHT", 0, 0)
         self.whereSeg:Select("all")
         -- Objets oubliés : depuis combien de jours
         self.oldDays = 14
         self.oldSeg = UI:Segmented(p, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
             function(d) self.oldDays = d; self:Refresh() end, 34)
-        self.oldSeg:SetPoint("TOPRIGHT", 0, -TOP_H)
+        self.oldSeg:SetPoint("TOPRIGHT", band, "BOTTOMRIGHT", 0, 0)
         self.oldSeg:Select(14)
         self.oldSeg:Hide()
 
         self.header = UI:Text(p, 14)
-        self.header:SetPoint("TOPLEFT", x0 + 2, -(TOP_H + 48))
+        self.header:SetPoint("TOPLEFT", band, "BOTTOMLEFT", x0 + 2, -48)
         self.info = UI:Text(p, 11, C.muted)
         self.info:SetPoint("BOTTOMLEFT", self.header, "BOTTOMRIGHT", 10, 1)
         self.countText = UI:Text(p, 11, C.muted)
-        self.countText:SetPoint("TOPRIGHT", -4, -(TOP_H + 50))
+        self.countText:SetPoint("TOPRIGHT", band, "BOTTOMRIGHT", -4, -50)
         self.countText:SetJustifyH("RIGHT")
 
         local scroll = UI:Scroll(p)
-        scroll:SetPoint("TOPLEFT", x0, -(TOP_H + 74))
+        scroll:SetPoint("TOPLEFT", band, "BOTTOMLEFT", x0, -74)
         scroll:SetPoint("BOTTOMRIGHT")
         self.scroll = scroll
         self.empty = UI:Text(p, 12, C.muted)
@@ -397,6 +422,25 @@ UI:RegisterPage({
         end, 26)
         self.setSeg:SetPoint("LEFT", self.gp.overlay.title, "RIGHT", 18, 0)
         self.setSeg:Select(curTab())
+        -- Courrier (onglets du groupe COURRIER) : la page Courrier est construite ici, sous la barre d'onglets
+        local host = _G.CreateFrame("Frame", nil, p)
+        host:SetPoint("TOPLEFT", band, "BOTTOMLEFT", 0, 12)
+        host:SetPoint("BOTTOMRIGHT")
+        host:Hide()
+        self.mailHost = host
+        local md = UI.pages.mail
+        if md and not md.frame then
+            md.frame = host
+            md.hosted = true
+            local ok, err = pcall(md.Build, md, host)
+            if not ok and WK.HandlerError then WK.HandlerError("page mail", err) end
+            -- ses onglets sont dans la barre d'Inventaire ; sa roue dentée va sur la ligne des onglets
+            if md.seg then md.seg:Hide() end
+            if md.gp and md.gp.gear then
+                md.gp.gear:ClearAllPoints(); md.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, -1)
+            end
+            if md.status then md.status:ClearAllPoints(); md.status:SetPoint("TOPRIGHT", host, "TOPRIGHT", -4, -16) end
+        end
 
         -- sacs par catégorie et leurs cases
         self.bags = UI:Pool(function()
@@ -592,7 +636,7 @@ UI:RegisterPage({
         local IL = WK.modules.ItemLock
         local cfg = IL:Config()
         local pane = UI:Scroll(p)
-        pane:SetPoint("TOPLEFT", x0, -TOP_H)
+        pane:SetPoint("TOPLEFT", self.band, "BOTTOMLEFT", x0, 0)
         pane:SetPoint("BOTTOMRIGHT")
         pane:Hide()
         self.lockPane = pane
@@ -706,7 +750,7 @@ UI:RegisterPage({
         local S = WK.modules.Stash
         local cfg = S:Config()
         local pane = UI:Scroll(p)
-        pane:SetPoint("TOPLEFT", x0, -TOP_H)
+        pane:SetPoint("TOPLEFT", self.band, "BOTTOMLEFT", x0, 0)
         pane:SetPoint("BOTTOMRIGHT")
         pane:Hide()
         self.stashPane = pane
@@ -1431,16 +1475,59 @@ UI:RegisterPage({
         local chars = WK.DB.global.characters
         local cfg = WK.DB.global.settings.ui
         local special = { spread = true, old = true, locks = true, stash = true }
-        if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
+        if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not MAIL_OF[self.char]
+            and not chars[self.char] then self.char = "all" end
         if cfg.invWho and cfg.invWho ~= "warband" and not chars[cfg.invWho] then cfg.invWho = nil end
         local wb = WK.DB.global.warbank
         if cfg.invWho == "warband" and not wb then cfg.invWho = nil end
-        local tab = special[self.char] and self.char or "all"
-        local x = 3
+        local mailOn = WK:PageOn("mail") and self.mailHost ~= nil
+        if MAIL_OF[self.char] and not mailOn then self.char = "all" end
+        local tab = (special[self.char] or MAIL_OF[self.char]) and self.char or "all"
+        local bar = self.tabBar
+        local avail = math.max(400, (self.band:GetWidth() or 0) > 0 and self.band:GetWidth() - 44 or 1000)
+        -- deux groupes : OBJETS puis, après un trait, COURRIER ; sur deux lignes si la place manque
+        local function headW(i) return (bar.heads[i]:GetStringWidth() or 40) + 12 end
+        local widths = { headW(1), headW(2) + 13 }
+        for _, b in ipairs(self.tabBtns) do
+            local g = b.mail and 2 or 1
+            if not b.mail or mailOn then widths[g] = widths[g] + (b:GetWidth() or 80) + 2 end
+        end
+        local twoLines = mailOn and (widths[1] + widths[2] + 6 > avail)
+        local x, line = 10, 0
+        local function place(f, w, yOff)
+            f:ClearAllPoints(); f:SetPoint("LEFT", bar, "TOPLEFT", x, -17 - line * 34 + (yOff or 0))
+            x = x + w
+        end
+        place(bar.heads[1], headW(1))
+        local maxX = 0
+        local mailStarted = false
         for _, b in ipairs(self.tabBtns) do
             local k = b.key
             local n, warn, tip
-            if k == "all" then
+            if b.mail and not mailStarted then
+                mailStarted = true
+                bar.heads[2]:SetShown(mailOn); bar.sep:SetShown(mailOn and not twoLines)
+                if mailOn then
+                    if twoLines then maxX = math.max(maxX, x); x, line = 10, 1
+                    else
+                        place(bar.sep, 13)
+                        bar.sep:ClearAllPoints(); bar.sep:SetPoint("CENTER", bar, "TOPLEFT", x - 7, -17)
+                    end
+                    place(bar.heads[2], headW(2))
+                end
+            end
+            if b.mail then
+                local mk = MAIL_OF[k]
+                local m, bk = WK.DB.global.mail, WK.DB.global.bank
+                local function cnt(t) local c = 0; for _ in pairs(t or {}) do c = c + 1 end return c end
+                if mk == "send" then n = cnt(m.rules) + cnt(m.cats); tip = string.format(T("%d règle(s) d'envoi"), n)
+                elseif mk == "bank" then
+                    n = cnt(bk.items) + cnt(bk.cats); tip = string.format(T("%d règle(s) de dépôt"), n)
+                else
+                    n = self:WaitingLetters(); warn = n > 0
+                    tip = string.format(T("%d lettre(s) en attente"), n)
+                end
+            elseif k == "all" then
                 n = self:WhoCount("all")
                 tip = string.format(T("%d objets"), n)
             elseif k == "spread" then
@@ -1465,20 +1552,44 @@ UI:RegisterPage({
             b:SetCount(n, warn)
             b.selected = (tab == k)
             b:Paint()
-            b:ClearAllPoints(); b:SetPoint("LEFT", x, 0)
-            x = x + b:GetWidth() + 2
+            b:SetShown(not b.mail or mailOn)
+            if not b.mail or mailOn then place(b, b:GetWidth() + 2) end
         end
-        self.tabBar:SetWidth(x + 1)
+        if not mailOn then bar.heads[2]:Hide(); bar.sep:Hide() end
+        maxX = math.max(maxX, x)
+        bar:SetSize(maxX + 1, twoLines and 68 or 34)
+        self.band:SetHeight(twoLines and 80 or TOP_H)
         -- liste PERSO : seulement dans « Tout le compte »
         self.whoBtn:SetShown(tab == "all")
+        self.curTab = tab
         if tab ~= "all" then self.whoMenu:Hide() end
         self.search:ClearAllPoints()
         if tab == "all" then
             self.search:SetPoint("TOPLEFT", self.whoBtn, "TOPRIGHT", 10, 0)
         else
-            self.search:SetPoint("TOPLEFT", 0, -TOP_H)
+            self.search:SetPoint("TOPLEFT", self.band, "BOTTOMLEFT", 0, 0)
         end
         self:PaintWho()
+    end,
+
+    -- Lettres en attente sur tous les persos (boîte aux lettres relevée)
+    WaitingLetters = function()
+        local n = 0
+        for _, c in pairs(WK.DB.global.characters) do
+            local box = c.mailbox
+            if box and (box.count or 0) > 0 then n = n + box.count end
+        end
+        return n
+    end,
+
+    -- Onglet de courrier affiché (« send », « bank », « receive ») ou nil
+    MailTab = function(self) return MAIL_OF[self.char or ""] end,
+
+    -- Ouvre un onglet du courrier (raccourcis du Résumé, pastilles de l'en-tête)
+    OpenMail = function(self, k)
+        self.char = "m:" .. (k or "send")
+        WK.DB.global.settings.ui.invChar = self.char
+        self:Refresh()
     end,
 
     -- Nombre d'objets d'un perso, de la banque de bataillon (« warband ») ou du compte (« all »)
@@ -1550,6 +1661,21 @@ UI:RegisterPage({
         self.bags:Reset(); self.slots:Reset(); self.lastList = nil
         local chars = WK.DB.global.characters
         local sel = self.char
+        -- onglets du COURRIER : la page Courrier à la place du contenu d'Inventaire
+        local mk = MAIL_OF[sel]
+        self.mailHost:SetShown(mk ~= nil)
+        self.gp.gear:SetShown(mk == nil)
+        if mk then
+            if self.gp:IsOpen() then self.gp:Open(false) end
+            for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText, self.whereSeg,
+                self.oldSeg,
+                self.whoBtn, self.lockPane, self.stashPane, self.empty }) do w:Hide() end
+            local md = UI.pages.mail
+            if md and md.frame == self.mailHost then
+                if md.tab ~= mk and md.SetTab then md:SetTab(mk) elseif md.Refresh then md:Refresh() end
+            end
+            return
+        end
         self.oldSeg:SetShown(sel == "old")
         -- objets verrouillés : leur propre panneau à la place de la liste
         local locks, stash = sel == "locks", sel == "stash"

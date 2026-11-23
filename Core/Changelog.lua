@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.197", date = "23/11/2026",
+        changed = {
+            "Inventaire et Courrier réunis (maquette B) : une seule barre d'onglets en deux groupes, OBJETS (Tout le compte, Rangement, À regrouper, Oubliés en banque, Verrouillés) puis COURRIER (Envoi, Dépôt banque, Réception), chacun avec son nombre. Courrier quitte la barre latérale ; la pastille passe sur Inventaire. Sur une fenêtre étroite, chaque groupe a sa ligne.",
+            "Expérience quitte la barre latérale : la section était vide une fois ses cartes reprises par la page Persos. Le rythme et le repos de tes persos sont dans Persos (bouton Expérience) ; le clic sur la barre d'XP et les rappels du Résumé y mènent. Les réglages de la barre restent dans Général > Barre d'XP.",
+        },
+    },
+    {
         version = "1.128.196", date = "23/11/2026",
         changed = {
             "Inventaire : la roue des réglages remonte sur la ligne des onglets, à droite ; le filtre Tout / Sacs / Banque / Courrier prend toute la droite de la ligne du dessous.",

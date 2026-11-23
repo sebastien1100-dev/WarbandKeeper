@@ -130,7 +130,7 @@ end
 -- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
-    { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "xp", "Expérience", "chart" }, { "classes", "Classes", "users" },
+    { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
 function UI:QoLSectionCount(key)
@@ -317,7 +317,10 @@ UI:RegisterPage({
                 if not isClass[key or ""] then key = QoL.CLASSES[1][1] end
             end
             -- Hôtel des ventes et Carte et guidage : onglets de Général (sections posées dessous)
-            local embedTab = key == "ah" and "Hôtel des ventes" or key == "maplayers" and "Carte et guidage" or nil
+            -- « xp » : ses cartes de données sont dans Persos (bouton Expérience),
+            -- ses réglages dans Général > Barre d'XP
+            local embedTab = key == "ah" and "Hôtel des ventes" or key == "maplayers" and "Carte et guidage"
+                or key == "xp" and "Barre d'XP" or nil
             if embedTab then key = "general"; ui.qolTabs = ui.qolTabs or {}; ui.qolTabs.general = embedTab end
             if not self.sections[key] then key = "general" end
             ui.qolSection = key
@@ -403,7 +406,7 @@ UI:RegisterPage({
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "cursor", "campfire", "xp", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "cursor", "campfire", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
