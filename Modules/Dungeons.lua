@@ -551,7 +551,8 @@ function M:CountEntry(d)
     end
 end
 WK:On("CHAT_MSG_SYSTEM", function(msg)
-    if type(msg) ~= "string" or not INSTANCE_RESET_SUCCESS then return end
+    -- message caché par le jeu (valeur secrète) : rien à lire
+    if type(msg) ~= "string" or (issecretvalue and issecretvalue(msg)) or not INSTANCE_RESET_SUCCESS then return end
     -- le « % » du format est échappé aussi, puis « %%s » (format échappé) devient une capture
     local pat = "^" .. INSTANCE_RESET_SUCCESS:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)") .. "$"
     if msg:match(pat) then db().resetAt = time() end
@@ -577,7 +578,7 @@ WK:On("PLAYER_UNGHOST", function() C_Timer.After(1, lateSummary) end)
 WK:On("PLAYER_DEAD", function() if M.run and M.run.st then M.run.st.deaths = (M.run.st.deaths or 0) + 1 end end)
 WK:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(msg)
     local st = M.run and M.run.st
-    if not st or type(msg) ~= "string" or not FACTION_STANDING_INCREASED then return end
+    if not st or type(msg) ~= "string" or (issecretvalue and issecretvalue(msg)) or not FACTION_STANDING_INCREASED then return end
     local pat = "^" .. FACTION_STANDING_INCREASED:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1"):gsub("%%%%s", "(.+)"):gsub("%%%%d", "(%%d+)") .. "$"
     local f, n = msg:match(pat)
     n = tonumber(n)

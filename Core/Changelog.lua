@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.207", date = "23/11/2026",
+        fixed = {
+            "Donjons : erreur « secret string » sur certains messages du jeu (remise à zéro d'instance, réputation) quand le jeu les cache : ils sont maintenant ignorés.",
+        },
+    },
+    {
         version = "1.128.206", date = "23/11/2026", restart = true,
         fixed = {
             "Donjons : les cartes s'affichaient en vert. Les images sont maintenant gardées dans leur format d'origine (512 px), que le jeu sait lire.",
