@@ -827,15 +827,21 @@ local function buildAmmo()
     if f.cd.SetDrawBling then f.cd:SetDrawBling(false) end
     if f.cd.SetHideCountdownNumbers then f.cd:SetHideCountdownNumbers(true) end
     if f.cd.SetUseCircularEdge then f.cd:SetUseCircularEdge(true) end
-    if f.cd.SetReverse then f.cd:SetReverse(true) end
-    -- icône ronde des munitions et son fond (qui flashe à zéro)
-    f.flash = UI:Rounded(f, AMMO_SIZE / 2, 0, "ARTWORK", 1)
-    f.flashHost = CreateFrame("Frame", nil, f)
-    f.flashHost:SetSize(AMMO_SIZE, AMMO_SIZE); f.flashHost:SetPoint("CENTER", f.track, "CENTER")
+    -- sens normal : la partie colorée = la part restante (à l'envers, rien ne s'affichait au-dessus du seuil)
+    if f.cd.SetReverse then f.cd:SetReverse(false) end
+    -- disque de fond sous l'icône (50 px, pas tout le cadre) et icône découpée en rond
+    f.flash = f:CreateTexture(nil, "BACKGROUND", nil, -1)
+    f.flash:SetSize(AMMO_SIZE, AMMO_SIZE); f.flash:SetPoint("CENTER", f.track, "CENTER")
+    f.flash:SetTexture(UI.MEDIA .. "circle")
     f.icon = f:CreateTexture(nil, "ARTWORK", nil, 3)
     f.icon:SetSize(AMMO_SIZE - 6, AMMO_SIZE - 6); f.icon:SetPoint("CENTER", f.track, "CENTER")
     f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    if f.icon.SetMask then pcall(f.icon.SetMask, f.icon, "Interface\\CharacterFrame\\TempPortraitAlphaMask") end
+    if f.CreateMaskTexture and f.icon.AddMaskTexture then
+        local m = f:CreateMaskTexture()
+        m:SetTexture(UI.MEDIA .. "circle", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        m:SetAllPoints(f.icon)
+        f.icon:AddMaskTexture(m)
+    end
     f.red = f:CreateTexture(nil, "ARTWORK", nil, 4) -- voile rouge sur l'icône (flash à zéro)
     f.red:SetAllPoints(f.icon)
     f.red:SetTexture(UI.MEDIA .. "circle")
@@ -860,9 +866,11 @@ local function buildAmmo()
     end)
     function f:Paint(st)
         self.st = st
-        local tex = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(st.id))
-            or select(10, WK.GetItemInfo(st.id))
-        self.icon:SetTexture(tex or "Interface\\Icons\\INV_Ammo_Arrow_02")
+        -- icône du jeu pour le genre de munitions : balle (sous-classe 3 des projectiles) ou flèche (2, par défaut)
+        local sub
+        if C_Item and C_Item.GetItemInfoInstant then sub = select(7, C_Item.GetItemInfoInstant(st.id)) end
+        local bullet = sub == 3
+        self.icon:SetTexture("Interface\\Icons\\INV_Ammo_" .. (bullet and "Bullet_02" or "Arrow_02"))
         local col = (st.level == "ok" and { UI:Accent() }) or (st.level == "low" and C.warning) or C.negative
         self.cd:SetSwipeColor(col[1], col[2], col[3], 1)
         -- balayage figé à la part restante : un « temps de recharge » arrêté
@@ -872,7 +880,7 @@ local function buildAmmo()
         end
         self.count:SetText(tostring(st.n))
         self.count:SetTextColor(col[1], col[2], col[3])
-        self.flash:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+        self.flash:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
         -- vitesse de la pulsation : lente (orange), moyenne (rouge), rapide (vide) ; aucune quand tout va bien
         self.period = (st.level == "low" and 1.4) or (st.level == "red" and 0.8) or (st.level == "empty" and 0.5) or nil
     end

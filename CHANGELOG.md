@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.235 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Alerte munitions : icône du jeu pour le genre de munitions (flèche ou balle) au lieu de celle de l'objet.
+
+### Corrections
+- Alerte munitions : l'icône était méconnaissable. Le fond sombre couvrait tout le cadre au lieu d'un disque, l'icône n'était pas ronde, et l'anneau était dessiné à l'envers (invisible au-dessus du seuil). L'anneau montre maintenant la part qui reste, et l'icône est ronde, posée sur un disque.
+
 ## v1.128.234 — 23/11/2026
 
 _Un /reload suffit._

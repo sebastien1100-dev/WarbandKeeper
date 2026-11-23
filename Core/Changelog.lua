@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.235", date = "23/11/2026",
+        fixed = {
+            "Alerte munitions : l'icône était méconnaissable. Le fond sombre couvrait tout le cadre au lieu d'un disque, l'icône n'était pas ronde, et l'anneau était dessiné à l'envers (invisible au-dessus du seuil). L'anneau montre maintenant la part qui reste, et l'icône est ronde, posée sur un disque.",
+        },
+        changed = {
+            "Alerte munitions : icône du jeu pour le genre de munitions (flèche ou balle) au lieu de celle de l'objet.",
+        },
+    },
+    {
         version = "1.128.234", date = "23/11/2026",
         added = {
             "Alerte munitions à l'écran : l'icône de tes flèches ou de tes balles (50 px) dans un anneau qui se vide avec elles. Sous le seuil, l'anneau orange respire ; sous un quart, il passe au rouge ; à zéro, toute l'icône flashe en rouge. Nombre restant dessous, détail au survol, clic = guidage vers le marchand le plus proche. Reste visible en combat.",
