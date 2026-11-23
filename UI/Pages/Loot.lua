@@ -231,7 +231,8 @@ UI:RegisterPage({
         body:SetPoint("TOPLEFT", x0, TOP)
         body:SetPoint("BOTTOMRIGHT")
 
-        -- Liste de tous les objets laissés au sol, avec leur prix (par-dessus la colonne de droite).
+        -- Objets laissés au sol (maquette A + fiche de B) : bilan, conseils en un clic, filtres, liste et fiche
+        -- de l'objet choisi, par-dessus la colonne de droite.
         local lp = UI:Card(p, "Objets laissés au sol")
         lp:SetPoint("TOPLEFT", x0, TOP)
         lp:SetPoint("BOTTOMRIGHT")
@@ -244,21 +245,113 @@ UI:RegisterPage({
         close:SetScript("OnClick", function() lp:Hide() end)
         self.lpSummary = UI:Text(lp, 11, C.muted)
         self.lpSummary:SetPoint("TOPLEFT", 16, -36)
-        self.lpSummary:SetPoint("TOPRIGHT", -16, -36)
-        self.lpSort = "value"
+        self.lpSummary:SetPoint("TOPRIGHT", -50, -36)
+        -- chiffres clés
+        self.lpKpi = UI:KpiRow(lp, 4, 74)
+        self.lpKpi:SetPoint("TOPLEFT", 12, -56)
+        self.lpKpi:SetPoint("TOPRIGHT", -12, -56)
+        -- conseils (cachés quand il n'y a rien à proposer)
+        local function tip(col)
+            local f = _G.CreateFrame("Frame", nil, lp)
+            f:SetHeight(44)
+            f.edge = UI:Rounded(f, 10, 0, "BACKGROUND", 1)
+            f.bg = UI:Rounded(f, 9, 1, "BACKGROUND", 2)
+            f.edge:SetColor(col[1], col[2], col[3], 0.45)
+            f.bg:SetColor(col[1] * 0.18, col[2] * 0.18, col[3] * 0.18, 1)
+            f.t = UI:Text(f, 12); f.t:SetPoint("TOPLEFT", 12, -8); f.t:SetJustifyH("LEFT")
+            f.s = UI:Text(f, 10, C.muted); f.s:SetPoint("TOPLEFT", f.t, "BOTTOMLEFT", 0, -3); f.s:SetJustifyH("LEFT")
+            f.btn = UI:Button(f, "", nil, 26, "primary")
+            f.btn:SetPoint("RIGHT", -9, 0)
+            f.t:SetPoint("RIGHT", f.btn, "LEFT", -10, 0); f.s:SetPoint("RIGHT", f.btn, "LEFT", -10, 0)
+            return f
+        end
+        self.lpTipWorth = tip(UI.colors.positive)
+        self.lpTipWorth.edge:SetColor(UI:Accent())
+        self.lpTipFull = tip(C.warning)
+        self.lpTipFull.btn:SetStyle("secondary")
+        self.lpTipWorth.btn:SetScript("OnClick", function()
+            local prof = L:Get(self.sel)
+            if prof and self.lpWorth and #self.lpWorth > 0 then L:AlwaysLoot(self.lpWorth, prof); self:Refresh() end
+        end)
+        self.lpTipFull.btn:SetScript("OnClick", function()
+            if UI.OpenBagBarSettings then UI:OpenBagBarSettings() end
+        end)
+        -- filtres
+        self.lpSort, self.lpReason, self.lpProf = "value", "all", "all"
         local sortSeg = UI:Segmented(lp, { { "value", "Valeur" }, { "count", "Quantité" }, { "recent", "Récents" } },
-            function(k) self.lpSort = k; self:RefreshLeft() end, 30)
-        sortSeg:SetPoint("TOPLEFT", 12, -56)
+            function(k) self.lpSort = k; self:RefreshLeft() end, 26)
         sortSeg:Select("value")
-        local clear = UI:Button(lp, "Vider la liste", nil, 28, "ghost", "trash")
-        clear:SetPoint("TOPRIGHT", -12, -57)
+        self.lpSortSeg = sortSeg
+        local reasonSeg = UI:Segmented(lp, { { "all", "Toutes raisons" }, { "filter", "Filtre" },
+            { "full", "Sacs pleins" } }, function(k) self.lpReason = k; self:RefreshLeft() end, 26)
+        reasonSeg:SetPoint("LEFT", sortSeg, "RIGHT", 12, 0)
+        reasonSeg:Select("all")
+        self.lpProfDd = UI:Dropdown(lp, 170, 26, { { "all", "Tous profils" } }, function(k)
+            self.lpProf = k; self:RefreshLeft()
+        end)
+        self.lpProfDd:SetPoint("LEFT", reasonSeg, "RIGHT", 12, 0)
+        local clear = UI:Button(lp, "Vider la liste", nil, 26, "ghost", "trash")
         clear.tooltip = "Maj + clic : remet la liste à zéro."
         clear:SetScript("OnClick", function()
-            if IsShiftKeyDown() then L:ClearLeft(); self:RefreshLeft() end
+            if _G.IsShiftKeyDown() then L:ClearLeft(); self.lpSel = nil; self:RefreshLeft() end
         end)
+        self.lpClear = clear
+        -- fiche de l'objet choisi (à droite)
+        local FW = 280
+        local fc = _G.CreateFrame("Frame", nil, lp)
+        fc:SetWidth(FW)
+        fc.edge = UI:Rounded(fc, 10, 0, "BACKGROUND", 1)
+        fc.bg = UI:Rounded(fc, 9, 1, "BACKGROUND", 2)
+        fc.edge:SetColor(unpack(C.border)); fc.bg:SetColor(unpack(C.surface))
+        self.lpFiche = fc
+        fc.icon = UI:RoundIcon(fc, 36); fc.icon:SetPoint("TOPLEFT", 12, -12)
+        fc.name = UI:Text(fc, 13); fc.name:SetPoint("TOPLEFT", 58, -13); fc.name:SetPoint("RIGHT", -10, 0)
+        fc.name:SetJustifyH("LEFT")
+        fc.cat = UI:Text(fc, 10, C.muted); fc.cat:SetPoint("TOPLEFT", fc.name, "BOTTOMLEFT", 0, -4)
+        fc.cat:SetPoint("RIGHT", -10, 0); fc.cat:SetJustifyH("LEFT")
+        local function mini(x)
+            local m = _G.CreateFrame("Frame", nil, fc)
+            m:SetSize((FW - 34) / 2, 54); m:SetPoint("TOPLEFT", x, -60)
+            local b = UI:Rounded(m, 8, 0, "BACKGROUND", 3); b:SetColor(unpack(C.surface2))
+            m.l = UI:Text(m, 10, C.muted); m.l:SetPoint("TOPLEFT", 10, -8)
+            m.v = UI:Text(m, 15); m.v:SetPoint("TOPLEFT", m.l, "BOTTOMLEFT", 0, -3)
+            m.s = UI:Text(m, 10, C.muted); m.s:SetPoint("TOPLEFT", m.v, "BOTTOMLEFT", 0, -2)
+            return m
+        end
+        fc.k1, fc.k2 = mini(12), mini(12 + (FW - 34) / 2 + 10)
+        fc.k1.l:SetText(UI:Upper(T("Laissé"))); fc.k2.l:SetText(UI:Upper(T("Valeur")))
+        local function sect(title, y)
+            local h = UI:Text(fc, 10, C.dim); h:SetPoint("TOPLEFT", 12, y); h:SetText(UI:Upper(T(title)))
+            local t = UI:Text(fc, 11); t:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -4)
+            t:SetPoint("RIGHT", fc, "RIGHT", -12, 0)
+            t:SetJustifyH("LEFT"); t:SetJustifyV("TOP")
+            if t.SetWordWrap then t:SetWordWrap(true) end
+            return h, t
+        end
+        fc.whereH, fc.where = sect("Où", -128)
+        fc.whyH, fc.why = sect("Pourquoi", -128)
+        fc.bAlways = UI:Button(fc, "", nil, 26, "primary")
+        fc.bAll = UI:Button(fc, "Toujours ramasser (tous les profils)", nil, 26, "secondary")
+        fc.bHide = UI:Button(fc, "Ne plus lister", nil, 26, "ghost")
+        for i, b in ipairs({ fc.bAlways, fc.bAll, fc.bHide }) do
+            b:SetPoint("BOTTOMLEFT", 12, 12 + (3 - i) * 32); b:SetPoint("BOTTOMRIGHT", -12, 12 + (3 - i) * 32)
+        end
+        fc.bAlways:SetScript("OnClick", function()
+            local prof = L:Get(self.sel)
+            if prof and self.lpSel then L:AlwaysLoot({ self.lpSel }, prof); self:Refresh() end
+        end)
+        fc.bAll:SetScript("OnClick", function()
+            if self.lpSel then L:AlwaysLoot({ self.lpSel }); self:Refresh() end
+        end)
+        fc.bHide:SetScript("OnClick", function()
+            if self.lpSel then L:HideLeft(self.lpSel); self.lpSel = nil; self:RefreshLeft() end
+        end)
+        fc.empty = UI:Text(fc, 11, C.muted); fc.empty:SetPoint("CENTER")
+        fc.empty:SetText(T("Choisis un objet de la liste."))
+        -- liste
         local lscroll = UI:Scroll(lp)
-        lscroll:SetPoint("TOPLEFT", 10, -96)
-        lscroll:SetPoint("BOTTOMRIGHT", -8, 10)
+        lscroll:SetPoint("BOTTOMLEFT", 10, 10)
+        lscroll:SetPoint("RIGHT", fc, "LEFT", -10, 0)
         self.lpScroll = lscroll
         self.lpEmpty = UI:Text(lp, 12, C.muted)
         self.lpEmpty:SetPoint("TOP", lscroll, "TOP", 0, -40)
@@ -267,24 +360,33 @@ UI:RegisterPage({
             local r = CreateFrame("Button", nil, lscroll.child)
             r:SetHeight(42)
             r.bg = UI:Rounded(r, 10, 0, "BACKGROUND", 1)
-            r.bg:SetColor(unpack(C.surface2))
+            r.edge = UI:Rounded(r, 10, 0, "BACKGROUND", 0)
             r.icon = UI:RoundIcon(r, 26)
             r.icon:SetPoint("LEFT", 10, 0)
-            r.add = UI:IconButton(r, "plus", 26, "Toujours ramasser cet objet (profil sélectionné)")
-            r.add:SetPoint("RIGHT", -8, 0)
+            r.hide = UI:IconButton(r, "close", 22, "Ne plus lister cet objet (le profil ne change pas)")
+            r.hide:SetPoint("RIGHT", -8, 0)
+            r.hide:SetScript("OnClick", function(b)
+                if b.itemID then
+                    L:HideLeft(b.itemID)
+                    if self.lpSel == b.itemID then self.lpSel = nil end
+                    self:RefreshLeft()
+                end
+            end)
+            r.add = UI:IconButton(r, "plus", 22, "Toujours ramasser cet objet (profil sélectionné)")
+            r.add:SetPoint("RIGHT", r.hide, "LEFT", -4, 0)
             r.add:SetScript("OnClick", function(b)
                 local prof = L:Get(self.sel)
-                if prof and b.itemID then prof.always[b.itemID] = true; prof.never[b.itemID] = nil; self:Refresh() end
+                if prof and b.itemID then L:AlwaysLoot({ b.itemID }, prof); self:Refresh() end
             end)
             r.value = UI:Text(r, 13)
-            r.value:SetPoint("TOPRIGHT", -44, -7)
+            r.value:SetPoint("TOPRIGHT", -64, -7)
             r.value:SetJustifyH("RIGHT")
             r.unit = UI:Text(r, 10, C.muted)
             r.unit:SetPoint("TOPRIGHT", r.value, "BOTTOMRIGHT", 0, -3)
             r.unit:SetJustifyH("RIGHT")
             r.name = UI:Text(r, 12)
             r.name:SetPoint("TOPLEFT", 46, -7)
-            r.name:SetPoint("TOPRIGHT", -200, -7)
+            r.name:SetPoint("TOPRIGHT", -150, -7)
             r.sub = UI:Text(r, 10, C.muted)
             r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
             r.sub:SetPoint("TOPRIGHT", r.name, "BOTTOMRIGHT", 0, -3)
@@ -300,25 +402,153 @@ UI:RegisterPage({
                 if IsShiftKeyDown() and s.itemID then
                     local _, link = WK.GetItemInfo(s.itemID)
                     if link then WK.InsertChatLink(link) end
+                    return
                 end
+                self.lpSel = s.itemID
+                self:RefreshLeft()
             end)
             return r
         end)
 
+        -- fiche : où, pourquoi, prix
+        local function paintFiche(e)
+            fc.empty:SetShown(e == nil)
+            for _, w in ipairs({ fc.icon, fc.name, fc.cat, fc.k1, fc.k2, fc.whereH, fc.where, fc.whyH, fc.why,
+                fc.bAlways, fc.bAll, fc.bHide }) do w:SetShown(e ~= nil) end
+            if not e then return end
+            local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
+            fc.icon:SetTexture(icon)
+            fc.name:SetText(e.name or name or "?"); fc.name:SetTextColor(qr or 1, qg or 1, qb or 1)
+            local _, _, _, ilvl, _, itype, isub = WK.GetItemInfo(e.id)
+            local bits = {}
+            if itype then bits[#bits + 1] = itype end
+            if isub and isub ~= itype then bits[#bits + 1] = isub end
+            if ilvl and ilvl > 1 then bits[#bits + 1] = string.format(T("niv. %d"), ilvl) end
+            fc.cat:SetText(table.concat(bits, " · "))
+            fc.k1.v:SetText("x" .. (e.n or 0)); fc.k1.s:SetText(string.format(T("%d fois"), e.times or 1))
+            if e.unit > 0 then
+                fc.k2.v:SetText(UI:GoldText(e.value))
+                fc.k2.s:SetText(string.format(T("%s l'unité"), UI:PlainMoney(e.unit)))
+            else
+                fc.k2.v:SetText(UI:Hex(C.dim) .. "-|r"); fc.k2.s:SetText(T("pas de prix"))
+            end
+            -- où : zones les plus fréquentes
+            local zl = {}
+            for z, n in pairs(e.zones or {}) do zl[#zl + 1] = { z, n } end
+            table.sort(zl, function(a, b) return a[2] > b[2] end)
+            local lines = {}
+            for i = 1, math.min(4, #zl) do lines[#lines + 1] = string.format(T("%s · %d fois"), zl[i][1], zl[i][2]) end
+            fc.where:SetText(#lines > 0 and table.concat(lines, "\n")
+                or (UI:Hex(C.muted) .. T("pas encore noté (objets laissés avant cette version)") .. "|r"))
+            -- pourquoi : profils, sacs pleins, règle du profil, prix du marchand
+            local why = {}
+            for pn, n in pairs(e.prof or {}) do
+                local pr
+                for _, x in ipairs(L:Profiles()) do if x.name == pn then pr = x end end
+                local rule = pr and L:WhyLeft(pr, e.id)
+                why[#why + 1] = string.format(T("Profil « %s »%s"), pn, rule and (" : " .. rule) or "")
+                    .. (n > 1 and string.format(" (%d)", n) or "")
+            end
+            if (e.fullN or 0) > 0 or (e.full or 0) > 0 then
+                why[#why + 1] = UI:Hex(C.warning) .. string.format(T("Sacs pleins : %d fois"), e.fullN or 1) .. "|r"
+            end
+            if #why == 0 then
+                local rule = L:WhyLeft(L:Get(self.sel), e.id)
+                why[#why + 1] = rule and string.format(T("Profil choisi : %s"), rule) or T("Laissé par le filtre")
+            end
+            local sell = select(11, WK.GetItemInfo(e.id))
+            if sell and sell > 0 then
+                why[#why + 1] = UI:Hex(C.muted) .. string.format(T("vendu %s chez le marchand"), UI:PlainMoney(sell))
+                    .. "|r"
+            end
+            fc.why:SetText(table.concat(why, "\n"))
+            -- « Pourquoi » sous le texte de « Où », d'après sa hauteur réelle (texte sur plusieurs lignes)
+            fc.whyH:ClearAllPoints()
+            fc.whyH:SetPoint("TOPLEFT", 12, -128 - 16 - math.ceil(fc.where:GetStringHeight() or 14) - 12)
+            local prof = L:Get(self.sel)
+            fc.bAlways:SetLabel(string.format(T("Toujours ramasser (%s)"), prof and prof.name or "-"))
+        end
+
         function self:RefreshLeft()
             if not lp:IsShown() then return end
-            local list, total, count, since = L:LeftList(self.lpSort)
-            self.lpSummary:SetText(string.format(T("%d objets laissés · valeur %s · depuis le %s  (%s)"),
-                count, UI:PlainMoney(total), date("%d/%m", since or time()), WK.modules.Value:SourceLabel()))
+            local prof = L:Get(self.sel)
+            -- bilan et conseils
+            local st = L:LeftStats(prof, 2000)
+            local _, _, count, since = L:LeftList("value")
+            self.lpSummary:SetText(string.format(T("%d objets laissés · depuis le %s  (%s)"),
+                count, _G.date("%d/%m", since or _G.time()), WK.modules.Value:SourceLabel()))
+            local now = _G.time()
+            local days = math.max(1, math.floor((now - (since or now)) / 86400 + 0.5))
+            self.lpKpi:Set(1, { label = UI:Upper(T("Valeur laissée")), value = UI:PlainMoney(st.total), color = C.gold,
+                sub = string.format(T("%d objets en %d jour(s)"), st.count, days) })
+            self.lpKpi:Set(2, { label = UI:Upper(T("Par le filtre")), value = UI:PlainMoney(st.filter),
+                sub = string.format(T("profil « %s »"), prof and prof.name or "-") })
+            self.lpKpi:Set(3, { label = UI:Upper(T("Sacs pleins")), value = UI:PlainMoney(st.full), color = C.warning,
+                sub = string.format(T("%d fois cette semaine"), st.fullWeek) })
+            local best = st.best
+            local bname = best and (best.name or (UI:ItemInfo(best.id))) or "-"
+            self.lpKpi:Set(4, { label = UI:Upper(T("Plus cher oublié")),
+                value = best and UI:PlainMoney(best.value) or "-", color = C.info, sub = bname })
+            self.lpWorth = st.worth
+            local y = -138
+            local showW, showF = #st.worth > 0, st.fullWeek >= 3
+            self.lpTipWorth:SetShown(showW); self.lpTipFull:SetShown(showF)
+            if showW or showF then
+                local half = showW and showF
+                self.lpTipWorth:ClearAllPoints(); self.lpTipFull:ClearAllPoints()
+                if showW then
+                    self.lpTipWorth:SetPoint("TOPLEFT", 12, y)
+                    if half then self.lpTipWorth:SetPoint("RIGHT", lp, "CENTER", -5, 0)
+                    else self.lpTipWorth:SetPoint("TOPRIGHT", -12, y) end
+                    self.lpTipWorth.t:SetText(string.format(T("%d objet(s) à plus de %s l'unité"), #st.worth,
+                        UI:PlainMoney(2000)))
+                    self.lpTipWorth.s:SetText(string.format(T("%s laissés"), UI:PlainMoney(st.worthValue)))
+                    self.lpTipWorth.btn:SetLabel(T("Toujours les ramasser"))
+                end
+                if showF then
+                    if half then self.lpTipFull:SetPoint("TOPLEFT", lp, "TOP", 5, y)
+                    else self.lpTipFull:SetPoint("TOPLEFT", 12, y) end
+                    self.lpTipFull:SetPoint("TOPRIGHT", -12, y)
+                    self.lpTipFull.t:SetText(string.format(T("Sacs pleins %d fois cette semaine"), st.fullWeek))
+                    self.lpTipFull.s:SetText(string.format(T("%s perdus faute de place"), UI:PlainMoney(st.full)))
+                    self.lpTipFull.btn:SetLabel(T("Barre des sacs"))
+                end
+                y = y - 52
+            end
+            -- filtres
+            self.lpSortSeg:ClearAllPoints(); self.lpSortSeg:SetPoint("TOPLEFT", 12, y)
+            -- « Vider la liste » en haut, à gauche de la croix (la ligne des filtres est pleine)
+            self.lpClear:ClearAllPoints(); self.lpClear:SetPoint("TOPRIGHT", -44, -8)
+            local opts = { { "all", "Tous profils" } }
+            for _, pr in ipairs(L:Profiles()) do opts[#opts + 1] = { pr.name, pr.name } end
+            self.lpProfDd:SetOptions(opts)
+            if self.lpProf ~= "all" then
+                local found = false
+                for _, o in ipairs(opts) do if o[1] == self.lpProf then found = true end end
+                if not found then self.lpProf = "all" end
+            end
+            self.lpProfDd:Select(self.lpProf)
+            y = y - 36
+            fc:ClearAllPoints(); fc:SetPoint("TOPRIGHT", -12, y); fc:SetPoint("BOTTOMRIGHT", -12, 10)
+            lscroll:SetPoint("TOPLEFT", 10, y)
+            -- liste
+            local filter = { reason = self.lpReason ~= "all" and self.lpReason or nil,
+                prof = self.lpProf ~= "all" and self.lpProf or nil }
+            local list = L:LeftList(self.lpSort, filter)
+            local selE
             self.lpRows:Reset()
-            local y = 0
+            local ry = 0
             for _, e in ipairs(list) do
                 local r = self.lpRows:Get()
-                r.itemID = e.id
-                r.add.itemID = e.id
+                r.itemID, r.add.itemID, r.hide.itemID = e.id, e.id, e.id
                 r:ClearAllPoints()
-                r:SetPoint("TOPLEFT", 0, -y)
-                r:SetPoint("TOPRIGHT", 0, -y)
+                r:SetPoint("TOPLEFT", 0, -ry)
+                r:SetPoint("TOPRIGHT", 0, -ry)
+                local sel = self.lpSel == e.id
+                if sel then selE = e end
+                r.bg:SetColor(unpack(sel and C.hover or C.surface2))
+                local ar, ag, ab = UI:Accent()
+                r.edge:SetColor(ar, ag, ab, sel and 0.8 or 0)
                 local name, icon, qr, qg, qb = UI:ItemInfo(e.id)
                 r.icon:SetTexture(icon)
                 r.name:SetText(e.name or name)
@@ -335,10 +565,13 @@ UI:RegisterPage({
                     r.value:SetText(UI:Hex(C.dim) .. "-|r")
                     r.unit:SetText(T("pas de prix"))
                 end
-                y = y + 46
+                ry = ry + 46
             end
-            self.lpScroll:SetContentHeight(y)
+            -- rien de choisi (ou plus dans la liste) : le premier objet
+            if not selE and list[1] then self.lpSel = list[1].id; return self:RefreshLeft() end
+            self.lpScroll:SetContentHeight(ry)
             self.lpEmpty:SetShown(#list == 0)
+            paintFiche(selE)
         end
 
         -- Réglages du profil

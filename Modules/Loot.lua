@@ -40,7 +40,10 @@ function M:OnInit()
         d.active = 1
     end
     d.recent = d.recent or {}
-    d.left = d.left or {}          -- [itemID] = { n = quantité, times = fois, last = date, name }
+    d.left = d.left or {}          -- [itemID] = { n = quantité, times = fois, last = date, name, full, fullN,
+                                   --   zones = { [zone] = fois }, prof = { [profil] = fois } }
+    d.leftHide = d.leftHide or {}  -- [itemID] = true : « ne plus lister » (jamais noté ni montré)
+    d.fullAt = d.fullAt or {}      -- dates des objets laissés faute de place (sacs pleins), 200 au plus
     d.leftSince = d.leftSince or time()
     self.leftSession = 0
 end
@@ -157,16 +160,29 @@ end
 
 -- Liste cumulée des objets laissés au sol, avec leur prix (unitaire et total).
 -- sort : "value" (valeur totale), "count" (quantité) ou "recent".
-function M:LeftList(sort)
+-- filter (facultatif) : { reason = "filter" | "full", prof = nom du profil } ; le total et le nombre
+-- rendus sont ceux de la liste filtrée
+function M.LeftList(_, sort, filter)
     local d = db()
     local V = WK.modules.Value
     local list, total, count = {}, 0, 0
+    filter = filter or {}
     for id, e in pairs(d.left or {}) do
-        local unit, src = V:Price(id)
-        local item = { id = id, n = e.n, times = e.times, last = e.last, name = e.name, full = e.full,
-            unit = unit or 0, src = src, value = (unit or 0) * e.n }
-        total, count = total + item.value, count + e.n
-        table.insert(list, item)
+        local fullN = e.full or 0
+        local keep = not (d.leftHide or {})[id]
+        if keep and filter.reason == "full" then keep = fullN > 0 end
+        if keep and filter.reason == "filter" then keep = (e.n or 0) > fullN end
+        if keep and filter.prof then keep = e.prof ~= nil and (e.prof[filter.prof] or 0) > 0 end
+        if keep then
+            local unit, src = V:Price(id)
+            local n = e.n
+            if filter.reason == "full" then n = fullN elseif filter.reason == "filter" then n = e.n - fullN end
+            local item = { id = id, n = n, times = e.times, last = e.last, name = e.name, full = e.full,
+                fullN = e.fullN, zones = e.zones, prof = e.prof,
+                unit = unit or 0, src = src, value = (unit or 0) * n }
+            total, count = total + item.value, count + n
+            table.insert(list, item)
+        end
     end
     table.sort(list, function(a, b)
         if sort == "count" and a.n ~= b.n then return a.n > b.n end
@@ -179,8 +195,70 @@ end
 
 function M:ClearLeft()
     local d = db()
-    d.left, d.leftSince = {}, time()
+    d.left, d.leftSince, d.fullAt = {}, _G.time(), {}
     WK:NotifyChanged()
+end
+
+-- « Ne plus lister » : retiré de la liste et plus jamais noté (le profil n'est pas touché)
+function M.HideLeft(_, id)
+    local d = db()
+    if not id then return end
+    d.leftHide = d.leftHide or {}
+    d.leftHide[id] = true
+    if d.left then d.left[id] = nil end
+    WK:NotifyChanged()
+end
+
+-- Bilan de la liste (maquette A) : valeur totale, part du filtre et des sacs pleins, sacs pleins sur 7 jours,
+-- objet le plus cher, et objets qui valent le coup (prix unitaire >= minUnit) pas encore « toujours » dans p
+function M.LeftStats(_, p, minUnit)
+    local d = db()
+    local V = WK.modules.Value
+    local st = { total = 0, filter = 0, full = 0, count = 0, fullWeek = 0, worth = {}, worthValue = 0 }
+    local week = _G.time() - 7 * 86400
+    for _, t in ipairs(d.fullAt or {}) do if t >= week then st.fullWeek = st.fullWeek + 1 end end
+    for id, e in pairs(d.left or {}) do
+        if not (d.leftHide or {})[id] then
+            local unit = V:Price(id) or 0
+            local fullN = e.full or 0
+            local v = unit * (e.n or 0)
+            st.total, st.count = st.total + v, st.count + (e.n or 0)
+            st.full = st.full + unit * fullN
+            st.filter = st.filter + unit * ((e.n or 0) - fullN)
+            if not st.best or v > st.best.value then st.best = { id = id, name = e.name, value = v } end
+            if unit >= (minUnit or 2000) and not (p and (p.always[id] or p.never[id])) then
+                st.worth[#st.worth + 1] = id
+                st.worthValue = st.worthValue + v
+            end
+        end
+    end
+    return st
+end
+
+-- Toujours ramasser une liste d'objets dans un profil (ou dans tous : p = nil)
+function M:AlwaysLoot(ids, p)
+    local list = p and { p } or self:Profiles()
+    for _, pr in ipairs(list) do
+        for _, id in ipairs(ids) do pr.always[id] = true; pr.never[id] = nil end
+    end
+    WK:NotifyChanged()
+end
+
+-- Pourquoi un objet a été laissé avec ce profil (texte court), d'après ses réglages actuels
+function M.WhyLeft(_, p, id)
+    if not (p and id) then return nil end
+    if p.never[id] then return T("dans sa liste « jamais »") end
+    if p.always[id] then return T("maintenant dans sa liste « toujours »") end
+    if (p.minQuality or 0) >= 99 then return T("ne ramasse que l'or et les objets de quête") end
+    local q = select(3, WK.GetItemInfo(id))
+    if q and q < (p.minQuality or 0) then
+        local names = { [0] = T("Grise"), T("Blanche"), T("Verte"), T("Bleue"), T("Épique") }
+        return string.format(T("qualité minimale : %s"), names[p.minQuality] or tostring(p.minQuality))
+    end
+    if (p.minValue or 0) > 0 then
+        return string.format(T("valeur minimale : %s"), WK.UI:PlainMoney(p.minValue))
+    end
+    return nil
 end
 
 local handled, lootOpen = false, false
@@ -189,13 +267,30 @@ local handled, lootOpen = false, false
 local function recordLeft(id, qty, name, full)
     local d = db()
     qty = qty or 1
+    if id and d.leftHide and d.leftHide[id] then return end -- « ne plus lister »
     M.leftSession = M.leftSession + qty
     table.insert(d.recent, 1, { id = id, n = qty, t = time(), name = name, full = full or nil })
     while #d.recent > MAX_RECENT do table.remove(d.recent) end
+    if full then
+        d.fullAt = d.fullAt or {}
+        table.insert(d.fullAt, _G.time())
+        while #d.fullAt > 200 do table.remove(d.fullAt, 1) end
+    end
     if id then
         local e = d.left[id] or { n = 0, times = 0 }
         e.n, e.times, e.last, e.name = e.n + qty, e.times + 1, time(), name or e.name
-        if full then e.full = (e.full or 0) + qty end
+        if full then e.full = (e.full or 0) + qty; e.fullN = (e.fullN or 0) + 1 end
+        -- où (zone) et avec quel profil : pour la fiche de l'objet
+        local zone = _G.GetRealZoneText and _G.GetRealZoneText() or nil
+        if zone and zone ~= "" and not (_G.issecretvalue and _G.issecretvalue(zone)) then
+            e.zones = e.zones or {}
+            e.zones[zone] = (e.zones[zone] or 0) + 1
+        end
+        local p = M:Effective()
+        if p and p.name then
+            e.prof = e.prof or {}
+            e.prof[p.name] = (e.prof[p.name] or 0) + 1
+        end
         d.left[id] = e
     end
 end

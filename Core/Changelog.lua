@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.247", date = "23/11/2026",
+        changed = {
+            "Filtre de butin, liste « Objets laissés au sol » refaite (maquette A avec la fiche de B) : chiffres clés en tête (valeur laissée, part du filtre, part des sacs pleins avec le nombre de fois cette semaine, objet le plus cher oublié).",
+            "Conseils en un clic : « N objets à plus de 20 pa l'unité » avec « Toujours les ramasser » (dans le profil choisi), et « Sacs pleins N fois cette semaine » qui mène aux réglages de la barre des sacs.",
+            "Filtres par raison (filtre ou sacs pleins) et par profil ; « × » sur chaque ligne retire un objet de la liste pour de bon sans toucher au profil.",
+            "Fiche de l'objet choisi à droite : quantité, valeur, où tu l'as laissé (zones), pourquoi (profil et sa règle, sacs pleins, prix du marchand), et « Toujours ramasser » pour le profil choisi ou pour tous. La zone et le profil sont notés à partir de cette version.",
+        },
+    },
+    {
         version = "1.128.246", date = "23/11/2026",
         fixed = {
             "Filtre de butin : un clic sur un profil referme la liste « Objets laissés au sol » (elle restait par-dessus le profil choisi).",
