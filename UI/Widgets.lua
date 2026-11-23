@@ -447,6 +447,47 @@ function UI:Segmented(parent, items, onSelect, height)
     return f
 end
 
+-- Onglets soulignés : 2e niveau d'onglets, sous une barre de pilules (UI:Segmented) dont il faut les distinguer.
+-- Même usage que UI:Segmented : items = { { clé, libellé } }, onSelect(clé), f:Select(clé).
+function UI.UnderTabs(_, parent, items, onSelect, height)
+    height = height or 30
+    local f = _G.CreateFrame("Frame", nil, parent)
+    f.line = f:CreateTexture(nil, "BACKGROUND")
+    f.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+    f.line:SetHeight(1); f.line:SetPoint("BOTTOMLEFT"); f.line:SetPoint("BOTTOMRIGHT")
+    f.buttons = {}
+    local x = 4
+    for _, it in ipairs(items) do
+        local b = _G.CreateFrame("Button", nil, f)
+        b.text = UI:Text(b, 12, C.muted)
+        b.text:SetPoint("CENTER", 0, 1)
+        b.text:SetText(WK.T(it[2]))
+        local w = math.ceil((b.text:GetStringWidth() or 40) + 6)
+        b:SetSize(w, height)
+        b:SetPoint("BOTTOMLEFT", x, 0)
+        b.bar = b:CreateTexture(nil, "ARTWORK")
+        b.bar:SetHeight(2); b.bar:SetPoint("BOTTOMLEFT"); b.bar:SetPoint("BOTTOMRIGHT")
+        b:SetScript("OnEnter", function(s2) s2.hover = true; f:Paint() end)
+        b:SetScript("OnLeave", function(s2) s2.hover = false; f:Paint() end)
+        b:SetScript("OnClick", function() f:Select(it[1]); onSelect(it[1]) end)
+        f.buttons[it[1]] = b
+        x = x + w + 18
+    end
+    f:SetSize(x, height)
+    f.Paint = function(fr)
+        local r, g, bb = UI:Accent()
+        for k, b in pairs(fr.buttons) do
+            local sel = k == fr.selected
+            b.bar:SetColorTexture(r, g, bb, 1); b.bar:SetShown(sel)
+            local col = (sel or b.hover) and C.text or C.muted
+            b.text:SetTextColor(col[1], col[2], col[3])
+        end
+    end
+    f.Select = function(fr, key) fr.selected = key; fr:Paint() end
+    UI:OnAccent(function() f:Paint() end)
+    return f
+end
+
 ---------------------------------------------------------------------------
 -- Curseur (slider) : valeur appliquée au relâchement.
 ---------------------------------------------------------------------------

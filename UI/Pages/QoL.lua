@@ -130,7 +130,6 @@ end
 -- Sections de QoL, affichées sous « QoL » dans la barre latérale (UI/MainFrame.lua) : clé, libellé, icône.
 UI.QOL_SECTIONS = {
     { "general", "Général", "gear" }, { "halo", "Halo", "spark" }, { "micro", "Micro menu", "menu" },
-    { "maplayers", "Carte et guidage", "map" },
     { "cursor", "Curseur", "crosshair" }, { "campfire", "Feu de camp", "fire" }, { "xp", "Expérience", "chart" }, { "classes", "Classes", "users" },
 }
 -- Pastille d'une section dans la barre latérale : alertes générales (Général) ou des classes (Classes).
@@ -248,6 +247,7 @@ UI:RegisterPage({
                 for j, t in ipairs(shown) do t.pane:SetShown(j == i) end
                 if sec.seg then sec.seg:Select(i) end
                 sec.scroll:SetContentHeight(sec.base + TABS_H + (shown[i] and shown[i].h or 0))
+                if sec.syncEmbed then sec.syncEmbed() end
                 if sec.scroll.SetVerticalScroll then sec.scroll:SetVerticalScroll(0) end
             end
             function sec.tabOf(frame)
@@ -258,7 +258,8 @@ UI:RegisterPage({
                 end
             end
             if #shown > 1 then
-                sec.seg = UI:Segmented(sec.scroll.child, items, function(i) sec.showTab(i) end, 32)
+                local mk = sec.underTabs and UI.UnderTabs or UI.Segmented
+                sec.seg = mk(UI, sec.scroll.child, items, function(i) sec.showTab(i) end, 32)
                 sec.seg:SetPoint("TOPLEFT", 0, -sec.base)
             else
                 -- un seul onglet : pas de barre, son contenu remonte
@@ -315,11 +316,18 @@ UI:RegisterPage({
                 if not isClass[key or ""] then key = WK.DB:Me().class end
                 if not isClass[key or ""] then key = QoL.CLASSES[1][1] end
             end
+            -- Hôtel des ventes et Carte et guidage : onglets de Général (sections posées dessous)
+            local embedTab = key == "ah" and "Hôtel des ventes" or key == "maplayers" and "Carte et guidage" or nil
+            if embedTab then key = "general"; ui.qolTabs = ui.qolTabs or {}; ui.qolTabs.general = embedTab end
             if not self.sections[key] then key = "general" end
             ui.qolSection = key
             local cls = isClass[key]
             if cls then ui.qolClass = key end
             for k, sec in pairs(self.sections) do sec.scroll:SetShown(k == key) end
+            local cs = self.sections[key]
+            if embedTab and cs and cs.tabs and cs.showTab then
+                for _, t in ipairs(cs.tabs) do if t.label == embedTab and t.index then cs.showTab(t.index) end end
+            elseif cs and cs.syncEmbed then cs.syncEmbed() end
             local navKey = cls and "classes" or key
             for k, b in pairs(self.navButtons) do b.selected = (k == navKey); b:Paint() end
             self.classBar:SetShown(cls or false)
@@ -384,8 +392,6 @@ UI:RegisterPage({
         micro.desc:SetText("Horloge et raccourcis")
         local fishBtn = navButton("fishing", "Pêche", -158, nil, "fish")
         fishBtn.desc:SetText("Tenue, appâts, touche unique")
-        local mapBtn = navButton("maplayers", "Carte et guidage", -208, nil, "map")
-        mapBtn.desc:SetText("Lieux utiles et trajets")
         local ahBtn = navButton("ah", "Hôtel des ventes", -208, nil, "coin")
         ahBtn.desc:SetText("Scan et prix")
         local curBtn = navButton("cursor", "Curseur", -258, nil, "crosshair")
@@ -397,7 +403,7 @@ UI:RegisterPage({
         local classesBtn = navButton("classes", "Classes", -258, nil, "users")
         classesBtn.desc:SetText("Réglages par classe")
         -- modules coupés (Core/Features.lua) : leur entrée disparaît, les autres se resserrent
-        local NAV_ORDER = { "general", "halo", "micro", "maplayers", "cursor", "campfire", "xp", "classes" }
+        local NAV_ORDER = { "general", "halo", "micro", "cursor", "campfire", "xp", "classes" }
         function self:LayoutNav()
             local y = -8
             for _, k in ipairs(NAV_ORDER) do
@@ -726,6 +732,39 @@ UI:RegisterPage({
                 end), 80)
             UI:SettingRow(xb, -408, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
                 toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
+        end
+
+        -- Hôtel des ventes et Carte et guidage (avant dans la barre latérale) : onglets de Général dont le contenu
+        -- est la section « ah » / « maplayers » (construite plus bas), posée sous la barre d'onglets de Général
+        local gsec = current
+        gsec.embeds = {}
+        for _, e in ipairs({ { "Hôtel des ventes", "ah" }, { "Carte et guidage", "maplayers" } }) do
+            subtab(e[1])
+            gsec.embeds[e[1]] = e[2]
+            y = 1 -- (un onglet sans hauteur n'est pas affiché)
+        end
+        function gsec.syncEmbed()
+            local open
+            local label = ui.qolTabs and ui.qolTabs.general
+            for lab, key in pairs(gsec.embeds) do
+                local es = self.sections[key]
+                if es then
+                    local on = gsec.scroll:IsShown() and label == lab
+                    if on then
+                        es.scroll:ClearAllPoints()
+                        es.scroll:SetPoint("TOPLEFT", 0, -(gsec.base + TABS_H))
+                        es.scroll:SetPoint("BOTTOMRIGHT")
+                        es.scroll:SetFrameLevel(gsec.scroll:GetFrameLevel() + 5)
+                        open = key
+                    end
+                    es.scroll:SetShown(on)
+                end
+            end
+            -- prix des objets (carte reprise des Options) : texte à jour
+            if open == "ah" then
+                local o = UI.pages.options
+                if o and o.frame and o.Refresh then pcall(o.Refresh, o) end
+            end
         end
 
         subtab("Alertes")
@@ -1177,6 +1216,7 @@ UI:RegisterPage({
         -- Carte : lieux utiles et trajets (Modules/MapLayers.lua, UI/MapLayers.lua)
         -----------------------------------------------------------------------
         section("maplayers")
+        current.underTabs = true -- 2e niveau d'onglets (sous ceux de Général)
         -- Mes notes de carte (Modules/MapNotes.lua, UI/MapNotes.lua) : réglages, recherche, liste par zone
         do
             local MN = WK.modules.MapNotes
@@ -1617,6 +1657,14 @@ UI:RegisterPage({
         -- Hôtel des ventes (Modules/AHScan.lua, UI/AuctionPanel.lua)
         -----------------------------------------------------------------------
         section("ah")
+        -- source des prix (reprise de la section « prices » des Options, cachée)
+        for _, oc in ipairs(UI:SectionCards("options", "prices")) do
+            oc:SetParent(root); oc:Show()
+            oc:ClearAllPoints(); oc:SetPoint("TOPLEFT", 0, -y); oc:SetPoint("TOPRIGHT", 0, -y)
+            current.cards = current.cards or {}
+            table.insert(current.cards, oc)
+            y = y + oc:GetHeight() + GAP
+        end
         local AS = WK.modules.AHScan
         local ac = AS:Config()
         local function atoggle(parent, field)

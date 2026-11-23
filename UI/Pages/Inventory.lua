@@ -4,7 +4,9 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 
 local MAX_ROWS = 150
-local TABS_W = 214
+local TOP_TABS = { { "all", "Tout le compte" }, { "stash", "Rangement" }, { "spread", "À regrouper" },
+    { "old", "Oubliés en banque" }, { "locks", "Verrouillés" } }
+local TOP_H = 46 -- barre d'onglets en haut (34) et son écart
 local GAP = 12
 local WHERE = { "bags", "bank", "mailbox" }
 local WHERE_LABEL = { bags = "Sacs", bank = "Banque", mailbox = "Courrier" }
@@ -179,106 +181,157 @@ UI:RegisterPage({
         local cfg = WK.DB.global.settings.ui
         self.char = cfg.invChar or "all"
 
-        -- Onglets (colonne de gauche) ------------------------------------------
-        local tabsCard = UI:Card(p)
-        tabsCard:SetWidth(TABS_W)
-        tabsCard:SetPoint("TOPLEFT")
-        tabsCard:SetPoint("BOTTOMLEFT")
-        local ts = UI:Scroll(tabsCard)
-        ts:SetPoint("TOPLEFT", 8, -8)
-        ts:SetPoint("BOTTOMRIGHT", -6, 8)
-        self.tabScroll = ts
-        self.tabs = UI:Pool(function()
-            local b = CreateFrame("Button", nil, ts.child)
-            b:SetHeight(32)
-            b.bg = UI:Rounded(b, 8, 0, "BACKGROUND", 1)
-            b.bar = CreateFrame("Frame", nil, b)
-            b.bar:SetSize(3, 18)
-            b.bar:SetPoint("LEFT", 0, 0)
-            b.barTex = UI:Rounded(b.bar, 1.5, 0, "ARTWORK", 1)
-            b.icon = UI:RoundIcon(b, 22)
-            b.icon:SetPoint("LEFT", 10, 0)
-            b.glyph = UI:Icon(b, "users", 16)
-            b.glyph:SetPoint("CENTER", b.icon, "CENTER")
-            -- chiffre dans une pastille à droite (accent si sélectionné, or s'il y a quelque chose à faire)
+        -- Onglets en haut (maquette A) : tout le compte et les vues d'aide au rangement ----------
+        -- (la liste des persos est dans l'onglet « Tout le compte », à gauche de la recherche)
+        local bar = _G.CreateFrame("Frame", nil, p)
+        bar:SetHeight(34)
+        bar:SetPoint("TOPLEFT", 0, 0)
+        UI:Panel(bar, 17, C.surface, C.border)
+        self.tabBar = bar
+        self.tabBtns = {}
+        for _, tk in ipairs(TOP_TABS) do
+            local b = _G.CreateFrame("Button", nil, bar)
+            b:SetHeight(28)
+            b.key = tk[1]
+            b.bg = UI:Rounded(b, 14, 0, "BACKGROUND", 1)
+            b.name = UI:Text(b, 12)
+            b.name:SetPoint("LEFT", 12, 0)
+            b.name:SetText(T(tk[2]))
             b.pill = CreateFrame("Frame", nil, b)
-            b.pill:SetSize(30, 16); b.pill:SetPoint("RIGHT", -8, 0)
+            b.pill:SetSize(22, 16)
+            b.pill:SetPoint("LEFT", b.name, "RIGHT", 6, 0)
             b.pillBg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 2)
             b.pillT = UI:Text(b.pill, 10, C.muted); b.pillT:SetPoint("CENTER", 0, 0)
-            b.name = UI:Text(b, 12)
-            b.name:SetPoint("LEFT", 40, 0)
-            b.name:SetPoint("RIGHT", b.pill, "LEFT", -6, 0)
-            -- détail (« 13 objets dispersés »…) gardé pour l'infobulle
-            b.sub = { SetText = function(t, v) t.text = v end }
             function b:SetCount(n, warn)
                 self.count, self.warn = n, warn
                 self.pillT:SetText(n and tostring(n) or "")
                 self.pill:SetShown(n ~= nil)
                 self.pill:SetWidth(math.max(22, (self.pillT:GetStringWidth() or 10) + 12))
+                self:SetWidth(12 + (self.name:GetStringWidth() or 60) + (n and (6 + self.pill:GetWidth()) or 0) + 12)
             end
             function b:Paint()
                 local sel = self.selected
                 local r, g, bb = UI:Accent()
-                if sel then self.bg:SetColor(r, g, bb, 0.12) else self.bg:SetColor(unpack(C.hover)) end
+                if sel then self.bg:SetColor(r, g, bb, 1) else self.bg:SetColor(unpack(C.hover)) end
                 self.bg:SetShown(sel or self.hover)
-                self.bar:SetShown(sel)
-                self.barTex:SetColor(r, g, bb)
                 if sel then
+                    self.name:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
                     self.pillBg:SetColor(r, g, bb, 1); self.pillT:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
-                elseif self.warn then
-                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2); self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
                 else
-                    self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1); self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                    self.name:SetTextColor(r, g, bb)
+                    if self.warn then
+                        self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2)
+                        self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                    else
+                        self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+                        self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                    end
                 end
             end
-            b:SetScript("OnEnter", function(s)
-                s.hover = true; s:Paint()
-                if s.sub.text and s.sub.text ~= "" then
-                    WK.UI:TooltipOwner(s, "ANCHOR_RIGHT")
-                    GameTooltip:SetText(s.name:GetText() or "", 1, 1, 1)
-                    GameTooltip:AddLine(s.sub.text, 0.75, 0.75, 0.75)
-                    GameTooltip:Show()
+            b:SetScript("OnEnter", function(s2)
+                s2.hover = true; s2:Paint()
+                if s2.tip and s2.tip ~= "" then
+                    WK.UI:TooltipOwner(s2, "ANCHOR_BOTTOM")
+                    _G.GameTooltip:SetText(s2.name:GetText() or "", 1, 1, 1)
+                    _G.GameTooltip:AddLine(s2.tip, 0.75, 0.75, 0.75)
+                    _G.GameTooltip:Show()
                 end
             end)
-            b:SetScript("OnLeave", function(s) s.hover = false; s:Paint(); GameTooltip:Hide() end)
-            b:SetScript("OnClick", function(s)
-                self.char = s.key
-                cfg.invChar = s.key
+            b:SetScript("OnLeave", function(s2) s2.hover = false; s2:Paint(); _G.GameTooltip:Hide() end)
+            b:SetScript("OnClick", function(s2)
+                -- « Tout le compte » : retrouve le perso choisi dans sa liste
+                local ui = WK.DB.global.settings.ui
+                local key = s2.key
+                if key == "all" then key = ui.invWho or "all" end
+                self.char = key
+                ui.invChar = key
                 if self.gp and self.gp:IsOpen() then self.gp:Open(false) end
                 self:Refresh()
             end)
-            return b
+            UI:OnAccent(function() b:Paint() end)
+            self.tabBtns[#self.tabBtns + 1] = b
+        end
+
+        -- Liste PERSO (onglet « Tout le compte ») ------------------------------------
+        local who = _G.CreateFrame("Button", nil, p)
+        who:SetSize(230, 34)
+        who:SetPoint("TOPLEFT", 0, -TOP_H)
+        UI:Panel(who, 17, C.surface, C.border)
+        who.cap = UI:Text(who, 10, C.dim); who.cap:SetPoint("LEFT", 14, 0); who.cap:SetText(UI:Upper(T("Perso")))
+        who.label = UI:Text(who, 12)
+        who.label:SetPoint("LEFT", who.cap, "RIGHT", 8, 0); who.label:SetPoint("RIGHT", -28, 0)
+        who.label:SetJustifyH("LEFT")
+        if who.label.SetWordWrap then who.label:SetWordWrap(false) end
+        who.arrow = UI:Icon(who, "chevron", 14, C.muted); who.arrow:SetPoint("RIGHT", -12, 0)
+        self.whoBtn = who
+        local menu = _G.CreateFrame("Frame", nil, who)
+        menu:SetFrameStrata("DIALOG")
+        menu:SetPoint("TOPLEFT", who, "BOTTOMLEFT", 0, -4)
+        menu:SetWidth(250)
+        UI:Panel(menu, 10, C.surface, C.border)
+        menu:Hide()
+        self.whoMenu = menu
+        menu.rows = UI:Pool(function()
+            local r = _G.CreateFrame("Button", nil, menu)
+            r:SetHeight(28)
+            r.bg = UI:Rounded(r, 7, 0, "BACKGROUND", 2)
+            r.name = UI:Text(r, 12); r.name:SetPoint("LEFT", 10, 0)
+            r.n = UI:Text(r, 11, C.muted); r.n:SetPoint("RIGHT", -10, 0); r.n:SetJustifyH("RIGHT")
+            r:SetScript("OnEnter", function(s2) s2.hover = true; s2:Paint() end)
+            r:SetScript("OnLeave", function(s2) s2.hover = false; s2:Paint() end)
+            r.Paint = function(rr)
+                rr.bg:SetColor(unpack(C.surface2))
+                rr.bg:SetShown(rr.selected or rr.hover)
+            end
+            r:SetScript("OnClick", function(s2)
+                menu:Hide()
+                local ui = WK.DB.global.settings.ui
+                ui.invWho = s2.key ~= "all" and s2.key or nil
+                self.char = s2.key
+                ui.invChar = s2.key
+                self:Refresh()
+            end)
+            return r
         end)
+        menu.head = UI:Text(menu, 9, C.dim); menu.head:SetText(UI:Upper(T("Persos")))
+        menu.sep = menu:CreateTexture(nil, "ARTWORK"); menu.sep:SetHeight(1)
+        menu.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+        who:SetScript("OnClick", function()
+            if menu:IsShown() then menu:Hide() else self:FillWhoMenu(); menu:Show() end
+        end)
+        who:SetScript("OnHide", function() menu:Hide() end)
+        who:SetScript("OnEnter", function(s2) s2.border:SetColor(UI:Accent()) end)
+        who:SetScript("OnLeave", function() self:PaintWho() end)
 
         -- Barre d'outils (droite) ----------------------------------------------------
-        local x0 = TABS_W + GAP
+        local x0 = 0
         local search = UI:Input(p, 280, 34, "Rechercher un objet...", "search")
-        search:SetPoint("TOPLEFT", x0, 0)
+        search:SetPoint("TOPLEFT", who, "TOPRIGHT", 10, 0)
         self.search = search
         search.onChange = function(text) self.query = string.lower(text or ""); self:Refresh() end
 
         self.whereSeg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
-        self.whereSeg:SetPoint("TOPRIGHT", -40, 0)
+        self.whereSeg:SetPoint("TOPRIGHT", -40, -TOP_H)
         self.whereSeg:Select("all")
         -- Objets oubliés : depuis combien de jours
         self.oldDays = 14
         self.oldSeg = UI:Segmented(p, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
             function(d) self.oldDays = d; self:Refresh() end, 34)
-        self.oldSeg:SetPoint("TOPRIGHT", -40, 0)
+        self.oldSeg:SetPoint("TOPRIGHT", -40, -TOP_H)
         self.oldSeg:Select(14)
         self.oldSeg:Hide()
 
         self.header = UI:Text(p, 14)
-        self.header:SetPoint("TOPLEFT", x0 + 2, -48)
+        self.header:SetPoint("TOPLEFT", x0 + 2, -(TOP_H + 48))
         self.info = UI:Text(p, 11, C.muted)
         self.info:SetPoint("BOTTOMLEFT", self.header, "BOTTOMRIGHT", 10, 1)
         self.countText = UI:Text(p, 11, C.muted)
-        self.countText:SetPoint("TOPRIGHT", -4, -50)
+        self.countText:SetPoint("TOPRIGHT", -4, -(TOP_H + 50))
         self.countText:SetJustifyH("RIGHT")
 
         local scroll = UI:Scroll(p)
-        scroll:SetPoint("TOPLEFT", x0, -74)
+        scroll:SetPoint("TOPLEFT", x0, -(TOP_H + 74))
         scroll:SetPoint("BOTTOMRIGHT")
         self.scroll = scroll
         self.empty = UI:Text(p, 12, C.muted)
@@ -320,12 +373,12 @@ UI:RegisterPage({
             end
             if prevReveal then return prevReveal(d, row) end
         end
-        self.gp.gear:SetPoint("TOPRIGHT")
-        -- au-dessus des vues (Rangement, verrous, monnaies) qui la couvraient
+        self.gp.gear:SetPoint("TOPRIGHT", 0, -TOP_H)
+        -- au-dessus des vues (Rangement, verrous) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
         -- le volet couvre tout le contenu (rien ne dépasse au-dessus) ; ses cartes commencent sous la roue dentée
         self.gp.overlay:ClearAllPoints()
-        self.gp.overlay:SetPoint("TOPLEFT", x0, 0)
+        self.gp.overlay:SetPoint("TOPLEFT", x0, -TOP_H)
         self.gp.overlay:SetPoint("BOTTOMRIGHT")
         self.gp.scroll:ClearAllPoints()
         self.gp.scroll:SetPoint("TOPLEFT", 0, -42)
@@ -344,11 +397,6 @@ UI:RegisterPage({
         end, 26)
         self.setSeg:SetPoint("LEFT", self.gp.overlay.title, "RIGHT", 18, 0)
         self.setSeg:Select(curTab())
-        -- monnaies du jeu (UI/Currency.lua)
-        self.moneyPane = UI:BuildMoneyPane(p)
-        self.moneyPane:SetPoint("TOPLEFT", x0, 0)
-        self.moneyPane:SetPoint("BOTTOMRIGHT")
-        self.moneyPane:Hide()
 
         -- sacs par catégorie et leurs cases
         self.bags = UI:Pool(function()
@@ -544,7 +592,7 @@ UI:RegisterPage({
         local IL = WK.modules.ItemLock
         local cfg = IL:Config()
         local pane = UI:Scroll(p)
-        pane:SetPoint("TOPLEFT", x0, 0)
+        pane:SetPoint("TOPLEFT", x0, -TOP_H)
         pane:SetPoint("BOTTOMRIGHT")
         pane:Hide()
         self.lockPane = pane
@@ -658,7 +706,7 @@ UI:RegisterPage({
         local S = WK.modules.Stash
         local cfg = S:Config()
         local pane = UI:Scroll(p)
-        pane:SetPoint("TOPLEFT", x0, 0)
+        pane:SetPoint("TOPLEFT", x0, -TOP_H)
         pane:SetPoint("BOTTOMRIGHT")
         pane:Hide()
         self.stashPane = pane
@@ -1378,103 +1426,122 @@ UI:RegisterPage({
         self.lockPane:SetContentHeight(ly)
     end,
 
-    -- Onglets : tout le compte, chaque personnage, banque de bataillon.
+    -- Onglets du haut (tout le compte, vues d'aide) et liste PERSO de l'onglet « Tout le compte ».
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        local special = { spread = true, old = true, locks = true, stash = true, money = true }
+        local cfg = WK.DB.global.settings.ui
+        local special = { spread = true, old = true, locks = true, stash = true }
         if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
-        -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
-        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" }, { key = "money" } }
-        for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
+        if cfg.invWho and cfg.invWho ~= "warband" and not chars[cfg.invWho] then cfg.invWho = nil end
         local wb = WK.DB.global.warbank
-        if wb then table.insert(entries, { key = "warband" }) end
-
-        self.tabs:Reset()
-        -- deux groupes : OUTILS (tout le compte et les vues d'aide) puis PERSOS (et le bataillon)
-        if not self.tabHeads then
-            self.tabHeads = {}
-            for i, label in ipairs({ "Outils", "Persos" }) do
-                local h = UI:Text(self.tabScroll.child, 10, C.dim)
-                h:SetText(UI:Upper(T(label)))
-                self.tabHeads[i] = h
+        if cfg.invWho == "warband" and not wb then cfg.invWho = nil end
+        local tab = special[self.char] and self.char or "all"
+        local x = 3
+        for _, b in ipairs(self.tabBtns) do
+            local k = b.key
+            local n, warn, tip
+            if k == "all" then
+                n = self:WhoCount("all")
+                tip = string.format(T("%d objets"), n)
+            elseif k == "spread" then
+                n = #WK.modules.Inventory:Spread(); warn = n > 0
+                tip = string.format(T("%d objets dispersés"), n)
+            elseif k == "stash" then
+                local r = WK.modules.Stash:Route()
+                n = #r.ah.list + #r.vendor.list
+                for _, d in pairs(r.dest) do n = n + #d.list end
+                warn = n > 0
+                tip = string.format(T("%d objets à ranger"), n)
+            elseif k == "locks" then
+                local m = 0
+                for _ in pairs(WK.modules.ItemLock:Manual()) do m = m + 1 end
+                n = #WK.modules.ItemLock:List()
+                tip = string.format(T("%d à la main"), m)
+            elseif k == "old" then
+                n = #WK.modules.Inventory:Forgotten(self.oldDays); warn = n > 0
+                tip = string.format(T("%d depuis %d j"), n, self.oldDays)
             end
-        end
-        local y = 4
-        local accountTotal = 0
-        local function head(i)
-            local h = self.tabHeads[i]
-            h:ClearAllPoints(); h:SetPoint("TOPLEFT", 10, -y)
-            y = y + 18
-        end
-        head(1)
-        for i, e in ipairs(entries) do
-            if e.c and not entries.persoHead then entries.persoHead = true; y = y + 10; head(2) end
-            local b = self.tabs:Get()
-            b.key = e.key
-            b:ClearAllPoints()
-            b:SetPoint("TOPLEFT", 0, -y)
-            b:SetPoint("TOPRIGHT", 0, -y)
-            if e.c then
-                local n = 0
-                for _, where in ipairs(WHERE) do n = n + countItems(listOf(e.c, where)) end
-                accountTotal = accountTotal + n
-                b.icon:Show(); b.glyph:Hide()
-                UI:SetCharIcon(b.icon, e.c, e.key)
-                b.name:SetText(WK:CharName(e.c, e.key))
-                b.name:SetTextColor(UI:ClassColor(e.c.class))
-                b.sub:SetText(string.format(T("%d objets"), n))
-                b:SetCount(n)
-                e.button = b
-            else
-                b.icon:Hide(); b.glyph:Show()
-                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send", money = "coin" }
-                b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
-                b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement", money = "Monnaies" }
-                b.name:SetText(T(names[e.key]))
-                b.name:SetTextColor(unpack(C.text))
-                if e.key == "warband" then
-                    local n = countItems(wb.items)
-                    b.sub:SetText(string.format(T("%d objets"), n))
-                    b:SetCount(n)
-                elseif e.key == "spread" then
-                    local n = #WK.modules.Inventory:Spread()
-                    b.sub:SetText(string.format(T("%d objets dispersés"), n))
-                    b:SetCount(n, n > 0)
-                elseif e.key == "stash" then
-                    local r = WK.modules.Stash:Route()
-                    local n = #r.ah.list + #r.vendor.list
-                    for _, d in pairs(r.dest) do n = n + #d.list end
-                    b.sub:SetText(string.format(T("%d objets à ranger"), n))
-                    b:SetCount(n, n > 0)
-                elseif e.key == "locks" then
-                    local n = 0
-                    for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
-                    b.sub:SetText(string.format(T("%d à la main"), n))
-                    b:SetCount(#WK.modules.ItemLock:List())
-                elseif e.key == "money" then
-                    local n = #WK.modules.Currency:List()
-                    b.sub:SetText(string.format(T("%d monnaie(s) sur le compte"), n))
-                    b:SetCount(n)
-                elseif e.key == "old" then
-                    local n = #WK.modules.Inventory:Forgotten(self.oldDays)
-                    b.sub:SetText(string.format(T("%d depuis %d j"), n, self.oldDays))
-                    b:SetCount(n, n > 0)
-                else
-                    b:SetCount(nil)
-                end
-                e.button = b
-            end
-            b.selected = (self.char == e.key)
+            b.tip = tip
+            b:SetCount(n, warn)
+            b.selected = (tab == k)
             b:Paint()
-            y = y + 34
+            b:ClearAllPoints(); b:SetPoint("LEFT", x, 0)
+            x = x + b:GetWidth() + 2
         end
-        -- Total du compte sur « Tout le compte ».
-        local all = entries[1].button
-        local wbn = wb and countItems(wb.items) or 0
-        all.sub:SetText(string.format(T("%d objets"), accountTotal + wbn))
-        all:SetCount(accountTotal + wbn); all:Paint()
-        self.tabScroll:SetContentHeight(y)
+        self.tabBar:SetWidth(x + 1)
+        -- liste PERSO : seulement dans « Tout le compte »
+        self.whoBtn:SetShown(tab == "all")
+        if tab ~= "all" then self.whoMenu:Hide() end
+        self.search:ClearAllPoints()
+        if tab == "all" then
+            self.search:SetPoint("TOPLEFT", self.whoBtn, "TOPRIGHT", 10, 0)
+        else
+            self.search:SetPoint("TOPLEFT", 0, -TOP_H)
+        end
+        self:PaintWho()
+    end,
+
+    -- Nombre d'objets d'un perso, de la banque de bataillon (« warband ») ou du compte (« all »)
+    WhoCount = function(_, key)
+        local chars = WK.DB.global.characters
+        local wb = WK.DB.global.warbank
+        local function one(c)
+            local n = 0
+            for _, where in ipairs(WHERE) do n = n + countItems(listOf(c, where)) end
+            return n
+        end
+        if key == "warband" then return wb and countItems(wb.items) or 0 end
+        if key ~= "all" then return chars[key] and one(chars[key]) or 0 end
+        local n = wb and countItems(wb.items) or 0
+        for _, c in pairs(chars) do n = n + one(c) end
+        return n
+    end,
+
+    PaintWho = function(self)
+        local who = self.whoBtn
+        local chars = WK.DB.global.characters
+        local sel = self.char
+        local on = sel ~= "all" and (sel == "warband" or chars[sel] ~= nil)
+        if on and sel == "warband" then
+            who.label:SetText(T("Banque de bataillon")); who.label:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+        elseif on then
+            who.label:SetText(WK:CharName(chars[sel], sel)); who.label:SetTextColor(UI:ClassColor(chars[sel].class))
+        else
+            who.label:SetText(T("Tout le compte")); who.label:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+        end
+        -- un perso choisi : la liste s'allume
+        if on then who.border:SetColor(UI:Accent()) else who.border:SetColor(unpack(C.border)) end
+    end,
+
+    -- Liste ouverte : Tout le compte, PERSOS (couleur de classe), puis la banque de bataillon
+    FillWhoMenu = function(self)
+        local menu = self.whoMenu
+        menu.rows:Reset()
+        local y = 6
+        local function row(key, text, col, n)
+            local r = menu.rows:Get()
+            r.key = key
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
+            r.name:SetText(text); r.name:SetTextColor(col[1], col[2], col[3])
+            r.n:SetText(tostring(n))
+            r.selected = (self.char == key); r:Paint()
+            y = y + 28
+        end
+        row("all", T("Tout le compte"), C.muted, self:WhoCount("all"))
+        menu.head:ClearAllPoints(); menu.head:SetPoint("TOPLEFT", 16, -(y + 6))
+        y = y + 20
+        for _, e in ipairs(UI:SortedCharacters()) do
+            row(e.key, WK:CharName(e.c, e.key), { UI:ClassColor(e.c.class) }, self:WhoCount(e.key))
+        end
+        local wb = WK.DB.global.warbank
+        menu.sep:SetShown(wb ~= nil)
+        if wb then
+            menu.sep:ClearAllPoints()
+            menu.sep:SetPoint("TOPLEFT", 12, -(y + 4)); menu.sep:SetPoint("TOPRIGHT", -12, -(y + 4))
+            y = y + 9
+            row("warband", T("Banque de bataillon"), C.gold, self:WhoCount("warband"))
+        end
+        menu:SetHeight(y + 6)
     end,
 
     Refresh = function(self)
@@ -1485,15 +1552,13 @@ UI:RegisterPage({
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
         -- objets verrouillés : leur propre panneau à la place de la liste
-        local locks, stash, money = sel == "locks", sel == "stash", sel == "money"
+        local locks, stash = sel == "locks", sel == "stash"
         self.lockPane:SetShown(locks)
         self.stashPane:SetShown(stash)
-        self.moneyPane:SetShown(money)
-        local pane = locks or stash or money
+        local pane = locks or stash
         for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not pane) end
         if pane then
             self.whereSeg:Hide(); self.empty:Hide()
-            if money then return self.moneyPane:Refresh() end
             if stash then return self:RefreshStash() end
             return self:RefreshLocks()
         end
@@ -1599,7 +1664,7 @@ UI:RegisterPage({
         end
         local W = math.max(400, self.scroll:GetWidth() or 800)
         self.scroll.child:SetWidth(W)
-        local ncol = W >= 1000 and 3 or 2
+        local ncol = W >= 1150 and 4 or (W >= 860 and 3 or 2)
         local bw = math.floor((W - (ncol - 1) * GAP) / ncol)
         local per = math.max(4, math.floor((bw - 24 + SGAP) / (SLOT + SGAP)))
         local heights = {}

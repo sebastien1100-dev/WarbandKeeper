@@ -18,7 +18,7 @@ WK.FEATURES = {
     { key = "range", label = "Distance", icon = "arrow", group = "MES PERSOS", desc = "ruban de distance du chasseur", reload = true },
     { key = "stats", label = "Stats", icon = "chart", group = "ARGENT", page = "stats" },
     { key = "mail", label = "Courrier", icon = "mail", group = "ARGENT", page = "mail" },
-    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "ARGENT", page = "auction", desc = "prix, scan, vente, alertes" },
+    { key = "ah", label = "Hôtel des ventes", icon = "coin", group = "ARGENT", desc = "prix, scan, vente, alertes" },
     { key = "journal", label = "Journal", icon = "clock", group = "ARGENT", page = "journal" },
     { key = "professions", label = "Métiers", icon = "hammer", group = "ARTISANAT", page = "professions", desc = "page et infobulle" },
     { key = "fishing", label = "Pêche", icon = "fish", group = "ARTISANAT", qol = "fishing", page = "fishing", desc = "collection, carnet et réglages", reload = true },

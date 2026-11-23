@@ -188,6 +188,16 @@ UI:RegisterPage({
         end)
     end,
 
+    -- clic sur l'or des sacs : la page descend jusqu'aux monnaies
+    ScrollToMoney = function(self)
+        if self.Refresh then self:Refresh() end
+        local sc = self.scroll
+        if self.moneyY and sc and sc.SetVerticalScroll then
+            local max = sc.MaxScroll and sc:MaxScroll() or self.moneyY
+            sc:SetVerticalScroll(math.min(max, self.moneyY))
+        end
+    end,
+
     RefreshMoney = function(self, y)
         local Cur = WK.modules.Currency
         local head, card = self.moneyHead, self.moneyCard
@@ -199,8 +209,9 @@ UI:RegisterPage({
         local any = okA and everything and #everything > 0
         head:SetShown(any); card:SetShown(any)
         self.moneyRows:Reset(); card.heads:Reset()
-        if not any then return y end
+        if not any then self.moneyY = nil; return y end
         y = y + 14
+        self.moneyY = y
         head:ClearAllPoints(); head:SetPoint("TOPLEFT", 0, -y); head:SetPoint("TOPRIGHT", 0, -y)
         head.seg:Select(cat)
         local chars = UI:SortedCharacters()

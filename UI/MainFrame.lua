@@ -17,10 +17,10 @@ local HOME_PAGE = "overview"
 local GROUPS = {
     -- « qol:<section> » : une section de la page QoL, rangée avec le thème qui va avec
     { "MES PERSOS", { "characters", "inventory", "qol:classes", "qol:xp" }, "logo" },
-    { "ARGENT", { "stats", "mail", "auction", "journal" }, "coin" },
+    { "ARGENT", { "stats", "mail", "journal" }, "coin" },
     { "ARTISANAT", { "professions", "fishing", "qol:campfire" }, "hammer" },
     { "FARM", { "farm", "loot" }, "bag" },
-    { "AVENTURE", { "quests", "rares", "dungeons", "lfg", "qol:maplayers" }, "map" },
+    { "AVENTURE", { "quests", "rares", "dungeons", "lfg" }, "map" },
     { "INTERFACE", { "qol:general", "qol:halo", "qol:cursor", "qol:micro" }, "gear" },
 }
 local BOTTOM = { "options" }
@@ -780,6 +780,15 @@ function UI:ShowPage(key)
     -- les patch notes sont une section des Options
     local sub
     if key == "notes" then key, sub = "options", "notes"; WK.DB.global.settings.ui.optSection = "notes" end
+    -- Hôtel des ventes : onglet de QoL > Général (ancienne page « auction »)
+    if key == "auction" then
+        if not WK:FeatureOn("ah") then key = "overview" else
+            key = "qol"
+            WK.DB.global.settings.ui.qolSection = "ah"
+            local q = self.pages.qol
+            if q and q.frame and q.ShowSection then q:ShowSection("ah") end
+        end
+    end
     if key and not WK:PageOn(key) then key = "overview" end -- module coupé
     local def = self.pages[key] or self.pages.overview
     if not self.frame then self:Create() end

@@ -1509,13 +1509,13 @@ function V.Ensure() win = win or build(); return win end
 return V
 end
 
--- Inventaire > Monnaies dans la fenêtre principale
+-- Monnaies : tableau en bas de la page Persos, dans la fenêtre principale
 function B.OpenMoney()
-    if not WK:PageOn("inventory") then return end
+    if not WK:PageOn("characters") then return end
     UI:Create():Show()
-    UI:ShowPage("inventory")
-    local ip = UI.pages.inventory
-    if ip then ip.char = "money"; WK.DB.global.settings.ui.invChar = "money"; ip:Refresh() end
+    UI:ShowPage("characters")
+    local cp = UI.pages.characters
+    if cp and cp.ScrollToMoney then cp:ScrollToMoney() end
 end
 
 ---------------------------------------------------------------------------

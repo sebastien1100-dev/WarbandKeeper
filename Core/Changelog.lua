@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.195", date = "23/11/2026", restart = true,
+        changed = {
+            "Inventaire : plus de colonne de gauche. Tout le compte, Rangement, À regrouper, Oubliés en banque et Verrouillés sont des onglets en haut, avec leur nombre. Dans « Tout le compte », une liste PERSO à gauche de la recherche choisit un perso (couleur de classe, nombre d'objets) ou la banque de bataillon ; le choix est retenu. Les catégories d'objets passent sur 4 colonnes quand la place le permet.",
+            "Monnaies quitte Inventaire (le tableau est en bas de la page Persos) ; le clic sur l'or des sacs y mène.",
+            "Hôtel des ventes et Carte et guidage quittent la barre latérale : ce sont maintenant des sous-onglets de QoL > Général. Carte et guidage garde ses onglets (Lieux, Mes notes, Guidage, Bateaux, Vols), en 2e niveau souligné.",
+        },
+    },
+    {
         version = "1.128.194", date = "23/11/2026",
         changed = {
             "Avant de partir quitte Inventaire : c'est maintenant un sous-onglet de QoL > Général, à côté de Marchand, Alertes et Groupe et confort.",

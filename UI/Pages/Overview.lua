@@ -227,7 +227,7 @@ local function nowItems()
         end
     end
     local AS = WK.modules.AHSell
-    if AS and AS.UnderCount and WK:PageOn("auction") then
+    if AS and AS.UnderCount and WK:FeatureOn("ah") then
         local n = AS:UnderCount()
         if n > 0 then
             table.insert(out, { prio = 4, icon = "coin", color = C.warning,
