@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.229 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Chaque case donne maintenant au jeu le n° de son sac, que le clic droit du jeu lit pour utiliser ou ouvrir l'objet.
+
 ## v1.128.228 — 23/11/2026
 
 _Un /reload suffit._

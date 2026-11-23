@@ -268,6 +268,10 @@ local function newButton(bag, slot)
     local ok, b = pcall(_G.CreateFrame, "ItemButton", name, h, "ContainerFrameItemButtonTemplate")
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
+    -- n° du sac sur la case : le clic droit du jeu (utiliser, ouvrir un paquet) le lit par GetBagID ;
+    -- sans lui, le clic droit ne faisait rien sur les clients qui ne le tirent pas du parent
+    if b.SetBagID then pcall(b.SetBagID, b, bag) end
+    b.bagID = b.bagID or bag
     b:SetSize(SZ(), SZ())
     b.wkOurs = true -- infobulle allégée (Modules/Inventory.lua)
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)

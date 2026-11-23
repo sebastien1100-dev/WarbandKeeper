@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.229", date = "23/11/2026",
+        fixed = {
+            "Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Chaque case donne maintenant au jeu le n° de son sac, que le clic droit du jeu lit pour utiliser ou ouvrir l'objet.",
+        },
+    },
+    {
         version = "1.128.228", date = "23/11/2026",
         changed = {
             "Bénédictions et bouton « Buffer le suivant » : un buff est remis quand il lui reste moins de 10 minutes (avant : 5 minutes pour la barre des bénédictions, 3 pour le bouton). La barre suit maintenant le même réglage « Remettre un buff qui finit dans moins de » (QoL > Classes), qui propose 1, 3, 5 ou 10 min, ou jamais. L'ancien réglage par défaut (3 min) passe à 10 min une fois.",
