@@ -10,7 +10,7 @@ WK.Changelog = {
     {
         version = "1.128.229", date = "23/11/2026",
         fixed = {
-            "Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Chaque case donne maintenant au jeu le n° de son sac, que le clic droit du jeu lit pour utiliser ou ouvrir l'objet.",
+            "Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Si le jeu ne l'a pas ouvert un instant après le clic droit, l'addon l'ouvre lui-même (paquets et coffres à butin seulement, hors combat, ni chez un marchand ni à la banque).",
         },
     },
     {

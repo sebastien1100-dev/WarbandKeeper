@@ -54,7 +54,7 @@ _Prévu, pas encore commencé._
 _Un /reload suffit._
 
 ### Corrections
-- Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Chaque case donne maintenant au jeu le n° de son sac, que le clic droit du jeu lit pour utiliser ou ouvrir l'objet.
+- Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Si le jeu ne l'a pas ouvert un instant après le clic droit, l'addon l'ouvre lui-même (paquets et coffres à butin seulement, hors combat, ni chez un marchand ni à la banque).
 
 ## v1.128.228 — 23/11/2026
 

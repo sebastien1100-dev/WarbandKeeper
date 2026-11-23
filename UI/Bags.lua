@@ -262,18 +262,47 @@ local function holderOf(bag)
     holders[bag] = h
     return h
 end
+-- objet qu'on ouvre d'un clic droit (paquet, coffre) : son n°, sinon nil
+local function lootable(bag, slot)
+    local CC = _G.C_Container
+    if CC and CC.GetContainerItemInfo then
+        local ok, info = pcall(CC.GetContainerItemInfo, bag, slot)
+        if ok and type(info) == "table" and info.hasLoot then return info.itemID end
+        return nil
+    end
+    if _G.GetContainerItemInfo then
+        local ok, _, _, _, _, _, canLoot, _, _, _, itemID = pcall(_G.GetContainerItemInfo, bag, slot)
+        if ok and canLoot then return itemID end
+    end
+end
+local function openLater(bag, slot, id)
+    if _G.InCombatLockdown and _G.InCombatLockdown() then return end
+    if _G.LootFrame and _G.LootFrame:IsShown() then return end -- le jeu l'a ouvert
+    local mf, bf = _G.MerchantFrame, _G.BankFrame
+    if (mf and mf.IsShown and mf:IsShown()) or (bf and bf.IsVisible and bf:IsVisible()) then return end
+    local cur, _, locked = WK.Container.Info(bag, slot)
+    if cur ~= id or locked then return end -- déjà ouvert, ou le jeu est en train de le faire
+    local CC = _G.C_Container
+    if CC and CC.UseContainerItem then pcall(CC.UseContainerItem, bag, slot)
+    elseif _G.UseContainerItem then pcall(_G.UseContainerItem, bag, slot) end
+end
+
 local function newButton(bag, slot)
     local h = holderOf(bag)
     local name = string.format("WarbandKeeper%sItem%d_%d", isBank and "Bank" or "Bag", bag + 2, slot)
     local ok, b = pcall(_G.CreateFrame, "ItemButton", name, h, "ContainerFrameItemButtonTemplate")
     if not ok or not b then b = _G.CreateFrame("Button", name, h, "ContainerFrameItemButtonTemplate") end
     b:SetID(slot)
-    -- n° du sac sur la case : le clic droit du jeu (utiliser, ouvrir un paquet) le lit par GetBagID ;
-    -- sans lui, le clic droit ne faisait rien sur les clients qui ne le tirent pas du parent
-    if b.SetBagID then pcall(b.SetBagID, b, bag) end
-    b.bagID = b.bagID or bag
     b:SetSize(SZ(), SZ())
-    b.wkOurs = true -- infobulle allégée (Modules/Inventory.lua)
+    b.wkOurs = true
+    -- clic droit sur un objet à ouvrir (paquet, coffre à butin) : si le jeu ne l'a pas ouvert 0,3 s après
+    -- (objet toujours là, pas de fenêtre de butin), on l'ouvre nous-mêmes. Le clic du jeu reste intact.
+    b:HookScript("PostClick", function(_, button)
+        if button ~= "RightButton" or (_G.IsModifiedClick and _G.IsModifiedClick()) then return end
+        local id = lootable(bag, slot)
+        if not id then return end
+        _G.C_Timer.After(0.3, function() openLater(bag, slot, id) end)
+    end) -- infobulle allégée (Modules/Inventory.lua)
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
     b.wkEdge = square(b, 0, -8)
     b.wkFill = square(b, EDGE, -7)
