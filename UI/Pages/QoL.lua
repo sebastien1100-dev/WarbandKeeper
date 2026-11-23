@@ -2097,15 +2097,14 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp", 40 + 5 * 46 + 8, "clic droit sur la flamme, ou dans la barre des sacs")
+            local kc = card("Kit de camp", 40 + 4 * 46 + 8, "clic droit sur la flamme, ou dans la barre des sacs")
             UI:SettingRow(kc, -40, "Kit de camp",
                 "Ton feu, tes objets de camp (meilleur palier en sac) et ton sac de couchage :"
                     .. " clic droit sur la flamme, ou case « kit » de la barre des sacs. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
-            UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
-                toggle(kc, function() return campCfg.kitAlways end, function(v) campCfg.kitAlways = v; cupdate() end), 80)
-            UI:SettingRow(kc, -132, "Pastilles sous la flamme",
-                "Avantages restants, recharge des objets de camp, « Bien nourri »"
+            -- « Toujours visible » retiré (la colonne près de la flamme n'existe plus)
+            UI:SettingRow(kc, -86, "Pastilles sous la flamme",
+                "Durée des avantages du camp, recharge des objets de camp"
                     .. " (seulement hors de la barre des sacs).",
                 toggle(kc, function() return campCfg.chips end, function(v) campCfg.chips = v; cupdate() end), 80)
             local fdir = UI:Segmented(kc, { { "right", "À droite" }, { "left", "À gauche" }, { "up", "Au-dessus" },
@@ -2113,7 +2112,7 @@ UI:RegisterPage({
                 campCfg.kitFlameDir = v
                 if UI.CampKitFlameOpen and UI.CampKitFlameOpen() then UI:RefreshCampKit() end
             end, 24)
-            UI:SettingRow(kc, -224, "Kit au clic droit sur la flamme",
+            UI:SettingRow(kc, -178, "Kit au clic droit sur la flamme",
                 "Un clic droit sur l'icône de flamme ouvre le kit en barre (avantages du camp en tête) de ce côté.",
                 fdir, 340)
             fdir:Select(campCfg.kitFlameDir or "right")
@@ -2121,7 +2120,7 @@ UI:RegisterPage({
             local kgo = UI:Button(kc, T("Réglages de la barre"), nil, 24, "secondary")
             kgo:SetWidth(kgo.label:GetStringWidth() + 28)
             kgo:SetScript("OnClick", function() UI:OpenBagBarSettings() end)
-            UI:SettingRow(kc, -178, "Dans la barre des sacs",
+            UI:SettingRow(kc, -132, "Dans la barre des sacs",
                 "La case « kit » et le sens du déroulé se règlent avec la barre"
                     .. " « Sacs, marchand et maître ».",
                 kgo, 200)
@@ -2132,7 +2131,7 @@ UI:RegisterPage({
             subtab("Comment ça marche", 4)
             local how = card("Comment ça marche", 40 + 2 * (STH + SG) + 36 + 8 * 18 + 8)
             local STEPS = {
-                { "Approche-toi du feu", "1. Près d'un camp, une flamme t'affecte (par exemple « Flammes pourpres ») : elle allonge la durée des effets de camp." },
+                { "Approche-toi du feu", "1. Près d'un camp, une flamme t'affecte (par exemple « Feu de camp proche ») : elle allonge la durée des effets de camp." },
                 { "Assieds-toi 1 min", "2. Assieds-toi (ou allonge-toi, agenouille-toi, dors, ou fabrique à côté) : « Feu de camp accueillant » compte 1 min." },
                 { "Récupère les avantages", "3. Tu obtiens « Avantages du camp », selon les objets posés autour du feu ; ils restent quand tu pars." },
                 { "Durées et recharges", "4. Un camp dure environ 15 min ; poser un feu : recharge de 5 min ; poser un objet de métier : recharge commune d'1 h." },

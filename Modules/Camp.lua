@@ -309,7 +309,7 @@ function M:GuideToBag()
 end
 
 local DEFAULTS = { enabled = false, icon = true, iconAlways = false, renewAt = 10, sound = false, doneSecs = 8,
-    kit = true, kitAlways = false, kitFlameDir = "right", chips = true, kitInBar = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
+    kit = true, kitFlameDir = "right", chips = true, kitInBar = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
 
 -- flamme près d'un camp : « Feu de camp proche » (n° 1283391 sur WoW Forever), anciennement « Flammes pourpres »
 local FLAME = { "flammes pourpres", "feu de camp proche", "campfire nearby", "nearby campfire" }

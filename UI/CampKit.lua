@@ -256,7 +256,8 @@ function UI:RefreshCampKit()
     -- les auras, elles, sont toujours relevées (flamme du camp ou assis près du feu)
     local a = M.auras
     local near = (M.state and M.state ~= "none") or (a and (a.flame or a.sit)) and true or false
-    UI.campKitAvail = #list > 0 and (cfg.kitAlways or near) or false
+    -- case « kit » de la barre des sacs : seulement près d'un feu (ancien réglage « Toujours visible » retiré)
+    UI.campKitAvail = #list > 0 and near or false
     -- ouvert par un clic droit sur la flamme : barre à côté de l'icône, de quoi qu'il en soit du reste
     local icon = _G.WarbandKeeperCampIcon
     if kit.flameOpen and not (#list > 0 and icon and icon:IsShown()) then kit.flameOpen = false end
