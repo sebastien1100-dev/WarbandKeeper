@@ -138,7 +138,7 @@ local function build()
                 r.name:SetTextColor(unpack(d.salut and C.text or classColor(d.class)))
                 r.miss:SetShown(d.missing > 0)
                 if d.missing > 0 then r.miss:Set(string.format(T("%d sans"), d.missing), C.negative) end
-                local soon = d.min and d.min < 300
+                local soon = d.min and d.min < B().RefreshSecs()
                 r.time:SetText(d.missing > 0 and "" or short(d.min))
                 r.time:SetTextColor(unpack(soon and C.warning or C.positive))
                 r.hl:SetColor(d.missing > 0 and C.negative[1] or r1, d.missing > 0 and C.negative[2] or g1, d.missing > 0 and C.negative[3] or b1,
@@ -168,7 +168,7 @@ local function build()
             local d = rows[i]
             if d and i <= n then
                 -- le joueur de la ligne qui en a besoin, sinon celui dont la bénédiction finit le plus tôt
-                local tgt = M:NextTarget(d, 300) or M:NextTarget(d, math.huge)
+                local tgt = M:NextTarget(d, M.RefreshSecs()) or M:NextTarget(d, math.huge)
                 local spell = M:Name(d.b)
                 local mt = (tgt and spell) and UI.BuffMacro({ unit = tgt.unit, spell = spell }) or nil
                 -- attribut posé seulement s'il change (avant : 13 boutons réécrits chaque seconde)

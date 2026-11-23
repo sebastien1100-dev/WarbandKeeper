@@ -120,7 +120,8 @@ local CLASS_DEFAULTS = {
     -- Prêtre, Paladin, Druide : rappels de buffs
     buffReminder = true,
     -- Druide, Prêtre, Mage, Paladin : bouton « Buffer le suivant » (UI/BuffButton.lua)
-    buffAround = true, kingsFirst = true, buffRefresh = 3, buffInstance = false, buffMounted = false, buffPlates = true,
+    buffAround = true, kingsFirst = true, buffRefresh = 10, buffInstance = false, buffMounted = false,
+    buffPlates = true,
     -- Mage
     portalText = "Portail vers %s, chuchote-moi !",
 }
@@ -141,6 +142,11 @@ function M:Config()
         q.classes[cl[1]] = c
         for k, v in pairs(CLASS_DEFAULTS) do
             if c[k] == nil then c[k] = type(v) == "table" and { min = v.min, buy = v.buy, auto = v.auto, minMinutes = v.minMinutes } or v end
+        end
+        -- rebuff : 10 min par défaut (avant 3) ; l'ancienne valeur par défaut est remontée une fois
+        if not c.buffRefresh10 then
+            if c.buffRefresh == 3 then c.buffRefresh = 10 end
+            c.buffRefresh10 = true
         end
         c.reag = c.reag or {}
         for _, r in ipairs(M.REAGENTS[cl[1]] or {}) do

@@ -476,8 +476,14 @@ M.InReach = inReach
 -- Prochain joueur à bénir dans une ligne (ou dans toutes) : sans ma bénédiction, puis le plus court.
 -- Avant, un membre hors de portée (jamais relu, donc « sans bénédiction ») passait toujours en tête et la
 -- ligne de la barre restait bloquée sur lui : les membres hors de portée sont maintenant écartés.
+-- délai de rebuff : réglage « Remettre un buff qui finit dans moins de » du paladin (10 min par défaut)
+function M.RefreshSecs()
+    local Q = WK.modules.QoL
+    local cc = Q and Q.Config and Q:Config().classes and Q:Config().classes.PALADIN
+    return ((cc and cc.buffRefresh) or 10) * 60
+end
 function M:NextTarget(row, refresh)
-    refresh = refresh or 300
+    refresh = refresh or M.RefreshSecs()
     local best, bestLeft
     for _, r in ipairs(row and { row } or self:Status()) do
         for _, m in ipairs(r.members) do

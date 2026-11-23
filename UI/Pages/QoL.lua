@@ -2962,8 +2962,8 @@ UI:RegisterPage({
                     UI:SettingRow(bb, by, "Rois d'abord", "Si tu connais Rois ; sinon Puissance pour guerrier, voleur et chasseur, Sagesse pour les autres.", bt("kingsFirst"), 80)
                     by = by - 46
                 end
-                local seg = UI:Segmented(bb, { { 1, "1 min" }, { 3, "3 min" }, { 0, "jamais" } }, function(v) cc.buffRefresh = v end, 26)
-                table.insert(self.dyn, function() seg:Select(cc.buffRefresh or 3) end)
+                local seg = UI:Segmented(bb, { { 1, "1 min" }, { 3, "3 min" }, { 5, "5 min" }, { 10, "10 min" }, { 0, "jamais" } }, function(v) cc.buffRefresh = v end, 26)
+                table.insert(self.dyn, function() seg:Select(cc.buffRefresh or 10) end)
                 UI:SettingRow(bb, by, "Remettre un buff qui finit dans moins de", nil, seg, 220)
                 by = by - 46
                 UI:SettingRow(bb, by, "En instance", nil, toggle(bb, function() return cc.buffInstance end, function(v) cc.buffInstance = v end), 80)

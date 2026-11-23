@@ -179,7 +179,7 @@ local function groupBlessings(seenGuid)
     end
     if not (myClass() == "PALADIN" and BL and BL:On() and IsInGroup and IsInGroup()) then return nil end
     local c = cfg() or {}
-    local refresh = (c.buffRefresh or 3) * 60
+    local refresh = (c.buffRefresh or 10) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     local out = {}
     for _, r in ipairs(BL:Status()) do
@@ -224,7 +224,7 @@ local function candidates()
         for i = 1, 4 do table.insert(units, "party" .. i) end
     end
     plateUnits(units)
-    local refresh = (c.buffRefresh or 3) * 60
+    local refresh = (c.buffRefresh or 10) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     for _, u in ipairs(units) do
         local guid = UnitExists(u) and guidOf(u)
@@ -604,7 +604,7 @@ function UI:BuffDiag()
     local players = 0
     for k = before + 1, #units do if UnitIsPlayer(units[k]) then players = players + 1 end end
     table.insert(out, string.format("plaques de nom à l'écran : %d (unités lues : %d, dont joueurs : %d)", nplates, #units - before, players))
-    local refresh = ((c and c.buffRefresh) or 3) * 60
+    local refresh = ((c and c.buffRefresh) or 10) * 60
     local mePvp = UnitIsPVP and UnitIsPVP("player")
     local shown, seen = 0, {}
     for _, u in ipairs(units) do
