@@ -371,22 +371,28 @@ local DUNGEON_EN = {
     { "mortemines", "The Deadmines" },
     { "ombrecroc", "Shadowfang Keep" },
     { "brassenoire", "Blackfathom Deeps" },
-    { "prison", "The Stockade" },
+    { "la prison", "The Stockade" }, { "prison de hurlevent", "The Stockade" },
     { "gnomeregan", "Gnomeregan" },
     { "kraal", "Razorfen Kraul" },
     { "souilles", "Razorfen Downs" },
-    { "cimetiere", "Scarlet Monastery Graveyard" }, { "bibliotheque", "Scarlet Monastery Library" },
-    { "armurerie", "Scarlet Monastery Armory" }, { "cathedrale", "Scarlet Monastery Cathedral" },
+    { "cimetiere", "Scarlet Monastery Graveyard", wingFirst = true },
+    { "bibliotheque", "Scarlet Monastery Library", wingFirst = true },
+    { "armurerie", "Scarlet Monastery Armory", wingFirst = true },
+    { "cathedrale", "Scarlet Monastery Cathedral", wingFirst = true },
     { "monastere", "Scarlet Monastery" },
     { "uldaman", "Uldaman" },
     { "zul'farrak", "Zul'Farrak" }, { "zulfarrak", "Zul'Farrak" },
     { "maraudon", "Maraudon" },
     { "atal", "Sunken Temple" }, { "englouti", "Sunken Temple" },
     { "profondeurs de rochenoire", "Blackrock Depths" }, { "profondeurs de blackrock", "Blackrock Depths" },
-    { "inferieur", "Lower Blackrock Spire" }, { "bas du pic", "Lower Blackrock Spire" },
-    { "superieur", "Upper Blackrock Spire" }, { "haut du pic", "Upper Blackrock Spire" },
-    { "pic de rochenoire", "Blackrock Spire" }, { "pic blackrock", "Blackrock Spire" },
-    { "hache-tripes", "Dire Maul", wing = true }, { "dire maul", "Dire Maul", wing = true },
+    { "inferieur", "Lower Blackrock Spire", wingFirst = true },
+    { "bas du pic", "Lower Blackrock Spire", wingFirst = true },
+    { "superieur", "Upper Blackrock Spire", wingFirst = true },
+    { "haut du pic", "Upper Blackrock Spire", wingFirst = true },
+    { "pic de rochenoire", "Blackrock Spire" },
+    { "pic rochenoire", "Blackrock Spire" }, { "pic blackrock", "Blackrock Spire" },
+    { "hache-tripes", "Dire Maul", wing = true, wingFirst = true },
+    { "dire maul", "Dire Maul", wing = true, wingFirst = true },
     { "stratholme", "Stratholme" },
     { "scholomance", "Scholomance" },
     { "coeur du magma", "Molten Core" },
@@ -398,21 +404,56 @@ local DUNGEON_EN = {
 }
 local ACCENTS = { ["é"] = "e", ["è"] = "e", ["ê"] = "e", ["ë"] = "e", ["à"] = "a", ["â"] = "a", ["î"] = "i", ["ï"] = "i",
                   ["ô"] = "o", ["û"] = "u", ["ù"] = "u", ["ç"] = "c", ["œ"] = "oe", ["É"] = "e", ["Œ"] = "oe" }
-function M.EnglishName(name)
-    if not name or name == "" then return name end
-    local low = string.lower(name)
+local function norm(s)
+    local low = string.lower(s or "")
     for k, v in pairs(ACCENTS) do low = low:gsub(k, v) end
-    for _, e in ipairs(DUNGEON_EN) do
-        if string.find(low, e[1], 1, true) then
-            if e.wing then -- Hache-tripes : l'aile, quel que soit le séparateur
-                local rest = " " .. low:gsub("[^%a]", " ") .. " "
-                if rest:find(" ouest ") or rest:find(" west ") then return e[2] .. " West" end
-                if rest:find(" est ") or rest:find(" east ") then return e[2] .. " East" end
-                if rest:find(" nord ") or rest:find(" north ") then return e[2] .. " North" end
+    return low
+end
+-- clé de comparaison : sans espaces (même insécables) ni ponctuation
+local function squash(s) return (norm(s):gsub("[^%w]", "")) end
+-- noms des donjons de la base (français, anglais, nom appris en jeu) » nom anglais, du plus long au plus court
+local dbNames
+local function dbIndex()
+    if dbNames then return dbNames end
+    dbNames = {}
+    local D = WK.modules.Dungeons
+    for _, d in ipairs(D and D:All() or {}) do
+        if d.en and d.en ~= "" then
+            for _, n in ipairs({ d.name, d.en, D:Name(d) }) do
+                if type(n) == "string" and #n >= 4 then dbNames[#dbNames + 1] = { squash(n), d.en } end
             end
-            return e[2]
         end
     end
+    table.sort(dbNames, function(a, b) return #a[1] > #b[1] end)
+    return dbNames
+end
+M._dbIndexReset = function() dbNames = nil end
+
+function M.EnglishName(name)
+    if not name or name == "" then return name end
+    local low = norm(name)
+    -- 1. ailes (Monastère, Hache-Tripes, bas / haut du Pic) ; 2. noms de la base ; 3. mots-clés
+    local function keywords(first)
+        for _, e in ipairs(DUNGEON_EN) do
+            if (e.wingFirst == true) == first and string.find(low, e[1], 1, true) then
+                if e.wing then -- Hache-tripes : l'aile, quel que soit le séparateur
+                    local rest = " " .. low:gsub("[^%a]", " ") .. " "
+                    if rest:find(" ouest ") or rest:find(" west ") then return e[2] .. " West" end
+                    if rest:find(" est ") or rest:find(" east ") then return e[2] .. " East" end
+                    if rest:find(" nord ") or rest:find(" north ") then return e[2] .. " North" end
+                end
+                return e[2]
+            end
+        end
+    end
+    local hit = keywords(true)
+    if hit then return hit end
+    local key = squash(name)
+    for _, e in ipairs(dbIndex()) do
+        if string.find(key, e[1], 1, true) then return e[2] end
+    end
+    hit = keywords(false)
+    if hit then return hit end
     return M.EnglishZones(name)
 end
 
