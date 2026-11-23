@@ -329,6 +329,8 @@ end
 ---------------------------------------------------------------------------
 local toast
 local function openJournal()
+    -- fenêtre fermée : on l'ouvre (ShowPage seul change la page d'une fenêtre déjà ouverte)
+    UI:Create():Show()
     UI:ShowPage("quests")
     local p = UI.pages and UI.pages.quests
     if p and p.ShowTab then p:ShowTab("journal") end

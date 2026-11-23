@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.223", date = "23/11/2026",
+        fixed = {
+            "Bandeau « Base de quêtes mise à jour » : « Voir » ne faisait rien quand la fenêtre de Warband Keeper était fermée. Il l'ouvre maintenant sur le journal de la page Quêtes.",
+        },
+    },
+    {
         version = "1.128.222", date = "23/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 3 objets de butin de plus, 1 recette de plus, 1 boss de plus détectés par la fin de rencontre, 1 boss de plus avec leur nom français, guides de métiers revus par wowtbc.gg.",
