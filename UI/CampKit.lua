@@ -308,6 +308,7 @@ function UI:RefreshCampKit()
 end
 -- clic droit sur la flamme : ouvre ou referme la barre du kit à côté d'elle (hors combat : boutons protégés)
 function UI.ToggleCampKitFlame()
+    if not M:Config().kit then return end -- « Kit au clic droit sur la flamme » coupé
     if inCombat() then WK:Print(T("Kit de camp : à ouvrir hors combat.")) return end
     if not kit then kit = build() end
     kit.flameOpen = not kit.flameOpen

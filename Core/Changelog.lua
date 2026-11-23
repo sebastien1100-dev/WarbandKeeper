@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.258", date = "23/11/2026",
+        changed = {
+            "Feu de camp, carte « Kit de camp » : l'interrupteur s'appelle « Kit au clic droit sur la flamme » et règle ce clic droit (coupé : le clic droit ne fait rien et l'infobulle ne le propose plus) ; « Côté du kit » choisit de quel côté il s'ouvre.",
+        },
+    },
+    {
         version = "1.128.257", date = "23/11/2026",
         changed = {
             "Feu de camp : réglage « Toujours visible » du kit retiré (il ne servait qu'à l'ancienne colonne près de la flamme). La case « kit » de la barre des sacs apparaît près d'un feu ; le clic droit sur la flamme ouvre le kit partout.",

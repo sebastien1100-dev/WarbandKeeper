@@ -2097,10 +2097,10 @@ UI:RegisterPage({
             UI:SettingRow(rem, -178, "Avantages affichés pendant", "Une fois obtenus, l'encart les montre puis s'efface (0 : il reste jusqu'à ce que tu le fermes).",
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
-            local kc = card("Kit de camp", 40 + 4 * 46 + 8, "clic droit sur la flamme, ou dans la barre des sacs")
-            UI:SettingRow(kc, -40, "Kit de camp",
-                "Ton feu, tes objets de camp (meilleur palier en sac) et ton sac de couchage :"
-                    .. " clic droit sur la flamme, ou case « kit » de la barre des sacs. Clic : utiliser (hors combat).",
+            local kc = card("Kit de camp", 40 + 4 * 46 + 8, "au clic droit sur l'icône de flamme")
+            UI:SettingRow(kc, -40, "Kit au clic droit sur la flamme",
+                "Un clic droit sur l'icône de flamme ouvre ton kit : feu, objets de camp (meilleur palier en sac),"
+                    .. " sac de couchage. Clic : utiliser (hors combat). Coupé : ni clic droit, ni case « kit » de la barre.",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             -- « Toujours visible » retiré (la colonne près de la flamme n'existe plus)
             UI:SettingRow(kc, -86, "Pastilles sous la flamme",
@@ -2112,8 +2112,8 @@ UI:RegisterPage({
                 campCfg.kitFlameDir = v
                 if UI.CampKitFlameOpen and UI.CampKitFlameOpen() then UI:RefreshCampKit() end
             end, 24)
-            UI:SettingRow(kc, -178, "Kit au clic droit sur la flamme",
-                "Un clic droit sur l'icône de flamme ouvre le kit en barre (avantages du camp en tête) de ce côté.",
+            UI:SettingRow(kc, -178, "Côté du kit",
+                "De quel côté de la flamme le kit s'ouvre (avantages du camp en tête).",
                 fdir, 340)
             fdir:Select(campCfg.kitFlameDir or "right")
             -- case « kit » de la barre des sacs et sens du déroulé : carte de la barre (QoL > Général > Marchand)

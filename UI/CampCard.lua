@@ -172,8 +172,10 @@ local function buildIcon()
             _G.GameTooltip:AddLine(T("Aucun feu de camp à proximité."), 0.6, 0.6, 0.6, true)
         else GameTooltip:AddLine(T("Clic : s'asseoir 1 min près du feu pour obtenir les avantages du camp."), 0.8, 0.8, 0.8, true) end
         local open = UI.CampKitFlameOpen and UI.CampKitFlameOpen()
-        _G.GameTooltip:AddLine(open and T("Clic droit : replier le kit de camp") or T("Clic droit : kit de camp"),
-            0.6, 0.6, 0.6)
+        if M:Config().kit then
+            _G.GameTooltip:AddLine(open and T("Clic droit : replier le kit de camp") or T("Clic droit : kit de camp"),
+                0.6, 0.6, 0.6)
+        end
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
