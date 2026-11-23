@@ -5,7 +5,7 @@ local T = function(s) return WK.T(s) end
 -- Aides de métiers (idées du module Professions de Naowh ; aucun code ni donnée repris) :
 --   désenchanter ou vendre (tables du jeu, puis tes propres désenchantements), enchantements proposés
 --   à l'échange, file de fabrication (WK.DB.global.shopping, décomptée à chaque fabrication) et alertes
---   de recharge, favoris chez le maître, consommables conseillés (carte « Avant de partir » d'Inventaire).
+--   de recharge, favoris chez le maître, consommables conseillés (carte « Avant de partir » de QoL > Général).
 -- Réglages : WK.DB.global.profHelp. Fenêtres : UI/ProfPanels.lua.
 
 local DEFAULTS = { craftTip = true, deTip = true, dePanel = true, trade = true, queueHud = true, queueAuto = true,

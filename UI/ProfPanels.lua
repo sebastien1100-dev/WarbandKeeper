@@ -585,16 +585,29 @@ WK:On("BAG_UPDATE_DELAYED", function() if profOpen and hud then UI:RefreshCraftH
 WK:On("PLAYER_LOGIN", function() if not hud then hud = buildHUD() end end)
 
 ---------------------------------------------------------------------------
--- Carte « Avant de partir » (Inventaire)
+-- Carte « Avant de partir » (QoL > Général, sous-onglet « Avant de partir »)
+-- flat : pas de défilement propre (posée dans une page qui défile) ; pane.onHeight(h) à chaque hauteur
 ---------------------------------------------------------------------------
-function UI:BuildPrepPane(parent)
-    local pane = UI:Scroll(parent)
+function UI:BuildPrepPane(parent, flat)
+    local pane
+    if flat then
+        pane = _G.CreateFrame("Frame", nil, parent)
+        pane.child = pane
+        pane:SetHeight(460)
+        function pane.SetContentHeight(_, h)
+            pane:SetHeight(h)
+            if pane.onHeight then pane.onHeight(h) end
+        end
+    else
+        pane = UI:Scroll(parent)
+    end
     local card = UI:Card(pane.child, T("Avant de partir"), " ")
+    pane.card = card
     card:SetPoint("TOPLEFT"); card:SetPoint("TOPRIGHT")
     local seg = UI:Segmented(card, { { "dungeon", "Donjon" }, { "raid", "Raid" }, { "pvp", "JcJ" } }, function(k)
         cfg().prepMode = k; pane:Refresh()
     end, 26)
-    seg:SetPoint("TOPRIGHT", -56, -10) -- à gauche de la roue dentée de la page
+    seg:SetPoint("TOPRIGHT", flat and -16 or -56, -10) -- à gauche de la roue dentée de la page
     local cols = { { "BUT", 16 }, { "CONSOMMABLE", 130 }, { "SACS", -420 }, { "AILLEURS", -320 }, { "OÙ L'AVOIR", -160 },
         { "SEUIL", -16 } }
     for _, cdef in ipairs(cols) do
@@ -647,8 +660,8 @@ local alert = UI:SettingRow(card, 0, "Rappel dans « À faire »", "Une ligne qu
     note:SetText(T("Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."))
 
     function pane:Refresh()
-        local W = math.max(500, (pane:GetWidth() or 700) - 14)
-        pane.child:SetWidth(W)
+        local W = math.max(500, (pane:GetWidth() or 700) - (flat and 0 or 14))
+        if not flat then pane.child:SetWidth(W) end
         local ck = WK:CharKey()
         local c = WK.DB.global.characters[ck] or {}
         seg:Select(cfg().prepMode)
@@ -686,7 +699,7 @@ local alert = UI:SettingRow(card, 0, "Rappel dans « À faire »", "Une ligne qu
         note:ClearAllPoints(); note:SetPoint("TOPLEFT", 16, -y); note:SetWidth(W - 32)
         y = y + math.ceil(note:GetStringHeight() or 16) + 22
         card:SetHeight(y)
-        pane:SetContentHeight(y + 10)
+        pane:SetContentHeight(flat and y or y + 10)
     end
     return pane
 end

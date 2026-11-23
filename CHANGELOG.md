@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.194 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Avant de partir quitte Inventaire : c'est maintenant un sous-onglet de QoL > Général, à côté de Marchand, Alertes et Groupe et confort.
+- Les réglages de la barre d'expérience passent dans QoL > Général, sous-onglet « Barre d'XP ». La section Expérience garde le rythme de la session et la liste des persos.
+
 ## v1.128.193 — 23/11/2026
 
 _Un /reload suffit._

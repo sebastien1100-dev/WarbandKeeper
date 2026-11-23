@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.194", date = "23/11/2026",
+        changed = {
+            "Avant de partir quitte Inventaire : c'est maintenant un sous-onglet de QoL > Général, à côté de Marchand, Alertes et Groupe et confort.",
+            "Les réglages de la barre d'expérience passent dans QoL > Général, sous-onglet « Barre d'XP ». La section Expérience garde le rythme de la session et la liste des persos.",
+        },
+    },
+    {
         version = "1.128.193", date = "23/11/2026",
         added = {
             "Persos : tableau des monnaies en bas de page, sous les Objectifs de la Warband : une ligne par monnaie, une colonne par perso (couleur de classe) et le total, filtre par catégorie (JcJ, Réputations, Raids, Évènements, Jeu). Au survol, le détail par perso (sacs, banque, courrier) et où les dépenser.",

@@ -321,7 +321,7 @@ UI:RegisterPage({
             if prevReveal then return prevReveal(d, row) end
         end
         self.gp.gear:SetPoint("TOPRIGHT")
-        -- au-dessus des vues (Rangement, verrous, Avant de partir) qui la couvraient
+        -- au-dessus des vues (Rangement, verrous, monnaies) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
         -- le volet couvre tout le contenu (rien ne dépasse au-dessus) ; ses cartes commencent sous la roue dentée
         self.gp.overlay:ClearAllPoints()
@@ -344,11 +344,6 @@ UI:RegisterPage({
         end, 26)
         self.setSeg:SetPoint("LEFT", self.gp.overlay.title, "RIGHT", 18, 0)
         self.setSeg:Select(curTab())
-        -- consommables conseillés (UI/ProfPanels.lua)
-        self.prepPane = UI:BuildPrepPane(p)
-        self.prepPane:SetPoint("TOPLEFT", x0, 0)
-        self.prepPane:SetPoint("BOTTOMRIGHT")
-        self.prepPane:Hide()
         -- monnaies du jeu (UI/Currency.lua)
         self.moneyPane = UI:BuildMoneyPane(p)
         self.moneyPane:SetPoint("TOPLEFT", x0, 0)
@@ -1386,10 +1381,10 @@ UI:RegisterPage({
     -- Onglets : tout le compte, chaque personnage, banque de bataillon.
     RefreshTabs = function(self)
         local chars = WK.DB.global.characters
-        local special = { spread = true, old = true, locks = true, stash = true, prep = true, money = true }
+        local special = { spread = true, old = true, locks = true, stash = true, money = true }
         if self.char ~= "all" and self.char ~= "warband" and not special[self.char] and not chars[self.char] then self.char = "all" end
         -- Tout le compte, puis les vues d'aide au rangement, puis chaque perso et le bataillon.
-        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" }, { key = "prep" }, { key = "money" } }
+        local entries = { { key = "all" }, { key = "stash" }, { key = "spread" }, { key = "old" }, { key = "locks" }, { key = "money" } }
         for _, e in ipairs(UI:SortedCharacters()) do table.insert(entries, { key = e.key, c = e.c }) end
         local wb = WK.DB.global.warbank
         if wb then table.insert(entries, { key = "warband" }) end
@@ -1432,10 +1427,10 @@ UI:RegisterPage({
                 e.button = b
             else
                 b.icon:Hide(); b.glyph:Show()
-                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send", prep = "fire", money = "coin" }
+                local glyphs = { all = "users", warband = "bag", spread = "mail", old = "clock", locks = "lock", stash = "send", money = "coin" }
                 b.glyph:SetTexture(UI.MEDIA .. glyphs[e.key])
                 b.glyph:SetVertexColor(UI:Accent())
-                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement", prep = "Avant de partir", money = "Monnaies" }
+                local names = { all = "Tout le compte", warband = "Banque de bataillon", spread = "À regrouper", old = "Oubliés en banque", locks = "Verrouillés", stash = "Rangement", money = "Monnaies" }
                 b.name:SetText(T(names[e.key]))
                 b.name:SetTextColor(unpack(C.text))
                 if e.key == "warband" then
@@ -1457,11 +1452,6 @@ UI:RegisterPage({
                     for _ in pairs(WK.modules.ItemLock:Manual()) do n = n + 1 end
                     b.sub:SetText(string.format(T("%d à la main"), n))
                     b:SetCount(#WK.modules.ItemLock:List())
-                elseif e.key == "prep" then
-                    local n = 0
-                    for _, r in ipairs(WK.modules.ProfHelp:Prep(WK:CharKey())) do if r.low then n = n + 1 end end
-                    b.sub:SetText(string.format(T("%d consommable(s) sous le seuil"), n))
-                    b:SetCount(n, n > 0)
                 elseif e.key == "money" then
                     local n = #WK.modules.Currency:List()
                     b.sub:SetText(string.format(T("%d monnaie(s) sur le compte"), n))
@@ -1495,17 +1485,15 @@ UI:RegisterPage({
         local sel = self.char
         self.oldSeg:SetShown(sel == "old")
         -- objets verrouillés : leur propre panneau à la place de la liste
-        local locks, stash, prep, money = sel == "locks", sel == "stash", sel == "prep", sel == "money"
+        local locks, stash, money = sel == "locks", sel == "stash", sel == "money"
         self.lockPane:SetShown(locks)
         self.stashPane:SetShown(stash)
-        self.prepPane:SetShown(prep)
         self.moneyPane:SetShown(money)
-        local pane = locks or stash or prep or money
+        local pane = locks or stash or money
         for _, w in ipairs({ self.search, self.scroll, self.header, self.info, self.countText }) do w:SetShown(not pane) end
         if pane then
             self.whereSeg:Hide(); self.empty:Hide()
             if money then return self.moneyPane:Refresh() end
-            if prep then return self.prepPane:Refresh() end
             if stash then return self:RefreshStash() end
             return self:RefreshLocks()
         end

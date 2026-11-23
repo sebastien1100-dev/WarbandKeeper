@@ -673,6 +673,61 @@ UI:RegisterPage({
         -- Alertes : les seuils et rappels d'Options (banque, courrier, rappels à la connexion) rejoignent
         -- l'onglet Alertes, sous l'état des persos (un seul endroit pour toutes les alertes).
         -- rangées en sous-onglets (UI:CardTabs) : État des persos, Alertes, Connexion, À faire
+        -- consommables conseillés (UI/ProfPanels.lua), avant dans Inventaire
+        subtab("Avant de partir")
+        do
+            local ptab, psec = current.cur, current
+            local prep = UI:BuildPrepPane(root, true)
+            prep:SetPoint("TOPLEFT", 0, -y); prep:SetPoint("TOPRIGHT", 0, -y)
+            prep.card.cardKey = "Avant de partir"
+            current.cards = current.cards or {}
+            table.insert(current.cards, prep.card)
+            prep.onHeight = function(h)
+                ptab.h = h + GAP
+                if ptab.pane:IsShown() and psec.scroll then
+                    psec.scroll:SetContentHeight(psec.base + TABS_H + ptab.h)
+                end
+            end
+            prep:SetScript("OnShow", function(f) f:Refresh() end)
+            WK:On("BAG_UPDATE_DELAYED", function() if prep:IsVisible() then prep:Refresh() end end)
+            psec.prepPane = prep -- (tests)
+            y = y + 460 + GAP
+        end
+
+        -- barre d'expérience (UI/XPBar.lua), avant dans la section Expérience
+        subtab("Barre d'XP")
+        do
+            local X = WK.modules.XP
+            local xcfg = X:Config()
+            local function xrefresh() if UI.RefreshXPBar then UI:RefreshXPBar() end end
+            local xb = card("Barre d'expérience", 40 + 9 * 46 + 8, "XP, repos et quêtes à rendre")
+            UI:SettingRow(xb, -40, "Afficher la barre", "Accent : ton XP ; bleu : ton repos ; jaune : l'XP des quêtes terminées à rendre (un trait marque où tu arriverais). Cachée au niveau maximum.",
+                toggle(xb, function() return xcfg.bar end, function(v) xcfg.bar = v; xrefresh() end), 80)
+            UI:SettingRow(xb, -86, "Compacte", "Juste la barre, sans les libellés (tout reste dans l'infobulle).",
+                toggle(xb, function() return xcfg.compact end, function(v) xcfg.compact = v; xrefresh() end), 80)
+            UI:SettingRow(xb, -132, "Sans fond", "Retire le cadre sombre autour de la barre : il ne reste que la barre et ses libellés (ombrés pour rester lisibles).",
+                toggle(xb, function() return xcfg.noBg end, function(v) xcfg.noBg = v; xrefresh() end), 80)
+            do
+                local seg = UI:Segmented(xb, { { "above", "Au-dessus" }, { "below", "En dessous" } }, function(v) xcfg.textPos = v; xrefresh() end, 26)
+                seg:Select(xcfg.textPos == "below" and "below" or "above")
+                UI:SettingRow(xb, -224, "Place du texte", "Libellés (niveau, repos, à rendre) au-dessus ou en dessous de la barre.", seg, 200)
+            end
+            UI:SettingRow(xb, -178, "Texte au survol", "Les libellés (niveau, repos, à rendre) n'apparaissent qu'au survol de la barre ; leur place est gardée.",
+                toggle(xb, function() return xcfg.textHover end, function(v) xcfg.textHover = v; xrefresh() end), 80)
+            UI:SettingRow(xb, -270, "Largeur", "Élargis la barre jusqu'à toute la largeur de l'écran.",
+                UI:Slider(xb, 240, 200, 1600, 20, function() return xcfg.width or 520 end, function(v) xcfg.width = v; xrefresh() end, "%d px"), 260)
+            UI:SettingRow(xb, -316, "Épaisseur", "Hauteur de la barre elle-même.",
+                UI:Slider(xb, 240, 4, 24, 1, function() return xcfg.thick or 8 end, function(v) xcfg.thick = v; xrefresh() end, "%d px"), 260)
+            UI:SettingRow(xb, -362, "Prévenir d'un niveau à rendre", "Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
+                toggle(xb, function() return xcfg.levelAlert end, function(v)
+                    xcfg.levelAlert = v
+                    local XPm = WK.modules.XP
+                    if XPm and XPm.CheckLevelAlert then XPm.CheckLevelAlert() end
+                end), 80)
+            UI:SettingRow(xb, -408, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
+                toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
+        end
+
         subtab("Alertes")
         do
             local alertCards = { state }
@@ -2187,39 +2242,8 @@ UI:RegisterPage({
         section("xp")
         do
             local X = WK.modules.XP
-            local xcfg = X:Config()
             local fmt, xdur = UI.FormatXP, UI.XPDuration
             local xsec = current
-            local function xrefresh() if UI.RefreshXPBar then UI:RefreshXPBar() end end
-            -- barre
-            local xb = card("Barre d'expérience", 40 + 9 * 46 + 8, "XP, repos et quêtes à rendre")
-            UI:SettingRow(xb, -40, "Afficher la barre", "Accent : ton XP ; bleu : ton repos ; jaune : l'XP des quêtes terminées à rendre (un trait marque où tu arriverais). Cachée au niveau maximum.",
-                toggle(xb, function() return xcfg.bar end, function(v) xcfg.bar = v; xrefresh() end), 80)
-            UI:SettingRow(xb, -86, "Compacte", "Juste la barre, sans les libellés (tout reste dans l'infobulle).",
-                toggle(xb, function() return xcfg.compact end, function(v) xcfg.compact = v; xrefresh() end), 80)
-            UI:SettingRow(xb, -132, "Sans fond", "Retire le cadre sombre autour de la barre : il ne reste que la barre et ses libellés (ombrés pour rester lisibles).",
-                toggle(xb, function() return xcfg.noBg end, function(v) xcfg.noBg = v; xrefresh() end), 80)
-            do
-                local seg = UI:Segmented(xb, { { "above", "Au-dessus" }, { "below", "En dessous" } }, function(v) xcfg.textPos = v; xrefresh() end, 26)
-                seg:Select(xcfg.textPos == "below" and "below" or "above")
-                UI:SettingRow(xb, -224, "Place du texte", "Libellés (niveau, repos, à rendre) au-dessus ou en dessous de la barre.", seg, 200)
-            end
-            UI:SettingRow(xb, -178, "Texte au survol", "Les libellés (niveau, repos, à rendre) n'apparaissent qu'au survol de la barre ; leur place est gardée.",
-                toggle(xb, function() return xcfg.textHover end, function(v) xcfg.textHover = v; xrefresh() end), 80)
-            UI:SettingRow(xb, -270, "Largeur", "Élargis la barre jusqu'à toute la largeur de l'écran.",
-                UI:Slider(xb, 240, 200, 1600, 20, function() return xcfg.width or 520 end, function(v) xcfg.width = v; xrefresh() end, "%d px"), 260)
-            UI:SettingRow(xb, -316, "Épaisseur", "Hauteur de la barre elle-même.",
-                UI:Slider(xb, 240, 4, 24, 1, function() return xcfg.thick or 8 end, function(v) xcfg.thick = v; xrefresh() end, "%d px"), 260)
-            UI:SettingRow(xb, -362, "Prévenir d'un niveau à rendre", "Dans « À faire » : rendre tes quêtes terminées te ferait passer un niveau.",
-                toggle(xb, function() return xcfg.levelAlert end, function(v)
-                    xcfg.levelAlert = v
-                    local XPm = WK.modules.XP
-                    if XPm and XPm.CheckLevelAlert then XPm.CheckLevelAlert() end
-                end), 80)
-            UI:SettingRow(xb, -408, "Prévenir d'un repos plein", "Dans « À faire » : un de tes persos a fait le plein de repos (150 %), il gaspille du temps d'auberge.",
-                toggle(xb, function() return xcfg.restAlert end, function(v) xcfg.restAlert = v end), 80)
-
-
             -- rythme de la session
             local xs = card("Rythme de la session", 40 + 5 * 20 + 44, "depuis la connexion")
             local xsText = dynText(xs, 12, C.text, function()
