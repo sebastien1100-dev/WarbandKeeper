@@ -121,9 +121,11 @@ local function buildIcon()
     b:SetFrameStrata("MEDIUM")
     b:SetClampedToScreen(true)
     b:RegisterForClicks("LeftButtonUp")
+    -- onde rouge (maquette B) : anneau qui part du bord de l'icône, grandit et s'efface, une fois par seconde
     b.glow = b:CreateTexture(nil, "BACKGROUND", nil, -1)
-    b.glow:SetTexture(UI.MEDIA .. "circle")
-    b.glow:SetPoint("CENTER"); b.glow:SetSize(70, 70)
+    b.glow:SetTexture(UI.MEDIA .. "ring")
+    b.glow:SetPoint("CENTER"); b.glow:SetSize(52, 52)
+    b.glow:SetVertexColor(1, 1, 1, 0)
     b.bg = b:CreateTexture(nil, "BACKGROUND")
     b.bg:SetTexture(UI.MEDIA .. "circle")
     b.bg:SetAllPoints()
@@ -167,11 +169,21 @@ local function buildIcon()
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
     b:SetScript("OnUpdate", function(s, el)
         s.t = (s.t or 0) + el
-        local r1, g1, b1 = UI:Accent()
         local st = s.sample and "sit" or M.state
-        -- pulsation pour attirer l'oeil quand il faut s'asseoir
-        local pulse = (st == "sit" or st == "early") and (0.35 + 0.3 * math.sin(s.t * 4)) or 0
-        s.glow:SetVertexColor(r1, g1, b1, pulse)
+        -- onde rouge quand il faut s'asseoir : de 52 à 80 px, de 0,9 à 0 d'opacité en 0,8 s, puis une pause
+        if st == "sit" or st == "early" then
+            local k = (s.t % 1.1) / 0.8
+            local c = C.negative
+            if k <= 1 then
+                local z = 52 + 28 * k
+                s.glow:SetSize(z, z)
+                s.glow:SetVertexColor(c[1], c[2], c[3], 0.9 * (1 - k))
+            else
+                s.glow:SetVertexColor(c[1], c[2], c[3], 0)
+            end
+        else
+            s.glow:SetVertexColor(1, 1, 1, 0)
+        end
         if st == "sitting" and not s.sample then
             local left = M.Remaining(M.auras and M.auras.sit) or 0
             s.num:SetText(left > 0 and tostring(math.ceil(left)) or "")
@@ -194,10 +206,13 @@ local function buildIcon()
         self.bg:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
         -- loin d'un feu (affichée en permanence) : discrète, avec le temps restant des avantages s'il y en a
         local perk = st == "none" and M.Remaining(M.auras and M.auras.perk) or nil
-        local col = (st == "done" or (perk and perk > 0)) and C.positive or (st == "early") and C.warning
+        -- à s'asseoir : anneau et flamme rouges (flamme orange pour « rassieds-toi »)
+        local col = (st == "done" or (perk and perk > 0)) and C.positive
+            or (st == "sit" or st == "early") and C.negative
             or (st == "none") and C.muted or { r1, g1, b1, 1 }
         self.ring:SetVertexColor(col[1], col[2], col[3], 1)
-        self.fire:SetVertexColor(col[1], col[2], col[3], 1)
+        local fc = st == "early" and C.warning or col
+        self.fire:SetVertexColor(fc[1], fc[2], fc[3], 1)
         self.fire:SetAlpha(st == "sitting" and 0.15 or st == "none" and 0.7 or 1)
         local lbl = st == "sitting" and T("assis") or st == "done" and T("avantages")
             or st == "early" and T("rassieds-toi")

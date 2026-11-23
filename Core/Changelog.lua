@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.244", date = "23/11/2026",
+        changed = {
+            "Feu de camp : quand il faut s'asseoir, l'icône n'a plus de halo rose. Son anneau et sa flamme passent au rouge, et une onde rouge part de son bord une fois par seconde (flamme orange pour « rassieds-toi »).",
+        },
+    },
+    {
         version = "1.128.243", date = "23/11/2026",
         added = {
             "Feu de camp : réglage « Icône toujours affichée » (QoL > Feu de camp > Rappels). La flamme reste à l'écran même loin d'un camp : grise, avec « pas de feu » ou le temps restant des avantages du camp ; près d'un feu, elle redevient normale (clic pour s'asseoir).",

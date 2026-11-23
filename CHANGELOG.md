@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.244 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Feu de camp : quand il faut s'asseoir, l'icône n'a plus de halo rose. Son anneau et sa flamme passent au rouge, et une onde rouge part de son bord une fois par seconde (flamme orange pour « rassieds-toi »).
+
 ## v1.128.243 — 23/11/2026
 
 _Un /reload suffit._
