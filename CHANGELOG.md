@@ -49,6 +49,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.191 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Répartition : tout l'équipement à lier quand équipé part à l'enchanteur (pour le désenchanter), sauf ce qui est verrouillé (épiques, envies, BiS) ; sans enchanteur, il reste où il est.
+- Répartition : nouvelle famille « Gemmes et pierres » pour le joaillier.
+- Répartition : perso principal, perso banque et perso HV se choisissent côte à côte en haut de l'onglet. Le perso banque garde le surplus de chaque famille et ce qui ne vaut pas la vente à l'HV, au lieu du marchand ; le perso HV ne se règle plus que là.
+
 ## v1.128.190 — 22/11/2026
 
 _Un /reload suffit._

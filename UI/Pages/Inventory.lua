@@ -57,7 +57,7 @@ local SLOT, SGAP = 40, 4
 -- exception qui a décidé d'un envoi (Stash:Compute, champ exc) : libellé et couleur de la pastille
 local EXC_TAG = { prio = { "prioritaire", "rule" }, always = { "toujours", "rule" }, cap = { "plafond", "info" },
     stock = { "stock", "gold" }, main = { "perso principal", "accent" }, cons = { "stock voulu", "info" },
-    gear = { "équipement", "muted" } }
+    gear = { "équipement", "muted" }, bank = { "perso banque", "info" } }
 UI.STASH_EXC_TAG = EXC_TAG
 local stashPop
 local function popMenu()
@@ -815,31 +815,22 @@ UI:RegisterPage({
             return r
         end)
         -- réglages du perso HV
-        local sets = UI:Card(root, T("Perso HV"), T("reçoit ce dont personne n'a besoin et le met en vente"))
+        local sets = UI:Card(root, T("Vente à l'HV et courrier"),
+            T("le perso HV se choisit en haut de l'onglet Répartition"))
         self.stashSets = sets
-        local charDd = UI:Dropdown(sets, 220, 30, {}, function(v) cfg.ahChar = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged() end)
-        self.stashCharDd = charDd
-        -- liste des persos remplie dès que la carte se montre (elle vit aussi dans la roue, hors vue Rangement)
-        local function fillAhChar()
-            local opts = { { "none", T("Aucun") } }
-            for _, e in ipairs(UI:SortedCharacters()) do table.insert(opts, { e.key, WK:CharName(e.c, e.key) }) end
-            charDd:SetOptions(opts)
-            charDd:Select(cfg.ahChar or "none")
-        end
-        self.FillAhChar = fillAhChar
-        sets:HookScript("OnShow", fillAhChar)
-        fillAhChar()
-        UI:SettingRow(sets, -40, "Perso qui vend à l'HV", "Il reçoit par courrier les composants dont aucun de tes persos n'a besoin. « Aucun » : tout est proposé au marchand.", charDd, 220)
-        UI:SettingRow(sets, -86, "Vendre à l'HV à partir de", "Valeur du lot au prix du scan de l'HV ; en dessous, il est proposé au marchand.",
+        UI:SettingRow(sets, -40, "Vendre à l'HV à partir de",
+            "Valeur du lot au prix du scan de l'HV ; en dessous, il est proposé au marchand.",
             UI:Slider(sets, 220, 0, 500, 10, function() return math.floor((cfg.minAH or 5000) / 100) end,
                 function(v) cfg.minAH = v * 100; S:Invalidate(); WK:NotifyChanged() end, "%d pa"), 240)
         -- (« Prix proposé » et « Durée des enchères » retirés : jamais lus ; la vente à l'HV suit les réglages de la
         -- fenêtre de l'HV, page Vendre)
-        UI:SettingRow(sets, -132, "Garder une réserve", "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
+        UI:SettingRow(sets, -86, "Garder une réserve",
+            "Quantité de chaque objet laissée sur le compte au lieu de la vendre.",
             UI:Slider(sets, 220, 0, 100, 5, function() return cfg.reserve or 0 end, function(v) cfg.reserve = v; S:Invalidate(); WK:NotifyChanged() end, "%d"), 240)
-        UI:SettingRow(sets, -178, "Proposer les envois à la boîte aux lettres", "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
+        UI:SettingRow(sets, -132, "Proposer les envois à la boîte aux lettres",
+            "Un panneau à côté du courrier liste ce que ce perso doit envoyer, coché par défaut.",
             UI:Toggle(sets, function() return cfg.mailPanel end, function(v) cfg.mailPanel = v end), 80)
-        sets:SetHeight(40 + 4 * 46 + 8)
+        sets:SetHeight(40 + 3 * 46 + 8)
         UI:OnResize(pane, function() if self.char == "stash" then self:RefreshStash() end end)
     end,
 
@@ -851,14 +842,34 @@ UI:RegisterPage({
         f:SetPoint("TOPLEFT", 0, -38)
         f:Hide()
         self.distFrame = f
-        f.mainLbl = UI:Text(f, 12); f.mainLbl:SetPoint("TOPLEFT", 4, -8); f.mainLbl:SetText(T("Perso principal"))
-        f.mainDd = UI:Dropdown(f, 200, 28, {}, function(v)
-            S:Config().main = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged(); self:RefreshStash()
-        end)
-        f.mainDd:SetPoint("LEFT", f.mainLbl, "RIGHT", 10, 0)
-        f.mainTip = UI:Text(f, 10, C.muted); f.mainTip:SetPoint("LEFT", f.mainDd, "RIGHT", 10, 0)
-        f.mainTip:SetText(T("reçoit nourriture, boisson, bandages et potions de son niveau tant qu'il monte"))
-        f.legend = UI:Text(f, 10, C.muted); f.legend:SetPoint("TOPLEFT", 4, -44)
+        -- trois rôles côte à côte : perso principal (consommables), perso banque (surplus), perso HV (vente)
+        f.roles = {}
+        local ROLES = {
+            { "main", "Perso principal", "Nourriture, boisson, bandages et potions de son niveau tant qu'il monte." },
+            { "bank", "Perso banque",
+                "Garde le surplus de chaque famille et ce qui ne vaut pas la vente à l'HV (au lieu du marchand)." },
+            { "ahChar", "Perso HV", "Reçoit ce dont personne n'a besoin et qui vaut la vente, pour le mettre à l'HV." },
+        }
+        for i, ro in ipairs(ROLES) do
+            local box = _G.CreateFrame("Frame", nil, f)
+            box:SetHeight(46)
+            box.l = UI:Text(box, 11, C.muted); box.l:SetPoint("TOPLEFT", 2, 0); box.l:SetText(T(ro[2]))
+            box.dd = UI:Dropdown(box, 180, 26, {}, function(v)
+                S:Config()[ro[1]] = (v ~= "none") and v or nil; S:Invalidate(); WK:NotifyChanged(); self:RefreshStash()
+            end)
+            box.dd:SetPoint("TOPLEFT", 0, -16)
+            box.key, box.tip = ro[1], ro[3]
+            box:EnableMouse(true)
+            box:SetScript("OnEnter", function(b)
+                UI:TooltipOwner(b, "ANCHOR_BOTTOM")
+                _G.GameTooltip:SetText(T(ro[2]), 1, 1, 1)
+                _G.GameTooltip:AddLine(T(b.tip), 0.8, 0.8, 0.8, true)
+                _G.GameTooltip:Show()
+            end)
+            box:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+            f.roles[i] = box
+        end
+        f.legend = UI:Text(f, 10, C.muted); f.legend:SetPoint("TOPLEFT", 4, -56)
         f.table = UI:Card(f)
         f.heads = UI:Pool(function()
             local h = _G.CreateFrame("Frame", nil, f.table)
@@ -998,7 +1009,11 @@ UI:RegisterPage({
         local opts = { { "none", T("Aucun") } }
         local list = UI:SortedCharacters()
         for _, e in ipairs(list) do opts[#opts + 1] = { e.key, WK:CharName(e.c, e.key) } end
-        f.mainDd:SetOptions(opts); f.mainDd:Select(cfg.main or "none")
+        local bw = math.floor((W - 24) / 3)
+        for i, box in ipairs(f.roles) do
+            box:ClearAllPoints(); box:SetPoint("TOPLEFT", (i - 1) * (bw + 12), -4); box:SetWidth(bw)
+            box.dd:SetOptions(opts); box.dd:Select(cfg[box.key] or "none")
+        end
         local function hx(col) return UI:Hex(col) end
         local ar, ag, ab = UI:Accent()
         f.legend:SetText(hx(C.positive) .. T("Reçoit") .. "|r " .. T("d'office, d'après ses métiers") .. "   "
@@ -1016,6 +1031,8 @@ UI:RegisterPage({
             h:ClearAllPoints(); h:SetPoint("TOPLEFT", f.table, "TOPLEFT", FAMW + (i - 1) * cw, 0); h:SetSize(cw, HEADH)
             local nm = WK:CharName(e.c, e.key)
             if e.key == cfg.main then nm = nm .. "  " .. hx({ ar, ag, ab }) .. T("principal") .. "|r" end
+            if e.key == cfg.bank then nm = nm .. "  " .. hx(C.info) .. T("banque") .. "|r" end
+            if e.key == cfg.ahChar then nm = nm .. "  " .. hx(C.gold) .. T("HV") .. "|r" end
             h.n:SetText(nm); h.n:SetTextColor(UI:ClassColor(e.c.class))
             local parts = {}
             for prof, pp in pairs(e.c.professions or {}) do
@@ -1053,8 +1070,8 @@ UI:RegisterPage({
             end
             y = y + ROWH
         end
-        f.table:ClearAllPoints(); f.table:SetPoint("TOPLEFT", 0, -64); f.table:SetSize(W, y + 6)
-        local ty = 64 + y + 6 + 12
+        f.table:ClearAllPoints(); f.table:SetPoint("TOPLEFT", 0, -76); f.table:SetSize(W, y + 6)
+        local ty = 76 + y + 6 + 12
         -- exceptions des persos
         f.charRows:Reset()
         local cy = 44
@@ -1120,8 +1137,6 @@ UI:RegisterPage({
         end
         self.distFrame:SetShown(dist)
         if dist then return self:RefreshDist(W) end
-        -- menu du perso HV
-        self.FillAhChar()
         local r = S:Route()
         self.stashCols:Reset(); self.stashRows:Reset()
         local total = 0

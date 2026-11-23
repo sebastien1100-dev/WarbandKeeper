@@ -23,6 +23,7 @@ function M:Config()
         if type(g.stash[k]) ~= "table" then g.stash[k] = {} end
     end
     if g.stash.main and not g.characters[g.stash.main] then g.stash.main = nil end
+    if g.stash.bank and not g.characters[g.stash.bank] then g.stash.bank = nil end
     return g.stash
 end
 
@@ -42,6 +43,7 @@ M.FAMILIES = {
     { key = "leather", label = "Peaux, cuirs, écailles", raw = true },
     { key = "herb", label = "Herbes", raw = true },
     { key = "ench", label = "Poussières, essences, éclats" },
+    { key = "gem", label = "Gemmes et pierres", sub = "pierres précieuses, gemmes taillées" },
     { key = "meat", label = "Viande, poisson cru", raw = true },
     { key = "food", label = "Nourriture et boisson", cons = { "food", "drink" } },
     { key = "heal", label = "Bandages et potions", cons = { "bandage", "potion" } },
@@ -50,7 +52,8 @@ M.FAMILIES = {
 local FAM = {}
 for _, f in ipairs(M.FAMILIES) do FAM[f.key] = f end
 -- sous-classes des composants d'artisanat (classe 7)
-local TRADE_FAM = { [5] = "cloth", [7] = "metal", [6] = "leather", [9] = "herb", [12] = "ench", [8] = "meat" }
+local TRADE_FAM = { [5] = "cloth", [7] = "metal", [6] = "leather", [9] = "herb", [12] = "ench", [8] = "meat",
+    [4] = "gem" }
 -- métiers qui consomment une famille : "all" = reçoit tout, "guide" = seulement ce que demande son guide
 local PROF_FAM = {
     ["Couture"] = { cloth = "all" }, ["Tailoring"] = { cloth = "all" },
@@ -60,7 +63,8 @@ local PROF_FAM = {
     ["Minage"] = { metal = "all" }, ["Mining"] = { metal = "all" },
     ["Travail du cuir"] = { leather = "all" }, ["Leatherworking"] = { leather = "all" },
     ["Alchimie"] = { herb = "all" }, ["Alchemy"] = { herb = "all" },
-    ["Enchantement"] = { ench = "all" }, ["Enchanting"] = { ench = "all" },
+    ["Enchantement"] = { ench = "all", gear = "all" }, ["Enchanting"] = { ench = "all", gear = "all" },
+    ["Joaillerie"] = { gem = "all" }, ["Jewelcrafting"] = { gem = "all" },
     ["Cuisine"] = { meat = "all" }, ["Cooking"] = { meat = "all" },
 }
 M.PROF_FAM = PROF_FAM
@@ -80,6 +84,7 @@ end
 function M.FamilyOf(_, id)
     local classID, subID = instant(id)
     if classID == 7 then return TRADE_FAM[subID] end
+    if classID == 3 then return "gem" end
     if classID == 0 then
         if subID == 5 then return "food" end
         if subID == 7 or subID == 1 then return "heal" end
@@ -196,7 +201,6 @@ function M:Cell(fam, key)
         end
         return { text = "-", col = "dim" }
     end
-    if fam == "gear" then return { text = T("Selon classe et niveau"), col = "muted" } end
     for _, rv in ipairs(self:FamReceivers(fam)) do
         if rv.key == key then
             if rv.how == "all" then
@@ -207,6 +211,7 @@ function M:Cell(fam, key)
     end
     if r and r.mode == "recv" then return { text = T("Reçoit") .. capTxt, col = "positive", mode = "recv" } end
     if fl.keep and f and f.raw then return { text = T("garde ses récoltes"), col = "rule", mode = "keep" } end
+    if key == self:Config().bank then return { text = T("Surplus · perso banque"), col = "gold", mode = "bank" } end
     return { text = "-", col = "dim" }
 end
 
@@ -393,9 +398,9 @@ function M:Compute()
             end
         elseif fam == "food" or fam == "heal" then
             consItems[#consItems + 1] = id
-        elseif fam == "gear" then
-            self:RouteGear(id, byChar, send, noRecv)
-        elseif classID and ROUTE_CLASS[classID] then
+        elseif fam == "gear" and IL and IL:Reason(id) then -- luacheck: ignore 542
+            -- équipement verrouillé par règle (épique, envie, BiS) : il ne part pas chez l'enchanteur
+        elseif classID and (ROUTE_CLASS[classID] or fam == "gear") then
             -- qui en a besoin : liste triée (priorité, puis le plus gros besoin restant)
             local needers, seen = {}, {}
             local stack = stackOf(id)
@@ -435,6 +440,12 @@ function M:Compute()
                         end
                     end
                 end
+            end
+            -- perso banque : le surplus de chaque famille (après les métiers), sauf l'équipement
+            local bankKey = cfg.bank and chars[cfg.bank] and cfg.bank
+            if fam and fam ~= "gear" and bankKey and not seen[bankKey] and not noRecv(bankKey, fam) then
+                table.insert(needers, { key = bankKey, prio = 6, why = T("perso banque : surplus"), exc = "bank" })
+                seen[bankKey] = #needers
             end
             if classID == 9 and #needers == 0 then
                 local who, why = self.recipeNeeds(id)
@@ -479,7 +490,7 @@ function M:Compute()
                 end
             end
             -- personne n'en a besoin : HV ou marchand (jamais un objet verrouillé par règle)
-            if #needers == 0 and not (IL and IL:Reason(id)) then
+            if #needers == 0 and fam ~= "gear" and not (IL and IL:Reason(id)) then
                 local total, from = 0, {}
                 for key, sp in pairs(spare) do if sp > 0 then total = total + sp; from[key] = sp end end
                 total = math.max(0, total - (cfg.reserve or 0))
@@ -496,6 +507,13 @@ function M:Compute()
                             local fr = {}
                             for k, v in pairs(from) do if k ~= cfg.ahChar then fr[k] = v end end
                             addTo(out.ah, id, rest, fr, ah and T("personne n'en a besoin") or T("à vérifier : pas de prix"), ah)
+                        end
+                    elseif bankKey then
+                        -- perso banque : il garde ce qui ne vaut pas la vente à l'HV (au lieu du marchand)
+                        for key, sp in pairs(from) do
+                            if key ~= bankKey and sp > 0 then
+                                send(bankKey, id, sp, key, T("perso banque : personne n'en a besoin"), "bank")
+                            end
                         end
                     elseif vendor > 0 and ah ~= nil then
                         addTo(out.vendor, id, total, from, string.format(T("vaut %s à l'HV"), WK:FormatMoney(ah)), vendor)
@@ -573,26 +591,6 @@ function M:RouteConsumables(ids, all, send, noRecv)
     end
 end
 
--- Équipement à lier quand équipé : d'un perso qui ne peut pas le porter vers celui qui peut, du niveau le plus proche
-function M.RouteGear(_, id, byChar, send, noRecv)
-    local Dg = WK.modules.Dungeons
-    if not (Dg and Dg.Usable) then return end
-    local rl = reqLevel(id) or 1
-    local chars = WK.DB.global.characters
-    for from, cnt in pairs(byChar) do
-        local fc = chars[from]
-        if cnt > 0 and fc and not Dg:Usable(id, fc) and not hasMailRule(id, from) then
-            local best, bd
-            for key, c in pairs(chars) do
-                if key ~= from and not noRecv(key, "gear") and Dg:Usable(id, c) and (c.level or 1) + 5 >= rl then
-                    local d = math.abs((c.level or 1) - rl)
-                    if not bd or d < bd or (d == bd and key < best) then best, bd = key, d end
-                end
-            end
-            if best then send(best, id, cnt, from, string.format(T("peut le porter (niveau %d)"), rl), "gear") end
-        end
-    end
-end
 
 -- Envois du perso connecté (objets dans ses sacs) : { { id, count, to = perso, why, ah? } }
 function M:MyShipments()

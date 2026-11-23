@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.191", date = "23/11/2026",
+        changed = {
+            "Répartition : tout l'équipement à lier quand équipé part à l'enchanteur (pour le désenchanter), sauf ce qui est verrouillé (épiques, envies, BiS) ; sans enchanteur, il reste où il est.",
+            "Répartition : nouvelle famille « Gemmes et pierres » pour le joaillier.",
+            "Répartition : perso principal, perso banque et perso HV se choisissent côte à côte en haut de l'onglet. Le perso banque garde le surplus de chaque famille et ce qui ne vaut pas la vente à l'HV, au lieu du marchand ; le perso HV ne se règle plus que là.",
+        },
+    },
+    {
         version = "1.128.190", date = "22/11/2026",
         added = {
             "Rangement > Répartition : un tableau des familles d'objets (tissus, minerais, peaux, herbes, enchantement, viande, nourriture, bandages et potions, équipement à lier) par perso, rempli tout seul d'après les métiers : le couturier reçoit les tissus, le mineur ou le forgeron le minerai, l'alchimiste les herbes, le secouriste ce que demande son guide…",
