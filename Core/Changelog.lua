@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.200", date = "23/11/2026",
+        changed = {
+            "Inventaire (maquette B) : en haut, un interrupteur Objets / Courrier (nombre d'objets du compte, lettres en attente). Dessous, seulement les onglets du groupe choisi, soulignés : Tout le compte, Rangement, À regrouper, Oubliés en banque, Verrouillés, ou Envoi, Dépôt banque, Réception. Chaque groupe revient à son dernier onglet ouvert.",
+        },
+    },
+    {
         version = "1.128.199", date = "23/11/2026",
         fixed = {
             "Persos > Expérience : « Rythme de la session » restait sur « Pas encore d'XP gagnée » et « Tous tes persos » ne se mettait plus à jour. Les deux cartes se recalculent maintenant à l'ouverture et à chaque gain d'XP.",

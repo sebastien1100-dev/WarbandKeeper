@@ -6,7 +6,8 @@ local T = function(s) return WK.T(s) end
 local MAX_ROWS = 150
 local TOP_TABS = { { "all", "Tout le compte" }, { "stash", "Rangement" }, { "spread", "À regrouper" },
     { "old", "Oubliés en banque" }, { "locks", "Verrouillés" } }
-local TOP_H = 46 -- barre d'onglets en haut (34) et son écart ; 80 sur deux lignes (fenêtre étroite)
+local SWITCH_H, UNDER_H = 36, 30 -- interrupteur Objets / Courrier, onglets soulignés
+local TOP_H = SWITCH_H + 8 + UNDER_H + 12 -- hauteur de la bande du haut
 -- onglets du groupe COURRIER : page Courrier (UI/Pages/Mail.lua) posée dans Inventaire
 local MAIL_TABS = { { "m:send", "Envoi", "send" }, { "m:bank", "Dépôt banque", "bank" },
     { "m:receive", "Réception", "receive" } }
@@ -191,67 +192,108 @@ UI:RegisterPage({
         local cfg = WK.DB.global.settings.ui
         self.char = cfg.invChar or "all"
 
-        -- Onglets en haut (maquette A) : tout le compte et les vues d'aide au rangement ----------
+        -- En haut (maquette B) : interrupteur Objets / Courrier, puis les onglets du groupe choisi, soulignés
         -- (la liste des persos est dans l'onglet « Tout le compte », à gauche de la recherche)
         local bar = _G.CreateFrame("Frame", nil, p)
-        bar:SetHeight(34)
+        bar:SetHeight(SWITCH_H)
         bar:SetPoint("TOPLEFT", 0, 0)
-        UI:Panel(bar, 17, C.surface, C.border)
+        UI:Panel(bar, SWITCH_H / 2, C.surface, C.border)
         self.tabBar = bar
+        bar.btns = {}
+        for i, g in ipairs({ { "obj", "Objets", "bag" }, { "mail", "Courrier", "mail" } }) do
+            local b = _G.CreateFrame("Button", nil, bar)
+            b:SetHeight(SWITCH_H - 6)
+            b.group = g[1]
+            b.bg = UI:Rounded(b, (SWITCH_H - 6) / 2, 0, "BACKGROUND", 1)
+            b.icon = UI:Icon(b, g[3], 15); b.icon:SetPoint("LEFT", 16, 0)
+            b.name = UI:Text(b, 13); b.name:SetPoint("LEFT", b.icon, "RIGHT", 8, 0); b.name:SetText(T(g[2]))
+            b.pill = _G.CreateFrame("Frame", nil, b); b.pill:SetSize(22, 16)
+            b.pill:SetPoint("LEFT", b.name, "RIGHT", 8, 0)
+            b.pillBg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 2)
+            b.pillT = UI:Text(b.pill, 10, C.muted); b.pillT:SetPoint("CENTER", 0, 0)
+            function b:SetCount(n, warn)
+                self.warn = warn
+                self.pillT:SetText(tostring(n or 0))
+                self.pill:SetWidth(math.max(22, (self.pillT:GetStringWidth() or 10) + 12))
+                self:SetWidth(16 + 15 + 8 + (self.name:GetStringWidth() or 60) + 8 + self.pill:GetWidth() + 16)
+            end
+            function b:Paint()
+                local r, g2, bb = UI:Accent()
+                local sel = self.selected
+                self.bg:SetColor(r, g2, bb, 1); self.bg:SetShown(sel)
+                local tc = sel and C.onAccent or { r, g2, bb }
+                self.name:SetTextColor(tc[1], tc[2], tc[3]); self.icon:SetVertexColor(tc[1], tc[2], tc[3])
+                if sel then
+                    self.pillBg:SetColor(C.onAccent[1], C.onAccent[2], C.onAccent[3], 0.18)
+                    self.pillT:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+                elseif self.warn then
+                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2)
+                    self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+                else
+                    self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+                    self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+                end
+            end
+            b:SetScript("OnClick", function(s2)
+                -- chaque groupe retrouve son dernier onglet
+                local ui = WK.DB.global.settings.ui
+                local key = s2.group == "mail" and (ui.invLastMail or "m:send") or (ui.invLastObj or ui.invWho or "all")
+                self.char = key; ui.invChar = key
+                if self.gp and self.gp:IsOpen() then self.gp:Open(false) end
+                self:Refresh()
+            end)
+            UI:OnAccent(function() b:Paint() end)
+            bar.btns[i] = b
+        end
+        -- onglets soulignés (2e niveau), trait sur toute la largeur
+        local under = _G.CreateFrame("Frame", nil, p)
+        under:SetPoint("TOPLEFT", 0, -(SWITCH_H + 8)); under:SetPoint("TOPRIGHT", 0, -(SWITCH_H + 8))
+        under:SetHeight(UNDER_H)
+        under.line = under:CreateTexture(nil, "BACKGROUND")
+        under.line:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
+        under.line:SetHeight(1); under.line:SetPoint("BOTTOMLEFT"); under.line:SetPoint("BOTTOMRIGHT")
+        self.underBar = under
         local band = _G.CreateFrame("Frame", nil, p)
         band:SetPoint("TOPLEFT"); band:SetPoint("TOPRIGHT"); band:SetHeight(TOP_H)
         self.band = band
-        -- titres des deux groupes et trait entre eux
-        bar.heads = {}
-        for i, lab in ipairs({ "Objets", "Courrier" }) do
-            -- lisible : texte clair, comme les titres de carte
-            local h = UI:Text(bar, 11, C.text); h:SetText(UI:Upper(T(lab)))
-            bar.heads[i] = h
-        end
-        bar.sep = bar:CreateTexture(nil, "ARTWORK"); bar.sep:SetSize(1, 20)
-        bar.sep:SetColorTexture(C.border[1], C.border[2], C.border[3], 1)
         self.tabBtns = {}
         local allTabs = {}
         for _, tk in ipairs(TOP_TABS) do allTabs[#allTabs + 1] = tk end
         for _, tk in ipairs(MAIL_TABS) do allTabs[#allTabs + 1] = { tk[1], tk[2], mail = true } end
         for _, tk in ipairs(allTabs) do
-            local b = _G.CreateFrame("Button", nil, bar)
-            b:SetHeight(28)
+            local b = _G.CreateFrame("Button", nil, under)
+            b:SetHeight(UNDER_H)
             b.key = tk[1]
             b.mail = tk.mail
-            b.bg = UI:Rounded(b, 14, 0, "BACKGROUND", 1)
             b.name = UI:Text(b, 12)
-            b.name:SetPoint("LEFT", 12, 0)
+            b.name:SetPoint("LEFT", 2, 1)
             b.name:SetText(T(tk[2]))
-            b.pill = CreateFrame("Frame", nil, b)
+            b.pill = _G.CreateFrame("Frame", nil, b)
             b.pill:SetSize(22, 16)
             b.pill:SetPoint("LEFT", b.name, "RIGHT", 6, 0)
             b.pillBg = UI:Rounded(b.pill, 8, 0, "BACKGROUND", 2)
             b.pillT = UI:Text(b.pill, 10, C.muted); b.pillT:SetPoint("CENTER", 0, 0)
+            b.bar = b:CreateTexture(nil, "ARTWORK")
+            b.bar:SetHeight(2); b.bar:SetPoint("BOTTOMLEFT"); b.bar:SetPoint("BOTTOMRIGHT")
             function b:SetCount(n, warn)
                 self.count, self.warn = n, warn
                 self.pillT:SetText(n and tostring(n) or "")
                 self.pill:SetShown(n ~= nil)
                 self.pill:SetWidth(math.max(22, (self.pillT:GetStringWidth() or 10) + 12))
-                self:SetWidth(12 + (self.name:GetStringWidth() or 60) + (n and (6 + self.pill:GetWidth()) or 0) + 12)
+                self:SetWidth(2 + (self.name:GetStringWidth() or 60) + (n and (6 + self.pill:GetWidth()) or 0) + 2)
             end
             function b:Paint()
                 local sel = self.selected
                 local r, g, bb = UI:Accent()
-                if sel then self.bg:SetColor(r, g, bb, 1) else self.bg:SetColor(unpack(C.hover)) end
-                self.bg:SetShown(sel or self.hover)
-                if sel then
-                    self.name:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
-                    self.pillBg:SetColor(r, g, bb, 1); self.pillT:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+                b.bar:SetColorTexture(r, g, bb, 1); b.bar:SetShown(sel)
+                local tc = (sel or self.hover) and C.text or C.muted
+                self.name:SetTextColor(tc[1], tc[2], tc[3])
+                if self.warn then
+                    self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2)
+                    self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
                 else
-                    self.name:SetTextColor(r, g, bb)
-                    if self.warn then
-                        self.pillBg:SetColor(C.gold[1], C.gold[2], C.gold[3], 0.2)
-                        self.pillT:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
-                    else
-                        self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
-                        self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
-                    end
+                    self.pillBg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+                    self.pillT:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
                 end
             end
             b:SetScript("OnEnter", function(s2)
@@ -399,7 +441,7 @@ UI:RegisterPage({
             end
             if prevReveal then return prevReveal(d, row) end
         end
-        self.gp.gear:SetPoint("TOPRIGHT", 0, -1) -- sur la ligne des onglets
+        self.gp.gear:SetPoint("TOPRIGHT", 0, -2) -- sur la ligne de l'interrupteur
         -- au-dessus des vues (Rangement, verrous) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
         -- le volet couvre tout le contenu (rien ne dépasse au-dessus) ; ses cartes commencent sous la roue dentée
@@ -438,7 +480,7 @@ UI:RegisterPage({
             -- ses onglets sont dans la barre d'Inventaire ; sa roue dentée va sur la ligne des onglets
             if md.seg then md.seg:Hide() end
             if md.gp and md.gp.gear then
-                md.gp.gear:ClearAllPoints(); md.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, -1)
+                md.gp.gear:ClearAllPoints(); md.gp.gear:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, -2)
             end
             if md.status then md.status:ClearAllPoints(); md.status:SetPoint("TOPRIGHT", host, "TOPRIGHT", -4, -16) end
         end
@@ -1485,47 +1527,36 @@ UI:RegisterPage({
         if MAIL_OF[self.char] and not mailOn then self.char = "all" end
         local tab = (special[self.char] or MAIL_OF[self.char]) and self.char or "all"
         local bar = self.tabBar
-        local avail = math.max(400, (self.band:GetWidth() or 0) > 0 and self.band:GetWidth() - 44 or 1000)
-        -- deux groupes : OBJETS puis, après un trait, COURRIER ; sur deux lignes si la place manque
-        local function headW(i) return (bar.heads[i]:GetStringWidth() or 40) + 16 end
-        local widths = { headW(1), headW(2) + 13 }
-        for _, b in ipairs(self.tabBtns) do
-            local g = b.mail and 2 or 1
-            if not b.mail or mailOn then widths[g] = widths[g] + (b:GetWidth() or 80) + 2 end
+        local group = MAIL_OF[tab] and "mail" or "obj"
+        -- dernier onglet de chaque groupe (l'interrupteur y revient)
+        if group == "mail" then cfg.invLastMail = tab else cfg.invLastObj = (tab == "all") and nil or tab end
+        local m, bk = WK.DB.global.mail, WK.DB.global.bank
+        local function cnt(t) local c = 0; for _ in pairs(t or {}) do c = c + 1 end return c end
+        local letters = self:WaitingLetters()
+        -- interrupteur
+        local sx = 3
+        for _, sb in ipairs(bar.btns) do
+            local isMail = sb.group == "mail"
+            sb:SetShown(not isMail or mailOn)
+            if isMail then sb:SetCount(letters, letters > 0) else sb:SetCount(self:WhoCount("all")) end
+            sb.selected = sb.group == group; sb:Paint()
+            if not isMail or mailOn then
+                sb:ClearAllPoints(); sb:SetPoint("LEFT", bar, "LEFT", sx, 0); sx = sx + sb:GetWidth() + 2
+            end
         end
-        local twoLines = mailOn and (widths[1] + widths[2] + 6 > avail)
-        local x, line = 10, 0
-        local function place(f, w, yOff)
-            f:ClearAllPoints(); f:SetPoint("LEFT", bar, "TOPLEFT", x, -17 - line * 34 + (yOff or 0))
-            x = x + w
-        end
-        place(bar.heads[1], headW(1))
-        local maxX = 0
-        local mailStarted = false
+        bar:SetWidth(sx + 1)
+        -- onglets du groupe choisi
+        local x = 4
         for _, b in ipairs(self.tabBtns) do
             local k = b.key
             local n, warn, tip
-            if b.mail and not mailStarted then
-                mailStarted = true
-                bar.heads[2]:SetShown(mailOn); bar.sep:SetShown(mailOn and not twoLines)
-                if mailOn then
-                    if twoLines then maxX = math.max(maxX, x); x, line = 10, 1
-                    else
-                        place(bar.sep, 13)
-                        bar.sep:ClearAllPoints(); bar.sep:SetPoint("CENTER", bar, "TOPLEFT", x - 7, -17)
-                    end
-                    place(bar.heads[2], headW(2))
-                end
-            end
             if b.mail then
                 local mk = MAIL_OF[k]
-                local m, bk = WK.DB.global.mail, WK.DB.global.bank
-                local function cnt(t) local c = 0; for _ in pairs(t or {}) do c = c + 1 end return c end
                 if mk == "send" then n = cnt(m.rules) + cnt(m.cats); tip = string.format(T("%d règle(s) d'envoi"), n)
                 elseif mk == "bank" then
                     n = cnt(bk.items) + cnt(bk.cats); tip = string.format(T("%d règle(s) de dépôt"), n)
                 else
-                    n = self:WaitingLetters(); warn = n > 0
+                    n = letters; warn = n > 0
                     tip = string.format(T("%d lettre(s) en attente"), n)
                 end
             elseif k == "all" then
@@ -1541,10 +1572,10 @@ UI:RegisterPage({
                 warn = n > 0
                 tip = string.format(T("%d objets à ranger"), n)
             elseif k == "locks" then
-                local m = 0
-                for _ in pairs(WK.modules.ItemLock:Manual()) do m = m + 1 end
+                local mm = 0
+                for _ in pairs(WK.modules.ItemLock:Manual()) do mm = mm + 1 end
                 n = #WK.modules.ItemLock:List()
-                tip = string.format(T("%d à la main"), m)
+                tip = string.format(T("%d à la main"), mm)
             elseif k == "old" then
                 n = #WK.modules.Inventory:Forgotten(self.oldDays); warn = n > 0
                 tip = string.format(T("%d depuis %d j"), n, self.oldDays)
@@ -1553,13 +1584,13 @@ UI:RegisterPage({
             b:SetCount(n, warn)
             b.selected = (tab == k)
             b:Paint()
-            b:SetShown(not b.mail or mailOn)
-            if not b.mail or mailOn then place(b, b:GetWidth() + 2) end
+            local show = (b.mail and "mail" or "obj") == group
+            b:SetShown(show)
+            if show then
+                b:ClearAllPoints(); b:SetPoint("BOTTOMLEFT", self.underBar, "BOTTOMLEFT", x, 0)
+                x = x + b:GetWidth() + 22
+            end
         end
-        if not mailOn then bar.heads[2]:Hide(); bar.sep:Hide() end
-        maxX = math.max(maxX, x)
-        bar:SetSize(maxX + 1, twoLines and 68 or 34)
-        self.band:SetHeight(twoLines and 80 or TOP_H)
         -- liste PERSO : seulement dans « Tout le compte »
         self.whoBtn:SetShown(tab == "all")
         self.curTab = tab
