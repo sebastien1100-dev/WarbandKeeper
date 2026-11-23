@@ -165,7 +165,12 @@ UI:RegisterPage({
             end
             b:SetScript("OnEnter", function(s) s.hover = true; s:Paint() end)
             b:SetScript("OnLeave", function(s) s.hover = false; s:Paint() end)
-            b:SetScript("OnClick", function(s) self.sel = s.index; self:Refresh() end)
+            -- un profil choisi : la liste des objets laissés au sol se referme (on revient au profil)
+            b:SetScript("OnClick", function(s)
+                self.sel = s.index
+                if self.leftPanel and self.leftPanel:IsShown() then self.leftPanel:Hide() end
+                self:Refresh()
+            end)
             return b
         end)
 

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.246", date = "23/11/2026",
+        fixed = {
+            "Filtre de butin : un clic sur un profil referme la liste « Objets laissés au sol » (elle restait par-dessus le profil choisi).",
+        },
+    },
+    {
         version = "1.128.245", date = "23/11/2026",
         added = {
             "Feu de camp : clic droit sur l'icône de flamme = le kit de camp s'ouvre en barre à côté d'elle. En tête, les avantages du camp et « Bien nourri » avec leur temps restant ; puis une icône par objet (clic = l'utiliser) et son état dessous (prêt, recharge, absent, quantité). Nouveau clic droit pour la replier ; elle se replie aussi en entrant en combat.",
