@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.192", date = "23/11/2026",
+        changed = {
+            "Répartition : les noms des persos sont à la couleur de leur classe dans les menus perso principal, perso banque et perso HV.",
+        },
+    },
+    {
         version = "1.128.191", date = "23/11/2026",
         changed = {
             "Répartition : tout l'équipement à lier quand équipé part à l'enchanteur (pour le désenchanter), sauf ce qui est verrouillé (épiques, envies, BiS) ; sans enchanteur, il reste où il est.",

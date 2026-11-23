@@ -1008,7 +1008,10 @@ UI:RegisterPage({
         f:SetWidth(W)
         local opts = { { "none", T("Aucun") } }
         local list = UI:SortedCharacters()
-        for _, e in ipairs(list) do opts[#opts + 1] = { e.key, WK:CharName(e.c, e.key) } end
+        -- noms à la couleur de leur classe
+        for _, e in ipairs(list) do
+            opts[#opts + 1] = { e.key, UI:Hex({ UI:ClassColor(e.c.class) }) .. WK:CharName(e.c, e.key) .. "|r" }
+        end
         local bw = math.floor((W - 24) / 3)
         for i, box in ipairs(f.roles) do
             box:ClearAllPoints(); box:SetPoint("TOPLEFT", (i - 1) * (bw + 12), -4); box:SetWidth(bw)

@@ -4950,4 +4950,5 @@ WK.Locales.enUS.text = {
     ["Nourriture, boisson, bandages et potions de son niveau tant qu'il monte."] = "Food, drink, bandages and potions of their level while levelling.",
     ["Garde le surplus de chaque famille et ce qui ne vaut pas la vente à l'HV (au lieu du marchand)."] = "Keeps each family's surplus and what is not worth selling at the AH (instead of the vendor).",
     ["Reçoit ce dont personne n'a besoin et qui vaut la vente, pour le mettre à l'HV."] = "Receives what nobody needs and is worth selling, to put it on the AH.",
+    ["Répartition : les noms des persos sont à la couleur de leur classe dans les menus perso principal, perso banque et perso HV."] = "Split: character names use their class colour in the main, bank and AH character menus.",
 }
