@@ -739,7 +739,8 @@ UI:RegisterPage({
         -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte, et défile au-delà
         local RH = math.floor(math.max(30, math.min(46, (m and MH or 46 * #bosses) / math.max(1, #bosses))))
         local listH = RH * #bosses
-        local viewH = m and MH or math.min(listH, math.max(120, math.min(320, avail)))
+        -- la liste peut descendre sous la carte (carte en largeur, peu haute) jusqu'à la place réservée
+        local viewH = m and math.max(MH, math.min(listH, avail)) or math.min(listH, math.max(120, math.min(320, avail)))
         local bs = self.bscroll
         local over = listH > viewH + 1
         bs:ClearAllPoints(); bs:SetPoint("TOPLEFT", x0, -y0)

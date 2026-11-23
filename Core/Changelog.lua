@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.212", date = "23/11/2026",
+        fixed = {
+            "Donjons à beaucoup de boss (Stratholme, Hache-Tripes, Pic Rochenoire…) : avec une fenêtre plus petite, la liste se limitait à la hauteur de la carte et ne montrait que quelques boss. Elle prend maintenant toute la place libre au-dessus des onglets, et défile au-delà.",
+            "Portraits de boss qui restaient vides : le jeu charge le modèle du boss après coup, le portrait est maintenant redemandé quelques instants plus tard.",
+            "Boss sans portrait connu (Pimgib, Doom'rel…) : une silhouette neutre à la place, pour que les noms restent alignés.",
+        },
+    },
+    {
         version = "1.128.211", date = "23/11/2026",
         fixed = {
             "Donjons à beaucoup de boss (Profondeurs de Rochenoire : 27 boss) : la liste des boss débordait et cachait les onglets Butin et Quêtes. Elle garde maintenant la hauteur de la carte et défile à la molette, en montrant d'abord le prochain boss.",

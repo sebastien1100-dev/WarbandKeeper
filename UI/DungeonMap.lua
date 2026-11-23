@@ -4,6 +4,7 @@ local C = UI.colors
 local T = function(s) return WK.T(s) end
 local CreateFrame = _G.CreateFrame
 local GameTooltip = _G.GameTooltip
+local C_Timer = _G.C_Timer
 
 -- Carte d'un donjon (maquettes A et C) : image du jeu par étage (Modules/DungeonMapsDB.lua, images dans
 -- WarbandKeeper_Data\Maps), une pastille par boss à sa place (n° dans l'ordre du jeu ; coche = tué, rose avec
@@ -39,6 +40,8 @@ function UI.DungeonMapHeight(m, floor, W)
     return best
 end
 
+local RETRY = { 0.3, 1.5, 4 }
+local UNKNOWN = "Interface\\Icons\\INV_Misc_QuestionMark"
 -- dead : boss tué (portrait grisé)
 function UI.SetBossPortrait(tex, d, b, dead)
     local npc = b and type(b.id) == "number" and b.id > 0 and b.id or nil
@@ -49,10 +52,21 @@ function UI.SetBossPortrait(tex, d, b, dead)
     if model and fn and pcall(fn, tex, model) then
         if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
         tex:Show()
+        -- le jeu dessine le portrait seulement une fois le modèle chargé : la 1re fois il reste vide,
+        -- on le redemande un peu plus tard (si la case montre toujours ce boss)
+        tex.wkModelId = model
+        if C_Timer and C_Timer.After then
+            for _, delay in ipairs(RETRY) do
+                C_Timer.After(delay, function()
+                    if tex.wkModelId == model and tex:IsShown() then pcall(fn, tex, model) end
+                end)
+            end
+        end
         if tex.wkModel then tex.wkModel:Hide() end
         return true
     end
     tex:Hide()
+    tex.wkModelId = nil
     -- client sans cette fonction : petit modèle 3D en portrait à la place de la texture
     if model and tex.GetParent then
         local pm = tex.wkModel
@@ -74,6 +88,13 @@ function UI.SetBossPortrait(tex, d, b, dead)
         pm:Hide()
     end
     if tex.wkModel then tex.wkModel:Hide() end
+    -- boss sans modèle connu : silhouette neutre, pour que chaque ligne ait sa case
+    if b then
+        tex:SetTexture(UNKNOWN)
+        if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
+        tex:Show()
+        return true
+    end
     return false
 end
 

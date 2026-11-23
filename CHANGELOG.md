@@ -49,6 +49,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.212 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Donjons à beaucoup de boss (Stratholme, Hache-Tripes, Pic Rochenoire…) : avec une fenêtre plus petite, la liste se limitait à la hauteur de la carte et ne montrait que quelques boss. Elle prend maintenant toute la place libre au-dessus des onglets, et défile au-delà.
+- Portraits de boss qui restaient vides : le jeu charge le modèle du boss après coup, le portrait est maintenant redemandé quelques instants plus tard.
+- Boss sans portrait connu (Pimgib, Doom'rel…) : une silhouette neutre à la place, pour que les noms restent alignés.
+
 ## v1.128.211 — 23/11/2026
 
 _Un /reload suffit._
