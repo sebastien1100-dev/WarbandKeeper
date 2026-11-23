@@ -49,6 +49,18 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.204 — 23/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Donjons : la carte de chaque donjon (29 donjons et raids, avec leurs étages), une pastille par boss à sa place : numéro dans l'ordre du jeu, coche quand il est tué, rose pour le prochain, plus petite pour un boss facultatif, « E » pour l'entrée. La liste des boss est à côté ; survoler une ligne allume le boss sur la carte, cliquer (sur la ligne ou la pastille) montre son seul butin. Tout tient dans la fenêtre : seule la liste de l'onglet Butin ou Quêtes défile.
+- Dans un donjon, la touche M montre la carte du donjon à la place de celle du jeu, avec les boss tués et le prochain qui se mettent à jour, et la liste des boss et le chrono à droite. Clic droit : la carte de la zone. Réglage dans la roue de la page Donjons.
+- Cartes et place des boss reprises du Dungeon Journal de Naowh Forever, avec l'accord de son auteur (mention dans Options > À propos).
+
+### Modifications
+- Donjons : l'onglet Parcours est remplacé par la carte. Annoncer au groupe et Partager le parcours sont dans la barre du bas pendant le passage.
+
 ## v1.128.203 — 23/11/2026
 
 _Un /reload suffit._

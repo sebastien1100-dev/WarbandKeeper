@@ -878,6 +878,8 @@ UI:RegisterPage({
                 "Trajets de vol (fichiers du jeu) et taux de drop observés par les joueurs : Everloot (everloot.app ; taux de drop sous licence CC BY-SA 4.0)." },
             { "fire", "Objets de camp, objets de la liste BiS", "wowlayerup-forever/opendata", "CC BY 4.0", "info",
                 "Objets de camp et objets portables de la liste BiS (n° d'objet, emplacement, caractéristiques, effet selon le niveau) : wowlayerup-forever/opendata (github.com/wowlayerup-forever/opendata, licence CC BY 4.0), données reprises et traduites." },
+            { "skull", "Cartes des donjons et place des boss", "Naowh Forever · Dungeon Journal", "accord", "positive",
+                "Cartes des donjons (images du jeu) et place des boss sur chacune : Dungeon Journal de Naowh Forever, reprises avec l'accord de son auteur." },
             { "boat", "Bateaux et zeppelins (trajets et quais)", "Fichiers du jeu · wago.tools", "jeu", "muted",
                 "Bateaux et zeppelins : trajets et quais tirés de la table TaxiPathNode des fichiers du jeu (wago.tools)." },
             { "book", "Prix des sorts de classe chez le maître", "What's Training · github.com/fusionpit/WhatsTraining", "MIT", "positive",

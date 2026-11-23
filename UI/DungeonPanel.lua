@@ -236,7 +236,10 @@ end
 
 local function onMap()
     local d = D:Current()
-    if d and D:Config().panel and WorldMapFrame and WorldMapFrame:IsShown() and not (panel and panel.userHidden) then
+    -- donjon avec carte : notre carte remplace celle du monde (UI/DungeonMap.lua), pas de panneau
+    local mapped = d and UI.DungeonMapData and UI.DungeonMapData(d) and D:Config().worldMap ~= false
+    if mapped and panel and panel.docked then panel:Hide() end
+    if d and not mapped and D:Config().panel and WorldMapFrame and WorldMapFrame:IsShown() and not (panel and panel.userHidden) then
         showFor(d, true)
     elseif panel and panel.docked then
         panel:Hide()
@@ -251,7 +254,10 @@ local function hook()
 end
 WK:On("PLAYER_LOGIN", hook)
 WK:On("ADDON_LOADED", function(name) if name == "Blizzard_WorldMap" then hook() end end)
-D.OnChange = function() if panel and panel:IsShown() then panel:Refresh() end end
+D.OnChange = function()
+    if panel and panel:IsShown() then panel:Refresh() end
+    if UI.RefreshDungeonWorldMap then UI.RefreshDungeonWorldMap() end
+end
 WK:On("GET_ITEM_INFO_RECEIVED", function()
     if panel and panel:IsShown() and not panel.pending then
         panel.pending = true
