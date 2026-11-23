@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.221 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Donjons : des portraits de boss clignotaient (Profondeurs de Rochenoire…). Chaque rafraîchissement de la page rechargeait le portrait ou le modèle 3D ; un boss déjà affiché garde maintenant son portrait.
+
 ## v1.128.220 — 23/11/2026
 
 _Un /reload suffit._

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.221", date = "23/11/2026",
+        fixed = {
+            "Donjons : des portraits de boss clignotaient (Profondeurs de Rochenoire…). Chaque rafraîchissement de la page rechargeait le portrait ou le modèle 3D ; un boss déjà affiché garde maintenant son portrait.",
+        },
+    },
+    {
         version = "1.128.220", date = "23/11/2026",
         changed = {
             "Donjons : un clic sur un boss (pastille de la carte, ligne de la liste ou encart) le choisit sans quitter l'onglet ouvert ; il s'affiche dans l'encart et reste allumé sur la carte. L'onglet Butin, ouvert à la main, ne montre que son butin (« Tous les boss » pour revenir).",

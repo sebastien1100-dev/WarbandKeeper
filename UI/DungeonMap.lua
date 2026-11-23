@@ -45,7 +45,7 @@ local UNKNOWN = "Interface\\Icons\\INV_Misc_QuestionMark"
 -- petit modèle 3D posé sur la case du portrait (créé une fois par case)
 local function modelFrame(tex)
     local pm = tex.wkModel
-    if pm then pm.wkToken = nil return pm end
+    if pm then return pm end
     local par = tex.GetParent and tex:GetParent()
     if not par then return nil end
     local ok, f = pcall(CreateFrame, "PlayerModel", nil, par)
@@ -67,6 +67,12 @@ function UI.SetBossPortrait(tex, d, b, dead)
         model = WK.DungeonBossModelsByName[string.lower(b.name)]
     end
     local fn = _G.SetPortraitTextureFromCreatureDisplayID
+    -- même boss que la dernière fois : rien n'est rechargé (sinon le portrait clignote à chaque rafraîchissement)
+    if model and fn and tex.wkModelId == model then
+        tex:SetDesaturated(dead and true or false); tex:Show()
+        if tex.wkModel then tex.wkModel:Hide(); tex.wkModel.wkKey = nil end
+        return true
+    end
     if model and fn and pcall(fn, tex, model) then
         if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
         tex:Show()
@@ -80,7 +86,7 @@ function UI.SetBossPortrait(tex, d, b, dead)
                 end)
             end
         end
-        if tex.wkModel then tex.wkModel:Hide() end
+        if tex.wkModel then tex.wkModel:Hide(); tex.wkModel.wkKey = nil end
         return true
     end
     tex:Hide()
@@ -89,15 +95,19 @@ function UI.SetBossPortrait(tex, d, b, dead)
     if model then
         local pm = modelFrame(tex)
         if not pm then return false end
+        if pm.wkKey == "d" .. model then
+            pm:SetAlpha(dead and 0.45 or 1); pm:Show()
+            return true
+        end
         if pcall(pm.SetDisplayInfo, pm, model) then
+            pm.wkKey = "d" .. model
             if pm.SetPortraitZoom then pcall(pm.SetPortraitZoom, pm, 1) end
             pm:SetAlpha(dead and 0.45 or 1)
             pm:Show()
             return true
         end
-        pm:Hide()
+        pm:Hide(); pm.wkKey = nil
     end
-    if tex.wkModel then tex.wkModel:Hide() end
     -- boss sans modèle connu : silhouette neutre, pour que chaque ligne ait sa case
     if b then
         tex:SetTexture(UNKNOWN)
@@ -110,20 +120,35 @@ function UI.SetBossPortrait(tex, d, b, dead)
         if not npc and type(b.name) == "string" and WK.DungeonBossNpcByName then
             npc = WK.DungeonBossNpcByName[string.lower(b.name)]
         end
-        local pm = npc and modelFrame(tex)
+        local pm = npc and modelFrame(tex) or tex.wkModel
+        if not npc then
+            if pm then pm:Hide(); pm.wkKey = nil end
+            return true
+        end
+        if pm and pm.wkKey == "c" .. npc then
+            -- déjà demandé : chargé = on le montre tel quel, sinon on attend la fin du chargement
+            pm:Show()
+            if pm.wkLoaded then pm:SetAlpha(dead and 0.45 or 1); tex:Hide() end
+            pm.wkDead = dead
+            return true
+        end
         if pm and pm.SetCreature and pcall(pm.SetCreature, pm, npc) then
             if pm.SetPortraitZoom then pcall(pm.SetPortraitZoom, pm, 1) end
+            pm.wkKey, pm.wkLoaded, pm.wkDead = "c" .. npc, false, dead
             pm:SetAlpha(0); pm:Show()
             local token = {}
             pm.wkToken = token
             local function check()
-                if pm.wkToken ~= token or not pm:IsShown() then return end
+                if pm.wkToken ~= token or not pm:IsShown() or pm.wkLoaded then return end
                 local ok, file = pcall(pm.GetModelFileID or function() return nil end, pm)
                 if ok and type(file) == "number" and file > 0 then
-                    pm:SetAlpha(dead and 0.45 or 1); tex:Hide()
+                    pm.wkLoaded = true
+                    pm:SetAlpha(pm.wkDead and 0.45 or 1); tex:Hide()
                 end
             end
             if C_Timer and C_Timer.After then for _, delay in ipairs(RETRY) do C_Timer.After(delay, check) end end
+        elseif pm then
+            pm:Hide(); pm.wkKey = nil
         end
         return true
     end
