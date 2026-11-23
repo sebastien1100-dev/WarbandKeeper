@@ -195,7 +195,9 @@ end
 
 function M:ClearLeft()
     local d = db()
-    d.left, d.leftSince, d.fullAt = {}, _G.time(), {}
+    -- la colonne « Laissés au sol récemment » et le compteur de la séance repartent aussi de zéro
+    d.left, d.leftSince, d.fullAt, d.recent = {}, _G.time(), {}, {}
+    M.leftSession = 0
     WK:NotifyChanged()
 end
 

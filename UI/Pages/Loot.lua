@@ -301,7 +301,7 @@ UI:RegisterPage({
         local clear = UI:Button(lp, "Vider la liste", nil, 26, "ghost", "trash")
         clear.tooltip = "Maj + clic : remet la liste à zéro."
         clear:SetScript("OnClick", function()
-            if _G.IsShiftKeyDown() then L:ClearLeft(); self.lpSel = nil; self:RefreshLeft() end
+            if _G.IsShiftKeyDown() then L:ClearLeft(); self.lpSel = nil; self:Refresh(); self:RefreshLeft() end
         end)
         self.lpClear = clear
         -- fiche de l'objet choisi (à droite)

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.249", date = "23/11/2026",
+        fixed = {
+            "Filtre de butin : « Vider la liste » vide aussi la colonne « Laissés au sol récemment » et le compteur de la séance (ils restaient pleins).",
+        },
+    },
+    {
         version = "1.128.248", date = "23/11/2026", restart = true,
         added = {
             "Butin à l'écran : chaque objet ramassé apparaît un instant dans un petit encadré à la couleur de sa rareté, avec la quantité, le prix du lot (scan de l'HV, sinon marchand), une ligne utile (prix à l'unité, nombre en sacs, camelote) et des étiquettes (amélioration, BiS, envie, quête, recette). Le plus récent en haut, 4 s chacun ; le survol le garde et montre l'infobulle ; le même objet ramassé de suite se cumule.",
