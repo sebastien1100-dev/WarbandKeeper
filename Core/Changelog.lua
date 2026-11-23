@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.205", date = "23/11/2026",
+        changed = {
+            "Stats > Dépenses refait (maquette A), sur toute la fenêtre : 4 chiffres clés (dépensé, gagné avec l'écart avec la période d'avant, bilan et moyenne par jour, plus gros poste), une bande « où part l'or, d'où il vient » par cause, puis trois cartes : dépenses par cause, gains par cause, bilan par perso. Un clic sur une cause ouvre le Journal filtré sur elle.",
+            "Stats > Journal de l'or refait (maquette A) : mêmes chiffres clés, filtre par cause en pastilles (plusieurs à la fois), recherche, liste rangée par jour avec le total du jour. Les ramassages d'or à la suite tiennent sur une ligne, dépliable d'un clic. Les filtres Tous les persos / Ce perso et 24 h / 7 j / 30 j sont communs aux deux vues.",
+            "Journal de l'or : chaque mouvement dit ce qu'il était quand on le sait (quête rendue, destination du vol, sort appris, expéditeur du courrier, objet acheté), pour les mouvements notés à partir de cette version.",
+            "Journal de l'or : « Autre » devient « Butin » (l'or ramassé sur les monstres), anciens mouvements compris.",
+        },
+    },
+    {
         version = "1.128.204", date = "23/11/2026", restart = true,
         added = {
             "Donjons : la carte de chaque donjon (29 donjons et raids, avec leurs étages), une pastille par boss à sa place : numéro dans l'ordre du jeu, coche quand il est tué, rose pour le prochain, plus petite pour un boss facultatif, « E » pour l'entrée. La liste des boss est à côté ; survoler une ligne allume le boss sur la carte, cliquer (sur la ligne ou la pastille) montre son seul butin. Tout tient dans la fenêtre : seule la liste de l'onglet Butin ou Quêtes défile.",

@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.205 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Stats > Dépenses refait (maquette A), sur toute la fenêtre : 4 chiffres clés (dépensé, gagné avec l'écart avec la période d'avant, bilan et moyenne par jour, plus gros poste), une bande « où part l'or, d'où il vient » par cause, puis trois cartes : dépenses par cause, gains par cause, bilan par perso. Un clic sur une cause ouvre le Journal filtré sur elle.
+- Stats > Journal de l'or refait (maquette A) : mêmes chiffres clés, filtre par cause en pastilles (plusieurs à la fois), recherche, liste rangée par jour avec le total du jour. Les ramassages d'or à la suite tiennent sur une ligne, dépliable d'un clic. Les filtres Tous les persos / Ce perso et 24 h / 7 j / 30 j sont communs aux deux vues.
+- Journal de l'or : chaque mouvement dit ce qu'il était quand on le sait (quête rendue, destination du vol, sort appris, expéditeur du courrier, objet acheté), pour les mouvements notés à partir de cette version.
+- Journal de l'or : « Autre » devient « Butin » (l'or ramassé sur les monstres), anciens mouvements compris.
+
 ## v1.128.204 — 23/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
