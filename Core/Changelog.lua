@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.243", date = "23/11/2026",
+        added = {
+            "Feu de camp : réglage « Icône toujours affichée » (QoL > Feu de camp > Rappels). La flamme reste à l'écran même loin d'un camp : grise, avec « pas de feu » ou le temps restant des avantages du camp ; près d'un feu, elle redevient normale (clic pour s'asseoir).",
+        },
+    },
+    {
         version = "1.128.242", date = "23/11/2026",
         added = {
             "Barre « Sacs, marchand et maître » : clic droit sur le bouton pour replier = ouvre les réglages de la barre (QoL > Général > Marchand).",

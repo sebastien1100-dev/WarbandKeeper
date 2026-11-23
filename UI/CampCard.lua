@@ -147,13 +147,20 @@ local function buildIcon()
     b.num:SetTextColor(1, 1, 1, 1)
     b.label = UI:Text(b, 10, C.text)
     b.label:SetPoint("TOP", b, "BOTTOM", 0, -3)
-    b:SetScript("OnClick", function() M:Sit() end)
+    -- loin d'un feu (icône affichée en permanence) : pas de clic, on ne s'assoit pas n'importe où
+    b:SetScript("OnClick", function() if M.state ~= "none" then M:Sit() end end)
     b:SetScript("OnEnter", function(s)
         UI:TooltipOwner(s, "ANCHOR_BOTTOM")
         local st = M.state
         GameTooltip:SetText(T("Feu de camp"), 1, 1, 1)
         if st == "sitting" then GameTooltip:AddLine(T("Reste assis : les avantages du camp arrivent à la fin de la minute."), 0.8, 0.8, 0.8, true)
         elseif st == "done" then GameTooltip:AddLine(M:PerkText() or T("Avantages du camp obtenus."), 0.8, 0.8, 0.8, true)
+        elseif st == "none" then
+            local left = M.Remaining(M.auras and M.auras.perk)
+            if left and left > 0 then
+                _G.GameTooltip:AddLine(M:PerkText() or T("Avantages du camp obtenus."), 0.8, 0.8, 0.8, true)
+            end
+            _G.GameTooltip:AddLine(T("Aucun feu de camp à proximité."), 0.6, 0.6, 0.6, true)
         else GameTooltip:AddLine(T("Clic : s'asseoir 1 min près du feu pour obtenir les avantages du camp."), 0.8, 0.8, 0.8, true) end
         GameTooltip:Show()
     end)
@@ -171,7 +178,12 @@ local function buildIcon()
         else
             s.num:SetText("")
         end
-        if st == "done" and s.doneAt and not s.sample then
+        -- loin d'un feu : temps restant des avantages relu toutes les 10 s
+        if st == "none" and not s.sample then
+            s.idle = (s.idle or 0) + el
+            if s.idle > 10 then s.idle = 0; s:Paint() end
+        end
+        if st == "done" and s.doneAt and not s.sample and not M:Config().iconAlways then
             local keep = M:Config().doneSecs or 8
             if keep > 0 and GetTime() - s.doneAt > keep then s:Hide() end
         end
@@ -180,11 +192,17 @@ local function buildIcon()
         local st = sample and "sit" or M.state
         local r1, g1, b1 = UI:Accent()
         self.bg:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.92)
-        local col = (st == "done") and C.positive or (st == "early") and C.warning or { r1, g1, b1, 1 }
+        -- loin d'un feu (affichée en permanence) : discrète, avec le temps restant des avantages s'il y en a
+        local perk = st == "none" and M.Remaining(M.auras and M.auras.perk) or nil
+        local col = (st == "done" or (perk and perk > 0)) and C.positive or (st == "early") and C.warning
+            or (st == "none") and C.muted or { r1, g1, b1, 1 }
         self.ring:SetVertexColor(col[1], col[2], col[3], 1)
         self.fire:SetVertexColor(col[1], col[2], col[3], 1)
-        self.fire:SetAlpha(st == "sitting" and 0.15 or 1)
-        self.label:SetText(st == "sitting" and T("assis") or st == "done" and T("avantages") or st == "early" and T("rassieds-toi") or T("s'asseoir"))
+        self.fire:SetAlpha(st == "sitting" and 0.15 or st == "none" and 0.7 or 1)
+        local lbl = st == "sitting" and T("assis") or st == "done" and T("avantages")
+            or st == "early" and T("rassieds-toi")
+            or st == "none" and ((perk and perk > 0) and UI:AgoShort(perk, true) or T("pas de feu")) or T("s'asseoir")
+        self.label:SetText(lbl)
         local a = M.auras or {}
         if st == "sitting" and a.sit and type(a.sit.expires) == "number" and not sample then
             local dur = (type(a.sit.duration) == "number" and a.sit.duration > 0) and a.sit.duration or 60
@@ -207,9 +225,10 @@ local function updateIcon(changed)
     if not icon then icon = buildIcon() end
     if icon.sample then return end
     local st = M.state
-    if not M:Config().icon or st == "none" then icon:Hide() return end
+    local always = M:Config().iconAlways and WK:FeatureOn("campfire")
+    if not M:Config().icon or (st == "none" and not always) then icon:Hide() return end
     if st == "done" and changed then icon.doneAt = GetTime() end
-    if st == "done" and not changed and not icon:IsShown() then return end
+    if st == "done" and not changed and not icon:IsShown() and not always then return end
     icon:Paint()
     icon:Show()
 end

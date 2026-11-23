@@ -2080,9 +2080,14 @@ UI:RegisterPage({
             end)
             -- rappel
             subtab("Rappels", 1)
-            local rem = card("Rappel à l'écran", 40 + 5 * 46 + 8, "icône et encart près du camp")
+            local rem = card("Rappel à l'écran", 40 + 6 * 46 + 8, "icône et encart près du camp")
             UI:SettingRow(rem, -224, "Icône près d'un feu de camp", "Une flamme qui apparaît près d'un camp : clic pour s'asseoir, un cercle décompte la minute. Se place en mode édition.",
                 toggle(rem, function() return campCfg.icon end, function(v) campCfg.icon = v; cupdate() end), 80)
+            UI:SettingRow(rem, -270, "Icône toujours affichée",
+                "La flamme reste à l'écran même loin d'un camp : grise, avec le"
+                    .. " temps restant des avantages du camp quand tu les as.",
+                toggle(rem, function() return campCfg.iconAlways end,
+                    function(v) campCfg.iconAlways = v; cupdate() end), 80)
             UI:SettingRow(rem, -40, "Encart près d'un feu de camp", "« Assieds-toi » avec un bouton, compte à rebours assis, avantages obtenus.",
                 toggle(rem, function() return campCfg.enabled end, function(v) campCfg.enabled = v; cupdate() end), 80)
             UI:SettingRow(rem, -86, "Proposer de renouveler", "Quand il reste moins que ce temps sur les avantages du camp (0 : seulement quand ils sont finis).",

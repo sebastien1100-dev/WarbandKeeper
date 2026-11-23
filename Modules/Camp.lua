@@ -308,7 +308,7 @@ function M:GuideToBag()
     G:Start(t, "Sac de couchage douillet", "camp")
 end
 
-local DEFAULTS = { enabled = false, icon = true, renewAt = 10, sound = false, doneSecs = 8,
+local DEFAULTS = { enabled = false, icon = true, iconAlways = false, renewAt = 10, sound = false, doneSecs = 8,
     kit = true, kitAlways = false, chips = true, kitInBar = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
 
 local FLAME = { "flammes pourpres" }
