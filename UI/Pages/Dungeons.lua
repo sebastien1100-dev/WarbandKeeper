@@ -798,11 +798,16 @@ UI:RegisterPage({
             end
             r.name:ClearAllPoints()
             if RH >= 36 then r.name:SetPoint("TOPLEFT", nx, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", nx, 0) end
-            r.name:SetPoint("RIGHT", r, "RIGHT", -150, 0)
-            -- butin pour ce perso (5 au plus)
+            -- butin pour ce perso (5 au plus ; moins quand la liste est étroite : le nom garde 150 px)
             local loot = UI:DungeonLoot(b, "me", c, key)
+            local rowW = bs.child:GetWidth() or 400
+            local maxIc = math.max(0, math.min(5, math.floor((rowW - nx - 150 - 8) / 27)))
+            local nIc = math.min(#loot, maxIc)
+            local nameR = nIc > 0 and -(8 + nIc * 27 + 6) or -8
+            r.name:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
+            r.sub:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
             for k, ic in ipairs(r.icons) do
-                local id = loot[k]
+                local id = k <= maxIc and loot[k] or nil
                 ic:SetShown(id ~= nil)
                 if id then
                     ic.id = id
