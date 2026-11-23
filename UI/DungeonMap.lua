@@ -42,6 +42,20 @@ end
 
 local RETRY = { 0.3, 1.5, 4 }
 local UNKNOWN = "Interface\\Icons\\INV_Misc_QuestionMark"
+-- petit modèle 3D posé sur la case du portrait (créé une fois par case)
+local function modelFrame(tex)
+    local pm = tex.wkModel
+    if pm then pm.wkToken = nil return pm end
+    local par = tex.GetParent and tex:GetParent()
+    if not par then return nil end
+    local ok, f = pcall(CreateFrame, "PlayerModel", nil, par)
+    if not ok or not f or not f.SetDisplayInfo then return nil end
+    pm = f; tex.wkModel = pm
+    pm:SetAllPoints(tex)
+    if pm.SetFrameLevel and par.GetFrameLevel then pm:SetFrameLevel(par:GetFrameLevel() + 2) end
+    return pm
+end
+
 -- dead : boss tué (portrait grisé)
 function UI.SetBossPortrait(tex, d, b, dead)
     -- n° du boss (peut venir du jeu), puis PNJ de sa rencontre, puis nom anglais
@@ -72,17 +86,9 @@ function UI.SetBossPortrait(tex, d, b, dead)
     tex:Hide()
     tex.wkModelId = nil
     -- client sans cette fonction : petit modèle 3D en portrait à la place de la texture
-    if model and tex.GetParent then
-        local pm = tex.wkModel
-        if not pm then
-            local par = tex:GetParent()
-            if not par then return false end
-            local ok, f = pcall(CreateFrame, "PlayerModel", nil, par)
-            if not ok or not f or not f.SetDisplayInfo then return false end
-            pm = f; tex.wkModel = pm
-            pm:SetAllPoints(tex)
-            if pm.SetFrameLevel and par.GetFrameLevel then pm:SetFrameLevel(par:GetFrameLevel() + 2) end
-        end
+    if model then
+        local pm = modelFrame(tex)
+        if not pm then return false end
         if pcall(pm.SetDisplayInfo, pm, model) then
             if pm.SetPortraitZoom then pcall(pm.SetPortraitZoom, pm, 1) end
             pm:SetAlpha(dead and 0.45 or 1)
@@ -97,6 +103,28 @@ function UI.SetBossPortrait(tex, d, b, dead)
         tex:SetTexture(UNKNOWN)
         if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
         tex:Show()
+        -- n° du PNJ connu : le jeu sait le dessiner s'il l'a déjà croisé (cache des créatures) ; le modèle
+        -- reste invisible tant qu'il n'est pas chargé, et remplace la silhouette s'il l'est
+        local npc = b and type(b.id) == "number" and b.id > 0 and b.id or nil
+        if not npc and b.encounter and m and m.x then npc = m.x[b.encounter] end
+        if not npc and type(b.name) == "string" and WK.DungeonBossNpcByName then
+            npc = WK.DungeonBossNpcByName[string.lower(b.name)]
+        end
+        local pm = npc and modelFrame(tex)
+        if pm and pm.SetCreature and pcall(pm.SetCreature, pm, npc) then
+            if pm.SetPortraitZoom then pcall(pm.SetPortraitZoom, pm, 1) end
+            pm:SetAlpha(0); pm:Show()
+            local token = {}
+            pm.wkToken = token
+            local function check()
+                if pm.wkToken ~= token or not pm:IsShown() then return end
+                local ok, file = pcall(pm.GetModelFileID or function() return nil end, pm)
+                if ok and type(file) == "number" and file > 0 then
+                    pm:SetAlpha(dead and 0.45 or 1); tex:Hide()
+                end
+            end
+            if C_Timer and C_Timer.After then for _, delay in ipairs(RETRY) do C_Timer.After(delay, check) end end
+        end
         return true
     end
     return false

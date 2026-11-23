@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.216", date = "23/11/2026",
+        added = {
+            "Donjons : les boss dont on n'a pas de portrait (Bourreau Sandfury, Zarla Ober, Ombre d'Hakkar, boss du Repaire des Noiregueules, Pimgib…) prennent le modèle 3D du boss dès que le jeu le connaît, c'est-à-dire après l'avoir croisé une fois. Sinon le point d'interrogation reste.",
+        },
+    },
+    {
         version = "1.128.215", date = "23/11/2026",
         fixed = {
             "Donjons : des boss avaient un point d'interrogation alors que leur portrait est connu (Capitaine Lèveffroi, Gardiens impérissables, Magmatus, The Baron…). Le portrait est maintenant retrouvé par le n° du boss, sa rencontre ou son nom. Quelques boss n'ont toujours pas de portrait dans les données (Gill, Umbra, Bossman Toof, Eric l'Agile, Pimgib…) : ils gardent le point d'interrogation.",

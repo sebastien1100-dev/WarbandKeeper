@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.216 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Donjons : les boss dont on n'a pas de portrait (Bourreau Sandfury, Zarla Ober, Ombre d'Hakkar, boss du Repaire des Noiregueules, Pimgib…) prennent le modèle 3D du boss dès que le jeu le connaît, c'est-à-dire après l'avoir croisé une fois. Sinon le point d'interrogation reste.
+
 ## v1.128.215 — 23/11/2026
 
 _Un /reload suffit._

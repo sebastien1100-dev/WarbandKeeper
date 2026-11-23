@@ -39,7 +39,7 @@ def read_maps(src):
 def naowh_encounters(src):
     """{ n° de rencontre: n° du PNJ }, { clé de carte: nom anglais } et { objet: % de drop } des fichiers
     Data/Dungeons (lus en texte ; taux 0 = inconnu, ignoré ; même objet chez plusieurs boss : le plus haut)."""
-    enc, names, drops, models, bynames = {}, {}, {}, {}, {}
+    enc, names, drops, models, bynames, npcnames = {}, {}, {}, {}, {}, {}
     folder = os.path.join(src, "Data", "Dungeons")
     for fn in os.listdir(folder):
         if not fn.endswith(".lua"):
@@ -58,6 +58,9 @@ def naowh_encounters(src):
                         # aussi par nom anglais (en minuscules) : boss sans n° chez nous, ou n° appris en jeu différent
                         if isinstance(b.get("name"), str) and isinstance(b.get("model"), int):
                             bynames[b["name"].lower()] = b["model"]
+                        # n° du PNJ par nom (boss sans modèle : portrait lu dans le cache du jeu, SetCreature)
+                        if isinstance(b.get("name"), str) and isinstance(b.get("npc"), int) and b["npc"] > 0:
+                            npcnames[b["name"].lower()] = b["npc"]
                         for item, pct in zip(seq(b.get("loot")), seq(b.get("chance"))):
                             if isinstance(item, int) and isinstance(pct, (int, float)) and pct > 0:
                                 drops[item] = max(drops.get(item, 0), pct)
@@ -65,7 +68,7 @@ def naowh_encounters(src):
                             if b.get("npc"):
                                 enc[int(e)] = int(b["npc"])
                 break
-    return enc, names, drops, models, bynames
+    return enc, names, drops, models, bynames, npcnames
 
 
 def our_dungeons():
@@ -133,7 +136,7 @@ def main():
         raise SystemExit(__doc__)
     src = sys.argv[1]
     maps = read_maps(src)
-    enc2npc, mapnames, drops, models, bynames = naowh_encounters(src)
+    enc2npc, mapnames, drops, models, bynames, npcnames = naowh_encounters(src)
     ours = our_dungeons()
     os.makedirs(OUT_DIR, exist_ok=True)
     lines, used = [], set()
@@ -197,6 +200,13 @@ def main():
         out.write("WK.DungeonBossModelsByName = {\n")
         for k, v in sorted(bynames.items()):
             out.write("[%s]=%d,\n" % (lua_str(k), v))
+        out.write("}\n")
+        # seulement les boss sans modèle : les autres ont déjà leur portrait
+        out.write("-- WK.DungeonBossNpcByName[nom anglais en minuscules] = n° du PNJ, pour les boss sans n° de modèle.\n")
+        out.write("WK.DungeonBossNpcByName = {\n")
+        for k, v in sorted(npcnames.items()):
+            if k not in bynames:
+                out.write("[%s]=%d,\n" % (lua_str(k), v))
         out.write("}\n")
     print("%d donjons avec carte, %d images, %d taux de drop, %d portraits" % (matched, len(used), len(drops), len(models)))
 
