@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.253", date = "23/11/2026",
+        changed = {
+            "Butin à l'écran : les petits encadrés n'ont plus de barre de couleur à gauche, seulement leur fin liseré à la couleur de la rareté.",
+        },
+    },
+    {
         version = "1.128.252", date = "23/11/2026",
         added = {
             "Diagnostic « Feu de camp » (/wk camp, aussi dans Options > Diagnostics) : à lancer près d'un feu, il liste les effets de ton perso et dit lesquels l'addon reconnaît (flamme du camp, assis, avantages).",
