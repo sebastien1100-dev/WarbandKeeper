@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.206", date = "23/11/2026", restart = true,
+        fixed = {
+            "Donjons : les cartes s'affichaient en vert. Les images sont maintenant gardées dans leur format d'origine (512 px), que le jeu sait lire.",
+        },
+        changed = {
+            "Donjons : la liste des boss à côté de la carte remplit sa hauteur : une pastille comme sur la carte, le nom, puis niveau, étage et état sur une 2e ligne, et le butin pour ton perso en icônes (survol : l'objet ; Maj + clic : lien).",
+        },
+    },
+    {
         version = "1.128.205", date = "23/11/2026",
         changed = {
             "Stats > Dépenses refait (maquette A), sur toute la fenêtre : 4 chiffres clés (dépensé, gagné avec l'écart avec la période d'avant, bilan et moyenne par jour, plus gros poste), une bande « où part l'or, d'où il vient » par cause, puis trois cartes : dépenses par cause, gains par cause, bilan par perso. Un clic sur une cause ouvre le Journal filtré sur elle.",

@@ -348,13 +348,39 @@ UI:RegisterPage({
         -- liste des boss à côté de la carte : n°, nom, étage, état ; survol = le boss s'allume sur la carte
         self.brows = UI:Pool(function()
             local r = CreateFrame("Button", nil, top)
-            r:SetHeight(22)
+            r:SetHeight(40)
             r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
-            r.n = UI:Text(r, 10); r.n:SetPoint("LEFT", 8, 0); r.n:SetWidth(16)
-            r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 30, 0); r.name:SetPoint("RIGHT", -110, 0)
+            -- pastille comme sur la carte, nom, 2e ligne (niveau, étage, état), butin pour ce perso à droite
+            r.pin = CreateFrame("Frame", nil, r); r.pin:SetSize(22, 22); r.pin:SetPoint("LEFT", 8, 0)
+            r.ring = UI:Rounded(r.pin, 11, 0, "ARTWORK", 1)
+            r.fill = UI:Rounded(r.pin, 9, 2, "ARTWORK", 2)
+            r.n = UI:Text(r.pin, 10); r.n:SetPoint("CENTER", 0, 0)
+            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 40, -5); r.name:SetPoint("RIGHT", r, "RIGHT", -150, 0)
             r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
-            r.fl = UI:Text(r, 10, C.dim); r.fl:SetPoint("RIGHT", -64, 0)
-            r.right = UI:Text(r, 10, C.dim); r.right:SetPoint("RIGHT", -8, 0)
+            r.sub = UI:Text(r, 10, C.dim); r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
+            r.sub:SetPoint("RIGHT", r, "RIGHT", -150, 0); r.sub:SetJustifyH("LEFT"); r.sub:SetWordWrap(false)
+            r.icons = {}
+            for k = 1, 5 do
+                local ic = CreateFrame("Button", nil, r)
+                ic:SetSize(24, 24)
+                ic:SetPoint("RIGHT", r, "RIGHT", -8 - (k - 1) * 27, 0)
+                ic.edge = UI:Rounded(ic, 5, 0, "BACKGROUND", 1)
+                ic.tex = ic:CreateTexture(nil, "ARTWORK"); ic.tex:SetPoint("TOPLEFT", 2, -2); ic.tex:SetPoint("BOTTOMRIGHT", -2, 2)
+                ic.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                ic:SetScript("OnEnter", function(s2)
+                    UI:TooltipOwner(s2, "ANCHOR_RIGHT")
+                    if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s2.id) else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
+                    GameTooltip:Show()
+                end)
+                ic:SetScript("OnLeave", function() GameTooltip:Hide() end)
+                ic:SetScript("OnClick", function(s2)
+                    if IsShiftKeyDown() then
+                        local link = select(6, UI:ItemInfo(s2.id))
+                        if link then WK.InsertChatLink(link) end
+                    else r:GetScript("OnClick")(r) end
+                end)
+                r.icons[k] = ic
+            end
             function r:Paint()
                 local on = self.state == "next" or self.hl or self.focused
                 self.bg:SetColor(unpack(self.hl and C.hover or C.surface2)); self.bg:SetShown(on)
@@ -693,7 +719,12 @@ UI:RegisterPage({
         local x0 = m and (S + 12) or 0
         local nextB = D:Next(d, key)
         local n, y = 0, y0
-        for _, b in ipairs(D:Bosses(d)) do
+        local bosses = D:Bosses(d)
+        -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte
+        local RH = math.floor(math.max(30, math.min(46, (m and S or 46 * #bosses) / math.max(1, #bosses))))
+        local c = WK.DB.global.characters[key] or WK.DB:Me()
+        local ac = { UI:Accent() }
+        for _, b in ipairs(bosses) do
             local opt = D:Optional(d, b)
             if not opt then n = n + 1 end
             local r = self.brows:Get()
@@ -701,19 +732,51 @@ UI:RegisterPage({
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", x0, -y); r:SetPoint("TOPRIGHT", 0, -y)
             r.state = UI.DungeonBossState(d, b, key, nextB)
             r.focused = self.focus == b.id
-            r.n:SetText(opt and "+" or tostring(n))
-            r.name:SetText(D:BossName(b) .. (opt and ("  " .. UI:Hex(C.dim) .. T("facultatif") .. "|r") or ""))
+            r:SetHeight(RH - 3)
+            r.n:SetText(r.state == "dead" and "x" or (opt and "+" or tostring(n)))
+            -- pastille aux couleurs de la carte
+            if r.state == "dead" then
+                r.ring:SetColor(C.dim[1], C.dim[2], C.dim[3], 1); r.fill:SetColor(0.23, 0.25, 0.28, 1)
+                r.n:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+            elseif r.state == "next" then
+                r.ring:SetColor(1, 1, 1, 1); r.fill:SetColor(ac[1], ac[2], ac[3], 1)
+                r.n:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+            else
+                r.ring:SetColor(ac[1], ac[2], ac[3], opt and 0.6 or 1); r.fill:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+                r.n:SetTextColor(C.text[1], C.text[2], C.text[3])
+            end
+            r.name:SetText(D:BossName(b))
             local col = r.state == "dead" and C.muted or C.text
             r.name:SetTextColor(col[1], col[2], col[3])
-            local ac = { UI:Accent() }
-            local nc = r.state == "next" and ac or col
-            r.n:SetTextColor(nc[1], nc[2], nc[3])
+            -- 2e ligne : niveau, étage, état
+            local bits = {}
+            if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niv. %d"), b.level) end
             local p = m and UI.DungeonBossPin(m, b)
-            r.fl:SetText((p and #m.f > 1) and string.format(T("étage %d"), p[1]) or "")
-            r.right:SetText(r.state == "dead" and T("tué") or (r.state == "next" and T("prochain") or ""))
-            if r.state == "next" then r.right:SetTextColor(ac[1], ac[2], ac[3]) else r.right:SetTextColor(C.dim[1], C.dim[2], C.dim[3]) end
+            if p and #m.f > 1 then bits[#bits + 1] = string.format(T("étage %d"), p[1]) end
+            if opt then bits[#bits + 1] = T("facultatif") end
+            if r.state == "dead" then bits[#bits + 1] = T("tué")
+            elseif r.state == "next" then bits[#bits + 1] = UI:Hex(ac) .. T("prochain") .. "|r" end
+            r.sub:SetText(table.concat(bits, "  ·  "))
+            r.sub:SetShown(RH >= 36)
+            r.name:ClearAllPoints()
+            if RH >= 36 then r.name:SetPoint("TOPLEFT", 40, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", 40, 0) end
+            r.name:SetPoint("RIGHT", r, "RIGHT", -150, 0)
+            -- butin pour ce perso (5 au plus)
+            local loot = UI:DungeonLoot(b, "me", c, key)
+            for k, ic in ipairs(r.icons) do
+                local id = loot[k]
+                ic:SetShown(id ~= nil)
+                if id then
+                    ic.id = id
+                    local _, icon = UI:ItemInfo(id)
+                    ic.tex:SetTexture(icon or 134400)
+                    local q = UI.DungeonQuality and UI.DungeonQuality(id) or C.border
+                    ic.edge:SetColor(q[1], q[2], q[3], 1)
+                    ic.tex:SetDesaturated(r.state == "dead")
+                end
+            end
             r:Paint()
-            y = y + 23
+            y = y + RH
         end
         -- sans carte, la liste ne prend que sa place ; avec, la hauteur de la carte
         local blockH = math.max(m and S or 0, y - y0)

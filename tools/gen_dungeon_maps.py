@@ -8,13 +8,14 @@ de son auteur** (exception à la règle « idées seulement » pour Naowh) : rie
 code. Son fichier Data/Maps.lua est **lu comme du texte** (analyseur de tables de tools/questie_forever.py),
 jamais exécuté. Chaque carte de Naowh est rattachée à nos donjons (Modules/DungeonsDB.lua) par les n° de PNJ
 de ses boss ; un de nos donjons fait de plusieurs ailes reçoit les étages de chacune. Les images (1024 px,
-DXT) sont réduites à 512 px en BLP à palette dans Data/Maps (dossier WarbandKeeper_Data, chargé à la demande :
+DXT1 avec niveaux réduits) sont gardées telles quelles, sans recompression : seul leur niveau de 512 px et les
+suivants sont recopiés dans un nouveau BLP2 (le jeu ne lit pas un BLP à palette fait par Pillow) dans Data/Maps (dossier WarbandKeeper_Data, chargé à la demande :
 une texture se lit par son chemin même si le dossier n'est pas chargé).
 """
 import os
+import struct
 import sys
 
-from PIL import Image
 from lupa import luajit21 as lupa
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +23,6 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from questie_forever import Parser, tokenize  # noqa: E402
 
-SIZE = 512
 OUT_LUA = os.path.join(ROOT, "Modules", "DungeonMapsDB.lua")
 OUT_DIR = os.path.join(ROOT, "Data", "Maps")
 
@@ -94,6 +94,27 @@ def floors_of(m):
     return out
 
 
+def half_blp(src_path, dst_path):
+    """BLP2 compressé avec niveaux : recopie à partir du 2e niveau (moitié de la taille), octets inchangés."""
+    d = open(src_path, "rb").read()
+    if d[:4] != b"BLP2" or d[11] != 1:
+        raise SystemExit("%s : BLP2 avec niveaux attendu" % src_path)
+    w, h = struct.unpack("<II", d[12:20])
+    offs = struct.unpack("<16I", d[20:84])
+    sizes = struct.unpack("<16I", d[84:148])
+    levels = [(offs[i], sizes[i]) for i in range(1, 16) if sizes[i] > 0]
+    head = 1172  # 20 + 64 + 64 + palette (1024)
+    new_offs, new_sizes, data, at = [], [], b"", head
+    for o, n in levels:
+        new_offs.append(at); new_sizes.append(n)
+        data += d[o:o + n]
+        at += n
+    new_offs += [0] * (16 - len(new_offs)); new_sizes += [0] * (16 - len(new_sizes))
+    out = d[:12] + struct.pack("<II", w // 2, h // 2) + struct.pack("<16I", *new_offs) + struct.pack("<16I", *new_sizes)
+    out += d[148:head] + data
+    open(dst_path, "wb").write(out)
+
+
 def main():
     if len(sys.argv) < 2:
         raise SystemExit(__doc__)
@@ -134,9 +155,7 @@ def main():
         xl = (", x={%s}" % ", ".join("[%d]=%d" % kv for kv in xs)) if xs else ""
         lines.append("[%d]={f={%s}%s, p={%s}%s}, -- %s" % (key, fl, el, pl, xl, name))
     for img in sorted(used):
-        im = Image.open(os.path.join(src, "Media", "Maps", img + ".blp")).convert("RGB")
-        im = im.resize((SIZE, SIZE), Image.LANCZOS).quantize(256)
-        im.save(os.path.join(OUT_DIR, img + ".blp"), "BLP")
+        half_blp(os.path.join(src, "Media", "Maps", img + ".blp"), os.path.join(OUT_DIR, img + ".blp"))
     for f in os.listdir(OUT_DIR):
         if f.endswith(".blp") and f[:-4] not in used:
             os.remove(os.path.join(OUT_DIR, f))

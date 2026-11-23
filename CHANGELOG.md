@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.206 — 23/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Modifications
+- Donjons : la liste des boss à côté de la carte remplit sa hauteur : une pastille comme sur la carte, le nom, puis niveau, étage et état sur une 2e ligne, et le butin pour ton perso en icônes (survol : l'objet ; Maj + clic : lien).
+
+### Corrections
+- Donjons : les cartes s'affichaient en vert. Les images sont maintenant gardées dans leur format d'origine (512 px), que le jeu sait lire.
+
 ## v1.128.205 — 23/11/2026
 
 _Un /reload suffit._
