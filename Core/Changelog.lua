@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.252", date = "23/11/2026",
+        added = {
+            "Diagnostic « Feu de camp » (/wk camp, aussi dans Options > Diagnostics) : à lancer près d'un feu, il liste les effets de ton perso et dit lesquels l'addon reconnaît (flamme du camp, assis, avantages).",
+        },
+        fixed = {
+            "Feu de camp : un effet de camp dont le jeu cache le nom est maintenant reconnu par son n° ou son icône déjà vus (l'icône restait grise « pas de feu »).",
+        },
+    },
+    {
         version = "1.128.251", date = "23/11/2026",
         fixed = {
             "Butin à l'écran : les encadrés n'existaient qu'après le premier objet ramassé, donc le mode édition ne les montrait pas (ni place, ni aperçu, ni « Tester »). Ils sont créés dès la connexion.",

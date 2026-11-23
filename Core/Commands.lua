@@ -91,6 +91,9 @@ SlashCmdList.WARBANDKEEPER = function(msg)
         for _, l in ipairs(WK.modules.Gear:TalentDiag()) do WK:Print("  " .. l) end
     elseif cmd == "pistage" or cmd == "tracking" then
         for _, l in ipairs(WK.modules.SelfBuffs.TrackDiag()) do WK:Print(l) end
+    elseif cmd == "camp" or cmd == "feu" then
+        -- effets du joueur et feu de camp reconnu ou non (Modules/Camp.lua)
+        WK.modules.Camp:Diag()
     elseif cmd == "armes" or cmd == "weapons" then
         -- compétences d'armes lues en jeu (Modules/WeaponSkills.lua)
         WK.modules.WeaponSkills:Diag()

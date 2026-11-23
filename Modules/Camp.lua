@@ -361,17 +361,34 @@ local function desc(spellId)
 end
 
 -- Effets du joueur liés au camp : { flame, sit, perk } = { name, icon, expires, duration, spellId, instance }
-local function scan()
+local function seenIcons()
+    local g = WK.DB.global
+    g.camp = g.camp or {}
+    g.camp.icons = g.camp.icons or {}
+    return g.camp.icons
+end
+local function scan(diag)
     local out = {}
     local function consider(name, icon, duration, expires, spellId, instance)
-        name, spellId = readable(name), readable(spellId)
-        if type(name) ~= "string" then return end
+        name, spellId, icon = readable(name), readable(spellId), readable(icon)
+        -- nom masqué par le jeu : effet reconnu par son n° ou son icône déjà vus (sinon rien)
+        if type(name) ~= "string" then
+            local kind = (type(spellId) == "number" and seen()[spellId]) or (icon and seenIcons()[icon])
+            if diag then diag[#diag + 1] = { name = "?", id = spellId, icon = icon, kind = kind } end
+            if kind and kind ~= "fed" then
+                out[kind] = { name = "?", icon = icon, duration = readable(duration), expires = readable(expires),
+                    spellId = spellId, instance = instance }
+            end
+            return
+        end
         local n = name:lower()
         local d = desc(type(spellId) == "number" and spellId or nil)
         local kind
         if has(PERK, n) or d:find("avantages de camp suivants", 1, true) then kind = "perk"
         elseif has(SIT, n) or (d:find("avantages de camp", 1, true) and d:find("près du feu", 1, true)) then kind = "sit"
         elseif has(FLAME, n) or (d:find("feu de camp", 1, true) and (n:find("flamme", 1, true) or d:find("flamme", 1, true))) then kind = "flame" end
+        if not kind and type(spellId) == "number" and seen()[spellId] then kind = seen()[spellId] end
+        if diag then diag[#diag + 1] = { name = name, id = spellId, icon = icon, kind = kind } end
         if n:find("bien nourri", 1, true) or n:find("well fed", 1, true) then
             out.fed = { name = name, icon = readable(icon), duration = readable(duration), expires = readable(expires) }
             return
@@ -379,6 +396,7 @@ local function scan()
         if kind then
             out[kind] = { name = name, icon = readable(icon), duration = readable(duration), expires = readable(expires), spellId = spellId, instance = instance }
             if type(spellId) == "number" then seen()[spellId] = kind end
+            if icon then seenIcons()[icon] = kind end
         end
     end
     if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
@@ -395,6 +413,22 @@ local function scan()
         end
     end
     return out
+end
+
+-- /wk camp : effets du joueur, ce que l'addon en comprend, et l'état du feu de camp
+function M:Diag()
+    local list = {}
+    local ok = pcall(scan, list)
+    WK:Print(string.format(T("Feu de camp : état « %s », icône %s"), tostring(self.state),
+        self:Config().icon and T("activée") or T("coupée")))
+    if not ok then WK:Print(T("  lecture des effets impossible (en combat ?)")) return end
+    for _, e in ipairs(list) do
+        WK:Print(string.format("  %s  · n° %s · icône %s · %s", tostring(e.name), tostring(e.id), tostring(e.icon),
+            e.kind and (T("reconnu : ") .. e.kind) or T("pas un effet de camp")))
+    end
+    if #list == 0 then WK:Print(T("  aucun effet sur le perso")) end
+    local hint = "  Près d'un feu, il faut l'effet « Flammes pourpres » (ou un effet dont la description parle du feu de camp)."
+    WK:Print(T(hint))
 end
 
 -- Texte des avantages (lignes de l'infobulle de l'effet, sans la première phrase)
