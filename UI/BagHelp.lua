@@ -770,3 +770,148 @@ function UI:BuildBagHelpCard(root)
     card:HookScript("OnShow", refreshItems)
     return card
 end
+
+---------------------------------------------------------------------------
+-- Alerte munitions (maquette C) : icône de tes munitions (50 px) dans un anneau qui se vide avec elles.
+-- Sous le seuil : anneau orange qui respire ; sous un quart : rouge ; à zéro : toute l'icône flashe en rouge.
+-- Réglages (carte « Munitions » de la classe) : cc.ammo.hud (affichée, défaut oui), cc.ammo.hudAlways
+-- (toujours visible, sinon seulement sous le seuil). Place, taille et opacité : mode édition (pleine au survol).
+-- Clic : guidage vers le marchand le plus proche. Reste visible en combat (c'est là qu'on manque de flèches).
+---------------------------------------------------------------------------
+local ammo
+local AMMO_SIZE = 50
+local CreateFrame, UIParent, GameTooltip, GetTime = _G.CreateFrame, _G.UIParent, _G.GameTooltip, _G.GetTime
+local UnitClass, C_Timer, C_Item = _G.UnitClass, _G.C_Timer, _G.C_Item
+local function ammoCfg()
+    local Q = WK.modules.QoL
+    local cls = select(2, UnitClass("player"))
+    if not (Q and Q.AMMO and Q.AMMO[cls or ""]) then return nil end
+    local cc = Q:Config().classes[cls]
+    return cc and cc.ammo
+end
+-- état : nil (rien à montrer), ou { n, frac (0..1 de l'anneau), level = ok / low / red / empty }
+local function ammoState()
+    local a = ammoCfg()
+    local c = WK.DB:Me()
+    if not (a and a.hud ~= false and c and c.ammo and c.ammo.id and WK:FeatureOn("classes")) then return nil end
+    local n = c.ammo.n or 0
+    local mins = c.ammo.speed and (n * c.ammo.speed / 60) or nil
+    local min, minM = a.min or 0, a.minMinutes or 0
+    local ratio -- part restante du seuil (le plus bas des deux seuils)
+    if min > 0 then ratio = n / min end
+    if minM > 0 and mins then local r = mins / minM; if not ratio or r < ratio then ratio = r end end
+    local level = "ok"
+    if n == 0 then level = "empty"
+    elseif ratio and ratio < 0.25 then level = "red"
+    elseif ratio and ratio < 1 then level = "low" end
+    if level == "ok" and not a.hudAlways then return nil end
+    local full = (min > 0 and min) or (a.buy and a.buy > 0 and a.buy) or n
+    local frac = math.max(0, math.min(1, full > 0 and n / full or 0))
+    return { id = c.ammo.id, n = n, mins = mins, frac = frac, level = level }
+end
+local function buildAmmo()
+    local f = CreateFrame("Button", "WarbandKeeperAmmoAlert", UIParent)
+    f:SetSize(AMMO_SIZE + 12, AMMO_SIZE + 30)
+    f:SetFrameStrata("MEDIUM")
+    f:RegisterForClicks("LeftButtonUp")
+    -- anneau : fond sombre + balayage (part restante), comme l'anneau du curseur
+    f.track = f:CreateTexture(nil, "BACKGROUND")
+    f.track:SetSize(AMMO_SIZE + 12, AMMO_SIZE + 12); f.track:SetPoint("TOP", 0, 0)
+    f.track:SetTexture(UI.MEDIA .. "ring")
+    f.track:SetVertexColor(C.border[1], C.border[2], C.border[3], 0.9)
+    f.cd = CreateFrame("Cooldown", nil, f, "CooldownFrameTemplate")
+    f.cd:SetAllPoints(f.track)
+    f.cd:EnableMouse(false)
+    if f.cd.SetSwipeTexture then f.cd:SetSwipeTexture(UI.MEDIA .. "ring") end
+    if f.cd.SetDrawEdge then f.cd:SetDrawEdge(false) end
+    if f.cd.SetDrawBling then f.cd:SetDrawBling(false) end
+    if f.cd.SetHideCountdownNumbers then f.cd:SetHideCountdownNumbers(true) end
+    if f.cd.SetUseCircularEdge then f.cd:SetUseCircularEdge(true) end
+    if f.cd.SetReverse then f.cd:SetReverse(true) end
+    -- icône ronde des munitions et son fond (qui flashe à zéro)
+    f.flash = UI:Rounded(f, AMMO_SIZE / 2, 0, "ARTWORK", 1)
+    f.flashHost = CreateFrame("Frame", nil, f)
+    f.flashHost:SetSize(AMMO_SIZE, AMMO_SIZE); f.flashHost:SetPoint("CENTER", f.track, "CENTER")
+    f.icon = f:CreateTexture(nil, "ARTWORK", nil, 3)
+    f.icon:SetSize(AMMO_SIZE - 6, AMMO_SIZE - 6); f.icon:SetPoint("CENTER", f.track, "CENTER")
+    f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    if f.icon.SetMask then pcall(f.icon.SetMask, f.icon, "Interface\\CharacterFrame\\TempPortraitAlphaMask") end
+    f.red = f:CreateTexture(nil, "ARTWORK", nil, 4) -- voile rouge sur l'icône (flash à zéro)
+    f.red:SetAllPoints(f.icon)
+    f.red:SetTexture(UI.MEDIA .. "circle")
+    f.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], 0)
+    f.count = UI:Text(f, 12); f.count:SetPoint("TOP", f.track, "BOTTOM", 0, -3)
+    f:SetScript("OnEnter", function(s)
+        local st = s.st
+        if not st then return end
+        UI:TooltipOwner(s, "ANCHOR_RIGHT")
+        GameTooltip:SetText((WK.GetItemInfo(st.id)) or T("Munitions"), 1, 1, 1)
+        GameTooltip:AddLine(string.format(T("%d dans les sacs"), st.n), 0.9, 0.9, 0.9)
+        if st.mins then
+            GameTooltip:AddLine(string.format(T("env. %d min de tir"), math.floor(st.mins)), 0.7, 0.7, 0.7)
+        end
+        GameTooltip:AddLine(T("Clic : guider vers le marchand le plus proche"), 0.5, 0.5, 0.5)
+        GameTooltip:Show()
+    end)
+    f:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f:SetScript("OnClick", function()
+        local G = WK.modules.Guide
+        if G and G.GoTo then pcall(G.GoTo, G, "ammo") end
+    end)
+    function f:Paint(st)
+        self.st = st
+        local tex = (C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(st.id))
+            or select(10, WK.GetItemInfo(st.id))
+        self.icon:SetTexture(tex or "Interface\\Icons\\INV_Ammo_Arrow_02")
+        local col = (st.level == "ok" and { UI:Accent() }) or (st.level == "low" and C.warning) or C.negative
+        self.cd:SetSwipeColor(col[1], col[2], col[3], 1)
+        -- balayage figé à la part restante : un « temps de recharge » arrêté
+        if self.cd.SetCooldown then
+            self.cd:SetCooldown(GetTime() - (1 - st.frac) * 100, 100)
+            if self.cd.Pause then self.cd:Pause() end
+        end
+        self.count:SetText(tostring(st.n))
+        self.count:SetTextColor(col[1], col[2], col[3])
+        self.flash:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+        -- vitesse de la pulsation : lente (orange), moyenne (rouge), rapide (vide) ; aucune quand tout va bien
+        self.period = (st.level == "low" and 1.4) or (st.level == "red" and 0.8) or (st.level == "empty" and 0.5) or nil
+    end
+    -- pulsation : anneau qui respire, voile rouge sur l'icône à zéro
+    local t = 0
+    f:SetScript("OnUpdate", function(s, el)
+        t = t + el
+        local p = s.period
+        if not p then s.cd:SetAlpha(1); s.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], 0) return end
+        local k = 0.5 + 0.5 * math.sin(t * 2 * math.pi / p)
+        s.cd:SetAlpha(0.45 + 0.55 * k)
+        local empty = s.st and s.st.level == "empty"
+        s.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], empty and (0.65 * k) or 0)
+    end)
+    f:Hide()
+    UI:RegisterHUD("ammoAlert", f, {
+        label = T("Alerte munitions"), default = { 0, -120 },
+        enabled = function() local a = ammoCfg(); return a ~= nil and a.hud ~= false end,
+        sample = function(on)
+            f.sample = on or nil
+            if on then f:Paint({ id = 2512, n = 312, mins = 3, frac = 0.78, level = "low" }); f:Show()
+            else UI:RefreshAmmoAlert() end
+        end,
+        test = function()
+            f.sample = true
+            f:Paint({ id = 2512, n = 0, frac = 0, level = "empty" }); f:Show()
+        end,
+        testStop = function() f.sample = nil; UI:RefreshAmmoAlert() end,
+    })
+    return f
+end
+function UI.RefreshAmmoAlert(_)
+    if not ammoCfg() then if ammo then ammo:Hide() end return end
+    ammo = ammo or buildAmmo()
+    if ammo.sample then return end
+    local st = ammoState()
+    if not st then ammo:Hide() return end
+    ammo:Paint(st)
+    ammo:Show()
+end
+-- relu toutes les secondes (tirs, achats, flèches ramassées) : lecture légère des chiffres déjà relevés
+if C_Timer.NewTicker then C_Timer.NewTicker(1, function() UI:RefreshAmmoAlert() end) end

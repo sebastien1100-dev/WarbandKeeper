@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.234", date = "23/11/2026",
+        added = {
+            "Alerte munitions à l'écran : l'icône de tes flèches ou de tes balles (50 px) dans un anneau qui se vide avec elles. Sous le seuil, l'anneau orange respire ; sous un quart, il passe au rouge ; à zéro, toute l'icône flashe en rouge. Nombre restant dessous, détail au survol, clic = guidage vers le marchand le plus proche. Reste visible en combat.",
+            "Réglages dans la carte « Munitions » de ta classe (QoL > Classes) : « Icône d'alerte à l'écran » et « Toujours affichée » (sinon seulement sous le seuil). Place, taille et opacité en mode édition (« Alerte munitions »), pleine au survol.",
+        },
+    },
+    {
         version = "1.128.233", date = "23/11/2026",
         fixed = {
             "Amélioration à porter : une arme de main gauche était proposée (« +61 ») alors que tu portes une arme à deux mains bien meilleure. La main gauche vide comptait pour zéro. Une main gauche (arme, bouclier, objet tenu) est maintenant comparée à l'arme à deux mains qu'elle retirerait.",

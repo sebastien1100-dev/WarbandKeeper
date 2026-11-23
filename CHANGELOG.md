@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.234 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Alerte munitions à l'écran : l'icône de tes flèches ou de tes balles (50 px) dans un anneau qui se vide avec elles. Sous le seuil, l'anneau orange respire ; sous un quart, il passe au rouge ; à zéro, toute l'icône flashe en rouge. Nombre restant dessous, détail au survol, clic = guidage vers le marchand le plus proche. Reste visible en combat.
+- Réglages dans la carte « Munitions » de ta classe (QoL > Classes) : « Icône d'alerte à l'écran » et « Toujours affichée » (sinon seulement sous le seuil). Place, taille et opacité en mode édition (« Alerte munitions »), pleine au survol.
+
 ## v1.128.233 — 23/11/2026
 
 _Un /reload suffit._

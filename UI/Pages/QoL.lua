@@ -2687,7 +2687,8 @@ UI:RegisterPage({
             -- Munitions
             if QoL.AMMO[class] then
                 subtab("Munitions", 2)
-                local am = card("Munitions", 186, class ~= "HUNTER" and "si tu tires à l'arc, au fusil ou à l'arbalète" or nil)
+                local amSub = class ~= "HUNTER" and "si tu tires à l'arc, au fusil ou à l'arbalète" or nil
+                local am = card("Munitions", 282, amSub)
                 UI:SettingRow(am, -40, "Alerte quand il en reste peu", "Type de munitions équipé, compté dans les sacs (0 : pas d'alerte au nombre).",
                     UI:Slider(am, 240, 0, 2000, 100, function() return cc.ammo.min or 0 end, function(v) cc.ammo.min = v; WK:NotifyChanged() end, "%d"), 260)
                 UI:SettingRow(am, -88, "Ou en minutes de tir", "Alerte quand il reste moins de ce temps de tir, d'après ta vitesse de tir (0 : pas d'alerte en minutes).",
@@ -2699,6 +2700,19 @@ UI:RegisterPage({
                 local tg = toggle(ctl, function() return cc.ammo.auto end, function(v) cc.ammo.auto = v end)
                 tg:SetPoint("RIGHT")
                 UI:SettingRow(am, -136, "Achat automatique chez le marchand", "Complète jusqu'à cette quantité avec la meilleure munition vendue pour ton arme et ton niveau.", ctl, 320)
+                -- icône à l'écran (UI/BagHelp.lua) : place, taille et opacité en mode édition, pleine au survol
+                local hudOn = toggle(am, function() return cc.ammo.hud ~= false end,
+                    function(v) cc.ammo.hud = v; UI:RefreshAmmoAlert() end)
+                UI:SettingRow(am, -184, "Icône d'alerte à l'écran",
+                    "L'icône de tes munitions dans un anneau qui se vide : orange sous le seuil, rouge sous un quart, "
+                    .. "flash rouge à zéro. Clic : marchand le plus proche. "
+                    .. "Place, taille et opacité : mode édition.", hudOn, 80)
+                local hudAll = toggle(am, function() return cc.ammo.hudAlways == true end,
+                    function(v) cc.ammo.hudAlways = v; UI:RefreshAmmoAlert() end)
+                UI:SettingRow(am, -232, "Toujours affichée",
+                    "Visible même quand il t'en reste assez (anneau à la couleur de l'apparence) ; "
+                    .. "sinon seulement sous le seuil.",
+                    hudAll, 80)
             end
 
             -- Aides propres à la classe
