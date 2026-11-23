@@ -305,9 +305,20 @@ function M:Upgrade(link)
     local id = WK:ParseItemID(link)
     if not id then return nil end
     if not (C_Item and C_Item.GetItemInfoInstant) then return nil end
-    local _, _, _, loc = C_Item.GetItemInfoInstant(id)
+    local _, _, _, loc, _, classID, subClassID = _G.C_Item.GetItemInfoInstant(id)
     local slots = loc and SLOTS[loc]
     if not slots or not wearable(id, link) then return nil end
+    -- arme dont la compétence n'est pas apprise : rien à proposer
+    local WS = WK.modules.WeaponSkills
+    if classID == 2 and WS and WS.Knows and WS:Knows(subClassID) == false then return nil end
+    -- arme de main gauche : seulement pour qui sait se battre à deux armes
+    if loc == "INVTYPE_WEAPONOFFHAND" and _G.CanDualWield and not _G.CanDualWield() then return nil end
+    -- main gauche (arme, bouclier, objet tenu) avec une arme à deux mains en main : l'équiper retire l'arme à
+    -- deux mains ; comparée à elle (avant, la main gauche vide comptait pour 0 et tout semblait un gain)
+    local invLink = _G.GetInventoryItemLink
+    local mainLink = invLink and invLink("player", 16)
+    local mainLoc = mainLink and select(4, _G.C_Item.GetItemInfoInstant(mainLink))
+    local offWithTwoHand = mainLoc == "INVTYPE_2HWEAPON" and (slots[1] == 17)
     local class = select(2, UnitClass("player"))
     local new = self:Score(link, class)
     if new <= 0 then return nil end
@@ -317,6 +328,7 @@ function M:Upgrade(link)
         local old = self:Score(cur, class)
         -- arme à deux mains : comparée à l'arme et à la main gauche ensemble
         if loc == "INVTYPE_2HWEAPON" then old = old + self:Score(GetInventoryItemLink and GetInventoryItemLink("player", 17), class) end
+        if offWithTwoHand and slot == 17 then old = old + self:Score(mainLink, class) end
         if not bestOld or old < bestOld then bestSlot, bestOld, oldLink = slot, old, cur end
     end
     if bestOld and new > bestOld * 1.05 + 0.5 then return bestSlot, new - bestOld, oldLink, new, bestOld end

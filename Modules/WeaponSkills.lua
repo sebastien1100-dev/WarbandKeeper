@@ -243,6 +243,16 @@ end
 
 -- { level, max, learned = { { id, name, icon, rank, max, equipped } }, toLearn = { { id, name, icon, cost, level, soon } },
 --   recorded }
+-- Le perso connecté sait-il manier une arme de cette sous-classe ? false = compétence pas apprise,
+-- nil = on ne sait pas (pas encore relevé, ou sous-classe sans compétence)
+function M.Knows(_, subClassID)
+    local skill = SUBCLASS[subClassID or -1]
+    if not skill then return nil end
+    local c = WK.DB.global.characters[WK:CharKey()]
+    if not (c and c.weapons) then return nil end
+    return c.weapons[skill] ~= nil
+end
+
 function M:ForChar(key)
     key = key or WK:CharKey()
     local c = WK.DB.global.characters[key] or {}

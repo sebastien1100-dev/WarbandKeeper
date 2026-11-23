@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.233", date = "23/11/2026",
+        fixed = {
+            "Amélioration à porter : une arme de main gauche était proposée (« +61 ») alors que tu portes une arme à deux mains bien meilleure. La main gauche vide comptait pour zéro. Une main gauche (arme, bouclier, objet tenu) est maintenant comparée à l'arme à deux mains qu'elle retirerait.",
+            "Amélioration à porter : plus d'arme de main gauche pour une classe qui ne se bat pas à deux armes, ni d'arme dont tu n'as pas appris la compétence (haches, épées…).",
+        },
+    },
+    {
         version = "1.128.232", date = "23/11/2026",
         added = {
             "Fenêtre « Mieux que ce que tu portes » : une croix pour la fermer sans rien refuser. Elle revient au prochain objet meilleur qui arrive dans tes sacs (« Pas celui-là » écarte toujours l'objet pour de bon).",

@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.233 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Amélioration à porter : une arme de main gauche était proposée (« +61 ») alors que tu portes une arme à deux mains bien meilleure. La main gauche vide comptait pour zéro. Une main gauche (arme, bouclier, objet tenu) est maintenant comparée à l'arme à deux mains qu'elle retirerait.
+- Amélioration à porter : plus d'arme de main gauche pour une classe qui ne se bat pas à deux armes, ni d'arme dont tu n'as pas appris la compétence (haches, épées…).
+
 ## v1.128.232 — 23/11/2026
 
 _Un /reload suffit._
