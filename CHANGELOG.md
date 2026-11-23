@@ -49,6 +49,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.218 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons : même présentation pour tous les donjons, quel que soit le nombre de boss : carte « Prochain boss » à côté de la carte et onglet « Boss ».
+- Onglet Boss : la place suit le nombre de boss. Jusqu'à 6 boss, une colonne avec des lignes hautes et 5 objets ; jusqu'à 14, deux colonnes et 4 objets ; au-delà, trois colonnes et 3 objets.
+- Carte « Prochain boss » : le butin passe sur sa propre ligne, sous le nom, qui n'est plus coupé.
+
 ## v1.128.217 — 23/11/2026
 
 _Un /reload suffit._

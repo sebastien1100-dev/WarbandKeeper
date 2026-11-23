@@ -21,8 +21,9 @@ local GROUPS = {
     { "past", "Déjà dépassés" }, { "now", "Pour ton niveau" }, { "soon", "Bientôt" }, { "high", "Plus haut" },
     { "raid", "Raids" },
 }
--- au-delà de ce nombre de boss : carte « Prochain boss » et onglet « Boss » (maquette C)
-local MANY = 8
+-- au-delà de ce nombre de boss : carte « Prochain boss » et onglet « Boss » (maquette C) ;
+-- 0 = tous les donjons ont la même présentation
+local MANY = 0
 
 local function groupOf(d, lvl)
     if d.raid then return "raid" end
@@ -427,7 +428,37 @@ UI:RegisterPage({
             nc.label = UI:Text(nc, 10, C.muted); nc.label:SetPoint("TOPLEFT", 16, -14)
             nc.row = bossRow(nc)
             nc.row:SetPoint("TOPLEFT", 6, -32); nc.row:SetPoint("TOPRIGHT", -6, -32)
-            nc.after = UI:Text(nc, 10, C.dim); nc.after:SetPoint("TOPLEFT", 16, -96); nc.after:SetPoint("RIGHT", -16, 0)
+            -- butin du prochain boss sur sa propre ligne : le nom garde toute la largeur
+            nc.icons = {}
+            for k = 1, 6 do
+                local ic = CreateFrame("Button", nil, nc)
+                ic:SetSize(30, 30)
+                ic:SetPoint("TOPLEFT", 16 + (k - 1) * 34, -94)
+                ic.edge = UI:Rounded(ic, 6, 0, "BACKGROUND", 1)
+                ic.tex = ic:CreateTexture(nil, "ARTWORK")
+                ic.tex:SetPoint("TOPLEFT", 2, -2); ic.tex:SetPoint("BOTTOMRIGHT", -2, 2)
+                ic.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                ic:SetScript("OnEnter", function(s2)
+                    UI:TooltipOwner(s2, "ANCHOR_RIGHT")
+                    if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s2.id)
+                    else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
+                    local info = D:ItemInfo(s2.id)
+                    if info and info.drop then
+                        local txt = string.format(T("Chance de drop : %s %%"), tostring(info.drop))
+                        GameTooltip:AddLine(txt, 0.8, 0.8, 0.8)
+                    end
+                    GameTooltip:Show()
+                end)
+                ic:SetScript("OnLeave", function() GameTooltip:Hide() end)
+                ic:SetScript("OnClick", function(s2)
+                    if IsShiftKeyDown() then
+                        local link = select(6, UI:ItemInfo(s2.id))
+                        if link then WK.InsertChatLink(link) end
+                    else nc:GetScript("OnClick")(nc) end
+                end)
+                nc.icons[k] = ic
+            end
+            nc.after = UI:Text(nc, 10, C.dim)
             nc.after:SetJustifyH("LEFT"); nc.after:SetWordWrap(false)
             nc.tiles = {}
             for k = 1, 3 do
@@ -929,7 +960,7 @@ UI:RegisterPage({
     LayoutNextCard = function(self, d, key, c, nextB, m, x0, y0, W, MH)
         local nc = self.nextCard
         local w = math.max(220, W - x0)
-        local h = math.max(MH, 214)
+        local h = math.max(MH, 250)
         nc:ClearAllPoints(); nc:SetPoint("TOPLEFT", x0, -y0); nc:SetSize(w, h)
         nc.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
         local bosses = D:Bosses(d)
@@ -947,7 +978,7 @@ UI:RegisterPage({
         nc.row:SetShown(nextB ~= nil); nc.after:SetShown(nextB ~= nil)
         if nextB then
             nc.row:SetHeight(56)
-            self:PaintBossRow(nc.row, d, nextB, D:Optional(d, nextB), n, 58, w - 12, key, c, nextB, m, 5)
+            self:PaintBossRow(nc.row, d, nextB, D:Optional(d, nextB), n, 58, w - 12, key, c, nextB, m, 0)
             nc.row.sub:SetText(nc.row.sub:GetText() .. "  ·  " .. string.format(T("boss %d sur %d"), n, total))
             -- les trois suivants
             local names = {}
@@ -960,6 +991,22 @@ UI:RegisterPage({
             end
             nc.after:SetText(#names > 0 and (T("Ensuite : ") .. table.concat(names, ", ")) or "")
         end
+        local loot = nextB and UI:DungeonLoot(nextB, "me", c, key) or {}
+        local fit = math.max(0, math.floor((w - 32 + 4) / 34))
+        for k, ic in ipairs(nc.icons) do
+            local id = k <= fit and loot[k] or nil
+            ic:SetShown(id ~= nil)
+            if id then
+                ic.id = id
+                local _, icon = UI:ItemInfo(id)
+                ic.tex:SetTexture(icon or 134400)
+                local q = UI.DungeonQuality and UI.DungeonQuality(id) or C.border
+                ic.edge:SetColor(q[1], q[2], q[3], 1)
+            end
+        end
+        -- sans butin pour ce perso, les suivants remontent
+        nc.after:ClearAllPoints()
+        nc.after:SetPoint("TOPLEFT", 16, (#loot > 0 and fit > 0) and -134 or -96); nc.after:SetPoint("RIGHT", -16, 0)
         -- chiffres : tués, facultatifs, chrono ou record
         local inRun = D:InRun(d) and key == WK:CharKey()
         local rec = D:Record(d)
@@ -1055,12 +1102,17 @@ UI:RegisterPage({
         local det = self.det
         local m = UI.DungeonMapData(d)
         local nextB = D:Next(d, key)
-        local ncol = W >= 900 and 3 or (W >= 600 and 2 or 1)
+        local bosses = D:Bosses(d)
+        -- la place suit le nombre de boss : 1 colonne jusqu'à 6 (lignes hautes, 5 objets), 2 jusqu'à 14
+        -- (4 objets), 3 au-delà (3 objets) ; jamais plus que la largeur ne permet
+        local nb = #bosses
+        local want = nb <= 6 and 1 or (nb <= 14 and 2 or 3)
+        local ncol = math.min(want, W >= 900 and 3 or (W >= 600 and 2 or 1))
         local CG = 12
         local colW = (W - 28 - (ncol - 1) * CG) / ncol
-        local bosses = D:Bosses(d)
-        local perCol = math.ceil(#bosses / ncol)
-        local RH = 42
+        local perCol = math.ceil(nb / ncol)
+        local RH = ncol == 1 and 48 or 42
+        local maxIc = ncol == 1 and 5 or (ncol == 2 and 4 or 3)
         local n = 0
         for i, b in ipairs(bosses) do
             local opt = D:Optional(d, b)
@@ -1070,7 +1122,7 @@ UI:RegisterPage({
             local rowI = (i - 1) % perCol
             local r = self.grows:Get()
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 14 + col * (colW + CG), -(10 + rowI * RH)); r:SetWidth(colW)
-            self:PaintBossRow(r, d, b, opt, n, RH, colW, key, c, nextB, m, 3)
+            self:PaintBossRow(r, d, b, opt, n, RH, colW, key, c, nextB, m, maxIc)
         end
         self:PlaceButtons(d)
         local h = 10 + perCol * RH + 12

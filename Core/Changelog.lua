@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.218", date = "23/11/2026",
+        changed = {
+            "Donjons : même présentation pour tous les donjons, quel que soit le nombre de boss : carte « Prochain boss » à côté de la carte et onglet « Boss ».",
+            "Onglet Boss : la place suit le nombre de boss. Jusqu'à 6 boss, une colonne avec des lignes hautes et 5 objets ; jusqu'à 14, deux colonnes et 4 objets ; au-delà, trois colonnes et 3 objets.",
+            "Carte « Prochain boss » : le butin passe sur sa propre ligne, sous le nom, qui n'est plus coupé.",
+        },
+    },
+    {
         version = "1.128.217", date = "23/11/2026",
         changed = {
             "Donjons de plus de 8 boss (Profondeurs de Rochenoire, Pic Rochenoire, Stratholme, Hache-Tripes, Monastère…) : à côté de la carte, une carte « Prochain boss » (portrait, butin pour toi, les trois suivants) et trois chiffres : boss tués, facultatifs, chrono ou record. Un onglet « Boss » avant Butin et Quêtes montre tous les boss sur trois colonnes, dans le même style que les petits donjons ; un clic sur un boss ouvre son butin.",
