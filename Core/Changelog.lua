@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.254", date = "23/11/2026",
+        fixed = {
+            "Feu de camp : à côté d'un feu, l'icône restait grise « pas de feu ». L'effet du jeu s'appelle maintenant « Feu de camp proche » (n° 1283391) au lieu de « Flammes pourpres » : il est reconnu, par son nom ou son n°.",
+        },
+    },
+    {
         version = "1.128.253", date = "23/11/2026",
         changed = {
             "Butin à l'écran : les petits encadrés n'ont plus de barre de couleur à gauche, seulement leur fin liseré à la couleur de la rareté.",

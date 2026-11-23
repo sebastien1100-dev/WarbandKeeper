@@ -311,7 +311,9 @@ end
 local DEFAULTS = { enabled = false, icon = true, iconAlways = false, renewAt = 10, sound = false, doneSecs = 8,
     kit = true, kitAlways = false, kitFlameDir = "right", chips = true, kitInBar = true, alertCd = true, alertExpire = true, alertFood = true } -- minutes restantes sous lesquelles on propose de renouveler
 
-local FLAME = { "flammes pourpres" }
+-- flamme près d'un camp : « Feu de camp proche » (n° 1283391 sur WoW Forever), anciennement « Flammes pourpres »
+local FLAME = { "flammes pourpres", "feu de camp proche", "campfire nearby", "nearby campfire" }
+local FLAME_IDS = { [1283391] = true }
 local SIT = { "feu de camp accueillant", "cozy campfire", "welcoming campfire" }
 local PERK = { "avantages du camp", "camp benefits" }
 
@@ -373,7 +375,8 @@ local function scan(diag)
         name, spellId, icon = readable(name), readable(spellId), readable(icon)
         -- nom masqué par le jeu : effet reconnu par son n° ou son icône déjà vus (sinon rien)
         if type(name) ~= "string" then
-            local kind = (type(spellId) == "number" and seen()[spellId]) or (icon and seenIcons()[icon])
+            local kind = (type(spellId) == "number" and (FLAME_IDS[spellId] and "flame" or seen()[spellId]))
+                or (icon and seenIcons()[icon])
             if diag then diag[#diag + 1] = { name = "?", id = spellId, icon = icon, kind = kind } end
             if kind and kind ~= "fed" then
                 out[kind] = { name = "?", icon = icon, duration = readable(duration), expires = readable(expires),
@@ -387,6 +390,7 @@ local function scan(diag)
         if has(PERK, n) or d:find("avantages de camp suivants", 1, true) then kind = "perk"
         elseif has(SIT, n) or (d:find("avantages de camp", 1, true) and d:find("près du feu", 1, true)) then kind = "sit"
         elseif has(FLAME, n) or (d:find("feu de camp", 1, true) and (n:find("flamme", 1, true) or d:find("flamme", 1, true))) then kind = "flame" end
+        if not kind and type(spellId) == "number" and FLAME_IDS[spellId] then kind = "flame" end
         if not kind and type(spellId) == "number" and seen()[spellId] then kind = seen()[spellId] end
         if diag then diag[#diag + 1] = { name = name, id = spellId, icon = icon, kind = kind } end
         if n:find("bien nourri", 1, true) or n:find("well fed", 1, true) then
@@ -427,7 +431,7 @@ function M:Diag()
             e.kind and (T("reconnu : ") .. e.kind) or T("pas un effet de camp")))
     end
     if #list == 0 then WK:Print(T("  aucun effet sur le perso")) end
-    local hint = "  Près d'un feu, il faut l'effet « Flammes pourpres » (ou un effet dont la description parle du feu de camp)."
+    local hint = "  Près d'un feu, il faut l'effet « Feu de camp proche » (ou un effet dont la description parle du feu de camp)."
     WK:Print(T(hint))
 end
 

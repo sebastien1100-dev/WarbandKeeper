@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.254 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Feu de camp : à côté d'un feu, l'icône restait grise « pas de feu ». L'effet du jeu s'appelle maintenant « Feu de camp proche » (n° 1283391) au lieu de « Flammes pourpres » : il est reconnu, par son nom ou son n°.
+
 ## v1.128.253 — 23/11/2026
 
 _Un /reload suffit._
