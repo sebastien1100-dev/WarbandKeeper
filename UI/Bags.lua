@@ -159,7 +159,15 @@ local function classify(e, ctx)
     if info.upgrade then info.badge, info.badgeCol = "+" .. math.floor(info.upgrade + 0.5), C.positive
     elseif info.bis == "mine" then info.badge, info.badgeCol = T("BiS"), C.gold
     elseif info.de then info.badge, info.badgeCol = T("DE"), C.plan
-    elseif ship then info.badge, info.badgeCol = shortName(ship.to), nil
+    elseif ship then
+        -- pastille du destinataire à la couleur de sa classe
+        local dc = WK.DB.global.characters[ship.to]
+        local col
+        if dc and dc.class then
+            local r, g, b = UI:ClassColor(dc.class)
+            col = { r, g, b }
+        end
+        info.badge, info.badgeCol = shortName(ship.to), col
     elseif questItem then info.badge, info.badgeCol = "Q", C.gold end
     return info
 end
@@ -373,6 +381,9 @@ local function paintButton(b, e)
     if info and info.badge then
         local col = info.badgeCol or { UI:Accent() }
         tag.bg:SetColor(col[1], col[2], col[3], 1)
+        -- texte sombre sur un fond clair (couleurs de classe), comme sur l'accent
+        local tc = C.onAccent or C.bg
+        tag.t:SetTextColor(tc[1], tc[2], tc[3])
         tag.t:SetText(info.badge)
         if info.dot then tag:SetSize(10, 10)
         else tag:SetSize(math.max(14, (tag.t:GetStringWidth() or 10) + 8), 13) end

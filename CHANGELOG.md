@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.225 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Sacs : la pastille du perso à qui envoyer un objet prend la couleur de sa classe (au lieu de la couleur de l'apparence pour tous).
+
 ## v1.128.224 — 23/11/2026
 
 _Un /reload suffit._
