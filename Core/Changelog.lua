@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.251", date = "23/11/2026",
+        fixed = {
+            "Butin à l'écran : les encadrés n'existaient qu'après le premier objet ramassé, donc le mode édition ne les montrait pas (ni place, ni aperçu, ni « Tester »). Ils sont créés dès la connexion.",
+        },
+    },
+    {
         version = "1.128.250", date = "23/11/2026",
         added = {
             "Butin à l'écran : bouton « Butin à l'écran » dans le bandeau du Filtre de loot, avec son interrupteur (activer ou couper d'un clic) et une roue qui ouvre ses réglages en trois cartes : Affichage, Quoi afficher, Grand encadré ; boutons « Tester » et « Placer (mode édition) ».",

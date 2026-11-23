@@ -557,3 +557,12 @@ function UI.BuildLootToastCards(_, parent)
     row(g, "Son", "Un petit son quand un butin notable apparaît.", tog(g, "sound"), 80)
     return { a, b, g }
 end
+
+-- Cadres créés dès la connexion : sinon ils n'existent qu'au premier butin ramassé, et le mode édition (place,
+-- aperçu, « Tester ») ne les connaît pas
+WK:On("PLAYER_LOGIN", function()
+    C_Timer.After(1, function()
+        stack = stack or buildStack()
+        big = big or buildBig()
+    end)
+end)
