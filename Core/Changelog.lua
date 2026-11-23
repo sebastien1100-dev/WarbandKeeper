@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.203", date = "23/11/2026",
+        added = {
+            "Diagnostic « Carte du donjon » (/wk cartedonjon, aussi dans Options > Diagnostics) : à lancer dans un donjon, il dit si le jeu a une carte de ce donjon et s'il y donne ta position. C'est ce qui décidera si la page Donjons peut montrer une carte avec les boss.",
+        },
+    },
+    {
         version = "1.128.202", date = "23/11/2026",
         changed = {
             "Inventaire : les chiffres de l'interrupteur Objets / Courrier sont plus gros et sur une pastille pleine (foncée sur le bouton choisi, dorée quand du courrier attend).",

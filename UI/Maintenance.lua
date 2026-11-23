@@ -346,6 +346,9 @@ UI.DIAGS = {
             "Dernières traversées notées, lignes reconnues, raisons d'un refus." },
         { "vol diag", "Vols",
             "Relais de vol connus du perso, relais manquants, durées apprises." },
+        { "cartedonjon", "Carte du donjon",
+            "Le jeu a-t-il une carte de ce donjon, et y donne-t-il ta position (pour placer les boss) ?",
+            "Lance-le dans un donjon." },
     } },
     { "Personnage", {
         { "talents", "Talents",

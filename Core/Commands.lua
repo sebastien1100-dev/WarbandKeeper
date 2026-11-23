@@ -71,6 +71,10 @@ SlashCmdList.WARBANDKEEPER = function(msg)
     elseif cmd == "banque" or cmd == "bank" then
         WK:Print(WK.T("Banque : diagnostic (à lancer banque ouverte)"))
         for _, l in ipairs(WK.modules.Inventory:BankDiag()) do WK:Print("  " .. l) end
+    elseif cmd == "cartedonjon" or cmd == "dmap" then
+        -- le jeu a-t-il une carte de ce donjon, et y donne-t-il la position du perso ? (carte des boss)
+        WK:Print(WK.T("Carte du donjon : diagnostic (à lancer dans le donjon)"))
+        for _, l in ipairs(WK.modules.Dungeons:MapDiag()) do WK:Print("  " .. l) end
     elseif cmd == "sacs" or cmd == "bags" then
         WK:Print(WK.T("Sacs : diagnostic"))
         for _, l in ipairs(WK.UI.BagDiag and WK.UI:BagDiag() or {}) do WK:Print("  " .. l) end

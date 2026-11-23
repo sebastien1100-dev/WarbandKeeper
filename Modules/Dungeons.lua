@@ -1125,3 +1125,33 @@ WK:On("PLAYER_REGEN_DISABLED", function()
     local d = M:Current()
     if d and d.key == run.key then M:Begin() end
 end)
+
+-- Diagnostic de la carte du donjon (/wk cartedonjon) : n° de carte, genre, images, position du perso
+function M.MapDiag(_)
+    local out = {}
+    local function add(...) out[#out + 1] = table.concat({ ... }, " ") end
+    local okI, name, itype, _, _, _, _, _, instID = pcall(_G.GetInstanceInfo)
+    add("instance:", tostring(okI and name), tostring(okI and itype), tostring(okI and instID))
+    local CM = _G.C_Map
+    if not CM then add("C_Map: absent"); return out end
+    local okM, mapID = pcall(CM.GetBestMapForUnit, "player")
+    add("carte:", tostring(okM and mapID))
+    if okM and mapID then
+        local okF, info = pcall(CM.GetMapInfo, mapID)
+        if okF and info then
+            add("nom:", tostring(info.name), "genre:", tostring(info.mapType), "parent:", tostring(info.parentMapID))
+        end
+        local okA, tex = pcall(CM.GetMapArtLayerTextures, mapID, 1)
+        add("images:", tostring(okA and type(tex) == "table" and #tex or "aucune"))
+        local okG, groups = pcall(CM.GetMapGroupMembersInfo, CM.GetMapGroupID and CM.GetMapGroupID(mapID) or 0)
+        add("étages:", tostring(okG and type(groups) == "table" and #groups or 0))
+        local okP, pos = pcall(CM.GetPlayerMapPosition, mapID, "player")
+        if okP and pos and pos.GetXY then
+            local x, y = pos:GetXY()
+            add("position:", string.format("%.1f, %.1f", (x or 0) * 100, (y or 0) * 100))
+        else
+            add("position:", "non donnée par le jeu")
+        end
+    end
+    return out
+end
