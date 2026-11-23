@@ -459,17 +459,35 @@ UI:RegisterPage({
         -- onglet Mes envies
         local wcard = UI:Card(root, T("Mes envies"), " ")
         self.wcard = wcard
-        self.wrows = UI:Pool(function()
-            local r = CreateFrame("Frame", nil, wcard)
-            r:SetHeight(ITEM_H + 4)
-            r.item = UI:DungeonLootRow(r)
-            r.item:SetPoint("TOPLEFT"); r.item:SetPoint("TOPRIGHT", -230, 0)
-            r.where = UI:Text(r, 10, C.muted)
-            r.where:SetPoint("RIGHT", -10, 0)
-            r.where:SetWidth(220)
-            r.where:SetJustifyH("RIGHT")
-            return r
+        -- une case par donjon (rangées en colonnes) : en-tête cliquable, boss, objets
+        self.wheads = UI:Pool(function()
+            local h = CreateFrame("Button", nil, wcard)
+            h:SetHeight(46)
+            h.bg = UI:Rounded(h, 6, 0, "BACKGROUND", 1)
+            h.name = UI:Text(h, 13); h.name:SetPoint("TOPLEFT", 12, -7); h.name:SetJustifyH("LEFT")
+            h.name:SetWordWrap(false)
+            h.sub = UI:Text(h, 10, C.muted); h.sub:SetPoint("TOPLEFT", h.name, "BOTTOMLEFT", 0, -3)
+            h.go = UI:Button(h, "Guider", nil, 22, "ghost", "guide")
+            h.go:SetPoint("RIGHT", -8, 0)
+            h.open = UI:Button(h, "Voir", nil, 22, "ghost")
+            h.open:SetPoint("RIGHT", h.go, "LEFT", -6, 0)
+            h.name:SetPoint("RIGHT", h.open, "LEFT", -8, 0)
+            local function open(s2)
+                self.tab = "list"; self.sel = s2.dk; self.focus = nil; self.dtab = "loot"; self:Refresh()
+            end
+            h:SetScript("OnClick", open)
+            h.open:SetScript("OnClick", function(b2) open(b2:GetParent()) end)
+            h.go:SetScript("OnClick", function(b2) local d = D:Get(b2:GetParent().dk); if d then D:GuideTo(d) end end)
+            h:SetScript("OnEnter", function(s2) s2.bg:SetColor(unpack(C.hover)) end)
+            h:SetScript("OnLeave", function(s2) s2.bg:SetColor(unpack(C.surface2)) end)
+            return h
         end)
+        self.wboss = UI:Pool(function()
+            local t = UI:Text(wcard, 10, C.dim)
+            t:SetJustifyH("LEFT"); t:SetWordWrap(false)
+            return t
+        end)
+        self.wrows = UI:Pool(function() return UI:DungeonLootRow(wcard) end)
         self.wempty = UI:Text(wcard, 11, C.muted)
         self.wempty:SetPoint("TOPLEFT", 16, -44)
         self.wempty:SetText(T("Pas encore d'envie : clique sur l'étoile d'un objet dans un donjon."))
@@ -477,7 +495,17 @@ UI:RegisterPage({
         UI:OnResize(sc, function(w) self.width = w; root:SetWidth(math.max(100, w - 12)); self:Refresh() end)
     end,
 
+    -- un changement de taille pendant le dessin relance Refresh : jamais deux dessins mêlés (colonnes en double)
     Refresh = function(self)
+        if self.drawing then self.redraw = true return end
+        self.drawing = true
+        local ok, err = pcall(self.RefreshNow, self)
+        self.drawing = false
+        if not ok then error(err, 0) end
+        if self.redraw then self.redraw = false; return self:Refresh() end
+    end,
+
+    RefreshNow = function(self)
         if not self.sc then return end
         -- menu des persos à jour (perso renommé ou supprimé : retour au premier)
         self.charDd:SetOptions(charOptions())
@@ -514,20 +542,84 @@ UI:RegisterPage({
             wc:Show()
             wc:ClearAllPoints(); wc:SetPoint("TOPLEFT", 0, 0); wc:SetWidth(W)
             local list = D:Wishes(key)
-            if wc.subtitle then wc.subtitle:SetText(string.format(T("%d objet(s) pour %s"), #list, WK:CharName(c, key))) end
-            local y = -40
+            self.wheads:Reset(); self.wboss:Reset()
+            -- par donjon (ordre de niveau), puis par boss dans l'ordre du donjon
+            local groups, order = {}, {}
             for _, e in ipairs(list) do
-                local r = self.wrows:Get()
-                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 10, y); r:SetPoint("TOPRIGHT", -10, y)
-                r.item:Set(e.id, e.dungeon and e.dungeon.key, c, key)
-                local boss
-                if e.dungeon then for _, b in ipairs(D:LootGroups(e.dungeon)) do for _, id in ipairs(b.loot) do if id == e.id then boss = b end end end end
-                r.where:SetText(e.dungeon and (D:Name(e.dungeon) .. (boss and ("  ·  " .. D:BossName(boss)) or "")) or "")
-                y = y - ITEM_H - 4
+                local dk = e.dungeon and e.dungeon.key or 0
+                if not groups[dk] then groups[dk] = { d = e.dungeon, ids = {} }; order[#order + 1] = dk end
+                groups[dk].ids[e.id] = true
             end
+            if wc.subtitle then
+                wc.subtitle:SetText(string.format(T("%d objet(s) dans %d donjon(s) pour %s"), #list, #order,
+                    WK:CharName(c, key)))
+            end
+            local ncol = math.max(1, math.min(3, math.floor((W - 20) / 440)))
+            local WGAP = 14
+            local colW = (W - 24 - (ncol - 1) * WGAP) / ncol
+            local colY = {}
+            for k = 1, ncol do colY[k] = 44 end
+            for _, dk in ipairs(order) do
+                local g = groups[dk]
+                local k = 1
+                for j = 2, ncol do if colY[j] < colY[k] then k = j end end
+                local x = 12 + (k - 1) * (colW + WGAP)
+                local yy = colY[k]
+                local h = self.wheads:Get()
+                h.dk = dk
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", x, -yy); h:SetWidth(colW)
+                h.bg:SetColor(unpack(C.surface2))
+                local d = g.d
+                h.name:SetText(d and D:Name(d) or T("Autre"))
+                if d then
+                    local done, n = D:Progress(d, key)
+                    local col = levelColor(d, lvl)
+                    h.sub:SetText(UI:Hex(col) .. (d.raid and T("raid") or (d.min .. "-" .. d.max)) .. "|r  ·  "
+                        .. string.format(T("%d/%d boss"), done, n))
+                else
+                    h.sub:SetText("")
+                end
+                h.go:SetShown(d ~= nil and d.entry ~= nil); h.open:SetShown(d ~= nil)
+                yy = yy + 46 + 6
+                -- boss du donjon qui portent une envie, dans l'ordre du jeu ; le reste à la fin
+                local seen = {}
+                local blocks = {}
+                if d then
+                    for _, b in ipairs(D:LootGroups(d)) do
+                        local ids = {}
+                        for _, id in ipairs(b.loot) do
+                            if g.ids[id] and not seen[id] then seen[id] = true; ids[#ids + 1] = id end
+                        end
+                        if #ids > 0 then blocks[#blocks + 1] = { D:BossName(b), ids } end
+                    end
+                end
+                local rest = {}
+                for id in pairs(g.ids) do if not seen[id] then rest[#rest + 1] = id end end
+                table.sort(rest)
+                if #rest > 0 then blocks[#blocks + 1] = { nil, rest } end
+                for _, bl in ipairs(blocks) do
+                    if bl[1] then
+                        local t = self.wboss:Get()
+                        t:ClearAllPoints(); t:SetPoint("TOPLEFT", x + 6, -yy); t:SetWidth(colW - 12)
+                        t:SetText(UI:Upper(bl[1]))
+                        yy = yy + 16
+                    end
+                    for _, id in ipairs(bl[2]) do
+                        local it = self.wrows:Get()
+                        it:ClearAllPoints(); it:SetPoint("TOPLEFT", x, -yy); it:SetWidth(colW)
+                        it:Set(id, dk ~= 0 and dk or nil, c, key, true)
+                        yy = yy + ITEM_H
+                    end
+                    yy = yy + 6
+                end
+                colY[k] = yy + 12
+            end
+            local bottom = 44
+            for k = 1, ncol do bottom = math.max(bottom, colY[k]) end
             self.wempty:SetShown(#list == 0)
-            wc:SetHeight(-y + 30)
-            self.sc:SetContentHeight(-y + 40)
+            if #list == 0 then bottom = 80 end
+            wc:SetHeight(bottom + 6)
+            self.sc:SetContentHeight(bottom + 16)
             return
         end
         self.wcard:Hide()

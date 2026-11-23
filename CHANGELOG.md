@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.213 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons, Mes envies : les objets sont rangés par donjon, dans des cases sur toute la largeur de la fenêtre (une à trois colonnes). Chaque case montre le niveau du donjon, les boss déjà tués, les objets regroupés sous leur boss, et des boutons Voir (ouvre le donjon) et Guider (vers l'entrée).
+
+### Corrections
+- Donjons : en revenant de Mes envies, le butin s'affichait en colonnes en double, superposées. La page ne mélange plus deux dessins.
+
 ## v1.128.212 — 23/11/2026
 
 _Un /reload suffit._

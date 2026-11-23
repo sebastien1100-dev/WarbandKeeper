@@ -2026,7 +2026,6 @@ WK.Locales.enUS.text = {
     ["Guider vers le donneur"] = "Guide to the quest giver",
     ["Mes envies"] = "My wishes",
     ["Pas encore d'envie : clique sur l'étoile d'un objet dans un donjon."] = "No wish yet: click the star of an item in a dungeon.",
-    ["%d objet(s) pour %s"] = "%d item(s) for %s",
     ["niv. %d-%d · %d boss"] = "lvl %d-%d · %d bosses",
     -- UI/Pages/Dungeons.lua (suite)
     ["niv. %d-%d · %d/%d boss ce passage"] = "lvl %d-%d · %d/%d bosses this run",
@@ -2824,6 +2823,8 @@ WK.Locales.enUS.text = {
     ["Par perso (bilan)"] = "By character (balance)",
     ["Cartes des donjons, boss, taux de drop"] = "Dungeon maps, bosses, drop rates",
     ["Cartes des donjons (images du jeu), place et portrait des boss, taux de drop des objets : Dungeon Journal de Naowh Forever, repris avec l'accord de son auteur."] = "Dungeon maps (game art), boss positions and portraits, item drop rates: Naowh Forever's Dungeon Journal, used with its author's permission.",
+    ["%d objet(s) dans %d donjon(s) pour %s"] = "%d item(s) in %d dungeon(s) for %s",
+    ["%d/%d boss"] = "%d/%d bosses",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

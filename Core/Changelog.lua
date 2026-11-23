@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.213", date = "23/11/2026",
+        changed = {
+            "Donjons, Mes envies : les objets sont rangés par donjon, dans des cases sur toute la largeur de la fenêtre (une à trois colonnes). Chaque case montre le niveau du donjon, les boss déjà tués, les objets regroupés sous leur boss, et des boutons Voir (ouvre le donjon) et Guider (vers l'entrée).",
+        },
+        fixed = {
+            "Donjons : en revenant de Mes envies, le butin s'affichait en colonnes en double, superposées. La page ne mélange plus deux dessins.",
+        },
+    },
+    {
         version = "1.128.212", date = "23/11/2026",
         fixed = {
             "Donjons à beaucoup de boss (Stratholme, Hache-Tripes, Pic Rochenoire…) : avec une fenêtre plus petite, la liste se limitait à la hauteur de la carte et ne montrait que quelques boss. Elle prend maintenant toute la place libre au-dessus des onglets, et défile au-delà.",
