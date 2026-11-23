@@ -122,9 +122,17 @@ UI:RegisterPage({
         self.enable:SetPoint("RIGHT", banner, "RIGHT", -16, 0)
         self.bannerState = UI:Text(banner, 11, C.muted)
         self.bannerState:SetPoint("TOPLEFT", bt, "BOTTOMLEFT", 0, -4)
-        self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -150, -30)
+        self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -210, -30)
         self.enableLbl = UI:Text(banner, 12)
         self.enableLbl:SetPoint("RIGHT", self.enable, "LEFT", -10, 0)
+        -- roue : réglages du butin à l'écran (UI/LootToast.lua), volet posé sous le bandeau
+        local ltCard = UI.BuildLootToastCard and UI:BuildLootToastCard(p)
+        if ltCard then
+            self.gp = UI:PageGear(p, { title = "Butin à l'écran", top = BANNER_H + GAP, columns = 1, size = 28,
+                cards = function() return { ltCard } end }, self)
+            self.gp.gear:SetPoint("RIGHT", self.enableLbl, "LEFT", -16, 0)
+            self.gp.gear:SetFrameLevel(banner:GetFrameLevel() + 5)
+        end
         local TOP = -(BANNER_H + GAP)
 
         -- Colonne de gauche : profils + objets laissés au sol --------------------------

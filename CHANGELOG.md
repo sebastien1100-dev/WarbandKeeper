@@ -49,6 +49,15 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.248 — 23/11/2026
+
+_Redémarrage complet du jeu nécessaire (nouveaux fichiers)._
+
+### Ajouts
+- Butin à l'écran : chaque objet ramassé apparaît un instant dans un petit encadré à la couleur de sa rareté, avec la quantité, le prix du lot (scan de l'HV, sinon marchand), une ligne utile (prix à l'unité, nombre en sacs, camelote) et des étiquettes (amélioration, BiS, envie, quête, recette). Le plus récent en haut, 4 s chacun ; le survol le garde et montre l'infobulle ; le même objet ramassé de suite se cumule.
+- Butin notable (bleu et plus par défaut, ou au-dessus d'une valeur choisie, objet BiS du perso, envie) : grand encadré au centre avec un halo à la couleur de la rareté et un petit son.
+- Réglages dans la roue de la page Filtre de loot (qualité minimale, durée, seuils du grand encadré, son) ; les deux encadrés se placent en mode édition. Achats, courrier et échanges ne s'affichent pas.
+
 ## v1.128.247 — 23/11/2026
 
 _Un /reload suffit._

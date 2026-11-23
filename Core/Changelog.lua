@@ -8,6 +8,14 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.248", date = "23/11/2026", restart = true,
+        added = {
+            "Butin à l'écran : chaque objet ramassé apparaît un instant dans un petit encadré à la couleur de sa rareté, avec la quantité, le prix du lot (scan de l'HV, sinon marchand), une ligne utile (prix à l'unité, nombre en sacs, camelote) et des étiquettes (amélioration, BiS, envie, quête, recette). Le plus récent en haut, 4 s chacun ; le survol le garde et montre l'infobulle ; le même objet ramassé de suite se cumule.",
+            "Butin notable (bleu et plus par défaut, ou au-dessus d'une valeur choisie, objet BiS du perso, envie) : grand encadré au centre avec un halo à la couleur de la rareté et un petit son.",
+            "Réglages dans la roue de la page Filtre de loot (qualité minimale, durée, seuils du grand encadré, son) ; les deux encadrés se placent en mode édition. Achats, courrier et échanges ne s'affichent pas.",
+        },
+    },
+    {
         version = "1.128.247", date = "23/11/2026",
         changed = {
             "Filtre de butin, liste « Objets laissés au sol » refaite (maquette A avec la fiche de B) : chiffres clés en tête (valeur laissée, part du filtre, part des sacs pleins avec le nombre de fois cette semaine, objet le plus cher oublié).",
