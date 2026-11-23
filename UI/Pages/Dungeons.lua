@@ -1,6 +1,7 @@
 local ADDON_NAME, WK = ...
 local UI = WK.UI
 local C = UI.colors
+local CreateFrame, GameTooltip, IsShiftKeyDown = _G.CreateFrame, _G.GameTooltip, _G.IsShiftKeyDown
 local T = function(s) return WK.T(s) end
 
 -- Page « Donjons » (groupe Exploration) : colonne des donjons à gauche, groupés selon le niveau du perso
@@ -365,11 +366,13 @@ UI:RegisterPage({
                 ic:SetSize(24, 24)
                 ic:SetPoint("RIGHT", r, "RIGHT", -8 - (k - 1) * 27, 0)
                 ic.edge = UI:Rounded(ic, 5, 0, "BACKGROUND", 1)
-                ic.tex = ic:CreateTexture(nil, "ARTWORK"); ic.tex:SetPoint("TOPLEFT", 2, -2); ic.tex:SetPoint("BOTTOMRIGHT", -2, 2)
+                ic.tex = ic:CreateTexture(nil, "ARTWORK")
+                ic.tex:SetPoint("TOPLEFT", 2, -2); ic.tex:SetPoint("BOTTOMRIGHT", -2, 2)
                 ic.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                 ic:SetScript("OnEnter", function(s2)
                     UI:TooltipOwner(s2, "ANCHOR_RIGHT")
-                    if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s2.id) else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
+                    if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s2.id)
+                    else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
                     GameTooltip:Show()
                 end)
                 ic:SetScript("OnLeave", function() GameTooltip:Hide() end)
