@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.201", date = "23/11/2026",
+        fixed = {
+            "Persos > Expérience : les autres persos affichaient « 0 % · 1 restants » et un repos faux. Le relevé fait à la déconnexion, quand le jeu ne donne plus l'XP, écrasait le bon relevé : il est maintenant ignoré. Un perso déjà touché affiche « à relever (connecte-le) » jusqu'à sa prochaine connexion, et son repos est estimé avec l'XP de son niveau.",
+        },
+        changed = {
+            "Persos > Expérience : « Plein dans » s'écrit en jours au-delà de 2 jours (« env. 37 j 12 h dehors »). Dehors, le repos se remplit 4 fois moins vite qu'en auberge : il faut plus d'un mois pour atteindre 150 %.",
+        },
+    },
+    {
         version = "1.128.200", date = "23/11/2026",
         changed = {
             "Inventaire (maquette B) : en haut, un interrupteur Objets / Courrier (nombre d'objets du compte, lettres en attente). Dessous, seulement les onglets du groupe choisi, soulignés : Tout le compte, Rangement, À regrouper, Oubliés en banque, Verrouillés, ou Envoi, Dépôt banque, Réception. Chaque groupe revient à son dernier onglet ouvert.",

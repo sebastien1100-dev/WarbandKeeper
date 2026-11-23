@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.201 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Persos > Expérience : « Plein dans » s'écrit en jours au-delà de 2 jours (« env. 37 j 12 h dehors »). Dehors, le repos se remplit 4 fois moins vite qu'en auberge : il faut plus d'un mois pour atteindre 150 %.
+
+### Corrections
+- Persos > Expérience : les autres persos affichaient « 0 % · 1 restants » et un repos faux. Le relevé fait à la déconnexion, quand le jeu ne donne plus l'XP, écrasait le bon relevé : il est maintenant ignoré. Un perso déjà touché affiche « à relever (connecte-le) » jusqu'à sa prochaine connexion, et son repos est estimé avec l'XP de son niveau.
+
 ## v1.128.200 — 23/11/2026
 
 _Un /reload suffit._

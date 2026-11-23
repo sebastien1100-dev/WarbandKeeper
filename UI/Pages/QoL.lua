@@ -2408,20 +2408,27 @@ UI:RegisterPage({
                         t.xfill:SetVertexColor(ar, ag, ab, 1)
                         t.rfill:SetVertexColor(C.info[1], C.info[2], C.info[3], 0.85)
                         t.full:Hide()
+                        -- relevé sans maximum d'XP (ancien relevé fait à la déconnexion) :
+                        -- XP inconnue, repos estimé quand même
+                        local noXP = x and (x.max or 0) <= 1
                         if maxed or not x then
                             t.xfill:SetWidth(maxed and bw or 0.01); t.rfill:Hide()
                             t.v1:SetText(maxed and T("niveau maximum") or "?")
                             t.v2:SetText("-"); t.v3:SetText("-")
                             t.v2:SetTextColor(C.muted[1], C.muted[2], C.muted[3]); t.v3:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
                         else
-                            local mx = math.max(1, x.max or 1)
-                            local pc = math.max(0, math.min(1, (x.cur or 0) / mx))
+                            local mx = noXP and (X:LevelXP(x.level or lvl) or 1) or math.max(1, x.max or 1)
+                            local pc = noXP and 0 or math.max(0, math.min(1, (x.cur or 0) / mx))
                             local frac = X:RestOf(e.key) or 0
                             t.xfill:SetWidth(math.max(0.01, bw * pc))
                             local rw = math.min(1 - pc, frac) * bw
                             t.rfill:ClearAllPoints(); t.rfill:SetPoint("TOPLEFT", t.track, "TOPLEFT", bw * pc, 0)
                             t.rfill:SetWidth(math.max(0.01, rw)); t.rfill:SetShown(rw > 0.5)
-                            t.v1:SetText(string.format(T("%d %% · %s restants"), math.floor(pc * 100), fmt(mx - (x.cur or 0))))
+                            if noXP then t.v1:SetText(T("à relever (connecte-le)"))
+                            else
+                                local left = fmt(mx - (x.cur or 0))
+                                t.v1:SetText(string.format(T("%d %% · %s restants"), math.floor(pc * 100), left))
+                            end
                             t.v2:SetText(string.format(T("%d %% d'un niveau"), math.floor(frac * 100)))
                             t.v2:SetTextColor(C.info[1], C.info[2], C.info[3])
                             local full = frac >= X.REST_MAX - 0.001

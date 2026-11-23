@@ -43,10 +43,19 @@ function M:Me()
     }
 end
 
+-- XP d'un niveau (1 à 59), comme le jeu : sert quand le relevé d'un perso n'a pas son maximum
+local LEVEL_XP = { 400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600, 8800, 10100, 11400, 12900, 14400,
+    16000, 17700, 19400, 21300, 23200, 25200, 27300, 29400, 31700, 34000, 36400, 38900, 41400, 44300, 47400, 50800,
+    54500, 58600, 62800, 67100, 71600, 76100, 80800, 85700, 90700, 95800, 101000, 106300, 111800, 117500, 123200,
+    129000, 135000, 141000, 147500, 154000, 163000, 173000, 184000, 196000, 208000, 220000, 232000, 245000 }
+function M.LevelXP(_, level) return LEVEL_XP[level or 0] end
+
 local function save()
     local c = WK.DB:Me()
     if not c then return end
     local x = M:Me()
+    -- XP pas encore (ou plus) lisible (connexion, déconnexion : le jeu rend 0) : on garde le dernier bon relevé
+    if x.max <= 1 and not x.maxed then return end
     c.xp = { level = x.level, cur = x.cur, max = x.max, rested = x.rested, resting = x.resting, at = time() }
 end
 
@@ -218,7 +227,8 @@ function M:RestOf(key)
     if not x then return nil end
     if key == WK:CharKey() then local me = self:Me(); return me.rested / me.max, me end
     if (c.level or x.level or 1) >= self:MaxLevel() then return nil end
-    local frac = (x.rested or 0) / math.max(1, x.max or 1)
+    local mx = ((x.max or 0) > 1) and x.max or LEVEL_XP[x.level or 0] or 1
+    local frac = (x.rested or 0) / mx
     local hours = math.max(0, (time() - (x.at or time())) / 3600)
     frac = frac + REST_PER_8H * (hours / 8) * (x.resting and 1 or 0.25)
     return math.min(REST_MAX, frac), x

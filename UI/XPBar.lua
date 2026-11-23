@@ -21,6 +21,11 @@ UI.FormatXP = fmt
 local function dur(sec)
     sec = math.floor(sec or 0)
     if sec < 3600 then return string.format(T("%d min"), math.max(1, math.floor(sec / 60))) end
+    -- au-delà de 2 jours : en jours (le repos plein dehors se compte en semaines)
+    if sec >= 48 * 3600 then
+        local d, h = math.floor(sec / 86400), math.floor(sec % 86400 / 3600)
+        return h > 0 and string.format(T("%d j %d h"), d, h) or string.format(T("%d j"), d)
+    end
     return string.format("%d h %02d", math.floor(sec / 3600), math.floor(sec % 3600 / 60))
 end
 UI.XPDuration = dur
