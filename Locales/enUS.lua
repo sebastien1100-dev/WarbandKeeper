@@ -2734,7 +2734,6 @@ WK.Locales.enUS.text = {
     ["Ce qui manque pour monter tes métiers jusqu'au palier choisi dans le guide (75, 150… ou Max), avec Acheter et Tout acheter. Seulement chez un marchand qui en vend."] = "What is missing to level your professions up to the tier chosen in the guide (75, 150... or Max), with Buy and Buy all. Only at a vendor who sells some.",
     ["Quand tu poses un objet dans la fenêtre de vente du jeu, son prix est mis au plus bas des autres vendeurs moins la marge ci-dessous (sinon au prix du scan)."] = "When you put an item in the game's sell window, its price is set to the other sellers' lowest minus the margin below (otherwise the scan price).",
     ["Le temps de pêcher ; tout redevient comme avant à la fermeture. Maximum : voix coupées, volume général au maximum, son gardé quand le jeu est en arrière-plan."] = "While fishing; everything goes back to normal on closing. Maximum: voices muted, master volume at maximum, sound kept when the game is in the background.",
-    ["Une colonne de boutons : ton feu, tes objets de camp (meilleur palier en sac), ton sac de couchage, ta nourriture « Bien nourri » et ta boisson. Clic : utiliser (hors combat)."] = "A column of buttons: your fire, your camp items (best tier in bags), your sleeping bag, your \"Well Fed\" food and your drink. Click: use (out of combat).",
     -- UI/Pages/LFG.lua
     ["Je joue (mes rôles)"] = "I play (my roles)",
     ["Mon message (demande de groupe)"] = "My message (group request)",
@@ -2970,6 +2969,8 @@ WK.Locales.enUS.text = {
     ["  Près d'un feu, il faut l'effet « Feu de camp proche » (ou un effet dont la description parle du feu de camp)."] = "  Near a fire, the \"Campfire nearby\" effect is needed (or an effect whose description mentions the campfire).",
     ["Effets sur ton perso et ce que l'addon en comprend (flamme du camp, assis, avantages)."] = "Effects on your character and what the addon makes of them (camp flame, sitting, benefits).",
     ["Lance-le à côté d'un feu de camp."] = "Run it next to a campfire.",
+    ["Ton feu, tes objets de camp (meilleur palier en sac) et ton sac de couchage : clic droit sur la flamme, ou case « kit » de la barre des sacs. Clic : utiliser (hors combat)."] = "Your fire, your camp items (best tier in bags) and your sleeping bag: right-click on the flame, or the \"kit\" slot of the bag bar. Click: use (out of combat).",
+    ["clic droit sur la flamme, ou dans la barre des sacs"] = "right-click on the flame, or in the bag bar",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",
@@ -4441,8 +4442,6 @@ WK.Locales.enUS.text = {
         "A kit tile in the bags, vendor and trainer bar (camp benefits time left); a click unfolds the kit with each item's name and state (out of combat). The bar must be shown.",
     ["Avantages restants, recharge des objets de camp, « Bien nourri » (seulement hors de la barre des sacs)."] =
         "Benefits left, camp item cooldown, Well Fed (only outside the bags bar).",
-    ["dans la barre des sacs, ou colonne près de la flamme"] =
-        "in the bags bar, or a column by the flame",
     ["Buffs à ne pas oublier"] =
         "Buffs not to forget",
     ["Tout est en place."] =

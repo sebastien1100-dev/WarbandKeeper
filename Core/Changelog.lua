@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.256", date = "23/11/2026",
+        changed = {
+            "Feu de camp : la colonne de boutons du kit près de la flamme est retirée (et du mode édition). Le kit s'ouvre par un clic droit sur la flamme, ou par la case « kit » de la barre des sacs.",
+        },
+    },
+    {
         version = "1.128.255", date = "23/11/2026",
         changed = {
             "Feu de camp, pastilles sous la flamme : les avantages du camp n'affichent plus que leur durée restante (« 59 min »), et la pastille « Bien nourri » n'est plus montrée.",

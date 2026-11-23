@@ -130,7 +130,7 @@ local function build()
     f:Hide()
     UI:RegisterHUD("campKit", f, {
         label = T("Kit de camp"), protected = true, default = { -170, -120 },
-        enabled = function() return M:Config().kit and not inBar() and WK:FeatureOn("campfire") end,
+        enabled = function() return false end, -- colonne retirée : plus dans le mode édition
         sample = function(on)
             f.sample = on or nil
             if inCombat() then return end
@@ -302,9 +302,8 @@ function UI:RefreshCampKit()
         kit:Show()
         return
     end
-    kit:Fill(list)
-    if UI.HUDApply then pcall(UI.HUDApply, UI, "campKit") end
-    kit:Show()
+    -- colonne près de la flamme retirée (à la demande du joueur) : le kit s'ouvre au clic droit sur la flamme
+    kit:Hide()
 end
 -- clic droit sur la flamme : ouvre ou referme la barre du kit à côté d'elle (hors combat : boutons protégés)
 function UI.ToggleCampKitFlame()
