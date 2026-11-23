@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.208", date = "23/11/2026",
+        fixed = {
+            "Erreur à la connexion « hooksecurefunc(): _G.TakeTaxiNode is not a function » (journal de l'or, 1.128.205) : les détails des vols, sorts appris, courrier et achats sont de nouveau notés.",
+        },
+    },
+    {
         version = "1.128.207", date = "23/11/2026",
         fixed = {
             "Donjons : erreur « secret string » sur certains messages du jeu (remise à zéro d'instance, réputation) quand le jeu les cache : ils sont maintenant ignorés.",

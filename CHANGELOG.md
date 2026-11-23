@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.208 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Erreur à la connexion « hooksecurefunc(): _G.TakeTaxiNode is not a function » (journal de l'or, 1.128.205) : les détails des vols, sorts appris, courrier et achats sont de nouveau notés.
+
 ## v1.128.207 — 23/11/2026
 
 _Un /reload suffit._

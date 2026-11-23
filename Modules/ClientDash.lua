@@ -57,20 +57,20 @@ WK:On("QUEST_TURNED_IN", function(qid)
 end)
 if hooksecurefunc then
     if RepairAllItems then hooksecurefunc("RepairAllItems", function() repairAt = GetTime() end) end
-    if _G.TakeTaxiNode then hooksecurefunc("_G.TakeTaxiNode", function(i)
+    if _G.TakeTaxiNode then hooksecurefunc("TakeTaxiNode", function(i)
         taxiAt = GetTime()
         local ok, n = pcall(_G.TaxiNodeName, i)
         if ok and type(n) == "string" then note("Vols", (n:match("^([^,]+)") or n)) end
     end) end
-    if _G.BuyTrainerService then hooksecurefunc("_G.BuyTrainerService", function(i)
+    if _G.BuyTrainerService then hooksecurefunc("BuyTrainerService", function(i)
         local ok, n, sub = pcall(_G.GetTrainerServiceInfo, i)
         if ok and n then note("Maître (apprentissage)", (sub and sub ~= "") and (n .. " (" .. sub .. ")") or n) end
     end) end
-    if _G.TakeInboxMoney then hooksecurefunc("_G.TakeInboxMoney", function(i)
+    if _G.TakeInboxMoney then hooksecurefunc("TakeInboxMoney", function(i)
         local ok, _, _, from = pcall(_G.GetInboxHeaderInfo, i)
         if ok and type(from) == "string" then note("Courrier", string.format(WK.T("de %s"), from)) end
     end) end
-    if _G.BuyMerchantItem then hooksecurefunc("_G.BuyMerchantItem", function(i)
+    if _G.BuyMerchantItem then hooksecurefunc("BuyMerchantItem", function(i)
         local n = WK.MerchantItemInfo and WK.MerchantItemInfo(i)
         if n then note("Achats chez le marchand", n) end
     end) end
