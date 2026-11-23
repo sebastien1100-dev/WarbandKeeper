@@ -2098,7 +2098,8 @@ UI:RegisterPage({
                 UI:Slider(rem, 240, 0, 30, 2, function() return campCfg.doneSecs or 8 end, function(v) campCfg.doneSecs = v end, "%d s"), 260)
             -- kit de camp et rappels
             local kc = card("Kit de camp", 40 + 5 * 46 + 8, "clic droit sur la flamme, ou dans la barre des sacs")
-            UI:SettingRow(kc, -40, "Kit de camp", "Ton feu, tes objets de camp (meilleur palier en sac) et ton sac de couchage :"
+            UI:SettingRow(kc, -40, "Kit de camp",
+                "Ton feu, tes objets de camp (meilleur palier en sac) et ton sac de couchage :"
                     .. " clic droit sur la flamme, ou case « kit » de la barre des sacs. Clic : utiliser (hors combat).",
                 toggle(kc, function() return campCfg.kit end, function(v) campCfg.kit = v; cupdate() end), 80)
             UI:SettingRow(kc, -86, "Toujours visible", "Sinon, le kit n'apparaît que près d'un feu de camp.",
