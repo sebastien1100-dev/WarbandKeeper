@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.196", date = "23/11/2026",
+        changed = {
+            "Inventaire : la roue des réglages remonte sur la ligne des onglets, à droite ; le filtre Tout / Sacs / Banque / Courrier prend toute la droite de la ligne du dessous.",
+        },
+    },
+    {
         version = "1.128.195", date = "23/11/2026", restart = true,
         changed = {
             "Inventaire : plus de colonne de gauche. Tout le compte, Rangement, À regrouper, Oubliés en banque et Verrouillés sont des onglets en haut, avec leur nombre. Dans « Tout le compte », une liste PERSO à gauche de la recherche choisit un perso (couleur de classe, nombre d'objets) ou la banque de bataillon ; le choix est retenu. Les catégories d'objets passent sur 4 colonnes quand la place le permet.",

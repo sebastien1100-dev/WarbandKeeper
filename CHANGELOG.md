@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.196 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Inventaire : la roue des réglages remonte sur la ligne des onglets, à droite ; le filtre Tout / Sacs / Banque / Courrier prend toute la droite de la ligne du dessous.
+
 ## v1.128.195 — 23/11/2026
 
 _Redémarrage complet du jeu nécessaire (nouveaux fichiers)._

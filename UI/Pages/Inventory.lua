@@ -312,13 +312,13 @@ UI:RegisterPage({
 
         self.whereSeg = UI:Segmented(p, { { "all", "Tout" }, { "bags", "Sacs" }, { "bank", "Banque" }, { "mailbox", "Courrier" } },
             function(key) self.where = key; self:Refresh() end, 34)
-        self.whereSeg:SetPoint("TOPRIGHT", -40, -TOP_H)
+        self.whereSeg:SetPoint("TOPRIGHT", 0, -TOP_H)
         self.whereSeg:Select("all")
         -- Objets oubliés : depuis combien de jours
         self.oldDays = 14
         self.oldSeg = UI:Segmented(p, { { 7, "7 j" }, { 14, "14 j" }, { 30, "30 j" } },
             function(d) self.oldDays = d; self:Refresh() end, 34)
-        self.oldSeg:SetPoint("TOPRIGHT", -40, -TOP_H)
+        self.oldSeg:SetPoint("TOPRIGHT", 0, -TOP_H)
         self.oldSeg:Select(14)
         self.oldSeg:Hide()
 
@@ -373,12 +373,12 @@ UI:RegisterPage({
             end
             if prevReveal then return prevReveal(d, row) end
         end
-        self.gp.gear:SetPoint("TOPRIGHT", 0, -TOP_H)
+        self.gp.gear:SetPoint("TOPRIGHT", 0, -1) -- sur la ligne des onglets
         -- au-dessus des vues (Rangement, verrous) qui la couvraient
         self.gp.gear:SetFrameLevel((p:GetFrameLevel() or 1) + 60)
         -- le volet couvre tout le contenu (rien ne dépasse au-dessus) ; ses cartes commencent sous la roue dentée
         self.gp.overlay:ClearAllPoints()
-        self.gp.overlay:SetPoint("TOPLEFT", x0, -TOP_H)
+        self.gp.overlay:SetPoint("TOPLEFT", x0, 0)
         self.gp.overlay:SetPoint("BOTTOMRIGHT")
         self.gp.scroll:ClearAllPoints()
         self.gp.scroll:SetPoint("TOPLEFT", 0, -42)
