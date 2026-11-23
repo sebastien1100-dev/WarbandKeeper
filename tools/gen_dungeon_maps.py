@@ -37,8 +37,9 @@ def read_maps(src):
 
 
 def naowh_encounters(src):
-    """{ n° de rencontre: n° du PNJ } et { clé de carte: nom anglais } des fichiers Data/Dungeons (lus en texte)."""
-    enc, names = {}, {}
+    """{ n° de rencontre: n° du PNJ }, { clé de carte: nom anglais } et { objet: % de drop } des fichiers
+    Data/Dungeons (lus en texte ; taux 0 = inconnu, ignoré ; même objet chez plusieurs boss : le plus haut)."""
+    enc, names, drops = {}, {}, {}
     folder = os.path.join(src, "Data", "Dungeons")
     for fn in os.listdir(folder):
         if not fn.endswith(".lua"):
@@ -52,11 +53,14 @@ def naowh_encounters(src):
                 names[key] = v.get("name")
                 for w in seq(v.get("wings")):
                     for b in seq(w.get("bosses")):
+                        for item, pct in zip(seq(b.get("loot")), seq(b.get("chance"))):
+                            if isinstance(item, int) and isinstance(pct, (int, float)) and pct > 0:
+                                drops[item] = max(drops.get(item, 0), pct)
                         for e in seq(b.get("encounters")):
                             if b.get("npc"):
                                 enc[int(e)] = int(b["npc"])
                 break
-    return enc, names
+    return enc, names, drops
 
 
 def our_dungeons():
@@ -120,7 +124,7 @@ def main():
         raise SystemExit(__doc__)
     src = sys.argv[1]
     maps = read_maps(src)
-    enc2npc, mapnames = naowh_encounters(src)
+    enc2npc, mapnames, drops = naowh_encounters(src)
     ours = our_dungeons()
     os.makedirs(OUT_DIR, exist_ok=True)
     lines, used = [], set()
@@ -167,7 +171,13 @@ def main():
         out.write("--   p = { [n° du PNJ] = { étage, x, y } }, x = { [n° de rencontre] = n° du PNJ } } ; x et y de 0 à 1 sur l'image.\n")
         out.write("local ADDON_NAME, WK = ...\nWK.DungeonMaps = {\n")
         out.write("\n".join(lines) + "\n}\n")
-    print("%d donjons avec carte, %d images" % (matched, len(used)))
+        out.write("-- WK.DungeonDrops[objet] = % de drop (Dungeon Journal de Naowh Forever, même accord) : après wowtbc.gg,\n")
+        out.write("-- avant les taux observés d'Everloot (Dungeons:ItemInfo).\nWK.DungeonDrops = {\n")
+        items = sorted(drops.items())
+        for i in range(0, len(items), 12):
+            out.write(" ".join("[%d]=%s," % (k, ("%g" % v)) for k, v in items[i:i + 12]) + "\n")
+        out.write("}\n")
+    print("%d donjons avec carte, %d images, %d taux de drop" % (matched, len(used), len(drops)))
 
 
 if __name__ == "__main__":

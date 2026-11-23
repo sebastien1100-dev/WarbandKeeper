@@ -373,6 +373,10 @@ UI:RegisterPage({
                     UI:TooltipOwner(s2, "ANCHOR_RIGHT")
                     if GameTooltip.SetItemByID then GameTooltip:SetItemByID(s2.id)
                     else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
+                    local info = D:ItemInfo(s2.id)
+                    if info and info.drop then
+                        GameTooltip:AddLine(string.format(T("Chance de drop : %s %%"), tostring(info.drop)), 0.8, 0.8, 0.8)
+                    end
                     GameTooltip:Show()
                 end)
                 ic:SetScript("OnLeave", function() GameTooltip:Hide() end)

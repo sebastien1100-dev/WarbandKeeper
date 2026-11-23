@@ -37,6 +37,9 @@ function UI:DungeonLootRow(parent)
     r.star.t:SetPoint("CENTER")
     r.tag = UI:Badge(r, "", nil)
     r.tag:SetPoint("RIGHT", r.star, "LEFT", -4, 0)
+    -- taux de drop, toujours affiché (colonne à droite du nom)
+    r.drop = UI:Text(r, 11, C.muted)
+    r.drop:SetJustifyH("RIGHT")
     r.name = UI:Text(r, 11)
     r.name:SetPoint("LEFT", 30, 0)
     r.name:SetPoint("RIGHT", r.tag, "LEFT", -4, 0)
@@ -76,14 +79,21 @@ function UI:DungeonLootRow(parent)
         if D:Owned(self.id) then self.tag:Set(T("sur le compte"), C.positive); self.tag:Show()
         elseif usable and not self.hideMine then self.tag:Set(T("pour toi")); self.tag:Show()
         elseif info and info.undiscovered then self.tag:Set(T("non découvert"), C.dim); self.tag:Show()
-        elseif info and info.drop then self.tag:Set(string.format("%s %%", tostring(info.drop)), C.muted); self.tag:Show()
         else self.tag:Hide() end
         if name == nil or name == "" then self.name:SetText("#" .. tostring(self.id)) end
-        if not self.tag:IsShown() then
-            self.name:SetPoint("RIGHT", self.star, "LEFT", -4, 0)
-        else
-            self.name:SetPoint("RIGHT", self.tag, "LEFT", -4, 0)
+        -- taux de drop : vert à 25 % et plus, gris clair en dessous, pâle sous 5 % ; « ~ » = observé par les joueurs
+        local drop = info and info.drop
+        self.drop:SetShown(drop ~= nil)
+        if drop then
+            local txt = (drop >= 10 and string.format("%d %%", math.floor(drop + 0.5)) or string.format("%.1f %%", drop)):gsub("%.", ",")
+            self.drop:SetText((info.observed and T("env. ") or "") .. txt)
+            local col = drop >= 25 and C.positive or (drop >= 5 and C.muted or C.dim)
+            self.drop:SetTextColor(col[1], col[2], col[3])
         end
+        local right = self.tag:IsShown() and self.tag or self.star
+        self.drop:ClearAllPoints(); self.drop:SetPoint("RIGHT", right, "LEFT", -8, 0)
+        self.name:ClearAllPoints(); self.name:SetPoint("LEFT", 30, 0)
+        self.name:SetPoint("RIGHT", drop and self.drop or right, "LEFT", -6, 0)
         local wished = D:IsWished(self.id, self.charKey)
         local r1, g1, b1 = UI:Accent()
         if wished then self.star.t:SetVertexColor(r1, g1, b1, 1) else self.star.t:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 1) end

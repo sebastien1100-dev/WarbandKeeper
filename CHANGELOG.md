@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.209 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Donjons : le taux de drop s'affiche à côté de chaque objet (vert à partir de 25 %, pâle sous 5 %), même quand l'objet porte « pour toi » ou « sur le compte » ; aussi dans l'infobulle des icônes de la liste des boss.
+- Taux de drop connus pour 1 073 objets au lieu de 188 : ceux du Dungeon Journal de Naowh Forever, repris avec l'accord de son auteur, s'ajoutent à ceux de wowtbc.gg et d'Everloot.
+
 ## v1.128.208 — 23/11/2026
 
 _Un /reload suffit._

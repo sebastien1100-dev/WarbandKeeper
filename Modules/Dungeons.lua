@@ -97,7 +97,8 @@ function M:ItemInfo(id)
     local i = WK.DungeonItems and WK.DungeonItems[id]
     if not i then return nil end
     local info = { quality = i[1], ilvl = i[2], req = i[3], drop = i[4], undiscovered = i[5] or false }
-    -- pas de taux sur wowtbc.gg : taux observé par les joueurs (Everloot), meilleure source
+    -- pas de taux sur wowtbc.gg : celui du Dungeon Journal de Naowh Forever, puis celui observé par les joueurs (Everloot)
+    if not info.drop and WK.DungeonDrops and WK.DungeonDrops[id] then info.drop = WK.DungeonDrops[id] end
     local ev = WK.EverDrops and WK.EverDrops[id]
     if not info.drop and ev then
         info.drop = ev[2] / 10
