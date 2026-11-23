@@ -122,16 +122,48 @@ UI:RegisterPage({
         self.enable:SetPoint("RIGHT", banner, "RIGHT", -16, 0)
         self.bannerState = UI:Text(banner, 11, C.muted)
         self.bannerState:SetPoint("TOPLEFT", bt, "BOTTOMLEFT", 0, -4)
-        self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -210, -30)
+        self.bannerState:SetPoint("TOPRIGHT", banner, "TOPRIGHT", -360, -30)
         self.enableLbl = UI:Text(banner, 12)
         self.enableLbl:SetPoint("RIGHT", self.enable, "LEFT", -10, 0)
-        -- roue : réglages du butin à l'écran (UI/LootToast.lua), volet posé sous le bandeau
-        local ltCard = UI.BuildLootToastCard and UI:BuildLootToastCard(p)
-        if ltCard then
-            self.gp = UI:PageGear(p, { title = "Butin à l'écran", top = BANNER_H + GAP, columns = 1, size = 28,
-                cards = function() return { ltCard } end }, self)
-            self.gp.gear:SetPoint("RIGHT", self.enableLbl, "LEFT", -16, 0)
-            self.gp.gear:SetFrameLevel(banner:GetFrameLevel() + 5)
+        -- « Butin à l'écran » (UI/LootToast.lua, maquette A) : bouton du bandeau avec son interrupteur et sa roue ;
+        -- la roue ouvre le volet des réglages (trois cartes) sous le bandeau
+        local ltCards = UI.BuildLootToastCards and UI:BuildLootToastCards(p)
+        if ltCards then
+            self.gp = UI:PageGear(p, { title = "Butin à l'écran", top = BANNER_H + GAP, columns = 2,
+                cards = function() return ltCards end,
+                -- volet ouvert : profils, avertissement, réglages du profil et liste cachés dessous
+                onToggle = function(open) self.ltOpen = open; self:CoverForGear() end }, self)
+            self.gp.gear:Hide()
+            -- au-dessus des cartes de la page (et de la liste des objets laissés au sol)
+            self.gp.overlay:SetFrameLevel(p:GetFrameLevel() + 120)
+            local lb = _G.CreateFrame("Frame", nil, banner)
+            lb:SetHeight(30)
+            lb:SetFrameLevel(banner:GetFrameLevel() + 5)
+            lb.edge = UI:Rounded(lb, 15, 0, "BACKGROUND", 1)
+            lb.bg = UI:Rounded(lb, 14, 1, "BACKGROUND", 2)
+            lb.label = UI:Text(lb, 12)
+            lb.label:SetPoint("LEFT", 14, 0)
+            lb.label:SetText(T("Butin à l'écran"))
+            local ltc = UI.LootToastConfig()
+            lb.tog = UI:Toggle(lb, function() return ltc.enabled end, function(v) ltc.enabled = v end)
+            lb.tog:SetPoint("LEFT", lb.label, "RIGHT", 10, 0)
+            lb.gear = UI:IconButton(lb, "gear", 24, "Réglages du butin à l'écran")
+            lb.gear:SetPoint("LEFT", lb.tog, "RIGHT", 8, 0)
+            lb.gear:SetScript("OnClick", function() self.gp:Open(not self.gp:IsOpen()) end)
+            lb:SetWidth(14 + lb.label:GetStringWidth() + 10 + 40 + 8 + 24 + 6)
+            lb:SetPoint("RIGHT", self.enableLbl, "LEFT", -24, 0)
+            local r, g, bl = UI:Accent()
+            lb.edge:SetColor(r, g, bl, 0.9)
+            lb.bg:SetColor(r * 0.16, g * 0.16, bl * 0.16, 1)
+            lb.label:SetTextColor(r, g, bl)
+            self.ltButton = lb
+            UI.RefreshLootToastButton = function() if lb.tog.Refresh then lb.tog:Refresh() end end
+            -- volet ouvert : la roue en surbrillance
+            local open0 = self.gp.Open
+            self.gp.Open = function(gp, onO)
+                open0(gp, onO)
+                if lb.gear.SetActive then lb.gear:SetActive(gp:IsOpen()) end
+            end
         end
         local TOP = -(BANNER_H + GAP)
 
@@ -745,6 +777,15 @@ UI:RegisterPage({
         end
     end,
 
+    CoverForGear = function(self)
+        local open = self.ltOpen
+        for _, f in ipairs({ self.leftCard, self.body }) do if f then f:SetShown(not open) end end
+        if open then
+            if self.warn then self.warn:Hide() end
+            if self.leftPanel then self.leftPanel:Hide() end
+        end
+    end,
+
     Refresh = function(self)
         local L = Loot()
         local d = WK.DB.global.loot
@@ -754,7 +795,7 @@ UI:RegisterPage({
 
         -- Avertissement butin automatique
         local warn = L:GameAutoLoot() and d.enabled
-        self.warn:SetShown(warn)
+        self.warn:SetShown(warn and not self.ltOpen)
         self.body:ClearAllPoints()
         self.body:SetPoint("TOPLEFT", LEFT_W + GAP, -(BANNER_H + GAP) - (warn and (44 + GAP) or 0))
         self.body:SetPoint("BOTTOMRIGHT")

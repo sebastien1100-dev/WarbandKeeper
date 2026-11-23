@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.250", date = "23/11/2026",
+        added = {
+            "Butin à l'écran : bouton « Butin à l'écran » dans le bandeau du Filtre de loot, avec son interrupteur (activer ou couper d'un clic) et une roue qui ouvre ses réglages en trois cartes : Affichage, Quoi afficher, Grand encadré ; boutons « Tester » et « Placer (mode édition) ».",
+            "Nouvelles options : afficher seulement en donjon et raid ou pendant une séance de farm ; pas en combat (affichés à la sortie du combat) ; taille ; nombre d'encadrés à la fois ; sens de la pile ; prix minimal du lot ; récompenses de quête ; or ramassé ; prix, ligne utile et étiquettes à montrer ou non ; durée du grand encadré et « aussi pour BiS et envies ».",
+        },
+    },
+    {
         version = "1.128.249", date = "23/11/2026",
         fixed = {
             "Filtre de butin : « Vider la liste » vide aussi la colonne « Laissés au sol récemment » et le compteur de la séance (ils restaient pleins).",

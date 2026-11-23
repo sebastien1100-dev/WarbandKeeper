@@ -13,11 +13,13 @@ local GetTime, C_Timer, C_Item, UIParent, wipe = _G.GetTime, _G.C_Timer, _G.C_It
 --     perso ou objet d'envie ; halo à la couleur de la rareté, son, BIG_DUR secondes.
 -- Messages « Vous recevez le butin » du perso (CHAT_MSG_LOOT, formats du jeu LOOT_ITEM_SELF…).
 -- Réglages WK.DB.global.lootToast (carte « Butin à l'écran » de la roue de la page Filtre de loot).
-local MAXN, W, H, GAPY = 6, 300, 48, 6
+local MAXN, W, H, GAPY = 8, 300, 48, 6
+local SIZES = { s = 0.85, m = 1, l = 1.2 }
 local BIG_W, BIG_H = 380, 76
 
 local DEFAULTS = { enabled = true, minQuality = 1, duration = 4, bigQuality = 3, bigValue = 0, bigDuration = 6,
-    sound = true }
+    sound = true, where = "all", noCombat = false, size = "m", maxN = 6, grow = "down", minValue = 0, quest = true,
+    money = false, showPrice = true, showSub = true, showTags = true, bigBis = true }
 function UI.LootToastConfig()
     local g = WK.DB.global
     g.lootToast = g.lootToast or {}
@@ -27,6 +29,21 @@ function UI.LootToastConfig()
 end
 local function cfg() return UI.LootToastConfig() end
 local function on() return cfg().enabled and WK:FeatureOn("loot") end
+local function scale() return SIZES[cfg().size or "m"] or 1 end
+-- « Afficher seulement » : partout, en donjon et raid, ou pendant une séance de farm
+local function placeOk()
+    local w = cfg().where or "all"
+    if w == "instance" then
+        local inst, kind = false, nil
+        if _G.IsInInstance then inst, kind = _G.IsInInstance() end
+        return inst and (kind == "party" or kind == "raid") or false
+    end
+    if w == "farm" then
+        local F = WK.modules.Farm
+        return F and F.Active and F:Active() or false
+    end
+    return true
+end
 
 local function qcolor(q)
     local col = _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[q or 1]
@@ -82,11 +99,12 @@ local function describe(id, link, qty)
     e.tags = table.concat(tags, "  ")
     local c = cfg()
     e.big = ((c.bigQuality or 3) < 9 and (q or 1) >= (c.bigQuality or 3))
-        or ((c.bigValue or 0) > 0 and e.value >= c.bigValue) or e.bis or e.wish or false
+        or ((c.bigValue or 0) > 0 and e.value >= c.bigValue) or (c.bigBis ~= false and (e.bis or e.wish)) or false
     return e
 end
 
 local function priceText(e)
+    if e.src == "money" then return UI:GoldText(e.value), T("ramassé") end
     if e.value > 0 then return UI:GoldText(e.value), e.src == "ah" and T("HV") or T("marchand") end
     return UI:Hex(C.dim) .. "-|r", T("pas de prix")
 end
@@ -137,21 +155,26 @@ local function newToast(parent)
         self.iconEdge:SetColorTexture(col[1], col[2], col[3], 1)
         self.icon:SetTexture(e.icon or 134400)
         self.name:SetText(UI:Hex(col) .. e.name .. "|r" .. (e.qty > 1 and ("  x" .. e.qty) or ""))
-        local sub = e.sub or ""
-        if e.tags ~= "" then sub = (sub ~= "" and (sub .. "   ") or "") .. e.tags end
+        local c = cfg()
+        local sub = c.showSub ~= false and e.sub or ""
+        if c.showTags ~= false and (e.tags or "") ~= "" then sub = (sub ~= "" and (sub .. "   ") or "") .. e.tags end
         self.sub:SetText(sub)
         local p, s = priceText(e)
-        self.price:SetText(p); self.src:SetText(s)
+        local sp = c.showPrice ~= false
+        self.price:SetText(sp and p or ""); self.src:SetText(sp and s or "")
+        self:SetScale(scale())
     end
     t:Hide()
     return t
 end
 
+-- plus récent en haut (« down ») ou en bas (« up ») ; décalages en unités de l'encadré (sa taille s'applique)
 local function layoutStack()
     local y = 0
+    local up = cfg().grow == "up"
     for _, t in ipairs(toasts) do
         t:ClearAllPoints()
-        t:SetPoint("TOP", stack, "TOP", 0, -y)
+        if up then t:SetPoint("BOTTOM", stack, "BOTTOM", 0, y) else t:SetPoint("TOP", stack, "TOP", 0, -y) end
         y = y + H + GAPY
     end
 end
@@ -203,7 +226,7 @@ local function push(e)
     stack = stack or buildStack()
     -- même objet encore affiché : cumulé, et remonté en haut
     for i, t in ipairs(toasts) do
-        if t.e and t.e.id == e.id then
+        if t.e and t.e.id == e.id and e.id ~= "money" then
             e.qty = t.e.qty + e.qty
             e.value = e.unit * e.qty
             local n = describe(e.id, e.link, e.qty)
@@ -219,7 +242,7 @@ local function push(e)
     t.born = GetTime(); t.hover = false
     t:SetAlpha(0); t:Show()
     table.insert(toasts, 1, t)
-    while #toasts > MAXN do
+    while #toasts > math.max(1, math.min(MAXN, cfg().maxN or 6)) do
         local old = table.remove(toasts)
         old:Hide(); table.insert(stack.free, old)
     end
@@ -235,24 +258,29 @@ local function buildBig()
     f:SetSize(BIG_W, BIG_H)
     f:SetFrameStrata("HIGH")
     f:SetClampedToScreen(true)
-    f.halo = f:CreateTexture(nil, "BACKGROUND", nil, -2)
+    -- tout le dessin dans « box », mis à l'échelle par le réglage de taille
+    -- (le cadre placé garde celle du mode édition)
+    f.box = _G.CreateFrame("Frame", nil, f)
+    f.box:SetSize(BIG_W, BIG_H); f.box:SetPoint("CENTER")
+    local box = f.box
+    f.halo = box:CreateTexture(nil, "BACKGROUND", nil, -2)
     f.halo:SetTexture(UI.MEDIA .. "fxhalo"); f.halo:SetBlendMode("ADD")
     f.halo:SetPoint("TOPLEFT", -40, 34); f.halo:SetPoint("BOTTOMRIGHT", 40, -34)
-    f.edge = UI:Rounded(f, 12, 0, "BACKGROUND", 1)
-    f.bg = UI:Rounded(f, 10, 2, "BACKGROUND", 2)
-    f.iconEdge = f:CreateTexture(nil, "ARTWORK")
+    f.edge = UI:Rounded(box, 12, 0, "BACKGROUND", 1)
+    f.bg = UI:Rounded(box, 10, 2, "BACKGROUND", 2)
+    f.iconEdge = box:CreateTexture(nil, "ARTWORK")
     f.iconEdge:SetSize(50, 50); f.iconEdge:SetPoint("LEFT", 13, 0)
-    f.icon = f:CreateTexture(nil, "OVERLAY")
+    f.icon = box:CreateTexture(nil, "OVERLAY")
     f.icon:SetPoint("TOPLEFT", f.iconEdge, "TOPLEFT", 2, -2)
     f.icon:SetPoint("BOTTOMRIGHT", f.iconEdge, "BOTTOMRIGHT", -2, 2)
     f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    f.price = UI:Text(f, 15, C.gold); f.price:SetPoint("TOPRIGHT", -14, -18); f.price:SetJustifyH("RIGHT")
-    f.src = UI:Text(f, 10, C.muted); f.src:SetPoint("TOPRIGHT", f.price, "BOTTOMRIGHT", 0, -4)
+    f.price = UI:Text(box, 15, C.gold); f.price:SetPoint("TOPRIGHT", -14, -18); f.price:SetJustifyH("RIGHT")
+    f.src = UI:Text(box, 10, C.muted); f.src:SetPoint("TOPRIGHT", f.price, "BOTTOMRIGHT", 0, -4)
     f.src:SetJustifyH("RIGHT")
-    f.head = UI:Text(f, 10, C.muted); f.head:SetPoint("TOPLEFT", 76, -10)
-    f.name = UI:Text(f, 15); f.name:SetPoint("TOPLEFT", f.head, "BOTTOMLEFT", 0, -3)
+    f.head = UI:Text(box, 10, C.muted); f.head:SetPoint("TOPLEFT", 76, -10)
+    f.name = UI:Text(box, 15); f.name:SetPoint("TOPLEFT", f.head, "BOTTOMLEFT", 0, -3)
     f.name:SetPoint("RIGHT", f.price, "LEFT", -10, 0)
-    f.tags = UI:Text(f, 11); f.tags:SetPoint("TOPLEFT", f.name, "BOTTOMLEFT", 0, -5)
+    f.tags = UI:Text(box, 11); f.tags:SetPoint("TOPLEFT", f.name, "BOTTOMLEFT", 0, -5)
     f.tags:SetPoint("RIGHT", f.price, "LEFT", -10, 0)
     f:SetScript("OnEnter", function(s)
         s.hover = true
@@ -315,6 +343,7 @@ local function showBig(e)
     -- un grand encadré encore affiché passe dans la pile
     if big:IsShown() and big.e and not big.sample then push(big.e) end
     big:Paint(e)
+    big.box:SetScale(scale()); big:SetSize(BIG_W * scale(), BIG_H * scale())
     big.born = GetTime(); big.hover = false; big.t = 0
     big:SetAlpha(0); big:Show()
     if cfg().sound and _G.PlaySound then
@@ -327,8 +356,16 @@ end
 function UI.LootToastCount() return #toasts, toasts[1] and toasts[1].e and toasts[1].e.qty or 0 end
 
 -- Un objet ramassé par le perso : affiché (s'il passe la qualité minimale)
+local queue = {}
+local function inCombat() return _G.InCombatLockdown and _G.InCombatLockdown() or false end
 function UI.LootToastShow(id, link, qty, tries)
     if not on() or not id then return end
+    if not placeOk() then return end
+    -- « pas en combat » : mis de côté, affiché à la sortie du combat
+    if cfg().noCombat and inCombat() then
+        if #queue < 30 then queue[#queue + 1] = { id, link, qty } end
+        return
+    end
     local e = describe(id, link, qty or 1)
     if not e then
         -- objet pas encore connu du client : redemandé un peu plus tard
@@ -338,6 +375,7 @@ function UI.LootToastShow(id, link, qty, tries)
         return
     end
     if e.q < (cfg().minQuality or 1) and not e.big then return end
+    if (cfg().minValue or 0) > 0 and e.value < cfg().minValue and not e.big then return end
     if e.big then showBig(e) else push(e) end
 end
 
@@ -375,6 +413,7 @@ local function lootPattern(fmt)
     return "^" .. p
 end
 local SELF = { "LOOT_ITEM_SELF_MULTIPLE", "LOOT_ITEM_SELF", "LOOT_ITEM_PUSHED_SELF_MULTIPLE", "LOOT_ITEM_PUSHED_SELF" }
+local PUSHED = { LOOT_ITEM_PUSHED_SELF_MULTIPLE = true, LOOT_ITEM_PUSHED_SELF = true }
 local patterns, patKey
 local function selfLoot(msg)
     -- formats relus s'ils changent (langue du client chargée après ce fichier)
@@ -382,12 +421,12 @@ local function selfLoot(msg)
         patterns, patKey = {}, _G.LOOT_ITEM_SELF
         for _, g in ipairs(SELF) do
             local p = lootPattern(_G[g])
-            if p then patterns[#patterns + 1] = p end
+            if p then patterns[#patterns + 1] = { p, PUSHED[g] } end
         end
     end
-    for _, p in ipairs(patterns) do
-        local link, n = msg:match(p)
-        if link then return link, tonumber(n) or 1 end
+    for _, e in ipairs(patterns) do
+        local link, n = msg:match(e[1])
+        if link then return link, tonumber(n) or 1, e[2] end
     end
     return nil
 end
@@ -406,42 +445,115 @@ WK:On("CHAT_MSG_LOOT", function(msg)
     if not on() or type(msg) ~= "string" then return end
     if _G.issecretvalue and _G.issecretvalue(msg) then return end
     if busy() then return end
-    local link, n = selfLoot(msg)
+    local link, n, pushed = selfLoot(msg)
     if not link then return end
+    if pushed and cfg().quest == false then return end -- récompense de quête (objet « reçu »)
     local id = WK:ParseItemID(link)
     if id then UI.LootToastShow(id, link, n) end
+end)
+
+WK:On("PLAYER_REGEN_ENABLED", function()
+    if #queue == 0 then return end
+    local q = queue
+    queue = {}
+    for i, e in ipairs(q) do C_Timer.After(0.15 * i, function() UI.LootToastShow(e[1], e[2], e[3]) end) end
+end)
+
+-- Or ramassé (option money) : écart de l'argent du perso pendant qu'une fenêtre de butin est ouverte
+local lootOpen, money0 = false, nil
+WK:On("LOOT_READY", function() lootOpen = true; money0 = _G.GetMoney and _G.GetMoney() end)
+WK:On("LOOT_CLOSED", function() lootOpen = false end)
+WK:On("PLAYER_MONEY", function()
+    local now = _G.GetMoney and _G.GetMoney()
+    if not (lootOpen and money0 and now) then money0 = now return end
+    local d = now - money0
+    money0 = now
+    if d <= 0 or not (cfg().money and on() and placeOk()) then return end
+    if cfg().noCombat and inCombat() then return end
+    -- argent : cumulé dans un seul encadré tant qu'il est affiché
+    for _, t in ipairs(toasts) do
+        if t.e and t.e.id == "money" then d = d + t.e.value end
+    end
+    local e = { id = "money", name = T("Argent"), q = 1, qty = 1, unit = d, value = d, src = "money",
+        icon = 133784, sub = "", tags = "" }
+    stack = stack or buildStack()
+    for i, t in ipairs(toasts) do
+        if t.e and t.e.id == "money" then
+            t:Paint(e); t.born = GetTime(); table.remove(toasts, i); table.insert(toasts, 1, t); layoutStack()
+            return
+        end
+    end
+    push(e)
 end)
 
 ---------------------------------------------------------------------------
 -- Carte de réglages (roue de la page Filtre de loot)
 ---------------------------------------------------------------------------
-function UI.BuildLootToastCard(_, parent)
+-- Volet de la roue « Butin à l'écran » (maquette A) : trois cartes, Affichage, Quoi afficher, Grand encadré
+function UI.BuildLootToastCards(_, parent)
     local c = cfg()
-    local card = UI:Card(parent, "Butin à l'écran", "un encadré par objet ramassé, prix du scan HV")
-    card:SetHeight(40 + 6 * 46 + 8)
-    local function row(y, name, desc, ctrl, w) UI:SettingRow(card, y, name, desc, ctrl, w) end
-    local function refresh()
-        if stack and not c.enabled then for _, t in ipairs(toasts) do t:Hide() end end
+    local function relayout() if stack then layoutStack() end end
+    local function seg(card, items, field, after)
+        local sg = UI:Segmented(card, items, function(v) c[field] = v; if after then after() end end, 24)
+        sg:Select(c[field])
+        return sg
     end
-    row(-40, "Afficher le butin à l'écran", "Un petit encadré par objet ramassé (couleur de la rareté, prix du lot,"
-            .. " étiquettes), qui s'efface tout seul. Se place en mode édition.",
-        UI:Toggle(card, function() return c.enabled end, function(v) c.enabled = v; refresh() end), 80)
-    local qs = UI:Segmented(card, { { 0, "Grise" }, { 1, "Blanche" }, { 2, "Verte" }, { 3, "Bleue" } },
-        function(v) c.minQuality = v end, 24)
-    row(-86, "Qualité minimale affichée", "Les objets en dessous ne sont pas montrés.", qs, 280)
-    qs:Select(c.minQuality or 1)
-    row(-132, "Durée d'un encadré", "Le survol le garde affiché.",
-        UI:Slider(card, 220, 2, 10, 1, function() return c.duration or 4 end,
-            function(v) c.duration = v end, "%d s"), 240)
-    local bs = UI:Segmented(card, { { 2, "Verte" }, { 3, "Bleue" }, { 4, "Épique" }, { 9, "Jamais" } },
-        function(v) c.bigQuality = v end, 24)
-    row(-178, "Grand encadré à partir de", "Butin notable : grand encadré au centre, halo et son (aussi pour un objet"
-            .. " BiS du perso ou une envie).", bs, 280)
-    bs:Select(c.bigQuality or 3)
-    row(-224, "Grand encadré au-dessus de", "Valeur du lot qui le rend notable, quelle que soit la rareté (0 : non).",
-        UI:Slider(card, 220, 0, 50, 1, function() return math.floor((c.bigValue or 0) / 10000) end,
-            function(v) c.bigValue = v * 10000 end, "%d po"), 240)
-    row(-270, "Son du grand encadré", "Un petit son quand un butin notable apparaît.",
-        UI:Toggle(card, function() return c.sound end, function(v) c.sound = v end), 80)
-    return card
+    local function tog(card, field, after)
+        return UI:Toggle(card, function() return c[field] ~= false end,
+            function(v) c[field] = v; if after then after() end end)
+    end
+    local function slider(card, field, mn, mx, st, fmt, mul)
+        mul = mul or 1
+        return UI:Slider(card, 200, mn, mx, st, function() return math.floor((c[field] or 0) / mul) end,
+            function(v) c[field] = v * mul end, fmt)
+    end
+    -- Affichage
+    local a = UI:Card(parent, "Affichage")
+    a:SetHeight(40 + 7 * 46 + 8)
+    local y = -40
+    local function row(card, name, desc, ctrl, w) UI:SettingRow(card, y, name, desc, ctrl, w); y = y - 46 end
+    row(a, "Afficher le butin à l'écran", "Même interrupteur que dans le bandeau. Se place en mode édition.",
+        tog(a, "enabled", function() if UI.RefreshLootToastButton then UI.RefreshLootToastButton() end end), 80)
+    row(a, "Afficher seulement", "Où les encadrés apparaissent.",
+        seg(a, { { "all", "Partout" }, { "instance", "Donjon et raid" }, { "farm", "Séance de farm" } }, "where"), 330)
+    row(a, "Pas en combat", "Les encadrés attendent la fin du combat.", tog(a, "noCombat"), 80)
+    row(a, "Taille", "Petits encadrés et grand encadré.",
+        seg(a, { { "s", "Petite" }, { "m", "Moyenne" }, { "l", "Grande" } }, "size", relayout), 240)
+    row(a, "Encadrés à la fois", "Les plus anciens partent d'abord.", slider(a, "maxN", 3, 8, 1, "%d"), 230)
+    row(a, "Sens de la pile", "Où arrive le plus récent.",
+        seg(a, { { "down", "En haut" }, { "up", "En bas" } }, "grow", relayout), 180)
+    row(a, "Durée d'un encadré", "Le survol le garde affiché.", slider(a, "duration", 2, 10, 1, "%d s"), 230)
+    -- Quoi afficher
+    local b = UI:Card(parent, "Quoi afficher")
+    b:SetHeight(40 + 7 * 46 + 22 + 46 + 8)
+    y = -40
+    row(b, "Qualité minimale", "En dessous, rien n'est montré.",
+        seg(b, { { 0, "Grise" }, { 1, "Blanche" }, { 2, "Verte" }, { 3, "Bleue" } }, "minQuality"), 280)
+    row(b, "Prix minimal du lot", "En dessous, rien n'est montré (0 : tout).",
+        slider(b, "minValue", 0, 100, 1, "%d pa", 100), 230)
+    row(b, "Récompenses de quête", "Objets reçus en rendant une quête.", tog(b, "quest"), 80)
+    row(b, "Or ramassé", "Un encadré « + po pa » pour l'argent ramassé sur les corps.", tog(b, "money"), 80)
+    local h = UI:Text(b, 10, C.dim); h:SetPoint("TOPLEFT", 16, y - 4); h:SetText(UI:Upper(T("Dans l'encadré")))
+    y = y - 22
+    row(b, "Prix du lot", "Scan HV, sinon marchand.", tog(b, "showPrice"), 80)
+    row(b, "Ligne utile", "Prix à l'unité, nombre en sacs, camelote.", tog(b, "showSub"), 80)
+    row(b, "Étiquettes", "Amélioration, BiS, envie, quête, recette.", tog(b, "showTags"), 80)
+    -- boutons : essayer tout de suite, placer en mode édition
+    local test = UI:Button(b, "Tester", nil, 26, "secondary")
+    test:SetPoint("BOTTOMRIGHT", -16, 12)
+    test:SetScript("OnClick", function() UI.LootToastDemo(true) end)
+    local place = UI:Button(b, "Placer (mode édition)", nil, 26, "secondary")
+    place:SetPoint("RIGHT", test, "LEFT", -8, 0)
+    place:SetScript("OnClick", function() if UI.EnterEditMode then UI:EnterEditMode() end end)
+    -- Grand encadré
+    local g = UI:Card(parent, "Grand encadré (butin notable)")
+    g:SetHeight(40 + 5 * 46 + 8)
+    y = -40
+    row(g, "À partir de la rareté", "Halo à la couleur de la rareté, au centre de l'écran.",
+        seg(g, { { 2, "Verte" }, { 3, "Bleue" }, { 4, "Épique" }, { 9, "Jamais" } }, "bigQuality"), 280)
+    row(g, "Ou au-dessus de", "Valeur du lot (0 : non).", slider(g, "bigValue", 0, 50, 1, "%d po", 10000), 230)
+    row(g, "Aussi pour", "Un objet BiS du perso ou un objet d'envie.", tog(g, "bigBis"), 80)
+    row(g, "Durée", "", slider(g, "bigDuration", 3, 12, 1, "%d s"), 230)
+    row(g, "Son", "Un petit son quand un butin notable apparaît.", tog(g, "sound"), 80)
+    return { a, b, g }
 end

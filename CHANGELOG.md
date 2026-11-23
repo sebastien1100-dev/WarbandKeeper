@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.250 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Butin à l'écran : bouton « Butin à l'écran » dans le bandeau du Filtre de loot, avec son interrupteur (activer ou couper d'un clic) et une roue qui ouvre ses réglages en trois cartes : Affichage, Quoi afficher, Grand encadré ; boutons « Tester » et « Placer (mode édition) ».
+- Nouvelles options : afficher seulement en donjon et raid ou pendant une séance de farm ; pas en combat (affichés à la sortie du combat) ; taille ; nombre d'encadrés à la fois ; sens de la pile ; prix minimal du lot ; récompenses de quête ; or ramassé ; prix, ligne utile et étiquettes à montrer ou non ; durée du grand encadré et « aussi pour BiS et envies ».
+
 ## v1.128.249 — 23/11/2026
 
 _Un /reload suffit._
