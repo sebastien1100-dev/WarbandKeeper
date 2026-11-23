@@ -111,6 +111,8 @@ local function build()
     f:SetScript("OnMouseWheel", function(s, delta)
         if not s.lastData then return end
         local n = s.items or 0
+        -- vers le bas seulement s'il reste des lignes cachées : la dernière quête reste en bas de la fenêtre
+        if delta < 0 and (s.hidden or 0) == 0 then return end
         s.off = math.max(0, math.min(math.max(0, n - 1), (s.off or 0) - delta))
         s:Paint(s.lastData, s.lastCfg)
     end)
@@ -287,8 +289,11 @@ local function build()
                 break
             end
         end
-        if self.off > 0 or hidden > 0 then
-            -- hauteur fixe : la ligne « plus haut / plus bas » est posée en bas, juste au-dessus du pied
+        self.hidden = hidden
+        local scrolling = self.off > 0 or hidden > 0
+        if scrolling then
+            -- hauteur fixe pendant le défilement : la ligne « plus haut / plus bas » toujours tout en bas
+            y = maxH - 4 - 2 - 18
             drawSection("", nil, nil)
             self.secs[ns].l:SetText((self.off > 0 and string.format(T("%d plus haut"), self.off) or "")
                 .. ((self.off > 0 and hidden > 0) and "  ·  " or "") .. (hidden > 0 and string.format(T("%d plus bas"), hidden) or ""))
@@ -298,7 +303,7 @@ local function build()
         for i = nr + 1, #self.rows do self.rows[i]:Hide() end
         for i = nsep + 1, #seps do seps[i]:Hide() end
         y = y + 4
-        self:SetHeight(math.min(maxH, y + 2))
+        self:SetHeight(scrolling and maxH or math.min(maxH, y + 2))
     end
     f:Hide()
     -- distance et entrée surveillées toutes les 2 s (rien à faire tant que la fenêtre est coupée)

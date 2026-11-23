@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.224", date = "23/11/2026",
+        fixed = {
+            "Fenêtre des quêtes du donjon : elle changeait de taille en défilant à la molette. Elle garde maintenant sa hauteur, la ligne « plus haut / plus bas » reste en bas, et la molette s'arrête quand la dernière quête est visible.",
+        },
+    },
+    {
         version = "1.128.223", date = "23/11/2026",
         fixed = {
             "Bandeau « Base de quêtes mise à jour » : « Voir » ne faisait rien quand la fenêtre de Warband Keeper était fermée. Il l'ouvre maintenant sur le journal de la page Quêtes.",
