@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.226 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre des bénédictions : un joueur béni apparaissait « sans » quand sa bénédiction n'était pas exactement celle prévue pour sa classe posée par toi. Il compte maintenant comme béni s'il a la bénédiction prévue (même posée par un autre paladin : la reposer écraserait la sienne) ou une autre de tes bénédictions. Le Salut reste à part.
+- Barre des bénédictions : le nom de l'aura passait sous le sceau et son temps ; il s'arrête maintenant avant.
+
 ## v1.128.225 — 23/11/2026
 
 _Un /reload suffit._

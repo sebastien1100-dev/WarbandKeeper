@@ -300,16 +300,40 @@ end
 ---------------------------------------------------------------------------
 -- (seen est déclaré plus haut, avec scannedAt)
 local blessNames = {}
-local function scanLeft(unit, b)
+local mineAnyCache = {}
+-- noms d'une bénédiction (normale et supérieure), gardés (avant : refaits pour chaque membre, chaque seconde)
+local function namesOf(b)
     local ids = M.BLESS[b]
     if not ids then return nil end
-    -- noms gardés par bénédiction (avant : refaits pour chaque membre, chaque seconde)
     local names = blessNames[b]
     if not names then
         names = {}
         local all = true
         for _, id in ipairs(ids) do local n = WK.SpellInfo(id); if n then names[n] = true else all = false end end
         if all then blessNames[b] = names end
+    end
+    return names
+end
+-- Bénédiction b sur le membre : posée par moi, ou la même posée par un autre paladin (il est couvert : la
+-- reposer écraserait la sienne) ; sinon, une autre de mes bénédictions compte aussi (il en a une de moi).
+-- Avant, seule la bénédiction prévue et posée par moi comptait : un membre béni autrement était « sans ».
+local function scanLeft(unit, b)
+    local names = namesOf(b)
+    if not names then return nil end
+    -- le Salut (4) se cumule avec la bénédiction de classe : jamais compté à la place d'une autre, ni l'inverse
+    local mineAny = mineAnyCache[b]
+    if not mineAny then
+        mineAny = {}
+        local all = true
+        if b ~= 4 then
+            for k = 1, #M.BLESS do
+                if k ~= b and k ~= 4 then
+                    local nk = namesOf(k)
+                    if nk and blessNames[k] then for n in pairs(nk) do mineAny[n] = true end else all = false end
+                end
+            end
+        end
+        if all then mineAnyCache[b] = mineAny end
     end
     for i = 1, 40 do
         local name, exp, src
@@ -322,7 +346,8 @@ local function scanLeft(unit, b)
             if not n then break end
             name, exp, src = readable(n), readable(e), readable(s)
         else break end
-        if name and names[name] and (src == nil or src == "player" or (UnitIsUnit and UnitIsUnit(src, "player"))) then
+        local mine = src == nil or src == "player" or (UnitIsUnit and UnitIsUnit(src, "player"))
+        if name and (names[name] or (mine and mineAny[name])) then
             return (not exp or exp == 0) and 0 or exp
         end
     end

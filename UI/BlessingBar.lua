@@ -78,6 +78,8 @@ local function build()
     f.aura:SetScript("OnLeave", function(s) if not inCombat() then s:SetAttribute("useOnKeyDown", nil) end end)
     f.auraName = UI:Text(f, 12, C.text); f.auraName:SetPoint("LEFT", f.aura, "RIGHT", 6, 0)
     f.seal = UI:Text(f, 10, C.muted); f.seal:SetPoint("TOPRIGHT", -8, -13); f.seal:SetJustifyH("RIGHT")
+    -- nom de l'aura coupé avant le sceau (il passait dessous)
+    f.auraName:SetPoint("RIGHT", f.seal, "LEFT", -8, 0); f.auraName:SetJustifyH("LEFT"); f.auraName:SetWordWrap(false)
     f.line = f:CreateTexture(nil, "ARTWORK"); f.line:SetHeight(1)
     f.line:SetPoint("TOPLEFT", 8, -36); f.line:SetPoint("TOPRIGHT", -8, -36); f.line:SetColorTexture(unpack(C.border))
     f.rows = {}

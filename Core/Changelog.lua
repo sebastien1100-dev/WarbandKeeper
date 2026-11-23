@@ -8,6 +8,13 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.226", date = "23/11/2026",
+        fixed = {
+            "Barre des bénédictions : un joueur béni apparaissait « sans » quand sa bénédiction n'était pas exactement celle prévue pour sa classe posée par toi. Il compte maintenant comme béni s'il a la bénédiction prévue (même posée par un autre paladin : la reposer écraserait la sienne) ou une autre de tes bénédictions. Le Salut reste à part.",
+            "Barre des bénédictions : le nom de l'aura passait sous le sceau et son temps ; il s'arrête maintenant avant.",
+        },
+    },
+    {
         version = "1.128.225", date = "23/11/2026",
         changed = {
             "Sacs : la pastille du perso à qui envoyer un objet prend la couleur de sa classe (au lieu de la couleur de l'apparence pour tous).",
