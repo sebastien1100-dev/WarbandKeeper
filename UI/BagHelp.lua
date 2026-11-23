@@ -494,6 +494,7 @@ WK:On("MERCHANT_UPDATE", function() if rsBtn and rsBtn:IsShown() then C_Timer.Af
 -- Amélioration à porter
 ---------------------------------------------------------------------------
 local wear
+local WEAR_SECS = 10 -- la proposition se ferme d'elle-même au bout de 10 s (pause au survol)
 local function buildWear()
     local f = CreateFrame("Frame", "WarbandKeeperWearOffer", UIParent)
     f:SetSize(320, 78)
@@ -505,10 +506,22 @@ local function buildWear()
     -- fermer : la fenêtre se retire sans rien refuser ; elle revient au prochain objet meilleur
     f.close = UI:IconButton(f, "close", 16, "Fermer (revient au prochain objet meilleur)")
     f.close:SetPoint("TOPRIGHT", -8, -8)
-    f.close:SetScript("OnClick", function()
+    local function dismiss()
         local M = BH()
         if M and M.queue then for i = #M.queue, 1, -1 do M.queue[i] = nil end end
         f:Hide()
+    end
+    f.close:SetScript("OnClick", dismiss)
+    -- fermeture d'elle-même au bout de WEAR_SECS (comme la croix), barre qui se vide en bas ; pause au survol
+    f.timer = f:CreateTexture(nil, "OVERLAY"); f.timer:SetHeight(2)
+    f.timer:SetPoint("BOTTOMLEFT", 10, 3)
+    f:SetScript("OnUpdate", function(s2, el)
+        if s2.sample or not s2.left then return end
+        if not s2:IsMouseOver() then s2.left = s2.left - el end
+        local r, g, b = UI:Accent()
+        s2.timer:SetColorTexture(r, g, b, 0.8)
+        s2.timer:SetWidth(math.max(0.01, (s2:GetWidth() - 20) * math.max(0, s2.left) / WEAR_SECS))
+        if s2.left <= 0 then s2.left = nil; dismiss() end
     end)
     f.name = UI:Text(f, 12); f.name:SetPoint("TOPLEFT", 56, -26); f.name:SetPoint("TOPRIGHT", -30, -26)
     if f.name.SetWordWrap then f.name:SetWordWrap(false) end
@@ -555,6 +568,8 @@ function UI:RefreshWearOffer()
     if wear.sample then return end
     local q = BH():Config().wear and WK:FeatureOn("inventory") and not inCombat() and BH():Offer()
     if not q then wear:Hide() return end
+    -- nouvel objet proposé : le compte à rebours repart
+    if wear.q ~= q or not wear:IsShown() then wear.left = WEAR_SECS end
     wear:Paint(q)
     wear:Show()
 end

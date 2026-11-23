@@ -11,6 +11,7 @@ WK.Changelog = {
         version = "1.128.232", date = "23/11/2026",
         added = {
             "Fenêtre « Mieux que ce que tu portes » : une croix pour la fermer sans rien refuser. Elle revient au prochain objet meilleur qui arrive dans tes sacs (« Pas celui-là » écarte toujours l'objet pour de bon).",
+            "Fenêtre « Mieux que ce que tu portes » : elle se ferme d'elle-même au bout de 10 secondes (fine barre qui se vide en bas, pause tant que la souris est dessus), comme avec la croix.",
         },
     },
     {
