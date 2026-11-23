@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.217 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Donjons de plus de 8 boss (Profondeurs de Rochenoire, Pic Rochenoire, Stratholme, Hache-Tripes, Monastère…) : à côté de la carte, une carte « Prochain boss » (portrait, butin pour toi, les trois suivants) et trois chiffres : boss tués, facultatifs, chrono ou record. Un onglet « Boss » avant Butin et Quêtes montre tous les boss sur trois colonnes, dans le même style que les petits donjons ; un clic sur un boss ouvre son butin.
+- Les donjons de 8 boss ou moins ne changent pas : la liste reste à côté de la carte, comme Gnomeregan.
+
 ## v1.128.216 — 23/11/2026
 
 _Un /reload suffit._

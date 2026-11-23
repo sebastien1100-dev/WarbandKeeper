@@ -21,6 +21,9 @@ local GROUPS = {
     { "past", "Déjà dépassés" }, { "now", "Pour ton niveau" }, { "soon", "Bientôt" }, { "high", "Plus haut" },
     { "raid", "Raids" },
 }
+-- au-delà de ce nombre de boss : carte « Prochain boss » et onglet « Boss » (maquette C)
+local MANY = 8
+
 local function groupOf(d, lvl)
     if d.raid then return "raid" end
     if lvl > d.max then return "past" end
@@ -313,6 +316,8 @@ UI:RegisterPage({
         det.live = UI:Badge(det, "Tu es dedans", C.positive)
         det.live:SetPoint("LEFT", det.sub, "RIGHT", 10, 0)
         tab("quests", "Quêtes"):SetPoint("LEFT", det.tabs.loot, "RIGHT", 8, 0)
+        -- donjons à beaucoup de boss (maquette C) : onglet « Boss » avant Butin, tous les boss en grille
+        tab("bosses", "Boss")
         det.quests = UI:Text(det, 11, C.muted)
         det.lfg = UI:Button(det, "Chercher un groupe", nil, 26, "secondary", "lfg")
         det.lfg:SetScript("OnClick", function() UI:ShowPage("lfg") end)
@@ -332,7 +337,9 @@ UI:RegisterPage({
         top:SetPoint("TOPLEFT", LIST_W + GAP, -42); top:SetPoint("TOPRIGHT", 0, -42)
         top:SetHeight(100)
         self.top = top
-        for _, w in ipairs({ det.live, det.filter, det.qfilter, det.tabs.loot, det.tabs.quests }) do w:SetParent(top) end
+        for _, w in ipairs({ det.live, det.filter, det.qfilter, det.tabs.loot, det.tabs.quests, det.tabs.bosses }) do
+            w:SetParent(top)
+        end
         -- titre, sous-titre et trait des onglets refaits dans le haut fixe (textes et traits gardent leur cadre)
         det.title:Hide(); det.sub:Hide(); det.tabLine:Hide()
         det.title = UI:Text(top, 15); det.title:SetPoint("TOPLEFT", 2, -6)
@@ -344,13 +351,16 @@ UI:RegisterPage({
         self.map = UI:DungeonMapView(top)
         self.map.onBoss = function(b) self.dtab = "loot"; self.focus = b.id; self:Refresh() end
         self.map.onHover = function(b)
-            for _, r in ipairs(self.brows.items) do if r:IsShown() then r.hl = b and r.boss.id == b.id; r:Paint() end end
+            for _, pool in ipairs({ self.brows, self.grows }) do
+                for _, r in ipairs(pool.items) do if r:IsShown() then r.hl = b and r.boss.id == b.id; r:Paint() end end
+            end
         end
         -- liste des boss à côté de la carte : n°, nom, étage, état ; survol = le boss s'allume sur la carte
         -- la liste défile quand elle dépasse la hauteur de la carte (donjons à 20 boss et plus)
         self.bscroll = UI:Scroll(top)
-        self.brows = UI:Pool(function()
-            local r = CreateFrame("Button", nil, self.bscroll.child)
+        -- une ligne de boss (liste à côté de la carte, ou grille de l'onglet Boss)
+        local function bossRow(parent)
+            local r = CreateFrame("Button", nil, parent)
             r:SetHeight(40)
             r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
             -- pastille comme sur la carte, nom, 2e ligne (niveau, étage, état), butin pour ce perso à droite
@@ -406,7 +416,32 @@ UI:RegisterPage({
                 self:Refresh()
             end)
             return r
-        end)
+        end
+        self.brows = UI:Pool(function() return bossRow(self.bscroll.child) end)
+        self.grows = UI:Pool(function() return bossRow(det) end)
+        -- carte « Prochain boss » à côté de la carte (donjons à beaucoup de boss)
+        do
+            local nc = CreateFrame("Button", nil, top)
+            self.nextCard = nc
+            nc.bg = UI:Rounded(nc, 10, 0, "BACKGROUND", 1)
+            nc.label = UI:Text(nc, 10, C.muted); nc.label:SetPoint("TOPLEFT", 16, -14)
+            nc.row = bossRow(nc)
+            nc.row:SetPoint("TOPLEFT", 6, -32); nc.row:SetPoint("TOPRIGHT", -6, -32)
+            nc.after = UI:Text(nc, 10, C.dim); nc.after:SetPoint("TOPLEFT", 16, -96); nc.after:SetPoint("RIGHT", -16, 0)
+            nc.after:SetJustifyH("LEFT"); nc.after:SetWordWrap(false)
+            nc.tiles = {}
+            for k = 1, 3 do
+                local t = CreateFrame("Frame", nil, nc)
+                t:SetHeight(52)
+                t.bg = UI:Rounded(t, 8, 0, "BACKGROUND", 1)
+                t.v = UI:Text(t, 16); t.v:SetPoint("TOPLEFT", 10, -8)
+                t.l = UI:Text(t, 10, C.muted); t.l:SetPoint("TOPLEFT", t.v, "BOTTOMLEFT", 0, -3)
+                nc.tiles[k] = t
+            end
+            nc:SetScript("OnClick", function(s2)
+                if s2.boss then self.dtab = "loot"; self.focus = s2.boss.id; self:Refresh() end
+            end)
+        end
         -- butin d'un seul boss : bouton pour revenir à tous
         det.allLoot = UI:Button(top, "Tous les boss", nil, 22, "ghost")
         det.allLoot:SetScript("OnClick", function() self.focus = nil; self:Refresh() end)
@@ -518,7 +553,7 @@ UI:RegisterPage({
         local lvl = c.level or 1
         self.tabSeg:Select(self.tab)
         self.gheads:Reset(); self.drows:Reset(); self.bheads:Reset(); self.items:Reset(); self.wrows:Reset(); self.qrows:Reset()
-        self.brows:Reset()
+        self.brows:Reset(); self.grows:Reset()
         -- entrée dans un donjon : la page se place dessus, onglet Parcours
         local cur = D:Current()
         local curKey = cur and cur.key or nil
@@ -710,7 +745,13 @@ UI:RegisterPage({
         det.live:SetShown(inRun and curKey == d.key)
         det.filter:Select(self.filter)
         det.qfilter:Select(self.qfilter)
-        if self.dtab ~= "quests" then self.dtab = "loot" end
+        -- beaucoup de boss : l'onglet Boss s'ouvre en premier sur un nouveau donjon
+        if self.dtabKey ~= d.key then
+            self.dtabKey = d.key
+            if self.many and not self.focus then self.dtab = "bosses" end
+        end
+        if self.dtab == "bosses" and not self.many then self.dtab = "loot" end
+        if self.dtab ~= "quests" and self.dtab ~= "bosses" then self.dtab = "loot" end
         local onLoot = self.dtab == "loot"
         det.filter:SetShown(not (self.dtab == "quests"))
         det.qfilter:SetShown(self.dtab == "quests")
@@ -742,6 +783,11 @@ UI:RegisterPage({
         det.tabs.quests:Paint(self.dtab == "quests", qBadge, todo > 0 and C.warning or C.positive, todo > 0)
         self.questTodo = todo
         det.allLoot:SetShown(onLoot and self.focus ~= nil)
+        det.tabs.bosses:Paint(self.dtab == "bosses", tostring(#D:Bosses(d)))
+        if self.dtab == "bosses" then
+            self.none:Hide()
+            return self:RefreshBosses(d, key, c, y, W)
+        end
         if not onLoot then
             self.none:Hide()
             return self:RefreshQuests(d, c, quests, states, ORDER, y, W)
@@ -804,6 +850,8 @@ UI:RegisterPage({
     end,
 
     -- haut fixe : en-tête, carte (taille selon la place) et liste des boss, onglets
+    -- haut fixe : en-tête, carte (taille selon la place) et liste des boss, onglets. Plus de 8 boss
+    -- (maquette C) : à côté de la carte, la carte « Prochain boss » ; tous les boss dans l'onglet « Boss »
     LayoutTop = function(self, d, key, W)
         local det, top = self.det, self.top
         local m = UI.DungeonMapData(d)
@@ -813,12 +861,6 @@ UI:RegisterPage({
         -- largeur de la carte ; sa hauteur suit (carte 3:2 plus basse : un peu plus large pour la même place)
         local ratio = m and UI.DungeonMapHeight(m, nil, 1000) / 1000 or 1
         local S = m and math.floor(math.max(200, math.min(360 / ratio, avail / ratio, W * 0.45))) or 0
-        -- beaucoup de boss (la liste ne tiendrait pas en une colonne) : carte un peu plus étroite,
-        -- pour laisser deux colonnes de boss à côté
-        local nB = #D:Bosses(d)
-        if m and nB * 30 > math.max(S * ratio, avail) then
-            S = math.floor(math.max(200, math.min(S, W * 0.38)))
-        end
         local MH = m and math.floor(S * ratio) or 0
         local y0 = 32
         self.map:ClearAllPoints()
@@ -829,130 +871,211 @@ UI:RegisterPage({
         else
             self.map:Hide()
         end
-        -- liste des boss
         local x0 = m and (S + 12) or 0
         local nextB = D:Next(d, key)
-        local n, y = 0, 0
         local bosses = D:Bosses(d)
-        -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte, et défile au-delà
-        local RH = math.floor(math.max(30, math.min(46, (m and MH or 46 * #bosses) / math.max(1, #bosses))))
-        local listH = RH * #bosses
-        -- la liste peut descendre sous la carte (carte en largeur, peu haute) jusqu'à la place réservée
-        local viewH = m and math.max(MH, math.min(listH, avail)) or math.min(listH, math.max(120, math.min(320, avail)))
-        -- beaucoup de boss : deux colonnes côte à côte (lignes de 24 px au moins) pour que tout tienne
-        local ncol, perCol = 1, #bosses
-        if listH > viewH + 1 and (W - x0 - 10) / 2 >= 215 then
-            ncol, perCol = 2, math.ceil(#bosses / 2)
-            RH = math.floor(math.max(24, math.min(46, viewH / perCol)))
-            listH = RH * perCol
-            if not m then viewH = math.min(listH, math.max(120, avail)) end
-        end
-        local bs = self.bscroll
-        local over = listH > viewH + 1
-        bs:ClearAllPoints(); bs:SetPoint("TOPLEFT", x0, -y0)
-        bs:SetSize(math.max(100, W - x0), math.max(1, viewH))
-        local innerW = math.max(100, W - x0 - (over and 14 or 0))
-        bs.child:SetWidth(innerW)
-        local CGAP = 10
-        local colW = ncol == 2 and (innerW - CGAP) / 2 or innerW
         local c = WK.DB.global.characters[key] or WK.DB:Me()
-        local ac = { UI:Accent() }
-        for i, b in ipairs(bosses) do
-            local opt = D:Optional(d, b)
-            if not opt then n = n + 1 end
-            local r = self.brows:Get()
-            r.boss = b
-            -- 2e colonne : on repart du haut
-            if ncol == 2 and i == perCol + 1 then y = 0 end
-            local cx = (ncol == 2 and i > perCol) and (colW + CGAP) or 0
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", cx, -y); r:SetWidth(colW)
-            r.state = UI.DungeonBossState(d, b, key, nextB)
-            r.focused = self.focus == b.id
-            r:SetHeight(RH - 3)
-            r.n:SetText(r.state == "dead" and "x" or (opt and "+" or tostring(n)))
-            -- pastille aux couleurs de la carte
-            if r.state == "dead" then
-                r.ring:SetColor(C.dim[1], C.dim[2], C.dim[3], 1); r.fill:SetColor(0.23, 0.25, 0.28, 1)
-                r.n:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
-            elseif r.state == "next" then
-                r.ring:SetColor(1, 1, 1, 1); r.fill:SetColor(ac[1], ac[2], ac[3], 1)
-                r.n:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
-            else
-                r.ring:SetColor(ac[1], ac[2], ac[3], opt and 0.6 or 1); r.fill:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
-                r.n:SetTextColor(C.text[1], C.text[2], C.text[3])
+        local many = #bosses > MANY
+        self.many = many
+        local bs, nc = self.bscroll, self.nextCard
+        bs:SetShown(not many); nc:SetShown(many)
+        local blockH
+        if many then
+            blockH = self:LayoutNextCard(d, key, c, nextB, m, x0, y0, W, MH)
+        else
+            -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte, et défile au-delà
+            local RH = math.floor(math.max(30, math.min(46, (m and MH or 46 * #bosses) / math.max(1, #bosses))))
+            local listH = RH * #bosses
+            local viewH = m and math.max(MH, math.min(listH, avail))
+                or math.min(listH, math.max(120, math.min(320, avail)))
+            local over = listH > viewH + 1
+            bs:ClearAllPoints(); bs:SetPoint("TOPLEFT", x0, -y0)
+            bs:SetSize(math.max(100, W - x0), math.max(1, viewH))
+            local innerW = math.max(100, W - x0 - (over and 14 or 0))
+            bs.child:SetWidth(innerW)
+            local n, y = 0, 0
+            for _, b in ipairs(bosses) do
+                local opt = D:Optional(d, b)
+                if not opt then n = n + 1 end
+                local r = self.brows:Get()
+                r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetWidth(innerW)
+                self:PaintBossRow(r, d, b, opt, n, RH, innerW, key, c, nextB, m, 5)
+                y = y + RH
             end
-            r.name:SetText(D:BossName(b))
-            local col = r.state == "dead" and C.muted or C.text
-            r.name:SetTextColor(col[1], col[2], col[3])
-            -- 2e ligne : niveau, étage, état
-            local bits = {}
-            if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niv. %d"), b.level) end
-            local p = m and UI.DungeonBossPin(m, b)
-            if p and #m.f > 1 then bits[#bits + 1] = string.format(T("étage %d"), p[1]) end
-            if opt then bits[#bits + 1] = T("facultatif") end
-            if r.state == "dead" then bits[#bits + 1] = T("tué")
-            elseif r.state == "next" then bits[#bits + 1] = UI:Hex(ac) .. T("prochain") .. "|r" end
-            r.sub:SetText(table.concat(bits, "  ·  "))
-            r.sub:SetShown(RH >= 36)
-            -- portrait entre la pastille et le nom
-            local FS = math.min(32, RH - 9)
-            local hasFace = UI.SetBossPortrait(r.face, d, b, r.state == "dead")
-            r.faceRing:SetShown(hasFace)
-            local nx = 40
-            if hasFace then
-                r.face:SetSize(FS, FS); r.face:ClearAllPoints(); r.face:SetPoint("LEFT", 38, 0)
-                r.faceRing:SetSize(FS + 2, FS + 2); r.faceRing:ClearAllPoints()
-                r.faceRing:SetPoint("CENTER", r.face, "CENTER")
-                local rc = r.state == "next" and ac or C.border
-                r.faceRing:SetVertexColor(rc[1], rc[2], rc[3], 1)
-                r.face:SetDesaturated(r.state == "dead")
-                nx = 38 + FS + 10
-            end
-            r.name:ClearAllPoints()
-            if RH >= 36 then r.name:SetPoint("TOPLEFT", nx, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", nx, 0) end
-            -- butin pour ce perso (5 au plus ; moins quand la liste est étroite : le nom garde 150 px)
-            local loot = UI:DungeonLoot(b, "me", c, key)
-            local rowW = colW
-            local maxIc = math.max(0, math.min(5, math.floor((rowW - nx - 150 - 8) / 27)))
-            local nIc = math.min(#loot, maxIc)
-            local nameR = nIc > 0 and -(8 + nIc * 27 + 6) or -8
-            r.name:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
-            r.sub:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
-            for k, ic in ipairs(r.icons) do
-                local id = k <= maxIc and loot[k] or nil
-                ic:SetShown(id ~= nil)
-                if id then
-                    ic.id = id
-                    local _, icon = UI:ItemInfo(id)
-                    ic.tex:SetTexture(icon or 134400)
-                    local q = UI.DungeonQuality and UI.DungeonQuality(id) or C.border
-                    ic.edge:SetColor(q[1], q[2], q[3], 1)
-                    ic.tex:SetDesaturated(r.state == "dead")
-                end
-            end
-            r:Paint()
-            y = y + RH
+            bs.child:SetHeight(math.max(1, listH))
+            local maxS = math.max(0, listH - viewH)
+            if bs:GetVerticalScroll() > maxS then bs:SetVerticalScroll(maxS) end
+            bs:UpdateBar()
+            -- sans carte, la liste ne prend que sa place ; avec, la hauteur de la carte
+            blockH = math.max(MH, viewH)
         end
-        bs.child:SetHeight(math.max(1, listH))
-        -- nouveau donjon : le prochain boss en vue
-        if self.bsKey ~= d.key then
-            self.bsKey = d.key
-            local idx = 0
-            for i, b in ipairs(bosses) do if nextB and b.id == nextB.id then idx = i end end
-            if idx > perCol then idx = idx - perCol end
-            bs:SetVerticalScroll(math.max(0, math.min(listH - viewH, (idx - 2) * RH)))
-        elseif bs:GetVerticalScroll() > math.max(0, listH - viewH) then
-            bs:SetVerticalScroll(math.max(0, listH - viewH))
-        end
-        bs:UpdateBar()
-        -- sans carte, la liste ne prend que sa place ; avec, la hauteur de la carte
-        local blockH = math.max(MH, viewH)
         local ty = y0 + blockH + 8
-        det.tabs.loot:ClearAllPoints(); det.tabs.loot:SetPoint("TOPLEFT", 0, -ty)
+        local tb = det.tabs
+        tb.bosses:SetShown(many)
+        tb.loot:ClearAllPoints()
+        if many then
+            tb.bosses:ClearAllPoints(); tb.bosses:SetPoint("TOPLEFT", 0, -ty)
+            tb.loot:SetPoint("LEFT", tb.bosses, "RIGHT", 8, 0)
+        else
+            tb.loot:SetPoint("TOPLEFT", 0, -ty)
+        end
         det.tabLine:ClearAllPoints()
         det.tabLine:SetPoint("TOPLEFT", 0, -(ty + 30)); det.tabLine:SetPoint("TOPRIGHT", 0, -(ty + 30))
         det.allLoot:ClearAllPoints(); det.allLoot:SetPoint("RIGHT", top, "TOPRIGHT", 0, -(ty + 15))
         top:SetHeight(ty + 32)
+    end,
+
+    -- carte « Prochain boss » : le boss (grand), son butin, les suivants, trois chiffres ; rend sa hauteur
+    LayoutNextCard = function(self, d, key, c, nextB, m, x0, y0, W, MH)
+        local nc = self.nextCard
+        local w = math.max(220, W - x0)
+        local h = math.max(MH, 214)
+        nc:ClearAllPoints(); nc:SetPoint("TOPLEFT", x0, -y0); nc:SetSize(w, h)
+        nc.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
+        local bosses = D:Bosses(d)
+        local idx, n, total, optN, killed = 0, 0, 0, 0, 0
+        for i, b in ipairs(bosses) do
+            local opt = D:Optional(d, b)
+            if opt then optN = optN + 1 else
+                total = total + 1
+                if UI.DungeonBossState(d, b, key, nextB) == "dead" then killed = killed + 1 end
+            end
+            if nextB and b.id == nextB.id then idx = i; n = total end
+        end
+        nc.boss = nextB
+        nc.label:SetText(UI:Upper(nextB and T("Prochain boss") or T("Tous les boss sont tués")))
+        nc.row:SetShown(nextB ~= nil); nc.after:SetShown(nextB ~= nil)
+        if nextB then
+            nc.row:SetHeight(56)
+            self:PaintBossRow(nc.row, d, nextB, D:Optional(d, nextB), n, 58, w - 12, key, c, nextB, m, 5)
+            nc.row.sub:SetText(nc.row.sub:GetText() .. "  ·  " .. string.format(T("boss %d sur %d"), n, total))
+            -- les trois suivants
+            local names = {}
+            for i = idx + 1, #bosses do
+                local b = bosses[i]
+                if not D:Optional(d, b) and UI.DungeonBossState(d, b, key, nextB) ~= "dead" then
+                    names[#names + 1] = D:BossName(b)
+                    if #names == 3 then break end
+                end
+            end
+            nc.after:SetText(#names > 0 and (T("Ensuite : ") .. table.concat(names, ", ")) or "")
+        end
+        -- chiffres : tués, facultatifs, chrono ou record
+        local inRun = D:InRun(d) and key == WK:CharKey()
+        local rec = D:Record(d)
+        local recTxt = rec and rec.dur and string.format(T("record %s"), D.Clock(rec.dur)) or nil
+        local tiles = {
+            { string.format("%d / %d", killed, total), T("boss tués") },
+            { tostring(optN), T("facultatifs") },
+            inRun and { D.Clock(D:Elapsed()), recTxt or T("en cours") }
+                or { rec and rec.dur and D.Clock(rec.dur) or "-", T("record") },
+        }
+        local TG = 8
+        local tw = (w - 32 - 2 * TG) / 3
+        for k, t in ipairs(nc.tiles) do
+            t:ClearAllPoints(); t:SetPoint("BOTTOMLEFT", 16 + (k - 1) * (tw + TG), 14); t:SetWidth(tw)
+            t.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1)
+            t.v:SetText(tiles[k][1]); t.l:SetText(tiles[k][2])
+        end
+        return h
+    end,
+
+    -- une ligne de boss : pastille (n°), portrait, nom, niveau · étage · état, butin pour ce perso
+    PaintBossRow = function(self, r, d, b, opt, n, RH, rowW, key, c, nextB, m, maxIcons)
+        local ac = { UI:Accent() }
+        r.boss = b
+        r.state = UI.DungeonBossState(d, b, key, nextB)
+        r.focused = self.focus == b.id
+        r:SetHeight(RH - 3)
+        r.n:SetText(r.state == "dead" and "x" or (opt and "+" or tostring(n)))
+        -- pastille aux couleurs de la carte
+        if r.state == "dead" then
+            r.ring:SetColor(C.dim[1], C.dim[2], C.dim[3], 1); r.fill:SetColor(0.23, 0.25, 0.28, 1)
+            r.n:SetTextColor(C.muted[1], C.muted[2], C.muted[3])
+        elseif r.state == "next" then
+            r.ring:SetColor(1, 1, 1, 1); r.fill:SetColor(ac[1], ac[2], ac[3], 1)
+            r.n:SetTextColor(C.onAccent[1], C.onAccent[2], C.onAccent[3])
+        else
+            r.ring:SetColor(ac[1], ac[2], ac[3], opt and 0.6 or 1); r.fill:SetColor(C.bg[1], C.bg[2], C.bg[3], 1)
+            r.n:SetTextColor(C.text[1], C.text[2], C.text[3])
+        end
+        r.name:SetText(D:BossName(b))
+        local col = r.state == "dead" and C.muted or C.text
+        r.name:SetTextColor(col[1], col[2], col[3])
+        -- 2e ligne : niveau, étage, état
+        local bits = {}
+        if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niv. %d"), b.level) end
+        local p = m and UI.DungeonBossPin(m, b)
+        if p and #m.f > 1 then bits[#bits + 1] = string.format(T("étage %d"), p[1]) end
+        if opt then bits[#bits + 1] = T("facultatif") end
+        if r.state == "dead" then bits[#bits + 1] = T("tué")
+        elseif r.state == "next" then bits[#bits + 1] = UI:Hex(ac) .. T("prochain") .. "|r" end
+        r.sub:SetText(table.concat(bits, "  ·  "))
+        r.sub:SetShown(RH >= 36)
+        -- portrait entre la pastille et le nom
+        local FS = math.min(32, RH - 9)
+        local hasFace = UI.SetBossPortrait(r.face, d, b, r.state == "dead")
+        r.faceRing:SetShown(hasFace)
+        local nx = 40
+        if hasFace then
+            r.face:SetSize(FS, FS); r.face:ClearAllPoints(); r.face:SetPoint("LEFT", 38, 0)
+            r.faceRing:SetSize(FS + 2, FS + 2); r.faceRing:ClearAllPoints()
+            r.faceRing:SetPoint("CENTER", r.face, "CENTER")
+            local rc = r.state == "next" and ac or C.border
+            r.faceRing:SetVertexColor(rc[1], rc[2], rc[3], 1)
+            r.face:SetDesaturated(r.state == "dead")
+            nx = 38 + FS + 10
+        end
+        r.name:ClearAllPoints()
+        if RH >= 36 then r.name:SetPoint("TOPLEFT", nx, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", nx, 0) end
+        -- butin pour ce perso (5 au plus ; moins quand la liste est étroite : le nom garde 150 px)
+        local loot = UI:DungeonLoot(b, "me", c, key)
+        local maxIc = math.max(0, math.min(maxIcons or 5, math.floor((rowW - nx - 150 - 8) / 27)))
+        local nIc = math.min(#loot, maxIc)
+        local nameR = nIc > 0 and -(8 + nIc * 27 + 6) or -8
+        r.name:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
+        r.sub:SetPoint("RIGHT", r, "RIGHT", nameR, 0)
+        for k, ic in ipairs(r.icons) do
+            local id = k <= maxIc and loot[k] or nil
+            ic:SetShown(id ~= nil)
+            if id then
+                ic.id = id
+                local _, icon = UI:ItemInfo(id)
+                ic.tex:SetTexture(icon or 134400)
+                local q = UI.DungeonQuality and UI.DungeonQuality(id) or C.border
+                ic.edge:SetColor(q[1], q[2], q[3], 1)
+                ic.tex:SetDesaturated(r.state == "dead")
+            end
+        end
+        r:Paint()
+    end,
+
+    -- onglet Boss (plus de 8 boss) : tous les boss en grille, 3 colonnes (2 ou 1 si la page est étroite)
+    RefreshBosses = function(self, d, key, c, y, W)
+        local det = self.det
+        local m = UI.DungeonMapData(d)
+        local nextB = D:Next(d, key)
+        local ncol = W >= 900 and 3 or (W >= 600 and 2 or 1)
+        local CG = 12
+        local colW = (W - 28 - (ncol - 1) * CG) / ncol
+        local bosses = D:Bosses(d)
+        local perCol = math.ceil(#bosses / ncol)
+        local RH = 42
+        local n = 0
+        for i, b in ipairs(bosses) do
+            local opt = D:Optional(d, b)
+            if not opt then n = n + 1 end
+            -- ordre du jeu en colonnes : on lit de haut en bas, puis la colonne suivante
+            local col = math.floor((i - 1) / perCol)
+            local rowI = (i - 1) % perCol
+            local r = self.grows:Get()
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 14 + col * (colW + CG), -(10 + rowI * RH)); r:SetWidth(colW)
+            self:PaintBossRow(r, d, b, opt, n, RH, colW, key, c, nextB, m, 3)
+        end
+        self:PlaceButtons(d)
+        local h = 10 + perCol * RH + 12
+        det:SetHeight(h)
+        self.sc:SetContentHeight(y + h + 10)
     end,
 
     -- onglet Quêtes du détail : état de chaque quête pour le perso, guidage vers le donneur
