@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.211", date = "23/11/2026",
+        fixed = {
+            "Donjons à beaucoup de boss (Profondeurs de Rochenoire : 27 boss) : la liste des boss débordait et cachait les onglets Butin et Quêtes. Elle garde maintenant la hauteur de la carte et défile à la molette, en montrant d'abord le prochain boss.",
+            "Cartes de donjon en largeur (Profondeurs de Rochenoire…) : l'image n'était pas recadrée et les boss tombaient au mauvais endroit. Carte affichée à sa vraie forme, boss bien placés, sur la page comme sur la carte du monde.",
+            "Portraits des boss absents en jeu : quand le client ne sait pas dessiner le portrait, un petit modèle 3D du boss le remplace.",
+            "Carte du monde en donjon : avec beaucoup de boss, les lignes de la liste se resserrent pour tout garder à l'écran.",
+        },
+    },
+    {
         version = "1.128.210", date = "23/11/2026",
         added = {
             "Donjons : le portrait de chaque boss (297 boss) dans la liste à côté de la carte et dans celle de la carte du monde en jeu, grisé une fois le boss tué, cerclé de rose pour le prochain. Portraits tirés du Dungeon Journal de Naowh Forever, avec l'accord de son auteur.",

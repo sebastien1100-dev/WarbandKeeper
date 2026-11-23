@@ -29,7 +29,18 @@ end
 
 -- Portrait d'un boss (n° de modèle du Dungeon Journal de Naowh Forever) dans une texture, rond ; faux sans portrait
 local MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
-function UI.SetBossPortrait(tex, d, b)
+-- Hauteur de la carte pour une largeur W : carrée, ou 3:2 (668 x 1002 utiles) ; étage nil = le plus haut
+function UI.DungeonMapHeight(m, floor, W)
+    if not m then return W end
+    local function h(fl) return (type(fl) == "table" and fl[2] == 0) and W * 668 / 1002 or W end
+    if floor then return h(m.f[floor] or m.f[1]) end
+    local best = 0
+    for _, fl in ipairs(m.f) do best = math.max(best, h(fl)) end
+    return best
+end
+
+-- dead : boss tué (portrait grisé)
+function UI.SetBossPortrait(tex, d, b, dead)
     local npc = b and type(b.id) == "number" and b.id > 0 and b.id or nil
     local m = UI.DungeonMapData(d)
     if not npc and b and b.encounter and m and m.x then npc = m.x[b.encounter] end
@@ -38,9 +49,31 @@ function UI.SetBossPortrait(tex, d, b)
     if model and fn and pcall(fn, tex, model) then
         if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
         tex:Show()
+        if tex.wkModel then tex.wkModel:Hide() end
         return true
     end
     tex:Hide()
+    -- client sans cette fonction : petit modèle 3D en portrait à la place de la texture
+    if model and tex.GetParent then
+        local pm = tex.wkModel
+        if not pm then
+            local par = tex:GetParent()
+            if not par then return false end
+            local ok, f = pcall(CreateFrame, "PlayerModel", nil, par)
+            if not ok or not f or not f.SetDisplayInfo then return false end
+            pm = f; tex.wkModel = pm
+            pm:SetAllPoints(tex)
+            if pm.SetFrameLevel and par.GetFrameLevel then pm:SetFrameLevel(par:GetFrameLevel() + 2) end
+        end
+        if pcall(pm.SetDisplayInfo, pm, model) then
+            if pm.SetPortraitZoom then pcall(pm.SetPortraitZoom, pm, 1) end
+            pm:SetAlpha(dead and 0.45 or 1)
+            pm:Show()
+            return true
+        end
+        pm:Hide()
+    end
+    if tex.wkModel then tex.wkModel:Hide() end
     return false
 end
 
@@ -179,9 +212,16 @@ function UI.DungeonMapView(_, parent)
         if not m then return end
         local floors = #m.f
         if self.floor > floors then self.floor = 1 end
-        self.tex:SetTexture(PATH .. m.f[self.floor])
+        local fl = m.f[self.floor]
+        local img, square = fl, true
+        if type(fl) == "table" then img, square = fl[1], fl[2] == 1 end
+        self.tex:SetTexture(PATH .. img)
+        -- carte 3:2 : seul le haut de l'image (683 px sur 1024) est dessiné
+        self.tex:SetTexCoord(0, 1, 0, square and 1 or 683 / 1024)
         local S = self:GetWidth() or 300
         if S <= 0 then S = 300 end
+        local H = UI.DungeonMapHeight(m, self.floor, S)
+        if math.abs((self:GetHeight() or 0) - H) > 0.5 then self:SetHeight(H) end
         -- boutons d'étage (« 1 », « 2 »… ; caché s'il n'y en a qu'un)
         self.floorBar:SetShown(floors > 1)
         local x = 2
@@ -204,7 +244,7 @@ function UI.DungeonMapView(_, parent)
         if e then
             self.entry.bg:SetColor(C.gold[1], C.gold[2], C.gold[3], 1)
             self.entry.t:SetTextColor(C.bg[1], C.bg[2], C.bg[3])
-            self.entry:ClearAllPoints(); self.entry:SetPoint("CENTER", self, "TOPLEFT", e[2] * S, -e[3] * S)
+            self.entry:ClearAllPoints(); self.entry:SetPoint("CENTER", self, "TOPLEFT", e[2] * S, -e[3] * H)
         end
         -- boss : n° pour ceux qui comptent, « + » pour les facultatifs ; deux boss au même endroit : décalés
         local nextB = D:Next(d, self.key)
@@ -223,7 +263,7 @@ function UI.DungeonMapView(_, parent)
                 local dup = spots[sk] or 0
                 spots[sk] = dup + 1
                 pin:ClearAllPoints()
-                pin:SetPoint("CENTER", self, "TOPLEFT", p[2] * S + dup * 14, -p[3] * S - dup * 4)
+                pin:SetPoint("CENTER", self, "TOPLEFT", p[2] * S + dup * 14, -p[3] * H - dup * 4)
                 pin:SetSize(opt and PIN - 4 or PIN, opt and PIN - 4 or PIN)
                 pinPaint(pin)
             end
@@ -301,10 +341,13 @@ local function buildOverlay()
         local key = WK:CharKey()
         local H = self:GetHeight() or 500
         local Wd = (self:GetWidth() or 800) - 250
-        local S = math.max(200, math.min(H - 16, Wd - 16))
+        -- largeur qui tient en hauteur comme en largeur (carte 3:2 plus basse que large)
+        local m = UI.DungeonMapData(d)
+        local ratio = UI.DungeonMapHeight(m, nil, 1000) / 1000
+        local S = math.max(200, math.min(Wd - 16, (H - 16) / ratio))
         self.map:ClearAllPoints()
         self.map:SetPoint("CENTER", self, "LEFT", Wd / 2, 0)
-        self.map:SetSize(S, S)
+        self.map:SetSize(S, S * ratio)
         self.map:SetDungeon(d, key)
         self.map:Refresh()
         self.title:SetText(D:Name(d))
@@ -313,7 +356,10 @@ local function buildOverlay()
         local nextB = D:Next(d, key)
         local y, n = 56, 0
         local r1, g1, b1 = UI:Accent()
-        for _, b in ipairs(D:Bosses(d)) do
+        local list = D:Bosses(d)
+        -- beaucoup de boss : lignes plus basses pour tout garder dans la hauteur (16 px au moins)
+        local RH = math.floor(math.max(16, math.min(25, (H - y - 8) / math.max(1, #list))))
+        for _, b in ipairs(list) do
             local opt = D:Optional(d, b)
             if not opt then n = n + 1 end
             local st = UI.DungeonBossState(d, b, key, nextB)
@@ -322,7 +368,7 @@ local function buildOverlay()
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
             r.n:SetText(opt and "+" or tostring(n))
             r.name:SetText(D:BossName(b))
-            if UI.SetBossPortrait(r.face, d, b) then r.face:SetDesaturated(st == "dead") end
+            if UI.SetBossPortrait(r.face, d, b, st == "dead") then r.face:SetDesaturated(st == "dead") end
             r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1); r.bg:SetShown(st == "next")
             local col = st == "dead" and C.muted or C.text
             r.name:SetTextColor(col[1], col[2], col[3])
@@ -331,7 +377,9 @@ local function buildOverlay()
             r.right:SetText(st == "dead" and T("tué") or (st == "next" and T("prochain") or ""))
             local rc = st == "next" and { r1, g1, b1 } or C.dim
             r.right:SetTextColor(rc[1], rc[2], rc[3])
-            y = y + 25
+            r:SetHeight(RH - 1)
+            r.face:SetSize(RH - 5, RH - 5)
+            y = y + RH
         end
     end
     return f

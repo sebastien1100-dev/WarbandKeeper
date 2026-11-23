@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.211 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Donjons à beaucoup de boss (Profondeurs de Rochenoire : 27 boss) : la liste des boss débordait et cachait les onglets Butin et Quêtes. Elle garde maintenant la hauteur de la carte et défile à la molette, en montrant d'abord le prochain boss.
+- Cartes de donjon en largeur (Profondeurs de Rochenoire…) : l'image n'était pas recadrée et les boss tombaient au mauvais endroit. Carte affichée à sa vraie forme, boss bien placés, sur la page comme sur la carte du monde.
+- Portraits des boss absents en jeu : quand le client ne sait pas dessiner le portrait, un petit modèle 3D du boss le remplace.
+- Carte du monde en donjon : avec beaucoup de boss, les lignes de la liste se resserrent pour tout garder à l'écran.
+
 ## v1.128.210 — 23/11/2026
 
 _Un /reload suffit._

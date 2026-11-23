@@ -96,7 +96,7 @@ def floors_of(m):
         if not img:
             # sans liste d'images : étage n > 1 = même nom suivi du n° (« AlcazPrison2 »)
             img = m.get("image") + (str(f) if f > 1 else "")
-        out.append((f, img.replace("/", "\\").split("\\")[-1], names.get(f)))
+        out.append((f, img.replace("/", "\\").split("\\")[-1], names.get(f), m.get("imageBottom")))
     return out
 
 
@@ -143,8 +143,9 @@ def main():
         for mk, m in parts:
             base = len(floors)
             local = {}
-            for f, img, fname in floors_of(m):
-                floors.append(img)
+            for f, img, fname, bottom in floors_of(m):
+                # image du jeu : la carte n'occupe que le haut (683 / 1024, format 3:2), sauf imageBottom = 1 (carré)
+                floors.append((img, 1 if bottom == 1 else 0))
                 local[f] = len(floors)
                 used.add(img)
             for npc, p in (m.get("pins") or {}).items():
@@ -154,7 +155,7 @@ def main():
             e = seq(m.get("entrance"))
             if entrance is None and len(e) == 3 and e[0] in local:
                 entrance = (local[e[0]], e[1], e[2])
-        fl = ", ".join('"%s"' % f for f in floors)
+        fl = ", ".join('{"%s",%d}' % f for f in floors)
         pl = ", ".join("[%d]={%d,%.3f,%.3f}" % (n, p[0], p[1], p[2]) for n, p in sorted(pins.items()))
         el = (", e={%d,%.3f,%.3f}" % entrance) if entrance else ""
         xs = sorted((e, enc2npc[e]) for e in encs if e in enc2npc and enc2npc[e] in pins)
@@ -169,7 +170,7 @@ def main():
         out.write("-- FICHIER GÉNÉRÉ par tools/gen_dungeon_maps.py : ne pas modifier à la main.\n")
         out.write("-- Cartes des donjons (images du jeu) et positions des boss : Dungeon Journal de Naowh Forever,\n")
         out.write("-- reprises avec l'accord de son auteur. Images dans WarbandKeeper_Data\\Maps.\n")
-        out.write("-- WK.DungeonMaps[clé du donjon] = { f = { image de chaque étage }, e = { étage, x, y } (entrée),\n")
+        out.write("-- WK.DungeonMaps[clé du donjon] = { f = { { image, carré (1) ou 3:2 (0) } par étage }, e = { étage, x, y } (entrée),\n")
         out.write("--   p = { [n° du PNJ] = { étage, x, y } }, x = { [n° de rencontre] = n° du PNJ } } ; x et y de 0 à 1 sur l'image.\n")
         out.write("local ADDON_NAME, WK = ...\nWK.DungeonMaps = {\n")
         out.write("\n".join(lines) + "\n}\n")

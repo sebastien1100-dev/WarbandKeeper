@@ -347,8 +347,10 @@ UI:RegisterPage({
             for _, r in ipairs(self.brows.items) do if r:IsShown() then r.hl = b and r.boss.id == b.id; r:Paint() end end
         end
         -- liste des boss à côté de la carte : n°, nom, étage, état ; survol = le boss s'allume sur la carte
+        -- la liste défile quand elle dépasse la hauteur de la carte (donjons à 20 boss et plus)
+        self.bscroll = UI:Scroll(top)
         self.brows = UI:Pool(function()
-            local r = CreateFrame("Button", nil, top)
+            local r = CreateFrame("Button", nil, self.bscroll.child)
             r:SetHeight(40)
             r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 1)
             -- pastille comme sur la carte, nom, 2e ligne (niveau, étage, état), butin pour ce perso à droite
@@ -716,11 +718,14 @@ UI:RegisterPage({
         local pageH = (self.top:GetParent():GetHeight() or 600)
         -- la carte grandit avec la fenêtre ; il reste au moins 150 px pour la liste de l'onglet
         local avail = pageH - 42 - 32 - 40 - 40 - 150
-        local S = m and math.floor(math.max(200, math.min(360, avail, W * 0.45))) or 0
+        -- largeur de la carte ; sa hauteur suit (carte 3:2 plus basse : un peu plus large pour la même place)
+        local ratio = m and UI.DungeonMapHeight(m, nil, 1000) / 1000 or 1
+        local S = m and math.floor(math.max(200, math.min(360 / ratio, avail / ratio, W * 0.45))) or 0
+        local MH = m and math.floor(S * ratio) or 0
         local y0 = 32
         self.map:ClearAllPoints()
         if m then
-            self.map:SetPoint("TOPLEFT", 0, -y0); self.map:SetSize(S, S)
+            self.map:SetPoint("TOPLEFT", 0, -y0); self.map:SetSize(S, MH)
             self.map:SetDungeon(d, key)
             self.map:Highlight(nil)
         else
@@ -729,10 +734,17 @@ UI:RegisterPage({
         -- liste des boss
         local x0 = m and (S + 12) or 0
         local nextB = D:Next(d, key)
-        local n, y = 0, y0
+        local n, y = 0, 0
         local bosses = D:Bosses(d)
-        -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte
-        local RH = math.floor(math.max(30, math.min(46, (m and S or 46 * #bosses) / math.max(1, #bosses))))
+        -- lignes de 30 à 46 px : la liste remplit la hauteur de la carte, et défile au-delà
+        local RH = math.floor(math.max(30, math.min(46, (m and MH or 46 * #bosses) / math.max(1, #bosses))))
+        local listH = RH * #bosses
+        local viewH = m and MH or math.min(listH, math.max(120, math.min(320, avail)))
+        local bs = self.bscroll
+        local over = listH > viewH + 1
+        bs:ClearAllPoints(); bs:SetPoint("TOPLEFT", x0, -y0)
+        bs:SetSize(math.max(100, W - x0), math.max(1, viewH))
+        bs.child:SetWidth(math.max(100, W - x0 - (over and 14 or 0)))
         local c = WK.DB.global.characters[key] or WK.DB:Me()
         local ac = { UI:Accent() }
         for _, b in ipairs(bosses) do
@@ -740,7 +752,7 @@ UI:RegisterPage({
             if not opt then n = n + 1 end
             local r = self.brows:Get()
             r.boss = b
-            r:ClearAllPoints(); r:SetPoint("TOPLEFT", x0, -y); r:SetPoint("TOPRIGHT", 0, -y)
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, -y); r:SetPoint("TOPRIGHT", 0, -y)
             r.state = UI.DungeonBossState(d, b, key, nextB)
             r.focused = self.focus == b.id
             r:SetHeight(RH - 3)
@@ -771,7 +783,7 @@ UI:RegisterPage({
             r.sub:SetShown(RH >= 36)
             -- portrait entre la pastille et le nom
             local FS = math.min(32, RH - 9)
-            local hasFace = UI.SetBossPortrait(r.face, d, b)
+            local hasFace = UI.SetBossPortrait(r.face, d, b, r.state == "dead")
             r.faceRing:SetShown(hasFace)
             local nx = 40
             if hasFace then
@@ -803,8 +815,19 @@ UI:RegisterPage({
             r:Paint()
             y = y + RH
         end
+        bs.child:SetHeight(math.max(1, listH))
+        -- nouveau donjon : le prochain boss en vue
+        if self.bsKey ~= d.key then
+            self.bsKey = d.key
+            local idx = 0
+            for i, b in ipairs(bosses) do if nextB and b.id == nextB.id then idx = i end end
+            bs:SetVerticalScroll(math.max(0, math.min(listH - viewH, (idx - 2) * RH)))
+        elseif bs:GetVerticalScroll() > math.max(0, listH - viewH) then
+            bs:SetVerticalScroll(math.max(0, listH - viewH))
+        end
+        bs:UpdateBar()
         -- sans carte, la liste ne prend que sa place ; avec, la hauteur de la carte
-        local blockH = math.max(m and S or 0, y - y0)
+        local blockH = math.max(MH, viewH)
         local ty = y0 + blockH + 8
         det.tabs.loot:ClearAllPoints(); det.tabs.loot:SetPoint("TOPLEFT", 0, -ty)
         det.tabLine:ClearAllPoints()
