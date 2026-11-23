@@ -1172,10 +1172,18 @@ function V.Refresh(light, live)
         end
         if #items > 0 then y = y + math.ceil(#items / cols) * (slotSize + GAP) + 8 end
     end
+    -- sacs spéciaux (composants, munitions) : places vides à la suite des objets, sur les mêmes lignes ;
+    -- en-tête « occupées / total »
+    local special = {}
+    if groups.rbag then special.rbag = rEmpties; rEmpties = {} end
+    if groups.abag then special.abag = aEmpties; aEmpties = {} end
     for _, c in ipairs(cats) do
         local g = groups[c.key] or {}
+        local sp = special[c.key]
+        local usedN = #g
+        if sp then for _, e in ipairs(sp) do g[#g + 1] = e end end
         if #g > 0 then
-            local meta = tostring(#g)
+            local meta = sp and (usedN .. " / " .. #g) or tostring(#g)
             if c.key == "junk" then
                 local v = 0
                 for _, e in ipairs(g) do v = v + (select(11, WK.GetItemInfo(e.id)) or 0) * (e.count or 1) end

@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.238", date = "23/11/2026",
+        changed = {
+            "Sacs : dans « Sac à munitions » et « Sac de composants », les places vides suivent les objets sur les mêmes lignes (plus de section « Places libres » à part pour ces sacs), et l'en-tête dit « occupées / total » (par exemple 5 / 8).",
+        },
+    },
+    {
         version = "1.128.237", date = "23/11/2026",
         added = {
             "Sacs : le carquois ou la giberne du chasseur a sa propre section « Sac à munitions », comme le sac de composants, avec ses places libres à part. Le pied de la fenêtre compte ces places séparément (« + N pour les munitions »).",
