@@ -21,27 +21,26 @@
   {
    "skill": [
     45,
-    50
+    51
    ],
    "recipe": 3816,
-   "crafts": 6,
-   "craftAll": true
+   "crafts": 6
   },
   {
    "skill": [
-    50,
-    75
+    51,
+    77
    ],
    "recipe": 3756,
-   "crafts": 26
+   "crafts": 28
   },
   {
    "skill": [
-    75,
+    77,
     80
    ],
    "recipe": 20648,
-   "crafts": 10,
+   "crafts": 5,
    "craftAll": true
   },
   {
@@ -83,7 +82,7 @@
     142
    ],
    "recipe": 3818,
-   "crafts": 40,
+   "crafts": 37,
    "craftAll": true
   },
   {
@@ -121,18 +120,18 @@
   {
    "skill": [
     176,
-    193
+    191
    ],
    "recipe": 7156,
-   "crafts": 20
+   "crafts": 17
   },
   {
    "skill": [
-    193,
+    191,
     196
    ],
    "recipe": 10487,
-   "crafts": 3
+   "crafts": 5
   },
   {
    "skill": [
@@ -188,14 +187,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    50
+    51
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    50,
+    51,
     125
    ],
    "trainers": {
@@ -2176,6 +2175,18 @@
    "recipe": 17722,
    "price": null,
    "vendors": []
+  },
+  {
+   "id": 1294289,
+   "out": 274490,
+   "learn": 165,
+   "src": "recipe",
+   "recipe": 274491,
+   "price": 5000,
+   "vendors": [
+    "Gorhak",
+    "Molkar"
+   ]
   },
   {
    "id": 3777,
@@ -5437,13 +5448,13 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 14,
-     "price": 1800
+     "price": 1699
     },
     {
      "id": 14047,
      "name": "Runecloth",
      "count": 10,
-     "price": 773
+     "price": 555
     },
     {
      "id": 14341,
@@ -5476,7 +5487,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 5,
-     "price": 609
+     "price": 540
     },
     {
      "id": 4291,
@@ -5500,7 +5511,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 4,
-     "price": 34
+     "price": 47
     }
    ],
    "source": "trainer",
@@ -5518,7 +5529,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 6,
-     "price": 198
+     "price": 197
     }
    ],
    "source": "trainer",
@@ -5536,7 +5547,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 3,
-     "price": 34
+     "price": 47
     },
     {
      "id": 2320,
@@ -5560,7 +5571,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 6,
-     "price": 34
+     "price": 47
     },
     {
      "id": 2320,
@@ -5584,7 +5595,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 14,
-     "price": 609
+     "price": 540
     },
     {
      "id": 4291,
@@ -5614,7 +5625,7 @@
      "id": 2319,
      "name": "Medium Leather",
      "count": 4,
-     "price": 96
+     "price": 89
     },
     {
      "id": 2321,
@@ -5638,13 +5649,13 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 20,
-     "price": 1800
+     "price": 1699
     },
     {
      "id": 15408,
      "name": "Heavy Scorpid Scale",
      "count": 10,
-     "price": 2699
+     "price": 1800
     },
     {
      "id": 14341,
@@ -5677,7 +5688,7 @@
      "id": 2934,
      "name": "Ruined Leather Scraps",
      "count": 3,
-     "price": 12
+     "price": 18
     }
    ],
    "source": "trainer",
@@ -5695,7 +5706,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 5,
-     "price": 198
+     "price": 197
     },
     {
      "id": 2321,
@@ -5719,7 +5730,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 1,
-     "price": 34
+     "price": 47
     }
    ],
    "source": "trainer",
@@ -5737,7 +5748,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 8,
-     "price": 1800
+     "price": 1699
     },
     {
      "id": 2325,
@@ -5777,7 +5788,7 @@
      "id": 783,
      "name": "Light Hide",
      "count": 1,
-     "price": 109
+     "price": 99
     },
     {
      "id": 4289,
@@ -5801,7 +5812,7 @@
      "id": 4232,
      "name": "Medium Hide",
      "count": 1,
-     "price": 355
+     "price": 330
     },
     {
      "id": 4289,
@@ -5825,7 +5836,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 10,
-     "price": 34
+     "price": 47
     },
     {
      "id": 4231,
@@ -5855,7 +5866,7 @@
      "id": 4235,
      "name": "Heavy Hide",
      "count": 1,
-     "price": 774
+     "price": 908
     },
     {
      "id": 4289,
@@ -5879,7 +5890,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 8,
-     "price": 198
+     "price": 197
     },
     {
      "id": 4236,
@@ -5909,7 +5920,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 5,
-     "price": 1800
+     "price": 1699
     }
    ],
    "source": "trainer",
@@ -5927,7 +5938,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 4,
-     "price": 198
+     "price": 197
     },
     {
      "id": 4236,
@@ -5957,7 +5968,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 5,
-     "price": 609
+     "price": 540
     },
     {
      "id": 4291,

@@ -26,8 +26,12 @@
 "name": "Katerina the Cleaner"
 },
 {
-"items": [],
-"name": "Zarla Ober"
+"items": [
+276744,
+276745,
+276746
+],
+"name": "Blazeroar"
 },
 {
 "items": [
@@ -122,6 +126,27 @@
 "ilvl": 53,
 "q": 3,
 "req": 48
+},
+"276744": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"276745": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
+},
+"276746": {
+"drop": null,
+"found": true,
+"ilvl": 55,
+"q": 3,
+"req": 50
 }
 },
 "levels": [

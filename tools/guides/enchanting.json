@@ -42,26 +42,26 @@
   {
    "skill": [
     103,
-    129
+    127
    ],
    "recipe": 7771,
-   "crafts": 35
+   "crafts": 31
   },
   {
    "skill": [
-    129,
-    130
+    127,
+    128
    ],
    "recipe": 7795,
    "crafts": 1
   },
   {
    "skill": [
-    130,
+    128,
     159
    ],
-   "recipe": 13501,
-   "crafts": 30
+   "recipe": 7863,
+   "crafts": 33
   },
   {
    "skill": [
@@ -74,42 +74,34 @@
   {
    "skill": [
     160,
-    200
+    197
    ],
    "recipe": 13637,
-   "crafts": 50
+   "crafts": 44
   },
   {
    "skill": [
-    200,
-    206
+    197,
+    211
    ],
    "recipe": 13663,
-   "crafts": 6
+   "crafts": 15
   },
   {
    "skill": [
-    206,
-    207
+    211,
+    212
    ],
    "recipe": 13702,
    "crafts": 1
   },
   {
    "skill": [
-    207,
-    210
-   ],
-   "recipe": 13746,
-   "crafts": 3
-  },
-  {
-   "skill": [
-    210,
+    212,
     250
    ],
    "recipe": 13815,
-   "crafts": 50
+   "crafts": 48
   },
   {
    "skill": [
@@ -122,10 +114,18 @@
   {
    "skill": [
     270,
+    272
+   ],
+   "recipe": 13939,
+   "crafts": 3
+  },
+  {
+   "skill": [
+    272,
     300
    ],
    "recipe": 20017,
-   "crafts": 36
+   "crafts": 34
   }
  ],
  "sections": [
@@ -141,7 +141,7 @@
    "rank": "Journeyman",
    "skill": [
     50,
-    129
+    127
    ],
    "trainers": {
     "alliance": [
@@ -183,8 +183,8 @@
   {
    "rank": "Expert",
    "skill": [
-    129,
-    200
+    127,
+    211
    ],
    "trainers": {
     "alliance": [
@@ -206,7 +206,7 @@
   {
    "rank": "Artisan",
    "skill": [
-    200,
+    211,
     300
    ],
    "trainers": {
@@ -2503,7 +2503,7 @@
      "id": 10938,
      "name": "Lesser Magic Essence",
      "count": 1,
-     "price": 140
+     "price": 133
     }
    ],
    "source": "trainer",
@@ -2520,7 +2520,7 @@
      "id": 11137,
      "name": "Vision Dust",
      "count": 1,
-     "price": 915
+     "price": 1059
     }
    ],
    "source": "trainer",
@@ -2537,7 +2537,7 @@
      "id": 11083,
      "name": "Soul Dust",
      "count": 1,
-     "price": 387
+     "price": 475
     }
    ],
    "source": "trainer",
@@ -2557,25 +2557,25 @@
      "id": 11144,
      "name": "Truesilver Rod",
      "count": 1,
-     "price": 3299
+     "price": 3499
     },
     {
      "id": 7971,
      "name": "Black Pearl",
      "count": 1,
-     "price": 1393
+     "price": 1347
     },
     {
      "id": 11135,
      "name": "Greater Mystic Essence",
      "count": 1,
-     "price": 2442
+     "price": 2433
     },
     {
      "id": 11137,
      "name": "Vision Dust",
      "count": 1,
-     "price": 915
+     "price": 1059
     }
    ],
    "source": "trainer",
@@ -2593,19 +2593,19 @@
      "id": 11176,
      "name": "Dream Dust",
      "count": 1,
-     "price": 2500
+     "price": 2495
     },
     {
      "id": 8831,
      "name": "Purple Lotus",
      "count": 1,
-     "price": 549
+     "price": 437
     },
     {
      "id": 8925,
      "name": "Crystal Vial",
      "count": 1,
-     "price": 494
+     "price": 475
     }
    ],
    "source": "recipe",
@@ -2631,7 +2631,7 @@
      "id": 11176,
      "name": "Dream Dust",
      "count": 6,
-     "price": 2500
+     "price": 2495
     }
    ],
    "source": "recipe",
@@ -2650,23 +2650,6 @@
     }
    ]
   },
-  "13746": {
-   "name": "Enchant Cloak - Greater Defense",
-   "item": null,
-   "reagents": [
-    {
-     "id": 11137,
-     "name": "Vision Dust",
-     "count": 1,
-     "price": 915
-    }
-   ],
-   "source": "trainer",
-   "tools": [
-    "Runed Truesilver Rod"
-   ],
-   "taught_by": []
-  },
   "7795": {
    "name": "Runed Silver Rod",
    "item": {
@@ -2678,29 +2661,52 @@
      "id": 6338,
      "name": "Silver Rod",
      "count": 1,
-     "price": 5080
+     "price": 985
     },
     {
      "id": 10940,
      "name": "Strange Dust",
      "count": 3,
-     "price": 108
+     "price": 104
     },
     {
      "id": 10938,
      "name": "Lesser Magic Essence",
      "count": 4,
-     "price": 140
+     "price": 133
     },
     {
      "id": 1210,
      "name": "Shadowgem",
      "count": 1,
-     "price": 260
+     "price": 270
     }
    ],
    "source": "trainer",
    "tools": [],
+   "taught_by": []
+  },
+  "13939": {
+   "name": "Enchant Bracer - Greater Strength",
+   "item": null,
+   "reagents": [
+    {
+     "id": 11176,
+     "name": "Dream Dust",
+     "count": 1,
+     "price": 2495
+    },
+    {
+     "id": 11174,
+     "name": "Lesser Nether Essence",
+     "count": 2,
+     "price": 3608
+    }
+   ],
+   "source": "trainer",
+   "tools": [
+    "Runed Truesilver Rod"
+   ],
    "taught_by": []
   },
   "13628": {
@@ -2714,47 +2720,54 @@
      "id": 11128,
      "name": "Golden Rod",
      "count": 1,
-     "price": 1900
+     "price": 1797
     },
     {
      "id": 5500,
      "name": "Iridescent Pearl",
      "count": 1,
-     "price": 790
+     "price": 800
     },
     {
      "id": 11082,
      "name": "Greater Astral Essence",
      "count": 1,
-     "price": 1699
+     "price": 1830
     },
     {
      "id": 11083,
      "name": "Soul Dust",
      "count": 1,
-     "price": 387
+     "price": 475
     }
    ],
    "source": "trainer",
    "tools": [],
    "taught_by": []
   },
-  "13501": {
-   "name": "Enchant Bracer - Lesser Stamina",
+  "7863": {
+   "name": "Enchant Boots - Minor Stamina",
    "item": null,
    "reagents": [
     {
-     "id": 11083,
-     "name": "Soul Dust",
-     "count": 1,
-     "price": 387
+     "id": 10940,
+     "name": "Strange Dust",
+     "count": 4,
+     "price": 104
     }
    ],
    "source": "trainer",
    "tools": [
     "Runed Silver Rod"
    ],
-   "taught_by": []
+   "taught_by": [
+    {
+     "id": 6376,
+     "name": "Formula: Enchant Boots - Minor Stamina",
+     "vendors": [],
+     "price": null
+    }
+   ]
   },
   "7418": {
    "name": "Enchant Bracer - Inferior Stamina",
@@ -2781,7 +2794,7 @@
      "id": 10940,
      "name": "Strange Dust",
      "count": 2,
-     "price": 108
+     "price": 104
     }
    ],
    "source": "trainer",
@@ -2805,7 +2818,7 @@
      "id": 10940,
      "name": "Strange Dust",
      "count": 1,
-     "price": 108
+     "price": 104
     }
    ],
    "source": "trainer",
@@ -2825,7 +2838,7 @@
      "id": 6217,
      "name": "Copper Rod",
      "count": 1,
-     "price": 29
+     "price": 24
     },
     {
      "id": 247786,
@@ -2846,7 +2859,7 @@
      "id": 11134,
      "name": "Lesser Mystic Essence",
      "count": 1,
-     "price": 859
+     "price": 840
     }
    ],
    "source": "trainer",

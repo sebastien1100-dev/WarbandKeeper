@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.222", date = "23/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : 3 objets de butin de plus, 1 recette de plus, 1 boss de plus détectés par la fin de rencontre, 1 boss de plus avec leur nom français, guides de métiers revus par wowtbc.gg.",
+        },
+    },
+    {
         version = "1.128.221", date = "23/11/2026",
         fixed = {
             "Donjons : des portraits de boss clignotaient (Profondeurs de Rochenoire…). Chaque rafraîchissement de la page rechargeait le portrait ou le modèle 3D ; un boss déjà affiché garde maintenant son portrait.",

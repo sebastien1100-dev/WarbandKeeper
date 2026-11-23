@@ -6,7 +6,7 @@
     1,
     51
    ],
-   "recipe": 8604,
+   "recipe": 2540,
    "crafts": 51
   },
   {
@@ -1590,7 +1590,7 @@
      "id": 5503,
      "name": "Clam Meat",
      "count": 1,
-     "price": 34
+     "price": 29
     },
     {
      "id": 159,
@@ -1614,7 +1614,7 @@
      "id": 5504,
      "name": "Tangy Clam Meat",
      "count": 1,
-     "price": 55
+     "price": 51
     },
     {
      "id": 2692,
@@ -1638,7 +1638,7 @@
      "id": 13760,
      "name": "Raw Sunscale Salmon",
      "count": 1,
-     "price": 192
+     "price": 299
     }
    ],
    "source": "recipe",
@@ -1688,6 +1688,24 @@
     }
    ]
   },
+  "2540": {
+   "name": "Roasted Boar Meat",
+   "item": {
+    "id": 2681,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 769,
+     "name": "Chunk of Boar Meat",
+     "count": 1,
+     "price": 24
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
   "7828": {
    "name": "Rockscale Cod",
    "item": {
@@ -1699,7 +1717,7 @@
      "id": 6362,
      "name": "Raw Rockscale Cod",
      "count": 1,
-     "price": 5
+     "price": 4
     }
    ],
    "source": "recipe",
@@ -1734,7 +1752,7 @@
      "id": 8365,
      "name": "Raw Mithril Head Trout",
      "count": 1,
-     "price": 75
+     "price": 98
     }
    ],
    "source": "recipe",
@@ -1769,31 +1787,7 @@
      "id": 12205,
      "name": "White Spider Meat",
      "count": 2,
-     "price": 189
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "8604": {
-   "name": "Herb Baked Egg",
-   "item": {
-    "id": 6888,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 6889,
-     "name": "Small Egg",
-     "count": 1,
-     "price": 25
-    },
-    {
-     "id": 2678,
-     "name": "Mild Spices",
-     "count": 1,
-     "price": 2
+     "price": 196
     }
    ],
    "source": "trainer",
