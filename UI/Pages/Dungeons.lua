@@ -375,7 +375,8 @@ UI:RegisterPage({
                     else GameTooltip:SetText((UI:ItemInfo(s2.id))) end
                     local info = D:ItemInfo(s2.id)
                     if info and info.drop then
-                        GameTooltip:AddLine(string.format(T("Chance de drop : %s %%"), tostring(info.drop)), 0.8, 0.8, 0.8)
+                        local txt = string.format(T("Chance de drop : %s %%"), tostring(info.drop))
+                        GameTooltip:AddLine(txt, 0.8, 0.8, 0.8)
                     end
                     GameTooltip:Show()
                 end)
