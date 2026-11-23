@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.242", date = "23/11/2026",
+        added = {
+            "Barre « Sacs, marchand et maître » : clic droit sur le bouton pour replier = ouvre les réglages de la barre (QoL > Général > Marchand).",
+        },
+    },
+    {
         version = "1.128.241", date = "23/11/2026",
         changed = {
             "Barre « Sacs, marchand et maître » : le bouton pour replier reste fixe à l'écran, la barre se déplie à partir de lui (avant, toute la barre se recentrait et le bouton bougeait).",

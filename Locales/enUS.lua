@@ -2850,6 +2850,7 @@ WK.Locales.enUS.text = {
     ["Taille des cases et de leurs icônes (la barre entière : réglage Taille)."] = "Size of the slots and their icons (the whole bar: Size setting).",
     ["Bouton pour replier"] = "Collapse button",
     ["En tête de barre : un clic replie ou déplie les cases. Repliée, une pastille rouge clignote sur le bouton quand une case est en alerte."] = "At the start of the bar: a click collapses or expands the slots. When collapsed, a red dot blinks on the button while a slot is on alert.",
+    ["Clic droit : réglages de la barre"] = "Right-click: bar settings",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",

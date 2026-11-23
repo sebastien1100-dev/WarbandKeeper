@@ -236,7 +236,7 @@ local function buildSpace()
     -- bouton « replier » en tête de barre (maquette B) : clic gauche = replier ou déplier (réglage barFold) ;
     -- replié, une pastille rouge respire dans son coin tant qu'une case est en alerte
     f.fold = newTile(f, "menu")
-    f.fold:RegisterForClicks("LeftButtonUp")
+    f.fold:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     f.fold.n:Hide()
     -- pastille au coin haut droit de l'icône, cernée de sombre pour rester visible sur le jeu
     f.fold.dotBg = f.fold:CreateTexture(nil, "OVERLAY", nil, 1)
@@ -285,9 +285,14 @@ local function buildSpace()
             _G.GameTooltip:AddLine(string.format(T("%d case(s) en alerte"), n), UI.RGB(C.negative))
         end
         _G.GameTooltip:AddLine(folded and T("Clic : déplier la barre") or T("Clic : replier la barre"), 0.6, 0.6, 0.6)
+        _G.GameTooltip:AddLine(T("Clic droit : réglages de la barre"), 0.6, 0.6, 0.6)
         _G.GameTooltip:Show()
     end)
-    f.fold:SetScript("OnClick", function(s)
+    f.fold:SetScript("OnClick", function(s, btn)
+        if btn == "RightButton" then
+            if UI.OpenBagBarSettings then UI:OpenBagBarSettings() end
+            return
+        end
         local cfg = BH():Config()
         cfg.barFolded = not cfg.barFolded or nil
         UI:RefreshBagSpace()
