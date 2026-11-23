@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.232", date = "23/11/2026",
+        added = {
+            "Fenêtre « Mieux que ce que tu portes » : une croix pour la fermer sans rien refuser. Elle revient au prochain objet meilleur qui arrive dans tes sacs (« Pas celui-là » écarte toujours l'objet pour de bon).",
+        },
+    },
+    {
         version = "1.128.231", date = "23/11/2026",
         fixed = {
             "Sacs : l'erreur « ADDON_ACTION_FORBIDDEN … UNKNOWN() » revenait, et la version précédente pouvait la provoquer aussi sur d'autres objets : elle remplaçait le clic du jeu sur toutes les cases. Le clic du jeu n'est plus touché ; seule une couche invisible, posée sur les paquets et coffres à butin, prend leur clic droit pour les ouvrir. Le clic gauche passe toujours à la case. Chez un marchand, à la banque, au courrier, à l'échange ou à l'HV, la couche se retire.",
