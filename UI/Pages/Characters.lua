@@ -50,6 +50,7 @@ UI:RegisterPage({
                 return out
             end,
             onToggle = function(open)
+                if open then self:RefreshXPCards() end
                 for _, h in ipairs(self.colHeaders or {}) do h:SetShown(not open) end
                 self.xpTitle:SetShown(open)
                 if self.share then self.share:SetShown(not open) end
@@ -186,6 +187,14 @@ UI:RegisterPage({
             r:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
             return r
         end)
+    end,
+
+    -- cartes reprises de QoL > Expérience : leurs textes sont recalculés ici (la page QoL n'est pas affichée)
+    RefreshXPCards = function(self)
+        if not (self.xp and self.xp:IsOpen()) then return end
+        for _, c in ipairs(self.xp.list or {}) do
+            for _, fn in ipairs(c.dynFns or {}) do pcall(fn) end
+        end
     end,
 
     -- Expérience : rythme et repos de tes persos (volet du bouton Expérience ; barre d'XP, clic, Résumé)
@@ -425,7 +434,7 @@ UI:RegisterPage({
     end,
 
     Refresh = function(self)
-        if self.xp and self.xp:IsOpen() then self.xp:Refresh() end
+        if self.xp and self.xp:IsOpen() then self.xp:Refresh(); self:RefreshXPCards() end
         self.rows:Reset()
         local me = WK:CharKey()
         local y = 0

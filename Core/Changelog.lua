@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.199", date = "23/11/2026",
+        fixed = {
+            "Persos > Expérience : « Rythme de la session » restait sur « Pas encore d'XP gagnée » et « Tous tes persos » ne se mettait plus à jour. Les deux cartes se recalculent maintenant à l'ouverture et à chaque gain d'XP.",
+        },
+    },
+    {
         version = "1.128.198", date = "23/11/2026",
         changed = {
             "Inventaire : les titres OBJETS et COURRIER de la barre d'onglets sont plus grands et en texte clair, pour être lisibles.",

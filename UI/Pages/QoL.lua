@@ -2309,6 +2309,9 @@ UI:RegisterPage({
                 table.insert(lines, UI:Hex(C.muted) .. string.format(T("Monstres %s  ·  quêtes %s  ·  découverte %s"), fmt(s.mobs), fmt(s.quests), fmt(s.explore)) .. "|r")
                 return table.concat(lines, "\n")
             end)
+            -- texte recalculé aussi par la page Persos (la carte y est reprise : bouton Expérience)
+            xs.dynFns = { self.dyn[#self.dyn] }
+            xs.rateText = xsText -- (tests)
             xsText:SetPoint("TOPLEFT", 16, -42); xsText:SetPoint("TOPRIGHT", -16, -42)
             xsText:SetJustifyH("LEFT")
             local xreset = UI:Button(xs, "Remettre à zéro", nil, 28, "secondary")
@@ -2442,6 +2445,7 @@ UI:RegisterPage({
                 end
             end
             table.insert(self.dyn, layoutTiles)
+            xa.dynFns = { layoutTiles }
             UI:OnResize(xa, function() if xa:IsVisible() then layoutTiles() end end)
         end
 
