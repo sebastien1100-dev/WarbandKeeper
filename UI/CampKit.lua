@@ -45,6 +45,8 @@ local function build()
     UI:HudBackground(f, "hud")
     f.buttons = {}
     f.head = UI:Text(f, 11, C.positive); f.head:SetPoint("TOPLEFT", 10, -7); f.head:SetJustifyH("LEFT"); f.head:Hide()
+    f.none = UI:Text(f, 11, C.muted); f.none:SetPoint("TOPLEFT", 10, -FHEAD - 10); f.none:SetJustifyH("LEFT")
+    f.none:SetText(T("Aucun objet de camp dans tes sacs (feu, objets de métier, sac de couchage).")); f.none:Hide()
     for i = 1, MAXB do
         local b = CreateFrame("Button", "WarbandKeeperCampKit" .. i, f, "SecureActionButtonTemplate")
         b:SetSize(BS, BS)
@@ -225,9 +227,11 @@ local function build()
             end
         end
         self.head:SetShown(barMode and true or false)
+        self.none:SetShown(barMode and n == 0 or false)
         if barMode then
             self:PaintHead()
             local w = 20 + n * BS + math.max(0, n - 1) * FGAP
+            if n == 0 then w = (self.none:GetStringWidth() or 0) + 20 end
             self:SetWidth(math.max(w, (self.head:GetStringWidth() or 0) + 20))
             self:SetHeight(FHEAD + 6 + BS + 18)
             for _, b in ipairs(self.buttons) do b.n:SetShown(true) end
@@ -260,7 +264,8 @@ function UI:RefreshCampKit()
     UI.campKitAvail = #list > 0 and near or false
     -- ouvert par un clic droit sur la flamme : barre à côté de l'icône, de quoi qu'il en soit du reste
     local icon = _G.WarbandKeeperCampIcon
-    if kit.flameOpen and not (#list > 0 and icon and icon:IsShown()) then kit.flameOpen = false end
+    -- sans objet de camp en sac, la barre s'ouvre quand même (avantages en tête et « rien dans tes sacs »)
+    if kit.flameOpen and not (cfg.kit and icon and icon:IsShown()) then kit.flameOpen = false end
     if kit.flameOpen then
         kit.list, kit.bar = false, true
         kit:Fill(list)

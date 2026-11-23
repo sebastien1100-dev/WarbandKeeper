@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.259", date = "23/11/2026",
+        fixed = {
+            "Feu de camp : le clic droit sur la flamme ne faisait rien quand aucun objet de camp n'était dans tes sacs (par exemple juste après les avoir utilisés). La barre s'ouvre maintenant quand même, avec les avantages en tête et « Aucun objet de camp dans tes sacs ».",
+        },
+    },
+    {
         version = "1.128.258", date = "23/11/2026",
         changed = {
             "Feu de camp, carte « Kit de camp » : l'interrupteur s'appelle « Kit au clic droit sur la flamme » et règle ce clic droit (coupé : le clic droit ne fait rien et l'infobulle ne le propose plus) ; « Côté du kit » choisit de quel côté il s'ouvre.",

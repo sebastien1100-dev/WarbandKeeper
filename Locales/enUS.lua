@@ -2972,6 +2972,7 @@ WK.Locales.enUS.text = {
     ["Un clic droit sur l'icône de flamme ouvre ton kit : feu, objets de camp (meilleur palier en sac), sac de couchage. Clic : utiliser (hors combat). Coupé : ni clic droit, ni case « kit » de la barre."] = "A right-click on the flame icon opens your kit: fire, camp items (best tier in bags), sleeping bag. Click: use (out of combat). Off: no right-click, no \"kit\" slot in the bar.",
     ["Côté du kit"] = "Kit side",
     ["De quel côté de la flamme le kit s'ouvre (avantages du camp en tête)."] = "Which side of the flame the kit opens on (camp benefits at the top).",
+    ["Aucun objet de camp dans tes sacs (feu, objets de métier, sac de couchage)."] = "No camp item in your bags (fire, profession items, sleeping bag).",
     ["Barre d'XP"] = "XP bar",
     ["Avant de partir"] = "Before you go",
     ["Le meilleur objet de chaque sorte pour ton niveau ; rouge : sous le seuil. Seuils x2 en raid ; en JcJ, pas d'élixir et moitié de nourriture."] = "The best item of each kind for your level; red: below threshold. Thresholds x2 in raids; in PvP, no elixir and half the food.",
