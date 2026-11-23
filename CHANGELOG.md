@@ -49,6 +49,14 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.215 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Donjons : des boss avaient un point d'interrogation alors que leur portrait est connu (Capitaine Lèveffroi, Gardiens impérissables, Magmatus, The Baron…). Le portrait est maintenant retrouvé par le n° du boss, sa rencontre ou son nom. Quelques boss n'ont toujours pas de portrait dans les données (Gill, Umbra, Bossman Toof, Eric l'Agile, Pimgib…) : ils gardent le point d'interrogation.
+- Donjons à beaucoup de boss : la carte se fait un peu plus étroite pour laisser la place aux deux colonnes de boss (Profondeurs de Rochenoire : les 27 boss visibles d'un coup).
+
 ## v1.128.214 — 23/11/2026
 
 _Un /reload suffit._

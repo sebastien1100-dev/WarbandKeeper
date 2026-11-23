@@ -44,10 +44,14 @@ local RETRY = { 0.3, 1.5, 4 }
 local UNKNOWN = "Interface\\Icons\\INV_Misc_QuestionMark"
 -- dead : boss tué (portrait grisé)
 function UI.SetBossPortrait(tex, d, b, dead)
-    local npc = b and type(b.id) == "number" and b.id > 0 and b.id or nil
+    -- n° du boss (peut venir du jeu), puis PNJ de sa rencontre, puis nom anglais
+    local models = WK.DungeonBossModels or {}
     local m = UI.DungeonMapData(d)
-    if not npc and b and b.encounter and m and m.x then npc = m.x[b.encounter] end
-    local model = npc and WK.DungeonBossModels and WK.DungeonBossModels[npc]
+    local model = b and type(b.id) == "number" and b.id > 0 and models[b.id] or nil
+    if not model and b and b.encounter and m and m.x and m.x[b.encounter] then model = models[m.x[b.encounter]] end
+    if not model and b and type(b.name) == "string" and WK.DungeonBossModelsByName then
+        model = WK.DungeonBossModelsByName[string.lower(b.name)]
+    end
     local fn = _G.SetPortraitTextureFromCreatureDisplayID
     if model and fn and pcall(fn, tex, model) then
         if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end

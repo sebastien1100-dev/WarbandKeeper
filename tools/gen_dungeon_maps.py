@@ -39,7 +39,7 @@ def read_maps(src):
 def naowh_encounters(src):
     """{ n° de rencontre: n° du PNJ }, { clé de carte: nom anglais } et { objet: % de drop } des fichiers
     Data/Dungeons (lus en texte ; taux 0 = inconnu, ignoré ; même objet chez plusieurs boss : le plus haut)."""
-    enc, names, drops, models = {}, {}, {}, {}
+    enc, names, drops, models, bynames = {}, {}, {}, {}, {}
     folder = os.path.join(src, "Data", "Dungeons")
     for fn in os.listdir(folder):
         if not fn.endswith(".lua"):
@@ -55,6 +55,9 @@ def naowh_encounters(src):
                     for b in seq(w.get("bosses")):
                         if isinstance(b.get("npc"), int) and isinstance(b.get("model"), int):
                             models[b["npc"]] = b["model"]
+                        # aussi par nom anglais (en minuscules) : boss sans n° chez nous, ou n° appris en jeu différent
+                        if isinstance(b.get("name"), str) and isinstance(b.get("model"), int):
+                            bynames[b["name"].lower()] = b["model"]
                         for item, pct in zip(seq(b.get("loot")), seq(b.get("chance"))):
                             if isinstance(item, int) and isinstance(pct, (int, float)) and pct > 0:
                                 drops[item] = max(drops.get(item, 0), pct)
@@ -62,7 +65,7 @@ def naowh_encounters(src):
                             if b.get("npc"):
                                 enc[int(e)] = int(b["npc"])
                 break
-    return enc, names, drops, models
+    return enc, names, drops, models, bynames
 
 
 def our_dungeons():
@@ -76,6 +79,10 @@ def our_dungeons():
         encs = [b[7] for _, b in d.bosses.items() if b[7]]
         out.append((d.key, d.name, ids, encs, d.en))
     return out
+
+
+def lua_str(v):
+    return '"' + v.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def seq(t):
@@ -126,7 +133,7 @@ def main():
         raise SystemExit(__doc__)
     src = sys.argv[1]
     maps = read_maps(src)
-    enc2npc, mapnames, drops, models = naowh_encounters(src)
+    enc2npc, mapnames, drops, models, bynames = naowh_encounters(src)
     ours = our_dungeons()
     os.makedirs(OUT_DIR, exist_ok=True)
     lines, used = [], set()
@@ -185,6 +192,11 @@ def main():
         ms = sorted(models.items())
         for i in range(0, len(ms), 12):
             out.write(" ".join("[%d]=%d," % kv for kv in ms[i:i + 12]) + "\n")
+        out.write("}\n")
+        out.write("-- WK.DungeonBossModelsByName[nom anglais en minuscules] = n° de modèle (même source, même accord).\n")
+        out.write("WK.DungeonBossModelsByName = {\n")
+        for k, v in sorted(bynames.items()):
+            out.write("[%s]=%d,\n" % (lua_str(k), v))
         out.write("}\n")
     print("%d donjons avec carte, %d images, %d taux de drop, %d portraits" % (matched, len(used), len(drops), len(models)))
 
