@@ -209,9 +209,15 @@ local function build()
                 end
                 if not barMode then b.state:SetJustifyH("RIGHT") end
                 -- attributs posés seulement s'ils changent (chaque aura du joueur repasse ici)
-                if b:GetAttribute("type") ~= "item" then b:SetAttribute("type", "item") end -- rendu après un aperçu
-                local item = "item:" .. e.id
-                if b:GetAttribute("item") ~= item then b:SetAttribute("item", item) end
+                -- jouet (sac de couchage appris en jouet) : bouton « toy », sinon objet des sacs
+                local typ = e.toy and "toy" or "item"
+                if b:GetAttribute("type") ~= typ then b:SetAttribute("type", typ) end -- rendu après un aperçu
+                if e.toy then
+                    if b:GetAttribute("toy") ~= e.id then b:SetAttribute("toy", e.id) end
+                else
+                    local item = "item:" .. e.id
+                    if b:GetAttribute("item") ~= item then b:SetAttribute("item", item) end
+                end
                 b.icon:SetTexture(itemIcon(e.id))
                 b.n:SetText((e.count or 0) > 1 and e.count or "")
                 local glow = e.kind == "fed" and fedMissing

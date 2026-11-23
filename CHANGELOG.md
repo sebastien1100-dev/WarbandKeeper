@@ -49,6 +49,16 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.260 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk camp liste aussi ce que le kit trouve dans tes sacs (feu, objets de camp, sac de couchage).
+
+### Corrections
+- Kit de camp : le sac de couchage n'apparaissait pas s'il n'avait pas le n° d'objet attendu. Il est maintenant trouvé aussi par son nom dans tes sacs (« Sac de couchage… »), ou parmi tes jouets s'il en est un.
+
 ## v1.128.259 — 23/11/2026
 
 _Un /reload suffit._

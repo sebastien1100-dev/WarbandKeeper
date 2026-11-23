@@ -246,7 +246,22 @@ function M:Kit(withFood)
         if not best and o.alt and (c[o.alt] or 0) > 0 then best = { id = o.alt, tier = 1 } end
         if best then table.insert(out, { id = best.id, kind = "object", count = c[best.id], o = o, tier = best.tier }) end
     end
-    if (c[M.SLEEPING_BAG] or 0) > 0 then table.insert(out, { id = M.SLEEPING_BAG, kind = "bag", count = 1 }) end
+    -- sac de couchage : son n° connu, sinon un objet des sacs dont le nom le dit, sinon le jouet
+    local bagId = (c[M.SLEEPING_BAG] or 0) > 0 and M.SLEEPING_BAG or nil
+    if not bagId then
+        for id in pairs(c) do
+            local nm = WK.GetItemInfo(id)
+            if type(nm) == "string" then
+                local l = nm:lower()
+                if l:find("sac de couchage", 1, true) or l:find("sleeping bag", 1, true) then bagId = id break end
+            end
+        end
+    end
+    if bagId then
+        table.insert(out, { id = bagId, kind = "bag", count = 1 })
+    elseif _G.PlayerHasToy and _G.PlayerHasToy(M.SLEEPING_BAG) then
+        table.insert(out, { id = M.SLEEPING_BAG, kind = "bag", count = 1, toy = true })
+    end
     if not withFood then return out end
     local level = (UnitLevel and UnitLevel("player")) or 1
     local best = {}
@@ -431,6 +446,12 @@ function M:Diag()
             e.kind and (T("reconnu : ") .. e.kind) or T("pas un effet de camp")))
     end
     if #list == 0 then WK:Print(T("  aucun effet sur le perso")) end
+    -- kit trouvé dans les sacs (clic droit sur la flamme)
+    local kit = {}
+    for _, e in ipairs(self:Kit()) do
+        kit[#kit + 1] = string.format("%s %s%s", e.kind, tostring(e.id), e.toy and " (jouet)" or "")
+    end
+    WK:Print(T("  Kit : ") .. (#kit > 0 and table.concat(kit, ", ") or T("rien dans tes sacs")))
     local hint = "  Près d'un feu, il faut l'effet « Feu de camp proche » (ou un effet dont la description parle du feu de camp)."
     WK:Print(T(hint))
 end

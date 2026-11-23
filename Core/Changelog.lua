@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.260", date = "23/11/2026",
+        fixed = {
+            "Kit de camp : le sac de couchage n'apparaissait pas s'il n'avait pas le n° d'objet attendu. Il est maintenant trouvé aussi par son nom dans tes sacs (« Sac de couchage… »), ou parmi tes jouets s'il en est un.",
+        },
+        added = {
+            "/wk camp liste aussi ce que le kit trouve dans tes sacs (feu, objets de camp, sac de couchage).",
+        },
+    },
+    {
         version = "1.128.259", date = "23/11/2026",
         fixed = {
             "Feu de camp : le clic droit sur la flamme ne faisait rien quand aucun objet de camp n'était dans tes sacs (par exemple juste après les avoir utilisés). La barre s'ouvre maintenant quand même, avec les avantages en tête et « Aucun objet de camp dans tes sacs ».",
