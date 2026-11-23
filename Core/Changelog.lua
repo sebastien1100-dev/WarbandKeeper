@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.236", date = "23/11/2026",
+        changed = {
+            "Alerte munitions : le nombre restant est plus visible. Il est plus gros (16 px, avec contour) et posé sur une pastille sombre, dont le bord prend la couleur de l'alerte (orange, rouge).",
+        },
+    },
+    {
         version = "1.128.235", date = "23/11/2026",
         fixed = {
             "Alerte munitions : l'icône était méconnaissable. Le fond sombre couvrait tout le cadre au lieu d'un disque, l'icône n'était pas ronde, et l'anneau était dessiné à l'envers (invisible au-dessus du seuil). L'anneau montre maintenant la part qui reste, et l'icône est ronde, posée sur un disque.",

@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.236 — 23/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Alerte munitions : le nombre restant est plus visible. Il est plus gros (16 px, avec contour) et posé sur une pastille sombre, dont le bord prend la couleur de l'alerte (orange, rouge).
+
 ## v1.128.235 — 23/11/2026
 
 _Un /reload suffit._

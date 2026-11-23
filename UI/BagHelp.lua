@@ -811,7 +811,7 @@ local function ammoState()
 end
 local function buildAmmo()
     local f = CreateFrame("Button", "WarbandKeeperAmmoAlert", UIParent)
-    f:SetSize(AMMO_SIZE + 12, AMMO_SIZE + 30)
+    f:SetSize(AMMO_SIZE + 24, AMMO_SIZE + 36)
     f:SetFrameStrata("MEDIUM")
     f:RegisterForClicks("LeftButtonUp")
     -- anneau : fond sombre + balayage (part restante), comme l'anneau du curseur
@@ -846,7 +846,17 @@ local function buildAmmo()
     f.red:SetAllPoints(f.icon)
     f.red:SetTexture(UI.MEDIA .. "circle")
     f.red:SetVertexColor(C.negative[1], C.negative[2], C.negative[3], 0)
-    f.count = UI:Text(f, 12); f.count:SetPoint("TOP", f.track, "BOTTOM", 0, -3)
+    -- nombre bien lisible : 16 px avec contour, sur une pastille sombre bordée de la couleur de l'état
+    f.countBox = CreateFrame("Frame", nil, f)
+    f.countBox:SetPoint("TOP", f.track, "BOTTOM", 0, 2)
+    f.countBox:SetSize(40, 20)
+    f.countEdge = UI:Rounded(f.countBox, 10, 0, "BACKGROUND", 1)
+    f.countBg = UI:Rounded(f.countBox, 9, 1, "BACKGROUND", 2)
+    f.count = UI:Text(f.countBox, 16); f.count:SetPoint("CENTER", 0, 0)
+    do
+        local font, size = f.count:GetFont()
+        if font then f.count:SetFont(font, size, "OUTLINE") end
+    end
     f:SetScript("OnEnter", function(s)
         local st = s.st
         if not st then return end
@@ -879,7 +889,12 @@ local function buildAmmo()
             if self.cd.Pause then self.cd:Pause() end
         end
         self.count:SetText(tostring(st.n))
-        self.count:SetTextColor(col[1], col[2], col[3])
+        -- texte clair sur la pastille ; la couleur de l'état passe par le bord (orange, rouge) et le texte
+        local tc = st.level == "ok" and C.text or col
+        self.count:SetTextColor(tc[1], tc[2], tc[3])
+        self.countBox:SetWidth(math.max(34, (self.count:GetStringWidth() or 20) + 16))
+        self.countEdge:SetColor(col[1], col[2], col[3], 1)
+        self.countBg:SetColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
         self.flash:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 0.95)
         -- vitesse de la pulsation : lente (orange), moyenne (rouge), rapide (vide) ; aucune quand tout va bien
         self.period = (st.level == "low" and 1.4) or (st.level == "red" and 0.8) or (st.level == "empty" and 0.5) or nil
