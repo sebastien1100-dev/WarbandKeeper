@@ -275,11 +275,20 @@ local function lootable(bag, slot)
         if ok and canLoot then return itemID end
     end
 end
+-- fenêtre du jeu ouverte où le clic droit fait autre chose (vendre, déposer, poster, échanger)
+local BUSY = { "MerchantFrame", "MailFrame", "TradeFrame", "AuctionHouseFrame", "GuildBankFrame" }
+local function busyWindow()
+    for _, n in ipairs(BUSY) do
+        local f = _G[n]
+        if f and f.IsShown and f:IsShown() then return true end
+    end
+    local bf = _G.BankFrame -- gardé ouvert mais invisible par notre banque : visible seulement à la banque
+    return bf and bf.IsVisible and bf:IsVisible() and true or false
+end
 local function openLater(bag, slot, id)
     if _G.InCombatLockdown and _G.InCombatLockdown() then return end
-    if _G.LootFrame and _G.LootFrame:IsShown() then return end -- le jeu l'a ouvert
-    local mf, bf = _G.MerchantFrame, _G.BankFrame
-    if (mf and mf.IsShown and mf:IsShown()) or (bf and bf.IsVisible and bf:IsVisible()) then return end
+    if _G.LootFrame and _G.LootFrame:IsShown() then return end -- déjà ouvert
+    if busyWindow() then return end
     local cur, _, locked = WK.Container.Info(bag, slot)
     if cur ~= id or locked then return end -- déjà ouvert, ou le jeu est en train de le faire
     local CC = _G.C_Container
@@ -295,13 +304,17 @@ local function newButton(bag, slot)
     b:SetID(slot)
     b:SetSize(SZ(), SZ())
     b.wkOurs = true
-    -- clic droit sur un objet à ouvrir (paquet, coffre à butin) : si le jeu ne l'a pas ouvert 0,3 s après
-    -- (objet toujours là, pas de fenêtre de butin), on l'ouvre nous-mêmes. Le clic du jeu reste intact.
-    b:HookScript("PostClick", function(_, button)
-        if button ~= "RightButton" or (_G.IsModifiedClick and _G.IsModifiedClick()) then return end
-        local id = lootable(bag, slot)
-        if not id then return end
-        _G.C_Timer.After(0.3, function() openLater(bag, slot, id) end)
+    -- clic droit sur un objet à ouvrir (paquet, coffre à butin) : ouvert par l'addon, sans passer par le clic du
+    -- jeu. Nos cases sont créées par l'addon : le jeu refusait d'ouvrir le paquet depuis son propre clic
+    -- (ADDON_ACTION_FORBIDDEN « UNKNOWN() » dans UseContainerItem), alors que l'ouverture faite à l'image suivante
+    -- passe. Tout autre clic (potion, équipement, marchand, banque, courrier…) va au clic du jeu, inchangé.
+    local gameClick = b:GetScript("OnClick")
+    b:SetScript("OnClick", function(s2, button, down)
+        if button == "RightButton" and not (_G.IsModifiedClick and _G.IsModifiedClick()) and not busyWindow() then
+            local id = lootable(bag, slot)
+            if id then _G.C_Timer.After(0, function() openLater(bag, slot, id) end) return end
+        end
+        if gameClick then return gameClick(s2, button, down) end
     end) -- infobulle allégée (Modules/Inventory.lua)
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
     b.wkEdge = square(b, 0, -8)

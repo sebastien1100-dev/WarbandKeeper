@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.230", date = "23/11/2026",
+        fixed = {
+            "Sacs : le clic droit sur un paquet (Paquet-cadeau du Décapeur…) déclenchait l'erreur « ADDON_ACTION_FORBIDDEN … UNKNOWN() » : le jeu refuse d'ouvrir un paquet depuis une case créée par un addon. L'addon ouvre maintenant les paquets et coffres à butin lui-même, sans passer par le clic du jeu, donc sans erreur. Les autres clics (potions, équipement, marchand, banque, courrier, échange, HV) ne changent pas.",
+        },
+    },
+    {
         version = "1.128.229", date = "23/11/2026",
         fixed = {
             "Sacs : le clic droit pour ouvrir un paquet (Paquet-cadeau du Décapeur…) ne faisait rien. Si le jeu ne l'a pas ouvert un instant après le clic droit, l'addon l'ouvre lui-même (paquets et coffres à butin seulement, hors combat, ni chez un marchand ni à la banque).",

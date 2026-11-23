@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.230 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : le clic droit sur un paquet (Paquet-cadeau du Décapeur…) déclenchait l'erreur « ADDON_ACTION_FORBIDDEN … UNKNOWN() » : le jeu refuse d'ouvrir un paquet depuis une case créée par un addon. L'addon ouvre maintenant les paquets et coffres à butin lui-même, sans passer par le clic du jeu, donc sans erreur. Les autres clics (potions, équipement, marchand, banque, courrier, échange, HV) ne changent pas.
+
 ## v1.128.229 — 23/11/2026
 
 _Un /reload suffit._
