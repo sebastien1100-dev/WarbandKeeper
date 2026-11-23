@@ -8,6 +8,15 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.241", date = "23/11/2026",
+        changed = {
+            "Barre « Sacs, marchand et maître » : le bouton pour replier reste fixe à l'écran, la barre se déplie à partir de lui (avant, toute la barre se recentrait et le bouton bougeait).",
+        },
+        fixed = {
+            "Barre « Sacs, marchand et maître » : la pastille d'alerte du bouton replié est bien rouge, au coin haut droit de l'icône, cernée de sombre ; l'icône du bouton est centrée.",
+        },
+    },
+    {
         version = "1.128.240", date = "23/11/2026",
         added = {
             "Barre « Sacs, marchand et maître » : un bouton en tête de barre la replie ou la déplie d'un clic gauche. Repliée, une pastille rouge clignote dans son coin quand une case est en alerte (par exemple un buff qui manque). Réglage « Bouton pour replier » dans la carte de la barre.",

@@ -238,10 +238,15 @@ local function buildSpace()
     f.fold = newTile(f, "menu")
     f.fold:RegisterForClicks("LeftButtonUp")
     f.fold.n:Hide()
-    f.fold.dot = f.fold:CreateTexture(nil, "OVERLAY")
+    -- pastille au coin haut droit de l'icône, cernée de sombre pour rester visible sur le jeu
+    f.fold.dotBg = f.fold:CreateTexture(nil, "OVERLAY", nil, 1)
+    f.fold.dotBg:SetTexture(UI.MEDIA .. "circle")
+    f.fold.dotBg:SetSize(12, 12); f.fold.dotBg:SetPoint("CENTER", f.fold.icon, "TOPRIGHT", 1, -1)
+    f.fold.dotBg:SetVertexColor(C.bg[1], C.bg[2], C.bg[3], 1)
+    f.fold.dot = f.fold:CreateTexture(nil, "OVERLAY", nil, 2)
     f.fold.dot:SetTexture(UI.MEDIA .. "circle")
-    f.fold.dot:SetSize(9, 9); f.fold.dot:SetPoint("TOPRIGHT", -4, -7)
-    f.fold.dot:Hide()
+    f.fold.dot:SetSize(8, 8); f.fold.dot:SetPoint("CENTER", f.fold.dotBg, "CENTER")
+    f.fold.dot:Hide(); f.fold.dotBg:Hide()
     f.fold.pulse = _G.CreateFrame("Frame", nil, f.fold)
     f.fold.pulse:Hide()
     f.fold.pulse:SetScript("OnUpdate", function(_, el)
@@ -249,8 +254,8 @@ local function buildSpace()
         d.ph = ((d.ph or 0) + el) % 1.6
         local k = 0.5 - 0.5 * math.cos(d.ph / 1.6 * 2 * math.pi)
         local c = C.negative
-        d.dot:SetVertexColor(c[1], c[2], c[3], 0.35 + 0.65 * k)
-        local z = 8 + 3 * k
+        d.dot:SetVertexColor(c[1], c[2], c[3], 0.55 + 0.45 * k)
+        local z = 7 + 3 * k
         d.dot:SetSize(z, z)
     end)
     -- cases en alerte (qui clignotent) : aujourd'hui la case des buffs
@@ -267,7 +272,9 @@ local function buildSpace()
         local r, g, bl = UI:Accent()
         b.icon:SetVertexColor(r, g, bl, 1)
         local alert = folded and self:Alerts() > 0
-        b.dot:SetShown(alert); b.pulse:SetShown(alert)
+        local c = C.negative
+        b.dot:SetVertexColor(c[1], c[2], c[3], 1)
+        b.dot:SetShown(alert); b.dotBg:SetShown(alert); b.pulse:SetShown(alert)
     end
     f.fold:SetScript("OnEnter", function(s)
         local folded = BH():Config().barFolded
@@ -296,6 +303,7 @@ local function buildSpace()
         self:SetHeight(TILE)
         local FW = math.floor(TILE * 0.62 + 0.5)
         self.fold:Resize(TILE, sz[2] - 4); self.fold:SetWidth(FW)
+        self.fold.icon:ClearAllPoints(); self.fold.icon:SetPoint("CENTER") -- sans chiffre : centrée
         for _, t in ipairs({ self.bag, self.vendor, self.trainer, self.kit, self.buffs }) do t:Resize(TILE, sz[2]) end
         self.bag.wkWanted = true
         self.vendor.wkWanted, self.trainer.wkWanted = showV and true, showT and true
@@ -329,7 +337,19 @@ local function buildSpace()
                 s:Show()
             else s:Hide() end
         end
-        self:SetWidth(math.max(1, x - 1))
+        -- le bouton reste fixe : la barre se déplie à partir de lui (bord gauche tenu en place). La position
+        -- du mode édition est celle du centre : décalée d'une demi-variation de largeur (pas au tout premier
+        -- passage, pour ne pas bouger les barres déjà placées)
+        local w0, w1 = self:GetWidth(), math.max(1, x - 1)
+        self:SetWidth(w1)
+        if self.wkArranged and w0 and math.abs(w1 - w0) > 0.5 then
+            local e = UI:HUDEntry("bagSpace")
+            if e.x then
+                e.x = e.x + (w1 - w0) / 2 * (e.scale or 1)
+                UI:HUDApply("bagSpace")
+            end
+        end
+        self.wkArranged = true
         -- sans fond (réglage barBg) : chiffres cernés de noir pour rester lisibles sur le jeu
         self.noBg = not bg
         self:OnHudPaint()
