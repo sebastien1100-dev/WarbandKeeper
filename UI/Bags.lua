@@ -304,18 +304,24 @@ local function newButton(bag, slot)
     b:SetID(slot)
     b:SetSize(SZ(), SZ())
     b.wkOurs = true
-    -- clic droit sur un objet à ouvrir (paquet, coffre à butin) : ouvert par l'addon, sans passer par le clic du
-    -- jeu. Nos cases sont créées par l'addon : le jeu refusait d'ouvrir le paquet depuis son propre clic
-    -- (ADDON_ACTION_FORBIDDEN « UNKNOWN() » dans UseContainerItem), alors que l'ouverture faite à l'image suivante
-    -- passe. Tout autre clic (potion, équipement, marchand, banque, courrier…) va au clic du jeu, inchangé.
-    local gameClick = b:GetScript("OnClick")
-    b:SetScript("OnClick", function(s2, button, down)
-        if button == "RightButton" and not (_G.IsModifiedClick and _G.IsModifiedClick()) and not busyWindow() then
-            local id = lootable(bag, slot)
-            if id then _G.C_Timer.After(0, function() openLater(bag, slot, id) end) return end
-        end
-        if gameClick then return gameClick(s2, button, down) end
-    end) -- infobulle allégée (Modules/Inventory.lua)
+    -- Objet à ouvrir (paquet, coffre à butin) : le jeu refuse de l'ouvrir depuis le clic d'une case créée par un
+    -- addon (ADDON_ACTION_FORBIDDEN « UNKNOWN() » dans UseContainerItem). Une couche invisible, posée seulement sur
+    -- ces objets, prend le clic droit (l'addon l'ouvre à l'image suivante) et laisse passer le clic gauche vers la
+    -- case. Le clic du jeu n'est jamais remplacé : le remplacer rendait tous les clics « non sûrs » (potions comprises).
+    local op = _G.CreateFrame("Button", nil, b)
+    op:SetAllPoints()
+    op:SetFrameLevel(b:GetFrameLevel() + 5)
+    op:RegisterForClicks("RightButtonUp")
+    if op.SetPassThroughButtons then pcall(op.SetPassThroughButtons, op, "LeftButton") end
+    op:SetScript("OnClick", function(_, button)
+        if button ~= "RightButton" or busyWindow() then return end
+        local id = lootable(bag, slot)
+        if id then _G.C_Timer.After(0, function() openLater(bag, slot, id) end) end
+    end)
+    op:SetScript("OnEnter", function() local fn = b:GetScript("OnEnter"); if fn then fn(b) end end)
+    op:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
+    op:Hide()
+    b.wkOpen = op -- infobulle allégée (Modules/Inventory.lua)
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
     b.wkEdge = square(b, 0, -8)
     b.wkFill = square(b, EDGE, -7)
@@ -455,6 +461,8 @@ local function paintButton(b, e)
         if type(a) == "table" and a.Stop then pcall(a.Stop, a) end
     end
     b.wkEntry = e
+    -- couche du clic droit : seulement sur un objet à ouvrir, hors marchand, banque, courrier, échange, HV
+    if b.wkOpen then b.wkOpen:SetShown(e ~= nil and e.bag ~= nil and not busyWindow() and lootable(e.bag, e.slot) ~= nil) end
     if UI.ItemLockPaint then pcall(UI.ItemLockPaint, b) end
 end
 
@@ -1792,6 +1800,8 @@ WK:On("ITEM_LOCK_CHANGED", repaintSoon)
 WK:On("BAG_UPDATE_COOLDOWN", repaintSoon)
 for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "GET_ITEM_INFO_RECEIVED",
     "MERCHANT_SHOW", "MERCHANT_CLOSED", "PLAYER_MONEY", "BAG_NEW_ITEMS_UPDATED", "AUCTION_HOUSE_SHOW",
-    "AUCTION_HOUSE_CLOSED", "PLAYERBANKSLOTS_CHANGED", "PLAYERBANKBAGSLOTS_CHANGED", "BAG_CONTAINER_UPDATE" }) do
+    "AUCTION_HOUSE_CLOSED", "PLAYERBANKSLOTS_CHANGED", "PLAYERBANKBAGSLOTS_CHANGED", "BAG_CONTAINER_UPDATE",
+    -- fenêtres où le clic droit fait autre chose : la couche « ouvrir le paquet » se retire ou revient
+    "MAIL_SHOW", "MAIL_CLOSED", "TRADE_SHOW", "TRADE_CLOSED", "BANKFRAME_OPENED", "BANKFRAME_CLOSED" }) do
     WK:On(ev, soon)
 end

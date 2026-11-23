@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.231 — 23/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : l'erreur « ADDON_ACTION_FORBIDDEN … UNKNOWN() » revenait, et la version précédente pouvait la provoquer aussi sur d'autres objets : elle remplaçait le clic du jeu sur toutes les cases. Le clic du jeu n'est plus touché ; seule une couche invisible, posée sur les paquets et coffres à butin, prend leur clic droit pour les ouvrir. Le clic gauche passe toujours à la case. Chez un marchand, à la banque, au courrier, à l'échange ou à l'HV, la couche se retire.
+
 ## v1.128.230 — 23/11/2026
 
 _Un /reload suffit._
