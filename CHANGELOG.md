@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.210 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Donjons : le portrait de chaque boss (297 boss) dans la liste à côté de la carte et dans celle de la carte du monde en jeu, grisé une fois le boss tué, cerclé de rose pour le prochain. Portraits tirés du Dungeon Journal de Naowh Forever, avec l'accord de son auteur.
+
 ## v1.128.209 — 23/11/2026
 
 _Un /reload suffit._

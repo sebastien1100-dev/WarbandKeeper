@@ -39,7 +39,7 @@ def read_maps(src):
 def naowh_encounters(src):
     """{ n° de rencontre: n° du PNJ }, { clé de carte: nom anglais } et { objet: % de drop } des fichiers
     Data/Dungeons (lus en texte ; taux 0 = inconnu, ignoré ; même objet chez plusieurs boss : le plus haut)."""
-    enc, names, drops = {}, {}, {}
+    enc, names, drops, models = {}, {}, {}, {}
     folder = os.path.join(src, "Data", "Dungeons")
     for fn in os.listdir(folder):
         if not fn.endswith(".lua"):
@@ -53,6 +53,8 @@ def naowh_encounters(src):
                 names[key] = v.get("name")
                 for w in seq(v.get("wings")):
                     for b in seq(w.get("bosses")):
+                        if isinstance(b.get("npc"), int) and isinstance(b.get("model"), int):
+                            models[b["npc"]] = b["model"]
                         for item, pct in zip(seq(b.get("loot")), seq(b.get("chance"))):
                             if isinstance(item, int) and isinstance(pct, (int, float)) and pct > 0:
                                 drops[item] = max(drops.get(item, 0), pct)
@@ -60,7 +62,7 @@ def naowh_encounters(src):
                             if b.get("npc"):
                                 enc[int(e)] = int(b["npc"])
                 break
-    return enc, names, drops
+    return enc, names, drops, models
 
 
 def our_dungeons():
@@ -124,7 +126,7 @@ def main():
         raise SystemExit(__doc__)
     src = sys.argv[1]
     maps = read_maps(src)
-    enc2npc, mapnames, drops = naowh_encounters(src)
+    enc2npc, mapnames, drops, models = naowh_encounters(src)
     ours = our_dungeons()
     os.makedirs(OUT_DIR, exist_ok=True)
     lines, used = [], set()
@@ -177,7 +179,13 @@ def main():
         for i in range(0, len(items), 12):
             out.write(" ".join("[%d]=%s," % (k, ("%g" % v)) for k, v in items[i:i + 12]) + "\n")
         out.write("}\n")
-    print("%d donjons avec carte, %d images, %d taux de drop" % (matched, len(used), len(drops)))
+        out.write("-- WK.DungeonBossModels[n° du PNJ] = n° de modèle (portrait : SetPortraitTextureFromCreatureDisplayID),\n")
+        out.write("-- même source et même accord.\nWK.DungeonBossModels = {\n")
+        ms = sorted(models.items())
+        for i in range(0, len(ms), 12):
+            out.write(" ".join("[%d]=%d," % kv for kv in ms[i:i + 12]) + "\n")
+        out.write("}\n")
+    print("%d donjons avec carte, %d images, %d taux de drop, %d portraits" % (matched, len(used), len(drops), len(models)))
 
 
 if __name__ == "__main__":

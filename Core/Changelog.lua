@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.210", date = "23/11/2026",
+        added = {
+            "Donjons : le portrait de chaque boss (297 boss) dans la liste à côté de la carte et dans celle de la carte du monde en jeu, grisé une fois le boss tué, cerclé de rose pour le prochain. Portraits tirés du Dungeon Journal de Naowh Forever, avec l'accord de son auteur.",
+        },
+    },
+    {
         version = "1.128.209", date = "23/11/2026",
         added = {
             "Donjons : le taux de drop s'affiche à côté de chaque objet (vert à partir de 25 %, pâle sous 5 %), même quand l'objet porte « pour toi » ou « sur le compte » ; aussi dans l'infobulle des icônes de la liste des boss.",

@@ -356,6 +356,9 @@ UI:RegisterPage({
             r.ring = UI:Rounded(r.pin, 11, 0, "ARTWORK", 1)
             r.fill = UI:Rounded(r.pin, 9, 2, "ARTWORK", 2)
             r.n = UI:Text(r.pin, 10); r.n:SetPoint("CENTER", 0, 0)
+            -- portrait du boss (rond, liseré), grisé une fois tué
+            r.face = r:CreateTexture(nil, "ARTWORK", nil, 2)
+            r.faceRing = UI:Icon(r, "circle", 34, nil, "ARTWORK")
             r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 40, -5); r.name:SetPoint("RIGHT", r, "RIGHT", -150, 0)
             r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
             r.sub = UI:Text(r, 10, C.dim); r.sub:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
@@ -766,8 +769,22 @@ UI:RegisterPage({
             elseif r.state == "next" then bits[#bits + 1] = UI:Hex(ac) .. T("prochain") .. "|r" end
             r.sub:SetText(table.concat(bits, "  ·  "))
             r.sub:SetShown(RH >= 36)
+            -- portrait entre la pastille et le nom
+            local FS = math.min(32, RH - 9)
+            local hasFace = UI.SetBossPortrait(r.face, d, b)
+            r.faceRing:SetShown(hasFace)
+            local nx = 40
+            if hasFace then
+                r.face:SetSize(FS, FS); r.face:ClearAllPoints(); r.face:SetPoint("LEFT", 38, 0)
+                r.faceRing:SetSize(FS + 2, FS + 2); r.faceRing:ClearAllPoints()
+                r.faceRing:SetPoint("CENTER", r.face, "CENTER")
+                local rc = r.state == "next" and ac or C.border
+                r.faceRing:SetVertexColor(rc[1], rc[2], rc[3], 1)
+                r.face:SetDesaturated(r.state == "dead")
+                nx = 38 + FS + 10
+            end
             r.name:ClearAllPoints()
-            if RH >= 36 then r.name:SetPoint("TOPLEFT", 40, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", 40, 0) end
+            if RH >= 36 then r.name:SetPoint("TOPLEFT", nx, -(RH - 3 - 28) / 2) else r.name:SetPoint("LEFT", nx, 0) end
             r.name:SetPoint("RIGHT", r, "RIGHT", -150, 0)
             -- butin pour ce perso (5 au plus)
             local loot = UI:DungeonLoot(b, "me", c, key)

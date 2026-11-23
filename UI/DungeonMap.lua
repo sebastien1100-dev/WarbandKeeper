@@ -27,6 +27,23 @@ function UI.DungeonBossPin(m, b)
     return p
 end
 
+-- Portrait d'un boss (n° de modèle du Dungeon Journal de Naowh Forever) dans une texture, rond ; faux sans portrait
+local MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
+function UI.SetBossPortrait(tex, d, b)
+    local npc = b and type(b.id) == "number" and b.id > 0 and b.id or nil
+    local m = UI.DungeonMapData(d)
+    if not npc and b and b.encounter and m and m.x then npc = m.x[b.encounter] end
+    local model = npc and WK.DungeonBossModels and WK.DungeonBossModels[npc]
+    local fn = _G.SetPortraitTextureFromCreatureDisplayID
+    if model and fn and pcall(fn, tex, model) then
+        if not tex.wkMasked and tex.SetMask then pcall(tex.SetMask, tex, MASK); tex.wkMasked = true end
+        tex:Show()
+        return true
+    end
+    tex:Hide()
+    return false
+end
+
 -- État d'un boss pour la carte : « dead », « next », « todo » (+ facultatif)
 function UI.DungeonBossState(d, b, key, nextB)
     local inRun = D:InRun(d) and key == WK:CharKey()
@@ -242,7 +259,8 @@ local function buildOverlay()
         local r = CreateFrame("Button", nil, f.side)
         r:SetHeight(24)
         r.bg = UI:Rounded(r, 6, 0, "BACKGROUND", 2)
-        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 30, 0); r.name:SetPoint("RIGHT", -60, 0)
+        r.face = r:CreateTexture(nil, "ARTWORK", nil, 2); r.face:SetSize(20, 20); r.face:SetPoint("LEFT", 26, 0)
+        r.name = UI:Text(r, 11); r.name:SetPoint("LEFT", 52, 0); r.name:SetPoint("RIGHT", -60, 0)
         r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
         r.n = UI:Text(r, 10); r.n:SetPoint("LEFT", 8, 0)
         r.right = UI:Text(r, 10, C.dim); r.right:SetPoint("RIGHT", -8, 0)
@@ -304,6 +322,7 @@ local function buildOverlay()
             r:ClearAllPoints(); r:SetPoint("TOPLEFT", 6, -y); r:SetPoint("TOPRIGHT", -6, -y)
             r.n:SetText(opt and "+" or tostring(n))
             r.name:SetText(D:BossName(b))
+            if UI.SetBossPortrait(r.face, d, b) then r.face:SetDesaturated(st == "dead") end
             r.bg:SetColor(C.surface2[1], C.surface2[2], C.surface2[3], 1); r.bg:SetShown(st == "next")
             local col = st == "dead" and C.muted or C.text
             r.name:SetTextColor(col[1], col[2], col[3])
