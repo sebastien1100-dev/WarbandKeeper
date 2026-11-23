@@ -10,9 +10,10 @@ WK.Changelog = {
     {
         version = "1.128.218", date = "23/11/2026",
         changed = {
+            "Donjons : un clic sur la pastille d'un boss (sur la carte ou dans la liste) le met dans l'encart à côté de la carte (« Boss choisi »), et la carte passe à son étage ; « Revenir au prochain » ramène le prochain boss.",
+            "Encart du boss : portrait plus grand, son butin sur sa propre ligne, et les trois boss suivants, chacun sur sa ligne avec son niveau et son étage.",
             "Donjons : même présentation pour tous les donjons, quel que soit le nombre de boss : carte « Prochain boss » à côté de la carte et onglet « Boss ».",
             "Onglet Boss : la place suit le nombre de boss. Jusqu'à 6 boss, une colonne avec des lignes hautes et 5 objets ; jusqu'à 14, deux colonnes et 4 objets ; au-delà, trois colonnes et 3 objets.",
-            "Carte « Prochain boss » : le butin passe sur sa propre ligne, sous le nom, qui n'est plus coupé.",
         },
     },
     {

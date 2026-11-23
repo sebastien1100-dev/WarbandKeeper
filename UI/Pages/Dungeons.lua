@@ -426,6 +426,10 @@ UI:RegisterPage({
             self.nextCard = nc
             nc.bg = UI:Rounded(nc, 10, 0, "BACKGROUND", 1)
             nc.label = UI:Text(nc, 10, C.muted); nc.label:SetPoint("TOPLEFT", 16, -14)
+            -- boss choisi : retour au prochain
+            nc.back = UI:Button(nc, "Revenir au prochain", nil, 20, "ghost")
+            nc.back:SetPoint("TOPRIGHT", -10, -8)
+            nc.back:SetScript("OnClick", function() self.focus = nil; self:Refresh() end)
             nc.row = bossRow(nc)
             nc.row:SetPoint("TOPLEFT", 6, -32); nc.row:SetPoint("TOPRIGHT", -6, -32)
             -- butin du prochain boss sur sa propre ligne : le nom garde toute la largeur
@@ -458,7 +462,15 @@ UI:RegisterPage({
                 end)
                 nc.icons[k] = ic
             end
-            nc.after = UI:Text(nc, 10, C.dim)
+            nc.after = UI:Text(nc, 10, C.muted)
+            nc.after:SetText(T("Ensuite"))
+            -- les trois boss suivants, une ligne chacun : n°, nom, niveau · étage
+            nc.nexts = {}
+            for k = 1, 3 do
+                local t = UI:Text(nc, 11)
+                t:SetJustifyH("LEFT"); t:SetWordWrap(false)
+                nc.nexts[k] = t
+            end
             nc.after:SetJustifyH("LEFT"); nc.after:SetWordWrap(false)
             nc.tiles = {}
             for k = 1, 3 do
@@ -898,7 +910,8 @@ UI:RegisterPage({
         if m then
             self.map:SetPoint("TOPLEFT", 0, -y0); self.map:SetSize(S, MH)
             self.map:SetDungeon(d, key)
-            self.map:Highlight(nil)
+            -- boss choisi : allumé sur la carte (qui passe à son étage)
+            self.map:Highlight(self.focus)
         else
             self.map:Hide()
         end
@@ -960,10 +973,14 @@ UI:RegisterPage({
     LayoutNextCard = function(self, d, key, c, nextB, m, x0, y0, W, MH)
         local nc = self.nextCard
         local w = math.max(220, W - x0)
-        local h = math.max(MH, 250)
+        local h = math.max(MH, 272)
         nc:ClearAllPoints(); nc:SetPoint("TOPLEFT", x0, -y0); nc:SetSize(w, h)
         nc.bg:SetColor(C.surface[1], C.surface[2], C.surface[3], 1)
         local bosses = D:Bosses(d)
+        -- boss montré : celui dont on a choisi la pastille (carte ou liste), sinon le prochain
+        local shown = nextB
+        if self.focus then for _, b in ipairs(bosses) do if b.id == self.focus then shown = b end end end
+        local picked = shown ~= nextB
         local idx, n, total, optN, killed = 0, 0, 0, 0, 0
         for i, b in ipairs(bosses) do
             local opt = D:Optional(d, b)
@@ -971,27 +988,50 @@ UI:RegisterPage({
                 total = total + 1
                 if UI.DungeonBossState(d, b, key, nextB) == "dead" then killed = killed + 1 end
             end
-            if nextB and b.id == nextB.id then idx = i; n = total end
+            if shown and b.id == shown.id then idx = i; n = total end
         end
-        nc.boss = nextB
-        nc.label:SetText(UI:Upper(nextB and T("Prochain boss") or T("Tous les boss sont tués")))
-        nc.row:SetShown(nextB ~= nil); nc.after:SetShown(nextB ~= nil)
-        if nextB then
+        nc.boss = shown
+        local lbl = picked and T("Boss choisi") or (nextB and T("Prochain boss") or T("Tous les boss sont tués"))
+        nc.label:SetText(UI:Upper(lbl))
+        nc.back:SetShown(picked)
+        nc.row:SetShown(shown ~= nil); nc.after:SetShown(shown ~= nil)
+        if shown then
+            local opt = D:Optional(d, shown)
             nc.row:SetHeight(56)
-            self:PaintBossRow(nc.row, d, nextB, D:Optional(d, nextB), n, 58, w - 12, key, c, nextB, m, 0)
-            nc.row.sub:SetText(nc.row.sub:GetText() .. "  ·  " .. string.format(T("boss %d sur %d"), n, total))
-            -- les trois suivants
-            local names = {}
+            self:PaintBossRow(nc.row, d, shown, opt, n, 58, w - 12, key, c, nextB, m, 0)
+            nc.row.focused = false; nc.row:Paint()
+            -- portrait plus grand dans l'encart
+            if nc.row.face:IsShown() or (nc.row.face.wkModel and nc.row.face.wkModel:IsShown()) then
+                nc.row.face:SetSize(48, 48); nc.row.faceRing:SetSize(50, 50)
+                nc.row.name:ClearAllPoints(); nc.row.name:SetPoint("TOPLEFT", 38 + 48 + 12, -12)
+                nc.row.name:SetPoint("RIGHT", nc.row, "RIGHT", -8, 0)
+            end
+            if not opt then
+                nc.row.sub:SetText(nc.row.sub:GetText() .. "  ·  " .. string.format(T("boss %d sur %d"), n, total))
+            end
+            -- les trois suivants (boss comptés, pas encore tués)
+            local list, num = {}, n
             for i = idx + 1, #bosses do
                 local b = bosses[i]
-                if not D:Optional(d, b) and UI.DungeonBossState(d, b, key, nextB) ~= "dead" then
-                    names[#names + 1] = D:BossName(b)
-                    if #names == 3 then break end
+                if not D:Optional(d, b) then
+                    num = num + 1
+                    if UI.DungeonBossState(d, b, key, nextB) ~= "dead" then
+                        local p = m and UI.DungeonBossPin(m, b)
+                        local bits = {}
+                        if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niv. %d"), b.level) end
+                        if p and #m.f > 1 then bits[#bits + 1] = string.format(T("étage %d"), p[1]) end
+                        local tail = #bits > 0 and ("  " .. UI:Hex(C.dim) .. table.concat(bits, " · ") .. "|r") or ""
+                        list[#list + 1] = UI:Hex(C.muted) .. num .. ".|r  " .. D:BossName(b) .. tail
+                        if #list == 3 then break end
+                    end
                 end
             end
-            nc.after:SetText(#names > 0 and (T("Ensuite : ") .. table.concat(names, ", ")) or "")
+            nc.after:SetShown(#list > 0)
+            for k, t in ipairs(nc.nexts) do t:SetShown(list[k] ~= nil); t:SetText(list[k] or "") end
+        else
+            for _, t in ipairs(nc.nexts) do t:Hide() end
         end
-        local loot = nextB and UI:DungeonLoot(nextB, "me", c, key) or {}
+        local loot = shown and UI:DungeonLoot(shown, "me", c, key) or {}
         local fit = math.max(0, math.floor((w - 32 + 4) / 34))
         for k, ic in ipairs(nc.icons) do
             local id = k <= fit and loot[k] or nil
@@ -1005,8 +1045,11 @@ UI:RegisterPage({
             end
         end
         -- sans butin pour ce perso, les suivants remontent
-        nc.after:ClearAllPoints()
-        nc.after:SetPoint("TOPLEFT", 16, (#loot > 0 and fit > 0) and -134 or -96); nc.after:SetPoint("RIGHT", -16, 0)
+        local ay = (#loot > 0 and fit > 0) and -136 or -98
+        nc.after:ClearAllPoints(); nc.after:SetPoint("TOPLEFT", 16, ay)
+        for k, t in ipairs(nc.nexts) do
+            t:ClearAllPoints(); t:SetPoint("TOPLEFT", 16, ay - 4 - k * 17); t:SetPoint("RIGHT", nc, "RIGHT", -16, 0)
+        end
         -- chiffres : tués, facultatifs, chrono ou record
         local inRun = D:InRun(d) and key == WK:CharKey()
         local rec = D:Record(d)
