@@ -117,6 +117,141 @@ UI:RegisterPage({
         end)
         UI:OnResize(p, function(w) self:PlaceColumns(w) end)
         self:BuildGoals(child)
+        self:BuildMoney(child)
+    end,
+
+    -- Monnaies du compte (maquette A) : tableau monnaies × persos sous les Objectifs, mêmes catégories que
+    -- Inventaire > Monnaies (Modules/Currency.lua) ; filtre retenu dans settings.ui.persoMoneyCat
+    BuildMoney = function(self, child)
+        local Cur = WK.modules.Currency
+        local head = _G.CreateFrame("Frame", nil, child)
+        head:SetHeight(30)
+        head.t = UI:Text(head, 14); head.t:SetPoint("LEFT", 4, 0); head.t:SetText(T("Monnaies"))
+        head.n = UI:Text(head, 11, C.muted); head.n:SetPoint("LEFT", head.t, "RIGHT", 10, 0)
+        local opts = { { "all", T("Tout") } }
+        for _, c in ipairs(Cur and Cur.CATS or {}) do opts[#opts + 1] = { c[1], T(c[2]) } end
+        head.seg = UI:Segmented(head, opts, function(k)
+            WK.DB.global.settings.ui.persoMoneyCat = k; UI:Refresh()
+        end, 26)
+        head.seg:SetPoint("RIGHT", 0, 0)
+        head.seg:Select(WK.DB.global.settings.ui.persoMoneyCat or "all")
+        self.moneyHead = head
+        local card = UI:Card(child)
+        self.moneyCard = card
+        card.heads = UI:Pool(function()
+            local t = UI:Text(card, 10, C.dim); t:SetJustifyH("RIGHT")
+            return t
+        end)
+        self.moneyRows = UI:Pool(function()
+            local r = _G.CreateFrame("Button", nil, card)
+            r:SetHeight(36)
+            r.line = r:CreateTexture(nil, "ARTWORK"); r.line:SetTexture("Interface\\Buttons\\WHITE8X8")
+            r.line:SetVertexColor(C.border[1], C.border[2], C.border[3], 1); r.line:SetHeight(1)
+            r.line:SetPoint("TOPLEFT"); r.line:SetPoint("TOPRIGHT")
+            r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 12, 0)
+            r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            r.name = UI:Text(r, 12); r.name:SetPoint("TOPLEFT", 42, -5)
+            r.cat = UI:Text(r, 10, C.dim); r.cat:SetPoint("TOPLEFT", 42, -20)
+            r.cells = {}
+            r.total = UI:Text(r, 12, C.gold); r.total:SetJustifyH("RIGHT")
+            r:SetScript("OnEnter", function(b)
+                local e = b.e
+                if not e then return end
+                UI:TooltipOwner(b, "ANCHOR_RIGHT")
+                _G.GameTooltip:SetText(e.name or "?", 1, 1, 1)
+                local chars = WK.DB.global.characters
+                for _, ce in ipairs(UI:SortedCharacters()) do
+                    local n = e.per[ce.key]
+                    if n and n > 0 then
+                        local cr, cg, cb = UI:ClassColor(ce.c.class)
+                        local detail = tostring(n)
+                        if e.item and Cur then
+                            local _, bg, bk, ml = Cur:Split(ce.key, e.item)
+                            local parts = {}
+                            if (bg or 0) > 0 then parts[#parts + 1] = string.format(T("sacs %d"), bg) end
+                            if (bk or 0) > 0 then parts[#parts + 1] = string.format(T("banque %d"), bk) end
+                            if (ml or 0) > 0 then parts[#parts + 1] = string.format(T("courrier %d"), ml) end
+                            if #parts > 0 then detail = detail .. "  (" .. table.concat(parts, ", ") .. ")" end
+                        end
+                        _G.GameTooltip:AddDoubleLine(WK:CharName(chars[ce.key], ce.key), detail, cr, cg, cb, 1, 1, 1)
+                    end
+                end
+                local where = Cur and Cur.WHERE and Cur.WHERE[e.cat]
+                if where then
+                    _G.GameTooltip:AddLine(" ")
+                    _G.GameTooltip:AddLine(T(where), 0.7, 0.7, 0.7, true)
+                end
+                _G.GameTooltip:Show()
+            end)
+            r:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+            return r
+        end)
+    end,
+
+    RefreshMoney = function(self, y)
+        local Cur = WK.modules.Currency
+        local head, card = self.moneyHead, self.moneyCard
+        if not (Cur and head) then return y end
+        local cat = WK.DB.global.settings.ui.persoMoneyCat or "all"
+        local okL, list = pcall(Cur.List, Cur, cat ~= "all" and cat or nil)
+        list = okL and list or {}
+        local okA, everything = pcall(Cur.List, Cur, nil)
+        local any = okA and everything and #everything > 0
+        head:SetShown(any); card:SetShown(any)
+        self.moneyRows:Reset(); card.heads:Reset()
+        if not any then return y end
+        y = y + 14
+        head:ClearAllPoints(); head:SetPoint("TOPLEFT", 0, -y); head:SetPoint("TOPRIGHT", 0, -y)
+        head.seg:Select(cat)
+        local chars = UI:SortedCharacters()
+        head.n:SetText(string.format(T("%d monnaie(s) · %d perso(s)"), #list, #chars))
+        y = y + 38
+        local W = card:GetWidth() > 0 and card:GetWidth() or (self.scroll:GetWidth() - 14)
+        local NAMEW, TOTW = math.max(220, W * 0.3), 90
+        local cw = math.max(70, (W - NAMEW - TOTW - 24) / math.max(1, #chars))
+        -- en-tête des colonnes : un perso par colonne (couleur de classe), puis le total
+        local hy = 10
+        for i, ce in ipairs(chars) do
+            local t = card.heads:Get()
+            t:ClearAllPoints(); t:SetPoint("TOPRIGHT", card, "TOPLEFT", NAMEW + i * cw, -hy); t:SetWidth(cw - 8)
+            t:SetText(WK:CharName(ce.c, ce.key)); t:SetTextColor(UI:ClassColor(ce.c.class))
+            if t.SetWordWrap then t:SetWordWrap(false) end
+            t:Show()
+        end
+        local tt = card.heads:Get()
+        tt:ClearAllPoints(); tt:SetPoint("TOPRIGHT", card, "TOPRIGHT", -12, -hy); tt:SetWidth(TOTW)
+        tt:SetText(UI:Upper(T("Total"))); tt:SetTextColor(C.dim[1], C.dim[2], C.dim[3]); tt:Show()
+        local ry = 30
+        local catName = {}
+        for _, c in ipairs(Cur.CATS or {}) do catName[c[1]] = T(c[2]) end
+        for _, e in ipairs(list) do
+            local r = self.moneyRows:Get()
+            r.e = e
+            r:ClearAllPoints(); r:SetPoint("TOPLEFT", card, "TOPLEFT", 0, -ry)
+            r:SetPoint("TOPRIGHT", card, "TOPRIGHT", 0, -ry)
+            r.icon:SetTexture(e.icon or 134400)
+            r.name:SetText(e.name or "?"); r.cat:SetText(catName[e.cat] or "")
+            for i, ce in ipairs(chars) do
+                local cell = r.cells[i]
+                if not cell then
+                    cell = UI:Text(r, 12); cell:SetJustifyH("RIGHT"); r.cells[i] = cell
+                end
+                cell:ClearAllPoints(); cell:SetPoint("RIGHT", r, "LEFT", NAMEW + i * cw, 0); cell:SetWidth(cw - 8)
+                local n = e.per[ce.key] or 0
+                cell:SetText(n > 0 and tostring(n) or "-")
+                local col = n > 0 and C.text or C.dim
+                cell:SetTextColor(col[1], col[2], col[3]); cell:Show()
+            end
+            for i = #chars + 1, #r.cells do r.cells[i]:Hide() end
+            r.total:ClearAllPoints(); r.total:SetPoint("RIGHT", -12, 0); r.total:SetWidth(TOTW)
+            r.total:SetText(tostring(e.total or 0))
+            r:Show()
+            ry = ry + 36
+        end
+        if #list == 0 then ry = ry + 30 end
+        card:ClearAllPoints(); card:SetPoint("TOPLEFT", 0, -y); card:SetPoint("TOPRIGHT", 0, -y)
+        card:SetHeight(ry + 6)
+        return y + ry + 6
     end,
 
     -- Objectifs de la Warband (maquette D, Modules/CharGoals.lua) : un objectif par ligne, jauge et temps
@@ -327,6 +462,7 @@ UI:RegisterPage({
             y = y + 56
         end
         y = self:RefreshGoals(y)
+        y = self:RefreshMoney(y)
         self.scroll:SetContentHeight(y)
     end,
 })

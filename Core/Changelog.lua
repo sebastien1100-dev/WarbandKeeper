@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.193", date = "23/11/2026",
+        added = {
+            "Persos : tableau des monnaies en bas de page, sous les Objectifs de la Warband : une ligne par monnaie, une colonne par perso (couleur de classe) et le total, filtre par catégorie (JcJ, Réputations, Raids, Évènements, Jeu). Au survol, le détail par perso (sacs, banque, courrier) et où les dépenser.",
+        },
+    },
+    {
         version = "1.128.192", date = "23/11/2026",
         changed = {
             "Répartition : les noms des persos sont à la couleur de leur classe dans les menus perso principal, perso banque et perso HV.",
