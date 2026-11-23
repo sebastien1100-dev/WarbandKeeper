@@ -67,6 +67,7 @@ local CATS = {
     { key = "equip", label = "Équipement" },
     { key = "mine", label = "Composants de tes métiers" },
     { key = "rbag", label = "Sac de composants", color = "rule" },
+    { key = "abag", label = "Sac à munitions", color = "gold" },
     { key = "ship", label = "Pour d'autres persos", color = "accent" },
     { key = "cons", label = "Consommables" },
     { key = "quest", label = "Quête", color = "gold" },
@@ -80,6 +81,20 @@ local function reagentBag()
     if BI and BI.ReagentBag then return BI.ReagentBag end
     local total, nb = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS, _G.NUM_BAG_SLOTS or 4
     return (total and total > nb) and total or nil
+end
+
+-- carquois et gibernes du perso (genre de sac « flèches » 1 ou « balles » 2) : seules des munitions y vont,
+-- leur contenu et leurs places libres ont leur propre section, comme le sac de composants
+local function ammoBags()
+    local out = {}
+    local CC = _G.C_Container
+    local nf = (CC and CC.GetContainerNumFreeSlots) or _G.GetContainerNumFreeSlots
+    if not nf then return out end
+    for bag = 1, (_G.NUM_BAG_SLOTS or 4) do
+        local ok, _, family = pcall(nf, bag)
+        if ok and type(family) == "number" and family > 0 and (family % 4) > 0 and family < 4 then out[bag] = true end
+    end
+    return out
 end
 
 local function instant(id)
@@ -493,7 +508,8 @@ local function readBags()
     local list, free, total = {}, 0, 0
     local ctx = context()
     local rb = not isBank and reagentBag() or nil
-    local rfree = 0
+    local ab = not isBank and ammoBags() or {}
+    local rfree, afree = 0, 0
     for _, bag in ipairs((isBank and WK.modules.Inventory:BankList() or WK.modules.Inventory:BagList())) do
         local n = WK.Container.NumSlots(bag) or 0
         total = total + n
@@ -514,15 +530,17 @@ local function readBags()
                     _G.C_Item.GetItemIconByID(id)) }
                 e.new = isNew(bag, slot, id)
                 e.info = classify(e, ctx)
-                if rb and bag == rb then e.info.cat = "rbag" end
+                if rb and bag == rb then e.info.cat = "rbag" elseif ab[bag] then e.info.cat = "abag" end
                 list[#list + 1] = e
             else
-                if rb and bag == rb then rfree = rfree + 1 else free = free + 1 end
+                if rb and bag == rb then rfree = rfree + 1
+                elseif ab[bag] then afree = afree + 1
+                else free = free + 1 end
                 list[#list + 1] = { bag = bag, slot = slot, empty = true }
             end
         end
     end
-    return list, free + rfree, total, rfree
+    return list, free + rfree + afree, total, rfree + afree, afree
 end
 
 -- Sacs et banque d'un autre perso (ou de tout le compte), d'après les derniers relevés (quantités par objet) :
@@ -924,21 +942,21 @@ function V.Refresh(light, live)
     V.ApplyTop()
     V.RefreshSlots()
     local offKey = not isBank and V.viewKey or nil
-    local list, free, total, rfree
+    local list, free, total, rfree, afree
     local chars = WK.DB.global.characters
     -- rafraîchissement léger (filtre, recherche, survol d'un sac) : la dernière lecture est reprise telle quelle
     -- (avant : sacs relus et chaque objet reclassé à chaque frappe dans la recherche)
     local lr = win.lastRead
     if light and lr and lr.key == (offKey or "me") then
-        list, free, total, rfree = lr.list, lr.free, lr.total, lr.rfree
+        list, free, total, rfree, afree = lr.list, lr.free, lr.total, lr.rfree, lr.afree
     elseif offKey then
         list = readOffline(offKey)
         local c = offKey ~= "all" and chars[offKey] or nil
         free, total, rfree = c and (c.freeSlots or 0) or 0, c and (c.totalSlots or 0) or 0, 0
     else
-        list, free, total, rfree = readBags()
+        list, free, total, rfree, afree = readBags()
     end
-    win.lastRead = { key = offKey or "me", list = list, free = free, total = total, rfree = rfree }
+    win.lastRead = { key = offKey or "me", list = list, free = free, total = total, rfree = rfree, afree = afree }
     win.list = list
     if win.who then V.RefreshWho() end
     if offKey == "all" then
@@ -975,7 +993,9 @@ function V.Refresh(light, live)
     local ac = { UI:Accent() }
     local normal = free - (rfree or 0)
     win.foot:SetText(string.format(T("%s places libres"), UI:Hex(normal == 0 and C.negative or ac) .. normal .. "|r")
-        .. ((rfree or 0) > 0 and ("  " .. UI:Hex(C.muted) .. "+ " .. string.format(T("%d pour les composants"), rfree)
+        .. (((rfree or 0) - (afree or 0)) > 0 and ("  " .. UI:Hex(C.muted) .. "+ "
+            .. string.format(T("%d pour les composants"), rfree - (afree or 0)) .. "|r") or "")
+        .. ((afree or 0) > 0 and ("  " .. UI:Hex(C.muted) .. "+ " .. string.format(T("%d pour les munitions"), afree)
             .. "|r") or ""))
     if offKey then
         money = 0
@@ -1036,19 +1056,22 @@ function V.Refresh(light, live)
         -- sans catégories : une seule grille, mais le sac de composants garde la sienne (seuls des composants y vont)
         cats = { { key = "all", label = "Objets" } }
         if not isBank then
-            for _, c in ipairs(CATS) do if c.key == "rbag" then cats[#cats + 1] = c end end
+            for _, c in ipairs(CATS) do if c.key == "rbag" or c.key == "abag" then cats[#cats + 1] = c end end
         end
     else
         for _, c in ipairs(CATS) do
             if isBank and c.key == "mine" then cats[#cats + 1] = { key = "__prof" }
-            elseif not (isBank and c.key == "rbag") then cats[#cats + 1] = c end
+            elseif not (isBank and (c.key == "rbag" or c.key == "abag")) then cats[#cats + 1] = c end
         end
     end
     for _, c in ipairs(cats) do groups[c.key] = {} end
     local profKeys = {}
     local function keyOf(e)
         if e.offline and e.where ~= "all" then return "o:" .. e.where end
-        if flat then return (not isBank and e.info.cat == "rbag") and "rbag" or "all" end
+        if flat then
+            if not isBank and (e.info.cat == "rbag" or e.info.cat == "abag") then return e.info.cat end
+            return "all"
+        end
         local k = e.info.cat
         if isBank and (k == "mine" or (k == "other" and REAGENT_CLASS[instant(e.id) or -1])) then
             local p = profOf(e.id)
@@ -1060,10 +1083,13 @@ function V.Refresh(light, live)
         end
         return k
     end
-    local empties, rEmpties = {}, {}
+    local empties, rEmpties, aEmpties = {}, {}, {}
+    local abags = not isBank and ammoBags() or {}
     for _, e in ipairs(list) do
         if e.empty then
-            if not isBank and e.bag == reagentBag() then rEmpties[#rEmpties + 1] = e else empties[#empties + 1] = e end
+            if not isBank and e.bag == reagentBag() then rEmpties[#rEmpties + 1] = e
+            elseif abags[e.bag] then aEmpties[#aEmpties + 1] = e
+            else empties[#empties + 1] = e end
         else table.insert(groups[keyOf(e)], e) end
     end
     if isBank and not flat then
@@ -1161,6 +1187,7 @@ function V.Refresh(light, live)
     end
     if #empties > 0 then head("Places libres", tostring(#empties)); place(empties) end
     if #rEmpties > 0 then head("Places libres du sac de composants", tostring(#rEmpties), "rule"); place(rEmpties) end
+    if #aEmpties > 0 then head("Places libres du sac à munitions", tostring(#aEmpties), "gold"); place(aEmpties) end
     for i = hi + 1, #win.heads do win.heads[i]:Hide() end
     -- cases d'un sac retiré : cachées
     for _, byBag in pairs(buttons) do for _, b in pairs(byBag) do if not used[b] then b:Hide() end end end

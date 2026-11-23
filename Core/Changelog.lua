@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.237", date = "23/11/2026",
+        added = {
+            "Sacs : le carquois ou la giberne du chasseur a sa propre section « Sac à munitions », comme le sac de composants, avec ses places libres à part. Le pied de la fenêtre compte ces places séparément (« + N pour les munitions »).",
+        },
+    },
+    {
         version = "1.128.236", date = "23/11/2026",
         changed = {
             "Alerte munitions : le nombre restant est plus visible. Il est plus gros (16 px, avec contour) et posé sur une pastille sombre, dont le bord prend la couleur de l'alerte (orange, rouge).",

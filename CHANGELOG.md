@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.237 — 23/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Sacs : le carquois ou la giberne du chasseur a sa propre section « Sac à munitions », comme le sac de composants, avec ses places libres à part. Le pied de la fenêtre compte ces places séparément (« + N pour les munitions »).
+
 ## v1.128.236 — 23/11/2026
 
 _Un /reload suffit._
