@@ -250,11 +250,24 @@ local SHORTCUTS = {
               if cj.TabContainer and cj.TabContainer.GetChildren then
                   for _, t in ipairs({ cj.TabContainer:GetChildren() }) do tabs[#tabs + 1] = t end
               end
-              for _, t in ipairs(tabs) do
-                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) and t.Click then
-                      pcall(t.Click, t)
-                      return
+              -- la page des héritages est-elle vraiment affichée ? (sur WoW Forever, le clic sur l'onglet trouvé par
+              -- son texte laissait les Apparences : on vérifie, puis on essaie chaque onglet jusqu'à la bonne page)
+              local function onHeirlooms()
+                  local hj = _G.HeirloomsJournal
+                  return hj and hj.IsVisible and hj:IsVisible() or false
+              end
+              local function pick(t)
+                  if t.Click then pcall(t.Click, t) end
+                  if not onHeirlooms() and _G.CollectionsJournal_SetTab and t.GetID then
+                      pcall(_G.CollectionsJournal_SetTab, cj, t:GetID())
                   end
+                  return onHeirlooms()
+              end
+              for _, t in ipairs(tabs) do
+                  if t.IsShown and t:IsShown() and isHeirloom(textOf(t)) and pick(t) then return end
+              end
+              for _, t in ipairs(tabs) do
+                  if t.IsShown and t:IsShown() and pick(t) then return end
               end
               WK:Print(WK.T("Onglet des héritages introuvable dans le journal des collections."))
           end)

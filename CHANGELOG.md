@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.277 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Micro menu > Héritages : le raccourci ouvrait encore les Apparences. Il vérifie maintenant que la page des héritages est vraiment affichée, et sinon essaie les autres onglets du journal des collections jusqu'à la trouver.
+
 ## v1.128.276 — 24/11/2026
 
 _Un /reload suffit._
