@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.13"
+CLIENT_VERSION = "1.9.14"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -2101,14 +2101,15 @@ class DashPage(Page):
             tk.Frame(bc.body, bg=C["border"], height=1).pack(fill="x")
             box = tk.Frame(bc.body, bg=C["surface"])
             box.pack(fill="x", pady=4)
-            if action:
-                Button(box, action[0], action[1], "primary", height=24, font=App.fonts["smallb"]).pack(side="right")
             label(box, title.upper(), fg="dim", font="smallb").pack(anchor="w")
             line = tk.Frame(box, bg=C["surface"])
             line.pack(anchor="w", fill="x")
             label(line, value, fg=vcol, font="bodyb").pack(side="left")
             if sub:
                 label(line, "  " + sub, fg="muted", font="small").pack(side="left")
+            # bouton sous la ligne (à droite, il mangeait le texte dans la colonne étroite)
+            if action:
+                Button(box, action[0], action[1], "primary", height=24, font=App.fonts["smallb"]).pack(anchor="w", pady=(4, 0))
         item("Sauvegarde du jeu", "lue " + ago_text(dash.get("at")), "", "muted")
         dur = int(sess.get("dur") or 0)
         item("Séance", str(sess.get("char") or dash.get("char") or "?"),
