@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.18"
+CLIENT_VERSION = "1.9.19"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -1747,12 +1747,18 @@ class Page(tk.Frame):
         if not items:
             label(self.pillBox, self.title, font="h2").pack(side="left", pady=(2, 0))
             return
+        # pastille arrondie, même style que l'état addon / client à droite (avant : rectangle à angles droits)
+        fl, fv = App.fonts["smallb"], App.fonts["bodyb"]
         for lab, val, col in items:
-            p = tk.Frame(self.pillBox, bg=C["surface"], highlightthickness=1, highlightbackground=C["border"])
+            lw, vw = fl.measure(lab), fv.measure(str(val))
+            w, h = 10 + lw + 6 + vw + 11, 26
+            p = tk.Canvas(self.pillBox, width=w, height=h, bg=C["bg"], highlightthickness=0, bd=0)
+            p.pill = True
+            rounded(p, 0, 0, w, h, 13, fill=C["border"], outline="")
+            rounded(p, 1, 1, w - 1, h - 1, 12, fill=C["surface"], outline="")
+            p.create_text(10, h / 2, text=lab, fill=C["dim"], font=fl, anchor="w")
+            p.create_text(10 + lw + 6, h / 2, text=str(val), fill=C.get(col, col) if col else C["text"], font=fv, anchor="w")
             p.pack(side="left", padx=(0, 6))
-            tk.Label(p, text=lab, bg=C["surface"], fg=C["dim"], font=App.fonts["smallb"]).pack(side="left", padx=(8, 5), pady=3)
-            tk.Label(p, text=val, bg=C["surface"], fg=C.get(col, col) if col else C["text"],
-                     font=App.fonts["bodyb"]).pack(side="left", padx=(0, 8), pady=3)
         self.after_idle(self.fit_pills)
 
     def fit_pills(self):
@@ -1763,7 +1769,7 @@ class Page(tk.Frame):
             return self.after(50, self.fit_pills)
         x, full = 0, False
         for p in box.winfo_children():
-            if not isinstance(p, tk.Frame):
+            if not getattr(p, "pill", False):
                 continue
             w = p.winfo_reqwidth() + 6
             if full or x + w > width:
@@ -3497,9 +3503,28 @@ class App:
             if self.maxed or "x" not in drag:
                 return
             root.geometry("+%d+%d" % (e.x_root - drag["x"], e.y_root - drag["y"]))
-        for wdg in (strip, self.side, self.brand) + tuple(self.brand.winfo_children()):
-            wdg.bind("<ButtonPress-1>", start, add="+")
-            wdg.bind("<B1-Motion>", move, add="+")
+        # la fenêtre se déplace en la saisissant n'importe où, sauf sur un bouton, un lien (curseur main), un champ
+        # de saisie, une barre de défilement ou une fenêtre de dialogue
+        def grabbable(w):
+            try:
+                if w.winfo_toplevel() is not root:
+                    return False
+                if isinstance(w, (Button, Segmented, ThinScroll, tk.Entry, tk.Text, tk.Scrollbar, tk.Menu)):
+                    return False
+                return str(w.cget("cursor")) not in ("hand2", "xterm")
+            except (tk.TclError, AttributeError):
+                return False
+
+        def start_any(e):
+            drag.pop("x", None)
+            if grabbable(e.widget):
+                start(e)
+
+        def stop(e):
+            drag.pop("x", None)
+        root.bind_all("<ButtonPress-1>", start_any, add="+")
+        root.bind_all("<B1-Motion>", move, add="+")
+        root.bind_all("<ButtonRelease-1>", stop, add="+")
         # fenêtre fixe : ni agrandir ni redimensionner
 
     def minimize(self):

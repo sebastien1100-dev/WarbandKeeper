@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.280", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.19 (fenêtre déplaçable par n'importe quel endroit, pastilles arrondies).",
+        },
+    },
+    {
         version = "1.128.279", date = "24/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.18 (une version qui ne change que le client n'est plus annoncée comme une mise à jour de l'addon).",
