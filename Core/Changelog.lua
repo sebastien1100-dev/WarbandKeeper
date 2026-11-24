@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.290", date = "24/11/2026",
+        fixed = {
+            "Retour au corps : une fois arrivé sur le corps, le bandeau « Retour au corps : cours-y · env. 0:00 » réapparaissait au milieu de l'écran (le guidage s'arrête à l'arrivée). Il ne s'affiche plus près du corps : le jeu propose déjà de revenir à la vie.",
+        },
+    },
+    {
         version = "1.128.289", date = "24/11/2026",
         changed = {
             "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : guides de métiers revus par wowtbc.gg.",

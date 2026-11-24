@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.290 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Retour au corps : une fois arrivé sur le corps, le bandeau « Retour au corps : cours-y · env. 0:00 » réapparaissait au milieu de l'écran (le guidage s'arrête à l'arrivée). Il ne s'affiche plus près du corps : le jeu propose déjà de revenir à la vie.
+
 ## v1.128.289 — 24/11/2026
 
 _Un /reload suffit._

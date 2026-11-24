@@ -193,6 +193,7 @@ WK:On("PLAYER_UNGHOST", function() ghostTick:Show() end)
 WK:On("PLAYER_ENTERING_WORLD", function() if _G.UnitIsGhost and _G.UnitIsGhost("player") then ghostTick:Show() end end)
 WK:On("PLAYER_ALIVE", function() ghostTick:Show() end)
 
+local ARRIVED = 40 -- m : assez près du corps pour que le jeu propose de revenir à la vie
 function UI:RefreshCorpse()
     if not banner then banner = build() end
     if banner.sample then return end
@@ -208,6 +209,9 @@ function UI:RefreshCorpse()
     local g = G()
     local pinShows = g:Config().screenPin and g.target and g.target.kind == "corpse"
     if pinShows then banner:Hide() return end
+    -- arrivé au corps (le guidage s'est arrêté à moins de 10 m) : plus de bandeau, le jeu propose déjà de revenir à
+    -- la vie (avant : « Retour au corps : cours-y · env. 0:00 » réapparaissait sur le corps)
+    if st and st.d and st.d <= ARRIVED then banner:Hide() return end
     banner:Paint(st)
     banner:Show()
 end
