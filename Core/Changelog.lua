@@ -7510,6 +7510,7 @@ WK.Roadmap = {
     { prio = 3, theme = "class", title = "Gain d'un rang", text = "Dans l'infobulle d'un sort : ce que le rang suivant ajoute (dégâts, soins…)." },
     { prio = 3, theme = "class", title = "Grimoires de démons", text = "Démoniste : rangs connus par chaque démon, marques chez le vendeur (appris, apprenable, plus tard)." },
     { prio = 3, theme = "class", title = "Curseur retrouvé", text = "Secouer la souris ou un raccourci : un grand anneau se resserre sur lui." },
+    { prio = 1, theme = "dung", title = "Ta position dans les donjons sans carte", text = "Apprise en jeu : avec les coordonnées du monde, l'entrée et chaque boss tué recalent la carte du donjon une fois pour toutes ; sans elles, position à l'estime collée aux couloirs appris au fil des passages. Flèche et cercle sur la carte du donjon, encart rond à l'écran au choix, partagé avec les Découvertes. En attente du /wk dmap au Kraal de Tranchebauge." },
     { prio = 3, theme = "dung", title = "Raids de Classic", text = "Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre." },
     { prio = 3, theme = "map", title = "Carte, suite", text = "Niveau et pêche de la zone au survol, flèches de sortie, zones de quête teintées, carte en fenêtre agrandissable." },
     { prio = 3, theme = "ui", title = "Infobulles, suite", text = "Crochetage requis d'un coffret, contenu des caisses, objet d'un ordre d'artisan, efficacité en mana des sorts (meilleur rang), capacités et armure d'un monstre, familier qu'il donne au chasseur." },

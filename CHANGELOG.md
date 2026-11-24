@@ -37,6 +37,7 @@ _Prévu, pas encore commencé._
 - **Salut choisi par classe** (basse) — Cocher dans le tableau des bénédictions quelles classes reçoivent le Salut, et revoir les priorités une fois Puissance et Salut collectif vérifiés en jeu.
 
 ### Donjons et quêtes
+- **Ta position dans les donjons sans carte** (haute) — Apprise en jeu : avec les coordonnées du monde, l'entrée et chaque boss tué recalent la carte du donjon une fois pour toutes ; sans elles, position à l'estime collée aux couloirs appris au fil des passages. Flèche et cercle sur la carte du donjon, encart rond à l'écran au choix, partagé avec les Découvertes. En attente du /wk dmap au Kraal de Tranchebauge.
 - **Raids de Classic** (basse) — Cœur du Magma, Zul'Gurub… si WoW Forever les ouvre.
 
 ### Fiabilité
