@@ -50,6 +50,17 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.299 — 24/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- Sacs : bouton « Désenchanter · N » dans l'en-tête pour un perso enchanteur (maquette A). Il compte les objets conseillés au désenchantement que ta compétence permet ; chaque clic désenchante le suivant, mis en surbrillance au survol, avec ce qu'il donne et son prix au marchand. Pas en combat ; les objets verrouillés sont laissés de côté.
+- Courrier : infobulle des lettres reçues refaite (maquette A). Une ligne par objet avec son icône, son nom en couleur de qualité, la quantité et le prix HV de la pile (à l'unité en dessous), sinon le prix du marchand ; puis l'or joint ou le contre-remboursement, la valeur de la lettre et le délai avant expiration.
+
+### Corrections
+- Sacs : la correction de la 1.128.297 (recettes apprises d'un clic droit) posait un bouton protégé dans chaque case, ce qui pouvait empêcher d'ouvrir ou de fermer les sacs en combat. C'est maintenant un seul bouton, posé sur la case survolée et retiré en entrant en combat.
+
 ## v1.128.298 — 24/11/2026
 
 _Un /reload suffit._

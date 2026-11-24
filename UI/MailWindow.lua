@@ -302,14 +302,53 @@ local function build(host)
                 local e = s.e
                 if not e then return end
                 UI:TooltipOwner(s, "ANCHOR_RIGHT")
-                GameTooltip:AddLine(e.sender, 1, 1, 1)
-                if e.subject ~= "" then GameTooltip:AddLine(e.subject, 0.8, 0.8, 0.8, true) end
-                if e.money > 0 then GameTooltip:AddLine(UI:GoldText(e.money)) end
+                local tt = _G.GameTooltip
+                -- maquette A : une ligne par objet (icône, nom en couleur de qualité, quantité, prix HV de la pile
+                -- et à l'unité ; sinon le prix du marchand), puis l'or joint et ce que vaut la lettre
+                local exp = (e.days or 30) >= 1 and string.format(T("expire dans %d j"), math.floor(e.days))
+                    or string.format(T("expire dans %d h"), math.max(1, math.floor((e.days or 0) * 24)))
+                tt:AddDoubleLine(e.sender, exp, 1, 1, 1, 0.6, 0.6, 0.6)
+                if e.subject ~= "" then tt:AddLine(e.subject, 0.7, 0.7, 0.7, true) end
+                local Val = WK.modules.Value
+                local worth = e.cod == 0 and e.money or 0
+                if #e.items > 0 then tt:AddLine(" ") end
                 for _, it in ipairs(e.items) do
-                    local name = it.name or (it.id and WK.GetItemInfo(it.id)) or "?"
-                    GameTooltip:AddLine(string.format("%s x%d", name, it.n), 0.85, 0.85, 0.85)
+                    local name, _, q, _, _, _, _, _, _, icon = WK.GetItemInfo(it.id or 0)
+                    name = it.name or name or "?"
+                    icon = it.icon or icon
+                    local qc = q and _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[q]
+                    local left = (icon and ("|T" .. icon .. ":20:20:0:0:64:64:5:59:5:59|t ") or "") .. name
+                        .. (it.n > 1 and ("  |cff999999x" .. it.n .. "|r") or "")
+                    local ah, vendor
+                    if Val and Val.Prices and it.id then ah, vendor = Val:Prices(it.id) end
+                    local right, sub
+                    if ah and ah > 0 then
+                        right = UI:GoldText(ah * it.n)
+                        if it.n > 1 then sub = string.format(T("%s l'unité"), WK:FormatMoney(ah)) end
+                        worth = worth + ah * it.n
+                    else
+                        right = UI:Hex(C.muted) .. T("pas en vente") .. "|r"
+                        if vendor and vendor > 0 then
+                            sub = string.format(T("marchand %s"), WK:FormatMoney(vendor * it.n))
+                            worth = worth + vendor * it.n
+                        end
+                    end
+                    tt:AddDoubleLine(left, right, qc and qc.r or 1, qc and qc.g or 1, qc and qc.b or 1, 1, 1, 1)
+                    if sub then tt:AddDoubleLine(" ", sub, 1, 1, 1, 0.55, 0.55, 0.55) end
                 end
-                GameTooltip:Show()
+                tt:AddLine(" ")
+                if e.money > 0 then
+                    if e.cod > 0 then
+                        tt:AddDoubleLine(T("Contre-remboursement"), UI:GoldText(e.cod), 1, 0.45, 0.45, 1, 1, 1)
+                    else
+                        tt:AddDoubleLine(T("Or joint"), UI:GoldText(e.money), 0.6, 0.6, 0.6, 1, 1, 1)
+                    end
+                elseif e.cod > 0 then
+                    tt:AddDoubleLine(T("Contre-remboursement"), UI:GoldText(e.cod), 1, 0.45, 0.45, 1, 1, 1)
+                end
+                if worth > 0 then tt:AddDoubleLine(T("Valeur de la lettre"), UI:GoldText(worth), 1, 1, 1, 1, 1, 1) end
+                tt:AddLine(T("« Prendre » : tout récupérer"), 0.5, 0.5, 0.5)
+                tt:Show()
             end)
             r:SetScript("OnLeave", function() GameTooltip:Hide() end)
             return r

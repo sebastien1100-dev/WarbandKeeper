@@ -244,6 +244,122 @@ local function edgeColor(e)
     end
     return C.border[1], C.border[2], C.border[3], e and 1 or 0.6
 end
+
+-- Bouton protégé du survol (un seul, enfant d'UIParent). Le jeu refuse à un addon d'utiliser un objet qui lance un
+-- sort (apprendre une recette) ou de lancer Désenchanter : seul un bouton protégé le peut, au clic du joueur. Il
+-- n'est enfant ni ancré à aucun cadre des sacs (sinon les sacs ne pourraient plus s'ouvrir ni se fermer en combat) :
+-- posé à l'écran par ses coordonnées sur la case ou le bouton survolé, hors combat, caché en partant et désarmé à
+-- l'entrée en combat. Clic gauche : laissé passer à la case dessous quand le jeu le permet, sinon refait ici
+-- (ramasser, poser, lien).
+local SH = {}
+B.SecureHover = SH
+local function shButton()
+    if SH.b then return SH.b end
+    local ok, s = pcall(_G.CreateFrame, "Button", "WarbandKeeperSecureHover", _G.UIParent, "SecureActionButtonTemplate")
+    if not ok or not s then return nil end
+    SH.b = s
+    s:Hide()
+    s:RegisterForClicks("AnyUp", "AnyDown")
+    local function pickup()
+        local o = s.owner
+        if not (o and o.wkBag and not inCombat()) then return end
+        local CC = _G.C_Container
+        local fn = (CC and CC.PickupContainerItem) or _G.PickupContainerItem
+        if fn then pcall(fn, o.wkBag, o.wkSlot) end
+    end
+    s:SetScript("PreClick", function(btn, button, down)
+        if btn.preClick then btn.preClick(btn, button, down) end
+    end)
+    s:SetScript("PostClick", function(_, button, down)
+        if down or button ~= "LeftButton" or SH.pass then return end
+        local o = s.owner
+        if not (o and o.wkBag) then return end
+        local CC = _G.C_Container
+        local link = (CC and CC.GetContainerItemLink and CC.GetContainerItemLink(o.wkBag, o.wkSlot))
+        if _G.IsModifiedClick and _G.IsModifiedClick() and link and _G.HandleModifiedItemClick then
+            _G.HandleModifiedItemClick(link)
+        else
+            pickup()
+        end
+    end)
+    s:SetScript("OnDragStart", pickup)
+    s:SetScript("OnReceiveDrag", pickup)
+    s:SetScript("OnEnter", function()
+        local o = s.owner
+        local fn = o and o:GetScript("OnEnter")
+        if fn then fn(o) end
+    end)
+    s:SetScript("OnLeave", function()
+        local o = s.owner
+        local fn = o and o:GetScript("OnLeave")
+        if fn then fn(o) end
+        SH.Release()
+    end)
+    s:SetScript("OnUpdate", function()
+        -- cadre dessous caché ou déplacé (sacs fermés, fenêtre glissée) : le bouton part aussi
+        local o = s.owner
+        if not o or not o:IsVisible() or (s.lastL and o:GetLeft() ~= s.lastL) then SH.Release() end
+    end)
+    return s
+end
+-- attrs : attributs du bouton (« type », « item »…) ; refresh() : les recalcule (nil = plus rien à faire)
+function SH.Cover(target, attrs, opts)
+    if inCombat() or not target or not attrs then return end
+    local s = shButton()
+    if not s then return end
+    local l, b, w, h = target:GetRect()
+    if not l then return end
+    local k = target:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+    for _, key in ipairs({ "type", "type2", "item", "item2", "spell", "target-bag", "target-slot" }) do
+        s:SetAttribute(key, nil)
+    end
+    s:SetAttribute("useOnKeyDown", false)
+    for key, v in pairs(attrs) do s:SetAttribute(key, v) end
+    -- case de sac : clic gauche laissé à la case (ou refait ici) ; bouton : tous les clics pour le bouton protégé
+    local slotMode = target.wkBag ~= nil
+    SH.pass = false
+    if s.SetPassThroughButtons then
+        if slotMode then SH.pass = pcall(s.SetPassThroughButtons, s, "LeftButton")
+        else pcall(s.SetPassThroughButtons, s) end
+    end
+    if s.RegisterForDrag then
+        if slotMode and not SH.pass then s:RegisterForDrag("LeftButton") else s:RegisterForDrag() end
+    end
+    s.owner, s.lastL = target, target:GetLeft()
+    s.refresh = opts and opts.refresh or nil
+    s.preClick = opts and opts.preClick or nil
+    s:ClearAllPoints()
+    s:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", l * k, b * k)
+    s:SetSize(w * k, h * k)
+    s:SetFrameStrata(target:GetFrameStrata())
+    s:SetFrameLevel(target:GetFrameLevel() + 10)
+    s:Show()
+end
+function SH.Release()
+    local s = SH.b
+    if not s or inCombat() then return end
+    s.owner, s.refresh, s.preClick, s.lastL = nil, nil, nil, nil
+    s:SetAttribute("type", nil); s:SetAttribute("type2", nil)
+    s:Hide()
+end
+function SH.Owner() return SH.b and SH.b:IsShown() and SH.b.owner or nil end
+-- sacs repeints (objet utilisé, désenchanté, déplacé) : attributs recalculés pour le cadre couvert
+function SH.Update()
+    local s = SH.b
+    if not s or not s:IsShown() or inCombat() then return end
+    if not s.refresh then return end
+    local attrs = s.refresh()
+    if attrs then SH.Cover(s.owner, attrs, { refresh = s.refresh, preClick = s.preClick }) else SH.Release() end
+end
+WK:On("PLAYER_REGEN_DISABLED", function()
+    local s = SH.b
+    if not s then return end
+    -- dernier moment permis : en combat, la case visée ne pourrait plus être reposée
+    s:SetAttribute("type", nil); s:SetAttribute("type2", nil)
+    s.owner = nil
+    s:Hide()
+end)
+
 local function makeView(kind)
 local V = {}
 local isBank = kind == "bank"
@@ -345,6 +461,7 @@ local function newButton(bag, slot)
     b:SetID(slot)
     b:SetSize(SZ(), SZ())
     b.wkOurs = true
+    b.wkBag, b.wkSlot = bag, slot -- nos champs (le jeu lit l'ID du porteur et de la case)
     -- Objet à ouvrir (paquet, coffre à butin) : le jeu refuse de l'ouvrir depuis le clic d'une case créée par un
     -- addon (ADDON_ACTION_FORBIDDEN « UNKNOWN() » dans UseContainerItem). Une couche invisible, posée seulement sur
     -- ces objets, prend le clic droit (l'addon l'ouvre à l'image suivante) et laisse passer le clic gauche vers la
@@ -364,26 +481,6 @@ local function newButton(bag, slot)
     op:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
     op:Hide()
     b.wkOpen = op -- infobulle allégée (Modules/Inventory.lua)
-    -- Recette ou objet qui lance un sort (apprendre une recette, parchemin…) : même refus que plus haut, et
-    -- l'addon ne peut pas le faire à la place du joueur. Une couche du jeu (SecureActionButtonTemplate) prend le
-    -- clic droit et utilise l'objet « sac case » comme le ferait la case (vente chez le marchand comprise). Montrée,
-    -- cachée et réglée hors combat seulement ; clic gauche (glisser, ramasser) toujours laissé à la case.
-    if not isBank and op.SetPassThroughButtons then
-        local okS, sec = pcall(_G.CreateFrame, "Button", nil, b, "SecureActionButtonTemplate")
-        if okS and sec then
-            sec:SetAllPoints()
-            sec:SetFrameLevel(b:GetFrameLevel() + 5)
-            sec:RegisterForClicks("RightButtonUp")
-            pcall(sec.SetPassThroughButtons, sec, "LeftButton")
-            sec:SetAttribute("useOnKeyDown", false)
-            sec:SetAttribute("type2", "item")
-            sec:SetAttribute("item2", bag .. " " .. slot)
-            sec:SetScript("OnEnter", function() local fn = b:GetScript("OnEnter"); if fn then fn(b) end end)
-            sec:SetScript("OnLeave", function() local fn = b:GetScript("OnLeave"); if fn then fn(b) end end)
-            sec:Hide()
-            b.wkUse = sec
-        end
-    end
     -- case à notre style : carré, bord de 2 px à la couleur de la qualité (le cadre brillant du jeu est masqué)
     b.wkEdge = square(b, 0, -8)
     b.wkFill = square(b, EDGE, -7)
@@ -426,6 +523,18 @@ local function newButton(bag, slot)
             if e.info and e.info.cat == "new" then e.info.cat = "other"; V.newDirty = true end
         end
         V.PlaceTip(s)
+        -- recette ou objet qui lance un sort : le clic droit passe par le bouton protégé du survol
+        if not isBank and not inCombat() then
+            local function attrs()
+                local id = WK.Container.Info(bag, slot)
+                if id and lootable(bag, slot) == nil and spellItem(id) then
+                    return { type2 = "item", item2 = bag .. " " .. slot }
+                end
+            end
+            local a = attrs()
+            if a then B.SecureHover.Cover(s, a, { refresh = attrs })
+            elseif B.SecureHover.Owner() == s then B.SecureHover.Release() end
+        end
     end)
     -- objet neuf vu : rangé dans sa vraie catégorie une fois la souris partie (rien ne bouge sous le curseur)
     b:HookScript("OnLeave", function()
@@ -526,12 +635,6 @@ local function paintButton(b, e)
     -- couche du clic droit : seulement sur un objet à ouvrir, hors marchand, banque, courrier, échange, HV
     if b.wkOpen then
         b.wkOpen:SetShown(e ~= nil and e.bag ~= nil and not busyWindow() and lootable(e.bag, e.slot) ~= nil)
-    end
-    -- couche sûre du clic droit : recettes et objets qui lancent un sort (hors combat : cadre protégé)
-    if b.wkUse and not inCombat() then
-        local id = e and e.bag and not e.offline and e.id
-        local spell = id and (lootable(e.bag, e.slot) == nil) and spellItem(id)
-        b.wkUse:SetShown(spell and true or false)
     end
     if UI.ItemLockPaint then pcall(UI.ItemLockPaint, b) end
 end
@@ -801,6 +904,74 @@ local function build()
             _G.GameTooltip:Show()
         end)
         f.craftBtn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+        -- « Désenchanter · N » (perso enchanteur, maquette A) : chaque clic désenchante l'objet conseillé suivant.
+        -- Le clic passe par le bouton protégé du survol (B.SecureHover), posé sur ce bouton quand la souris y entre.
+        f.deBtn = UI:Button(f, "Désenchanter", nil, 22, "primary", "spark")
+        f.deBtn:Hide()
+        local function deAttrs()
+            local nx = f.deNext
+            local spell = PH and WK.SpellInfo(PH.DE_SPELL)
+            if not (nx and spell) then return nil end
+            return { type = "spell", spell = spell, ["target-bag"] = nx.bag, ["target-slot"] = nx.slot }
+        end
+        local function deSlot()
+            local nx = f.deNext
+            return nx and buttons[nx.bag] and buttons[nx.bag][nx.slot]
+        end
+        f.deBtn:SetScript("OnEnter", function(b)
+            b.hover = true; b:Refresh()
+            local nx = f.deNext
+            UI:TooltipOwner(b, "ANCHOR_BOTTOM")
+            local tt = _G.GameTooltip
+            if inCombat() then
+                tt:SetText(T("Désenchanter le suivant"), 1, 1, 1)
+                tt:AddLine(T("Pas en combat."), 1, 0.4, 0.4)
+                tt:Show()
+                return
+            end
+            tt:SetText(T("Désenchanter le suivant"), 1, 1, 1)
+            if nx then
+                local name, _, q = WK.GetItemInfo(nx.id)
+                local qc = q and _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[q]
+                tt:AddLine((nx.icon and ("|T" .. nx.icon .. ":16:16:0:0|t ") or "") .. (name or "?"),
+                    qc and qc.r or 1, qc and qc.g or 1, qc and qc.b or 1)
+                if nx.a then
+                    local gives = WK:FormatMoney(math.floor(nx.a.value or 0))
+                    tt:AddLine(string.format(T("Donne environ %s"), gives), 0.8, 0.8, 0.8)
+                    local sells = WK:FormatMoney(nx.a.vendor or 0)
+                    tt:AddLine(string.format(T("Vente au marchand : %s"), sells), 0.6, 0.6, 0.6)
+                end
+            end
+            local how = T("Un clic par objet (le jeu l'exige) ; l'objet visé est mis en surbrillance.")
+            tt:AddLine(how, 0.6, 0.6, 0.6, true)
+            tt:Show()
+            local sl = deSlot()
+            if sl and sl.LockHighlight then sl:LockHighlight() end
+            local a = deAttrs()
+            if a then
+                B.SecureHover.Cover(b, a, {
+                    refresh = deAttrs,
+                    -- la case visée a pu changer depuis le dernier rafraîchissement : revérifiée juste avant
+                    preClick = function(sec)
+                        local x = f.deNext
+                        local id, _, locked = nil, nil, nil
+                        if x then id, _, locked = WK.Container.Info(x.bag, x.slot) end
+                        if not (x and id == x.id and not locked) then
+                            if not inCombat() then sec:SetAttribute("type", nil) end
+                            _G.C_Timer.After(0.1, function() V.Refresh() end)
+                            return
+                        end
+                        PH:ExpectDE(x.id)
+                    end })
+            end
+        end)
+        f.deBtn:SetScript("OnLeave", function(b)
+            b.hover = false; b:Refresh()
+            _G.GameTooltip:Hide()
+            for _, bs in pairs(buttons) do
+                for _, sl in pairs(bs) do if sl.UnlockHighlight then sl:UnlockHighlight() end end
+            end
+        end)
         local cb = _G.CreateFrame("Frame", nil, f)
         cb:SetHeight(CRAFT_H - 8)
         cb.bg = UI:Rounded(cb, 8, 0, "BACKGROUND", 1)
@@ -833,13 +1004,45 @@ local function build()
                 return (fs.GetUnboundedStringWidth and fs:GetUnboundedStringWidth()) or fs:GetStringWidth() or 0
             end
             local room = (f:GetWidth() or 0) - 320 - (PAD + tw(f.title) + 10 + tw(f.sub) + 16)
+            -- objet conseillé au désenchantement suivant (mes sacs, enchanteur, compétence suffisante, pas verrouillé)
+            local nx, nDE = nil, 0
+            local rank = PH and PH.EnchantRank and PH:EnchantRank()
+            if rank and not V.viewKey then
+                local IL = WK.modules.ItemLock
+                for _, e in ipairs(f.list or {}) do
+                    if not e.empty and not e.offline and e.bag and e.info and e.info.de
+                        and not (IL and IL.IsLocked and IL:IsLocked(e.id)) then
+                        local okA, a = pcall(PH.DEAdvice, PH, e.id)
+                        if okA and a and (a.skill or 0) <= rank then
+                            nDE = nDE + 1
+                            nx = nx or { bag = e.bag, slot = e.slot, id = e.id, icon = e.icon, a = a }
+                        end
+                    end
+                end
+            end
+            f.deNext = nx
+            local deW = 0
+            if nDE > 0 then
+                f.deBtn.label:SetText(string.format(T("Désenchanter · %d"), nDE))
+                deW = (f.deBtn:GetWidth() or 130) + 8
+                -- peu de place : l'icône et le nombre seulement
+                if room < deW + 44 then
+                    f.deBtn.label:SetText(tostring(nDE))
+                    deW = (f.deBtn:GetWidth() or 50) + 8
+                end
+            end
+            room = room - deW
             local full = (f.craftBtn:GetWidth() or 150) + 8
             local wide = room >= full
             f.craftBtn:SetShown(wide); f.craftIcon:SetShown(not wide)
             f.craftIcon:SetActive(on and true or false)
+            f.deBtn:ClearAllPoints()
+            f.deBtn:SetPoint("RIGHT", wide and f.craftBtn or f.craftIcon, "LEFT", -8, 0)
+            f.deBtn:SetShown(nDE > 0)
+            f.deBtn:SetEnabled(not inCombat())
             -- fenêtre très étroite : « 40 / 64 places » s'arrête avant le marteau (finit par « … »)
             if not wide then
-                local subRoom = (f:GetWidth() or 0) - 320 - 34 - (PAD + tw(f.title) + 10) - 6
+                local subRoom = (f:GetWidth() or 0) - 320 - 34 - deW - (PAD + tw(f.title) + 10) - 6
                 if f.sub.SetWordWrap then f.sub:SetWordWrap(false) end
                 f.sub:SetWidth(math.max(30, math.min(tw(f.sub) + 2, subRoom)))
             else
@@ -1385,6 +1588,8 @@ function V.Refresh(light, live)
         win:SetSize(PAD * 2 + cols * (slotSize + GAP) - GAP + 14 + ficheW, math.max(320, y + 110 + topOff()))
     end
     if not light then V.RefreshFiche() end
+    -- bouton protégé du survol : attributs recalculés (objet utilisé, désenchanté ou déplacé)
+    if B.SecureHover then B.SecureHover.Update() end
 end
 
 function V.Layout() return cols, slotSize end -- pour les tests

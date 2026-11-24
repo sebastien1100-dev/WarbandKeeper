@@ -8,6 +8,16 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.299", date = "24/11/2026",
+        added = {
+            "Sacs : bouton « Désenchanter · N » dans l'en-tête pour un perso enchanteur (maquette A). Il compte les objets conseillés au désenchantement que ta compétence permet ; chaque clic désenchante le suivant, mis en surbrillance au survol, avec ce qu'il donne et son prix au marchand. Pas en combat ; les objets verrouillés sont laissés de côté.",
+            "Courrier : infobulle des lettres reçues refaite (maquette A). Une ligne par objet avec son icône, son nom en couleur de qualité, la quantité et le prix HV de la pile (à l'unité en dessous), sinon le prix du marchand ; puis l'or joint ou le contre-remboursement, la valeur de la lettre et le délai avant expiration.",
+        },
+        fixed = {
+            "Sacs : la correction de la 1.128.297 (recettes apprises d'un clic droit) posait un bouton protégé dans chaque case, ce qui pouvait empêcher d'ouvrir ou de fermer les sacs en combat. C'est maintenant un seul bouton, posé sur la case survolée et retiré en entrant en combat.",
+        },
+    },
+    {
         version = "1.128.298", date = "24/11/2026",
         fixed = {
             "Sacs : le bouton « Mode fabrication » semblait ne rien faire. Le mode changeait bien, mais les sacs n'étaient pas repeints : ni le bouton, ni le bandeau, ni le tri ne suivaient avant le prochain changement dans les sacs. Ils suivent maintenant tout de suite, aussi pour les interrupteurs du bandeau et quand le mode se coupe en fermant le métier.",
