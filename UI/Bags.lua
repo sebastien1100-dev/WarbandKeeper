@@ -530,7 +530,10 @@ local function readBags()
                     _G.C_Item.GetItemIconByID(id)) }
                 e.new = isNew(bag, slot, id)
                 e.info = classify(e, ctx)
-                if rb and bag == rb then e.info.cat = "rbag" elseif ab[bag] then e.info.cat = "abag" end
+                -- sac de composants : catégorie d'origine gardée (cat0) pour la vue par catégories, où ses objets
+                -- sont rangés avec les autres ; seule la vue sans catégories garde sa grille à part
+                if rb and bag == rb then e.info.cat0 = e.info.cat; e.info.cat = "rbag"
+                elseif ab[bag] then e.info.cat = "abag" end
                 list[#list + 1] = e
             else
                 if rb and bag == rb then rfree = rfree + 1
@@ -1092,7 +1095,9 @@ function V.Refresh(light, live)
     else
         for _, c in ipairs(CATS) do
             if isBank and c.key == "mine" then cats[#cats + 1] = { key = "__prof" }
-            elseif not (isBank and (c.key == "rbag" or c.key == "abag")) then cats[#cats + 1] = c end
+            -- par catégories, le contenu du sac de composants est trié avec le reste (avant : section à part, hors
+            -- du tri) ; ses places libres gardent leur ligne « Places libres du sac de composants »
+            elseif not (c.key == "rbag" or (isBank and c.key == "abag")) then cats[#cats + 1] = c end
         end
     end
     for _, c in ipairs(cats) do groups[c.key] = {} end
@@ -1104,6 +1109,7 @@ function V.Refresh(light, live)
             return "all"
         end
         local k = e.info.cat
+        if k == "rbag" then k = e.info.cat0 or "other" end
         if isBank and (k == "mine" or (k == "other" and REAGENT_CLASS[instant(e.id) or -1])) then
             local p = profOf(e.id)
             k = p and ("p:" .. p) or "reag"

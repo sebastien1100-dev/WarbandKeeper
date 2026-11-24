@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.287", date = "24/11/2026",
+        fixed = {
+            "Sacs (vue par catégories) : les objets du sac de composants restaient dans une section à part, hors du tri. Ils sont maintenant rangés avec les autres dans leur catégorie ; ses places libres gardent leur ligne « Places libres du sac de composants ». La vue sans catégories garde sa grille à part.",
+        },
+    },
+    {
         version = "1.128.286", date = "24/11/2026",
         changed = {
             "Rien ne change en jeu : cette version livre le client PC 1.9.25 (sources aussi pour un envoi de découvertes fait avant la 1.9.23).",
