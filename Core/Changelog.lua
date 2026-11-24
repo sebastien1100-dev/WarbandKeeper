@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.294", date = "24/11/2026",
+        fixed = {
+            "Barre de fabrication : la ligne du bas (« 3.1 s par fabrication · fin vers… · ensuite : … ») passait sous le niveau du métier (« Minage 110 »), et un long nom de recette sous « reste ». Chaque texte s'arrête maintenant avant son voisin et finit par « … » s'il est trop long.",
+        },
+    },
+    {
         version = "1.128.293", date = "24/11/2026",
         changed = {
             "Métiers : le « + » d'une recette et « Ajouter à la file » ouvrent une petite fenêtre. Tu y choisis le nombre (-, +, 1, 5, 10 ou tout ce qui est faisable), et tu vois ce qu'il y a déjà dans la file de fabrication, avec -, + et retirer sur chaque ligne (et « Vider »).",

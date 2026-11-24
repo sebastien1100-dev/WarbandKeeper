@@ -785,6 +785,20 @@ local function buildBar()
         self.sub:SetText(sub2 or "")
         self.skill:SetText(skill or "")
         self.stop:SetShown((C_TradeSkillUI and C_TradeSkillUI.StopRecipeRepeat or StopTradeSkillRepeat) ~= nil)
+        -- lignes du haut et du bas bornées à la place libre (avant : « ensuite : … » passait sous « Minage 110 »,
+        -- un long nom sous « reste ») ; un texte trop long finit par « … »
+        local barW = self.bar:GetWidth() or 0
+        local function tw(fs)
+            return (fs.GetUnboundedStringWidth and fs:GetUnboundedStringWidth()) or fs:GetStringWidth() or 0
+        end
+        if barW > 0 then
+            if self.sub.SetWordWrap then self.sub:SetWordWrap(false) end
+            if self.name.SetWordWrap then self.name:SetWordWrap(false) end
+            local skillW = (skill and skill ~= "") and (tw(self.skill) + 12) or 0
+            self.sub:SetWidth(math.max(40, barW - skillW))
+            local nameRoom = barW - tw(self.left) - tw(self.count) - 22
+            self.name:SetWidth(math.max(40, math.min(tw(self.name) + 2, nameRoom)))
+        end
     end
     f:SetScript("OnUpdate", function(s, el)
         s.acc = (s.acc or 0) + el

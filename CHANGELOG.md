@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.294 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Barre de fabrication : la ligne du bas (« 3.1 s par fabrication · fin vers… · ensuite : … ») passait sous le niveau du métier (« Minage 110 »), et un long nom de recette sous « reste ». Chaque texte s'arrête maintenant avant son voisin et finit par « … » s'il est trop long.
+
 ## v1.128.293 — 24/11/2026
 
 _Un /reload suffit._
