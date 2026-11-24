@@ -33,7 +33,7 @@ from tkinter import filedialog, font as tkfont
 
 import learned  # Découvertes (client/learned.py, partagé avec tools/gen_learned.py)
 
-CLIENT_VERSION = "1.9.22"
+CLIENT_VERSION = "1.9.23"
 REPO = "sebastien1100-dev/WarbandKeeper"
 ADDON = "WarbandKeeper"
 DATA_ADDON = "WarbandKeeper_Data"  # grosses bases, chargées à la demande (dossier à côté de l'addon)
@@ -914,7 +914,9 @@ class GitHub:
         self.api("PATCH", "/git/refs/heads/" + branch, {"sha": commit, "force": False})
         if direct:
             return {"n": len(added), "base": new, "what": what,
-                    "items": [learned.short(r["genre"], r["key"], r["value"]) for r in added][:60]}
+                    # détail du dernier envoi, avec ses sources (colonnes SOURCES et CONF. de la page)
+                    "items": [{"t": learned.short(r["genre"], r["key"], r["value"]), "s": list(r.get("srcs") or []),
+                               "c": r.get("confirm") or len(r.get("srcs") or [])} for r in added][:60]}
         pr = self.api("POST", "/pulls", {
             "title": "Découvertes : %d ajout%s" % (len(added), "s" if len(added) > 1 else ""), "head": branch, "base": "main",
             "body": "Découvertes intégrées à l'addon, envoyées par le client PC (page Découvertes).\n\n"
@@ -2814,11 +2816,19 @@ class LearnedPage(Page):
                     datetime.fromtimestamp(last["at"]).strftime("%d/%m %H:%M"), plural(int(last.get("n") or 0), "ajout")),
                     fg="muted", font="small").pack(anchor="w", pady=(2, 4))
                 items = last.get("items") or []
-                for t in items[:self.MAX_ROWS]:
+                for it in items[:self.MAX_ROWS]:
+                    # envoi d'avant la 1.9.23 : seulement le texte, sources inconnues (tiret)
+                    if isinstance(it, dict):
+                        t, srcs, conf = it.get("t") or "", ", ".join(it.get("s") or []), str(it.get("c") or "")
+                    else:
+                        t, srcs, conf = str(it), "", ""
                     row = tk.Frame(self.list.inner, bg=C["surface"])
                     row.pack(fill="x", pady=1)
                     label(row, "envoyée", fg="positive", font="small", width=12).pack(side="right")
-                    label(row, t if len(t) < 60 else t[:59] + "…", font="small").pack(side="left")
+                    label(row, conf or "–", fg="muted" if conf else "dim", font="small", width=5).pack(side="right")
+                    label(row, (srcs if len(srcs) < 11 else srcs[:10] + "…") or "–", fg="dim", font="small",
+                          width=9).pack(side="right")
+                    label(row, t if len(t) < 47 else t[:46] + "…", font="small").pack(side="left", fill="x", expand=True)
                 if not items:
                     label(self.list.inner, "(détail gardé à partir du prochain envoi)", fg="dim", font="small").pack(anchor="w")
             else:

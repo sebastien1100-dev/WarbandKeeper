@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.284", date = "24/11/2026",
+        changed = {
+            "Rien ne change en jeu : cette version livre le client PC 1.9.23 (colonnes Sources et Conf. remplies pour le dernier envoi des découvertes).",
+        },
+    },
+    {
         version = "1.128.283", date = "24/11/2026",
         changed = {
             "Quêtes apprises en jeu : une quête entrée depuis dans la base de l'addon est retirée de ta sauvegarde (la base la connaît mieux, la copie ne faisait que grossir le fichier).",

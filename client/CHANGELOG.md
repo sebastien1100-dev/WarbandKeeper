@@ -3,6 +3,11 @@
 Notes du client PC (WarbandKeeper-Client.exe), à part de celles de l'addon. Lues par le client
 (Nouveautés > Client) et jointes à chaque Release. Monter `CLIENT_VERSION` dans `wk_client.py` en même temps.
 
+## 1.9.23 — 24/11/2026
+
+### Corrections
+- Découvertes > « Rien de nouveau depuis le dernier envoi » : les colonnes SOURCES et CONF. étaient vides. Le dernier envoi garde maintenant, pour chaque ligne, d'où elle vient et combien de sources l'ont confirmée. Un envoi fait avant cette version n'a pas ce détail : un tiret s'affiche jusqu'au prochain envoi.
+
 ## 1.9.22 — 24/11/2026
 
 ### Corrections
