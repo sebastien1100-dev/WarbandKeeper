@@ -930,6 +930,18 @@ local function build()
                 return
             end
             tt:SetText(T("Désenchanter le suivant"), 1, 1, 1)
+            local why = f.deWhy or {}
+            if not nx then
+                if (why.high or 0) > 0 then
+                    tt:AddLine(string.format(T("%d objet(s) demandent Enchantement %d (tu as %d)."), why.high,
+                        why.need or 0, why.rank or 0), 1, 0.45, 0.45, true)
+                end
+                if (why.sell or 0) > 0 then
+                    local sell = T("%d objet(s) se vendent mieux qu'ils ne se désenchantent ; "
+                        .. "« Toujours désenchanter » dans la fiche de l'objet pour le forcer.")
+                    tt:AddLine(string.format(sell, why.sell), 0.8, 0.8, 0.8, true)
+                end
+            end
             if nx then
                 local name, _, q = WK.GetItemInfo(nx.id)
                 local qc = q and _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[q]
@@ -942,8 +954,10 @@ local function build()
                     tt:AddLine(string.format(T("Vente au marchand : %s"), sells), 0.6, 0.6, 0.6)
                 end
             end
-            local how = T("Un clic par objet (le jeu l'exige) ; l'objet visé est mis en surbrillance.")
-            tt:AddLine(how, 0.6, 0.6, 0.6, true)
+            if nx then
+                local how = T("Un clic par objet (le jeu l'exige) ; l'objet visé est mis en surbrillance.")
+                tt:AddLine(how, 0.6, 0.6, 0.6, true)
+            end
             tt:Show()
             local sl = deSlot()
             if sl and sl.LockHighlight then sl:LockHighlight() end
@@ -1006,23 +1020,35 @@ local function build()
             local room = (f:GetWidth() or 0) - 320 - (PAD + tw(f.title) + 10 + tw(f.sub) + 16)
             -- objet conseillé au désenchantement suivant (mes sacs, enchanteur, compétence suffisante, pas verrouillé)
             local nx, nDE = nil, 0
+            local nHigh, needSkill, nSell = 0, nil, 0
             local rank = PH and PH.EnchantRank and PH:EnchantRank()
             if rank and not V.viewKey then
                 local IL = WK.modules.ItemLock
                 for _, e in ipairs(f.list or {}) do
-                    if not e.empty and not e.offline and e.bag and e.info and e.info.de
+                    local q = e.quality or 0
+                    if not e.empty and not e.offline and e.bag and q >= 2
                         and not (IL and IL.IsLocked and IL:IsLocked(e.id)) then
                         local okA, a = pcall(PH.DEAdvice, PH, e.id)
-                        if okA and a and (a.skill or 0) <= rank then
-                            nDE = nDE + 1
-                            nx = nx or { bag = e.bag, slot = e.slot, id = e.id, icon = e.icon, a = a }
+                        if okA and a then
+                            if (a.skill or 0) > rank then
+                                -- compétence trop basse : comptés pour le dire (bouton grisé)
+                                nHigh = nHigh + 1
+                                needSkill = math.min(needSkill or a.skill, a.skill)
+                            elseif a.advice == "de" then
+                                nDE = nDE + 1
+                                nx = nx or { bag = e.bag, slot = e.slot, id = e.id, icon = e.icon, a = a }
+                            else
+                                nSell = nSell + 1
+                            end
                         end
                     end
                 end
             end
             f.deNext = nx
+            f.deWhy = { high = nHigh, need = needSkill, rank = rank, sell = nSell }
             local deW = 0
-            if nDE > 0 then
+            local showDE = nDE > 0 or nHigh > 0 or nSell > 0
+            if showDE then
                 f.deBtn.label:SetText(string.format(T("Désenchanter · %d"), nDE))
                 deW = (f.deBtn:GetWidth() or 130) + 8
                 -- peu de place : l'icône et le nombre seulement
@@ -1038,8 +1064,10 @@ local function build()
             f.craftIcon:SetActive(on and true or false)
             f.deBtn:ClearAllPoints()
             f.deBtn:SetPoint("RIGHT", wide and f.craftBtn or f.craftIcon, "LEFT", -8, 0)
-            f.deBtn:SetShown(nDE > 0)
-            f.deBtn:SetEnabled(not inCombat())
+            f.deBtn:SetShown(showDE)
+            -- rien à désenchanter maintenant (compétence trop basse, objets qui se vendent mieux) : grisé, la raison
+            -- dans l'infobulle (avant : bouton caché, on croyait qu'il manquait)
+            f.deBtn:SetEnabled(nDE > 0 and not inCombat())
             -- fenêtre très étroite : « 40 / 64 places » s'arrête avant le marteau (finit par « … »)
             if not wide then
                 local subRoom = (f:GetWidth() or 0) - 320 - 34 - deW - (PAD + tw(f.title) + 10) - 6

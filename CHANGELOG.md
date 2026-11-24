@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.300 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : le bouton « Désenchanter » restait caché quand rien n'était désenchantable tout de suite (Enchantement trop bas, objets qui se vendent mieux). Il est maintenant montré, grisé, et son infobulle dit pourquoi : « 15 objet(s) demandent Enchantement 25 (tu as 1) », ou combien se vendent mieux (« Toujours désenchanter » dans la fiche de l'objet pour le forcer).
+
 ## v1.128.299 — 24/11/2026
 
 _Un /reload suffit._

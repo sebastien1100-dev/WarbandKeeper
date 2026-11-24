@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.300", date = "24/11/2026",
+        fixed = {
+            "Sacs : le bouton « Désenchanter » restait caché quand rien n'était désenchantable tout de suite (Enchantement trop bas, objets qui se vendent mieux). Il est maintenant montré, grisé, et son infobulle dit pourquoi : « 15 objet(s) demandent Enchantement 25 (tu as 1) », ou combien se vendent mieux (« Toujours désenchanter » dans la fiche de l'objet pour le forcer).",
+        },
+    },
+    {
         version = "1.128.299", date = "24/11/2026",
         added = {
             "Sacs : bouton « Désenchanter · N » dans l'en-tête pour un perso enchanteur (maquette A). Il compte les objets conseillés au désenchantement que ta compétence permet ; chaque clic désenchante le suivant, mis en surbrillance au survol, avec ce qu'il donne et son prix au marchand. Pas en combat ; les objets verrouillés sont laissés de côté.",
