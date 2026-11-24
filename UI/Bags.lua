@@ -1496,6 +1496,12 @@ function V.RefreshFiche()
         table.insert(need, string.format(T("%s : %d à lui envoyer"), WK:CharName(WK.DB.global.characters[info.ship.to]
             or {}, info.ship.to), info.ship.count or 0))
     end
+    -- rien à envoyer : pourquoi l'objet reste sur ce perso (guide, recette, métier, règle…), sur le compte affiché
+    local Sh = WK.modules.Stash
+    if not info.ship and Sh and Sh.KeepReason and not e.offline then
+        local okK, kr = pcall(Sh.KeepReason, Sh, e.id)
+        if okK and kr then table.insert(need, string.format(T("Reste ici : %s"), kr)) end
+    end
     local Bi = WK.modules.BiS
     if Bi and Bi.Holders then for _, h in ipairs(Bi:Holders(e.id)) do table.insert(need, T("Liste BiS : ") .. h) end end
     if info.upgrade then

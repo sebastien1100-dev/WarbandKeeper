@@ -261,7 +261,8 @@ function M:Needs(onlyKey)
                     if not m.recipe and m.need > 0 then
                         local e = n[m.itemID]
                         if not e or (e.prio or 9) > 1 then
-                            n[m.itemID] = { n = m.need, prio = 1, why = string.format(T("guide : %d jusqu'à %d"), m.need, upTo) }
+                            n[m.itemID] = { n = m.need, prio = 1, prof = prof,
+                                why = string.format(T("guide : %d jusqu'à %d"), m.need, upTo) }
                         end
                     end
                 end
@@ -347,7 +348,14 @@ function M:Compute()
     local all = holdings()
     local IL = WK.modules.ItemLock
     local chars = WK.DB.global.characters
-    local out = { dest = {}, ah = { list = {}, value = 0 }, sell = { list = {}, value = 0 }, vendor = { list = {}, value = 0 } }
+    -- keep[objet][perso] = raison pour laquelle ce perso garde l'objet (fiche des sacs : « Reste ici : … »)
+    local out = { dest = {}, ah = { list = {}, value = 0 }, sell = { list = {}, value = 0 },
+        vendor = { list = {}, value = 0 }, keep = {} }
+    local function kept(id, key, why)
+        if not why or why == "" then return end
+        out.keep[id] = out.keep[id] or {}
+        out.keep[id][key] = out.keep[id][key] or why
+    end
     local function addTo(group, id, count, from, why, unit, exc)
         local e = { id = id, count = count, from = from, why = why, unit = unit, exc = exc }
         table.insert(group.list, e)
@@ -407,7 +415,8 @@ function M:Compute()
             for key, n in pairs(needs) do
                 local e = n[id]
                 if e and not noRecv(key, fam) then
-                    table.insert(needers, { key = key, need = e.n, prio = e.prio, why = e.why }); seen[key] = #needers
+                    table.insert(needers, { key = key, need = e.n, prio = e.prio, why = e.why, prof = e.prof })
+                    seen[key] = #needers
                 end
             end
             if fam then
@@ -468,7 +477,9 @@ function M:Compute()
             -- « tout » garde tout (il en fera ce qu'il veut) ; un perso qui garde ses récoltes ne cède rien.
             local spare = {}
             for key, cnt in pairs(byChar) do
-                if not hasMailRule(id, key) and not keeps(key, fam) then
+                if hasMailRule(id, key) then kept(id, key, T("une règle d'envoi s'en occupe"))
+                elseif keeps(key, fam) then kept(id, key, T("garde ses récoltes"))
+                else
                     local nd = isNeeder[key]
                     local keep = nd and (nd.need or math.huge) or 0
                     -- un receveur de plus bas rang cède au premier de la liste (pas d'échange en boucle)
@@ -476,6 +487,9 @@ function M:Compute()
                     if nd and first and first.key ~= key and nd.need == nil and first.need == nil then keep = 0 end
                     local sp = math.max(0, cnt - keep)
                     if sp > 0 then spare[key] = sp end
+                    if keep > 0 and cnt > 0 and nd then
+                        kept(id, key, nd.prof and (nd.prof .. " · " .. (nd.why or "")) or nd.why)
+                    end
                 end
             end
             -- vers ceux qui en ont besoin
@@ -593,6 +607,13 @@ end
 
 
 -- Envois du perso connecté (objets dans ses sacs) : { { id, count, to = perso, why, ah? } }
+-- Pourquoi ce perso (le perso connecté par défaut) garde cet objet au lieu de l'envoyer, ou nil
+function M:KeepReason(id, key)
+    local k = self:Route().keep
+    local e = k and k[id]
+    return e and e[key or WK:CharKey()] or nil
+end
+
 function M:MyShipments()
     local me = WK:CharKey()
     local r = self:Route()

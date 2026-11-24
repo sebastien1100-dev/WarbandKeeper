@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.288", date = "24/11/2026",
+        added = {
+            "Sacs > fiche d'un objet : quand rien n'est à envoyer, une ligne dit pourquoi l'objet reste sur ce perso (« Reste ici : Secourisme · guide : 30 jusqu'à 75 », recette connue, métier, garde ses récoltes, règle d'envoi…).",
+        },
+    },
+    {
         version = "1.128.287", date = "24/11/2026",
         fixed = {
             "Sacs (vue par catégories) : les objets du sac de composants restaient dans une section à part, hors du tri. Ils sont maintenant rangés avec les autres dans leur catégorie ; ses places libres gardent leur ligne « Places libres du sac de composants ». La vue sans catégories garde sa grille à part.",
