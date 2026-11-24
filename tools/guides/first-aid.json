@@ -44,18 +44,18 @@
   {
    "skill": [
     125,
-    152
+    150
    ],
    "recipe": 1244433,
-   "crafts": 34
+   "crafts": 31
   },
   {
    "skill": [
-    152,
+    150,
     180
    ],
    "recipe": 7928,
-   "crafts": 43
+   "crafts": 46
   },
   {
    "skill": [
@@ -522,7 +522,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 1,
-     "price": 555
+     "price": 505
     }
    ],
    "source": "trainer",
@@ -540,7 +540,7 @@
      "id": 14047,
      "name": "Runecloth",
      "count": 2,
-     "price": 555
+     "price": 505
     }
    ],
    "source": "trainer",
@@ -558,7 +558,7 @@
      "id": 2589,
      "name": "Linen Cloth",
      "count": 1,
-     "price": 25
+     "price": 24
     }
    ],
    "source": "trainer",
@@ -576,7 +576,7 @@
      "id": 2589,
      "name": "Linen Cloth",
      "count": 2,
-     "price": 25
+     "price": 24
     }
    ],
    "source": "trainer",
@@ -594,7 +594,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 1,
-     "price": 545
+     "price": 485
     }
    ],
    "source": "recipe",
@@ -622,7 +622,7 @@
      "id": 3174,
      "name": "Spider Ichor",
      "count": 1,
-     "price": 19
+     "price": 22
     },
     {
      "id": 2678,
@@ -664,7 +664,7 @@
      "id": 2450,
      "name": "Briarthorn",
      "count": 1,
-     "price": 148
+     "price": 121
     }
    ],
    "source": "trainer",
@@ -694,7 +694,7 @@
      "id": 2453,
      "name": "Bruiseweed",
      "count": 1,
-     "price": 111
+     "price": 106
     }
    ],
    "source": "trainer",
@@ -712,7 +712,7 @@
      "id": 4338,
      "name": "Mageweave Cloth",
      "count": 2,
-     "price": 545
+     "price": 485
     }
    ],
    "source": "trainer",
@@ -730,7 +730,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 1,
-     "price": 200
+     "price": 194
     }
    ],
    "source": "trainer",
@@ -748,7 +748,7 @@
      "id": 4306,
      "name": "Silk Cloth",
      "count": 2,
-     "price": 200
+     "price": 194
     }
    ],
    "source": "recipe",
@@ -776,7 +776,7 @@
      "id": 1475,
      "name": "Small Venom Sac",
      "count": 1,
-     "price": 75
+     "price": 119
     }
    ],
    "source": "trainer",

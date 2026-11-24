@@ -4,49 +4,40 @@
   {
    "skill": [
     1,
-    30
+    29
    ],
    "recipe": 2881,
-   "crafts": 36,
+   "crafts": 33,
    "craftAll": true
   },
   {
    "skill": [
-    30,
-    45
+    29,
+    44
    ],
    "recipe": 2152,
+   "crafts": 22
+  },
+  {
+   "skill": [
+    44,
+    67
+   ],
+   "recipe": 3756,
    "crafts": 23
   },
   {
    "skill": [
-    45,
-    51
-   ],
-   "recipe": 3816,
-   "crafts": 6
-  },
-  {
-   "skill": [
-    51,
+    67,
     77
    ],
-   "recipe": 3756,
-   "crafts": 28
+   "recipe": 3763,
+   "crafts": 10
   },
   {
    "skill": [
     77,
-    80
-   ],
-   "recipe": 20648,
-   "crafts": 5,
-   "craftAll": true
-  },
-  {
-   "skill": [
-    80,
-    97
+    95
    ],
    "recipe": 3817,
    "crafts": 20,
@@ -54,52 +45,53 @@
   },
   {
    "skill": [
-    97,
+    95,
     100
    ],
    "recipe": 3763,
-   "crafts": 6
+   "crafts": 10,
+   "craftAll": true
   },
   {
    "skill": [
     100,
     105
    ],
-   "recipe": 9068,
-   "crafts": 6
+   "recipe": 9074,
+   "crafts": 5
   },
   {
    "skill": [
     105,
     125
    ],
-   "recipe": 3768,
+   "recipe": 3766,
    "crafts": 20
   },
   {
    "skill": [
     125,
-    142
+    141
    ],
    "recipe": 3818,
-   "crafts": 37,
+   "crafts": 30,
    "craftAll": true
   },
   {
    "skill": [
-    142,
-    155
+    141,
+    158
    ],
-   "recipe": 3780,
-   "crafts": 18
+   "recipe": 3764,
+   "crafts": 24
   },
   {
    "skill": [
-    155,
+    158,
     165
    ],
-   "recipe": 7151,
-   "crafts": 10
+   "recipe": 9196,
+   "crafts": 7
   },
   {
    "skill": [
@@ -120,34 +112,34 @@
   {
    "skill": [
     176,
-    191
+    193
    ],
    "recipe": 7156,
-   "crafts": 17
+   "crafts": 20
   },
   {
    "skill": [
-    191,
-    196
-   ],
-   "recipe": 10487,
-   "crafts": 5
-  },
-  {
-   "skill": [
-    196,
-    210
+    193,
+    209
    ],
    "recipe": 10507,
-   "crafts": 19
+   "crafts": 20
   },
   {
    "skill": [
-    210,
+    209,
+    214
+   ],
+   "recipe": 10511,
+   "crafts": 8
+  },
+  {
+   "skill": [
+    214,
     225
    ],
    "recipe": 10548,
-   "crafts": 15
+   "crafts": 11
   },
   {
    "skill": [
@@ -187,14 +179,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    51
+    67
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    51,
+    67,
     125
    ],
    "trainers": {
@@ -238,7 +230,7 @@
    "rank": "Expert",
    "skill": [
     125,
-    210
+    209
    ],
    "trainers": {
     "alliance": [
@@ -260,7 +252,7 @@
   {
    "rank": "Artisan",
    "skill": [
-    210,
+    209,
     300
    ],
    "trainers": {
@@ -5448,13 +5440,13 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 14,
-     "price": 1699
+     "price": 1243
     },
     {
      "id": 14047,
      "name": "Runecloth",
      "count": 10,
-     "price": 555
+     "price": 505
     },
     {
      "id": 14341,
@@ -5487,7 +5479,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 5,
-     "price": 540
+     "price": 613
     },
     {
      "id": 4291,
@@ -5500,18 +5492,30 @@
    "tools": [],
    "taught_by": []
   },
-  "20648": {
-   "name": "Medium Leather",
+  "10511": {
+   "name": "Turtle Scale Breastplate",
    "item": {
-    "id": 2319,
+    "id": 8189,
     "count": 1
    },
    "reagents": [
     {
-     "id": 2318,
-     "name": "Light Leather",
-     "count": 4,
-     "price": 47
+     "id": 4304,
+     "name": "Thick Leather",
+     "count": 6,
+     "price": 613
+    },
+    {
+     "id": 8167,
+     "name": "Turtle Scale",
+     "count": 12,
+     "price": 533
+    },
+    {
+     "id": 8343,
+     "name": "Heavy Silken Thread",
+     "count": 1,
+     "price": 2000
     }
    ],
    "source": "trainer",
@@ -5529,7 +5533,7 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 6,
-     "price": 197
+     "price": 214
     }
    ],
    "source": "trainer",
@@ -5547,7 +5551,7 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 3,
-     "price": 47
+     "price": 35
     },
     {
      "id": 2320,
@@ -5571,13 +5575,37 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 6,
-     "price": 47
+     "price": 35
     },
     {
      "id": 2320,
      "name": "Coarse Thread",
      "count": 2,
      "price": 10
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3764": {
+   "name": "Hillman's Leather Gloves",
+   "item": {
+    "id": 4247,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 2319,
+     "name": "Medium Leather",
+     "count": 14,
+     "price": 72
+    },
+    {
+     "id": 2321,
+     "name": "Fine Thread",
+     "count": 4,
+     "price": 100
     }
    ],
    "source": "trainer",
@@ -5595,7 +5623,7 @@
      "id": 4304,
      "name": "Thick Leather",
      "count": 14,
-     "price": 540
+     "price": 613
     },
     {
      "id": 4291,
@@ -5608,13 +5636,19 @@
    "tools": [],
    "taught_by": []
   },
-  "3768": {
-   "name": "Hillman's Shoulders",
+  "3766": {
+   "name": "Dark Leather Belt",
    "item": {
-    "id": 4251,
+    "id": 4249,
     "count": 1
    },
    "reagents": [
+    {
+     "id": 4246,
+     "name": "Fine Leather Belt",
+     "count": 1,
+     "price": null
+    },
     {
      "id": 4233,
      "name": "Cured Medium Hide",
@@ -5622,16 +5656,16 @@
      "price": null
     },
     {
-     "id": 2319,
-     "name": "Medium Leather",
-     "count": 4,
-     "price": 89
-    },
-    {
      "id": 2321,
      "name": "Fine Thread",
-     "count": 1,
+     "count": 2,
      "price": 100
+    },
+    {
+     "id": 4340,
+     "name": "Gray Dye",
+     "count": 1,
+     "price": 350
     }
    ],
    "source": "trainer",
@@ -5649,7 +5683,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 20,
-     "price": 1699
+     "price": 1243
     },
     {
      "id": 15408,
@@ -5688,31 +5722,7 @@
      "id": 2934,
      "name": "Ruined Leather Scraps",
      "count": 3,
-     "price": 18
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "3780": {
-   "name": "Heavy Armor Kit",
-   "item": {
-    "id": 4265,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4234,
-     "name": "Heavy Leather",
-     "count": 5,
-     "price": 197
-    },
-    {
-     "id": 2321,
-     "name": "Fine Thread",
-     "count": 1,
-     "price": 100
+     "price": 15
     }
    ],
    "source": "trainer",
@@ -5730,7 +5740,55 @@
      "id": 2318,
      "name": "Light Leather",
      "count": 1,
-     "price": 47
+     "price": 35
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3817": {
+   "name": "Cured Medium Hide",
+   "item": {
+    "id": 4233,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4232,
+     "name": "Medium Hide",
+     "count": 1,
+     "price": 359
+    },
+    {
+     "id": 4289,
+     "name": "Salt",
+     "count": 1,
+     "price": 50
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3818": {
+   "name": "Cured Heavy Hide",
+   "item": {
+    "id": 4236,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 4235,
+     "name": "Heavy Hide",
+     "count": 1,
+     "price": 810
+    },
+    {
+     "id": 4289,
+     "name": "Salt",
+     "count": 3,
+     "price": 50
     }
    ],
    "source": "trainer",
@@ -5748,7 +5806,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 8,
-     "price": 1699
+     "price": 1243
     },
     {
      "id": 2325,
@@ -5777,77 +5835,29 @@
     }
    ]
   },
-  "3816": {
-   "name": "Cured Light Hide",
+  "9196": {
+   "name": "Dusky Leather Armor",
    "item": {
-    "id": 4231,
+    "id": 7374,
     "count": 1
    },
    "reagents": [
     {
-     "id": 783,
-     "name": "Light Hide",
-     "count": 1,
-     "price": 99
-    },
-    {
-     "id": 4289,
-     "name": "Salt",
-     "count": 1,
-     "price": 50
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "3817": {
-   "name": "Cured Medium Hide",
-   "item": {
-    "id": 4233,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4232,
-     "name": "Medium Hide",
-     "count": 1,
-     "price": 330
-    },
-    {
-     "id": 4289,
-     "name": "Salt",
-     "count": 1,
-     "price": 50
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "9068": {
-   "name": "Light Leather Pants",
-   "item": {
-    "id": 7282,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 2318,
-     "name": "Light Leather",
+     "id": 4234,
+     "name": "Heavy Leather",
      "count": 10,
-     "price": 47
+     "price": 214
     },
     {
-     "id": 4231,
-     "name": "Cured Light Hide",
+     "id": 3824,
+     "name": "Shadow Oil",
      "count": 1,
-     "price": null
+     "price": 1594
     },
     {
      "id": 2321,
      "name": "Fine Thread",
-     "count": 1,
+     "count": 2,
      "price": 100
     }
    ],
@@ -5855,53 +5865,29 @@
    "tools": [],
    "taught_by": []
   },
-  "3818": {
-   "name": "Cured Heavy Hide",
+  "9074": {
+   "name": "Nimble Leather Gloves",
    "item": {
-    "id": 4236,
+    "id": 7285,
     "count": 1
    },
    "reagents": [
     {
-     "id": 4235,
-     "name": "Heavy Hide",
+     "id": 2457,
+     "name": "Elixir of Minor Agility",
      "count": 1,
-     "price": 908
+     "price": 415
     },
     {
-     "id": 4289,
-     "name": "Salt",
-     "count": 3,
-     "price": 50
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "7151": {
-   "name": "Barbaric Shoulders",
-   "item": {
-    "id": 5964,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4234,
-     "name": "Heavy Leather",
-     "count": 8,
-     "price": 197
-    },
-    {
-     "id": 4236,
-     "name": "Cured Heavy Hide",
-     "count": 1,
-     "price": null
+     "id": 2319,
+     "name": "Medium Leather",
+     "count": 6,
+     "price": 72
     },
     {
      "id": 2321,
      "name": "Fine Thread",
-     "count": 2,
+     "count": 1,
      "price": 100
     }
    ],
@@ -5920,7 +5906,7 @@
      "id": 8170,
      "name": "Rugged Leather",
      "count": 5,
-     "price": 1699
+     "price": 1243
     }
    ],
    "source": "trainer",
@@ -5938,37 +5924,13 @@
      "id": 4234,
      "name": "Heavy Leather",
      "count": 4,
-     "price": 197
+     "price": 214
     },
     {
      "id": 4236,
      "name": "Cured Heavy Hide",
      "count": 1,
      "price": null
-    },
-    {
-     "id": 4291,
-     "name": "Silken Thread",
-     "count": 1,
-     "price": 500
-    }
-   ],
-   "source": "trainer",
-   "tools": [],
-   "taught_by": []
-  },
-  "10487": {
-   "name": "Thick Armor Kit",
-   "item": {
-    "id": 8173,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 4304,
-     "name": "Thick Leather",
-     "count": 5,
-     "price": 540
     },
     {
      "id": 4291,

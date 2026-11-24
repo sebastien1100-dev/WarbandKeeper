@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.289", date = "24/11/2026",
+        changed = {
+            "Données mises à jour depuis QuestieDB, Everloot, wago.tools, wowtbc.gg, What's Training et opendata : guides de métiers revus par wowtbc.gg.",
+        },
+    },
+    {
         version = "1.128.288", date = "24/11/2026",
         added = {
             "Sacs > fiche d'un objet : quand rien n'est à envoyer, une ligne dit pourquoi l'objet reste sur ce perso (« Reste ici : Secourisme · guide : 30 jusqu'à 75 », recette connue, métier, garde ses récoltes, règle d'envoi…).",

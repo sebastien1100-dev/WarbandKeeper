@@ -4,42 +4,34 @@
   {
    "skill": [
     1,
-    51
+    50
    ],
    "recipe": 2540,
-   "crafts": 51
+   "crafts": 50
   },
   {
    "skill": [
-    51,
-    100
+    50,
+    103
    ],
    "recipe": 6499,
-   "crafts": 52
+   "crafts": 57
   },
   {
    "skill": [
-    100,
+    103,
     125
    ],
-   "recipe": 7755,
-   "crafts": 25
+   "recipe": 25704,
+   "crafts": 23
   },
   {
    "skill": [
     125,
-    160
-   ],
-   "recipe": 7755,
-   "crafts": 45
-  },
-  {
-   "skill": [
-    160,
     175
    ],
    "recipe": 6500,
-   "crafts": 18
+   "crafts": 53
   },
   {
    "skill": [
@@ -52,26 +44,26 @@
   {
    "skill": [
     210,
-    235
+    215
    ],
-   "recipe": 20916,
-   "crafts": 35
+   "recipe": 1247741,
+   "crafts": 8
   },
   {
    "skill": [
-    235,
-    250
+    215,
+    260
    ],
    "recipe": 21175,
-   "crafts": 18
+   "crafts": 55
   },
   {
    "skill": [
-    250,
+    260,
     300
    ],
-   "recipe": 18244,
-   "crafts": 53
+   "recipe": 18243,
+   "crafts": 43
   }
  ],
  "sections": [
@@ -79,14 +71,14 @@
    "rank": "Apprentice",
    "skill": [
     1,
-    51
+    50
    ],
    "trainers": null
   },
   {
    "rank": "Journeyman",
    "skill": [
-    51,
+    50,
     125
    ],
    "trainers": {
@@ -1590,7 +1582,7 @@
      "id": 5503,
      "name": "Clam Meat",
      "count": 1,
-     "price": 29
+     "price": 22
     },
     {
      "id": 159,
@@ -1614,7 +1606,7 @@
      "id": 5504,
      "name": "Tangy Clam Meat",
      "count": 1,
-     "price": 51
+     "price": 57
     },
     {
      "id": 2692,
@@ -1627,26 +1619,32 @@
    "tools": [],
    "taught_by": []
   },
-  "18244": {
-   "name": "Poached Sunscale Salmon",
+  "18243": {
+   "name": "Nightfin Soup",
    "item": {
-    "id": 13932,
+    "id": 13931,
     "count": 1
    },
    "reagents": [
     {
-     "id": 13760,
-     "name": "Raw Sunscale Salmon",
+     "id": 13759,
+     "name": "Raw Nightfin Snapper",
      "count": 1,
-     "price": 299
+     "price": 280
+    },
+    {
+     "id": 159,
+     "name": "Refreshing Spring Water",
+     "count": 1,
+     "price": 5
     }
    ],
    "source": "recipe",
    "tools": [],
    "taught_by": [
     {
-     "id": 13946,
-     "name": "Recipe: Poached Sunscale Salmon",
+     "id": 13945,
+     "name": "Recipe: Nightfin Soup",
      "vendors": [
       "Gikkix"
      ],
@@ -1654,37 +1652,59 @@
     }
    ]
   },
-  "7755": {
-   "name": "Bristle Whisker Catfish",
+  "25704": {
+   "name": "Smoked Sagefish",
    "item": {
-    "id": 4593,
+    "id": 21072,
     "count": 1
    },
    "reagents": [
     {
-     "id": 6308,
-     "name": "Raw Bristle Whisker Catfish",
+     "id": 21071,
+     "name": "Raw Sagefish",
      "count": 1,
-     "price": 8
+     "price": 55
+    },
+    {
+     "id": 2678,
+     "name": "Mild Spices",
+     "count": 1,
+     "price": 2
     }
    ],
    "source": "recipe",
    "tools": [],
    "taught_by": [
     {
-     "id": 6330,
-     "name": "Recipe: Bristle Whisker Catfish",
+     "id": 21099,
+     "name": "Recipe: Smoked Sagefish",
      "vendors": [
-      "Lindea Rabonne",
+      "Micha Yance",
       "Derak Nightfall",
+      "Kelsey Yance",
       "Naal Mistrunner",
-      "Sewa Mistrunner",
-      "Kilxx",
+      "Gloria Femmel",
+      "Xen'to",
+      "Fyldan",
+      "Nyoma",
       "Ronald Burch",
-      "Catherine Leland",
-      "Gritta Chumwater"
+      "Emrul Riknussun",
+      "Erika Tate",
+      "Tarban Hearthgrain",
+      "Wulan",
+      "Otho Moji'ko",
+      "Reagent Bot",
+      "Aza'bek",
+      "Zerril Softbreeze",
+      "Derek Odds",
+      "Repair Bot",
+      "Kalsey Sanden",
+      "Fimbo Greasemitz",
+      "Paige",
+      "Qujo",
+      "Miranda Turner"
      ],
-     "price": 1200
+     "price": 500
     }
    ]
   },
@@ -1699,7 +1719,7 @@
      "id": 769,
      "name": "Chunk of Boar Meat",
      "count": 1,
-     "price": 24
+     "price": 19
     }
    ],
    "source": "trainer",
@@ -1741,41 +1761,6 @@
     }
    ]
   },
-  "20916": {
-   "name": "Mithril Headed Trout",
-   "item": {
-    "id": 8364,
-    "count": 1
-   },
-   "reagents": [
-    {
-     "id": 8365,
-     "name": "Raw Mithril Head Trout",
-     "count": 1,
-     "price": 98
-    }
-   ],
-   "source": "recipe",
-   "tools": [],
-   "taught_by": [
-    {
-     "id": 17062,
-     "name": "Recipe: Mithril Head Trout",
-     "vendors": [
-      "Lindea Rabonne",
-      "Kelsey Yance",
-      "Stuart Fleming",
-      "Shankys",
-      "Heldan Galesong",
-      "Lizbeth Cromwell",
-      "Tansy Puddlefizz",
-      "Wulan",
-      "Wik'Tar"
-     ],
-     "price": 2200
-    }
-   ]
-  },
   "21175": {
    "name": "Spider Sausage",
    "item": {
@@ -1787,7 +1772,25 @@
      "id": 12205,
      "name": "White Spider Meat",
      "count": 2,
-     "price": 196
+     "price": 188
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "1247741": {
+   "name": "Spinefin Halibut",
+   "item": {
+    "id": 8957,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 8959,
+     "name": "Raw Spinefin Halibut",
+     "count": 1,
+     "price": 168
     }
    ],
    "source": "trainer",

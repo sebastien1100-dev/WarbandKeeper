@@ -12,10 +12,18 @@
   {
    "skill": [
     13,
-    75
+    15
    ],
    "recipe": 7183,
-   "crafts": 72
+   "crafts": 2
+  },
+  {
+   "skill": [
+    15,
+    75
+   ],
+   "recipe": 2329,
+   "crafts": 70
   },
   {
    "skill": [
@@ -28,27 +36,34 @@
   {
    "skill": [
     80,
-    95
+    90
    ],
    "recipe": 7836,
-   "crafts": 55,
-   "craftAll": true
+   "crafts": 15
+  },
+  {
+   "skill": [
+    90,
+    95
+   ],
+   "recipe": 7179,
+   "crafts": 5
   },
   {
    "skill": [
     95,
-    115
+    121
    ],
-   "recipe": 7179,
-   "crafts": 20
+   "recipe": 3171,
+   "crafts": 26
   },
   {
    "skill": [
-    115,
+    121,
     130
    ],
-   "recipe": 7841,
-   "crafts": 15
+   "recipe": 3173,
+   "crafts": 9
   },
   {
    "skill": [
@@ -96,24 +111,16 @@
     235,
     240
    ],
-   "recipe": 11448,
+   "recipe": 12609,
    "crafts": 10
   },
   {
    "skill": [
     240,
-    246
-   ],
-   "recipe": 15833,
-   "crafts": 6
-  },
-  {
-   "skill": [
-    246,
     250
    ],
    "recipe": 11465,
-   "crafts": 4
+   "crafts": 10
   },
   {
    "skill": [
@@ -2029,30 +2036,30 @@
  "skillOnly": [],
  "craftedTools": {},
  "recipes": {
-  "7841": {
-   "name": "Swim Speed Potion",
+  "12609": {
+   "name": "Catseye Draught",
    "item": {
-    "id": 6372,
+    "id": 10592,
     "count": 1
    },
    "reagents": [
     {
-     "id": 2452,
-     "name": "Swiftthistle",
+     "id": 3821,
+     "name": "Goldthorn",
      "count": 1,
-     "price": 289
+     "price": 357
     },
     {
-     "id": 6370,
-     "name": "Blackmouth Oil",
+     "id": 3818,
+     "name": "Fadeleaf",
      "count": 1,
-     "price": null
+     "price": 350
     },
     {
-     "id": 3371,
-     "name": "Empty Vial",
+     "id": 3372,
+     "name": "Leaded Vial",
      "count": 1,
-     "price": 4
+     "price": 40
     }
    ],
    "source": "trainer",
@@ -2070,7 +2077,7 @@
      "id": 765,
      "name": "Silverleaf",
      "count": 1,
-     "price": 15
+     "price": 16
     },
     {
      "id": 3371,
@@ -2083,30 +2090,60 @@
    "tools": [],
    "taught_by": []
   },
-  "11448": {
-   "name": "Greater Mana Potion",
+  "3171": {
+   "name": "Elixir of Wisdom",
    "item": {
-    "id": 6149,
+    "id": 3383,
     "count": 1
    },
    "reagents": [
     {
-     "id": 3358,
-     "name": "Khadgar's Whisker",
+     "id": 785,
+     "name": "Mageroyal",
      "count": 1,
-     "price": 403
+     "price": 54
     },
     {
-     "id": 3821,
-     "name": "Goldthorn",
-     "count": 1,
-     "price": 415
+     "id": 2450,
+     "name": "Briarthorn",
+     "count": 2,
+     "price": 121
     },
     {
-     "id": 3372,
-     "name": "Leaded Vial",
+     "id": 3371,
+     "name": "Empty Vial",
      "count": 1,
-     "price": 40
+     "price": 4
+    }
+   ],
+   "source": "trainer",
+   "tools": [],
+   "taught_by": []
+  },
+  "3173": {
+   "name": "Lesser Mana Potion",
+   "item": {
+    "id": 3385,
+    "count": 1
+   },
+   "reagents": [
+    {
+     "id": 785,
+     "name": "Mageroyal",
+     "count": 1,
+     "price": 54
+    },
+    {
+     "id": 3820,
+     "name": "Stranglekelp",
+     "count": 1,
+     "price": 193
+    },
+    {
+     "id": 3371,
+     "name": "Empty Vial",
+     "count": 1,
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -2130,7 +2167,7 @@
      "id": 3356,
      "name": "Kingsblood",
      "count": 1,
-     "price": 122
+     "price": 130
     },
     {
      "id": 3372,
@@ -2154,13 +2191,13 @@
      "id": 8839,
      "name": "Blindweed",
      "count": 1,
-     "price": 1200
+     "price": 1599
     },
     {
      "id": 3358,
      "name": "Khadgar's Whisker",
      "count": 1,
-     "price": 403
+     "price": 325
     },
     {
      "id": 8925,
@@ -2184,7 +2221,7 @@
      "id": 3820,
      "name": "Stranglekelp",
      "count": 1,
-     "price": 196
+     "price": 193
     },
     {
      "id": 6370,
@@ -2214,13 +2251,13 @@
      "id": 8838,
      "name": "Sungrass",
      "count": 1,
-     "price": 1344
+     "price": 1388
     },
     {
      "id": 3821,
      "name": "Goldthorn",
      "count": 1,
-     "price": 415
+     "price": 357
     },
     {
      "id": 8925,
@@ -2244,13 +2281,13 @@
      "id": 765,
      "name": "Silverleaf",
      "count": 1,
-     "price": 15
+     "price": 16
     },
     {
      "id": 2447,
      "name": "Peacebloom",
      "count": 1,
-     "price": 99
+     "price": 63
     },
     {
      "id": 3371,
@@ -2274,7 +2311,7 @@
      "id": 13422,
      "name": "Stonescale Eel",
      "count": 1,
-     "price": 133
+     "price": 145
     },
     {
      "id": 3372,
@@ -2304,7 +2341,7 @@
      "id": 8838,
      "name": "Sungrass",
      "count": 1,
-     "price": 1344
+     "price": 1388
     },
     {
      "id": 8925,
@@ -2338,13 +2375,13 @@
      "id": 3820,
      "name": "Stranglekelp",
      "count": 1,
-     "price": 196
+     "price": 193
     },
     {
      "id": 3356,
      "name": "Kingsblood",
      "count": 1,
-     "price": 122
+     "price": 130
     },
     {
      "id": 3372,
@@ -2357,24 +2394,30 @@
    "tools": [],
    "taught_by": []
   },
-  "15833": {
-   "name": "Dreamless Sleep Potion",
+  "2329": {
+   "name": "Elixir of Minor Strength",
    "item": {
-    "id": 12190,
+    "id": 2454,
     "count": 1
    },
    "reagents": [
     {
-     "id": 8831,
-     "name": "Purple Lotus",
-     "count": 3,
-     "price": 437
+     "id": 2449,
+     "name": "Earthroot",
+     "count": 1,
+     "price": 53
     },
     {
-     "id": 8925,
-     "name": "Crystal Vial",
+     "id": 765,
+     "name": "Silverleaf",
      "count": 1,
-     "price": 500
+     "price": 16
+    },
+    {
+     "id": 3371,
+     "name": "Empty Vial",
+     "count": 1,
+     "price": 4
     }
    ],
    "source": "trainer",
@@ -2392,13 +2435,13 @@
      "id": 3355,
      "name": "Wild Steelbloom",
      "count": 1,
-     "price": 132
+     "price": 110
     },
     {
      "id": 3821,
      "name": "Goldthorn",
      "count": 1,
-     "price": 415
+     "price": 357
     },
     {
      "id": 3372,
@@ -2422,7 +2465,7 @@
      "id": 6358,
      "name": "Oily Blackmouth",
      "count": 2,
-     "price": 45
+     "price": 43
     },
     {
      "id": 3371,
@@ -2446,7 +2489,7 @@
      "id": 6359,
      "name": "Firefin Snapper",
      "count": 2,
-     "price": 15
+     "price": 11
     },
     {
      "id": 3371,
@@ -2470,13 +2513,13 @@
      "id": 2449,
      "name": "Earthroot",
      "count": 2,
-     "price": 130
+     "price": 53
     },
     {
      "id": 2447,
      "name": "Peacebloom",
      "count": 1,
-     "price": 99
+     "price": 63
     },
     {
      "id": 3371,
