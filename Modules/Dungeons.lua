@@ -1137,6 +1137,14 @@ function M.MapDiag(_)
     local function add(...) out[#out + 1] = table.concat({ ... }, " ") end
     local okI, name, itype, _, _, _, _, _, instID = pcall(_G.GetInstanceInfo)
     add("instance:", tostring(okI and name), tostring(okI and itype), tostring(okI and instID))
+    -- ce qui pourrait servir à estimer la position quand le jeu ne donne pas de carte : coordonnées du monde,
+    -- orientation, vitesse
+    local okU, wy, wx, _, wInst = pcall(_G.UnitPosition or function() end, "player")
+    add("monde:", okU and wy and string.format("%.1f, %.1f (instance %s)", wx, wy, tostring(wInst)) or "non donné")
+    local okD, face = pcall(_G.GetPlayerFacing or function() end)
+    add("direction:", okD and face and string.format("%.2f", face) or "non donnée")
+    local okS, speed = pcall(_G.GetUnitSpeed or function() end, "player")
+    add("vitesse:", okS and speed and string.format("%.1f", speed) or "non donnée")
     local CM = _G.C_Map
     if not CM then add("C_Map: absent"); return out end
     local okM, mapID = pcall(CM.GetBestMapForUnit, "player")

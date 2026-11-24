@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.266 — 24/11/2026
+
+_Un /reload suffit._
+
+### Ajouts
+- /wk cartedonjon donne aussi les coordonnées du monde, la direction et la vitesse du perso, quand le jeu les fournit : pour savoir si ta position peut être estimée dans un donjon sans carte (Kraal de Tranchebauge…).
+
 ## v1.128.265 — 24/11/2026
 
 _Un /reload suffit._

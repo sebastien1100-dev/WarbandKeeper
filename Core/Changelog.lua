@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.266", date = "24/11/2026",
+        added = {
+            "/wk cartedonjon donne aussi les coordonnées du monde, la direction et la vitesse du perso, quand le jeu les fournit : pour savoir si ta position peut être estimée dans un donjon sans carte (Kraal de Tranchebauge…).",
+        },
+    },
+    {
         version = "1.128.265", date = "24/11/2026",
         fixed = {
             "Bénédictions : les familiers du groupe (démon du démoniste, familier du chasseur) étaient oubliés : impossible de les bénir depuis la barre. Ils comptent maintenant dans la ligne de la classe de leur maître, avec la même bénédiction : le clic sur la ligne et « Buffer le suivant » les bénissent aussi, et l'infobulle les marque « (familier) ».",
