@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.302", date = "24/11/2026",
+        fixed = {
+            "Sacs : chez le marchand, l'or disparaissait du bas des sacs pour laisser la place aux boutons « Vendre les inutiles » et « Réunir les piles ». Il reste maintenant affiché : les boutons prennent d'abord un libellé court (« Inutiles (1) », « Piles », « Camelote ») et, si la fenêtre est vraiment trop étroite, l'or passe dans l'en-tête, à côté des places.",
+        },
+    },
+    {
         version = "1.128.301", date = "24/11/2026",
         fixed = {
             "Hôtel des ventes : après un premier clic sur « Acheter », le bouton devenait « Confirmer 20pa 98pc », s'élargissait et recouvrait la quantité et le cumul de la ligne. Il dit maintenant « Confirmer », en couleur pleine, à la même place ; le prix du lot est dans son infobulle.",

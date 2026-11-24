@@ -50,6 +50,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.302 — 24/11/2026
+
+_Un /reload suffit._
+
+### Corrections
+- Sacs : chez le marchand, l'or disparaissait du bas des sacs pour laisser la place aux boutons « Vendre les inutiles » et « Réunir les piles ». Il reste maintenant affiché : les boutons prennent d'abord un libellé court (« Inutiles (1) », « Piles », « Camelote ») et, si la fenêtre est vraiment trop étroite, l'or passe dans l'en-tête, à côté des places.
+
 ## v1.128.301 — 24/11/2026
 
 _Un /reload suffit._

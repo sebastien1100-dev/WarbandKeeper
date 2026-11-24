@@ -1414,25 +1414,41 @@ function V.Refresh(light, live)
             anchor = b
         end
     end
-    -- pied trop étroit pour les boutons (chez le marchand) : texte des places raccourci (« 12 libres »),
-    -- puis l'or caché tant que les boutons sont là (avant, « Vendre les inutiles » passait sur l'or)
+    -- pied trop étroit pour les boutons (chez le marchand) : texte des places raccourci (« 12 libres »), puis
+    -- libellés courts des boutons ; l'or n'est jamais caché : s'il ne tient toujours pas, il passe dans l'en-tête,
+    -- à côté des places (avant : caché chez le marchand)
     do
         local right = PAD + (B.Config().fiche and FICHE_W + 10 or 0)
-        local bw = 0
-        for _, b in ipairs({ isBank and win.tidy or win.sell, win.sellMore, win.merge }) do
-            if b and b:IsShown() then bw = bw + (b:GetWidth() or 0) + 8 end
+        local first = isBank and win.tidy or win.sell
+        if not isBank then win.sell:SetLabel(T("Vendre la camelote")) end
+        win.merge:SetLabel(T("Réunir les piles"))
+        local function btnW()
+            local bw = 0
+            for _, b in ipairs({ first, win.sellMore, win.merge }) do
+                if b and b:IsShown() then bw = bw + (b:GetWidth() or 0) + 8 end
+            end
+            return bw
         end
         local W = win:GetWidth() or 0
-        local function need()
-            return PAD + (win.foot:GetStringWidth() or 0) + 18 + 16 + 6 + (win.money:GetStringWidth() or 0) + 12
-                + bw + right
+        local function need(withMoney)
+            return PAD + (win.foot:GetStringWidth() or 0)
+                + (withMoney and (18 + 16 + 6 + (win.money:GetStringWidth() or 0)) or 0) + 12 + btnW() + right
         end
-        local showMoney = true
-        if bw > 0 and need() > W then
+        local moneyUp = false
+        if btnW() > 0 and need(true) > W then
             win.foot:SetText(string.format(T("%s libres"), UI:Hex(normal == 0 and C.negative or ac) .. normal .. "|r"))
-            if need() > W then showMoney = false end
+            if need(true) > W then
+                if not isBank then win.sell:SetLabel(T("Camelote")) end
+                if unneeded > 0 then win.sellMore:SetLabel(string.format(T("Inutiles (%d)"), unneeded)) end
+                win.merge:SetLabel(T("Piles"))
+            end
+            if need(true) > W then moneyUp = true end
         end
-        win.coin:SetShown(showMoney); win.money:SetShown(showMoney); win.moneyBtn:SetShown(showMoney)
+        win.coin:SetShown(not moneyUp); win.money:SetShown(not moneyUp); win.moneyBtn:SetShown(not moneyUp)
+        if moneyUp then
+            win.sub:SetText((win.sub:GetText() or "") .. "  ·  " .. WK:FormatMoney(money))
+            if win.PaintCraft and not inCombat() then win.PaintCraft() end
+        end
     end
     -- disposition : par catégorie, cases vides à la fin
     -- en combat : jamais de mise en page (nos cases sont des boutons protégés : les cacher ou bouger leur cadre
