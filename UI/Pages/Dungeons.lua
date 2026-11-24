@@ -87,7 +87,8 @@ UI:RegisterPage({
             function() if UI.RefreshRealReminder then UI:RefreshRealReminder() end end)
         local sumSeg = UI:Segmented(scard, { { "off", "Non" }, { "me", "Pour moi" }, { "group", "Au groupe" } }, function(v) dc.summary = v end, 24)
         sumSeg:Select(dc.summary or "me")
-        UI:SettingRow(scard, -40 - 6 * 46, "Résumé en sortant", "Expérience, argent, morts et réputation du passage, dans le chat (ou envoyé au groupe).", sumSeg, 230)
+        UI:SettingRow(scard, -40 - 6 * 46, "Résumé en sortant", "Expérience, argent, morts et réputation du passage, envoyés au groupe (« Au groupe »),"
+            .. " ou dans ton chat quand le bilan à l'écran est coupé.", sumSeg, 230)
         local startSeg = UI:Segmented(scard, { { "pull", "Au premier pack" }, { "enter", "En entrant" } }, function(v) dc.timerStart = v end, 24)
         startSeg:Select(dc.timerStart or "pull")
         UI:SettingRow(scard, -40 - 7 * 46, "Départ du chrono", "Au premier pack : le chrono attend ton premier combat dans le donjon (ou le chrono d'un membre du groupe). En entrant : dès la porte franchie.", startSeg, 250)

@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.270 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Fin de donjon : plus de ligne « Bilan du donjon » dans le chat quand le bilan s'affiche à l'écran. Elle revient si tu coupes « Bilan à l'écran » ; « Au groupe » envoie toujours le résumé au groupe.
+
 ## v1.128.269 — 24/11/2026
 
 _Un /reload suffit._

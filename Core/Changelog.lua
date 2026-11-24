@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.270", date = "24/11/2026",
+        changed = {
+            "Fin de donjon : plus de ligne « Bilan du donjon » dans le chat quand le bilan s'affiche à l'écran. Elle revient si tu coupes « Bilan à l'écran » ; « Au groupe » envoie toujours le résumé au groupe.",
+        },
+    },
+    {
         version = "1.128.269", date = "24/11/2026",
         fixed = {
             "Quêtes du donjon : le nom du donjon passait sous les pastilles « en cours » et « à prendre ». Le titre s'arrête maintenant avant elles ; si le nom est trop long, les pastilles passent sur une ligne sous le titre.",

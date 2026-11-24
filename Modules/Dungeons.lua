@@ -644,7 +644,8 @@ function M:LeaveSummary(run)
     if mode == "off" then return end
     local txt = self:SummaryText(run)
     if not txt then return end
-    WK:Print(T("Bilan du donjon :") .. " " .. txt)
+    -- dans ton chat seulement sans le bilan à l'écran (doublon, à la demande du joueur)
+    if mode ~= "group" and cfg.summaryBanner == false then WK:Print(T("Bilan du donjon :") .. " " .. txt) end
     if mode == "group" and IsInGroup and IsInGroup() and SendChatMessage then
         -- message aux autres joueurs : sans codes de couleur
         local plain = txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
