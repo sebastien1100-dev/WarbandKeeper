@@ -104,7 +104,9 @@ local function popMenu()
     end
     -- liste : { { label, desc, on, col, fn } | { sep = true }
     --          | { seg = { label, opts = { { clé, libellé } }, sel, fn } } }
-    function f:Open(anchor, title, sub, list)
+    -- w : largeur (360 d'office) ; side : « RIGHT » = posé à droite de l'ancre (sinon dessous)
+    function f:Open(anchor, title, sub, list, w, side)
+        self:SetWidth(w or 360)
         self.title:SetText(title or ""); self.sub:SetText(sub or "")
         for _, it in ipairs(self.items) do it:Hide() end
         local y = (sub and sub ~= "") and 50 or 36
@@ -145,7 +147,8 @@ local function popMenu()
         end
         self:SetHeight(y + 10)
         self:ClearAllPoints()
-        if anchor then self:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -4) else self:SetPoint("CENTER") end
+        if anchor and side == "RIGHT" then self:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 6)
+        elseif anchor then self:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -4) else self:SetPoint("CENTER") end
         self:Show()
     end
     stashPop = f

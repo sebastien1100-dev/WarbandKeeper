@@ -49,6 +49,13 @@ _Prévu, pas encore commencé._
 - **Rares signalés à la guilde** (basse) — Un rare mort, et sur quelle couche, prévient les membres qui ont l'addon.
 - **« Qui peut fabriquer… ? » en guilde** (basse) — La recherche de recette étendue aux membres de la guilde qui ont l'addon.
 
+## v1.128.268 — 24/11/2026
+
+_Un /reload suffit._
+
+### Modifications
+- Carte du donjon : le clic droit sur la pastille d'un boss ouvre un petit menu. « Lier dans le chat » met son nom, « Lier avec son butin » ajoute jusqu'à 3 objets (les plus utiles pour toi d'abord), « Lier avec sa position » ajoute l'endroit sur la carte. En groupe, « Annoncer au groupe » envoie « Prochain : [nom] (niv. 33, boss 3) ». Sur la carte du monde remplacée dans le donjon, un simple clic suffit.
+
 ## v1.128.267 — 24/11/2026
 
 _Un /reload suffit._

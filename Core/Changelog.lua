@@ -8,6 +8,12 @@ local ADDON_NAME, WK = ...
 -- La plus récente en premier.
 WK.Changelog = {
     {
+        version = "1.128.268", date = "24/11/2026",
+        changed = {
+            "Carte du donjon : le clic droit sur la pastille d'un boss ouvre un petit menu. « Lier dans le chat » met son nom, « Lier avec son butin » ajoute jusqu'à 3 objets (les plus utiles pour toi d'abord), « Lier avec sa position » ajoute l'endroit sur la carte. En groupe, « Annoncer au groupe » envoie « Prochain : [nom] (niv. 33, boss 3) ». Sur la carte du monde remplacée dans le donjon, un simple clic suffit.",
+        },
+    },
+    {
         version = "1.128.267", date = "24/11/2026",
         changed = {
             "Quêtes du donjon (fenêtre à l'écran) : un clic sur une quête met son lien dans le chat. Le guidage vers le donneur et le menu du clic droit sont retirés de cette fenêtre.",

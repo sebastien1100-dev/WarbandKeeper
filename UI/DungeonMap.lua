@@ -35,6 +35,71 @@ function UI.DungeonBossChat(b)
     return n .. " "
 end
 
+-- Menu du clic droit sur une pastille (maquette A) : lier le boss dans le chat (seul, avec son butin, avec sa
+-- position) ou l'annoncer au groupe. Le texte va dans la barre de saisie (Entrée pour envoyer) ; seul
+-- « Annoncer au groupe » envoie, au groupe ou au raid (jamais un canal public).
+local function groupChannel()
+    if _G.IsInRaid and _G.IsInRaid() then return "RAID" end
+    if _G.IsInGroup and _G.IsInGroup() then return "PARTY" end
+end
+UI.DungeonGroupChannel = groupChannel
+-- liens du butin du boss (utile au perso d'abord), 3 au plus, sous la limite du chat
+function UI.DungeonBossLootText(b, key)
+    local c = WK.DB.global.characters[key or ""] or WK.DB:Me()
+    local ids = UI.DungeonLoot and UI:DungeonLoot(b, "me", c, key) or {}
+    if #ids == 0 then ids = b.loot or {} end
+    local out = UI.DungeonBossChat(b):gsub("%s$", "")
+    local links = {}
+    for _, id in ipairs(ids) do
+        if #links >= 3 then break end
+        local _, link = WK.GetItemInfo(id)
+        if type(link) == "string" and #out + #link + 3 < 250 then links[#links + 1] = link end
+    end
+    if #links > 0 then out = out .. " : " .. table.concat(links, " ") end
+    return out .. " "
+end
+function UI.DungeonBossMenu(pin, key)
+    local b = pin.boss
+    if not b then return end
+    local name = D:BossName(b)
+    local bits = {}
+    if pin.n then bits[#bits + 1] = string.format(T("Boss %d"), pin.n) end
+    if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niveau %d"), b.level) end
+    local stTxt = { dead = T("tué"), next = T("prochain") }
+    if stTxt[pin.state] then bits[#bits + 1] = stTxt[pin.state] end
+    local list = {
+        { label = T("Lier dans le chat"), fn = function() WK.ChatInsert(UI.DungeonBossChat(b)) end },
+        { label = T("Lier avec son butin"), fn = function() WK.ChatInsert(UI.DungeonBossLootText(b, key)) end },
+    }
+    if pin.pos then
+        list[#list + 1] = { label = T("Lier avec sa position"), fn = function()
+            local p = pin.pos
+            local where = string.format(T("%d · %d"), math.floor(p[2] * 100 + 0.5), math.floor(p[3] * 100 + 0.5))
+            if (pin.floors or 1) > 1 then where = string.format(T("étage %d, %s"), p[1], where) end
+            WK.ChatInsert(UI.DungeonBossChat(b):gsub("%s$", "") .. " : " .. where .. " ")
+        end }
+    end
+    local ch = groupChannel()
+    if ch then
+        list[#list + 1] = { sep = true }
+        list[#list + 1] = { label = T("Annoncer au groupe"),
+            desc = string.format(T("« %s »"), UI.DungeonBossAnnounce(b, pin)), fn = function()
+                pcall(_G.SendChatMessage, UI.DungeonBossAnnounce(b, pin), ch)
+            end }
+    end
+    UI.StashPopMenu():Open(pin, name, table.concat(bits, " · "), list, 240, "RIGHT")
+end
+-- message « Prochain : [Nom] (boss 3) » envoyé au groupe
+function UI.DungeonBossAnnounce(b, pin)
+    local bits = {}
+    if (b.level or 0) > 0 then bits[#bits + 1] = string.format(T("niv. %d"), b.level) end
+    if pin and pin.n then bits[#bits + 1] = string.format(T("boss %d"), pin.n) end
+    local txt = "[" .. tostring(D:BossName(b)) .. "]"
+    if #bits > 0 then txt = txt .. " (" .. table.concat(bits, ", ") .. ")" end
+    if pin and pin.state == "next" then return string.format(T("Prochain : %s"), txt) end
+    return txt
+end
+
 -- Portrait d'un boss (n° de modèle du Dungeon Journal de Naowh Forever) dans une texture, rond ; faux sans portrait
 local MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 -- Hauteur de la carte pour une largeur W : carrée, ou 3:2 (668 x 1002 utiles) ; étage nil = le plus haut
@@ -257,7 +322,7 @@ function UI.DungeonMapView(_, parent)
             end
             if #loot > 4 then GameTooltip:AddLine(string.format(T("et %d autre(s)"), #loot - 4), 0.6, 0.6, 0.6) end
             if v.onBoss then GameTooltip:AddLine(T("Clic : le choisir"), 0.5, 0.5, 0.5) end
-            local hint = v.onBoss and T("Clic droit : lier dans le chat") or T("Clic : lier dans le chat")
+            local hint = v.onBoss and T("Clic droit : lier, annoncer") or T("Clic : lier, annoncer")
             GameTooltip:AddLine(hint, 0.5, 0.5, 0.5)
             GameTooltip:Show()
         end)
@@ -266,7 +331,8 @@ function UI.DungeonMapView(_, parent)
         p:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         p:SetScript("OnClick", function(s, btn)
             if btn ~= "RightButton" and v.onBoss then return v.onBoss(s.boss) end
-            WK.ChatInsert(UI.DungeonBossChat(s.boss))
+            GameTooltip:Hide()
+            UI.DungeonBossMenu(s, v.key)
         end)
         return p
     end)
@@ -347,7 +413,7 @@ function UI.DungeonMapView(_, parent)
             local p = UI.DungeonBossPin(m, bo)
             if p and p[1] == self.floor then
                 local pin = self.pins:Get()
-                pin.boss, pin.optional = bo, opt
+                pin.boss, pin.optional, pin.n, pin.pos, pin.floors = bo, opt, (not opt) and n or nil, p, floors
                 pin.state = UI.DungeonBossState(d, bo, self.key, nextB)
                 pin.hl = self.hlId == bo.id
                 pin.num:SetText(pin.state == "dead" and "x" or (opt and "+" or tostring(n)))
